@@ -11,19 +11,11 @@ const SearchResults: FC<Props> = ({ values }) => {
     <>
       <style jsx>{`
         .results {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
           margin: 1rem auto;
-        }
-
-        @media (min-width: 500px) {
-          .results {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-          }
-        }
-
-        @media (min-width: 800px) {
-          grid-template-columns: repeat(4, 1fr);
           max-width: 1024px;
+          padding: 0 0.5rem;
         }
       `}</style>
 

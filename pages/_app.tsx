@@ -82,7 +82,7 @@ export default class extends App {
 
           .copyright {
             font-size: 0.9rem;
-            margin: 1rem 0.5rem;
+            margin: 2rem 0.5rem;
             text-align: center;
           }
 
@@ -96,6 +96,8 @@ export default class extends App {
           <title>
             {query ? `${query} - あにまーれサーチ` : 'あにまーれサーチ'}
           </title>
+
+          <link href="/static/favicon.png" rel="icon" />
 
           <link
             as="style"

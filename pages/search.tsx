@@ -21,7 +21,30 @@ const Search: NextFC<Props, Props, NextContext<Query>> = ({ hits }) => {
         <meta content="noindex,follow" name="robots" />
       </Head>
 
-      <SearchResults values={hits} />
+      <style jsx>{`
+        .notfound {
+          align-items: center;
+          display: flex;
+          height: 100%;
+          justify-content: center;
+        }
+
+        .notfound p {
+          font-size: 1rem;
+          line-height: 1.5;
+          margin: 0;
+        }
+      `}</style>
+
+      {hits.length > 0 ? (
+        <SearchResults values={hits} />
+      ) : (
+        <div className="notfound">
+          <p>
+            検索結果がありません。
+          </p>
+        </div>
+      )}
     </>
   )
 }

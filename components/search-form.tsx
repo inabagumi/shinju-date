@@ -31,11 +31,14 @@ const SearchForm: FC<Props> = ({ query }) => {
           line-height: 1.5;
           max-width: 100%;
           padding: 0 0.2em;
-          width: 320px;
+          transition: width 0.5s ease;
+          width: 240px;
         }
 
         .text-field:focus {
+          border-color: #9e9e9e;
           outline: 0;
+          width: 320px;
         }
       `}</style>
 
