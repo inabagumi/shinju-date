@@ -14,11 +14,11 @@ type Query = {
   q: string
 }
 
-const Search: NextFC<Props, Props, NextContext<Query>> = ({ hits, query }) => {
+const Search: NextFC<Props, Props, NextContext<Query>> = ({ hits }) => {
   return (
     <>
       <Head>
-        <title>{query} - AniMare Search</title>
+        <meta content="noindex,follow" name="robots" />
       </Head>
 
       <SearchResults values={hits} />

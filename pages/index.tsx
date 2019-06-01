@@ -6,7 +6,7 @@ const Index: NextFC = () => {
   return (
     <>
       <Head>
-        <title>AniMare Search</title>
+        <link href="https://search.animare.cafe/" rel="canonical" />
       </Head>
     </>
   )

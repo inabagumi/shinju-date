@@ -34,10 +34,7 @@ function search({
 }
 
 function normalizeTitle(title: string) {
-  return title.replace(
-    /\s*【[^】]+\s*\/\s*あにまーれ】?\s*/,
-    ' '
-  ).trim()
+  return title.replace(/\s*【[^】]+\s*\/\s*あにまーれ】?\s*/, ' ').trim()
 }
 
 async function* getVideosByChannelId(

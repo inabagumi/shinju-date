@@ -11,6 +11,12 @@ export default class extends App {
     return (
       <>
         <style jsx global>{`
+          html,
+          body,
+          #__next {
+            height: 100%;
+          }
+
           body {
             font-family: Roboto, Noto Sans JP, sans-serif;
             margin: 0;
@@ -18,6 +24,12 @@ export default class extends App {
         `}</style>
 
         <style jsx>{`
+          .wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+          }
+
           .header {
             border-bottom: 1px solid #e0e0e0;
           }
@@ -36,7 +48,7 @@ export default class extends App {
           @media (min-width: 500px) {
             .header__content {
               flex-direction: row;
-              justify-content:  space-between;
+              justify-content: space-between;
             }
           }
 
@@ -58,9 +70,33 @@ export default class extends App {
             color: inherit;
             text-decoration: none;
           }
+
+          .content {
+            flex-grow: 1;
+          }
+
+          .footer {
+            background-color: #424242;
+            color: #fafafa;
+          }
+
+          .copyright {
+            font-size: 0.9rem;
+            margin: 1rem 0.5rem;
+            text-align: center;
+          }
+
+          .copyright a {
+            color: inherit;
+            text-decoration: none;
+          }
         `}</style>
 
         <Head>
+          <title>
+            {query ? `${query} - あにまーれサーチ` : 'あにまーれサーチ'}
+          </title>
+
           <link
             as="style"
             href="https://fonts.googleapis.com/css?display=swap&amp;family=Roboto:400,700"
@@ -74,19 +110,38 @@ export default class extends App {
         </Head>
 
         <Container>
-          <div className="header">
-            <div className="header__content">
-              <h1 className="title">
-                <Link href="/">
-                  <a className="title__link">AniMare Search</a>
-                </Link>
-              </h1>
+          <div className="wrapper">
+            <div className="header">
+              <div className="header__content">
+                <h1 className="title">
+                  <Link href="/">
+                    <a className="title__link" tabIndex={-1}>
+                      あにまーれサーチ
+                    </a>
+                  </Link>
+                </h1>
 
-              <SearchForm query={query} />
+                <SearchForm query={query} />
+              </div>
+            </div>
+
+            <div className="content">
+              <Component {...pageProps} />
+            </div>
+
+            <div className="footer">
+              <p className="copyright">
+                Copyright 2019{' '}
+                <a
+                  href="https://haneru.dev/"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  Haneru Developers
+                </a>
+              </p>
             </div>
           </div>
-
-          <Component {...pageProps} />
 
           <link
             href="https://fonts.googleapis.com/css?display=swap&amp;family=Roboto:400,700"

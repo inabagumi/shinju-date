@@ -23,11 +23,13 @@ const SearchForm: FC<Props> = ({ query }) => {
           appearance: none;
           border: 1px solid #e0e0e0;
           border-radius: 3px;
+          box-sizing: border-box;
           color: #424242;
           display: block;
           font-family: inherit;
           font-size: 1rem;
           line-height: 1.5;
+          max-width: 100%;
           padding: 0 0.2em;
           width: 320px;
         }

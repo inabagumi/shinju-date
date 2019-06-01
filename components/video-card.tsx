@@ -6,7 +6,9 @@ type Props = {
   value: Video
 }
 
-const VideoCard: FC<Props> = ({ value: { channel, id, publishedAt, title, url } }) => {
+const VideoCard: FC<Props> = ({
+  value: { channel, id, publishedAt, title, url }
+}) => {
   const thumbnail = `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`
   const date = new Date(publishedAt * 1000)
 
