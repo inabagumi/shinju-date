@@ -1,0 +1,23 @@
+{
+  "alias": ["search.animare.cafe"],
+  "build": {
+    "env": {
+      "ALGOLIA_API_KEY": "@algolia-api-key",
+      "ALGOLIA_APPLICATION_ID": "@algolia-application-id",
+      "ALGOLIA_INDEX_NAME": "prod_ANIMARE_SEARCH"
+    }
+  },
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@now/next"
+    }
+  ],
+  "github": {
+    "silent": true
+  },
+  "name": "animare-search",
+  "regions": ["hnd1"],
+  "scope": "inabagumi",
+  "version": 2
+}
