@@ -22,7 +22,7 @@ const Header: FC<Props> = ({ query }) => {
           flex-direction: column;
           justify-content: flex-start;
           line-height: 1;
-          margin: 0 auto;
+          margin: 1rem auto 0;
           max-width: 1024px;
           padding: 0.5rem 1rem;
         }
@@ -31,6 +31,7 @@ const Header: FC<Props> = ({ query }) => {
           .header__content {
             flex-direction: row;
             justify-content: space-between;
+            margin-top: 0;
           }
         }
 
