@@ -18,6 +18,26 @@
   },
   "name": "animare-search",
   "regions": ["hnd1"],
+  "routes": [
+    {
+      "headers": {
+        "cache-control": "immutable, max-age=31536000"
+      },
+      "src": "/_next/.+"
+    },
+    {
+      "headers": {
+        "cache-control": "max-age=600, s-maxage=60"
+      },
+      "src": "/static/.+"
+    },
+    {
+      "headers": {
+        "cache-control": "max-age=0"
+      },
+      "src": "/.*"
+    }
+  ],
   "scope": "inabagumi",
   "version": 2
 }

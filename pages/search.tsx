@@ -40,9 +40,7 @@ const Search: NextFC<Props, Props, NextContext<Query>> = ({ hits }) => {
         <SearchResults values={hits} />
       ) : (
         <div className="notfound">
-          <p>
-            検索結果がありません。
-          </p>
+          <p>検索結果がありません</p>
         </div>
       )}
     </>
