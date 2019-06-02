@@ -30,9 +30,11 @@ const Search: NextFC<Props, Props, NextContext<Query>> = ({ hits }) => {
         }
 
         .notfound p {
-          font-size: 1rem;
+          color: #424242;
+          font-size: 1.25rem;
           line-height: 1.5;
           margin: 0;
+          padding: 1rem 0.5rem;
         }
       `}</style>
 

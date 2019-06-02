@@ -34,7 +34,7 @@ export default class extends App {
           }
 
           .footer {
-            background-color: #424242;
+            background-color: #212121;
             color: #fafafa;
           }
 
@@ -67,6 +67,11 @@ export default class extends App {
             href="https://fonts.googleapis.com/css?display=swap&amp;family=Noto+Sans+JP:400,700"
             rel="preload"
           />
+          <link
+            as="style"
+            href="https://fonts.googleapis.com/css?family=Material+Icons"
+            rel="preload"
+          />
         </Head>
 
         <Container>
@@ -97,6 +102,10 @@ export default class extends App {
           />
           <link
             href="https://fonts.googleapis.com/css?display=swap&amp;family=Noto+Sans+JP:400,700"
+            rel="stylesheet"
+          />
+          <link
+            href="https://fonts.googleapis.com/css?family=Material+Icons"
             rel="stylesheet"
           />
         </Container>

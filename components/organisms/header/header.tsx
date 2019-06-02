@@ -53,6 +53,7 @@ const Header: FC<Props> = ({ query }) => {
           text-decoration: none;
         }
       `}</style>
+
       <div className="header">
         <div className="header__content">
           <h1 className="title">
