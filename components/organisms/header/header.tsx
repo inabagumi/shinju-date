@@ -65,7 +65,7 @@ const Header: FC<Props> = ({ query }) => {
 
           <SearchForm
             onChange={({ target }) =>
-              Router.push(
+              Router.replace(
                 target.value
                   ? `/search?q=${encodeURIComponent(target.value)}`
                   : '/'
