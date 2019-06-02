@@ -32,6 +32,7 @@
   "license": "MIT",
   "name": "@inabagumi/animare-search",
   "prettier": "@inabagumi/prettier-config",
+  "private": true,
   "scripts": {
     "build": "next build",
     "dev": "next",
