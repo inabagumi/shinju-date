@@ -72,6 +72,11 @@ export default class extends App {
             href="https://fonts.googleapis.com/css?family=Material+Icons"
             rel="preload"
           />
+          <link
+            as="script"
+            href="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver%2CPromise.prototype.finally"
+            rel="preload"
+          />
         </Head>
 
         <Container>
@@ -108,6 +113,7 @@ export default class extends App {
             href="https://fonts.googleapis.com/css?family=Material+Icons"
             rel="stylesheet"
           />
+          <script src="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver%2CPromise.prototype.finally" />
         </Container>
       </>
     )
