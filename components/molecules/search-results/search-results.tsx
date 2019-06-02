@@ -1,6 +1,6 @@
 import { FC } from 'react'
-import Video from '../types/video'
-import VideoCard from './video-card'
+import Video from '../../../types/video'
+import VideoCard from '../../atoms/video-card'
 
 type Props = {
   values: Video[]
@@ -11,6 +11,7 @@ const SearchResults: FC<Props> = ({ values }) => {
     <>
       <style jsx>{`
         .results {
+          box-sizing: border-box;
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
           margin: 1rem auto;

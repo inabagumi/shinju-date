@@ -1,15 +1,13 @@
 import format from 'date-fns/format'
 import React, { FC } from 'react'
-import Video from '../types/video'
+import Video from '../../../types/video'
 
 type Props = {
   value: Video
 }
 
-const VideoCard: FC<Props> = ({
-  value: { channel, id, publishedAt, title, url }
-}) => {
-  const thumbnail = `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`
+const VideoCard: FC<Props> = ({ value: { id, publishedAt, title, url } }) => {
+  const thumbnail = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
   const date = new Date(publishedAt * 1000)
 
   return (
@@ -28,9 +26,26 @@ const VideoCard: FC<Props> = ({
         }
 
         .thumbnail {
+          align-items: center;
+          display: flex;
+          margin: 0 0 0.5rem;
+          overflow: hidden;
+          position: relative;
+          width: 100%;
+        }
+
+        .thumbnail::before {
+          content: '';
+          display: block;
+          padding-top: 56.25%; /* 9 / 16 */
+        }
+
+        .thumbnail img {
           display: block;
           height: auto;
-          margin: 0 0 0.5rem;
+          left: 0;
+          position: absolute;
+          right: 0;
           width: 100%;
         }
 
@@ -50,13 +65,9 @@ const VideoCard: FC<Props> = ({
       `}</style>
 
       <a className="card" href={url} rel="noopener noreferrer" target="_blank">
-        <img
-          alt=""
-          className="thumbnail"
-          height="720"
-          src={thumbnail}
-          width="1280"
-        />
+        <div className="thumbnail">
+          <img alt="" height="360" src={thumbnail} width="480" />
+        </div>
 
         <h3 className="title">{title}</h3>
 
