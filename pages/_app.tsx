@@ -76,7 +76,7 @@ export default class extends App {
 
         <Container>
           <div className="wrapper">
-            <Header query={query} />
+            <Header query={query || ''} />
 
             <div className="content">
               <Component {...pageProps} />

@@ -1,21 +1,3 @@
-import { NextFC } from 'next'
-import Head from 'next/head'
-import React from 'react'
+import Search from './search'
 
-const Index: NextFC = () => {
-  return (
-    <>
-      <Head>
-        <link href="https://search.animare.cafe/" rel="canonical" />
-      </Head>
-    </>
-  )
-}
-
-Index.getInitialProps = async () => {
-  return {
-    query: ''
-  }
-}
-
-export default Index
+export default Search
