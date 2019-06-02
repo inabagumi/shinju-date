@@ -21,7 +21,6 @@ function search({
   return youtube.search.list({
     auth: process.env.GOOGLE_API_KEY,
     channelId,
-    eventType: 'completed',
     maxResults: 50,
     order: 'date',
     pageToken,
