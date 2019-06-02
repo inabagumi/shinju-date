@@ -1,7 +1,7 @@
 import { NextContext, NextFC } from 'next'
 import Head from 'next/head'
 import React from 'react'
-import SearchResults from '../components/search-results'
+import SearchResults from '../components/molecules/search-results'
 import search from '../lib/search'
 import Video from '../types/video'
 

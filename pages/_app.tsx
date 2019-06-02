@@ -1,7 +1,6 @@
 import App, { Container } from 'next/app'
 import Head from 'next/head'
-import Link from 'next/link'
-import SearchForm from '../components/search-form'
+import Header from '../components/organisms/header'
 
 export default class extends App {
   render() {
@@ -28,47 +27,6 @@ export default class extends App {
             display: flex;
             flex-direction: column;
             height: 100%;
-          }
-
-          .header {
-            border-bottom: 1px solid #e0e0e0;
-          }
-
-          .header__content {
-            align-items: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            line-height: 1;
-            margin: 0 auto;
-            max-width: 1024px;
-            padding: 0.5rem 1rem;
-          }
-
-          @media (min-width: 500px) {
-            .header__content {
-              flex-direction: row;
-              justify-content: space-between;
-            }
-          }
-
-          .title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0 0 0.5rem 0;
-            padding: 0;
-          }
-
-          @media (min-width: 500px) {
-            .title {
-              margin-bottom: 0;
-              margin-right: 1rem;
-            }
-          }
-
-          .title__link {
-            color: inherit;
-            text-decoration: none;
           }
 
           .content {
@@ -113,19 +71,7 @@ export default class extends App {
 
         <Container>
           <div className="wrapper">
-            <div className="header">
-              <div className="header__content">
-                <h1 className="title">
-                  <Link href="/">
-                    <a className="title__link" tabIndex={-1}>
-                      あにまーれサーチ
-                    </a>
-                  </Link>
-                </h1>
-
-                <SearchForm query={query} />
-              </div>
-            </div>
+            <Header query={query} />
 
             <div className="content">
               <Component {...pageProps} />

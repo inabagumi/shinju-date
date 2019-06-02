@@ -1,21 +1,11 @@
-import Router from 'next/router'
-import React, { ChangeEvent, FC, useCallback } from 'react'
+import React, { ChangeEvent, FC } from 'react'
 
 type Props = {
-  query?: string
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void
+  query: string
 }
 
-const SearchForm: FC<Props> = ({ query }) => {
-  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    const { target } = event
-
-    Router.push(
-      target.value ? `/search?q=${encodeURIComponent(target.value)}` : '/'
-    )
-  }, [])
-
-  const handleSubmit = useCallback(event => event.preventDefault(), [])
-
+const SearchForm: FC<Props> = ({ onChange, query }) => {
   return (
     <>
       <style jsx>{`
@@ -42,14 +32,14 @@ const SearchForm: FC<Props> = ({ query }) => {
         }
       `}</style>
 
-      <form action="/search" onSubmit={handleSubmit}>
+      <form action="/search" onSubmit={event => event.preventDefault()}>
         <div>
           <input
             className="text-field"
             defaultValue={query}
             name="q"
             type="text"
-            onChange={handleChange}
+            onChange={event => onChange && onChange(event)}
           />
         </div>
       </form>
