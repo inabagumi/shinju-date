@@ -99,12 +99,14 @@ export default class Search extends Component<Props, State> {
   }
 
   render() {
-    const { results } = this.state
+    const { query, results } = this.state
+    const path = query ? `/search?q=${encodeURIComponent(query)}` : '/'
 
     return (
       <>
         <Head>
-          <meta content="noindex,follow" name="robots" />
+          {query && <meta content="noindex,follow" name="robots" />}
+          <link href={`https://search.animare.cafe${path}`} rel="canonical" />
         </Head>
 
         <style jsx>{`
