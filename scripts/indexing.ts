@@ -37,7 +37,8 @@ function normalizeTitle(title: string) {
 }
 
 async function* getVideosByChannelId(
-  channelId: string
+  channelId: string,
+  all: boolean = false
 ): AsyncIterableIterator<Video> {
   let date = new Date()
   let pageToken = ''
@@ -75,6 +76,8 @@ async function* getVideosByChannelId(
         url: `https://www.youtube.com/watch?v=${videoId}`
       }
     }
+
+    if (!all) break
 
     pageToken = response.data.nextPageToken || ''
 
