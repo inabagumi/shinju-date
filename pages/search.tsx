@@ -33,7 +33,7 @@ export default class Search extends Component<Props, State> {
   }
 
   static getDerivedStateFromProps(nextProps: Props, prevState: State) {
-    if (prevState.isLoading || prevState.query === nextProps.query) return
+    if (prevState.isLoading || prevState.query === nextProps.query) return null
 
     return {
       hasNext: nextProps.hasNext,
