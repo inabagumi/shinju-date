@@ -1,7 +1,16 @@
 import algoliasearch from 'algoliasearch'
 import subDays from 'date-fns/subDays'
 import { google } from 'googleapis'
+import yargs from 'yargs'
 import Video from '../types/video'
+
+const { argv } = yargs
+  .option('a', {
+    alias: 'all',
+    default: false,
+    type: 'boolean'
+  })
+  .help()
 
 const youtube = google.youtube({ version: 'v3' })
 
@@ -87,7 +96,7 @@ async function* getVideosByChannelId(
   }
 }
 
-async function main() {
+async function main({ a: all }: { a: boolean }) {
   const channels = [
     // 因幡はねる
     'UC0Owc36U9lOyi9Gx9Ic-4qg',
@@ -104,7 +113,7 @@ async function main() {
   const results: Video[] = []
 
   for (const channelId of channels) {
-    for await (const video of getVideosByChannelId(channelId)) {
+    for await (const video of getVideosByChannelId(channelId, all)) {
       results.push(video)
     }
   }
@@ -118,4 +127,4 @@ async function main() {
   await index.addObjects(results)
 }
 
-main().catch(error => console.error(error))
+main(argv).catch(error => console.error(error))
