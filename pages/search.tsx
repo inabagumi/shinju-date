@@ -1,107 +1,141 @@
-import { NextContext, NextFC } from 'next'
+import { NextContext } from 'next'
 import Head from 'next/head'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { Component, createRef } from 'react'
 import SearchResults from '../components/molecules/search-results'
 import search from '../lib/search'
 import Video from '../types/video'
 
 type Props = {
+  hasNext: boolean
   hits: Video[]
   query: string
+}
+
+type State = {
+  hasNext: boolean
+  isLoading: boolean
+  page: number
+  query?: string
+  results: Video[]
 }
 
 type Query = {
   q: string
 }
 
-const Search: NextFC<Props, Props, NextContext<Query>> = ({ hits, query }) => {
-  const targetRef = useRef<HTMLParagraphElement>(null)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [hasNext, setHasNext] = useState<boolean>(true)
-  const [page, setPage] = useState<number>(0)
-  const [results, setResults] = useState<Video[]>(hits)
+export default class Search extends Component<Props, State> {
+  static async getInitialProps({
+    query: { q: query }
+  }: NextContext<Query>): Promise<Props> {
+    const { hits, nbPages } = await search<Video>(query)
 
-  useEffect(() => {
-    setHasNext(true)
-    setPage(0)
-    setResults(hits)
-  }, [hits])
+    return { hasNext: nbPages > 1, hits, query }
+  }
 
-  useEffect(() => {
-    if (isLoading || !hasNext || !targetRef.current) return
+  static getDerivedStateFromProps(nextProps: Props, prevState: State) {
+    if (prevState.isLoading || prevState.query === nextProps.query) return
 
-    const observer = new IntersectionObserver(entries => {
-      if (!entries.every(entry => entry.isIntersecting)) return
+    return {
+      hasNext: nextProps.hasNext,
+      page: 0,
+      query: nextProps.query,
+      results: nextProps.hits
+    }
+  }
 
-      setIsLoading(true)
+  state = {
+    hasNext: this.props.hasNext,
+    isLoading: false,
+    page: 0,
+    query: this.props.query,
+    results: this.props.hits
+  }
 
-      search<Video>(query, { page: page + 1 })
-        .then(response => {
-          setPage(prevPage => prevPage + 1)
-          setResults(prevResults => prevResults.concat(response.hits))
+  targetRef = createRef<HTMLDivElement>()
+  intersectionObserver?: IntersectionObserver
 
-          if (page >= response.nbPages) setHasNext(false)
-        })
-        .catch(() => {
-          setHasNext(false)
-        })
-        .finally(() => {
-          setIsLoading(false)
-        })
+  componentDidMount() {
+    this.intersectionObserver = new IntersectionObserver(this.handleIntersect, {
+      rootMargin: '100px 0px 0px'
     })
 
-    observer.observe(targetRef.current)
+    this.intersectionObserver.observe(this.targetRef.current!)
+  }
 
-    return () => {
-      observer.disconnect()
-    }
-  }, [targetRef.current, isLoading, hasNext, query, page])
+  shouldComponentUpdate(nextProps: Props, nextState: State) {
+    return (
+      this.state.isLoading !== nextState.isLoading ||
+      this.state.page !== nextState.page ||
+      this.props.query !== nextProps.query
+    )
+  }
 
-  return (
-    <>
-      <Head>
-        <meta content="noindex,follow" name="robots" />
-      </Head>
+  componentWillUnmount() {
+    if (this.intersectionObserver) this.intersectionObserver.disconnect()
+  }
 
-      <style jsx>{`
-        .notfound {
-          align-items: center;
-          display: flex;
-          height: 100%;
-          justify-content: center;
-        }
+  handleIntersect: IntersectionObserverCallback = entries => {
+    const { hasNext, isLoading } = this.state
 
-        .notfound p {
-          color: #424242;
-          font-size: 1.25rem;
-          line-height: 1.5;
-          margin: 0;
-          padding: 1rem 0.5rem;
-        }
-      `}</style>
+    if (isLoading || !hasNext || !entries.some(entry => entry.isIntersecting))
+      return
 
-      <main>
-        {results.length > 0 ? (
-          <SearchResults values={results} />
-        ) : (
-          <div className="notfound">
-            <p>検索結果がありません</p>
-          </div>
-        )}
+    const { page, query } = this.state
 
-        <p ref={targetRef} />
-      </main>
-    </>
-  )
-}
+    this.setState({ isLoading: true })
 
-Search.getInitialProps = async ({ query }) => {
-  const { hits } = await search<Video>(query.q)
+    search<Video>(query, { page: page + 1 })
+      .then(({ hits, nbPages, page: actualPage }) => {
+        this.setState(prevState => ({
+          page: actualPage,
+          results: prevState.results.concat(hits),
+          hasNext: actualPage <= nbPages
+        }))
+      })
+      .catch(() => {
+        this.setState({ hasNext: false })
+      })
+      .finally(() => this.setState({ isLoading: false }))
+  }
 
-  return {
-    hits,
-    query: query.q
+  render() {
+    const { results } = this.state
+
+    return (
+      <>
+        <Head>
+          <meta content="noindex,follow" name="robots" />
+        </Head>
+
+        <style jsx>{`
+          .notfound {
+            align-items: center;
+            display: flex;
+            height: 100%;
+            justify-content: center;
+          }
+
+          .notfound p {
+            color: #424242;
+            font-size: 1.25rem;
+            line-height: 1.5;
+            margin: 0;
+            padding: 1rem 0.5rem;
+          }
+        `}</style>
+
+        <main>
+          {results.length > 0 ? (
+            <SearchResults values={results} />
+          ) : (
+            <div className="notfound">
+              <p>検索結果がありません</p>
+            </div>
+          )}
+
+          <div ref={this.targetRef} />
+        </main>
+      </>
+    )
   }
 }
-
-export default Search
