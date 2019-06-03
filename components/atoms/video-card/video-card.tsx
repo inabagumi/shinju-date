@@ -73,7 +73,7 @@ const VideoCard: FC<Props> = ({ value: { id, publishedAt, title, url } }) => {
 
         <p className="published">
           <time dateTime={date.toISOString()}>
-            {format(date, 'yyy/MM/dd hh:mm')}
+            {format(date, 'yyy/MM/dd HH:mm')}
           </time>
         </p>
       </a>
