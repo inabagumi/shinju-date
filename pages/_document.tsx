@@ -22,7 +22,7 @@ export default class extends Document {
           />
           <link
             as="script"
-            href="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver%2CPromise.prototype.finally"
+            href="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver"
             rel="preload"
           />
         </Head>
@@ -42,7 +42,7 @@ export default class extends Document {
             href="https://fonts.googleapis.com/css?family=Material+Icons"
             rel="stylesheet"
           />
-          <script src="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver%2CPromise.prototype.finally" />
+          <script src="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver" />
 
           <NextScript />
         </body>
