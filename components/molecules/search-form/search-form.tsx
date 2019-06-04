@@ -1,5 +1,12 @@
 import classNames from 'classnames'
-import React, { ChangeEvent, FC, useState } from 'react'
+import React, {
+  ChangeEvent,
+  FC,
+  FormEvent,
+  useCallback,
+  useState,
+  useRef
+} from 'react'
 
 type Props = {
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void
@@ -7,7 +14,17 @@ type Props = {
 }
 
 const SearchForm: FC<Props> = ({ onChange, query }) => {
+  const textFieldRef = useRef<HTMLInputElement>(null)
   const [isFocused, setIsFocusesd] = useState<boolean>(false)
+
+  const handleSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+
+      if (textFieldRef.current && isFocused) textFieldRef.current.blur()
+    },
+    [isFocused, textFieldRef.current]
+  )
 
   return (
     <>
@@ -68,11 +85,7 @@ const SearchForm: FC<Props> = ({ onChange, query }) => {
         }
       `}</style>
 
-      <form
-        action="/search"
-        method="get"
-        onSubmit={event => event.preventDefault()}
-      >
+      <form action="/search" method="get" onSubmit={handleSubmit}>
         <div
           className={classNames('text-field', {
             'text-field--focused': isFocused
@@ -87,6 +100,7 @@ const SearchForm: FC<Props> = ({ onChange, query }) => {
             onBlur={() => setIsFocusesd(false)}
             onChange={event => onChange && onChange(event)}
             onFocus={() => setIsFocusesd(true)}
+            ref={textFieldRef}
           />
         </div>
       </form>
