@@ -7,7 +7,6 @@ type Props = {
 }
 
 const VideoCard: FC<Props> = ({ value: { id, publishedAt, title, url } }) => {
-  const thumbnail = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
   const date = new Date(publishedAt * 1000)
 
   return (
@@ -37,10 +36,10 @@ const VideoCard: FC<Props> = ({ value: { id, publishedAt, title, url } }) => {
         .thumbnail::before {
           content: '';
           display: block;
-          padding-top: 56.25%; /* 9 / 16 */
+          padding-top: 56.25%;
         }
 
-        .thumbnail img {
+        .thumbnail__image {
           display: block;
           height: auto;
           left: 0;
@@ -65,9 +64,20 @@ const VideoCard: FC<Props> = ({ value: { id, publishedAt, title, url } }) => {
       `}</style>
 
       <a className="card" href={url} rel="noopener noreferrer" target="_blank">
-        <div className="thumbnail">
-          <img alt="" height="360" src={thumbnail} width="480" />
-        </div>
+        <picture className="thumbnail">
+          <source
+            srcSet={`https://i.ytimg.com/vi_webp/${id}/hqdefault.webp`}
+            type="image/webp"
+          />
+
+          <img
+            alt=""
+            className="thumbnail__image"
+            height="360"
+            src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`}
+            width="480"
+          />
+        </picture>
 
         <h3 className="title">{title}</h3>
 
