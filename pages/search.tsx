@@ -56,7 +56,7 @@ export default class Search extends Component<Props, State> {
 
   componentDidMount() {
     this.intersectionObserver = new IntersectionObserver(this.handleIntersect, {
-      rootMargin: '100px 0px 0px'
+      rootMargin: '200px 0px 0px'
     })
 
     this.intersectionObserver.observe(this.targetRef.current!)
