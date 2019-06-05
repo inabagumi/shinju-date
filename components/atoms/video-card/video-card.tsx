@@ -26,6 +26,7 @@ const VideoCard: FC<Props> = ({ value: { id, publishedAt, title, url } }) => {
 
         .thumbnail {
           align-items: center;
+          background-color: #424242;
           display: flex;
           margin: 0 0 0.5rem;
           overflow: hidden;
