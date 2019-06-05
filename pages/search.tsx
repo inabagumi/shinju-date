@@ -126,6 +126,12 @@ export default class Search extends Component<Props, State> {
             padding: 1rem 0.5rem;
           }
 
+          .footer {
+            align-items: center;
+            display: flex;
+            justify-content: center;
+          }
+
           @keyframes spinner {
             0% {
               transform: rotate(0deg);
@@ -142,14 +148,14 @@ export default class Search extends Component<Props, State> {
             border-radius: 50%;
             box-sizing: border-box;
             height: 36px;
-            margin: 1rem auto;
+            margin: 1rem;
             width: 36px;
           }
 
           .loading--show {
             border-bottom-color: #ffc107;
-            border-left-color: #e91e63;
-            border-right-color: #03a9f4;
+            border-left-color: #03a9f4;
+            border-right-color: #e91e63;
             border-top-color: #4caf50;
           }
         `}</style>
@@ -163,7 +169,7 @@ export default class Search extends Component<Props, State> {
             </div>
           )}
 
-          <div ref={this.targetRef}>
+          <div className="footer" ref={this.targetRef}>
             <div
               className={classNames('loading', { 'loading--show': isLoading })}
             />
