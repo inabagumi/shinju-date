@@ -112,18 +112,16 @@ export default class Search extends Component<Props, State> {
 
         <style jsx>{`
           .notfound {
-            align-items: center;
-            display: flex;
-            height: 100%;
-            justify-content: center;
+            margin: 1rem;
           }
 
           .notfound p {
             color: #424242;
-            font-size: 1.25rem;
+            font-size: 1rem;
             line-height: 1.5;
-            margin: 0;
-            padding: 1rem 0.5rem;
+            margin: 10rem 0;
+            padding: 0 0.5rem;
+            text-align: center;
           }
 
           .footer {
@@ -149,6 +147,7 @@ export default class Search extends Component<Props, State> {
             box-sizing: border-box;
             height: 36px;
             margin: 1rem;
+            transition: border-color 0.2s ease;
             width: 36px;
           }
 
