@@ -1,3 +1,4 @@
+import classNames from 'classnames'
 import { NextContext } from 'next'
 import Head from 'next/head'
 import React, { Component, createRef } from 'react'
@@ -99,7 +100,7 @@ export default class Search extends Component<Props, State> {
   }
 
   render() {
-    const { query, results } = this.state
+    const { isLoading, query, results } = this.state
     const path = query ? `/search?q=${encodeURIComponent(query)}` : '/'
 
     return (
@@ -124,6 +125,33 @@ export default class Search extends Component<Props, State> {
             margin: 0;
             padding: 1rem 0.5rem;
           }
+
+          @keyframes spinner {
+            0% {
+              transform: rotate(0deg);
+            }
+
+            100% {
+              transform: rotate(360deg);
+            }
+          }
+
+          .loading {
+            animation: spinner 0.5s linear infinite;
+            border: 4px solid transparent;
+            border-radius: 50%;
+            box-sizing: border-box;
+            height: 36px;
+            margin: 1rem auto;
+            width: 36px;
+          }
+
+          .loading--show {
+            border-bottom-color: #ffc107;
+            border-left-color: #e91e63;
+            border-right-color: #03a9f4;
+            border-top-color: #4caf50;
+          }
         `}</style>
 
         <main>
@@ -135,7 +163,11 @@ export default class Search extends Component<Props, State> {
             </div>
           )}
 
-          <div ref={this.targetRef} />
+          <div ref={this.targetRef}>
+            <div
+              className={classNames('loading', { 'loading--show': isLoading })}
+            />
+          </div>
         </main>
       </>
     )
