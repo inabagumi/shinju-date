@@ -1857,10 +1857,10 @@ cyclist@~0.2.2:
   resolved "https://registry.yarnpkg.com/cyclist/-/cyclist-0.2.2.tgz#1b33792e11e914a2fd6d6ed6447464444e5fa640"
   integrity sha1-GzN5LhHpFKL9bW7WRHRkRE5fpkA=
 
-date-fns@^2.0.0-alpha.29:
-  version "2.0.0-alpha.29"
-  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.0.0-alpha.29.tgz#9d4a36e3ebba63d009e957fea8fdfef7921bc6cb"
-  integrity sha512-AIFZ0hG/1fdb7HZHTDyiEJdNiaFyZxXcx/kF8z3I9wxbhkN678KrrLSneKcsb0Xy5KqCA4wCIxmGpdVWSNZnpA==
+date-fns@^2.0.0-alpha.30:
+  version "2.0.0-alpha.30"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.0.0-alpha.30.tgz#23958c6f5ae97522c2ba837b725001749e875096"
+  integrity sha512-qUIZPmN18/ePPvWr/D9dAASMoGPcinj2USQ2uzMUFYePSPavBh9hatumLBXBEgvlAq+IxuUbeXYl07PphKCENA==
 
 date-now@^0.1.4:
   version "0.1.4"
