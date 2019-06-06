@@ -51,10 +51,6 @@ export default class extends App {
         `}</style>
 
         <Head>
-          <title>
-            {query ? `${query} - あにまーれサーチ` : 'あにまーれサーチ'}
-          </title>
-
           <link href="/static/favicon.png" rel="icon" />
         </Head>
 

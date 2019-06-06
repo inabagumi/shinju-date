@@ -106,7 +106,12 @@ export default class Search extends Component<Props, State> {
     return (
       <>
         <Head>
+          <title>
+            {query ? `${query} - あにまーれサーチ` : 'あにまーれサーチ'}
+          </title>
+
           {query && <meta content="noindex,follow" name="robots" />}
+
           <link href={`https://search.animare.cafe${path}`} rel="canonical" />
         </Head>
 
