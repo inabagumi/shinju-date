@@ -23,7 +23,7 @@ const Header: FC<Props> = ({ query }) => {
           justify-content: flex-start;
           line-height: 1;
           margin: 1rem auto 0;
-          max-width: 1024px;
+          max-width: 1200px;
           padding: 0.5rem 1rem;
         }
 

@@ -20,7 +20,6 @@ const VideoCard: FC<Props> = ({ value: { id, publishedAt, title, url } }) => {
           color: inherit;
           display: flex;
           flex-direction: column;
-          margin: 0 0.5rem 2rem;
           overflow: hidden;
           text-decoration: none;
         }

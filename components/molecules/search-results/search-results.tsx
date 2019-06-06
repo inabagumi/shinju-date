@@ -13,9 +13,10 @@ const SearchResults: FC<Props> = ({ values }) => {
         .results {
           box-sizing: border-box;
           display: grid;
+          gap: 1rem;
           grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
           margin: 1rem auto;
-          max-width: 1024px;
+          max-width: 1200px;
           padding: 0 0.5rem;
         }
       `}</style>
