@@ -52,11 +52,13 @@ export default class Search extends Component<Props, State> {
     results: this.props.hits
   }
 
+  containerRef = createRef<HTMLElement>()
   targetRef = createRef<HTMLDivElement>()
   intersectionObserver?: IntersectionObserver
 
   componentDidMount() {
     this.intersectionObserver = new IntersectionObserver(this.handleIntersect, {
+      root: this.containerRef.current!,
       rootMargin: '200px 0px 0px'
     })
 
@@ -159,7 +161,7 @@ export default class Search extends Component<Props, State> {
           }
         `}</style>
 
-        <main>
+        <main ref={this.containerRef}>
           {results.length > 0 ? (
             <SearchResults values={results} />
           ) : (
