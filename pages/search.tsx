@@ -116,7 +116,22 @@ export default class Search extends Component<Props, State> {
         </Head>
 
         <style jsx>{`
+          @keyframes show {
+            0% {
+              opacity: 0;
+            }
+
+            50% {
+              opacity: 0;
+            }
+
+            100% {
+              opacity: 1;
+            }
+          }
+
           .notfound {
+            animation: show 1s ease;
             margin: 1rem;
           }
 

@@ -13,7 +13,18 @@ const VideoCard: FC<Props> = ({ value: { id, publishedAt, title, url } }) => {
   return (
     <>
       <style jsx>{`
+        @keyframes show {
+          0% {
+            opacity: 0.2;
+          }
+
+          100% {
+            opacity: 1;
+          }
+        }
+
         .card {
+          animation: show 0.3s ease;
           border-radius: 4px;
           box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1),
             0 1px 3px 1px rgba(0, 0, 0, 0.2);
