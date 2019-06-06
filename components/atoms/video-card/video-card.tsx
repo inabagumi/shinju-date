@@ -1,6 +1,7 @@
 import format from 'date-fns/format'
 import React, { FC } from 'react'
 import Video from '../../../types/video'
+import YouTubeThumbnail from '../youtube-thumbnail'
 
 type Props = {
   value: Video
@@ -24,31 +25,6 @@ const VideoCard: FC<Props> = ({ value: { id, publishedAt, title, url } }) => {
           text-decoration: none;
         }
 
-        .thumbnail {
-          align-items: center;
-          background-color: #424242;
-          display: flex;
-          margin: 0 0 0.5rem;
-          overflow: hidden;
-          position: relative;
-          width: 100%;
-        }
-
-        .thumbnail::before {
-          content: '';
-          display: block;
-          padding-top: 56.25%;
-        }
-
-        .thumbnail__image {
-          display: block;
-          height: auto;
-          left: 0;
-          position: absolute;
-          right: 0;
-          width: 100%;
-        }
-
         .title {
           flex-grow: 1;
           font-size: 0.9rem;
@@ -65,20 +41,7 @@ const VideoCard: FC<Props> = ({ value: { id, publishedAt, title, url } }) => {
       `}</style>
 
       <a className="card" href={url} rel="noopener noreferrer" target="_blank">
-        <picture className="thumbnail">
-          <source
-            srcSet={`https://i.ytimg.com/vi_webp/${id}/hqdefault.webp`}
-            type="image/webp"
-          />
-
-          <img
-            alt=""
-            className="thumbnail__image"
-            height="360"
-            src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`}
-            width="480"
-          />
-        </picture>
+        <YouTubeThumbnail id={id} />
 
         <h3 className="title">{title}</h3>
 
