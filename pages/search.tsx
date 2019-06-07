@@ -110,6 +110,11 @@ export default class Search extends Component<Props, State> {
             {query ? `${query} - あにまーれサーチ` : 'あにまーれサーチ'}
           </title>
 
+          <meta
+            content="『あにまーれサーチ』は有閑喫茶 あにまーれのメンバーである因幡はねるさん、宇森ひなこさん、宗谷いちかさん、日ノ隈らんさんの 4 人が YouTube Live で配信した放送や投稿した動画の検索ができるウェブサービスです。"
+            name="description"
+          />
+
           {query && <meta content="noindex,follow" name="robots" />}
 
           <link href={`https://search.animare.cafe${path}`} rel="canonical" />
