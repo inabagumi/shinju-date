@@ -15,7 +15,17 @@ type Props = {
 
 const SearchForm: FC<Props> = ({ onChange, query }) => {
   const textFieldRef = useRef<HTMLInputElement>(null)
+  const [value, setValue] = useState<string>(query)
   const [isFocused, setIsFocusesd] = useState<boolean>(false)
+
+  const handleChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setValue(event.target.value)
+
+      if (typeof onChange === 'function') onChange(event)
+    },
+    [setValue, onChange]
+  )
 
   const handleSubmit = useCallback(
     (event: FormEvent<HTMLFormElement>) => {
@@ -31,7 +41,7 @@ const SearchForm: FC<Props> = ({ onChange, query }) => {
       <style jsx>{`
         .text-field {
           align-items: center;
-          background-color: #fff;
+          background-color: #f5f5f5;
           border: 1px solid #e0e0e0;
           border-radius: 6px;
           box-sizing: border-box;
@@ -39,30 +49,35 @@ const SearchForm: FC<Props> = ({ onChange, query }) => {
           display: flex;
           max-width: 100%;
           position: relative;
-          transition: border-color 0.2s ease, color 0.2s ease, width 0.3s ease;
+          transition-duration: 0.3s;
+          transition-property: background-color, border-color, color, width;
+          transition-timing-function: ease-out;
           width: 240px;
         }
 
         .text-field:hover,
         .text-field--focused {
           border-color: #616161;
-        }
-
-        .text-field:hover {
           color: #616161;
+          transition-timing-function: ease-in;
         }
 
         .text-field--focused {
-          color: #424242;
+          background-color: #fff;
           width: 320px;
+        }
+
+        .text-field__label {
+          display: block;
+          left: 6px;
+          overflow: hidden;
+          position: absolute;
         }
 
         .text-field__icon {
           display: block;
           font-size: 20px;
-          left: 6px;
           pointer-events: none;
-          position: absolute;
         }
 
         .text-field__input {
@@ -70,8 +85,8 @@ const SearchForm: FC<Props> = ({ onChange, query }) => {
           background-color: transparent;
           border: 0;
           box-sizing: border-box;
-          color: inherit;
-          display: flex;
+          color: #616161;
+          display: block;
           font-family: inherit;
           font-size: 1rem;
           height: 100%;
@@ -91,16 +106,22 @@ const SearchForm: FC<Props> = ({ onChange, query }) => {
             'text-field--focused': isFocused
           })}
         >
-          <span className="material-icons text-field__icon">search</span>
+          <label className="text-field__label" htmlFor="search-query">
+            <span aria-label="検索" className="material-icons text-field__icon">
+              search
+            </span>
+          </label>
+
           <input
             className="text-field__input"
-            defaultValue={query}
+            id="search-query"
             name="q"
-            type="text"
+            type="search"
             onBlur={() => setIsFocusesd(false)}
-            onChange={event => onChange && onChange(event)}
+            onChange={handleChange}
             onFocus={() => setIsFocusesd(true)}
             ref={textFieldRef}
+            value={value}
           />
         </div>
       </form>

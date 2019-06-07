@@ -1,5 +1,10 @@
 import algoliasearch, { QueryParameters } from 'algoliasearch'
 
+const NORMALIZE_RE = /(?<!\w)[bｂdｄgｇhｈkｋmｍnｎpｐrｒsｓtｔwｗyｙzｚ](?=(?:$|\s))/
+
+export const normalize = (value: string): string =>
+  value.replace(NORMALIZE_RE, '')
+
 export default async function search<T = any>(
   query: string,
   params: QueryParameters = {}
