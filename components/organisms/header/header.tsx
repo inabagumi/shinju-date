@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Router from 'next/router'
-import React, { FC } from 'react'
+import React, { ChangeEvent, FC, useCallback } from 'react'
+import { normalize } from '../../../lib/search'
 import SearchForm from '../../molecules/search-form'
 
 type Props = {
@@ -8,6 +9,15 @@ type Props = {
 }
 
 const Header: FC<Props> = ({ query }) => {
+  const handleChange = useCallback(
+    ({ target }: ChangeEvent<HTMLInputElement>) => {
+      const query = normalize(target.value)
+
+      Router.replace(target.value ? `/search?q=${query}` : '/')
+    },
+    []
+  )
+
   return (
     <>
       <style jsx>{`
@@ -65,16 +75,7 @@ const Header: FC<Props> = ({ query }) => {
             </Link>
           </h1>
 
-          <SearchForm
-            onChange={({ target }) =>
-              Router.replace(
-                target.value
-                  ? `/search?q=${encodeURIComponent(target.value)}`
-                  : '/'
-              )
-            }
-            query={query}
-          />
+          <SearchForm onChange={handleChange} query={query} />
         </div>
       </div>
     </>
