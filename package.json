@@ -25,11 +25,35 @@
     "@types/react": "^16.8.19",
     "@types/styled-jsx": "^2.2.8",
     "@types/yargs": "^13.0.0",
+    "@typescript-eslint/eslint-plugin": "^1.9.0",
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^4.3.0",
+    "eslint-plugin-react": "^7.13.0",
+    "eslint-plugin-react-hooks": "^1.6.0",
     "googleapis": "^40.0.0",
     "prettier": "^1.18.2",
     "ts-node": "^8.2.0",
     "typescript": "^3.5.1",
     "yargs": "^13.2.4"
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:@typescript-eslint/recommended",
+      "plugin:react/recommended",
+      "prettier/@typescript-eslint",
+      "prettier/react"
+    ],
+    "plugins": [
+      "react-hooks"
+    ],
+    "rules": {
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "@typescript-eslint/explicit-member-accessibility": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "react/prop-types": "off",
+      "react-hooks/exhaustive-deps": "error",
+      "react-hooks/rules-of-hooks": "error"
+    }
   },
   "license": "MIT",
   "name": "@inabagumi/animare-search",
@@ -40,6 +64,7 @@
     "dev": "next",
     "format": "prettier --ignore-path .gitignore --write \"**/*.{js,json,ts,tsx}\"",
     "indexing": "ts-node --project scripts/tsconfig.json scripts/indexing.ts",
+    "lint": "eslint --ignore-path .gitignore --ext .js,.ts,.tsx .",
     "start": "next start"
   },
   "version": "1.0.0"

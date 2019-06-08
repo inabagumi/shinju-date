@@ -1,4 +1,4 @@
-type Channel = {
+interface Channel {
   id: string
   title: string
   url: string

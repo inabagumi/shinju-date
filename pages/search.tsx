@@ -6,13 +6,13 @@ import SearchResults from '../components/molecules/search-results'
 import search from '../lib/search'
 import Video from '../types/video'
 
-type Props = {
+interface Props {
   hasNext: boolean
   hits: Video[]
   query: string
 }
 
-type State = {
+interface State {
   hasNext: boolean
   isLoading: boolean
   page: number
@@ -20,14 +20,10 @@ type State = {
   results: Video[]
 }
 
-type Query = {
-  q: string
-}
-
 export default class Search extends Component<Props, State> {
   static async getInitialProps({
     query: { q: query }
-  }: NextContext<Query>): Promise<Props> {
+  }: NextContext<{ q: string }>): Promise<Props> {
     const { hits, nbPages } = await search<Video>(query)
 
     return { hasNext: nbPages > 1, hits, query }

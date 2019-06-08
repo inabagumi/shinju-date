@@ -3,7 +3,7 @@ import React, { FC } from 'react'
 import Video from '../../../types/video'
 import YouTubeThumbnail from '../youtube-thumbnail'
 
-type Props = {
+interface Props {
   value: Video
 }
 

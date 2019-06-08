@@ -9,7 +9,7 @@ import React, {
 } from 'react'
 import TextField from '../../atoms/text-field'
 
-type Props = {
+interface Props {
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void
   query: string
 }
@@ -28,7 +28,7 @@ const SearchForm: FC<Props> = ({ onChange, query }) => {
 
       if (textFieldRef.current) textFieldRef.current.blur()
     },
-    [textFieldRef.current]
+    []
   )
 
   const handleFocus = useCallback(() => {

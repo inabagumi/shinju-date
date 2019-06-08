@@ -1,5 +1,6 @@
 import App, { Container } from 'next/app'
 import Head from 'next/head'
+import React from 'react'
 import Header from '../components/organisms/header'
 
 export default class extends App {

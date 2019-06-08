@@ -1,6 +1,6 @@
 import React, { FC } from 'react'
 
-type Props = {
+interface Props {
   id: string
 }
 
