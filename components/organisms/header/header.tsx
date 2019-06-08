@@ -13,13 +13,27 @@ const Header: FC<Props> = ({ query }) => {
     ({ target }: ChangeEvent<HTMLInputElement>) => {
       const query = normalize(target.value)
 
-      Router.replace(target.value ? `/search?q=${query}` : '/')
+      Router.replace(query ? `/search?q=${encodeURIComponent(query)}` : '/')
     },
     []
   )
 
   return (
     <>
+      <div className="header">
+        <div className="header__content">
+          <h1 className="title">
+            <Link href="/">
+              <a className="title__link" tabIndex={-1}>
+                あにまーれサーチ
+              </a>
+            </Link>
+          </h1>
+
+          <SearchForm onChange={handleChange} query={query} />
+        </div>
+      </div>
+
       <style jsx>{`
         .header {
           border-bottom: 1px solid #e0e0e0;
@@ -64,20 +78,6 @@ const Header: FC<Props> = ({ query }) => {
           text-decoration: none;
         }
       `}</style>
-
-      <div className="header">
-        <div className="header__content">
-          <h1 className="title">
-            <Link href="/">
-              <a className="title__link" tabIndex={-1}>
-                あにまーれサーチ
-              </a>
-            </Link>
-          </h1>
-
-          <SearchForm onChange={handleChange} query={query} />
-        </div>
-      </div>
     </>
   )
 }
