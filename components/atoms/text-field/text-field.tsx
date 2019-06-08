@@ -143,7 +143,7 @@ const TextField: RefForwardingComponent<HTMLInputElement, Props> = (
           font-size: 1rem;
           height: 100%;
           line-height: 1.5;
-          padding: 0.2rem 6px 0.3rem;
+          padding: 0.3rem 6px;
           width: 100%;
         }
 
