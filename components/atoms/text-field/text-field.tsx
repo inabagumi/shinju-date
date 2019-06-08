@@ -10,29 +10,20 @@ import React, {
   useState
 } from 'react'
 
-type Props = DetailedHTMLProps<
-  InputHTMLAttributes<HTMLInputElement>,
-  HTMLInputElement
-> & {
+interface Props
+  extends DetailedHTMLProps<
+    InputHTMLAttributes<HTMLInputElement>,
+    HTMLInputElement
+  > {
   icon?: string
 }
 
 type Value = string | number | string[] | undefined
 
 const TextField: RefForwardingComponent<HTMLInputElement, Props> = (
-  props,
+  { icon, onBlur, onChange, onFocus, type, value: defaultValue, ...inputProps },
   ref
 ) => {
-  const {
-    icon,
-    onBlur,
-    onChange,
-    onFocus,
-    type,
-    value: defaultValue,
-    ...inputProps
-  } = props
-
   const [value, setValue] = useState<Value>(defaultValue)
   const [isFocused, setIsFocusesd] = useState<boolean>(false)
 
