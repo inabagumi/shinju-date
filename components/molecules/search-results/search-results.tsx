@@ -1,8 +1,8 @@
-import { FC } from 'react'
+import React, { FC } from 'react'
 import Video from '../../../types/video'
 import VideoCard from '../../atoms/video-card'
 
-type Props = {
+interface Props {
   values: Video[]
 }
 

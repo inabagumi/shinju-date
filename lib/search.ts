@@ -5,7 +5,7 @@ const NORMALIZE_RE = /(\W)([bｂdｄgｇhｈkｋmｍnｎpｐrｒsｓtｔwｗyｙ
 export const normalize = (value: string): string =>
   value.replace(NORMALIZE_RE, (_, ...args) => args[0] + args[2])
 
-export default async function search<T = any>(
+export default async function search<T>(
   query: string,
   params: QueryParameters = {}
 ) {

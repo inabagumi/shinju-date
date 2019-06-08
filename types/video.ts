@@ -1,6 +1,6 @@
 import Channel from './channel'
 
-type Video = {
+interface Video {
   channel: Channel
   id: string
   objectID: string

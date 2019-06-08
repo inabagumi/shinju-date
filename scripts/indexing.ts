@@ -14,7 +14,7 @@ const { argv } = yargs
 
 const youtube = google.youtube({ version: 'v3' })
 
-type SearchParams = {
+interface SearchParams {
   channelId: string
   pageToken: string
   publishedAfter: Date

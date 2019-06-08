@@ -4,7 +4,7 @@ import React, { ChangeEvent, FC, useCallback } from 'react'
 import { normalize } from '../../../lib/search'
 import SearchForm from '../../molecules/search-form'
 
-type Props = {
+interface Props {
   query: string
 }
 
