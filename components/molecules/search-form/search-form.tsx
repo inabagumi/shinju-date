@@ -22,14 +22,11 @@ const SearchForm: FC<Props> = ({ onChange, query }) => {
     setIsFocusesd(false)
   }, [])
 
-  const handleSubmit = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault()
+  const handleSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
 
-      if (textFieldRef.current) textFieldRef.current.blur()
-    },
-    []
-  )
+    if (textFieldRef.current) textFieldRef.current.blur()
+  }, [])
 
   const handleFocus = useCallback(() => {
     setIsFocusesd(true)
@@ -44,6 +41,7 @@ const SearchForm: FC<Props> = ({ onChange, query }) => {
         })}
         method="get"
         onSubmit={handleSubmit}
+        role="search"
       >
         <TextField
           aria-label="検索"

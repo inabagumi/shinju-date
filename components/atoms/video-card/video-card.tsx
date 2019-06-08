@@ -1,17 +1,39 @@
 import format from 'date-fns/format'
-import React, { FC } from 'react'
+import React, { AriaAttributes, FC } from 'react'
 import Video from '../../../types/video'
 import YouTubeThumbnail from '../youtube-thumbnail'
 
-interface Props {
+interface Props extends AriaAttributes {
   value: Video
 }
 
-const VideoCard: FC<Props> = ({ value: { id, publishedAt, title, url } }) => {
+const VideoCard: FC<Props> = ({
+  value: { id, publishedAt, title, url },
+  ...props
+}) => {
   const date = new Date(publishedAt * 1000)
 
   return (
     <>
+      <a
+        className="card"
+        href={url}
+        rel="noopener noreferrer"
+        role="article"
+        target="_blank"
+        {...props}
+      >
+        <YouTubeThumbnail id={id} />
+
+        <h3 className="title">{title}</h3>
+
+        <p className="published">
+          <time dateTime={date.toISOString()}>
+            {format(date, 'yyy/MM/dd HH:mm')}
+          </time>
+        </p>
+      </a>
+
       <style jsx>{`
         .card {
           border-radius: 4px;
@@ -38,18 +60,6 @@ const VideoCard: FC<Props> = ({ value: { id, publishedAt, title, url } }) => {
           text-align: right;
         }
       `}</style>
-
-      <a className="card" href={url} rel="noopener noreferrer" target="_blank">
-        <YouTubeThumbnail id={id} />
-
-        <h3 className="title">{title}</h3>
-
-        <p className="published">
-          <time dateTime={date.toISOString()}>
-            {format(date, 'yyy/MM/dd HH:mm')}
-          </time>
-        </p>
-      </a>
     </>
   )
 }

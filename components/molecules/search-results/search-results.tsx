@@ -21,9 +21,14 @@ const SearchResults: FC<Props> = ({ values }) => {
         }
       `}</style>
 
-      <div className="results">
-        {values.map(video => (
-          <VideoCard key={video.id} value={video} />
+      <div className="results" role="feed">
+        {values.map((video, i) => (
+          <VideoCard
+            aria-posinset={i + 1}
+            aria-setsize={values.length}
+            key={video.id}
+            value={video}
+          />
         ))}
       </div>
     </>
