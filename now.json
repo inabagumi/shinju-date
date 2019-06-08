@@ -35,7 +35,14 @@
       "headers": {
         "cache-control": "max-age=0"
       },
-      "src": "/.*"
+      "src": "/(?:search)?"
+    },
+    {
+      "dest": "/_error",
+      "headers": {
+        "cache-control": "max-age=0"
+      },
+      "src": ".*"
     }
   ],
   "scope": "inabagumi",
