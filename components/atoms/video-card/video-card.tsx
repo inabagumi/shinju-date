@@ -19,7 +19,6 @@ const VideoCard: FC<Props> = ({
         className="card"
         href={url}
         rel="noopener noreferrer"
-        role="article"
         target="_blank"
         {...props}
       >
