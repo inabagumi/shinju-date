@@ -752,6 +752,11 @@
   resolved "https://registry.yarnpkg.com/@types/classnames/-/classnames-2.2.8.tgz#17139e1e1104203572caa4368f6796f6225b70b4"
   integrity sha512-3UrLzPnz8u+MMXuJTF++389IfLSQUbl5F3ry9WCxva0BKG5H/oo5NuPRXk+HrpPU1+5pVHSWhnVWRzIaFQ7QuQ==
 
+"@types/eslint-visitor-keys@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/eslint-visitor-keys/-/eslint-visitor-keys-1.0.0.tgz#1ee30d79544ca84d68d4b3cdb0af4f205663dd2d"
+  integrity sha512-OCutwjDZ4aFS6PB1UZ988C4YgwlBHJd6wCeQqaLdmadZ/7e+w79+hbMUFC1QXDNCmdyoRfAFdm0RypzwR+Qpag==
+
 "@types/next-server@*":
   version "8.1.1"
   resolved "https://registry.yarnpkg.com/@types/next-server/-/next-server-8.1.1.tgz#1570d5079cf7e82e77f48826024c6e2797cddda7"
@@ -870,6 +875,16 @@
   dependencies:
     "@typescript-eslint/typescript-estree" "1.10.1"
     eslint-scope "^4.0.0"
+
+"@typescript-eslint/parser@^1.10.1":
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/@typescript-eslint/parser/-/parser-1.10.1.tgz#ee119a3e399a0dfa834ce7840eb92a244ccf570c"
+  integrity sha512-p6KYXqIj5RJas4HGa56NHFTtirwzO3alVtp/UcOLpGopfDKHV5v+UzQcTZahPR7wQhFFngYK49GJpHV9RRyFfg==
+  dependencies:
+    "@types/eslint-visitor-keys" "^1.0.0"
+    "@typescript-eslint/experimental-utils" "1.10.1"
+    "@typescript-eslint/typescript-estree" "1.10.1"
+    eslint-visitor-keys "^1.0.0"
 
 "@typescript-eslint/typescript-estree@1.10.1":
   version "1.10.1"
