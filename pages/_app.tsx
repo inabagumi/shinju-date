@@ -2,14 +2,49 @@ import App, { Container } from 'next/app'
 import Head from 'next/head'
 import React from 'react'
 import Header from '../components/organisms/header'
+import { getTitle } from '../lib/title'
 
 export default class extends App {
   render() {
     const { Component, pageProps } = this.props
     const { query } = pageProps
+    const title = getTitle()
 
     return (
       <>
+        <Head>
+          <link href="/static/favicon.png" rel="icon" />
+          <link
+            href="/opensearch.xml"
+            rel="search"
+            title={title}
+            type="application/opensearchdescription+xml"
+          />
+        </Head>
+
+        <Container>
+          <div className="wrapper">
+            <Header query={query || ''} />
+
+            <div className="content">
+              <Component {...pageProps} />
+            </div>
+
+            <div className="footer">
+              <p className="copyright">
+                Copyright 2019{' '}
+                <a
+                  href="https://haneru.dev/"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  Haneru Developers
+                </a>
+              </p>
+            </div>
+          </div>
+        </Container>
+
         <style jsx global>{`
           html,
           body,
@@ -50,33 +85,6 @@ export default class extends App {
             text-decoration: none;
           }
         `}</style>
-
-        <Head>
-          <link href="/static/favicon.png" rel="icon" />
-        </Head>
-
-        <Container>
-          <div className="wrapper">
-            <Header query={query || ''} />
-
-            <div className="content">
-              <Component {...pageProps} />
-            </div>
-
-            <div className="footer">
-              <p className="copyright">
-                Copyright 2019{' '}
-                <a
-                  href="https://haneru.dev/"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  Haneru Developers
-                </a>
-              </p>
-            </div>
-          </div>
-        </Container>
       </>
     )
   }

@@ -1,11 +1,12 @@
 import Error from 'next/error'
 import Head from 'next/head'
 import React from 'react'
+import { getTitle } from '../lib/title'
 
 export default class extends Error {
   render() {
     const { statusCode } = this.props
-    const title = process.env.ANIMARE_SEARCH_TITLE || 'Search'
+    const title = getTitle()
 
     return (
       <>

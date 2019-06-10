@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Router from 'next/router'
 import React, { ChangeEvent, FC, useCallback } from 'react'
 import { normalize } from '../../../lib/search'
+import { getTitle } from '../../../lib/title'
 import SearchForm from '../../molecules/search-form'
 
 interface HeaderProps {
@@ -9,7 +10,7 @@ interface HeaderProps {
 }
 
 const Header: FC<HeaderProps> = ({ query }) => {
-  const title = process.env.ANIMARE_SEARCH_TITLE || 'Search'
+  const title = getTitle()
 
   const handleChange = useCallback(
     ({ target }: ChangeEvent<HTMLInputElement>) => {
