@@ -5,11 +5,12 @@ import React from 'react'
 export default class extends Error {
   render() {
     const { statusCode } = this.props
+    const title = process.env.ANIMARE_SEARCH_TITLE || 'Search'
 
     return (
       <>
         <Head>
-          <title>{statusCode} - あにまーれサーチ</title>
+          <title>エラー! - ${title}</title>
         </Head>
 
         <div className="error">

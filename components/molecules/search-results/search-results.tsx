@@ -9,6 +9,17 @@ interface Props {
 const SearchResults: FC<Props> = ({ values }) => {
   return (
     <>
+      <div className="results" role="feed">
+        {values.map((video, i) => (
+          <VideoCard
+            aria-posinset={i + 1}
+            aria-setsize={values.length}
+            key={video.id}
+            value={video}
+          />
+        ))}
+      </div>
+
       <style jsx>{`
         .results {
           box-sizing: border-box;
@@ -20,17 +31,6 @@ const SearchResults: FC<Props> = ({ values }) => {
           padding: 0 0.5rem;
         }
       `}</style>
-
-      <div className="results" role="feed">
-        {values.map((video, i) => (
-          <VideoCard
-            aria-posinset={i + 1}
-            aria-setsize={values.length}
-            key={video.id}
-            value={video}
-          />
-        ))}
-      </div>
     </>
   )
 }

@@ -9,6 +9,8 @@ interface Props {
 }
 
 const Header: FC<Props> = ({ query }) => {
+  const title = process.env.ANIMARE_SEARCH_TITLE || 'Search'
+
   const handleChange = useCallback(
     ({ target }: ChangeEvent<HTMLInputElement>) => {
       const query = normalize(target.value)
@@ -25,7 +27,7 @@ const Header: FC<Props> = ({ query }) => {
           <h1 className="title">
             <Link href="/">
               <a className="title__link" tabIndex={-1}>
-                あにまーれサーチ
+                <img alt={title} height="48" src="/static/logo.png" width="120" />
               </a>
             </Link>
           </h1>
@@ -68,14 +70,19 @@ const Header: FC<Props> = ({ query }) => {
 
         @media (min-width: 500px) {
           .title {
-            margin-bottom: 0;
-            margin-right: 1rem;
+            margin: 0.5rem 1rem 0 0;
           }
         }
 
         .title__link {
           color: inherit;
+          display: block;
           text-decoration: none;
+        }
+
+        .title__logo {
+          border: 0;
+          display: block;
         }
       `}</style>
     </>

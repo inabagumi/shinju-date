@@ -4,7 +4,10 @@
     "env": {
       "ALGOLIA_API_KEY": "@algolia-api-key",
       "ALGOLIA_APPLICATION_ID": "@algolia-application-id",
-      "ALGOLIA_INDEX_NAME": "prod_ANIMARE_SEARCH"
+      "ALGOLIA_INDEX_NAME": "prod_ANIMARE_SEARCH",
+      "ANIMARE_SEARCH_BASE_URL": "https://search.animare.cafe",
+      "ANIMARE_SEARCH_DESCRIPTION": "『あにまーれサーチ』は有閑喫茶 あにまーれのメンバーである因幡はねるさん、宇森ひなこさん、宗谷いちかさん、日ノ隈らんさんの 4 人の動画を検索できるウェブサービスです。4 人が YouTube で配信した放送と投稿した動画を網羅的に検索することができます。コラボ放送の検索などにご活用ください。",
+      "ANIMARE_SEARCH_TITLE": "あにまーれサーチ"
     }
   },
   "builds": [
