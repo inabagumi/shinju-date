@@ -4,6 +4,7 @@ import Head from 'next/head'
 import React, { Component, createRef } from 'react'
 import SearchResults from '../components/molecules/search-results'
 import search from '../lib/search'
+import { getTitle } from '../lib/title'
 import Video from '../types/video'
 
 interface Props {
@@ -98,7 +99,7 @@ export default class Search extends Component<Props, State> {
   render() {
     const { isLoading, query, results } = this.state
 
-    const title = process.env.ANIMARE_SEARCH_TITLE || 'Search'
+    const title = getTitle()
     const description = process.env.ANIMARE_SEARCH_DESCRIPTION
     const baseUrl = process.env.ANIMARE_SEARCH_BASE_URL || 'https://example.com'
 

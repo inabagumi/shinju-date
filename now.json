@@ -29,6 +29,13 @@
       "src": "/_next/.+"
     },
     {
+      "dest": "/static/opensearch.xml",
+      "headers": {
+        "cache-control": "max-age=600, s-maxage=60"
+      },
+      "src": "/opensearch\\.xml"
+    },
+    {
       "headers": {
         "cache-control": "max-age=600, s-maxage=60"
       },
