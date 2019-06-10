@@ -20,6 +20,7 @@ const VideoCard: FC<VideoCardProps> = ({
       <article className="card" {...props}>
         <div className="card__thumbnail">
           <a
+            aria-label={title}
             className="card__link"
             href={url}
             rel="noopener noreferrer"
@@ -43,6 +44,7 @@ const VideoCard: FC<VideoCardProps> = ({
 
         <p className="card__published">
           <a
+            aria-label={title}
             className="card__link"
             href={url}
             rel="noopener noreferrer"
