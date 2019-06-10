@@ -22,6 +22,7 @@ const VideoCard: FC<VideoCardProps> = ({
             className="card__link"
             href={url}
             rel="noopener noreferrer"
+            tabIndex={-1}
             target="_blank"
           >
             <YouTubeThumbnail id={id} />
@@ -44,6 +45,7 @@ const VideoCard: FC<VideoCardProps> = ({
             className="card__link"
             href={url}
             rel="noopener noreferrer"
+            tabIndex={-1}
             target="_blank"
           >
             <time dateTime={date.toISOString()}>
