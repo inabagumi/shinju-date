@@ -83,7 +83,9 @@ const VideoCard: FC<VideoCardProps> = ({
           margin: 0;
         }
 
-        .card__title a {
+        .card__title .card__link {
+          box-sizing: border-box;
+          height: 100%;
           padding: 0 0.5rem;
         }
 
