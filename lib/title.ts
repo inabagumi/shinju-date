@@ -1,1 +1,2 @@
-export const getTitle = (): string => process.env.ANIMARE_SEARCH_TITLE || 'Search'
+export const getTitle = (): string =>
+  process.env.ANIMARE_SEARCH_TITLE || 'Search'
