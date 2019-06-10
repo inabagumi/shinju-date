@@ -1,4 +1,5 @@
-import format from 'date-fns/format'
+import formatDistanceStrict from 'date-fns/formatDistanceStrict'
+import ja from 'date-fns/locale/ja'
 import React, { DetailedHTMLProps, FC, HTMLAttributes } from 'react'
 import Video from '../../../types/video'
 import YouTubeThumbnail from '../youtube-thumbnail'
@@ -47,7 +48,10 @@ const VideoCard: FC<VideoCardProps> = ({
             target="_blank"
           >
             <time dateTime={date.toISOString()}>
-              {format(date, 'yyy/MM/dd HH:mm')}
+              {formatDistanceStrict(date, new Date(), {
+                addSuffix: true,
+                locale: ja
+              })}
             </time>
           </a>
         </p>
