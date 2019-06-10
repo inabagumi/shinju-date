@@ -114,6 +114,17 @@ export default class Search extends Component<Props, State> {
           {query && <meta content="noindex,follow" name="robots" />}
 
           <link href={baseUrl + path} rel="canonical" />
+
+          <meta content={description} property="og:description" />
+          <meta
+            content={`${baseUrl}/static/main-visual.png`}
+            property="og:image"
+          />
+          <meta content={title} property="og:title" />
+          <meta content="website" property="og:type" />
+          <meta content={baseUrl + path} property="og:url" />
+
+          <meta content="summary_large_image" name="twitter:card" />
         </Head>
 
         <main>
