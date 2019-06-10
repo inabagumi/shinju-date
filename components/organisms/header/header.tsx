@@ -4,11 +4,11 @@ import React, { ChangeEvent, FC, useCallback } from 'react'
 import { normalize } from '../../../lib/search'
 import SearchForm from '../../molecules/search-form'
 
-interface Props {
+interface HeaderProps {
   query: string
 }
 
-const Header: FC<Props> = ({ query }) => {
+const Header: FC<HeaderProps> = ({ query }) => {
   const title = process.env.ANIMARE_SEARCH_TITLE || 'Search'
 
   const handleChange = useCallback(
@@ -27,7 +27,12 @@ const Header: FC<Props> = ({ query }) => {
           <h1 className="title">
             <Link href="/">
               <a className="title__link" tabIndex={-1}>
-                <img alt={title} height="48" src="/static/logo.png" width="120" />
+                <img
+                  alt={title}
+                  height="48"
+                  src="/static/logo.png"
+                  width="120"
+                />
               </a>
             </Link>
           </h1>
