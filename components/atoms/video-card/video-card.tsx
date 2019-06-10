@@ -1,13 +1,14 @@
 import format from 'date-fns/format'
-import React, { AriaAttributes, FC } from 'react'
+import React, { DetailedHTMLProps, FC, HTMLAttributes } from 'react'
 import Video from '../../../types/video'
 import YouTubeThumbnail from '../youtube-thumbnail'
 
-interface Props extends AriaAttributes {
+export interface VideoCardProps
+  extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
   value: Video
 }
 
-const VideoCard: FC<Props> = ({
+const VideoCard: FC<VideoCardProps> = ({
   value: { id, publishedAt, title, url },
   ...props
 }) => {
@@ -15,23 +16,42 @@ const VideoCard: FC<Props> = ({
 
   return (
     <>
-      <a
-        className="card"
-        href={url}
-        rel="noopener noreferrer"
-        target="_blank"
-        {...props}
-      >
-        <YouTubeThumbnail id={id} />
+      <article className="card" {...props}>
+        <div className="card__thumbnail">
+          <a
+            className="card__link"
+            href={url}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <YouTubeThumbnail id={id} />
+          </a>
+        </div>
 
-        <h3 className="title">{title}</h3>
+        <h3 className="card__title">
+          <a
+            className="card__link"
+            href={url}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            {title}
+          </a>
+        </h3>
 
-        <p className="published">
-          <time dateTime={date.toISOString()}>
-            {format(date, 'yyy/MM/dd HH:mm')}
-          </time>
+        <p className="card__published">
+          <a
+            className="card__link"
+            href={url}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <time dateTime={date.toISOString()}>
+              {format(date, 'yyy/MM/dd HH:mm')}
+            </time>
+          </a>
         </p>
-      </a>
+      </article>
 
       <style jsx>{`
         .card {
@@ -45,18 +65,36 @@ const VideoCard: FC<Props> = ({
           text-decoration: none;
         }
 
-        .title {
+        .card__link {
+          color: inherit;
+          display: block;
+          text-decoration: none;
+        }
+
+        .card__thumbnail .card__link {
+          padding: 0 0 0.5rem;
+        }
+
+        .card__title {
           flex-grow: 1;
           font-size: 0.9rem;
           font-weight: 700;
           line-height: 1.5;
-          margin: 0 0.5rem;
+          margin: 0;
         }
 
-        .published {
+        .card__title a {
+          padding: 0 0.5rem;
+        }
+
+        .card__published {
           font-size: 0.8rem;
-          margin: 0.5rem 0.5rem 0.5rem;
+          margin: 0;
           text-align: right;
+        }
+
+        .card__published .card__link {
+          padding: 0.5rem 0.5rem 0.5rem;
         }
       `}</style>
     </>

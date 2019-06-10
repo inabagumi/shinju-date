@@ -10,7 +10,7 @@ import React, {
   useState
 } from 'react'
 
-interface Props
+export interface TextFieldProps
   extends DetailedHTMLProps<
     InputHTMLAttributes<HTMLInputElement>,
     HTMLInputElement
@@ -20,7 +20,7 @@ interface Props
 
 type Value = string | number | string[] | undefined
 
-const TextField: RefForwardingComponent<HTMLInputElement, Props> = (
+const TextField: RefForwardingComponent<HTMLInputElement, TextFieldProps> = (
   { icon, onBlur, onChange, onFocus, type, value: defaultValue, ...inputProps },
   ref
 ) => {
