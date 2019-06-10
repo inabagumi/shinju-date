@@ -97,24 +97,39 @@ export default class Search extends Component<Props, State> {
 
   render() {
     const { isLoading, query, results } = this.state
+
+    const title = process.env.ANIMARE_SEARCH_TITLE || 'Search'
+    const description = process.env.ANIMARE_SEARCH_DESCRIPTION
+    const baseUrl = process.env.ANIMARE_SEARCH_BASE_URL || 'https://example.com'
+
     const path = query ? `/search?q=${encodeURIComponent(query)}` : '/'
 
     return (
       <>
         <Head>
-          <title>
-            {query ? `${query} - あにまーれサーチ` : 'あにまーれサーチ'}
-          </title>
+          <title>{[query, title].filter(Boolean).join(' - ')}</title>
 
-          <meta
-            content="『あにまーれサーチ』は有閑喫茶 あにまーれのメンバーである因幡はねるさん、宇森ひなこさん、宗谷いちかさん、日ノ隈らんさんの 4 人が YouTube Live で配信した放送や投稿した動画の検索ができるウェブサービスです。"
-            name="description"
-          />
-
+          {description && <meta content={description} name="description" />}
           {query && <meta content="noindex,follow" name="robots" />}
 
-          <link href={`https://search.animare.cafe${path}`} rel="canonical" />
+          <link href={baseUrl + path} rel="canonical" />
         </Head>
+
+        <main>
+          {results.length < 1 && (
+            <div className="notfound">
+              <p>検索結果がありません</p>
+            </div>
+          )}
+
+          <SearchResults values={results} />
+
+          <div className="footer" ref={this.targetRef}>
+            <div
+              className={classNames('loading', { 'loading--show': isLoading })}
+            />
+          </div>
+        </main>
 
         <style jsx>{`
           .notfound {
@@ -164,22 +179,6 @@ export default class Search extends Component<Props, State> {
             border-top-color: #4caf50;
           }
         `}</style>
-
-        <main>
-          {results.length > 0 ? (
-            <SearchResults values={results} />
-          ) : (
-            <div className="notfound">
-              <p>検索結果がありません</p>
-            </div>
-          )}
-
-          <div className="footer" ref={this.targetRef}>
-            <div
-              className={classNames('loading', { 'loading--show': isLoading })}
-            />
-          </div>
-        </main>
       </>
     )
   }
