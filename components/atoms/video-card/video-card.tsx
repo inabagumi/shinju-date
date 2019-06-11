@@ -79,6 +79,11 @@ const VideoCard: FC<VideoCardProps> = ({
           text-decoration: none;
         }
 
+        .card__thumbnail .card__link:focus,
+        .card__published .card__link:focus {
+          outline: 0;
+        }
+
         .card__thumbnail .card__link {
           padding: 0 0 0.5rem;
         }
