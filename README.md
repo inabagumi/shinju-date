@@ -1,11 +1,24 @@
-# あにまーれサーチ
+# AniMare Search
 
-[あにまーれサーチ](https://search.animare.cafe/)は有閑喫茶 あにまーれのメンバーが YouTube Live で配信した放送の検索ができるウェブサービスです。現在はタイトルからの検索に対応しています。
+[AniMare Search](https://search.animare.cafe/) is a web service that searches broadcasts by the YouTube Live. This service targets broadcasts by members of the AniMare.
 
-## 開発
+## Development
 
-検索機能の提供のために [Algolia](https://www.algolia.com/) を利用しています。そのため開発や運用を行う際に Algolia のアカウント作成とトークンの発行が必要になります。
+Requires an active account of [Algolia](https://www.algolia.com/).
 
-## ライセンス
+- [Node.js](https://nodejs.org/en/)
+- [Yarn](https://yarnpkg.com/en/)
+
+```console
+$ git clone https://github.com/inabagumi/animare-search.git
+$ cd animare-search
+$ echo ALGOLIA_API_KEY=xxx >> .env.build
+$ echo ALGOLIA_APPLICATION_ID=xxx >> .env.build
+$ echo ALGOLIA_INDEX_NAME=xxx >> .env.build
+$ yarn install
+$ npx now dev
+```
+
+## License
 
 [MIT](LICENSE)
