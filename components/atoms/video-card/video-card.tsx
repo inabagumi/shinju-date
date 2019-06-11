@@ -1,3 +1,4 @@
+import format from 'date-fns/format'
 import formatDistanceStrict from 'date-fns/formatDistanceStrict'
 import ja from 'date-fns/locale/ja'
 import React, { DetailedHTMLProps, FC, HTMLAttributes } from 'react'
@@ -51,7 +52,10 @@ const VideoCard: FC<VideoCardProps> = ({
             tabIndex={-1}
             target="_blank"
           >
-            <time dateTime={date.toISOString()}>
+            <time
+              dateTime={date.toISOString()}
+              title={format(date, 'yyy/MM/dd HH:mm')}
+            >
               {formatDistanceStrict(date, new Date(), {
                 addSuffix: true,
                 locale: ja
