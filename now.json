@@ -23,10 +23,25 @@
   "regions": ["hnd1"],
   "routes": [
     {
+      "dest": "/_next/static/service-worker.js",
       "headers": {
-        "cache-control": "immutable, max-age=31536000"
+        "cache-control": "max-age=0"
       },
-      "src": "/_next/.+"
+      "src": "/service-worker\\.js"
+    },
+    {
+      "dest": "/static/favicon.ico",
+      "headers": {
+        "cache-control": "max-age=600, s-maxage=60"
+      },
+      "src": "/favicon\\.ico"
+    },
+    {
+      "dest": "/static/manifest.json",
+      "headers": {
+        "cache-control": "max-age=600, s-maxage=60"
+      },
+      "src": "/manifest\\.json"
     },
     {
       "dest": "/static/opensearch.xml",
@@ -34,6 +49,12 @@
         "cache-control": "max-age=600, s-maxage=60"
       },
       "src": "/opensearch\\.xml"
+    },
+    {
+      "headers": {
+        "cache-control": "immutable, max-age=31536000"
+      },
+      "src": "/_next/.+"
     },
     {
       "headers": {

@@ -13,7 +13,10 @@ export default class extends App {
     return (
       <>
         <Head>
+          <meta content="#212121" name="theme-color" />
+
           <link href="/static/favicon.png" rel="icon" />
+          <link href="/manifest.json" rel="manifest" />
           <link
             href="/opensearch.xml"
             rel="search"
