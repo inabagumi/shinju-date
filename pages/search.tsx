@@ -111,7 +111,6 @@ export default class Search extends Component<Props, State> {
           <title>{[query, title].filter(Boolean).join(' - ')}</title>
 
           {description && <meta content={description} name="description" />}
-          {query && <meta content="noindex,follow" name="robots" />}
 
           <link href={baseUrl + path} rel="canonical" />
 

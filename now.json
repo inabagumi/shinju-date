@@ -37,6 +37,13 @@
       "src": "/favicon\\.ico"
     },
     {
+      "dest": "/static/robots.txt",
+      "headers": {
+        "cache-control": "max-age=600, s-maxage=60"
+      },
+      "src": "/robots\\.txt"
+    },
+    {
       "dest": "/static/manifest.json",
       "headers": {
         "cache-control": "max-age=600, s-maxage=60"
