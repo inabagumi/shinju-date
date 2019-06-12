@@ -12,6 +12,7 @@
     "classnames": "^2.2.6",
     "date-fns": "^2.0.0-alpha.32",
     "next": "^8.1.0",
+    "next-offline": "^4.0.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6"
   },
@@ -45,6 +46,16 @@
       "plugin:jsx-a11y/recommended",
       "prettier/@typescript-eslint",
       "prettier/react"
+    ],
+    "overrides": [
+      {
+        "files": [
+          "next.config.js"
+        ],
+        "rules": {
+          "@typescript-eslint/no-var-requires": "off"
+        }
+      }
     ],
     "plugins": [
       "react-hooks"
