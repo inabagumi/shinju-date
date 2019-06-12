@@ -49,6 +49,7 @@ const SearchForm: FC<Props> = ({ onChange, query }) => {
           onBlur={handleBlur}
           onChange={onChange}
           onFocus={handleFocus}
+          placeholder="検索"
           ref={textFieldRef}
           value={query}
         />
