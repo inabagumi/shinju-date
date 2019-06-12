@@ -11,7 +11,7 @@ export default class extends Error {
     return (
       <>
         <Head>
-          <title>エラー! - ${title}</title>
+          <title>エラー! - {title}</title>
         </Head>
 
         <div className="error">
