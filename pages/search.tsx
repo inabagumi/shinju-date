@@ -99,7 +99,7 @@ export default class Search extends Component<Props, State> {
   render() {
     const { isLoading, query, results } = this.state
 
-    const title = getTitle()
+    const title = [query, getTitle()].filter(Boolean).join(' - ')
     const description = process.env.ANIMARE_SEARCH_DESCRIPTION
     const baseUrl = process.env.ANIMARE_SEARCH_BASE_URL || 'https://example.com'
 
@@ -108,7 +108,7 @@ export default class Search extends Component<Props, State> {
     return (
       <>
         <Head>
-          <title>{[query, title].filter(Boolean).join(' - ')}</title>
+          <title>{title}</title>
 
           {description && <meta content={description} name="description" />}
           {query && <meta content="noindex,follow" name="robots" />}
