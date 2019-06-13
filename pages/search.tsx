@@ -2,6 +2,7 @@ import classNames from 'classnames'
 import { NextContext } from 'next'
 import Head from 'next/head'
 import React, { Component, createRef } from 'react'
+import Spinner from '../components/atoms/spinner'
 import SearchResults from '../components/molecules/search-results'
 import search from '../lib/search'
 import { getTitle } from '../lib/title'
@@ -139,7 +140,9 @@ export default class Search extends Component<Props, State> {
           <div className="footer" ref={this.targetRef}>
             <div
               className={classNames('loading', { 'loading--show': isLoading })}
-            />
+            >
+              <Spinner aria-label="読み込み中..." />
+            </div>
           </div>
         </main>
 
@@ -157,38 +160,15 @@ export default class Search extends Component<Props, State> {
             text-align: center;
           }
 
-          .footer {
+          .loading {
             align-items: center;
-            display: flex;
+            display: none;
+            height: 100px;
             justify-content: center;
           }
 
-          @keyframes spinner {
-            0% {
-              transform: rotate(0deg);
-            }
-
-            100% {
-              transform: rotate(360deg);
-            }
-          }
-
-          .loading {
-            animation: spinner 0.5s linear infinite;
-            border: 4px solid transparent;
-            border-radius: 50%;
-            box-sizing: border-box;
-            height: 36px;
-            margin: 1rem;
-            transition: border-color 0.2s ease;
-            width: 36px;
-          }
-
           .loading--show {
-            border-bottom-color: #ffc107;
-            border-left-color: #03a9f4;
-            border-right-color: #e91e63;
-            border-top-color: #4caf50;
+            display: flex;
           }
         `}</style>
       </>
