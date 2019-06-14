@@ -27,7 +27,6 @@ export default class extends Error {
           }
 
           .error__title {
-            color: #212121;
             font-size: 5rem;
             font-weight: 700;
           }

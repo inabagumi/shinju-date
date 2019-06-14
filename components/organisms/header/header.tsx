@@ -23,7 +23,7 @@ const Header: FC<HeaderProps> = ({ query }) => {
 
   return (
     <>
-      <div className="header">
+      <header className="header">
         <div className="header__content">
           <h1 className="title">
             <Link href="/">
@@ -40,7 +40,7 @@ const Header: FC<HeaderProps> = ({ query }) => {
 
           <SearchForm onChange={handleChange} query={query} />
         </div>
-      </div>
+      </header>
 
       <style jsx>{`
         .header {

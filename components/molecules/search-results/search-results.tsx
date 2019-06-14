@@ -20,6 +20,12 @@ const SearchResults: FC<Props> = ({ values }) => {
         ))}
       </div>
 
+      {values.length < 1 && (
+        <div className="notfound">
+          <p>検索結果がありません</p>
+        </div>
+      )}
+
       <style jsx>{`
         .results {
           box-sizing: border-box;
@@ -29,6 +35,18 @@ const SearchResults: FC<Props> = ({ values }) => {
           margin: 1rem auto;
           max-width: 1200px;
           padding: 0 0.5rem;
+        }
+
+        .notfound {
+          margin: 1rem;
+        }
+
+        .notfound p {
+          font-size: 1rem;
+          line-height: 1.5;
+          margin: 10rem 0;
+          padding: 0 0.5rem;
+          text-align: center;
         }
       `}</style>
     </>

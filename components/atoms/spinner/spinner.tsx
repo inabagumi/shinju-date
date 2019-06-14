@@ -1,11 +1,11 @@
 import React, { DetailedHTMLProps, FC, HTMLAttributes } from 'react'
 
-type Props = DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
+type Props = DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLDivElement>
 
 const Spinner: FC<Props> = props => {
   return (
     <>
-      <div className="spinner" {...props} />
+      <span className="spinner" {...props} />
 
       <style jsx>{`
         @keyframes spin {
@@ -27,8 +27,8 @@ const Spinner: FC<Props> = props => {
           border-right-color: #e91e63;
           border-top-color: #4caf50;
           box-sizing: border-box;
+          display: inline-block;
           height: 36px;
-          margin: 1rem;
           width: 36px;
         }
       `}</style>
