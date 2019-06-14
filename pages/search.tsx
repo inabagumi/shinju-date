@@ -129,12 +129,6 @@ export default class Search extends Component<Props, State> {
         </Head>
 
         <main>
-          {results.length < 1 && (
-            <div className="notfound">
-              <p>検索結果がありません</p>
-            </div>
-          )}
-
           <SearchResults values={results} />
 
           <div className="footer" ref={this.targetRef}>
@@ -147,19 +141,6 @@ export default class Search extends Component<Props, State> {
         </main>
 
         <style jsx>{`
-          .notfound {
-            margin: 1rem;
-          }
-
-          .notfound p {
-            color: #424242;
-            font-size: 1rem;
-            line-height: 1.5;
-            margin: 10rem 0;
-            padding: 0 0.5rem;
-            text-align: center;
-          }
-
           .loading {
             align-items: center;
             display: none;

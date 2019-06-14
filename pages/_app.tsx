@@ -1,6 +1,7 @@
 import App, { Container } from 'next/app'
 import Head from 'next/head'
 import React from 'react'
+import Footer from '../components/organisms/footer'
 import Header from '../components/organisms/header'
 import { getTitle } from '../lib/title'
 
@@ -33,18 +34,7 @@ export default class extends App {
               <Component {...pageProps} />
             </div>
 
-            <div className="footer">
-              <p className="copyright">
-                Copyright 2019{' '}
-                <a
-                  href="https://haneru.dev/"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  Haneru Developers
-                </a>
-              </p>
-            </div>
+            <Footer />
           </div>
         </Container>
 
@@ -56,6 +46,7 @@ export default class extends App {
           }
 
           body {
+            color: #212121;
             font-family: Roboto, Noto Sans JP, sans-serif;
             margin: 0;
           }
@@ -70,22 +61,6 @@ export default class extends App {
 
           .content {
             flex-grow: 1;
-          }
-
-          .footer {
-            background-color: #212121;
-            color: #fafafa;
-          }
-
-          .copyright {
-            font-size: 0.9rem;
-            margin: 2rem 0.5rem;
-            text-align: center;
-          }
-
-          .copyright a {
-            color: inherit;
-            text-decoration: none;
           }
         `}</style>
       </>
