@@ -58,13 +58,19 @@ const SearchForm: FC<Props> = ({ onChange, query }) => {
       <style jsx>{`
         .search-form {
           margin: 0;
-          transition: width 0.3s ease-out;
-          width: 240px;
+          width: 100%;
         }
 
-        .search-form--focused {
-          transition-timing-function: ease-in;
-          width: 320px;
+        @media (min-width: 500px) {
+          .search-form {
+            transition: width 0.3s ease-out;
+            width: 240px;
+          }
+
+          .search-form--focused {
+            transition-timing-function: ease-in;
+            width: 320px;
+          }
         }
       `}</style>
     </>

@@ -26,22 +26,14 @@ export default class extends App {
         </Head>
 
         <Container>
-          <div className="wrapper">
-            <Header query={query || ''} />
+          <Header query={query || ''} />
 
-            <div className="content">
-              <Component {...pageProps} />
-            </div>
+          <div className="content">
+            <Component {...pageProps} />
           </div>
         </Container>
 
         <style jsx global>{`
-          html,
-          body,
-          #__next {
-            height: 100%;
-          }
-
           body {
             color: #212121;
             font-family: Roboto, Noto Sans JP, sans-serif;
@@ -50,14 +42,8 @@ export default class extends App {
         `}</style>
 
         <style jsx>{`
-          .wrapper {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-          }
-
           .content {
-            flex-grow: 1;
+            margin-top: 60px;
           }
         `}</style>
       </>
