@@ -44,34 +44,39 @@ const Header: FC<HeaderProps> = ({ query }) => {
 
       <style jsx>{`
         .header {
+          background-color: #fff;
           border-bottom: 1px solid #e0e0e0;
+          height: 60px;
+          left: 0;
+          position: fixed;
+          right: 0;
+          top: 0;
+          z-index: 2;
         }
 
         .header__content {
           align-items: center;
           box-sizing: border-box;
           display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
+          height: 100%;
+          justify-content: space-between;
           line-height: 1;
-          margin: 1rem auto 0;
-          max-width: 1200px;
-          padding: 0.5rem 1rem;
+          margin: 0 auto;
+          max-width: 1024px;
+          padding: 0 0.5rem 0 0;
         }
 
         @media (min-width: 500px) {
           .header__content {
-            flex-direction: row;
-            justify-content: space-between;
-            margin-top: 0;
+            padding: 0.5rem 1rem;
           }
         }
 
         .title {
           font-size: 1.5rem;
           font-weight: 700;
-          margin: 0 0 0.5rem 0;
           padding: 0;
+          margin: 0 1rem 0 0;
         }
 
         @media (min-width: 500px) {
@@ -83,7 +88,12 @@ const Header: FC<HeaderProps> = ({ query }) => {
         .title__link {
           color: inherit;
           display: block;
+          -webkit-tap-highlight-color: transparent;
           text-decoration: none;
+        }
+
+        .title__link:focus {
+          outline: 0;
         }
 
         .title__logo {

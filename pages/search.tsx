@@ -28,6 +28,8 @@ class Search extends Component<SearchProps, SearchState> {
   static async getInitialProps({ query }: SearchContext): Promise<SearchProps> {
     const { hits, nbPages } = await search<Video>(query.q)
 
+    if (typeof window !== 'undefined') window.scrollTo(0, 0)
+
     return {
       hasNext: nbPages > 1,
       hits,
@@ -62,7 +64,7 @@ class Search extends Component<SearchProps, SearchState> {
 
   componentDidMount() {
     this.intersectionObserver = new IntersectionObserver(this.handleIntersect, {
-      rootMargin: '200px 0px 0px'
+      rootMargin: '300px 0px 0px'
     })
 
     this.intersectionObserver.observe(this.targetRef.current!)
@@ -149,7 +151,7 @@ class Search extends Component<SearchProps, SearchState> {
 
         <style jsx>{`
           .search__footer {
-            height: 100px;
+            height: 200px;
           }
 
           .search__loading {

@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from 'react'
+import React, { FC, useCallback, useState, useEffect } from 'react'
 import List from 'react-list'
 import Video from '../../../types/video'
 import VideoCard from '../../atoms/video-card'
@@ -8,6 +8,8 @@ interface Props {
 }
 
 const SearchResults: FC<Props> = ({ values }) => {
+  const [minSize, setMinSize] = useState<number>(20)
+
   const renderItem = useCallback(
     (index, key) => (
       <VideoCard
@@ -29,6 +31,10 @@ const SearchResults: FC<Props> = ({ values }) => {
     []
   )
 
+  useEffect(() => {
+    setMinSize(4)
+  }, [])
+
   return (
     <>
       <div className="search-results">
@@ -36,20 +42,23 @@ const SearchResults: FC<Props> = ({ values }) => {
           itemRenderer={renderItem}
           itemsRenderer={renderItems}
           length={values.length}
-          minSize={12}
+          minSize={minSize}
           type="uniform"
         />
       </div>
 
       <style jsx>{`
+        .search-results {
+          margin: 0 auto;
+          max-width: 1024px;
+          padding: 1rem 0.5rem 0.5rem;
+        }
+
         .search-results :global(.search-results__list) {
           box-sizing: border-box;
           display: grid;
           gap: 1rem;
-          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-          margin: 1rem auto;
-          max-width: 1200px;
-          padding: 0 0.5rem;
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         }
       `}</style>
     </>

@@ -104,7 +104,7 @@ const VideoCard: FC<VideoCardProps> = ({
           -webkit-box-orient: vertical;
           box-sizing: border-box;
           display: -webkit-box;
-          height: 3rem;
+          height: 2.7rem;
           -webkit-line-clamp: 2;
           overflow: hidden;
           padding: 0 0.5rem;
