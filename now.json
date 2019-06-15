@@ -12,6 +12,9 @@
   },
   "builds": [
     {
+      "config": {
+        "maxLambdaSize": "50mb"
+      },
       "src": "package.json",
       "use": "@now/next"
     }
