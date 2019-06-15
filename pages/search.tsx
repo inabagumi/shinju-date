@@ -8,30 +8,37 @@ import search from '../lib/search'
 import { getTitle } from '../lib/title'
 import Video from '../types/video'
 
-interface Props {
+export interface SearchProps {
   hasNext: boolean
   hits: Video[]
   query: string
 }
 
-interface State {
+export interface SearchState {
   hasNext: boolean
   isLoading: boolean
   page: number
-  query?: string
+  query: string
   results: Video[]
 }
 
-export default class Search extends Component<Props, State> {
-  static async getInitialProps({
-    query: { q: query }
-  }: NextContext<{ q: string }>): Promise<Props> {
-    const { hits, nbPages } = await search<Video>(query)
+export type SearchContext = NextContext<{ q: string }>
 
-    return { hasNext: nbPages > 1, hits, query }
+class Search extends Component<SearchProps, SearchState> {
+  static async getInitialProps({ query }: SearchContext): Promise<SearchProps> {
+    const { hits, nbPages } = await search<Video>(query.q)
+
+    return {
+      hasNext: nbPages > 1,
+      hits,
+      query: query.q
+    }
   }
 
-  static getDerivedStateFromProps(nextProps: Props, prevState: State) {
+  static getDerivedStateFromProps(
+    nextProps: SearchProps,
+    prevState: SearchState
+  ) {
     if (prevState.isLoading || prevState.query === nextProps.query) return null
 
     return {
@@ -50,7 +57,7 @@ export default class Search extends Component<Props, State> {
     results: this.props.hits
   }
 
-  targetRef = createRef<HTMLDivElement>()
+  targetRef = createRef<HTMLElement>()
   intersectionObserver?: IntersectionObserver
 
   componentDidMount() {
@@ -61,7 +68,7 @@ export default class Search extends Component<Props, State> {
     this.intersectionObserver.observe(this.targetRef.current!)
   }
 
-  shouldComponentUpdate(nextProps: Props, nextState: State) {
+  shouldComponentUpdate(nextProps: SearchProps, nextState: SearchState) {
     return (
       this.state.isLoading !== nextState.isLoading ||
       this.state.page !== nextState.page ||
@@ -76,12 +83,13 @@ export default class Search extends Component<Props, State> {
   handleIntersect: IntersectionObserverCallback = entries => {
     const { hasNext, isLoading } = this.state
 
-    if (isLoading || !hasNext || !entries.some(entry => entry.isIntersecting))
+    if (isLoading || !hasNext || !entries.some(entry => entry.isIntersecting)) {
       return
-
-    const { page, query } = this.state
+    }
 
     this.setState({ isLoading: true })
+
+    const { page, query } = this.state
 
     search<Video>(query, { page: page + 1 })
       .then(({ hits, nbPages, page: actualPage }) => {
@@ -91,9 +99,7 @@ export default class Search extends Component<Props, State> {
           hasNext: actualPage <= nbPages
         }))
       })
-      .catch(() => {
-        this.setState({ hasNext: false })
-      })
+      .catch(() => this.setState({ hasNext: false }))
       .finally(() => this.setState({ isLoading: false }))
   }
 
@@ -103,7 +109,6 @@ export default class Search extends Component<Props, State> {
     const title = [query, getTitle()].filter(Boolean).join(' - ')
     const description = process.env.ANIMARE_SEARCH_DESCRIPTION
     const baseUrl = process.env.ANIMARE_SEARCH_BASE_URL || 'https://example.com'
-
     const path = query ? `/search?q=${encodeURIComponent(query)}` : '/'
 
     return (
@@ -131,24 +136,30 @@ export default class Search extends Component<Props, State> {
         <main>
           <SearchResults values={results} />
 
-          <div className="footer" ref={this.targetRef}>
+          <footer className="search__footer" ref={this.targetRef}>
             <div
-              className={classNames('loading', { 'loading--show': isLoading })}
+              className={classNames('search__loading', {
+                'search__loading--show': isLoading
+              })}
             >
               <Spinner aria-label="読み込み中..." />
             </div>
-          </div>
+          </footer>
         </main>
 
         <style jsx>{`
-          .loading {
+          .search__footer {
+            height: 100px;
+          }
+
+          .search__loading {
             align-items: center;
             display: none;
-            height: 100px;
+            height: 100%;
             justify-content: center;
           }
 
-          .loading--show {
+          .search__loading--show {
             display: flex;
           }
         `}</style>
@@ -156,3 +167,5 @@ export default class Search extends Component<Props, State> {
     )
   }
 }
+
+export default Search

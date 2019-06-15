@@ -101,9 +101,15 @@ const VideoCard: FC<VideoCardProps> = ({
         }
 
         .card__title .card__link {
+          -webkit-box-orient: vertical;
           box-sizing: border-box;
-          height: 100%;
+          display: -webkit-box;
+          height: 3rem;
+          -webkit-line-clamp: 2;
+          overflow: hidden;
           padding: 0 0.5rem;
+          text-overflow: ellipsis;
+          width: 100%;
         }
 
         .card__published {
