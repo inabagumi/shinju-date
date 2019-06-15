@@ -1,4 +1,5 @@
-import React, { FC } from 'react'
+import React, { FC, useCallback } from 'react'
+import List from 'react-list'
 import Video from '../../../types/video'
 import VideoCard from '../../atoms/video-card'
 
@@ -7,27 +8,41 @@ interface Props {
 }
 
 const SearchResults: FC<Props> = ({ values }) => {
+  const renderItem = useCallback(
+    (index, key) => (
+      <VideoCard
+        aria-posinset={index + 1}
+        aria-setsize={values.length}
+        key={key}
+        value={values[index]}
+      />
+    ),
+    [values]
+  )
+
+  const renderItems = useCallback(
+    (items, ref) => (
+      <div className="search-results__list" ref={ref} role="feed">
+        {items}
+      </div>
+    ),
+    []
+  )
+
   return (
     <>
-      <div className="results" role="feed">
-        {values.map((video, i) => (
-          <VideoCard
-            aria-posinset={i + 1}
-            aria-setsize={values.length}
-            key={video.id}
-            value={video}
-          />
-        ))}
+      <div className="search-results">
+        <List
+          itemRenderer={renderItem}
+          itemsRenderer={renderItems}
+          length={values.length}
+          minSize={12}
+          type="uniform"
+        />
       </div>
 
-      {values.length < 1 && (
-        <div className="notfound">
-          <p>検索結果がありません</p>
-        </div>
-      )}
-
       <style jsx>{`
-        .results {
+        .search-results :global(.search-results__list) {
           box-sizing: border-box;
           display: grid;
           gap: 1rem;
@@ -35,18 +50,6 @@ const SearchResults: FC<Props> = ({ values }) => {
           margin: 1rem auto;
           max-width: 1200px;
           padding: 0 0.5rem;
-        }
-
-        .notfound {
-          margin: 1rem;
-        }
-
-        .notfound p {
-          font-size: 1rem;
-          line-height: 1.5;
-          margin: 10rem 0;
-          padding: 0 0.5rem;
-          text-align: center;
         }
       `}</style>
     </>

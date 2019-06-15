@@ -1,7 +1,6 @@
 import App, { Container } from 'next/app'
 import Head from 'next/head'
 import React from 'react'
-import Footer from '../components/organisms/footer'
 import Header from '../components/organisms/header'
 import { getTitle } from '../lib/title'
 
@@ -33,8 +32,6 @@ export default class extends App {
             <div className="content">
               <Component {...pageProps} />
             </div>
-
-            <Footer />
           </div>
         </Container>
 
