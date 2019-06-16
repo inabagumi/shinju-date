@@ -4,6 +4,7 @@ import React, {
   DetailedHTMLProps,
   FocusEvent,
   InputHTMLAttributes,
+  ReactElement,
   RefForwardingComponent,
   forwardRef,
   useCallback,
@@ -15,7 +16,7 @@ export interface TextFieldProps
     InputHTMLAttributes<HTMLInputElement>,
     HTMLInputElement
   > {
-  icon?: string
+  icon?: ReactElement
 }
 
 type Value = string | number | string[] | undefined
@@ -63,7 +64,7 @@ const TextField: RefForwardingComponent<HTMLInputElement, TextFieldProps> = (
         })}
       >
         {icon && (
-          <span aria-hidden="true" className="material-icons text-field__icon">
+          <span aria-hidden="true" className="text-field__icon">
             {icon}
           </span>
         )}
@@ -113,6 +114,7 @@ const TextField: RefForwardingComponent<HTMLInputElement, TextFieldProps> = (
           align-items: center;
           bottom: 0;
           display: flex;
+          fill: currentColor;
           font-size: 20px;
           justify-content: center;
           overflow: hidden;
