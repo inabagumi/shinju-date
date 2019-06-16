@@ -21,10 +21,6 @@ export default class extends Document {
             href="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver"
             rel="preload"
           />
-          <link
-            href="https://fonts.googleapis.com/css?display=swap&amp;family=Material+Icons"
-            rel="stylesheet"
-          />
         </Head>
 
         <body>
