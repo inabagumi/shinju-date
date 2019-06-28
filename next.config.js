@@ -14,6 +14,7 @@ module.exports = withTypescript(
     target: 'serverless',
     workboxOpts: {
       clientsClaim: true,
+      importWorkboxFrom: 'local',
       runtimeCaching: [
         {
           handler: 'NetworkFirst',
