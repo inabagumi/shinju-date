@@ -3117,7 +3117,7 @@ globby@^7.1.1:
     pify "^3.0.0"
     slash "^1.0.0"
 
-google-auth-library@^4.0.0, google-auth-library@^4.2.0:
+google-auth-library@^4.0.0, google-auth-library@^4.2.5:
   version "4.2.5"
   resolved "https://registry.yarnpkg.com/google-auth-library/-/google-auth-library-4.2.5.tgz#79b8ce6843525cb3a6e61cf97abef333d1386bd5"
   integrity sha512-Vfsr82M1KTdT0H0wjawwp0LHsT6mPKSolRp21ZpJ7Ydq63zRe8DbGKjRCCrhsRZHg+p17DuuSCMEznwk3CJRdw==
@@ -3138,25 +3138,25 @@ google-p12-pem@^2.0.0:
   dependencies:
     node-forge "^0.8.0"
 
-googleapis-common@^2.0.0:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/googleapis-common/-/googleapis-common-2.0.3.tgz#b15557dd43de879c1398ec4ae6b5853fdecd50de"
-  integrity sha512-gUObzhe0fnDkDPHsxseXCVt1JB9apaQfTomykGyoRXzvydHqXS0llGzaJnAC4JOvvL+TQDedwx2GETLibMUuUA==
+googleapis-common@^2.0.2:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/googleapis-common/-/googleapis-common-2.0.4.tgz#bd28eba24578d632b28dfa140838dee4d37ba2f3"
+  integrity sha512-8RRkxr24v1jIKCC1onFWA8RGnwFV55m3Qpil9DLX1yLc9e5qvOJsRoDOhhD2e7jFRONYEhT/BzT8vJZANqSr9w==
   dependencies:
     extend "^3.0.2"
     gaxios "^2.0.1"
-    google-auth-library "^4.2.0"
+    google-auth-library "^4.2.5"
     qs "^6.7.0"
     url-template "^2.0.8"
     uuid "^3.3.2"
 
-googleapis@^40.0.0:
-  version "40.0.0"
-  resolved "https://registry.yarnpkg.com/googleapis/-/googleapis-40.0.0.tgz#c2b16f660fb7a8dcada97e9862b73955ba83865e"
-  integrity sha512-G4iUF6V141mbgbXmbXQDYP0pOYJAONvA8m+RzYfuVBcwfKm7Pn6Aes9LT0a6ddmW9CmydHmHdOgKZuWwkXueXg==
+googleapis@^40.0.1:
+  version "40.0.1"
+  resolved "https://registry.yarnpkg.com/googleapis/-/googleapis-40.0.1.tgz#a5cdd2c6257e04fa9d4848526a2799c309b97d56"
+  integrity sha512-B6qZVCautOOspEhru9GZ814I+ztkGWyA4ZEUfaXwXHBruX/HAWqedbsuUEx1w3nCECywK/FLTNUdcbH9zpaMaw==
   dependencies:
     google-auth-library "^4.0.0"
-    googleapis-common "^2.0.0"
+    googleapis-common "^2.0.2"
 
 graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.4, graceful-fs@^4.1.6:
   version "4.2.0"
