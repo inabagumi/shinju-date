@@ -32,7 +32,7 @@ const SearchResults: FC<Props> = ({ values }) => {
   )
 
   useEffect(() => {
-    setMinSize(4)
+    setMinSize(8)
   }, [])
 
   return (
@@ -44,6 +44,7 @@ const SearchResults: FC<Props> = ({ values }) => {
           length={values.length}
           minSize={minSize}
           type="uniform"
+          useTranslate3d
         />
       </div>
 
