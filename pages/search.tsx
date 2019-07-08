@@ -1,5 +1,5 @@
 import classNames from 'classnames'
-import { NextContext } from 'next'
+import { NextPageContext } from 'next'
 import Head from 'next/head'
 import React, { Component, createRef } from 'react'
 import Spinner from '../components/atoms/spinner'
@@ -22,18 +22,19 @@ export interface SearchState {
   results: Video[]
 }
 
-export type SearchContext = NextContext<{ q: string }>
-
 class Search extends Component<SearchProps, SearchState> {
-  static async getInitialProps({ query }: SearchContext): Promise<SearchProps> {
-    const { hits, nbPages } = await search<Video>(query.q)
+  static async getInitialProps({
+    query
+  }: NextPageContext): Promise<SearchProps> {
+    const q = Array.isArray(query.q) ? query.q[0] : query.q
+    const { hits, nbPages } = await search<Video>(q)
 
     if (typeof window !== 'undefined') window.scrollTo(0, 0)
 
     return {
       hasNext: nbPages > 1,
       hits,
-      query: query.q
+      query: q
     }
   }
 
