@@ -15,7 +15,7 @@
     "@inabagumi/prettier-config": "^1.0.0",
     "@types/algoliasearch": "^3.30.12",
     "@types/classnames": "^2.2.9",
-    "@types/node": "^12.6.1",
+    "@types/node": "^12.6.2",
     "@types/react": "^16.8.23",
     "@types/react-list": "^0.8.5",
     "@types/yargs": "^13.0.0",
