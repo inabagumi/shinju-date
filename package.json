@@ -7,8 +7,7 @@
     "next": "^9.0.0",
     "next-offline": "^4.0.2",
     "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "react-list": "^0.8.11"
+    "react-dom": "^16.8.6"
   },
   "description": "",
   "devDependencies": {
@@ -17,7 +16,6 @@
     "@types/classnames": "^2.2.9",
     "@types/node": "^12.6.2",
     "@types/react": "^16.8.23",
-    "@types/react-list": "^0.8.5",
     "@types/yargs": "^13.0.0",
     "@typescript-eslint/eslint-plugin": "^1.11.0",
     "@typescript-eslint/parser": "^1.11.0",
