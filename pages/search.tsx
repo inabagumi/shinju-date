@@ -152,7 +152,7 @@ class Search extends Component<SearchProps, SearchState> {
 
         <style jsx>{`
           .search__footer {
-            height: 200px;
+            padding: 2rem 0;
           }
 
           .search__loading {

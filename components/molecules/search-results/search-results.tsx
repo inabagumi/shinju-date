@@ -1,5 +1,4 @@
-import React, { FC, useCallback, useState, useEffect } from 'react'
-import List from 'react-list'
+import React, { FC } from 'react'
 import Video from '../../../types/video'
 import VideoCard from '../../atoms/video-card'
 
@@ -8,44 +7,19 @@ interface Props {
 }
 
 const SearchResults: FC<Props> = ({ values }) => {
-  const [minSize, setMinSize] = useState<number>(20)
-
-  const renderItem = useCallback(
-    (index, key) => (
-      <VideoCard
-        aria-posinset={index + 1}
-        aria-setsize={values.length}
-        key={key}
-        value={values[index]}
-      />
-    ),
-    [values]
-  )
-
-  const renderItems = useCallback(
-    (items, ref) => (
-      <div className="search-results__list" ref={ref} role="feed">
-        {items}
-      </div>
-    ),
-    []
-  )
-
-  useEffect(() => {
-    setMinSize(8)
-  }, [])
-
   return (
     <>
       <div className="search-results">
-        <List
-          itemRenderer={renderItem}
-          itemsRenderer={renderItems}
-          length={values.length}
-          minSize={minSize}
-          type="uniform"
-          useTranslate3d
-        />
+        <div className="search-results__list" role="feed">
+          {values.map((value, index) => (
+            <VideoCard
+              aria-posinset={index + 1}
+              aria-setsize={values.length}
+              key={index}
+              value={value}
+            />
+          ))}
+        </div>
       </div>
 
       <style jsx>{`
@@ -55,7 +29,7 @@ const SearchResults: FC<Props> = ({ values }) => {
           padding: 1rem 0.5rem 0.5rem;
         }
 
-        .search-results :global(.search-results__list) {
+        .search-results__list {
           box-sizing: border-box;
           display: grid;
           gap: 1rem;
