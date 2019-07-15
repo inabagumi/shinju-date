@@ -28,7 +28,7 @@
     "prettier": "^1.18.2",
     "ts-node": "^8.3.0",
     "typescript": "~3.5.3",
-    "yargs": "^13.2.4"
+    "yargs": "^13.3.0"
   },
   "eslintConfig": {
     "extends": [
