@@ -14,7 +14,7 @@
     "@inabagumi/prettier-config": "^1.0.0",
     "@types/algoliasearch": "^3.30.14",
     "@types/classnames": "^2.2.9",
-    "@types/node": "^12.6.3",
+    "@types/node": "^12.6.4",
     "@types/react": "^16.8.23",
     "@types/yargs": "^13.0.0",
     "@typescript-eslint/eslint-plugin": "^1.12.0",
