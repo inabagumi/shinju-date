@@ -821,10 +821,10 @@
   resolved "https://registry.yarnpkg.com/@inabagumi/prettier-config/-/prettier-config-1.0.0.tgz#ac77b1217e0656956621c596f7451c1f858dcd58"
   integrity sha512-i/NAhEZh/w3RMxLQpsygqwvQXaoEnmXepauyNp6UExNyafXUtv4LqgaVnDqh78OSlv3WQPhf1u5sasrE8NEa1Q==
 
-"@types/algoliasearch@^3.30.14":
-  version "3.30.14"
-  resolved "https://registry.yarnpkg.com/@types/algoliasearch/-/algoliasearch-3.30.14.tgz#2166c0fedfa029a4be0fd80e5b35b4eb2d99731e"
-  integrity sha512-GfUz6Cb7BXSyR/mQchUVy4Y6TNbho/0NrdqDtfSENJaBI9+miD00xowISIsidDJTonjQIq0tN7f/+OQBVBM1Cw==
+"@types/algoliasearch@^3.30.15":
+  version "3.30.15"
+  resolved "https://registry.yarnpkg.com/@types/algoliasearch/-/algoliasearch-3.30.15.tgz#60aff270cea4b8b848fbb389a68988f163e80934"
+  integrity sha512-UpQvm0phg/wNyy64OGHgAw0as2DxprhihTurKIO+u2/VtXbRk/ZpbsuG/sGaKglJoOmD7a+fWl6k/t8N/jB6Pg==
 
 "@types/classnames@^2.2.9":
   version "2.2.9"
