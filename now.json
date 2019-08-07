@@ -76,7 +76,7 @@
       "headers": {
         "cache-control": "max-age=0"
       },
-      "src": "/(?:search)?"
+      "src": "/(?:about|search)?"
     },
     {
       "dest": "/_error",
