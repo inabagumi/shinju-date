@@ -1,9 +1,9 @@
 import { NextPage } from 'next'
 import Head from 'next/head'
-import React from 'react'
+import React, { ReactElement } from 'react'
 import { getTitle } from '../lib/title'
 
-const About: NextPage = () => {
+const About: NextPage = (): ReactElement => {
   const title = getTitle()
   const description = process.env.ANIMARE_SEARCH_DESCRIPTION
 

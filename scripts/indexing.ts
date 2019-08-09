@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, @typescript-eslint/explicit-function-return-type */
+
 import algoliasearch from 'algoliasearch'
 import subDays from 'date-fns/subDays'
 import { google } from 'googleapis'

@@ -3,6 +3,7 @@ import React, {
   ChangeEvent,
   FC,
   FormEvent,
+  ReactElement,
   useCallback,
   useRef,
   useState
@@ -14,21 +15,24 @@ export interface SearchFormProps {
   query: string
 }
 
-const SearchForm: FC<SearchFormProps> = ({ onChange, query }) => {
+const SearchForm: FC<SearchFormProps> = ({ onChange, query }): ReactElement => {
   const textFieldRef = useRef<HTMLInputElement>(null)
   const [isFocused, setIsFocusesd] = useState<boolean>(false)
 
-  const handleBlur = useCallback(() => {
+  const handleBlur = useCallback((): void => {
     setIsFocusesd(false)
   }, [])
 
-  const handleSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const handleSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>): void => {
+      event.preventDefault()
 
-    if (textFieldRef.current) textFieldRef.current.blur()
-  }, [])
+      if (textFieldRef.current) textFieldRef.current.blur()
+    },
+    []
+  )
 
-  const handleFocus = useCallback(() => {
+  const handleFocus = useCallback((): void => {
     setIsFocusesd(true)
   }, [])
 

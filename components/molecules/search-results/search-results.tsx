@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, ReactElement } from 'react'
 import Video from '../../../types/video'
 import VideoCard from '../../atoms/video-card'
 
@@ -6,19 +6,21 @@ interface Props {
   values: Video[]
 }
 
-const SearchResults: FC<Props> = ({ values }) => {
+const SearchResults: FC<Props> = ({ values }): ReactElement => {
   return (
     <>
       <div className="search-results">
         <div className="search-results__list" role="feed">
-          {values.map((value, index) => (
-            <VideoCard
-              aria-posinset={index + 1}
-              aria-setsize={values.length}
-              key={index}
-              value={value}
-            />
-          ))}
+          {values.map(
+            (value, index): ReactElement => (
+              <VideoCard
+                aria-posinset={index + 1}
+                aria-setsize={values.length}
+                key={index}
+                value={value}
+              />
+            )
+          )}
         </div>
       </div>
 

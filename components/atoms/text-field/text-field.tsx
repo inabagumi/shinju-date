@@ -24,12 +24,12 @@ type Value = string | number | string[] | undefined
 const TextField: RefForwardingComponent<HTMLInputElement, TextFieldProps> = (
   { icon, onBlur, onChange, onFocus, type, value: defaultValue, ...inputProps },
   ref
-) => {
+): ReactElement => {
   const [value, setValue] = useState<Value>(defaultValue)
   const [isFocused, setIsFocusesd] = useState<boolean>(false)
 
   const handleBlur = useCallback(
-    (event: FocusEvent<HTMLInputElement>) => {
+    (event: FocusEvent<HTMLInputElement>): void => {
       setIsFocusesd(false)
 
       if (typeof onBlur === 'function') onBlur(event)
@@ -38,7 +38,7 @@ const TextField: RefForwardingComponent<HTMLInputElement, TextFieldProps> = (
   )
 
   const handleChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
+    (event: ChangeEvent<HTMLInputElement>): void => {
       setValue(event.target.value)
 
       if (typeof onChange === 'function') onChange(event)
@@ -47,7 +47,7 @@ const TextField: RefForwardingComponent<HTMLInputElement, TextFieldProps> = (
   )
 
   const handleFocus = useCallback(
-    (event: FocusEvent<HTMLInputElement>) => {
+    (event: FocusEvent<HTMLInputElement>): void => {
       setIsFocusesd(true)
 
       if (typeof onFocus === 'function') onFocus(event)

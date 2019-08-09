@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Router from 'next/router'
-import React, { ChangeEvent, FC, useCallback } from 'react'
+import React, { ChangeEvent, FC, ReactElement, useCallback } from 'react'
 import { normalize } from '../../../lib/search'
 import { getTitle } from '../../../lib/title'
 import SearchForm from '../../molecules/search-form'
@@ -9,11 +9,11 @@ interface HeaderProps {
   query: string
 }
 
-const Header: FC<HeaderProps> = ({ query }) => {
+const Header: FC<HeaderProps> = ({ query }): ReactElement => {
   const title = getTitle()
 
   const handleChange = useCallback(
-    ({ target }: ChangeEvent<HTMLInputElement>) => {
+    ({ target }: ChangeEvent<HTMLInputElement>): void => {
       const query = normalize(target.value)
 
       Router.replace(query ? `/search?q=${encodeURIComponent(query)}` : '/')

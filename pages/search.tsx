@@ -1,7 +1,7 @@
 import classNames from 'classnames'
 import { NextPageContext } from 'next'
 import Head from 'next/head'
-import React, { Component, createRef } from 'react'
+import React, { Component, ReactElement, createRef } from 'react'
 import Spinner from '../components/atoms/spinner'
 import SearchResults from '../components/molecules/search-results'
 import search from '../lib/search'
@@ -23,7 +23,7 @@ export interface SearchState {
 }
 
 class Search extends Component<SearchProps, SearchState> {
-  static async getInitialProps({
+  public static async getInitialProps({
     query
   }: NextPageContext): Promise<SearchProps> {
     const q = Array.isArray(query.q) ? query.q[0] : query.q
@@ -38,10 +38,10 @@ class Search extends Component<SearchProps, SearchState> {
     }
   }
 
-  static getDerivedStateFromProps(
+  public static getDerivedStateFromProps(
     nextProps: SearchProps,
     prevState: SearchState
-  ) {
+  ): Pick<SearchState, 'hasNext' | 'page' | 'query' | 'results'> | null {
     if (prevState.isLoading || prevState.query === nextProps.query) return null
 
     return {
@@ -52,7 +52,7 @@ class Search extends Component<SearchProps, SearchState> {
     }
   }
 
-  state = {
+  public state = {
     hasNext: this.props.hasNext,
     isLoading: false,
     page: 0,
@@ -60,18 +60,22 @@ class Search extends Component<SearchProps, SearchState> {
     results: this.props.hits
   }
 
-  targetRef = createRef<HTMLElement>()
-  intersectionObserver?: IntersectionObserver
+  private targetRef = createRef<HTMLElement>()
+  private intersectionObserver?: IntersectionObserver
 
-  componentDidMount() {
+  public componentDidMount(): void {
     this.intersectionObserver = new IntersectionObserver(this.handleIntersect, {
       rootMargin: '300px 0px 0px'
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.intersectionObserver.observe(this.targetRef.current!)
   }
 
-  shouldComponentUpdate(nextProps: SearchProps, nextState: SearchState) {
+  public shouldComponentUpdate(
+    nextProps: SearchProps,
+    nextState: SearchState
+  ): boolean {
     return (
       this.state.isLoading !== nextState.isLoading ||
       this.state.page !== nextState.page ||
@@ -79,14 +83,18 @@ class Search extends Component<SearchProps, SearchState> {
     )
   }
 
-  componentWillUnmount() {
+  public componentWillUnmount(): void {
     if (this.intersectionObserver) this.intersectionObserver.disconnect()
   }
 
-  handleIntersect: IntersectionObserverCallback = entries => {
+  private handleIntersect: IntersectionObserverCallback = (entries): void => {
     const { hasNext, isLoading } = this.state
 
-    if (isLoading || !hasNext || !entries.some(entry => entry.isIntersecting)) {
+    if (
+      isLoading ||
+      !hasNext ||
+      !entries.some((entry): boolean => entry.isIntersecting)
+    ) {
       return
     }
 
@@ -95,18 +103,24 @@ class Search extends Component<SearchProps, SearchState> {
     const { page, query } = this.state
 
     search<Video>(query, { page: page + 1 })
-      .then(({ hits, nbPages, page: actualPage }) => {
-        this.setState(prevState => ({
-          page: actualPage,
-          results: prevState.results.concat(hits),
-          hasNext: actualPage <= nbPages
-        }))
+      .then(({ hits, nbPages, page: actualPage }): void => {
+        this.setState(
+          (prevState): Pick<SearchState, 'hasNext' | 'page' | 'results'> => ({
+            page: actualPage,
+            results: prevState.results.concat(hits),
+            hasNext: actualPage <= nbPages
+          })
+        )
       })
-      .catch(() => this.setState({ hasNext: false }))
-      .finally(() => this.setState({ isLoading: false }))
+      .catch((): void => {
+        this.setState({ hasNext: false })
+      })
+      .finally((): void => {
+        this.setState({ isLoading: false })
+      })
   }
 
-  render() {
+  public render(): ReactElement {
     const { isLoading, query, results } = this.state
 
     const title = [query, getTitle()].filter(Boolean).join(' - ')
