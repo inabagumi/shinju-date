@@ -1,7 +1,12 @@
 import format from 'date-fns/format'
 import formatDistanceStrict from 'date-fns/formatDistanceStrict'
 import ja from 'date-fns/locale/ja'
-import React, { DetailedHTMLProps, FC, HTMLAttributes } from 'react'
+import React, {
+  DetailedHTMLProps,
+  FC,
+  HTMLAttributes,
+  ReactElement
+} from 'react'
 import Video from '../../../types/video'
 import YouTubeThumbnail from '../youtube-thumbnail'
 
@@ -13,7 +18,7 @@ export interface VideoCardProps
 const VideoCard: FC<VideoCardProps> = ({
   value: { id, publishedAt, title, url },
   ...props
-}) => {
+}): ReactElement => {
   const date = new Date(publishedAt * 1000)
 
   return (

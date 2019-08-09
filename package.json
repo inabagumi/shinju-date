@@ -11,6 +11,7 @@
   },
   "description": "",
   "devDependencies": {
+    "@inabagumi/eslint-config-react": "^1.0.0",
     "@inabagumi/prettier-config": "^1.0.0",
     "@types/algoliasearch": "^3.30.17",
     "@types/classnames": "^2.2.9",
@@ -22,6 +23,7 @@
     "eslint": "^6.1.0",
     "eslint-config-prettier": "^6.0.0",
     "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-react": "^7.14.3",
     "eslint-plugin-react-hooks": "^1.7.0",
     "googleapis": "^42.0.0",
@@ -32,38 +34,10 @@
   },
   "eslintConfig": {
     "extends": [
-      "plugin:@typescript-eslint/recommended",
-      "plugin:react/recommended",
-      "plugin:jsx-a11y/recommended",
-      "prettier/@typescript-eslint",
-      "prettier/react"
-    ],
-    "overrides": [
-      {
-        "files": [
-          "next.config.js"
-        ],
-        "rules": {
-          "@typescript-eslint/no-var-requires": "off"
-        }
-      }
-    ],
-    "plugins": [
-      "react-hooks"
+      "@inabagumi/react"
     ],
     "rules": {
-      "@typescript-eslint/explicit-function-return-type": "off",
-      "@typescript-eslint/explicit-member-accessibility": "off",
-      "@typescript-eslint/no-non-null-assertion": "off",
-      "jsx-a11y/anchor-is-valid": "off",
-      "react/prop-types": "off",
-      "react-hooks/exhaustive-deps": "error",
-      "react-hooks/rules-of-hooks": "error"
-    },
-    "settings": {
-      "react": {
-        "version": "detect"
-      }
+      "jsx-a11y/anchor-is-valid": "off"
     }
   },
   "license": "MIT",

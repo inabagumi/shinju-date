@@ -1,8 +1,13 @@
-import React, { DetailedHTMLProps, FC, HTMLAttributes } from 'react'
+import React, {
+  DetailedHTMLProps,
+  FC,
+  HTMLAttributes,
+  ReactElement
+} from 'react'
 
 type Props = DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLDivElement>
 
-const Spinner: FC<Props> = props => {
+const Spinner: FC<Props> = (props): ReactElement => {
   return (
     <>
       <span className="spinner" {...props} />

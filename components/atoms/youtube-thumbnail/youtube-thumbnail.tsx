@@ -1,10 +1,10 @@
-import React, { FC } from 'react'
+import React, { FC, ReactElement } from 'react'
 
 export interface YouTubeThumbnailProps {
   id: string
 }
 
-const YouTubeThumbnail: FC<YouTubeThumbnailProps> = ({ id }) => {
+const YouTubeThumbnail: FC<YouTubeThumbnailProps> = ({ id }): ReactElement => {
   return (
     <>
       <picture className="thumbnail">

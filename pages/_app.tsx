@@ -1,11 +1,11 @@
 import App, { Container } from 'next/app'
 import Head from 'next/head'
-import React from 'react'
+import React, { ReactElement } from 'react'
 import Header from '../components/organisms/header'
 import { getTitle } from '../lib/title'
 
 export default class extends App {
-  render() {
+  public render(): ReactElement {
     const { Component, pageProps } = this.props
     const { query } = pageProps
     const title = getTitle()

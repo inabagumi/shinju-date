@@ -1,10 +1,10 @@
 import Error from 'next/error'
 import Head from 'next/head'
-import React from 'react'
+import React, { ReactElement } from 'react'
 import { getTitle } from '../lib/title'
 
 export default class extends Error {
-  render() {
+  public render(): ReactElement {
     const { statusCode } = this.props
     const title = getTitle()
 
