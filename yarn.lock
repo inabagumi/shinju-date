@@ -816,7 +816,7 @@
   dependencies:
     "@hapi/hoek" "8.x.x"
 
-"@inabagumi/eslint-config-react@^1.0.0":
+"@inabagumi/eslint-config-react@^1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@inabagumi/eslint-config-react/-/eslint-config-react-1.0.2.tgz#2ad194c8b2c8928b9438de3d8a7116463c7a5231"
   integrity sha512-47JiQQb2LUb8d958BqPD169yVjxt+PYqe/c8fCC6FCGkQCAxhWg0K5IpsZI8Z7R9RiiVwSCwcB+6lnYoEofAGQ==
