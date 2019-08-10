@@ -15,6 +15,10 @@ export default class extends App {
     return (
       <>
         <Head>
+          <meta
+            content="initial-scale=1,minimum-scale=1,user-scalable=no,width=device-width"
+            name="viewport"
+          />
           <meta content="#212121" name="theme-color" />
 
           <link href="/static/favicon.png" rel="icon" />
