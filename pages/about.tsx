@@ -13,29 +13,11 @@ const About: NextPage = (): ReactElement => {
         <title>About - {title}</title>
       </Head>
 
-      <main className="content">
-        <h2 className="title">あにまーれサーチとは?</h2>
+      <main className="container margin-top--lg">
+        <h1>あにまーれサーチとは?</h1>
 
-        <p className="description">{description}</p>
+        <p>{description}</p>
       </main>
-
-      <style jsx>{`
-        .content {
-          margin: 0 auto;
-          max-width: 800px;
-          padding: 2rem 0.5rem 0;
-        }
-
-        .title {
-          font-size: 2rem;
-          margin: 1rem 0 2rem 0.5rem;
-        }
-
-        .description {
-          line-height: 2;
-          margin: 0 0.5rem 1rem;
-        }
-      `}</style>
     </>
   )
 }

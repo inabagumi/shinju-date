@@ -14,23 +14,9 @@ export default class extends Error {
           <title>エラー! - {title}</title>
         </Head>
 
-        <div className="error">
-          <h2 className="error__title">{statusCode}</h2>
+        <div className="container margin-top--lg">
+          <h1>{statusCode}</h1>
         </div>
-
-        <style jsx>{`
-          .error {
-            align-items: center;
-            display: flex;
-            height: 100%;
-            justify-content: center;
-          }
-
-          .error__title {
-            font-size: 5rem;
-            font-weight: 700;
-          }
-        `}</style>
       </>
     )
   }

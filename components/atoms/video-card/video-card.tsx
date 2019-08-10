@@ -11,7 +11,10 @@ import Video from '../../../types/video'
 import YouTubeThumbnail from '../youtube-thumbnail'
 
 export interface VideoCardProps
-  extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
+  extends DetailedHTMLProps<
+    HTMLAttributes<HTMLAnchorElement>,
+    HTMLAnchorElement
+  > {
   value: Video
 }
 
@@ -23,40 +26,23 @@ const VideoCard: FC<VideoCardProps> = ({
 
   return (
     <>
-      <article className="card" {...props}>
-        <div className="card__thumbnail">
-          <a
-            aria-label={title}
-            className="card__link"
-            href={url}
-            rel="noopener noreferrer"
-            tabIndex={-1}
-            target="_blank"
-          >
-            <YouTubeThumbnail id={id} />
-          </a>
+      <a
+        className="card"
+        href={url}
+        rel="noopener noreferrer"
+        target="_blank"
+        {...props}
+      >
+        <div className="card__image">
+          <YouTubeThumbnail id={id} />
         </div>
 
-        <h3 className="card__title">
-          <a
-            className="card__link"
-            href={url}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            {title}
-          </a>
-        </h3>
+        <div className="card__body">
+          <h4>{title}</h4>
+        </div>
 
-        <p className="card__published">
-          <a
-            aria-label={title}
-            className="card__link"
-            href={url}
-            rel="noopener noreferrer"
-            tabIndex={-1}
-            target="_blank"
-          >
+        <div className="card__footer">
+          <small className="published">
             <time
               dateTime={date.toISOString()}
               title={format(date, 'yyy/MM/dd HH:mm')}
@@ -66,59 +52,30 @@ const VideoCard: FC<VideoCardProps> = ({
                 locale: ja
               })}
             </time>
-          </a>
-        </p>
-      </article>
+          </small>
+        </div>
+      </a>
 
       <style jsx>{`
         .card {
-          border-radius: 4px;
-          box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1),
-            0 1px 3px 1px rgba(0, 0, 0, 0.2);
           color: inherit;
           display: flex;
           flex-direction: column;
-          overflow: hidden;
+          height: 100%;
+        }
+
+        .card:hover {
           text-decoration: none;
         }
 
-        .card__link {
-          color: inherit;
-          display: block;
-          text-decoration: none;
-        }
-
-        .card__thumbnail .card__link:focus,
-        .card__published .card__link:focus {
-          outline: 0;
-        }
-
-        .card__thumbnail .card__link {
-          padding: 0 0 0.5rem;
-        }
-
-        .card__title {
+        .card__body {
           flex-grow: 1;
-          font-size: 0.9rem;
-          font-weight: 700;
-          line-height: 1.5;
-          margin: 0;
         }
 
-        .card__title .card__link {
-          box-sizing: border-box;
-          padding: 0 0.5rem;
-          width: 100%;
-        }
-
-        .card__published {
-          font-size: 0.8rem;
-          margin: 0;
+        .published {
+          color: var(--ifm-color-secondar);
+          display: block;
           text-align: right;
-        }
-
-        .card__published .card__link {
-          padding: 0.5rem 0.5rem 0.5rem;
         }
       `}</style>
     </>
