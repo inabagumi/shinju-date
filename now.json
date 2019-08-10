@@ -76,7 +76,14 @@
       "headers": {
         "cache-control": "max-age=0"
       },
-      "src": "/(?:about|search)?"
+      "src": "/(?:search)?"
+    },
+    {
+      "dest": "/about.html",
+      "headers": {
+        "cache-control": "max-age=600, s-maxage=60"
+      },
+      "src": "/about"
     },
     {
       "dest": "/_error",

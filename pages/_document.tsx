@@ -8,12 +8,12 @@ export default class extends Document {
         <Head>
           <link
             as="style"
-            href="https://fonts.googleapis.com/css?display=swap&amp;family=Roboto:400,700"
+            href="https://fonts.googleapis.com/css?display=swap&amp;family=Roboto:300,400,500,700"
             rel="preload"
           />
           <link
             as="style"
-            href="https://fonts.googleapis.com/css?display=swap&amp;family=Noto+Sans+JP:400,700"
+            href="https://fonts.googleapis.com/css?display=swap&amp;family=Noto+Sans+JP:300,400,500,700"
             rel="preload"
           />
           <link
@@ -27,11 +27,11 @@ export default class extends Document {
           <Main />
 
           <link
-            href="https://fonts.googleapis.com/css?display=swap&amp;family=Roboto:400,700"
+            href="https://fonts.googleapis.com/css?display=swap&amp;family=Roboto:300,400,500,700"
             rel="stylesheet"
           />
           <link
-            href="https://fonts.googleapis.com/css?display=swap&amp;family=Noto+Sans+JP:400,700"
+            href="https://fonts.googleapis.com/css?display=swap&amp;family=Noto+Sans+JP:300,400,500,700"
             rel="stylesheet"
           />
           <script src="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver" />
