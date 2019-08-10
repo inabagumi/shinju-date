@@ -33,6 +33,7 @@ const SearchForm: FC<SearchFormProps> = ({ onChange, query }): ReactElement => {
             aria-label="検索"
             onChange={onChange}
             placeholder="検索"
+            ref={textFieldRef}
             type="text"
             value={query}
           />
