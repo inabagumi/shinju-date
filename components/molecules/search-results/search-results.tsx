@@ -17,7 +17,7 @@ const SearchResults: FC<Props> = ({ values }): ReactElement => {
               {row.map(
                 (value): ReactElement => (
                   <div
-                    className="col padding-bottom--md padding-horiz--sm"
+                    className="col col--3 padding-bottom--md padding-horiz--sm"
                     key={value.url}
                   >
                     <VideoCard value={value} />
