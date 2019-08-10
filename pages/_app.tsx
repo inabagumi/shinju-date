@@ -4,6 +4,8 @@ import React, { ReactElement } from 'react'
 import Header from '../components/organisms/header'
 import { getTitle } from '../lib/title'
 
+import 'infima/dist/css/default/default.css'
+
 export default class extends App {
   public render(): ReactElement {
     const { Component, pageProps } = this.props
@@ -28,22 +30,16 @@ export default class extends App {
         <Container>
           <Header query={query || ''} />
 
-          <div className="content">
-            <Component {...pageProps} />
-          </div>
+          <Component {...pageProps} />
         </Container>
 
         <style jsx global>{`
-          body {
-            color: #212121;
-            font-family: Roboto, Noto Sans JP, sans-serif;
-            margin: 0;
+          :root {
+            --ifm-font-family-base: Roboto, Noto Sans JP, sans-serif;
           }
-        `}</style>
 
-        <style jsx>{`
-          .content {
-            margin-top: 60px;
+          body {
+            padding-top: 60px;
           }
         `}</style>
       </>
