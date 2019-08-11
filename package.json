@@ -41,7 +41,7 @@
     "yargs": "^13.3.0"
   },
   "engines": {
-    "node": "^10.13.0"
+    "node": "^v10.16.2"
   },
   "eslintConfig": {
     "extends": [
