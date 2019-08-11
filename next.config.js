@@ -26,7 +26,7 @@ module.exports = withOffline(
           handler: 'CacheFirst',
           options: {
             cacheableResponse: {
-              statuses: [0, 200]
+              statuses: [200]
             }
           },
           urlPattern: /^https:\/\/(?:fonts\.googleapis\.com|fonts\.gstatic\.com|i\.ytimg\.com|polyfill\.io)\//i
