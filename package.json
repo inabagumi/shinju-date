@@ -40,6 +40,9 @@
     "typescript": "~3.5.3",
     "yargs": "^13.3.0"
   },
+  "engines": {
+    "node": "^10.13.0"
+  },
   "eslintConfig": {
     "extends": [
       "@inabagumi/react"
