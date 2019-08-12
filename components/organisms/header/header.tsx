@@ -222,19 +222,19 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
             <div className="navbar__items navbar__items--right">
               <a
                 className="navbar__item navbar__link"
-                href="https://github.com/inabagumi/animare-search"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                GitHub
-              </a>
-              <a
-                className="navbar__item navbar__link"
                 href="https://forms.gle/sriuF4xAG5t2R5E97"
                 rel="noopener noreferrer"
                 target="_blank"
               >
                 お問い合わせ
+              </a>
+              <a
+                className="navbar__item navbar__link"
+                href="https://github.com/inabagumi/animare-search"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                GitHub
               </a>
               <Toggle
                 aria-label="ダークモード切り替え"
@@ -333,18 +333,6 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                   <li className="menu__list-item">
                     <a
                       className="menu__link"
-                      href="https://github.com/inabagumi/animare-search"
-                      onClick={hideSidebar}
-                      onKeyDown={hideSidebar}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      GitHub
-                    </a>
-                  </li>
-                  <li className="menu__list-item">
-                    <a
-                      className="menu__link"
                       href="https://forms.gle/sriuF4xAG5t2R5E97"
                       onClick={hideSidebar}
                       onKeyDown={hideSidebar}
@@ -352,6 +340,18 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                       target="_blank"
                     >
                       お問い合わせ
+                    </a>
+                  </li>
+                  <li className="menu__list-item">
+                    <a
+                      className="menu__link"
+                      href="https://github.com/inabagumi/animare-search"
+                      onClick={hideSidebar}
+                      onKeyDown={hideSidebar}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      GitHub
                     </a>
                   </li>
                 </ul>
