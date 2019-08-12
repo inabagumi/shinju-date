@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useRef
 } from 'react'
+import TextField from '../../atoms/text-field'
 
 export interface SearchFormProps {
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void
@@ -28,13 +29,13 @@ const SearchForm: FC<SearchFormProps> = ({ onChange, query }): ReactElement => {
     <>
       <form action="/search" method="get" onSubmit={handleSubmit} role="search">
         <div className="navbar__search">
-          <input
+          <TextField
             aria-label="検索"
-            defaultValue={query}
             onChange={onChange}
             placeholder="検索"
             ref={textFieldRef}
             type="text"
+            value={query}
           />
         </div>
       </form>
