@@ -13,8 +13,16 @@ import { Helmet } from 'react-helmet'
 import Toggle from 'react-toggle'
 import { normalize } from '../../../lib/search'
 import { getTitle } from '../../../lib/title'
+import Emoji from '../../atoms/emoji'
 import Logo from '../../atoms/logo'
 import SearchForm from '../../molecules/search-form'
+
+const Sun: FC = (): ReactElement => (
+  <Emoji label="ダークモードオフ" value="☀️️" />
+)
+const Moon: FC = (): ReactElement => (
+  <Emoji label="ダークモードオン" value="🌙" />
+)
 
 interface HeaderProps {
   query: string
@@ -30,11 +38,42 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
   const [theme, setTheme] = useState<string>(currentTheme)
   const [sidebarShown, setSidebarShown] = useState<boolean>(false)
 
-  const showSidebar = useCallback(() => {
+  useEffect((): (() => void) => {
+    const mediaQueryList = matchMedia('(prefers-color-scheme: dark)')
+    let currentTheme: string | null = null
+
+    try {
+      currentTheme = localStorage.getItem('theme')
+    } finally {
+      if (typeof currentTheme === 'string') {
+        setTheme(currentTheme)
+      } else {
+        setTheme(mediaQueryList.matches ? 'dark' : '')
+      }
+    }
+
+    const handlePrefersColorSchemeChange = (): void => {
+      const nextTheme = mediaQueryList.matches ? 'dark' : ''
+
+      setTheme(nextTheme)
+
+      try {
+        localStorage.setItem('theme', nextTheme)
+      } catch {}
+    }
+
+    mediaQueryList.addListener(handlePrefersColorSchemeChange)
+
+    return (): void => {
+      mediaQueryList.removeListener(handlePrefersColorSchemeChange)
+    }
+  }, [setTheme])
+
+  const showSidebar = useCallback((): void => {
     setSidebarShown(true)
   }, [setSidebarShown])
 
-  const hideSidebar = useCallback(() => {
+  const hideSidebar = useCallback((): void => {
     setSidebarShown(false)
   }, [setSidebarShown])
 
@@ -59,13 +98,6 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
     },
     [setTheme]
   )
-
-  useEffect((): void => {
-    try {
-      const localStorageTheme = localStorage.getItem('theme')
-      if (localStorageTheme) setTheme(localStorageTheme)
-    } catch {}
-  }, [])
 
   return (
     <>
@@ -103,13 +135,18 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                 </svg>
               </div>
               <Link href="/">
-                <a aria-label={title} className="navbar__brand" tabIndex={-1}>
+                <a
+                  aria-label={title}
+                  className="navbar__brand"
+                  href="/"
+                  tabIndex={-1}
+                >
                   <Logo />
                 </a>
               </Link>
 
               <Link href="/about">
-                <a className="navbar__item navbar__link" onClick={hideSidebar}>
+                <a className="navbar__item navbar__link" href="/">
                   About
                 </a>
               </Link>
@@ -129,8 +166,8 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                 checked={theme === 'dark'}
                 className="react-toggle--lg-only"
                 icons={{
-                  checked: <span className="icon">💡</span>,
-                  unchecked: <span className="icon">🌙</span>
+                  checked: <Sun />,
+                  unchecked: <Moon />
                 }}
                 onChange={handleToggleChange}
                 value="dark"
@@ -150,7 +187,9 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                 <a
                   aria-label={title}
                   className="navbar__brand"
+                  href="/"
                   onClick={hideSidebar}
+                  onKeyDown={hideSidebar}
                   tabIndex={-1}
                 >
                   <Logo />
@@ -160,8 +199,8 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                 aria-label="ダークモード切り替え"
                 checked={theme === 'dark'}
                 icons={{
-                  checked: <span className="icon">💡</span>,
-                  unchecked: <span className="icon">🌙</span>
+                  checked: <Sun />,
+                  unchecked: <Moon />
                 }}
                 onChange={handleToggleChange}
                 value="dark"
@@ -173,7 +212,12 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                 <ul className="menu__list">
                   <li className="menu__list-item">
                     <Link href="/about">
-                      <a className="menu__link" onClick={hideSidebar}>
+                      <a
+                        className="menu__link"
+                        href="/about"
+                        onClick={hideSidebar}
+                        onKeyDown={hideSidebar}
+                      >
                         About
                       </a>
                     </Link>
@@ -183,6 +227,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                       className="menu__link"
                       href="https://github.com/inabagumi/animare-search"
                       onClick={hideSidebar}
+                      onKeyDown={hideSidebar}
                       rel="noopener noreferrer"
                       target="_blank"
                     >
@@ -203,14 +248,6 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
 
         .navbar:not(.navbar--sidebar-show) .navbar__sidebar {
           box-shadow: none;
-        }
-
-        .icon {
-          align-items: center;
-          display: flex;
-          height: 10px;
-          justify-content: center;
-          width: 10px;
         }
 
         /**
