@@ -4,6 +4,8 @@ import Router from 'next/router'
 import React, {
   ChangeEvent,
   FC,
+  KeyboardEvent,
+  MouseEvent,
   ReactElement,
   useCallback,
   useEffect,
@@ -16,6 +18,25 @@ import { getTitle } from '../../../lib/title'
 import Emoji from '../../atoms/emoji'
 import Logo from '../../atoms/logo'
 import SearchForm from '../../molecules/search-form'
+
+const channels = [
+  {
+    id: 'UC0Owc36U9lOyi9Gx9Ic-4qg',
+    title: '因幡はねる'
+  },
+  {
+    id: 'UChqYnJlFxlBi6DfRz6jRenQ',
+    title: '宇森ひなこ'
+  },
+  {
+    id: 'UC2kyQhzGOB-JPgcQX9OMgEw',
+    title: '宗谷いちか'
+  },
+  {
+    id: 'UCRvpMpzAXBRKJQuk-8-Sdvg',
+    title: '日ノ隈らん'
+  }
+]
 
 const Sun: FC = (): ReactElement => (
   <Emoji label="ダークモードオフ" value="☀️️" />
@@ -37,6 +58,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
 
   const [theme, setTheme] = useState<string>(currentTheme)
   const [sidebarShown, setSidebarShown] = useState<boolean>(false)
+  const [filterListShown, setFilterListShown] = useState<boolean>(false)
 
   useEffect((): (() => void) => {
     const mediaQueryList = matchMedia('(prefers-color-scheme: dark)')
@@ -76,6 +98,19 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
   const hideSidebar = useCallback((): void => {
     setSidebarShown(false)
   }, [setSidebarShown])
+
+  const toggleFilterListShown = useCallback(
+    (
+      event: KeyboardEvent<HTMLAnchorElement> | MouseEvent<HTMLAnchorElement>
+    ): void => {
+      event.preventDefault()
+
+      setFilterListShown(
+        (beforeFilterListShown): boolean => !beforeFilterListShown
+      )
+    },
+    [setFilterListShown]
+  )
 
   const handleChange = useCallback(
     ({ target }: ChangeEvent<HTMLInputElement>): void => {
@@ -150,6 +185,38 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                   About
                 </a>
               </Link>
+
+              <div className="dropdown dropdown--hoverable navbar__item">
+                <a
+                  className="navbar__link"
+                  href="/"
+                  onClick={(event): void => {
+                    event.preventDefault()
+                  }}
+                  onKeyDown={(event): void => {
+                    event.preventDefault()
+                  }}
+                >
+                  フィルター
+                </a>
+
+                <ul className="dropdown__menu">
+                  {channels.map(
+                    (channel): ReactElement => (
+                      <li key={channel.id}>
+                        <Link href={`/search?q=+from:${channel.id}`}>
+                          <a
+                            className="dropdown__link"
+                            href={`/search?q=+from:${channel.id}`}
+                          >
+                            {channel.title}
+                          </a>
+                        </Link>
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
             </div>
 
             <div className="navbar__items navbar__items--right">
@@ -222,6 +289,39 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                       </a>
                     </Link>
                   </li>
+                  <li
+                    className={classNames('menu__list-item', {
+                      'menu__list-item--collapsed': !filterListShown
+                    })}
+                  >
+                    <a
+                      className="menu__link menu__link--sublist"
+                      href="/"
+                      onClick={toggleFilterListShown}
+                      onKeyDown={toggleFilterListShown}
+                      role="button"
+                    >
+                      フィルター
+                    </a>
+                    <ul className="menu__list">
+                      {channels.map(
+                        (channel): ReactElement => (
+                          <li key={channel.id}>
+                            <Link href={`/search?q=+from:${channel.id}`}>
+                              <a
+                                className="menu__link"
+                                href={`/search?q=+from:${channel.id}`}
+                                onClick={hideSidebar}
+                                onKeyDown={hideSidebar}
+                              >
+                                {channel.title}
+                              </a>
+                            </Link>
+                          </li>
+                        )
+                      )}{' '}
+                    </ul>
+                  </li>
                   <li className="menu__list-item">
                     <a
                       className="menu__link"
@@ -248,6 +348,10 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
 
         .navbar:not(.navbar--sidebar-show) .navbar__sidebar {
           box-shadow: none;
+        }
+
+        .navbar__link svg {
+          vertical-align: middle;
         }
 
         /**
