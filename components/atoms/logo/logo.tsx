@@ -1,6 +1,6 @@
-import React, { FC } from 'react'
+import React, { FC, ReactElement } from 'react'
 
-const Logo: FC = () => {
+const Logo: FC = (): ReactElement => {
   return (
     <svg height="48" viewBox="0 0 120 48" width="120">
       <path
