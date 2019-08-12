@@ -26,7 +26,7 @@ class Search extends Component<SearchProps, SearchState> {
   public static async getInitialProps({
     query
   }: NextPageContext): Promise<SearchProps> {
-    const q = Array.isArray(query.q) ? query.q[0] : query.q
+    const q = (Array.isArray(query.q) ? query.q[0] : query.q) || ''
     const { hits, nbPages } = await search<Video>(q)
 
     if (typeof window !== 'undefined') window.scrollTo(0, 0)
