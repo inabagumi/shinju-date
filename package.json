@@ -12,7 +12,8 @@
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-helmet": "^6.0.0-beta",
-    "react-toggle": "^4.0.2"
+    "react-toggle": "^4.0.2",
+    "react-waypoint": "^9.0.2"
   },
   "description": "",
   "devDependencies": {

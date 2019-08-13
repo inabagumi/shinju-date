@@ -32,7 +32,7 @@ const TextField: RefForwardingComponent<HTMLInputElement, TextFieldProps> = (
     [onChange]
   )
 
-  useEffect(() => {
+  useEffect((): void => {
     setValue(defaultValue)
   }, [defaultValue])
 
