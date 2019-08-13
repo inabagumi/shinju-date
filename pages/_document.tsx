@@ -16,11 +16,6 @@ export default class extends Document {
             href="https://fonts.googleapis.com/css?display=swap&amp;family=Noto+Sans+JP:300,400,500,700"
             rel="preload"
           />
-          <link
-            as="script"
-            href="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver"
-            rel="preload"
-          />
         </Head>
 
         <body>
@@ -34,7 +29,6 @@ export default class extends Document {
             href="https://fonts.googleapis.com/css?display=swap&amp;family=Noto+Sans+JP:300,400,500,700"
             rel="stylesheet"
           />
-          <script src="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver" />
 
           <NextScript />
         </body>
