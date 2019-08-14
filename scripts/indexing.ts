@@ -49,7 +49,7 @@ function normalizeTitle(title: string) {
 
 async function* getVideosByChannelId(
   channelId: string,
-  all: boolean = false
+  all = false
 ): AsyncIterableIterator<Video> {
   let date = new Date()
   let pageToken = ''

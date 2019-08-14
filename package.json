@@ -11,7 +11,7 @@
     "next-offline": "^4.0.3",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
-    "react-helmet": "^6.0.0-beta",
+    "react-helmet": "^5.2.1",
     "react-toggle": "^4.0.2",
     "react-waypoint": "^9.0.2"
   },

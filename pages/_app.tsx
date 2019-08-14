@@ -1,6 +1,6 @@
 import App, { Container } from 'next/app'
-import Head from 'next/head'
 import React, { ReactElement } from 'react'
+import { Helmet } from 'react-helmet'
 import Header from '../components/organisms/header'
 import { getTitle } from '../lib/title'
 
@@ -14,7 +14,7 @@ export default class extends App {
 
     return (
       <>
-        <Head>
+        <Helmet defaultTitle={title} titleTemplate={`%s - ${title}`}>
           <meta
             content="initial-scale=1,minimum-scale=1,user-scalable=no,width=device-width"
             name="viewport"
@@ -29,7 +29,7 @@ export default class extends App {
             title={title}
             type="application/opensearchdescription+xml"
           />
-        </Head>
+        </Helmet>
 
         <Container>
           <Header query={query || ''} />
