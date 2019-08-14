@@ -49,6 +49,8 @@ export default class extends Document<Props> {
         <body {...helmet.bodyAttributes.toComponent()}>
           <Main />
 
+          <NextScript />
+
           <link
             href="https://fonts.googleapis.com/css?display=swap&amp;family=Roboto:300,400,500,700"
             rel="stylesheet"
@@ -57,8 +59,6 @@ export default class extends Document<Props> {
             href="https://fonts.googleapis.com/css?display=swap&amp;family=Noto+Sans+JP:300,400,500,700"
             rel="stylesheet"
           />
-
-          <NextScript />
         </body>
       </Html>
     )
