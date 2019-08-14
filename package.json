@@ -17,7 +17,7 @@
   },
   "description": "",
   "devDependencies": {
-    "@inabagumi/eslint-config-react": "^2.0.2",
+    "@inabagumi/eslint-config-react": "^2.1.0",
     "@inabagumi/prettier-config": "^1.0.0",
     "@types/algoliasearch": "^3.30.17",
     "@types/classnames": "^2.2.9",
