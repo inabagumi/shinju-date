@@ -1,11 +1,39 @@
-import Document, { Head, Html, Main, NextScript } from 'next/document'
+import Document, {
+  DocumentContext,
+  DocumentInitialProps,
+  Head,
+  Html,
+  Main,
+  NextScript
+} from 'next/document'
 import React, { ReactElement } from 'react'
+import { Helmet, HelmetData } from 'react-helmet'
 
-export default class extends Document {
+type Props = {
+  helmet: HelmetData
+}
+
+export default class extends Document<Props> {
+  public static async getInitialProps(
+    ctx: DocumentContext
+  ): Promise<DocumentInitialProps & Props> {
+    const documentProps = await super.getInitialProps(ctx)
+
+    return {
+      ...documentProps,
+      helmet: Helmet.renderStatic()
+    }
+  }
+
   public render(): ReactElement {
+    const { helmet } = this.props
+
     return (
-      <Html lang="ja">
+      <Html {...helmet.htmlAttributes.toComponent()}>
         <Head>
+          {helmet.title.toComponent()}
+          {helmet.meta.toComponent()}
+          {helmet.link.toComponent()}
           <link
             as="style"
             href="https://fonts.googleapis.com/css?display=swap&amp;family=Roboto:300,400,500,700"
@@ -18,7 +46,7 @@ export default class extends Document {
           />
         </Head>
 
-        <body>
+        <body {...helmet.bodyAttributes.toComponent()}>
           <Main />
 
           <link

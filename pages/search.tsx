@@ -1,6 +1,6 @@
 import { NextPage } from 'next'
-import Head from 'next/head'
 import React, { ReactElement, useCallback, useState, useEffect } from 'react'
+import { Helmet } from 'react-helmet'
 import { Waypoint } from 'react-waypoint'
 import Spinner from '../components/atoms/spinner'
 import SearchResults from '../components/molecules/search-results'
@@ -8,7 +8,7 @@ import search from '../lib/search'
 import { getTitle } from '../lib/title'
 import Video from '../types/video'
 
-export interface SearchProps {
+export type SearchProps = {
   hasNext: boolean
   hits: Video[]
   query: string
@@ -48,8 +48,8 @@ const Search: NextPage<SearchProps> = ({
 
   return (
     <>
-      <Head>
-        <title>{title}</title>
+      <Helmet htmlAttributes={{ lang: 'ja' }}>
+        {query && <title>{query}</title>}
 
         {description && <meta content={description} name="description" />}
         {query && <meta content="noindex,follow" name="robots" />}
@@ -66,7 +66,7 @@ const Search: NextPage<SearchProps> = ({
         <meta content={baseUrl + path} property="og:url" />
 
         <meta content="summary_large_image" name="twitter:card" />
-      </Head>
+      </Helmet>
 
       <main>
         <SearchResults values={results} />

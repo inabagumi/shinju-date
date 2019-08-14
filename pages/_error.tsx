@@ -1,18 +1,16 @@
 import Error from 'next/error'
-import Head from 'next/head'
 import React, { ReactElement } from 'react'
-import { getTitle } from '../lib/title'
+import { Helmet } from 'react-helmet'
 
 export default class extends Error {
   public render(): ReactElement {
     const { statusCode } = this.props
-    const title = getTitle()
 
     return (
       <>
-        <Head>
-          <title>エラー! - {title}</title>
-        </Head>
+        <Helmet>
+          <title>エラー!</title>
+        </Helmet>
 
         <div className="container margin-top--lg">
           <h1>{statusCode}</h1>
