@@ -1,5 +1,6 @@
 const withCSS = require('@zeit/next-css')
 const withOffline = require('next-offline')
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 module.exports = withOffline(
   withCSS({
@@ -15,6 +16,13 @@ module.exports = withOffline(
       ANIMARE_SEARCH_TITLE: process.env.ANIMARE_SEARCH_TITLE
     },
     target: 'serverless',
+    webpack(config) {
+      if (config.optimization.minimizer) {
+        config.optimization.minimizer.push(new OptimizeCssAssetsPlugin())
+      }
+
+      return config
+    },
     workboxOpts: {
       clientsClaim: true,
       runtimeCaching: [

@@ -36,6 +36,7 @@
     "eslint-plugin-react": "^7.14.3",
     "eslint-plugin-react-hooks": "^1.7.0",
     "googleapis": "^42.0.0",
+    "optimize-css-assets-webpack-plugin": "^5.0.3",
     "prettier": "^1.18.2",
     "ts-node": "^8.3.0",
     "typescript": "~3.5.3",
