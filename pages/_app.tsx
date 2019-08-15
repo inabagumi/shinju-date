@@ -40,6 +40,8 @@ export default class extends App {
         <style jsx global>{`
           :root {
             --ifm-font-family-base: Roboto, Noto Sans JP, sans-serif;
+            --ifm-font-size-base: 16px;
+            --ifm-line-height-base: 2;
           }
 
           body {
