@@ -56,7 +56,6 @@
     "build": "next build",
     "dev": "next",
     "format": "prettier --ignore-path .gitignore --write \"**/*.{js,json,md,mdx,ts,tsx}\"",
-    "indexing": "ts-node --project scripts/tsconfig.json scripts/indexing.ts",
     "lint": "eslint --ignore-path .gitignore --ext .js,.ts,.tsx .",
     "start": "next start"
   },
