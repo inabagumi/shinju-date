@@ -454,17 +454,17 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
         }
 
         :global(.react-toggle--checked .react-toggle-thumb) {
-          border-color: #0099e0;
+          border-color: var(--ifm-color-primary);
           left: 27px;
         }
 
         :global(.react-toggle--focus .react-toggle-thumb) {
-          box-shadow: 0 0 2px 3px #0099e0;
+          box-shadow: 0 0 2px 3px var(--ifm-color-primary);
         }
 
         :global(.react-toggle:active:not(.react-toggle--disabled)
             .react-toggle-thumb) {
-          box-shadow: 0 0 5px 5px #0099e0;
+          box-shadow: 0 0 5px 5px var(--ifm-color-primary);
         }
       `}</style>
     </>
