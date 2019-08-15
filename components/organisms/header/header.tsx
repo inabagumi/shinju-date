@@ -228,14 +228,6 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
               >
                 お問い合わせ
               </a>
-              <a
-                className="navbar__item navbar__link"
-                href="https://github.com/inabagumi/animare-search"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                GitHub
-              </a>
               <Toggle
                 aria-label="ダークモード切り替え"
                 checked={theme === 'dark'}
@@ -327,7 +319,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                             </Link>
                           </li>
                         )
-                      )}{' '}
+                      )}
                     </ul>
                   </li>
                   <li className="menu__list-item">
@@ -340,18 +332,6 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                       target="_blank"
                     >
                       お問い合わせ
-                    </a>
-                  </li>
-                  <li className="menu__list-item">
-                    <a
-                      className="menu__link"
-                      href="https://github.com/inabagumi/animare-search"
-                      onClick={hideSidebar}
-                      onKeyDown={hideSidebar}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      GitHub
                     </a>
                   </li>
                 </ul>
@@ -368,10 +348,6 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
 
         .navbar:not(.navbar--sidebar-show) .navbar__sidebar {
           box-shadow: none;
-        }
-
-        .navbar__link svg {
-          vertical-align: middle;
         }
 
         /**
