@@ -1,4 +1,5 @@
-import algoliasearch, { Index, QueryParameters, Response } from 'algoliasearch'
+import { QueryParameters, Response } from 'algoliasearch'
+import algoliasearch, { Index } from 'algoliasearch/lite'
 
 const NORMALIZE_RE = /(\W)([bｂdｄgｇhｈkｋmｍnｎpｐrｒsｓtｔwｗyｙzｚ])($|\s)/g
 
