@@ -22,6 +22,13 @@ const About: FC<Props> = ({ children, subtitle, title }): ReactElement => {
       )}
 
       <div className="container margin-top--lg">{children}</div>
+
+      <style jsx>{`
+        .hero__title {
+          letter-spacing: 0.25rem;
+          word-break: keep-all;
+        }
+      `}</style>
     </>
   )
 }
