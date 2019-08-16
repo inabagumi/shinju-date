@@ -5,6 +5,8 @@ const NORMALIZE_RE = /(\W)([bｂdｄgｇhｈkｋmｍnｎpｐrｒsｓtｔwｗyｙ
 export const normalize = (value: string): string =>
   value.replace(NORMALIZE_RE, (_, ...args): string => args[0] + args[2])
 
+const QUERY_FROM_PREFIX = 'from:'
+
 interface ParsedQuery {
   filters: string
   keywords: string[]
@@ -15,7 +17,10 @@ export const parseQuery = (query: string): ParsedQuery => {
   const channels: string[] = []
 
   query.split(/\s+/).forEach((keyword): void => {
-    if (keyword.startsWith('from:')) {
+    if (
+      keyword.startsWith(QUERY_FROM_PREFIX) &&
+      keyword.length > QUERY_FROM_PREFIX.length
+    ) {
       channels.push(keyword.slice(5))
     } else {
       keywords.push(keyword)
