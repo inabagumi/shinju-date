@@ -143,199 +143,194 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
           'navbar--sidebar-show': sidebarShown
         })}
       >
-        <div className="container">
-          <div className="navbar__inner">
-            <div className="navbar__items">
-              <div
-                className="navbar__toggle"
-                onClick={showSidebar}
-                onKeyDown={showSidebar}
-                role="button"
-                tabIndex={0}
-              >
-                <svg
-                  focusable="false"
-                  height="30"
-                  viewBox="0 0 30 30"
-                  width="30"
-                >
-                  <title>メニュー</title>
-                  <path
-                    d="M4 7h22M4 15h22M4 23h22"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeMiterlimit="10"
-                    strokeWidth="2"
-                  />
-                </svg>
-              </div>
-              <Link href="/">
-                <a
-                  aria-label={title}
-                  className="navbar__brand"
-                  href="/"
-                  tabIndex={-1}
-                >
-                  <Logo />
-                </a>
-              </Link>
-
-              <Link href="/about">
-                <a className="navbar__item navbar__link" href="/">
-                  About
-                </a>
-              </Link>
-
-              <div className="dropdown dropdown--hoverable navbar__item">
-                <a
-                  className="navbar__link"
-                  href="/"
-                  onClick={(event): void => {
-                    event.preventDefault()
-                  }}
-                  onKeyDown={(event): void => {
-                    event.preventDefault()
-                  }}
-                >
-                  フィルター
-                </a>
-
-                <ul className="dropdown__menu">
-                  {channels.map(
-                    (channel): ReactElement => (
-                      <li key={channel.id}>
-                        <Link href={`/search?q=+from:${channel.id}`}>
-                          <a
-                            className="dropdown__link"
-                            href={`/search?q=+from:${channel.id}`}
-                          >
-                            {channel.title}
-                          </a>
-                        </Link>
-                      </li>
-                    )
-                  )}
-                </ul>
-              </div>
+        <div className="navbar__inner">
+          <div className="navbar__items">
+            <div
+              className="navbar__toggle"
+              onClick={showSidebar}
+              onKeyDown={showSidebar}
+              role="button"
+              tabIndex={0}
+            >
+              <svg focusable="false" height="30" viewBox="0 0 30 30" width="30">
+                <title>メニュー</title>
+                <path
+                  d="M4 7h22M4 15h22M4 23h22"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeMiterlimit="10"
+                  strokeWidth="2"
+                />
+              </svg>
             </div>
-
-            <div className="navbar__items navbar__items--right">
+            <Link href="/">
               <a
-                className="navbar__item navbar__link"
-                href="https://forms.gle/sriuF4xAG5t2R5E97"
-                rel="noopener noreferrer"
-                target="_blank"
+                aria-label={title}
+                className="navbar__brand"
+                href="/"
+                tabIndex={-1}
               >
-                お問い合わせ
+                <Logo />
               </a>
-              <Toggle
-                aria-label="ダークモード切り替え"
-                checked={theme === 'dark'}
-                className="react-toggle--lg-only"
-                icons={{
-                  checked: <Sun />,
-                  unchecked: <Moon />
-                }}
-                onChange={handleToggleChange}
-                value="dark"
-              />
+            </Link>
 
-              <SearchForm onChange={handleChange} query={query} />
+            <Link href="/about">
+              <a className="navbar__item navbar__link" href="/">
+                About
+              </a>
+            </Link>
+
+            <div className="dropdown dropdown--hoverable navbar__item">
+              <a
+                className="navbar__link"
+                href="/"
+                onClick={(event): void => {
+                  event.preventDefault()
+                }}
+                onKeyDown={(event): void => {
+                  event.preventDefault()
+                }}
+              >
+                フィルター
+              </a>
+
+              <ul className="dropdown__menu">
+                {channels.map(
+                  (channel): ReactElement => (
+                    <li key={channel.id}>
+                      <Link href={`/search?q=+from:${channel.id}`}>
+                        <a
+                          className="dropdown__link"
+                          href={`/search?q=+from:${channel.id}`}
+                        >
+                          {channel.title}
+                        </a>
+                      </Link>
+                    </li>
+                  )
+                )}
+              </ul>
             </div>
           </div>
-          <div
-            role="presentation"
-            className="navbar__sidebar__backdrop"
-            onClick={hideSidebar}
-          />
-          <div className="navbar__sidebar">
-            <div className="navbar__sidebar__brand">
-              <Link href="/">
-                <a
-                  aria-label={title}
-                  className="navbar__brand"
-                  href="/"
-                  onClick={hideSidebar}
-                  onKeyDown={hideSidebar}
-                  tabIndex={-1}
-                >
-                  <Logo />
-                </a>
-              </Link>
-              <Toggle
-                aria-label="ダークモード切り替え"
-                checked={theme === 'dark'}
-                icons={{
-                  checked: <Sun />,
-                  unchecked: <Moon />
-                }}
-                onChange={handleToggleChange}
-                value="dark"
-              />
-            </div>
 
-            <div className="navbar__sidebar__items">
-              <div className="menu">
-                <ul className="menu__list">
-                  <li className="menu__list-item">
-                    <Link href="/about">
-                      <a
-                        className="menu__link"
-                        href="/about"
-                        onClick={hideSidebar}
-                        onKeyDown={hideSidebar}
-                      >
-                        About
-                      </a>
-                    </Link>
-                  </li>
-                  <li
-                    className={classNames('menu__list-item', {
-                      'menu__list-item--collapsed': !filterListShown
-                    })}
-                  >
-                    <a
-                      className="menu__link menu__link--sublist"
-                      href="/"
-                      onClick={toggleFilterListShown}
-                      onKeyDown={toggleFilterListShown}
-                      role="button"
-                    >
-                      フィルター
-                    </a>
-                    <ul className="menu__list">
-                      {channels.map(
-                        (channel): ReactElement => (
-                          <li key={channel.id}>
-                            <Link href={`/search?q=+from:${channel.id}`}>
-                              <a
-                                className="menu__link"
-                                href={`/search?q=+from:${channel.id}`}
-                                onClick={hideSidebar}
-                                onKeyDown={hideSidebar}
-                              >
-                                {channel.title}
-                              </a>
-                            </Link>
-                          </li>
-                        )
-                      )}
-                    </ul>
-                  </li>
-                  <li className="menu__list-item">
+          <div className="navbar__items navbar__items--right">
+            <a
+              className="navbar__item navbar__link"
+              href="https://forms.gle/sriuF4xAG5t2R5E97"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              お問い合わせ
+            </a>
+            <Toggle
+              aria-label="ダークモード切り替え"
+              checked={theme === 'dark'}
+              className="react-toggle--lg-only"
+              icons={{
+                checked: <Sun />,
+                unchecked: <Moon />
+              }}
+              onChange={handleToggleChange}
+              value="dark"
+            />
+
+            <SearchForm onChange={handleChange} query={query} />
+          </div>
+        </div>
+
+        <div
+          role="presentation"
+          className="navbar__sidebar__backdrop"
+          onClick={hideSidebar}
+        />
+
+        <div className="navbar__sidebar">
+          <div className="navbar__sidebar__brand">
+            <Link href="/">
+              <a
+                aria-label={title}
+                className="navbar__brand"
+                href="/"
+                onClick={hideSidebar}
+                onKeyDown={hideSidebar}
+                tabIndex={-1}
+              >
+                <Logo />
+              </a>
+            </Link>
+            <Toggle
+              aria-label="ダークモード切り替え"
+              checked={theme === 'dark'}
+              icons={{
+                checked: <Sun />,
+                unchecked: <Moon />
+              }}
+              onChange={handleToggleChange}
+              value="dark"
+            />
+          </div>
+
+          <div className="navbar__sidebar__items">
+            <div className="menu">
+              <ul className="menu__list">
+                <li className="menu__list-item">
+                  <Link href="/about">
                     <a
                       className="menu__link"
-                      href="https://forms.gle/sriuF4xAG5t2R5E97"
+                      href="/about"
                       onClick={hideSidebar}
                       onKeyDown={hideSidebar}
-                      rel="noopener noreferrer"
-                      target="_blank"
                     >
-                      お問い合わせ
+                      About
                     </a>
-                  </li>
-                </ul>
-              </div>
+                  </Link>
+                </li>
+                <li
+                  className={classNames('menu__list-item', {
+                    'menu__list-item--collapsed': !filterListShown
+                  })}
+                >
+                  <a
+                    className="menu__link menu__link--sublist"
+                    href="/"
+                    onClick={toggleFilterListShown}
+                    onKeyDown={toggleFilterListShown}
+                    role="button"
+                  >
+                    フィルター
+                  </a>
+                  <ul className="menu__list">
+                    {channels.map(
+                      (channel): ReactElement => (
+                        <li key={channel.id}>
+                          <Link href={`/search?q=+from:${channel.id}`}>
+                            <a
+                              className="menu__link"
+                              href={`/search?q=+from:${channel.id}`}
+                              onClick={hideSidebar}
+                              onKeyDown={hideSidebar}
+                            >
+                              {channel.title}
+                            </a>
+                          </Link>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </li>
+                <li className="menu__list-item">
+                  <a
+                    className="menu__link"
+                    href="https://forms.gle/sriuF4xAG5t2R5E97"
+                    onClick={hideSidebar}
+                    onKeyDown={hideSidebar}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    お問い合わせ
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
