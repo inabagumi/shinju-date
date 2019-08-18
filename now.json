@@ -33,32 +33,11 @@
       "src": "/service-worker\\.js"
     },
     {
-      "dest": "/static/favicon.ico",
+      "dest": "/static/$1",
       "headers": {
         "cache-control": "max-age=600, s-maxage=60"
       },
-      "src": "/favicon\\.ico"
-    },
-    {
-      "dest": "/static/robots.txt",
-      "headers": {
-        "cache-control": "max-age=600, s-maxage=60"
-      },
-      "src": "/robots\\.txt"
-    },
-    {
-      "dest": "/static/manifest.json",
-      "headers": {
-        "cache-control": "max-age=600, s-maxage=60"
-      },
-      "src": "/manifest\\.json"
-    },
-    {
-      "dest": "/static/opensearch.xml",
-      "headers": {
-        "cache-control": "max-age=600, s-maxage=60"
-      },
-      "src": "/opensearch\\.xml"
+      "src": "/(favicon\\.ico|manifest\\.json|opensearch\\.xml|robots\\.txt)"
     },
     {
       "headers": {
@@ -79,11 +58,11 @@
       "src": "/(?:search)?"
     },
     {
-      "dest": "/about.html",
+      "dest": "/$1.html",
       "headers": {
         "cache-control": "max-age=600, s-maxage=60"
       },
-      "src": "/about"
+      "src": "/(about|contact)"
     },
     {
       "dest": "/_error",

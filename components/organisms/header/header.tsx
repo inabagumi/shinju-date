@@ -214,14 +214,15 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
           </div>
 
           <div className="navbar__items navbar__items--right">
-            <a
-              className="navbar__item navbar__link"
-              href="https://forms.gle/sriuF4xAG5t2R5E97"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              お問い合わせ
-            </a>
+            <Link href="/contact">
+              <a
+                className="navbar__item navbar__link"
+                href="/contact"
+              >
+                お問い合わせ
+              </a>
+            </Link>
+
             <Toggle
               aria-label="ダークモード切り替え"
               checked={theme === 'dark'}
@@ -319,16 +320,16 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                   </ul>
                 </li>
                 <li className="menu__list-item">
-                  <a
-                    className="menu__link"
-                    href="https://forms.gle/sriuF4xAG5t2R5E97"
-                    onClick={hideSidebar}
-                    onKeyDown={hideSidebar}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    お問い合わせ
-                  </a>
+                  <Link href="/contact">
+                    <a
+                      className="menu__link"
+                      href="/contact"
+                      onClick={hideSidebar}
+                      onKeyDown={hideSidebar}
+                    >
+                      お問い合わせ
+                    </a>
+                  </Link>
                 </li>
               </ul>
             </div>
