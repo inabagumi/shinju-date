@@ -13,7 +13,7 @@ jobs:
     steps:
     - name: Download ytc
       env:
-        YTC_VERSION: '1.0.0'
+        YTC_VERSION: '1.1.0'
       run: |
         mkdir -p bin
         curl -sSL https://github.com/inabagumi/ytc/releases/download/v${YTC_VERSION}/ytc_${YTC_VERSION}_$(uname -s)_$(uname -m).tar.gz | tar xzf - -C bin
