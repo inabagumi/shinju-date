@@ -27,4 +27,9 @@ jobs:
         ALGOLIA_API_KEY: ${{ secrets.ALGOLIA_API_KEY }}
         ALGOLIA_APPLICATION_ID: ${{ secrets.ALGOLIA_APPLICATION_ID }}
         ALGOLIA_INDEX_NAME: prod_ANIMARE_SEARCH
-      run: $(go env GOPATH)/bin/ytc
+      run: |
+        $(go env GOPATH)/bin/ytc \
+          -channel UC0Owc36U9lOyi9Gx9Ic-4qg \
+          -channel UChqYnJlFxlBi6DfRz6jRenQ \
+          -channel UC2kyQhzGOB-JPgcQX9OMgEw \
+          -channel UCRvpMpzAXBRKJQuk-8-Sdvg
