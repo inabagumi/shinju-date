@@ -1,5 +1,6 @@
 import { NextPage } from 'next'
 import React, { ReactElement } from 'react'
+import { Helmet } from 'react-helmet'
 
 const Contact: NextPage = (): ReactElement => {
   const formUrl =
@@ -7,6 +8,10 @@ const Contact: NextPage = (): ReactElement => {
 
   return (
     <>
+      <Helmet>
+        <title>お問い合わせ</title>
+      </Helmet>
+
       <div className="container margin-top--lg">
         <iframe
           className="embedded-form"
