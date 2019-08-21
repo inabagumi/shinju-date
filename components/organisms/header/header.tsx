@@ -215,10 +215,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
 
           <div className="navbar__items navbar__items--right">
             <Link href="/contact">
-              <a
-                className="navbar__item navbar__link"
-                href="/contact"
-              >
+              <a className="navbar__item navbar__link" href="/contact">
                 お問い合わせ
               </a>
             </Link>
