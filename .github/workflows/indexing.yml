@@ -12,14 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-    - name: Setup Go 1.12
-      uses: actions/setup-go@v1
-      with:
-        go-version: 1.12
-
-    - name: Install ytc
-      run: go get -u github.com/inabagumi/ytc
+    - name: Download ytc
+      env:
+        YTC_VERSION: '1.0.0'
+      run: |
+        mkdir -p bin
+        curl -sSL https://github.com/inabagumi/ytc/releases/download/v${YTC_VERSION}/ytc_${YTC_VERSION}_$(uname -s)_$(uname -m).tar.gz | tar xzf - -C bin
 
     - name: Run ytc
       env:
@@ -28,7 +26,7 @@ jobs:
         ALGOLIA_APPLICATION_ID: ${{ secrets.ALGOLIA_APPLICATION_ID }}
         ALGOLIA_INDEX_NAME: prod_ANIMARE_SEARCH
       run: |
-        $(go env GOPATH)/bin/ytc \
+        ./bin/ytc \
           -channel UC0Owc36U9lOyi9Gx9Ic-4qg \
           -channel UChqYnJlFxlBi6DfRz6jRenQ \
           -channel UC2kyQhzGOB-JPgcQX9OMgEw \
