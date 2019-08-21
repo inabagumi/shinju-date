@@ -1,4 +1,4 @@
-name: Indexing
+name: Scheduled Tasks
 
 on:
   schedule:
@@ -6,8 +6,7 @@ on:
 
 jobs:
   build:
-
-    name: Run ytc
+    name: Indexing
 
     runs-on: ubuntu-latest
 
