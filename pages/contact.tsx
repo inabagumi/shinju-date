@@ -2,12 +2,17 @@ import { NextPage } from 'next'
 import React, { ReactElement } from 'react'
 
 const Contact: NextPage = (): ReactElement => {
-  const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLScZpHj8bihvn6dg8CF09aSCW9og11Lra-tMXeTBcr_ul-0fUw/viewform?embedded=true'
+  const formUrl =
+    'https://docs.google.com/forms/d/e/1FAIpQLScZpHj8bihvn6dg8CF09aSCW9og11Lra-tMXeTBcr_ul-0fUw/viewform?embedded=true'
 
   return (
     <>
       <div className="container margin-top--lg">
-        <iframe className="embedded-form" src={formUrl}>
+        <iframe
+          className="embedded-form"
+          src={formUrl}
+          title="お問い合わせフォーム"
+        >
           読み込んでいます…
         </iframe>
       </div>
