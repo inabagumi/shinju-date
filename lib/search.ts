@@ -22,7 +22,7 @@ export const parseQuery = (query: string): ParsedQuery => {
       keyword.startsWith(QUERY_FROM_PREFIX) &&
       keyword.length > QUERY_FROM_PREFIX.length
     ) {
-      channels.push(keyword.slice(5))
+      channels.push(keyword.slice(QUERY_FROM_PREFIX.length))
     } else {
       keywords.push(keyword)
     }
