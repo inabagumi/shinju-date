@@ -81,7 +81,9 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
 
       try {
         localStorage.setItem('theme', nextTheme)
-      } catch {}
+      } catch (error) {
+        console.error(error)
+      }
     }
 
     mediaQueryList.addListener(handlePrefersColorSchemeChange)
@@ -129,7 +131,9 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
 
       try {
         localStorage.setItem('theme', nextTheme)
-      } catch {}
+      } catch (error) {
+        console.error(error)
+      }
     },
     [setTheme]
   )
