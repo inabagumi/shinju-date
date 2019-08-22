@@ -1,6 +1,6 @@
-import format from 'date-fns/format'
 import formatDistanceStrict from 'date-fns/formatDistanceStrict'
 import ja from 'date-fns/locale/ja'
+import format from 'date-fns-tz/format'
 import React, {
   DetailedHTMLProps,
   FC,
@@ -45,7 +45,9 @@ const VideoCard: FC<VideoCardProps> = ({
           <small className="published">
             <time
               dateTime={date.toISOString()}
-              title={format(date, 'yyy/MM/dd HH:mm')}
+              title={format(date, 'yyy/MM/dd HH:mm', {
+                timeZone: 'Asia/Tokyo'
+              })}
             >
               {formatDistanceStrict(date, new Date(), {
                 addSuffix: true,
