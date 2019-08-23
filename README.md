@@ -1,5 +1,8 @@
 # AniMare Search
 
+[![Node.js CI](https://github.com/inabagumi/animare-search/workflows/Node.js%20CI/badge.svg)](https://github.com/inabagumi/animare-search/actions)
+[![Scheduled Tasks](https://github.com/inabagumi/animare-search/workflows/Scheduled%20Tasks/badge.svg)](https://github.com/inabagumi/animare-search/actions)
+
 [AniMare Search](https://search.animare.cafe/) is a web service that searches broadcasts by the YouTube Live. This service targets broadcasts by members of the AniMare.
 
 ## Development
