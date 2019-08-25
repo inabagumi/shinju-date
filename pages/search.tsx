@@ -1,7 +1,7 @@
 import { NextPage } from 'next'
 import React, { ReactElement, useCallback, useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet'
-import { Waypoint } from 'react-waypoint'
+import { InView } from 'react-intersection-observer'
 import Spinner from '../components/atoms/spinner'
 import SearchResults from '../components/molecules/search-results'
 import search from '../lib/search'
@@ -23,7 +23,7 @@ const Search: NextPage<SearchProps> = ({
   const [page, setPage] = useState<number>(0)
   const [hasNext, setHasNext] = useState<boolean>(initialHasNext)
 
-  const onEnter = useCallback((): void => {
+  const handleChange = useCallback((): void => {
     search<Video>(query, { page: page + 1 })
       .then(({ hits, nbPages, page: actualPage }): void => {
         setHasNext(actualPage < nbPages - 1)
@@ -73,11 +73,13 @@ const Search: NextPage<SearchProps> = ({
 
         <footer className="search__footer">
           {hasNext && (
-            <Waypoint onEnter={onEnter}>
-              <div className="search__loading">
-                <Spinner aria-label="読み込み中..." />
-              </div>
-            </Waypoint>
+            <InView
+              as="div"
+              className="search__loading"
+              onChange={handleChange}
+            >
+              <Spinner aria-label="読み込み中..." />
+            </InView>
           )}
         </footer>
       </main>
@@ -87,7 +89,7 @@ const Search: NextPage<SearchProps> = ({
           padding: 2rem 0;
         }
 
-        .search__loading {
+        :global(.search__loading) {
           align-items: center;
           display: flex;
           height: 100%;
