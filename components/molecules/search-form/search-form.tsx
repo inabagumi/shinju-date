@@ -39,6 +39,12 @@ const SearchForm: FC<SearchFormProps> = ({ onChange, query }): ReactElement => {
           />
         </div>
       </form>
+
+      <style jsx>{`
+        .navbar__search :global(input) {
+          font-size: 1rem;
+        }
+      `}</style>
     </>
   )
 }
