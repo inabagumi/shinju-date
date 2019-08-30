@@ -62,7 +62,7 @@
       "headers": {
         "cache-control": "max-age=600, s-maxage=60"
       },
-      "src": "/(about|contact)"
+      "src": "/(about|contact|privacy|terms)"
     },
     {
       "dest": "/_error",
