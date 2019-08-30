@@ -1,4 +1,4 @@
-import App, { Container } from 'next/app'
+import App from 'next/app'
 import React, { ReactElement } from 'react'
 import { Helmet } from 'react-helmet'
 import Header from '../components/organisms/header'
@@ -31,11 +31,9 @@ export default class extends App {
           />
         </Helmet>
 
-        <Container>
-          <Header query={query || ''} />
+        <Header query={query || ''} />
 
-          <Component {...pageProps} />
-        </Container>
+        <Component {...pageProps} />
 
         <style jsx global>{`
           :root {
