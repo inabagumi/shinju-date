@@ -183,7 +183,24 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                 About
               </a>
             </Link>
+            <Link href="/terms">
+              <a className="navbar__item navbar__link" href="/terms">
+                利用規約
+              </a>
+            </Link>
+            <Link href="/privacy">
+              <a className="navbar__item navbar__link" href="/privacy">
+                プライバシーポリシー
+              </a>
+            </Link>
+            <Link href="/contact">
+              <a className="navbar__item navbar__link" href="/contact">
+                お問い合わせ
+              </a>
+            </Link>
+          </div>
 
+          <div className="navbar__items navbar__items--right">
             <div className="dropdown dropdown--hoverable navbar__item">
               <a
                 className="navbar__link"
@@ -215,26 +232,6 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                 )}
               </ul>
             </div>
-          </div>
-
-          <div className="navbar__items navbar__items--right">
-            <Link href="/terms">
-              <a className="navbar__item navbar__link" href="/terms">
-                利用規約
-              </a>
-            </Link>
-
-            <Link href="/privacy">
-              <a className="navbar__item navbar__link" href="/privacy">
-                プライバシーポリシー
-              </a>
-            </Link>
-
-            <Link href="/contact">
-              <a className="navbar__item navbar__link" href="/contact">
-                お問い合わせ
-              </a>
-            </Link>
 
             <Toggle
               aria-label="ダークモード切り替え"
@@ -299,39 +296,6 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                     </a>
                   </Link>
                 </li>
-                <li
-                  className={classNames('menu__list-item', {
-                    'menu__list-item--collapsed': !filterListShown
-                  })}
-                >
-                  <a
-                    className="menu__link menu__link--sublist"
-                    href="/"
-                    onClick={toggleFilterListShown}
-                    onKeyDown={toggleFilterListShown}
-                    role="button"
-                  >
-                    フィルター
-                  </a>
-                  <ul className="menu__list">
-                    {channels.map(
-                      (channel): ReactElement => (
-                        <li key={channel.id}>
-                          <Link href={`/search?q=+from:${channel.id}`}>
-                            <a
-                              className="menu__link"
-                              href={`/search?q=+from:${channel.id}`}
-                              onClick={hideSidebar}
-                              onKeyDown={hideSidebar}
-                            >
-                              {channel.title}
-                            </a>
-                          </Link>
-                        </li>
-                      )
-                    )}
-                  </ul>
-                </li>
                 <li className="menu__list-item">
                   <Link href="/terms">
                     <a
@@ -367,6 +331,39 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                       お問い合わせ
                     </a>
                   </Link>
+                </li>
+                <li
+                  className={classNames('menu__list-item', {
+                    'menu__list-item--collapsed': !filterListShown
+                  })}
+                >
+                  <a
+                    className="menu__link menu__link--sublist"
+                    href="/"
+                    onClick={toggleFilterListShown}
+                    onKeyDown={toggleFilterListShown}
+                    role="button"
+                  >
+                    フィルター
+                  </a>
+                  <ul className="menu__list">
+                    {channels.map(
+                      (channel): ReactElement => (
+                        <li key={channel.id}>
+                          <Link href={`/search?q=+from:${channel.id}`}>
+                            <a
+                              className="menu__link"
+                              href={`/search?q=+from:${channel.id}`}
+                              onClick={hideSidebar}
+                              onKeyDown={hideSidebar}
+                            >
+                              {channel.title}
+                            </a>
+                          </Link>
+                        </li>
+                      )
+                    )}
+                  </ul>
                 </li>
               </ul>
             </div>
