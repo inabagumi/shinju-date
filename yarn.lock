@@ -930,10 +930,10 @@
   resolved "https://registry.yarnpkg.com/@next/mdx/-/mdx-9.0.5.tgz#8daab757d394c3b7c6e0336c67bb88b503def03b"
   integrity sha512-qA1BTenzLE6X8SUherPbdLWeS+SYh4yrlzBHwmEIvRcnNTLbHBvqGq1L74/r7MyVr2XILAak0ImB5i8r0kRWYg==
 
-"@types/algoliasearch@^3.30.17":
-  version "3.30.17"
-  resolved "https://registry.yarnpkg.com/@types/algoliasearch/-/algoliasearch-3.30.17.tgz#b43b30ad0550e1a740b977b5a39c37f97cfa0e5f"
-  integrity sha512-BDBV4gsS+Nlzn3OcIJLRD4Y0yj7TI5Pc9ozDLn+ug/tnb6R1V+VVzZoqgeEoPtrfhEC4gOTI1PmApE0eg/Slkw==
+"@types/algoliasearch@^3.30.18":
+  version "3.30.18"
+  resolved "https://registry.yarnpkg.com/@types/algoliasearch/-/algoliasearch-3.30.18.tgz#5b68d8fc67e5070fbb3f283d69c7948f84dc7e1c"
+  integrity sha512-X4ESBM6iVOX+/GOTkfVIGgVm0xalBybCI+InrMbqFfjN6j+5p+KV87elKkygTtlikxrcJQ5/HqNMtVyn3z6J2Q==
 
 "@types/classnames@^2.2.9":
   version "2.2.9"
