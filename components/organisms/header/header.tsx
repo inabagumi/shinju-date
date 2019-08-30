@@ -179,18 +179,30 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
             </Link>
 
             <Link href="/about">
-              <a className="navbar__item navbar__link" href="/">
+              <a
+                className="navbar__item navbar__link"
+                href="/"
+                title="あにまーれサーチとは?"
+              >
                 About
               </a>
             </Link>
             <Link href="/terms">
-              <a className="navbar__item navbar__link" href="/terms">
-                利用規約
+              <a
+                className="navbar__item navbar__link"
+                href="/terms"
+                title="利用規約"
+              >
+                Terms
               </a>
             </Link>
             <Link href="/privacy">
-              <a className="navbar__item navbar__link" href="/privacy">
-                プライバシーポリシー
+              <a
+                className="navbar__item navbar__link"
+                href="/privacy"
+                title="プライバシーポリシー"
+              >
+                Privacy
               </a>
             </Link>
           </div>
@@ -286,6 +298,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                       href="/about"
                       onClick={hideSidebar}
                       onKeyDown={hideSidebar}
+                      title="あにまーれサーチとは?"
                     >
                       About
                     </a>
@@ -298,8 +311,9 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                       href="/terms"
                       onClick={hideSidebar}
                       onKeyDown={hideSidebar}
+                      title="利用規約"
                     >
-                      利用規約
+                      Terms
                     </a>
                   </Link>
                 </li>
@@ -310,8 +324,9 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                       href="/privacy"
                       onClick={hideSidebar}
                       onKeyDown={hideSidebar}
+                      title="プライバシーポリシー"
                     >
-                      プライバシーポリシー
+                      Privacy
                     </a>
                   </Link>
                 </li>
