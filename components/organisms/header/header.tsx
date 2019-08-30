@@ -193,11 +193,6 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                 プライバシーポリシー
               </a>
             </Link>
-            <Link href="/contact">
-              <a className="navbar__item navbar__link" href="/contact">
-                お問い合わせ
-              </a>
-            </Link>
           </div>
 
           <div className="navbar__items navbar__items--right">
@@ -317,18 +312,6 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                       onKeyDown={hideSidebar}
                     >
                       プライバシーポリシー
-                    </a>
-                  </Link>
-                </li>
-                <li className="menu__list-item">
-                  <Link href="/contact">
-                    <a
-                      className="menu__link"
-                      href="/contact"
-                      onClick={hideSidebar}
-                      onKeyDown={hideSidebar}
-                    >
-                      お問い合わせ
                     </a>
                   </Link>
                 </li>
