@@ -218,6 +218,18 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
           </div>
 
           <div className="navbar__items navbar__items--right">
+            <Link href="/terms">
+              <a className="navbar__item navbar__link" href="/terms">
+                利用規約
+              </a>
+            </Link>
+
+            <Link href="/privacy">
+              <a className="navbar__item navbar__link" href="/privacy">
+                プライバシーポリシー
+              </a>
+            </Link>
+
             <Link href="/contact">
               <a className="navbar__item navbar__link" href="/contact">
                 お問い合わせ
@@ -319,6 +331,30 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                       )
                     )}
                   </ul>
+                </li>
+                <li className="menu__list-item">
+                  <Link href="/terms">
+                    <a
+                      className="menu__link"
+                      href="/terms"
+                      onClick={hideSidebar}
+                      onKeyDown={hideSidebar}
+                    >
+                      利用規約
+                    </a>
+                  </Link>
+                </li>
+                <li className="menu__list-item">
+                  <Link href="/privacy">
+                    <a
+                      className="menu__link"
+                      href="/privacy"
+                      onClick={hideSidebar}
+                      onKeyDown={hideSidebar}
+                    >
+                      プライバシーポリシー
+                    </a>
+                  </Link>
                 </li>
                 <li className="menu__list-item">
                   <Link href="/contact">

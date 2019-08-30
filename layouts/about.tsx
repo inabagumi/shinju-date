@@ -28,6 +28,11 @@ const About: FC<Props> = ({ children, subtitle, title }): ReactElement => {
           letter-spacing: 0.25rem;
           word-break: keep-all;
         }
+
+        .container :global(ol ol),
+        .container :global(ul ol) {
+          list-style-type: decimal;
+        }
       `}</style>
     </>
   )
