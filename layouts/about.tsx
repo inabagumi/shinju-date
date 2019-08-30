@@ -29,6 +29,10 @@ const About: FC<Props> = ({ children, subtitle, title }): ReactElement => {
           word-break: keep-all;
         }
 
+        .container {
+          margin-bottom: 5rem;
+        }
+
         .container :global(ol ol),
         .container :global(ul ol) {
           list-style-type: decimal;
