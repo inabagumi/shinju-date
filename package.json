@@ -21,7 +21,7 @@
   "devDependencies": {
     "@inabagumi/eslint-config-react": "^4.1.2",
     "@inabagumi/prettier-config": "^1.1.0",
-    "@mdx-js/loader": "^1.4.5",
+    "@mdx-js/loader": "^1.5.0",
     "@types/algoliasearch": "^3.34.2",
     "@types/classnames": "^2.2.9",
     "@types/lodash": "^4.14.139",
