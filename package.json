@@ -27,7 +27,7 @@
     "@types/lodash": "^4.14.139",
     "@types/node": "^12.7.8",
     "@types/react": "^16.9.3",
-    "@types/react-helmet": "^5.0.10",
+    "@types/react-helmet": "^5.0.11",
     "@types/react-toggle": "^4.0.2",
     "eslint": "^6.4.0",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
