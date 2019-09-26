@@ -3,7 +3,7 @@
   "dependencies": {
     "@next/mdx": "^9.0.6",
     "@zeit/next-css": "^1.0.1",
-    "algoliasearch": "^3.34.0",
+    "algoliasearch": "^3.35.0",
     "classnames": "^2.2.6",
     "date-fns": "^2.3.0",
     "date-fns-tz": "^1.0.7",
