@@ -5,7 +5,7 @@
     "@zeit/next-css": "^1.0.1",
     "algoliasearch": "^3.35.0",
     "classnames": "^2.2.6",
-    "date-fns": "^2.4.0",
+    "date-fns": "^2.4.1",
     "date-fns-tz": "^1.0.7",
     "infima": "^0.2.0-alpha.2",
     "lodash": "^4.17.15",
