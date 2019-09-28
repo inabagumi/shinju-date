@@ -68,21 +68,15 @@ const Search: NextPage<SearchProps> = ({
         <meta content="summary_large_image" name="twitter:card" />
       </Helmet>
 
-      <main>
-        <SearchResults values={results} />
+      <SearchResults values={results} />
 
-        <footer className="search__footer">
-          {hasNext && (
-            <InView
-              as="div"
-              className="search__loading"
-              onChange={handleChange}
-            >
-              <Spinner aria-label="読み込み中..." />
-            </InView>
-          )}
-        </footer>
-      </main>
+      <footer className="search__footer">
+        {hasNext && (
+          <InView as="div" className="search__loading" onChange={handleChange}>
+            <Spinner aria-label="読み込み中..." />
+          </InView>
+        )}
+      </footer>
 
       <style jsx>{`
         .search__footer {

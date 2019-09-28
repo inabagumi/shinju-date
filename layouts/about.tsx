@@ -1,43 +1,45 @@
+import Link from 'next/link'
+import { useRouter } from 'next/router'
 import React, { FC, ReactElement } from 'react'
 import { Helmet } from 'react-helmet'
-import Footer from '../components/organisms/footer'
 
 type Props = {
-  subtitle?: string
   title?: string
-  withFooter?: boolean
 }
 
-const About: FC<Props> = ({
-  children,
-  subtitle,
-  title,
-  withFooter = false
-}): ReactElement => {
+const About: FC<Props> = ({ children, title }): ReactElement => {
+  const router = useRouter()
+
   return (
     <>
       <Helmet>{title && <title>{title}</title>}</Helmet>
 
-      {title && (
-        <div className="hero hero--dark">
-          <div className="container">
-            <h1 className="hero__title">{title}</h1>
+      <nav aria-label="パンくずリスト" className="margin-vert--md">
+        <ul className="breadcrumbs breadcrumbs--sm">
+          <li className="breadcrumb__item">
+            <Link href="/">
+              <a className="breadcrumb__link" href="/">
+                あにまーれサーチ
+              </a>
+            </Link>
+          </li>
+          <li className="breadcrumb__item breadcrumb__item--active">
+            <Link href={router.pathname}>
+              <a className="breadcrumb__link" href={router.pathname}>
+                {title || router.pathname}
+              </a>
+            </Link>
+          </li>
+        </ul>
+      </nav>
 
-            {subtitle && <p className="hero__subtitle">{subtitle}</p>}
-          </div>
-        </div>
-      )}
+      <div className="container">
+        {title && <h1>{title}</h1>}
 
-      <div className="container margin-top--lg">{children}</div>
-
-      {withFooter && <Footer />}
+        {children}
+      </div>
 
       <style jsx>{`
-        .hero__title {
-          letter-spacing: 0.25rem;
-          word-break: keep-all;
-        }
-
         .container :global(ol ol),
         .container :global(ul ol) {
           list-style-type: decimal;
