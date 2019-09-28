@@ -1,6 +1,6 @@
 import classNames from 'classnames'
 import Link from 'next/link'
-import Router from 'next/router'
+import { useRouter } from 'next/router'
 import React, {
   ChangeEvent,
   FC,
@@ -58,7 +58,8 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
 
   const [theme, setTheme] = useState<string>(currentTheme)
   const [sidebarShown, setSidebarShown] = useState<boolean>(false)
-  const [filterListShown, setFilterListShown] = useState<boolean>(false)
+  const [filterListShown, setFilterListShown] = useState<boolean>(true)
+  const router = useRouter()
 
   useEffect((): (() => void) => {
     const mediaQueryList = matchMedia('(prefers-color-scheme: dark)')
@@ -118,9 +119,9 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
     ({ target }: ChangeEvent<HTMLInputElement>): void => {
       const query = normalize(target.value)
 
-      Router.replace(query ? `/search?q=${encodeURIComponent(query)}` : '/')
+      router.replace(query ? `/search?q=${encodeURIComponent(query)}` : '/')
     },
-    []
+    [router]
   )
 
   const handleToggleChange = useCallback(
@@ -175,34 +176,6 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                 tabIndex={-1}
               >
                 <Logo />
-              </a>
-            </Link>
-
-            <Link href="/about">
-              <a
-                className="navbar__item navbar__link"
-                href="/"
-                title="あにまーれサーチとは?"
-              >
-                About
-              </a>
-            </Link>
-            <Link href="/terms">
-              <a
-                className="navbar__item navbar__link"
-                href="/terms"
-                title="利用規約"
-              >
-                Terms
-              </a>
-            </Link>
-            <Link href="/privacy">
-              <a
-                className="navbar__item navbar__link"
-                href="/privacy"
-                title="プライバシーポリシー"
-              >
-                Privacy
               </a>
             </Link>
           </div>
@@ -294,39 +267,42 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                 <li className="menu__list-item">
                   <Link href="/about">
                     <a
-                      className="menu__link"
+                      className={classNames('menu__link', {
+                        'menu__link--active': router.pathname === '/about'
+                      })}
                       href="/about"
                       onClick={hideSidebar}
                       onKeyDown={hideSidebar}
-                      title="あにまーれサーチとは?"
                     >
-                      About
+                      あにまーれサーチとは?
                     </a>
                   </Link>
                 </li>
                 <li className="menu__list-item">
                   <Link href="/terms">
                     <a
-                      className="menu__link"
+                      className={classNames('menu__link', {
+                        'menu__link--active': router.pathname === '/terms'
+                      })}
                       href="/terms"
                       onClick={hideSidebar}
                       onKeyDown={hideSidebar}
-                      title="利用規約"
                     >
-                      Terms
+                      利用規約
                     </a>
                   </Link>
                 </li>
                 <li className="menu__list-item">
                   <Link href="/privacy">
                     <a
-                      className="menu__link"
+                      className={classNames('menu__link', {
+                        'menu__link--active': router.pathname === '/privacy'
+                      })}
                       href="/privacy"
                       onClick={hideSidebar}
                       onKeyDown={hideSidebar}
-                      title="プライバシーポリシー"
                     >
-                      Privacy
+                      プライバシーポリシー
                     </a>
                   </Link>
                 </li>
