@@ -58,7 +58,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
 
   const [theme, setTheme] = useState<string>(currentTheme)
   const [sidebarShown, setSidebarShown] = useState<boolean>(false)
-  const [filterListShown, setFilterListShown] = useState<boolean>(true)
+  const [filterListShown, setFilterListShown] = useState<boolean>(false)
   const router = useRouter()
 
   useEffect((): (() => void) => {
@@ -264,6 +264,46 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
           <div className="navbar__sidebar__items">
             <div className="menu">
               <ul className="menu__list">
+                <li
+                  className={classNames('menu__list-item', {
+                    'menu__list-item--collapsed': !filterListShown
+                  })}
+                >
+                  <a
+                    className="menu__link menu__link--sublist"
+                    href="/"
+                    onClick={toggleFilterListShown}
+                    onKeyDown={toggleFilterListShown}
+                    role="button"
+                  >
+                    フィルター
+                  </a>
+                  <ul className="menu__list">
+                    {channels.map(
+                      (channel): ReactElement => (
+                        <li key={channel.id}>
+                          <Link href={`/search?q=+from:${channel.id}`}>
+                            <a
+                              className="menu__link"
+                              href={`/search?q=+from:${channel.id}`}
+                              onClick={hideSidebar}
+                              onKeyDown={hideSidebar}
+                            >
+                              {channel.title}
+                            </a>
+                          </Link>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="navbar__sidebar__items">
+            <div className="menu">
+              <ul className="menu__list">
                 <li className="menu__list-item">
                   <Link href="/about">
                     <a
@@ -306,39 +346,6 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                     </a>
                   </Link>
                 </li>
-                <li
-                  className={classNames('menu__list-item', {
-                    'menu__list-item--collapsed': !filterListShown
-                  })}
-                >
-                  <a
-                    className="menu__link menu__link--sublist"
-                    href="/"
-                    onClick={toggleFilterListShown}
-                    onKeyDown={toggleFilterListShown}
-                    role="button"
-                  >
-                    フィルター
-                  </a>
-                  <ul className="menu__list">
-                    {channels.map(
-                      (channel): ReactElement => (
-                        <li key={channel.id}>
-                          <Link href={`/search?q=+from:${channel.id}`}>
-                            <a
-                              className="menu__link"
-                              href={`/search?q=+from:${channel.id}`}
-                              onClick={hideSidebar}
-                              onKeyDown={hideSidebar}
-                            >
-                              {channel.title}
-                            </a>
-                          </Link>
-                        </li>
-                      )
-                    )}
-                  </ul>
-                </li>
               </ul>
             </div>
           </div>
@@ -352,6 +359,16 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
 
         .navbar:not(.navbar--sidebar-show) .navbar__sidebar {
           box-shadow: none;
+        }
+
+        .navbar__sidebar {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .navbar__sidebar__brand + .navbar__sidebar__items {
+          flex-grow: 1;
+          flex-shrink: 0;
         }
 
         /**
