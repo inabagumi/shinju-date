@@ -103,6 +103,7 @@ export default class extends App {
         <style jsx>{`
           .sidebar {
             display: flex;
+            flex-direction: column;
             height: calc(100vh - var(--ifm-navbar-height));
             justify-content: flex-end;
             overflow-y: auto;
