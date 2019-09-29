@@ -8,11 +8,7 @@ import { getTitle } from '../lib/title'
 
 import 'infima/dist/css/default/default.css'
 
-type State = {
-  menuShown: boolean
-}
-
-export default class extends App<{}, {}, State> {
+export default class extends App {
   public render(): ReactElement {
     const { Component, pageProps, router } = this.props
     const { query } = pageProps
@@ -106,7 +102,9 @@ export default class extends App<{}, {}, State> {
 
         <style jsx>{`
           .sidebar {
+            display: flex;
             height: calc(100vh - var(--ifm-navbar-height));
+            justify-content: flex-end;
             overflow-y: auto;
             position: sticky;
             top: var(--ifm-navbar-height);
