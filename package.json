@@ -15,7 +15,7 @@
     "react-dom": "^16.10.1",
     "react-helmet": "^5.2.1",
     "react-intersection-observer": "^8.24.2",
-    "react-toggle": "^4.0.2"
+    "react-toggle": "^4.1.1"
   },
   "description": "AniMare Search is a web service for searching videos.",
   "devDependencies": {
