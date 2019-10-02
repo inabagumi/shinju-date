@@ -41,7 +41,7 @@ export default class extends App {
               <Component {...pageProps} />
             </main>
 
-            <div className="col col--3">
+            <div className="col col--2">
               <div className="sidebar padding-vert--lg">
                 <div className="menu">
                   <ul className="menu__list">
