@@ -69,7 +69,7 @@ export default async function search<T>(
   return index.search<T>({
     filters,
     query: keywords.join(' '),
-    hitsPerPage: 20,
+    hitsPerPage: 24,
     ...params
   })
 }
