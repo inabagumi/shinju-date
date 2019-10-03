@@ -11,8 +11,8 @@
     "lodash": "^4.17.15",
     "next": "^9.0.7",
     "next-offline": "^4.0.5",
-    "react": "^16.10.1",
-    "react-dom": "^16.10.1",
+    "react": "^16.10.2",
+    "react-dom": "^16.10.2",
     "react-helmet": "^5.2.1",
     "react-intersection-observer": "^8.24.2",
     "react-toggle": "^4.1.1"
