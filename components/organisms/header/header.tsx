@@ -353,8 +353,18 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
       </nav>
 
       <style jsx>{`
-        .navbar__brand {
-          outline: none;
+        @media (max-width: 996px) {
+          .navbar__items {
+            flex-grow: 0;
+          }
+
+          .navbar__items--right {
+            flex-grow: 1;
+          }
+
+          .navbar__items .navbar__brand {
+            display: none;
+          }
         }
 
         .navbar:not(.navbar--sidebar-show) .navbar__sidebar {
