@@ -33,15 +33,15 @@ const About: FC<Props> = ({ children, title }): ReactElement => {
         </ul>
       </nav>
 
-      <div className="container">
+      <div className="markdown padding-bottom--lg">
         {title && <h1>{title}</h1>}
 
         {children}
       </div>
 
       <style jsx>{`
-        .container :global(ol ol),
-        .container :global(ul ol) {
+        .markdown :global(ol ol),
+        .markdown :global(ul ol) {
           list-style-type: decimal;
         }
       `}</style>

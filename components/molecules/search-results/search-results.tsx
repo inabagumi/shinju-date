@@ -12,7 +12,7 @@ interface Props {
 const SearchResults: FC<Props> = ({ values }): ReactElement => {
   return (
     <>
-      <div className="container margin-top--lg">
+      <div className="margin-top--lg">
         {chunk(values, COLUMNS_COUNT).map(
           (row, i): ReactElement => (
             <div className="row" key={`row-${i}`}>

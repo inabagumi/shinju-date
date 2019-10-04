@@ -35,14 +35,14 @@ export default class extends App {
 
         <Header query={query || ''} />
 
-        <div className="container container--fluid">
+        <div className="container">
           <div className="row">
             <main className="col">
               <Component {...pageProps} />
             </main>
 
             <div className="col col--2">
-              <div className="sidebar padding-vert--lg">
+              <div className="sidebar padding-vert--sm">
                 <div className="menu">
                   <ul className="menu__list">
                     <li className="menu__list-item">
@@ -90,6 +90,7 @@ export default class extends App {
 
         <style jsx global>{`
           :root {
+            --ifm-container-width: 1240px;
             --ifm-font-family-base: Roboto, Noto Sans JP, sans-serif;
             --ifm-font-size-base: 16px;
             --ifm-line-height-base: 2;
@@ -115,6 +116,10 @@ export default class extends App {
             .sidebar {
               display: none;
             }
+          }
+
+          .menu__link {
+            font-size: 0.85rem;
           }
         `}</style>
       </>
