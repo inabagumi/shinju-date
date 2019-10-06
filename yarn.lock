@@ -937,10 +937,10 @@
   resolved "https://registry.yarnpkg.com/@mdx-js/util/-/util-1.5.0.tgz#4915de47ae55ae62bb26eef073b8e022ea506e14"
   integrity sha512-+mJxrZfDoZ1TX/BVxBaDtYfZFS95r6Z6u5CnYNZJYZdcELUaBX0D7FMM9Up/sb9OTq1sfxHkEkud8sohqrIT/Q==
 
-"@next/mdx@^9.0.7":
-  version "9.0.7"
-  resolved "https://registry.yarnpkg.com/@next/mdx/-/mdx-9.0.7.tgz#3b2e3afe384bda9fbd7eac8c605befa856cc174c"
-  integrity sha512-Wce6sb8UgOU1hAsY/3rY98GrZ5HIbK8K/kUzocgO+GXIaI4HKyVnus/rqOmFV0UmdpKDokjYEpo2Ap2iLn18xA==
+"@next/mdx@^9.0.8":
+  version "9.0.8"
+  resolved "https://registry.yarnpkg.com/@next/mdx/-/mdx-9.0.8.tgz#5bc8d3985832a0baef91d3c17fb90dd4517a027c"
+  integrity sha512-S76T5Fjw2wDfWdFxoUZn0vm77csqEFf2uF+557nu1H//aaqFV7OtEVrPq/c0PajysyAF8Gixb4cZnzz3F7zJgQ==
 
 "@types/algoliasearch@^3.34.3":
   version "3.34.3"
@@ -4900,10 +4900,10 @@ next-offline@^4.0.6:
     webpack "^4.19.1"
     workbox-webpack-plugin "^4.3.1"
 
-next@^9.0.7:
-  version "9.0.7"
-  resolved "https://registry.yarnpkg.com/next/-/next-9.0.7.tgz#0baf77507dd303bb281c3a354c30767a93cf09c7"
-  integrity sha512-gqxdnGHJuuaKJAPi5cLytR/S88yAaoN0ra7Y3vVLLN+MTkNHQR97tSXlpU2ZE3o3tuHSUZqg7krbYtIS4WMOpw==
+next@^9.0.8:
+  version "9.0.8"
+  resolved "https://registry.yarnpkg.com/next/-/next-9.0.8.tgz#ea37d7f64d754ea4608d15d6be3809b4be3f698f"
+  integrity sha512-vG8AasXnZ7sYYAaqKwFYnsgAGDkX8NdKDSHHz0Pzi//HN/9qJf6JnycEB4Jif8dIarDE8JWDjnBKw3Aw/lsFHg==
   dependencies:
     "@ampproject/toolbox-optimizer" "1.0.1"
     "@babel/core" "7.4.5"
