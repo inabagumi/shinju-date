@@ -26,18 +26,18 @@
   "regions": ["hnd1"],
   "routes": [
     {
+      "continue": true,
+      "headers": {
+        "cache-control": "max-age=600, s-maxage=60"
+      },
+      "src": ".*"
+    },
+    {
       "dest": "/_next/static/service-worker.js",
       "headers": {
         "cache-control": "max-age=0"
       },
       "src": "/service-worker\\.js"
-    },
-    {
-      "dest": "/static/$1",
-      "headers": {
-        "cache-control": "max-age=600, s-maxage=60"
-      },
-      "src": "/(favicon\\.ico|manifest\\.json|opensearch\\.xml|robots\\.txt)"
     },
     {
       "headers": {
@@ -47,22 +47,16 @@
     },
     {
       "headers": {
-        "cache-control": "max-age=600, s-maxage=60"
-      },
-      "src": "/static/.+"
-    },
-    {
-      "headers": {
         "cache-control": "max-age=0"
       },
       "src": "/(?:search)?"
     },
     {
       "dest": "/$1.html",
-      "headers": {
-        "cache-control": "max-age=600, s-maxage=60"
-      },
       "src": "/(about|contact|privacy|terms)"
+    },
+    {
+      "handle": "filesystem"
     },
     {
       "dest": "/_error",
