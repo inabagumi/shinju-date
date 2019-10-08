@@ -330,6 +330,16 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
           flex-shrink: 0;
         }
 
+        :global(.react-toggle--lg-only) {
+          display: none;
+        }
+
+        @media (min-width: 996px) {
+          :global(.react-toggle--lg-only) {
+            display: inline-block;
+          }
+        }
+
         :global(.react-toggle--checked .react-toggle-thumb) {
           border-color: var(--ifm-color-primary);
         }
