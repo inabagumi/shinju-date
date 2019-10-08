@@ -2,7 +2,7 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@next/mdx": "^9.1.1",
-    "algoliasearch": "^3.35.0",
+    "algoliasearch": "^3.35.1",
     "classnames": "^2.2.6",
     "date-fns": "^2.4.1",
     "date-fns-tz": "^1.0.7",
