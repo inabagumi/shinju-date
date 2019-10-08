@@ -65,13 +65,10 @@ export const ThemeProvider: FC = ({ children }): ReactElement => {
         : ''
     )
 
-    mediaQueryList.addEventListener('change', handlePrefersColorSchemeChange)
+    mediaQueryList.addListener(handlePrefersColorSchemeChange)
 
     return (): void => {
-      mediaQueryList.removeEventListener(
-        'change',
-        handlePrefersColorSchemeChange
-      )
+      mediaQueryList.removeListener(handlePrefersColorSchemeChange)
     }
   }, [handlePrefersColorSchemeChange])
 
