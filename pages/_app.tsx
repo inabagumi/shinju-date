@@ -4,104 +4,20 @@ import Link from 'next/link'
 import React, { ReactElement } from 'react'
 import { Helmet } from 'react-helmet'
 import Header from '../components/organisms/header'
-import { ThemeContext } from '../context/theme-context'
+import { ThemeProvider } from '../context/theme-context'
 import { getTitle } from '../lib/title'
 
 import 'infima/dist/css/default/default.css'
 
-const getMediaQueryList = (): MediaQueryList | null => {
-  if (typeof window === 'undefined') return null
-
-  return matchMedia('(prefers-color-scheme: dark)')
-}
-
-type Props = {}
-
-type State = {
-  theme: string
-}
-
-export default class extends App<Props, Props, State> {
-  public mediaQueryList = getMediaQueryList()
-
-  public state = {
-    theme: ''
-  }
-
-  public componentDidMount(): void {
-    if (this.mediaQueryList) {
-      this.mediaQueryList.addEventListener(
-        'change',
-        this.handlePrefersColorSchemeChange
-      )
-    }
-
-    requestAnimationFrame(() => {
-      let theme: string | null = null
-
-      try {
-        theme = localStorage.getItem('theme')
-      } finally {
-        if (typeof theme !== 'string') {
-          theme =
-            this.mediaQueryList && this.mediaQueryList.matches ? 'dark' : ''
-        }
-      }
-
-      this.setState({ theme })
-    })
-  }
-
-  public componentWillUnmount(): void {
-    if (this.mediaQueryList)
-      this.mediaQueryList.removeEventListener(
-        'change',
-        this.handlePrefersColorSchemeChange
-      )
-  }
-
-  public handlePrefersColorSchemeChange = (
-    event: MediaQueryListEvent
-  ): void => {
-    const theme = event.matches ? 'dark' : ''
-
-    this.setState({ theme }, () => {
-      try {
-        localStorage.setItem('theme', theme)
-      } catch (error) {
-        console.error(error)
-      }
-    })
-  }
-
-  public toggleTheme = (): void => {
-    this.setState(
-      state => ({
-        theme: state.theme !== 'dark' ? 'dark' : ''
-      }),
-      () => {
-        try {
-          localStorage.setItem('theme', this.state.theme)
-        } catch (error) {
-          console.error(error)
-        }
-      }
-    )
-  }
-
+export default class extends App {
   public render(): ReactElement {
     const { Component, pageProps, router } = this.props
     const { query } = pageProps
-    const { theme } = this.state
     const title = getTitle()
 
     return (
-      <ThemeContext.Provider value={{ theme, toggleTheme: this.toggleTheme }}>
-        <Helmet
-          defaultTitle={title}
-          htmlAttributes={{ 'data-theme': theme }}
-          titleTemplate={`%s - ${title}`}
-        >
+      <ThemeProvider>
+        <Helmet defaultTitle={title} titleTemplate={`%s - ${title}`}>
           <meta
             content="initial-scale=1,minimum-scale=1,user-scalable=no,width=device-width"
             name="viewport"
@@ -207,7 +123,7 @@ export default class extends App<Props, Props, State> {
             font-size: 0.85rem;
           }
         `}</style>
-      </ThemeContext.Provider>
+      </ThemeProvider>
     )
   }
 }

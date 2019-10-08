@@ -11,6 +11,7 @@ import React, {
   useContext,
   useState
 } from 'react'
+import { Helmet } from 'react-helmet'
 import Toggle from 'react-toggle'
 import { ThemeContext } from '../../../context/theme-context'
 import { normalize } from '../../../lib/search'
@@ -89,6 +90,8 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
 
   return (
     <>
+      <Helmet htmlAttributes={{ 'data-theme': theme }} />
+
       <nav
         className={classNames('navbar', 'navbar--fixed-top', {
           'navbar--sidebar-show': sidebarShown
