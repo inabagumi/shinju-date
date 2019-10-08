@@ -8,11 +8,11 @@ import React, {
   MouseEvent,
   ReactElement,
   useCallback,
-  useEffect,
+  useContext,
   useState
 } from 'react'
-import { Helmet } from 'react-helmet'
 import Toggle from 'react-toggle'
+import { ThemeContext } from '../../../context/theme-context'
 import { normalize } from '../../../lib/search'
 import { getTitle } from '../../../lib/title'
 import Emoji from '../../atoms/emoji'
@@ -51,48 +51,11 @@ interface HeaderProps {
 
 const Header: FC<HeaderProps> = ({ query }): ReactElement => {
   const title = getTitle()
-  const currentTheme =
-    (typeof document !== 'undefined' &&
-      document.documentElement.getAttribute('data-theme')) ||
-    ''
 
-  const [theme, setTheme] = useState<string>(currentTheme)
+  const { theme, toggleTheme } = useContext(ThemeContext)
   const [sidebarShown, setSidebarShown] = useState<boolean>(false)
   const [filterListShown, setFilterListShown] = useState<boolean>(false)
   const router = useRouter()
-
-  useEffect((): (() => void) => {
-    const mediaQueryList = matchMedia('(prefers-color-scheme: dark)')
-    let currentTheme: string | null = null
-
-    try {
-      currentTheme = localStorage.getItem('theme')
-    } finally {
-      if (typeof currentTheme === 'string') {
-        setTheme(currentTheme)
-      } else {
-        setTheme(mediaQueryList.matches ? 'dark' : '')
-      }
-    }
-
-    const handlePrefersColorSchemeChange = (): void => {
-      const nextTheme = mediaQueryList.matches ? 'dark' : ''
-
-      setTheme(nextTheme)
-
-      try {
-        localStorage.setItem('theme', nextTheme)
-      } catch (error) {
-        console.error(error)
-      }
-    }
-
-    mediaQueryList.addListener(handlePrefersColorSchemeChange)
-
-    return (): void => {
-      mediaQueryList.removeListener(handlePrefersColorSchemeChange)
-    }
-  }, [setTheme])
 
   const showSidebar = useCallback((): void => {
     setSidebarShown(true)
@@ -124,25 +87,8 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
     [router]
   )
 
-  const handleToggleChange = useCallback(
-    ({ target }: ChangeEvent<HTMLInputElement>): void => {
-      const nextTheme = target.checked ? target.value : ''
-
-      setTheme(nextTheme)
-
-      try {
-        localStorage.setItem('theme', nextTheme)
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    [setTheme]
-  )
-
   return (
     <>
-      <Helmet htmlAttributes={{ 'data-theme': theme }} />
-
       <nav
         className={classNames('navbar', 'navbar--fixed-top', {
           'navbar--sidebar-show': sidebarShown
@@ -221,7 +167,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                 checked: <Sun />,
                 unchecked: <Moon />
               }}
-              onChange={handleToggleChange}
+              onChange={toggleTheme}
               value="dark"
             />
 
@@ -256,7 +202,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                 checked: <Sun />,
                 unchecked: <Moon />
               }}
-              onChange={handleToggleChange}
+              onChange={toggleTheme}
               value="dark"
             />
           </div>
