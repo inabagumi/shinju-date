@@ -8,6 +8,7 @@ import { ThemeProvider } from '../context/theme-context'
 import { getTitle } from '../lib/title'
 
 import 'infima/dist/css/default/default.css'
+import 'react-toggle/style.css'
 
 export default class extends App {
   public render(): ReactElement {
