@@ -52,10 +52,6 @@
       "src": "/(?:search)?"
     },
     {
-      "dest": "/$1.html",
-      "src": "/(about|contact|privacy|terms)"
-    },
-    {
       "handle": "filesystem"
     },
     {
