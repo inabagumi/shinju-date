@@ -1,8 +1,8 @@
-name: Scheduled Tasks
+name: Fetch Hinako channel, Ichika channel, and Ran channel
 
 on:
   schedule:
-  - cron: '45 * * * *'
+  - cron: '2 2/3 * * *'
 
 jobs:
   build:
@@ -20,7 +20,7 @@ jobs:
         curl -sSL ${YTC_RELEASES_URL}/download/v${YTC_VERSION}/ytc_${YTC_VERSION}_$(uname -s)_$(uname -m).tar.gz | tar xzf - -C bin
         ./bin/ytc -version
 
-    - name: Run ytc
+    - name: Fetch Hinako channel, Ichika channel, and Ran channel
       env:
         TZ: UTC
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
@@ -29,7 +29,6 @@ jobs:
         ALGOLIA_INDEX_NAME: prod_ANIMARE_SEARCH
       run: |
         ./bin/ytc \
-          -channel UC0Owc36U9lOyi9Gx9Ic-4qg \
           -channel UChqYnJlFxlBi6DfRz6jRenQ \
           -channel UC2kyQhzGOB-JPgcQX9OMgEw \
           -channel UCRvpMpzAXBRKJQuk-8-Sdvg
