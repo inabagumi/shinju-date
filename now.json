@@ -46,6 +46,13 @@
       "src": "/_next/.+"
     },
     {
+      "continue": true,
+      "headers": {
+        "content-security-policy": "connect-src 'self' https://*.algolia.net https://*.algolianet.com https://fonts.googleapis.com https://fonts.gstatic.com; default-src 'none'; font-src https://fonts.gstatic.com; img-src 'self' data: https://i.ytimg.com; manifest-src 'self'; script-src 'self' https://storage.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; worker-src 'self'"
+      },
+      "src": ".*"
+    },
+    {
       "headers": {
         "cache-control": "max-age=0"
       },
