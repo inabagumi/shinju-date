@@ -33,7 +33,7 @@ module.exports = withOffline(
               statuses: [200]
             }
           },
-          urlPattern: /^https:\/\/(?:fonts\.googleapis\.com|fonts\.gstatic\.com|i\.ytimg\.com|polyfill\.io)\//i
+          urlPattern: /^https:\/\/(?:fonts\.googleapis\.com|fonts\.gstatic\.com|i\.ytimg\.com)\//i
         }
       ],
       skipWaiting: true,
