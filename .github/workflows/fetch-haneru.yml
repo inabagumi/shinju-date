@@ -1,0 +1,31 @@
+name: Fetch Haneru channel
+
+on:
+  schedule:
+  - cron: '17,32,47 * * * *'
+
+jobs:
+  build:
+    name: Indexing
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download ytc
+      env:
+        YTC_RELEASES_URL: https://github.com/inabagumi/ytc/releases
+        YTC_VERSION: '2.0.1'
+      run: |
+        mkdir -p bin
+        curl -sSL ${YTC_RELEASES_URL}/download/v${YTC_VERSION}/ytc_${YTC_VERSION}_$(uname -s)_$(uname -m).tar.gz | tar xzf - -C bin
+        ./bin/ytc -version
+
+    - name: Fetch Haneru channel
+      env:
+        TZ: UTC
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        ALGOLIA_API_KEY: ${{ secrets.ALGOLIA_API_KEY }}
+        ALGOLIA_APPLICATION_ID: ${{ secrets.ALGOLIA_APPLICATION_ID }}
+        ALGOLIA_INDEX_NAME: prod_ANIMARE_SEARCH
+      run: |
+        ./bin/ytc -channel UC0Owc36U9lOyi9Gx9Ic-4qg
