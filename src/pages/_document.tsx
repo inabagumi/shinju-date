@@ -2,7 +2,6 @@ import Document, {
   DocumentContext,
   DocumentInitialProps,
   Head,
-  Html,
   Main,
   NextScript
 } from 'next/document'
@@ -29,7 +28,7 @@ export default class extends Document<Props> {
     const { helmet } = this.props
 
     return (
-      <Html {...helmet.htmlAttributes.toComponent()}>
+      <html {...helmet.htmlAttributes.toComponent()}>
         <Head>
           {helmet.title.toComponent()}
           {helmet.meta.toComponent()}
@@ -60,7 +59,7 @@ export default class extends Document<Props> {
             rel="stylesheet"
           />
         </body>
-      </Html>
+      </html>
     )
   }
 }
