@@ -28,7 +28,7 @@ export default class extends Document<Props> {
     const { helmet } = this.props
 
     return (
-      <html {...helmet.htmlAttributes.toComponent()}>
+      <html lang="en" {...helmet.htmlAttributes.toComponent()}>
         <Head>
           {helmet.title.toComponent()}
           {helmet.meta.toComponent()}
