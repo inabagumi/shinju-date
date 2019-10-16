@@ -935,10 +935,10 @@
   resolved "https://registry.yarnpkg.com/@mdx-js/util/-/util-1.5.1.tgz#f5f29bde5b09f8da3f4a4b43fa0a34bcf8ffc7cb"
   integrity sha512-8F8E5FPWKP/cHjjI+O6Sh4KLUktk0KKS1xrxqVoBQd14/PBDH+kUgSJVE99p9jSRGh+OjCBmqx0tXN+m32w1tA==
 
-"@next/mdx@^9.1.2-canary.3":
-  version "9.1.2-canary.3"
-  resolved "https://registry.yarnpkg.com/@next/mdx/-/mdx-9.1.2-canary.3.tgz#738607fd073a511adda55c6afad841db009b3676"
-  integrity sha512-bxbh9vECI2SsBWHsWj41roxdxwvHTRzFcF26pePijkR1kU3u8xq9QIUOyKOX0N3tWb/k9jaJEKgcH3tmuE6AjQ==
+"@next/mdx@^9.1.2-canary.5":
+  version "9.1.2-canary.5"
+  resolved "https://registry.yarnpkg.com/@next/mdx/-/mdx-9.1.2-canary.5.tgz#0bb714c1c35fb17cd007b738e1e4acc878163111"
+  integrity sha512-81hkkVbqocC65/ZWFFRoP4Gx59SAWJMhQN9hktB7lfJpRAEmkS3jykBa4gR25Xcru/Ye9iJwI8LJLCWWU354zA==
 
 "@types/algoliasearch@^3.34.5":
   version "3.34.5"
@@ -4598,10 +4598,10 @@ next-offline@^4.0.6:
     webpack "^4.19.1"
     workbox-webpack-plugin "^4.3.1"
 
-next@^9.1.2-canary.3:
-  version "9.1.2-canary.3"
-  resolved "https://registry.yarnpkg.com/next/-/next-9.1.2-canary.3.tgz#9c150eab55f319efbcfcd969b3bffbe3eebcd84f"
-  integrity sha512-2SSoYy7+6BCCWAEofuwn3OZlEv6TDAZfuFnOATk8OEeXPEgNg0l/P9txTrLqz0g2JNMgM9Z1rfinNLIyg/QVVA==
+next@^9.1.2-canary.5:
+  version "9.1.2-canary.5"
+  resolved "https://registry.yarnpkg.com/next/-/next-9.1.2-canary.5.tgz#590f1ce364a6b1181e6868c202cea9652b58513a"
+  integrity sha512-z+XCjnzz3SS1YS1gRCsWppvv5C8dfkP4bzki9yAoQ6H4q1e5Gy80lE6a6zwk4n00AD7f0t8QkiPubmQJVQdhTA==
   dependencies:
     "@ampproject/toolbox-optimizer" "1.1.1"
     "@babel/core" "7.4.5"
