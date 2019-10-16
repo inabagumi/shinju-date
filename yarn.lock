@@ -975,10 +975,10 @@
   resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.7.3.tgz#2ab0d5da2e5815f94b0b9d4b95d1e5f243ab2ca7"
   integrity sha512-KfRL3PuHmqQLOG+2tGpRO26Ctg+Cq1E01D2DMriKEATHgWLfeNDmq9e29Q9WIky0dQ3NPkd1mzYH8Lm936Z9qw==
 
-"@types/react-helmet@^5.0.11":
-  version "5.0.11"
-  resolved "https://registry.yarnpkg.com/@types/react-helmet/-/react-helmet-5.0.11.tgz#d2642af4658e7b97accb46ea8b00d6dc614c99fa"
-  integrity sha512-id9DjHp/+Cm+x3etN+EWs5OP76PPpz8jXw+iN9xcXltssF0KHNjAzlan///ASXegEewaItlw5FhFnoLxRUJQ9g==
+"@types/react-helmet@^5.0.12":
+  version "5.0.12"
+  resolved "https://registry.yarnpkg.com/@types/react-helmet/-/react-helmet-5.0.12.tgz#b78c4e56b044fdd0d2223861470b2714d8b90085"
+  integrity sha512-GXWs/peXpoeZOCHsQ7M3ykV26FDnUdjN76wPw06XrBGkm2qBuS77LKvefUWMt2A5azROsJumorXzV2HU3A+CdA==
   dependencies:
     "@types/react" "*"
 
