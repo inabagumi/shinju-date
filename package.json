@@ -4,7 +4,7 @@
     "@next/mdx": "^9.1.2-canary.5",
     "algoliasearch": "^3.35.1",
     "classnames": "^2.2.6",
-    "date-fns": "^2.5.0",
+    "date-fns": "^2.5.1",
     "date-fns-tz": "^1.0.8",
     "infima": "^0.2.0-alpha.2",
     "localforage": "^1.7.3",
