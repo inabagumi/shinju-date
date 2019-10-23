@@ -90,7 +90,10 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
 
   return (
     <>
-      <Helmet htmlAttributes={{ 'data-theme': theme }} />
+      <Helmet>
+        {/* eslint-disable-next-line jsx-a11y/html-has-lang */}
+        <html data-theme={theme} />
+      </Helmet>
 
       <nav
         className={classNames('navbar', 'navbar--fixed-top', {
