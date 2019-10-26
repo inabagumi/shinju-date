@@ -1,4 +1,4 @@
-name: Fetch Hinako channel, Ichika channel, and Ran channel
+name: Fetch Ichika channel, and Ran channel
 
 on:
   schedule:
@@ -29,6 +29,5 @@ jobs:
         ALGOLIA_INDEX_NAME: prod_ANIMARE_SEARCH
       run: |
         ./bin/ytc \
-          -channel UChqYnJlFxlBi6DfRz6jRenQ \
           -channel UC2kyQhzGOB-JPgcQX9OMgEw \
           -channel UCRvpMpzAXBRKJQuk-8-Sdvg
