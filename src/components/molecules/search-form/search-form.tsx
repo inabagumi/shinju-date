@@ -31,6 +31,7 @@ const SearchForm: FC<SearchFormProps> = ({ onChange, query }): ReactElement => {
         <div className="navbar__search">
           <TextField
             aria-label="検索"
+            className="navbar__search-input"
             onChange={onChange}
             placeholder="検索"
             ref={textFieldRef}
@@ -50,7 +51,7 @@ const SearchForm: FC<SearchFormProps> = ({ onChange, query }): ReactElement => {
             padding-right: var(--ifm-navbar-padding-horizontal);
           }
 
-          .navbar__search :global(input) {
+          .navbar__search :global(.navbar__search-input) {
             font-size: 1rem;
             width: 100%;
           }
