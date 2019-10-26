@@ -26,10 +26,6 @@ const channels = [
     title: '因幡はねる'
   },
   {
-    id: 'UChqYnJlFxlBi6DfRz6jRenQ',
-    title: '宇森ひなこ'
-  },
-  {
     id: 'UC2kyQhzGOB-JPgcQX9OMgEw',
     title: '宗谷いちか'
   },
