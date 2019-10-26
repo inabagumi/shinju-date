@@ -19,7 +19,7 @@
   },
   "description": "AniMare Search is a web service for searching videos.",
   "devDependencies": {
-    "@inabagumi/eslint-config-react": "^4.3.0",
+    "@inabagumi/eslint-config-react": "^4.4.0",
     "@inabagumi/prettier-config": "^1.1.0",
     "@mdx-js/loader": "^1.5.1",
     "@types/algoliasearch": "^3.34.5",
