@@ -93,7 +93,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
 
       <nav
         className={classNames('navbar', 'navbar--fixed-top', {
-          'navbar--sidebar-show': sidebarShown
+          'navbar-sidebar--show': sidebarShown
         })}
       >
         <div className="navbar__inner">
