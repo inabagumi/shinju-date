@@ -6,7 +6,7 @@
     "classnames": "^2.2.6",
     "date-fns": "^2.6.0",
     "date-fns-tz": "^1.0.8",
-    "infima": "^0.2.0-alpha.2",
+    "infima": "^0.2.0-alpha.3",
     "localforage": "^1.7.3",
     "lodash": "^4.17.15",
     "next": "^9.1.2-canary.8",

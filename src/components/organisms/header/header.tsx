@@ -93,7 +93,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
 
       <nav
         className={classNames('navbar', 'navbar--fixed-top', {
-          'navbar--sidebar-show': sidebarShown
+          'navbar-sidebar--show': sidebarShown
         })}
       >
         <div className="navbar__inner">
@@ -179,12 +179,12 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
 
         <div
           role="presentation"
-          className="navbar__sidebar__backdrop"
+          className="navbar-sidebar__backdrop"
           onClick={hideSidebar}
         />
 
-        <div className="navbar__sidebar">
-          <div className="navbar__sidebar__brand">
+        <div className="navbar-sidebar">
+          <div className="navbar-sidebar__brand">
             <Link href="/">
               <a
                 aria-label={title}
@@ -209,7 +209,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
             />
           </div>
 
-          <div className="navbar__sidebar__items">
+          <div className="navbar-sidebar__items">
             <div className="menu">
               <ul className="menu__list">
                 <li
@@ -249,7 +249,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
             </div>
           </div>
 
-          <div className="navbar__sidebar__items">
+          <div className="navbar-sidebar__items">
             <div className="menu">
               <ul className="menu__list">
                 <li className="menu__list-item">
@@ -315,16 +315,16 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
           }
         }
 
-        .navbar:not(.navbar--sidebar-show) .navbar__sidebar {
+        .navbar:not(.navbar--sidebar-show) .navbar-sidebar {
           box-shadow: none;
         }
 
-        .navbar__sidebar {
+        .navbar-sidebar {
           display: flex;
           flex-direction: column;
         }
 
-        .navbar__sidebar__brand + .navbar__sidebar__items {
+        .navbar-sidebar__brand + .navbar-sidebar__items {
           flex-grow: 1;
           flex-shrink: 0;
         }
