@@ -1,6 +1,7 @@
 import formatDistanceStrict from 'date-fns/formatDistanceStrict'
 import ja from 'date-fns/locale/ja'
 import format from 'date-fns-tz/format'
+import toDate from 'date-fns-tz/toDate'
 import React, {
   DetailedHTMLProps,
   FC,
@@ -22,7 +23,7 @@ const VideoCard: FC<VideoCardProps> = ({
   value: { id, publishedAt, title, url },
   ...props
 }): ReactElement => {
-  const date = new Date(publishedAt * 1000)
+  const date = toDate(publishedAt * 1000)
 
   return (
     <>
