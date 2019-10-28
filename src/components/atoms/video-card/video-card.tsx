@@ -1,7 +1,6 @@
 import formatDistanceStrict from 'date-fns/formatDistanceStrict'
 import ja from 'date-fns/locale/ja'
-import format from 'date-fns-tz/format'
-import toDate from 'date-fns-tz/toDate'
+import { formatToTimeZone } from 'date-fns-timezone'
 import React, {
   DetailedHTMLProps,
   FC,
@@ -23,7 +22,7 @@ const VideoCard: FC<VideoCardProps> = ({
   value: { id, publishedAt, title, url },
   ...props
 }): ReactElement => {
-  const date = toDate(publishedAt * 1000, { timeZone: 'UTC' })
+  const date = new Date(publishedAt * 1000)
 
   return (
     <>
@@ -46,7 +45,7 @@ const VideoCard: FC<VideoCardProps> = ({
           <small className="published">
             <time
               dateTime={date.toISOString()}
-              title={format(date, 'yyy/MM/dd HH:mm', {
+              title={formatToTimeZone(date, 'YYYY/MM/DD HH:mm', {
                 timeZone: 'Asia/Tokyo'
               })}
             >
