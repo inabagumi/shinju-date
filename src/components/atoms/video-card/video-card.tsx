@@ -23,7 +23,7 @@ const VideoCard: FC<VideoCardProps> = ({
   value: { id, publishedAt, title, url },
   ...props
 }): ReactElement => {
-  const date = toDate(publishedAt * 1000)
+  const date = toDate(publishedAt * 1000, { timeZone: 'UTC' })
 
   return (
     <>
