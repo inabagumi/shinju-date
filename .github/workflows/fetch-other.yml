@@ -29,5 +29,5 @@ jobs:
         ALGOLIA_INDEX_NAME: prod_ANIMARE_SEARCH
       run: |
         ./bin/pinkie \
-          -channel UC2kyQhzGOB-JPgcQX9OMgEw \
-          -channel UCRvpMpzAXBRKJQuk-8-Sdvg
+          --channel UC2kyQhzGOB-JPgcQX9OMgEw \
+          --channel UCRvpMpzAXBRKJQuk-8-Sdvg

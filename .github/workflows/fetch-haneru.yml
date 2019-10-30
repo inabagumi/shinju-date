@@ -28,4 +28,4 @@ jobs:
         ALGOLIA_APPLICATION_ID: ${{ secrets.ALGOLIA_APPLICATION_ID }}
         ALGOLIA_INDEX_NAME: prod_ANIMARE_SEARCH
       run: |
-        ./bin/pinkie -channel UC0Owc36U9lOyi9Gx9Ic-4qg
+        ./bin/pinkie --channel UC0Owc36U9lOyi9Gx9Ic-4qg
