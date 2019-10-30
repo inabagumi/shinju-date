@@ -1,6 +1,4 @@
-import formatDistanceStrict from 'date-fns/formatDistanceStrict'
-import ja from 'date-fns/locale/ja'
-import { formatToTimeZone } from 'date-fns-timezone'
+import dynamic from 'next/dynamic'
 import React, {
   DetailedHTMLProps,
   FC,
@@ -10,15 +8,18 @@ import React, {
 import Video from '../../../types/video'
 import YouTubeThumbnail from '../youtube-thumbnail'
 
-export interface VideoCardProps
-  extends DetailedHTMLProps<
-    HTMLAttributes<HTMLAnchorElement>,
-    HTMLAnchorElement
-  > {
+const Time = dynamic(() => import('../time'), {
+  ssr: false
+})
+
+type Props = DetailedHTMLProps<
+  HTMLAttributes<HTMLAnchorElement>,
+  HTMLAnchorElement
+> & {
   value: Video
 }
 
-const VideoCard: FC<VideoCardProps> = ({
+const VideoCard: FC<Props> = ({
   value: { id, publishedAt, title, url },
   ...props
 }): ReactElement => {
@@ -43,17 +44,8 @@ const VideoCard: FC<VideoCardProps> = ({
 
         <div className="card__footer">
           <small className="published">
-            <time
-              dateTime={date.toISOString()}
-              title={formatToTimeZone(date, 'YYYY/MM/DD HH:mm', {
-                timeZone: 'Asia/Tokyo'
-              })}
-            >
-              {formatDistanceStrict(date, new Date(), {
-                addSuffix: true,
-                locale: ja
-              })}
-            </time>
+            &nbsp;
+            <Time date={date} />
           </small>
         </div>
       </a>
