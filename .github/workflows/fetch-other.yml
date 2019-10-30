@@ -14,7 +14,7 @@ jobs:
     - name: Download Pinkie
       env:
         PINKIE_RELEASES_URL: https://github.com/inabagumi/pinkie/releases
-        PINKIE_VERSION: '3.0.1'
+        PINKIE_VERSION: '3.0.2'
       run: |
         mkdir -p bin
         curl -sSL ${PINKIE_RELEASES_URL}/download/v${PINKIE_VERSION}/pinkie_${PINKIE_VERSION}_$(uname -s)_$(uname -m).tar.gz | tar xzf - -C bin
