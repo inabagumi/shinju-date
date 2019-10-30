@@ -11,14 +11,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Download ytc
+    - name: Download Pinkie
       env:
-        YTC_RELEASES_URL: https://github.com/inabagumi/ytc/releases
-        YTC_VERSION: '2.2.0'
+        PINKIE_RELEASES_URL: https://github.com/inabagumi/pinkie/releases
+        PINKIE_VERSION: '3.0.1'
       run: |
         mkdir -p bin
-        curl -sSL ${YTC_RELEASES_URL}/download/v${YTC_VERSION}/ytc_${YTC_VERSION}_$(uname -s)_$(uname -m).tar.gz | tar xzf - -C bin
-        ./bin/ytc -version
+        curl -sSL ${PINKIE_RELEASES_URL}/download/v${PINKIE_VERSION}/pinkie_${PINKIE_VERSION}_$(uname -s)_$(uname -m).tar.gz | tar xzf - -C bin
+        ./bin/pinkie -version
 
     - name: Fetch Hinako channel, Ichika channel, and Ran channel
       env:
@@ -28,6 +28,6 @@ jobs:
         ALGOLIA_APPLICATION_ID: ${{ secrets.ALGOLIA_APPLICATION_ID }}
         ALGOLIA_INDEX_NAME: prod_ANIMARE_SEARCH
       run: |
-        ./bin/ytc \
+        ./bin/pinkie \
           -channel UC2kyQhzGOB-JPgcQX9OMgEw \
           -channel UCRvpMpzAXBRKJQuk-8-Sdvg
