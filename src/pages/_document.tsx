@@ -19,10 +19,6 @@ export default class extends Document<Props> {
   ): Promise<DocumentInitialProps & Props> {
     const documentProps = await super.getInitialProps(ctx)
 
-    if (typeof window === 'undefined') {
-      await import('@formatjs/intl-relativetimeformat/polyfill-locales')
-    }
-
     return {
       ...documentProps,
       helmet: Helmet.renderStatic()

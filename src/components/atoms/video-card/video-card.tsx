@@ -8,7 +8,7 @@ import React, {
 import Video from '../../../types/video'
 import YouTubeThumbnail from '../youtube-thumbnail'
 
-const Time = dynamic(() => import('../time'), {
+const Time = dynamic(async () => import('../time'), {
   ssr: false
 })
 
