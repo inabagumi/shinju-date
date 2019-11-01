@@ -820,6 +820,13 @@
   resolved "https://registry.yarnpkg.com/@csstools/convert-colors/-/convert-colors-1.4.0.tgz#ad495dc41b12e75d588c6db8b9834f08fa131eb7"
   integrity sha512-5a6wqoJV/xEdbRNKVo6I4hO3VjyDq//8q2f9I6PBAvMesJHFauXDorcNCsr9RzvsZnaWi5NYCcfyqP1QeFHFbw==
 
+"@formatjs/intl-pluralrules@^1.3.1":
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/@formatjs/intl-pluralrules/-/intl-pluralrules-1.3.1.tgz#e3459a976a1a26e83f36f6d62d92eff948717a6e"
+  integrity sha512-Z3NlE4q6zzG3tum9r0q0fs30IW2pUDvwUjtP3sPimFIPcycHRC60hW5AR1PTE9N0OPOB6ntBx6ZWvASBcAFLrw==
+  dependencies:
+    "@formatjs/intl-utils" "^1.4.0"
+
 "@formatjs/intl-relativetimeformat@^4.2.1":
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/@formatjs/intl-relativetimeformat/-/intl-relativetimeformat-4.2.1.tgz#bee6ffb2227dfde001d7214deb8ab6c2bde4077b"

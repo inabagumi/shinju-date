@@ -8,6 +8,10 @@ import Header from '../components/organisms/header'
 import { ThemeProvider } from '../context/theme-context'
 import { getTitle } from '../lib/title'
 
+import '@formatjs/intl-pluralrules/polyfill'
+import '@formatjs/intl-pluralrules/dist/locale-data/ja'
+import '@formatjs/intl-relativetimeformat/polyfill'
+import '@formatjs/intl-relativetimeformat/dist/locale-data/ja'
 import 'infima/dist/css/default/default.css'
 import 'react-toggle/style.css'
 
