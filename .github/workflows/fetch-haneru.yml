@@ -11,21 +11,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Download Pinkie
-      env:
-        PINKIE_RELEASES_URL: https://github.com/inabagumi/pinkie/releases
-        PINKIE_VERSION: '3.0.4'
-      run: |
-        mkdir -p bin
-        curl -sSL ${PINKIE_RELEASES_URL}/download/v${PINKIE_VERSION}/pinkie_${PINKIE_VERSION}_$(uname -s)_$(uname -m).tar.gz | tar xzf - -C bin
-        ./bin/pinkie -version
-
-    - name: Fetch Haneru channel
+    - uses: docker://inabagumi/pinkie
+      with:
+        args: --channel UC0Owc36U9lOyi9Gx9Ic-4qg
       env:
         TZ: UTC
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         ALGOLIA_API_KEY: ${{ secrets.ALGOLIA_API_KEY }}
         ALGOLIA_APPLICATION_ID: ${{ secrets.ALGOLIA_APPLICATION_ID }}
         ALGOLIA_INDEX_NAME: prod_ANIMARE_SEARCH
-      run: |
-        ./bin/pinkie --channel UC0Owc36U9lOyi9Gx9Ic-4qg
