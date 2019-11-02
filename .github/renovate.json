@@ -1,6 +1,3 @@
 {
-  "extends": ["@inabagumi"],
-  "github-actions": {
-    "enabled": true
-  }
+  "extends": ["@inabagumi"]
 }
