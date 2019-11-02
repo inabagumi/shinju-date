@@ -1,6 +1,6 @@
 {
   "extends": ["@inabagumi"],
   "github-actions": {
-    "enabled" true
+    "enabled": true
   }
 }
