@@ -6,11 +6,8 @@ import React, {
   ReactElement
 } from 'react'
 import Video from '../../../types/video'
+import Time from '../time'
 import YouTubeThumbnail from '../youtube-thumbnail'
-
-const Time = dynamic(async () => import('../time'), {
-  ssr: false
-})
 
 type Props = DetailedHTMLProps<
   HTMLAttributes<HTMLAnchorElement>,
