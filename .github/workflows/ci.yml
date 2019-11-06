@@ -22,7 +22,7 @@ jobs:
       - uses: actions/cache@v1
         with:
           path: node_modules
-          key: node-deps-${{ hashFiles(**/yarn.lock) }}
+          key: node-deps-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             node-deps-
       - run: yarn install --frozen-lockfile
