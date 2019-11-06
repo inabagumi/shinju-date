@@ -19,6 +19,12 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 10
+      - uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: node-deps-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            node-deps-
       - run: yarn install --frozen-lockfile
       - run: yarn format-check
       - run: yarn lint
