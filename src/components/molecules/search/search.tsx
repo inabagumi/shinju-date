@@ -7,7 +7,7 @@ import React, {
   useState
 } from 'react'
 import { InView } from 'react-intersection-observer'
-import search from '../../../lib/search'
+import useSearch from '../../../hooks/use-search'
 import Video from '../../../types/video'
 import Spinner from '../../atoms/spinner'
 import VideoCard from '../../atoms/video-card'
@@ -19,37 +19,21 @@ interface Props {
 }
 
 const Search: FC<Props> = ({ query }): ReactElement => {
-  const [results, setResults] = useState<Video[]>([])
   const [page, setPage] = useState(0)
-  const [hasNext, setHasNext] = useState(true)
+  const { hasNext, items } = useSearch<Video>(query, page)
 
-  useEffect(() => {
-    search<Video>(query)
-      .then(({ hits, nbPages }): void => {
-        setHasNext(nbPages > 1)
-        setResults(hits)
-      })
-      .catch((): void => {
-        setHasNext(false)
-      })
+  useEffect((): void => {
+    setPage(0)
   }, [query])
 
   const handleChange = useCallback(() => {
-    search<Video>(query, { page: page + 1 })
-      .then(({ hits, nbPages, page: actualPage }): void => {
-        setHasNext(actualPage < nbPages - 1)
-        setPage(actualPage)
-        setResults((prevResults): Video[] => prevResults.concat(hits))
-      })
-      .catch((): void => {
-        setHasNext(false)
-      })
-  }, [query, page])
+    setPage((page): number => page + 1)
+  }, [])
 
   return (
     <>
       <div className="margin-top--lg">
-        {chunk(results, COLUMNS_COUNT).map(
+        {chunk(items, COLUMNS_COUNT).map(
           (row, i): ReactElement => (
             <div className="row" key={`row-${i}`}>
               {row.map(

@@ -1,19 +1,15 @@
-import { QueryParameters, Response } from 'algoliasearch'
+import { Response, QueryParameters } from 'algoliasearch'
 import algoliasearch, { Index } from 'algoliasearch/lite'
-
-const NORMALIZE_RE = /(\W)([bｂdｄgｇhｈkｋmｍnｎpｐrｒsｓtｔwｗyｙzｚ])($|\s)/g
-
-export const normalize = (value: string): string =>
-  value.replace(NORMALIZE_RE, (_, ...args): string => args[0] + args[2])
+import { useEffect, useState } from 'react'
 
 const QUERY_FROM_PREFIX = 'from:'
 
-interface ParsedQuery {
+type ParsedQuery = {
   filters: string
   keywords: string[]
 }
 
-export const parseQuery = (query: string): ParsedQuery => {
+const parseQuery = (query: string): ParsedQuery => {
   const keywords: string[] = []
   const channels: string[] = []
 
@@ -58,12 +54,11 @@ const getIndex = (): Index => {
 
 let index: Index
 
-export default async function search<T>(
+function search<T>(
   query: string,
-  params: QueryParameters = {}
+  params: QueryParameters
 ): Promise<Response<T>> {
   index = index || getIndex()
-
   const { keywords, filters } = parseQuery(query)
 
   return index.search<T>({
@@ -72,4 +67,35 @@ export default async function search<T>(
     hitsPerPage: 9,
     ...params
   })
+}
+
+type SearchResults<T> = {
+  hasNext: boolean
+  items: T[]
+}
+
+export default function useSearch<T>(
+  query: string,
+  page = 0
+): SearchResults<T> {
+  const [hasNext, setHasNext] = useState(true)
+  const [items, setItems] = useState<T[]>([])
+
+  useEffect((): void => {
+    search<T>(query, { page })
+      .then(({ hits, nbPages }): void => {
+        setHasNext(nbPages > 1)
+
+        if (page > 0) {
+          setItems((previousItems): T[] => previousItems.concat(hits))
+        } else {
+          setItems(hits)
+        }
+      })
+      .catch((): void => {
+        setHasNext(false)
+      })
+  }, [query, page])
+
+  return { hasNext, items }
 }

@@ -14,7 +14,6 @@ import React, {
 import { Helmet } from 'react-helmet'
 import Toggle from 'react-toggle'
 import { ThemeContext } from '../../../context/theme-context'
-import { normalize } from '../../../lib/search'
 import { getTitle } from '../../../lib/title'
 import Emoji from '../../atoms/emoji'
 import Logo from '../../atoms/logo'
@@ -41,6 +40,11 @@ const Sun: FC = (): ReactElement => (
 const Moon: FC = (): ReactElement => (
   <Emoji label="ダークモードオン" value="🌙" />
 )
+
+const NORMALIZE_RE = /(\W)([bｂdｄgｇhｈkｋmｍnｎpｐrｒsｓtｔwｗyｙzｚ])($|\s)/g
+
+const normalize = (value: string): string =>
+  value.replace(NORMALIZE_RE, (_, ...args): string => args[0] + args[2])
 
 interface HeaderProps {
   query: string
