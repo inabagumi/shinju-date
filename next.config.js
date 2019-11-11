@@ -1,6 +1,8 @@
 const withMDX = require('@next/mdx')
 const withOffline = require('next-offline')
 
+require('dotenv').config()
+
 module.exports = withOffline(
   withMDX()({
     cssLoaderOptions: {
