@@ -1,23 +1,23 @@
 import { NextPage } from 'next'
-import React, { ReactElement } from 'react'
-import { Helmet } from 'react-helmet'
+import Head from 'next/head'
+import React, { ReactElement, useContext } from 'react'
 import Search from '../components/molecules/search'
-import { getTitle } from '../lib/title'
+import { SiteContext } from '../context/site-context'
 
 export type SearchProps = {
   query: string
 }
 
 const SearchPage: NextPage<SearchProps> = ({ query }): ReactElement => {
-  const title = [query, getTitle()].filter(Boolean).join(' - ')
-  const description = process.env.ANIMARE_SEARCH_DESCRIPTION
-  const baseUrl = process.env.ANIMARE_SEARCH_BASE_URL || 'https://example.com'
+  const { baseUrl, description, title: siteTitle } = useContext(SiteContext)
+
+  const title = [query, siteTitle].filter(Boolean).join(' - ')
   const path = query ? `/search?q=${encodeURIComponent(query)}` : '/'
 
   return (
     <>
-      <Helmet htmlAttributes={{ lang: 'ja' }}>
-        {query && <title>{query}</title>}
+      <Head>
+        <title>{title}</title>
 
         {description && <meta content={description} name="description" />}
         {query && <meta content="noindex,follow" name="robots" />}
@@ -31,7 +31,7 @@ const SearchPage: NextPage<SearchProps> = ({ query }): ReactElement => {
         <meta content={baseUrl + path} property="og:url" />
 
         <meta content="summary_large_image" name="twitter:card" />
-      </Helmet>
+      </Head>
 
       <Search query={query} />
     </>

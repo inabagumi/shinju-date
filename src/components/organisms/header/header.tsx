@@ -9,15 +9,17 @@ import React, {
   ReactElement,
   useCallback,
   useContext,
+  useEffect,
   useState
 } from 'react'
-import { Helmet } from 'react-helmet'
 import Toggle from 'react-toggle'
+import { SiteContext } from '../../../context/site-context'
 import { ThemeContext } from '../../../context/theme-context'
-import { getTitle } from '../../../lib/title'
-import Emoji from '../../atoms/emoji'
+import normalize from '../../../lib/normalize'
 import Logo from '../../atoms/logo'
 import SearchForm from '../../molecules/search-form'
+import Moon from './moon'
+import Sun from './sun'
 
 const channels = [
   {
@@ -34,25 +36,12 @@ const channels = [
   }
 ]
 
-const Sun: FC = (): ReactElement => (
-  <Emoji label="ダークモードオフ" value="☀️️" />
-)
-const Moon: FC = (): ReactElement => (
-  <Emoji label="ダークモードオン" value="🌙" />
-)
-
-const NORMALIZE_RE = /(\W)([bｂdｄgｇhｈkｋmｍnｎpｐrｒsｓtｔwｗyｙzｚ])($|\s)/g
-
-const normalize = (value: string): string =>
-  value.replace(NORMALIZE_RE, (_, ...args): string => args[0] + args[2])
-
 interface HeaderProps {
   query: string
 }
 
 const Header: FC<HeaderProps> = ({ query }): ReactElement => {
-  const title = getTitle()
-
+  const { title: siteTitle } = useContext(SiteContext)
   const { theme, toggleTheme } = useContext(ThemeContext)
   const [sidebarShown, setSidebarShown] = useState<boolean>(false)
   const [filterListShown, setFilterListShown] = useState<boolean>(false)
@@ -88,13 +77,12 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
     [router]
   )
 
+  useEffect((): void => {
+    document.documentElement.dataset.theme = theme
+  }, [theme])
+
   return (
     <>
-      <Helmet>
-        {/* eslint-disable-next-line jsx-a11y/html-has-lang */}
-        <html data-theme={theme} />
-      </Helmet>
-
       <nav
         className={classNames('navbar', 'navbar--fixed-top', {
           'navbar-sidebar--show': sidebarShown
@@ -122,7 +110,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
             </div>
             <Link href="/">
               <a
-                aria-label={title}
+                aria-label={siteTitle}
                 className="navbar__brand"
                 href="/"
                 tabIndex={-1}
@@ -191,7 +179,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
           <div className="navbar-sidebar__brand">
             <Link href="/">
               <a
-                aria-label={title}
+                aria-label={siteTitle}
                 className="navbar__brand"
                 href="/"
                 onClick={hideSidebar}
@@ -266,7 +254,8 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                       onClick={hideSidebar}
                       onKeyDown={hideSidebar}
                     >
-                      あにまーれサーチとは?
+                      {siteTitle}
+                      とは?
                     </a>
                   </Link>
                 </li>
@@ -331,29 +320,6 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
         .navbar-sidebar__brand + .navbar-sidebar__items {
           flex-grow: 1;
           flex-shrink: 0;
-        }
-
-        :global(.react-toggle--lg-only) {
-          display: none;
-        }
-
-        @media (min-width: 996px) {
-          :global(.react-toggle--lg-only) {
-            display: inline-block;
-          }
-        }
-
-        :global(.react-toggle--checked .react-toggle-thumb) {
-          border-color: var(--ifm-color-primary);
-        }
-
-        :global(.react-toggle--focus .react-toggle-thumb) {
-          box-shadow: 0 0 2px 3px var(--ifm-color-primary);
-        }
-
-        :global(.react-toggle:active:not(.react-toggle--disabled)
-            .react-toggle-thumb) {
-          box-shadow: 0 0 5px 5px var(--ifm-color-primary);
         }
       `}</style>
     </>
