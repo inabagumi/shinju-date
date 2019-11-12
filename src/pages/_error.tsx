@@ -1,6 +1,6 @@
 import Error from 'next/error'
+import Head from 'next/head'
 import React, { ReactElement } from 'react'
-import { Helmet } from 'react-helmet'
 
 export default class extends Error {
   public render(): ReactElement {
@@ -8,9 +8,9 @@ export default class extends Error {
 
     return (
       <>
-        <Helmet>
+        <Head>
           <title>エラー!</title>
-        </Helmet>
+        </Head>
 
         <div className="container margin-top--lg">
           <h1>{statusCode}</h1>

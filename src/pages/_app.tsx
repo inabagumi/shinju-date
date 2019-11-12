@@ -1,32 +1,26 @@
-import classNames from 'classnames'
-import App from 'next/app'
-import Link from 'next/link'
-import React, { ReactElement } from 'react'
-import { Helmet } from 'react-helmet'
+import { AppProps } from 'next/app'
+import Head from 'next/head'
+import React, { FC, ReactElement } from 'react'
 import { IntlProvider } from 'react-intl'
 import Header from '../components/organisms/header'
+import Sidebar from '../components/organisms/sidebar'
+import { SiteProvider } from '../context/site-context'
 import { ThemeProvider } from '../context/theme-context'
-import { getTitle } from '../lib/title'
 
 import '@formatjs/intl-relativetimeformat/polyfill'
 import '@formatjs/intl-relativetimeformat/dist/locale-data/ja'
 import 'infima/dist/css/default/default.css'
 import 'react-toggle/style.css'
 
-export default class extends App {
-  public render(): ReactElement {
-    const { Component, pageProps, router } = this.props
-    const { query } = pageProps
-    const title = getTitle()
+const MyApp: FC<AppProps> = ({ Component, pageProps }): ReactElement => {
+  const { query } = pageProps
 
-    return (
-      <IntlProvider locale="ja" timeZone="Asia/Tokyo">
+  return (
+    <IntlProvider locale="ja" timeZone="Asia/Tokyo">
+      <SiteProvider>
         <ThemeProvider>
-          <Helmet defaultTitle={title} titleTemplate={`%s - ${title}`}>
-            <meta
-              content="initial-scale=1,minimum-scale=1,user-scalable=no,width=device-width"
-              name="viewport"
-            />
+          <Head>
+            <meta content="width=device-width" name="viewport" />
             <meta content="#212121" name="theme-color" />
 
             <link href="/favicon.png" rel="icon" />
@@ -34,10 +28,9 @@ export default class extends App {
             <link
               href="/opensearch.xml"
               rel="search"
-              title={title}
               type="application/opensearchdescription+xml"
             />
-          </Helmet>
+          </Head>
 
           <Header query={query || ''} />
 
@@ -48,49 +41,7 @@ export default class extends App {
               </main>
 
               <div className="col col--2">
-                <div className="sidebar padding-vert--sm">
-                  <div className="menu">
-                    <ul className="menu__list">
-                      <li className="menu__list-item">
-                        <Link href="/about" prefetch={false}>
-                          <a
-                            className={classNames('menu__link', {
-                              'menu__link--active': router.pathname === '/about'
-                            })}
-                            href="/about"
-                          >
-                            あにまーれサーチとは
-                          </a>
-                        </Link>
-                      </li>
-                      <li className="menu__list-item">
-                        <Link href="/terms" prefetch={false}>
-                          <a
-                            className={classNames('menu__link', {
-                              'menu__link--active': router.pathname === '/terms'
-                            })}
-                            href="/terms"
-                          >
-                            利用規約
-                          </a>
-                        </Link>
-                      </li>
-                      <li className="menu__list-item">
-                        <Link href="/privacy" prefetch={false}>
-                          <a
-                            className={classNames('menu__link', {
-                              'menu__link--active':
-                                router.pathname === '/privacy'
-                            })}
-                            href="/privacy"
-                          >
-                            プライバシーポリシー
-                          </a>
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
+                <Sidebar />
               </div>
             </div>
           </div>
@@ -106,31 +57,34 @@ export default class extends App {
             body {
               padding-top: 60px;
             }
-          `}</style>
 
-          <style jsx>{`
-            .sidebar {
-              display: flex;
-              flex-direction: column;
-              height: calc(100vh - var(--ifm-navbar-height));
-              justify-content: flex-end;
-              overflow-y: auto;
-              position: sticky;
-              top: var(--ifm-navbar-height);
+            .react-toggle--lg-only {
+              display: none;
             }
 
-            @media (max-width: 996px) {
-              .sidebar {
-                display: none;
+            @media (min-width: 996px) {
+              .react-toggle--lg-only {
+                display: inline-block;
               }
             }
 
-            .menu__link {
-              font-size: 0.85rem;
+            .react-toggle--checked .react-toggle-thumb {
+              border-color: var(--ifm-color-primary);
+            }
+
+            .react-toggle--focus .react-toggle-thumb {
+              box-shadow: 0 0 2px 3px var(--ifm-color-primary);
+            }
+
+            .react-toggle:active:not(.react-toggle--disabled)
+              .react-toggle-thumb {
+              box-shadow: 0 0 5px 5px var(--ifm-color-primary);
             }
           `}</style>
         </ThemeProvider>
-      </IntlProvider>
-    )
-  }
+      </SiteProvider>
+    </IntlProvider>
+  )
 }
+
+export default MyApp

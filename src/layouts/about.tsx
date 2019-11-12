@@ -1,25 +1,29 @@
+import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, { FC, ReactElement } from 'react'
-import { Helmet } from 'react-helmet'
+import React, { FC, ReactElement, useContext } from 'react'
+import { SiteContext } from '../context/site-context'
 
 type Props = {
   title?: string
 }
 
 const About: FC<Props> = ({ children, title }): ReactElement => {
+  const { title: siteTitle } = useContext(SiteContext)
   const router = useRouter()
 
   return (
     <>
-      <Helmet>{title && <title>{title}</title>}</Helmet>
+      <Head>
+        <title>{title ? [title, siteTitle].join(' - ') : siteTitle}</title>
+      </Head>
 
       <nav aria-label="パンくずリスト" className="margin-vert--md">
         <ul className="breadcrumbs breadcrumbs--sm">
           <li className="breadcrumb__item">
             <Link href="/">
               <a className="breadcrumb__link" href="/">
-                あにまーれサーチ
+                {siteTitle}
               </a>
             </Link>
           </li>
