@@ -52,7 +52,7 @@ export default class extends App {
                   <div className="menu">
                     <ul className="menu__list">
                       <li className="menu__list-item">
-                        <Link href="/about">
+                        <Link href="/about" prefetch={false}>
                           <a
                             className={classNames('menu__link', {
                               'menu__link--active': router.pathname === '/about'
@@ -64,7 +64,7 @@ export default class extends App {
                         </Link>
                       </li>
                       <li className="menu__list-item">
-                        <Link href="/terms">
+                        <Link href="/terms" prefetch={false}>
                           <a
                             className={classNames('menu__link', {
                               'menu__link--active': router.pathname === '/terms'
@@ -76,7 +76,7 @@ export default class extends App {
                         </Link>
                       </li>
                       <li className="menu__list-item">
-                        <Link href="/privacy">
+                        <Link href="/privacy" prefetch={false}>
                           <a
                             className={classNames('menu__link', {
                               'menu__link--active':

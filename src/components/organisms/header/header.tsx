@@ -257,7 +257,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
             <div className="menu">
               <ul className="menu__list">
                 <li className="menu__list-item">
-                  <Link href="/about">
+                  <Link href="/about" prefetch={false}>
                     <a
                       className={classNames('menu__link', {
                         'menu__link--active': router.pathname === '/about'
@@ -271,7 +271,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                   </Link>
                 </li>
                 <li className="menu__list-item">
-                  <Link href="/terms">
+                  <Link href="/terms" prefetch={false}>
                     <a
                       className={classNames('menu__link', {
                         'menu__link--active': router.pathname === '/terms'
@@ -285,7 +285,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                   </Link>
                 </li>
                 <li className="menu__list-item">
-                  <Link href="/privacy">
+                  <Link href="/privacy" prefetch={false}>
                     <a
                       className={classNames('menu__link', {
                         'menu__link--active': router.pathname === '/privacy'
