@@ -5883,10 +5883,10 @@ react-intersection-observer@^8.25.1:
   dependencies:
     tiny-invariant "^1.0.6"
 
-react-intl@^3.5.0:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/react-intl/-/react-intl-3.5.0.tgz#452ce2bc75044c4fc914b25f8b0bc2252cc36e82"
-  integrity sha512-bz5PuK1ZK7K4liRdl48Jbp9AUiWQBuEOqnCnOVZXgGKbJ/1TgeYiU0IyGu8yGMPD7b5A5RMCOdOjYI0/H5XSUw==
+react-intl@^3.6.0:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/react-intl/-/react-intl-3.6.0.tgz#100185ee58620ecf1cf229de9afcb91ae9dd4e60"
+  integrity sha512-oXzHXRPHz2IaG8jmS/G8v2KXIZwOQPzjqb3MUIIjPY+usWKy7lXXSbuuAfU4co9erSuJj1zA5nMeEANfNI1PEg==
   dependencies:
     "@formatjs/intl-listformat" "^1.2.2"
     "@formatjs/intl-relativetimeformat" "^4.4.1"
