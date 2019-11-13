@@ -20,6 +20,7 @@ const nextConfig = {
   },
   pageExtensions: ['mdx', 'tsx'],
   target: 'serverless',
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   transformManifest: manifest => ['/'].concat(manifest),
   workboxOpts: {
     clientsClaim: true,

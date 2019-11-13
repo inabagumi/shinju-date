@@ -13,7 +13,7 @@ const parseQuery = (query: string): ParsedQuery => {
   const keywords: string[] = []
   const channels: string[] = []
 
-  query.split(/\s+/).forEach((keyword): void => {
+  query.split(/\s+/).forEach(keyword => {
     if (
       keyword.startsWith(QUERY_FROM_PREFIX) &&
       keyword.length > QUERY_FROM_PREFIX.length
@@ -114,7 +114,7 @@ const createSearchReducer = <T>(): Reducer<State<T>, Action<T>> => {
   }
 }
 
-export default function useSearch<T>(query: string, page = 0): State<T> {
+export default <T>(query: string, page = 0): State<T> => {
   const searchReducer = createSearchReducer<T>()
   const [state, dispatch] = useReducer(searchReducer, {
     hasNext: true,
@@ -122,21 +122,21 @@ export default function useSearch<T>(query: string, page = 0): State<T> {
     items: []
   })
 
-  useEffect((): void => {
+  useEffect(() => {
     dispatch({ type: 'SEARCH_INIT' })
 
     search<T>(query, { page })
-      .then(({ hits: items, nbPages }): void => {
+      .then(({ hits: items, nbPages, page: actualPage }) => {
         dispatch({
           payload: {
-            hasNext: nbPages > 1,
+            hasNext: actualPage < nbPages - 1,
             items,
-            page
+            page: actualPage
           },
           type: 'SEARCH_SUCCESS'
         })
       })
-      .catch((): void => {
+      .catch(() => {
         dispatch({ type: 'SEARCH_FAILURE' })
       })
   }, [query, page])
