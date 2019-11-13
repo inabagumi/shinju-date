@@ -1,6 +1,6 @@
 import { Response, QueryParameters } from 'algoliasearch'
 import algoliasearch, { Index } from 'algoliasearch/lite'
-import { useEffect, useState } from 'react'
+import { Reducer, useEffect, useReducer } from 'react'
 
 const QUERY_FROM_PREFIX = 'from:'
 
@@ -69,33 +69,77 @@ function search<T>(
   })
 }
 
-type SearchResults<T> = {
+type State<T> = {
   hasNext: boolean
   items: T[]
+  isLoading: boolean
 }
 
-export default function useSearch<T>(
-  query: string,
-  page = 0
-): SearchResults<T> {
-  const [hasNext, setHasNext] = useState(true)
-  const [items, setItems] = useState<T[]>([])
+type ActionPayload<T> = {
+  hasNext: boolean
+  items: T[]
+  page: number
+}
+
+type Action<T> =
+  | { type: 'SEARCH_FAILURE' }
+  | { type: 'SEARCH_INIT' }
+  | { payload: ActionPayload<T>; type: 'SEARCH_SUCCESS' }
+
+const createSearchReducer = <T>(): Reducer<State<T>, Action<T>> => {
+  return (state: State<T>, action: Action<T>): State<T> => {
+    switch (action.type) {
+      case 'SEARCH_FAILURE':
+        return {
+          ...state,
+          hasNext: false,
+          isLoading: false
+        }
+      case 'SEARCH_INIT':
+        return {
+          ...state,
+          isLoading: true
+        }
+      case 'SEARCH_SUCCESS':
+        return {
+          ...state,
+          hasNext: action.payload.hasNext,
+          isLoading: false,
+          items:
+            action.payload.page > 0
+              ? state.items.concat(action.payload.items)
+              : action.payload.items
+        }
+    }
+  }
+}
+
+export default function useSearch<T>(query: string, page = 0): State<T> {
+  const searchReducer = createSearchReducer<T>()
+  const [state, dispatch] = useReducer(searchReducer, {
+    hasNext: true,
+    isLoading: false,
+    items: []
+  })
 
   useEffect((): void => {
-    search<T>(query, { page })
-      .then(({ hits, nbPages }): void => {
-        setHasNext(nbPages > 1)
+    dispatch({ type: 'SEARCH_INIT' })
 
-        if (page > 0) {
-          setItems((previousItems): T[] => previousItems.concat(hits))
-        } else {
-          setItems(hits)
-        }
+    search<T>(query, { page })
+      .then(({ hits: items, nbPages }): void => {
+        dispatch({
+          payload: {
+            hasNext: nbPages > 1,
+            items,
+            page
+          },
+          type: 'SEARCH_SUCCESS'
+        })
       })
       .catch((): void => {
-        setHasNext(false)
+        dispatch({ type: 'SEARCH_FAILURE' })
       })
   }, [query, page])
 
-  return { hasNext, items }
+  return state
 }
