@@ -20,11 +20,13 @@ const nextConfig = {
   },
   pageExtensions: ['mdx', 'tsx'],
   target: 'serverless',
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  transformManifest: manifest => ['/'].concat(manifest),
   workboxOpts: {
     clientsClaim: true,
     runtimeCaching: [
+      {
+        handler: 'CacheFirst',
+        urlPattern: /^\/(?:about|privacy|search|terms)$/
+      },
       {
         handler: 'NetworkFirst',
         urlPattern: /\.(ico|png)$/i
