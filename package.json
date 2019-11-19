@@ -25,7 +25,7 @@
     "@mdx-js/loader": "^1.5.1",
     "@types/algoliasearch": "^3.34.5",
     "@types/classnames": "^2.2.9",
-    "@types/lodash": "^4.14.148",
+    "@types/lodash": "^4.14.149",
     "@types/node": "^12.12.8",
     "@types/react": "^16.9.11",
     "@types/react-toggle": "^4.0.2",
