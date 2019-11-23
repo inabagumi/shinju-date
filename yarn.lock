@@ -856,6 +856,13 @@
   dependencies:
     "@formatjs/intl-utils" "^1.4.2"
 
+"@formatjs/intl-relativetimeformat@^4.4.4":
+  version "4.4.4"
+  resolved "https://registry.yarnpkg.com/@formatjs/intl-relativetimeformat/-/intl-relativetimeformat-4.4.4.tgz#1f902bb21b9396a3f0a5deef910f74fa346d1cbb"
+  integrity sha512-8nbjuIJI8VLMpk7aqVuUUW3sOq5OPDJMHBTeMu2DSSTFkqyqzzqNHgF4s4T94f+QeoUFXc02hZNw3YrGRTTlZQ==
+  dependencies:
+    "@formatjs/intl-utils" "^1.4.2"
+
 "@formatjs/intl-unified-numberformat@^2.1.4":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@formatjs/intl-unified-numberformat/-/intl-unified-numberformat-2.1.4.tgz#3e99d4ed2a179003f7c4af9124749052c95dfbf1"
