@@ -1,7 +1,7 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@formatjs/intl-relativetimeformat": "^4.4.3",
+    "@formatjs/intl-relativetimeformat": "^4.4.4",
     "@next/mdx": "^9.1.4",
     "algoliasearch": "^3.35.1",
     "classnames": "^2.2.6",
