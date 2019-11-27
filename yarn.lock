@@ -849,19 +849,19 @@
   dependencies:
     "@formatjs/intl-utils" "^1.4.3"
 
-"@formatjs/intl-relativetimeformat@^4.4.4":
-  version "4.4.4"
-  resolved "https://registry.yarnpkg.com/@formatjs/intl-relativetimeformat/-/intl-relativetimeformat-4.4.4.tgz#1f902bb21b9396a3f0a5deef910f74fa346d1cbb"
-  integrity sha512-8nbjuIJI8VLMpk7aqVuUUW3sOq5OPDJMHBTeMu2DSSTFkqyqzzqNHgF4s4T94f+QeoUFXc02hZNw3YrGRTTlZQ==
-  dependencies:
-    "@formatjs/intl-utils" "^1.4.2"
-
 "@formatjs/intl-relativetimeformat@^4.4.5":
   version "4.4.5"
   resolved "https://registry.yarnpkg.com/@formatjs/intl-relativetimeformat/-/intl-relativetimeformat-4.4.5.tgz#96a8edf5791931123789c18b6be26b725b8e2937"
   integrity sha512-dxUn3/+rfqBCmJrBNzKJUxIyIQSlmTUKUHxE/O4naEb2H7nnliW7Iy4Y/4ArjiL6PQlORMktQzzYJwAVUGbqNQ==
   dependencies:
     "@formatjs/intl-utils" "^1.4.3"
+
+"@formatjs/intl-relativetimeformat@^4.4.6":
+  version "4.4.6"
+  resolved "https://registry.yarnpkg.com/@formatjs/intl-relativetimeformat/-/intl-relativetimeformat-4.4.6.tgz#d5ac5ea857186aae6c5cc71194134a18e26c3225"
+  integrity sha512-eyYNGp8fTUGnWnX1sYpJfu1zqUQDo/30HIkAOs9lwTpU1mTwbVUCkA9m6ivYWo/NNoKNVACbwFctspl+NimkRg==
+  dependencies:
+    "@formatjs/intl-utils" "^1.4.4"
 
 "@formatjs/intl-unified-numberformat@^2.1.6":
   version "2.1.6"
@@ -870,15 +870,15 @@
   dependencies:
     "@formatjs/intl-utils" "^1.4.3"
 
-"@formatjs/intl-utils@^1.4.2":
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/@formatjs/intl-utils/-/intl-utils-1.4.2.tgz#446a032eeab4696ab3a1136ed388f7d7683ff067"
-  integrity sha512-XF+/49yOoCJa/w37M3a2u6YZrUy9efmb+b5gXWmOF6rqM6FoEUw8aApj2NJV7Njx25SA+jNT/MYukPLDWRQxrQ==
-
 "@formatjs/intl-utils@^1.4.3":
   version "1.4.3"
   resolved "https://registry.yarnpkg.com/@formatjs/intl-utils/-/intl-utils-1.4.3.tgz#97e8d79ec6ab8173b95bd285ce4b1ef9be6c4c24"
   integrity sha512-9zemPM/4+KgW14J8BJJFv0KEhdaPYgcYk5CUVWbwjl6VqOR/pATpQzac97VdIgkXODxMtCQ8tYEPz+LpmD+6Xw==
+
+"@formatjs/intl-utils@^1.4.4":
+  version "1.4.4"
+  resolved "https://registry.yarnpkg.com/@formatjs/intl-utils/-/intl-utils-1.4.4.tgz#1f3120448dc4e9968d859fd85aa027b1ae0b29bc"
+  integrity sha512-FYLEfy5rn1AYV03Vm8ey4snJRwcXzlGJWdi+oDEAMogyhPoFX4Y/jCeFSMfkcxbztYfNM8zzJqXlRBTLtAYldg==
 
 "@formatjs/macro@^0.2.5":
   version "0.2.5"
