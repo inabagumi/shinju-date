@@ -10,15 +10,6 @@
       "ANIMARE_SEARCH_TITLE": "あにまーれサーチ"
     }
   },
-  "builds": [
-    {
-      "config": {
-        "maxLambdaSize": "50mb"
-      },
-      "src": "package.json",
-      "use": "@now/next"
-    }
-  ],
   "env": {
     "NODE_ICU_DATA": "node_modules/full-icu"
   },
