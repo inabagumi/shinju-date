@@ -1,5 +1,4 @@
 {
-  "alias": ["search.animare.cafe"],
   "build": {
     "env": {
       "ALGOLIA_API_KEY": "@algolia-api-key",
