@@ -23,6 +23,10 @@ import Sun from './sun'
 
 const channels = [
   {
+    id: 'UCRvpMpzAXBRKJQuk-8-Sdvg',
+    title: '日ノ隈らん'
+  },
+  {
     id: 'UC0Owc36U9lOyi9Gx9Ic-4qg',
     title: '因幡はねる'
   },
@@ -31,8 +35,36 @@ const channels = [
     title: '宗谷いちか'
   },
   {
-    id: 'UCRvpMpzAXBRKJQuk-8-Sdvg',
-    title: '日ノ隈らん'
+    id: 'UCDh2bWI5EDu7PavqwICkVpA',
+    title: '堰代ミコ'
+  },
+  {
+    id: 'UCeLzT-7b2PBcunJplmWtoDg',
+    title: '周防パトラ'
+  },
+  {
+    id: 'UCYTz3uIgwVY3ZU-IQJS8r3A',
+    title: '島村シャルロット'
+  },
+  {
+    id: 'UCwePpiw1ocZRSNSkpKvVISw',
+    title: '西園寺メアリ'
+  },
+  {
+    id: 'UC3EhsuKdEkI99TWZwZgWutg',
+    title: '杏戸ゆげ'
+  },
+  {
+    id: 'UCL-2thbJ7grC9fmGF4OLuTg',
+    title: '鴨見カモミ'
+  },
+  {
+    id: 'UChXm-xAYPfygrbyLo2yCASQ',
+    title: '季咲あんこ'
+  },
+  {
+    id: 'UCmqrvfLMws-GLGHQcB5dasg',
+    title: '花奏かのん'
   }
 ]
 
