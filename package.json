@@ -18,7 +18,7 @@
     "react-intl": "^3.10.0",
     "react-toggle": "^4.1.1"
   },
-  "description": "AniMare Search is a web service for searching videos.",
+  "description": "SHINJU DATE is a web service for searching videos.",
   "devDependencies": {
     "@inabagumi/eslint-config-react": "^5.0.0",
     "@inabagumi/prettier-config": "^1.1.0",
@@ -41,8 +41,9 @@
       "@inabagumi/react"
     ]
   },
+  "homepage": "https://shinju.date/",
   "license": "MIT",
-  "name": "@inabagumi/animare-search",
+  "name": "@inabagumi/shinju-date",
   "prettier": "@inabagumi/prettier-config",
   "private": true,
   "scripts": {

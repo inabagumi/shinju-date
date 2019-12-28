@@ -9,10 +9,10 @@ const defaultValues = {
 export const SiteContext = createContext(defaultValues)
 
 export const SiteProvider: FC = ({ children }): ReactElement => {
-  const baseUrl = process.env.ANIMARE_SEARCH_BASE_URL || defaultValues.baseUrl
+  const baseUrl = process.env.SHINJU_DATE_BASE_URL || defaultValues.baseUrl
   const description =
-    process.env.ANIMARE_SEARCH_DESCRIPTION || defaultValues.description
-  const title = process.env.ANIMARE_SEARCH_TITLE || defaultValues.title
+    process.env.SHINJU_DATE_DESCRIPTION || defaultValues.description
+  const title = process.env.SHINJU_DATE_TITLE || defaultValues.title
 
   return (
     <SiteContext.Provider value={{ baseUrl, description, title }}>

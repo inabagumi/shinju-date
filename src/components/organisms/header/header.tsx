@@ -115,7 +115,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                 href="/"
                 tabIndex={-1}
               >
-                <Logo />
+                <Logo className="navbar__logo" />
               </a>
             </Link>
           </div>
@@ -186,7 +186,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
                 onKeyDown={hideSidebar}
                 tabIndex={-1}
               >
-                <Logo />
+                <Logo className="navbar__logo" />
               </a>
             </Link>
             <Toggle
@@ -320,6 +320,10 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
         .navbar-sidebar__brand + .navbar-sidebar__items {
           flex-grow: 1;
           flex-shrink: 0;
+        }
+
+        .navbar :global(.navbar__logo) {
+          width: auto;
         }
       `}</style>
     </>
