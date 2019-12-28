@@ -25,7 +25,7 @@ const SearchPage: NextPage<SearchProps> = ({ query }): ReactElement => {
         <link href={baseUrl + path} rel="canonical" />
 
         <meta content={description} property="og:description" />
-        <meta content={`${baseUrl}/main-visual.png`} property="og:image" />
+        <meta content={`${baseUrl}/main-visual.jpg`} property="og:image" />
         <meta content={title} property="og:title" />
         <meta content="website" property="og:type" />
         <meta content={baseUrl + path} property="og:url" />
