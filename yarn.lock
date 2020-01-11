@@ -936,13 +936,6 @@
   dependencies:
     "@formatjs/intl-utils" "^2.0.4"
 
-"@formatjs/intl-relativetimeformat@^4.5.7":
-  version "4.5.7"
-  resolved "https://registry.yarnpkg.com/@formatjs/intl-relativetimeformat/-/intl-relativetimeformat-4.5.7.tgz#5ededab9dd0c2249be5cb75a899c0d253647eb2b"
-  integrity sha512-sKqBXTU8yaZE0UVlPDmnMICpKhU93rCJulqrhE8E5qWglAZuuGOPA98XEQM2OIRXg+2T6DkHu/Qm4MpUj9/J2Q==
-  dependencies:
-    "@formatjs/intl-utils" "^2.0.4"
-
 "@formatjs/intl-unified-numberformat@^3.0.4":
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/@formatjs/intl-unified-numberformat/-/intl-unified-numberformat-3.0.4.tgz#da689bfdd72e4857ee5a02cccdfd4ddf2c401ab2"
@@ -950,11 +943,6 @@
   dependencies:
     "@formatjs/intl-utils" "^2.0.4"
     unicode-12.1.0 "0.8"
-
-"@formatjs/intl-utils@^2.0.4":
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/@formatjs/intl-utils/-/intl-utils-2.0.4.tgz#936961b7eade01f6d331d31cc9fb512d1fb3981a"
-  integrity sha512-zd92HkqxeEprsyM3JLGr+jhhMkmY0NCYQ+Jyw/DC6qZHiFejdO19doYcH5/iMUUPEYLI2h/k7TETqAEez8Btog==
 
 "@formatjs/intl-utils@^2.0.4":
   version "2.0.4"
@@ -1072,10 +1060,10 @@
   resolved "https://registry.yarnpkg.com/@next/mdx/-/mdx-9.1.7.tgz#bd5299af13815a2f9e3ec669137ed0526c045593"
   integrity sha512-xVEoN9czh9MYO9qT7a5u9+iZnrwmeiJ5hMPY4/+02h5UaeIsJriFHMDiIXtzeZLVPBS61PVZaiyVdR01r8QBPw==
 
-"@types/algoliasearch@^3.34.7":
-  version "3.34.7"
-  resolved "https://registry.yarnpkg.com/@types/algoliasearch/-/algoliasearch-3.34.7.tgz#7d0d565f658dbdbb2c6201dbc750dd66e0701ff5"
-  integrity sha512-5loTXY3jFdKwSDFtKWSBdhKLNs2TI+YKnyNCnUh/WnOEjMbDi8fZHb6sflW8zs9VL7lYtwGkd62ralE7kjZjNQ==
+"@types/algoliasearch@^3.34.8":
+  version "3.34.8"
+  resolved "https://registry.yarnpkg.com/@types/algoliasearch/-/algoliasearch-3.34.8.tgz#a5b002e2b4256839c50fa1bdfcb94a137cd1721a"
+  integrity sha512-lQUO+rAGW1QgUknnGUjtFAuPJwp9h5CYe1az42oISHd1kqIhW1iEwvEUag1bUo3+UAcq2IxASViUF/yAOvirEA==
 
 "@types/classnames@^2.2.9":
   version "2.2.9"
