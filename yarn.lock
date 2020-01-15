@@ -1075,10 +1075,10 @@
   resolved "https://registry.yarnpkg.com/@mdx-js/util/-/util-1.5.3.tgz#49f939313a8561814ef72c231257865aa127ca55"
   integrity sha512-OXeOtHO+eN50QlIkm4Vj4vqNGtowv4FH9L21WvcbEM0eeZrb7aANiFTN70lBQEXcucxCMRkd/6IA9LxhotZEQw==
 
-"@next/mdx@^9.1.7":
-  version "9.1.7"
-  resolved "https://registry.yarnpkg.com/@next/mdx/-/mdx-9.1.7.tgz#bd5299af13815a2f9e3ec669137ed0526c045593"
-  integrity sha512-xVEoN9czh9MYO9qT7a5u9+iZnrwmeiJ5hMPY4/+02h5UaeIsJriFHMDiIXtzeZLVPBS61PVZaiyVdR01r8QBPw==
+"@next/mdx@^9.2.0":
+  version "9.2.0"
+  resolved "https://registry.yarnpkg.com/@next/mdx/-/mdx-9.2.0.tgz#f705fd11357f84bec14c4432f6f176ba33fa6345"
+  integrity sha512-UvmpvBr15g4nxQcppiOT3Ej8CLJ9wx/aUICuF4HDCdip5aN9R9epsuZy38y08kvbnbeOlpuJPDpu46A4joXvzA==
 
 "@types/algoliasearch@^3.34.8":
   version "3.34.8"
@@ -1922,7 +1922,7 @@ browserify-zlib@^0.2.0:
   dependencies:
     pako "~1.0.5"
 
-browserslist@^4.6.0, browserslist@^4.6.4, browserslist@^4.8.0, browserslist@^4.8.3:
+browserslist@4.8.3, browserslist@^4.6.0, browserslist@^4.6.4, browserslist@^4.8.0, browserslist@^4.8.3:
   version "4.8.3"
   resolved "https://registry.yarnpkg.com/browserslist/-/browserslist-4.8.3.tgz#65802fcd77177c878e015f0e3189f2c4f627ba44"
   integrity sha512-iU43cMMknxG1ClEZ2MDKeonKE1CCrFVkQK2AqO2YWFmvIrx4JWrvQ4w4hQez6EpVI8rHTtqh/ruHHDHSOKxvUg==
@@ -4890,10 +4890,10 @@ next-offline@^4.0.6:
     webpack "^4.19.1"
     workbox-webpack-plugin "^4.3.1"
 
-next@^9.1.7:
-  version "9.1.7"
-  resolved "https://registry.yarnpkg.com/next/-/next-9.1.7.tgz#d813ab3a21a98aac3713f6c1934a8533b6162eb0"
-  integrity sha512-qG6TsPl7ANuNPFhKq/1Pd4pAf24QCmUAjc0P8qYrSSsbwNIco1KNNXOyZajV/YlqBjBy/fCrZoErKK3zEUVz6w==
+next@^9.2.0:
+  version "9.2.0"
+  resolved "https://registry.yarnpkg.com/next/-/next-9.2.0.tgz#1adc85ad45143114cd22e6a68337f56319cd59d2"
+  integrity sha512-c4gyJotZHuvq9dslum+Z2Z21jjb9qWMYybV+IS9yEg7hTjs8OyKU59snyJ1Bi0ul84OdyLOZ4ytjch9zMw9lEQ==
   dependencies:
     "@ampproject/toolbox-optimizer" "1.1.1"
     "@babel/core" "7.7.2"
@@ -4919,6 +4919,7 @@ next@^9.1.7:
     babel-plugin-syntax-jsx "6.18.0"
     babel-plugin-transform-define "2.0.0"
     babel-plugin-transform-react-remove-prop-types "0.4.24"
+    browserslist "4.8.3"
     cache-loader "4.1.0"
     chalk "2.4.2"
     ci-info "2.0.0"
