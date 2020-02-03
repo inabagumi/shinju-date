@@ -1,5 +1,9 @@
-import { Response, QueryParameters } from 'algoliasearch'
-import algoliasearch, { Index } from 'algoliasearch/lite'
+import {
+  ObjectWithObjectID,
+  SearchOptions,
+  SearchResponse
+} from '@algolia/client-search'
+import algoliasearch, { SearchIndex } from 'algoliasearch/lite'
 import { Reducer, useEffect, useReducer } from 'react'
 
 const QUERY_FROM_PREFIX = 'from:'
@@ -32,7 +36,7 @@ const parseQuery = (query: string): ParsedQuery => {
   }
 }
 
-const getIndex = (): Index => {
+const getIndex = (): SearchIndex => {
   if (!process.env.ALGOLIA_APPLICATION_ID) {
     throw new TypeError('Application ID is required.')
   }
@@ -52,18 +56,17 @@ const getIndex = (): Index => {
   return index
 }
 
-let index: Index
+let index: SearchIndex
 
 function search<T>(
   query: string,
-  params: QueryParameters
-): Promise<Response<T>> {
+  params: SearchOptions
+): Readonly<Promise<SearchResponse<T>>> {
   index = index || getIndex()
   const { keywords, filters } = parseQuery(query)
 
-  return index.search<T>({
+  return index.search<T>(keywords.join(' '), {
     filters,
-    query: keywords.join(' '),
     hitsPerPage: 9,
     ...params
   })
@@ -77,7 +80,7 @@ type State<T> = {
 
 type ActionPayload<T> = {
   hasNext: boolean
-  items: T[]
+  items: (T & ObjectWithObjectID)[]
   page: number
 }
 
@@ -130,7 +133,7 @@ export default <T>(query: string, page = 0): State<T> => {
         dispatch({
           payload: {
             hasNext: actualPage < nbPages - 1,
-            items,
+            items: [...items],
             page: actualPage
           },
           type: 'SEARCH_SUCCESS'
