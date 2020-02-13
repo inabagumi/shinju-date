@@ -26,7 +26,6 @@
       "src": ".*"
     },
     {
-      "dest": "/_next/static/service-worker.js",
       "headers": {
         "cache-control": "max-age=0"
       },
@@ -50,16 +49,6 @@
         "cache-control": "max-age=300,s-maxage=60"
       },
       "src": "/(?:search)?"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "dest": "/_error",
-      "headers": {
-        "cache-control": "max-age=0"
-      },
-      "src": ".*"
     }
   ],
   "scope": "inabagumi",

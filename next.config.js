@@ -16,7 +16,16 @@ const nextConfig = {
     SHINJU_DATE_TITLE: process.env.SHINJU_DATE_TITLE
   },
   experimental: {
-    css: true
+    rewrites: () => [
+      {
+        destination: '/search',
+        source: '/'
+      },
+      {
+        destination: '/_next/static/service-worker.js',
+        source: '/service-worker.js'
+      }
+    ]
   },
   pageExtensions: ['mdx', 'tsx'],
   target: 'serverless',
