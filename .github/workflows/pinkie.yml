@@ -2,7 +2,7 @@ name: Fetch Ichika channel, and Ran channel
 
 on:
   schedule:
-  - cron: '2 2/3 * * *'
+  - cron: '35 1,6,10,13,16,19,22 * * *'
 
 jobs:
   build:
