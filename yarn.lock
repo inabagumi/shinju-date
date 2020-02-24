@@ -6560,10 +6560,10 @@ react-error-overlay@5.1.6:
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-5.1.6.tgz#0cd73407c5d141f9638ae1e0c63e7b2bf7e9929d"
   integrity sha512-X1Y+0jR47ImDVr54Ab6V9eGk0Hnu7fVWGeHQSOXHf/C2pF9c6uy3gef8QUeuUiWlNb0i08InPSE5a/KJzNzw1Q==
 
-react-intersection-observer@^8.25.3:
-  version "8.25.3"
-  resolved "https://registry.yarnpkg.com/react-intersection-observer/-/react-intersection-observer-8.25.3.tgz#f26a8b031d372b5b9e6e7f7ec11de696a304ccd2"
-  integrity sha512-H4VfC1w6G/zlBaRcQ2OS9o2ix4Xhi60v7qEL+msCG03AmyN1QlzLgqN1vglK4hHctE/HDoNzC1V+eJUhRxFHPQ==
+react-intersection-observer@^8.26.0:
+  version "8.26.0"
+  resolved "https://registry.yarnpkg.com/react-intersection-observer/-/react-intersection-observer-8.26.0.tgz#83b8795b628d8553036feb6275982dfa12a58650"
+  integrity sha512-xjyxPOdjazidcRtbO5EpOV+apeEZAp07dl1n0zMzYzPuTYKC4hSVsXzLTduT+luk/k5S1dZeCo2ri4ZlqPt7DA==
   dependencies:
     tiny-invariant "^1.1.0"
 
