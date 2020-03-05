@@ -15,7 +15,7 @@
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-intersection-observer": "^8.26.1",
-    "react-intl": "^3.12.1",
+    "react-intl": "^4.1.0",
     "react-toggle": "^4.1.1"
   },
   "description": "SHINJU DATE is a web service for searching videos.",
