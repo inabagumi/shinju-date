@@ -6624,10 +6624,10 @@ react-intersection-observer@^8.26.1:
   dependencies:
     tiny-invariant "^1.1.0"
 
-react-intl@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/react-intl/-/react-intl-4.1.0.tgz#7f1989bb7fe809a1f1c2cd4b60fea20a7ef59f0d"
-  integrity sha512-Zy87BSKy4t6JzEFYTiOOHGvpVsXowVJUspQpTSN+PZwpP9/EXx+ub4aKHIiYmY+26uFjgd8y0a/08jfV6iKOKw==
+react-intl@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/react-intl/-/react-intl-4.1.1.tgz#f6e409f6fb114740d603db9fe35881252cd78944"
+  integrity sha512-aQ3yzQJaLXALwBX1tV2Wllp2heNjDTfNJPbk2jX1Cc2mMI4O2DwI5A3BzqSvgTtiiaQN3jMYTYGQElWdNAZDwA==
   dependencies:
     "@formatjs/intl-displaynames" "^1.2.1"
     "@formatjs/intl-listformat" "^1.4.1"
