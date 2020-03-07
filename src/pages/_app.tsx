@@ -54,10 +54,6 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }): ReactElement => {
               --ifm-line-height-base: 2;
             }
 
-            body {
-              padding-top: 60px;
-            }
-
             .react-toggle--lg-only {
               display: none;
             }
