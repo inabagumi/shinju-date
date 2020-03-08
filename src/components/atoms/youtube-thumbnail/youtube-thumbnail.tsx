@@ -26,6 +26,7 @@ const YouTubeThumbnail: FC<YouTubeThumbnailProps> = ({ id }): ReactElement => {
         <img
           alt=""
           className="thumbnail__image"
+          loading="lazy"
           src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`}
         />
       </picture>
