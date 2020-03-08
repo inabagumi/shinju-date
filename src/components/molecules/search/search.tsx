@@ -1,8 +1,8 @@
 import classNames from 'classnames'
-import chunk from 'lodash/chunk'
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
-import useSearch from '../../../hooks/use-search'
+import { useSWRPages } from 'swr'
+import { useSearch as search } from '../../../search'
 import Video from '../../../types/video'
 import Spinner from '../../atoms/spinner'
 import VideoCard from '../../atoms/video-card'
@@ -13,51 +13,56 @@ interface Props {
   query: string
 }
 
-const Search: FC<Props> = ({ query }): JSX.Element => {
-  const [page, setPage] = useState(0)
-  const { hasNext, isLoading, items } = useSearch<Video>(query, page)
-  const [loadingRef, inView] = useInView()
+const Search: FC<Props> = ({ query }) => {
+  const { isLoadingMore, isReachingEnd, loadMore, pages } = useSWRPages(
+    'search-page',
+    ({ offset: page, withSWR }) => {
+      const { data: items } = withSWR(
+        search<Video>(query, { page: page || 0 })
+      )
+
+      if (!items) return null
+
+      return (items as Video[]).map(value => {
+        const className = classNames(
+          'col',
+          `col--${12 / COLUMNS_COUNT}`,
+          'padding-bottom--lg',
+          'padding-horiz--sm'
+        )
+
+        return (
+          <div className={className} key={value.url}>
+            <VideoCard value={value} />
+          </div>
+        )
+      })
+    },
+    ({ data: items }: { data?: Video[] }, index): number | null =>
+      (items?.length || 0) > 0 ? index + 1 : null,
+    [query]
+  )
+  const [footerRef, inView] = useInView()
 
   useEffect(() => {
-    setPage(0)
-  }, [query])
+    if (!inView || isReachingEnd || isLoadingMore) return
 
-  useEffect(() => {
-    if (!inView || isLoading) return
-
-    setPage(page => page + 1)
-  }, [inView, isLoading])
+    loadMore()
+  }, [inView, isReachingEnd, isLoadingMore, loadMore])
 
   return (
     <>
       <div className="margin-top--lg">
-        {chunk(items, COLUMNS_COUNT).map<JSX.Element>((row, i) => (
-          <div className="row" key={`row-${i}`}>
-            {row.map<JSX.Element>(value => {
-              const className = classNames(
-                'col',
-                `col--${12 / COLUMNS_COUNT}`,
-                'padding-bottom--lg',
-                'padding-horiz--sm'
-              )
-
-              return (
-                <div className={className} key={value.url}>
-                  <VideoCard value={value} />
-                </div>
-              )
-            })}
-          </div>
-        ))}
+        <div className="row">{pages}</div>
       </div>
 
-      <footer className="search__footer">
-        {hasNext && (
-          <div className="search__loading" ref={loadingRef}>
+      <div className="search__footer" ref={footerRef}>
+        {isLoadingMore && (
+          <div className="search__loading">
             <Spinner aria-label="読み込み中..." />
           </div>
         )}
-      </footer>
+      </div>
 
       <style jsx>{`
         .search__footer {
