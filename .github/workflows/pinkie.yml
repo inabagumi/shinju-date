@@ -2,7 +2,7 @@ name: Fetch Ichika channel, and Ran channel
 
 on:
   schedule:
-  - cron: '35 1,6,10,13,16,19,22 * * *'
+  - cron: '35 1,6,13,16,19,22 * * *'
 
 jobs:
   build:
@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: docker://inabagumi/pinkie:3.2
       with:
-        args: --channel UCRvpMpzAXBRKJQuk-8-Sdvg --channel UC0Owc36U9lOyi9Gx9Ic-4qg --channel UC2kyQhzGOB-JPgcQX9OMgEw --channel UCDh2bWI5EDu7PavqwICkVpA --channel UCeLzT-7b2PBcunJplmWtoDg --channel UCYTz3uIgwVY3ZU-IQJS8r3A --channel UCwePpiw1ocZRSNSkpKvVISw --channel UC3EhsuKdEkI99TWZwZgWutg --channel UCL-2thbJ7grC9fmGF4OLuTg --channel UChXm-xAYPfygrbyLo2yCASQ --channel UCmqrvfLMws-GLGHQcB5dasg --channel UCXp7sNC0F_qkjickvlYkg-Q --channel UCW8WKciBixmaqaGqrlTITRQ
+        args: --channel UCRvpMpzAXBRKJQuk-8-Sdvg --channel UC0Owc36U9lOyi9Gx9Ic-4qg --channel UC2kyQhzGOB-JPgcQX9OMgEw --channel UCDh2bWI5EDu7PavqwICkVpA --channel UCeLzT-7b2PBcunJplmWtoDg --channel UCYTz3uIgwVY3ZU-IQJS8r3A --channel UCwePpiw1ocZRSNSkpKvVISw --channel UC3EhsuKdEkI99TWZwZgWutg --channel UCL-2thbJ7grC9fmGF4OLuTg --channel UChXm-xAYPfygrbyLo2yCASQ --channel UCmqrvfLMws-GLGHQcB5dasg --channel UCXp7sNC0F_qkjickvlYkg-Q --channel UCW8WKciBixmaqaGqrlTITRQ --channel UCgqQ5iuvUyPRHp3rBLuOtCw
       env:
         TZ: UTC
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
