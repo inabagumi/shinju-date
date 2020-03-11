@@ -18,16 +18,12 @@ const nextConfig = {
   experimental: {
     rewrites: () => [
       {
-        destination: '/search',
-        source: '/'
-      },
-      {
         destination: '/_next/static/service-worker.js',
         source: '/service-worker.js'
       }
     ]
   },
-  pageExtensions: ['mdx', 'tsx'],
+  pageExtensions: ['mdx', 'ts', 'tsx'],
   target: 'serverless',
   workboxOpts: {
     clientsClaim: true,
