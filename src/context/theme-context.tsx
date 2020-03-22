@@ -40,7 +40,7 @@ export const ThemeProvider: FC = ({ children }): ReactElement => {
 
     localForage
       .getItem<string>('theme')
-      .then(value => {
+      .then((value) => {
         const nextTheme =
           typeof value !== 'string'
             ? mediaQueryList.matches
