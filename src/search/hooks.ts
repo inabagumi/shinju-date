@@ -33,7 +33,7 @@ const parseQuery = (query: string): ParsedQuery => {
   const keywords: string[] = []
   const channels: string[] = []
 
-  query.split(/\s+/).forEach(keyword => {
+  query.split(/\s+/).forEach((keyword) => {
     if (
       keyword.startsWith(QUERY_FROM_PREFIX) &&
       keyword.length > QUERY_FROM_PREFIX.length

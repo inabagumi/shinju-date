@@ -23,7 +23,7 @@ const Search: FC<Props> = ({ query }) => {
 
       if (!items) return null
 
-      return (items as Video[]).map(value => {
+      return (items as Video[]).map((value) => {
         const className = classNames(
           'col',
           `col--${12 / COLUMNS_COUNT}`,
