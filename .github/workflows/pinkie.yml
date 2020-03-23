@@ -1,4 +1,4 @@
-name: Fetch Ichika channel, and Ran channel
+name: Fetch all channels
 
 on:
   schedule:
