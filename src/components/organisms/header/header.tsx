@@ -35,6 +35,14 @@ const channels = [
     title: '宗谷いちか'
   },
   {
+    id: 'UCXp7sNC0F_qkjickvlYkg-Q',
+    title: '風見くく'
+  },
+  {
+    id: 'UCW8WKciBixmaqaGqrlTITRQ',
+    title: '柚原いづみ'
+  },
+  {
     id: 'UCDh2bWI5EDu7PavqwICkVpA',
     title: '堰代ミコ'
   },
@@ -49,6 +57,18 @@ const channels = [
   {
     id: 'UCwePpiw1ocZRSNSkpKvVISw',
     title: '西園寺メアリ'
+  },
+  {
+    id: 'UC--A2dwZW7-M2kID0N6_lfA',
+    title: '獅子王クリス'
+  },
+  {
+    id: 'UC2hc-00y-MSR6eYA4eQ4tjQ',
+    title: '龍ヶ崎リン'
+  },
+  {
+    id: 'UCvPPBoTOor5gm8zSlE2tg4w',
+    title: '虎城アンナ'
   },
   {
     id: 'UC3EhsuKdEkI99TWZwZgWutg',
