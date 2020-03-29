@@ -11,9 +11,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: docker://inabagumi/pinkie:3.3
+    - run: echo ${GITHUB_TOKEN} | docker login docker.pkg.github.com -u ${GITHUB_ACTOR} --password-stdin
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: docker://docker.pkg.github.com/inabagumi/pinkie/pinkie:3.3
       with:
-        args: --channel UCRvpMpzAXBRKJQuk-8-Sdvg --channel UC0Owc36U9lOyi9Gx9Ic-4qg --channel UC2kyQhzGOB-JPgcQX9OMgEw --channel UCDh2bWI5EDu7PavqwICkVpA --channel UCeLzT-7b2PBcunJplmWtoDg --channel UCYTz3uIgwVY3ZU-IQJS8r3A --channel UCwePpiw1ocZRSNSkpKvVISw --channel UC3EhsuKdEkI99TWZwZgWutg --channel UCL-2thbJ7grC9fmGF4OLuTg --channel UChXm-xAYPfygrbyLo2yCASQ --channel UCmqrvfLMws-GLGHQcB5dasg --channel UCXp7sNC0F_qkjickvlYkg-Q --channel UCW8WKciBixmaqaGqrlTITRQ --channel UCgqQ5iuvUyPRHp3rBLuOtCw --channel UC--A2dwZW7-M2kID0N6_lfA --channel UCvPPBoTOor5gm8zSlE2tg4w --channel UC2hc-00y-MSR6eYA4eQ4tjQ
+        args: |
+          --channel UCRvpMpzAXBRKJQuk-8-Sdvg \
+          --channel UC0Owc36U9lOyi9Gx9Ic-4qg \
+          --channel UC2kyQhzGOB-JPgcQX9OMgEw \
+          --channel UCDh2bWI5EDu7PavqwICkVpA \
+          --channel UCeLzT-7b2PBcunJplmWtoDg \
+          --channel UCYTz3uIgwVY3ZU-IQJS8r3A \
+          --channel UCwePpiw1ocZRSNSkpKvVISw \
+          --channel UC3EhsuKdEkI99TWZwZgWutg \
+          --channel UCL-2thbJ7grC9fmGF4OLuTg \
+          --channel UChXm-xAYPfygrbyLo2yCASQ \
+          --channel UCmqrvfLMws-GLGHQcB5dasg \
+          --channel UCXp7sNC0F_qkjickvlYkg-Q \
+          --channel UCW8WKciBixmaqaGqrlTITRQ \
+          --channel UCgqQ5iuvUyPRHp3rBLuOtCw \
+          --channel UC--A2dwZW7-M2kID0N6_lfA \
+          --channel UCvPPBoTOor5gm8zSlE2tg4w \
+          --channel UC2hc-00y-MSR6eYA4eQ4tjQ
       env:
         TZ: UTC
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
