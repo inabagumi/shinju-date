@@ -11,10 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - run: echo ${GITHUB_TOKEN} | docker login docker.pkg.github.com -u ${GITHUB_ACTOR} --password-stdin
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - uses: docker://docker.pkg.github.com/inabagumi/pinkie/pinkie:3.3
+    - uses: docker://inabagumi/pinkie:3.3
       with:
         args: |
           --channel UCRvpMpzAXBRKJQuk-8-Sdvg \
