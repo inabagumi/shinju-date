@@ -16,7 +16,7 @@
     "react-intersection-observer": "^8.26.1",
     "react-intl": "^4.3.1",
     "react-toggle": "^4.1.1",
-    "swr": "^0.1.18"
+    "swr": "^0.2.0"
   },
   "description": "SHINJU DATE is a web service for searching videos.",
   "devDependencies": {
