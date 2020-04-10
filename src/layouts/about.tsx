@@ -19,20 +19,38 @@ const About: FC<Props> = ({ children, title }): ReactElement => {
       </Head>
 
       <nav aria-label="パンくずリスト" className="margin-vert--md">
-        <ul className="breadcrumbs breadcrumbs--sm">
-          <li className="breadcrumb__item">
+        <ul
+          className="breadcrumbs breadcrumbs--sm"
+          itemScope
+          itemType="https://schema.org/BreadcrumbList"
+        >
+          <li
+            className="breadcrumb__item"
+            itemScope
+            itemType="https://schema.org/ListItem"
+          >
             <Link href="/">
-              <a className="breadcrumb__link" href="/">
-                {siteTitle}
+              <a className="breadcrumb__link" href="/" itemProp="item">
+                <span itemProp="name">{siteTitle}</span>
               </a>
             </Link>
+            <meta itemProp="position" content="1" />
           </li>
-          <li className="breadcrumb__item breadcrumb__item--active">
+          <li
+            className="breadcrumb__item breadcrumb__item--active"
+            itemScope
+            itemType="https://schema.org/ListItem"
+          >
             <Link href={router.pathname}>
-              <a className="breadcrumb__link" href={router.pathname}>
-                {title || router.pathname}
+              <a
+                className="breadcrumb__link"
+                href={router.pathname}
+                itemProp="item"
+              >
+                <span itemProp="name">{title || router.pathname}</span>
               </a>
             </Link>
+            <meta itemProp="position" content="2" />
           </li>
         </ul>
       </nav>
