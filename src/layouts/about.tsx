@@ -26,6 +26,7 @@ const About: FC<Props> = ({ children, title }): ReactElement => {
         >
           <li
             className="breadcrumb__item"
+            itemProp="itemListElement"
             itemScope
             itemType="https://schema.org/ListItem"
           >
@@ -38,6 +39,7 @@ const About: FC<Props> = ({ children, title }): ReactElement => {
           </li>
           <li
             className="breadcrumb__item breadcrumb__item--active"
+            itemProp="itemListElement"
             itemScope
             itemType="https://schema.org/ListItem"
           >
