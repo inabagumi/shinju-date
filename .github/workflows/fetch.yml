@@ -2,7 +2,7 @@ name: Fetch all channels
 
 on:
   schedule:
-  - cron: '35 4,7,10,13,16,21 * * *'
+  - cron: '35 4,10,13,16,21 * * *'
 
 jobs:
   build:
