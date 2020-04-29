@@ -10,7 +10,7 @@
     "infima": "^0.2.0-alpha.9",
     "localforage": "^1.7.3",
     "next": "^9.3.6",
-    "next-offline": "^5.0.1",
+    "next-offline": "^5.0.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-intersection-observer": "^8.26.2",
