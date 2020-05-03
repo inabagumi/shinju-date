@@ -43,6 +43,18 @@ const channels = [
     title: '柚原いづみ'
   },
   {
+    id: 'UCOgONfZgrG2g0jntQKa6cDw',
+    title: '灰原あかね'
+  },
+  {
+    id: 'UCtzCQnCT9E4o6U3mHHSHbQQ',
+    title: '白宮みみ'
+  },
+  {
+    id: 'UC_BlXOQe5OcRC7o0GX8kp8A',
+    title: '羽柴なつみ'
+  },
+  {
     id: 'UCDh2bWI5EDu7PavqwICkVpA',
     title: '堰代ミコ'
   },
@@ -57,6 +69,10 @@ const channels = [
   {
     id: 'UCwePpiw1ocZRSNSkpKvVISw',
     title: '西園寺メアリ'
+  },
+  {
+    id: 'UCgqQ5iuvUyPRHp3rBLuOtCw',
+    title: 'ハニーストラップ公式'
   },
   {
     id: 'UC--A2dwZW7-M2kID0N6_lfA',
@@ -85,6 +101,10 @@ const channels = [
   {
     id: 'UCmqrvfLMws-GLGHQcB5dasg',
     title: '花奏かのん'
+  },
+  {
+    id: 'UC_BlXOQe5OcRC7o0GX8kp8A',
+    title: '奇想天外あにびっと!'
   }
 ]
 
