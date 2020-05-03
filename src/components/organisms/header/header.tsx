@@ -55,6 +55,10 @@ const channels = [
     title: '羽柴なつみ'
   },
   {
+    id: 'UC0xhrAce06OkQfHBqAfLQAQ',
+    title: '奇想天外あにびっと!'
+  },
+  {
     id: 'UCDh2bWI5EDu7PavqwICkVpA',
     title: '堰代ミコ'
   },
@@ -101,10 +105,6 @@ const channels = [
   {
     id: 'UCmqrvfLMws-GLGHQcB5dasg',
     title: '花奏かのん'
-  },
-  {
-    id: 'UC_BlXOQe5OcRC7o0GX8kp8A',
-    title: '奇想天外あにびっと!'
   }
 ]
 
