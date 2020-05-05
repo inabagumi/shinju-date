@@ -14,7 +14,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-intersection-observer": "^8.26.2",
-    "react-intl": "^4.5.1",
+    "react-intl": "^4.5.2",
     "react-toggle": "^4.1.1",
     "swr": "^0.2.0"
   },
