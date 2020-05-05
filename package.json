@@ -2,6 +2,7 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@formatjs/intl-relativetimeformat": "^4.5.14",
+    "@mdx-js/loader": "^1.6.1",
     "@next/mdx": "^9.3.6",
     "algoliasearch": "^4.2.0",
     "classnames": "^2.2.6",
@@ -22,7 +23,6 @@
   "devDependencies": {
     "@inabagumi/eslint-config-react": "^5.1.1",
     "@inabagumi/prettier-config": "^1.1.2",
-    "@mdx-js/loader": "^1.6.1",
     "@types/classnames": "^2.2.10",
     "@types/node": "^12.12.37",
     "@types/react": "^16.9.34",
