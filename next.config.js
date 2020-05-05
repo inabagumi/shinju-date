@@ -13,6 +13,27 @@ const nextConfig = {
     ALGOLIA_INDEX_NAME: process.env.ALGOLIA_INDEX_NAME
   },
   experimental: {
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+    headers: () => [
+      {
+        headers: [
+          {
+            key: 'cache-control',
+            value: 'max-age=300, s-maxage=60'
+          }
+        ],
+        source: '/(.*)'
+      },
+      {
+        headers: [
+          {
+            key: 'cache-control',
+            value: 'max-age=0'
+          }
+        ],
+        source: '/service-worker.js'
+      }
+    ],
     pageEnv: true,
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     rewrites: () => [
