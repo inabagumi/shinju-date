@@ -1,14 +1,4 @@
 {
-  "build": {
-    "env": {
-      "ALGOLIA_API_KEY": "@algolia-api-key",
-      "ALGOLIA_APPLICATION_ID": "@algolia-application-id",
-      "ALGOLIA_INDEX_NAME": "prod_ANIMARE_SEARCH",
-      "SHINJU_DATE_BASE_URL": "https://shinju.date",
-      "SHINJU_DATE_DESCRIPTION": "『SHINJU DATE』は有閑喫茶 あにまーれ、​ハニーストラップ、ブイアパのメンバーがYouTubeで配信した放送や投稿した動画の検索ができるウェブサービスです。コラボ放送の検索などにご活用ください。",
-      "SHINJU_DATE_TITLE": "SHINJU DATE"
-    }
-  },
   "env": {
     "NODE_ICU_DATA": "node_modules/full-icu"
   },
