@@ -1,7 +1,4 @@
 {
-  "env": {
-    "NODE_ICU_DATA": "node_modules/full-icu"
-  },
   "github": {
     "silent": true
   },
