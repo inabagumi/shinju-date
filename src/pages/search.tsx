@@ -1,25 +1,24 @@
 import { NextPage } from 'next'
+import { useRouter } from 'next/router'
 import { NextSeo } from 'next-seo'
-import React, { ReactElement, useContext } from 'react'
+import React, { useContext } from 'react'
 import Search from '../components/molecules/search'
 import { SiteContext } from '../context/site-context'
 
-export type SearchProps = {
-  query: string
-}
-
-const SearchPage: NextPage<SearchProps> = ({ query }): ReactElement => {
+const SearchPage: NextPage = () => {
+  const { query } = useRouter()
   const { baseUrl, description, title: siteTitle } = useContext(SiteContext)
 
-  const title = [query, siteTitle].filter(Boolean).join(' - ')
-  const path = query ? `/search?q=${encodeURIComponent(query)}` : '/'
+  const keyword = Array.isArray(query.q) ? query.q[0] : query.q || ''
+  const title = [keyword, siteTitle].filter(Boolean).join(' - ')
+  const path = keyword ? `/search?q=${encodeURIComponent(keyword)}` : '/'
 
   return (
     <>
       <NextSeo
         canonical={baseUrl + path}
         description={description}
-        noindex={!!query}
+        noindex={!!keyword}
         openGraph={{
           images: [
             {
@@ -36,19 +35,9 @@ const SearchPage: NextPage<SearchProps> = ({ query }): ReactElement => {
         }}
       />
 
-      <Search query={query} />
+      <Search query={keyword} />
     </>
   )
-}
-
-SearchPage.getInitialProps = async ({ query }): Promise<SearchProps> => {
-  const q = (Array.isArray(query.q) ? query.q[0] : query.q) || ''
-
-  if (typeof window !== 'undefined') window.scrollTo(0, 0)
-
-  return {
-    query: q
-  }
 }
 
 export default SearchPage
