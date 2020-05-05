@@ -5,7 +5,7 @@ import { useSWRPages } from 'swr'
 import { useSearch as search } from '../../../search'
 import Video from '../../../types/video'
 import Spinner from '../../atoms/spinner'
-import VideoCard from '../../atoms/video-card'
+import VideoCard from '../video-card'
 
 const COLUMNS_COUNT = 3
 

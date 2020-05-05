@@ -2,6 +2,7 @@ import Channel from './channel'
 
 interface Video {
   channel: Channel
+  duration: string
   id: string
   publishedAt: number
   title: string
