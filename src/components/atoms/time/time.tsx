@@ -1,33 +1,37 @@
-import React, { FC, ReactElement } from 'react'
-import { FormattedRelativeTime, useIntl } from 'react-intl'
+import { format, formatDistanceToNow } from 'date-fns'
+import jaLocale from 'date-fns/locale/ja'
+import React, { FC, useEffect, useState } from 'react'
 
-const FORMAT_DATE_OPTIONS = {
-  day: 'numeric',
-  hour: 'numeric',
-  minute: 'numeric',
-  month: 'numeric',
-  year: 'numeric'
-}
+const relativeTime = (date: Date): string =>
+  formatDistanceToNow(date, {
+    addSuffix: true,
+    includeSeconds: true,
+    locale: jaLocale
+  })
 
 type Props = {
   date: Date
 }
 
-const Time: FC<Props> = ({ date }): ReactElement => {
-  const intl = useIntl()
+const Time: FC<Props> = ({ date }) => {
+  const [label, setLabel] = useState(() => relativeTime(date))
+
+  useEffect(() => {
+    const timerID = setInterval(() => {
+      setLabel(relativeTime(date))
+    }, 5000)
+
+    return (): void => {
+      clearInterval(timerID)
+    }
+  }, [date])
 
   return (
     <time
       dateTime={date.toISOString()}
-      title={intl.formatDate(date, FORMAT_DATE_OPTIONS)}
+      title={format(date, 'yyyy/MM/dd HH:mm:ss')}
     >
-      <FormattedRelativeTime
-        numeric="auto"
-        style="narrow"
-        unit="second"
-        updateIntervalInSeconds={1}
-        value={Math.floor((date.getTime() - Date.now()) / 1000)}
-      />
+      {label}
     </time>
   )
 }

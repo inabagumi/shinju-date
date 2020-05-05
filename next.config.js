@@ -14,6 +14,7 @@ const nextConfig = {
   },
   experimental: {
     pageEnv: true,
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     rewrites: () => [
       {
         destination: '/_next/static/service-worker.js',
