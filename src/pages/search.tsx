@@ -1,5 +1,5 @@
 import { NextPage } from 'next'
-import Head from 'next/head'
+import { NextSeo } from 'next-seo'
 import React, { ReactElement, useContext } from 'react'
 import Search from '../components/molecules/search'
 import { SiteContext } from '../context/site-context'
@@ -16,22 +16,25 @@ const SearchPage: NextPage<SearchProps> = ({ query }): ReactElement => {
 
   return (
     <>
-      <Head>
-        <title>{title}</title>
-
-        {description && <meta content={description} name="description" />}
-        {query && <meta content="noindex,follow" name="robots" />}
-
-        <link href={baseUrl + path} rel="canonical" />
-
-        <meta content={description} property="og:description" />
-        <meta content={`${baseUrl}/main-visual.jpg`} property="og:image" />
-        <meta content={title} property="og:title" />
-        <meta content="website" property="og:type" />
-        <meta content={baseUrl + path} property="og:url" />
-
-        <meta content="summary_large_image" name="twitter:card" />
-      </Head>
+      <NextSeo
+        canonical={baseUrl + path}
+        description={description}
+        noindex={!!query}
+        openGraph={{
+          images: [
+            {
+              height: 630,
+              url: baseUrl + '/main-visual.jpg',
+              width: 1200
+            }
+          ],
+          type: 'website'
+        }}
+        title={title}
+        twitter={{
+          cardType: 'summary_large_image'
+        }}
+      />
 
       <Search query={query} />
     </>
