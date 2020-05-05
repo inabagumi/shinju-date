@@ -12,6 +12,7 @@
     "localforage": "^1.7.3",
     "next": "^9.3.6",
     "next-offline": "^5.0.2",
+    "next-seo": "^4.4.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-intersection-observer": "^8.26.2",
