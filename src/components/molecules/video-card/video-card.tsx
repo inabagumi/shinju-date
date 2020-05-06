@@ -23,7 +23,7 @@ type Props = DetailedHTMLProps<
 
 const VideoCard: FC<Props> = ({ value, ...props }) => {
   const date = new Date(value.publishedAt * 1000)
-  const duration = parseDuration(value.duration)
+  const duration = parseDuration(value.duration || 'PT0S')
   const hasDuration =
     duration.seconds > 0 || duration.minutes > 0 || duration.hours > 0
 
