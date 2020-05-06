@@ -2,14 +2,16 @@ import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { NextSeo } from 'next-seo'
 import React, { useContext } from 'react'
-import Search from '../components/molecules/search'
-import { SiteContext } from '../context/site-context'
+
+import Search from 'components/organisms/search'
+import { SiteContext } from 'context/site-context'
+import getValue from 'utils/getValue'
 
 const SearchPage: NextPage = () => {
   const { query } = useRouter()
   const { baseUrl, description, title: siteTitle } = useContext(SiteContext)
 
-  const keyword = Array.isArray(query.q) ? query.q[0] : query.q || ''
+  const keyword = getValue(query.q)
   const title = [keyword, siteTitle].filter(Boolean).join(' - ')
   const path = keyword ? `/search?q=${encodeURIComponent(keyword)}` : '/'
 

@@ -2,10 +2,11 @@ import classNames from 'classnames'
 import React, { FC, useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
 import { useSWRPages } from 'swr'
-import { useSearch as search } from '../../../search'
-import Video from '../../../types/video'
-import Spinner from '../../atoms/spinner'
-import VideoCard from '../video-card'
+
+import Video from 'types/video'
+import Spinner from 'components/atoms/spinner'
+import VideoCard from 'components/molecules/video-card'
+import { useSearch as search } from 'search'
 
 const COLUMNS_COUNT = 3
 
