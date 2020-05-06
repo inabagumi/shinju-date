@@ -2,7 +2,6 @@ import classNames from 'classnames'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, {
-  ChangeEvent,
   FC,
   KeyboardEvent,
   MouseEvent,
@@ -13,11 +12,12 @@ import React, {
   useState
 } from 'react'
 import Toggle from 'react-toggle'
-import { SiteContext } from '../../../context/site-context'
-import { ThemeContext } from '../../../context/theme-context'
-import normalize from '../../../lib/normalize'
-import Logo from '../../atoms/logo'
-import SearchForm from '../../molecules/search-form'
+
+import Logo from 'components/atoms/logo'
+import SearchForm from 'components/molecules/search-form'
+import { SiteContext } from 'context/site-context'
+import { ThemeContext } from 'context/theme-context'
+
 import Moon from './moon'
 import Sun from './sun'
 
@@ -108,11 +108,7 @@ const channels = [
   }
 ]
 
-interface HeaderProps {
-  query: string
-}
-
-const Header: FC<HeaderProps> = ({ query }): ReactElement => {
+const Header: FC = () => {
   const { title: siteTitle } = useContext(SiteContext)
   const { theme, toggleTheme } = useContext(ThemeContext)
   const [sidebarShown, setSidebarShown] = useState<boolean>(false)
@@ -140,16 +136,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
     [setFilterListShown]
   )
 
-  const handleChange = useCallback(
-    ({ target }: ChangeEvent<HTMLInputElement>): void => {
-      const query = normalize(target.value)
-
-      router.replace(query ? `/search?q=${encodeURIComponent(query)}` : '/')
-    },
-    [router]
-  )
-
-  useEffect((): void => {
+  useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
 
@@ -237,7 +224,7 @@ const Header: FC<HeaderProps> = ({ query }): ReactElement => {
               value="dark"
             />
 
-            <SearchForm onChange={handleChange} query={query} />
+            <SearchForm />
           </div>
         </div>
 
