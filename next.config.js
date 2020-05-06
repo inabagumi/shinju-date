@@ -7,11 +7,6 @@ const nextConfig = {
   cssLoaderOptions: {
     url: false
   },
-  env: {
-    ALGOLIA_API_KEY: process.env.ALGOLIA_API_KEY,
-    ALGOLIA_APPLICATION_ID: process.env.ALGOLIA_APPLICATION_ID,
-    ALGOLIA_INDEX_NAME: process.env.ALGOLIA_INDEX_NAME
-  },
   experimental: {
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     headers: () => [

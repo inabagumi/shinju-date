@@ -1,10 +1,11 @@
+import { parseJSON } from 'date-fns'
 import React, { DetailedHTMLProps, FC, HTMLAttributes } from 'react'
 import css from 'styled-jsx/css'
-import { parse as parseDuration } from '../../../time/duration'
-import Video from '../../../types/video'
-import Duration from '../../atoms/duration'
-import Time from '../../atoms/time'
-import YouTubeThumbnail from '../../atoms/youtube-thumbnail'
+
+import Duration from 'components/atoms/duration'
+import RelativeTime from 'components/atoms/relative-time'
+import YouTubeThumbnail from 'components/atoms/youtube-thumbnail'
+import Video from 'types/video'
 
 const { className: durationClassName, styles: durationStyles } = css.resolve`
   span {
@@ -22,10 +23,11 @@ type Props = DetailedHTMLProps<
 }
 
 const VideoCard: FC<Props> = ({ value, ...props }) => {
-  const date = new Date(value.publishedAt * 1000)
-  const duration = parseDuration(value.duration || 'PT0S')
+  const date = parseJSON(value.publishedAt)
   const hasDuration =
-    duration.seconds > 0 || duration.minutes > 0 || duration.hours > 0
+    (value.duration.seconds || 0) > 0 ||
+    (value.duration.minutes || 0) > 0 ||
+    (value.duration.hours || 0) > 0
 
   return (
     <>
@@ -40,7 +42,7 @@ const VideoCard: FC<Props> = ({ value, ...props }) => {
           <YouTubeThumbnail id={value.id} />
 
           {hasDuration && (
-            <Duration className={durationClassName} value={duration} />
+            <Duration className={durationClassName} value={value.duration} />
           )}
         </div>
 
@@ -51,7 +53,7 @@ const VideoCard: FC<Props> = ({ value, ...props }) => {
         <div className="card__footer">
           <small className="video__published">
             &nbsp;
-            <Time date={date} />
+            <RelativeTime date={date} />
           </small>
         </div>
       </a>

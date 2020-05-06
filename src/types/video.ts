@@ -1,10 +1,12 @@
-import Channel from './channel'
+import { Duration } from 'date-fns'
+
+import Channel from 'types/channel'
 
 interface Video {
   channel: Channel
-  duration?: string
+  duration: Duration
   id: string
-  publishedAt: number
+  publishedAt: string
   title: string
   url: string
 }

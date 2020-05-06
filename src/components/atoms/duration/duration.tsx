@@ -1,6 +1,11 @@
 import classNames from 'classnames'
+import { Duration as DurationObject } from 'date-fns'
 import React, { FC } from 'react'
-import { Duration as DurationObject, format } from '../../../time/duration'
+
+const format = (duration: DurationObject): string =>
+  [duration.hours || 0, duration.minutes || 0, duration.seconds || 0]
+    .map((value) => value.toString().padStart(2, '0'))
+    .join(':')
 
 type Props = {
   className?: string

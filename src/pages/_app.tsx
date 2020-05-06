@@ -1,24 +1,24 @@
 import { AppProps } from 'next/app'
 import Head from 'next/head'
 import React, { FC } from 'react'
-import Header from '../components/organisms/header'
-import Sidebar from '../components/organisms/sidebar'
-import { SiteProvider } from '../context/site-context'
-import { ThemeProvider } from '../context/theme-context'
-import { SearchProvider } from '../search'
+import { SWRConfig } from 'swr'
+
+import Header from 'components/organisms/header'
+import Sidebar from 'components/organisms/sidebar'
+import { SiteProvider } from 'context/site-context'
+import { ThemeProvider } from 'context/theme-context'
 
 import 'infima/dist/css/default/default.css'
 import 'react-toggle/style.css'
 
+async function fetcher<T>(url: string): Promise<T> {
+  const res = await fetch(url)
+  return res.json()
+}
+
 const MyApp: FC<AppProps> = ({ Component, pageProps }) => (
-  <SiteProvider>
-    <SearchProvider
-      value={{
-        apiKey: process.env.ALGOLIA_API_KEY,
-        applicationId: process.env.ALGOLIA_APPLICATION_ID,
-        indexName: process.env.ALGOLIA_INDEX_NAME
-      }}
-    >
+  <SWRConfig value={{ fetcher }}>
+    <SiteProvider>
       <ThemeProvider>
         <Head>
           <meta content="width=device-width" name="viewport" />
@@ -79,8 +79,8 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => (
           }
         `}</style>
       </ThemeProvider>
-    </SearchProvider>
-  </SiteProvider>
+    </SiteProvider>
+  </SWRConfig>
 )
 
 export default MyApp
