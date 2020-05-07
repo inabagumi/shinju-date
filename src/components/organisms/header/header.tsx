@@ -1,16 +1,7 @@
 import classNames from 'classnames'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, {
-  FC,
-  KeyboardEvent,
-  MouseEvent,
-  ReactElement,
-  useCallback,
-  useContext,
-  useEffect,
-  useState
-} from 'react'
+import React, { FC, useCallback, useContext, useEffect, useState } from 'react'
 import Toggle from 'react-toggle'
 
 import Logo from 'components/atoms/logo'
@@ -21,98 +12,10 @@ import { ThemeContext } from 'context/theme-context'
 import Moon from './moon'
 import Sun from './sun'
 
-const channels = [
-  {
-    id: 'UCRvpMpzAXBRKJQuk-8-Sdvg',
-    title: '日ノ隈らん'
-  },
-  {
-    id: 'UC0Owc36U9lOyi9Gx9Ic-4qg',
-    title: '因幡はねる'
-  },
-  {
-    id: 'UC2kyQhzGOB-JPgcQX9OMgEw',
-    title: '宗谷いちか'
-  },
-  {
-    id: 'UCXp7sNC0F_qkjickvlYkg-Q',
-    title: '風見くく'
-  },
-  {
-    id: 'UCW8WKciBixmaqaGqrlTITRQ',
-    title: '柚原いづみ'
-  },
-  {
-    id: 'UCOgONfZgrG2g0jntQKa6cDw',
-    title: '灰原あかね'
-  },
-  {
-    id: 'UCtzCQnCT9E4o6U3mHHSHbQQ',
-    title: '白宮みみ'
-  },
-  {
-    id: 'UC_BlXOQe5OcRC7o0GX8kp8A',
-    title: '羽柴なつみ'
-  },
-  {
-    id: 'UC0xhrAce06OkQfHBqAfLQAQ',
-    title: '奇想天外あにびっと!'
-  },
-  {
-    id: 'UCDh2bWI5EDu7PavqwICkVpA',
-    title: '堰代ミコ'
-  },
-  {
-    id: 'UCeLzT-7b2PBcunJplmWtoDg',
-    title: '周防パトラ'
-  },
-  {
-    id: 'UCYTz3uIgwVY3ZU-IQJS8r3A',
-    title: '島村シャルロット'
-  },
-  {
-    id: 'UCwePpiw1ocZRSNSkpKvVISw',
-    title: '西園寺メアリ'
-  },
-  {
-    id: 'UCgqQ5iuvUyPRHp3rBLuOtCw',
-    title: 'ハニーストラップ公式'
-  },
-  {
-    id: 'UC--A2dwZW7-M2kID0N6_lfA',
-    title: '獅子王クリス'
-  },
-  {
-    id: 'UC2hc-00y-MSR6eYA4eQ4tjQ',
-    title: '龍ヶ崎リン'
-  },
-  {
-    id: 'UCvPPBoTOor5gm8zSlE2tg4w',
-    title: '虎城アンナ'
-  },
-  {
-    id: 'UC3EhsuKdEkI99TWZwZgWutg',
-    title: '杏戸ゆげ'
-  },
-  {
-    id: 'UCL-2thbJ7grC9fmGF4OLuTg',
-    title: '鴨見カモミ'
-  },
-  {
-    id: 'UChXm-xAYPfygrbyLo2yCASQ',
-    title: '季咲あんこ'
-  },
-  {
-    id: 'UCmqrvfLMws-GLGHQcB5dasg',
-    title: '花奏かのん'
-  }
-]
-
 const Header: FC = () => {
   const { title: siteTitle } = useContext(SiteContext)
   const { theme, toggleTheme } = useContext(ThemeContext)
   const [sidebarShown, setSidebarShown] = useState<boolean>(false)
-  const [filterListShown, setFilterListShown] = useState<boolean>(false)
   const router = useRouter()
 
   const showSidebar = useCallback((): void => {
@@ -122,19 +25,6 @@ const Header: FC = () => {
   const hideSidebar = useCallback((): void => {
     setSidebarShown(false)
   }, [setSidebarShown])
-
-  const toggleFilterListShown = useCallback(
-    (
-      event: KeyboardEvent<HTMLAnchorElement> | MouseEvent<HTMLAnchorElement>
-    ): void => {
-      event.preventDefault()
-
-      setFilterListShown(
-        (beforeFilterListShown): boolean => !beforeFilterListShown
-      )
-    },
-    [setFilterListShown]
-  )
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -180,38 +70,6 @@ const Header: FC = () => {
           </div>
 
           <div className="navbar__items navbar__items--right">
-            <div className="dropdown dropdown--hoverable navbar__item">
-              <a
-                className="navbar__link"
-                href="/"
-                onClick={(event): void => {
-                  event.preventDefault()
-                }}
-                onKeyDown={(event): void => {
-                  event.preventDefault()
-                }}
-              >
-                フィルター
-              </a>
-
-              <ul className="dropdown__menu">
-                {channels.map(
-                  (channel): ReactElement => (
-                    <li key={channel.id}>
-                      <Link href={`/search?q=+from:${channel.id}`}>
-                        <a
-                          className="dropdown__link"
-                          href={`/search?q=+from:${channel.id}`}
-                        >
-                          {channel.title}
-                        </a>
-                      </Link>
-                    </li>
-                  )
-                )}
-              </ul>
-            </div>
-
             <Toggle
               aria-label="ダークモード切り替え"
               checked={theme === 'dark'}
@@ -258,46 +116,6 @@ const Header: FC = () => {
               onChange={toggleTheme}
               value="dark"
             />
-          </div>
-
-          <div className="navbar-sidebar__items">
-            <div className="menu">
-              <ul className="menu__list">
-                <li
-                  className={classNames('menu__list-item', {
-                    'menu__list-item--collapsed': !filterListShown
-                  })}
-                >
-                  <a
-                    className="menu__link menu__link--sublist"
-                    href="/"
-                    onClick={toggleFilterListShown}
-                    onKeyDown={toggleFilterListShown}
-                    role="button"
-                  >
-                    フィルター
-                  </a>
-                  <ul className="menu__list">
-                    {channels.map(
-                      (channel): ReactElement => (
-                        <li key={channel.id}>
-                          <Link href={`/search?q=+from:${channel.id}`}>
-                            <a
-                              className="menu__link"
-                              href={`/search?q=+from:${channel.id}`}
-                              onClick={hideSidebar}
-                              onKeyDown={hideSidebar}
-                            >
-                              {channel.title}
-                            </a>
-                          </Link>
-                        </li>
-                      )
-                    )}
-                  </ul>
-                </li>
-              </ul>
-            </div>
           </div>
 
           <div className="navbar-sidebar__items">
@@ -374,11 +192,6 @@ const Header: FC = () => {
         .navbar-sidebar {
           display: flex;
           flex-direction: column;
-        }
-
-        .navbar-sidebar__brand + .navbar-sidebar__items {
-          flex-grow: 1;
-          flex-shrink: 0;
         }
 
         .navbar :global(.navbar__logo) {

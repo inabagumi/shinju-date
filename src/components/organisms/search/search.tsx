@@ -1,30 +1,33 @@
 import classNames from 'classnames'
 import React, { FC, useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
-import { useSWRPages } from 'swr'
+import swr, { useSWRPages } from 'swr'
 
 import Video from 'types/video'
 import Spinner from 'components/atoms/spinner'
 import VideoCard from 'components/molecules/video-card'
-import { useSearch as search } from 'search'
 
 const COLUMNS_COUNT = 3
 
-interface Props {
+type Props = {
   query: string
 }
 
 const Search: FC<Props> = ({ query }) => {
-  const { isLoadingMore, isReachingEnd, loadMore, pages } = useSWRPages(
+  const response = useSWRPages<string | null, Video[]>(
     'search-page',
-    ({ offset: page, withSWR }) => {
+    ({ offset, withSWR }) => {
+      const searchParams = new URLSearchParams()
+      searchParams.append('q', query)
+      if (offset) searchParams.append('until', offset)
+
       const { data: items } = withSWR(
-        search<Video>(query, { page: page || 0 })
+        swr<Video[]>(`/api/search?${searchParams.toString()}`)
       )
 
       if (!items) return null
 
-      return (items as Video[]).map((value) => {
+      return items.map((value) => {
         const className = classNames(
           'col',
           `col--${12 / COLUMNS_COUNT}`,
@@ -33,17 +36,19 @@ const Search: FC<Props> = ({ query }) => {
         )
 
         return (
-          <div className={className} key={value.url}>
+          <div className={className} key={value.id}>
             <VideoCard value={value} />
           </div>
         )
       })
     },
-    ({ data: items }: { data?: Video[] }, index): number | null =>
-      (items?.length || 0) > 0 ? index + 1 : null,
+    ({ data: items }) =>
+      items && items.length > 0 ? items[items.length - 1].publishedAt : null,
     [query]
   )
   const [footerRef, inView] = useInView()
+
+  const { isLoadingMore, isReachingEnd, loadMore, pages } = response
 
   useEffect(() => {
     if (!inView || isReachingEnd || isLoadingMore) return
