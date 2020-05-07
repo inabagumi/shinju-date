@@ -18,11 +18,13 @@ const Search: FC<Props> = ({ query }) => {
     'search-page',
     ({ offset, withSWR }) => {
       const searchParams = new URLSearchParams()
-      searchParams.append('q', query)
+      if (query) searchParams.append('q', query)
       if (offset) searchParams.append('until', offset)
 
+      const queryString = searchParams.toString()
+
       const { data: items } = withSWR(
-        swr<Video[]>(`/api/search?${searchParams.toString()}`)
+        swr<Video[]>(`/api/search${queryString ? `?${queryString}` : ''}`)
       )
 
       if (!items) return null
