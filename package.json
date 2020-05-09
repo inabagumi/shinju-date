@@ -7,7 +7,7 @@
     "classnames": "^2.2.6",
     "date-fns": "^2.13.0",
     "dotenv": "^8.2.0",
-    "infima": "^0.2.0-alpha.9",
+    "infima": "^0.2.0-alpha.10",
     "localforage": "^1.7.3",
     "next": "^9.3.6",
     "next-offline": "^5.0.2",
