@@ -7,50 +7,68 @@ import Video from 'types/video'
 import Spinner from 'components/atoms/spinner'
 import VideoCard from 'components/molecules/video-card'
 
-const COLUMNS_COUNT = 3
+const SEARCH_INITIAL_COUNT = 18
+const SEARCH_COLUMNS_COUNT = 3
+
+type Params = {
+  count?: number | null
+  q?: string | null
+  until?: string | null
+}
+
+const buildQueryString = (params: Params): string => {
+  const searchParams = new URLSearchParams()
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value) {
+      searchParams.append(key, value.toString())
+    }
+  }
+
+  return searchParams.toString()
+}
 
 type Props = {
-  query: string
+  query?: string
 }
 
 const Search: FC<Props> = ({ query }) => {
-  const response = useSWRPages<string | null, Video[]>(
-    'search-page',
+  const { isLoadingMore, isReachingEnd, loadMore, pages } = useSWRPages<
+    string | null,
+    Video[]
+  >(
+    `search-page:${query}`,
     ({ offset, withSWR }) => {
-      const searchParams = new URLSearchParams()
-      if (query) searchParams.append('q', query)
-      if (offset) searchParams.append('until', offset)
+      const queryString = buildQueryString({
+        count: SEARCH_INITIAL_COUNT,
+        q: query,
+        until: offset
+      })
+      const url = queryString ? `/api/search?${queryString}` : '/api/search'
 
-      const queryString = searchParams.toString()
-
-      const { data: items } = withSWR(
-        swr<Video[]>(`/api/search${queryString ? `?${queryString}` : ''}`)
-      )
+      const { data: items } = withSWR(swr<Video[]>(url))
 
       if (!items) return null
 
-      return items.map((value) => {
-        const className = classNames(
-          'col',
-          `col--${12 / COLUMNS_COUNT}`,
-          'padding-bottom--lg',
-          'padding-horiz--sm'
-        )
-
-        return (
-          <div className={className} key={value.id}>
-            <VideoCard value={value} />
-          </div>
-        )
-      })
+      return items.map((value) => (
+        <div
+          className={classNames(
+            'col',
+            `col--${12 / SEARCH_COLUMNS_COUNT}`,
+            'padding-bottom--lg',
+            'padding-horiz--sm'
+          )}
+          key={value.id}
+        >
+          <VideoCard value={value} />
+        </div>
+      ))
     },
     ({ data: items }) =>
       items && items.length > 0 ? items[items.length - 1].publishedAt : null,
     [query]
   )
   const [footerRef, inView] = useInView()
-
-  const { isLoadingMore, isReachingEnd, loadMore, pages } = response
 
   useEffect(() => {
     if (!inView || isReachingEnd || isLoadingMore) return
@@ -64,13 +82,15 @@ const Search: FC<Props> = ({ query }) => {
         <div className="row">{pages}</div>
       </div>
 
-      <div className="search__footer" ref={footerRef}>
-        {isLoadingMore && (
-          <div className="search__loading">
-            <Spinner aria-label="読み込み中..." />
-          </div>
-        )}
-      </div>
+      {!isReachingEnd && (
+        <div className="search__footer" ref={footerRef}>
+          {isLoadingMore && (
+            <div className="search__loading">
+              <Spinner aria-label="読み込み中..." />
+            </div>
+          )}
+        </div>
+      )}
 
       <style jsx>{`
         .search__footer {
