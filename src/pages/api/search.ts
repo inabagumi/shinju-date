@@ -58,6 +58,7 @@ const normalize = ({
 
 const handler: NextApiHandler<Array<Video>> = async (req, res) => {
   const query = getValue(req.query.q)
+  const count = parseInt(getValue(req.query.count) || '20', 10)
 
   const filters = [
     req.query.until &&
@@ -68,7 +69,7 @@ const handler: NextApiHandler<Array<Video>> = async (req, res) => {
 
   const { hits } = await search<VideoObject>(query, {
     filters,
-    hitsPerPage: 18
+    hitsPerPage: count
   })
 
   res.setHeader('cache-control', 'max-age=60,s-maxage=120')
