@@ -15,6 +15,11 @@ const nextConfig = {
           {
             key: 'cache-control',
             value: 'max-age=300, s-maxage=60'
+          },
+          {
+            key: 'content-security-policy',
+            value:
+              "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://i.ytimg.com https://storage.googleapis.com; default-src 'self'; font-src https://fonts.gstatic.com; img-src 'self' data: https://i.ytimg.com; manifest-src 'self'; script-src 'self' 'unsafe-inline' https://storage.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; worker-src 'self'"
           }
         ],
         source: '/(.*)'
