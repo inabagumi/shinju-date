@@ -9,7 +9,7 @@ import React, {
   useState
 } from 'react'
 
-import getValue from 'utils/getValue'
+import getValue from 'utils/get-value'
 
 const SearchForm: FC = () => {
   const { query } = useRouter()

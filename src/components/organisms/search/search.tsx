@@ -6,30 +6,13 @@ import swr, { useSWRPages } from 'swr'
 import Video from 'types/video'
 import Spinner from 'components/atoms/spinner'
 import VideoCard from 'components/molecules/video-card'
+import buildQueryString from 'utils/build-query-string'
 
 const SEARCH_INITIAL_COUNT = 18
 const SEARCH_COLUMNS_COUNT = 3
 
-type Params = {
-  count?: number | null
-  q?: string | null
-  until?: string | null
-}
-
-const buildQueryString = (params: Params): string => {
-  const searchParams = new URLSearchParams()
-
-  for (const [key, value] of Object.entries(params)) {
-    if (value) {
-      searchParams.append(key, value.toString())
-    }
-  }
-
-  return searchParams.toString()
-}
-
 type Props = {
-  query?: string
+  query: string
 }
 
 const Search: FC<Props> = ({ query }) => {
@@ -44,9 +27,9 @@ const Search: FC<Props> = ({ query }) => {
         q: query,
         until: offset
       })
-      const url = queryString ? `/api/search?${queryString}` : '/api/search'
+      const apiURL = queryString ? `/api/search?${queryString}` : '/api/search'
 
-      const { data: items } = withSWR(swr<Video[]>(url))
+      const { data: items } = withSWR(swr<Video[]>(apiURL))
 
       if (!items) return null
 

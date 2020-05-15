@@ -1,4 +1,4 @@
-import { parseJSON } from 'date-fns'
+import { format, parseJSON } from 'date-fns'
 import React, { DetailedHTMLProps, FC, HTMLAttributes } from 'react'
 import css from 'styled-jsx/css'
 
@@ -19,11 +19,12 @@ type Props = DetailedHTMLProps<
   HTMLAttributes<HTMLAnchorElement>,
   HTMLAnchorElement
 > & {
+  absolute?: boolean
   value: Video
 }
 
-const VideoCard: FC<Props> = ({ value, ...props }) => {
-  const date = parseJSON(value.publishedAt)
+const VideoCard: FC<Props> = ({ absolute, value, ...props }) => {
+  const publishedAt = parseJSON(value.publishedAt)
   const hasDuration =
     (value.duration.seconds || 0) > 0 ||
     (value.duration.minutes || 0) > 0 ||
@@ -53,7 +54,13 @@ const VideoCard: FC<Props> = ({ value, ...props }) => {
         <div className="card__footer">
           <small className="video__published">
             &nbsp;
-            <RelativeTime date={date} />
+            {absolute ? (
+              <time dateTime={publishedAt.toJSON()}>
+                {format(publishedAt, 'HH:mm')}
+              </time>
+            ) : (
+              <RelativeTime date={publishedAt} />
+            )}
           </small>
         </div>
       </a>

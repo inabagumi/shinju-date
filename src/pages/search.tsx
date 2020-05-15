@@ -4,7 +4,7 @@ import React, { useContext } from 'react'
 
 import Search from 'components/organisms/search'
 import { SiteContext } from 'context/site-context'
-import getValue from 'utils/getValue'
+import getValue from 'utils/get-value'
 
 type Props = {
   keyword: string
