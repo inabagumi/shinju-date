@@ -25,27 +25,27 @@ const About: FC<Props> = ({ children, title }): ReactElement => {
           itemType="https://schema.org/BreadcrumbList"
         >
           <li
-            className="breadcrumb__item"
+            className="breadcrumbs__item"
             itemProp="itemListElement"
             itemScope
             itemType="https://schema.org/ListItem"
           >
             <Link href="/">
-              <a className="breadcrumb__link" href="/" itemProp="item">
+              <a className="breadcrumbs__link" href="/" itemProp="item">
                 <span itemProp="name">{siteTitle}</span>
               </a>
             </Link>
             <meta itemProp="position" content="1" />
           </li>
           <li
-            className="breadcrumb__item breadcrumb__item--active"
+            className="breadcrumbs__item breadcrumbs__item--active"
             itemProp="itemListElement"
             itemScope
             itemType="https://schema.org/ListItem"
           >
             <Link href={router.pathname}>
               <a
-                className="breadcrumb__link"
+                className="breadcrumbs__link"
                 href={router.pathname}
                 itemProp="item"
               >
