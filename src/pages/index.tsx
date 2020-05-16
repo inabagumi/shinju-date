@@ -1,13 +1,13 @@
 import { subHours } from 'date-fns'
 import { NextPage } from 'next'
 import { NextSeo } from 'next-seo'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import useSWR from 'swr'
 
 import Spinner from 'components/atoms/spinner'
 import Schedule from 'components/organisms/schedule '
 import { SiteContext } from 'context/site-context'
-import Video from 'types/video'
+import SearchResponseBody from 'types/search-response-body'
 import buildQueryString from 'utils/build-query-string'
 
 const getRequestURL = (now = new Date()): string => {
@@ -21,19 +21,11 @@ const getRequestURL = (now = new Date()): string => {
 }
 
 const IndexPage: NextPage = () => {
-  const [now, setNow] = useState(() => new Date())
+  const now = useState(() => new Date())[0]
   const { baseUrl, description, title } = useContext(SiteContext)
-  const { data: items } = useSWR<Array<Video>>(() => getRequestURL(now))
-
-  useEffect(() => {
-    const timerID = setInterval(() => {
-      setNow(new Date())
-    }, 1000 * 60)
-
-    return (): void => {
-      clearInterval(timerID)
-    }
-  }, [])
+  const { data: items } = useSWR<SearchResponseBody>(() => getRequestURL(now), {
+    refreshInterval: 10 * 1000
+  })
 
   return (
     <>

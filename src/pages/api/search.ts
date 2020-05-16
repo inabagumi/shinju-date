@@ -1,14 +1,12 @@
 import { getUnixTime, parseISO } from 'date-fns'
 import { NextApiHandler } from 'next'
 
-import Video from 'types/video'
+import SearchResponseBody from 'types/search-response-body'
 import getValue from 'utils/get-value'
 import normalize, { VideoObject } from 'utils/normalize'
 import search from 'utils/search'
 
-type ResponseBody = Array<Video>
-
-const handler: NextApiHandler<ResponseBody> = async (req, res) => {
+const handler: NextApiHandler<SearchResponseBody> = async (req, res) => {
   const query = getValue(req.query.q)
   const count = parseInt(getValue(req.query.count) || '20', 10)
 
