@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import { format, parseJSON } from 'date-fns'
 import React, { DetailedHTMLProps, FC, HTMLAttributes } from 'react'
 import css from 'styled-jsx/css'
@@ -6,29 +7,51 @@ import Duration from 'components/atoms/duration'
 import RelativeTime from 'components/atoms/relative-time'
 import YouTubeThumbnail from 'components/atoms/youtube-thumbnail'
 import Video from 'types/video'
+import parseDuration from 'utils/parse-duration'
 
-const { className: durationClassName, styles: durationStyles } = css.resolve`
-  span {
+const isPast = (duration: Duration): boolean =>
+  (duration.seconds || 0) > 0 ||
+  (duration.minutes || 0) > 0 ||
+  (duration.hours || 0) > 0
+
+const { className, styles } = css.resolve`
+  .video__duration {
     bottom: 0.5em;
     position: absolute;
     right: 0.5em;
+    background-color: rgba(0, 0, 0, 0.85);
+    border-radius: 0.3em;
+    color: #fff;
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1;
+    padding: 0.3em;
+  }
+
+  .video__published {
+    color: var(--ifm-color-secondar);
+    display: block;
+    font-size: 0.85rem;
+    text-align: right;
   }
 `
+
+type TimeOptions = {
+  relativeTime?: boolean
+}
 
 type Props = DetailedHTMLProps<
   HTMLAttributes<HTMLAnchorElement>,
   HTMLAnchorElement
 > & {
-  absolute?: boolean
+  timeOptions?: TimeOptions
   value: Video
 }
 
-const VideoCard: FC<Props> = ({ absolute, value, ...props }) => {
+const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => {
   const publishedAt = parseJSON(value.publishedAt)
-  const hasDuration =
-    (value.duration.seconds || 0) > 0 ||
-    (value.duration.minutes || 0) > 0 ||
-    (value.duration.hours || 0) > 0
+  const duration = parseDuration(value.duration)
 
   return (
     <>
@@ -42,8 +65,11 @@ const VideoCard: FC<Props> = ({ absolute, value, ...props }) => {
         <div className="card__image video__image">
           <YouTubeThumbnail id={value.id} />
 
-          {hasDuration && (
-            <Duration className={durationClassName} value={value.duration} />
+          {isPast(duration) && (
+            <Duration
+              className={clsx('video__duration', className)}
+              dateTime={value.duration}
+            />
           )}
         </div>
 
@@ -52,16 +78,21 @@ const VideoCard: FC<Props> = ({ absolute, value, ...props }) => {
         </div>
 
         <div className="card__footer">
-          <small className="video__published">
-            &nbsp;
-            {absolute ? (
-              <time dateTime={publishedAt.toJSON()}>
-                {format(publishedAt, 'HH:mm')}
-              </time>
-            ) : (
-              <RelativeTime date={publishedAt} />
-            )}
-          </small>
+          {timeOptions?.relativeTime ? (
+            <RelativeTime
+              className={clsx('video__published', className)}
+              dateTime={value.publishedAt}
+              title={format(publishedAt, 'yyyy/MM/dd HH:mm:ss')}
+            />
+          ) : (
+            <time
+              className={clsx('video__published', className)}
+              dateTime={value.publishedAt}
+              title={format(publishedAt, 'yyyy/MM/dd HH:mm:ss')}
+            >
+              {format(publishedAt, 'HH:mm')}
+            </time>
+          )}
         </div>
       </a>
 
@@ -84,15 +115,9 @@ const VideoCard: FC<Props> = ({ absolute, value, ...props }) => {
         .video__body {
           flex-grow: 1;
         }
-
-        .video__published {
-          color: var(--ifm-color-secondar);
-          display: block;
-          text-align: right;
-        }
       `}</style>
 
-      {durationStyles}
+      {styles}
     </>
   )
 }

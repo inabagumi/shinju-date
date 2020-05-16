@@ -1,10 +1,8 @@
-import { Duration } from 'date-fns'
-
 import Channel from 'types/channel'
 
-interface Video {
+type Video = {
   channel: Channel
-  duration: Duration
+  duration: string
   id: string
   publishedAt: string
   title: string
