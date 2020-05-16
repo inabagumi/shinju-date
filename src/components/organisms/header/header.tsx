@@ -6,17 +6,17 @@ import Toggle from 'react-toggle'
 
 import Logo from 'components/atoms/logo'
 import SearchForm from 'components/molecules/search-form'
-import { SiteContext } from 'context/site-context'
+import { useSiteMetadata } from 'context/site-context'
 import { ThemeContext } from 'context/theme-context'
 
 import Moon from './moon'
 import Sun from './sun'
 
 const Header: FC = () => {
-  const { title: siteTitle } = useContext(SiteContext)
   const { theme, toggleTheme } = useContext(ThemeContext)
   const [sidebarShown, setSidebarShown] = useState<boolean>(false)
   const router = useRouter()
+  const { title: siteTitle } = useSiteMetadata()
 
   const showSidebar = useCallback((): void => {
     setSidebarShown(true)
