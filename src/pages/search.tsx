@@ -9,6 +9,7 @@ import Spinner from 'components/atoms/spinner'
 import VideoCard from 'components/molecules/video-card'
 import { useSiteMetadata } from 'context/site-context'
 import buildQueryString from 'utils/build-query-string'
+import chunk from 'utils/chunk'
 import getValue from 'utils/get-value'
 
 const SEARCH_INITIAL_COUNT = 18
@@ -47,17 +48,21 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
 
       if (!items) return null
 
-      return items.map((value) => (
-        <div
-          className="col col--4 padding-bottom--lg padding-horiz--sm"
-          key={value.id}
-        >
-          <VideoCard
-            timeOptions={{
-              relativeTime: true
-            }}
-            value={value}
-          />
+      return chunk(items, 3).map((values) => (
+        <div className="row" key={values.map((value) => value.id).join(':')}>
+          {values.map((value) => (
+            <div
+              className="col col--4 padding-bottom--lg padding-horiz--sm"
+              key={value.id}
+            >
+              <VideoCard
+                timeOptions={{
+                  relativeTime: true
+                }}
+                value={value}
+              />
+            </div>
+          ))}
         </div>
       ))
     },
@@ -99,9 +104,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
         }}
       />
 
-      <div className="margin-top--lg">
-        <div className="row">{pages}</div>
-      </div>
+      <div className="margin-top--lg">{pages}</div>
 
       {!isReachingEnd && (
         <div className="search__footer" ref={footerRef}>

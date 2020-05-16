@@ -3,6 +3,7 @@ import React, { FC } from 'react'
 
 import VideoCard from 'components/molecules/video-card'
 import Video from 'types/video'
+import chunk from 'utils/chunk'
 
 type ScheduleMap = Record<string, Array<Video>>
 
@@ -35,16 +36,21 @@ const Schedule: FC<Props> = ({ values }) => {
             <time dateTime={day}>{format(parseJSON(day), 'yyyy/MM/dd')}</time>
           </h2>
 
-          <div className="row">
-            {items.map((value) => (
-              <div
-                className="col col--4 padding-bottom--lg padding-horiz--sm"
-                key={value.id}
-              >
-                <VideoCard value={value} />
-              </div>
-            ))}
-          </div>
+          {chunk(items, 3).map((values) => (
+            <div
+              className="row"
+              key={values.map((value) => value.id).join(':')}
+            >
+              {values.map((value) => (
+                <div
+                  className="col col--4 padding-bottom--lg padding-horiz--sm"
+                  key={value.id}
+                >
+                  <VideoCard value={value} />
+                </div>
+              ))}
+            </div>
+          ))}
         </section>
       ))}
 
