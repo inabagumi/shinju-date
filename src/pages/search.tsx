@@ -52,7 +52,12 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
           className="col col--4 padding-bottom--lg padding-horiz--sm"
           key={value.id}
         >
-          <VideoCard value={value} />
+          <VideoCard
+            timeOptions={{
+              relativeTime: true
+            }}
+            value={value}
+          />
         </div>
       ))
     },

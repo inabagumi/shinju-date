@@ -1,5 +1,5 @@
-import classNames from 'classnames'
-import React, { FC, ReactElement } from 'react'
+import clsx from 'clsx'
+import React, { FC } from 'react'
 
 interface Props {
   className?: string
@@ -7,14 +7,10 @@ interface Props {
   value: string
 }
 
-const Emoji: FC<Props> = ({ className, label, value }): ReactElement => {
+const Emoji: FC<Props> = ({ className, label, value }) => {
   return (
     <>
-      <span
-        aria-label={label}
-        className={classNames('emoji', className)}
-        role="img"
-      >
+      <span aria-label={label} className={clsx('emoji', className)} role="img">
         {value}
       </span>
 

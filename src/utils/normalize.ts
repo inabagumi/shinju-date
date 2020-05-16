@@ -2,10 +2,8 @@ import { ObjectWithObjectID } from '@algolia/client-search'
 import { fromUnixTime } from 'date-fns'
 
 import Video from 'types/video'
-import parseDuration from 'utils/parse-duration'
 
-export type VideoObject = Omit<Video, 'duration' | 'publishedAt'> & {
-  duration?: string
+export type VideoObject = Omit<Video, 'publishedAt'> & {
   publishedAt: number
 }
 
@@ -18,7 +16,7 @@ const normalize = ({
   url
 }: VideoObject & ObjectWithObjectID): Video => ({
   channel,
-  duration: parseDuration(duration || 'PT0S'),
+  duration: duration || 'PT0S',
   id,
   publishedAt: fromUnixTime(publishedAt).toJSON(),
   title,

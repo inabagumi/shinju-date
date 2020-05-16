@@ -1,4 +1,4 @@
-import classNames from 'classnames'
+import clsx from 'clsx'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { FC, useCallback, useContext, useEffect, useState } from 'react'
@@ -33,7 +33,7 @@ const Header: FC = () => {
   return (
     <>
       <nav
-        className={classNames('navbar', 'navbar--fixed-top', {
+        className={clsx('navbar', 'navbar--fixed-top', {
           'navbar-sidebar--show': sidebarShown
         })}
       >
@@ -124,7 +124,7 @@ const Header: FC = () => {
                 <li className="menu__list-item">
                   <Link href="/about" prefetch={false}>
                     <a
-                      className={classNames('menu__link', {
+                      className={clsx('menu__link', {
                         'menu__link--active': router.pathname === '/about'
                       })}
                       href="/about"
@@ -139,7 +139,7 @@ const Header: FC = () => {
                 <li className="menu__list-item">
                   <Link href="/terms" prefetch={false}>
                     <a
-                      className={classNames('menu__link', {
+                      className={clsx('menu__link', {
                         'menu__link--active': router.pathname === '/terms'
                       })}
                       href="/terms"
@@ -153,7 +153,7 @@ const Header: FC = () => {
                 <li className="menu__list-item">
                   <Link href="/privacy" prefetch={false}>
                     <a
-                      className={classNames('menu__link', {
+                      className={clsx('menu__link', {
                         'menu__link--active': router.pathname === '/privacy'
                       })}
                       href="/privacy"

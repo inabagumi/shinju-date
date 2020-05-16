@@ -1,6 +1,12 @@
-import { format, formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow, parseISO } from 'date-fns'
 import jaLocale from 'date-fns/locale/ja'
-import React, { FC, useEffect, useState } from 'react'
+import React, {
+  FC,
+  DetailedHTMLProps,
+  TimeHTMLAttributes,
+  useEffect,
+  useState
+} from 'react'
 import { useInView } from 'react-intersection-observer'
 
 const relativeTime = (date: Date): string =>
@@ -10,13 +16,22 @@ const relativeTime = (date: Date): string =>
     locale: jaLocale
   })
 
-type Props = {
-  date: Date
-}
+type Props = DetailedHTMLProps<
+  TimeHTMLAttributes<HTMLTimeElement>,
+  HTMLTimeElement
+>
 
-const Time: FC<Props> = ({ date }) => {
+const RelativeTime: FC<Props> = ({
+  dateTime = new Date().toISOString(),
+  ...props
+}) => {
+  const [date, setDate] = useState(() => parseISO(dateTime))
   const [label, setLabel] = useState(() => relativeTime(date))
   const [timeRef, inView] = useInView()
+
+  useEffect(() => {
+    setDate(parseISO(dateTime))
+  }, [dateTime])
 
   useEffect(() => {
     if (!inView) return
@@ -31,14 +46,10 @@ const Time: FC<Props> = ({ date }) => {
   }, [date, inView])
 
   return (
-    <time
-      dateTime={date.toISOString()}
-      ref={timeRef}
-      title={format(date, 'yyyy/MM/dd HH:mm:ss')}
-    >
+    <time dateTime={dateTime} ref={timeRef} {...props}>
       {label}
     </time>
   )
 }
 
-export default Time
+export default RelativeTime

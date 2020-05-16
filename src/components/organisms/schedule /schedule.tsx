@@ -41,7 +41,7 @@ const Schedule: FC<Props> = ({ values }) => {
                 className="col col--4 padding-bottom--lg padding-horiz--sm"
                 key={value.id}
               >
-                <VideoCard absolute value={value} />
+                <VideoCard value={value} />
               </div>
             ))}
           </div>
