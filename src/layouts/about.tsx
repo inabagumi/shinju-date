@@ -1,15 +1,16 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, { FC, ReactElement, useContext } from 'react'
-import { SiteContext } from '../context/site-context'
+import React, { FC, ReactElement } from 'react'
+
+import { useSiteMetadata } from 'context/site-context'
 
 type Props = {
   title?: string
 }
 
 const About: FC<Props> = ({ children, title }): ReactElement => {
-  const { title: siteTitle } = useContext(SiteContext)
+  const { title: siteTitle } = useSiteMetadata()
   const router = useRouter()
 
   return (

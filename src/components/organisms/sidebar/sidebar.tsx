@@ -1,12 +1,13 @@
 import classNames from 'classnames'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, { FC, ReactElement, useContext } from 'react'
-import { SiteContext } from '../../../context/site-context'
+import React, { FC, ReactElement } from 'react'
+
+import { useSiteMetadata } from 'context/site-context'
 
 const Sidebar: FC = (): ReactElement => {
-  const { title } = useContext(SiteContext)
   const router = useRouter()
+  const { title } = useSiteMetadata()
 
   return (
     <>

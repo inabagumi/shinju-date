@@ -1,12 +1,12 @@
 import { subHours } from 'date-fns'
 import { NextPage } from 'next'
 import { NextSeo } from 'next-seo'
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import useSWR from 'swr'
 
 import Spinner from 'components/atoms/spinner'
 import Schedule from 'components/organisms/schedule '
-import { SiteContext } from 'context/site-context'
+import { useSiteMetadata } from 'context/site-context'
 import SearchResponseBody from 'types/search-response-body'
 import buildQueryString from 'utils/build-query-string'
 
@@ -22,21 +22,21 @@ const getRequestURL = (now = new Date()): string => {
 
 const IndexPage: NextPage = () => {
   const now = useState(() => new Date())[0]
-  const { baseUrl, description, title } = useContext(SiteContext)
   const { data: items } = useSWR<SearchResponseBody>(() => getRequestURL(now), {
     refreshInterval: 10 * 1000
   })
+  const { baseURL, description, title } = useSiteMetadata()
 
   return (
     <>
       <NextSeo
-        canonical={`${baseUrl}/`}
+        canonical={`${baseURL}/`}
         description={description}
         openGraph={{
           images: [
             {
               height: 630,
-              url: baseUrl + '/main-visual.jpg',
+              url: `${baseURL}/main-visual.jpg`,
               width: 1200
             }
           ],
