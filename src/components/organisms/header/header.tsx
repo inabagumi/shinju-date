@@ -166,6 +166,18 @@ const Header: FC = () => {
             <div className="menu">
               <ul className="menu__list">
                 <li className="menu__list-item">
+                  <a
+                    className="menu__link"
+                    href="https://haneru.dev/"
+                    onClick={hideSidebar}
+                    onKeyDown={hideSidebar}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    運営者情報
+                  </a>
+                </li>
+                <li className="menu__list-item">
                   <Link href="/about" prefetch={false}>
                     <a
                       className={clsx('menu__link', {
