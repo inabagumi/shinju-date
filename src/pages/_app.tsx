@@ -4,7 +4,6 @@ import React, { FC } from 'react'
 import { SWRConfig } from 'swr'
 
 import Header from 'components/organisms/header'
-import Sidebar from 'components/organisms/sidebar'
 import { SiteProvider } from 'context/site-context'
 import { ThemeProvider } from 'context/theme-context'
 
@@ -35,34 +34,15 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => (
 
         <Header />
 
-        <div className="container">
-          <div className="row">
-            <main className="col">
-              <Component {...pageProps} />
-            </main>
-
-            <div className="col col--2">
-              <Sidebar />
-            </div>
-          </div>
-        </div>
+        <main className="container">
+          <Component {...pageProps} />
+        </main>
 
         <style jsx global>{`
           :root {
-            --ifm-container-width: 1240px;
             --ifm-font-family-base: Roboto, Noto Sans JP, sans-serif;
             --ifm-font-size-base: 16px;
             --ifm-line-height-base: 2;
-          }
-
-          .react-toggle--lg-only {
-            display: none;
-          }
-
-          @media (min-width: 996px) {
-            .react-toggle--lg-only {
-              display: inline-block;
-            }
           }
 
           .react-toggle--checked .react-toggle-thumb {

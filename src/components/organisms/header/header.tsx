@@ -2,15 +2,45 @@ import clsx from 'clsx'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { FC, useCallback, useContext, useEffect, useState } from 'react'
-import Toggle from 'react-toggle'
+import { FaMoon, FaSun } from 'react-icons/fa'
+import Toggle, { ToggleIcons } from 'react-toggle'
+import css from 'styled-jsx/css'
 
 import Logo from 'components/atoms/logo'
 import SearchForm from 'components/molecules/search-form'
 import { useSiteMetadata } from 'context/site-context'
 import { ThemeContext } from 'context/theme-context'
 
-import Moon from './moon'
-import Sun from './sun'
+const { className, styles } = css.resolve`
+  .navbar__logo {
+    width: auto;
+  }
+
+  .theme-toggle--lg {
+    display: inline-block;
+  }
+
+  .theme-toggle--sm {
+    display: none;
+  }
+
+  @media (max-width: 996px) {
+    .theme-toggle--lg {
+      display: none;
+    }
+
+    .theme-toggle--sm {
+      display: inline-block;
+    }
+  }
+
+  .theme-toggle__icon {
+    color: #ffeb3b;
+    display: inline-block;
+    font-size: 0.8rem;
+    vertical-align: middle;
+  }
+`
 
 const Header: FC = () => {
   const { theme, toggleTheme } = useContext(ThemeContext)
@@ -30,6 +60,25 @@ const Header: FC = () => {
     document.documentElement.dataset.theme = theme
   }, [theme])
 
+  useEffect(() => {
+    document.documentElement.classList.toggle('fixed', sidebarShown)
+  }, [sidebarShown])
+
+  const toggleIcons: ToggleIcons = {
+    checked: (
+      <FaSun
+        aria-label="ダークモードオフ"
+        className={clsx('theme-toggle__icon', className)}
+      />
+    ),
+    unchecked: (
+      <FaMoon
+        aria-label="ダークモードオン"
+        className={clsx('theme-toggle__icon', className)}
+      />
+    )
+  }
+
   return (
     <>
       <nav
@@ -40,6 +89,7 @@ const Header: FC = () => {
         <div className="navbar__inner">
           <div className="navbar__items">
             <div
+              aria-label="メニュー"
               className="navbar__toggle"
               onClick={showSidebar}
               onKeyDown={showSidebar}
@@ -47,7 +97,6 @@ const Header: FC = () => {
               tabIndex={0}
             >
               <svg focusable="false" height="30" viewBox="0 0 30 30" width="30">
-                <title>メニュー</title>
                 <path
                   d="M4 7h22M4 15h22M4 23h22"
                   stroke="currentColor"
@@ -64,7 +113,7 @@ const Header: FC = () => {
                 href="/"
                 tabIndex={-1}
               >
-                <Logo className="navbar__logo" />
+                <Logo className={clsx('navbar__logo', className)} />
               </a>
             </Link>
           </div>
@@ -73,11 +122,8 @@ const Header: FC = () => {
             <Toggle
               aria-label="ダークモード切り替え"
               checked={theme === 'dark'}
-              className="react-toggle--lg-only"
-              icons={{
-                checked: <Sun />,
-                unchecked: <Moon />
-              }}
+              className={clsx('theme-toggle', 'theme-toggle--lg', className)}
+              icons={toggleIcons}
               onChange={toggleTheme}
               value="dark"
             />
@@ -103,16 +149,14 @@ const Header: FC = () => {
                 onKeyDown={hideSidebar}
                 tabIndex={-1}
               >
-                <Logo className="navbar__logo" />
+                <Logo className={clsx('navbar__logo', className)} />
               </a>
             </Link>
             <Toggle
               aria-label="ダークモード切り替え"
               checked={theme === 'dark'}
-              icons={{
-                checked: <Sun />,
-                unchecked: <Moon />
-              }}
+              className={clsx('theme-toggle', 'theme-toggle--sm', className)}
+              icons={toggleIcons}
               onChange={toggleTheme}
               value="dark"
             />
@@ -170,7 +214,24 @@ const Header: FC = () => {
         </div>
       </nav>
 
+      <style global jsx>{`
+        html.fixed,
+        html.fixed body {
+          height: 100%;
+          overflow-y: hidden;
+        }
+      `}</style>
+
       <style jsx>{`
+        .navbar__toggle {
+          display: block;
+        }
+
+        .navbar__toggle svg {
+          display: inline-block;
+          vertical-align: middle;
+        }
+
         @media (max-width: 996px) {
           .navbar__items {
             flex-grow: 0;
@@ -192,12 +253,11 @@ const Header: FC = () => {
         .navbar-sidebar {
           display: flex;
           flex-direction: column;
-        }
-
-        .navbar :global(.navbar__logo) {
-          width: auto;
+          max-width: 300px;
         }
       `}</style>
+
+      {styles}
     </>
   )
 }
