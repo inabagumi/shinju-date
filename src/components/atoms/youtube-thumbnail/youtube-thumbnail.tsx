@@ -10,10 +10,12 @@ const YouTubeThumbnail: FC<Props> = ({ id }) => (
       <img
         alt=""
         className="thumbnail__image"
+        height={360}
         loading="lazy"
         sizes="(min-width: 500px) 320px, 480px"
         src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`}
         srcSet={`https://i.ytimg.com/vi/${id}/mqdefault.jpg 320w, https://i.ytimg.com/vi/${id}/hqdefault.jpg`}
+        width={480}
       />
     </div>
 
