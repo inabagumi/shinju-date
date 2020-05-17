@@ -6,8 +6,6 @@ import VideoCard from 'components/molecules/video-card'
 import Video from 'types/video'
 import chunk from 'utils/chunk'
 
-import styles from './schedule.module.css'
-
 type ScheduleMap = Record<string, Array<Video>>
 
 type Props = {
@@ -35,7 +33,7 @@ const Schedule: FC<Props> = ({ values }) => {
     <>
       {Object.entries(schedule).map(([day, items]) => (
         <section className="margin-top--lg section" key={day}>
-          <h2 className={clsx('margin-bottom--lg', styles.title)}>
+          <h2 className="margin-bottom--lg text--right">
             <time dateTime={day}>{format(parseJSON(day), 'yyyy/MM/dd')}</time>
           </h2>
 
