@@ -1,5 +1,5 @@
-import clsx from 'clsx'
 import { compareAsc, format, parseJSON, startOfDay } from 'date-fns'
+import jaLocale from 'date-fns/locale/ja'
 import React, { FC } from 'react'
 
 import VideoCard from 'components/molecules/video-card'
@@ -34,7 +34,9 @@ const Schedule: FC<Props> = ({ values }) => {
       {Object.entries(schedule).map(([day, items]) => (
         <section className="margin-top--lg section" key={day}>
           <h2 className="margin-bottom--lg text--right">
-            <time dateTime={day}>{format(parseJSON(day), 'yyyy/MM/dd')}</time>
+            <time dateTime={day}>
+              {format(parseJSON(day), 'P', { locale: jaLocale })}
+            </time>
           </h2>
 
           {chunk(items, 3).map((values) => (

@@ -1,5 +1,6 @@
 import clsx from 'clsx'
 import { format, parseJSON } from 'date-fns'
+import jaLocale from 'date-fns/locale/ja'
 import React, { DetailedHTMLProps, FC, HTMLAttributes } from 'react'
 
 import Duration from 'components/atoms/duration'
@@ -30,6 +31,7 @@ type Props = DetailedHTMLProps<
 const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => {
   const publishedAt = parseJSON(value.publishedAt)
   const duration = parseDuration(value.duration)
+  const timeLabel = format(publishedAt, 'PPPp', { locale: jaLocale })
 
   return (
     <a
@@ -56,15 +58,15 @@ const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => {
           <RelativeTime
             className={styles.published}
             dateTime={value.publishedAt}
-            title={format(publishedAt, 'yyyy/MM/dd HH:mm:ss')}
+            title={timeLabel}
           />
         ) : (
           <time
             className={styles.published}
             dateTime={value.publishedAt}
-            title={format(publishedAt, 'yyyy/MM/dd HH:mm:ss')}
+            title={timeLabel}
           >
-            {format(publishedAt, 'HH:mm')}
+            {format(publishedAt, 'p', { locale: jaLocale })}
           </time>
         )}
       </div>
