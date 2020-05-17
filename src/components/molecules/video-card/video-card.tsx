@@ -43,9 +43,14 @@ const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => {
         <YouTubeThumbnail id={value.id} />
 
         {isFinished(duration) ? (
-          <Duration className={styles.duration} dateTime={value.duration} />
+          <Duration
+            className={clsx('badge', 'badge--info', styles.duration)}
+            dateTime={value.duration}
+          />
         ) : isPast(publishedAt) ? (
-          <span className={styles.liveNow}>ライブ配信中</span>
+          <span className={clsx('badge', 'badge--info', styles.liveNow)}>
+            ライブ配信中
+          </span>
         ) : null}
       </div>
 

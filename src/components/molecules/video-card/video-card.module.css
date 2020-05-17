@@ -4,25 +4,24 @@
 
 .duration,
 .liveNow {
+  --ifm-badge-padding-horizontal: 0.3em;
+  --ifm-badge-padding-vertical: 0.3em;
+
+  font-size: 0.8rem;
+  font-weight: var(--ifm-font-weight-semibold);
   position: absolute;
   right: 0.5em;
-  border-radius: 0.3em;
-  display: inline-block;
-  font-size: 0.8rem;
-  font-weight: 500;
-  line-height: 1;
-  padding: 0.3em;
 }
 
 .duration {
-  background-color: rgba(0, 0, 0, 0.85);
+  --ifm-badge-background-color: rgba(0, 0, 0, 0.85);
+
   bottom: 0.5em;
-  color: #fff;
 }
 
 .liveNow {
-  background-color: rgba(198, 40, 40, 0.85);
-  color: #fff;
+  --ifm-badge-background-color: #d32f2f;
+
   top: 0.5em;
 }
 
