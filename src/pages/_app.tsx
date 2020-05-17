@@ -3,6 +3,7 @@ import Head from 'next/head'
 import React, { FC } from 'react'
 import { SWRConfig } from 'swr'
 
+import Footer from 'components/organisms/footer'
 import Header from 'components/organisms/header'
 import { SiteProvider } from 'context/site-context'
 import { ThemeProvider } from 'context/theme-context'
@@ -36,9 +37,11 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => (
 
         <Header />
 
-        <main>
+        <main style={{ flexBasis: 'auto', flexGrow: 1, flexShrink: 0 }}>
           <Component {...pageProps} />
         </main>
+
+        <Footer />
       </ThemeProvider>
     </SiteProvider>
   </SWRConfig>
