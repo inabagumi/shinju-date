@@ -50,7 +50,7 @@ const IndexPage: NextPage = () => {
         }}
       />
 
-      <div className="container">
+      <div className="container margin-bottom--lg">
         {items ? (
           <Schedule values={items} />
         ) : (

@@ -1,4 +1,3 @@
-.markdown ol ol,
-.markdown ul ol {
+.orderedList {
   list-style-type: decimal;
 }

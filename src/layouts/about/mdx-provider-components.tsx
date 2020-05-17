@@ -5,8 +5,11 @@ import React, {
   AnchorHTMLAttributes,
   DetailedHTMLProps,
   FC,
-  HTMLAttributes
+  HTMLAttributes,
+  OlHTMLAttributes
 } from 'react'
+
+import styles from './about.module.css'
 
 type LinkProps = DetailedHTMLProps<
   AnchorHTMLAttributes<HTMLAnchorElement>,
@@ -41,9 +44,19 @@ const H2: FC<HeadingProps> = ({ className, ...props }) => (
   <h2 className={clsx('margin-top--lg', className)} {...props} />
 )
 
+type OrderdListProps = DetailedHTMLProps<
+  OlHTMLAttributes<HTMLOListElement>,
+  HTMLOListElement
+>
+
+const OrderedList: FC<OrderdListProps> = ({ className, ...props }) => (
+  <ol className={clsx(styles.orderedList, className)} {...props} />
+)
+
 const mdxProviderComponents: MDXProviderComponentsProp = {
   a: Link,
-  h2: H2
+  h2: H2,
+  ol: OrderedList
 }
 
 export default mdxProviderComponents
