@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { format, parseJSON } from 'date-fns'
+import { format, isPast, parseJSON } from 'date-fns'
 import jaLocale from 'date-fns/locale/ja'
 import React, { DetailedHTMLProps, FC, HTMLAttributes } from 'react'
 
@@ -11,10 +11,8 @@ import parseDuration from 'utils/parse-duration'
 
 import styles from './video-card.module.css'
 
-const isPast = (duration: Duration): boolean =>
-  (duration.seconds || 0) > 0 ||
-  (duration.minutes || 0) > 0 ||
-  (duration.hours || 0) > 0
+const isFinished = (duration: Duration): boolean =>
+  Object.values(duration).some((value) => value && value > 0)
 
 type TimeOptions = {
   relativeTime?: boolean
@@ -33,6 +31,8 @@ const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => {
   const duration = parseDuration(value.duration)
   const timeLabel = format(publishedAt, 'PPPp', { locale: jaLocale })
 
+  console.log(duration)
+
   return (
     <a
       className={clsx('card', styles.video)}
@@ -44,9 +44,11 @@ const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => {
       <div className={clsx('card__image', styles.image)}>
         <YouTubeThumbnail id={value.id} />
 
-        {isPast(duration) && (
+        {isFinished(duration) ? (
           <Duration className={styles.duration} dateTime={value.duration} />
-        )}
+        ) : isPast(publishedAt) ? (
+          <span className={styles.liveNow}>ライブ配信中</span>
+        ) : null}
       </div>
 
       <div className={clsx('card__body', styles.content)}>

@@ -1,15 +1,30 @@
 import { Duration } from 'date-fns'
 
-const ISO8601_DURATION_REGEXP = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+))S$/
+const ISO8601_DURATION_REGEXP = /^P(?:(?:(\d+(?:[.,]\d+)?)Y)?(?:(\d+(?:[.,]\d+)?)M)?(?:(\d+(?:[.,]\d+)?)D)?(?:T(?:(\d+(?:[.,]\d+)?)H)?(?:(\d+(?:[.,]\d+)?)M)?(?:(\d+(?:[.,]\d+)?)S))?|(\d+(?:[.,]\d+)?)W)$/
+
+const ISO8601_DURATION_SUFFIXES = [
+  'years',
+  'months',
+  'days',
+  'hours',
+  'minutes',
+  'seconds',
+  'weeks'
+]
 
 const parseDuration = (duration: string): Duration => {
   const match = duration.match(ISO8601_DURATION_REGEXP)
 
-  return {
-    hours: parseInt(match?.[1] || '0', 10),
-    minutes: parseInt(match?.[2] || '0', 10),
-    seconds: parseInt(match?.[3] || '0', 10)
-  }
+  return ISO8601_DURATION_SUFFIXES.reduce<Duration>((result, suffix, index) => {
+    const value = parseFloat((match?.[index + 1] || '0').replace(/,/, '.'))
+
+    return Number.isNaN(value) || value <= 0
+      ? result
+      : {
+          ...result,
+          [suffix]: value
+        }
+  }, {})
 }
 
 export default parseDuration
