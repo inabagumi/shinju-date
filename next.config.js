@@ -44,7 +44,24 @@ const nextConfig = {
     ]
   },
   pageExtensions: ['mdx', 'ts', 'tsx'],
-  target: 'serverless',
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  webpack(config, { defaultLoaders }) {
+    config.module.rules.push({
+      test: /\.svg$/,
+      use: [
+        defaultLoaders.babel,
+        {
+          loader: '@svgr/webpack',
+          options: {
+            babel: false,
+            dimensions: false
+          }
+        }
+      ]
+    })
+
+    return config
+  },
   workboxOpts: {
     clientsClaim: true,
     runtimeCaching: [
