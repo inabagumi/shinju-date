@@ -1,10 +1,12 @@
+import clsx from 'clsx'
 import swr, { useSWRPages } from 'swr'
 import { GetServerSideProps, NextPage } from 'next'
 import { NextSeo } from 'next-seo'
 import React, { useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
+import css from 'styled-jsx/css'
 
-import Video from 'types/video'
+import SearchResponseBody from 'types/search-response-body'
 import Spinner from 'components/atoms/spinner'
 import VideoCard from 'components/molecules/video-card'
 import { useSiteMetadata } from 'context/site-context'
@@ -12,7 +14,15 @@ import buildQueryString from 'utils/build-query-string'
 import chunk from 'utils/chunk'
 import getValue from 'utils/get-value'
 
-const SEARCH_INITIAL_COUNT = 18
+const { className, styles } = css.resolve`
+  .loading {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    margin: 2rem 0;
+  }
+`
 
 type Props = {
   keyword: string
@@ -31,22 +41,25 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
 }
 
 const SearchPage: NextPage<Props> = ({ keyword }) => {
-  const { isLoadingMore, isReachingEnd, loadMore, pages } = useSWRPages<
-    string | null,
-    Video[]
-  >(
+  const { loadMore, pages } = useSWRPages<string | null, SearchResponseBody>(
     `search-page:${keyword}`,
     ({ offset, withSWR }) => {
       const queryString = buildQueryString({
-        count: SEARCH_INITIAL_COUNT,
+        count: 9,
         q: keyword,
         until: offset
       })
       const apiURL = queryString ? `/api/search?${queryString}` : '/api/search'
 
-      const { data: items } = withSWR(swr<Video[]>(apiURL))
+      const { data: items } = withSWR(swr(apiURL))
 
-      if (!items) return null
+      if (!items) {
+        return (
+          <div className={clsx('loading', className)}>
+            <Spinner aria-label="読み込み中..." />
+          </div>
+        )
+      }
 
       return chunk(items, 3).map((values) => (
         <div className="row" key={values.map((value) => value.id).join(':')}>
@@ -74,10 +87,10 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
   const { baseURL, description, title: siteTitle } = useSiteMetadata()
 
   useEffect(() => {
-    if (!inView || isReachingEnd || isLoadingMore) return
+    if (!inView) return
 
     loadMore()
-  }, [inView, isReachingEnd, isLoadingMore, loadMore])
+  }, [inView, loadMore])
 
   const path = keyword ? `/search?q=${encodeURIComponent(keyword)}` : '/search'
   const title = [keyword, siteTitle].filter(Boolean).join(' - ')
@@ -106,28 +119,9 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
 
       <div className="margin-top--lg">{pages}</div>
 
-      {!isReachingEnd && (
-        <div className="search__footer" ref={footerRef}>
-          {isLoadingMore && (
-            <div className="search__loading">
-              <Spinner aria-label="読み込み中..." />
-            </div>
-          )}
-        </div>
-      )}
+      <div className="padding-bottom--lg" ref={footerRef} />
 
-      <style jsx>{`
-        .search__footer {
-          padding: 2rem 0;
-        }
-
-        .search__loading {
-          align-items: center;
-          display: flex;
-          height: 100%;
-          justify-content: center;
-        }
-      `}</style>
+      {styles}
     </>
   )
 }
