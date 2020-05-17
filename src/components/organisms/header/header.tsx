@@ -4,7 +4,7 @@ import React, { FC, useContext, useEffect } from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
 import Toggle, { ToggleIcons } from 'react-toggle'
 
-import Logo from 'components/atoms/logo'
+import Logo from 'assets/logo.svg'
 import SearchForm from 'components/molecules/search-form'
 import { useSiteMetadata } from 'context/site-context'
 import { ThemeContext } from 'context/theme-context'
