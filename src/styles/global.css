@@ -1,0 +1,23 @@
+:root {
+  --ifm-font-family-base: Roboto, Noto Sans JP, sans-serif;
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 2;
+}
+
+html.fixed,
+html.fixed body {
+  height: 100%;
+  overflow-y: hidden;
+}
+
+.react-toggle--checked .react-toggle-thumb {
+  border-color: var(--ifm-color-primary);
+}
+
+.react-toggle--focus .react-toggle-thumb {
+  box-shadow: 0 0 2px 3px var(--ifm-color-primary);
+}
+
+.react-toggle:active:not(.react-toggle--disabled) .react-toggle-thumb {
+  box-shadow: 0 0 5px 5px var(--ifm-color-primary);
+}

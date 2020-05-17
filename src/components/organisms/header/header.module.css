@@ -1,0 +1,60 @@
+.lgOnly {
+  display: inline-block;
+}
+
+@media (max-width: 996px) {
+  .lgOnly {
+    display: none;
+  }
+}
+
+.logo {
+  width: auto;
+}
+
+.sidebar {
+  --ifm-global-shadow-md: none;
+
+  display: block !important;
+  max-width: 300px;
+}
+
+.smOnly {
+  display: none;
+}
+
+@media (max-width: 996px) {
+  .smOnly {
+    display: inline-block;
+  }
+}
+
+.themeIcon {
+  color: #ffeb3b;
+  display: inline-block;
+  font-size: 0.8rem;
+  vertical-align: middle;
+}
+
+.toggle {
+  display: block !important;
+}
+
+.toggle svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@media (max-width: 996px) {
+  .navbar__items {
+    flex-grow: 0;
+  }
+
+  .navbar__items--right {
+    flex-grow: 1;
+  }
+
+  .navbar__items .navbar__brand {
+    display: none;
+  }
+}

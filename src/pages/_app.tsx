@@ -10,6 +10,8 @@ import { ThemeProvider } from 'context/theme-context'
 import 'infima/dist/css/default/default.css'
 import 'react-toggle/style.css'
 
+import 'styles/global.css'
+
 async function fetcher<T>(url: string): Promise<T> {
   const res = await fetch(url)
   return res.json()
@@ -37,27 +39,6 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => (
         <main className="container">
           <Component {...pageProps} />
         </main>
-
-        <style jsx global>{`
-          :root {
-            --ifm-font-family-base: Roboto, Noto Sans JP, sans-serif;
-            --ifm-font-size-base: 16px;
-            --ifm-line-height-base: 2;
-          }
-
-          .react-toggle--checked .react-toggle-thumb {
-            border-color: var(--ifm-color-primary);
-          }
-
-          .react-toggle--focus .react-toggle-thumb {
-            box-shadow: 0 0 2px 3px var(--ifm-color-primary);
-          }
-
-          .react-toggle:active:not(.react-toggle--disabled)
-            .react-toggle-thumb {
-            box-shadow: 0 0 5px 5px var(--ifm-color-primary);
-          }
-        `}</style>
       </ThemeProvider>
     </SiteProvider>
   </SWRConfig>

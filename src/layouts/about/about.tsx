@@ -1,9 +1,12 @@
+import clsx from 'clsx'
 import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { FC, ReactElement } from 'react'
 
 import { useSiteMetadata } from 'context/site-context'
+
+import styles from './about.module.css'
 
 type Props = {
   title?: string
@@ -58,18 +61,11 @@ const About: FC<Props> = ({ children, title }): ReactElement => {
         </ul>
       </nav>
 
-      <div className="markdown padding-bottom--lg">
+      <div className={clsx('padding-bottom--lg', styles.markdown)}>
         {title && <h1>{title}</h1>}
 
         {children}
       </div>
-
-      <style jsx>{`
-        .markdown :global(ol ol),
-        .markdown :global(ul ol) {
-          list-style-type: decimal;
-        }
-      `}</style>
     </>
   )
 }
