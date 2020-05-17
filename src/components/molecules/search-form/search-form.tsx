@@ -22,6 +22,10 @@ const SearchForm: FC = () => {
     setValue(event.target.value)
   }, [])
 
+  const handleFocus = useCallback(() => {
+    Router.prefetch('/search')
+  }, [])
+
   const handleSubmit = useCallback(
     (event: FormEvent<HTMLFormElement>): void => {
       event.preventDefault()
@@ -51,6 +55,7 @@ const SearchForm: FC = () => {
           className={clsx('navbar__search-input', styles.input)}
           name="q"
           onChange={handleChange}
+          onFocus={handleFocus}
           placeholder="検索"
           ref={textFieldRef}
           type="search"
