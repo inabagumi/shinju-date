@@ -5,7 +5,7 @@ import React, { useState } from 'react'
 import useSWR from 'swr'
 
 import Spinner from 'components/atoms/spinner'
-import Schedule from 'components/organisms/schedule '
+import Schedule from 'components/organisms/schedule'
 import { useSiteMetadata } from 'context/site-context'
 import SearchResponseBody from 'types/search-response-body'
 import buildQueryString from 'utils/build-query-string'
