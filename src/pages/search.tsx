@@ -107,9 +107,11 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
         }}
       />
 
-      <div className="margin-top--lg">{pages}</div>
+      <div className="container">
+        <div className="margin-top--lg">{pages}</div>
 
-      <div className="padding-bottom--lg" ref={footerRef} />
+        <div className="padding-bottom--lg" ref={footerRef} />
+      </div>
     </>
   )
 }

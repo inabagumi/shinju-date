@@ -50,13 +50,15 @@ const IndexPage: NextPage = () => {
         }}
       />
 
-      {items ? (
-        <Schedule values={items} />
-      ) : (
-        <div className={styles.loading}>
-          <Spinner />
-        </div>
-      )}
+      <div className="container">
+        {items ? (
+          <Schedule values={items} />
+        ) : (
+          <div className={styles.loading}>
+            <Spinner />
+          </div>
+        )}
+      </div>
     </>
   )
 }
