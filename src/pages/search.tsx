@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import swr, { useSWRPages } from 'swr'
 import { GetServerSideProps, NextPage } from 'next'
 import { NextSeo } from 'next-seo'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
 import css from 'styled-jsx/css'
 
