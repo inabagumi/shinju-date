@@ -1,4 +1,4 @@
-.markdown :global(ol ol),
-.markdown :global(ul ol) {
+.markdown ol ol,
+.markdown ul ol {
   list-style-type: decimal;
 }

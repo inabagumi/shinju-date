@@ -36,7 +36,7 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => (
 
         <Header />
 
-        <main className="container">
+        <main>
           <Component {...pageProps} />
         </main>
       </ThemeProvider>
