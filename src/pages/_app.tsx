@@ -7,6 +7,7 @@ import Footer from 'components/organisms/footer'
 import Header from 'components/organisms/header'
 import { SiteProvider } from 'context/site-context'
 import { ThemeProvider } from 'context/theme-context'
+import styles from 'styles/app.module.css'
 
 import 'infima/dist/css/default/default.css'
 import 'react-toggle/style.css'
@@ -37,7 +38,7 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => (
 
         <Header />
 
-        <main style={{ flexBasis: 'auto', flexGrow: 1, flexShrink: 0 }}>
+        <main className={styles.wrapper}>
           <Component {...pageProps} />
         </main>
 
