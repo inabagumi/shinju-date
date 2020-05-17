@@ -31,8 +31,6 @@ const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => {
   const duration = parseDuration(value.duration)
   const timeLabel = format(publishedAt, 'PPPp', { locale: jaLocale })
 
-  console.log(duration)
-
   return (
     <a
       className={clsx('card', styles.video)}
