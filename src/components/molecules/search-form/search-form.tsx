@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import Router, { useRouter } from 'next/router'
 import React, {
   ChangeEvent,
@@ -10,6 +11,7 @@ import React, {
 } from 'react'
 
 import getValue from 'utils/get-value'
+import styles from './search-form.module.css'
 
 const SearchForm: FC = () => {
   const { query } = useRouter()
@@ -36,39 +38,26 @@ const SearchForm: FC = () => {
   }, [query.q])
 
   return (
-    <>
-      <form action="/search" method="get" onSubmit={handleSubmit} role="search">
-        <div className="navbar__search">
-          <input
-            aria-label="検索"
-            className="navbar__search-input"
-            name="q"
-            onChange={handleChange}
-            placeholder="検索"
-            ref={textFieldRef}
-            type="search"
-            value={value}
-          />
-        </div>
-      </form>
-
-      <style jsx>{`
-        @media (max-width: 996px) {
-          form {
-            width: 100%;
-          }
-
-          .navbar__search {
-            padding-right: var(--ifm-navbar-padding-horizontal);
-          }
-
-          .navbar__search :global(.navbar__search-input) {
-            font-size: 1rem;
-            width: 100%;
-          }
-        }
-      `}</style>
-    </>
+    <form
+      action="/search"
+      className={styles.form}
+      method="get"
+      onSubmit={handleSubmit}
+      role="search"
+    >
+      <div className={clsx('navbar__search', styles.content)}>
+        <input
+          aria-label="検索"
+          className={clsx('navbar__search-input', styles.input)}
+          name="q"
+          onChange={handleChange}
+          placeholder="検索"
+          ref={textFieldRef}
+          type="search"
+          value={value}
+        />
+      </div>
+    </form>
   )
 }
 

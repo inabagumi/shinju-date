@@ -1,0 +1,23 @@
+.thumbnail {
+  align-items: center;
+  background-color: #424242;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.thumbnail::before {
+  content: '';
+  display: block;
+  padding-top: 56.25%;
+}
+
+.image {
+  display: block;
+  height: auto;
+  left: 0;
+  position: absolute;
+  right: 0;
+  width: 100%;
+}

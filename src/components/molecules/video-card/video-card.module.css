@@ -1,0 +1,38 @@
+.content {
+  flex-grow: 1;
+}
+
+.duration {
+  bottom: 0.5em;
+  position: absolute;
+  right: 0.5em;
+  background-color: rgba(0, 0, 0, 0.85);
+  border-radius: 0.3em;
+  color: #fff;
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1;
+  padding: 0.3em;
+}
+
+.image {
+  position: relative;
+}
+
+.published {
+  color: var(--ifm-color-secondar);
+  display: block;
+  font-size: 0.85rem;
+  text-align: right;
+}
+
+.video {
+  --ifm-link-color: var(--ifm-font-color-base);
+  --ifm-link-hover-color: var(--ifm-link-color);
+  --ifm-link-hover-decoration: none;
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}

@@ -1,9 +1,12 @@
+import clsx from 'clsx'
 import { compareAsc, format, parseJSON, startOfDay } from 'date-fns'
 import React, { FC } from 'react'
 
 import VideoCard from 'components/molecules/video-card'
 import Video from 'types/video'
 import chunk from 'utils/chunk'
+
+import styles from './schedule.module.css'
 
 type ScheduleMap = Record<string, Array<Video>>
 
@@ -32,7 +35,7 @@ const Schedule: FC<Props> = ({ values }) => {
     <>
       {Object.entries(schedule).map(([day, items]) => (
         <section className="margin-top--lg section" key={day}>
-          <h2 className="margin-bottom--lg section__title">
+          <h2 className={clsx('margin-bottom--lg', styles.title)}>
             <time dateTime={day}>{format(parseJSON(day), 'yyyy/MM/dd')}</time>
           </h2>
 
@@ -53,14 +56,6 @@ const Schedule: FC<Props> = ({ values }) => {
           ))}
         </section>
       ))}
-
-      <style jsx>{`
-        .section__title {
-          font-size: 1.3rem;
-          font-weight: 500;
-          text-align: right;
-        }
-      `}</style>
     </>
   )
 }

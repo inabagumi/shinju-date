@@ -10,6 +10,8 @@ import { useSiteMetadata } from 'context/site-context'
 import SearchResponseBody from 'types/search-response-body'
 import buildQueryString from 'utils/build-query-string'
 
+import styles from 'styles/index.module.css'
+
 const getRequestURL = (now = new Date()): string => {
   const apiURL = '/api/search'
   const queryString = buildQueryString({
@@ -51,19 +53,10 @@ const IndexPage: NextPage = () => {
       {items ? (
         <Schedule values={items} />
       ) : (
-        <div className="loading">
+        <div className={styles.loading}>
           <Spinner />
         </div>
       )}
-
-      <style jsx>{`
-        .loading {
-          align-items: center;
-          display: flex;
-          justify-content: center;
-          margin: 2rem auto;
-        }
-      `}</style>
     </>
   )
 }

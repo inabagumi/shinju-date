@@ -1,10 +1,8 @@
-import clsx from 'clsx'
 import swr, { useSWRPages } from 'swr'
 import { GetServerSideProps, NextPage } from 'next'
 import { NextSeo } from 'next-seo'
 import React, { useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
-import css from 'styled-jsx/css'
 
 import SearchResponseBody from 'types/search-response-body'
 import Spinner from 'components/atoms/spinner'
@@ -14,15 +12,7 @@ import buildQueryString from 'utils/build-query-string'
 import chunk from 'utils/chunk'
 import getValue from 'utils/get-value'
 
-const { className, styles } = css.resolve`
-  .loading {
-    align-items: center;
-    display: flex;
-    height: 100%;
-    justify-content: center;
-    margin: 2rem 0;
-  }
-`
+import styles from 'styles/search.module.css'
 
 type Props = {
   keyword: string
@@ -55,7 +45,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
 
       if (!items) {
         return (
-          <div className={clsx('loading', className)}>
+          <div className={styles.loading}>
             <Spinner aria-label="読み込み中..." />
           </div>
         )
@@ -120,8 +110,6 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
       <div className="margin-top--lg">{pages}</div>
 
       <div className="padding-bottom--lg" ref={footerRef} />
-
-      {styles}
     </>
   )
 }
