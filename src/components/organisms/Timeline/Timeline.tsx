@@ -1,11 +1,7 @@
-import { compareAsc, format, parseJSON, startOfDay } from 'date-fns'
-import jaLocale from 'date-fns/locale/ja'
+import { compareAsc, parseJSON, startOfDay } from 'date-fns'
 import React, { FC } from 'react'
 
-import Skeleton from '@/components/atoms/Skeleton'
-import VideoCard from '@/components/molecules/VideoCard'
 import type { Video } from '@/types'
-import { chunk } from '@/utils'
 
 import TimelineSection from './TimelineSection'
 
