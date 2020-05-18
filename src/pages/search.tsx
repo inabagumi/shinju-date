@@ -4,15 +4,12 @@ import { NextSeo } from 'next-seo'
 import React, { useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
 
-import SearchResponseBody from 'types/search-response-body'
-import Spinner from 'components/atoms/spinner'
-import VideoCard from 'components/molecules/video-card'
-import { useSiteMetadata } from 'context/site-context'
-import buildQueryString from 'utils/build-query-string'
-import chunk from 'utils/chunk'
-import getValue from 'utils/get-value'
-
-import styles from 'styles/search.module.css'
+import type { SearchResponseBody } from '@/types'
+import Spinner from '@/components/atoms/Spinner'
+import VideoCard from '@/components/molecules/VideoCard'
+import { useSiteMetadata } from '@/context/SiteContext'
+import styles from '@/styles/search.module.css'
+import { buildQueryString, chunk, getValue } from '@/utils'
 
 type Props = {
   keyword: string

@@ -4,13 +4,12 @@ import { NextSeo } from 'next-seo'
 import React, { useState } from 'react'
 import useSWR from 'swr'
 
-import Spinner from 'components/atoms/spinner'
-import Schedule from 'components/organisms/schedule'
-import { useSiteMetadata } from 'context/site-context'
-import SearchResponseBody from 'types/search-response-body'
-import buildQueryString from 'utils/build-query-string'
-
-import styles from 'styles/index.module.css'
+import Spinner from '@/components/atoms/Spinner'
+import Schedule from '@/components/organisms/Schedule'
+import { useSiteMetadata } from '@/context/SiteContext'
+import styles from '@/styles/index.module.css'
+import type { SearchResponseBody } from '@/types'
+import { buildQueryString } from '@/utils'
 
 const getRequestURL = (now = new Date()): string => {
   const apiURL = '/api/search'

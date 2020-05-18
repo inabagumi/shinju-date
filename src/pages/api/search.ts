@@ -1,10 +1,8 @@
 import { getUnixTime, parseISO } from 'date-fns'
 import { NextApiHandler } from 'next'
 
-import SearchResponseBody from 'types/search-response-body'
-import getValue from 'utils/get-value'
-import normalize, { VideoObject } from 'utils/normalize'
-import search from 'utils/search'
+import type { AlgoliaVideo, SearchResponseBody } from '@/types'
+import { getValue, normalize, search } from '@/utils'
 
 const handler: NextApiHandler<SearchResponseBody> = async (req, res) => {
   const query = getValue(req.query.q)
@@ -19,7 +17,7 @@ const handler: NextApiHandler<SearchResponseBody> = async (req, res) => {
     .filter(Boolean)
     .join(' AND ')
 
-  const { hits } = await search<VideoObject>(query, {
+  const { hits } = await search<AlgoliaVideo>(query, {
     filters,
     hitsPerPage: count
   })
