@@ -1,0 +1,26 @@
+.skeleton {
+  background-color: var(--ifm-color-secondary-lighter);
+  display: inline-block;
+}
+
+.circle {
+  border-radius: 50%;
+  height: var(--ifm-avatar-photo-size-md);
+  width: var(--ifm-avatar-photo-size-md);
+}
+
+.rect {
+  height: 100%;
+  width: 100%;
+}
+
+.text {
+  border-radius: var(--ifm-global-radius);
+  height: 1em;
+  max-width: 80%;
+  width: 10em;
+}
+
+.text::before {
+  content: '\00a0';
+}

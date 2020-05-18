@@ -2,18 +2,17 @@ import { compareAsc, format, parseJSON, startOfDay } from 'date-fns'
 import jaLocale from 'date-fns/locale/ja'
 import React, { FC } from 'react'
 
+import Skeleton from '@/components/atoms/Skeleton'
 import VideoCard from '@/components/molecules/VideoCard'
 import type { Video } from '@/types'
 import { chunk } from '@/utils'
 
+import TimelineSection from './TimelineSection'
+
 type ScheduleMap = Record<string, Array<Video>>
 
-type Props = {
-  values: Array<Video>
-}
-
-const Timeline: FC<Props> = ({ values }) => {
-  const schedule = [...values]
+const buildScheduleMap = (values: Array<Video>): ScheduleMap =>
+  [...values]
     .sort(
       ({ publishedAt: leftPublishedAt }, { publishedAt: rightPublishedAt }) =>
         compareAsc(parseJSON(leftPublishedAt), parseJSON(rightPublishedAt))
@@ -29,33 +28,22 @@ const Timeline: FC<Props> = ({ values }) => {
       }
     }, {})
 
+type Props = {
+  values?: Array<Video>
+}
+
+const Timeline: FC<Props> = ({ values }) => {
+  const schedule = values && buildScheduleMap(values)
+
   return (
     <>
-      {Object.entries(schedule).map(([day, items]) => (
-        <section className="margin-top--lg section" key={day}>
-          <h2 className="margin-bottom--lg text--right">
-            <time dateTime={day}>
-              {format(parseJSON(day), 'P', { locale: jaLocale })}
-            </time>
-          </h2>
-
-          {chunk(items, 3).map((values) => (
-            <div
-              className="row"
-              key={values.map((value) => value.id).join(':')}
-            >
-              {values.map((value) => (
-                <div
-                  className="col col--4 padding-bottom--lg padding-horiz--sm"
-                  key={value.id}
-                >
-                  <VideoCard value={value} />
-                </div>
-              ))}
-            </div>
-          ))}
-        </section>
-      ))}
+      {schedule ? (
+        Object.entries(schedule).map(([day, items]) => (
+          <TimelineSection dateTime={day} items={items} key={day} />
+        ))
+      ) : (
+        <TimelineSection />
+      )}
     </>
   )
 }

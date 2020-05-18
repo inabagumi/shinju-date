@@ -4,10 +4,8 @@ import { NextSeo } from 'next-seo'
 import React, { useState } from 'react'
 import useSWR from 'swr'
 
-import Spinner from '@/components/atoms/Spinner'
 import Timeline from '@/components/organisms/Timeline'
 import { useSiteMetadata } from '@/context/SiteContext'
-import styles from '@/styles/index.module.css'
 import type { SearchResponseBody } from '@/types'
 import { buildQueryString } from '@/utils'
 
@@ -50,13 +48,7 @@ const IndexPage: NextPage = () => {
       />
 
       <div className="container margin-bottom--lg">
-        {items ? (
-          <Timeline values={items} />
-        ) : (
-          <div className={styles.loading}>
-            <Spinner />
-          </div>
-        )}
+        <Timeline values={items} />
       </div>
     </>
   )
