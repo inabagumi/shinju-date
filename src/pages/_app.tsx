@@ -1,6 +1,8 @@
 import { AppProps } from 'next/app'
 import Head from 'next/head'
-import React, { FC } from 'react'
+import Router from 'next/router'
+import NProgress from 'nprogress'
+import React, { FC, useCallback, useEffect } from 'react'
 import { SWRConfig } from 'swr'
 
 import Footer from '@/components/organisms/Footer'
@@ -10,6 +12,7 @@ import { ThemeProvider } from '@/context/ThemeContext'
 import styles from '@/styles/app.module.css'
 
 import 'infima/dist/css/default/default.css'
+import 'nprogress/css/nprogress.css'
 import 'react-toggle/style.css'
 
 import '@/styles/global.css'
@@ -19,33 +22,67 @@ async function fetcher<T>(url: string): Promise<T> {
   return res.json()
 }
 
-const MyApp: FC<AppProps> = ({ Component, pageProps }) => (
-  <SWRConfig value={{ fetcher }}>
-    <SiteProvider>
-      <ThemeProvider>
-        <Head>
-          <meta content="width=device-width" name="viewport" />
-          <meta content="#212121" name="theme-color" />
+NProgress.configure({
+  showSpinner: false
+})
 
-          <link href="/favicon.png" rel="icon" />
-          <link href="/manifest.json" rel="manifest" />
-          <link
-            href="/opensearch.xml"
-            rel="search"
-            type="application/opensearchdescription+xml"
-          />
-        </Head>
+const MyApp: FC<AppProps> = ({ Component, pageProps }) => {
+  const handleRouteChangeStart = useCallback(() => {
+    NProgress.start()
+  }, [])
 
-        <Header />
+  const handleRouteChangeComplete = useCallback(() => {
+    NProgress.done()
+  }, [])
 
-        <main className={styles.wrapper}>
-          <Component {...pageProps} />
-        </main>
+  const handleRouteChangeError = useCallback(() => {
+    NProgress.done()
+  }, [])
 
-        <Footer />
-      </ThemeProvider>
-    </SiteProvider>
-  </SWRConfig>
-)
+  useEffect(() => {
+    Router.events.on('routeChangeStart', handleRouteChangeStart)
+    Router.events.on('routeChangeComplete', handleRouteChangeComplete)
+    Router.events.on('routeChangeError', handleRouteChangeError)
+
+    return (): void => {
+      Router.events.off('routeChangeStart', handleRouteChangeStart)
+      Router.events.off('routeChangeComplete', handleRouteChangeComplete)
+      Router.events.off('routeChangeError', handleRouteChangeError)
+    }
+  }, [
+    handleRouteChangeStart,
+    handleRouteChangeComplete,
+    handleRouteChangeError
+  ])
+
+  return (
+    <SWRConfig value={{ fetcher }}>
+      <SiteProvider>
+        <ThemeProvider>
+          <Head>
+            <meta content="width=device-width" name="viewport" />
+            <meta content="#212121" name="theme-color" />
+
+            <link href="/favicon.png" rel="icon" />
+            <link href="/manifest.json" rel="manifest" />
+            <link
+              href="/opensearch.xml"
+              rel="search"
+              type="application/opensearchdescription+xml"
+            />
+          </Head>
+
+          <Header />
+
+          <main className={styles.wrapper}>
+            <Component {...pageProps} />
+          </main>
+
+          <Footer />
+        </ThemeProvider>
+      </SiteProvider>
+    </SWRConfig>
+  )
+}
 
 export default MyApp
