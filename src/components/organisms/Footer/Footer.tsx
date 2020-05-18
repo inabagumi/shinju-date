@@ -34,7 +34,7 @@ const Footer: FC = () => {
             <a className="footer__link-item">プライバシーポリシー</a>
           </Link>
         </nav>
-        <div>Copyright © Haneru Developers</div>
+        <div>© Haneru Developers</div>
       </div>
     </div>
   )
