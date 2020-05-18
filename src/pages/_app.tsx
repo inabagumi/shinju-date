@@ -3,16 +3,16 @@ import Head from 'next/head'
 import React, { FC } from 'react'
 import { SWRConfig } from 'swr'
 
-import Footer from 'components/organisms/footer'
-import Header from 'components/organisms/header'
-import { SiteProvider } from 'context/site-context'
-import { ThemeProvider } from 'context/theme-context'
-import styles from 'styles/app.module.css'
+import Footer from '@/components/organisms/Footer'
+import Header from '@/components/organisms/Header'
+import { SiteProvider } from '@/context/SiteContext'
+import { ThemeProvider } from '@/context/ThemeContext'
+import styles from '@/styles/app.module.css'
 
 import 'infima/dist/css/default/default.css'
 import 'react-toggle/style.css'
 
-import 'styles/global.css'
+import '@/styles/global.css'
 
 async function fetcher<T>(url: string): Promise<T> {
   const res = await fetch(url)
