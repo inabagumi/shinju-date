@@ -9,7 +9,7 @@ import React, {
   OlHTMLAttributes
 } from 'react'
 
-import styles from './About.module.css'
+import styles from './Markdown.module.css'
 
 type LinkProps = DetailedHTMLProps<
   AnchorHTMLAttributes<HTMLAnchorElement>,
