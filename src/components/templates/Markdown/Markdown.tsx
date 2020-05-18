@@ -7,7 +7,7 @@ import React, { FC } from 'react'
 
 import { useSiteMetadata } from '@/context/SiteContext'
 
-import styles from './About.module.css'
+import styles from './Markdown.module.css'
 import mdxProviderComponents from './mdxProviderComponents'
 
 type Props = {
