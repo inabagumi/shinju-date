@@ -12,7 +12,7 @@ type Props = {
   values: Array<Video>
 }
 
-const Schedule: FC<Props> = ({ values }) => {
+const Timeline: FC<Props> = ({ values }) => {
   const schedule = [...values]
     .sort(
       ({ publishedAt: leftPublishedAt }, { publishedAt: rightPublishedAt }) =>
@@ -60,4 +60,4 @@ const Schedule: FC<Props> = ({ values }) => {
   )
 }
 
-export default Schedule
+export default Timeline
