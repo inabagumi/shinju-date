@@ -5,7 +5,7 @@ import React, { useState } from 'react'
 import useSWR from 'swr'
 
 import Spinner from '@/components/atoms/Spinner'
-import Schedule from '@/components/organisms/Schedule'
+import Timeline from '@/components/organisms/Timeline'
 import { useSiteMetadata } from '@/context/SiteContext'
 import styles from '@/styles/index.module.css'
 import type { SearchResponseBody } from '@/types'
@@ -51,7 +51,7 @@ const IndexPage: NextPage = () => {
 
       <div className="container margin-bottom--lg">
         {items ? (
-          <Schedule values={items} />
+          <Timeline values={items} />
         ) : (
           <div className={styles.loading}>
             <Spinner />
