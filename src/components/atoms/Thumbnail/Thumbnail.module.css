@@ -1,6 +1,6 @@
 .thumbnail {
   align-items: center;
-  background-color: #424242;
+  background-color: var(--ifm-color-secondary-lighter);
   display: flex;
   overflow: hidden;
   position: relative;

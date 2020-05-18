@@ -4,11 +4,10 @@ import { NextSeo } from 'next-seo'
 import React, { useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
 
-import type { SearchResponseBody } from '@/types'
-import Spinner from '@/components/atoms/Spinner'
+import SearchSkeleton from '@/components/molecules/SearchSkeleton'
 import VideoCard from '@/components/molecules/VideoCard'
 import { useSiteMetadata } from '@/context/SiteContext'
-import styles from '@/styles/search.module.css'
+import type { SearchResponseBody } from '@/types'
 import { buildQueryString, chunk, getValue } from '@/utils'
 
 type Props = {
@@ -41,11 +40,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
       const { data: items } = withSWR(swr(apiURL))
 
       if (!items) {
-        return (
-          <div className={styles.loading}>
-            <Spinner aria-label="読み込み中..." />
-          </div>
-        )
+        return <SearchSkeleton />
       }
 
       return chunk(items, 3).map((values) => (
