@@ -1,9 +1,9 @@
+import { SWRConfig } from '@ykzts/swr'
 import { AppProps } from 'next/app'
 import Head from 'next/head'
 import Router from 'next/router'
 import NProgress from 'nprogress'
 import React, { FC, useCallback, useEffect } from 'react'
-import { SWRConfig } from 'swr'
 
 import Footer from '@/components/organisms/Footer'
 import Header from '@/components/organisms/Header'

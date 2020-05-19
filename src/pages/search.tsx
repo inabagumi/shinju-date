@@ -1,4 +1,4 @@
-import swr, { useSWRPages } from 'swr'
+import swr, { useSWRPages } from '@ykzts/swr'
 import { GetServerSideProps, NextPage } from 'next'
 import { NextSeo } from 'next-seo'
 import React, { useEffect } from 'react'
