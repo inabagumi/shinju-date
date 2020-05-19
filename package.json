@@ -14,7 +14,7 @@
     "clsx": "^1.1.0",
     "date-fns": "^2.14.0",
     "dotenv": "^8.2.0",
-    "infima": "^0.2.0-alpha.10",
+    "infima": "^0.2.0-alpha.11",
     "localforage": "^1.7.3",
     "next": "^9.4.1",
     "next-offline": "^5.0.2",
