@@ -3,7 +3,7 @@ import algoliasearch from 'algoliasearch/lite'
 
 const search = async <T = unknown>(
   query: string,
-  options: SearchOptions
+  options?: SearchOptions
 ): Promise<SearchResponse<T>> => {
   const client = algoliasearch(
     process.env.ALGOLIA_APPLICATION_ID || '',
