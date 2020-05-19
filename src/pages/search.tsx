@@ -1,5 +1,6 @@
 import swr, { useSWRPages } from 'swr'
 import { GetServerSideProps, NextPage } from 'next'
+import Link from 'next/link'
 import { NextSeo } from 'next-seo'
 import React, { useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
@@ -9,6 +10,8 @@ import VideoCard from '@/components/molecules/VideoCard'
 import { useSiteMetadata } from '@/context/SiteContext'
 import type { SearchResponseBody } from '@/types'
 import { buildQueryString, chunk, getValue } from '@/utils'
+
+const SEARCH_RESULT_COUNT = 9
 
 type Props = {
   keyword: string
@@ -27,11 +30,14 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
 }
 
 const SearchPage: NextPage<Props> = ({ keyword }) => {
-  const { loadMore, pages } = useSWRPages<string | null, SearchResponseBody>(
+  const { isEmpty, loadMore, pages } = useSWRPages<
+    string | null,
+    SearchResponseBody
+  >(
     `search-page:${keyword}`,
     ({ offset, withSWR }) => {
       const queryString = buildQueryString({
-        count: 9,
+        count: SEARCH_RESULT_COUNT,
         q: keyword,
         until: offset
       })
@@ -61,8 +67,10 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
         </div>
       ))
     },
-    ({ data: items }) =>
-      items && items.length > 0 ? items[items.length - 1].publishedAt : null,
+    ({ data: items = [] }) =>
+      items.length >= SEARCH_RESULT_COUNT
+        ? items[items.length - 1].publishedAt
+        : null,
     [keyword]
   )
   const [footerRef, inView] = useInView()
@@ -100,7 +108,26 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
       />
 
       <div className="container">
-        <div className="margin-top--lg">{pages}</div>
+        {!isEmpty ? (
+          <div className="margin-top--lg">{pages}</div>
+        ) : (
+          <div className="text--center margin-bottom--lg margin-top--lg padding-bottom--lg padding-top--lg">
+            <h2>検索結果はありません</h2>
+            <p>
+              『{keyword}』で検索しましたが一致する動画は見つかりませんでした。
+            </p>
+
+            <Link href="/search">
+              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+              <a
+                className="button button--lg button--outline button--primary"
+                role="button"
+              >
+                新着動画を見る
+              </a>
+            </Link>
+          </div>
+        )}
 
         <div className="padding-bottom--lg" ref={footerRef} />
       </div>
