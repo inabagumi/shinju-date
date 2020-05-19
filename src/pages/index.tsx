@@ -1,8 +1,8 @@
+import useSWR from '@ykzts/swr'
 import { subHours } from 'date-fns'
 import { NextPage } from 'next'
 import { NextSeo } from 'next-seo'
 import React, { useState } from 'react'
-import useSWR from 'swr'
 
 import Timeline from '@/components/organisms/Timeline'
 import { useSiteMetadata } from '@/context/SiteContext'
