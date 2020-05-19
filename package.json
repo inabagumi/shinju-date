@@ -10,10 +10,12 @@
     "@mdx-js/react": "^1.6.1",
     "@next/mdx": "^9.4.1",
     "@svgr/webpack": "^5.4.0",
+    "@ykzts/swr": "github:ykzts/swr#built",
     "algoliasearch": "^4.2.0",
     "clsx": "^1.1.0",
     "date-fns": "^2.14.0",
     "dotenv": "^8.2.0",
+    "ics": "^2.19.0",
     "infima": "^0.2.0-alpha.11",
     "localforage": "^1.7.3",
     "next": "^9.4.1",
@@ -24,8 +26,7 @@
     "react-dom": "^16.13.1",
     "react-icons": "^3.10.0",
     "react-intersection-observer": "^8.26.2",
-    "react-toggle": "^4.1.1",
-    "@ykzts/swr": "github:ykzts/swr#built"
+    "react-toggle": "^4.1.1"
   },
   "description": "SHINJU DATE is a web service for searching videos.",
   "devDependencies": {

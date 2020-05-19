@@ -40,6 +40,14 @@ const nextConfig = {
       {
         destination: '/_next/static/service-worker.js',
         source: '/service-worker.js'
+      },
+      {
+        destination: '/api/calendar',
+        source: '/calendar.ics'
+      },
+      {
+        destination: '/api/calendar/:id',
+        source: '/calendar/:id.ics'
       }
     ]
   },
