@@ -34,6 +34,7 @@ const nextConfig = {
         source: '/service-worker.js'
       }
     ],
+    optionalCatchAll: true,
     pageEnv: true,
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     rewrites: () => [
