@@ -17,11 +17,7 @@ import Header from '@/components/organisms/Header'
 import { SiteProvider } from '@/context/SiteContext'
 import { ThemeProvider } from '@/context/ThemeContext'
 import styles from '@/styles/app.module.css'
-
-async function fetcher<T>(url: string): Promise<T> {
-  const res = await fetch(url)
-  return res.json()
-}
+import { fetcher } from '@/utils'
 
 NProgress.configure({
   showSpinner: false
