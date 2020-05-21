@@ -5,7 +5,7 @@ import Router from 'next/router'
 import NProgress from 'nprogress'
 import React, { FC, useCallback, useEffect } from 'react'
 
-import { favicon192x192, favicon512x512 } from '@/assets'
+import { appleTouchIcon, favicon192x192, favicon512x512 } from '@/assets'
 import Footer from '@/components/organisms/Footer'
 import Header from '@/components/organisms/Header'
 import { SiteProvider } from '@/context/SiteContext'
@@ -74,6 +74,12 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => {
               href={favicon512x512}
               rel="icon"
               sizes="512x512"
+              type="image/png"
+            />
+            <link
+              href={appleTouchIcon}
+              rel="apple-touch-icon"
+              sizes="152x152"
               type="image/png"
             />
             <link href="/manifest.json" rel="manifest" />
