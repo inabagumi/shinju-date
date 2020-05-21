@@ -4,9 +4,6 @@ const withOffline = require('next-offline')
 require('dotenv').config()
 
 const nextConfig = {
-  cssLoaderOptions: {
-    url: false
-  },
   experimental: {
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     headers: () => [
