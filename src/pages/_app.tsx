@@ -1,3 +1,9 @@
+import 'infima/dist/css/default/default.css'
+import 'nprogress/css/nprogress.css'
+import 'react-toggle/style.css'
+
+import '@/styles/global.css'
+
 import { SWRConfig } from '@ykzts/swr'
 import { AppProps } from 'next/app'
 import Head from 'next/head'
@@ -11,12 +17,6 @@ import Header from '@/components/organisms/Header'
 import { SiteProvider } from '@/context/SiteContext'
 import { ThemeProvider } from '@/context/ThemeContext'
 import styles from '@/styles/app.module.css'
-
-import 'infima/dist/css/default/default.css'
-import 'nprogress/css/nprogress.css'
-import 'react-toggle/style.css'
-
-import '@/styles/global.css'
 
 async function fetcher<T>(url: string): Promise<T> {
   const res = await fetch(url)
