@@ -1,6 +1,3 @@
-.content {
-  flex-grow: 1;
-}
 .video {
   --ifm-link-color: var(--ifm-font-color-base);
   --ifm-link-hover-color: var(--ifm-link-color);
@@ -49,6 +46,18 @@
   --ifm-badge-background-color: #d32f2f;
 
   top: 0.5em;
+}
+
+.content {
+  flex-grow: 1;
+}
+
+.titleSkeleton {
+  width: 80%;
+}
+
+.titleSkeleton:first-child {
+  width: 100%;
 }
 
 .published {
