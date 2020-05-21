@@ -43,6 +43,10 @@ const nextConfig = {
         source: '/service-worker.js'
       },
       {
+        destination: '/api/manifest',
+        source: '/manifest.json'
+      },
+      {
         destination: '/api/calendar',
         source: '/calendar.ics'
       },
@@ -54,7 +58,25 @@ const nextConfig = {
   },
   pageExtensions: ['mdx', 'ts', 'tsx'],
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  webpack(config, { defaultLoaders }) {
+  webpack(config, { defaultLoaders, dev }) {
+    config.module.rules.push({
+      test: /\.(?:jpe?g|png)$/,
+      use: [
+        defaultLoaders.babel,
+        {
+          loader: 'url-loader',
+          options: {
+            limit: 2048,
+            name: dev
+              ? '[name].[ext]?[contenthash:8]'
+              : '[name].[contenthash:8].[ext]',
+            outputPath: 'static/media',
+            publicPath: '/_next/static/media'
+          }
+        }
+      ]
+    })
+
     config.module.rules.push({
       test: /\.svg$/,
       use: [
