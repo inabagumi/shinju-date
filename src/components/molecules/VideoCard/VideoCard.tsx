@@ -75,7 +75,14 @@ const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => {
       </div>
 
       <div className={clsx('card__body', styles.content)}>
-        <h4>{value?.title || <Skeleton variant="text" />}</h4>
+        <h4>
+          {value?.title ?? (
+            <>
+              <Skeleton className={styles.titleSkeleton} variant="text" />
+              <Skeleton className={styles.titleSkeleton} variant="text" />
+            </>
+          )}
+        </h4>
       </div>
 
       <div className="card__footer">
