@@ -1,6 +1,36 @@
 .skeleton {
-  background-color: var(--ifm-color-secondary-lighter);
+  background-color: var(--ifm-hover-overlay);
   display: inline-block;
+  overflow: hidden;
+  position: relative;
+}
+
+@keyframes wave {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translate(100%);
+  }
+}
+
+.skeleton::after {
+  animation: wave 1.5s linear 0.3s infinite;
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    var(--ifm-hover-overlay),
+    transparent
+  );
+  bottom: 0;
+  content: '';
+  display: block;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform: translateX(-100%);
 }
 
 .circle {
