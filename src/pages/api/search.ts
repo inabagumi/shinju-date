@@ -18,6 +18,7 @@ const handler: NextApiHandler<SearchResponseBody> = async (req, res) => {
     .join(' AND ')
 
   const { hits } = await search<AlgoliaVideo>(query, {
+    attributesToHighlight: [],
     filters,
     hitsPerPage: count
   })
