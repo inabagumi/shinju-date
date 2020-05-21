@@ -5,6 +5,7 @@ import { NextSeo } from 'next-seo'
 import React, { useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
 
+import { mainVisual } from '@/assets'
 import SearchSkeleton from '@/components/molecules/SearchSkeleton'
 import VideoCard from '@/components/molecules/VideoCard'
 import { useSiteMetadata } from '@/context/SiteContext'
@@ -95,7 +96,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
           images: [
             {
               height: 630,
-              url: `${baseURL}/main-visual.jpg`,
+              url: new URL(mainVisual, baseURL).toString(),
               width: 1200
             }
           ],

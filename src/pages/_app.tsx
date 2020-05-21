@@ -5,6 +5,7 @@ import Router from 'next/router'
 import NProgress from 'nprogress'
 import React, { FC, useCallback, useEffect } from 'react'
 
+import { favicon192x192, favicon512x512 } from '@/assets'
 import Footer from '@/components/organisms/Footer'
 import Header from '@/components/organisms/Header'
 import { SiteProvider } from '@/context/SiteContext'
@@ -63,7 +64,18 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => {
             <meta content="width=device-width" name="viewport" />
             <meta content="#212121" name="theme-color" />
 
-            <link href="/favicon.png" rel="icon" />
+            <link
+              href={favicon192x192}
+              rel="icon"
+              sizes="192x192"
+              type="image/png"
+            />
+            <link
+              href={favicon512x512}
+              rel="icon"
+              sizes="512x512"
+              type="image/png"
+            />
             <link href="/manifest.json" rel="manifest" />
             <link
               href="/opensearch.xml"

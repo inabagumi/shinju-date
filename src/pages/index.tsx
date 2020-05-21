@@ -4,6 +4,7 @@ import { NextPage } from 'next'
 import { NextSeo } from 'next-seo'
 import React, { useState } from 'react'
 
+import { mainVisual } from '@/assets'
 import Timeline from '@/components/organisms/Timeline'
 import { useSiteMetadata } from '@/context/SiteContext'
 import type { SearchResponseBody } from '@/types'
@@ -35,7 +36,7 @@ const IndexPage: NextPage = () => {
           images: [
             {
               height: 630,
-              url: `${baseURL}/main-visual.jpg`,
+              url: new URL(mainVisual, baseURL).toString(),
               width: 1200
             }
           ],
