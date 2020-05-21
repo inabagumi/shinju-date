@@ -1,5 +1,5 @@
 import { compareAsc, parseJSON, startOfDay } from 'date-fns'
-import React, { FC } from 'react'
+import React, { FC, useMemo } from 'react'
 
 import type { Video } from '@/types'
 
@@ -29,7 +29,7 @@ type Props = {
 }
 
 const Timeline: FC<Props> = ({ values }) => {
-  const schedule = values && buildScheduleMap(values)
+  const schedule = useMemo(() => values && buildScheduleMap(values), [values])
 
   return (
     <>
