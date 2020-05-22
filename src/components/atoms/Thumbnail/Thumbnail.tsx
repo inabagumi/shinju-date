@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, memo } from 'react'
 
 import styles from './Thumbnail.module.css'
 
@@ -21,4 +21,7 @@ const Thumbnail: FC<Props> = ({ id }) => (
   </div>
 )
 
-export default Thumbnail
+export default memo(
+  Thumbnail,
+  (previousProps, nextProps) => previousProps.id === nextProps.id
+)

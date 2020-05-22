@@ -1,14 +1,7 @@
 import clsx from 'clsx'
-import { isBefore, parseJSON } from 'date-fns'
-import React, {
-  DetailedHTMLProps,
-  FC,
-  HTMLAttributes,
-  useEffect,
-  useState
-} from 'react'
-import { useInView } from 'react-intersection-observer'
+import React, { DetailedHTMLProps, FC, HTMLAttributes, memo } from 'react'
 
+import LiveStatus from '@/components/atoms/LiveStatus'
 import Skeleton from '@/components/atoms/Skeleton'
 import Time from '@/components/atoms/Time'
 import Thumbnail from '@/components/atoms/Thumbnail'
@@ -30,20 +23,7 @@ type Props = DetailedHTMLProps<
 }
 
 const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => {
-  const [now, setNow] = useState(() => new Date())
-  const [imageRef, inView] = useInView()
-
-  useEffect(() => {
-    if (!value || !inView) return
-
-    const timerID = setInterval(() => {
-      setNow(new Date())
-    })
-
-    return (): void => {
-      clearInterval(timerID)
-    }
-  }, [value, inView])
+  const finished = !!value && !isZeroSeconds(parseDuration(value.duration))
 
   return (
     <a
@@ -53,36 +33,35 @@ const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => {
       target="_blank"
       {...props}
     >
-      <div className={clsx('card__image', styles.image)} ref={imageRef}>
+      <div className={clsx('card__image', styles.image)}>
         {value ? (
-          <Thumbnail id={value.id} />
+          <>
+            <Thumbnail id={value.id} />
+
+            {finished ? (
+              <Time
+                className={clsx('badge', 'badge--info', styles.duration)}
+                dateTime={value.duration}
+                variant="duration"
+              />
+            ) : (
+              <LiveStatus value={value} />
+            )}
+          </>
         ) : (
           <Skeleton className={styles.thumbnailSkeleton} variant="rect" />
         )}
-
-        {value?.duration && !isZeroSeconds(parseDuration(value?.duration)) ? (
-          <Time
-            className={clsx('badge', 'badge--info', styles.duration)}
-            dateTime={value.duration}
-            variant="duration"
-          />
-        ) : value?.publishedAt &&
-          isBefore(parseJSON(value.publishedAt), now) ? (
-          <span className={clsx('badge', 'badge--info', styles.liveNow)}>
-            ライブ配信中
-          </span>
-        ) : null}
       </div>
 
       <div className={clsx('card__body', styles.content)}>
-        <h4>
-          {value?.title ?? (
-            <>
-              <Skeleton className={styles.titleSkeleton} variant="text" />
-              <Skeleton className={styles.titleSkeleton} variant="text" />
-            </>
-          )}
-        </h4>
+        {value ? (
+          <h4>{value.title}</h4>
+        ) : (
+          <h4>
+            <Skeleton className={styles.titleSkeleton} variant="text" />
+            <Skeleton className={styles.titleSkeleton} variant="text" />
+          </h4>
+        )}
       </div>
 
       <div className="card__footer">
@@ -102,4 +81,14 @@ const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => {
   )
 }
 
-export default VideoCard
+export default memo(
+  VideoCard,
+  (
+    { timeOptions: previousTimeOptions, value: previousValue },
+    { timeOptions: nextTimeOptions, value: nextValue }
+  ) =>
+    previousValue?.title === nextValue?.title &&
+    previousValue?.publishedAt === nextValue?.publishedAt &&
+    previousValue?.duration === nextValue?.duration &&
+    previousTimeOptions?.relativeTime === nextTimeOptions?.relativeTime
+)

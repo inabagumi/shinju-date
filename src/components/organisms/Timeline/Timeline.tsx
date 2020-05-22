@@ -1,5 +1,5 @@
 import { compareAsc, parseJSON, startOfDay } from 'date-fns'
-import React, { FC, useMemo } from 'react'
+import React, { FC, memo, useMemo } from 'react'
 
 import type { Video } from '@/types'
 
@@ -44,4 +44,4 @@ const Timeline: FC<Props> = ({ values }) => {
   )
 }
 
-export default Timeline
+export default memo(Timeline)
