@@ -25,27 +25,16 @@
   padding-top: 56.25%;
 }
 
-.duration,
-.liveNow {
+.duration {
+  --ifm-badge-background-color: rgba(0, 0, 0, 0.85);
   --ifm-badge-padding-horizontal: 0.3em;
   --ifm-badge-padding-vertical: 0.3em;
 
+  bottom: 0.5em;
   font-size: 0.8rem;
   font-weight: var(--ifm-font-weight-semibold);
   position: absolute;
   right: 0.5em;
-}
-
-.duration {
-  --ifm-badge-background-color: rgba(0, 0, 0, 0.85);
-
-  bottom: 0.5em;
-}
-
-.liveNow {
-  --ifm-badge-background-color: #d32f2f;
-
-  top: 0.5em;
 }
 
 .content {

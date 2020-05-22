@@ -1,0 +1,14 @@
+.liveStatus {
+  position: absolute;
+  right: 0.5em;
+  top: 0.5em;
+}
+
+.liveNow {
+  --ifm-badge-background-color: #d32f2f;
+  --ifm-badge-padding-horizontal: 0.3em;
+  --ifm-badge-padding-vertical: 0.3em;
+
+  font-size: 0.8rem;
+  font-weight: var(--ifm-font-weight-semibold);
+}
