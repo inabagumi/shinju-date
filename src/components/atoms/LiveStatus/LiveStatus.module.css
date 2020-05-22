@@ -1,10 +1,9 @@
 .liveStatus {
   font-size: 0.8rem;
-  height: calc(50% - 0.5em);
   position: absolute;
   right: 0.5em;
   top: 0.5em;
-  width: calc(50% - 0.5em);
+  width: auto;
 }
 
 .liveNow {
