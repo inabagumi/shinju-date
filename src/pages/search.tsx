@@ -6,6 +6,8 @@ import React, { useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
 
 import { mainVisual } from '@/assets'
+import Container from '@/components/atoms/Container'
+import Grid, { Col, Row } from '@/components/molecules/Grid'
 import SearchSkeleton from '@/components/molecules/SearchSkeleton'
 import VideoCard from '@/components/molecules/VideoCard'
 import { useSiteMetadata } from '@/context/SiteContext'
@@ -51,11 +53,12 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
       }
 
       return chunk(items, 3).map((values) => (
-        <div className="row" key={values.map((value) => value.id).join(':')}>
+        <Row key={values.map((value) => value.id).join(':')}>
           {values.map((value) => (
-            <div
-              className="col col--4 padding-bottom--lg padding-horiz--sm"
+            <Col
+              className="padding-bottom--lg padding-horiz--sm"
               key={value.id}
+              size={4}
             >
               <VideoCard
                 timeOptions={{
@@ -63,9 +66,9 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
                 }}
                 value={value}
               />
-            </div>
+            </Col>
           ))}
-        </div>
+        </Row>
       ))
     },
     ({ data: items = [] }) =>
@@ -108,9 +111,11 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
         }}
       />
 
-      <div className="container">
+      <Container>
         {!isEmpty ? (
-          <div className="margin-top--lg">{pages}</div>
+          <div className="margin-top--lg">
+            <Grid>{pages}</Grid>
+          </div>
         ) : (
           <div className="text--center margin-bottom--lg margin-top--lg padding-bottom--lg padding-top--lg">
             <h2>検索結果はありません</h2>
@@ -131,7 +136,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
         )}
 
         <div className="padding-bottom--lg" ref={footerRef} />
-      </div>
+      </Container>
     </>
   )
 }

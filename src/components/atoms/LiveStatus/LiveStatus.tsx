@@ -1,8 +1,8 @@
-import clsx from 'clsx'
 import { isBefore, parseJSON } from 'date-fns'
 import React, { FC, memo, useEffect, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 
+import Badge from '@/components/atoms/Badge'
 import type { Video } from '@/types'
 import { isZeroSeconds, parseDuration } from '@/utils'
 
@@ -32,21 +32,8 @@ const LiveStatus: FC<Props> = ({ value }) => {
   const liveNow = past && isZeroSeconds(parseDuration(value.duration))
 
   return (
-    <div
-      aria-hidden={liveNow}
-      aria-label="配信ステータス"
-      className={styles.liveStatus}
-      ref={statusRef}
-    >
-      {liveNow && (
-        <span
-          className={clsx('badge', 'badge--info', {
-            [styles.liveNow]: liveNow
-          })}
-        >
-          ライブ配信中
-        </span>
-      )}
+    <div ref={statusRef}>
+      {liveNow && <Badge className={styles.liveNow}>ライブ配信中</Badge>}
     </div>
   )
 }

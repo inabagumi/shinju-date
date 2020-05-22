@@ -1,16 +1,17 @@
 import React, { FC } from 'react'
 
+import { Col, Row } from '@/components/molecules/Grid'
 import VideoCard from '@/components/molecules/VideoCard'
 
 const SearchSkeleton: FC = () => (
-  <div className="row">
-    <div className="col col--4 padding-bottom--lg padding-horiz--sm">
+  <Row>
+    <Col className="padding-bottom--lg padding-horiz--sm" size={4}>
       <VideoCard />
-    </div>
-    <div className="col col--4 padding-bottom--lg padding-horiz--sm">
+    </Col>
+    <Col className="padding-bottom--lg padding-horiz--sm" size={4}>
       <VideoCard />
-    </div>
-  </div>
+    </Col>
+  </Row>
 )
 
 export default SearchSkeleton

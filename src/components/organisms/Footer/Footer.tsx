@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import React, { FC } from 'react'
 
+import Container from '@/components/atoms/Container'
 import { useSiteMetadata } from '@/context/SiteContext'
 
 const Footer: FC = () => {
@@ -8,7 +9,7 @@ const Footer: FC = () => {
 
   return (
     <div className="footer">
-      <div className="container container--fluid">
+      <Container fluid>
         <nav className="footer__links">
           <a
             className="footer__link-item"
@@ -35,7 +36,7 @@ const Footer: FC = () => {
           </Link>
         </nav>
         <div>© Haneru Developers</div>
-      </div>
+      </Container>
     </div>
   )
 }

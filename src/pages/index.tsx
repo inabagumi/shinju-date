@@ -6,6 +6,7 @@ import { NextSeo } from 'next-seo'
 import React, { useState } from 'react'
 
 import { mainVisual } from '@/assets'
+import Container from '@/components/atoms/Container'
 import Timeline from '@/components/organisms/Timeline'
 import { useSiteMetadata } from '@/context/SiteContext'
 import type { SearchResponseBody } from '@/types'
@@ -49,7 +50,7 @@ const IndexPage: NextPage = () => {
         }}
       />
 
-      <div className="container margin-bottom--lg">
+      <Container className="margin-bottom--lg">
         <Timeline values={items} />
 
         {items && (
@@ -60,7 +61,7 @@ const IndexPage: NextPage = () => {
             </Link>
           </nav>
         )}
-      </div>
+      </Container>
     </>
   )
 }

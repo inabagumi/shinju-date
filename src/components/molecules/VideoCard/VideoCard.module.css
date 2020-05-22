@@ -27,12 +27,11 @@
 
 .duration {
   --ifm-badge-background-color: rgba(0, 0, 0, 0.85);
-  --ifm-badge-padding-horizontal: 0.3em;
-  --ifm-badge-padding-vertical: 0.3em;
+  --ifm-badge-border-color: var(--ifm-badge-background-color);
+  --ifm-badge-padding-horizontal: 0.5em;
+  --ifm-badge-padding-vertical: 0.2em;
 
   bottom: 0.5em;
-  font-size: 0.8rem;
-  font-weight: var(--ifm-font-weight-semibold);
   position: absolute;
   right: 0.5em;
 }
