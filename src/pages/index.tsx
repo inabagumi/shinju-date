@@ -1,6 +1,7 @@
 import useSWR from '@ykzts/swr'
 import { subHours } from 'date-fns'
 import { NextPage } from 'next'
+import Link from 'next/link'
 import { NextSeo } from 'next-seo'
 import React, { useState } from 'react'
 
@@ -50,6 +51,15 @@ const IndexPage: NextPage = () => {
 
       <div className="container margin-bottom--lg">
         <Timeline values={items} />
+
+        {items && (
+          <nav className="text--right">
+            <Link href="/search">
+              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+              <a rel="next">もっと見る »</a>
+            </Link>
+          </nav>
+        )}
       </div>
     </>
   )
