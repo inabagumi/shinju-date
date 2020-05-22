@@ -40,7 +40,7 @@ const LiveStatus: FC<Props> = ({ value }) => {
     >
       {liveNow && (
         <span
-          className={clsx('badge', 'badge--info', styles.liveStatus, {
+          className={clsx('badge', 'badge--info', {
             [styles.liveNow]: liveNow
           })}
         >
