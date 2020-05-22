@@ -1,5 +1,7 @@
 const withMDX = require('@next/mdx')
+const glob = require('glob')
 const withOffline = require('next-offline')
+const PurgecssPlugin = require('purgecss-webpack-plugin')
 
 require('dotenv').config()
 
@@ -87,6 +89,14 @@ const nextConfig = {
         }
       ]
     })
+
+    config.plugins.push(
+      new PurgecssPlugin({
+        paths: glob.sync(`${config.context}/src/**/*.{tsx,mdx}`, {
+          nodir: true
+        })
+      })
+    )
 
     return config
   },
