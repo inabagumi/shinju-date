@@ -1,6 +1,6 @@
 .thumbnail {
   align-items: center;
-  background-color: var(--ifm-color-secondary-lighter);
+  background-color: var(--ifm-hover-overlay);
   display: flex;
   overflow: hidden;
   position: relative;
@@ -14,10 +14,12 @@
 }
 
 .image {
+  bottom: 0;
   display: block;
   height: auto;
   left: 0;
+  object-fit: contain;
   position: absolute;
   right: 0;
-  width: 100%;
+  top: 0;
 }
