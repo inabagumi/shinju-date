@@ -1,16 +1,10 @@
-.liveStatus {
-  font-size: 0.8rem;
+.liveNow {
+  --ifm-badge-background-color: #d32f2f;
+  --ifm-badge-border-color: var(--ifm-badge-background-color);
+  --ifm-badge-padding-horizontal: 0.5em;
+  --ifm-badge-padding-vertical: 0.25em;
+
   position: absolute;
   right: 0.5em;
   top: 0.5em;
-  width: auto;
-}
-
-.liveNow {
-  --ifm-badge-background-color: #d32f2f;
-  --ifm-badge-padding-horizontal: 0.3em;
-  --ifm-badge-padding-vertical: 0.3em;
-
-  font-size: inherit;
-  font-weight: var(--ifm-font-weight-semibold);
 }

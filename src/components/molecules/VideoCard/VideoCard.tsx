@@ -1,6 +1,7 @@
 import clsx from 'clsx'
-import React, { DetailedHTMLProps, FC, HTMLAttributes, memo } from 'react'
+import React, { AnchorHTMLAttributes, DetailedHTMLProps, FC, memo } from 'react'
 
+import Badge from '@/components/atoms/Badge'
 import LiveStatus from '@/components/atoms/LiveStatus'
 import Skeleton from '@/components/atoms/Skeleton'
 import Time from '@/components/atoms/Time'
@@ -14,10 +15,12 @@ type TimeOptions = {
   relativeTime?: boolean
 }
 
-type Props = DetailedHTMLProps<
-  HTMLAttributes<HTMLAnchorElement>,
+type BaseProps = DetailedHTMLProps<
+  AnchorHTMLAttributes<HTMLAnchorElement>,
   HTMLAnchorElement
-> & {
+>
+
+type Props = BaseProps & {
   timeOptions?: TimeOptions
   value?: Video
 }
@@ -39,11 +42,9 @@ const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => {
             <Thumbnail id={value.id} />
 
             {finished ? (
-              <Time
-                className={clsx('badge', 'badge--info', styles.duration)}
-                dateTime={value.duration}
-                variant="duration"
-              />
+              <Badge className={styles.duration}>
+                <Time dateTime={value.duration} variant="duration" />
+              </Badge>
             ) : (
               <LiveStatus value={value} />
             )}
