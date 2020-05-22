@@ -1,7 +1,6 @@
 import useSWR from '@ykzts/swr'
 import { subHours } from 'date-fns'
 import { NextPage } from 'next'
-import Head from 'next/head'
 import Link from 'next/link'
 import { NextSeo } from 'next-seo'
 import React, { useState } from 'react'
