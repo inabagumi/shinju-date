@@ -15,7 +15,10 @@ const Thumbnail: FC<Props> = ({ id }) => (
       loading="lazy"
       sizes="(min-width: 500px) 320px, 480px"
       src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`}
-      srcSet={`https://i.ytimg.com/vi/${id}/mqdefault.jpg 320w, https://i.ytimg.com/vi/${id}/hqdefault.jpg`}
+      srcSet={[
+        `https://i.ytimg.com/vi/${id}/mqdefault.jpg 320w`,
+        `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
+      ].join(', ')}
       width={480}
     />
   </div>
