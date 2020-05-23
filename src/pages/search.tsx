@@ -34,7 +34,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
 
 const SearchPage: NextPage<Props> = ({ keyword }) => {
   const { isEmpty, loadMore, pages } = useSWRPages<
-    string | null,
+    Date | null,
     SearchResponseBody
   >(
     `search-page:${keyword}`,
@@ -42,7 +42,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
       const queryString = buildQueryString({
         count: SEARCH_RESULT_COUNT,
         q: keyword,
-        until: offset
+        until: offset?.toJSON()
       })
       const apiURL = queryString ? `/api/search?${queryString}` : '/api/search'
 

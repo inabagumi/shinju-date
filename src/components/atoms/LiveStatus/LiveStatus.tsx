@@ -1,10 +1,9 @@
-import { isBefore, parseJSON } from 'date-fns'
+import { isBefore, isEqual } from 'date-fns'
 import React, { FC, memo, useEffect, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 
 import Badge from '@/components/atoms/Badge'
 import type { Video } from '@/types'
-import { isZeroSeconds, parseDuration } from '@/utils'
 
 import styles from './LiveStatus.module.css'
 
@@ -28,8 +27,8 @@ const LiveStatus: FC<Props> = ({ value }) => {
     }
   }, [inView])
 
-  const past = isBefore(parseJSON(value.publishedAt), now)
-  const liveNow = past && isZeroSeconds(parseDuration(value.duration))
+  const past = isBefore(value.publishedAt, now)
+  const liveNow = past && !value.duration
 
   return (
     <div ref={statusRef}>
@@ -41,6 +40,8 @@ const LiveStatus: FC<Props> = ({ value }) => {
 export default memo(
   LiveStatus,
   ({ value: previousValue }, { value: nextValue }) =>
-    previousValue.publishedAt === nextValue.publishedAt &&
-    previousValue.duration === nextValue.duration
+    isEqual(previousValue.publishedAt, nextValue.publishedAt) &&
+    previousValue.duration?.seconds === nextValue.duration?.seconds &&
+    previousValue.duration?.minutes === nextValue.duration?.minutes &&
+    previousValue.duration?.hours === nextValue.duration?.hours
 )

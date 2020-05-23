@@ -1,6 +1,7 @@
 import type { Video } from '@/types'
 
-type AlgoliaVideo = Omit<Video, 'publishedAt'> & {
+type AlgoliaVideo = Omit<Video, 'duration' | 'publishedAt'> & {
+  duration?: string
   publishedAt: number
 }
 

@@ -1,4 +1,4 @@
-import { compareAsc, parseJSON, startOfDay } from 'date-fns'
+import { compareAsc, startOfDay } from 'date-fns'
 import React, { FC, memo, useMemo } from 'react'
 
 import type { Video } from '@/types'
@@ -11,11 +11,10 @@ const buildScheduleMap = (values: Array<Video>): ScheduleMap =>
   [...values]
     .sort(
       ({ publishedAt: leftPublishedAt }, { publishedAt: rightPublishedAt }) =>
-        compareAsc(parseJSON(leftPublishedAt), parseJSON(rightPublishedAt))
+        compareAsc(leftPublishedAt, rightPublishedAt)
     )
     .reduce<ScheduleMap>((map, value) => {
-      const publishedAt = parseJSON(value.publishedAt)
-      const day = startOfDay(publishedAt).toJSON()
+      const day = startOfDay(value.publishedAt).toJSON()
       const items = map[day] ?? []
 
       return {
