@@ -7,6 +7,11 @@ import LiveStatus from '@/components/atoms/LiveStatus'
 import Skeleton from '@/components/atoms/Skeleton'
 import Time from '@/components/atoms/Time'
 import Thumbnail from '@/components/atoms/Thumbnail'
+import Card, {
+  CardBody,
+  CardFooter,
+  CardImage
+} from '@/components/molecules/Card'
 import type { Video } from '@/types'
 
 import styles from './VideoCard.module.css'
@@ -26,14 +31,15 @@ type Props = BaseProps & {
 }
 
 const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => (
-  <a
+  <Card
+    as="a"
     className={clsx('card', styles.video)}
     href={value?.url}
     rel="noopener noreferrer"
     target="_blank"
     {...props}
   >
-    <div className={clsx('card__image', styles.image)}>
+    <CardImage className={styles.image}>
       <Thumbnail id={value?.id} />
 
       {value?.duration ? (
@@ -46,20 +52,20 @@ const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => (
       ) : value ? (
         <LiveStatus value={value} />
       ) : null}
-    </div>
+    </CardImage>
 
-    <div className={clsx('card__body', styles.content)}>
+    <CardBody className={styles.content}>
       {value ? (
-        <h4>{value.title}</h4>
+        <h3 className={styles.title}>{value.title}</h3>
       ) : (
-        <h4>
+        <h3 className={styles.title}>
           <Skeleton className={styles.titleSkeleton} variant="text" />
           <Skeleton className={styles.titleSkeleton} variant="text" />
-        </h4>
+        </h3>
       )}
-    </div>
+    </CardBody>
 
-    <div className="card__footer">
+    <CardFooter>
       {value?.publishedAt ? (
         <Time
           className={styles.published}
@@ -71,8 +77,8 @@ const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => (
           <Skeleton variant="text" />
         </span>
       )}
-    </div>
-  </a>
+    </CardFooter>
+  </Card>
 )
 
 export default memo(

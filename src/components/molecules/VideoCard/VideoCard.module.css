@@ -27,6 +27,10 @@
   flex-grow: 1;
 }
 
+.title {
+  font-size: var(--ifm-h4-font-size);
+}
+
 .titleSkeleton {
   width: 80%;
 }
