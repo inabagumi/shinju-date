@@ -34,24 +34,18 @@ const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => (
     {...props}
   >
     <div className={clsx('card__image', styles.image)}>
-      {value ? (
-        <>
-          <Thumbnail id={value.id} />
+      <Thumbnail id={value?.id} />
 
-          {value?.duration ? (
-            <Badge className={styles.duration}>
-              <Time
-                dateTime={formatISODuration(value.duration)}
-                variant="duration"
-              />
-            </Badge>
-          ) : (
-            <LiveStatus value={value} />
-          )}
-        </>
-      ) : (
-        <Skeleton className={styles.thumbnailSkeleton} variant="rect" />
-      )}
+      {value?.duration ? (
+        <Badge className={styles.duration}>
+          <Time
+            dateTime={formatISODuration(value.duration)}
+            variant="duration"
+          />
+        </Badge>
+      ) : value ? (
+        <LiveStatus value={value} />
+      ) : null}
     </div>
 
     <div className={clsx('card__body', styles.content)}>
