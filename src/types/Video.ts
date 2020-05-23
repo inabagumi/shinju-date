@@ -1,10 +1,12 @@
+import type { Duration } from 'date-fns'
+
 import type { Channel } from '@/types'
 
 type Video = {
   channel: Channel
-  duration: string
+  duration?: Duration
   id: string
-  publishedAt: string
+  publishedAt: Date
   title: string
   url: string
 }

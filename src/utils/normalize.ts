@@ -1,22 +1,27 @@
 import { ObjectWithObjectID } from '@algolia/client-search'
 import { fromUnixTime } from 'date-fns'
 
+import { isZeroSeconds, parseDuration } from '@/utils'
 import type { AlgoliaVideo, Video } from '@/types'
 
-const normalize = ({
+function normalize({
   channel,
-  duration,
+  duration: rawDuration,
   id,
   publishedAt,
   title,
   url
-}: AlgoliaVideo & ObjectWithObjectID): Video => ({
-  channel,
-  duration: duration || 'PT0S',
-  id,
-  publishedAt: fromUnixTime(publishedAt).toJSON(),
-  title,
-  url
-})
+}: AlgoliaVideo & ObjectWithObjectID): Video {
+  const duration = parseDuration(rawDuration ?? 'P0D')
+
+  return {
+    channel,
+    duration: isZeroSeconds(duration) ? undefined : duration,
+    id,
+    publishedAt: fromUnixTime(publishedAt),
+    title,
+    url
+  }
+}
 
 export default normalize

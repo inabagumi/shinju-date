@@ -1,24 +1,26 @@
 import {
-  Duration,
+  add,
   addDays,
   addHours,
   addMinutes,
   getUnixTime,
-  isPast,
-  parseJSON,
-  addSeconds
+  isPast
 } from 'date-fns'
-import { EventAttributes, createEvents } from 'ics'
+import { DateArray, EventAttributes, createEvents } from 'ics'
 import { NextApiHandler } from 'next'
 
 import { AlgoliaVideo } from '@/types'
-import { getValue, normalize, parseDuration, search } from '@/utils'
+import { getValue, normalize, search } from '@/utils'
 
-const getSeconds = ({
-  hours = 0,
-  minutes = 0,
-  seconds = 0
-}: Duration): number => hours * 60 * 60 + minutes * 60 + seconds
+function convertToDateArray(date: Date): DateArray {
+  return [
+    date.getUTCFullYear(),
+    date.getUTCMonth() + 1,
+    date.getUTCDate(),
+    date.getUTCHours(),
+    date.getUTCMinutes()
+  ]
+}
 
 const handler: NextApiHandler = async (req, res) => {
   const now = new Date()
@@ -34,36 +36,20 @@ const handler: NextApiHandler = async (req, res) => {
   })
   const events = hits.map(normalize).map(
     (video): EventAttributes => {
-      const publishedAt = parseJSON(video.publishedAt)
-      const duration = parseDuration(video.duration)
-      const seconds = getSeconds(duration)
-      const endedAt =
-        seconds > 0
-          ? addSeconds(publishedAt, seconds)
-          : isPast(publishedAt)
-          ? addMinutes(now, 30)
-          : addHours(publishedAt, 1)
+      const endedAt = video.duration
+        ? add(video.publishedAt, video.duration)
+        : isPast(video.publishedAt)
+        ? addMinutes(now, 30)
+        : addHours(video.publishedAt, 1)
 
       return {
         description: video.url,
-        end: [
-          endedAt.getUTCFullYear(),
-          endedAt.getUTCMonth() + 1,
-          endedAt.getUTCDate(),
-          endedAt.getUTCHours(),
-          endedAt.getUTCMinutes()
-        ],
+        end: convertToDateArray(endedAt),
         endInputType: 'utc',
         endOutputType: 'utc',
         location: 'YouTube',
         productId: 'SHINJU DATE',
-        start: [
-          publishedAt.getUTCFullYear(),
-          publishedAt.getUTCMonth() + 1,
-          publishedAt.getUTCDate(),
-          publishedAt.getUTCHours(),
-          publishedAt.getUTCMinutes()
-        ],
+        start: convertToDateArray(video.publishedAt),
         startInputType: 'utc',
         startOutputType: 'utc',
         title: video.title,
