@@ -60,6 +60,9 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => {
             <meta content="width=device-width" name="viewport" />
             <meta content="#212121" name="theme-color" />
 
+            <link href="https://fonts.googleapis.com" rel="preconnect" />
+            <link href="https://fonts.gstatic.com" rel="preconnect" />
+            <link href="https://i.ytimg.com" rel="preconnect" />
             <link
               href={favicon192x192}
               rel="icon"
@@ -84,6 +87,16 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => {
               rel="search"
               type="application/opensearchdescription+xml"
             />
+            <link
+              as="style"
+              href="https://fonts.googleapis.com/css?display=swap&amp;family=Roboto:300,400,500,700"
+              rel="preload"
+            />
+            <link
+              as="style"
+              href="https://fonts.googleapis.com/css?display=swap&amp;family=Noto+Sans+JP:300,400,500,700"
+              rel="preload"
+            />
           </Head>
 
           <Header />
@@ -93,6 +106,15 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => {
           </main>
 
           <Footer />
+
+          <link
+            href="https://fonts.googleapis.com/css?display=swap&amp;family=Roboto:300,400,500,700"
+            rel="stylesheet"
+          />
+          <link
+            href="https://fonts.googleapis.com/css?display=swap&amp;family=Noto+Sans+JP:300,400,500,700"
+            rel="stylesheet"
+          />
         </ThemeProvider>
       </SiteProvider>
     </SWRConfig>
