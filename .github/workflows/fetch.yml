@@ -35,6 +35,7 @@ jobs:
             --channel UC_BlXOQe5OcRC7o0GX8kp8A
             --channel UC0xhrAce06OkQfHBqAfLQAQ
             --channel UCV4EoK6BVNl7wxuxpUvvSWA
+            --channel UCzUNASdzI4PV5SlqtYwAkKQ
         env:
           TZ: UTC
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
