@@ -14,9 +14,8 @@ Requires an active account of [Algolia](https://www.algolia.com/).
 ```console
 $ git clone https://github.com/inabagumi/shinju-date.git
 $ cd shinju-date
-$ echo ALGOLIA_API_KEY=xxx >> .env
-$ echo ALGOLIA_APPLICATION_ID=xxx >> .env
-$ echo ALGOLIA_INDEX_NAME=xxx >> .env
+$ cp .env.local.sample .env.local
+$ nano .env
 $ yarn install
 $ yarn dev
 ```
