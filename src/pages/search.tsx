@@ -6,6 +6,7 @@ import React, { useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
 
 import { mainVisual } from '@/assets'
+import LinkButton from '@/components/atoms/LinkButton'
 import Container from '@/components/atoms/Container'
 import Grid, { Col, Row } from '@/components/molecules/Grid'
 import SearchSkeleton from '@/components/molecules/SearchSkeleton'
@@ -123,14 +124,10 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
               『{keyword}』で検索しましたが一致する動画は見つかりませんでした。
             </p>
 
-            <Link href="/search">
-              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-              <a
-                className="button button--lg button--outline button--primary"
-                role="button"
-              >
+            <Link href="/search" passHref>
+              <LinkButton color="primary" outline size="lg">
                 新着動画を見る
-              </a>
+              </LinkButton>
             </Link>
           </div>
         )}
