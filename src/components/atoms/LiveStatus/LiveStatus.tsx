@@ -1,4 +1,4 @@
-import { isBefore, isEqual } from 'date-fns'
+import { addHours, isBefore, isEqual } from 'date-fns'
 import React, { FC, memo, useEffect, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 
@@ -28,7 +28,8 @@ const LiveStatus: FC<Props> = ({ value }) => {
   }, [inView])
 
   const past = isBefore(value.publishedAt, now)
-  const liveNow = past && !value.duration
+  const liveNow =
+    past && !value.duration && isBefore(now, addHours(value.publishedAt, 12))
 
   return (
     <div ref={statusRef}>
