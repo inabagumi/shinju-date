@@ -18,6 +18,7 @@ const Thumbnail: FC<Props> = ({ value }) => {
           className={styles.image}
           height={value.thumbnail.height}
           loading="lazy"
+          src={value.thumbnail.src}
           srcSet={value.thumbnail.srcSet}
           width={value.thumbnail.width}
         />
