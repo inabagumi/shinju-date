@@ -1,4 +1,3 @@
-export { default as buildQueryString } from './buildQueryString'
 export { default as chunk } from './chunk'
 export { default as fetcher } from './fetcher'
 export { default as formatDuration } from './formatDuration'

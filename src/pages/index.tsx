@@ -1,32 +1,29 @@
 import useSWR from '@ykzts/swr'
-import { subHours } from 'date-fns'
+import { startOfHour, subHours } from 'date-fns'
 import { NextPage } from 'next'
 import Link from 'next/link'
 import { NextSeo } from 'next-seo'
-import React, { useState } from 'react'
+import React from 'react'
 
 import { mainVisual } from '@/assets'
 import Container from '@/components/atoms/Container'
 import Timeline from '@/components/organisms/Timeline'
 import { useSiteMetadata } from '@/context/SiteContext'
 import type { SearchResponseBody } from '@/types'
-import { buildQueryString } from '@/utils'
 
 const getRequestURL = (now = new Date()): string => {
-  const apiURL = '/api/search'
-  const queryString = buildQueryString({
-    count: 100,
-    since: subHours(now, 2).toJSON()
+  const hours = startOfHour(now)
+  const since = subHours(hours, 2)
+  const searchParams = new URLSearchParams({
+    count: '100',
+    since: since.toJSON()
   })
 
-  return queryString ? `${apiURL}?${queryString}` : apiURL
+  return `/api/search?${searchParams.toString()}`
 }
 
 const IndexPage: NextPage = () => {
-  const now = useState(() => new Date())[0]
-  const { data: items } = useSWR<SearchResponseBody>(() => getRequestURL(now), {
-    refreshInterval: 10 * 1000
-  })
+  const { data: items } = useSWR<SearchResponseBody>(() => getRequestURL())
   const { baseURL, description, title } = useSiteMetadata()
 
   return (

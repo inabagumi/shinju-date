@@ -13,7 +13,7 @@ import SearchSkeleton from '@/components/molecules/SearchSkeleton'
 import VideoCard from '@/components/molecules/VideoCard'
 import { useSiteMetadata } from '@/context/SiteContext'
 import type { SearchResponseBody } from '@/types'
-import { buildQueryString, chunk, getValue } from '@/utils'
+import { chunk, getValue } from '@/utils'
 
 const SEARCH_RESULT_COUNT = 9
 
@@ -40,14 +40,18 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
   >(
     `search-page:${keyword}`,
     ({ offset, withSWR }) => {
-      const queryString = buildQueryString({
-        count: SEARCH_RESULT_COUNT,
-        q: keyword,
-        until: offset?.toJSON()
-      })
-      const apiURL = queryString ? `/api/search?${queryString}` : '/api/search'
+      const { data: items } = withSWR(
+        swr(() => {
+          const searchParams = new URLSearchParams({
+            count: SEARCH_RESULT_COUNT.toString(),
+            q: keyword
+          })
 
-      const { data: items } = withSWR(swr(apiURL))
+          if (offset) searchParams.set('until', offset.toJSON())
+
+          return `/api/search?${searchParams.toString()}`
+        })
+      )
 
       if (!items) {
         return <SearchSkeleton />
