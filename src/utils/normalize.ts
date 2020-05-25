@@ -29,6 +29,10 @@ const buildThumbnail = (id: string, width = 320): Image => {
 
   return {
     height: width * ASPECT_RATIO,
+    preSrc: imgixClient.buildURL(path, {
+      ...params,
+      w: 10
+    }),
     src: imgixClient.buildURL(path, params),
     srcSet: imgixClient
       .buildSrcSet(path, params)
