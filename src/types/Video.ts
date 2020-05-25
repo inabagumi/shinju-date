@@ -7,7 +7,7 @@ type Video = {
   duration?: Duration
   id: string
   publishedAt: Date
-  thumbnails: Image[]
+  thumbnail: Image
   title: string
   url: string
 }
