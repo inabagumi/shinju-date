@@ -1,0 +1,11 @@
+/*
+
+!/public/
+!/src/
+!/.env
+!/next-env.d.ts
+!/next.config.js
+!/package.json
+!/tsconfig.json
+!/vercel.json
+!/yarn.lock
