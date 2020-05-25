@@ -12,11 +12,9 @@ import NProgress from 'nprogress'
 import React, { FC, useCallback, useEffect } from 'react'
 
 import { appleTouchIcon, favicon192x192, favicon512x512 } from '@/assets'
-import Footer from '@/components/organisms/Footer'
-import Header from '@/components/organisms/Header'
+import Layout from '@/components/templates/Layout'
 import { SiteProvider } from '@/context/SiteContext'
 import { ThemeProvider } from '@/context/ThemeContext'
-import styles from '@/styles/app.module.css'
 import { fetcher } from '@/utils'
 
 NProgress.configure({
@@ -99,13 +97,9 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => {
             />
           </Head>
 
-          <Header />
-
-          <main className={styles.wrapper}>
+          <Layout>
             <Component {...pageProps} />
-          </main>
-
-          <Footer />
+          </Layout>
 
           <link
             href="https://fonts.googleapis.com/css?display=swap&amp;family=Roboto:300,400,500,700"
