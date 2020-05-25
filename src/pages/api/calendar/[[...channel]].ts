@@ -5,6 +5,7 @@ import {
   addMinutes,
   getUnixTime,
   isPast,
+  max,
   min
 } from 'date-fns'
 import { DateArray, EventAttributes, createEvents } from 'ics'
@@ -40,7 +41,10 @@ const handler: NextApiHandler = async (req, res) => {
       const endedAt = video.duration
         ? add(video.publishedAt, video.duration)
         : isPast(video.publishedAt)
-        ? min([addMinutes(now, 30), addHours(video.publishedAt, 12)])
+        ? min([
+            max([addHours(video.publishedAt, 1), addMinutes(now, 30)]),
+            addHours(video.publishedAt, 12)
+          ])
         : addHours(video.publishedAt, 1)
 
       return {
