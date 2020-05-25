@@ -1,7 +1,8 @@
-type Thumbnail = {
+type Image = {
   height: number
   src: string
+  srcSet: string
   width: number
 }
 
-export default Thumbnail
+export default Image

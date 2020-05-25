@@ -1,41 +1,25 @@
 import React, { FC, memo } from 'react'
 
 import Skeleton from '@/components/atoms/Skeleton'
-import type { Image } from '@/types'
+import { Video } from '@/types'
 
 import styles from './Thumbnail.module.css'
 
-const buildSizes = (images: Image[]): string =>
-  images
-    .map(({ width }, i) =>
-      [i === 0 && '(min-width: 500px)', `${width}px`].filter(Boolean).join(' ')
-    )
-    .join(', ')
-
-const buildSrcSet = (images: Image[]): string =>
-  images
-    .map(({ src, width }, i): string =>
-      [src, i < images.length - 1 && `${width}w`].filter(Boolean).join(' ')
-    )
-    .join(', ')
-
 type Props = {
-  values?: Image[]
+  value?: Video
 }
 
-const Thumbnail: FC<Props> = ({ values }) => {
+const Thumbnail: FC<Props> = ({ value }) => {
   return (
     <div className={styles.thumbnail}>
-      {values ? (
+      {value ? (
         <img
           alt=""
           className={styles.image}
-          height={values[0].height}
+          height={value.thumbnail.height}
           loading="lazy"
-          sizes={buildSizes(values)}
-          src={values[0].src}
-          srcSet={buildSrcSet(values)}
-          width={values[0].width}
+          srcSet={value.thumbnail.srcSet}
+          width={value.thumbnail.width}
         />
       ) : (
         <Skeleton className={styles.image} variant="rect" />
@@ -46,9 +30,6 @@ const Thumbnail: FC<Props> = ({ values }) => {
 
 export default memo(
   Thumbnail,
-  ({ values: previousValues }, { values: nextValues }) => {
-    const srcs = (nextValues ?? []).map((value) => value.src)
-
-    return (previousValues ?? []).every((value) => srcs.includes(value.src))
-  }
+  ({ value: previousValue }, { value: nextValue }) =>
+    previousValue?.thumbnail.srcSet !== nextValue?.thumbnail.srcSet
 )

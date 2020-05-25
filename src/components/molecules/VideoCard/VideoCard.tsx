@@ -40,7 +40,7 @@ const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => (
     {...props}
   >
     <CardImage className={styles.image}>
-      <Thumbnail values={value?.thumbnails} />
+      <Thumbnail value={value} />
 
       {value?.duration ? (
         <Badge className={styles.duration}>
