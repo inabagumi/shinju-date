@@ -20,6 +20,10 @@ const Image: ForwardRefRenderFunction<HTMLImageElement, Props> = (
 ) => {
   const [isLoading, setIsLoading] = useState(true)
 
+  const handleError = useCallback(() => {
+    setIsLoading(true)
+  }, [])
+
   const handleLoad = useCallback(() => {
     setIsLoading(false)
   }, [])
@@ -31,10 +35,11 @@ const Image: ForwardRefRenderFunction<HTMLImageElement, Props> = (
   return (
     // eslint-disable-next-line jsx-a11y/alt-text
     <img
-      onLoad={handleLoad}
       className={clsx(styles.image, className, {
         [styles.imageLoading]: isLoading
       })}
+      onError={handleError}
+      onLoad={handleLoad}
       ref={ref}
       src={src}
       srcSet={srcSet}
