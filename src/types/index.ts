@@ -1,3 +1,4 @@
+export type { default as AlgoliaImage } from './AlgoliaImage'
 export type { default as AlgoliaVideo } from './AlgoliaVideo'
 export type { default as Channel } from './Channel'
 export type { default as Image } from './Image'
