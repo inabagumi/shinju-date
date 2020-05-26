@@ -60,7 +60,7 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => {
 
             <link href="https://fonts.googleapis.com" rel="preconnect" />
             <link href="https://fonts.gstatic.com" rel="preconnect" />
-            <link href="https://i.ytimg.com" rel="preconnect" />
+            <link href="https://shinju-date.imgix.net" rel="preconnect" />
             <link
               href={favicon192x192}
               rel="icon"
