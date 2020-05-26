@@ -3,7 +3,7 @@ import { fromUnixTime } from 'date-fns'
 import ImgixClient from 'imgix-core-js'
 
 import { isZeroSeconds, parseDuration } from '@/utils'
-import type { AlgoliaVideo, Image, Video } from '@/types'
+import type { AlgoliaImage, AlgoliaVideo, Image, Video } from '@/types'
 
 const ASPECT_RATIO = 0.5625
 
@@ -16,26 +16,28 @@ const createImgixClient = (): ImgixClient =>
 
 let imgixClient: ImgixClient
 
-const buildThumbnail = (id: string, width = 320): Image => {
+const normalizeThumbnail = (thumbnail: AlgoliaImage, width = 320): Image => {
   imgixClient = imgixClient ?? createImgixClient()
 
-  const path = `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`
   const params = {
     ar: `1:${ASPECT_RATIO}`,
     auto: 'compress,format',
     fit: 'crop',
     w: width
   }
+  const preSrc =
+    thumbnail.preSrc ??
+    imgixClient.buildURL(thumbnail.src, {
+      ...params,
+      w: 10
+    })
 
   return {
     height: width * ASPECT_RATIO,
-    preSrc: imgixClient.buildURL(path, {
-      ...params,
-      w: 10
-    }),
-    src: imgixClient.buildURL(path, params),
+    preSrc,
+    src: imgixClient.buildURL(thumbnail.src, params),
     srcSet: imgixClient
-      .buildSrcSet(path, params)
+      .buildSrcSet(thumbnail.src, params)
       .split(/\s*,\s*/)
       .slice(0, 3)
       .join(', '),
@@ -48,17 +50,23 @@ function normalize({
   duration: rawDuration,
   id,
   publishedAt,
+  thumbnail: rawThumbnail,
   title,
   url
 }: AlgoliaVideo & ObjectWithObjectID): Video {
   const duration = parseDuration(rawDuration ?? 'P0D')
+  const thumbnail = rawThumbnail ?? {
+    height: 720,
+    src: `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`,
+    width: 1280
+  }
 
   return {
     channel,
     duration: isZeroSeconds(duration) ? undefined : duration,
     id,
     publishedAt: fromUnixTime(publishedAt),
-    thumbnail: buildThumbnail(id),
+    thumbnail: normalizeThumbnail(thumbnail),
     title,
     url
   }
