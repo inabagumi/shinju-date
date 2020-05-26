@@ -1,5 +1,6 @@
 import React, { FC, memo } from 'react'
 
+import Image from '@/components/atoms/Image'
 import Skeleton from '@/components/atoms/Skeleton'
 import { Video } from '@/types'
 
@@ -12,14 +13,14 @@ type Props = {
 const Thumbnail: FC<Props> = ({ value }) => (
   <div className={styles.thumbnail}>
     {value ? (
-      <img
+      <Image
         alt=""
         className={styles.image}
         height={value.thumbnail.height}
         loading="lazy"
+        preSrc={value.thumbnail.preSrc}
         src={value.thumbnail.src}
         srcSet={value.thumbnail.srcSet}
-        style={{ backgroundImage: `url('${value.thumbnail.preSrc}')` }}
         width={value.thumbnail.width}
       />
     ) : (
