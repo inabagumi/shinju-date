@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: docker://inabagumi/pinkie:3.4
+      - uses: docker://inabagumi/pinkie:3.5
         with:
           args: --channel UCRvpMpzAXBRKJQuk-8-Sdvg
             --channel UC0Owc36U9lOyi9Gx9Ic-4qg
