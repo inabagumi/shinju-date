@@ -8,7 +8,7 @@
   "dependencies": {
     "@mdx-js/loader": "^1.6.4",
     "@mdx-js/react": "^1.6.4",
-    "@next/mdx": "^9.4.2",
+    "@next/mdx": "^9.4.4",
     "@svgr/webpack": "^5.4.0",
     "@ykzts/swr": "github:ykzts/swr#built",
     "algoliasearch": "^4.2.0",
@@ -20,7 +20,7 @@
     "imgix-core-js": "^2.3.1",
     "infima": "^0.2.0-alpha.12",
     "localforage": "^1.7.3",
-    "next": "^9.4.2",
+    "next": "^9.4.4",
     "next-offline": "^5.0.2",
     "next-seo": "^4.5.0",
     "nprogress": "^1.0.0-1",
