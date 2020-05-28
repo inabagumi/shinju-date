@@ -4,6 +4,9 @@ const withOffline = require('next-offline')
 require('dotenv').config()
 
 const nextConfig = {
+  env: {
+    GA_TRACKING_ID: process.env.GA_TRACKING_ID
+  },
   experimental: {
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     headers: () => [
@@ -33,6 +36,7 @@ const nextConfig = {
     ],
     optionalCatchAll: true,
     pageEnv: true,
+    plugins: true,
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     rewrites: () => [
       {
