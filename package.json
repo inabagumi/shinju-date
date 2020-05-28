@@ -9,6 +9,7 @@
     "@mdx-js/loader": "^1.6.4",
     "@mdx-js/react": "^1.6.4",
     "@next/mdx": "^9.4.4",
+    "@next/plugin-google-analytics": "^9.4.4",
     "@svgr/webpack": "^5.4.0",
     "@ykzts/swr": "github:ykzts/swr#built",
     "algoliasearch": "^4.2.0",
