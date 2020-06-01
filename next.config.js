@@ -1,4 +1,6 @@
-const withMDX = require('@next/mdx')
+const cspBuilder = require('content-security-policy-builder')
+
+const withMDX = require('@next/mdx')()
 const withOffline = require('next-offline')
 
 const nextConfig = {
@@ -16,8 +18,42 @@ const nextConfig = {
           },
           {
             key: 'content-security-policy',
-            value:
-              "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://shinju-date.imgix.net https://storage.googleapis.com https://www.google-analytics.com; default-src 'self'; font-src https://fonts.gstatic.com; img-src 'self' data: https://shinju-date.imgix.net https://www.google-analytics.com https://www.googletagmanager.com; manifest-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://storage.googleapis.com https://www.google-analytics.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; worker-src 'self'"
+            value: cspBuilder({
+              directives: {
+                connectSrc: [
+                  "'self'",
+                  'https://fonts.googleapis.com',
+                  'https://fonts.gstatic.com',
+                  'https://shinju-date.imgix.net',
+                  'https://storage.googleapis.com',
+                  'https://www.google-analytics.com'
+                ],
+                defaultSrc: ["'self'"],
+                fontSrc: ['https://fonts.gstatic.com'],
+                imgSrc: [
+                  "'self'",
+                  'data:',
+                  'https://shinju-date.imgix.net',
+                  'https://www.google-analytics.com',
+                  'https://www.googletagmanager.com'
+                ],
+                manifestSrc: ["'self'"],
+                scriptSrc: [
+                  "'self'",
+                  "'unsafe-eval'",
+                  "'unsafe-inline'",
+                  'https://storage.googleapis.com',
+                  'https://www.google-analytics.com',
+                  'https://www.googletagmanager.com'
+                ],
+                styleSrc: [
+                  "'self'",
+                  "'unsafe-inline'",
+                  'https://fonts.googleapis.com'
+                ],
+                workerSrc: ["'self'"]
+              }
+            })
           }
         ],
         source: '/((?!_next).*)'
@@ -118,4 +154,4 @@ const nextConfig = {
   }
 }
 
-module.exports = withOffline(withMDX()(nextConfig))
+module.exports = withOffline(withMDX(nextConfig))
