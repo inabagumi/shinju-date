@@ -1,8 +1,6 @@
 const withMDX = require('@next/mdx')
 const withOffline = require('next-offline')
 
-require('dotenv').config()
-
 const nextConfig = {
   env: {
     GA_TRACKING_ID: process.env.GA_TRACKING_ID
