@@ -21,7 +21,7 @@ const Image: ForwardRefRenderFunction<HTMLImageElement, Props> = (
   const [isLoading, setIsLoading] = useState(true)
 
   const handleError = useCallback(() => {
-    setIsLoading(true)
+    setIsLoading(false)
   }, [])
 
   const handleLoad = useCallback(() => {
