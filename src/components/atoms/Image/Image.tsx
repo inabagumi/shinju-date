@@ -5,6 +5,7 @@ import React, {
   forwardRef,
   useCallback,
   useEffect,
+  useRef,
   useState
 } from 'react'
 
@@ -18,6 +19,7 @@ const Image: ForwardRefRenderFunction<HTMLImageElement, Props> = (
   { className, preSrc, src, srcSet, ...props },
   ref
 ) => {
+  const imageRef = useRef<HTMLImageElement>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const handleError = useCallback(() => {
@@ -27,6 +29,22 @@ const Image: ForwardRefRenderFunction<HTMLImageElement, Props> = (
   const handleLoad = useCallback(() => {
     setIsLoading(false)
   }, [])
+
+  useEffect(() => {
+    if (!imageRef.current || !imageRef.current.complete) return
+
+    setIsLoading(false)
+  }, [imageRef])
+
+  useEffect(() => {
+    if (!ref) return
+
+    if (typeof ref === 'function') {
+      ref(imageRef.current)
+    } else {
+      ref.current = imageRef.current
+    }
+  }, [ref, imageRef])
 
   useEffect(() => {
     setIsLoading(true)
@@ -40,7 +58,7 @@ const Image: ForwardRefRenderFunction<HTMLImageElement, Props> = (
       })}
       onError={handleError}
       onLoad={handleLoad}
-      ref={ref}
+      ref={imageRef}
       src={src}
       srcSet={srcSet}
       style={{ backgroundImage: `url('${preSrc}')` }}
