@@ -1,4 +1,5 @@
 import swr, { useSWRPages } from '@ykzts/swr'
+import clsx from 'clsx'
 import { GetServerSideProps, NextPage } from 'next'
 import Link from 'next/link'
 import { NextSeo } from 'next-seo'
@@ -12,6 +13,7 @@ import Grid, { Col, Row } from '@/components/molecules/Grid'
 import SearchSkeleton from '@/components/molecules/SearchSkeleton'
 import VideoCard from '@/components/molecules/VideoCard'
 import { useSiteMetadata } from '@/context/SiteContext'
+import styles from '@/styles/search.module.css'
 import type { SearchResponseBody } from '@/types'
 import { chunk, getValue } from '@/utils'
 
@@ -92,7 +94,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
   }, [inView, loadMore])
 
   const path = keyword ? `/search?q=${encodeURIComponent(keyword)}` : '/search'
-  const title = [keyword, siteTitle].filter(Boolean).join(' - ')
+  const title = keyword ? `『${keyword}』の検索結果` : '動画一覧'
 
   return (
     <>
@@ -110,7 +112,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
           ],
           type: 'website'
         }}
-        title={title}
+        title={[title, siteTitle].filter(Boolean).join(' - ')}
         twitter={{
           cardType: 'summary_large_image'
         }}
@@ -119,6 +121,10 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
       <Container>
         {!isEmpty ? (
           <div className="margin-top--lg">
+            <h1 className={clsx('margin-bottom--lg', styles.searchResultsFor)}>
+              {title}
+            </h1>
+
             <Grid>{pages}</Grid>
           </div>
         ) : (

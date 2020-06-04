@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { FC } from 'react'
 
+import Container from '@/components/atoms/Container'
+import Hero, { HeroTitle } from '@/components/organisms/Hero'
 import { useSiteMetadata } from '@/context/SiteContext'
 
 import styles from './Markdown.module.css'
@@ -24,13 +26,11 @@ const About: FC<Props> = ({ children, title }) => {
         <title>{[title, siteTitle].filter(Boolean).join(' - ')}</title>
       </Head>
 
-      <div className="hero hero--dark">
-        <div className="container">
-          <h1 className="hero__title">{title ?? siteTitle}</h1>
-        </div>
-      </div>
+      <Hero color="dark">
+        <HeroTitle>{title ?? siteTitle}</HeroTitle>
+      </Hero>
 
-      <div className="container">
+      <Container>
         <nav aria-label="パンくずリスト" className="margin-vert--md">
           <ul
             className="breadcrumbs breadcrumbs--sm"
@@ -75,7 +75,7 @@ const About: FC<Props> = ({ children, title }) => {
             {children}
           </MDXProvider>
         </div>
-      </div>
+      </Container>
     </>
   )
 }

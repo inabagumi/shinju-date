@@ -1,14 +1,18 @@
 import useSWR from '@ykzts/swr'
+import clsx from 'clsx'
 import { startOfHour, subHours } from 'date-fns'
 import { NextPage } from 'next'
 import Link from 'next/link'
 import { NextSeo } from 'next-seo'
 import React from 'react'
 
-import { mainVisual } from '@/assets'
+import { Logo, mainVisual } from '@/assets'
+import LinkButton from '@/components/atoms/LinkButton'
 import Container from '@/components/atoms/Container'
+import Hero, { HeroTitle } from '@/components/organisms/Hero'
 import Timeline from '@/components/organisms/Timeline'
 import { useSiteMetadata } from '@/context/SiteContext'
+import styles from '@/styles/home.module.css'
 import type { SearchResponseBody } from '@/types'
 
 const getRequestURL = (now = new Date()): string => {
@@ -49,17 +53,32 @@ const IndexPage: NextPage = () => {
         }}
       />
 
-      <Container className="margin-bottom--lg">
-        <Timeline values={items} />
+      <Hero className="padding-vert--xl" shadow>
+        <HeroTitle className={clsx('text--center', styles.home)}>
+          <Logo
+            aria-label="SHINJU DATE"
+            className={styles.logo}
+            height="80"
+            width="256"
+          />
+        </HeroTitle>
 
-        {items && (
-          <nav className="text--right">
-            <Link href="/search">
-              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-              <a rel="next">もっと見る »</a>
-            </Link>
-          </nav>
-        )}
+        <nav className="margin-top--xl text--center">
+          <Link href="/search" passHref>
+            <LinkButton
+              className="margin-left--sm"
+              color="primary"
+              outline
+              size="lg"
+            >
+              動画一覧
+            </LinkButton>
+          </Link>
+        </nav>
+      </Hero>
+
+      <Container className="margin-bottom--lg" id="schedule">
+        <Timeline values={items} />
       </Container>
     </>
   )

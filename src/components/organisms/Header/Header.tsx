@@ -37,7 +37,11 @@ const Header: FC = () => {
               href="/"
               tabIndex={-1}
             >
-              <Logo className={clsx('navbar__logo', styles.logo)} />
+              <Logo
+                className={clsx('navbar__logo', styles.logo)}
+                height="40"
+                width="128"
+              />
             </a>
           </Link>
         </div>
