@@ -10,11 +10,17 @@ type Props = BaseProps & {
   fluid?: boolean
 }
 
-const Container: FC<Props> = ({ children, className, fluid = false }) => (
+const Container: FC<Props> = ({
+  children,
+  className,
+  fluid = false,
+  ...props
+}) => (
   <div
     className={clsx('container', className, {
       'container--fluid': fluid
     })}
+    {...props}
   >
     {children}
   </div>
