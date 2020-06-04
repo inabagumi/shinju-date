@@ -17,7 +17,7 @@ import type { SearchResponseBody } from '@/types'
 
 const getRequestURL = (now = new Date()): string => {
   const hours = startOfHour(now)
-  const since = subHours(hours, 2)
+  const since = subHours(hours, 5)
   const searchParams = new URLSearchParams({
     count: '100',
     since: since.toJSON()
@@ -78,7 +78,7 @@ const IndexPage: NextPage = () => {
       </Hero>
 
       <Container className="margin-bottom--lg" id="schedule">
-        <Timeline values={items} />
+        <Timeline values={items?.filter((item) => !item.duration)} />
       </Container>
     </>
   )
