@@ -87,12 +87,7 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => {
             />
             <link
               as="style"
-              href="https://fonts.googleapis.com/css?display=swap&amp;family=Roboto:300,400,500,700"
-              rel="preload"
-            />
-            <link
-              as="style"
-              href="https://fonts.googleapis.com/css?display=swap&amp;family=Noto+Sans+JP:300,400,500,700"
+              href="https://fonts.googleapis.com/css?display=swap&amp;family=Lato:300,400,500,700"
               rel="preload"
             />
           </Head>
@@ -102,11 +97,7 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => {
           </Layout>
 
           <link
-            href="https://fonts.googleapis.com/css?display=swap&amp;family=Roboto:300,400,500,700"
-            rel="stylesheet"
-          />
-          <link
-            href="https://fonts.googleapis.com/css?display=swap&amp;family=Noto+Sans+JP:300,400,500,700"
+            href="https://fonts.googleapis.com/css?display=swap&amp;family=Lato:300,400,500,700"
             rel="stylesheet"
           />
         </ThemeProvider>
