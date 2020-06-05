@@ -20,7 +20,7 @@
     "ics": "^2.19.0",
     "imgix-core-js": "^2.3.1",
     "infima": "^0.2.0-alpha.12",
-    "localforage": "^1.7.3",
+    "localforage": "^1.7.4",
     "next": "^9.4.4",
     "next-offline": "^5.0.2",
     "next-seo": "^4.5.0",
