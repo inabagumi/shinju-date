@@ -4,7 +4,7 @@ import React, { FC, useEffect } from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
 import Toggle, { ToggleIcons } from 'react-toggle'
 
-import { Logo } from '@/assets'
+import { Icon } from '@/assets'
 import SearchForm from '@/components/molecules/SearchForm'
 import { useSiteMetadata } from '@/context/SiteContext'
 import { useTheme } from '@/context/ThemeContext'
@@ -31,17 +31,11 @@ const Header: FC = () => {
       <div className="navbar__inner">
         <div className="navbar__items">
           <Link href="/">
-            <a
-              aria-label={siteTitle}
-              className="navbar__brand"
-              href="/"
-              tabIndex={-1}
-            >
-              <Logo
-                className={clsx('navbar__logo', styles.logo)}
-                height="40"
-                width="128"
-              />
+            <a className="navbar__brand" href="/">
+              <Icon className="navbar__logo" height={32} width={32} />
+              <strong className={clsx('navbar__title', styles.title)}>
+                {siteTitle}
+              </strong>
             </a>
           </Link>
         </div>
