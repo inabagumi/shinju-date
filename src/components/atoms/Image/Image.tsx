@@ -31,7 +31,7 @@ const Image: ForwardRefRenderFunction<HTMLImageElement, Props> = (
   }, [])
 
   useEffect(() => {
-    if (!imageRef.current || !imageRef.current.complete) return
+    if (!imageRef?.current.complete) return
 
     setIsLoading(false)
   }, [imageRef])
