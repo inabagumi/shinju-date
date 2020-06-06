@@ -58,8 +58,9 @@ const IndexPage: NextPage = () => {
           <Logo
             aria-label="SHINJU DATE"
             className={styles.logo}
-            height="80"
-            width="256"
+            height={80}
+            role="img"
+            width={256}
           />
         </HeroTitle>
 

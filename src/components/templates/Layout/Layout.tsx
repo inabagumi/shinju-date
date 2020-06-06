@@ -1,13 +1,13 @@
 import React, { FC } from 'react'
 
 import Footer from '@/components/organisms/Footer'
-import Header from '@/components/organisms/Header'
+import Navbar from '@/components/organisms/Navbar'
 
 import styles from './Layout.module.css'
 
 const Layout: FC = ({ children }) => (
   <>
-    <Header />
+    <Navbar />
 
     <main className={styles.wrapper}>{children}</main>
 
