@@ -1,5 +1,9 @@
 @media (max-width: 996px) {
-  .title {
+  .logo {
+    display: none;
+  }
+
+  .toggle {
     display: none;
   }
 }
