@@ -1,6 +1,5 @@
 import clsx from 'clsx'
 import React, {
-  ForwardRefRenderFunction,
   ImgHTMLAttributes,
   forwardRef,
   useCallback,
@@ -15,56 +14,57 @@ type Props = ImgHTMLAttributes<HTMLImageElement> & {
   preSrc: string
 }
 
-const Image: ForwardRefRenderFunction<HTMLImageElement, Props> = (
-  { className, preSrc, src, srcSet, ...props },
-  ref
-) => {
-  const imageRef = useRef<HTMLImageElement>(null)
-  const [isLoading, setIsLoading] = useState(true)
+const Image = forwardRef<HTMLImageElement, Props>(
+  ({ alt = '', className, preSrc, src, srcSet, ...props }, ref) => {
+    const imageRef = useRef<HTMLImageElement>(null)
+    const [isLoading, setIsLoading] = useState(true)
 
-  const handleError = useCallback(() => {
-    setIsLoading(false)
-  }, [])
+    const handleError = useCallback(() => {
+      setIsLoading(false)
+    }, [])
 
-  const handleLoad = useCallback(() => {
-    setIsLoading(false)
-  }, [])
+    const handleLoad = useCallback(() => {
+      setIsLoading(false)
+    }, [])
 
-  useEffect(() => {
-    if (!imageRef.current?.complete) return
+    useEffect(() => {
+      if (!imageRef.current?.complete) return
 
-    setIsLoading(false)
-  }, [imageRef])
+      setIsLoading(false)
+    }, [imageRef])
 
-  useEffect(() => {
-    if (!ref) return
+    useEffect(() => {
+      if (!ref) return
 
-    if (typeof ref === 'function') {
-      ref(imageRef.current)
-    } else {
-      ref.current = imageRef.current
-    }
-  }, [ref, imageRef])
+      if (typeof ref === 'function') {
+        ref(imageRef.current)
+      } else {
+        ref.current = imageRef.current
+      }
+    }, [ref, imageRef])
 
-  useEffect(() => {
-    setIsLoading(true)
-  }, [src, srcSet])
+    useEffect(() => {
+      setIsLoading(true)
+    }, [src, srcSet])
 
-  return (
-    // eslint-disable-next-line jsx-a11y/alt-text
-    <img
-      className={clsx(styles.image, className, {
-        [styles.imageLoading]: isLoading
-      })}
-      onError={handleError}
-      onLoad={handleLoad}
-      ref={imageRef}
-      src={src}
-      srcSet={srcSet}
-      style={{ backgroundImage: `url('${preSrc}')` }}
-      {...props}
-    />
-  )
-}
+    return (
+      <img
+        alt={alt}
+        className={clsx(styles.image, className, {
+          [styles.imageLoading]: isLoading
+        })}
+        onError={handleError}
+        onLoad={handleLoad}
+        ref={imageRef}
+        src={src}
+        srcSet={srcSet}
+        style={{ backgroundImage: `url('${preSrc}')` }}
+        {...props}
+      />
+    )
+  }
+)
 
-export default forwardRef(Image)
+Image.displayName = 'Image'
+
+export default Image
