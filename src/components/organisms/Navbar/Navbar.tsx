@@ -95,6 +95,17 @@ const Navbar: FC = () => {
               動画一覧
             </a>
           </Link>
+          <Link href="/calendar">
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+            <a
+              aria-current={router.asPath === '/calendar' ? 'page' : undefined}
+              className={clsx('navbar__item', 'navbar__link', {
+                'navbar__link--active': router.asPath === '/calendar'
+              })}
+            >
+              カレンダー
+            </a>
+          </Link>
         </div>
 
         <div className="navbar__items navbar__items--right">
@@ -163,6 +174,22 @@ const Navbar: FC = () => {
                     onClick={hideSidebar}
                   >
                     動画一覧
+                  </a>
+                </Link>
+              </li>
+              <li className="menu__list-item">
+                <Link href="/calendar">
+                  <a
+                    aria-current={
+                      router.asPath === '/calendar' ? 'page' : undefined
+                    }
+                    className={clsx('menu__link', {
+                      'navbar__link--active': router.asPath === '/calendar'
+                    })}
+                    href="/calendar"
+                    onClick={hideSidebar}
+                  >
+                    カレンダー
                   </a>
                 </Link>
               </li>
