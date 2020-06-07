@@ -45,7 +45,7 @@ const handler: NextApiHandler = async (req, res) => {
           ])
 
       return {
-        calName: channel ?? video.channel.title,
+        calName: channel && video.channel.title,
         description: video.url,
         end: convertToDateArray(endedAt),
         endInputType: 'utc',
