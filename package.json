@@ -17,7 +17,7 @@
     "content-security-policy-builder": "^2.1.0",
     "date-fns": "^2.14.0",
     "file-loader": "^6.0.0",
-    "ics": "^2.22.0",
+    "ics": "^2.22.1",
     "imgix-core-js": "^2.3.1",
     "infima": "^0.2.0-alpha.12",
     "localforage": "^1.7.4",
