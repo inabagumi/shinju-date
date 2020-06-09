@@ -1,6 +1,6 @@
 import useSWR from '@ykzts/swr'
 import clsx from 'clsx'
-import { startOfHour, subHours } from 'date-fns'
+import { isFuture, startOfHour, subHours } from 'date-fns'
 import { NextPage } from 'next'
 import Link from 'next/link'
 import { NextSeo } from 'next-seo'
@@ -79,7 +79,11 @@ const IndexPage: NextPage = () => {
       </Hero>
 
       <Container className="margin-bottom--lg" id="schedule">
-        <Timeline values={items?.filter((item) => !item.duration)} />
+        <Timeline
+          values={items?.filter(
+            (item) => isFuture(item.publishedAt) || !item.duration
+          )}
+        />
       </Container>
     </>
   )
