@@ -1988,15 +1988,7 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react@*":
-  version "16.9.35"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-16.9.35.tgz#a0830d172e8aadd9bd41709ba2281a3124bbd368"
-  integrity sha512-q0n0SsWcGc8nDqH2GJfWQWUOmZSJhXV64CjVN5SvcNti3TdEaA3AH0D8DwNmMdzjMAC/78tB8nAZIlV8yTz+zQ==
-  dependencies:
-    "@types/prop-types" "*"
-    csstype "^2.2.0"
-
-"@types/react@^16.9.36":
+"@types/react@*", "@types/react@^16.9.36":
   version "16.9.36"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-16.9.36.tgz#ade589ff51e2a903e34ee4669e05dbfa0c1ce849"
   integrity sha512-mGgUb/Rk/vGx4NCvquRuSH0GHBQKb1OqpGS9cT9lFxlTLHZgkksgI60TuIxubmn7JuCb+sENHhQciqa0npm0AQ==
@@ -9155,10 +9147,10 @@ svgo@^1.0.0, svgo@^1.2.2:
     unquote "~1.1.1"
     util.promisify "~1.0.0"
 
-swr@0.3.0-beta.4:
-  version "0.3.0-beta.4"
-  resolved "https://registry.yarnpkg.com/swr/-/swr-0.3.0-beta.4.tgz#52e7ddef2e4740d41e84b8bbf11b5a0f2ea8d0b4"
-  integrity sha512-0vcRG7ZKBPSX2pW7XmVxgydXVxQlmHAMlB0i0VnQr460nlMpHcdZ0FKs36/LzZNcNGiufNVx7T2upL4hSZ2JPg==
+swr@0.3.0-beta.5:
+  version "0.3.0-beta.5"
+  resolved "https://registry.yarnpkg.com/swr/-/swr-0.3.0-beta.5.tgz#5c0dfae31d968c6045f10e2056511005dc1c4c85"
+  integrity sha512-88sfkGje9nPaDFPVA4ftm6ZISe7b6bnKUx6x8fjzkjLhRETgTvN19Pfe7R53sItsNLHGDDJrbpdUhy0TmT6VvA==
   dependencies:
     fast-deep-equal "2.0.1"
 
