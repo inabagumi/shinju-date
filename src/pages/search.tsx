@@ -54,6 +54,10 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
       }
 
       return `/api/search?${searchParams.toString()}`
+    },
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false
     }
   )
   const { baseURL, description, title: siteTitle } = useSiteMetadata()
