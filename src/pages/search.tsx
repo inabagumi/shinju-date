@@ -1,10 +1,10 @@
-import swr, { useSWRPages } from '@ykzts/swr'
 import clsx from 'clsx'
 import { GetServerSideProps, NextPage } from 'next'
 import Link from 'next/link'
 import { NextSeo } from 'next-seo'
-import React, { useEffect } from 'react'
-import { useInView } from 'react-intersection-observer'
+import React, { useCallback } from 'react'
+import InfiniteScroll from 'react-infinite-scroll-component'
+import { useSWRInfinite } from 'swr'
 
 import { mainVisual } from '@/assets'
 import LinkButton from '@/components/atoms/LinkButton'
@@ -36,65 +36,36 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
 }
 
 const SearchPage: NextPage<Props> = ({ keyword }) => {
-  const { isEmpty, loadMore, pages } = useSWRPages<
-    Date | null,
-    SearchResponseBody
-  >(
-    `search-page:${keyword}`,
-    ({ offset, withSWR }) => {
-      const { data: items } = withSWR(
-        swr(() => {
-          const searchParams = new URLSearchParams({
-            count: SEARCH_RESULT_COUNT.toString(),
-            q: keyword
-          })
+  const { data, setPage } = useSWRInfinite<SearchResponseBody>(
+    (index, previousPageData) => {
+      if (previousPageData?.length === 0) return null
 
-          if (offset) searchParams.set('until', offset.toJSON())
+      const searchParams = new URLSearchParams({
+        count: SEARCH_RESULT_COUNT.toString()
+      })
 
-          return `/api/search?${searchParams.toString()}`
-        })
-      )
+      if (keyword) searchParams.set('q', keyword)
 
-      if (!items) {
-        return <SearchSkeleton />
+      const offset =
+        previousPageData?.[previousPageData.length - 1]?.publishedAt
+
+      if (index > 0 && offset) {
+        searchParams.set('until', offset.toJSON())
       }
 
-      return chunk(items, 3).map((values) => (
-        <Row key={values.map((value) => value.id).join(':')}>
-          {values.map((value) => (
-            <Col
-              className="padding-bottom--lg padding-horiz--sm"
-              key={value.id}
-              size={4}
-            >
-              <VideoCard
-                timeOptions={{
-                  relativeTime: true
-                }}
-                value={value}
-              />
-            </Col>
-          ))}
-        </Row>
-      ))
-    },
-    ({ data: items = [] }) =>
-      items.length >= SEARCH_RESULT_COUNT
-        ? items[items.length - 1].publishedAt
-        : null,
-    [keyword]
+      return `/api/search?${searchParams.toString()}`
+    }
   )
-  const [footerRef, inView] = useInView()
   const { baseURL, description, title: siteTitle } = useSiteMetadata()
 
-  useEffect(() => {
-    if (!inView) return
-
-    loadMore()
-  }, [inView, loadMore])
+  const loadMore = useCallback(
+    () => setPage?.((x) => x + 1) || Promise.resolve(),
+    [setPage]
+  )
 
   const path = keyword ? `/search?q=${encodeURIComponent(keyword)}` : '/search'
   const title = keyword ? `『${keyword}』の検索結果` : '動画一覧'
+  const items = data ? data?.flat() : []
 
   return (
     <>
@@ -119,19 +90,53 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
       />
 
       <Container>
-        {!isEmpty ? (
+        {data?.[0]?.length !== 0 ? (
           <div className="margin-top--lg">
             <h1 className={clsx('margin-bottom--lg', styles.searchResultsFor)}>
               {title}
             </h1>
 
-            <Grid>{pages}</Grid>
+            <InfiniteScroll
+              dataLength={items.length}
+              hasMore={(data?.[data.length - 1]?.length || 0) > 0}
+              loader={<SearchSkeleton key={0} />}
+              next={loadMore}
+              scrollThreshold="100px"
+              style={{
+                WebkitOverflowScrolling: undefined,
+                height: undefined,
+                overflow: undefined
+              }}
+            >
+              <Grid>
+                {chunk(items, 3).map((values) => (
+                  <Row key={values.map((value) => value.id).join(':')}>
+                    {values.map((value) => (
+                      <Col
+                        className="padding-bottom--lg padding-horiz--sm"
+                        key={value.id}
+                        size={4}
+                      >
+                        <VideoCard
+                          timeOptions={{
+                            relativeTime: true
+                          }}
+                          value={value}
+                        />
+                      </Col>
+                    ))}
+                  </Row>
+                ))}
+              </Grid>
+            </InfiniteScroll>
           </div>
         ) : (
           <div className="text--center margin-bottom--lg margin-top--lg padding-bottom--lg padding-top--lg">
-            <h2>検索結果はありません</h2>
+            <h1 className={styles.searchResultsFor}>検索結果はありません</h1>
+
             <p>
-              『{keyword}』で検索しましたが一致する動画は見つかりませんでした。
+              『{keyword}
+              』で検索しましたが一致する動画は見つかりませんでした。
             </p>
 
             <Link href="/search" passHref>
@@ -141,8 +146,6 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
             </Link>
           </div>
         )}
-
-        <div className="padding-bottom--lg" ref={footerRef} />
       </Container>
     </>
   )

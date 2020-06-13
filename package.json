@@ -11,7 +11,6 @@
     "@next/mdx": "^9.4.4",
     "@next/plugin-google-analytics": "^9.4.4",
     "@svgr/webpack": "^5.4.0",
-    "@ykzts/swr": "github:ykzts/swr#built",
     "algoliasearch": "^4.3.0",
     "clsx": "^1.1.1",
     "content-security-policy-builder": "^2.1.0",
@@ -28,8 +27,10 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-icons": "^3.10.0",
+    "react-infinite-scroll-component": "^5.0.5",
     "react-intersection-observer": "^8.26.2",
     "react-toggle": "^4.1.1",
+    "swr": "0.3.0-beta.4",
     "url-loader": "^4.1.0"
   },
   "description": "SHINJU DATE is a web service for searching videos.",

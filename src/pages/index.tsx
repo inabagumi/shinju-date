@@ -1,10 +1,10 @@
-import useSWR from '@ykzts/swr'
 import clsx from 'clsx'
 import { isFuture, startOfHour, subHours } from 'date-fns'
 import { NextPage } from 'next'
 import Link from 'next/link'
 import { NextSeo } from 'next-seo'
 import React from 'react'
+import useSWR from 'swr'
 
 import { Logo, mainVisual } from '@/assets'
 import LinkButton from '@/components/atoms/LinkButton'
