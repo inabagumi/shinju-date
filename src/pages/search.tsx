@@ -105,7 +105,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
               hasMore={(data?.[data.length - 1]?.length || 0) > 0}
               loader={<SearchSkeleton key={0} />}
               next={loadMore}
-              scrollThreshold="100px"
+              scrollThreshold={0.9}
               style={{
                 WebkitOverflowScrolling: undefined,
                 height: undefined,
