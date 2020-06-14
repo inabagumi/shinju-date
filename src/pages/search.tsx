@@ -13,7 +13,7 @@ import Grid, { Col, Row } from '@/components/molecules/Grid'
 import SearchSkeleton from '@/components/molecules/SearchSkeleton'
 import VideoCard from '@/components/molecules/VideoCard'
 import { useSiteMetadata } from '@/context/SiteContext'
-import styles from '@/styles/search.module.css'a
+import styles from '@/styles/search.module.css'
 import type { SearchResponseBody } from '@/types'
 import { chunk, getValue } from '@/utils'
 
