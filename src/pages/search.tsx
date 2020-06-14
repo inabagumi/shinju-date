@@ -13,7 +13,7 @@ import Grid, { Col, Row } from '@/components/molecules/Grid'
 import SearchSkeleton from '@/components/molecules/SearchSkeleton'
 import VideoCard from '@/components/molecules/VideoCard'
 import { useSiteMetadata } from '@/context/SiteContext'
-import styles from '@/styles/search.module.css'
+import styles from '@/styles/search.module.css'a
 import type { SearchResponseBody } from '@/types'
 import { chunk, getValue } from '@/utils'
 
@@ -105,7 +105,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
               hasMore={(data?.[data.length - 1]?.length || 0) > 0}
               loader={<SearchSkeleton key={0} />}
               next={loadMore}
-              scrollThreshold="100px"
+              scrollThreshold={0.9}
               style={{
                 WebkitOverflowScrolling: undefined,
                 height: undefined,
