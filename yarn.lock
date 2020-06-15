@@ -9138,9 +9138,9 @@ svgo@^1.0.0, svgo@^1.2.2:
     util.promisify "~1.0.0"
 
 swr@^0.3.0-beta.4:
-  version "0.3.0-beta.5"
-  resolved "https://registry.yarnpkg.com/swr/-/swr-0.3.0-beta.5.tgz#5c0dfae31d968c6045f10e2056511005dc1c4c85"
-  integrity sha512-88sfkGje9nPaDFPVA4ftm6ZISe7b6bnKUx6x8fjzkjLhRETgTvN19Pfe7R53sItsNLHGDDJrbpdUhy0TmT6VvA==
+  version "0.3.0-beta.4"
+  resolved "https://registry.yarnpkg.com/swr/-/swr-0.3.0-beta.4.tgz#52e7ddef2e4740d41e84b8bbf11b5a0f2ea8d0b4"
+  integrity sha512-0vcRG7ZKBPSX2pW7XmVxgydXVxQlmHAMlB0i0VnQr460nlMpHcdZ0FKs36/LzZNcNGiufNVx7T2upL4hSZ2JPg==
   dependencies:
     fast-deep-equal "2.0.1"
 
