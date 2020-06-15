@@ -9137,7 +9137,7 @@ svgo@^1.0.0, svgo@^1.2.2:
     unquote "~1.1.1"
     util.promisify "~1.0.0"
 
-swr@0.3.0-beta.4:
+swr@^0.3.0-beta.4:
   version "0.3.0-beta.4"
   resolved "https://registry.yarnpkg.com/swr/-/swr-0.3.0-beta.4.tgz#52e7ddef2e4740d41e84b8bbf11b5a0f2ea8d0b4"
   integrity sha512-0vcRG7ZKBPSX2pW7XmVxgydXVxQlmHAMlB0i0VnQr460nlMpHcdZ0FKs36/LzZNcNGiufNVx7T2upL4hSZ2JPg==
