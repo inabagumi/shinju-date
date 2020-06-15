@@ -5213,9 +5213,9 @@ inline-style-parser@0.1.1:
   integrity sha512-7NXolsK4CAS5+xvdj5OMMbI962hU/wvwoxk+LWR9Ek9bVtyuuYScDN6eS0rUm6TxApFpw7CX1o4uJzcd4AyD3Q==
 
 inquirer@^7.0.0:
-  version "7.1.0"
-  resolved "https://registry.yarnpkg.com/inquirer/-/inquirer-7.1.0.tgz#1298a01859883e17c7264b82870ae1034f92dd29"
-  integrity sha512-5fJMWEmikSYu0nv/flMc475MhGbB7TSPd/2IpFV4I4rMklboCH2rQjYY5kKiYGHqUF9gvaambupcJFFG9dvReg==
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/inquirer/-/inquirer-7.2.0.tgz#63ce99d823090de7eb420e4bb05e6f3449aa389a"
+  integrity sha512-E0c4rPwr9ByePfNlTIB8z51kK1s2n6jrHuJeEHENl/sbq2G/S1auvibgEwNR4uSyiU+PiYHqSwsgGiXjG8p5ZQ==
   dependencies:
     ansi-escapes "^4.2.1"
     chalk "^3.0.0"
@@ -9138,9 +9138,9 @@ svgo@^1.0.0, svgo@^1.2.2:
     util.promisify "~1.0.0"
 
 swr@^0.3.0-beta.4:
-  version "0.3.0-beta.4"
-  resolved "https://registry.yarnpkg.com/swr/-/swr-0.3.0-beta.4.tgz#52e7ddef2e4740d41e84b8bbf11b5a0f2ea8d0b4"
-  integrity sha512-0vcRG7ZKBPSX2pW7XmVxgydXVxQlmHAMlB0i0VnQr460nlMpHcdZ0FKs36/LzZNcNGiufNVx7T2upL4hSZ2JPg==
+  version "0.3.0-beta.5"
+  resolved "https://registry.yarnpkg.com/swr/-/swr-0.3.0-beta.5.tgz#5c0dfae31d968c6045f10e2056511005dc1c4c85"
+  integrity sha512-88sfkGje9nPaDFPVA4ftm6ZISe7b6bnKUx6x8fjzkjLhRETgTvN19Pfe7R53sItsNLHGDDJrbpdUhy0TmT6VvA==
   dependencies:
     fast-deep-equal "2.0.1"
 
