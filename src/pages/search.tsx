@@ -36,7 +36,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
 }
 
 const SearchPage: NextPage<Props> = ({ keyword }) => {
-  const { data, setPage } = useSWRInfinite<SearchResponseBody>(
+  const { data, setSize } = useSWRInfinite<SearchResponseBody>(
     (index, previousPageData) => {
       if (previousPageData?.length === 0) return null
 
@@ -63,8 +63,8 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
   const { baseURL, description, title: siteTitle } = useSiteMetadata()
 
   const loadMore = useCallback(
-    () => setPage?.((x) => x + 1) || Promise.resolve(),
-    [setPage]
+    () => setSize?.((x) => x + 1) || Promise.resolve(),
+    [setSize]
   )
 
   const path = keyword ? `/search?q=${encodeURIComponent(keyword)}` : '/search'
