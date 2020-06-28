@@ -8,7 +8,7 @@ const Footer: FC = () => {
   const { title: siteTitle } = useSiteMetadata()
 
   return (
-    <div className="footer">
+    <footer className="footer footer--dark">
       <Container fluid>
         <nav className="footer__links">
           <a
@@ -37,7 +37,7 @@ const Footer: FC = () => {
         </nav>
         <div>© Haneru Developers</div>
       </Container>
-    </div>
+    </footer>
   )
 }
 
