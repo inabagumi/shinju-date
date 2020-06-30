@@ -8,90 +8,88 @@ const nextConfig = {
     GA_TRACKING_ID: process.env.GA_TRACKING_ID
   },
   experimental: {
-    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-    headers: () => [
-      {
-        headers: [
-          {
-            key: 'cache-control',
-            value: 'max-age=300, s-maxage=60'
-          },
-          {
-            key: 'content-security-policy',
-            value: cspBuilder({
-              directives: {
-                connectSrc: [
-                  "'self'",
-                  'https://fonts.googleapis.com',
-                  'https://fonts.gstatic.com',
-                  'https://shinju-date.imgix.net',
-                  'https://storage.googleapis.com',
-                  'https://www.google-analytics.com'
-                ],
-                defaultSrc: ["'self'"],
-                fontSrc: ['https://fonts.gstatic.com'],
-                imgSrc: [
-                  "'self'",
-                  'data:',
-                  'https://shinju-date.imgix.net',
-                  'https://www.google-analytics.com',
-                  'https://www.googletagmanager.com'
-                ],
-                manifestSrc: ["'self'"],
-                scriptSrc: [
-                  "'self'",
-                  "'unsafe-eval'",
-                  "'unsafe-inline'",
-                  'https://storage.googleapis.com',
-                  'https://www.google-analytics.com',
-                  'https://www.googletagmanager.com'
-                ],
-                styleSrc: [
-                  "'self'",
-                  "'unsafe-inline'",
-                  'https://fonts.googleapis.com'
-                ],
-                workerSrc: ["'self'"]
-              }
-            })
-          }
-        ],
-        source: '/((?!_next).*)'
-      },
-      {
-        headers: [
-          {
-            key: 'cache-control',
-            value: 'max-age=0'
-          }
-        ],
-        source: '/service-worker.js'
-      }
-    ],
-    optionalCatchAll: true,
-    pageEnv: true,
-    plugins: true,
-    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-    rewrites: () => [
-      {
-        destination: '/_next/static/service-worker.js',
-        source: '/service-worker.js'
-      },
-      {
-        destination: '/api/manifest',
-        source: '/manifest.json'
-      },
-      {
-        destination: '/api/calendar',
-        source: '/calendar.ics'
-      },
-      {
-        destination: '/api/calendar/:id',
-        source: '/calendar/:id.ics'
-      }
-    ]
+    plugins: true
   },
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  headers: () => [
+    {
+      headers: [
+        {
+          key: 'cache-control',
+          value: 'max-age=300, s-maxage=60'
+        },
+        {
+          key: 'content-security-policy',
+          value: cspBuilder({
+            directives: {
+              connectSrc: [
+                "'self'",
+                'https://fonts.googleapis.com',
+                'https://fonts.gstatic.com',
+                'https://shinju-date.imgix.net',
+                'https://storage.googleapis.com',
+                'https://www.google-analytics.com'
+              ],
+              defaultSrc: ["'self'"],
+              fontSrc: ['https://fonts.gstatic.com'],
+              imgSrc: [
+                "'self'",
+                'data:',
+                'https://shinju-date.imgix.net',
+                'https://www.google-analytics.com',
+                'https://www.googletagmanager.com'
+              ],
+              manifestSrc: ["'self'"],
+              scriptSrc: [
+                "'self'",
+                "'unsafe-eval'",
+                "'unsafe-inline'",
+                'https://storage.googleapis.com',
+                'https://www.google-analytics.com',
+                'https://www.googletagmanager.com'
+              ],
+              styleSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                'https://fonts.googleapis.com'
+              ],
+              workerSrc: ["'self'"]
+            }
+          })
+        }
+      ],
+      source: '/((?!_next).*)'
+    },
+    {
+      headers: [
+        {
+          key: 'cache-control',
+          value: 'max-age=0'
+        }
+      ],
+      source: '/service-worker.js'
+    }
+  ],
   pageExtensions: ['mdx', 'ts', 'tsx'],
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  rewrites: () => [
+    {
+      destination: '/_next/static/service-worker.js',
+      source: '/service-worker.js'
+    },
+    {
+      destination: '/api/manifest',
+      source: '/manifest.json'
+    },
+    {
+      destination: '/api/calendar',
+      source: '/calendar.ics'
+    },
+    {
+      destination: '/api/calendar/:id',
+      source: '/calendar/:id.ics'
+    }
+  ],
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   webpack(config, { defaultLoaders, dev }) {
     config.module.rules.push({
