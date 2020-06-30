@@ -22,7 +22,7 @@
     "localforage": "^1.7.4",
     "next": "^9.4.4",
     "next-offline": "^5.0.2",
-    "next-seo": "^4.7.0",
+    "next-seo": "^4.7.1",
     "nprogress": "^1.0.0-1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
