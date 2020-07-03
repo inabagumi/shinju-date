@@ -1,15 +1,13 @@
 import { compareAsc, startOfDay } from 'date-fns'
+import groupBy from 'lodash.groupby'
 import React, { FC, memo, useMemo } from 'react'
 import type { Video } from '@/types'
-import { groupBy } from '@/utils'
 import TimelineSection from './TimelineSection'
 
-const compare = (
-  { publishedAt: leftPublishedAt }: Video,
-  { publishedAt: rightPublishedAt }: Video
-): number => compareAsc(leftPublishedAt, rightPublishedAt)
+const compare = (leftVideo: Video, rightVideo: Video): number =>
+  compareAsc(leftVideo.publishedAt, rightVideo.publishedAt)
 
-const buildScheduleMap = (values: Array<Video>): Record<string, Video[]> => {
+const buildScheduleMap = (values: Video[]): Record<string, Video[]> => {
   const reverseValues = [...values].sort(compare)
 
   return groupBy(reverseValues, (value) =>
