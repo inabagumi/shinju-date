@@ -20,65 +20,60 @@ type TimeOptions = {
   relativeTime?: boolean
 }
 
-type BaseProps = DetailedHTMLProps<
-  AnchorHTMLAttributes<HTMLAnchorElement>,
-  HTMLAnchorElement
->
-
-type Props = BaseProps & {
+type Props = Omit<JSX.IntrinsicElements['div'], 'ref'> & {
   timeOptions?: TimeOptions
   value?: Video
 }
 
 const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => (
-  <Card
-    as="a"
-    className={clsx('card', styles.video)}
+  <a
+    className={styles.container}
     href={value?.url}
     rel="noopener noreferrer"
     target="_blank"
-    {...props}
   >
-    <CardImage className={styles.image}>
-      <Thumbnail value={value} />
+    <Card className={clsx('card', styles.video)} {...props}>
+      <CardImage className={styles.image}>
+        <Thumbnail value={value} />
 
-      {value?.duration ? (
-        <Badge className={styles.duration}>
+        {value?.duration ? (
+          <Badge className={styles.duration}>
+            <Time
+              dateTime={formatISODuration(value.duration)}
+              variant="duration"
+            />
+          </Badge>
+        ) : value ? (
+          <LiveStatus value={value} />
+        ) : null}
+      </CardImage>
+
+      <CardBody className={styles.content}>
+        {value ? (
+          <h3 className={styles.title}>{value.title}</h3>
+        ) : (
+          <h3 className={styles.title}>
+            <Skeleton className={styles.titleSkeleton} variant="text" />
+            <Skeleton className={styles.titleSkeleton} variant="text" />
+          </h3>
+        )}
+      </CardBody>
+
+      <CardFooter>
+        {value?.publishedAt ? (
           <Time
-            dateTime={formatISODuration(value.duration)}
-            variant="duration"
+            className={styles.published}
+            dateTime={value.publishedAt.toJSON()}
+            variant={timeOptions?.relativeTime ? 'relative' : 'normal'}
           />
-        </Badge>
-      ) : value ? (
-        <LiveStatus value={value} />
-      ) : null}
-    </CardImage>
-
-    <CardBody className={styles.content}>
-      {value ? (
-        <h3 className={styles.title}>{value.title}</h3>
-      ) : (
-        <h3 className={styles.title}>
-          <Skeleton className={styles.titleSkeleton} variant="text" />
-          <Skeleton className={styles.titleSkeleton} variant="text" />
-        </h3>
-      )}
-    </CardBody>
-
-    <CardFooter>
-      {value?.publishedAt ? (
-        <Time
-          className={styles.published}
-          dateTime={value.publishedAt.toJSON()}
-          variant={timeOptions?.relativeTime ? 'relative' : 'normal'}
-        />
-      ) : (
-        <span className={styles.published}>
-          <Skeleton variant="text" />
-        </span>
-      )}
-    </CardFooter>
-  </Card>
+        ) : (
+          <span className={styles.published}>
+            <Skeleton variant="text" />
+          </span>
+        )}
+      </CardFooter>
+    </Card>
+  </a>
 )
 
 export default memo(
