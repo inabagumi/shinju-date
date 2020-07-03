@@ -1,13 +1,12 @@
+import chunk from 'lodash.chunk'
 import { NextPage } from 'next'
 import { NextSeo } from 'next-seo'
 import React from 'react'
-
 import Container from '@/components/atoms/Container'
 import LinkButton from '@/components/atoms/LinkButton'
 import Card, { CardHeader, CardFooter } from '@/components/molecules/Card'
 import Grid, { Col, Row } from '@/components/molecules/Grid'
 import Hero, { HeroTitle } from '@/components/organisms/Hero'
-import { chunk } from '@/utils'
 
 export const list = [
   {

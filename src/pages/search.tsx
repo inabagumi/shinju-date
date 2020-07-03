@@ -1,11 +1,11 @@
 import clsx from 'clsx'
+import chunk from 'lodash.chunk'
 import { GetServerSideProps, NextPage } from 'next'
 import Link from 'next/link'
 import { NextSeo } from 'next-seo'
 import React, { useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { useSWRInfinite } from 'swr'
-
 import { mainVisual } from '@/assets'
 import LinkButton from '@/components/atoms/LinkButton'
 import Container from '@/components/atoms/Container'
@@ -15,7 +15,7 @@ import VideoCard from '@/components/molecules/VideoCard'
 import { useSiteMetadata } from '@/context/SiteContext'
 import styles from '@/styles/search.module.css'
 import type { SearchResponseBody } from '@/types'
-import { chunk, getValue } from '@/utils'
+import { getValue } from '@/utils'
 
 const SEARCH_RESULT_COUNT = 9
 
