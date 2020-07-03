@@ -1,7 +1,7 @@
 import clsx from 'clsx'
-import React, { DetailedHTMLProps, FC, HTMLAttributes } from 'react'
+import React, { FC } from 'react'
 
-type Props = DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
+type Props = Omit<JSX.IntrinsicElements['div'], 'ref'>
 
 const CardImage: FC<Props> = ({ className, ...props }) => (
   <div className={clsx('card__body', className)} {...props} />
