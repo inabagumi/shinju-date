@@ -1,30 +1,24 @@
 import { compareAsc, startOfDay } from 'date-fns'
 import React, { FC, memo, useMemo } from 'react'
-
 import type { Video } from '@/types'
-
+import { groupBy } from '@/utils'
 import TimelineSection from './TimelineSection'
 
-type ScheduleMap = Record<string, Array<Video>>
+const compare = (
+  { publishedAt: leftPublishedAt }: Video,
+  { publishedAt: rightPublishedAt }: Video
+): number => compareAsc(leftPublishedAt, rightPublishedAt)
 
-const buildScheduleMap = (values: Array<Video>): ScheduleMap =>
-  [...values]
-    .sort(
-      ({ publishedAt: leftPublishedAt }, { publishedAt: rightPublishedAt }) =>
-        compareAsc(leftPublishedAt, rightPublishedAt)
-    )
-    .reduce<ScheduleMap>((map, value) => {
-      const day = startOfDay(value.publishedAt).toJSON()
-      const items = map[day] ?? []
+const buildScheduleMap = (values: Array<Video>): Record<string, Video[]> => {
+  const reverseValues = [...values].sort(compare)
 
-      return {
-        ...map,
-        [day]: items.concat(value)
-      }
-    }, {})
+  return groupBy(reverseValues, (value) =>
+    startOfDay(value.publishedAt).toJSON()
+  )
+}
 
 type Props = {
-  values?: Array<Video>
+  values?: Video[]
 }
 
 const Timeline: FC<Props> = ({ values }) => {
