@@ -26,19 +26,21 @@ const nextConfig = {
                 "'self'",
                 'https://fonts.googleapis.com',
                 'https://fonts.gstatic.com',
-                'https://shinju-date.imgix.net',
                 'https://storage.googleapis.com',
-                'https://www.google-analytics.com'
-              ],
+                'https://www.google-analytics.com',
+                process.env.IMGIX_DOMAIN &&
+                  `https://${process.env.IMGIX_DOMAIN}`
+              ].filter(Boolean),
               defaultSrc: ["'self'"],
               fontSrc: ['https://fonts.gstatic.com'],
               imgSrc: [
                 "'self'",
                 'data:',
-                'https://shinju-date.imgix.net',
                 'https://www.google-analytics.com',
-                'https://www.googletagmanager.com'
-              ],
+                'https://www.googletagmanager.com',
+                process.env.IMGIX_DOMAIN &&
+                  `https://${process.env.IMGIX_DOMAIN}`
+              ].filter(Boolean),
               manifestSrc: ["'self'"],
               scriptSrc: [
                 "'self'",
