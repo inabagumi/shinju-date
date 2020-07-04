@@ -4,6 +4,7 @@
   --ifm-link-hover-decoration: none;
 
   display: block;
+  height: 100%;
 }
 
 .video {
