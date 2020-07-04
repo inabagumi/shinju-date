@@ -1,0 +1,12 @@
+.dummyImage {
+  background-color: #fafafa;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.dummyImage::before {
+  content: '';
+  display: block;
+  padding-top: 56.25%;
+}
