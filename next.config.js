@@ -10,7 +10,6 @@ const nextConfig = {
   experimental: {
     plugins: true
   },
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   headers: () => [
     {
       headers: [
@@ -73,7 +72,6 @@ const nextConfig = {
     }
   ],
   pageExtensions: ['mdx', 'ts', 'tsx'],
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   rewrites: () => [
     {
       destination: '/_next/static/service-worker.js',
@@ -92,7 +90,6 @@ const nextConfig = {
       source: '/calendar/:id.ics'
     }
   ],
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   webpack(config, { defaultLoaders, dev }) {
     config.module.rules.push({
       test: /\.(?:jpe?g|png)$/,
