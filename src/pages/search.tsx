@@ -102,7 +102,9 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
 
             <InfiniteScroll
               dataLength={items.length}
-              hasMore={(data?.[data.length - 1]?.length || 0) > 0}
+              hasMore={
+                (data?.[data.length - 1]?.length || 0) === SEARCH_RESULT_COUNT
+              }
               loader={<SearchSkeleton key={0} />}
               next={loadMore}
               scrollThreshold={0.9}
