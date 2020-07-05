@@ -71,6 +71,10 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
   const title = keyword ? `『${keyword}』の検索結果` : '動画一覧'
   const items = data ? data?.flat() : []
 
+  const isEmpty = data?.[0]?.length === 0
+  const isReachingEnd =
+    isEmpty || (!!data && data[data.length - 1]?.length < SEARCH_RESULT_COUNT)
+
   return (
     <>
       <NextSeo
@@ -94,7 +98,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
       />
 
       <Container>
-        {data?.[0]?.length !== 0 ? (
+        {!isEmpty ? (
           <div className="margin-top--lg">
             <h1 className={clsx('margin-bottom--lg', styles.searchResultsFor)}>
               {title}
@@ -102,9 +106,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
 
             <InfiniteScroll
               dataLength={items.length}
-              hasMore={
-                (data?.[data.length - 1]?.length || 0) === SEARCH_RESULT_COUNT
-              }
+              hasMore={!isReachingEnd}
               loader={<SearchSkeleton key={0} />}
               next={loadMore}
               scrollThreshold={0.9}
