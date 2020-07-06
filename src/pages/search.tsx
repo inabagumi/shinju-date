@@ -6,7 +6,7 @@ import { NextSeo } from 'next-seo'
 import React, { useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { useSWRInfinite } from 'swr'
-import { mainVisual } from '@/assets'
+import { shareCard } from '@/assets'
 import LinkButton from '@/components/atoms/LinkButton'
 import Container from '@/components/atoms/Container'
 import Grid, { Col, Row } from '@/components/molecules/Grid'
@@ -85,7 +85,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
           images: [
             {
               height: 630,
-              url: new URL(mainVisual, baseURL).toString(),
+              url: new URL(shareCard, baseURL).toString(),
               width: 1200
             }
           ],

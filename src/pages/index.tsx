@@ -1,15 +1,10 @@
-import clsx from 'clsx'
 import { isFuture, startOfHour, subHours } from 'date-fns'
 import { NextPage } from 'next'
-import Link from 'next/link'
 import { NextSeo } from 'next-seo'
 import React from 'react'
 import useSWR from 'swr'
-
-import { Logo, mainVisual } from '@/assets'
-import LinkButton from '@/components/atoms/LinkButton'
+import { Logo, hero, shareCard } from '@/assets'
 import Container from '@/components/atoms/Container'
-import Hero, { HeroTitle } from '@/components/organisms/Hero'
 import Timeline from '@/components/organisms/Timeline'
 import { useSiteMetadata } from '@/context/SiteContext'
 import styles from '@/styles/home.module.css'
@@ -41,7 +36,7 @@ const IndexPage: NextPage = () => {
           images: [
             {
               height: 630,
-              url: new URL(mainVisual, baseURL).toString(),
+              url: new URL(shareCard, baseURL).toString(),
               width: 1200
             }
           ],
@@ -53,30 +48,30 @@ const IndexPage: NextPage = () => {
         }}
       />
 
-      <Hero className="padding-vert--xl" shadow>
-        <HeroTitle className={clsx('text--center', styles.home)}>
-          <Logo
-            aria-label="SHINJU DATE"
-            className={styles.logo}
-            height={80}
-            role="img"
-            width={256}
-          />
-        </HeroTitle>
+      <div className={styles.hero}>
+        <div className={styles.heroInner}>
+          <h1 className={styles.heroTitle}>
+            <Logo
+              aria-label="SHINJU DATE"
+              className={styles.logo}
+              height={80}
+              role="img"
+              width={256}
+            />
+          </h1>
+        </div>
 
-        <nav className="margin-top--xl text--center">
-          <Link href="/search" passHref>
-            <LinkButton
-              className="margin-left--sm"
-              color="primary"
-              outline
-              size="lg"
-            >
-              動画一覧
-            </LinkButton>
-          </Link>
-        </nav>
-      </Hero>
+        <div className={styles.heroImage}>
+          <img
+            alt=""
+            className={styles.heroImageEntity}
+            height={1080}
+            role="presentation"
+            src={hero}
+            width={1920}
+          />
+        </div>
+      </div>
 
       <Container className="margin-bottom--lg" id="schedule">
         <Timeline
