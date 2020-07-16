@@ -47,6 +47,20 @@ const Image = forwardRef<HTMLImageElement, Props>(
       setIsLoading(true)
     }, [src, srcSet])
 
+    useEffect(() => {
+      if (!isLoading || imageRef.current?.complete) return
+
+      const requestID = requestAnimationFrame(() => {
+        if (imageRef.current?.complete) {
+          setIsLoading(false)
+        }
+      })
+
+      return (): void => {
+        cancelAnimationFrame(requestID)
+      }
+    }, [isLoading, imageRef])
+
     return (
       <img
         alt={alt}
