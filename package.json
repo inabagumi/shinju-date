@@ -48,7 +48,7 @@
     "@types/react": "^16.9.43",
     "@types/react-toggle": "^4.0.2",
     "@types/web-app-manifest": "^1.0.0",
-    "eslint": "^7.4.0",
+    "eslint": "^7.5.0",
     "jest": "^26.1.0",
     "prettier": "^2.0.5",
     "typescript": "~3.9.7"
