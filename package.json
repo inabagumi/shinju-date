@@ -6,8 +6,8 @@
     ]
   },
   "dependencies": {
-    "@mdx-js/loader": "^1.6.11",
-    "@mdx-js/react": "^1.6.11",
+    "@mdx-js/loader": "^1.6.12",
+    "@mdx-js/react": "^1.6.12",
     "@next/mdx": "^9.4.5-canary.39",
     "@next/plugin-google-analytics": "^9.4.5-canary.39",
     "@svgr/webpack": "^5.4.0",
