@@ -9062,10 +9062,10 @@ svgo@^1.0.0, svgo@^1.2.2:
     unquote "~1.1.1"
     util.promisify "~1.0.0"
 
-swr@^0.3.0-beta.10:
-  version "0.3.0-beta.10"
-  resolved "https://registry.yarnpkg.com/swr/-/swr-0.3.0-beta.10.tgz#c2d2810ea89f862fef328790949dd5e3ef55517b"
-  integrity sha512-SIWKDwu02zSQrxijB2jbu6aKkefOmxLinJ85AUlcdrMT366vQLRNZBDqH37jy8555Gt/b7t9Q8Q3XuPureb8Ig==
+swr@^0.3.0-beta.11:
+  version "0.3.0-beta.11"
+  resolved "https://registry.yarnpkg.com/swr/-/swr-0.3.0-beta.11.tgz#9bf0d4413dc2c4c3bfd34af54b1ad4b169fce5e4"
+  integrity sha512-/OKEu4BjdsdGxhrbFZqYvmyOYkDemsBgk2ulKOa9ip2PB+iQ3500IDuvtoBDhmTfpgCb0Yit2PIICR//jVCO6Q==
   dependencies:
     fast-deep-equal "2.0.1"
 
