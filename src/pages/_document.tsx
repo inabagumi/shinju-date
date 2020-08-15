@@ -7,7 +7,7 @@ export default class extends Document {
       <Html lang="ja">
         <Head>
           <link
-            href="https://fonts.googleapis.com/css2?display=swap&family=Lato:wght@300;400;700"
+            href="https://fonts.googleapis.com/css2?display=swap&amp;family=Lato%3Awght%40300%3B400%3B700"
             rel="stylesheet"
           />
         </Head>
