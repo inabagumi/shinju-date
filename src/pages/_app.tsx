@@ -87,21 +87,11 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }) => {
               rel="search"
               type="application/opensearchdescription+xml"
             />
-            <link
-              as="style"
-              href="https://fonts.googleapis.com/css?display=swap&amp;family=Lato:300,400,500,700"
-              rel="preload"
-            />
           </Head>
 
           <Layout>
             <Component {...pageProps} />
           </Layout>
-
-          <link
-            href="https://fonts.googleapis.com/css?display=swap&amp;family=Lato:300,400,500,700"
-            rel="stylesheet"
-          />
         </ThemeProvider>
       </SiteProvider>
     </SWRConfig>
