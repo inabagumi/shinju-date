@@ -5,7 +5,12 @@ export default class extends Document {
   render(): JSX.Element {
     return (
       <Html lang="ja">
-        <Head />
+        <Head>
+          <link
+            href="https://fonts.googleapis.com/css?display=swap&amp;family=Lato:300,400,500,700"
+            rel="stylesheet"
+          />
+        </Head>
 
         <body>
           <Main />
