@@ -32,7 +32,7 @@
     "react-infinite-scroll-component": "^5.0.5",
     "react-intersection-observer": "^8.27.0",
     "react-toggle": "^4.1.1",
-    "swr": "^0.3.0",
+    "swr": "^0.3.1",
     "url-loader": "^4.1.0"
   },
   "description": "SHINJU DATE is a web service for searching videos.",
