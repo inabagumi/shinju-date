@@ -22,9 +22,7 @@ const getRequestURL = (now = new Date()): string => {
 }
 
 const IndexPage: NextPage = () => {
-  const { data: items } = useSWR<SearchResponseBody>(() => getRequestURL(), {
-    refreshInterval: 10 * 1000
-  })
+  const { data: items } = useSWR<SearchResponseBody>(() => getRequestURL())
   const { baseURL, description, title } = useSiteMetadata()
 
   return (
