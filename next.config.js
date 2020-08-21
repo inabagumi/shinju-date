@@ -9,6 +9,7 @@ const nextConfig = {
   },
   experimental: {
     optimizeFonts: true,
+    optimizeImages: true,
     plugins: true,
     scrollRestoration: true
   },
