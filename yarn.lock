@@ -3800,6 +3800,11 @@ date-fns@^2.15.0:
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.15.0.tgz#424de6b3778e4e69d3ff27046ec136af58ae5d5f"
   integrity sha512-ZCPzAMJZn3rNUvvQIMlXhDr4A+Ar07eLeGsGREoWU19a3Pqf5oYa+ccd+B3F6XVtQY6HANMFdOQ8A+ipFnvJdQ==
 
+dayjs@^1.8.33:
+  version "1.8.34"
+  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.8.34.tgz#d3ad33cc43d6b0f24cb8686b90aad2c653708069"
+  integrity sha512-Olb+E6EoMvdPmAMq2QoucuyZycKHjTlBXmRx8Ada+wGtq4SIXuDCdtoaX4KkK0yjf1fJLnwXQURr8gQKWKaybw==
+
 debug@4, debug@^4.0.1, debug@^4.1.0, debug@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.1.1.tgz#3b72260255109c6b589cee050f1d516139664791"
@@ -5099,14 +5104,14 @@ iconv-lite@0.4.24:
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
 
-ics@^2.23.0:
-  version "2.23.0"
-  resolved "https://registry.yarnpkg.com/ics/-/ics-2.23.0.tgz#b669819720b8fbe7c17b89798bdd1113d610997f"
-  integrity sha512-eFq3+G4KobHdVcNTLPuqaUnNxwYgpOm7VeIGOh1LLw9ftvRHigNwk6jeA+Zv/WyEZGiK1QfVRuSnZZfvt/TmeQ==
+ics@^2.24.0:
+  version "2.24.0"
+  resolved "https://registry.yarnpkg.com/ics/-/ics-2.24.0.tgz#c17e04a32a18b6549db3c18def709d90ceb72607"
+  integrity sha512-JmPUqwKHog1aZWT0+8x9zCawLac+P6LVxbRWSdHMjJX0063nXbxuXbLBPxDxP0lWRK2a2OxxnlPbe3N7xDUsXA==
   dependencies:
     "@hapi/joi" "^17.1.1"
+    dayjs "^1.8.33"
     lodash "^4.17.15"
-    moment "^2.24.0"
     uuid "^3.3.3"
 
 icss-utils@^4.0.0, icss-utils@^4.1.1:
@@ -6630,11 +6635,6 @@ mkdirp@^0.5.1, mkdirp@^0.5.3, mkdirp@~0.5.1:
   integrity sha512-NKmAlESf6jMGym1++R0Ra7wvhV+wFW63FaSOFPwRahvea0gMUcGUhVeAg/0BC0wiv9ih5NYPB1Wn1UEI1/L+xQ==
   dependencies:
     minimist "^1.2.5"
-
-moment@^2.24.0:
-  version "2.27.0"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.27.0.tgz#8bff4e3e26a236220dfe3e36de756b6ebaa0105d"
-  integrity sha512-al0MUK7cpIcglMv3YF13qSgdAIqxHTO7brRtaz3DlSULbqfazqkc5kEjNrLDOM7fsjshoFIihnU8snrP7zUvhQ==
 
 move-concurrently@^1.0.1:
   version "1.0.1"
