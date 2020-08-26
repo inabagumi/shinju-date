@@ -23,11 +23,6 @@ const talents: Talent[] = [
   },
   {
     group: 'ブイアパ',
-    id: 'UCL-2thbJ7grC9fmGF4OLuTg',
-    name: '鴨見カモミ'
-  },
-  {
-    group: 'ブイアパ',
     id: 'UChXm-xAYPfygrbyLo2yCASQ',
     name: '季咲あんこ'
   },
