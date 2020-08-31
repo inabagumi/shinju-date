@@ -14,7 +14,7 @@
     "algoliasearch": "^4.4.0",
     "clsx": "^1.1.1",
     "content-security-policy-builder": "^2.1.0",
-    "date-fns": "^2.16.0",
+    "date-fns": "^2.16.1",
     "file-loader": "^6.1.0",
     "ics": "^2.24.0",
     "imgix-core-js": "^2.3.1",
