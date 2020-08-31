@@ -15,7 +15,7 @@
     "clsx": "^1.1.1",
     "content-security-policy-builder": "^2.1.0",
     "date-fns": "^2.16.0",
-    "file-loader": "^6.0.0",
+    "file-loader": "^6.1.0",
     "ics": "^2.24.0",
     "imgix-core-js": "^2.3.1",
     "infima": "^0.2.0-alpha.12",
