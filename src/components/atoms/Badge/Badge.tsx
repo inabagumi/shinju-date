@@ -12,9 +12,7 @@ type Props = BaseProps & {
 
 const Badge: FC<Props> = ({ children, className, color, ...props }) => (
   <span
-    className={clsx('badge', className, {
-      [`badge--${color}`]: !!color
-    })}
+    className={clsx('badge', className, color && `badge--${color}`)}
     {...props}
   >
     {children}

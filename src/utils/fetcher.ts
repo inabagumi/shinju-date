@@ -10,7 +10,7 @@ async function fetcher<T>(url: string): Promise<T> {
   const res = await fetch(url)
   const body = await res.text()
 
-  return JSON.parse(body, reviver)
+  return JSON.parse(body, reviver) as T
 }
 
 export default fetcher

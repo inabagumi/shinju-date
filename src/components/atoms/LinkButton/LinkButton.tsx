@@ -24,13 +24,13 @@ function Button(
     <a
       className={clsx(
         'button',
+        color && `button--${color}`,
+        size && `button--${size}`,
         {
           'button--active': active,
           'button--block': block,
           'button--disabled': disabled,
-          'button--outline': outline,
-          [`button--${color}`]: !!color,
-          [`button--${size}`]: !!size
+          'button--outline': outline
         },
         className
       )}

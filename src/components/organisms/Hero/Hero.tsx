@@ -12,8 +12,8 @@ const Hero: FC<Props> = ({ children, color, className, shadow, ...props }) => (
   <div
     className={clsx(
       'hero',
+      color && `hero--${color}`,
       {
-        [`hero--${color}`]: !!color,
         'shadow--lw': shadow
       },
       className

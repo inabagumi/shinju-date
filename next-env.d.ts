@@ -1,9 +1,23 @@
 /// <reference types="next" />
 /// <reference types="next/types/global" />
 
-declare module '*.jpeg'
-declare module '*.jpg'
-declare module '*.png'
+declare module '*.jpeg' {
+  const url: string
+
+  export default url
+}
+
+declare module '*.jpg' {
+  const url: string
+
+  export default url
+}
+
+declare module '*.png' {
+  const url: string
+
+  export default url
+}
 
 declare module '*.svg' {
   import { FC, ReactSVGElement, SVGProps } from 'react'

@@ -59,7 +59,10 @@
   "eslintConfig": {
     "extends": [
       "@inabagumi/react"
-    ]
+    ],
+    "parserOptions": {
+      "project": "tsconfig.json"
+    }
   },
   "homepage": "https://shinju.date/",
   "jest": {

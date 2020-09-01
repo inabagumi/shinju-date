@@ -25,6 +25,7 @@ type Props = {
 
 export const getServerSideProps: GetServerSideProps<Props> = async ({
   query
+  // eslint-disable-next-line @typescript-eslint/require-await
 }) => {
   const keyword = getValue(query.q)
 
@@ -63,7 +64,8 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
   const { baseURL, description, title: siteTitle } = useSiteMetadata()
 
   const loadMore = useCallback(
-    () => setSize?.((x) => x + 1) || Promise.resolve(),
+    () =>
+      typeof setSize === 'function' ? setSize((x) => x + 1) : Promise.resolve(),
     [setSize]
   )
 

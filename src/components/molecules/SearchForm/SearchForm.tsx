@@ -24,14 +24,16 @@ const SearchForm: FC = () => {
   }, [])
 
   const handleFocus = useCallback(() => {
-    Router.prefetch('/search')
+    void Router.prefetch('/search')
   }, [])
 
   const handleSubmit = useCallback(
     (event: FormEvent<HTMLFormElement>): void => {
       event.preventDefault()
 
-      Router.push(value ? `/search?q=${encodeURIComponent(value)}` : '/search')
+      void Router.push(
+        value ? `/search?q=${encodeURIComponent(value)}` : '/search'
+      )
 
       if (textFieldRef.current) textFieldRef.current.blur()
     },
