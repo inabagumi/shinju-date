@@ -43,7 +43,7 @@ type Props = Omit<JSX.IntrinsicElements['div'], 'ref'> & {
 }
 
 const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => (
-  <Container>
+  <Container href={value?.url}>
     <Card className={clsx('card', styles.video)} {...props}>
       <CardImage className={styles.image}>
         <Thumbnail value={value} />
