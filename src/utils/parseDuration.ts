@@ -13,7 +13,7 @@ const ISO8601_DURATION_SUFFIXES = [
 ]
 
 const parseDuration = (duration: string): Duration => {
-  const match = duration.match(ISO8601_DURATION_REGEXP)
+  const match = ISO8601_DURATION_REGEXP.exec(duration)
 
   return ISO8601_DURATION_SUFFIXES.reduce<Duration>((result, suffix, index) => {
     const value = parseFloat((match?.[index + 1] || '0').replace(/,/, '.'))

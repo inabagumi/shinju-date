@@ -10,18 +10,28 @@ export const ThemeProvider: FC = ({ children }) => {
   const toggleTheme = useCallback((): void => {
     const nextTheme = theme !== 'dark' ? 'dark' : 'light'
 
-    localForage.setItem<Theme>('theme', nextTheme)
-
-    setTheme(nextTheme)
+    localForage
+      .setItem<Theme>('theme', nextTheme)
+      .then(() => {
+        setTheme(nextTheme)
+      })
+      .catch((error) => {
+        console.error(error)
+      })
   }, [theme])
 
   const handlePrefersColorSchemeChange = useCallback(
     (event: MediaQueryListEvent): void => {
       const nextTheme = event.matches ? 'dark' : 'light'
 
-      localForage.setItem<Theme>('theme', nextTheme)
-
-      setTheme(nextTheme)
+      localForage
+        .setItem<Theme>('theme', nextTheme)
+        .then(() => {
+          setTheme(nextTheme)
+        })
+        .catch((error) => {
+          console.error(error)
+        })
     },
     []
   )

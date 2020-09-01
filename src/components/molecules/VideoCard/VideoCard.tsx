@@ -16,6 +16,23 @@ import type { Video } from '@/types'
 
 import styles from './VideoCard.module.css'
 
+const Container: FC<JSX.IntrinsicElements['a']> = ({ children, href }) => {
+  if (href) {
+    return (
+      <a
+        className={styles.container}
+        href={href}
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        {children}
+      </a>
+    )
+  }
+
+  return <div className={styles.container}>{children}</div>
+}
+
 type TimeOptions = {
   relativeTime?: boolean
 }
@@ -26,12 +43,7 @@ type Props = Omit<JSX.IntrinsicElements['div'], 'ref'> & {
 }
 
 const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => (
-  <a
-    className={styles.container}
-    href={value?.url}
-    rel="noopener noreferrer"
-    target="_blank"
-  >
+  <Container>
     <Card className={clsx('card', styles.video)} {...props}>
       <CardImage className={styles.image}>
         <Thumbnail value={value} />
@@ -73,7 +85,7 @@ const VideoCard: FC<Props> = ({ timeOptions, value, ...props }) => (
         )}
       </CardFooter>
     </Card>
-  </a>
+  </Container>
 )
 
 export default memo(
