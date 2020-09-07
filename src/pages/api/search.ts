@@ -23,7 +23,7 @@ const handler: NextApiHandler<SearchResponseBody> = async (req, res) => {
     hitsPerPage: count
   })
 
-  res.setHeader('cache-control', 'max-age=120,s-maxage=600')
+  res.setHeader('cache-control', 'max-age=60')
   res.status(200).json(hits.map(normalize))
 }
 
