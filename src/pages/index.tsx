@@ -12,7 +12,12 @@ import { useSiteMetadata } from '@/context/SiteContext'
 import styles from '@/styles/home.module.css'
 import type { SearchResponseBody } from '@/types'
 
-const popularitySearchQueries = ['Minecraft', 'DbD', 'RFA', 'Mr.President!']
+const popularitySearchQueries = [
+  'Minecraft',
+  'Dead by Daylight',
+  'リングフィット アドベンチャー',
+  'Detroit: Become Human'
+]
 
 const getRequestURL = (now = new Date()): string => {
   const hours = startOfHour(now)
