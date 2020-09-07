@@ -1,5 +1,7 @@
+import clsx from 'clsx'
 import { isFuture, startOfHour, subHours } from 'date-fns'
 import { NextPage } from 'next'
+import Link from 'next/link'
 import { NextSeo } from 'next-seo'
 import React from 'react'
 import useSWR from 'swr'
@@ -9,6 +11,8 @@ import Timeline from '@/components/organisms/Timeline'
 import { useSiteMetadata } from '@/context/SiteContext'
 import styles from '@/styles/home.module.css'
 import type { SearchResponseBody } from '@/types'
+
+const popularitySearchQueries = ['Minecraft', 'DbD', 'RFA', 'Mr.President!']
 
 const getRequestURL = (now = new Date()): string => {
   const hours = startOfHour(now)
@@ -72,6 +76,36 @@ const IndexPage: NextPage = () => {
       </div>
 
       <Container className="margin-bottom--lg" id="schedule">
+        {popularitySearchQueries.length > 0 && (
+          <div className="padding-vert--lg">
+            <ul className="pills pills--block">
+              {popularitySearchQueries.map((query) => (
+                <li className={clsx('pills__item', styles.pill)} key={query}>
+                  <Link
+                    as={`/search?q=${query}`}
+                    href={{
+                      pathname: '/search',
+                      query: {
+                        q: query
+                      }
+                    }}
+                    prefetch={false}
+                  >
+                    {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                    <a
+                      aria-label={`『${query}』の検索結果`}
+                      className={styles.pillLink}
+                      title={`『${query}』の検索結果`}
+                    >
+                      {query}
+                    </a>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <Timeline
           values={items?.filter(
             (item) => isFuture(item.publishedAt) || !item.duration
