@@ -7511,12 +7511,10 @@ react-infinite-scroll-component@^5.0.5:
   dependencies:
     throttle-debounce "^2.1.0"
 
-react-intersection-observer@^8.27.1:
-  version "8.27.1"
-  resolved "https://registry.yarnpkg.com/react-intersection-observer/-/react-intersection-observer-8.27.1.tgz#c641bf7594a0c06c1947ef1368812cb870c4bcfd"
-  integrity sha512-s70LKz+hm8wQY/4pvGVWs/gAfiLPlivyZiiUU1JdWDZj7vN8jbHYzJ8H1HWGvWpcudRg7g7kBWUUbcRjlloD0Q==
-  dependencies:
-    tiny-invariant "^1.1.0"
+react-intersection-observer@^8.28.0:
+  version "8.28.0"
+  resolved "https://registry.yarnpkg.com/react-intersection-observer/-/react-intersection-observer-8.28.0.tgz#000ba74e99b1627c26cfc0c37467c92283581511"
+  integrity sha512-hZpM1mLDsgU2Qu/2m8IkL0njDdn4FZgjyNokBMa88wiPuqzY6oVf5TOeSY57xNLubtDEp8YsTXkSJx8zNX/Cag==
 
 react-is@16.13.1, react-is@^16.12.0, react-is@^16.8.1:
   version "16.13.1"
@@ -8754,11 +8752,6 @@ timers-browserify@^2.0.4:
   integrity sha512-60aV6sgJ5YEbzUdn9c8kYGIqOubPoUdqQCul3SBAsRCZ40s6Y5cMcrW4dt3/k/EsbLVJNl9n6Vz3fTc+k2GeKQ==
   dependencies:
     setimmediate "^1.0.4"
-
-tiny-invariant@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/tiny-invariant/-/tiny-invariant-1.1.0.tgz#634c5f8efdc27714b7f386c35e6760991d230875"
-  integrity sha512-ytxQvrb1cPc9WBEI/HSeYYoGD0kWnGEOR8RY6KomWLBVhqz0RgTwVO9dLrGz7dC+nN9llyI7OKAgRq8Vq4ZBSw==
 
 tmpl@1.0.x:
   version "1.0.4"
