@@ -30,7 +30,7 @@
     "react-dom": "^16.13.1",
     "react-icons": "^3.11.0",
     "react-infinite-scroll-component": "^5.0.5",
-    "react-intersection-observer": "^8.28.4",
+    "react-intersection-observer": "^8.28.5",
     "react-toggle": "^4.1.1",
     "swr": "^0.3.2",
     "url-loader": "^4.1.0"
