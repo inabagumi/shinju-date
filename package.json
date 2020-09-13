@@ -29,7 +29,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-icons": "^3.11.0",
-    "react-infinite-scroll-component": "^5.0.5",
+    "react-infinite-scroll-component": "^5.1.0",
     "react-intersection-observer": "^8.28.5",
     "react-toggle": "^4.1.1",
     "swr": "^0.3.2",
