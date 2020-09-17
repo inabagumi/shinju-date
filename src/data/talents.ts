@@ -93,11 +93,6 @@ const talents: Talent[] = [
   },
   {
     group: '有閑喫茶 あにまーれ',
-    id: 'UCOgONfZgrG2g0jntQKa6cDw',
-    name: '灰原あかね'
-  },
-  {
-    group: '有閑喫茶 あにまーれ',
     id: 'UC_BlXOQe5OcRC7o0GX8kp8A',
     name: '羽柴なつみ'
   },
