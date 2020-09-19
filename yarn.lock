@@ -1530,6 +1530,11 @@
   resolved "https://registry.yarnpkg.com/@mdx-js/util/-/util-1.6.18.tgz#c7563bf72cb4520b8b7100b64006a64be717e936"
   integrity sha512-axMe+NoLF55OlXPbhRn4GNCHcL1f5W3V3c0dWzg05S9JXm3Ecpxzxaht3g3vTP0dcqBL/yh/xCvzK0ZpO54Eug==
 
+"@next/eslint-plugin-next@^9.5.3":
+  version "9.5.3"
+  resolved "https://registry.yarnpkg.com/@next/eslint-plugin-next/-/eslint-plugin-next-9.5.3.tgz#45b9c8aabe05d31d555d20f2aafe13c27aefd2fb"
+  integrity sha512-Q9AGbE4gEP8yKXv10Weopg7tmN5rsEYWG8+n2chBk0F7dM3Vwxn+5G/7BG8+KSK8QOPXwFSnJo6iDUJKC21tAw==
+
 "@next/mdx@^9.5.3":
   version "9.5.3"
   resolved "https://registry.yarnpkg.com/@next/mdx/-/mdx-9.5.3.tgz#246fd65b2f0854894d7d80b27a7af1708ccceb49"

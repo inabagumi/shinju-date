@@ -71,7 +71,8 @@ const Navbar: FC = () => {
           </div>
 
           <Link href="/">
-            <a className="navbar__brand" href="/">
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+            <a className="navbar__brand">
               <Icon
                 className={clsx('navbar__logo', styles.logo)}
                 height={32}
@@ -135,7 +136,8 @@ const Navbar: FC = () => {
       <div className="navbar-sidebar">
         <div className="navbar-sidebar__brand">
           <Link href="/">
-            <a className="navbar__brand" href="/" onClick={hideSidebar}>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+            <a className="navbar__brand" onClick={hideSidebar}>
               <Icon
                 className="navbar__logo"
                 height={32}
@@ -163,6 +165,7 @@ const Navbar: FC = () => {
             <ul className="menu__list">
               <li className="menu__list-item">
                 <Link href="/search">
+                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
                   <a
                     aria-current={
                       router.asPath === '/search' ? 'page' : undefined
@@ -170,7 +173,6 @@ const Navbar: FC = () => {
                     className={clsx('menu__link', {
                       'navbar__link--active': router.asPath === '/search'
                     })}
-                    href="/search"
                     onClick={hideSidebar}
                   >
                     動画一覧
@@ -179,6 +181,7 @@ const Navbar: FC = () => {
               </li>
               <li className="menu__list-item">
                 <Link href="/calendar">
+                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
                   <a
                     aria-current={
                       router.asPath === '/calendar' ? 'page' : undefined
@@ -186,7 +189,6 @@ const Navbar: FC = () => {
                     className={clsx('menu__link', {
                       'navbar__link--active': router.asPath === '/calendar'
                     })}
-                    href="/calendar"
                     onClick={hideSidebar}
                   >
                     カレンダー

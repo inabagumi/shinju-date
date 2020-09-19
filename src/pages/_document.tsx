@@ -8,6 +8,10 @@ export default class extends Document {
         <Head>
           <link
             href="https://fonts.googleapis.com/css2?display=swap&amp;family=Lato%3Awght%40300%3B400%3B700"
+            rel="preload"
+          />
+          <link
+            href="https://fonts.googleapis.com/css2?display=swap&amp;family=Lato%3Awght%40300%3B400%3B700"
             rel="stylesheet"
           />
         </Head>

@@ -20,7 +20,7 @@ declare module '*.png' {
 }
 
 declare module '*.svg' {
-  import { FC, ReactSVGElement, SVGProps } from 'react'
+  import { FC, SVGProps } from 'react'
 
   type Props = SVGProps<SVGSVGElement>
   const content: FC<Props>
