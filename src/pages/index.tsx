@@ -86,16 +86,7 @@ const IndexPage: NextPage = () => {
             <ul className="pills pills--block">
               {popularitySearchQueries.map((query) => (
                 <li className={clsx('pills__item', styles.pill)} key={query}>
-                  <Link
-                    as={`/search?q=${query}`}
-                    href={{
-                      pathname: '/search',
-                      query: {
-                        q: query
-                      }
-                    }}
-                    prefetch={false}
-                  >
+                  <Link href={`/search?q=${query}`} prefetch={false}>
                     {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                     <a
                       aria-label={`『${query}』の検索結果`}
