@@ -39,7 +39,7 @@ const Navbar: FC = () => {
 
   return (
     <nav
-      className={clsx('navbar', 'navbar--fixed-top', {
+      className={clsx('navbar', 'navbar--dark', 'navbar--fixed-top', {
         'navbar-sidebar--show': sidebarShown
       })}
     >
