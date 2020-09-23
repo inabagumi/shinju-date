@@ -2,7 +2,6 @@ import chunk from 'lodash.chunk'
 import groupBy from 'lodash.groupby'
 import { NextPage } from 'next'
 import { NextSeo } from 'next-seo'
-import React from 'react'
 import Container from '@/components/atoms/Container'
 import LinkButton from '@/components/atoms/LinkButton'
 import Card, {

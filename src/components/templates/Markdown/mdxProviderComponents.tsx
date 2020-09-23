@@ -1,7 +1,7 @@
 import { MDXProviderComponentsProp } from '@mdx-js/react'
 import clsx from 'clsx'
 import NextLink from 'next/link'
-import React, {
+import {
   AnchorHTMLAttributes,
   DetailedHTMLProps,
   FC,

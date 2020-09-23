@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
 import Toggle, { ToggleIcons } from 'react-toggle'
 

@@ -1,4 +1,4 @@
-import React, { FC, memo } from 'react'
+import { FC, memo } from 'react'
 
 import Image from '@/components/atoms/Image'
 import Skeleton from '@/components/atoms/Skeleton'

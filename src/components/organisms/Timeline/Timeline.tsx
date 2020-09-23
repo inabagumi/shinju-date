@@ -1,6 +1,6 @@
 import { compareAsc, startOfDay } from 'date-fns'
 import groupBy from 'lodash.groupby'
-import React, { FC, memo, useMemo } from 'react'
+import { FC, memo, useMemo } from 'react'
 import type { Video } from '@/types'
 import TimelineSection from './TimelineSection'
 

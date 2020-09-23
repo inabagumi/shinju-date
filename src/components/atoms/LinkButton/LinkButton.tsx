@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import React, { AnchorHTMLAttributes, Ref, forwardRef } from 'react'
+import { AnchorHTMLAttributes, Ref, forwardRef } from 'react'
 
 import { InfimaButtonProps } from '@/types'
 

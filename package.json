@@ -26,8 +26,8 @@
     "next-offline": "^5.0.2",
     "next-seo": "^4.7.3",
     "nprogress": "^1.0.0-1",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
+    "react": "^17.0.0-rc.2",
+    "react-dom": "^17.0.0-rc.2",
     "react-icons": "^3.11.0",
     "react-infinite-scroll-component": "^5.1.0",
     "react-intersection-observer": "^8.28.5",
@@ -69,7 +69,9 @@
       "@next/next/no-html-link-for-pages": [
         "error",
         "src/pages"
-      ]
+      ],
+      "react/jsx-uses-react": "off",
+      "react/react-in-jsx-scope": "off"
     }
   },
   "homepage": "https://shinju.date/",

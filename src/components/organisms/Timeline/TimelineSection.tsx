@@ -1,6 +1,6 @@
 import { format, parseJSON } from 'date-fns'
 import jaLocale from 'date-fns/locale/ja'
-import React, { FC } from 'react'
+import { FC } from 'react'
 
 import Skeleton from '@/components/atoms/Skeleton'
 import Grid, { Col, Row } from '@/components/molecules/Grid'

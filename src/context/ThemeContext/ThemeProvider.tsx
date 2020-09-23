@@ -1,5 +1,5 @@
 import localForage from 'localforage'
-import React, { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 
 import type Theme from './Theme'
 import ThemeContext from './ThemeContext'

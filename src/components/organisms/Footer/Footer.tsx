@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import React, { FC } from 'react'
+import { FC } from 'react'
 
 import Container from '@/components/atoms/Container'
 import { useSiteMetadata } from '@/context/SiteContext'

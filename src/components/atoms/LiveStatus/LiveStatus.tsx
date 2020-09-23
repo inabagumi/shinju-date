@@ -1,5 +1,5 @@
 import { addHours, getSeconds, isBefore, isEqual } from 'date-fns'
-import React, { FC, memo, useEffect, useState } from 'react'
+import { FC, memo, useEffect, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 
 import Badge from '@/components/atoms/Badge'

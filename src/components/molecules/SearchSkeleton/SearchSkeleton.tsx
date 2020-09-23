@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import { FC } from 'react'
 
 import { Col, Row } from '@/components/molecules/Grid'
 import VideoCard from '@/components/molecules/VideoCard'

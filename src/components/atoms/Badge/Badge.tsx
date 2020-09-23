@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import React, { DetailedHTMLProps, FC, HTMLAttributes } from 'react'
+import { DetailedHTMLProps, FC, HTMLAttributes } from 'react'
 
 type BaseProps = DetailedHTMLProps<
   HTMLAttributes<HTMLSpanElement>,
