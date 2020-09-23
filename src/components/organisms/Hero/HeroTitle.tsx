@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import React, { FC, HTMLAttributes } from 'react'
+import { FC, HTMLAttributes } from 'react'
 
 type Props = HTMLAttributes<HTMLHeadingElement>
 

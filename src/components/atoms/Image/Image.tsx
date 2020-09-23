@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import React, {
+import {
   ImgHTMLAttributes,
   forwardRef,
   useCallback,

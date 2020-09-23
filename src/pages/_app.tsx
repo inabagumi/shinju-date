@@ -8,7 +8,7 @@ import { AppProps } from 'next/app'
 import Head from 'next/head'
 import Router from 'next/router'
 import NProgress from 'nprogress'
-import React, { FC, useCallback, useEffect } from 'react'
+import { FC, useCallback, useEffect } from 'react'
 import { SWRConfig } from 'swr'
 
 import { appleTouchIcon, favicon192x192, favicon512x512 } from '@/assets'

@@ -1,6 +1,16 @@
 const cspBuilder = require('content-security-policy-builder')
 
-const withMDX = require('@next/mdx')()
+const MDX_RENDERER = `
+import { mdx } from '@mdx-js/react'
+
+/** @jsxRuntime classic */
+`
+
+const withMDX = require('@next/mdx')({
+  options: {
+    renderer: MDX_RENDERER
+  }
+})
 const withOffline = require('next-offline')
 
 const nextConfig = {

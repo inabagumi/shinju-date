@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { formatISODuration, isEqual } from 'date-fns'
-import React, { FC, memo } from 'react'
+import { FC, memo } from 'react'
 
 import Badge from '@/components/atoms/Badge'
 import LiveStatus from '@/components/atoms/LiveStatus'

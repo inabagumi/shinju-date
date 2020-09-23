@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import Router, { useRouter } from 'next/router'
-import React, {
+import {
   ChangeEvent,
   FC,
   FormEvent,

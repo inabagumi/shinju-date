@@ -1,4 +1,4 @@
-import React, { DetailedHTMLProps, FC, TimeHTMLAttributes } from 'react'
+import { DetailedHTMLProps, FC, TimeHTMLAttributes } from 'react'
 
 import { formatDuration, parseDuration } from '@/utils'
 

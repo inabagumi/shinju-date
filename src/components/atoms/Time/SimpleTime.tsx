@@ -1,6 +1,6 @@
 import { format, parseISO } from 'date-fns'
 import jaLocale from 'date-fns/locale/ja'
-import React, {
+import {
   FC,
   DetailedHTMLProps,
   TimeHTMLAttributes,

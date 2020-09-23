@@ -1,4 +1,4 @@
-import React, { FC, DetailedHTMLProps, TimeHTMLAttributes } from 'react'
+import { FC, DetailedHTMLProps, TimeHTMLAttributes } from 'react'
 
 import DurationTime from './DurationTime'
 import RelativeTime from './RelativeTime'

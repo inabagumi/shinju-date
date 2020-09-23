@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import React, { ButtonHTMLAttributes, Ref, forwardRef } from 'react'
+import { ButtonHTMLAttributes, Ref, forwardRef } from 'react'
 
 import { InfimaButtonProps } from '@/types'
 
