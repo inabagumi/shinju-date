@@ -11,7 +11,7 @@ const withMDX = require('@next/mdx')({
     renderer: MDX_RENDERER
   }
 })
-const withOffline = require('next-offline')
+const withPWA = require('next-pwa')
 
 const nextConfig = {
   env: {
@@ -40,6 +40,7 @@ const nextConfig = {
                 'https://fonts.gstatic.com',
                 'https://storage.googleapis.com',
                 'https://www.google-analytics.com',
+                'https://www.googletagmanager.com',
                 process.env.IMGIX_DOMAIN &&
                   `https://${process.env.IMGIX_DOMAIN}`
               ].filter(Boolean),
@@ -85,10 +86,19 @@ const nextConfig = {
     }
   ],
   pageExtensions: ['mdx', 'ts', 'tsx'],
+  pwa: {
+    dest: '.next/static',
+    disable: process.env.NODE_ENV === 'development',
+    sw: '/service-worker.js'
+  },
   rewrites: () => [
     {
       destination: '/_next/static/service-worker.js',
       source: '/service-worker.js'
+    },
+    {
+      destination: '/_next/static/workbox-:hash.js',
+      source: '/workbox-:hash.js'
     },
     {
       destination: '/api/manifest',
@@ -137,31 +147,7 @@ const nextConfig = {
     })
 
     return config
-  },
-  workboxOpts: {
-    clientsClaim: true,
-    runtimeCaching: [
-      {
-        handler: 'CacheFirst',
-        urlPattern: /^\/(?:about|privacy|search|terms)$/
-      },
-      {
-        handler: 'NetworkFirst',
-        urlPattern: /\.(ico|png)$/i
-      },
-      {
-        handler: 'CacheFirst',
-        options: {
-          cacheableResponse: {
-            statuses: [200]
-          }
-        },
-        urlPattern: /^https:\/\/(?:fonts\.googleapis\.com|fonts\.gstatic\.com|shinju-date\.imgix\.net)\//i
-      }
-    ],
-    skipWaiting: true,
-    swDest: 'static/service-worker.js'
   }
 }
 
-module.exports = withOffline(withMDX(nextConfig))
+module.exports = withPWA(withMDX(nextConfig))
