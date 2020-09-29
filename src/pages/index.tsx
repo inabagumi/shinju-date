@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { NextSeo } from 'next-seo'
 import useSWR from 'swr'
 import { Logo, hero, shareCard } from '@/assets'
+import Page from '@/components/Layout'
 import Container from '@/components/atoms/Container'
 import Timeline from '@/components/organisms/Timeline'
 import { useSiteMetadata } from '@/context/SiteContext'
@@ -54,59 +55,61 @@ const IndexPage: NextPage = () => {
         }}
       />
 
-      <div className={styles.hero}>
-        <div className={styles.heroInner}>
-          <h1 className={styles.heroTitle}>
-            <Logo
-              aria-label="SHINJU DATE"
-              className={styles.logo}
-              height={80}
-              role="img"
-              width={256}
-            />
-          </h1>
-        </div>
-
-        <div className={styles.heroImage}>
-          <img
-            alt=""
-            className={styles.heroImageEntity}
-            height={1080}
-            role="presentation"
-            src={hero}
-            width={1920}
-          />
-        </div>
-      </div>
-
-      <Container className="margin-bottom--lg" id="schedule">
-        {popularitySearchQueries.length > 0 && (
-          <div className="padding-vert--lg">
-            <ul className="pills pills--block">
-              {popularitySearchQueries.map((query) => (
-                <li className={clsx('pills__item', styles.pill)} key={query}>
-                  <Link href={`/search?q=${query}`} prefetch={false}>
-                    {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                    <a
-                      aria-label={`『${query}』の検索結果`}
-                      className={styles.pillLink}
-                      title={`『${query}』の検索結果`}
-                    >
-                      {query}
-                    </a>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+      <Page>
+        <div className={styles.hero}>
+          <div className={styles.heroInner}>
+            <h1 className={styles.heroTitle}>
+              <Logo
+                aria-label="SHINJU DATE"
+                className={styles.logo}
+                height={80}
+                role="img"
+                width={256}
+              />
+            </h1>
           </div>
-        )}
 
-        <Timeline
-          values={items?.filter(
-            (item) => isFuture(item.publishedAt) || !item.duration
+          <div className={styles.heroImage}>
+            <img
+              alt=""
+              className={styles.heroImageEntity}
+              height={1080}
+              role="presentation"
+              src={hero}
+              width={1920}
+            />
+          </div>
+        </div>
+
+        <Container className="margin-bottom--lg" id="schedule">
+          {popularitySearchQueries.length > 0 && (
+            <div className="padding-vert--lg">
+              <ul className="pills pills--block">
+                {popularitySearchQueries.map((query) => (
+                  <li className={clsx('pills__item', styles.pill)} key={query}>
+                    <Link href={`/search?q=${query}`} prefetch={false}>
+                      {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                      <a
+                        aria-label={`『${query}』の検索結果`}
+                        className={styles.pillLink}
+                        title={`『${query}』の検索結果`}
+                      >
+                        {query}
+                      </a>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
-        />
-      </Container>
+
+          <Timeline
+            values={items?.filter(
+              (item) => isFuture(item.publishedAt) || !item.duration
+            )}
+          />
+        </Container>
+      </Page>
     </>
   )
 }
