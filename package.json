@@ -38,7 +38,7 @@
     "@types/mdx-js__react": "^1.5.3",
     "@types/node": "^12.12.47",
     "@types/nprogress": "^0.2.0",
-    "@types/react": "^16.9.49",
+    "@types/react": "^16.9.50",
     "@types/web-app-manifest": "^1.0.0",
     "eslint": "^7.10.0",
     "file-loader": "^6.1.0",
