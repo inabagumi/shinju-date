@@ -1,3 +1,5 @@
+@import 'infima/dist/css/default/default.css';
+
 :root {
   --ifm-font-family-base: Lato, Helvetica Neue, Arial, Hiragino Kaku Gothic ProN,
     Hiragino Sans, BIZ UDPGothic, Meiryo, sans-serif;
@@ -5,27 +7,4 @@
   --ifm-line-height-base: 2;
 
   --nprogress-color: var(--ifm-color-primary);
-}
-
-html,
-body {
-  height: 100%;
-}
-
-#__next {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-}
-
-.react-toggle--checked .react-toggle-thumb {
-  border-color: var(--ifm-color-primary);
-}
-
-.react-toggle--focus .react-toggle-thumb {
-  box-shadow: 0 0 2px 3px var(--ifm-color-primary);
-}
-
-.react-toggle:active:not(.react-toggle--disabled) .react-toggle-thumb {
-  box-shadow: 0 0 5px 5px var(--ifm-color-primary);
 }
