@@ -1,29 +1,18 @@
 {
   "author": "Haneru Developers",
-  "babel": {
-    "presets": [
-      "next/babel"
-    ]
-  },
   "dependencies": {
-    "@mdx-js/loader": "^1.6.18",
     "@mdx-js/react": "^1.6.18",
-    "@next/mdx": "^9.5.3",
-    "@next/plugin-google-analytics": "^9.5.3",
-    "@svgr/webpack": "^5.4.0",
     "algoliasearch": "^4.5.1",
     "clsx": "^1.1.1",
     "content-security-policy-builder": "^2.1.0",
     "date-fns": "^2.16.1",
-    "file-loader": "^6.1.0",
     "ics": "^2.25.0",
     "imgix-core-js": "^2.3.1",
     "infima": "^0.2.0-alpha.12",
     "localforage": "^1.9.0",
     "lodash.chunk": "^4.2.0",
     "lodash.groupby": "^4.6.0",
-    "next": "^9.5.3",
-    "next-pwa": "^3.1.4",
+    "next": "^9.5.4-canary.23",
     "next-seo": "^4.10.1",
     "nprogress": "^1.0.0-1",
     "react": "^17.0.0-rc.2",
@@ -31,15 +20,18 @@
     "react-icons": "^3.11.0",
     "react-infinite-scroll-component": "^5.1.0",
     "react-intersection-observer": "^8.29.0",
-    "react-toggle": "^4.1.1",
-    "swr": "^0.3.5",
-    "url-loader": "^4.1.0"
+    "swr": "^0.3.5"
   },
   "description": "SHINJU DATE is a web service for searching videos.",
   "devDependencies": {
+    "@fullhuman/postcss-purgecss": "^3.0.0",
     "@inabagumi/eslint-config-react": "^6.0.1",
     "@inabagumi/prettier-config": "^1.1.2",
-    "@next/eslint-plugin-next": "^9.5.3",
+    "@mdx-js/loader": "^1.6.18",
+    "@next/eslint-plugin-next": "^9.5.4-canary.23",
+    "@next/mdx": "^9.5.4-canary.23",
+    "@next/plugin-google-analytics": "^9.5.4-canary.23",
+    "@svgr/webpack": "^5.4.0",
     "@types/jest": "^26.0.14",
     "@types/lodash.chunk": "^4.2.6",
     "@types/lodash.groupby": "^4.6.6",
@@ -47,47 +39,23 @@
     "@types/node": "^12.12.47",
     "@types/nprogress": "^0.2.0",
     "@types/react": "^16.9.49",
-    "@types/react-toggle": "^4.0.2",
     "@types/web-app-manifest": "^1.0.0",
     "eslint": "^7.10.0",
+    "file-loader": "^6.1.0",
     "jest": "^26.4.2",
+    "next-pwa": "^3.1.4",
+    "postcss-flexbugs-fixes": "^4.2.1",
+    "postcss-preset-env": "^6.7.0",
     "prettier": "^2.1.2",
-    "typescript": "~4.0.3"
+    "typescript": "~4.0.3",
+    "url-loader": "^4.1.0"
   },
   "engines": {
     "node": "12.x"
   },
-  "eslintConfig": {
-    "extends": [
-      "@inabagumi/react",
-      "plugin:@next/next/recommended"
-    ],
-    "parserOptions": {
-      "project": "tsconfig.json"
-    },
-    "rules": {
-      "@next/next/no-html-link-for-pages": [
-        "error",
-        "src/pages"
-      ],
-      "react/jsx-uses-react": "off",
-      "react/react-in-jsx-scope": "off"
-    }
-  },
   "homepage": "https://shinju.date/",
-  "jest": {
-    "moduleNameMapper": {
-      "^@/(.+)$": "<rootDir>/src/$1"
-    },
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/.next/"
-    ],
-    "testURL": "https://shinju-date.test"
-  },
   "license": "MIT",
   "name": "@inabagumi/shinju-date",
-  "prettier": "@inabagumi/prettier-config",
   "private": true,
   "scripts": {
     "build": "next build",
