@@ -57,6 +57,9 @@
   "license": "MIT",
   "name": "@inabagumi/shinju-date",
   "private": true,
+  "resolutions": {
+    "node-fetch": "^2.6.1"
+  },
   "scripts": {
     "build": "next build",
     "dev": "next",
