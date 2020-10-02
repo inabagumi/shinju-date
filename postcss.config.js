@@ -4,7 +4,7 @@ module.exports = {
       '@fullhuman/postcss-purgecss',
       {
         content: ['./src/**/*.{mdx,tsx}'],
-        safelist: ['html']
+        safelist: ['html', 'data-theme', /^data-reach-skip-nav/]
       }
     ],
     'postcss-flexbugs-fixes',
