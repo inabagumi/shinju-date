@@ -7,16 +7,14 @@ import { FaMoon, FaSun } from 'react-icons/fa'
 
 import { Icon } from '@/assets'
 import SearchForm from '@/components/SearchForm'
-import { useSiteMetadata } from '@/context/SiteContext'
-import { useTheme } from '@/context/ThemeContext'
+import useTheme from '@/hooks/useTheme'
 
 import styles from './Navbar.module.css'
 
 const Navbar: FC = () => {
   const [sidebarShown, setSidebarShown] = useState(false)
   const router = useRouter()
-  const [theme, toggleTheme] = useTheme()
-  const { title: siteTitle } = useSiteMetadata()
+  const [theme, setTheme] = useTheme()
 
   const showSidebar = useCallback(() => {
     setSidebarShown(true)
@@ -25,6 +23,14 @@ const Navbar: FC = () => {
   const hideSidebar = useCallback(() => {
     setSidebarShown(false)
   }, [])
+
+  const toggleTheme = useCallback(() => {
+    setTheme((currentValue) => {
+      const nextTheme = currentValue === 'dark' ? 'light' : 'dark'
+
+      return nextTheme
+    })
+  }, [setTheme])
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -73,7 +79,7 @@ const Navbar: FC = () => {
                 width={32}
               />
               <strong className={clsx('navbar__title', styles.title)}>
-                {siteTitle}
+                SHINJU DATE
               </strong>
             </a>
           </Link>
@@ -136,7 +142,7 @@ const Navbar: FC = () => {
                 role="img"
                 width={32}
               />
-              <strong className="navbar__title">{siteTitle}</strong>
+              <strong className="navbar__title">SHINJU DATE</strong>
             </a>
           </Link>
         </div>

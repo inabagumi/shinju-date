@@ -3,7 +3,7 @@ import { NextApiHandler } from 'next'
 import { favicon192x192, favicon512x512 } from '@/assets'
 
 const handler: NextApiHandler<WebAppManifest> = (_req, res) => {
-  const name = process.env.NEXT_PUBLIC_TITLE
+  const name = 'SHINJU DATE'
 
   res.setHeader('Cache-Control', 'max-age=60, s-maxage=120')
   res.setHeader('Content-Type', 'application/manifest+json')
