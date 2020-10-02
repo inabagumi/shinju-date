@@ -28,12 +28,12 @@ const TimelineSection: FC<Props> = ({ dateTime, items }) => (
       {items ? (
         chunk(items, 3).map((values) => (
           <div className="row" key={values.map((value) => value.id).join(':')}>
-            {items.map((item) => (
+            {values.map((value) => (
               <div
                 className="col col--4 padding-bottom--lg padding-horiz--sm"
-                key={item.id}
+                key={value.id}
               >
-                <VideoCard value={item} />
+                <VideoCard value={value} />
               </div>
             ))}
           </div>
