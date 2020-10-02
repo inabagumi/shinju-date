@@ -6,6 +6,8 @@ import Navbar from '@/components/Navbar'
 
 import styles from './Layout.module.css'
 
+import '@reach/skip-nav/styles.css'
+
 const SKIP_NAV_CONTENT_ID = 'content'
 
 const Layout: FC = ({ children }) => (
