@@ -10,7 +10,6 @@ import { useSWRInfinite } from 'swr'
 import { shareCard } from '@/assets'
 import Page from '@/components/Layout'
 import VideoCard from '@/components/VideoCard'
-import { useSiteMetadata } from '@/context/SiteContext'
 import styles from '@/styles/search.module.css'
 import type { SearchResponseBody } from '@/types'
 import { getValue } from '@/utils'
@@ -46,7 +45,6 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
       revalidateOnReconnect: false
     }
   )
-  const { baseURL, description } = useSiteMetadata()
 
   const loadMore = useCallback(
     () =>
@@ -54,8 +52,10 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
     [setSize]
   )
 
+  const baseURL = process.env.NEXT_PUBLIC_BASE_URL || 'https://example.com'
   const path = keyword ? `/search?q=${encodeURIComponent(keyword)}` : '/search'
   const title = keyword ? `『${keyword}』の検索結果` : '動画一覧'
+  const description = process.env.NEXT_PUBLIC_DESCRIPTION
   const items = data ? data?.flat() : []
 
   const isEmpty = data?.[0]?.length === 0

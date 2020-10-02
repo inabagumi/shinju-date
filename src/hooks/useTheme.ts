@@ -1,24 +1,13 @@
 import localForage from 'localforage'
-import { FC, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
+import { useRecoilState } from 'recoil'
+import { SetterOrUpdater } from 'recoil'
 
-import type Theme from './Theme'
-import ThemeContext from './ThemeContext'
+import themeState from '@/atoms/themeState'
+import type { Theme } from '@/atoms/themeState'
 
-export const ThemeProvider: FC = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>('light')
-
-  const toggleTheme = useCallback((): void => {
-    const nextTheme = theme !== 'dark' ? 'dark' : 'light'
-
-    localForage
-      .setItem<Theme>('theme', nextTheme)
-      .then(() => {
-        setTheme(nextTheme)
-      })
-      .catch((error) => {
-        console.error(error)
-      })
-  }, [theme])
+const useTheme = (): [Theme, SetterOrUpdater<Theme>] => {
+  const [theme, setTheme] = useRecoilState(themeState)
 
   const handlePrefersColorSchemeChange = useCallback(
     (event: MediaQueryListEvent): void => {
@@ -55,18 +44,28 @@ export const ThemeProvider: FC = ({ children }) => {
         setTheme(mediaQueryList.matches ? 'dark' : 'light')
       })
 
-    mediaQueryList.addListener(handlePrefersColorSchemeChange)
+    mediaQueryList.addEventListener('change', handlePrefersColorSchemeChange)
 
     return (): void => {
-      mediaQueryList.removeListener(handlePrefersColorSchemeChange)
+      mediaQueryList.removeEventListener(
+        'change',
+        handlePrefersColorSchemeChange
+      )
     }
-  }, [handlePrefersColorSchemeChange])
+  }, [])
 
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  )
+  useEffect(() => {
+    localForage
+      .setItem<Theme>('theme', theme)
+      .then(() => {
+        setTheme(theme)
+      })
+      .catch((error) => {
+        console.error(error)
+      })
+  }, [theme])
+
+  return [theme, setTheme]
 }
 
-export default ThemeProvider
+export default useTheme

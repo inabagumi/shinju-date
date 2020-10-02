@@ -8,7 +8,6 @@ import useSWR from 'swr'
 import { Logo, hero, shareCard } from '@/assets'
 import Page from '@/components/Layout'
 import Timeline from '@/components/Timeline'
-import { useSiteMetadata } from '@/context/SiteContext'
 import styles from '@/styles/home.module.css'
 import type { SearchResponseBody } from '@/types'
 
@@ -32,12 +31,14 @@ const getRequestURL = (now = new Date()): string => {
 
 const IndexPage: NextPage = () => {
   const { data: items } = useSWR<SearchResponseBody>(() => getRequestURL())
-  const { baseURL, description, title } = useSiteMetadata()
+
+  const baseURL = process.env.NEXT_PUBLIC_BASE_URL || 'https://example.com'
+  const description = process.env.NEXT_PUBLIC_DESCRIPTION
 
   return (
     <>
       <NextSeo
-        canonical={`${baseURL}/`}
+        canonical={new URL('/', baseURL).toString()}
         description={description}
         openGraph={{
           images: [
@@ -49,7 +50,7 @@ const IndexPage: NextPage = () => {
           ],
           type: 'website'
         }}
-        title={title}
+        title="SHINJU DATE"
         titleTemplate="%s"
         twitter={{
           cardType: 'summary_large_image'

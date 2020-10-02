@@ -10,23 +10,25 @@ import '@reach/skip-nav/styles.css'
 
 const SKIP_NAV_CONTENT_ID = 'content'
 
-const Layout: FC = ({ children }) => (
-  <>
-    <div className={styles.wrapper}>
-      <SkipNavLink
-        className={styles.skipNavLink}
-        contentId={SKIP_NAV_CONTENT_ID}
-      >
-        コンテンツにスキップ
-      </SkipNavLink>
+const Layout: FC = ({ children }) => {
+  return (
+    <>
+      <div className={styles.wrapper}>
+        <SkipNavLink
+          className={styles.skipNavLink}
+          contentId={SKIP_NAV_CONTENT_ID}
+        >
+          コンテンツにスキップ
+        </SkipNavLink>
 
-      <Navbar />
+        <Navbar />
 
-      <SkipNavContent id={SKIP_NAV_CONTENT_ID}>{children}</SkipNavContent>
-    </div>
+        <SkipNavContent id={SKIP_NAV_CONTENT_ID}>{children}</SkipNavContent>
+      </div>
 
-    <Footer />
-  </>
-)
+      <Footer />
+    </>
+  )
+}
 
 export default Layout

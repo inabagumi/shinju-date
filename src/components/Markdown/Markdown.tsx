@@ -6,7 +6,6 @@ import { NextSeo } from 'next-seo'
 import type { FC } from 'react'
 
 import Page from '@/components/Layout'
-import { useSiteMetadata } from '@/context/SiteContext'
 
 import styles from './Markdown.module.css'
 import mdxProviderComponents from './mdxProviderComponents'
@@ -17,18 +16,19 @@ type Props = {
 
 const About: FC<Props> = ({ children, title }) => {
   const router = useRouter()
-  const { title: siteTitle } = useSiteMetadata()
 
   return (
     <>
       <NextSeo title={title} />
 
       <Page>
-        <div className="hero hero--dark">
-          <div className="container">
-            <h1 className="hero__title">{title ?? siteTitle}</h1>
+        {title && (
+          <div className="hero hero--dark">
+            <div className="container">
+              <h1 className="hero__title">{title}</h1>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="container">
           <nav aria-label="パンくずリスト" className="margin-vert--md">
@@ -46,7 +46,7 @@ const About: FC<Props> = ({ children, title }) => {
                 <Link href="/">
                   {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a className="breadcrumbs__link" itemProp="item">
-                    <span itemProp="name">{siteTitle}</span>
+                    <span itemProp="name">SHINJU DATE</span>
                   </a>
                 </Link>
                 <meta itemProp="position" content="1" />

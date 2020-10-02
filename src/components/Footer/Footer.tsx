@@ -1,11 +1,7 @@
 import Link from 'next/link'
 import type { FC } from 'react'
 
-import { useSiteMetadata } from '@/context/SiteContext'
-
 const Footer: FC = () => {
-  const { title: siteTitle } = useSiteMetadata()
-
   return (
     <footer className="footer footer--dark">
       <div className="container container--fluid">
@@ -21,7 +17,7 @@ const Footer: FC = () => {
           <span className="footer__link-separator">·</span>
           <Link href="/about" prefetch={false}>
             {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-            <a className="footer__link-item">{siteTitle}とは</a>
+            <a className="footer__link-item">SHINJU DATEとは</a>
           </Link>
           <span className="footer__link-separator">·</span>
           <Link href="/terms" prefetch={false}>
