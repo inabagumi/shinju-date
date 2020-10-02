@@ -1,3 +1,27 @@
 .wrapper {
   min-height: 100vh;
 }
+
+.skipNavLink {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.skipNavLink:focus {
+  background-color: white;
+  clip: auto;
+  height: auto;
+  left: 10px;
+  padding: 1rem;
+  position: fixed;
+  top: 10px;
+  width: auto;
+  z-index: 1000;
+  z-index: calc(var(--ifm-z-index-fixed) + 1);
+}
