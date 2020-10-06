@@ -4,7 +4,6 @@ module.exports = {
     project: 'tsconfig.json'
   },
   rules: {
-    '@next/next/no-html-link-for-pages': ['error', 'src/pages'],
     'react/jsx-uses-react': 'off',
     'react/react-in-jsx-scope': 'off'
   }
