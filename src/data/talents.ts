@@ -83,6 +83,11 @@ const talents: Talent[] = [
   },
   {
     group: '有閑喫茶 あにまーれ',
+    id: 'UC_WOBIopwUih0rytRnr_1Ag',
+    name: '瀬島るい'
+  },
+  {
+    group: '有閑喫茶 あにまーれ',
     id: 'UC2kyQhzGOB-JPgcQX9OMgEw',
     name: '宗谷いちか'
   },
@@ -100,6 +105,11 @@ const talents: Talent[] = [
     group: '有閑喫茶 あにまーれ',
     id: 'UCRvpMpzAXBRKJQuk-8-Sdvg',
     name: '日ノ隈らん'
+  },
+  {
+    group: '',
+    id: 'UCFsWaTQ7kT76jNNGeGIKNSA',
+    name: '飛良ひかり'
   },
   {
     group: 'ブイアパ',
