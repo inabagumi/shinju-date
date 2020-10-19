@@ -20,7 +20,7 @@
     "react-dom": "^17.0.0-rc.3",
     "react-icons": "^3.11.0",
     "react-infinite-scroll-component": "^5.1.0",
-    "react-intersection-observer": "^8.29.0",
+    "react-intersection-observer": "^8.29.1",
     "recoil": "^0.0.13",
     "swr": "^0.3.5"
   },
