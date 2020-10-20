@@ -1,16 +1,6 @@
 const cspBuilder = require('content-security-policy-builder')
 
-const MDX_RENDERER = `
-import { mdx } from '@mdx-js/react'
-
-/** @jsxRuntime classic */
-`
-
-const withMDX = require('@next/mdx')({
-  options: {
-    renderer: MDX_RENDERER
-  }
-})
+const withMDX = require('@next/mdx')()
 const withPWA = require('next-pwa')
 
 const nextConfig = {
