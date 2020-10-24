@@ -7,7 +7,7 @@
     "clsx": "^1.1.1",
     "content-security-policy-builder": "^2.1.0",
     "date-fns": "^2.16.1",
-    "ics": "^2.25.0",
+    "ics": "^2.26.0",
     "imgix-core-js": "^2.3.2",
     "infima": "^0.2.0-alpha.13",
     "localforage": "^1.9.0",
