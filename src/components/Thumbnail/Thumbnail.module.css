@@ -2,20 +2,29 @@
   align-items: center;
   display: flex;
   overflow: hidden;
+  padding-bottom: 56.25%;
   position: relative;
   width: 100%;
 }
 
-.thumbnail::before {
-  content: '';
-  display: block;
-  padding-top: 56.25%;
+.thumbnail > div {
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
-.image {
-  display: block;
+.placeholder {
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: blur(10px);
   height: 100%;
-  object-fit: cover;
-  position: absolute;
   width: 100%;
+}
+
+.skeleton {
+  left: 0;
+  position: absolute;
+  top: 0;
 }
