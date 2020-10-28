@@ -46,6 +46,24 @@ export default class extends Document {
             href="https://fonts.googleapis.com/css2?display=swap&amp;family=Lato%3Awght%40300%3B400%3B700"
             rel="stylesheet"
           />
+          {process.env.NEXT_PUBLIC_GA_TRACKING_ID && (
+            <>
+              <script
+                async
+                src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_TRACKING_ID}`}
+              />
+              <script
+                dangerouslySetInnerHTML={{
+                  __html: [
+                    'window.dataLayer = window.dataLayer || [];',
+                    'function gtag(){dataLayer.push(arguments);}',
+                    "gtag('js', new Date());",
+                    `gtag('config', '${process.env.NEXT_PUBLIC_GA_TRACKING_ID}');`
+                  ].join('')
+                }}
+              />
+            </>
+          )}
         </Head>
         <body>
           <Main />
