@@ -1,5 +1,3 @@
-const cspBuilder = require('content-security-policy-builder')
-
 const withMDX = require('@next/mdx')()
 const withPWA = require('next-pwa')
 
@@ -10,68 +8,6 @@ const nextConfig = {
   experimental: {
     plugins: true
   },
-  headers: () => [
-    {
-      headers: [
-        {
-          key: 'cache-control',
-          value: 'max-age=300, s-maxage=60'
-        },
-        {
-          key: 'content-security-policy',
-          value: cspBuilder({
-            directives: {
-              connectSrc: [
-                "'self'",
-                'https://fonts.googleapis.com',
-                'https://fonts.gstatic.com',
-                'https://storage.googleapis.com',
-                'https://www.google-analytics.com',
-                'https://www.googletagmanager.com',
-                process.env.IMGIX_DOMAIN &&
-                  `https://${process.env.IMGIX_DOMAIN}`
-              ].filter(Boolean),
-              defaultSrc: ["'self'"],
-              fontSrc: ['https://fonts.gstatic.com'],
-              imgSrc: [
-                "'self'",
-                'data:',
-                'https://www.google-analytics.com',
-                'https://www.googletagmanager.com',
-                process.env.IMGIX_DOMAIN &&
-                  `https://${process.env.IMGIX_DOMAIN}`
-              ].filter(Boolean),
-              manifestSrc: ["'self'"],
-              scriptSrc: [
-                "'self'",
-                "'unsafe-eval'",
-                "'unsafe-inline'",
-                'https://storage.googleapis.com',
-                'https://www.google-analytics.com',
-                'https://www.googletagmanager.com'
-              ],
-              styleSrc: [
-                "'self'",
-                "'unsafe-inline'",
-                'https://fonts.googleapis.com'
-              ],
-              workerSrc: ["'self'"]
-            }
-          })
-        }
-      ],
-      source: '/((?!_next).*)'
-    },
-    {
-      headers: [
-        {
-          key: 'cache-control',
-          value: 'max-age=0'
-        }
-      ],
-      source: '/service-worker.js'
-    }
-  ],
   pageExtensions: ['mdx', 'ts', 'tsx'],
   pwa: {
     dest: '.next/static',
