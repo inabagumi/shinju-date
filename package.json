@@ -5,7 +5,6 @@
     "@reach/skip-nav": "^0.11.2",
     "algoliasearch": "^4.5.1",
     "clsx": "^1.1.1",
-    "content-security-policy-builder": "^2.1.0",
     "date-fns": "^2.16.1",
     "ics": "^2.26.1",
     "imgix-core-js": "^2.3.2",
