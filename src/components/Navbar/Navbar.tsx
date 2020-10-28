@@ -1,20 +1,20 @@
 import clsx from 'clsx'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useCallback, useEffect, useState } from 'react'
+import { useTheme } from 'next-themes'
+import { useCallback, useState } from 'react'
 import type { FC } from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
 
 import { Icon } from '@/assets'
 import SearchForm from '@/components/SearchForm'
-import useTheme from '@/hooks/useTheme'
 
 import styles from './Navbar.module.css'
 
 const Navbar: FC = () => {
   const [sidebarShown, setSidebarShown] = useState(false)
   const router = useRouter()
-  const [theme, setTheme] = useTheme()
+  const { setTheme, theme } = useTheme()
 
   const showSidebar = useCallback(() => {
     setSidebarShown(true)
@@ -25,16 +25,8 @@ const Navbar: FC = () => {
   }, [])
 
   const toggleTheme = useCallback(() => {
-    setTheme((currentValue) => {
-      const nextTheme = currentValue === 'dark' ? 'light' : 'dark'
-
-      return nextTheme
-    })
-  }, [setTheme])
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme
-  }, [theme])
+    setTheme(theme === 'dark' ? 'light' : 'dark')
+  }, [setTheme, theme])
 
   return (
     <nav
