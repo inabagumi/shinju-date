@@ -4,12 +4,6 @@ const withMDX = require('@next/mdx')()
 const withPWA = require('next-pwa')
 
 const nextConfig = {
-  env: {
-    NEXT_PUBLIC_GA_TRACKING_ID: process.env.NEXT_PUBLIC_GA_TRACKING_ID
-  },
-  experimental: {
-    plugins: true
-  },
   headers: () => [
     {
       headers: [
