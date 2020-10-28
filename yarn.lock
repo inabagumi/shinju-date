@@ -3529,11 +3529,6 @@ console-control-strings@^1.0.0, console-control-strings@~1.1.0:
   resolved "https://registry.yarnpkg.com/console-control-strings/-/console-control-strings-1.1.0.tgz#3d7cf4464db6446ea644bf4b39507f9851008e8e"
   integrity sha1-PXz0Rk22RG6mRL9LOVB/mFEAjo4=
 
-content-security-policy-builder@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/content-security-policy-builder/-/content-security-policy-builder-2.1.0.tgz#0a2364d769a3d7014eec79ff7699804deb8cfcbb"
-  integrity sha512-/MtLWhJVvJNkA9dVLAp6fg9LxD2gfI6R2Fi1hPmfjYXSahJJzcfvoeDOxSyp4NvxMuwWv3WMssE9o31DoULHrQ==
-
 convert-source-map@1.7.0, convert-source-map@^1.4.0, convert-source-map@^1.6.0, convert-source-map@^1.7.0:
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-1.7.0.tgz#17a2cb882d7f77d3490585e2ce6c524424a3a442"
@@ -6757,6 +6752,11 @@ next-seo@^4.14.0:
   resolved "https://registry.yarnpkg.com/next-seo/-/next-seo-4.14.0.tgz#8a3243286f65606da81f6fdb0f8b1673ab5dd5a6"
   integrity sha512-HHL82n2bx1Aj0z8kpy31LoJxzWpZwC/RlXleoO5zNNjJjEGtNS7uZ+wrvAbFGUqC4V54I1sZa4f0WZV+mpOx6w==
 
+next-themes@^0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/next-themes/-/next-themes-0.0.6.tgz#4533f0df4bbc6f44be736591b660f00bb356e9e1"
+  integrity sha512-5xEJRXRkA6v4ocg/2LLlQT7/0HXW0PJb5FaYTrlw9v58ZClMTVK4E4ZiY2YsaVtLkst4hK3qfI25n5OeNAORtQ==
+
 next-tick@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/next-tick/-/next-tick-1.0.0.tgz#ca86d1fe8828169b0120208e3dc8424b9db8342c"
@@ -7983,11 +7983,6 @@ readdirp@~3.4.0:
   integrity sha512-0xe001vZBnJEK+uKcj8qOhyAKPzIT+gStxWr3LCB0DwcXR5NZJ3IaC+yGnHCYzB/S7ov3m3EEbZI2zeNvX+hGQ==
   dependencies:
     picomatch "^2.2.1"
-
-recoil@^0.0.13:
-  version "0.0.13"
-  resolved "https://registry.yarnpkg.com/recoil/-/recoil-0.0.13.tgz#23e6d63135c07d8defbd91aaa35dca94ec5c15a6"
-  integrity sha512-2OToaQ8GR//KsdKdaEhMi04QKStLGRpk3qjC58iBpZpUtsByZ4dUy2UJtRcYuhnVlltGZ8HNwcEQRdFOS864SQ==
 
 regenerate-unicode-properties@^8.2.0:
   version "8.2.0"
