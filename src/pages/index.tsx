@@ -1,6 +1,7 @@
 import clsx from 'clsx'
 import { isFuture, startOfHour, subHours } from 'date-fns'
 import type { NextPage } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { NextSeo } from 'next-seo'
 import useSWR from 'swr'
@@ -72,10 +73,10 @@ const IndexPage: NextPage = () => {
           </div>
 
           <div className={styles.heroImage}>
-            <img
+            <Image
               alt=""
-              className={styles.heroImageEntity}
               height={1080}
+              priority
               role="presentation"
               src={hero}
               width={1920}

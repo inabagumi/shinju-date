@@ -1,6 +1,7 @@
-import { FC, memo } from 'react'
+import Image from 'next/image'
+import { memo } from 'react'
+import type { FC } from 'react'
 
-import Image from '@/components/Image'
 import Skeleton from '@/components/Skeleton'
 import { Video } from '@/types'
 
@@ -13,18 +14,25 @@ type Props = {
 const Thumbnail: FC<Props> = ({ value }) => (
   <div className={styles.thumbnail}>
     {value ? (
-      <Image
-        alt=""
-        className={styles.image}
-        height={value.thumbnail.height}
-        loading="lazy"
-        preSrc={value.thumbnail.preSrc}
-        src={value.thumbnail.src}
-        srcSet={value.thumbnail.srcSet}
-        width={value.thumbnail.width}
-      />
+      <>
+        {value.thumbnail.preSrc && (
+          <div
+            className={styles.placeholder}
+            style={{
+              backgroundImage: `url(${value.thumbnail.preSrc})`
+            }}
+          />
+        )}
+        <Image
+          alt=""
+          height={value.thumbnail.height}
+          sizes="(max-width: 996px) 100vw, 30vw"
+          src={value.thumbnail.src}
+          width={value.thumbnail.width}
+        />
+      </>
     ) : (
-      <Skeleton className={styles.image} variant="rect" />
+      <Skeleton className={styles.skeleton} variant="rect" />
     )}
   </div>
 )
@@ -32,5 +40,5 @@ const Thumbnail: FC<Props> = ({ value }) => (
 export default memo(
   Thumbnail,
   ({ value: previousValue }, { value: nextValue }) =>
-    previousValue?.thumbnail.srcSet !== nextValue?.thumbnail.srcSet
+    previousValue?.thumbnail.src !== nextValue?.thumbnail.src
 )
