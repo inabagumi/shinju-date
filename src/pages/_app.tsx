@@ -11,7 +11,7 @@ import ProgressBar from '@/components/ProgressBar'
 import { fetcher } from '@/utils'
 
 const MyApp: FC<AppProps> = ({ Component, pageProps, router }) => {
-  const handleRouterChangeComplete = useCallback(() => {
+  const handleRouterChangeComplete = useCallback((url: string) => {
     const trackingID = process.env.NEXT_PUBLIC_GA_TRACKING_ID
 
     if (!trackingID) return
