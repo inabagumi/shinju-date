@@ -8,10 +8,12 @@
 }
 
 .thumbnail > div {
+  height: 100%;
   left: 50%;
-  position: absolute;
+  position: absolute !important;
   top: 50%;
   transform: translate(-50%, -50%);
+  width: 100%;
 }
 
 .placeholder {
@@ -19,8 +21,6 @@
   background-repeat: no-repeat;
   background-size: cover;
   filter: blur(10px);
-  height: 100%;
-  width: 100%;
 }
 
 .skeleton {
