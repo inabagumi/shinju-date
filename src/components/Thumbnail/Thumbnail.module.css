@@ -7,20 +7,21 @@
   width: 100%;
 }
 
-.thumbnail > div {
-  height: 100%;
-  left: 50%;
-  position: absolute !important;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-}
-
 .placeholder {
   background-color: transparent;
   background-repeat: no-repeat;
   background-size: cover;
   filter: blur(10px);
+  height: 100%;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+}
+
+.image {
+  object-fit: cover;
 }
 
 .skeleton {

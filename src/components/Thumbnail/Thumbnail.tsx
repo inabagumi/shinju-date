@@ -25,10 +25,10 @@ const Thumbnail: FC<Props> = ({ value }) => (
         )}
         <Image
           alt=""
-          height={value.thumbnail.height}
+          className={styles.image}
+          layout="fill"
           sizes="(max-width: 996px) 100vw, 30vw"
           src={value.thumbnail.src}
-          width={value.thumbnail.width}
         />
       </>
     ) : (
