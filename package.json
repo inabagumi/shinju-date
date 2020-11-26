@@ -18,7 +18,7 @@
     "nprogress": "^1.0.0-1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "react-icons": "^3.11.0",
+    "react-icons": "^4.0.0",
     "react-infinite-scroll-component": "^5.1.0",
     "react-intersection-observer": "^8.31.0",
     "swr": "^0.3.9"
