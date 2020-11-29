@@ -14,7 +14,7 @@ import type { SearchResponseBody } from '@/types'
 
 const popularitySearchQueries = [
   'Minecraft',
-  'Dead by Daylight',
+  '桃太郎電鉄',
   'リングフィット アドベンチャー',
   'Detroit: Become Human'
 ]
