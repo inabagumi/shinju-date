@@ -6,7 +6,7 @@
     "algoliasearch": "^4.8.2",
     "clsx": "^1.1.1",
     "date-fns": "^2.16.1",
-    "ics": "^2.26.1",
+    "ics": "^2.26.2",
     "imgix-core-js": "^2.3.2",
     "infima": "^0.2.0-alpha.18",
     "localforage": "^1.9.0",
