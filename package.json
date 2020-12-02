@@ -1,7 +1,7 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@mdx-js/react": "^1.6.21",
+    "@mdx-js/react": "^1.6.22",
     "@reach/skip-nav": "^0.12.1",
     "algoliasearch": "^4.8.2",
     "clsx": "^1.1.1",
@@ -28,7 +28,7 @@
     "@fullhuman/postcss-purgecss": "^3.0.0",
     "@inabagumi/eslint-config-react": "^7.0.0",
     "@inabagumi/prettier-config": "^1.1.2",
-    "@mdx-js/loader": "^1.6.21",
+    "@mdx-js/loader": "^1.6.22",
     "@next/eslint-plugin-next": "^10.0.3",
     "@next/mdx": "^10.0.3",
     "@svgr/webpack": "^5.5.0",
