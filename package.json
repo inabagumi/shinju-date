@@ -3,7 +3,7 @@
   "dependencies": {
     "@mdx-js/react": "^1.6.22",
     "@reach/skip-nav": "^0.12.1",
-    "algoliasearch": "^4.8.2",
+    "algoliasearch": "^4.8.3",
     "clsx": "^1.1.1",
     "date-fns": "^2.16.1",
     "ics": "^2.26.2",
