@@ -61,8 +61,8 @@
   "resolutions": {
     "node-fetch": "^2.6.1",
     "webpack": "^5.9.0",
-    "workbox-webpack-plugin": "^6.0.0",
-    "workbox-window": "^6.0.0"
+    "workbox-webpack-plugin": "^6.0.2",
+    "workbox-window": "^6.0.2"
   },
   "scripts": {
     "build": "next build",
