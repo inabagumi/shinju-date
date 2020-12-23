@@ -2,6 +2,9 @@ const withMDX = require('@next/mdx')()
 const withPWA = require('next-pwa')
 
 const nextConfig = {
+  experimental: {
+    optimizeCss: true
+  },
   images: {
     deviceSizes: [320, 420, 768, 1024, 1200, 1920],
     domains: ['i.ytimg.com']
