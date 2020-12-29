@@ -12,6 +12,9 @@ import Timeline from '@/components/Timeline'
 import styles from '@/styles/home.module.css'
 import type { SearchResponseBody } from '@/types'
 
+const tagline =
+  '774 inc. 所属タレントの配信スケジュールや動画の検索ができるウェブサービス'
+
 const popularitySearchQueries = [
   'Minecraft',
   '桃太郎電鉄',
@@ -52,7 +55,7 @@ const IndexPage: NextPage = () => {
           type: 'website'
         }}
         title="SHINJU DATE"
-        titleTemplate="%s"
+        titleTemplate={`%s - ${tagline}`}
         twitter={{
           cardType: 'summary_large_image'
         }}
