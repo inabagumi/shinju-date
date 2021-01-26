@@ -2,7 +2,7 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@mdx-js/react": "^1.6.22",
-    "@reach/skip-nav": "^0.12.1",
+    "@reach/skip-nav": "^0.13.0",
     "algoliasearch": "^4.8.4",
     "clsx": "^1.1.1",
     "date-fns": "^2.16.1",
