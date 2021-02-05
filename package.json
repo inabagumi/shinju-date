@@ -5,7 +5,7 @@
     "@reach/skip-nav": "^0.13.0",
     "algoliasearch": "^4.8.4",
     "clsx": "^1.1.1",
-    "date-fns": "^2.16.1",
+    "date-fns": "^2.17.0",
     "ics": "^2.26.2",
     "imgix-core-js": "^2.3.2",
     "infima": "^0.2.0-alpha.18",
