@@ -1,4 +1,5 @@
 const withMDX = require('@next/mdx')()
+const withPWA = require('next-pwa')
 
 const nextConfig = {
   experimental: {
@@ -39,9 +40,7 @@ const nextConfig = {
       source: '/calendar/:id.ics'
     }
   ],
-  webpack(config, { defaultLoaders, dev, ...options }) {
-    const withPWA = require('next-pwa')
-
+  webpack(config, { defaultLoaders, dev }) {
     config.module.rules.push({
       test: /\.(?:jpe?g|png)$/,
       use: [
@@ -74,8 +73,8 @@ const nextConfig = {
       ]
     })
 
-    return withPWA().webpack(config, { defaultLoaders, dev, ...options })
+    return config
   }
 }
 
-module.exports = withMDX(nextConfig)
+module.exports = withPWA(withMDX(nextConfig))
