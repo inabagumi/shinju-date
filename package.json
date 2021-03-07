@@ -39,7 +39,7 @@
     "@types/mdx-js__react": "^1.5.3",
     "@types/node": "^12.20.4",
     "@types/nprogress": "^0.2.0",
-    "@types/react": "^17.0.2",
+    "@types/react": "^17.0.3",
     "@types/web-app-manifest": "^1.0.0",
     "critters": "^0.0.7",
     "eslint": "^7.21.0",
