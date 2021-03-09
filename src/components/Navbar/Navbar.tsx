@@ -36,13 +36,13 @@ const Navbar: FC = () => {
     >
       <div className="navbar__inner">
         <div className="navbar__items">
-          <div
+          <button
             aria-label="メニューを開く"
             className="navbar__toggle"
             onClick={showSidebar}
             onKeyDown={showSidebar}
-            role="button"
             tabIndex={0}
+            type="button"
           >
             <svg
               focusable="false"
@@ -59,7 +59,7 @@ const Navbar: FC = () => {
                 strokeWidth={2}
               />
             </svg>
-          </div>
+          </button>
 
           <Link href="/">
             {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
