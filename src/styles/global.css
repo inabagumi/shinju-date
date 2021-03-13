@@ -8,8 +8,3 @@
 
   --nprogress-color: var(--ifm-color-primary);
 }
-
-/* hotfix */
-.navbar__toggle {
-  color: inherit;
-}
