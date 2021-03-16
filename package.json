@@ -37,7 +37,7 @@
     "@types/lodash.chunk": "^4.2.6",
     "@types/lodash.groupby": "^4.6.6",
     "@types/mdx-js__react": "^1.5.3",
-    "@types/node": "^12.20.5",
+    "@types/node": "^12.20.6",
     "@types/nprogress": "^0.2.0",
     "@types/react": "^17.0.3",
     "@types/web-app-manifest": "^1.0.0",
