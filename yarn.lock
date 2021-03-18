@@ -3079,17 +3079,16 @@ create-hmac@^1.1.0, create-hmac@^1.1.4, create-hmac@^1.1.7:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
-critters@^0.0.8:
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/critters/-/critters-0.0.8.tgz#174dfa6bb05beb1364d10091556d908d424a4919"
-  integrity sha512-xgxqyv32+IssSV7nll2vb5QV+JdoCht1dpT950zMqICXMNuTTArxpe2hRkOtHEDqHVOrNVKL6WBa4OenkDJWEg==
+critters@^0.0.9:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/critters/-/critters-0.0.9.tgz#1a000ad42527ee5fdd08905dafdb15ded8c906f2"
+  integrity sha512-8aMHzByeuPiNi8mtx6CwPAHm9TIJHfB3en4VylqRhMVegnTL3A+BJssrmSiGTj8B0DQGWlafq3Q31GLElpBVBw==
   dependencies:
     chalk "^4.1.0"
     css "^3.0.0"
     parse5 "^6.0.1"
     parse5-htmlparser2-tree-adapter "^6.0.1"
     pretty-bytes "^5.3.0"
-    webpack-log "^3.0.1"
 
 cross-spawn@^6.0.0:
   version "6.0.5"
@@ -5622,11 +5621,6 @@ lodash@^4.17.13, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
 
-loglevelnext@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/loglevelnext/-/loglevelnext-3.0.1.tgz#e3e4659c4061c09264f6812c33586dc55a009a04"
-  integrity sha512-JpjaJhIN1reaSb26SIxDGtE0uc67gPl19OMVHrr+Ggt6b/Vy60jmCtKgQBrygAH0bhRA2nkxgDvM+8QvR8r0YA==
-
 loose-envify@^1.0.0, loose-envify@^1.1.0, loose-envify@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/loose-envify/-/loose-envify-1.4.0.tgz#71ee51fa7be4caec1a63839f7e682d8132d30caf"
@@ -5848,11 +5842,6 @@ ms@2.1.2:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
-
-nanoid@^2.0.3:
-  version "2.1.11"
-  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-2.1.11.tgz#ec24b8a758d591561531b4176a01e3ab4f0f0280"
-  integrity sha512-s/snB+WGm6uwi0WjsZdaVcuf3KJXlfGl2LcxgwkEwJF0D/BWzVWAZW/XY4bFaiR7s0Jk3FPvlnepg1H1b1UwlA==
 
 nanoid@^3.1.16, nanoid@^3.1.20:
   version "3.1.21"
@@ -8599,15 +8588,6 @@ webidl-conversions@^6.1.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-6.1.0.tgz#9111b4d7ea80acd40f5270d666621afa78b69514"
   integrity sha512-qBIvFLGiBpLjfwmYAaHPXsn+ho5xZnGvyGvsarywGNc8VyQJUMHJ8OBKGGrPER0okBeMDaan4mNBlgBROxuI8w==
-
-webpack-log@^3.0.1:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/webpack-log/-/webpack-log-3.0.2.tgz#edf64fe4cabffeb04a03ca44d89f9908a4a9d238"
-  integrity sha512-ijm2zgqTY2omtlxRNrtDqxAQOrfAGMxWg9fQB/kuFSeZjx/OkYnfYLqsjf/JkrWOHINMzqxaJDXaog6Mx9KaHg==
-  dependencies:
-    chalk "^2.4.2"
-    loglevelnext "^3.0.1"
-    nanoid "^2.0.3"
 
 webpack-sources@^1.4.3:
   version "1.4.3"
