@@ -12,7 +12,6 @@ export default class extends Document {
           <link href="https://fonts.gstatic.com" rel="preconnect" />
           <link href="https://www.googletagmanager.com" rel="preconnect" />
           <link href="https://www.google-analytics.com" rel="preconnect" />
-          <link href="https://shinju-date.imgix.net" rel="preconnect" />
           <link
             as="style"
             href="https://fonts.googleapis.com/css2?display=swap&amp;family=Lato%3Awght%40300%3B400%3B700"
