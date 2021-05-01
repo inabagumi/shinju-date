@@ -4,6 +4,8 @@ import { fromUnixTime } from 'date-fns'
 import { isZeroSeconds, parseDuration } from '@/utils'
 import type { AlgoliaVideo, Video } from '@/types'
 
+const thumbnailBasePath = '/images/youtube'
+
 function normalize({
   channel,
   duration: rawDuration,
@@ -14,11 +16,19 @@ function normalize({
   url
 }: AlgoliaVideo & ObjectWithObjectID): Video {
   const duration = parseDuration(rawDuration ?? 'P0D')
-  const thumbnail = rawThumbnail ?? {
-    height: 720,
-    src: `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`,
-    width: 1280
-  }
+  const thumbnail = rawThumbnail
+    ? {
+        ...rawThumbnail,
+        src: rawThumbnail.src.replace(
+          /^https:\/\/i\.ytimg\.com\/vi\//,
+          `${thumbnailBasePath}/`
+        )
+      }
+    : {
+        height: 720,
+        src: `${thumbnailBasePath}/${id}/maxresdefault.jpg`,
+        width: 1280
+      }
 
   return {
     channel,
