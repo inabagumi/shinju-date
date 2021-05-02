@@ -17,6 +17,15 @@
   position: relative;
 }
 
+.thumbnailSkeleton {
+  left: 0;
+  overflow: hidden;
+  padding-bottom: 56.25%;
+  position: relative;
+  top: 0;
+  width: 100%;
+}
+
 .duration {
   --ifm-badge-background-color: rgba(0, 0, 0, 0.85);
   --ifm-badge-border-color: var(--ifm-badge-background-color);

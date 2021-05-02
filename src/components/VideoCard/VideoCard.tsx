@@ -1,6 +1,6 @@
 import clsx from 'clsx'
-import { formatISODuration, isEqual } from 'date-fns'
-import { FC, memo } from 'react'
+import { formatISODuration } from 'date-fns'
+import type { ReactNode, VFC } from 'react'
 
 import LiveStatus from '@/components/LiveStatus'
 import Skeleton from '@/components/Skeleton'
@@ -11,10 +11,11 @@ import type { Video } from '@/types'
 import styles from './VideoCard.module.css'
 
 type ContainerProps = {
+  children: ReactNode
   href?: string
 }
 
-const Container: FC<ContainerProps> = ({ children, href }) => {
+const Container: VFC<ContainerProps> = ({ children, href }) => {
   if (href) {
     return (
       <a
@@ -40,11 +41,15 @@ type Props = {
   value?: Video
 }
 
-const VideoCard: FC<Props> = ({ timeOptions, value }) => (
+const VideoCard: VFC<Props> = ({ timeOptions, value }) => (
   <Container href={value?.url}>
     <div className={clsx('card', styles.video)}>
       <div className={clsx('card__image', styles.image)}>
-        <Thumbnail value={value} />
+        {value ? (
+          <Thumbnail value={value} />
+        ) : (
+          <Skeleton className={styles.thumbnailSkeleton} variant="rect" />
+        )}
 
         {value?.duration ? (
           <span className={clsx('badge', styles.duration)}>
@@ -86,16 +91,4 @@ const VideoCard: FC<Props> = ({ timeOptions, value }) => (
   </Container>
 )
 
-export default memo(
-  VideoCard,
-  (
-    { timeOptions: previousTimeOptions, value: previousValue },
-    { timeOptions: nextTimeOptions, value: nextValue }
-  ) =>
-    previousValue?.title === nextValue?.title &&
-    isEqual(previousValue?.publishedAt || 0, nextValue?.publishedAt || 0) &&
-    previousValue?.duration?.seconds === nextValue?.duration?.seconds &&
-    previousValue?.duration?.minutes === nextValue?.duration?.minutes &&
-    previousValue?.duration?.hours === nextValue?.duration?.hours &&
-    previousTimeOptions?.relativeTime === nextTimeOptions?.relativeTime
-)
+export default VideoCard
