@@ -3,6 +3,7 @@ const withPWA = require('next-pwa')
 
 const nextConfig = {
   experimental: {
+    enableBlurryPlaceholder: true,
     optimizeCss: true
   },
   future: {

@@ -1,6 +1,6 @@
 type Image = {
   height: number
-  preSrc?: string
+  preSrc: string
   src: string
   width: number
 }

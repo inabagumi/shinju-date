@@ -11,31 +11,24 @@ function normalize({
   duration: rawDuration,
   id,
   publishedAt,
-  thumbnail: rawThumbnail,
+  thumbnail,
   title,
   url
 }: AlgoliaVideo & ObjectWithObjectID): Video {
   const duration = parseDuration(rawDuration ?? 'P0D')
-  const thumbnail = rawThumbnail
-    ? {
-        ...rawThumbnail,
-        src: rawThumbnail.src.replace(
-          /^https:\/\/i\.ytimg\.com\/vi\//,
-          `${thumbnailBasePath}/`
-        )
-      }
-    : {
-        height: 720,
-        src: `${thumbnailBasePath}/${id}/maxresdefault.jpg`,
-        width: 1280
-      }
 
   return {
     channel,
     duration: isZeroSeconds(duration) ? undefined : duration,
     id,
     publishedAt: fromUnixTime(publishedAt),
-    thumbnail,
+    thumbnail: {
+      ...thumbnail,
+      src: thumbnail.src.replace(
+        /^https:\/\/i\.ytimg\.com\/vi\//,
+        `${thumbnailBasePath}/`
+      )
+    },
     title,
     url
   }
