@@ -5,7 +5,7 @@
     "@reach/skip-nav": "^0.15.0",
     "algoliasearch": "^4.9.1",
     "clsx": "^1.1.1",
-    "date-fns": "^2.21.2",
+    "date-fns": "^2.21.3",
     "dedent": "^0.7.0",
     "ics": "^2.27.0",
     "infima": "^0.2.0-alpha.23",
