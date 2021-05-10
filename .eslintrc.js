@@ -4,6 +4,7 @@ module.exports = {
     project: 'tsconfig.json'
   },
   rules: {
-    '@next/next/google-font-display': 'off'
+    '@next/next/google-font-display': 'off',
+    '@next/next/google-font-preconnect': 'off'
   }
 }
