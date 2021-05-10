@@ -35,32 +35,30 @@ const handler: NextApiHandler = async (req, res) => {
       .join(' AND '),
     hitsPerPage: 100
   })
-  const events = hits.map(normalize).map(
-    (video): EventAttributes => {
-      const endedAt = video.duration
-        ? add(video.publishedAt, video.duration)
-        : min([
-            max([addHours(video.publishedAt, 1), addMinutes(now, 30)]),
-            addHours(video.publishedAt, 12)
-          ])
+  const events = hits.map(normalize).map((video): EventAttributes => {
+    const endedAt = video.duration
+      ? add(video.publishedAt, video.duration)
+      : min([
+          max([addHours(video.publishedAt, 1), addMinutes(now, 30)]),
+          addHours(video.publishedAt, 12)
+        ])
 
-      return {
-        calName: channel && video.channel.title,
-        description: video.url,
-        end: convertToDateArray(endedAt),
-        endInputType: 'utc',
-        endOutputType: 'utc',
-        location: 'YouTube',
-        productId: 'SHINJU DATE',
-        start: convertToDateArray(video.publishedAt),
-        startInputType: 'utc',
-        startOutputType: 'utc',
-        title: video.title,
-        uid: `${video.id}@shinju.date`,
-        url: video.url
-      }
+    return {
+      calName: channel && video.channel.title,
+      description: video.url,
+      end: convertToDateArray(endedAt),
+      endInputType: 'utc',
+      endOutputType: 'utc',
+      location: 'YouTube',
+      productId: 'SHINJU DATE',
+      start: convertToDateArray(video.publishedAt),
+      startInputType: 'utc',
+      startOutputType: 'utc',
+      title: video.title,
+      uid: `${video.id}@shinju.date`,
+      url: video.url
     }
-  )
+  })
 
   const { value } = createEvents(events)
 
