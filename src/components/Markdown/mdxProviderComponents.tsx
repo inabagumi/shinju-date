@@ -1,27 +1,17 @@
-import { MDXProviderComponentsProp } from '@mdx-js/react'
 import clsx from 'clsx'
 import NextLink from 'next/link'
-import {
-  AnchorHTMLAttributes,
-  DetailedHTMLProps,
-  FC,
-  HTMLAttributes,
-  OlHTMLAttributes
-} from 'react'
+import type { ComponentPropsWithoutRef, VFC } from 'react'
 
 import styles from './Markdown.module.css'
 
-type LinkProps = DetailedHTMLProps<
-  AnchorHTMLAttributes<HTMLAnchorElement>,
-  HTMLAnchorElement
->
+type LinkProps = ComponentPropsWithoutRef<'a'>
 
-const ExternalLink: FC<LinkProps> = (props) => (
+const ExternalLink: VFC<LinkProps> = (props) => (
   // eslint-disable-next-line jsx-a11y/anchor-has-content
   <a {...props} rel="noopener noreferrer" target="_blank" />
 )
 
-const Link: FC<LinkProps> = ({ href = '', ...props }) =>
+const Link: VFC<LinkProps> = ({ href = '', ...props }) =>
   /^https?:\/\//.test(href) ? (
     <ExternalLink href={href} {...props} />
   ) : href.startsWith('/') ? (
@@ -34,26 +24,20 @@ const Link: FC<LinkProps> = ({ href = '', ...props }) =>
     <a href={href} {...props} />
   )
 
-type HeadingProps = DetailedHTMLProps<
-  HTMLAttributes<HTMLHeadingElement>,
-  HTMLHeadingElement
->
+type HeadingProps = ComponentPropsWithoutRef<'h2'>
 
-const H2: FC<HeadingProps> = ({ className, ...props }) => (
+const H2: VFC<HeadingProps> = ({ className, ...props }) => (
   // eslint-disable-next-line jsx-a11y/heading-has-content
   <h2 className={clsx('margin-top--lg', className)} {...props} />
 )
 
-type OrderdListProps = DetailedHTMLProps<
-  OlHTMLAttributes<HTMLOListElement>,
-  HTMLOListElement
->
+type OrderdListProps = ComponentPropsWithoutRef<'ol'>
 
-const OrderedList: FC<OrderdListProps> = ({ className, ...props }) => (
+const OrderedList: VFC<OrderdListProps> = ({ className, ...props }) => (
   <ol className={clsx(styles.orderedList, className)} {...props} />
 )
 
-const mdxProviderComponents: MDXProviderComponentsProp = {
+const mdxProviderComponents = {
   a: Link,
   h2: H2,
   ol: OrderedList
