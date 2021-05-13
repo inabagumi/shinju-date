@@ -1436,15 +1436,15 @@
   resolved "https://registry.yarnpkg.com/@next/env/-/env-10.2.1-canary.5.tgz#8dd4e178f69bd68e8a6dbb6b23adbf689aedd820"
   integrity sha512-lld7lKihYj43nnggfUezX3WCYajfRlAGkTLWVkPBV+fcJrLhinzpqFHlGF1bIbePze8V/vaxJTnKZnH+kzU9UA==
 
-"@next/eslint-plugin-next@^10.2.1-canary.5":
-  version "10.2.1-canary.5"
-  resolved "https://registry.yarnpkg.com/@next/eslint-plugin-next/-/eslint-plugin-next-10.2.1-canary.5.tgz#887873a588edc935f7cd956407df527b152e3869"
-  integrity sha512-PHptbjBWpK+zC3ozWVsCKc7RMzm5sZUOIWodB+8zhBO/NOM8yWfRVlJO+rkP7h/27mDQYRvZ1K3uRZksBj/FgQ==
+"@next/eslint-plugin-next@^10.2.1-canary.6":
+  version "10.2.1-canary.6"
+  resolved "https://registry.yarnpkg.com/@next/eslint-plugin-next/-/eslint-plugin-next-10.2.1-canary.6.tgz#d9fd722f35ed5aca4bf48ab0667c9b25f303c3e4"
+  integrity sha512-yzg1G/lec6bf4CDtFnMM59mXdYesYCkXIIQ5n6KlIRnvVqoVNQX7Qyrfj7oxJ9rCUa0CZQXhORNhtDZNqbX5NQ==
 
-"@next/mdx@^10.2.1-canary.5":
-  version "10.2.1-canary.5"
-  resolved "https://registry.yarnpkg.com/@next/mdx/-/mdx-10.2.1-canary.5.tgz#bbddefa4a6e59503be1d87e5c4f68dedcf480da2"
-  integrity sha512-AY1JC5QCEvip3w7fX+9fDsavbMHPYYGOOgr95hoaB71c3lIcBQ55hdH2+01YTSedWKNSOVuoPIcpGC3g48uDHA==
+"@next/mdx@^10.2.1-canary.6":
+  version "10.2.1-canary.6"
+  resolved "https://registry.yarnpkg.com/@next/mdx/-/mdx-10.2.1-canary.6.tgz#c79e6403bcb2580f1ea458731ccd227044dfe476"
+  integrity sha512-yidhKBLp52inIdPDoEpJLzRUgyt+Trm5/v+avd6gS//u4PCMHAcfRDKDEUxczmEdNPefRKHwGiqryXaR9h5S4A==
 
 "@next/polyfill-module@10.2.1-canary.5":
   version "10.2.1-canary.5"
