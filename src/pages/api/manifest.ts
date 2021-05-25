@@ -1,4 +1,5 @@
-import { NextApiHandler } from 'next'
+import type { NextApiHandler } from 'next'
+import type { WebAppManifest } from 'web-app-manifest'
 
 import { favicon192x192, favicon512x512 } from '@/assets'
 
