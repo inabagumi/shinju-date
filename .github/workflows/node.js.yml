@@ -18,13 +18,16 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 12
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - uses: actions/cache@v2
         with:
-          path: node_modules
-          key: node-deps-${{ hashFiles('**/yarn.lock') }}
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            node-deps-
-      - run: yarn install --frozen-lockfile
+            ${{ runner.os }}-yarn-
+      - run: yarn install --immutable
       - run: yarn format-check
       - run: yarn lint
       - run: yarn test
