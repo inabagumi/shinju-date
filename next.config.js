@@ -1,6 +1,9 @@
 const withMDX = require('@next/mdx')()
 const withPWA = require('next-pwa')
 
+/**
+ * @type {import('next/dist/next-server/server/config').NextConfig}
+ **/
 const nextConfig = {
   experimental: {
     enableBlurryPlaceholder: true,
