@@ -1687,7 +1687,7 @@ __metadata:
     algoliasearch: ^4.9.1
     clsx: ^1.1.1
     critters: ^0.0.10
-    date-fns: ^2.22.0
+    date-fns: ^2.22.1
     dedent: ^0.7.0
     eslint: ^7.27.0
     file-loader: ^6.2.0
@@ -4359,10 +4359,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:^2.22.0":
-  version: 2.22.0
-  resolution: "date-fns@npm:2.22.0"
-  checksum: f9cab0d3fde00d5a0655f3561a3eda679ebdb7776b8136f04e36b9fe807fef5784244489e9446b713a722dd6af3bc9c6781fc64af791262bbde1015c3c9eee80
+"date-fns@npm:^2.22.1":
+  version: 2.22.1
+  resolution: "date-fns@npm:2.22.1"
+  checksum: 7ff97cd605af50c02f341687c2cafd218839a1aace67965374989855a13f76dc4fe52e0e38c343c1ad1f8399787cb6839a0b14a669c44b30550c287300b1bb50
   languageName: node
   linkType: hard
 
