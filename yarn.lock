@@ -1692,7 +1692,7 @@ __metadata:
     eslint: ^7.27.0
     file-loader: ^6.2.0
     ics: ^2.27.0
-    infima: ^0.2.0-alpha.23
+    infima: ^0.2.0-alpha.24
     jest: ^27.0.1
     localforage: ^1.9.0
     lodash.chunk: ^4.2.0
@@ -5812,10 +5812,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"infima@npm:^0.2.0-alpha.23":
-  version: 0.2.0-alpha.23
-  resolution: "infima@npm:0.2.0-alpha.23"
-  checksum: d419228b87c4082a050f9800e0e81c2c9c2099bcb17cc302a79677963e276d25b22b1b9826f5dd6d61df88c466e0873220bdec7b8c2e1fad2318f42722d3af04
+"infima@npm:^0.2.0-alpha.24":
+  version: 0.2.0-alpha.24
+  resolution: "infima@npm:0.2.0-alpha.24"
+  checksum: 3bc4e0f01fc12cd12afcd70a6274491408931f063743aa5c55a2dac71fdcd957ca37c8f95d0714647742f04958dd5671fbba7f902ad688f79c6cc4a3c2edf079
   languageName: node
   linkType: hard
 
