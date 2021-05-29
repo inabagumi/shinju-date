@@ -44,7 +44,7 @@
     "critters": "^0.0.10",
     "eslint": "^7.27.0",
     "file-loader": "^6.2.0",
-    "jest": "^27.0.1",
+    "jest": "^27.0.3",
     "next-pwa": "^5.2.21",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-preset-env": "^6.7.0",
