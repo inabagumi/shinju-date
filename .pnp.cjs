@@ -40,7 +40,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@inabagumi/prettier-config", "npm:1.1.3"],
             ["@mdx-js/loader", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:2.0.0-next.9"],
             ["@mdx-js/react", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:2.0.0-next.9"],
-            ["@next/eslint-plugin-next", "npm:10.2.4-canary.11"],
             ["@next/mdx", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:10.2.4-canary.11"],
             ["@reach/skip-nav", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:0.15.0"],
             ["@svgr/webpack", "npm:5.5.0"],
@@ -2901,7 +2900,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@inabagumi/prettier-config", "npm:1.1.3"],
             ["@mdx-js/loader", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:2.0.0-next.9"],
             ["@mdx-js/react", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:2.0.0-next.9"],
-            ["@next/eslint-plugin-next", "npm:10.2.4-canary.11"],
             ["@next/mdx", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:10.2.4-canary.11"],
             ["@reach/skip-nav", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:0.15.0"],
             ["@svgr/webpack", "npm:5.5.0"],
@@ -5918,7 +5916,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ]],
       ["core-js-pure", [
         ["npm:3.14.0", {
-          "packageLocation": "./.yarn/cache/core-js-pure-npm-3.14.0-9a85e5a133-800628e536.zip/node_modules/core-js-pure/",
+          "packageLocation": "./.yarn/unplugged/core-js-pure-npm-3.14.0-9a85e5a133/node_modules/core-js-pure/",
           "packageDependencies": [
             ["core-js-pure", "npm:3.14.0"]
           ],
@@ -6619,7 +6617,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ]],
       ["ejs", [
         ["npm:2.7.4", {
-          "packageLocation": "./.yarn/cache/ejs-npm-2.7.4-879ed38a4e-a1d2bfc7d1.zip/node_modules/ejs/",
+          "packageLocation": "./.yarn/unplugged/ejs-npm-2.7.4-879ed38a4e/node_modules/ejs/",
           "packageDependencies": [
             ["ejs", "npm:2.7.4"]
           ],
