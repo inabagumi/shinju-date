@@ -7,7 +7,6 @@ import styles from './Markdown.module.css'
 type LinkProps = ComponentPropsWithoutRef<'a'>
 
 const ExternalLink: VFC<LinkProps> = (props) => (
-  // eslint-disable-next-line jsx-a11y/anchor-has-content
   <a {...props} rel="noopener noreferrer" target="_blank" />
 )
 
@@ -16,18 +15,15 @@ const Link: VFC<LinkProps> = ({ href = '', ...props }) =>
     <ExternalLink href={href} {...props} />
   ) : href.startsWith('/') ? (
     <NextLink href={href}>
-      {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
       <a {...props} />
     </NextLink>
   ) : (
-    // eslint-disable-next-line jsx-a11y/anchor-has-content
     <a href={href} {...props} />
   )
 
 type HeadingProps = ComponentPropsWithoutRef<'h2'>
 
 const H2: VFC<HeadingProps> = ({ className, ...props }) => (
-  // eslint-disable-next-line jsx-a11y/heading-has-content
   <h2 className={clsx('margin-top--lg', className)} {...props} />
 )
 

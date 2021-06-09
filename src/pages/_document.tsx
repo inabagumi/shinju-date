@@ -2,7 +2,7 @@ import Document, { Head, Html, Main, NextScript } from 'next/document'
 
 import { appleTouchIcon, favicon192x192, favicon512x512 } from '@/assets'
 
-export default class extends Document {
+export default class MyDocument extends Document {
   render(): JSX.Element {
     return (
       <Html lang="ja">

@@ -4,6 +4,8 @@
 /node_modules
 /.pnp
 .pnp.js
+package.json
+yarn.lock
 
 # next.js
 /.next/
@@ -18,3 +20,5 @@
 # yarn v2
 .yarn
 .yarnrc.yml
+.pnp.*
+.vscode

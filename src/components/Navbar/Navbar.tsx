@@ -62,7 +62,6 @@ const Navbar: FC = () => {
           </button>
 
           <Link href="/">
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a className="navbar__brand">
               <Icon
                 className={clsx('navbar__logo', styles.logo)}
@@ -77,7 +76,6 @@ const Navbar: FC = () => {
           </Link>
 
           <Link href="/search">
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a
               aria-current={router.asPath === '/search' ? 'page' : undefined}
               className={clsx('navbar__item', 'navbar__link', {
@@ -115,7 +113,6 @@ const Navbar: FC = () => {
       <div className="navbar-sidebar">
         <div className="navbar-sidebar__brand">
           <Link href="/">
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
             <a className="navbar__brand" onClick={hideSidebar}>
               <Icon
                 className="navbar__logo"
@@ -132,7 +129,6 @@ const Navbar: FC = () => {
             <ul className="menu__list">
               <li className="menu__list-item">
                 <Link href="/search">
-                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
                   <a
                     aria-current={
                       router.asPath === '/search' ? 'page' : undefined
