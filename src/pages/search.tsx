@@ -81,9 +81,9 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
         openGraph={{
           images: [
             {
-              height: 630,
-              url: new URL(shareCard, baseURL).toString(),
-              width: 1200
+              height: shareCard.height,
+              url: new URL(shareCard.src, baseURL).toString(),
+              width: shareCard.width
             }
           ],
           type: 'website'
