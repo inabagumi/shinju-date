@@ -44,7 +44,6 @@ const About: FC<Props> = ({ children, title }) => {
                 itemType="https://schema.org/ListItem"
               >
                 <Link href="/">
-                  {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                   <a className="breadcrumbs__link" itemProp="item">
                     <span itemProp="name">SHINJU DATE</span>
                   </a>

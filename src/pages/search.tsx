@@ -150,7 +150,6 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
               </p>
 
               <Link href="/search">
-                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <a className="button button--lg button--outline button--primary">
                   新着動画を見る
                 </a>

@@ -16,17 +16,14 @@ const Footer: FC = () => {
           </a>
           <span className="footer__link-separator">·</span>
           <Link href="/about" prefetch={false}>
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a className="footer__link-item">SHINJU DATEとは</a>
           </Link>
           <span className="footer__link-separator">·</span>
           <Link href="/terms" prefetch={false}>
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a className="footer__link-item">利用規約</a>
           </Link>
           <span className="footer__link-separator">·</span>
           <Link href="/privacy" prefetch={false}>
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a className="footer__link-item">プライバシーポリシー</a>
           </Link>
         </nav>
