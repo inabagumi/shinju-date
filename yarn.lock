@@ -1630,7 +1630,6 @@ __metadata:
     "@inabagumi/prettier-config": ^1.1.3
     "@mdx-js/loader": ^2.0.0-next.9
     "@mdx-js/react": ^2.0.0-next.9
-    "@next/eslint-plugin-next": ^10.2.4-canary.11
     "@next/mdx": ^10.2.4-canary.11
     "@reach/skip-nav": ^0.15.0
     "@svgr/webpack": ^5.5.0
@@ -1971,7 +1970,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/eslint-plugin-next@npm:10.2.4-canary.11, @next/eslint-plugin-next@npm:^10.2.4-canary.11":
+"@next/eslint-plugin-next@npm:10.2.4-canary.11":
   version: 10.2.4-canary.11
   resolution: "@next/eslint-plugin-next@npm:10.2.4-canary.11"
   checksum: 2d0b3638d95b6df25b8b50bc77f0aeec50c5b593550626ce78862ee479e71e468717107f41fccbd796724214267e6e00d81d07e9cc971c2a9baba770fdc11948
