@@ -47,9 +47,9 @@ const IndexPage: NextPage = () => {
         openGraph={{
           images: [
             {
-              height: 630,
-              url: new URL(shareCard, baseURL).toString(),
-              width: 1200
+              height: shareCard.height,
+              url: new URL(shareCard.src, baseURL).toString(),
+              width: shareCard.width
             }
           ],
           type: 'website'
@@ -76,14 +76,7 @@ const IndexPage: NextPage = () => {
           </div>
 
           <div className={styles.heroImage}>
-            <Image
-              alt=""
-              height={1080}
-              priority
-              role="presentation"
-              src={hero}
-              width={1920}
-            />
+            <Image alt="" priority role="presentation" src={hero} />
           </div>
         </div>
 

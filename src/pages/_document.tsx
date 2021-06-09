@@ -18,21 +18,21 @@ export default class MyDocument extends Document {
             rel="preload"
           />
           <link
-            href={favicon192x192}
+            href={favicon192x192.src}
             rel="icon"
-            sizes="192x192"
+            sizes={`${favicon192x192.width}x${favicon192x192.height}`}
             type="image/png"
           />
           <link
-            href={favicon512x512}
+            href={favicon512x512.src}
             rel="icon"
-            sizes="512x512"
+            sizes={`${favicon512x512.width}x${favicon512x512.height}`}
             type="image/png"
           />
           <link
-            href={appleTouchIcon}
+            href={appleTouchIcon.src}
             rel="apple-touch-icon"
-            sizes="152x152"
+            sizes={`${appleTouchIcon.width}x${appleTouchIcon.height}`}
             type="image/png"
           />
           <link href="/manifest.json" rel="manifest" />

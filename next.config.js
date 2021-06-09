@@ -6,11 +6,7 @@ const withPWA = require('next-pwa')
  **/
 const nextConfig = {
   experimental: {
-    enableBlurryPlaceholder: true,
     optimizeCss: true
-  },
-  future: {
-    webpack5: true
   },
   images: {
     deviceSizes: [320, 420, 768, 1024, 1200, 1920],
@@ -57,24 +53,12 @@ const nextConfig = {
       }
     ]
   },
-  webpack(config, { defaultLoaders, dev }) {
-    config.module.rules.push({
-      test: /\.(?:jpe?g|png)$/,
-      use: [
-        defaultLoaders.babel,
-        {
-          loader: 'url-loader',
-          options: {
-            limit: 2048,
-            name: dev
-              ? '[name].[ext]?[contenthash:8]'
-              : '[name].[contenthash:8].[ext]',
-            outputPath: 'static/media',
-            publicPath: '/_next/static/media'
-          }
-        }
-      ]
-    })
+  webpack(config, { defaultLoaders }) {
+    for (const rule of config.module.rules) {
+      if (rule.loader === 'next-image-loader') {
+        rule.test = /\.(png|jpg|jpeg|gif|webp|ico|bmp)$/i
+      }
+    }
 
     config.module.rules.push({
       test: /\.svg$/,

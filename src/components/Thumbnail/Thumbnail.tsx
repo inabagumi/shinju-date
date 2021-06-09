@@ -37,8 +37,6 @@ const Thumbnail: VFC<Props> = ({ value }) => {
       objectFit="cover"
       objectPosition="center"
       placeholder="blur"
-      /* todo: https://github.com/vercel/next.js/pull/24704 */
-      priority
       sizes="(max-width: 996px) 100vw, 30vw"
       src={value.thumbnail.src}
       width={width}
