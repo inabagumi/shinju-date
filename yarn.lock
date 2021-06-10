@@ -1663,7 +1663,7 @@ __metadata:
     next-seo: ^4.24.0
     next-themes: ^0.0.14
     nprogress: ^1.0.0-1
-    postcss: ^8.3.0
+    postcss: ^8.3.1
     postcss-flexbugs-fixes: ^5.0.2
     postcss-preset-env: ^6.7.0
     prettier: ~2.3.1
@@ -8922,14 +8922,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.2.1, postcss@npm:^8.3.0":
-  version: 8.3.0
-  resolution: "postcss@npm:8.3.0"
+"postcss@npm:^8.2.1, postcss@npm:^8.3.1":
+  version: 8.3.1
+  resolution: "postcss@npm:8.3.1"
   dependencies:
     colorette: ^1.2.2
     nanoid: ^3.1.23
     source-map-js: ^0.6.2
-  checksum: 7786df62a605e6fc9380c1ee1e5ed177fbcdb3f3427ac6096ee0dbd9d80bdb8627d2e528d38d6f0fe850bb5668d4d46923eaf65dfd146e9b51fe770bf140d0ef
+  checksum: 710ccb3f1a7b2f107a431c1c1dac2eec29cf29aef55c326bef8504f1c35b832811e87b47157e8320e4b5bba81e66a81fc3cfaaa4bec1af0812ceefebcd0f8c90
   languageName: node
   linkType: hard
 
