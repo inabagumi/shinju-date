@@ -43,7 +43,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@next/mdx", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:10.2.4-canary.12"],
             ["@reach/skip-nav", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:0.15.0"],
             ["@svgr/webpack", "npm:5.5.0"],
-            ["@types/dedent", "npm:0.7.0"],
             ["@types/eslint", "npm:7.2.13"],
             ["@types/gtag.js", "npm:0.0.5"],
             ["@types/jest", "npm:26.0.23"],
@@ -59,7 +58,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["clsx", "npm:1.1.1"],
             ["critters", "npm:0.0.10"],
             ["date-fns", "npm:2.22.1"],
-            ["dedent", "npm:0.7.0"],
             ["eslint", "npm:7.28.0"],
             ["eslint-config-next", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:10.2.4-canary.12"],
             ["eslint-config-prettier", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.3.0"],
@@ -2903,7 +2901,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@next/mdx", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:10.2.4-canary.12"],
             ["@reach/skip-nav", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:0.15.0"],
             ["@svgr/webpack", "npm:5.5.0"],
-            ["@types/dedent", "npm:0.7.0"],
             ["@types/eslint", "npm:7.2.13"],
             ["@types/gtag.js", "npm:0.0.5"],
             ["@types/jest", "npm:26.0.23"],
@@ -2919,7 +2916,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["clsx", "npm:1.1.1"],
             ["critters", "npm:0.0.10"],
             ["date-fns", "npm:2.22.1"],
-            ["dedent", "npm:0.7.0"],
             ["eslint", "npm:7.28.0"],
             ["eslint-config-next", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:10.2.4-canary.12"],
             ["eslint-config-prettier", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.3.0"],
@@ -3853,15 +3849,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["@types/babel__traverse", "npm:7.11.1"],
             ["@babel/types", "npm:7.14.4"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["@types/dedent", [
-        ["npm:0.7.0", {
-          "packageLocation": "./.yarn/cache/@types-dedent-npm-0.7.0-6255895dfd-b9b7f0c42d.zip/node_modules/@types/dedent/",
-          "packageDependencies": [
-            ["@types/dedent", "npm:0.7.0"]
           ],
           "linkType": "HARD",
         }]

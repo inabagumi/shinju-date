@@ -1633,7 +1633,6 @@ __metadata:
     "@next/mdx": ^10.2.4-canary.12
     "@reach/skip-nav": ^0.15.0
     "@svgr/webpack": ^5.5.0
-    "@types/dedent": ^0.7.0
     "@types/eslint": ^7.2.13
     "@types/gtag.js": ^0.0.5
     "@types/jest": ^26.0.23
@@ -1649,7 +1648,6 @@ __metadata:
     clsx: ^1.1.1
     critters: ^0.0.10
     date-fns: ^2.22.1
-    dedent: ^0.7.0
     eslint: ^7.28.0
     eslint-config-next: ^10.2.4-canary.12
     eslint-config-prettier: ^8.3.0
@@ -2361,13 +2359,6 @@ __metadata:
   dependencies:
     "@babel/types": ^7.3.0
   checksum: 7bcf7fd0c88687929467d8be08460a7b216b2df5080338bc0575f1b9dbc51ba467b44063802ebbbea1249d5e2a87fed1f02d18b36c1723cd4d957cca70d3a89b
-  languageName: node
-  linkType: hard
-
-"@types/dedent@npm:^0.7.0":
-  version: 0.7.0
-  resolution: "@types/dedent@npm:0.7.0"
-  checksum: b9b7f0c42d99da764be75dd00b2f2be162f5a0ca43aafe0c740efa76b5f37f8a4f4e2ccc84883054e06e05c1169733aa8ee7750da0334c9cba26d9e10ae844f1
   languageName: node
   linkType: hard
 
