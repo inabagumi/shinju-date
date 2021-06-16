@@ -1660,7 +1660,7 @@ __metadata:
     lodash.groupby: ^4.6.0
     next: ^11.0.0
     next-pwa: ^5.2.21
-    next-seo: ^4.24.0
+    next-seo: ^4.25.1
     next-themes: ^0.0.14
     nprogress: ^1.0.0-1
     postcss: ^8.3.4
@@ -7753,14 +7753,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next-seo@npm:^4.24.0":
-  version: 4.24.0
-  resolution: "next-seo@npm:4.24.0"
+"next-seo@npm:^4.25.1":
+  version: 4.25.1
+  resolution: "next-seo@npm:4.25.1"
   peerDependencies:
-    next: ^8.1.1-canary.54 || ^9.0.0 || ^10.0.0
-    react: ^16.0.0 || ^17.0.0
-    react-dom: ^16.0.0 || ^17.0.0
-  checksum: b42dff2ca56f6c230fa100b9db4de53f84081224c65d2ac79ba0b762a14cc28a838f31c60048dfec1ec81316d3b4b911330cb22b202e48659a57264f3e90d57c
+    next: ^8.1.1-canary.54 || >=9.0.0
+    react: ">=16.0.0"
+    react-dom: ">=16.0.0"
+  checksum: 1ccf9e41ce90baf19cf4efa88b2a01e1049aba6ab6e3ef416e9dc60b61b0608ddc1cb40aef898e5687112e5ebea1aca62bcaaeab810e9caee05e5d3468eb44af
   languageName: node
   linkType: hard
 
