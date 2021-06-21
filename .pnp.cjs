@@ -44,7 +44,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@reach/skip-nav", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:0.15.0"],
             ["@svgr/webpack", "npm:5.5.0"],
             ["@types/eslint", "npm:7.2.13"],
-            ["@types/gtag.js", "npm:0.0.5"],
+            ["@types/gtag.js", "npm:0.0.6"],
             ["@types/jest", "npm:26.0.23"],
             ["@types/lodash.chunk", "npm:4.2.6"],
             ["@types/lodash.groupby", "npm:4.6.6"],
@@ -2902,7 +2902,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@reach/skip-nav", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:0.15.0"],
             ["@svgr/webpack", "npm:5.5.0"],
             ["@types/eslint", "npm:7.2.13"],
-            ["@types/gtag.js", "npm:0.0.5"],
+            ["@types/gtag.js", "npm:0.0.6"],
             ["@types/jest", "npm:26.0.23"],
             ["@types/lodash.chunk", "npm:4.2.6"],
             ["@types/lodash.groupby", "npm:4.6.6"],
@@ -3902,10 +3902,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@types/gtag.js", [
-        ["npm:0.0.5", {
-          "packageLocation": "./.yarn/cache/@types-gtag.js-npm-0.0.5-afbffb5bdf-18247e3552.zip/node_modules/@types/gtag.js/",
+        ["npm:0.0.6", {
+          "packageLocation": "./.yarn/cache/@types-gtag.js-npm-0.0.6-56532a7c1d-e1d6657b6b.zip/node_modules/@types/gtag.js/",
           "packageDependencies": [
-            ["@types/gtag.js", "npm:0.0.5"]
+            ["@types/gtag.js", "npm:0.0.6"]
           ],
           "linkType": "HARD",
         }]
