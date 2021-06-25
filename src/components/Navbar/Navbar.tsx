@@ -38,7 +38,7 @@ const Navbar: FC = () => {
         <div className="navbar__items">
           <button
             aria-label="メニューを開く"
-            className="navbar__toggle"
+            className="clean-btn navbar__toggle"
             onClick={showSidebar}
             onKeyDown={showSidebar}
             tabIndex={0}
