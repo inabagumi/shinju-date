@@ -1661,7 +1661,7 @@ __metadata:
     next: ^11.0.1
     next-pwa: ^5.2.21
     next-seo: ^4.26.0
-    next-themes: ^0.0.14
+    next-themes: ^0.0.15
     nprogress: ^1.0.0-1
     postcss: ^8.3.5
     postcss-flexbugs-fixes: ^5.0.2
@@ -7789,14 +7789,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next-themes@npm:^0.0.14":
-  version: 0.0.14
-  resolution: "next-themes@npm:0.0.14"
+"next-themes@npm:^0.0.15":
+  version: 0.0.15
+  resolution: "next-themes@npm:0.0.15"
   peerDependencies:
     next: "*"
     react: "*"
     react-dom: "*"
-  checksum: 4b9094fb55e6df275ddd1dc8ab2d0e3fe50615add6330c286b1769a8a584494489cf536fcad8b6dc7c3f7869caf3d7db27d271d79bd1b15c493c7cba71c7a497
+  checksum: c85793fa07e08bb060993d4ad8b3a79a9db83d16a0256d3852676621e0ab1b8a013ef984216581d24f29b8c47da2ebfbe456229564e73edd50e89b64f307f174
   languageName: node
   linkType: hard
 
