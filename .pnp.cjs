@@ -51,7 +51,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/node", "npm:14.17.4"],
             ["@types/nprogress", "npm:0.2.0"],
             ["@types/react", "npm:17.0.13"],
-            ["@types/web-app-manifest", "npm:1.0.1"],
+            ["@types/web-app-manifest", "npm:1.0.2"],
             ["@typescript-eslint/eslint-plugin", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.28.1"],
             ["@typescript-eslint/parser", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.28.1"],
             ["algoliasearch", "npm:4.10.2"],
@@ -2909,7 +2909,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/node", "npm:14.17.4"],
             ["@types/nprogress", "npm:0.2.0"],
             ["@types/react", "npm:17.0.13"],
-            ["@types/web-app-manifest", "npm:1.0.1"],
+            ["@types/web-app-manifest", "npm:1.0.2"],
             ["@typescript-eslint/eslint-plugin", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.28.1"],
             ["@typescript-eslint/parser", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.28.1"],
             ["algoliasearch", "npm:4.10.2"],
@@ -4155,10 +4155,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@types/web-app-manifest", [
-        ["npm:1.0.1", {
-          "packageLocation": "./.yarn/cache/@types-web-app-manifest-npm-1.0.1-652427a398-3171d6e11e.zip/node_modules/@types/web-app-manifest/",
+        ["npm:1.0.2", {
+          "packageLocation": "./.yarn/cache/@types-web-app-manifest-npm-1.0.2-7b13c119a3-4f9ced4981.zip/node_modules/@types/web-app-manifest/",
           "packageDependencies": [
-            ["@types/web-app-manifest", "npm:1.0.1"]
+            ["@types/web-app-manifest", "npm:1.0.2"]
           ],
           "linkType": "HARD",
         }]
