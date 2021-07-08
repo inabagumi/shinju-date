@@ -1656,7 +1656,7 @@ __metadata:
     "@types/jest": ^26.0.24
     "@types/lodash.chunk": ^4.2.6
     "@types/lodash.groupby": ^4.6.6
-    "@types/node": ^14.17.4
+    "@types/node": ^14.17.5
     "@types/nprogress": ^0.2.0
     "@types/react": ^17.0.14
     "@types/web-app-manifest": ^1.0.2
@@ -2527,10 +2527,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.17.4":
-  version: 14.17.4
-  resolution: "@types/node@npm:14.17.4"
-  checksum: a0bbe143273f9bf39c1d4f9955b6efeabfa5ddb436692ca8fe1a835ceaacfb2536cad122df54a29daaf6139dcc79a480502c39477cf5fe28b9af2709a41312e7
+"@types/node@npm:^14.17.5":
+  version: 14.17.5
+  resolution: "@types/node@npm:14.17.5"
+  checksum: 8fba22a8df7bcea75039f08e00fcff8e331f6d367739a9631d3457bc3e8e5ddfdd60e1a5d685d9420312e9ed7cf2f2146d37224ec9f7d578fe8dd32ce3821e62
   languageName: node
   linkType: hard
 
