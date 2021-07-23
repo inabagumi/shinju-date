@@ -57,7 +57,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["algoliasearch", "npm:4.10.3"],
             ["clsx", "npm:1.1.1"],
             ["critters", "npm:0.0.10"],
-            ["date-fns", "npm:2.22.1"],
+            ["date-fns", "npm:2.23.0"],
             ["eslint", "npm:7.31.0"],
             ["eslint-config-next", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:11.0.1"],
             ["eslint-config-prettier", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.3.0"],
@@ -2936,7 +2936,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["algoliasearch", "npm:4.10.3"],
             ["clsx", "npm:1.1.1"],
             ["critters", "npm:0.0.10"],
-            ["date-fns", "npm:2.22.1"],
+            ["date-fns", "npm:2.23.0"],
             ["eslint", "npm:7.31.0"],
             ["eslint-config-next", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:11.0.1"],
             ["eslint-config-prettier", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.3.0"],
@@ -6297,10 +6297,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["date-fns", [
-        ["npm:2.22.1", {
-          "packageLocation": "./.yarn/cache/date-fns-npm-2.22.1-cc0cbadceb-7ff97cd605.zip/node_modules/date-fns/",
+        ["npm:2.23.0", {
+          "packageLocation": "./.yarn/cache/date-fns-npm-2.23.0-fa1182c861-485216d550.zip/node_modules/date-fns/",
           "packageDependencies": [
-            ["date-fns", "npm:2.22.1"]
+            ["date-fns", "npm:2.23.0"]
           ],
           "linkType": "HARD",
         }]
