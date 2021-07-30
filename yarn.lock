@@ -1671,7 +1671,7 @@ __metadata:
     eslint-config-prettier: ^8.3.0
     eslint-plugin-prettier: ^3.4.0
     ics: ^2.29.0
-    infima: ^0.2.0-alpha.29
+    infima: ^0.2.0-alpha.30
     jest: ^27.0.6
     localforage: ^1.9.0
     lodash.chunk: ^4.2.0
@@ -5891,10 +5891,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"infima@npm:^0.2.0-alpha.29":
-  version: 0.2.0-alpha.29
-  resolution: "infima@npm:0.2.0-alpha.29"
-  checksum: 925444d6c9e1e8ed0f3f65d831d7ed07cd592c7ad8b418b52992ee0b7128304ce39d9aea992021c672aa6cc11a8e1eb6c584bfffee6c225e26c0e9f360b889a6
+"infima@npm:^0.2.0-alpha.30":
+  version: 0.2.0-alpha.30
+  resolution: "infima@npm:0.2.0-alpha.30"
+  checksum: eb227c82494590d8caa088b2324afcec925e890fc49515d98168b1f2dd303c902cb48d0a8184b33bbe65ff72be72da5a839f91b6d2444f26a1ff5a5cea1ac476
   languageName: node
   linkType: hard
 
