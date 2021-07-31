@@ -1670,7 +1670,7 @@ __metadata:
     eslint-config-next: ^11.0.1
     eslint-config-prettier: ^8.3.0
     eslint-plugin-prettier: ^3.4.0
-    ics: ^2.29.0
+    ics: ^2.31.0
     infima: ^0.2.0-alpha.30
     jest: ^27.0.6
     localforage: ^1.9.0
@@ -5792,13 +5792,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ics@npm:^2.29.0":
-  version: 2.29.0
-  resolution: "ics@npm:2.29.0"
+"ics@npm:^2.31.0":
+  version: 2.31.0
+  resolution: "ics@npm:2.31.0"
   dependencies:
-    uuid: ^3.3.3
+    nanoid: ^3.1.23
     yup: ^0.32.9
-  checksum: f22c79ece7cdc527ce216c00a58dc710da58089622e155276dc986c127bec5bfdcddd2c500e647c981fe2ea6039b1370655da05aa695060924ab4cc083910543
+  checksum: c5dbb6ca10b0ffc3936805ece4340365d3113d72939762cb3cb5b727850b2774c4d367952ebd25310cacc7ac8ce6acc944de32bfaaff097856e4dd0764a86126
   languageName: node
   linkType: hard
 
@@ -11112,15 +11112,6 @@ typescript@~4.3.5:
     safe-buffer: ^5.1.2
     which-typed-array: ^1.1.2
   checksum: 8eac7a6e6b341c0f1b3eb73bbe5dfcae31a7e9699c8fc3266789f3e95f7637946a7700dcf1904dbd3749a58a36760ebf7acf4bb5b717f7468532a8a79f44eff0
-  languageName: node
-  linkType: hard
-
-"uuid@npm:^3.3.3":
-  version: 3.4.0
-  resolution: "uuid@npm:3.4.0"
-  bin:
-    uuid: ./bin/uuid
-  checksum: 58de2feed61c59060b40f8203c0e4ed7fd6f99d42534a499f1741218a1dd0c129f4aa1de797bcf822c8ea5da7e4137aa3673431a96dae729047f7aca7b27866f
   languageName: node
   linkType: hard
 
