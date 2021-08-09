@@ -57,6 +57,7 @@
   "homepage": "https://shinju.date/",
   "license": "MIT",
   "name": "@inabagumi/shinju-date",
+  "packageManager": "yarn@3.0.0",
   "private": true,
   "scripts": {
     "build": "next build",
