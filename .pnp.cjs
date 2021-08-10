@@ -45,7 +45,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@svgr/webpack", "npm:5.5.0"],
             ["@types/eslint", "npm:7.28.0"],
             ["@types/gtag.js", "npm:0.0.7"],
-            ["@types/jest", "npm:26.0.24"],
+            ["@types/jest", "npm:27.0.0"],
             ["@types/lodash.chunk", "npm:4.2.6"],
             ["@types/lodash.groupby", "npm:4.6.6"],
             ["@types/node", "npm:14.17.9"],
@@ -2891,7 +2891,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@svgr/webpack", "npm:5.5.0"],
             ["@types/eslint", "npm:7.28.0"],
             ["@types/gtag.js", "npm:0.0.7"],
-            ["@types/jest", "npm:26.0.24"],
+            ["@types/jest", "npm:27.0.0"],
             ["@types/lodash.chunk", "npm:4.2.6"],
             ["@types/lodash.groupby", "npm:4.6.6"],
             ["@types/node", "npm:14.17.9"],
@@ -3928,10 +3928,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@types/jest", [
-        ["npm:26.0.24", {
-          "packageLocation": "./.yarn/cache/@types-jest-npm-26.0.24-47c570294f-ae39675412.zip/node_modules/@types/jest/",
+        ["npm:27.0.0", {
+          "packageLocation": "./.yarn/cache/@types-jest-npm-27.0.0-071a5f5a28-bb894a1fcc.zip/node_modules/@types/jest/",
           "packageDependencies": [
-            ["@types/jest", "npm:26.0.24"],
+            ["@types/jest", "npm:27.0.0"],
             ["jest-diff", "npm:26.6.2"],
             ["pretty-format", "npm:26.6.2"]
           ],
