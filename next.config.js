@@ -2,7 +2,7 @@ const withMDX = require('@next/mdx')()
 const withPWA = require('next-pwa')
 
 /**
- * @type {import('next/dist/next-server/server/config').NextConfig}
+ * @type {import('next').NextConfig}
  **/
 const nextConfig = {
   experimental: {
