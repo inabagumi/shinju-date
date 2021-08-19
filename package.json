@@ -8,7 +8,7 @@
     "date-fns": "^2.23.0",
     "ics": "^2.31.0",
     "infima": "^0.2.0-alpha.31",
-    "localforage": "^1.9.0",
+    "localforage": "^1.10.0",
     "lodash.chunk": "^4.2.0",
     "lodash.groupby": "^4.6.0",
     "next": "^11.1.0",

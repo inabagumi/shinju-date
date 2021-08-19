@@ -65,7 +65,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["ics", "npm:2.31.0"],
             ["infima", "npm:0.2.0-alpha.31"],
             ["jest", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:27.0.6"],
-            ["localforage", "npm:1.9.0"],
+            ["localforage", "npm:1.10.0"],
             ["lodash.chunk", "npm:4.2.0"],
             ["lodash.groupby", "npm:4.6.0"],
             ["next", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:11.1.0"],
@@ -2915,7 +2915,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["ics", "npm:2.31.0"],
             ["infima", "npm:0.2.0-alpha.31"],
             ["jest", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:27.0.6"],
-            ["localforage", "npm:1.9.0"],
+            ["localforage", "npm:1.10.0"],
             ["lodash.chunk", "npm:4.2.0"],
             ["lodash.groupby", "npm:4.6.0"],
             ["next", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:11.1.0"],
@@ -9596,10 +9596,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["localforage", [
-        ["npm:1.9.0", {
-          "packageLocation": "./.yarn/cache/localforage-npm-1.9.0-5c11c66e94-dc0256ce87.zip/node_modules/localforage/",
+        ["npm:1.10.0", {
+          "packageLocation": "./.yarn/cache/localforage-npm-1.10.0-cf9ea9a436-f2978b434d.zip/node_modules/localforage/",
           "packageDependencies": [
-            ["localforage", "npm:1.9.0"],
+            ["localforage", "npm:1.10.0"],
             ["lie", "npm:3.1.1"]
           ],
           "linkType": "HARD",
