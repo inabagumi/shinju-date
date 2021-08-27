@@ -20,7 +20,7 @@
     "react-icons": "^4.2.0",
     "react-infinite-scroll-component": "^6.1.0",
     "react-intersection-observer": "^8.32.1",
-    "swr": "^0.5.7"
+    "swr": "^1.0.0"
   },
   "description": "SHINJU DATE is a web service for searching videos.",
   "devDependencies": {

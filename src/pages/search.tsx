@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { NextSeo } from 'next-seo'
 import { useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
-import { useSWRInfinite } from 'swr'
+import useSWRInfinite from 'swr/infinite'
 
 import { shareCard } from '@/assets'
 import Page from '@/components/Layout'

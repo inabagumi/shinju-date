@@ -82,7 +82,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["react-icons", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.2.0"],
             ["react-infinite-scroll-component", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:6.1.0"],
             ["react-intersection-observer", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.32.1"],
-            ["swr", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:0.5.7"],
+            ["swr", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:1.0.0"],
             ["typescript", "patch:typescript@npm%3A4.4.2#~builtin<compat/typescript>::version=4.4.2&hash=d8b4e7"]
           ],
           "linkType": "SOFT",
@@ -2932,7 +2932,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["react-icons", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.2.0"],
             ["react-infinite-scroll-component", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:6.1.0"],
             ["react-intersection-observer", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.32.1"],
-            ["swr", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:0.5.7"],
+            ["swr", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:1.0.0"],
             ["typescript", "patch:typescript@npm%3A4.4.2#~builtin<compat/typescript>::version=4.4.2&hash=d8b4e7"]
           ],
           "linkType": "SOFT",
@@ -13362,17 +13362,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["swr", [
-        ["npm:0.5.7", {
-          "packageLocation": "./.yarn/cache/swr-npm-0.5.7-8528ace0f6-1bbc7fb107.zip/node_modules/swr/",
+        ["npm:1.0.0", {
+          "packageLocation": "./.yarn/cache/swr-npm-1.0.0-ce6221f6d9-8ffb767ca5.zip/node_modules/swr/",
           "packageDependencies": [
-            ["swr", "npm:0.5.7"]
+            ["swr", "npm:1.0.0"]
           ],
           "linkType": "SOFT",
         }],
-        ["virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:0.5.7", {
-          "packageLocation": "./.yarn/__virtual__/swr-virtual-d4490fb252/0/cache/swr-npm-0.5.7-8528ace0f6-1bbc7fb107.zip/node_modules/swr/",
+        ["virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:1.0.0", {
+          "packageLocation": "./.yarn/__virtual__/swr-virtual-40c16b57bb/0/cache/swr-npm-1.0.0-ce6221f6d9-8ffb767ca5.zip/node_modules/swr/",
           "packageDependencies": [
-            ["swr", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:0.5.7"],
+            ["swr", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:1.0.0"],
             ["@types/react", "npm:17.0.19"],
             ["dequal", "npm:2.0.2"],
             ["react", "npm:17.0.2"]
