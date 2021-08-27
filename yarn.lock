@@ -1641,7 +1641,7 @@ __metadata:
     react-dom: ^17.0.2
     react-icons: ^4.2.0
     react-infinite-scroll-component: ^6.1.0
-    react-intersection-observer: ^8.32.0
+    react-intersection-observer: ^8.32.1
     swr: ^0.5.6
     typescript: ~4.4.2
   languageName: unknown
@@ -9244,12 +9244,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-intersection-observer@npm:^8.32.0":
-  version: 8.32.0
-  resolution: "react-intersection-observer@npm:8.32.0"
+"react-intersection-observer@npm:^8.32.1":
+  version: 8.32.1
+  resolution: "react-intersection-observer@npm:8.32.1"
   peerDependencies:
     react: ^15.0.0 || ^16.0.0 || ^17.0.0|| ^18.0.0
-  checksum: 24eebbbc73511d975627b6563ff168812ec3de5bd251dd4991cf89b2ad04b3c0dd27f8487ea368f87793d117557771d517ccf0625b5c8e944d8ad71a68f079fd
+  checksum: 3bd4419a468299909774287244ce33390a6a2770da241fd0b53e8594b7e4ad4ffe9d08bceec616d297194a78680401029231d19388871469a0e234558de2fa47
   languageName: node
   linkType: hard
 
