@@ -24,6 +24,7 @@
   },
   "description": "SHINJU DATE is a web service for searching videos.",
   "devDependencies": {
+    "@algolia/client-search": "^4.10.5",
     "@babel/runtime": "^7.15.3",
     "@fullhuman/postcss-purgecss": "^4.0.3",
     "@inabagumi/prettier-config": "^1.1.3",

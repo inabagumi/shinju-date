@@ -3,7 +3,7 @@ module.exports = {
     [
       '@fullhuman/postcss-purgecss',
       {
-        content: ['./src/**/*.{mdx,tsx}'],
+        content: ['./pages/**/*.{mdx,tsx}', './components/**/*.{mdx,tsx}'],
         safelist: ['html', 'data-theme', /^data-reach-skip-nav/]
       }
     ],
