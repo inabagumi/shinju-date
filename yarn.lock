@@ -74,7 +74,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@algolia/client-search@npm:4.10.5":
+"@algolia/client-search@npm:4.10.5, @algolia/client-search@npm:^4.10.5":
   version: 4.10.5
   resolution: "@algolia/client-search@npm:4.10.5"
   dependencies:
@@ -1595,6 +1595,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@inabagumi/shinju-date@workspace:."
   dependencies:
+    "@algolia/client-search": ^4.10.5
     "@babel/runtime": ^7.15.3
     "@fullhuman/postcss-purgecss": ^4.0.3
     "@inabagumi/prettier-config": ^1.1.3

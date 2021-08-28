@@ -35,6 +35,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         [null, {
           "packageLocation": "./",
           "packageDependencies": [
+            ["@algolia/client-search", "npm:4.10.5"],
             ["@babel/runtime", "npm:7.15.3"],
             ["@fullhuman/postcss-purgecss", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.0.3"],
             ["@inabagumi/prettier-config", "npm:1.1.3"],
@@ -2885,6 +2886,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",
           "packageDependencies": [
             ["@inabagumi/shinju-date", "workspace:."],
+            ["@algolia/client-search", "npm:4.10.5"],
             ["@babel/runtime", "npm:7.15.3"],
             ["@fullhuman/postcss-purgecss", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.0.3"],
             ["@inabagumi/prettier-config", "npm:1.1.3"],

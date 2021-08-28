@@ -12,7 +12,12 @@
     "moduleResolution": "node",
     "noEmit": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/assets/*": ["assets/*"],
+      "@/components/*": ["components/*"],
+      "@/pages/*": ["pages/*"],
+      "@/styles/*": ["styles/*"],
+      "@/types/*": ["types/*"],
+      "@/utils/*": ["utils/*"]
     },
     "resolveJsonModule": true,
     "skipLibCheck": true,
