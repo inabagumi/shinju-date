@@ -65,7 +65,7 @@
     "dev": "next",
     "format": "prettier --write '**/*.{json,yml}'",
     "format-check": "prettier --check '**/*.{json,yml}'",
-    "lint": "eslint .",
+    "lint": "next lint",
     "start": "next start",
     "test": "jest"
   },
