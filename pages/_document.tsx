@@ -6,15 +6,9 @@ export default class MyDocument extends Document {
       <Html lang="ja">
         <Head>
           <meta content="#212121" name="theme-color" />
-          <link href="https://fonts.googleapis.com" rel="preconnect" />
           <link href="https://fonts.gstatic.com" rel="preconnect" />
           <link href="https://www.googletagmanager.com" rel="preconnect" />
           <link href="https://www.google-analytics.com" rel="preconnect" />
-          <link
-            as="style"
-            href="https://fonts.googleapis.com/css2?display=swap&amp;family=Lato%3Awght%40300%3B400%3B700"
-            rel="preload"
-          />
           <link href="/manifest.json" rel="manifest" />
           <link
             href="/opensearch.xml"
