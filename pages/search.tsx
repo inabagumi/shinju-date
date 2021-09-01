@@ -69,6 +69,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
       <div className="col col--4 padding-bottom--lg padding-horiz--sm">
         <VideoCard />
       </div>
+      <div className="col col--4" />
     </div>
   )
 
@@ -135,6 +136,9 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
                           />
                         </div>
                       ))}
+                      {new Array(3 - values.length).fill(
+                        <div className="col col--4" />
+                      )}
                     </div>
                   ))}
                 </div>

@@ -52,6 +52,9 @@ const Timeline: FC<Props> = ({ values }) => {
                       <VideoCard value={value} />
                     </div>
                   ))}
+                  {new Array(3 - values.length).fill(
+                    <div className="col col--4" />
+                  )}
                 </div>
               ))}
             </div>
@@ -70,6 +73,7 @@ const Timeline: FC<Props> = ({ values }) => {
               <div className="col col--4 padding-bottom--lg padding-horiz--sm">
                 <VideoCard />
               </div>
+              <div className="col col--4" />
             </div>
           </div>
         </section>
