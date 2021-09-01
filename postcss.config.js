@@ -5,7 +5,7 @@ module.exports = {
       {
         content: ['./pages/**/*.{mdx,tsx}', './components/**/*.{mdx,tsx}'],
         defaultExtractor: (content) => content.match(/[\w-/:]+(?<!:)/g) || [],
-        safelist: ['html', 'body', 'data-theme', /^data-reach-/, 'class']
+        safelist: ['html', 'body', 'data-theme', /^data-reach-/]
       }
     ],
     'postcss-flexbugs-fixes',
