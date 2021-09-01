@@ -4,7 +4,8 @@ module.exports = {
       '@fullhuman/postcss-purgecss',
       {
         content: ['./pages/**/*.{mdx,tsx}', './components/**/*.{mdx,tsx}'],
-        safelist: ['html', 'data-theme', /^data-reach-skip-nav/]
+        defaultExtractor: (content) => content.match(/[\w-/:]+(?<!:)/g) || [],
+        safelist: ['html', 'body', 'data-theme', /^data-reach-/, 'class']
       }
     ],
     'postcss-flexbugs-fixes',
