@@ -64,7 +64,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-config-prettier", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.3.0"],
             ["eslint-plugin-prettier", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.0.0"],
             ["ics", "npm:2.31.0"],
-            ["infima", "npm:0.2.0-alpha.32"],
+            ["infima", "npm:0.2.0-alpha.33"],
             ["jest", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:27.1.0"],
             ["localforage", "npm:1.10.0"],
             ["lodash.chunk", "npm:4.2.0"],
@@ -2916,7 +2916,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-config-prettier", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.3.0"],
             ["eslint-plugin-prettier", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.0.0"],
             ["ics", "npm:2.31.0"],
-            ["infima", "npm:0.2.0-alpha.32"],
+            ["infima", "npm:0.2.0-alpha.33"],
             ["jest", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:27.1.0"],
             ["localforage", "npm:1.10.0"],
             ["lodash.chunk", "npm:4.2.0"],
@@ -8248,10 +8248,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["infima", [
-        ["npm:0.2.0-alpha.32", {
-          "packageLocation": "./.yarn/cache/infima-npm-0.2.0-alpha.32-7ffaf02286-aee0fe7c0a.zip/node_modules/infima/",
+        ["npm:0.2.0-alpha.33", {
+          "packageLocation": "./.yarn/cache/infima-npm-0.2.0-alpha.33-18256298d2-da16108bd9.zip/node_modules/infima/",
           "packageDependencies": [
-            ["infima", "npm:0.2.0-alpha.32"]
+            ["infima", "npm:0.2.0-alpha.33"]
           ],
           "linkType": "HARD",
         }]
