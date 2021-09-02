@@ -36,7 +36,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",
           "packageDependencies": [
             ["@algolia/client-search", "npm:4.10.5"],
-            ["@babel/runtime", "npm:7.15.3"],
+            ["@babel/runtime", "npm:7.15.4"],
             ["@fullhuman/postcss-purgecss", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.0.3"],
             ["@inabagumi/prettier-config", "npm:1.1.3"],
             ["@mdx-js/loader", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:2.0.0-next.9"],
@@ -2700,6 +2700,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["regenerator-runtime", "npm:0.13.9"]
           ],
           "linkType": "HARD",
+        }],
+        ["npm:7.15.4", {
+          "packageLocation": "./.yarn/cache/@babel-runtime-npm-7.15.4-52ce5bf6ea-c408254304.zip/node_modules/@babel/runtime/",
+          "packageDependencies": [
+            ["@babel/runtime", "npm:7.15.4"],
+            ["regenerator-runtime", "npm:0.13.9"]
+          ],
+          "linkType": "HARD",
         }]
       ]],
       ["@babel/runtime-corejs3", [
@@ -2888,7 +2896,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["@inabagumi/shinju-date", "workspace:."],
             ["@algolia/client-search", "npm:4.10.5"],
-            ["@babel/runtime", "npm:7.15.3"],
+            ["@babel/runtime", "npm:7.15.4"],
             ["@fullhuman/postcss-purgecss", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.0.3"],
             ["@inabagumi/prettier-config", "npm:1.1.3"],
             ["@mdx-js/loader", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:2.0.0-next.9"],
@@ -4748,7 +4756,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/aria-query-npm-4.2.2-e0c4f1a309-38401a9a40.zip/node_modules/aria-query/",
           "packageDependencies": [
             ["aria-query", "npm:4.2.2"],
-            ["@babel/runtime", "npm:7.15.3"],
+            ["@babel/runtime", "npm:7.15.4"],
             ["@babel/runtime-corejs3", "npm:7.15.3"]
           ],
           "linkType": "HARD",
@@ -7094,7 +7102,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/__virtual__/eslint-plugin-jsx-a11y-virtual-3afa14fa45/0/cache/eslint-plugin-jsx-a11y-npm-6.4.1-c0ffc3303a-3032627638.zip/node_modules/eslint-plugin-jsx-a11y/",
           "packageDependencies": [
             ["eslint-plugin-jsx-a11y", "virtual:8efd2e77d65d7e6609e8dac5386b0ffd78e58b62116f6ea457448dc5ad381744eb96606fe1a97c88befa4ead7a6f44f119e3efb7ee297d592d2a0441083e429d#npm:6.4.1"],
-            ["@babel/runtime", "npm:7.15.3"],
+            ["@babel/runtime", "npm:7.15.4"],
             ["@types/eslint", "npm:7.28.0"],
             ["aria-query", "npm:4.2.2"],
             ["array-includes", "npm:3.1.3"],
@@ -12283,7 +12291,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/regenerator-transform-npm-0.14.5-40045884e9-a467a3b652.zip/node_modules/regenerator-transform/",
           "packageDependencies": [
             ["regenerator-transform", "npm:0.14.5"],
-            ["@babel/runtime", "npm:7.15.3"]
+            ["@babel/runtime", "npm:7.15.4"]
           ],
           "linkType": "HARD",
         }]
@@ -14505,7 +14513,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@apideck/better-ajv-errors", "virtual:8ea3bfd34289d6c8c6fd7860e074ca02e1588ee9ec7970bc14f8f8d5317215d21c1ac2c0b44940ef8714af9f6bdf1555a8e1d5420642ec9dc98df8d189cf2373#npm:0.2.5"],
             ["@babel/core", "npm:7.15.0"],
             ["@babel/preset-env", "virtual:0d3ac09bc69ff6f5b2ac593856de04c532ec6d2cf18b78443f418f411b60f83c0f94400da7d048ef2418caf9f222b695a9bd62d7c763e677281a627f1ac95357#npm:7.15.0"],
-            ["@babel/runtime", "npm:7.15.3"],
+            ["@babel/runtime", "npm:7.15.4"],
             ["@rollup/plugin-babel", "virtual:8ea3bfd34289d6c8c6fd7860e074ca02e1588ee9ec7970bc14f8f8d5317215d21c1ac2c0b44940ef8714af9f6bdf1555a8e1d5420642ec9dc98df8d189cf2373#npm:5.3.0"],
             ["@rollup/plugin-node-resolve", "virtual:8ea3bfd34289d6c8c6fd7860e074ca02e1588ee9ec7970bc14f8f8d5317215d21c1ac2c0b44940ef8714af9f6bdf1555a8e1d5420642ec9dc98df8d189cf2373#npm:11.2.1"],
             ["@rollup/plugin-replace", "virtual:8ea3bfd34289d6c8c6fd7860e074ca02e1588ee9ec7970bc14f8f8d5317215d21c1ac2c0b44940ef8714af9f6bdf1555a8e1d5420642ec9dc98df8d189cf2373#npm:2.4.2"],
@@ -14866,7 +14874,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/yup-npm-0.32.9-d884fe5f43-3f33850913.zip/node_modules/yup/",
           "packageDependencies": [
             ["yup", "npm:0.32.9"],
-            ["@babel/runtime", "npm:7.15.3"],
+            ["@babel/runtime", "npm:7.15.4"],
             ["@types/lodash", "npm:4.14.172"],
             ["lodash", "npm:4.17.21"],
             ["lodash-es", "npm:4.17.21"],
