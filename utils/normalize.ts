@@ -24,13 +24,21 @@ function normalize({
     duration: isZeroSeconds(duration) ? undefined : duration,
     id,
     publishedAt: fromUnixTime(publishedAt),
-    thumbnail: {
-      ...thumbnail,
-      src: thumbnail.src.replace(
-        /^https:\/\/i\.ytimg\.com\/vi\//,
-        `${thumbnailBasePath}/`
-      )
-    },
+    thumbnail: thumbnail
+      ? {
+          ...thumbnail,
+          src: thumbnail.src.replace(
+            /^https:\/\/i\.ytimg\.com\/vi\//,
+            `${thumbnailBasePath}/`
+          )
+        }
+      : {
+          height: 720,
+          preSrc:
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=',
+          src: `${thumbnailBasePath}/${id}/maxresdefault.jpg`,
+          width: 1280
+        },
     title,
     url
   }
