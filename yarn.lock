@@ -1651,7 +1651,7 @@ __metadata:
     next-seo: ^4.28.1
     next-themes: ^0.0.15
     nprogress: ^1.0.0-1
-    postcss: ^8.3.7
+    postcss: ^8.3.8
     postcss-flexbugs-fixes: ^5.0.2
     postcss-preset-env: ^6.7.0
     prettier: ~2.4.1
@@ -7820,10 +7820,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanocolors@npm:^0.1.5":
-  version: 0.1.5
-  resolution: "nanocolors@npm:0.1.5"
-  checksum: 032c12a5d8d901a3a59679db1f906d258080352ce6a5ea7a90df033fe969d1257f63000bc37c9562d068ba0c980f629868e9698e69511c9761080d030a6bc7b1
+"nanocolors@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "nanocolors@npm:0.2.2"
+  checksum: 87392fa827d033847d08d5b6ef47aceb165856a100dd079de6cc7b749ca5ed5d237e8609b2e64b64f7933aee497f73ccc2930dcefe1cbcb70a253418423d936e
   languageName: node
   linkType: hard
 
@@ -9050,14 +9050,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.2.1, postcss@npm:^8.3.7":
-  version: 8.3.7
-  resolution: "postcss@npm:8.3.7"
+"postcss@npm:^8.2.1, postcss@npm:^8.3.8":
+  version: 8.3.8
+  resolution: "postcss@npm:8.3.8"
   dependencies:
-    nanocolors: ^0.1.5
+    nanocolors: ^0.2.2
     nanoid: ^3.1.25
     source-map-js: ^0.6.2
-  checksum: 6b8c80611045787efa9900b1a278ec71393a12530a1c1f14baadcd6076e753791edd9bb9ef36c258cac450bc95dc3542ce2a4b6f21d5087875b91daa87422fc5
+  checksum: 20073f3f70487e9fa8d40e930d02595c4d96b7db8b2142ee4efe8e0c9a54c844c720370e178aef57c12d2d5bf65592cfdd1d020a74bf2840bc58650590713a35
   languageName: node
   linkType: hard
 
