@@ -74,7 +74,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["next-seo", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.28.1"],
             ["next-themes", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:0.0.15"],
             ["nprogress", "npm:1.0.0-1"],
-            ["postcss", "npm:8.3.7"],
+            ["postcss", "npm:8.3.8"],
             ["postcss-flexbugs-fixes", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:5.0.2"],
             ["postcss-preset-env", "npm:6.7.0"],
             ["prettier", "npm:2.4.1"],
@@ -2820,7 +2820,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["@fullhuman/postcss-purgecss", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.0.3"],
             ["@types/postcss", null],
-            ["postcss", "npm:8.3.7"],
+            ["postcss", "npm:8.3.8"],
             ["purgecss", "npm:4.0.3"]
           ],
           "packagePeers": [
@@ -2943,7 +2943,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["next-seo", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.28.1"],
             ["next-themes", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:0.0.15"],
             ["nprogress", "npm:1.0.0-1"],
-            ["postcss", "npm:8.3.7"],
+            ["postcss", "npm:8.3.8"],
             ["postcss-flexbugs-fixes", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:5.0.2"],
             ["postcss-preset-env", "npm:6.7.0"],
             ["prettier", "npm:2.4.1"],
@@ -10372,10 +10372,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["nanocolors", [
-        ["npm:0.1.5", {
-          "packageLocation": "./.yarn/cache/nanocolors-npm-0.1.5-730175ebe1-032c12a5d8.zip/node_modules/nanocolors/",
+        ["npm:0.2.2", {
+          "packageLocation": "./.yarn/cache/nanocolors-npm-0.2.2-663a96697d-87392fa827.zip/node_modules/nanocolors/",
           "packageDependencies": [
-            ["nanocolors", "npm:0.1.5"]
+            ["nanocolors", "npm:0.2.2"]
           ],
           "linkType": "HARD",
         }]
@@ -11366,11 +11366,11 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           ],
           "linkType": "HARD",
         }],
-        ["npm:8.3.7", {
-          "packageLocation": "./.yarn/cache/postcss-npm-8.3.7-ff962f218f-6b8c806110.zip/node_modules/postcss/",
+        ["npm:8.3.8", {
+          "packageLocation": "./.yarn/cache/postcss-npm-8.3.8-adce56afd5-20073f3f70.zip/node_modules/postcss/",
           "packageDependencies": [
-            ["postcss", "npm:8.3.7"],
-            ["nanocolors", "npm:0.1.5"],
+            ["postcss", "npm:8.3.8"],
+            ["nanocolors", "npm:0.2.2"],
             ["nanoid", "npm:3.1.25"],
             ["source-map-js", "npm:0.6.2"]
           ],
@@ -11523,7 +11523,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["postcss-flexbugs-fixes", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:5.0.2"],
             ["@types/postcss", null],
-            ["postcss", "npm:8.3.7"]
+            ["postcss", "npm:8.3.8"]
           ],
           "packagePeers": [
             "@types/postcss",
@@ -12008,7 +12008,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["purgecss", "npm:4.0.3"],
             ["commander", "npm:6.2.1"],
             ["glob", "npm:7.1.7"],
-            ["postcss", "npm:8.3.7"],
+            ["postcss", "npm:8.3.8"],
             ["postcss-selector-parser", "npm:6.0.6"]
           ],
           "linkType": "HARD",
