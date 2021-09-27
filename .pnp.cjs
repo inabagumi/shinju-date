@@ -38,7 +38,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@algolia/client-search", "npm:4.10.5"],
             ["@babel/runtime", "npm:7.15.4"],
             ["@fullhuman/postcss-purgecss", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.0.3"],
-            ["@inabagumi/prettier-config", "npm:1.1.3"],
+            ["@inabagumi/prettier-config", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:2.0.0"],
             ["@mdx-js/loader", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:2.0.0-next.9"],
             ["@mdx-js/react", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:2.0.0-next.9"],
             ["@next/mdx", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:11.1.2"],
@@ -2891,10 +2891,23 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@inabagumi/prettier-config", [
-        ["npm:1.1.3", {
-          "packageLocation": "./.yarn/cache/@inabagumi-prettier-config-npm-1.1.3-1e75f18469-ac9d349719.zip/node_modules/@inabagumi/prettier-config/",
+        ["npm:2.0.0", {
+          "packageLocation": "./.yarn/cache/@inabagumi-prettier-config-npm-2.0.0-be23b98823-9a1dd794af.zip/node_modules/@inabagumi/prettier-config/",
           "packageDependencies": [
-            ["@inabagumi/prettier-config", "npm:1.1.3"]
+            ["@inabagumi/prettier-config", "npm:2.0.0"]
+          ],
+          "linkType": "SOFT",
+        }],
+        ["virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:2.0.0", {
+          "packageLocation": "./.yarn/__virtual__/@inabagumi-prettier-config-virtual-bae0e9c092/0/cache/@inabagumi-prettier-config-npm-2.0.0-be23b98823-9a1dd794af.zip/node_modules/@inabagumi/prettier-config/",
+          "packageDependencies": [
+            ["@inabagumi/prettier-config", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:2.0.0"],
+            ["@types/prettier", null],
+            ["prettier", "npm:2.4.1"]
+          ],
+          "packagePeers": [
+            "@types/prettier",
+            "prettier"
           ],
           "linkType": "HARD",
         }]
@@ -2907,7 +2920,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@algolia/client-search", "npm:4.10.5"],
             ["@babel/runtime", "npm:7.15.4"],
             ["@fullhuman/postcss-purgecss", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.0.3"],
-            ["@inabagumi/prettier-config", "npm:1.1.3"],
+            ["@inabagumi/prettier-config", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:2.0.0"],
             ["@mdx-js/loader", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:2.0.0-next.9"],
             ["@mdx-js/react", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:2.0.0-next.9"],
             ["@next/mdx", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:11.1.2"],
