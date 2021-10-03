@@ -80,7 +80,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["prettier", "npm:2.4.1"],
             ["react", "npm:17.0.2"],
             ["react-dom", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:17.0.2"],
-            ["react-icons", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.2.0"],
+            ["react-icons", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.3.1"],
             ["react-infinite-scroll-component", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:6.1.0"],
             ["react-intersection-observer", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.32.1"],
             ["swr", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:1.0.1"],
@@ -2962,7 +2962,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["prettier", "npm:2.4.1"],
             ["react", "npm:17.0.2"],
             ["react-dom", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:17.0.2"],
-            ["react-icons", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.2.0"],
+            ["react-icons", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.3.1"],
             ["react-infinite-scroll-component", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:6.1.0"],
             ["react-intersection-observer", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.32.1"],
             ["swr", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:1.0.1"],
@@ -12174,17 +12174,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["react-icons", [
-        ["npm:4.2.0", {
-          "packageLocation": "./.yarn/cache/react-icons-npm-4.2.0-8be7673a1c-2b42d9b0ac.zip/node_modules/react-icons/",
+        ["npm:4.3.1", {
+          "packageLocation": "./.yarn/cache/react-icons-npm-4.3.1-46cb955834-2cc608acdd.zip/node_modules/react-icons/",
           "packageDependencies": [
-            ["react-icons", "npm:4.2.0"]
+            ["react-icons", "npm:4.3.1"]
           ],
           "linkType": "SOFT",
         }],
-        ["virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.2.0", {
-          "packageLocation": "./.yarn/__virtual__/react-icons-virtual-4728368e92/0/cache/react-icons-npm-4.2.0-8be7673a1c-2b42d9b0ac.zip/node_modules/react-icons/",
+        ["virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.3.1", {
+          "packageLocation": "./.yarn/__virtual__/react-icons-virtual-842b8f245e/0/cache/react-icons-npm-4.3.1-46cb955834-2cc608acdd.zip/node_modules/react-icons/",
           "packageDependencies": [
-            ["react-icons", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.2.0"],
+            ["react-icons", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.3.1"],
             ["@types/react", "npm:17.0.27"],
             ["react", "npm:17.0.2"]
           ],
