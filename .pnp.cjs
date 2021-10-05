@@ -74,7 +74,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["next-seo", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.28.1"],
             ["next-themes", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:0.0.15"],
             ["nprogress", "npm:1.0.0-1"],
-            ["postcss", "npm:8.3.8"],
+            ["postcss", "npm:8.3.9"],
             ["postcss-flexbugs-fixes", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:5.0.2"],
             ["postcss-preset-env", "npm:6.7.0"],
             ["prettier", "npm:2.4.1"],
@@ -2820,7 +2820,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["@fullhuman/postcss-purgecss", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.0.3"],
             ["@types/postcss", null],
-            ["postcss", "npm:8.3.8"],
+            ["postcss", "npm:8.3.9"],
             ["purgecss", "npm:4.0.3"]
           ],
           "packagePeers": [
@@ -2956,7 +2956,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["next-seo", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.28.1"],
             ["next-themes", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:0.0.15"],
             ["nprogress", "npm:1.0.0-1"],
-            ["postcss", "npm:8.3.8"],
+            ["postcss", "npm:8.3.9"],
             ["postcss-flexbugs-fixes", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:5.0.2"],
             ["postcss-preset-env", "npm:6.7.0"],
             ["prettier", "npm:2.4.1"],
@@ -11285,6 +11285,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["picocolors", [
+        ["npm:0.2.1", {
+          "packageLocation": "./.yarn/cache/picocolors-npm-0.2.1-fa0e648c44-3b0f441f00.zip/node_modules/picocolors/",
+          "packageDependencies": [
+            ["picocolors", "npm:0.2.1"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["picomatch", [
         ["npm:2.3.0", {
           "packageLocation": "./.yarn/cache/picomatch-npm-2.3.0-5e60e6c82d-16818720ea.zip/node_modules/picomatch/",
@@ -11413,12 +11422,12 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           ],
           "linkType": "HARD",
         }],
-        ["npm:8.3.8", {
-          "packageLocation": "./.yarn/cache/postcss-npm-8.3.8-adce56afd5-20073f3f70.zip/node_modules/postcss/",
+        ["npm:8.3.9", {
+          "packageLocation": "./.yarn/cache/postcss-npm-8.3.9-f40ddb7d0e-b64d0e59bc.zip/node_modules/postcss/",
           "packageDependencies": [
-            ["postcss", "npm:8.3.8"],
-            ["nanocolors", "npm:0.2.12"],
+            ["postcss", "npm:8.3.9"],
             ["nanoid", "npm:3.1.28"],
+            ["picocolors", "npm:0.2.1"],
             ["source-map-js", "npm:0.6.2"]
           ],
           "linkType": "HARD",
@@ -11570,7 +11579,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["postcss-flexbugs-fixes", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:5.0.2"],
             ["@types/postcss", null],
-            ["postcss", "npm:8.3.8"]
+            ["postcss", "npm:8.3.9"]
           ],
           "packagePeers": [
             "@types/postcss",
@@ -12055,7 +12064,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["purgecss", "npm:4.0.3"],
             ["commander", "npm:6.2.1"],
             ["glob", "npm:7.2.0"],
-            ["postcss", "npm:8.3.8"],
+            ["postcss", "npm:8.3.9"],
             ["postcss-selector-parser", "npm:6.0.6"]
           ],
           "linkType": "HARD",
