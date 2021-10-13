@@ -49,7 +49,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jest", "npm:27.0.2"],
             ["@types/lodash.chunk", "npm:4.2.6"],
             ["@types/lodash.groupby", "npm:4.6.6"],
-            ["@types/node", "npm:14.17.25"],
+            ["@types/node", "npm:14.17.26"],
             ["@types/nprogress", "npm:0.2.0"],
             ["@types/react", "npm:17.0.29"],
             ["@types/web-app-manifest", "npm:1.0.2"],
@@ -2931,7 +2931,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jest", "npm:27.0.2"],
             ["@types/lodash.chunk", "npm:4.2.6"],
             ["@types/lodash.groupby", "npm:4.6.6"],
-            ["@types/node", "npm:14.17.25"],
+            ["@types/node", "npm:14.17.26"],
             ["@types/nprogress", "npm:0.2.0"],
             ["@types/react", "npm:17.0.29"],
             ["@types/web-app-manifest", "npm:1.0.2"],
@@ -4097,10 +4097,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@types/node", [
-        ["npm:14.17.25", {
-          "packageLocation": "./.yarn/cache/@types-node-npm-14.17.25-aaedb9265d-2fdf3f7825.zip/node_modules/@types/node/",
+        ["npm:14.17.26", {
+          "packageLocation": "./.yarn/cache/@types-node-npm-14.17.26-c3095634db-f8d211e638.zip/node_modules/@types/node/",
           "packageDependencies": [
-            ["@types/node", "npm:14.17.25"]
+            ["@types/node", "npm:14.17.26"]
           ],
           "linkType": "HARD",
         }],
