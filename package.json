@@ -3,7 +3,7 @@
   "dependencies": {
     "@mdx-js/react": "^2.0.0-next.9",
     "@reach/skip-nav": "^0.16.0",
-    "algoliasearch": "^4.10.5",
+    "algoliasearch": "^4.11.0",
     "clsx": "^1.1.1",
     "date-fns": "^2.25.0",
     "ics": "^2.31.0",
@@ -24,7 +24,7 @@
   },
   "description": "SHINJU DATE is a web service for searching videos.",
   "devDependencies": {
-    "@algolia/client-search": "^4.10.5",
+    "@algolia/client-search": "^4.11.0",
     "@babel/runtime": "^7.15.4",
     "@fullhuman/postcss-purgecss": "^4.0.3",
     "@inabagumi/prettier-config": "^2.0.0",
