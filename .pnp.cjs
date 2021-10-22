@@ -57,7 +57,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@typescript-eslint/parser", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:5.1.0"],
             ["algoliasearch", "npm:4.11.0"],
             ["clsx", "npm:1.1.1"],
-            ["critters", "npm:0.0.12"],
+            ["critters", "npm:0.0.14"],
             ["date-fns", "npm:2.25.0"],
             ["eslint", "npm:8.0.1"],
             ["eslint-config-next", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:11.1.2"],
@@ -2939,7 +2939,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@typescript-eslint/parser", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:5.1.0"],
             ["algoliasearch", "npm:4.11.0"],
             ["clsx", "npm:1.1.1"],
-            ["critters", "npm:0.0.12"],
+            ["critters", "npm:0.0.14"],
             ["date-fns", "npm:2.25.0"],
             ["eslint", "npm:8.0.1"],
             ["eslint-config-next", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:11.1.2"],
@@ -6064,10 +6064,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["critters", [
-        ["npm:0.0.12", {
-          "packageLocation": "./.yarn/cache/critters-npm-0.0.12-cf5ca61a26-3a4ce08a13.zip/node_modules/critters/",
+        ["npm:0.0.14", {
+          "packageLocation": "./.yarn/cache/critters-npm-0.0.14-9dc1ff3ba9-ccde57f7b3.zip/node_modules/critters/",
           "packageDependencies": [
-            ["critters", "npm:0.0.12"],
+            ["critters", "npm:0.0.14"],
             ["chalk", "npm:4.1.2"],
             ["css-select", "npm:4.1.3"],
             ["parse5", "npm:6.0.1"],
