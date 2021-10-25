@@ -82,7 +82,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["react-dom", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:17.0.2"],
             ["react-icons", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.3.1"],
             ["react-infinite-scroll-component", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:6.1.0"],
-            ["react-intersection-observer", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.32.1"],
+            ["react-intersection-observer", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.32.2"],
             ["swr", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:1.0.1"],
             ["typescript", "patch:typescript@npm%3A4.4.4#~builtin<compat/typescript>::version=4.4.4&hash=d8b4e7"]
           ],
@@ -2964,7 +2964,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["react-dom", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:17.0.2"],
             ["react-icons", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:4.3.1"],
             ["react-infinite-scroll-component", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:6.1.0"],
-            ["react-intersection-observer", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.32.1"],
+            ["react-intersection-observer", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.32.2"],
             ["swr", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:1.0.1"],
             ["typescript", "patch:typescript@npm%3A4.4.4#~builtin<compat/typescript>::version=4.4.4&hash=d8b4e7"]
           ],
@@ -12273,17 +12273,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["react-intersection-observer", [
-        ["npm:8.32.1", {
-          "packageLocation": "./.yarn/cache/react-intersection-observer-npm-8.32.1-d70cc1ca2a-3bd4419a46.zip/node_modules/react-intersection-observer/",
+        ["npm:8.32.2", {
+          "packageLocation": "./.yarn/cache/react-intersection-observer-npm-8.32.2-8d6cf3a489-d536ed70df.zip/node_modules/react-intersection-observer/",
           "packageDependencies": [
-            ["react-intersection-observer", "npm:8.32.1"]
+            ["react-intersection-observer", "npm:8.32.2"]
           ],
           "linkType": "SOFT",
         }],
-        ["virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.32.1", {
-          "packageLocation": "./.yarn/__virtual__/react-intersection-observer-virtual-d2e1733b2d/0/cache/react-intersection-observer-npm-8.32.1-d70cc1ca2a-3bd4419a46.zip/node_modules/react-intersection-observer/",
+        ["virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.32.2", {
+          "packageLocation": "./.yarn/__virtual__/react-intersection-observer-virtual-43b3508335/0/cache/react-intersection-observer-npm-8.32.2-8d6cf3a489-d536ed70df.zip/node_modules/react-intersection-observer/",
           "packageDependencies": [
-            ["react-intersection-observer", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.32.1"],
+            ["react-intersection-observer", "virtual:9abc6afa5a135a464166903979f3441bcd7d711642a547aaf512cc670ca9701e1afbb7c58d0573d7ab5f14b67fee480f53693578bad82bb2671f185d40a056cb#npm:8.32.2"],
             ["@types/react", "npm:17.0.32"],
             ["react", "npm:17.0.2"]
           ],
