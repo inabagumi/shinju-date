@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { NextSeo } from 'next-seo'
-import type { FC } from 'react'
+import type { ReactNode, VFC } from 'react'
 
 import Page from '@/components/Layout'
 
@@ -11,10 +11,11 @@ import styles from './Markdown.module.css'
 import mdxProviderComponents from './mdxProviderComponents'
 
 type Props = {
+  children: ReactNode[]
   title?: string
 }
 
-const About: FC<Props> = ({ children, title }) => {
+const About: VFC<Props> = ({ children, title }) => {
   const router = useRouter()
 
   return (
