@@ -1,10 +1,6 @@
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
-  extends: [
-    'eslint:recommended',
-    'next/core-web-vitals',
-    'plugin:prettier/recommended'
-  ],
+  extends: ['eslint:recommended', 'next/core-web-vitals', 'prettier'],
   overrides: [
     {
       files: ['**/*.ts?(x)'],
@@ -17,13 +13,7 @@ module.exports = {
       env: {
         commonjs: true
       },
-      files: [
-        '.eslintrc.js',
-        'babel.config.js',
-        'jest.config.js',
-        'next.config.js',
-        'prettier.config.js'
-      ],
+      files: ['next.config.js'],
       parserOptions: {
         sourceType: 'script'
       }

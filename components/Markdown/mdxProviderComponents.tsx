@@ -1,17 +1,17 @@
 import clsx from 'clsx'
 import NextLink from 'next/link'
-import type { ComponentPropsWithoutRef, VFC } from 'react'
+import type { ComponentPropsWithoutRef } from 'react'
 
 import styles from './Markdown.module.css'
 
 type LinkProps = ComponentPropsWithoutRef<'a'>
 
-const ExternalLink: VFC<LinkProps> = (props) => (
-  <a {...props} rel="noopener noreferrer" target="_blank" />
-)
+function ExternalLink(props: LinkProps) {
+  return <a {...props} rel="noopener noreferrer" target="_blank" />
+}
 
-const Link: VFC<LinkProps> = ({ href = '', ...props }) =>
-  /^https?:\/\//.test(href) ? (
+function Link({ href = '', ...props }: LinkProps) {
+  return /^https?:\/\//.test(href) ? (
     <ExternalLink href={href} {...props} />
   ) : href.startsWith('/') ? (
     <NextLink href={href}>
@@ -20,18 +20,15 @@ const Link: VFC<LinkProps> = ({ href = '', ...props }) =>
   ) : (
     <a href={href} {...props} />
   )
+}
 
-type HeadingProps = ComponentPropsWithoutRef<'h2'>
+function H2({ className, ...props }: ComponentPropsWithoutRef<'h2'>) {
+  return <h2 className={clsx('margin-top--lg', className)} {...props} />
+}
 
-const H2: VFC<HeadingProps> = ({ className, ...props }) => (
-  <h2 className={clsx('margin-top--lg', className)} {...props} />
-)
-
-type OrderdListProps = ComponentPropsWithoutRef<'ol'>
-
-const OrderedList: VFC<OrderdListProps> = ({ className, ...props }) => (
-  <ol className={clsx(styles.orderedList, className)} {...props} />
-)
+function OrderedList({ className, ...props }: ComponentPropsWithoutRef<'ol'>) {
+  return <ol className={clsx(styles.orderedList, className)} {...props} />
+}
 
 const mdxProviderComponents = {
   a: Link,
