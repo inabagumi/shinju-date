@@ -13,7 +13,7 @@ module.exports = {
       env: {
         commonjs: true
       },
-      files: ['next.config.js'],
+      files: ['.eslintrc.js', '*.config.js'],
       parserOptions: {
         sourceType: 'script'
       }

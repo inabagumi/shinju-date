@@ -1,4 +1,4 @@
-module.exports = {
+const config = {
   plugins: [
     [
       '@fullhuman/postcss-purgecss',
@@ -23,3 +23,5 @@ module.exports = {
     ]
   ]
 }
+
+export default config

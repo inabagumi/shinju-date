@@ -11,7 +11,10 @@ const config = {
     '^@/utils/(.+)$': '<rootDir>/utils/$1'
   },
   testPathIgnorePatterns: [...defaults.testPathIgnorePatterns, '/.next/'],
-  testURL: 'https://shinju-date.test'
+  testURL: 'https://shinju-date.test',
+  transform: {
+    '^.+\\.(t|j)sx?$': ['@swc/jest']
+  }
 }
 
 export default config

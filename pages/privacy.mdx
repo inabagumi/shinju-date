@@ -1,8 +1,8 @@
 import Markdown from '@/components/Markdown'
 
-export const title = 'プライバシーポリシー'
-
-export default Markdown
+export default function Root({ children }) {
+  return <Markdown title="プライバシーポリシー">{children}</Markdown>
+}
 
 [Haneru Developers](https://haneru.dev/) (以下「当団体」といいます) は、本ウェブサイト上で提供するサービス (以下「本サービス」といいます) における、ユーザーの個人情報の取扱いについて、以下のとおりプライバシーポリシー (以下「本ポリシー」といいます) を定めます。
 
