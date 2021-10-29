@@ -15,12 +15,12 @@ type Props = {
   title?: string
 }
 
-const About: VFC<Props> = ({ children, title }) => {
+const Markdown: VFC<Props> = ({ children, title }) => {
   const router = useRouter()
 
   return (
     <>
-      <NextSeo title={title} />
+      {title && <NextSeo title={title} />}
 
       <Page>
         {title && (
@@ -82,4 +82,4 @@ const About: VFC<Props> = ({ children, title }) => {
   )
 }
 
-export default About
+export default Markdown

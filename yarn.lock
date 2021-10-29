@@ -1747,7 +1747,7 @@
 
 "@swc/core@^1.2.105":
   version "1.2.105"
-  resolved "https://registry.npmjs.org/@swc/core/-/core-1.2.105.tgz"
+  resolved "https://registry.yarnpkg.com/@swc/core/-/core-1.2.105.tgz#098a5962f6d129c9766f9679a95694d18b682661"
   integrity sha512-LMji8Fs0cM6Mp7NR5h4GMDw9+UlOzy0X/yeJXMDgW/q7zmwxVqOLKUHHVXouaSNLrb6XblgqxLWsmhZLsqodQw==
   dependencies:
     "@node-rs/helper" "^1.0.0"
@@ -1766,7 +1766,7 @@
 
 "@swc/jest@^0.2.5":
   version "0.2.5"
-  resolved "https://registry.npmjs.org/@swc/jest/-/jest-0.2.5.tgz"
+  resolved "https://registry.yarnpkg.com/@swc/jest/-/jest-0.2.5.tgz#2c9a84974208524e70192f1ff1c090cf6252c292"
   integrity sha512-7Vb+RXuXWk47QbOPJ3hwSIMCwUVylp7JUhUITVtMe3hMoBv0IMfVCML9p6jiRhoBAzjzYDPPteKoVxSUJjFNPA==
 
 "@tootallnate/once@1":
