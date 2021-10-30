@@ -1,4 +1,4 @@
-/// <reference types="@mdx-js/loader" />
+/// <reference types="mdx" />
 
 declare namespace NodeJS {
   interface ProcessEnv {
