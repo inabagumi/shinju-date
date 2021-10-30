@@ -26,7 +26,7 @@ const getRequestURL = (now = new Date()): string => {
 const IndexPage: NextPage = () => {
   const { data: items } = useSWR<SearchResponseBody>(() => getRequestURL())
 
-  const baseURL = process.env.NEXT_PUBLIC_BASE_URL || 'https://example.com'
+  const baseURL = process.env.NEXT_PUBLIC_BASE_URL
   const description = process.env.NEXT_PUBLIC_DESCRIPTION
 
   return (

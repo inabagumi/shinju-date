@@ -51,7 +51,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
     [setSize]
   )
 
-  const baseURL = process.env.NEXT_PUBLIC_BASE_URL || 'https://example.com'
+  const baseURL = process.env.NEXT_PUBLIC_BASE_URL
   const path = keyword ? `/search?q=${encodeURIComponent(keyword)}` : '/search'
   const title = keyword ? `『${keyword}』の検索結果` : '動画一覧'
   const description = process.env.NEXT_PUBLIC_DESCRIPTION
@@ -75,7 +75,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
   return (
     <>
       <NextSeo
-        canonical={`${baseURL}${path}`}
+        canonical={new URL(path, baseURL).toString()}
         description={description}
         noindex
         openGraph={{

@@ -6,10 +6,10 @@ const search = async <T = unknown>(
   options?: SearchOptions
 ): Promise<SearchResponse<T>> => {
   const client = algoliasearch(
-    process.env.ALGOLIA_APPLICATION_ID || '',
-    process.env.ALGOLIA_API_KEY || ''
+    process.env.ALGOLIA_APPLICATION_ID,
+    process.env.ALGOLIA_API_KEY
   )
-  const index = client.initIndex(process.env.ALGOLIA_INDEX_NAME || '')
+  const index = client.initIndex(process.env.ALGOLIA_INDEX_NAME)
 
   return index.search<T>(query, options)
 }
