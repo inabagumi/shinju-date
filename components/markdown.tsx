@@ -1,14 +1,10 @@
-import { MDXProvider } from '@mdx-js/react'
-import clsx from 'clsx'
-import Link from 'next/link'
+import { MDXProvider, useMDXComponents } from '@mdx-js/react'
 import { useRouter } from 'next/router'
 import { NextSeo } from 'next-seo'
+import Page from './layout'
+import Link, { Props as LinkProps } from './link'
+import type { FunctionComponent } from 'mdx/types'
 import type { ReactNode, VFC } from 'react'
-
-import Page from '@/components/Layout'
-
-import styles from './Markdown.module.css'
-import mdxProviderComponents from './mdxProviderComponents'
 
 type Props = {
   children: ReactNode[]
@@ -17,6 +13,9 @@ type Props = {
 
 const Markdown: VFC<Props> = ({ children, title }) => {
   const router = useRouter()
+  const components = useMDXComponents({
+    a: Link as FunctionComponent<LinkProps>
+  })
 
   return (
     <>
@@ -44,10 +43,8 @@ const Markdown: VFC<Props> = ({ children, title }) => {
                 itemScope
                 itemType="https://schema.org/ListItem"
               >
-                <Link href="/">
-                  <a className="breadcrumbs__link" itemProp="item">
-                    <span itemProp="name">SHINJU DATE</span>
-                  </a>
+                <Link className="breadcrumbs__link" href="/" itemProp="item">
+                  <span itemProp="name">SHINJU DATE</span>
                 </Link>
                 <meta itemProp="position" content="1" />
               </li>
@@ -57,24 +54,20 @@ const Markdown: VFC<Props> = ({ children, title }) => {
                 itemScope
                 itemType="https://schema.org/ListItem"
               >
-                <Link href={router.pathname}>
-                  <a
-                    className="breadcrumbs__link"
-                    href={router.pathname}
-                    itemProp="item"
-                  >
-                    <span itemProp="name">{title || router.pathname}</span>
-                  </a>
+                <Link
+                  className="breadcrumbs__link"
+                  href={router.pathname}
+                  itemProp="item"
+                >
+                  <span itemProp="name">{title || router.pathname}</span>
                 </Link>
                 <meta itemProp="position" content="2" />
               </li>
             </ul>
           </nav>
 
-          <div className={clsx('padding-bottom--lg', styles.markdown)}>
-            <MDXProvider components={mdxProviderComponents}>
-              {children}
-            </MDXProvider>
+          <div className="markdown padding-bottom--lg">
+            <MDXProvider components={components}>{children}</MDXProvider>
           </div>
         </div>
       </Page>

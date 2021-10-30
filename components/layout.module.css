@@ -1,4 +1,6 @@
 .wrapper {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }
 
@@ -9,4 +11,8 @@
 .skipNavLink:focus {
   z-index: 1000 !important;
   z-index: calc(var(--ifm-z-index-fixed) + 1) !important;
+}
+
+.content {
+  flex-grow: 1;
 }

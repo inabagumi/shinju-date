@@ -1,18 +1,17 @@
 import clsx from 'clsx'
 import chunk from 'lodash.chunk'
-import type { GetServerSideProps, NextPage } from 'next'
-import Link from 'next/link'
 import { NextSeo } from 'next-seo'
 import { useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite from 'swr/infinite'
-
-import shareCard from '@/assets/share-card.jpg'
-import Page from '@/components/Layout'
-import VideoCard from '@/components/VideoCard'
-import styles from '@/styles/search.module.css'
-import type SearchResponseBody from '@/types/SearchResponseBody'
-import getValue from '@/utils/getValue'
+import shareCard from '../assets/share-card.jpg'
+import VideoCard from '../components/video-card'
+import Page from '../components/layout'
+import Link from '../components/link'
+import styles from '../styles/search.module.css'
+import getValue from '../utils/getValue'
+import type { GetServerSideProps, NextPage } from 'next'
+import type SearchResponseBody from '../types/SearchResponseBody'
 
 const SEARCH_RESULT_COUNT = 9
 
@@ -153,10 +152,12 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
                 』で検索しましたが一致する動画は見つかりませんでした。
               </p>
 
-              <Link href="/search">
-                <a className="button button--lg button--outline button--primary">
-                  新着動画を見る
-                </a>
+              <Link
+                className="button button--lg button--outline button--primary"
+                href="/search"
+                role="button"
+              >
+                新着動画を見る
               </Link>
             </div>
           )}

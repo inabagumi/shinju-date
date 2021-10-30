@@ -1,16 +1,15 @@
 import 'nprogress/css/nprogress.css'
-
 import { useRouter } from 'next/router'
 import NProgress from 'nprogress'
-import type { NProgressOptions } from 'nprogress'
 import { useCallback, useEffect } from 'react'
-import type { FC } from 'react'
+import type { NProgressOptions } from 'nprogress'
+import type { VFC } from 'react'
 
 type Props = {
   options?: Partial<NProgressOptions>
 }
 
-const ProgressBar: FC<Props> = ({ options = {} }) => {
+const ProgressBar: VFC<Props> = ({ options = {} }) => {
   const router = useRouter()
 
   const handleRouteChangeStart = useCallback(() => {

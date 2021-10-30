@@ -1,7 +1,6 @@
 import Image from 'next/image'
+import type Video from '../types/Video'
 import type { VFC } from 'react'
-
-import type Video from '@/types/Video'
 
 type Props = {
   value: Video

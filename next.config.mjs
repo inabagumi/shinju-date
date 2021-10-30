@@ -11,12 +11,17 @@ const nextConfig = {
   images: {
     deviceSizes: [320, 420, 768, 1024, 1200, 1920],
     domains: [],
+    formats: ['image/avif', 'image/webp'],
     ...(process.env.IMGIX_BASE_PATH
       ? {
           loader: 'imgix',
           path: process.env.IMGIX_BASE_PATH
         }
       : {})
+  },
+  i18n: {
+    defaultLocale: 'ja',
+    locales: ['ja']
   },
   pageExtensions: ['mdx', 'ts', 'tsx'],
   pwa: {

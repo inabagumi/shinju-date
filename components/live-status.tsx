@@ -1,12 +1,10 @@
 import clsx from 'clsx'
 import { addHours, getSeconds, isBefore, isEqual } from 'date-fns'
 import { memo, useEffect, useState } from 'react'
-import type { VFC } from 'react'
 import { useInView } from 'react-intersection-observer'
-
-import type Video from '@/types/Video'
-
-import styles from './LiveStatus.module.css'
+import styles from './live-status.module.css'
+import type { VFC } from 'react'
+import type Video from '../types/Video'
 
 type Props = {
   value: Video

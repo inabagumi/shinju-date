@@ -1,4 +1,4 @@
-import getValue from '@/utils/getValue'
+import getValue from '../getValue'
 
 describe('getValue', () => {
   it('string is given', () => {

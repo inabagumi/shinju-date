@@ -3,11 +3,10 @@ import jaLocale from 'date-fns/locale/ja'
 import chunk from 'lodash.chunk'
 import groupBy from 'lodash.groupby'
 import { memo, useMemo } from 'react'
-import type { FC } from 'react'
-
-import Skeleton from '@/components/Skeleton'
-import VideoCard from '@/components/VideoCard'
-import type Video from '@/types/Video'
+import Skeleton from './skeleton'
+import VideoCard from './video-card'
+import type { VFC } from 'react'
+import type Video from '../types/Video'
 
 const compare = (leftVideo: Video, rightVideo: Video): number =>
   compareAsc(leftVideo.publishedAt, rightVideo.publishedAt)
@@ -24,7 +23,7 @@ type Props = {
   values?: Video[]
 }
 
-const Timeline: FC<Props> = ({ values }) => {
+const Timeline: VFC<Props> = ({ values }) => {
   const schedule = useMemo(() => values && buildScheduleMap(values), [values])
 
   return (
@@ -42,7 +41,7 @@ const Timeline: FC<Props> = ({ values }) => {
               {chunk(items, 3).map((values) => (
                 <div
                   className="row"
-                  key={values.map((value) => value.id).join(':')}
+                  key={`items:[${values.map((value) => value.id).join(',')}]`}
                 >
                   {values.map((value) => (
                     <div
@@ -52,9 +51,6 @@ const Timeline: FC<Props> = ({ values }) => {
                       <VideoCard value={value} />
                     </div>
                   ))}
-                  {new Array(3 - values.length).fill(
-                    <div className="col col--4" />
-                  )}
                 </div>
               ))}
             </div>
@@ -73,7 +69,6 @@ const Timeline: FC<Props> = ({ values }) => {
               <div className="col col--4 padding-bottom--lg padding-horiz--sm">
                 <VideoCard />
               </div>
-              <div className="col col--4" />
             </div>
           </div>
         </section>

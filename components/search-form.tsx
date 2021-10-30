@@ -1,21 +1,12 @@
 import clsx from 'clsx'
-import Router, { useRouter } from 'next/router'
-import {
-  ChangeEvent,
-  FC,
-  FormEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import { useRouter } from 'next/router'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import getValue from '../utils/getValue'
+import styles from './search-form.module.css'
+import type { ChangeEvent, FormEvent, VFC } from 'react'
 
-import getValue from '@/utils/getValue'
-
-import styles from './SearchForm.module.css'
-
-const SearchForm: FC = () => {
-  const { query } = useRouter()
+const SearchForm: VFC = () => {
+  const { query, ...router } = useRouter()
   const [value, setValue] = useState(() => getValue(query.q))
   const textFieldRef = useRef<HTMLInputElement>(null)
 
@@ -24,20 +15,20 @@ const SearchForm: FC = () => {
   }, [])
 
   const handleFocus = useCallback(() => {
-    void Router.prefetch('/search')
-  }, [])
+    void router.prefetch('/search')
+  }, [router])
 
   const handleSubmit = useCallback(
     (event: FormEvent<HTMLFormElement>): void => {
       event.preventDefault()
 
-      void Router.push(
+      void router.push(
         value ? `/search?q=${encodeURIComponent(value)}` : '/search'
       )
 
       if (textFieldRef.current) textFieldRef.current.blur()
     },
-    [value]
+    [value, router]
   )
 
   useEffect(() => {
