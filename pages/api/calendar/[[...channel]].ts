@@ -8,13 +8,12 @@ import {
   min
 } from 'date-fns'
 import { createEvents } from 'ics'
+import getValue from '../../../utils/getValue'
+import normalize from '../../../utils/normalize'
+import search from '../../../utils/search'
 import type { DateArray, EventAttributes } from 'ics'
 import type { NextApiHandler } from 'next'
-
-import type AlgoliaVideo from '@/types/AlgoliaVideo'
-import getValue from '@/utils/getValue'
-import normalize from '@/utils/normalize'
-import search from '@/utils/search'
+import type AlgoliaVideo from '../../../types/AlgoliaVideo'
 
 function convertToDateArray(date: Date): DateArray {
   return [

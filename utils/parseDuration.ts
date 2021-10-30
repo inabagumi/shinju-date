@@ -1,4 +1,4 @@
-import { Duration } from 'date-fns'
+import type { Duration } from 'date-fns'
 
 const ISO8601_DURATION_REGEXP =
   /^P(?:(?:(\d+(?:[.,]\d+)?)Y)?(?:(\d+(?:[.,]\d+)?)M)?(?:(\d+(?:[.,]\d+)?)D)?(?:T(?:(\d+(?:[.,]\d+)?)H)?(?:(\d+(?:[.,]\d+)?)M)?(?:(\d+(?:[.,]\d+)?)S)?)?|(\d+(?:[.,]\d+)?)W)$/

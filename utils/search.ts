@@ -1,5 +1,5 @@
-import type { SearchOptions, SearchResponse } from '@algolia/client-search'
 import algoliasearch from 'algoliasearch/lite'
+import type { SearchOptions, SearchResponse } from '@algolia/client-search'
 
 const search = async <T = unknown>(
   query: string,

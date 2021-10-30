@@ -1,4 +1,4 @@
-import type Video from '@/types/Video'
+import type Video from './Video'
 
 type SearchResponseBody = Video[]
 

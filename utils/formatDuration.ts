@@ -1,4 +1,4 @@
-import { Duration } from 'date-fns'
+import type { Duration } from 'date-fns'
 
 const formatDuration = (duration: Duration): string =>
   [duration.hours || 0, duration.minutes || 0, duration.seconds || 0]

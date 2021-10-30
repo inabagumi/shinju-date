@@ -1,7 +1,6 @@
 import type { Duration } from 'date-fns'
-
-import type Channel from '@/types/Channel'
-import type Image from '@/types/Image'
+import type Channel from './Channel'
+import type Image from './Image'
 
 type Video = {
   channel: Channel

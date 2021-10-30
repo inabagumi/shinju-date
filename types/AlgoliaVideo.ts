@@ -1,5 +1,5 @@
-import type Image from '@/types/Image'
-import type Video from '@/types/Video'
+import type Image from './Image'
+import type Video from './Video'
 
 type AlgoliaVideo = Omit<Video, 'duration' | 'publishedAt' | 'thumbnail'> & {
   duration?: string

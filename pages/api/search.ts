@@ -1,11 +1,10 @@
 import { getUnixTime, parseISO } from 'date-fns'
 import { NextApiHandler } from 'next'
-
-import type AlgoliaVideo from '@/types/AlgoliaVideo'
-import type SearchResponseBody from '@/types/SearchResponseBody'
-import getValue from '@/utils/getValue'
-import normalize from '@/utils/normalize'
-import search from '@/utils/search'
+import getValue from '../../utils/getValue'
+import normalize from '../../utils/normalize'
+import search from '../../utils/search'
+import type AlgoliaVideo from '../../types/AlgoliaVideo'
+import type SearchResponseBody from '../../types/SearchResponseBody'
 
 const handler: NextApiHandler<SearchResponseBody> = async (req, res) => {
   const query = getValue(req.query.q)

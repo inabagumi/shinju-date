@@ -1,10 +1,9 @@
-import type { ObjectWithObjectID } from '@algolia/client-search'
 import { fromUnixTime } from 'date-fns'
-
-import isZeroSeconds from '@/utils/isZeroSeconds'
-import parseDuration from '@/utils/parseDuration'
-import type AlgoliaVideo from '@/types/AlgoliaVideo'
-import type Video from '@/types/Video'
+import isZeroSeconds from './isZeroSeconds'
+import parseDuration from './parseDuration'
+import type { ObjectWithObjectID } from '@algolia/client-search'
+import type AlgoliaVideo from '../types/AlgoliaVideo'
+import type Video from '../types/Video'
 
 const thumbnailBasePath = '/images/youtube'
 

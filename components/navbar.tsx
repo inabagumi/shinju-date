@@ -3,15 +3,13 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useTheme } from 'next-themes'
 import { useCallback, useState } from 'react'
-import type { FC } from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
+import Icon from '../assets/icon.svg'
+import styles from './navbar.module.css'
+import SearchForm from './search-form'
+import type { VFC } from 'react'
 
-import Icon from '@/assets/icon.svg'
-import SearchForm from '@/components/SearchForm'
-
-import styles from './Navbar.module.css'
-
-const Navbar: FC = () => {
+const Navbar: VFC = () => {
   const [sidebarShown, setSidebarShown] = useState(false)
   const router = useRouter()
   const { setTheme, theme } = useTheme()
