@@ -11,7 +11,7 @@ const BlockLink: VFC<Props> = ({ href, ...props }) => {
   return href ? (
     <Link className={styles.blockLink} href={href} {...props} />
   ) : (
-    <div className={styles.blockLink}></div>
+    <div className={styles.blockLink} {...props} />
   )
 }
 

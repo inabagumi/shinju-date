@@ -61,15 +61,38 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
   const isReachingEnd =
     isEmpty || (!!data && data[data.length - 1]?.length < SEARCH_RESULT_COUNT)
   const placeholder = (
-    <div className="row" key={0}>
-      <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-        <VideoCard />
+    <>
+      <div className="row">
+        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
+          <VideoCard />
+        </div>
+        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
+          <VideoCard />
+        </div>
+        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
+          <VideoCard />
+        </div>
       </div>
-      <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-        <VideoCard />
+      <div className="row">
+        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
+          <VideoCard />
+        </div>
+        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
+          <VideoCard />
+        </div>
+        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
+          <VideoCard />
+        </div>
       </div>
-      <div className="col col--4" />
-    </div>
+      <div className="row">
+        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
+          <VideoCard />
+        </div>
+        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
+          <VideoCard />
+        </div>
+      </div>
+    </>
   )
 
   return (
@@ -135,9 +158,6 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
                           />
                         </div>
                       ))}
-                      {new Array(3 - values.length).fill(
-                        <div className="col col--4" />
-                      )}
                     </div>
                   ))}
                 </div>
