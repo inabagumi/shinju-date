@@ -1697,109 +1697,109 @@
     ejs "^2.6.1"
     magic-string "^0.25.0"
 
-"@svgr/babel-plugin-add-jsx-attribute@^5.4.0":
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-add-jsx-attribute/-/babel-plugin-add-jsx-attribute-5.4.0.tgz#81ef61947bb268eb9d50523446f9c638fb355906"
-  integrity sha512-ZFf2gs/8/6B8PnSofI0inYXr2SDNTDScPXhN7k5EqD4aZ3gi6u+rbmZHVB8IM3wDyx8ntKACZbtXSm7oZGRqVg==
+"@svgr/babel-plugin-add-jsx-attribute@^6.0.0-alpha.1":
+  version "6.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-add-jsx-attribute/-/babel-plugin-add-jsx-attribute-6.0.0-alpha.1.tgz#4b6a1ddff5a527819a64d8ccbf0f68b05e27a3ce"
+  integrity sha512-nmQKOptngoL6PvVaqPmmU9P5TuhcXLOQPMstPNUKrYAUXDdVLFmRMkYIp34fme/7ntM8vuGZOkP7I92lrqgBVA==
 
-"@svgr/babel-plugin-remove-jsx-attribute@^5.4.0":
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-remove-jsx-attribute/-/babel-plugin-remove-jsx-attribute-5.4.0.tgz#6b2c770c95c874654fd5e1d5ef475b78a0a962ef"
-  integrity sha512-yaS4o2PgUtwLFGTKbsiAy6D0o3ugcUhWK0Z45umJ66EPWunAz9fuFw2gJuje6wqQvQWOTJvIahUwndOXb7QCPg==
+"@svgr/babel-plugin-remove-jsx-attribute@^6.0.0-alpha.1":
+  version "6.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-remove-jsx-attribute/-/babel-plugin-remove-jsx-attribute-6.0.0-alpha.1.tgz#1ad411c5782ca6b4397092ca6fb947e6d30f1143"
+  integrity sha512-5hrpsNks29+s2XhzYVVhkLWdoiEEbaw3gRVeFrO7FzmIgVhKTbvdGywIOYHIhEFv6yzkc6lwTrlBULy2yyoKgQ==
 
-"@svgr/babel-plugin-remove-jsx-empty-expression@^5.0.1":
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-remove-jsx-empty-expression/-/babel-plugin-remove-jsx-empty-expression-5.0.1.tgz#25621a8915ed7ad70da6cea3d0a6dbc2ea933efd"
-  integrity sha512-LA72+88A11ND/yFIMzyuLRSMJ+tRKeYKeQ+mR3DcAZ5I4h5CPWN9AHyUzJbWSYp/u2u0xhmgOe0+E41+GjEueA==
+"@svgr/babel-plugin-remove-jsx-empty-expression@^6.0.0-alpha.1":
+  version "6.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-remove-jsx-empty-expression/-/babel-plugin-remove-jsx-empty-expression-6.0.0-alpha.1.tgz#2bea2f57b352a965cd9aee828dc2069a03d8298e"
+  integrity sha512-Qgye0GTv7O08e0rofzAbVAfD/Jil6M/J5aTOksyRPW7TdppKa/yS2cbhKjT3BdHfzlei10zfpQ4auzsEK8YwCw==
 
-"@svgr/babel-plugin-replace-jsx-attribute-value@^5.0.1":
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-replace-jsx-attribute-value/-/babel-plugin-replace-jsx-attribute-value-5.0.1.tgz#0b221fc57f9fcd10e91fe219e2cd0dd03145a897"
-  integrity sha512-PoiE6ZD2Eiy5mK+fjHqwGOS+IXX0wq/YDtNyIgOrc6ejFnxN4b13pRpiIPbtPwHEc+NT2KCjteAcq33/F1Y9KQ==
+"@svgr/babel-plugin-replace-jsx-attribute-value@^6.0.0-alpha.1":
+  version "6.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-replace-jsx-attribute-value/-/babel-plugin-replace-jsx-attribute-value-6.0.0-alpha.1.tgz#a202f634fa99e95ffed7ac0e22c050e6fa464f31"
+  integrity sha512-AzQ4PXyvFEJ1rZxiuQChsk1z77iuOxoYG/bOmvvKQDmcjn8yCanWao+Ky4LLGfobtR5E3UxzFzErU/Ed0W69qA==
 
-"@svgr/babel-plugin-svg-dynamic-title@^5.4.0":
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-svg-dynamic-title/-/babel-plugin-svg-dynamic-title-5.4.0.tgz#139b546dd0c3186b6e5db4fefc26cb0baea729d7"
-  integrity sha512-zSOZH8PdZOpuG1ZVx/cLVePB2ibo3WPpqo7gFIjLV9a0QsuQAzJiwwqmuEdTaW2pegyBE17Uu15mOgOcgabQZg==
+"@svgr/babel-plugin-svg-dynamic-title@^6.0.0-alpha.1":
+  version "6.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-svg-dynamic-title/-/babel-plugin-svg-dynamic-title-6.0.0-alpha.1.tgz#dfa70807c9b8aea30a52294906762ca7157bd47b"
+  integrity sha512-kg/HgXemkJNHZb1HCKHUEZTZIVsW3Yk9V/+J+UczM4fogYOSl9Q9wtJg9q3lOI/5FNDn1evmlBPjhQpfd0kcaQ==
 
-"@svgr/babel-plugin-svg-em-dimensions@^5.4.0":
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-svg-em-dimensions/-/babel-plugin-svg-em-dimensions-5.4.0.tgz#6543f69526632a133ce5cabab965deeaea2234a0"
-  integrity sha512-cPzDbDA5oT/sPXDCUYoVXEmm3VIoAWAPT6mSPTJNbQaBNUuEKVKyGH93oDY4e42PYHRW67N5alJx/eEol20abw==
+"@svgr/babel-plugin-svg-em-dimensions@^6.0.0-alpha.1":
+  version "6.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-svg-em-dimensions/-/babel-plugin-svg-em-dimensions-6.0.0-alpha.1.tgz#cb8a014c7e423471770eef1f54bba6a3ea478407"
+  integrity sha512-dx82szoXCjXyN6dES8pVGNAJC9FbhtRJRwZJxHt5tZDGxC1JDIirSgAAwvs4GMzC2WFVTvuOPstWOS/e5pP4IA==
 
-"@svgr/babel-plugin-transform-react-native-svg@^5.4.0":
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-transform-react-native-svg/-/babel-plugin-transform-react-native-svg-5.4.0.tgz#00bf9a7a73f1cad3948cdab1f8dfb774750f8c80"
-  integrity sha512-3eYP/SaopZ41GHwXma7Rmxcv9uRslRDTY1estspeB1w1ueZWd/tPlMfEOoccYpEMZU3jD4OU7YitnXcF5hLW2Q==
+"@svgr/babel-plugin-transform-react-native-svg@^6.0.0-alpha.1":
+  version "6.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-transform-react-native-svg/-/babel-plugin-transform-react-native-svg-6.0.0-alpha.1.tgz#d95da1433a61e661e4bb0a80f63d5b3f37886181"
+  integrity sha512-OWiGmgUazKcFlLF4AzTMV7Wt+twR7P+Kwy3nM80PWdwjhGeGELQwQZ9F+pHpay6KvTSxdYoySCxemvPucrSfGg==
 
-"@svgr/babel-plugin-transform-svg-component@^6.0.0-alpha.0":
-  version "6.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-transform-svg-component/-/babel-plugin-transform-svg-component-6.0.0-alpha.0.tgz#185138160b6e69f500f29cdf376767b94ada496c"
-  integrity sha512-Ixk9ibYoyT7ojZ+N2g++3mlH422vJeZsiPfCS8L+Kx8/sYUU3EXcT0vtkiyhEfxc78DGBqXMf+5Sg68y9+Wjmg==
+"@svgr/babel-plugin-transform-svg-component@^6.0.0-alpha.1":
+  version "6.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-transform-svg-component/-/babel-plugin-transform-svg-component-6.0.0-alpha.1.tgz#0d96ef224772bf44a28997c0bde76fcb0d2a187b"
+  integrity sha512-bOYUxOM1oGtQMXctk4csZ3P1aW5xgfIwp21IKQPTIcAu+XTu1dWVyikBTTil+girxWqVqbseNKHxX5Lz4uMu1w==
 
-"@svgr/babel-preset@^6.0.0-alpha.0":
-  version "6.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@svgr/babel-preset/-/babel-preset-6.0.0-alpha.0.tgz#86e57d3909326eebcd3faba6a08903f7da81e65e"
-  integrity sha512-VHh2bM26W3RUs7gXiPtrEOEDUn/HLV0nNLYjHKmJUNfgsCJcvdZd7ySl9QDiHCbwXwL/ootmzgFR3shZWn7VPg==
+"@svgr/babel-preset@^6.0.0-alpha.1":
+  version "6.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@svgr/babel-preset/-/babel-preset-6.0.0-alpha.1.tgz#06b8b15cb1cff9b117399ddc07c8a733cdf6306c"
+  integrity sha512-lrnCnEyDfuANB3NLU0b8pGOTvkvFTCavRFcTr7aRLaasQVHM+KD/X/3g5USdbHHXM8PGx2iDAb1jjdIebOsOBw==
   dependencies:
-    "@svgr/babel-plugin-add-jsx-attribute" "^5.4.0"
-    "@svgr/babel-plugin-remove-jsx-attribute" "^5.4.0"
-    "@svgr/babel-plugin-remove-jsx-empty-expression" "^5.0.1"
-    "@svgr/babel-plugin-replace-jsx-attribute-value" "^5.0.1"
-    "@svgr/babel-plugin-svg-dynamic-title" "^5.4.0"
-    "@svgr/babel-plugin-svg-em-dimensions" "^5.4.0"
-    "@svgr/babel-plugin-transform-react-native-svg" "^5.4.0"
-    "@svgr/babel-plugin-transform-svg-component" "^6.0.0-alpha.0"
+    "@svgr/babel-plugin-add-jsx-attribute" "^6.0.0-alpha.1"
+    "@svgr/babel-plugin-remove-jsx-attribute" "^6.0.0-alpha.1"
+    "@svgr/babel-plugin-remove-jsx-empty-expression" "^6.0.0-alpha.1"
+    "@svgr/babel-plugin-replace-jsx-attribute-value" "^6.0.0-alpha.1"
+    "@svgr/babel-plugin-svg-dynamic-title" "^6.0.0-alpha.1"
+    "@svgr/babel-plugin-svg-em-dimensions" "^6.0.0-alpha.1"
+    "@svgr/babel-plugin-transform-react-native-svg" "^6.0.0-alpha.1"
+    "@svgr/babel-plugin-transform-svg-component" "^6.0.0-alpha.1"
 
-"@svgr/core@^6.0.0-alpha.0":
-  version "6.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@svgr/core/-/core-6.0.0-alpha.0.tgz#e5e7bdb9352de88d2fd3247a098a0e3c16f6ce4d"
-  integrity sha512-5EMaF24QO8OhS6oWG+9lnnypq/FNqcLMz9wgrQDJeh2FWi/qFB0hAJGO0i8Bp3JK+RVlblzW7jmHxVhiTG3SLg==
+"@svgr/core@^6.0.0-alpha.1":
+  version "6.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@svgr/core/-/core-6.0.0-alpha.1.tgz#d92c9999863da4d4d1f0c1d76f16be9c2c5151f1"
+  integrity sha512-D2ABBzQ9MQUanfBT2/rE7pDlTJkFw184NLxytohPxeePa7NgkK0DlV11p55llgfMLsKXlEEymtz269RPVp6ecw==
   dependencies:
-    "@svgr/plugin-jsx" "^6.0.0-alpha.0"
+    "@svgr/plugin-jsx" "^6.0.0-alpha.1"
     camelcase "^6.2.0"
     cosmiconfig "^7.0.1"
 
-"@svgr/hast-util-to-babel-ast@^6.0.0-alpha.0":
-  version "6.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@svgr/hast-util-to-babel-ast/-/hast-util-to-babel-ast-6.0.0-alpha.0.tgz#2a5c15456921ae37fe8ae04cbf7fb23694bb8e0e"
-  integrity sha512-K5PrntLZFznbugYW07oHESR3yBy0P1JQqcuSW2eZPcWj799VEVZCSFiBHr692J1na0v2NzkNxkb/A3Pw0Z9Htw==
+"@svgr/hast-util-to-babel-ast@^6.0.0-alpha.1":
+  version "6.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@svgr/hast-util-to-babel-ast/-/hast-util-to-babel-ast-6.0.0-alpha.1.tgz#92c7b0cc99817ae00ed8ea78bdb44132a49e929d"
+  integrity sha512-6sQb+2B8To0W4mDIQAG0rAbNCWzVinaLlmShYHy38oHRJBaHLvnSHEqebGxBynO6nf8wgVfQjuTBLuUAR+awig==
   dependencies:
     "@babel/types" "^7.15.6"
     entities "^3.0.1"
 
-"@svgr/plugin-jsx@^6.0.0-alpha.0":
-  version "6.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@svgr/plugin-jsx/-/plugin-jsx-6.0.0-alpha.0.tgz#4e30a6f84609db8007f126585466f88df9ec78f9"
-  integrity sha512-aezlhT+WwV4KHyfw4yKrSlBzoeSsrWWIgRAVZ4VJsIEl+7F+361AVX3uO8OhUwwJUL3yTMTxOfXzFOmYg2KjBA==
+"@svgr/plugin-jsx@^6.0.0-alpha.1":
+  version "6.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@svgr/plugin-jsx/-/plugin-jsx-6.0.0-alpha.1.tgz#e599fb89a80f732598c95aa17fe3b0790fb9cef3"
+  integrity sha512-U+CE/+4lDYQksUUZeHke8PEDguD31l+1I9NNGMWA4DqnDmLlTKJPJhn4N4rYPx72eDaXzfOiEYwKIIG9te3uBg==
   dependencies:
     "@babel/core" "^7.15.5"
-    "@svgr/babel-preset" "^6.0.0-alpha.0"
-    "@svgr/hast-util-to-babel-ast" "^6.0.0-alpha.0"
+    "@svgr/babel-preset" "^6.0.0-alpha.1"
+    "@svgr/hast-util-to-babel-ast" "^6.0.0-alpha.1"
     svg-parser "^2.0.2"
 
-"@svgr/plugin-svgo@^6.0.0-alpha.0":
-  version "6.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@svgr/plugin-svgo/-/plugin-svgo-6.0.0-alpha.0.tgz#544d63231ac4ad3962bdc1e5515bd4baa8d49aae"
-  integrity sha512-rCLgedZgenCBSSlcP/A42/UgS+WduXXUbFrbbjd9hzzjs4YJrTqE3D326e/D5SwoAM7y8BwhDmzacZjFeMIYRw==
+"@svgr/plugin-svgo@^6.0.0-alpha.1":
+  version "6.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@svgr/plugin-svgo/-/plugin-svgo-6.0.0-alpha.1.tgz#7ca2d179bcf50bd81f43cd31ce4aef76fc8ef67f"
+  integrity sha512-4dqQk+41lzd5eZEYTUaPvd902AmMFxQSgVDxMgWx6RzvO3aaYm5M3CcMIKlQYkgk6OMfEjjz99T7WxXp8kOreA==
   dependencies:
     cosmiconfig "^7.0.1"
     deepmerge "^4.2.2"
     svgo "^2.5.0"
 
-"@svgr/webpack@^6.0.0-alpha.0":
-  version "6.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@svgr/webpack/-/webpack-6.0.0-alpha.0.tgz#2676848f7935c430cf7214b3b442887ca28c6a81"
-  integrity sha512-ddwyHVc1yizvm3Vy3ahQLpxbc3urNtO8mHNV+cQXEB6j0HNWxYUGJi9Pwlpe/q61UcUV+pqKIDET7zhKb6BsWg==
+"@svgr/webpack@^6.0.0-alpha.1":
+  version "6.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@svgr/webpack/-/webpack-6.0.0-alpha.1.tgz#e3611cd1ea3be905b744d90b12d9a5f5e2462949"
+  integrity sha512-np52+pFXfU04cCcOdP3CqnuFxPGQdQw747anGh326b+IHRHj/Pyd9w/pZ1s5KcZFkno4JDiN9E0DXvtW6pEAVQ==
   dependencies:
     "@babel/core" "^7.15.5"
     "@babel/plugin-transform-react-constant-elements" "^7.14.5"
     "@babel/preset-env" "^7.15.6"
     "@babel/preset-react" "^7.14.5"
     "@babel/preset-typescript" "^7.15.0"
-    "@svgr/core" "^6.0.0-alpha.0"
-    "@svgr/plugin-jsx" "^6.0.0-alpha.0"
-    "@svgr/plugin-svgo" "^6.0.0-alpha.0"
+    "@svgr/core" "^6.0.0-alpha.1"
+    "@svgr/plugin-jsx" "^6.0.0-alpha.1"
+    "@svgr/plugin-svgo" "^6.0.0-alpha.1"
     loader-utils "^2.0.0"
 
 "@swc/core-android-arm64@^1.2.106":
