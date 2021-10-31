@@ -66,11 +66,7 @@ const nextConfig = {
         {
           loader: '@mdx-js/loader',
           /** @type {import('@mdx-js/loader').Options} */
-          options: {
-            jsx: true,
-            jsxImportSource: '',
-            jsxRuntime: ''
-          }
+          options: {}
         }
       ]
     })
