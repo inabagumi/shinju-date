@@ -1,4 +1,5 @@
 import withPWA from 'next-pwa'
+import remarkGfm from 'remark-gfm'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -11,7 +12,10 @@ const nextConfig = {
   images: {
     deviceSizes: [320, 420, 768, 1024, 1200, 1920],
     domains: [],
-    formats: ['image/avif', 'image/webp'],
+    formats: [
+      process.env.NODE_ENV === 'production' && 'image/avif',
+      'image/webp'
+    ].filter(Boolean),
     ...(process.env.IMGIX_BASE_PATH
       ? {
           loader: 'imgix',
@@ -66,7 +70,11 @@ const nextConfig = {
         {
           loader: '@mdx-js/loader',
           /** @type {import('@mdx-js/loader').Options} */
-          options: {}
+          options: {
+            jsx: true,
+            providerImportSource: '@mdx-js/react',
+            remarkPlugins: [remarkGfm]
+          }
         }
       ]
     })
