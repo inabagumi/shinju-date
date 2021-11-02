@@ -96,7 +96,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
   )
 
   return (
-    <>
+    <Page>
       <NextSeo
         canonical={new URL(path, baseURL).toString()}
         description={description}
@@ -117,73 +117,68 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
         }}
       />
 
-      <Page>
-        <div className="container">
-          {!isEmpty ? (
-            <div className="margin-top--lg">
-              <h1
-                className={clsx('margin-bottom--lg', styles.searchResultsFor)}
-              >
-                {title}
-              </h1>
+      <div className="container">
+        {!isEmpty ? (
+          <div className="margin-top--lg">
+            <h1 className={clsx('margin-bottom--lg', styles.searchResultsFor)}>
+              {title}
+            </h1>
 
-              <InfiniteScroll
-                dataLength={items.length}
-                hasMore={!isReachingEnd}
-                loader={placeholder}
-                next={loadMore}
-                scrollThreshold={0.9}
-                style={{
-                  WebkitOverflowScrolling: undefined,
-                  height: undefined,
-                  overflow: undefined
-                }}
-              >
-                <div className="container">
-                  {chunk(items, 3).map((values) => (
-                    <div
-                      className="row"
-                      key={values.map((value) => value.id).join(':')}
-                    >
-                      {values.map((value) => (
-                        <div
-                          className="col col--4 padding-bottom--lg padding-horiz--sm"
-                          key={value.id}
-                        >
-                          <VideoCard
-                            timeOptions={{
-                              relativeTime: true
-                            }}
-                            value={value}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </InfiniteScroll>
-            </div>
-          ) : (
-            <div className="text--center margin-bottom--lg margin-top--lg padding-bottom--lg padding-top--lg">
-              <h1 className={styles.searchResultsFor}>検索結果はありません</h1>
+            <InfiniteScroll
+              dataLength={items.length}
+              hasMore={!isReachingEnd}
+              loader={placeholder}
+              next={loadMore}
+              scrollThreshold={0.5}
+              style={{
+                WebkitOverflowScrolling: undefined,
+                height: undefined,
+                overflow: undefined
+              }}
+            >
+              <div className="container">
+                {chunk(items, 3).map((values) => (
+                  <div
+                    className="row"
+                    key={values.map((value) => value.id).join(':')}
+                  >
+                    {values.map((value) => (
+                      <div
+                        className="col col--4 padding-bottom--lg padding-horiz--sm"
+                        key={value.id}
+                      >
+                        <VideoCard
+                          timeOptions={{
+                            relativeTime: true
+                          }}
+                          value={value}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </InfiniteScroll>
+          </div>
+        ) : (
+          <div className="text--center margin-bottom--lg margin-top--lg padding-bottom--lg padding-top--lg">
+            <h1 className={styles.searchResultsFor}>検索結果はありません</h1>
 
-              <p>
-                『{keyword}
-                』で検索しましたが一致する動画は見つかりませんでした。
-              </p>
+            <p>
+              『{keyword}』で検索しましたが一致する動画は見つかりませんでした。
+            </p>
 
-              <Link
-                className="button button--lg button--outline button--primary"
-                href="/search"
-                role="button"
-              >
-                新着動画を見る
-              </Link>
-            </div>
-          )}
-        </div>
-      </Page>
-    </>
+            <Link
+              className="button button--lg button--outline button--primary"
+              href="/search"
+              role="button"
+            >
+              新着動画を見る
+            </Link>
+          </div>
+        )}
+      </div>
+    </Page>
   )
 }
 
