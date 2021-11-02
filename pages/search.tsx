@@ -129,7 +129,7 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
               hasMore={!isReachingEnd}
               loader={placeholder}
               next={loadMore}
-              scrollThreshold={0.5}
+              scrollThreshold={0.8}
               style={{
                 WebkitOverflowScrolling: undefined,
                 height: undefined,
