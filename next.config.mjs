@@ -7,7 +7,8 @@ const nextConfig = {
     dirs: ['components', 'pages', 'types', 'utils']
   },
   experimental: {
-    optimizeCss: true
+    optimizeCss: true,
+    swcMinify: true
   },
   images: {
     deviceSizes: [320, 420, 768, 1024, 1200, 1920],
