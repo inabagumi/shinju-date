@@ -61,38 +61,14 @@ const SearchPage: NextPage<Props> = ({ keyword }) => {
   const isReachingEnd =
     isEmpty || (!!data && data[data.length - 1]?.length < SEARCH_RESULT_COUNT)
   const placeholder = (
-    <>
-      <div className="row">
-        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-          <VideoCard />
-        </div>
-        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-          <VideoCard />
-        </div>
-        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-          <VideoCard />
-        </div>
+    <div className="row">
+      <div className="col col--4 padding-bottom--lg padding-horiz--sm">
+        <VideoCard />
       </div>
-      <div className="row">
-        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-          <VideoCard />
-        </div>
-        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-          <VideoCard />
-        </div>
-        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-          <VideoCard />
-        </div>
+      <div className="col col--4 padding-bottom--lg padding-horiz--sm">
+        <VideoCard />
       </div>
-      <div className="row">
-        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-          <VideoCard />
-        </div>
-        <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-          <VideoCard />
-        </div>
-      </div>
-    </>
+    </div>
   )
 
   return (
