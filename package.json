@@ -5,7 +5,6 @@
     "@reach/skip-nav": "^0.16.0",
     "algoliasearch": "^4.11.0",
     "clsx": "^1.1.1",
-    "corepack": "^0.10.0",
     "date-fns": "^2.25.0",
     "ics": "^2.31.0",
     "infima": "^0.2.0-alpha.34",
