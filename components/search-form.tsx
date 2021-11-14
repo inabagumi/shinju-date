@@ -1,43 +1,62 @@
 import clsx from 'clsx'
 import { useRouter } from 'next/router'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import getValue from '../utils/getValue'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styles from './search-form.module.css'
-import type { ChangeEvent, FormEvent, VFC } from 'react'
+import type { ChangeEventHandler, FormEventHandler, VFC } from 'react'
+
+function getQuery(valueOrValues: string | string[] | undefined): string {
+  return (Array.isArray(valueOrValues) ? valueOrValues : [valueOrValues])
+    .filter(Boolean)
+    .join(' ')
+}
 
 const SearchForm: VFC = () => {
-  const { query, ...router } = useRouter()
-  const [value, setValue] = useState(() => getValue(query.q))
+  const { pathname, query, ...router } = useRouter()
+  const [value, setValue] = useState(() => getQuery(query.q))
   const textFieldRef = useRef<HTMLInputElement>(null)
+  const basePath = useMemo(
+    () =>
+      pathname.startsWith('/channels/[id]') && query.id && query.id !== '_all'
+        ? `/channels/${query.id}/videos`
+        : pathname.startsWith('/groups/[id]') &&
+          !Array.isArray(query.id) &&
+          query.id
+        ? `/groups/${query.id}/videos`
+        : '/videos',
+    [pathname, query]
+  )
 
-  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setValue(event.target.value)
-  }, [])
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (event) => {
+      setValue(event.target.value)
+    },
+    []
+  )
 
   const handleFocus = useCallback(() => {
-    void router.prefetch('/search')
-  }, [router])
+    void router.prefetch(basePath)
+  }, [router, basePath])
 
-  const handleSubmit = useCallback(
-    (event: FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>(
+    (event) => {
       event.preventDefault()
 
       void router.push(
-        value ? `/search?q=${encodeURIComponent(value)}` : '/search'
+        value ? `${basePath}?q=${encodeURIComponent(value)}` : basePath
       )
 
       if (textFieldRef.current) textFieldRef.current.blur()
     },
-    [value, router]
+    [value, basePath, router]
   )
 
   useEffect(() => {
-    setValue(getValue(query.q))
+    setValue(getQuery(query.q))
   }, [query.q])
 
   return (
     <form
-      action="/search"
+      action={basePath}
       className={styles.form}
       method="get"
       onSubmit={handleSubmit}

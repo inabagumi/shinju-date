@@ -1,10 +1,10 @@
 import clsx from 'clsx'
-import { addHours, getSeconds, isBefore, isEqual } from 'date-fns'
-import { memo, useEffect, useState } from 'react'
+import { addHours, getSeconds, isBefore } from 'date-fns'
+import { useEffect, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 import styles from './live-status.module.css'
 import type { VFC } from 'react'
-import type Video from '../types/Video'
+import type { Video } from '../lib/algolia'
 
 type Props = {
   value: Video
@@ -28,7 +28,7 @@ const LiveStatus: VFC<Props> = ({ value }) => {
 
   const liveNow =
     isBefore(value.publishedAt, now) &&
-    !value.duration &&
+    (!value.duration || value.duration === 'P0D') &&
     getSeconds(value.publishedAt) > 0 &&
     isBefore(now, addHours(value.publishedAt, 12))
 
@@ -41,11 +41,4 @@ const LiveStatus: VFC<Props> = ({ value }) => {
   )
 }
 
-export default memo(
-  LiveStatus,
-  ({ value: previousValue }, { value: nextValue }) =>
-    isEqual(previousValue.publishedAt, nextValue.publishedAt) &&
-    previousValue.duration?.seconds === nextValue.duration?.seconds &&
-    previousValue.duration?.minutes === nextValue.duration?.minutes &&
-    previousValue.duration?.hours === nextValue.duration?.hours
-)
+export default LiveStatus
