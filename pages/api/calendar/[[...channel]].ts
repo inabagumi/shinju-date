@@ -3,17 +3,16 @@ import {
   addDays,
   addHours,
   addMinutes,
+  fromUnixTime,
   getUnixTime,
   max,
   min
 } from 'date-fns'
 import { createEvents } from 'ics'
-import getValue from '../../../utils/getValue'
-import normalize from '../../../utils/normalize'
-import search from '../../../utils/search'
+import { getVideosByQuery } from '../../../lib/algolia'
+import { parseDuration } from '../../../lib/date-fns'
 import type { DateArray, EventAttributes } from 'ics'
 import type { NextApiHandler } from 'next'
-import type AlgoliaVideo from '../../../types/AlgoliaVideo'
 
 function convertToDateArray(date: Date): DateArray {
   return [
@@ -27,33 +26,34 @@ function convertToDateArray(date: Date): DateArray {
 
 const handler: NextApiHandler = async (req, res) => {
   const now = new Date()
-  const channel = getValue(req.query.channel)
-  const { hits } = await search<AlgoliaVideo>('', {
+  const channels = (
+    Array.isArray(req.query.channel) ? req.query.channel : [req.query.channel]
+  ).filter(Boolean)
+  const videos = await getVideosByQuery({
     filters: [
-      channel && `channel.id:${channel}`,
+      ...channels.map((channelID) => `channel.id:${channelID}`),
       `publishedAt < ${getUnixTime(addDays(now, 7))}`
-    ]
-      .filter(Boolean)
-      .join(' AND '),
-    hitsPerPage: 100
+    ],
+    limit: 100
   })
-  const events = hits.map(normalize).map((video): EventAttributes => {
+  const events = videos.map((video): EventAttributes => {
+    const publishedAt = fromUnixTime(video.publishedAt)
     const endedAt = video.duration
-      ? add(video.publishedAt, video.duration)
+      ? add(video.publishedAt, parseDuration(video.duration))
       : min([
           max([addHours(video.publishedAt, 1), addMinutes(now, 30)]),
           addHours(video.publishedAt, 12)
         ])
 
     return {
-      calName: channel && video.channel.title,
+      calName: video.channel.title,
       description: video.url,
       end: convertToDateArray(endedAt),
       endInputType: 'utc',
       endOutputType: 'utc',
       location: 'YouTube',
       productId: 'SHINJU DATE',
-      start: convertToDateArray(video.publishedAt),
+      start: convertToDateArray(publishedAt),
       startInputType: 'utc',
       startOutputType: 'utc',
       title: video.title,

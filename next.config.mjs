@@ -3,9 +3,6 @@ import remarkGfm from 'remark-gfm'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    dirs: ['components', 'pages', 'types', 'utils']
-  },
   experimental: {
     optimizeCss: true,
     swcMinify: true
@@ -35,6 +32,15 @@ const nextConfig = {
     sw: 'service-worker.js'
   },
   reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        destination: '/videos',
+        permanent: true,
+        source: '/search'
+      }
+    ]
+  },
   async rewrites() {
     return [
       {
@@ -50,16 +56,30 @@ const nextConfig = {
         source: '/manifest.json'
       },
       {
-        destination: 'https://i.ytimg.com/vi/:id/:name.jpg',
-        source: '/images/youtube/:id/:name.jpg'
+        destination: 'https://i.ytimg.com/vi/:id/maxresdefault.jpg',
+        source: '/images/youtube/:id.jpg'
       },
+      {
+        destination: '/channels/_all/videos',
+        source: '/videos'
+      },
+      // deprecated
       {
         destination: '/api/calendar',
         source: '/calendar.ics'
       },
       {
+        destination: '/api/calendar',
+        source: '/videos.ics'
+      },
+      // deprecated
+      {
         destination: '/api/calendar/:id',
         source: '/calendar/:id.ics'
+      },
+      {
+        destination: '/api/calendar/:id',
+        source: '/channels/:id/videos.ics'
       }
     ]
   },

@@ -1,28 +1,42 @@
 import Image from 'next/image'
-import type Video from '../types/Video'
+import Skeleton from './skeleton'
+import styles from './thumbnail.module.css'
 import type { VFC } from 'react'
+import type { Image as ImageObject } from '../lib/algolia'
+
+const thumbnailBasePath = '/images/youtube'
+const defaultPreSrc =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII='
 
 type Props = {
-  value: Video
+  alt?: string
+  value?: ImageObject
 }
 
-const Thumbnail: VFC<Props> = ({ value }) => {
-  const width = value.thumbnail.width ?? 1920
+const Thumbnail: VFC<Props> = ({ alt = '', value }) => {
+  const width = value?.width ?? 1920
   const height = width * 0.5625
+  const src = value?.src.replace(
+    /^https:\/\/i\.ytimg\.com\/vi\/([^/]+)\/[^.]+\.jpg$/,
+    (_, id) => `${thumbnailBasePath}/${id}.jpg`
+  )
+  const preSrc = value?.preSrc ?? defaultPreSrc
 
-  return (
+  return src ? (
     <Image
-      alt={value.title}
-      blurDataURL={value.thumbnail.preSrc}
+      alt={alt}
+      blurDataURL={preSrc}
       height={height}
       layout="responsive"
       objectFit="cover"
       objectPosition="center"
       placeholder="blur"
       sizes="(max-width: 996px) 100vw, 30vw"
-      src={value.thumbnail.src}
+      src={src}
       width={width}
     />
+  ) : (
+    <Skeleton className={styles.skeleton} variant="rect" />
   )
 }
 

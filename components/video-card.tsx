@@ -1,15 +1,16 @@
 import clsx from 'clsx'
-import { formatISODuration } from 'date-fns'
+import { formatISO, fromUnixTime } from 'date-fns'
 import { useMemo } from 'react'
 import { FormattedRelativeTime, FormattedTime } from 'react-intl'
-import formatDuration from '../utils/formatDuration'
+import { parseDuration } from '../lib/date-fns'
 import BlockLink from './block-link'
+import Duration from './duration'
 import LiveStatus from './live-status'
 import Skeleton from './skeleton'
 import Thumbnail from './thumbnail'
 import styles from './video-card.module.css'
 import type { VFC } from 'react'
-import type Video from '../types/Video'
+import type { Video } from '../lib/algolia'
 
 type TimeOptions = {
   relativeTime?: boolean
@@ -27,16 +28,12 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
     <BlockLink href={value?.url}>
       <div className={clsx('card', styles.video)}>
         <div className={clsx('card__image', styles.image)}>
-          {value ? (
-            <Thumbnail value={value} />
-          ) : (
-            <Skeleton className={styles.thumbnailSkeleton} variant="rect" />
-          )}
+          <Thumbnail value={value?.thumbnail} />
 
-          {value?.duration ? (
+          {value?.duration && value.duration !== 'P0D' ? (
             <span className={clsx('badge', styles.duration)}>
-              <time dateTime={formatISODuration(value.duration)}>
-                {formatDuration(value.duration)}
+              <time dateTime={value.duration}>
+                <Duration value={parseDuration(value.duration)} />
               </time>
             </span>
           ) : value ? (
@@ -59,16 +56,16 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
           {value?.publishedAt ? (
             <time
               className={styles.published}
-              dateTime={value.publishedAt.toJSON()}
+              dateTime={formatISO(fromUnixTime(value.publishedAt))}
             >
               {timeOptions?.relativeTime ? (
                 <FormattedRelativeTime
                   numeric="auto"
                   updateIntervalInSeconds={1}
-                  value={(value.publishedAt.getTime() - now) / 1000}
+                  value={value.publishedAt - now / 1000}
                 />
               ) : (
-                <FormattedTime value={value.publishedAt} />
+                <FormattedTime value={fromUnixTime(value.publishedAt)} />
               )}
             </time>
           ) : (

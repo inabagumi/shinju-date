@@ -12,7 +12,6 @@ import favicon192x192 from '../assets/favicon-192x192.png'
 import favicon512x512 from '../assets/favicon-512x512.png'
 import ProgressBar from '../components/progress-bar'
 import Link, { Props as LinkProps } from '../components/link'
-import fetcher from '../utils/fetcher'
 import type { FunctionComponent, MDXComponents } from 'mdx/types'
 import type { AppProps } from 'next/app'
 import type { VFC } from 'react'
@@ -46,7 +45,7 @@ const MyApp: VFC<AppProps> = ({ Component, pageProps, router }) => {
       defaultLocale={router.defaultLocale}
       locale={router.locale ?? 'en'}
     >
-      <SWRConfig value={{ fetcher }}>
+      <SWRConfig>
         <ThemeProvider defaultTheme="system">
           <MDXProvider components={mdxComponents}>
             <Head>

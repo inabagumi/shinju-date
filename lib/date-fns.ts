@@ -13,7 +13,7 @@ const ISO8601_DURATION_SUFFIXES = [
   'weeks'
 ]
 
-const parseDuration = (duration: string): Duration => {
+export function parseDuration(duration: string): Duration {
   const match = ISO8601_DURATION_REGEXP.exec(duration)
 
   return ISO8601_DURATION_SUFFIXES.reduce<Duration>((result, suffix, index) => {
@@ -27,5 +27,3 @@ const parseDuration = (duration: string): Duration => {
         }
   }, {})
 }
-
-export default parseDuration

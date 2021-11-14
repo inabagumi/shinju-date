@@ -1,31 +1,35 @@
-import { isFuture, startOfHour, subHours } from 'date-fns'
+import {
+  compareAsc,
+  fromUnixTime,
+  getUnixTime,
+  startOfHour,
+  subHours
+} from 'date-fns'
 import { NextSeo } from 'next-seo'
-import useSWR from 'swr'
 import shareCard from '../assets/share-card.jpg'
 import Hero from '../components/hero'
 import Page from '../components/layout'
 import PopularitySearchQueries from '../components/popularity-search-queries'
 import Timeline from '../components/timeline'
-import type { NextPage } from 'next'
-import type SearchResponseBody from '../types/SearchResponseBody'
+import { getVideosByQuery } from '../lib/algolia'
+import type { GetStaticProps, NextPage } from 'next'
+import type { Video } from '../lib/algolia'
 
 const tagline =
   '774 inc. 所属タレントの配信スケジュールや動画の検索ができるウェブサービス'
 
-const getRequestURL = (now = new Date()): string => {
-  const hours = startOfHour(now)
-  const since = subHours(hours, 5)
-  const searchParams = new URLSearchParams({
-    count: '100',
-    since: since.toJSON()
-  })
+function compareVideo(videoA: Video, videoB: Video): number {
+  const publishedAtA = fromUnixTime(videoA.publishedAt)
+  const publishedAtB = fromUnixTime(videoB.publishedAt)
 
-  return `/api/search?${searchParams.toString()}`
+  return compareAsc(publishedAtA, publishedAtB)
 }
 
-const IndexPage: NextPage = () => {
-  const { data: items } = useSWR<SearchResponseBody>(() => getRequestURL())
+type Props = {
+  videos: Video[]
+}
 
+const SchedulePage: NextPage<Props> = ({ videos }) => {
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL
   const description = process.env.NEXT_PUBLIC_DESCRIPTION
 
@@ -55,7 +59,7 @@ const IndexPage: NextPage = () => {
 
       <div className="container margin-bottom--lg">
         <PopularitySearchQueries
-          keywords={[
+          values={[
             'Minecraft',
             '桃太郎電鉄',
             'リングフィット アドベンチャー',
@@ -63,14 +67,26 @@ const IndexPage: NextPage = () => {
           ]}
         />
 
-        <Timeline
-          values={items?.filter(
-            (item) => isFuture(item.publishedAt) || !item.duration
-          )}
-        />
+        <Timeline values={videos} />
       </div>
     </Page>
   )
 }
 
-export default IndexPage
+export default SchedulePage
+
+export const getStaticProps: GetStaticProps<Props> = async () => {
+  const hours = startOfHour(new Date())
+  const since = subHours(hours, 5)
+  const videos = await getVideosByQuery({
+    filters: [`publishedAt >= ${getUnixTime(since)}`, 'duration:P0D'],
+    limit: 100
+  })
+
+  return {
+    props: {
+      videos: [...videos].sort(compareVideo)
+    },
+    revalidate: 1
+  }
+}

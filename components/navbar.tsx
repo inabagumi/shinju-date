@@ -8,6 +8,30 @@ import Icon from '../assets/icon.svg'
 import styles from './navbar.module.css'
 import SearchForm from './search-form'
 import type { VFC } from 'react'
+import type { Group } from '../lib/algolia'
+
+const groups: Group[] = [
+  {
+    id: 'animare',
+    title: '有閑喫茶「あにまーれ」'
+  },
+  {
+    id: 'honeystrap',
+    title: 'HoneyStrap-ハニーストラップ-'
+  },
+  {
+    id: 'vapart',
+    title: 'ブイアパ'
+  },
+  {
+    id: 'sugarlyric',
+    title: 'SugarLyric -シュガーリリック-'
+  },
+  {
+    id: 'hiyocro',
+    title: '緋翼のクロスピース -ひよクロ-'
+  }
+]
 
 const Navbar: VFC = () => {
   const [sidebarShown, setSidebarShown] = useState(false)
@@ -73,11 +97,11 @@ const Navbar: VFC = () => {
             </a>
           </Link>
 
-          <Link href="/search">
+          <Link href="/videos">
             <a
-              aria-current={router.asPath === '/search' ? 'page' : undefined}
+              aria-current={router.asPath === '/videos' ? 'page' : undefined}
               className={clsx('navbar__item', 'navbar__link', {
-                'navbar__link--active': router.asPath === '/search'
+                'navbar__link--active': router.asPath === '/videos'
               })}
             >
               動画一覧
@@ -86,6 +110,21 @@ const Navbar: VFC = () => {
         </div>
 
         <div className="navbar__items navbar__items--right">
+          <div className="navbar__item dropdown dropdown--hoverable">
+            <a className="navbar__link" href="#">
+              グループ
+            </a>
+            <ul className="dropdown__menu">
+              {groups.map((group) => (
+                <li key={group.id}>
+                  <Link href={`/groups/${group.id}/videos`}>
+                    <a className="dropdown__link">{group.title}</a>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           <button
             className={clsx(
               'navbar__item',
@@ -123,22 +162,38 @@ const Navbar: VFC = () => {
           </Link>
         </div>
         <div className="navbar-sidebar__items">
-          <div className="menu">
+          <div className="menu navbar-sidebar__item">
             <ul className="menu__list">
               <li className="menu__list-item">
-                <Link href="/search">
+                <Link href="/videos">
                   <a
                     aria-current={
-                      router.asPath === '/search' ? 'page' : undefined
+                      router.asPath === '/videos' ? 'page' : undefined
                     }
                     className={clsx('menu__link', {
-                      'navbar__link--active': router.asPath === '/search'
+                      'navbar__link--active': router.asPath === '/videos'
                     })}
                     onClick={hideSidebar}
                   >
                     動画一覧
                   </a>
                 </Link>
+              </li>
+              <li className="menu__list-item">
+                <a className="menu__link menu__link--sublist" href="#">
+                  グループ
+                </a>
+                <ul className="menu__list">
+                  {groups.map((group) => (
+                    <li className="menu__list-item" key={group.id}>
+                      <Link href={`/groups/${group.id}/videos`}>
+                        <a className="menu__link" onClick={hideSidebar}>
+                          {group.title}
+                        </a>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </li>
             </ul>
           </div>
