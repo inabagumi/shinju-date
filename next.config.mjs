@@ -55,6 +55,10 @@ const nextConfig = {
         destination: '/api/manifest',
         source: '/manifest.json'
       },
+      {
+        destination: 'https://i.ytimg.com/vi/:id/maxresdefault.jpg',
+        source: '/images/youtube/:id.jpg'
+      },
       // deprecated
       {
         destination: '/api/calendar',
