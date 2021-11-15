@@ -1,20 +1,19 @@
 import NextLink from 'next/link'
 import { forwardRef } from 'react'
-import ExternalLink, { isExternalLink } from './external-link'
 import type { ComponentPropsWithoutRef } from 'react'
 
 export type Props = ComponentPropsWithoutRef<'a'>
 
 const Link = forwardRef<HTMLAnchorElement, Props>(function Link(
-  { href = '', ...props },
+  { href, ...props },
   ref
 ) {
-  return isExternalLink(href) ? (
-    <ExternalLink href={href} {...props} ref={ref} />
-  ) : (
+  return href?.startsWith('/') ? (
     <NextLink href={href}>
       <a {...props} ref={ref} />
     </NextLink>
+  ) : (
+    <a href={href} {...props} ref={ref} />
   )
 })
 
