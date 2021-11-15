@@ -1,5 +1,4 @@
 import { NextSeo } from 'next-seo'
-import shareCard from '../../../assets/share-card.jpg'
 import Page from '../../../components/layout'
 import SearchResults, {
   SEARCH_RESULT_COUNT
@@ -31,25 +30,8 @@ const VideosPage: NextPage<Props> = ({ channels, group, query, videos }) => {
           query ? `${basePath}?q=${encodeURIComponent(query)}` : basePath,
           process.env.NEXT_PUBLIC_BASE_URL
         ).toString()}
-        description={process.env.NEXT_PUBLIC_DESCRIPTION}
         noindex
-        openGraph={{
-          images: [
-            {
-              height: shareCard.height,
-              url: new URL(
-                shareCard.src,
-                process.env.NEXT_PUBLIC_BASE_URL
-              ).toString(),
-              width: shareCard.width
-            }
-          ],
-          type: 'website'
-        }}
         title={title}
-        twitter={{
-          cardType: 'summary_large_image'
-        }}
       />
 
       <SearchResults

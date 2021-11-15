@@ -93,7 +93,26 @@ const MyApp: VFC<AppProps> = ({ Component, pageProps, router }) => {
               </>
             )}
 
-            <DefaultSeo titleTemplate="%s - SHINJU DATE" />
+            <DefaultSeo
+              description={process.env.NEXT_PUBLIC_DESCRIPTION}
+              openGraph={{
+                images: [
+                  {
+                    height: 630,
+                    url: new URL(
+                      new URL('../assets/share-card.jpg', import.meta.url),
+                      process.env.NEXT_PUBLIC_BASE_URL
+                    ).toString(),
+                    width: 1200
+                  }
+                ],
+                type: 'website'
+              }}
+              titleTemplate="%s - SHINJU DATE"
+              twitter={{
+                cardType: 'summary_large_image'
+              }}
+            />
             <ProgressBar options={{ showSpinner: false }} />
             <Component {...pageProps} />
           </MDXProvider>
