@@ -46,7 +46,8 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
 
   const videos = await getVideosByQuery({
     limit: SEARCH_RESULT_COUNT,
-    page: 1
+    page: 1,
+    query: q
   })
 
   return {
