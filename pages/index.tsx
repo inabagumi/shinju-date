@@ -14,8 +14,8 @@ import Page from '../components/layout'
 import PopularitySearchQueries from '../components/popularity-search-queries'
 import Timeline from '../components/timeline'
 import { getVideosByQuery } from '../lib/algolia'
-import type { GetStaticProps, NextPage } from 'next'
 import type { Video } from '../lib/algolia'
+import type { GetStaticProps, NextPage } from 'next'
 
 const tagline =
   '774 inc. 所属タレントの配信スケジュールや動画の検索ができるウェブサービス'

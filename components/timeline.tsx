@@ -4,8 +4,8 @@ import groupBy from 'lodash.groupby'
 import { useMemo } from 'react'
 import { FormattedDate } from 'react-intl'
 import VideoCard from './video-card'
-import type { VFC } from 'react'
 import type { Video } from '../lib/algolia'
+import type { VFC } from 'react'
 
 const buildScheduleMap = (values: Video[]): Record<string, Video[]> => {
   return groupBy(values, (value) =>

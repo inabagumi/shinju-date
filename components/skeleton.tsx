@@ -1,6 +1,6 @@
 import clsx from 'clsx'
-import type { VFC } from 'react'
 import styles from './skeleton.module.css'
+import type { VFC } from 'react'
 
 type Props = {
   className?: string

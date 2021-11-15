@@ -5,8 +5,11 @@ import remarkGfm from 'remark-gfm'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    optimizeCss: true,
-    swcMinify: true
+    optimizeCss: true
+  },
+  i18n: {
+    defaultLocale: 'ja',
+    locales: ['ja']
   },
   images: {
     deviceSizes: [320, 420, 768, 1024, 1200, 1920],
@@ -21,10 +24,6 @@ const nextConfig = {
           path: process.env.IMGIX_BASE_PATH
         }
       : {})
-  },
-  i18n: {
-    defaultLocale: 'ja',
-    locales: ['ja']
   },
   pageExtensions: ['mdx', 'ts', 'tsx'],
   pwa: {
@@ -84,6 +83,7 @@ const nextConfig = {
       }
     ]
   },
+  swcMinify: true,
   webpack(config, { defaultLoaders }) {
     config.module.rules.push({
       test: /\.mdx?$/,

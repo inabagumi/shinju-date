@@ -1,17 +1,17 @@
 import '../styles/global.css'
 import { MDXProvider } from '@mdx-js/react'
-import Head from 'next/head'
-import Script from 'next/script'
 import { DefaultSeo } from 'next-seo'
 import { ThemeProvider } from 'next-themes'
+import Head from 'next/head'
+import Script from 'next/script'
 import { useCallback, useEffect } from 'react'
 import { IntlProvider } from 'react-intl'
 import { SWRConfig } from 'swr'
 import appleTouchIcon from '../assets/apple-touch-icon.png'
 import favicon192x192 from '../assets/favicon-192x192.png'
 import favicon512x512 from '../assets/favicon-512x512.png'
-import ProgressBar from '../components/progress-bar'
 import Link, { Props as LinkProps } from '../components/link'
+import ProgressBar from '../components/progress-bar'
 import type { FunctionComponent, MDXComponents } from 'mdx/types'
 import type { AppProps } from 'next/app'
 import type { VFC } from 'react'
@@ -76,7 +76,6 @@ const MyApp: VFC<AppProps> = ({ Component, pageProps, router }) => {
                   strategy="afterInteractive"
                 />
                 <Script
-                  id="gtag-init"
                   dangerouslySetInnerHTML={{
                     __html: `
                       window.dataLayer = window.dataLayer || [];
@@ -88,6 +87,7 @@ const MyApp: VFC<AppProps> = ({ Component, pageProps, router }) => {
                       });
                     `
                   }}
+                  id="gtag-init"
                   strategy="afterInteractive"
                 />
               </>

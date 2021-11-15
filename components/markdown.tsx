@@ -1,5 +1,5 @@
-import { useRouter } from 'next/router'
 import { NextSeo } from 'next-seo'
+import { useRouter } from 'next/router'
 import Page from './layout'
 import Link from './link'
 import type { ReactNode, VFC } from 'react'
@@ -40,7 +40,7 @@ const Markdown: VFC<Props> = ({ children, title }) => {
               <Link className="breadcrumbs__link" href="/" itemProp="item">
                 <span itemProp="name">SHINJU DATE</span>
               </Link>
-              <meta itemProp="position" content="1" />
+              <meta content="1" itemProp="position" />
             </li>
             <li
               className="breadcrumbs__item breadcrumbs__item--active"
@@ -55,7 +55,7 @@ const Markdown: VFC<Props> = ({ children, title }) => {
               >
                 <span itemProp="name">{title || router.pathname}</span>
               </Link>
-              <meta itemProp="position" content="2" />
+              <meta content="2" itemProp="position" />
             </li>
           </ul>
         </nav>
