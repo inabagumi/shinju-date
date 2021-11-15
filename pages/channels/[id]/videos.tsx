@@ -59,7 +59,8 @@ export const getServerSideProps: GetServerSideProps<Props, Params> = async ({
       getChannelByID(channelID).catch(() => undefined),
       getVideosByChannelID(channelID, {
         limit: SEARCH_RESULT_COUNT,
-        page: 1
+        page: 1,
+        query: q
       })
     ])
 
