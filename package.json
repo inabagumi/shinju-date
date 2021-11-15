@@ -34,7 +34,7 @@
     "@svgr/webpack": "^6.0.0-alpha.4",
     "@swc/core": "^1.2.108",
     "@swc/jest": "^0.2.5",
-    "@types/eslint": "^7.28.2",
+    "@types/eslint": "^7.29.0",
     "@types/gtag.js": "^0.0.8",
     "@types/jest": "^27.0.2",
     "@types/lodash.chunk": "^4.2.6",
