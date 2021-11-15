@@ -9,8 +9,8 @@ import LiveStatus from './live-status'
 import Skeleton from './skeleton'
 import Thumbnail from './thumbnail'
 import styles from './video-card.module.css'
-import type { VFC } from 'react'
 import type { Video } from '../lib/algolia'
+import type { VFC } from 'react'
 
 type TimeOptions = {
   relativeTime?: boolean

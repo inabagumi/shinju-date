@@ -5,11 +5,11 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite from 'swr/infinite'
 import { getVideosByChannelIDs } from '../lib/algolia'
 import Link from './link'
-import VideoCard from './video-card'
 import styles from './search-results.module.css'
+import VideoCard from './video-card'
+import type { Channel, Video } from '../lib/algolia'
 import type { VFC } from 'react'
 import type { InfiniteFetcher } from 'swr/infinite'
-import type { Channel, Video } from '../lib/algolia'
 
 export const SEARCH_RESULT_COUNT = 9
 

@@ -1,8 +1,8 @@
 import Image from 'next/image'
 import Skeleton from './skeleton'
 import styles from './thumbnail.module.css'
-import type { VFC } from 'react'
 import type { Image as ImageObject } from '../lib/algolia'
+import type { VFC } from 'react'
 
 const thumbnailBasePath = '/images/youtube'
 const defaultPreSrc =

@@ -7,8 +7,8 @@ import {
   getChannelsByGroupID,
   getVideosByChannelIDs
 } from '../../../lib/algolia'
-import type { GetServerSideProps, NextPage } from 'next'
 import type { Channel, Group, Video } from '../../../lib/algolia'
+import type { GetServerSideProps, NextPage } from 'next'
 
 type Props = {
   channels: Channel[]
@@ -73,8 +73,8 @@ export const getServerSideProps: GetServerSideProps<Props, Params> = async ({
 
       return {
         props: {
-          group: channels[0].group,
           channels,
+          group: channels[0].group,
           query: q,
           videos
         }

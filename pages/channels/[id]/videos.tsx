@@ -4,8 +4,8 @@ import SearchResults, {
   SEARCH_RESULT_COUNT
 } from '../../../components/search-results'
 import { getChannelByID, getVideosByChannelID } from '../../../lib/algolia'
-import type { GetServerSideProps, NextPage } from 'next'
 import type { Channel, Video } from '../../../lib/algolia'
+import type { GetServerSideProps, NextPage } from 'next'
 
 type Props = {
   channel: Channel

@@ -1,6 +1,6 @@
 import Image from 'next/image'
-import Logo from '../assets/logo.svg'
 import hero from '../assets/hero.jpg'
+import Logo from '../assets/logo.svg'
 import styles from './hero.module.css'
 import type { VFC } from 'react'
 

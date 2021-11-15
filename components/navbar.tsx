@@ -1,14 +1,14 @@
 import clsx from 'clsx'
+import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useTheme } from 'next-themes'
 import { useCallback, useState } from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
 import Icon from '../assets/icon.svg'
 import styles from './navbar.module.css'
 import SearchForm from './search-form'
-import type { VFC } from 'react'
 import type { Group } from '../lib/algolia'
+import type { VFC } from 'react'
 
 const groups: Group[] = [
   {
@@ -142,9 +142,9 @@ const Navbar: VFC = () => {
       </div>
 
       <div
-        role="presentation"
         className="navbar-sidebar__backdrop"
         onClick={hideSidebar}
+        role="presentation"
       />
 
       <div className="navbar-sidebar">

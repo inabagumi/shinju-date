@@ -3,8 +3,8 @@ import { addHours, getSeconds, isBefore } from 'date-fns'
 import { useEffect, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 import styles from './live-status.module.css'
-import type { VFC } from 'react'
 import type { Video } from '../lib/algolia'
+import type { VFC } from 'react'
 
 type Props = {
   value: Video
