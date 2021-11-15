@@ -4,6 +4,7 @@ import type { ReactNode, VFC } from 'react'
 export type Item = {
   href: string
   label: string
+  target?: '_blank'
 }
 
 export type Props = {
@@ -31,6 +32,8 @@ const Footer: VFC<Props> = ({ items }) => {
                   className="footer__link-item"
                   href={currentValue.href}
                   key={currentValue.href}
+                  rel={currentValue.target && 'noopener noreferrer'}
+                  target={currentValue.target}
                 >
                   {currentValue.label}
                 </Link>

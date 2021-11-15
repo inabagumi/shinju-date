@@ -25,7 +25,7 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
   const now = useMemo(() => Date.now(), [])
 
   return (
-    <BlockLink href={value?.url}>
+    <BlockLink href={value?.url} rel="noopener noreferrer" target="_blank">
       <div className={clsx('card', styles.video)}>
         <div className={clsx('card__image', styles.image)}>
           <Thumbnail value={value?.thumbnail} />
