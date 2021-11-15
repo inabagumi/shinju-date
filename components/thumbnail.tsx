@@ -17,8 +17,11 @@ const Thumbnail: VFC<Props> = ({ alt = '', value }) => {
   const width = value?.width ?? 1920
   const height = width * 0.5625
   const src = value?.src.replace(
-    /^https:\/\/i\.ytimg\.com\/vi\/([^/]+)\/[^.]+\.jpg$/,
-    (_, id) => `${thumbnailBasePath}/${id}.jpg`
+    /^https:\/\/i\.ytimg\.com\/vi\/([^/]+)\/([^.]+)\.jpg$/,
+    (_, id: string, filename: string) =>
+      `${thumbnailBasePath}/${id}${
+        filename === 'maxresdefault' ? '' : `/${filename}`
+      }.jpg`
   )
   const preSrc = value?.preSrc ?? defaultPreSrc
 
