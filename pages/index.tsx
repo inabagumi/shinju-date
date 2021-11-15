@@ -2,11 +2,13 @@ import {
   compareAsc,
   fromUnixTime,
   getUnixTime,
+  parseISO,
   startOfHour,
   subHours
 } from 'date-fns'
 import { NextSeo } from 'next-seo'
-import shareCard from '../assets/share-card.jpg'
+import { useMemo } from 'react'
+import useSWR from 'swr'
 import Hero from '../components/hero'
 import Page from '../components/layout'
 import PopularitySearchQueries from '../components/popularity-search-queries'
@@ -25,34 +27,37 @@ function compareVideo(videoA: Video, videoB: Video): number {
   return compareAsc(publishedAtA, publishedAtB)
 }
 
+async function getVideos(now: Date): Promise<Video[]> {
+  const hours = startOfHour(now)
+  const since = subHours(hours, 5)
+  const videos = await getVideosByQuery({
+    filters: [`publishedAt >= ${getUnixTime(since)}`, 'duration:P0D'],
+    limit: 100
+  })
+
+  return [...videos].sort(compareVideo)
+}
+
 type Props = {
+  now: string
   videos: Video[]
 }
 
-const SchedulePage: NextPage<Props> = ({ videos }) => {
-  const baseURL = process.env.NEXT_PUBLIC_BASE_URL
-  const description = process.env.NEXT_PUBLIC_DESCRIPTION
+const SchedulePage: NextPage<Props> = ({
+  now: rawNow,
+  videos: prefetchedData
+}) => {
+  const now = useMemo(() => parseISO(rawNow), [rawNow])
+  const { data: videos = [] } = useSWR<Video[], unknown, Date>(now, getVideos, {
+    fallbackData: prefetchedData
+  })
 
   return (
     <Page>
       <NextSeo
-        canonical={new URL('/', baseURL).toString()}
-        description={description}
-        openGraph={{
-          images: [
-            {
-              height: shareCard.height,
-              url: new URL(shareCard.src, baseURL).toString(),
-              width: shareCard.width
-            }
-          ],
-          type: 'website'
-        }}
+        canonical={new URL('/', process.env.NEXT_PUBLIC_BASE_URL).toString()}
         title="SHINJU DATE"
         titleTemplate={`%s - ${tagline}`}
-        twitter={{
-          cardType: 'summary_large_image'
-        }}
       />
 
       <Hero />
@@ -76,16 +81,13 @@ const SchedulePage: NextPage<Props> = ({ videos }) => {
 export default SchedulePage
 
 export const getStaticProps: GetStaticProps<Props> = async () => {
-  const hours = startOfHour(new Date())
-  const since = subHours(hours, 5)
-  const videos = await getVideosByQuery({
-    filters: [`publishedAt >= ${getUnixTime(since)}`, 'duration:P0D'],
-    limit: 100
-  })
+  const now = new Date()
+  const videos = await getVideos(now)
 
   return {
     props: {
-      videos: [...videos].sort(compareVideo)
+      now: now.toJSON(),
+      videos
     },
     revalidate: 1
   }

@@ -59,10 +59,6 @@ const nextConfig = {
         destination: 'https://i.ytimg.com/vi/:id/maxresdefault.jpg',
         source: '/images/youtube/:id.jpg'
       },
-      {
-        destination: '/channels/_all/videos',
-        source: '/videos'
-      },
       // deprecated
       {
         destination: '/api/calendar',

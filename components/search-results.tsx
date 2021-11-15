@@ -24,7 +24,7 @@ const fetcher: InfiniteFetcher<Args, Video[]> = (channelIDs, page, query) => {
 }
 
 type Props = {
-  basePath?: string
+  basePath: string
   channels?: Channel[]
   prefetchedData?: Video[][]
   query?: string
@@ -32,7 +32,7 @@ type Props = {
 }
 
 const SearchResults: VFC<Props> = ({
-  basePath = '/videos',
+  basePath,
   channels = [],
   prefetchedData,
   query = '',
