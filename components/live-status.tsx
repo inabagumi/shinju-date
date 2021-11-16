@@ -1,6 +1,6 @@
 import clsx from 'clsx'
-import { addHours, getSeconds, isBefore } from 'date-fns'
-import { useEffect, useState } from 'react'
+import { addHours, fromUnixTime, getSeconds, isBefore } from 'date-fns'
+import { useEffect, useMemo, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 import styles from './live-status.module.css'
 import type { Video } from '../lib/algolia'
@@ -12,6 +12,10 @@ type Props = {
 
 const LiveStatus: VFC<Props> = ({ value }) => {
   const [now, setNow] = useState(() => new Date())
+  const publishedAt = useMemo(
+    () => fromUnixTime(value.publishedAt),
+    [value.publishedAt]
+  )
   const [statusRef, inView] = useInView()
 
   useEffect(() => {
@@ -27,10 +31,10 @@ const LiveStatus: VFC<Props> = ({ value }) => {
   }, [inView])
 
   const liveNow =
-    isBefore(value.publishedAt, now) &&
+    isBefore(publishedAt, now) &&
     (!value.duration || value.duration === 'P0D') &&
-    getSeconds(value.publishedAt) > 0 &&
-    isBefore(now, addHours(value.publishedAt, 12))
+    getSeconds(publishedAt) > 0 &&
+    isBefore(now, addHours(publishedAt, 12))
 
   return (
     <div ref={statusRef}>
