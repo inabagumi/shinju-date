@@ -41,7 +41,7 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
           ) : null}
         </div>
 
-        <div className={clsx('card__body', styles.content)}>
+        <div className="card__body">
           {value ? (
             <h3 className={styles.title}>{value.title}</h3>
           ) : (
