@@ -1,11 +1,17 @@
+import { MDXProvider } from '@mdx-js/react'
 import { NextSeo } from 'next-seo'
 import { useRouter } from 'next/router'
 import Page from './layout'
-import Link from './link'
+import Link, { Props as LinkProps } from './link'
+import type { FunctionComponent, MDXComponents } from 'mdx/types'
 import type { ReactNode, VFC } from 'react'
 
+const mdxComponents: MDXComponents = {
+  a: Link as FunctionComponent<LinkProps>
+}
+
 type Props = {
-  children: ReactNode[]
+  children: ReactNode
   title?: string
 }
 
@@ -60,7 +66,9 @@ const Markdown: VFC<Props> = ({ children, title }) => {
           </ul>
         </nav>
 
-        <div className="markdown padding-bottom--lg">{children}</div>
+        <div className="markdown padding-bottom--lg">
+          <MDXProvider components={mdxComponents}>{children}</MDXProvider>
+        </div>
       </div>
     </Page>
   )
