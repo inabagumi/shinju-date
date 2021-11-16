@@ -1,8 +1,9 @@
 @import 'infima/dist/css/default/default.css';
 
 :root {
-  --ifm-font-family-base: Lato, Helvetica Neue, Arial, Hiragino Kaku Gothic ProN,
-    Hiragino Sans, BIZ UDPGothic, Meiryo, sans-serif;
+  --ifm-font-family-base: Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji,
+    Lato, Helvetica Neue, Arial, Hiragino Kaku Gothic ProN, Hiragino Sans,
+    BIZ UDPGothic, Meiryo, sans-serif;
   --ifm-font-size-base: 16px;
   --ifm-line-height-base: 2;
 
