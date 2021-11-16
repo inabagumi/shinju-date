@@ -1,12 +1,10 @@
-import { defaults } from 'jest-config'
+import nextJest from 'next/jest.js'
+
+const createJestConfig = nextJest()
 
 /** @type {import('@jest/types').Config.InitialOptions} */
-const config = {
-  testPathIgnorePatterns: [...defaults.testPathIgnorePatterns, '/.next/'],
-  testURL: 'https://shinju-date.test',
-  transform: {
-    '^.+\\.(t|j)sx?$': ['@swc/jest']
-  }
+const jestConfig = {
+  testURL: 'https://shinju-date.test'
 }
 
-export default config
+export default createJestConfig(jestConfig)
