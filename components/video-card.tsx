@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { formatISO, fromUnixTime } from 'date-fns'
 import { useMemo } from 'react'
-import { FormattedRelativeTime, FormattedTime } from 'react-intl'
+import { FormattedRelativeTime, FormattedTime, useIntl } from 'react-intl'
 import { parseDuration } from '../lib/date'
 import BlockLink from './block-link'
 import Duration from './duration'
@@ -23,6 +23,11 @@ type Props = {
 
 const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
   const now = useMemo(() => Date.now(), [])
+  const publishedAt = useMemo(
+    () => value?.publishedAt && fromUnixTime(value.publishedAt),
+    [value?.publishedAt]
+  )
+  const intl = useIntl()
 
   return (
     <BlockLink href={value?.url} rel="noopener noreferrer" target="_blank">
@@ -53,19 +58,27 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
         </div>
 
         <div className="card__footer">
-          {value?.publishedAt ? (
+          {publishedAt ? (
             <time
               className={styles.published}
-              dateTime={formatISO(fromUnixTime(value.publishedAt))}
+              dateTime={formatISO(publishedAt)}
+              title={intl.formatDate(publishedAt, {
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                month: 'long',
+                second: '2-digit',
+                year: 'numeric'
+              })}
             >
               {timeOptions?.relativeTime ? (
                 <FormattedRelativeTime
                   numeric="auto"
                   updateIntervalInSeconds={1}
-                  value={value.publishedAt - now / 1000}
+                  value={(publishedAt.getTime() - now) / 1000}
                 />
               ) : (
-                <FormattedTime value={fromUnixTime(value.publishedAt)} />
+                <FormattedTime value={publishedAt} />
               )}
             </time>
           ) : (
