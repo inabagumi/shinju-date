@@ -1,28 +1,31 @@
 import clsx from 'clsx'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { getQueryValue } from '../lib/url'
 import styles from './search-form.module.css'
+import type { ParsedUrlQuery } from 'querystring'
 import type { ChangeEventHandler, FormEventHandler, VFC } from 'react'
 
-function getQuery(valueOrValues: string | string[] | undefined): string {
-  return (Array.isArray(valueOrValues) ? valueOrValues : [valueOrValues])
-    .filter(Boolean)
-    .join(' ')
+function getBasePath(pathname: string, query: ParsedUrlQuery) {
+  const id = getQueryValue('id', query)
+
+  if (id) {
+    if (pathname.startsWith('/channels/[id]')) {
+      return `/channels/${id}/videos`
+    } else if (pathname.startsWith('/groups/[id]')) {
+      return `/groups/${id}/videos`
+    }
+  }
+
+  return '/videos'
 }
 
 const SearchForm: VFC = () => {
   const { pathname, query, ...router } = useRouter()
-  const [value, setValue] = useState(() => getQuery(query.q))
+  const [value, setValue] = useState(() => getQueryValue('q', query))
   const textFieldRef = useRef<HTMLInputElement>(null)
   const basePath = useMemo(
-    () =>
-      pathname.startsWith('/channels/[id]') && query.id && query.id !== '_all'
-        ? `/channels/${query.id}/videos`
-        : pathname.startsWith('/groups/[id]') &&
-          !Array.isArray(query.id) &&
-          query.id
-        ? `/groups/${query.id}/videos`
-        : '/videos',
+    () => getBasePath(pathname, query),
     [pathname, query]
   )
 
@@ -33,26 +36,24 @@ const SearchForm: VFC = () => {
     []
   )
 
-  const handleFocus = useCallback(() => {
-    void router.prefetch(basePath)
-  }, [router, basePath])
-
   const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>(
     (event) => {
       event.preventDefault()
 
-      void router.push(
-        value ? `${basePath}?q=${encodeURIComponent(value)}` : basePath
-      )
-
-      if (textFieldRef.current) textFieldRef.current.blur()
+      router
+        .push(value ? `${basePath}?q=${encodeURIComponent(value)}` : basePath)
+        .finally(() => {
+          if (textFieldRef.current) {
+            textFieldRef.current.blur()
+          }
+        })
     },
     [value, basePath, router]
   )
 
   useEffect(() => {
-    setValue(getQuery(query.q))
-  }, [query.q])
+    setValue(getQueryValue('q', query))
+  }, [query])
 
   return (
     <form
@@ -68,7 +69,6 @@ const SearchForm: VFC = () => {
           className={clsx('navbar__search-input', styles.input)}
           name="q"
           onChange={handleChange}
-          onFocus={handleFocus}
           placeholder="検索"
           ref={textFieldRef}
           type="search"

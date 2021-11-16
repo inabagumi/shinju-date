@@ -4,6 +4,7 @@ import SearchResults, {
   SEARCH_RESULT_COUNT
 } from '../components/search-results'
 import { getVideosByQuery } from '../lib/algolia'
+import { getQueryValue } from '../lib/url'
 import type { Channel, Video } from '../lib/algolia'
 import type { GetServerSideProps, NextPage } from 'next'
 
@@ -42,7 +43,7 @@ export default VideosPage
 export const getServerSideProps: GetServerSideProps<Props> = async ({
   query
 }) => {
-  const q = Array.isArray(query.q) ? query.q.join(' ') : query.q ?? ''
+  const q = getQueryValue('q', query) ?? ''
 
   const videos = await getVideosByQuery({
     limit: SEARCH_RESULT_COUNT,
