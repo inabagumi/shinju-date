@@ -9,8 +9,8 @@ import {
   min
 } from 'date-fns'
 import { createEvents } from 'ics'
-import { getVideosByQuery } from '../../../lib/algolia'
-import { parseDuration } from '../../../lib/date-fns'
+import { getVideosByChannelIDs } from '../../../lib/algolia'
+import { parseDuration } from '../../../lib/date'
 import type { DateArray, EventAttributes } from 'ics'
 import type { NextApiHandler } from 'next'
 
@@ -26,14 +26,11 @@ function convertToDateArray(date: Date): DateArray {
 
 const handler: NextApiHandler = async (req, res) => {
   const now = new Date()
-  const channels = (
+  const channelIDs = (
     Array.isArray(req.query.channel) ? req.query.channel : [req.query.channel]
   ).filter(Boolean)
-  const videos = await getVideosByQuery({
-    filters: [
-      ...channels.map((channelID) => `channel.id:${channelID}`),
-      `publishedAt < ${getUnixTime(addDays(now, 7))}`
-    ],
+  const videos = await getVideosByChannelIDs(channelIDs, {
+    filters: [`publishedAt < ${getUnixTime(addDays(now, 7))}`],
     limit: 100
   })
   const events = videos.map((video): EventAttributes => {

@@ -7,6 +7,7 @@ import {
   getChannelsByGroupID,
   getVideosByChannelIDs
 } from '../../../lib/algolia'
+import { getQueryValue } from '../../../lib/url'
 import type { Channel, Group, Video } from '../../../lib/algolia'
 import type { GetServerSideProps, NextPage } from 'next'
 
@@ -56,7 +57,7 @@ export const getServerSideProps: GetServerSideProps<Props, Params> = async ({
   query
 }) => {
   const groupID = params?.id
-  const q = Array.isArray(query.q) ? query.q.join(' ') : query.q ?? ''
+  const q = getQueryValue('q', query) ?? ''
 
   if (groupID) {
     const channels = await getChannelsByGroupID(groupID)

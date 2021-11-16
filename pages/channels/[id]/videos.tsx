@@ -4,6 +4,7 @@ import SearchResults, {
   SEARCH_RESULT_COUNT
 } from '../../../components/search-results'
 import { getChannelByID, getVideosByChannelID } from '../../../lib/algolia'
+import { getQueryValue } from '../../../lib/url'
 import type { Channel, Video } from '../../../lib/algolia'
 import type { GetServerSideProps, NextPage } from 'next'
 
@@ -52,7 +53,7 @@ export const getServerSideProps: GetServerSideProps<Props, Params> = async ({
   query
 }) => {
   const channelID = params?.id
-  const q = Array.isArray(query.q) ? query.q.join(' ') : query.q ?? ''
+  const q = getQueryValue('q', query) ?? ''
 
   if (channelID) {
     const [channel, videos] = await Promise.all([
