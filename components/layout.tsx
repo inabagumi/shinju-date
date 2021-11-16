@@ -23,9 +23,7 @@ const Layout: VFC<Props> = ({ children }) => {
 
       <Navbar />
 
-      <SkipNavContent className={styles.content} id={SKIP_NAV_CONTENT_ID}>
-        {children}
-      </SkipNavContent>
+      <SkipNavContent id={SKIP_NAV_CONTENT_ID}>{children}</SkipNavContent>
 
       <Footer
         items={[

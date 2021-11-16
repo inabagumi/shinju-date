@@ -1,6 +1,6 @@
 .video {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
   height: 100%;
 }
 
@@ -17,10 +17,6 @@
   bottom: 0.5em;
   position: absolute;
   right: 0.5em;
-}
-
-.content {
-  flex-grow: 1;
 }
 
 .title {
