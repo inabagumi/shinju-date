@@ -42,9 +42,7 @@ const SearchResults: VFC<Props> = ({
     (index) => [channels.map((channel) => channel.id), index + 1, query],
     fetcher,
     {
-      fallbackData: prefetchedData,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false
+      fallbackData: prefetchedData
     }
   )
   const loadMore = useCallback(() => setSize((x) => x + 1), [setSize])
