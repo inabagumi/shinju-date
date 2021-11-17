@@ -5,10 +5,12 @@ import Head from 'next/head'
 import Script from 'next/script'
 import { useCallback, useEffect } from 'react'
 import { IntlProvider } from 'react-intl'
+import aa from 'search-insights'
 import { SWRConfig } from 'swr'
 import appleTouchIcon from '../assets/apple-touch-icon.png'
 import favicon192x192 from '../assets/favicon-192x192.png'
 import favicon512x512 from '../assets/favicon-512x512.png'
+import shareCard from '../assets/share-card.jpg'
 import ProgressBar from '../components/progress-bar'
 import type { AppProps } from 'next/app'
 import type { VFC } from 'react'
@@ -23,6 +25,14 @@ const MyApp: VFC<AppProps> = ({ Component, pageProps, router }) => {
         page_title: document.title
       })
     }
+  }, [])
+
+  useEffect(() => {
+    aa('init', {
+      apiKey: process.env.NEXT_PUBLIC_ALGOLIA_API_KEY,
+      appId: process.env.NEXT_PUBLIC_ALGOLIA_APPLICATION_ID,
+      useCookie: true
+    })
   }, [])
 
   useEffect(() => {
@@ -90,12 +100,12 @@ const MyApp: VFC<AppProps> = ({ Component, pageProps, router }) => {
             openGraph={{
               images: [
                 {
-                  height: 630,
+                  height: shareCard.height,
                   url: new URL(
-                    new URL('../assets/share-card.jpg', import.meta.url),
+                    shareCard.src,
                     process.env.NEXT_PUBLIC_BASE_URL
                   ).toString(),
-                  width: 1200
+                  width: shareCard.width
                 }
               ],
               type: 'website'
