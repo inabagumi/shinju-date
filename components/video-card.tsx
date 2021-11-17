@@ -1,7 +1,8 @@
 import clsx from 'clsx'
 import { formatISO, fromUnixTime } from 'date-fns'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { FormattedRelativeTime, FormattedTime, useIntl } from 'react-intl'
+import aa from 'search-insights'
 import { parseDuration } from '../lib/date'
 import BlockLink from './block-link'
 import Duration from './duration'
@@ -29,8 +30,23 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
   )
   const intl = useIntl()
 
+  const handleClick = useCallback(() => {
+    if (value?.id) {
+      aa('clickedObjectIDs', {
+        eventName: 'Click video card',
+        index: process.env.NEXT_PUBLIC_ALGOLIA_INDEX_NAME,
+        objectIDs: [value.id]
+      })
+    }
+  }, [value?.id])
+
   return (
-    <BlockLink href={value?.url} rel="noopener noreferrer" target="_blank">
+    <BlockLink
+      href={value?.url}
+      onClick={handleClick}
+      rel="noopener noreferrer"
+      target="_blank"
+    >
       <div className={clsx('card', styles.video)}>
         <div className={clsx('card__image', styles.image)}>
           <Thumbnail value={value?.thumbnail} />
