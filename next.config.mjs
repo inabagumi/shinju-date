@@ -42,48 +42,43 @@ const nextConfig = {
     ]
   },
   async rewrites() {
-    return [
-      {
-        destination: '/_next/static/service-worker.js',
-        source: '/service-worker.js'
-      },
-      {
-        destination: '/_next/static/workbox-:hash.js',
-        source: '/workbox-:hash.js'
-      },
-      {
-        destination: '/api/manifest',
-        source: '/manifest.json'
-      },
-      {
-        destination: 'https://i.ytimg.com/vi/:id/maxresdefault.jpg',
-        source: '/images/youtube/:id.jpg'
-      },
-      {
-        destination: 'https://i.ytimg.com/vi/:id/:filename.jpg',
-        source: '/images/youtube/:id/:filename.jpg'
-      },
-      // deprecated
-      {
-        destination: '/api/calendar',
-        source: '/calendar.ics'
-      },
-      {
-        destination: '/api/calendar',
-        source: '/videos.ics'
-      },
-      // deprecated
-      {
-        destination: '/api/calendar/:id',
-        source: '/calendar/:id.ics'
-      },
-      {
-        destination: '/api/calendar/:id',
-        source: '/channels/:id/videos.ics'
-      }
-    ]
+    return {
+      afterFiles: [
+        {
+          destination: '/_next/static/service-worker.js',
+          source: '/service-worker.js'
+        },
+        {
+          destination: '/_next/static/workbox-:hash.js',
+          source: '/workbox-:hash.js'
+        },
+        {
+          destination: '/api/manifest',
+          source: '/manifest.json'
+        },
+        // deprecated
+        {
+          destination: '/api/calendar',
+          source: '/calendar.ics'
+        },
+        {
+          destination: '/api/calendar',
+          source: '/videos.ics'
+        },
+        // deprecated
+        {
+          destination: '/api/calendar/:id',
+          source: '/calendar/:id.ics'
+        },
+        {
+          destination: '/api/calendar/:id',
+          source: '/channels/:id/videos.ics'
+        }
+      ]
+    }
   },
-  swcMinify: true,
+  // todo: https://github.com/vercel/next.js/issues/31153
+  // swcMinify: true,
   webpack(config, { defaultLoaders }) {
     config.module.rules.push({
       test: /\.mdx?$/,
