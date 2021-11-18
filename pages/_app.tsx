@@ -47,6 +47,7 @@ const MyApp: VFC<AppProps> = ({ Component, pageProps, router }) => {
     <IntlProvider
       defaultLocale={router.defaultLocale}
       locale={router.locale ?? 'en'}
+      timeZone="Asia/Tokyo"
     >
       <SWRConfig>
         <ThemeProvider defaultTheme="system">
