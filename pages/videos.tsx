@@ -3,7 +3,6 @@ import Page from '../components/layout'
 import SearchResults, {
   getVideosByChannelIDsWithPage
 } from '../components/search-results'
-import { getVideosByQuery } from '../lib/algolia'
 import { getQueryValue } from '../lib/url'
 import type { Channel, Video } from '../lib/algolia'
 import type { GetServerSideProps, NextPage } from 'next'
