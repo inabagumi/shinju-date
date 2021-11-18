@@ -20,7 +20,13 @@ const Hero: VFC = () => {
       </div>
 
       <div className={styles.heroImage}>
-        <Image alt="" priority role="presentation" src={hero} />
+        <Image
+          alt=""
+          layout="responsive"
+          priority
+          role="presentation"
+          src={hero}
+        />
       </div>
     </div>
   )
