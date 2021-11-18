@@ -102,6 +102,30 @@ const Navbar: VFC<Props> = ({ basePath }) => {
               </strong>
             </a>
           </Link>
+
+          <Link href="/about">
+            <a
+              aria-current={router.pathname === '/about' ? 'page' : undefined}
+              className={clsx('navbar__item', 'navbar__link', {
+                'navbar__link--active': router.pathname === '/about'
+              })}
+            >
+              SHINJU DATEとは
+            </a>
+          </Link>
+
+          <Link
+            aria-current={router.pathname === '/videos' ? 'page' : 'undefined'}
+            href="/videos"
+          >
+            <a
+              className={clsx('navbar__item', 'navbar__link', {
+                'navbar__link--active': router.pathname === '/videos'
+              })}
+            >
+              動画一覧
+            </a>
+          </Link>
         </div>
 
         <div className="navbar__items navbar__items--right">
@@ -192,38 +216,62 @@ const Navbar: VFC<Props> = ({ basePath }) => {
           <div className="menu navbar-sidebar__item">
             <ul className="menu__list">
               <li className="menu__list-item">
-                <Link href={`/videos${query ? `?q=${query}` : ''}`}>
+                <Link href="/about">
                   <a
-                    aria-current={basePath === '/videos' ? 'page' : undefined}
+                    aria-current={
+                      router.pathname === '/about' ? 'page' : undefined
+                    }
                     className={clsx('menu__link', {
-                      'menu__link--active': basePath === '/videos'
+                      'menu__link--active': router.pathname === '/about'
                     })}
                     onClick={hideSidebar}
                   >
-                    全グループ
+                    SHINJU DATEとは
                   </a>
                 </Link>
               </li>
-              {groups.map((group) => {
-                const pathname = `/groups/${group.id}/videos`
-                const isActive = basePath === pathname
-
-                return (
-                  <li className="menu__list-item" key={group.id}>
-                    <Link href={`${pathname}${query ? `?q=${query}` : ''}`}>
+              <li className="menu__list-item">
+                <a className="menu__link menu__link--sublist" role="button">
+                  動画一覧
+                </a>
+                <ul className="menu__list">
+                  <li className="menu__list-item">
+                    <Link href={`/videos${query ? `?q=${query}` : ''}`}>
                       <a
-                        aria-current={isActive ? 'page' : undefined}
+                        aria-current={
+                          basePath === '/videos' ? 'page' : undefined
+                        }
                         className={clsx('menu__link', {
-                          'menu__link--active': isActive
+                          'menu__link--active': basePath === '/videos'
                         })}
                         onClick={hideSidebar}
                       >
-                        {group.title}
+                        全グループ
                       </a>
                     </Link>
                   </li>
-                )
-              })}
+                  {groups.map((group) => {
+                    const pathname = `/groups/${group.id}/videos`
+                    const isActive = basePath === pathname
+
+                    return (
+                      <li className="menu__list-item" key={group.id}>
+                        <Link href={`${pathname}${query ? `?q=${query}` : ''}`}>
+                          <a
+                            aria-current={isActive ? 'page' : undefined}
+                            className={clsx('menu__link', {
+                              'menu__link--active': isActive
+                            })}
+                            onClick={hideSidebar}
+                          >
+                            {group.title}
+                          </a>
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </li>
             </ul>
           </div>
         </div>

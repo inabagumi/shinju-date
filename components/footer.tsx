@@ -15,10 +15,6 @@ const Footer: VFC = () => {
             運営者情報
           </Link>
           <span className="footer__link-separator">·</span>
-          <Link className="footer__link-item" href="/about">
-            SHINJU DATEとは
-          </Link>
-          <span className="footer__link-separator">·</span>
           <Link className="footer__link-item" href="/terms">
             利用規約
           </Link>
