@@ -1,9 +1,8 @@
+import { Temporal } from '@js-temporal/polyfill'
 import clsx from 'clsx'
-import { formatISO, fromUnixTime } from 'date-fns'
 import { useCallback, useMemo } from 'react'
 import { FormattedRelativeTime, FormattedTime, useIntl } from 'react-intl'
 import aa from 'search-insights'
-import { parseDuration } from '../lib/date'
 import BlockLink from './block-link'
 import Duration from './duration'
 import LiveStatus from './live-status'
@@ -23,12 +22,22 @@ type Props = {
 }
 
 const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
-  const now = useMemo(() => Date.now(), [])
-  const publishedAt = useMemo(
-    () => value?.publishedAt && fromUnixTime(value.publishedAt),
-    [value?.publishedAt]
-  )
   const intl = useIntl()
+  const now = useMemo(
+    () => Temporal.Now.zonedDateTimeISO(intl.timeZone ?? 'UTC'),
+    [intl.timeZone]
+  )
+  const publishedAt = useMemo(
+    () =>
+      Temporal.Instant.fromEpochSeconds(
+        value?.publishedAt ?? 0
+      ).toZonedDateTimeISO(intl.timeZone ?? 'UTC'),
+    [value?.publishedAt, intl.timeZone]
+  )
+  const duration = useMemo(
+    () => Temporal.Duration.from(value?.duration ?? 'P0D'),
+    [value?.duration]
+  )
 
   const handleClick = useCallback(() => {
     if (value?.id) {
@@ -51,10 +60,10 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
         <div className={clsx('card__image', styles.image)}>
           <Thumbnail value={value?.thumbnail} />
 
-          {value?.duration && value.duration !== 'P0D' ? (
+          {duration.total({ unit: 'second' }) > 0 ? (
             <span className={clsx('badge', styles.duration)}>
-              <time dateTime={value.duration}>
-                <Duration value={parseDuration(value.duration)} />
+              <time dateTime={duration.toJSON()}>
+                <Duration value={duration} />
               </time>
             </span>
           ) : value ? (
@@ -77,8 +86,8 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
           {publishedAt ? (
             <time
               className={styles.published}
-              dateTime={formatISO(publishedAt)}
-              title={intl.formatDate(publishedAt, {
+              dateTime={publishedAt.toJSON()}
+              title={intl.formatDate(publishedAt.epochMilliseconds, {
                 day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit',
@@ -91,10 +100,10 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
                 <FormattedRelativeTime
                   numeric="auto"
                   updateIntervalInSeconds={1}
-                  value={(publishedAt.getTime() - now) / 1000}
+                  value={now.until(publishedAt).total({ unit: 'second' })}
                 />
               ) : (
-                <FormattedTime value={publishedAt} />
+                <FormattedTime value={publishedAt.epochMilliseconds} />
               )}
             </time>
           ) : (

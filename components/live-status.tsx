@@ -1,20 +1,33 @@
+import { Temporal } from '@js-temporal/polyfill'
 import clsx from 'clsx'
-import { addHours, fromUnixTime, getSeconds, isBefore } from 'date-fns'
 import { useEffect, useMemo, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
+import { useIntl } from 'react-intl'
 import styles from './live-status.module.css'
 import type { Video } from '../lib/algolia'
 import type { VFC } from 'react'
+
+function getNow(timeZone = 'UTC'): Temporal.ZonedDateTime {
+  return Temporal.Now.zonedDateTimeISO(timeZone)
+}
 
 type Props = {
   value: Video
 }
 
 const LiveStatus: VFC<Props> = ({ value }) => {
-  const [now, setNow] = useState(() => new Date())
+  const intl = useIntl()
+  const [now, setNow] = useState(() => getNow(intl.timeZone ?? 'UTC'))
   const publishedAt = useMemo(
-    () => fromUnixTime(value.publishedAt),
-    [value.publishedAt]
+    () =>
+      Temporal.Instant.fromEpochSeconds(value.publishedAt).toZonedDateTimeISO(
+        intl.timeZone ?? 'UTC'
+      ),
+    [value.publishedAt, intl.timeZone]
+  )
+  const duration = useMemo(
+    () => Temporal.Duration.from(value.duration ?? 'P0D'),
+    [value.duration]
   )
   const [statusRef, inView] = useInView()
 
@@ -22,19 +35,19 @@ const LiveStatus: VFC<Props> = ({ value }) => {
     if (!inView) return
 
     const timerID = setInterval(() => {
-      setNow(new Date())
+      setNow(getNow(intl.timeZone))
     }, 5 * 1000)
 
     return (): void => {
       clearInterval(timerID)
     }
-  }, [inView])
+  }, [inView, intl.timeZone])
 
   const liveNow =
-    isBefore(publishedAt, now) &&
-    (!value.duration || value.duration === 'P0D') &&
-    getSeconds(publishedAt) > 0 &&
-    isBefore(now, addHours(publishedAt, 12))
+    Temporal.ZonedDateTime.compare(publishedAt, now) < 1 &&
+    Temporal.ZonedDateTime.compare(now, publishedAt.add({ hours: 12 })) < 1 &&
+    duration.total({ unit: 'second' }) < 1 &&
+    publishedAt.second > 0
 
   return (
     <div ref={statusRef}>
