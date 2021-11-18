@@ -22,7 +22,6 @@ const Footer: VFC = () => {
           <Link className="footer__link-item" href="/privacy">
             プライバシーポリシー
           </Link>
-          <span className="footer__link-separator">·</span>
         </nav>
       </div>
     </footer>
