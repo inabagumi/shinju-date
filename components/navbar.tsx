@@ -2,9 +2,10 @@ import clsx from 'clsx'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
 import Icon from '../assets/icon.svg'
+import { getQueryValue } from '../lib/url'
 import styles from './navbar.module.css'
 import SearchForm from './search-form'
 import type { Group } from '../lib/algolia'
@@ -33,10 +34,15 @@ const groups: Group[] = [
   }
 ]
 
-const Navbar: VFC = () => {
+type Props = {
+  basePath?: string
+}
+
+const Navbar: VFC<Props> = ({ basePath }) => {
   const [sidebarShown, setSidebarShown] = useState(false)
   const router = useRouter()
   const { setTheme, theme } = useTheme()
+  const query = useMemo(() => getQueryValue('q', router.query), [router.query])
 
   const showSidebar = useCallback(() => {
     setSidebarShown(true)
@@ -96,32 +102,53 @@ const Navbar: VFC = () => {
               </strong>
             </a>
           </Link>
-
-          <Link href="/videos">
-            <a
-              aria-current={router.asPath === '/videos' ? 'page' : undefined}
-              className={clsx('navbar__item', 'navbar__link', {
-                'navbar__link--active': router.asPath === '/videos'
-              })}
-            >
-              動画一覧
-            </a>
-          </Link>
         </div>
 
         <div className="navbar__items navbar__items--right">
           <div className="navbar__item dropdown dropdown--hoverable">
-            <a className="navbar__link" href="#">
-              グループ
-            </a>
+            <Link
+              href={`${basePath?.endsWith('/videos') ? basePath : '/videos'}${
+                query ? `?q=${query}` : ''
+              }`}
+            >
+              <a className="navbar__link">
+                {groups.find(
+                  (group) => basePath === `/groups/${group.id}/videos`
+                )?.title ?? '全グループ'}
+              </a>
+            </Link>
             <ul className="dropdown__menu">
-              {groups.map((group) => (
-                <li key={group.id}>
-                  <Link href={`/groups/${group.id}/videos`}>
-                    <a className="dropdown__link">{group.title}</a>
-                  </Link>
-                </li>
-              ))}
+              <li>
+                <Link href={`/videos${query ? `?q=${query}` : ''}`}>
+                  <a
+                    aria-current={basePath === '/videos' ? 'page' : undefined}
+                    className={clsx('dropdown__link', {
+                      'dropdown__link--active': basePath === '/videos'
+                    })}
+                  >
+                    全グループ
+                  </a>
+                </Link>
+              </li>
+              {groups.map((group) => {
+                const pathname = `/groups/${group.id}/videos`
+                const isActive = basePath === pathname
+
+                return (
+                  <li key={group.id}>
+                    <Link href={`${pathname}${query ? `?q=${query}` : ''}`}>
+                      <a
+                        aria-current={isActive ? 'page' : undefined}
+                        className={clsx('dropdown__link', {
+                          'dropdown__link--active': isActive
+                        })}
+                      >
+                        {group.title}
+                      </a>
+                    </Link>
+                  </li>
+                )
+              })}
             </ul>
           </div>
 
@@ -137,7 +164,7 @@ const Navbar: VFC = () => {
             {theme === 'dark' ? <FaSun /> : <FaMoon />}
           </button>
 
-          <SearchForm />
+          <SearchForm basePath={basePath} />
         </div>
       </div>
 
@@ -165,36 +192,38 @@ const Navbar: VFC = () => {
           <div className="menu navbar-sidebar__item">
             <ul className="menu__list">
               <li className="menu__list-item">
-                <Link href="/videos">
+                <Link href={`/videos${query ? `?q=${query}` : ''}`}>
                   <a
-                    aria-current={
-                      router.asPath === '/videos' ? 'page' : undefined
-                    }
+                    aria-current={basePath === '/videos' ? 'page' : undefined}
                     className={clsx('menu__link', {
-                      'navbar__link--active': router.asPath === '/videos'
+                      'menu__link--active': basePath === '/videos'
                     })}
                     onClick={hideSidebar}
                   >
-                    動画一覧
+                    全グループ
                   </a>
                 </Link>
               </li>
-              <li className="menu__list-item">
-                <a className="menu__link menu__link--sublist" href="#">
-                  グループ
-                </a>
-                <ul className="menu__list">
-                  {groups.map((group) => (
-                    <li className="menu__list-item" key={group.id}>
-                      <Link href={`/groups/${group.id}/videos`}>
-                        <a className="menu__link" onClick={hideSidebar}>
-                          {group.title}
-                        </a>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </li>
+              {groups.map((group) => {
+                const pathname = `/groups/${group.id}/videos`
+                const isActive = basePath === pathname
+
+                return (
+                  <li className="menu__list-item" key={group.id}>
+                    <Link href={`${pathname}${query ? `?q=${query}` : ''}`}>
+                      <a
+                        aria-current={isActive ? 'page' : undefined}
+                        className={clsx('menu__link', {
+                          'menu__link--active': isActive
+                        })}
+                        onClick={hideSidebar}
+                      >
+                        {group.title}
+                      </a>
+                    </Link>
+                  </li>
+                )
+              })}
             </ul>
           </div>
         </div>

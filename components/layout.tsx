@@ -8,10 +8,11 @@ import type { ReactNode, VFC } from 'react'
 const SKIP_NAV_CONTENT_ID = 'content'
 
 type Props = {
+  basePath?: string
   children: ReactNode
 }
 
-const Layout: VFC<Props> = ({ children }) => {
+const Layout: VFC<Props> = ({ basePath, children }) => {
   return (
     <div className={styles.wrapper}>
       <SkipNavLink
@@ -21,7 +22,7 @@ const Layout: VFC<Props> = ({ children }) => {
         コンテンツにスキップ
       </SkipNavLink>
 
-      <Navbar />
+      <Navbar basePath={basePath} />
 
       <SkipNavContent id={SKIP_NAV_CONTENT_ID}>{children}</SkipNavContent>
 
