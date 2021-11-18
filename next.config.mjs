@@ -31,6 +31,7 @@ const nextConfig = {
       /\/_middlewareManifest\.js$/,
       /\/_middleware\.js$/,
       /\/middleware-manifest\.json$/,
+      /\/middleware-chunks\/[^.]+\.js$/,
       /\/webpack-middleware-[^.]+\.js$/
     ],
     dest: '.next/static',
