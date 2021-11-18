@@ -15,7 +15,11 @@ export const SEARCH_RESULT_COUNT = 9
 
 type Args = [channelIDs: string[], page: number, query: string]
 
-const fetcher: InfiniteFetcher<Args, Video[]> = (channelIDs, page, query) => {
+export const getVideosByChannelIDsWithPage: InfiniteFetcher<Args, Video[]> = (
+  channelIDs,
+  page,
+  query
+) => {
   return getVideosByChannelIDs(channelIDs, {
     limit: SEARCH_RESULT_COUNT,
     page,
@@ -40,7 +44,7 @@ const SearchResults: VFC<Props> = ({
 }) => {
   const { data, setSize } = useSWRInfinite<Video[], unknown, Args>(
     (index) => [channels.map((channel) => channel.id), index + 1, query],
-    fetcher,
+    getVideosByChannelIDsWithPage,
     {
       fallbackData: prefetchedData
     }
@@ -73,6 +77,7 @@ const SearchResults: VFC<Props> = ({
           )}
 
           <InfiniteScroll
+            className="container"
             dataLength={items.length}
             hasMore={!isReachingEnd}
             loader={placeholder}
@@ -84,28 +89,26 @@ const SearchResults: VFC<Props> = ({
               overflow: undefined
             }}
           >
-            <div className="container">
-              {chunk(items, 3).map((values) => (
-                <div
-                  className="row"
-                  key={values.map((value) => value.id).join(':')}
-                >
-                  {values.map((value) => (
-                    <div
-                      className="col col--4 padding-bottom--lg padding-horiz--sm"
-                      key={value.id}
-                    >
-                      <VideoCard
-                        timeOptions={{
-                          relativeTime: true
-                        }}
-                        value={value}
-                      />
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
+            {chunk(items, 3).map((values) => (
+              <div
+                className="row"
+                key={values.map((value) => value.id).join(':')}
+              >
+                {values.map((value) => (
+                  <div
+                    className="col col--4 padding-bottom--lg padding-horiz--sm"
+                    key={value.id}
+                  >
+                    <VideoCard
+                      timeOptions={{
+                        relativeTime: true
+                      }}
+                      value={value}
+                    />
+                  </div>
+                ))}
+              </div>
+            ))}
           </InfiniteScroll>
         </div>
       ) : (

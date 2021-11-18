@@ -16,6 +16,7 @@ import Timeline from '../components/timeline'
 import { getVideosByQuery } from '../lib/algolia'
 import type { Video } from '../lib/algolia'
 import type { GetStaticProps, NextPage } from 'next'
+import type { Fetcher } from 'swr'
 
 const tagline =
   '774 inc. 所属タレントの配信スケジュールや動画の検索ができるウェブサービス'
@@ -27,7 +28,7 @@ function compareVideo(videoA: Video, videoB: Video): number {
   return compareAsc(publishedAtA, publishedAtB)
 }
 
-async function getVideos(now: Date): Promise<Video[]> {
+const getNotEndedVideos: Fetcher<Video[], Date> = async (now) => {
   const hours = startOfHour(now)
   const since = subHours(hours, 5)
   const videos = await getVideosByQuery({
@@ -48,9 +49,13 @@ const SchedulePage: NextPage<Props> = ({
   videos: prefetchedData
 }) => {
   const now = useMemo(() => parseISO(rawNow), [rawNow])
-  const { data: videos = [] } = useSWR<Video[], unknown, Date>(now, getVideos, {
-    fallbackData: prefetchedData
-  })
+  const { data: videos = [] } = useSWR<Video[], unknown, Date>(
+    now,
+    getNotEndedVideos,
+    {
+      fallbackData: prefetchedData
+    }
+  )
 
   return (
     <Page>
@@ -82,7 +87,7 @@ export default SchedulePage
 
 export const getStaticProps: GetStaticProps<Props> = async () => {
   const now = new Date()
-  const videos = await getVideos(now)
+  const videos = await getNotEndedVideos(now)
 
   return {
     props: {

@@ -1,12 +1,9 @@
 import { NextSeo } from 'next-seo'
 import Page from '../../../components/layout'
 import SearchResults, {
-  SEARCH_RESULT_COUNT
+  getVideosByChannelIDsWithPage
 } from '../../../components/search-results'
-import {
-  getChannelsByGroupID,
-  getVideosByChannelIDs
-} from '../../../lib/algolia'
+import { getChannelsByGroupID } from '../../../lib/algolia'
 import { getQueryValue } from '../../../lib/url'
 import type { Channel, Group, Video } from '../../../lib/algolia'
 import type { GetServerSideProps, NextPage } from 'next'
@@ -63,14 +60,8 @@ export const getServerSideProps: GetServerSideProps<Props, Params> = async ({
     const channels = await getChannelsByGroupID(groupID)
 
     if (channels.length > 0) {
-      const videos = await getVideosByChannelIDs(
-        channels.map((channel) => channel.id),
-        {
-          limit: SEARCH_RESULT_COUNT,
-          page: 1,
-          query: q
-        }
-      )
+      const channelIDs = channels.map((channel) => channel.id)
+      const videos = await getVideosByChannelIDsWithPage(channelIDs, 1, q)
 
       return {
         props: {
