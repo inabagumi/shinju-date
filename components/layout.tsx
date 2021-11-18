@@ -24,7 +24,9 @@ const Layout: VFC<Props> = ({ basePath, children }) => {
 
       <Navbar basePath={basePath} />
 
-      <SkipNavContent id={SKIP_NAV_CONTENT_ID}>{children}</SkipNavContent>
+      <SkipNavContent className="padding-bottom--xl" id={SKIP_NAV_CONTENT_ID}>
+        {children}
+      </SkipNavContent>
 
       <Footer
         items={[
