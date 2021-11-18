@@ -1,46 +1,49 @@
-import {
-  add,
-  addDays,
-  addHours,
-  addMinutes,
-  fromUnixTime,
-  getUnixTime,
-  max,
-  min
-} from 'date-fns'
+import { Temporal } from '@js-temporal/polyfill'
 import { createEvents } from 'ics'
 import { getVideosByChannelIDs } from '../../../lib/algolia'
-import { parseDuration } from '../../../lib/date'
 import type { DateArray, EventAttributes } from 'ics'
 import type { NextApiHandler } from 'next'
 
-function convertToDateArray(date: Date): DateArray {
+function max(arr: Temporal.ZonedDateTime[]): Temporal.ZonedDateTime {
+  return [...arr].sort((a, b) => Temporal.ZonedDateTime.compare(a, b))[0]
+}
+
+function min(arr: Temporal.ZonedDateTime[]): Temporal.ZonedDateTime {
+  return [...arr].sort((a, b) => Temporal.ZonedDateTime.compare(b, a))[0]
+}
+
+function convertToDateArray(dateTime: Temporal.ZonedDateTime): DateArray {
   return [
-    date.getUTCFullYear(),
-    date.getUTCMonth() + 1,
-    date.getUTCDate(),
-    date.getUTCHours(),
-    date.getUTCMinutes()
+    dateTime.year,
+    dateTime.month,
+    dateTime.day,
+    dateTime.hour,
+    dateTime.minute
   ]
 }
 
 const handler: NextApiHandler = async (req, res) => {
-  const now = new Date()
+  const timeZone = Temporal.TimeZone.from('UTC')
+  const now = Temporal.Now.zonedDateTimeISO(timeZone)
   const channelIDs = (
     Array.isArray(req.query.channel) ? req.query.channel : [req.query.channel]
   ).filter(Boolean)
   const videos = await getVideosByChannelIDs(channelIDs, {
-    filters: [`publishedAt < ${getUnixTime(addDays(now, 7))}`],
+    filters: [`publishedAt < ${now.add({ days: 7 }).epochSeconds}`],
     limit: 100
   })
   const events = videos.map((video): EventAttributes => {
-    const publishedAt = fromUnixTime(video.publishedAt)
-    const endedAt = video.duration
-      ? add(video.publishedAt, parseDuration(video.duration))
-      : min([
-          max([addHours(video.publishedAt, 1), addMinutes(now, 30)]),
-          addHours(video.publishedAt, 12)
-        ])
+    const publishedAt = Temporal.Instant.fromEpochSeconds(
+      video.publishedAt
+    ).toZonedDateTimeISO(timeZone)
+    const duration = Temporal.Duration.from(video.duration ?? 'P0D')
+    const endedAt =
+      duration.total({ unit: 'second' }) > 0
+        ? publishedAt.add(duration)
+        : min([
+            max([publishedAt.add({ hours: 1 }), now.add({ minutes: 30 })]),
+            publishedAt.add({ hours: 12 })
+          ])
 
     return {
       calName: video.channel.title,

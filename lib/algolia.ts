@@ -109,7 +109,7 @@ export function getVideosByChannelIDs(
     filters: [
       channelIDs.map((channelID) => `channel.id:${channelID}`).join(' OR '),
       ...filters
-    ],
+    ].filter(Boolean),
     ...options
   })
 }

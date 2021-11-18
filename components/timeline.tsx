@@ -1,16 +1,30 @@
-import { fromUnixTime, startOfDay } from 'date-fns'
+import { Temporal } from '@js-temporal/polyfill'
 import chunk from 'lodash.chunk'
 import groupBy from 'lodash.groupby'
 import { useMemo } from 'react'
-import { FormattedDate } from 'react-intl'
+import { FormattedDate, useIntl } from 'react-intl'
 import VideoCard from './video-card'
 import type { Video } from '../lib/algolia'
 import type { VFC } from 'react'
 
-const buildScheduleMap = (values: Video[]): Record<string, Video[]> => {
-  return groupBy(values, (value) =>
-    startOfDay(fromUnixTime(value.publishedAt)).toJSON()
-  )
+type BuildScheduleMapOptions = {
+  timeZone?: string
+}
+
+const buildScheduleMap = (
+  values: Video[],
+  { timeZone = 'UTC' }: BuildScheduleMapOptions = {}
+): Record<string, Video[]> => {
+  const tz = Temporal.TimeZone.from(timeZone)
+
+  return groupBy(values, (value) => {
+    const publishedAt = Temporal.Instant.fromEpochSeconds(
+      value.publishedAt
+    ).toZonedDateTimeISO(tz)
+    const publishedDate = publishedAt.toPlainDate()
+
+    return publishedDate.toString()
+  })
 }
 
 type Props = {
@@ -18,7 +32,11 @@ type Props = {
 }
 
 const Timeline: VFC<Props> = ({ values }) => {
-  const schedule = useMemo(() => buildScheduleMap(values), [values])
+  const intl = useIntl()
+  const schedule = useMemo(
+    () => buildScheduleMap(values, { timeZone: intl.timeZone }),
+    [values, intl.timeZone]
+  )
 
   return (
     <>

@@ -1,14 +1,14 @@
-import type { Duration as DurationObject } from 'date-fns'
+import { Temporal } from '@js-temporal/polyfill'
 import type { VFC } from 'react'
 
-function formatDuration(duration: DurationObject): string {
-  return [duration.hours || 0, duration.minutes || 0, duration.seconds || 0]
+function formatDuration(duration: Temporal.Duration): string {
+  return [duration.hours, duration.minutes, duration.seconds]
     .map((value) => value.toString().padStart(2, '0'))
     .join(':')
 }
 
 type Props = {
-  value: DurationObject
+  value: Temporal.Duration
 }
 
 const Duration: VFC<Props> = ({ value }) => {
