@@ -28,26 +28,7 @@ const Layout: VFC<Props> = ({ basePath, children }) => {
         {children}
       </SkipNavContent>
 
-      <Footer
-        items={[
-          {
-            href: 'https://haneru.dev/',
-            label: '運営者情報'
-          },
-          {
-            href: '/about',
-            label: 'SHINJU DATEとは'
-          },
-          {
-            href: '/terms',
-            label: '利用規約'
-          },
-          {
-            href: '/privacy',
-            label: 'プライバシーポリシー'
-          }
-        ]}
-      />
+      <Footer />
     </div>
   )
 }
