@@ -1,7 +1,7 @@
 import { NextSeo } from 'next-seo'
 import Page from '../components/layout'
 import SearchResults, {
-  SEARCH_RESULT_COUNT
+  getVideosByChannelIDsWithPage
 } from '../components/search-results'
 import { getVideosByQuery } from '../lib/algolia'
 import { getQueryValue } from '../lib/url'
@@ -44,12 +44,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
   query
 }) => {
   const q = getQueryValue('q', query) ?? ''
-
-  const videos = await getVideosByQuery({
-    limit: SEARCH_RESULT_COUNT,
-    page: 1,
-    query: q
-  })
+  const videos = await getVideosByChannelIDsWithPage([], 1, q)
 
   return {
     props: {
