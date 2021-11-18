@@ -4,12 +4,16 @@ import { getVideosByChannelIDs } from '../../../lib/algolia'
 import type { DateArray, EventAttributes } from 'ics'
 import type { NextApiHandler } from 'next'
 
-function max(arr: Temporal.ZonedDateTime[]): Temporal.ZonedDateTime {
-  return [...arr].sort((a, b) => Temporal.ZonedDateTime.compare(a, b))[0]
+function max(dateTimeList: Temporal.ZonedDateTime[]): Temporal.ZonedDateTime {
+  return [...dateTimeList].sort((a, b) =>
+    Temporal.ZonedDateTime.compare(b, a)
+  )[0]
 }
 
-function min(arr: Temporal.ZonedDateTime[]): Temporal.ZonedDateTime {
-  return [...arr].sort((a, b) => Temporal.ZonedDateTime.compare(b, a))[0]
+function min(dateTimeList: Temporal.ZonedDateTime[]): Temporal.ZonedDateTime {
+  return [...dateTimeList].sort((a, b) =>
+    Temporal.ZonedDateTime.compare(a, b)
+  )[0]
 }
 
 function convertToDateArray(dateTime: Temporal.ZonedDateTime): DateArray {
