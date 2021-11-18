@@ -18,7 +18,7 @@ const VideosPage: NextPage<Props> = ({ query, videos }) => {
   const title = query ? `『${query}』の検索結果` : '動画一覧'
 
   return (
-    <Page>
+    <Page basePath="/videos">
       <NextSeo
         canonical={new URL(
           query ? `/videos?q=${encodeURIComponent(query)}` : '/videos',

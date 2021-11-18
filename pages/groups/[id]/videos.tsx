@@ -22,7 +22,7 @@ const VideosPage: NextPage<Props> = ({ channels, group, query, videos }) => {
     : `『${group.title}』の動画一覧`
 
   return (
-    <Page>
+    <Page basePath={basePath}>
       <NextSeo
         canonical={new URL(
           query ? `${basePath}?q=${encodeURIComponent(query)}` : basePath,
