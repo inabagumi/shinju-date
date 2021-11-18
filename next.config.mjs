@@ -27,6 +27,12 @@ const nextConfig = {
   },
   pageExtensions: ['mdx', 'ts', 'tsx'],
   pwa: {
+    buildExcludes: [
+      /\/_middlewareManifest\.js$/,
+      /\/_middleware\.js$/,
+      /\/middleware-manifest\.json$/,
+      /\/webpack-middleware-[^.]+\.js$/
+    ],
     dest: '.next/static',
     disable: process.env.NODE_ENV === 'development',
     sw: 'service-worker.js'
