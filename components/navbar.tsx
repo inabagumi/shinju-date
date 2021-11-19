@@ -132,7 +132,7 @@ const Navbar: VFC<Props> = ({ basePath }) => {
           <div className="navbar__item dropdown dropdown--hoverable">
             <Link
               href={`${basePath?.endsWith('/videos') ? basePath : '/videos'}${
-                query ? `?q=${query}` : ''
+                query ? `/${encodeURIComponent(query)}` : ''
               }`}
             >
               <a className="navbar__link">
@@ -143,7 +143,11 @@ const Navbar: VFC<Props> = ({ basePath }) => {
             </Link>
             <ul className="dropdown__menu">
               <li>
-                <Link href={`/videos${query ? `?q=${query}` : ''}`}>
+                <Link
+                  href={`/videos${
+                    query ? `/${encodeURIComponent(query)}` : ''
+                  }`}
+                >
                   <a
                     aria-current={basePath === '/videos' ? 'page' : undefined}
                     className={clsx('dropdown__link', {
@@ -160,7 +164,11 @@ const Navbar: VFC<Props> = ({ basePath }) => {
 
                 return (
                   <li key={group.id}>
-                    <Link href={`${pathname}${query ? `?q=${query}` : ''}`}>
+                    <Link
+                      href={`${pathname}${
+                        query ? `/${encodeURIComponent(query)}` : ''
+                      }`}
+                    >
                       <a
                         aria-current={isActive ? 'page' : undefined}
                         className={clsx('dropdown__link', {
@@ -236,7 +244,11 @@ const Navbar: VFC<Props> = ({ basePath }) => {
                 </a>
                 <ul className="menu__list">
                   <li className="menu__list-item">
-                    <Link href={`/videos${query ? `?q=${query}` : ''}`}>
+                    <Link
+                      href={`/videos${
+                        query ? `/${encodeURIComponent(query)}` : ''
+                      }`}
+                    >
                       <a
                         aria-current={
                           basePath === '/videos' ? 'page' : undefined
@@ -256,7 +268,11 @@ const Navbar: VFC<Props> = ({ basePath }) => {
 
                     return (
                       <li className="menu__list-item" key={group.id}>
-                        <Link href={`${pathname}${query ? `?q=${query}` : ''}`}>
+                        <Link
+                          href={`${pathname}${
+                            query ? `/${encodeURIComponent(query)}` : ''
+                          }`}
+                        >
                           <a
                             aria-current={isActive ? 'page' : undefined}
                             className={clsx('menu__link', {

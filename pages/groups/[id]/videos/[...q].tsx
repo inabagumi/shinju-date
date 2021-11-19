@@ -1,12 +1,11 @@
 import { NextSeo } from 'next-seo'
-import Page from '../../../components/layout'
+import Page from '../../../../components/layout'
 import SearchResults, {
   getVideosByChannelIDsWithPage
-} from '../../../components/search-results'
-import { getChannelsByGroupID } from '../../../lib/algolia'
-import { getQueryValue } from '../../../lib/url'
-import type { Channel, Group, Video } from '../../../lib/algolia'
-import type { GetServerSideProps, NextPage } from 'next'
+} from '../../../../components/search-results'
+import { getChannelsByGroupID } from '../../../../lib/algolia'
+import type { Channel, Group, Video } from '../../../../lib/algolia'
+import type { GetStaticPaths, GetStaticProps, NextPage } from 'next'
 
 type Props = {
   channels: Channel[]
@@ -47,29 +46,37 @@ export default VideosPage
 
 type Params = {
   id: string
+  q?: string[]
 }
 
-export const getServerSideProps: GetServerSideProps<Props, Params> = async ({
-  params,
-  query
+export const getStaticPaths: GetStaticPaths<Params> = () => {
+  return {
+    fallback: 'blocking',
+    paths: []
+  }
+}
+
+export const getStaticProps: GetStaticProps<Props, Params> = async ({
+  params
 }) => {
   const groupID = params?.id
-  const q = getQueryValue('q', query) ?? ''
+  const query = params?.q?.join('/') ?? ''
 
   if (groupID) {
     const channels = await getChannelsByGroupID(groupID)
 
     if (channels.length > 0) {
       const channelIDs = channels.map((channel) => channel.id)
-      const videos = await getVideosByChannelIDsWithPage(channelIDs, 1, q)
+      const videos = await getVideosByChannelIDsWithPage(channelIDs, 1, query)
 
       return {
         props: {
           channels,
           group: channels[0].group,
-          query: q,
+          query,
           videos
-        }
+        },
+        revalidate: 5
       }
     }
   }

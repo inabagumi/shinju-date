@@ -1,4 +1,5 @@
 import ipaddr from 'ipaddr.js'
+import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 /**
@@ -29,7 +30,9 @@ function isImageResponse(res: Response): boolean {
   return !!contentType && ACCEPT_IMAGE_TYPES.includes(contentType)
 }
 
-export async function middleware(req: NextRequest): Promise<void | Response> {
+export async function middleware(
+  req: NextRequest
+): Promise<NextResponse | Response> {
   if (
     req.ip &&
     req.headers.get('user-agent')?.startsWith('imgix/') &&
@@ -45,5 +48,15 @@ export async function middleware(req: NextRequest): Promise<void | Response> {
         })
   }
 
-  return
+  if (req.nextUrl.pathname.endsWith('/videos')) {
+    const query = req.nextUrl.searchParams.getAll('q').filter(Boolean).join(' ')
+
+    if (query) {
+      return NextResponse.redirect(
+        `${req.nextUrl.pathname}/${encodeURIComponent(query)}`
+      )
+    }
+  }
+
+  return NextResponse.next()
 }
