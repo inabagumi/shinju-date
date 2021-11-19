@@ -23,16 +23,17 @@ type Props = {
 
 const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
   const intl = useIntl()
-  const now = useMemo(
-    () => Temporal.Now.zonedDateTimeISO(intl.timeZone ?? 'UTC'),
+  const timeZone = useMemo(
+    () => Temporal.TimeZone.from(intl.timeZone ?? 'UTC'),
     [intl.timeZone]
   )
+  const now = useMemo(() => Temporal.Now.zonedDateTimeISO(timeZone), [timeZone])
   const publishedAt = useMemo(
     () =>
       Temporal.Instant.fromEpochSeconds(
         value?.publishedAt ?? 0
-      ).toZonedDateTimeISO(intl.timeZone ?? 'UTC'),
-    [value?.publishedAt, intl.timeZone]
+      ).toZonedDateTimeISO(timeZone),
+    [value?.publishedAt, timeZone]
   )
   const duration = useMemo(
     () => Temporal.Duration.from(value?.duration ?? 'P0D'),
@@ -83,10 +84,10 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
         </div>
 
         <div className="card__footer">
-          {publishedAt ? (
+          {publishedAt.epochSeconds > 0 ? (
             <time
               className={styles.published}
-              dateTime={publishedAt.toJSON()}
+              dateTime={publishedAt.toInstant().toJSON()}
               title={intl.formatDate(publishedAt.epochMilliseconds, {
                 day: 'numeric',
                 hour: '2-digit',

@@ -7,7 +7,7 @@ import styles from './live-status.module.css'
 import type { Video } from '../lib/algolia'
 import type { VFC } from 'react'
 
-function getNow(timeZone = 'UTC'): Temporal.ZonedDateTime {
+function getNow(timeZone: Temporal.TimeZone): Temporal.ZonedDateTime {
   return Temporal.Now.zonedDateTimeISO(timeZone)
 }
 
@@ -17,13 +17,17 @@ type Props = {
 
 const LiveStatus: VFC<Props> = ({ value }) => {
   const intl = useIntl()
-  const [now, setNow] = useState(() => getNow(intl.timeZone ?? 'UTC'))
+  const timeZone = useMemo(
+    () => Temporal.TimeZone.from(intl.timeZone ?? 'UTC'),
+    [intl.timeZone]
+  )
+  const [now, setNow] = useState(() => getNow(timeZone))
   const publishedAt = useMemo(
     () =>
       Temporal.Instant.fromEpochSeconds(value.publishedAt).toZonedDateTimeISO(
-        intl.timeZone ?? 'UTC'
+        timeZone
       ),
-    [value.publishedAt, intl.timeZone]
+    [value.publishedAt, timeZone]
   )
   const duration = useMemo(
     () => Temporal.Duration.from(value.duration ?? 'P0D'),
@@ -35,13 +39,13 @@ const LiveStatus: VFC<Props> = ({ value }) => {
     if (!inView) return
 
     const timerID = setInterval(() => {
-      setNow(getNow(intl.timeZone))
+      setNow(getNow(timeZone))
     }, 5 * 1000)
 
     return (): void => {
       clearInterval(timerID)
     }
-  }, [inView, intl.timeZone])
+  }, [inView, timeZone])
 
   const liveNow =
     Temporal.ZonedDateTime.compare(publishedAt, now) < 1 &&

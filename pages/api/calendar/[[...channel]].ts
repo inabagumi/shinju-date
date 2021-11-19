@@ -1,30 +1,9 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { createEvents } from 'ics'
 import { getVideosByChannelIDs } from '../../../lib/algolia'
-import type { DateArray, EventAttributes } from 'ics'
+import { convertToDateArray, max, min } from '../../../lib/date'
+import type { EventAttributes } from 'ics'
 import type { NextApiHandler } from 'next'
-
-function max(dateTimeList: Temporal.ZonedDateTime[]): Temporal.ZonedDateTime {
-  return [...dateTimeList].sort((a, b) =>
-    Temporal.ZonedDateTime.compare(b, a)
-  )[0]
-}
-
-function min(dateTimeList: Temporal.ZonedDateTime[]): Temporal.ZonedDateTime {
-  return [...dateTimeList].sort((a, b) =>
-    Temporal.ZonedDateTime.compare(a, b)
-  )[0]
-}
-
-function convertToDateArray(dateTime: Temporal.ZonedDateTime): DateArray {
-  return [
-    dateTime.year,
-    dateTime.month,
-    dateTime.day,
-    dateTime.hour,
-    dateTime.minute
-  ]
-}
 
 const handler: NextApiHandler = async (req, res) => {
   const timeZone = Temporal.TimeZone.from('UTC')
@@ -44,10 +23,10 @@ const handler: NextApiHandler = async (req, res) => {
     const endedAt =
       duration.total({ unit: 'second' }) > 0
         ? publishedAt.add(duration)
-        : min([
-            max([publishedAt.add({ hours: 1 }), now.add({ minutes: 30 })]),
+        : min(
+            max(publishedAt.add({ hours: 1 }), now.add({ minutes: 30 })),
             publishedAt.add({ hours: 12 })
-          ])
+          )
 
     return {
       calName: video.channel.title,
