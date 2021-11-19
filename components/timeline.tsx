@@ -8,12 +8,12 @@ import type { Video } from '../lib/algolia'
 import type { VFC } from 'react'
 
 type BuildScheduleMapOptions = {
-  timeZone?: string
+  timeZone: Temporal.TimeZone
 }
 
 const buildScheduleMap = (
   values: Video[],
-  { timeZone = 'UTC' }: BuildScheduleMapOptions = {}
+  { timeZone }: BuildScheduleMapOptions
 ): Record<string, Video[]> => {
   const tz = Temporal.TimeZone.from(timeZone)
 
@@ -33,9 +33,13 @@ type Props = {
 
 const Timeline: VFC<Props> = ({ values }) => {
   const intl = useIntl()
+  const timeZone = useMemo(
+    () => Temporal.TimeZone.from(intl.timeZone ?? 'UTC'),
+    [intl.timeZone]
+  )
   const schedule = useMemo(
-    () => buildScheduleMap(values, { timeZone: intl.timeZone }),
-    [values, intl.timeZone]
+    () => buildScheduleMap(values, { timeZone }),
+    [values, timeZone]
   )
 
   return (
