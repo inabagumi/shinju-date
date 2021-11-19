@@ -1,11 +1,10 @@
 import { NextSeo } from 'next-seo'
-import Page from '../components/layout'
+import Page from '../../components/layout'
 import SearchResults, {
   getVideosByChannelIDsWithPage
-} from '../components/search-results'
-import { getQueryValue } from '../lib/url'
-import type { Channel, Video } from '../lib/algolia'
-import type { GetServerSideProps, NextPage } from 'next'
+} from '../../components/search-results'
+import type { Channel, Video } from '../../lib/algolia'
+import type { GetStaticPaths, GetStaticProps, NextPage } from 'next'
 
 type Props = {
   channel?: Channel
@@ -39,16 +38,28 @@ const VideosPage: NextPage<Props> = ({ query, videos }) => {
 
 export default VideosPage
 
-export const getServerSideProps: GetServerSideProps<Props> = async ({
-  query
+type Params = {
+  q: string[]
+}
+
+export const getStaticPaths: GetStaticPaths<Params> = () => {
+  return {
+    fallback: 'blocking',
+    paths: []
+  }
+}
+
+export const getStaticProps: GetStaticProps<Props, Params> = async ({
+  params
 }) => {
-  const q = getQueryValue('q', query) ?? ''
-  const videos = await getVideosByChannelIDsWithPage([], 1, q)
+  const query = params?.q?.join('/') ?? ''
+  const videos = await getVideosByChannelIDsWithPage([], 1, query)
 
   return {
     props: {
-      query: q,
+      query,
       videos
-    }
+    },
+    revalidate: 5
   }
 }

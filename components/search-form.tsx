@@ -26,7 +26,7 @@ const SearchForm: VFC<Props> = ({ basePath = '/videos' }) => {
       event.preventDefault()
 
       router
-        .push(value ? `${basePath}?q=${encodeURIComponent(value)}` : basePath)
+        .push(`/${basePath}${value ? `/${encodeURIComponent(value)}` : ''}`)
         .finally(() => {
           if (textFieldRef.current) {
             textFieldRef.current.blur()
