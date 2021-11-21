@@ -63,7 +63,7 @@ const SchedulePage: NextPage<Props> = ({
         <PopularitySearchQueries
           values={[
             'Minecraft',
-            '桃太郎電鉄',
+            'ポケットモンスター',
             'リングフィット アドベンチャー',
             'Detroit: Become Human'
           ]}
