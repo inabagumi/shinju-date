@@ -16,7 +16,7 @@ const PopularitySearchQueries: VFC<Props> = ({ values }) => {
             <Link
               aria-label={`『${query}』の検索結果`}
               className={styles.pillLink}
-              href={`/videos?q=${query}`}
+              href={`/videos/${encodeURIComponent(query)}`}
               title={`『${query}』の検索結果`}
             >
               {query}
