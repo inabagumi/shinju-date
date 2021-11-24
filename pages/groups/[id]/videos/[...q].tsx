@@ -27,7 +27,6 @@ const VideosPage: NextPage<Props> = ({ channels, group, query, videos }) => {
           query ? `${basePath}?q=${encodeURIComponent(query)}` : basePath,
           process.env.NEXT_PUBLIC_BASE_URL
         ).toString()}
-        noindex
         title={title}
       />
 
