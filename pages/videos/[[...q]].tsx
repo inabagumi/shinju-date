@@ -22,6 +22,7 @@ const VideosPage: NextPage<Props> = ({ query, videos }) => {
           query ? `/videos?q=${encodeURIComponent(query)}` : '/videos',
           process.env.NEXT_PUBLIC_BASE_URL
         ).toString()}
+        noindex={!!query}
         title={title}
       />
 
