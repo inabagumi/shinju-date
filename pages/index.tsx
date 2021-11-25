@@ -44,7 +44,8 @@ const SchedulePage: NextPage<Props> = ({
 }) => {
   const now = useMemo(() => Temporal.Instant.fromEpochSeconds(rawNow), [rawNow])
   const { data: videos = [] } = useSWR<Video[]>(now, getNotEndedVideos, {
-    fallbackData: prefetchedData
+    fallbackData: prefetchedData,
+    refreshInterval: 10_000
   })
 
   return (
