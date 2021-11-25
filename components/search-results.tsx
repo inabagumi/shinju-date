@@ -3,6 +3,7 @@ import chunk from 'lodash.chunk'
 import { useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite from 'swr/infinite'
+import { useBasePath } from '../components/layout'
 import { getVideosByChannelIDs } from '../lib/algolia'
 import Link from './link'
 import styles from './search-results.module.css'
@@ -25,7 +26,6 @@ export function getVideosByChannelIDsWithPage(
 }
 
 type Props = {
-  basePath: string
   channels?: Channel[]
   prefetchedData?: Video[][]
   query?: string
@@ -33,7 +33,6 @@ type Props = {
 }
 
 const SearchResults: VFC<Props> = ({
-  basePath,
   channels = [],
   prefetchedData,
   query = '',
@@ -50,6 +49,8 @@ const SearchResults: VFC<Props> = ({
       fallbackData: prefetchedData
     }
   )
+  const basePath = useBasePath()
+
   const loadMore = useCallback(() => setSize((x) => x + 1), [setSize])
 
   const items = data ? data.flat() : []

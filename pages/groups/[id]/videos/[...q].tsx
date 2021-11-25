@@ -32,7 +32,6 @@ const VideosPage: NextPage<Props> = ({ channels, group, query, videos }) => {
       />
 
       <SearchResults
-        basePath={basePath}
         channels={channels}
         prefetchedData={[videos]}
         query={query}

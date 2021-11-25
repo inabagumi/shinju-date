@@ -26,12 +26,7 @@ const VideosPage: NextPage<Props> = ({ query, videos }) => {
         title={title}
       />
 
-      <SearchResults
-        basePath="/video"
-        prefetchedData={[videos]}
-        query={query}
-        title={title}
-      />
+      <SearchResults prefetchedData={[videos]} query={query} title={title} />
     </Page>
   )
 }
