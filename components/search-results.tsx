@@ -9,17 +9,14 @@ import styles from './search-results.module.css'
 import VideoCard from './video-card'
 import type { Channel, Video } from '../lib/algolia'
 import type { VFC } from 'react'
-import type { InfiniteFetcher } from 'swr/infinite'
 
 export const SEARCH_RESULT_COUNT = 9
 
-type Args = [channelIDs: string[], page: number, query: string]
-
-export const getVideosByChannelIDsWithPage: InfiniteFetcher<Args, Video[]> = (
-  channelIDs,
-  page,
-  query
-) => {
+export function getVideosByChannelIDsWithPage(
+  channelIDs: string[] = [],
+  page = 1,
+  query = ''
+): Promise<Video[]> {
   return getVideosByChannelIDs(channelIDs, {
     limit: SEARCH_RESULT_COUNT,
     page,
@@ -42,8 +39,12 @@ const SearchResults: VFC<Props> = ({
   query = '',
   title
 }) => {
-  const { data, setSize } = useSWRInfinite<Video[], unknown, Args>(
-    (index) => [channels.map((channel) => channel.id), index + 1, query],
+  const { data, setSize } = useSWRInfinite<Video[]>(
+    (index: number) => [
+      channels.map((channel) => channel.id),
+      index + 1,
+      query
+    ],
     getVideosByChannelIDsWithPage,
     {
       fallbackData: prefetchedData

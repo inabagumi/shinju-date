@@ -9,7 +9,7 @@ import Timeline from '../components/timeline'
 import { getVideosByQuery } from '../lib/algolia'
 import type { Video } from '../lib/algolia'
 import type { GetStaticProps, NextPage } from 'next'
-import type { Fetcher } from 'swr'
+import type { BareFetcher } from 'swr'
 
 const tagline =
   '774 inc. 所属タレントの配信スケジュールや動画の検索ができるウェブサービス'
@@ -21,7 +21,9 @@ function compareVideo(videoA: Video, videoB: Video): number {
   return Temporal.Instant.compare(publishedAtA, publishedAtB)
 }
 
-const getNotEndedVideos: Fetcher<Video[], Temporal.Instant> = async (now) => {
+const getNotEndedVideos: BareFetcher<Video[]> = async (
+  now: Temporal.Instant
+) => {
   const since = now.subtract({ hours: 5 })
   const videos = await getVideosByQuery({
     filters: [`publishedAt >= ${since.epochSeconds}`, 'duration:P0D'],
@@ -41,13 +43,9 @@ const SchedulePage: NextPage<Props> = ({
   videos: prefetchedData
 }) => {
   const now = useMemo(() => Temporal.Instant.fromEpochSeconds(rawNow), [rawNow])
-  const { data: videos = [] } = useSWR<Video[], unknown, Temporal.Instant>(
-    now,
-    getNotEndedVideos,
-    {
-      fallbackData: prefetchedData
-    }
-  )
+  const { data: videos = [] } = useSWR<Video[]>(now, getNotEndedVideos, {
+    fallbackData: prefetchedData
+  })
 
   return (
     <Page>
