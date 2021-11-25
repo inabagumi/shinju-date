@@ -6,6 +6,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
 import Icon from '../assets/icon.svg'
 import { getQueryValue } from '../lib/url'
+import { useBasePath } from './layout'
 import styles from './navbar.module.css'
 import SearchForm from './search-form'
 import type { Group } from '../lib/algolia'
@@ -34,14 +35,11 @@ const groups: Group[] = [
   }
 ]
 
-type Props = {
-  basePath?: string
-}
-
-const Navbar: VFC<Props> = ({ basePath }) => {
+const Navbar: VFC = () => {
   const [sidebarShown, setSidebarShown] = useState(false)
   const router = useRouter()
   const { setTheme, theme } = useTheme()
+  const basePath = useBasePath()
   const query = useMemo(() => getQueryValue('q', router.query), [router.query])
 
   const showSidebar = useCallback(() => {
@@ -196,7 +194,7 @@ const Navbar: VFC<Props> = ({ basePath }) => {
             {theme === 'dark' ? <FaSun /> : <FaMoon />}
           </button>
 
-          <SearchForm basePath={basePath} />
+          <SearchForm />
         </div>
       </div>
 

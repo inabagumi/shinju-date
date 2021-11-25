@@ -1,18 +1,16 @@
 import clsx from 'clsx'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useBasePath } from '../components/layout'
 import { getQueryValue } from '../lib/url'
 import styles from './search-form.module.css'
 import type { ChangeEventHandler, FormEventHandler, VFC } from 'react'
 
-type Props = {
-  basePath?: string
-}
-
-const SearchForm: VFC<Props> = ({ basePath = '/videos' }) => {
+const SearchForm: VFC = () => {
   const { query, ...router } = useRouter()
   const [value, setValue] = useState(() => getQueryValue('q', query))
   const textFieldRef = useRef<HTMLInputElement>(null)
+  const basePath = useBasePath()
 
   const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (event) => {
