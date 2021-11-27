@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 import { NextSeo } from 'next-seo'
 import Page from '../../../../components/layout'
 import SearchResults, {
@@ -10,11 +11,18 @@ import type { GetStaticPaths, GetStaticProps, NextPage } from 'next'
 type Props = {
   channels: Channel[]
   group: Group
+  now: number
   query: string
   videos: Video[]
 }
 
-const VideosPage: NextPage<Props> = ({ channels, group, query, videos }) => {
+const VideosPage: NextPage<Props> = ({
+  channels,
+  group,
+  now,
+  query,
+  videos
+}) => {
   const basePath = `/groups/${group.id}/videos`
   const title = query
     ? `『${query}』の検索結果 - ${group.title}`
@@ -24,7 +32,7 @@ const VideosPage: NextPage<Props> = ({ channels, group, query, videos }) => {
     <Page basePath={basePath}>
       <NextSeo
         canonical={new URL(
-          query ? `${basePath}?q=${encodeURIComponent(query)}` : basePath,
+          `${basePath}${query ? `/${encodeURIComponent(query)}` : ''}`,
           process.env.NEXT_PUBLIC_BASE_URL
         ).toString()}
         noindex={!!query}
@@ -33,6 +41,7 @@ const VideosPage: NextPage<Props> = ({ channels, group, query, videos }) => {
 
       <SearchResults
         channels={channels}
+        now={now}
         prefetchedData={[videos]}
         query={query}
         title={title}
@@ -62,16 +71,23 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({
   const query = params?.q?.join('/') ?? ''
 
   if (groupID) {
+    const now = Temporal.Now.instant().epochSeconds
     const channels = await getChannelsByGroupID(groupID)
 
     if (channels.length > 0) {
       const channelIDs = channels.map((channel) => channel.id)
-      const videos = await getVideosByChannelIDsWithPage(channelIDs, 1, query)
+      const videos = await getVideosByChannelIDsWithPage(
+        now,
+        channelIDs,
+        1,
+        query
+      )
 
       return {
         props: {
           channels,
           group: channels[0].group,
+          now,
           query,
           videos
         },

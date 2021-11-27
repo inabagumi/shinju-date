@@ -1,6 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { NextSeo } from 'next-seo'
-import { useMemo } from 'react'
 import useSWR from 'swr'
 import Hero from '../components/hero'
 import Page from '../components/layout'
@@ -15,18 +14,19 @@ const tagline =
   '774 inc. 所属タレントの配信スケジュールや動画の検索ができるウェブサービス'
 
 function compareVideo(videoA: Video, videoB: Video): number {
-  const publishedAtA = Temporal.Instant.fromEpochSeconds(videoA.publishedAt)
-  const publishedAtB = Temporal.Instant.fromEpochSeconds(videoB.publishedAt)
-
-  return Temporal.Instant.compare(publishedAtA, publishedAtB)
+  return videoA.publishedAt - videoB.publishedAt
 }
 
-const getNotEndedVideos: BareFetcher<Video[]> = async (
-  now: Temporal.Instant
-) => {
+const getNotEndedVideos: BareFetcher<Video[]> = async (rawNow: number) => {
+  const now = Temporal.Instant.fromEpochSeconds(rawNow)
   const since = now.subtract({ hours: 5 })
+  const until = now.toZonedDateTimeISO('UTC').add({ months: 2 }).toInstant()
   const videos = await getVideosByQuery({
-    filters: [`publishedAt >= ${since.epochSeconds}`, 'duration:P0D'],
+    filters: [
+      `publishedAt >= ${since.epochSeconds}`,
+      `publishedAt <= ${until.epochSeconds}`,
+      'duration:P0D'
+    ],
     limit: 100
   })
 
@@ -38,12 +38,8 @@ type Props = {
   videos: Video[]
 }
 
-const SchedulePage: NextPage<Props> = ({
-  now: rawNow,
-  videos: prefetchedData
-}) => {
-  const now = useMemo(() => Temporal.Instant.fromEpochSeconds(rawNow), [rawNow])
-  const { data: videos = [] } = useSWR<Video[]>(now, getNotEndedVideos, {
+const SchedulePage: NextPage<Props> = ({ now, videos: prefetchedData }) => {
+  const { data: videos = [] } = useSWR<Video[]>([now], getNotEndedVideos, {
     fallbackData: prefetchedData,
     refreshInterval: 10_000
   })
@@ -77,12 +73,12 @@ const SchedulePage: NextPage<Props> = ({
 export default SchedulePage
 
 export const getStaticProps: GetStaticProps<Props> = async () => {
-  const now = Temporal.Now.instant()
+  const now = Temporal.Now.instant().epochSeconds
   const videos = await getNotEndedVideos(now)
 
   return {
     props: {
-      now: now.epochSeconds,
+      now,
       videos
     },
     revalidate: 1
