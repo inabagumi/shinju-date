@@ -1,16 +1,16 @@
 import { Temporal } from '@js-temporal/polyfill'
 import clsx from 'clsx'
-import { useCallback, useMemo } from 'react'
+import { type VFC, useCallback, useEffect, useMemo, useState } from 'react'
+import { useInView } from 'react-intersection-observer'
 import { FormattedRelativeTime, FormattedTime, useIntl } from 'react-intl'
 import aa from 'search-insights'
+import { type Video } from '../lib/algolia'
 import BlockLink from './block-link'
 import Duration from './duration'
-import LiveStatus from './live-status'
+import { useNow } from './layout'
 import Skeleton from './skeleton'
 import Thumbnail from './thumbnail'
 import styles from './video-card.module.css'
-import type { Video } from '../lib/algolia'
-import type { VFC } from 'react'
 
 type TimeOptions = {
   relativeTime?: boolean
@@ -23,22 +23,21 @@ type Props = {
 
 const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
   const intl = useIntl()
-  const timeZone = useMemo(
-    () => Temporal.TimeZone.from(intl.timeZone ?? 'UTC'),
-    [intl.timeZone]
-  )
-  const now = useMemo(() => Temporal.Now.zonedDateTimeISO(timeZone), [timeZone])
-  const publishedAt = useMemo(
-    () =>
-      Temporal.Instant.fromEpochSeconds(
-        value?.publishedAt ?? 0
-      ).toZonedDateTimeISO(timeZone),
-    [value?.publishedAt, timeZone]
-  )
+  const [cardRef, inView] = useInView()
+  const now = useNow()
+  const publishedAt = useMemo(() => {
+    const timeZone = Temporal.TimeZone.from(intl.timeZone ?? 'UTC')
+    const epochSeconds = value?.publishedAt ?? 0
+
+    return Temporal.Instant.fromEpochSeconds(epochSeconds).toZonedDateTimeISO(
+      timeZone
+    )
+  }, [value?.publishedAt, intl.timeZone])
   const duration = useMemo(
     () => Temporal.Duration.from(value?.duration ?? 'P0D'),
     [value?.duration]
   )
+  const [liveNow, setLiveNow] = useState(false)
 
   const handleClick = useCallback(() => {
     if (value?.id) {
@@ -50,6 +49,51 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
     }
   }, [value?.id])
 
+  useEffect(() => {
+    let timeoutID: NodeJS.Timeout | undefined
+    let requestID: number | undefined
+
+    if (inView) {
+      const instantPublishedAt = publishedAt.toInstant()
+      const updateNow = () => {
+        const currentNow = Temporal.Now.instant()
+
+        setLiveNow(
+          () =>
+            Temporal.Instant.compare(instantPublishedAt, currentNow) < 1 &&
+            Temporal.Instant.compare(
+              currentNow,
+              instantPublishedAt.add({ hours: 12 })
+            ) < 1 &&
+            duration.total({ unit: 'second' }) < 1 &&
+            publishedAt.second > 0
+        )
+
+        timeoutID = setTimeout(() => {
+          timeoutID = undefined
+
+          requestID = requestAnimationFrame(() => {
+            requestID = undefined
+
+            updateNow()
+          })
+        }, 5_000)
+      }
+
+      updateNow()
+    }
+
+    return () => {
+      if (timeoutID) {
+        clearInterval(timeoutID)
+      }
+
+      if (requestID) {
+        cancelAnimationFrame(requestID)
+      }
+    }
+  }, [inView, publishedAt, duration])
+
   return (
     <BlockLink
       href={value?.url}
@@ -57,7 +101,7 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
       rel="noopener noreferrer"
       target="_blank"
     >
-      <div className={clsx('card', styles.video)}>
+      <div className={clsx('card', styles.video)} ref={cardRef}>
         <div className={clsx('card__image', styles.image)}>
           <Thumbnail value={value?.thumbnail} />
 
@@ -67,8 +111,8 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
                 <Duration value={duration} />
               </time>
             </span>
-          ) : value ? (
-            <LiveStatus value={value} />
+          ) : liveNow ? (
+            <span className={clsx('badge', styles.liveNow)}>ライブ配信中</span>
           ) : null}
         </div>
 
@@ -101,7 +145,9 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
                 <FormattedRelativeTime
                   numeric="auto"
                   updateIntervalInSeconds={1}
-                  value={now.until(publishedAt).total({ unit: 'second' })}
+                  value={now
+                    .until(publishedAt.toInstant())
+                    .total({ unit: 'second' })}
                 />
               ) : (
                 <FormattedTime value={publishedAt.epochMilliseconds} />

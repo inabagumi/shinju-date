@@ -4,7 +4,7 @@ import chunk from 'lodash.chunk'
 import { useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite from 'swr/infinite'
-import { useBasePath } from '../components/layout'
+import { useBasePath, useNow } from '../components/layout'
 import { getVideosByChannelIDs } from '../lib/algolia'
 import Link from './link'
 import styles from './search-results.module.css'
@@ -33,7 +33,6 @@ export function getVideosByChannelIDsWithPage(
 
 type Props = {
   channels?: Channel[]
-  now: number
   prefetchedData?: Video[][]
   query?: string
   title?: string
@@ -41,13 +40,18 @@ type Props = {
 
 const SearchResults: VFC<Props> = ({
   channels = [],
-  now,
   prefetchedData,
   query = '',
   title
 }) => {
+  const now = useNow()
   const { data, setSize } = useSWRInfinite<Video[]>(
-    (index) => [now, channels.map((channel) => channel.id), index + 1, query],
+    (index) => [
+      now.epochSeconds,
+      channels.map((channel) => channel.id),
+      index + 1,
+      query
+    ],
     getVideosByChannelIDsWithPage,
     {
       fallbackData: prefetchedData
