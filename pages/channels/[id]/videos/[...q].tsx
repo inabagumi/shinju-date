@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 import { NextSeo } from 'next-seo'
 import Page from '../../../../components/layout'
 import SearchResults, {
@@ -9,11 +10,12 @@ import type { GetStaticPaths, GetStaticProps, NextPage } from 'next'
 
 type Props = {
   channel: Channel
+  now: number
   query: string
   videos: Video[]
 }
 
-const VideosPage: NextPage<Props> = ({ channel, query, videos }) => {
+const VideosPage: NextPage<Props> = ({ channel, now, query, videos }) => {
   const basePath = `/channels/${channel.id}/videos`
   const title = query
     ? `『${query}』の検索結果 - ${channel?.title}`
@@ -23,7 +25,7 @@ const VideosPage: NextPage<Props> = ({ channel, query, videos }) => {
     <Page basePath={basePath}>
       <NextSeo
         canonical={new URL(
-          query ? `${basePath}?q=${encodeURIComponent(query)}` : basePath,
+          `${basePath}${query ? `/${encodeURIComponent(query)}` : ''}`,
           process.env.NEXT_PUBLIC_BASE_URL
         ).toString()}
         noindex={!!query}
@@ -32,6 +34,7 @@ const VideosPage: NextPage<Props> = ({ channel, query, videos }) => {
 
       <SearchResults
         channels={channel ? [channel] : undefined}
+        now={now}
         prefetchedData={[videos]}
         query={query}
         title={title}
@@ -61,15 +64,17 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({
   const query = params?.q?.join('/') ?? ''
 
   if (channelID) {
+    const now = Temporal.Now.instant().epochSeconds
     const [channel, videos] = await Promise.all([
       getChannelByID(channelID).catch(() => undefined),
-      getVideosByChannelIDsWithPage([channelID], 1, query)
+      getVideosByChannelIDsWithPage(now, [channelID], 1, query)
     ])
 
     if (channel) {
       return {
         props: {
           channel,
+          now,
           query,
           videos
         },

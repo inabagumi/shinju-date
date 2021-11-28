@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 import clsx from 'clsx'
 import chunk from 'lodash.chunk'
 import { useCallback } from 'react'
@@ -14,11 +15,16 @@ import type { VFC } from 'react'
 export const SEARCH_RESULT_COUNT = 9
 
 export function getVideosByChannelIDsWithPage(
+  rawNow: number,
   channelIDs: string[] = [],
   page = 1,
   query = ''
 ): Promise<Video[]> {
+  const now = Temporal.Instant.fromEpochSeconds(rawNow)
+  const until = now.toZonedDateTimeISO('UTC').add({ months: 2 }).toInstant()
+
   return getVideosByChannelIDs(channelIDs, {
+    filters: [`publishedAt <= ${until.epochSeconds}`],
     limit: SEARCH_RESULT_COUNT,
     page,
     query
@@ -27,6 +33,7 @@ export function getVideosByChannelIDsWithPage(
 
 type Props = {
   channels?: Channel[]
+  now: number
   prefetchedData?: Video[][]
   query?: string
   title?: string
@@ -34,16 +41,13 @@ type Props = {
 
 const SearchResults: VFC<Props> = ({
   channels = [],
+  now,
   prefetchedData,
   query = '',
   title
 }) => {
   const { data, setSize } = useSWRInfinite<Video[]>(
-    (index: number) => [
-      channels.map((channel) => channel.id),
-      index + 1,
-      query
-    ],
+    (index) => [now, channels.map((channel) => channel.id), index + 1, query],
     getVideosByChannelIDsWithPage,
     {
       fallbackData: prefetchedData
