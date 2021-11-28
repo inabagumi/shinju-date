@@ -22,7 +22,7 @@ const VideosPage: NextPage<Props> = ({ channel, now, query, videos }) => {
     : `『${channel.title}』の動画一覧`
 
   return (
-    <Page basePath={basePath}>
+    <Page basePath={basePath} now={now}>
       <NextSeo
         canonical={new URL(
           `${basePath}${query ? `/${encodeURIComponent(query)}` : ''}`,
@@ -34,7 +34,6 @@ const VideosPage: NextPage<Props> = ({ channel, now, query, videos }) => {
 
       <SearchResults
         channels={channel ? [channel] : undefined}
-        now={now}
         prefetchedData={[videos]}
         query={query}
         title={title}

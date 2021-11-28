@@ -1,13 +1,14 @@
 import '@reach/skip-nav/styles.css'
+import { Temporal } from '@js-temporal/polyfill'
 import { SkipNavContent, SkipNavLink } from '@reach/skip-nav'
-import { createContext, useContext } from 'react'
+import { type ReactNode, type VFC, createContext, useContext } from 'react'
 import Footer from './footer'
 import styles from './layout.module.css'
 import Navbar from './navbar'
-import type { ReactNode, VFC } from 'react'
 
 type Value = {
   basePath: string
+  now?: number
 }
 
 const LayoutContext = createContext<Value>({
@@ -22,20 +23,27 @@ export function useBasePath(): string {
   return basePath
 }
 
+export function useNow(): Temporal.Instant {
+  const { now: rawNow } = useContext(LayoutContext)
+  const now =
+    typeof rawNow !== 'undefined'
+      ? Temporal.Instant.fromEpochSeconds(rawNow)
+      : rawNow
+
+  return now ?? Temporal.Now.instant()
+}
+
 const SKIP_NAV_CONTENT_ID = 'content'
 
 type Props = {
   basePath?: string
   children: ReactNode
+  now?: number
 }
 
-const Layout: VFC<Props> = ({ basePath = '/videos', children }) => {
+const Layout: VFC<Props> = ({ basePath = '/videos', children, now }) => {
   return (
-    <LayoutProvider
-      value={{
-        basePath
-      }}
-    >
+    <LayoutProvider value={{ basePath, now }}>
       <div className={styles.wrapper}>
         <SkipNavLink
           className={styles.skipNavLink}
