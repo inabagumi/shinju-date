@@ -59,8 +59,8 @@ const SchedulePage: NextPage<Props> = ({ now, videos: prefetchedData }) => {
           values={[
             'Minecraft',
             'ポケットモンスター',
-            'リングフィット アドベンチャー',
-            'Detroit: Become Human'
+            '龍が如く',
+            'Phasmophobia'
           ]}
         />
 
