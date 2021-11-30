@@ -1,9 +1,10 @@
 import '../styles/global.css'
 import { DefaultSeo } from 'next-seo'
 import { ThemeProvider } from 'next-themes'
+import { type AppProps } from 'next/app'
 import Head from 'next/head'
 import Script from 'next/script'
-import { useCallback, useEffect } from 'react'
+import { type VFC, useCallback, useEffect } from 'react'
 import { IntlProvider } from 'react-intl'
 import aa from 'search-insights'
 import { SWRConfig } from 'swr'
@@ -13,8 +14,6 @@ import favicon512x512 from '../assets/favicon-512x512.png'
 import shareCard from '../assets/share-card.jpg'
 import { GroupProvider } from '../components/group'
 import ProgressBar from '../components/progress-bar'
-import type { AppProps } from 'next/app'
-import type { VFC } from 'react'
 
 const MyApp: VFC<AppProps> = ({ Component, pageProps, router }) => {
   const handleRouterChangeComplete = useCallback((url: string) => {

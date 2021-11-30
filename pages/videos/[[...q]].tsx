@@ -51,7 +51,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({
 }) => {
   const now = Temporal.Now.instant().epochSeconds
   const query = params?.q?.join('/') ?? ''
-  const videos = await fetchVideosByChannelIDs(now, [], 1, query)
+  const videos = await fetchVideosByChannelIDs({ now, query })
 
   return {
     props: {

@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import chunk from 'lodash.chunk'
 import { type VFC, useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
-import useSWRInfinite from 'swr/infinite'
+import useSWRInfinite, { type InfiniteFetcher } from 'swr/infinite'
 import { useBasePath, useNow } from '../components/layout'
 import { type Video, getVideosByChannelIDs } from '../lib/algolia'
 import { type Channel } from '../lib/supabase'
@@ -13,12 +13,24 @@ import VideoCard from './video-card'
 
 export const SEARCH_RESULT_COUNT = 9
 
-export function fetchVideosByChannelIDs(
-  rawNow: number,
-  channelIDs: string[] = [],
+type FetchVideosByChannelIDsOptions = {
+  channelIDs?: string[]
+  now: number
+  page?: number
+  query?: string
+}
+
+type KeyLoader = (
+  index: number,
+  previousPageData: Video[]
+) => FetchVideosByChannelIDsOptions
+
+export const fetchVideosByChannelIDs: InfiniteFetcher<Video[], KeyLoader> = ({
+  channelIDs = [],
+  now: rawNow,
   page = 1,
   query = ''
-): Promise<Video[]> {
+}) => {
   const now = Temporal.Instant.fromEpochSeconds(rawNow)
   const until = now.toZonedDateTimeISO('UTC').add({ months: 2 }).toInstant()
 
@@ -44,13 +56,13 @@ const SearchResults: VFC<Props> = ({
   title
 }) => {
   const now = useNow()
-  const { data, setSize } = useSWRInfinite<Video[]>(
-    (index) => [
-      now.epochSeconds,
-      channels.map((channel) => channel.slug),
-      index + 1,
+  const { data, setSize } = useSWRInfinite<Video[], Error, KeyLoader>(
+    (index) => ({
+      channelIDs: channels.map((channel) => channel.slug),
+      now: now.epochSeconds,
+      page: index + 1,
       query
-    ],
+    }),
     fetchVideosByChannelIDs,
     {
       fallbackData: prefetchedData

@@ -1,11 +1,11 @@
 import { type PostgrestError } from '@supabase/supabase-js'
 import { type ReactNode, type VFC } from 'react'
-import useSWR, { type BareFetcher } from 'swr'
+import useSWR, { type Fetcher } from 'swr'
 import { supabase } from '../../lib/supabase'
 import GroupContext from './context'
 import { GroupWithoutChannels } from './types'
 
-const fetchAllGroups: BareFetcher<GroupWithoutChannels[]> = async () => {
+const fetchAllGroups: Fetcher<GroupWithoutChannels[]> = async () => {
   const { data, error } = await supabase
     .from<GroupWithoutChannels>('groups')
     .select('id, name, slug')

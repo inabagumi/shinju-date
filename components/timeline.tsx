@@ -1,11 +1,10 @@
 import { Temporal } from '@js-temporal/polyfill'
 import chunk from 'lodash.chunk'
 import groupBy from 'lodash.groupby'
-import { useMemo } from 'react'
+import { type VFC, useMemo } from 'react'
 import { FormattedDate, useIntl } from 'react-intl'
+import { type Video } from '../lib/algolia'
 import VideoCard from './video-card'
-import type { Video } from '../lib/algolia'
-import type { VFC } from 'react'
 
 type BuildScheduleMapOptions = {
   timeZone: Temporal.TimeZone

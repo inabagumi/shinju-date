@@ -1,10 +1,17 @@
 import clsx from 'clsx'
 import { useRouter } from 'next/router'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  type ChangeEventHandler,
+  type FormEventHandler,
+  type VFC,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 import { useBasePath } from '../components/layout'
 import { getQueryValue } from '../lib/url'
 import styles from './search-form.module.css'
-import type { ChangeEventHandler, FormEventHandler, VFC } from 'react'
 
 const SearchForm: VFC = () => {
   const { query, ...router } = useRouter()
@@ -26,9 +33,7 @@ const SearchForm: VFC = () => {
       router
         .push(`/${basePath}${value ? `/${encodeURIComponent(value)}` : ''}`)
         .finally(() => {
-          if (textFieldRef.current) {
-            textFieldRef.current.blur()
-          }
+          textFieldRef.current?.blur()
         })
     },
     [value, basePath, router]

@@ -1,5 +1,7 @@
-import algoliasearch from 'algoliasearch/lite'
-import type { SearchClient, SearchIndex } from 'algoliasearch/lite'
+import algoliasearch, {
+  type SearchClient,
+  type SearchIndex
+} from 'algoliasearch/lite'
 
 export type SearchOptions = {
   filters?: string[]
