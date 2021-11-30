@@ -11,6 +11,7 @@ import appleTouchIcon from '../assets/apple-touch-icon.png'
 import favicon192x192 from '../assets/favicon-192x192.png'
 import favicon512x512 from '../assets/favicon-512x512.png'
 import shareCard from '../assets/share-card.jpg'
+import { GroupProvider } from '../components/group'
 import ProgressBar from '../components/progress-bar'
 import type { AppProps } from 'next/app'
 import type { VFC } from 'react'
@@ -51,36 +52,37 @@ const MyApp: VFC<AppProps> = ({ Component, pageProps, router }) => {
     >
       <SWRConfig>
         <ThemeProvider defaultTheme="system">
-          <Head>
-            <link
-              href={favicon192x192.src}
-              rel="icon"
-              sizes={`${favicon192x192.width}x${favicon192x192.height}`}
-              type="image/png"
-            />
-            <link
-              href={favicon512x512.src}
-              rel="icon"
-              sizes={`${favicon512x512.width}x${favicon512x512.height}`}
-              type="image/png"
-            />
-            <link
-              href={appleTouchIcon.src}
-              rel="apple-touch-icon"
-              sizes={`${appleTouchIcon.width}x${appleTouchIcon.height}`}
-              type="image/png"
-            />
-          </Head>
-
-          {process.env.NEXT_PUBLIC_GA_TRACKING_ID && (
-            <>
-              <Script
-                src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_TRACKING_ID}`}
-                strategy="afterInteractive"
+          <GroupProvider>
+            <Head>
+              <link
+                href={favicon192x192.src}
+                rel="icon"
+                sizes={`${favicon192x192.width}x${favicon192x192.height}`}
+                type="image/png"
               />
-              <Script
-                dangerouslySetInnerHTML={{
-                  __html: `
+              <link
+                href={favicon512x512.src}
+                rel="icon"
+                sizes={`${favicon512x512.width}x${favicon512x512.height}`}
+                type="image/png"
+              />
+              <link
+                href={appleTouchIcon.src}
+                rel="apple-touch-icon"
+                sizes={`${appleTouchIcon.width}x${appleTouchIcon.height}`}
+                type="image/png"
+              />
+            </Head>
+
+            {process.env.NEXT_PUBLIC_GA_TRACKING_ID && (
+              <>
+                <Script
+                  src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_TRACKING_ID}`}
+                  strategy="afterInteractive"
+                />
+                <Script
+                  dangerouslySetInnerHTML={{
+                    __html: `
                     window.dataLayer = window.dataLayer || [];
                     function gtag(){dataLayer.push(arguments);}
                     gtag('js', new Date());
@@ -89,35 +91,36 @@ const MyApp: VFC<AppProps> = ({ Component, pageProps, router }) => {
                       page_path: window.location.pathname
                     });
                   `
-                }}
-                id="gtag-init"
-                strategy="afterInteractive"
-              />
-            </>
-          )}
+                  }}
+                  id="gtag-init"
+                  strategy="afterInteractive"
+                />
+              </>
+            )}
 
-          <DefaultSeo
-            description={process.env.NEXT_PUBLIC_DESCRIPTION}
-            openGraph={{
-              images: [
-                {
-                  height: shareCard.height,
-                  url: new URL(
-                    shareCard.src,
-                    process.env.NEXT_PUBLIC_BASE_URL
-                  ).toString(),
-                  width: shareCard.width
-                }
-              ],
-              type: 'website'
-            }}
-            titleTemplate="%s - SHINJU DATE"
-            twitter={{
-              cardType: 'summary_large_image'
-            }}
-          />
-          <ProgressBar options={{ showSpinner: false }} />
-          <Component {...pageProps} />
+            <DefaultSeo
+              description={process.env.NEXT_PUBLIC_DESCRIPTION}
+              openGraph={{
+                images: [
+                  {
+                    height: shareCard.height,
+                    url: new URL(
+                      shareCard.src,
+                      process.env.NEXT_PUBLIC_BASE_URL
+                    ).toString(),
+                    width: shareCard.width
+                  }
+                ],
+                type: 'website'
+              }}
+              titleTemplate="%s - SHINJU DATE"
+              twitter={{
+                cardType: 'summary_large_image'
+              }}
+            />
+            <ProgressBar options={{ showSpinner: false }} />
+            <Component {...pageProps} />
+          </GroupProvider>
         </ThemeProvider>
       </SWRConfig>
     </IntlProvider>

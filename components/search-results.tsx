@@ -1,20 +1,19 @@
 import { Temporal } from '@js-temporal/polyfill'
 import clsx from 'clsx'
 import chunk from 'lodash.chunk'
-import { useCallback } from 'react'
+import { type VFC, useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite from 'swr/infinite'
 import { useBasePath, useNow } from '../components/layout'
-import { getVideosByChannelIDs } from '../lib/algolia'
+import { type Video, getVideosByChannelIDs } from '../lib/algolia'
+import { type Channel } from '../lib/supabase'
 import Link from './link'
 import styles from './search-results.module.css'
 import VideoCard from './video-card'
-import type { Channel, Video } from '../lib/algolia'
-import type { VFC } from 'react'
 
 export const SEARCH_RESULT_COUNT = 9
 
-export function getVideosByChannelIDsWithPage(
+export function fetchVideosByChannelIDs(
   rawNow: number,
   channelIDs: string[] = [],
   page = 1,
@@ -48,11 +47,11 @@ const SearchResults: VFC<Props> = ({
   const { data, setSize } = useSWRInfinite<Video[]>(
     (index) => [
       now.epochSeconds,
-      channels.map((channel) => channel.id),
+      channels.map((channel) => channel.slug),
       index + 1,
       query
     ],
-    getVideosByChannelIDsWithPage,
+    fetchVideosByChannelIDs,
     {
       fallbackData: prefetchedData
     }

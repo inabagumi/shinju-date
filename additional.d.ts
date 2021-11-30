@@ -11,6 +11,8 @@ declare namespace NodeJS {
     readonly NEXT_PUBLIC_BASE_URL: string
     readonly NEXT_PUBLIC_DESCRIPTION: string
     readonly NEXT_PUBLIC_GA_TRACKING_ID?: string
+    readonly NEXT_PUBLIC_SUPABASE_ANON_KEY: string
+    readonly NEXT_PUBLIC_SUPABASE_URL: string
 
     readonly IMGIX_BASE_PATH?: string
   }
