@@ -19,13 +19,13 @@ declare namespace NodeJS {
 }
 
 declare module 'next-pwa' {
-  import type { NextConfig } from 'next'
+  import { type NextConfig } from 'next'
 
   export default function withPWA(config: NextConfig): NextConfig
 }
 
 declare module '*.svg' {
-  import { SVGProps, VFC } from 'react'
+  import { type SVGProps, type VFC } from 'react'
 
   type Props = SVGProps<SVGSVGElement>
   const content: VFC<Props>

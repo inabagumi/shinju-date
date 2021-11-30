@@ -67,15 +67,10 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({
       const query = params.q?.join('/') ?? ''
       const channelIDs = group.channels.map((channel) => channel.slug)
 
-      const videos = await fetchVideosByChannelIDs(now, channelIDs, 1, query)
+      const videos = await fetchVideosByChannelIDs({ channelIDs, now, query })
 
       return {
-        props: {
-          group,
-          now,
-          query,
-          videos
-        },
+        props: { group, now, query, videos },
         revalidate: 5
       }
     }

@@ -64,7 +64,11 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({
     const query = params?.q?.join('/') ?? ''
     const [channel, videos] = await Promise.all([
       getChannelBySlug(params.id).catch(() => null),
-      fetchVideosByChannelIDs(now, [params.id], 1, query)
+      fetchVideosByChannelIDs({
+        channelIDs: [params.id],
+        now,
+        query
+      })
     ])
 
     if (channel) {

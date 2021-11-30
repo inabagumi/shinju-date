@@ -4,7 +4,7 @@ import { NextSeo } from 'next-seo'
 import Hero from '../components/hero'
 import Page from '../components/layout'
 import PopularitySearchQueries from '../components/popularity-search-queries'
-import Schedule, { getNotEndedVideos } from '../components/schedule'
+import Schedule, { fetchNotEndedVideos } from '../components/schedule'
 import { type Video } from '../lib/algolia'
 
 const tagline =
@@ -46,13 +46,10 @@ export default SchedulePage
 
 export const getStaticProps: GetStaticProps<Props> = async () => {
   const now = Temporal.Now.instant().epochSeconds
-  const videos = await getNotEndedVideos(now)
+  const videos = await fetchNotEndedVideos({ now })
 
   return {
-    props: {
-      now,
-      videos
-    },
+    props: { now, videos },
     revalidate: 1
   }
 }
