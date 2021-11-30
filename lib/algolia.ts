@@ -15,19 +15,10 @@ export type Image = {
   width: number
 }
 
-export type Group = {
-  id: string
-  title: string
-}
-
 export type Channel = {
   id: string
   title: string
   url: string
-}
-
-export type ChannelWithGroup = Channel & {
-  group: Group
 }
 
 export type Video = {
@@ -52,26 +43,6 @@ export async function getChannelByID(id: string) {
   return videos[0].channel
 }
 
-export async function getChannelsByGroupID(
-  id: string,
-  { filters = [], limit = 100, page = 1 }: SearchOptions = {}
-): Promise<ChannelWithGroup[]> {
-  const index = getChannelsIndex()
-  const { hits } = await index.search<ChannelWithGroup>('', {
-    filters: [`group.id:${id}`, ...filters].join(' AND '),
-    hitsPerPage: limit,
-    page: page - 1
-  })
-
-  return hits
-}
-
-export function getChannelsIndex(): SearchIndex {
-  const client = getClient()
-
-  return client.initIndex(process.env.NEXT_PUBLIC_ALGOLIA_CHANNELS_INDEX_NAME)
-}
-
 let client: SearchClient
 
 export function getClient(): SearchClient {
@@ -87,18 +58,6 @@ export function getDefaultIndex(): SearchIndex {
   const client = getClient()
 
   return client.initIndex(process.env.NEXT_PUBLIC_ALGOLIA_INDEX_NAME)
-}
-
-export async function getGroupByID(id: string) {
-  const channels = await getChannelsByGroupID(id, {
-    limit: 1
-  })
-
-  if (channels.length < 1) {
-    throw new TypeError('That group does not exist.')
-  }
-
-  return channels[0].group
 }
 
 export function getVideosByChannelIDs(

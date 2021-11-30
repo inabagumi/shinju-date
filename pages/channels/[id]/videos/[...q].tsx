@@ -1,12 +1,12 @@
 import { Temporal } from '@js-temporal/polyfill'
+import { type GetStaticPaths, type GetStaticProps, type NextPage } from 'next'
 import { NextSeo } from 'next-seo'
 import Page from '../../../../components/layout'
 import SearchResults, {
-  getVideosByChannelIDsWithPage
+  fetchVideosByChannelIDs
 } from '../../../../components/search-results'
-import { getChannelByID } from '../../../../lib/algolia'
-import type { Channel, Video } from '../../../../lib/algolia'
-import type { GetStaticPaths, GetStaticProps, NextPage } from 'next'
+import { type Video } from '../../../../lib/algolia'
+import { type Channel, getChannelBySlug } from '../../../../lib/supabase'
 
 type Props = {
   channel: Channel
@@ -16,10 +16,10 @@ type Props = {
 }
 
 const VideosPage: NextPage<Props> = ({ channel, now, query, videos }) => {
-  const basePath = `/channels/${channel.id}/videos`
+  const basePath = `/channels/${channel.slug}/videos`
   const title = query
-    ? `『${query}』の検索結果 - ${channel?.title}`
-    : `『${channel.title}』の動画一覧`
+    ? `『${query}』の検索結果 - ${channel.name}`
+    : `『${channel.name}』の動画一覧`
 
   return (
     <Page basePath={basePath} now={now}>
@@ -59,14 +59,12 @@ export const getStaticPaths: GetStaticPaths<Params> = () => {
 export const getStaticProps: GetStaticProps<Props, Params> = async ({
   params
 }) => {
-  const channelID = params?.id
-  const query = params?.q?.join('/') ?? ''
-
-  if (channelID) {
+  if (params) {
     const now = Temporal.Now.instant().epochSeconds
+    const query = params?.q?.join('/') ?? ''
     const [channel, videos] = await Promise.all([
-      getChannelByID(channelID).catch(() => undefined),
-      getVideosByChannelIDsWithPage(now, [channelID], 1, query)
+      getChannelBySlug(params.id).catch(() => null),
+      fetchVideosByChannelIDs(now, [params.id], 1, query)
     ])
 
     if (channel) {

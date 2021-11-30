@@ -2,44 +2,22 @@ import clsx from 'clsx'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useCallback, useMemo, useState } from 'react'
+import { type VFC, useCallback, useMemo, useState } from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
 import Icon from '../assets/icon.svg'
 import { getQueryValue } from '../lib/url'
+import { useGroups } from './group'
 import { useBasePath } from './layout'
 import styles from './navbar.module.css'
 import SearchForm from './search-form'
-import type { Group } from '../lib/algolia'
-import type { VFC } from 'react'
-
-const groups: Group[] = [
-  {
-    id: 'animare',
-    title: '有閑喫茶「あにまーれ」'
-  },
-  {
-    id: 'honeystrap',
-    title: 'HoneyStrap-ハニーストラップ-'
-  },
-  {
-    id: 'vapart',
-    title: 'ブイアパ'
-  },
-  {
-    id: 'sugarlyric',
-    title: 'SugarLyric -シュガーリリック-'
-  },
-  {
-    id: 'hiyocro',
-    title: '緋翼のクロスピース -ひよクロ-'
-  }
-]
+import Skeleton from './skeleton'
 
 const Navbar: VFC = () => {
   const [sidebarShown, setSidebarShown] = useState(false)
   const router = useRouter()
   const { setTheme, theme } = useTheme()
   const basePath = useBasePath()
+  const groups = useGroups()
   const query = useMemo(() => getQueryValue('q', router.query), [router.query])
 
   const showSidebar = useCallback(() => {
@@ -127,60 +105,85 @@ const Navbar: VFC = () => {
         </div>
 
         <div className="navbar__items navbar__items--right">
-          <div className="navbar__item dropdown dropdown--hoverable">
-            <Link
-              href={`${basePath?.endsWith('/videos') ? basePath : '/videos'}${
-                query ? `/${encodeURIComponent(query)}` : ''
-              }`}
-            >
-              <a className="navbar__link">
-                {groups.find(
-                  (group) => basePath === `/groups/${group.id}/videos`
-                )?.title ?? '全グループ'}
-              </a>
-            </Link>
-            <ul className="dropdown__menu">
-              <li>
-                <Link
-                  href={`/videos${
-                    query ? `/${encodeURIComponent(query)}` : ''
-                  }`}
-                >
-                  <a
-                    aria-current={basePath === '/videos' ? 'page' : undefined}
-                    className={clsx('dropdown__link', {
-                      'dropdown__link--active': basePath === '/videos'
-                    })}
+          {groups ? (
+            <div className="navbar__item dropdown dropdown--hoverable">
+              <Link
+                href={`${basePath?.endsWith('/videos') ? basePath : '/videos'}${
+                  query ? `/${encodeURIComponent(query)}` : ''
+                }`}
+              >
+                <a className="navbar__link">
+                  {groups.find(
+                    (group) => basePath === `/groups/${group.slug}/videos`
+                  )?.name ?? '全グループ'}
+                </a>
+              </Link>
+              <ul className="dropdown__menu">
+                <li>
+                  <Link
+                    href={`/videos${
+                      query ? `/${encodeURIComponent(query)}` : ''
+                    }`}
                   >
-                    全グループ
-                  </a>
-                </Link>
-              </li>
-              {groups.map((group) => {
-                const pathname = `/groups/${group.id}/videos`
-                const isActive = basePath === pathname
-
-                return (
-                  <li key={group.id}>
-                    <Link
-                      href={`${pathname}${
-                        query ? `/${encodeURIComponent(query)}` : ''
-                      }`}
+                    <a
+                      aria-current={basePath === '/videos' ? 'page' : undefined}
+                      className={clsx('dropdown__link', {
+                        'dropdown__link--active': basePath === '/videos'
+                      })}
                     >
-                      <a
-                        aria-current={isActive ? 'page' : undefined}
-                        className={clsx('dropdown__link', {
-                          'dropdown__link--active': isActive
-                        })}
+                      全グループ
+                    </a>
+                  </Link>
+                </li>
+                {groups.map((group) => {
+                  const pathname = `/groups/${group.slug}/videos`
+                  const isActive = basePath === pathname
+
+                  return (
+                    <li key={group.slug}>
+                      <Link
+                        href={`${pathname}${
+                          query ? `/${encodeURIComponent(query)}` : ''
+                        }`}
                       >
-                        {group.title}
-                      </a>
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
+                        <a
+                          aria-current={isActive ? 'page' : undefined}
+                          className={clsx('dropdown__link', {
+                            'dropdown__link--active': isActive
+                          })}
+                        >
+                          {group.name}
+                        </a>
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          ) : (
+            <div className="navbar__item dropdown dropdown--hoverable">
+              <a className="navbar__link" role="button">
+                <Skeleton variant="text" />
+              </a>
+              <ul className="dropdown__menu">
+                <li>
+                  <a className="dropdown__link">
+                    <Skeleton variant="text" />
+                  </a>
+                </li>
+                <li>
+                  <a className="dropdown__link">
+                    <Skeleton variant="text" />
+                  </a>
+                </li>
+                <li>
+                  <a className="dropdown__link">
+                    <Skeleton variant="text" />
+                  </a>
+                </li>
+              </ul>
+            </div>
+          )}
 
           <button
             className={clsx(
@@ -260,30 +263,50 @@ const Navbar: VFC = () => {
                       </a>
                     </Link>
                   </li>
-                  {groups.map((group) => {
-                    const pathname = `/groups/${group.id}/videos`
-                    const isActive = basePath === pathname
+                  {groups ? (
+                    groups.map((group) => {
+                      const pathname = `/groups/${group.slug}/videos`
+                      const isActive = basePath === pathname
 
-                    return (
-                      <li className="menu__list-item" key={group.id}>
-                        <Link
-                          href={`${pathname}${
-                            query ? `/${encodeURIComponent(query)}` : ''
-                          }`}
-                        >
-                          <a
-                            aria-current={isActive ? 'page' : undefined}
-                            className={clsx('menu__link', {
-                              'menu__link--active': isActive
-                            })}
-                            onClick={hideSidebar}
+                      return (
+                        <li className="menu__list-item" key={group.slug}>
+                          <Link
+                            href={`${pathname}${
+                              query ? `/${encodeURIComponent(query)}` : ''
+                            }`}
                           >
-                            {group.title}
-                          </a>
-                        </Link>
+                            <a
+                              aria-current={isActive ? 'page' : undefined}
+                              className={clsx('menu__link', {
+                                'menu__link--active': isActive
+                              })}
+                              onClick={hideSidebar}
+                            >
+                              {group.name}
+                            </a>
+                          </Link>
+                        </li>
+                      )
+                    })
+                  ) : (
+                    <>
+                      <li className="menu__list-item">
+                        <a className="menu__link">
+                          <Skeleton variant="text" />
+                        </a>
                       </li>
-                    )
-                  })}
+                      <li className="menu__list-item">
+                        <a className="menu__link">
+                          <Skeleton variant="text" />
+                        </a>
+                      </li>
+                      <li className="menu__list-item">
+                        <a className="menu__link">
+                          <Skeleton variant="text" />
+                        </a>
+                      </li>
+                    </>
+                  )}
                 </ul>
               </li>
             </ul>
