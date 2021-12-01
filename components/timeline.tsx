@@ -14,12 +14,10 @@ const buildScheduleMap = (
   values: Video[],
   { timeZone }: BuildScheduleMapOptions
 ): Record<string, Video[]> => {
-  const tz = Temporal.TimeZone.from(timeZone)
-
   return groupBy(values, (value) => {
     const publishedAt = Temporal.Instant.fromEpochSeconds(
       value.publishedAt
-    ).toZonedDateTimeISO(tz)
+    ).toZonedDateTimeISO(timeZone)
     const publishedDate = publishedAt.toPlainDate()
 
     return publishedDate.toString()
@@ -32,14 +30,11 @@ type Props = {
 
 const Timeline: VFC<Props> = ({ values }) => {
   const intl = useIntl()
-  const timeZone = useMemo(
-    () => Temporal.TimeZone.from(intl.timeZone ?? 'UTC'),
-    [intl.timeZone]
-  )
-  const schedule = useMemo(
-    () => buildScheduleMap(values, { timeZone }),
-    [values, timeZone]
-  )
+  const schedule = useMemo(() => {
+    const timeZone = Temporal.TimeZone.from(intl.timeZone ?? 'UTC')
+
+    return buildScheduleMap(values, { timeZone })
+  }, [values, intl.timeZone])
 
   return (
     <>

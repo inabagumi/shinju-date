@@ -5,12 +5,14 @@ import { useRouter } from 'next/router'
 import { type VFC, useCallback, useMemo, useState } from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
 import Icon from '../assets/icon.svg'
-import { getQueryValue } from '../lib/url'
-import { useGroups } from './group'
+import { getQueryValue, join as urlJoin } from '../lib/url'
+import { useCurrentGroup, useGroups } from './group'
 import { useBasePath } from './layout'
 import styles from './navbar.module.css'
 import SearchForm from './search-form'
 import Skeleton from './skeleton'
+
+const VIDEOS_PAGE_REGEXP = /\/videos(?:\/(?:\[\[[^\]]+\]\]|\[[^\]]\]))?$/
 
 const Navbar: VFC = () => {
   const [sidebarShown, setSidebarShown] = useState(false)
@@ -18,6 +20,11 @@ const Navbar: VFC = () => {
   const { setTheme, theme } = useTheme()
   const basePath = useBasePath()
   const groups = useGroups()
+  const [currentGroup] = useCurrentGroup()
+  const isVideosPage = useMemo(
+    () => VIDEOS_PAGE_REGEXP.test(router.pathname),
+    [router.pathname]
+  )
   const query = useMemo(() => getQueryValue('q', router.query), [router.query])
 
   const showSidebar = useCallback(() => {
@@ -108,56 +115,73 @@ const Navbar: VFC = () => {
           {groups ? (
             <div className="navbar__item dropdown dropdown--hoverable">
               <Link
-                href={`${basePath?.endsWith('/videos') ? basePath : '/videos'}${
-                  query ? `/${encodeURIComponent(query)}` : ''
+                href={`${basePath}${
+                  isVideosPage
+                    ? `/videos${query ? `/${encodeURIComponent(query)}` : ''}`
+                    : ''
                 }`}
               >
                 <a className="navbar__link">
-                  {groups.find(
-                    (group) => basePath === `/groups/${group.slug}/videos`
-                  )?.name ?? '全グループ'}
+                  {currentGroup?.name ?? '全グループ'}
                 </a>
               </Link>
               <ul className="dropdown__menu">
                 <li>
                   <Link
-                    href={`/videos${
-                      query ? `/${encodeURIComponent(query)}` : ''
-                    }`}
+                    href={
+                      isVideosPage
+                        ? `/videos${
+                            query ? `/${encodeURIComponent(query)}` : ''
+                          }`
+                        : '/'
+                    }
                   >
                     <a
-                      aria-current={basePath === '/videos' ? 'page' : undefined}
+                      aria-current={
+                        (
+                          isVideosPage
+                            ? router.pathname.startsWith('/videos')
+                            : router.pathname === '/'
+                        )
+                          ? 'page'
+                          : undefined
+                      }
                       className={clsx('dropdown__link', {
-                        'dropdown__link--active': basePath === '/videos'
+                        'dropdown__link--active': isVideosPage
+                          ? router.pathname.startsWith('/videos')
+                          : router.pathname === '/'
                       })}
                     >
                       全グループ
                     </a>
                   </Link>
                 </li>
-                {groups.map((group) => {
-                  const pathname = `/groups/${group.slug}/videos`
-                  const isActive = basePath === pathname
-
-                  return (
-                    <li key={group.slug}>
-                      <Link
-                        href={`${pathname}${
-                          query ? `/${encodeURIComponent(query)}` : ''
-                        }`}
+                {groups.map((group) => (
+                  <li key={group.slug}>
+                    <Link
+                      href={
+                        isVideosPage
+                          ? urlJoin(
+                              `/groups/${group.slug}/videos`,
+                              query ? encodeURIComponent(query) : ''
+                            )
+                          : `/groups/${group.slug}`
+                      }
+                    >
+                      <a
+                        aria-current={
+                          group.slug === currentGroup?.slug ? 'page' : undefined
+                        }
+                        className={clsx('dropdown__link', {
+                          'dropdown__link--active':
+                            group.slug === currentGroup?.slug
+                        })}
                       >
-                        <a
-                          aria-current={isActive ? 'page' : undefined}
-                          className={clsx('dropdown__link', {
-                            'dropdown__link--active': isActive
-                          })}
-                        >
-                          {group.name}
-                        </a>
-                      </Link>
-                    </li>
-                  )
-                })}
+                        {group.name}
+                      </a>
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
           ) : (
@@ -241,6 +265,70 @@ const Navbar: VFC = () => {
               </li>
               <li className="menu__list-item">
                 <a className="menu__link menu__link--sublist" role="button">
+                  配信予定
+                </a>
+                <ul className="menu__list">
+                  <li className="menu__list-item">
+                    <Link href="/">
+                      <a
+                        aria-current={
+                          router.pathname === '/' ? 'page' : undefined
+                        }
+                        className={clsx('menu__link', {
+                          'menu__link--active': router.pathname === '/'
+                        })}
+                        onClick={hideSidebar}
+                      >
+                        全グループ
+                      </a>
+                    </Link>
+                  </li>
+                  {groups ? (
+                    groups.map((group) => (
+                      <li className="menu__list-item" key={group.slug}>
+                        <Link href={`/groups/${group.slug}`}>
+                          <a
+                            aria-current={
+                              router.pathname === '/groups/[slug]' &&
+                              group.slug === currentGroup?.slug
+                                ? 'page'
+                                : undefined
+                            }
+                            className={clsx('menu__link', {
+                              'menu__link--active':
+                                router.pathname === '/groups/[slug]' &&
+                                group.slug === currentGroup?.slug
+                            })}
+                            onClick={hideSidebar}
+                          >
+                            {group.name}
+                          </a>
+                        </Link>
+                      </li>
+                    ))
+                  ) : (
+                    <>
+                      <li className="menu__list-item">
+                        <a className="menu__link">
+                          <Skeleton variant="text" />
+                        </a>
+                      </li>
+                      <li className="menu__list-item">
+                        <a className="menu__link">
+                          <Skeleton variant="text" />
+                        </a>
+                      </li>
+                      <li className="menu__list-item">
+                        <a className="menu__link">
+                          <Skeleton variant="text" />
+                        </a>
+                      </li>
+                    </>
+                  )}
+                </ul>
+              </li>
+              <li className="menu__list-item">
+                <a className="menu__link menu__link--sublist" role="button">
                   動画一覧
                 </a>
                 <ul className="menu__list">
@@ -252,10 +340,13 @@ const Navbar: VFC = () => {
                     >
                       <a
                         aria-current={
-                          basePath === '/videos' ? 'page' : undefined
+                          router.pathname === '/videos/[[...queries]]'
+                            ? 'page'
+                            : undefined
                         }
                         className={clsx('menu__link', {
-                          'menu__link--active': basePath === '/videos'
+                          'menu__link--active':
+                            router.pathname === '/videos/[[...queries]]'
                         })}
                         onClick={hideSidebar}
                       >
@@ -264,30 +355,39 @@ const Navbar: VFC = () => {
                     </Link>
                   </li>
                   {groups ? (
-                    groups.map((group) => {
-                      const pathname = `/groups/${group.slug}/videos`
-                      const isActive = basePath === pathname
-
-                      return (
-                        <li className="menu__list-item" key={group.slug}>
-                          <Link
-                            href={`${pathname}${
-                              query ? `/${encodeURIComponent(query)}` : ''
-                            }`}
+                    groups.map((group) => (
+                      <li className="menu__list-item" key={group.slug}>
+                        <Link
+                          href={urlJoin(
+                            `/groups/${group.slug}/videos`,
+                            query ? `/${encodeURIComponent(query)}` : ''
+                          )}
+                        >
+                          <a
+                            aria-current={
+                              [
+                                '/groups/[slug]/videos',
+                                '/groups/[slug]/videos/[...queries]'
+                              ].includes(router.pathname) &&
+                              group.slug === currentGroup?.slug
+                                ? 'page'
+                                : undefined
+                            }
+                            className={clsx('menu__link', {
+                              'menu__link--active':
+                                [
+                                  '/groups/[slug]/videos',
+                                  '/groups/[slug]/videos/[...queries]'
+                                ].includes(router.pathname) &&
+                                group.slug === currentGroup?.slug
+                            })}
+                            onClick={hideSidebar}
                           >
-                            <a
-                              aria-current={isActive ? 'page' : undefined}
-                              className={clsx('menu__link', {
-                                'menu__link--active': isActive
-                              })}
-                              onClick={hideSidebar}
-                            >
-                              {group.name}
-                            </a>
-                          </Link>
-                        </li>
-                      )
-                    })
+                            {group.name}
+                          </a>
+                        </Link>
+                      </li>
+                    ))
                   ) : (
                     <>
                       <li className="menu__list-item">

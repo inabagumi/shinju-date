@@ -12,7 +12,7 @@ type Value = {
 }
 
 const LayoutContext = createContext<Value>({
-  basePath: '/videos'
+  basePath: '/'
 })
 
 export const LayoutProvider = LayoutContext.Provider
@@ -41,7 +41,7 @@ type Props = {
   now?: number
 }
 
-const Layout: VFC<Props> = ({ basePath = '/videos', children, now }) => {
+const Layout: VFC<Props> = ({ basePath = '/', children, now }) => {
   return (
     <LayoutProvider value={{ basePath, now }}>
       <div className={styles.wrapper}>

@@ -1,9 +1,17 @@
 import { type PostgrestError } from '@supabase/supabase-js'
-import { type ReactNode, type VFC } from 'react'
+import { useRouter } from 'next/router'
+import {
+  type ReactNode,
+  type VFC,
+  useCallback,
+  useEffect,
+  useState
+} from 'react'
 import useSWR, { type Fetcher } from 'swr'
 import { supabase } from '../../lib/supabase'
+import { getQueryValue } from '../../lib/url'
 import GroupContext from './context'
-import { GroupWithoutChannels } from './types'
+import { type GroupWithoutChannels } from './types'
 
 const fetchAllGroups: Fetcher<GroupWithoutChannels[]> = async () => {
   const { data, error } = await supabase
@@ -22,13 +30,16 @@ type Props = {
 }
 
 const GroupProvider: VFC<Props> = ({ children }) => {
+  const [currentGroup, setCurrentGroup] = useState<GroupWithoutChannels>()
   const { data: groups } = useSWR<GroupWithoutChannels[], PostgrestError>(
     'group-list',
     fetchAllGroups
   )
 
   return (
-    <GroupContext.Provider value={{ values: groups }}>
+    <GroupContext.Provider
+      value={{ current: currentGroup, setCurrentGroup, values: groups }}
+    >
       {children}
     </GroupContext.Provider>
   )

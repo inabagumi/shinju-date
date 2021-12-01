@@ -10,7 +10,7 @@ import {
   useState
 } from 'react'
 import { useBasePath } from '../components/layout'
-import { getQueryValue } from '../lib/url'
+import { getQueryValue, join as urlJoin } from '../lib/url'
 import styles from './search-form.module.css'
 
 const SearchForm: VFC = () => {
@@ -31,7 +31,9 @@ const SearchForm: VFC = () => {
       event.preventDefault()
 
       router
-        .push(`/${basePath}${value ? `/${encodeURIComponent(value)}` : ''}`)
+        .push(
+          urlJoin(basePath, 'videos', value ? encodeURIComponent(value) : '')
+        )
         .finally(() => {
           textFieldRef.current?.blur()
         })
@@ -40,12 +42,14 @@ const SearchForm: VFC = () => {
   )
 
   useEffect(() => {
-    setValue(getQueryValue('q', query))
+    const newValue = getQueryValue('q', query)
+
+    setValue(newValue)
   }, [query])
 
   return (
     <form
-      action={basePath}
+      action={urlJoin(basePath, 'videos')}
       className={styles.form}
       method="get"
       onSubmit={handleSubmit}

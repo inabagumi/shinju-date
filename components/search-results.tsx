@@ -4,10 +4,10 @@ import chunk from 'lodash.chunk'
 import { type VFC, useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite, { type InfiniteFetcher } from 'swr/infinite'
-import { useBasePath, useNow } from '../components/layout'
+import { useNow } from '../components/layout'
 import { type Video, getVideosByChannelIDs } from '../lib/algolia'
 import { type Channel } from '../lib/supabase'
-import Link from './link'
+import NoResults from './no-results'
 import styles from './search-results.module.css'
 import VideoCard from './video-card'
 
@@ -68,7 +68,6 @@ const SearchResults: VFC<Props> = ({
       fallbackData: prefetchedData
     }
   )
-  const basePath = useBasePath()
 
   const loadMore = useCallback(() => setSize((x) => x + 1), [setSize])
 
@@ -133,19 +132,10 @@ const SearchResults: VFC<Props> = ({
           </InfiniteScroll>
         </div>
       ) : (
-        <div className="text--center margin-bottom--lg margin-top--lg padding-bottom--lg padding-top--lg">
-          <h1 className={styles.searchResultsFor}>検索結果はありません</h1>
-
-          <p>『{query}』で検索しましたが一致する動画は見つかりませんでした。</p>
-
-          <Link
-            className="button button--lg button--outline button--primary"
-            href={basePath}
-            role="button"
-          >
-            新着動画を見る
-          </Link>
-        </div>
+        <NoResults
+          message={`『{query}』で検索しましたが一致する動画は見つかりませんでした。`}
+          title="検索結果はありません"
+        />
       )}
     </div>
   )
