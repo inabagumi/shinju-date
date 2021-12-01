@@ -36,7 +36,7 @@ const VideosPage: NextPage<Props> = ({ now, query, videos }) => {
 export default VideosPage
 
 type Params = {
-  q: string[]
+  queries?: string[]
 }
 
 export const getStaticPaths: GetStaticPaths<Params> = () => {
@@ -50,15 +50,11 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({
   params
 }) => {
   const now = Temporal.Now.instant().epochSeconds
-  const query = params?.q?.join('/') ?? ''
+  const query = params?.queries?.join('/') ?? ''
   const videos = await fetchVideosByChannelIDs({ now, query })
 
   return {
-    props: {
-      now,
-      query,
-      videos
-    },
+    props: { now, query, videos },
     revalidate: 5
   }
 }

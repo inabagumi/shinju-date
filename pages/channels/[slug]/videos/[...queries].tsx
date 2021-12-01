@@ -6,26 +6,26 @@ import SearchResults, {
   fetchVideosByChannelIDs
 } from '../../../../components/search-results'
 import { type Video } from '../../../../lib/algolia'
-import { type Group, getGroupBySlug } from '../../../../lib/supabase'
+import { type Channel, getChannelBySlug } from '../../../../lib/supabase'
 
 type Props = {
-  group: Group
+  channel: Channel
   now: number
   query: string
   videos: Video[]
 }
 
-const VideosPage: NextPage<Props> = ({ group, now, query, videos }) => {
-  const basePath = `/groups/${group.slug}/videos`
+const VideosPage: NextPage<Props> = ({ channel, now, query, videos }) => {
+  const basePath = `/channels/${channel.slug}`
   const title = query
-    ? `『${query}』の検索結果 - ${group.name}`
-    : `『${group.name}』の動画一覧`
+    ? `『${query}』の検索結果 - ${channel.name}`
+    : `『${channel.name}』の動画一覧`
 
   return (
     <Page basePath={basePath} now={now}>
       <NextSeo
         canonical={new URL(
-          `${basePath}${query ? `/${encodeURIComponent(query)}` : ''}`,
+          `${basePath}/videos${query ? `/${encodeURIComponent(query)}` : ''}`,
           process.env.NEXT_PUBLIC_BASE_URL
         ).toString()}
         noindex={!!query}
@@ -33,7 +33,7 @@ const VideosPage: NextPage<Props> = ({ group, now, query, videos }) => {
       />
 
       <SearchResults
-        channels={group.channels}
+        channels={channel ? [channel] : undefined}
         prefetchedData={[videos]}
         query={query}
         title={title}
@@ -45,8 +45,8 @@ const VideosPage: NextPage<Props> = ({ group, now, query, videos }) => {
 export default VideosPage
 
 type Params = {
-  id: string
-  q?: string[]
+  queries?: string[]
+  slug: string
 }
 
 export const getStaticPaths: GetStaticPaths<Params> = () => {
@@ -60,23 +60,27 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({
   params
 }) => {
   if (params) {
-    const group = await getGroupBySlug(params.id)
+    const now = Temporal.Now.instant().epochSeconds
+    const query = params?.queries?.join('/') ?? ''
+    const [channel, videos] = await Promise.all([
+      getChannelBySlug(params.slug),
+      fetchVideosByChannelIDs({
+        channelIDs: [params.slug],
+        now,
+        query
+      })
+    ])
 
-    if (group && group.channels.length > 0) {
-      const now = Temporal.Now.instant().epochSeconds
-      const query = params.q?.join('/') ?? ''
-      const channelIDs = group.channels.map((channel) => channel.slug)
-
-      const videos = await fetchVideosByChannelIDs({ channelIDs, now, query })
-
+    if (channel) {
       return {
-        props: { group, now, query, videos },
+        props: { channel, now, query, videos },
         revalidate: 5
       }
     }
   }
 
   return {
-    notFound: true
+    notFound: true,
+    revalidate: 60
   }
 }

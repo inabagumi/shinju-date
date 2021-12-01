@@ -45,16 +45,6 @@ const nextConfig = {
         destination: '/videos',
         permanent: true,
         source: '/search'
-      },
-      {
-        destination: '/channels/:id/videos',
-        permanent: false,
-        source: '/channels/:id'
-      },
-      {
-        destination: '/groups/:id/videos',
-        permanent: false,
-        source: '/groups/:id'
       }
     ]
   },
