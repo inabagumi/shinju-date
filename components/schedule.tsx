@@ -4,6 +4,7 @@ import useSWR, { type Fetcher } from 'swr'
 import { type Video, getVideosByChannelIDs } from '../lib/algolia'
 import { type Channel } from '../lib/supabase'
 import { useNow } from './layout'
+import NoResults from './no-results'
 import Timeline from './timeline'
 
 type FetchNotEndedVideosOptions = {
@@ -58,7 +59,15 @@ const Schedule: VFC<Props> = ({ channels = [], prefetchedData }) => {
     }
   )
 
-  return <Timeline values={videos} />
+  return (
+    <div className="margin-bottom--lg">
+      {videos.length > 0 ? (
+        <Timeline values={videos} />
+      ) : (
+        <NoResults message="YouTubeに登録されている配信予定の動画がありません。" />
+      )}
+    </div>
+  )
 }
 
 export default Schedule

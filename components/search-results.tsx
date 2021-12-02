@@ -133,7 +133,7 @@ const SearchResults: VFC<Props> = ({
         </div>
       ) : (
         <NoResults
-          message={`『{query}』で検索しましたが一致する動画は見つかりませんでした。`}
+          message={`『${query}』で検索しましたが一致する動画は見つかりませんでした。`}
           title="検索結果はありません"
         />
       )}
