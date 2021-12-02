@@ -1,7 +1,8 @@
 import { MDXProvider } from '@mdx-js/react'
+import { SkipNavContent } from '@reach/skip-nav'
 import { NextSeo } from 'next-seo'
 import { useRouter } from 'next/router'
-import Page from './layout'
+import Page, { DEFAULT_SKIP_NAV_CONTENT_ID } from './layout'
 import Link, { Props as LinkProps } from './link'
 import type { FunctionComponent, MDXComponents } from 'mdx/types'
 import type { ReactNode, VFC } from 'react'
@@ -30,7 +31,11 @@ const Markdown: VFC<Props> = ({ children, title }) => {
         </div>
       )}
 
-      <div className="container">
+      <SkipNavContent
+        as="main"
+        className="container"
+        id={DEFAULT_SKIP_NAV_CONTENT_ID}
+      >
         <nav aria-label="パンくずリスト" className="margin-vert--md">
           <ul
             className="breadcrumbs breadcrumbs--sm"
@@ -69,7 +74,7 @@ const Markdown: VFC<Props> = ({ children, title }) => {
         <div className="markdown padding-bottom--lg">
           <MDXProvider components={mdxComponents}>{children}</MDXProvider>
         </div>
-      </div>
+      </SkipNavContent>
     </Page>
   )
 }
