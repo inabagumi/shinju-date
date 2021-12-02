@@ -79,7 +79,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({
 
       return {
         props: { group, now, videos },
-        revalidate: 1
+        revalidate: 60
       }
     }
   }

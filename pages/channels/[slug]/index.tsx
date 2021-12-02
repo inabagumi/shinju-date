@@ -79,7 +79,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({
     if (channel) {
       return {
         props: { channel, now, videos },
-        revalidate: 1
+        revalidate: 60
       }
     }
   }
