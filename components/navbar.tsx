@@ -25,7 +25,10 @@ const Navbar: VFC = () => {
     () => VIDEOS_PAGE_REGEXP.test(router.pathname),
     [router.pathname]
   )
-  const query = useMemo(() => getQueryValue('q', router.query), [router.query])
+  const query = useMemo(
+    () => getQueryValue('queries', router.query),
+    [router.query]
+  )
 
   const showSidebar = useCallback(() => {
     setSidebarShown(true)

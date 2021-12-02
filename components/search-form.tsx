@@ -15,7 +15,7 @@ import styles from './search-form.module.css'
 
 const SearchForm: VFC = () => {
   const { query, ...router } = useRouter()
-  const [value, setValue] = useState(() => getQueryValue('q', query))
+  const [value, setValue] = useState(() => getQueryValue('queries', query))
   const textFieldRef = useRef<HTMLInputElement>(null)
   const basePath = useBasePath()
 
@@ -42,7 +42,7 @@ const SearchForm: VFC = () => {
   )
 
   useEffect(() => {
-    const newValue = getQueryValue('q', query)
+    const newValue = getQueryValue('queries', query)
 
     setValue(newValue)
   }, [query])
