@@ -1,7 +1,8 @@
 import { Temporal } from '@js-temporal/polyfill'
+import { SkipNavContent } from '@reach/skip-nav'
 import { type GetStaticPaths, type GetStaticProps, type NextPage } from 'next'
 import { NextSeo } from 'next-seo'
-import Page from '../../../components/layout'
+import Page, { DEFAULT_SKIP_NAV_CONTENT_ID } from '../../../components/layout'
 import Link from '../../../components/link'
 import Schedule, { fetchNotEndedVideos } from '../../../components/schedule'
 import { type Video } from '../../../lib/algolia'
@@ -41,11 +42,15 @@ const SchedulePage: NextPage<Props> = ({ channel, now, videos }) => {
         </div>
       </div>
 
-      <main className="container">
+      <SkipNavContent
+        as="main"
+        className="container"
+        id={DEFAULT_SKIP_NAV_CONTENT_ID}
+      >
         <h2 className="margin-top--lg">今後の配信予定</h2>
 
         <Schedule channels={[channel]} prefetchedData={videos} />
-      </main>
+      </SkipNavContent>
     </Page>
   )
 }

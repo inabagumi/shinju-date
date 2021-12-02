@@ -1,8 +1,11 @@
 import { Temporal } from '@js-temporal/polyfill'
+import { SkipNavContent } from '@reach/skip-nav'
 import { type GetStaticPaths, type GetStaticProps, type NextPage } from 'next'
 import { NextSeo } from 'next-seo'
 import { useCurrentGroup } from '../../../../components/group'
-import Page from '../../../../components/layout'
+import Page, {
+  DEFAULT_SKIP_NAV_CONTENT_ID
+} from '../../../../components/layout'
 import SearchResults, {
   fetchVideosByChannelIDs
 } from '../../../../components/search-results'
@@ -36,12 +39,14 @@ const VideosPage: NextPage<Props> = ({ group, now, query, videos }) => {
         title={title}
       />
 
-      <SearchResults
-        channels={group.channels}
-        prefetchedData={[videos]}
-        query={query}
-        title={title}
-      />
+      <SkipNavContent as="main" id={DEFAULT_SKIP_NAV_CONTENT_ID}>
+        <SearchResults
+          channels={group.channels}
+          prefetchedData={[videos]}
+          query={query}
+          title={title}
+        />
+      </SkipNavContent>
     </Page>
   )
 }
