@@ -32,7 +32,10 @@ export const fetchNotEndedVideos: Fetcher<
     const duration = Temporal.Duration.from(video.duration ?? 'P0D')
     const endedAt = publishedAt.add(duration)
 
-    return Temporal.Instant.compare(endedAt, now) >= 0
+    return (
+      Temporal.Instant.compare(endedAt, now) >= 0 ||
+      duration.total({ unit: 'second' }) < 1
+    )
   })
 }
 
