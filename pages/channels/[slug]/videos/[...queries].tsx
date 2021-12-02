@@ -74,7 +74,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({
     if (channel) {
       return {
         props: { channel, now, query, videos },
-        revalidate: 5
+        revalidate: query ? 600 : 60
       }
     }
   }
