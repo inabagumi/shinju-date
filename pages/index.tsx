@@ -26,7 +26,7 @@ const SchedulePage: NextPage<Props> = ({ now, videos }) => {
 
       <Hero />
 
-      <div className="container margin-bottom--lg">
+      <main className="container">
         <PopularitySearchQueries
           values={[
             'Minecraft',
@@ -37,7 +37,7 @@ const SchedulePage: NextPage<Props> = ({ now, videos }) => {
         />
 
         <Schedule prefetchedData={videos} />
-      </div>
+      </main>
     </Page>
   )
 }

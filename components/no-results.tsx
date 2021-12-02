@@ -5,7 +5,7 @@ import styles from './no-results.module.css'
 
 type Props = {
   message: string
-  title: string
+  title?: string
 }
 
 const NoResults: VFC<Props> = ({ message, title }) => {
@@ -13,7 +13,7 @@ const NoResults: VFC<Props> = ({ message, title }) => {
 
   return (
     <div className="text--center margin-bottom--lg margin-top--lg padding-bottom--lg padding-top--lg">
-      <h1 className={styles.title}>{title}</h1>
+      {title && <h1 className={styles.title}>{title}</h1>}
 
       <p>{message}</p>
 

@@ -8,6 +8,7 @@ import SearchResults, {
 } from '../../../../components/search-results'
 import { type Video } from '../../../../lib/algolia'
 import { type Group, getGroupBySlug } from '../../../../lib/supabase'
+import { join as urlJoin } from '../../../../lib/url'
 
 type Props = {
   group: Group
@@ -19,7 +20,7 @@ type Props = {
 const VideosPage: NextPage<Props> = ({ group, now, query, videos }) => {
   useCurrentGroup(group)
 
-  const basePath = `/groups/${group.slug}/videos`
+  const basePath = `/groups/${group.slug}`
   const title = query
     ? `『${query}』の検索結果 - ${group.name}`
     : `『${group.name}』の動画一覧`
@@ -28,7 +29,7 @@ const VideosPage: NextPage<Props> = ({ group, now, query, videos }) => {
     <Page basePath={basePath} now={now}>
       <NextSeo
         canonical={new URL(
-          `${basePath}${query ? `/${encodeURIComponent(query)}` : ''}`,
+          urlJoin(basePath, 'videos', query ? encodeURIComponent(query) : ''),
           process.env.NEXT_PUBLIC_BASE_URL
         ).toString()}
         noindex={!!query}

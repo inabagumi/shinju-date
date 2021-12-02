@@ -3,7 +3,6 @@ import { type GetStaticPaths, type GetStaticProps, type NextPage } from 'next'
 import { NextSeo } from 'next-seo'
 import Page from '../../../components/layout'
 import Link from '../../../components/link'
-import NoResults from '../../../components/no-results'
 import Schedule, { fetchNotEndedVideos } from '../../../components/schedule'
 import { type Video } from '../../../lib/algolia'
 import { type Channel, getChannelBySlug } from '../../../lib/supabase'
@@ -27,35 +26,26 @@ const SchedulePage: NextPage<Props> = ({ channel, now, videos }) => {
         title={channel.name}
       />
 
-      {videos.length > 0 ? (
-        <>
-          <div className="hero hero--dark">
-            <div className="container">
-              <h1 className="hero__title">{channel.name}</h1>
+      <div className="hero hero--dark">
+        <div className="container">
+          <h1 className="hero__title">{channel.name}</h1>
 
-              <div>
-                <Link
-                  className="button button--lg button--secondary"
-                  href={`${basePath}/videos`}
-                >
-                  動画一覧
-                </Link>
-              </div>
-            </div>
+          <div>
+            <Link
+              className="button button--lg button--secondary"
+              href={`${basePath}/videos`}
+            >
+              動画一覧
+            </Link>
           </div>
+        </div>
+      </div>
 
-          <div className="container margin-bottom--lg">
-            <h2 className="margin-top--lg">今後の配信予定</h2>
+      <main className="container">
+        <h2 className="margin-top--lg">今後の配信予定</h2>
 
-            <Schedule channels={[channel]} prefetchedData={videos} />
-          </div>
-        </>
-      ) : (
-        <NoResults
-          message="YouTubeに登録されている配信予定の動画がありません。"
-          title="配信予定の動画がありません"
-        />
-      )}
+        <Schedule channels={[channel]} prefetchedData={videos} />
+      </main>
     </Page>
   )
 }
