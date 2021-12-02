@@ -6,10 +6,6 @@ import { type Channel } from '../lib/supabase'
 import { useNow } from './layout'
 import Timeline from './timeline'
 
-function compareVideo(videoA: Video, videoB: Video): number {
-  return videoA.publishedAt - videoB.publishedAt
-}
-
 type FetchNotEndedVideosOptions = {
   channelIDs?: string[]
   now: number
@@ -25,13 +21,18 @@ export const fetchNotEndedVideos: Fetcher<
   const videos = await getVideosByChannelIDs(channelIDs, {
     filters: [
       `publishedAt >= ${since.epochSeconds}`,
-      `publishedAt <= ${until.epochSeconds}`,
-      'duration:P0D'
+      `publishedAt <= ${until.epochSeconds}`
     ],
     limit: 100
   })
 
-  return [...videos].sort(compareVideo)
+  return [...videos].reverse().filter((video) => {
+    const publishedAt = Temporal.Instant.fromEpochSeconds(video.publishedAt)
+    const duration = Temporal.Duration.from(video.duration ?? 'P0D')
+    const endedAt = publishedAt.add(duration)
+
+    return Temporal.Instant.compare(endedAt, now) >= 0
+  })
 }
 
 type Props = {
