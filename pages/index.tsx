@@ -12,13 +12,13 @@ const tagline =
   '774 inc. 所属タレントの配信スケジュールや動画の検索ができるウェブサービス'
 
 type Props = {
-  now: number
+  baseTime: number
   videos: Video[]
 }
 
-const SchedulePage: NextPage<Props> = ({ now, videos }) => {
+const SchedulePage: NextPage<Props> = ({ baseTime, videos }) => {
   return (
-    <Page now={now}>
+    <Page baseTime={baseTime}>
       <NextSeo
         canonical={new URL('/', process.env.NEXT_PUBLIC_BASE_URL).toString()}
         title="SHINJU DATE"
@@ -50,11 +50,11 @@ const SchedulePage: NextPage<Props> = ({ now, videos }) => {
 export default SchedulePage
 
 export const getStaticProps: GetStaticProps<Props> = async () => {
-  const now = Temporal.Now.instant().epochSeconds
-  const videos = await fetchNotEndedVideos({ now })
+  const baseTime = Temporal.Now.instant().epochSeconds
+  const videos = await fetchNotEndedVideos({ baseTime })
 
   return {
-    props: { now, videos },
+    props: { baseTime, videos },
     revalidate: 60
   }
 }

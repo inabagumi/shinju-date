@@ -14,13 +14,13 @@ import { type Group, getGroupBySlug } from '../../../../lib/supabase'
 import { join as urlJoin } from '../../../../lib/url'
 
 type Props = {
+  baseTime: number
   group: Group
-  now: number
   query: string
   videos: Video[]
 }
 
-const VideosPage: NextPage<Props> = ({ group, now, query, videos }) => {
+const VideosPage: NextPage<Props> = ({ group, baseTime, query, videos }) => {
   useCurrentGroup(group)
 
   const basePath = `/groups/${group.slug}`
@@ -29,7 +29,7 @@ const VideosPage: NextPage<Props> = ({ group, now, query, videos }) => {
     : `『${group.name}』の動画一覧`
 
   return (
-    <Page basePath={basePath} now={now}>
+    <Page basePath={basePath} baseTime={baseTime}>
       <NextSeo
         canonical={new URL(
           urlJoin(basePath, 'videos', query ? encodeURIComponent(query) : ''),
@@ -72,13 +72,17 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({
     const group = await getGroupBySlug(params.slug)
 
     if (group && group.channels.length > 0) {
-      const now = Temporal.Now.instant().epochSeconds
+      const baseTime = Temporal.Now.instant().epochSeconds
       const query = params.queries?.join('/') ?? ''
       const channelIDs = group.channels.map((channel) => channel.slug)
-      const videos = await fetchVideosByChannelIDs({ channelIDs, now, query })
+      const videos = await fetchVideosByChannelIDs({
+        baseTime,
+        channelIDs,
+        query
+      })
 
       return {
-        props: { group, now, query, videos },
+        props: { baseTime, group, query, videos },
         revalidate: query ? 600 : 60
       }
     }

@@ -3,22 +3,25 @@ import { type VFC } from 'react'
 import useSWR, { type Fetcher } from 'swr'
 import { type Video, getVideosByChannelIDs } from '../lib/algolia'
 import { type Channel } from '../lib/supabase'
-import { useNow } from './layout'
+import { useBaseTime } from './layout'
 import NoResults from './no-results'
 import Timeline from './timeline'
 
 type FetchNotEndedVideosOptions = {
+  baseTime: number
   channelIDs?: string[]
-  now: number
 }
 
 export const fetchNotEndedVideos: Fetcher<
   Video[],
   FetchNotEndedVideosOptions
-> = async ({ channelIDs = [], now: rawNow }) => {
-  const now = Temporal.Instant.fromEpochSeconds(rawNow)
-  const since = now.subtract({ hours: 5 })
-  const until = now.toZonedDateTimeISO('UTC').add({ months: 2 }).toInstant()
+> = async ({ baseTime: rawBaseTime, channelIDs = [] }) => {
+  const baseTime = Temporal.Instant.fromEpochSeconds(rawBaseTime)
+  const since = baseTime.subtract({ hours: 5 })
+  const until = baseTime
+    .toZonedDateTimeISO('UTC')
+    .add({ months: 2 })
+    .toInstant()
   const videos = await getVideosByChannelIDs(channelIDs, {
     filters: [
       `publishedAt >= ${since.epochSeconds}`,
@@ -33,7 +36,7 @@ export const fetchNotEndedVideos: Fetcher<
     const endedAt = publishedAt.add(duration)
 
     return (
-      Temporal.Instant.compare(endedAt, now) >= 0 ||
+      Temporal.Instant.compare(endedAt, baseTime) >= 0 ||
       duration.total({ unit: 'second' }) < 1
     )
   })
@@ -45,15 +48,15 @@ type Props = {
 }
 
 const Schedule: VFC<Props> = ({ channels = [], prefetchedData }) => {
-  const now = useNow()
+  const baseTime = useBaseTime()
   const { data: videos = [] } = useSWR<
     Video[],
     Error,
     FetchNotEndedVideosOptions
   >(
     {
-      channelIDs: channels.map((channel) => channel.slug),
-      now: now.epochSeconds
+      baseTime: baseTime.epochSeconds,
+      channelIDs: channels.map((channel) => channel.slug)
     },
     fetchNotEndedVideos,
     {
