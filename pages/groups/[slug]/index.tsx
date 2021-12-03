@@ -10,18 +10,18 @@ import { type Video } from '../../../lib/algolia'
 import { type Group, getGroupBySlug } from '../../../lib/supabase'
 
 type Props = {
+  baseTime: number
   group: Group
-  now: number
   videos: Video[]
 }
 
-const SchedulePage: NextPage<Props> = ({ group, now, videos }) => {
+const SchedulePage: NextPage<Props> = ({ baseTime, group, videos }) => {
   useCurrentGroup(group)
 
   const basePath = `/groups/${group.slug}`
 
   return (
-    <Page basePath={basePath} now={now}>
+    <Page basePath={basePath} baseTime={baseTime}>
       <NextSeo
         canonical={new URL(
           basePath,
@@ -78,12 +78,12 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({
     const group = await getGroupBySlug(params.slug)
 
     if (group && group.channels.length > 0) {
-      const now = Temporal.Now.instant().epochSeconds
+      const baseTime = Temporal.Now.instant().epochSeconds
       const channelIDs = group.channels.map((channel) => channel.slug)
-      const videos = await fetchNotEndedVideos({ channelIDs, now })
+      const videos = await fetchNotEndedVideos({ baseTime, channelIDs })
 
       return {
-        props: { group, now, videos },
+        props: { baseTime, group, videos },
         revalidate: 60
       }
     }

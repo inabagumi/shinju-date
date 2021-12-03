@@ -7267,11 +7267,6 @@ react-infinite-scroll-component@^6.1.0:
   dependencies:
     throttle-debounce "^2.1.0"
 
-react-intersection-observer@^8.32.5:
-  version "8.32.5"
-  resolved "https://registry.yarnpkg.com/react-intersection-observer/-/react-intersection-observer-8.32.5.tgz#92e8d8888b0b43a5c10c398e0d483d574bce7f3e"
-  integrity sha512-4xKdUWRNdPueXXxTyMOV41w6qIa4tsV7BbWOW+IYsvGPP7wxOj9V6o3cKywie+/VDr5Qs7pCzi5Wom78dUxj1w==
-
 react-intl@^5.23.0:
   version "5.23.0"
   resolved "https://registry.yarnpkg.com/react-intl/-/react-intl-5.23.0.tgz#8384028959a0b092950e593dd48edb5c088ea037"

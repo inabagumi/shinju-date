@@ -9,16 +9,16 @@ import { type Video } from '../../../lib/algolia'
 import { type Channel, getChannelBySlug } from '../../../lib/supabase'
 
 type Props = {
+  baseTime: number
   channel: Channel
-  now: number
   videos: Video[]
 }
 
-const SchedulePage: NextPage<Props> = ({ channel, now, videos }) => {
+const SchedulePage: NextPage<Props> = ({ channel, baseTime, videos }) => {
   const basePath = `/channels/${channel.slug}`
 
   return (
-    <Page basePath={basePath} now={now}>
+    <Page basePath={basePath} baseTime={baseTime}>
       <NextSeo
         canonical={new URL(
           basePath,
@@ -72,18 +72,18 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({
   params
 }) => {
   if (params) {
-    const now = Temporal.Now.instant().epochSeconds
+    const baseTime = Temporal.Now.instant().epochSeconds
     const [channel, videos] = await Promise.all([
       getChannelBySlug(params.slug),
       fetchNotEndedVideos({
-        channelIDs: [params.slug],
-        now
+        baseTime,
+        channelIDs: [params.slug]
       })
     ])
 
     if (channel) {
       return {
-        props: { channel, now, videos },
+        props: { baseTime, channel, videos },
         revalidate: 60
       }
     }

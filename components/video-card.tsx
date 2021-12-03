@@ -1,7 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill'
 import clsx from 'clsx'
 import { type VFC, useCallback, useEffect, useMemo, useState } from 'react'
-import { useInView } from 'react-intersection-observer'
 import { FormattedRelativeTime, FormattedTime, useIntl } from 'react-intl'
 import aa from 'search-insights'
 import { type Video } from '../lib/algolia'
@@ -23,7 +22,6 @@ type Props = {
 
 const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
   const intl = useIntl()
-  const [cardRef, inView] = useInView()
   const now = useNow()
   const publishedAt = useMemo(() => {
     const timeZone = Temporal.TimeZone.from(intl.timeZone ?? 'UTC')
@@ -50,49 +48,17 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
   }, [value?.id])
 
   useEffect(() => {
-    let timeoutID: NodeJS.Timeout | undefined
-    let requestID: number | undefined
+    const instantPublishedAt = publishedAt.toInstant()
 
-    if (inView) {
-      const instantPublishedAt = publishedAt.toInstant()
-      const updateNow = () => {
-        const currentNow = Temporal.Now.instant()
-
-        setLiveNow(
-          () =>
-            Temporal.Instant.compare(instantPublishedAt, currentNow) < 1 &&
-            Temporal.Instant.compare(
-              currentNow,
-              instantPublishedAt.add({ hours: 12 })
-            ) < 1 &&
-            duration.total({ unit: 'second' }) < 1 &&
-            publishedAt.second > 0
-        )
-
-        timeoutID = setTimeout(() => {
-          timeoutID = undefined
-
-          requestID = requestAnimationFrame(() => {
-            requestID = undefined
-
-            updateNow()
-          })
-        }, 5_000)
-      }
-
-      updateNow()
-    }
-
-    return () => {
-      if (timeoutID) {
-        clearInterval(timeoutID)
-      }
-
-      if (requestID) {
-        cancelAnimationFrame(requestID)
-      }
-    }
-  }, [inView, publishedAt, duration])
+    setLiveNow(
+      () =>
+        Temporal.Instant.compare(instantPublishedAt, now) < 1 &&
+        Temporal.Instant.compare(now, instantPublishedAt.add({ hours: 12 })) <
+          1 &&
+        duration.total({ unit: 'second' }) < 1 &&
+        publishedAt.second > 0
+    )
+  }, [now, publishedAt, duration])
 
   return (
     <BlockLink
@@ -101,7 +67,7 @@ const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
       rel="noopener noreferrer"
       target="_blank"
     >
-      <div className={clsx('card', styles.video)} ref={cardRef}>
+      <div className={clsx('card', styles.video)}>
         <div className={clsx('card__image', styles.image)}>
           <Thumbnail value={value?.thumbnail} />
 

@@ -9,17 +9,17 @@ import SearchResults, {
 import { type Video } from '../../lib/algolia'
 
 type Props = {
-  now: number
+  baseTime: number
   query: string
   videos: Video[]
 }
 
-const VideosPage: NextPage<Props> = ({ now, query, videos }) => {
+const VideosPage: NextPage<Props> = ({ baseTime, query, videos }) => {
   const basePath = '/videos'
   const title = query ? `『${query}』の検索結果` : '動画一覧'
 
   return (
-    <Page basePath={basePath} now={now}>
+    <Page basePath={basePath} baseTime={baseTime}>
       <NextSeo
         canonical={new URL(
           `${basePath}${query ? `/${encodeURIComponent(query)}` : ''}`,
@@ -52,12 +52,12 @@ export const getStaticPaths: GetStaticPaths<Params> = () => {
 export const getStaticProps: GetStaticProps<Props, Params> = async ({
   params
 }) => {
-  const now = Temporal.Now.instant().epochSeconds
+  const baseTime = Temporal.Now.instant().epochSeconds
   const query = params?.queries?.join('/') ?? ''
-  const videos = await fetchVideosByChannelIDs({ now, query })
+  const videos = await fetchVideosByChannelIDs({ baseTime, query })
 
   return {
-    props: { now, query, videos },
+    props: { baseTime, query, videos },
     revalidate: 5
   }
 }

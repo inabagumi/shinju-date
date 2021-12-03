@@ -1,15 +1,7 @@
 import { type PostgrestError } from '@supabase/supabase-js'
-import { useRouter } from 'next/router'
-import {
-  type ReactNode,
-  type VFC,
-  useCallback,
-  useEffect,
-  useState
-} from 'react'
+import { type ReactNode, type VFC, useState } from 'react'
 import useSWR, { type Fetcher } from 'swr'
 import { supabase } from '../../lib/supabase'
-import { getQueryValue } from '../../lib/url'
 import GroupContext from './context'
 import { type GroupWithoutChannels } from './types'
 
