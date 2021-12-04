@@ -90,6 +90,7 @@ export async function getVideosByQuery({
 }: SearchOptions = {}): Promise<Video[]> {
   const index = getDefaultIndex()
   const { hits } = await index.search<Video>(query, {
+    cacheable: false,
     filters: filters.join(' AND '),
     hitsPerPage: limit,
     page: page - 1
