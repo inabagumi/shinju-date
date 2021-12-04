@@ -61,7 +61,7 @@ const Schedule: VFC<Props> = ({ channels = [], prefetchedData }) => {
     fetchNotEndedVideos,
     {
       fallbackData: prefetchedData,
-      refreshInterval: 10_000
+      refreshInterval: 60_000
     }
   )
 
