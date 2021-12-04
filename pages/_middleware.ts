@@ -1,6 +1,5 @@
 import ipaddr from 'ipaddr.js'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { type NextMiddleware, NextResponse } from 'next/server'
 
 /**
  * The IP address range for Imgix
@@ -30,9 +29,7 @@ function isImageResponse(res: Response): boolean {
   return !!contentType && ACCEPT_IMAGE_TYPES.includes(contentType)
 }
 
-export async function middleware(
-  req: NextRequest
-): Promise<NextResponse | Response> {
+export const middleware: NextMiddleware = async (req) => {
   if (
     req.ip &&
     req.headers.get('user-agent')?.startsWith('imgix/') &&
