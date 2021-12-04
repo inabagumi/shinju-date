@@ -1,10 +1,8 @@
-import { NextResponse } from 'next/server'
+// eslint-disable-next-line @next/next/no-server-import-in-page
+import { type NextMiddleware, NextResponse } from 'next/server'
 import { basename } from 'path'
-import type { NextRequest } from 'next/server'
 
-export async function middleware(
-  req: NextRequest
-): Promise<NextResponse | Response | undefined> {
+export const middleware: NextMiddleware = async (req) => {
   const id = basename(req.nextUrl.pathname, '.jpg')
   const res = await fetch(`https://i.ytimg.com/vi/${id}/maxresdefault.jpg`)
 
