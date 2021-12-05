@@ -1,3 +1,4 @@
+import { createNullCache } from '@algolia/cache-common'
 import algoliasearch, {
   type SearchClient,
   type SearchIndex
@@ -50,7 +51,11 @@ let client: SearchClient
 export function getClient(): SearchClient {
   client ??= algoliasearch(
     process.env.NEXT_PUBLIC_ALGOLIA_APPLICATION_ID,
-    process.env.NEXT_PUBLIC_ALGOLIA_API_KEY
+    process.env.NEXT_PUBLIC_ALGOLIA_API_KEY,
+    {
+      requestsCache: createNullCache(),
+      responsesCache: createNullCache()
+    }
   )
 
   return client
@@ -90,7 +95,6 @@ export async function getVideosByQuery({
 }: SearchOptions = {}): Promise<Video[]> {
   const index = getDefaultIndex()
   const { hits } = await index.search<Video>(query, {
-    cacheable: false,
     filters: filters.join(' AND '),
     hitsPerPage: limit,
     page: page - 1
