@@ -15,14 +15,13 @@ type Props = {
 }
 
 const VideosPage: NextPage<Props> = ({ baseTime, query, videos }) => {
-  const basePath = '/videos'
   const title = query ? `『${query}』の検索結果` : '動画一覧'
 
   return (
-    <Page basePath={basePath} baseTime={baseTime}>
+    <Page baseTime={baseTime}>
       <NextSeo
         canonical={new URL(
-          `${basePath}${query ? `/${encodeURIComponent(query)}` : ''}`,
+          `/videos${query ? `/${encodeURIComponent(query)}` : ''}`,
           process.env.NEXT_PUBLIC_BASE_URL
         ).toString()}
         noindex={!!query}
