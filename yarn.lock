@@ -9,7 +9,7 @@
   dependencies:
     "@algolia/cache-common" "4.11.0"
 
-"@algolia/cache-common@4.11.0":
+"@algolia/cache-common@4.11.0", "@algolia/cache-common@^4.11.0":
   version "4.11.0"
   resolved "https://registry.yarnpkg.com/@algolia/cache-common/-/cache-common-4.11.0.tgz#066fe6d58b18e4b028dbef9bb8de07c5e22a3594"
   integrity sha512-lODcJRuPXqf+6mp0h6bOxPMlbNoyn3VfjBVcQh70EDP0/xExZbkpecgHyyZK4kWg+evu+mmgvTK3GVHnet/xKw==
