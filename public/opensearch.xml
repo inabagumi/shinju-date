@@ -5,5 +5,5 @@
   <InputEncoding>UTF-8</InputEncoding>
   <moz:SearchForm>https://shinju.date/</moz:SearchForm>
   <ShortName>SHINJU DATE</ShortName>
-  <Url method="get" template="https://shinju.date/search?q={searchTerms}" type="text/html"/>
+  <Url method="get" template="https://shinju.date/videos/{searchTerms}" type="text/html"/>
 </OpenSearchDescription>
