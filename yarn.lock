@@ -7550,10 +7550,10 @@ schema-utils@^3.1.1:
     ajv "^6.12.5"
     ajv-keywords "^3.5.2"
 
-search-insights@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/search-insights/-/search-insights-2.1.0.tgz#42822fa325062ec5bf050c5f8cad58f0c5b21310"
-  integrity sha512-mWIVsZ5igQnlM2tC0HJCtGWKQcBhLhkasZoZZS2exUfZPpRowVWEvyyYTWU3M0rUKWlWLWFCYvJ3HGTSSCsOcw==
+search-insights@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/search-insights/-/search-insights-2.2.0.tgz#6f8246ba4637c0aceb31e4bffa53d2e166b24bf5"
+  integrity sha512-9zcqipGzFwVp0JnGqaAIqWlAk2T/3UFOPu+FA2mA2pBueg7oHq6Us3iXbx213Acu/H/wg389Fa0lee7gv8699w==
 
 semver@7.0.0:
   version "7.0.0"
