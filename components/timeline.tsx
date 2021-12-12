@@ -31,7 +31,7 @@ type Props = {
 const Timeline: VFC<Props> = ({ values }) => {
   const intl = useIntl()
   const schedule = useMemo(() => {
-    const timeZone = Temporal.TimeZone.from(intl.timeZone ?? 'UTC')
+    const timeZone = new Temporal.TimeZone(intl.timeZone ?? 'UTC')
 
     return buildScheduleMap(values, { timeZone })
   }, [values, intl.timeZone])
