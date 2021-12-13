@@ -35,15 +35,6 @@ const nextConfig = {
     sw: 'service-worker.js'
   },
   reactStrictMode: true,
-  async redirects() {
-    return [
-      {
-        destination: '/videos',
-        permanent: true,
-        source: '/search'
-      }
-    ]
-  },
   async rewrites() {
     return {
       afterFiles: [
@@ -76,6 +67,10 @@ const nextConfig = {
         {
           destination: '/api/calendar/:id',
           source: '/channels/:id/videos.ics'
+        },
+        {
+          destination: '/api/search',
+          source: '/search'
         }
       ]
     }
