@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import chunk from 'lodash.chunk'
 import { type VFC, useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
-import useSWRInfinite, { type InfiniteFetcher } from 'swr/infinite'
+import useSWRInfinite, { type SWRInfiniteFetcher } from 'swr/infinite'
 import { useBaseTime } from '../components/layout'
 import { type Video, getVideosByChannelIDs } from '../lib/algolia'
 import { type Channel } from '../lib/supabase'
@@ -25,12 +25,10 @@ type KeyLoader = (
   previousPageData: Video[]
 ) => FetchVideosByChannelIDsOptions
 
-export const fetchVideosByChannelIDs: InfiniteFetcher<Video[], KeyLoader> = ({
-  baseTime: rawBaseTime,
-  channelIDs = [],
-  page = 1,
-  query = ''
-}) => {
+export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
+  Video[],
+  KeyLoader
+> = ({ baseTime: rawBaseTime, channelIDs = [], page = 1, query = '' }) => {
   const baseTime = Temporal.Instant.fromEpochSeconds(rawBaseTime)
   const until = baseTime
     .toZonedDateTimeISO('UTC')
