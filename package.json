@@ -34,7 +34,7 @@
     "@jest/types": "^27.4.2",
     "@mdx-js/loader": "^2.0.0-rc.2",
     "@svgr/webpack": "^6.1.2",
-    "@types/eslint": "^8.2.1",
+    "@types/eslint": "^8.2.2",
     "@types/gtag.js": "^0.0.8",
     "@types/jest": "^27.4.0",
     "@types/lodash.chunk": "^4.2.6",
