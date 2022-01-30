@@ -33,7 +33,7 @@
     "@inabagumi/prettier-config": "^2.0.0",
     "@jest/types": "^27.4.2",
     "@mdx-js/loader": "^2.0.0-rc.2",
-    "@svgr/webpack": "^6.2.0",
+    "@svgr/webpack": "^6.2.1",
     "@types/eslint": "^8.4.1",
     "@types/gtag.js": "^0.0.8",
     "@types/jest": "^27.4.0",
