@@ -48,7 +48,7 @@
     "critters": "^0.0.16",
     "eslint": "~8.10.0",
     "eslint-config-next": "^12.1.0",
-    "eslint-config-prettier": "~8.4.0",
+    "eslint-config-prettier": "~8.5.0",
     "jest": "^27.5.1",
     "next-pwa": "^5.4.4",
     "postcss": "^8.4.7",
