@@ -36,8 +36,8 @@ const SchedulePage: NextPage<Props> = ({ baseTime, videos }) => {
           values={[
             'Minecraft',
             'ポケットモンスター',
-            'マリオパーティ',
-            'Phasmophobia'
+            'Phasmophobia',
+            'ELDEN RING'
           ]}
         />
 
