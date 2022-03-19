@@ -5,6 +5,13 @@
     "esbenp.prettier-vscode",
     "silvenon.mdx"
   ],
+  "features": {
+    "terraform": {
+      "terragrunt": "none",
+      "tflint": "none",
+      "version": "1.1.7"
+    }
+  },
   "forwardPorts": [3000],
   "image": "mcr.microsoft.com/vscode/devcontainers/typescript-node:0-16-buster",
   "name": "Node.js & TypeScript",
