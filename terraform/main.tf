@@ -70,10 +70,9 @@ resource "vercel_project" "this" {
     type = "github"
     repo = "inabagumi/shinju-date"
   }
-  name           = "shinju-date"
-  public_source  = false
-  root_directory = "./"
-  team_id        = var.vercel_team_id
+  name          = "shinju-date"
+  public_source = false
+  team_id       = var.vercel_team_id
 }
 
 resource "vercel_project_domain" "date" {
