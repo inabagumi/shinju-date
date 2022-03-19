@@ -26,13 +26,13 @@ resource "vercel_project" "this" {
     },
     {
       key    = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
-      target = ["preview", "development"]
-      value  = "dev_videos"
+      target = ["production"]
+      value  = "prod_videos"
     },
     {
       key    = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
-      target = ["production"]
-      value  = "prod_videos"
+      target = ["preview", "development"]
+      value  = "dev_videos"
     },
     {
       key    = "NEXT_PUBLIC_BASE_URL"
@@ -63,7 +63,7 @@ resource "vercel_project" "this" {
       key    = "IMGIX_BASE_PATH"
       target = ["production"]
       value  = "https://shinju-date.imgix.net"
-    }
+    },
   ]
   framework = "nextjs"
   git_repository = {
@@ -73,11 +73,16 @@ resource "vercel_project" "this" {
   name          = "shinju-date"
   public_source = false
   team_id       = var.vercel_team_id
+
+  lifecycle {
+    ignore_changes = [environment]
+  }
 }
 
 resource "vercel_project_domain" "date" {
   domain     = "shinju.date"
   project_id = vercel_project.this.id
+  team_id    = vercel_project.this.team_id
 }
 
 resource "vercel_project_domain" "cafe" {
@@ -85,4 +90,5 @@ resource "vercel_project_domain" "cafe" {
   project_id           = vercel_project.this.id
   redirect             = vercel_project_domain.date.domain
   redirect_status_code = 308
+  team_id              = vercel_project.this.team_id
 }
