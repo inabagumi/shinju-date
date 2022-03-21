@@ -21,7 +21,7 @@ jobs:
       - name: Get yarn pnp unplugged directory path
         id: yarn-pnp-unplugged-dir-path
         run: echo "::set-output name=dir::$(yarn config get pnpUnpluggedFolder)"
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ${{ steps.yarn-pnp-unplugged-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
