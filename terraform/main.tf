@@ -73,10 +73,6 @@ resource "vercel_project" "this" {
   name          = "shinju-date"
   public_source = false
   team_id       = var.vercel_team_id
-
-  lifecycle {
-    ignore_changes = [environment]
-  }
 }
 
 resource "vercel_project_domain" "date" {
