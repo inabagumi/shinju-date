@@ -15,7 +15,7 @@
     "lodash.chunk": "^4.2.0",
     "lodash.groupby": "^4.6.0",
     "next": "^12.1.0",
-    "next-seo": "^5.1.0",
+    "next-seo": "^5.2.0",
     "next-themes": "^0.0.15",
     "nprogress": "^1.0.0-1",
     "react": "^17.0.2",
