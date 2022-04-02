@@ -1671,13 +1671,12 @@
   dependencies:
     cross-fetch "^3.0.6"
 
-"@supabase/realtime-js@^1.4.5":
-  version "1.4.5"
-  resolved "https://registry.yarnpkg.com/@supabase/realtime-js/-/realtime-js-1.4.5.tgz#45ae914b9b7da730b3dc643b90235e4f517ea72b"
-  integrity sha512-DTlWqh92xjsBu0qBHXJbx8WFNjt+yB4IzYlQEJkp5tKCAIgNuREhGQT2NGJJzvznA8NdP6zT5sSQbseLl10+dg==
+"@supabase/realtime-js@^1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@supabase/realtime-js/-/realtime-js-1.6.2.tgz#1fec4eabc9b01346006d6098d8cc29ebafa2b70a"
+  integrity sha512-0aK2WoCYvS2lO2BGQwPaxz91oq76lJ+/rSzAMUDFe8mZFj+v4ugifDMUHKpSxJWqW4u4OB9cs3zw11qWlQQCrw==
   dependencies:
     "@types/phoenix" "^1.5.4"
-    lodash.clonedeep "^4.5.0"
     websocket "^1.0.34"
 
 "@supabase/storage-js@^1.6.5":
@@ -1687,15 +1686,15 @@
   dependencies:
     cross-fetch "^3.1.0"
 
-"@supabase/supabase-js@^1.33.2":
-  version "1.33.2"
-  resolved "https://registry.yarnpkg.com/@supabase/supabase-js/-/supabase-js-1.33.2.tgz#29b5206c55884b653153ae1f2ce3a1679d080e8f"
-  integrity sha512-OAsvCw4C5L5E+VGwz5ZMm+NAO6BYmMMdVlc6ER6wbb5It8yfaE78HrffeBW5z+gXNkF4bi45O9LH6B/GqS0CdA==
+"@supabase/supabase-js@^1.33.3":
+  version "1.33.3"
+  resolved "https://registry.yarnpkg.com/@supabase/supabase-js/-/supabase-js-1.33.3.tgz#f5dadcea6c0d04bb4c93268c1e63ec9eec8b33bf"
+  integrity sha512-wQyCoP03bs21UvfVxRYrFTBmYSGMXjFAKlmP66MACqWUfYLKgJJ3/xVFfOLyyi7M8QTYw8XUK+z4yqQ5p1l88Q==
   dependencies:
     "@supabase/functions-js" "^1.3.2"
     "@supabase/gotrue-js" "^1.22.10"
     "@supabase/postgrest-js" "^0.37.2"
-    "@supabase/realtime-js" "^1.4.5"
+    "@supabase/realtime-js" "^1.6.2"
     "@supabase/storage-js" "^1.6.5"
 
 "@surma/rollup-plugin-off-main-thread@^2.2.3":
@@ -4984,11 +4983,6 @@ lodash.chunk@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/lodash.chunk/-/lodash.chunk-4.2.0.tgz#66e5ce1f76ed27b4303d8c6512e8d1216e8106bc"
   integrity sha1-ZuXOH3btJ7QwPYxlEujRIW6BBrw=
-
-lodash.clonedeep@^4.5.0:
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
-  integrity sha1-4j8/nE+Pvd6HJSnBBxhXoIblzO8=
 
 lodash.debounce@^4.0.8:
   version "4.0.8"
