@@ -4,7 +4,7 @@ import { ThemeProvider } from 'next-themes'
 import { type AppProps } from 'next/app'
 import Head from 'next/head'
 import Script from 'next/script'
-import { type VFC, useCallback, useEffect } from 'react'
+import { type FC, useCallback, useEffect } from 'react'
 import { IntlProvider } from 'react-intl'
 import aa from 'search-insights'
 import appleTouchIcon from '../assets/apple-touch-icon.png'
@@ -14,7 +14,7 @@ import shareCard from '../assets/share-card.jpg'
 import { GroupProvider } from '../components/group'
 import ProgressBar from '../components/progress-bar'
 
-const MyApp: VFC<AppProps> = ({ Component, pageProps, router }) => {
+const MyApp: FC<AppProps> = ({ Component, pageProps, router }) => {
   const handleRouterChangeComplete = useCallback((url: string) => {
     const trackingID = process.env.NEXT_PUBLIC_GA_TRACKING_ID
 
@@ -44,6 +44,8 @@ const MyApp: VFC<AppProps> = ({ Component, pageProps, router }) => {
 
   return (
     <IntlProvider locale="ja" timeZone="Asia/Tokyo">
+      {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+      {/* @ts-ignore: */}
       <ThemeProvider defaultTheme="system">
         <GroupProvider>
           <Head>
