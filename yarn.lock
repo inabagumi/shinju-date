@@ -3952,10 +3952,10 @@ indexes-of@^1.0.1:
   resolved "https://registry.yarnpkg.com/indexes-of/-/indexes-of-1.0.1.tgz#f30f716c8e2bd346c7b67d3df3915566a7c05607"
   integrity sha1-8w9xbI4r00bHtn0985FVZqfAVgc=
 
-infima@^0.2.0-alpha.38:
-  version "0.2.0-alpha.38"
-  resolved "https://registry.yarnpkg.com/infima/-/infima-0.2.0-alpha.38.tgz#e41d95c7cd82756549b17df12f613fed4af3d528"
-  integrity sha512-1WsmqSMI5IqzrUx3goq+miJznHBonbE3aoqZ1AR/i/oHhroxNeSV6Awv5VoVfXBhfTzLSnxkHaRI2qpAMYcCzw==
+infima@^0.2.0-alpha.39:
+  version "0.2.0-alpha.39"
+  resolved "https://registry.yarnpkg.com/infima/-/infima-0.2.0-alpha.39.tgz#054b13ac44f3e9a42bc083988f1a1586add2f59c"
+  integrity sha512-UyYiwD3nwHakGhuOUfpe3baJ8gkiPpRVx4a4sE/Ag+932+Y6swtLsdPoRR8ezhwqGnduzxmFkjumV9roz6QoLw==
 
 inflight@^1.0.4:
   version "1.0.6"
