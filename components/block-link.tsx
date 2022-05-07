@@ -1,11 +1,11 @@
 import clsx from 'clsx'
+import { type ComponentPropsWithoutRef, type FC } from 'react'
 import styles from './block-link.module.css'
 import Link from './link'
-import type { ComponentPropsWithoutRef, VFC } from 'react'
 
 type Props = ComponentPropsWithoutRef<'a'>
 
-const BlockLink: VFC<Props> = ({
+const BlockLink: FC<Props> = ({
   children,
   className,
   href,

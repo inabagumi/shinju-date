@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill'
 import clsx from 'clsx'
 import chunk from 'lodash.chunk'
-import { type VFC, useCallback } from 'react'
+import { type FC, useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite, { type SWRInfiniteFetcher } from 'swr/infinite'
 import { useBaseTime } from '../components/layout'
@@ -50,7 +50,7 @@ type Props = {
   title?: string
 }
 
-const SearchResults: VFC<Props> = ({
+const SearchResults: FC<Props> = ({
   channels = [],
   prefetchedData,
   query = '',

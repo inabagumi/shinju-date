@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
+    newNextLinkBehavior: true,
     optimizeCss: true
   },
   images: {

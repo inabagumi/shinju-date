@@ -38,6 +38,7 @@ const SchedulePage: NextPage<Props> = ({ baseTime, group, videos }) => {
             <Link
               className="button button--lg button--secondary"
               href={`${basePath}/videos`}
+              role="button"
             >
               動画一覧
             </Link>

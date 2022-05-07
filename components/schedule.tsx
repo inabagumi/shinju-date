@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { type VFC } from 'react'
+import { type FC } from 'react'
 import useSWR, { type Fetcher } from 'swr'
 import { type Video, getVideosByChannelIDs } from '../lib/algolia'
 import { type Channel } from '../lib/supabase'
@@ -47,7 +47,7 @@ type Props = {
   prefetchedData: Video[]
 }
 
-const Schedule: VFC<Props> = ({ channels = [], prefetchedData }) => {
+const Schedule: FC<Props> = ({ channels = [], prefetchedData }) => {
   const baseTime = useBaseTime()
   const { data: videos = [] } = useSWR<
     Video[],

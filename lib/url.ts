@@ -16,7 +16,7 @@ export function getQueryValue(
 }
 
 export function join(...paths: string[]): string {
-  return ['', ...paths.flatMap((path) => path.split('/')).filter(Boolean)].join(
-    '/'
-  )
+  return ['', ...paths.flatMap((path) => path.split('/'))]
+    .filter(Boolean)
+    .join('/')
 }

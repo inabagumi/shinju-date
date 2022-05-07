@@ -1,5 +1,5 @@
 import { type PostgrestError } from '@supabase/supabase-js'
-import { type ReactNode, type VFC, useState } from 'react'
+import { type FC, type ReactNode, useState } from 'react'
 import useSWR, { type Fetcher } from 'swr'
 import { supabase } from '../../lib/supabase'
 import GroupContext from './context'
@@ -21,7 +21,7 @@ type Props = {
   children: ReactNode
 }
 
-const GroupProvider: VFC<Props> = ({ children }) => {
+const GroupProvider: FC<Props> = ({ children }) => {
   const [currentGroup, setCurrentGroup] = useState<GroupWithoutChannels>()
   const { data: groups } = useSWR<GroupWithoutChannels[], PostgrestError>(
     'group-list',

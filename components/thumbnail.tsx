@@ -1,8 +1,8 @@
 import Image from 'next/image'
+import { type FC } from 'react'
+import { type Image as ImageObject } from '../lib/algolia'
 import Skeleton from './skeleton'
 import styles from './thumbnail.module.css'
-import type { Image as ImageObject } from '../lib/algolia'
-import type { VFC } from 'react'
 
 const thumbnailBasePath = '/images/youtube'
 const defaultPreSrc =
@@ -13,7 +13,7 @@ type Props = {
   value?: ImageObject
 }
 
-const Thumbnail: VFC<Props> = ({ alt = '', value }) => {
+const Thumbnail: FC<Props> = ({ alt = '', value }) => {
   const width = value?.width ?? 1920
   const height = width * 0.5625
   const src = value?.src.replace(

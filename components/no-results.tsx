@@ -1,4 +1,4 @@
-import { type VFC } from 'react'
+import { type FC } from 'react'
 import { useBasePath } from './layout'
 import Link from './link'
 import styles from './no-results.module.css'
@@ -8,7 +8,7 @@ type Props = {
   title?: string
 }
 
-const NoResults: VFC<Props> = ({ message, title }) => {
+const NoResults: FC<Props> = ({ message, title }) => {
   const basePath = useBasePath()
 
   return (
