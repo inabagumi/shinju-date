@@ -1,6 +1,6 @@
 import NextLink from 'next/link'
 import { forwardRef } from 'react'
-import type { ComponentPropsWithoutRef } from 'react'
+import { type ComponentPropsWithoutRef } from 'react'
 
 export type Props = ComponentPropsWithoutRef<'a'>
 
@@ -9,9 +9,7 @@ const Link = forwardRef<HTMLAnchorElement, Props>(function Link(
   ref
 ) {
   return href?.startsWith('/') ? (
-    <NextLink href={href}>
-      <a {...props} ref={ref} />
-    </NextLink>
+    <NextLink href={href} {...props} ref={ref} />
   ) : (
     <a href={href} {...props} ref={ref} />
   )

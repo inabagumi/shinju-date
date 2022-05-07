@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill'
 import chunk from 'lodash.chunk'
 import groupBy from 'lodash.groupby'
-import { type VFC, useMemo } from 'react'
+import { type FC, useMemo } from 'react'
 import { FormattedDate, useIntl } from 'react-intl'
 import { type Video } from '../lib/algolia'
 import VideoCard from './video-card'
@@ -28,7 +28,7 @@ type Props = {
   values: Video[]
 }
 
-const Timeline: VFC<Props> = ({ values }) => {
+const Timeline: FC<Props> = ({ values }) => {
   const intl = useIntl()
   const schedule = useMemo(() => {
     const timeZone = new Temporal.TimeZone(intl.timeZone ?? 'UTC')

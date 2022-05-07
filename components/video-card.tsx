@@ -1,6 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill'
 import clsx from 'clsx'
-import { type VFC, useCallback, useEffect, useMemo, useState } from 'react'
+import { type FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { FormattedRelativeTime, FormattedTime, useIntl } from 'react-intl'
 import aa from 'search-insights'
 import { type Video } from '../lib/algolia'
@@ -20,7 +20,7 @@ type Props = {
   value?: Video
 }
 
-const VideoCard: VFC<Props> = ({ timeOptions, value }) => {
+const VideoCard: FC<Props> = ({ timeOptions, value }) => {
   const intl = useIntl()
   const now = useNow()
   const publishedAt = useMemo(() => {

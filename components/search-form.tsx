@@ -2,8 +2,8 @@ import clsx from 'clsx'
 import { useRouter } from 'next/router'
 import {
   type ChangeEventHandler,
+  type FC,
   type FormEventHandler,
-  type VFC,
   useCallback,
   useEffect,
   useRef,
@@ -13,7 +13,7 @@ import { useBasePath } from '../components/layout'
 import { getQueryValue, join as urlJoin } from '../lib/url'
 import styles from './search-form.module.css'
 
-const SearchForm: VFC = () => {
+const SearchForm: FC = () => {
   const { query, ...router } = useRouter()
   const [value, setValue] = useState(() => getQueryValue('queries', query))
   const textFieldRef = useRef<HTMLInputElement>(null)

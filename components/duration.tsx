@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-import type { VFC } from 'react'
+import { type FC } from 'react'
 
 function formatDuration(duration: Temporal.Duration): string {
   return [duration.hours, duration.minutes, duration.seconds]
@@ -11,7 +11,7 @@ type Props = {
   value: Temporal.Duration
 }
 
-const Duration: VFC<Props> = ({ value }) => {
+const Duration: FC<Props> = ({ value }) => {
   return <>{formatDuration(value)}</>
 }
 

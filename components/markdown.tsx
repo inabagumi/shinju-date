@@ -1,11 +1,11 @@
 import { MDXProvider } from '@mdx-js/react'
 import { SkipNavContent } from '@reach/skip-nav'
+import { type FunctionComponent, type MDXComponents } from 'mdx/types'
 import { NextSeo } from 'next-seo'
 import { useRouter } from 'next/router'
+import { type FC, type ReactNode } from 'react'
 import Page, { DEFAULT_SKIP_NAV_CONTENT_ID } from './layout'
 import Link, { Props as LinkProps } from './link'
-import type { FunctionComponent, MDXComponents } from 'mdx/types'
-import type { ReactNode, VFC } from 'react'
 
 const mdxComponents: MDXComponents = {
   a: Link as FunctionComponent<LinkProps>
@@ -16,7 +16,7 @@ type Props = {
   title?: string
 }
 
-const Markdown: VFC<Props> = ({ children, title }) => {
+const Markdown: FC<Props> = ({ children, title }) => {
   const router = useRouter()
 
   return (

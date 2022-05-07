@@ -1,7 +1,7 @@
+import { type FC } from 'react'
 import Link from './link'
-import type { VFC } from 'react'
 
-const Footer: VFC = () => {
+const Footer: FC = () => {
   return (
     <footer className="footer footer--dark">
       <div className="container container--fluid">
