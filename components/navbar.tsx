@@ -113,11 +113,12 @@ const Navbar: FC = () => {
             <div className="navbar__item dropdown dropdown--hoverable">
               <Link
                 className="navbar__link"
-                href={`${basePath}${
-                  isVideosPage
-                    ? `/videos${query ? `/${encodeURIComponent(query)}` : ''}`
-                    : ''
-                }`}
+                href={urlJoin(
+                  basePath,
+                  ...(isVideosPage
+                    ? ['videos', query ? encodeURIComponent(query) : '']
+                    : [])
+                )}
               >
                 {currentGroup?.name ?? '全グループ'}
               </Link>
