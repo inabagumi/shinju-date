@@ -1,4 +1,4 @@
-import type { ParsedUrlQuery } from 'querystring'
+import { type ParsedUrlQuery } from 'querystring'
 
 export function getQueryValue(
   key: string,
@@ -16,7 +16,10 @@ export function getQueryValue(
 }
 
 export function join(...paths: string[]): string {
-  return ['', ...paths.flatMap((path) => path.split('/'))]
+  const pathname = paths
+    .flatMap((p) => p.split('/'))
     .filter(Boolean)
     .join('/')
+
+  return `/${pathname}`
 }
