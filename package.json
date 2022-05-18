@@ -51,7 +51,7 @@
     "eslint-config-prettier": "~8.5.0",
     "jest": "^28.1.0",
     "next-pwa": "^5.5.2",
-    "postcss": "^8.4.13",
+    "postcss": "^8.4.14",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-preset-env": "^7.5.0",
     "prettier": "~2.6.2",
