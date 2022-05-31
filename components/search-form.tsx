@@ -9,8 +9,9 @@ import {
   useRef,
   useState
 } from 'react'
+import { joinURL } from 'ufo'
 import { useBasePath } from '../components/layout'
-import { getQueryValue, join as urlJoin } from '../lib/url'
+import { getQueryValue } from '../lib/url'
 import styles from './search-form.module.css'
 
 const SearchForm: FC = () => {
@@ -32,7 +33,7 @@ const SearchForm: FC = () => {
 
       router
         .push(
-          urlJoin(basePath, 'videos', value ? encodeURIComponent(value) : '')
+          joinURL(basePath, 'videos', value ? encodeURIComponent(value) : '')
         )
         .finally(() => {
           textFieldRef.current?.blur()
@@ -49,7 +50,7 @@ const SearchForm: FC = () => {
 
   return (
     <form
-      action={urlJoin(basePath, 'videos')}
+      action={joinURL(basePath, 'videos')}
       className={styles.form}
       method="get"
       onSubmit={handleSubmit}
