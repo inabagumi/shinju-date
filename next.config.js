@@ -1,3 +1,4 @@
+import nextMDX from '@next/mdx'
 import withPWA from 'next-pwa'
 import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
@@ -5,6 +6,8 @@ import remarkGfm from 'remark-gfm'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
+    browsersListForSwc: true,
+    legacyBrowsers: false,
     newNextLinkBehavior: true,
     optimizeCss: true
   },
@@ -76,33 +79,8 @@ const nextConfig = {
       ]
     }
   },
-  // todo: https://github.com/vercel/next.js/issues/31153
-  // swcMinify: true,
+  swcMinify: true,
   webpack(config, { defaultLoaders }) {
-    config.module.rules.push({
-      test: /\.mdx?$/,
-      use: [
-        defaultLoaders.babel,
-        {
-          loader: '@mdx-js/loader',
-          /** @type {import('@mdx-js/loader').Options} */
-          options: {
-            jsx: true,
-            providerImportSource: '@mdx-js/react',
-            rehypePlugins: [
-              [
-                rehypeExternalLinks,
-                {
-                  rel: ['noopener', 'noreferrer']
-                }
-              ]
-            ],
-            remarkPlugins: [remarkGfm]
-          }
-        }
-      ]
-    })
-
     config.module.rules.push({
       test: /\.svg$/,
       use: [
@@ -121,4 +99,20 @@ const nextConfig = {
   }
 }
 
-export default withPWA(nextConfig)
+const withMDX = nextMDX({
+  options: {
+    jsx: true,
+    providerImportSource: '@mdx-js/react',
+    rehypePlugins: [
+      [
+        rehypeExternalLinks,
+        {
+          rel: ['noopener', 'noreferrer']
+        }
+      ]
+    ],
+    remarkPlugins: [remarkGfm]
+  }
+})
+
+export default withPWA(withMDX(nextConfig))

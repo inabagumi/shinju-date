@@ -1,8 +1,12 @@
 import ipaddr from 'ipaddr.js'
+// eslint-disable-next-line @next/next/no-server-import-in-page
 import { type NextMiddleware, NextResponse } from 'next/server'
 
+const THUMBNAIL_PATH_REGEXP =
+  /^\/images\/youtube\/(?<id>[^./]+?)\.(?:jpg|webp)$/i
+
 /**
- * The IP address range for Imgix
+ * The IP address range for Imgix.
  *
  * @see https://docs.imgix.com/best-practices/ensuring-origin-deliverability#identifying-requests-from-imgix
  */
@@ -30,16 +34,37 @@ function isImageResponse(res: Response): boolean {
 }
 
 export const middleware: NextMiddleware = async (req) => {
+  const remoteImageMatch = req.nextUrl.pathname.match(THUMBNAIL_PATH_REGEXP)
+  const youtubeVideoID = remoteImageMatch?.groups?.id
+
+  if (youtubeVideoID) {
+    const res = await fetch(
+      `https://i.ytimg.com/vi/${youtubeVideoID}/maxresdefault.jpg`,
+      {
+        method: 'HEAD'
+      }
+    )
+
+    return res.ok
+      ? NextResponse.rewrite(res.url)
+      : NextResponse.rewrite(
+          `https://i.ytimg.com/vi/${youtubeVideoID}/hqdefault.jpg`
+        )
+  }
+
   if (
+    req.ua &&
     req.ip &&
-    req.headers.get('user-agent')?.startsWith('imgix/') &&
+    req.ua.ua.startsWith('imgix/') &&
     isImgixIPAddress(ipaddr.parse(req.ip))
   ) {
-    const res = await fetch(req)
+    const res = await fetch(req, {
+      method: 'HEAD'
+    })
 
     return isImageResponse(res)
-      ? res
-      : new Response('Not Found', {
+      ? NextResponse.next()
+      : new NextResponse(null, {
           status: 404,
           statusText: 'Not Found'
         })
@@ -50,7 +75,10 @@ export const middleware: NextMiddleware = async (req) => {
 
     if (query) {
       return NextResponse.redirect(
-        `${req.nextUrl.pathname}/${encodeURIComponent(query)}`
+        new URL(
+          `${req.nextUrl.pathname}/${encodeURIComponent(query)}`,
+          req.nextUrl
+        )
       )
     }
   }
