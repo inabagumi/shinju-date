@@ -17,7 +17,7 @@ module.exports = {
       env: {
         commonjs: true
       },
-      files: ['.eslintrc.js', '*.config.js'],
+      files: ['.cjs'],
       parserOptions: {
         sourceType: 'script'
       }

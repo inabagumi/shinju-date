@@ -8,9 +8,11 @@ import type { NextApiHandler } from 'next'
 const handler: NextApiHandler = async (req, res) => {
   const timeZone = Temporal.TimeZone.from('UTC')
   const now = Temporal.Now.zonedDateTimeISO(timeZone)
-  const channelIDs = (
-    Array.isArray(req.query.channel) ? req.query.channel : [req.query.channel]
-  ).filter(Boolean)
+  const channelIDs = req.query.channel
+    ? Array.isArray(req.query.channel)
+      ? req.query.channel
+      : [req.query.channel]
+    : []
   const videos = await getVideosByChannelIDs(channelIDs, {
     filters: [`publishedAt < ${now.add({ days: 7 }).epochSeconds}`],
     limit: 100
