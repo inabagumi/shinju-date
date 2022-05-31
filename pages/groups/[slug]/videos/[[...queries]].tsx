@@ -2,6 +2,7 @@ import { Temporal } from '@js-temporal/polyfill'
 import { SkipNavContent } from '@reach/skip-nav'
 import { type GetStaticPaths, type GetStaticProps, type NextPage } from 'next'
 import { NextSeo } from 'next-seo'
+import { joinURL } from 'ufo'
 import { useCurrentGroup } from '../../../../components/group'
 import Page, {
   DEFAULT_SKIP_NAV_CONTENT_ID
@@ -11,7 +12,6 @@ import SearchResults, {
 } from '../../../../components/search-results'
 import { type Video } from '../../../../lib/algolia'
 import { type Group, getGroupBySlug } from '../../../../lib/supabase'
-import { join as urlJoin } from '../../../../lib/url'
 
 type Props = {
   baseTime: number
@@ -32,7 +32,7 @@ const VideosPage: NextPage<Props> = ({ group, baseTime, query, videos }) => {
     <Page basePath={basePath} baseTime={baseTime}>
       <NextSeo
         canonical={new URL(
-          urlJoin(basePath, 'videos', query ? encodeURIComponent(query) : ''),
+          joinURL(basePath, 'videos', query ? encodeURIComponent(query) : ''),
           process.env.NEXT_PUBLIC_BASE_URL
         ).toString()}
         noindex={!!query}

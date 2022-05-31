@@ -4,8 +4,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { type FC, useCallback, useMemo, useState } from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
+import { joinURL } from 'ufo'
 import Icon from '../assets/icon.svg'
-import { getQueryValue, join as urlJoin } from '../lib/url'
+import { getQueryValue } from '../lib/url'
 import { useCurrentGroup, useGroups } from './group'
 import { useBasePath } from './layout'
 import styles from './navbar.module.css'
@@ -113,7 +114,7 @@ const Navbar: FC = () => {
             <div className="navbar__item dropdown dropdown--hoverable">
               <Link
                 className="navbar__link"
-                href={urlJoin(
+                href={joinURL(
                   basePath,
                   ...(isVideosPage
                     ? ['videos', query ? encodeURIComponent(query) : '']
@@ -162,7 +163,7 @@ const Navbar: FC = () => {
                       })}
                       href={
                         isVideosPage
-                          ? urlJoin(
+                          ? joinURL(
                               `/groups/${group.slug}/videos`,
                               query ? encodeURIComponent(query) : ''
                             )
@@ -353,7 +354,7 @@ const Navbar: FC = () => {
                               ].includes(router.pathname) &&
                               group.slug === currentGroup?.slug
                           })}
-                          href={urlJoin(
+                          href={joinURL(
                             `/groups/${group.slug}/videos`,
                             query ? `/${encodeURIComponent(query)}` : ''
                           )}

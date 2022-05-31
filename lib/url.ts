@@ -14,12 +14,3 @@ export function getQueryValue(
 
   return values.filter(Boolean).join(' ')
 }
-
-export function join(...paths: string[]): string {
-  const pathname = paths
-    .flatMap((p) => p.split('/'))
-    .filter(Boolean)
-    .join('/')
-
-  return `/${pathname}`
-}
