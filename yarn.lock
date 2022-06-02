@@ -1623,17 +1623,17 @@
   resolved "https://registry.yarnpkg.com/@next/env/-/env-12.1.7-canary.27.tgz#b003b28a262b18a30470276b39ea0bf484c82e38"
   integrity sha512-s0H6vPS2maW4LLxt8bwGiI5CeheF3htajGraQSoKRzrWybaAoK13hMt7TtxZUK0NR1YsHAy38TlpVtIT5zEZhg==
 
-"@next/eslint-plugin-next@12.1.7-canary.27":
-  version "12.1.7-canary.27"
-  resolved "https://registry.yarnpkg.com/@next/eslint-plugin-next/-/eslint-plugin-next-12.1.7-canary.27.tgz#06e7354c63bcc790162e0527172237628cb5d4e3"
-  integrity sha512-AsyaxEn0TRDFA1rxeZJSKuLS0f+NA9YFstXueV6BR5xRMHBt0qEHn4dEk2kO23+OBmYemOOSudkhaoqIuN+rtA==
+"@next/eslint-plugin-next@12.1.7-canary.28":
+  version "12.1.7-canary.28"
+  resolved "https://registry.yarnpkg.com/@next/eslint-plugin-next/-/eslint-plugin-next-12.1.7-canary.28.tgz#afa81a44664fccda00d6fc924543836b4b267c12"
+  integrity sha512-fBLNf/7xReQCxUmAPdgskA0PiBaCWgac9dg0MeMUpAGfkSutSHYqY7cSI3oEIH+es/6dpeJSnDJ5PROIn9xyAw==
   dependencies:
     glob "7.1.7"
 
-"@next/mdx@^12.1.7-canary.27":
-  version "12.1.7-canary.27"
-  resolved "https://registry.yarnpkg.com/@next/mdx/-/mdx-12.1.7-canary.27.tgz#10c5074b27e718fa47bfe7e40b994b857fc34c8e"
-  integrity sha512-4dnLNcksRZPya5vdSHMZcSIRse8KfR/lOAkZXX1/G0neHz4HQr2vVg5y1kB/g4VKOGb/5hZq/LHMZ16GBqOLsQ==
+"@next/mdx@^12.1.7-canary.28":
+  version "12.1.7-canary.28"
+  resolved "https://registry.yarnpkg.com/@next/mdx/-/mdx-12.1.7-canary.28.tgz#98d809cd57811c34aaa46aaf4b02ed17d0e4057a"
+  integrity sha512-nuw2qiZfK7Ie0ctL1oRQBCiLowDWEUHbbXJQsYrGMf6X82LmPN6dNMOLfLdCHEs1EONqinl5C7TM/4YFWX6yjA==
 
 "@next/swc-android-arm-eabi@12.1.7-canary.27":
   version "12.1.7-canary.27"
@@ -3311,12 +3311,12 @@ escape-string-regexp@^5.0.0:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-5.0.0.tgz#4683126b500b61762f2dbebace1806e8be31b1c8"
   integrity sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw==
 
-eslint-config-next@^12.1.7-canary.27:
-  version "12.1.7-canary.27"
-  resolved "https://registry.yarnpkg.com/eslint-config-next/-/eslint-config-next-12.1.7-canary.27.tgz#364fa547386677836f748ce048eed8012835f53c"
-  integrity sha512-rnmXnVdj6og024DQtCzFfdLTIJsaXMQh9X4uEwyfBFR9vRNsra6ia7thqqwunsMR9WyJLLY7mf74zI/FlVaOFg==
+eslint-config-next@^12.1.7-canary.28:
+  version "12.1.7-canary.28"
+  resolved "https://registry.yarnpkg.com/eslint-config-next/-/eslint-config-next-12.1.7-canary.28.tgz#0b52eb40991ae7abc55aa07367c2b5878c59294e"
+  integrity sha512-42ITTmivQS6w/9npjtRypdXyNb7En9Rwx1Z7kG2OdLt6AQUs0zNCDfU59Bo2dWBOyP3LTJ8bqX601jRjL9Ur7g==
   dependencies:
-    "@next/eslint-plugin-next" "12.1.7-canary.27"
+    "@next/eslint-plugin-next" "12.1.7-canary.28"
     "@rushstack/eslint-patch" "^1.1.3"
     "@typescript-eslint/parser" "^5.21.0"
     eslint-import-resolver-node "^0.3.6"
