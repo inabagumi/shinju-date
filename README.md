@@ -9,15 +9,15 @@
 Requires an active account of [Algolia](https://www.algolia.com/).
 
 - [Node.js](https://nodejs.org/en/)
-- [Yarn](https://yarnpkg.com/en/)
 
 ```console
 $ git clone https://github.com/inabagumi/shinju-date.git
 $ cd shinju-date
 $ cp .env.local.sample .env.local
 $ nano .env.local
-$ yarn install
-$ yarn dev
+$ corepack enable
+$ pnpm install
+$ pnpm dev
 ```
 
 ## License
