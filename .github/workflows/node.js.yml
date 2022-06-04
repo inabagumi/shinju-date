@@ -15,19 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Enable corepack
+        run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: 14
-      - name: Get yarn pnp unplugged directory path
-        id: yarn-pnp-unplugged-dir-path
-        run: echo "::set-output name=dir::$(yarn config get pnpUnpluggedFolder)"
-      - uses: actions/cache@v3
-        with:
-          path: ${{ steps.yarn-pnp-unplugged-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-      - run: yarn install --immutable
-      - run: yarn format-check
-      - run: yarn lint
-      # - run: yarn test --ci --coverage
+          node-version: 16.x
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format-check
+      - run: pnpm lint
+      # - run: pnpm test --ci --coverage
