@@ -45,11 +45,6 @@ resource "vercel_project" "this" {
       target = ["production", "preview", "development"]
       value  = var.supabase_url
     },
-    {
-      key    = "IMGIX_BASE_PATH"
-      target = ["production"]
-      value  = "https://shinju-date.imgix.net"
-    },
   ]
   framework = "nextjs"
   git_repository = {

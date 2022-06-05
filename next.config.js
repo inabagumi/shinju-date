@@ -12,18 +12,8 @@ const nextConfig = {
     optimizeCss: true
   },
   images: {
-    deviceSizes: [320, 420, 768, 1024, 1200, 1920],
-    domains: [],
-    formats: [
-      process.env.NODE_ENV === 'production' && 'image/avif',
-      'image/webp'
-    ].filter(Boolean),
-    ...(process.env.IMGIX_BASE_PATH
-      ? {
-          loader: 'imgix',
-          path: process.env.IMGIX_BASE_PATH
-        }
-      : {})
+    domains: ['i.ytimg.com'],
+    formats: ['image/avif', 'image/webp']
   },
   pageExtensions: ['mdx', 'ts', 'tsx'],
   pwa: {
