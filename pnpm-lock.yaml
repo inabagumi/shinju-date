@@ -21,7 +21,7 @@ specifiers:
   '@types/mdx': ^2.0.2
   '@types/node': ^16.11.38
   '@types/nprogress': ^0.2.0
-  '@types/react': ^18.0.11
+  '@types/react': ^18.0.12
   '@types/web-app-manifest': ^1.0.2
   '@typescript-eslint/eslint-plugin': ~5.27.0
   '@typescript-eslint/parser': ~5.27.0
@@ -103,7 +103,7 @@ devDependencies:
   '@types/mdx': 2.0.2
   '@types/node': 16.11.38
   '@types/nprogress': 0.2.0
-  '@types/react': 18.0.11
+  '@types/react': 18.0.12
   '@types/web-app-manifest': 1.0.2
   '@typescript-eslint/eslint-plugin': 5.27.0_kor2e3kwnnzugzo3aovmfcq2la
   '@typescript-eslint/parser': 5.27.0_ud6rd4xtew5bv4yhvkvu24pzm4
@@ -2080,7 +2080,7 @@ packages:
       react: '>=16'
     dependencies:
       '@types/mdx': 2.0.2
-      '@types/react': 18.0.11
+      '@types/react': 18.0.12
       react: 18.1.0
 
   /@next/env/12.1.7-canary.29:
@@ -2636,7 +2636,7 @@ packages:
   /@types/hoist-non-react-statics/3.3.1:
     resolution: {integrity: sha512-iMIqiko6ooLrTh1joXodJK5X9xeEALT1kM5G3ZLhD3hszxBdIEd5C75U834D9mLcINgD4OyZf5uQXjkuYydWvA==}
     dependencies:
-      '@types/react': 18.0.11
+      '@types/react': 18.0.12
       hoist-non-react-statics: 3.3.2
     dev: false
 
@@ -2730,8 +2730,8 @@ packages:
   /@types/prop-types/15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
 
-  /@types/react/18.0.11:
-    resolution: {integrity: sha512-JxSwm54IgMW4XTR+zFF5QpNx4JITmFbB4WHR2J0vg9RpjNeyqEMlODXsD2e64br6GX70TL0UYjZJETpyyC1WdA==}
+  /@types/react/18.0.12:
+    resolution: {integrity: sha512-duF1OTASSBQtcigUvhuiTB1Ya3OvSy+xORCiEf20H0P0lzx+/KeVsA99U5UjLXSbyo1DRJDlLKqTeM1ngosqtg==}
     dependencies:
       '@types/prop-types': 15.7.5
       '@types/scheduler': 0.16.2
@@ -7075,7 +7075,7 @@ packages:
       '@formatjs/intl-displaynames': 6.0.1
       '@formatjs/intl-listformat': 7.0.1
       '@types/hoist-non-react-statics': 3.3.1
-      '@types/react': 18.0.11
+      '@types/react': 18.0.12
       hoist-non-react-statics: 3.3.2
       intl-messageformat: 10.0.1
       react: 18.1.0
