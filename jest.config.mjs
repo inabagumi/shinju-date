@@ -4,7 +4,9 @@ const createJestConfig = nextJest()
 
 /** @type {import('@jest/types').Config.InitialOptions} */
 const jestConfig = {
-  testURL: 'https://shinju-date.test'
+  testEnvironmentOptions: {
+    url: 'https://shinju-date.test'
+  }
 }
 
 export default createJestConfig(jestConfig)

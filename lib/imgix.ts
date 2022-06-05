@@ -1,4 +1,4 @@
-import ipaddr from 'ipaddr.js'
+import * as ipaddr from 'ipaddr.js'
 
 /**
  * The IP address range for Imgix.
@@ -22,6 +22,10 @@ export function isImgixIPAddress(addr: ipaddr.IPv4 | ipaddr.IPv6): boolean {
   )
 }
 
+export function isImgixUserAgent(userAgent: string): boolean {
+  return userAgent.startsWith('imgix/')
+}
+
 type IsRequestFromImgixOptions = {
   ip: string
   ua: string
@@ -30,7 +34,7 @@ type IsRequestFromImgixOptions = {
 export function isRequestFromImgix({ ip, ua }: IsRequestFromImgixOptions) {
   const addr = ipaddr.parse(ip)
 
-  return ua.startsWith('imgix/') && isImgixIPAddress(addr)
+  return isImgixUserAgent(ua) && isImgixIPAddress(addr)
 }
 
 export function isImageResponse(res: Response): boolean {
