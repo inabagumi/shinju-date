@@ -39,7 +39,7 @@ specifiers:
   lodash.chunk: ^4.2.0
   lodash.groupby: ^4.6.0
   next: ^12.1.7-canary.29
-  next-pwa: ^5.5.3
+  next-pwa: ^5.5.4
   next-seo: ^5.4.0
   next-themes: ^0.2.0
   nprogress: ^1.0.0-1
@@ -112,7 +112,7 @@ devDependencies:
   eslint-config-next: 12.1.7-canary.29_5nl3czao72fiyefoy6pw7ahxcu
   eslint-config-prettier: 8.5.0_eslint@8.17.0
   jest: 28.1.0_@types+node@16.11.38
-  next-pwa: 5.5.3_next@12.1.7-canary.29
+  next-pwa: 5.5.4_next@12.1.7-canary.29
   postcss: 8.4.14
   postcss-flexbugs-fixes: 5.0.2_postcss@8.4.14
   postcss-preset-env: 7.7.1_postcss@8.4.14
@@ -6194,8 +6194,8 @@ packages:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
     dev: true
 
-  /next-pwa/5.5.3_next@12.1.7-canary.29:
-    resolution: {integrity: sha512-+xRuhDzGP5gPd6l1ycCbTYK/wOvwYfVegrRm0pmf9eHv/IWjektwMyVIIHk9hBTErBkwZXxoZDj1WCSmto0R4w==}
+  /next-pwa/5.5.4_next@12.1.7-canary.29:
+    resolution: {integrity: sha512-EgB2MQWGR8oZDzY6US+/D0LOCUhPZYCgeqRVBYDxQWNi0N6XfQOoZPw2COIrg/eMt/rB0M+/mquhAQACs5v4Ag==}
     peerDependencies:
       next: '>=9.0.0'
     dependencies:
