@@ -1,14 +1,17 @@
+// eslint-disable-next-line @next/next/no-server-import-in-page
+import { NextResponse } from 'next/server'
+import { type WebAppManifest } from 'web-app-manifest'
 import favicon192x192 from '../../assets/favicon-192x192.png'
 import favicon512x512 from '../../assets/favicon-512x512.png'
-import type { NextApiHandler } from 'next'
-import type { WebAppManifest } from 'web-app-manifest'
 
-const handler: NextApiHandler<WebAppManifest> = (_req, res) => {
+export const config = {
+  runtime: 'experimental-edge'
+}
+
+const handler = (): NextResponse => {
   const name = 'SHINJU DATE'
 
-  res.setHeader('Cache-Control', 'max-age=60, s-maxage=120')
-  res.setHeader('Content-Type', 'application/manifest+json')
-  res.status(200).json({
+  const body: WebAppManifest = {
     background_color: '#fff',
     display: 'standalone',
     icons: [
@@ -28,6 +31,13 @@ const handler: NextApiHandler<WebAppManifest> = (_req, res) => {
     short_name: name,
     start_url: '/?utm_source=homescreen',
     theme_color: '#212121'
+  }
+
+  return NextResponse.json(body, {
+    headers: {
+      'Cache-Control': 'max-age=60, s-maxage=120',
+      'Content-Type': 'application/manifest+json'
+    }
   })
 }
 
