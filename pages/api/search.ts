@@ -1,25 +1,21 @@
-import { type NextApiHandler } from 'next'
-import { getQueryValue } from '../../lib/url'
+// eslint-disable-next-line @next/next/no-server-import-in-page
+import { type NextRequest, NextResponse } from 'next/server'
 
-const handler: NextApiHandler = (req, res) => {
-  let basePath = '/videos'
-  let query = getQueryValue('q', req.query)
+export const config = {
+  runtime: 'experimental-edge'
+}
 
-  if (query) {
-    const splitedQuery = query.split(' ')
-    const channelIDs = splitedQuery
-      .filter((value) => value.startsWith('from:'))
-      .map((value) => value.slice(5))
+const handler = (req: NextRequest): NextResponse => {
+  const basePath = '/videos'
+  const queries = req.nextUrl.searchParams.getAll('q')
+  const query = queries.join(' ')
 
-    if (channelIDs.length === 1) {
-      basePath = `/channels/${channelIDs[0]}/videos`
-      query = splitedQuery
-        .filter((value) => value !== `from:${channelIDs[0]}`)
-        .join(' ')
-    }
-  }
-
-  res.redirect(`${basePath}${query ? `/${encodeURIComponent(query)}` : ''}`)
+  return NextResponse.redirect(
+    new URL(
+      `${basePath}${query ? `/${encodeURIComponent(query)}` : ''}`,
+      req.nextUrl
+    )
+  )
 }
 
 export default handler
