@@ -7,8 +7,8 @@ specifiers:
   '@inabagumi/prettier-config': ^2.0.0
   '@jest/types': ^28.1.1
   '@js-temporal/polyfill': ^0.4.1
-  '@mdx-js/loader': ^2.1.1
-  '@mdx-js/react': ^2.1.1
+  '@mdx-js/loader': ^2.1.2
+  '@mdx-js/react': ^2.1.2
   '@next/mdx': ^12.1.7-canary.41
   '@reach/skip-nav': ^0.17.0
   '@supabase/supabase-js': ^1.35.3
@@ -63,7 +63,7 @@ specifiers:
 dependencies:
   '@algolia/cache-common': 4.13.1
   '@js-temporal/polyfill': 0.4.1
-  '@mdx-js/react': 2.1.1_react@18.2.0
+  '@mdx-js/react': 2.1.2_react@18.2.0
   '@reach/skip-nav': 0.17.0_biqbaboplfbrettd7655fr4n2y
   '@supabase/supabase-js': 1.35.3
   algoliasearch: 4.13.1
@@ -92,8 +92,8 @@ devDependencies:
   '@fullhuman/postcss-purgecss': 4.1.3_postcss@8.4.14
   '@inabagumi/prettier-config': 2.0.0_prettier@2.7.1
   '@jest/types': 28.1.1
-  '@mdx-js/loader': 2.1.1
-  '@next/mdx': 12.1.7-canary.41_svepmivmajrgriivp7ha5q4gca
+  '@mdx-js/loader': 2.1.2
+  '@next/mdx': 12.1.7-canary.41_todqhrvd7cvbb36hzi2r6xttgq
   '@svgr/webpack': 6.2.1
   '@types/eslint': 8.4.3
   '@types/gtag.js': 0.0.10
@@ -2040,8 +2040,8 @@ packages:
       tslib: 2.4.0
     dev: false
 
-  /@mdx-js/loader/2.1.1:
-    resolution: {integrity: sha512-24danl02C30QoXVQTqvoEL84jN1e2BBSYMk9A/DGYBtHWXg5kdVp+A6P4hrFOwHvkEIjRbY0N49jPOSbpOgrOQ==}
+  /@mdx-js/loader/2.1.2:
+    resolution: {integrity: sha512-P7CWhrqE5rZ3ewBngZ9t/zQPbSq42iuty78K3zJ8Bl518qnOX1d106c+n7I/zHODPAmw9JfYMQdbv9WrrHa0DA==}
     peerDependencies:
       webpack: '>=4'
     dependencies:
@@ -2075,8 +2075,8 @@ packages:
       - supports-color
     dev: true
 
-  /@mdx-js/react/2.1.1_react@18.2.0:
-    resolution: {integrity: sha512-7zlZDf5xmWH8I0kFE4DG91COOkxjaW9DX5f1HWztZpFcVua2gJgMYfIkFaDpO/DH/tWi6Mz+OheW4194r15igg==}
+  /@mdx-js/react/2.1.2_react@18.2.0:
+    resolution: {integrity: sha512-52e3DTJBrjsw3U51ZCdZ3N1IBaqnbzLIngCSXpKtiYiGr7PIqp3/P/+kym0MPTwBL/y9ZBmCieD8FyrXuEDrRw==}
     peerDependencies:
       react: '>=16'
     dependencies:
@@ -2093,14 +2093,14 @@ packages:
       glob: 7.1.7
     dev: true
 
-  /@next/mdx/12.1.7-canary.41_svepmivmajrgriivp7ha5q4gca:
+  /@next/mdx/12.1.7-canary.41_todqhrvd7cvbb36hzi2r6xttgq:
     resolution: {integrity: sha512-sRBxCSP7oYQAg8ieJuHM+vtodHzjOU0AZL2uy+0Jith+yfohoMUVU+7yIsev3VJZHdlg8KS2xnX/W9yNSKunAg==}
     peerDependencies:
       '@mdx-js/loader': '>=0.15.0'
       '@mdx-js/react': '*'
     dependencies:
-      '@mdx-js/loader': 2.1.1
-      '@mdx-js/react': 2.1.1_react@18.2.0
+      '@mdx-js/loader': 2.1.2
+      '@mdx-js/react': 2.1.2_react@18.2.0
     dev: true
 
   /@next/swc-android-arm-eabi/12.1.7-canary.41:
