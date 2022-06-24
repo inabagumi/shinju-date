@@ -1,8 +1,13 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { type EventAttributes, createEvents } from 'ics'
-import { type NextApiHandler } from 'next'
+// eslint-disable-next-line @next/next/no-server-import-in-page
+import { type NextRequest, NextResponse } from 'next/server'
 import { type Video, getVideosByChannelIDs } from '../../../lib/algolia'
 import { convertToDateArray, max, min } from '../../../lib/date'
+
+export const config = {
+  runtime: 'experimental-edge'
+}
 
 type GetPublishedAtAndEndedAtOptions = {
   now: Temporal.ZonedDateTime
@@ -61,14 +66,10 @@ function createEventAttributesList(
   })
 }
 
-const handler: NextApiHandler = async (req, res) => {
+const handler = async (req: NextRequest): Promise<NextResponse> => {
   const timeZone = Temporal.TimeZone.from('UTC')
   const now = Temporal.Now.zonedDateTimeISO(timeZone)
-  const channelIDs = req.query.channel
-    ? Array.isArray(req.query.channel)
-      ? req.query.channel
-      : [req.query.channel]
-    : []
+  const channelIDs = req.nextUrl.searchParams.getAll('channel').filter(Boolean)
   const videos = await getVideosByChannelIDs(channelIDs, {
     filters: [`publishedAt < ${now.add({ days: 7 }).epochSeconds}`],
     limit: 100
@@ -76,9 +77,12 @@ const handler: NextApiHandler = async (req, res) => {
   const events = createEventAttributesList(videos, { now })
   const { value } = createEvents(events)
 
-  res.setHeader('Cache-Control', 'max-age=60,s-maxage=300')
-  res.setHeader('Content-Type', 'text/calendar;charset=UTF-8')
-  res.status(200).send(value)
+  return new NextResponse(value, {
+    headers: {
+      'Cache-Control': 'max-age=60,s-maxage=300',
+      'Content-Type': 'text/calendar;charset=UTF-8'
+    }
+  })
 }
 
 export default handler
