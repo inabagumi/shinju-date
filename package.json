@@ -2,6 +2,7 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@algolia/cache-common": "^4.13.1",
+    "@algolia/requester-common": "^4.13.1",
     "@js-temporal/polyfill": "^0.4.1",
     "@mdx-js/react": "^2.1.2",
     "@reach/skip-nav": "^0.17.0",
