@@ -4,9 +4,17 @@ import {
   type Response
 } from '@algolia/requester-common'
 
+function isAbortError(error: unknown): boolean {
+  return (
+    // browser fetch
+    (error instanceof DOMException && error.name === 'AbortError') ||
+    // node-fetch or undici
+    (error instanceof Error && error.name === 'AbortError')
+  )
+}
+
 function genericError(error: unknown, abortContent: string): Response {
-  const isTimedOut =
-    error instanceof DOMException && error.name === 'AbortError'
+  const isTimedOut = isAbortError(error)
   const content = isTimedOut
     ? abortContent
     : error instanceof Error
@@ -20,7 +28,7 @@ function genericError(error: unknown, abortContent: string): Response {
   }
 }
 
-export function createFetchRequester(fetch = globalThis.fetch): Requester {
+export function createFetchRequester(): Requester {
   return {
     async send(request: Request): Promise<Readonly<Response>> {
       const abortController = new AbortController()
