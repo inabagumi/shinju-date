@@ -9,7 +9,8 @@ const nextConfig = {
     browsersListForSwc: true,
     legacyBrowsers: false,
     newNextLinkBehavior: true,
-    optimizeCss: true
+    optimizeCss: true,
+    runtime: 'edge'
   },
   images: {
     domains: ['i.ytimg.com'],
