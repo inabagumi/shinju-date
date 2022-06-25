@@ -10,7 +10,7 @@ specifiers:
   '@js-temporal/polyfill': ^0.4.1
   '@mdx-js/loader': ^2.1.2
   '@mdx-js/react': ^2.1.2
-  '@next/mdx': ^12.1.7-canary.47
+  '@next/mdx': ^12.1.7-canary.48
   '@reach/skip-nav': ^0.17.0
   '@supabase/supabase-js': ^1.35.3
   '@svgr/webpack': ^6.2.1
@@ -95,7 +95,7 @@ devDependencies:
   '@inabagumi/prettier-config': 2.0.0_prettier@2.7.1
   '@jest/types': 28.1.1
   '@mdx-js/loader': 2.1.2
-  '@next/mdx': 12.1.7-canary.47_todqhrvd7cvbb36hzi2r6xttgq
+  '@next/mdx': 12.1.7-canary.48_todqhrvd7cvbb36hzi2r6xttgq
   '@svgr/webpack': 6.2.1
   '@types/eslint': 8.4.3
   '@types/gtag.js': 0.0.10
@@ -2095,8 +2095,8 @@ packages:
       glob: 7.1.7
     dev: true
 
-  /@next/mdx/12.1.7-canary.47_todqhrvd7cvbb36hzi2r6xttgq:
-    resolution: {integrity: sha512-knJC5rB17Xnxe+bXR1XKPc53x27p146S6ZELGnvVuxA8Dtv5eX7zLltf/0exOGrZnNvtxt3I5Sm3bphLj8S3Eg==}
+  /@next/mdx/12.1.7-canary.48_todqhrvd7cvbb36hzi2r6xttgq:
+    resolution: {integrity: sha512-U1ENoydPR4eGBESclcvKv0a7LOeRgdIRa4kpf69AsGs3+qTBp5Yu+EDvsdYP/sl0KlJR15j989raE2hebao/cg==}
     peerDependencies:
       '@mdx-js/loader': '>=0.15.0'
       '@mdx-js/react': '*'
