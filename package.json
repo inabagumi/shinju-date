@@ -35,7 +35,7 @@
     "@inabagumi/prettier-config": "^2.0.0",
     "@jest/types": "^28.1.1",
     "@mdx-js/loader": "^2.1.2",
-    "@next/mdx": "^12.1.7-canary.47",
+    "@next/mdx": "^12.1.7-canary.48",
     "@svgr/webpack": "^6.2.1",
     "@types/eslint": "^8.4.3",
     "@types/gtag.js": "^0.0.10",
