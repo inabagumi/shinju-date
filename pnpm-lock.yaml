@@ -30,7 +30,7 @@ specifiers:
   clsx: ^1.1.1
   critters: ^0.0.16
   eslint: ~8.18.0
-  eslint-config-next: ^12.1.7-canary.47
+  eslint-config-next: ^12.1.7-canary.48
   eslint-config-prettier: ~8.5.0
   ics: ^2.35.0
   infima: ^0.2.0-alpha.40
@@ -111,7 +111,7 @@ devDependencies:
   '@typescript-eslint/parser': 5.29.0_b5e7v2qnwxfo6hmiq56u52mz3e
   critters: 0.0.16
   eslint: 8.18.0
-  eslint-config-next: 12.1.7-canary.47_zhj2overriywynn63o4wb2g2fm
+  eslint-config-next: 12.1.7-canary.48_zhj2overriywynn63o4wb2g2fm
   eslint-config-prettier: 8.5.0_eslint@8.18.0
   jest: 28.1.1_@types+node@16.11.41
   next-pwa: 5.5.4_next@12.1.7-canary.48
@@ -2089,8 +2089,8 @@ packages:
   /@next/env/12.1.7-canary.48:
     resolution: {integrity: sha512-5GY5lOTANTUVilxP+SvH3XvygasehIGKWkUQp/lRKMEy/CUyI6YKvlwh5XwoDW/02bF+v7Wgus/G/eNj/NLrXA==}
 
-  /@next/eslint-plugin-next/12.1.7-canary.47:
-    resolution: {integrity: sha512-e5T0ksBzLTx+d3ie2YS5EjwVtuZ1jfKUpZ6hp51KaLPmHQzJDkfEC3gzUW024nxjCtcXLw0UNk9xrmJYAWKGQA==}
+  /@next/eslint-plugin-next/12.1.7-canary.48:
+    resolution: {integrity: sha512-G2KieAN6fBQ0BVWdQrYWh3SqSWV9syYAZp911JQbJt6qU0QJaEPbtA21qPoFvhI6B8G5TMIUtqXnssq7dwJsTQ==}
     dependencies:
       glob: 7.1.7
     dev: true
@@ -3892,8 +3892,8 @@ packages:
     engines: {node: '>=12'}
     dev: true
 
-  /eslint-config-next/12.1.7-canary.47_zhj2overriywynn63o4wb2g2fm:
-    resolution: {integrity: sha512-DRIMEPbUl+1lVeW9cLl/Yt7WmLbkbzsRnRLx9FSyYW/bqUlIrzb+fv/hkV2OTs9GodHw9AecTxn4tSzW3RQYFQ==}
+  /eslint-config-next/12.1.7-canary.48_zhj2overriywynn63o4wb2g2fm:
+    resolution: {integrity: sha512-4zywfgQuY6dQacB3ut36yB1vSvXHPPuB0YqkaEReSZ/sNCy8s5OzAC9Ny0VUCIBiwttR9HktN78K2NUTGoQNLg==}
     peerDependencies:
       eslint: ^7.23.0 || ^8.0.0
       next: '>=10.2.0'
@@ -3902,7 +3902,7 @@ packages:
       typescript:
         optional: true
     dependencies:
-      '@next/eslint-plugin-next': 12.1.7-canary.47
+      '@next/eslint-plugin-next': 12.1.7-canary.48
       '@rushstack/eslint-patch': 1.1.3
       '@typescript-eslint/parser': 5.29.0_b5e7v2qnwxfo6hmiq56u52mz3e
       eslint: 8.18.0
