@@ -1,6 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { type EventAttributes, createEvents } from 'ics'
-// eslint-disable-next-line @next/next/no-server-import-in-page
 import { type NextRequest, NextResponse } from 'next/server'
 import { type Video, getVideosByChannelIDs } from '../../../lib/algolia'
 import { convertToDateArray, max, min } from '../../../lib/date'
