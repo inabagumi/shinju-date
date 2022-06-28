@@ -10,7 +10,7 @@ const nextConfig = {
     legacyBrowsers: false,
     newNextLinkBehavior: true,
     optimizeCss: true,
-    runtime: 'edge'
+    runtime: 'experimental-edge'
   },
   images: {
     domains: ['i.ytimg.com'],
