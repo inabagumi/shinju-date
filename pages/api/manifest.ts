@@ -1,4 +1,3 @@
-// eslint-disable-next-line @next/next/no-server-import-in-page
 import { NextResponse } from 'next/server'
 import { type WebAppManifest } from 'web-app-manifest'
 import favicon192x192 from '../../assets/favicon-192x192.png'
