@@ -8,6 +8,10 @@ import PopularitySearchQueries from '../components/popularity-search-queries'
 import Schedule, { fetchNotEndedVideos } from '../components/schedule'
 import { type Video } from '../lib/algolia'
 
+export const config = {
+  runtime: 'experimental-edge'
+}
+
 const tagline =
   '774 inc. 所属タレントの配信スケジュールや動画の検索ができるウェブサービス'
 
