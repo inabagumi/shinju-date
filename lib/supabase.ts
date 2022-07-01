@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { PostgrestClient } from '@supabase/postgrest-js'
 
 export type Channel = {
   id: string
@@ -13,13 +13,26 @@ export type Group = {
   slug: string
 }
 
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
+export function createPostgRESTClient(
+  url: string,
+  token?: string
+): PostgrestClient {
+  const client = new PostgrestClient(url)
+
+  if (token) {
+    client.auth(token)
+  }
+
+  return client
+}
+
+export const postgrest = createPostgRESTClient(
+  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1`,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
 export async function getChannelBySlug(slug: string): Promise<Channel | null> {
-  const { data: channels, error } = await supabase
+  const { data: channels, error } = await postgrest
     .from<Channel>('channels')
     .select(
       `
@@ -43,7 +56,7 @@ export async function getChannelBySlug(slug: string): Promise<Channel | null> {
 }
 
 export async function getGroupBySlug(slug: string): Promise<Group | null> {
-  const { data: groups, error } = await supabase
+  const { data: groups, error } = await postgrest
     .from<Group>('groups')
     .select(
       `

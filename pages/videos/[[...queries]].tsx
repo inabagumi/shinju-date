@@ -8,6 +8,10 @@ import SearchResults, {
 } from '../../components/search-results'
 import { type Video } from '../../lib/algolia'
 
+export const config = {
+  runtime: 'experimental-edge'
+}
+
 type Props = {
   baseTime: number
   query: string
