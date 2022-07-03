@@ -8,7 +8,7 @@
     "@reach/skip-nav": "^0.17.0",
     "@supabase/supabase-js": "^1.35.4",
     "algoliasearch": "^4.13.1",
-    "clsx": "^1.1.1",
+    "clsx": "^1.2.0",
     "ics": "^2.35.0",
     "infima": "^0.2.0-alpha.40",
     "ipaddr.js": "^2.0.1",
