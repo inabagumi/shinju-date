@@ -45,7 +45,7 @@
     "@types/mdx": "^2.0.2",
     "@types/node": "^16.11.43",
     "@types/nprogress": "^0.2.0",
-    "@types/react": "^18.0.14",
+    "@types/react": "^18.0.15",
     "@types/web-app-manifest": "^1.0.2",
     "@typescript-eslint/eslint-plugin": "~5.30.5",
     "@typescript-eslint/parser": "~5.30.5",
