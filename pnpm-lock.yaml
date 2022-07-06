@@ -27,7 +27,7 @@ specifiers:
   '@typescript-eslint/eslint-plugin': ~5.30.5
   '@typescript-eslint/parser': ~5.30.5
   algoliasearch: ^4.13.1
-  clsx: ^1.2.0
+  clsx: ^1.2.1
   critters: ^0.0.16
   eslint: ~8.18.0
   eslint-config-next: ^12.2.0
@@ -69,7 +69,7 @@ dependencies:
   '@reach/skip-nav': 0.17.0_biqbaboplfbrettd7655fr4n2y
   '@supabase/supabase-js': 1.35.4
   algoliasearch: 4.13.1
-  clsx: 1.2.0
+  clsx: 1.2.1
   ics: 2.35.0
   infima: 0.2.0-alpha.40
   ipaddr.js: 2.0.1
@@ -3407,8 +3407,8 @@ packages:
       wrap-ansi: 7.0.0
     dev: true
 
-  /clsx/1.2.0:
-    resolution: {integrity: sha512-EPRP7XJsM1y0iCU3Z7C7jFKdQboXSeHgEfzQUTlz7m5NP3hDrlz48aUsmNGp4pC+JOW9WA3vIRqlYuo/bl4Drw==}
+  /clsx/1.2.1:
+    resolution: {integrity: sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==}
     engines: {node: '>=6'}
     dev: false
 
