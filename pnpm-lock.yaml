@@ -32,7 +32,7 @@ specifiers:
   eslint: ~8.19.0
   eslint-config-next: ^12.2.0
   eslint-config-prettier: ~8.5.0
-  ics: ^2.35.0
+  ics: ^2.37.0
   infima: ^0.2.0-alpha.41
   ipaddr.js: ^2.0.1
   jest: ^28.1.2
@@ -70,7 +70,7 @@ dependencies:
   '@supabase/supabase-js': 1.35.4
   algoliasearch: 4.13.1
   clsx: 1.2.1
-  ics: 2.35.0
+  ics: 2.37.0
   infima: 0.2.0-alpha.41
   ipaddr.js: 2.0.1
   localforage: 1.10.0
@@ -4605,8 +4605,8 @@ packages:
     engines: {node: '>=10.17.0'}
     dev: true
 
-  /ics/2.35.0:
-    resolution: {integrity: sha512-uxHoiu9VnE/1RUIWoUqn9GVswUzrejHFa5Gk20gGySw+2FO8xzgJe7GLFk+hzmevHViG/6zANLhjVY6kFWctKQ==}
+  /ics/2.37.0:
+    resolution: {integrity: sha512-pwjHe4nPFB/YulKlNo35z8BjjHej0PE/FcET/P7zMH+6pAfME1+NiUSFu/QbJN+o7AOJVXous626kNxrb33blg==}
     dependencies:
       nanoid: 3.3.4
       yup: 0.32.11
