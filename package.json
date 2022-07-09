@@ -9,7 +9,7 @@
     "@supabase/supabase-js": "^1.35.4",
     "algoliasearch": "^4.13.1",
     "clsx": "^1.2.1",
-    "ics": "^2.35.0",
+    "ics": "^2.37.0",
     "infima": "^0.2.0-alpha.41",
     "ipaddr.js": "^2.0.1",
     "localforage": "^1.10.0",
