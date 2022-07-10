@@ -76,10 +76,8 @@ const handler: NextApiHandler<string> = async (req, res) => {
   const events = createEventAttributesList(videos, { now })
   const { value } = createEvents(events)
 
-  res.writeHead(200, {
-    'Cache-Control': 'max-age=60,s-maxage=300',
-    'Content-Type': 'text/calendar;charset=UTF-8'
-  })
+  res.setHeader('Cache-Control', 'max-age=60,s-maxage=300')
+  res.setHeader('Content-Type', 'text/calendar;charset=UTF-8')
   res.send(value ?? '')
 }
 
