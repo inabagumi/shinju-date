@@ -1,9 +1,9 @@
 import { createNullCache } from '@algolia/cache-common'
+import { createFetchRequester } from '@algolia/requester-fetch'
 import algoliasearch, {
   type SearchClient,
   type SearchIndex
 } from 'algoliasearch/lite'
-import { createFetchRequester } from './requesters'
 
 export type SearchOptions = {
   filters?: string[]
