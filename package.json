@@ -3,7 +3,7 @@
   "dependencies": {
     "@algolia/cache-common": "^4.14.0",
     "@algolia/requester-fetch": "^4.14.0",
-    "@js-temporal/polyfill": "^0.4.1",
+    "@js-temporal/polyfill": "^0.4.2",
     "@mdx-js/react": "^2.1.2",
     "@reach/skip-nav": "^0.17.0",
     "@supabase/supabase-js": "^1.35.4",
