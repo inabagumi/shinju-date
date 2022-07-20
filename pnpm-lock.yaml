@@ -2,8 +2,8 @@ lockfileVersion: 5.4
 
 specifiers:
   '@algolia/cache-common': ^4.14.0
-  '@algolia/client-search': ^4.14.0
-  '@algolia/requester-fetch': ^4.14.0
+  '@algolia/client-search': ^4.14.1
+  '@algolia/requester-fetch': ^4.14.1
   '@fullhuman/postcss-purgecss': ^4.1.3
   '@inabagumi/prettier-config': ^2.0.0
   '@jest/types': ^28.1.3
@@ -26,7 +26,7 @@ specifiers:
   '@types/web-app-manifest': ^1.0.2
   '@typescript-eslint/eslint-plugin': ~5.30.7
   '@typescript-eslint/parser': ~5.30.7
-  algoliasearch: ^4.14.0
+  algoliasearch: ^4.14.1
   clsx: ^1.2.1
   critters: ^0.0.16
   eslint: ~8.20.0
@@ -63,12 +63,12 @@ specifiers:
 
 dependencies:
   '@algolia/cache-common': 4.14.0
-  '@algolia/requester-fetch': 4.14.0
+  '@algolia/requester-fetch': 4.14.1
   '@js-temporal/polyfill': 0.4.2
   '@mdx-js/react': 2.1.2_react@18.2.0
   '@reach/skip-nav': 0.17.0_biqbaboplfbrettd7655fr4n2y
   '@supabase/supabase-js': 1.35.4
-  algoliasearch: 4.14.0
+  algoliasearch: 4.14.1
   clsx: 1.2.1
   ics: 2.37.0
   infima: 0.2.0-alpha.42
@@ -90,7 +90,7 @@ dependencies:
   ufo: 0.8.5
 
 devDependencies:
-  '@algolia/client-search': 4.14.0
+  '@algolia/client-search': 4.14.1
   '@fullhuman/postcss-purgecss': 4.1.3_postcss@8.4.14
   '@inabagumi/prettier-config': 2.0.0_prettier@2.7.1
   '@jest/types': 28.1.3
@@ -126,95 +126,99 @@ devDependencies:
 
 packages:
 
-  /@algolia/cache-browser-local-storage/4.14.0:
-    resolution: {integrity: sha512-vSX0uPTgTuWdKOv0DbjFBl5AGlWDzYADtv5ChLBBKHTBhAKp4f9b38zDB0v89pCbcoAGZjtb6UTM+pUEVSTuSw==}
+  /@algolia/cache-browser-local-storage/4.14.1:
+    resolution: {integrity: sha512-BBdibsPn3hLBajc/NRAtHEeoXsw+ziSGR/3bqRNB5puUuwKPQZSE2MaMVWSADnlc3KV3bEj4xsfKOVLJyfJSPQ==}
     dependencies:
-      '@algolia/cache-common': 4.14.0
+      '@algolia/cache-common': 4.14.1
     dev: false
 
   /@algolia/cache-common/4.14.0:
     resolution: {integrity: sha512-9bCWX78td6DEtyVIJc2R8MokniFFgbS5r9ADVvBuBeDtVuNhOwDO/MYZ2WlAQJTwos9TtS9v0iJ9Ym0rDHMldA==}
-
-  /@algolia/cache-in-memory/4.14.0:
-    resolution: {integrity: sha512-kIH9JjebSsZVxnTjaWarunFkWaHnMZ5vG98KwvQj++I4PCMgk7z/GBm9bMNgPUsDPqHxQ0p9HO/j8YgN6VYxgQ==}
-    dependencies:
-      '@algolia/cache-common': 4.14.0
     dev: false
 
-  /@algolia/client-account/4.14.0:
-    resolution: {integrity: sha512-b0rAB3D2rf5qOeBZbUNcixl9EmiVPz6QgEvP2TC3Ed85+8xdVhtbyLD5EzTHQr2BPXvklo5NK1K5Q3UOZ9ojJQ==}
+  /@algolia/cache-common/4.14.1:
+    resolution: {integrity: sha512-XhAzm0Sm3D3DuOWUyDoVSXZ/RjYMvI1rbki+QH4ODAVaHDWVhMhg3IJPv3gIbBQnEQdtPdBhsf2hyPxAu28E5w==}
+
+  /@algolia/cache-in-memory/4.14.1:
+    resolution: {integrity: sha512-fVUu7N1hYb/zZYfV9Krlij70NwS+8bQm5vmDJyfp0+9FjSjz2V7wj1CUxvaY8ZcgoBPj9ehQ8sRuqSM2m5OPww==}
     dependencies:
-      '@algolia/client-common': 4.14.0
-      '@algolia/client-search': 4.14.0
-      '@algolia/transporter': 4.14.0
+      '@algolia/cache-common': 4.14.1
     dev: false
 
-  /@algolia/client-analytics/4.14.0:
-    resolution: {integrity: sha512-HcuAbUP2D2SZiV8pvBd6ZoJNJ1Zu5bvUctCknGS7QVQv4xfeDHFcQulwEPftKBhIoJmVZPsQznpeLf+PTGTA+w==}
+  /@algolia/client-account/4.14.1:
+    resolution: {integrity: sha512-Zm4+PN3bsBPhv1dKKwzBaRGzf0G1JcjjSTpE231L7Z7LsEDcFDW4E6L5ctwMz3SliSBeL/j1ghmaunJrZlkRIg==}
     dependencies:
-      '@algolia/client-common': 4.14.0
-      '@algolia/client-search': 4.14.0
-      '@algolia/requester-common': 4.14.0
-      '@algolia/transporter': 4.14.0
+      '@algolia/client-common': 4.14.1
+      '@algolia/client-search': 4.14.1
+      '@algolia/transporter': 4.14.1
     dev: false
 
-  /@algolia/client-common/4.14.0:
-    resolution: {integrity: sha512-7pmtPOicY6QEBQEYinChkVVi0SnDGcgJn1P0GkWxIMD23ZQk7o0/eMAQYqkGR3TET6YB/bZDeDrpL5v4DKN3tg==}
+  /@algolia/client-analytics/4.14.1:
+    resolution: {integrity: sha512-EhZLR0ezBZx7ZGkwzj7OTvnI8j2Alyv1ByC0Mx48qh3KqRhVwMFm/Uf34zAv4Dum2PTFin41Y4smAvAypth9nQ==}
     dependencies:
-      '@algolia/requester-common': 4.14.0
-      '@algolia/transporter': 4.14.0
-
-  /@algolia/client-personalization/4.14.0:
-    resolution: {integrity: sha512-O/vADaSZYAzL0o8L+2QeTZr1O3VXu8DjBUXnEWWgn96v6zqTH0aoQsQ7gvYEsGNvTGiZZwNJNruzMaBNG0GNUA==}
-    dependencies:
-      '@algolia/client-common': 4.14.0
-      '@algolia/requester-common': 4.14.0
-      '@algolia/transporter': 4.14.0
+      '@algolia/client-common': 4.14.1
+      '@algolia/client-search': 4.14.1
+      '@algolia/requester-common': 4.14.1
+      '@algolia/transporter': 4.14.1
     dev: false
 
-  /@algolia/client-search/4.14.0:
-    resolution: {integrity: sha512-gFxteVMUzEMq6lDEex/gZKNudrFmOFLuWS9SQCU+sXeTCRw32aY5/RBDigOkD6Yp6nLkfnYWvPnDshwY6WgTbw==}
+  /@algolia/client-common/4.14.1:
+    resolution: {integrity: sha512-WDwziD7Rt1yCRDfONmeLOfh1Lt8uOy6Vn7dma171KOH9NN3q8yDQpOhPqdFOCz1j3GC1FfIZxaC0YEOIobZ2lg==}
     dependencies:
-      '@algolia/client-common': 4.14.0
-      '@algolia/requester-common': 4.14.0
-      '@algolia/transporter': 4.14.0
+      '@algolia/requester-common': 4.14.1
+      '@algolia/transporter': 4.14.1
 
-  /@algolia/logger-common/4.14.0:
-    resolution: {integrity: sha512-1Fw+5Nd4d7NWNA9FhOIIXzESJn+j5VTO/f3YK+XhoOlbAwfMbD32InWEjNglrcHnSO8kpqrizFXveKTx1CzoKw==}
-
-  /@algolia/logger-console/4.14.0:
-    resolution: {integrity: sha512-nBJwg1TVdzAZCIA5tIFYKA+QqYGD9iRhO8yEdm68VcOeckyNTQuvJtAkWyvzr2qNL6GD+bN8nUQ8Cf5HFy/wZg==}
+  /@algolia/client-personalization/4.14.1:
+    resolution: {integrity: sha512-D4eeW7bTi769PWcEYZO+QiKuUXFOC5zK5Iy83Ey6FHqS7m5TXws5MP1rmETE018lTXeYq2NSHWp/F07fRRg0RA==}
     dependencies:
-      '@algolia/logger-common': 4.14.0
+      '@algolia/client-common': 4.14.1
+      '@algolia/requester-common': 4.14.1
+      '@algolia/transporter': 4.14.1
     dev: false
 
-  /@algolia/requester-browser-xhr/4.14.0:
-    resolution: {integrity: sha512-J4ND/l0/wOyztyOA3F4kFNIj/QDTeiS45m3hqSCVXpIJn/iq1ZP8zYW5q0/2sEMehO8TawVJiHnXYV0kO0Dk0Q==}
+  /@algolia/client-search/4.14.1:
+    resolution: {integrity: sha512-K6XrdIIQq8a3o+kCedj5slUVzA1aKttae4mLzwnY0bS7tYduv1IQggi9Sz8gOG6/MMyKMB4IwYqr47t/0z4Vxw==}
     dependencies:
-      '@algolia/requester-common': 4.14.0
+      '@algolia/client-common': 4.14.1
+      '@algolia/requester-common': 4.14.1
+      '@algolia/transporter': 4.14.1
+
+  /@algolia/logger-common/4.14.1:
+    resolution: {integrity: sha512-58CK87wTjUWI1QNXc3nFDQ7EXBi28NoLufXE9sMjng2fAL1wPdyO+KFD8KTBoXOZnJWflPj5F7p6jLyGAfgvcQ==}
+
+  /@algolia/logger-console/4.14.1:
+    resolution: {integrity: sha512-not+VwH1Dx2B/BaN+4+4+YnGRBJ9lduNz2qbMCTxZ4yFHb+84j4ewHRPBTtEmibn7caVCPybdTKfHLQhimSBLQ==}
+    dependencies:
+      '@algolia/logger-common': 4.14.1
     dev: false
 
-  /@algolia/requester-common/4.14.0:
-    resolution: {integrity: sha512-8DGIW5keIbAFet2TKGr/C9DVJ1r8IWFjgf4URPHn6NHMf6R+ruQp0gOf7xBP1Bw6JIS3/DbvlGqbw8sNO/N+Hw==}
-
-  /@algolia/requester-fetch/4.14.0:
-    resolution: {integrity: sha512-fPr723pxRhm6+F/ynm2TxoB8vORkw6YrOOfzekXsV5jHwVx7HuB29UAuLuleRTxGPMYcBlUP+I5IecvKyWM7NQ==}
+  /@algolia/requester-browser-xhr/4.14.1:
+    resolution: {integrity: sha512-mpH6QsFBbXjTy9+iU86Rcdt9LxS7GA/tWhGMr0+Ap8+4Za5+ELToz0PC7euVeVOcclgGGi7gbjOAmf6k8b10iA==}
     dependencies:
-      '@algolia/requester-common': 4.14.0
+      '@algolia/requester-common': 4.14.1
     dev: false
 
-  /@algolia/requester-node-http/4.14.0:
-    resolution: {integrity: sha512-DP0k1H9c6+lR4G/jKG4kez3QW1ksUDSSSSy3I8nhPZErIGgd0IqCTXDt1GwykDEkvYj/l4sA3x8pJtDMW3JSzw==}
+  /@algolia/requester-common/4.14.1:
+    resolution: {integrity: sha512-EbXBKrfYcX5/JJfaw7IZxhWlbUtjd5Chs+Alrfc4tutgRQn4dmImWS07n3iffwJcYdOWY1eRrnfBK5BwopuN5A==}
+
+  /@algolia/requester-fetch/4.14.1:
+    resolution: {integrity: sha512-Do0gPCT5y/f+PQrSq1fcniQrvbIIrpIP6WULB5S+tuJsJHi7VrDQYDi16HY/Q3Dqzc9TH1/7jAusWbo9/MtfSQ==}
     dependencies:
-      '@algolia/requester-common': 4.14.0
+      '@algolia/requester-common': 4.14.1
     dev: false
 
-  /@algolia/transporter/4.14.0:
-    resolution: {integrity: sha512-AP+8Qxeg0XvQ3rFbj4pIUzDMmtjo5pgBMx/57ADbge5Y4Y9ByDdQNjEKk6QFIe70SAwR/cGzglwYg7nl8mK/OA==}
+  /@algolia/requester-node-http/4.14.1:
+    resolution: {integrity: sha512-/sbRqL9P8aVuYUG50BgpCbdJyyCS7fia+sQIx9d1DiGPO7hunwLaEyR4H7JDHc/PLKdVEPygJx3rnbJWix4Btg==}
     dependencies:
-      '@algolia/cache-common': 4.14.0
-      '@algolia/logger-common': 4.14.0
-      '@algolia/requester-common': 4.14.0
+      '@algolia/requester-common': 4.14.1
+    dev: false
+
+  /@algolia/transporter/4.14.1:
+    resolution: {integrity: sha512-xbmoIqszFDOCCZqizBQ2TNHcGtjZX7EkJCzABsrokA0WqtfZzClFmtc+tZYgtEiyAfIF70alTegG19poQGdkvg==}
+    dependencies:
+      '@algolia/cache-common': 4.14.1
+      '@algolia/logger-common': 4.14.1
+      '@algolia/requester-common': 4.14.1
 
   /@ampproject/remapping/2.2.0:
     resolution: {integrity: sha512-qRmjj8nj9qmLTQXXmaR1cck3UXSRMPrbsLJAasZpF+t3riI71BXed5ebIOYwQntykeZuhjsdweEc9BxH5Jc26w==}
@@ -2957,23 +2961,23 @@ packages:
       uri-js: 4.4.1
     dev: true
 
-  /algoliasearch/4.14.0:
-    resolution: {integrity: sha512-r1rt5UQnrmqwjloi4tZzggUC7oWjNR/gfk+fjx0x4oP2UeDW5c8/XCovVFs9nwJ4n2xNKlxELyMAedcuLrBdng==}
+  /algoliasearch/4.14.1:
+    resolution: {integrity: sha512-ZWqnbsGUgU03/IyG995pMCc+EmNVDA/4c9ntr8B0dWQwFqazOQ4ErvKZxarbgSNmyPo/eZcVsTb0bNplJMttGQ==}
     dependencies:
-      '@algolia/cache-browser-local-storage': 4.14.0
-      '@algolia/cache-common': 4.14.0
-      '@algolia/cache-in-memory': 4.14.0
-      '@algolia/client-account': 4.14.0
-      '@algolia/client-analytics': 4.14.0
-      '@algolia/client-common': 4.14.0
-      '@algolia/client-personalization': 4.14.0
-      '@algolia/client-search': 4.14.0
-      '@algolia/logger-common': 4.14.0
-      '@algolia/logger-console': 4.14.0
-      '@algolia/requester-browser-xhr': 4.14.0
-      '@algolia/requester-common': 4.14.0
-      '@algolia/requester-node-http': 4.14.0
-      '@algolia/transporter': 4.14.0
+      '@algolia/cache-browser-local-storage': 4.14.1
+      '@algolia/cache-common': 4.14.1
+      '@algolia/cache-in-memory': 4.14.1
+      '@algolia/client-account': 4.14.1
+      '@algolia/client-analytics': 4.14.1
+      '@algolia/client-common': 4.14.1
+      '@algolia/client-personalization': 4.14.1
+      '@algolia/client-search': 4.14.1
+      '@algolia/logger-common': 4.14.1
+      '@algolia/logger-console': 4.14.1
+      '@algolia/requester-browser-xhr': 4.14.1
+      '@algolia/requester-common': 4.14.1
+      '@algolia/requester-node-http': 4.14.1
+      '@algolia/transporter': 4.14.1
     dev: false
 
   /ansi-escapes/4.3.2:
