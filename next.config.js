@@ -97,7 +97,8 @@ const withMDX = nextMDX({
       [
         rehypeExternalLinks,
         {
-          rel: ['noopener', 'noreferrer']
+          rel: ['noopener', 'noreferrer'],
+          target: '_blank'
         }
       ]
     ],
