@@ -12,7 +12,7 @@ specifiers:
   '@mdx-js/react': ^2.1.2
   '@next/mdx': ^12.2.4
   '@reach/skip-nav': ^0.17.0
-  '@supabase/supabase-js': ^1.35.4
+  '@supabase/supabase-js': ^1.35.6
   '@svgr/webpack': ^6.3.1
   '@types/eslint': ^8.4.5
   '@types/gtag.js': ^0.0.10
