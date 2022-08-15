@@ -39,7 +39,7 @@
     "@svgr/webpack": "^6.3.1",
     "@types/eslint": "^8.4.5",
     "@types/gtag.js": "^0.0.10",
-    "@types/jest": "^28.1.6",
+    "@types/jest": "^28.1.7",
     "@types/lodash.chunk": "^4.2.7",
     "@types/lodash.groupby": "^4.6.7",
     "@types/mdx": "^2.0.2",
