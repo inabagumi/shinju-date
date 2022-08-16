@@ -57,7 +57,7 @@
     "next-pwa": "^5.5.5",
     "postcss": "^8.4.16",
     "postcss-flexbugs-fixes": "^5.0.2",
-    "postcss-preset-env": "^7.7.2",
+    "postcss-preset-env": "^7.8.0",
     "prettier": "~2.7.1",
     "prettier-plugin-md-nocjsp": "^1.4.0",
     "rehype-external-links": "^2.0.0",
