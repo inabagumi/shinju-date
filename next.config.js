@@ -1,5 +1,5 @@
 import nextMDX from '@next/mdx'
-import withPWA from 'next-pwa'
+import nextPWA from 'next-pwa'
 import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
 
@@ -16,18 +16,6 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp']
   },
   pageExtensions: ['mdx', 'ts', 'tsx'],
-  pwa: {
-    buildExcludes: [
-      /\/_middlewareManifest\.js$/,
-      /\/_middleware\.js$/,
-      /\/middleware-manifest\.json$/,
-      /\/middleware-chunks\/[^.]+\.js$/,
-      /\/webpack-middleware-[^.]+\.js$/
-    ],
-    dest: '.next/static',
-    disable: process.env.NODE_ENV === 'development',
-    sw: 'service-worker.js'
-  },
   reactStrictMode: true,
   async rewrites() {
     return {
@@ -88,6 +76,12 @@ const nextConfig = {
     return config
   }
 }
+
+const withPWA = nextPWA({
+  dest: '.next/static',
+  disable: process.env.NODE_ENV === 'development',
+  sw: 'service-worker.js'
+})
 
 const withMDX = nextMDX({
   options: {
