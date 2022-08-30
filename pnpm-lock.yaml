@@ -22,7 +22,7 @@ specifiers:
   '@types/mdx': ^2.0.2
   '@types/node': ^16.11.56
   '@types/nprogress': ^0.2.0
-  '@types/react': ^18.0.17
+  '@types/react': ^18.0.18
   '@types/web-app-manifest': ^1.0.2
   '@typescript-eslint/eslint-plugin': ~5.36.1
   '@typescript-eslint/parser': ~5.36.0
@@ -105,7 +105,7 @@ devDependencies:
   '@types/mdx': 2.0.2
   '@types/node': 16.11.56
   '@types/nprogress': 0.2.0
-  '@types/react': 18.0.17
+  '@types/react': 18.0.18
   '@types/web-app-manifest': 1.0.2
   '@typescript-eslint/eslint-plugin': 5.36.1_3g5q5capxpyhialyvs33l4nssm
   '@typescript-eslint/parser': 5.36.0_yqf6kl63nyoq5megxukfnom5rm
@@ -2153,7 +2153,7 @@ packages:
       react: '>=16'
     dependencies:
       '@types/mdx': 2.0.2
-      '@types/react': 18.0.17
+      '@types/react': 18.0.18
       react: 18.2.0
 
   /@next/env/12.2.5:
@@ -2710,7 +2710,7 @@ packages:
   /@types/hoist-non-react-statics/3.3.1:
     resolution: {integrity: sha512-iMIqiko6ooLrTh1joXodJK5X9xeEALT1kM5G3ZLhD3hszxBdIEd5C75U834D9mLcINgD4OyZf5uQXjkuYydWvA==}
     dependencies:
-      '@types/react': 18.0.17
+      '@types/react': 18.0.18
       hoist-non-react-statics: 3.3.2
     dev: false
 
@@ -2804,8 +2804,8 @@ packages:
   /@types/prop-types/15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
 
-  /@types/react/18.0.17:
-    resolution: {integrity: sha512-38ETy4tL+rn4uQQi7mB81G7V1g0u2ryquNmsVIOKUAEIDK+3CUjZ6rSRpdvS99dNBnkLFL83qfmtLacGOTIhwQ==}
+  /@types/react/18.0.18:
+    resolution: {integrity: sha512-6hI08umYs6NaiHFEEGioXnxJ+oEhY3eRz8VCUaudZmGdtvPviCJB8mgaMxaDWAdPSYd4eFavrPk2QIolwbLYrg==}
     dependencies:
       '@types/prop-types': 15.7.5
       '@types/scheduler': 0.16.2
@@ -7245,7 +7245,7 @@ packages:
       '@formatjs/intl-displaynames': 6.1.2
       '@formatjs/intl-listformat': 7.1.2
       '@types/hoist-non-react-statics': 3.3.1
-      '@types/react': 18.0.17
+      '@types/react': 18.0.18
       hoist-non-react-statics: 3.3.2
       intl-messageformat: 10.1.4
       react: 18.2.0
