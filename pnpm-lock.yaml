@@ -15,7 +15,7 @@ specifiers:
   '@supabase/supabase-js': ^1.35.6
   '@svgr/webpack': ^6.3.1
   '@types/eslint': ^8.4.6
-  '@types/gtag.js': ^0.0.10
+  '@types/gtag.js': ^0.0.11
   '@types/jest': ^29.0.0
   '@types/lodash.chunk': ^4.2.7
   '@types/lodash.groupby': ^4.6.7
@@ -98,7 +98,7 @@ devDependencies:
   '@next/mdx': 12.2.5_hbo3tj2k5fhsh63l2ltjrymaq4
   '@svgr/webpack': 6.3.1
   '@types/eslint': 8.4.6
-  '@types/gtag.js': 0.0.10
+  '@types/gtag.js': 0.0.11
   '@types/jest': 29.0.0
   '@types/lodash.chunk': 4.2.7
   '@types/lodash.groupby': 4.6.7
@@ -2671,8 +2671,8 @@ packages:
       '@types/node': 16.11.56
     dev: true
 
-  /@types/gtag.js/0.0.10:
-    resolution: {integrity: sha512-98Hy7woUb3jMAMXkZQwfIOYNyfxmI0+U4m0PpCGdnd/FHk0tDpQFCqgXdNkdEoXsKkcGya/2Gew1cAJjKJspVw==}
+  /@types/gtag.js/0.0.11:
+    resolution: {integrity: sha512-rUuSDedDjcuUpoc2zf6eX6zRrxqALNgwrmMBfVFopkLH7YGM52C7tt6j9GsYIvaxn+ioVRpOKoHnN1DXzHEqIg==}
     dev: true
 
   /@types/hast/2.3.4:
