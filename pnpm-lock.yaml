@@ -42,7 +42,7 @@ specifiers:
   next: ^12.3.0
   next-pwa: ^5.6.0
   next-seo: ^5.5.0
-  next-themes: ^0.2.0
+  next-themes: ^0.2.1
   nprogress: ^1.0.0-1
   postcss: ^8.4.16
   postcss-flexbugs-fixes: ^5.0.2
@@ -78,7 +78,7 @@ dependencies:
   lodash.groupby: 4.6.0
   next: 12.3.0_biqbaboplfbrettd7655fr4n2y
   next-seo: 5.5.0_c3hne4hwj64hb7tofigd3bvkji
-  next-themes: 0.2.0_c3hne4hwj64hb7tofigd3bvkji
+  next-themes: 0.2.1_c3hne4hwj64hb7tofigd3bvkji
   nprogress: 1.0.0-1
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
@@ -6268,8 +6268,8 @@ packages:
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /next-themes/0.2.0_c3hne4hwj64hb7tofigd3bvkji:
-    resolution: {integrity: sha512-myhpDL4vadBD9YDSHiewqvzorGzB03N84e+3LxCwHRlM/hiBOaW+UsKsQojQAzC7fdcJA0l2ppveXcYaVV+hxQ==}
+  /next-themes/0.2.1_c3hne4hwj64hb7tofigd3bvkji:
+    resolution: {integrity: sha512-B+AKNfYNIzh0vqQQKqQItTS8evEouKD7H5Hj3kmuPERwddR2TxvDSFZuTj6T7Jfn1oyeUyJMydPl1Bkxkh0W7A==}
     peerDependencies:
       next: '*'
       react: '*'
