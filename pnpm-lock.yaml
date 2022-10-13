@@ -11,7 +11,7 @@ specifiers:
   '@mdx-js/loader': ^2.1.5
   '@mdx-js/react': ^2.1.5
   '@next/mdx': ^12.3.1
-  '@reach/skip-nav': ^0.17.0
+  '@reach/skip-nav': ^0.18.0
   '@supabase/supabase-js': ^1.35.7
   '@svgr/webpack': ^6.4.0
   '@types/eslint': ^8.4.6
@@ -66,7 +66,7 @@ dependencies:
   '@algolia/requester-fetch': 4.14.2
   '@js-temporal/polyfill': 0.4.2
   '@mdx-js/react': 2.1.5_react@18.2.0
-  '@reach/skip-nav': 0.17.0_biqbaboplfbrettd7655fr4n2y
+  '@reach/skip-nav': 0.18.0_biqbaboplfbrettd7655fr4n2y
   '@supabase/supabase-js': 1.35.7
   algoliasearch: 4.14.2
   clsx: 1.2.1
@@ -2271,28 +2271,23 @@ packages:
       fastq: 1.13.0
     dev: true
 
-  /@reach/skip-nav/0.17.0_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-wkkpQK3ffczzGHis6TaUvpOabuAL9n9Kh5vr4h56XPIJP3X77VcHUDk7MK3HbV1mTgamGxc9Hbd1sXKSWLu3yA==}
+  /@reach/polymorphic/0.18.0_react@18.2.0:
+    resolution: {integrity: sha512-N9iAjdMbE//6rryZZxAPLRorzDcGBnluf7YQij6XDLiMtfCj1noa7KyLpEc/5XCIB/EwhX3zCluFAwloBKdblA==}
     peerDependencies:
       react: ^16.8.0 || 17.x
-      react-dom: ^16.8.0 || 17.x
     dependencies:
-      '@reach/utils': 0.17.0_biqbaboplfbrettd7655fr4n2y
       react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-      tslib: 2.4.0
     dev: false
 
-  /@reach/utils/0.17.0_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-M5y8fCBbrWeIsxedgcSw6oDlAMQDkl5uv3VnMVJ7guwpf4E48Xlh1v66z/1BgN/WYe2y8mB/ilFD2nysEfdGeA==}
+  /@reach/skip-nav/0.18.0_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-7XKHX0NNTz9VJw1d+ZRuu3KhKSOZTIHSbHUuv7qKKPwSNApDa+dVGqR/I7dKwyB/CDFMXO4iEz4XLtOmvi0FEg==}
     peerDependencies:
       react: ^16.8.0 || 17.x
       react-dom: ^16.8.0 || 17.x
     dependencies:
+      '@reach/polymorphic': 0.18.0_react@18.2.0
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
-      tiny-warning: 1.0.3
-      tslib: 2.4.0
     dev: false
 
   /@rollup/plugin-babel/5.3.1_vy4anxjpv2s44kyfi2kxqu576u:
@@ -7745,10 +7740,6 @@ packages:
   /throttle-debounce/2.3.0:
     resolution: {integrity: sha512-H7oLPV0P7+jgvrk+6mwwwBDmxTaxnu9HMXmloNLXwnNO0ZxZ31Orah2n8lU1eMPvsaowP2CX+USCgyovXfdOFQ==}
     engines: {node: '>=8'}
-    dev: false
-
-  /tiny-warning/1.0.3:
-    resolution: {integrity: sha512-lBN9zLN/oAf68o3zNXYrdCt1kP8WsiGW8Oo2ka41b2IM5JL/S1CTyX1rW0mb/zSuJun0ZUrDxx4sqvYS2FWzPA==}
     dev: false
 
   /tmpl/1.0.5:
