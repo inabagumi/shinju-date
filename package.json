@@ -6,7 +6,7 @@
     "@js-temporal/polyfill": "^0.4.2",
     "@mdx-js/react": "^2.1.5",
     "@reach/skip-nav": "^0.18.0",
-    "@supabase/supabase-js": "^1.35.7",
+    "@supabase/supabase-js": "^2.0.0",
     "algoliasearch": "^4.14.2",
     "clsx": "^1.2.1",
     "ics": "^2.40.0",
