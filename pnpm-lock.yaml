@@ -19,7 +19,7 @@ specifiers:
   '@types/jest': ^29.2.0
   '@types/lodash.chunk': ^4.2.7
   '@types/lodash.groupby': ^4.6.7
-  '@types/mdx': ^2.0.2
+  '@types/mdx': ^2.0.3
   '@types/node': ^16.11.66
   '@types/nprogress': ^0.2.0
   '@types/react': ^18.0.21
@@ -102,7 +102,7 @@ devDependencies:
   '@types/jest': 29.2.0
   '@types/lodash.chunk': 4.2.7
   '@types/lodash.groupby': 4.6.7
-  '@types/mdx': 2.0.2
+  '@types/mdx': 2.0.3
   '@types/node': 16.11.66
   '@types/nprogress': 0.2.0
   '@types/react': 18.0.21
@@ -2104,7 +2104,7 @@ packages:
     resolution: {integrity: sha512-zEG0lt+Bl/r5U6e0TOS7qDbsXICtemfAPquxWFsMbdzrvlWaqMGemLl+sjVpqlyaaiCiGVQBSGdCk0t1qXjkQg==}
     dependencies:
       '@types/estree-jsx': 1.0.0
-      '@types/mdx': 2.0.2
+      '@types/mdx': 2.0.3
       estree-util-build-jsx: 2.2.0
       estree-util-is-identifier-name: 2.0.1
       estree-util-to-js: 1.1.0
@@ -2129,7 +2129,7 @@ packages:
     peerDependencies:
       react: '>=16'
     dependencies:
-      '@types/mdx': 2.0.2
+      '@types/mdx': 2.0.3
       '@types/react': 18.0.21
       react: 18.2.0
 
@@ -2740,8 +2740,8 @@ packages:
       '@types/unist': 2.0.6
     dev: true
 
-  /@types/mdx/2.0.2:
-    resolution: {integrity: sha512-mJGfgj4aWpiKb8C0nnJJchs1sHBHn0HugkVfqqyQi7Wn6mBRksLeQsPOFvih/Pu8L1vlDzfe/LidhVHBeUk3aQ==}
+  /@types/mdx/2.0.3:
+    resolution: {integrity: sha512-IgHxcT3RC8LzFLhKwP3gbMPeaK7BM9eBH46OdapPA7yvuIUJ8H6zHZV53J8hGZcTSnt95jANt+rTBNUUc22ACQ==}
 
   /@types/minimatch/5.1.2:
     resolution: {integrity: sha512-K0VQKziLUWkVKiRVrx4a40iPaxTUefQmjtkQofBkYRcoaaL/8rhwDWww9qWbrgicNOgnpIsMxyNIUM4+n6dUIA==}
