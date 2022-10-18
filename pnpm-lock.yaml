@@ -7,7 +7,7 @@ specifiers:
   '@fullhuman/postcss-purgecss': ^5.0.0
   '@inabagumi/prettier-config': ^2.0.0
   '@jest/types': ^29.2.1
-  '@js-temporal/polyfill': ^0.4.2
+  '@js-temporal/polyfill': ^0.4.3
   '@mdx-js/loader': ^2.1.5
   '@mdx-js/react': ^2.1.5
   '@next/mdx': ^12.3.1
@@ -64,7 +64,7 @@ specifiers:
 dependencies:
   '@algolia/cache-common': 4.14.2
   '@algolia/requester-fetch': 4.14.2
-  '@js-temporal/polyfill': 0.4.2
+  '@js-temporal/polyfill': 0.4.3
   '@mdx-js/react': 2.1.5_react@18.2.0
   '@reach/skip-nav': 0.18.0_biqbaboplfbrettd7655fr4n2y
   '@supabase/supabase-js': 1.35.7
@@ -2081,8 +2081,8 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.14
     dev: true
 
-  /@js-temporal/polyfill/0.4.2:
-    resolution: {integrity: sha512-c85vRxyqnJaXKyf4tvYij8jwiVIZhNLYDI9C4LLuOwVEHf4HUqGg07BBn70Le71W193QT/vmKg3jPUyQxJRHKQ==}
+  /@js-temporal/polyfill/0.4.3:
+    resolution: {integrity: sha512-6Fmjo/HlkyVCmJzAPnvtEWlcbQUSRhi8qlN9EtJA/wP7FqXsevLLrlojR44kzNzrRkpf7eDJ+z7b4xQD/Ycypw==}
     engines: {node: '>=12'}
     dependencies:
       jsbi: 4.3.0
