@@ -14,7 +14,7 @@ specifiers:
   '@reach/skip-nav': ^0.18.0
   '@supabase/supabase-js': ^1.35.7
   '@svgr/webpack': ^6.5.0
-  '@types/eslint': ^8.4.7
+  '@types/eslint': ^8.4.8
   '@types/gtag.js': ^0.0.12
   '@types/jest': ^29.2.0
   '@types/lodash.chunk': ^4.2.7
@@ -97,7 +97,7 @@ devDependencies:
   '@mdx-js/loader': 2.1.5
   '@next/mdx': 12.3.1_wuv4qx5dshjptmdbtsqqkih5iu
   '@svgr/webpack': 6.5.0
-  '@types/eslint': 8.4.7
+  '@types/eslint': 8.4.8
   '@types/gtag.js': 0.0.12
   '@types/jest': 29.2.0
   '@types/lodash.chunk': 4.2.7
@@ -2637,8 +2637,8 @@ packages:
       '@types/ms': 0.7.31
     dev: true
 
-  /@types/eslint/8.4.7:
-    resolution: {integrity: sha512-ehM7cCt2RSFs42mb+lcmhFT9ouIlV92PuaeRGn8N8c98oMjG4Z5pJHA9b1QiCcuqnbPSHcyfiD3mlhqMaHsQIw==}
+  /@types/eslint/8.4.8:
+    resolution: {integrity: sha512-zUCKQI1bUCTi+0kQs5ZQzQ/XILWRLIlh15FXWNykJ+NG3TMKMVvwwC6GP3DR1Ylga15fB7iAExSzc4PNlR5i3w==}
     dependencies:
       '@types/estree': 1.0.0
       '@types/json-schema': 7.0.11
