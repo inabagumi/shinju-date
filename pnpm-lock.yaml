@@ -26,6 +26,7 @@ specifiers:
   '@types/web-app-manifest': ^1.0.2
   '@typescript-eslint/eslint-plugin': ~5.41.0
   '@typescript-eslint/parser': ~5.41.0
+  '@vercel/analytics': ^0.1.1
   algoliasearch: ^4.14.2
   clsx: ^1.2.1
   critters: ^0.0.16
@@ -68,6 +69,7 @@ dependencies:
   '@mdx-js/react': 2.1.5_react@18.2.0
   '@reach/skip-nav': 0.18.0_biqbaboplfbrettd7655fr4n2y
   '@supabase/supabase-js': 1.35.7
+  '@vercel/analytics': 0.1.1_react@18.2.0
   algoliasearch: 4.14.2
   clsx: 1.2.1
   ics: 2.41.0
@@ -2937,6 +2939,14 @@ packages:
       '@typescript-eslint/types': 5.41.0
       eslint-visitor-keys: 3.3.0
     dev: true
+
+  /@vercel/analytics/0.1.1_react@18.2.0:
+    resolution: {integrity: sha512-34on7YtVt/yT8+QX7c5K2bcKYXnax06sQiK2PUdlQ1ABg5699mPdLGOSpS1gF//kR1s9oig4MCJ+N9nOjpaS6g==}
+    peerDependencies:
+      react: ^16.8||^17||^18
+    dependencies:
+      react: 18.2.0
+    dev: false
 
   /acorn-jsx/5.3.2_acorn@8.8.1:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}

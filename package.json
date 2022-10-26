@@ -7,6 +7,7 @@
     "@mdx-js/react": "^2.1.5",
     "@reach/skip-nav": "^0.18.0",
     "@supabase/supabase-js": "^1.35.7",
+    "@vercel/analytics": "^0.1.1",
     "algoliasearch": "^4.14.2",
     "clsx": "^1.2.1",
     "ics": "^2.41.0",

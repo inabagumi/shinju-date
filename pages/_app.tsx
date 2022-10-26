@@ -1,4 +1,5 @@
 import '../styles/global.css'
+import { Analytics } from '@vercel/analytics/react'
 import { DefaultSeo } from 'next-seo'
 import { ThemeProvider } from 'next-themes'
 import { type AppProps } from 'next/app'
@@ -115,6 +116,7 @@ const MyApp: FC<AppProps> = ({ Component, pageProps, router }) => {
           />
           <ProgressBar options={{ showSpinner: false }} />
           <Component {...pageProps} />
+          <Analytics />
         </GroupProvider>
       </ThemeProvider>
     </IntlProvider>
