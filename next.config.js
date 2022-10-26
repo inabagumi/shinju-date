@@ -6,9 +6,6 @@ import remarkGfm from 'remark-gfm'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    browsersListForSwc: true,
-    legacyBrowsers: false,
-    newNextLinkBehavior: true,
     optimizeCss: true
   },
   images: {
