@@ -37,7 +37,7 @@
     "@jest/types": "^29.2.1",
     "@mdx-js/loader": "^2.1.5",
     "@next/mdx": "^13.0.0",
-    "@svgr/webpack": "^6.5.0",
+    "@svgr/webpack": "^6.5.1",
     "@types/eslint": "^8.4.8",
     "@types/gtag.js": "^0.0.12",
     "@types/jest": "^29.2.0",
