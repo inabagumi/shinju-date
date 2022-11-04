@@ -42,7 +42,7 @@ specifiers:
   lodash.groupby: ^4.6.0
   next: ^13.0.2
   next-pwa: ^5.6.0
-  next-seo: ^5.13.0
+  next-seo: ^5.14.0
   next-themes: ^0.2.1
   nprogress: ^1.0.0-1
   postcss: ^8.4.18
@@ -79,7 +79,7 @@ dependencies:
   lodash.chunk: 4.2.0
   lodash.groupby: 4.6.0
   next: 13.0.2_biqbaboplfbrettd7655fr4n2y
-  next-seo: 5.13.0_pknogjuzx4bv7zxtatcb2ahtsq
+  next-seo: 5.14.0_pknogjuzx4bv7zxtatcb2ahtsq
   next-themes: 0.2.1_pknogjuzx4bv7zxtatcb2ahtsq
   nprogress: 1.0.0-1
   react: 18.2.0
@@ -6272,8 +6272,8 @@ packages:
       - webpack
     dev: true
 
-  /next-seo/5.13.0_pknogjuzx4bv7zxtatcb2ahtsq:
-    resolution: {integrity: sha512-3n6cOjXydxXlrbMIWcU+D6TllKj72C2rg7IdgoxoKOnfC8ah3U0VUIGRApKXK0wi5ME1m+TBq9isAFFbFdbWXQ==}
+  /next-seo/5.14.0_pknogjuzx4bv7zxtatcb2ahtsq:
+    resolution: {integrity: sha512-VpbVFXbDzy31qoKBH7xoxtzh+nDhEWYOBnlc18zkXmypRd3X9vxdwh7rlr3q2BQTfbfk2J/a6Y2vEb+oTcCW0w==}
     peerDependencies:
       next: ^8.1.1-canary.54 || >=9.0.0
       react: '>=16.0.0'
