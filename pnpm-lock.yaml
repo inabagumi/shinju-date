@@ -10,7 +10,7 @@ specifiers:
   '@js-temporal/polyfill': ^0.4.3
   '@mdx-js/loader': ^2.1.5
   '@mdx-js/react': ^2.1.5
-  '@next/mdx': ^13.0.2
+  '@next/mdx': ^13.0.3
   '@reach/skip-nav': ^0.18.0
   '@supabase/supabase-js': ^1.35.7
   '@svgr/webpack': ^6.5.1
@@ -97,7 +97,7 @@ devDependencies:
   '@inabagumi/prettier-config': 2.0.0_prettier@2.7.1
   '@jest/types': 29.3.1
   '@mdx-js/loader': 2.1.5
-  '@next/mdx': 13.0.2_wuv4qx5dshjptmdbtsqqkih5iu
+  '@next/mdx': 13.0.3_wuv4qx5dshjptmdbtsqqkih5iu
   '@svgr/webpack': 6.5.1
   '@types/eslint': 8.4.10
   '@types/gtag.js': 0.0.12
@@ -2141,8 +2141,8 @@ packages:
       glob: 7.1.7
     dev: true
 
-  /@next/mdx/13.0.2_wuv4qx5dshjptmdbtsqqkih5iu:
-    resolution: {integrity: sha512-udtSlWoOLoHdJvtuGyj3ctXW4fogsQDWU2YXp4Sx4JdsS7VKvJkhTU0Df47nAJsQKCJhQ92h+j7rA+1Dulxxqg==}
+  /@next/mdx/13.0.3_wuv4qx5dshjptmdbtsqqkih5iu:
+    resolution: {integrity: sha512-0NWKlwQdKsG/KdpTceC17zGlGP7deRAc2/JXpsOcy0744QWd3ai1Eg5g6YsR25giiW6EJVQr0ynfFzTLXdzg9Q==}
     peerDependencies:
       '@mdx-js/loader': '>=0.15.0'
       '@mdx-js/react': '*'
