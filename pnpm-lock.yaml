@@ -49,7 +49,7 @@ specifiers:
   postcss-flexbugs-fixes: ^5.0.2
   postcss-preset-env: ^7.8.3
   prettier: ~2.8.0
-  prettier-plugin-md-nocjsp: ^1.4.0
+  prettier-plugin-md-nocjsp: ^1.5.0
   react: ^18.2.0
   react-dom: ^18.2.0
   react-icons: ^4.7.1
@@ -121,7 +121,7 @@ devDependencies:
   postcss-flexbugs-fixes: 5.0.2_postcss@8.4.19
   postcss-preset-env: 7.8.3_postcss@8.4.19
   prettier: 2.8.0
-  prettier-plugin-md-nocjsp: 1.4.0
+  prettier-plugin-md-nocjsp: 1.5.0_prettier@2.8.0
   rehype-external-links: 2.0.1
   remark-gfm: 3.0.1
   typescript: 4.9.3
@@ -7088,8 +7088,12 @@ packages:
     engines: {node: '>= 0.8.0'}
     dev: true
 
-  /prettier-plugin-md-nocjsp/1.4.0:
-    resolution: {integrity: sha512-w8N5N7w5lSVj+kX4d9fYU3xeFdxh/CkoYHy7CojtZJCkwOZXrTBvymJMnnOjBLNseTJ24j0q+BlmpkTNq+rxbg==}
+  /prettier-plugin-md-nocjsp/1.5.0_prettier@2.8.0:
+    resolution: {integrity: sha512-rrGFV1cOSz9P0cM1GeD0LYEJ92ptq2qlTngTRS+k22CFRgh+06HHfKy0uhb38Xtr6yLiFwXFCoXrlhS483bqqg==}
+    peerDependencies:
+      prettier: 2.x
+    dependencies:
+      prettier: 2.8.0
     dev: true
 
   /prettier/2.8.0:
