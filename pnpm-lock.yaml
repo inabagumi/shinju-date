@@ -1,7 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@algolia/cache-common': ^4.14.2
+  '@algolia/cache-common': ^4.14.3
   '@algolia/client-search': ^4.14.3
   '@algolia/requester-fetch': ^4.14.3
   '@fullhuman/postcss-purgecss': ^5.0.0
@@ -63,7 +63,7 @@ specifiers:
   ufo: ^1.0.1
 
 dependencies:
-  '@algolia/cache-common': 4.14.2
+  '@algolia/cache-common': 4.14.3
   '@algolia/requester-fetch': 4.14.3
   '@js-temporal/polyfill': 0.4.3
   '@mdx-js/react': 2.2.1_react@18.2.0
@@ -132,10 +132,6 @@ packages:
     resolution: {integrity: sha512-hWH1yCxgG3+R/xZIscmUrWAIBnmBFHH5j30fY/+aPkEZWt90wYILfAHIOZ1/Wxhho5SkPfwFmT7ooX2d9JeQBw==}
     dependencies:
       '@algolia/cache-common': 4.14.3
-    dev: false
-
-  /@algolia/cache-common/4.14.2:
-    resolution: {integrity: sha512-SbvAlG9VqNanCErr44q6lEKD2qoK4XtFNx9Qn8FK26ePCI8I9yU7pYB+eM/cZdS9SzQCRJBbHUumVr4bsQ4uxg==}
     dev: false
 
   /@algolia/cache-common/4.14.3:
