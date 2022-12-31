@@ -16,7 +16,7 @@ specifiers:
   '@svgr/webpack': ^6.5.1
   '@types/eslint': ^8.4.10
   '@types/gtag.js': ^0.0.12
-  '@types/jest': ^29.2.4
+  '@types/jest': ^29.2.5
   '@types/lodash.chunk': ^4.2.7
   '@types/lodash.groupby': ^4.6.7
   '@types/mdx': ^2.0.3
@@ -101,7 +101,7 @@ devDependencies:
   '@svgr/webpack': 6.5.1
   '@types/eslint': 8.4.10
   '@types/gtag.js': 0.0.12
-  '@types/jest': 29.2.4
+  '@types/jest': 29.2.5
   '@types/lodash.chunk': 4.2.7
   '@types/lodash.groupby': 4.6.7
   '@types/mdx': 2.0.3
@@ -2712,8 +2712,8 @@ packages:
       '@types/istanbul-lib-report': 3.0.0
     dev: true
 
-  /@types/jest/29.2.4:
-    resolution: {integrity: sha512-PipFB04k2qTRPePduVLTRiPzQfvMeLwUN3Z21hsAKaB/W9IIzgB2pizCL466ftJlcyZqnHoC9ZHpxLGl3fS86A==}
+  /@types/jest/29.2.5:
+    resolution: {integrity: sha512-H2cSxkKgVmqNHXP7TC2L/WUorrZu8ZigyRywfVzv6EyBlxj39n4C00hjXYQWsbwqgElaj/CiAeSRmk5GoaKTgw==}
     dependencies:
       expect: 29.3.1
       pretty-format: 29.3.1
