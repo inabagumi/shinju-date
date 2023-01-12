@@ -26,7 +26,7 @@ specifiers:
   '@types/web-app-manifest': ^1.0.2
   '@typescript-eslint/eslint-plugin': ~5.48.1
   '@typescript-eslint/parser': ~5.48.1
-  '@vercel/analytics': ^0.1.6
+  '@vercel/analytics': ^0.1.7
   algoliasearch: ^4.14.3
   clsx: ^1.2.1
   critters: ^0.0.16
@@ -69,7 +69,7 @@ dependencies:
   '@mdx-js/react': 2.2.1_react@18.2.0
   '@reach/skip-nav': 0.18.0_biqbaboplfbrettd7655fr4n2y
   '@supabase/supabase-js': 1.35.7
-  '@vercel/analytics': 0.1.6_react@18.2.0
+  '@vercel/analytics': 0.1.7_react@18.2.0
   algoliasearch: 4.14.3
   clsx: 1.2.1
   ics: 2.41.0
@@ -2958,8 +2958,8 @@ packages:
       eslint-visitor-keys: 3.3.0
     dev: true
 
-  /@vercel/analytics/0.1.6_react@18.2.0:
-    resolution: {integrity: sha512-zNd5pj3iDvq8IMBQHa1YRcIteiw6ZiPB8AsONHd8ieFXlNpLqhXfIYnf4WvTfZ7S1NSJ++mIM14aJnNac/VMXQ==}
+  /@vercel/analytics/0.1.7_react@18.2.0:
+    resolution: {integrity: sha512-vaHVFggK1lPBbm73NRONI/D6oBM/Ot1zIXI9IpjxgUsvQMZrO4JpPEIDvGihgnAWbzH7LfpjOOJccxRoaDRtDA==}
     peerDependencies:
       react: ^16.8||^17||^18
     dependencies:
