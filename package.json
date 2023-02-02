@@ -38,7 +38,7 @@
     "@mdx-js/loader": "^2.2.1",
     "@next/mdx": "^13.1.6",
     "@svgr/webpack": "^6.5.1",
-    "@types/eslint": "^8.4.10",
+    "@types/eslint": "^8.21.0",
     "@types/gtag.js": "^0.0.12",
     "@types/jest": "^29.4.0",
     "@types/lodash.chunk": "^4.2.7",
