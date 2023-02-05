@@ -11,7 +11,10 @@ import SearchResults, {
   fetchVideosByChannelIDs
 } from '../../../../components/search-results'
 import { type Video } from '../../../../lib/algolia'
-import { type Group, getGroupBySlug } from '../../../../lib/supabase'
+import { getGroupBySlug } from '../../../../lib/supabase'
+import { normalizeChannels } from '../../../groups/[slug]'
+
+type Group = NonNullable<Awaited<ReturnType<typeof getGroupBySlug>>>
 
 type Props = {
   baseTime: number
@@ -27,6 +30,7 @@ const VideosPage: NextPage<Props> = ({ group, baseTime, query, videos }) => {
   const title = query
     ? `『${query}』の検索結果 - ${group.name}`
     : `『${group.name}』の動画一覧`
+  const channels = normalizeChannels(group.channels)
 
   return (
     <Page basePath={basePath} baseTime={baseTime}>
@@ -41,7 +45,7 @@ const VideosPage: NextPage<Props> = ({ group, baseTime, query, videos }) => {
 
       <SkipNavContent as="main" id={DEFAULT_SKIP_NAV_CONTENT_ID}>
         <SearchResults
-          channels={group.channels}
+          channels={channels}
           prefetchedData={[videos]}
           query={query}
           title={title}
@@ -70,11 +74,12 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({
 }) => {
   if (params) {
     const group = await getGroupBySlug(params.slug)
+    const channels = normalizeChannels(group?.channels)
 
-    if (group && group.channels.length > 0) {
+    if (group && channels.length > 0) {
       const baseTime = Temporal.Now.instant().epochSeconds
       const query = params.queries?.join('/') ?? ''
-      const channelIDs = group.channels.map((channel) => channel.slug)
+      const channelIDs = channels.map((channel) => channel.slug)
       const videos = await fetchVideosByChannelIDs({
         baseTime,
         channelIDs,

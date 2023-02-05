@@ -1,26 +1,14 @@
 import { createClient } from '@supabase/supabase-js'
+import { type Database } from './database.types'
 
-export type Channel = {
-  id: string
-  name: string
-  slug: string
-}
-
-export type Group = {
-  channels: Channel[]
-  id: number
-  name: string
-  slug: string
-}
-
-export const supabase = createClient(
+export const supabase = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
-export async function getChannelBySlug(slug: string): Promise<Channel | null> {
+export async function getChannelBySlug(slug: string) {
   const { data: channels, error } = await supabase
-    .from<Channel>('channels')
+    .from('channels')
     .select(
       `
         id,
@@ -42,9 +30,9 @@ export async function getChannelBySlug(slug: string): Promise<Channel | null> {
   return channels[0]
 }
 
-export async function getGroupBySlug(slug: string): Promise<Group | null> {
+export async function getGroupBySlug(slug: string) {
   const { data: groups, error } = await supabase
-    .from<Group>('groups')
+    .from('groups')
     .select(
       `
         channels (id, name, slug),
@@ -54,6 +42,7 @@ export async function getGroupBySlug(slug: string): Promise<Group | null> {
       `
     )
     .eq('slug', slug)
+    .is('channels.deleted_at', null)
     .limit(1)
 
   if (error) {

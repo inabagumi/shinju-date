@@ -1,10 +1,10 @@
 import { useCallback, useContext, useEffect } from 'react'
 import GroupContext from './context'
-import { type GroupWithoutChannels, type SetCurrentGroup } from './types'
+import { type Group, type SetCurrentGroup } from './types'
 
 export function useCurrentGroup(
-  initialCurrentGroup?: GroupWithoutChannels
-): [currentGroup: GroupWithoutChannels | undefined, set: SetCurrentGroup] {
+  initialCurrentGroup?: Group
+): [currentGroup: Group | undefined, set: SetCurrentGroup] {
   const { current, setCurrentGroup } = useContext(GroupContext)
   const set = useCallback<SetCurrentGroup>(
     (...args) => setCurrentGroup?.(...args),
@@ -22,7 +22,7 @@ export function useCurrentGroup(
   return [current, set]
 }
 
-export function useGroups(): GroupWithoutChannels[] | undefined {
+export function useGroups(): Group[] | undefined {
   const { values } = useContext(GroupContext)
 
   return values

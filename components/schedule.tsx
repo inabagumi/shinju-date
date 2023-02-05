@@ -2,9 +2,9 @@ import { Temporal } from '@js-temporal/polyfill'
 import { type FC } from 'react'
 import useSWR, { type Fetcher } from 'swr'
 import { type Video, getVideosByChannelIDs } from '../lib/algolia'
-import { type Channel } from '../lib/supabase'
 import { useBaseTime } from './layout'
 import NoResults from './no-results'
+import { type Channel } from './search-results'
 import Timeline from './timeline'
 
 type FetchNotEndedVideosOptions = {
