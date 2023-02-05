@@ -6,10 +6,11 @@ import Page, {
   DEFAULT_SKIP_NAV_CONTENT_ID
 } from '../../../../components/layout'
 import SearchResults, {
+  type Channel,
   fetchVideosByChannelIDs
 } from '../../../../components/search-results'
 import { type Video } from '../../../../lib/algolia'
-import { type Channel, getChannelBySlug } from '../../../../lib/supabase'
+import { getChannelBySlug } from '../../../../lib/supabase'
 
 type Props = {
   baseTime: number

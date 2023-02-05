@@ -10,6 +10,7 @@ export type Image = {
 export type Channel = {
   id: string
   title: string
+  slug: string
   url: string
 }
 

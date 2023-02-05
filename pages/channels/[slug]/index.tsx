@@ -6,11 +6,11 @@ import Page, { DEFAULT_SKIP_NAV_CONTENT_ID } from '../../../components/layout'
 import Link from '../../../components/link'
 import Schedule, { fetchNotEndedVideos } from '../../../components/schedule'
 import { type Video } from '../../../lib/algolia'
-import { type Channel, getChannelBySlug } from '../../../lib/supabase'
+import { getChannelBySlug } from '../../../lib/supabase'
 
 type Props = {
   baseTime: number
-  channel: Channel
+  channel: NonNullable<Awaited<ReturnType<typeof getChannelBySlug>>>
   videos: Video[]
 }
 

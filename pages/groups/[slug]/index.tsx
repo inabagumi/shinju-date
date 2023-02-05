@@ -7,7 +7,13 @@ import Page, { DEFAULT_SKIP_NAV_CONTENT_ID } from '../../../components/layout'
 import Link from '../../../components/link'
 import Schedule, { fetchNotEndedVideos } from '../../../components/schedule'
 import { type Video } from '../../../lib/algolia'
-import { type Group, getGroupBySlug } from '../../../lib/supabase'
+import { getGroupBySlug } from '../../../lib/supabase'
+
+type Group = NonNullable<Awaited<ReturnType<typeof getGroupBySlug>>>
+
+export function normalizeChannels(channels?: Group['channels']) {
+  return channels ? (Array.isArray(channels) ? channels : [channels]) : []
+}
 
 type Props = {
   baseTime: number
@@ -19,6 +25,7 @@ const SchedulePage: NextPage<Props> = ({ baseTime, group, videos }) => {
   useCurrentGroup(group)
 
   const basePath = `/groups/${group.slug}`
+  const channels = normalizeChannels(group.channels)
 
   return (
     <Page basePath={basePath} baseTime={baseTime}>
@@ -53,7 +60,7 @@ const SchedulePage: NextPage<Props> = ({ baseTime, group, videos }) => {
       >
         <h2 className="margin-top--lg">今後の配信予定</h2>
 
-        <Schedule channels={group.channels} prefetchedData={videos} />
+        <Schedule channels={channels} prefetchedData={videos} />
       </SkipNavContent>
     </Page>
   )
@@ -77,10 +84,11 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({
 }) => {
   if (params) {
     const group = await getGroupBySlug(params.slug)
+    const channels = normalizeChannels(group?.channels)
 
-    if (group && group.channels.length > 0) {
+    if (group && channels.length > 0) {
       const baseTime = Temporal.Now.instant().epochSeconds
-      const channelIDs = group.channels.map((channel) => channel.slug)
+      const channelIDs = channels.map((channel) => channel.slug)
       const videos = await fetchNotEndedVideos({ baseTime, channelIDs })
 
       return {

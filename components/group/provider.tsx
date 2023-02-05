@@ -3,12 +3,10 @@ import { type FC, type ReactNode, useState } from 'react'
 import useSWR, { type Fetcher } from 'swr'
 import { supabase } from '../../lib/supabase'
 import GroupContext from './context'
-import { type GroupWithoutChannels } from './types'
+import { type Group } from './types'
 
-const fetchAllGroups: Fetcher<GroupWithoutChannels[]> = async () => {
-  const { data, error } = await supabase
-    .from<GroupWithoutChannels>('groups')
-    .select('id, name, slug')
+const fetchAllGroups: Fetcher<Group[]> = async () => {
+  const { data, error } = await supabase.from('groups').select('id, name, slug')
 
   if (error) {
     throw error
@@ -22,8 +20,8 @@ type Props = {
 }
 
 const GroupProvider: FC<Props> = ({ children }) => {
-  const [currentGroup, setCurrentGroup] = useState<GroupWithoutChannels>()
-  const { data: groups } = useSWR<GroupWithoutChannels[], PostgrestError>(
+  const [currentGroup, setCurrentGroup] = useState<Group>()
+  const { data: groups } = useSWR<Group[], PostgrestError>(
     'group-list',
     fetchAllGroups
   )

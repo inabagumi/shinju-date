@@ -6,12 +6,14 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite, { type SWRInfiniteFetcher } from 'swr/infinite'
 import { useBaseTime } from '../components/layout'
 import { type Video, getVideosByChannelIDs } from '../lib/algolia'
-import { type Channel } from '../lib/supabase'
+import { getChannelBySlug } from '../lib/supabase'
 import NoResults from './no-results'
 import styles from './search-results.module.css'
 import VideoCard from './video-card'
 
 export const SEARCH_RESULT_COUNT = 9
+
+export type Channel = NonNullable<Awaited<ReturnType<typeof getChannelBySlug>>>
 
 type FetchVideosByChannelIDsOptions = {
   baseTime: number

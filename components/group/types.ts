@@ -1,14 +1,15 @@
 import { type Dispatch, type SetStateAction } from 'react'
-import { type Group } from '../../lib/supabase'
+import { type Database } from '../../lib/database.types'
+
+export type Group = Pick<
+  Database['public']['Tables']['groups']['Row'],
+  'id' | 'name' | 'slug'
+>
 
 export type GroupValue = {
-  current?: GroupWithoutChannels
+  current?: Group
   setCurrentGroup?: SetCurrentGroup
-  values?: GroupWithoutChannels[]
+  values?: Group[]
 }
 
-export type GroupWithoutChannels = Omit<Group, 'channels'>
-
-export type SetCurrentGroup = Dispatch<
-  SetStateAction<GroupWithoutChannels | undefined>
->
+export type SetCurrentGroup = Dispatch<SetStateAction<Group | undefined>>
