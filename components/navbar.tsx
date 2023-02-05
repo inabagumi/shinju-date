@@ -1,7 +1,7 @@
 import clsx from 'clsx'
-import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { useTheme } from 'next-themes'
 import { type FC, useCallback, useMemo, useState } from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
 import { joinURL } from 'ufo'
