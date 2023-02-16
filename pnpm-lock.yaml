@@ -12,7 +12,7 @@ specifiers:
   '@mdx-js/react': ^2.3.0
   '@next/mdx': ^13.1.6
   '@reach/skip-nav': ^0.18.0
-  '@supabase/supabase-js': ^2.7.1
+  '@supabase/supabase-js': ^2.8.0
   '@svgr/webpack': ^6.5.1
   '@types/eslint': ^8.21.1
   '@types/gtag.js': ^0.0.12
@@ -68,7 +68,7 @@ dependencies:
   '@js-temporal/polyfill': 0.4.3
   '@mdx-js/react': 2.3.0_react@18.2.0
   '@reach/skip-nav': 0.18.0_biqbaboplfbrettd7655fr4n2y
-  '@supabase/supabase-js': 2.7.1
+  '@supabase/supabase-js': 2.8.0
   '@vercel/analytics': 0.1.9_react@18.2.0
   algoliasearch: 4.14.3
   clsx: 1.2.1
@@ -2480,8 +2480,8 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/gotrue-js/2.11.0:
-    resolution: {integrity: sha512-yo3yExoTqpJH4YpdI5PDjZ1YLOj3wURppimfsV0ep5uxDY/lE1uOhiMCPnhy59DbFAKG7bjnhJ1L7sk+B2os3w==}
+  /@supabase/gotrue-js/2.12.0:
+    resolution: {integrity: sha512-sx9YbCf2wjdYww7j3bkpPHSQ6Ur79xSlxBw0Kq6chWqCeG8vst1dUCPeHZZWfu++nblCRnCajhryZ3Xt5XVj8g==}
     dependencies:
       cross-fetch: 3.1.5
     transitivePeerDependencies:
@@ -2513,11 +2513,11 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/supabase-js/2.7.1:
-    resolution: {integrity: sha512-Q/e+JAluZEvy7D4ul3aAs3aOiKkGvHlZULy6wjchWQyU9YlJKZLr6VPYcwUeitcnRKZi4al5iTS55LgdJFfqIA==}
+  /@supabase/supabase-js/2.8.0:
+    resolution: {integrity: sha512-uzf4J+qAKdUMhB2tnJl6BrQRUQBinwjJ2eWo2ZsDw9EUUP5JcHsxTamiq6p91DpqzmTIRg3xRAT+bItTzbfa0w==}
     dependencies:
       '@supabase/functions-js': 2.0.0
-      '@supabase/gotrue-js': 2.11.0
+      '@supabase/gotrue-js': 2.12.0
       '@supabase/postgrest-js': 1.3.0
       '@supabase/realtime-js': 2.6.0
       '@supabase/storage-js': 2.3.0
