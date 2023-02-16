@@ -57,7 +57,7 @@ specifiers:
   react-intl: ^6.2.8
   rehype-external-links: ^2.0.1
   remark-gfm: ^3.0.1
-  search-insights: ^2.2.3
+  search-insights: ^2.3.0
   swr: ^2.0.3
   typescript: ~4.9.5
   ufo: ^1.0.1
@@ -87,7 +87,7 @@ dependencies:
   react-icons: 4.7.1_react@18.2.0
   react-infinite-scroll-component: 6.1.0_react@18.2.0
   react-intl: 6.2.8_j5ip3o3v6sktjzl5cxtjyfbuo4
-  search-insights: 2.2.3
+  search-insights: 2.3.0
   swr: 2.0.3_react@18.2.0
   ufo: 1.0.1
 
@@ -7823,8 +7823,8 @@ packages:
       ajv-keywords: 3.5.2_ajv@6.12.6
     dev: true
 
-  /search-insights/2.2.3:
-    resolution: {integrity: sha512-fXwC0QzkBGZuGTb6FoQG+iLS81wljYuBU4Sco4TGTgp5boVkiKZeFqPV0e5h5++5QncTU2FQrQ+G3ILnqEa3yA==}
+  /search-insights/2.3.0:
+    resolution: {integrity: sha512-0v/TTO4fbd6I91sFBK/e2zNfD0f51A+fMoYNkMplmR77NpThUye/7gIxNoJ3LejKpZH6Z2KNBIpxxFmDKj10Yw==}
     engines: {node: '>=8.16.0'}
     dev: false
 
