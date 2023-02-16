@@ -25,7 +25,7 @@
     "react-icons": "^4.7.1",
     "react-infinite-scroll-component": "^6.1.0",
     "react-intl": "^6.2.8",
-    "search-insights": "^2.2.3",
+    "search-insights": "^2.3.0",
     "swr": "^2.0.3",
     "ufo": "^1.0.1"
   },
