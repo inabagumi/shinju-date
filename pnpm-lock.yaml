@@ -34,7 +34,7 @@ specifiers:
   eslint-config-next: ^13.1.6
   eslint-config-prettier: ~8.6.0
   ics: ^3.0.1
-  infima: ^0.2.0-alpha.42
+  infima: ^0.2.0-alpha.43
   ipaddr.js: ^2.0.1
   jest: ^29.4.3
   localforage: ^1.10.0
@@ -73,7 +73,7 @@ dependencies:
   algoliasearch: 4.14.3
   clsx: 1.2.1
   ics: 3.0.1
-  infima: 0.2.0-alpha.42
+  infima: 0.2.0-alpha.43
   ipaddr.js: 2.0.1
   localforage: 1.10.0
   lodash.chunk: 4.2.0
@@ -4977,8 +4977,8 @@ packages:
     engines: {node: '>=0.8.19'}
     dev: true
 
-  /infima/0.2.0-alpha.42:
-    resolution: {integrity: sha512-ift8OXNbQQwtbIt6z16KnSWP7uJ/SysSMFI4F87MNRTicypfl4Pv3E2OGVv6N3nSZFJvA8imYulCBS64iyHYww==}
+  /infima/0.2.0-alpha.43:
+    resolution: {integrity: sha512-2uw57LvUqW0rK/SWYnd/2rRfxNA5DDNOh33jxF7fy46VWoNhGxiUQyVZHbBMjQ33mQem0cjdDVwgWVAmlRfgyQ==}
     engines: {node: '>=12'}
     dev: false
 
