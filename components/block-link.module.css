@@ -1,8 +1,0 @@
-.blockLink {
-  --ifm-link-color: var(--ifm-font-color-base);
-  --ifm-link-hover-color: var(--ifm-link-color);
-  --ifm-link-hover-decoration: none;
-
-  display: block;
-  height: 100%;
-}

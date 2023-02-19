@@ -6,13 +6,19 @@ import remarkGfm from 'remark-gfm'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    optimizeCss: true
+    appDir: true,
+    mdxRs: true
   },
   images: {
-    domains: ['i.ytimg.com'],
-    formats: ['image/avif', 'image/webp']
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      {
+        hostname: 'i.ytimg.com',
+        pathname: '/vi/**',
+        protocol: 'https'
+      }
+    ]
   },
-  pageExtensions: ['mdx', 'ts', 'tsx'],
   reactStrictMode: true,
   async rewrites() {
     return {
@@ -25,36 +31,19 @@ const nextConfig = {
           destination: '/_next/static/workbox-:hash.js',
           source: '/workbox-:hash.js'
         },
-        {
-          destination: '/api/manifest',
-          source: '/manifest.json'
-        },
         // deprecated
         {
-          destination: '/api/calendar',
+          destination: '/videos.ics',
           source: '/calendar.ics'
         },
-        {
-          destination: '/api/calendar',
-          source: '/videos.ics'
-        },
         // deprecated
         {
-          destination: '/api/calendar/:id',
+          destination: '/channels/:id/videos.ics',
           source: '/calendar/:id.ics'
-        },
-        {
-          destination: '/api/calendar/:id',
-          source: '/channels/:id/videos.ics'
-        },
-        {
-          destination: '/api/search',
-          source: '/search'
         }
       ]
     }
   },
-  swcMinify: true,
   webpack(config, { defaultLoaders }) {
     config.module.rules.push({
       test: /\.svg$/,
@@ -82,8 +71,6 @@ const withPWA = nextPWA({
 
 const withMDX = nextMDX({
   options: {
-    jsx: true,
-    providerImportSource: '@mdx-js/react',
     rehypePlugins: [
       [
         rehypeExternalLinks,

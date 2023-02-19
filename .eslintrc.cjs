@@ -33,12 +33,19 @@ module.exports = {
         },
         groups: [
           ['builtin', 'external'],
+          'internal',
           'parent',
           ['index', 'sibling'],
           'unknown',
           'type'
         ],
-        'newlines-between': 'never'
+        'newlines-between': 'never',
+        pathGroups: [
+          {
+            group: 'internal',
+            pattern: '@/**'
+          }
+        ]
       }
     ],
     'react/jsx-sort-props': 'error',
