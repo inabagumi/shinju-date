@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { cache } from 'react'
 import { type Database } from './database.types'
 
 export const supabase = createClient<Database>(
@@ -6,52 +7,60 @@ export const supabase = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
-export async function getChannelBySlug(slug: string) {
-  const { data: channels, error } = await supabase
-    .from('channels')
-    .select(
-      `
-        id,
-        name,
-        slug
-      `
-    )
-    .eq('slug', slug)
-    .limit(1)
-
-  if (error) {
-    throw error
-  }
-
-  if (!channels || channels.length < 1) {
-    return null
-  }
-
-  return channels[0]
-}
-
-export async function getGroupBySlug(slug: string) {
-  const { data: groups, error } = await supabase
+export const getAllGroups = cache(async function getAllGroups() {
+  const { data, error } = await supabase
     .from('groups')
-    .select(
-      `
-        channels (id, name, slug),
-        id,
-        name,
-        slug
-      `
-    )
-    .eq('slug', slug)
-    .is('channels.deleted_at', null)
-    .limit(1)
+    .select('id, name, slug')
+    .is('deleted_at', null)
 
   if (error) {
     throw error
   }
 
-  if (!groups || groups.length < 1) {
-    return null
+  return data ?? []
+})
+
+export const getChannelBySlug = cache(async function getChannelBySlug(
+  slug: string
+) {
+  const { data: channel, error } = await supabase
+    .from('channels')
+    .select('id, name, slug')
+    .eq('slug', slug)
+    .is('deleted_at', null)
+    .single()
+
+  if (error && error.code !== 'PGRST116') {
+    throw error
   }
 
-  return groups[0]
+  return channel
+})
+
+export function getChannelsByGroup(
+  group: Awaited<ReturnType<typeof getGroupBySlug>>
+) {
+  return group?.channels
+    ? Array.isArray(group.channels)
+      ? group.channels
+      : [group.channels]
+    : []
 }
+
+export const getGroupBySlug = cache(async function getGroupBySlug(
+  slug: string
+) {
+  const { data: group, error } = await supabase
+    .from('groups')
+    .select('channels (id, name, slug), id, name, slug')
+    .eq('slug', slug)
+    .is('deleted_at', null)
+    .is('channels.deleted_at', null)
+    .single()
+
+  if (error && error.code !== 'PGRST116') {
+    throw error
+  }
+
+  return group
+})

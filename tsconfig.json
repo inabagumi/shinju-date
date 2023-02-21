@@ -11,6 +11,14 @@
     "module": "es2020",
     "moduleResolution": "node",
     "noEmit": true,
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
@@ -18,5 +26,11 @@
     "target": "es2020"
   },
   "exclude": ["node_modules"],
-  "include": ["next-env.d.ts", "additional.d.ts", "**/*.ts", "**/*.tsx"]
+  "include": [
+    "next-env.d.ts",
+    "additional.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ]
 }
