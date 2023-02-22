@@ -10,8 +10,11 @@ export const supabase = createClient<Database>(
 export const getAllGroups = cache(async function getAllGroups() {
   const { data, error } = await supabase
     .from('groups')
-    .select('id, name, slug')
+    .select('id, name, slug, short_name')
     .is('deleted_at', null)
+    .order('created_at', {
+      ascending: true
+    })
 
   if (error) {
     throw error
@@ -52,7 +55,7 @@ export const getGroupBySlug = cache(async function getGroupBySlug(
 ) {
   const { data: group, error } = await supabase
     .from('groups')
-    .select('channels (id, name, slug), id, name, slug')
+    .select('channels (id, name, slug), id, name, slug, short_name')
     .eq('slug', slug)
     .is('deleted_at', null)
     .is('channels.deleted_at', null)
