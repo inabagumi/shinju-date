@@ -17,7 +17,6 @@
     "lodash.groupby": "^4.6.0",
     "lodash.merge": "^4.6.2",
     "next": "^13.1.7-canary.23",
-    "next-seo": "^5.15.0",
     "next-themes": "^0.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -76,7 +75,6 @@
     "format": "prettier -w .",
     "format-check": "prettier -c .",
     "lint": "next lint",
-    "prepare": "mkdir -p vendor/infima && cp node_modules/infima/dist/css/default/default.min.css vendor/infima",
     "start": "next start",
     "test": "jest"
   },
