@@ -31,6 +31,7 @@ export const metadata: Metadata = {
     ]
   },
   manifest: '/manifest.json',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL),
   themeColor: '#212121',
   title: {
     default: 'SHINJU DATE',
