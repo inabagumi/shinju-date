@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import merge from 'lodash.merge'
 import { type Metadata } from 'next'
 import { redirect } from 'next/navigation'
+import Balancer from 'react-wrap-balancer'
 import baseMetadata from '@/app/metadata'
 import { fetchVideosByChannelIDs } from '@/lib/fetchers'
 import { parseQueries } from '@/lib/url'
@@ -73,7 +74,9 @@ export default async function Page({
 
   return (
     <div className="margin-top--lg">
-      <h1 className={clsx('margin-bottom--lg', styles.title)}>{title}</h1>
+      <h1 className={clsx('margin-bottom--lg', styles.title)}>
+        <Balancer>{title}</Balancer>
+      </h1>
 
       <SearchResults prefetchedData={[videos]} query={query} />
     </div>
