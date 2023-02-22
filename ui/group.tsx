@@ -9,7 +9,7 @@ import { getAllGroups } from '@/lib/supabase'
 
 type Group = Pick<
   Database['public']['Tables']['groups']['Row'],
-  'id' | 'name' | 'slug'
+  'id' | 'name' | 'slug' | 'short_name'
 >
 
 type GroupValue = {

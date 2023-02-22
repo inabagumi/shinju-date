@@ -132,7 +132,9 @@ export default function Navbar(): JSX.Element {
                     : [])
                 )}
               >
-                {currentGroup?.name ?? '全グループ'}
+                {currentGroup
+                  ? currentGroup.short_name ?? currentGroup.name
+                  : '全グループ'}
               </Link>
               <ul className={clsx('dropdown__menu', styles.dropdownMenu)}>
                 <li>
@@ -181,7 +183,7 @@ export default function Navbar(): JSX.Element {
                           : `/groups/${group.slug}`
                       }
                     >
-                      {group.name}
+                      {group.short_name ?? group.name}
                     </Link>
                   </li>
                 ))}
@@ -291,7 +293,7 @@ export default function Navbar(): JSX.Element {
                           href={`/groups/${group.slug}`}
                           onClick={hideSidebar}
                         >
-                          {group.name}
+                          {group.short_name ?? group.name}
                         </Link>
                       </li>
                     ))
@@ -360,7 +362,7 @@ export default function Navbar(): JSX.Element {
                           )}
                           onClick={hideSidebar}
                         >
-                          {group.name}
+                          {group.short_name ?? group.name}
                         </Link>
                       </li>
                     ))
