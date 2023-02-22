@@ -5,6 +5,7 @@ import { type FunctionComponent, type MDXComponents } from 'mdx/types'
 import { ThemeProvider } from 'next-themes'
 import { type ReactNode } from 'react'
 import { IntlProvider } from 'react-intl'
+import { Provider as BalancerProvider } from 'react-wrap-balancer'
 import { GroupProvider } from '@/ui/group'
 import Link, { Props as LinkProps } from '@/ui/link'
 
@@ -20,9 +21,11 @@ export default function Providers({ children }: Props) {
   return (
     <IntlProvider locale="ja" timeZone="Asia/Tokyo">
       <ThemeProvider defaultTheme="system">
-        <MDXProvider components={mdxComponents}>
-          <GroupProvider>{children}</GroupProvider>
-        </MDXProvider>
+        <BalancerProvider>
+          <MDXProvider components={mdxComponents}>
+            <GroupProvider>{children}</GroupProvider>
+          </MDXProvider>
+        </BalancerProvider>
       </ThemeProvider>
     </IntlProvider>
   )

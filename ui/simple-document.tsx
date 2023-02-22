@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { type ReactNode } from 'react'
+import Balancer from 'react-wrap-balancer'
 import { SkipNavContent } from './skip-nav'
 
 type Props = {
@@ -25,7 +26,9 @@ export default function SimpleDocument({
       {title && (
         <div className="hero hero--dark">
           <div className="container">
-            <h1 className="hero__title">{title}</h1>
+            <h1 className="hero__title">
+              <Balancer>{title}</Balancer>
+            </h1>
 
             {button && <div>{button}</div>}
           </div>
