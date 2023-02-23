@@ -11,6 +11,7 @@ const nextConfig = {
   },
   images: {
     formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 365 * 24 * 60 * 60,
     remotePatterns: [
       {
         hostname: 'i.ytimg.com',
