@@ -7,6 +7,22 @@ export const supabase = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
+export const getAllChannels = cache(async function getAllChannels() {
+  const { data, error } = await supabase
+    .from('channels')
+    .select('id, name, slug')
+    .is('deleted_at', null)
+    .order('created_at', {
+      ascending: true
+    })
+
+  if (error) {
+    throw error
+  }
+
+  return data ?? []
+})
+
 export const getAllGroups = cache(async function getAllGroups() {
   const { data, error } = await supabase
     .from('groups')
