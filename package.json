@@ -11,6 +11,7 @@
     "algoliasearch": "^4.14.3",
     "clsx": "^1.2.1",
     "dedent": "^0.7.0",
+    "edge-sitemap": "^1.0.3",
     "ics": "^3.1.0",
     "infima": "^0.2.0-alpha.43",
     "lodash.chunk": "^4.2.0",
