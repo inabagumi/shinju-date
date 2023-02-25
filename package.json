@@ -69,7 +69,7 @@
   "homepage": "https://shinju.date/",
   "license": "MIT",
   "name": "@inabagumi/shinju-date",
-  "packageManager": "pnpm@7.27.1",
+  "packageManager": "pnpm@7.28.0",
   "private": true,
   "scripts": {
     "build": "next build",
