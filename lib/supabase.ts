@@ -1,13 +1,24 @@
 import { createClient } from '@supabase/supabase-js'
-import { cache } from 'react'
 import { type Database } from './database.types'
 
 export const supabase = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  {
+    global: {
+      fetch(input, init = {}) {
+        return fetch(input, {
+          next: {
+            revalidate: 60
+          },
+          ...init
+        })
+      }
+    }
+  }
 )
 
-export const getAllChannels = cache(async function getAllChannels() {
+export async function getAllChannels() {
   const { data, error } = await supabase
     .from('channels')
     .select('id, name, slug')
@@ -21,9 +32,9 @@ export const getAllChannels = cache(async function getAllChannels() {
   }
 
   return data ?? []
-})
+}
 
-export const getAllGroups = cache(async function getAllGroups() {
+export async function getAllGroups() {
   const { data, error } = await supabase
     .from('groups')
     .select('id, name, slug, short_name')
@@ -37,11 +48,9 @@ export const getAllGroups = cache(async function getAllGroups() {
   }
 
   return data ?? []
-})
+}
 
-export const getChannelBySlug = cache(async function getChannelBySlug(
-  slug: string
-) {
+export async function getChannelBySlug(slug: string) {
   const { data: channel, error } = await supabase
     .from('channels')
     .select('id, name, slug')
@@ -54,7 +63,7 @@ export const getChannelBySlug = cache(async function getChannelBySlug(
   }
 
   return channel
-})
+}
 
 export function getChannelsByGroup(
   group: Awaited<ReturnType<typeof getGroupBySlug>>
@@ -66,9 +75,7 @@ export function getChannelsByGroup(
     : []
 }
 
-export const getGroupBySlug = cache(async function getGroupBySlug(
-  slug: string
-) {
+export async function getGroupBySlug(slug: string) {
   const { data: group, error } = await supabase
     .from('groups')
     .select('channels (id, name, slug), id, name, slug, short_name')
@@ -82,4 +89,4 @@ export const getGroupBySlug = cache(async function getGroupBySlug(
   }
 
   return group
-})
+}
