@@ -1,4 +1,3 @@
-import { cache } from 'react'
 import { type SearchOptions, getDefaultIndex } from '.'
 
 export type Image = {
@@ -57,7 +56,7 @@ export function getVideosByChannelID(
   return getVideosByChannelIDs([id], options)
 }
 
-export const getVideosByQuery = cache(async function getVideosByQuery({
+export async function getVideosByQuery({
   filters = [],
   limit = 20,
   page = 1,
@@ -71,4 +70,4 @@ export const getVideosByQuery = cache(async function getVideosByQuery({
   })
 
   return hits
-})
+}
