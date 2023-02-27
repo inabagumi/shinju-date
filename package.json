@@ -27,7 +27,7 @@
     "react-wrap-balancer": "^0.4.0",
     "search-insights": "^2.3.0",
     "swr": "^2.0.4",
-    "ufo": "^1.1.0"
+    "ufo": "^1.1.1"
   },
   "description": "SHINJU DATE is a web service for searching videos.",
   "devDependencies": {
