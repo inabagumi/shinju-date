@@ -1,7 +1,7 @@
 import merge from 'lodash.merge'
 import baseMetadata from '@/app/metadata'
 import SimpleDocument from '@/ui/simple-document'
-import About from './about'
+import About from './about.mdx'
 
 const title = 'SHINJU DATEとは?'
 

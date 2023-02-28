@@ -1,7 +1,7 @@
 import merge from 'lodash.merge'
 import baseMetadata from '@/app/metadata'
 import SimpleDocument from '@/ui/simple-document'
-import Privacy from './privacy'
+import Privacy from './privacy.mdx'
 
 const title = 'プライバシーポリシー'
 

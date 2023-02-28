@@ -1,7 +1,7 @@
 import merge from 'lodash.merge'
 import baseMetadata from '@/app/metadata'
 import SimpleDocument from '@/ui/simple-document'
-import Terms from './terms'
+import Terms from './terms.mdx'
 
 const title = '利用規約'
 
