@@ -7,16 +7,17 @@ import Script from 'next/script'
 import { Suspense, useEffect } from 'react'
 import aa from 'search-insights'
 
-export function GoogleAnalytics(): JSX.Element {
+type GoogleAnalyticsProps = {
+  trackingID: string
+}
+
+export function GoogleAnalytics({
+  trackingID
+}: GoogleAnalyticsProps): JSX.Element {
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const trackingID = process.env.NEXT_PUBLIC_GA_TRACKING_ID
 
   useEffect(() => {
-    if (!trackingID || !pathname || !searchParams) {
-      return
-    }
-
     gtag('config', trackingID, {
       page_location: [pathname, searchParams.toString()]
         .filter(Boolean)
@@ -24,10 +25,6 @@ export function GoogleAnalytics(): JSX.Element {
       page_title: document.title
     })
   }, [trackingID, pathname, searchParams])
-
-  if (!trackingID) {
-    return <></>
-  }
 
   return (
     <>
@@ -64,9 +61,9 @@ export default function Analytics(): JSX.Element {
 
   return (
     <>
-      <Suspense fallback={null}>
-        <GoogleAnalytics />
-      </Suspense>
+      {process.env.NEXT_PUBLIC_GA_TRACKING_ID && (
+        <GoogleAnalytics trackingID={process.env.NEXT_PUBLIC_GA_TRACKING_ID} />
+      )}
       <VercelAnalytics />
     </>
   )
