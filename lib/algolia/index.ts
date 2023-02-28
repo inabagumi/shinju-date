@@ -19,7 +19,13 @@ export function getClient(): SearchClient {
     process.env.NEXT_PUBLIC_ALGOLIA_APPLICATION_ID,
     process.env.NEXT_PUBLIC_ALGOLIA_API_KEY,
     {
-      requester: createFetchRequester(),
+      requester: createFetchRequester({
+        requesterOptions: {
+          next: {
+            revalidate: 60
+          }
+        }
+      }),
       requestsCache: createNullCache(),
       responsesCache: createNullCache()
     }
