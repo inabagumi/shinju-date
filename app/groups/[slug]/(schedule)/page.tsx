@@ -19,11 +19,13 @@ type Props = {
   params: Params
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params
+}: Props): Promise<Metadata | null> {
   const group = await getGroupBySlug(params.slug)
 
   if (!group) {
-    return {}
+    return null
   }
 
   const title = group.name
