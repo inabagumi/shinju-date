@@ -1,17 +1,4 @@
 import { Temporal } from '@js-temporal/polyfill'
-import type { DateArray } from 'ics'
-
-export function convertToDateArray(
-  dateTime: Temporal.ZonedDateTime
-): DateArray {
-  return [
-    dateTime.year,
-    dateTime.month,
-    dateTime.day,
-    dateTime.hour,
-    dateTime.minute
-  ]
-}
 
 export function max(
   ...values: Temporal.ZonedDateTime[]

@@ -56,13 +56,12 @@ export async function getChannelBySlug(slug: string) {
     .select('id, name, slug')
     .eq('slug', slug)
     .is('deleted_at', null)
-    .single()
 
-  if (error && error.code !== 'PGRST116') {
+  if (error) {
     throw error
   }
 
-  return channel
+  return channel[0] ?? null
 }
 
 export function getChannelsByGroup(
@@ -82,11 +81,10 @@ export async function getGroupBySlug(slug: string) {
     .eq('slug', slug)
     .is('deleted_at', null)
     .is('channels.deleted_at', null)
-    .single()
 
-  if (error && error.code !== 'PGRST116') {
+  if (error) {
     throw error
   }
 
-  return group
+  return group[0] ?? null
 }
