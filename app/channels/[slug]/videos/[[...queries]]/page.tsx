@@ -43,14 +43,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: {
       canonical: query
         ? `/channels/${channel.slug}/videos/${encodeURIComponent(query)}`
-        : `/channels/${channel.slug}/videos`
+        : `/channels/${channel.slug}/videos`,
+      types: {
+        'text/calendar': !query
+          ? `/channels/${channel.slug}/videos.ics`
+          : undefined
+      }
     },
     openGraph: {
       title,
       type: 'article'
     },
     robots: {
-      index: !!query
+      index: !query
     },
     title,
     twitter: {

@@ -31,14 +31,17 @@ export function generateMetadata({ params }: Props): Metadata {
 
   return merge(baseMetadata, {
     alternates: {
-      canonical: query ? `/videos/${encodeURIComponent(query)}` : '/videos'
+      canonical: query ? `/videos/${encodeURIComponent(query)}` : '/videos',
+      types: {
+        'text/calendar': !query ? '/videos.ics' : undefined
+      }
     },
     openGraph: {
       title,
       type: 'article'
     },
     robots: {
-      index: !!query
+      index: !query
     },
     title,
     twitter: {
