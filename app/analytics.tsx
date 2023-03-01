@@ -62,7 +62,11 @@ export default function Analytics(): JSX.Element {
   return (
     <>
       {process.env.NEXT_PUBLIC_GA_TRACKING_ID && (
-        <GoogleAnalytics trackingID={process.env.NEXT_PUBLIC_GA_TRACKING_ID} />
+        <Suspense>
+          <GoogleAnalytics
+            trackingID={process.env.NEXT_PUBLIC_GA_TRACKING_ID}
+          />
+        </Suspense>
       )}
       <VercelAnalytics />
     </>
