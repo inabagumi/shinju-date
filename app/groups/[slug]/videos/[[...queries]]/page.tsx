@@ -27,11 +27,13 @@ type Props = {
   searchParams: SearchParams
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params
+}: Props): Promise<Metadata | null> {
   const group = await getGroupBySlug(params.slug)
 
   if (!group) {
-    return {}
+    return null
   }
 
   const query = parseQueries(params.queries)

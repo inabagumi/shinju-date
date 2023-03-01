@@ -19,11 +19,13 @@ type Props = {
   params: Params
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params
+}: Props): Promise<Metadata | null> {
   const channel = await getChannelBySlug(params.slug)
 
   if (!channel) {
-    return {}
+    return null
   }
 
   const title = channel.name

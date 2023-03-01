@@ -27,11 +27,13 @@ type Props = {
   searchParams: SearchParams
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params
+}: Props): Promise<Metadata | null> {
   const channel = await getChannelBySlug(params.slug)
 
   if (!channel) {
-    return {}
+    return null
   }
 
   const query = parseQueries(params.queries)
