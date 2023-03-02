@@ -4,13 +4,8 @@ import { type PostgrestError } from '@supabase/supabase-js'
 import { usePathname } from 'next/navigation'
 import { type ReactNode, createContext, useContext, useMemo } from 'react'
 import useSWR from 'swr'
-import { type Database } from '@/lib/database.types'
-import { getAllGroups } from '@/lib/supabase'
-
-type Group = Pick<
-  Database['public']['Tables']['groups']['Row'],
-  'id' | 'name' | 'slug' | 'short_name'
->
+import { fromAsync } from '@/lib/polyfills/array'
+import { type Group, getAllGroups } from '@/lib/supabase'
 
 type GroupValue = {
   currentValue?: Group
@@ -38,6 +33,10 @@ export function useGroupList(): Group[] {
   return values
 }
 
+function fetchAllGroups(): Promise<Group[]> {
+  return fromAsync(getAllGroups())
+}
+
 type GroupProviderProps = {
   children: ReactNode
 }
@@ -46,7 +45,7 @@ export function GroupProvider({ children }: GroupProviderProps) {
   const pathname = usePathname()
   const { data: groups } = useSWR<Group[], PostgrestError>(
     'group-list',
-    getAllGroups
+    fetchAllGroups
   )
   const currentGroup = useMemo<Group | undefined>(() => {
     if (!pathname || !groups) {
