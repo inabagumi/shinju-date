@@ -12,7 +12,7 @@ specifiers:
   '@mdx-js/react': ^2.3.0
   '@next/mdx': ^13.2.3
   '@reach/skip-nav': ^0.18.0
-  '@supabase/supabase-js': ^2.8.0
+  '@supabase/supabase-js': ^2.10.0
   '@svgr/webpack': ^6.5.1
   '@types/dedent': ^0.7.0
   '@types/eslint': ^8.21.1
@@ -69,7 +69,7 @@ dependencies:
   '@js-temporal/polyfill': 0.4.3
   '@mdx-js/react': 2.3.0_react@18.2.0
   '@reach/skip-nav': 0.18.0_biqbaboplfbrettd7655fr4n2y
-  '@supabase/supabase-js': 2.8.0_encoding@0.1.13
+  '@supabase/supabase-js': 2.10.0_encoding@0.1.13
   '@vercel/analytics': 0.1.11_react@18.2.0
   algoliasearch: 4.14.3
   clsx: 1.2.1
@@ -2497,8 +2497,8 @@ packages:
       '@sinonjs/commons': 2.0.0
     dev: true
 
-  /@supabase/functions-js/2.0.0_encoding@0.1.13:
-    resolution: {integrity: sha512-ozb7bds2yvf5k7NM2ZzUkxvsx4S4i2eRKFSJetdTADV91T65g4gCzEs9L3LUXSrghcGIkUaon03VPzOrFredqg==}
+  /@supabase/functions-js/2.1.0_encoding@0.1.13:
+    resolution: {integrity: sha512-vRziB+AqRXRaGHjEFHwBo0kuNDTuAxI7VUeqU24Fe86ISoD8YEQm0dGdpleJEcqgDGWaO6pxT1tfj1BRY5PwMg==}
     dependencies:
       cross-fetch: 3.1.5_encoding@0.1.13
     transitivePeerDependencies:
@@ -2530,22 +2530,22 @@ packages:
       - supports-color
     dev: false
 
-  /@supabase/storage-js/2.3.0_encoding@0.1.13:
-    resolution: {integrity: sha512-YGWVCEYYYF3+UiyL8O4xC78N9n9paLbT0hHl8dmYAtd3DqyWtu5Eph9JTu0PWm+/29Zhns5TbhUZW4xpWjJfPQ==}
+  /@supabase/storage-js/2.3.1_encoding@0.1.13:
+    resolution: {integrity: sha512-BaPIvyvjuZW1V0CnfGKUZyzpBUXnsh0XD8eqTOYd+MdiGPmIPI0vtwnT4fAoK8mipp1vpcN62EVQaqeUnWXPtQ==}
     dependencies:
       cross-fetch: 3.1.5_encoding@0.1.13
     transitivePeerDependencies:
       - encoding
     dev: false
 
-  /@supabase/supabase-js/2.8.0_encoding@0.1.13:
-    resolution: {integrity: sha512-uzf4J+qAKdUMhB2tnJl6BrQRUQBinwjJ2eWo2ZsDw9EUUP5JcHsxTamiq6p91DpqzmTIRg3xRAT+bItTzbfa0w==}
+  /@supabase/supabase-js/2.10.0_encoding@0.1.13:
+    resolution: {integrity: sha512-/vkpPxGDyLfTASWnVHL8vdgQxn9SX/Cs+BotTxFhLSIeGFSazC6rpQSMKu6RqzO7gjBD1KqTv0h3auWfClWs+Q==}
     dependencies:
-      '@supabase/functions-js': 2.0.0_encoding@0.1.13
+      '@supabase/functions-js': 2.1.0_encoding@0.1.13
       '@supabase/gotrue-js': 2.12.1_encoding@0.1.13
       '@supabase/postgrest-js': 1.4.1_encoding@0.1.13
       '@supabase/realtime-js': 2.6.0
-      '@supabase/storage-js': 2.3.0_encoding@0.1.13
+      '@supabase/storage-js': 2.3.1_encoding@0.1.13
       cross-fetch: 3.1.5_encoding@0.1.13
     transitivePeerDependencies:
       - encoding
