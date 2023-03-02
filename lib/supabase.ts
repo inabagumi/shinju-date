@@ -18,7 +18,12 @@ export const supabase = createClient<Database>(
   }
 )
 
-export async function getAllChannels() {
+export type Channel = Pick<
+  Database['public']['Tables']['channels']['Row'],
+  'id' | 'name' | 'slug'
+>
+
+export async function* getAllChannels(): AsyncGenerator<Channel, void, void> {
   const { data, error } = await supabase
     .from('channels')
     .select('id, name, slug')
@@ -31,10 +36,17 @@ export async function getAllChannels() {
     throw error
   }
 
-  return data ?? []
+  for (const channel of data ?? []) {
+    yield channel
+  }
 }
 
-export async function getAllGroups() {
+export type Group = Pick<
+  Database['public']['Tables']['groups']['Row'],
+  'id' | 'name' | 'slug' | 'short_name'
+>
+
+export async function* getAllGroups(): AsyncGenerator<Group, void, void> {
   const { data, error } = await supabase
     .from('groups')
     .select('id, name, slug, short_name')
@@ -47,7 +59,9 @@ export async function getAllGroups() {
     throw error
   }
 
-  return data ?? []
+  for (const group of data ?? []) {
+    yield group
+  }
 }
 
 export async function getChannelBySlug(slug: string) {

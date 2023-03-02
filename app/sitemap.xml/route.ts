@@ -6,7 +6,7 @@ const DEFINED_PAGES: SitemapItem[] = [
   {
     changefreq: 'daily',
     loc: '/',
-    priority: 0.7
+    priority: 1.0
   },
   {
     changefreq: 'daily',
@@ -16,77 +16,125 @@ const DEFINED_PAGES: SitemapItem[] = [
   {
     changefreq: 'monthly',
     loc: '/about',
-    priority: 0.5
+    priority: 0.7
   },
   {
     changefreq: 'monthly',
     loc: '/privacy',
-    priority: 0.5
+    priority: 0.1
   },
   {
     changefreq: 'monthly',
     loc: '/terms',
-    priority: 0.5
+    priority: 0.1
   }
 ]
 
-export const revalidate = 300
+export const revalidate = 86_400 // 1 day
 
-async function writeSitemap(
-  writableStream: WritableStream<SitemapItem>
-): Promise<void> {
-  const writer = writableStream.getWriter()
+function mix<T>(streams: ReadableStream<T>[]): ReadableStream<T> {
+  return new ReadableStream<T>({
+    async start(controller) {
+      await Promise.all(
+        streams.map(async (stream) => {
+          const reader = stream.getReader()
 
-  await writer.ready
+          async function pump(): Promise<void> {
+            const { done, value } = await reader.read()
 
-  try {
-    await Promise.all([
-      ...DEFINED_PAGES.map((sitemapItem) => writer.write(sitemapItem)),
-      getAllChannels().then((channels) =>
-        Promise.all(
-          channels.flatMap((channel) => [
-            writer.write({
-              changefreq: 'daily',
-              loc: `/channels/${channel.slug}`,
-              priority: 0.7
-            }),
-            writer.write({
-              changefreq: 'daily',
-              loc: `/channels/${channel.slug}/videos`,
-              priority: 0.7
-            })
-          ])
-        )
-      ),
-      getAllGroups().then((groups) =>
-        Promise.all(
-          groups.flatMap((group) => [
-            writer.write({
-              changefreq: 'daily',
-              loc: `/groups/${group.slug}`,
-              priority: 0.7
-            }),
-            writer.write({
-              changefreq: 'daily',
-              loc: `/groups/${group.slug}/videos`,
-              priority: 0.7
-            })
-          ])
-        )
+            if (value) {
+              controller.enqueue(value)
+            }
+
+            if (!done) {
+              return pump()
+            }
+          }
+
+          return pump()
+        })
       )
-    ])
-  } finally {
-    await writer.close()
-  }
+
+      controller.close()
+    }
+  })
+}
+
+function createDefinedPagesStream(): ReadableStream<SitemapItem> {
+  return new ReadableStream<SitemapItem>({
+    start(controller) {
+      for (const sitemapItem of DEFINED_PAGES) {
+        controller.enqueue(sitemapItem)
+      }
+
+      controller.close()
+    }
+  })
+}
+
+function createChannelsStream(): ReadableStream<SitemapItem> {
+  const iterator = getAllChannels()
+
+  return new ReadableStream<SitemapItem>({
+    async pull(controller) {
+      const { done, value: channel } = await iterator.next()
+
+      if (channel) {
+        controller.enqueue({
+          changefreq: 'daily',
+          loc: `/channels/${channel.slug}`,
+          priority: 0.7
+        })
+        controller.enqueue({
+          changefreq: 'daily',
+          loc: `/channels/${channel.slug}/videos`,
+          priority: 0.5
+        })
+      }
+
+      if (done) {
+        controller.close()
+      }
+    }
+  })
+}
+
+function createGroupsStream(): ReadableStream<SitemapItem> {
+  const iterator = getAllGroups()
+
+  return new ReadableStream<SitemapItem>({
+    async pull(controller) {
+      const { done, value: group } = await iterator.next()
+
+      if (group) {
+        controller.enqueue({
+          changefreq: 'daily',
+          loc: `/groups/${group.slug}`,
+          priority: 0.7
+        })
+        controller.enqueue({
+          changefreq: 'daily',
+          loc: `/groups/${group.slug}/videos`,
+          priority: 0.5
+        })
+      }
+
+      if (done) {
+        controller.close()
+      }
+    }
+  })
 }
 
 export function GET(): NextResponse {
-  const { readable: smReadable, writable: smWritable } = new SitemapStream({
-    baseURL: new URL(process.env.NEXT_PUBLIC_BASE_URL)
-  })
-  const body = smReadable.pipeThrough(new TextEncoderStream())
-
-  void writeSitemap(smWritable)
+  const baseURL = new URL(process.env.NEXT_PUBLIC_BASE_URL)
+  const body = mix([
+    createDefinedPagesStream(),
+    createChannelsStream(),
+    createGroupsStream()
+  ])
+    .pipeThrough(new SitemapStream({ baseURL }))
+    .pipeThrough(new TextEncoderStream())
 
   return new NextResponse(body, {
     headers: {
