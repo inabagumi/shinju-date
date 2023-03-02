@@ -31,7 +31,7 @@ specifiers:
   algoliasearch: ^4.14.3
   clsx: ^1.2.1
   dedent: ^0.7.0
-  edge-sitemap: ^1.0.6
+  edge-sitemap: ^1.1.1
   encoding: ^0.1.13
   eslint: ~8.35.0
   eslint-config-next: ^13.2.3
@@ -74,7 +74,7 @@ dependencies:
   algoliasearch: 4.14.3
   clsx: 1.2.1
   dedent: 0.7.0
-  edge-sitemap: 1.0.6
+  edge-sitemap: 1.1.1
   ics: 3.1.0
   infima: 0.2.0-alpha.43
   lodash.chunk: 4.2.0
@@ -3968,8 +3968,8 @@ packages:
       domhandler: 4.3.1
     dev: true
 
-  /edge-sitemap/1.0.6:
-    resolution: {integrity: sha512-KW3so9Qgzek85Rg8bqsnHmkCxVfsbP2Ro5e9K6gDuI0bR1LYArytIaYtZt0vCMAKQe47unYTqvoWlgNRbo45HQ==}
+  /edge-sitemap/1.1.1:
+    resolution: {integrity: sha512-5BOX0QLcdPtpgeMGFnS4HZEB58roskzSjdWYlBSMUBWqHdOF8V5PjFpl3GT7CPufG0uAD8SwqXRXz9VtYOX4KQ==}
     engines: {node: '>=16.5.0'}
     dev: false
 
