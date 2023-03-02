@@ -65,8 +65,10 @@ const nextConfig = {
 }
 
 const withPWA = nextPWA({
+  buildExcludes: [/app-build-manifest\.json$/],
   dest: '.next/static',
   disable: process.env.NODE_ENV === 'development',
+  publicExcludes: ['!404.png', '!opensearch.xml'],
   sw: 'service-worker.js'
 })
 
