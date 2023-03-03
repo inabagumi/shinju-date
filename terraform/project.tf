@@ -53,6 +53,7 @@ resource "vercel_project" "this" {
   }
   name                       = "shinju-date"
   public_source              = false
+  root_directory             = "apps/web"
   serverless_function_region = "hnd1"
   team_id                    = var.vercel_team_id
 }

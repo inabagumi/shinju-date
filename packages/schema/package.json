@@ -1,0 +1,29 @@
+{
+  "author": "Haneru Developers",
+  "dependencies": {},
+  "description": "",
+  "devDependencies": {
+    "@tsconfig/strictest": "^1.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.54.0",
+    "@typescript-eslint/parser": "^5.54.0",
+    "eslint": "^8.35.0",
+    "eslint-config-prettier": "^8.6.0",
+    "supabase": "^1.41.4"
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "main": "./src/index.ts",
+  "name": "@shinju-date/schema",
+  "private": true,
+  "repository": {
+    "directory": "packages/schema",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "generate": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > src/index.ts",
+    "lint": "eslint ."
+  },
+  "type": "module",
+  "version": "1.0.0"
+}

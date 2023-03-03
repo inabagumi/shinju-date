@@ -1,11 +1,11 @@
 'use client'
 
+import { type Database } from '@shinju-date/schema'
 import chunk from 'lodash.chunk'
 import { useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite from 'swr/infinite'
 import { type Video } from '@/lib/algolia'
-import { type Database } from '@/lib/database.types'
 import { SEARCH_RESULT_COUNT, fetchVideosByChannelIDs } from '@/lib/fetchers'
 import VideoCard from './video-card'
 

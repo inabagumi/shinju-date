@@ -1,7 +1,5 @@
 function supportsTextEncoderTransform(): boolean {
-  return (
-    'TextEncoderStream' in globalThis && process.env.NEXT_RUNTIME !== 'edge'
-  )
+  return 'TextEncoderStream' in globalThis && !('EdgeRuntime' in globalThis)
 }
 
 class TextEncoderTransformer implements Transformer<string, Uint8Array> {
