@@ -9,6 +9,7 @@ import {
 } from '@/lib/calendar'
 import { getChannelsByGroup, getGroupBySlug } from '@/lib/supabase'
 
+export const runtime = 'edge'
 export const revalidate = 60
 
 type Params = {

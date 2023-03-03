@@ -5,6 +5,7 @@ import About from './about.mdx'
 
 const title = 'SHINJU DATEとは?'
 
+export const runtime = 'edge'
 export const revalidate = 120
 
 export const metadata = merge(baseMetadata, {

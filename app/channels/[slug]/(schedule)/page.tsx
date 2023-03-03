@@ -9,6 +9,7 @@ import NoResults from '@/ui/no-results'
 import SimpleDocument from '@/ui/simple-document'
 import Timeline from '@/ui/timeline'
 
+// export const runtime = 'edge'
 export const revalidate = 60
 
 type Params = {
