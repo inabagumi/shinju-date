@@ -1,4 +1,12 @@
-export async function fromAsync<T, TReturn = any>(
+declare global {
+  interface ArrayConstructor {
+    fromAsync<T, TReturn = any>(
+      iterator: AsyncGenerator<T, TReturn, undefined>
+    ): Promise<T[]>
+  }
+}
+
+async function polyfillFromAsync<T, TReturn = any>(
   iterator: AsyncGenerator<T, TReturn, undefined>
 ): Promise<T[]> {
   const values: T[] = []
@@ -9,3 +17,6 @@ export async function fromAsync<T, TReturn = any>(
 
   return values
 }
+
+export const fromAsync =
+  'fromAsync' in Array ? Array.fromAsync.bind(this) : polyfillFromAsync

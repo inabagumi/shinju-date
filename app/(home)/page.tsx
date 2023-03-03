@@ -8,6 +8,7 @@ const title = 'SHINJU DATE'
 const tagline =
   '774 inc. 所属タレントの配信スケジュールや動画の検索ができるウェブサービス'
 
+// export const runtime = 'edge'
 export const revalidate = 60
 
 export const metadata = merge(baseMetadata, {

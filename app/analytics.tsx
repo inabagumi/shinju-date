@@ -5,7 +5,6 @@ import dedent from 'dedent'
 import { usePathname, useSearchParams } from 'next/navigation'
 import Script from 'next/script'
 import { Suspense, useEffect } from 'react'
-import aa from 'search-insights'
 
 type GoogleAnalyticsProps = {
   trackingID: string
@@ -51,14 +50,6 @@ export function GoogleAnalytics({
 }
 
 export default function Analytics(): JSX.Element {
-  useEffect(() => {
-    aa('init', {
-      apiKey: process.env.NEXT_PUBLIC_ALGOLIA_API_KEY,
-      appId: process.env.NEXT_PUBLIC_ALGOLIA_APPLICATION_ID,
-      useCookie: true
-    })
-  }, [])
-
   return (
     <>
       {process.env.NEXT_PUBLIC_GA_TRACKING_ID && (

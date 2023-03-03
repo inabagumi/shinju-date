@@ -1,7 +1,8 @@
 import dedent from 'dedent'
 import { NextResponse } from 'next/server'
 
-export const revalidate = 1_800
+export const runtime = 'edge'
+export const revalidate = 86_400 // 1 day
 
 export function GET() {
   const sitemapURL = new URL('/sitemap.xml', process.env.NEXT_PUBLIC_BASE_URL)

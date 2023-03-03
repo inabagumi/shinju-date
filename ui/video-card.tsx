@@ -3,9 +3,8 @@
 import { Temporal } from '@js-temporal/polyfill'
 import clsx from 'clsx'
 import Image from 'next/image'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { FormattedRelativeTime, FormattedTime, useIntl } from 'react-intl'
-import aa from 'search-insights'
 import { type Video } from '@/lib/algolia'
 import Skeleton from './skeleton'
 import styles from './video-card.module.css'
@@ -143,16 +142,6 @@ export default function VideoCard({
   timeOptions = {},
   value
 }: Partial<Props>): JSX.Element {
-  const handleClick = useCallback(() => {
-    if (value) {
-      aa('clickedObjectIDs', {
-        eventName: 'Click video card',
-        index: process.env.NEXT_PUBLIC_ALGOLIA_INDEX_NAME,
-        objectIDs: [value.id]
-      })
-    }
-  }, [value])
-
   if (!value) {
     return (
       <div className={styles.blockLink}>
@@ -165,7 +154,6 @@ export default function VideoCard({
     <a
       className={styles.blockLink}
       href={value.url}
-      onClick={handleClick}
       rel="noopener noreferrer"
       target="_blank"
     >
