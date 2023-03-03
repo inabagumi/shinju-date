@@ -24,6 +24,11 @@
     }
   },
   "forwardPorts": [3000],
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
   "image": "mcr.microsoft.com/devcontainers/typescript-node:0-18-bullseye",
   "name": "SHINJU DATE",
   "postCreateCommand": "sudo corepack enable && pnpm install",
