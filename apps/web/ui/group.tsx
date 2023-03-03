@@ -1,10 +1,10 @@
 'use client'
 
+import { fromAsync } from '@shinju-date/polyfills'
 import { type PostgrestError } from '@supabase/supabase-js'
 import { usePathname } from 'next/navigation'
 import { type ReactNode, createContext, useContext, useMemo } from 'react'
 import useSWR from 'swr'
-import { fromAsync } from '@/lib/polyfills/array'
 import { type Group, getAllGroups } from '@/lib/supabase'
 
 type GroupValue = {

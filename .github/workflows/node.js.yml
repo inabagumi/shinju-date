@@ -21,6 +21,6 @@ jobs:
         with:
           node-version: 18.x
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install
       - run: pnpm format-check
-      - run: pnpm test -- --ci --coverage
+      - run: pnpm test

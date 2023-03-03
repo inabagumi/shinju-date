@@ -1,6 +1,6 @@
+import { TextEncoderStream } from '@shinju-date/polyfills'
 import { type SitemapItem, SitemapStream } from 'edge-sitemap'
 import { NextResponse } from 'next/server'
-import { TextEncoderStream } from '@/lib/polyfills/encoding'
 import { mix } from '@/lib/streams'
 import { getAllChannels, getAllGroups } from '@/lib/supabase'
 

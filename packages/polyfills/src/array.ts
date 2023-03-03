@@ -1,12 +1,12 @@
 declare global {
   interface ArrayConstructor {
-    fromAsync<T, TReturn = any>(
+    fromAsync<T, TReturn = unknown>(
       iterator: AsyncGenerator<T, TReturn, undefined>
     ): Promise<T[]>
   }
 }
 
-async function polyfillFromAsync<T, TReturn = any>(
+async function polyfillFromAsync<T, TReturn = unknown>(
   iterator: AsyncGenerator<T, TReturn, undefined>
 ): Promise<T[]> {
   const values: T[] = []

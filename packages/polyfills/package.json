@@ -1,0 +1,27 @@
+{
+  "author": "Haneru Developers",
+  "dependencies": {},
+  "description": "",
+  "devDependencies": {
+    "@tsconfig/strictest": "^1.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.54.0",
+    "@typescript-eslint/parser": "^5.54.0",
+    "eslint": "^8.35.0",
+    "eslint-config-prettier": "^8.6.0"
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "main": "./src/index.ts",
+  "name": "@shinju-date/polyfills",
+  "private": true,
+  "repository": {
+    "directory": "packages/polyfills",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "type": "module",
+  "version": "1.0.0"
+}

@@ -11,7 +11,9 @@
 
 # next.js
 /.next/
+/.vscode/
 /out/
+/static/
 
 # production
 /build
@@ -35,9 +37,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# terraform
-terraform
-
-# pnpm
-pnpm-lock.yaml
