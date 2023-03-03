@@ -52,7 +52,7 @@ specifiers:
   prettier-plugin-md-nocjsp: ^1.5.1
   react: ^18.2.0
   react-dom: ^18.2.0
-  react-icons: ^4.7.1
+  react-icons: ^4.8.0
   react-infinite-scroll-component: ^6.1.0
   react-intl: ^6.2.10
   react-wrap-balancer: ^0.4.0
@@ -84,7 +84,7 @@ dependencies:
   next-themes: 0.2.1_nvzgbose6yf6w7ijjprgspqefi
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
-  react-icons: 4.7.1_react@18.2.0
+  react-icons: 4.8.0_react@18.2.0
   react-infinite-scroll-component: 6.1.0_react@18.2.0
   react-intl: 6.2.10_j5ip3o3v6sktjzl5cxtjyfbuo4
   react-wrap-balancer: 0.4.0_react@18.2.0
@@ -7442,8 +7442,8 @@ packages:
       react: 18.2.0
       scheduler: 0.23.0
 
-  /react-icons/4.7.1_react@18.2.0:
-    resolution: {integrity: sha512-yHd3oKGMgm7zxo3EA7H2n7vxSoiGmHk5t6Ou4bXsfcgWyhfDKMpyKfhHR6Bjnn63c+YXBLBPUql9H4wPJM6sXw==}
+  /react-icons/4.8.0_react@18.2.0:
+    resolution: {integrity: sha512-N6+kOLcihDiAnj5Czu637waJqSnwlMNROzVZMhfX68V/9bu9qHaMIJC4UdozWoOk57gahFCNHwVvWzm0MTzRjg==}
     peerDependencies:
       react: '*'
     dependencies:
