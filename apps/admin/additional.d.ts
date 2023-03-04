@@ -1,5 +1,3 @@
-/// <reference types="mdx" />
-
 declare namespace NodeJS {
   interface ProcessEnv {
     readonly NODE_ENV: 'development' | 'production' | 'test'
@@ -13,19 +11,4 @@ declare namespace NodeJS {
     readonly NEXT_PUBLIC_SUPABASE_ANON_KEY: string
     readonly NEXT_PUBLIC_SUPABASE_URL: string
   }
-}
-
-declare module 'next-pwa' {
-  import { type NextConfig } from 'next'
-
-  export default function withPWA(config: NextConfig): NextConfig
-}
-
-declare module '*.svg' {
-  import { type FC, type SVGProps } from 'react'
-
-  type Props = SVGProps<SVGSVGElement>
-  const content: FC<Props>
-
-  export default content
 }
