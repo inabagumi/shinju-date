@@ -8,7 +8,7 @@
     "@typescript-eslint/parser": "^5.54.0",
     "eslint": "^8.35.0",
     "eslint-config-prettier": "^8.6.0",
-    "supabase": "^1.41.4"
+    "supabase": "^1.41.6"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
