@@ -1,0 +1,45 @@
+{
+  "author": "Haneru Developers",
+  "dependencies": {
+    "@algolia/cache-common": "^4.15.0",
+    "@algolia/requester-fetch": "^4.15.0",
+    "@js-temporal/polyfill": "^0.4.3",
+    "@shinju-date/polyfills": "workspace:*",
+    "@supabase/supabase-js": "^2.10.0",
+    "algoliasearch": "^4.15.0",
+    "next": "^13.2.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "description": "",
+  "devDependencies": {
+    "@algolia/client-search": "^4.15.0",
+    "@shinju-date/schema": "workspace:*",
+    "@types/node": "^18.14.6",
+    "@types/react": "^18.0.28",
+    "@typescript-eslint/eslint-plugin": "~5.54.0",
+    "@typescript-eslint/parser": "~5.54.0",
+    "encoding": "^0.1.13",
+    "eslint": "~8.35.0",
+    "eslint-config-next": "^13.2.3",
+    "eslint-config-prettier": "~8.6.0",
+    "typescript": "~4.9.5"
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "name": "@shinju-date/admin",
+  "private": true,
+  "repository": {
+    "directory": "apps/admin",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "build": "next build",
+    "dev": "next --port 4000",
+    "lint": "next lint",
+    "start": "next start --port 4000"
+  },
+  "type": "module",
+  "version": "1.0.0"
+}

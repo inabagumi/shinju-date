@@ -79,3 +79,54 @@ resource "vercel_project_domain" "ink" {
   redirect_status_code = 308
   team_id              = vercel_project.this.team_id
 }
+
+resource "vercel_project" "admin" {
+  environment = [
+    {
+      key    = "NEXT_PUBLIC_ALGOLIA_API_KEY"
+      target = ["production", "preview", "development"]
+      value  = var.algolia_api_key
+    },
+    {
+      key    = "NEXT_PUBLIC_ALGOLIA_APPLICATION_ID"
+      target = ["production", "preview", "development"]
+      value  = var.algolia_application_id
+    },
+    {
+      key    = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
+      target = ["production"]
+      value  = "prod_videos"
+    },
+    {
+      key    = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
+      target = ["preview", "development"]
+      value  = "dev_videos"
+    },
+    {
+      key    = "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      target = ["production", "preview", "development"]
+      value  = var.supabase_anon_key
+    },
+    {
+      key    = "NEXT_PUBLIC_SUPABASE_URL"
+      target = ["production", "preview", "development"]
+      value  = var.supabase_url
+    },
+  ]
+  framework = "nextjs"
+  git_repository = {
+    type = "github"
+    repo = "inabagumi/shinju-date"
+  }
+  name                       = "shinju-date-admin"
+  public_source              = false
+  root_directory             = "apps/admin"
+  serverless_function_region = "hnd1"
+  team_id                    = var.vercel_team_id
+}
+
+resource "vercel_project_domain" "admin" {
+  domain     = "admin.shinju.date"
+  project_id = vercel_project.admin.id
+  team_id    = vercel_project.admin.team_id
+}
