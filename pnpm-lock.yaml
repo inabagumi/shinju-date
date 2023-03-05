@@ -2591,8 +2591,8 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/gotrue-js/2.12.2_encoding@0.1.13:
-    resolution: {integrity: sha512-4XpeHxlsu/dXAkj32OxWUVV/8VPMa+cwmNVpVmffMpIJWo/cnRllqqYW2tZX3o8ysA05I/AgYy0nDkef1kuHCQ==}
+  /@supabase/gotrue-js/2.13.0_encoding@0.1.13:
+    resolution: {integrity: sha512-NFBHuHNUn94mP/zOQzsp1k2PtwV55Vhf6ZbTzmMpiUvIRlXhVteZcdfdoAQDIBrdxOdL7F54NFp1gIupPZka6g==}
     dependencies:
       cross-fetch: 3.1.5_encoding@0.1.13
     transitivePeerDependencies:
@@ -2628,7 +2628,7 @@ packages:
     resolution: {integrity: sha512-/vkpPxGDyLfTASWnVHL8vdgQxn9SX/Cs+BotTxFhLSIeGFSazC6rpQSMKu6RqzO7gjBD1KqTv0h3auWfClWs+Q==}
     dependencies:
       '@supabase/functions-js': 2.1.0_encoding@0.1.13
-      '@supabase/gotrue-js': 2.12.2_encoding@0.1.13
+      '@supabase/gotrue-js': 2.13.0_encoding@0.1.13
       '@supabase/postgrest-js': 1.4.1_encoding@0.1.13
       '@supabase/realtime-js': 2.6.0
       '@supabase/storage-js': 2.3.1_encoding@0.1.13
@@ -3682,7 +3682,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001460
-      electron-to-chromium: 1.4.318
+      electron-to-chromium: 1.4.320
       node-releases: 2.0.10
       update-browserslist-db: 1.0.10_browserslist@4.21.5
     dev: true
@@ -4201,8 +4201,8 @@ packages:
       jake: 10.8.5
     dev: true
 
-  /electron-to-chromium/1.4.318:
-    resolution: {integrity: sha512-EQHZE/yO9Sg6gIP9VezPltDWFA8pMnv7dNRb4Y0ukels3iyXTH313gbHvK/tZwUF+jeh5F5fDf1rqWb8ZWX8fw==}
+  /electron-to-chromium/1.4.320:
+    resolution: {integrity: sha512-h70iRscrNluMZPVICXYl5SSB+rBKo22XfuIS1ER0OQxQZpKTnFpuS6coj7wY9M/3trv7OR88rRMOlKmRvDty7Q==}
     dev: true
 
   /emittery/0.13.1:
