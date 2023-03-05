@@ -2,7 +2,6 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "dbaeumer.vscode-eslint",
         "EditorConfig.EditorConfig",
         "esbenp.prettier-vscode",
         "silvenon.mdx"
@@ -20,10 +19,10 @@
     "ghcr.io/devcontainers/features/terraform:1": {
       "terragrunt": "none",
       "tflint": "none",
-      "version": "1.1.7"
+      "version": "1.3.9"
     }
   },
-  "forwardPorts": [3000],
+  "forwardPorts": [3000, 4000],
   "hostRequirements": {
     "cpus": 4,
     "memory": "8gb",
@@ -31,6 +30,5 @@
   },
   "image": "mcr.microsoft.com/devcontainers/typescript-node:0-18-bullseye",
   "name": "SHINJU DATE",
-  "postCreateCommand": "sudo corepack enable && pnpm install",
-  "remoteUser": "node"
+  "postCreateCommand": "sudo corepack enable && pnpm install"
 }
