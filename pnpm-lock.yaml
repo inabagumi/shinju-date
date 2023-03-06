@@ -24,6 +24,7 @@ importers:
       '@js-temporal/polyfill': ^0.4.3
       '@shinju-date/polyfills': workspace:*
       '@shinju-date/schema': workspace:*
+      '@supabase/auth-helpers-nextjs': ^0.5.5
       '@supabase/supabase-js': ^2.10.0
       '@types/node': ^18.14.6
       '@types/react': ^18.0.28
@@ -43,6 +44,7 @@ importers:
       '@algolia/requester-fetch': 4.15.0
       '@js-temporal/polyfill': 0.4.3
       '@shinju-date/polyfills': link:../../packages/polyfills
+      '@supabase/auth-helpers-nextjs': 0.5.5_ku2vntnma2imfrsyohnkxzette
       '@supabase/supabase-js': 2.10.0_encoding@0.1.13
       algoliasearch: 4.15.0
       next: 13.2.3_biqbaboplfbrettd7655fr4n2y
@@ -2582,6 +2584,23 @@ packages:
     dependencies:
       '@sinonjs/commons': 2.0.0
     dev: true
+
+  /@supabase/auth-helpers-nextjs/0.5.5_ku2vntnma2imfrsyohnkxzette:
+    resolution: {integrity: sha512-IJp6XDvLpPOg7r1YU14jmqlOYHOB0MeXZgmbIg6LHFYU8yMBczWu9c1A63plFVnXRtLUMAlcNISkrgHZMc0VdA==}
+    peerDependencies:
+      '@supabase/supabase-js': ^2.0.4
+    dependencies:
+      '@supabase/auth-helpers-shared': 0.3.0_ku2vntnma2imfrsyohnkxzette
+      '@supabase/supabase-js': 2.10.0_encoding@0.1.13
+    dev: false
+
+  /@supabase/auth-helpers-shared/0.3.0_ku2vntnma2imfrsyohnkxzette:
+    resolution: {integrity: sha512-6lKhVMBZnGdFelpZyvQDBQSOY+pglS6a5U4ieAqfKQ/rx3rSjRASR3UGh7V+el1re3xYe3ddVBWXw16rdVAzrQ==}
+    peerDependencies:
+      '@supabase/supabase-js': ^2.0.4
+    dependencies:
+      '@supabase/supabase-js': 2.10.0_encoding@0.1.13
+    dev: false
 
   /@supabase/functions-js/2.1.0_encoding@0.1.13:
     resolution: {integrity: sha512-vRziB+AqRXRaGHjEFHwBo0kuNDTuAxI7VUeqU24Fe86ISoD8YEQm0dGdpleJEcqgDGWaO6pxT1tfj1BRY5PwMg==}

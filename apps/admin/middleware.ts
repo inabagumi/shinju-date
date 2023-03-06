@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseClient } from '@/lib/supabase/middleware'
 
 export const config = {
   matcher: ['/']
@@ -15,10 +15,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   } = await supabase.auth.getSession()
 
   if (!session || error) {
-    const nextUrl = request.nextUrl.clone()
-    nextUrl.pathname = '/login'
-
-    return NextResponse.redirect(nextUrl)
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   return response
