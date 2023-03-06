@@ -34,7 +34,7 @@ importers:
       encoding: ^0.1.13
       eslint: ~8.35.0
       eslint-config-next: ^13.2.3
-      eslint-config-prettier: ~8.6.0
+      eslint-config-prettier: ~8.7.0
       next: ^13.2.3
       react: ^18.2.0
       react-dom: ^18.2.0
@@ -60,7 +60,7 @@ importers:
       encoding: 0.1.13
       eslint: 8.35.0
       eslint-config-next: 13.2.3_ycpbpc6yetojsgtrx3mwntkhsu
-      eslint-config-prettier: 8.6.0_eslint@8.35.0
+      eslint-config-prettier: 8.7.0_eslint@8.35.0
       typescript: 4.9.5
 
   apps/web:
@@ -100,7 +100,7 @@ importers:
       encoding: ^0.1.13
       eslint: ~8.35.0
       eslint-config-next: ^13.2.3
-      eslint-config-prettier: ~8.6.0
+      eslint-config-prettier: ~8.7.0
       ics: ^3.1.0
       infima: ^0.2.0-alpha.43
       jest: ^29.4.3
@@ -176,7 +176,7 @@ importers:
       encoding: 0.1.13
       eslint: 8.35.0
       eslint-config-next: 13.2.3_ycpbpc6yetojsgtrx3mwntkhsu
-      eslint-config-prettier: 8.6.0_eslint@8.35.0
+      eslint-config-prettier: 8.7.0_eslint@8.35.0
       jest: 29.4.3_@types+node@18.14.6
       next-pwa: 5.6.0_next@13.2.3
       postcss: 8.4.21
@@ -192,13 +192,13 @@ importers:
       '@typescript-eslint/eslint-plugin': ^5.54.0
       '@typescript-eslint/parser': ^5.54.0
       eslint: ^8.35.0
-      eslint-config-prettier: ^8.6.0
+      eslint-config-prettier: ^8.7.0
     devDependencies:
       '@tsconfig/strictest': 1.0.2
       '@typescript-eslint/eslint-plugin': 5.54.0_ajyizmi44oc3hrc35l6ndh7p4e
       '@typescript-eslint/parser': 5.54.0_eslint@8.35.0
       eslint: 8.35.0
-      eslint-config-prettier: 8.6.0_eslint@8.35.0
+      eslint-config-prettier: 8.7.0_eslint@8.35.0
 
   packages/schema:
     specifiers:
@@ -206,14 +206,14 @@ importers:
       '@typescript-eslint/eslint-plugin': ^5.54.0
       '@typescript-eslint/parser': ^5.54.0
       eslint: ^8.35.0
-      eslint-config-prettier: ^8.6.0
+      eslint-config-prettier: ^8.7.0
       supabase: ^1.41.6
     devDependencies:
       '@tsconfig/strictest': 1.0.2
       '@typescript-eslint/eslint-plugin': 5.54.0_ajyizmi44oc3hrc35l6ndh7p4e
       '@typescript-eslint/parser': 5.54.0_eslint@8.35.0
       eslint: 8.35.0
-      eslint-config-prettier: 8.6.0_eslint@8.35.0
+      eslint-config-prettier: 8.7.0_eslint@8.35.0
       supabase: 1.41.6
 
 packages:
@@ -4422,8 +4422,8 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-config-prettier/8.6.0_eslint@8.35.0:
-    resolution: {integrity: sha512-bAF0eLpLVqP5oEVUFKpMA+NnRFICwn9X8B5jrR9FcqnYBuPbqWEjTEspPWMj5ye6czoSLDweCzSo3Ko7gGrZaA==}
+  /eslint-config-prettier/8.7.0_eslint@8.35.0:
+    resolution: {integrity: sha512-HHVXLSlVUhMSmyW4ZzEuvjpwqamgmlfkutD53cYXLikh4pt/modINRcCIApJ84czDxM4GZInwUrromsDdTImTA==}
     hasBin: true
     peerDependencies:
       eslint: '>=7.0.0'
