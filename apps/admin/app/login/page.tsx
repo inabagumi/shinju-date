@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createSupabaseClient } from '@/lib/supabase/server'
+import Content from './content'
 
 // export const runtime = 'edge'
 
@@ -29,35 +30,5 @@ export default async function Login({ searchParams }: Props) {
     redirect('/')
   }
 
-  return (
-    <>
-      <h1>Login</h1>
-      {message && <p>{message}</p>}
-      <form action="/login/email" encType="multipart/form-data" method="post">
-        <fieldset>
-          <legend>
-            <label htmlFor="email">E-mail</label>
-          </legend>
-
-          <input
-            defaultValue={email}
-            name="email"
-            placeholder="example@example.com"
-            required
-            type="email"
-          />
-        </fieldset>
-
-        <fieldset>
-          <legend>
-            <label htmlFor="password">Password</label>
-          </legend>
-
-          <input id="password" name="password" required type="password" />
-        </fieldset>
-
-        <button type="submit">Login</button>
-      </form>
-    </>
-  )
+  return <Content defaultValues={{ email }} message={message} />
 }
