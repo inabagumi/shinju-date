@@ -1,6 +1,8 @@
 import { type ReactNode } from 'react'
+import Provider from './provider'
 
 export const metadata = {
+  themeColor: '#212121',
   title: 'Admin UI - SHINJU DATE'
 }
 
@@ -11,7 +13,9 @@ type Props = {
 export default function RootLayout({ children }: Props) {
   return (
     <html lang="ja">
-      <body>{children}</body>
+      <body>
+        <Provider>{children}</Provider>
+      </body>
     </html>
   )
 }

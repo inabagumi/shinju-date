@@ -1,13 +1,5 @@
-export const runtime = 'edge'
+import HomeContent from './content'
 
 export default function Home(): JSX.Element {
-  return (
-    <>
-      <h1>Home</h1>
-
-      <form action="/logout" method="post">
-        <button type="submit">Logout</button>
-      </form>
-    </>
-  )
+  return <HomeContent />
 }
