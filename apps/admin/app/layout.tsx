@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react'
+import { createSupabaseClient } from '@/lib/supabase/server'
 import Provider from './provider'
 
 export const metadata = {
@@ -10,11 +11,16 @@ type Props = {
   children: ReactNode
 }
 
-export default function RootLayout({ children }: Props) {
+export default async function RootLayout({ children }: Props) {
+  const supabase = createSupabaseClient()
+  const {
+    data: { session }
+  } = await supabase.auth.getSession()
+
   return (
     <html lang="ja">
       <body>
-        <Provider>{children}</Provider>
+        <Provider session={session ?? undefined}>{children}</Provider>
       </body>
     </html>
   )

@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
+import { AbsoluteCenter, Container } from '@/lib/chakra-ui'
 import { createSupabaseClient } from '@/lib/supabase/server'
-import Content from './content'
+import ErrorMessage, { ErrorMessageProvider } from './error-message'
+import LoginForm from './form'
 
 // export const runtime = 'edge'
 
@@ -30,5 +32,15 @@ export default async function Login({ searchParams }: Props) {
     redirect('/')
   }
 
-  return <Content defaultValues={{ email }} message={message} />
+  return (
+    <ErrorMessageProvider message={message}>
+      <Container maxW="100%" minH="100lvh" pos="relative" w="container.lg">
+        <ErrorMessage />
+
+        <AbsoluteCenter maxW="100%" p={4}>
+          <LoginForm defaultValues={{ email }} />
+        </AbsoluteCenter>
+      </Container>
+    </ErrorMessageProvider>
+  )
 }
