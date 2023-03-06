@@ -30,5 +30,15 @@
   },
   "image": "mcr.microsoft.com/devcontainers/typescript-node:0-18-bullseye",
   "name": "SHINJU DATE",
+  "portsAttributes": {
+    "3000": {
+      "label": "Web",
+      "onAutoForward": "silent"
+    },
+    "4000": {
+      "label": "Admin",
+      "onAutoForward": "silent"
+    }
+  },
   "postCreateCommand": "sudo corepack enable && pnpm install"
 }
