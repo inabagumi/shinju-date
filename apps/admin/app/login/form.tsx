@@ -1,13 +1,18 @@
 'use client'
 
+import { yupResolver } from '@hookform/resolvers/yup'
+import { type Database } from '@shinju-date/schema'
+import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs'
+import { type SupabaseClient } from '@supabase/supabase-js'
+import { useRouter } from 'next/navigation'
+import { type FormEventHandler, useMemo } from 'react'
+import { type Control, useController, useForm } from 'react-hook-form'
+import { HiEye, HiEyeOff } from 'react-icons/hi'
+import * as yup from 'yup'
 import {
-  AbsoluteCenter,
-  Alert,
-  AlertIcon,
   Box,
   Button,
   Center,
-  Container,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -17,24 +22,8 @@ import {
   InputGroup,
   InputRightElement,
   useDisclosure
-} from '@chakra-ui/react'
-import { yupResolver } from '@hookform/resolvers/yup'
-import { type Database } from '@shinju-date/schema'
-import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs'
-import { type SupabaseClient } from '@supabase/supabase-js'
-import { useRouter } from 'next/navigation'
-import {
-  type FormEventHandler,
-  type ReactNode,
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState
-} from 'react'
-import { type Control, useController, useForm } from 'react-hook-form'
-import { HiEye, HiEyeOff } from 'react-icons/hi'
-import * as yup from 'yup'
+} from '@/lib/chakra-ui'
+import { useErrorMessage } from './error-message'
 
 const formDataSchema = yup
   .object()
@@ -50,40 +39,6 @@ const formDataSchema = yup
   })
   .required()
 type FormData = yup.InferType<typeof formDataSchema>
-
-export type ErrorMessageValues = {
-  message?: string
-  setErrorMessage: (message: string) => void
-}
-export const ErrorMessageContext = createContext<ErrorMessageValues>({
-  setErrorMessage: () => undefined
-})
-
-export function useErrorMessage(): ErrorMessageValues {
-  return useContext(ErrorMessageContext)
-}
-
-type ErrorMessageProviderProps = {
-  children: ReactNode
-  message?: string
-}
-
-export function ErrorMessageProvider({
-  children,
-  message: defaultMessage
-}: ErrorMessageProviderProps): JSX.Element {
-  const [message, setRawMessage] = useState(() => defaultMessage)
-
-  const setErrorMessage = useCallback((message: string) => {
-    setRawMessage(message)
-  }, [])
-
-  return (
-    <ErrorMessageContext.Provider value={{ message, setErrorMessage }}>
-      {children}
-    </ErrorMessageContext.Provider>
-  )
-}
 
 export type PasswordFieldProps<N extends keyof FormData> = {
   control: Control<FormData, N>
@@ -114,7 +69,7 @@ export function PasswordField<N extends keyof FormData>({
       />
       <InputRightElement>
         <IconButton
-          aria-label=""
+          aria-label={shownPassword ? 'パスワードを隠す' : 'パスワードを表示'}
           icon={shownPassword ? <HiEyeOff /> : <HiEye />}
           onClick={shownPassword ? hidePassword : showPassword}
           variant="link"
@@ -124,11 +79,11 @@ export function PasswordField<N extends keyof FormData>({
   )
 }
 
-export type LoginFormProps = {
+export type Props = {
   defaultValues: Partial<Omit<FormData, 'password'>>
 }
 
-export function LoginForm({ defaultValues }: LoginFormProps): JSX.Element {
+export default function LoginForm({ defaultValues }: Props): JSX.Element {
   const router = useRouter()
   const {
     control,
@@ -171,7 +126,7 @@ export function LoginForm({ defaultValues }: LoginFormProps): JSX.Element {
       borderRadius="lg"
       borderWidth={1}
       encType="multipart/form-data"
-      maxW="sm"
+      maxW="100%"
       method="post"
       noValidate
       onSubmit={onSubmit}
@@ -205,45 +160,5 @@ export function LoginForm({ defaultValues }: LoginFormProps): JSX.Element {
         </Button>
       </Center>
     </Box>
-  )
-}
-
-export function ErrorMessage(): JSX.Element | null {
-  const { message } = useErrorMessage()
-
-  if (!message) {
-    return null
-  }
-
-  return (
-    <Box p={4}>
-      <Alert status="error">
-        <AlertIcon />
-
-        {message}
-      </Alert>
-    </Box>
-  )
-}
-
-type Props = {
-  defaultValues: Partial<Omit<FormData, 'password'>>
-  message?: string
-}
-
-export default function LoginContent({
-  defaultValues,
-  message
-}: Props): JSX.Element {
-  return (
-    <ErrorMessageProvider message={message}>
-      <Container maxW="container.lg" minH="100lvh" pos="relative">
-        <ErrorMessage />
-
-        <AbsoluteCenter>
-          <LoginForm defaultValues={defaultValues} />
-        </AbsoluteCenter>
-      </Container>
-    </ErrorMessageProvider>
   )
 }

@@ -23,6 +23,7 @@ importers:
       '@algolia/requester-fetch': ^4.15.0
       '@chakra-ui/next-js': ^2.0.1
       '@chakra-ui/react': ^2.5.1
+      '@chakra-ui/skip-nav': ^2.0.15
       '@emotion/react': ^11.10.6
       '@emotion/styled': ^11.10.6
       '@hookform/resolvers': ^2.9.11
@@ -53,6 +54,7 @@ importers:
       '@algolia/requester-fetch': 4.15.0
       '@chakra-ui/next-js': 2.0.1_rh4ranelmiiwcjr6torwvcvzsy
       '@chakra-ui/react': 2.5.1_ospfgdir4kjoyzjmcchbyoggem
+      '@chakra-ui/skip-nav': 2.0.15_react@18.2.0
       '@emotion/react': 11.10.6_pmekkgnqduwlme35zpnqhenc34
       '@emotion/styled': 11.10.6_oouaibmszuch5k64ms7uxp2aia
       '@hookform/resolvers': 2.9.11_react-hook-form@7.43.5
@@ -2453,6 +2455,15 @@ packages:
       '@chakra-ui/react-use-previous': 2.0.5_react@18.2.0
       '@chakra-ui/shared-utils': 2.0.5
       '@chakra-ui/system': 2.5.1_xqp3pgpqjlfxxa3zxu4zoc4fba
+      react: 18.2.0
+    dev: false
+
+  /@chakra-ui/skip-nav/2.0.15_react@18.2.0:
+    resolution: {integrity: sha512-5UtmlnV4BmIgEk6lQ0h81JEYhPX04wJEk5ZMoilQ2zEQYL6TkVVHkhRXyc1Zfq76hmHuZPXZV/yJeTecj6jIrA==}
+    peerDependencies:
+      '@chakra-ui/system': '>=2.0.0'
+      react: '>=18'
+    dependencies:
       react: 18.2.0
     dev: false
 
