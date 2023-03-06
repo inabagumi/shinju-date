@@ -134,7 +134,7 @@ export default function LoginForm({ defaultValues }: Props): JSX.Element {
       w="md"
     >
       <Heading as="h1" size="md" textAlign="center">
-        ログイン
+        Admin UI
       </Heading>
 
       <FormControl isInvalid={!!errors.email} mt={4}>
