@@ -6,7 +6,7 @@
     "@chakra-ui/skip-nav": "^2.0.15",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
-    "framer-motion": "^10.2.1"
+    "framer-motion": "^10.2.3"
   },
   "description": "",
   "devDependencies": {
