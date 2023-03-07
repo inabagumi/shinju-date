@@ -34,7 +34,7 @@ export default async function Login({ searchParams }: Props) {
 
   return (
     <ErrorMessageProvider message={message}>
-      <Container maxW="100%" minH="100lvh" pos="relative" w="container.lg">
+      <Container maxW="100%" minH="100dvh" pos="relative" w="container.lg">
         <ErrorMessage />
 
         <AbsoluteCenter maxW="100%" p={4}>
