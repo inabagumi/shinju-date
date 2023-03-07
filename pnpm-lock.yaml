@@ -267,14 +267,14 @@ importers:
       '@typescript-eslint/parser': ^5.54.1
       eslint: ^8.35.0
       eslint-config-prettier: ^8.7.0
-      supabase: ^1.42.1
+      supabase: ^1.42.2
     devDependencies:
       '@tsconfig/strictest': 1.0.2
       '@typescript-eslint/eslint-plugin': 5.54.1_uyiasnnzcqrxqkfvjklwnmwcha
       '@typescript-eslint/parser': 5.54.1_eslint@8.35.0
       eslint: 8.35.0
       eslint-config-prettier: 8.7.0_eslint@8.35.0
-      supabase: 1.42.1
+      supabase: 1.42.2
 
 packages:
 
@@ -10431,8 +10431,8 @@ packages:
     resolution: {integrity: sha512-GP6WDNWf+o403jrEp9c5jibKavrtLW+/qYGhFxFrG8maXhwTBI7gLLhiBb0o7uFccWN+EOS9aMO6cGHWAO07OA==}
     dev: false
 
-  /supabase/1.42.1:
-    resolution: {integrity: sha512-4RE777WV164Yvu5Bec8JCBsnjot40o91JOXrOp7Lng5a5ZEpMKa/pcL4Q8Nn16xhtZpVxJ4bxFtr/O2lqtxiQA==}
+  /supabase/1.42.2:
+    resolution: {integrity: sha512-GBQhcWuDGUMRD1w7/jfCDDp1eL9+84ynRuNEWXhf79UZQIXLM92o6DWDDYQaFz2/qEpgmivfsITy1gv1E4jyXw==}
     hasBin: true
     requiresBuild: true
     dependencies:
