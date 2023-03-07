@@ -1,2 +1,2 @@
-export * from './array'
-export * from './encoding'
+export * from './array.js'
+export * from './encoding.js'
