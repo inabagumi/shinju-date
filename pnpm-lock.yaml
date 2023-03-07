@@ -141,7 +141,7 @@ importers:
       react-wrap-balancer: ^0.4.0
       rehype-external-links: ^2.0.1
       remark-gfm: ^3.0.1
-      swr: ^2.0.4
+      swr: ^2.1.0
       typescript: ~4.9.5
       ufo: ^1.1.1
     dependencies:
@@ -170,7 +170,7 @@ importers:
       react-infinite-scroll-component: 6.1.0_react@18.2.0
       react-intl: 6.2.10_j5ip3o3v6sktjzl5cxtjyfbuo4
       react-wrap-balancer: 0.4.0_react@18.2.0
-      swr: 2.0.4_react@18.2.0
+      swr: 2.1.0_react@18.2.0
       ufo: 1.1.1
     devDependencies:
       '@algolia/client-search': 4.15.0
@@ -9774,8 +9774,8 @@ packages:
       stable: 0.1.8
     dev: true
 
-  /swr/2.0.4_react@18.2.0:
-    resolution: {integrity: sha512-4GUiTjknRUVuw4MWUHR7mzJ9G/DWL+yZz/TgWDfiA0OZ9tL6qyrTkN2wPeboBpL3OJTkej3pexh3mWCnv8cFkQ==}
+  /swr/2.1.0_react@18.2.0:
+    resolution: {integrity: sha512-4hYl5p3/KalQ1MORealM79g/DtLohmud6yyfXw5l4wjtFksYUnocRFudvyaoUtgj3FrVNK9lS25Av9dsZYvz0g==}
     engines: {pnpm: '7'}
     peerDependencies:
       react: ^16.11.0 || ^17.0.0 || ^18.0.0
