@@ -1,9 +1,9 @@
 'use client'
 
+import { Box, Button } from '@shinju-date/chakra-ui'
 import { useRouter } from 'next/navigation'
 import { type FormEventHandler, type ReactNode, useCallback } from 'react'
 import { useSupabaseClient } from '@/app/session'
-import { Box, Button } from '@/lib/chakra-ui'
 
 export type Props = {
   children: ReactNode
@@ -35,7 +35,9 @@ export default function LogoutButton({ children }: Props) {
       method="post"
       onSubmit={handleSubmit}
     >
-      <Button type="submit">{children}</Button>
+      <Button size="sm" type="submit">
+        {children}
+      </Button>
     </Box>
   )
 }

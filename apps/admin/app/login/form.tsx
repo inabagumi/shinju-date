@@ -1,14 +1,5 @@
 'use client'
 
-import { yupResolver } from '@hookform/resolvers/yup'
-import { type Database } from '@shinju-date/schema'
-import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs'
-import { type SupabaseClient } from '@supabase/supabase-js'
-import { useRouter } from 'next/navigation'
-import { type FormEventHandler, useMemo } from 'react'
-import { type Control, useController, useForm } from 'react-hook-form'
-import { HiEye, HiEyeOff } from 'react-icons/hi'
-import * as yup from 'yup'
 import {
   Box,
   Button,
@@ -22,7 +13,16 @@ import {
   InputGroup,
   InputRightElement,
   useDisclosure
-} from '@/lib/chakra-ui'
+} from '@shinju-date/chakra-ui'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { type Database } from '@shinju-date/schema'
+import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs'
+import { type SupabaseClient } from '@supabase/supabase-js'
+import { useRouter } from 'next/navigation'
+import { type FormEventHandler, useMemo } from 'react'
+import { type Control, useController, useForm } from 'react-hook-form'
+import { HiEye, HiEyeOff } from 'react-icons/hi'
+import * as yup from 'yup'
 import { useErrorMessage } from './error-message'
 
 const formDataSchema = yup

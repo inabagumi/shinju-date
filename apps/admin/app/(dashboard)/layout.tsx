@@ -1,6 +1,12 @@
+import {
+  Box,
+  Flex,
+  Link,
+  SkipNavContent,
+  SkipNavLink
+} from '@shinju-date/chakra-ui'
 import NextLink from 'next/link'
 import { ReactNode } from 'react'
-import { Box, Flex, Link, SkipNavContent, SkipNavLink } from '@/lib/chakra-ui'
 import LogoutButton from './logout-button'
 
 export type Props = {
@@ -12,7 +18,13 @@ export default function DashboardLayout({ children }: Props): JSX.Element {
     <>
       <SkipNavLink>コンテンツにスキップ</SkipNavLink>
 
-      <Box as="header" borderBottomWidth={1} p={2} pos="sticky">
+      <Box
+        as="header"
+        backdropBlur={15}
+        borderBottomWidth={1}
+        p={2}
+        pos="sticky"
+      >
         <Flex justify="space-between">
           <Flex alignItems="center">
             <Link
@@ -25,7 +37,7 @@ export default function DashboardLayout({ children }: Props): JSX.Element {
               Admin UI
             </Link>
           </Flex>
-          <Flex alignItems="center">
+          <Flex alignItems="center" px="4" py={2}>
             <LogoutButton>ログアウト</LogoutButton>
           </Flex>
         </Flex>

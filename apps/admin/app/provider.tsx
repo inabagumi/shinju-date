@@ -1,9 +1,9 @@
 'use client'
 
-import { CacheProvider } from '@chakra-ui/next-js'
+import theme from '@shinju-date/chakra-theme'
+import { CacheProvider, ChakraProvider } from '@shinju-date/chakra-ui'
 import { type Session } from '@supabase/auth-helpers-nextjs'
 import { type ReactNode } from 'react'
-import { ChakraProvider, ColorModeScript } from '@/lib/chakra-ui'
 import { SessionProvider } from './session'
 
 type Props = {
@@ -14,12 +14,8 @@ type Props = {
 export default function Provider({ children, session }: Props) {
   return (
     <CacheProvider>
-      <ChakraProvider>
-        <SessionProvider session={session}>
-          <ColorModeScript initialColorMode="system" />
-
-          {children}
-        </SessionProvider>
+      <ChakraProvider theme={theme}>
+        <SessionProvider session={session}>{children}</SessionProvider>
       </ChakraProvider>
     </CacheProvider>
   )

@@ -22,9 +22,5 @@
     "test": "turbo test"
   },
   "type": "module",
-  "version": "1.0.0",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+  "version": "1.0.0"
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import { Alert, AlertIcon, Box, type BoxProps } from '@shinju-date/chakra-ui'
 import {
   type ReactNode,
   createContext,
@@ -7,7 +8,6 @@ import {
   useContext,
   useState
 } from 'react'
-import { Alert, AlertIcon, Box } from '@/lib/chakra-ui'
 
 export type ErrorMessageValues = {
   message?: string
@@ -43,7 +43,10 @@ export function ErrorMessageProvider({
   )
 }
 
-export default function ErrorMessage(): JSX.Element | null {
+export default function ErrorMessage({
+  p,
+  ...props
+}: BoxProps): JSX.Element | null {
   const { message } = useErrorMessage()
 
   if (!message) {
@@ -51,7 +54,7 @@ export default function ErrorMessage(): JSX.Element | null {
   }
 
   return (
-    <Box p={4}>
+    <Box p={p ?? 4} {...props}>
       <Alert status="error">
         <AlertIcon />
 
