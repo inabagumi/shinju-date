@@ -6,6 +6,6 @@ export default defineConfig({
   },
   dts: true,
   entry: ['./src/index.ts'],
-  format: 'cjs',
+  format: ['cjs', 'esm'],
   target: 'es2022'
 })
