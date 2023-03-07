@@ -7,15 +7,28 @@
   "description": "",
   "devDependencies": {
     "@chakra-ui/cli": "^2.3.0",
-    "@tsconfig/strictest": "^1.0.2",
+    "@shinju-date/tsconfig": "workspace:*",
+    "@types/node": "^18.14.6",
     "@typescript-eslint/eslint-plugin": "^5.54.0",
     "@typescript-eslint/parser": "^5.54.0",
     "eslint": "^8.35.0",
-    "eslint-config-prettier": "^8.7.0"
+    "eslint-config-prettier": "^8.7.0",
+    "tsup": "^6.6.3",
+    "typescript": "^4.9.5"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./theming.types.d.ts": {
+      "types": "./dist/theming.types.d.ts"
+    }
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
   "name": "@shinju-date/chakra-theme",
   "private": true,
   "repository": {
@@ -24,9 +37,11 @@
     "url": "https://github.com/inabagumi/shinju-date.git"
   },
   "scripts": {
-    "generate": "chakra-cli tokens ./src/theme.ts --out types/theming.types.d.ts --template augmentation",
-    "lint": "eslint .",
-    "postinstall": "${npm_execpath} run generate"
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint ."
   },
+  "type": "module",
+  "types": "./dist/index.d.ts",
   "version": "1.0.0"
 }

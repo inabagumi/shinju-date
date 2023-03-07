@@ -1,10 +1,5 @@
 {
-  "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "module": "Node16",
-    "target": "ES2022"
-  },
   "exclude": ["node_modules"],
-  "extends": "@tsconfig/strictest",
-  "include": ["./src/**/*.ts"]
+  "extends": "@shinju-date/tsconfig/base",
+  "include": ["./src/**/*.ts", "./tsup.config.ts"]
 }

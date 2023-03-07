@@ -3,15 +3,31 @@
   "dependencies": {},
   "description": "",
   "devDependencies": {
-    "@tsconfig/strictest": "^1.0.2",
+    "@shinju-date/tsconfig": "workspace:*",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
     "eslint": "^8.35.0",
-    "eslint-config-prettier": "^8.7.0"
+    "eslint-config-prettier": "^8.7.0",
+    "tsup": "^6.6.3",
+    "typescript": "^4.9.5"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./array": {
+      "import": "./dist/array.js",
+      "types": "./dist/array.d.ts"
+    },
+    "./encoding": {
+      "import": "./dist/encoding.js",
+      "types": "./dist/encoding.d.ts"
+    }
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
   "name": "@shinju-date/polyfills",
   "private": true,
   "repository": {
@@ -20,8 +36,11 @@
     "url": "https://github.com/inabagumi/shinju-date.git"
   },
   "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
     "lint": "eslint ."
   },
   "type": "module",
+  "types": "./dist/index.d.ts",
   "version": "1.0.0"
 }

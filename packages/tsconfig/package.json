@@ -1,0 +1,20 @@
+{
+  "author": "Haneru Developers",
+  "dependencies": {
+    "@tsconfig/strictest": "^1.0.2"
+  },
+  "description": "",
+  "devDependencies": {},
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "name": "@shinju-date/tsconfig",
+  "private": true,
+  "repository": {
+    "directory": "packages/tsconfig",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {},
+  "type": "module",
+  "version": "1.0.0"
+}

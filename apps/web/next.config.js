@@ -45,7 +45,6 @@ const nextConfig = {
       ]
     }
   },
-  transpilePackages: ['@shinju-date/polyfills', '@shinju-date/schema'],
   webpack(config, { defaultLoaders }) {
     config.module.rules.push({
       test: /\.svg$/,
