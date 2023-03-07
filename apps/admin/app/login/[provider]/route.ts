@@ -29,7 +29,7 @@ type Props = {
 export async function POST(
   request: NextRequest,
   { params }: Props
-): Promise<NextResponse> {
+): Promise<NextResponse | Response> {
   if (params.provider !== 'email') {
     notFound()
   }
@@ -55,9 +55,7 @@ export async function POST(
       newURL.searchParams.set('email', email)
     }
 
-    const res = await fetch(newURL)
-
-    return new NextResponse(res.body)
+    return fetch(newURL)
   }
 
   return response

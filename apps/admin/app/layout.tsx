@@ -1,3 +1,4 @@
+import { ColorModeScript } from '@shinju-date/chakra-ui'
 import { type ReactNode } from 'react'
 import { createSupabaseClient } from '@/lib/supabase/server'
 import Provider from './provider'
@@ -20,7 +21,11 @@ export default async function RootLayout({ children }: Props) {
   return (
     <html lang="ja">
       <body>
-        <Provider session={session ?? undefined}>{children}</Provider>
+        <Provider session={session ?? undefined}>
+          <ColorModeScript initialColorMode="system" />
+
+          {children}
+        </Provider>
       </body>
     </html>
   )

@@ -1,0 +1,32 @@
+{
+  "author": "Haneru Developers",
+  "dependencies": {
+    "@chakra-ui/styled-system": "^2.6.1",
+    "@shinju-date/chakra-ui": "workspace:*"
+  },
+  "description": "",
+  "devDependencies": {
+    "@chakra-ui/cli": "^2.3.0",
+    "@tsconfig/strictest": "^1.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.54.0",
+    "@typescript-eslint/parser": "^5.54.0",
+    "eslint": "^8.35.0",
+    "eslint-config-prettier": "^8.7.0"
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "main": "./src/index.ts",
+  "name": "@shinju-date/chakra-theme",
+  "private": true,
+  "repository": {
+    "directory": "packages/chakra-theme",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "generate": "chakra-cli tokens ./src/theme.ts --out types/theming.types.d.ts --template augmentation",
+    "lint": "eslint .",
+    "postinstall": "${npm_execpath} run generate"
+  },
+  "version": "1.0.0"
+}
