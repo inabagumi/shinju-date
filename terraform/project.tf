@@ -48,8 +48,9 @@ resource "vercel_project" "this" {
   ]
   framework = "nextjs"
   git_repository = {
-    type = "github"
-    repo = "inabagumi/shinju-date"
+    production_branch = "main"
+    repo              = "inabagumi/shinju-date"
+    type              = "github"
   }
   name                       = "shinju-date"
   public_source              = false
@@ -121,8 +122,9 @@ resource "vercel_project" "admin" {
   ]
   framework = "nextjs"
   git_repository = {
-    type = "github"
-    repo = "inabagumi/shinju-date"
+    production_branch = "main"
+    repo              = "inabagumi/shinju-date"
+    type              = "github"
   }
   name                       = "shinju-date-admin"
   public_source              = false
