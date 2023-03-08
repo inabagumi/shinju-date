@@ -1,6 +1,6 @@
 resource "vercel_dns_record" "digicert_caa" {
   domain  = "shinju.date"
-  name    = "api"
+  name    = ""
   team_id = vercel_project.this.team_id
   ttl     = 60
   type    = "CAA"
