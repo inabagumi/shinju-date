@@ -40,5 +40,6 @@
       "onAutoForward": "silent"
     }
   },
-  "postCreateCommand": "sudo corepack enable && pnpm install"
+  "postCreateCommand": "sudo corepack enable && pnpm install && pnpm build --filter={./packages/*}...",
+  "waitFor": "postCreateCommand"
 }
