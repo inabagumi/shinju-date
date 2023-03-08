@@ -36,6 +36,7 @@
     "@jest/types": "^29.5.0",
     "@mdx-js/loader": "^2.3.0",
     "@next/mdx": "^13.2.3",
+    "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/schema": "workspace:*",
     "@svgr/webpack": "^6.5.1",
     "@types/dedent": "^0.7.0",

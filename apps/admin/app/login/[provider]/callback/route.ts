@@ -1,3 +1,4 @@
+import { verifyOrigin } from '@shinju-date/helpers'
 import { notFound } from 'next/navigation'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createSupabaseClient } from '@/lib/supabase/middleware'
@@ -18,6 +19,15 @@ export async function GET(
     notFound()
   }
 
+  if (!verifyOrigin(request)) {
+    return new NextResponse('422 Unprocessable Entity', {
+      headers: {
+        'Content-Type': 'text/plain; charset=UTF-8'
+      },
+      status: 422
+    })
+  }
+
   const response = NextResponse.redirect(new URL('/', request.url))
   const supabase = createSupabaseClient(request, response)
   const email = request.nextUrl.searchParams.get('email') ?? ''
@@ -27,8 +37,8 @@ export async function GET(
     error
   } = await supabase.auth.verifyOtp({
     email,
-    type: 'magiclink',
-    token
+    token,
+    type: 'magiclink'
   })
 
   if (!session || error) {

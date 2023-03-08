@@ -5,24 +5,32 @@
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/tsconfig": "workspace:*",
     "eslint": "^8.35.0",
-    "supabase": "^1.42.3",
+    "next": "^13.2.3",
     "tsup": "^6.6.3",
     "typescript": "^4.9.5"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
   "main": "./dist/index.js",
-  "name": "@shinju-date/schema",
+  "name": "@shinju-date/helpers",
   "private": true,
+  "peerDependencies": {
+    "next": "^13.2.3"
+  },
   "repository": {
-    "directory": "packages/schema",
+    "directory": "packages/helpers",
     "type": "git",
     "url": "https://github.com/inabagumi/shinju-date.git"
   },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "generate": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > src/index.ts",
     "lint": "eslint ."
   },
   "type": "module",

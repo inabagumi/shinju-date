@@ -1,3 +1,4 @@
+import { verifyOrigin } from '@shinju-date/helpers'
 import { notFound } from 'next/navigation'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createSupabaseClient } from '@/lib/supabase/middleware'
@@ -32,6 +33,15 @@ export async function POST(
 ): Promise<NextResponse | Response> {
   if (params.provider !== 'email') {
     notFound()
+  }
+
+  if (!verifyOrigin(request)) {
+    return new NextResponse('422 Unprocessable Entity', {
+      headers: {
+        'Content-Type': 'text/plain; charset=UTF-8'
+      },
+      status: 422
+    })
   }
 
   const response = NextResponse.redirect(new URL('/', request.url))
