@@ -14,7 +14,7 @@ type Props = {
 export default function Provider({ children, session }: Props) {
   return (
     <CacheProvider>
-      <ChakraProvider theme={theme}>
+      <ChakraProvider disableEnvironment theme={theme}>
         <SessionProvider session={session}>{children}</SessionProvider>
       </ChakraProvider>
     </CacheProvider>
