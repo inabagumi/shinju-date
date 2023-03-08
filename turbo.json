@@ -3,6 +3,16 @@
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
+      "env": [
+        "NEXT_PUBLIC_ALGOLIA_API_KEY",
+        "NEXT_PUBLIC_ALGOLIA_APPLICATION_ID",
+        "NEXT_PUBLIC_ALGOLIA_INDEX_NAME",
+        "NEXT_PUBLIC_BASE_URL",
+        "NEXT_PUBLIC_DESCRIPTION",
+        "NEXT_PUBLIC_GA_TRACKING_ID",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "NEXT_PUBLIC_SUPABASE_URL"
+      ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {
@@ -10,7 +20,7 @@
       "persistent": true
     },
     "lint": {
-      "dependsOn": ["build"]
+      "dependsOn": ["^build"]
     },
     "test": {}
   }
