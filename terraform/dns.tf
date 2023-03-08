@@ -7,7 +7,7 @@ resource "vercel_dns_record" "google_site_verification" {
   value   = "google-site-verification=B-AnwaokGJSxLYWtDEFi_NDp-GxH-aLGAMT8SsxTFL4"
 }
 
-resource "vercel_dns_record" "google_site_verification" {
+resource "vercel_dns_record" "digicert_caa" {
   domain  = "shinju.date"
   name    = "api"
   team_id = vercel_project.this.team_id
