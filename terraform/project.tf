@@ -113,12 +113,6 @@ resource "vercel_project" "admin" {
       target = ["production", "preview", "development"]
       value  = var.supabase_url
     },
-    # TODO: https://github.com/orgs/vercel/discussions/1209
-    {
-      key    = "VERCEL_FORCE_NO_BUILD_CACHE"
-      target = ["production", "preview"]
-      value  = "1"
-    },
   ]
   framework = "nextjs"
   git_repository = {
