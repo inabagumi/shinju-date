@@ -29,7 +29,7 @@ importers:
       '@shinju-date/chakra-ui': workspace:*
       '@shinju-date/polyfills': workspace:*
       '@shinju-date/schema': workspace:*
-      '@supabase/auth-helpers-nextjs': ^0.5.5
+      '@supabase/auth-helpers-nextjs': ^0.5.6
       '@supabase/supabase-js': ^2.10.0
       '@types/node': ^18.14.6
       '@types/react': ^18.0.28
@@ -55,7 +55,7 @@ importers:
       '@shinju-date/chakra-theme': link:../../packages/chakra-theme
       '@shinju-date/chakra-ui': link:../../packages/chakra-ui
       '@shinju-date/polyfills': link:../../packages/polyfills
-      '@supabase/auth-helpers-nextjs': 0.5.5_ku2vntnma2imfrsyohnkxzette
+      '@supabase/auth-helpers-nextjs': 0.5.6_ku2vntnma2imfrsyohnkxzette
       '@supabase/supabase-js': 2.10.0_encoding@0.1.13
       algoliasearch: 4.15.0
       next: 13.2.3_biqbaboplfbrettd7655fr4n2y
@@ -4040,8 +4040,8 @@ packages:
       '@sinonjs/commons': 2.0.0
     dev: true
 
-  /@supabase/auth-helpers-nextjs/0.5.5_ku2vntnma2imfrsyohnkxzette:
-    resolution: {integrity: sha512-IJp6XDvLpPOg7r1YU14jmqlOYHOB0MeXZgmbIg6LHFYU8yMBczWu9c1A63plFVnXRtLUMAlcNISkrgHZMc0VdA==}
+  /@supabase/auth-helpers-nextjs/0.5.6_ku2vntnma2imfrsyohnkxzette:
+    resolution: {integrity: sha512-NiUGGnO9vRycMDnl/DzFbHCJhNV9DdH1vH61T1Fzgp2aRW8LfLRVlBQeGCg2AzyvAe0MiLbbRsGNcJmAmJPs9A==}
     peerDependencies:
       '@supabase/supabase-js': ^2.0.4
     dependencies:
