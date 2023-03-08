@@ -35,7 +35,7 @@ export default async function Login({ searchParams }: Props) {
   return (
     <ErrorMessageProvider message={message}>
       <Container maxW="100%" pos="relative" w="container.lg">
-        <ErrorMessage pos="absolute" left={0} right={0} top={0} />
+        <ErrorMessage left={0} pos="absolute" right={0} top={0} />
 
         <Flex align="center" justify="center" minH="100dvh" p={4} w="100%">
           <LoginForm defaultValues={{ email }} />

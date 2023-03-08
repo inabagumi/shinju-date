@@ -1,0 +1,24 @@
+{
+  "author": "Haneru Developers",
+  "description": "",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/parser": "^5.54.1",
+    "eslint": "^8.35.0",
+    "eslint-config-next": "^13.2.3",
+    "eslint-config-prettier": "^8.7.0"
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "main": "./index.json",
+  "name": "@shinju-date/eslint-config",
+  "private": true,
+  "repository": {
+    "directory": "packages/eslint-config",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {},
+  "type": "module",
+  "version": "1.0.0"
+}

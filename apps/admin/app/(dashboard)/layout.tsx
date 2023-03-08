@@ -28,11 +28,11 @@ export default function DashboardLayout({ children }: Props): JSX.Element {
         <Flex justify="space-between">
           <Flex alignItems="center">
             <Link
+              _hover={{ textDecoration: 'none' }}
               as={NextLink}
               fontSize="2xl"
               fontWeight="bold"
               href="/"
-              _hover={{ textDecoration: 'none' }}
             >
               Admin UI
             </Link>

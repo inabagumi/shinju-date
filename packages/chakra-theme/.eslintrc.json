@@ -1,21 +1,13 @@
 {
   "$schema": "https://json.schemastore.org/eslintrc",
-  "env": {
-    "es2022": true,
-    "node": true
-  },
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking",
-    "prettier"
+  "extends": ["@shinju-date"],
+  "overrides": [
+    {
+      "files": ["**/*.ts?(x)"],
+      "parserOptions": {
+        "project": "./tsconfig.json"
+      }
+    }
   ],
-  "ignorePatterns": ["/dist/", "/types/theming.types.d.ts"],
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "ecmaVersion": 2022,
-    "project": "./tsconfig.json"
-  },
   "root": true
 }

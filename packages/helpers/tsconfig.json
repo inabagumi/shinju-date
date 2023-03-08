@@ -1,0 +1,5 @@
+{
+  "exclude": ["node_modules"],
+  "extends": "@shinju-date/tsconfig/base",
+  "include": ["./src/**/*.ts", "./tsup.config.ts"]
+}

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json.schemastore.org/eslintrc",
+  "extends": ["eslint:recommended", "next/core-web-vitals", "prettier"],
+  "ignorePatterns": [".next/", ".turbo/", "dist/", "node_modules/"],
+  "overrides": [
+    {
+      "extends": [
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking"
+      ],
+      "files": ["**/*.ts?(x)"]
+    },
+    {
+      "files": ["**/*.cjs"],
+      "parserOptions": {
+        "sourceType": "script"
+      }
+    }
+  ],
+  "rules": {
+    "import/order": [
+      "error",
+      {
+        "alphabetize": {
+          "order": "asc"
+        },
+        "groups": [
+          ["builtin", "external"],
+          "internal",
+          "parent",
+          ["index", "sibling"],
+          "unknown",
+          "type"
+        ],
+        "newlines-between": "never",
+        "pathGroups": [
+          {
+            "group": "internal",
+            "pattern": "@/**"
+          }
+        ]
+      }
+    ],
+    "react/jsx-sort-props": "error",
+    "react/sort-prop-types": "error",
+    "sort-imports": [
+      "error",
+      {
+        "ignoreDeclarationSort": true
+      }
+    ],
+    "sort-keys": [
+      "error",
+      "asc",
+      {
+        "natural": true
+      }
+    ],
+    "sort-vars": [
+      "error",
+      {
+        "ignoreCase": false
+      }
+    ]
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022
+  }
+}
