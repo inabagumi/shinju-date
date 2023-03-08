@@ -1,6 +1,11 @@
 {
   "$schema": "https://json.schemastore.org/eslintrc",
-  "extends": ["eslint:recommended", "next/core-web-vitals", "prettier"],
+  "extends": [
+    "eslint:recommended",
+    "next/core-web-vitals",
+    "turbo",
+    "prettier"
+  ],
   "ignorePatterns": [".next/", ".turbo/", "dist/", "node_modules/"],
   "overrides": [
     {

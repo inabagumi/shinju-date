@@ -1,12 +1,15 @@
 {
   "author": "Haneru Developers",
-  "description": "",
-  "devDependencies": {
+  "dependencies": {
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
-    "eslint": "^8.35.0",
     "eslint-config-next": "^13.2.3",
-    "eslint-config-prettier": "^8.7.0"
+    "eslint-config-prettier": "^8.7.0",
+    "eslint-config-turbo": "^0.0.9"
+  },
+  "description": "",
+  "devDependencies": {
+    "eslint": "^8.35.0"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
