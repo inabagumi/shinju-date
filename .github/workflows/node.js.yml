@@ -2,21 +2,23 @@ name: Node.js CI
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
   push:
-    branches:
-      - main
-    tags:
-      - '!*'
+    types: [opened, synchronize]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Build and Test
+    runs-on: ubuntu-22.04
+    env:
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+
     steps:
       - uses: actions/checkout@v3
-      - name: Enable corepack
-        run: corepack enable
+        with:
+          fetch-depth: 2
+      - run: corepack enable
       - uses: actions/setup-node@v3
         with:
           node-version: 18.x
