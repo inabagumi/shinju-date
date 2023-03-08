@@ -1,5 +1,3 @@
-import { Temporal } from '@js-temporal/polyfill'
-
 export function max(
   ...values: Temporal.ZonedDateTime[]
 ): Temporal.ZonedDateTime {

@@ -41,6 +41,7 @@ class PolyfillTextEncoderStream implements TransformStream<string, Uint8Array> {
   }
 }
 
+// TODO: https://github.com/vercel/next.js/pull/46818
 export const TextEncoderStream = supportsTextEncoderTransform()
   ? globalThis.TextEncoderStream
   : PolyfillTextEncoderStream

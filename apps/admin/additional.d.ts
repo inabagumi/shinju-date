@@ -1,4 +1,5 @@
-import '@shinju-date/chakra-theme/theming.types.d.ts'
+/// <reference types="@shinju-date/chakra-theme/theming.types.d.ts" />
+/// <reference types="@shinju-date/polyfills" />
 
 declare namespace NodeJS {
   interface ProcessEnv {

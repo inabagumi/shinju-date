@@ -3,7 +3,6 @@
   "dependencies": {
     "@algolia/cache-common": "^4.15.0",
     "@algolia/requester-fetch": "^4.15.0",
-    "@js-temporal/polyfill": "^0.4.3",
     "@mdx-js/react": "^2.3.0",
     "@reach/skip-nav": "^0.18.0",
     "@shinju-date/polyfills": "workspace:*",

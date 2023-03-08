@@ -1,3 +1,4 @@
+/// <reference types="@shinju-date/polyfills" />
 /// <reference types="mdx" />
 
 declare namespace NodeJS {

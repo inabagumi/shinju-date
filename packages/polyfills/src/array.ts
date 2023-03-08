@@ -1,11 +1,3 @@
-declare global {
-  interface ArrayConstructor {
-    fromAsync<T, TReturn = unknown>(
-      iterator: AsyncGenerator<T, TReturn, undefined>
-    ): Promise<T[]>
-  }
-}
-
 async function polyfillFromAsync<T, TReturn = unknown>(
   iterator: AsyncGenerator<T, TReturn, undefined>
 ): Promise<T[]> {
@@ -18,5 +10,17 @@ async function polyfillFromAsync<T, TReturn = unknown>(
   return values
 }
 
-export const fromAsync =
-  'fromAsync' in Array ? Array.fromAsync.bind(this) : polyfillFromAsync
+declare global {
+  interface ArrayConstructor {
+    fromAsync: typeof polyfillFromAsync
+  }
+}
+
+if (!('fromAsync' in Array)) {
+  Object.defineProperty(Array, 'fromAsync', {
+    configurable: false,
+    enumerable: false,
+    value: polyfillFromAsync,
+    writable: false
+  })
+}

@@ -5,22 +5,9 @@
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/tsconfig": "workspace:*",
     "eslint": "^8.35.0",
+    "temporal-polyfill": "^0.1.1",
     "tsup": "^6.6.3",
     "typescript": "^4.9.5"
-  },
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./array": {
-      "import": "./dist/array.js",
-      "types": "./dist/array.d.ts"
-    },
-    "./encoding": {
-      "import": "./dist/encoding.js",
-      "types": "./dist/encoding.d.ts"
-    }
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",

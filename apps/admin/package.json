@@ -4,7 +4,6 @@
     "@algolia/cache-common": "^4.15.0",
     "@algolia/requester-fetch": "^4.15.0",
     "@hookform/resolvers": "^2.9.11",
-    "@js-temporal/polyfill": "^0.4.3",
     "@shinju-date/chakra-theme": "workspace:*",
     "@shinju-date/chakra-ui": "workspace:*",
     "@shinju-date/helpers": "workspace:*",

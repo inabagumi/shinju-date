@@ -1,7 +1,6 @@
 'use client'
 
 import { type Database } from '@shinju-date/schema'
-import { Temporal } from '@js-temporal/polyfill'
 import chunk from 'lodash.chunk'
 import groupBy from 'lodash.groupby'
 import { useMemo } from 'react'

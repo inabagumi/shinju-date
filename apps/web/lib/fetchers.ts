@@ -1,4 +1,3 @@
-import { Temporal } from '@js-temporal/polyfill'
 import { type Fetcher } from 'swr'
 import { type SWRInfiniteFetcher } from 'swr/infinite'
 import { type Video, getVideosByChannelIDs } from '@/lib/algolia'

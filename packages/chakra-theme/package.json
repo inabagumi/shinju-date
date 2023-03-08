@@ -25,7 +25,7 @@
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "name": "@shinju-date/chakra-theme",
   "private": true,
   "repository": {

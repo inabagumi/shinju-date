@@ -1,3 +1,4 @@
+import '@shinju-date/polyfills'
 import 'infima/dist/css/default/default.min.css'
 import './globals.css'
 import { type Metadata } from 'next'

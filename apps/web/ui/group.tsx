@@ -1,6 +1,5 @@
 'use client'
 
-import { fromAsync } from '@shinju-date/polyfills'
 import { type PostgrestError } from '@supabase/supabase-js'
 import { usePathname } from 'next/navigation'
 import { type ReactNode, createContext, useContext, useMemo } from 'react'
@@ -34,7 +33,7 @@ export function useGroupList(): Group[] {
 }
 
 function fetchAllGroups(): Promise<Group[]> {
-  return fromAsync(getAllGroups())
+  return Array.fromAsync(getAllGroups())
 }
 
 type GroupProviderProps = {

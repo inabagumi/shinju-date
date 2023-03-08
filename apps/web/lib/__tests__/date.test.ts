@@ -1,4 +1,3 @@
-import { Temporal } from '@js-temporal/polyfill'
 import { max, min } from '../date'
 
 describe('max', () => {

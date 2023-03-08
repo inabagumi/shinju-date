@@ -1,3 +1,4 @@
+import '@shinju-date/polyfills'
 import { ColorModeScript } from '@shinju-date/chakra-ui'
 import { type ReactNode } from 'react'
 import { createSupabaseClient } from '@/lib/supabase/server'

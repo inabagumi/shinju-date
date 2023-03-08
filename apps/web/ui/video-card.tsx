@@ -1,6 +1,5 @@
 'use client'
 
-import { Temporal } from '@js-temporal/polyfill'
 import clsx from 'clsx'
 import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'

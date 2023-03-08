@@ -1,2 +1,2 @@
-export * from './array.js'
-export * from './encoding.js'
+import 'temporal-polyfill/global'
+import './array.js'
