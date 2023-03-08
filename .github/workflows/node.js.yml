@@ -23,4 +23,5 @@ jobs:
           cache: pnpm
       - run: pnpm install
       - run: pnpm format-check
+      - run: pnpm lint --filter './packages/*'
       - run: pnpm test
