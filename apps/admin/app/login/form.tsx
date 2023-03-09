@@ -6,7 +6,6 @@ import {
   Button,
   Center,
   FormControl,
-  FormErrorMessage,
   FormLabel,
   Heading,
   IconButton,
@@ -15,44 +14,25 @@ import {
   InputRightElement,
   useDisclosure
 } from '@shinju-date/chakra-ui'
-import { type Database } from '@shinju-date/schema'
-import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs'
-import { type SupabaseClient } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
-import { type FormEventHandler, useMemo } from 'react'
-import { type Control, useController, useForm } from 'react-hook-form'
+import { type FormEventHandler, useCallback, useMemo, useState } from 'react'
+import {
+  type SubmitErrorHandler,
+  type SubmitHandler,
+  type UseControllerProps,
+  useController,
+  useForm
+} from 'react-hook-form'
 import { HiEye, HiEyeOff } from 'react-icons/hi'
-import * as yup from 'yup'
+import { useSupabaseClient } from '@/app/session'
+import { LOGIN_FAILED_MESSAGE } from './constants'
 import { useErrorMessage } from './error-message'
+import loginFormDataSchema, { type LoginFormData } from './schema'
 
-const formDataSchema = yup
-  .object()
-  .shape({
-    email: yup
-      .string()
-      .email('メールアドレスが正しくありません')
-      .required('メールアドレスが入力されていません'),
-    password: yup
-      .string()
-      .min(8, 'パスワードは8文字以上入力してください')
-      .required('パスワードが入力されていません')
-  })
-  .required()
-type FormData = yup.InferType<typeof formDataSchema>
-
-export type PasswordFieldProps<N extends keyof FormData> = {
-  control: Control<FormData, N>
-  name: N
-}
-
-export function PasswordField<N extends keyof FormData>({
-  control,
-  name
-}: PasswordFieldProps<N>): JSX.Element {
-  const {
-    field,
-    formState: { errors }
-  } = useController({ control, name })
+export function PasswordField<N extends keyof LoginFormData>(
+  props: UseControllerProps<LoginFormData, N>
+): JSX.Element {
+  const { field } = useController(props)
   const {
     isOpen: shownPassword,
     onClose: hidePassword,
@@ -63,7 +43,6 @@ export function PasswordField<N extends keyof FormData>({
     <InputGroup>
       <Input
         autoComplete="current-password"
-        isInvalid={!!errors[name]}
         type={shownPassword ? 'text' : 'password'}
         {...field}
       />
@@ -80,43 +59,56 @@ export function PasswordField<N extends keyof FormData>({
 }
 
 export type Props = {
-  defaultValues: Partial<Omit<FormData, 'password'>>
+  defaultValues: Partial<Omit<LoginFormData, 'password'>>
+  disabled?: boolean
 }
 
-export default function LoginForm({ defaultValues }: Props): JSX.Element {
+export default function LoginForm({
+  defaultValues,
+  disabled = false
+}: Props): JSX.Element {
   const router = useRouter()
   const {
     control,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
     handleSubmit,
     register
-  } = useForm<FormData>({
+  } = useForm<LoginFormData>({
     defaultValues,
-    resolver: yupResolver(formDataSchema)
+    resolver: yupResolver(loginFormDataSchema)
   })
   const { setErrorMessage } = useErrorMessage()
-  const supabase = useMemo<SupabaseClient<Database>>(
-    () => createBrowserSupabaseClient<Database>(),
-    []
-  )
-  const onSubmit = useMemo<FormEventHandler>(
-    () =>
-      handleSubmit(async ({ email, password }) => {
-        const {
-          data: { session },
-          error
-        } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        })
+  const supabase = useSupabaseClient()
+  const [isDisabled, setIsDisabled] = useState(disabled)
 
-        if (!error && session) {
-          router.push('/')
-        } else {
-          setErrorMessage('ログインに失敗しました')
-        }
-      }),
-    [handleSubmit, router, setErrorMessage, supabase.auth]
+  const submitHandler = useCallback<SubmitHandler<LoginFormData>>(
+    async ({ email, password }) => {
+      if (!supabase) {
+        return
+      }
+
+      const {
+        data: { session },
+        error
+      } = await supabase.auth.signInWithPassword({ email, password })
+
+      if (!error && session) {
+        setIsDisabled(true)
+        router.push('/')
+      } else {
+        setErrorMessage(LOGIN_FAILED_MESSAGE)
+      }
+    },
+    [router, setErrorMessage, supabase]
+  )
+  const subimitErrorHandler = useCallback<
+    SubmitErrorHandler<LoginFormData>
+  >(() => {
+    setErrorMessage(LOGIN_FAILED_MESSAGE)
+  }, [setErrorMessage])
+  const onSubmit = useMemo<FormEventHandler>(
+    () => handleSubmit(submitHandler, subimitErrorHandler),
+    [submitHandler, subimitErrorHandler, handleSubmit]
   )
 
   return (
@@ -137,25 +129,29 @@ export default function LoginForm({ defaultValues }: Props): JSX.Element {
         Admin UI
       </Heading>
 
-      <FormControl isInvalid={!!errors.email} mt={4}>
-        <FormLabel>メールアドレス</FormLabel>
+      <FormControl as="fieldset" isReadOnly={isDisabled}>
+        <FormLabel as="legend" fontSize="sm">
+          メールアドレス
+        </FormLabel>
         <Input autoComplete="email" type="email" {...register('email')} />
-        {errors.email && (
-          <FormErrorMessage>{errors.email.message}</FormErrorMessage>
-        )}
       </FormControl>
 
-      <FormControl isInvalid={!!errors.password} mt="6">
-        <FormLabel>パスワード</FormLabel>
+      <FormControl as="fieldset" isReadOnly={isDisabled} mt={6}>
+        <FormLabel as="legend" fontSize="sm">
+          パスワード
+        </FormLabel>
 
-        <PasswordField control={control} name="password" />
-        {errors.password && (
-          <FormErrorMessage>{errors.password.message}</FormErrorMessage>
-        )}
+        <PasswordField control={control} defaultValue="" name="password" />
       </FormControl>
 
       <Center mt={6}>
-        <Button isLoading={isSubmitting} type="submit">
+        <Button
+          colorScheme="blue"
+          isDisabled={isDisabled}
+          isLoading={isSubmitting}
+          type="submit"
+          width="full"
+        >
           ログイン
         </Button>
       </Center>

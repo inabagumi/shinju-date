@@ -1,7 +1,6 @@
 import { type Metadata } from 'next'
 import shareCard from '@/assets/share-card.jpg'
-
-const description = process.env.NEXT_PUBLIC_DESCRIPTION
+import { description } from './constants'
 
 const baseMetadata: Metadata = {
   description,

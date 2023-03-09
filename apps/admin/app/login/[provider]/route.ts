@@ -1,6 +1,8 @@
 import { verifyOrigin } from '@shinju-date/helpers'
 import { notFound } from 'next/navigation'
 import { type NextRequest, NextResponse } from 'next/server'
+import { LOGIN_FAILED_MESSAGE } from '@/app/login/constants'
+import loginFormDataSchema, { type LoginFormData } from '@/app/login/schema'
 import { createSupabaseClient } from '@/lib/supabase/middleware'
 
 // export const runtime = 'edge'
@@ -17,6 +19,32 @@ function getValue(key: string, formData: FormData): Promise<string | null> {
   } else {
     return Promise.resolve(value)
   }
+}
+
+type CreateErrorResponseOptions = {
+  defaultValues: Partial<Omit<LoginFormData, 'password'>>
+  message?: string
+}
+
+async function createErrorResponse(
+  request: NextRequest,
+  { defaultValues, message }: CreateErrorResponseOptions
+): Promise<Response> {
+  const newURL = new URL('/login', request.url)
+
+  if (message) {
+    newURL.searchParams.set('message', message)
+  }
+
+  if (defaultValues) {
+    for (const [key, value] of Object.entries(defaultValues)) {
+      if (value) {
+        newURL.searchParams.set(key, value)
+      }
+    }
+  }
+
+  return fetch(newURL)
 }
 
 type Params = {
@@ -44,28 +72,42 @@ export async function POST(
     })
   }
 
+  const formData = await request.formData()
+  const [email, password] = await Promise.all([
+    getValue('email', formData),
+    getValue('password', formData)
+  ])
+
+  let loginFormData: LoginFormData
+  try {
+    loginFormData = await loginFormDataSchema.validate(
+      { email, password },
+      { strict: true }
+    )
+  } catch (error) {
+    return createErrorResponse(request, {
+      defaultValues: {
+        email: email ?? ''
+      },
+      message: LOGIN_FAILED_MESSAGE
+    })
+  }
+
   const response = NextResponse.redirect(new URL('/', request.url))
   const supabase = createSupabaseClient(request, response)
 
-  const formData = await request.formData()
-  const email = await getValue('email', formData)
-  const password = await getValue('password', formData)
-
   const { error } = await supabase.auth.signInWithPassword({
-    email: email ?? '',
-    password: password ?? ''
+    email: loginFormData.email,
+    password: loginFormData.password
   })
 
   if (error) {
-    const newURL = new URL('/login', request.url)
-
-    newURL.searchParams.set('message', 'ログインに失敗しました')
-
-    if (email) {
-      newURL.searchParams.set('email', email)
-    }
-
-    return fetch(newURL)
+    return createErrorResponse(request, {
+      defaultValues: {
+        email: loginFormData.email
+      },
+      message: LOGIN_FAILED_MESSAGE
+    })
   }
 
   return response
