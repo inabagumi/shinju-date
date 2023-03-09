@@ -2,6 +2,7 @@ import { verifyOrigin } from '@shinju-date/helpers'
 import { notFound } from 'next/navigation'
 import { type NextRequest, NextResponse } from 'next/server'
 import { LOGIN_FAILED_MESSAGE } from '@/app/login/constants'
+import { getRedirectTo } from '@/app/login/page'
 import loginFormDataSchema, { type LoginFormData } from '@/app/login/schema'
 import { createSupabaseClient } from '@/lib/supabase/middleware'
 
@@ -24,16 +25,21 @@ function getValue(key: string, formData: FormData): Promise<string | null> {
 type CreateErrorResponseOptions = {
   defaultValues: Partial<Omit<LoginFormData, 'password'>>
   message?: string
+  redirectTo?: string
 }
 
 async function createErrorResponse(
   request: NextRequest,
-  { defaultValues, message }: CreateErrorResponseOptions
+  { defaultValues, message, redirectTo }: CreateErrorResponseOptions
 ): Promise<Response> {
   const newURL = new URL('/login', request.url)
 
   if (message) {
     newURL.searchParams.set('message', message)
+  }
+
+  if (redirectTo) {
+    newURL.searchParams.set('return', redirectTo)
   }
 
   if (defaultValues) {
@@ -71,6 +77,9 @@ export async function POST(
       status: 422
     })
   }
+
+  const returnTo = request.nextUrl.searchParams.get('return')
+  const redirectTo = getRedirectTo(returnTo ?? '/')
 
   const formData = await request.formData()
   const [email, password] = await Promise.all([
