@@ -7,15 +7,23 @@ import {
   Center,
   FormControl,
   FormLabel,
+  type HTMLChakraProps,
   Heading,
   IconButton,
   Input,
   InputGroup,
   InputRightElement,
+  chakra,
   useDisclosure
 } from '@shinju-date/chakra-ui'
 import { useRouter } from 'next/navigation'
-import { type FormEventHandler, useCallback, useMemo, useState } from 'react'
+import {
+  type FormEventHandler,
+  forwardRef,
+  useCallback,
+  useMemo,
+  useState
+} from 'react'
 import {
   type SubmitErrorHandler,
   type SubmitHandler,
@@ -57,6 +65,18 @@ export function PasswordField<N extends keyof LoginFormData>(
     </InputGroup>
   )
 }
+
+type LegendLabelProps = HTMLChakraProps<'label'>
+
+export const LegendLabel = forwardRef<HTMLLabelElement, LegendLabelProps>(
+  function LegendLabel(props, ref) {
+    return (
+      <chakra.legend display="contents">
+        <chakra.label {...props} ref={ref} />
+      </chakra.legend>
+    )
+  }
+)
 
 export type Props = {
   defaultValues: Partial<Omit<LoginFormData, 'password'>>
@@ -130,14 +150,14 @@ export default function LoginForm({
       </Heading>
 
       <FormControl as="fieldset" isReadOnly={isDisabled}>
-        <FormLabel as="legend" fontSize="sm">
+        <FormLabel as={LegendLabel} fontSize="sm">
           メールアドレス
         </FormLabel>
         <Input autoComplete="email" type="email" {...register('email')} />
       </FormControl>
 
       <FormControl as="fieldset" isReadOnly={isDisabled} mt={6}>
-        <FormLabel as="legend" fontSize="sm">
+        <FormLabel as={LegendLabel} fontSize="sm">
           パスワード
         </FormLabel>
 
