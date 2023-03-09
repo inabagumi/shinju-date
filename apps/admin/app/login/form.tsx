@@ -81,11 +81,13 @@ export const LegendLabel = forwardRef<HTMLLabelElement, LegendLabelProps>(
 export type Props = {
   defaultValues: Partial<Omit<LoginFormData, 'password'>>
   disabled?: boolean
+  redirectTo?: string
 }
 
 export default function LoginForm({
   defaultValues,
-  disabled = false
+  disabled = false,
+  redirectTo = '/'
 }: Props): JSX.Element {
   const router = useRouter()
   const {
@@ -99,6 +101,11 @@ export default function LoginForm({
   })
   const { setErrorMessage } = useErrorMessage()
   const supabase = useSupabaseClient()
+  const fallbackURL = useMemo(() => {
+    const searchParams = new URLSearchParams({ return: redirectTo })
+
+    return ['/login/email', searchParams.toString()].join('?')
+  }, [redirectTo])
   const [isDisabled, setIsDisabled] = useState(disabled)
 
   const submitHandler = useCallback<SubmitHandler<LoginFormData>>(
@@ -114,12 +121,12 @@ export default function LoginForm({
 
       if (!error && session) {
         setIsDisabled(true)
-        router.push('/')
+        router.push(redirectTo)
       } else {
         setErrorMessage(LOGIN_FAILED_MESSAGE)
       }
     },
-    [router, setErrorMessage, supabase]
+    [redirectTo, router, setErrorMessage, supabase]
   )
   const subimitErrorHandler = useCallback<
     SubmitErrorHandler<LoginFormData>
@@ -133,7 +140,7 @@ export default function LoginForm({
 
   return (
     <Box
-      action="/login/email"
+      action={fallbackURL}
       as="form"
       borderRadius="lg"
       borderWidth={1}

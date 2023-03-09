@@ -6,9 +6,23 @@ import LoginForm from './form'
 
 // export const runtime = 'edge'
 
+export function getRedirectTo(pathname?: string): string {
+  if (pathname) {
+    const baseURL = new URL('https://shinju-date.test/')
+    const newURL = new URL(pathname, baseURL)
+
+    if (baseURL.host === newURL.host) {
+      return newURL.pathname
+    }
+  }
+
+  return '/'
+}
+
 type SearchParams = {
   email?: string | string[]
   message?: string | string[]
+  return?: string | string[]
 }
 
 type Props = {
@@ -22,6 +36,10 @@ export default async function Login({ searchParams }: Props) {
   const message = Array.isArray(searchParams.message)
     ? searchParams.message[0]
     : searchParams.message
+  const returnTo = Array.isArray(searchParams.return)
+    ? searchParams.return[0]
+    : searchParams.return
+  const redirectTo = getRedirectTo(returnTo)
   const supabase = createSupabaseClient()
   const {
     data: { session },
@@ -29,7 +47,7 @@ export default async function Login({ searchParams }: Props) {
   } = await supabase.auth.getSession()
 
   if (!error && session) {
-    redirect('/')
+    redirect(redirectTo)
   }
 
   return (
@@ -38,7 +56,7 @@ export default async function Login({ searchParams }: Props) {
         <ErrorMessage left={0} pos="absolute" right={0} top={0} />
 
         <Flex align="center" justify="center" minH="100dvh" p={4} w="100%">
-          <LoginForm defaultValues={{ email }} />
+          <LoginForm defaultValues={{ email }} redirectTo={redirectTo} />
         </Flex>
       </Container>
     </ErrorMessageProvider>

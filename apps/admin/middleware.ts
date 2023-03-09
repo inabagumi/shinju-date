@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { createSupabaseClient } from '@/lib/supabase/middleware'
 
 export const config = {
-  matcher: ['/']
+  matcher: ['/', '/channels', '/channels/:id', '/groups', '/groups/:slug']
 }
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
@@ -15,7 +15,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   } = await supabase.auth.getSession()
 
   if (!session || error) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    const newURL = new URL('/login', request.url)
+
+    newURL.searchParams.set('return', request.nextUrl.pathname)
+
+    return NextResponse.redirect(newURL)
   }
 
   return response
