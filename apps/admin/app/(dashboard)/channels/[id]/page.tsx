@@ -1,5 +1,7 @@
 import { Container } from '@shinju-date/chakra-ui'
 
+// export const runtime = 'edge'
+
 type Params = {
   id: string
 }

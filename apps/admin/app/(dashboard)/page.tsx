@@ -7,6 +7,8 @@ import {
 } from '@shinju-date/chakra-ui'
 import NextLink from 'next/link'
 
+// export const runtime = 'edge'
+
 export default function Dashboard(): JSX.Element {
   return (
     <Container maxW="100%" w="container.xl">

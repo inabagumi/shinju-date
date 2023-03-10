@@ -2,7 +2,7 @@
 
 import theme from '@shinju-date/chakra-theme'
 import { CacheProvider, ChakraProvider } from '@shinju-date/chakra-ui'
-import { type Session } from '@supabase/auth-helpers-nextjs'
+import { type Session } from '@supabase/supabase-js'
 import { type ReactNode } from 'react'
 import { SessionProvider } from './session'
 

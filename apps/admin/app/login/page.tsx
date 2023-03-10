@@ -1,11 +1,13 @@
 import { Container, Flex } from '@shinju-date/chakra-ui'
 import { normalizePath } from '@shinju-date/helpers'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { createSupabaseClient } from '@/lib/supabase/server'
+import { SESSION_ID_COOKIE_KEY } from '@/lib/constants'
+import { createSupabaseClient } from '@/lib/supabase'
 import ErrorMessage, { ErrorMessageProvider } from './error-message'
 import LoginForm from './form'
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 type SearchParams = {
   email?: string | string[]
@@ -18,25 +20,31 @@ type Props = {
 }
 
 export default async function Login({ searchParams }: Props) {
+  const returnTo = Array.isArray(searchParams.return)
+    ? searchParams.return[0]
+    : searchParams.return
+  const redirectTo = normalizePath(returnTo)
+  const cookieStore = cookies()
+  const sessionID = cookieStore.get(SESSION_ID_COOKIE_KEY)?.value
+
+  if (sessionID) {
+    const supabaseClient = createSupabaseClient({ sessionID })
+    const {
+      data: { session },
+      error
+    } = await supabaseClient.auth.getSession()
+
+    if (!error && session) {
+      redirect(redirectTo)
+    }
+  }
+
   const email = Array.isArray(searchParams.email)
     ? searchParams.email[0]
     : searchParams.email
   const message = Array.isArray(searchParams.message)
     ? searchParams.message[0]
     : searchParams.message
-  const returnTo = Array.isArray(searchParams.return)
-    ? searchParams.return[0]
-    : searchParams.return
-  const redirectTo = normalizePath(returnTo)
-  const supabase = createSupabaseClient()
-  const {
-    data: { session },
-    error
-  } = await supabase.auth.getSession()
-
-  if (!error && session) {
-    redirect(redirectTo)
-  }
 
   return (
     <ErrorMessageProvider message={message}>

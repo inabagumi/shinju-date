@@ -7,7 +7,7 @@ import {
 } from '@shinju-date/chakra-ui'
 import NextLink from 'next/link'
 import { ReactNode } from 'react'
-import LogoutButton from './logout-button'
+import AuthButton from './auth-button'
 
 export type Props = {
   children: ReactNode
@@ -38,7 +38,7 @@ export default function DashboardLayout({ children }: Props): JSX.Element {
             </Link>
           </Flex>
           <Flex alignItems="center" px="4" py={2}>
-            <LogoutButton>ログアウト</LogoutButton>
+            <AuthButton />
           </Flex>
         </Flex>
       </Box>

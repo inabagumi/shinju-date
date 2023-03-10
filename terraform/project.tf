@@ -113,6 +113,16 @@ resource "vercel_project" "admin" {
       target = ["production", "preview", "development"]
       value  = var.supabase_url
     },
+    {
+      key    = "UPSTASH_REDIS_REST_TOKEN"
+      target = ["production", "preview", "development"]
+      value  = var.upstash_redis_rest_token
+    },
+    {
+      key    = "UPSTASH_REDIS_REST_URL"
+      target = ["production", "preview", "development"]
+      value  = var.upstash_redis_rest_url
+    },
   ]
   framework = "nextjs"
   git_repository = {
