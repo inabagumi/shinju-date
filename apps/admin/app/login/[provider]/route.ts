@@ -1,8 +1,7 @@
-import { verifyOrigin } from '@shinju-date/helpers'
+import { normalizePath, verifyOrigin } from '@shinju-date/helpers'
 import { notFound } from 'next/navigation'
 import { type NextRequest, NextResponse } from 'next/server'
 import { LOGIN_FAILED_MESSAGE } from '@/app/login/constants'
-import { getRedirectTo } from '@/app/login/page'
 import loginFormDataSchema, { type LoginFormData } from '@/app/login/schema'
 import { createSupabaseClient } from '@/lib/supabase/middleware'
 
@@ -78,9 +77,6 @@ export async function POST(
     })
   }
 
-  const returnTo = request.nextUrl.searchParams.get('return')
-  const redirectTo = getRedirectTo(returnTo ?? '/')
-
   const formData = await request.formData()
   const [email, password] = await Promise.all([
     getValue('email', formData),
@@ -102,7 +98,9 @@ export async function POST(
     })
   }
 
-  const response = NextResponse.redirect(new URL('/', request.url))
+  const returnTo = request.nextUrl.searchParams.get('return')
+  const redirectTo = normalizePath(returnTo ?? '/')
+  const response = NextResponse.redirect(new URL(redirectTo, request.url))
   const supabase = createSupabaseClient(request, response)
 
   const { error } = await supabase.auth.signInWithPassword({
