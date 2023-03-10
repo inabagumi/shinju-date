@@ -1,23 +1,11 @@
 import { Container, Flex } from '@shinju-date/chakra-ui'
+import { normalizePath } from '@shinju-date/helpers'
 import { redirect } from 'next/navigation'
 import { createSupabaseClient } from '@/lib/supabase/server'
 import ErrorMessage, { ErrorMessageProvider } from './error-message'
 import LoginForm from './form'
 
 // export const runtime = 'edge'
-
-export function getRedirectTo(pathname?: string): string {
-  if (pathname) {
-    const baseURL = new URL('https://shinju-date.test/')
-    const newURL = new URL(pathname, baseURL)
-
-    if (baseURL.host === newURL.host) {
-      return newURL.pathname
-    }
-  }
-
-  return '/'
-}
 
 type SearchParams = {
   email?: string | string[]
@@ -39,7 +27,7 @@ export default async function Login({ searchParams }: Props) {
   const returnTo = Array.isArray(searchParams.return)
     ? searchParams.return[0]
     : searchParams.return
-  const redirectTo = getRedirectTo(returnTo)
+  const redirectTo = normalizePath(returnTo)
   const supabase = createSupabaseClient()
   const {
     data: { session },
