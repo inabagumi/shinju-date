@@ -4,6 +4,7 @@ import favicon192x192 from '@/assets/favicon-192x192.png'
 import favicon512x512 from '@/assets/favicon-512x512.png'
 
 export const runtime = 'edge'
+export const dynamic = 'force-static'
 export const revalidate = 86_400 // 1 day
 
 export function GET(): NextResponse {

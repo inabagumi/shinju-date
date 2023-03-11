@@ -6,6 +6,7 @@ import Terms from './terms.mdx'
 const title = '利用規約'
 
 export const runtime = 'edge'
+export const dynamic = 'force-static'
 export const revalidate = 120
 
 export const metadata = merge(baseMetadata, {
