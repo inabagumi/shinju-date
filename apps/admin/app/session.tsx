@@ -59,23 +59,6 @@ export function useAuth(): UseAuth {
       if (!newSession) {
         throw new TypeError('Login failed.')
       }
-
-      const res = await fetch('/api/sessions/me', {
-        body: JSON.stringify({
-          access_token: newSession.access_token,
-          refresh_token: newSession.refresh_token
-        }),
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8'
-        },
-        method: 'PATCH',
-        mode: 'same-origin'
-      })
-
-      if (res.status !== 200) {
-        throw new TypeError('Failed to set session.')
-      }
     },
     [auth]
   )
