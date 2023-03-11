@@ -6,6 +6,7 @@ import Privacy from './privacy.mdx'
 const title = 'プライバシーポリシー'
 
 export const runtime = 'edge'
+export const dynamic = 'force-static'
 export const revalidate = 120
 
 export const metadata = merge(baseMetadata, {

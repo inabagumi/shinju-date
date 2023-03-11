@@ -7,6 +7,7 @@ import {
 } from '@/lib/calendar'
 
 export const runtime = 'edge'
+export const dynamic = 'force-static'
 export const revalidate = 60
 
 export async function GET(): Promise<NextResponse> {

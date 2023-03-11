@@ -9,6 +9,7 @@ import {
 import { getChannelBySlug } from '@/lib/supabase'
 
 export const runtime = 'edge'
+export const dynamic = 'force-static'
 export const revalidate = 60
 
 type Params = {

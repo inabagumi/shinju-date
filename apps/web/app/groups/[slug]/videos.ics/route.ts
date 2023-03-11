@@ -10,6 +10,7 @@ import {
 import { getChannelsByGroup, getGroupBySlug } from '@/lib/supabase'
 
 export const runtime = 'edge'
+export const dynamic = 'force-static'
 export const revalidate = 60
 
 type Params = {
