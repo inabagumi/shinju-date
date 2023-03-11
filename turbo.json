@@ -10,7 +10,9 @@
         "NEXT_PUBLIC_BASE_URL",
         "NEXT_PUBLIC_GA_TRACKING_ID",
         "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-        "NEXT_PUBLIC_SUPABASE_URL"
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "UPSTASH_REDIS_REST_TOKEN",
+        "UPSTASH_REDIS_REST_URL"
       ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },

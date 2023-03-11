@@ -32,10 +32,13 @@ import {
   useForm
 } from 'react-hook-form'
 import { HiEye, HiEyeOff } from 'react-icons/hi'
-import { useSupabaseClient } from '@/app/session'
-import { LOGIN_FAILED_MESSAGE } from './constants'
+import * as yup from 'yup'
+import { useAuth } from '@/app/session'
+import { LOGIN_FAILED_MESSAGE } from '@/lib/constants'
+import { loginFormDataSchema } from '@/lib/schemas'
 import { useErrorMessage } from './error-message'
-import loginFormDataSchema, { type LoginFormData } from './schema'
+
+type LoginFormData = yup.InferType<typeof loginFormDataSchema>
 
 export function PasswordField<N extends keyof LoginFormData>(
   props: UseControllerProps<LoginFormData, N>
@@ -100,33 +103,23 @@ export default function LoginForm({
     resolver: yupResolver(loginFormDataSchema)
   })
   const { setErrorMessage } = useErrorMessage()
-  const supabase = useSupabaseClient()
-  const fallbackURL = useMemo(() => {
-    const searchParams = new URLSearchParams({ return: redirectTo })
-
-    return ['/login/email', searchParams.toString()].join('?')
-  }, [redirectTo])
   const [isDisabled, setIsDisabled] = useState(disabled)
+  const { signIn } = useAuth()
 
   const submitHandler = useCallback<SubmitHandler<LoginFormData>>(
     async ({ email, password }) => {
-      if (!supabase) {
+      try {
+        await signIn({ email, password })
+      } catch {
+        setErrorMessage(LOGIN_FAILED_MESSAGE)
+
         return
       }
 
-      const {
-        data: { session },
-        error
-      } = await supabase.auth.signInWithPassword({ email, password })
-
-      if (!error && session) {
-        setIsDisabled(true)
-        router.push(redirectTo)
-      } else {
-        setErrorMessage(LOGIN_FAILED_MESSAGE)
-      }
+      setIsDisabled(true)
+      router.push(redirectTo)
     },
-    [redirectTo, router, setErrorMessage, supabase]
+    [redirectTo, router, signIn, setErrorMessage]
   )
   const subimitErrorHandler = useCallback<
     SubmitErrorHandler<LoginFormData>
@@ -140,11 +133,9 @@ export default function LoginForm({
 
   return (
     <Box
-      action={fallbackURL}
       as="form"
       borderRadius="lg"
       borderWidth={1}
-      encType="multipart/form-data"
       maxW="100%"
       method="post"
       noValidate
