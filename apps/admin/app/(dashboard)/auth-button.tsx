@@ -2,19 +2,30 @@
 
 import { Button, SkeletonText, chakra } from '@shinju-date/chakra-ui'
 import NextLink from 'next/link'
-import { type FormEventHandler, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { type FormEventHandler, useCallback, useState } from 'react'
 import { useAuth } from '@/app/session'
 
 export function SignOutButton(): JSX.Element {
+  const router = useRouter()
   const { signOut } = useAuth()
+  const [isDisabled, setIsDisabled] = useState(false)
 
   const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>(
     (event) => {
       event.preventDefault()
 
-      void signOut()
+      setIsDisabled(true)
+
+      signOut()
+        .then(() => {
+          router.push('/login')
+        })
+        .catch(() => {
+          setIsDisabled(false)
+        })
     },
-    [signOut]
+    [signOut, router]
   )
 
   return (
@@ -24,7 +35,7 @@ export function SignOutButton(): JSX.Element {
       method="POST"
       onSubmit={handleSubmit}
     >
-      <Button size="sm" type="submit">
+      <Button isDisabled={isDisabled} size="sm" type="submit">
         ログアウト
       </Button>
     </chakra.form>

@@ -9,32 +9,98 @@ import {
 export const CURRENT_SESSION_KEY = 'currentSession'
 
 export class SupabaseAuthStorage implements SupportedStorage {
-  #currentSession?: Session
-
-  constructor(session?: Session) {
-    this.#currentSession = session
+  #currentSession: Session | undefined
+  #defaultFetchOptions: RequestInit = {
+    cache: 'no-store',
+    credentials: 'same-origin',
+    mode: 'same-origin'
   }
 
-  getItem(key: string): string | null {
-    return key === CURRENT_SESSION_KEY && this.#currentSession
-      ? JSON.stringify(this.#currentSession)
-      : null
+  constructor(defaultSession?: Session) {
+    this.#currentSession = defaultSession
   }
 
-  removeItem(key: string): void {
-    if (key === CURRENT_SESSION_KEY) {
+  async getItem(key: string): Promise<string | null> {
+    if (key !== CURRENT_SESSION_KEY) {
+      return null
+    }
+
+    if (this.#currentSession) {
+      return JSON.stringify(this.#currentSession)
+    } else if ('window' in globalThis) {
+      const response = await fetch('/api/sessions/me', {
+        ...this.#defaultFetchOptions,
+        method: 'GET'
+      })
+
+      if (response.status !== 200) {
+        return null
+      }
+
+      return response.text()
+    }
+
+    return null
+  }
+
+  async removeItem(key: string): Promise<void> {
+    if (key !== CURRENT_SESSION_KEY) {
+      return
+    }
+
+    if (this.#currentSession) {
       this.#currentSession = undefined
+    } else if ('window' in globalThis) {
+      await fetch('/api/sessions/me', {
+        ...this.#defaultFetchOptions,
+        method: 'DELETE'
+      })
     }
   }
 
-  setItem(key: string, value: string): void {
-    if (key === CURRENT_SESSION_KEY) {
-      this.#currentSession = JSON.parse(value) as Session
+  async setItem(key: string, value: string): Promise<void> {
+    if (key !== CURRENT_SESSION_KEY) {
+      return
+    }
+
+    const maybeSession = JSON.parse(value) as unknown
+
+    if (
+      maybeSession === null ||
+      typeof maybeSession !== 'object' ||
+      !('access_token' in maybeSession) ||
+      typeof maybeSession.access_token !== 'string' ||
+      !('refresh_token' in maybeSession) ||
+      typeof maybeSession.refresh_token !== 'string'
+    ) {
+      return
+    }
+
+    if (this.#currentSession) {
+      this.#currentSession = undefined
+    }
+
+    if ('window' in globalThis) {
+      if (this.#currentSession) {
+        this.#currentSession = undefined
+      }
+
+      await fetch('/api/sessions/me', {
+        ...this.#defaultFetchOptions,
+        body: JSON.stringify({
+          access_token: maybeSession.access_token,
+          refresh_token: maybeSession.refresh_token
+        }),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8'
+        },
+        method: 'PATCH'
+      })
+    } else {
+      this.#currentSession = maybeSession as Session
     }
   }
 }
-
-export const defaultStorage = new SupabaseAuthStorage()
 
 export type CreateSupabaseClientOptions = {
   session?: Session
@@ -42,7 +108,7 @@ export type CreateSupabaseClientOptions = {
 
 export function createSupabaseClient({
   session
-}: CreateSupabaseClientOptions = {}): SupabaseClient<Database> {
+}: CreateSupabaseClientOptions): SupabaseClient<Database> {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
     throw new TypeError(
       '`process.env.NEXT_PUBLIC_SUPABASE_URL` must be defined.'
@@ -60,7 +126,7 @@ export function createSupabaseClient({
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       auth: {
-        autoRefreshToken: true,
+        autoRefreshToken: false,
         detectSessionInUrl: false,
         persistSession: true,
         storage: new SupabaseAuthStorage(session),

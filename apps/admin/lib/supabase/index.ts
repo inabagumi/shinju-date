@@ -56,7 +56,7 @@ export function createSupabaseClient({
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       auth: {
-        autoRefreshToken: true,
+        autoRefreshToken: false,
         detectSessionInUrl: false,
         persistSession: true,
         storage: defaultStorage,

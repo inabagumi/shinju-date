@@ -2,7 +2,7 @@ import { type Session } from '@supabase/supabase-js'
 import { type NextRequest, NextResponse } from 'next/server'
 import { SESSION_ID_COOKIE_KEY } from '@/lib/constants'
 import { sessionSchema } from '@/lib/schemas'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseClient, defaultStorage } from '@/lib/supabase'
 
 //TODO: https://github.com/vercel/next.js/issues/46337
 // export const runtime = 'edge'
@@ -18,8 +18,10 @@ function createErrorResponse(status: number, message?: string) {
   )
 }
 
-export function DELETE(request: NextRequest): NextResponse {
-  if (!request.cookies.has(SESSION_ID_COOKIE_KEY)) {
+export async function DELETE(request: NextRequest): Promise<NextResponse> {
+  const sessionID = request.cookies.get(SESSION_ID_COOKIE_KEY)?.value
+
+  if (!sessionID) {
     return NextResponse.json(
       {
         error: 'Session does not exist.'
@@ -30,13 +32,15 @@ export function DELETE(request: NextRequest): NextResponse {
     )
   }
 
-  const response = new NextResponse('204 No Content', {
+  try {
+    await defaultStorage.removeItem(`session:${sessionID}:token`)
+  } catch {
+    return createErrorResponse(500, 'Session deletion failed.')
+  }
+
+  return new NextResponse(null, {
     status: 204
   })
-
-  response.cookies.delete(SESSION_ID_COOKIE_KEY)
-
-  return response
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -48,14 +52,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const supabaseClient = createSupabaseClient({ sessionID })
   const {
-    data: { session }
+    data: { session },
+    error
   } = await supabaseClient.auth.getSession()
 
-  return NextResponse.json({
-    access_token: session?.access_token ?? '',
-    id: sessionID,
-    refresh_token: session?.refresh_token ?? ''
-  })
+  if (error) {
+    return createErrorResponse(error.status ?? 500, error.message)
+  }
+
+  if (!session) {
+    return createErrorResponse(404, 'Session does not exist.')
+  }
+
+  return NextResponse.json(session)
 }
 
 export async function PATCH(request: NextRequest): Promise<NextResponse> {
@@ -88,13 +97,13 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     error
   } = await supabaseClient.auth.setSession(partialSession)
 
-  if (!session || error) {
-    return createErrorResponse(500, error?.message ?? 'Internal Server Error')
+  if (error) {
+    return createErrorResponse(error.status ?? 500, error.message)
   }
 
-  return NextResponse.json({
-    access_token: session.access_token,
-    id: sessionID,
-    refresh_token: session.refresh_token
-  })
+  if (!session) {
+    return createErrorResponse(404, 'Session does not exist.')
+  }
+
+  return NextResponse.json(session)
 }
