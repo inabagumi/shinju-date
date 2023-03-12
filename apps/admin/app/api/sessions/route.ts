@@ -42,6 +42,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const response = NextResponse.json(session, {
+    headers: {
+      Location: new URL('/api/sessions/me', request.url).toString()
+    },
     status: 201
   })
 
