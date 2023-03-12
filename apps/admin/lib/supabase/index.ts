@@ -9,6 +9,10 @@ import { redisClient as defaultRedisClient } from '@/lib/redis'
 
 const ONE_MONTH = 60 * 60 * 24 * 30
 
+export function createStorageKey(sessionID: string): string {
+  return `session:${sessionID}:token`
+}
+
 export class SupabaseAuthStorage implements SupportedStorage {
   #client: Redis
 
@@ -75,7 +79,7 @@ export function createSupabaseClient({
         detectSessionInUrl: false,
         persistSession: true,
         storage: defaultStorage,
-        storageKey: `session:${sessionID}:token`
+        storageKey: createStorageKey(sessionID)
       },
       global: {
         fetch(input, init): Promise<Response> {

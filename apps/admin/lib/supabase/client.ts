@@ -85,7 +85,7 @@ export class SupabaseAuthStorage implements SupportedStorage {
         this.#currentSession = undefined
       }
 
-      await fetch('/api/sessions/me', {
+      await fetch('/api/sessions', {
         ...this.#defaultFetchOptions,
         body: JSON.stringify({
           access_token: maybeSession.access_token,
@@ -94,7 +94,7 @@ export class SupabaseAuthStorage implements SupportedStorage {
         headers: {
           'Content-Type': 'application/json; charset=UTF-8'
         },
-        method: 'PATCH'
+        method: 'POST'
       })
     } else {
       this.#currentSession = maybeSession as Session
