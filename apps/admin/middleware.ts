@@ -4,10 +4,31 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { SESSION_ID_COOKIE_KEY } from '@/lib/constants'
 import { createSupabaseClient } from '@/lib/supabase'
 
-const ONE_WEEK = 60 * 60 * 24 * 7
+const ONE_WEEK = 1_000 * 60 * 60 * 24 * 7
 
 export const config = {
   matcher: ['/', '/channels/:id*', '/groups/:slug*', '/login']
+}
+
+type AssignSessionIDOptions = {
+  request: NextRequest
+  response: NextResponse
+  sessionID?: string
+}
+
+function assignSessionID({
+  request,
+  response,
+  sessionID
+}: AssignSessionIDOptions): void {
+  const isLocal = request.nextUrl.hostname === 'localhost'
+
+  response.cookies.set(SESSION_ID_COOKIE_KEY, sessionID ?? nanoid(), {
+    expires: new Date(Date.now() + ONE_WEEK),
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: !isLocal
+  })
 }
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
@@ -31,6 +52,8 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
         return NextResponse.redirect(new URL(returnTo, request.url))
       } else {
+        assignSessionID({ request, response, sessionID })
+
         return response
       }
     }
@@ -49,16 +72,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     newResponse = NextResponse.redirect(newURL)
   }
 
-  if (!sessionID) {
-    const isLocal = request.nextUrl.hostname === 'localhost'
-
-    newResponse.cookies.set(SESSION_ID_COOKIE_KEY, nanoid(), {
-      expires: new Date(Date.now() + ONE_WEEK),
-      httpOnly: true,
-      sameSite: 'strict',
-      secure: !isLocal
-    })
-  }
+  assignSessionID({ request, response: newResponse, sessionID })
 
   return newResponse
 }
