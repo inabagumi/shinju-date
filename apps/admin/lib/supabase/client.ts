@@ -9,6 +9,7 @@ import {
 export const CURRENT_SESSION_KEY = 'currentSession'
 
 export class SupabaseAuthStorage implements SupportedStorage {
+  #apiURL = '/api/sessions/me'
   #currentSession: Session | undefined
   #defaultFetchOptions: RequestInit = {
     cache: 'no-store',
@@ -28,12 +29,12 @@ export class SupabaseAuthStorage implements SupportedStorage {
     if (this.#currentSession) {
       return JSON.stringify(this.#currentSession)
     } else if ('window' in globalThis) {
-      const response = await fetch('/api/sessions/me', {
+      const response = await fetch(this.#apiURL, {
         ...this.#defaultFetchOptions,
         method: 'GET'
       })
 
-      if (response.status !== 200) {
+      if (!response.ok) {
         return null
       }
 
@@ -51,7 +52,7 @@ export class SupabaseAuthStorage implements SupportedStorage {
     if (this.#currentSession) {
       this.#currentSession = undefined
     } else if ('window' in globalThis) {
-      await fetch('/api/sessions/me', {
+      await fetch(this.#apiURL, {
         ...this.#defaultFetchOptions,
         method: 'DELETE'
       })
@@ -85,7 +86,7 @@ export class SupabaseAuthStorage implements SupportedStorage {
         this.#currentSession = undefined
       }
 
-      await fetch('/api/sessions', {
+      await fetch(this.#apiURL, {
         ...this.#defaultFetchOptions,
         body: JSON.stringify({
           access_token: maybeSession.access_token,
@@ -94,7 +95,7 @@ export class SupabaseAuthStorage implements SupportedStorage {
         headers: {
           'Content-Type': 'application/json; charset=UTF-8'
         },
-        method: 'POST'
+        method: 'PUT'
       })
     } else {
       this.#currentSession = maybeSession as Session

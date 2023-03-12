@@ -1,34 +1,11 @@
 import { normalizePath } from '@shinju-date/helpers'
-import { nanoid } from 'nanoid'
 import { type NextRequest, NextResponse } from 'next/server'
 import { SESSION_ID_COOKIE_KEY } from '@/lib/constants'
+import { assignSessionID } from '@/lib/session'
 import { createSupabaseClient } from '@/lib/supabase'
-
-const ONE_WEEK = 1_000 * 60 * 60 * 24 * 7
 
 export const config = {
   matcher: ['/', '/channels/:id*', '/groups/:slug*', '/login']
-}
-
-type AssignSessionIDOptions = {
-  request: NextRequest
-  response: NextResponse
-  sessionID?: string
-}
-
-function assignSessionID({
-  request,
-  response,
-  sessionID
-}: AssignSessionIDOptions): void {
-  const isLocal = request.nextUrl.hostname === 'localhost'
-
-  response.cookies.set(SESSION_ID_COOKIE_KEY, sessionID ?? nanoid(), {
-    expires: new Date(Date.now() + ONE_WEEK),
-    httpOnly: true,
-    sameSite: 'strict',
-    secure: !isLocal
-  })
 }
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
