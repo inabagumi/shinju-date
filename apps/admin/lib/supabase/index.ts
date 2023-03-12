@@ -4,7 +4,7 @@ import {
   type SupportedStorage,
   createClient
 } from '@supabase/supabase-js'
-import { Redis } from '@upstash/redis'
+import { type Redis } from '@upstash/redis'
 import { redisClient as defaultRedisClient } from '@/lib/redis'
 
 const ONE_MONTH = 60 * 60 * 24 * 30
@@ -16,8 +16,22 @@ export class SupabaseAuthStorage implements SupportedStorage {
     this.#client = client
   }
 
-  getItem(key: string): Promise<string | null> {
-    return this.#client.get<string>(key)
+  async getItem(key: string): Promise<string | null> {
+    let value: string | null
+
+    try {
+      const [val] = await this.#client
+        .multi()
+        .get(key)
+        .expire(key, ONE_MONTH)
+        .exec<[string | null, 0 | 1]>()
+
+      value = val
+    } catch {
+      value = null
+    }
+
+    return value
   }
 
   async removeItem(key: string): Promise<void> {
@@ -25,8 +39,9 @@ export class SupabaseAuthStorage implements SupportedStorage {
   }
 
   async setItem(key: string, value: string): Promise<void> {
-    await this.#client.set(key, value)
-    await this.#client.expire(key, ONE_MONTH)
+    await this.#client.set(key, value, {
+      ex: ONE_MONTH
+    })
   }
 }
 
