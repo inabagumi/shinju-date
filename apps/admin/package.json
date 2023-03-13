@@ -25,7 +25,7 @@
     "@algolia/client-search": "^4.15.0",
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/schema": "workspace:*",
-    "@types/node": "^18.15.1",
+    "@types/node": "^18.15.2",
     "@types/react": "^18.0.28",
     "encoding": "^0.1.13",
     "eslint": "~8.36.0",
