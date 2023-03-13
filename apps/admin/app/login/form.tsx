@@ -165,8 +165,7 @@ export default function LoginForm({
       <Center mt={6}>
         <Button
           colorScheme="blue"
-          isDisabled={isDisabled}
-          isLoading={isSubmitting}
+          isLoading={isSubmitting || isDisabled}
           type="submit"
           width="full"
         >
