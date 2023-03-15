@@ -125,7 +125,7 @@ importers:
       react-dom: ^18.2.0
       react-icons: ^4.8.0
       react-infinite-scroll-component: ^6.1.0
-      react-intl: ^6.2.10
+      react-intl: ^6.3.0
       react-wrap-balancer: ^0.4.0
       rehype-external-links: ^2.0.1
       remark-gfm: ^3.0.1
@@ -156,7 +156,7 @@ importers:
       react-dom: 18.2.0_react@18.2.0
       react-icons: 4.8.0_react@18.2.0
       react-infinite-scroll-component: 6.1.0_react@18.2.0
-      react-intl: 6.2.10_j5ip3o3v6sktjzl5cxtjyfbuo4
+      react-intl: 6.3.0_j5ip3o3v6sktjzl5cxtjyfbuo4
       react-wrap-balancer: 0.4.0_react@18.2.0
       swr: 2.1.0_react@18.2.0
       ufo: 1.1.1
@@ -9871,8 +9871,8 @@ packages:
       throttle-debounce: 2.3.0
     dev: false
 
-  /react-intl/6.2.10_j5ip3o3v6sktjzl5cxtjyfbuo4:
-    resolution: {integrity: sha512-l2TpskkFR0OzQnq7ChiJ5ZX23USZSzpKOcaR9MYC4UOHE9bT4kQ5JXXolgkq3tiOlvseEOzUCerlzn886AX9Yg==}
+  /react-intl/6.3.0_j5ip3o3v6sktjzl5cxtjyfbuo4:
+    resolution: {integrity: sha512-3hNuLecjy2IwAYbkeI2CRi5RyFN/ucBvHBnmDdePaJt/sTGa1aw2s+0QaW/reL9uTKP/O84O23wO3qZxx3FonQ==}
     peerDependencies:
       react: ^16.6.0 || 17 || 18
       typescript: ^4.7
