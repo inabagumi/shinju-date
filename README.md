@@ -2,24 +2,8 @@
 
 [![Node.js CI](https://github.com/inabagumi/shinju-date/workflows/Node.js%20CI/badge.svg)](https://github.com/inabagumi/shinju-date/actions)
 
-[SHINJU DATE](https://shinju.date/) is a web service that searches broadcasts by the YouTube Live. This service targets broadcasts by members of the 774 inc.
+「[SHINJU DATE](https://shinju.date/)」は[774 inc.](https://www.774.ai/) に所属するタレントが[YouTube](https://www.youtube.com/)で配信や投稿した動画を検索できるウェブサービスです。[774 inc. が定める二次創作ガイドライン](https://www.774.ai/guideline)に従って774 inc.とは直接の関係がない営利を目的としていない団体である[Haneru Developers](https://haneru.dev/)によって開発と運営が行われています。
 
-## Development
-
-Requires an active account of [Algolia](https://www.algolia.com/).
-
-- [Node.js](https://nodejs.org/en/)
-
-```console
-$ git clone https://github.com/inabagumi/shinju-date.git
-$ cd shinju-date
-$ cp .env.local.sample .env.local
-$ nano .env.local
-$ corepack enable
-$ pnpm install
-$ pnpm dev
-```
-
-## License
+## ライセンス
 
 [MIT](LICENSE)
