@@ -290,14 +290,14 @@ importers:
       '@shinju-date/eslint-config': workspace:*
       '@shinju-date/tsconfig': workspace:*
       eslint: ^8.36.0
-      supabase: ^1.42.6
+      supabase: ^1.42.7
       tsup: ^6.6.3
       typescript: ^4.9.5
     devDependencies:
       '@shinju-date/eslint-config': link:../eslint-config
       '@shinju-date/tsconfig': link:../tsconfig
       eslint: 8.36.0
-      supabase: 1.42.6
+      supabase: 1.42.7
       tsup: 6.6.3_typescript@4.9.5
       typescript: 4.9.5
 
@@ -10545,8 +10545,8 @@ packages:
       ts-interface-checker: 0.1.13
     dev: true
 
-  /supabase/1.42.6:
-    resolution: {integrity: sha512-HRrADbLMA8nRB5VsWChdR1L3tCHTVwIjMHWh4+M8GepX654C693jHJEVSb09eu59N2T2OsxfDvf5+kvIkzh3kg==}
+  /supabase/1.42.7:
+    resolution: {integrity: sha512-wBdb5MDqsB9J7IYf9Pilat4Q0NSehTs3iC1ghPSfxrzIhlwHelN2AT+5FDy0CBgHcFSdj4OoKCFDARKSvWst9w==}
     hasBin: true
     requiresBuild: true
     dependencies:
