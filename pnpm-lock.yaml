@@ -31,7 +31,7 @@ importers:
       '@shinju-date/helpers': workspace:*
       '@shinju-date/polyfills': workspace:*
       '@shinju-date/schema': workspace:*
-      '@supabase/supabase-js': ^2.10.0
+      '@supabase/supabase-js': ^2.11.0
       '@types/node': ^18.15.3
       '@types/react': ^18.0.28
       '@upstash/redis': ^1.20.1
@@ -55,7 +55,7 @@ importers:
       '@shinju-date/chakra-ui': link:../../packages/chakra-ui
       '@shinju-date/helpers': link:../../packages/helpers
       '@shinju-date/polyfills': link:../../packages/polyfills
-      '@supabase/supabase-js': 2.10.0_encoding@0.1.13
+      '@supabase/supabase-js': 2.11.0_encoding@0.1.13
       '@upstash/redis': 1.20.1_encoding@0.1.13
       algoliasearch: 4.15.0
       nanoid: 4.0.1
@@ -90,7 +90,7 @@ importers:
       '@shinju-date/eslint-config': workspace:*
       '@shinju-date/polyfills': workspace:*
       '@shinju-date/schema': workspace:*
-      '@supabase/supabase-js': ^2.10.0
+      '@supabase/supabase-js': ^2.11.0
       '@svgr/webpack': ^6.5.1
       '@types/dedent': ^0.7.0
       '@types/gtag.js': ^0.0.12
@@ -139,7 +139,7 @@ importers:
       '@mdx-js/react': 2.3.0_react@18.2.0
       '@reach/skip-nav': 0.18.0_biqbaboplfbrettd7655fr4n2y
       '@shinju-date/polyfills': link:../../packages/polyfills
-      '@supabase/supabase-js': 2.10.0_encoding@0.1.13
+      '@supabase/supabase-js': 2.11.0_encoding@0.1.13
       '@vercel/analytics': 0.1.11_react@18.2.0
       algoliasearch: 4.15.0
       clsx: 1.2.1
@@ -4067,8 +4067,8 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/realtime-js/2.6.0:
-    resolution: {integrity: sha512-tOVulMobhpxyDuu8VIImpL8FXmZOKsGNOSyS5ihJdj2xYmPPvYG+D2J51Ewfl+MFF65tweiB6p9N9bNIW1cDNA==}
+  /@supabase/realtime-js/2.7.0:
+    resolution: {integrity: sha512-wg35ofiCpIemycmPZvvZk3jM9c9z8VvnPUBbSP9ZZN2vSOEJ9C7DZuLiiZMXsyNUzjVgIn62A1tN99T5+9O8Aw==}
     dependencies:
       '@types/phoenix': 1.5.5
       websocket: 1.0.34
@@ -4084,13 +4084,13 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/supabase-js/2.10.0_encoding@0.1.13:
-    resolution: {integrity: sha512-/vkpPxGDyLfTASWnVHL8vdgQxn9SX/Cs+BotTxFhLSIeGFSazC6rpQSMKu6RqzO7gjBD1KqTv0h3auWfClWs+Q==}
+  /@supabase/supabase-js/2.11.0_encoding@0.1.13:
+    resolution: {integrity: sha512-FkaPZjVx1oY4boS02kAoNhmdyy5hrezxGlY8lZdQwKvk7ee5NPiXzjjsGruc6JOS1QNeuWIUAw1L7uKVYI30dA==}
     dependencies:
       '@supabase/functions-js': 2.1.0_encoding@0.1.13
       '@supabase/gotrue-js': 2.13.0_encoding@0.1.13
       '@supabase/postgrest-js': 1.4.1_encoding@0.1.13
-      '@supabase/realtime-js': 2.6.0
+      '@supabase/realtime-js': 2.7.0
       '@supabase/storage-js': 2.3.1_encoding@0.1.13
       cross-fetch: 3.1.5_encoding@0.1.13
     transitivePeerDependencies:
