@@ -42,14 +42,14 @@ importers:
       next: ^13.2.4
       react: ^18.2.0
       react-dom: ^18.2.0
-      react-hook-form: ^7.43.5
+      react-hook-form: ^7.43.6
       react-icons: ^4.8.0
       typescript: ~4.9.5
       yup: ^1.0.2
     dependencies:
       '@algolia/cache-common': 4.15.0
       '@algolia/requester-fetch': 4.15.0
-      '@hookform/resolvers': 2.9.11_react-hook-form@7.43.5
+      '@hookform/resolvers': 2.9.11_react-hook-form@7.43.6
       '@js-temporal/polyfill': 0.4.3
       '@shinju-date/chakra-theme': link:../../packages/chakra-theme
       '@shinju-date/chakra-ui': link:../../packages/chakra-ui
@@ -62,7 +62,7 @@ importers:
       next: 13.2.4_biqbaboplfbrettd7655fr4n2y
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
-      react-hook-form: 7.43.5_react@18.2.0
+      react-hook-form: 7.43.6_react@18.2.0
       react-icons: 4.8.0_react@18.2.0
       yup: 1.0.2
     devDependencies:
@@ -3416,12 +3416,12 @@ packages:
       purgecss: 5.0.0
     dev: true
 
-  /@hookform/resolvers/2.9.11_react-hook-form@7.43.5:
+  /@hookform/resolvers/2.9.11_react-hook-form@7.43.6:
     resolution: {integrity: sha512-bA3aZ79UgcHj7tFV7RlgThzwSSHZgvfbt2wprldRkYBcMopdMvHyO17Wwp/twcJasNFischFfS7oz8Katz8DdQ==}
     peerDependencies:
       react-hook-form: ^7.0.0
     dependencies:
-      react-hook-form: 7.43.5_react@18.2.0
+      react-hook-form: 7.43.6_react@18.2.0
     dev: false
 
   /@humanwhocodes/config-array/0.11.8:
@@ -9845,8 +9845,8 @@ packages:
       use-sidecar: 1.1.2
     dev: false
 
-  /react-hook-form/7.43.5_react@18.2.0:
-    resolution: {integrity: sha512-YcaXhuFHoOPipu5pC7ckxrLrialiOcU91pKu8P+isAcXZyMgByUK9PkI9j5fENO4+6XU5PwWXRGMIFlk9u9UBQ==}
+  /react-hook-form/7.43.6_react@18.2.0:
+    resolution: {integrity: sha512-zEXpju7XnrszIW5AMIjGw3ta/NmhkXG02fnSbIt4MfCegdQhmLkAfeM8bba87Co3oyBDsp8wONP8POcRToPBVw==}
     engines: {node: '>=12.22.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18
