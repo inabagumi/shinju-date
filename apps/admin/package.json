@@ -29,7 +29,7 @@
     "@types/react": "^18.0.28",
     "encoding": "^0.1.13",
     "eslint": "~8.36.0",
-    "typescript": "~5.0.2"
+    "typescript": "~4.9.5"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
