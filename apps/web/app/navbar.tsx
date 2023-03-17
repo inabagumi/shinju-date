@@ -1,46 +1,258 @@
 'use client'
 
+import { fromAsync } from '@shinju-date/polyfills'
 import clsx from 'clsx'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
-import { useCallback, useMemo, useState } from 'react'
+import {
+  type MouseEventHandler,
+  Suspense,
+  use,
+  useCallback,
+  useMemo,
+  useState
+} from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
 import { joinURL } from 'ufo'
 import Icon from '@/assets/icon.svg'
+import { type Group, getAllGroups } from '@/lib/supabase'
 import { parseQueries } from '@/lib/url'
-import { useCurrentGroup, useGroupList } from '@/ui/group'
 import Skeleton from '@/ui/skeleton'
+import { title as siteName } from './constants'
 import styles from './navbar.module.css'
 import SearchForm from './search-form'
+
+const cacheMap = new Map<() => Promise<Group[]>, Promise<Group[]>>()
+
+function cache(fn: () => Promise<Group[]>): () => Promise<Group[]> {
+  return (): Promise<Group[]> => {
+    if (cacheMap.has(fn)) {
+      const value = cacheMap.get(fn)
+
+      if (value) {
+        return value
+      }
+    }
+
+    const result = fn()
+    cacheMap.set(fn, result)
+
+    return result
+  }
+}
+
+const fetchGroups = cache(function fetchGroups(): Promise<Group[]> {
+  return fromAsync(getAllGroups())
+})
+
+function GroupsDropdown({
+  basePath = '/',
+  currentGroupSlug,
+  groupsPromise,
+  isVideosPage = false,
+  query
+}: {
+  basePath?: string
+  currentGroupSlug?: string
+  groupsPromise: Promise<Group[]>
+  isVideosPage?: boolean
+  query?: string
+}): JSX.Element {
+  const groups = use(groupsPromise)
+  const pathname = usePathname()
+  const currentGroup = useMemo<Group | undefined>(
+    () => groups.find((group) => group.slug === currentGroupSlug),
+    [currentGroupSlug, groups]
+  )
+
+  return (
+    <div className="navbar__item dropdown dropdown--hoverable">
+      <Link
+        className="navbar__link"
+        href={joinURL(
+          basePath,
+          ...(isVideosPage
+            ? ['videos', query ? encodeURIComponent(query) : '']
+            : [])
+        )}
+      >
+        {currentGroup
+          ? currentGroup.short_name ?? currentGroup.name
+          : '全グループ'}
+      </Link>
+      <ul className={clsx('dropdown__menu', styles.dropdownMenu)}>
+        <li>
+          <Link
+            aria-current={
+              (
+                isVideosPage
+                  ? pathname?.startsWith('/videos')
+                  : pathname === '/'
+              )
+                ? 'page'
+                : undefined
+            }
+            className={clsx('dropdown__link', {
+              'dropdown__link--active': isVideosPage
+                ? !currentGroup
+                : pathname === '/'
+            })}
+            href={
+              isVideosPage
+                ? `/videos${query ? `/${encodeURIComponent(query)}` : ''}`
+                : '/'
+            }
+          >
+            全グループ
+          </Link>
+        </li>
+        {groups.map((group) => (
+          <li key={group.slug}>
+            <Link
+              aria-current={
+                group.slug === currentGroup?.slug ? 'page' : undefined
+              }
+              className={clsx('dropdown__link', {
+                'dropdown__link--active': group.slug === currentGroup?.slug
+              })}
+              href={
+                isVideosPage
+                  ? joinURL(
+                      `/groups/${group.slug}/videos`,
+                      query ? encodeURIComponent(query) : ''
+                    )
+                  : `/groups/${group.slug}`
+              }
+            >
+              {group.short_name ?? group.name}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+function GroupsDropdownSkeleton(): JSX.Element {
+  return (
+    <div className="navbar__item dropdown dropdown--hoverable">
+      <a className="navbar__link" role="button">
+        <Skeleton variant="text" />
+      </a>
+      <ul className="dropdown__menu">
+        <li>
+          <a className="dropdown__link">
+            <Skeleton variant="text" />
+          </a>
+        </li>
+        <li>
+          <a className="dropdown__link">
+            <Skeleton variant="text" />
+          </a>
+        </li>
+        <li>
+          <a className="dropdown__link">
+            <Skeleton variant="text" />
+          </a>
+        </li>
+      </ul>
+    </div>
+  )
+}
+
+function MenuListItems({
+  groupsPromise,
+  onClick,
+  query,
+  suffix
+}: {
+  groupsPromise: Promise<Group[]>
+  onClick?: MouseEventHandler
+  query?: string
+  suffix?: string
+}): JSX.Element {
+  const groups = use(groupsPromise)
+  const pathname = usePathname()
+
+  return (
+    <>
+      {groups.map((group) => {
+        const groupPathname = joinURL(
+          '/groups',
+          `/${group.slug}`,
+          ...(suffix ? [suffix, query ? `/${query}` : ''] : [])
+        )
+
+        return (
+          <li className="menu__list-item" key={group.slug}>
+            <Link
+              aria-current={pathname === groupPathname ? 'page' : undefined}
+              className={clsx('menu__link', {
+                'menu__link--active': pathname === groupPathname
+              })}
+              href={groupPathname}
+              onClick={onClick}
+            >
+              {group.short_name ?? group.name}
+            </Link>
+          </li>
+        )
+      })}
+    </>
+  )
+}
+
+function MenuListItemsSkeleton(): JSX.Element {
+  return (
+    <>
+      <li className="menu__list-item">
+        <a className="menu__link">
+          <Skeleton variant="text" />
+        </a>
+      </li>
+      <li className="menu__list-item">
+        <a className="menu__link">
+          <Skeleton variant="text" />
+        </a>
+      </li>
+      <li className="menu__list-item">
+        <a className="menu__link">
+          <Skeleton variant="text" />
+        </a>
+      </li>
+    </>
+  )
+}
 
 export default function Navbar(): JSX.Element {
   const [sidebarShown, setSidebarShown] = useState(false)
   const pathname = usePathname()
   const { setTheme, theme } = useTheme()
-  const groupList = useGroupList()
-  const currentGroup = useCurrentGroup()
+  const currentGroupSlug = useMemo<string | undefined>(() => {
+    return pathname?.split('/')[2]
+  }, [pathname])
   const isVideosPage = useMemo(
     () =>
       !!pathname &&
-      (currentGroup
+      (currentGroupSlug
         ? pathname.split('/')[3] === 'videos'
         : pathname.startsWith('/videos')),
-    [currentGroup, pathname]
+    [currentGroupSlug, pathname]
   )
   const basePath = useMemo(
-    () => (currentGroup ? `/groups/${currentGroup.slug}` : '/'),
-    [currentGroup]
+    () => (currentGroupSlug ? `/groups/${currentGroupSlug}` : '/'),
+    [currentGroupSlug]
   )
   const query = useMemo(() => {
     if (!pathname || !isVideosPage) {
       return ''
     }
 
-    const queries = pathname.split('/').slice(currentGroup ? 4 : 2)
+    const queries = pathname.split('/').slice(currentGroupSlug ? 4 : 2)
 
     return parseQueries(queries)
-  }, [pathname, isVideosPage, currentGroup])
+  }, [pathname, isVideosPage, currentGroupSlug])
 
   const showSidebar = useCallback(() => {
     setSidebarShown(true)
@@ -53,6 +265,8 @@ export default function Navbar(): JSX.Element {
   const toggleTheme = useCallback(() => {
     setTheme(theme === 'dark' ? 'light' : 'dark')
   }, [setTheme, theme])
+
+  const groupsPromise = fetchGroups()
 
   return (
     <nav
@@ -95,7 +309,7 @@ export default function Navbar(): JSX.Element {
               width={32}
             />
             <strong className={clsx('navbar__title', styles.title)}>
-              SHINJU DATE
+              {siteName}
             </strong>
           </Link>
 
@@ -106,7 +320,7 @@ export default function Navbar(): JSX.Element {
             })}
             href="/about"
           >
-            SHINJU DATEとは
+            {`${siteName}とは`}
           </Link>
 
           <Link
@@ -121,98 +335,15 @@ export default function Navbar(): JSX.Element {
         </div>
 
         <div className="navbar__items navbar__items--right">
-          {groupList.length > 0 ? (
-            <div className="navbar__item dropdown dropdown--hoverable">
-              <Link
-                className="navbar__link"
-                href={joinURL(
-                  basePath,
-                  ...(isVideosPage
-                    ? ['videos', query ? encodeURIComponent(query) : '']
-                    : [])
-                )}
-              >
-                {currentGroup
-                  ? currentGroup.short_name ?? currentGroup.name
-                  : '全グループ'}
-              </Link>
-              <ul className={clsx('dropdown__menu', styles.dropdownMenu)}>
-                <li>
-                  <Link
-                    aria-current={
-                      (
-                        isVideosPage
-                          ? pathname?.startsWith('/videos')
-                          : pathname === '/'
-                      )
-                        ? 'page'
-                        : undefined
-                    }
-                    className={clsx('dropdown__link', {
-                      'dropdown__link--active': isVideosPage
-                        ? !currentGroup
-                        : pathname === '/'
-                    })}
-                    href={
-                      isVideosPage
-                        ? `/videos${
-                            query ? `/${encodeURIComponent(query)}` : ''
-                          }`
-                        : '/'
-                    }
-                  >
-                    全グループ
-                  </Link>
-                </li>
-                {groupList.map((group) => (
-                  <li key={group.slug}>
-                    <Link
-                      aria-current={
-                        group.slug === currentGroup?.slug ? 'page' : undefined
-                      }
-                      className={clsx('dropdown__link', {
-                        'dropdown__link--active':
-                          group.slug === currentGroup?.slug
-                      })}
-                      href={
-                        isVideosPage
-                          ? joinURL(
-                              `/groups/${group.slug}/videos`,
-                              query ? encodeURIComponent(query) : ''
-                            )
-                          : `/groups/${group.slug}`
-                      }
-                    >
-                      {group.short_name ?? group.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : (
-            <div className="navbar__item dropdown dropdown--hoverable">
-              <a className="navbar__link" role="button">
-                <Skeleton variant="text" />
-              </a>
-              <ul className="dropdown__menu">
-                <li>
-                  <a className="dropdown__link">
-                    <Skeleton variant="text" />
-                  </a>
-                </li>
-                <li>
-                  <a className="dropdown__link">
-                    <Skeleton variant="text" />
-                  </a>
-                </li>
-                <li>
-                  <a className="dropdown__link">
-                    <Skeleton variant="text" />
-                  </a>
-                </li>
-              </ul>
-            </div>
-          )}
+          <Suspense fallback={<GroupsDropdownSkeleton />}>
+            <GroupsDropdown
+              basePath={basePath}
+              currentGroupSlug={currentGroupSlug}
+              groupsPromise={groupsPromise}
+              isVideosPage={isVideosPage}
+              query={query}
+            />
+          </Suspense>
 
           <button
             className={clsx(
@@ -240,7 +371,7 @@ export default function Navbar(): JSX.Element {
         <div className="navbar-sidebar__brand">
           <Link className="navbar__brand" href="/" onClick={hideSidebar}>
             <Icon className="navbar__logo" height={32} role="img" width={32} />
-            <strong className="navbar__title">SHINJU DATE</strong>
+            <strong className="navbar__title">{siteName}</strong>
           </Link>
         </div>
         <div className="navbar-sidebar__items">
@@ -255,7 +386,7 @@ export default function Navbar(): JSX.Element {
                   href="/about"
                   onClick={hideSidebar}
                 >
-                  SHINJU DATEとは
+                  {`${siteName}とは`}
                 </Link>
               </li>
               <li className="menu__list-item">
@@ -275,47 +406,12 @@ export default function Navbar(): JSX.Element {
                       全グループ
                     </Link>
                   </li>
-                  {groupList.length > 0 ? (
-                    groupList.map((group) => (
-                      <li className="menu__list-item" key={group.slug}>
-                        <Link
-                          aria-current={
-                            pathname === '/groups/[slug]' &&
-                            group.slug === currentGroup?.slug
-                              ? 'page'
-                              : undefined
-                          }
-                          className={clsx('menu__link', {
-                            'menu__link--active':
-                              pathname === '/groups/[slug]' &&
-                              group.slug === currentGroup?.slug
-                          })}
-                          href={`/groups/${group.slug}`}
-                          onClick={hideSidebar}
-                        >
-                          {group.short_name ?? group.name}
-                        </Link>
-                      </li>
-                    ))
-                  ) : (
-                    <>
-                      <li className="menu__list-item">
-                        <a className="menu__link">
-                          <Skeleton variant="text" />
-                        </a>
-                      </li>
-                      <li className="menu__list-item">
-                        <a className="menu__link">
-                          <Skeleton variant="text" />
-                        </a>
-                      </li>
-                      <li className="menu__list-item">
-                        <a className="menu__link">
-                          <Skeleton variant="text" />
-                        </a>
-                      </li>
-                    </>
-                  )}
+                  <Suspense fallback={<MenuListItemsSkeleton />}>
+                    <MenuListItems
+                      groupsPromise={groupsPromise}
+                      onClick={hideSidebar}
+                    />
+                  </Suspense>
                 </ul>
               </li>
               <li className="menu__list-item">
@@ -339,52 +435,14 @@ export default function Navbar(): JSX.Element {
                       全グループ
                     </Link>
                   </li>
-                  {groupList.length > 0 ? (
-                    groupList.map((group) => (
-                      <li className="menu__list-item" key={group.slug}>
-                        <Link
-                          aria-current={
-                            currentGroup &&
-                            isVideosPage &&
-                            group.slug === currentGroup.slug
-                              ? 'page'
-                              : undefined
-                          }
-                          className={clsx('menu__link', {
-                            'menu__link--active':
-                              currentGroup &&
-                              isVideosPage &&
-                              group.slug === currentGroup.slug
-                          })}
-                          href={joinURL(
-                            `/groups/${group.slug}/videos`,
-                            query ? `/${encodeURIComponent(query)}` : ''
-                          )}
-                          onClick={hideSidebar}
-                        >
-                          {group.short_name ?? group.name}
-                        </Link>
-                      </li>
-                    ))
-                  ) : (
-                    <>
-                      <li className="menu__list-item">
-                        <a className="menu__link">
-                          <Skeleton variant="text" />
-                        </a>
-                      </li>
-                      <li className="menu__list-item">
-                        <a className="menu__link">
-                          <Skeleton variant="text" />
-                        </a>
-                      </li>
-                      <li className="menu__list-item">
-                        <a className="menu__link">
-                          <Skeleton variant="text" />
-                        </a>
-                      </li>
-                    </>
-                  )}
+                  <Suspense fallback={<MenuListItemsSkeleton />}>
+                    <MenuListItems
+                      groupsPromise={groupsPromise}
+                      onClick={hideSidebar}
+                      query={query}
+                      suffix="/videos"
+                    />
+                  </Suspense>
                 </ul>
               </li>
             </ul>
