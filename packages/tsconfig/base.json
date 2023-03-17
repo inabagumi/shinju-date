@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "importsNotUsedAsValues": null,
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "module": "Node16",
     "target": "ES2022"

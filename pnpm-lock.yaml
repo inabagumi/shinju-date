@@ -9,14 +9,14 @@ importers:
       prettier: ~2.8.4
       prettier-plugin-md-nocjsp: ^1.5.1
       turbo: ^1.8.3
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     devDependencies:
       '@inabagumi/prettier-config': 2.0.0_prettier@2.8.4
       '@tsconfig/strictest': 1.0.2
       prettier: 2.8.4
       prettier-plugin-md-nocjsp: 1.5.1_prettier@2.8.4
       turbo: 1.8.3
-      typescript: 4.9.5
+      typescript: 5.0.2
 
   apps/admin:
     specifiers:
@@ -130,7 +130,7 @@ importers:
       rehype-external-links: ^2.0.1
       remark-gfm: ^3.0.1
       swr: ^2.1.0
-      typescript: ~4.9.5
+      typescript: ~5.0.2
       ufo: ^1.1.1
     dependencies:
       '@algolia/cache-common': 4.15.0
@@ -156,7 +156,7 @@ importers:
       react-dom: 18.2.0_react@18.2.0
       react-icons: 4.8.0_react@18.2.0
       react-infinite-scroll-component: 6.1.0_react@18.2.0
-      react-intl: 6.3.0_j5ip3o3v6sktjzl5cxtjyfbuo4
+      react-intl: 6.3.0_odn5rdmyrxuyfnlhepsb7fjnvi
       react-wrap-balancer: 0.4.0_react@18.2.0
       swr: 2.1.0_react@18.2.0
       ufo: 1.1.1
@@ -188,7 +188,7 @@ importers:
       postcss-preset-env: 8.0.1_postcss@8.4.21
       rehype-external-links: 2.0.1
       remark-gfm: 3.0.1
-      typescript: 4.9.5
+      typescript: 5.0.2
 
   packages/chakra-theme:
     specifiers:
@@ -199,17 +199,17 @@ importers:
       '@shinju-date/tsconfig': workspace:*
       eslint: ^8.36.0
       tsup: ^6.6.3
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@chakra-ui/styled-system': 2.6.1
       '@shinju-date/chakra-ui': link:../chakra-ui
     devDependencies:
-      '@chakra-ui/cli': 2.3.0_typescript@4.9.5
+      '@chakra-ui/cli': 2.3.0_typescript@5.0.2
       '@shinju-date/eslint-config': link:../eslint-config
       '@shinju-date/tsconfig': link:../tsconfig
       eslint: 8.36.0
-      tsup: 6.6.3_typescript@4.9.5
-      typescript: 4.9.5
+      tsup: 6.6.3_typescript@5.0.2
+      typescript: 5.0.2
 
   packages/chakra-ui:
     specifiers:
@@ -223,7 +223,7 @@ importers:
       eslint: ^8.36.0
       framer-motion: ^10.6.0
       tsup: ^6.6.3
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     dependencies:
       '@chakra-ui/next-js': 2.0.1_2qqnrf4dnivxsv24wia6jiyfk4
       '@chakra-ui/react': 2.5.1_oz653j6ggbtkddmtobjyuqjidy
@@ -235,8 +235,8 @@ importers:
       '@shinju-date/eslint-config': link:../eslint-config
       '@shinju-date/tsconfig': link:../tsconfig
       eslint: 8.36.0
-      tsup: 6.6.3_typescript@4.9.5
-      typescript: 4.9.5
+      tsup: 6.6.3_typescript@5.0.2
+      typescript: 5.0.2
 
   packages/eslint-config:
     specifiers:
@@ -262,14 +262,14 @@ importers:
       eslint: ^8.36.0
       next: ^13.2.4
       tsup: ^6.6.3
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     devDependencies:
       '@shinju-date/eslint-config': link:../eslint-config
       '@shinju-date/tsconfig': link:../tsconfig
       eslint: 8.36.0
       next: 13.2.4
-      tsup: 6.6.3_typescript@4.9.5
-      typescript: 4.9.5
+      tsup: 6.6.3_typescript@5.0.2
+      typescript: 5.0.2
 
   packages/polyfills:
     specifiers:
@@ -277,13 +277,13 @@ importers:
       '@shinju-date/tsconfig': workspace:*
       eslint: ^8.36.0
       tsup: ^6.6.3
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     devDependencies:
       '@shinju-date/eslint-config': link:../eslint-config
       '@shinju-date/tsconfig': link:../tsconfig
       eslint: 8.36.0
-      tsup: 6.6.3_typescript@4.9.5
-      typescript: 4.9.5
+      tsup: 6.6.3_typescript@5.0.2
+      typescript: 5.0.2
 
   packages/schema:
     specifiers:
@@ -292,14 +292,14 @@ importers:
       eslint: ^8.36.0
       supabase: ^1.42.7
       tsup: ^6.6.3
-      typescript: ^4.9.5
+      typescript: ^5.0.2
     devDependencies:
       '@shinju-date/eslint-config': link:../eslint-config
       '@shinju-date/tsconfig': link:../tsconfig
       eslint: 8.36.0
       supabase: 1.42.7
-      tsup: 6.6.3_typescript@4.9.5
-      typescript: 4.9.5
+      tsup: 6.6.3_typescript@5.0.2
+      typescript: 5.0.2
 
   packages/tsconfig:
     specifiers:
@@ -1807,7 +1807,7 @@ packages:
       '@zag-js/focus-visible': 0.2.1
     dev: false
 
-  /@chakra-ui/cli/2.3.0_typescript@4.9.5:
+  /@chakra-ui/cli/2.3.0_typescript@5.0.2:
     resolution: {integrity: sha512-63Xs4aMYxc17U8GfyPuQnAv8qRg/z2oCd8lgAdn6m755lvQ0e5RZ+mNecfJN1uNXRs3BmKXWnmGh1NvfQ6q1UQ==}
     hasBin: true
     dependencies:
@@ -1821,7 +1821,7 @@ packages:
       ora: 5.4.1
       prettier: 2.8.4
       regenerator-runtime: 0.13.11
-      ts-node: 10.9.1_3bszheb7uvxhm7xoyvgc67yd7m
+      ts-node: 10.9.1_waxbghx7wrgdaz377f4cnno4nq
       tsconfig-paths: 4.1.2
       update-notifier: 5.1.0
     transitivePeerDependencies:
@@ -3389,7 +3389,7 @@ packages:
       tslib: 2.5.0
     dev: false
 
-  /@formatjs/intl/2.6.7_typescript@4.9.5:
+  /@formatjs/intl/2.6.7_typescript@5.0.2:
     resolution: {integrity: sha512-9FvEJfUMzlmP5ZBK3EE0928kVsZmD5aeWXg+faP8+mKIvG3c0hkLEXQ2MiUrXQt4rsEzOPbYVtBdthzSM0e2fw==}
     peerDependencies:
       typescript: ^4.7
@@ -3404,7 +3404,7 @@ packages:
       '@formatjs/intl-listformat': 7.1.9
       intl-messageformat: 10.3.1
       tslib: 2.5.0
-      typescript: 4.9.5
+      typescript: 5.0.2
     dev: false
 
   /@fullhuman/postcss-purgecss/5.0.0_postcss@8.4.21:
@@ -9871,7 +9871,7 @@ packages:
       throttle-debounce: 2.3.0
     dev: false
 
-  /react-intl/6.3.0_j5ip3o3v6sktjzl5cxtjyfbuo4:
+  /react-intl/6.3.0_odn5rdmyrxuyfnlhepsb7fjnvi:
     resolution: {integrity: sha512-3hNuLecjy2IwAYbkeI2CRi5RyFN/ucBvHBnmDdePaJt/sTGa1aw2s+0QaW/reL9uTKP/O84O23wO3qZxx3FonQ==}
     peerDependencies:
       react: ^16.6.0 || 17 || 18
@@ -9882,7 +9882,7 @@ packages:
     dependencies:
       '@formatjs/ecma402-abstract': 1.14.3
       '@formatjs/icu-messageformat-parser': 2.3.0
-      '@formatjs/intl': 2.6.7_typescript@4.9.5
+      '@formatjs/intl': 2.6.7_typescript@5.0.2
       '@formatjs/intl-displaynames': 6.2.6
       '@formatjs/intl-listformat': 7.1.9
       '@types/hoist-non-react-statics': 3.3.1
@@ -9891,7 +9891,7 @@ packages:
       intl-messageformat: 10.3.1
       react: 18.2.0
       tslib: 2.5.0
-      typescript: 4.9.5
+      typescript: 5.0.2
     dev: false
 
   /react-is/16.13.1:
@@ -10779,7 +10779,7 @@ packages:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
     dev: true
 
-  /ts-node/10.9.1_3bszheb7uvxhm7xoyvgc67yd7m:
+  /ts-node/10.9.1_waxbghx7wrgdaz377f4cnno4nq:
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
     peerDependencies:
@@ -10805,7 +10805,7 @@ packages:
       create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
-      typescript: 4.9.5
+      typescript: 5.0.2
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
     dev: true
@@ -10839,7 +10839,7 @@ packages:
   /tslib/2.5.0:
     resolution: {integrity: sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==}
 
-  /tsup/6.6.3_typescript@4.9.5:
+  /tsup/6.6.3_typescript@5.0.2:
     resolution: {integrity: sha512-OLx/jFllYlVeZQ7sCHBuRVEQBBa1tFbouoc/gbYakyipjVQdWy/iQOvmExUA/ewap9iQ7tbJf9pW0PgcEFfJcQ==}
     engines: {node: '>=14.18'}
     hasBin: true
@@ -10869,7 +10869,7 @@ packages:
       source-map: 0.8.0-beta.0
       sucrase: 3.29.0
       tree-kill: 1.2.2
-      typescript: 4.9.5
+      typescript: 5.0.2
     transitivePeerDependencies:
       - supports-color
       - ts-node
@@ -10998,6 +10998,12 @@ packages:
   /typescript/4.9.5:
     resolution: {integrity: sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==}
     engines: {node: '>=4.2.0'}
+    hasBin: true
+    dev: true
+
+  /typescript/5.0.2:
+    resolution: {integrity: sha512-wVORMBGO/FAs/++blGNeAVdbNKtIh1rbBL2EyQ1+J9lClJ93KiiKe8PmFIVdXhHcyv44SL9oglmfeSsndo0jRw==}
+    engines: {node: '>=12.20'}
     hasBin: true
 
   /ufo/1.1.1:

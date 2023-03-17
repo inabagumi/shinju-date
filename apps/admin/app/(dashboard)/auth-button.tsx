@@ -35,7 +35,7 @@ export function SignOutButton(): JSX.Element {
       method="POST"
       onSubmit={handleSubmit}
     >
-      <Button isDisabled={isDisabled} size="sm" type="submit">
+      <Button isLoading={isDisabled} size="sm" type="submit">
         ログアウト
       </Button>
     </chakra.form>
