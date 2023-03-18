@@ -1,51 +1,4 @@
 resource "vercel_project" "this" {
-  environment = [
-    {
-      key    = "NEXT_PUBLIC_ALGOLIA_API_KEY"
-      target = ["production", "preview", "development"]
-      value  = var.algolia_api_key
-    },
-    {
-      key    = "NEXT_PUBLIC_ALGOLIA_APPLICATION_ID"
-      target = ["production", "preview", "development"]
-      value  = var.algolia_application_id
-    },
-    {
-      key    = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
-      target = ["production"]
-      value  = "prod_videos"
-    },
-    {
-      key    = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
-      target = ["preview", "development"]
-      value  = "dev_videos"
-    },
-    {
-      key    = "NEXT_PUBLIC_BASE_URL"
-      target = ["production", "preview", "development"]
-      value  = "https://shinju.date"
-    },
-    {
-      key    = "NEXT_PUBLIC_GA_TRACKING_ID"
-      target = ["production"]
-      value  = "UA-167910717-1"
-    },
-    {
-      key    = "NEXT_PUBLIC_GA_TRACKING_ID"
-      target = ["preview", "development"]
-      value  = "UA-167910717-2"
-    },
-    {
-      key    = "NEXT_PUBLIC_SUPABASE_ANON_KEY"
-      target = ["production", "preview", "development"]
-      value  = var.supabase_anon_key
-    },
-    {
-      key    = "NEXT_PUBLIC_SUPABASE_URL"
-      target = ["production", "preview", "development"]
-      value  = var.supabase_url
-    },
-  ]
   framework = "nextjs"
   git_repository = {
     production_branch = "main"
@@ -82,49 +35,87 @@ resource "vercel_project_domain" "ink" {
   team_id              = vercel_project.this.team_id
 }
 
+resource "vercel_project_environment_variable" "algolia_api_key" {
+  key        = "NEXT_PUBLIC_ALGOLIA_API_KEY"
+  project_id = vercel_project.this.id
+  target     = ["production", "preview", "development"]
+  team_id    = vercel_project.this.team_id
+  value      = var.algolia_api_key
+}
+
+resource "vercel_project_environment_variable" "algolia_application_id" {
+  key        = "NEXT_PUBLIC_ALGOLIA_APPLICATION_ID"
+  project_id = vercel_project.this.id
+  target     = ["production", "preview", "development"]
+  team_id    = vercel_project.this.team_id
+  value      = var.algolia_application_id
+}
+
+resource "vercel_project_environment_variable" "algolia_index_name" {
+  key        = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
+  project_id = vercel_project.this.id
+  target     = ["production"]
+  team_id    = vercel_project.this.team_id
+  value      = "prod_videos"
+}
+
+resource "vercel_project_environment_variable" "algolia_index_name_dev" {
+  key        = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
+  project_id = vercel_project.this.id
+  target     = ["preview", "development"]
+  team_id    = vercel_project.this.team_id
+  value      = "dev_videos"
+}
+
+resource "vercel_project_environment_variable" "base_url" {
+  key        = "NEXT_PUBLIC_BASE_URL"
+  project_id = vercel_project.this.id
+  target     = ["production", "preview"]
+  team_id    = vercel_project.this.team_id
+  value      = "https://shinju.date"
+}
+
+resource "vercel_project_environment_variable" "base_url_dev" {
+  key        = "NEXT_PUBLIC_BASE_URL"
+  project_id = vercel_project.this.id
+  target     = ["development"]
+  team_id    = vercel_project.this.team_id
+  value      = "http://localhost:3000"
+}
+
+resource "vercel_project_environment_variable" "ga_tracking_id" {
+  key        = "NEXT_PUBLIC_GA_TRACKING_ID"
+  project_id = vercel_project.this.id
+  target     = ["production"]
+  team_id    = vercel_project.this.team_id
+  value      = "https://shinju.date"
+}
+
+resource "vercel_project_environment_variable" "ga_tracking_id_dev" {
+  key        = "NEXT_PUBLIC_GA_TRACKING_ID"
+  project_id = vercel_project.this.id
+  target     = ["preview", "development"]
+  team_id    = vercel_project.this.team_id
+  value      = "http://localhost:3000"
+}
+
+resource "vercel_project_environment_variable" "supabase_anon_key" {
+  key        = "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+  project_id = vercel_project.this.id
+  target     = ["production", "preview", "development"]
+  team_id    = vercel_project.this.team_id
+  value      = var.supabase_anon_key
+}
+
+resource "vercel_project_environment_variable" "supabase_url" {
+  key        = "NEXT_PUBLIC_SUPABASE_URL"
+  project_id = vercel_project.this.id
+  target     = ["production", "preview", "development"]
+  team_id    = vercel_project.this.team_id
+  value      = var.supabase_url
+}
+
 resource "vercel_project" "admin" {
-  environment = [
-    {
-      key    = "NEXT_PUBLIC_ALGOLIA_API_KEY"
-      target = ["production", "preview", "development"]
-      value  = var.algolia_api_key
-    },
-    {
-      key    = "NEXT_PUBLIC_ALGOLIA_APPLICATION_ID"
-      target = ["production", "preview", "development"]
-      value  = var.algolia_application_id
-    },
-    {
-      key    = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
-      target = ["production"]
-      value  = "prod_videos"
-    },
-    {
-      key    = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
-      target = ["preview", "development"]
-      value  = "dev_videos"
-    },
-    {
-      key    = "NEXT_PUBLIC_SUPABASE_ANON_KEY"
-      target = ["production", "preview", "development"]
-      value  = var.supabase_anon_key
-    },
-    {
-      key    = "NEXT_PUBLIC_SUPABASE_URL"
-      target = ["production", "preview", "development"]
-      value  = var.supabase_url
-    },
-    {
-      key    = "UPSTASH_REDIS_REST_TOKEN"
-      target = ["production", "preview", "development"]
-      value  = var.upstash_redis_rest_token
-    },
-    {
-      key    = "UPSTASH_REDIS_REST_URL"
-      target = ["production", "preview", "development"]
-      value  = var.upstash_redis_rest_url
-    },
-  ]
   framework = "nextjs"
   git_repository = {
     production_branch = "main"
@@ -143,4 +134,84 @@ resource "vercel_project_domain" "admin" {
   domain     = "admin.shinju.date"
   project_id = vercel_project.admin.id
   team_id    = vercel_project.admin.team_id
+}
+
+resource "vercel_project_environment_variable" "admin_algolia_api_key" {
+  key        = "NEXT_PUBLIC_ALGOLIA_API_KEY"
+  project_id = vercel_project.admin.id
+  target     = ["production", "preview", "development"]
+  team_id    = vercel_project.admin.team_id
+  value      = var.algolia_api_key
+}
+
+resource "vercel_project_environment_variable" "admin_algolia_application_id" {
+  key        = "NEXT_PUBLIC_ALGOLIA_APPLICATION_ID"
+  project_id = vercel_project.admin.id
+  target     = ["production", "preview", "development"]
+  team_id    = vercel_project.admin.team_id
+  value      = var.algolia_application_id
+}
+
+resource "vercel_project_environment_variable" "admin_algolia_index_name" {
+  key        = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
+  project_id = vercel_project.admin.id
+  target     = ["production"]
+  team_id    = vercel_project.admin.team_id
+  value      = "prod_videos"
+}
+
+resource "vercel_project_environment_variable" "admin_algolia_index_name_dev" {
+  key        = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
+  project_id = vercel_project.admin.id
+  target     = ["preview", "development"]
+  team_id    = vercel_project.admin.team_id
+  value      = "dev_videos"
+}
+
+resource "vercel_project_environment_variable" "admin_supabase_anon_key" {
+  key        = "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+  project_id = vercel_project.admin.id
+  target     = ["production", "preview", "development"]
+  team_id    = vercel_project.admin.team_id
+  value      = var.supabase_anon_key
+}
+
+resource "vercel_project_environment_variable" "admin_supabase_url" {
+  key        = "NEXT_PUBLIC_SUPABASE_URL"
+  project_id = vercel_project.admin.id
+  target     = ["production", "preview", "development"]
+  team_id    = vercel_project.admin.team_id
+  value      = var.supabase_url
+}
+
+resource "vercel_project_environment_variable" "admin_upstash_redis_rest_token" {
+  key        = "UPSTASH_REDIS_REST_TOKEN"
+  project_id = vercel_project.admin.id
+  target     = ["production", "preview", "development"]
+  team_id    = vercel_project.admin.team_id
+  value      = var.upstash_redis_rest_token
+}
+
+resource "vercel_project_environment_variable" "admin_upstash_redis_rest_token_dev" {
+  key        = "UPSTASH_REDIS_REST_TOKEN"
+  project_id = vercel_project.admin.id
+  target     = ["production", "preview", "development"]
+  team_id    = vercel_project.admin.team_id
+  value      = var.upstash_redis_rest_token_dev
+}
+
+resource "vercel_project_environment_variable" "admin_upstash_redis_rest_url" {
+  key        = "UPSTASH_REDIS_REST_URL"
+  project_id = vercel_project.admin.id
+  target     = ["production"]
+  team_id    = vercel_project.admin.team_id
+  value      = var.upstash_redis_rest_url
+}
+
+resource "vercel_project_environment_variable" "admin_upstash_redis_rest_url_dev" {
+  key        = "UPSTASH_REDIS_REST_URL"
+  project_id = vercel_project.admin.id
+  target     = ["preview", "development"]
+  team_id    = vercel_project.admin.team_id
+  value      = var.upstash_redis_rest_url_dev
 }
