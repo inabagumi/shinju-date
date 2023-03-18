@@ -168,12 +168,28 @@ resource "vercel_project_environment_variable" "admin_algolia_index_name_dev" {
   value      = "dev_videos"
 }
 
+resource "vercel_project_environment_variable" "admin_google_api_key" {
+  key        = "GOOGLE_API_KEY"
+  project_id = vercel_project.admin.id
+  target     = ["production", "preview", "development"]
+  team_id    = vercel_project.admin.team_id
+  value      = var.google_api_key
+}
+
 resource "vercel_project_environment_variable" "admin_supabase_anon_key" {
   key        = "NEXT_PUBLIC_SUPABASE_ANON_KEY"
   project_id = vercel_project.admin.id
   target     = ["production", "preview", "development"]
   team_id    = vercel_project.admin.team_id
   value      = var.supabase_anon_key
+}
+
+resource "vercel_project_environment_variable" "admin_supabase_service_role_key" {
+  key        = "SUPABASE_SERVICE_ROLE_KEY"
+  project_id = vercel_project.admin.id
+  target     = ["production", "preview", "development"]
+  team_id    = vercel_project.admin.team_id
+  value      = var.supabase_service_role_key
 }
 
 resource "vercel_project_environment_variable" "admin_supabase_url" {
