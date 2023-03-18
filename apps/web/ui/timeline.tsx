@@ -1,40 +1,35 @@
 'use client'
 
-import { type Database } from '@shinju-date/schema'
 import { Temporal } from '@js-temporal/polyfill'
+import { type Database } from '@shinju-date/schema'
 import chunk from 'lodash.chunk'
 import groupBy from 'lodash.groupby'
 import { useMemo } from 'react'
-import { FormattedDate, useIntl } from 'react-intl'
 import useSWR from 'swr'
 import { type Video } from '@/lib/algolia'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
 import Skeleton from './skeleton'
-import VideoCard from './video-card'
+import VideoCard, { VideoCardSkeleton } from './video-card'
 
-type BuildScheduleMapOptions = {
-  timeZone: Temporal.TimeZone
-}
+export function TimelineSkeleton(): JSX.Element {
+  return (
+    <section className="margin-top--lg section">
+      <h2 className="margin-bottom--lg text--right">
+        <Skeleton variant="text" />
+      </h2>
 
-const buildScheduleMap = (
-  values: Video[],
-  { timeZone }: BuildScheduleMapOptions
-): Record<string, Video[]> => {
-  values.sort((videoA, videoB) =>
-    Temporal.Instant.compare(
-      Temporal.Instant.fromEpochSeconds(videoA.publishedAt),
-      Temporal.Instant.fromEpochSeconds(videoB.publishedAt)
-    )
+      <div className="container">
+        <div className="row">
+          <div className="col col--4 padding-bottom--lg padding-horiz--sm">
+            <VideoCardSkeleton />
+          </div>
+          <div className="col col--4 padding-bottom--lg padding-horiz--sm">
+            <VideoCardSkeleton />
+          </div>
+        </div>
+      </div>
+    </section>
   )
-
-  return groupBy(values, (value) => {
-    const publishedAt = Temporal.Instant.fromEpochSeconds(
-      value.publishedAt
-    ).toZonedDateTimeISO(timeZone)
-    const publishedDate = publishedAt.toPlainDate()
-
-    return publishedDate.toString()
-  })
 }
 
 type Channel = Pick<
@@ -61,25 +56,39 @@ export default function Timeline({
       refreshInterval: 60_000
     }
   )
-  const intl = useIntl()
-  const schedule = useMemo(() => {
-    const timeZone = new Temporal.TimeZone(intl.timeZone ?? 'UTC')
+  const schedule = useMemo<Map<Temporal.PlainDate, Video[]>>(() => {
+    const sortedValues = [...videos].sort((videoA, videoB) =>
+      Temporal.Instant.compare(
+        Temporal.Instant.fromEpochSeconds(videoA.publishedAt),
+        Temporal.Instant.fromEpochSeconds(videoB.publishedAt)
+      )
+    )
+    const groupedValues = groupBy(sortedValues, (value) =>
+      Temporal.Instant.fromEpochSeconds(value.publishedAt)
+        .toZonedDateTimeISO('Asia/Tokyo')
+        .toPlainDate()
+        .toJSON()
+    )
+    const groupedMap = new Map<Temporal.PlainDate, Video[]>()
 
-    return buildScheduleMap(videos, { timeZone })
-  }, [videos, intl.timeZone])
+    for (const [key, values] of Object.entries(groupedValues)) {
+      groupedMap.set(Temporal.PlainDate.from(key), values)
+    }
+
+    return groupedMap
+  }, [videos])
 
   return (
     <>
-      {Object.entries(schedule).map(([dateTime, items]) => (
-        <section className="margin-top--lg section" key={dateTime}>
+      {Array.from(schedule.entries()).map(([dateTime, items]) => (
+        <section className="margin-top--lg section" key={dateTime.toJSON()}>
           <h2 className="margin-bottom--lg text--right">
-            <time dateTime={dateTime}>
-              <FormattedDate
-                day="2-digit"
-                month="2-digit"
-                value={dateTime}
-                year="numeric"
-              />
+            <time dateTime={dateTime.toJSON()}>
+              {dateTime.toLocaleString('ja-JP', {
+                dateStyle: 'short',
+                timeStyle: undefined,
+                timeZone: 'Asia/Tokyo'
+              })}
             </time>
           </h2>
 
@@ -103,26 +112,5 @@ export default function Timeline({
         </section>
       ))}
     </>
-  )
-}
-
-export function TimelineSkeleton(): JSX.Element {
-  return (
-    <section className="margin-top--lg section">
-      <h2 className="margin-bottom--lg text--right">
-        <Skeleton variant="text" />
-      </h2>
-
-      <div className="container">
-        <div className="row">
-          <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-            <VideoCard />
-          </div>
-          <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-            <VideoCard />
-          </div>
-        </div>
-      </div>
-    </section>
   )
 }

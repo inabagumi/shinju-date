@@ -7,16 +7,16 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite from 'swr/infinite'
 import { type Video } from '@/lib/algolia'
 import { SEARCH_RESULT_COUNT, fetchVideosByChannelIDs } from '@/lib/fetchers'
-import VideoCard from './video-card'
+import VideoCard, { VideoCardSkeleton } from './video-card'
 
 export function SearchResultsPlaceholder(): JSX.Element {
   return (
     <div className="row">
       <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-        <VideoCard />
+        <VideoCardSkeleton />
       </div>
       <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-        <VideoCard />
+        <VideoCardSkeleton />
       </div>
     </div>
   )
@@ -87,8 +87,9 @@ export default function SearchResults({
               key={value.id}
             >
               <VideoCard
-                timeOptions={{
-                  relativeTime: true
+                dateTimeFormatOptions={{
+                  dateStyle: 'short',
+                  timeStyle: 'short'
                 }}
                 value={value}
               />
