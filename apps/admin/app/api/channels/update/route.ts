@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 import { type Database } from '@shinju-date/schema'
 import dedent from 'dedent'
 import { NextResponse } from 'next/server'
@@ -30,6 +31,7 @@ export async function POST(): Promise<NextResponse> {
     )
   }
 
+  const currentDateTime = Temporal.Now.instant()
   const supabaseClient = createSupabaseClient({
     token: process.env.SUPABASE_SERVICE_ROLE_KEY
   })
@@ -78,6 +80,7 @@ export async function POST(): Promise<NextResponse> {
         .from('channels')
         .update({
           name: item.snippet.title,
+          updated_at: currentDateTime.toJSON(),
           url: channelURL
         })
         .eq('slug', item.id)
