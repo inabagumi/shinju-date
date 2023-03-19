@@ -128,3 +128,5 @@ export async function POST(): Promise<NextResponse> {
     status: 204
   })
 }
+
+export const GET = POST
