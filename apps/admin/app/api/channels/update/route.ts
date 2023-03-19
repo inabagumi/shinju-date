@@ -2,21 +2,10 @@ import { Temporal } from '@js-temporal/polyfill'
 import { type Database } from '@shinju-date/schema'
 import dedent from 'dedent'
 import { NextResponse } from 'next/server'
-import { redisClient } from '@/lib/redis'
+import { isDuplicate } from '@/lib/redis'
 import { createErrorResponse } from '@/lib/session'
 import { createSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
-
-const TWO_HOURS = 60 * 60 * 2
-
-async function isDuplicate(key: string) {
-  const response = await redisClient.set(key, true, {
-    ex: TWO_HOURS,
-    nx: true
-  })
-
-  return !response
-}
 
 type Channel = Pick<
   Database['public']['Tables']['channels']['Row'],
@@ -24,7 +13,9 @@ type Channel = Pick<
 >
 
 export async function POST(): Promise<NextResponse> {
-  if (await isDuplicate('cron:channels:update')) {
+  const duration = Temporal.Duration.from({ hours: 2 })
+
+  if (await isDuplicate('cron:channels:update', duration)) {
     return createErrorResponse(
       429,
       'There has been no interval since the last run.'

@@ -1,9 +1,19 @@
+import { type Temporal } from '@js-temporal/polyfill'
 import {
   Redis,
   type Requester,
   type UpstashRequest,
   type UpstashResponse
 } from '@upstash/redis'
+
+export async function isDuplicate(key: string, duration: Temporal.Duration) {
+  const response = await redisClient.set(key, true, {
+    ex: duration.total({ unit: 'second' }),
+    nx: true
+  })
+
+  return !response
+}
 
 export class HTTPClient implements Requester {
   #baseURL: string

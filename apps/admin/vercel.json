@@ -5,6 +5,10 @@
       "schedule": "21 1/3 * * *"
     },
     {
+      "path": "/api/videos/update",
+      "schedule": "42 6/12 * * *"
+    },
+    {
       "path": "/api/channels/update/2023-03-21",
       "schedule": "0 15 20 3 *"
     }
