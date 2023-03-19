@@ -129,5 +129,4 @@ export async function POST(): Promise<NextResponse> {
   })
 }
 
-
 export const GET = POST
