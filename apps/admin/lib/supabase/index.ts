@@ -9,6 +9,8 @@ import { redisClient as defaultRedisClient } from '@/lib/redis'
 
 const ONE_MONTH = 60 * 60 * 24 * 30
 
+export type TypedSupabaseClient = SupabaseClient<Database>
+
 export function createStorageKey(sessionID: string): string {
   return `session:${sessionID}:token`
 }
@@ -61,7 +63,7 @@ export function createSupabaseClient({
   sessionID,
   token = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   url: baseURL = process.env.NEXT_PUBLIC_SUPABASE_URL
-}: CreateSupabaseClientOptions = {}): SupabaseClient<Database> {
+}: CreateSupabaseClientOptions = {}): TypedSupabaseClient {
   if (!token) {
     throw new TypeError('`options.token` must be defined.')
   }
