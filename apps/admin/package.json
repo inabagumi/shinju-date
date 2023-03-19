@@ -3,6 +3,7 @@
   "dependencies": {
     "@algolia/cache-common": "^4.15.0",
     "@algolia/requester-fetch": "^4.15.0",
+    "@googleapis/youtube": "^8.0.2",
     "@hookform/resolvers": "^2.9.11",
     "@js-temporal/polyfill": "^0.4.3",
     "@shinju-date/chakra-theme": "workspace:*",
@@ -12,6 +13,7 @@
     "@supabase/supabase-js": "^2.11.0",
     "@upstash/redis": "^1.20.1",
     "algoliasearch": "^4.15.0",
+    "dedent": "^0.7.0",
     "nanoid": "^4.0.1",
     "next": "^13.2.4",
     "react": "^18.2.0",
@@ -25,6 +27,7 @@
     "@algolia/client-search": "^4.15.0",
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/schema": "workspace:*",
+    "@types/dedent": "^0.7.0",
     "@types/node": "^18.15.3",
     "@types/react": "^18.0.28",
     "encoding": "^0.1.13",

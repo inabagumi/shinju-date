@@ -52,40 +52,40 @@ export class SupabaseAuthStorage implements SupportedStorage {
 export const defaultStorage = new SupabaseAuthStorage(defaultRedisClient)
 
 type CreateSupabaseClientOptions = {
-  sessionID: string
+  sessionID?: string
+  token?: string
+  url?: string
 }
 
 export function createSupabaseClient({
-  sessionID
-}: CreateSupabaseClientOptions): SupabaseClient<Database> {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    throw new TypeError(
-      '`process.env.NEXT_PUBLIC_SUPABASE_URL` must be defined.'
-    )
+  sessionID,
+  token = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  url: baseURL = process.env.NEXT_PUBLIC_SUPABASE_URL
+}: CreateSupabaseClientOptions = {}): SupabaseClient<Database> {
+  if (!token) {
+    throw new TypeError('`options.token` must be defined.')
   }
 
-  if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    throw new TypeError(
-      '`process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY` must be defined.'
-    )
+  if (!baseURL) {
+    throw new TypeError('`options.url` must be defined.')
   }
 
-  return createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      auth: {
-        autoRefreshToken: false,
-        detectSessionInUrl: false,
-        persistSession: true,
-        storage: defaultStorage,
-        storageKey: createStorageKey(sessionID)
-      },
-      global: {
-        fetch(input, init): Promise<Response> {
-          return fetch(input, { ...init, cache: 'no-store' })
+  return createClient<Database>(baseURL, token, {
+    ...(sessionID
+      ? {
+          auth: {
+            autoRefreshToken: false,
+            detectSessionInUrl: false,
+            persistSession: true,
+            storage: defaultStorage,
+            storageKey: createStorageKey(sessionID)
+          }
         }
+      : {}),
+    global: {
+      fetch(input, init): Promise<Response> {
+        return fetch(input, { ...init, cache: 'no-store' })
       }
     }
-  )
+  })
 }
