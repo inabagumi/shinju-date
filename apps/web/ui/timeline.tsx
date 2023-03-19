@@ -11,6 +11,53 @@ import { fetchNotEndedVideos } from '@/lib/fetchers'
 import Skeleton from './skeleton'
 import VideoCard, { VideoCardSkeleton } from './video-card'
 
+type TimelineSectionProps = {
+  dateTime: string
+  items: Video[]
+}
+
+function TimelineSection({
+  dateTime: rawDateTime,
+  items
+}: TimelineSectionProps): JSX.Element {
+  const dateTime = useMemo(
+    () => Temporal.PlainDate.from(rawDateTime),
+    [rawDateTime]
+  )
+
+  return (
+    <section className="margin-top--lg section">
+      <h2 className="margin-bottom--lg text--right">
+        <time dateTime={dateTime.toJSON()}>
+          {dateTime.toLocaleString('ja-JP', {
+            dateStyle: 'short',
+            timeStyle: undefined,
+            timeZone: 'Asia/Tokyo'
+          })}
+        </time>
+      </h2>
+
+      <div className="container">
+        {chunk(items, 3).map((values) => (
+          <div
+            className="row"
+            key={`items:[${values.map((value) => value.id).join(',')}]`}
+          >
+            {values.map((value) => (
+              <div
+                className="col col--4 padding-bottom--lg padding-horiz--sm"
+                key={value.id}
+              >
+                <VideoCard value={value} />
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 export function TimelineSkeleton(): JSX.Element {
   return (
     <section className="margin-top--lg section">
@@ -56,60 +103,25 @@ export default function Timeline({
       refreshInterval: 60_000
     }
   )
-  const schedule = useMemo<Map<Temporal.PlainDate, Video[]>>(() => {
+  const schedule = useMemo<Record<string, Video[]>>(() => {
     const sortedValues = [...videos].sort((videoA, videoB) =>
       Temporal.Instant.compare(
         Temporal.Instant.fromEpochSeconds(videoA.publishedAt),
         Temporal.Instant.fromEpochSeconds(videoB.publishedAt)
       )
     )
-    const groupedValues = groupBy(sortedValues, (value) =>
+    return groupBy(sortedValues, (value) =>
       Temporal.Instant.fromEpochSeconds(value.publishedAt)
         .toZonedDateTimeISO('Asia/Tokyo')
         .toPlainDate()
         .toJSON()
     )
-    const groupedMap = new Map<Temporal.PlainDate, Video[]>()
-
-    for (const [key, values] of Object.entries(groupedValues)) {
-      groupedMap.set(Temporal.PlainDate.from(key), values)
-    }
-
-    return groupedMap
   }, [videos])
 
   return (
     <>
-      {Array.from(schedule.entries()).map(([dateTime, items]) => (
-        <section className="margin-top--lg section" key={dateTime.toJSON()}>
-          <h2 className="margin-bottom--lg text--right">
-            <time dateTime={dateTime.toJSON()}>
-              {dateTime.toLocaleString('ja-JP', {
-                dateStyle: 'short',
-                timeStyle: undefined,
-                timeZone: 'Asia/Tokyo'
-              })}
-            </time>
-          </h2>
-
-          <div className="container">
-            {chunk(items, 3).map((values) => (
-              <div
-                className="row"
-                key={`items:[${values.map((value) => value.id).join(',')}]`}
-              >
-                {values.map((value) => (
-                  <div
-                    className="col col--4 padding-bottom--lg padding-horiz--sm"
-                    key={value.id}
-                  >
-                    <VideoCard value={value} />
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </section>
+      {Object.entries(schedule).map(([dateTime, items]) => (
+        <TimelineSection dateTime={dateTime} items={items} key={dateTime} />
       ))}
     </>
   )
