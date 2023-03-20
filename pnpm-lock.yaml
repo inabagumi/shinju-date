@@ -32,7 +32,7 @@ importers:
       '@shinju-date/helpers': workspace:*
       '@shinju-date/polyfills': workspace:*
       '@shinju-date/schema': workspace:*
-      '@supabase/supabase-js': ^2.11.0
+      '@supabase/supabase-js': ^2.12.0
       '@types/dedent': ^0.7.0
       '@types/node': ^18.15.3
       '@types/react': ^18.0.28
@@ -59,7 +59,7 @@ importers:
       '@shinju-date/chakra-ui': link:../../packages/chakra-ui
       '@shinju-date/helpers': link:../../packages/helpers
       '@shinju-date/polyfills': link:../../packages/polyfills
-      '@supabase/supabase-js': 2.11.0_encoding@0.1.13
+      '@supabase/supabase-js': 2.12.0_encoding@0.1.13
       '@upstash/redis': 1.20.1_encoding@0.1.13
       algoliasearch: 4.15.0
       dedent: 0.7.0
@@ -96,7 +96,7 @@ importers:
       '@shinju-date/eslint-config': workspace:*
       '@shinju-date/polyfills': workspace:*
       '@shinju-date/schema': workspace:*
-      '@supabase/supabase-js': ^2.11.0
+      '@supabase/supabase-js': ^2.12.0
       '@svgr/webpack': ^6.5.1
       '@types/dedent': ^0.7.0
       '@types/gtag.js': ^0.0.12
@@ -144,7 +144,7 @@ importers:
       '@mdx-js/react': 2.3.0_react@18.2.0
       '@reach/skip-nav': 0.18.0_biqbaboplfbrettd7655fr4n2y
       '@shinju-date/polyfills': link:../../packages/polyfills
-      '@supabase/supabase-js': 2.11.0_encoding@0.1.13
+      '@supabase/supabase-js': 2.12.0_encoding@0.1.13
       '@vercel/analytics': 0.1.11_react@18.2.0
       algoliasearch: 4.15.0
       clsx: 1.2.1
@@ -4014,10 +4014,11 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/realtime-js/2.7.0:
-    resolution: {integrity: sha512-wg35ofiCpIemycmPZvvZk3jM9c9z8VvnPUBbSP9ZZN2vSOEJ9C7DZuLiiZMXsyNUzjVgIn62A1tN99T5+9O8Aw==}
+  /@supabase/realtime-js/2.7.1:
+    resolution: {integrity: sha512-WC0yPArBF/wPXwxKWTrRSMWWnFQCbhhUsX0u42x4OqUdDJtow6rzvDIZHWFZLh85UUBYIQ2++AabSNgzd3ubQg==}
     dependencies:
       '@types/phoenix': 1.5.5
+      '@types/websocket': 1.0.5
       websocket: 1.0.34
     transitivePeerDependencies:
       - supports-color
@@ -4031,13 +4032,13 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/supabase-js/2.11.0_encoding@0.1.13:
-    resolution: {integrity: sha512-FkaPZjVx1oY4boS02kAoNhmdyy5hrezxGlY8lZdQwKvk7ee5NPiXzjjsGruc6JOS1QNeuWIUAw1L7uKVYI30dA==}
+  /@supabase/supabase-js/2.12.0_encoding@0.1.13:
+    resolution: {integrity: sha512-tHV4KqlPHuPt4uPu+nYwQTEp+mU7Qc0h42EyRW7rsAGGo8bmKIOGnZjyDDc5lxg0CW7OF5R5oMQWmtuuXZh00Q==}
     dependencies:
       '@supabase/functions-js': 2.1.0_encoding@0.1.13
       '@supabase/gotrue-js': 2.14.0_encoding@0.1.13
       '@supabase/postgrest-js': 1.4.1_encoding@0.1.13
-      '@supabase/realtime-js': 2.7.0
+      '@supabase/realtime-js': 2.7.1
       '@supabase/storage-js': 2.3.1_encoding@0.1.13
       cross-fetch: 3.1.5_encoding@0.1.13
     transitivePeerDependencies:
@@ -4514,7 +4515,6 @@ packages:
 
   /@types/node/18.15.3:
     resolution: {integrity: sha512-p6ua9zBxz5otCmbpb5D3U4B5Nanw6Pk3PPyX05xnxbB/fRv71N7CPmORg7uAD5P70T0xmx1pzAx/FUfa5X+3cw==}
-    dev: true
 
   /@types/parse-json/4.0.0:
     resolution: {integrity: sha512-//oorEZjL6sbPcKUaCdIGlIUeH26mgzimjBB77G6XRgnDl/L5wOnpyBGRe/Mmf5CVW3PwEBE1NjiMZ/ssFh4wA==}
@@ -4571,6 +4571,12 @@ packages:
   /@types/web-app-manifest/1.0.2:
     resolution: {integrity: sha512-Dzq+rbsRHy+HLuDd4j/q8jTyW6Yte1dRihlBD0Xf5FTrnjFg8QgtzXySCahxy1VRreqASMBhn7amZIs8ZJ/T2Q==}
     dev: true
+
+  /@types/websocket/1.0.5:
+    resolution: {integrity: sha512-NbsqiNX9CnEfC1Z0Vf4mE1SgAJ07JnRYcNex7AJ9zAVzmiGHmjKFEk7O4TJIsgv2B1sLEb6owKFZrACwdYngsQ==}
+    dependencies:
+      '@types/node': 18.15.3
+    dev: false
 
   /@types/yargs-parser/21.0.0:
     resolution: {integrity: sha512-iO9ZQHkZxHn4mSakYV0vFHAVDyEOIJQrV2uZ06HxEPcx+mt8swXoZHIbaaJ2crJYFfErySgktuTZ3BeLz+XmFA==}
