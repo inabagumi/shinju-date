@@ -136,6 +136,14 @@ resource "vercel_project_domain" "admin" {
   team_id    = vercel_project.admin.team_id
 }
 
+resource "vercel_project_environment_variable" "admin_algolia_admin_api_key" {
+  key        = "ALGOLIA_ADMIN_API_KEY"
+  project_id = vercel_project.admin.id
+  target     = ["production", "preview", "development"]
+  team_id    = vercel_project.admin.team_id
+  value      = var.algolia_admin_api_key
+}
+
 resource "vercel_project_environment_variable" "admin_algolia_api_key" {
   key        = "NEXT_PUBLIC_ALGOLIA_API_KEY"
   project_id = vercel_project.admin.id
