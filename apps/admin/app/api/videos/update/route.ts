@@ -612,7 +612,7 @@ async function saveToAlgolia({ supabaseClient, videos }: SaveToAlgoliaOptions) {
         duration: video.duration,
         id: video.slug,
         objectID: video.slug,
-        published_at: publishedAt.epochSeconds,
+        publishedAt: publishedAt.epochSeconds,
         thumbnail: {
           height: thumbnail.height,
           preSrc: thumbnail.blur_data_url,
