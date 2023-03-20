@@ -9,7 +9,7 @@ import { createErrorResponse } from '@/lib/session'
 import { type TypedSupabaseClient, createSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 
-const CHECK_DUPLICATE_KEY = 'cron:videos:update:debug2'
+const CHECK_DUPLICATE_KEY = 'cron:videos:update'
 
 type SavedChannel = Pick<
   Database['public']['Tables']['channels']['Row'],
@@ -633,7 +633,7 @@ async function saveToAlgolia({ supabaseClient, videos }: SaveToAlgoliaOptions) {
 }
 
 export async function POST(): Promise<NextResponse> {
-  const duration = Temporal.Duration.from({ hours: 1 })
+  const duration = Temporal.Duration.from({ minutes: 8 })
 
   if (await isDuplicate(CHECK_DUPLICATE_KEY, duration)) {
     return createErrorResponse(
