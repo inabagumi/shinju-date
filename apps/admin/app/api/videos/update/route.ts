@@ -597,7 +597,7 @@ async function saveToAlgolia({ supabaseClient, videos }: SaveToAlgoliaOptions) {
         .from('thumbnails')
         .getPublicUrl(thumbnail.path, {
           transform: {
-            height: Math.floor(thumbnail.height * (1080 / 1920)),
+            height: Math.floor(thumbnail.width * (1080 / 1920)),
             resize: 'cover',
             width: thumbnail.width
           }
