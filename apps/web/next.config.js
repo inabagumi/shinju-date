@@ -14,6 +14,11 @@ const nextConfig = {
     minimumCacheTTL: 365 * 24 * 60 * 60,
     remotePatterns: [
       {
+        hostname: 'api.shinju.date',
+        pathname: '/storage/v1/**',
+        protocol: 'https'
+      },
+      {
         hostname: 'i.ytimg.com',
         pathname: '/vi/**',
         protocol: 'https'
