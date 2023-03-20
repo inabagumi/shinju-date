@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/videos/update",
-      "schedule": "42 6/12 * * *"
+      "schedule": "2/10 * * * *"
     },
     {
       "path": "/api/channels/update/2023-03-21",

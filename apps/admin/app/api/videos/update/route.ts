@@ -3,10 +3,50 @@ import { Temporal } from '@js-temporal/polyfill'
 import { type Database } from '@shinju-date/schema'
 import { nanoid } from 'nanoid'
 import { NextResponse } from 'next/server'
+import { createAlgoliaClient } from '@/lib/algolia'
 import { isDuplicate } from '@/lib/redis'
 import { createErrorResponse } from '@/lib/session'
 import { type TypedSupabaseClient, createSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
+
+const CHECK_DUPLICATE_KEY = 'cron:videos:update:debug2'
+
+type SavedChannel = Pick<
+  Database['public']['Tables']['channels']['Row'],
+  'id' | 'slug'
+>
+
+type GetChannelsOptions = {
+  savedChannels?: SavedChannel[]
+}
+
+async function* getChannels({
+  savedChannels = []
+}: GetChannelsOptions): AsyncGenerator<
+  youtube.Schema$Channel,
+  void,
+  undefined
+> {
+  const channelIDs = savedChannels.map((channel) => channel.slug)
+
+  for (let i = 0; i < channelIDs.length; i += 50) {
+    const {
+      data: { items }
+    } = await youtubeClient.channels.list({
+      id: channelIDs.slice(i, i + 50),
+      maxResults: channelIDs.slice(i, i + 50).length,
+      part: ['contentDetails', 'id']
+    })
+
+    if (!items || items.length < 1) {
+      continue
+    }
+
+    for (const item of items) {
+      yield item
+    }
+  }
+}
 
 type GetPlaylistItemsOptions = {
   all?: boolean
@@ -351,10 +391,22 @@ async function upsertThumbnails({
   return data
 }
 
+type VideoChannel = Pick<
+  Database['public']['Tables']['channels']['Row'],
+  'name' | 'slug' | 'url'
+>
+type VideoThumbnail = Pick<
+  Database['public']['Tables']['thumbnails']['Row'],
+  'blur_data_url' | 'height' | 'path' | 'width'
+>
+
 type Video = Pick<
   Database['public']['Tables']['videos']['Row'],
-  'slug' | 'title' | 'url'
->
+  'duration' | 'published_at' | 'slug' | 'title' | 'url'
+> & {
+  channels: VideoChannel | VideoChannel[] | null
+  thumbnails: VideoThumbnail | VideoThumbnail[] | null
+}
 
 type ScrapeOptions = {
   channelID: number
@@ -440,7 +492,9 @@ async function scrape({
             : {})
         })
         .eq('id', savedVideo.id)
-        .select('slug, title, url')
+        .select(
+          'channels (name, slug, url), duration, published_at, slug, thumbnails (blur_data_url, height, path, width), title, url'
+        )
         .single()
 
       if (error) {
@@ -500,7 +554,9 @@ async function scrape({
       const { data, error } = await supabaseClient
         .from('videos')
         .insert(values)
-        .select('slug, title, url')
+        .select(
+          'channels (name, slug, url), duration, published_at, slug, thumbnails (blur_data_url, height, path, width), title, url'
+        )
 
       if (error) {
         throw error
@@ -511,10 +567,75 @@ async function scrape({
   ])
 }
 
+type SaveToAlgoliaOptions = {
+  supabaseClient: TypedSupabaseClient
+  videos: Video[]
+}
+
+async function saveToAlgolia({ supabaseClient, videos }: SaveToAlgoliaOptions) {
+  const algoliaClient = createAlgoliaClient({
+    apiKey: process.env.ALGOLIA_ADMIN_API_KEY
+  })
+
+  const objects = await Promise.all(
+    videos.map((video) => {
+      const channel = Array.isArray(video.channels)
+        ? video.channels[0]
+        : video.channels
+      const thumbnail = Array.isArray(video.thumbnails)
+        ? video.thumbnails[0]
+        : video.thumbnails
+
+      if (!channel || !thumbnail) {
+        return {}
+      }
+
+      const publishedAt = Temporal.Instant.from(video.published_at)
+      const {
+        data: { publicUrl: thumbnailURL }
+      } = supabaseClient.storage
+        .from('thumbnails')
+        .getPublicUrl(thumbnail.path, {
+          transform: {
+            height: Math.floor(thumbnail.height * (1080 / 1920)),
+            resize: 'cover',
+            width: thumbnail.width
+          }
+        })
+
+      return {
+        channel: {
+          id: channel.slug,
+          title: channel.name,
+          url: channel.url
+        },
+        duration: video.duration,
+        id: video.slug,
+        objectID: video.slug,
+        published_at: publishedAt.epochSeconds,
+        thumbnail: {
+          height: thumbnail.height,
+          preSrc: thumbnail.blur_data_url,
+          src: thumbnailURL,
+          width: thumbnail.width
+        },
+        title: video.title,
+        url: video.url
+      }
+    })
+  )
+
+  await algoliaClient.saveObjects(
+    objects.filter((obj) => Object.keys(obj).length < 1)
+  )
+
+  console.log(objects)
+}
+
 export async function POST(): Promise<NextResponse> {
   const duration = Temporal.Duration.from({ hours: 1 })
 
-  if (await isDuplicate('cron:videos:update', duration)) {
+  if (await isDuplicate(CHECK_DUPLICATE_KEY, duration)) {
     return createErrorResponse(
       429,
       'There has been no interval since the last run.'
@@ -525,30 +646,41 @@ export async function POST(): Promise<NextResponse> {
   const supabaseClient = createSupabaseClient({
     token: process.env.SUPABASE_SERVICE_ROLE_KEY
   })
-  const { data: channels, error } = await supabaseClient
+
+  const { data: savedChannels, error } = await supabaseClient
     .from('channels')
     .select('id, slug')
     .is('deleted_at', null)
 
   if (error) {
-    return createErrorResponse(500, error.message)
+    throw error
   }
 
-  const {
-    data: { items }
-  } = await youtubeClient.channels.list({
-    id: channels.map((channel) => channel.slug),
-    maxResults: 50,
-    part: ['contentDetails', 'id']
-  })
+  const channels: youtube.Schema$Channel[] = []
 
-  if (!items || items.length < 1) {
+  try {
+    for await (const channel of getChannels({ savedChannels })) {
+      channels.push(channel)
+    }
+  } catch (error) {
+    const message =
+      error !== null &&
+      typeof error === 'object' &&
+      'message' in error &&
+      typeof error.message === 'string'
+        ? error.message
+        : undefined
+
+    return createErrorResponse(500, message ?? 'Internal Server Error')
+  }
+
+  if (channels.length < 1) {
     return createErrorResponse(404, 'There are no channels.')
   }
 
   const results = await Promise.allSettled(
-    channels.map((channel) => {
-      const ch = items.find((item) => item.id === channel.slug)
+    savedChannels.map((savedChannel) => {
+      const ch = channels.find((item) => item.id === savedChannel.slug)
 
       if (!ch?.contentDetails?.relatedPlaylists?.uploads) {
         return Promise.reject(
@@ -557,13 +689,15 @@ export async function POST(): Promise<NextResponse> {
       }
 
       return scrape({
-        channelID: channel.id,
+        channelID: savedChannel.id,
         currentDateTime,
         playlistID: ch.contentDetails.relatedPlaylists.uploads,
         supabaseClient
       })
     })
   )
+
+  const videos: Video[] = []
 
   for (const result of results) {
     if (result.status === 'rejected') {
@@ -572,9 +706,17 @@ export async function POST(): Promise<NextResponse> {
       for (const nextResult of result.value) {
         if (nextResult.status === 'rejected') {
           console.error(nextResult.reason)
+        } else {
+          for (const video of nextResult.value ?? []) {
+            videos.push(video)
+          }
         }
       }
     }
+  }
+
+  if (videos.length > 0) {
+    await saveToAlgolia({ supabaseClient, videos })
   }
 
   return new NextResponse(null, {
