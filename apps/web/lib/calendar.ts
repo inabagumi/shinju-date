@@ -5,8 +5,20 @@ import {
   createEvents
 } from 'ics'
 import { NextResponse } from 'next/server'
-import { type Video } from './algolia'
 import { max, min } from './date'
+
+type Channel = {
+  name: string
+}
+
+type Video = {
+  channels: Channel[] | Channel | null
+  duration: string
+  published_at: string
+  slug: string
+  title: string
+  url: string
+}
 
 type GetPublishedAtAndEndedAtOptions = {
   now: Temporal.ZonedDateTime
@@ -21,10 +33,10 @@ export function getPublishedAtAndEndedAt(
   video: Video,
   { now }: GetPublishedAtAndEndedAtOptions
 ): GetPublishedAtAndEndedAtResult {
-  const publishedAt = Temporal.Instant.fromEpochSeconds(
-    video.publishedAt
+  const publishedAt = Temporal.Instant.from(
+    video.published_at
   ).toZonedDateTimeISO(now.timeZone)
-  const duration = Temporal.Duration.from(video.duration ?? 'P0D')
+  const duration = Temporal.Duration.from(video.duration)
   const endedAt =
     duration.total({ unit: 'second' }) > 0
       ? publishedAt.add(duration)
@@ -68,9 +80,12 @@ export function createEventAttributesList(
 ): EventAttributes[] {
   return videos.map((video): EventAttributes => {
     const [publishedAt, endedAt] = getPublishedAtAndEndedAt(video, { now })
+    const channel = Array.isArray(video.channels)
+      ? video.channels[0]
+      : video.channels
 
     return {
-      calName: video.channel.title,
+      calName: channel?.name,
       description: video.url,
       end: convertTimestampToArray(endedAt.epochMilliseconds, 'utc'),
       endInputType: 'utc',
@@ -81,7 +96,7 @@ export function createEventAttributesList(
       startInputType: 'utc',
       startOutputType: 'utc',
       title: video.title,
-      uid: `${video.id}@shinju.date`,
+      uid: `${video.slug}@shinju.date`,
       url: video.url
     }
   })
