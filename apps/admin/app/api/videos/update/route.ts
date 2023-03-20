@@ -626,7 +626,7 @@ async function saveToAlgolia({ supabaseClient, videos }: SaveToAlgoliaOptions) {
   )
 
   await algoliaClient.saveObjects(
-    objects.filter((obj) => Object.keys(obj).length < 1)
+    objects.filter((obj) => Object.keys(obj).length > 0)
   )
 
   console.log(objects)
