@@ -1,6 +1,7 @@
-import { youtube_v3 as youtube } from '@googleapis/youtube'
+import { type youtube_v3 as youtube } from '@googleapis/youtube'
 import { Temporal } from '@js-temporal/polyfill'
 import { type Database } from '@shinju-date/schema'
+import { nanoid } from 'nanoid'
 import { NextResponse } from 'next/server'
 import { isDuplicate } from '@/lib/redis'
 import { createErrorResponse } from '@/lib/session'
@@ -11,7 +12,7 @@ type GetPlaylistItemsOptions = {
   all?: boolean
 }
 
-async function* getPlayListitems(
+async function* getPlaylistItems(
   playlistID: string,
   { all = false }: GetPlaylistItemsOptions = {}
 ): AsyncGenerator<youtube.Schema$PlaylistItem, void, undefined> {
@@ -21,7 +22,7 @@ async function* getPlayListitems(
     const {
       data: { items, nextPageToken }
     } = await youtubeClient.playlistItems.list({
-      maxResults: 50,
+      maxResults: all ? 50 : 10,
       pageToken,
       part: ['contentDetails'],
       playlistId: playlistID
@@ -63,10 +64,16 @@ type GetVideosOptions = {
 async function* getVideos(
   channelID: string,
   { all = false }: GetVideosOptions = {}
-): AsyncGenerator<youtube.Schema$Video, void, undefined> {
+): AsyncGenerator<
+  youtube.Schema$Video & {
+    id: NonNullable<youtube.Schema$Video['id']>
+  },
+  void,
+  undefined
+> {
   const playlistItems: youtube.Schema$PlaylistItem[] = []
 
-  for await (const playlistItem of getPlayListitems(channelID, { all })) {
+  for await (const playlistItem of getPlaylistItems(channelID, { all })) {
     playlistItems.push(playlistItem)
   }
 
@@ -90,20 +97,263 @@ async function* getVideos(
     for (const item of items) {
       const publishedAt = getPublishedAt(item)
       if (item.id && publishedAt) {
-        yield item
+        yield {
+          ...item,
+          id: item.id
+        }
       }
     }
   }
 }
 
-type Video = Pick<
-  Database['public']['Tables']['videos']['Row'],
-  'slug' | 'title' | 'url'
+type Thumbnail = Pick<
+  Database['public']['Tables']['thumbnails']['Row'],
+  'blur_data_url' | 'height' | 'id' | 'path' | 'updated_at' | 'width'
 >
 
 type SavedVideo = Pick<
   Database['public']['Tables']['videos']['Row'],
-  'id' | 'duration' | 'published_at' | 'slug' | 'title'
+  'id' | 'duration' | 'published_at' | 'slug' | 'thumbnail_id' | 'title'
+> & {
+  thumbnails: Thumbnail | Thumbnail[] | null
+}
+
+type SortOutVideosOptions = {
+  supabaseClient: TypedSupabaseClient
+  videos: (youtube.Schema$Video & {
+    id: NonNullable<youtube.Schema$Video['id']>
+  })[]
+}
+
+type SortOutVideosResult = [
+  savedVideos: SavedVideo[],
+  unsavedVideos: (youtube.Schema$Video & {
+    id: NonNullable<youtube.Schema$Video['id']>
+  })[]
+]
+
+async function sortOutVideos({
+  supabaseClient,
+  videos
+}: SortOutVideosOptions): Promise<SortOutVideosResult> {
+  const videoIDs = videos.map((video) => video.id)
+  const savedVideos: SavedVideo[] = []
+
+  for (let i = 0; i < videoIDs.length; i += 100) {
+    const { data, error } = await supabaseClient
+      .from('videos')
+      .select(
+        'id, duration, published_at, slug, thumbnail_id, thumbnails (blur_data_url, height, id, path, updated_at, width), title'
+      )
+      .in('slug', videoIDs.slice(i, i + 100))
+
+    if (error) {
+      throw error
+    }
+
+    savedVideos.push(...data)
+  }
+
+  const savedVideoIDs = savedVideos.map((savedVideo) => savedVideo.slug)
+  const unsavedVideos = videos.filter(
+    (video) => video.id && !savedVideoIDs.includes(video.id)
+  )
+
+  return [savedVideos, unsavedVideos]
+}
+
+function getThumbnail(video: youtube.Schema$Video): Required<{
+  [K in keyof youtube.Schema$Thumbnail]: NonNullable<
+    youtube.Schema$Thumbnail[K]
+  >
+}> {
+  const thumbnail =
+    video.snippet?.thumbnails &&
+    (video.snippet.thumbnails.maxres ??
+      video.snippet.thumbnails.standard ??
+      video.snippet.thumbnails.high)
+
+  if (!thumbnail || !thumbnail.url || !thumbnail.width || !thumbnail.height) {
+    throw new TypeError('Thumbnail URL does not exist.')
+  }
+
+  return {
+    height: thumbnail.height,
+    url: thumbnail.url,
+    width: thumbnail.width
+  }
+}
+
+type GetBlurDataURLOptions = {
+  height: number
+  path: string
+  supabaseClient: TypedSupabaseClient
+  width: number
+}
+
+async function getBlurDataURL({
+  height,
+  path,
+  supabaseClient,
+  width
+}: GetBlurDataURLOptions): Promise<string> {
+  const { data: blob, error } = await supabaseClient.storage
+    .from('thumbnails')
+    .download(path, {
+      transform: {
+        height: Math.floor(10 * (height / width)),
+        resize: 'cover',
+        width: 10
+      }
+    })
+
+  if (error) {
+    throw error
+  }
+
+  const buffer = await blob.arrayBuffer()
+  const binary = new Uint8Array(buffer)
+  const base64 = btoa(String.fromCharCode(...binary))
+
+  return `data:${blob.type};base64,${base64}`
+}
+
+type UploadThumbnailOptions = {
+  currentDateTime: Temporal.Instant
+  supabaseClient: TypedSupabaseClient
+  thumbnail?: Thumbnail
+  video: youtube.Schema$Video & {
+    id: NonNullable<youtube.Schema$Video['id']>
+  }
+}
+
+async function uploadThumbnail({
+  currentDateTime,
+  supabaseClient,
+  thumbnail,
+  video
+}: UploadThumbnailOptions): Promise<
+  Database['public']['Tables']['thumbnails']['Insert'] | null
+> {
+  const newThumbnail = getThumbnail(video)
+  const imageRes = await fetch(newThumbnail.url)
+  const etag = imageRes.headers.get('etag')
+
+  let imageUpdatedAt: Temporal.Instant | undefined
+
+  if (etag && /"\d+"/.test(etag)) {
+    const unixTime = parseInt(etag.slice(1, -1), 10)
+    imageUpdatedAt = Temporal.Instant.fromEpochSeconds(unixTime)
+  }
+
+  if (!imageRes.ok) {
+    throw new TypeError('Failed to fetch thumbnail.')
+  }
+
+  if (
+    thumbnail &&
+    (!imageUpdatedAt ||
+      Temporal.Instant.compare(
+        Temporal.Instant.from(thumbnail.updated_at),
+        imageUpdatedAt
+      ) > 0)
+  ) {
+    return null
+  }
+
+  const imageBody = await imageRes.blob()
+  const contentType = imageRes.headers.get('Content-Type') ?? 'image/jpeg'
+
+  const { data, error } = await supabaseClient.storage
+    .from('thumbnails')
+    .upload(`${video.id}/${nanoid()}.jpg`, imageBody, {
+      cacheControl: 'max-age=2592000',
+      contentType,
+      upsert: false
+    })
+
+  if (error) {
+    throw error
+  }
+
+  const blurDataURL = await getBlurDataURL({
+    height: newThumbnail.height,
+    path: data.path,
+    supabaseClient,
+    width: newThumbnail.width
+  })
+
+  return {
+    blur_data_url: blurDataURL,
+    height: newThumbnail.height,
+    id: thumbnail?.id,
+    path: data.path,
+    updated_at: currentDateTime.toJSON(),
+    width: newThumbnail.width
+  }
+}
+
+type UpsertThumbnailsOptions = {
+  currentDateTime: Temporal.Instant
+  savedVideos?: SavedVideo[]
+  supabaseClient: TypedSupabaseClient
+  videos: (youtube.Schema$Video & {
+    id: NonNullable<youtube.Schema$Video['id']>
+  })[]
+}
+
+async function upsertThumbnails({
+  currentDateTime,
+  savedVideos = [],
+  supabaseClient,
+  videos
+}: UpsertThumbnailsOptions): Promise<{ id: number; path: string }[]> {
+  const results = await Promise.allSettled(
+    videos.map(async (video) => {
+      const savedVideo = savedVideos.find(
+        (savedVideo) => savedVideo.slug === video.id
+      )
+      const thumbnail = savedVideo?.thumbnails
+        ? Array.isArray(savedVideo.thumbnails)
+          ? savedVideo.thumbnails[0]
+          : savedVideo.thumbnails
+        : undefined
+
+      return uploadThumbnail({
+        currentDateTime,
+        supabaseClient,
+        thumbnail,
+        video
+      })
+    })
+  )
+
+  const upsertValues: Database['public']['Tables']['thumbnails']['Insert'][] =
+    []
+
+  for (const result of results) {
+    if (result.status === 'rejected' || !result.value) {
+      continue
+    }
+
+    upsertValues.push(result.value)
+  }
+
+  const { data, error } = await supabaseClient
+    .from('thumbnails')
+    .upsert(upsertValues)
+    .select('id, path')
+
+  if (error) {
+    throw error
+  }
+
+  return data
+}
+
+type Video = Pick<
+  Database['public']['Tables']['videos']['Row'],
+  'slug' | 'title' | 'url'
 >
 
 type ScrapeOptions = {
@@ -119,31 +369,17 @@ async function scrape({
   playlistID,
   supabaseClient
 }: ScrapeOptions): Promise<PromiseSettledResult<Video[]>[]> {
-  const videos: youtube.Schema$Video[] = []
+  const videos: (youtube.Schema$Video & {
+    id: NonNullable<youtube.Schema$Video['id']>
+  })[] = []
   for await (const video of getVideos(playlistID)) {
     videos.push(video)
   }
 
-  const videoIDs = videos.map((video) => video.id).filter(Boolean) as string[]
-  const savedVideos: SavedVideo[] = []
-
-  for (let i = 0; i < videoIDs.length; i += 100) {
-    const { data, error } = await supabaseClient
-      .from('videos')
-      .select('id, duration, published_at, slug, title')
-      .in('slug', videoIDs.slice(i, i + 100))
-
-    if (error) {
-      throw error
-    }
-
-    savedVideos.push(...data)
-  }
-
-  const savedVideoIDs = savedVideos.map((savedVideo) => savedVideo.slug)
-  const unsavedVideos = videos.filter(
-    (video) => video.id && !savedVideoIDs.includes(video.id)
-  )
+  const [savedVideos, unsavedVideos] = await sortOutVideos({
+    supabaseClient,
+    videos
+  })
 
   return Promise.allSettled([
     ...savedVideos.map(async (savedVideo) => {
@@ -159,12 +395,19 @@ async function scrape({
         throw new TypeError('Publication date time does not exist.')
       }
 
+      const [newThumbnail] = await upsertThumbnails({
+        currentDateTime,
+        savedVideos: [savedVideo],
+        supabaseClient,
+        videos: [newVideo]
+      })
       const savedPublishedAt = Temporal.Instant.from(savedVideo.published_at)
       const newDuration = newVideo.contentDetails.duration ?? 'P0D'
 
       if (
         savedVideo.duration === newDuration &&
         savedPublishedAt.equals(newPublishedAt) &&
+        (!newThumbnail || savedVideo.thumbnail_id === newThumbnail.id) &&
         savedVideo.title === newVideo.snippet.title
       ) {
         return []
@@ -173,10 +416,28 @@ async function scrape({
       const { data, error } = await supabaseClient
         .from('videos')
         .update({
-          duration: newDuration,
-          published_at: newPublishedAt.toJSON(),
-          title: newVideo.snippet.title ?? '',
-          updated_at: currentDateTime.toJSON()
+          updated_at: currentDateTime.toJSON(),
+
+          ...(savedVideo.duration !== newDuration
+            ? {
+                duration: newDuration
+              }
+            : {}),
+          ...(!savedPublishedAt.equals(newPublishedAt)
+            ? {
+                published_at: newPublishedAt.toJSON()
+              }
+            : {}),
+          ...(newThumbnail && savedVideo.thumbnail_id !== newThumbnail.id
+            ? {
+                thumbnail_id: newThumbnail?.id
+              }
+            : {}),
+          ...(savedVideo.title !== newVideo.snippet.title
+            ? {
+                title: newVideo.snippet.title ?? ''
+              }
+            : {})
         })
         .eq('id', savedVideo.id)
         .select('slug, title, url')
@@ -216,6 +477,24 @@ async function scrape({
           updated_at: currentDateTime.toJSON(),
           url: `https://www.youtube.com/watch?v=${unsavedVideo.id}`
         })
+      }
+
+      const thumbnails = await upsertThumbnails({
+        currentDateTime,
+        supabaseClient,
+        videos: unsavedVideos
+      })
+
+      for (const value of values) {
+        const thumbnail = thumbnails.find((thumbnail) =>
+          thumbnail.path.startsWith(`${value.slug}/`)
+        )
+
+        if (!thumbnail) {
+          continue
+        }
+
+        value.thumbnail_id = thumbnail.id
       }
 
       const { data, error } = await supabaseClient

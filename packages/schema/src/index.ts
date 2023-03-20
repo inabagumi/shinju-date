@@ -70,14 +70,48 @@ export interface Database {
           updated_at?: string
         }
       }
+      thumbnails: {
+        Row: {
+          blur_data_url: string
+          created_at: string
+          deleted_at: string | null
+          height: number
+          id: number
+          path: string
+          updated_at: string
+          width: number
+        }
+        Insert: {
+          blur_data_url: string
+          created_at?: string
+          deleted_at?: string | null
+          height: number
+          id?: number
+          path: string
+          updated_at?: string
+          width: number
+        }
+        Update: {
+          blur_data_url?: string
+          created_at?: string
+          deleted_at?: string | null
+          height?: number
+          id?: number
+          path?: string
+          updated_at?: string
+          width?: number
+        }
+      }
       videos: {
         Row: {
           channel_id: number
           created_at: string
+          deleted_at: string | null
           duration: string
           id: number
           published_at: string
           slug: string
+          thumbnail_id: number | null
           title: string
           updated_at: string
           url: string
@@ -85,10 +119,12 @@ export interface Database {
         Insert: {
           channel_id: number
           created_at?: string
+          deleted_at?: string | null
           duration: string
           id?: number
           published_at: string
           slug: string
+          thumbnail_id?: number | null
           title: string
           updated_at?: string
           url: string
@@ -96,10 +132,12 @@ export interface Database {
         Update: {
           channel_id?: number
           created_at?: string
+          deleted_at?: string | null
           duration?: string
           id?: number
           published_at?: string
           slug?: string
+          thumbnail_id?: number | null
           title?: string
           updated_at?: string
           url?: string
