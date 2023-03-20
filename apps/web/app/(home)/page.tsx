@@ -6,7 +6,7 @@ import Timeline from '@/ui/timeline'
 
 const title = 'SHINJU DATE'
 const tagline =
-  '774 inc. 所属タレントの配信スケジュールや動画の検索ができるウェブサービス'
+  'ななしいんく所属タレントの配信スケジュールや動画の検索ができるウェブサービス'
 
 // export const runtime = 'edge'
 export const revalidate = 60
