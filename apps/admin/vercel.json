@@ -7,10 +7,6 @@
     {
       "path": "/api/videos/update",
       "schedule": "2/10 * * * *"
-    },
-    {
-      "path": "/api/channels/update/2023-03-21",
-      "schedule": "0 15 20 3 *"
     }
   ]
 }
