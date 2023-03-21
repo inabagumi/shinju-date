@@ -11,19 +11,7 @@ const nextConfig = {
   },
   images: {
     formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 365 * 24 * 60 * 60,
-    remotePatterns: [
-      {
-        hostname: 'api.shinju.date',
-        pathname: '/storage/v1/**',
-        protocol: 'https'
-      },
-      {
-        hostname: 'i.ytimg.com',
-        pathname: '/vi/**',
-        protocol: 'https'
-      }
-    ]
+    minimumCacheTTL: 365 * 24 * 60 * 60
   },
   reactStrictMode: true,
   async rewrites() {
