@@ -44,10 +44,7 @@ export const fetchNotEndedVideos: Fetcher<
 > = async ({ channelIDs }) => {
   const baseTime = Temporal.Now.instant()
   const since = baseTime.subtract({ hours: 5 })
-  const until = baseTime
-    .toZonedDateTimeISO('UTC')
-    .add({ months: 2 })
-    .toInstant()
+  const until = baseTime.toZonedDateTimeISO('UTC').add({ weeks: 1 }).toInstant()
 
   let builder = supabase
     .from('videos')
@@ -59,7 +56,7 @@ export const fetchNotEndedVideos: Fetcher<
     .order('published_at', { ascending: false })
     .limit(100)
 
-  if (channelIDs) {
+  if (channelIDs && channelIDs.length > 0) {
     builder = builder.in('channels.slug', channelIDs)
   }
 
@@ -99,7 +96,7 @@ export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
   const baseTime = Temporal.Now.instant()
   const until = baseTime
     .toZonedDateTimeISO('UTC')
-    .add({ months: 2 })
+    .add({ months: 1 })
     .toInstant()
 
   if (!query) {
@@ -113,7 +110,7 @@ export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
       .order('published_at', { ascending: false })
       .range(from, from + SEARCH_RESULT_COUNT - 1)
 
-    if (channelIDs) {
+    if (channelIDs && channelIDs.length > 0) {
       builder = builder.in('channels.slug', channelIDs)
     }
 
@@ -134,15 +131,13 @@ export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
     query
   })
 
+  const videoIDs = videos.map((video) => video.id)
   const { data, error } = await supabase
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
     .is('deleted_at', null)
     .is('channels.deleted_at', null)
-    .in(
-      'slug',
-      videos.map((video) => video.id)
-    )
+    .in('slug', videoIDs)
     .order('published_at', { ascending: false })
     .limit(SEARCH_RESULT_COUNT)
 
