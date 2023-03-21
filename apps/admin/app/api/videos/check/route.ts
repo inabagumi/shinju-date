@@ -158,19 +158,22 @@ async function deleteVideos({
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const duration = Temporal.Duration.from({ minutes: 30 })
+  const { searchParams } = request.nextUrl
+  const all =
+    searchParams.has('all') &&
+    ['1', 'true', 'yes'].includes(searchParams.get('all') ?? 'false')
+  const duration = all
+    ? Temporal.Duration.from({ days: 4 })
+    : Temporal.Duration.from({ minutes: 30 })
+  const duplicateKey = all ? `${CHECK_DUPLICATE_KEY}:all` : CHECK_DUPLICATE_KEY
 
-  if (await isDuplicate(CHECK_DUPLICATE_KEY, duration)) {
+  if (await isDuplicate(duplicateKey, duration)) {
     return createErrorResponse(
       429,
       'There has been no interval since the last run.'
     )
   }
 
-  const { searchParams } = request.nextUrl
-  const all =
-    searchParams.has('all') &&
-    ['1', 'true', 'yes'].includes(searchParams.get('all') ?? 'false')
   const currentDateTime = Temporal.Now.instant()
   const supabaseClient = createSupabaseClient({
     token: process.env.SUPABASE_SERVICE_ROLE_KEY
