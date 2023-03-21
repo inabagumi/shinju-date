@@ -62,7 +62,7 @@ async function* getPlaylistItems(
     const {
       data: { items, nextPageToken }
     } = await youtubeClient.playlistItems.list({
-      maxResults: all ? 50 : 10,
+      maxResults: all ? 50 : 20,
       pageToken,
       part: ['contentDetails'],
       playlistId: playlistID
