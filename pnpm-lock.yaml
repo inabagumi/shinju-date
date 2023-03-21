@@ -6,15 +6,15 @@ importers:
     specifiers:
       '@inabagumi/prettier-config': ^2.0.0
       '@tsconfig/strictest': ^1.0.2
-      prettier: ~2.8.5
+      prettier: ~2.8.6
       prettier-plugin-md-nocjsp: ^1.5.1
       turbo: ^1.8.4
       typescript: ^5.0.2
     devDependencies:
-      '@inabagumi/prettier-config': 2.0.0_prettier@2.8.5
+      '@inabagumi/prettier-config': 2.0.0_prettier@2.8.6
       '@tsconfig/strictest': 1.0.2
-      prettier: 2.8.5
-      prettier-plugin-md-nocjsp: 1.5.1_prettier@2.8.5
+      prettier: 2.8.6
+      prettier-plugin-md-nocjsp: 1.5.1_prettier@2.8.6
       turbo: 1.8.4
       typescript: 5.0.2
 
@@ -3388,12 +3388,12 @@ packages:
   /@humanwhocodes/object-schema/1.2.1:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
 
-  /@inabagumi/prettier-config/2.0.0_prettier@2.8.5:
+  /@inabagumi/prettier-config/2.0.0_prettier@2.8.6:
     resolution: {integrity: sha512-b5tcbqpJv4gmJca3SQrRQ+QH/cDlMV5rS9gi9zTPXtIRGMByR4hLMuIffkknbKTOQ5UrDjvrWBbzY1mfw5geJA==}
     peerDependencies:
       prettier: '>= 2.4.0'
     dependencies:
-      prettier: 2.8.5
+      prettier: 2.8.6
     dev: true
 
   /@istanbuljs/load-nyc-config/1.1.0:
@@ -5436,7 +5436,7 @@ packages:
     dependencies:
       chalk: 2.4.2
       clear-any-console: 1.16.2
-      prettier: 2.8.5
+      prettier: 2.8.6
     dev: true
 
   /client-only/0.0.1:
@@ -9790,12 +9790,12 @@ packages:
     engines: {node: '>=4'}
     dev: true
 
-  /prettier-plugin-md-nocjsp/1.5.1_prettier@2.8.5:
+  /prettier-plugin-md-nocjsp/1.5.1_prettier@2.8.6:
     resolution: {integrity: sha512-qJyt8otPPNetQEcsZEaS4BGSgGfrhX9CfvcUUauvHewaMMZDxWDU8GB1VkWHwhLZ4W9nDTfWxGPBce8Ot4Jaxg==}
     peerDependencies:
       prettier: 2.x
     dependencies:
-      prettier: 2.8.5
+      prettier: 2.8.6
     dev: true
 
   /prettier/2.8.4:
@@ -9804,8 +9804,8 @@ packages:
     hasBin: true
     dev: true
 
-  /prettier/2.8.5:
-    resolution: {integrity: sha512-3gzuxrHbKUePRBB4ZeU08VNkUcqEHaUaouNt0m7LGP4Hti/NuB07C7PPTM/LkWqXoJYJn2McEo5+kxPNrtQkLQ==}
+  /prettier/2.8.6:
+    resolution: {integrity: sha512-mtuzdiBbHwPEgl7NxWlqOkithPyp4VN93V7VeHVWBF+ad3I5avc0RVDT4oImXQy9H/AqxA2NSQH8pSxHW6FYbQ==}
     engines: {node: '>=10.13.0'}
     hasBin: true
     dev: true
