@@ -5,6 +5,14 @@
       "schedule": "21 1/3 * * *"
     },
     {
+      "path": "/api/videos/check",
+      "schedule": "57 0/1 * * *"
+    },
+    {
+      "path": "/api/videos/check?all=1",
+      "schedule": "4 23 * * 2"
+    },
+    {
       "path": "/api/videos/update",
       "schedule": "2/10 * * * *"
     }

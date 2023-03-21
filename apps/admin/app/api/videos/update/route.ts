@@ -30,11 +30,12 @@ async function* getChannels({
   const channelIDs = savedChannels.map((channel) => channel.slug)
 
   for (let i = 0; i < channelIDs.length; i += 50) {
+    const ids = channelIDs.slice(i, i + 50)
     const {
       data: { items }
     } = await youtubeClient.channels.list({
-      id: channelIDs.slice(i, i + 50),
-      maxResults: channelIDs.slice(i, i + 50).length,
+      id: ids,
+      maxResults: ids.length,
       part: ['contentDetails', 'id']
     })
 
@@ -577,8 +578,8 @@ async function saveToAlgolia({ supabaseClient, videos }: SaveToAlgoliaOptions) {
     apiKey: process.env.ALGOLIA_ADMIN_API_KEY
   })
 
-  const objects = await Promise.all(
-    videos.map((video) => {
+  const objects = videos
+    .map((video) => {
       const channel = Array.isArray(video.channels)
         ? video.channels[0]
         : video.channels
@@ -623,11 +624,9 @@ async function saveToAlgolia({ supabaseClient, videos }: SaveToAlgoliaOptions) {
         url: video.url
       }
     })
-  )
+    .filter(Boolean) as Record<string, any>[]
 
-  await algoliaClient.saveObjects(
-    objects.filter((obj) => Object.keys(obj).length > 0)
-  )
+  await algoliaClient.saveObjects(objects)
 
   console.log(objects)
 }
