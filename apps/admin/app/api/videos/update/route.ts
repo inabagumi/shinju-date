@@ -10,6 +10,7 @@ import { type TypedSupabaseClient, createSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 
 const CHECK_DUPLICATE_KEY = 'cron:videos:update'
+const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({ days: 30 })
 
 type SavedChannel = Pick<
   Database['public']['Tables']['channels']['Row'],
@@ -308,7 +309,9 @@ async function uploadThumbnail({
   const { data, error } = await supabaseClient.storage
     .from('thumbnails')
     .upload(`${video.id}/${nanoid()}.jpg`, imageBody, {
-      cacheControl: 'max-age=2592000',
+      cacheControl: DEFAULT_CACHE_CONTROL_MAX_AGE.total({
+        unit: 'second'
+      }).toString(10),
       contentType,
       upsert: false
     })
