@@ -1,4 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
+import { type Database } from '@shinju-date/schema'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createAlgoliaClient } from '@/lib/algolia'
 import { isDuplicate } from '@/lib/redis'
@@ -8,9 +9,14 @@ import { youtubeClient } from '@/lib/youtube'
 
 const CHECK_DUPLICATE_KEY = 'cron:videos:check'
 
+type Thumbnail = {
+  id: number
+}
+
 type Video = {
   id: number
   slug: string
+  thumbnails: Thumbnail[] | Thumbnail | null
 }
 
 type GetSavedVideos = {
@@ -35,7 +41,7 @@ async function* getSavedVideos({
   for (let i = 0; i < count; i += 100) {
     const { data: savedVideos, error } = await supabaseClient
       .from('videos')
-      .select('id, slug')
+      .select('id, slug, thumbnails (id)')
       .is('deleted_at', null)
       .order('published_at', { ascending: false })
       .range(i, i + 99)
@@ -82,6 +88,34 @@ async function* getVideoIDs(
   }
 }
 
+type SoftDeleteRowsOptions = {
+  currentDateTime: Temporal.Instant
+  ids: number[]
+  supabaseClient: TypedSupabaseClient
+  table: keyof Database['public']['Tables']
+}
+
+async function softDeleteRows({
+  currentDateTime,
+  ids,
+  supabaseClient,
+  table
+}: SoftDeleteRowsOptions): Promise<{ id: number }[]> {
+  const { data, error } = await supabaseClient
+    .from(table)
+    .update({
+      deleted_at: currentDateTime.toJSON()
+    })
+    .in('id', ids)
+    .select('id')
+
+  if (error) {
+    throw error
+  }
+
+  return data
+}
+
 type DeleteOptions = {
   currentDateTime: Temporal.Instant
   supabaseClient: TypedSupabaseClient
@@ -93,19 +127,26 @@ async function deleteVideos({
   supabaseClient,
   videos
 }: DeleteOptions): Promise<void> {
-  const { error } = await supabaseClient
-    .from('videos')
-    .update({
-      deleted_at: currentDateTime.toJSON()
-    })
-    .in(
-      'id',
-      videos.map((video) => video.id)
+  const thumbnails = videos
+    .map((video) =>
+      Array.isArray(video.thumbnails) ? video.thumbnails[0] : video.thumbnails
     )
+    .filter(Boolean) as Thumbnail[]
 
-  if (error) {
-    throw error
-  }
+  await Promise.all([
+    softDeleteRows({
+      currentDateTime,
+      ids: videos.map((video) => video.id),
+      supabaseClient,
+      table: 'videos'
+    }),
+    softDeleteRows({
+      currentDateTime,
+      ids: thumbnails.map((thumbnail) => thumbnail.id),
+      supabaseClient,
+      table: 'thumbnails'
+    })
+  ])
 
   const algoliaClient = createAlgoliaClient({
     apiKey: process.env.ALGOLIA_ADMIN_API_KEY
