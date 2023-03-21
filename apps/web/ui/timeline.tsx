@@ -1,13 +1,11 @@
 'use client'
 
 import { Temporal } from '@js-temporal/polyfill'
-import { type Database } from '@shinju-date/schema'
 import chunk from 'lodash.chunk'
 import groupBy from 'lodash.groupby'
 import { useMemo } from 'react'
 import useSWR from 'swr'
-import { type Video } from '@/lib/algolia'
-import { fetchNotEndedVideos } from '@/lib/fetchers'
+import { type Channel, type Video, fetchNotEndedVideos } from '@/lib/fetchers'
 import Skeleton from './skeleton'
 import VideoCard, { VideoCardSkeleton } from './video-card'
 
@@ -41,12 +39,12 @@ function TimelineSection({
         {chunk(items, 3).map((values) => (
           <div
             className="row"
-            key={`items:[${values.map((value) => value.id).join(',')}]`}
+            key={`items:[${values.map((value) => value.slug).join(',')}]`}
           >
             {values.map((value) => (
               <div
                 className="col col--4 padding-bottom--lg padding-horiz--sm"
-                key={value.id}
+                key={value.slug}
               >
                 <VideoCard value={value} />
               </div>
@@ -79,23 +77,18 @@ export function TimelineSkeleton(): JSX.Element {
   )
 }
 
-type Channel = Pick<
-  Database['public']['Tables']['channels']['Row'],
-  'id' | 'name' | 'slug'
->
-
 type Props = {
   channels?: Channel[]
   prefetchedData: Video[]
 }
 
 export default function Timeline({
-  channels = [],
+  channels,
   prefetchedData
 }: Props): JSX.Element {
   const { data: videos } = useSWR(
     {
-      channelIDs: channels.map((channel) => channel.slug)
+      channelIDs: channels && channels.map((channel) => channel.slug)
     },
     fetchNotEndedVideos,
     {
@@ -106,12 +99,12 @@ export default function Timeline({
   const schedule = useMemo<Record<string, Video[]>>(() => {
     const sortedValues = [...videos].sort((videoA, videoB) =>
       Temporal.Instant.compare(
-        Temporal.Instant.fromEpochSeconds(videoA.publishedAt),
-        Temporal.Instant.fromEpochSeconds(videoB.publishedAt)
+        Temporal.Instant.from(videoA.published_at),
+        Temporal.Instant.from(videoB.published_at)
       )
     )
     return groupBy(sortedValues, (value) =>
-      Temporal.Instant.fromEpochSeconds(value.publishedAt)
+      Temporal.Instant.from(value.published_at)
         .toZonedDateTimeISO('Asia/Tokyo')
         .toPlainDate()
         .toJSON()

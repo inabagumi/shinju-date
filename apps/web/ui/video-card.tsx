@@ -2,19 +2,64 @@
 
 import { Temporal } from '@js-temporal/polyfill'
 import clsx from 'clsx'
-import Image from 'next/image'
+import Image, { type ImageLoaderProps } from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
-import { type Video } from '@/lib/algolia'
+import { type Video } from '@/lib/fetchers'
+import { supabase } from '@/lib/supabase'
 import Skeleton from './skeleton'
 import styles from './video-card.module.css'
-
-const defaultPreSrc =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII='
 
 function formatDuration(duration: Temporal.Duration): string {
   return [duration.hours, duration.minutes, duration.seconds]
     .map((value) => value.toString().padStart(2, '0'))
     .join(':')
+}
+
+function supabaseLoader({
+  quality = 80,
+  src,
+  width
+}: ImageLoaderProps): string {
+  const {
+    data: { publicUrl }
+  } = supabase.storage.from('thumbnails').getPublicUrl(src, {
+    transform: {
+      quality,
+      resize: 'contain',
+      width
+    }
+  })
+
+  return publicUrl
+}
+
+type ThumbnailProps = {
+  video: Video
+}
+
+function Thumbnail({ video }: ThumbnailProps): JSX.Element | null {
+  const thumbnail = useMemo(
+    () =>
+      Array.isArray(video.thumbnails) ? video.thumbnails[0] : video.thumbnails,
+    [video.thumbnails]
+  )
+
+  if (!thumbnail) {
+    return null
+  }
+
+  return (
+    <Image
+      alt=""
+      blurDataURL={thumbnail.blur_data_url}
+      className={styles.thumbnail}
+      fill
+      loader={supabaseLoader}
+      placeholder="blur"
+      sizes="(max-width: 996px) 100vw, 30vw"
+      src={thumbnail.path}
+    />
+  )
 }
 
 export function VideoCardSkeleton(): JSX.Element {
@@ -57,10 +102,10 @@ export default function VideoCard({
   const [now] = useState(() => Temporal.Now.zonedDateTimeISO('Asia/Tokyo'))
   const publishedAt = useMemo(
     () =>
-      Temporal.Instant.fromEpochSeconds(value.publishedAt).toZonedDateTimeISO(
+      Temporal.Instant.from(value.published_at).toZonedDateTimeISO(
         'Asia/Tokyo'
       ),
-    [value.publishedAt]
+    [value.published_at]
   )
   const duration = useMemo(
     () => Temporal.Duration.from(value?.duration ?? 'P0D'),
@@ -88,17 +133,7 @@ export default function VideoCard({
     >
       <div className={clsx('card', styles.video)}>
         <div className={clsx('card__image', styles.image)}>
-          {value.thumbnail && (
-            <Image
-              alt=""
-              blurDataURL={value.thumbnail.preSrc ?? defaultPreSrc}
-              className={styles.thumbnail}
-              fill
-              placeholder="blur"
-              sizes="(max-width: 996px) 100vw, 30vw"
-              src={value.thumbnail.src}
-            />
-          )}
+          <Thumbnail video={value} />
 
           {duration.total({ unit: 'second' }) > 0 ? (
             <span className={clsx('badge', styles.duration)}>

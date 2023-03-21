@@ -5,8 +5,11 @@ import chunk from 'lodash.chunk'
 import { useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite from 'swr/infinite'
-import { type Video } from '@/lib/algolia'
-import { SEARCH_RESULT_COUNT, fetchVideosByChannelIDs } from '@/lib/fetchers'
+import {
+  SEARCH_RESULT_COUNT,
+  type Video,
+  fetchVideosByChannelIDs
+} from '@/lib/fetchers'
 import VideoCard, { VideoCardSkeleton } from './video-card'
 
 export function SearchResultsPlaceholder(): JSX.Element {
@@ -42,13 +45,13 @@ type Props = {
 }
 
 export default function SearchResults({
-  channels = [],
+  channels,
   prefetchedData,
   query = ''
 }: Props): JSX.Element {
   const { data, setSize } = useSWRInfinite(
     (index) => ({
-      channelIDs: channels.map((channel) => channel.slug),
+      channelIDs: channels && channels.map((channel) => channel.slug),
       page: index + 1,
       query
     }),
@@ -80,11 +83,11 @@ export default function SearchResults({
       }}
     >
       {chunk(items, 3).map((values) => (
-        <div className="row" key={values.map((value) => value.id).join(':')}>
+        <div className="row" key={values.map((value) => value.slug).join(':')}>
           {values.map((value) => (
             <div
               className="col col--4 padding-bottom--lg padding-horiz--sm"
-              key={value.id}
+              key={value.slug}
             >
               <VideoCard
                 dateTimeFormatOptions={{
