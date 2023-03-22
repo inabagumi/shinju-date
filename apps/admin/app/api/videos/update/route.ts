@@ -88,15 +88,21 @@ async function* getPlaylistItems(
   }
 }
 
-function getPublishedAt(
-  video: youtube.Schema$Video
-): Temporal.Instant | undefined {
-  const publishedAt = video.liveStreamingDetails
-    ? video.liveStreamingDetails.actualStartTime ??
-      video.liveStreamingDetails.scheduledStartTime
-    : video.snippet?.publishedAt
+type FilteredYouTubeVideo = youtube.Schema$Video & {
+  contentDetails: NonNullable<youtube.Schema$Video['contentDetails']>
+  id: NonNullable<youtube.Schema$Video['id']>
+  snippet: NonNullable<youtube.Schema$Video['snippet']> & {
+    publishedAt: NonNullable<youtube.Schema$VideoSnippet['publishedAt']>
+  }
+}
 
-  return publishedAt ? Temporal.Instant.from(publishedAt) : undefined
+function getPublishedAt(video: FilteredYouTubeVideo): Temporal.Instant {
+  const publishedAt =
+    video.liveStreamingDetails?.actualStartTime ??
+    video.liveStreamingDetails?.scheduledStartTime ??
+    video.snippet.publishedAt
+
+  return Temporal.Instant.from(publishedAt)
 }
 
 type GetVideosOptions = {
@@ -106,13 +112,7 @@ type GetVideosOptions = {
 async function* getVideos(
   channelID: string,
   { all = false }: GetVideosOptions = {}
-): AsyncGenerator<
-  youtube.Schema$Video & {
-    id: NonNullable<youtube.Schema$Video['id']>
-  },
-  void,
-  undefined
-> {
+): AsyncGenerator<FilteredYouTubeVideo, void, undefined> {
   const playlistItems: youtube.Schema$PlaylistItem[] = []
 
   for await (const playlistItem of getPlaylistItems(channelID, { all })) {
@@ -137,11 +137,15 @@ async function* getVideos(
     }
 
     for (const item of items) {
-      const publishedAt = getPublishedAt(item)
-      if (item.id && publishedAt) {
+      if (item.id && item.snippet?.publishedAt && item.contentDetails) {
         yield {
           ...item,
-          id: item.id
+          contentDetails: item.contentDetails,
+          id: item.id,
+          snippet: {
+            ...item.snippet,
+            publishedAt: item.snippet.publishedAt
+          }
         }
       }
     }
@@ -155,39 +159,30 @@ type SavedThumbnail = Omit<
 
 type SavedVideo = Omit<
   Database['public']['Tables']['videos']['Row'],
-  'channel_id' | 'created_at' | 'updated_at' | 'url'
+  'channel_id' | 'updated_at' | 'url'
 > & {
   thumbnails: SavedThumbnail | SavedThumbnail[] | null
 }
 
-type SortOutVideosOptions = {
+type GetSavedVideosOptions = {
+  ids: string[]
   supabaseClient: TypedSupabaseClient
-  videos: (youtube.Schema$Video & {
-    id: NonNullable<youtube.Schema$Video['id']>
-  })[]
 }
 
-type SortOutVideosResult = [
-  savedVideos: SavedVideo[],
-  unsavedVideos: (youtube.Schema$Video & {
-    id: NonNullable<youtube.Schema$Video['id']>
-  })[]
-]
-
-async function sortOutVideos({
-  supabaseClient,
-  videos
-}: SortOutVideosOptions): Promise<SortOutVideosResult> {
-  const videoIDs = videos.map((video) => video.id)
+async function getSavedVideos({
+  ids,
+  supabaseClient
+}: GetSavedVideosOptions): Promise<SavedVideo[]> {
   const savedVideos: SavedVideo[] = []
 
-  for (let i = 0; i < videoIDs.length; i += 100) {
-    const ids = videoIDs.slice(i, i + 100)
+  for (let i = 0; i < ids.length; i += 100) {
+    const videoIDs = ids.slice(i, i + 100)
     const { data, error } = await supabaseClient
       .from('videos')
       .select(
         `
           id,
+          created_at,
           deleted_at,
           duration,
           published_at,
@@ -205,7 +200,7 @@ async function sortOutVideos({
           title
         `
       )
-      .in('slug', ids)
+      .in('slug', videoIDs)
 
     if (error) {
       throw error
@@ -214,21 +209,18 @@ async function sortOutVideos({
     savedVideos.push(...data)
   }
 
-  const savedVideoIDs = savedVideos.map((savedVideo) => savedVideo.slug)
-  const unsavedVideos = videos.filter(
-    (video) => video.id && !savedVideoIDs.includes(video.id)
-  )
-
-  return [savedVideos, unsavedVideos]
+  return savedVideos
 }
 
-function getThumbnail(video: youtube.Schema$Video): Required<{
-  [K in keyof youtube.Schema$Thumbnail]: NonNullable<
-    youtube.Schema$Thumbnail[K]
-  >
-}> {
+type StaticThumbnail = {
+  height: number
+  url: string
+  width: number
+}
+
+function getThumbnail(video: FilteredYouTubeVideo): StaticThumbnail {
   const thumbnail =
-    video.snippet?.thumbnails &&
+    video.snippet.thumbnails &&
     (video.snippet.thumbnails.maxres ??
       video.snippet.thumbnails.standard ??
       video.snippet.thumbnails.high)
@@ -282,9 +274,7 @@ type UploadThumbnailOptions = {
   currentDateTime: Temporal.Instant
   supabaseClient: TypedSupabaseClient
   thumbnail?: SavedThumbnail
-  video: youtube.Schema$Video & {
-    id: NonNullable<youtube.Schema$Video['id']>
-  }
+  video: FilteredYouTubeVideo
 }
 
 async function uploadThumbnail({
@@ -375,9 +365,7 @@ type UpsertThumbnailsOptions = {
   currentDateTime: Temporal.Instant
   savedVideos?: SavedVideo[]
   supabaseClient: TypedSupabaseClient
-  videos: (youtube.Schema$Video & {
-    id: NonNullable<youtube.Schema$Video['id']>
-  })[]
+  videos: FilteredYouTubeVideo[]
 }
 
 async function upsertThumbnails({
@@ -387,7 +375,7 @@ async function upsertThumbnails({
   videos
 }: UpsertThumbnailsOptions): Promise<{ id: number; path: string }[]> {
   const results = await Promise.allSettled(
-    videos.map(async (video) => {
+    videos.map((video) => {
       const savedVideo = savedVideos.find(
         (savedVideo) => savedVideo.slug === video.id
       )
@@ -429,6 +417,10 @@ async function upsertThumbnails({
   return data
 }
 
+function nonNullable<T>(value: T): value is NonNullable<T> {
+  return !!value
+}
+
 type VideoChannel = Pick<
   Database['public']['Tables']['channels']['Row'],
   'name' | 'slug' | 'url'
@@ -458,195 +450,143 @@ async function scrape({
   currentDateTime = Temporal.Now.instant(),
   playlistID,
   supabaseClient
-}: ScrapeOptions): Promise<PromiseSettledResult<Video[]>[]> {
-  const videos: (youtube.Schema$Video & {
-    id: NonNullable<youtube.Schema$Video['id']>
-  })[] = []
+}: ScrapeOptions): Promise<Video[]> {
+  const videos: FilteredYouTubeVideo[] = []
   for await (const video of getVideos(playlistID)) {
     videos.push(video)
   }
 
-  const [savedVideos, unsavedVideos] = await sortOutVideos({
+  const savedVideos = await getSavedVideos({
+    ids: videos.map((video) => video.id),
+    supabaseClient
+  })
+
+  const thumbnails = await upsertThumbnails({
+    currentDateTime,
+    savedVideos,
     supabaseClient,
     videos
   })
 
-  return Promise.allSettled([
-    ...savedVideos.map(async (savedVideo) => {
-      const newVideo = videos.find((video) => video.id === savedVideo.slug)
+  const upsertValues = videos
+    .map<Database['public']['Tables']['videos']['Insert'] | null>((video) => {
+      const savedVideo = savedVideos.find(
+        (savedVideo) => savedVideo.slug === video.id
+      )
+      const thumbnail = thumbnails.find((thumbnail) =>
+        thumbnail.path.startsWith(`${video.id}/`)
+      )
+      const publishedAt = getPublishedAt(video)
+      const updateValue: Partial<
+        Database['public']['Tables']['videos']['Insert']
+      > = {}
 
-      if (!newVideo || !newVideo.snippet || !newVideo.contentDetails) {
-        throw new TypeError('New video does not exist.')
-      }
+      if (savedVideo) {
+        const savedPublishedAt = Temporal.Instant.from(savedVideo.published_at)
+        const newDuration = video.contentDetails.duration ?? 'P0D'
 
-      const newPublishedAt = getPublishedAt(newVideo)
+        let detectUpdate = false
 
-      if (!newPublishedAt) {
-        throw new TypeError('Publication date time does not exist.')
-      }
+        if (savedVideo.duration !== newDuration) {
+          updateValue.duration = newDuration
 
-      const [newThumbnail] = await upsertThumbnails({
-        currentDateTime,
-        savedVideos: [savedVideo],
-        supabaseClient,
-        videos: [newVideo]
-      })
-      const savedPublishedAt = Temporal.Instant.from(savedVideo.published_at)
-      const newDuration = newVideo.contentDetails.duration ?? 'P0D'
-
-      if (
-        !savedVideo.deleted_at &&
-        savedVideo.duration === newDuration &&
-        savedPublishedAt.equals(newPublishedAt) &&
-        (!newThumbnail || savedVideo.thumbnail_id === newThumbnail.id) &&
-        savedVideo.title === newVideo.snippet.title
-      ) {
-        return []
-      }
-
-      const { data, error } = await supabaseClient
-        .from('videos')
-        .update({
-          deleted_at: null,
-          updated_at: currentDateTime.toJSON(),
-
-          ...(savedVideo.duration !== newDuration
-            ? {
-                duration: newDuration
-              }
-            : {}),
-          ...(!savedPublishedAt.equals(newPublishedAt)
-            ? {
-                published_at: newPublishedAt.toJSON()
-              }
-            : {}),
-          ...(newThumbnail && savedVideo.thumbnail_id !== newThumbnail.id
-            ? {
-                thumbnail_id: newThumbnail?.id
-              }
-            : {}),
-          ...(savedVideo.title !== newVideo.snippet.title
-            ? {
-                title: newVideo.snippet.title ?? ''
-              }
-            : {})
-        })
-        .eq('id', savedVideo.id)
-        .select(
-          `
-            channels (
-              name,
-              slug,
-              url
-            ),
-            duration,
-            published_at,
-            slug,
-            thumbnails (
-              blur_data_url,
-              height,
-              path,
-              width
-            ),
-            title,
-            url
-          `
-        )
-        .single()
-
-      if (error) {
-        throw error
-      }
-
-      return [data]
-    }),
-    (async function () {
-      const values: Database['public']['Tables']['videos']['Insert'][] = []
-
-      for (const unsavedVideo of unsavedVideos) {
-        if (
-          !unsavedVideo.id ||
-          !unsavedVideo.snippet ||
-          !unsavedVideo.contentDetails
-        ) {
-          continue
+          detectUpdate = true
+        } else {
+          updateValue.duration = savedVideo.duration
         }
 
-        const publishedAt = getPublishedAt(unsavedVideo)
+        if (savedPublishedAt.equals(publishedAt)) {
+          updateValue.published_at = publishedAt.toJSON()
 
-        if (!publishedAt) {
-          continue
+          detectUpdate = true
+        } else {
+          updateValue.published_at = savedVideo.published_at
         }
 
-        values.push({
-          channel_id: channelID,
-          created_at: currentDateTime.toJSON(),
-          duration: unsavedVideo.contentDetails.duration ?? 'P0D',
-          published_at: publishedAt.toJSON(),
-          slug: unsavedVideo.id,
-          title: unsavedVideo.snippet.title ?? '',
-          updated_at: currentDateTime.toJSON(),
-          url: `https://www.youtube.com/watch?v=${unsavedVideo.id}`
-        })
-      }
+        if (savedVideo.thumbnail_id !== thumbnail?.id) {
+          updateValue.thumbnail_id = thumbnail?.id
 
-      const thumbnails = await upsertThumbnails({
-        currentDateTime,
-        supabaseClient,
-        videos: unsavedVideos
-      })
-
-      for (const value of values) {
-        const thumbnail = thumbnails.find((thumbnail) =>
-          thumbnail.path.startsWith(`${value.slug}/`)
-        )
-
-        if (!thumbnail) {
-          continue
+          detectUpdate = true
+        } else {
+          updateValue.thumbnail_id = savedVideo.thumbnail_id
         }
 
-        value.thumbnail_id = thumbnail.id
+        if (savedVideo.title !== video.snippet.title) {
+          updateValue.title = video.snippet.title ?? ''
+
+          detectUpdate = true
+        } else {
+          updateValue.title = savedVideo.title
+        }
+
+        if (savedVideo.deleted_at) {
+          savedVideo.deleted_at = null
+
+          detectUpdate = true
+        }
+
+        if (!detectUpdate) {
+          return null
+        }
+
+        updateValue.id = savedVideo.id
+        updateValue.created_at = savedVideo.created_at
       }
 
-      const { data, error } = await supabaseClient
-        .from('videos')
-        .insert(values)
-        .select(
-          `
-            channels (
-              name,
-              slug,
-              url
-            ),
-            duration,
-            published_at,
-            slug,
-            thumbnails (
-              blur_data_url,
-              height,
-              path,
-              width
-            ),
-            title,
-            url
-          `
-        )
-
-      if (error) {
-        throw error
+      return {
+        channel_id: channelID,
+        created_at: currentDateTime.toJSON(),
+        duration: video.contentDetails.duration ?? 'P0D',
+        published_at: publishedAt.toJSON(),
+        slug: video.id,
+        title: video.snippet.title ?? '',
+        updated_at: currentDateTime.toJSON(),
+        url: `https://www.youtube.com/watch?v=${video.id}`,
+        ...updateValue
       }
+    })
+    .filter(nonNullable)
 
-      return data
-    })()
-  ])
+  if (upsertValues.length < 1) {
+    return []
+  }
+
+  const { data, error } = await supabaseClient
+    .from('videos')
+    .upsert(upsertValues)
+    .select(
+      `
+        channels (
+          name,
+          slug,
+          url
+        ),
+        duration,
+        published_at,
+        slug,
+        thumbnails (
+          blur_data_url,
+          height,
+          path,
+          width
+        ),
+        title,
+        url
+      `
+    )
+
+  if (error) {
+    throw error
+  }
+
+  return data
 }
 
 type SaveToAlgoliaOptions = {
-  supabaseClient: TypedSupabaseClient
   videos: Video[]
 }
 
-async function saveToAlgolia({ supabaseClient, videos }: SaveToAlgoliaOptions) {
+async function saveToAlgolia({ videos }: SaveToAlgoliaOptions) {
   const algoliaClient = createAlgoliaClient({
     apiKey: process.env.ALGOLIA_ADMIN_API_KEY
   })
@@ -665,36 +605,17 @@ async function saveToAlgolia({ supabaseClient, videos }: SaveToAlgoliaOptions) {
       }
 
       const publishedAt = Temporal.Instant.from(video.published_at)
-      const {
-        data: { publicUrl: thumbnailURL }
-      } = supabaseClient.storage
-        .from('thumbnails')
-        .getPublicUrl(thumbnail.path, {
-          transform: {
-            height: Math.floor(thumbnail.width * (1080 / 1920)),
-            resize: 'cover',
-            width: thumbnail.width
-          }
-        })
 
       return {
         channel: {
           id: channel.slug,
-          title: channel.name,
-          url: channel.url
+          title: channel.name
         },
         duration: video.duration,
         id: video.slug,
         objectID: video.slug,
         publishedAt: publishedAt.epochSeconds,
-        thumbnail: {
-          height: thumbnail.height,
-          preSrc: thumbnail.blur_data_url,
-          src: thumbnailURL,
-          width: thumbnail.width
-        },
-        title: video.title,
-        url: video.url
+        title: video.title
       }
     })
     .filter(Boolean) as Record<string, any>[]
@@ -775,20 +696,14 @@ export async function POST(): Promise<NextResponse> {
     if (result.status === 'rejected') {
       console.error(result.reason)
     } else {
-      for (const nextResult of result.value) {
-        if (nextResult.status === 'rejected') {
-          console.error(nextResult.reason)
-        } else {
-          for (const video of nextResult.value ?? []) {
-            videos.push(video)
-          }
-        }
+      for (const video of result.value) {
+        videos.push(video)
       }
     }
   }
 
   if (videos.length > 0) {
-    await saveToAlgolia({ supabaseClient, videos })
+    await saveToAlgolia({ videos })
   }
 
   return new NextResponse(null, {
