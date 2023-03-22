@@ -495,7 +495,7 @@ async function scrape({
           updateValue.duration = savedVideo.duration
         }
 
-        if (savedPublishedAt.equals(publishedAt)) {
+        if (!savedPublishedAt.equals(publishedAt)) {
           updateValue.published_at = publishedAt.toJSON()
 
           detectUpdate = true
