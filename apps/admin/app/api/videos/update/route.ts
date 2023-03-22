@@ -503,8 +503,8 @@ async function scrape({
           updateValue.published_at = savedVideo.published_at
         }
 
-        if (savedVideo.thumbnail_id !== thumbnail?.id) {
-          updateValue.thumbnail_id = thumbnail?.id
+        if (thumbnail && savedVideo.thumbnail_id !== thumbnail.id) {
+          updateValue.thumbnail_id = thumbnail.id
 
           detectUpdate = true
         } else {
