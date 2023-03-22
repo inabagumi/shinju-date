@@ -104,7 +104,8 @@ async function softDeleteRows({
   const { data, error } = await supabaseClient
     .from(table)
     .update({
-      deleted_at: currentDateTime.toJSON()
+      deleted_at: currentDateTime.toJSON(),
+      updated_at: currentDateTime.toJSON()
     })
     .in('id', ids)
     .select('id')
