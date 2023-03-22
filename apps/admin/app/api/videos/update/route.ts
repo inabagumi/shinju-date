@@ -148,16 +148,16 @@ async function* getVideos(
   }
 }
 
-type Thumbnail = Pick<
+type SavedThumbnail = Omit<
   Database['public']['Tables']['thumbnails']['Row'],
-  'blur_data_url' | 'height' | 'id' | 'path' | 'updated_at' | 'width'
+  'created_at'
 >
 
-type SavedVideo = Pick<
+type SavedVideo = Omit<
   Database['public']['Tables']['videos']['Row'],
-  'id' | 'duration' | 'published_at' | 'slug' | 'thumbnail_id' | 'title'
+  'channel_id' | 'created_at' | 'updated_at' | 'url'
 > & {
-  thumbnails: Thumbnail | Thumbnail[] | null
+  thumbnails: SavedThumbnail | SavedThumbnail[] | null
 }
 
 type SortOutVideosOptions = {
@@ -182,12 +182,30 @@ async function sortOutVideos({
   const savedVideos: SavedVideo[] = []
 
   for (let i = 0; i < videoIDs.length; i += 100) {
+    const ids = videoIDs.slice(i, i + 100)
     const { data, error } = await supabaseClient
       .from('videos')
       .select(
-        'id, duration, published_at, slug, thumbnail_id, thumbnails (blur_data_url, height, id, path, updated_at, width), title'
+        `
+          id,
+          deleted_at,
+          duration,
+          published_at,
+          slug,
+          thumbnail_id,
+          thumbnails (
+            blur_data_url,
+            deleted_at,
+            height,
+            id,
+            path,
+            updated_at,
+            width
+          ),
+          title
+        `
       )
-      .in('slug', videoIDs.slice(i, i + 100))
+      .in('slug', ids)
 
     if (error) {
       throw error
@@ -263,7 +281,7 @@ async function getBlurDataURL({
 type UploadThumbnailOptions = {
   currentDateTime: Temporal.Instant
   supabaseClient: TypedSupabaseClient
-  thumbnail?: Thumbnail
+  thumbnail?: SavedThumbnail
   video: youtube.Schema$Video & {
     id: NonNullable<youtube.Schema$Video['id']>
   }
@@ -283,9 +301,18 @@ async function uploadThumbnail({
 
   let imageUpdatedAt: Temporal.Instant | undefined
 
-  if (etag && /"\d+"/.test(etag)) {
+  if (etag && /^"\d+"$/.test(etag)) {
     const unixTime = parseInt(etag.slice(1, -1), 10)
-    imageUpdatedAt = Temporal.Instant.fromEpochSeconds(unixTime)
+
+    try {
+      imageUpdatedAt = Temporal.Instant.fromEpochSeconds(unixTime)
+    } catch {
+      // skip
+    }
+  }
+
+  if (!imageUpdatedAt) {
+    imageUpdatedAt = Temporal.Now.instant()
   }
 
   if (!imageRes.ok) {
@@ -294,12 +321,18 @@ async function uploadThumbnail({
 
   if (
     thumbnail &&
-    (!imageUpdatedAt ||
-      Temporal.Instant.compare(
-        Temporal.Instant.from(thumbnail.updated_at),
-        imageUpdatedAt
-      ) > 0)
+    Temporal.Instant.compare(
+      Temporal.Instant.from(thumbnail.updated_at),
+      imageUpdatedAt
+    ) > 0
   ) {
+    if (thumbnail.deleted_at) {
+      return {
+        ...thumbnail,
+        deleted_at: null
+      }
+    }
+
     return null
   }
 
@@ -329,6 +362,7 @@ async function uploadThumbnail({
 
   return {
     blur_data_url: blurDataURL,
+    deleted_at: null,
     height: newThumbnail.height,
     id: thumbnail?.id,
     path: data.path,
@@ -399,9 +433,9 @@ type VideoChannel = Pick<
   Database['public']['Tables']['channels']['Row'],
   'name' | 'slug' | 'url'
 >
-type VideoThumbnail = Pick<
+type VideoThumbnail = Omit<
   Database['public']['Tables']['thumbnails']['Row'],
-  'blur_data_url' | 'height' | 'path' | 'width'
+  'created_at' | 'deleted_at' | 'id' | 'updated_at'
 >
 
 type Video = Pick<
@@ -461,6 +495,7 @@ async function scrape({
       const newDuration = newVideo.contentDetails.duration ?? 'P0D'
 
       if (
+        !savedVideo.deleted_at &&
         savedVideo.duration === newDuration &&
         savedPublishedAt.equals(newPublishedAt) &&
         (!newThumbnail || savedVideo.thumbnail_id === newThumbnail.id) &&
@@ -472,6 +507,7 @@ async function scrape({
       const { data, error } = await supabaseClient
         .from('videos')
         .update({
+          deleted_at: null,
           updated_at: currentDateTime.toJSON(),
 
           ...(savedVideo.duration !== newDuration
@@ -497,7 +533,24 @@ async function scrape({
         })
         .eq('id', savedVideo.id)
         .select(
-          'channels (name, slug, url), duration, published_at, slug, thumbnails (blur_data_url, height, path, width), title, url'
+          `
+            channels (
+              name,
+              slug,
+              url
+            ),
+            duration,
+            published_at,
+            slug,
+            thumbnails (
+              blur_data_url,
+              height,
+              path,
+              width
+            ),
+            title,
+            url
+          `
         )
         .single()
 
@@ -559,7 +612,24 @@ async function scrape({
         .from('videos')
         .insert(values)
         .select(
-          'channels (name, slug, url), duration, published_at, slug, thumbnails (blur_data_url, height, path, width), title, url'
+          `
+            channels (
+              name,
+              slug,
+              url
+            ),
+            duration,
+            published_at,
+            slug,
+            thumbnails (
+              blur_data_url,
+              height,
+              path,
+              width
+            ),
+            title,
+            url
+          `
         )
 
       if (error) {
