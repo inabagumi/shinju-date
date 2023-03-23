@@ -235,7 +235,7 @@ async function getBlurDataURL(blob: Blob): Promise<string> {
 
   const blurImage = originalImage.resize(
     10,
-    Math.floor(10 * (originalImage.height, originalImage.width))
+    Math.floor(10 * (originalImage.height / originalImage.width))
   )
   const binary = await blurImage.encodeJPEG(75)
   const base64 = btoa(String.fromCharCode(...binary))
