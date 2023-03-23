@@ -41,6 +41,7 @@ importers:
       dedent: ^0.7.0
       encoding: ^0.1.13
       eslint: ~8.36.0
+      imagescript: ^1.2.16
       nanoid: ^4.0.1
       next: ^13.2.4
       react: ^18.2.0
@@ -63,6 +64,7 @@ importers:
       '@upstash/redis': 1.20.1_encoding@0.1.13
       algoliasearch: 4.15.0
       dedent: 0.7.0
+      imagescript: 1.2.16
       nanoid: 4.0.1
       next: 13.2.4_biqbaboplfbrettd7655fr4n2y
       react: 18.2.0
@@ -7124,6 +7126,11 @@ packages:
   /ignore/5.2.4:
     resolution: {integrity: sha512-MAb38BcSbH0eHNBxn7ql2NH/kX33OkB3lZ1BNdh7ENeRChHTYsTvWrMubiIAMNS2llXEEgZ1MUOBtXChP3kaFQ==}
     engines: {node: '>= 4'}
+
+  /imagescript/1.2.16:
+    resolution: {integrity: sha512-hhy8OVNymU+cYYj8IwCbdNlXJRoMr4HRd7+efkH32eBVfybVU/5SbzDYf3ZSiiF9ye/ghfBrI/ujec/nwl+fOQ==}
+    engines: {node: '>=14.0.0'}
+    dev: false
 
   /import-fresh/3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
