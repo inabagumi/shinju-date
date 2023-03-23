@@ -10,6 +10,7 @@ import { type TypedSupabaseClient, createSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 
 const CHECK_DUPLICATE_KEY = 'cron:videos:update'
+const CHECK_DURATION = Temporal.Duration.from({ minutes: 3 })
 const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({ days: 30 })
 
 type SavedChannel = Pick<
@@ -44,9 +45,7 @@ async function* getChannels({
       continue
     }
 
-    for (const item of items) {
-      yield item
-    }
+    yield* items
   }
 }
 
@@ -74,11 +73,7 @@ async function* getPlaylistItems(
       break
     }
 
-    for (const item of items) {
-      if (item.contentDetails?.videoId) {
-        yield item
-      }
-    }
+    yield* items.filter((item) => item.contentDetails?.videoId)
 
     if (!all || !nextPageToken) {
       break
@@ -136,19 +131,12 @@ async function* getVideos(
       continue
     }
 
-    for (const item of items) {
-      if (item.id && item.snippet?.publishedAt && item.contentDetails) {
-        yield {
-          ...item,
-          contentDetails: item.contentDetails,
-          id: item.id,
-          snippet: {
-            ...item.snippet,
-            publishedAt: item.snippet.publishedAt
-          }
-        }
-      }
-    }
+    yield* items.filter(
+      (item): item is FilteredYouTubeVideo =>
+        typeof item.id === 'string' &&
+        typeof item.snippet?.publishedAt === 'string' &&
+        'contentDetails' in item
+    )
   }
 }
 
@@ -169,15 +157,13 @@ type GetSavedVideosOptions = {
   supabaseClient: TypedSupabaseClient
 }
 
-async function getSavedVideos({
+async function* getSavedVideos({
   ids,
   supabaseClient
-}: GetSavedVideosOptions): Promise<SavedVideo[]> {
-  const savedVideos: SavedVideo[] = []
-
+}: GetSavedVideosOptions): AsyncGenerator<SavedVideo, void, undefined> {
   for (let i = 0; i < ids.length; i += 100) {
     const videoIDs = ids.slice(i, i + 100)
-    const { data, error } = await supabaseClient
+    const { data: videos, error } = await supabaseClient
       .from('videos')
       .select(
         `
@@ -206,10 +192,8 @@ async function getSavedVideos({
       throw error
     }
 
-    savedVideos.push(...data)
+    yield* videos
   }
-
-  return savedVideos
 }
 
 type StaticThumbnail = {
@@ -361,6 +345,10 @@ async function uploadThumbnail({
   }
 }
 
+function nonNullable<T>(value: T): value is NonNullable<T> {
+  return value !== null && typeof value !== 'undefined'
+}
+
 type UpsertThumbnailsOptions = {
   currentDateTime: Temporal.Instant
   savedVideos?: SavedVideo[]
@@ -394,16 +382,9 @@ async function upsertThumbnails({
     })
   )
 
-  const upsertValues: Database['public']['Tables']['thumbnails']['Insert'][] =
-    []
-
-  for (const result of results) {
-    if (result.status === 'rejected' || !result.value) {
-      continue
-    }
-
-    upsertValues.push(result.value)
-  }
+  const upsertValues = results
+    .map((result) => (result.status !== 'rejected' ? result.value : null))
+    .filter(nonNullable)
 
   const { data, error } = await supabaseClient
     .from('thumbnails')
@@ -415,10 +396,6 @@ async function upsertThumbnails({
   }
 
   return data
-}
-
-function nonNullable<T>(value: T): value is NonNullable<T> {
-  return !!value
 }
 
 type VideoChannel = Pick<
@@ -456,10 +433,15 @@ async function scrape({
     videos.push(video)
   }
 
-  const savedVideos = await getSavedVideos({
-    ids: videos.map((video) => video.id),
+  const videoIDs = videos.map((video) => video.id)
+  const savedVideos: SavedVideo[] = []
+
+  for await (const savedVideo of getSavedVideos({
+    ids: videoIDs,
     supabaseClient
-  })
+  })) {
+    savedVideos.push(savedVideo)
+  }
 
   const thumbnails = await upsertThumbnails({
     currentDateTime,
@@ -626,9 +608,7 @@ async function saveToAlgolia({ videos }: SaveToAlgoliaOptions) {
 }
 
 export async function POST(): Promise<NextResponse> {
-  const duration = Temporal.Duration.from({ minutes: 8 })
-
-  if (await isDuplicate(CHECK_DUPLICATE_KEY, duration)) {
+  if (await isDuplicate(CHECK_DUPLICATE_KEY, CHECK_DURATION)) {
     return createErrorResponse(
       429,
       'There has been no interval since the last run.'
