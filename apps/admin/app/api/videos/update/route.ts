@@ -1,6 +1,7 @@
 import { type youtube_v3 as youtube } from '@googleapis/youtube'
 import { Temporal } from '@js-temporal/polyfill'
 import { type Database } from '@shinju-date/schema'
+import { Image, decode } from 'imagescript'
 import { nanoid } from 'nanoid'
 import { NextResponse } from 'next/server'
 import { createAlgoliaClient } from '@/lib/algolia'
@@ -12,6 +13,10 @@ import { youtubeClient } from '@/lib/youtube'
 const CHECK_DUPLICATE_KEY = 'cron:videos:update'
 const CHECK_DURATION = Temporal.Duration.from({ minutes: 3 })
 const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({ days: 30 })
+
+function isNonNullable<T>(value: T): value is NonNullable<T> {
+  return value !== null && typeof value !== 'undefined'
+}
 
 type SavedChannel = Pick<
   Database['public']['Tables']['channels']['Row'],
@@ -220,38 +225,22 @@ function getThumbnail(video: FilteredYouTubeVideo): StaticThumbnail {
   }
 }
 
-type GetBlurDataURLOptions = {
-  height: number
-  path: string
-  supabaseClient: TypedSupabaseClient
-  width: number
-}
+async function getBlurDataURL(blob: Blob): Promise<string> {
+  const buffer = await blob.arrayBuffer()
+  const originalImage = await decode(new Uint8Array(buffer))
 
-async function getBlurDataURL({
-  height,
-  path,
-  supabaseClient,
-  width
-}: GetBlurDataURLOptions): Promise<string> {
-  const { data: blob, error } = await supabaseClient.storage
-    .from('thumbnails')
-    .download(path, {
-      transform: {
-        height: Math.floor(10 * (height / width)),
-        resize: 'cover',
-        width: 10
-      }
-    })
-
-  if (error) {
-    throw error
+  if (!(originalImage instanceof Image)) {
+    throw new TypeError('A blob in an unsupported format was given.')
   }
 
-  const buffer = await blob.arrayBuffer()
-  const binary = new Uint8Array(buffer)
+  const blurImage = originalImage.resize(
+    10,
+    Math.floor(10 * (originalImage.height, originalImage.width))
+  )
+  const binary = await blurImage.encodeJPEG(75)
   const base64 = btoa(String.fromCharCode(...binary))
 
-  return `data:${blob.type};base64,${base64}`
+  return `data:image/jpeg;base64,${base64}`
 }
 
 type UploadThumbnailOptions = {
@@ -303,7 +292,8 @@ async function uploadThumbnail({
     if (thumbnail.deleted_at) {
       return {
         ...thumbnail,
-        deleted_at: null
+        deleted_at: null,
+        updated_at: currentDateTime.toString()
       }
     }
 
@@ -327,12 +317,7 @@ async function uploadThumbnail({
     throw error
   }
 
-  const blurDataURL = await getBlurDataURL({
-    height: newThumbnail.height,
-    path: data.path,
-    supabaseClient,
-    width: newThumbnail.width
-  })
+  const blurDataURL = await getBlurDataURL(imageBody)
 
   return {
     blur_data_url: blurDataURL,
@@ -340,13 +325,9 @@ async function uploadThumbnail({
     height: newThumbnail.height,
     id: thumbnail?.id,
     path: data.path,
-    updated_at: currentDateTime.toJSON(),
+    updated_at: currentDateTime.toString(),
     width: newThumbnail.width
   }
-}
-
-function nonNullable<T>(value: T): value is NonNullable<T> {
-  return value !== null && typeof value !== 'undefined'
 }
 
 type UpsertThumbnailsOptions = {
@@ -384,7 +365,7 @@ async function upsertThumbnails({
 
   const upsertValues = results
     .map((result) => (result.status !== 'rejected' ? result.value : null))
-    .filter(nonNullable)
+    .filter(isNonNullable)
 
   const { data, error } = await supabaseClient
     .from('thumbnails')
@@ -478,7 +459,7 @@ async function scrape({
         }
 
         if (!savedPublishedAt.equals(publishedAt)) {
-          updateValue.published_at = publishedAt.toJSON()
+          updateValue.published_at = publishedAt.toString()
 
           detectUpdate = true
         } else {
@@ -517,17 +498,17 @@ async function scrape({
 
       return {
         channel_id: channelID,
-        created_at: currentDateTime.toJSON(),
+        created_at: currentDateTime.toString(),
         duration: video.contentDetails.duration ?? 'P0D',
-        published_at: publishedAt.toJSON(),
+        published_at: publishedAt.toString(),
         slug: video.id,
         title: video.snippet.title ?? '',
-        updated_at: currentDateTime.toJSON(),
+        updated_at: currentDateTime.toString(),
         url: `https://www.youtube.com/watch?v=${video.id}`,
         ...updateValue
       }
     })
-    .filter(nonNullable)
+    .filter(isNonNullable)
 
   if (upsertValues.length < 1) {
     return []
@@ -578,12 +559,9 @@ async function saveToAlgolia({ videos }: SaveToAlgoliaOptions) {
       const channel = Array.isArray(video.channels)
         ? video.channels[0]
         : video.channels
-      const thumbnail = Array.isArray(video.thumbnails)
-        ? video.thumbnails[0]
-        : video.thumbnails
 
-      if (!channel || !thumbnail) {
-        return {}
+      if (!channel) {
+        return null
       }
 
       const publishedAt = Temporal.Instant.from(video.published_at)
@@ -600,7 +578,7 @@ async function saveToAlgolia({ videos }: SaveToAlgoliaOptions) {
         title: video.title
       }
     })
-    .filter(Boolean) as Record<string, any>[]
+    .filter(isNonNullable)
 
   await algoliaClient.saveObjects(objects)
 
