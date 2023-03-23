@@ -20,7 +20,7 @@ importers:
 
   apps/admin:
     specifiers:
-      '@algolia/cache-common': ^4.15.0
+      '@algolia/cache-common': ^4.16.0
       '@algolia/client-search': ^4.16.0
       '@algolia/requester-fetch': ^4.16.0
       '@googleapis/youtube': ^8.0.2
@@ -51,7 +51,7 @@ importers:
       typescript: ~4.9.5
       yup: ^1.0.2
     dependencies:
-      '@algolia/cache-common': 4.15.0
+      '@algolia/cache-common': 4.16.0
       '@algolia/requester-fetch': 4.16.0
       '@googleapis/youtube': 8.0.2_encoding@0.1.13
       '@hookform/resolvers': 3.0.0_react-hook-form@7.43.7
@@ -85,7 +85,7 @@ importers:
 
   apps/web:
     specifiers:
-      '@algolia/cache-common': ^4.15.0
+      '@algolia/cache-common': ^4.16.0
       '@algolia/client-search': ^4.16.0
       '@algolia/requester-fetch': ^4.16.0
       '@fullhuman/postcss-purgecss': ^5.0.0
@@ -140,7 +140,7 @@ importers:
       typescript: ~5.0.2
       ufo: ^1.1.1
     dependencies:
-      '@algolia/cache-common': 4.15.0
+      '@algolia/cache-common': 4.16.0
       '@algolia/requester-fetch': 4.16.0
       '@js-temporal/polyfill': 0.4.3
       '@mdx-js/react': 2.3.0_react@18.2.0
@@ -319,10 +319,6 @@ packages:
     resolution: {integrity: sha512-jVrk0YB3tjOhD5/lhBtYCVCeLjZmVpf2kdi4puApofytf/R0scjWz0GdozlW4HhU+Prxmt/c9ge4QFjtv5OAzQ==}
     dependencies:
       '@algolia/cache-common': 4.16.0
-    dev: false
-
-  /@algolia/cache-common/4.15.0:
-    resolution: {integrity: sha512-Me3PbI4QurAM+3D+htIE0l1xt6+bl/18SG6Wc7bPQEZAtN7DTGz22HqhKNyLF2lR/cOfpaH7umXZlZEhIHf7gQ==}
     dev: false
 
   /@algolia/cache-common/4.16.0:
