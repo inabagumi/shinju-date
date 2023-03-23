@@ -8,6 +8,7 @@ import { type TypedSupabaseClient, createSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 
 const CHECK_DUPLICATE_KEY = 'cron:videos:check'
+const CHECK_DURATION = Temporal.Duration.from({ minutes: 25 })
 
 type Thumbnail = {
   id: number
@@ -163,9 +164,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const all =
     searchParams.has('all') &&
     ['1', 'true', 'yes'].includes(searchParams.get('all') ?? 'false')
-  const duration = all
-    ? Temporal.Duration.from({ days: 4 })
-    : Temporal.Duration.from({ minutes: 30 })
+  const duration = all ? Temporal.Duration.from({ days: 4 }) : CHECK_DURATION
   const duplicateKey = all ? `${CHECK_DUPLICATE_KEY}:all` : CHECK_DUPLICATE_KEY
 
   if (await isDuplicate(duplicateKey, duration)) {

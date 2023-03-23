@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/videos/check",
-      "schedule": "57 0/1 * * *"
+      "schedule": "27/30 * * * *"
     },
     {
       "path": "/api/videos/check?all=1",
@@ -14,7 +14,7 @@
     },
     {
       "path": "/api/videos/update",
-      "schedule": "2/10 * * * *"
+      "schedule": "2/5 * * * *"
     }
   ]
 }
