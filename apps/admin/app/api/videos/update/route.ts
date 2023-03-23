@@ -502,6 +502,7 @@ async function scrape({
         duration: video.contentDetails.duration ?? 'P0D',
         published_at: publishedAt.toString(),
         slug: video.id,
+        thumbnail_id: thumbnail?.id,
         title: video.snippet.title ?? '',
         updated_at: currentDateTime.toString(),
         url: `https://www.youtube.com/watch?v=${video.id}`,
