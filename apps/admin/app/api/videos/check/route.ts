@@ -39,13 +39,14 @@ async function* getSavedVideos({
 
   if (!count) return
 
-  for (let i = 0; i < count; i += 100) {
+  const limit = all ? 2000 : 100
+  for (let i = 0; i < count; i += limit) {
     const { data: savedVideos, error } = await supabaseClient
       .from('videos')
       .select('id, slug, thumbnails (id)')
       .is('deleted_at', null)
       .order('published_at', { ascending: false })
-      .range(i, i + 99)
+      .range(i, i + (limit - 1))
 
     if (error) {
       throw error
