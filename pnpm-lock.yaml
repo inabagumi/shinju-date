@@ -35,7 +35,7 @@ importers:
       '@supabase/supabase-js': ^2.12.1
       '@types/dedent': ^0.7.0
       '@types/node': ^18.15.7
-      '@types/react': ^18.0.28
+      '@types/react': ^18.0.29
       '@upstash/redis': ^1.20.1
       algoliasearch: ^4.16.0
       dedent: ^0.7.0
@@ -78,7 +78,7 @@ importers:
       '@shinju-date/schema': link:../../packages/schema
       '@types/dedent': 0.7.0
       '@types/node': 18.15.7
-      '@types/react': 18.0.28
+      '@types/react': 18.0.29
       encoding: 0.1.13
       eslint: 8.36.0
       typescript: 4.9.5
@@ -108,7 +108,7 @@ importers:
       '@types/lodash.merge': ^4.6.7
       '@types/mdx': ^2.0.3
       '@types/node': ^18.15.7
-      '@types/react': ^18.0.28
+      '@types/react': ^18.0.29
       '@types/web-app-manifest': ^1.0.2
       '@vercel/analytics': ^0.1.11
       algoliasearch: ^4.16.0
@@ -183,7 +183,7 @@ importers:
       '@types/lodash.merge': 4.6.7
       '@types/mdx': 2.0.3
       '@types/node': 18.15.7
-      '@types/react': 18.0.28
+      '@types/react': 18.0.29
       '@types/web-app-manifest': 1.0.2
       encoding: 0.1.13
       eslint: 8.36.0
@@ -3728,7 +3728,7 @@ packages:
       react: '>=16'
     dependencies:
       '@types/mdx': 2.0.3
-      '@types/react': 18.0.28
+      '@types/react': 18.0.29
       react: 18.2.0
 
   /@next/env/13.2.4:
@@ -4532,8 +4532,8 @@ packages:
   /@types/prop-types/15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
 
-  /@types/react/18.0.28:
-    resolution: {integrity: sha512-RD0ivG1kEztNBdoAK7lekI9M+azSnitIn85h4iOiaLjaTrMjzslhaqCGaI4IyCJ1RljWiLCEu4jyrLLgqxBTew==}
+  /@types/react/18.0.29:
+    resolution: {integrity: sha512-wXHktgUABxplw1+UnljseDq4+uztQyp2tlWZRIxHlpchsCFqiYkvaDS8JR7eKOQm8wziTH/el5qL7D6gYNkYcw==}
     dependencies:
       '@types/prop-types': 15.7.5
       '@types/scheduler': 0.16.2
