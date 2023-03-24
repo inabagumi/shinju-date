@@ -483,7 +483,7 @@ async function scrape({
         }
 
         if (savedVideo.deleted_at) {
-          savedVideo.deleted_at = null
+          updateValue.deleted_at = null
 
           detectUpdate = true
         }
