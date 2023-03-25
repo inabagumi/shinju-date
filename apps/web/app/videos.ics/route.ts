@@ -16,7 +16,6 @@ export async function GET(): Promise<NextResponse> {
   const { data: videos, error } = await supabase
     .from('videos')
     .select('channels (name), duration, published_at, slug, title, url')
-    .is('deleted_at', null)
     .lt('published_at', now.add({ days: 7 }).toInstant().toString())
     .order('published_at', { ascending: false })
     .limit(100)

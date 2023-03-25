@@ -49,8 +49,6 @@ export const fetchNotEndedVideos: Fetcher<
   let builder = supabase
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
-    .is('deleted_at', null)
-    .is('channels.deleted_at', null)
     .gte('published_at', since.toJSON())
     .lte('published_at', until.toJSON())
     .order('published_at', { ascending: false })
@@ -104,8 +102,6 @@ export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
     let builder = supabase
       .from('videos')
       .select(DEFAULT_SEARCH_SELECT)
-      .is('deleted_at', null)
-      .is('channels.deleted_at', null)
       .lte('published_at', until.toJSON())
       .order('published_at', { ascending: false })
       .range(from, from + SEARCH_RESULT_COUNT - 1)
@@ -135,8 +131,6 @@ export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
   const { data, error } = await supabase
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
-    .is('deleted_at', null)
-    .is('channels.deleted_at', null)
     .in('slug', videoIDs)
     .order('published_at', { ascending: false })
     .limit(SEARCH_RESULT_COUNT)
