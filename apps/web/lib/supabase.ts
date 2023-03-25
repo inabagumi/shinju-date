@@ -27,7 +27,6 @@ export async function* getAllChannels(): AsyncGenerator<Channel, void, void> {
   const { data, error } = await supabase
     .from('channels')
     .select('id, name, slug')
-    .is('deleted_at', null)
     .order('created_at', {
       ascending: true
     })
@@ -50,7 +49,6 @@ export async function* getAllGroups(): AsyncGenerator<Group, void, void> {
   const { data, error } = await supabase
     .from('groups')
     .select('id, name, slug, short_name')
-    .is('deleted_at', null)
     .order('created_at', {
       ascending: true
     })
@@ -69,7 +67,6 @@ export async function getChannelBySlug(slug: string) {
     .from('channels')
     .select('id, name, slug')
     .eq('slug', slug)
-    .is('deleted_at', null)
 
   if (error) {
     throw error
@@ -93,8 +90,6 @@ export async function getGroupBySlug(slug: string) {
     .from('groups')
     .select('channels (id, name, slug), id, name, slug, short_name')
     .eq('slug', slug)
-    .is('deleted_at', null)
-    .is('channels.deleted_at', null)
 
   if (error) {
     throw error

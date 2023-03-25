@@ -27,7 +27,6 @@ export async function GET(
     .from('channels')
     .select('*', { count: 'exact', head: true })
     .eq('slug', params.slug)
-    .is('deleted_at', null)
 
   if (error) {
     return new NextResponse(error.message, {
@@ -47,10 +46,18 @@ export async function GET(
   const { data: videos, error: secondError } = await supabase
     .from('videos')
     .select(
-      'channels!inner (name, slug), duration, published_at, slug, title, url'
+      `
+        channels!inner (
+          name,
+          slug
+        ),
+        duration,
+        published_at,
+        slug,
+        title,
+        url
+      `
     )
-    .is('deleted_at', null)
-    .is('channels.deleted_at', null)
     .eq('channels.slug', params.slug)
     .lt('published_at', now.add({ days: 7 }).toInstant().toJSON())
     .order('published_at', { ascending: false })
