@@ -11,7 +11,7 @@ import { type TypedSupabaseClient, createSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 
 const CHECK_DUPLICATE_KEY = 'cron:videos:update'
-const CHECK_DURATION = Temporal.Duration.from({ minutes: 3 })
+const CHECK_DURATION = Temporal.Duration.from({ minutes: 1, seconds: 30 })
 const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({ days: 30 })
 
 function isNonNullable<T>(value: T): value is NonNullable<T> {
