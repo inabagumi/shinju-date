@@ -45,7 +45,7 @@
     "@types/lodash.groupby": "^4.6.7",
     "@types/lodash.merge": "^4.6.7",
     "@types/mdx": "^2.0.3",
-    "@types/node": "^18.15.7",
+    "@types/node": "^18.15.8",
     "@types/react": "^18.0.29",
     "@types/web-app-manifest": "^1.0.2",
     "encoding": "^0.1.13",
