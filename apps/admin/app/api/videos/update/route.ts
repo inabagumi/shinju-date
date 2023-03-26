@@ -323,10 +323,15 @@ async function uploadThumbnail({
     blur_data_url: blurDataURL,
     deleted_at: null,
     height: newThumbnail.height,
-    id: thumbnail?.id,
     path: data.path,
     updated_at: currentDateTime.toString(),
-    width: newThumbnail.width
+    width: newThumbnail.width,
+
+    ...(thumbnail
+      ? {
+          id: thumbnail.id
+        }
+      : {})
   }
 }
 
