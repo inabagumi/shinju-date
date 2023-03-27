@@ -5,14 +5,14 @@ importers:
   .:
     specifiers:
       '@inabagumi/prettier-config': ^2.0.0
-      '@tsconfig/strictest': ^1.0.2
+      '@tsconfig/strictest': ^2.0.0
       prettier: ~2.8.7
       prettier-plugin-md-nocjsp: ^1.5.1
       turbo: ^1.8.5
       typescript: ^5.0.2
     devDependencies:
       '@inabagumi/prettier-config': 2.0.0_prettier@2.8.7
-      '@tsconfig/strictest': 1.0.2
+      '@tsconfig/strictest': 2.0.0
       prettier: 2.8.7
       prettier-plugin-md-nocjsp: 1.5.1_prettier@2.8.7
       turbo: 1.8.5
@@ -309,9 +309,9 @@ importers:
 
   packages/tsconfig:
     specifiers:
-      '@tsconfig/strictest': ^1.0.2
+      '@tsconfig/strictest': ^2.0.0
     dependencies:
-      '@tsconfig/strictest': 1.0.2
+      '@tsconfig/strictest': 2.0.0
 
 packages:
 
@@ -4380,8 +4380,8 @@ packages:
     resolution: {integrity: sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==}
     dev: true
 
-  /@tsconfig/strictest/1.0.2:
-    resolution: {integrity: sha512-IRKlC8cnP7zMz1SDBjyIVyPapkEGWLZ6wkF6Z8T+xU80P9sO5uGXlIUvtzjx+7ehPJRWxkB6CeIDwUfyqNtYkQ==}
+  /@tsconfig/strictest/2.0.0:
+    resolution: {integrity: sha512-E0dpiZNdwO20c8d3seh7OmjAvDpwoRkTcU6M8cvggzB45Bd45tyTU2XJeA5Wfq+8NzVGhunvqOJ30AjSkywMXA==}
 
   /@types/acorn/4.0.6:
     resolution: {integrity: sha512-veQTnWP+1D/xbxVrPC3zHnCZRjSrKfhbMUlEA43iMZLu7EsnTtkJklIuwrCPbOi8YkvDQAiW05VQQFvvz9oieQ==}

@@ -1,7 +1,7 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@tsconfig/strictest": "^1.0.2"
+    "@tsconfig/strictest": "^2.0.0"
   },
   "description": "",
   "devDependencies": {},
