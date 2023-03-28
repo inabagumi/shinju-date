@@ -1,9 +1,9 @@
 import { type youtube_v3 as youtube } from '@googleapis/youtube'
 import { Temporal } from '@js-temporal/polyfill'
 import { type Database } from '@shinju-date/schema'
-import { Image, decode } from 'imagescript'
 import { nanoid } from 'nanoid'
 import { NextResponse } from 'next/server'
+import sharp from 'sharp'
 import { createAlgoliaClient } from '@/lib/algolia'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { isDuplicate } from '@/lib/redis'
@@ -233,21 +233,10 @@ function getThumbnail(video: FilteredYouTubeVideo): StaticThumbnail {
 }
 
 async function getBlurDataURL(blob: Blob): Promise<string> {
-  const buffer = await blob.arrayBuffer()
-  const originalImage = await decode(new Uint8Array(buffer))
+  const rawData = await blob.arrayBuffer()
+  const buffer = await sharp(rawData).resize(10).toBuffer()
 
-  if (!(originalImage instanceof Image)) {
-    throw new TypeError('A blob in an unsupported format was given.')
-  }
-
-  const blurImage = originalImage.resize(
-    10,
-    Math.floor(10 * (originalImage.height / originalImage.width))
-  )
-  const binary = await blurImage.encodeJPEG(75)
-  const base64 = btoa(String.fromCharCode(...binary))
-
-  return `data:image/jpeg;base64,${base64}`
+  return `data:image/jpeg;base64,${buffer.toString('base64')}`
 }
 
 type UploadThumbnailOptions = {
