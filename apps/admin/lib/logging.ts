@@ -6,7 +6,7 @@ function createDefaultLogger(): Logger {
     level: 'info',
     transports: [
       new transports.Console({
-        format: format.combine(format.splat(), format.cli(), format.colorize())
+        format: format.combine(format.splat(), format.cli())
       })
     ]
   })
