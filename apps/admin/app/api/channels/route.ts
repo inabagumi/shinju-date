@@ -4,7 +4,7 @@ import { createSupabaseClient } from '@/lib/supabase'
 
 export async function GET(): Promise<NextResponse> {
   const supabaseClient = createSupabaseClient()
-  const { data, error } = await supabaseClient
+  const { data: rawChannels, error } = await supabaseClient
     .from('channels')
     .select('name, slug, url')
     .is('deleted_at', null)
@@ -13,11 +13,7 @@ export async function GET(): Promise<NextResponse> {
     return createErrorResponse(500, error.message)
   }
 
-  if (!data) {
-    return createErrorResponse(404, '404 Not Found.')
-  }
-
-  const channels = data.map((channel) => ({
+  const channels = rawChannels.map((channel) => ({
     id: channel.slug,
     name: channel.name,
     url: channel.url

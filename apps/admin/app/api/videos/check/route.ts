@@ -2,6 +2,7 @@ import { Temporal } from '@js-temporal/polyfill'
 import { type Database } from '@shinju-date/schema'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createAlgoliaClient } from '@/lib/algolia'
+import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { isDuplicate } from '@/lib/redis'
 import { createErrorResponse } from '@/lib/session'
 import { type TypedSupabaseClient, createSupabaseClient } from '@/lib/supabase'
@@ -125,18 +126,23 @@ type DeleteOptions = {
   videos: Video[]
 }
 
-async function deleteVideos({
+function deleteVideos({
   currentDateTime,
   supabaseClient,
   videos
-}: DeleteOptions): Promise<void> {
+}: DeleteOptions): Promise<
+  [...PromiseSettledResult<{ id: number }[]>[], PromiseSettledResult<string[]>]
+> {
+  const algoliaClient = createAlgoliaClient({
+    apiKey: process.env.ALGOLIA_ADMIN_API_KEY
+  })
   const thumbnails = videos
     .map((video) =>
       Array.isArray(video.thumbnails) ? video.thumbnails[0] : video.thumbnails
     )
     .filter(Boolean) as Thumbnail[]
 
-  await Promise.all([
+  return Promise.allSettled([
     softDeleteRows({
       currentDateTime,
       ids: videos.map((video) => video.id),
@@ -148,16 +154,11 @@ async function deleteVideos({
       ids: thumbnails.map((thumbnail) => thumbnail.id),
       supabaseClient,
       table: 'thumbnails'
-    })
+    }),
+    algoliaClient
+      .deleteObjects(videos.map((video) => video.slug))
+      .then((res) => res.objectIDs)
   ])
-
-  const algoliaClient = createAlgoliaClient({
-    apiKey: process.env.ALGOLIA_ADMIN_API_KEY
-  })
-
-  await algoliaClient.deleteObjects(videos.map((video) => video.slug))
-
-  console.log(videos)
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -187,7 +188,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       savedVideos.push(savedVideo)
     }
   } catch (error) {
-    console.error(error)
+    captureException(error)
 
     return createErrorResponse(500, 'internal server error')
   }
@@ -201,7 +202,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       videoIDs.push(videoID)
     }
   } catch (error) {
-    console.error(error)
+    captureException(error)
 
     return createErrorResponse(500, 'internal server error')
   }
@@ -212,11 +213,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     )
 
     if (deletedVideos.length > 0) {
-      await deleteVideos({
+      const results = await deleteVideos({
         currentDateTime,
         supabaseClient,
         videos: deletedVideos
       })
+      const rejectedResults = results.filter(
+        (result): result is PromiseRejectedResult =>
+          result.status === 'rejected'
+      )
+
+      for (const result of rejectedResults) {
+        captureException(result.reason)
+      }
+
+      for (const video of deletedVideos) {
+        logger.info('Delete video (id: %s).', video.slug)
+      }
     }
   }
 
