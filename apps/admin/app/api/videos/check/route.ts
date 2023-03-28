@@ -227,9 +227,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         captureException(result.reason)
       }
 
-      for (const video of deletedVideos) {
-        logger.info('Delete video (id: %s).', video.slug)
-      }
+      logger.info('The videos has been deleted.', {
+        ids: deletedVideos.map((video) => video.slug)
+      })
     }
   }
 

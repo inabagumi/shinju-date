@@ -728,12 +728,12 @@ export async function POST(): Promise<NextResponse> {
     for (const video of videos) {
       const publishedAt = Temporal.Instant.from(video.published_at)
 
-      logger.info(
-        'Save video (id: %s, title: %s, publishedAt: %s).',
-        video.slug,
-        video.title,
-        publishedAt.toString()
-      )
+      logger.info('The video has been saved.', {
+        duration: video.duration,
+        id: video.slug,
+        publishedAt,
+        title: video.title
+      })
     }
   }
 

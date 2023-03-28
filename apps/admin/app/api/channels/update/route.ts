@@ -96,21 +96,17 @@ export async function POST(): Promise<NextResponse> {
         continue
       }
 
+      const changedColumns: Partial<typeof channel> = {}
+
       if (channel.name !== newChannel.name) {
-        logger.info(
-          'Change channel name from "%s" to "%s".',
-          channel.name,
-          newChannel.name
-        )
+        changedColumns.name = `${channel.name} -> ${newChannel.name}`
       }
 
       if (channel.url !== newChannel.url) {
-        logger.info(
-          'Change channel URL from "%s" to "%s".',
-          channel.url,
-          newChannel.url
-        )
+        changedColumns.url = `${channel.url} -> ${newChannel.url}`
       }
+
+      logger.info('Channel information has been updated.', changedColumns)
     } else if (result.status === 'rejected') {
       captureException(result.reason)
     }

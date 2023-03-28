@@ -2,13 +2,9 @@ import { type Logger, createLogger, format, transports } from 'winston'
 
 function createDefaultLogger(): Logger {
   const logger = createLogger({
-    format: format.json(),
+    format: format.combine(format.timestamp(), format.splat(), format.json()),
     level: 'info',
-    transports: [
-      new transports.Console({
-        format: format.combine(format.splat(), format.cli())
-      })
-    ]
+    transports: [new transports.Console()]
   })
 
   return logger
