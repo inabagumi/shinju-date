@@ -13,13 +13,13 @@
     "@supabase/supabase-js": "^2.12.1",
     "@upstash/redis": "^1.20.1",
     "algoliasearch": "^4.16.0",
-    "imagescript": "^1.2.16",
     "nanoid": "^4.0.2",
     "next": "^13.2.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.43.8",
     "react-icons": "^4.8.0",
+    "sharp": "^0.32.0",
     "winston": "^3.8.2",
     "yup": "^1.0.2"
   },
@@ -30,7 +30,6 @@
     "@shinju-date/schema": "workspace:*",
     "@types/node": "^18.15.10",
     "@types/react": "^18.0.30",
-    "encoding": "^0.1.13",
     "eslint": "~8.36.0",
     "typescript": "~4.9.5"
   },

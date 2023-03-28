@@ -2,7 +2,6 @@
 const nextConfig = {
   experimental: {
     appDir: true,
-    serverComponentsExternalPackages: ['imagescript'],
     typedRoutes: true
   }
 }
