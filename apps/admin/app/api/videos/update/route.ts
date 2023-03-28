@@ -5,6 +5,7 @@ import { Image, decode } from 'imagescript'
 import { nanoid } from 'nanoid'
 import { NextResponse } from 'next/server'
 import { createAlgoliaClient } from '@/lib/algolia'
+import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { isDuplicate } from '@/lib/redis'
 import { createErrorResponse } from '@/lib/session'
 import { type TypedSupabaseClient, createSupabaseClient } from '@/lib/supabase'
@@ -16,6 +17,12 @@ const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({ days: 30 })
 
 function isNonNullable<T>(value: T): value is NonNullable<T> {
   return value !== null && typeof value !== 'undefined'
+}
+
+function isRejected<T>(
+  result: PromiseSettledResult<T>
+): result is PromiseRejectedResult {
+  return result.status === 'rejected'
 }
 
 type SavedChannel = Pick<
@@ -399,19 +406,13 @@ async function upsertThumbnails({
       })
   ])
 
-  const resultThumbnails: { id: number; path: string }[] = []
+  const resultThumbnails = upsertResults.flatMap((result) =>
+    result.status === 'fulfilled' ? result.value : []
+  )
+  const rejectedResults = upsertResults.filter(isRejected)
 
-  for (const result of upsertResults) {
-    switch (result.status) {
-      case 'fulfilled':
-        resultThumbnails.push(...result.value)
-
-        break
-      case 'rejected':
-        console.error(result.reason)
-
-        break
-    }
+  for (const rejectedResult of rejectedResults) {
+    captureException(rejectedResult.reason)
   }
 
   return resultThumbnails
@@ -433,6 +434,25 @@ type Video = Pick<
   channels: VideoChannel | VideoChannel[] | null
   thumbnails: VideoThumbnail | VideoThumbnail[] | null
 }
+
+const scrapeResultSelect = `
+  channels (
+    name,
+    slug,
+    url
+  ),
+  duration,
+  published_at,
+  slug,
+  thumbnails (
+    blur_data_url,
+    height,
+    path,
+    width
+  ),
+  title,
+  url
+`
 
 type ScrapeOptions = {
   channelID: number
@@ -555,88 +575,42 @@ async function scrape({
   const upsertValues = values.filter((value) => value.id)
   const insertValues = values.filter((value) => !value.id)
 
-  const results = await Promise.allSettled(
-    [
-      upsertValues.length > 0
-        ? supabaseClient
-            .from('videos')
-            .upsert(upsertValues)
-            .select(
-              `
-          channels (
-            name,
-            slug,
-            url
-          ),
-          duration,
-          published_at,
-          slug,
-          thumbnails (
-            blur_data_url,
-            height,
-            path,
-            width
-          ),
-          title,
-          url
-        `
-            )
-            .then(({ data, error }) => {
-              if (error) {
-                throw error
-              }
+  const results = await Promise.allSettled([
+    upsertValues.length > 0
+      ? supabaseClient
+          .from('videos')
+          .upsert(upsertValues)
+          .select(scrapeResultSelect)
+          .then(({ data, error }) => {
+            if (error) {
+              throw error
+            }
 
-              return data
-            })
-        : null,
-      insertValues.length > 0
-        ? supabaseClient
-            .from('videos')
-            .insert(insertValues)
-            .select(
-              `
-          channels (
-            name,
-            slug,
-            url
-          ),
-          duration,
-          published_at,
-          slug,
-          thumbnails (
-            blur_data_url,
-            height,
-            path,
-            width
-          ),
-          title,
-          url
-        `
-            )
-            .then(({ data, error }) => {
-              if (error) {
-                throw error
-              }
+            return data
+          })
+      : Promise.resolve([]),
+    insertValues.length > 0
+      ? supabaseClient
+          .from('videos')
+          .insert(insertValues)
+          .select(scrapeResultSelect)
+          .then(({ data, error }) => {
+            if (error) {
+              throw error
+            }
 
-              return data
-            })
-        : null
-    ].filter(isNonNullable)
+            return data
+          })
+      : Promise.resolve([])
+  ])
+
+  const resultVideos = results.flatMap((result) =>
+    result.status === 'fulfilled' ? result.value : []
   )
+  const rejectedResults = results.filter(isRejected)
 
-  const resultVideos: Video[] = []
-
-  for (const result of results) {
-    switch (result.status) {
-      case 'fulfilled':
-        resultVideos.push(...result.value)
-
-        break
-      case 'rejected':
-        console.error(result.reason)
-
-        break
-    }
+  for (const rejectedResult of rejectedResults) {
+    captureException(rejectedResult.reason)
   }
 
   return resultVideos
@@ -678,8 +652,6 @@ async function saveToAlgolia({ videos }: SaveToAlgoliaOptions) {
     .filter(isNonNullable)
 
   await algoliaClient.saveObjects(objects)
-
-  console.log(objects)
 }
 
 export async function POST(): Promise<NextResponse> {
@@ -749,7 +721,7 @@ export async function POST(): Promise<NextResponse> {
 
   for (const result of results) {
     if (result.status === 'rejected') {
-      console.error(result.reason)
+      captureException(result.reason)
     } else {
       for (const video of result.value) {
         videos.push(video)
@@ -758,7 +730,22 @@ export async function POST(): Promise<NextResponse> {
   }
 
   if (videos.length > 0) {
-    await saveToAlgolia({ videos })
+    try {
+      await saveToAlgolia({ videos })
+    } catch (error) {
+      captureException(error)
+    }
+
+    for (const video of videos) {
+      const publishedAt = Temporal.Instant.from(video.published_at)
+
+      logger.info(
+        'Save video (id: %s, title: %s, publishedAt: %s).',
+        video.slug,
+        video.title,
+        publishedAt.toString()
+      )
+    }
   }
 
   return new NextResponse(null, {

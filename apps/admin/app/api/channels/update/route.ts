@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { type Database } from '@shinju-date/schema'
-import dedent from 'dedent'
 import { NextResponse } from 'next/server'
+import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { isDuplicate } from '@/lib/redis'
 import { createErrorResponse } from '@/lib/session'
 import { createSupabaseClient } from '@/lib/supabase'
@@ -87,34 +87,32 @@ export async function POST(): Promise<NextResponse> {
   )
 
   for (const result of results) {
-    switch (result.status) {
-      case 'fulfilled':
-        if (result.value) {
-          const channelID = result.value.slug
+    if (result.status === 'fulfilled' && result.value) {
+      const newChannel = result.value
+      const channelID = newChannel.slug
+      const channel = channels.find((channel) => channel.slug === channelID)
 
-          const channel = channels.find((channel) => channel.slug === channelID)
+      if (!channel) {
+        continue
+      }
 
-          if (channel) {
-            console.log(
-              dedent`
-                channelID: ${channelID}
-                name: ${channel.name} -> ${result.value.name}
-                url: ${channel.url} -> ${result.value.url}
-              `
-            )
-          }
-        }
+      if (channel.name !== newChannel.name) {
+        logger.info(
+          'Change channel name from "%s" to "%s".',
+          channel.name,
+          newChannel.name
+        )
+      }
 
-        break
-      case 'rejected':
-        console.error(result.reason)
-
-        break
-
-      default:
-        console.error('An undefined status was returned.')
-
-        break
+      if (channel.url !== newChannel.url) {
+        logger.info(
+          'Change channel URL from "%s" to "%s".',
+          channel.url,
+          newChannel.url
+        )
+      }
+    } else if (result.status === 'rejected') {
+      captureException(result.reason)
     }
   }
 
