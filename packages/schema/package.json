@@ -4,7 +4,7 @@
   "devDependencies": {
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/tsconfig": "workspace:*",
-    "eslint": "^8.36.0",
+    "eslint": "^8.37.0",
     "supabase": "^1.45.3",
     "tsup": "^6.7.0",
     "typescript": "^5.0.2"
