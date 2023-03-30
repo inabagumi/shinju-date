@@ -17,6 +17,9 @@
       "files": ["**/*.ts?(x)"]
     },
     {
+      "env": {
+        "commonjs": true
+      },
       "files": ["**/*.cjs"],
       "parserOptions": {
         "sourceType": "script"
