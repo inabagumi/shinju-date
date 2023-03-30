@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { createErrorResponse } from '@/lib/session'
 import { createSupabaseClient } from '@/lib/supabase'
 
+export const revalidate = 0
+
 export async function GET(): Promise<NextResponse> {
   const supabaseClient = createSupabaseClient()
   const { data: rawChannels, error } = await supabaseClient

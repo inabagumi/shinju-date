@@ -7,6 +7,8 @@ import { createErrorResponse } from '@/lib/session'
 import { createSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 
+export const revalidate = 0
+
 type Channel = Pick<
   Database['public']['Tables']['channels']['Row'],
   'name' | 'slug' | 'url'

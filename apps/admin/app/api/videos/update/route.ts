@@ -15,6 +15,8 @@ const CHECK_DUPLICATE_KEY = 'cron:videos:update'
 const CHECK_DURATION = Temporal.Duration.from({ minutes: 1, seconds: 30 })
 const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({ days: 30 })
 
+export const revalidate = 0
+
 function isNonNullable<T>(value: T): value is NonNullable<T> {
   return value !== null && typeof value !== 'undefined'
 }
