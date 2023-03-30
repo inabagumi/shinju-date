@@ -50,8 +50,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/polyfills
       '@supabase/supabase-js':
-        specifier: ^2.12.1
-        version: 2.12.1
+        specifier: ^2.13.0
+        version: 2.13.0
       '@upstash/redis':
         specifier: ^1.20.2
         version: 1.20.2
@@ -129,8 +129,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/polyfills
       '@supabase/supabase-js':
-        specifier: ^2.12.1
-        version: 2.12.1
+        specifier: ^2.13.0
+        version: 2.13.0
       '@vercel/analytics':
         specifier: ^0.1.11
         version: 0.1.11(react@18.2.0)
@@ -4294,8 +4294,8 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/supabase-js@2.12.1:
-    resolution: {integrity: sha512-sni5tYUCjLd57xuFbL8iGP/hAq2rS/Bxh3StrGjO0v78bMcS+WPh6E/WV5SstvOrxS78RKI8fASm3jk8/UjVXA==}
+  /@supabase/supabase-js@2.13.0:
+    resolution: {integrity: sha512-D37k5BIwYa4/XNe9eEPz8W0L8MS5w0j16wFDd0twClJC/z+wA4tbcaeWm5Q8IsMeExPa0LrdSrQwPI5bBg6trg==}
     dependencies:
       '@supabase/functions-js': 2.1.0
       '@supabase/gotrue-js': 2.16.0
