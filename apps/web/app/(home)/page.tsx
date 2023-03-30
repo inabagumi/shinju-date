@@ -8,6 +8,7 @@ const title = 'SHINJU DATE'
 const tagline =
   'ななしいんく所属タレントの配信スケジュールや動画の検索ができるウェブサービス'
 
+// TODO: https://github.com/vercel/next.js/issues/43458
 // export const runtime = 'edge'
 export const revalidate = 60
 

@@ -1,5 +1,6 @@
 import { Container } from '@shinju-date/chakra-ui'
 
+// TODO: https://github.com/vercel/next.js/issues/43458
 // export const runtime = 'edge'
 
 export default function GroupListPage(): JSX.Element {
