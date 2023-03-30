@@ -17,7 +17,7 @@
     "next": "^13.2.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-hook-form": "^7.43.8",
+    "react-hook-form": "^7.43.9",
     "react-icons": "^4.8.0",
     "sharp": "^0.32.0",
     "winston": "^3.8.2",
