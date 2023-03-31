@@ -1,4 +1,5 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
       "path": "/api/channels/update",
@@ -16,5 +17,6 @@
       "path": "/api/videos/update",
       "schedule": "1/2 * * * *"
     }
-  ]
+  ],
+  "ignoreCommand": "pnpm dlx turbo-ignore"
 }
