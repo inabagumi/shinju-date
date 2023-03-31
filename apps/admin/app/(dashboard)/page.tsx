@@ -7,6 +7,7 @@ import {
 } from '@shinju-date/chakra-ui'
 import NextLink from 'next/link'
 
+// TODO: https://github.com/vercel/next.js/issues/43458
 // export const runtime = 'edge'
 
 export default function Dashboard(): JSX.Element {

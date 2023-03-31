@@ -7,6 +7,7 @@ import favicon192x192 from '@/assets/favicon-192x192.png'
 import favicon512x512 from '@/assets/favicon-512x512.png'
 import { SkipNavLink } from '@/ui/skip-nav'
 import Analytics from './analytics'
+import { title as siteName } from './constants'
 import { lato } from './fonts'
 import Footer from './footer'
 import styles from './layout.module.css'
@@ -30,12 +31,12 @@ export const metadata: Metadata = {
       }
     ]
   },
-  manifest: '/manifest.json',
+  manifest: '/manifest.webmanifest',
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL),
   themeColor: '#212121',
   title: {
-    default: 'SHINJU DATE',
-    template: '%s - SHINJU DATE'
+    default: siteName,
+    template: `%s - ${siteName}`
   }
 }
 

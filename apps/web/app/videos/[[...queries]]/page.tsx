@@ -10,6 +10,7 @@ import NoResults from '@/ui/no-results'
 import SearchResults from '@/ui/search-results'
 import styles from './page.module.css'
 
+// TODO: timeout
 // export const runtime = 'edge'
 export const revalidate = 5
 
