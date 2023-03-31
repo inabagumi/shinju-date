@@ -1,7 +1,7 @@
 'use client'
 
 import clsx from 'clsx'
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import {
   type ChangeEventHandler,
   type FormEventHandler,
@@ -10,21 +10,16 @@ import {
   useRef,
   useState
 } from 'react'
-import { joinURL } from 'ufo'
 import styles from './search-form.module.css'
 
-type Props = {
-  basePath?: string
-  query?: string
-}
-
-export default function SearchForm({
-  basePath = '/',
-  query
-}: Props): JSX.Element {
+export default function SearchForm(): JSX.Element {
   const router = useRouter()
-  const [value, setValue] = useState(() => query ?? '')
-  const videosPath = useMemo(() => joinURL(basePath, 'videos'), [basePath])
+  const params = useParams()
+  const query = useMemo<string>(
+    () => (params.queries ? decodeURIComponent(params.queries) : ''),
+    [params.queries]
+  )
+  const [value, setValue] = useState(() => query)
   const textFieldRef = useRef<HTMLInputElement>(null)
 
   const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
@@ -38,16 +33,16 @@ export default function SearchForm({
     (event) => {
       event.preventDefault()
 
-      router.push(`${videosPath}/${encodeURIComponent(value)}`)
+      router.push(`/videos/${encodeURIComponent(value)}`)
 
       textFieldRef.current?.blur()
     },
-    [videosPath, value, router]
+    [value, router]
   )
 
   return (
     <form
-      action={videosPath}
+      action="/videos"
       className={styles.form}
       method="get"
       onSubmit={handleSubmit}

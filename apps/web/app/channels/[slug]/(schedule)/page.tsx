@@ -76,7 +76,10 @@ export default async function Page({ params }: Props): Promise<JSX.Element> {
       {videos.length > 0 ? (
         <Timeline channels={[channel]} prefetchedData={videos} />
       ) : (
-        <NoResults message="YouTubeに登録されている配信予定の動画がありません。" />
+        <NoResults
+          basePath={`/channels/${channel.slug}`}
+          message="YouTubeに登録されている配信予定の動画がありません。"
+        />
       )}
     </SimpleDocument>
   )
