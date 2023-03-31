@@ -13,6 +13,8 @@ export default function NoResults({
   message,
   title
 }: Props): JSX.Element {
+  console.log(basePath)
+
   return (
     <div className="text--center margin-bottom--lg margin-top--lg padding-bottom--lg padding-top--lg">
       {title && <h1 className={styles.title}>{title}</h1>}
@@ -21,7 +23,7 @@ export default function NoResults({
 
       <Link
         className="button button--lg button--outline button--primary"
-        href={joinURL(basePath, 'videos')}
+        href={joinURL(basePath, '/videos')}
         role="button"
       >
         新着動画を見る
