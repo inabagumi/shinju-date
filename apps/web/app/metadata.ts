@@ -1,6 +1,6 @@
 import { type Metadata } from 'next'
 import shareCard from '@/assets/share-card.jpg'
-import { description } from './constants'
+import { description } from '@/lib/constants'
 
 const baseMetadata: Metadata = {
   description,

@@ -2,14 +2,72 @@
 
 import clsx from 'clsx'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
-import { useCallback, useState } from 'react'
+import {
+  type ChangeEventHandler,
+  type FormEventHandler,
+  useCallback,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
 import Icon from '@/assets/icon.svg'
-import { title as siteName } from './constants'
+import { title as siteName } from '@/lib/constants'
 import styles from './navbar.module.css'
-import SearchForm from './search-form'
+
+function SearchForm(): JSX.Element {
+  const router = useRouter()
+  const params = useParams()
+  const query = useMemo<string>(
+    () => (params.queries ? decodeURIComponent(params.queries) : ''),
+    [params.queries]
+  )
+  const [value, setValue] = useState(() => query)
+  const textFieldRef = useRef<HTMLInputElement>(null)
+
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (event) => {
+      setValue(event.target.value)
+    },
+    []
+  )
+
+  const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>(
+    (event) => {
+      event.preventDefault()
+
+      router.push(`/videos/${encodeURIComponent(value)}`)
+
+      textFieldRef.current?.blur()
+    },
+    [value, router]
+  )
+
+  return (
+    <form
+      action="/videos"
+      className={styles.form}
+      method="get"
+      onSubmit={handleSubmit}
+      role="search"
+    >
+      <div className={clsx('navbar__search', styles.content)}>
+        <input
+          aria-label="検索"
+          className={clsx('navbar__search-input', styles.input)}
+          name="q"
+          onChange={handleChange}
+          placeholder="検索"
+          ref={textFieldRef}
+          type="search"
+          value={value}
+        />
+      </div>
+    </form>
+  )
+}
 
 export default function Navbar(): JSX.Element {
   const [sidebarShown, setSidebarShown] = useState(false)
