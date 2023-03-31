@@ -1,9 +1,9 @@
 import { type youtube_v3 as youtube } from '@googleapis/youtube'
 import { Temporal } from '@js-temporal/polyfill'
 import { type Database } from '@shinju-date/schema'
+import { Image, decode as decodeImage } from 'imagescript'
 import { nanoid } from 'nanoid'
 import { NextResponse } from 'next/server'
-import sharp from 'sharp'
 import { createAlgoliaClient } from '@/lib/algolia'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { isDuplicate } from '@/lib/redis'
@@ -236,9 +236,17 @@ function getThumbnail(video: FilteredYouTubeVideo): StaticThumbnail {
 
 async function getBlurDataURL(blob: Blob): Promise<string> {
   const rawData = await blob.arrayBuffer()
-  const buffer = await sharp(rawData).resize(10).toBuffer()
+  const image = await decodeImage(new Uint8Array(rawData))
+  const resizedImage = image.resize(10, Image.RESIZE_AUTO)
 
-  return `data:image/jpeg;base64,${buffer.toString('base64')}`
+  if (!resizedImage) {
+    throw new TypeError('The image could not be resized.')
+  }
+
+  const buffer = await resizedImage.encodeJPEG(80)
+  const base64encodedImage = atob(String.fromCharCode(...buffer))
+
+  return `data:image/jpeg;base64,${base64encodedImage}`
 }
 
 type UploadThumbnailOptions = {
