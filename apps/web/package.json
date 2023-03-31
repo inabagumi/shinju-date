@@ -7,7 +7,7 @@
     "@mdx-js/react": "^2.3.0",
     "@reach/skip-nav": "^0.18.0",
     "@shinju-date/polyfills": "workspace:*",
-    "@supabase/supabase-js": "^2.13.0",
+    "@supabase/supabase-js": "^2.13.1",
     "@vercel/analytics": "^0.1.11",
     "algoliasearch": "^4.16.0",
     "clsx": "^1.2.1",
