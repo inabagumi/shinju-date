@@ -13,6 +13,12 @@ const CHECK_DURATION = Temporal.Duration.from({ minutes: 25 })
 
 export const revalidate = 0
 
+function wait(time: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, time)
+  })
+}
+
 type Thumbnail = {
   id: number
 }
@@ -90,6 +96,8 @@ async function* getVideoIDs(
 
       yield item.id
     }
+
+    await wait(250)
   }
 }
 
