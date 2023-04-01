@@ -5,8 +5,7 @@ import { sessionSchema } from '@/lib/schemas'
 import { assignSessionID, createErrorResponse } from '@/lib/session'
 import { createSupabaseClient } from '@/lib/supabase'
 
-// TODO: https://github.com/vercel/next.js/issues/46337
-// export const runtime = 'edge'
+export const runtime = 'edge'
 export const revalidate = 0
 
 export async function POST(request: NextRequest): Promise<NextResponse> {

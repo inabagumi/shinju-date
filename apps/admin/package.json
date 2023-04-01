@@ -15,7 +15,7 @@
     "algoliasearch": "^4.16.0",
     "imagescript": "^1.2.16",
     "nanoid": "^4.0.2",
-    "next": "^13.2.4",
+    "next": "^13.2.5-canary.25",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.43.9",
