@@ -21,7 +21,7 @@
   "name": "@shinju-date/helpers",
   "private": true,
   "peerDependencies": {
-    "next": "^13.2.4"
+    "next": "^13.2.3"
   },
   "repository": {
     "directory": "packages/helpers",

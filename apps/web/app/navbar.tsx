@@ -2,7 +2,7 @@
 
 import clsx from 'clsx'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import {
   type ChangeEventHandler,
@@ -19,12 +19,11 @@ import styles from './navbar.module.css'
 
 function SearchForm(): JSX.Element {
   const router = useRouter()
-  const pathname = usePathname()
-  const query = useMemo<string>(() => {
-    const m = pathname.match(/\/videos(?:\/(.*))?$/)
-
-    return m ? decodeURIComponent(m[1]) : ''
-  }, [pathname])
+  const params = useParams()
+  const query = useMemo<string>(
+    () => (params.queries ? decodeURIComponent(params.queries) : ''),
+    [params.queries]
+  )
   const [value, setValue] = useState(() => query)
   const textFieldRef = useRef<HTMLInputElement>(null)
 
