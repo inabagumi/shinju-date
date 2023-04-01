@@ -14,6 +14,8 @@ export const defaultLogger = createDefaultLogger()
 
 export function captureException(error: unknown): void {
   if (error instanceof Error) {
-    defaultLogger.error(error.message)
+    defaultLogger.error(error.message, {
+      stack: error.stack
+    })
   }
 }
