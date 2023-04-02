@@ -46,7 +46,7 @@
     "@types/lodash.merge": "^4.6.7",
     "@types/mdx": "^2.0.4",
     "@types/node": "^18.15.11",
-    "@types/react": "^18.0.31",
+    "@types/react": "^18.0.32",
     "@types/web-app-manifest": "^1.0.2",
     "eslint": "~8.37.0",
     "jest": "^29.5.0",
