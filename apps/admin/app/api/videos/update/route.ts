@@ -17,12 +17,6 @@ const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({ days: 30 })
 
 export const revalidate = 0
 
-function wait(time: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, time)
-  })
-}
-
 function isNonNullable<T>(value: T): value is NonNullable<T> {
   return value !== null && typeof value !== 'undefined'
 }
@@ -100,8 +94,6 @@ async function* getPlaylistItems(
     }
 
     pageToken = nextPageToken
-
-    await wait(250)
   }
 }
 
@@ -159,8 +151,6 @@ async function* getVideos(
         typeof item.snippet?.publishedAt === 'string' &&
         'contentDetails' in item
     )
-
-    await wait(250)
   }
 }
 
