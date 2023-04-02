@@ -1,5 +1,6 @@
 import nextMDX from '@next/mdx'
 import nextPWA from 'next-pwa'
+import { fileURLToPath } from 'node:url'
 import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
 
@@ -7,7 +8,8 @@ import remarkGfm from 'remark-gfm'
 const nextConfig = {
   experimental: {
     appDir: true,
-    mdxRs: true
+    mdxRs: true,
+    outputFileTracingRoot: fileURLToPath(new URL('../..', import.meta.url))
   },
   images: {
     formats: ['image/avif', 'image/webp'],
