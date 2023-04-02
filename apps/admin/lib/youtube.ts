@@ -1,7 +1,7 @@
 import { youtube_v3 as youtube } from '@googleapis/youtube'
 import pLimit from 'p-limit'
 
-const limit = pLimit(6)
+const limit = pLimit(12)
 
 function fetchWithCocurrencyLimit(
   input: RequestInfo | URL,
