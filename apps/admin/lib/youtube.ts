@@ -3,7 +3,7 @@ import pLimit from 'p-limit'
 
 const limit = pLimit(12)
 
-function fetchWithCocurrencyLimit(
+export function fetchWithCocurrencyLimit(
   input: RequestInfo | URL,
   init?: RequestInit
 ): Promise<Response> {

@@ -9,7 +9,7 @@ import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { isDuplicate } from '@/lib/redis'
 import { createErrorResponse } from '@/lib/session'
 import { type TypedSupabaseClient, createSupabaseClient } from '@/lib/supabase'
-import { youtubeClient } from '@/lib/youtube'
+import { fetchWithCocurrencyLimit, youtubeClient } from '@/lib/youtube'
 
 const CHECK_DUPLICATE_KEY = 'cron:videos:update'
 const CHECK_DURATION = Temporal.Duration.from({ minutes: 1, seconds: 30 })
@@ -257,7 +257,7 @@ async function uploadThumbnail({
   Database['public']['Tables']['thumbnails']['Insert'] | null
 > {
   const newThumbnail = getThumbnail(video)
-  const imageRes = await fetch(newThumbnail.url)
+  const imageRes = await fetchWithCocurrencyLimit(newThumbnail.url)
   const etag = imageRes.headers.get('etag')
 
   let imageUpdatedAt: Temporal.Instant | undefined
