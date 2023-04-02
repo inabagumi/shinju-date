@@ -13,7 +13,6 @@
     "@supabase/supabase-js": "^2.13.1",
     "@upstash/redis": "^1.20.2",
     "algoliasearch": "^4.16.0",
-    "imagescript": "^1.2.16",
     "nanoid": "^4.0.2",
     "next": "^13.2.4",
     "p-limit": "^4.0.0",
@@ -21,6 +20,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.43.9",
     "react-icons": "^4.8.0",
+    "sharp": "^0.32.0",
     "winston": "^3.8.2",
     "yup": "^1.0.2"
   },

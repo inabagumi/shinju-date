@@ -14,7 +14,6 @@ const nextConfig = {
       ]
     },
     outputFileTracingRoot: fileURLToPath(new URL('../..', import.meta.url)),
-    serverComponentsExternalPackages: ['imagescript'],
     typedRoutes: true
   }
 }
