@@ -15,6 +15,16 @@ export const defaultLogger = createDefaultLogger()
 export function captureException(error: unknown): void {
   if (error instanceof Error) {
     defaultLogger.error(error.message, {
+      ...(error.cause instanceof Error
+        ? {
+            cause: {
+              message: error.cause.message,
+              name: error.cause.name,
+              stack: error.cause.stack
+            }
+          }
+        : {}),
+      name: error.name,
       stack: error.stack
     })
   }
