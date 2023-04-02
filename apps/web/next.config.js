@@ -9,6 +9,15 @@ const nextConfig = {
   experimental: {
     appDir: true,
     mdxRs: true,
+    outputFileTracingExcludes: {
+      '*': [
+        './**/node_modules/@swc/core-linux-x64-gnu',
+        './**/node_modules/@swc/core-linux-x64-musl',
+        './**/node_modules/@esbuild/linux-x64',
+        './**/node_modules/webpack',
+        './**/node_modules/terser'
+      ]
+    },
     outputFileTracingRoot: fileURLToPath(new URL('../..', import.meta.url))
   },
   images: {

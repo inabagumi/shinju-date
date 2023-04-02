@@ -4,6 +4,15 @@ import { fileURLToPath } from 'node:url'
 const nextConfig = {
   experimental: {
     appDir: true,
+    outputFileTracingExcludes: {
+      '*': [
+        './**/node_modules/@swc/core-linux-x64-gnu',
+        './**/node_modules/@swc/core-linux-x64-musl',
+        './**/node_modules/@esbuild/linux-x64',
+        './**/node_modules/webpack',
+        './**/node_modules/terser'
+      ]
+    },
     outputFileTracingRoot: fileURLToPath(new URL('../..', import.meta.url)),
     serverComponentsExternalPackages: ['imagescript'],
     typedRoutes: true
