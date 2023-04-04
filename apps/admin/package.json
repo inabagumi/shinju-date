@@ -10,7 +10,7 @@
     "@shinju-date/chakra-ui": "workspace:*",
     "@shinju-date/helpers": "workspace:*",
     "@shinju-date/polyfills": "workspace:*",
-    "@supabase/supabase-js": "^2.13.1",
+    "@supabase/supabase-js": "^2.14.0",
     "@upstash/redis": "^1.20.2",
     "algoliasearch": "^4.17.0",
     "nanoid": "^4.0.2",
