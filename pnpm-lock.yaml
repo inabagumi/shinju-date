@@ -23,8 +23,8 @@ importers:
   apps/admin:
     dependencies:
       '@algolia/cache-common':
-        specifier: ^4.16.0
-        version: 4.16.0
+        specifier: ^4.17.0
+        version: 4.17.0
       '@algolia/requester-fetch':
         specifier: ^4.17.0
         version: 4.17.0
@@ -114,8 +114,8 @@ importers:
   apps/web:
     dependencies:
       '@algolia/cache-common':
-        specifier: ^4.16.0
-        version: 4.16.0
+        specifier: ^4.17.0
+        version: 4.17.0
       '@algolia/requester-fetch':
         specifier: ^4.17.0
         version: 4.17.0
@@ -433,10 +433,6 @@ packages:
     resolution: {integrity: sha512-myRSRZDIMYB8uCkO+lb40YKiYHi0fjpWRtJpR/dgkaiBlSD0plRyB6lLOh1XIfmMcSeBOqDE7y9m8xZMrXYfyQ==}
     dependencies:
       '@algolia/cache-common': 4.17.0
-    dev: false
-
-  /@algolia/cache-common@4.16.0:
-    resolution: {integrity: sha512-4iHjkSYQYw46pITrNQgXXhvUmcekI8INz1m+SzmqLX8jexSSy4Ky4zfGhZzhhhLHXUP3+x/PK/c0qPjxEvRwKQ==}
     dev: false
 
   /@algolia/cache-common@4.17.0:
