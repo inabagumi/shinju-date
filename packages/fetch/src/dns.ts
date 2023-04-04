@@ -1,4 +1,5 @@
 import LRUCache from 'lru-cache'
+import pLimit from 'p-limit'
 import * as yup from 'yup'
 import { fetch } from './globals.js'
 
@@ -82,6 +83,8 @@ async function requestDoH(
   return dnsResponseSchema.validate(maybeDNSResponse, { strict: true })
 }
 
+const limit = pLimit(1)
+
 const cache = new LRUCache<string, string[]>({
   max: 100
 })
@@ -90,43 +93,45 @@ type ResolveOptions = {
   ipv6?: boolean
 }
 
-export async function resolve(
+export function resolve(
   hostname: string,
   { ipv6 = false }: ResolveOptions = {}
 ): Promise<string[]> {
-  const cacheKey = ipv6 ? `ipv6:${hostname}` : `ipv4:${hostname}`
-  const cachedAddresses = cache.get(cacheKey)
+  return limit(async () => {
+    const cacheKey = ipv6 ? `ipv6:${hostname}` : `ipv4:${hostname}`
+    const cachedAddresses = cache.get(cacheKey)
 
-  if (cachedAddresses) {
-    return cachedAddresses
-  }
+    if (cachedAddresses) {
+      return cachedAddresses
+    }
 
-  const dnsResponse = await requestDoH(hostname, { ipv6 })
+    const dnsResponse = await requestDoH(hostname, { ipv6 })
 
-  if (dnsResponse.Status !== 0) {
-    throw new TypeError(dnsResponse.Comment ?? `Unknown error: ${hostname}`)
-  }
+    if (dnsResponse.Status !== 0) {
+      throw new TypeError(dnsResponse.Comment ?? `Unknown error: ${hostname}`)
+    }
 
-  if (!dnsResponse.Answer || dnsResponse.Answer.length < 1) {
-    return []
-  }
+    if (!dnsResponse.Answer || dnsResponse.Answer.length < 1) {
+      return []
+    }
 
-  const records = dnsResponse.Answer.filter(
-    (record) => record.type === (ipv6 ? 28 : 1)
-  )
-  const addresses = records.map((record) => record.data)
-  const minimumTTL = records
-    .map((record) => record.TTL ?? 0)
-    .reduce(
-      (previousTTL, currentTTL) => Math.min(previousTTL, currentTTL),
-      1200
+    const records = dnsResponse.Answer.filter(
+      (record) => record.type === (ipv6 ? 28 : 1)
     )
+    const addresses = records.map((record) => record.data)
+    const minimumTTL = records
+      .map((record) => record.TTL ?? 0)
+      .reduce(
+        (previousTTL, currentTTL) => Math.min(previousTTL, currentTTL),
+        1200
+      )
 
-  if (minimumTTL > 0) {
-    cache.set(cacheKey, addresses, {
-      ttl: minimumTTL * 1_000
-    })
-  }
+    if (minimumTTL > 0) {
+      cache.set(cacheKey, addresses, {
+        ttl: minimumTTL * 1_000
+      })
+    }
 
-  return addresses
+    return addresses
+  })
 }

@@ -14,16 +14,7 @@ const nextConfig = {
       ]
     },
     outputFileTracingRoot: fileURLToPath(new URL('../..', import.meta.url)),
-    serverComponentsExternalPackages: ['undici'],
     typedRoutes: true
-  },
-  webpack(config) {
-    config.experiments = {
-      ...config.experiments,
-      topLevelAwait: true
-    }
-
-    return config
   }
 }
 
