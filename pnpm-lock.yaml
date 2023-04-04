@@ -50,8 +50,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/polyfills
       '@supabase/supabase-js':
-        specifier: ^2.13.1
-        version: 2.13.1
+        specifier: ^2.14.0
+        version: 2.14.0
       '@upstash/redis':
         specifier: ^1.20.2
         version: 1.20.2
@@ -132,8 +132,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/polyfills
       '@supabase/supabase-js':
-        specifier: ^2.13.1
-        version: 2.13.1
+        specifier: ^2.14.0
+        version: 2.14.0
       '@vercel/analytics':
         specifier: ^0.1.11
         version: 0.1.11(react@18.2.0)
@@ -4189,11 +4189,10 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/gotrue-js@2.18.0:
-    resolution: {integrity: sha512-U4K7bUfNTkBErnp4zsPAsKu0T4LoKaly5940nxztMmt9iNTWMKJCPQge5e5PouHhWHvLIgrVo23+Uo+3iyUHag==}
+  /@supabase/gotrue-js@2.18.1:
+    resolution: {integrity: sha512-nXTQPbV1t1WRmdAfUeed0uIXiTwNplCGVEnHbbymyx0V7YZShlzgayuB5WZDRZLau5jg616NIRWf6/9VNF3hlg==}
     dependencies:
       cross-fetch: 3.1.5
-      crypto-js: 4.1.1
     transitivePeerDependencies:
       - encoding
     dev: false
@@ -4224,11 +4223,11 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/supabase-js@2.13.1:
-    resolution: {integrity: sha512-+Q3FMj0TuI6xJBTTREIRxuLW1QreZhtRxlF5+7aprmlVq1+GsMfnpBOpXcdyhcWWL8UcmaoMJD8tJiedXGCXlg==}
+  /@supabase/supabase-js@2.14.0:
+    resolution: {integrity: sha512-pdcYDaxTUqv5A8NqDnLn731rTP0Wm469H+0ag6Jb8YpWR95rmusfpGY7vrykWXvdnvCMxoG6eEwSF9vQtxVrow==}
     dependencies:
       '@supabase/functions-js': 2.1.0
-      '@supabase/gotrue-js': 2.18.0
+      '@supabase/gotrue-js': 2.18.1
       '@supabase/postgrest-js': 1.5.0
       '@supabase/realtime-js': 2.7.1
       '@supabase/storage-js': 2.3.1
@@ -5840,10 +5839,6 @@ packages:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
-
-  /crypto-js@4.1.1:
-    resolution: {integrity: sha512-o2JlM7ydqd3Qk9CA0L4NL6mTzU2sdx96a+oOfPu8Mkl/PK51vSyoi8/rQ8NknZtk44vq15lmhAj9CIAGwgeWKw==}
-    dev: false
 
   /crypto-random-string@2.0.0:
     resolution: {integrity: sha512-v1plID3y9r/lPhviJ1wrXpLeyUIGAZ2SHNYTEapm7/8A9nLPoyvVp3RK/EPFqn5kEznyWgYZNsRtYYIWbuG8KA==}
