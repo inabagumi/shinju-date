@@ -44,7 +44,7 @@ const readyDispatcher = import('undici')
   )
   .catch(() => undefined)
 
-const limit = pLimit(12)
+const limit = pLimit(6)
 
 export default function fetchWithDNSCache(
   input: RequestInfo | URL,
