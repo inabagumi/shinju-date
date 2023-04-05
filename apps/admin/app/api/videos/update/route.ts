@@ -14,7 +14,7 @@ import { youtubeClient } from '@/lib/youtube'
 
 const CHECK_DUPLICATE_KEY = 'cron:videos:update'
 const CHECK_DURATION = Temporal.Duration.from({ minutes: 1, seconds: 30 })
-const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({ days: 30 })
+const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({ days: 365 })
 
 export const revalidate = 0
 
@@ -192,6 +192,7 @@ async function* getSavedVideos({
           thumbnails (
             blur_data_url,
             deleted_at,
+            etag,
             height,
             id,
             path,
@@ -258,45 +259,52 @@ async function uploadThumbnail({
   Database['public']['Tables']['thumbnails']['Insert'] | null
 > {
   const newThumbnail = getThumbnail(video)
-  const imageRes = await fetch(newThumbnail.url)
-  const etag = imageRes.headers.get('etag')
+  const requestHeaders = new Headers()
 
-  let imageUpdatedAt: Temporal.Instant | undefined
-
-  if (etag && /^"\d+"$/.test(etag)) {
-    const unixTime = parseInt(etag.slice(1, -1), 10)
-
-    try {
-      imageUpdatedAt = Temporal.Instant.fromEpochSeconds(unixTime)
-    } catch {
-      // skip
-    }
+  if (thumbnail?.etag) {
+    requestHeaders.set('If-None-Match', thumbnail.etag)
   }
 
-  if (!imageUpdatedAt) {
-    imageUpdatedAt = Temporal.Now.instant()
-  }
+  const imageRes = await fetch(newThumbnail.url, {
+    headers: requestHeaders
+  })
 
-  if (!imageRes.ok) {
+  if (!imageRes.ok && imageRes.status !== 304) {
     throw new TypeError('Failed to fetch thumbnail.')
   }
 
-  if (
-    thumbnail &&
-    Temporal.Instant.compare(
-      Temporal.Instant.from(thumbnail.updated_at),
-      imageUpdatedAt
-    ) > 0
-  ) {
-    if (thumbnail.deleted_at) {
-      return {
-        ...thumbnail,
-        deleted_at: null,
-        updated_at: currentDateTime.toString()
+  const etag = imageRes.headers.get('etag')
+
+  if (thumbnail) {
+    let notModified = imageRes.status === 304
+
+    if (!notModified && etag) {
+      const match = etag.match(/^"(\d+)"$/)
+
+      if (match) {
+        const unixTime = parseInt(match[1], 10)
+        const imageUpdatedAt = Temporal.Instant.fromEpochSeconds(unixTime)
+
+        notModified =
+          Temporal.Instant.compare(
+            Temporal.Instant.from(thumbnail.updated_at),
+            imageUpdatedAt
+          ) > 0
       }
     }
 
-    return null
+    if (notModified) {
+      if (thumbnail?.deleted_at) {
+        return {
+          ...thumbnail,
+          deleted_at: null,
+          etag,
+          updated_at: currentDateTime.toString()
+        }
+      }
+
+      return null
+    }
   }
 
   const imageBody = await imageRes.blob()
@@ -321,16 +329,12 @@ async function uploadThumbnail({
   return {
     blur_data_url: blurDataURL,
     deleted_at: null,
+    etag,
     height: newThumbnail.height,
+    id: thumbnail?.id,
     path: data.path,
     updated_at: currentDateTime.toString(),
-    width: newThumbnail.width,
-
-    ...(thumbnail
-      ? {
-          id: thumbnail.id
-        }
-      : {})
+    width: newThumbnail.width
   }
 }
 
@@ -423,7 +427,7 @@ type VideoChannel = Pick<
 >
 type VideoThumbnail = Omit<
   Database['public']['Tables']['thumbnails']['Row'],
-  'created_at' | 'deleted_at' | 'id' | 'updated_at'
+  'created_at' | 'deleted_at' | 'etag' | 'id' | 'updated_at'
 >
 
 type Video = Pick<

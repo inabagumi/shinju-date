@@ -75,6 +75,7 @@ export interface Database {
           blur_data_url: string
           created_at: string
           deleted_at: string | null
+          etag: string | null
           height: number
           id: number
           path: string
@@ -85,6 +86,7 @@ export interface Database {
           blur_data_url: string
           created_at?: string
           deleted_at?: string | null
+          etag?: string | null
           height: number
           id?: number
           path: string
@@ -95,6 +97,7 @@ export interface Database {
           blur_data_url?: string
           created_at?: string
           deleted_at?: string | null
+          etag?: string | null
           height?: number
           id?: number
           path?: string
