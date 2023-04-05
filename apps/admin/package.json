@@ -4,7 +4,7 @@
     "@algolia/cache-common": "^4.17.0",
     "@algolia/requester-fetch": "^4.17.0",
     "@googleapis/youtube": "^9.0.0",
-    "@hookform/resolvers": "^3.0.0",
+    "@hookform/resolvers": "^3.0.1",
     "@js-temporal/polyfill": "^0.4.3",
     "@shinju-date/chakra-theme": "workspace:*",
     "@shinju-date/chakra-ui": "workspace:*",
