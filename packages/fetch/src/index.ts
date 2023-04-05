@@ -1,5 +1,4 @@
 import { type LookupOneOptions } from 'node:dns'
-import pLimit from 'p-limit'
 import { resolve } from './dns.js'
 import { ErrnoException } from './errors.js'
 import { fetch } from './globals.js'
@@ -44,19 +43,15 @@ const readyDispatcher = import('undici')
   )
   .catch(() => undefined)
 
-const limit = pLimit(6)
-
-export default function fetchWithDNSCache(
+export default async function fetchWithDNSCache(
   input: RequestInfo | URL,
   init?: RequestInit
 ): Promise<Response> {
-  return limit(async () => {
-    const dispatcher = await readyDispatcher
+  const dispatcher = await readyDispatcher
 
-    return fetch(input, {
-      ...init,
-      // @ts-expect-error for undici fetch
-      dispatcher
-    })
+  return fetch(input, {
+    ...init,
+    // @ts-expect-error for undici fetch
+    dispatcher
   })
 }
