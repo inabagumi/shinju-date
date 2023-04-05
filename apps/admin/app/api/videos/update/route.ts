@@ -367,9 +367,16 @@ async function upsertThumbnails({
     })
   )
 
-  const values = results
-    .map((result) => (result.status !== 'rejected' ? result.value : null))
-    .filter(isNonNullable)
+  const values: Database['public']['Tables']['thumbnails']['Insert'][] = []
+
+  for (const result of results) {
+    if (result.status === 'fulfilled' && result.value) {
+      values.push(result.value)
+    } else if (result.status === 'rejected') {
+      captureException(result.reason)
+    }
+  }
+
   const upsertValues = values.filter((value) => value.id)
   const insertValues = values.filter((value) => !value.id)
 
