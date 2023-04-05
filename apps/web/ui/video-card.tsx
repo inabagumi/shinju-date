@@ -137,7 +137,7 @@ export default function VideoCard({
 
           {duration.total({ unit: 'second' }) > 0 ? (
             <span className={clsx('badge', styles.duration)}>
-              <time dateTime={duration.toJSON()}>
+              <time dateTime={duration.toString()}>
                 {formatDuration(duration)}
               </time>
             </span>
@@ -153,7 +153,7 @@ export default function VideoCard({
         <div className="card__footer">
           <time
             className={styles.published}
-            dateTime={publishedAt.toJSON()}
+            dateTime={publishedAt.toString({ timeZoneName: 'never' })}
             title={publishedAt.toLocaleString('ja-JP', {
               dateStyle: 'short',
               timeStyle: 'medium'
