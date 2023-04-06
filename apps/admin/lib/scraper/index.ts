@@ -6,6 +6,8 @@ export function scrape(options: ScraperOptions) {
   return scraper.scrape()
 }
 
+export { Scraper }
+export { default as DB } from './db'
 export * from './db'
 export * from './helpers'
 export * from './scraper'
