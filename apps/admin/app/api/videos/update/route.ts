@@ -4,6 +4,7 @@ import fetch from '@shinju-date/fetch'
 import { type Database } from '@shinju-date/schema'
 import { nanoid } from 'nanoid'
 import { NextResponse } from 'next/server'
+import PQueue from 'p-queue'
 import sharp from 'sharp'
 import { createAlgoliaClient } from '@/lib/algolia'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
@@ -351,6 +352,10 @@ async function upsertThumbnails({
   supabaseClient,
   videos
 }: UpsertThumbnailsOptions): Promise<{ id: number; path: string }[]> {
+  const queue = new PQueue({
+    concurrency: 6,
+    interval: 1_000
+  })
   const results = await Promise.allSettled(
     videos.map((video) => {
       const savedVideo = savedVideos.find(
@@ -362,12 +367,14 @@ async function upsertThumbnails({
           : savedVideo.thumbnails
         : undefined
 
-      return uploadThumbnail({
-        currentDateTime,
-        supabaseClient,
-        thumbnail,
-        video
-      })
+      return queue.add(() =>
+        uploadThumbnail({
+          currentDateTime,
+          supabaseClient,
+          thumbnail,
+          video
+        })
+      )
     })
   )
 
@@ -701,34 +708,42 @@ export async function POST(): Promise<NextResponse> {
     return createErrorResponse(404, 'There are no channels.')
   }
 
+  const queue = new PQueue({
+    concurrency: 3,
+    interval: 1_000
+  })
+
   const results = await Promise.allSettled(
     savedChannels.map((savedChannel) => {
       const ch = channels.find((item) => item.id === savedChannel.slug)
+      const playlistID = ch?.contentDetails?.relatedPlaylists?.uploads
 
-      if (!ch?.contentDetails?.relatedPlaylists?.uploads) {
+      if (!playlistID) {
         return Promise.reject(
           new TypeError('The uploads playlist does not exist.')
         )
       }
 
-      return scrape({
-        channelID: savedChannel.id,
-        currentDateTime,
-        playlistID: ch.contentDetails.relatedPlaylists.uploads,
-        supabaseClient
-      })
+      return queue.add(() =>
+        scrape({
+          channelID: savedChannel.id,
+          currentDateTime,
+          playlistID,
+          supabaseClient
+        })
+      )
     })
   )
 
   const videos: Video[] = []
 
   for (const result of results) {
-    if (result.status === 'rejected') {
-      captureException(result.reason)
-    } else {
+    if (result.status === 'fulfilled' && result.value) {
       for (const video of result.value) {
         videos.push(video)
       }
+    } else if (result.status === 'rejected') {
+      captureException(result.reason)
     }
   }
 
