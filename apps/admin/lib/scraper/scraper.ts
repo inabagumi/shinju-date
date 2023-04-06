@@ -112,7 +112,7 @@ export class Thumbnail {
           Thumbnail.upload({
             ...options,
             originalVideo,
-            savedThumbnail: savedThumbnail
+            savedThumbnail
           })
         )
       })
@@ -233,7 +233,11 @@ export class Thumbnail {
       deleted_at: null,
       etag,
       height: this.#height,
-      id: this.#savedThumbnail?.id,
+      ...(this.#savedThumbnail
+        ? {
+            id: this.#savedThumbnail.id
+          }
+        : {}),
       path,
       updated_at: this.#currentDateTime.toString(),
       width: this.#width
