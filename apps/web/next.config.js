@@ -1,4 +1,5 @@
 import nextMDX from '@next/mdx'
+import { withSentryConfig } from '@sentry/nextjs'
 import nextPWA from 'next-pwa'
 import { fileURLToPath } from 'node:url'
 import rehypeExternalLinks from 'rehype-external-links'
@@ -95,4 +96,8 @@ const withMDX = nextMDX({
   }
 })
 
-export default withPWA(withMDX(nextConfig))
+export default withSentryConfig(
+  withPWA(withMDX(nextConfig)),
+  { silent: true },
+  { hideSourceMaps: true }
+)
