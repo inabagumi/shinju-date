@@ -1,16 +1,10 @@
-import { NextResponse } from 'next/server'
-import { type WebAppManifest } from 'web-app-manifest'
+import { MetadataRoute } from 'next'
 import favicon192x192 from '@/assets/favicon-192x192.png'
 import favicon512x512 from '@/assets/favicon-512x512.png'
+import { title } from '@/lib/constants'
 
-export const runtime = 'edge'
-export const dynamic = 'force-static'
-export const revalidate = 86_400 // 1 day
-
-export function GET(): NextResponse {
-  const name = 'SHINJU DATE'
-
-  const body: WebAppManifest = {
+export default function robots(): MetadataRoute.Manifest {
+  return {
     background_color: '#fff',
     display: 'standalone',
     icons: [
@@ -25,17 +19,10 @@ export function GET(): NextResponse {
         type: 'image/png'
       }
     ],
-    name,
+    name: title,
     scope: '/',
-    short_name: name,
+    short_name: title,
     start_url: '/?utm_source=homescreen',
     theme_color: '#212121'
   }
-
-  return NextResponse.json(body, {
-    headers: {
-      'Cache-Control': 'max-age=60, s-maxage=120',
-      'Content-Type': 'application/manifest+json'
-    }
-  })
 }

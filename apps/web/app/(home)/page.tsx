@@ -1,23 +1,19 @@
-import merge from 'lodash.merge'
-import baseMetadata from '@/app/metadata'
+import { description, tagline, title } from '@/lib/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
 import NoResults from '@/ui/no-results'
 import Timeline from '@/ui/timeline'
-
-const title = 'SHINJU DATE'
-const tagline =
-  'ななしいんく所属タレントの配信スケジュールや動画の検索ができるウェブサービス'
 
 // TODO: https://github.com/vercel/next.js/issues/43458
 // export const runtime = 'edge'
 export const revalidate = 60
 
-export const metadata = merge(baseMetadata, {
+export const metadata = {
   alternates: {
     canonical: '/'
   },
+  description,
   openGraph: {
-    siteName: undefined,
+    description,
     title,
     type: 'website'
   },
@@ -25,9 +21,10 @@ export const metadata = merge(baseMetadata, {
     absolute: `${title} - ${tagline}`
   },
   twitter: {
+    card: 'summary_large_image',
     title
   }
-})
+}
 
 export default async function Page(): Promise<JSX.Element> {
   const videos = await fetchNotEndedVideos({})

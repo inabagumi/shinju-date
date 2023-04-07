@@ -1,8 +1,7 @@
-import merge from 'lodash.merge'
 import { type Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import baseMetadata from '@/app/metadata'
+import { title as siteName } from '@/lib/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
 import { getChannelsByGroup, getGroupBySlug } from '@/lib/supabase'
 import NoResults from '@/ui/no-results'
@@ -32,19 +31,20 @@ export async function generateMetadata({
 
   const title = group.name
 
-  return merge(baseMetadata, {
+  return {
     alternates: {
       canonical: `/groups/${group.slug}`
     },
     openGraph: {
+      siteName,
       title,
       type: 'article'
     },
     title,
     twitter: {
-      title: `${title} - SHINJU DATE`
+      title: `${title} - ${siteName}`
     }
-  })
+  }
 }
 
 export default async function Page({ params }: Props): Promise<JSX.Element> {

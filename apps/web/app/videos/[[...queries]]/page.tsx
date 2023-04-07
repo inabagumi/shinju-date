@@ -1,9 +1,8 @@
 import clsx from 'clsx'
-import merge from 'lodash.merge'
 import { type Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import Balancer from 'react-wrap-balancer'
-import baseMetadata from '@/app/metadata'
+import { title as siteName } from '@/lib/constants'
 import { fetchVideosByChannelIDs } from '@/lib/fetchers'
 import { parseQueries } from '@/lib/url'
 import NoResults from '@/ui/no-results'
@@ -31,14 +30,15 @@ export function generateMetadata({ params }: Props): Metadata {
   const query = parseQueries(params.queries)
   const title = query ? `『${query}』の検索結果` : '動画一覧'
 
-  return merge(baseMetadata, {
+  return {
     alternates: {
       canonical: query ? `/videos/${encodeURIComponent(query)}` : '/videos',
       types: {
-        'text/calendar': !query ? '/videos.ics' : undefined
+        'text/calendar': !query ? '/videos.ics' : null
       }
     },
     openGraph: {
+      siteName,
       title,
       type: 'article'
     },
@@ -47,9 +47,9 @@ export function generateMetadata({ params }: Props): Metadata {
     },
     title,
     twitter: {
-      title: `${title} - SHINJU DATE`
+      title: `${title} - ${siteName}`
     }
-  })
+  }
 }
 
 export default async function Page({

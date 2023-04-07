@@ -170,9 +170,6 @@ importers:
       lodash.groupby:
         specifier: ^4.6.0
         version: 4.6.0
-      lodash.merge:
-        specifier: ^4.6.2
-        version: 4.6.2
       next:
         specifier: ^13.3.0
         version: 13.3.0(react-dom@18.2.0)(react@18.2.0)
@@ -240,9 +237,6 @@ importers:
       '@types/lodash.groupby':
         specifier: ^4.6.7
         version: 4.6.7
-      '@types/lodash.merge':
-        specifier: ^4.6.7
-        version: 4.6.7
       '@types/mdx':
         specifier: ^2.0.4
         version: 2.0.4
@@ -252,9 +246,6 @@ importers:
       '@types/react':
         specifier: ^18.0.33
         version: 18.0.33
-      '@types/web-app-manifest':
-        specifier: ^1.0.2
-        version: 1.0.2
       eslint:
         specifier: ~8.37.0
         version: 8.37.0
@@ -4677,12 +4668,6 @@ packages:
       '@types/lodash': 4.14.192
     dev: true
 
-  /@types/lodash.merge@4.6.7:
-    resolution: {integrity: sha512-OwxUJ9E50gw3LnAefSHJPHaBLGEKmQBQ7CZe/xflHkyy/wH2zVyEIAKReHvVrrn7zKdF58p16We9kMfh7v0RRQ==}
-    dependencies:
-      '@types/lodash': 4.14.192
-    dev: true
-
   /@types/lodash.mergewith@4.6.7:
     resolution: {integrity: sha512-3m+lkO5CLRRYU0fhGRp7zbsGi6+BZj0uTVSwvcKU+nSlhjA9/QRNfuSGnD2mX6hQA7ZbmcCkzk5h4ZYGOtk14A==}
     dependencies:
@@ -4771,10 +4756,6 @@ packages:
 
   /@types/unist@2.0.6:
     resolution: {integrity: sha512-PBjIUxZHOuj0R15/xuwJYjFi+KZdNFrehocChv4g5hu6aFroHue8m0lBP0POdK2nKzbw0cgV1mws8+V/JAcEkQ==}
-    dev: true
-
-  /@types/web-app-manifest@1.0.2:
-    resolution: {integrity: sha512-Dzq+rbsRHy+HLuDd4j/q8jTyW6Yte1dRihlBD0Xf5FTrnjFg8QgtzXySCahxy1VRreqASMBhn7amZIs8ZJ/T2Q==}
     dev: true
 
   /@types/websocket@1.0.5:
