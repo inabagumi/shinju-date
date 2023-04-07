@@ -53,8 +53,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/polyfills
       '@supabase/supabase-js':
-        specifier: ^2.14.0
-        version: 2.14.0
+        specifier: ^2.15.0
+        version: 2.15.0
       '@upstash/redis':
         specifier: ^1.20.2
         version: 1.20.2
@@ -141,8 +141,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/polyfills
       '@supabase/supabase-js':
-        specifier: ^2.14.0
-        version: 2.14.0
+        specifier: ^2.15.0
+        version: 2.15.0
       '@vercel/analytics':
         specifier: ^0.1.11
         version: 0.1.11(react@18.2.0)
@@ -4214,22 +4214,22 @@ packages:
       - supports-color
     dev: false
 
-  /@supabase/storage-js@2.3.1:
-    resolution: {integrity: sha512-BaPIvyvjuZW1V0CnfGKUZyzpBUXnsh0XD8eqTOYd+MdiGPmIPI0vtwnT4fAoK8mipp1vpcN62EVQaqeUnWXPtQ==}
+  /@supabase/storage-js@2.4.0:
+    resolution: {integrity: sha512-uCT6WjeZsyxH/Br1MnXieJnXrYxS3DpIkdNxEFTKCoaPX/KZ2t62v++R2IMNB/XGI1LMuJfN5wM28uuK6DMpfw==}
     dependencies:
       cross-fetch: 3.1.5
     transitivePeerDependencies:
       - encoding
     dev: false
 
-  /@supabase/supabase-js@2.14.0:
-    resolution: {integrity: sha512-pdcYDaxTUqv5A8NqDnLn731rTP0Wm469H+0ag6Jb8YpWR95rmusfpGY7vrykWXvdnvCMxoG6eEwSF9vQtxVrow==}
+  /@supabase/supabase-js@2.15.0:
+    resolution: {integrity: sha512-gtgq8Tyb4AJoTGeUH3EISOiobdSYwUPcjV+mqL8zGMND+mfqh6l90fnxVPxepnIFXeppJh67YIFTu2bZhr6AMA==}
     dependencies:
       '@supabase/functions-js': 2.1.0
       '@supabase/gotrue-js': 2.18.1
       '@supabase/postgrest-js': 1.5.0
       '@supabase/realtime-js': 2.7.1
-      '@supabase/storage-js': 2.3.1
+      '@supabase/storage-js': 2.4.0
       cross-fetch: 3.1.5
     transitivePeerDependencies:
       - encoding
