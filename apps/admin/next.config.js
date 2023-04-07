@@ -1,3 +1,4 @@
+import { withSentryConfig } from '@sentry/nextjs'
 import { fileURLToPath } from 'node:url'
 
 /** @type {import('next').NextConfig} */
@@ -17,4 +18,12 @@ const nextConfig = {
   }
 }
 
-export default nextConfig
+export default withSentryConfig(
+  nextConfig,
+  {
+    silent: true
+  },
+  {
+    hideSourceMaps: true
+  }
+)
