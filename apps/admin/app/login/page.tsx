@@ -7,7 +7,7 @@ import { createSupabaseClient } from '@/lib/supabase'
 import ErrorMessage, { ErrorMessageProvider } from './error-message'
 import LoginForm from './form'
 
-export const runtime = 'edge'
+// export const runtime = 'edge'
 
 type SearchParams = {
   email?: string | string[]
