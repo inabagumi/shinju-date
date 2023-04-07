@@ -5,6 +5,7 @@ import {
   createEvents
 } from 'ics'
 import { NextResponse } from 'next/server'
+import { title as siteName } from '@/lib/constants'
 import { max, min } from './date'
 
 type Channel = {
@@ -91,7 +92,7 @@ export function createEventAttributesList(
       endInputType: 'utc',
       endOutputType: 'utc',
       location: 'YouTube',
-      productId: 'SHINJU DATE',
+      productId: siteName,
       start: convertTimestampToArray(publishedAt.epochMilliseconds, 'utc'),
       startInputType: 'utc',
       startOutputType: 'utc',

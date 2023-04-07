@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { type ReactNode } from 'react'
 import Balancer from 'react-wrap-balancer'
+import { title as siteName } from '@/lib/constants'
 import { SkipNavContent } from './skip-nav'
 
 type Props = {
@@ -51,7 +52,7 @@ export default function SimpleDocument({
                   itemType="https://schema.org/ListItem"
                 >
                   <Link className="breadcrumbs__link" href="/" itemProp="item">
-                    <span itemProp="name">SHINJU DATE</span>
+                    <span itemProp="name">${siteName}</span>
                   </Link>
                   <meta content="1" itemProp="position" />
                 </li>
