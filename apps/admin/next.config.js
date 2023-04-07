@@ -13,8 +13,7 @@ const nextConfig = {
         './**/node_modules/terser'
       ]
     },
-    outputFileTracingRoot: fileURLToPath(new URL('../..', import.meta.url)),
-    typedRoutes: true
+    outputFileTracingRoot: fileURLToPath(new URL('../..', import.meta.url))
   }
 }
 
