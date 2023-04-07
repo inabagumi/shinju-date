@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs'
 import { type Logger, createLogger, format, transports } from 'winston'
 
 function createDefaultLogger(): Logger {
@@ -13,19 +14,9 @@ function createDefaultLogger(): Logger {
 export const defaultLogger = createDefaultLogger()
 
 export function captureException(error: unknown): void {
-  if (error instanceof Error) {
-    defaultLogger.error(error.message, {
-      ...(error.cause instanceof Error
-        ? {
-            cause: {
-              message: error.cause.message,
-              name: error.cause.name,
-              stack: error.cause.stack
-            }
-          }
-        : {}),
-      name: error.name,
-      stack: error.stack
-    })
+  if (process.env.NODE_ENV === 'production') {
+    Sentry.captureException(error)
+  } else {
+    console.error(error)
   }
 }

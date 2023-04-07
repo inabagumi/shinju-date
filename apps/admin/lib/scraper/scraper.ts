@@ -5,7 +5,7 @@ import mime from 'mime'
 import { nanoid } from 'nanoid'
 import PQueue from 'p-queue'
 import sharp from 'sharp'
-import { captureException, defaultLogger as logger } from '@/lib/logging'
+import { captureException } from '@/lib/logging'
 import { type TypedSupabaseClient } from '@/lib/supabase'
 import {
   type FilteredYouTubeChannel,
