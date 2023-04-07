@@ -8,8 +8,7 @@ import NoResults from '@/ui/no-results'
 import SimpleDocument from '@/ui/simple-document'
 import Timeline from '@/ui/timeline'
 
-// TODO: https://github.com/vercel/next.js/issues/43458
-// export const runtime = 'edge'
+export const runtime = 'edge'
 export const revalidate = 60
 
 type Params = {
