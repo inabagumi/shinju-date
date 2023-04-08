@@ -11,6 +11,7 @@ import { youtubeClient } from '@/lib/youtube'
 const CHECK_DUPLICATE_KEY = 'cron:videos:check'
 const CHECK_DURATION = Temporal.Duration.from({ minutes: 25 })
 
+export const runtime = 'nodejs'
 export const revalidate = 0
 
 type Thumbnail = {

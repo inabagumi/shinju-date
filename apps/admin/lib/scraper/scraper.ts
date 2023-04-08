@@ -1,5 +1,4 @@
 import { Temporal } from '@js-temporal/polyfill'
-import fetch from '@shinju-date/fetch'
 import { type Database } from '@shinju-date/schema'
 import mime from 'mime'
 import { nanoid } from 'nanoid'
@@ -14,7 +13,7 @@ import {
   getVideos
 } from '@/lib/youtube'
 import DB, { type Video } from './db'
-import { getPublishedAt, isNonNullable } from './helpers'
+import { getPublishedAt, isNonNullable, retryableFetch } from './helpers'
 import {
   type SavedChannel,
   type SavedThumbnail,
@@ -157,52 +156,53 @@ export class Thumbnail {
   async upload(): Promise<
     Database['public']['Tables']['thumbnails']['Insert'] | null
   > {
-    const requestHeaders = new Headers()
+    if (this.#savedThumbnail?.updated_at) {
+      const updatedAt = Temporal.Instant.from(this.#savedThumbnail.updated_at)
 
-    if (this.#savedThumbnail?.etag) {
-      requestHeaders.set('If-None-Match', this.#savedThumbnail.etag)
-    }
-
-    const imageRes = await fetch(this.#url, {
-      headers: requestHeaders
-    })
-
-    if (!imageRes.ok && imageRes.status !== 304) {
-      throw new TypeError('Failed to fetch thumbnail.')
-    }
-
-    const etag = imageRes.headers.get('etag')
-
-    if (this.#savedThumbnail) {
-      let notModified = imageRes.status === 304
-
-      if (!notModified && etag) {
-        const match = etag.match(/^"(\d+)"$/)
-
-        if (match) {
-          const unixTime = parseInt(match[1], 10)
-          const imageUpdatedAt = Temporal.Instant.fromEpochSeconds(unixTime)
-
-          notModified =
-            Temporal.Instant.compare(
-              Temporal.Instant.from(this.#savedThumbnail.updated_at),
-              imageUpdatedAt
-            ) > 0
-        }
-      }
-
-      if (notModified) {
-        if (this.#savedThumbnail.deleted_at || !this.#savedThumbnail.etag) {
+      if (
+        Temporal.Instant.compare(
+          updatedAt.add({ minutes: 5 }),
+          this.#currentDateTime
+        ) > 0
+      ) {
+        if (this.#savedThumbnail.deleted_at) {
           return {
             ...this.#savedThumbnail,
             deleted_at: null,
-            etag,
             updated_at: this.#currentDateTime.toString()
           }
         }
 
         return null
       }
+    }
+
+    const requestHeaders = new Headers()
+
+    if (this.#savedThumbnail?.etag) {
+      requestHeaders.set('If-None-Match', this.#savedThumbnail.etag)
+    }
+
+    const imageRes = await retryableFetch(this.#url, {
+      headers: requestHeaders
+    })
+
+    const etag = imageRes.headers.get('etag')
+
+    if (imageRes.status === 304) {
+      if (
+        this.#savedThumbnail &&
+        (this.#savedThumbnail.deleted_at || !this.#savedThumbnail.etag)
+      ) {
+        return {
+          ...this.#savedThumbnail,
+          deleted_at: null,
+          etag,
+          updated_at: this.#currentDateTime.toString()
+        }
+      }
+
+      return null
     }
 
     const imageBody = await imageRes.blob()
