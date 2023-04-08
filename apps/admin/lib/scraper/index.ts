@@ -9,6 +9,7 @@ export function scrape(options: ScraperOptions) {
 export { Scraper }
 export { default as DB } from './db'
 export * from './db'
+export * from './errors'
 export * from './helpers'
 export * from './scraper'
 export * from './types'

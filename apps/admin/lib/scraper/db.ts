@@ -1,6 +1,7 @@
 import { type Database } from '@shinju-date/schema'
 import { captureException } from '@/lib/logging'
 import { type TypedSupabaseClient } from '@/lib/supabase'
+import { DatabaseError } from './errors'
 import { type SavedVideo } from './types'
 
 export type VideoChannel = Pick<
@@ -95,28 +96,32 @@ export default class DB {
     const upsertValues = values.filter((value) => value.id)
     const insertValues = values.filter((value) => !value.id)
     const results = await Promise.allSettled([
-      this.#supabaseClient
-        .from('thumbnails')
-        .upsert(upsertValues)
-        .select('id, path')
-        .then(({ data, error }) => {
-          if (error) {
-            throw error
-          }
+      upsertValues.length > 0
+        ? this.#supabaseClient
+            .from('thumbnails')
+            .upsert(upsertValues)
+            .select('id, path')
+            .then(({ data, error }) => {
+              if (error) {
+                throw new DatabaseError(error)
+              }
 
-          return data
-        }),
-      this.#supabaseClient
-        .from('thumbnails')
-        .insert(insertValues)
-        .select('id, path')
-        .then(({ data, error }) => {
-          if (error) {
-            throw error
-          }
+              return data
+            })
+        : Promise.resolve([]),
+      insertValues.length > 0
+        ? this.#supabaseClient
+            .from('thumbnails')
+            .insert(insertValues)
+            .select('id, path')
+            .then(({ data, error }) => {
+              if (error) {
+                throw new DatabaseError(error)
+              }
 
-          return data
-        })
+              return data
+            })
+        : Promise.resolve([])
     ])
 
     const thumbnails: { id: number; path: string }[] = []
@@ -148,7 +153,7 @@ export default class DB {
             .select(scrapeResultSelect)
             .then(({ data, error }) => {
               if (error) {
-                throw error
+                throw new DatabaseError(error)
               }
 
               return data
@@ -161,7 +166,7 @@ export default class DB {
             .select(scrapeResultSelect)
             .then(({ data, error }) => {
               if (error) {
-                throw error
+                throw new DatabaseError(error)
               }
 
               return data
