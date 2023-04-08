@@ -190,6 +190,10 @@ export class Thumbnail {
     const etag = imageRes.headers.get('etag')
 
     if (imageRes.status === 304) {
+      // The body is read to reuse the socket.
+      // see https://github.com/nodejs/undici/issues/1203#issuecomment-1398191693
+      await imageRes.arrayBuffer()
+
       if (
         this.#savedThumbnail &&
         (this.#savedThumbnail.deleted_at || !this.#savedThumbnail.etag)
