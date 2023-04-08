@@ -7,7 +7,7 @@
   "devDependencies": {
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/tsconfig": "workspace:*",
-    "eslint": "^8.37.0",
+    "eslint": "^8.38.0",
     "lru-cache": "^8.0.5",
     "p-limit": "^4.0.0",
     "tsup": "^6.7.0",
