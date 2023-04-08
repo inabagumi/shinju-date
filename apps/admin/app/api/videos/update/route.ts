@@ -12,6 +12,7 @@ import { type FilteredYouTubeChannel, getChannels } from '@/lib/youtube'
 const CHECK_DUPLICATE_KEY = 'cron:videos:update'
 const CHECK_DURATION = Temporal.Duration.from({ minutes: 1, seconds: 30 })
 
+export const runtime = 'nodejs'
 export const revalidate = 0
 
 type SaveToAlgoliaOptions = {

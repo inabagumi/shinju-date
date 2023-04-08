@@ -7,6 +7,7 @@ import { createErrorResponse } from '@/lib/session'
 import { createSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 
+export const runtime = 'nodejs'
 export const revalidate = 0
 
 type Channel = Pick<

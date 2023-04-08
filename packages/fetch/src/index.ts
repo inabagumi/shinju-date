@@ -1,4 +1,5 @@
 import { type LookupOneOptions } from 'node:dns'
+import { Agent } from 'undici'
 import { resolve } from './dns.js'
 import { ErrnoException } from './errors.js'
 import { fetch } from './globals.js'
@@ -32,23 +33,16 @@ function lookup(
     })
 }
 
-const readyDispatcher = import('undici')
-  .then(
-    ({ Agent }) =>
-      new Agent({
-        connect: {
-          lookup
-        }
-      })
-  )
-  .catch(() => undefined)
+const dispatcher = new Agent({
+  connect: {
+    lookup
+  }
+})
 
 export default async function fetchWithDNSCache(
   input: RequestInfo | URL,
   init?: RequestInit
 ): Promise<Response> {
-  const dispatcher = await readyDispatcher
-
   return fetch(input, {
     ...init,
     // @ts-expect-error for undici fetch
