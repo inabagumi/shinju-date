@@ -10,7 +10,7 @@
     "p-limit": "^4.0.0",
     "tsup": "^6.7.0",
     "typescript": "^5.0.4",
-    "undici": "^5.21.1",
+    "undici": "^5.21.2",
     "yup": "^1.0.2"
   },
   "exports": {
