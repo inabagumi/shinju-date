@@ -6,7 +6,7 @@
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/tsconfig": "workspace:*",
     "eslint": "^8.38.0",
-    "lru-cache": "^9.0.0",
+    "lru-cache": "^9.0.1",
     "p-limit": "^4.0.0",
     "tsup": "^6.7.0",
     "typescript": "^5.0.4",
