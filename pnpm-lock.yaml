@@ -56,8 +56,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/polyfills
       '@supabase/supabase-js':
-        specifier: ^2.18.0
-        version: 2.18.0
+        specifier: ^2.19.0
+        version: 2.19.0
       '@upstash/redis':
         specifier: ^1.20.2
         version: 1.20.2
@@ -150,8 +150,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/polyfills
       '@supabase/supabase-js':
-        specifier: ^2.18.0
-        version: 2.18.0
+        specifier: ^2.19.0
+        version: 2.19.0
       '@vercel/analytics':
         specifier: ^0.1.11
         version: 0.1.11(react@18.2.0)
@@ -4376,8 +4376,8 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/gotrue-js@2.21.0:
-    resolution: {integrity: sha512-KM+NECYoOQUQc1k6bNfHAkNUCaJf2GwfNp5x38TZqIvwJviHLX1FLBdTiOOqw1DlLeOpYtxYOgxSouLqictvZQ==}
+  /@supabase/gotrue-js@2.22.0:
+    resolution: {integrity: sha512-YBxg1AoMgXSFbEuamMyuJhKwscmK/eCkL8K7CenCjJJRVKfNHDYkM9F7VX9+atDDY6ejufdYz1auVfsqRrt9pQ==}
     dependencies:
       cross-fetch: 3.1.5
     transitivePeerDependencies:
@@ -4410,11 +4410,11 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/supabase-js@2.18.0:
-    resolution: {integrity: sha512-5hDKz6/BwTE+2Zo9oGoiolJGajpqmWwNjgqyjQcne57Pt9WL2aWyltkmYjxLEpes6yVO/9AaLtnULsK6lcWW4A==}
+  /@supabase/supabase-js@2.19.0:
+    resolution: {integrity: sha512-LO+uMy4lnmLvpdF5vGSEQgurxoj8qx4LiZve555JeAnrnuyubvDLZ8Kk5nU0+9KRi4VGQIeD5znqMh0OaACj4w==}
     dependencies:
       '@supabase/functions-js': 2.1.0
-      '@supabase/gotrue-js': 2.21.0
+      '@supabase/gotrue-js': 2.22.0
       '@supabase/postgrest-js': 1.5.0
       '@supabase/realtime-js': 2.7.2
       '@supabase/storage-js': 2.4.0
