@@ -98,8 +98,8 @@ importers:
         specifier: ^3.8.2
         version: 3.8.2
       yup:
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.1.0
+        version: 1.1.0
     devDependencies:
       '@algolia/client-search':
         specifier: ^4.17.0
@@ -397,8 +397,8 @@ importers:
         specifier: ^5.21.2
         version: 5.21.2
       yup:
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.1.0
+        version: 1.1.0
 
   packages/helpers:
     devDependencies:
@@ -12400,8 +12400,8 @@ packages:
       toposort: 2.0.2
     dev: false
 
-  /yup@1.0.2:
-    resolution: {integrity: sha512-Lpi8nITFKjWtCoK3yQP8MUk78LJmHWqbFd0OOMXTar+yjejlQ4OIIoZgnTW1bnEUKDw6dZBcy3/IdXnt2KDUow==}
+  /yup@1.1.0:
+    resolution: {integrity: sha512-CtpEHWiIMwWJBJ+zX8xWImXXdvJ10X/sKkYYTXfVocHj087e9zhP0GNkU7HlXBBI4T9BtHQxs8n2jLzmo/X8Yg==}
     dependencies:
       property-expr: 2.0.5
       tiny-case: 1.0.3
