@@ -97,47 +97,27 @@ export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
     .add({ months: 1 })
     .toInstant()
 
-  if (!query) {
-    const from = SEARCH_RESULT_COUNT * (page - 1)
-    let builder = supabase
-      .from('videos')
-      .select(DEFAULT_SEARCH_SELECT)
-      .lte('published_at', until.toJSON())
-      .order('published_at', { ascending: false })
-      .range(from, from + SEARCH_RESULT_COUNT - 1)
-
-    if (channelIDs && channelIDs.length > 0) {
-      builder = builder.in('channels.slug', channelIDs)
-    }
-
-    const { data: videos, error } = await builder
-
-    if (error) {
-      throw error
-    }
-
-    return videos
-  }
-
-  const videos = await getVideos({
-    channelIDs,
-    filters: [`publishedAt <= ${until.epochSeconds}`],
-    limit: SEARCH_RESULT_COUNT,
-    page,
-    query
-  })
-
-  const videoIDs = videos.map((video) => video.id)
-  const { data, error } = await supabase
+  const from = SEARCH_RESULT_COUNT * (page - 1)
+  let builder = supabase
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
-    .in('slug', videoIDs)
+    .lte('published_at', until.toJSON())
     .order('published_at', { ascending: false })
-    .limit(SEARCH_RESULT_COUNT)
+    .range(from, from + SEARCH_RESULT_COUNT - 1)
+
+  if (channelIDs && channelIDs.length > 0) {
+    builder = builder.in('channels.slug', channelIDs)
+  }
+
+  if (query) {
+    builder = builder.ilike('title', `%${query}%`)
+  }
+
+  const { data: videos, error } = await builder
 
   if (error) {
     throw error
   }
 
-  return data
+  return videos
 }
