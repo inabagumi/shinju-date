@@ -382,8 +382,8 @@ importers:
         specifier: ^8.38.0
         version: 8.38.0
       lru-cache:
-        specifier: ^9.0.1
-        version: 9.0.1
+        specifier: ^9.0.2
+        version: 9.0.2
       p-limit:
         specifier: ^4.0.0
         version: 4.0.0
@@ -8758,8 +8758,8 @@ packages:
     dependencies:
       yallist: 4.0.0
 
-  /lru-cache@9.0.1:
-    resolution: {integrity: sha512-C8QsKIN1UIXeOs3iWmiZ1lQY+EnKDojWd37fXy1aSbJvH4iSma1uy2OWuoB3m4SYRli5+CUjDv3Dij5DVoetmg==}
+  /lru-cache@9.0.2:
+    resolution: {integrity: sha512-7zYMKApzQ9qQE13xQUzbXVY3p2C5lh+9V+bs8M9fRf1TF59id+8jkljRWtIPfBfNP4yQAol5cqh/e8clxatdXw==}
     engines: {node: 14 || >=16.14}
     dev: true
 
