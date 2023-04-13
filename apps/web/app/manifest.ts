@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
-import favicon192x192 from '@/assets/favicon-192x192.png'
-import favicon512x512 from '@/assets/favicon-512x512.png'
 import { title } from '@/lib/constants'
+import favicon512x512 from './icon1.png'
+import favicon192x192 from './icon2.png'
 
 export default function robots(): MetadataRoute.Manifest {
   return {

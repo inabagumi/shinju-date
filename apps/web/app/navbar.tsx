@@ -13,9 +13,9 @@ import {
   useState
 } from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
-import Icon from '@/assets/icon.svg'
 import { title as siteName } from '@/lib/constants'
 import styles from './navbar.module.css'
+import Icon from './square-icon.svg'
 
 function SearchForm(): JSX.Element {
   const router = useRouter()
