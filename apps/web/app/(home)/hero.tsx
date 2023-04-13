@@ -1,7 +1,7 @@
 import Image from 'next/image'
-import hero from '@/assets/hero.jpg'
-import Logo from '@/assets/logo.svg'
+import hero from './hero.jpg'
 import styles from './hero.module.css'
+import Logo from './logo.svg'
 
 export default function Hero(): JSX.Element {
   return (
