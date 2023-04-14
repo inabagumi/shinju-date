@@ -5,6 +5,10 @@ import { fileURLToPath } from 'node:url'
 import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
 
+const supabaseBaseURL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL &&
+  new URL(process.env.NEXT_PUBLIC_SUPABASE_URL)
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
@@ -23,7 +27,14 @@ const nextConfig = {
   },
   images: {
     formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 365 * 24 * 60 * 60
+    minimumCacheTTL: 365 * 24 * 60 * 60,
+    remotePatterns: [
+      {
+        hostname: supabaseBaseURL?.host,
+        pathname: '/storage/v1/object/public/**',
+        protocol: supabaseBaseURL?.protocol.slice(0, -1)
+      }
+    ]
   },
   reactStrictMode: true,
   async rewrites() {
