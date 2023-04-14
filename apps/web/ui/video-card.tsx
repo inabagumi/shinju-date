@@ -16,7 +16,7 @@ function formatDuration(duration: Temporal.Duration): string {
 }
 
 function supabaseLoader({
-  quality = 80,
+  quality = 75,
   src,
   width
 }: ImageLoaderProps): string {
