@@ -15,24 +15,6 @@ function formatDuration(duration: Temporal.Duration): string {
     .join(':')
 }
 
-function supabaseLoader({
-  quality = 75,
-  src,
-  width
-}: ImageLoaderProps): string {
-  const {
-    data: { publicUrl }
-  } = supabase.storage.from('thumbnails').getPublicUrl(src, {
-    transform: {
-      quality,
-      resize: 'contain',
-      width
-    }
-  })
-
-  return publicUrl
-}
-
 type ThumbnailProps = {
   video: Video
 }
@@ -43,8 +25,19 @@ function Thumbnail({ video }: ThumbnailProps): JSX.Element | null {
       Array.isArray(video.thumbnails) ? video.thumbnails[0] : video.thumbnails,
     [video.thumbnails]
   )
+  const publicURL = useMemo(() => {
+    if (!thumbnail) {
+      return null
+    }
 
-  if (!thumbnail) {
+    const {
+      data: { publicUrl }
+    } = supabase.storage.from('thumbnails').getPublicUrl(thumbnail.path)
+
+    return publicUrl
+  }, [thumbnail])
+
+  if (!thumbnail || !publicURL) {
     return null
   }
 
@@ -54,10 +47,9 @@ function Thumbnail({ video }: ThumbnailProps): JSX.Element | null {
       blurDataURL={thumbnail.blur_data_url}
       className={styles.thumbnail}
       fill
-      loader={supabaseLoader}
       placeholder="blur"
       sizes="(max-width: 996px) 100vw, 30vw"
-      src={thumbnail.path}
+      src={publicURL}
     />
   )
 }
