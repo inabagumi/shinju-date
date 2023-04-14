@@ -70,6 +70,23 @@ export interface Database {
           updated_at?: string
         }
       }
+      synonyms: {
+        Row: {
+          id: number
+          synonyms: string[]
+          term: string
+        }
+        Insert: {
+          id?: number
+          synonyms: string[]
+          term: string
+        }
+        Update: {
+          id?: number
+          synonyms?: string[]
+          term?: string
+        }
+      }
       thumbnails: {
         Row: {
           blur_data_url: string
@@ -151,7 +168,24 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      search_videos: {
+        Args: {
+          query: string
+        }
+        Returns: {
+          channel_id: number
+          created_at: string
+          deleted_at: string | null
+          duration: string
+          id: number
+          published_at: string
+          slug: string
+          thumbnail_id: number | null
+          title: string
+          updated_at: string
+          url: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

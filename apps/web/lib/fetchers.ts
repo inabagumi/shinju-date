@@ -2,10 +2,10 @@ import { Temporal } from '@js-temporal/polyfill'
 import { type Database } from '@shinju-date/schema'
 import { type Fetcher } from 'swr'
 import { type SWRInfiniteFetcher } from 'swr/infinite'
-import { getVideos } from '@/lib/algolia'
 import { supabase } from '@/lib/supabase'
 
 export const SEARCH_RESULT_COUNT = 9
+
 export const DEFAULT_SEARCH_SELECT = `
   channels!inner (name, slug),
   duration,
@@ -98,6 +98,27 @@ export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
     .toInstant()
 
   const from = SEARCH_RESULT_COUNT * (page - 1)
+
+  if (query) {
+    let builder = supabase
+      .rpc('search_videos', { query })
+      .lte('published_at', until.toJSON())
+      .order('published_at', { ascending: false })
+      .range(from, from + SEARCH_RESULT_COUNT - 1)
+
+    if (channelIDs && channelIDs.length > 0) {
+      builder = builder.in('channels.slug', channelIDs)
+    }
+
+    const { data: videos, error } = await builder.select(DEFAULT_SEARCH_SELECT)
+
+    if (error) {
+      throw error
+    }
+
+    return videos
+  }
+
   let builder = supabase
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
@@ -107,10 +128,6 @@ export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
 
   if (channelIDs && channelIDs.length > 0) {
     builder = builder.in('channels.slug', channelIDs)
-  }
-
-  if (query) {
-    builder = builder.ilike('title', `%${query}%`)
   }
 
   const { data: videos, error } = await builder
