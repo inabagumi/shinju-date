@@ -2,7 +2,7 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@googleapis/youtube": "^9.0.0",
-    "@hookform/resolvers": "^3.0.1",
+    "@hookform/resolvers": "^3.1.0",
     "@js-temporal/polyfill": "^0.4.3",
     "@sentry/nextjs": "^7.48.0",
     "@shinju-date/chakra-theme": "workspace:*",
