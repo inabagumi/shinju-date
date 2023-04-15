@@ -1,4 +1,3 @@
-import { TextEncoderStream } from '@shinju-date/polyfills'
 import { type SitemapItem, SitemapStream } from 'edge-sitemap'
 import { NextResponse } from 'next/server'
 import { mix } from '@/lib/streams'
