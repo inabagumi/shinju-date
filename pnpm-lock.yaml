@@ -46,9 +46,6 @@ importers:
       '@shinju-date/helpers':
         specifier: workspace:*
         version: link:../../packages/helpers
-      '@shinju-date/polyfills':
-        specifier: workspace:*
-        version: link:../../packages/polyfills
       '@supabase/supabase-js':
         specifier: ^2.20.0
         version: 2.20.0
@@ -128,9 +125,6 @@ importers:
       '@sentry/nextjs':
         specifier: ^7.48.0
         version: 7.48.0(next@13.3.1-canary.8)(react@18.2.0)
-      '@shinju-date/polyfills':
-        specifier: workspace:*
-        version: link:../../packages/polyfills
       '@supabase/supabase-js':
         specifier: ^2.20.0
         version: 2.20.0
@@ -390,24 +384,6 @@ importers:
       next:
         specifier: ^13.3.1-canary.8
         version: 13.3.1-canary.8(react-dom@18.2.0)(react@18.2.0)
-      tsup:
-        specifier: ^6.7.0
-        version: 6.7.0(typescript@5.0.4)
-      typescript:
-        specifier: ^5.0.4
-        version: 5.0.4
-
-  packages/polyfills:
-    devDependencies:
-      '@shinju-date/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@shinju-date/tsconfig':
-        specifier: workspace:*
-        version: link:../tsconfig
-      eslint:
-        specifier: ^8.38.0
-        version: 8.38.0
       tsup:
         specifier: ^6.7.0
         version: 6.7.0(typescript@5.0.4)
