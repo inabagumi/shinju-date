@@ -1,6 +1,3 @@
-variable "algolia_admin_api_key" {}
-variable "algolia_api_key" {}
-variable "algolia_application_id" {}
 variable "google_api_key" {}
 variable "supabase_anon_key" {}
 variable "supabase_service_role_key" {}

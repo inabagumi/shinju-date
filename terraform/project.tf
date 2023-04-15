@@ -34,38 +34,6 @@ resource "vercel_project_domain" "ink" {
   team_id              = vercel_project.this.team_id
 }
 
-resource "vercel_project_environment_variable" "algolia_api_key" {
-  key        = "NEXT_PUBLIC_ALGOLIA_API_KEY"
-  project_id = vercel_project.this.id
-  target     = ["production", "preview", "development"]
-  team_id    = vercel_project.this.team_id
-  value      = var.algolia_api_key
-}
-
-resource "vercel_project_environment_variable" "algolia_application_id" {
-  key        = "NEXT_PUBLIC_ALGOLIA_APPLICATION_ID"
-  project_id = vercel_project.this.id
-  target     = ["production", "preview", "development"]
-  team_id    = vercel_project.this.team_id
-  value      = var.algolia_application_id
-}
-
-resource "vercel_project_environment_variable" "algolia_index_name" {
-  key        = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
-  project_id = vercel_project.this.id
-  target     = ["production"]
-  team_id    = vercel_project.this.team_id
-  value      = "prod_videos"
-}
-
-resource "vercel_project_environment_variable" "algolia_index_name_dev" {
-  key        = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
-  project_id = vercel_project.this.id
-  target     = ["preview", "development"]
-  team_id    = vercel_project.this.team_id
-  value      = "dev_videos"
-}
-
 resource "vercel_project_environment_variable" "base_url" {
   key        = "NEXT_PUBLIC_BASE_URL"
   project_id = vercel_project.this.id
@@ -132,46 +100,6 @@ resource "vercel_project_domain" "admin" {
   domain     = "admin.shinju.date"
   project_id = vercel_project.admin.id
   team_id    = vercel_project.admin.team_id
-}
-
-resource "vercel_project_environment_variable" "admin_algolia_admin_api_key" {
-  key        = "ALGOLIA_ADMIN_API_KEY"
-  project_id = vercel_project.admin.id
-  target     = ["production", "preview", "development"]
-  team_id    = vercel_project.admin.team_id
-  value      = var.algolia_admin_api_key
-}
-
-resource "vercel_project_environment_variable" "admin_algolia_api_key" {
-  key        = "NEXT_PUBLIC_ALGOLIA_API_KEY"
-  project_id = vercel_project.admin.id
-  target     = ["production", "preview", "development"]
-  team_id    = vercel_project.admin.team_id
-  value      = var.algolia_api_key
-}
-
-resource "vercel_project_environment_variable" "admin_algolia_application_id" {
-  key        = "NEXT_PUBLIC_ALGOLIA_APPLICATION_ID"
-  project_id = vercel_project.admin.id
-  target     = ["production", "preview", "development"]
-  team_id    = vercel_project.admin.team_id
-  value      = var.algolia_application_id
-}
-
-resource "vercel_project_environment_variable" "admin_algolia_index_name" {
-  key        = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
-  project_id = vercel_project.admin.id
-  target     = ["production"]
-  team_id    = vercel_project.admin.team_id
-  value      = "prod_videos"
-}
-
-resource "vercel_project_environment_variable" "admin_algolia_index_name_dev" {
-  key        = "NEXT_PUBLIC_ALGOLIA_INDEX_NAME"
-  project_id = vercel_project.admin.id
-  target     = ["preview", "development"]
-  team_id    = vercel_project.admin.team_id
-  value      = "dev_videos"
 }
 
 resource "vercel_project_environment_variable" "admin_google_api_key" {

@@ -1,7 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { type Database } from '@shinju-date/schema'
 import { type NextRequest, NextResponse } from 'next/server'
-import { createAlgoliaClient } from '@/lib/algolia'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { isDuplicate } from '@/lib/redis'
 import { createErrorResponse } from '@/lib/session'
@@ -133,12 +132,7 @@ function deleteVideos({
   currentDateTime,
   supabaseClient,
   videos
-}: DeleteOptions): Promise<
-  [...PromiseSettledResult<{ id: number }[]>[], PromiseSettledResult<string[]>]
-> {
-  const algoliaClient = createAlgoliaClient({
-    apiKey: process.env.ALGOLIA_ADMIN_API_KEY
-  })
+}: DeleteOptions): Promise<PromiseSettledResult<{ id: number }[]>[]> {
   const thumbnails = videos
     .map((video) =>
       Array.isArray(video.thumbnails) ? video.thumbnails[0] : video.thumbnails
@@ -157,10 +151,7 @@ function deleteVideos({
       ids: thumbnails.map((thumbnail) => thumbnail.id),
       supabaseClient,
       table: 'thumbnails'
-    }),
-    algoliaClient
-      .deleteObjects(videos.map((video) => video.slug))
-      .then((res) => res.objectIDs)
+    })
   ])
 }
 
