@@ -46,7 +46,7 @@
     "next-pwa": "^5.6.0",
     "postcss": "^8.4.22",
     "postcss-flexbugs-fixes": "^5.0.2",
-    "postcss-preset-env": "^8.3.1",
+    "postcss-preset-env": "^8.3.2",
     "rehype-external-links": "^2.0.1",
     "remark-gfm": "^3.0.1",
     "typescript": "~5.0.4"
