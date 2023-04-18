@@ -5,7 +5,7 @@
     "@inabagumi/prettier-config": "^2.0.0",
     "prettier": "~2.8.7",
     "prettier-plugin-md-nocjsp": "^1.5.1",
-    "turbo": "^1.9.1",
+    "turbo": "^1.9.3",
     "typescript": "^5.0.4"
   },
   "homepage": "https://shinju.date/",
