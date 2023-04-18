@@ -5,7 +5,7 @@
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/tsconfig": "workspace:*",
     "eslint": "^8.38.0",
-    "next": "^13.3.1-canary.12",
+    "next": "^13.3.1-canary.13",
     "tsup": "^6.7.0",
     "typescript": "^5.0.4"
   },
