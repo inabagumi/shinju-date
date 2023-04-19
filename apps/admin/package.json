@@ -9,7 +9,7 @@
     "@shinju-date/chakra-ui": "workspace:*",
     "@shinju-date/fetch": "workspace:*",
     "@shinju-date/helpers": "workspace:*",
-    "@supabase/supabase-js": "^2.20.0",
+    "@supabase/supabase-js": "^2.21.0",
     "@upstash/redis": "^1.20.4",
     "mime": "^3.0.0",
     "nanoid": "^4.0.2",
