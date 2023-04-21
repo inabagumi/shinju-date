@@ -1,5 +1,6 @@
 'use client'
 
+import { track } from '@vercel/analytics'
 import clsx from 'clsx'
 import Link from 'next/link'
 import { useParams, usePathname, useRouter } from 'next/navigation'
@@ -39,6 +40,7 @@ function SearchForm(): JSX.Element {
       event.preventDefault()
 
       router.push(`/videos/${encodeURIComponent(value)}`)
+      track('Search', { query: value })
 
       textFieldRef.current?.blur()
     },
