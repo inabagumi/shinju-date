@@ -52,7 +52,7 @@ export default function SimpleDocument({
                   itemType="https://schema.org/ListItem"
                 >
                   <Link className="breadcrumbs__link" href="/" itemProp="item">
-                    <span itemProp="name">${siteName}</span>
+                    <span itemProp="name">{siteName}</span>
                   </Link>
                   <meta content="1" itemProp="position" />
                 </li>
