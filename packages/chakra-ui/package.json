@@ -4,8 +4,8 @@
     "@chakra-ui/next-js": "^2.1.2",
     "@chakra-ui/react": "^2.5.5",
     "@chakra-ui/skip-nav": "^2.0.15",
-    "@emotion/react": "^11.10.6",
-    "@emotion/styled": "^11.10.6",
+    "@emotion/react": "^11.10.8",
+    "@emotion/styled": "^11.10.8",
     "framer-motion": "^10.12.4"
   },
   "description": "",
