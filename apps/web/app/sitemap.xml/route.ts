@@ -102,7 +102,9 @@ function createGroupsStream(): ReadableStream<SitemapItem> {
 }
 
 export function GET(): NextResponse {
-  const baseURL = new URL(process.env.NEXT_PUBLIC_BASE_URL)
+  const baseURL = new URL(
+    process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
+  )
   const body = mix([
     createDefinedPagesStream(),
     createChannelsStream(),

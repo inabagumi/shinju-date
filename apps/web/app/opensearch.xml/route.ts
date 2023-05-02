@@ -7,7 +7,7 @@ export const dynamic = 'force-static'
 export const revalidate = 86_400 // 1 day
 
 export function GET() {
-  const baseURL = process.env.NEXT_PUBLIC_BASE_URL
+  const baseURL = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
   const body = dedent`
     <?xml version="1.0" encoding="utf-8"?>
     <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">

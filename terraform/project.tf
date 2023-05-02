@@ -37,17 +37,9 @@ resource "vercel_project_domain" "ink" {
 resource "vercel_project_environment_variable" "base_url" {
   key        = "NEXT_PUBLIC_BASE_URL"
   project_id = vercel_project.this.id
-  target     = ["production", "preview"]
+  target     = ["production"]
   team_id    = vercel_project.this.team_id
   value      = "https://shinju.date"
-}
-
-resource "vercel_project_environment_variable" "base_url_dev" {
-  key        = "NEXT_PUBLIC_BASE_URL"
-  project_id = vercel_project.this.id
-  target     = ["development"]
-  team_id    = vercel_project.this.team_id
-  value      = "http://localhost:3000"
 }
 
 resource "vercel_project_environment_variable" "ga_tracking_id" {

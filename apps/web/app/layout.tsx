@@ -1,7 +1,7 @@
 import './globals.css'
 import { type Metadata } from 'next'
 import { type ReactNode } from 'react'
-import { title as siteName } from '@/lib/constants'
+import { title as siteName, themeColor } from '@/lib/constants'
 import { SkipNavLink } from '@/ui/skip-nav'
 import Analytics from './analytics'
 import { lato } from './fonts'
@@ -11,8 +11,10 @@ import Navbar from './navbar'
 import Providers from './providers'
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL),
-  themeColor: '#212121',
+  metadataBase: process.env.NEXT_PUBLIC_BASE_URL
+    ? new URL(process.env.NEXT_PUBLIC_BASE_URL)
+    : null,
+  themeColor,
   title: {
     default: siteName,
     template: `%s - ${siteName}`

@@ -15,7 +15,8 @@ export const metadata = {
   openGraph: {
     description,
     title,
-    type: 'website'
+    type: 'website',
+    url: '/'
   },
   title: {
     absolute: `${title} - ${tagline}`

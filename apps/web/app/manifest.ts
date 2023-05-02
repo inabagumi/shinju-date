@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next'
-import { title } from '@/lib/constants'
+import { themeColor, title } from '@/lib/constants'
 import favicon512x512 from './icon1.png'
 import favicon192x192 from './icon2.png'
 
@@ -9,12 +9,12 @@ export default function robots(): MetadataRoute.Manifest {
     display: 'standalone',
     icons: [
       {
-        sizes: `${favicon192x192.width}x${favicon192x192.height}`,
+        sizes: [favicon192x192.width, favicon192x192.height].join('x'),
         src: favicon192x192.src,
         type: 'image/png'
       },
       {
-        sizes: `${favicon512x512.width}x${favicon512x512.height}`,
+        sizes: [favicon512x512.width, favicon512x512.height].join('x'),
         src: favicon512x512.src,
         type: 'image/png'
       }
@@ -23,6 +23,6 @@ export default function robots(): MetadataRoute.Manifest {
     scope: '/',
     short_name: title,
     start_url: '/?utm_source=homescreen',
-    theme_color: '#212121'
+    theme_color: themeColor
   }
 }
