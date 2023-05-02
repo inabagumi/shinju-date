@@ -50,8 +50,8 @@ importers:
         specifier: ^2.21.0
         version: 2.21.0
       '@upstash/redis':
-        specifier: ^1.20.4
-        version: 1.20.4
+        specifier: ^1.20.5
+        version: 1.20.5
       mime:
         specifier: ^3.0.0
         version: 3.0.0
@@ -4962,8 +4962,8 @@ packages:
       eslint-visitor-keys: 3.4.0
     dev: false
 
-  /@upstash/redis@1.20.4:
-    resolution: {integrity: sha512-U7j7py+yPvafB5KS7o+F19j2CWzZCwmQ4Tvs+n2lpCWuw/8CeFtWrFWPtQa5dgrVu6tu+Ki9DmhDiAbgMS5fGA==}
+  /@upstash/redis@1.20.5:
+    resolution: {integrity: sha512-Lif1Dly/ocyzojufFmVRMuQ80MxY/Ul0aBSIjq88H/4xv+9Fjp9q0z5nZSvJoXGs9z+nUtSXylGzd6KstfBOoQ==}
     dependencies:
       isomorphic-fetch: 3.0.0
     transitivePeerDependencies:
