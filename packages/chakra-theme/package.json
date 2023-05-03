@@ -1,12 +1,12 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@chakra-ui/styled-system": "^2.8.0",
+    "@chakra-ui/styled-system": "^2.9.0",
     "@shinju-date/chakra-ui": "workspace:*"
   },
   "description": "",
   "devDependencies": {
-    "@chakra-ui/cli": "^2.3.0",
+    "@chakra-ui/cli": "^2.4.0",
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/tsconfig": "workspace:*",
     "eslint": "^8.39.0",
