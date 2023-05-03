@@ -403,8 +403,8 @@ importers:
         specifier: ^8.39.0
         version: 8.39.0
       supabase:
-        specifier: ^1.52.3
-        version: 1.52.3
+        specifier: ^1.53.0
+        version: 1.53.0
       tsup:
         specifier: ^6.7.0
         version: 6.7.0(typescript@5.0.4)
@@ -9235,8 +9235,8 @@ packages:
       yallist: 4.0.0
     dev: true
 
-  /minipass@4.2.8:
-    resolution: {integrity: sha512-fNzuVyifolSLFL4NzpF+wEF4qrgqaaKX0haXPQEdQ7NKAN+WecoKMHV09YcuL/DHxrUsYQOK3MiuDf7Ip2OXfQ==}
+  /minipass@5.0.0:
+    resolution: {integrity: sha512-3FnjYuehv9k6ovOEbyOswadCDPX1piCfhV8ncmYtHOjuPwylVWsghTLo7rabjC3Rx5xD4HDx8Wm1xnMF7S5qFQ==}
     engines: {node: '>=8'}
     dev: true
 
@@ -11077,14 +11077,14 @@ packages:
       ts-interface-checker: 0.1.13
     dev: true
 
-  /supabase@1.52.3:
-    resolution: {integrity: sha512-CiXIkWKIKgEOcnKEhjVddZAzM0gG5woNx2DtHgiJk5SvHNKQVuQJqIS08VwxLRo39oof9sUac0i8IFtWOc9zsA==}
+  /supabase@1.53.0:
+    resolution: {integrity: sha512-uxFckhFUMCIrBa32Ro9A1htC0TAVWiO5jeg6uxeHVtrsimxkXof402Bm2mCNVOF1tIf6Fh1i6ttmae/hpO7eiw==}
     hasBin: true
     requiresBuild: true
     dependencies:
       bin-links: 4.0.1
       node-fetch: 3.3.1
-      tar: 6.1.13
+      tar: 6.1.14
     dev: true
 
   /supports-color@5.5.0:
@@ -11169,13 +11169,13 @@ packages:
       readable-stream: 3.6.2
     dev: false
 
-  /tar@6.1.13:
-    resolution: {integrity: sha512-jdIBIN6LTIe2jqzay/2vtYLlBHa3JF42ot3h1dW8Q0PaAG4v8rm0cvpVePtau5C6OKXGGcgO9q2AMNSWxiLqKw==}
+  /tar@6.1.14:
+    resolution: {integrity: sha512-piERznXu0U7/pW7cdSn7hjqySIVTYT6F76icmFk7ptU7dDYlXTm5r9A6K04R2vU3olYgoKeo1Cg3eeu5nhftAw==}
     engines: {node: '>=10'}
     dependencies:
       chownr: 2.0.0
       fs-minipass: 2.1.0
-      minipass: 4.2.8
+      minipass: 5.0.0
       minizlib: 2.1.2
       mkdirp: 1.0.4
       yallist: 4.0.0
