@@ -1,8 +1,8 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@chakra-ui/next-js": "^2.1.2",
-    "@chakra-ui/react": "^2.5.5",
+    "@chakra-ui/next-js": "^2.1.3",
+    "@chakra-ui/react": "^2.6.1",
     "@chakra-ui/skip-nav": "^2.0.15",
     "@emotion/react": "^11.10.8",
     "@emotion/styled": "^11.10.8",
