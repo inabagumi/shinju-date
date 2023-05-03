@@ -6,7 +6,7 @@
   },
   "description": "",
   "devDependencies": {
-    "@chakra-ui/cli": "^2.4.0",
+    "@chakra-ui/cli": "^2.4.1",
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/tsconfig": "workspace:*",
     "eslint": "^8.39.0",
