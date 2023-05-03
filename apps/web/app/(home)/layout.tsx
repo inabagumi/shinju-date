@@ -1,7 +1,9 @@
-import { type ReactNode } from 'react'
+import { type ReactNode, Suspense } from 'react'
 import { SkipNavContent } from '@/ui/skip-nav'
 import Hero from './hero'
-import PopularitySearchQueries from './popularity-search-queries'
+import PopularitySearchQueries, {
+  PopularitySearchQueriesSkeleton
+} from './popularity-search-queries'
 
 type Props = {
   children: ReactNode
@@ -14,14 +16,10 @@ export default function HomeLayout({ children }: Props) {
 
       <SkipNavContent>
         <main className="container">
-          <PopularitySearchQueries
-            values={[
-              'Minecraft',
-              'ポケットモンスター',
-              'Phasmophobia',
-              'ELDEN RING'
-            ]}
-          />
+          <Suspense fallback={<PopularitySearchQueriesSkeleton />}>
+            {/* @ts-expect-error Async Server Component */}
+            <PopularitySearchQueries />
+          </Suspense>
 
           <div className="margin-bottom--lg">{children}</div>
         </main>

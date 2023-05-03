@@ -74,6 +74,38 @@ resource "vercel_project_environment_variable" "supabase_url" {
   value      = var.supabase_url
 }
 
+resource "vercel_project_environment_variable" "upstash_redis_rest_token" {
+  key        = "UPSTASH_REDIS_REST_TOKEN"
+  project_id = vercel_project.this.id
+  target     = ["production"]
+  team_id    = vercel_project.this.team_id
+  value      = var.upstash_redis_rest_token
+}
+
+resource "vercel_project_environment_variable" "upstash_redis_rest_token_dev" {
+  key        = "UPSTASH_REDIS_REST_TOKEN"
+  project_id = vercel_project.this.id
+  target     = ["preview", "development"]
+  team_id    = vercel_project.this.team_id
+  value      = var.upstash_redis_rest_token_dev
+}
+
+resource "vercel_project_environment_variable" "upstash_redis_rest_url" {
+  key        = "UPSTASH_REDIS_REST_URL"
+  project_id = vercel_project.this.id
+  target     = ["production"]
+  team_id    = vercel_project.this.team_id
+  value      = var.upstash_redis_rest_url
+}
+
+resource "vercel_project_environment_variable" "upstash_redis_rest_url_dev" {
+  key        = "UPSTASH_REDIS_REST_URL"
+  project_id = vercel_project.this.id
+  target     = ["preview", "development"]
+  team_id    = vercel_project.this.team_id
+  value      = var.upstash_redis_rest_url_dev
+}
+
 resource "vercel_project" "admin" {
   framework = "nextjs"
   git_repository = {
