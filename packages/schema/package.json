@@ -5,7 +5,7 @@
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/tsconfig": "workspace:*",
     "eslint": "^8.39.0",
-    "supabase": "^1.53.0",
+    "supabase": "^1.54.0",
     "tsup": "^6.7.0",
     "typescript": "^5.0.4"
   },
