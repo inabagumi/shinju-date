@@ -4,7 +4,6 @@ import { fileURLToPath } from 'node:url'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    appDir: true,
     outputFileTracingExcludes: {
       '*': [
         './**/node_modules/@swc/core-linux-x64-gnu',
