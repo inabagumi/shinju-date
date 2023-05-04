@@ -23,7 +23,7 @@
     "react-infinite-scroll-component": "^6.1.0",
     "react-wrap-balancer": "^0.4.1",
     "swr": "^2.1.5",
-    "ufo": "^1.1.1"
+    "ufo": "^1.1.2"
   },
   "description": "",
   "devDependencies": {
