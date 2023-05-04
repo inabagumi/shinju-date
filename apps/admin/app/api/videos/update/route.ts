@@ -2,20 +2,19 @@ import { Temporal } from '@js-temporal/polyfill'
 import { NextResponse } from 'next/server'
 import PQueue from 'p-queue'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
-import { isDuplicate } from '@/lib/redis'
+import { videosUpdate as ratelimit } from '@/lib/ratelimit'
 import { type Video, scrape } from '@/lib/scraper'
 import { createErrorResponse } from '@/lib/session'
 import { createSupabaseClient } from '@/lib/supabase'
 import { type FilteredYouTubeChannel, getChannels } from '@/lib/youtube'
 
-const CHECK_DUPLICATE_KEY = 'cron:videos:update'
-const CHECK_DURATION = Temporal.Duration.from({ minutes: 1, seconds: 30 })
-
 export const runtime = 'nodejs'
 export const revalidate = 0
 
 export async function POST(): Promise<NextResponse> {
-  if (await isDuplicate(CHECK_DUPLICATE_KEY, CHECK_DURATION)) {
+  const { success } = await ratelimit.limit('videos:update')
+
+  if (!success) {
     return createErrorResponse(
       429,
       'There has been no interval since the last run.'
