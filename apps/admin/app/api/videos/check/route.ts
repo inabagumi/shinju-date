@@ -2,13 +2,13 @@ import { Temporal } from '@js-temporal/polyfill'
 import { type Database } from '@shinju-date/schema'
 import { type NextRequest, NextResponse } from 'next/server'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
-import { isDuplicate } from '@/lib/redis'
+import {
+  videosCheckAll as ratelimitAll,
+  videosCheck as ratelimitRecent
+} from '@/lib/ratelimit'
 import { createErrorResponse } from '@/lib/session'
 import { type TypedSupabaseClient, createSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
-
-const CHECK_DUPLICATE_KEY = 'cron:videos:check'
-const CHECK_DURATION = Temporal.Duration.from({ minutes: 25 })
 
 export const runtime = 'nodejs'
 export const revalidate = 0
@@ -160,10 +160,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const all =
     searchParams.has('all') &&
     ['1', 'true', 'yes'].includes(searchParams.get('all') ?? 'false')
-  const duration = all ? Temporal.Duration.from({ days: 4 }) : CHECK_DURATION
-  const duplicateKey = all ? `${CHECK_DUPLICATE_KEY}:all` : CHECK_DUPLICATE_KEY
+  const ratelimit = all ? ratelimitAll : ratelimitRecent
+  const { success } = await ratelimit.limit(
+    all ? 'videos:check:all' : 'videos:check'
+  )
 
-  if (await isDuplicate(duplicateKey, duration)) {
+  if (!success) {
     return createErrorResponse(
       429,
       'There has been no interval since the last run.'

@@ -2,7 +2,7 @@ import { Temporal } from '@js-temporal/polyfill'
 import { type Database } from '@shinju-date/schema'
 import { NextResponse } from 'next/server'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
-import { isDuplicate } from '@/lib/redis'
+import { channelsUpdate as ratelimit } from '@/lib/ratelimit'
 import { createErrorResponse } from '@/lib/session'
 import { createSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
@@ -16,9 +16,9 @@ type Channel = Pick<
 >
 
 export async function POST(): Promise<NextResponse> {
-  const duration = Temporal.Duration.from({ hours: 2 })
+  const { success } = await ratelimit.limit('channels:update')
 
-  if (await isDuplicate('cron:channels:update', duration)) {
+  if (!success) {
     return createErrorResponse(
       429,
       'There has been no interval since the last run.'
