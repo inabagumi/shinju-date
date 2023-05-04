@@ -1,5 +1,4 @@
 import { Temporal } from '@js-temporal/polyfill'
-import fetch from '@shinju-date/fetch'
 import pRetry, { AbortError } from 'p-retry'
 import { type FilteredYouTubeVideo } from '@/lib/youtube'
 
