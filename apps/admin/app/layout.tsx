@@ -1,14 +1,14 @@
-import { ColorModeScript } from '@shinju-date/chakra-ui'
+import './globals.css'
 import { type Session } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { type ReactNode } from 'react'
 import { SESSION_ID_COOKIE_KEY } from '@/lib/constants'
 import { createSupabaseClient } from '@/lib/supabase'
+import { lato } from './fonts'
 import Provider from './provider'
 
 export const dynamic = 'force-dynamic'
 export const metadata = {
-  themeColor: '#212121',
   title: 'Admin UI - SHINJU DATE'
 }
 
@@ -31,13 +31,9 @@ export default async function RootLayout({ children }: Props) {
   }
 
   return (
-    <html lang="ja">
+    <html className={lato.variable} lang="ja">
       <body>
-        <Provider session={session}>
-          <ColorModeScript initialColorMode="system" />
-
-          {children}
-        </Provider>
+        <Provider session={session}>{children}</Provider>
       </body>
     </html>
   )

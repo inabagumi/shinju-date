@@ -1,0 +1,66 @@
+.form {
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 1rem;
+  width: 30rem;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0.5rem 0 1rem;
+  text-align: center;
+}
+
+.formGroup {
+  border: 0;
+  padding: 0;
+  margin-bottom: 2rem;
+}
+
+.formLabel {
+  display: contents;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.textField {
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  box-sizing: border-box;
+  display: block;
+  font-size: 1rem;
+  line-height: 2;
+  padding: 0 0.5rem;
+  width: 100%;
+}
+
+.textField:focus {
+  outline: #3182ce solid 2px;
+}
+
+.submitButton {
+  background-color: #3182ce;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  color: #fff;
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  padding: 0.5rem;
+  width: 100%;
+}
+
+.submitButton:active {
+  background-color: #2c5282;
+}
+
+.submitButton:hover {
+  background-color: #2b6cb0;
+}
