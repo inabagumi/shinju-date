@@ -49,7 +49,7 @@
     "postcss": "^8.4.23",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-preset-env": "^8.3.2",
-    "rehype-external-links": "^2.0.1",
+    "rehype-external-links": "^2.1.0",
     "remark-gfm": "^3.0.1",
     "typescript": "~5.0.4"
   },
