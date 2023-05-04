@@ -1,5 +1,4 @@
 import { youtube_v3 as youtube } from '@googleapis/youtube'
-import fetch from '@shinju-date/fetch'
 
 export const YOUTUBE_DATA_API_MAX_RESULTS = 50
 
