@@ -42,22 +42,6 @@ resource "vercel_project_environment_variable" "base_url" {
   value      = "https://shinju.date"
 }
 
-resource "vercel_project_environment_variable" "ga_tracking_id" {
-  key        = "NEXT_PUBLIC_GA_TRACKING_ID"
-  project_id = vercel_project.this.id
-  target     = ["production"]
-  team_id    = vercel_project.this.team_id
-  value      = "https://shinju.date"
-}
-
-resource "vercel_project_environment_variable" "ga_tracking_id_dev" {
-  key        = "NEXT_PUBLIC_GA_TRACKING_ID"
-  project_id = vercel_project.this.id
-  target     = ["preview", "development"]
-  team_id    = vercel_project.this.team_id
-  value      = "http://localhost:3000"
-}
-
 resource "vercel_project_environment_variable" "supabase_anon_key" {
   key        = "NEXT_PUBLIC_SUPABASE_ANON_KEY"
   project_id = vercel_project.this.id
