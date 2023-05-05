@@ -1,10 +1,49 @@
+'use client'
+
 import clsx from 'clsx'
 import Link from 'next/link'
-import { redisClient } from '@/lib/redis'
+import { use } from 'react'
 import Skeleton from '@/ui/skeleton'
-import styles from './popularity-search-queries.module.css'
+import styles from './recommendation-queries.module.css'
 
-export function PopularitySearchQueriesSkeleton(): JSX.Element {
+type Fn = () => Promise<string[]>
+
+const cacheMap = new WeakMap<Fn, ReturnType<Fn>>()
+
+function cache(fn: Fn): Fn {
+  return (): ReturnType<Fn> => {
+    if (cacheMap.has(fn)) {
+      const value = cacheMap.get(fn)
+
+      if (value) {
+        return value
+      }
+    }
+
+    const result = fn()
+    cacheMap.set(fn, result)
+
+    return result
+  }
+}
+
+const fetchRecommendationQueries = cache(
+  async function fetchRecommendationQueries(): Promise<string[]> {
+    const res = await fetch('/api/queries')
+    const queries = (await res.json()) as unknown
+
+    if (
+      !Array.isArray(queries) ||
+      !queries.every((query): query is string => typeof query === 'string')
+    ) {
+      return []
+    }
+
+    return queries
+  }
+)
+
+export function RecommendationQueriesSkeleton(): JSX.Element {
   return (
     <div className="padding-vert--lg">
       <ul className="pills pills--block">
@@ -25,15 +64,12 @@ export function PopularitySearchQueriesSkeleton(): JSX.Element {
   )
 }
 
-export default async function PopularitySearchQueries(): Promise<JSX.Element> {
-  const queries = await redisClient.srandmember<string[]>(
-    'recommendation_queries',
-    4
-  )
-
-  if (!queries || queries.length < 1) {
-    return <></>
+export default function RecommendationQueries(): JSX.Element {
+  if (typeof window === 'undefined') {
+    return <RecommendationQueriesSkeleton />
   }
+
+  const queries = use(fetchRecommendationQueries())
 
   return (
     <div className="padding-vert--lg">
