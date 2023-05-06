@@ -2,46 +2,15 @@
 
 import clsx from 'clsx'
 import Link from 'next/link'
-import { use } from 'react'
+import useSWR from 'swr'
 import Skeleton from '@/ui/skeleton'
 import styles from './recommendation-queries.module.css'
 
-type Fn = () => Promise<string[]>
+async function fetcher<T>(url: string): Promise<T> {
+  const res = await fetch(url)
 
-const cacheMap = new WeakMap<Fn, ReturnType<Fn>>()
-
-function cache(fn: Fn): Fn {
-  return (): ReturnType<Fn> => {
-    if (cacheMap.has(fn)) {
-      const value = cacheMap.get(fn)
-
-      if (value) {
-        return value
-      }
-    }
-
-    const result = fn()
-    cacheMap.set(fn, result)
-
-    return result
-  }
+  return res.json() as T
 }
-
-const fetchRecommendationQueries = cache(
-  async function fetchRecommendationQueries(): Promise<string[]> {
-    const res = await fetch('/api/queries')
-    const queries = (await res.json()) as unknown
-
-    if (
-      !Array.isArray(queries) ||
-      !queries.every((query): query is string => typeof query === 'string')
-    ) {
-      return []
-    }
-
-    return queries
-  }
-)
 
 export function RecommendationQueriesSkeleton(): JSX.Element {
   return (
@@ -64,12 +33,15 @@ export function RecommendationQueriesSkeleton(): JSX.Element {
   )
 }
 
-export default function RecommendationQueries(): JSX.Element {
-  if (typeof window === 'undefined') {
+export default function RecommendationQueries(): JSX.Element | null {
+  const { data: queries } = useSWR<string[]>('/api/queries', fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false
+  })
+
+  if (!queries) {
     return <RecommendationQueriesSkeleton />
   }
-
-  const queries = use(fetchRecommendationQueries())
 
   return (
     <div className="padding-vert--lg">
