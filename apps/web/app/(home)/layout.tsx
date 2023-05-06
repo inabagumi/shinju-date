@@ -1,9 +1,7 @@
-import { type ReactNode, Suspense } from 'react'
+import { type ReactNode } from 'react'
 import { SkipNavContent } from '@/ui/skip-nav'
 import Hero from './hero'
-import RecommendationQueries, {
-  RecommendationQueriesSkeleton
-} from './recommendation-queries'
+import RecommendationQueries from './recommendation-queries'
 
 type Props = {
   children: ReactNode
@@ -16,9 +14,7 @@ export default function HomeLayout({ children }: Props) {
 
       <SkipNavContent>
         <main className="container">
-          <Suspense fallback={<RecommendationQueriesSkeleton />}>
-            <RecommendationQueries />
-          </Suspense>
+          <RecommendationQueries />
 
           <div className="margin-bottom--lg">{children}</div>
         </main>
