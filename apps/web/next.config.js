@@ -1,7 +1,6 @@
 import nextMDX from '@next/mdx'
 import { withSentryConfig } from '@sentry/nextjs'
 import nextPWA from 'next-pwa'
-import { fileURLToPath } from 'node:url'
 import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
 
@@ -12,17 +11,7 @@ const supabaseBaseURL =
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    mdxRs: true,
-    outputFileTracingExcludes: {
-      '*': [
-        './**/node_modules/@swc/core-linux-x64-gnu',
-        './**/node_modules/@swc/core-linux-x64-musl',
-        './**/node_modules/@esbuild/linux-x64',
-        './**/node_modules/webpack',
-        './**/node_modules/terser'
-      ]
-    },
-    outputFileTracingRoot: fileURLToPath(new URL('../..', import.meta.url))
+    mdxRs: true
   },
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -106,8 +95,4 @@ const withMDX = nextMDX({
   }
 })
 
-export default withSentryConfig(
-  withPWA(withMDX(nextConfig)),
-  { silent: true },
-  { hideSourceMaps: true }
-)
+export default withSentryConfig(withPWA(withMDX(nextConfig)), { silent: true })
