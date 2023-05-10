@@ -1,13 +1,9 @@
-@import 'infima/dist/css/default/default.min.css';
+@import url('node_modules:infima/dist/css/default/default.min.css') layer(base);
 
 :root {
   --ifm-font-family-base: var(--font-lato, 'Lato'), Helvetica Neue, Arial,
     Hiragino Kaku Gothic ProN, Hiragino Sans, BIZ UDPGothic, Meiryo, sans-serif,
-    Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji !important;
-  --ifm-font-size-base: 16px !important;
-  --ifm-line-height-base: 2 !important;
-}
-
-body > svg[aria-hidden] {
-  display: none;
+    Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji;
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 2;
 }

@@ -28,6 +28,7 @@
   },
   "description": "",
   "devDependencies": {
+    "@csstools/postcss-bundler": "^1.0.6",
     "@fullhuman/postcss-purgecss": "^5.0.0",
     "@jest/types": "^29.6.3",
     "@mdx-js/loader": "^2.3.0",
@@ -44,11 +45,10 @@
     "@types/node": "^18.18.5",
     "@types/react": "^18.2.28",
     "@types/react-dom": "18.2.11",
+    "autoprefixer": "^10.4.16",
     "eslint": "~8.51.0",
     "jest": "^29.7.0",
     "postcss": "^8.4.31",
-    "postcss-flexbugs-fixes": "^5.0.2",
-    "postcss-preset-env": "^9.2.0",
     "rehype-external-links": "^3.0.0",
     "remark-gfm": "^4.0.0",
     "typescript": "~5.2.2"
