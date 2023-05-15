@@ -2,22 +2,22 @@
 # Manual edits may be lost in future updates.
 
 provider "registry.terraform.io/vercel/vercel" {
-  version     = "0.11.5"
-  constraints = "0.11.5"
+  version     = "0.12.0"
+  constraints = "0.12.0"
   hashes = [
-    "h1:4y9za4hcMg63+9Uo5NpdGnYaFLcgoQjdb+0yIf/A+2w=",
-    "h1:5Yy8Eqi/mNueoEZicTSq1yaPa+4cHyt3NtBApx3TUak=",
-    "h1:5g46gSJ7wxcw/gIbMxZttfQV9iu/t3h5+l7qXSt9yqY=",
-    "h1:88eHweLxtkq3qQdxizOrns9XJpPio4B6S9DgcLCxUn8=",
-    "h1:D1p/Em+InGl5AUP/ZKnohevgxJJ/tcbd7kalpDV8hZA=",
-    "h1:DZ9JDXu5nT5Fpy9gLRSfSsrBLjwAsQ8A7T0HbwJykFQ=",
-    "h1:OBI1SDKwtYeqLSeKBMpocp8Yg2aYz9jEYfUX+ogV4Rk=",
-    "h1:TskfZHhc0hKJB5qaQ9Oit4WKql8aqp87y1DA/njvHuE=",
-    "h1:UsIfTBCUraqspk2ZXJc7juZAJnOEqVNH7Rwy4WdJAgE=",
-    "h1:WzMVblZKgSC42QmWmjaX4mRbEe0XV4KgbBxD8e89KYY=",
-    "h1:dW/e/fqr8NJ39gRNQZqOfe9pVok8e7VlfbsazvOcM1E=",
-    "h1:g+W9kgOPlNLQB44S4zRGBl+ZgN78MZOMa/jrLulOxIM=",
-    "h1:jmCUmoepxa3DEQdMdARLmPZe1ZF/duFnvs2/AJxaH2M=",
-    "h1:kNnyE7MlkhuktxBoG8fxkOOxgpLQHEbp1gerKxlB7jY=",
+    "h1:0IkvglmN01lzgf4kLCNC6td9Maqxtm5UjFBWhJIb1BQ=",
+    "h1:2H3HVfFtn5PghTZq40Ied5237x0oB3IQtxiHzd+J1Eg=",
+    "h1:5+Cn/NeAAot/bEG3UkgpD6rH6fF076/kYYhTx9cWvyU=",
+    "h1:6Z362kempdSBhzVTIifCQKG0lkwKKY6eoHODwtpYjMA=",
+    "h1:7Mz75LRzFB0D5ZEbnp/WmH5bzCMIXjq0wEJQdGIGoEE=",
+    "h1:CRhvZLbuvdCTRz9COhIN7kmI7faJDxvcwPU0x/dSrfQ=",
+    "h1:DbbSQIfEmKMEUdo0OnOYNE44Plt57NiSNAbWBaBn+Go=",
+    "h1:EuO5BYnvd8kwtDgqz+g9VFidc+WOwdmk+5Ocm3O6CBw=",
+    "h1:GZw9dRXhHJUL5BtGLDvtqzxK8vo15S1LMkBiKcuh2YQ=",
+    "h1:JnrgxMtsA6hbFLCqQ6yTY3FF9TbuZB2fhly5qJKgkDo=",
+    "h1:Pi7PahIawR6unvxoyEXMfHpcUNSyN01xaFrn7Kh7+x8=",
+    "h1:W9TegCsqPgUvzi83QYLA4X3PSzRqslfVC9jrgcrtP6c=",
+    "h1:ZaxE5SbKHJDM+11pldjgC5pMZEcMR1IBtPFyyYFicHY=",
+    "h1:x/pR3AOH+4b6TaEocyrPZ+zwg2xqMtHo5HcU2UFSgm8=",
   ]
 }
