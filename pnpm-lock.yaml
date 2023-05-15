@@ -271,8 +271,8 @@ importers:
         specifier: ^8.8.0
         version: 8.8.0(eslint@8.40.0)
       eslint-config-turbo:
-        specifier: ^1.9.4
-        version: 1.9.4(eslint@8.40.0)
+        specifier: ^1.9.5
+        version: 1.9.5(eslint@8.40.0)
     devDependencies:
       eslint:
         specifier: ^8.40.0
@@ -4909,13 +4909,13 @@ packages:
       eslint: 8.40.0
     dev: false
 
-  /eslint-config-turbo@1.9.4(eslint@8.40.0):
-    resolution: {integrity: sha512-pB9Jg1Zn0Qo25LLxmvcMgjBmw8sEt6rwJO8oTKjO4DEQVUAMoNHcR7bdQCdIszHV3c1tYUjbJgm0L1B9qU81nw==}
+  /eslint-config-turbo@1.9.5(eslint@8.40.0):
+    resolution: {integrity: sha512-mV52KGcx65xQGckAqIC44kKA9Iv9B0QVHeFbl5ZoJ0SwyBJwug2bkdhnWh/KU/t3Wc3+5TpBHU8u2ygmB0nBbg==}
     peerDependencies:
       eslint: '>6.6.0'
     dependencies:
       eslint: 8.40.0
-      eslint-plugin-turbo: 1.9.4(eslint@8.40.0)
+      eslint-plugin-turbo: 1.9.5(eslint@8.40.0)
     dev: false
 
   /eslint-import-resolver-node@0.3.7:
@@ -5073,8 +5073,8 @@ packages:
       string.prototype.matchall: 4.0.8
     dev: false
 
-  /eslint-plugin-turbo@1.9.4(eslint@8.40.0):
-    resolution: {integrity: sha512-ySDJl63nIWa+j9WOAnblBWKDyaCTfGCYhSNSMCe0N5Jk01YWMEowFr2bGw31Zg0dOijioYo9ewwfLLKbJYOUmQ==}
+  /eslint-plugin-turbo@1.9.5(eslint@8.40.0):
+    resolution: {integrity: sha512-fJW2uLWuv7J3tqJckjDKcApMNcqseV92kQoFMTZwSL5B1g8wJx0sAx9FcDpWgElFnqe2k63Iqz/DMZjdXI72aw==}
     peerDependencies:
       eslint: '>6.6.0'
     dependencies:
@@ -9617,6 +9617,7 @@ packages:
 
   /turbo@1.9.4:
     resolution: {integrity: sha512-PqhlMCmu6sOqcVswt1tYL0TV/O0uQ8kUZWfmlEl0EHPusc2R3nzg7KVXrZbXTHXzQH5HE2oJm9iUI0mYz31i7Q==}
+    deprecated: File hashing without git has a significant correctness issue.
     hasBin: true
     requiresBuild: true
     optionalDependencies:
