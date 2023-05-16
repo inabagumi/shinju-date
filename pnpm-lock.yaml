@@ -311,8 +311,8 @@ importers:
         specifier: ^8.40.0
         version: 8.40.0
       supabase:
-        specifier: ^1.60.2
-        version: 1.60.2
+        specifier: ^1.61.0
+        version: 1.61.0
       tsup:
         specifier: ^6.7.0
         version: 6.7.0(typescript@5.0.4)
@@ -9252,8 +9252,8 @@ packages:
       ts-interface-checker: 0.1.13
     dev: true
 
-  /supabase@1.60.2:
-    resolution: {integrity: sha512-kMXQO/26X1A1LBKt84GChLEdrowE3LMgfKnSedmWD+U0DIuo9HTmXP2CIePErjovTu5ZBXj4GcbYQ41lE8YlJg==}
+  /supabase@1.61.0:
+    resolution: {integrity: sha512-/HHsTpKxHvGToTfhKx8yLZTK8ggDcqOnZJK6xB/4s3XpaOYWBU4xAhmUHm2CgU60KbgDIvsDgheCBOT6T8C4pw==}
     hasBin: true
     requiresBuild: true
     dependencies:
