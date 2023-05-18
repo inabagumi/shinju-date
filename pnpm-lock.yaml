@@ -311,8 +311,8 @@ importers:
         specifier: ^8.40.0
         version: 8.40.0
       supabase:
-        specifier: ^1.61.3
-        version: 1.61.3
+        specifier: ^1.61.5
+        version: 1.61.5
       tsup:
         specifier: ^6.7.0
         version: 6.7.0(typescript@5.0.4)
@@ -9252,14 +9252,14 @@ packages:
       ts-interface-checker: 0.1.13
     dev: true
 
-  /supabase@1.61.3:
-    resolution: {integrity: sha512-MpalL40KyUVxGN+k/r6L1IZL/VpEOLLWiwd3/HXC+qAd8BVObuc/UJQc5j1T+4gCvqcwcl059autWEeUKObFaw==}
+  /supabase@1.61.5:
+    resolution: {integrity: sha512-6hGaaXFOadp6/KicJgekBH64o9+1M0BIWv+Y5w4vPepQ7c6YhGP0rZF/+epfVXd/T4DaNiAaTiT/PODejUJFog==}
     hasBin: true
     requiresBuild: true
     dependencies:
       bin-links: 4.0.1
       node-fetch: 3.3.1
-      tar: 6.1.14
+      tar: 6.1.15
     dev: true
 
   /supports-color@5.5.0:
@@ -9345,8 +9345,8 @@ packages:
       readable-stream: 3.6.2
     dev: false
 
-  /tar@6.1.14:
-    resolution: {integrity: sha512-piERznXu0U7/pW7cdSn7hjqySIVTYT6F76icmFk7ptU7dDYlXTm5r9A6K04R2vU3olYgoKeo1Cg3eeu5nhftAw==}
+  /tar@6.1.15:
+    resolution: {integrity: sha512-/zKt9UyngnxIT/EAGYuxaMYgOIJiP81ab9ZfkILq4oNLPFX50qyYmu7jRj9qeXoxmJHjGlbH0+cm2uy1WCs10A==}
     engines: {node: '>=10'}
     dependencies:
       chownr: 2.0.0
