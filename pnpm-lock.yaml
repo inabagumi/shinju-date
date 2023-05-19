@@ -244,8 +244,8 @@ importers:
         specifier: ^5.0.2
         version: 5.0.2(postcss@8.4.23)
       postcss-preset-env:
-        specifier: ^8.4.0
-        version: 8.4.0(postcss@8.4.23)
+        specifier: ^8.4.1
+        version: 8.4.1(postcss@8.4.23)
       rehype-external-links:
         specifier: ^2.1.0
         version: 2.1.0
@@ -1890,6 +1890,19 @@ packages:
     dependencies:
       postcss: 8.4.23
       postcss-value-parser: 4.2.0
+    dev: true
+
+  /@csstools/postcss-relative-color-syntax@1.0.0(postcss@8.4.23):
+    resolution: {integrity: sha512-/Q2xOHjOeq8p8j/+yilJlroWzqbBca3+tux2ikkArsAsQS9sHWbFtPz602EpNnoGSnVg7o/QSf3xxaekyzv/8A==}
+    engines: {node: ^14 || ^16 || >=18}
+    peerDependencies:
+      postcss: ^8.4
+    dependencies:
+      '@csstools/css-color-parser': 1.2.0(@csstools/css-parser-algorithms@2.1.1)(@csstools/css-tokenizer@2.1.1)
+      '@csstools/css-parser-algorithms': 2.1.1(@csstools/css-tokenizer@2.1.1)
+      '@csstools/css-tokenizer': 2.1.1
+      '@csstools/postcss-progressive-custom-properties': 2.2.0(postcss@8.4.23)
+      postcss: 8.4.23
     dev: true
 
   /@csstools/postcss-scope-pseudo-class@2.0.2(postcss@8.4.23):
@@ -8322,8 +8335,8 @@ packages:
       postcss-value-parser: 4.2.0
     dev: true
 
-  /postcss-preset-env@8.4.0(postcss@8.4.23):
-    resolution: {integrity: sha512-QG3PgHc3vHu4AmMyU0F6ZlUb4uZZ198a/DzsNK/mR4evdE9fR5onfI0UqXqoWFuGiPgPP79PWM1N4rRg/FVt9A==}
+  /postcss-preset-env@8.4.1(postcss@8.4.23):
+    resolution: {integrity: sha512-IlcUT8ZSuQFWXJ/F+KvqmkzT85u33rlvd36IzM6qhdnccO7Rs3uBrHY802BFjNcPRawqSCDmPv7KKyCzNxx5Fw==}
     engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
       postcss: ^8.4
@@ -8345,6 +8358,7 @@ packages:
       '@csstools/postcss-normalize-display-values': 2.0.1(postcss@8.4.23)
       '@csstools/postcss-oklab-function': 2.2.2(postcss@8.4.23)
       '@csstools/postcss-progressive-custom-properties': 2.2.0(postcss@8.4.23)
+      '@csstools/postcss-relative-color-syntax': 1.0.0(postcss@8.4.23)
       '@csstools/postcss-scope-pseudo-class': 2.0.2(postcss@8.4.23)
       '@csstools/postcss-stepped-value-functions': 2.1.1(postcss@8.4.23)
       '@csstools/postcss-text-decoration-shorthand': 2.2.4(postcss@8.4.23)
