@@ -30,7 +30,7 @@
     "@types/mime": "^3.0.1",
     "@types/node": "^18.16.13",
     "@types/react": "^18.2.6",
-    "eslint": "~8.40.0",
+    "eslint": "~8.41.0",
     "typescript": "~5.0.4"
   },
   "homepage": "https://shinju.date/",
