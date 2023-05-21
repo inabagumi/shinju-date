@@ -28,7 +28,7 @@
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/schema": "workspace:*",
     "@types/mime": "^3.0.1",
-    "@types/node": "^18.16.13",
+    "@types/node": "^18.16.14",
     "@types/react": "^18.2.6",
     "eslint": "~8.41.0",
     "typescript": "~5.0.4"
