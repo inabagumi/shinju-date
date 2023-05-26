@@ -38,8 +38,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/helpers
       '@supabase/supabase-js':
-        specifier: ^2.22.0
-        version: 2.22.0(encoding@0.1.13)
+        specifier: ^2.23.0
+        version: 2.23.0(encoding@0.1.13)
       '@upstash/ratelimit':
         specifier: ^0.4.3
         version: 0.4.3(encoding@0.1.13)
@@ -123,8 +123,8 @@ importers:
         specifier: ^7.53.1
         version: 7.53.1(encoding@0.1.13)(next@13.4.4)(react@18.2.0)
       '@supabase/supabase-js':
-        specifier: ^2.22.0
-        version: 2.22.0(encoding@0.1.13)
+        specifier: ^2.23.0
+        version: 2.23.0(encoding@0.1.13)
       '@upstash/redis':
         specifier: ^1.20.6
         version: 1.20.6(encoding@0.1.13)
@@ -3000,8 +3000,8 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/postgrest-js@1.6.1(encoding@0.1.13):
-    resolution: {integrity: sha512-WDBUPOCOwcZonaCwEodwdA8hwWYOiXroDF9vWGxZxKAnuSVE2Ieci/kvhR4EsWvgGST2h90LRowgO+msXe8+fA==}
+  /@supabase/postgrest-js@1.7.0(encoding@0.1.13):
+    resolution: {integrity: sha512-wLADHZ5jm7LljF4GigK0H2vc1wGupBY2hGYfb4fVo0UuyMftmA6tOYy+ZpMH/vPq01CUFwXGwvIke6kyqh/QDg==}
     dependencies:
       cross-fetch: 3.1.6(encoding@0.1.13)
     transitivePeerDependencies:
@@ -3026,12 +3026,12 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/supabase-js@2.22.0(encoding@0.1.13):
-    resolution: {integrity: sha512-omkgSWL1HwnpXZZy+yshFLx/qqxwk9kx9jbRM6IHNEylKrH/sz6JX7rGyIOmN9niDxMRjsCu1nwuBhD6IiF2xg==}
+  /@supabase/supabase-js@2.23.0(encoding@0.1.13):
+    resolution: {integrity: sha512-mlkzAQ3aLmcyJtlEdrkLNeq4MbnWcr/W+PjWZwBfxnrakoQqT97eRt/XZ1bXcWbmA9NKG8wHsLiTEOJmWW6CcQ==}
     dependencies:
       '@supabase/functions-js': 2.1.1(encoding@0.1.13)
       '@supabase/gotrue-js': 2.27.0(encoding@0.1.13)
-      '@supabase/postgrest-js': 1.6.1(encoding@0.1.13)
+      '@supabase/postgrest-js': 1.7.0(encoding@0.1.13)
       '@supabase/realtime-js': 2.7.2
       '@supabase/storage-js': 2.5.1(encoding@0.1.13)
       cross-fetch: 3.1.6(encoding@0.1.13)
