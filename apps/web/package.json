@@ -46,7 +46,7 @@
     "eslint": "~8.41.0",
     "jest": "^29.5.0",
     "next-pwa": "^5.6.0",
-    "postcss": "^8.4.23",
+    "postcss": "^8.4.24",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-preset-env": "^8.4.1",
     "rehype-external-links": "^2.1.0",
