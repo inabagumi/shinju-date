@@ -40,6 +40,6 @@
       "onAutoForward": "silent"
     }
   },
-  "postCreateCommand": "sudo corepack enable && pnpm install && pnpm build --filter={./packages/*}...",
+  "postCreateCommand": "sudo npm uninstall -g pnpm && sudo corepack enable && pnpm install && pnpm build --filter={./packages/*}...",
   "waitFor": "postCreateCommand"
 }
