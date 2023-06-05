@@ -1,7 +1,7 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@js-temporal/polyfill": "^0.4.3",
+    "@js-temporal/polyfill": "^0.4.4",
     "@mdx-js/react": "^2.3.0",
     "@reach/skip-nav": "^0.18.0",
     "@sentry/nextjs": "^7.54.0",
