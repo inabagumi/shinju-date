@@ -36,7 +36,7 @@ export function getPublishedAtAndEndedAt(
 ): GetPublishedAtAndEndedAtResult {
   const publishedAt = Temporal.Instant.from(
     video.published_at
-  ).toZonedDateTimeISO(now.timeZone)
+  ).toZonedDateTimeISO(now.timeZoneId)
   const duration = Temporal.Duration.from(video.duration)
   const endedAt =
     duration.total({ unit: 'second' }) > 0
