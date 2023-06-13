@@ -42,8 +42,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/helpers
       '@supabase/supabase-js':
-        specifier: ^2.24.0
-        version: 2.24.0(encoding@0.1.13)
+        specifier: ^2.25.0
+        version: 2.25.0(encoding@0.1.13)
       '@upstash/ratelimit':
         specifier: ^0.4.3
         version: 0.4.3(encoding@0.1.13)
@@ -127,8 +127,8 @@ importers:
         specifier: ^7.54.0
         version: 7.54.0(encoding@0.1.13)(next@13.4.5)(react@18.2.0)
       '@supabase/supabase-js':
-        specifier: ^2.24.0
-        version: 2.24.0(encoding@0.1.13)
+        specifier: ^2.25.0
+        version: 2.25.0(encoding@0.1.13)
       '@upstash/redis':
         specifier: ^1.21.0
         version: 1.21.0(encoding@0.1.13)
@@ -3069,8 +3069,8 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/realtime-js@2.7.2:
-    resolution: {integrity: sha512-Fi6xAl5PUkqnjl3wo4rdcQIbMG3+yTRX1aUZe/yfvTG84RMvmCXJ1yN6MmafVLeZpU1xkaz5Vx4L0tnHcLiy6w==}
+  /@supabase/realtime-js@2.7.3:
+    resolution: {integrity: sha512-c7TzL81sx2kqyxsxcDduJcHL9KJdCOoKimGP6lQSqiZKX42ATlBZpWbyy9KFGFBjAP4nyopMf5JhPi2ZH9jyNw==}
     dependencies:
       '@types/phoenix': 1.6.0
       '@types/websocket': 1.0.5
@@ -3087,13 +3087,13 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/supabase-js@2.24.0(encoding@0.1.13):
-    resolution: {integrity: sha512-zrAm+hp6DBICqZ7xVPk+KofmlfjJWQzXuf2sHAyPz8XVjpha84z2OVWcow2aI10YkMOrPwhRtBBQYJOnh/fx2w==}
+  /@supabase/supabase-js@2.25.0(encoding@0.1.13):
+    resolution: {integrity: sha512-AEh0suSrjfpQCOhY7hLsgX6gr8XEUWshVkTq9IODiHTnAR6NHiEQ865LTeWu8gqCDf2XH1n20JcSmovIe3Xixw==}
     dependencies:
       '@supabase/functions-js': 2.1.1(encoding@0.1.13)
       '@supabase/gotrue-js': 2.29.0(encoding@0.1.13)
       '@supabase/postgrest-js': 1.7.0(encoding@0.1.13)
-      '@supabase/realtime-js': 2.7.2
+      '@supabase/realtime-js': 2.7.3
       '@supabase/storage-js': 2.5.1(encoding@0.1.13)
       cross-fetch: 3.1.6(encoding@0.1.13)
     transitivePeerDependencies:
