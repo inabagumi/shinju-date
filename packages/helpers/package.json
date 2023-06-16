@@ -6,7 +6,7 @@
     "@shinju-date/tsconfig": "workspace:*",
     "eslint": "^8.42.0",
     "next": "^13.4.6",
-    "tsup": "^6.7.0",
+    "tsup": "^7.0.0",
     "typescript": "^5.1.3"
   },
   "exports": {
