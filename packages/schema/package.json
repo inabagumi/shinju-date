@@ -3,7 +3,8 @@
   "description": "",
   "devDependencies": {
     "@shinju-date/eslint-config": "workspace:*",
-    "@shinju-date/tsconfig": "workspace:*",
+    "@tsconfig/esm": "^1.0.4",
+    "@tsconfig/strictest": "^2.0.1",
     "eslint": "^8.43.0",
     "supabase": "^1.74.2",
     "tsup": "^7.1.0",

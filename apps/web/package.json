@@ -35,6 +35,7 @@
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/schema": "workspace:*",
     "@svgr/webpack": "^8.0.1",
+    "@tsconfig/next": "^2.0.0",
     "@types/dedent": "^0.7.0",
     "@types/gtag.js": "^0.0.12",
     "@types/jest": "^29.5.2",
