@@ -27,6 +27,7 @@
   "devDependencies": {
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/schema": "workspace:*",
+    "@tsconfig/next": "^2.0.0",
     "@types/mime": "^3.0.1",
     "@types/node": "^18.16.18",
     "@types/react": "^18.2.14",

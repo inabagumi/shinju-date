@@ -96,6 +96,9 @@ importers:
       '@shinju-date/schema':
         specifier: workspace:*
         version: link:../../packages/schema
+      '@tsconfig/next':
+        specifier: ^2.0.0
+        version: 2.0.0
       '@types/mime':
         specifier: ^3.0.1
         version: 3.0.1
@@ -208,6 +211,9 @@ importers:
       '@svgr/webpack':
         specifier: ^8.0.1
         version: 8.0.1
+      '@tsconfig/next':
+        specifier: ^2.0.0
+        version: 2.0.0
       '@types/dedent':
         specifier: ^0.7.0
         version: 0.7.0
@@ -287,9 +293,12 @@ importers:
       '@shinju-date/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@shinju-date/tsconfig':
-        specifier: workspace:*
-        version: link:../tsconfig
+      '@tsconfig/esm':
+        specifier: ^1.0.4
+        version: 1.0.4
+      '@tsconfig/strictest':
+        specifier: ^2.0.1
+        version: 2.0.1
       eslint:
         specifier: ^8.43.0
         version: 8.43.0
@@ -308,9 +317,12 @@ importers:
       '@shinju-date/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@shinju-date/tsconfig':
-        specifier: workspace:*
-        version: link:../tsconfig
+      '@tsconfig/esm':
+        specifier: ^1.0.4
+        version: 1.0.4
+      '@tsconfig/strictest':
+        specifier: ^2.0.1
+        version: 2.0.1
       eslint:
         specifier: ^8.43.0
         version: 8.43.0
@@ -323,12 +335,6 @@ importers:
       typescript:
         specifier: ^5.1.5
         version: 5.1.5
-
-  packages/tsconfig:
-    dependencies:
-      '@tsconfig/strictest':
-        specifier: ^2.0.1
-        version: 2.0.1
 
 packages:
 
@@ -3272,9 +3278,17 @@ packages:
     engines: {node: '>=10.13.0'}
     dev: true
 
+  /@tsconfig/esm@1.0.4:
+    resolution: {integrity: sha512-bix9CWljCxyD06nGQRDYdmTw0wevvEDyrLKjbDocGV31JQYbfqqgMV1yFeJ9aDgorKQ9yDLrak8poiggsB5Liw==}
+    dev: true
+
+  /@tsconfig/next@2.0.0:
+    resolution: {integrity: sha512-ip/XpFLWuUrhDkbI8ixpWxPlmWvUhQCLS5rB7nibcZUavA1Ru34Q7a5CniBM7BdHw1YlAXu40HXUn66h/A4EBQ==}
+    dev: true
+
   /@tsconfig/strictest@2.0.1:
     resolution: {integrity: sha512-7JHHCbyCsGUxLd0pDbp24yz3zjxw2t673W5oAP6HCEdr/UUhaRhYd3SSnUsGCk+VnPVJVA4mXROzbhI+nyIk+w==}
-    dev: false
+    dev: true
 
   /@types/acorn@4.0.6:
     resolution: {integrity: sha512-veQTnWP+1D/xbxVrPC3zHnCZRjSrKfhbMUlEA43iMZLu7EsnTtkJklIuwrCPbOi8YkvDQAiW05VQQFvvz9oieQ==}

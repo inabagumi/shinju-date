@@ -1,5 +1,8 @@
 {
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ESNext"]
+  },
   "exclude": ["node_modules"],
-  "extends": "@shinju-date/tsconfig/base.json",
+  "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/esm/tsconfig"],
   "include": ["./src/**/*.ts", "./tsup.config.ts"]
 }
