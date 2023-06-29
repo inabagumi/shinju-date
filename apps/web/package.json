@@ -52,7 +52,7 @@
     "postcss-preset-env": "^8.5.1",
     "rehype-external-links": "^2.1.0",
     "remark-gfm": "^3.0.1",
-    "typescript": "~5.1.5"
+    "typescript": "~5.1.6"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
