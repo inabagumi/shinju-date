@@ -78,8 +78,8 @@ importers:
         specifier: ^4.10.1
         version: 4.10.1(react@18.2.0)
       sharp:
-        specifier: ^0.32.2
-        version: 0.32.2
+        specifier: ^0.32.3
+        version: 0.32.3
       winston:
         specifier: ^3.10.0
         version: 3.10.0
@@ -9075,8 +9075,8 @@ packages:
       randombytes: 2.1.0
     dev: true
 
-  /sharp@0.32.2:
-    resolution: {integrity: sha512-e4hyWKtU7ks/rLmoPys476zhpQnLqPJopz4+5b6OPeyJfvCTInAp0pe5tGhstjsNdUvDLrUVGEwevewYdZM8Eg==}
+  /sharp@0.32.3:
+    resolution: {integrity: sha512-i1gFPiNqyqxC4ouVvCKj5G8WfPIMeeSxpKcMrjic6NY4e8zktW7bIdqHPc3FCG+pNKU/XCEabKA57hhvZi8UmQ==}
     engines: {node: '>=14.15.0'}
     requiresBuild: true
     dependencies:
