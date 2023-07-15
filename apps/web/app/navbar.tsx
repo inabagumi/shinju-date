@@ -21,10 +21,17 @@ import Icon from './square-icon.svg'
 function SearchForm(): JSX.Element {
   const router = useRouter()
   const params = useParams()
-  const query = useMemo<string>(
-    () => (params.queries ? decodeURIComponent(params.queries) : ''),
-    [params]
-  )
+  const query = useMemo<string>(() => {
+    if (params.queries) {
+      const rawQuery = Array.isArray(params.queries)
+        ? params.queries.join('/')
+        : params.queries
+
+      return decodeURIComponent(rawQuery)
+    }
+
+    return ''
+  }, [params])
   const [value, setValue] = useState(() => query)
   const textFieldRef = useRef<HTMLInputElement>(null)
 
