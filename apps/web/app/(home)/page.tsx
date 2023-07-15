@@ -3,8 +3,7 @@ import { fetchNotEndedVideos } from '@/lib/fetchers'
 import NoResults from '@/ui/no-results'
 import Timeline from '@/ui/timeline'
 
-// TODO: https://github.com/vercel/next.js/issues/43458
-// export const runtime = 'edge'
+export const runtime = 'edge'
 export const revalidate = 60
 
 export const metadata = {
