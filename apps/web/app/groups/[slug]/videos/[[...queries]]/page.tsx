@@ -10,8 +10,7 @@ import { parseQueries } from '@/lib/url'
 import NoResults from '@/ui/no-results'
 import SearchResults from '@/ui/search-results'
 
-// TODO: timeout
-// export const runtime = 'edge'
+export const runtime = 'edge'
 export const revalidate = 5
 
 type Params = {

@@ -6,7 +6,6 @@ import {
 } from '@/lib/calendar'
 import { supabase } from '@/lib/supabase'
 
-export const runtime = 'edge'
 export const dynamic = 'force-static'
 export const revalidate = 60
 
