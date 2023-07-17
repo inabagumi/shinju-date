@@ -2,7 +2,7 @@
 
 import { Temporal } from '@js-temporal/polyfill'
 import clsx from 'clsx'
-import Image, { type ImageLoaderProps } from 'next/image'
+import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { type Video } from '@/lib/fetchers'
 import { supabase } from '@/lib/supabase'

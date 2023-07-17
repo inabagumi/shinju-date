@@ -1,6 +1,6 @@
 import clsx from 'clsx'
-import { SearchResultsSkeleton } from '@/ui/search-results'
-import Skeleton from '@/ui/skeleton'
+import { SearchResultsSkeleton } from '@/components/search-results'
+import Skeleton from '@/components/skeleton'
 import styles from './page.module.css'
 
 export default function Loading(): JSX.Element {

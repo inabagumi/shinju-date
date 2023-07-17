@@ -2,13 +2,13 @@ import './globals.css'
 import { Analytics } from '@vercel/analytics/react'
 import { type Metadata } from 'next'
 import { type ReactNode } from 'react'
+import { SkipNavLink } from '@/components/skip-nav'
 import { title as siteName, themeColor } from '@/lib/constants'
-import { SkipNavLink } from '@/ui/skip-nav'
-import { lato } from './fonts'
-import Footer from './footer'
+import Footer from './_components/footer'
+import Navbar from './_components/navbar'
+import Providers from './_components/providers'
+import { lato } from './_lib/fonts'
 import styles from './layout.module.css'
-import Navbar from './navbar'
-import Providers from './providers'
 
 export const metadata: Metadata = {
   metadataBase: process.env.NEXT_PUBLIC_BASE_URL

@@ -1,5 +1,5 @@
 import { type Metadata } from 'next'
-import SimpleDocument from '@/ui/simple-document'
+import SimpleDocument from '@/components/simple-document'
 
 export const metadata: Metadata = {
   title: '404 Not Found'

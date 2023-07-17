@@ -1,16 +1,8 @@
-'use client'
-
 import clsx from 'clsx'
 import Link from 'next/link'
-import useSWR from 'swr'
-import Skeleton from '@/ui/skeleton'
+import Skeleton from '@/components/skeleton'
+import { redisClient } from '@/lib/redis'
 import styles from './recommendation-queries.module.css'
-
-async function fetcher<T>(url: string): Promise<T> {
-  const res = await fetch(url)
-
-  return res.json() as T
-}
 
 export function RecommendationQueriesSkeleton(): JSX.Element {
   return (
@@ -33,13 +25,13 @@ export function RecommendationQueriesSkeleton(): JSX.Element {
   )
 }
 
-export default function RecommendationQueries(): JSX.Element | null {
-  const { data: queries } = useSWR<string[]>('/api/queries', fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false
-  })
+export default async function RecommendationQueries(): Promise<JSX.Element> {
+  const queries = await redisClient.srandmember<string[]>(
+    'recommendation_queries',
+    4
+  )
 
-  if (!queries) {
+  if (!queries || queries.length < 1) {
     return <RecommendationQueriesSkeleton />
   }
 

@@ -1,12 +1,12 @@
 import { type Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import NoResults from '@/components/no-results'
+import SimpleDocument from '@/components/simple-document'
+import Timeline from '@/components/timeline'
 import { title as siteName } from '@/lib/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
 import { getChannelsByGroup, getGroupBySlug } from '@/lib/supabase'
-import NoResults from '@/ui/no-results'
-import SimpleDocument from '@/ui/simple-document'
-import Timeline from '@/ui/timeline'
 
 export const runtime = 'edge'
 export const revalidate = 60

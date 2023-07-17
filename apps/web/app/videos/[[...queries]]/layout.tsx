@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react'
-import { SkipNavContent } from '@/ui/skip-nav'
+import { SkipNavContent } from '@/components/skip-nav'
 
 type Props = {
   children: ReactNode

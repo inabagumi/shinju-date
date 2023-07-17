@@ -1,5 +1,5 @@
+import SimpleDocument from '@/components/simple-document'
 import { title as siteName } from '@/lib/constants'
-import SimpleDocument from '@/ui/simple-document'
 import Privacy from './privacy.mdx'
 
 const title = 'プライバシーポリシー'
