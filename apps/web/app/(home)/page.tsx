@@ -1,7 +1,7 @@
+import NoResults from '@/components/no-results'
+import Timeline from '@/components/timeline'
 import { description, tagline, title } from '@/lib/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
-import NoResults from '@/ui/no-results'
-import Timeline from '@/ui/timeline'
 
 export const runtime = 'edge'
 export const revalidate = 60

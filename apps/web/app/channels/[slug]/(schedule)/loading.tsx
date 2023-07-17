@@ -1,6 +1,6 @@
-import SimpleDocument from '@/ui/simple-document'
-import Skeleton from '@/ui/skeleton'
-import { TimelineSkeleton } from '@/ui/timeline'
+import SimpleDocument from '@/components/simple-document'
+import Skeleton from '@/components/skeleton'
+import { TimelineSkeleton } from '@/components/timeline'
 
 export default function Loading(): JSX.Element {
   return (
