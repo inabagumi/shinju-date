@@ -19,7 +19,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.45.2",
     "react-icons": "^4.10.1",
-    "sharp": "^0.32.3",
+    "sharp": "^0.32.4",
     "winston": "^3.10.0",
     "yup": "^1.2.0"
   },
