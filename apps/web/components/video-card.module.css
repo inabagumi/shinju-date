@@ -18,7 +18,7 @@
   position: relative;
 }
 
-.thubmnail {
+.thumbnail {
   display: block;
   object-fit: cover;
   object-position: center;
