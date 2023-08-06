@@ -27,8 +27,8 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(encoding@0.1.13)
       '@hookform/resolvers':
-        specifier: ^3.1.1
-        version: 3.1.1(react-hook-form@7.45.4)
+        specifier: ^3.2.0
+        version: 3.2.0(react-hook-form@7.45.4)
       '@js-temporal/polyfill':
         specifier: ^0.4.4
         version: 0.4.4
@@ -2264,8 +2264,8 @@ packages:
       - supports-color
     dev: false
 
-  /@hookform/resolvers@3.1.1(react-hook-form@7.45.4):
-    resolution: {integrity: sha512-tS16bAUkqjITNSvbJuO1x7MXbn7Oe8ZziDTJdA9mMvsoYthnOOiznOTGBYwbdlYBgU+tgpI/BtTU3paRbCuSlg==}
+  /@hookform/resolvers@3.2.0(react-hook-form@7.45.4):
+    resolution: {integrity: sha512-skXQHhLxq0Sz2xDwCyv5dygBCtXJe1GmWwxDzfdtl0X6agD6qcyTG8HrZWkjJoy8AkiLARqYvSYJ8z7+Nwmi7w==}
     peerDependencies:
       react-hook-form: ^7.0.0
     dependencies:
