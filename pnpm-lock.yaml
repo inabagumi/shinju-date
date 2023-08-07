@@ -39,8 +39,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/helpers
       '@supabase/supabase-js':
-        specifier: ^2.31.0
-        version: 2.31.0(encoding@0.1.13)
+        specifier: ^2.32.0
+        version: 2.32.0(encoding@0.1.13)
       '@upstash/ratelimit':
         specifier: ^0.4.3
         version: 0.4.3(encoding@0.1.13)
@@ -127,8 +127,8 @@ importers:
         specifier: ^7.61.1
         version: 7.61.1(encoding@0.1.13)(next@13.4.12)(react@18.2.0)
       '@supabase/supabase-js':
-        specifier: ^2.31.0
-        version: 2.31.0(encoding@0.1.13)
+        specifier: ^2.32.0
+        version: 2.32.0(encoding@0.1.13)
       '@upstash/redis':
         specifier: ^1.22.0
         version: 1.22.0(encoding@0.1.13)
@@ -3065,8 +3065,8 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/supabase-js@2.31.0(encoding@0.1.13):
-    resolution: {integrity: sha512-W9/4s+KnSUX67wJKBn/3yLq+ieycnMzVjK3nNTLX5Wko3ypNT/081l2iFYrf+nsLQ1CiT4mA92I3dxCy6CmxTg==}
+  /@supabase/supabase-js@2.32.0(encoding@0.1.13):
+    resolution: {integrity: sha512-1ShFhuOI5Du7604nlCelBsRD61daXk2O0qwjumoz35bqrYThnSPPtpJqZOHw6Mg6o7mLjIInYLh/DBlh8UvzRg==}
     dependencies:
       '@supabase/functions-js': 2.1.2(encoding@0.1.13)
       '@supabase/gotrue-js': 2.46.1(encoding@0.1.13)
