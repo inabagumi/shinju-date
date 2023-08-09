@@ -24,8 +24,8 @@ importers:
   apps/admin:
     dependencies:
       '@googleapis/youtube':
-        specifier: ^10.1.0
-        version: 10.1.0(encoding@0.1.13)
+        specifier: ^11.0.0
+        version: 11.0.0(encoding@0.1.13)
       '@hookform/resolvers':
         specifier: ^3.2.0
         version: 3.2.0(react-hook-form@7.45.4)
@@ -2254,8 +2254,8 @@ packages:
       purgecss: 5.0.0
     dev: true
 
-  /@googleapis/youtube@10.1.0(encoding@0.1.13):
-    resolution: {integrity: sha512-+80fqeUYINfcYNNse6Qk7O1OTEjTLI0wx8wkxfmMnS3iDMzJVm/WkSMHZtVbGSZmZzD3d8/HDEFKviIastQ5Ng==}
+  /@googleapis/youtube@11.0.0(encoding@0.1.13):
+    resolution: {integrity: sha512-NkLgFv1mfs7mhThGCng0BincT3RYEmlapgcaPPwjU7koYn3ghdy+cqUClXbqV4uqm5uWBtrvzoTAVT+NSqISiQ==}
     engines: {node: '>=12.0.0'}
     dependencies:
       googleapis-common: 6.0.4(encoding@0.1.13)
