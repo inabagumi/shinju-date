@@ -44,7 +44,7 @@
     "@types/mdx": "^2.0.6",
     "@types/node": "^18.17.4",
     "@types/react": "^18.2.20",
-    "eslint": "~8.46.0",
+    "eslint": "~8.47.0",
     "jest": "^29.6.2",
     "next-pwa": "^5.6.0",
     "postcss": "^8.4.27",
