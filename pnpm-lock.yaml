@@ -148,8 +148,8 @@ importers:
         specifier: ^0.1.13
         version: 0.1.13
       ics:
-        specifier: ^3.2.0
-        version: 3.2.0
+        specifier: ^3.4.0
+        version: 3.4.0
       infima:
         specifier: ^0.2.0-alpha.43
         version: 0.2.0-alpha.43
@@ -5763,8 +5763,8 @@ packages:
       safer-buffer: 2.1.2
     dev: false
 
-  /ics@3.2.0:
-    resolution: {integrity: sha512-7YWa5LQBW7ao+9Yz+L0bdUWYXCUE/UBPMY/9w9UFU6Ho2dBz85caJKiB+Tm+qv8HN6pCpH8jaWemXJijs8+PiA==}
+  /ics@3.4.0:
+    resolution: {integrity: sha512-ewKO7nF5BKhVKas3XmjB1siXdhJ7OvojY+HmD1ik/lozuzcZdy+Wt6IbB2San2gvHZAMUZhTa4UQyCE1I8e+sw==}
     dependencies:
       nanoid: 3.3.6
       yup: 1.2.0
