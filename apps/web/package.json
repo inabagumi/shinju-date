@@ -34,7 +34,7 @@
     "@next/mdx": "^13.4.16",
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/schema": "workspace:*",
-    "@svgr/webpack": "^8.0.1",
+    "@svgr/webpack": "^8.1.0",
     "@tsconfig/next": "^2.0.0",
     "@types/dedent": "^0.7.0",
     "@types/gtag.js": "^0.0.13",
