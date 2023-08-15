@@ -6,7 +6,7 @@
     "@tsconfig/esm": "^1.0.4",
     "@tsconfig/strictest": "^2.0.1",
     "eslint": "^8.47.0",
-    "next": "^13.4.13",
+    "next": "^13.4.16",
     "tsup": "^7.2.0",
     "typescript": "^5.1.6"
   },
