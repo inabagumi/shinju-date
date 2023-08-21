@@ -29,7 +29,7 @@
   "description": "",
   "devDependencies": {
     "@fullhuman/postcss-purgecss": "^5.0.0",
-    "@jest/types": "^29.6.1",
+    "@jest/types": "^29.6.3",
     "@mdx-js/loader": "^2.3.0",
     "@next/mdx": "^13.4.19",
     "@shinju-date/eslint-config": "workspace:*",
