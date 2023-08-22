@@ -39,8 +39,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/helpers
       '@supabase/supabase-js':
-        specifier: ^2.33.0
-        version: 2.33.0(encoding@0.1.13)
+        specifier: ^2.33.1
+        version: 2.33.1(encoding@0.1.13)
       '@upstash/ratelimit':
         specifier: ^0.4.3
         version: 0.4.3(encoding@0.1.13)
@@ -127,8 +127,8 @@ importers:
         specifier: ^7.64.0
         version: 7.64.0(encoding@0.1.13)(next@13.4.19)(react@18.2.0)
       '@supabase/supabase-js':
-        specifier: ^2.33.0
-        version: 2.33.0(encoding@0.1.13)
+        specifier: ^2.33.1
+        version: 2.33.1(encoding@0.1.13)
       '@upstash/redis':
         specifier: ^1.22.0
         version: 1.22.0(encoding@0.1.13)
@@ -3016,8 +3016,8 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/realtime-js@2.7.3:
-    resolution: {integrity: sha512-c7TzL81sx2kqyxsxcDduJcHL9KJdCOoKimGP6lQSqiZKX42ATlBZpWbyy9KFGFBjAP4nyopMf5JhPi2ZH9jyNw==}
+  /@supabase/realtime-js@2.7.4:
+    resolution: {integrity: sha512-FzSzs1k9ruh/uds5AJ95Nc3beiMCCIhougExJ3O98CX1LMLAKUKFy5FivKLvcNhXnNfUEL0XUfGMb4UH2J7alg==}
     dependencies:
       '@types/phoenix': 1.6.0
       '@types/websocket': 1.0.5
@@ -3034,13 +3034,13 @@ packages:
       - encoding
     dev: false
 
-  /@supabase/supabase-js@2.33.0(encoding@0.1.13):
-    resolution: {integrity: sha512-8cUAwRRPhDSJrxdsJDsFy3dHA7uhNeVyNOfGCholywge24EeNIuIanbBAT2LCRaGmJjQEG98uXSQoD14hy8iWg==}
+  /@supabase/supabase-js@2.33.1(encoding@0.1.13):
+    resolution: {integrity: sha512-jA00rquPTppPOHpBB6KABW98lfg0gYXcuGqP3TB1iiduznRVsi3GGk2qBKXPDLMYSe0kRlQp5xCwWWthaJr8eA==}
     dependencies:
       '@supabase/functions-js': 2.1.2(encoding@0.1.13)
       '@supabase/gotrue-js': 2.47.0(encoding@0.1.13)
       '@supabase/postgrest-js': 1.8.0(encoding@0.1.13)
-      '@supabase/realtime-js': 2.7.3
+      '@supabase/realtime-js': 2.7.4
       '@supabase/storage-js': 2.5.1(encoding@0.1.13)
       cross-fetch: 3.1.8(encoding@0.1.13)
     transitivePeerDependencies:
