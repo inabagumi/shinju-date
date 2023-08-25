@@ -29,7 +29,7 @@
     "@shinju-date/schema": "workspace:*",
     "@tsconfig/next": "^2.0.0",
     "@types/mime": "^3.0.1",
-    "@types/node": "^18.17.9",
+    "@types/node": "^18.17.11",
     "@types/react": "^18.2.21",
     "eslint": "~8.47.0",
     "typescript": "~5.2.2"
