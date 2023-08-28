@@ -52,3 +52,18 @@
   display: block;
   z-index: 1;
 }
+
+.pill {
+  padding: 0;
+}
+
+.pillLink,
+.pillLink:hover {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+.pillLink {
+  display: block;
+  padding: 0.25rem 1rem;
+}
