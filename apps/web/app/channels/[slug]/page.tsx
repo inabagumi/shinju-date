@@ -6,7 +6,7 @@ import SimpleDocument from '@/components/simple-document'
 import Timeline from '@/components/timeline'
 import { title as siteName } from '@/lib/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
-import { getChannelsByGroup, getGroupBySlug } from '@/lib/supabase'
+import { getChannelBySlug } from '@/lib/supabase'
 
 export const runtime = 'edge'
 export const revalidate = 60
@@ -22,17 +22,17 @@ type Props = {
 export async function generateMetadata({
   params
 }: Props): Promise<Metadata | null> {
-  const group = await getGroupBySlug(params.slug)
+  const channel = await getChannelBySlug(params.slug)
 
-  if (!group) {
+  if (!channel) {
     return null
   }
 
-  const title = group.name
+  const title = channel.name
 
   return {
     alternates: {
-      canonical: `/groups/${group.slug}`
+      canonical: `/channels/${channel.slug}`
     },
     openGraph: {
       siteName,
@@ -46,16 +46,15 @@ export async function generateMetadata({
   }
 }
 
-export default async function Page({ params }: Props): Promise<JSX.Element> {
-  const group = await getGroupBySlug(params.slug)
+export default async function ChannelSchedulePage({ params }: Props) {
+  const channel = await getChannelBySlug(params.slug)
 
-  if (!group) {
+  if (!channel) {
     notFound()
   }
 
-  const channels = getChannelsByGroup(group)
   const videos = await fetchNotEndedVideos({
-    channelIDs: channels.map((channel) => channel.slug)
+    channelIDs: [channel.slug]
   })
 
   return (
@@ -63,21 +62,21 @@ export default async function Page({ params }: Props): Promise<JSX.Element> {
       button={
         <Link
           className="button button--lg button--secondary"
-          href={`/groups/${group.slug}/videos`}
+          href={`/channels/${channel.slug}/videos`}
           role="button"
         >
           動画一覧
         </Link>
       }
-      title={group.name}
+      title={channel.name}
     >
       <h2 className="margin-top--lg">今後の配信予定</h2>
 
       {videos.length > 0 ? (
-        <Timeline channels={channels} prefetchedData={videos} />
+        <Timeline channels={[channel]} prefetchedData={videos} />
       ) : (
         <NoResults
-          basePath={`/groups/${group.slug}`}
+          basePath={`/channels/${channel.slug}`}
           message="YouTubeに登録されている配信予定の動画がありません。"
         />
       )}

@@ -2,7 +2,7 @@ import SimpleDocument from '@/components/simple-document'
 import Skeleton from '@/components/skeleton'
 import { TimelineSkeleton } from '@/components/timeline'
 
-export default function Loading(): JSX.Element {
+export default function ChannelScheduleLoading() {
   return (
     <SimpleDocument
       button={

@@ -25,6 +25,20 @@ const nextConfig = {
     ]
   },
   reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        destination: '/',
+        permanent: true,
+        source: '/groups/:slug'
+      },
+      {
+        destination: '/videos/:queries*',
+        permanent: true,
+        source: '/groups/:slug/videos/:queries*'
+      }
+    ]
+  },
   async rewrites() {
     return {
       afterFiles: [
@@ -39,36 +53,9 @@ const nextConfig = {
         {
           destination: '/manifest.webmanifest',
           source: '/manifest.json'
-        },
-        // deprecated
-        {
-          destination: '/videos.ics',
-          source: '/calendar.ics'
-        },
-        // deprecated
-        {
-          destination: '/channels/:id/videos.ics',
-          source: '/calendar/:id.ics'
         }
       ]
     }
-  },
-  webpack(config, { defaultLoaders }) {
-    config.module.rules.push({
-      test: /\.svg$/,
-      use: [
-        defaultLoaders.babel,
-        {
-          loader: '@svgr/webpack',
-          options: {
-            babel: false,
-            dimensions: false
-          }
-        }
-      ]
-    })
-
-    return config
   }
 }
 
@@ -76,7 +63,6 @@ const withPWA = nextPWA({
   buildExcludes: [/app-build-manifest\.json$/],
   dest: '.next/static',
   disable: process.env.NODE_ENV === 'development',
-  publicExcludes: ['!404.png', '!opensearch.xml'],
   sw: 'service-worker.js'
 })
 

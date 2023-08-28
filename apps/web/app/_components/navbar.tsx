@@ -16,9 +16,8 @@ import {
 import { FaMoon, FaSun } from 'react-icons/fa'
 import { title as siteName } from '@/lib/constants'
 import styles from './navbar.module.css'
-import Icon from './square-icon.svg'
 
-function SearchForm(): JSX.Element {
+function SearchForm() {
   const router = useRouter()
   const params = useParams()
   const query = useMemo<string>(() => {
@@ -78,7 +77,7 @@ function SearchForm(): JSX.Element {
   )
 }
 
-export default function Navbar(): JSX.Element {
+export default function Navbar() {
   const [sidebarShown, setSidebarShown] = useState(false)
   const pathname = usePathname()
   const { setTheme, theme } = useTheme()
@@ -129,12 +128,14 @@ export default function Navbar(): JSX.Element {
           </button>
 
           <Link className="navbar__brand" href="/">
-            <Icon
+            <svg
               className={clsx('navbar__logo', styles.logo)}
               height={32}
               role="img"
               width={32}
-            />
+            >
+              <use xlinkHref="#svg-symbols-square-icon" />
+            </svg>
             <strong className={clsx('navbar__title', styles.title)}>
               {siteName}
             </strong>
@@ -192,7 +193,9 @@ export default function Navbar(): JSX.Element {
       <div className="navbar-sidebar">
         <div className="navbar-sidebar__brand">
           <Link className="navbar__brand" href="/" onClick={hideSidebar}>
-            <Icon className="navbar__logo" height={32} role="img" width={32} />
+            <svg className="navbar__logo" height={32} role="img" width={32}>
+              <use xlinkHref="#svg-symbols-square-icon" />
+            </svg>
             <strong className="navbar__title">{siteName}</strong>
           </Link>
         </div>
