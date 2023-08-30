@@ -60,8 +60,8 @@ importers:
         specifier: ^13.4.19
         version: 13.4.19(react-dom@18.2.0)(react@18.2.0)
       p-queue:
-        specifier: ^7.3.4
-        version: 7.3.4
+        specifier: ^7.4.0
+        version: 7.4.0
       p-retry:
         specifier: ^5.1.2
         version: 5.1.2
@@ -4888,8 +4888,8 @@ packages:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
 
-  /eventemitter3@4.0.7:
-    resolution: {integrity: sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==}
+  /eventemitter3@5.0.1:
+    resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
     dev: false
 
   /execa@5.1.1:
@@ -7505,11 +7505,11 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /p-queue@7.3.4:
-    resolution: {integrity: sha512-esox8CWt0j9EZECFvkFl2WNPat8LN4t7WWeXq73D9ha0V96qPRufApZi4ZhPwXAln1uVVal429HVVKPa2X0yQg==}
+  /p-queue@7.4.0:
+    resolution: {integrity: sha512-1FYFpop2WjLUfhSpKb0pi01JL+Z+H0Z8F2XPn2g04WxGynU/X8mx8s/66fb7jZ39pS2ZliAWCX97EoTSIdMmtw==}
     engines: {node: '>=12'}
     dependencies:
-      eventemitter3: 4.0.7
+      eventemitter3: 5.0.1
       p-timeout: 5.1.0
     dev: false
 
