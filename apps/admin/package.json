@@ -7,7 +7,7 @@
     "@sentry/nextjs": "^7.66.0",
     "@shinju-date/helpers": "workspace:*",
     "@supabase/supabase-js": "^2.33.1",
-    "@upstash/ratelimit": "^0.4.3",
+    "@upstash/ratelimit": "^0.4.4",
     "@upstash/redis": "^1.22.0",
     "encoding": "^0.1.13",
     "mime": "^3.0.0",
