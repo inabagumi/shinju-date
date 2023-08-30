@@ -14,7 +14,7 @@
     "nanoid": "^4.0.2",
     "next": "^13.4.19",
     "p-queue": "^7.4.0",
-    "p-retry": "^5.1.2",
+    "p-retry": "^6.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.45.4",
