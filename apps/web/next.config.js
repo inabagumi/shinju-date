@@ -1,6 +1,5 @@
-import nextMDX from '@next/mdx'
+import createMDX from '@next/mdx'
 import { withSentryConfig } from '@sentry/nextjs'
-import nextPWA from 'next-pwa'
 import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
 
@@ -43,14 +42,6 @@ const nextConfig = {
     return {
       afterFiles: [
         {
-          destination: '/_next/static/service-worker.js',
-          source: '/service-worker.js'
-        },
-        {
-          destination: '/_next/static/workbox-:hash.js',
-          source: '/workbox-:hash.js'
-        },
-        {
           destination: '/manifest.webmanifest',
           source: '/manifest.json'
         }
@@ -59,14 +50,7 @@ const nextConfig = {
   }
 }
 
-const withPWA = nextPWA({
-  buildExcludes: [/app-build-manifest\.json$/],
-  dest: '.next/static',
-  disable: process.env.NODE_ENV === 'development',
-  sw: 'service-worker.js'
-})
-
-const withMDX = nextMDX({
+const withMDX = createMDX({
   options: {
     rehypePlugins: [
       [
@@ -81,4 +65,4 @@ const withMDX = nextMDX({
   }
 })
 
-export default withSentryConfig(withPWA(withMDX(nextConfig)), { silent: true })
+export default withSentryConfig(withMDX(nextConfig), { silent: true })
