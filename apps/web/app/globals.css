@@ -7,3 +7,7 @@
   --ifm-font-size-base: 16px !important;
   --ifm-line-height-base: 2 !important;
 }
+
+body > svg[aria-hidden] {
+  display: none;
+}
