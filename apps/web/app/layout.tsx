@@ -32,7 +32,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
-        <svg style={{ display: 'none' }}>
+        <svg aria-hidden>
           <defs>
             <symbol id="svg-symbols-square-icon" viewBox="0 0 256 256">
               <rect fill="#212121" height="256" rx="24" width="256" />
