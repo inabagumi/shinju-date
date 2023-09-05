@@ -23,6 +23,7 @@ const nextConfig = {
       }
     ]
   },
+  pageExtensions: ['tsx', 'ts', 'mdx'],
   reactStrictMode: true,
   async redirects() {
     return [
