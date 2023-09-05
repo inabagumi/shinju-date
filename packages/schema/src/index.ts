@@ -3,7 +3,7 @@ export type Json =
   | number
   | boolean
   | null
-  | { [key: string]: Json }
+  | { [key: string]: Json | undefined }
   | Json[]
 
 export interface Database {
@@ -40,6 +40,14 @@ export interface Database {
           updated_at?: string
           url?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'channels_group_id_fkey'
+            columns: ['group_id']
+            referencedRelation: 'groups'
+            referencedColumns: ['id']
+          }
+        ]
       }
       groups: {
         Row: {
@@ -69,23 +77,31 @@ export interface Database {
           slug?: string
           updated_at?: string
         }
+        Relationships: []
       }
       synonyms: {
         Row: {
+          created_at: string
           id: number
           synonyms: string[]
           term: string
+          updated_at: string
         }
         Insert: {
+          created_at?: string
           id?: number
           synonyms: string[]
           term: string
+          updated_at?: string
         }
         Update: {
+          created_at?: string
           id?: number
           synonyms?: string[]
           term?: string
+          updated_at?: string
         }
+        Relationships: []
       }
       thumbnails: {
         Row: {
@@ -121,6 +137,7 @@ export interface Database {
           updated_at?: string
           width?: number
         }
+        Relationships: []
       }
       videos: {
         Row: {
@@ -162,6 +179,20 @@ export interface Database {
           updated_at?: string
           url?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'videos_channel_id_fkey'
+            columns: ['channel_id']
+            referencedRelation: 'channels'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'videos_thumbnail_id_fkey'
+            columns: ['thumbnail_id']
+            referencedRelation: 'thumbnails'
+            referencedColumns: ['id']
+          }
+        ]
       }
     }
     Views: {

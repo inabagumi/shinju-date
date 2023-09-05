@@ -7,16 +7,6 @@ export const supabase = createClient<Database>(
   {
     auth: {
       persistSession: false
-    },
-    global: {
-      fetch(input, init = {}) {
-        return fetch(input, {
-          next: {
-            revalidate: 60
-          },
-          ...init
-        })
-      }
     }
   }
 )
@@ -43,28 +33,6 @@ export async function* getAllChannels(): AsyncGenerator<Channel, void, void> {
   }
 }
 
-export type Group = Pick<
-  Database['public']['Tables']['groups']['Row'],
-  'id' | 'name' | 'slug' | 'short_name'
->
-
-export async function* getAllGroups(): AsyncGenerator<Group, void, void> {
-  const { data, error } = await supabase
-    .from('groups')
-    .select('id, name, slug, short_name')
-    .order('created_at', {
-      ascending: true
-    })
-
-  if (error) {
-    throw error
-  }
-
-  for (const group of data ?? []) {
-    yield group
-  }
-}
-
 export async function getChannelBySlug(slug: string) {
   const { data: channel, error } = await supabase
     .from('channels')
@@ -76,27 +44,4 @@ export async function getChannelBySlug(slug: string) {
   }
 
   return channel[0] ?? null
-}
-
-export function getChannelsByGroup(
-  group: Awaited<ReturnType<typeof getGroupBySlug>>
-) {
-  return group?.channels
-    ? Array.isArray(group.channels)
-      ? group.channels
-      : [group.channels]
-    : []
-}
-
-export async function getGroupBySlug(slug: string) {
-  const { data: group, error } = await supabase
-    .from('groups')
-    .select('channels (id, name, slug), id, name, slug, short_name')
-    .eq('slug', slug)
-
-  if (error) {
-    throw error
-  }
-
-  return group[0] ?? null
 }
