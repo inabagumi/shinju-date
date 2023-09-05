@@ -1,3 +1,23 @@
+import { title as siteName } from '@/lib/constants'
+
+export const dynamic = 'force-static'
+export const revalidate = 120
+
+export const metadata = {
+  alternates: {
+    canonical: '/privacy'
+  },
+  openGraph: {
+    siteName,
+    title: 'プライバシーポリシー',
+    type: 'article'
+  },
+  title: 'プライバシーポリシー',
+  twitter: {
+    title: `プライバシーポリシー - ${siteName}`
+  }
+}
+
 [Haneru Developers] (以下「当団体」といいます) は、本ウェブサイト上で提供するサービス (以下「本サービス」といいます) における、ユーザーの個人情報の取扱いについて、以下のとおりプライバシーポリシー (以下「本ポリシー」といいます) を定めます。
 
 ## 第一条 (個人情報)

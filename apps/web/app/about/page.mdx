@@ -1,3 +1,23 @@
+import { title as siteName } from '@/lib/constants'
+
+export const dynamic = 'force-static'
+export const revalidate = 120
+
+export const metadata = {
+  alternates: {
+    canonical: '/about'
+  },
+  openGraph: {
+    siteName,
+    title: `${siteName}とは?`,
+    type: 'article'
+  },
+  title: `${siteName}とは?`,
+  twitter: {
+    title: `${siteName}とは? - ${siteName}`
+  }
+}
+
 「SHINJU DATE」は[ななしいんく]に所属するタレントが[YouTube]で配信や投稿した動画を検索できるウェブサービスです。ななしいんくが定める[二次創作ガイドライン][guideline]に従ってななしいんくとは直接の関係がない営利を目的としていない団体である[Haneru Developers]によって開発と運営が行われています。
 
 ## 動画情報取得について
