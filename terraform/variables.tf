@@ -1,7 +1,4 @@
 variable "google_api_key" {}
-variable "supabase_anon_key" {}
-variable "supabase_service_role_key" {}
-variable "supabase_url" {}
 variable "upstash_redis_rest_token" {}
 variable "upstash_redis_rest_token_dev" {}
 variable "upstash_redis_rest_url" {}
