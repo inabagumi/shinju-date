@@ -11,7 +11,7 @@
     "@upstash/redis": "^1.22.0",
     "encoding": "^0.1.13",
     "mime": "^3.0.0",
-    "nanoid": "^4.0.2",
+    "nanoid": "^5.0.1",
     "next": "^13.4.19",
     "p-queue": "^7.4.1",
     "p-retry": "^6.0.0",
