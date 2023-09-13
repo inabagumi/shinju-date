@@ -4,7 +4,7 @@
     "@googleapis/youtube": "^11.0.1",
     "@hookform/resolvers": "^3.3.1",
     "@js-temporal/polyfill": "^0.4.4",
-    "@sentry/nextjs": "^7.68.0",
+    "@sentry/nextjs": "^7.69.0",
     "@shinju-date/helpers": "workspace:*",
     "@supabase/supabase-js": "^2.33.2",
     "@upstash/ratelimit": "^0.4.4",
