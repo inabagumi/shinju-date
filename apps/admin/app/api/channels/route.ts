@@ -3,6 +3,7 @@ import { createErrorResponse } from '@/lib/session'
 import { createSupabaseClient } from '@/lib/supabase'
 
 export const revalidate = 0
+export const maxDuration = 120
 
 export async function GET(): Promise<NextResponse> {
   const supabaseClient = createSupabaseClient()
