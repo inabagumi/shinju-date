@@ -12,6 +12,7 @@ import { youtubeClient } from '@/lib/youtube'
 
 export const runtime = 'nodejs'
 export const revalidate = 0
+export const maxDuration = 120
 
 type Thumbnail = {
   id: number

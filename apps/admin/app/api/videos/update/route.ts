@@ -10,6 +10,7 @@ import { type FilteredYouTubeChannel, getChannels } from '@/lib/youtube'
 
 export const runtime = 'nodejs'
 export const revalidate = 0
+export const maxDuration = 120
 
 export async function POST(): Promise<NextResponse> {
   const { success } = await ratelimit.limit('videos:update')
