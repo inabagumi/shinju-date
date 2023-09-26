@@ -63,8 +63,8 @@ importers:
         specifier: ^7.4.1
         version: 7.4.1
       p-retry:
-        specifier: ^6.0.0
-        version: 6.0.0
+        specifier: ^6.1.0
+        version: 6.1.0
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -4651,6 +4651,11 @@ packages:
     engines: {node: '>= 0.4'}
     dev: false
 
+  /is-network-error@1.0.0:
+    resolution: {integrity: sha512-P3fxi10Aji2FZmHTrMPSNFbNC6nnp4U5juPAIjXPHkUNubi4+qK7vvdsaNpAUwXslhYm9oyjEYTxs1xd/+Ph0w==}
+    engines: {node: '>=16'}
+    dev: false
+
   /is-number-object@1.0.7:
     resolution: {integrity: sha512-k1U0IRzLMo7ZlYIfzRu23Oh6MiIFasgpb9X76eqfFZAqwH44UI4KTBvBYIZ1dSL9ZzChTB9ShHfLkR4pdW5krQ==}
     engines: {node: '>= 0.4'}
@@ -6643,11 +6648,12 @@ packages:
       p-timeout: 5.1.0
     dev: false
 
-  /p-retry@6.0.0:
-    resolution: {integrity: sha512-6NuuXu8Upembd4sNdo4PRbs+M6aHgBTrFE6lkH0YKjVzne3cDW4gkncB98ty/bkMxLxLVNeD5bX9FyWjM7WZ+A==}
+  /p-retry@6.1.0:
+    resolution: {integrity: sha512-fJLEQ2KqYBJRuaA/8cKMnqhulqNM+bpcjYtXNex2t3mOXKRYPitAJt9NacSf8XAFzcYahSAbKpobiWDSqHSh2g==}
     engines: {node: '>=16.17'}
     dependencies:
       '@types/retry': 0.12.2
+      is-network-error: 1.0.0
       retry: 0.13.1
     dev: false
 
