@@ -48,7 +48,9 @@ const nextConfig = {
         }
       ]
     }
-  }
+  },
+  // TODO Next.js v13.5.4でnext build時にTypeError: Cannot call a class as a functionがthrowされてビルドに失敗してしまうので一旦無効に #3536
+  swcMinify: false
 }
 
 const withMDX = createMDX({
