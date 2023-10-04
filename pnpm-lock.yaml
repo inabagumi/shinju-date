@@ -39,8 +39,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/helpers
       '@supabase/supabase-js':
-        specifier: ^2.37.0
-        version: 2.37.0
+        specifier: ^2.38.0
+        version: 2.38.0
       '@upstash/ratelimit':
         specifier: ^0.4.4
         version: 0.4.4(encoding@0.1.13)
@@ -127,8 +127,8 @@ importers:
         specifier: ^7.73.0
         version: 7.73.0(encoding@0.1.13)(next@13.5.3)(react@18.2.0)
       '@supabase/supabase-js':
-        specifier: ^2.37.0
-        version: 2.37.0
+        specifier: ^2.38.0
+        version: 2.38.0
       '@upstash/redis':
         specifier: ^1.22.1
         version: 1.22.1(encoding@0.1.13)
@@ -1993,8 +1993,8 @@ packages:
       '@supabase/node-fetch': 2.6.14
     dev: false
 
-  /@supabase/gotrue-js@2.54.0:
-    resolution: {integrity: sha512-JjtbchtPbpgK0O8NIMIvKLk7HHv0kd23L3UO5a398nczCcBkI0IvmbPtbS4Xs5AUIuJ+JHtV6siOZR1ha5EzQw==}
+  /@supabase/gotrue-js@2.54.2:
+    resolution: {integrity: sha512-e6XCirHbacHFFPM60w0u+rVwcymOIvYIhor1VoUzr/6/whgI9ootiUcLngcGedc8mbHbjhuSQ6QuC9Mjs5+UHQ==}
     dependencies:
       '@supabase/node-fetch': 2.6.14
     dev: false
@@ -2029,11 +2029,11 @@ packages:
       '@supabase/node-fetch': 2.6.14
     dev: false
 
-  /@supabase/supabase-js@2.37.0:
-    resolution: {integrity: sha512-kWXVvGWAkThQodHh3yaSQoNHNDm5bwp+H6f1BfC4tr0k096zzTb3ACMnZLQBS0qOXEEbuAnGxIWUv+RE8GaIhg==}
+  /@supabase/supabase-js@2.38.0:
+    resolution: {integrity: sha512-FSkIcz+/+TTBqNqhR8AdtblxEqCF72//CCkmZFIRCa3Xh/aiI0F4cBdL7AB3aIQn2DhE4aGxZ4mGiGR593096Q==}
     dependencies:
       '@supabase/functions-js': 2.1.5
-      '@supabase/gotrue-js': 2.54.0
+      '@supabase/gotrue-js': 2.54.2
       '@supabase/node-fetch': 2.6.14
       '@supabase/postgrest-js': 1.8.4
       '@supabase/realtime-js': 2.8.0
