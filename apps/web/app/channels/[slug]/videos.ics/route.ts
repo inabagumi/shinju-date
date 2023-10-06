@@ -1,5 +1,4 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { type NextRequest, NextResponse } from 'next/server'
 import {
   createCalendarResponse,
   createEventAttributesList,
@@ -18,17 +17,14 @@ type Props = {
   params: Params
 }
 
-export async function GET(
-  _req: NextRequest,
-  { params }: Props
-): Promise<NextResponse> {
+export async function GET(_req: Request, { params }: Props): Promise<Response> {
   const { count, error } = await supabase
     .from('channels')
     .select('*', { count: 'exact', head: true })
     .eq('slug', params.slug)
 
   if (error) {
-    return new NextResponse(error.message, {
+    return new Response(error.message, {
       headers: {
         'Content-Type': 'text/plain; charset=UTF-8'
       },
@@ -63,7 +59,7 @@ export async function GET(
     .limit(100)
 
   if (secondError) {
-    return new NextResponse(secondError.message, {
+    return new Response(secondError.message, {
       headers: {
         'Content-Type': 'text/plain; charset=UTF-8'
       },

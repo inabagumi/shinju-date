@@ -1,11 +1,10 @@
 import dedent from 'dedent'
-import { NextResponse } from 'next/server'
 import { description, title as siteName } from '@/lib/constants'
 
 export const dynamic = 'force-static'
 export const revalidate = 86_400 // 1 day
 
-export function GET() {
+export function GET(): Response {
   const baseURL = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
   const body = dedent`
     <?xml version="1.0" encoding="utf-8"?>
@@ -22,7 +21,7 @@ export function GET() {
     </OpenSearchDescription>
   `
 
-  return new NextResponse(body, {
+  return new Response(body, {
     headers: {
       'Content-Type': 'application/opensearchdescription+xml; charset=UTF-8'
     }
