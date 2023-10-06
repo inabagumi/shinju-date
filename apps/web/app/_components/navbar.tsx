@@ -1,13 +1,11 @@
 'use client'
 
-import { track } from '@vercel/analytics'
 import clsx from 'clsx'
 import Link from 'next/link'
-import { useParams, usePathname, useRouter } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import {
   type ChangeEventHandler,
-  type FormEventHandler,
   useCallback,
   useMemo,
   useRef,
@@ -15,10 +13,10 @@ import {
 } from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
 import { title as siteName } from '@/lib/constants'
+import search from '../_actions/search'
 import styles from './navbar.module.css'
 
 function SearchForm() {
-  const router = useRouter()
   const params = useParams()
   const query = useMemo<string>(() => {
     if (params.queries) {
@@ -41,27 +39,17 @@ function SearchForm() {
     []
   )
 
-  const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>(
-    (event) => {
-      event.preventDefault()
-
-      router.push(`/videos/${encodeURIComponent(value)}`)
-      track('Search', { query: value })
-
-      textFieldRef.current?.blur()
-    },
-    [value, router]
-  )
-
   return (
-    <form
-      action="/videos"
-      className={styles.form}
-      method="get"
-      onSubmit={handleSubmit}
-      role="search"
-    >
-      <div className={clsx('navbar__search', styles.content)}>
+    <search className={styles.search}>
+      <form
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        action={async (formData) => {
+          textFieldRef.current?.blur()
+
+          await search(formData)
+        }}
+        className={clsx('navbar__search', styles.content)}
+      >
         <input
           aria-label="検索"
           className={clsx('navbar__search-input', styles.input)}
@@ -72,8 +60,8 @@ function SearchForm() {
           type="search"
           value={value}
         />
-      </div>
-    </form>
+      </form>
+    </search>
   )
 }
 
