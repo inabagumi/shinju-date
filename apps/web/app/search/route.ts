@@ -1,16 +1,17 @@
-import { type NextRequest, NextResponse } from 'next/server'
-
 export const runtime = 'edge'
 
-export function GET(req: NextRequest): NextResponse {
+export function GET(req: Request): Response {
   const basePath = '/videos'
-  const queries = req.nextUrl.searchParams.getAll('q')
+  const nextURL = new URL(req.url)
+  const queries = nextURL.searchParams.getAll('q')
   const query = queries.join(' ')
 
-  return NextResponse.redirect(
+  return Response.redirect(
     new URL(
-      `${basePath}${query ? `/${encodeURIComponent(query)}` : ''}`,
-      req.nextUrl
+      queries.length > 0
+        ? `${basePath}/${encodeURIComponent(query)}`
+        : basePath,
+      nextURL
     )
   )
 }

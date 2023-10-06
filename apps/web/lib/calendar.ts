@@ -4,7 +4,6 @@ import {
   convertTimestampToArray,
   createEvents
 } from 'ics'
-import { NextResponse } from 'next/server'
 import { title as siteName } from '@/lib/constants'
 import { max, min } from './date'
 
@@ -49,13 +48,11 @@ export function getPublishedAtAndEndedAt(
   return [publishedAt, endedAt]
 }
 
-export function createCalendarResponse(
-  events: EventAttributes[]
-): NextResponse {
+export function createCalendarResponse(events: EventAttributes[]): Response {
   const { error, value } = createEvents(events)
 
   if (error && !value) {
-    return new NextResponse('500 Internal Server Error\n', {
+    return new Response('500 Internal Server Error\n', {
       headers: {
         'Cache-Control': 'no-store',
         'Content-Type': 'text/plain; charset=UTF-8'
@@ -64,7 +61,7 @@ export function createCalendarResponse(
     })
   }
 
-  return new NextResponse(value, {
+  return new Response(value, {
     headers: {
       'Content-Type': 'text/calendar; charset=UTF-8'
     }
@@ -103,8 +100,8 @@ export function createEventAttributesList(
   })
 }
 
-export function createNotFoundResponse(): NextResponse {
-  return new NextResponse('404 Not Found\n', {
+export function createNotFoundResponse(): Response {
+  return new Response('404 Not Found\n', {
     headers: {
       'Cache-Control': 'no-store',
       'Content-Type': 'text/plain; charset=UTF-8'

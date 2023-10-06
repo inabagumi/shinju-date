@@ -1,5 +1,3 @@
-import type { NextRequest } from 'next/server.js'
-
 export function getOrigin(url: URL): string {
   const { host, protocol } = url
 
@@ -19,12 +17,14 @@ export function normalizePath(pathname?: string): string {
   return '/'
 }
 
-export function verifyOrigin(request: NextRequest): boolean {
+export function verifyOrigin(request: Request): boolean {
   const origin = request.headers.get('Origin')
 
   if (!origin) {
     return false
   }
 
-  return origin === getOrigin(request.nextUrl)
+  const nextURL = new URL(request.url)
+
+  return origin === getOrigin(nextURL)
 }

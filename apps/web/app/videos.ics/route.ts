@@ -1,5 +1,4 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { NextResponse } from 'next/server'
 import {
   createCalendarResponse,
   createEventAttributesList
@@ -9,7 +8,7 @@ import { supabase } from '@/lib/supabase'
 export const dynamic = 'force-static'
 export const revalidate = 60
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(): Promise<Response> {
   const timeZone = Temporal.TimeZone.from('UTC')
   const now = Temporal.Now.zonedDateTimeISO(timeZone)
   const { data: videos, error } = await supabase
@@ -20,7 +19,7 @@ export async function GET(): Promise<NextResponse> {
     .limit(100)
 
   if (error) {
-    return new NextResponse(error.message, {
+    return new Response(error.message, {
       headers: {
         'Content-Type': 'text/plain; charset=UTF-8'
       },
