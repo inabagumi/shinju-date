@@ -120,6 +120,7 @@ export default function VideoCard({
     <a
       className={styles.blockLink}
       href={value.url}
+      ping="/ping"
       rel="noopener noreferrer"
       target="_blank"
     >
