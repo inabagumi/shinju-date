@@ -1,6 +1,8 @@
 import { track } from '@vercel/analytics/server'
 import { supabase } from '@/lib/supabase'
 
+export const runtime = 'edge'
+
 type TrackProperties = {
   channel_id: string
   channel_name: string
@@ -53,8 +55,10 @@ async function generateTrackProperties(
 
 export async function POST(request: Request): Promise<Response> {
   const requestType = request.headers.get('Content-Type')
+  const userAgent = request.headers.get('User-Agent')
+  const xForwardedFor = request.headers.get('X-Forwarded-For')
 
-  if (requestType !== 'text/ping') {
+  if (requestType !== 'text/ping' || !userAgent || !xForwardedFor) {
     return new Response(null, {
       status: 415
     })
@@ -94,7 +98,11 @@ export async function POST(request: Request): Promise<Response> {
     })
   }
 
-  const { headers } = request
+  const headers = new Headers({
+    'User-Agent': userAgent,
+    'X-Forwarded-For': xForwardedFor
+  })
+
   const pingFrom = request.headers.get('Ping-From')
 
   if (pingFrom) {
