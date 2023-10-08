@@ -12,8 +12,8 @@ import {
   useState
 } from 'react'
 import { FaMoon, FaSun } from 'react-icons/fa'
+import { search } from '@/app/_actions'
 import { title as siteName } from '@/lib/constants'
-import search from '../_actions/search'
 import styles from './navbar.module.css'
 
 function SearchForm() {
