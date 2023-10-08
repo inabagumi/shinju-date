@@ -3,7 +3,7 @@
 import { track } from '@vercel/analytics/server'
 import { redirect } from 'next/navigation'
 
-export default async function search(formData: FormData): Promise<never> {
+export async function search(formData: FormData) {
   const queries = formData.getAll('q')
   const query = queries.join(' ')
 
