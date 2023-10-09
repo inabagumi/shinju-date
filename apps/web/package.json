@@ -47,7 +47,7 @@
     "jest": "^29.7.0",
     "postcss": "^8.4.31",
     "postcss-flexbugs-fixes": "^5.0.2",
-    "postcss-preset-env": "^9.1.4",
+    "postcss-preset-env": "^9.2.0",
     "rehype-external-links": "^3.0.0",
     "remark-gfm": "^4.0.0",
     "typescript": "~5.2.2"
