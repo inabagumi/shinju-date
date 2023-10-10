@@ -6,7 +6,7 @@
     "@reach/skip-nav": "^0.18.0",
     "@sentry/nextjs": "^7.73.0",
     "@supabase/supabase-js": "^2.38.0",
-    "@upstash/redis": "^1.23.1",
+    "@upstash/redis": "^1.23.3",
     "@vercel/analytics": "^1.1.0",
     "clsx": "^2.0.0",
     "dedent": "^1.5.1",
