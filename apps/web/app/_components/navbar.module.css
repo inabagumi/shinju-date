@@ -1,5 +1,5 @@
 @media (max-width: 996px) {
-  .logo {
+  .logo:is(:not(:global(.navbar-sidebar__brand) .logo)) {
     display: none;
   }
 }
@@ -18,14 +18,4 @@
 .navbarButton:hover {
   color: var(--ifm-navbar-link-color);
   opacity: 0.6;
-}
-
-.search {
-  display: block;
-}
-
-@media (max-width: 996px) {
-  .input {
-    font-size: 1rem;
-  }
 }

@@ -1,0 +1,9 @@
+.search {
+  display: block;
+}
+
+@media (max-width: 996px) {
+  .input {
+    font-size: 1rem;
+  }
+}
