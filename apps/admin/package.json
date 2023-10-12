@@ -1,7 +1,7 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@googleapis/youtube": "^11.0.1",
+    "@googleapis/youtube": "^12.0.0",
     "@hookform/resolvers": "^3.3.2",
     "@js-temporal/polyfill": "^0.4.4",
     "@sentry/nextjs": "^7.73.0",
