@@ -2,6 +2,7 @@ import { track } from '@vercel/analytics/server'
 import clsx from 'clsx'
 import { redirect } from 'next/navigation'
 import styles from './search-form.module.css'
+import SearchTextField from './search-text-fieid'
 
 async function search(formData: FormData) {
   'use server'
@@ -22,9 +23,9 @@ export default function SearchForm() {
         action={search}
         className="navbar__search"
       >
-        <input
+        <SearchTextField
           aria-label="検索"
-          className={clsx('navbar__search-input', styles.input)}
+          className={clsx('navbar__search-input', styles.textField)}
           name="q"
           placeholder="検索"
           type="search"
