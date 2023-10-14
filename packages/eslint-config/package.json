@@ -3,7 +3,7 @@
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^6.7.5",
     "@typescript-eslint/parser": "^6.7.5",
-    "eslint-config-next": "^13.5.5-canary.13",
+    "eslint-config-next": "^13.5.5-canary.15",
     "eslint-config-prettier": "^9.0.0",
     "eslint-config-turbo": "^1.10.15"
   },
