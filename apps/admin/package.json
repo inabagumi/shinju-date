@@ -10,7 +10,7 @@
     "@upstash/ratelimit": "^0.4.4",
     "@upstash/redis": "^1.23.3",
     "mime": "^3.0.0",
-    "nanoid": "^5.0.1",
+    "nanoid": "^5.0.2",
     "next": "^13.5.5-canary.16",
     "p-queue": "^7.4.1",
     "p-retry": "^6.1.0",
