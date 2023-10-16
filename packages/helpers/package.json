@@ -6,7 +6,7 @@
     "@tsconfig/esm": "^1.0.5",
     "@tsconfig/strictest": "^2.0.2",
     "eslint": "^8.51.0",
-    "next": "^13.5.5-canary.16",
+    "next": "^13.5.5-canary.17",
     "tsup": "^7.2.0",
     "typescript": "^5.2.2"
   },
