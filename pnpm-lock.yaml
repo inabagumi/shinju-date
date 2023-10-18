@@ -209,8 +209,8 @@ importers:
         specifier: ^2.0.1
         version: 2.0.1
       '@types/dedent':
-        specifier: ^0.7.0
-        version: 0.7.0
+        specifier: ^0.7.1
+        version: 0.7.1
       '@types/gtag.js':
         specifier: ^0.0.16
         version: 0.0.16
@@ -1791,8 +1791,8 @@ packages:
       '@types/ms': 0.7.31
     dev: true
 
-  /@types/dedent@0.7.0:
-    resolution: {integrity: sha512-EGlKlgMhnLt/cM4DbUSafFdrkeJoC9Mvnj0PUCU7tFmTjMjNRT957kXCx0wYm3JuEq4o4ZsS5vG+NlkM2DMd2A==}
+  /@types/dedent@0.7.1:
+    resolution: {integrity: sha512-NKo033xLkoVCgUobq+FS1S3J6kwWeOcyqEBc2r2oi9J/dKncY11J9VgS0Giv7T4rxVt/MajUVcFppT2TPJA2Cg==}
     dev: true
 
   /@types/estree-jsx@1.0.1:
