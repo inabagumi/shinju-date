@@ -2,7 +2,7 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@js-temporal/polyfill": "^0.4.4",
-    "@mdx-js/react": "^2.3.0",
+    "@mdx-js/react": "^3.0.0",
     "@reach/skip-nav": "^0.18.0",
     "@sentry/nextjs": "^7.75.0",
     "@supabase/supabase-js": "^2.38.2",
@@ -31,7 +31,7 @@
     "@csstools/postcss-bundler": "^1.0.6",
     "@fullhuman/postcss-purgecss": "^5.0.0",
     "@jest/types": "^29.6.3",
-    "@mdx-js/loader": "^2.3.0",
+    "@mdx-js/loader": "^3.0.0",
     "@next/mdx": "^13.5.6",
     "@shinju-date/eslint-config": "workspace:*",
     "@shinju-date/schema": "workspace:*",
