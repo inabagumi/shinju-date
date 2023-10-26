@@ -6,7 +6,7 @@
     "@tsconfig/esm": "^1.0.5",
     "@tsconfig/strictest": "^2.0.2",
     "eslint": "^8.52.0",
-    "next": "^13.5.6",
+    "next": "^14.0.0",
     "tsup": "^7.2.0",
     "typescript": "^5.2.2"
   },
@@ -22,7 +22,7 @@
   "name": "@shinju-date/helpers",
   "private": true,
   "peerDependencies": {
-    "next": "^13.2.4"
+    "next": "^14.0.0"
   },
   "repository": {
     "directory": "packages/helpers",
