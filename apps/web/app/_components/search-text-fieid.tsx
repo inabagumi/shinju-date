@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation'
 import { type ComponentPropsWithoutRef, forwardRef, useMemo } from 'react'
-import { experimental_useFormStatus as useFormStatus } from 'react-dom'
+import { useFormStatus } from 'react-dom'
 
 export default forwardRef<HTMLInputElement, ComponentPropsWithoutRef<'input'>>(
   function SearchTextField({ disabled, value: defaultValue, ...props }, ref) {
