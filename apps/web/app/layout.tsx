@@ -1,6 +1,6 @@
 import './globals.css'
 import { Analytics } from '@vercel/analytics/react'
-import { type Metadata } from 'next'
+import { type Metadata, type Viewport } from 'next'
 import Link from 'next/link'
 import { type ReactNode } from 'react'
 import { SkipNavLink } from '@/components/skip-nav'
@@ -27,11 +27,14 @@ export const metadata: Metadata = {
   metadataBase: process.env.NEXT_PUBLIC_BASE_URL
     ? new URL(process.env.NEXT_PUBLIC_BASE_URL)
     : null,
-  themeColor,
   title: {
     default: siteName,
     template: `%s - ${siteName}`
   }
+}
+
+export const viewport: Viewport = {
+  themeColor
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
