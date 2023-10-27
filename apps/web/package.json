@@ -4,7 +4,7 @@
     "@js-temporal/polyfill": "^0.4.4",
     "@mdx-js/react": "^3.0.0",
     "@reach/skip-nav": "^0.18.0",
-    "@sentry/nextjs": "^7.75.1",
+    "@sentry/nextjs": "^7.76.0",
     "@supabase/supabase-js": "^2.38.4",
     "@upstash/redis": "^1.24.1",
     "@vercel/analytics": "^1.1.1",
