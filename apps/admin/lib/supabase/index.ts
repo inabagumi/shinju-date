@@ -83,11 +83,6 @@ export function createSupabaseClient({
             storageKey: createStorageKey(sessionID)
           }
         }
-      : {}),
-    global: {
-      fetch(input, init): Promise<Response> {
-        return fetch(input, { ...init, cache: 'no-store' })
-      }
-    }
+      : {})
   })
 }
