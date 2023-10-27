@@ -10,8 +10,7 @@ const supabaseBaseURL =
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    mdxRs: true,
-    serverActions: true
+    mdxRs: true
   },
   images: {
     formats: ['image/avif', 'image/webp'],
