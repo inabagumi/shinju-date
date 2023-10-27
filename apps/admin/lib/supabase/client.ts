@@ -132,11 +132,6 @@ export function createSupabaseClient({
         persistSession: true,
         storage: new SupabaseAuthStorage(session),
         storageKey: CURRENT_SESSION_KEY
-      },
-      global: {
-        fetch(input, init): Promise<Response> {
-          return fetch(input, { ...init, cache: 'no-store' })
-        }
       }
     }
   )
