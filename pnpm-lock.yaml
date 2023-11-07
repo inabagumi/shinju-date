@@ -218,8 +218,8 @@ importers:
         specifier: ^29.5.7
         version: 29.5.7
       '@types/lodash.chunk':
-        specifier: ^4.2.8
-        version: 4.2.8
+        specifier: ^4.2.9
+        version: 4.2.9
       '@types/lodash.groupby':
         specifier: ^4.6.8
         version: 4.6.8
@@ -1843,8 +1843,8 @@ packages:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
     dev: false
 
-  /@types/lodash.chunk@4.2.8:
-    resolution: {integrity: sha512-wSUIKYp9PMko5SjZIbdoy7mRiEXAVXWFS3kFQu5wDl6+DtFBJ5OvtD62kJIJ+rH3ELPLijUr2gV3EVT+iqO1og==}
+  /@types/lodash.chunk@4.2.9:
+    resolution: {integrity: sha512-Z9VtFUSnmT0No/QymqfG9AGbfOA4O5qB/uyP89xeZBqDAsKsB4gQFTqt7d0pHjbsTwtQ4yZObQVHuKlSOhIJ5Q==}
     dependencies:
       '@types/lodash': 4.14.200
     dev: true
