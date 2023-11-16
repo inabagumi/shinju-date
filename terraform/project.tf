@@ -34,6 +34,11 @@ resource "vercel_project_domain" "ink" {
   team_id              = vercel_project.this.team_id
 }
 
+resource "random_password" "cron_secret" {
+  length  = 16
+  special = false
+}
+
 resource "vercel_project_environment_variable" "base_url" {
   key        = "NEXT_PUBLIC_BASE_URL"
   project_id = vercel_project.this.id
@@ -132,4 +137,12 @@ resource "vercel_project_environment_variable" "admin_upstash_redis_rest_url_dev
   target     = ["preview", "development"]
   team_id    = vercel_project.admin.team_id
   value      = var.upstash_redis_rest_url_dev
+}
+
+resource "vercel_project_environment_variable" "cron_secret" {
+  key        = "CRON_SECRET"
+  project_id = vercel_project.admin.id
+  target     = ["production"]
+  team_id    = vercel_project.admin.team_id
+  value      = random_password.cron_secret.result
 }

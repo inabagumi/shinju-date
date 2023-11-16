@@ -19,7 +19,7 @@
     "ghcr.io/devcontainers/features/terraform:1": {
       "terragrunt": "none",
       "tflint": "none",
-      "version": "1.3.9"
+      "version": "1.6.4"
     }
   },
   "forwardPorts": [3000, 4000],
