@@ -26,7 +26,7 @@ export function assignSessionID({
 }
 
 export function createErrorResponse(status: number, message?: string) {
-  return NextResponse.json(
+  return Response.json(
     { error: message ?? status.toString(10) },
     {
       status

@@ -1,5 +1,5 @@
 import { type Session } from '@supabase/supabase-js'
-import { type NextRequest, NextResponse } from 'next/server'
+import { type NextRequest } from 'next/server'
 import { sessionSchema } from '@/lib/schemas'
 import { createErrorResponse, getSessionID } from '@/lib/session'
 import {
@@ -11,7 +11,7 @@ import {
 export const runtime = 'edge'
 export const revalidate = 0
 
-export async function DELETE(request: NextRequest): Promise<NextResponse> {
+export async function DELETE(request: NextRequest): Promise<Response> {
   const sessionID = getSessionID(request)
 
   if (!sessionID) {
@@ -25,12 +25,12 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     return createErrorResponse(500, 'Session deletion failed.')
   }
 
-  return new NextResponse(null, {
+  return new Response(null, {
     status: 204
   })
 }
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<Response> {
   const sessionID = getSessionID(request)
 
   if (!sessionID) {
@@ -51,10 +51,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return createErrorResponse(404, 'Session does not exist.')
   }
 
-  return NextResponse.json(session)
+  return Response.json(session)
 }
 
-export async function PUT(request: NextRequest): Promise<NextResponse> {
+export async function PUT(request: NextRequest): Promise<Response> {
   const sessionID = getSessionID(request)
 
   if (!sessionID) {
@@ -92,7 +92,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     return createErrorResponse(404, 'Session does not exist.')
   }
 
-  return NextResponse.json(session, {
+  return Response.json(session, {
     status: 201
   })
 }

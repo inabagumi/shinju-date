@@ -1,6 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill'
+import { verifyCronRequest } from '@shinju-date/helpers'
 import { type Database } from '@shinju-date/schema'
-import { NextResponse } from 'next/server'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { channelsUpdate as ratelimit } from '@/lib/ratelimit'
 import { createErrorResponse } from '@/lib/session'
@@ -16,7 +16,11 @@ type Channel = Pick<
   'name' | 'slug' | 'url'
 >
 
-export async function POST(): Promise<NextResponse> {
+export async function POST(request: Request): Promise<Response> {
+  if (!verifyCronRequest(request, { cronSecure: process.env.CRON_SECRET })) {
+    return createErrorResponse(401, 'Unauthorized')
+  }
+
   const { success } = await ratelimit.limit('channels:update')
 
   if (!success) {
@@ -116,7 +120,7 @@ export async function POST(): Promise<NextResponse> {
     }
   }
 
-  return new NextResponse(null, {
+  return new Response(null, {
     status: 204
   })
 }
