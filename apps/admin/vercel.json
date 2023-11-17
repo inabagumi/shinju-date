@@ -15,7 +15,7 @@
     },
     {
       "path": "/api/videos/update",
-      "schedule": "1/2 * * * *"
+      "schedule": "1/20 * * * *"
     }
   ]
 }
