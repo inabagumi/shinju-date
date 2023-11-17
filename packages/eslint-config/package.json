@@ -9,7 +9,7 @@
   },
   "description": "",
   "devDependencies": {
-    "eslint": "^8.53.0"
+    "eslint": "^8.54.0"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
