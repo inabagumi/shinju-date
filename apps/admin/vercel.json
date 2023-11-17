@@ -17,6 +17,5 @@
       "path": "/api/videos/update",
       "schedule": "1/2 * * * *"
     }
-  ],
-  "ignoreCommand": "pnpm dlx turbo-ignore"
+  ]
 }

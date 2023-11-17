@@ -8,7 +8,7 @@ import { createSupabaseClient } from '@/lib/supabase'
 export const runtime = 'edge'
 export const revalidate = 0
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+export async function POST(request: NextRequest): Promise<Response> {
   let maybeSession: unknown
   try {
     maybeSession = await request.json()

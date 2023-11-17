@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { NextResponse } from 'next/server'
+import { verifyCronRequest } from '@shinju-date/helpers'
 import PQueue from 'p-queue'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { videosUpdate as ratelimit } from '@/lib/ratelimit'
@@ -12,7 +12,11 @@ export const runtime = 'nodejs'
 export const revalidate = 0
 export const maxDuration = 120
 
-export async function POST(): Promise<NextResponse> {
+export async function POST(request: Request): Promise<Response> {
+  if (!verifyCronRequest(request, { cronSecure: process.env.CRON_SECRET })) {
+    return createErrorResponse(401, 'Unauthorized')
+  }
+
   const { success } = await ratelimit.limit('videos:update')
 
   if (!success) {
@@ -104,7 +108,7 @@ export async function POST(): Promise<NextResponse> {
     }
   }
 
-  return new NextResponse(null, {
+  return new Response(null, {
     status: 204
   })
 }

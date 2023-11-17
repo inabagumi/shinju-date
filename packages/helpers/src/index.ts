@@ -17,6 +17,27 @@ export function normalizePath(pathname?: string): string {
   return '/'
 }
 
+export function verifyCronRequest(
+  request: Request,
+  { cronSecure }: { cronSecure?: string } = {}
+): boolean {
+  if (typeof cronSecure === 'undefined') {
+    return true
+  }
+
+  const authHeader = request.headers.get('Authorization')
+
+  if (!authHeader) {
+    return false
+  }
+
+  const [type, credentials] = authHeader
+    .split(/\s+/)
+    .map((value) => value.trim())
+
+  return type === 'Bearer' && credentials === cronSecure
+}
+
 export function verifyOrigin(request: Request): boolean {
   const origin = request.headers.get('Origin')
 

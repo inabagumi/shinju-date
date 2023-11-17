@@ -1,6 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill'
+import { verifyCronRequest } from '@shinju-date/helpers'
 import { type Database } from '@shinju-date/schema'
-import { type NextRequest, NextResponse } from 'next/server'
+import { type NextRequest } from 'next/server'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import {
   videosCheckAll as ratelimitAll,
@@ -156,7 +157,11 @@ function deleteVideos({
   ])
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+export async function POST(request: NextRequest): Promise<Response> {
+  if (!verifyCronRequest(request, { cronSecure: process.env.CRON_SECRET })) {
+    return createErrorResponse(401, 'Unauthorized')
+  }
+
   const { searchParams } = request.nextUrl
   const all =
     searchParams.has('all') &&
@@ -230,7 +235,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  return new NextResponse(null, {
+  return new Response(null, {
     status: 204
   })
 }

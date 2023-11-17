@@ -1,11 +1,10 @@
-import { NextResponse } from 'next/server'
 import { createErrorResponse } from '@/lib/session'
 import { createSupabaseClient } from '@/lib/supabase'
 
 export const revalidate = 0
 export const maxDuration = 120
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(): Promise<Response> {
   const supabaseClient = createSupabaseClient()
   const { data: rawChannels, error } = await supabaseClient
     .from('channels')
@@ -22,7 +21,7 @@ export async function GET(): Promise<NextResponse> {
     url: channel.url
   }))
 
-  return NextResponse.json(channels, {
+  return Response.json(channels, {
     headers: {
       'Cache-Control': 'max-age=60'
     }

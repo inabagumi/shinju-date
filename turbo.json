@@ -5,6 +5,7 @@
       "dependsOn": ["^build"],
       "env": [
         "ALGOLIA_ADMIN_API_KEY",
+        "CRON_SECRET",
         "GOOGLE_API_KEY",
         "NEXT_PUBLIC_BASE_URL",
         "NEXT_PUBLIC_SENTRY_DSN",
