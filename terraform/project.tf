@@ -10,6 +10,9 @@ resource "vercel_project" "this" {
   root_directory             = "apps/web"
   serverless_function_region = "hnd1"
   team_id                    = var.vercel_team_id
+  vercel_authentication = {
+    protect_production = false
+  }
 }
 
 resource "vercel_project_domain" "date" {
@@ -32,11 +35,6 @@ resource "vercel_project_domain" "ink" {
   redirect             = vercel_project_domain.date.domain
   redirect_status_code = 308
   team_id              = vercel_project.this.team_id
-}
-
-resource "random_password" "cron_secret" {
-  length  = 16
-  special = false
 }
 
 resource "vercel_project_environment_variable" "base_url" {
@@ -91,12 +89,20 @@ resource "vercel_project" "admin" {
   root_directory             = "apps/admin"
   serverless_function_region = "hnd1"
   team_id                    = var.vercel_team_id
+  vercel_authentication = {
+    protect_production = false
+  }
 }
 
 resource "vercel_project_domain" "admin" {
   domain     = "admin.shinju.date"
   project_id = vercel_project.admin.id
   team_id    = vercel_project.admin.team_id
+}
+
+resource "random_password" "cron_secret" {
+  length  = 16
+  special = false
 }
 
 resource "vercel_project_environment_variable" "admin_google_api_key" {
