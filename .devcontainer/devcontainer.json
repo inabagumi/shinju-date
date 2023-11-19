@@ -28,7 +28,7 @@
     "memory": "8gb",
     "storage": "32gb"
   },
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-18-bookworm",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bookworm",
   "name": "SHINJU DATE",
   "portsAttributes": {
     "3000": {
