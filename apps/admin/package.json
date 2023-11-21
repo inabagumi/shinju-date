@@ -6,7 +6,7 @@
     "@js-temporal/polyfill": "^0.4.4",
     "@sentry/nextjs": "^7.81.0",
     "@shinju-date/helpers": "workspace:*",
-    "@supabase/supabase-js": "^2.38.4",
+    "@supabase/supabase-js": "^2.38.5",
     "@upstash/ratelimit": "^0.4.4",
     "@upstash/redis": "^1.25.1",
     "mime": "^3.0.0",
