@@ -7,7 +7,7 @@
     "@tsconfig/strictest": "^2.0.2",
     "eslint": "^8.54.0",
     "supabase": "^1.113.2",
-    "tsup": "^7.3.0",
+    "tsup": "^8.0.1",
     "typescript": "^5.3.2"
   },
   "homepage": "https://shinju.date/",
