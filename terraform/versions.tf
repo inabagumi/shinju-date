@@ -7,7 +7,7 @@ terraform {
 
     vercel = {
       source  = "vercel/vercel"
-      version = "0.16.0"
+      version = "1.0.0"
     }
   }
 
