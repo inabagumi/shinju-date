@@ -11,7 +11,7 @@ resource "vercel_project" "this" {
   serverless_function_region = "hnd1"
   team_id                    = var.vercel_team_id
   vercel_authentication = {
-    protect_production = false
+    deployment_type = "standard_protection"
   }
 }
 
@@ -90,7 +90,7 @@ resource "vercel_project" "admin" {
   serverless_function_region = "hnd1"
   team_id                    = var.vercel_team_id
   vercel_authentication = {
-    protect_production = false
+    deployment_type = "standard_protection"
   }
 }
 
