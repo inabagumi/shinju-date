@@ -186,10 +186,10 @@ importers:
     devDependencies:
       '@csstools/postcss-bundler':
         specifier: ^1.0.7
-        version: 1.0.7(postcss@8.4.31)
+        version: 1.0.7(postcss@8.4.32)
       '@fullhuman/postcss-purgecss':
         specifier: ^5.0.0
-        version: 5.0.0(postcss@8.4.31)
+        version: 5.0.0(postcss@8.4.32)
       '@jest/types':
         specifier: ^29.6.3
         version: 29.6.3
@@ -237,7 +237,7 @@ importers:
         version: 18.2.17
       autoprefixer:
         specifier: ^10.4.16
-        version: 10.4.16(postcss@8.4.31)
+        version: 10.4.16(postcss@8.4.32)
       eslint:
         specifier: ~8.55.0
         version: 8.55.0
@@ -245,8 +245,8 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@20.10.2)
       postcss:
-        specifier: ^8.4.31
-        version: 8.4.31
+        specifier: ^8.4.32
+        version: 8.4.32
       rehype-external-links:
         specifier: ^3.0.0
         version: 3.0.0
@@ -696,7 +696,7 @@ packages:
     engines: {node: ^14 || ^16 || >=18}
     dev: true
 
-  /@csstools/postcss-bundler@1.0.7(postcss@8.4.31):
+  /@csstools/postcss-bundler@1.0.7(postcss@8.4.32):
     resolution: {integrity: sha512-LPhMspDTwDQVjdsPsoA9Yw8ZTJq1tTVB8Vsap4KH2Uw49RIvKgS6x4m4/Etxks32hMiuyBlFpQHdPILT4WV41A==}
     engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
@@ -704,11 +704,11 @@ packages:
     dependencies:
       '@csstools/css-parser-algorithms': 2.3.2(@csstools/css-tokenizer@2.2.1)
       '@csstools/css-tokenizer': 2.2.1
-      '@csstools/postcss-rebase-url': 1.0.3(postcss@8.4.31)
-      postcss: 8.4.31
+      '@csstools/postcss-rebase-url': 1.0.3(postcss@8.4.32)
+      postcss: 8.4.32
     dev: true
 
-  /@csstools/postcss-rebase-url@1.0.3(postcss@8.4.31):
+  /@csstools/postcss-rebase-url@1.0.3(postcss@8.4.32):
     resolution: {integrity: sha512-hXA8vtcMXaY40ATkzlQ+QTLyJC3qsYPmC2u3/rr7dci6nhKnN0tjn3C6UM8YCFsxf1Yn6H4GVzGdCcwL2e7PEg==}
     engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
@@ -716,7 +716,7 @@ packages:
     dependencies:
       '@csstools/css-parser-algorithms': 2.3.2(@csstools/css-tokenizer@2.2.1)
       '@csstools/css-tokenizer': 2.2.1
-      postcss: 8.4.31
+      postcss: 8.4.32
     dev: true
 
   /@dabh/diagnostics@2.0.3:
@@ -958,12 +958,12 @@ packages:
     resolution: {integrity: sha512-qQfo2mxH5yVom1kacMtZZJFVdW+E70mqHMJvVg6WTLo+VBuQJ4TojZlfWBjK0ve5BdEeNAVxOsl/nvNMpJOaJA==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
-  /@fullhuman/postcss-purgecss@5.0.0(postcss@8.4.31):
+  /@fullhuman/postcss-purgecss@5.0.0(postcss@8.4.32):
     resolution: {integrity: sha512-onDS/b/2pMRzqSoj4qOs2tYFmOpaspjTAgvACIHMPiicu1ptajiBruTrjBzTKdxWdX0ldaBb7wj8nEaTLyFkJw==}
     peerDependencies:
       postcss: ^8.0.0
     dependencies:
-      postcss: 8.4.31
+      postcss: 8.4.32
       purgecss: 5.0.0
     dev: true
 
@@ -2388,7 +2388,7 @@ packages:
       has-symbols: 1.0.3
     dev: false
 
-  /autoprefixer@10.4.16(postcss@8.4.31):
+  /autoprefixer@10.4.16(postcss@8.4.32):
     resolution: {integrity: sha512-7vd3UC6xKp0HLfua5IjZlcXvGAGy7cBAXTg2lyQ/8WpNhd6SiZ8Be+xm3FyBSYJx5GKcpRCzBh7RH4/0dnY+uQ==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
@@ -2400,7 +2400,7 @@ packages:
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.0.0
-      postcss: 8.4.31
+      postcss: 8.4.32
       postcss-value-parser: 4.2.0
     dev: true
 
@@ -6179,6 +6179,15 @@ packages:
       picocolors: 1.0.0
       source-map-js: 1.0.2
 
+  /postcss@8.4.32:
+    resolution: {integrity: sha512-D/kj5JNu6oo2EIy+XL/26JEDTlIbB8hw85G8StOE6L74RQAVVP5rej6wxCNqyMbR4RkPfqvezVbPw81Ngd6Kcw==}
+    engines: {node: ^10 || ^12 || >=14}
+    dependencies:
+      nanoid: 3.3.7
+      picocolors: 1.0.0
+      source-map-js: 1.0.2
+    dev: true
+
   /prebuild-install@7.1.1:
     resolution: {integrity: sha512-jAXscXWMcCK8GgCoHOfIr0ODh5ai8mj63L2nWrjuAgXE6tDyYGnx4/8o/rCgU+B4JSyZBKbeZqzhtwtC3ovxjw==}
     engines: {node: '>=10'}
@@ -6271,7 +6280,7 @@ packages:
     dependencies:
       commander: 9.5.0
       glob: 8.1.0
-      postcss: 8.4.31
+      postcss: 8.4.32
       postcss-selector-parser: 6.0.13
     dev: true
 
