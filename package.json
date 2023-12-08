@@ -4,7 +4,7 @@
   "devDependencies": {
     "@inabagumi/prettier-config": "^2.0.2",
     "prettier": "~3.1.0",
-    "turbo": "^1.11.0",
+    "turbo": "^1.11.1",
     "typescript": "^5.3.3"
   },
   "homepage": "https://shinju.date/",
