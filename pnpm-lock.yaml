@@ -100,8 +100,8 @@ importers:
         specifier: ^20.10.4
         version: 20.10.4
       '@types/react':
-        specifier: ^18.2.42
-        version: 18.2.42
+        specifier: ^18.2.43
+        version: 18.2.43
       eslint:
         specifier: ~8.55.0
         version: 8.55.0
@@ -116,7 +116,7 @@ importers:
         version: 0.4.4
       '@mdx-js/react':
         specifier: ^3.0.0
-        version: 3.0.0(@types/react@18.2.42)(react@18.2.0)
+        version: 3.0.0(@types/react@18.2.43)(react@18.2.0)
       '@reach/skip-nav':
         specifier: ^0.18.0
         version: 0.18.0(react-dom@18.2.0)(react@18.2.0)
@@ -230,8 +230,8 @@ importers:
         specifier: ^20.10.4
         version: 20.10.4
       '@types/react':
-        specifier: ^18.2.42
-        version: 18.2.42
+        specifier: ^18.2.43
+        version: 18.2.43
       '@types/react-dom':
         specifier: ^18.2.17
         version: 18.2.17
@@ -1318,14 +1318,14 @@ packages:
       - supports-color
     dev: true
 
-  /@mdx-js/react@3.0.0(@types/react@18.2.42)(react@18.2.0):
+  /@mdx-js/react@3.0.0(@types/react@18.2.43)(react@18.2.0):
     resolution: {integrity: sha512-nDctevR9KyYFyV+m+/+S4cpzCWHqj+iHDHq3QrsWezcC+B17uZdIWgCguESUkwFhM3n/56KxWVE3V6EokrmONQ==}
     peerDependencies:
       '@types/react': '>=16'
       react: '>=16'
     dependencies:
       '@types/mdx': 2.0.10
-      '@types/react': 18.2.42
+      '@types/react': 18.2.43
       react: 18.2.0
 
   /@next/env@14.0.4:
@@ -1349,7 +1349,7 @@ packages:
         optional: true
     dependencies:
       '@mdx-js/loader': 3.0.0
-      '@mdx-js/react': 3.0.0(@types/react@18.2.42)(react@18.2.0)
+      '@mdx-js/react': 3.0.0(@types/react@18.2.43)(react@18.2.0)
       source-map: 0.7.4
     dev: true
 
@@ -2000,11 +2000,11 @@ packages:
   /@types/react-dom@18.2.17:
     resolution: {integrity: sha512-rvrT/M7Df5eykWFxn6MYt5Pem/Dbyc1N8Y0S9Mrkw2WFCRiqUgw9P7ul2NpwsXCSM1DVdENzdG9J5SreqfAIWg==}
     dependencies:
-      '@types/react': 18.2.42
+      '@types/react': 18.2.43
     dev: true
 
-  /@types/react@18.2.42:
-    resolution: {integrity: sha512-c1zEr96MjakLYus/wPnuWDo1/zErfdU9rNsIGmE+NV71nx88FG9Ttgo5dqorXTu/LImX2f63WBP986gJkMPNbA==}
+  /@types/react@18.2.43:
+    resolution: {integrity: sha512-nvOV01ZdBdd/KW6FahSbcNplt2jCJfyWdTos61RYHV+FVv5L/g9AOX1bmbVcWcLFL8+KHQfh1zVIQrud6ihyQA==}
     dependencies:
       '@types/prop-types': 15.7.11
       '@types/scheduler': 0.16.8
