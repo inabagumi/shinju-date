@@ -10,10 +10,10 @@ importers:
     devDependencies:
       '@inabagumi/prettier-config':
         specifier: ^2.0.2
-        version: 2.0.2(prettier@3.1.0)
+        version: 2.0.2(prettier@3.1.1)
       prettier:
-        specifier: ~3.1.0
-        version: 3.1.0
+        specifier: ~3.1.1
+        version: 3.1.1
       turbo:
         specifier: ^1.11.1
         version: 1.11.1
@@ -1002,12 +1002,12 @@ packages:
   /@humanwhocodes/object-schema@2.0.1:
     resolution: {integrity: sha512-dvuCeX5fC9dXgJn9t+X5atfmgQAzUOWqS1254Gh0m6i8wKd10ebXkfNKiRK+1GWi/yTvvLDHpoxLr0xxxeslWw==}
 
-  /@inabagumi/prettier-config@2.0.2(prettier@3.1.0):
+  /@inabagumi/prettier-config@2.0.2(prettier@3.1.1):
     resolution: {integrity: sha512-R35xTbZ0QeZ31k6S8KoSpzDSPPbFggYE6DgoVpW4cwIHF9VwAWToTfxd7vJ4J7m1rmMIJMWSvuYmPu1lvEcBNw==}
     peerDependencies:
       prettier: '>= 2.4.0'
     dependencies:
-      prettier: 3.1.0
+      prettier: 3.1.1
     dev: true
 
   /@istanbuljs/load-nyc-config@1.1.0:
@@ -6162,8 +6162,8 @@ packages:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
 
-  /prettier@3.1.0:
-    resolution: {integrity: sha512-TQLvXjq5IAibjh8EpBIkNKxO749UEWABoiIZehEPiY4GNpVdhaFKqSTu+QrlU6D2dPAfubRmtJTi4K4YkQ5eXw==}
+  /prettier@3.1.1:
+    resolution: {integrity: sha512-22UbSzg8luF4UuZtzgiUOfcGM8s4tjBv6dJRT7j275NXsy2jb4aJa4NNveul5x4eqlF1wuhuR2RElK71RvmVaw==}
     engines: {node: '>=14'}
     hasBin: true
     dev: true
