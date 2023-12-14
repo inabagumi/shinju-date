@@ -57,8 +57,8 @@ importers:
         specifier: ^14.0.4
         version: 14.0.4(react-dom@18.2.0)(react@18.2.0)
       p-queue:
-        specifier: ^8.0.0
-        version: 8.0.0
+        specifier: ^8.0.1
+        version: 8.0.1
       p-retry:
         specifier: ^6.1.0
         version: 6.1.0
@@ -6000,8 +6000,8 @@ packages:
     dependencies:
       p-limit: 3.1.0
 
-  /p-queue@8.0.0:
-    resolution: {integrity: sha512-7LAaj8F47D5963LiTIAb/4UWR6w6SnDrDlxXg9ev/U0Lg9h35Kg8C8KiBry0c6MUofSicdLsEvS0j25gHAyCuA==}
+  /p-queue@8.0.1:
+    resolution: {integrity: sha512-NXzu9aQJTAzbBqOt2hwsR63ea7yvxJc0PwN/zobNAudYfb1B7R08SzB4TsLeSbUCuG467NhnoT0oO6w1qRO+BA==}
     engines: {node: '>=18'}
     dependencies:
       eventemitter3: 5.0.1
