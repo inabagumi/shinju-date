@@ -8,7 +8,7 @@
     "@shinju-date/helpers": "workspace:*",
     "@supabase/supabase-js": "^2.39.1",
     "@upstash/ratelimit": "^1.0.0",
-    "@upstash/redis": "^1.25.2",
+    "@upstash/redis": "^1.27.1",
     "mime": "^4.0.1",
     "nanoid": "^5.0.4",
     "next": "^14.0.4",
