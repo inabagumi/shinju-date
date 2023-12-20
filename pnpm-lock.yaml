@@ -145,8 +145,8 @@ importers:
         specifier: ^0.1.13
         version: 0.1.13
       ics:
-        specifier: ^3.7.1
-        version: 3.7.1
+        specifier: ^3.7.2
+        version: 3.7.2
       infima:
         specifier: ^0.2.0-alpha.43
         version: 0.2.0-alpha.43
@@ -4227,8 +4227,8 @@ packages:
       safer-buffer: 2.1.2
     dev: false
 
-  /ics@3.7.1:
-    resolution: {integrity: sha512-FlCDHEjqi2vcY2p6b4zBu2bUfXep0VoFzrBAtnVzJPPPAV7w84TX7JhFzvtWY6ArLOCZTE6zpR4xfw5U2LSR1A==}
+  /ics@3.7.2:
+    resolution: {integrity: sha512-UC5bBJYKyzkYZv4/AoIV9dsZw+rwFkUOtHHhnxmb0HTUEpfDmfl5sB9DlePKrTxx6SGMXiIQbiElf66viSTB0A==}
     dependencies:
       nanoid: 3.3.7
       runes2: 1.1.3
