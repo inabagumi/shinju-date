@@ -8,6 +8,7 @@
     "@supabase/supabase-js": "^2.39.1",
     "@upstash/redis": "^1.27.1",
     "@vercel/analytics": "^1.1.1",
+    "@vercel/speed-insights": "^1.0.2",
     "clsx": "^2.0.0",
     "dedent": "^1.5.1",
     "edge-sitemap": "^1.1.1",
