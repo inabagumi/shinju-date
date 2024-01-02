@@ -5,7 +5,7 @@
     "@mdx-js/react": "^3.0.0",
     "@reach/skip-nav": "^0.18.0",
     "@sentry/nextjs": "^7.91.0",
-    "@supabase/supabase-js": "^2.39.1",
+    "@supabase/supabase-js": "^2.39.2",
     "@upstash/redis": "^1.27.1",
     "@vercel/analytics": "^1.1.1",
     "@vercel/speed-insights": "^1.0.2",
