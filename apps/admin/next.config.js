@@ -9,6 +9,8 @@ export default withSentryConfig(
   nextConfig,
   {},
   {
-    hideSourceMaps: true
+    automaticVercelMonitors: true,
+    hideSourceMaps: true,
+    tunnelRoute: '/api/monitoring/sentry'
   }
 )
