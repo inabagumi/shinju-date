@@ -5,6 +5,10 @@ const nextConfig = {
   reactStrictMode: true
 }
 
-export default withSentryConfig(nextConfig, {
-  silent: true
-})
+export default withSentryConfig(
+  nextConfig,
+  {},
+  {
+    hideSourceMaps: true
+  }
+)
