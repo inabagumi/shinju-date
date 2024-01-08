@@ -48,8 +48,7 @@ const nextConfig = {
         }
       ]
     }
-  },
-  swcMinify: false
+  }
 }
 
 const withMDX = createMDX({
