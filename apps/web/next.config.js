@@ -10,7 +10,8 @@ const supabaseBaseURL =
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    mdxRs: true
+    mdxRs: true,
+    serverComponentsExternalPackages: ['@sentry/profiling-node']
   },
   images: {
     formats: ['image/avif', 'image/webp'],
