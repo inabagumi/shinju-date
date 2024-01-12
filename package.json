@@ -3,7 +3,7 @@
   "description": "SHINJU DATE is a web service for searching videos.",
   "devDependencies": {
     "@inabagumi/prettier-config": "^2.0.2",
-    "prettier": "~3.1.1",
+    "prettier": "~3.2.0",
     "turbo": "^1.11.3",
     "typescript": "^5.3.3"
   },
