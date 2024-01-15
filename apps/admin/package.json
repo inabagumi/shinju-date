@@ -30,7 +30,7 @@
     "@tsconfig/next": "^2.0.1",
     "@types/mime": "^3.0.4",
     "@types/node": "^20.11.2",
-    "@types/react": "^18.2.47",
+    "@types/react": "^18.2.48",
     "eslint": "~8.56.0",
     "typescript": "~5.3.3"
   },
