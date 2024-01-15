@@ -14,7 +14,8 @@
         "NODE_ENV",
         "SUPABASE_SERVICE_ROLE_KEY",
         "UPSTASH_REDIS_REST_TOKEN",
-        "UPSTASH_REDIS_REST_URL"
+        "UPSTASH_REDIS_REST_URL",
+        "VERCEL_ENV"
       ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
