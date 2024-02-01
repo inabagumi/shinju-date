@@ -10,7 +10,7 @@
     "@supabase/supabase-js": "^2.39.3",
     "@upstash/ratelimit": "^1.0.0",
     "@upstash/redis": "^1.28.2",
-    "@vercel/otel": "^1.1.0",
+    "@vercel/otel": "^1.2.0",
     "mime": "^4.0.1",
     "nanoid": "^5.0.4",
     "next": "^14.1.0",
