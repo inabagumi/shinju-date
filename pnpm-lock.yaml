@@ -51,8 +51,8 @@ importers:
         specifier: ^1.28.3
         version: 1.28.3
       '@vercel/otel':
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.2.1
+        version: 1.2.1
       mime:
         specifier: ^4.0.1
         version: 4.0.1
@@ -142,8 +142,8 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2
       '@vercel/otel':
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.2.1
+        version: 1.2.1
       '@vercel/speed-insights':
         specifier: ^1.0.9
         version: 1.0.9(next@14.1.0)(react@18.2.0)
@@ -2648,8 +2648,8 @@ packages:
       server-only: 0.0.1
     dev: false
 
-  /@vercel/otel@1.2.0:
-    resolution: {integrity: sha512-SAvJZBgC07KbfBQzRvhOeGBDQ5u/8zzdTBK3ZPOMaCGQFHMJrK2lFSSYh1wC+bR2W8qLigSm9cye4PAc1hzabA==}
+  /@vercel/otel@1.2.1:
+    resolution: {integrity: sha512-/KyiPGwkt+eO8rnw+43ZQU0KLBANGgXxMR1isXk6iw3uKafC+7/5SZ7RiQm6jPxfdgxoF5UEtbd5Nkw3u0zQMw==}
     engines: {node: '>=18'}
     peerDependencies:
       '@opentelemetry/api': ^1.7.0
