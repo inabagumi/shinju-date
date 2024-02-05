@@ -201,10 +201,10 @@ importers:
     devDependencies:
       '@csstools/postcss-bundler':
         specifier: ^1.0.9
-        version: 1.0.9(postcss@8.4.33)
+        version: 1.0.9(postcss@8.4.34)
       '@fullhuman/postcss-purgecss':
         specifier: ^5.0.0
-        version: 5.0.0(postcss@8.4.33)
+        version: 5.0.0(postcss@8.4.34)
       '@jest/types':
         specifier: ^29.6.3
         version: 29.6.3
@@ -252,7 +252,7 @@ importers:
         version: 18.2.18
       autoprefixer:
         specifier: ^10.4.17
-        version: 10.4.17(postcss@8.4.33)
+        version: 10.4.17(postcss@8.4.34)
       eslint:
         specifier: ~8.56.0
         version: 8.56.0
@@ -260,8 +260,8 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@20.11.16)
       postcss:
-        specifier: ^8.4.33
-        version: 8.4.33
+        specifier: ^8.4.34
+        version: 8.4.34
       rehype-external-links:
         specifier: ^3.0.0
         version: 3.0.0
@@ -711,7 +711,7 @@ packages:
     engines: {node: ^14 || ^16 || >=18}
     dev: true
 
-  /@csstools/postcss-bundler@1.0.9(postcss@8.4.33):
+  /@csstools/postcss-bundler@1.0.9(postcss@8.4.34):
     resolution: {integrity: sha512-oBZ2yLnkCSfO9AGSzgvTYHCOGjviQoj+gzOY/JsufBDt3Byz8a+rqLTUs6gyFAj0ygidSvNLgvfnTkS4omtcDA==}
     engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
@@ -719,11 +719,11 @@ packages:
     dependencies:
       '@csstools/css-parser-algorithms': 2.5.0(@csstools/css-tokenizer@2.2.3)
       '@csstools/css-tokenizer': 2.2.3
-      '@csstools/postcss-rebase-url': 1.0.5(postcss@8.4.33)
-      postcss: 8.4.33
+      '@csstools/postcss-rebase-url': 1.0.5(postcss@8.4.34)
+      postcss: 8.4.34
     dev: true
 
-  /@csstools/postcss-rebase-url@1.0.5(postcss@8.4.33):
+  /@csstools/postcss-rebase-url@1.0.5(postcss@8.4.34):
     resolution: {integrity: sha512-z62UK07J0kn0rarNeq1//FBJ2bhO1T0Vxochkw/sylKsUvxVhrEDu1xjwTaQAXamjvYsom4En59U3aIZTGjp6A==}
     engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
@@ -731,7 +731,7 @@ packages:
     dependencies:
       '@csstools/css-parser-algorithms': 2.5.0(@csstools/css-tokenizer@2.2.3)
       '@csstools/css-tokenizer': 2.2.3
-      postcss: 8.4.33
+      postcss: 8.4.34
     dev: true
 
   /@dabh/diagnostics@2.0.3:
@@ -982,12 +982,12 @@ packages:
     resolution: {integrity: sha512-gMsVel9D7f2HLkBma9VbtzZRehRogVRfbr++f06nL2vnCGCNlzOD+/MUov/F4p8myyAHspEhVobgjpX64q5m6A==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
-  /@fullhuman/postcss-purgecss@5.0.0(postcss@8.4.33):
+  /@fullhuman/postcss-purgecss@5.0.0(postcss@8.4.34):
     resolution: {integrity: sha512-onDS/b/2pMRzqSoj4qOs2tYFmOpaspjTAgvACIHMPiicu1ptajiBruTrjBzTKdxWdX0ldaBb7wj8nEaTLyFkJw==}
     peerDependencies:
       postcss: ^8.0.0
     dependencies:
-      postcss: 8.4.33
+      postcss: 8.4.34
       purgecss: 5.0.0
     dev: true
 
@@ -2905,7 +2905,7 @@ packages:
       has-symbols: 1.0.3
     dev: false
 
-  /autoprefixer@10.4.17(postcss@8.4.33):
+  /autoprefixer@10.4.17(postcss@8.4.34):
     resolution: {integrity: sha512-/cpVNRLSfhOtcGflT13P2794gVSgmPgTR+erw5ifnMLZb0UnSlkK4tquLmkd3BhA+nLo5tX8Cu0upUsGKvKbmg==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
@@ -2917,7 +2917,7 @@ packages:
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.0.0
-      postcss: 8.4.33
+      postcss: 8.4.34
       postcss-value-parser: 4.2.0
     dev: true
 
@@ -6683,8 +6683,8 @@ packages:
       picocolors: 1.0.0
       source-map-js: 1.0.2
 
-  /postcss@8.4.33:
-    resolution: {integrity: sha512-Kkpbhhdjw2qQs2O2DGX+8m5OVqEcbB9HRBvuYM9pgrjEFUg30A9LmXNlTAUj4S9kgtGyrMbTzVjH7E+s5Re2yg==}
+  /postcss@8.4.34:
+    resolution: {integrity: sha512-4eLTO36woPSocqZ1zIrFD2K1v6wH7pY1uBh0JIM2KKfrVtGvPFiAku6aNOP0W1Wr9qwnaCsF0Z+CrVnryB2A8Q==}
     engines: {node: ^10 || ^12 || >=14}
     dependencies:
       nanoid: 3.3.7
@@ -6803,7 +6803,7 @@ packages:
     dependencies:
       commander: 9.5.0
       glob: 8.1.0
-      postcss: 8.4.33
+      postcss: 8.4.34
       postcss-selector-parser: 6.0.15
     dev: true
 
