@@ -26,7 +26,7 @@
     "react-icons": "^5.0.1",
     "react-infinite-scroll-component": "^6.1.0",
     "react-wrap-balancer": "^1.1.0",
-    "swr": "^2.2.4",
+    "swr": "^2.2.5",
     "ufo": "^1.4.0"
   },
   "description": "",
