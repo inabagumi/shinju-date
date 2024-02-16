@@ -8,7 +8,7 @@
     "@sentry/profiling-node": "^7.101.1",
     "@supabase/supabase-js": "^2.39.6",
     "@upstash/redis": "^1.28.4",
-    "@vercel/analytics": "^1.1.4",
+    "@vercel/analytics": "^1.2.0",
     "@vercel/otel": "^1.2.1",
     "@vercel/speed-insights": "^1.0.10",
     "clsx": "^2.1.0",
