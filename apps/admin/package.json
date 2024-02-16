@@ -9,7 +9,7 @@
     "@shinju-date/helpers": "workspace:*",
     "@supabase/supabase-js": "^2.39.6",
     "@upstash/ratelimit": "^1.0.1",
-    "@upstash/redis": "^1.28.3",
+    "@upstash/redis": "^1.28.4",
     "@vercel/otel": "^1.2.1",
     "mime": "^4.0.1",
     "nanoid": "^5.0.5",
