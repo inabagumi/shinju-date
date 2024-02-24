@@ -10,7 +10,7 @@ export const DEFAULT_SEARCH_SELECT = `
   channels!inner (name, slug),
   duration,
   slug,
-  thumbnails!inner (blur_data_url, height, path, width),
+  thumbnails (blur_data_url, height, path, width),
   published_at,
   title,
   url
@@ -31,7 +31,7 @@ export type Video = Pick<
   'duration' | 'slug' | 'published_at' | 'title' | 'url'
 > & {
   channels: Channel[] | Channel | null
-  thumbnails: Thumbnail[] | Thumbnail | null
+  thumbnails?: Thumbnail[] | Thumbnail | null
 }
 
 type FetchNotEndedVideosOptions = {
