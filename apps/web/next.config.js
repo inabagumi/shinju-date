@@ -22,6 +22,11 @@ const nextConfig = {
         hostname: supabaseBaseURL?.host,
         pathname: '/storage/v1/object/public/**',
         protocol: supabaseBaseURL?.protocol.slice(0, -1)
+      },
+      {
+        hostname: 'i.ytimg.com',
+        pathname: '/vi/**',
+        protocol: 'https'
       }
     ]
   },

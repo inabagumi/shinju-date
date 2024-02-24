@@ -27,27 +27,23 @@ function Thumbnail({ video }: ThumbnailProps): JSX.Element | null {
   )
   const publicURL = useMemo(() => {
     if (!thumbnail) {
-      return null
+      return `https://i.ytimg.com/vi/${video.slug}/maxresdefault.jpg`
     }
 
     const {
-      data: { publicUrl }
+      data: { publicUrl: url }
     } = supabase.storage.from('thumbnails').getPublicUrl(thumbnail.path)
 
-    return publicUrl
-  }, [thumbnail])
-
-  if (!thumbnail || !publicURL) {
-    return null
-  }
+    return url
+  }, [thumbnail, video.slug])
 
   return (
     <Image
       alt=""
-      blurDataURL={thumbnail.blur_data_url}
+      blurDataURL={thumbnail?.blur_data_url}
       className={styles.thumbnail}
       fill
-      placeholder="blur"
+      placeholder={thumbnail ? 'blur' : undefined}
       sizes="(max-width: 996px) 100vw, 30vw"
       src={publicURL}
     />
