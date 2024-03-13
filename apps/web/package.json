@@ -31,7 +31,7 @@
   },
   "description": "",
   "devDependencies": {
-    "@csstools/postcss-bundler": "^1.0.10",
+    "@csstools/postcss-bundler": "^1.0.11",
     "@fullhuman/postcss-purgecss": "^5.0.0",
     "@jest/types": "^29.6.3",
     "@mdx-js/loader": "^3.0.1",
