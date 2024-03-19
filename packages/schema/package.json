@@ -6,7 +6,7 @@
     "@tsconfig/esm": "^1.0.5",
     "@tsconfig/strictest": "^2.0.3",
     "eslint": "^8.57.0",
-    "supabase": "^1.149.4",
+    "supabase": "^1.150.0",
     "tsup": "^8.0.2",
     "typescript": "^5.4.2"
   },

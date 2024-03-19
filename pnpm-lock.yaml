@@ -333,7 +333,7 @@ importers:
         specifier: ^8.57.0
         version: 8.57.0
       supabase:
-        specifier: ^1.149.4
+        specifier: ^1.150.0
         version: 1.150.0
       tsup:
         specifier: ^8.0.2
