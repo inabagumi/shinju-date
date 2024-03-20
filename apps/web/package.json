@@ -54,7 +54,7 @@
     "postcss": "^8.4.37",
     "rehype-external-links": "^3.0.0",
     "remark-gfm": "^4.0.0",
-    "typescript": "~5.4.2"
+    "typescript": "~5.4.3"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
