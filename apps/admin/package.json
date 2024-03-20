@@ -33,7 +33,7 @@
     "@types/node": "^20.11.30",
     "@types/react": "^18.2.67",
     "eslint": "~8.57.0",
-    "typescript": "~5.4.2"
+    "typescript": "~5.4.3"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
