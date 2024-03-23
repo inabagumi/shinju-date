@@ -46,9 +46,8 @@ function getThumbnail(video: FilteredYouTubeVideo): StaticThumbnail {
   }
 }
 
-async function getBlurDataURL(blob: Blob): Promise<string> {
-  const rawData = await blob.arrayBuffer()
-  const buffer = await sharp(rawData).resize(10).toBuffer()
+async function getBlurDataURL(data: ArrayBuffer): Promise<string> {
+  const buffer = await sharp(data).resize(10).toBuffer()
 
   return `data:image/jpeg;base64,${buffer.toString('base64')}`
 }
@@ -209,7 +208,7 @@ export class Thumbnail {
       return null
     }
 
-    const imageBody = await imageRes.blob()
+    const imageBody = await imageRes.arrayBuffer()
     const contentType = imageRes.headers.get('Content-Type') ?? 'image/jpeg'
     const extension = mime.getExtension(contentType) ?? 'jpg'
     const path = `${this.#videoID}/${nanoid()}.${extension}`
