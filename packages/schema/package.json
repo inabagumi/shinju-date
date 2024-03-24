@@ -4,7 +4,7 @@
   "devDependencies": {
     "@shinju-date/eslint-config": "workspace:*",
     "@tsconfig/esm": "^1.0.5",
-    "@tsconfig/strictest": "^2.0.3",
+    "@tsconfig/strictest": "^2.0.4",
     "eslint": "^8.57.0",
     "supabase": "^1.150.0",
     "tsup": "^8.0.2",
