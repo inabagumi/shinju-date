@@ -97,8 +97,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/schema
       '@tsconfig/next':
-        specifier: ^2.0.1
-        version: 2.0.1
+        specifier: ^2.0.2
+        version: 2.0.2
       '@types/mime':
         specifier: ^3.0.4
         version: 3.0.4
@@ -221,8 +221,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/schema
       '@tsconfig/next':
-        specifier: ^2.0.1
-        version: 2.0.1
+        specifier: ^2.0.2
+        version: 2.0.2
       '@types/dedent':
         specifier: ^0.7.2
         version: 0.7.2
@@ -2237,8 +2237,8 @@ packages:
     deprecated: this package has been deprecated
     dev: true
 
-  /@tsconfig/next@2.0.1:
-    resolution: {integrity: sha512-8Za+6fv85ipdoO1u/Xknyurab8T92LbS0/KzRB0/GHvPh3xl0L4yf5+VmSxXNwjF1uS/xLSqf+BPhfaqasCpZw==}
+  /@tsconfig/next@2.0.2:
+    resolution: {integrity: sha512-W84/xm8UevymR1tuxU1/qPM0di7FZahaSaJj92K7/y2hYB28Y/4dvaXm/hud3DPsG+b4BVNk4RCzCKA9/dPIbw==}
     dev: true
 
   /@tsconfig/strictest@2.0.3:
