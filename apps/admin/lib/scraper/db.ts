@@ -1,21 +1,25 @@
-import { type Database } from '@shinju-date/schema'
+import {
+  type DefaultDatabase,
+  createSupabaseClient
+} from '@shinju-date/supabase'
 import { captureException } from '@/lib/logging'
-import { type TypedSupabaseClient } from '@/lib/supabase'
 import { DatabaseError } from './errors'
 import { type SavedVideo } from './types'
 
+type TypedSupabaseClient = ReturnType<typeof createSupabaseClient>
+
 export type VideoChannel = Pick<
-  Database['public']['Tables']['channels']['Row'],
+  DefaultDatabase['public']['Tables']['channels']['Row'],
   'name' | 'slug' | 'url'
 >
 
 export type VideoThumbnail = Omit<
-  Database['public']['Tables']['thumbnails']['Row'],
+  DefaultDatabase['public']['Tables']['thumbnails']['Row'],
   'created_at' | 'deleted_at' | 'etag' | 'id' | 'updated_at'
 >
 
 export type Video = Pick<
-  Database['public']['Tables']['videos']['Row'],
+  DefaultDatabase['public']['Tables']['videos']['Row'],
   'duration' | 'published_at' | 'slug' | 'title' | 'url'
 > & {
   channels: VideoChannel | VideoChannel[] | null
@@ -91,7 +95,7 @@ export default class DB {
   }
 
   async upsertThumbnails(
-    values: Database['public']['Tables']['thumbnails']['Insert'][]
+    values: DefaultDatabase['public']['Tables']['thumbnails']['Insert'][]
   ): Promise<{ id: number; path: string }[]> {
     const upsertValues = values.filter((value) => value.id)
     const insertValues = values.filter((value) => !value.id)
@@ -140,7 +144,7 @@ export default class DB {
   }
 
   async upsertVideos(
-    values: Database['public']['Tables']['videos']['Insert'][]
+    values: DefaultDatabase['public']['Tables']['videos']['Insert'][]
   ): Promise<Video[]> {
     const upsertValues = values.filter((value) => value.id)
     const insertValues = values.filter((value) => !value.id)

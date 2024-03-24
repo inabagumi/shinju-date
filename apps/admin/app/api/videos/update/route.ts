@@ -1,11 +1,11 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { verifyCronRequest } from '@shinju-date/helpers'
+import { createSupabaseClient } from '@shinju-date/supabase'
 import PQueue from 'p-queue'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { videosUpdate as ratelimit } from '@/lib/ratelimit'
 import { type Video, scrape } from '@/lib/scraper'
 import { createErrorResponse } from '@/lib/session'
-import { createSupabaseClient } from '@/lib/supabase'
 import { type FilteredYouTubeChannel, getChannels } from '@/lib/youtube'
 
 export const runtime = 'nodejs'
@@ -27,9 +27,10 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const currentDateTime = Temporal.Now.instant()
-  const supabaseClient = createSupabaseClient({
-    token: process.env.SUPABASE_SERVICE_ROLE_KEY
-  })
+  const supabaseClient = createSupabaseClient(
+    undefined,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
 
   const { data: savedChannels, error } = await supabaseClient
     .from('channels')

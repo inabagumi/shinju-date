@@ -1,11 +1,13 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { type Database } from '@shinju-date/schema'
+import {
+  type DefaultDatabase,
+  createSupabaseClient
+} from '@shinju-date/supabase'
 import mime from 'mime'
 import { nanoid } from 'nanoid'
 import PQueue from 'p-queue'
 import sharp from 'sharp'
 import { captureException } from '@/lib/logging'
-import { type TypedSupabaseClient } from '@/lib/supabase'
 import {
   type FilteredYouTubeChannel,
   type FilteredYouTubeVideo,
@@ -21,6 +23,8 @@ import {
 } from './types'
 
 const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({ days: 365 })
+
+type TypedSupabaseClient = ReturnType<typeof createSupabaseClient>
 
 type StaticThumbnail = {
   height: number
@@ -79,7 +83,9 @@ export class Thumbnail {
 
   static upload(
     options: ThumbnailOptions
-  ): Promise<Database['public']['Tables']['thumbnails']['Insert'] | null> {
+  ): Promise<
+    DefaultDatabase['public']['Tables']['thumbnails']['Insert'] | null
+  > {
     const instance = new Thumbnail(options)
 
     return instance.upload()
@@ -116,7 +122,8 @@ export class Thumbnail {
       })
     )
 
-    const values: Database['public']['Tables']['thumbnails']['Insert'][] = []
+    const values: DefaultDatabase['public']['Tables']['thumbnails']['Insert'][] =
+      []
 
     for (const result of results) {
       if (result.status === 'fulfilled' && result.value) {
@@ -153,7 +160,7 @@ export class Thumbnail {
   }
 
   async upload(): Promise<
-    Database['public']['Tables']['thumbnails']['Insert'] | null
+    DefaultDatabase['public']['Tables']['thumbnails']['Insert'] | null
   > {
     if (this.#savedThumbnail?.updated_at) {
       const updatedAt = Temporal.Instant.from(this.#savedThumbnail.updated_at)
@@ -319,7 +326,7 @@ export default class Scraper {
     })
 
     const values = originalVideos
-      .map<Database['public']['Tables']['videos']['Insert'] | null>(
+      .map<DefaultDatabase['public']['Tables']['videos']['Insert'] | null>(
         (originalVideo) => {
           const savedVideo = savedVideos.find(
             (savedVideo) => savedVideo.slug === originalVideo.id
@@ -329,7 +336,7 @@ export default class Scraper {
           )
           const publishedAt = getPublishedAt(originalVideo)
           const updateValue: Partial<
-            Database['public']['Tables']['videos']['Insert']
+            DefaultDatabase['public']['Tables']['videos']['Insert']
           > = {}
 
           if (savedVideo) {

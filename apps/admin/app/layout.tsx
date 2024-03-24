@@ -1,14 +1,13 @@
 import './globals.css'
-import { type Session } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
+import { type Metadata, type Viewport } from 'next'
 import { type ReactNode } from 'react'
-import { SESSION_ID_COOKIE_KEY } from '@/lib/constants'
-import { createSupabaseClient } from '@/lib/supabase'
 import { lato } from './fonts'
-import Provider from './provider'
 
-export const dynamic = 'force-dynamic'
-export const metadata = {
+export const viewport: Viewport = {
+  themeColor: '#1e293b' // --color-slate-800
+}
+
+export const metadata: Metadata = {
   title: 'Admin UI - SHINJU DATE'
 }
 
@@ -16,25 +15,10 @@ type Props = {
   children: ReactNode
 }
 
-export default async function RootLayout({ children }: Props) {
-  const cookieStore = cookies()
-  const sessionID = cookieStore.get(SESSION_ID_COOKIE_KEY)?.value
-
-  let session: Session | undefined
-  if (sessionID) {
-    const supabaseClient = createSupabaseClient({ sessionID })
-    const { data, error } = await supabaseClient.auth.getSession()
-
-    if (!error && data.session) {
-      session = data.session
-    }
-  }
-
+export default function RootLayout({ children }: Props) {
   return (
     <html className={lato.variable} lang="ja">
-      <body>
-        <Provider session={session}>{children}</Provider>
-      </body>
+      <body className="font-sans text-slate-600">{children}</body>
     </html>
   )
 }

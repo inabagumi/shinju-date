@@ -1,55 +1,33 @@
-import { normalizePath } from '@shinju-date/helpers'
+import { createSupabaseClientWithResponse } from '@shinju-date/supabase/middleware'
 import { type NextRequest, NextResponse } from 'next/server'
-import { SESSION_ID_COOKIE_KEY } from '@/lib/constants'
-import { assignSessionID } from '@/lib/session'
-import { createSupabaseClient } from '@/lib/supabase'
-
-export const config = {
-  matcher: ['/', '/channels/:id*', '/groups/:slug*', '/login']
-}
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
-  const response = NextResponse.next()
-  const sessionID = request.cookies.get(SESSION_ID_COOKIE_KEY)?.value
-  const isLoginPage = request.nextUrl.pathname === '/login'
+  const [supabaseClient, response] = createSupabaseClientWithResponse(
+    undefined,
+    undefined,
+    { request }
+  )
+  const { error } = await supabaseClient.auth.getUser()
 
-  if (sessionID) {
-    const supabaseClient = createSupabaseClient({ sessionID })
-
-    const {
-      data: { session },
-      error
-    } = await supabaseClient.auth.getSession()
-
-    if (session && !error) {
-      if (isLoginPage) {
-        const returnTo = normalizePath(
-          request.nextUrl.searchParams.get('return') ?? undefined
-        )
-
-        return NextResponse.redirect(new URL(returnTo, request.url))
-      } else {
-        assignSessionID({ request, response, sessionID })
-
-        return response
-      }
-    }
+  if (request.nextUrl.pathname === '/login' && !error) {
+    return NextResponse.redirect(new URL('/', request.nextUrl))
+  } else if (request.nextUrl.pathname !== '/login' && error) {
+    return NextResponse.redirect(new URL('/login', request.nextUrl))
   }
 
-  let newResponse: NextResponse
-  if (isLoginPage) {
-    newResponse = response
-  } else {
-    const newURL = new URL('/login', request.url)
+  return response
+}
 
-    if (request.nextUrl.pathname !== '/') {
-      newURL.searchParams.set('return', request.nextUrl.pathname)
-    }
-
-    newResponse = NextResponse.redirect(newURL)
-  }
-
-  assignSessionID({ request, response: newResponse, sessionID })
-
-  return newResponse
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - api (api endpoint)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
+    '/((?!_next/static|_next/image|api|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'
+  ]
 }

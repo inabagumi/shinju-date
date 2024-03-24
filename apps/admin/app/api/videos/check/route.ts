@@ -1,6 +1,9 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { verifyCronRequest } from '@shinju-date/helpers'
-import { type Database } from '@shinju-date/schema'
+import {
+  type DefaultDatabase,
+  createSupabaseClient
+} from '@shinju-date/supabase'
 import { type NextRequest } from 'next/server'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import {
@@ -8,12 +11,13 @@ import {
   videosCheck as ratelimitRecent
 } from '@/lib/ratelimit'
 import { createErrorResponse } from '@/lib/session'
-import { type TypedSupabaseClient, createSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 
 export const runtime = 'nodejs'
 export const revalidate = 0
 export const maxDuration = 120
+
+type TypedSupabaseClient = ReturnType<typeof createSupabaseClient>
 
 type Thumbnail = {
   id: number
@@ -99,7 +103,7 @@ type SoftDeleteRowsOptions = {
   currentDateTime: Temporal.Instant
   ids: number[]
   supabaseClient: TypedSupabaseClient
-  table: keyof Database['public']['Tables']
+  table: keyof DefaultDatabase['public']['Tables']
 }
 
 async function softDeleteRows({
@@ -179,9 +183,10 @@ export async function POST(request: NextRequest): Promise<Response> {
   }
 
   const currentDateTime = Temporal.Now.instant()
-  const supabaseClient = createSupabaseClient({
-    token: process.env.SUPABASE_SERVICE_ROLE_KEY
-  })
+  const supabaseClient = createSupabaseClient(
+    undefined,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
 
   const savedVideos: Video[] = []
 

@@ -3,12 +3,12 @@
   "description": "",
   "devDependencies": {
     "@shinju-date/eslint-config": "workspace:*",
-    "@tsconfig/esm": "^1.0.5",
+    "@tsconfig/node20": "^20.1.3",
     "@tsconfig/strictest": "^2.0.4",
     "eslint": "^8.57.0",
     "next": "^14.1.4",
     "tsup": "^8.0.2",
-    "typescript": "^5.4.3"
+    "typescript": "~5.4.3"
   },
   "exports": {
     ".": {

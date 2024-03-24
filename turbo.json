@@ -3,21 +3,7 @@
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
-      "env": [
-        "ALGOLIA_ADMIN_API_KEY",
-        "CRON_SECRET",
-        "GOOGLE_API_KEY",
-        "NEXT_PUBLIC_BASE_URL",
-        "NEXT_PUBLIC_SENTRY_DSN",
-        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-        "NEXT_PUBLIC_SUPABASE_URL",
-        "NODE_ENV",
-        "SUPABASE_SERVICE_ROLE_KEY",
-        "UPSTASH_REDIS_REST_TOKEN",
-        "UPSTASH_REDIS_REST_URL",
-        "VERCEL_ENV"
-      ],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": ["dist/**"]
     },
     "dev": {
       "cache": false,
