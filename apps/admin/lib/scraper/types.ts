@@ -1,17 +1,17 @@
-import { type Database } from '@shinju-date/schema'
+import { type DefaultDatabase } from '@shinju-date/supabase'
 
 export type SavedChannel = Pick<
-  Database['public']['Tables']['channels']['Row'],
+  DefaultDatabase['public']['Tables']['channels']['Row'],
   'id' | 'slug'
 >
 
 export type SavedThumbnail = Omit<
-  Database['public']['Tables']['thumbnails']['Row'],
+  DefaultDatabase['public']['Tables']['thumbnails']['Row'],
   'created_at'
 >
 
 export type SavedVideo = Omit<
-  Database['public']['Tables']['videos']['Row'],
+  DefaultDatabase['public']['Tables']['videos']['Row'],
   'channel_id' | 'updated_at' | 'url'
 > & {
   thumbnails: SavedThumbnail | SavedThumbnail[] | null

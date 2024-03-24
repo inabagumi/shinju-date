@@ -1,7 +1,0 @@
-.container {
-  display: grid;
-  min-height: 100dvh;
-  place-items: center;
-  position: relative;
-  width: 100%;
-}

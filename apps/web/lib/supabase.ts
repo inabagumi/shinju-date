@@ -1,22 +1,8 @@
-import { type Database } from '@shinju-date/schema'
-import { createClient } from '@supabase/supabase-js'
+import { createSupabaseClient } from '@shinju-date/supabase'
 
-export const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  {
-    auth: {
-      persistSession: false
-    }
-  }
-)
+export const supabase = createSupabaseClient()
 
-export type Channel = Pick<
-  Database['public']['Tables']['channels']['Row'],
-  'id' | 'name' | 'slug'
->
-
-export async function* getAllChannels(): AsyncGenerator<Channel, void, void> {
+export async function* getAllChannels() {
   const { data, error } = await supabase
     .from('channels')
     .select('id, name, slug')

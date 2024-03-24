@@ -1,5 +1,5 @@
+import { createSupabaseClient } from '@shinju-date/supabase'
 import { createErrorResponse } from '@/lib/session'
-import { createSupabaseClient } from '@/lib/supabase'
 
 export const revalidate = 0
 export const maxDuration = 120

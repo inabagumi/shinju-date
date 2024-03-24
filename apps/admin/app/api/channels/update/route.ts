@@ -1,10 +1,12 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { verifyCronRequest } from '@shinju-date/helpers'
-import { type Database } from '@shinju-date/schema'
+import {
+  type DefaultDatabase,
+  createSupabaseClient
+} from '@shinju-date/supabase'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { channelsUpdate as ratelimit } from '@/lib/ratelimit'
 import { createErrorResponse } from '@/lib/session'
-import { createSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 
 export const runtime = 'nodejs'
@@ -12,7 +14,7 @@ export const revalidate = 0
 export const maxDuration = 120
 
 type Channel = Pick<
-  Database['public']['Tables']['channels']['Row'],
+  DefaultDatabase['public']['Tables']['channels']['Row'],
   'name' | 'slug' | 'url'
 >
 
@@ -31,9 +33,10 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const currentDateTime = Temporal.Now.instant()
-  const supabaseClient = createSupabaseClient({
-    token: process.env.SUPABASE_SERVICE_ROLE_KEY
-  })
+  const supabaseClient = createSupabaseClient(
+    undefined,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
   const { data: channels, error } = await supabaseClient
     .from('channels')
     .select('name, slug, url')

@@ -1,6 +1,6 @@
 'use client'
 
-import { type Database } from '@shinju-date/schema'
+import { type DefaultDatabase } from '@shinju-date/supabase'
 import chunk from 'lodash.chunk'
 import { useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
@@ -34,7 +34,7 @@ export function SearchResultsSkeleton(): JSX.Element {
 }
 
 type Channel = Pick<
-  Database['public']['Tables']['channels']['Row'],
+  DefaultDatabase['public']['Tables']['channels']['Row'],
   'id' | 'name' | 'slug'
 >
 

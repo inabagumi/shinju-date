@@ -5,7 +5,7 @@
     "@inabagumi/prettier-config": "^3.0.0",
     "prettier": "~3.2.5",
     "turbo": "^1.13.0",
-    "typescript": "^5.4.3"
+    "typescript": "~5.4.3"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
@@ -21,5 +21,8 @@
     "test": "turbo test"
   },
   "type": "module",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "dependencies": {
+    "prettier-plugin-tailwindcss": "^0.5.12"
+  }
 }

@@ -1,14 +1,5 @@
-:root {
-  --border-color: #e2e8f0;
-  --font-family: var(--font-lato, 'Lato'), 'Helvetica Neue', Arial,
-    'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'BIZ UDPGothic', Meiryo,
-    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
-  --text-color: #1a202c;
-}
+@import 'tailwindcss';
 
-body {
-  color: var(--text-color);
-  font-family: var(--font-family);
-  line-height: 1;
-  margin: 0;
+@theme {
+  --font-family-sans: var(--font-lato, Lato), var(--font-family-sans);
 }

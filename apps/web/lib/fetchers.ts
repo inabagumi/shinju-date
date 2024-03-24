@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { type Database } from '@shinju-date/schema'
+import { type DefaultDatabase } from '@shinju-date/supabase'
 import { type Fetcher } from 'swr'
 import { type SWRInfiniteFetcher } from 'swr/infinite'
 import { supabase } from '@/lib/supabase'
@@ -17,17 +17,17 @@ export const DEFAULT_SEARCH_SELECT = `
 `
 
 export type Channel = Pick<
-  Database['public']['Tables']['channels']['Row'],
+  DefaultDatabase['public']['Tables']['channels']['Row'],
   'name' | 'slug'
 >
 
 export type Thumbnail = Pick<
-  Database['public']['Tables']['thumbnails']['Row'],
+  DefaultDatabase['public']['Tables']['thumbnails']['Row'],
   'blur_data_url' | 'height' | 'path' | 'width'
 >
 
 export type Video = Pick<
-  Database['public']['Tables']['videos']['Row'],
+  DefaultDatabase['public']['Tables']['videos']['Row'],
   'duration' | 'slug' | 'published_at' | 'title' | 'url'
 > & {
   channels: Channel[] | Channel | null

@@ -1,6 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/eslintrc",
   "extends": ["@shinju-date"],
+  "ignorePatterns": ["/types/supabase.ts"],
   "overrides": [
     {
       "files": ["**/*.ts?(x)"],
@@ -9,5 +10,8 @@
       }
     }
   ],
-  "root": true
+  "root": true,
+  "rules": {
+    "turbo/no-undeclared-env-vars": "off"
+  }
 }

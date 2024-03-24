@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
-export default function Dashboard(): null {
+export default function DashboardPage() {
   return null
 }
