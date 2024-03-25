@@ -1,5 +1,10 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-family-sans: var(--font-lato, Lato), var(--font-family-sans);
+  /**
+   * https://github.com/tailwindlabs/tailwindcss/blob/next/packages/tailwindcss/theme.css#L366-L367
+   */
+  --font-family-sans: var(--font-lato, Lato), ui-sans-serif, system-ui,
+    sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
+    Noto Color Emoji;
 }
