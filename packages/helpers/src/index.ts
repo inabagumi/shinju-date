@@ -1,25 +1,21 @@
-export function getOrigin(url: URL): string {
-  const { host, protocol } = url
-
-  return `${protocol}//${host}`
+type CreateErrorResponseOptions = {
+  status?: number
 }
 
-export function normalizePath(pathname?: string): string {
-  if (pathname) {
-    const baseURL = new URL('https://shinju-date.test/')
-    const newURL = new URL(pathname, baseURL)
+export function createErrorResponse(
+  message: string,
+  { status = 500 }: CreateErrorResponseOptions
+) {
+  return Response.json({ error: message }, { status })
+}
 
-    if (baseURL.host === newURL.host) {
-      return newURL.pathname
-    }
-  }
-
-  return '/'
+type VerifyCronRequestOptions = {
+  cronSecure?: string
 }
 
 export function verifyCronRequest(
   request: Request,
-  { cronSecure }: { cronSecure?: string } = {}
+  { cronSecure }: VerifyCronRequestOptions = {}
 ): boolean {
   if (typeof cronSecure === 'undefined') {
     return true
@@ -36,16 +32,4 @@ export function verifyCronRequest(
     .map((value) => value.trim())
 
   return type === 'Bearer' && credentials === cronSecure
-}
-
-export function verifyOrigin(request: Request): boolean {
-  const origin = request.headers.get('Origin')
-
-  if (!origin) {
-    return false
-  }
-
-  const nextURL = new URL(request.url)
-
-  return origin === getOrigin(nextURL)
 }

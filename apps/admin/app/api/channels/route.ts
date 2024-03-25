@@ -1,5 +1,5 @@
+import { createErrorResponse } from '@shinju-date/helpers'
 import { createSupabaseClient } from '@shinju-date/supabase'
-import { createErrorResponse } from '@/lib/session'
 
 export const revalidate = 0
 export const maxDuration = 120
@@ -12,7 +12,7 @@ export async function GET(): Promise<Response> {
     .is('deleted_at', null)
 
   if (error) {
-    return createErrorResponse(500, error.message)
+    return createErrorResponse(error.message, { status: 500 })
   }
 
   const channels = rawChannels.map((channel) => ({

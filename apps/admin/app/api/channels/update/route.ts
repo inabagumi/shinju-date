@@ -1,12 +1,11 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { verifyCronRequest } from '@shinju-date/helpers'
+import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import {
   type DefaultDatabase,
   createSupabaseClient
 } from '@shinju-date/supabase'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { channelsUpdate as ratelimit } from '@/lib/ratelimit'
-import { createErrorResponse } from '@/lib/session'
 import { youtubeClient } from '@/lib/youtube'
 
 export const runtime = 'nodejs'
@@ -20,15 +19,15 @@ type Channel = Pick<
 
 export async function POST(request: Request): Promise<Response> {
   if (!verifyCronRequest(request, { cronSecure: process.env.CRON_SECRET })) {
-    return createErrorResponse(401, 'Unauthorized')
+    return createErrorResponse('Unauthorized', { status: 401 })
   }
 
   const { success } = await ratelimit.limit('channels:update')
 
   if (!success) {
     return createErrorResponse(
-      429,
-      'There has been no interval since the last run.'
+      'There has been no interval since the last run.',
+      { status: 429 }
     )
   }
 
@@ -43,7 +42,7 @@ export async function POST(request: Request): Promise<Response> {
     .is('deleted_at', null)
 
   if (error) {
-    return createErrorResponse(500, error.message)
+    return createErrorResponse(error.message, { status: 500 })
   }
 
   const {

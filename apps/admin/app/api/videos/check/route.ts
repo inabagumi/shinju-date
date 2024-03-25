@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { verifyCronRequest } from '@shinju-date/helpers'
+import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import {
   type DefaultDatabase,
   createSupabaseClient
@@ -10,7 +10,6 @@ import {
   videosCheckAll as ratelimitAll,
   videosCheck as ratelimitRecent
 } from '@/lib/ratelimit'
-import { createErrorResponse } from '@/lib/session'
 import { youtubeClient } from '@/lib/youtube'
 
 export const runtime = 'nodejs'
@@ -163,7 +162,7 @@ function deleteVideos({
 
 export async function POST(request: NextRequest): Promise<Response> {
   if (!verifyCronRequest(request, { cronSecure: process.env.CRON_SECRET })) {
-    return createErrorResponse(401, 'Unauthorized')
+    return createErrorResponse('Unauthorized', { status: 401 })
   }
 
   const { searchParams } = request.nextUrl
@@ -177,8 +176,8 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   if (!success) {
     return createErrorResponse(
-      429,
-      'There has been no interval since the last run.'
+      'There has been no interval since the last run.',
+      { status: 429 }
     )
   }
 
@@ -197,7 +196,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   } catch (error) {
     captureException(error)
 
-    return createErrorResponse(500, 'internal server error')
+    return createErrorResponse('internal server error', { status: 500 })
   }
 
   const videoIDs: string[] = []
@@ -211,7 +210,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   } catch (error) {
     captureException(error)
 
-    return createErrorResponse(500, 'internal server error')
+    return createErrorResponse('internal server error', { status: 500 })
   }
 
   if (savedVideos.length !== videoIDs.length) {
