@@ -10,17 +10,13 @@ export function createErrorResponse(
 }
 
 type VerifyCronRequestOptions = {
-  cronSecure?: string
+  cronSecure: string
 }
 
 export function verifyCronRequest(
   request: Request,
-  { cronSecure }: VerifyCronRequestOptions = {}
+  { cronSecure }: VerifyCronRequestOptions
 ): boolean {
-  if (typeof cronSecure === 'undefined') {
-    return true
-  }
-
   const authHeader = request.headers.get('Authorization')
 
   if (!authHeader) {

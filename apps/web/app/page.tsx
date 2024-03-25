@@ -54,7 +54,10 @@ function RecommendationQueriesSkeleton() {
         {Array(RECOMMENDATION_QUERIES_COUNT)
           .fill(0)
           .map((_, i) => (
-            <li className={clsx('pills__item', styles.pill)} key={`pill-${i}`}>
+            <li
+              className={clsx('pills__item', styles['pill'])}
+              key={`pill-${i}`}
+            >
               <Skeleton />
             </li>
           ))}
@@ -77,10 +80,10 @@ async function RecommendationQueries() {
     <div className="padding-vert--lg">
       <ul className="pills pills--block">
         {queries.map((query) => (
-          <li className={clsx('pills__item', styles.pill)} key={query}>
+          <li className={clsx('pills__item', styles['pill'])} key={query}>
             <Link
               aria-label={`『${query}』の検索結果`}
-              className={styles.pillLink}
+              className={styles['pillLink']}
               href={`/videos/${encodeURIComponent(query)}`}
               title={`『${query}』の検索結果`}
             >
@@ -96,12 +99,12 @@ async function RecommendationQueries() {
 export default function SchedulePage() {
   return (
     <>
-      <div className={styles.hero}>
-        <div className={styles.heroInner}>
-          <h1 className={styles.heroTitle}>
+      <div className={styles['hero']}>
+        <div className={styles['heroInner']}>
+          <h1 className={styles['heroTitle']}>
             <svg
               aria-label="SHINJU DATE"
-              className={styles.logo}
+              className={styles['logo']}
               height={80}
               role="img"
               width={256}
@@ -113,7 +116,7 @@ export default function SchedulePage() {
 
         <Image
           alt=""
-          className={styles.heroImage}
+          className={styles['heroImage']}
           fill
           priority
           role="presentation"

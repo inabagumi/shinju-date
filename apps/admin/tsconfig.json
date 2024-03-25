@@ -5,12 +5,12 @@
     },
     "target": "es2022"
   },
-  "extends": ["@tsconfig/next/tsconfig"],
+  "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/next/tsconfig"],
   "include": [
     "next-env.d.ts",
     "additional.d.ts",
+    ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts"
+    "**/*.tsx"
   ]
 }

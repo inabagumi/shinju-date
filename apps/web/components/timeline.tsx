@@ -17,7 +17,7 @@ type TimelineSectionProps = {
 function TimelineSection({
   dateTime: rawDateTime,
   items
-}: TimelineSectionProps): JSX.Element {
+}: TimelineSectionProps) {
   const dateTime = useMemo(
     () => Temporal.PlainDate.from(rawDateTime),
     [rawDateTime]
@@ -29,7 +29,6 @@ function TimelineSection({
         <time dateTime={dateTime.toJSON()}>
           {dateTime.toLocaleString('ja-JP', {
             dateStyle: 'short',
-            timeStyle: undefined,
             timeZone: 'Asia/Tokyo'
           })}
         </time>

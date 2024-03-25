@@ -13,7 +13,7 @@ export default function NoResults({
 }) {
   return (
     <div className="text--center margin-bottom--lg margin-top--lg padding-bottom--lg padding-top--lg">
-      {title && <h1 className={styles.title}>{title}</h1>}
+      {title && <h1 className={styles['title']}>{title}</h1>}
 
       <p>{message}</p>
 

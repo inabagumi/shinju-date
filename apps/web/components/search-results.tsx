@@ -48,7 +48,7 @@ export default function SearchResults({
   channels,
   prefetchedData,
   query = ''
-}: Props): JSX.Element {
+}: Props) {
   const { data, setSize } = useSWRInfinite(
     (index) => ({
       channelIDs: channels && channels.map((channel) => channel.slug),
@@ -56,7 +56,7 @@ export default function SearchResults({
       query
     }),
     fetchVideosByChannelIDs,
-    {
+    prefetchedData && {
       fallbackData: prefetchedData
     }
   )
@@ -65,8 +65,9 @@ export default function SearchResults({
 
   const items = data ? data.flat() : []
   const isEmpty = data?.[0]?.length === 0
+  const lastData = data && data[data.length - 1]
   const isReachingEnd =
-    isEmpty || (!!data && data[data.length - 1]?.length < SEARCH_RESULT_COUNT)
+    isEmpty || (lastData && lastData.length < SEARCH_RESULT_COUNT)
 
   return (
     <InfiniteScroll
