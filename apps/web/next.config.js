@@ -1,11 +1,14 @@
+// @ts-check
+
 import createMDX from '@next/mdx'
 import { withSentryConfig } from '@sentry/nextjs'
 import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
 
 const supabaseBaseURL =
-  process.env.NEXT_PUBLIC_SUPABASE_URL &&
-  new URL(process.env.NEXT_PUBLIC_SUPABASE_URL)
+  typeof process.env['NEXT_PUBLIC_SUPABASE_URL'] !== 'undefined'
+    ? new URL(process.env['NEXT_PUBLIC_SUPABASE_URL'])
+    : undefined
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -18,11 +21,15 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 365 * 24 * 60 * 60,
     remotePatterns: [
-      {
-        hostname: supabaseBaseURL?.host,
-        pathname: '/storage/v1/object/public/**',
-        protocol: supabaseBaseURL?.protocol.slice(0, -1)
-      },
+      ...(supabaseBaseURL
+        ? [
+            {
+              hostname: supabaseBaseURL.host,
+              pathname: '/storage/v1/object/public/**',
+              protocol: undefined
+            }
+          ]
+        : []),
       {
         hostname: 'i.ytimg.com',
         pathname: '/vi/**',
@@ -53,7 +60,9 @@ const nextConfig = {
           destination: '/manifest.webmanifest',
           source: '/manifest.json'
         }
-      ]
+      ],
+      beforeFiles: [],
+      fallback: []
     }
   }
 }
