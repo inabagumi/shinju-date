@@ -140,8 +140,8 @@ export function Input({
   return (
     <input
       aria-describedby={invalid && id ? `${id}-error-message` : undefined}
-      aria-invalid={invalid}
-      disabled={disabled ?? pending}
+      aria-invalid={invalid ? true : undefined}
+      disabled={disabled ?? pending ? true : undefined}
       id={newId ?? id}
       name={newName ?? name}
       onChange={handleChange}
@@ -155,7 +155,14 @@ export function Input({
 type LabelProps = ComponentPropsWithoutRef<'label'>
 
 export function Label({ htmlFor, ...props }: LabelProps) {
+  const { pending } = useFormStatus()
   const { id } = useContext(FormFieldContext)
 
-  return <label htmlFor={htmlFor ?? id} {...props} />
+  return (
+    <label
+      aria-disabled={pending ? true : undefined}
+      htmlFor={htmlFor ?? id}
+      {...props}
+    />
+  )
 }
