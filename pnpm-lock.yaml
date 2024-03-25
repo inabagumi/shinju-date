@@ -127,6 +127,9 @@ importers:
       eslint:
         specifier: ~8.57.0
         version: 8.57.0
+      postcss-load-config:
+        specifier: ^5.0.3
+        version: 5.0.3(postcss@8.4.38)
       typescript:
         specifier: ~5.4.3
         version: 5.4.3
@@ -278,6 +281,9 @@ importers:
       postcss:
         specifier: ^8.4.38
         version: 8.4.38
+      postcss-load-config:
+        specifier: ^5.0.3
+        version: 5.0.3(postcss@8.4.38)
       rehype-external-links:
         specifier: ^3.0.0
         version: 3.0.0
@@ -7203,6 +7209,23 @@ packages:
         optional: true
     dependencies:
       lilconfig: 3.1.1
+      yaml: 2.4.1
+    dev: true
+
+  /postcss-load-config@5.0.3(postcss@8.4.38):
+    resolution: {integrity: sha512-90pBBI5apUVruIEdCxZic93Wm+i9fTrp7TXbgdUCH+/L+2WnfpITSpq5dFU/IPvbv7aNiMlQISpUkAm3fEcvgQ==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      jiti: '>=1.21.0'
+      postcss: '>=8.0.9'
+    peerDependenciesMeta:
+      jiti:
+        optional: true
+      postcss:
+        optional: true
+    dependencies:
+      lilconfig: 3.1.1
+      postcss: 8.4.38
       yaml: 2.4.1
     dev: true
 
