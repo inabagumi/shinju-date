@@ -1,11 +1,10 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { verifyCronRequest } from '@shinju-date/helpers'
+import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { createSupabaseClient } from '@shinju-date/supabase'
 import PQueue from 'p-queue'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { videosUpdate as ratelimit } from '@/lib/ratelimit'
 import { type Video, scrape } from '@/lib/scraper'
-import { createErrorResponse } from '@/lib/session'
 import { type FilteredYouTubeChannel, getChannels } from '@/lib/youtube'
 
 export const runtime = 'nodejs'
@@ -14,15 +13,15 @@ export const maxDuration = 120
 
 export async function POST(request: Request): Promise<Response> {
   if (!verifyCronRequest(request, { cronSecure: process.env.CRON_SECRET })) {
-    return createErrorResponse(401, 'Unauthorized')
+    return createErrorResponse('Unauthorized', { status: 401 })
   }
 
   const { success } = await ratelimit.limit('videos:update')
 
   if (!success) {
     return createErrorResponse(
-      429,
-      'There has been no interval since the last run.'
+      'There has been no interval since the last run.',
+      { status: 429 }
     )
   }
 
@@ -51,11 +50,11 @@ export async function POST(request: Request): Promise<Response> {
   } catch (error) {
     captureException(error)
 
-    return createErrorResponse(500, 'Internal Server Error')
+    return createErrorResponse('Internal Server Error', { status: 500 })
   }
 
   if (channels.length < 1) {
-    return createErrorResponse(404, 'There are no channels.')
+    return createErrorResponse('There are no channels.', { status: 404 })
   }
 
   const queue = new PQueue({
