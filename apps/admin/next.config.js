@@ -11,12 +11,14 @@ const nextConfig = {
   reactStrictMode: true
 }
 
-export default withSentryConfig(
-  nextConfig,
-  {},
-  {
-    automaticVercelMonitors: true,
-    hideSourceMaps: true,
-    tunnelRoute: '/api/monitoring/sentry'
-  }
-)
+export default process.env['NEXT_PUBLIC_SENTRY_DSN']
+  ? withSentryConfig(
+      nextConfig,
+      {},
+      {
+        automaticVercelMonitors: true,
+        hideSourceMaps: true,
+        tunnelRoute: '/api/monitoring/sentry'
+      }
+    )
+  : nextConfig

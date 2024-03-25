@@ -82,12 +82,14 @@ const withMDX = createMDX({
   }
 })
 
-export default withSentryConfig(
-  withMDX(nextConfig),
-  {},
-  {
-    automaticVercelMonitors: true,
-    hideSourceMaps: true,
-    tunnelRoute: '/api/monitoring/sentry'
-  }
-)
+export default process.env['NEXT_PUBLIC_SENTRY_DSN']
+  ? withSentryConfig(
+      withMDX(nextConfig),
+      {},
+      {
+        automaticVercelMonitors: true,
+        hideSourceMaps: true,
+        tunnelRoute: '/api/monitoring/sentry'
+      }
+    )
+  : withMDX(nextConfig)
