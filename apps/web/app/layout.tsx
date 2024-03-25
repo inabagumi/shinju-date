@@ -52,7 +52,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <SVGSymbols />
 
         <Providers>
-          <div className={styles.wrapper}>
+          <div className={styles['wrapper']}>
             <SkipNavLink>コンテンツにスキップ</SkipNavLink>
 
             <Navbar>
@@ -92,7 +92,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <div className="padding-bottom--xl">{children}</div>
 
             <footer className="footer footer--dark">
-              <div className="container container--fluid">
+              <div className="container--fluid container">
                 <nav className="footer__links">
                   <a
                     className="footer__link-item"

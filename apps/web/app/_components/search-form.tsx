@@ -17,7 +17,7 @@ async function search(formData: FormData) {
 
 export default function SearchForm() {
   return (
-    <search className={styles.search}>
+    <search className={styles['search']}>
       <form
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         action={search}
@@ -25,7 +25,7 @@ export default function SearchForm() {
       >
         <SearchTextField
           aria-label="検索"
-          className={clsx('navbar__search-input', styles.textField)}
+          className={clsx('navbar__search-input', styles['textField'])}
           name="q"
           placeholder="検索"
           type="search"

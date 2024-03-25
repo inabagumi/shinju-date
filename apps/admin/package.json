@@ -31,6 +31,7 @@
     "@shinju-date/eslint-config": "workspace:*",
     "@tailwindcss/postcss": "^4.0.0-alpha.10",
     "@tsconfig/next": "^2.0.2",
+    "@tsconfig/strictest": "^2.0.4",
     "@types/mime": "^3.0.4",
     "@types/node": "^20.11.30",
     "@types/react": "^18.2.70",

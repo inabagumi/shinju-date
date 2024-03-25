@@ -41,7 +41,7 @@ function Thumbnail({ video }: ThumbnailProps): JSX.Element | null {
     <Image
       alt=""
       blurDataURL={thumbnail?.blur_data_url}
-      className={styles.thumbnail}
+      className={styles['thumbnail']}
       fill
       placeholder={thumbnail ? 'blur' : undefined}
       sizes="(max-width: 996px) 100vw, 30vw"
@@ -52,21 +52,21 @@ function Thumbnail({ video }: ThumbnailProps): JSX.Element | null {
 
 export function VideoCardSkeleton(): JSX.Element {
   return (
-    <div className={styles.blockLink}>
-      <div className={clsx('card', styles.video)}>
-        <div className={clsx('card__image', styles.image)}>
-          <Skeleton className={styles.thumbnailSkeleton} variant="rect" />
+    <div className={styles['blockLink']}>
+      <div className={clsx('card', styles['video'])}>
+        <div className={clsx('card__image', styles['image'])}>
+          <Skeleton className={styles['thumbnailSkeleton']} variant="rect" />
         </div>
 
         <div className="card__body">
-          <h3 className={styles.title}>
-            <Skeleton className={styles.titleSkeleton} variant="text" />
-            <Skeleton className={styles.titleSkeleton} variant="text" />
+          <h3 className={styles['title']}>
+            <Skeleton className={styles['titleSkeleton']} variant="text" />
+            <Skeleton className={styles['titleSkeleton']} variant="text" />
           </h3>
         </div>
 
         <div className="card__footer">
-          <span className={styles.published}>
+          <span className={styles['published']}>
             <Skeleton variant="text" />
           </span>
         </div>
@@ -114,34 +114,36 @@ export default function VideoCard({
 
   return (
     <a
-      className={styles.blockLink}
+      className={styles['blockLink']}
       href={value.url}
       ping="/ping"
       rel="noopener noreferrer"
       target="_blank"
     >
-      <div className={clsx('card', styles.video)}>
-        <div className={clsx('card__image', styles.image)}>
+      <div className={clsx('card', styles['video'])}>
+        <div className={clsx('card__image', styles['image'])}>
           <Thumbnail video={value} />
 
           {duration.total({ unit: 'second' }) > 0 ? (
-            <span className={clsx('badge', styles.duration)}>
+            <span className={clsx('badge', styles['duration'])}>
               <time dateTime={duration.toString()}>
                 {formatDuration(duration)}
               </time>
             </span>
           ) : liveNow ? (
-            <span className={clsx('badge', styles.liveNow)}>ライブ配信中</span>
+            <span className={clsx('badge', styles['liveNow'])}>
+              ライブ配信中
+            </span>
           ) : null}
         </div>
 
         <div className="card__body">
-          <h3 className={styles.title}>{value.title}</h3>
+          <h3 className={styles['title']}>{value.title}</h3>
         </div>
 
         <div className="card__footer">
           <time
-            className={styles.published}
+            className={styles['published']}
             dateTime={publishedAt.toString({ timeZoneName: 'never' })}
             title={publishedAt.toLocaleString('ja-JP', {
               dateStyle: 'short',

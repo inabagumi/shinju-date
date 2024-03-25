@@ -78,7 +78,7 @@ export default async function Page({
 
   return (
     <div className="margin-top--lg">
-      <h1 className={clsx('margin-bottom--lg', styles.title)}>
+      <h1 className={clsx('margin-bottom--lg', styles['title'])}>
         <Balancer>{title}</Balancer>
       </h1>
 

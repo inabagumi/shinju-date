@@ -3,7 +3,7 @@ import { Temporal } from '@js-temporal/polyfill'
 export function max(
   ...values: Temporal.ZonedDateTime[]
 ): Temporal.ZonedDateTime {
-  if (values.length < 1) {
+  if (!values[0]) {
     throw new TypeError('At least one argument is required.')
   }
 
@@ -21,7 +21,7 @@ export function max(
 export function min(
   ...values: Temporal.ZonedDateTime[]
 ): Temporal.ZonedDateTime {
-  if (values.length < 1) {
+  if (!values[0]) {
     throw new TypeError('At least one argument is required.')
   }
 

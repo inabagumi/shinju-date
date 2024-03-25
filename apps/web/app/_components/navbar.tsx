@@ -43,7 +43,7 @@ export function ThemeToggleButton() {
           ? 'ライトモードに切り替える'
           : 'ダークモードに切り替える'
       }
-      className={clsx('navbar__item', 'navbar__link', styles.navbarButton)}
+      className={clsx('navbar__item', 'navbar__link', styles['navbarButton'])}
       onClick={toggleTheme}
       type="button"
     >
@@ -111,14 +111,14 @@ export function NavbarBrand({
   return (
     <Link className="navbar__brand" {...props}>
       <svg
-        className={clsx('navbar__logo', styles.logo)}
+        className={clsx('navbar__logo', styles['logo'])}
         height={32}
         role="img"
         width={32}
       >
         <use xlinkHref="#svg-symbols-square-icon" />
       </svg>
-      <strong className={clsx('navbar__title', styles.title)}>
+      <strong className={clsx('navbar__title', styles['title'])}>
         {children}
       </strong>
     </Link>

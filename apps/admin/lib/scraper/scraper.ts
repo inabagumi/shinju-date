@@ -116,7 +116,7 @@ export class Thumbnail {
           Thumbnail.upload({
             ...options,
             originalVideo,
-            savedThumbnail
+            ...(savedThumbnail ? { savedThumbnail } : {})
           })
         )
       })
@@ -398,10 +398,10 @@ export default class Scraper {
             duration: originalVideo.contentDetails.duration ?? 'P0D',
             published_at: publishedAt.toString(),
             slug: originalVideo.id,
-            thumbnail_id: thumbnail?.id,
             title: originalVideo.snippet.title ?? '',
             updated_at: this.#currentDateTime.toString(),
             url: `https://www.youtube.com/watch?v=${originalVideo.id}`,
+            ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
             ...updateValue
           }
         }

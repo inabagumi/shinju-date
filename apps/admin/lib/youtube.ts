@@ -2,10 +2,20 @@ import { youtube_v3 as youtube } from '@googleapis/youtube'
 
 export const YOUTUBE_DATA_API_MAX_RESULTS = 50
 
-export const youtubeClient = new youtube.Youtube({
-  auth: process.env.GOOGLE_API_KEY,
-  fetchImplementation: fetch
-})
+function createYouTubeClient() {
+  const apiKey = process.env['GOOGLE_API_KEY']
+
+  if (!apiKey) {
+    throw new TypeError('An API Key is required.')
+  }
+
+  return new youtube.Youtube({
+    auth: apiKey,
+    fetchImplementation: fetch
+  })
+}
+
+export const youtubeClient = createYouTubeClient()
 
 type NonNullableChannelContentDetails =
   NonNullable<youtube.Schema$ChannelContentDetails>
@@ -81,9 +91,9 @@ export async function* getPlaylistItems({
       data: { items, nextPageToken }
     } = await youtubeClient.playlistItems.list({
       maxResults: all ? 50 : 20,
-      pageToken,
       part: ['contentDetails'],
-      playlistId: playlistID
+      playlistId: playlistID,
+      ...(pageToken ? { pageToken } : {})
     })
 
     if (!items || items.length < 1) {

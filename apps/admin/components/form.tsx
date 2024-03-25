@@ -85,7 +85,12 @@ export function FormField({ name, ...props }: FormFieldProps) {
   const id = useId()
 
   return (
-    <FormFieldContext.Provider value={{ id, name }}>
+    <FormFieldContext.Provider
+      value={{
+        id,
+        ...(name ? { name } : {})
+      }}
+    >
       <div {...props} />
     </FormFieldContext.Provider>
   )
@@ -98,7 +103,7 @@ export function GenericErrorMessage({
   ...props
 }: GenericErrorMessageProps) {
   const { errors } = useContext(FormContext)
-  const errorMessages = errors?.generic || []
+  const errorMessages = errors?.['generic'] || []
 
   return (
     errorMessages.length > 0 && (

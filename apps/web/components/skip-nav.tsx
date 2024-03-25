@@ -14,9 +14,13 @@ export const DEFAULT_SKIP_NAV_CONTENT_ID = 'content'
 export function SkipNavLink({
   contentId = DEFAULT_SKIP_NAV_CONTENT_ID,
   ...props
-}: SkipNavLinkProps): JSX.Element {
+}: SkipNavLinkProps) {
   return (
-    <SkipNavLinkImpl className={styles.link} contentId={contentId} {...props} />
+    <SkipNavLinkImpl
+      className={styles['link']}
+      contentId={contentId}
+      {...props}
+    />
   )
 }
 
@@ -24,5 +28,5 @@ export function SkipNavContent({
   id = DEFAULT_SKIP_NAV_CONTENT_ID,
   ...props
 }: SkipNavContentProps) {
-  return <SkipNavContentImpl className={styles.content} id={id} {...props} />
+  return <SkipNavContentImpl className={styles['content']} id={id} {...props} />
 }

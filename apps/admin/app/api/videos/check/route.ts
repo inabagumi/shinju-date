@@ -161,7 +161,8 @@ function deleteVideos({
 }
 
 export async function POST(request: NextRequest): Promise<Response> {
-  if (!verifyCronRequest(request, { cronSecure: process.env.CRON_SECRET })) {
+  const cronSecure = process.env['CRON_SECRET']
+  if (cronSecure && !verifyCronRequest(request, { cronSecure })) {
     return createErrorResponse('Unauthorized', { status: 401 })
   }
 
@@ -184,7 +185,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   const currentDateTime = Temporal.Now.instant()
   const supabaseClient = createSupabaseClient(
     undefined,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
+    process.env['SUPABASE_SERVICE_ROLE_KEY']
   )
 
   const savedVideos: Video[] = []
