@@ -1,3 +1,5 @@
+// @ts-check
+
 import nextJest from 'next/jest.js'
 
 const createJestConfig = nextJest()
