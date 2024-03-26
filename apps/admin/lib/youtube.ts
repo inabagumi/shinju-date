@@ -44,7 +44,7 @@ export async function* getChannels({
   void,
   undefined
 > {
-  for (let i = 0; i < ids.length; i += 50) {
+  for (let i = 0; i < ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
     const {
       data: { items }
     } = await youtubeClient.channels.list({
@@ -90,7 +90,7 @@ export async function* getPlaylistItems({
     const {
       data: { items, nextPageToken }
     } = await youtubeClient.playlistItems.list({
-      maxResults: 50,
+      maxResults: all ? YOUTUBE_DATA_API_MAX_RESULTS : 20,
       part: ['contentDetails'],
       playlistId: playlistID,
       ...(pageToken ? { pageToken } : {})
