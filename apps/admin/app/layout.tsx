@@ -4,7 +4,7 @@ import { type ReactNode } from 'react'
 import { lato } from './fonts'
 
 export const viewport: Viewport = {
-  themeColor: '#1e293b' // --color-slate-800
+  themeColor: '#1e0064' // var(--color-primary)
 }
 
 export const metadata: Metadata = {
@@ -18,7 +18,7 @@ type Props = {
 export default function RootLayout({ children }: Props) {
   return (
     <html className={lato.variable} lang="ja">
-      <body className="font-sans text-slate-600">{children}</body>
+      <body className="font-sans text-primary">{children}</body>
     </html>
   )
 }
