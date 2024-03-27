@@ -88,7 +88,7 @@ importers:
         specifier: ^0.33.2
         version: 0.33.3
       tailwindcss:
-        specifier: ^4.0.0-alpha.10
+        specifier: ^4.0.0-alpha.11
         version: 4.0.0-alpha.11
       winston:
         specifier: ^3.13.0

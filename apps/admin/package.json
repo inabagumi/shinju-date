@@ -21,7 +21,7 @@
     "react-hook-form": "^7.51.2",
     "react-icons": "^5.0.1",
     "sharp": "^0.33.2",
-    "tailwindcss": "^4.0.0-alpha.10",
+    "tailwindcss": "^4.0.0-alpha.11",
     "winston": "^3.13.0",
     "yup": "^1.4.0",
     "zod": "^3.22.4"
