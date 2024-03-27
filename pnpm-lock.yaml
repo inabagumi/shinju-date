@@ -110,8 +110,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@tsconfig/strictest':
-        specifier: ^2.0.4
-        version: 2.0.4
+        specifier: ^2.0.5
+        version: 2.0.5
       '@types/mime':
         specifier: ^3.0.4
         version: 3.0.4
@@ -240,8 +240,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@tsconfig/strictest':
-        specifier: ^2.0.4
-        version: 2.0.4
+        specifier: ^2.0.5
+        version: 2.0.5
       '@types/dedent':
         specifier: ^0.7.2
         version: 0.7.2
@@ -325,8 +325,8 @@ importers:
         specifier: ^20.1.4
         version: 20.1.4
       '@tsconfig/strictest':
-        specifier: ^2.0.4
-        version: 2.0.4
+        specifier: ^2.0.5
+        version: 2.0.5
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -356,8 +356,8 @@ importers:
         specifier: ^20.1.4
         version: 20.1.4
       '@tsconfig/strictest':
-        specifier: ^2.0.4
-        version: 2.0.4
+        specifier: ^2.0.5
+        version: 2.0.5
       '@types/cookie':
         specifier: ^0.6.0
         version: 0.6.0
@@ -2402,8 +2402,8 @@ packages:
     resolution: {integrity: sha512-sqgsT69YFeLWf5NtJ4Xq/xAF8p4ZQHlmGW74Nu2tD4+g5fAsposc4ZfaaPixVu4y01BEiDCWLRDCvDM5JOsRxg==}
     dev: true
 
-  /@tsconfig/strictest@2.0.4:
-    resolution: {integrity: sha512-/VKO/oufDOvAE48KGzZOEXFBKtR3PnGlb4cJoRtw3Ax5tYwaWnaNgyTJDviIbvjlnn82WMfTNvhegFkj5Xt2UA==}
+  /@tsconfig/strictest@2.0.5:
+    resolution: {integrity: sha512-ec4tjL2Rr0pkZ5hww65c+EEPYwxOi4Ryv+0MtjeaSQRJyq322Q27eOQiFbuNgw2hpL4hB1/W/HBGk3VKS43osg==}
     dev: true
 
   /@types/acorn@4.0.6:
