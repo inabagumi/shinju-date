@@ -107,8 +107,8 @@ importers:
         specifier: ^4.0.0-alpha.10
         version: 4.0.0-alpha.10(postcss@8.4.38)
       '@tsconfig/next':
-        specifier: ^2.0.2
-        version: 2.0.2
+        specifier: ^2.0.3
+        version: 2.0.3
       '@tsconfig/strictest':
         specifier: ^2.0.4
         version: 2.0.4
@@ -237,8 +237,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/eslint-config
       '@tsconfig/next':
-        specifier: ^2.0.2
-        version: 2.0.2
+        specifier: ^2.0.3
+        version: 2.0.3
       '@tsconfig/strictest':
         specifier: ^2.0.4
         version: 2.0.4
@@ -2394,8 +2394,8 @@ packages:
       - postcss
     dev: true
 
-  /@tsconfig/next@2.0.2:
-    resolution: {integrity: sha512-W84/xm8UevymR1tuxU1/qPM0di7FZahaSaJj92K7/y2hYB28Y/4dvaXm/hud3DPsG+b4BVNk4RCzCKA9/dPIbw==}
+  /@tsconfig/next@2.0.3:
+    resolution: {integrity: sha512-b4aKvmdWnv9aUy+NStUFlefirk3SItW20OJtbi5/ue9oMRaQtUYbN5zsr7OmV3rlx6Gp6h7A82gPoCXhrNGVPQ==}
     dev: true
 
   /@tsconfig/node20@20.1.3:
