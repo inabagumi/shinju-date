@@ -82,8 +82,14 @@ const withMDX = createMDX({
   }
 })
 
-export default process.env['NEXT_PUBLIC_SENTRY_DSN']
-  ? withSentryConfig(
+/**
+ * @param {import('next').NextConfig} nextConfig
+ * @returns {import('next').NextConfig}
+ */
+function withPlugins(nextConfig) {
+  if (process.env['NEXT_PUBLIC_SENTRY_DSN']) {
+    // @ts-expect-error
+    return withSentryConfig(
       withMDX(nextConfig),
       {},
       {
@@ -92,4 +98,9 @@ export default process.env['NEXT_PUBLIC_SENTRY_DSN']
         tunnelRoute: '/api/monitoring/sentry'
       }
     )
-  : withMDX(nextConfig)
+  }
+
+  return withMDX(nextConfig)
+}
+
+export default withPlugins(nextConfig)
