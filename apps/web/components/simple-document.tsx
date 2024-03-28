@@ -3,9 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { type ReactNode } from 'react'
-import Balancer from 'react-wrap-balancer'
 import { title as siteName } from '@/lib/constants'
-import { SkipNavContent } from './skip-nav'
 
 type Props = {
   button?: ReactNode
@@ -27,59 +25,55 @@ export default function SimpleDocument({
       {title && (
         <div className="hero hero--dark">
           <div className="container">
-            <h1 className="hero__title">
-              <Balancer>{title}</Balancer>
-            </h1>
+            <h1 className="hero__title text-balance">{title}</h1>
 
             {button && <div>{button}</div>}
           </div>
         </div>
       )}
 
-      <SkipNavContent>
-        <main className="container">
-          {withBreadcrumbs && (
-            <nav aria-label="パンくずリスト" className="margin-vert--md">
-              <ul
-                className="breadcrumbs breadcrumbs--sm"
+      <main className="container">
+        {withBreadcrumbs && (
+          <nav aria-label="パンくずリスト" className="margin-vert--md">
+            <ul
+              className="breadcrumbs breadcrumbs--sm"
+              itemScope
+              itemType="https://schema.org/BreadcrumbList"
+            >
+              <li
+                className="breadcrumbs__item"
+                itemProp="itemListElement"
                 itemScope
-                itemType="https://schema.org/BreadcrumbList"
+                itemType="https://schema.org/ListItem"
               >
+                <Link className="breadcrumbs__link" href="/" itemProp="item">
+                  <span itemProp="name">{siteName}</span>
+                </Link>
+                <meta content="1" itemProp="position" />
+              </li>
+              {pathname && (
                 <li
-                  className="breadcrumbs__item"
+                  className="breadcrumbs__item breadcrumbs__item--active"
                   itemProp="itemListElement"
                   itemScope
                   itemType="https://schema.org/ListItem"
                 >
-                  <Link className="breadcrumbs__link" href="/" itemProp="item">
-                    <span itemProp="name">{siteName}</span>
-                  </Link>
-                  <meta content="1" itemProp="position" />
-                </li>
-                {pathname && (
-                  <li
-                    className="breadcrumbs__item breadcrumbs__item--active"
-                    itemProp="itemListElement"
-                    itemScope
-                    itemType="https://schema.org/ListItem"
+                  <Link
+                    className="breadcrumbs__link"
+                    href={pathname}
+                    itemProp="item"
                   >
-                    <Link
-                      className="breadcrumbs__link"
-                      href={pathname}
-                      itemProp="item"
-                    >
-                      <span itemProp="name">{title || pathname}</span>
-                    </Link>
-                    <meta content="2" itemProp="position" />
-                  </li>
-                )}
-              </ul>
-            </nav>
-          )}
+                    <span itemProp="name">{title || pathname}</span>
+                  </Link>
+                  <meta content="2" itemProp="position" />
+                </li>
+              )}
+            </ul>
+          </nav>
+        )}
 
-          <div className="padding-bottom--lg">{children}</div>
-        </main>
-      </SkipNavContent>
+        <div className="padding-bottom--lg">{children}</div>
+      </main>
     </>
   )
 }

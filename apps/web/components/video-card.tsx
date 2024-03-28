@@ -1,13 +1,10 @@
 'use client'
 
 import { Temporal } from '@js-temporal/polyfill'
-import clsx from 'clsx'
 import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { type Video } from '@/lib/fetchers'
 import { supabase } from '@/lib/supabase'
-import Skeleton from './skeleton'
-import styles from './video-card.module.css'
 
 function formatDuration(duration: Temporal.Duration): string {
   return [duration.hours, duration.minutes, duration.seconds]
@@ -19,15 +16,16 @@ type ThumbnailProps = {
   video: Video
 }
 
-function Thumbnail({ video }: ThumbnailProps): JSX.Element | null {
+function Thumbnail({
+  video: { slug, thumbnails }
+}: ThumbnailProps): JSX.Element | null {
   const thumbnail = useMemo(
-    () =>
-      Array.isArray(video.thumbnails) ? video.thumbnails[0] : video.thumbnails,
-    [video.thumbnails]
+    () => (Array.isArray(thumbnails) ? thumbnails[0] : thumbnails),
+    [thumbnails]
   )
   const publicURL = useMemo(() => {
     if (!thumbnail) {
-      return `https://i.ytimg.com/vi/${video.slug}/maxresdefault.jpg`
+      return `https://i.ytimg.com/vi/${slug}/maxresdefault.jpg`
     }
 
     const {
@@ -35,13 +33,13 @@ function Thumbnail({ video }: ThumbnailProps): JSX.Element | null {
     } = supabase.storage.from('thumbnails').getPublicUrl(thumbnail.path)
 
     return url
-  }, [thumbnail, video.slug])
+  }, [thumbnail, slug])
 
   return (
     <Image
       alt=""
       blurDataURL={thumbnail?.blur_data_url}
-      className={styles['thumbnail']}
+      className="object-cover object-center"
       fill
       placeholder={thumbnail ? 'blur' : undefined}
       sizes="(max-width: 996px) 100vw, 30vw"
@@ -50,25 +48,21 @@ function Thumbnail({ video }: ThumbnailProps): JSX.Element | null {
   )
 }
 
-export function VideoCardSkeleton(): JSX.Element {
+export function VideoCardSkeleton() {
   return (
-    <div className={styles['blockLink']}>
-      <div className={clsx('card', styles['video'])}>
-        <div className={clsx('card__image', styles['image'])}>
-          <Skeleton className={styles['thumbnailSkeleton']} variant="rect" />
-        </div>
+    <div className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-primary-foreground shadow">
+      <div className="relative aspect-video">
+        <div className="h-full animate-pulse bg-slate-200" />
+      </div>
 
-        <div className="card__body">
-          <h3 className={styles['title']}>
-            <Skeleton className={styles['titleSkeleton']} variant="text" />
-            <Skeleton className={styles['titleSkeleton']} variant="text" />
-          </h3>
-        </div>
+      <div className="grid grow grid-rows-[1fr_auto] gap-6 p-2.5">
+        <h3 className="font-semibold break-all">
+          <span className="inline-block h-4 w-full animate-pulse rounded-md bg-slate-200" />
+          <span className="inline-block h-4 w-28 animate-pulse rounded-md bg-slate-200" />
+        </h3>
 
-        <div className="card__footer">
-          <span className={styles['published']}>
-            <Skeleton variant="text" />
-          </span>
+        <div className="text-right text-sm">
+          <span className="inline-block h-3 w-24 animate-pulse rounded-md bg-slate-200" />
         </div>
       </div>
     </div>
@@ -86,7 +80,7 @@ type Props = {
 export default function VideoCard({
   dateTimeFormatOptions = { dateStyle: undefined, timeStyle: 'short' },
   value
-}: Props): JSX.Element {
+}: Props) {
   const [now] = useState(() => Temporal.Now.zonedDateTimeISO('Asia/Tokyo'))
   const publishedAt = useMemo(
     () =>
@@ -114,58 +108,59 @@ export default function VideoCard({
 
   return (
     <a
-      className={styles['blockLink']}
+      className="contents"
       href={value.url}
       ping="/ping"
       rel="noopener noreferrer"
       target="_blank"
     >
-      <div className={clsx('card', styles['video'])}>
-        <div className={clsx('card__image', styles['image'])}>
+      <div className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-primary-foreground shadow hover:border-secondary-blue">
+        <div className="relative aspect-video">
           <Thumbnail video={value} />
 
-          {duration.total({ unit: 'second' }) > 0 ? (
-            <span className={clsx('badge', styles['duration'])}>
+          {duration.total({ unit: 'second' }) > 0 && (
+            <span className="absolute bottom-0 left-0 m-2 inline-block rounded-md bg-slate-800/80 py-0.5 px-1.5 text-xs font-semibold text-white">
               <time dateTime={duration.toString()}>
                 {formatDuration(duration)}
               </time>
             </span>
-          ) : liveNow ? (
-            <span className={clsx('badge', styles['liveNow'])}>
+          )}
+          {liveNow && (
+            <span className="absolute top-0 right-0 m-2 inline-block rounded-md bg-secondary-pink py-0.5 px-1.5 text-xs font-semibold text-white">
               ライブ配信中
             </span>
-          ) : null}
+          )}
         </div>
 
-        <div className="card__body">
-          <h3 className={styles['title']}>{value.title}</h3>
-        </div>
+        <div className="grid grow grid-rows-[1fr_auto] gap-6 p-2.5">
+          <h3 className="font-semibold break-all">{value.title}</h3>
 
-        <div className="card__footer">
-          <time
-            className={styles['published']}
-            dateTime={publishedAt.toString({ timeZoneName: 'never' })}
-            title={publishedAt.toLocaleString('ja-JP', {
-              dateStyle: 'short',
-              timeStyle: 'medium'
-            })}
-          >
-            {publishedAt.toLocaleString('ja-JP', {
-              day: dateTimeFormatOptions.dateStyle ? '2-digit' : undefined,
-              hour: dateTimeFormatOptions.timeStyle ? '2-digit' : undefined,
-              minute: dateTimeFormatOptions.timeStyle ? '2-digit' : undefined,
-              month: dateTimeFormatOptions.dateStyle ? '2-digit' : undefined,
-              second:
-                dateTimeFormatOptions.timeStyle &&
-                dateTimeFormatOptions.timeStyle !== 'short'
-                  ? '2-digit'
-                  : undefined,
-              year:
-                dateTimeFormatOptions.dateStyle && now.year !== publishedAt.year
-                  ? 'numeric'
-                  : undefined
-            })}
-          </time>
+          <div className="text-right text-sm">
+            <time
+              dateTime={publishedAt.toString({ timeZoneName: 'never' })}
+              title={publishedAt.toLocaleString('ja-JP', {
+                dateStyle: 'short',
+                timeStyle: 'medium'
+              })}
+            >
+              {publishedAt.toLocaleString('ja-JP', {
+                day: dateTimeFormatOptions.dateStyle ? '2-digit' : undefined,
+                hour: dateTimeFormatOptions.timeStyle ? '2-digit' : undefined,
+                minute: dateTimeFormatOptions.timeStyle ? '2-digit' : undefined,
+                month: dateTimeFormatOptions.dateStyle ? '2-digit' : undefined,
+                second:
+                  dateTimeFormatOptions.timeStyle &&
+                  dateTimeFormatOptions.timeStyle !== 'short'
+                    ? '2-digit'
+                    : undefined,
+                year:
+                  dateTimeFormatOptions.dateStyle &&
+                  now.year !== publishedAt.year
+                    ? 'numeric'
+                    : undefined
+              })}
+            </time>
+          </div>
         </div>
       </div>
     </a>

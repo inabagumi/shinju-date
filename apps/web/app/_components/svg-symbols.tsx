@@ -1,8 +1,6 @@
-import styles from './svg-symbols.module.css'
-
 export default function SVGSymbols() {
   return (
-    <svg aria-hidden className={styles['root']}>
+    <svg aria-hidden className="hidden">
       <defs>
         <symbol id="svg-symbols-square-icon" viewBox="0 0 256 256">
           <rect fill="#212121" height="256" rx="24" width="256" />

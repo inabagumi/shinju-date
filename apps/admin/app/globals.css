@@ -8,6 +8,11 @@
     var(--font-family-emoji);
 
   --color-primary: #1e0064;
+  --color-primary-foreground: color-mix(
+    in srgb,
+    var(--color-primary) 5%,
+    var(--color-white)
+  );
   --color-secondary-pink: #ff3278;
   --color-secondary-blue: #0050ff;
 }

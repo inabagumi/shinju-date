@@ -22,7 +22,7 @@ export default function robots(): MetadataRoute.Manifest {
     name: title,
     scope: '/',
     short_name: title,
-    start_url: '/?utm_source=homescreen',
+    start_url: '/',
     theme_color: themeColor
   }
 }
