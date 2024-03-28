@@ -1,8 +1,5 @@
-import clsx from 'clsx'
 import { type Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
-import Balancer from 'react-wrap-balancer'
-import styles from '@/app/videos/[[...queries]]/page.module.css'
 import NoResults from '@/components/no-results'
 import SearchResults from '@/components/search-results'
 import { title as siteName } from '@/lib/constants'
@@ -103,16 +100,14 @@ export default async function Page({
     : `『${channel.name}』の動画一覧`
 
   return (
-    <div className="margin-top--lg">
-      <h1 className={clsx('margin-bottom--lg', styles['title'])}>
-        <Balancer>{title}</Balancer>
-      </h1>
+    <>
+      <h1 className="text-xl font-semibold">{title}</h1>
 
       <SearchResults
         channels={[channel]}
         prefetchedData={[videos]}
         query={query}
       />
-    </div>
+    </>
   )
 }

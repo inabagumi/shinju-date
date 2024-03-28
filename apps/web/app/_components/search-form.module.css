@@ -1,9 +1,0 @@
-.search {
-  display: block;
-}
-
-@media (max-width: 996px) {
-  .textField {
-    font-size: 1rem;
-  }
-}

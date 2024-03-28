@@ -1,9 +1,80 @@
-@import url('node_modules:infima/dist/css/default/default.min.css') layer(base);
+@import 'tailwindcss';
 
-:root {
-  --ifm-font-family-base: var(--font-lato, 'Lato'), Helvetica Neue, Arial,
+@theme {
+  --font-family-emoji: Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
+    Noto Color Emoji;
+  --font-family-sans: var(--font-lato, Lato), Helvetica Neue, Arial,
     Hiragino Kaku Gothic ProN, Hiragino Sans, BIZ UDPGothic, Meiryo, sans-serif,
-    Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji;
-  --ifm-font-size-base: 16px;
-  --ifm-line-height-base: 2;
+    var(--font-family-emoji);
+
+  --color-774-nevy-50: #f2f1ff;
+  --color-774-nevy-100: #eae5ff;
+  --color-774-nevy-200: #d5ceff;
+  --color-774-nevy-300: #b7a7ff;
+  --color-774-nevy-400: #9676ff;
+  --color-774-nevy-500: #763fff;
+  --color-774-nevy-600: #6718ff;
+  --color-774-nevy-700: #5907fa;
+  --color-774-nevy-800: #4a05d2;
+  --color-774-nevy-900: #3e06ac;
+  --color-774-nevy-950: #1e0064;
+  --color-774-pink-50: #fff0f4;
+  --color-774-pink-100: #ffe2ea;
+  --color-774-pink-200: #ffcada;
+  --color-774-pink-300: #ff9fbb;
+  --color-774-pink-400: #ff6999;
+  --color-774-pink-500: #ff3278;
+  --color-774-pink-600: #ed1166;
+  --color-774-pink-700: #c80858;
+  --color-774-pink-800: #a80950;
+  --color-774-pink-900: #8f0c4a;
+  --color-774-pink-950: #500124;
+  --color-774-blue-50: #edf7ff;
+  --color-774-blue-100: #d6ebff;
+  --color-774-blue-200: #b5deff;
+  --color-774-blue-300: #83caff;
+  --color-774-blue-400: #48acff;
+  --color-774-blue-500: #1e87ff;
+  --color-774-blue-600: #0665ff;
+  --color-774-blue-700: #0050ff;
+  --color-774-blue-800: #083ec5;
+  --color-774-blue-900: #0d399b;
+  --color-774-blue-950: #0e245d;
+
+  --color-primary: var(--color-774-nevy-950);
+  --color-primary-foreground: var(--color-774-nevy-50);
+  --color-secondary-pink: var(--color-774-pink-500);
+  --color-secondary-pink-foreground: var(--color-774-pink-50);
+  --color-secondary-blue: var(--color-774-blue-700);
+  --color-secondary-blue-foreground: var(--color-774-blue-50);
+
+  --background-image-search-icon: url(./_assets/search-icon.svg);
+  --background-image-search-icon-invert: url(./_assets/search-icon-invert.svg);
+}
+
+@layer components {
+  .markdown {
+    @apply space-y-4 leading-loose;
+
+    h2 {
+      @apply text-xl font-semibold;
+    }
+
+    ol,
+    ul {
+      @apply ps-6;
+    }
+
+    ol {
+      @apply list-decimal;
+    }
+
+    ul {
+      @apply list-disc;
+    }
+
+    a {
+      @apply text-secondary-blue hover:text-secondary-pink hover:underline;
+    }
+  }
 }

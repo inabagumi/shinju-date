@@ -1,31 +1,27 @@
 'use client'
 
 import { Temporal } from '@js-temporal/polyfill'
-import chunk from 'lodash.chunk'
 import groupBy from 'lodash.groupby'
 import { useMemo } from 'react'
 import useSWR from 'swr'
 import { type Channel, type Video, fetchNotEndedVideos } from '@/lib/fetchers'
-import Skeleton from './skeleton'
-import VideoCard, { VideoCardSkeleton } from './video-card'
-
-type TimelineSectionProps = {
-  dateTime: string
-  items: Video[]
-}
+import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 
 function TimelineSection({
   dateTime: rawDateTime,
   items
-}: TimelineSectionProps) {
+}: {
+  dateTime: string
+  items: Video[]
+}) {
   const dateTime = useMemo(
     () => Temporal.PlainDate.from(rawDateTime),
     [rawDateTime]
   )
 
   return (
-    <section className="margin-top--lg section">
-      <h2 className="margin-bottom--lg text--right">
+    <section className="space-y-6">
+      <h2 className="text-right text-2xl font-bold">
         <time dateTime={dateTime.toJSON()}>
           {dateTime.toLocaleString('ja-JP', {
             dateStyle: 'short',
@@ -34,57 +30,30 @@ function TimelineSection({
         </time>
       </h2>
 
-      <div className="container">
-        {chunk(items, 3).map((values) => (
-          <div
-            className="row"
-            key={`items:[${values.map((value) => value.slug).join(',')}]`}
-          >
-            {values.map((value) => (
-              <div
-                className="col col--4 padding-bottom--lg padding-horiz--sm"
-                key={value.slug}
-              >
-                <VideoCard value={value} />
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
+      <VideoCardList values={items} />
     </section>
   )
 }
 
-export function TimelineSkeleton(): JSX.Element {
+export function TimelineSkeleton() {
   return (
-    <section className="margin-top--lg section">
-      <h2 className="margin-bottom--lg text--right">
-        <Skeleton variant="text" />
+    <section className="space-y-6">
+      <h2 className="text-right text-2xl font-bold">
+        <span className="inline-block h-6 w-32 animate-pulse rounded-md bg-774-nevy-100" />
       </h2>
 
-      <div className="container">
-        <div className="row">
-          <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-            <VideoCardSkeleton />
-          </div>
-          <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-            <VideoCardSkeleton />
-          </div>
-        </div>
-      </div>
+      <VideoCardListSkeleton />
     </section>
   )
-}
-
-type Props = {
-  channels?: Channel[]
-  prefetchedData: Video[]
 }
 
 export default function Timeline({
   channels,
   prefetchedData
-}: Props): JSX.Element {
+}: {
+  channels?: Channel[]
+  prefetchedData: Video[]
+}) {
   const { data: videos } = useSWR(
     {
       channelIDs: channels && channels.map((channel) => channel.slug)
@@ -111,10 +80,10 @@ export default function Timeline({
   }, [videos])
 
   return (
-    <>
+    <div className="space-y-20">
       {Object.entries(schedule).map(([dateTime, items]) => (
         <TimelineSection dateTime={dateTime} items={items} key={dateTime} />
       ))}
-    </>
+    </div>
   )
 }

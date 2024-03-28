@@ -1,14 +1,11 @@
 import { type ReactNode } from 'react'
-import { SkipNavContent } from '@/components/skip-nav'
 
 type Props = {
   children: ReactNode
 }
 
-export default function VideosLayout({ children }: Props): JSX.Element {
+export default function VideosLayout({ children }: Props) {
   return (
-    <SkipNavContent>
-      <div className="container">{children}</div>
-    </SkipNavContent>
+    <main className="mx-auto grid max-w-6xl gap-8 py-8 px-4">{children}</main>
   )
 }

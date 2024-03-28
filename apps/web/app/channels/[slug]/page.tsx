@@ -61,7 +61,7 @@ export default async function ChannelSchedulePage({ params }: Props) {
     <SimpleDocument
       button={
         <Link
-          className="button button--lg button--secondary"
+          className="inline-block rounded-lg bg-primary-foreground py-1.5 px-6 text-primary hover:bg-774-nevy-100"
           href={`/channels/${channel.slug}/videos`}
           role="button"
         >
@@ -70,7 +70,7 @@ export default async function ChannelSchedulePage({ params }: Props) {
       }
       title={channel.name}
     >
-      <h2 className="margin-top--lg">今後の配信予定</h2>
+      <h2 className="text-xl font-semibold">今後の配信予定</h2>
 
       {videos.length > 0 ? (
         <Timeline channels={[channel]} prefetchedData={videos} />
