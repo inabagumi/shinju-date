@@ -1,7 +1,6 @@
 import clsx from 'clsx'
 import { type Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
-import Balancer from 'react-wrap-balancer'
 import styles from '@/app/videos/[[...queries]]/page.module.css'
 import NoResults from '@/components/no-results'
 import SearchResults from '@/components/search-results'
@@ -104,8 +103,8 @@ export default async function Page({
 
   return (
     <div className="margin-top--lg">
-      <h1 className={clsx('margin-bottom--lg', styles['title'])}>
-        <Balancer>{title}</Balancer>
+      <h1 className={clsx('margin-bottom--lg text-balance', styles['title'])}>
+        {title}
       </h1>
 
       <SearchResults

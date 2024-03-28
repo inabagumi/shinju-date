@@ -1,7 +1,6 @@
 import clsx from 'clsx'
 import { type Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import Balancer from 'react-wrap-balancer'
 import NoResults from '@/components/no-results'
 import SearchResults from '@/components/search-results'
 import { title as siteName } from '@/lib/constants'
@@ -51,10 +50,7 @@ export function generateMetadata({ params }: Props): Metadata {
   }
 }
 
-export default async function Page({
-  params,
-  searchParams
-}: Props): Promise<JSX.Element> {
+export default async function VideosPage({ params, searchParams }: Props) {
   const query = parseQueries(params.queries)
 
   if (!query && searchParams.q) {
@@ -78,8 +74,8 @@ export default async function Page({
 
   return (
     <div className="margin-top--lg">
-      <h1 className={clsx('margin-bottom--lg', styles['title'])}>
-        <Balancer>{title}</Balancer>
+      <h1 className={clsx('margin-bottom--lg text-balance', styles['title'])}>
+        {title}
       </h1>
 
       <SearchResults prefetchedData={[videos]} query={query} />
