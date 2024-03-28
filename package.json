@@ -4,6 +4,8 @@
   "devDependencies": {
     "@inabagumi/prettier-config": "^3.0.0",
     "prettier": "~3.2.5",
+    "prettier-plugin-tailwindcss": "^0.5.13",
+    "tailwindcss": "^4.0.0-alpha.11",
     "turbo": "^1.13.0",
     "typescript": "~5.4.3"
   },
@@ -21,8 +23,5 @@
     "test": "turbo test"
   },
   "type": "module",
-  "version": "1.0.0",
-  "dependencies": {
-    "prettier-plugin-tailwindcss": "^0.5.13"
-  }
+  "version": "1.0.0"
 }
