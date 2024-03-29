@@ -42,7 +42,7 @@ export default function Breadcrumbs({
             itemType="https://schema.org/ListItem"
           >
             <Link
-              className="rounded-full bg-zinc-700 py-1 px-4 hover:bg-zinc-600"
+              className="rounded-full bg-774-nevy-100 py-1 px-4 hover:bg-774-nevy-200 dark:bg-zinc-700 dark:hover:bg-zinc-600"
               href={pathname}
               itemProp="item"
             >
