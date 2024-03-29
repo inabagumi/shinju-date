@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { joinURL } from 'ufo'
-import styles from './no-results.module.css'
 
 export default function NoResults({
   basePath = '/',
@@ -12,13 +11,13 @@ export default function NoResults({
   title?: string
 }) {
   return (
-    <div className="text--center margin-bottom--lg margin-top--lg padding-bottom--lg padding-top--lg">
-      {title && <h1 className={styles['title']}>{title}</h1>}
+    <div className="space-y-8 py-16 px-8 text-center">
+      {title && <h1 className="text-2xl font-bold">{title}</h1>}
 
-      <p>{message}</p>
+      <p className="text-balance">{message}</p>
 
       <Link
-        className="button button--lg button--outline button--primary"
+        className="inline-block rounded-md border border-current py-3 px-6 font-semibold text-secondary-blue hover:bg-secondary-blue hover:text-secondary-blue-foreground dark:border-774-nevy-50 dark:text-774-nevy-50 dark:hover:bg-774-nevy-50 dark:hover:text-primary"
         href={joinURL(basePath, '/videos')}
         role="button"
       >

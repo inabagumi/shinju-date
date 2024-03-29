@@ -1,7 +1,6 @@
 'use client'
 
 import { type DefaultDatabase } from '@shinju-date/supabase'
-import chunk from 'lodash.chunk'
 import { useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite from 'swr/infinite'
@@ -10,25 +9,12 @@ import {
   type Video,
   fetchVideosByChannelIDs
 } from '@/lib/fetchers'
-import VideoCard, { VideoCardSkeleton } from './video-card'
+import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 
-export function SearchResultsPlaceholder(): JSX.Element {
-  return (
-    <div className="row">
-      <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-        <VideoCardSkeleton />
-      </div>
-      <div className="col col--4 padding-bottom--lg padding-horiz--sm">
-        <VideoCardSkeleton />
-      </div>
-    </div>
-  )
-}
-
-export function SearchResultsSkeleton(): JSX.Element {
+export function SearchResultsSkeleton() {
   return (
     <div className="container">
-      <SearchResultsPlaceholder />
+      <VideoCardListSkeleton />
     </div>
   )
 }
@@ -38,17 +24,15 @@ type Channel = Pick<
   'id' | 'name' | 'slug'
 >
 
-type Props = {
-  channels?: Channel[]
-  prefetchedData?: Video[][]
-  query?: string
-}
-
 export default function SearchResults({
   channels,
   prefetchedData,
   query = ''
-}: Props) {
+}: {
+  channels?: Channel[]
+  prefetchedData?: Video[][]
+  query?: string
+}) {
   const { data, setSize } = useSWRInfinite(
     (index) => ({
       channelIDs: channels && channels.map((channel) => channel.slug),
@@ -71,10 +55,9 @@ export default function SearchResults({
 
   return (
     <InfiniteScroll
-      className="container"
       dataLength={items.length}
       hasMore={!isReachingEnd}
-      loader={<SearchResultsPlaceholder />}
+      loader={<VideoCardListSkeleton className="mt-12" />}
       next={loadMore}
       scrollThreshold={0.8}
       style={{
@@ -83,24 +66,13 @@ export default function SearchResults({
         overflow: undefined
       }}
     >
-      {chunk(items, 3).map((values) => (
-        <div className="row" key={values.map((value) => value.slug).join(':')}>
-          {values.map((value) => (
-            <div
-              className="col col--4 padding-bottom--lg padding-horiz--sm"
-              key={value.slug}
-            >
-              <VideoCard
-                dateTimeFormatOptions={{
-                  dateStyle: 'short',
-                  timeStyle: 'short'
-                }}
-                value={value}
-              />
-            </div>
-          ))}
-        </div>
-      ))}
+      <VideoCardList
+        dateTimeFormatOptions={{
+          dateStyle: 'short',
+          timeStyle: 'short'
+        }}
+        values={items}
+      />
     </InfiniteScroll>
   )
 }

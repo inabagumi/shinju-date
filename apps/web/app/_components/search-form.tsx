@@ -1,36 +1,46 @@
-import { track } from '@vercel/analytics/server'
-import clsx from 'clsx'
-import { redirect } from 'next/navigation'
-import styles from './search-form.module.css'
-import SearchTextField from './search-text-fieid'
+'use client'
 
-async function search(formData: FormData) {
-  'use server'
+import { useParams } from 'next/navigation'
+import {
+  type ChangeEventHandler,
+  type ComponentPropsWithoutRef,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useState
+} from 'react'
+import { useFormStatus } from 'react-dom'
 
-  const queries = formData.getAll('q')
-  const query = queries.join(' ')
+export const SearchTextField = forwardRef<
+  HTMLInputElement,
+  ComponentPropsWithoutRef<'input'>
+>(function SearchTextField({ disabled, value: defaultValue, ...props }, ref) {
+  const { pending } = useFormStatus()
+  const [value, setValue] = useState(defaultValue ?? '')
+  const { queries } = useParams()
 
-  await track('Search', { query })
+  useEffect(() => {
+    const query = (Array.isArray(queries) ? queries : [queries])
+      .map((value = '') => decodeURIComponent(value))
+      .join('/')
 
-  redirect(`/videos/${encodeURIComponent(query)}`)
-}
+    setValue(query)
+  }, [queries])
 
-export default function SearchForm() {
-  return (
-    <search className={styles['search']}>
-      <form
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        action={search}
-        className="navbar__search"
-      >
-        <SearchTextField
-          aria-label="検索"
-          className={clsx('navbar__search-input', styles['textField'])}
-          name="q"
-          placeholder="検索"
-          type="search"
-        />
-      </form>
-    </search>
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    ({ target }) => {
+      setValue(target.value)
+    },
+    []
   )
-}
+
+  return (
+    <input
+      disabled={disabled ?? pending}
+      onChange={handleChange}
+      ref={ref}
+      value={value}
+      {...props}
+    />
+  )
+})

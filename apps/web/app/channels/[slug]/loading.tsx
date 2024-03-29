@@ -1,5 +1,4 @@
 import SimpleDocument from '@/components/simple-document'
-import Skeleton from '@/components/skeleton'
 import { TimelineSkeleton } from '@/components/timeline'
 
 export default function ChannelScheduleLoading() {
@@ -8,13 +7,15 @@ export default function ChannelScheduleLoading() {
       button={
         <a
           aria-disabled
-          className="button button-lg button--secondary disabled"
+          className="inline-block rounded-lg bg-primary-foreground py-1.5 px-6 text-primary"
           role="button"
         >
           動画一覧
         </a>
       }
-      title={<Skeleton variant="text" />}
+      title={
+        <span className="inline-block h-6 w-32 animate-pulse bg-774-nevy-100 dark:bg-zinc-800" />
+      }
     >
       <h2 className="margin-top--lg">今後の配信予定</h2>
 

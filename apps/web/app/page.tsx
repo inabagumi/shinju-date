@@ -1,23 +1,19 @@
-import clsx from 'clsx'
+import { type Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import NoResults from '@/components/no-results'
-import Skeleton from '@/components/skeleton'
-import { SkipNavContent } from '@/components/skip-nav'
 import Timeline, { TimelineSkeleton } from '@/components/timeline'
 import { description, tagline, title } from '@/lib/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
 import { redisClient } from '@/lib/redis'
 import hero from './_assets/hero.jpg'
-import styles from './page.module.css'
 
 const RECOMMENDATION_QUERIES_COUNT = 4
 
-export const runtime = 'edge'
 export const revalidate = 60
 
-export const metadata = {
+export const metadata: Metadata = {
   alternates: {
     canonical: '/'
   },
@@ -37,8 +33,12 @@ export const metadata = {
   }
 }
 
-async function HomeTimeline() {
-  const videos = await fetchNotEndedVideos({})
+async function HomeTimeline({
+  videosPromise
+}: {
+  videosPromise: ReturnType<typeof fetchNotEndedVideos>
+}) {
+  const videos = await videosPromise
 
   return videos.length > 0 ? (
     <Timeline prefetchedData={videos} />
@@ -49,16 +49,13 @@ async function HomeTimeline() {
 
 function RecommendationQueriesSkeleton() {
   return (
-    <div className="padding-vert--lg">
-      <ul className="pills pills--block">
+    <div className="py-4">
+      <ul className="mx-auto grid max-w-6xl grid-cols-4 gap-2 px-2">
         {Array(RECOMMENDATION_QUERIES_COUNT)
           .fill(0)
           .map((_, i) => (
-            <li
-              className={clsx('pills__item', styles['pill'])}
-              key={`pill-${i}`}
-            >
-              <Skeleton />
+            <li className="" key={`pill-${i}`}>
+              <span className="h-4 w-20 animate-pulse bg-774-nevy-100 dark:bg-zinc-800" />
             </li>
           ))}
       </ul>
@@ -66,24 +63,25 @@ function RecommendationQueriesSkeleton() {
   )
 }
 
-async function RecommendationQueries() {
-  const queries = await redisClient.srandmember<string[]>(
-    'recommendation_queries',
-    RECOMMENDATION_QUERIES_COUNT
-  )
+async function RecommendationQueries({
+  queriesPromise
+}: {
+  queriesPromise: Promise<string[]>
+}) {
+  const queries = await queriesPromise
 
-  if (!queries || queries.length < 1) {
+  if (queries.length < 1) {
     return <RecommendationQueriesSkeleton />
   }
 
   return (
-    <div className="padding-vert--lg">
-      <ul className="pills pills--block">
+    <nav className="py-4">
+      <ul className="mx-auto grid max-w-6xl grid-cols-2 gap-2 px-2 md:grid-cols-4">
         {queries.map((query) => (
-          <li className={clsx('pills__item', styles['pill'])} key={query}>
+          <li key={query}>
             <Link
               aria-label={`『${query}』の検索結果`}
-              className={styles['pillLink']}
+              className="block rounded-xl py-2 px-1 text-center hover:bg-774-nevy-100 dark:hover:bg-zinc-600"
               href={`/videos/${encodeURIComponent(query)}`}
               title={`『${query}』の検索結果`}
             >
@@ -92,19 +90,26 @@ async function RecommendationQueries() {
           </li>
         ))}
       </ul>
-    </div>
+    </nav>
   )
 }
 
 export default function SchedulePage() {
+  const videosPromise = fetchNotEndedVideos({})
+  const queriesPromise = redisClient
+    .srandmember<
+      string[]
+    >('recommendation_queries', RECOMMENDATION_QUERIES_COUNT)
+    .then((queries) => queries ?? [])
+
   return (
     <>
-      <div className={styles['hero']}>
-        <div className={styles['heroInner']}>
-          <h1 className={styles['heroTitle']}>
+      <div className="relative aspect-video bg-slate-700">
+        <div className="absolute right-0 bottom-0 left-0 z-20 bg-gradient-to-t from-slate-900/80 text-white">
+          <h1 className="py-6 px-8 text-center md:text-left">
             <svg
               aria-label="SHINJU DATE"
-              className={styles['logo']}
+              className="inline-block h-14 w-auto drop-shadow-2xl"
               height={80}
               role="img"
               width={256}
@@ -116,27 +121,23 @@ export default function SchedulePage() {
 
         <Image
           alt=""
-          className={styles['heroImage']}
-          fill
+          className="absolute inset-0 z-10 w-full"
           priority
           role="presentation"
+          sizes="100vw"
           src={hero}
         />
       </div>
 
-      <SkipNavContent>
-        <main className="container">
-          <Suspense fallback={<RecommendationQueriesSkeleton />}>
-            <RecommendationQueries />
-          </Suspense>
+      <main className="mx-auto max-w-6xl space-y-12 px-4">
+        <Suspense fallback={<RecommendationQueriesSkeleton />}>
+          <RecommendationQueries queriesPromise={queriesPromise} />
+        </Suspense>
 
-          <div className="margin-bottom--lg">
-            <Suspense fallback={<TimelineSkeleton />}>
-              <HomeTimeline />
-            </Suspense>
-          </div>
-        </main>
-      </SkipNavContent>
+        <Suspense fallback={<TimelineSkeleton />}>
+          <HomeTimeline videosPromise={videosPromise} />
+        </Suspense>
+      </main>
     </>
   )
 }

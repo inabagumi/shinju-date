@@ -1,16 +1,13 @@
-import clsx from 'clsx'
 import { SearchResultsSkeleton } from '@/components/search-results'
-import Skeleton from '@/components/skeleton'
-import styles from './page.module.css'
 
-export default function Loading(): JSX.Element {
+export default function Loading() {
   return (
-    <div className="margin-top--lg">
-      <h1 className={clsx('margin-bottom--lg', styles['title'])}>
-        <Skeleton variant="text" />
+    <>
+      <h1 className="text-xl font-semibold">
+        <span className="inline-block h-8 w-64 animate-pulse rounded-md bg-774-nevy-100 dark:bg-zinc-800" />
       </h1>
 
       <SearchResultsSkeleton />
-    </div>
+    </>
   )
 }

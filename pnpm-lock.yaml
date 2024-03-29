@@ -144,12 +144,9 @@ importers:
       '@mdx-js/react':
         specifier: ^3.0.1
         version: 3.0.1(@types/react@18.2.73)(react@18.2.0)
-      '@reach/skip-nav':
-        specifier: ^0.18.0
-        version: 0.18.0(react-dom@18.2.0)(react@18.2.0)
       '@sentry/nextjs':
         specifier: ^7.109.0
-        version: 7.109.0(encoding@0.1.13)(next@14.1.4)(react@18.2.0)(webpack@5.91.0)
+        version: 7.109.0(next@14.1.4)(react@18.2.0)(webpack@5.91.0)
       '@sentry/profiling-node':
         specifier: ^7.109.0
         version: 7.109.0
@@ -174,12 +171,6 @@ importers:
       dedent:
         specifier: ^1.5.1
         version: 1.5.1
-      edge-sitemap:
-        specifier: ^1.1.1
-        version: 1.1.1
-      encoding:
-        specifier: ^0.1.13
-        version: 0.1.13
       ics:
         specifier: ^3.7.2
         version: 3.7.2
@@ -195,9 +186,6 @@ importers:
       next:
         specifier: ^14.1.4
         version: 14.1.4(@babel/core@7.24.3)(@opentelemetry/api@1.8.0)(react-dom@18.2.0)(react@18.2.0)
-      next-themes:
-        specifier: ^0.3.0
-        version: 0.3.0(react-dom@18.2.0)(react@18.2.0)
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -210,12 +198,15 @@ importers:
       react-infinite-scroll-component:
         specifier: ^6.1.0
         version: 6.1.0(react@18.2.0)
-      react-wrap-balancer:
-        specifier: ^1.1.0
-        version: 1.1.0(react@18.2.0)
       swr:
         specifier: ^2.2.5
         version: 2.2.5(react@18.2.0)
+      tailwind-merge:
+        specifier: ^2.2.2
+        version: 2.2.2
+      tailwindcss:
+        specifier: ^4.0.0-alpha.11
+        version: 4.0.0-alpha.11
       ufo:
         specifier: ^1.5.3
         version: 1.5.3
@@ -238,6 +229,9 @@ importers:
       '@shinju-date/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
+      '@tailwindcss/postcss':
+        specifier: ^4.0.0-alpha.11
+        version: 4.0.0-alpha.11(postcss@8.4.38)
       '@tsconfig/next':
         specifier: ^2.0.3
         version: 2.0.3
@@ -1815,25 +1809,6 @@ packages:
     requiresBuild: true
     optional: true
 
-  /@reach/polymorphic@0.18.0(react@18.2.0):
-    resolution: {integrity: sha512-N9iAjdMbE//6rryZZxAPLRorzDcGBnluf7YQij6XDLiMtfCj1noa7KyLpEc/5XCIB/EwhX3zCluFAwloBKdblA==}
-    peerDependencies:
-      react: ^16.8.0 || 17.x
-    dependencies:
-      react: 18.2.0
-    dev: false
-
-  /@reach/skip-nav@0.18.0(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-7XKHX0NNTz9VJw1d+ZRuu3KhKSOZTIHSbHUuv7qKKPwSNApDa+dVGqR/I7dKwyB/CDFMXO4iEz4XLtOmvi0FEg==}
-    peerDependencies:
-      react: ^16.8.0 || 17.x
-      react-dom: ^16.8.0 || 17.x
-    dependencies:
-      '@reach/polymorphic': 0.18.0(react@18.2.0)
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-    dev: false
-
   /@rollup/plugin-commonjs@24.0.0(rollup@2.78.0):
     resolution: {integrity: sha512-0w0wyykzdyRRPHOb0cQt14mIBLujfAv6GgP6g8nvg/iBxEm112t3YPPq+Buqe2+imvElTka+bjNlJ/gB56TD8g==}
     engines: {node: '>=14.0.0'}
@@ -2016,7 +1991,7 @@ packages:
       '@sentry/utils': 7.109.0
     dev: false
 
-  /@sentry/cli@1.77.3(encoding@0.1.13):
+  /@sentry/cli@1.77.3:
     resolution: {integrity: sha512-c3eDqcDRmy4TFz2bFU5Y6QatlpoBPPa8cxBooaS4aMQpnIdLYPF1xhyyiW0LQlDUNc3rRjNF7oN5qKoaRoMTQQ==}
     engines: {node: '>= 8'}
     hasBin: true
@@ -2024,7 +1999,7 @@ packages:
     dependencies:
       https-proxy-agent: 5.0.1
       mkdirp: 0.5.6
-      node-fetch: 2.7.0(encoding@0.1.13)
+      node-fetch: 2.7.0
       progress: 2.0.3
       proxy-from-env: 1.1.0
       which: 2.0.2
@@ -2051,38 +2026,6 @@ packages:
       localforage: 1.10.0
     dev: false
 
-  /@sentry/nextjs@7.109.0(encoding@0.1.13)(next@14.1.4)(react@18.2.0)(webpack@5.91.0):
-    resolution: {integrity: sha512-AT0jhMDj7N57z8+XfgEyTJBogpU64z4mQpfOsSF5uuequzo3IlVVoJcu88jdqUkaVFxBJp3aF2T4nz65OHLoeA==}
-    engines: {node: '>=8'}
-    peerDependencies:
-      next: ^10.0.8 || ^11.0 || ^12.0 || ^13.0 || ^14.0
-      react: 16.x || 17.x || 18.x
-      webpack: '>= 4.0.0'
-    peerDependenciesMeta:
-      webpack:
-        optional: true
-    dependencies:
-      '@rollup/plugin-commonjs': 24.0.0(rollup@2.78.0)
-      '@sentry/core': 7.109.0
-      '@sentry/integrations': 7.109.0
-      '@sentry/node': 7.109.0
-      '@sentry/react': 7.109.0(react@18.2.0)
-      '@sentry/types': 7.109.0
-      '@sentry/utils': 7.109.0
-      '@sentry/vercel-edge': 7.109.0
-      '@sentry/webpack-plugin': 1.21.0(encoding@0.1.13)
-      chalk: 3.0.0
-      next: 14.1.4(@babel/core@7.24.3)(@opentelemetry/api@1.8.0)(react-dom@18.2.0)(react@18.2.0)
-      react: 18.2.0
-      resolve: 1.22.8
-      rollup: 2.78.0
-      stacktrace-parser: 0.1.10
-      webpack: 5.91.0
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
-    dev: false
-
   /@sentry/nextjs@7.109.0(next@14.1.4)(react@18.2.0):
     resolution: {integrity: sha512-AT0jhMDj7N57z8+XfgEyTJBogpU64z4mQpfOsSF5uuequzo3IlVVoJcu88jdqUkaVFxBJp3aF2T4nz65OHLoeA==}
     engines: {node: '>=8'}
@@ -2102,13 +2045,45 @@ packages:
       '@sentry/types': 7.109.0
       '@sentry/utils': 7.109.0
       '@sentry/vercel-edge': 7.109.0
-      '@sentry/webpack-plugin': 1.21.0(encoding@0.1.13)
+      '@sentry/webpack-plugin': 1.21.0
       chalk: 3.0.0
       next: 14.1.4(@opentelemetry/api@1.8.0)(react-dom@18.2.0)(react@18.2.0)
       react: 18.2.0
       resolve: 1.22.8
       rollup: 2.78.0
       stacktrace-parser: 0.1.10
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+    dev: false
+
+  /@sentry/nextjs@7.109.0(next@14.1.4)(react@18.2.0)(webpack@5.91.0):
+    resolution: {integrity: sha512-AT0jhMDj7N57z8+XfgEyTJBogpU64z4mQpfOsSF5uuequzo3IlVVoJcu88jdqUkaVFxBJp3aF2T4nz65OHLoeA==}
+    engines: {node: '>=8'}
+    peerDependencies:
+      next: ^10.0.8 || ^11.0 || ^12.0 || ^13.0 || ^14.0
+      react: 16.x || 17.x || 18.x
+      webpack: '>= 4.0.0'
+    peerDependenciesMeta:
+      webpack:
+        optional: true
+    dependencies:
+      '@rollup/plugin-commonjs': 24.0.0(rollup@2.78.0)
+      '@sentry/core': 7.109.0
+      '@sentry/integrations': 7.109.0
+      '@sentry/node': 7.109.0
+      '@sentry/react': 7.109.0(react@18.2.0)
+      '@sentry/types': 7.109.0
+      '@sentry/utils': 7.109.0
+      '@sentry/vercel-edge': 7.109.0
+      '@sentry/webpack-plugin': 1.21.0
+      chalk: 3.0.0
+      next: 14.1.4(@babel/core@7.24.3)(@opentelemetry/api@1.8.0)(react-dom@18.2.0)(react@18.2.0)
+      react: 18.2.0
+      resolve: 1.22.8
+      rollup: 2.78.0
+      stacktrace-parser: 0.1.10
+      webpack: 5.91.0
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -2180,11 +2155,11 @@ packages:
       '@sentry/utils': 7.109.0
     dev: false
 
-  /@sentry/webpack-plugin@1.21.0(encoding@0.1.13):
+  /@sentry/webpack-plugin@1.21.0:
     resolution: {integrity: sha512-x0PYIMWcsTauqxgl7vWUY6sANl+XGKtx7DCVnnY7aOIIlIna0jChTAPANTfA2QrK+VK+4I/4JxatCEZBnXh3Og==}
     engines: {node: '>= 8'}
     dependencies:
-      '@sentry/cli': 1.77.3(encoding@0.1.13)
+      '@sentry/cli': 1.77.3
       webpack-sources: 3.2.3
     transitivePeerDependencies:
       - encoding
@@ -3853,11 +3828,6 @@ packages:
       safe-buffer: 5.2.1
     dev: false
 
-  /edge-sitemap@1.1.1:
-    resolution: {integrity: sha512-5BOX0QLcdPtpgeMGFnS4HZEB58roskzSjdWYlBSMUBWqHdOF8V5PjFpl3GT7CPufG0uAD8SwqXRXz9VtYOX4KQ==}
-    engines: {node: '>=16.5.0'}
-    dev: false
-
   /electron-to-chromium@1.4.715:
     resolution: {integrity: sha512-XzWNH4ZSa9BwVUQSDorPWAUQ5WGuYz7zJUNpNif40zFCiCl20t8zgylmreNmn26h5kiyw2lg7RfTmeMBsDklqg==}
 
@@ -3874,12 +3844,6 @@ packages:
 
   /enabled@2.0.0:
     resolution: {integrity: sha512-AKrN98kuwOzMIdAizXGI86UFBoo26CL21UM763y1h/GMSJ4/OHU9k2YlsmBpyScFo/wbLzWQJBMCW4+IO3/+OQ==}
-    dev: false
-
-  /encoding@0.1.13:
-    resolution: {integrity: sha512-ETBauow1T35Y/WZMkio9jiM0Z5xjHHmJ4XmjZOq1l/dXz3lr2sRn87nJy20RupqSh1F2m3HHPSp8ShIPQJrJ3A==}
-    dependencies:
-      iconv-lite: 0.6.3
     dev: false
 
   /enhanced-resolve@5.16.0:
@@ -4643,7 +4607,7 @@ packages:
       extend: 3.0.2
       https-proxy-agent: 7.0.4
       is-stream: 2.0.1
-      node-fetch: 2.7.0(encoding@0.1.13)
+      node-fetch: 2.7.0
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -4963,13 +4927,6 @@ packages:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
     engines: {node: '>=10.17.0'}
     dev: true
-
-  /iconv-lite@0.6.3:
-    resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      safer-buffer: 2.1.2
-    dev: false
 
   /ics@3.7.2:
     resolution: {integrity: sha512-UC5bBJYKyzkYZv4/AoIV9dsZw+rwFkUOtHHhnxmb0HTUEpfDmfl5sB9DlePKrTxx6SGMXiIQbiElf66viSTB0A==}
@@ -6787,16 +6744,6 @@ packages:
   /neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /next-themes@0.3.0(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
-    peerDependencies:
-      react: ^16.8 || ^17 || ^18
-      react-dom: ^16.8 || ^17 || ^18
-    dependencies:
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-    dev: false
-
   /next@14.1.4(@babel/core@7.24.3)(@opentelemetry/api@1.8.0)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-1WTaXeSrUwlz/XcnhGTY7+8eiaFvdet5z9u3V2jb+Ek1vFo0VhHKSAIJvDWfQpttWjnyw14kBeq28TPq7bTeEQ==}
     engines: {node: '>=18.17.0'}
@@ -6888,7 +6835,7 @@ packages:
     engines: {node: '>=10.5.0'}
     dev: true
 
-  /node-fetch@2.7.0(encoding@0.1.13):
+  /node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
     engines: {node: 4.x || >=6.0.0}
     peerDependencies:
@@ -6897,7 +6844,6 @@ packages:
       encoding:
         optional: true
     dependencies:
-      encoding: 0.1.13
       whatwg-url: 5.0.0
     dev: false
 
@@ -7443,14 +7389,6 @@ packages:
     resolution: {integrity: sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==}
     dev: true
 
-  /react-wrap-balancer@1.1.0(react@18.2.0):
-    resolution: {integrity: sha512-EhF3jOZm5Fjx+Cx41e423qOv2c2aOvXAtym2OHqrGeMUnwERIyNsRBgnfT3plB170JmuYvts8K2KSPEIerKr5A==}
-    peerDependencies:
-      react: '>=16.8.0 || ^17.0.0 || ^18'
-    dependencies:
-      react: 18.2.0
-    dev: false
-
   /react@18.2.0:
     resolution: {integrity: sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==}
     engines: {node: '>=0.10.0'}
@@ -7711,10 +7649,6 @@ packages:
   /safe-stable-stringify@2.4.3:
     resolution: {integrity: sha512-e2bDA2WJT0wxseVd4lsDP4+3ONX6HpMXQa1ZhFQ7SU+GjvORCmShbCMltrtIDfkYhVHrOcPtj+KhmDBdPdZD1g==}
     engines: {node: '>=10'}
-    dev: false
-
-  /safer-buffer@2.1.2:
-    resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
     dev: false
 
   /scheduler@0.23.0:
@@ -8111,6 +8045,12 @@ packages:
       client-only: 0.0.1
       react: 18.2.0
       use-sync-external-store: 1.2.0(react@18.2.0)
+    dev: false
+
+  /tailwind-merge@2.2.2:
+    resolution: {integrity: sha512-tWANXsnmJzgw6mQ07nE3aCDkCK4QdT3ThPMCzawoYA2Pws7vSTCvz3Vrjg61jVUGfFZPJzxEP+NimbcW+EdaDw==}
+    dependencies:
+      '@babel/runtime': 7.24.1
     dev: false
 
   /tailwindcss@4.0.0-alpha.11:
