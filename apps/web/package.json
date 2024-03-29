@@ -29,7 +29,7 @@
   "description": "",
   "devDependencies": {
     "@csstools/postcss-bundler": "^1.0.11",
-    "@fullhuman/postcss-purgecss": "^5.0.0",
+    "@fullhuman/postcss-purgecss": "^6.0.0",
     "@jest/types": "^29.6.3",
     "@mdx-js/loader": "^3.0.1",
     "@next/mdx": "^14.1.4",
