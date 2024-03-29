@@ -60,6 +60,10 @@
       @apply text-xl font-semibold;
     }
 
+    h3 {
+      @apply font-semibold;
+    }
+
     ol,
     ul {
       @apply ps-6;
