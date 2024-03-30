@@ -9,7 +9,7 @@ function createClient(
   key = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']
 ): SupabaseClient<DefaultDatabase> {
   if (!url || !key) {
-    throw new TypeError('')
+    throw new TypeError('Supabase URL and key are required.')
   }
 
   return createSupabaseClient<DefaultDatabase>(url, key)
