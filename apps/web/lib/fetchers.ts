@@ -2,6 +2,7 @@ import { Temporal } from '@js-temporal/polyfill'
 import { type DefaultDatabase } from '@shinju-date/supabase'
 import { type Fetcher } from 'swr'
 import { type SWRInfiniteFetcher } from 'swr/infinite'
+import { timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
 
 export const SEARCH_RESULT_COUNT = 9
@@ -43,8 +44,15 @@ export const fetchNotEndedVideos: Fetcher<
   FetchNotEndedVideosOptions
 > = async ({ channelIDs }) => {
   const baseTime = Temporal.Now.instant()
-  const since = baseTime.subtract({ hours: 5 })
-  const until = baseTime.toZonedDateTimeISO('UTC').add({ weeks: 1 }).toInstant()
+  const hour = baseTime.toZonedDateTimeISO(timeZone).with({
+    microsecond: 0,
+    millisecond: 0,
+    minute: 0,
+    nanosecond: 0,
+    second: 0
+  }) // startOfHour
+  const since = hour.toInstant().subtract({ hours: 5 })
+  const until = hour.add({ weeks: 1 }).toInstant()
 
   let builder = supabaseClient
     .from('videos')
@@ -91,9 +99,8 @@ export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
   Video[],
   KeyLoader
 > = async ({ channelIDs, page = 1, query = '' }) => {
-  const baseTime = Temporal.Now.instant()
-  const until = baseTime
-    .toZonedDateTimeISO('UTC')
+  const until = Temporal.Now.zonedDateTimeISO(timeZone)
+    .startOfDay()
     .add({ months: 1 })
     .toInstant()
 
