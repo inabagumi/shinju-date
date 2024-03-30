@@ -3,9 +3,9 @@
   "extends": ["github>inabagumi/renovate-config"],
   "packageRules": [
     {
-      "dependencyDashboardApproval": true,
+      "groupName": "tailwindcss monorepo",
       "matchManagers": ["npm"],
-      "matchPackageNames": ["sharp"]
+      "matchSourceUrls": ["https://github.com/tailwindlabs/tailwindcss"]
     }
   ],
   "reviewers": ["ykzts"]
