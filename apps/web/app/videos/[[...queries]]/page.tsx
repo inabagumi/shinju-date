@@ -1,5 +1,4 @@
 import { type Metadata } from 'next'
-import { redirect } from 'next/navigation'
 import NoResults from '@/components/no-results'
 import SearchResults from '@/components/search-results'
 import { title as siteName } from '@/lib/constants'
@@ -13,13 +12,8 @@ type Params = {
   queries?: string[]
 }
 
-type SearchParams = {
-  q?: string | string[]
-}
-
 type Props = {
   params: Params
-  searchParams: SearchParams
 }
 
 export function generateMetadata({ params }: Props): Metadata {
@@ -48,16 +42,8 @@ export function generateMetadata({ params }: Props): Metadata {
   }
 }
 
-export default async function VideosPage({ params, searchParams }: Props) {
+export default async function VideosPage({ params }: Props) {
   const query = parseQueries(params.queries)
-
-  if (!query && searchParams.q) {
-    const value = Array.isArray(searchParams.q)
-      ? searchParams.q.join(' ')
-      : searchParams.q
-
-    redirect(`/videos/${encodeURIComponent(value)}`)
-  }
 
   const title = query ? `『${query}』の検索結果` : '動画一覧'
   const videos = await fetchVideosByChannelIDs({ query })

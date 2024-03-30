@@ -1,5 +1,5 @@
 import { type Metadata } from 'next'
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import NoResults from '@/components/no-results'
 import SearchResults from '@/components/search-results'
 import { title as siteName } from '@/lib/constants'
@@ -15,13 +15,8 @@ type Params = {
   slug: string
 }
 
-type SearchParams = {
-  q?: string | string[]
-}
-
 type Props = {
   params: Params
-  searchParams: SearchParams
 }
 
 export async function generateMetadata({
@@ -62,10 +57,7 @@ export async function generateMetadata({
   }
 }
 
-export default async function Page({
-  params,
-  searchParams
-}: Props): Promise<JSX.Element> {
+export default async function VideosPage({ params }: Props) {
   const channel = await getChannelBySlug(params.slug)
 
   if (!channel) {
@@ -73,15 +65,6 @@ export default async function Page({
   }
 
   const query = parseQueries(params.queries)
-
-  if (!query && searchParams.q) {
-    const value = Array.isArray(searchParams.q)
-      ? searchParams.q.join(' ')
-      : searchParams.q
-
-    redirect(`/channels/${channel.slug}/videos/${encodeURIComponent(value)}`)
-  }
-
   const videos = await fetchVideosByChannelIDs({
     channelIDs: [channel.slug],
     query
