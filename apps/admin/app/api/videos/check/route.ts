@@ -42,7 +42,7 @@ async function* getSavedVideos({
     .select('*', { count: 'exact', head: true })
 
   if (error) {
-    throw error
+    throw new TypeError(error.message, { cause: error })
   }
 
   if (!count) return
@@ -57,7 +57,7 @@ async function* getSavedVideos({
       .range(i, i + (limit - 1))
 
     if (error) {
-      throw error
+      throw new TypeError(error.message, { cause: error })
     }
 
     for (const savedVideo of savedVideos) {
@@ -121,7 +121,7 @@ async function softDeleteRows({
     .select('id')
 
   if (error) {
-    throw error
+    throw new TypeError(error.message, { cause: error })
   }
 
   return data

@@ -90,7 +90,7 @@ export async function POST(request: Request): Promise<Response> {
         .single()
 
       if (error) {
-        throw error
+        throw new TypeError(error.message, { cause: error })
       }
 
       return data

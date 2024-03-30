@@ -3,7 +3,7 @@ import {
   createCalendarResponse,
   createEventAttributesList
 } from '@/lib/calendar'
-import { supabase } from '@/lib/supabase'
+import { supabaseClient } from '@/lib/supabase'
 
 export const dynamic = 'force-static'
 export const revalidate = 60
@@ -11,7 +11,7 @@ export const revalidate = 60
 export async function GET(): Promise<Response> {
   const timeZone = Temporal.TimeZone.from('UTC')
   const now = Temporal.Now.zonedDateTimeISO(timeZone)
-  const { data: videos, error } = await supabase
+  const { data: videos, error } = await supabaseClient
     .from('videos')
     .select('channels (name), duration, published_at, slug, title, url')
     .lt('published_at', now.add({ days: 7 }).toInstant().toString())

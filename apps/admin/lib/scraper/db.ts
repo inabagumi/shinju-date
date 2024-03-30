@@ -87,7 +87,7 @@ export default class DB {
         .in('slug', ids.slice(i, i + 100))
 
       if (error) {
-        throw error
+        throw new TypeError(error.message, { cause: error })
       }
 
       yield* videos

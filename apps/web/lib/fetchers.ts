@@ -2,7 +2,7 @@ import { Temporal } from '@js-temporal/polyfill'
 import { type DefaultDatabase } from '@shinju-date/supabase'
 import { type Fetcher } from 'swr'
 import { type SWRInfiniteFetcher } from 'swr/infinite'
-import { supabase } from '@/lib/supabase'
+import { supabaseClient } from '@/lib/supabase'
 
 export const SEARCH_RESULT_COUNT = 9
 
@@ -46,7 +46,7 @@ export const fetchNotEndedVideos: Fetcher<
   const since = baseTime.subtract({ hours: 5 })
   const until = baseTime.toZonedDateTimeISO('UTC').add({ weeks: 1 }).toInstant()
 
-  let builder = supabase
+  let builder = supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
     .gte('published_at', since.toJSON())
@@ -61,7 +61,7 @@ export const fetchNotEndedVideos: Fetcher<
   const { data: videos, error } = await builder
 
   if (error) {
-    throw error
+    throw new TypeError(error.message, { cause: error })
   }
 
   return videos.filter((video) => {
@@ -100,7 +100,7 @@ export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
   const from = SEARCH_RESULT_COUNT * (page - 1)
 
   if (query) {
-    let builder = supabase
+    let builder = supabaseClient
       .rpc('search_videos', { query })
       .lte('published_at', until.toJSON())
       .order('published_at', { ascending: false })
@@ -113,13 +113,13 @@ export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
     const { data: videos, error } = await builder.select(DEFAULT_SEARCH_SELECT)
 
     if (error) {
-      throw error
+      throw new TypeError(error.message, { cause: error })
     }
 
     return videos
   }
 
-  let builder = supabase
+  let builder = supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
     .lte('published_at', until.toJSON())
@@ -133,7 +133,7 @@ export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
   const { data: videos, error } = await builder
 
   if (error) {
-    throw error
+    throw new TypeError(error.message, { cause: error })
   }
 
   return videos
