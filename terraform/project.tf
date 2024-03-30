@@ -5,6 +5,7 @@ resource "vercel_project" "this" {
     repo              = "inabagumi/shinju-date"
     type              = "github"
   }
+  ignore_command             = "npx turbo-ignore"
   name                       = "shinju-date"
   public_source              = false
   root_directory             = "apps/web"
@@ -84,6 +85,7 @@ resource "vercel_project" "admin" {
     repo              = "inabagumi/shinju-date"
     type              = "github"
   }
+  ignore_command             = "npx turbo-ignore"
   name                       = "shinju-date-admin"
   public_source              = false
   root_directory             = "apps/admin"
