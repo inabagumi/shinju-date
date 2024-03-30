@@ -47,9 +47,9 @@ const nextConfig = {
         source: '/groups/:slug'
       },
       {
-        destination: '/videos/:queries*',
+        destination: '/videos/:query*',
         permanent: true,
-        source: '/groups/:slug/videos/:queries*'
+        source: '/groups/:slug/videos/:query*'
       }
     ]
   },
