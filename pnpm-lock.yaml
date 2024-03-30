@@ -153,6 +153,9 @@ importers:
       '@shinju-date/supabase':
         specifier: workspace:*
         version: link:../../packages/supabase
+      '@supabase/supabase-js':
+        specifier: ^2.41.1
+        version: 2.41.1
       '@upstash/redis':
         specifier: ^1.29.0
         version: 1.29.0

@@ -1,5 +1,5 @@
 import { track } from '@vercel/analytics/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseClient } from '@/lib/supabase'
 
 export const runtime = 'edge'
 
@@ -25,7 +25,7 @@ async function generateTrackProperties(
     }
 
     if (videoID) {
-      const { data: video, error } = await supabase
+      const { data: video, error } = await supabaseClient
         .from('videos')
         .select('channels (name, slug), slug, title')
         .eq('slug', videoID)

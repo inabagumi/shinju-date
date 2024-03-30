@@ -38,7 +38,7 @@ export async function POST(request: Request): Promise<Response> {
     .is('deleted_at', null)
 
   if (error) {
-    throw error
+    throw new TypeError(error.message, { cause: error })
   }
 
   const channelIDs = savedChannels.map((savedChannel) => savedChannel.slug)

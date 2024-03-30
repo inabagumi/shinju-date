@@ -4,7 +4,7 @@ import { Temporal } from '@js-temporal/polyfill'
 import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { type Video } from '@/lib/fetchers'
-import { supabase } from '@/lib/supabase'
+import { supabaseClient } from '@/lib/supabase'
 
 function formatDuration(duration: Temporal.Duration): string {
   return [duration.hours, duration.minutes, duration.seconds]
@@ -24,7 +24,7 @@ function Thumbnail({ video: { slug, thumbnails } }: { video: Video }) {
 
     const {
       data: { publicUrl: url }
-    } = supabase.storage.from('thumbnails').getPublicUrl(thumbnail.path)
+    } = supabaseClient.storage.from('thumbnails').getPublicUrl(thumbnail.path)
 
     return url
   }, [thumbnail, slug])

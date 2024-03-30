@@ -6,6 +6,7 @@
     "@sentry/nextjs": "^7.109.0",
     "@sentry/profiling-node": "^7.109.0",
     "@shinju-date/supabase": "workspace:*",
+    "@supabase/supabase-js": "^2.41.1",
     "@upstash/redis": "^1.29.0",
     "@vercel/analytics": "^1.2.2",
     "@vercel/otel": "^1.8.1",

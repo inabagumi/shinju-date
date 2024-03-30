@@ -4,7 +4,7 @@ import {
   createEventAttributesList,
   createNotFoundResponse
 } from '@/lib/calendar'
-import { supabase } from '@/lib/supabase'
+import { supabaseClient } from '@/lib/supabase'
 
 export const dynamic = 'force-static'
 export const revalidate = 60
@@ -18,7 +18,7 @@ type Props = {
 }
 
 export async function GET(_req: Request, { params }: Props): Promise<Response> {
-  const { count, error } = await supabase
+  const { count, error } = await supabaseClient
     .from('channels')
     .select('*', { count: 'exact', head: true })
     .eq('slug', params.slug)
@@ -38,7 +38,7 @@ export async function GET(_req: Request, { params }: Props): Promise<Response> {
 
   const timeZone = Temporal.TimeZone.from('UTC')
   const now = Temporal.Now.zonedDateTimeISO(timeZone)
-  const { data: videos, error: secondError } = await supabase
+  const { data: videos, error: secondError } = await supabaseClient
     .from('videos')
     .select(
       `
