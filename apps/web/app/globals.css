@@ -77,8 +77,8 @@
       @apply list-disc;
     }
 
-    a {
-      @apply text-secondary-blue hover:text-secondary-pink hover:underline;
+    a:any-link {
+      @apply text-secondary-blue hover:text-secondary-pink hover:underline dark:text-774-blue-400 dark:hover:text-774-pink-400;
     }
   }
 }
