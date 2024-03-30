@@ -3,6 +3,7 @@
 import { Temporal } from '@js-temporal/polyfill'
 import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
+import { timeZone } from '@/lib/constants'
 import { type Video } from '@/lib/fetchers'
 import { supabaseClient } from '@/lib/supabase'
 
@@ -74,12 +75,10 @@ export default function VideoCard({
   >
   value: Video
 }) {
-  const [now] = useState(() => Temporal.Now.zonedDateTimeISO('Asia/Tokyo'))
+  const [now] = useState(() => Temporal.Now.zonedDateTimeISO(timeZone))
   const publishedAt = useMemo(
     () =>
-      Temporal.Instant.from(value.published_at).toZonedDateTimeISO(
-        'Asia/Tokyo'
-      ),
+      Temporal.Instant.from(value.published_at).toZonedDateTimeISO(timeZone),
     [value.published_at]
   )
   const duration = useMemo(

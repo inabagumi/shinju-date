@@ -4,6 +4,7 @@ import { Temporal } from '@js-temporal/polyfill'
 import groupBy from 'lodash.groupby'
 import { useMemo } from 'react'
 import useSWR from 'swr'
+import { timeZone } from '@/lib/constants'
 import { type Channel, type Video, fetchNotEndedVideos } from '@/lib/fetchers'
 import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 
@@ -25,7 +26,7 @@ function TimelineSection({
         <time dateTime={dateTime.toJSON()}>
           {dateTime.toLocaleString('ja-JP', {
             dateStyle: 'short',
-            timeZone: 'Asia/Tokyo'
+            timeZone
           })}
         </time>
       </h2>
@@ -73,7 +74,7 @@ export default function Timeline({
     )
     return groupBy(sortedValues, (value) =>
       Temporal.Instant.from(value.published_at)
-        .toZonedDateTimeISO('Asia/Tokyo')
+        .toZonedDateTimeISO(timeZone)
         .toPlainDate()
         .toJSON()
     )

@@ -1,4 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
+import { timeZone } from '../constants'
 import { max, min } from '../date'
 
 describe('max', () => {
@@ -6,13 +7,13 @@ describe('max', () => {
     const dateTimeA = Temporal.ZonedDateTime.from({
       day: 3,
       month: 3,
-      timeZone: 'Asia/Tokyo',
+      timeZone,
       year: 1999
     })
     const dateTimeB = Temporal.ZonedDateTime.from({
       day: 9,
       month: 6,
-      timeZone: 'Asia/Tokyo',
+      timeZone,
       year: 2018
     })
     const result = max(dateTimeA, dateTimeB)
@@ -26,13 +27,13 @@ describe('min', () => {
     const dateTimeA = Temporal.ZonedDateTime.from({
       day: 3,
       month: 3,
-      timeZone: 'Asia/Tokyo',
+      timeZone,
       year: 1999
     })
     const dateTimeB = Temporal.ZonedDateTime.from({
       day: 9,
       month: 6,
-      timeZone: 'Asia/Tokyo',
+      timeZone,
       year: 2018
     })
     const result = min(dateTimeA, dateTimeB)
