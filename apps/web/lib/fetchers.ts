@@ -70,11 +70,28 @@ export const fetchNotEndedVideos: Fetcher<
   return videos.filter((video) => {
     const publishedAt = Temporal.Instant.from(video.published_at)
     const duration = Temporal.Duration.from(video.duration)
-    const endedAt = publishedAt.add(duration)
+    const endedAt =
+      duration.total({ unit: 'second' }) > 0
+        ? publishedAt.add(duration)
+        : undefined
 
+    // 終了時刻がわかっている動画
+    if (endedAt) {
+      // プレミア公開中の動画
+      return Temporal.Instant.compare(endedAt, baseTime) >= 0
+    }
+
+    // (おそらく) ライブ配信中の動画
+    if (publishedAt.epochSeconds % 60 > 0) {
+      return true
+    }
+
+    // まだ配信開始前やプレミア公開開始前の動画 (30分のゆとりあり)
     return (
-      Temporal.Instant.compare(endedAt, baseTime) >= 0 ||
-      duration.total({ unit: 'second' }) < 1
+      Temporal.Instant.compare(
+        baseTime.subtract({ minutes: 30 }),
+        publishedAt
+      ) < 0
     )
   })
 }

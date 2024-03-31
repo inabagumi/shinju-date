@@ -17,7 +17,7 @@ function isActive({
     Temporal.ZonedDateTime.compare(publishedAt, now) < 1 &&
     Temporal.ZonedDateTime.compare(now, publishedAt.add({ hours: 12 })) < 1 &&
     duration.total({ unit: 'second' }) < 1 &&
-    publishedAt.second > 0
+    publishedAt.epochSeconds % 60 > 0
   )
 }
 
