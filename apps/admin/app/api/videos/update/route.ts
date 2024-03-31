@@ -108,9 +108,9 @@ export async function POST(request: Request): Promise<Response> {
         title: video.title
       })
     }
-  }
 
-  await revalidateTags(['videos'])
+    await revalidateTags(['videos'])
+  }
 
   return new Response(null, {
     status: 204

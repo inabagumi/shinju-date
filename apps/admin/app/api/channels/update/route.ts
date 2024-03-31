@@ -98,6 +98,8 @@ export async function POST(request: Request): Promise<Response> {
     })
   )
 
+  let isUpdated = false
+
   for (const result of results) {
     if (result.status === 'fulfilled' && result.value) {
       const newChannel = result.value
@@ -119,12 +121,18 @@ export async function POST(request: Request): Promise<Response> {
       }
 
       logger.info('Channel information has been updated.', changedColumns)
+
+      if (!isUpdated) {
+        isUpdated = true
+      }
     } else if (result.status === 'rejected') {
       captureException(result.reason)
     }
   }
 
-  await revalidateTags(['channels'])
+  if (isUpdated) {
+    await revalidateTags(['channels'])
+  }
 
   return new Response(null, {
     status: 204
