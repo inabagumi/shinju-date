@@ -29,7 +29,7 @@
     "@tailwindcss/postcss": "^4.0.0-alpha.11",
     "@tsconfig/next": "^2.0.3",
     "@tsconfig/strictest": "^2.0.5",
-    "@types/mime": "^3.0.4",
+    "@types/mime": "^4.0.0",
     "@types/node": "^20.12.2",
     "@types/react": "^18.2.73",
     "@types/react-dom": "^18.2.23",
