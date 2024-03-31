@@ -4,6 +4,7 @@ import PQueue from 'p-queue'
 import { Temporal } from 'temporal-polyfill'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { videosUpdate as ratelimit } from '@/lib/ratelimit'
+import { revalidateTags } from '@/lib/revalidate'
 import { type Video, scrape } from '@/lib/scraper'
 import { type FilteredYouTubeChannel, getChannels } from '@/lib/youtube'
 
@@ -108,6 +109,8 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
   }
+
+  await revalidateTags(['videos'])
 
   return new Response(null, {
     status: 204
