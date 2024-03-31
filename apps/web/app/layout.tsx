@@ -4,6 +4,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import { type Metadata, type Viewport } from 'next'
 import Link from 'next/link'
 import { type ReactNode } from 'react'
+import { TimerProvider } from '@/components/timer'
 import { title as siteName, themeColor } from '@/lib/constants'
 import { SearchTextField } from './_components/search-form'
 import SVGSymbols from './_components/svg-symbols'
@@ -73,7 +74,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </search>
         </nav>
 
-        <div className="pb-20">{children}</div>
+        <div className="pb-20">
+          <TimerProvider>{children}</TimerProvider>
+        </div>
 
         <footer className="bg-primary py-5 text-sm text-primary-foreground dark:bg-zinc-800">
           <nav className="mx-auto max-w-6xl py-2 px-4">
