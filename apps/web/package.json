@@ -23,7 +23,8 @@
     "tailwind-merge": "^2.2.2",
     "tailwindcss": "^4.0.0-alpha.11",
     "temporal-polyfill": "^0.2.3",
-    "ufo": "^1.5.3"
+    "ufo": "^1.5.3",
+    "zod": "^3.22.4"
   },
   "description": "",
   "devDependencies": {
