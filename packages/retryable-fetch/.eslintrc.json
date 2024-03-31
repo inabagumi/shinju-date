@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/eslintrc",
+  "extends": ["@shinju-date"],
+  "overrides": [
+    {
+      "files": ["**/*.ts?(x)"],
+      "parserOptions": {
+        "project": "./tsconfig.json"
+      }
+    }
+  ],
+  "root": true
+}

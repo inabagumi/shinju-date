@@ -1,28 +1,39 @@
 import { type MDXComponents } from 'mdx/types'
-import NextLink from 'next/link'
+import NextLink, { type LinkProps } from 'next/link'
 import { type ComponentPropsWithoutRef } from 'react'
 
 function Link({
   children,
   href,
-  rel: originalRel,
-  target: originalTarget,
+  onMouseEnter,
+  onTouchStart,
+  onClick,
   ...props
 }: ComponentPropsWithoutRef<'a'>) {
   if (href && href.startsWith('/')) {
+    const linkProps: Partial<LinkProps> = {}
+
+    if (typeof onMouseEnter === 'function') {
+      linkProps.onMouseEnter = onMouseEnter
+    }
+
+    if (typeof onTouchStart === 'function') {
+      linkProps.onTouchStart = onTouchStart
+    }
+
+    if (typeof onClick === 'function') {
+      linkProps.onClick = onClick
+    }
+
     return (
-      <NextLink href={href} rel={originalRel} target={originalTarget}>
+      <NextLink href={href} {...props} {...linkProps}>
         {children}
       </NextLink>
     )
   }
 
-  const isExternal = !!href && /^https?:\/\//.test(href)
-  const rel = originalRel ?? isExternal ? 'noopener noreferrer' : undefined
-  const target = originalTarget ?? isExternal ? '_blank' : undefined
-
   return (
-    <a href={href} rel={rel} target={target} {...props}>
+    <a href={href} {...props}>
       {children}
     </a>
   )
