@@ -1,3 +1,5 @@
+import { isNonNullable } from '@shinju-date/helpers'
+import retryableFetch from '@shinju-date/retryable-fetch'
 import {
   type DefaultDatabase,
   createSupabaseClient
@@ -15,7 +17,7 @@ import {
   getVideos
 } from '@/lib/youtube'
 import DB, { type Video } from './db'
-import { getPublishedAt, isNonNullable, retryableFetch } from './helpers'
+import { getPublishedAt } from './helpers'
 import {
   type SavedChannel,
   type SavedThumbnail,

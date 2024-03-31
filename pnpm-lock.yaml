@@ -44,6 +44,9 @@ importers:
       '@shinju-date/helpers':
         specifier: workspace:*
         version: link:../../packages/helpers
+      '@shinju-date/retryable-fetch':
+        specifier: workspace:*
+        version: link:../../packages/retryable-fetch
       '@shinju-date/supabase':
         specifier: workspace:*
         version: link:../../packages/supabase
@@ -68,21 +71,12 @@ importers:
       p-queue:
         specifier: ^8.0.1
         version: 8.0.1
-      p-retry:
-        specifier: ^6.2.0
-        version: 6.2.0
       react:
         specifier: ^18.2.0
         version: 18.2.0
       react-dom:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
-      react-hook-form:
-        specifier: ^7.51.2
-        version: 7.51.2(react@18.2.0)
-      react-icons:
-        specifier: ^5.0.1
-        version: 5.0.1(react@18.2.0)
       sharp:
         specifier: ^0.33.3
         version: 0.33.3
@@ -95,9 +89,6 @@ importers:
       winston:
         specifier: ^3.13.0
         version: 3.13.0
-      yup:
-        specifier: ^1.4.0
-        version: 1.4.0
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -147,6 +138,9 @@ importers:
       '@sentry/profiling-node':
         specifier: ^7.109.0
         version: 7.109.0
+      '@shinju-date/helpers':
+        specifier: workspace:*
+        version: link:../../packages/helpers
       '@shinju-date/supabase':
         specifier: workspace:*
         version: link:../../packages/supabase
@@ -186,9 +180,6 @@ importers:
       react-dom:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
-      react-icons:
-        specifier: ^5.0.1
-        version: 5.0.1(react@18.2.0)
       react-infinite-scroll-component:
         specifier: ^6.1.0
         version: 6.1.0(react@18.2.0)
@@ -311,6 +302,31 @@ importers:
       next:
         specifier: ^14.1.4
         version: 14.1.4(@opentelemetry/api@1.8.0)(react-dom@18.2.0)(react@18.2.0)
+      tsup:
+        specifier: ^8.0.2
+        version: 8.0.2(typescript@5.4.3)
+      typescript:
+        specifier: ~5.4.3
+        version: 5.4.3
+
+  packages/retryable-fetch:
+    dependencies:
+      p-retry:
+        specifier: ^6.2.0
+        version: 6.2.0
+    devDependencies:
+      '@shinju-date/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@tsconfig/node20':
+        specifier: ^20.1.4
+        version: 20.1.4
+      '@tsconfig/strictest':
+        specifier: ^2.0.5
+        version: 2.0.5
+      eslint:
+        specifier: ^8.57.0
+        version: 8.57.0
       tsup:
         specifier: ^8.0.2
         version: 8.0.2(typescript@5.4.3)
@@ -7233,14 +7249,6 @@ packages:
     engines: {node: '>=12.22.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18
-    dependencies:
-      react: 18.2.0
-    dev: false
-
-  /react-icons@5.0.1(react@18.2.0):
-    resolution: {integrity: sha512-WqLZJ4bLzlhmsvme6iFdgO8gfZP17rfjYEJ2m9RsZjZ+cc4k1hTzknEz63YS1MeT50kVzoa1Nz36f4BEx+Wigw==}
-    peerDependencies:
-      react: '*'
     dependencies:
       react: 18.2.0
     dev: false

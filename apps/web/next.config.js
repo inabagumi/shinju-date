@@ -2,6 +2,7 @@
 
 import createMDX from '@next/mdx'
 import { withSentryConfig } from '@sentry/nextjs'
+import { isNonNullable } from '@shinju-date/helpers'
 import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
 
@@ -14,28 +15,25 @@ const supabaseBaseURL =
 const nextConfig = {
   experimental: {
     instrumentationHook: true,
-    mdxRs: true,
     serverComponentsExternalPackages: ['@sentry/profiling-node']
   },
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 365 * 24 * 60 * 60,
     remotePatterns: [
-      ...(supabaseBaseURL
-        ? [
-            {
-              hostname: supabaseBaseURL.host,
-              pathname: '/storage/v1/object/public/**',
-              protocol: undefined
-            }
-          ]
-        : []),
+      supabaseBaseURL && {
+        hostname: supabaseBaseURL.host,
+        pathname: '/storage/v1/object/public/**',
+        /** @type {'http' | 'https' | undefined} */
+        protocol: supabaseBaseURL.protocol === 'https:' ? 'https' : undefined
+      },
       {
         hostname: 'i.ytimg.com',
         pathname: '/vi/**',
+        /** @type {'http' | 'https' | undefined} */
         protocol: 'https'
       }
-    ]
+    ].filter(isNonNullable)
   },
   pageExtensions: ['tsx', 'ts', 'mdx'],
   reactStrictMode: true,
