@@ -11,7 +11,7 @@ import hero from './_assets/hero.jpg'
 
 const RECOMMENDATION_QUERIES_COUNT = 4
 
-export const revalidate = 60
+export const revalidate = 600 // 10 minutes
 
 export const metadata: Metadata = {
   alternates: {

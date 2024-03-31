@@ -6,7 +6,7 @@ import { fetchVideosByChannelIDs } from '@/lib/fetchers'
 import { parseQueries } from '@/lib/url'
 
 export const runtime = 'edge'
-export const revalidate = 5
+export const revalidate = 300 // 5 minutes
 
 type Params = {
   queries?: string[]
