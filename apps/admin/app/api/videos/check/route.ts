@@ -10,6 +10,7 @@ import {
   videosCheckAll as ratelimitAll,
   videosCheck as ratelimitRecent
 } from '@/lib/ratelimit'
+import { revalidateTags } from '@/lib/revalidate'
 import { youtubeClient } from '@/lib/youtube'
 
 export const runtime = 'nodejs'
@@ -239,6 +240,8 @@ export async function POST(request: NextRequest): Promise<Response> {
       })
     }
   }
+
+  await revalidateTags(['videos'])
 
   return new Response(null, {
     status: 204

@@ -6,6 +6,7 @@ import {
 import { Temporal } from 'temporal-polyfill'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { channelsUpdate as ratelimit } from '@/lib/ratelimit'
+import { revalidateTags } from '@/lib/revalidate'
 import { youtubeClient } from '@/lib/youtube'
 
 export const runtime = 'nodejs'
@@ -122,6 +123,8 @@ export async function POST(request: Request): Promise<Response> {
       captureException(result.reason)
     }
   }
+
+  await revalidateTags(['channels'])
 
   return new Response(null, {
     status: 204
