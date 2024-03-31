@@ -1,15 +1,15 @@
-import { Temporal } from '@js-temporal/polyfill'
+import { Temporal } from 'temporal-polyfill'
 import {
   createCalendarResponse,
   createEventAttributesList
 } from '@/lib/calendar'
+import { timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
 
 export const dynamic = 'force-static'
 export const revalidate = 60
 
 export async function GET(): Promise<Response> {
-  const timeZone = Temporal.TimeZone.from('UTC')
   const now = Temporal.Now.zonedDateTimeISO(timeZone)
   const { data: videos, error } = await supabaseClient
     .from('videos')

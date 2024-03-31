@@ -1,11 +1,11 @@
-import { Temporal } from '@js-temporal/polyfill'
+import { max, min } from '@shinju-date/temporal-fns'
 import {
   type EventAttributes,
   convertTimestampToArray,
   createEvents
 } from 'ics'
+import { Temporal } from 'temporal-polyfill'
 import { title as siteName } from '@/lib/constants'
-import { max, min } from './date'
 
 type Channel = {
   name: string

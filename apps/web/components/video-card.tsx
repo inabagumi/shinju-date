@@ -1,8 +1,8 @@
 'use client'
 
-import { Temporal } from '@js-temporal/polyfill'
 import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
+import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
 import { type Video } from '@/lib/fetchers'
 import { supabaseClient } from '@/lib/supabase'

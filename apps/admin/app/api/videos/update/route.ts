@@ -1,7 +1,7 @@
-import { Temporal } from '@js-temporal/polyfill'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { createSupabaseClient } from '@shinju-date/supabase'
 import PQueue from 'p-queue'
+import { Temporal } from 'temporal-polyfill'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { videosUpdate as ratelimit } from '@/lib/ratelimit'
 import { type Video, scrape } from '@/lib/scraper'

@@ -3,7 +3,6 @@
   "dependencies": {
     "@googleapis/youtube": "^14.0.0",
     "@hookform/resolvers": "^3.3.4",
-    "@js-temporal/polyfill": "^0.4.4",
     "@sentry/nextjs": "^7.109.0",
     "@sentry/profiling-node": "^7.109.0",
     "@shinju-date/helpers": "workspace:*",
@@ -22,6 +21,7 @@
     "react-icons": "^5.0.1",
     "sharp": "^0.33.3",
     "tailwindcss": "^4.0.0-alpha.11",
+    "temporal-polyfill": "^0.2.3",
     "winston": "^3.13.0",
     "yup": "^1.4.0",
     "zod": "^3.22.4"

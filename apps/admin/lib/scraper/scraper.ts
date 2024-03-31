@@ -1,4 +1,3 @@
-import { Temporal } from '@js-temporal/polyfill'
 import {
   type DefaultDatabase,
   createSupabaseClient
@@ -7,6 +6,7 @@ import mime from 'mime'
 import { nanoid } from 'nanoid'
 import PQueue from 'p-queue'
 import sharp from 'sharp'
+import { Temporal } from 'temporal-polyfill'
 import { captureException } from '@/lib/logging'
 import {
   type FilteredYouTubeChannel,

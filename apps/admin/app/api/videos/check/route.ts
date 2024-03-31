@@ -1,10 +1,10 @@
-import { Temporal } from '@js-temporal/polyfill'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import {
   type DefaultDatabase,
   createSupabaseClient
 } from '@shinju-date/supabase'
 import { type NextRequest } from 'next/server'
+import { Temporal } from 'temporal-polyfill'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import {
   videosCheckAll as ratelimitAll,

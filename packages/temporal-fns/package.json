@@ -1,0 +1,67 @@
+{
+  "author": "Haneru Developers",
+  "dependencies": {
+    "temporal-polyfill": "^0.2.3"
+  },
+  "description": "",
+  "devDependencies": {
+    "@shinju-date/eslint-config": "workspace:*",
+    "@tsconfig/node20": "^20.1.4",
+    "@tsconfig/strictest": "^2.0.5",
+    "eslint": "^8.57.0",
+    "tsup": "^8.0.2",
+    "typescript": "~5.4.3"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./max": {
+      "types": "./dist/max.d.ts",
+      "default": "./dist/max.js"
+    },
+    "./min": {
+      "types": "./dist/min.d.ts",
+      "default": "./dist/min.js"
+    },
+    "./start-of-hour": {
+      "types": "./dist/start-of-hour.d.ts",
+      "default": "./dist/start-of-hour.js"
+    }
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "name": "@shinju-date/temporal-fns",
+  "private": true,
+  "repository": {
+    "directory": "packages/temporal-fns",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint ."
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      ".": [
+        "./dist/index.d.ts"
+      ],
+      "./max": [
+        "./dist/max.d.ts"
+      ],
+      "./min": [
+        "./dist/min.d.ts"
+      ],
+      "./start-of-hour": [
+        "./dist/start-of-hour"
+      ]
+    }
+  },
+  "version": "1.0.0"
+}

@@ -1,7 +1,8 @@
-import { Temporal } from '@js-temporal/polyfill'
 import { type DefaultDatabase } from '@shinju-date/supabase'
+import { startOfHour } from '@shinju-date/temporal-fns'
 import { type Fetcher } from 'swr'
 import { type SWRInfiniteFetcher } from 'swr/infinite'
+import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
 
@@ -44,13 +45,7 @@ export const fetchNotEndedVideos: Fetcher<
   FetchNotEndedVideosOptions
 > = async ({ channelIDs }) => {
   const baseTime = Temporal.Now.instant()
-  const hour = baseTime.toZonedDateTimeISO(timeZone).with({
-    microsecond: 0,
-    millisecond: 0,
-    minute: 0,
-    nanosecond: 0,
-    second: 0
-  }) // startOfHour
+  const hour = startOfHour(baseTime.toZonedDateTimeISO(timeZone))
   const since = hour.toInstant().subtract({ hours: 5 })
   const until = hour.add({ weeks: 1 }).toInstant()
 
