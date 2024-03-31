@@ -195,6 +195,9 @@ importers:
       ufo:
         specifier: ^1.5.3
         version: 1.5.3
+      zod:
+        specifier: ^3.22.4
+        version: 3.22.4
     devDependencies:
       '@jest/types':
         specifier: ^29.6.3
