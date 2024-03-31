@@ -238,10 +238,10 @@ export async function POST(request: NextRequest): Promise<Response> {
       logger.info('The videos has been deleted.', {
         ids: deletedVideos.map((video) => video.slug)
       })
+
+      await revalidateTags(['videos'])
     }
   }
-
-  await revalidateTags(['videos'])
 
   return new Response(null, {
     status: 204
