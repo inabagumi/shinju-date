@@ -105,9 +105,6 @@ importers:
       '@tsconfig/strictest':
         specifier: ^2.0.5
         version: 2.0.5
-      '@types/mime':
-        specifier: ^3.0.4
-        version: 3.0.4
       '@types/node':
         specifier: ^20.12.2
         version: 20.12.2
@@ -2482,10 +2479,6 @@ packages:
 
   /@types/mdx@2.0.12:
     resolution: {integrity: sha512-H9VZ9YqE+H28FQVchC83RCs5xQ2J7mAAv6qdDEaWmXEVl3OpdH+xfrSUzQ1lp7U7oSTRZ0RvW08ASPJsYBi7Cw==}
-
-  /@types/mime@3.0.4:
-    resolution: {integrity: sha512-iJt33IQnVRkqeqC7PzBHPTC6fDlRNRW8vjrgqtScAhrmMwe8c4Eo7+fUGTa+XdWrpEgpyKWMYmi2dIwMAYRzPw==}
-    dev: true
 
   /@types/ms@0.7.34:
     resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
