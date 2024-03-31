@@ -85,7 +85,7 @@ export default function VideoCard({
     <a
       className="flex flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none"
       href={value.url}
-      ping="/ping"
+      ping="/api/ping"
       rel="noopener noreferrer"
       target="_blank"
     >
