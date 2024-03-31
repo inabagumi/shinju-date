@@ -35,9 +35,6 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.3.4
         version: 3.3.4(react-hook-form@7.51.2)
-      '@js-temporal/polyfill':
-        specifier: ^0.4.4
-        version: 0.4.4
       '@sentry/nextjs':
         specifier: ^7.109.0
         version: 7.109.0(next@14.1.4)(react@18.2.0)
@@ -92,6 +89,9 @@ importers:
       tailwindcss:
         specifier: ^4.0.0-alpha.11
         version: 4.0.0-alpha.11
+      temporal-polyfill:
+        specifier: ^0.2.3
+        version: 0.2.3
       winston:
         specifier: ^3.13.0
         version: 3.13.0
@@ -138,9 +138,6 @@ importers:
 
   apps/web:
     dependencies:
-      '@js-temporal/polyfill':
-        specifier: ^0.4.4
-        version: 0.4.4
       '@mdx-js/react':
         specifier: ^3.0.1
         version: 3.0.1(@types/react@18.2.73)(react@18.2.0)
@@ -153,6 +150,9 @@ importers:
       '@shinju-date/supabase':
         specifier: workspace:*
         version: link:../../packages/supabase
+      '@shinju-date/temporal-fns':
+        specifier: workspace:*
+        version: link:../../packages/temporal-fns
       '@supabase/supabase-js':
         specifier: ^2.41.1
         version: 2.41.1
@@ -201,6 +201,9 @@ importers:
       tailwindcss:
         specifier: ^4.0.0-alpha.11
         version: 4.0.0-alpha.11
+      temporal-polyfill:
+        specifier: ^0.2.3
+        version: 0.2.3
       ufo:
         specifier: ^1.5.3
         version: 1.5.3
@@ -345,6 +348,31 @@ importers:
       supabase:
         specifier: ^1.151.1
         version: 1.151.1
+      tsup:
+        specifier: ^8.0.2
+        version: 8.0.2(typescript@5.4.3)
+      typescript:
+        specifier: ~5.4.3
+        version: 5.4.3
+
+  packages/temporal-fns:
+    dependencies:
+      temporal-polyfill:
+        specifier: ^0.2.3
+        version: 0.2.3
+    devDependencies:
+      '@shinju-date/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@tsconfig/node20':
+        specifier: ^20.1.4
+        version: 20.1.4
+      '@tsconfig/strictest':
+        specifier: ^2.0.5
+        version: 2.0.5
+      eslint:
+        specifier: ^8.57.0
+        version: 8.57.0
       tsup:
         specifier: ^8.0.2
         version: 8.0.2(typescript@5.4.3)
@@ -1444,14 +1472,6 @@ packages:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.4.15
-
-  /@js-temporal/polyfill@0.4.4:
-    resolution: {integrity: sha512-2X6bvghJ/JAoZO52lbgyAPFj8uCflhTo2g7nkFzEQdXd/D8rEeD4HtmTEpmtGCva260fcd66YNXBOYdnmHqSOg==}
-    engines: {node: '>=12'}
-    dependencies:
-      jsbi: 4.3.0
-      tslib: 2.6.2
-    dev: false
 
   /@mdx-js/loader@3.0.1(webpack@5.91.0):
     resolution: {integrity: sha512-YbYUt7YyEOdFxhyuCWmLKf5vKhID/hJAojEUnheJk4D8iYVLFQw+BAoBWru/dHGch1omtmZOPstsmKPyBF68Tw==}
@@ -5646,10 +5666,6 @@ packages:
     dependencies:
       argparse: 2.0.1
 
-  /jsbi@4.3.0:
-    resolution: {integrity: sha512-SnZNcinB4RIcnEyZqFPdGPVgrg2AcnykiBy0sHVJQKHYeaLUvi3Exj+iaPpLnFVkDPZIV4U0yvgC9/R4uEAZ9g==}
-    dev: false
-
   /jsesc@2.5.2:
     resolution: {integrity: sha512-OYu7XEzjkCQ3C5Ps3QIZsQfNpqoJyZZA99wd9aWd05NCtC5pWOkShK2mkL6HXQR6/Cy2lbNdPlZBpuQHXE63gA==}
     engines: {node: '>=4'}
@@ -7928,6 +7944,16 @@ packages:
       mkdirp: 1.0.4
       yallist: 4.0.0
     dev: true
+
+  /temporal-polyfill@0.2.3:
+    resolution: {integrity: sha512-7ZJRc7wq/1XjrOQYkkNpgo2qfE9XLrUU8D/DS+LAC/T0bYqZ46rW6dow0sOTXTPZS4bwer8bD/0OyuKQBfA3yw==}
+    dependencies:
+      temporal-spec: 0.2.0
+    dev: false
+
+  /temporal-spec@0.2.0:
+    resolution: {integrity: sha512-r1AT0XdEp8TMQ13FLvOt8mOtAxDQsRt2QU5rSWCA7YfshddU651Y1NHVrceLANvixKdf9fYO8B/S9fXHodB7HQ==}
+    dev: false
 
   /terser-webpack-plugin@5.3.10(webpack@5.91.0):
     resolution: {integrity: sha512-BKFPWlPDndPs+NGGCr1U59t0XScL5317Y0UReNrHaw9/FwhPENlq6bfgs+4yPfyP51vqC1bQ4rp1EfXW5ZSH9w==}

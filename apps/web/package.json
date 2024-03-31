@@ -1,11 +1,11 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@js-temporal/polyfill": "^0.4.4",
     "@mdx-js/react": "^3.0.1",
     "@sentry/nextjs": "^7.109.0",
     "@sentry/profiling-node": "^7.109.0",
     "@shinju-date/supabase": "workspace:*",
+    "@shinju-date/temporal-fns": "workspace:*",
     "@supabase/supabase-js": "^2.41.1",
     "@upstash/redis": "^1.29.0",
     "@vercel/analytics": "^1.2.2",
@@ -22,6 +22,7 @@
     "swr": "^2.2.5",
     "tailwind-merge": "^2.2.2",
     "tailwindcss": "^4.0.0-alpha.11",
+    "temporal-polyfill": "^0.2.3",
     "ufo": "^1.5.3"
   },
   "description": "",

@@ -1,5 +1,5 @@
-import { Temporal } from '@js-temporal/polyfill'
 import pRetry, { AbortError } from 'p-retry'
+import { Temporal } from 'temporal-polyfill'
 import { type FilteredYouTubeVideo } from '@/lib/youtube'
 
 export function getPublishedAt(video: FilteredYouTubeVideo): Temporal.Instant {

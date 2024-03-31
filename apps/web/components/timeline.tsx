@@ -1,9 +1,9 @@
 'use client'
 
-import { Temporal } from '@js-temporal/polyfill'
 import groupBy from 'lodash.groupby'
 import { useMemo } from 'react'
 import useSWR from 'swr'
+import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
 import { type Channel, type Video, fetchNotEndedVideos } from '@/lib/fetchers'
 import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
