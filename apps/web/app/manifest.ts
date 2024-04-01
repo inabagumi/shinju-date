@@ -3,7 +3,7 @@ import { themeColor, title } from '@/lib/constants'
 
 export default function robots(): MetadataRoute.Manifest {
   return {
-    background_color: '#fff',
+    background_color: '#f2f1ff', // var(--color-774-nevy-50)
     display: 'standalone',
     icons: [
       {
