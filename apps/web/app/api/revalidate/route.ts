@@ -1,11 +1,10 @@
+import { captureException } from '@sentry/nextjs'
 import { createErrorResponse } from '@shinju-date/helpers'
 import { revalidateTag } from 'next/cache'
 import { z } from 'zod'
 
 const payloadSchema = z.object({
-  schema: z.string(),
-  table: z.string(),
-  type: z.union([z.literal('DELETE'), z.literal('INSERT'), z.literal('UPDATE')])
+  tags: z.array(z.string())
 })
 
 async function parseRequest(
@@ -22,18 +21,18 @@ export async function POST(request: Request): Promise<Response> {
   try {
     payload = await parseRequest(request)
   } catch (error) {
-    console.error(error)
+    captureException(error)
 
     return createErrorResponse('Unprocessable Entity', { status: 422 })
   }
 
-  if (payload.schema !== 'public') {
-    return createErrorResponse('Unprocessable Entity', {
-      status: 422
-    })
+  if (payload.tags.length < 1) {
+    return createErrorResponse('Unprocessable Entity', { status: 422 })
   }
 
-  revalidateTag(payload.table)
+  for (const tag of payload.tags) {
+    revalidateTag(tag)
+  }
 
   return new Response(null, { status: 204 })
 }

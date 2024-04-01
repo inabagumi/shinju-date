@@ -6,6 +6,7 @@ import {
 import { Temporal } from 'temporal-polyfill'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { channelsUpdate as ratelimit } from '@/lib/ratelimit'
+import { revalidateTags } from '@/lib/revalidate'
 import { youtubeClient } from '@/lib/youtube'
 
 export const runtime = 'nodejs'
@@ -97,6 +98,8 @@ export async function POST(request: Request): Promise<Response> {
     })
   )
 
+  let isUpdated = false
+
   for (const result of results) {
     if (result.status === 'fulfilled' && result.value) {
       const newChannel = result.value
@@ -118,9 +121,19 @@ export async function POST(request: Request): Promise<Response> {
       }
 
       logger.info('Channel information has been updated.', changedColumns)
+
+      if (!isUpdated) {
+        isUpdated = true
+      }
     } else if (result.status === 'rejected') {
       captureException(result.reason)
     }
+  }
+
+  if (isUpdated) {
+    await revalidateTags(['channels'], {
+      signal: request.signal
+    })
   }
 
   return new Response(null, {
