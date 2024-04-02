@@ -12,7 +12,7 @@
     "@types/cookie": "^0.6.0",
     "eslint": "^8.57.0",
     "next": "^14.1.4",
-    "supabase": "^1.151.1",
+    "supabase": "^1.153.1",
     "tsup": "^8.0.2",
     "typescript": "~5.4.3"
   },
