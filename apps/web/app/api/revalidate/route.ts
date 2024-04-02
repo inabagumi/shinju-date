@@ -16,7 +16,7 @@ async function parseRequest(
 }
 
 export async function POST(request: Request): Promise<Response> {
-  let payload: Awaited<ReturnType<typeof parseRequest>>
+  let payload: z.infer<typeof payloadSchema>
 
   try {
     payload = await parseRequest(request)
@@ -33,6 +33,8 @@ export async function POST(request: Request): Promise<Response> {
   for (const tag of payload.tags) {
     revalidateTag(tag)
   }
+
+  console.log('Revalidated: ', payload.tags)
 
   return new Response(null, { status: 204 })
 }
