@@ -16,3 +16,8 @@ export function createSupabaseClient(
 
 export { type Database as DefaultDatabase }
 export { type PostgrestError } from '@supabase/supabase-js'
+export {
+  type Tables,
+  type TablesInsert,
+  type TablesUpdate
+} from '../types/supabase.js'
