@@ -139,4 +139,4 @@ terraform
 pnpm-lock.yaml
 
 # supabase
-/packages/supabase/types/supabase.ts
+/packages/database/types/supabase.ts
