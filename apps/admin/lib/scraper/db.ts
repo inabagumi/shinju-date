@@ -1,6 +1,6 @@
 import { type Tables, type TablesInsert } from '@shinju-date/database'
 import { createSupabaseClient } from '@shinju-date/supabase'
-import { captureException } from '@/lib/logging'
+import { captureException } from '@/lib/sentry'
 import { DatabaseError } from './errors'
 import { type SavedVideo } from './types'
 

@@ -7,7 +7,7 @@ import { nanoid } from 'nanoid'
 import PQueue from 'p-queue'
 import sharp from 'sharp'
 import { Temporal } from 'temporal-polyfill'
-import { captureException } from '@/lib/logging'
+import { captureException } from '@/lib/sentry'
 import {
   type FilteredYouTubeChannel,
   type FilteredYouTubeVideo,

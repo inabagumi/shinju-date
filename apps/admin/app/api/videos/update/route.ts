@@ -1,11 +1,12 @@
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
+import { defaultLogger as logger } from '@shinju-date/logging'
 import { createSupabaseClient } from '@shinju-date/supabase'
 import PQueue from 'p-queue'
 import { Temporal } from 'temporal-polyfill'
-import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { videosUpdate as ratelimit } from '@/lib/ratelimit'
 import { revalidateTags } from '@/lib/revalidate'
 import { type Video, scrape } from '@/lib/scraper'
+import { captureException } from '@/lib/sentry'
 import { type FilteredYouTubeChannel, getChannels } from '@/lib/youtube'
 
 export const runtime = 'nodejs'
@@ -104,7 +105,7 @@ export async function POST(request: Request): Promise<Response> {
       logger.info('The video has been saved.', {
         duration: video.duration,
         id: video.slug,
-        publishedAt,
+        publishedAt: publishedAt.toString(),
         title: video.title
       })
     }
