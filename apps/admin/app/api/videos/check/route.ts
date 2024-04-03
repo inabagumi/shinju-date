@@ -1,8 +1,6 @@
+import { type default as Database } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
-import {
-  type DefaultDatabase,
-  createSupabaseClient
-} from '@shinju-date/supabase'
+import { createSupabaseClient } from '@shinju-date/supabase'
 import { type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
@@ -103,7 +101,7 @@ type SoftDeleteRowsOptions = {
   currentDateTime: Temporal.Instant
   ids: number[]
   supabaseClient: TypedSupabaseClient
-  table: keyof DefaultDatabase['public']['Tables']
+  table: keyof Database['public']['Tables']
 }
 
 async function softDeleteRows({

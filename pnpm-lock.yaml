@@ -93,6 +93,9 @@ importers:
         specifier: ^3.22.4
         version: 3.22.4
     devDependencies:
+      '@shinju-date/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@shinju-date/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -138,9 +141,6 @@ importers:
       '@shinju-date/helpers':
         specifier: workspace:*
         version: link:../../packages/helpers
-      '@shinju-date/supabase':
-        specifier: workspace:*
-        version: link:../../packages/supabase
       '@shinju-date/temporal-fns':
         specifier: workspace:*
         version: link:../../packages/temporal-fns
@@ -208,6 +208,9 @@ importers:
       '@next/mdx':
         specifier: ^14.1.4
         version: 14.1.4(@mdx-js/loader@3.0.1)(@mdx-js/react@3.0.1)
+      '@shinju-date/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@shinju-date/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -259,6 +262,36 @@ importers:
       remark-gfm:
         specifier: ^4.0.0
         version: 4.0.0
+      typescript:
+        specifier: ~5.4.3
+        version: 5.4.3
+
+  packages/database:
+    devDependencies:
+      '@shinju-date/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@tsconfig/node20':
+        specifier: ^20.1.4
+        version: 20.1.4
+      '@tsconfig/strictest':
+        specifier: ^2.0.5
+        version: 2.0.5
+      '@types/cookie':
+        specifier: ^0.6.0
+        version: 0.6.0
+      eslint:
+        specifier: ^8.57.0
+        version: 8.57.0
+      next:
+        specifier: ^14.1.4
+        version: 14.1.4(@opentelemetry/api@1.8.0)(react-dom@18.2.0)(react@18.2.0)
+      supabase:
+        specifier: ^1.153.1
+        version: 1.153.1
+      tsup:
+        specifier: ^8.0.2
+        version: 8.0.2(typescript@5.4.3)
       typescript:
         specifier: ~5.4.3
         version: 5.4.3
@@ -336,6 +369,9 @@ importers:
 
   packages/supabase:
     dependencies:
+      '@shinju-date/database':
+        specifier: workspace:*
+        version: link:../database
       '@supabase/ssr':
         specifier: ^0.1.0
         version: 0.1.0(@supabase/supabase-js@2.42.0)
@@ -361,9 +397,6 @@ importers:
       next:
         specifier: ^14.1.4
         version: 14.1.4(@opentelemetry/api@1.8.0)(react-dom@18.2.0)(react@18.2.0)
-      supabase:
-        specifier: ^1.153.1
-        version: 1.153.1
       tsup:
         specifier: ^8.0.2
         version: 8.0.2(typescript@5.4.3)

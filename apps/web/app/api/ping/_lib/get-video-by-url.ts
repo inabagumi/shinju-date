@@ -26,7 +26,7 @@ export default async function getVideoByURL(url: URL): Promise<Video> {
 
   const { data: video, error } = await supabaseClient
     .from('videos')
-    .select('channels (id, name, slug), id, slug, title')
+    .select('channels!inner (id, name, slug), id, slug, title')
     .eq('slug', videoID)
     .single()
 
@@ -36,12 +36,5 @@ export default async function getVideoByURL(url: URL): Promise<Video> {
     })
   }
 
-  if (!video.channels) {
-    throw new TypeError('The channel does not exist.')
-  }
-
-  return {
-    ...video,
-    channel: video.channels
-  }
+  return video
 }

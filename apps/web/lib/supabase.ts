@@ -1,4 +1,4 @@
-import { type DefaultDatabase } from '@shinju-date/supabase'
+import { type default as Database } from '@shinju-date/database'
 import {
   type SupabaseClient,
   createClient as createSupabaseClient
@@ -31,12 +31,12 @@ function getTags(requestInfo: RequestInfo | URL): string[] {
 function createClient(
   url = process.env['NEXT_PUBLIC_SUPABASE_URL'],
   key = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']
-): SupabaseClient<DefaultDatabase> {
+): SupabaseClient<Database> {
   if (!url || !key) {
     throw new TypeError('Supabase URL and key are required.')
   }
 
-  return createSupabaseClient<DefaultDatabase>(url, key, {
+  return createSupabaseClient<Database>(url, key, {
     global: {
       fetch(requestInfo, requestInit) {
         const tags = getTags(requestInfo)

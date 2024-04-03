@@ -1,6 +1,6 @@
 'use client'
 
-import { type DefaultDatabase } from '@shinju-date/supabase'
+import { type Tables } from '@shinju-date/database'
 import { useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite from 'swr/infinite'
@@ -19,10 +19,7 @@ export function SearchResultsSkeleton() {
   )
 }
 
-type Channel = Pick<
-  DefaultDatabase['public']['Tables']['channels']['Row'],
-  'id' | 'name' | 'slug'
->
+type Channel = Pick<Tables<'channels'>, 'id' | 'name' | 'slug'>
 
 export default function SearchResults({
   channels,

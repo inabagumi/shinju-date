@@ -19,7 +19,7 @@ export default async function increment(
   const multi = redisClient.multi()
 
   multi.zincrby(`videos:clicked:${keySuffix}`, 1, video.id)
-  multi.zincrby(`channels:clicked:${keySuffix}`, 1, video.channel.id)
+  multi.zincrby(`channels:clicked:${keySuffix}`, 1, video.channels.id)
 
   await multi.exec()
 }

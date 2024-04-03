@@ -1,9 +1,7 @@
+import { type TablesInsert } from '@shinju-date/database'
 import { isNonNullable } from '@shinju-date/helpers'
 import retryableFetch from '@shinju-date/retryable-fetch'
-import {
-  type DefaultDatabase,
-  createSupabaseClient
-} from '@shinju-date/supabase'
+import { createSupabaseClient } from '@shinju-date/supabase'
 import mime from 'mime'
 import { nanoid } from 'nanoid'
 import PQueue from 'p-queue'
@@ -85,9 +83,7 @@ export class Thumbnail {
 
   static upload(
     options: ThumbnailOptions
-  ): Promise<
-    DefaultDatabase['public']['Tables']['thumbnails']['Insert'] | null
-  > {
+  ): Promise<TablesInsert<'thumbnails'> | null> {
     const instance = new Thumbnail(options)
 
     return instance.upload()
@@ -124,8 +120,7 @@ export class Thumbnail {
       })
     )
 
-    const values: DefaultDatabase['public']['Tables']['thumbnails']['Insert'][] =
-      []
+    const values: TablesInsert<'thumbnails'>[] = []
 
     for (const result of results) {
       if (result.status === 'fulfilled' && result.value) {
@@ -161,9 +156,7 @@ export class Thumbnail {
     this.#width = width
   }
 
-  async upload(): Promise<
-    DefaultDatabase['public']['Tables']['thumbnails']['Insert'] | null
-  > {
+  async upload(): Promise<TablesInsert<'thumbnails'> | null> {
     if (this.#savedThumbnail?.updated_at) {
       const updatedAt = Temporal.Instant.from(this.#savedThumbnail.updated_at)
 
@@ -328,86 +321,83 @@ export default class Scraper {
     })
 
     const values = originalVideos
-      .map<DefaultDatabase['public']['Tables']['videos']['Insert'] | null>(
-        (originalVideo) => {
-          const savedVideo = savedVideos.find(
-            (savedVideo) => savedVideo.slug === originalVideo.id
+      .map<TablesInsert<'videos'> | null>((originalVideo) => {
+        const savedVideo = savedVideos.find(
+          (savedVideo) => savedVideo.slug === originalVideo.id
+        )
+        const thumbnail = thumbnails.find((thumbnail) =>
+          thumbnail.path.startsWith(`${originalVideo.id}/`)
+        )
+        const publishedAt = getPublishedAt(originalVideo)
+        const updateValue: Partial<TablesInsert<'videos'>> = {}
+
+        if (savedVideo) {
+          const savedPublishedAt = Temporal.Instant.from(
+            savedVideo.published_at
           )
-          const thumbnail = thumbnails.find((thumbnail) =>
-            thumbnail.path.startsWith(`${originalVideo.id}/`)
-          )
-          const publishedAt = getPublishedAt(originalVideo)
-          const updateValue: Partial<
-            DefaultDatabase['public']['Tables']['videos']['Insert']
-          > = {}
+          const newDuration = originalVideo.contentDetails.duration ?? 'P0D'
 
-          if (savedVideo) {
-            const savedPublishedAt = Temporal.Instant.from(
-              savedVideo.published_at
-            )
-            const newDuration = originalVideo.contentDetails.duration ?? 'P0D'
+          let detectUpdate = false
 
-            let detectUpdate = false
+          if (savedVideo.duration !== newDuration) {
+            updateValue.duration = newDuration
 
-            if (savedVideo.duration !== newDuration) {
-              updateValue.duration = newDuration
-
-              detectUpdate = true
-            } else {
-              updateValue.duration = savedVideo.duration
-            }
-
-            if (!savedPublishedAt.equals(publishedAt)) {
-              updateValue.published_at = publishedAt.toString()
-
-              detectUpdate = true
-            } else {
-              updateValue.published_at = savedVideo.published_at
-            }
-
-            if (thumbnail && savedVideo.thumbnail_id !== thumbnail.id) {
-              updateValue.thumbnail_id = thumbnail.id
-
-              detectUpdate = true
-            } else {
-              updateValue.thumbnail_id = savedVideo.thumbnail_id
-            }
-
-            if (savedVideo.title !== originalVideo.snippet.title) {
-              updateValue.title = originalVideo.snippet.title ?? ''
-
-              detectUpdate = true
-            } else {
-              updateValue.title = savedVideo.title
-            }
-
-            if (savedVideo.deleted_at) {
-              detectUpdate = true
-            }
-
-            if (!detectUpdate) {
-              return null
-            }
-
-            updateValue.id = savedVideo.id
-            updateValue.created_at = savedVideo.created_at
+            detectUpdate = true
+          } else {
+            updateValue.duration = savedVideo.duration
           }
 
-          return {
-            channel_id: this.#savedChannel.id,
-            created_at: this.#currentDateTime.toString(),
-            deleted_at: null,
-            duration: originalVideo.contentDetails.duration ?? 'P0D',
-            published_at: publishedAt.toString(),
-            slug: originalVideo.id,
-            title: originalVideo.snippet.title ?? '',
-            updated_at: this.#currentDateTime.toString(),
-            url: `https://www.youtube.com/watch?v=${originalVideo.id}`,
-            ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
-            ...updateValue
+          if (!savedPublishedAt.equals(publishedAt)) {
+            updateValue.published_at = publishedAt.toString()
+
+            detectUpdate = true
+          } else {
+            updateValue.published_at = savedVideo.published_at
           }
+
+          if (thumbnail && savedVideo.thumbnail_id !== thumbnail.id) {
+            updateValue.thumbnail_id = thumbnail.id
+
+            detectUpdate = true
+          } else {
+            updateValue.thumbnail_id = savedVideo.thumbnail_id
+          }
+
+          if (savedVideo.title !== originalVideo.snippet.title) {
+            updateValue.title = originalVideo.snippet.title ?? ''
+
+            detectUpdate = true
+          } else {
+            updateValue.title = savedVideo.title
+          }
+
+          if (savedVideo.deleted_at) {
+            detectUpdate = true
+          }
+
+          if (!detectUpdate) {
+            return null
+          }
+
+          updateValue.id = savedVideo.id
+          updateValue.created_at = savedVideo.created_at
         }
-      )
+
+        return {
+          channel_id: this.#savedChannel.id,
+          created_at: this.#currentDateTime.toString(),
+          deleted_at: null,
+          duration: originalVideo.contentDetails.duration ?? 'P0D',
+          published_at: publishedAt.toString(),
+          slug: originalVideo.id,
+          title: originalVideo.snippet.title ?? '',
+          updated_at: this.#currentDateTime.toString(),
+          url: `https://www.youtube.com/watch?v=${originalVideo.id}`,
+          visible: savedVideo?.visible ?? true,
+          ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
+          ...updateValue
+        }
+      })
       .filter(isNonNullable)
 
     if (values.length < 1) {
