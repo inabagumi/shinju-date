@@ -8,9 +8,8 @@ import LiveNow from './live-now'
 
 function getThumbnailURL({
   slug,
-  thumbnails
+  thumbnail
 }: Video): [src: string, blurDataURL: string | undefined] {
-  const thumbnail = Array.isArray(thumbnails) ? thumbnails[0] : thumbnails
   if (!thumbnail) {
     return [`https://i.ytimg.com/vi/${slug}/maxresdefault.jpg`, undefined]
   }

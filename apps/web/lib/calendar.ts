@@ -1,3 +1,4 @@
+import { type Tables } from '@shinju-date/database'
 import { max, min } from '@shinju-date/temporal-fns'
 import {
   type EventAttributes,
@@ -7,17 +8,13 @@ import {
 import { Temporal } from 'temporal-polyfill'
 import { title as siteName } from '@/lib/constants'
 
-type Channel = {
-  name: string
-}
+type Channel = Pick<Tables<'channels'>, 'name'>
 
-type Video = {
-  channels: Channel[] | Channel | null
-  duration: string
-  published_at: string
-  slug: string
-  title: string
-  url: string
+type Video = Pick<
+  Tables<'videos'>,
+  'duration' | 'published_at' | 'slug' | 'title' | 'url'
+> & {
+  channel: Channel
 }
 
 type GetPublishedAtAndEndedAtOptions = {
@@ -78,12 +75,9 @@ export function createEventAttributesList(
 ): EventAttributes[] {
   return videos.map((video): EventAttributes => {
     const [publishedAt, endedAt] = getPublishedAtAndEndedAt(video, { now })
-    const channel = Array.isArray(video.channels)
-      ? video.channels[0]
-      : video.channels
 
     return {
-      calName: channel?.name,
+      calName: video.channel.name,
       description: video.url,
       end: convertTimestampToArray(endedAt.epochMilliseconds, 'utc'),
       endInputType: 'utc',
@@ -97,15 +91,5 @@ export function createEventAttributesList(
       uid: `${video.slug}@shinju.date`,
       url: video.url
     }
-  })
-}
-
-export function createNotFoundResponse(): Response {
-  return new Response('404 Not Found\n', {
-    headers: {
-      'Cache-Control': 'no-store',
-      'Content-Type': 'text/plain; charset=UTF-8'
-    },
-    status: 404
   })
 }
