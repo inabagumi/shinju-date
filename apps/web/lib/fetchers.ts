@@ -9,10 +9,10 @@ import { supabaseClient } from '@/lib/supabase'
 export const SEARCH_RESULT_COUNT = 12
 
 export const DEFAULT_SEARCH_SELECT = `
-  channels!inner (name, slug),
+  channel:channels!inner (name, slug),
   duration,
   slug,
-  thumbnails (blur_data_url, height, path, width),
+  thumbnail:thumbnails (blur_data_url, height, path, width),
   published_at,
   title,
   url
@@ -29,8 +29,8 @@ export type Video = Pick<
   Tables<'videos'>,
   'duration' | 'slug' | 'published_at' | 'title' | 'url'
 > & {
-  channels: Channel[] | Channel | null
-  thumbnails?: Thumbnail[] | Thumbnail | null
+  channel: Channel
+  thumbnail?: Thumbnail | null
 }
 
 type FetchNotEndedVideosOptions = {
@@ -126,7 +126,9 @@ export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
       builder = builder.in('channels.slug', channelIDs)
     }
 
-    const { data: videos, error } = await builder.select(DEFAULT_SEARCH_SELECT)
+    const { data: videos, error } = await builder.select<string, Video>(
+      DEFAULT_SEARCH_SELECT
+    )
 
     if (error) {
       throw new TypeError(error.message, { cause: error })

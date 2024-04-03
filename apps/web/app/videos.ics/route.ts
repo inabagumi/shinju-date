@@ -1,3 +1,5 @@
+import { createErrorResponse } from '@shinju-date/helpers'
+import { startOfHour } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import {
   createCalendarResponse,
@@ -7,24 +9,30 @@ import { timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
 
 export const dynamic = 'force-static'
-export const revalidate = 60
+export const revalidate = 600
 
 export async function GET(): Promise<Response> {
-  const now = Temporal.Now.zonedDateTimeISO(timeZone)
+  const now = startOfHour(Temporal.Now.zonedDateTimeISO(timeZone))
   const { data: videos, error } = await supabaseClient
     .from('videos')
-    .select('channels (name), duration, published_at, slug, title, url')
+    .select(
+      `
+        channel:channels!inner (
+          name
+        ),
+        duration,
+        published_at,
+        slug,
+        title,
+        url
+      `
+    )
     .lt('published_at', now.add({ days: 7 }).toInstant().toString())
     .order('published_at', { ascending: false })
     .limit(100)
 
   if (error) {
-    return new Response(error.message, {
-      headers: {
-        'Content-Type': 'text/plain; charset=UTF-8'
-      },
-      status: 500
-    })
+    return createErrorResponse(error.message, { status: 500 })
   }
 
   const events = createEventAttributesList(videos, { now })

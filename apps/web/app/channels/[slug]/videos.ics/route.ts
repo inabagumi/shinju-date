@@ -1,13 +1,15 @@
+import { createErrorResponse } from '@shinju-date/helpers'
+import { startOfHour } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import {
   createCalendarResponse,
-  createEventAttributesList,
-  createNotFoundResponse
+  createEventAttributesList
 } from '@/lib/calendar'
+import { timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
 
 export const dynamic = 'force-static'
-export const revalidate = 60
+export const revalidate = 600
 
 type Params = {
   slug: string
@@ -24,25 +26,19 @@ export async function GET(_req: Request, { params }: Props): Promise<Response> {
     .eq('slug', params.slug)
 
   if (error) {
-    return new Response(error.message, {
-      headers: {
-        'Content-Type': 'text/plain; charset=UTF-8'
-      },
-      status: 500
-    })
+    return createErrorResponse(error.message, { status: 500 })
   }
 
   if (!count || count < 1) {
-    return createNotFoundResponse()
+    return createErrorResponse('Not Found', { status: 404 })
   }
 
-  const timeZone = Temporal.TimeZone.from('UTC')
-  const now = Temporal.Now.zonedDateTimeISO(timeZone)
+  const now = startOfHour(Temporal.Now.zonedDateTimeISO(timeZone))
   const { data: videos, error: secondError } = await supabaseClient
     .from('videos')
     .select(
       `
-        channels!inner (
+        channel:channels!inner (
           name,
           slug
         ),
@@ -59,12 +55,7 @@ export async function GET(_req: Request, { params }: Props): Promise<Response> {
     .limit(100)
 
   if (secondError) {
-    return new Response(secondError.message, {
-      headers: {
-        'Content-Type': 'text/plain; charset=UTF-8'
-      },
-      status: 500
-    })
+    return createErrorResponse(secondError.message, { status: 500 })
   }
 
   const events = createEventAttributesList(videos, { now })
