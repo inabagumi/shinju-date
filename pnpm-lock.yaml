@@ -369,9 +369,6 @@ importers:
 
   packages/supabase:
     dependencies:
-      '@shinju-date/database':
-        specifier: workspace:*
-        version: link:../database
       '@supabase/ssr':
         specifier: ^0.1.0
         version: 0.1.0(@supabase/supabase-js@2.42.0)
@@ -379,6 +376,9 @@ importers:
         specifier: ^2.42.0
         version: 2.42.0
     devDependencies:
+      '@shinju-date/database':
+        specifier: workspace:*
+        version: link:../database
       '@shinju-date/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
