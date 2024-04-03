@@ -1,10 +1,10 @@
+import { type default as DefaultDatabase } from '@shinju-date/database'
 import { createServerClient } from '@supabase/ssr'
 import {
   type SupabaseClient,
   type SupabaseClientOptions
 } from '@supabase/supabase-js'
 import { type NextRequest, NextResponse } from 'next/server.js'
-import { type Database as DefaultDatabase } from '../types/supabase.js'
 
 type Options<SchemaName> = SupabaseClientOptions<SchemaName> & {
   request: NextRequest

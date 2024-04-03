@@ -1,4 +1,4 @@
-import { type DefaultDatabase } from '@shinju-date/supabase'
+import { type Tables } from '@shinju-date/database'
 import { startOfHour } from '@shinju-date/temporal-fns'
 import { type Fetcher } from 'swr'
 import { type SWRInfiniteFetcher } from 'swr/infinite'
@@ -18,18 +18,15 @@ export const DEFAULT_SEARCH_SELECT = `
   url
 `
 
-export type Channel = Pick<
-  DefaultDatabase['public']['Tables']['channels']['Row'],
-  'name' | 'slug'
->
+export type Channel = Pick<Tables<'channels'>, 'name' | 'slug'>
 
 export type Thumbnail = Pick<
-  DefaultDatabase['public']['Tables']['thumbnails']['Row'],
+  Tables<'thumbnails'>,
   'blur_data_url' | 'height' | 'path' | 'width'
 >
 
 export type Video = Pick<
-  DefaultDatabase['public']['Tables']['videos']['Row'],
+  Tables<'videos'>,
   'duration' | 'slug' | 'published_at' | 'title' | 'url'
 > & {
   channels: Channel[] | Channel | null

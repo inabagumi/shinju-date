@@ -1,0 +1,38 @@
+{
+  "author": "Haneru Developers",
+  "dependencies": {},
+  "description": "",
+  "devDependencies": {
+    "@shinju-date/eslint-config": "workspace:*",
+    "@tsconfig/node20": "^20.1.4",
+    "@tsconfig/strictest": "^2.0.5",
+    "@types/cookie": "^0.6.0",
+    "eslint": "^8.57.0",
+    "next": "^14.1.4",
+    "supabase": "^1.153.1",
+    "tsup": "^8.0.2",
+    "typescript": "~5.4.3"
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "name": "@shinju-date/database",
+  "peerDependencies": {
+    "next": "^14.1.4"
+  },
+  "private": true,
+  "repository": {
+    "directory": "packages/database",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "generate": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > types/supabase.ts",
+    "lint": "eslint ."
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "1.0.0"
+}

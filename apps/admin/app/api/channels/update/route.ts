@@ -1,8 +1,6 @@
+import { type Tables } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
-import {
-  type DefaultDatabase,
-  createSupabaseClient
-} from '@shinju-date/supabase'
+import { createSupabaseClient } from '@shinju-date/supabase'
 import { Temporal } from 'temporal-polyfill'
 import { captureException, defaultLogger as logger } from '@/lib/logging'
 import { channelsUpdate as ratelimit } from '@/lib/ratelimit'
@@ -13,10 +11,7 @@ export const runtime = 'nodejs'
 export const revalidate = 0
 export const maxDuration = 120
 
-type Channel = Pick<
-  DefaultDatabase['public']['Tables']['channels']['Row'],
-  'name' | 'slug' | 'url'
->
+type Channel = Pick<Tables<'channels'>, 'name' | 'slug' | 'url'>
 
 export async function POST(request: Request): Promise<Response> {
   const cronSecure = process.env['CRON_SECRET']

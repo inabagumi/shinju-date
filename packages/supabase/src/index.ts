@@ -1,5 +1,5 @@
+import { type default as Database } from '@shinju-date/database'
 import { type SupabaseClient, createClient } from '@supabase/supabase-js'
-import { type Database } from '../types/supabase.js'
 
 export function createSupabaseClient(
   supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'] ??
@@ -14,10 +14,4 @@ export function createSupabaseClient(
   return createClient<Database>(supabaseUrl, supabaseKey)
 }
 
-export { type Database as DefaultDatabase }
 export { type PostgrestError } from '@supabase/supabase-js'
-export {
-  type Tables,
-  type TablesInsert,
-  type TablesUpdate
-} from '../types/supabase.js'

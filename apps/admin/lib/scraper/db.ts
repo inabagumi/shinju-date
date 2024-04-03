@@ -1,25 +1,20 @@
-import {
-  type DefaultDatabase,
-  createSupabaseClient
-} from '@shinju-date/supabase'
+import { type Tables, type TablesInsert } from '@shinju-date/database'
+import { createSupabaseClient } from '@shinju-date/supabase'
 import { captureException } from '@/lib/logging'
 import { DatabaseError } from './errors'
 import { type SavedVideo } from './types'
 
 type TypedSupabaseClient = ReturnType<typeof createSupabaseClient>
 
-export type VideoChannel = Pick<
-  DefaultDatabase['public']['Tables']['channels']['Row'],
-  'name' | 'slug' | 'url'
->
+export type VideoChannel = Pick<Tables<'channels'>, 'name' | 'slug' | 'url'>
 
 export type VideoThumbnail = Omit<
-  DefaultDatabase['public']['Tables']['thumbnails']['Row'],
+  Tables<'thumbnails'>,
   'created_at' | 'deleted_at' | 'etag' | 'id' | 'updated_at'
 >
 
 export type Video = Pick<
-  DefaultDatabase['public']['Tables']['videos']['Row'],
+  Tables<'videos'>,
   'duration' | 'published_at' | 'slug' | 'title' | 'url'
 > & {
   channels: VideoChannel | VideoChannel[] | null
@@ -81,7 +76,8 @@ export default class DB {
               updated_at,
               width
             ),
-            title
+            title,
+            visible
           `
         )
         .in('slug', ids.slice(i, i + 100))
@@ -95,7 +91,7 @@ export default class DB {
   }
 
   async upsertThumbnails(
-    values: DefaultDatabase['public']['Tables']['thumbnails']['Insert'][]
+    values: TablesInsert<'thumbnails'>[]
   ): Promise<{ id: number; path: string }[]> {
     const upsertValues = values.filter((value) => value.id)
     const insertValues = values.filter((value) => !value.id)
@@ -143,9 +139,7 @@ export default class DB {
     return thumbnails
   }
 
-  async upsertVideos(
-    values: DefaultDatabase['public']['Tables']['videos']['Insert'][]
-  ): Promise<Video[]> {
+  async upsertVideos(values: TablesInsert<'videos'>[]): Promise<Video[]> {
     const upsertValues = values.filter((value) => value.id)
     const insertValues = values.filter((value) => !value.id)
 

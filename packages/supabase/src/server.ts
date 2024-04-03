@@ -1,7 +1,7 @@
+import { type default as Database } from '@shinju-date/database'
 import { createServerClient } from '@supabase/ssr'
 import { type SupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers.js'
-import { type Database } from '../types/supabase.js'
 
 export function createSupabaseClient(
   supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'] ??
@@ -44,5 +44,4 @@ export function createSupabaseClient(
   })
 }
 
-export { type Database }
 export { type PostgrestError } from '@supabase/supabase-js'
