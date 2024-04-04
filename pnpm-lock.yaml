@@ -18,7 +18,7 @@ importers:
         specifier: ^0.5.13
         version: 0.5.13(prettier@3.2.5)
       tailwindcss:
-        specifier: ^4.0.0-alpha.11
+        specifier: ^4.0.0-alpha.12
         version: 4.0.0-alpha.12
       turbo:
         specifier: ^1.13.2
@@ -84,7 +84,7 @@ importers:
         specifier: ^0.33.3
         version: 0.33.3
       tailwindcss:
-        specifier: ^4.0.0-alpha.11
+        specifier: ^4.0.0-alpha.12
         version: 4.0.0-alpha.12
       temporal-polyfill:
         specifier: ^0.2.3
@@ -193,7 +193,7 @@ importers:
         specifier: ^2.2.2
         version: 2.2.2
       tailwindcss:
-        specifier: ^4.0.0-alpha.11
+        specifier: ^4.0.0-alpha.12
         version: 4.0.0-alpha.12
       temporal-polyfill:
         specifier: ^0.2.3
