@@ -1,23 +1,18 @@
 import { createErrorResponse } from '@shinju-date/helpers'
+import { defaultLogger as logger } from '@shinju-date/logging'
 import { revalidateTag } from 'next/cache'
-import { z } from 'zod'
+import { type Payload, payloadSchema } from './_lib/schemas'
 
 export const runtime = 'edge'
 
-const payloadSchema = z.object({
-  tags: z.string().min(1).array().nonempty()
-})
-
-async function parseRequest(
-  request: Request
-): Promise<z.infer<typeof payloadSchema>> {
+async function parseRequest(request: Request): Promise<Payload> {
   const rawPayload = (await request.json()) as unknown
 
   return payloadSchema.parse(rawPayload)
 }
 
 export async function POST(request: Request): Promise<Response> {
-  let payload: z.infer<typeof payloadSchema>
+  let payload: Payload
 
   try {
     payload = await parseRequest(request)
@@ -31,7 +26,9 @@ export async function POST(request: Request): Promise<Response> {
     revalidateTag(tag)
   }
 
-  console.log(JSON.stringify({ revalidated: 'success', tags: payload.tags }))
+  logger.info('Revalidation was successful.', {
+    tags: payload.tags
+  })
 
   return new Response(null, { status: 204 })
 }

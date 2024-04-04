@@ -5,6 +5,7 @@
     "@sentry/nextjs": "^7.109.0",
     "@sentry/profiling-node": "^7.109.0",
     "@shinju-date/helpers": "workspace:*",
+    "@shinju-date/logging": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
     "@supabase/supabase-js": "^2.42.0",
     "@upstash/redis": "^1.29.0",

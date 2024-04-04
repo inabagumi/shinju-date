@@ -44,6 +44,9 @@ importers:
       '@shinju-date/helpers':
         specifier: workspace:*
         version: link:../../packages/helpers
+      '@shinju-date/logging':
+        specifier: workspace:*
+        version: link:../../packages/logging
       '@shinju-date/retryable-fetch':
         specifier: workspace:*
         version: link:../../packages/retryable-fetch
@@ -141,6 +144,9 @@ importers:
       '@shinju-date/helpers':
         specifier: workspace:*
         version: link:../../packages/helpers
+      '@shinju-date/logging':
+        specifier: workspace:*
+        version: link:../../packages/logging
       '@shinju-date/temporal-fns':
         specifier: workspace:*
         version: link:../../packages/temporal-fns
@@ -335,6 +341,27 @@ importers:
       next:
         specifier: ^14.1.4
         version: 14.1.4(@opentelemetry/api@1.8.0)(react-dom@18.2.0)(react@18.2.0)
+      tsup:
+        specifier: ^8.0.2
+        version: 8.0.2(typescript@5.4.3)
+      typescript:
+        specifier: ~5.4.3
+        version: 5.4.3
+
+  packages/logging:
+    devDependencies:
+      '@shinju-date/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@tsconfig/node20':
+        specifier: ^20.1.4
+        version: 20.1.4
+      '@tsconfig/strictest':
+        specifier: ^2.0.5
+        version: 2.0.5
+      eslint:
+        specifier: ^8.57.0
+        version: 8.57.0
       tsup:
         specifier: ^8.0.2
         version: 8.0.2(typescript@5.4.3)

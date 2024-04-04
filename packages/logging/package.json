@@ -1,0 +1,31 @@
+{
+  "author": "Haneru Developers",
+  "dependencies": {},
+  "description": "",
+  "devDependencies": {
+    "@shinju-date/eslint-config": "workspace:*",
+    "@tsconfig/node20": "^20.1.4",
+    "@tsconfig/strictest": "^2.0.5",
+    "eslint": "^8.57.0",
+    "tsup": "^8.0.2",
+    "typescript": "~5.4.3"
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "name": "@shinju-date/logging",
+  "private": true,
+  "repository": {
+    "directory": "packages/logging",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint ."
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "1.0.0"
+}

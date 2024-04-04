@@ -1,14 +1,15 @@
 import { type default as Database } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
+import { defaultLogger as logger } from '@shinju-date/logging'
 import { createSupabaseClient } from '@shinju-date/supabase'
 import { type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
-import { captureException, defaultLogger as logger } from '@/lib/logging'
 import {
   videosCheckAll as ratelimitAll,
   videosCheck as ratelimitRecent
 } from '@/lib/ratelimit'
 import { revalidateTags } from '@/lib/revalidate'
+import { captureException } from '@/lib/sentry'
 import { youtubeClient } from '@/lib/youtube'
 
 export const runtime = 'nodejs'
