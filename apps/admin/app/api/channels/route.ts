@@ -8,7 +8,7 @@ export async function GET(): Promise<Response> {
   const supabaseClient = createSupabaseClient()
   const { data: rawChannels, error } = await supabaseClient
     .from('channels')
-    .select('name, slug, url')
+    .select('name, slug')
     .is('deleted_at', null)
 
   if (error) {
@@ -17,8 +17,7 @@ export async function GET(): Promise<Response> {
 
   const channels = rawChannels.map((channel) => ({
     id: channel.slug,
-    name: channel.name,
-    url: channel.url
+    name: channel.name
   }))
 
   return Response.json(channels, {

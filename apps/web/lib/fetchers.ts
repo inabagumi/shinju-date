@@ -14,8 +14,7 @@ export const DEFAULT_SEARCH_SELECT = `
   slug,
   thumbnail:thumbnails (blur_data_url, height, path, width),
   published_at,
-  title,
-  url
+  title
 `
 
 export type Channel = Pick<Tables<'channels'>, 'name' | 'slug'>
@@ -27,7 +26,7 @@ export type Thumbnail = Pick<
 
 export type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'slug' | 'published_at' | 'title' | 'url'
+  'duration' | 'slug' | 'published_at' | 'title'
 > & {
   channel: Channel
   thumbnail?: Thumbnail | null

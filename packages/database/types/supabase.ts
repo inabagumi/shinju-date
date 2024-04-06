@@ -13,50 +13,8 @@ export type Database = {
         Row: {
           created_at: string
           deleted_at: string | null
-          group_id: number
           id: number
           name: string
-          slug: string
-          updated_at: string
-          url: string
-        }
-        Insert: {
-          created_at?: string
-          deleted_at?: string | null
-          group_id: number
-          id?: number
-          name: string
-          slug: string
-          updated_at?: string
-          url: string
-        }
-        Update: {
-          created_at?: string
-          deleted_at?: string | null
-          group_id?: number
-          id?: number
-          name?: string
-          slug?: string
-          updated_at?: string
-          url?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "channels_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "groups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      groups: {
-        Row: {
-          created_at: string
-          deleted_at: string | null
-          id: number
-          name: string
-          short_name: string | null
           slug: string
           updated_at: string
         }
@@ -65,7 +23,6 @@ export type Database = {
           deleted_at?: string | null
           id?: number
           name: string
-          short_name?: string | null
           slug: string
           updated_at?: string
         }
@@ -74,31 +31,33 @@ export type Database = {
           deleted_at?: string | null
           id?: number
           name?: string
-          short_name?: string | null
           slug?: string
           updated_at?: string
         }
         Relationships: []
       }
-      synonyms: {
+      terms: {
         Row: {
           created_at: string
           id: number
-          synonyms: string[]
+          readings: string[] | null
+          synonyms: string[] | null
           term: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           id?: number
-          synonyms: string[]
+          readings?: string[] | null
+          synonyms?: string[] | null
           term: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           id?: number
-          synonyms?: string[]
+          readings?: string[] | null
+          synonyms?: string[] | null
           term?: string
           updated_at?: string
         }
@@ -152,7 +111,6 @@ export type Database = {
           thumbnail_id: number | null
           title: string
           updated_at: string
-          url: string
           visible: boolean
         }
         Insert: {
@@ -166,7 +124,6 @@ export type Database = {
           thumbnail_id?: number | null
           title: string
           updated_at?: string
-          url: string
           visible?: boolean
         }
         Update: {
@@ -180,7 +137,6 @@ export type Database = {
           thumbnail_id?: number | null
           title?: string
           updated_at?: string
-          url?: string
           visible?: boolean
         }
         Relationships: [
@@ -220,7 +176,6 @@ export type Database = {
           thumbnail_id: number | null
           title: string
           updated_at: string
-          url: string
           visible: boolean
         }[]
       }

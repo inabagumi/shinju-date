@@ -6,7 +6,7 @@ import { type SavedVideo } from './types'
 
 type TypedSupabaseClient = ReturnType<typeof createSupabaseClient>
 
-export type VideoChannel = Pick<Tables<'channels'>, 'name' | 'slug' | 'url'>
+export type VideoChannel = Pick<Tables<'channels'>, 'name' | 'slug'>
 
 export type VideoThumbnail = Omit<
   Tables<'thumbnails'>,
@@ -15,7 +15,7 @@ export type VideoThumbnail = Omit<
 
 export type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'published_at' | 'slug' | 'title' | 'url'
+  'duration' | 'published_at' | 'slug' | 'title'
 > & {
   channels: VideoChannel | VideoChannel[] | null
   thumbnails: VideoThumbnail | VideoThumbnail[] | null
@@ -24,8 +24,7 @@ export type Video = Pick<
 const scrapeResultSelect = `
   channels (
     name,
-    slug,
-    url
+    slug
   ),
   duration,
   published_at,
@@ -36,8 +35,7 @@ const scrapeResultSelect = `
     path,
     width
   ),
-  title,
-  url
+  title
 `
 
 export default class DB {
