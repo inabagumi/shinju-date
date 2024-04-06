@@ -87,8 +87,8 @@ importers:
         specifier: ^4.0.0-alpha.13
         version: 4.0.0-alpha.13
       temporal-polyfill:
-        specifier: ^0.2.3
-        version: 0.2.3
+        specifier: ^0.2.4
+        version: 0.2.4
       winston:
         specifier: ^3.13.0
         version: 3.13.0
@@ -196,8 +196,8 @@ importers:
         specifier: ^4.0.0-alpha.13
         version: 4.0.0-alpha.13
       temporal-polyfill:
-        specifier: ^0.2.3
-        version: 0.2.3
+        specifier: ^0.2.4
+        version: 0.2.4
       ufo:
         specifier: ^1.5.3
         version: 1.5.3
@@ -434,8 +434,8 @@ importers:
   packages/temporal-fns:
     dependencies:
       temporal-polyfill:
-        specifier: ^0.2.3
-        version: 0.2.3
+        specifier: ^0.2.4
+        version: 0.2.4
     devDependencies:
       '@shinju-date/eslint-config':
         specifier: workspace:*
@@ -8047,14 +8047,14 @@ packages:
       yallist: 4.0.0
     dev: true
 
-  /temporal-polyfill@0.2.3:
-    resolution: {integrity: sha512-7ZJRc7wq/1XjrOQYkkNpgo2qfE9XLrUU8D/DS+LAC/T0bYqZ46rW6dow0sOTXTPZS4bwer8bD/0OyuKQBfA3yw==}
+  /temporal-polyfill@0.2.4:
+    resolution: {integrity: sha512-WA5p0CjQTkMjF9m8sP4wSYgpqI8m2d4q7wPUyaJOWhy4bI9mReLb2yGvTV4qf/DPMTe6H6M/Dig5KmTMB7ev6Q==}
     dependencies:
-      temporal-spec: 0.2.0
+      temporal-spec: 0.2.4
     dev: false
 
-  /temporal-spec@0.2.0:
-    resolution: {integrity: sha512-r1AT0XdEp8TMQ13FLvOt8mOtAxDQsRt2QU5rSWCA7YfshddU651Y1NHVrceLANvixKdf9fYO8B/S9fXHodB7HQ==}
+  /temporal-spec@0.2.4:
+    resolution: {integrity: sha512-lDMFv4nKQrSjlkHKAlHVqKrBG4DyFfa9F74cmBZ3Iy3ed8yvWnlWSIdi4IKfSqwmazAohBNwiN64qGx4y5Q3IQ==}
     dev: false
 
   /terser-webpack-plugin@5.3.10(webpack@5.91.0):
