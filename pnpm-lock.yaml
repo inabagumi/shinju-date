@@ -53,6 +53,9 @@ importers:
       '@shinju-date/supabase':
         specifier: workspace:*
         version: link:../../packages/supabase
+      '@supabase/supabase-js':
+        specifier: ^2.42.0
+        version: 2.42.0
       '@upstash/ratelimit':
         specifier: ^1.0.3
         version: 1.0.3

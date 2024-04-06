@@ -1,18 +1,53 @@
-import { createSupabaseClientWithResponse } from '@shinju-date/supabase/middleware'
 import { type NextRequest, NextResponse } from 'next/server'
+import { createSupabaseClient } from '@/lib/supabase'
+
+const isProd = process.env['NODE_ENV'] === 'production'
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
-  const [supabaseClient, response] = createSupabaseClientWithResponse(
-    undefined,
-    undefined,
-    { request }
-  )
+  const response = NextResponse.next()
+
+  const supabaseClient = createSupabaseClient({
+    auth: {
+      storage: {
+        getItem(key) {
+          return request.cookies.get(key)?.value ?? null
+        },
+        removeItem(key) {
+          response.cookies.delete({
+            httpOnly: true,
+            name: key,
+            sameSite: 'strict',
+            secure: isProd
+          })
+        },
+        setItem(key, value) {
+          response.cookies.set(key, value, {
+            httpOnly: true,
+            maxAge: 30 * 24 * 60 * 60,
+            sameSite: 'strict',
+            secure: isProd
+          })
+        }
+      }
+    }
+  })
+
   const { error } = await supabaseClient.auth.getUser()
 
   if (request.nextUrl.pathname === '/login' && !error) {
-    return NextResponse.redirect(new URL('/', request.nextUrl))
+    return NextResponse.redirect(new URL('/', request.nextUrl), {
+      headers: response.headers
+    })
   } else if (request.nextUrl.pathname !== '/login' && error) {
-    return NextResponse.redirect(new URL('/login', request.nextUrl))
+    const loginURL = new URL('/login', request.nextUrl)
+
+    if (request.nextUrl.pathname !== '/') {
+      loginURL.searchParams.set('', request.nextUrl.pathname)
+    }
+
+    return NextResponse.redirect(loginURL, {
+      headers: response.headers
+    })
   }
 
   return response

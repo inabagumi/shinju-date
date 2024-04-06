@@ -1,9 +1,10 @@
 'use server'
 
-import { createSupabaseClient } from '@shinju-date/supabase'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { ZodError, z } from 'zod'
 import { type FormState } from '@/components/form'
+import { createSupabaseClient } from '@/lib/supabase'
 
 const formSchema = z.object({
   email: z
@@ -56,7 +57,10 @@ export async function signIn(
     }
   }
 
-  const supabaseClient = createSupabaseClient()
+  const cookieStore = cookies()
+  const supabaseClient = createSupabaseClient({
+    cookieStore
+  })
   const { error } = await supabaseClient.auth.signInWithPassword(credentials)
 
   if (error) {
