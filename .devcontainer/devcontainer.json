@@ -35,6 +35,6 @@
       "onAutoForward": "silent"
     }
   },
-  "postCreateCommand": "sudo npm uninstall -g pnpm && sudo corepack enable && pnpm install && pnpm build --filter={./packages/*}...",
+  "postCreateCommand": "sudo npm uninstall -g pnpm && sudo sh -c 'COREPACK_ENABLE_DOWNLOAD_PROMPT=0 corepack enable' && pnpm install && pnpm build --filter={./packages/*}...",
   "waitFor": "postCreateCommand"
 }
