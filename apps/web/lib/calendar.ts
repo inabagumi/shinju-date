@@ -12,7 +12,7 @@ type Channel = Pick<Tables<'channels'>, 'name'>
 
 type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'published_at' | 'slug' | 'title' | 'url'
+  'duration' | 'published_at' | 'slug' | 'title'
 > & {
   channel: Channel
 }
@@ -75,10 +75,11 @@ export function createEventAttributesList(
 ): EventAttributes[] {
   return videos.map((video): EventAttributes => {
     const [publishedAt, endedAt] = getPublishedAtAndEndedAt(video, { now })
+    const url = `https://www.youtube.com/watch?v=${encodeURIComponent(video.slug)}`
 
     return {
       calName: video.channel.name,
-      description: video.url,
+      description: url,
       end: convertTimestampToArray(endedAt.epochMilliseconds, 'utc'),
       endInputType: 'utc',
       endOutputType: 'utc',
@@ -89,7 +90,7 @@ export function createEventAttributesList(
       startOutputType: 'utc',
       title: video.title,
       uid: `${video.slug}@shinju.date`,
-      url: video.url
+      url
     }
   })
 }

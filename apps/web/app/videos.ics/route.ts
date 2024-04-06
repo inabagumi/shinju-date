@@ -23,8 +23,7 @@ export async function GET(): Promise<Response> {
         duration,
         published_at,
         slug,
-        title,
-        url
+        title
       `
     )
     .lt('published_at', now.add({ days: 7 }).toInstant().toString())

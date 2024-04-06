@@ -392,7 +392,6 @@ export default class Scraper {
           slug: originalVideo.id,
           title: originalVideo.snippet.title ?? '',
           updated_at: this.#currentDateTime.toString(),
-          url: `https://www.youtube.com/watch?v=${originalVideo.id}`,
           visible: savedVideo?.visible ?? true,
           ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
           ...updateValue

@@ -45,8 +45,7 @@ export async function GET(_req: Request, { params }: Props): Promise<Response> {
         duration,
         published_at,
         slug,
-        title,
-        url
+        title
       `
     )
     .eq('channels.slug', params.slug)

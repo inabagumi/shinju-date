@@ -12,7 +12,7 @@ export const runtime = 'nodejs'
 export const revalidate = 0
 export const maxDuration = 120
 
-type Channel = Pick<Tables<'channels'>, 'name' | 'slug' | 'url'>
+type Channel = Pick<Tables<'channels'>, 'name' | 'slug'>
 
 export async function POST(request: Request): Promise<Response> {
   const cronSecure = process.env['CRON_SECRET']
@@ -36,7 +36,7 @@ export async function POST(request: Request): Promise<Response> {
   )
   const { data: channels, error } = await supabaseClient
     .from('channels')
-    .select('name, slug, url')
+    .select('name, slug')
     .is('deleted_at', null)
 
   if (error) {
@@ -67,11 +67,7 @@ export async function POST(request: Request): Promise<Response> {
         throw new TypeError('A snippet is empty.')
       }
 
-      const channelURL = item.snippet.customUrl
-        ? `https://www.youtube.com/${item.snippet.customUrl}`
-        : `https://www.youtube.com/channels/${item.id}`
-
-      if (item.snippet.title === channel.name && channelURL === channel.url) {
+      if (item.snippet.title === channel.name) {
         return null
       }
 
@@ -79,11 +75,10 @@ export async function POST(request: Request): Promise<Response> {
         .from('channels')
         .update({
           name: item.snippet.title,
-          updated_at: currentDateTime.toJSON(),
-          url: channelURL
+          updated_at: currentDateTime.toJSON()
         })
         .eq('slug', item.id)
-        .select('name, slug, url')
+        .select('name, slug')
         .single()
 
       if (error) {
@@ -110,10 +105,6 @@ export async function POST(request: Request): Promise<Response> {
 
       if (channel.name !== newChannel.name) {
         changedColumns.name = `${channel.name} -> ${newChannel.name}`
-      }
-
-      if (channel.url !== newChannel.url) {
-        changedColumns.url = `${channel.url} -> ${newChannel.url}`
       }
 
       logger.info('Channel information has been updated.', changedColumns)
