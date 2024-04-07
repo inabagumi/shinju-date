@@ -39,7 +39,6 @@ export type Database = {
       terms: {
         Row: {
           created_at: string
-          deleted_at: string | null
           id: number
           readings: string[]
           synonyms: string[]
@@ -48,7 +47,6 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          deleted_at?: string | null
           id?: number
           readings: string[]
           synonyms: string[]
@@ -57,7 +55,6 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          deleted_at?: string | null
           id?: number
           readings?: string[]
           synonyms?: string[]
@@ -209,7 +206,6 @@ export type Database = {
         }
         Returns: {
           created_at: string
-          deleted_at: string | null
           id: number
           readings: string[]
           synonyms: string[]
