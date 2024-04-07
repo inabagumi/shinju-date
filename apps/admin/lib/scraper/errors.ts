@@ -1,4 +1,4 @@
-import { type PostgrestError } from '@shinju-date/supabase'
+import { type PostgrestError } from '@supabase/supabase-js'
 
 export class DatabaseError extends Error {
   code: string

@@ -1,13 +1,13 @@
 import { type TablesInsert } from '@shinju-date/database'
 import { isNonNullable } from '@shinju-date/helpers'
 import retryableFetch from '@shinju-date/retryable-fetch'
-import { createSupabaseClient } from '@shinju-date/supabase'
 import mime from 'mime'
 import { nanoid } from 'nanoid'
 import PQueue from 'p-queue'
 import sharp from 'sharp'
 import { Temporal } from 'temporal-polyfill'
 import { captureException } from '@/lib/sentry'
+import { type TypedSupabaseClient } from '@/lib/supabase'
 import {
   type FilteredYouTubeChannel,
   type FilteredYouTubeVideo,
@@ -23,8 +23,6 @@ import {
 } from './types'
 
 const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({ days: 365 })
-
-type TypedSupabaseClient = ReturnType<typeof createSupabaseClient>
 
 type StaticThumbnail = {
   height: number
