@@ -1,7 +1,6 @@
 import { type default as Database } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { defaultLogger as logger } from '@shinju-date/logging'
-import { createSupabaseClient } from '@shinju-date/supabase'
 import { type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import {
@@ -10,13 +9,12 @@ import {
 } from '@/lib/ratelimit'
 import { revalidateTags } from '@/lib/revalidate'
 import { captureException } from '@/lib/sentry'
+import { type TypedSupabaseClient, createSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 
 export const runtime = 'nodejs'
 export const revalidate = 0
 export const maxDuration = 120
-
-type TypedSupabaseClient = ReturnType<typeof createSupabaseClient>
 
 type Thumbnail = {
   id: number
@@ -184,8 +182,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   const currentDateTime = Temporal.Now.instant()
   const supabaseClient = createSupabaseClient(
-    undefined,
-    process.env['SUPABASE_SERVICE_ROLE_KEY']
+    process.env['SUPABASE_SERVICE_ROLE_KEY'] ?? ''
   )
 
   const savedVideos: Video[] = []

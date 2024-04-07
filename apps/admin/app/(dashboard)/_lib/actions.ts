@@ -1,11 +1,13 @@
 'use server'
 
-import { createSupabaseClient } from '@shinju-date/supabase'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { type FormState } from '@/components/form'
+import { createSupabaseClient } from '@/lib/supabase'
 
 export async function signOut(): Promise<FormState> {
-  const supabaseClient = createSupabaseClient()
+  const cookieStore = cookies()
+  const supabaseClient = createSupabaseClient({ cookieStore })
   const { error } = await supabaseClient.auth.signOut()
 
   if (error) {

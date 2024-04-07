@@ -40,6 +40,13 @@ class CookieStorage
   }
 }
 
+export type TypedSupabaseClient<
+  Database = DefaultDatabase,
+  SchemaName extends string & keyof Database = 'public' extends keyof Database
+    ? 'public'
+    : string & keyof Database
+> = SupabaseClient<Database, SchemaName>
+
 type ClientOptions<SchemaName> = SupabaseClientOptions<SchemaName> & {
   cookieStore?: ReturnType<typeof cookies>
 }

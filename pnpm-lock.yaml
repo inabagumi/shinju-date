@@ -50,9 +50,6 @@ importers:
       '@shinju-date/retryable-fetch':
         specifier: workspace:*
         version: link:../../packages/retryable-fetch
-      '@shinju-date/supabase':
-        specifier: workspace:*
-        version: link:../../packages/supabase
       '@supabase/supabase-js':
         specifier: ^2.42.0
         version: 2.42.0
@@ -387,43 +384,6 @@ importers:
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
-      tsup:
-        specifier: ^8.0.2
-        version: 8.0.2(typescript@5.4.4)
-      typescript:
-        specifier: ~5.4.4
-        version: 5.4.4
-
-  packages/supabase:
-    dependencies:
-      '@supabase/ssr':
-        specifier: ^0.1.0
-        version: 0.1.0(@supabase/supabase-js@2.42.0)
-      '@supabase/supabase-js':
-        specifier: ^2.42.0
-        version: 2.42.0
-    devDependencies:
-      '@shinju-date/database':
-        specifier: workspace:*
-        version: link:../database
-      '@shinju-date/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@tsconfig/node20':
-        specifier: ^20.1.4
-        version: 20.1.4
-      '@tsconfig/strictest':
-        specifier: ^2.0.5
-        version: 2.0.5
-      '@types/cookie':
-        specifier: ^0.6.0
-        version: 0.6.0
-      eslint:
-        specifier: ^8.57.0
-        version: 8.57.0
-      next:
-        specifier: ^14.1.4
-        version: 14.1.4(@opentelemetry/api@1.8.0)(react-dom@18.2.0)(react@18.2.0)
       tsup:
         specifier: ^8.0.2
         version: 8.0.2(typescript@5.4.4)
@@ -2251,16 +2211,6 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@supabase/ssr@0.1.0(@supabase/supabase-js@2.42.0):
-    resolution: {integrity: sha512-bIVrkqjAK5G3KjkIMKYKtAOlCgRRplEWjrlyRyXSOYtgDieiOhk2ZyNAPsEOa1By9OZVxuX5eAW1fitdnuxayw==}
-    peerDependencies:
-      '@supabase/supabase-js': ^2.33.1
-    dependencies:
-      '@supabase/supabase-js': 2.42.0
-      cookie: 0.5.0
-      ramda: 0.29.1
-    dev: false
-
   /@supabase/storage-js@2.5.5:
     resolution: {integrity: sha512-OpLoDRjFwClwc2cjTJZG8XviTiQH4Ik8sCiMK5v7et0MDu2QlXjCAW3ljxJB5+z/KazdMOTnySi+hysxWUPu3w==}
     dependencies:
@@ -3590,11 +3540,6 @@ packages:
 
   /convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
-
-  /cookie@0.5.0:
-    resolution: {integrity: sha512-YZ3GUyn/o8gfKJlnlX7g7xq4gyO6OSuhGPKaaGssGB2qgDUS0gPgtTvoyZLTt9Ab6dC4hfc9dV5arkvc/OCmrw==}
-    engines: {node: '>= 0.6'}
-    dev: false
 
   /create-jest@29.7.0(@types/node@20.12.5):
     resolution: {integrity: sha512-Adz2bdH0Vq3F53KEMJOoftQFutWCukm6J24wbPWRO4k1kMY7gS7ds/uoJkNuV8wDCtWWnuwGcJwpWcih+zEW1Q==}
@@ -7248,10 +7193,6 @@ packages:
 
   /queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
-
-  /ramda@0.29.1:
-    resolution: {integrity: sha512-OfxIeWzd4xdUNxlWhgFazxsA/nl3mS4/jGZI5n00uWOoSSFRhC1b6gl6xvmzUamgmqELraWp0J/qqVlXYPDPyA==}
-    dev: false
 
   /randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}

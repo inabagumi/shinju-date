@@ -1,10 +1,8 @@
 import { type Tables, type TablesInsert } from '@shinju-date/database'
-import { createSupabaseClient } from '@shinju-date/supabase'
 import { captureException } from '@/lib/sentry'
+import { type TypedSupabaseClient } from '@/lib/supabase'
 import { DatabaseError } from './errors'
 import { type SavedVideo } from './types'
-
-type TypedSupabaseClient = ReturnType<typeof createSupabaseClient>
 
 export type VideoChannel = Pick<Tables<'channels'>, 'name' | 'slug'>
 
