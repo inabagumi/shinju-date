@@ -6,6 +6,10 @@
       "schedule": "21 1/3 * * *"
     },
     {
+      "path": "/api/recommendation/queries/update",
+      "schedule": "7/30 * * * *"
+    },
+    {
       "path": "/api/videos/check",
       "schedule": "27/30 * * * *"
     },
