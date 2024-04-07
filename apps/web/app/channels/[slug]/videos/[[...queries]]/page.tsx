@@ -66,7 +66,7 @@ export default async function VideosPage({ params }: Props) {
 
   const query = parseQueries(params.queries)
   const videos = await fetchVideosByChannelIDs({
-    channelIDs: [channel.slug],
+    channelIDs: [channel.id],
     query
   })
 

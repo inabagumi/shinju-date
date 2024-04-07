@@ -4,6 +4,7 @@ import { type Tables } from '@shinju-date/database'
 import { useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite from 'swr/infinite'
+import { Temporal } from 'temporal-polyfill'
 import {
   SEARCH_RESULT_COUNT,
   type Video,
@@ -30,12 +31,21 @@ export default function SearchResults({
   prefetchedData?: Video[][]
   query?: string
 }) {
-  const { data, setSize } = useSWRInfinite(
-    (index) => ({
-      channelIDs: channels && channels.map((channel) => channel.slug),
-      page: index + 1,
-      query
-    }),
+  const { data = [], setSize } = useSWRInfinite(
+    (_index, previousVideos: Video[] | null) => {
+      const lastVideo = previousVideos?.at(-1)
+      const until = lastVideo
+        ? Temporal.Instant.from(lastVideo.published_at).subtract({
+            nanoseconds: 1
+          })
+        : undefined
+
+      return {
+        channelIDs: channels && channels.map((channel) => channel.id),
+        query,
+        until
+      }
+    },
     fetchVideosByChannelIDs,
     prefetchedData && {
       fallbackData: prefetchedData
@@ -44,11 +54,10 @@ export default function SearchResults({
 
   const loadMore = useCallback(() => setSize((x) => x + 1), [setSize])
 
-  const items = data ? data.flat() : []
-  const isEmpty = data?.[0]?.length === 0
-  const lastData = data && data[data.length - 1]
-  const isReachingEnd =
-    isEmpty || (lastData && lastData.length < SEARCH_RESULT_COUNT)
+  const items = data.flat()
+  const isEmpty = items.length === 0
+  const lastData = data.at(-1)
+  const isReachingEnd = isEmpty || (lastData?.length ?? 0) < SEARCH_RESULT_COUNT
 
   return (
     <InfiniteScroll
