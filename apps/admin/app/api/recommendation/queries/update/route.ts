@@ -21,7 +21,6 @@ async function getAllTerms({
   const { data: terms, error } = await supabaseClient
     .from('terms')
     .select('term')
-    .is('deleted_at', null)
     .order('updated_at', { ascending: true })
     .range((page - 1) * perPage, perPage * page - 1)
 
