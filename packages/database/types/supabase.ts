@@ -39,25 +39,28 @@ export type Database = {
       terms: {
         Row: {
           created_at: string
+          deleted_at: string | null
           id: number
-          readings: string[] | null
-          synonyms: string[] | null
+          readings: string[]
+          synonyms: string[]
           term: string
           updated_at: string
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           id?: number
-          readings?: string[] | null
-          synonyms?: string[] | null
+          readings: string[]
+          synonyms: string[]
           term: string
           updated_at?: string
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           id?: number
-          readings?: string[] | null
-          synonyms?: string[] | null
+          readings?: string[]
+          synonyms?: string[]
           term?: string
           updated_at?: string
         }
@@ -177,6 +180,20 @@ export type Database = {
           title: string
           updated_at: string
           visible: boolean
+        }[]
+      }
+      suggestions: {
+        Args: {
+          query: string
+        }
+        Returns: {
+          created_at: string
+          deleted_at: string | null
+          id: number
+          readings: string[]
+          synonyms: string[]
+          term: string
+          updated_at: string
         }[]
       }
     }

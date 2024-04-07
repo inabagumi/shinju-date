@@ -52,7 +52,7 @@ export function createSupabaseClient<
 >(
   url: string,
   key: string,
-  options: ClientOptions<SchemaName>
+  options?: ClientOptions<SchemaName> | undefined
 ): SupabaseClient<Database, SchemaName>
 export function createSupabaseClient<
   Database = DefaultDatabase,
@@ -61,7 +61,15 @@ export function createSupabaseClient<
     : string & keyof Database
 >(
   key: string,
-  options: ClientOptions<SchemaName>
+  options?: ClientOptions<SchemaName> | undefined
+): SupabaseClient<Database, SchemaName>
+export function createSupabaseClient<
+  Database = DefaultDatabase,
+  SchemaName extends string & keyof Database = 'public' extends keyof Database
+    ? 'public'
+    : string & keyof Database
+>(
+  options: ClientOptions<SchemaName> | undefined
 ): SupabaseClient<Database, SchemaName>
 export function createSupabaseClient<
   Database = DefaultDatabase,
@@ -69,12 +77,6 @@ export function createSupabaseClient<
     ? 'public'
     : string & keyof Database
 >(): SupabaseClient<Database, SchemaName>
-export function createSupabaseClient<
-  Database = DefaultDatabase,
-  SchemaName extends string & keyof Database = 'public' extends keyof Database
-    ? 'public'
-    : string & keyof Database
->(options: ClientOptions<SchemaName>): SupabaseClient<Database, SchemaName>
 export function createSupabaseClient<
   Database = DefaultDatabase,
   SchemaName extends string & keyof Database = 'public' extends keyof Database
