@@ -8,7 +8,6 @@ import { title as siteName } from '@/lib/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
 import { getChannelBySlug } from '@/lib/supabase'
 
-export const runtime = 'edge'
 export const revalidate = 600 // 10 minutes
 
 type Params = {
