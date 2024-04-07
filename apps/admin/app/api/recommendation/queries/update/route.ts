@@ -1,6 +1,7 @@
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { defaultLogger as logger } from '@shinju-date/logging'
 import { type NextRequest } from 'next/server'
+import { recommendationQueriesUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
 import { createSupabaseClient } from '@/lib/supabase'
 
@@ -41,6 +42,15 @@ export async function POST(request: NextRequest) {
   const cronSecure = process.env['CRON_SECRET']
   if (cronSecure && !verifyCronRequest(request, { cronSecure })) {
     return createErrorResponse('Unauthorized', { status: 401 })
+  }
+
+  const { success } = await ratelimit.limit('recommendation:queries:update')
+
+  if (!success) {
+    return createErrorResponse(
+      'There has been no interval since the last run.',
+      { status: 429 }
+    )
   }
 
   let terms: Awaited<ReturnType<typeof getAllTerms>>
