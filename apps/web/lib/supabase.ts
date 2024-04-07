@@ -14,7 +14,7 @@ function getTags(requestInfo: RequestInfo | URL): string[] {
   if (pathname.startsWith('/rest/v1/rpc')) {
     const fnName = pathname.split('/').at(-1)
 
-    if (fnName === 'search_videos') {
+    if (fnName && ['search_videos', 'search_videos_v2'].includes(fnName)) {
       tags.push('videos')
     }
   } else if (pathname.startsWith('/rest/v1/')) {

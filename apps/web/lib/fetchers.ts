@@ -39,7 +39,7 @@ type FetchNotEndedVideosOptions = {
 export const fetchNotEndedVideos: Fetcher<
   Video[],
   FetchNotEndedVideosOptions
-> = async ({ channelIDs }) => {
+> = async ({ channelIDs = [] }) => {
   const baseTime = Temporal.Now.instant()
   const hour = startOfHour(baseTime.toZonedDateTimeISO(timeZone))
   const since = hour.toInstant().subtract({ hours: 5 })
@@ -93,9 +93,9 @@ export const fetchNotEndedVideos: Fetcher<
 }
 
 type FetchVideosByChannelIDsOptions = {
-  channelIDs?: string[]
-  page?: number
+  channelIDs?: number[]
   query?: string
+  until?: Temporal.Instant
 }
 
 type KeyLoader = (
@@ -106,48 +106,22 @@ type KeyLoader = (
 export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
   Video[],
   KeyLoader
-> = async ({ channelIDs, page = 1, query = '' }) => {
-  const until = Temporal.Now.zonedDateTimeISO(timeZone)
+> = async ({
+  channelIDs,
+  query = '',
+  until = Temporal.Now.zonedDateTimeISO(timeZone)
     .startOfDay()
     .add({ months: 1 })
     .toInstant()
-
-  const from = SEARCH_RESULT_COUNT * (page - 1)
-
-  if (query) {
-    let builder = supabaseClient
-      .rpc('search_videos', { query })
-      .lte('published_at', until.toJSON())
-      .order('published_at', { ascending: false })
-      .range(from, from + SEARCH_RESULT_COUNT - 1)
-
-    if (channelIDs && channelIDs.length > 0) {
-      builder = builder.in('channels.slug', channelIDs)
-    }
-
-    const { data: videos, error } = await builder.select<string, Video>(
-      DEFAULT_SEARCH_SELECT
-    )
-
-    if (error) {
-      throw new TypeError(error.message, { cause: error })
-    }
-
-    return videos
-  }
-
-  let builder = supabaseClient
-    .from('videos')
-    .select(DEFAULT_SEARCH_SELECT)
-    .lte('published_at', until.toJSON())
-    .order('published_at', { ascending: false })
-    .range(from, from + SEARCH_RESULT_COUNT - 1)
-
-  if (channelIDs && channelIDs.length > 0) {
-    builder = builder.in('channels.slug', channelIDs)
-  }
-
-  const { data: videos, error } = await builder
+}) => {
+  const { data: videos, error } = await supabaseClient
+    .rpc('search_videos_v2', {
+      channel_ids: channelIDs ?? [],
+      perpage: SEARCH_RESULT_COUNT,
+      query,
+      until: until.toJSON()
+    })
+    .select<string, Video>(DEFAULT_SEARCH_SELECT)
 
   if (error) {
     throw new TypeError(error.message, { cause: error })

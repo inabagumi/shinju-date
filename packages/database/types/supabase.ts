@@ -182,6 +182,27 @@ export type Database = {
           visible: boolean
         }[]
       }
+      search_videos_v2: {
+        Args: {
+          query: string
+          until: string
+          channel_ids: number[]
+          perpage: number
+        }
+        Returns: {
+          channel_id: number
+          created_at: string
+          deleted_at: string | null
+          duration: string
+          id: number
+          published_at: string
+          slug: string
+          thumbnail_id: number | null
+          title: string
+          updated_at: string
+          visible: boolean
+        }[]
+      }
       suggestions: {
         Args: {
           query: string
