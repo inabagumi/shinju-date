@@ -6,7 +6,7 @@ import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
 
-export const SEARCH_RESULT_COUNT = 12
+export const SEARCH_RESULT_COUNT = 6
 
 export const DEFAULT_SEARCH_SELECT = `
   channel:channels!inner (name, slug),
