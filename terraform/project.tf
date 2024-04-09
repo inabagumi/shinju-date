@@ -102,19 +102,6 @@ resource "vercel_project_domain" "admin" {
   team_id    = vercel_project.admin.team_id
 }
 
-resource "random_password" "cron_secret" {
-  length  = 16
-  special = false
-}
-
-resource "vercel_project_environment_variable" "admin_google_api_key" {
-  key        = "GOOGLE_API_KEY"
-  project_id = vercel_project.admin.id
-  target     = ["production", "preview", "development"]
-  team_id    = vercel_project.admin.team_id
-  value      = var.google_api_key
-}
-
 resource "vercel_project_environment_variable" "admin_upstash_redis_rest_token" {
   key        = "UPSTASH_REDIS_REST_TOKEN"
   project_id = vercel_project.admin.id
@@ -147,14 +134,6 @@ resource "vercel_project_environment_variable" "admin_upstash_redis_rest_url_dev
   value      = var.upstash_redis_rest_url_dev
 }
 
-resource "vercel_project_environment_variable" "cron_secret" {
-  key        = "CRON_SECRET"
-  project_id = vercel_project.admin.id
-  target     = ["production"]
-  team_id    = vercel_project.admin.team_id
-  value      = random_password.cron_secret.result
-}
-
 resource "vercel_project" "batch" {
   framework = "nextjs"
   git_repository = {
@@ -171,6 +150,11 @@ resource "vercel_project" "batch" {
   vercel_authentication = {
     deployment_type = "standard_protection"
   }
+}
+
+resource "random_password" "cron_secret" {
+  length  = 16
+  special = false
 }
 
 resource "vercel_project_environment_variable" "batch_google_api_key" {
