@@ -9,7 +9,7 @@ import {
 } from '@/lib/ratelimit'
 import { revalidateTags } from '@/lib/revalidate'
 import { captureException } from '@/lib/sentry'
-import { type TypedSupabaseClient, createSupabaseClient } from '@/lib/supabase'
+import { type TypedSupabaseClient, supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 
 export const runtime = 'nodejs'
@@ -181,10 +181,6 @@ export async function POST(request: NextRequest): Promise<Response> {
   }
 
   const currentDateTime = Temporal.Now.instant()
-  const supabaseClient = createSupabaseClient(
-    process.env['SUPABASE_SERVICE_ROLE_KEY'] ?? ''
-  )
-
   const savedVideos: Video[] = []
 
   try {
