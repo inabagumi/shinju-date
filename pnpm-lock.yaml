@@ -29,12 +29,76 @@ importers:
 
   apps/admin:
     dependencies:
-      '@googleapis/youtube':
-        specifier: ^14.0.0
-        version: 14.0.0
       '@hookform/resolvers':
         specifier: ^3.3.4
         version: 3.3.4(react-hook-form@7.51.2)
+      '@sentry/nextjs':
+        specifier: ^7.109.0
+        version: 7.109.0(next@14.1.4)(react@18.2.0)
+      '@sentry/profiling-node':
+        specifier: ^7.109.0
+        version: 7.109.0
+      '@supabase/supabase-js':
+        specifier: ^2.42.0
+        version: 2.42.0
+      '@vercel/otel':
+        specifier: ^1.8.1
+        version: 1.8.1(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0)(@opentelemetry/instrumentation@0.46.0)(@opentelemetry/resources@1.23.0)(@opentelemetry/sdk-logs@0.46.0)(@opentelemetry/sdk-metrics@1.23.0)(@opentelemetry/sdk-trace-base@1.23.0)
+      next:
+        specifier: ^14.1.4
+        version: 14.1.4(@opentelemetry/api@1.8.0)(react-dom@18.2.0)(react@18.2.0)
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
+      tailwindcss:
+        specifier: ^4.0.0-alpha.13
+        version: 4.0.0-alpha.13
+      zod:
+        specifier: ^3.22.4
+        version: 3.22.4
+    devDependencies:
+      '@shinju-date/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@shinju-date/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      '@tailwindcss/postcss':
+        specifier: ^4.0.0-alpha.13
+        version: 4.0.0-alpha.13(postcss@8.4.38)
+      '@tsconfig/next':
+        specifier: ^2.0.3
+        version: 2.0.3
+      '@tsconfig/strictest':
+        specifier: ^2.0.5
+        version: 2.0.5
+      '@types/node':
+        specifier: ^20.12.6
+        version: 20.12.6
+      '@types/react':
+        specifier: ^18.2.75
+        version: 18.2.75
+      '@types/react-dom':
+        specifier: ^18.2.24
+        version: 18.2.24
+      eslint:
+        specifier: ~8.57.0
+        version: 8.57.0
+      postcss-load-config:
+        specifier: ^5.0.3
+        version: 5.0.3(postcss@8.4.38)
+      typescript:
+        specifier: ~5.4.4
+        version: 5.4.4
+
+  apps/batch:
+    dependencies:
+      '@googleapis/youtube':
+        specifier: ^14.0.0
+        version: 14.0.0
       '@sentry/nextjs':
         specifier: ^7.109.0
         version: 7.109.0(next@14.1.4)(react@18.2.0)
@@ -83,9 +147,6 @@ importers:
       sharp:
         specifier: ^0.33.3
         version: 0.33.3
-      tailwindcss:
-        specifier: ^4.0.0-alpha.13
-        version: 4.0.0-alpha.13
       temporal-polyfill:
         specifier: ^0.2.4
         version: 0.2.4
@@ -99,9 +160,6 @@ importers:
       '@shinju-date/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@tailwindcss/postcss':
-        specifier: ^4.0.0-alpha.13
-        version: 4.0.0-alpha.13(postcss@8.4.38)
       '@tsconfig/next':
         specifier: ^2.0.3
         version: 2.0.3
@@ -120,9 +178,6 @@ importers:
       eslint:
         specifier: ~8.57.0
         version: 8.57.0
-      postcss-load-config:
-        specifier: ^5.0.3
-        version: 5.0.3(postcss@8.4.38)
       typescript:
         specifier: ~5.4.4
         version: 5.4.4

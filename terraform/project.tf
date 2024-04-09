@@ -154,3 +154,69 @@ resource "vercel_project_environment_variable" "cron_secret" {
   team_id    = vercel_project.admin.team_id
   value      = random_password.cron_secret.result
 }
+
+resource "vercel_project" "batch" {
+  framework = "nextjs"
+  git_repository = {
+    production_branch = "main"
+    repo              = "inabagumi/shinju-date"
+    type              = "github"
+  }
+  ignore_command             = "npx turbo-ignore"
+  name                       = "shinju-date-batch"
+  public_source              = false
+  root_directory             = "apps/batch"
+  serverless_function_region = "hnd1"
+  team_id                    = var.vercel_team_id
+  vercel_authentication = {
+    deployment_type = "standard_protection"
+  }
+}
+
+resource "vercel_project_environment_variable" "batch_google_api_key" {
+  key        = "GOOGLE_API_KEY"
+  project_id = vercel_project.batch.id
+  target     = ["production", "preview", "development"]
+  team_id    = vercel_project.batch.team_id
+  value      = var.google_api_key
+}
+
+resource "vercel_project_environment_variable" "batch_upstash_redis_rest_token" {
+  key        = "UPSTASH_REDIS_REST_TOKEN"
+  project_id = vercel_project.batch.id
+  target     = ["production"]
+  team_id    = vercel_project.batch.team_id
+  value      = var.upstash_redis_rest_token
+}
+
+resource "vercel_project_environment_variable" "batch_upstash_redis_rest_token_dev" {
+  key        = "UPSTASH_REDIS_REST_TOKEN"
+  project_id = vercel_project.batch.id
+  target     = ["preview", "development"]
+  team_id    = vercel_project.batch.team_id
+  value      = var.upstash_redis_rest_token_dev
+}
+
+resource "vercel_project_environment_variable" "batch_upstash_redis_rest_url" {
+  key        = "UPSTASH_REDIS_REST_URL"
+  project_id = vercel_project.batch.id
+  target     = ["production"]
+  team_id    = vercel_project.batch.team_id
+  value      = var.upstash_redis_rest_url
+}
+
+resource "vercel_project_environment_variable" "batch_upstash_redis_rest_url_dev" {
+  key        = "UPSTASH_REDIS_REST_URL"
+  project_id = vercel_project.batch.id
+  target     = ["preview", "development"]
+  team_id    = vercel_project.batch.team_id
+  value      = var.upstash_redis_rest_url_dev
+}
+
+resource "vercel_project_environment_variable" "batch_cron_secret" {
+  key        = "CRON_SECRET"
+  project_id = vercel_project.batch.id
+  target     = ["production"]
+  team_id    = vercel_project.batch.team_id
+  value      = random_password.cron_secret.result
+}

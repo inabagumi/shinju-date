@@ -3,13 +3,13 @@ import { defaultLogger as logger } from '@shinju-date/logging'
 import { type NextRequest } from 'next/server'
 import { recommendationQueriesUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
-import { createSupabaseClient } from '@/lib/supabase'
+import { supabaseClient } from '@/lib/supabase'
 
 const RECOMENDATION_QUERIES_KEY = 'recommendation_queries'
 
-const supabaseClient = createSupabaseClient(
-  process.env['SUPABASE_SERVICE_ROLE_KEY'] ?? ''
-)
+export const runtime = 'nodejs'
+export const revalidate = 0
+export const maxDuration = 120
 
 async function getAllTerms({
   page = 1,

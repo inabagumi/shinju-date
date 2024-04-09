@@ -1,0 +1,21 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "pipeline": {
+    "build": {
+      "env": [
+        "CRON_SECRET",
+        "GOOGLE_API_KEY",
+        "NEXT_PUBLIC_SENTRY_DSN",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NODE_ENV",
+        "UPSTASH_REDIS_REST_TOKEN",
+        "UPSTASH_REDIS_REST_URL",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "VERCEL_ENV"
+      ],
+      "outputs": [".next/**", "!.next/cache/**"]
+    }
+  }
+}

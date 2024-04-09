@@ -1,45 +1,52 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@hookform/resolvers": "^3.3.4",
+    "@googleapis/youtube": "^14.0.0",
     "@sentry/nextjs": "^7.109.0",
     "@sentry/profiling-node": "^7.109.0",
+    "@shinju-date/helpers": "workspace:*",
+    "@shinju-date/logging": "workspace:*",
+    "@shinju-date/retryable-fetch": "workspace:*",
     "@supabase/supabase-js": "^2.42.0",
+    "@upstash/ratelimit": "^1.0.3",
+    "@upstash/redis": "^1.29.0",
     "@vercel/otel": "^1.8.1",
+    "mime": "^4.0.1",
+    "nanoid": "^5.0.7",
     "next": "^14.1.4",
+    "p-queue": "^8.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "tailwindcss": "^4.0.0-alpha.13",
+    "sharp": "^0.33.3",
+    "temporal-polyfill": "^0.2.4",
     "zod": "^3.22.4"
   },
   "description": "",
   "devDependencies": {
     "@shinju-date/database": "workspace:*",
     "@shinju-date/eslint-config": "workspace:*",
-    "@tailwindcss/postcss": "^4.0.0-alpha.13",
     "@tsconfig/next": "^2.0.3",
     "@tsconfig/strictest": "^2.0.5",
     "@types/node": "^20.12.6",
     "@types/react": "^18.2.75",
     "@types/react-dom": "^18.2.24",
     "eslint": "~8.57.0",
-    "postcss-load-config": "^5.0.3",
     "typescript": "~5.4.4"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "name": "@shinju-date/admin",
+  "name": "@shinju-date/batch",
   "private": true,
   "repository": {
-    "directory": "apps/admin",
+    "directory": "apps/batch",
     "type": "git",
     "url": "https://github.com/inabagumi/shinju-date.git"
   },
   "scripts": {
     "build": "next build",
-    "dev": "next --port 4000",
+    "dev": "next --port 5000",
     "lint": "next lint",
-    "start": "next start --port 4000"
+    "start": "next start --port 5000"
   },
   "type": "module",
   "version": "1.0.0"
