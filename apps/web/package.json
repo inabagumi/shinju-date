@@ -21,7 +21,7 @@
     "react-infinite-scroll-component": "^6.1.0",
     "swr": "^2.2.5",
     "tailwind-merge": "^2.2.2",
-    "tailwindcss": "^4.0.0-alpha.13",
+    "tailwindcss": "^4.0.0-alpha.14",
     "temporal-polyfill": "^0.2.4",
     "ufo": "^1.5.3",
     "zod": "^3.22.4"
