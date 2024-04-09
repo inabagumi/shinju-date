@@ -18,7 +18,7 @@ importers:
         specifier: ^0.5.13
         version: 0.5.13(prettier@3.2.5)
       tailwindcss:
-        specifier: ^4.0.0-alpha.13
+        specifier: ^4.0.0-alpha.14
         version: 4.0.0-alpha.14
       turbo:
         specifier: ^1.13.2
@@ -54,7 +54,7 @@ importers:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
       tailwindcss:
-        specifier: ^4.0.0-alpha.13
+        specifier: ^4.0.0-alpha.14
         version: 4.0.0-alpha.14
       zod:
         specifier: ^3.22.4
@@ -245,7 +245,7 @@ importers:
         specifier: ^2.2.2
         version: 2.2.2
       tailwindcss:
-        specifier: ^4.0.0-alpha.13
+        specifier: ^4.0.0-alpha.14
         version: 4.0.0-alpha.14
       temporal-polyfill:
         specifier: ^0.2.4
