@@ -74,7 +74,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </search>
         </nav>
 
-        <div className="pb-20">
+        <div className="pb-20 md:pb-40">
           <TimerProvider>{children}</TimerProvider>
         </div>
 
