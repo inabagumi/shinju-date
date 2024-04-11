@@ -12,7 +12,7 @@
     "@vercel/analytics": "^1.2.2",
     "@vercel/otel": "^1.8.1",
     "@vercel/speed-insights": "^1.0.10",
-    "dedent": "^1.5.2",
+    "dedent": "^1.5.3",
     "ics": "^3.7.2",
     "lodash.groupby": "^4.6.0",
     "next": "^14.1.4",
