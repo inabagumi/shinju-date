@@ -218,8 +218,8 @@ importers:
         specifier: ^1.0.10
         version: 1.0.10(next@14.1.4)(react@18.2.0)
       dedent:
-        specifier: ^1.5.2
-        version: 1.5.2
+        specifier: ^1.5.3
+        version: 1.5.3
       ics:
         specifier: ^3.7.2
         version: 3.7.2
@@ -3694,9 +3694,8 @@ packages:
       character-entities: 2.0.2
     dev: true
 
-  /dedent@1.5.2:
-    resolution: {integrity: sha512-O4ncVvQ2ZI0KH+of+Evf956RssiyxvMgU0hE8QyG+rwmUjcxEYX4DoF9FQxIaHye3WQjPXrv3uRhlDrRzlq2CQ==}
-    engines: {node: '>=18'}
+  /dedent@1.5.3:
+    resolution: {integrity: sha512-NHQtfOOW68WD8lgypbLA5oT+Bt0xXJhiYvoR6SmmNXZfpzOGXwdKWmcwG8N7PwVVWV3eF/68nmD9BaJSsTBhyQ==}
     peerDependencies:
       babel-plugin-macros: ^3.1.0
     peerDependenciesMeta:
@@ -5302,7 +5301,7 @@ packages:
       '@types/node': 20.12.7
       chalk: 4.1.2
       co: 4.6.0
-      dedent: 1.5.2
+      dedent: 1.5.3
       is-generator-fn: 2.1.0
       jest-each: 29.7.0
       jest-matcher-utils: 29.7.0
