@@ -39,8 +39,8 @@ importers:
         specifier: ^7.110.0
         version: 7.110.0
       '@supabase/supabase-js':
-        specifier: ^2.42.1
-        version: 2.42.1
+        specifier: ^2.42.2
+        version: 2.42.2
       '@vercel/otel':
         specifier: ^1.8.1
         version: 1.8.1(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0)(@opentelemetry/instrumentation@0.46.0)(@opentelemetry/resources@1.23.0)(@opentelemetry/sdk-logs@0.46.0)(@opentelemetry/sdk-metrics@1.23.0)(@opentelemetry/sdk-trace-base@1.23.0)
@@ -115,8 +115,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/retryable-fetch
       '@supabase/supabase-js':
-        specifier: ^2.42.1
-        version: 2.42.1
+        specifier: ^2.42.2
+        version: 2.42.2
       '@upstash/ratelimit':
         specifier: ^1.0.3
         version: 1.0.3
@@ -203,8 +203,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/temporal-fns
       '@supabase/supabase-js':
-        specifier: ^2.42.1
-        version: 2.42.1
+        specifier: ^2.42.2
+        version: 2.42.2
       '@upstash/redis':
         specifier: ^1.29.0
         version: 1.29.0
@@ -2254,8 +2254,8 @@ packages:
       '@supabase/node-fetch': 2.6.15
     dev: false
 
-  /@supabase/realtime-js@2.9.3:
-    resolution: {integrity: sha512-lAp50s2n3FhGJFq+wTSXLNIDPw5Y0Wxrgt44eM5nLSA3jZNUUP3Oq2Ccd1CbZdVntPCWLZvJaU//pAd2NE+QnQ==}
+  /@supabase/realtime-js@2.9.4:
+    resolution: {integrity: sha512-wdq+2hZpgw0r2ldRs87d3U08Y8BrsO1bZxPNqbImpYshAEkusDz4vufR8KaqujKxqewmXS6YnUhuRVdvSEIKCA==}
     dependencies:
       '@supabase/node-fetch': 2.6.15
       '@types/phoenix': 1.6.4
@@ -2272,14 +2272,14 @@ packages:
       '@supabase/node-fetch': 2.6.15
     dev: false
 
-  /@supabase/supabase-js@2.42.1:
-    resolution: {integrity: sha512-y05XIC6wChApz8BWE2TLUo6SBGp9ttbjhQ9DcQXI897vI3RRPIjm3wZqUoZiexUco+kgt3Em53+m55nB8Um6Sg==}
+  /@supabase/supabase-js@2.42.2:
+    resolution: {integrity: sha512-bt9OGKb6OBRBjhKq1nvpF3o/NzE/Hpq8xrMap5pmeI0iNzgLeAU8l+slEshP8j/lcd/Gkbb+AwiEkYyPBM1r+w==}
     dependencies:
       '@supabase/auth-js': 2.63.0
       '@supabase/functions-js': 2.2.2
       '@supabase/node-fetch': 2.6.15
       '@supabase/postgrest-js': 1.15.1
-      '@supabase/realtime-js': 2.9.3
+      '@supabase/realtime-js': 2.9.4
       '@supabase/storage-js': 2.5.5
     transitivePeerDependencies:
       - bufferutil
