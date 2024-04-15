@@ -118,8 +118,8 @@ importers:
         specifier: ^2.42.4
         version: 2.42.4
       '@upstash/ratelimit':
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^1.1.1
+        version: 1.1.1
       '@upstash/redis':
         specifier: ^1.29.0
         version: 1.29.0
@@ -2829,8 +2829,8 @@ packages:
       '@upstash/redis': 1.29.0
     dev: false
 
-  /@upstash/ratelimit@1.0.3:
-    resolution: {integrity: sha512-uaws/6Ar28TICm61wfIbL4Ba91WYtIfl6HMj0PNJ0H/nm0SSXwVbCxPEiX9aXa41gMlVWujaJcOreqIuO8/mqg==}
+  /@upstash/ratelimit@1.1.1:
+    resolution: {integrity: sha512-e9xnKkHOYzOoqt5eH5bCB90UslkW/sKcKaDwcd07QZ40lkAPHE8DEuzgZwXuKfuywWp8XDE/c6HwDXcsTsNfww==}
     dependencies:
       '@upstash/core-analytics': 0.0.7
     dev: false
