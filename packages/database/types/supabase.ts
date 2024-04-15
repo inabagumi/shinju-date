@@ -36,51 +36,6 @@ export type Database = {
         }
         Relationships: []
       }
-      search_videos_result: {
-        Row: {
-          channel_id: number
-          duration: string
-          id: number
-          published_at: string
-          slug: string
-          thumbnail_id: number | null
-          title: string
-        }
-        Insert: {
-          channel_id: number
-          duration: string
-          id?: number
-          published_at: string
-          slug: string
-          thumbnail_id?: number | null
-          title: string
-        }
-        Update: {
-          channel_id?: number
-          duration?: string
-          id?: number
-          published_at?: string
-          slug?: string
-          thumbnail_id?: number | null
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "public_search_videos_result_channel_id_fkey"
-            columns: ["channel_id"]
-            isOneToOne: false
-            referencedRelation: "channels"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "public_search_videos_result_thumbnail_id_fkey"
-            columns: ["thumbnail_id"]
-            isOneToOne: false
-            referencedRelation: "thumbnails"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       terms: {
         Row: {
           created_at: string
@@ -206,6 +161,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      index_advisor: {
+        Args: {
+          query: string
+        }
+        Returns: {
+          startup_cost_before: Json
+          startup_cost_after: Json
+          total_cost_before: Json
+          total_cost_after: Json
+          index_statements: string[]
+          errors: string[]
+        }[]
+      }
       search_videos_v2: {
         Args: {
           query: string
@@ -215,12 +183,16 @@ export type Database = {
         }
         Returns: {
           channel_id: number
+          created_at: string
+          deleted_at: string | null
           duration: string
           id: number
           published_at: string
           slug: string
           thumbnail_id: number | null
           title: string
+          updated_at: string
+          visible: boolean
         }[]
       }
       suggestions: {
