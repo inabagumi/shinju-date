@@ -6,6 +6,8 @@ function getYouTubeVideoID(url: URL): string {
 
   if (url.host === 'youtu.be') {
     videoID = url.pathname.slice(1) || undefined
+  } else if (url.startsWith('/live/')) {
+    videoID = url.pathname.split('/').at(2) || undefined
   } else if (url.pathname === '/watch') {
     videoID = url.searchParams.get('v') || undefined
   }
