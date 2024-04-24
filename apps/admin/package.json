@@ -6,7 +6,7 @@
     "@sentry/profiling-node": "^7.112.2",
     "@supabase/supabase-js": "^2.42.5",
     "@vercel/otel": "^1.8.1",
-    "next": "^14.2.2",
+    "next": "^14.2.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwindcss": "^4.0.0-alpha.14",
