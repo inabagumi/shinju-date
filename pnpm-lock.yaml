@@ -42,8 +42,8 @@ importers:
         specifier: ^2.42.7
         version: 2.42.7
       '@vercel/otel':
-        specifier: ^1.8.1
-        version: 1.8.1(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0)(@opentelemetry/instrumentation@0.46.0(@opentelemetry/api@1.8.0))(@opentelemetry/resources@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-logs@0.46.0(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-metrics@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-trace-base@1.23.0(@opentelemetry/api@1.8.0))
+        specifier: ^1.8.2
+        version: 1.8.2(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0)(@opentelemetry/instrumentation@0.46.0(@opentelemetry/api@1.8.0))(@opentelemetry/resources@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-logs@0.46.0(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-metrics@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-trace-base@1.23.0(@opentelemetry/api@1.8.0))
       next:
         specifier: ^14.2.3
         version: 14.2.3(@babel/core@7.24.4)(@opentelemetry/api@1.8.0)(react-dom@18.3.0(react@18.3.0))(react@18.3.0)
@@ -124,8 +124,8 @@ importers:
         specifier: ^1.30.0
         version: 1.30.0
       '@vercel/otel':
-        specifier: ^1.8.1
-        version: 1.8.1(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0)(@opentelemetry/instrumentation@0.46.0(@opentelemetry/api@1.8.0))(@opentelemetry/resources@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-logs@0.46.0(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-metrics@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-trace-base@1.23.0(@opentelemetry/api@1.8.0))
+        specifier: ^1.8.2
+        version: 1.8.2(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0)(@opentelemetry/instrumentation@0.46.0(@opentelemetry/api@1.8.0))(@opentelemetry/resources@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-logs@0.46.0(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-metrics@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-trace-base@1.23.0(@opentelemetry/api@1.8.0))
       mime:
         specifier: ^4.0.3
         version: 4.0.3
@@ -212,8 +212,8 @@ importers:
         specifier: ^1.2.2
         version: 1.2.2(next@14.2.3(@babel/core@7.24.4)(@opentelemetry/api@1.8.0)(react-dom@18.3.0(react@18.3.0))(react@18.3.0))(react@18.3.0)
       '@vercel/otel':
-        specifier: ^1.8.1
-        version: 1.8.1(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0)(@opentelemetry/instrumentation@0.46.0(@opentelemetry/api@1.8.0))(@opentelemetry/resources@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-logs@0.46.0(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-metrics@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-trace-base@1.23.0(@opentelemetry/api@1.8.0))
+        specifier: ^1.8.2
+        version: 1.8.2(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0)(@opentelemetry/instrumentation@0.46.0(@opentelemetry/api@1.8.0))(@opentelemetry/resources@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-logs@0.46.0(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-metrics@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-trace-base@1.23.0(@opentelemetry/api@1.8.0))
       '@vercel/speed-insights':
         specifier: ^1.0.10
         version: 1.0.10(next@14.2.3(@babel/core@7.24.4)(@opentelemetry/api@1.8.0)(react-dom@18.3.0(react@18.3.0))(react@18.3.0))(react@18.3.0)
@@ -1737,8 +1737,8 @@ packages:
       react:
         optional: true
 
-  '@vercel/otel@1.8.1':
-    resolution: {integrity: sha512-jHcmxGmA6Tv948uxzMtuixRHwxWoSrcl27KzrZgQBfDM6h0Xf77yLPtZtazj1j9L/yTH8ooFoXxkVXpYDNQ77g==}
+  '@vercel/otel@1.8.2':
+    resolution: {integrity: sha512-9OIORbSLy9iN0UNWMKvx7UVwwB4m9bTkvks4Cw2WX6iyvXtWX4FibNSNbN/Dkn/Sc0rOt0jn7n3m3llFXR+R1g==}
     engines: {node: '>=18'}
     peerDependencies:
       '@opentelemetry/api': ^1.7.0
@@ -6056,7 +6056,7 @@ snapshots:
       next: 14.2.3(@babel/core@7.24.4)(@opentelemetry/api@1.8.0)(react-dom@18.3.0(react@18.3.0))(react@18.3.0)
       react: 18.3.0
 
-  '@vercel/otel@1.8.1(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0)(@opentelemetry/instrumentation@0.46.0(@opentelemetry/api@1.8.0))(@opentelemetry/resources@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-logs@0.46.0(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-metrics@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-trace-base@1.23.0(@opentelemetry/api@1.8.0))':
+  '@vercel/otel@1.8.2(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0)(@opentelemetry/instrumentation@0.46.0(@opentelemetry/api@1.8.0))(@opentelemetry/resources@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-logs@0.46.0(@opentelemetry/api-logs@0.46.0)(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-metrics@1.23.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-trace-base@1.23.0(@opentelemetry/api@1.8.0))':
     dependencies:
       '@opentelemetry/api': 1.8.0
       '@opentelemetry/api-logs': 0.46.0

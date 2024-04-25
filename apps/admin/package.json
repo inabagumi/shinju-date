@@ -5,7 +5,7 @@
     "@sentry/nextjs": "^7.112.2",
     "@sentry/profiling-node": "^7.112.2",
     "@supabase/supabase-js": "^2.42.7",
-    "@vercel/otel": "^1.8.1",
+    "@vercel/otel": "^1.8.2",
     "next": "^14.2.3",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
