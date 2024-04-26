@@ -345,8 +345,8 @@ importers:
         specifier: ^14.2.3
         version: 14.2.3(@babel/core@7.24.4)(@opentelemetry/api@1.8.0)(react-dom@18.3.0(react@18.3.0))(react@18.3.0)
       supabase:
-        specifier: ^1.163.2
-        version: 1.163.2
+        specifier: ^1.163.6
+        version: 1.163.6
       tsup:
         specifier: ^8.0.2
         version: 8.0.2(postcss@8.4.38)(typescript@5.4.5)
@@ -4263,8 +4263,8 @@ packages:
     engines: {node: '>=16 || 14 >=14.17'}
     hasBin: true
 
-  supabase@1.163.2:
-    resolution: {integrity: sha512-mA/lhdNsEk9HEF72HbHzpm4EO39TKw2rChizcp8+dwFhaa2ex/jvkLHXujAuPjsZMXgQzRvUj4ltHsY0Z1cUlA==}
+  supabase@1.163.6:
+    resolution: {integrity: sha512-GuanZQdIEGXCWz1UYIMPDmIsAdqD8IiqnATqfNSqlWMYK4y4X912HxyGW1sjYZjQar/10RSkSwPAsRLwDTAxrw==}
     engines: {npm: '>=8'}
     hasBin: true
 
@@ -9321,7 +9321,7 @@ snapshots:
       pirates: 4.0.6
       ts-interface-checker: 0.1.13
 
-  supabase@1.163.2:
+  supabase@1.163.6:
     dependencies:
       bin-links: 4.0.3
       https-proxy-agent: 7.0.4
