@@ -97,8 +97,8 @@ importers:
   apps/batch:
     dependencies:
       '@googleapis/youtube':
-        specifier: ^14.0.0
-        version: 14.0.0
+        specifier: ^15.0.0
+        version: 15.0.0
       '@sentry/nextjs':
         specifier: ^7.112.2
         version: 7.112.2(next@14.2.3(@babel/core@7.24.4)(@opentelemetry/api@1.8.0)(react-dom@18.3.0(react@18.3.0))(react@18.3.0))(react@18.3.0)(webpack@5.91.0)
@@ -811,8 +811,8 @@ packages:
     resolution: {integrity: sha512-Ys+3g2TaW7gADOJzPt83SJtCDhMjndcDMFVQ/Tj9iA1BfJzFKD9mAUXT3OenpuPHbI6P/myECxRJrofUsDx/5g==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
-  '@googleapis/youtube@14.0.0':
-    resolution: {integrity: sha512-3CFZZ/gYV+yRI4AfnBGWke4P2puo4PHhY+/vbf4q2M25ptgtlQ1knDquv3UVGnjbiEPO2Gh5TYz7Vuj3z8Aisg==}
+  '@googleapis/youtube@15.0.0':
+    resolution: {integrity: sha512-tgJsqmeNz7w9bd0nUwxWyXp14k8Zjs5/4MCb73tL4pk9NLjxnPbtl12A8W0eCLVkRm5ODbkw8LmNsABIOHZZBg==}
     engines: {node: '>=12.0.0'}
 
   '@hookform/resolvers@3.3.4':
@@ -4996,7 +4996,7 @@ snapshots:
 
   '@eslint/js@8.57.0': {}
 
-  '@googleapis/youtube@14.0.0':
+  '@googleapis/youtube@15.0.0':
     dependencies:
       googleapis-common: 7.1.0
     transitivePeerDependencies:
