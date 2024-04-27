@@ -104,7 +104,7 @@ export default function SchedulePage() {
 
   return (
     <>
-      <div className="relative aspect-video bg-slate-700">
+      <div className="relative aspect-[4/3] bg-slate-700 sm:aspect-video">
         <div className="absolute right-0 bottom-0 left-0 z-20 bg-gradient-to-t from-slate-900/80 text-white">
           <h1 className="py-6 px-8 text-center md:text-left">
             <svg
@@ -121,7 +121,7 @@ export default function SchedulePage() {
 
         <Image
           alt=""
-          className="absolute inset-0 z-10 w-full"
+          className="absolute inset-0 z-10 h-full w-full object-cover"
           priority
           role="presentation"
           sizes="100vw"
