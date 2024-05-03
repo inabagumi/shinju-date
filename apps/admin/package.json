@@ -4,7 +4,7 @@
     "@hookform/resolvers": "^3.3.4",
     "@sentry/nextjs": "^7.113.0",
     "@sentry/profiling-node": "^7.113.0",
-    "@supabase/supabase-js": "^2.43.0",
+    "@supabase/supabase-js": "^2.43.1",
     "@vercel/otel": "^1.8.2",
     "next": "^14.2.3",
     "react": "^18.3.1",
