@@ -10,7 +10,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwindcss": "^4.0.0-alpha.14",
-    "zod": "^3.23.5"
+    "zod": "^3.23.6"
   },
   "description": "",
   "devDependencies": {
