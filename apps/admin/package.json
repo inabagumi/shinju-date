@@ -19,7 +19,7 @@
     "@tailwindcss/postcss": "^4.0.0-alpha.14",
     "@tsconfig/next": "^2.0.3",
     "@tsconfig/strictest": "^2.0.5",
-    "@types/node": "^20.12.10",
+    "@types/node": "^20.12.11",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.0",
     "eslint": "~8.57.0",
