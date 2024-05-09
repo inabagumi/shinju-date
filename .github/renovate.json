@@ -3,6 +3,7 @@
   "extends": ["github>inabagumi/renovate-config"],
   "packageRules": [
     {
+      "followTag": "next",
       "groupName": "tailwindcss monorepo",
       "ignoreUnstable": false,
       "matchManagers": ["npm"],
