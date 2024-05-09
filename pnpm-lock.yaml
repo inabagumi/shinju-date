@@ -18,8 +18,8 @@ importers:
         specifier: ^0.5.14
         version: 0.5.14(prettier@3.2.5)
       tailwindcss:
-        specifier: ^4.0.0-alpha.14
-        version: 4.0.0-alpha.14
+        specifier: ^4.0.0-alpha.15
+        version: 4.0.0-alpha.15
       turbo:
         specifier: ^1.13.3
         version: 1.13.3
@@ -54,8 +54,8 @@ importers:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
       tailwindcss:
-        specifier: ^4.0.0-alpha.14
-        version: 4.0.0-alpha.14
+        specifier: ^4.0.0-alpha.15
+        version: 4.0.0-alpha.15
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -245,8 +245,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0
       tailwindcss:
-        specifier: ^4.0.0-alpha.14
-        version: 4.0.0-alpha.14
+        specifier: ^4.0.0-alpha.15
+        version: 4.0.0-alpha.15
       temporal-polyfill:
         specifier: ^0.2.4
         version: 0.2.4
@@ -4293,6 +4293,9 @@ packages:
 
   tailwindcss@4.0.0-alpha.14:
     resolution: {integrity: sha512-7qAhQPrsWyaaDk0IjOEhTEdgDWsN0MjB3kk38DxK5vXqPJ7C57FYlARA6vrE36WL0K/mYdAA54vWJbWbDfoVcQ==}
+
+  tailwindcss@4.0.0-alpha.15:
+    resolution: {integrity: sha512-hlL3dKkgKTNz6dXe4OWJMngI9DdcJncGXvhhjdPkMc/Pqc81NCYaV/8Z11DZ4Djy5RSFfLf41HI6+DGeKtvJ2g==}
 
   tapable@2.2.1:
     resolution: {integrity: sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==}
@@ -9357,6 +9360,8 @@ snapshots:
       '@babel/runtime': 7.24.5
 
   tailwindcss@4.0.0-alpha.14: {}
+
+  tailwindcss@4.0.0-alpha.15: {}
 
   tapable@2.2.1: {}
 
