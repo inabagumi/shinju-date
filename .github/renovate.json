@@ -7,7 +7,7 @@
       "groupName": "tailwindcss monorepo",
       "ignoreUnstable": false,
       "matchManagers": ["npm"],
-      "matchSourceUrls": ["https://github.com/tailwindlabs/tailwindcss"]
+      "matchSourceUrls": ["https://github.com/tailwindlabs/tailwindcss.git"]
     }
   ],
   "reviewers": ["ykzts"]
