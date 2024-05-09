@@ -21,7 +21,7 @@
     "react-infinite-scroll-component": "^6.1.0",
     "swr": "^2.2.5",
     "tailwind-merge": "^2.3.0",
-    "tailwindcss": "^4.0.0-alpha.14",
+    "tailwindcss": "^4.0.0-alpha.15",
     "temporal-polyfill": "^0.2.4",
     "ufo": "^1.5.3",
     "zod": "^3.23.8"
@@ -33,7 +33,7 @@
     "@next/mdx": "^14.2.3",
     "@shinju-date/database": "workspace:*",
     "@shinju-date/eslint-config": "workspace:*",
-    "@tailwindcss/postcss": "^4.0.0-alpha.14",
+    "@tailwindcss/postcss": "^4.0.0-alpha.15",
     "@tsconfig/next": "^2.0.3",
     "@tsconfig/strictest": "^2.0.5",
     "@types/dedent": "^0.7.2",
