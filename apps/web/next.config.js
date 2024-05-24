@@ -15,6 +15,7 @@ const supabaseBaseURL =
 const nextConfig = {
   experimental: {
     instrumentationHook: true,
+    ppr: true,
     serverComponentsExternalPackages: ['@sentry/profiling-node']
   },
   images: {
