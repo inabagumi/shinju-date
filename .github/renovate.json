@@ -12,6 +12,10 @@
     {
       "extends": "monorepo:nextjs",
       "followTag": "rc"
+    },
+    {
+      "extends": "monorepo:react",
+      "followTag": "rc"
     }
   ],
   "reviewers": ["ykzts"]
