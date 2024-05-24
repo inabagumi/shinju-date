@@ -43,6 +43,7 @@ function createClient(
 
         return fetch(requestInfo, {
           ...requestInit,
+          cache: 'force-cache',
           next: {
             tags
           }
