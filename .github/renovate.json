@@ -8,6 +8,10 @@
       "matchManagers": ["npm"],
       "matchPackageNames": ["tailwindcss"],
       "matchPackagePatterns": ["^@tailwindcss/"]
+    },
+    {
+      "extends": "monorepo:nextjs",
+      "followTag": "rc"
     }
   ],
   "reviewers": ["ykzts"]
