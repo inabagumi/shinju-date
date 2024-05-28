@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*'
     },
     sitemap: new URL(
-      '/sitemap.xml',
+      '/sitemap',
       process.env['NEXT_PUBLIC_BASE_URL'] ?? 'http://localhost:3000'
     ).toString()
   }
