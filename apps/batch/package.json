@@ -18,7 +18,7 @@
     "react": "^19.0.0-rc-9d4fba0788-20240530",
     "react-dom": "^19.0.0-rc-9d4fba0788-20240530",
     "sharp": "^0.33.4",
-    "temporal-polyfill": "^0.2.4",
+    "temporal-polyfill": "^0.2.5",
     "zod": "^3.23.8"
   },
   "description": "",
