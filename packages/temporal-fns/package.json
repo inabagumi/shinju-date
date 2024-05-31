@@ -1,7 +1,7 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "temporal-polyfill": "^0.2.4"
+    "temporal-polyfill": "^0.2.5"
   },
   "description": "",
   "devDependencies": {
