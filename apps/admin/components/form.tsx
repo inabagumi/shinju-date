@@ -5,12 +5,13 @@ import {
   type ComponentPropsWithoutRef,
   Fragment,
   createContext,
+  useActionState,
   useCallback,
   useContext,
   useId,
   useState
 } from 'react'
-import { useFormState, useFormStatus } from 'react-dom'
+import { useFormStatus } from 'react-dom'
 
 export type FormState = Partial<{
   errors: Record<string, string[]>
@@ -39,7 +40,7 @@ export default function Form({
   noValidate = true,
   ...props
 }: Props) {
-  const [state, formAction] = useFormState(action, initialState)
+  const [state, formAction] = useActionState(action, initialState)
 
   return (
     <FormContext.Provider value={state}>
