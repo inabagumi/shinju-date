@@ -15,8 +15,7 @@ const supabaseBaseURL =
 const nextConfig = {
   experimental: {
     instrumentationHook: true,
-    ppr: true,
-    serverComponentsExternalPackages: ['@sentry/profiling-node']
+    ppr: true
   },
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -63,7 +62,8 @@ const nextConfig = {
       beforeFiles: [],
       fallback: []
     }
-  }
+  },
+  serverExternalPackages: ['@sentry/profiling-node']
 }
 
 const withMDX = createMDX({

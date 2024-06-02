@@ -5,10 +5,10 @@ import { withSentryConfig } from '@sentry/nextjs'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    instrumentationHook: true,
-    serverComponentsExternalPackages: ['@sentry/profiling-node']
+    instrumentationHook: true
   },
-  reactStrictMode: true
+  reactStrictMode: true,
+  serverExternalPackages: ['@sentry/profiling-node']
 }
 
 /**
