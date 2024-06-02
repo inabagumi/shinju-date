@@ -7,6 +7,7 @@ if (dsn) {
     dsn,
     enabled: process.env['VERCEL_ENV'] === 'production',
     integrations: [
+      Sentry.browserTracingIntegration(),
       Sentry.browserProfilingIntegration(),
       Sentry.replayIntegration()
     ],
