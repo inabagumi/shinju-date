@@ -17,16 +17,12 @@ const nextConfig = {
  */
 function withPlugins(nextConfig) {
   if (process.env['NEXT_PUBLIC_SENTRY_DSN']) {
-    // @ts-expect-error
-    return withSentryConfig(
-      nextConfig,
-      {},
-      {
-        automaticVercelMonitors: true,
-        hideSourceMaps: true,
-        tunnelRoute: '/api/monitoring/sentry'
-      }
-    )
+    return withSentryConfig(nextConfig, {
+      automaticVercelMonitors: true,
+      hideSourceMaps: true,
+      silent: true,
+      tunnelRoute: '/api/monitoring/sentry'
+    })
   }
 
   return nextConfig
