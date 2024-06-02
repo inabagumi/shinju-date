@@ -17,6 +17,19 @@ const nextConfig = {
     instrumentationHook: true,
     ppr: true
   },
+  async headers() {
+    return [
+      {
+        headers: [
+          {
+            key: 'Document-Policy',
+            value: 'js-profiling'
+          }
+        ],
+        source: '/:path*'
+      }
+    ]
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 365 * 24 * 60 * 60,

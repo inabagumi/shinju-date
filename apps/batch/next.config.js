@@ -7,6 +7,19 @@ const nextConfig = {
   experimental: {
     instrumentationHook: true
   },
+  async headers() {
+    return [
+      {
+        headers: [
+          {
+            key: 'Document-Policy',
+            value: 'js-profiling'
+          }
+        ],
+        source: '/:path*'
+      }
+    ]
+  },
   reactStrictMode: true,
   serverExternalPackages: ['@sentry/profiling-node']
 }
