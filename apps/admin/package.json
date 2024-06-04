@@ -7,8 +7,8 @@
     "@supabase/supabase-js": "^2.43.4",
     "@vercel/otel": "^1.8.3",
     "next": "^15.0.0-rc.0",
-    "react": "^19.0.0-rc-9d4fba0788-20240530",
-    "react-dom": "^19.0.0-rc-9d4fba0788-20240530",
+    "react": "^19.0.0-rc-bf3a29d097-20240603",
+    "react-dom": "^19.0.0-rc-bf3a29d097-20240603",
     "tailwindcss": "^4.0.0-alpha.15",
     "zod": "^3.23.8"
   },
