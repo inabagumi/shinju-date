@@ -15,8 +15,8 @@
     "nanoid": "^5.0.7",
     "next": "^15.0.0-rc.0",
     "p-queue": "^8.0.1",
-    "react": "^19.0.0-rc-bf3a29d097-20240603",
-    "react-dom": "^19.0.0-rc-bf3a29d097-20240603",
+    "react": "^19.0.0-rc-eb259b5d3b-20240605",
+    "react-dom": "^19.0.0-rc-eb259b5d3b-20240605",
     "sharp": "^0.33.4",
     "temporal-polyfill": "^0.2.5",
     "zod": "^3.23.8"
