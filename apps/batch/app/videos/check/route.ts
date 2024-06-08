@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs'
 import { type default as Database } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { defaultLogger as logger } from '@shinju-date/logging'
@@ -180,61 +181,73 @@ export async function POST(request: NextRequest): Promise<Response> {
     )
   }
 
-  const currentDateTime = Temporal.Now.instant()
-  const savedVideos: Video[] = []
-
   try {
-    for await (const savedVideo of getSavedVideos({ all, supabaseClient })) {
-      savedVideos.push(savedVideo)
-    }
-  } catch (error) {
-    captureException(error)
+    await Sentry.withMonitor(
+      all ? '/videos/check?all=1' : '/videos/check',
+      async () => {
+        const currentDateTime = Temporal.Now.instant()
+        const savedVideos: Video[] = []
 
-    return createErrorResponse('internal server error', { status: 500 })
-  }
+        for await (const savedVideo of getSavedVideos({
+          all,
+          supabaseClient
+        })) {
+          savedVideos.push(savedVideo)
+        }
 
-  const videoIDs: string[] = []
+        const videoIDs: string[] = []
 
-  try {
-    for await (const videoID of getVideoIDs(
-      savedVideos.map((savedVideo) => savedVideo.slug)
-    )) {
-      videoIDs.push(videoID)
-    }
-  } catch (error) {
-    captureException(error)
+        for await (const videoID of getVideoIDs(
+          savedVideos.map((savedVideo) => savedVideo.slug)
+        )) {
+          videoIDs.push(videoID)
+        }
 
-    return createErrorResponse('internal server error', { status: 500 })
-  }
+        if (savedVideos.length !== videoIDs.length) {
+          const deletedVideos = savedVideos.filter(
+            (savedVideo) => !videoIDs.includes(savedVideo.slug)
+          )
 
-  if (savedVideos.length !== videoIDs.length) {
-    const deletedVideos = savedVideos.filter(
-      (savedVideo) => !videoIDs.includes(savedVideo.slug)
-    )
+          if (deletedVideos.length > 0) {
+            const results = await deleteVideos({
+              currentDateTime,
+              supabaseClient,
+              videos: deletedVideos
+            })
+            const rejectedResults = results.filter(
+              (result): result is PromiseRejectedResult =>
+                result.status === 'rejected'
+            )
 
-    if (deletedVideos.length > 0) {
-      const results = await deleteVideos({
-        currentDateTime,
-        supabaseClient,
-        videos: deletedVideos
-      })
-      const rejectedResults = results.filter(
-        (result): result is PromiseRejectedResult =>
-          result.status === 'rejected'
-      )
+            for (const result of rejectedResults) {
+              captureException(result.reason)
+            }
 
-      for (const result of rejectedResults) {
-        captureException(result.reason)
+            logger.info('The videos has been deleted.', {
+              ids: deletedVideos.map((video) => video.slug)
+            })
+
+            await revalidateTags(['videos'], {
+              signal: request.signal
+            })
+          }
+        }
+      },
+      {
+        schedule: {
+          type: 'crontab',
+          value: all ? '4 23 * * 2' : '27/30 * * * *'
+        },
+        timezone: 'Etc/UTC'
       }
+    )
+  } catch (error) {
+    captureException(error)
 
-      logger.info('The videos has been deleted.', {
-        ids: deletedVideos.map((video) => video.slug)
-      })
+    const message =
+      error instanceof Error ? error.message : 'Internal Server Error'
 
-      await revalidateTags(['videos'], {
-        signal: request.signal
-      })
-    }
+    return createErrorResponse(message, { status: 500 })
   }
 
   return new Response(null, {

@@ -1,8 +1,10 @@
+import * as Sentry from '@sentry/nextjs'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { defaultLogger as logger } from '@shinju-date/logging'
 import { type NextRequest } from 'next/server'
 import { recommendationQueriesUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
+import { captureException } from '@/lib/sentry'
 import { supabaseClient } from '@/lib/supabase'
 
 const RECOMENDATION_QUERIES_KEY = 'recommendation_queries'
@@ -52,40 +54,58 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  let terms: Awaited<ReturnType<typeof getAllTerms>>
-
   try {
-    terms = await getAllTerms()
+    await Sentry.withMonitor(
+      '/recommendation/queries/update',
+      async () => {
+        const [terms, queries] = await Promise.all([
+          getAllTerms(),
+          redisClient.smembers(RECOMENDATION_QUERIES_KEY)
+        ])
+        const termValues = terms.map(({ term }) => term)
+        const addableWords = termValues.filter(
+          (term) => !queries.includes(term)
+        )
+        const deletableWords = queries.filter(
+          (query) => !termValues.includes(query)
+        )
+
+        if (addableWords.length > 0 || deletableWords.length > 0) {
+          const multi = redisClient.multi()
+
+          if (addableWords.length > 0) {
+            multi.sadd(RECOMENDATION_QUERIES_KEY, ...addableWords)
+          }
+
+          if (deletableWords.length > 0) {
+            multi.srem(RECOMENDATION_QUERIES_KEY, ...deletableWords)
+          }
+
+          const results = await multi.exec<number[]>()
+
+          if (results.some((result) => result > 0)) {
+            logger.info('Update recommendation queries.', {
+              added: addableWords,
+              deleted: deletableWords
+            })
+          }
+        }
+      },
+      {
+        schedule: {
+          type: 'crontab',
+          value: '7/30 * * * *'
+        },
+        timezone: 'Etc/UTC'
+      }
+    )
   } catch (error) {
-    console.error(error)
+    captureException(error)
 
-    return createErrorResponse('Internal Server Error', { status: 500 })
-  }
+    const message =
+      error instanceof Error ? error.message : 'Internal Server Error'
 
-  const queries = await redisClient.smembers(RECOMENDATION_QUERIES_KEY)
-  const termValues = terms.map(({ term }) => term)
-  const addableWords = termValues.filter((term) => !queries.includes(term))
-  const deletableWords = queries.filter((query) => !termValues.includes(query))
-
-  if (addableWords.length > 0 || deletableWords.length > 0) {
-    const multi = redisClient.multi()
-
-    if (addableWords.length > 0) {
-      multi.sadd(RECOMENDATION_QUERIES_KEY, ...addableWords)
-    }
-
-    if (deletableWords.length > 0) {
-      multi.srem(RECOMENDATION_QUERIES_KEY, ...deletableWords)
-    }
-
-    const results = await multi.exec<number[]>()
-
-    if (results.some((result) => result > 0)) {
-      logger.info('Update recommendation queries.', {
-        added: addableWords,
-        deleted: deletableWords
-      })
-    }
+    return createErrorResponse(message, { status: 500 })
   }
 
   return new Response(null, { status: 204 })

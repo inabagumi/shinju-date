@@ -31,7 +31,7 @@ const nextConfig = {
 function withPlugins(nextConfig) {
   if (process.env['NEXT_PUBLIC_SENTRY_DSN']) {
     return withSentryConfig(nextConfig, {
-      automaticVercelMonitors: true,
+      automaticVercelMonitors: false,
       hideSourceMaps: true,
       silent: true,
       tunnelRoute: '/api/monitoring/sentry'
