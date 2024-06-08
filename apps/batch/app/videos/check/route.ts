@@ -244,11 +244,21 @@ export async function POST(request: NextRequest): Promise<Response> {
   } catch (error) {
     captureException(error)
 
+    // wait for logging
+    await new Promise((resolve) => {
+      setTimeout(resolve, 2_000)
+    })
+
     const message =
       error instanceof Error ? error.message : 'Internal Server Error'
 
     return createErrorResponse(message, { status: 500 })
   }
+
+  // wait for logging
+  await new Promise((resolve) => {
+    setTimeout(resolve, 2_000)
+  })
 
   return new Response(null, {
     status: 204
