@@ -1,14 +1,12 @@
 import * as Sentry from '@sentry/nextjs'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { defaultLogger as logger } from '@shinju-date/logging'
-import { type NextRequest, unstable_after as after } from 'next/server'
-import { Temporal } from 'temporal-polyfill'
+import { type NextRequest } from 'next/server'
 import { recommendationQueriesUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
 import { captureException } from '@/lib/sentry'
 import { supabaseClient } from '@/lib/supabase'
 
-const MONITOR_SLUG = '/recommendation/queries/update'
 const RECOMENDATION_QUERIES_KEY = 'recommendation_queries'
 
 export const runtime = 'nodejs'
@@ -56,62 +54,57 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const currentDateTime = Temporal.Now.instant()
-  const checkInId = Sentry.captureCheckIn(
-    {
-      monitorSlug: MONITOR_SLUG,
-      status: 'in_progress'
-    },
-    {
-      schedule: {
-        type: 'crontab',
-        value: '7/30 * * * *'
-      },
-      timezone: 'Etc/UTC'
-    }
-  )
-
   try {
-    const [terms, queries] = await Promise.all([
-      getAllTerms(),
-      redisClient.smembers(RECOMENDATION_QUERIES_KEY)
-    ])
-    const termValues = terms.map(({ term }) => term)
-    const addableWords = termValues.filter((term) => !queries.includes(term))
-    const deletableWords = queries.filter(
-      (query) => !termValues.includes(query)
+    await Sentry.withMonitor(
+      '/recommendation/queries/update',
+      async () => {
+        const [terms, queries] = await Promise.all([
+          getAllTerms(),
+          redisClient.smembers(RECOMENDATION_QUERIES_KEY)
+        ])
+        const termValues = terms.map(({ term }) => term)
+        const addableWords = termValues.filter(
+          (term) => !queries.includes(term)
+        )
+        const deletableWords = queries.filter(
+          (query) => !termValues.includes(query)
+        )
+
+        if (addableWords.length > 0 || deletableWords.length > 0) {
+          const multi = redisClient.multi()
+
+          if (addableWords.length > 0) {
+            multi.sadd(RECOMENDATION_QUERIES_KEY, ...addableWords)
+          }
+
+          if (deletableWords.length > 0) {
+            multi.srem(RECOMENDATION_QUERIES_KEY, ...deletableWords)
+          }
+
+          const results = await multi.exec<number[]>()
+
+          if (results.some((result) => result > 0)) {
+            logger.info('Update recommendation queries.', {
+              added: addableWords,
+              deleted: deletableWords
+            })
+          }
+        }
+      },
+      {
+        schedule: {
+          type: 'crontab',
+          value: '7/30 * * * *'
+        },
+        timezone: 'Etc/UTC'
+      }
     )
-
-    if (addableWords.length > 0 || deletableWords.length > 0) {
-      const multi = redisClient.multi()
-
-      if (addableWords.length > 0) {
-        multi.sadd(RECOMENDATION_QUERIES_KEY, ...addableWords)
-      }
-
-      if (deletableWords.length > 0) {
-        multi.srem(RECOMENDATION_QUERIES_KEY, ...deletableWords)
-      }
-
-      const results = await multi.exec<number[]>()
-
-      if (results.some((result) => result > 0)) {
-        logger.info('Update recommendation queries.', {
-          added: addableWords,
-          deleted: deletableWords
-        })
-      }
-    }
   } catch (error) {
-    after(() => {
-      captureException(error)
+    captureException(error)
 
-      Sentry.captureCheckIn({
-        checkInId,
-        duration: currentDateTime.until(Temporal.Now.instant()).seconds,
-        monitorSlug: MONITOR_SLUG,
-        status: 'error'
-      })
+    // wait for logging
+    await new Promise((resolve) => {
+      setTimeout(resolve, 2_000)
     })
 
     const message =
@@ -120,13 +113,9 @@ export async function POST(request: NextRequest) {
     return createErrorResponse(message, { status: 500 })
   }
 
-  after(() => {
-    Sentry.captureCheckIn({
-      checkInId,
-      duration: currentDateTime.until(Temporal.Now.instant()).seconds,
-      monitorSlug: MONITOR_SLUG,
-      status: 'ok'
-    })
+  // wait for logging
+  await new Promise((resolve) => {
+    setTimeout(resolve, 2_000)
   })
 
   return new Response(null, { status: 204 })
