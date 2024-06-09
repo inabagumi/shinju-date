@@ -1,4 +1,5 @@
 import { type default as Database } from '@shinju-date/database'
+import retryableFetch from '@shinju-date/retryable-fetch'
 import {
   type SupabaseClient,
   createClient as createSupabaseClient
@@ -41,7 +42,7 @@ function createClient(
       fetch(requestInfo, requestInit) {
         const tags = getTags(requestInfo)
 
-        return fetch(requestInfo, {
+        return retryableFetch(requestInfo, {
           ...requestInit,
           cache: 'force-cache',
           next: {

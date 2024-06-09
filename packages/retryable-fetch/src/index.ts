@@ -1,12 +1,11 @@
 import pRetry, { AbortError } from 'p-retry'
 
 export default function retryableFetch(
-  input: RequestInfo,
-  init?: RequestInit
+  ...args: Parameters<typeof fetch>
 ): Promise<Response> {
   return pRetry<Response>(
     async () => {
-      const res = await fetch(input, init)
+      const res = await fetch(...args)
 
       if (!res.ok && res.status !== 304) {
         // The body is read to reuse the socket.

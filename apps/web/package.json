@@ -6,6 +6,7 @@
     "@sentry/profiling-node": "^8.8.0",
     "@shinju-date/helpers": "workspace:*",
     "@shinju-date/logging": "workspace:*",
+    "@shinju-date/retryable-fetch": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
     "@supabase/supabase-js": "^2.43.4",
     "@upstash/redis": "^1.31.3",
