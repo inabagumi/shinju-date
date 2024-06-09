@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/nextjs'
 import { type default as Database } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { defaultLogger as logger } from '@shinju-date/logging'
-import { type NextRequest, unstable_after as after } from 'next/server'
+import { type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import {
   videosCheckAll as ratelimitAll,
@@ -181,81 +181,72 @@ export async function POST(request: NextRequest): Promise<Response> {
     )
   }
 
-  const monitorSlug = all ? '/videos/check?all=1' : '/videos/check'
-  const currentDateTime = Temporal.Now.instant()
-  const checkInId = Sentry.captureCheckIn(
-    {
-      monitorSlug,
-      status: 'in_progress'
-    },
-    {
-      schedule: {
-        type: 'crontab',
-        value: all ? '4 23 * * 2' : '27/30 * * * *'
-      },
-      timezone: 'Etc/UTC'
-    }
-  )
-
   try {
-    const savedVideos: Video[] = []
+    await Sentry.withMonitor(
+      all ? '/videos/check?all=1' : '/videos/check',
+      async () => {
+        const currentDateTime = Temporal.Now.instant()
+        const savedVideos: Video[] = []
 
-    for await (const savedVideo of getSavedVideos({
-      all,
-      supabaseClient
-    })) {
-      savedVideos.push(savedVideo)
-    }
-
-    const videoIDs: string[] = []
-
-    for await (const videoID of getVideoIDs(
-      savedVideos.map((savedVideo) => savedVideo.slug)
-    )) {
-      videoIDs.push(videoID)
-    }
-
-    if (savedVideos.length !== videoIDs.length) {
-      const deletedVideos = savedVideos.filter(
-        (savedVideo) => !videoIDs.includes(savedVideo.slug)
-      )
-
-      if (deletedVideos.length > 0) {
-        const results = await deleteVideos({
-          currentDateTime,
-          supabaseClient,
-          videos: deletedVideos
-        })
-        const rejectedResults = results.filter(
-          (result): result is PromiseRejectedResult =>
-            result.status === 'rejected'
-        )
-
-        for (const result of rejectedResults) {
-          after(() => {
-            captureException(result.reason)
-          })
+        for await (const savedVideo of getSavedVideos({
+          all,
+          supabaseClient
+        })) {
+          savedVideos.push(savedVideo)
         }
 
-        logger.info('The videos has been deleted.', {
-          ids: deletedVideos.map((video) => video.slug)
-        })
+        const videoIDs: string[] = []
 
-        await revalidateTags(['videos'], {
-          signal: request.signal
-        })
+        for await (const videoID of getVideoIDs(
+          savedVideos.map((savedVideo) => savedVideo.slug)
+        )) {
+          videoIDs.push(videoID)
+        }
+
+        if (savedVideos.length !== videoIDs.length) {
+          const deletedVideos = savedVideos.filter(
+            (savedVideo) => !videoIDs.includes(savedVideo.slug)
+          )
+
+          if (deletedVideos.length > 0) {
+            const results = await deleteVideos({
+              currentDateTime,
+              supabaseClient,
+              videos: deletedVideos
+            })
+            const rejectedResults = results.filter(
+              (result): result is PromiseRejectedResult =>
+                result.status === 'rejected'
+            )
+
+            for (const result of rejectedResults) {
+              captureException(result.reason)
+            }
+
+            logger.info('The videos has been deleted.', {
+              ids: deletedVideos.map((video) => video.slug)
+            })
+
+            await revalidateTags(['videos'], {
+              signal: request.signal
+            })
+          }
+        }
+      },
+      {
+        schedule: {
+          type: 'crontab',
+          value: all ? '4 23 * * 2' : '27/30 * * * *'
+        },
+        timezone: 'Etc/UTC'
       }
-    }
+    )
   } catch (error) {
-    after(() => {
-      captureException(error)
+    captureException(error)
 
-      Sentry.captureCheckIn({
-        checkInId,
-        duration: currentDateTime.until(Temporal.Now.instant()).seconds,
-        monitorSlug,
-        status: 'error'
-      })
+    // wait for logging
+    await new Promise((resolve) => {
+      setTimeout(resolve, 2_000)
     })
 
     const message =
@@ -264,13 +255,9 @@ export async function POST(request: NextRequest): Promise<Response> {
     return createErrorResponse(message, { status: 500 })
   }
 
-  after(() => {
-    Sentry.captureCheckIn({
-      checkInId,
-      duration: currentDateTime.until(Temporal.Now.instant()).seconds,
-      monitorSlug,
-      status: 'ok'
-    })
+  // wait for logging
+  await new Promise((resolve) => {
+    setTimeout(resolve, 2_000)
   })
 
   return new Response(null, {
