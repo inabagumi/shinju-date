@@ -1,4 +1,5 @@
 import { type default as DefaultDatabase } from '@shinju-date/database'
+import retryableFetch from '@shinju-date/retryable-fetch'
 import {
   type SupabaseClient,
   type SupabaseClientOptions,
@@ -26,7 +27,13 @@ export function createSupabaseClient<
     throw new TypeError('Supabase URL and key are required.')
   }
 
-  return createClient<Database, SchemaName>(url, key, options)
+  return createClient<Database, SchemaName>(url, key, {
+    ...options,
+    global: {
+      ...options?.global,
+      fetch: options?.global?.fetch ?? retryableFetch
+    }
+  })
 }
 
 export const supabaseClient = createSupabaseClient()
