@@ -245,9 +245,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     captureException(error)
 
     // wait for logging
-    await new Promise((resolve) => {
-      setTimeout(resolve, 2_000)
-    })
+    await Sentry.flush(2_000)
 
     const message =
       error instanceof Error ? error.message : 'Internal Server Error'
@@ -256,9 +254,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   }
 
   // wait for logging
-  await new Promise((resolve) => {
-    setTimeout(resolve, 2_000)
-  })
+  await Sentry.flush(2_000)
 
   return new Response(null, {
     status: 204
