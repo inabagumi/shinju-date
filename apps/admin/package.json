@@ -2,8 +2,8 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@hookform/resolvers": "^3.6.0",
-    "@sentry/nextjs": "^8.8.0",
-    "@sentry/profiling-node": "^8.8.0",
+    "@sentry/nextjs": "^8.9.2",
+    "@sentry/profiling-node": "^8.9.2",
     "@supabase/supabase-js": "^2.43.4",
     "@vercel/otel": "^1.8.3",
     "next": "^15.0.0-rc.0",
