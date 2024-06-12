@@ -1,7 +1,7 @@
 import { registerOTel } from '@vercel/otel'
 
 export async function register() {
-  registerOTel({ serviceName: 'shinju-date-admin' })
+  registerOTel({ serviceName: 'shinju-date-batch' })
 
   const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
 
@@ -13,11 +13,7 @@ export async function register() {
       tracesSampleRate: 1.0
     }
 
-    if (process.env['NEXT_RUNTIME'] === 'edge') {
-      Sentry.init({
-        ...commonSentryOptions
-      })
-    } else {
+    if (process.env['NEXT_RUNTIME'] === 'nodejs') {
       const { nodeProfilingIntegration } = await import(
         '@sentry/profiling-node'
       )
@@ -26,6 +22,12 @@ export async function register() {
         ...commonSentryOptions,
         integrations: [nodeProfilingIntegration()],
         profilesSampleRate: 1.0
+      })
+    }
+
+    if (process.env['NEXT_RUNTIME'] === 'edge') {
+      Sentry.init({
+        ...commonSentryOptions
       })
     }
   }
