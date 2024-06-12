@@ -29,9 +29,6 @@ importers:
 
   apps/admin:
     dependencies:
-      '@hookform/resolvers':
-        specifier: ^3.6.0
-        version: 3.6.0(react-hook-form@7.51.5(react@19.0.0-rc-f994737d14-20240522))
       '@sentry/nextjs':
         specifier: ^8.9.2
         version: 8.9.2(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.25.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.52.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.25.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.25.0)(next@15.0.0-rc.0(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-f994737d14-20240522(react@19.0.0-rc-f994737d14-20240522))(react@19.0.0-rc-f994737d14-20240522))(react@19.0.0-rc-f994737d14-20240522)(webpack@5.91.0)
@@ -101,7 +98,7 @@ importers:
         version: 18.0.0
       '@sentry/nextjs':
         specifier: ^8.9.2
-        version: 8.9.2(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.25.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.25.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.25.0)(next@15.0.0-rc.0(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-f994737d14-20240522(react@19.0.0-rc-f994737d14-20240522))(react@19.0.0-rc-f994737d14-20240522))(react@19.0.0-rc-f994737d14-20240522)(webpack@5.91.0)
+        version: 8.9.2(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.25.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.52.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.25.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.25.0)(next@15.0.0-rc.0(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-f994737d14-20240522(react@19.0.0-rc-f994737d14-20240522))(react@19.0.0-rc-f994737d14-20240522))(react@19.0.0-rc-f994737d14-20240522)(webpack@5.91.0)
       '@sentry/profiling-node':
         specifier: ^8.9.2
         version: 8.9.2
@@ -813,11 +810,6 @@ packages:
   '@googleapis/youtube@18.0.0':
     resolution: {integrity: sha512-BvZIIGmDlUeJNvqvihrHwsFZMbgiuDDMYTXFg9mHhpEqRBgXZf/N2/nq5r7Vfywf8bCbGaScmL+DE4txb+NLbw==}
     engines: {node: '>=12.0.0'}
-
-  '@hookform/resolvers@3.6.0':
-    resolution: {integrity: sha512-UBcpyOX3+RR+dNnqBd0lchXpoL8p4xC21XP8H6Meb8uve5Br1GCnmg0PcBoKKqPKgGu9GHQ/oygcmPrQhetwqw==}
-    peerDependencies:
-      react-hook-form: ^7.0.0
 
   '@humanwhocodes/config-array@0.11.14':
     resolution: {integrity: sha512-3T8LkOmg45BV5FICb15QQMsyUSWrQ8AygVfC7ZG32zOalnqrilm018ZVCw0eapXux8FtA33q8PSRSstjee3jSg==}
@@ -4240,12 +4232,6 @@ packages:
     peerDependencies:
       react: 19.0.0-rc-f994737d14-20240522
 
-  react-hook-form@7.51.5:
-    resolution: {integrity: sha512-J2ILT5gWx1XUIJRETiA7M19iXHlG74+6O3KApzvqB/w8S5NQR7AbU8HVZrMALdmDgWpRPYiZJl0zx8Z4L2mP6Q==}
-    engines: {node: '>=12.22.0'}
-    peerDependencies:
-      react: ^16.8.0 || ^17 || ^18
-
   react-infinite-scroll-component@6.1.0:
     resolution: {integrity: sha512-SQu5nCqy8DxQWpnUVLx7V7b7LcA37aM7tvoWjTLZp1dk6EJibM5/4EJKzOnl07/BsM1Y40sKLuqjCwwH/xV0TQ==}
     peerDependencies:
@@ -5321,10 +5307,6 @@ snapshots:
       - encoding
       - supports-color
 
-  '@hookform/resolvers@3.6.0(react-hook-form@7.51.5(react@19.0.0-rc-f994737d14-20240522))':
-    dependencies:
-      react-hook-form: 7.51.5(react@19.0.0-rc-f994737d14-20240522)
-
   '@humanwhocodes/config-array@0.11.14':
     dependencies:
       '@humanwhocodes/object-schema': 2.0.3
@@ -6137,35 +6119,6 @@ snapshots:
       '@sentry/utils': 8.9.2
 
   '@sentry/nextjs@8.9.2(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.25.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.52.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.25.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.25.0)(next@15.0.0-rc.0(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-f994737d14-20240522(react@19.0.0-rc-f994737d14-20240522))(react@19.0.0-rc-f994737d14-20240522))(react@19.0.0-rc-f994737d14-20240522)(webpack@5.91.0)':
-    dependencies:
-      '@opentelemetry/instrumentation-http': 0.52.0(@opentelemetry/api@1.9.0)
-      '@rollup/plugin-commonjs': 24.0.0(rollup@3.29.4)
-      '@sentry/core': 8.9.2
-      '@sentry/node': 8.9.2
-      '@sentry/opentelemetry': 8.9.2(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.25.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.52.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.25.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.25.0)
-      '@sentry/react': 8.9.2(react@19.0.0-rc-f994737d14-20240522)
-      '@sentry/types': 8.9.2
-      '@sentry/utils': 8.9.2
-      '@sentry/vercel-edge': 8.9.2
-      '@sentry/webpack-plugin': 2.18.0(webpack@5.91.0)
-      chalk: 3.0.0
-      next: 15.0.0-rc.0(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-f994737d14-20240522(react@19.0.0-rc-f994737d14-20240522))(react@19.0.0-rc-f994737d14-20240522)
-      react: 19.0.0-rc-f994737d14-20240522
-      resolve: 1.22.8
-      rollup: 3.29.4
-      stacktrace-parser: 0.1.10
-    optionalDependencies:
-      webpack: 5.91.0
-    transitivePeerDependencies:
-      - '@opentelemetry/api'
-      - '@opentelemetry/core'
-      - '@opentelemetry/instrumentation'
-      - '@opentelemetry/sdk-trace-base'
-      - '@opentelemetry/semantic-conventions'
-      - encoding
-      - supports-color
-
-  '@sentry/nextjs@8.9.2(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.25.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.25.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.25.0)(next@15.0.0-rc.0(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-f994737d14-20240522(react@19.0.0-rc-f994737d14-20240522))(react@19.0.0-rc-f994737d14-20240522))(react@19.0.0-rc-f994737d14-20240522)(webpack@5.91.0)':
     dependencies:
       '@opentelemetry/instrumentation-http': 0.52.0(@opentelemetry/api@1.9.0)
       '@rollup/plugin-commonjs': 24.0.0(rollup@3.29.4)
@@ -7507,7 +7460,7 @@ snapshots:
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@7.2.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@7.13.0(eslint@8.57.0)(typescript@5.4.5))(eslint@8.57.0))(eslint@8.57.0)
-      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@7.2.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@7.2.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.2.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@7.13.0(eslint@8.57.0)(typescript@5.4.5))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
       eslint-plugin-jsx-a11y: 6.8.0(eslint@8.57.0)
       eslint-plugin-react: 7.34.2(eslint@8.57.0)
       eslint-plugin-react-hooks: 4.6.2(eslint@8.57.0)
@@ -7540,7 +7493,7 @@ snapshots:
       enhanced-resolve: 5.17.0
       eslint: 8.57.0
       eslint-module-utils: 2.8.1(@typescript-eslint/parser@7.2.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.2.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@7.13.0(eslint@8.57.0)(typescript@5.4.5))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
-      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@7.2.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@7.2.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.2.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@7.13.0(eslint@8.57.0)(typescript@5.4.5))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
       fast-glob: 3.3.2
       get-tsconfig: 4.7.5
       is-core-module: 2.13.1
@@ -7562,7 +7515,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.29.1(@typescript-eslint/parser@7.2.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0):
+  eslint-plugin-import@2.29.1(@typescript-eslint/parser@7.2.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.2.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@7.13.0(eslint@8.57.0)(typescript@5.4.5))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       array-includes: 3.1.8
       array.prototype.findlastindex: 1.2.5
@@ -9659,10 +9612,6 @@ snapshots:
     dependencies:
       react: 19.0.0-rc-f994737d14-20240522
       scheduler: 0.25.0-rc-f994737d14-20240522
-
-  react-hook-form@7.51.5(react@19.0.0-rc-f994737d14-20240522):
-    dependencies:
-      react: 19.0.0-rc-f994737d14-20240522
 
   react-infinite-scroll-component@6.1.0(react@19.0.0-rc-f994737d14-20240522):
     dependencies:
