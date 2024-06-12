@@ -1,8 +1,4 @@
-import { registerOTel } from '@vercel/otel'
-
 export async function register() {
-  registerOTel({ serviceName: 'shinju-date-admin' })
-
   const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
 
   if (dsn) {
