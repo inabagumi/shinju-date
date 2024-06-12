@@ -212,8 +212,8 @@ importers:
         specifier: ^1.5.3
         version: 1.5.3
       ics:
-        specifier: ^3.7.5
-        version: 3.7.5
+        specifier: ^3.7.6
+        version: 3.7.6
       lodash.groupby:
         specifier: ^4.6.0
         version: 4.6.0
@@ -2983,8 +2983,8 @@ packages:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
     engines: {node: '>=10.17.0'}
 
-  ics@3.7.5:
-    resolution: {integrity: sha512-/4NqBU0fYAQdmdfyUV29p8TB2J3+c9ipLeJlDE6I3SPNSsJ/xblbKyPt4Bv+DYY5AW/4gcXY/gLRABVy6uyKmQ==}
+  ics@3.7.6:
+    resolution: {integrity: sha512-Z1QIWoPzyzqKUSj2Ui9vD3ca0AS+uHyiCjkROFx9PiKtJu9vMuMo6KJ4aqFmMAqn5q3fLq/5tLTJRm4zr9jjgw==}
 
   ignore@5.3.1:
     resolution: {integrity: sha512-5Fytz/IraMjqpwfd34ke28PTVMjZjJG2MPn5t7OE4eUCUNf8BAa7b5WUS9/Qvr6mwOQS7Mk6vdsMno5he+T8Xw==}
@@ -7985,7 +7985,7 @@ snapshots:
 
   human-signals@2.1.0: {}
 
-  ics@3.7.5:
+  ics@3.7.6:
     dependencies:
       nanoid: 3.3.7
       runes2: 1.1.4
