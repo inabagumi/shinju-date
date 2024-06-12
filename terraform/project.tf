@@ -41,7 +41,7 @@ resource "vercel_project_domain" "ink" {
 resource "vercel_project_environment_variable" "enable_experimental_corepack" {
   key        = "ENABLE_EXPERIMENTAL_COREPACK"
   project_id = vercel_project.this.id
-  target     = ["production", "preview", "development"]
+  target     = ["production", "preview"]
   team_id    = vercel_project.this.team_id
   value      = "1"
 }
@@ -49,7 +49,7 @@ resource "vercel_project_environment_variable" "enable_experimental_corepack" {
 resource "vercel_project_environment_variable" "use_bytecode_caching" {
   key        = "USE_BYTECODE_CACHING"
   project_id = vercel_project.this.id
-  target     = ["production", "preview", "development"]
+  target     = ["production"]
   team_id    = vercel_project.this.team_id
   value      = "1"
 }
@@ -121,7 +121,7 @@ resource "vercel_project_domain" "admin" {
 resource "vercel_project_environment_variable" "admin_enable_experimental_corepack" {
   key        = "ENABLE_EXPERIMENTAL_COREPACK"
   project_id = vercel_project.admin.id
-  target     = ["production", "preview", "development"]
+  target     = ["production", "preview"]
   team_id    = vercel_project.admin.team_id
   value      = "1"
 }
@@ -129,7 +129,7 @@ resource "vercel_project_environment_variable" "admin_enable_experimental_corepa
 resource "vercel_project_environment_variable" "admin_use_bytecode_caching" {
   key        = "USE_BYTECODE_CACHING"
   project_id = vercel_project.admin.id
-  target     = ["production", "preview", "development"]
+  target     = ["production"]
   team_id    = vercel_project.admin.team_id
   value      = "1"
 }
@@ -192,7 +192,7 @@ resource "random_password" "cron_secret" {
 resource "vercel_project_environment_variable" "batch_enable_experimental_corepack" {
   key        = "ENABLE_EXPERIMENTAL_COREPACK"
   project_id = vercel_project.batch.id
-  target     = ["production", "preview", "development"]
+  target     = ["production", "preview"]
   team_id    = vercel_project.batch.team_id
   value      = "1"
 }
@@ -200,7 +200,7 @@ resource "vercel_project_environment_variable" "batch_enable_experimental_corepa
 resource "vercel_project_environment_variable" "batch_use_bytecode_caching" {
   key        = "USE_BYTECODE_CACHING"
   project_id = vercel_project.batch.id
-  target     = ["production", "preview", "development"]
+  target     = ["production"]
   team_id    = vercel_project.batch.team_id
   value      = "1"
 }
