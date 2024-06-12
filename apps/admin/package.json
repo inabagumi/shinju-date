@@ -1,7 +1,6 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@hookform/resolvers": "^3.6.0",
     "@sentry/nextjs": "^8.9.2",
     "@sentry/profiling-node": "^8.9.2",
     "@supabase/supabase-js": "^2.43.4",
