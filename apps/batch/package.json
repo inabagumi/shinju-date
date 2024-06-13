@@ -8,7 +8,7 @@
     "@shinju-date/logging": "workspace:*",
     "@shinju-date/retryable-fetch": "workspace:*",
     "@supabase/supabase-js": "^2.43.4",
-    "@upstash/ratelimit": "^1.2.0",
+    "@upstash/ratelimit": "^1.2.1",
     "@upstash/redis": "^1.31.5",
     "mime": "^4.0.3",
     "nanoid": "^5.0.7",
