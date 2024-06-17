@@ -4,7 +4,7 @@
   "devDependencies": {
     "@inabagumi/prettier-config": "^3.0.0",
     "prettier": "~3.3.2",
-    "prettier-plugin-tailwindcss": "^0.6.4",
+    "prettier-plugin-tailwindcss": "^0.6.5",
     "tailwindcss": "^4.0.0-alpha.16",
     "turbo": "^2.0.4",
     "typescript": "~5.4.5"
