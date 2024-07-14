@@ -147,7 +147,7 @@ export function Input({
     <input
       aria-describedby={invalid && id ? `${id}-error-message` : undefined}
       aria-invalid={invalid ? true : undefined}
-      disabled={disabled ?? pending ? true : undefined}
+      disabled={disabled ?? (pending ? true : undefined)}
       id={newId ?? id}
       name={newName ?? name}
       onChange={handleChange}
