@@ -7,7 +7,7 @@
     "@shinju-date/helpers": "workspace:*",
     "@shinju-date/logging": "workspace:*",
     "@shinju-date/retryable-fetch": "workspace:*",
-    "@supabase/supabase-js": "^2.44.3",
+    "@supabase/supabase-js": "^2.44.4",
     "@upstash/ratelimit": "^1.2.1",
     "@upstash/redis": "^1.32.0",
     "mime": "^4.0.4",
