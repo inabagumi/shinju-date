@@ -22,7 +22,7 @@
     "@types/react-dom": "^18.3.0",
     "eslint": "~8.57.0",
     "postcss-load-config": "^6.0.1",
-    "typescript": "~5.5.3"
+    "typescript": "~5.5.4"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
