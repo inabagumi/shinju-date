@@ -5,7 +5,7 @@
     "@inabagumi/prettier-config": "^3.0.0",
     "prettier": "~3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.5",
-    "tailwindcss": "^4.0.0-alpha.17",
+    "tailwindcss": "^4.0.0-alpha.18",
     "turbo": "^2.0.9",
     "typescript": "~5.5.4"
   },
