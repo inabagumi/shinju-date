@@ -9,7 +9,7 @@
     "@shinju-date/retryable-fetch": "workspace:*",
     "@supabase/supabase-js": "^2.45.0",
     "@upstash/ratelimit": "^2.0.1",
-    "@upstash/redis": "^1.33.0",
+    "@upstash/redis": "^1.34.0",
     "mime": "^4.0.4",
     "nanoid": "^5.0.7",
     "next": "^15.0.0-rc.0",
