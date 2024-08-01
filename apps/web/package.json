@@ -2,8 +2,8 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@mdx-js/react": "^3.0.1",
-    "@sentry/nextjs": "^8.21.0",
-    "@sentry/profiling-node": "^8.21.0",
+    "@sentry/nextjs": "^8.22.0",
+    "@sentry/profiling-node": "^8.22.0",
     "@shinju-date/helpers": "workspace:*",
     "@shinju-date/logging": "workspace:*",
     "@shinju-date/retryable-fetch": "workspace:*",
