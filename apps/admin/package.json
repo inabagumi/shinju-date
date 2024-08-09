@@ -7,14 +7,14 @@
     "next": "^15.0.0-rc.0",
     "react": "^19.0.0-rc-fb9a90fa48-20240614",
     "react-dom": "^19.0.0-rc-fb9a90fa48-20240614",
-    "tailwindcss": "^4.0.0-alpha.18",
+    "tailwindcss": "^4.0.0-alpha.19",
     "zod": "^3.23.8"
   },
   "description": "",
   "devDependencies": {
     "@shinju-date/database": "workspace:*",
     "@shinju-date/eslint-config": "workspace:*",
-    "@tailwindcss/postcss": "^4.0.0-alpha.18",
+    "@tailwindcss/postcss": "^4.0.0-alpha.19",
     "@tsconfig/next": "^2.0.3",
     "@tsconfig/strictest": "^2.0.5",
     "@types/node": "^20.14.15",
