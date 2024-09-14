@@ -62,7 +62,7 @@ importers:
         version: link:../../packages/eslint-config
       '@tailwindcss/postcss':
         specifier: ^4.0.0-alpha.23
-        version: 4.0.0-alpha.23(postcss@8.4.45)
+        version: 4.0.0-alpha.23(postcss@8.4.47)
       '@tsconfig/next':
         specifier: ^2.0.3
         version: 2.0.3
@@ -83,7 +83,7 @@ importers:
         version: 8.57.0
       postcss-load-config:
         specifier: ^6.0.1
-        version: 6.0.1(postcss@8.4.45)
+        version: 6.0.1(postcss@8.4.47)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -265,7 +265,7 @@ importers:
         version: link:../../packages/eslint-config
       '@tailwindcss/postcss':
         specifier: ^4.0.0-alpha.23
-        version: 4.0.0-alpha.23(postcss@8.4.45)
+        version: 4.0.0-alpha.23(postcss@8.4.47)
       '@tsconfig/next':
         specifier: ^2.0.3
         version: 2.0.3
@@ -300,11 +300,11 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@20.16.5)
       postcss:
-        specifier: ^8.4.45
-        version: 8.4.45
+        specifier: ^8.4.47
+        version: 8.4.47
       postcss-load-config:
         specifier: ^6.0.1
-        version: 6.0.1(postcss@8.4.45)
+        version: 6.0.1(postcss@8.4.47)
       rehype-external-links:
         specifier: ^3.0.0
         version: 3.0.0
@@ -340,7 +340,7 @@ importers:
         version: 1.192.5
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(postcss@8.4.45)(typescript@5.6.2)
+        version: 8.2.4(postcss@8.4.47)(typescript@5.6.2)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -386,7 +386,7 @@ importers:
         version: 15.0.0-rc.0(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-fb9a90fa48-20240614(react@19.0.0-rc-fb9a90fa48-20240614))(react@19.0.0-rc-fb9a90fa48-20240614)
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(postcss@8.4.45)(typescript@5.6.2)
+        version: 8.2.4(postcss@8.4.47)(typescript@5.6.2)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -407,7 +407,7 @@ importers:
         version: 8.57.0
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(postcss@8.4.45)(typescript@5.6.2)
+        version: 8.2.4(postcss@8.4.47)(typescript@5.6.2)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -432,7 +432,7 @@ importers:
         version: 8.57.0
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(postcss@8.4.45)(typescript@5.6.2)
+        version: 8.2.4(postcss@8.4.47)(typescript@5.6.2)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -457,7 +457,7 @@ importers:
         version: 8.57.0
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(postcss@8.4.45)(typescript@5.6.2)
+        version: 8.2.4(postcss@8.4.47)(typescript@5.6.2)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -4017,8 +4017,8 @@ packages:
     resolution: {integrity: sha512-PS08Iboia9mts/2ygV3eLpY5ghnUcfLV/EXTOW1E2qYxJKGGBUtNjN76FYHnMs36RmARn41bC0AZmn+rR0OVpQ==}
     engines: {node: ^10 || ^12 || >=14}
 
-  postcss@8.4.45:
-    resolution: {integrity: sha512-7KTLTdzdZZYscUc65XmjFiB73vBhBfbPztCYdUNvlaso9PrzjzcmjqBPR0lNGkcVlcO4BjiO5rK/qNz+XAen1Q==}
+  postcss@8.4.47:
+    resolution: {integrity: sha512-56rxCq7G/XfB4EkXq9Egn5GCqugWvDFjafDOThIdMBsI15iqPqR5r15TfSr1YPYeEI19YeaXMCbY6u88Y76GLQ==}
     engines: {node: ^10 || ^12 || >=14}
 
   postgres-array@2.0.0:
@@ -6246,12 +6246,12 @@ snapshots:
       '@tailwindcss/oxide-linux-x64-musl': 4.0.0-alpha.23
       '@tailwindcss/oxide-win32-x64-msvc': 4.0.0-alpha.23
 
-  '@tailwindcss/postcss@4.0.0-alpha.23(postcss@8.4.45)':
+  '@tailwindcss/postcss@4.0.0-alpha.23(postcss@8.4.47)':
     dependencies:
       '@tailwindcss/node': 4.0.0-alpha.23
       '@tailwindcss/oxide': 4.0.0-alpha.23
       lightningcss: 1.26.0
-      postcss-import: 16.1.0(postcss@8.4.45)
+      postcss-import: 16.1.0(postcss@8.4.47)
       tailwindcss: 4.0.0-alpha.23
     transitivePeerDependencies:
       - postcss
@@ -9342,18 +9342,18 @@ snapshots:
 
   possible-typed-array-names@1.0.0: {}
 
-  postcss-import@16.1.0(postcss@8.4.45):
+  postcss-import@16.1.0(postcss@8.4.47):
     dependencies:
-      postcss: 8.4.45
+      postcss: 8.4.47
       postcss-value-parser: 4.2.0
       read-cache: 1.0.0
       resolve: 1.22.8
 
-  postcss-load-config@6.0.1(postcss@8.4.45):
+  postcss-load-config@6.0.1(postcss@8.4.47):
     dependencies:
       lilconfig: 3.1.2
     optionalDependencies:
-      postcss: 8.4.45
+      postcss: 8.4.47
 
   postcss-value-parser@4.2.0: {}
 
@@ -9363,7 +9363,7 @@ snapshots:
       picocolors: 1.1.0
       source-map-js: 1.2.1
 
-  postcss@8.4.45:
+  postcss@8.4.47:
     dependencies:
       nanoid: 3.3.7
       picocolors: 1.1.0
@@ -9967,7 +9967,7 @@ snapshots:
 
   tslib@2.7.0: {}
 
-  tsup@8.2.4(postcss@8.4.45)(typescript@5.6.2):
+  tsup@8.2.4(postcss@8.4.47)(typescript@5.6.2):
     dependencies:
       bundle-require: 5.0.0(esbuild@0.23.1)
       cac: 6.7.14
@@ -9979,14 +9979,14 @@ snapshots:
       globby: 11.1.0
       joycon: 3.1.1
       picocolors: 1.1.0
-      postcss-load-config: 6.0.1(postcss@8.4.45)
+      postcss-load-config: 6.0.1(postcss@8.4.47)
       resolve-from: 5.0.0
       rollup: 4.21.2
       source-map: 0.8.0-beta.0
       sucrase: 3.35.0
       tree-kill: 1.2.2
     optionalDependencies:
-      postcss: 8.4.45
+      postcss: 8.4.47
       typescript: 5.6.2
     transitivePeerDependencies:
       - jiti
