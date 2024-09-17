@@ -339,8 +339,8 @@ importers:
         specifier: ^1.192.5
         version: 1.192.5
       tsup:
-        specifier: ^8.2.4
-        version: 8.2.4(postcss@8.4.47)(typescript@5.6.2)
+        specifier: ^8.3.0
+        version: 8.3.0(postcss@8.4.47)(typescript@5.6.2)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -385,8 +385,8 @@ importers:
         specifier: ^15.0.0-rc.0
         version: 15.0.0-rc.0(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-fb9a90fa48-20240614(react@19.0.0-rc-fb9a90fa48-20240614))(react@19.0.0-rc-fb9a90fa48-20240614)
       tsup:
-        specifier: ^8.2.4
-        version: 8.2.4(postcss@8.4.47)(typescript@5.6.2)
+        specifier: ^8.3.0
+        version: 8.3.0(postcss@8.4.47)(typescript@5.6.2)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -406,8 +406,8 @@ importers:
         specifier: ^8.57.1
         version: 8.57.1
       tsup:
-        specifier: ^8.2.4
-        version: 8.2.4(postcss@8.4.47)(typescript@5.6.2)
+        specifier: ^8.3.0
+        version: 8.3.0(postcss@8.4.47)(typescript@5.6.2)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -431,8 +431,8 @@ importers:
         specifier: ^8.57.1
         version: 8.57.1
       tsup:
-        specifier: ^8.2.4
-        version: 8.2.4(postcss@8.4.47)(typescript@5.6.2)
+        specifier: ^8.3.0
+        version: 8.3.0(postcss@8.4.47)(typescript@5.6.2)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -456,8 +456,8 @@ importers:
         specifier: ^8.57.1
         version: 8.57.1
       tsup:
-        specifier: ^8.2.4
-        version: 8.2.4(postcss@8.4.47)(typescript@5.6.2)
+        specifier: ^8.3.0
+        version: 8.3.0(postcss@8.4.47)(typescript@5.6.2)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -2733,6 +2733,14 @@ packages:
   fb-watchman@2.0.2:
     resolution: {integrity: sha512-p5161BqbuCaSnB8jIbzQHOlpgsPmK5rJVDfDKO91Axs5NC1uu3HRQm6wt9cd9/+GtQQIO53JdGXXoyDpTAsgYA==}
 
+  fdir@6.3.0:
+    resolution: {integrity: sha512-QOnuT+BOtivR77wYvCWHfGt9s4Pz1VIMbD463vegT5MLqNXy8rYFT/lPVEqf/bhYeT6qmqrNHhsX+rWwe3rOCQ==}
+    peerDependencies:
+      picomatch: ^3 || ^4
+    peerDependenciesMeta:
+      picomatch:
+        optional: true
+
   fetch-blob@3.2.0:
     resolution: {integrity: sha512-7yAQpD2UMJzLi1Dqv7qFYnPbaPx7ZfFK6PiIxQ4PfkGPyNyl2Ugx+a/umUonmKqjhM4DnfbMvdX6otXq83soQQ==}
     engines: {node: ^12.20 || >= 14.13}
@@ -3970,6 +3978,10 @@ packages:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
 
+  picomatch@4.0.2:
+    resolution: {integrity: sha512-M7BAV6Rlcy5u+m6oPhAPFgJTzAioX/6B0DxyvDlo9l8+T3nLKbrczg2WLUyzd45L8RqfUMyGPzekbMvX2Ldkwg==}
+    engines: {node: '>=12'}
+
   pify@2.3.0:
     resolution: {integrity: sha512-udgsAY+fTnvv7kI7aaxbqwWNb0AHiB0qBO89PZKPkoTmGOgdbrHDKD+0B2X4uTfJ/FT1R09r9gTsjUjNJotuog==}
     engines: {node: '>=0.10.0'}
@@ -4560,6 +4572,10 @@ packages:
   tiny-case@1.0.3:
     resolution: {integrity: sha512-Eet/eeMhkO6TX8mnUteS9zgPbUMQa4I6Kkp5ORiBD5476/m+PIRiumP5tmh5ioJpH7k51Kehawy2UDfsnxxY8Q==}
 
+  tinyglobby@0.2.6:
+    resolution: {integrity: sha512-NbBoFBpqfcgd1tCiO8Lkfdk+xrA7mlLR9zgvZcZWQQwU63XAfUePyd6wZBaU93Hqw347lHnwFzttAkemHzzz4g==}
+    engines: {node: '>=12.0.0'}
+
   tmpl@1.0.5:
     resolution: {integrity: sha512-3f0uOEAQwIqGuWW2MVzYg8fV/QNnc/IpuJNG837rLuczAaLVHslWHZQj4IGiEl5Hs3kkbhwL9Ab7Hrsmuj+Smw==}
 
@@ -4605,8 +4621,8 @@ packages:
   tslib@2.7.0:
     resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==}
 
-  tsup@8.2.4:
-    resolution: {integrity: sha512-akpCPePnBnC/CXgRrcy72ZSntgIEUa1jN0oJbbvpALWKNOz1B7aM+UVDWGRGIO/T/PZugAESWDJUAb5FD48o8Q==}
+  tsup@8.3.0:
+    resolution: {integrity: sha512-ALscEeyS03IomcuNdFdc0YWGVIkwH1Ws7nfTbAPuoILvEV2hpGQAY72LIOjglGo4ShWpZfpBqP/jpQVCzqYQag==}
     engines: {node: '>=18'}
     hasBin: true
     peerDependencies:
@@ -7596,6 +7612,10 @@ snapshots:
     dependencies:
       bser: 2.1.1
 
+  fdir@6.3.0(picomatch@4.0.2):
+    optionalDependencies:
+      picomatch: 4.0.2
+
   fetch-blob@3.2.0:
     dependencies:
       node-domexception: 1.0.0
@@ -9332,6 +9352,8 @@ snapshots:
 
   picomatch@2.3.1: {}
 
+  picomatch@4.0.2: {}
+
   pify@2.3.0: {}
 
   pirates@4.0.6: {}
@@ -9930,6 +9952,11 @@ snapshots:
 
   tiny-case@1.0.3: {}
 
+  tinyglobby@0.2.6:
+    dependencies:
+      fdir: 6.3.0(picomatch@4.0.2)
+      picomatch: 4.0.2
+
   tmpl@1.0.5: {}
 
   to-fast-properties@2.0.0: {}
@@ -9967,7 +9994,7 @@ snapshots:
 
   tslib@2.7.0: {}
 
-  tsup@8.2.4(postcss@8.4.47)(typescript@5.6.2):
+  tsup@8.3.0(postcss@8.4.47)(typescript@5.6.2):
     dependencies:
       bundle-require: 5.0.0(esbuild@0.23.1)
       cac: 6.7.14
@@ -9976,7 +10003,6 @@ snapshots:
       debug: 4.3.7
       esbuild: 0.23.1
       execa: 5.1.1
-      globby: 11.1.0
       joycon: 3.1.1
       picocolors: 1.1.0
       postcss-load-config: 6.0.1(postcss@8.4.47)
@@ -9984,6 +10010,7 @@ snapshots:
       rollup: 4.21.2
       source-map: 0.8.0-beta.0
       sucrase: 3.35.0
+      tinyglobby: 0.2.6
       tree-kill: 1.2.2
     optionalDependencies:
       postcss: 8.4.47
