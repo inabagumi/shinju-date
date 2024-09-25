@@ -21,7 +21,7 @@ export function createSupabaseClient<
 >(
   url: string | undefined = process.env['NEXT_PUBLIC_SUPABASE_URL'],
   key: string | undefined = process.env['SUPABASE_SERVICE_ROLE_KEY'],
-  options?: SupabaseClientOptions<SchemaName> | undefined
+  options?: SupabaseClientOptions<SchemaName>
 ): SupabaseClient<Database, SchemaName> {
   if (!url || !key) {
     throw new TypeError('Supabase URL and key are required.')

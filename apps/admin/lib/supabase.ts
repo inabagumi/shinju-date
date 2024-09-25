@@ -59,7 +59,7 @@ export function createSupabaseClient<
 >(
   url: string,
   key: string,
-  options?: ClientOptions<SchemaName> | undefined
+  options?: ClientOptions<SchemaName>
 ): SupabaseClient<Database, SchemaName>
 export function createSupabaseClient<
   Database = DefaultDatabase,
@@ -68,7 +68,7 @@ export function createSupabaseClient<
     : string & keyof Database
 >(
   key: string,
-  options?: ClientOptions<SchemaName> | undefined
+  options?: ClientOptions<SchemaName>
 ): SupabaseClient<Database, SchemaName>
 export function createSupabaseClient<
   Database = DefaultDatabase,
@@ -90,9 +90,9 @@ export function createSupabaseClient<
     ? 'public'
     : string & keyof Database
 >(
-  urlOrKeyOrOptions?: string | ClientOptions<SchemaName> | undefined,
-  keyOrOptions?: string | ClientOptions<SchemaName> | undefined,
-  options?: ClientOptions<SchemaName> | undefined
+  urlOrKeyOrOptions?: string | ClientOptions<SchemaName>,
+  keyOrOptions?: string | ClientOptions<SchemaName>,
+  options?: ClientOptions<SchemaName>
 ): SupabaseClient<Database, SchemaName> {
   const key =
     typeof keyOrOptions === 'string'

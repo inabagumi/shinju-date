@@ -1,8 +1,8 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^8.4.0",
-    "@typescript-eslint/parser": "^8.4.0",
+    "@typescript-eslint/eslint-plugin": "^8.7.0",
+    "@typescript-eslint/parser": "^8.7.0",
     "eslint-config-next": "^15.0.0-rc.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-config-turbo": "^2.1.2"
