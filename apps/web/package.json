@@ -20,7 +20,7 @@
     "react-dom": "^19.0.0-rc-fb9a90fa48-20240614",
     "react-infinite-scroll-component": "^6.1.0",
     "swr": "^2.2.5",
-    "tailwind-merge": "^2.5.2",
+    "tailwind-merge": "^2.5.3",
     "tailwindcss": "^4.0.0-alpha.26",
     "temporal-polyfill": "^0.2.5",
     "ufo": "^1.5.4",
