@@ -22,7 +22,7 @@
   "name": "@shinju-date/helpers",
   "private": true,
   "peerDependencies": {
-    "next": "^14.0.0 || ^15.0.0-rc"
+    "next": "^14.0.0 || ^15.0.0-rc || ^15.0.0-canary"
   },
   "repository": {
     "directory": "packages/helpers",
