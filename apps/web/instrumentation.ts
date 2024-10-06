@@ -8,7 +8,7 @@ export async function register() {
     const commonSentryOptions = {
       dsn,
       enabled: process.env['VERCEL_ENV'] === 'production',
-      tracesSampleRate: 1.0
+      tracesSampleRate: 0.333
     }
 
     if (process.env['NEXT_RUNTIME'] === 'nodejs') {
@@ -19,7 +19,7 @@ export async function register() {
       Sentry.init({
         ...commonSentryOptions,
         integrations: [nodeProfilingIntegration()],
-        profilesSampleRate: 1.0
+        profilesSampleRate: 0.333
       })
     }
 

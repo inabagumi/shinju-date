@@ -11,9 +11,9 @@ if (dsn) {
       Sentry.browserProfilingIntegration(),
       Sentry.replayIntegration()
     ],
-    profilesSampleRate: 1.0,
+    profilesSampleRate: 0.333,
     replaysOnErrorSampleRate: 1.0,
     replaysSessionSampleRate: 0.1,
-    tracesSampleRate: 1.0
+    tracesSampleRate: 0.333
   })
 }
