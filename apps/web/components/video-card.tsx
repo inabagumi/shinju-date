@@ -33,10 +33,10 @@ function Thumbnail({ video }: { video: Video }) {
   return (
     <Image
       alt=""
-      blurDataURL={blurDataURL}
+      blurDataURL={blurDataURL ?? ''}
       className="object-cover object-center"
       fill
-      placeholder={blurDataURL ? 'blur' : undefined}
+      placeholder={blurDataURL ? 'blur' : 'empty'}
       sizes="(max-width: 996px) 100vw, 30vw"
       src={publicURL}
     />

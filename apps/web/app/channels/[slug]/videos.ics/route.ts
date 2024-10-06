@@ -11,19 +11,21 @@ import { supabaseClient } from '@/lib/supabase'
 export const dynamic = 'force-static'
 export const revalidate = 600
 
-type Params = {
-  slug: string
-}
-
-type Props = {
-  params: Params
-}
-
-export async function GET(_req: Request, { params }: Props): Promise<Response> {
+export async function GET(
+  _req: Request,
+  {
+    params
+  }: Readonly<{
+    params: Promise<{
+      slug: string
+    }>
+  }>
+): Promise<Response> {
+  const { slug } = await params
   const { count, error } = await supabaseClient
     .from('channels')
     .select('*', { count: 'exact', head: true })
-    .eq('slug', params.slug)
+    .eq('slug', slug)
 
   if (error) {
     return createErrorResponse(error.message, { status: 500 })
@@ -48,7 +50,7 @@ export async function GET(_req: Request, { params }: Props): Promise<Response> {
         title
       `
     )
-    .eq('channels.slug', params.slug)
+    .eq('channels.slug', slug)
     .lt('published_at', now.add({ days: 7 }).toInstant().toJSON())
     .order('published_at', { ascending: false })
     .limit(100)

@@ -10,18 +10,15 @@ import { getChannelBySlug } from '@/lib/supabase'
 
 export const revalidate = 600 // 10 minutes
 
-type Params = {
-  slug: string
-}
-
-type Props = {
-  params: Params
-}
-
 export async function generateMetadata({
   params
-}: Props): Promise<Metadata | null> {
-  const channel = await getChannelBySlug(params.slug)
+}: Readonly<{
+  params: Promise<{
+    slug: string
+  }>
+}>): Promise<Metadata | null> {
+  const { slug } = await params
+  const channel = await getChannelBySlug(slug)
 
   if (!channel) {
     return null
@@ -45,8 +42,15 @@ export async function generateMetadata({
   }
 }
 
-export default async function ChannelSchedulePage({ params }: Props) {
-  const channel = await getChannelBySlug(params.slug)
+export default async function ChannelSchedulePage({
+  params
+}: Readonly<{
+  params: Promise<{
+    slug: string
+  }>
+}>) {
+  const { slug } = await params
+  const channel = await getChannelBySlug(slug)
 
   if (!channel) {
     notFound()

@@ -11,7 +11,7 @@
     },
     {
       "extends": "monorepo:nextjs",
-      "followTag": "rc"
+      "followTag": "canary"
     },
     {
       "extends": "monorepo:react",

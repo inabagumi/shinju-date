@@ -9,25 +9,22 @@ import { parseQueries } from '@/lib/url'
 
 export const revalidate = 300 // 5 minutes
 
-type Params = {
-  queries?: string[]
-  slug: string
-}
-
-type Props = {
-  params: Params
-}
-
 export async function generateMetadata({
   params
-}: Props): Promise<Metadata | null> {
-  const channel = await getChannelBySlug(params.slug)
+}: Readonly<{
+  params: Promise<{
+    queries?: string[]
+    slug: string
+  }>
+}>): Promise<Metadata | null> {
+  const { queries, slug } = await params
+  const channel = await getChannelBySlug(slug)
 
   if (!channel) {
     return null
   }
 
-  const query = parseQueries(params.queries)
+  const query = parseQueries(queries)
   const title = query
     ? `『${query}』の検索結果 - ${channel.name}`
     : `『${channel.name}』の動画一覧`
@@ -56,14 +53,22 @@ export async function generateMetadata({
   }
 }
 
-export default async function VideosPage({ params }: Props) {
-  const channel = await getChannelBySlug(params.slug)
+export default async function VideosPage({
+  params
+}: Readonly<{
+  params: Promise<{
+    queries?: string[]
+    slug: string
+  }>
+}>) {
+  const { queries, slug } = await params
+  const channel = await getChannelBySlug(slug)
 
   if (!channel) {
     notFound()
   }
 
-  const query = parseQueries(params.queries)
+  const query = parseQueries(queries)
   const videos = await fetchVideosByChannelIDs({
     channelIDs: [channel.id],
     query

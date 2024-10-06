@@ -57,7 +57,7 @@ export async function signIn(
     }
   }
 
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabaseClient = createSupabaseClient({
     cookieStore
   })

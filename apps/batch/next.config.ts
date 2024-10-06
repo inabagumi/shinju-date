@@ -1,14 +1,9 @@
-// @ts-check
-
 import { withSentryConfig } from '@sentry/nextjs'
+import type { NextConfig } from 'next'
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  experimental: {
-    instrumentationHook: true
-  },
-  async headers() {
-    return [
+const nextConfig: NextConfig = {
+  headers() {
+    return Promise.resolve([
       {
         headers: [
           {
@@ -18,17 +13,13 @@ const nextConfig = {
         ],
         source: '/:path*'
       }
-    ]
+    ])
   },
   reactStrictMode: true,
   serverExternalPackages: ['@sentry/profiling-node']
 }
 
-/**
- * @param {import('next').NextConfig} nextConfig
- * @returns {import('next').NextConfig}
- */
-function withPlugins(nextConfig) {
+function withPlugins(nextConfig: NextConfig): NextConfig {
   if (process.env['NEXT_PUBLIC_SENTRY_DSN']) {
     return withSentryConfig(nextConfig, {
       automaticVercelMonitors: false,
