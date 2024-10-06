@@ -74,7 +74,11 @@ export async function POST(request: NextRequest) {
           const multi = redisClient.multi()
 
           if (addableWords.length > 0) {
-            multi.sadd(RECOMENDATION_QUERIES_KEY, ...addableWords)
+            multi.sadd(
+              RECOMENDATION_QUERIES_KEY,
+              addableWords[0],
+              ...addableWords.slice(1)
+            )
           }
 
           if (deletableWords.length > 0) {
