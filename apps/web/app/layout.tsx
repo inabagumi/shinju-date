@@ -1,6 +1,5 @@
 import './globals.css'
 import { Analytics } from '@vercel/analytics/react'
-import { SpeedInsights } from '@vercel/speed-insights/next'
 import { type Metadata, type Viewport } from 'next'
 import Link from 'next/link'
 import { type ReactNode } from 'react'
@@ -120,7 +119,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </footer>
 
         <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   )
