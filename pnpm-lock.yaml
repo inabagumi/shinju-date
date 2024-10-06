@@ -39,7 +39,7 @@ importers:
         specifier: ^2.45.4
         version: 2.45.4
       next:
-        specifier: ~15.0.0-canary.179
+        specifier: 15.0.0-canary.179
         version: 15.0.0-canary.179(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-fb9a90fa48-20240614(react@19.0.0-rc-fb9a90fa48-20240614))(react@19.0.0-rc-fb9a90fa48-20240614)
       react:
         specifier: ^19.0.0-rc-fb9a90fa48-20240614
@@ -124,7 +124,7 @@ importers:
         specifier: ^5.0.7
         version: 5.0.7
       next:
-        specifier: ~15.0.0-canary.179
+        specifier: 15.0.0-canary.179
         version: 15.0.0-canary.179(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-fb9a90fa48-20240614(react@19.0.0-rc-fb9a90fa48-20240614))(react@19.0.0-rc-fb9a90fa48-20240614)
       p-queue:
         specifier: ^8.0.1
@@ -215,7 +215,7 @@ importers:
         specifier: ^4.6.0
         version: 4.6.0
       next:
-        specifier: ~15.0.0-canary.179
+        specifier: 15.0.0-canary.179
         version: 15.0.0-canary.179(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-fb9a90fa48-20240614(react@19.0.0-rc-fb9a90fa48-20240614))(react@19.0.0-rc-fb9a90fa48-20240614)
       react:
         specifier: ^19.0.0-rc-fb9a90fa48-20240614
@@ -252,7 +252,7 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1(webpack@5.94.0)
       '@next/mdx':
-        specifier: ~15.0.0-canary.179
+        specifier: 15.0.0-canary.179
         version: 15.0.0-canary.179(@mdx-js/loader@3.0.1(webpack@5.94.0))(@mdx-js/react@3.0.1(@types/react@18.3.11)(react@19.0.0-rc-fb9a90fa48-20240614))
       '@shinju-date/database':
         specifier: workspace:*
@@ -330,7 +330,7 @@ importers:
         specifier: ^8.57.1
         version: 8.57.1
       next:
-        specifier: ~15.0.0-canary.179
+        specifier: 15.0.0-canary.179
         version: 15.0.0-canary.179(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-fb9a90fa48-20240614(react@19.0.0-rc-fb9a90fa48-20240614))(react@19.0.0-rc-fb9a90fa48-20240614)
       supabase:
         specifier: ^1.200.3
@@ -351,7 +351,7 @@ importers:
         specifier: ^8.8.0
         version: 8.8.0(eslint@8.57.1)(typescript@5.6.2)
       eslint-config-next:
-        specifier: ~15.0.0-canary.179
+        specifier: 15.0.0-canary.179
         version: 15.0.0-canary.179(eslint@8.57.1)(typescript@5.6.2)
       eslint-config-prettier:
         specifier: ^9.1.0
@@ -379,7 +379,7 @@ importers:
         specifier: ^8.57.1
         version: 8.57.1
       next:
-        specifier: ~15.0.0-canary.179
+        specifier: 15.0.0-canary.179
         version: 15.0.0-canary.179(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-fb9a90fa48-20240614(react@19.0.0-rc-fb9a90fa48-20240614))(react@19.0.0-rc-fb9a90fa48-20240614)
       tsup:
         specifier: ^8.3.0
