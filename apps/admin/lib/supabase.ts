@@ -1,19 +1,23 @@
-import { type default as DefaultDatabase } from '@shinju-date/database'
 import {
   type SupabaseClient,
   type SupabaseClientOptions,
   createClient
 } from '@supabase/supabase-js'
-import { type cookies } from 'next/headers'
+import type { default as DefaultDatabase } from '@shinju-date/database'
+import type { cookies } from 'next/headers'
 
 const isProd = process.env['NODE_ENV'] === 'production'
 
 class CookieStorage
   implements Pick<Storage, 'getItem' | 'removeItem' | 'setItem'>
 {
-  #cookieStore: ReturnType<typeof cookies>
+  #cookieStore: Awaited<ReturnType<typeof cookies>>
 
-  constructor({ cookieStore }: { cookieStore: ReturnType<typeof cookies> }) {
+  constructor({
+    cookieStore
+  }: {
+    cookieStore: Awaited<ReturnType<typeof cookies>>
+  }) {
     this.#cookieStore = cookieStore
   }
 
@@ -48,7 +52,7 @@ export type TypedSupabaseClient<
 > = SupabaseClient<Database, SchemaName>
 
 type ClientOptions<SchemaName> = SupabaseClientOptions<SchemaName> & {
-  cookieStore?: ReturnType<typeof cookies>
+  cookieStore?: Awaited<ReturnType<typeof cookies>>
 }
 
 export function createSupabaseClient<

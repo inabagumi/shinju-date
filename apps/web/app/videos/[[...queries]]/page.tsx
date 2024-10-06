@@ -7,16 +7,15 @@ import { parseQueries } from '@/lib/url'
 
 export const revalidate = 300 // 5 minutes
 
-type Params = {
-  queries?: string[]
-}
-
-type Props = {
-  params: Params
-}
-
-export function generateMetadata({ params }: Props): Metadata {
-  const query = parseQueries(params.queries)
+export async function generateMetadata({
+  params
+}: Readonly<{
+  params: Promise<{
+    queries?: string[]
+  }>
+}>): Promise<Metadata> {
+  const { queries } = await params
+  const query = parseQueries(queries)
   const title = query ? `『${query}』の検索結果` : '動画一覧'
 
   return {
@@ -41,8 +40,15 @@ export function generateMetadata({ params }: Props): Metadata {
   }
 }
 
-export default async function VideosPage({ params }: Props) {
-  const query = parseQueries(params.queries)
+export default async function VideosPage({
+  params
+}: Readonly<{
+  params: Promise<{
+    queries?: string[]
+  }>
+}>) {
+  const { queries } = await params
+  const query = parseQueries(queries)
 
   const title = query ? `『${query}』の検索結果` : '動画一覧'
   const videos = await fetchVideosByChannelIDs({ query })

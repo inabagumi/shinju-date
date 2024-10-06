@@ -1,3 +1,5 @@
+import type { Instrumentation } from 'next'
+
 export async function register() {
   const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
 
@@ -28,3 +30,14 @@ export async function register() {
     }
   }
 }
+
+export const onRequestError: Instrumentation.onRequestError =
+  async function onRequestError(...args) {
+    const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
+
+    if (dsn) {
+      const { captureRequestError } = await import('@sentry/nextjs')
+
+      return captureRequestError(...args)
+    }
+  }
