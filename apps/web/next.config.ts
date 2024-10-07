@@ -12,7 +12,8 @@ const supabaseBaseURL =
 const nextConfig: NextConfig = {
   experimental: {
     dynamicIO: true,
-    ppr: true
+    ppr: true,
+    pprFallbacks: true
   },
   headers() {
     return Promise.resolve([
