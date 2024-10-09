@@ -11,13 +11,13 @@ import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
 
 type TimerContextValue = {
-  now?: Temporal.ZonedDateTime
+  now?: Temporal.ZonedDateTime | undefined
 }
 
 const TimerContext = createContext<TimerContextValue>({})
 
-export function TimerProvider({ children }: { children: ReactNode }) {
-  const [now, setNow] = useState(() => Temporal.Now.zonedDateTimeISO(timeZone))
+export function TimerProvider({ children }: Readonly<{ children: ReactNode }>) {
+  const [now, setNow] = useState<Temporal.ZonedDateTime>()
 
   useEffect(() => {
     const timer = setInterval(() => {
