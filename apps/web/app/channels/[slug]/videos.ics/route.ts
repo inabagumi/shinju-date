@@ -8,8 +8,8 @@ import {
 import { timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
 
-export const dynamic = 'force-static'
 export const revalidate = 600
+export const runtime = 'edge'
 
 export async function GET(
   _req: Request,

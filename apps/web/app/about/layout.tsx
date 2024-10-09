@@ -4,7 +4,6 @@ import SimpleDocument from '@/components/simple-document'
 import { title as siteName } from '@/lib/constants'
 
 export const dynamic = 'force-static'
-export const revalidate = 120
 
 export const metadata: Metadata = {
   alternates: {
