@@ -11,6 +11,7 @@ import hero from './_assets/hero.jpg'
 
 const RECOMMENDATION_QUERIES_COUNT = 4
 
+export const experimental_ppr = true
 export const revalidate = 600 // 10 minutes
 
 export const metadata: Metadata = {
@@ -35,9 +36,9 @@ export const metadata: Metadata = {
 
 async function HomeTimeline({
   videosPromise
-}: {
+}: Readonly<{
   videosPromise: ReturnType<typeof fetchNotEndedVideos>
-}) {
+}>) {
   const videos = await videosPromise
 
   return videos.length > 0 ? (
@@ -50,12 +51,14 @@ async function HomeTimeline({
 function RecommendationQueriesSkeleton() {
   return (
     <div className="py-4">
-      <ul className="mx-auto grid max-w-6xl grid-cols-4 gap-2 px-2">
+      <ul className="mx-auto grid max-w-6xl grid-cols-2 gap-2 px-2 md:grid-cols-4">
         {Array(RECOMMENDATION_QUERIES_COUNT)
           .fill(0)
           .map((_, i) => (
             <li className="" key={`pill-${i}`}>
-              <span className="h-4 w-20 animate-pulse bg-774-nevy-100 dark:bg-zinc-800" />
+              <span className="block rounded-xl py-2 px-1 text-center hover:bg-774-nevy-100 dark:hover:bg-zinc-600">
+                <span className="inline-block h-4 w-20 animate-pulse bg-774-nevy-100 dark:bg-zinc-800" />
+              </span>
             </li>
           ))}
       </ul>
@@ -65,9 +68,9 @@ function RecommendationQueriesSkeleton() {
 
 async function RecommendationQueries({
   queriesPromise
-}: {
+}: Readonly<{
   queriesPromise: Promise<string[]>
-}) {
+}>) {
   const queries = await queriesPromise
 
   if (queries.length < 1) {

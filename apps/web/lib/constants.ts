@@ -5,3 +5,5 @@ export const tagline =
   'ななしいんく所属タレントの配信スケジュールや動画の検索ができるウェブサービス'
 export const themeColor = '#1e0064' // var(--color-primary)
 export const timeZone = 'Asia/Tokyo'
+
+export const SEARCH_RESULT_COUNT = 6
