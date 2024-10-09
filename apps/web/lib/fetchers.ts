@@ -1,14 +1,15 @@
-import { type Tables } from '@shinju-date/database'
+'use server'
+
 import { startOfHour } from '@shinju-date/temporal-fns'
-import { type Fetcher } from 'swr'
-import { type SWRInfiniteFetcher } from 'swr/infinite'
 import { Temporal } from 'temporal-polyfill'
-import { timeZone } from '@/lib/constants'
+import { getCurrentTime } from '@/lib/cached-functions'
+import { SEARCH_RESULT_COUNT, timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
+import type { Tables } from '@shinju-date/database'
+import type { Fetcher } from 'swr'
+import type { SWRInfiniteFetcher } from 'swr/infinite'
 
-export const SEARCH_RESULT_COUNT = 6
-
-export const DEFAULT_SEARCH_SELECT = `
+const DEFAULT_SEARCH_SELECT = `
   channel:channels!inner (name, slug),
   duration,
   slug,
@@ -40,7 +41,8 @@ export const fetchNotEndedVideos: Fetcher<
   Video[],
   FetchNotEndedVideosOptions
 > = async ({ channelIDs = [] }) => {
-  const baseTime = Temporal.Now.instant()
+  const epochNanoseconds = await getCurrentTime()
+  const baseTime = Temporal.Instant.fromEpochNanoseconds(epochNanoseconds)
   const hour = startOfHour(baseTime.toZonedDateTimeISO(timeZone))
   const since = hour.toInstant().subtract({ hours: 5 })
   const until = hour.add({ weeks: 1 }).toInstant()
@@ -92,10 +94,20 @@ export const fetchNotEndedVideos: Fetcher<
   })
 }
 
+async function getDefaultBaseTime() {
+  const epochNanoseconds = await getCurrentTime()
+
+  return Temporal.Instant.fromEpochNanoseconds(epochNanoseconds)
+    .toZonedDateTimeISO(timeZone)
+    .startOfDay()
+    .add({ months: 1 })
+    .toInstant()
+}
+
 type FetchVideosByChannelIDsOptions = {
   channelIDs?: number[]
   query?: string
-  until?: Temporal.Instant
+  until?: bigint
 }
 
 type KeyLoader = (
@@ -106,20 +118,16 @@ type KeyLoader = (
 export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
   Video[],
   KeyLoader
-> = async ({
-  channelIDs,
-  query = '',
-  until = Temporal.Now.zonedDateTimeISO(timeZone)
-    .startOfDay()
-    .add({ months: 1 })
-    .toInstant()
-}) => {
+> = async ({ channelIDs, query = '', until }) => {
+  const baseTime = until
+    ? Temporal.Instant.fromEpochNanoseconds(until)
+    : await getDefaultBaseTime()
   const { data: videos, error } = await supabaseClient
     .rpc('search_videos_v2', {
       channel_ids: channelIDs ?? [],
       perpage: SEARCH_RESULT_COUNT,
       query,
-      until: until.toJSON()
+      until: baseTime.toJSON()
     })
     .select<string, Video>(DEFAULT_SEARCH_SELECT)
 

@@ -5,11 +5,8 @@ import { useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite from 'swr/infinite'
 import { Temporal } from 'temporal-polyfill'
-import {
-  SEARCH_RESULT_COUNT,
-  type Video,
-  fetchVideosByChannelIDs
-} from '@/lib/fetchers'
+import { SEARCH_RESULT_COUNT } from '@/lib/constants'
+import { type Video, fetchVideosByChannelIDs } from '@/lib/fetchers'
 import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 
 export function SearchResultsSkeleton() {
@@ -43,7 +40,7 @@ export default function SearchResults({
       return {
         channelIDs: channels && channels.map((channel) => channel.id),
         query,
-        until
+        until: until?.epochNanoseconds
       }
     },
     fetchVideosByChannelIDs,
