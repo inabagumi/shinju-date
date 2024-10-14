@@ -230,8 +230,8 @@ importers:
         specifier: ^2.2.5
         version: 2.2.5(react@19.0.0-rc-fb9a90fa48-20240614)
       tailwind-merge:
-        specifier: ^2.5.3
-        version: 2.5.3
+        specifier: ^2.5.4
+        version: 2.5.4
       tailwindcss:
         specifier: ^4.0.0-alpha.26
         version: 4.0.0-alpha.26
@@ -4436,8 +4436,8 @@ packages:
     peerDependencies:
       react: ^16.11.0 || ^17.0.0 || ^18.0.0
 
-  tailwind-merge@2.5.3:
-    resolution: {integrity: sha512-d9ZolCAIzom1nf/5p4LdD5zvjmgSxY0BGgdSvmXIoMYAiPdAW/dSpP7joCDYFY7r/HkEa2qmPtkgsu0xjQeQtw==}
+  tailwind-merge@2.5.4:
+    resolution: {integrity: sha512-0q8cfZHMu9nuYP/b5Shb7Y7Sh1B7Nnl5GqNr1U+n2p6+mybvRtayrQ+0042Z5byvTA8ihjlP8Odo8/VnHbZu4Q==}
 
   tailwindcss@4.0.0-alpha.26:
     resolution: {integrity: sha512-jHLs/18tHTLWkuaWMrTFdeF8qM0ZqCtZHo/YvtZOuhZGA9wW1TVpIvPkAHECXRSp4JiTKBkCzUPdv505kMkgow==}
@@ -9766,7 +9766,7 @@ snapshots:
       react: 19.0.0-rc-fb9a90fa48-20240614
       use-sync-external-store: 1.2.2(react@19.0.0-rc-fb9a90fa48-20240614)
 
-  tailwind-merge@2.5.3: {}
+  tailwind-merge@2.5.4: {}
 
   tailwindcss@4.0.0-alpha.26: {}
 
