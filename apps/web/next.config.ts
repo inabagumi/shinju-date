@@ -28,6 +28,7 @@ const nextConfig: NextConfig = {
               "form-action 'none'",
               "frame-ancestors 'none'",
               "img-src 'self' data:",
+              "manifest-src 'self'",
               "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'"
             ].join('; ')
