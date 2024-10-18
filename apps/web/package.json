@@ -1,7 +1,7 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@mdx-js/react": "^3.0.1",
+    "@mdx-js/react": "^3.1.0",
     "@sentry/nextjs": "^8.34.0",
     "@sentry/profiling-node": "^8.34.0",
     "@shinju-date/helpers": "workspace:*",
@@ -28,7 +28,7 @@
   "description": "",
   "devDependencies": {
     "@jest/types": "^29.6.3",
-    "@mdx-js/loader": "^3.0.1",
+    "@mdx-js/loader": "^3.1.0",
     "@next/mdx": "15.0.0-canary.197",
     "@shinju-date/database": "workspace:*",
     "@shinju-date/eslint-config": "workspace:*",
