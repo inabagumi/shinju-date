@@ -19,6 +19,20 @@ const nextConfig: NextConfig = {
       {
         headers: [
           {
+            key: 'Content-Security-Policy',
+            value: [
+              "base-uri 'none'",
+              "connect-src 'self'",
+              "default-src 'none'",
+              "font-src 'self'",
+              "form-action 'none'",
+              "frame-ancestors 'none'",
+              "img-src 'self' data:",
+              "script-src 'self' 'unsafe-inline'",
+              "style-src 'self' 'unsafe-inline'"
+            ].join('; ')
+          },
+          {
             key: 'Document-Policy',
             value: 'js-profiling'
           }
