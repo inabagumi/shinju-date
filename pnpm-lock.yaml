@@ -176,8 +176,8 @@ importers:
   apps/web:
     dependencies:
       '@mdx-js/react':
-        specifier: ^3.0.1
-        version: 3.0.1(@types/react@18.3.11)(react@19.0.0-rc-fb9a90fa48-20240614)
+        specifier: ^3.1.0
+        version: 3.1.0(@types/react@18.3.11)(react@19.0.0-rc-fb9a90fa48-20240614)
       '@sentry/nextjs':
         specifier: ^8.34.0
         version: 8.34.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.26.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.53.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.26.0(@opentelemetry/api@1.9.0))(next@15.0.0-canary.197(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-fb9a90fa48-20240614(react@19.0.0-rc-fb9a90fa48-20240614))(react@19.0.0-rc-fb9a90fa48-20240614))(react@19.0.0-rc-fb9a90fa48-20240614)(webpack@5.95.0)
@@ -249,11 +249,11 @@ importers:
         specifier: ^29.6.3
         version: 29.6.3
       '@mdx-js/loader':
-        specifier: ^3.0.1
-        version: 3.0.1(webpack@5.95.0)
+        specifier: ^3.1.0
+        version: 3.1.0(webpack@5.95.0)
       '@next/mdx':
         specifier: 15.0.0-canary.197
-        version: 15.0.0-canary.197(@mdx-js/loader@3.0.1(webpack@5.95.0))(@mdx-js/react@3.0.1(@types/react@18.3.11)(react@19.0.0-rc-fb9a90fa48-20240614))
+        version: 15.0.0-canary.197(@mdx-js/loader@3.1.0(webpack@5.95.0))(@mdx-js/react@3.1.0(@types/react@18.3.11)(react@19.0.0-rc-fb9a90fa48-20240614))
       '@shinju-date/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -1033,16 +1033,19 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@mdx-js/loader@3.0.1':
-    resolution: {integrity: sha512-YbYUt7YyEOdFxhyuCWmLKf5vKhID/hJAojEUnheJk4D8iYVLFQw+BAoBWru/dHGch1omtmZOPstsmKPyBF68Tw==}
+  '@mdx-js/loader@3.1.0':
+    resolution: {integrity: sha512-xU/lwKdOyfXtQGqn3VnJjlDrmKXEvMi1mgYxVmukEUtVycIz1nh7oQ40bKTd4cA7rLStqu0740pnhGYxGoqsCg==}
     peerDependencies:
       webpack: '>=5'
+    peerDependenciesMeta:
+      webpack:
+        optional: true
 
   '@mdx-js/mdx@3.0.1':
     resolution: {integrity: sha512-eIQ4QTrOWyL3LWEe/bu6Taqzq2HQvHcyTMaOrI95P2/LmJE7AsfPfgJGuFLPVqBUE1BC1rik3VIhU+s9u72arA==}
 
-  '@mdx-js/react@3.0.1':
-    resolution: {integrity: sha512-9ZrPIU4MGf6et1m1ov3zKf+q9+deetI51zprKB1D/z3NOb+rUxxtEl3mCjW5wTGh6VhRdwPueh1oRzi6ezkA8A==}
+  '@mdx-js/react@3.1.0':
+    resolution: {integrity: sha512-QjHtSaoameoalGnKDT3FoIl4+9RwyTmo9ZJGBdLOks/YOiWHoRDI3PUwEzOE7kEmGcV3AFcp9K6dYu9rEuKLAQ==}
     peerDependencies:
       '@types/react': '>=16'
       react: '>=16'
@@ -5455,10 +5458,11 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@mdx-js/loader@3.0.1(webpack@5.95.0)':
+  '@mdx-js/loader@3.1.0(webpack@5.95.0)':
     dependencies:
       '@mdx-js/mdx': 3.0.1
       source-map: 0.7.4
+    optionalDependencies:
       webpack: 5.95.0
     transitivePeerDependencies:
       - supports-color
@@ -5491,7 +5495,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@mdx-js/react@3.0.1(@types/react@18.3.11)(react@19.0.0-rc-fb9a90fa48-20240614)':
+  '@mdx-js/react@3.1.0(@types/react@18.3.11)(react@19.0.0-rc-fb9a90fa48-20240614)':
     dependencies:
       '@types/mdx': 2.0.13
       '@types/react': 18.3.11
@@ -5503,12 +5507,12 @@ snapshots:
     dependencies:
       fast-glob: 3.3.1
 
-  '@next/mdx@15.0.0-canary.197(@mdx-js/loader@3.0.1(webpack@5.95.0))(@mdx-js/react@3.0.1(@types/react@18.3.11)(react@19.0.0-rc-fb9a90fa48-20240614))':
+  '@next/mdx@15.0.0-canary.197(@mdx-js/loader@3.1.0(webpack@5.95.0))(@mdx-js/react@3.1.0(@types/react@18.3.11)(react@19.0.0-rc-fb9a90fa48-20240614))':
     dependencies:
       source-map: 0.7.4
     optionalDependencies:
-      '@mdx-js/loader': 3.0.1(webpack@5.95.0)
-      '@mdx-js/react': 3.0.1(@types/react@18.3.11)(react@19.0.0-rc-fb9a90fa48-20240614)
+      '@mdx-js/loader': 3.1.0(webpack@5.95.0)
+      '@mdx-js/react': 3.1.0(@types/react@18.3.11)(react@19.0.0-rc-fb9a90fa48-20240614)
 
   '@next/swc-darwin-arm64@15.0.0-canary.197':
     optional: true
