@@ -5,37 +5,19 @@ resource "vercel_project" "this" {
     repo              = "inabagumi/shinju-date"
     type              = "github"
   }
-  ignore_command             = "npx turbo-ignore"
-  name                       = "shinju-date"
-  public_source              = false
-  root_directory             = "apps/web"
+  ignore_command = "npx turbo-ignore"
+  name           = "shinju-date"
+  public_source  = false
+  root_directory = "apps/web"
+  resource_config = {
+    function_default_cpu_type = "standard"
+    function_default_timeout  = 30
+  }
   serverless_function_region = "hnd1"
   team_id                    = var.vercel_team_id
   vercel_authentication = {
     deployment_type = "standard_protection"
   }
-}
-
-resource "vercel_project_domain" "date" {
-  domain     = "shinju.date"
-  project_id = vercel_project.this.id
-  team_id    = vercel_project.this.team_id
-}
-
-resource "vercel_project_domain" "cafe" {
-  domain               = "search.animare.cafe"
-  project_id           = vercel_project.this.id
-  redirect             = vercel_project_domain.date.domain
-  redirect_status_code = 308
-  team_id              = vercel_project.this.team_id
-}
-
-resource "vercel_project_domain" "ink" {
-  domain               = "schedule.774.ink"
-  project_id           = vercel_project.this.id
-  redirect             = vercel_project_domain.date.domain
-  redirect_status_code = 308
-  team_id              = vercel_project.this.team_id
 }
 
 resource "vercel_project_environment_variable" "enable_experimental_corepack" {
@@ -101,21 +83,19 @@ resource "vercel_project" "admin" {
     repo              = "inabagumi/shinju-date"
     type              = "github"
   }
-  ignore_command             = "npx turbo-ignore"
-  name                       = "shinju-date-admin"
-  public_source              = false
-  root_directory             = "apps/admin"
+  ignore_command = "npx turbo-ignore"
+  name           = "shinju-date-admin"
+  public_source  = false
+  root_directory = "apps/admin"
+  resource_config = {
+    function_default_cpu_type = "standard_legacy"
+    function_default_timeout  = 30
+  }
   serverless_function_region = "hnd1"
   team_id                    = var.vercel_team_id
   vercel_authentication = {
     deployment_type = "standard_protection"
   }
-}
-
-resource "vercel_project_domain" "admin" {
-  domain     = "admin.shinju.date"
-  project_id = vercel_project.admin.id
-  team_id    = vercel_project.admin.team_id
 }
 
 resource "vercel_project_environment_variable" "admin_enable_experimental_corepack" {
@@ -173,10 +153,14 @@ resource "vercel_project" "batch" {
     repo              = "inabagumi/shinju-date"
     type              = "github"
   }
-  ignore_command             = "npx turbo-ignore"
-  name                       = "shinju-date-batch"
-  public_source              = false
-  root_directory             = "apps/batch"
+  ignore_command = "npx turbo-ignore"
+  name           = "shinju-date-batch"
+  public_source  = false
+  root_directory = "apps/batch"
+  resource_config = {
+    function_default_cpu_type = "standard"
+    function_default_timeout  = 120
+  }
   serverless_function_region = "hnd1"
   team_id                    = var.vercel_team_id
   vercel_authentication = {
