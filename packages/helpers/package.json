@@ -6,7 +6,7 @@
     "@tsconfig/node20": "^20.1.4",
     "@tsconfig/strictest": "^2.0.5",
     "eslint": "^8.57.1",
-    "next": "15.0.0-canary.203",
+    "next": "15.0.1-canary.0",
     "tsup": "^8.3.0",
     "typescript": "~5.6.3"
   },
@@ -22,7 +22,7 @@
   "name": "@shinju-date/helpers",
   "private": true,
   "peerDependencies": {
-    "next": "^14.0.0 || ^15.0.0-rc || ^15.0.0-canary"
+    "next": "^14.0.0 || ^15.0.0-rc || ^15.0.0-canary || ^15.0.1-canary"
   },
   "repository": {
     "directory": "packages/helpers",
