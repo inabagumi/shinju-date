@@ -10,11 +10,6 @@
       "matchPackagePatterns": ["^@tailwindcss/"]
     },
     {
-      "automerge": false,
-      "extends": "monorepo:nextjs",
-      "followTag": "canary"
-    },
-    {
       "extends": "monorepo:react",
       "followTag": "rc"
     }
