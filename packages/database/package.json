@@ -8,7 +8,7 @@
     "@tsconfig/strictest": "^2.0.5",
     "@types/cookie": "^0.6.0",
     "eslint": "^8.57.1",
-    "next": "15.0.0-canary.203",
+    "next": "15.0.1-canary.0",
     "supabase": "^1.204.3",
     "tsup": "^8.3.0",
     "typescript": "~5.6.3"
@@ -18,7 +18,7 @@
   "main": "./dist/index.js",
   "name": "@shinju-date/database",
   "peerDependencies": {
-    "next": "^14.1.4 || ^15.0.0-rc || ^15.0.0-canary"
+    "next": "^14.1.4 || ^15.0.0-rc || ^15.0.0-canary || ^15.0.1-canary"
   },
   "private": true,
   "repository": {
