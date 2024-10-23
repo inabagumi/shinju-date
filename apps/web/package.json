@@ -36,7 +36,7 @@
     "@tsconfig/next": "^2.0.3",
     "@tsconfig/strictest": "^2.0.5",
     "@types/dedent": "^0.7.2",
-    "@types/jest": "^29.5.13",
+    "@types/jest": "^29.5.14",
     "@types/lodash.groupby": "^4.6.9",
     "@types/mdx": "^2.0.13",
     "@types/node": "^20.16.14",
