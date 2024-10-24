@@ -40,5 +40,9 @@ function Link({
 }
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
-  return { a: Link, ...components }
+  return {
+    // @ts-expect-error mdx/typesがReact v19に対応していないので無視させる。
+    a: Link,
+    ...components
+  }
 }
