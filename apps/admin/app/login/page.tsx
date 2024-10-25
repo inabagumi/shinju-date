@@ -23,7 +23,7 @@ export default function Login() {
               メールアドレス
             </Label>
             <Input
-              className="w-full rounded-md border border-slate-300 bg-white py-1 px-1.5 placeholder:text-slate-300 focus-visible:border-secondary-blue focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+              className="w-full rounded-md border border-slate-300 bg-white px-1.5 py-1 placeholder:text-slate-300 focus-visible:border-secondary-blue focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
               placeholder="admin@example.com"
               required
               type="email"
@@ -35,7 +35,7 @@ export default function Login() {
               パスワード
             </Label>
             <Input
-              className="w-full rounded-md border border-slate-300 bg-white py-1 px-1.5 placeholder:text-slate-300 focus-visible:border-secondary-blue focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+              className="w-full rounded-md border border-slate-300 bg-white px-1.5 py-1 placeholder:text-slate-300 focus-visible:border-secondary-blue focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
               minLength={8}
               placeholder="••••••••"
               required

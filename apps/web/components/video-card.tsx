@@ -92,14 +92,14 @@ export default function VideoCard({
         <Thumbnail video={value} />
 
         {duration.total({ unit: 'second' }) > 0 && (
-          <span className="absolute bottom-0 left-0 m-2 inline-block rounded-md bg-slate-800/80 py-0.5 px-1.5 text-xs font-semibold text-white">
+          <span className="absolute bottom-0 left-0 m-2 inline-block rounded-md bg-slate-800/80 px-1.5 py-0.5 text-xs font-semibold text-white">
             <time dateTime={duration.toString()}>
               {formatDuration(duration)}
             </time>
           </span>
         )}
         <LiveNow
-          className="absolute top-0 right-0 m-2 inline-block rounded-md bg-774-pink-600 py-0.5 px-1.5 text-xs font-semibold text-774-pink-50"
+          className="absolute top-0 right-0 m-2 inline-block rounded-md bg-774-pink-600 px-1.5 py-0.5 text-xs font-semibold text-774-pink-50"
           duration={duration}
           publishedAt={publishedAt}
         />

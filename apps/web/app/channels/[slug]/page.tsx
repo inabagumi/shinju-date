@@ -64,7 +64,7 @@ export default async function ChannelSchedulePage({
     <SimpleDocument
       button={
         <Link
-          className="inline-block rounded-lg bg-primary-foreground py-1.5 px-6 text-primary hover:bg-774-nevy-100"
+          className="inline-block rounded-lg bg-primary-foreground px-6 py-1.5 text-primary hover:bg-774-nevy-100"
           href={`/channels/${channel.slug}/videos`}
           role="button"
         >
