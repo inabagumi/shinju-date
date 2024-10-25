@@ -56,7 +56,7 @@ function RecommendationQueriesSkeleton() {
           .fill(0)
           .map((_, i) => (
             <li className="" key={`pill-${i}`}>
-              <span className="block rounded-xl py-2 px-1 text-center hover:bg-774-nevy-100 dark:hover:bg-zinc-600">
+              <span className="block rounded-xl px-1 py-2 text-center hover:bg-774-nevy-100 dark:hover:bg-zinc-600">
                 <span className="inline-block h-4 w-20 animate-pulse bg-774-nevy-100 dark:bg-zinc-800" />
               </span>
             </li>
@@ -84,7 +84,7 @@ async function RecommendationQueries({
           <li key={query}>
             <Link
               aria-label={`『${query}』の検索結果`}
-              className="block rounded-xl py-2 px-1 text-center hover:bg-774-nevy-100 dark:hover:bg-zinc-600"
+              className="block rounded-xl px-1 py-2 text-center hover:bg-774-nevy-100 dark:hover:bg-zinc-600"
               href={`/videos/${encodeURIComponent(query)}`}
               title={`『${query}』の検索結果`}
             >
@@ -109,7 +109,7 @@ export default function SchedulePage() {
     <>
       <div className="relative aspect-[4/3] bg-slate-700 sm:aspect-video">
         <div className="absolute right-0 bottom-0 left-0 z-20 bg-gradient-to-t from-slate-900/80 text-white">
-          <h1 className="py-6 px-8 text-center md:text-left">
+          <h1 className="px-8 py-6 text-center md:text-left">
             <svg
               aria-label="SHINJU DATE"
               className="inline-block h-14 w-auto drop-shadow-2xl"

@@ -7,7 +7,7 @@ export default async function TermsPage() {
     <dl className="">
       {terms.map(({ readings, synonyms, term }) => (
         <div
-          className="space-y-4 border-secondary-blue py-4 px-2 not-last:border-b"
+          className="space-y-4 border-secondary-blue px-2 py-4 not-last:border-b"
           key={term}
         >
           <dt className="text-lg font-semibold">{term}</dt>
@@ -16,7 +16,7 @@ export default async function TermsPage() {
               {[...(synonyms ?? []), ''].map((synonym) => (
                 <div className="py-2" key={synonym}>
                   <input
-                    className="inline-block w-full rounded-md border border-774-blue-300 py-1 px-2 focus:outline-0 focus-visible:border-secondary-blue"
+                    className="inline-block w-full rounded-md border border-774-blue-300 px-2 py-1 focus:outline-0 focus-visible:border-secondary-blue"
                     type="text"
                     value={synonym}
                   />
@@ -27,7 +27,7 @@ export default async function TermsPage() {
               {[...(readings ?? []), ''].map((reading) => (
                 <div className="py-2" key={reading}>
                   <input
-                    className="inline-block w-full rounded-md border border-774-blue-300 py-1 px-2 focus:outline-0 focus-visible:border-secondary-blue"
+                    className="inline-block w-full rounded-md border border-774-blue-300 px-2 py-1 focus:outline-0 focus-visible:border-secondary-blue"
                     type="text"
                     value={reading}
                   />

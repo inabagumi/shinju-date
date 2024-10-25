@@ -7,7 +7,7 @@ export default function ChannelScheduleLoading() {
       button={
         <a
           aria-disabled
-          className="inline-block rounded-lg bg-primary-foreground py-1.5 px-6 text-primary"
+          className="inline-block rounded-lg bg-primary-foreground px-6 py-1.5 text-primary"
           role="button"
         >
           動画一覧
