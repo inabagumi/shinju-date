@@ -89,7 +89,7 @@ importers:
         version: 8.57.1
       postcss-load-config:
         specifier: ^6.0.1
-        version: 6.0.1(jiti@2.4.0)(postcss@8.4.47)
+        version: 6.0.1(jiti@2.4.0)(postcss@8.4.48)
       typescript:
         specifier: ~5.6.3
         version: 5.6.3
@@ -303,11 +303,11 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@20.17.6)
       postcss:
-        specifier: ^8.4.47
-        version: 8.4.47
+        specifier: ^8.4.48
+        version: 8.4.48
       postcss-load-config:
         specifier: ^6.0.1
-        version: 6.0.1(jiti@2.4.0)(postcss@8.4.47)
+        version: 6.0.1(jiti@2.4.0)(postcss@8.4.48)
       rehype-external-links:
         specifier: ^3.0.0
         version: 3.0.0
@@ -343,7 +343,7 @@ importers:
         version: 1.219.2
       tsup:
         specifier: ^8.3.5
-        version: 8.3.5(jiti@2.4.0)(postcss@8.4.47)(typescript@5.6.3)
+        version: 8.3.5(jiti@2.4.0)(postcss@8.4.48)(typescript@5.6.3)
       typescript:
         specifier: ~5.6.3
         version: 5.6.3
@@ -389,7 +389,7 @@ importers:
         version: 15.0.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-fb9a90fa48-20240614(react@19.0.0-rc-fb9a90fa48-20240614))(react@19.0.0-rc-fb9a90fa48-20240614)
       tsup:
         specifier: ^8.3.5
-        version: 8.3.5(jiti@2.4.0)(postcss@8.4.47)(typescript@5.6.3)
+        version: 8.3.5(jiti@2.4.0)(postcss@8.4.48)(typescript@5.6.3)
       typescript:
         specifier: ~5.6.3
         version: 5.6.3
@@ -410,7 +410,7 @@ importers:
         version: 8.57.1
       tsup:
         specifier: ^8.3.5
-        version: 8.3.5(jiti@2.4.0)(postcss@8.4.47)(typescript@5.6.3)
+        version: 8.3.5(jiti@2.4.0)(postcss@8.4.48)(typescript@5.6.3)
       typescript:
         specifier: ~5.6.3
         version: 5.6.3
@@ -435,7 +435,7 @@ importers:
         version: 8.57.1
       tsup:
         specifier: ^8.3.5
-        version: 8.3.5(jiti@2.4.0)(postcss@8.4.47)(typescript@5.6.3)
+        version: 8.3.5(jiti@2.4.0)(postcss@8.4.48)(typescript@5.6.3)
       typescript:
         specifier: ~5.6.3
         version: 5.6.3
@@ -460,7 +460,7 @@ importers:
         version: 8.57.1
       tsup:
         specifier: ^8.3.5
-        version: 8.3.5(jiti@2.4.0)(postcss@8.4.47)(typescript@5.6.3)
+        version: 8.3.5(jiti@2.4.0)(postcss@8.4.48)(typescript@5.6.3)
       typescript:
         specifier: ~5.6.3
         version: 5.6.3
@@ -3946,8 +3946,8 @@ packages:
     resolution: {integrity: sha512-PS08Iboia9mts/2ygV3eLpY5ghnUcfLV/EXTOW1E2qYxJKGGBUtNjN76FYHnMs36RmARn41bC0AZmn+rR0OVpQ==}
     engines: {node: ^10 || ^12 || >=14}
 
-  postcss@8.4.47:
-    resolution: {integrity: sha512-56rxCq7G/XfB4EkXq9Egn5GCqugWvDFjafDOThIdMBsI15iqPqR5r15TfSr1YPYeEI19YeaXMCbY6u88Y76GLQ==}
+  postcss@8.4.48:
+    resolution: {integrity: sha512-GCRK8F6+Dl7xYniR5a4FYbpBzU8XnZVeowqsQFYdcXuSbChgiks7qybSkbvnaeqv0G0B+dd9/jJgH8kkLDQeEA==}
     engines: {node: ^10 || ^12 || >=14}
 
   postgres-array@2.0.0:
@@ -6246,7 +6246,7 @@ snapshots:
       '@tailwindcss/node': 4.0.0-alpha.31
       '@tailwindcss/oxide': 4.0.0-alpha.31
       lightningcss: 1.28.1
-      postcss: 8.4.47
+      postcss: 8.4.48
       tailwindcss: 4.0.0-alpha.31
 
   '@tsconfig/next@2.0.3': {}
@@ -9217,12 +9217,12 @@ snapshots:
 
   possible-typed-array-names@1.0.0: {}
 
-  postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.47):
+  postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.48):
     dependencies:
       lilconfig: 3.1.2
     optionalDependencies:
       jiti: 2.4.0
-      postcss: 8.4.47
+      postcss: 8.4.48
 
   postcss@8.4.31:
     dependencies:
@@ -9230,7 +9230,7 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  postcss@8.4.47:
+  postcss@8.4.48:
     dependencies:
       nanoid: 3.3.7
       picocolors: 1.1.1
@@ -9872,7 +9872,7 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  tsup@8.3.5(jiti@2.4.0)(postcss@8.4.47)(typescript@5.6.3):
+  tsup@8.3.5(jiti@2.4.0)(postcss@8.4.48)(typescript@5.6.3):
     dependencies:
       bundle-require: 5.0.0(esbuild@0.24.0)
       cac: 6.7.14
@@ -9882,7 +9882,7 @@ snapshots:
       esbuild: 0.24.0
       joycon: 3.1.1
       picocolors: 1.1.1
-      postcss-load-config: 6.0.1(jiti@2.4.0)(postcss@8.4.47)
+      postcss-load-config: 6.0.1(jiti@2.4.0)(postcss@8.4.48)
       resolve-from: 5.0.0
       rollup: 4.25.0
       source-map: 0.8.0-beta.0
@@ -9891,7 +9891,7 @@ snapshots:
       tinyglobby: 0.2.10
       tree-kill: 1.2.2
     optionalDependencies:
-      postcss: 8.4.47
+      postcss: 8.4.48
       typescript: 5.6.3
     transitivePeerDependencies:
       - jiti
