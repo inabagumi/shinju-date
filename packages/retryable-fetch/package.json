@@ -1,7 +1,7 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "p-retry": "^6.2.0"
+    "p-retry": "^6.2.1"
   },
   "description": "",
   "devDependencies": {
