@@ -1,11 +1,13 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^8.16.0",
-    "@typescript-eslint/parser": "^8.16.0",
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.15.0",
+    "@types/node": "^20.17.8",
     "eslint-config-next": "^15.0.3",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-config-turbo": "^2.3.2"
+    "eslint-config-turbo": "^2.3.2",
+    "typescript-eslint": "^8.16.0"
   },
   "description": "",
   "devDependencies": {
@@ -13,7 +15,7 @@
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "main": "./index.json",
+  "main": "./src/index.js",
   "name": "@shinju-date/eslint-config",
   "private": true,
   "repository": {
@@ -23,5 +25,6 @@
   },
   "scripts": {},
   "type": "module",
+  "types": "./src/index.d.ts",
   "version": "1.0.0"
 }
