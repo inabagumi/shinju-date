@@ -2,8 +2,8 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@googleapis/youtube": "^20.0.0",
-    "@sentry/nextjs": "^8.40.0",
-    "@sentry/profiling-node": "^8.40.0",
+    "@sentry/nextjs": "^8.41.0",
+    "@sentry/profiling-node": "^8.41.0",
     "@shinju-date/helpers": "workspace:*",
     "@shinju-date/logging": "workspace:*",
     "@shinju-date/retryable-fetch": "workspace:*",
