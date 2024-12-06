@@ -13,14 +13,6 @@
   "license": "MIT",
   "name": "@shinju-date/monorepo",
   "packageManager": "pnpm@9.14.4",
-  "pnpm": {
-    "overrides": {
-      "@types/react": "npm:types-react@rc",
-      "@types/react-dom": "npm:types-react-dom@rc",
-      "react": "^19.0.0-rc-fb9a90fa48-20240614",
-      "react-dom": "^19.0.0-rc-fb9a90fa48-20240614"
-    }
-  },
   "private": true,
   "scripts": {
     "build": "turbo build",
