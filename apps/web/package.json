@@ -14,7 +14,7 @@
     "dedent": "^1.5.3",
     "ics": "^3.8.1",
     "lodash.groupby": "^4.6.0",
-    "next": "^15.0.3",
+    "next": "^15.0.4",
     "react": "^19.0.0-rc-fb9a90fa48-20240614",
     "react-dom": "^19.0.0-rc-fb9a90fa48-20240614",
     "react-infinite-scroll-component": "^6.1.0",
@@ -29,7 +29,7 @@
   "devDependencies": {
     "@jest/types": "^29.6.3",
     "@mdx-js/loader": "^3.1.0",
-    "@next/mdx": "^15.0.3",
+    "@next/mdx": "^15.0.4",
     "@shinju-date/database": "workspace:*",
     "@shinju-date/eslint-config": "workspace:*",
     "@tailwindcss/postcss": "^4.0.0-beta.5",
