@@ -8,7 +8,7 @@
     "@tsconfig/strictest": "^2.0.5",
     "@types/cookie": "^0.6.0",
     "eslint": "^8.57.1",
-    "next": "^15.0.3",
+    "next": "^15.0.4",
     "supabase": "^2.0.0",
     "tsup": "^8.3.5",
     "typescript": "~5.7.2"
