@@ -33,8 +33,8 @@ importers:
         specifier: ^8.45.0
         version: 8.45.0(@opentelemetry/core@1.29.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.56.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.29.0(@opentelemetry/api@1.9.0))(next@15.1.0(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)(webpack@5.97.1)
       '@sentry/profiling-node':
-        specifier: ^8.44.0
-        version: 8.44.0
+        specifier: ^8.45.0
+        version: 8.45.0
       '@supabase/supabase-js':
         specifier: ^2.47.6
         version: 2.47.6
@@ -97,8 +97,8 @@ importers:
         specifier: ^8.45.0
         version: 8.45.0(@opentelemetry/core@1.29.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.56.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.29.0(@opentelemetry/api@1.9.0))(next@15.1.0(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)(webpack@5.97.1)
       '@sentry/profiling-node':
-        specifier: ^8.44.0
-        version: 8.44.0
+        specifier: ^8.45.0
+        version: 8.45.0
       '@shinju-date/helpers':
         specifier: workspace:*
         version: link:../../packages/helpers
@@ -182,8 +182,8 @@ importers:
         specifier: ^8.45.0
         version: 8.45.0(@opentelemetry/core@1.29.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.56.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.29.0(@opentelemetry/api@1.9.0))(next@15.1.0(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)(webpack@5.97.1)
       '@sentry/profiling-node':
-        specifier: ^8.44.0
-        version: 8.44.0
+        specifier: ^8.45.0
+        version: 8.45.0
       '@shinju-date/helpers':
         specifier: workspace:*
         version: link:../../packages/helpers
@@ -1533,10 +1533,6 @@ packages:
     engines: {node: '>= 10'}
     hasBin: true
 
-  '@sentry/core@8.44.0':
-    resolution: {integrity: sha512-C43eW9Mr1WGpxCeI6pXUl7TeTwR2TwWhuU8wHx2s5eoATDQwbjz9l+JXXjVJf5YXXEwNOZL2WAx/f0diLA5rTQ==}
-    engines: {node: '>=14.18'}
-
   '@sentry/core@8.45.0':
     resolution: {integrity: sha512-4YTuBipWSh4JrtSYS5GxUQBAcAgOIkEoFfFbwVcr3ivijOacJLRXTBn3rpcy1CKjBq0PHDGR+2RGRYC+bNAMxg==}
     engines: {node: '>=14.18'}
@@ -1547,23 +1543,9 @@ packages:
     peerDependencies:
       next: ^13.2.0 || ^14.0 || ^15.0.0-rc.0
 
-  '@sentry/node@8.44.0':
-    resolution: {integrity: sha512-mONfSnPwbkQEr0o5mhuJdLbxeEjyjt9VbYYXmXvHF/gQD7nzLYKkc6mA2rl74ITBZdyyKOTO7OmsSHMfD0f+ZA==}
-    engines: {node: '>=14.18'}
-
   '@sentry/node@8.45.0':
     resolution: {integrity: sha512-a+4csASc7zQlSAGt5AMVTUFn3Rz0qyiU90Hq1ejWLEF11i2FI73TrPVmyYT9bb+/AhzZV0vqmmrL5HVvxp/UGA==}
     engines: {node: '>=14.18'}
-
-  '@sentry/opentelemetry@8.44.0':
-    resolution: {integrity: sha512-zOqDrsLJr6femKKs7Sp00FvsiextrDWNzNfNab3RACCmK3Ezj37Eoag23FHbxjCDuPouqIxLy3cxOygwnb/IoQ==}
-    engines: {node: '>=14.18'}
-    peerDependencies:
-      '@opentelemetry/api': ^1.9.0
-      '@opentelemetry/core': ^1.29.0
-      '@opentelemetry/instrumentation': ^0.56.0
-      '@opentelemetry/sdk-trace-base': ^1.29.0
-      '@opentelemetry/semantic-conventions': ^1.28.0
 
   '@sentry/opentelemetry@8.45.0':
     resolution: {integrity: sha512-qk8TBqk0EO7ggMdun16Wfb38IBN+VQBKwdbs7rbUfKOmXudsDAcz3gg7QfCO7qHoCK8c+fY3cIKoVrQkJ879+Q==}
@@ -1575,8 +1557,8 @@ packages:
       '@opentelemetry/sdk-trace-base': ^1.29.0
       '@opentelemetry/semantic-conventions': ^1.28.0
 
-  '@sentry/profiling-node@8.44.0':
-    resolution: {integrity: sha512-wWuHYR5y9eVve/sKkTnHSt/06CfwyXX5DZNwTbSlfefBwqA8NXiFsPuj09b/GDdO8rFgApJPWQz7l1sI6Gx9dQ==}
+  '@sentry/profiling-node@8.45.0':
+    resolution: {integrity: sha512-vQB/T/ZRQlrHfk/+xDPxpnSekbg2M/TMoYZu68rl4R35dfdmHqyazgH6PlTmItayMJgQuu+q5oUp+w0BFG3VxQ==}
     engines: {node: '>=14.18'}
     hasBin: true
 
@@ -6036,8 +6018,6 @@ snapshots:
       - encoding
       - supports-color
 
-  '@sentry/core@8.44.0': {}
-
   '@sentry/core@8.45.0': {}
 
   '@sentry/nextjs@8.45.0(@opentelemetry/core@1.29.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.56.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.29.0(@opentelemetry/api@1.9.0))(next@15.1.0(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)(webpack@5.97.1)':
@@ -6065,46 +6045,6 @@ snapshots:
       - react
       - supports-color
       - webpack
-
-  '@sentry/node@8.44.0':
-    dependencies:
-      '@opentelemetry/api': 1.9.0
-      '@opentelemetry/context-async-hooks': 1.29.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/core': 1.29.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation': 0.56.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-amqplib': 0.45.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-connect': 0.42.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-dataloader': 0.15.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-express': 0.46.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-fastify': 0.43.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-fs': 0.18.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-generic-pool': 0.42.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-graphql': 0.46.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-hapi': 0.44.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-http': 0.56.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-ioredis': 0.46.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-kafkajs': 0.6.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-knex': 0.43.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-koa': 0.46.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-lru-memoizer': 0.43.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-mongodb': 0.50.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-mongoose': 0.45.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-mysql': 0.44.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-mysql2': 0.44.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-nestjs-core': 0.43.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-pg': 0.49.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-redis-4': 0.45.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-tedious': 0.17.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation-undici': 0.9.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/resources': 1.29.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-trace-base': 1.29.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/semantic-conventions': 1.28.0
-      '@prisma/instrumentation': 5.19.1
-      '@sentry/core': 8.44.0
-      '@sentry/opentelemetry': 8.44.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.29.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.56.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.29.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.28.0)
-      import-in-the-middle: 1.11.3
-    transitivePeerDependencies:
-      - supports-color
 
   '@sentry/node@8.45.0':
     dependencies:
@@ -6146,15 +6086,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@sentry/opentelemetry@8.44.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.29.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.56.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.29.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.28.0)':
-    dependencies:
-      '@opentelemetry/api': 1.9.0
-      '@opentelemetry/core': 1.29.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/instrumentation': 0.56.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-trace-base': 1.29.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/semantic-conventions': 1.28.0
-      '@sentry/core': 8.44.0
-
   '@sentry/opentelemetry@8.45.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.29.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.56.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.29.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.28.0)':
     dependencies:
       '@opentelemetry/api': 1.9.0
@@ -6164,10 +6095,10 @@ snapshots:
       '@opentelemetry/semantic-conventions': 1.28.0
       '@sentry/core': 8.45.0
 
-  '@sentry/profiling-node@8.44.0':
+  '@sentry/profiling-node@8.45.0':
     dependencies:
-      '@sentry/core': 8.44.0
-      '@sentry/node': 8.44.0
+      '@sentry/core': 8.45.0
+      '@sentry/node': 8.45.0
       detect-libc: 2.0.3
       node-abi: 3.71.0
     transitivePeerDependencies:
@@ -7288,7 +7219,7 @@ snapshots:
       eslint: 8.57.1
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.7.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.18.0(eslint@8.57.1)(typescript@5.7.2))(eslint@8.57.1))(eslint@8.57.1)
-      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.18.0(eslint@8.57.1)(typescript@5.7.2))(eslint-import-resolver-typescript@3.7.0)(eslint@8.57.1)
+      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.18.0(eslint@8.57.1)(typescript@5.7.2))(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.18.0(eslint@8.57.1)(typescript@5.7.2))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@8.57.1)
       eslint-plugin-react: 7.37.2(eslint@8.57.1)
       eslint-plugin-react-hooks: 5.1.0(eslint@8.57.1)
@@ -7328,7 +7259,7 @@ snapshots:
       is-glob: 4.0.3
       stable-hash: 0.0.4
     optionalDependencies:
-      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.18.0(eslint@8.57.1)(typescript@5.7.2))(eslint-import-resolver-typescript@3.7.0)(eslint@8.57.1)
+      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.18.0(eslint@8.57.1)(typescript@5.7.2))(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.18.0(eslint@8.57.1)(typescript@5.7.2))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -7343,7 +7274,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.18.0(eslint@8.57.1)(typescript@5.7.2))(eslint-import-resolver-typescript@3.7.0)(eslint@8.57.1):
+  eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.18.0(eslint@8.57.1)(typescript@5.7.2))(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.18.0(eslint@8.57.1)(typescript@5.7.2))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.8
