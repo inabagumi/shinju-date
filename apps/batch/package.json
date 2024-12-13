@@ -3,7 +3,7 @@
   "dependencies": {
     "@googleapis/youtube": "^20.0.0",
     "@sentry/nextjs": "^8.45.0",
-    "@sentry/profiling-node": "^8.44.0",
+    "@sentry/profiling-node": "^8.45.0",
     "@shinju-date/helpers": "workspace:*",
     "@shinju-date/logging": "workspace:*",
     "@shinju-date/retryable-fetch": "workspace:*",
