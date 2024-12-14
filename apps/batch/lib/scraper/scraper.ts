@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs'
 import { type TablesInsert } from '@shinju-date/database'
 import { isNonNullable } from '@shinju-date/helpers'
 import retryableFetch from '@shinju-date/retryable-fetch'
@@ -6,7 +7,6 @@ import { nanoid } from 'nanoid'
 import PQueue from 'p-queue'
 import sharp from 'sharp'
 import { Temporal } from 'temporal-polyfill'
-import { captureException } from '@/lib/sentry'
 import { type TypedSupabaseClient } from '@/lib/supabase'
 import {
   type FilteredYouTubeChannel,
@@ -124,7 +124,7 @@ export class Thumbnail {
       if (result.status === 'fulfilled' && result.value) {
         values.push(result.value)
       } else if (result.status === 'rejected') {
-        captureException(result.reason)
+        Sentry.captureException(result.reason)
       }
     }
 

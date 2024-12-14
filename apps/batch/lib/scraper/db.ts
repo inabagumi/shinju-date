@@ -1,5 +1,5 @@
+import * as Sentry from '@sentry/nextjs'
 import { type Tables, type TablesInsert } from '@shinju-date/database'
-import { captureException } from '@/lib/sentry'
 import { type TypedSupabaseClient } from '@/lib/supabase'
 import { DatabaseError } from './errors'
 import { type SavedVideo } from './types'
@@ -128,7 +128,7 @@ export default class DB {
           thumbnails.push(thumbnail)
         }
       } else {
-        captureException(result.reason)
+        Sentry.captureException(result.reason)
       }
     }
 
@@ -176,7 +176,7 @@ export default class DB {
           videos.push(video)
         }
       } else {
-        captureException(result.reason)
+        Sentry.captureException(result.reason)
       }
     }
 
