@@ -6,7 +6,7 @@
       "groupName": "tailwindcss monorepo",
       "ignoreUnstable": false,
       "matchManagers": ["npm"],
-      "matchPackageNames": ["tailwindcss", "/^@tailwindcss//"]
+      "matchPackageNames": ["@tailwindcss/**", "tailwindcss"]
     }
   ],
   "reviewers": ["ykzts"]
