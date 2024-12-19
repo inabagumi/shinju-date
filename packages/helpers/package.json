@@ -6,7 +6,7 @@
     "@tsconfig/node20": "^20.1.4",
     "@tsconfig/strictest": "^2.0.5",
     "eslint": "^8.57.1",
-    "next": "^15.1.1",
+    "next": "^15.1.2",
     "tsup": "^8.3.5",
     "typescript": "~5.7.2"
   },
