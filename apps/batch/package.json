@@ -29,7 +29,7 @@
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
-    "eslint": "~8.57.1",
+    "eslint": "~9.17.0",
     "typescript": "~5.7.2"
   },
   "homepage": "https://shinju.date/",
