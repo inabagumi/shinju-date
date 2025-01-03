@@ -39,7 +39,7 @@
     "@types/jest": "^29.5.14",
     "@types/lodash.groupby": "^4.6.9",
     "@types/mdx": "^2.0.13",
-    "@types/node": "^22.10.4",
+    "@types/node": "^22.10.5",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "eslint": "~8.57.1",
