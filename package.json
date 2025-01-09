@@ -7,7 +7,7 @@
     "prettier-plugin-tailwindcss": "^0.6.9",
     "tailwindcss": "^4.0.0-beta.8",
     "turbo": "^2.3.3",
-    "typescript": "~5.7.2"
+    "typescript": "~5.7.3"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
