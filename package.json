@@ -12,7 +12,7 @@
   "homepage": "https://shinju.date/",
   "license": "MIT",
   "name": "@shinju-date/monorepo",
-  "packageManager": "pnpm@10.0.0",
+  "packageManager": "pnpm@10.2.1",
   "private": true,
   "scripts": {
     "build": "turbo build",
