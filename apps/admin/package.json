@@ -4,7 +4,7 @@
     "@sentry/nextjs": "^8.54.0",
     "@sentry/profiling-node": "^8.54.0",
     "@supabase/supabase-js": "^2.48.1",
-    "next": "^15.1.6",
+    "next": "^15.1.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwindcss": "^4.0.5",
