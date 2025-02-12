@@ -23,7 +23,7 @@
     "tailwindcss": "^4.0.6",
     "temporal-polyfill": "^0.2.5",
     "ufo": "^1.5.4",
-    "zod": "^3.24.1"
+    "zod": "^3.24.2"
   },
   "description": "",
   "devDependencies": {
