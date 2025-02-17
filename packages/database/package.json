@@ -6,7 +6,7 @@
     "@shinju-date/eslint-config": "workspace:*",
     "@tsconfig/node20": "^20.1.4",
     "@tsconfig/strictest": "^2.0.5",
-    "eslint": "^8.57.1",
+    "eslint": "^9.20.1",
     "next": "^15.1.7",
     "supabase": "^2.12.1",
     "tsup": "^8.3.6",
