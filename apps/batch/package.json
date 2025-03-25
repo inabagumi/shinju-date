@@ -11,7 +11,7 @@
     "@upstash/ratelimit": "^2.0.5",
     "@upstash/redis": "^1.34.6",
     "mime": "^4.0.6",
-    "nanoid": "^5.1.0",
+    "nanoid": "^5.1.5",
     "next": "^15.1.7",
     "p-queue": "^8.1.0",
     "react": "^19.0.0",
