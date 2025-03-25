@@ -318,8 +318,8 @@ importers:
         specifier: workspace:*
         version: link:../eslint-config
       '@tsconfig/node20':
-        specifier: ^20.1.4
-        version: 20.1.4
+        specifier: ^20.1.5
+        version: 20.1.5
       '@tsconfig/strictest':
         specifier: ^2.0.5
         version: 2.0.5
@@ -367,8 +367,8 @@ importers:
         specifier: workspace:*
         version: link:../eslint-config
       '@tsconfig/node20':
-        specifier: ^20.1.4
-        version: 20.1.4
+        specifier: ^20.1.5
+        version: 20.1.5
       '@tsconfig/strictest':
         specifier: ^2.0.5
         version: 2.0.5
@@ -391,8 +391,8 @@ importers:
         specifier: workspace:*
         version: link:../eslint-config
       '@tsconfig/node20':
-        specifier: ^20.1.4
-        version: 20.1.4
+        specifier: ^20.1.5
+        version: 20.1.5
       '@tsconfig/strictest':
         specifier: ^2.0.5
         version: 2.0.5
@@ -416,8 +416,8 @@ importers:
         specifier: workspace:*
         version: link:../eslint-config
       '@tsconfig/node20':
-        specifier: ^20.1.4
-        version: 20.1.4
+        specifier: ^20.1.5
+        version: 20.1.5
       '@tsconfig/strictest':
         specifier: ^2.0.5
         version: 2.0.5
@@ -441,8 +441,8 @@ importers:
         specifier: workspace:*
         version: link:../eslint-config
       '@tsconfig/node20':
-        specifier: ^20.1.4
-        version: 20.1.4
+        specifier: ^20.1.5
+        version: 20.1.5
       '@tsconfig/strictest':
         specifier: ^2.0.5
         version: 2.0.5
@@ -1712,8 +1712,8 @@ packages:
   '@tsconfig/next@2.0.3':
     resolution: {integrity: sha512-b4aKvmdWnv9aUy+NStUFlefirk3SItW20OJtbi5/ue9oMRaQtUYbN5zsr7OmV3rlx6Gp6h7A82gPoCXhrNGVPQ==}
 
-  '@tsconfig/node20@20.1.4':
-    resolution: {integrity: sha512-sqgsT69YFeLWf5NtJ4Xq/xAF8p4ZQHlmGW74Nu2tD4+g5fAsposc4ZfaaPixVu4y01BEiDCWLRDCvDM5JOsRxg==}
+  '@tsconfig/node20@20.1.5':
+    resolution: {integrity: sha512-Vm8e3WxDTqMGPU4GATF9keQAIy1Drd7bPwlgzKJnZtoOsTm1tduUTbDjg0W5qERvGuxPI2h9RbMufH0YdfBylA==}
 
   '@tsconfig/strictest@2.0.5':
     resolution: {integrity: sha512-ec4tjL2Rr0pkZ5hww65c+EEPYwxOi4Ryv+0MtjeaSQRJyq322Q27eOQiFbuNgw2hpL4hB1/W/HBGk3VKS43osg==}
@@ -6354,7 +6354,7 @@ snapshots:
 
   '@tsconfig/next@2.0.3': {}
 
-  '@tsconfig/node20@20.1.4': {}
+  '@tsconfig/node20@20.1.5': {}
 
   '@tsconfig/strictest@2.0.5': {}
 
@@ -7349,7 +7349,7 @@ snapshots:
       eslint: 8.57.1
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.8.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.24.1(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1))(eslint@8.57.1)
-      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.24.1(eslint@8.57.1)(typescript@5.7.3))(eslint-import-resolver-typescript@3.8.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.24.1(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1)
+      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.24.1(eslint@8.57.1)(typescript@5.7.3))(eslint-import-resolver-typescript@3.8.0)(eslint@8.57.1)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@8.57.1)
       eslint-plugin-react: 7.37.4(eslint@8.57.1)
       eslint-plugin-react-hooks: 5.1.0(eslint@8.57.1)
@@ -7389,7 +7389,7 @@ snapshots:
       stable-hash: 0.0.4
       tinyglobby: 0.2.10
     optionalDependencies:
-      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.24.1(eslint@8.57.1)(typescript@5.7.3))(eslint-import-resolver-typescript@3.8.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.24.1(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1)
+      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.24.1(eslint@8.57.1)(typescript@5.7.3))(eslint-import-resolver-typescript@3.8.0)(eslint@8.57.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -7404,7 +7404,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.24.1(eslint@8.57.1)(typescript@5.7.3))(eslint-import-resolver-typescript@3.8.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.24.1(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1):
+  eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.24.1(eslint@8.57.1)(typescript@5.7.3))(eslint-import-resolver-typescript@3.8.0)(eslint@8.57.1):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.8

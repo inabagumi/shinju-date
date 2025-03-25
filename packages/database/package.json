@@ -4,7 +4,7 @@
   "description": "",
   "devDependencies": {
     "@shinju-date/eslint-config": "workspace:*",
-    "@tsconfig/node20": "^20.1.4",
+    "@tsconfig/node20": "^20.1.5",
     "@tsconfig/strictest": "^2.0.5",
     "eslint": "^8.57.1",
     "next": "^15.1.7",
