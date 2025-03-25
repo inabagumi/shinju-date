@@ -91,8 +91,8 @@ importers:
   apps/batch:
     dependencies:
       '@googleapis/youtube':
-        specifier: ^20.0.0
-        version: 20.0.0
+        specifier: ^23.0.0
+        version: 23.0.0
       '@sentry/nextjs':
         specifier: ^8.55.0
         version: 8.55.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.2.3(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)(webpack@5.98.0)
@@ -798,8 +798,8 @@ packages:
     resolution: {integrity: sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
-  '@googleapis/youtube@20.0.0':
-    resolution: {integrity: sha512-wdt1J0JoKYhvpoS2XIRHX0g/9ul/B0fQeeJAhuuBIdYINuuLt6/oZYZZCBmkuhtkA3IllXgqgAXOjLtLRAnR2g==}
+  '@googleapis/youtube@23.0.0':
+    resolution: {integrity: sha512-ztYSuxvSz+iZGL2hu9GJ0QN8gCYhGueApP/w0K4elkkwy725wEy9/+aPvJKjMbNINTyaonS8YJdx5FLBmhiQtA==}
     engines: {node: '>=12.0.0'}
 
   '@humanwhocodes/config-array@0.13.0':
@@ -5256,7 +5256,7 @@ snapshots:
 
   '@eslint/js@8.57.1': {}
 
-  '@googleapis/youtube@20.0.0':
+  '@googleapis/youtube@23.0.0':
     dependencies:
       googleapis-common: 7.2.0
     transitivePeerDependencies:
