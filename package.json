@@ -6,7 +6,7 @@
     "prettier": "~3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^4.1.2",
-    "turbo": "^2.4.2",
+    "turbo": "^2.5.0",
     "typescript": "~5.8.2"
   },
   "homepage": "https://shinju.date/",
