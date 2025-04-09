@@ -76,8 +76,8 @@ importers:
         specifier: ^19.1.0
         version: 19.1.0
       '@types/react-dom':
-        specifier: ^19.1.1
-        version: 19.1.1(@types/react@19.1.0)
+        specifier: ^19.1.2
+        version: 19.1.2(@types/react@19.1.0)
       eslint:
         specifier: ~8.57.1
         version: 8.57.1
@@ -164,8 +164,8 @@ importers:
         specifier: ^19.1.0
         version: 19.1.0
       '@types/react-dom':
-        specifier: ^19.1.1
-        version: 19.1.1(@types/react@19.1.0)
+        specifier: ^19.1.2
+        version: 19.1.2(@types/react@19.1.0)
       eslint:
         specifier: ~8.57.1
         version: 8.57.1
@@ -288,8 +288,8 @@ importers:
         specifier: ^19.1.0
         version: 19.1.0
       '@types/react-dom':
-        specifier: ^19.1.1
-        version: 19.1.1(@types/react@19.1.0)
+        specifier: ^19.1.2
+        version: 19.1.2(@types/react@19.1.0)
       eslint:
         specifier: ~8.57.1
         version: 8.57.1
@@ -1811,8 +1811,8 @@ packages:
   '@types/phoenix@1.6.6':
     resolution: {integrity: sha512-PIzZZlEppgrpoT2QgbnDU+MMzuR6BbCjllj0bM70lWoejMeNJAxCchxnv7J3XFkI8MpygtRpzXrIlmWUBclP5A==}
 
-  '@types/react-dom@19.1.1':
-    resolution: {integrity: sha512-jFf/woGTVTjUJsl2O7hcopJ1r0upqoq/vIOoCj0yLh3RIXxWcljlpuZ+vEBRXsymD1jhfeJrlyTy/S1UW+4y1w==}
+  '@types/react-dom@19.1.2':
+    resolution: {integrity: sha512-XGJkWF41Qq305SKWEILa1O8vzhb3aOo3ogBlSmiqNko/WmRb6QIaweuZCXjKygVDXpzXb5wyxKTSOsmkuqj+Qw==}
     peerDependencies:
       '@types/react': ^19.0.0
 
@@ -6470,7 +6470,7 @@ snapshots:
 
   '@types/phoenix@1.6.6': {}
 
-  '@types/react-dom@19.1.1(@types/react@19.1.0)':
+  '@types/react-dom@19.1.2(@types/react@19.1.0)':
     dependencies:
       '@types/react': 19.1.0
 
