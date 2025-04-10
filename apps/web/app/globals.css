@@ -1,11 +1,11 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-family-emoji: Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
-    Noto Color Emoji;
-  --font-family-sans: var(--font-lato, Lato), Helvetica Neue, Arial,
-    Hiragino Kaku Gothic ProN, Hiragino Sans, BIZ UDPGothic, Meiryo, sans-serif,
-    var(--font-family-emoji);
+  --font-family-emoji:
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  --font-family-sans:
+    var(--font-lato, Lato), Helvetica Neue, Arial, Hiragino Kaku Gothic ProN,
+    Hiragino Sans, BIZ UDPGothic, Meiryo, sans-serif, var(--font-family-emoji);
 
   --color-774-nevy-50: #f2f1ff;
   --color-774-nevy-100: #eae5ff;
