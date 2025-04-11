@@ -73,11 +73,11 @@ importers:
         specifier: ^22.14.0
         version: 22.14.0
       '@types/react':
-        specifier: ^19.1.0
-        version: 19.1.0
+        specifier: ^19.1.1
+        version: 19.1.1
       '@types/react-dom':
         specifier: ^19.1.2
-        version: 19.1.2(@types/react@19.1.0)
+        version: 19.1.2(@types/react@19.1.1)
       eslint:
         specifier: ~8.57.1
         version: 8.57.1
@@ -161,11 +161,11 @@ importers:
         specifier: ^22.14.0
         version: 22.14.0
       '@types/react':
-        specifier: ^19.1.0
-        version: 19.1.0
+        specifier: ^19.1.1
+        version: 19.1.1
       '@types/react-dom':
         specifier: ^19.1.2
-        version: 19.1.2(@types/react@19.1.0)
+        version: 19.1.2(@types/react@19.1.1)
       eslint:
         specifier: ~8.57.1
         version: 8.57.1
@@ -177,7 +177,7 @@ importers:
     dependencies:
       '@mdx-js/react':
         specifier: ^3.1.0
-        version: 3.1.0(@types/react@19.1.0)(react@19.1.0)
+        version: 3.1.0(@types/react@19.1.1)(react@19.1.0)
       '@sentry/nextjs':
         specifier: ^9.12.0
         version: 9.12.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.3.0(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(webpack@5.99.5)
@@ -253,7 +253,7 @@ importers:
         version: 3.1.0(acorn@8.14.1)(webpack@5.99.5)
       '@next/mdx':
         specifier: ^15.3.0
-        version: 15.3.0(@mdx-js/loader@3.1.0(acorn@8.14.1)(webpack@5.99.5))(@mdx-js/react@3.1.0(@types/react@19.1.0)(react@19.1.0))
+        version: 15.3.0(@mdx-js/loader@3.1.0(acorn@8.14.1)(webpack@5.99.5))(@mdx-js/react@3.1.0(@types/react@19.1.1)(react@19.1.0))
       '@shinju-date/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -285,11 +285,11 @@ importers:
         specifier: ^22.14.0
         version: 22.14.0
       '@types/react':
-        specifier: ^19.1.0
-        version: 19.1.0
+        specifier: ^19.1.1
+        version: 19.1.1
       '@types/react-dom':
         specifier: ^19.1.2
-        version: 19.1.2(@types/react@19.1.0)
+        version: 19.1.2(@types/react@19.1.1)
       eslint:
         specifier: ~8.57.1
         version: 8.57.1
@@ -1906,8 +1906,8 @@ packages:
     peerDependencies:
       '@types/react': ^19.0.0
 
-  '@types/react@19.1.0':
-    resolution: {integrity: sha512-UaicktuQI+9UKyA4njtDOGBD/67t8YEBt2xdfqu8+gP9hqPUPsiXlNPcpS2gVdjmis5GKPG3fCxbQLVgxsQZ8w==}
+  '@types/react@19.1.1':
+    resolution: {integrity: sha512-ePapxDL7qrgqSF67s0h9m412d9DbXyC1n59O2st+9rjuuamWsZuD2w55rqY12CbzsZ7uVXb5Nw0gEp9Z8MMutQ==}
 
   '@types/retry@0.12.2':
     resolution: {integrity: sha512-XISRgDJ2Tc5q4TRqvgJtzsRkFYNJzZrhTdtMoGVBttwzzQJkPnS3WWTFc7kuDRoPtPakl+T+OfdEUjYJj7Jbow==}
@@ -5777,10 +5777,10 @@ snapshots:
       - acorn
       - supports-color
 
-  '@mdx-js/react@3.1.0(@types/react@19.1.0)(react@19.1.0)':
+  '@mdx-js/react@3.1.0(@types/react@19.1.1)(react@19.1.0)':
     dependencies:
       '@types/mdx': 2.0.13
-      '@types/react': 19.1.0
+      '@types/react': 19.1.1
       react: 19.1.0
 
   '@napi-rs/wasm-runtime@0.2.8':
@@ -5796,12 +5796,12 @@ snapshots:
     dependencies:
       fast-glob: 3.3.1
 
-  '@next/mdx@15.3.0(@mdx-js/loader@3.1.0(acorn@8.14.1)(webpack@5.99.5))(@mdx-js/react@3.1.0(@types/react@19.1.0)(react@19.1.0))':
+  '@next/mdx@15.3.0(@mdx-js/loader@3.1.0(acorn@8.14.1)(webpack@5.99.5))(@mdx-js/react@3.1.0(@types/react@19.1.1)(react@19.1.0))':
     dependencies:
       source-map: 0.7.4
     optionalDependencies:
       '@mdx-js/loader': 3.1.0(acorn@8.14.1)(webpack@5.99.5)
-      '@mdx-js/react': 3.1.0(@types/react@19.1.0)(react@19.1.0)
+      '@mdx-js/react': 3.1.0(@types/react@19.1.1)(react@19.1.0)
 
   '@next/swc-darwin-arm64@15.3.0':
     optional: true
@@ -6679,11 +6679,11 @@ snapshots:
 
   '@types/phoenix@1.6.6': {}
 
-  '@types/react-dom@19.1.2(@types/react@19.1.0)':
+  '@types/react-dom@19.1.2(@types/react@19.1.1)':
     dependencies:
-      '@types/react': 19.1.0
+      '@types/react': 19.1.1
 
-  '@types/react@19.1.0':
+  '@types/react@19.1.1':
     dependencies:
       csstype: 3.1.3
 
