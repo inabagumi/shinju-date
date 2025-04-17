@@ -21,7 +21,7 @@
     "swr": "^2.3.3",
     "tailwind-merge": "^3.2.0",
     "tailwindcss": "^4.1.4",
-    "temporal-polyfill": "^0.2.5",
+    "temporal-polyfill": "^0.3.0",
     "ufo": "^1.6.1",
     "zod": "^3.24.3"
   },
