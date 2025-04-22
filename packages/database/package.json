@@ -8,7 +8,7 @@
     "@tsconfig/strictest": "^2.0.5",
     "eslint": "^8.57.1",
     "next": "^15.3.1",
-    "supabase": "^2.20.12",
+    "supabase": "^2.22.4",
     "tsup": "^8.4.0",
     "typescript": "~5.8.3"
   },
