@@ -2,6 +2,9 @@ import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  experimental: {
+    reactCompiler: true
+  },
   headers() {
     return Promise.resolve([
       {
@@ -19,16 +22,11 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['@sentry/profiling-node']
 }
 
-/**
- * @param {import('next').NextConfig} nextConfig
- * @returns {import('next').NextConfig}
- */
 function withPlugins(nextConfig: NextConfig): NextConfig {
   if (process.env['NEXT_PUBLIC_SENTRY_DSN']) {
     return withSentryConfig(nextConfig, {
       automaticVercelMonitors: false,
-      silent: true,
-      tunnelRoute: '/api/monitoring/sentry'
+      silent: true
     })
   }
 
