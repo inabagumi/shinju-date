@@ -1,7 +1,7 @@
 import createMDX from '@next/mdx'
 import { withSentryConfig } from '@sentry/nextjs'
-import rehypeExternalLinks from 'rehype-external-links'
-import remarkGfm from 'remark-gfm'
+// import rehypeExternalLinks from 'rehype-external-links'
+// import remarkGfm from 'remark-gfm'
 import type { NextConfig } from 'next'
 
 const supabaseBaseURL =
@@ -102,14 +102,21 @@ const withMDX = createMDX({
   options: {
     rehypePlugins: [
       [
-        rehypeExternalLinks,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        'rehype-external-links' as any,
         {
           rel: ['noopener', 'noreferrer'],
           target: '_blank'
         }
       ]
     ],
-    remarkPlugins: [remarkGfm]
+    remarkPlugins: [
+      [
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        'remark-gfm' as any,
+        {}
+      ]
+    ]
   }
 })
 
