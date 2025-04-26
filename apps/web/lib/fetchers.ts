@@ -80,7 +80,7 @@ export const fetchNotEndedVideos: Fetcher<
     }
 
     // (おそらく) ライブ配信中の動画
-    if (publishedAt.epochSeconds % 60 > 0) {
+    if ((publishedAt.epochMilliseconds / 1_000) % 60 > 0) {
       return true
     }
 
