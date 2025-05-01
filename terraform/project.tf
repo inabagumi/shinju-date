@@ -1,5 +1,6 @@
 resource "vercel_project" "this" {
-  framework = "nextjs"
+  enable_affected_projects_deployments = true
+  framework                            = "nextjs"
   git_repository = {
     production_branch = "main"
     repo              = "inabagumi/shinju-date"
@@ -77,7 +78,8 @@ resource "vercel_project_environment_variable" "upstash_redis_rest_url_dev" {
 }
 
 resource "vercel_project" "admin" {
-  framework = "nextjs"
+  enable_affected_projects_deployments = true
+  framework                            = "nextjs"
   git_repository = {
     production_branch = "main"
     repo              = "inabagumi/shinju-date"
@@ -147,7 +149,8 @@ resource "vercel_project_environment_variable" "admin_upstash_redis_rest_url_dev
 }
 
 resource "vercel_project" "batch" {
-  framework = "nextjs"
+  enable_affected_projects_deployments = true
+  framework                            = "nextjs"
   git_repository = {
     production_branch = "main"
     repo              = "inabagumi/shinju-date"
