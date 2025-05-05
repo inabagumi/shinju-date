@@ -43,7 +43,7 @@
     "url": "https://github.com/inabagumi/shinju-date.git"
   },
   "scripts": {
-    "build": "next build --turbopack",
+    "build": "next build",
     "dev": "next --port 5000 --turbopack",
     "lint": "next lint",
     "start": "next start --port 5000"
