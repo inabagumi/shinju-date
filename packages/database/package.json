@@ -9,7 +9,7 @@
     "eslint": "^8.57.1",
     "next": "^15.3.2",
     "supabase": "^2.22.12",
-    "tsup": "^8.4.0",
+    "tsup": "^8.5.0",
     "typescript": "~5.8.3"
   },
   "homepage": "https://shinju.date/",

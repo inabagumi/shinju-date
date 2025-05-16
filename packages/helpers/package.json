@@ -7,7 +7,7 @@
     "@tsconfig/strictest": "^2.0.5",
     "eslint": "^8.57.1",
     "next": "^15.3.2",
-    "tsup": "^8.4.0",
+    "tsup": "^8.5.0",
     "typescript": "~5.8.3"
   },
   "exports": {
