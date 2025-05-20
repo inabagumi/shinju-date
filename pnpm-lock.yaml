@@ -94,8 +94,8 @@ importers:
   apps/batch:
     dependencies:
       '@googleapis/youtube':
-        specifier: ^25.0.0
-        version: 25.0.0
+        specifier: ^25.1.0
+        version: 25.1.0
       '@sentry/nextjs':
         specifier: ^9.20.0
         version: 9.20.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.3.2(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(webpack@5.99.8)
@@ -819,8 +819,8 @@ packages:
     peerDependencies:
       '@opentelemetry/api': ^1.9.0
 
-  '@googleapis/youtube@25.0.0':
-    resolution: {integrity: sha512-Duvx04LF2cJhskrJZ3d5l+R2lpsAE3aQwn1d8HhLSRcKdS5lBLlEIA33TN1KDl3Ern/57XLRQu6xfzCe56hD8w==}
+  '@googleapis/youtube@25.1.0':
+    resolution: {integrity: sha512-WqKYtgOWMyIuA9A5f1rAm6pu/dF69DIXZJaKimnB1mjxWu6hC/J7NpxhJFZitQNM91CHjm998F/I3y3+WMjRLg==}
     engines: {node: '>=12.0.0'}
 
   '@humanwhocodes/config-array@0.13.0':
@@ -5504,7 +5504,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@googleapis/youtube@25.0.0':
+  '@googleapis/youtube@25.1.0':
     dependencies:
       googleapis-common: 7.2.0
     transitivePeerDependencies:
