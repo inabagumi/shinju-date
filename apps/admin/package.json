@@ -1,8 +1,8 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@sentry/nextjs": "^9.22.0",
-    "@sentry/profiling-node": "^9.22.0",
+    "@sentry/nextjs": "^9.27.0",
+    "@sentry/profiling-node": "^9.27.0",
     "@supabase/supabase-js": "^2.50.0",
     "next": "^15.3.3",
     "react": "^19.1.0",
