@@ -4,6 +4,9 @@ if (dsn) {
   import('@sentry/nextjs')
     .then((Sentry) => {
       Sentry.init({
+        _experiments: {
+          enableLogs: true
+        },
         dsn,
         enabled: process.env['VERCEL_ENV'] === 'production',
         integrations: [

@@ -5,7 +5,6 @@
     "@sentry/nextjs": "^9.30.0",
     "@sentry/profiling-node": "^9.30.0",
     "@shinju-date/helpers": "workspace:*",
-    "@shinju-date/logging": "workspace:*",
     "@shinju-date/retryable-fetch": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
     "@supabase/supabase-js": "^2.50.0",
