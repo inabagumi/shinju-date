@@ -1,7 +1,6 @@
 import * as Sentry from '@sentry/nextjs'
 import { type default as Database } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
-import { defaultLogger as logger } from '@shinju-date/logging'
 import { type NextRequest, after } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import {
@@ -237,7 +236,7 @@ export async function POST(request: NextRequest): Promise<Response> {
         Sentry.captureException(result.reason)
       }
 
-      logger.info('The videos has been deleted.', {
+      Sentry.logger.info('The videos has been deleted.', {
         ids: deletedVideos.map((video) => video.slug)
       })
 

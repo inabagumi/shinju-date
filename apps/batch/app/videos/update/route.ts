@@ -1,6 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
-import { defaultLogger as logger } from '@shinju-date/logging'
 import { after } from 'next/server'
 import PQueue from 'p-queue'
 import { Temporal } from 'temporal-polyfill'
@@ -121,7 +120,7 @@ export async function POST(request: Request): Promise<Response> {
     for (const video of videos) {
       const publishedAt = Temporal.Instant.from(video.published_at)
 
-      logger.info('The video has been saved.', {
+      Sentry.logger.info('The video has been saved.', {
         duration: video.duration,
         id: video.slug,
         publishedAt: publishedAt.toString(),

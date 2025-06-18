@@ -1,5 +1,5 @@
+import * as Sentry from '@sentry/nextjs'
 import { createErrorResponse } from '@shinju-date/helpers'
-import { defaultLogger as logger } from '@shinju-date/logging'
 import getVideoByURL from './_lib/get-video-by-url'
 import increment from './_lib/increment'
 import track from './_lib/track'
@@ -60,7 +60,7 @@ export async function POST(request: Request): Promise<Response> {
 
   await Promise.all([track(video, { headers }), increment(video)])
 
-  logger.info('A click event has been sent.', {
+  Sentry.logger.info('A click event has been sent.', {
     channel_name: video.channel.name,
     id: video.slug,
     title: video.title

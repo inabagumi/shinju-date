@@ -1,5 +1,5 @@
+import * as Sentry from '@sentry/nextjs'
 import { createErrorResponse } from '@shinju-date/helpers'
-import { defaultLogger as logger } from '@shinju-date/logging'
 import { revalidateTag } from 'next/cache'
 import { type Payload, payloadSchema } from './_lib/schemas'
 
@@ -26,7 +26,7 @@ export async function POST(request: Request): Promise<Response> {
     revalidateTag(tag)
   }
 
-  logger.info('Revalidation was successful.', {
+  Sentry.logger.info('Revalidation was successful.', {
     tags: payload.tags
   })
 

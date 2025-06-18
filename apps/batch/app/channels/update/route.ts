@@ -1,7 +1,6 @@
 import * as Sentry from '@sentry/nextjs'
 import { type Tables } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
-import { defaultLogger as logger } from '@shinju-date/logging'
 import { after } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import { channelsUpdate as ratelimit } from '@/lib/ratelimit'
@@ -132,7 +131,10 @@ export async function POST(request: Request): Promise<Response> {
         changedColumns.name = `${channel.name} -> ${newChannel.name}`
       }
 
-      logger.info('Channel information has been updated.', changedColumns)
+      Sentry.logger.info(
+        'Channel information has been updated.',
+        changedColumns
+      )
 
       if (!isUpdated) {
         isUpdated = true

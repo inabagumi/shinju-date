@@ -1,6 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
-import { defaultLogger as logger } from '@shinju-date/logging'
 import { type NextRequest, after } from 'next/server'
 import { recommendationQueriesUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
@@ -94,7 +93,7 @@ export async function POST(request: NextRequest) {
     const results = await multi.exec<number[]>()
 
     if (results.some((result) => result > 0)) {
-      logger.info('Update recommendation queries.', {
+      Sentry.logger.info('Update recommendation queries.', {
         added: addableWords,
         deleted: deletableWords
       })
