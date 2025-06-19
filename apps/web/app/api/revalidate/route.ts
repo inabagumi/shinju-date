@@ -17,7 +17,9 @@ export async function POST(request: Request): Promise<Response> {
   try {
     payload = await parseRequest(request)
   } catch (error) {
-    console.error(error)
+    Sentry.logger.warn('Incorrect request received.', {
+      cause: error
+    })
 
     return createErrorResponse('Unprocessable Entity', { status: 422 })
   }

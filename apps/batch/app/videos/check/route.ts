@@ -164,6 +164,8 @@ function deleteVideos({
 export async function POST(request: NextRequest): Promise<Response> {
   const cronSecure = process.env['CRON_SECRET']
   if (cronSecure && !verifyCronRequest(request, { cronSecure })) {
+    Sentry.logger.warn('CRON_SECRET did not match.')
+
     return createErrorResponse('Unauthorized', { status: 401 })
   }
 
@@ -177,6 +179,8 @@ export async function POST(request: NextRequest): Promise<Response> {
   )
 
   if (!success) {
+    Sentry.logger.warn('There has been no interval since the last run.')
+
     return createErrorResponse(
       'There has been no interval since the last run.',
       { status: 429 }
@@ -244,6 +248,8 @@ export async function POST(request: NextRequest): Promise<Response> {
         signal: request.signal
       })
     }
+  } else {
+    Sentry.logger.info('Deleted videos did not exist.')
   }
 
   after(async () => {

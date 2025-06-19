@@ -18,12 +18,16 @@ export const maxDuration = 120
 export async function POST(request: Request): Promise<Response> {
   const cronSecure = process.env['CRON_SECRET']
   if (cronSecure && !verifyCronRequest(request, { cronSecure })) {
+    Sentry.logger.warn('CRON_SECRET did not match.')
+
     return createErrorResponse('Unauthorized', { status: 401 })
   }
 
   const { success } = await ratelimit.limit('videos:update')
 
   if (!success) {
+    Sentry.logger.warn('There has been no interval since the last run.')
+
     return createErrorResponse(
       'There has been no interval since the last run.',
       { status: 429 }
@@ -131,6 +135,8 @@ export async function POST(request: Request): Promise<Response> {
     await revalidateTags(['videos'], {
       signal: request.signal
     })
+  } else {
+    Sentry.logger.info('No updated channels existed.')
   }
 
   after(async () => {
