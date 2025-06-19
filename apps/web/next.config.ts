@@ -124,7 +124,9 @@ function withPlugins(nextConfig: NextConfig): NextConfig {
   if (process.env['NEXT_PUBLIC_SENTRY_DSN']) {
     return withSentryConfig(withMDX(nextConfig), {
       automaticVercelMonitors: false,
-      silent: true
+      disableLogger: true,
+      silent: true,
+      widenClientFileUpload: true
     })
   }
 
