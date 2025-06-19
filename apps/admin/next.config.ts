@@ -27,7 +27,11 @@ function withPlugins(nextConfig: NextConfig): NextConfig {
     return withSentryConfig(nextConfig, {
       automaticVercelMonitors: false,
       disableLogger: true,
+      reactComponentAnnotation: {
+        enabled: true
+      },
       silent: true,
+      tunnelRoute: '/monitoring',
       widenClientFileUpload: true
     })
   }
