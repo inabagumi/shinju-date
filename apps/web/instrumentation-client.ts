@@ -23,6 +23,7 @@ if (dsn) {
         profilesSampleRate: 0.333,
         replaysOnErrorSampleRate: 1.0,
         replaysSessionSampleRate: 0.1,
+        sendDefaultPii: true,
         tracesSampleRate: 0.333
       })
     })

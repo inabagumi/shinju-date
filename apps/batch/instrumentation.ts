@@ -14,6 +14,7 @@ export async function register() {
       dsn,
       enabled: environment === 'production',
       environment,
+      sendDefaultPii: true,
       tracesSampleRate: 1.0
     }
 
