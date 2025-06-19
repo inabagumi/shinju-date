@@ -9,31 +9,35 @@ export const runtime = 'edge'
 
 export async function POST(request: Request): Promise<Response> {
   const requestType = request.headers.get('Content-Type')
-
-  if (requestType !== 'text/ping') {
-    return createErrorResponse('Unsupported Media Type', { status: 415 })
-  }
-
   const userAgent = request.headers.get('User-Agent')
   const xForwardedFor = request.headers.get('X-Forwarded-For')
-
-  if (!userAgent || !xForwardedFor) {
-    return createErrorResponse('Unprocessable Entity', { status: 422 })
-  }
-
   const pingTo = request.headers.get('Ping-To')
 
-  if (!pingTo || !URL.canParse(pingTo)) {
-    if (pingTo) {
-      console.error(new TypeError(`Invalid URL: ${pingTo}`))
-    }
+  if (
+    requestType !== 'text/ping' ||
+    !userAgent ||
+    !xForwardedFor ||
+    !pingTo ||
+    !URL.canParse(pingTo)
+  ) {
+    Sentry.logger.warn('An invalid request was received.', {
+      headers: request.headers.entries()
+    })
 
-    return createErrorResponse('Unprocessable Entity', { status: 422 })
+    if (requestType !== 'text/ping') {
+      return createErrorResponse('Unsupported Media Type', { status: 415 })
+    } else {
+      return createErrorResponse('Unprocessable Entity', { status: 422 })
+    }
   }
 
   const trackURL = new URL(pingTo)
 
   if (!['http:', 'https:'].includes(trackURL.protocol)) {
+    Sentry.logger.warn('An invalid request was received.', {
+      headers: request.headers.entries()
+    })
+
     return createErrorResponse('Unprocessable Entity', { status: 422 })
   }
 
@@ -42,7 +46,10 @@ export async function POST(request: Request): Promise<Response> {
   try {
     video = await getVideoByURL(trackURL)
   } catch (error) {
-    console.error(error)
+    Sentry.logger.warn('Video does not exist.', {
+      cause: error,
+      url: trackURL.toString()
+    })
 
     return createErrorResponse('Unprocessable Entity', { status: 422 })
   }

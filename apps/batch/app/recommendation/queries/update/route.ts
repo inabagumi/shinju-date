@@ -41,12 +41,16 @@ async function getAllTerms({
 export async function POST(request: NextRequest) {
   const cronSecure = process.env['CRON_SECRET']
   if (cronSecure && !verifyCronRequest(request, { cronSecure })) {
+    Sentry.logger.warn('CRON_SECRET did not match.')
+
     return createErrorResponse('Unauthorized', { status: 401 })
   }
 
   const { success } = await ratelimit.limit('recommendation:queries:update')
 
   if (!success) {
+    Sentry.logger.warn('There has been no interval since the last run.')
+
     return createErrorResponse(
       'There has been no interval since the last run.',
       { status: 429 }
@@ -98,6 +102,8 @@ export async function POST(request: NextRequest) {
         deleted: deletableWords
       })
     }
+  } else {
+    Sentry.logger.info('The updated recommended query did not exist.')
   }
 
   after(async () => {
