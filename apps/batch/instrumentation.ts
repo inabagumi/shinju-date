@@ -5,12 +5,15 @@ export async function register() {
 
   if (dsn) {
     const Sentry = await import('@sentry/nextjs')
+
+    const environment = process.env['VERCEL_ENV'] ?? 'development'
     const commonSentryOptions = {
       _experiments: {
         enableLogs: true
       },
       dsn,
-      enabled: process.env['VERCEL_ENV'] === 'production',
+      enabled: environment === 'production',
+      environment,
       tracesSampleRate: 1.0
     }
 

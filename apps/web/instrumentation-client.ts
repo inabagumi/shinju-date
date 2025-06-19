@@ -3,12 +3,18 @@ const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
 if (dsn) {
   import('@sentry/nextjs')
     .then((Sentry) => {
+      const environment =
+        process.env['VERCEL_ENV'] ??
+        process.env['NEXT_PUBLIC_VERCEL_ENV'] ??
+        'development'
+
       Sentry.init({
         _experiments: {
           enableLogs: true
         },
         dsn,
-        enabled: process.env['VERCEL_ENV'] === 'production',
+        enabled: environment === 'production',
+        environment,
         integrations: [
           Sentry.browserTracingIntegration(),
           Sentry.browserProfilingIntegration(),
