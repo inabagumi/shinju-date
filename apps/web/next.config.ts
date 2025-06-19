@@ -31,7 +31,8 @@ const nextConfig: NextConfig = {
               "img-src 'self' data:",
               "manifest-src 'self'",
               "script-src 'self' 'unsafe-inline'",
-              "style-src 'self' 'unsafe-inline'"
+              "style-src 'self' 'unsafe-inline'",
+              "worker-src 'self' blob:"
             ].join('; ')
           },
           {
