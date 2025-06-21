@@ -6,7 +6,7 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite from 'swr/infinite'
 import { Temporal } from 'temporal-polyfill'
 import { SEARCH_RESULT_COUNT } from '@/lib/constants'
-import { type Video, fetchVideosByChannelIDs } from '@/lib/fetchers'
+import { fetchVideosByChannelIDs, type Video } from '@/lib/fetchers'
 import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 
 export function SearchResultsSkeleton() {
@@ -64,9 +64,9 @@ export default function SearchResults({
       next={loadMore}
       scrollThreshold={0.8}
       style={{
-        WebkitOverflowScrolling: undefined,
         height: undefined,
         overflow: undefined,
+        WebkitOverflowScrolling: undefined,
       }}
     >
       <VideoCardList

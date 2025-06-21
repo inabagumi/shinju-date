@@ -18,10 +18,10 @@
   "license": "MIT",
   "main": "./dist/index.js",
   "name": "@shinju-date/helpers",
-  "private": true,
   "peerDependencies": {
     "next": "^14.0.0 || ^15.0.0"
   },
+  "private": true,
   "repository": {
     "directory": "packages/helpers",
     "type": "git",

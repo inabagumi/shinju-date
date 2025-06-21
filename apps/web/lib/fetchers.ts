@@ -1,13 +1,13 @@
 'use server'
 
+import type { Tables } from '@shinju-date/database'
 import { startOfHour } from '@shinju-date/temporal-fns'
+import type { Fetcher } from 'swr'
+import type { SWRInfiniteFetcher } from 'swr/infinite'
 import { Temporal } from 'temporal-polyfill'
 import { getCurrentTime } from '@/lib/cached-functions'
 import { SEARCH_RESULT_COUNT, timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
-import type { Tables } from '@shinju-date/database'
-import type { Fetcher } from 'swr'
-import type { SWRInfiniteFetcher } from 'swr/infinite'
 
 const DEFAULT_SEARCH_SELECT = `
   channel:channels!inner (name, slug),
