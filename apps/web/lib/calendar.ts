@@ -1,9 +1,9 @@
 import type { Tables } from '@shinju-date/database'
 import { max, min } from '@shinju-date/temporal-fns'
 import {
-  type EventAttributes,
   convertTimestampToArray,
   createEvents,
+  type EventAttributes,
 } from 'ics'
 import { Temporal } from 'temporal-polyfill'
 import { title as siteName } from '@/lib/constants'

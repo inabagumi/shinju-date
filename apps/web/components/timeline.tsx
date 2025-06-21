@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import useSWR from 'swr'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
-import { type Channel, type Video, fetchNotEndedVideos } from '@/lib/fetchers'
+import { type Channel, fetchNotEndedVideos, type Video } from '@/lib/fetchers'
 import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 
 function TimelineSection({

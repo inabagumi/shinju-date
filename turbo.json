@@ -26,11 +26,6 @@
       "cache": false,
       "persistent": true
     },
-    "format": {},
-    "format-check": {},
-    "lint": {
-      "dependsOn": ["^build"]
-    },
     "test": {}
   },
   "ui": "tui"

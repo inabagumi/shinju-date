@@ -1,5 +1,14 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "assist": {
+    "actions": {
+      "source": {
+        "useSortedAttributes": "on",
+        "useSortedKeys": "on",
+        "useSortedProperties": "on"
+      }
+    }
+  },
   "css": {
     "assist": {
       "enabled": true
@@ -25,11 +34,20 @@
     "rules": {
       "complexity": {
         "useLiteralKeys": "off"
-      },
-      "recommended": true
+      }
     }
   },
   "overrides": [
+    {
+      "assist": {
+        "actions": {
+          "source": {
+            "useSortedKeys": "off"
+          }
+        }
+      },
+      "includes": ["**/package.json"]
+    },
     {
       "includes": ["apps/*/**"],
       "linter": {

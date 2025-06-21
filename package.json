@@ -18,10 +18,8 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
+    "check": "biome check",
     "dev": "turbo dev",
-    "format": "biome format --write",
-    "format-check": "biome format",
-    "lint": "biome lint",
     "test": "turbo test"
   },
   "type": "module",
