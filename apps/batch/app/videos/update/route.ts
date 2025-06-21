@@ -5,7 +5,7 @@ import PQueue from 'p-queue'
 import { Temporal } from 'temporal-polyfill'
 import { videosUpdate as ratelimit } from '@/lib/ratelimit'
 import { revalidateTags } from '@/lib/revalidate'
-import { type Video, scrape } from '@/lib/scraper'
+import { scrape, type Video } from '@/lib/scraper'
 import { supabaseClient } from '@/lib/supabase'
 import { type FilteredYouTubeChannel, getChannels } from '@/lib/youtube'
 
@@ -17,10 +17,17 @@ export const maxDuration = 120
 
 export async function POST(request: Request): Promise<Response> {
   const cronSecure = process.env['CRON_SECRET']
-  if (cronSecure && !verifyCronRequest(request, { cronSecure })) {
+  if (
+    cronSecure &&
+    !verifyCronRequest(request, {
+      cronSecure,
+    })
+  ) {
     Sentry.logger.warn('CRON_SECRET did not match.')
 
-    return createErrorResponse('Unauthorized', { status: 401 })
+    return createErrorResponse('Unauthorized', {
+      status: 401,
+    })
   }
 
   const { success } = await ratelimit.limit('videos:update')
@@ -30,22 +37,24 @@ export async function POST(request: Request): Promise<Response> {
 
     return createErrorResponse(
       'There has been no interval since the last run.',
-      { status: 429 }
+      {
+        status: 429,
+      },
     )
   }
 
   const checkInId = Sentry.captureCheckIn(
     {
       monitorSlug: MONITOR_SLUG,
-      status: 'in_progress'
+      status: 'in_progress',
     },
     {
       schedule: {
         type: 'crontab',
-        value: '1/10 * * * *'
+        value: '1/10 * * * *',
       },
-      timezone: 'Etc/UTC'
-    }
+      timezone: 'Etc/UTC',
+    },
   )
 
   const currentDateTime = Temporal.Now.instant()
@@ -62,19 +71,23 @@ export async function POST(request: Request): Promise<Response> {
       Sentry.captureCheckIn({
         checkInId,
         monitorSlug: MONITOR_SLUG,
-        status: 'error'
+        status: 'error',
       })
 
       await Sentry.flush(10_000)
     })
 
-    return createErrorResponse(error.message, { status: 500 })
+    return createErrorResponse(error.message, {
+      status: 500,
+    })
   }
 
   const channelIDs = savedChannels.map((savedChannel) => savedChannel.slug)
   const channels: FilteredYouTubeChannel[] = []
 
-  for await (const channel of getChannels({ ids: channelIDs })) {
+  for await (const channel of getChannels({
+    ids: channelIDs,
+  })) {
     channels.push(channel)
   }
 
@@ -84,13 +97,13 @@ export async function POST(request: Request): Promise<Response> {
 
   const queue = new PQueue({
     concurrency: 1,
-    interval: 250
+    interval: 250,
   })
 
   const results = await Promise.allSettled(
     savedChannels.map((savedChannel) => {
       const originalChannel = channels.find(
-        (item) => item.id === savedChannel.slug
+        (item) => item.id === savedChannel.slug,
       )
 
       if (!originalChannel) {
@@ -102,10 +115,10 @@ export async function POST(request: Request): Promise<Response> {
           channel: originalChannel,
           currentDateTime,
           savedChannel: savedChannel,
-          supabaseClient
-        })
+          supabaseClient,
+        }),
       )
-    })
+    }),
   )
 
   const videos: Video[] = []
@@ -128,12 +141,12 @@ export async function POST(request: Request): Promise<Response> {
         duration: video.duration,
         id: video.slug,
         publishedAt: publishedAt.toString(),
-        title: video.title
+        title: video.title,
       })
     }
 
     await revalidateTags(['videos'], {
-      signal: request.signal
+      signal: request.signal,
     })
   } else {
     Sentry.logger.info('No updated channels existed.')
@@ -143,14 +156,14 @@ export async function POST(request: Request): Promise<Response> {
     Sentry.captureCheckIn({
       checkInId,
       monitorSlug: MONITOR_SLUG,
-      status: 'ok'
+      status: 'ok',
     })
 
     await Sentry.flush(10_000)
   })
 
   return new Response(null, {
-    status: 204
+    status: 204,
   })
 }
 

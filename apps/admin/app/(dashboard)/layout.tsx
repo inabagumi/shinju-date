@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import Form, { Button } from '@/components/form'
 import { signOut } from './_lib/actions'
 

@@ -1,8 +1,8 @@
 import * as Sentry from '@sentry/nextjs'
-import { type Tables, type TablesInsert } from '@shinju-date/database'
-import { type TypedSupabaseClient } from '@/lib/supabase'
+import type { Tables, TablesInsert } from '@shinju-date/database'
+import type { TypedSupabaseClient } from '@/lib/supabase'
 import { DatabaseError } from './errors'
-import { type SavedVideo } from './types'
+import type { SavedVideo } from './types'
 
 export type VideoChannel = Pick<Tables<'channels'>, 'name' | 'slug'>
 
@@ -48,7 +48,7 @@ export default class DB {
   }
 
   async *getSavedVideos(
-    ids: string[]
+    ids: string[],
   ): AsyncGenerator<SavedVideo, void, undefined> {
     for (let i = 0; i < ids.length; i += 100) {
       const { data: videos, error } = await this.#supabaseClient
@@ -74,21 +74,26 @@ export default class DB {
             ),
             title,
             visible
-          `
+          `,
         )
         .in('slug', ids.slice(i, i + 100))
 
       if (error) {
-        throw new TypeError(error.message, { cause: error })
+        throw new TypeError(error.message, {
+          cause: error,
+        })
       }
 
       yield* videos
     }
   }
 
-  async upsertThumbnails(
-    values: TablesInsert<'thumbnails'>[]
-  ): Promise<{ id: number; path: string }[]> {
+  async upsertThumbnails(values: TablesInsert<'thumbnails'>[]): Promise<
+    {
+      id: number
+      path: string
+    }[]
+  > {
     const upsertValues = values.filter((value) => value.id)
     const insertValues = values.filter((value) => !value.id)
     const results = await Promise.allSettled([
@@ -117,10 +122,13 @@ export default class DB {
 
               return data
             })
-        : Promise.resolve([])
+        : Promise.resolve([]),
     ])
 
-    const thumbnails: { id: number; path: string }[] = []
+    const thumbnails: {
+      id: number
+      path: string
+    }[] = []
 
     for (const result of results) {
       if (result.status === 'fulfilled') {
@@ -165,7 +173,7 @@ export default class DB {
 
               return data
             })
-        : Promise.resolve([])
+        : Promise.resolve([]),
     ])
 
     const videos: Video[] = []

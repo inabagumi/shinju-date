@@ -3,7 +3,7 @@ import { createErrorResponse } from '@shinju-date/helpers'
 import getVideoByURL from './_lib/get-video-by-url'
 import increment from './_lib/increment'
 import track from './_lib/track'
-import { Video } from './_lib/types'
+import type { Video } from './_lib/types'
 
 export const runtime = 'edge'
 
@@ -21,13 +21,17 @@ export async function POST(request: Request): Promise<Response> {
     !URL.canParse(pingTo)
   ) {
     Sentry.logger.warn('An invalid request was received.', {
-      headers: request.headers.entries()
+      headers: request.headers.entries(),
     })
 
     if (requestType !== 'text/ping') {
-      return createErrorResponse('Unsupported Media Type', { status: 415 })
+      return createErrorResponse('Unsupported Media Type', {
+        status: 415,
+      })
     } else {
-      return createErrorResponse('Unprocessable Entity', { status: 422 })
+      return createErrorResponse('Unprocessable Entity', {
+        status: 422,
+      })
     }
   }
 
@@ -35,10 +39,12 @@ export async function POST(request: Request): Promise<Response> {
 
   if (!['http:', 'https:'].includes(trackURL.protocol)) {
     Sentry.logger.warn('An invalid request was received.', {
-      headers: request.headers.entries()
+      headers: request.headers.entries(),
     })
 
-    return createErrorResponse('Unprocessable Entity', { status: 422 })
+    return createErrorResponse('Unprocessable Entity', {
+      status: 422,
+    })
   }
 
   let video: Video
@@ -48,15 +54,17 @@ export async function POST(request: Request): Promise<Response> {
   } catch (error) {
     Sentry.logger.warn('Video does not exist.', {
       cause: error,
-      url: trackURL.toString()
+      url: trackURL.toString(),
     })
 
-    return createErrorResponse('Unprocessable Entity', { status: 422 })
+    return createErrorResponse('Unprocessable Entity', {
+      status: 422,
+    })
   }
 
   const headers = new Headers({
     'User-Agent': userAgent,
-    'X-Forwarded-For': xForwardedFor
+    'X-Forwarded-For': xForwardedFor,
   })
 
   const pingFrom = request.headers.get('Ping-From')
@@ -65,15 +73,20 @@ export async function POST(request: Request): Promise<Response> {
     headers.set('Referer', pingFrom)
   }
 
-  await Promise.all([track(video, { headers }), increment(video)])
+  await Promise.all([
+    track(video, {
+      headers,
+    }),
+    increment(video),
+  ])
 
   Sentry.logger.info('A click event has been sent.', {
     channel_name: video.channel.name,
     id: video.slug,
-    title: video.title
+    title: video.title,
   })
 
   return new Response(null, {
-    status: 204
+    status: 204,
   })
 }

@@ -5,13 +5,13 @@ export default function ChannelScheduleLoading() {
   return (
     <SimpleDocument
       button={
-        <a
-          aria-disabled
+        <button
           className="inline-block rounded-lg bg-primary-foreground px-6 py-1.5 text-primary"
-          role="button"
+          disabled
+          type="button"
         >
           動画一覧
-        </a>
+        </button>
       }
       title={
         <span className="inline-block h-6 w-32 animate-pulse bg-774-nevy-100 dark:bg-zinc-800" />

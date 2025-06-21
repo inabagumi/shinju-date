@@ -3,13 +3,13 @@
 import {
   type ChangeEventHandler,
   type ComponentPropsWithoutRef,
-  Fragment,
   createContext,
+  Fragment,
   useActionState,
   useCallback,
   useContext,
   useId,
-  useState
+  useState,
 } from 'react'
 import { useFormStatus } from 'react-dom'
 
@@ -29,7 +29,7 @@ const FormFieldContext = createContext<FormFieldContextValue>({})
 type Props = Omit<ComponentPropsWithoutRef<'form'>, 'action'> & {
   action: (
     currentState: FormState,
-    payload: FormData
+    payload: FormData,
   ) => FormState | Promise<FormState>
   initialState?: Awaited<FormState>
 }
@@ -68,7 +68,7 @@ export function ErrorMessage(props: ErrorMessageProps) {
     errorMessages.length > 0 && (
       <p id={id ? `${id}-error-message` : undefined} {...props}>
         {errorMessages.map((message, i) => (
-          <Fragment key={i}>
+          <Fragment key={`${i}:${message}`}>
             {i > 0 && <br />}
             {message}
           </Fragment>
@@ -89,7 +89,7 @@ export function FormField({ name, ...props }: FormFieldProps) {
     <FormFieldContext.Provider
       value={{
         id,
-        ...(name ? { name } : {})
+        ...(name ? { name } : {}),
       }}
     >
       <div {...props} />
@@ -110,7 +110,7 @@ export function GenericErrorMessage({
     errorMessages.length > 0 && (
       <p role={role} {...props}>
         {errorMessages.map((message, i) => (
-          <Fragment key={i}>
+          <Fragment key={`${i}:${message}`}>
             {i > 0 && <br />}
             {message}
           </Fragment>
@@ -140,7 +140,7 @@ export function Input({
     ({ target }) => {
       setValue(target.value)
     },
-    []
+    [],
   )
 
   return (
@@ -165,6 +165,7 @@ export function Label({ htmlFor, ...props }: LabelProps) {
   const { id } = useContext(FormFieldContext)
 
   return (
+    // biome-ignore lint/a11y/noLabelWithoutControl: ラッパーなので無効に。
     <label
       aria-disabled={pending ? true : undefined}
       htmlFor={htmlFor ?? id}

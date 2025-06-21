@@ -1,9 +1,9 @@
-import { type Tables } from '@shinju-date/database'
+import type { Tables } from '@shinju-date/database'
 import { max, min } from '@shinju-date/temporal-fns'
 import {
   type EventAttributes,
   convertTimestampToArray,
-  createEvents
+  createEvents,
 } from 'ics'
 import { Temporal } from 'temporal-polyfill'
 import { title as siteName } from '@/lib/constants'
@@ -23,23 +23,34 @@ type GetPublishedAtAndEndedAtOptions = {
 
 type GetPublishedAtAndEndedAtResult = [
   publishedAt: Temporal.ZonedDateTime,
-  endedAt: Temporal.ZonedDateTime
+  endedAt: Temporal.ZonedDateTime,
 ]
 
 export function getPublishedAtAndEndedAt(
   video: Video,
-  { now }: GetPublishedAtAndEndedAtOptions
+  { now }: GetPublishedAtAndEndedAtOptions,
 ): GetPublishedAtAndEndedAtResult {
   const publishedAt = Temporal.Instant.from(
-    video.published_at
+    video.published_at,
   ).toZonedDateTimeISO(now.timeZoneId)
   const duration = Temporal.Duration.from(video.duration)
   const endedAt =
-    duration.total({ unit: 'second' }) > 0
+    duration.total({
+      unit: 'second',
+    }) > 0
       ? publishedAt.add(duration)
       : min(
-          max(publishedAt.add({ hours: 1 }), now.add({ minutes: 30 })),
-          publishedAt.add({ hours: 12 })
+          max(
+            publishedAt.add({
+              hours: 1,
+            }),
+            now.add({
+              minutes: 30,
+            }),
+          ),
+          publishedAt.add({
+            hours: 12,
+          }),
         )
 
   return [publishedAt, endedAt]
@@ -52,16 +63,16 @@ export function createCalendarResponse(events: EventAttributes[]): Response {
     return new Response('500 Internal Server Error\n', {
       headers: {
         'Cache-Control': 'no-store',
-        'Content-Type': 'text/plain; charset=UTF-8'
+        'Content-Type': 'text/plain; charset=UTF-8',
       },
-      status: 500
+      status: 500,
     })
   }
 
   return new Response(value, {
     headers: {
-      'Content-Type': 'text/calendar; charset=UTF-8'
-    }
+      'Content-Type': 'text/calendar; charset=UTF-8',
+    },
   })
 }
 
@@ -71,10 +82,12 @@ type CreateEventAttributesListOptions = {
 
 export function createEventAttributesList(
   videos: Video[],
-  { now }: CreateEventAttributesListOptions
+  { now }: CreateEventAttributesListOptions,
 ): EventAttributes[] {
   return videos.map((video): EventAttributes => {
-    const [publishedAt, endedAt] = getPublishedAtAndEndedAt(video, { now })
+    const [publishedAt, endedAt] = getPublishedAtAndEndedAt(video, {
+      now,
+    })
     const url = `https://www.youtube.com/watch?v=${encodeURIComponent(video.slug)}`
 
     return {
@@ -90,7 +103,7 @@ export function createEventAttributesList(
       startOutputType: 'utc',
       title: video.title,
       uid: `${video.slug}@shinju.date`,
-      url
+      url,
     }
   })
 }

@@ -7,7 +7,7 @@ import { useNow } from './timer'
 function isActive({
   duration,
   now,
-  publishedAt
+  publishedAt,
 }: {
   duration: Temporal.Duration
   now: Temporal.ZonedDateTime
@@ -15,8 +15,15 @@ function isActive({
 }): boolean {
   return (
     Temporal.ZonedDateTime.compare(publishedAt, now) < 1 &&
-    Temporal.ZonedDateTime.compare(now, publishedAt.add({ hours: 12 })) < 1 &&
-    duration.total({ unit: 'second' }) < 1 &&
+    Temporal.ZonedDateTime.compare(
+      now,
+      publishedAt.add({
+        hours: 12,
+      }),
+    ) < 1 &&
+    duration.total({
+      unit: 'second',
+    }) < 1 &&
     (publishedAt.epochMilliseconds / 1_000) % 60 > 0
   )
 }
@@ -24,7 +31,7 @@ function isActive({
 export default function LiveNow({
   className,
   duration,
-  publishedAt
+  publishedAt,
 }: {
   className?: string | undefined
   duration: Temporal.Duration
@@ -32,11 +39,21 @@ export default function LiveNow({
 }) {
   const now = useNow()
   const [liveNow, setLiveNow] = useState(() =>
-    isActive({ duration, now, publishedAt })
+    isActive({
+      duration,
+      now,
+      publishedAt,
+    }),
   )
 
   useEffect(() => {
-    setLiveNow(() => isActive({ duration, now, publishedAt }))
+    setLiveNow(() =>
+      isActive({
+        duration,
+        now,
+        publishedAt,
+      }),
+    )
   }, [now, publishedAt, duration])
 
   if (!liveNow) {

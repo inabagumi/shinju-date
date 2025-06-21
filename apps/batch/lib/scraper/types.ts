@@ -1,4 +1,4 @@
-import { type Tables } from '@shinju-date/database'
+import type { Tables } from '@shinju-date/database'
 
 export type SavedChannel = Pick<Tables<'channels'>, 'id' | 'slug'>
 

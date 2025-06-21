@@ -1,4 +1,4 @@
-import { type Metadata } from 'next'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import NoResults from '@/components/no-results'
@@ -11,7 +11,7 @@ import { getChannelBySlug } from '@/lib/supabase'
 export const revalidate = 600 // 10 minutes
 
 export async function generateMetadata({
-  params
+  params,
 }: Readonly<{
   params: Promise<{
     slug: string
@@ -28,22 +28,22 @@ export async function generateMetadata({
 
   return {
     alternates: {
-      canonical: `/channels/${channel.slug}`
+      canonical: `/channels/${channel.slug}`,
     },
     openGraph: {
       siteName,
       title,
-      type: 'article'
+      type: 'article',
     },
     title,
     twitter: {
-      title: `${title} - ${siteName}`
-    }
+      title: `${title} - ${siteName}`,
+    },
   }
 }
 
 export default async function ChannelSchedulePage({
-  params
+  params,
 }: Readonly<{
   params: Promise<{
     slug: string
@@ -57,7 +57,7 @@ export default async function ChannelSchedulePage({
   }
 
   const videos = await fetchNotEndedVideos({
-    channelIDs: [channel.slug]
+    channelIDs: [channel.slug],
   })
 
   return (
@@ -66,7 +66,6 @@ export default async function ChannelSchedulePage({
         <Link
           className="inline-block rounded-lg bg-primary-foreground px-6 py-1.5 text-primary hover:bg-774-nevy-100"
           href={`/channels/${channel.slug}/videos`}
-          role="button"
         >
           動画一覧
         </Link>

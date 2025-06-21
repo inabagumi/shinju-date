@@ -2,5 +2,5 @@ export type {
   Database as default,
   Tables,
   TablesInsert,
-  TablesUpdate
+  TablesUpdate,
 } from '../types/supabase.js'

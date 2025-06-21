@@ -1,5 +1,5 @@
 import { supabaseClient } from '@/lib/supabase'
-import { type Video } from './types'
+import type { Video } from './types'
 
 function getYouTubeVideoID(url: URL): string {
   let videoID: string | undefined
@@ -34,7 +34,7 @@ export default async function getVideoByURL(url: URL): Promise<Video> {
 
   if (error) {
     throw new TypeError(error.message, {
-      cause: error
+      cause: error,
     })
   }
 

@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
             httpOnly: true,
             name: key,
             sameSite: 'strict',
-            secure: isProd
+            secure: isProd,
           })
         },
         setItem(key, value) {
@@ -25,18 +25,18 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
             httpOnly: true,
             maxAge: 30 * 24 * 60 * 60,
             sameSite: 'strict',
-            secure: isProd
+            secure: isProd,
           })
-        }
-      }
-    }
+        },
+      },
+    },
   })
 
   const { error } = await supabaseClient.auth.getUser()
 
   if (request.nextUrl.pathname === '/login' && !error) {
     return NextResponse.redirect(new URL('/', request.nextUrl), {
-      headers: response.headers
+      headers: response.headers,
     })
   } else if (request.nextUrl.pathname !== '/login' && error) {
     const loginURL = new URL('/login', request.nextUrl)
@@ -46,7 +46,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     }
 
     return NextResponse.redirect(loginURL, {
-      headers: response.headers
+      headers: response.headers,
     })
   }
 
@@ -63,6 +63,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|api|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'
-  ]
+    '/((?!_next/static|_next/image|api|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }

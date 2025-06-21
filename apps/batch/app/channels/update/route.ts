@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
-import { type Tables } from '@shinju-date/database'
+import type { Tables } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { after } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
@@ -18,10 +18,17 @@ type Channel = Pick<Tables<'channels'>, 'name' | 'slug'>
 
 export async function POST(request: Request): Promise<Response> {
   const cronSecure = process.env['CRON_SECRET']
-  if (cronSecure && !verifyCronRequest(request, { cronSecure })) {
+  if (
+    cronSecure &&
+    !verifyCronRequest(request, {
+      cronSecure,
+    })
+  ) {
     Sentry.logger.warn('CRON_SECRET did not match.')
 
-    return createErrorResponse('Unauthorized', { status: 401 })
+    return createErrorResponse('Unauthorized', {
+      status: 401,
+    })
   }
 
   const { success } = await ratelimit.limit('channels:update')
@@ -31,22 +38,24 @@ export async function POST(request: Request): Promise<Response> {
 
     return createErrorResponse(
       'There has been no interval since the last run.',
-      { status: 429 }
+      {
+        status: 429,
+      },
     )
   }
 
   const checkInId = Sentry.captureCheckIn(
     {
       monitorSlug: MONITOR_SLUG,
-      status: 'in_progress'
+      status: 'in_progress',
     },
     {
       schedule: {
         type: 'crontab',
-        value: '21 1/3 * * *'
+        value: '21 1/3 * * *',
       },
-      timezone: 'Etc/UTC'
-    }
+      timezone: 'Etc/UTC',
+    },
   )
 
   const currentDateTime = Temporal.Now.instant()
@@ -62,21 +71,23 @@ export async function POST(request: Request): Promise<Response> {
       Sentry.captureCheckIn({
         checkInId,
         monitorSlug: MONITOR_SLUG,
-        status: 'error'
+        status: 'error',
       })
 
       await Sentry.flush(10_000)
     })
 
-    return createErrorResponse(error.message, { status: 500 })
+    return createErrorResponse(error.message, {
+      status: 500,
+    })
   }
 
   const {
-    data: { items = [] }
+    data: { items = [] },
   } = await youtubeClient.channels.list({
     id: channels.map((channel) => channel.slug),
     maxResults: channels.length,
-    part: ['snippet']
+    part: ['snippet'],
   })
 
   const results = await Promise.allSettled(
@@ -103,7 +114,7 @@ export async function POST(request: Request): Promise<Response> {
         .from('channels')
         .update({
           name: item.snippet.title,
-          updated_at: currentDateTime.toJSON()
+          updated_at: currentDateTime.toJSON(),
         })
         .eq('slug', item.id)
         .select('name, slug')
@@ -114,7 +125,7 @@ export async function POST(request: Request): Promise<Response> {
       }
 
       return data
-    })
+    }),
   )
 
   let isUpdated = false
@@ -137,7 +148,7 @@ export async function POST(request: Request): Promise<Response> {
 
       Sentry.logger.info(
         'Channel information has been updated.',
-        changedColumns
+        changedColumns,
       )
 
       if (!isUpdated) {
@@ -150,7 +161,7 @@ export async function POST(request: Request): Promise<Response> {
 
   if (isUpdated) {
     await revalidateTags(['channels'], {
-      signal: request.signal
+      signal: request.signal,
     })
   } else {
     Sentry.logger.info('No updated channels existed.')
@@ -160,14 +171,14 @@ export async function POST(request: Request): Promise<Response> {
     Sentry.captureCheckIn({
       checkInId,
       monitorSlug: MONITOR_SLUG,
-      status: 'ok'
+      status: 'ok',
     })
 
     await Sentry.flush(10_000)
   })
 
   return new Response(null, {
-    status: 204
+    status: 204,
   })
 }
 

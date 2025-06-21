@@ -2,11 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { title as siteName } from '@/lib/constants'
 
 export default function Breadcrumbs({
-  title
+  title,
 }: {
   title?: ReactNode | undefined
 }) {

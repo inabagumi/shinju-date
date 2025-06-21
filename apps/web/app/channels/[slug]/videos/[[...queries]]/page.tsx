@@ -1,4 +1,4 @@
-import { type Metadata } from 'next'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import NoResults from '@/components/no-results'
 import SearchResults from '@/components/search-results'
@@ -10,7 +10,7 @@ import { parseQueries } from '@/lib/url'
 export const revalidate = 300 // 5 minutes
 
 export async function generateMetadata({
-  params
+  params,
 }: Readonly<{
   params: Promise<{
     queries?: string[]
@@ -35,26 +35,26 @@ export async function generateMetadata({
         ? `/channels/${channel.slug}/videos/${encodeURIComponent(query)}`
         : `/channels/${channel.slug}/videos`,
       types: {
-        'text/calendar': !query ? `/channels/${channel.slug}/videos.ics` : null
-      }
+        'text/calendar': !query ? `/channels/${channel.slug}/videos.ics` : null,
+      },
     },
     openGraph: {
       siteName,
       title,
-      type: 'article'
+      type: 'article',
     },
     robots: {
-      index: !query
+      index: !query,
     },
     title,
     twitter: {
-      title: `${title} - ${siteName}`
-    }
+      title: `${title} - ${siteName}`,
+    },
   }
 }
 
 export default async function VideosPage({
-  params
+  params,
 }: Readonly<{
   params: Promise<{
     queries?: string[]
@@ -71,7 +71,7 @@ export default async function VideosPage({
   const query = parseQueries(queries)
   const videos = await fetchVideosByChannelIDs({
     channelIDs: [channel.id],
-    query
+    query,
   })
 
   if (videos.length < 1) {

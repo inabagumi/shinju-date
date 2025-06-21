@@ -1,10 +1,10 @@
-import { type ComponentPropsWithoutRef } from 'react'
+import type { ComponentPropsWithoutRef } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { type Video } from '@/lib/fetchers'
+import type { Video } from '@/lib/fetchers'
 import VideoCard, { VideoCardSkeleton } from './video-card'
 
 export function VideoCardListSkeleton({
-  className
+  className,
 }: {
   className?: string | undefined
 }) {
@@ -12,7 +12,7 @@ export function VideoCardListSkeleton({
     <div
       className={twMerge(
         'grid grid-cols-1 gap-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3',
-        className
+        className,
       )}
     >
       <VideoCardSkeleton />

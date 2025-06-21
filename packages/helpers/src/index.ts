@@ -4,16 +4,18 @@ type CreateErrorResponseOptions = {
 
 export function createErrorResponse(
   message: string,
-  { status = 500 }: CreateErrorResponseOptions
+  { status = 500 }: CreateErrorResponseOptions,
 ) {
   return Response.json(
-    { error: message },
+    {
+      error: message,
+    },
     {
       headers: {
-        'Cache-Control': 'no-store'
+        'Cache-Control': 'no-store',
       },
-      status
-    }
+      status,
+    },
   )
 }
 
@@ -27,7 +29,7 @@ export function isNonNullable<T>(value: T): value is NonNullable<T> {
 
 export function verifyCronRequest(
   request: Request,
-  { cronSecure }: VerifyCronRequestOptions
+  { cronSecure }: VerifyCronRequestOptions,
 ): boolean {
   const authHeader = request.headers.get('Authorization')
 

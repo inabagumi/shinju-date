@@ -2,10 +2,8 @@
   "author": "Haneru Developers",
   "description": "",
   "devDependencies": {
-    "@shinju-date/eslint-config": "workspace:*",
     "@tsconfig/node20": "^20.1.6",
     "@tsconfig/strictest": "^2.0.5",
-    "eslint": "^8.57.1",
     "next": "^15.3.4",
     "tsup": "^8.5.0",
     "typescript": "~5.8.3"
@@ -31,8 +29,7 @@
   },
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch",
-    "lint": "eslint ."
+    "dev": "tsup --watch"
   },
   "type": "module",
   "types": "./dist/index.d.ts",

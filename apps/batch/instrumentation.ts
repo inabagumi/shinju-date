@@ -9,13 +9,13 @@ export async function register() {
     const environment = process.env['VERCEL_ENV'] ?? 'development'
     const commonSentryOptions = {
       _experiments: {
-        enableLogs: true
+        enableLogs: true,
       },
       dsn,
       enabled: environment === 'production',
       environment,
       sendDefaultPii: true,
-      tracesSampleRate: 1.0
+      tracesSampleRate: 1.0,
     }
 
     if (process.env['NEXT_RUNTIME'] === 'nodejs') {
@@ -26,13 +26,13 @@ export async function register() {
       Sentry.init({
         ...commonSentryOptions,
         integrations: [nodeProfilingIntegration()],
-        profilesSampleRate: 1.0
+        profilesSampleRate: 1.0,
       })
     }
 
     if (process.env['NEXT_RUNTIME'] === 'edge') {
       Sentry.init({
-        ...commonSentryOptions
+        ...commonSentryOptions,
       })
     }
   }

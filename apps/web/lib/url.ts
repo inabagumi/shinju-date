@@ -1,8 +1,8 @@
-import { type ParsedUrlQuery } from 'querystring'
+import type { ParsedUrlQuery } from 'node:querystring'
 
 export function getQueryValue(
   key: string,
-  query: ParsedUrlQuery
+  query: ParsedUrlQuery,
 ): string | undefined {
   const valueOrValues = query[key]
 

@@ -1,17 +1,37 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "CRON_SECRET",
+    "GOOGLE_API_KEY",
+    "NEXT_PUBLIC_BASE_URL",
+    "NEXT_PUBLIC_SENTRY_DSN",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_RUNTIME",
+    "NODE_ENV",
+    "SENTRY_AUTH_TOKEN",
+    "SENTRY_ORG",
+    "SENTRY_PROJECT",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "UPSTASH_REDIS_REST_TOKEN",
+    "UPSTASH_REDIS_REST_URL",
+    "VERCEL_ENV"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
+    "format": {},
+    "format-check": {},
     "lint": {
       "dependsOn": ["^build"]
     },
     "test": {}
-  }
+  },
+  "ui": "tui"
 }

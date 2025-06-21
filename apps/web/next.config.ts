@@ -10,10 +10,13 @@ const supabaseBaseURL =
     : undefined
 
 const nextConfig: NextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   experimental: {
     // dynamicIO: true,
     // ppr: 'incremental',
-    reactCompiler: true
+    reactCompiler: true,
   },
   headers() {
     return Promise.resolve([
@@ -32,16 +35,16 @@ const nextConfig: NextConfig = {
               "manifest-src 'self'",
               "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
-              "worker-src 'self' blob:"
-            ].join('; ')
+              "worker-src 'self' blob:",
+            ].join('; '),
           },
           {
             key: 'Document-Policy',
-            value: 'js-profiling'
-          }
+            value: 'js-profiling',
+          },
         ],
-        source: '/:path*'
-      }
+        source: '/:path*',
+      },
     ])
   },
   images: {
@@ -55,18 +58,18 @@ const nextConfig: NextConfig = {
               pathname: '/storage/v1/object/public/**',
               ...(supabaseBaseURL.protocol === 'https:'
                 ? {
-                    protocol: 'https' as const
+                    protocol: 'https' as const,
                   }
-                : {})
-            }
+                : {}),
+            },
           ]
         : []),
       {
         hostname: 'i.ytimg.com',
         pathname: '/vi/**',
-        protocol: 'https' as const
-      }
-    ]
+        protocol: 'https' as const,
+      },
+    ],
   },
   pageExtensions: ['tsx', 'ts', 'mdx'],
   reactStrictMode: true,
@@ -75,13 +78,13 @@ const nextConfig: NextConfig = {
       {
         destination: '/',
         permanent: true,
-        source: '/groups/:slug'
+        source: '/groups/:slug',
       },
       {
         destination: '/videos/:query*',
         permanent: true,
-        source: '/groups/:slug/videos/:query*'
-      }
+        source: '/groups/:slug/videos/:query*',
+      },
     ])
   },
   rewrites() {
@@ -89,36 +92,36 @@ const nextConfig: NextConfig = {
       afterFiles: [
         {
           destination: '/manifest.webmanifest',
-          source: '/manifest.json'
-        }
+          source: '/manifest.json',
+        },
       ],
       beforeFiles: [],
-      fallback: []
+      fallback: [],
     })
   },
-  serverExternalPackages: ['@sentry/profiling-node']
+  serverExternalPackages: ['@sentry/profiling-node'],
 }
 
 const withMDX = createMDX({
   options: {
     rehypePlugins: [
       [
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: Turbopackでは文字列でしかrehypePluginの設定ができないため`any`にしている。
         'rehype-external-links' as any,
         {
           rel: ['noopener', 'noreferrer'],
-          target: '_blank'
-        }
-      ]
+          target: '_blank',
+        },
+      ],
     ],
     remarkPlugins: [
       [
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: Turbopackでは文字列でしかrehypePluginの設定ができないため`any`にしている。
         'remark-gfm' as any,
-        {}
-      ]
-    ]
-  }
+        {},
+      ],
+    ],
+  },
 })
 
 function withPlugins(nextConfig: NextConfig): NextConfig {
@@ -127,11 +130,11 @@ function withPlugins(nextConfig: NextConfig): NextConfig {
       automaticVercelMonitors: false,
       disableLogger: true,
       reactComponentAnnotation: {
-        enabled: true
+        enabled: true,
       },
       silent: true,
       tunnelRoute: '/monitoring',
-      widenClientFileUpload: true
+      widenClientFileUpload: true,
     })
   }
 

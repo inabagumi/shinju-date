@@ -22,7 +22,7 @@ export default function retryableFetch(
       return res
     },
     {
-      retries: 5
-    }
+      retries: 5,
+    },
   )
 }

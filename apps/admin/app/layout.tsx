@@ -1,14 +1,14 @@
 import './globals.css'
-import { type Metadata, type Viewport } from 'next'
-import { type ReactNode } from 'react'
+import type { Metadata, Viewport } from 'next'
+import type { ReactNode } from 'react'
 import { lato } from './fonts'
 
 export const viewport: Viewport = {
-  themeColor: '#1e0064' // var(--color-primary)
+  themeColor: '#1e0064', // var(--color-primary)
 }
 
 export const metadata: Metadata = {
-  title: 'Admin UI - SHINJU DATE'
+  title: 'Admin UI - SHINJU DATE',
 }
 
 type Props = {

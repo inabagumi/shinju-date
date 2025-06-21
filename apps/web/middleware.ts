@@ -1,4 +1,4 @@
-import { type NextMiddleware, type NextRequest } from 'next/server'
+import type { NextMiddleware, NextRequest } from 'next/server'
 import { joinURL } from 'ufo'
 
 function isVideosPage(pathname: string): boolean {
@@ -14,6 +14,8 @@ function isVideosPage(pathname: string): boolean {
 }
 
 export function middleware(request: NextRequest): ReturnType<NextMiddleware> {
+  console.log(process.env['UPSTASH_REDIS_REST_URL'])
+
   if (
     isVideosPage(request.nextUrl.pathname) &&
     request.nextUrl.searchParams.has('q')
@@ -21,7 +23,7 @@ export function middleware(request: NextRequest): ReturnType<NextMiddleware> {
     const queries = request.nextUrl.searchParams.getAll('q')
     const pathname = joinURL(
       request.nextUrl.pathname,
-      queries.map((query) => encodeURIComponent(query)).join('/')
+      queries.map((query) => encodeURIComponent(query)).join('/'),
     )
 
     return Response.redirect(new URL(pathname, request.nextUrl), 308)
