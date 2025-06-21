@@ -6,10 +6,11 @@ resource "vercel_project" "this" {
     repo              = "inabagumi/shinju-date"
     type              = "github"
   }
-  ignore_command = "npx turbo-ignore"
-  name           = "shinju-date"
-  public_source  = false
-  root_directory = "apps/web"
+  ignore_command               = "npx turbo-ignore"
+  name                         = "shinju-date"
+  prioritise_production_builds = true
+  public_source                = false
+  root_directory               = "apps/web"
   resource_config = {
     function_default_cpu_type = "standard"
     function_default_timeout  = 30
@@ -77,6 +78,15 @@ resource "vercel_project_environment_variable" "upstash_redis_rest_url_dev" {
   value      = var.upstash_redis_rest_url_dev
 }
 
+resource "vercel_project_deployment_retention" "this" {
+  expiration_canceled   = "1m"
+  expiration_errored    = "1m"
+  expiration_preview    = "1m"
+  expiration_production = "unlimited"
+  project_id            = vercel_project.this.id
+  team_id               = vercel_project.this.team_id
+}
+
 resource "vercel_project" "admin" {
   enable_affected_projects_deployments = true
   framework                            = "nextjs"
@@ -85,10 +95,11 @@ resource "vercel_project" "admin" {
     repo              = "inabagumi/shinju-date"
     type              = "github"
   }
-  ignore_command = "npx turbo-ignore"
-  name           = "shinju-date-admin"
-  public_source  = false
-  root_directory = "apps/admin"
+  ignore_command               = "npx turbo-ignore"
+  name                         = "shinju-date-admin"
+  prioritise_production_builds = true
+  public_source                = false
+  root_directory               = "apps/admin"
   resource_config = {
     function_default_cpu_type = "standard_legacy"
     function_default_timeout  = 30
@@ -148,6 +159,15 @@ resource "vercel_project_environment_variable" "admin_upstash_redis_rest_url_dev
   value      = var.upstash_redis_rest_url_dev
 }
 
+resource "vercel_project_deployment_retention" "admin" {
+  expiration_canceled   = "1m"
+  expiration_errored    = "1m"
+  expiration_preview    = "1m"
+  expiration_production = "unlimited"
+  project_id            = vercel_project.admin.id
+  team_id               = vercel_project.admin.team_id
+}
+
 resource "vercel_project" "batch" {
   enable_affected_projects_deployments = true
   framework                            = "nextjs"
@@ -156,10 +176,11 @@ resource "vercel_project" "batch" {
     repo              = "inabagumi/shinju-date"
     type              = "github"
   }
-  ignore_command = "npx turbo-ignore"
-  name           = "shinju-date-batch"
-  public_source  = false
-  root_directory = "apps/batch"
+  ignore_command               = "npx turbo-ignore"
+  name                         = "shinju-date-batch"
+  prioritise_production_builds = true
+  public_source                = false
+  root_directory               = "apps/batch"
   resource_config = {
     function_default_cpu_type = "standard"
     function_default_timeout  = 120
@@ -238,4 +259,13 @@ resource "vercel_project_environment_variable" "batch_cron_secret" {
   target     = ["production"]
   team_id    = vercel_project.batch.team_id
   value      = random_password.cron_secret.result
+}
+
+resource "vercel_project_deployment_retention" "batch" {
+  expiration_canceled   = "1m"
+  expiration_errored    = "1m"
+  expiration_preview    = "1m"
+  expiration_production = "unlimited"
+  project_id            = vercel_project.batch.id
+  team_id               = vercel_project.batch.team_id
 }
