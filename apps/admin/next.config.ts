@@ -2,8 +2,11 @@ import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   experimental: {
-    reactCompiler: true
+    reactCompiler: true,
   },
   headers() {
     return Promise.resolve([
@@ -11,15 +14,15 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Document-Policy',
-            value: 'js-profiling'
-          }
+            value: 'js-profiling',
+          },
         ],
-        source: '/:path*'
-      }
+        source: '/:path*',
+      },
     ])
   },
   reactStrictMode: true,
-  serverExternalPackages: ['@sentry/profiling-node']
+  serverExternalPackages: ['@sentry/profiling-node'],
 }
 
 function withPlugins(nextConfig: NextConfig): NextConfig {
@@ -28,11 +31,11 @@ function withPlugins(nextConfig: NextConfig): NextConfig {
       automaticVercelMonitors: false,
       disableLogger: true,
       reactComponentAnnotation: {
-        enabled: true
+        enabled: true,
       },
       silent: true,
       tunnelRoute: '/monitoring',
-      widenClientFileUpload: true
+      widenClientFileUpload: true,
     })
   }
 

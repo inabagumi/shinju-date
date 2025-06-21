@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/nextjs'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
-import { type NextRequest, after } from 'next/server'
+import { after, type NextRequest } from 'next/server'
 import { recommendationQueriesUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
@@ -14,7 +14,7 @@ export const maxDuration = 120
 
 async function getAllTerms({
   page = 1,
-  perPage = 1_000
+  perPage = 1_000,
 }: {
   perPage?: number
   page?: number
@@ -22,15 +22,22 @@ async function getAllTerms({
   const { data: terms, error } = await supabaseClient
     .from('terms')
     .select('term')
-    .order('updated_at', { ascending: true })
+    .order('updated_at', {
+      ascending: true,
+    })
     .range((page - 1) * perPage, perPage * page - 1)
 
   if (error) {
-    throw new TypeError(error.message, { cause: error })
+    throw new TypeError(error.message, {
+      cause: error,
+    })
   }
 
   if (terms.length === perPage) {
-    const nextTerms = await getAllTerms({ page: page + 1, perPage })
+    const nextTerms = await getAllTerms({
+      page: page + 1,
+      perPage,
+    })
 
     terms.push(...nextTerms)
   }
@@ -40,10 +47,17 @@ async function getAllTerms({
 
 export async function POST(request: NextRequest) {
   const cronSecure = process.env['CRON_SECRET']
-  if (cronSecure && !verifyCronRequest(request, { cronSecure })) {
+  if (
+    cronSecure &&
+    !verifyCronRequest(request, {
+      cronSecure,
+    })
+  ) {
     Sentry.logger.warn('CRON_SECRET did not match.')
 
-    return createErrorResponse('Unauthorized', { status: 401 })
+    return createErrorResponse('Unauthorized', {
+      status: 401,
+    })
   }
 
   const { success } = await ratelimit.limit('recommendation:queries:update')
@@ -53,27 +67,29 @@ export async function POST(request: NextRequest) {
 
     return createErrorResponse(
       'There has been no interval since the last run.',
-      { status: 429 }
+      {
+        status: 429,
+      },
     )
   }
 
   const checkInId = Sentry.captureCheckIn(
     {
       monitorSlug: MONITOR_SLUG,
-      status: 'in_progress'
+      status: 'in_progress',
     },
     {
       schedule: {
         type: 'crontab',
-        value: '7/30 * * * *'
+        value: '7/30 * * * *',
       },
-      timezone: 'Etc/UTC'
-    }
+      timezone: 'Etc/UTC',
+    },
   )
 
   const [terms, queries] = await Promise.all([
     getAllTerms(),
-    redisClient.smembers(RECOMENDATION_QUERIES_KEY)
+    redisClient.smembers(RECOMENDATION_QUERIES_KEY),
   ])
   const termValues = terms.map(({ term }) => term)
   const addableWords = termValues.filter((term) => !queries.includes(term))
@@ -86,7 +102,7 @@ export async function POST(request: NextRequest) {
       multi.sadd(
         RECOMENDATION_QUERIES_KEY,
         addableWords[0],
-        ...addableWords.slice(1)
+        ...addableWords.slice(1),
       )
     }
 
@@ -99,7 +115,7 @@ export async function POST(request: NextRequest) {
     if (results.some((result) => result > 0)) {
       Sentry.logger.info('Update recommendation queries.', {
         added: addableWords,
-        deleted: deletableWords
+        deleted: deletableWords,
       })
     }
   } else {
@@ -110,13 +126,15 @@ export async function POST(request: NextRequest) {
     Sentry.captureCheckIn({
       checkInId,
       monitorSlug: MONITOR_SLUG,
-      status: 'ok'
+      status: 'ok',
     })
 
     await Sentry.flush(10_000)
   })
 
-  return new Response(null, { status: 204 })
+  return new Response(null, {
+    status: 204,
+  })
 }
 
 export const GET = POST

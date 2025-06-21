@@ -1,6 +1,6 @@
-import { type MDXComponents } from 'mdx/types'
+import type { MDXComponents } from 'mdx/types'
 import NextLink, { type LinkProps } from 'next/link'
-import { type ComponentPropsWithoutRef } from 'react'
+import type { ComponentPropsWithoutRef } from 'react'
 
 function Link({
   children,
@@ -10,7 +10,7 @@ function Link({
   onClick,
   ...props
 }: ComponentPropsWithoutRef<'a'>) {
-  if (href && href.startsWith('/')) {
+  if (href?.startsWith('/')) {
     const linkProps: Partial<LinkProps> = {}
 
     if (typeof onMouseEnter === 'function') {
@@ -42,6 +42,6 @@ function Link({
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
     a: Link,
-    ...components
+    ...components,
   }
 }

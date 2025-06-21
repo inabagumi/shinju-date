@@ -11,7 +11,7 @@ export function GET(req: Request): Response {
       queries.length > 0
         ? `${basePath}/${encodeURIComponent(query)}`
         : basePath,
-      nextURL
-    )
+      nextURL,
+    ),
   )
 }

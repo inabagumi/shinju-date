@@ -1,5 +1,5 @@
-import { type Metadata } from 'next'
-import { type ReactNode } from 'react'
+import type { Metadata } from 'next'
+import type { ReactNode } from 'react'
 import SimpleDocument from '@/components/simple-document'
 import { title as siteName } from '@/lib/constants'
 
@@ -7,17 +7,17 @@ export const dynamic = 'force-static'
 
 export const metadata: Metadata = {
   alternates: {
-    canonical: '/about'
+    canonical: '/about',
   },
   openGraph: {
     siteName,
     title: `${siteName}とは?`,
-    type: 'article'
+    type: 'article',
   },
   title: `${siteName}とは?`,
   twitter: {
-    title: `${siteName}とは? - ${siteName}`
-  }
+    title: `${siteName}とは? - ${siteName}`,
+  },
 }
 
 export default function Template({ children }: { children: ReactNode }) {

@@ -1,8 +1,8 @@
-import { type Metadata } from 'next'
+import type { Metadata } from 'next'
 import SimpleDocument from '@/components/simple-document'
 
 export const metadata: Metadata = {
-  title: '404 Not Found'
+  title: '404 Not Found',
 }
 
 export default function NotFound() {

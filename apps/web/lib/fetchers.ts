@@ -44,15 +44,23 @@ export const fetchNotEndedVideos: Fetcher<
   const epochNanoseconds = await getCurrentTime()
   const baseTime = Temporal.Instant.fromEpochNanoseconds(epochNanoseconds)
   const hour = startOfHour(baseTime.toZonedDateTimeISO(timeZone))
-  const since = hour.toInstant().subtract({ hours: 5 })
-  const until = hour.add({ weeks: 1 }).toInstant()
+  const since = hour.toInstant().subtract({
+    hours: 5,
+  })
+  const until = hour
+    .add({
+      weeks: 1,
+    })
+    .toInstant()
 
   let builder = supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
     .gte('published_at', since.toJSON())
     .lte('published_at', until.toJSON())
-    .order('published_at', { ascending: false })
+    .order('published_at', {
+      ascending: false,
+    })
     .limit(100)
 
   if (channelIDs && channelIDs.length > 0) {
@@ -62,14 +70,18 @@ export const fetchNotEndedVideos: Fetcher<
   const { data: videos, error } = await builder
 
   if (error) {
-    throw new TypeError(error.message, { cause: error })
+    throw new TypeError(error.message, {
+      cause: error,
+    })
   }
 
   return videos.filter((video) => {
     const publishedAt = Temporal.Instant.from(video.published_at)
     const duration = Temporal.Duration.from(video.duration)
     const endedAt =
-      duration.total({ unit: 'second' }) > 0
+      duration.total({
+        unit: 'second',
+      }) > 0
         ? publishedAt.add(duration)
         : undefined
 
@@ -87,8 +99,10 @@ export const fetchNotEndedVideos: Fetcher<
     // まだ配信開始前やプレミア公開開始前の動画 (30分のゆとりあり)
     return (
       Temporal.Instant.compare(
-        baseTime.subtract({ minutes: 30 }),
-        publishedAt
+        baseTime.subtract({
+          minutes: 30,
+        }),
+        publishedAt,
       ) < 0
     )
   })
@@ -100,7 +114,9 @@ async function getDefaultBaseTime() {
   return Temporal.Instant.fromEpochNanoseconds(epochNanoseconds)
     .toZonedDateTimeISO(timeZone)
     .startOfDay()
-    .add({ months: 1 })
+    .add({
+      months: 1,
+    })
     .toInstant()
 }
 
@@ -112,7 +128,7 @@ type FetchVideosByChannelIDsOptions = {
 
 type KeyLoader = (
   index: number,
-  previousPageData: Video[]
+  previousPageData: Video[],
 ) => FetchVideosByChannelIDsOptions
 
 export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
@@ -127,12 +143,14 @@ export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
       channel_ids: channelIDs ?? [],
       perpage: SEARCH_RESULT_COUNT,
       query,
-      until: baseTime.toJSON()
+      until: baseTime.toJSON(),
     })
     .select<string, Video>(DEFAULT_SEARCH_SELECT)
 
   if (error) {
-    throw new TypeError(error.message, { cause: error })
+    throw new TypeError(error.message, {
+      cause: error,
+    })
   }
 
   return videos

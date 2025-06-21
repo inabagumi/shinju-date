@@ -1,9 +1,9 @@
-import { type ParsedUrlQuery } from 'node:querystring'
+import type { ParsedUrlQuery } from 'node:querystring'
 import { getQueryValue } from '../url'
 
 const DUMMY_QUERY: ParsedUrlQuery = {
   a: 'test',
-  b: ['test', 'test']
+  b: ['test', 'test'],
 }
 
 describe('getQueryValue', () => {

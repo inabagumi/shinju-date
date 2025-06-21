@@ -1,12 +1,12 @@
 'use client'
 
-import { Temporal } from 'temporal-polyfill'
+import type { Temporal } from 'temporal-polyfill'
 import { useNow } from './timer'
 
 export default function FormattedTime({
   className,
   dateTime,
-  options: { dateStyle = undefined, timeStyle = 'short' } = {}
+  options: { dateStyle = undefined, timeStyle = 'short' } = {},
 }: {
   className?: string | undefined
   dateTime: Temporal.ZonedDateTime
@@ -17,10 +17,12 @@ export default function FormattedTime({
   return (
     <time
       className={className}
-      dateTime={dateTime.toString({ timeZoneName: 'never' })}
+      dateTime={dateTime.toString({
+        timeZoneName: 'never',
+      })}
       title={dateTime.toLocaleString('ja-JP', {
         dateStyle: 'short',
-        timeStyle: 'medium'
+        timeStyle: 'medium',
       })}
     >
       {dateTime.toLocaleString('ja-JP', {
@@ -29,7 +31,7 @@ export default function FormattedTime({
         minute: timeStyle ? '2-digit' : undefined,
         month: dateStyle ? '2-digit' : undefined,
         second: timeStyle && timeStyle !== 'short' ? '2-digit' : undefined,
-        year: dateStyle && now.year !== dateTime.year ? 'numeric' : undefined
+        year: dateStyle && now.year !== dateTime.year ? 'numeric' : undefined,
       })}
     </time>
   )

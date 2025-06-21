@@ -1,9 +1,9 @@
+import type { default as DefaultDatabase } from '@shinju-date/database'
 import {
+  createClient,
   type SupabaseClient,
   type SupabaseClientOptions,
-  createClient
 } from '@supabase/supabase-js'
-import type { default as DefaultDatabase } from '@shinju-date/database'
 import type { cookies } from 'next/headers'
 
 const isProd = process.env['NODE_ENV'] === 'production'
@@ -14,7 +14,7 @@ class CookieStorage
   #cookieStore: Awaited<ReturnType<typeof cookies>>
 
   constructor({
-    cookieStore
+    cookieStore,
   }: {
     cookieStore: Awaited<ReturnType<typeof cookies>>
   }) {
@@ -30,7 +30,7 @@ class CookieStorage
       httpOnly: true,
       name: key,
       sameSite: 'strict',
-      secure: isProd
+      secure: isProd,
     })
   }
 
@@ -39,7 +39,7 @@ class CookieStorage
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60,
       sameSite: 'strict',
-      secure: isProd
+      secure: isProd,
     })
   }
 }
@@ -48,7 +48,7 @@ export type TypedSupabaseClient<
   Database = DefaultDatabase,
   SchemaName extends string & keyof Database = 'public' extends keyof Database
     ? 'public'
-    : string & keyof Database
+    : string & keyof Database,
 > = SupabaseClient<Database, SchemaName>
 
 type ClientOptions<SchemaName> = SupabaseClientOptions<SchemaName> & {
@@ -59,44 +59,44 @@ export function createSupabaseClient<
   Database = DefaultDatabase,
   SchemaName extends string & keyof Database = 'public' extends keyof Database
     ? 'public'
-    : string & keyof Database
+    : string & keyof Database,
 >(
   url: string,
   key: string,
-  options?: ClientOptions<SchemaName>
+  options?: ClientOptions<SchemaName>,
 ): SupabaseClient<Database, SchemaName>
 export function createSupabaseClient<
   Database = DefaultDatabase,
   SchemaName extends string & keyof Database = 'public' extends keyof Database
     ? 'public'
-    : string & keyof Database
+    : string & keyof Database,
 >(
   key: string,
-  options?: ClientOptions<SchemaName>
+  options?: ClientOptions<SchemaName>,
 ): SupabaseClient<Database, SchemaName>
 export function createSupabaseClient<
   Database = DefaultDatabase,
   SchemaName extends string & keyof Database = 'public' extends keyof Database
     ? 'public'
-    : string & keyof Database
+    : string & keyof Database,
 >(
-  options: ClientOptions<SchemaName> | undefined
+  options: ClientOptions<SchemaName> | undefined,
 ): SupabaseClient<Database, SchemaName>
 export function createSupabaseClient<
   Database = DefaultDatabase,
   SchemaName extends string & keyof Database = 'public' extends keyof Database
     ? 'public'
-    : string & keyof Database
+    : string & keyof Database,
 >(): SupabaseClient<Database, SchemaName>
 export function createSupabaseClient<
   Database = DefaultDatabase,
   SchemaName extends string & keyof Database = 'public' extends keyof Database
     ? 'public'
-    : string & keyof Database
+    : string & keyof Database,
 >(
   urlOrKeyOrOptions?: string | ClientOptions<SchemaName>,
   keyOrOptions?: string | ClientOptions<SchemaName>,
-  options?: ClientOptions<SchemaName>
+  options?: ClientOptions<SchemaName>,
 ): SupabaseClient<Database, SchemaName> {
   const key =
     typeof keyOrOptions === 'string'
@@ -129,10 +129,14 @@ export function createSupabaseClient<
     auth: {
       autoRefreshToken: true,
       flowType: 'pkce',
-      storage: cookieStore && new CookieStorage({ cookieStore }),
-      ...authOptions
+      storage:
+        cookieStore &&
+        new CookieStorage({
+          cookieStore,
+        }),
+      ...authOptions,
     },
-    ...clientOptions
+    ...clientOptions,
   })
 }
 

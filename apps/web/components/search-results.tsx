@@ -1,6 +1,6 @@
 'use client'
 
-import { type Tables } from '@shinju-date/database'
+import type { Tables } from '@shinju-date/database'
 import { useCallback } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import useSWRInfinite from 'swr/infinite'
@@ -22,7 +22,7 @@ type Channel = Pick<Tables<'channels'>, 'id' | 'name' | 'slug'>
 export default function SearchResults({
   channels,
   prefetchedData,
-  query = ''
+  query = '',
 }: {
   channels?: Channel[]
   prefetchedData?: Video[][]
@@ -33,20 +33,20 @@ export default function SearchResults({
       const lastVideo = previousVideos?.at(-1)
       const until = lastVideo
         ? Temporal.Instant.from(lastVideo.published_at).subtract({
-            nanoseconds: 1
+            nanoseconds: 1,
           })
         : undefined
 
       return {
-        channelIDs: channels && channels.map((channel) => channel.id),
+        channelIDs: channels?.map((channel) => channel.id),
         query,
-        until: until?.epochNanoseconds
+        until: until?.epochNanoseconds,
       }
     },
     fetchVideosByChannelIDs,
     prefetchedData && {
-      fallbackData: prefetchedData
-    }
+      fallbackData: prefetchedData,
+    },
   )
 
   const loadMore = useCallback(() => setSize((x) => x + 1), [setSize])
@@ -66,13 +66,13 @@ export default function SearchResults({
       style={{
         WebkitOverflowScrolling: undefined,
         height: undefined,
-        overflow: undefined
+        overflow: undefined,
       }}
     >
       <VideoCardList
         dateTimeFormatOptions={{
           dateStyle: 'short',
-          timeStyle: 'short'
+          timeStyle: 'short',
         }}
         values={items}
       />

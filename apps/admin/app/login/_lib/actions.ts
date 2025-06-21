@@ -3,34 +3,34 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { ZodError, z } from 'zod'
-import { type FormState } from '@/components/form'
+import type { FormState } from '@/components/form'
 import { createSupabaseClient } from '@/lib/supabase'
 
 const formSchema = z.object({
   email: z
     .string({
       invalid_type_error: 'メールアドレスの形式が正しくありません。',
-      required_error: 'メールアドレスは必須です。'
+      required_error: 'メールアドレスは必須です。',
     })
     .email('メールアドレスの形式が正しくありません。'),
   password: z
     .string({
       invalid_type_error: 'パスワードの形式が正しくありません。',
-      required_error: 'パスワードは必須です。'
+      required_error: 'パスワードは必須です。',
     })
-    .min(8, 'パスワードは8文字以上入力する必要があります。')
+    .min(8, 'パスワードは8文字以上入力する必要があります。'),
 })
 
 export async function signIn(
   _currentState: FormState,
-  formData: FormData
+  formData: FormData,
 ): Promise<FormState> {
   let credentials: z.infer<typeof formSchema>
 
   try {
     credentials = formSchema.parse({
       email: formData.get('email'),
-      password: formData.get('password')
+      password: formData.get('password'),
     })
   } catch (error) {
     if (error instanceof ZodError) {
@@ -42,32 +42,32 @@ export async function signIn(
           return {
             errors: {
               ...previousErrors,
-              [name]: [...previousMessages, issue.message]
-            }
+              [name]: [...previousMessages, issue.message],
+            },
           }
         },
-        {}
+        {},
       )
     }
 
     return {
       errors: {
-        generic: ['入力された値が正しくありません。']
-      }
+        generic: ['入力された値が正しくありません。'],
+      },
     }
   }
 
   const cookieStore = await cookies()
   const supabaseClient = createSupabaseClient({
-    cookieStore
+    cookieStore,
   })
   const { error } = await supabaseClient.auth.signInWithPassword(credentials)
 
   if (error) {
     return {
       errors: {
-        generic: ['メールアドレスかパスワードが正しくありません。']
-      }
+        generic: ['メールアドレスかパスワードが正しくありません。'],
+      },
     }
   }
 

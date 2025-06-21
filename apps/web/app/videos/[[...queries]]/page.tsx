@@ -1,4 +1,4 @@
-import { type Metadata } from 'next'
+import type { Metadata } from 'next'
 import NoResults from '@/components/no-results'
 import SearchResults from '@/components/search-results'
 import { title as siteName } from '@/lib/constants'
@@ -8,7 +8,7 @@ import { parseQueries } from '@/lib/url'
 export const revalidate = 300 // 5 minutes
 
 export async function generateMetadata({
-  params
+  params,
 }: Readonly<{
   params: Promise<{
     queries?: string[]
@@ -22,26 +22,26 @@ export async function generateMetadata({
     alternates: {
       canonical: query ? `/videos/${encodeURIComponent(query)}` : '/videos',
       types: {
-        'text/calendar': !query ? '/videos.ics' : null
-      }
+        'text/calendar': !query ? '/videos.ics' : null,
+      },
     },
     openGraph: {
       siteName,
       title,
-      type: 'article'
+      type: 'article',
     },
     robots: {
-      index: !query
+      index: !query,
     },
     title,
     twitter: {
-      title: `${title} - ${siteName}`
-    }
+      title: `${title} - ${siteName}`,
+    },
   }
 }
 
 export default async function VideosPage({
-  params
+  params,
 }: Readonly<{
   params: Promise<{
     queries?: string[]
@@ -51,7 +51,9 @@ export default async function VideosPage({
   const query = parseQueries(queries)
 
   const title = query ? `『${query}』の検索結果` : '動画一覧'
-  const videos = await fetchVideosByChannelIDs({ query })
+  const videos = await fetchVideosByChannelIDs({
+    query,
+  })
 
   if (videos.length < 1) {
     const message = query

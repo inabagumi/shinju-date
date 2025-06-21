@@ -5,5 +5,5 @@ export default defineConfig({
   entry: ['./src/index.ts'],
   format: 'esm',
   sourcemap: true,
-  target: 'es2022'
+  target: 'es2022',
 })

@@ -1,8 +1,8 @@
-import { type SVGProps } from 'react'
+import type { SVGProps } from 'react'
 
 export default function SearchIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 256 256" {...props}>
+    <svg aria-hidden="true" viewBox="0 0 256 256" {...props}>
       <circle
         cx="97.5"
         cy="100.5"

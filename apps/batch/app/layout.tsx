@@ -1,12 +1,12 @@
-import { type Metadata } from 'next'
-import { type ReactNode } from 'react'
+import type { Metadata } from 'next'
+import type { ReactNode } from 'react'
 
 export const metadata: Metadata = {
-  title: 'batch.shinju.date'
+  title: 'batch.shinju.date',
 }
 
 export default function RootLayout({
-  children
+  children,
 }: Readonly<{
   children: ReactNode
 }>) {

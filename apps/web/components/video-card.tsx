@@ -1,21 +1,21 @@
 import Image from 'next/image'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
-import { type Video } from '@/lib/fetchers'
+import type { Video } from '@/lib/fetchers'
 import { supabaseClient } from '@/lib/supabase'
 import FormattedTime from './formatted-time'
 import LiveNow from './live-now'
 
 function getThumbnailURL({
   slug,
-  thumbnail
+  thumbnail,
 }: Video): [src: string, blurDataURL: string | undefined] {
   if (!thumbnail) {
     return [`https://i.ytimg.com/vi/${slug}/maxresdefault.jpg`, undefined]
   }
 
   const {
-    data: { publicUrl: url }
+    data: { publicUrl: url },
   } = supabaseClient.storage.from('thumbnails').getPublicUrl(thumbnail.path)
 
   return [url, thumbnail?.blur_data_url]
@@ -66,8 +66,11 @@ export function VideoCardSkeleton() {
 }
 
 export default function VideoCard({
-  dateTimeFormatOptions = { dateStyle: undefined, timeStyle: 'short' },
-  value
+  dateTimeFormatOptions = {
+    dateStyle: undefined,
+    timeStyle: 'short',
+  },
+  value,
 }: {
   dateTimeFormatOptions?: Pick<
     Intl.DateTimeFormatOptions,
@@ -76,7 +79,7 @@ export default function VideoCard({
   value: Video
 }) {
   const publishedAt = Temporal.Instant.from(
-    value.published_at
+    value.published_at,
   ).toZonedDateTimeISO(timeZone)
   const duration = Temporal.Duration.from(value?.duration ?? 'P0D')
 
@@ -91,7 +94,9 @@ export default function VideoCard({
       <div className="relative aspect-video">
         <Thumbnail video={value} />
 
-        {duration.total({ unit: 'second' }) > 0 && (
+        {duration.total({
+          unit: 'second',
+        }) > 0 && (
           <span className="absolute bottom-0 left-0 m-2 inline-block rounded-md bg-slate-800/80 px-1.5 py-0.5 text-xs font-semibold text-white">
             <time dateTime={duration.toString()}>
               {formatDuration(duration)}

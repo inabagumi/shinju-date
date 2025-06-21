@@ -5,11 +5,13 @@ export default async function getTerms() {
     .from('terms')
     .select('readings, synonyms, term')
     .order('updated_at', {
-      ascending: true
+      ascending: true,
     })
 
   if (error) {
-    throw new TypeError(error.message, { cause: error })
+    throw new TypeError(error.message, {
+      cause: error,
+    })
   }
 
   return terms

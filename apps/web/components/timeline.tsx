@@ -10,14 +10,14 @@ import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 
 function TimelineSection({
   dateTime: rawDateTime,
-  items
+  items,
 }: {
   dateTime: string
   items: Video[]
 }) {
   const dateTime = useMemo(
     () => Temporal.PlainDate.from(rawDateTime),
-    [rawDateTime]
+    [rawDateTime],
   )
 
   return (
@@ -26,7 +26,7 @@ function TimelineSection({
         <time dateTime={dateTime.toJSON()}>
           {dateTime.toLocaleString('ja-JP', {
             dateStyle: 'short',
-            timeZone
+            timeZone,
           })}
         </time>
       </h2>
@@ -50,33 +50,33 @@ export function TimelineSkeleton() {
 
 export default function Timeline({
   channels,
-  prefetchedData
+  prefetchedData,
 }: {
   channels?: Channel[]
   prefetchedData: Video[]
 }) {
   const { data: videos } = useSWR(
     {
-      channelIDs: channels && channels.map((channel) => channel.slug)
+      channelIDs: channels?.map((channel) => channel.slug),
     },
     fetchNotEndedVideos,
     {
       fallbackData: prefetchedData,
-      refreshInterval: 60_000
-    }
+      refreshInterval: 60_000,
+    },
   )
   const schedule = useMemo<Record<string, Video[]>>(() => {
     const sortedValues = [...videos].sort((videoA, videoB) =>
       Temporal.Instant.compare(
         Temporal.Instant.from(videoA.published_at),
-        Temporal.Instant.from(videoB.published_at)
-      )
+        Temporal.Instant.from(videoB.published_at),
+      ),
     )
     return groupBy(sortedValues, (value) =>
       Temporal.Instant.from(value.published_at)
         .toZonedDateTimeISO(timeZone)
         .toPlainDate()
-        .toJSON()
+        .toJSON(),
     )
   }, [videos])
 

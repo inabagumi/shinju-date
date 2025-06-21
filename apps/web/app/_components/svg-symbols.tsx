@@ -1,6 +1,6 @@
 export default function SVGSymbols() {
   return (
-    <svg aria-hidden className="hidden">
+    <svg aria-hidden="true" className="hidden">
       <defs>
         <symbol id="svg-symbols-square-icon" viewBox="0 0 256 256">
           <circle

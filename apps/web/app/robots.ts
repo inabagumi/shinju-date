@@ -4,11 +4,11 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       allow: '/',
-      userAgent: '*'
+      userAgent: '*',
     },
     sitemap: new URL(
       '/sitemap.xml',
-      process.env['NEXT_PUBLIC_BASE_URL'] ?? 'http://localhost:3000'
-    ).toString()
+      process.env['NEXT_PUBLIC_BASE_URL'] ?? 'http://localhost:3000',
+    ).toString(),
   }
 }

@@ -11,7 +11,7 @@ export function GET(): Response {
       <Description>${description}</Description>
       <Image height="16" type="image/x-icon" width="16">${new URL(
         '/favicon.ico',
-        baseURL
+        baseURL,
       ).toString()}</Image>
       <InputEncoding>UTF-8</InputEncoding>
       <moz:SearchForm>${new URL('/', baseURL).toString()}</moz:SearchForm>
@@ -22,7 +22,7 @@ export function GET(): Response {
 
   return new Response(body, {
     headers: {
-      'Content-Type': 'application/opensearchdescription+xml; charset=UTF-8'
-    }
+      'Content-Type': 'application/opensearchdescription+xml; charset=UTF-8',
+    },
   })
 }

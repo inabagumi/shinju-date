@@ -3,7 +3,7 @@ import { startOfHour } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import {
   createCalendarResponse,
-  createEventAttributesList
+  createEventAttributesList,
 } from '@/lib/calendar'
 import { timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
@@ -14,25 +14,32 @@ export const runtime = 'edge'
 export async function GET(
   _req: Request,
   {
-    params
+    params,
   }: Readonly<{
     params: Promise<{
       slug: string
     }>
-  }>
+  }>,
 ): Promise<Response> {
   const { slug } = await params
   const { count, error } = await supabaseClient
     .from('channels')
-    .select('*', { count: 'exact', head: true })
+    .select('*', {
+      count: 'exact',
+      head: true,
+    })
     .eq('slug', slug)
 
   if (error) {
-    return createErrorResponse(error.message, { status: 500 })
+    return createErrorResponse(error.message, {
+      status: 500,
+    })
   }
 
   if (!count || count < 1) {
-    return createErrorResponse('Not Found', { status: 404 })
+    return createErrorResponse('Not Found', {
+      status: 404,
+    })
   }
 
   const now = startOfHour(Temporal.Now.zonedDateTimeISO(timeZone))
@@ -48,18 +55,32 @@ export async function GET(
         published_at,
         slug,
         title
-      `
+      `,
     )
     .eq('channels.slug', slug)
-    .lt('published_at', now.add({ days: 7 }).toInstant().toJSON())
-    .order('published_at', { ascending: false })
+    .lt(
+      'published_at',
+      now
+        .add({
+          days: 7,
+        })
+        .toInstant()
+        .toJSON(),
+    )
+    .order('published_at', {
+      ascending: false,
+    })
     .limit(100)
 
   if (secondError) {
-    return createErrorResponse(secondError.message, { status: 500 })
+    return createErrorResponse(secondError.message, {
+      status: 500,
+    })
   }
 
-  const events = createEventAttributesList(videos, { now })
+  const events = createEventAttributesList(videos, {
+    now,
+  })
 
   return createCalendarResponse(events)
 }

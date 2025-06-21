@@ -7,7 +7,7 @@ import {
   forwardRef,
   useCallback,
   useEffect,
-  useState
+  useState,
 } from 'react'
 import { useFormStatus } from 'react-dom'
 
@@ -31,7 +31,7 @@ export const SearchTextField = forwardRef<
     ({ target }) => {
       setValue(target.value)
     },
-    []
+    [],
   )
 
   return (

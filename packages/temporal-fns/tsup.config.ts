@@ -6,9 +6,9 @@ export default defineConfig({
     './src/index.ts',
     './src/max.ts',
     './src/min.ts',
-    './src/start-of-hour.ts'
+    './src/start-of-hour.ts',
   ],
   format: 'esm',
   sourcemap: true,
-  target: 'es2022'
+  target: 'es2022',
 })

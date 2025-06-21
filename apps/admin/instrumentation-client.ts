@@ -10,7 +10,7 @@ if (dsn) {
 
       Sentry.init({
         _experiments: {
-          enableLogs: true
+          enableLogs: true,
         },
         dsn,
         enabled: environment === 'production',
@@ -18,13 +18,13 @@ if (dsn) {
         integrations: [
           Sentry.browserTracingIntegration(),
           Sentry.browserProfilingIntegration(),
-          Sentry.replayIntegration()
+          Sentry.replayIntegration(),
         ],
         profilesSampleRate: 1.0,
         replaysOnErrorSampleRate: 1.0,
         replaysSessionSampleRate: 0.1,
         sendDefaultPii: true,
-        tracesSampleRate: 1.0
+        tracesSampleRate: 1.0,
       })
     })
     .catch((error) => {
@@ -34,7 +34,7 @@ if (dsn) {
 
 export async function onRouterTransitionStart(
   href: string,
-  navigationType: string
+  navigationType: string,
 ) {
   const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
 

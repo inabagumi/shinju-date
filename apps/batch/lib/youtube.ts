@@ -11,7 +11,7 @@ function createYouTubeClient() {
 
   return new youtube.Youtube({
     auth: apiKey,
-    fetchImplementation: fetch
+    fetchImplementation: fetch,
   })
 }
 
@@ -38,7 +38,7 @@ export type GetChannelsOptions = {
 }
 
 export async function* getChannels({
-  ids
+  ids,
 }: GetChannelsOptions): AsyncGenerator<
   FilteredYouTubeChannel,
   void,
@@ -46,11 +46,11 @@ export async function* getChannels({
 > {
   for (let i = 0; i < ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
     const {
-      data: { items }
+      data: { items },
     } = await youtubeClient.channels.list({
       id: ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS),
       maxResults: YOUTUBE_DATA_API_MAX_RESULTS,
-      part: ['contentDetails', 'id']
+      part: ['contentDetails', 'id'],
     })
 
     if (!items || items.length < 1) {
@@ -60,7 +60,7 @@ export async function* getChannels({
     yield* items.filter(
       (item): item is FilteredYouTubeChannel =>
         typeof item.id === 'string' &&
-        typeof item.contentDetails?.relatedPlaylists?.uploads === 'string'
+        typeof item.contentDetails?.relatedPlaylists?.uploads === 'string',
     )
   }
 }
@@ -78,7 +78,7 @@ export type GetPlaylistItemsOptions = {
 
 export async function* getPlaylistItems({
   all = false,
-  playlistID
+  playlistID,
 }: GetPlaylistItemsOptions): AsyncGenerator<
   FilteredYouTubePlaylistItem,
   void,
@@ -88,12 +88,16 @@ export async function* getPlaylistItems({
 
   while (true) {
     const {
-      data: { items, nextPageToken }
+      data: { items, nextPageToken },
     } = await youtubeClient.playlistItems.list({
       maxResults: all ? YOUTUBE_DATA_API_MAX_RESULTS : 20,
       part: ['contentDetails'],
       playlistId: playlistID,
-      ...(pageToken ? { pageToken } : {})
+      ...(pageToken
+        ? {
+            pageToken,
+          }
+        : {}),
     })
 
     if (!items || items.length < 1) {
@@ -102,7 +106,7 @@ export async function* getPlaylistItems({
 
     yield* items.filter(
       (item): item is FilteredYouTubePlaylistItem =>
-        typeof item.contentDetails?.videoId === 'string'
+        typeof item.contentDetails?.videoId === 'string',
     )
 
     if (!all || !nextPageToken) {
@@ -126,15 +130,15 @@ export type GetVideosOptions = {
 }
 
 export async function* getVideos({
-  ids
+  ids,
 }: GetVideosOptions): AsyncGenerator<FilteredYouTubeVideo, void, undefined> {
   for (let i = 0; i < ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
     const {
-      data: { items }
+      data: { items },
     } = await youtubeClient.videos.list({
       id: ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS - 1),
       maxResults: YOUTUBE_DATA_API_MAX_RESULTS,
-      part: ['contentDetails', 'liveStreamingDetails', 'snippet']
+      part: ['contentDetails', 'liveStreamingDetails', 'snippet'],
     })
 
     if (!items || items.length < 1) {
@@ -145,7 +149,7 @@ export async function* getVideos({
       (item): item is FilteredYouTubeVideo =>
         typeof item.id === 'string' &&
         typeof item.snippet?.publishedAt === 'string' &&
-        'contentDetails' in item
+        'contentDetails' in item,
     )
   }
 }

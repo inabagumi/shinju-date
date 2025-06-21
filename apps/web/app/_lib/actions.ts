@@ -7,7 +7,9 @@ export async function search(formData: FormData) {
   const query = formData.get('query')
 
   if (query && typeof query === 'string') {
-    await track('Search', { query })
+    await track('Search', {
+      query,
+    })
 
     redirect(`/videos/${encodeURIComponent(query)}`)
   } else {

@@ -1,8 +1,8 @@
-import { type default as Database } from '@shinju-date/database'
+import type { default as Database } from '@shinju-date/database'
 import retryableFetch from '@shinju-date/retryable-fetch'
 import {
+  createClient as createSupabaseClient,
   type SupabaseClient,
-  createClient as createSupabaseClient
 } from '@supabase/supabase-js'
 
 function getTags(requestInfo: RequestInfo | URL): string[] {
@@ -31,7 +31,7 @@ function getTags(requestInfo: RequestInfo | URL): string[] {
 
 function createClient(
   url = process.env['NEXT_PUBLIC_SUPABASE_URL'],
-  key = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']
+  key = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'],
 ): SupabaseClient<Database> {
   if (!url || !key) {
     throw new TypeError('Supabase URL and key are required.')
@@ -46,11 +46,11 @@ function createClient(
           ...requestInit,
           cache: 'force-cache',
           next: {
-            tags
-          }
+            tags,
+          },
         })
-      }
-    }
+      },
+    },
   })
 }
 
@@ -61,11 +61,13 @@ export async function* getAllChannels() {
     .from('channels')
     .select('id, name, slug')
     .order('created_at', {
-      ascending: true
+      ascending: true,
     })
 
   if (error) {
-    throw new TypeError(error.message, { cause: error })
+    throw new TypeError(error.message, {
+      cause: error,
+    })
   }
 
   for (const channel of data ?? []) {
@@ -80,7 +82,9 @@ export async function getChannelBySlug(slug: string) {
     .eq('slug', slug)
 
   if (error) {
-    throw new TypeError(error.message, { cause: error })
+    throw new TypeError(error.message, {
+      cause: error,
+    })
   }
 
   return channel[0] ?? null

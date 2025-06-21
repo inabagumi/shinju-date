@@ -1,11 +1,11 @@
-import { type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import Breadcrumbs from './breadcrumbs'
 
 export default function SimpleDocument({
   button,
   children,
   title,
-  withBreadcrumbs = false
+  withBreadcrumbs = false,
 }: {
   button?: ReactNode
   children: ReactNode

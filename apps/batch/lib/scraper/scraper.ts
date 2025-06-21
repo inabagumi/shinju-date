@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
-import { type TablesInsert } from '@shinju-date/database'
+import type { TablesInsert } from '@shinju-date/database'
 import { isNonNullable } from '@shinju-date/helpers'
 import retryableFetch from '@shinju-date/retryable-fetch'
 import mime from 'mime'
@@ -7,22 +7,20 @@ import { nanoid } from 'nanoid'
 import PQueue from 'p-queue'
 import sharp from 'sharp'
 import { Temporal } from 'temporal-polyfill'
-import { type TypedSupabaseClient } from '@/lib/supabase'
+import type { TypedSupabaseClient } from '@/lib/supabase'
 import {
   type FilteredYouTubeChannel,
   type FilteredYouTubeVideo,
   getPlaylistItems,
-  getVideos
+  getVideos,
 } from '@/lib/youtube'
 import DB, { type Video } from './db'
 import { getPublishedAt } from './helpers'
-import {
-  type SavedChannel,
-  type SavedThumbnail,
-  type SavedVideo
-} from './types'
+import type { SavedChannel, SavedThumbnail, SavedVideo } from './types'
 
-const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({ days: 365 })
+const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({
+  days: 365,
+})
 
 type StaticThumbnail = {
   height: number
@@ -44,7 +42,7 @@ function getThumbnail(video: FilteredYouTubeVideo): StaticThumbnail {
   return {
     height: thumbnail.height,
     url: thumbnail.url,
-    width: thumbnail.width
+    width: thumbnail.width,
   }
 }
 
@@ -80,7 +78,7 @@ export class Thumbnail {
   #width: number
 
   static upload(
-    options: ThumbnailOptions
+    options: ThumbnailOptions,
   ): Promise<TablesInsert<'thumbnails'> | null> {
     const instance = new Thumbnail(options)
 
@@ -91,16 +89,16 @@ export class Thumbnail {
     db,
     options,
     originalVideos,
-    savedVideos
+    savedVideos,
   }: UpsertThumbnailsOptions): Promise<{ id: number; path: string }[]> {
     const queue = new PQueue({
       concurrency: 12,
-      interval: 250
+      interval: 250,
     })
     const results = await Promise.allSettled(
       originalVideos.map((originalVideo) => {
         const savedVideo = savedVideos.find(
-          (savedVideo) => savedVideo.slug === originalVideo.id
+          (savedVideo) => savedVideo.slug === originalVideo.id,
         )
         const savedThumbnail = savedVideo?.thumbnails
           ? Array.isArray(savedVideo.thumbnails)
@@ -112,10 +110,10 @@ export class Thumbnail {
           Thumbnail.upload({
             ...options,
             originalVideo,
-            ...(savedThumbnail ? { savedThumbnail } : {})
-          })
+            ...(savedThumbnail ? { savedThumbnail } : {}),
+          }),
         )
-      })
+      }),
     )
 
     const values: TablesInsert<'thumbnails'>[] = []
@@ -140,7 +138,7 @@ export class Thumbnail {
     dryRun = false,
     originalVideo,
     savedThumbnail,
-    supabaseClient
+    supabaseClient,
   }: ThumbnailOptions) {
     const { height, url, width } = getThumbnail(originalVideo)
 
@@ -154,6 +152,7 @@ export class Thumbnail {
     this.#width = width
   }
 
+  // biome-ignore lint/suspicious/useAdjacentOverloadSignatures: 該当しないのになぜかエラーが出る。
   async upload(): Promise<TablesInsert<'thumbnails'> | null> {
     if (this.#savedThumbnail?.updated_at) {
       const updatedAt = Temporal.Instant.from(this.#savedThumbnail.updated_at)
@@ -161,14 +160,14 @@ export class Thumbnail {
       if (
         Temporal.Instant.compare(
           updatedAt.add({ minutes: 5 }),
-          this.#currentDateTime
+          this.#currentDateTime,
         ) > 0
       ) {
         if (this.#savedThumbnail.deleted_at) {
           return {
             ...this.#savedThumbnail,
             deleted_at: null,
-            updated_at: this.#currentDateTime.toString()
+            updated_at: this.#currentDateTime.toString(),
           }
         }
 
@@ -183,7 +182,7 @@ export class Thumbnail {
     }
 
     const imageRes = await retryableFetch(this.#url, {
-      headers: requestHeaders
+      headers: requestHeaders,
     })
 
     const etag = imageRes.headers.get('etag')
@@ -201,7 +200,7 @@ export class Thumbnail {
           ...this.#savedThumbnail,
           deleted_at: null,
           etag,
-          updated_at: this.#currentDateTime.toString()
+          updated_at: this.#currentDateTime.toString(),
         }
       }
 
@@ -218,10 +217,10 @@ export class Thumbnail {
         .from('thumbnails')
         .upload(path, imageBody, {
           cacheControl: DEFAULT_CACHE_CONTROL_MAX_AGE.total({
-            unit: 'second'
+            unit: 'second',
           }).toString(10),
           contentType,
-          upsert: false
+          upsert: false,
         })
 
       if (error) {
@@ -236,14 +235,10 @@ export class Thumbnail {
       deleted_at: null,
       etag,
       height: this.#height,
-      ...(this.#savedThumbnail
-        ? {
-            id: this.#savedThumbnail.id
-          }
-        : {}),
+      ...(this.#savedThumbnail ? { id: this.#savedThumbnail.id } : {}),
       path,
       updated_at: this.#currentDateTime.toString(),
-      width: this.#width
+      width: this.#width,
     }
   }
 }
@@ -268,7 +263,7 @@ export default class Scraper {
     currentDateTime = Temporal.Now.instant(),
     dryRun = false,
     savedChannel,
-    supabaseClient
+    supabaseClient,
   }: ScraperOptions) {
     this.#channel = channel
     this.#currentDateTime = currentDateTime
@@ -285,7 +280,7 @@ export default class Scraper {
     const videoIDs: string[] = []
 
     for await (const playlistItem of getPlaylistItems({
-      playlistID: this.playlistID
+      playlistID: this.playlistID,
     })) {
       videoIDs.push(playlistItem.contentDetails.videoId)
     }
@@ -312,26 +307,26 @@ export default class Scraper {
       options: {
         currentDateTime: this.#currentDateTime,
         dryRun: this.#dryRun,
-        supabaseClient: this.#db.client
+        supabaseClient: this.#db.client,
       },
       originalVideos,
-      savedVideos
+      savedVideos,
     })
 
     const values = originalVideos
       .map<TablesInsert<'videos'> | null>((originalVideo) => {
         const savedVideo = savedVideos.find(
-          (savedVideo) => savedVideo.slug === originalVideo.id
+          (savedVideo) => savedVideo.slug === originalVideo.id,
         )
         const thumbnail = thumbnails.find((thumbnail) =>
-          thumbnail.path.startsWith(`${originalVideo.id}/`)
+          thumbnail.path.startsWith(`${originalVideo.id}/`),
         )
         const publishedAt = getPublishedAt(originalVideo)
         const updateValue: Partial<TablesInsert<'videos'>> = {}
 
         if (savedVideo) {
           const savedPublishedAt = Temporal.Instant.from(
-            savedVideo.published_at
+            savedVideo.published_at,
           )
           const newDuration = originalVideo.contentDetails.duration ?? 'P0D'
 
@@ -392,7 +387,7 @@ export default class Scraper {
           updated_at: this.#currentDateTime.toString(),
           visible: savedVideo?.visible ?? true,
           ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
-          ...updateValue
+          ...updateValue,
         }
       })
       .filter(isNonNullable)

@@ -1,4 +1,4 @@
-import { type Metadata } from 'next'
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense } from 'react'
@@ -16,26 +16,26 @@ export const revalidate = 600 // 10 minutes
 
 export const metadata: Metadata = {
   alternates: {
-    canonical: '/'
+    canonical: '/',
   },
   description,
   openGraph: {
     description,
     title,
     type: 'website',
-    url: '/'
+    url: '/',
   },
   title: {
-    absolute: `${title} - ${tagline}`
+    absolute: `${title} - ${tagline}`,
   },
   twitter: {
     card: 'summary_large_image',
-    title
-  }
+    title,
+  },
 }
 
 async function HomeTimeline({
-  videosPromise
+  videosPromise,
 }: Readonly<{
   videosPromise: ReturnType<typeof fetchNotEndedVideos>
 }>) {
@@ -55,7 +55,11 @@ function RecommendationQueriesSkeleton() {
         {Array(RECOMMENDATION_QUERIES_COUNT)
           .fill(0)
           .map((_, i) => (
-            <li className="" key={`pill-${i}`}>
+            <li
+              className=""
+              // biome-ignore lint/suspicious/noArrayIndexKey: Skeleton用なので連番でも問題なし。
+              key={`pill-${i}`}
+            >
               <span className="block rounded-xl px-1 py-2 text-center hover:bg-774-nevy-100 dark:hover:bg-zinc-600">
                 <span className="inline-block h-4 w-20 animate-pulse bg-774-nevy-100 dark:bg-zinc-800" />
               </span>
@@ -67,7 +71,7 @@ function RecommendationQueriesSkeleton() {
 }
 
 async function RecommendationQueries({
-  queriesPromise
+  queriesPromise,
 }: Readonly<{
   queriesPromise: Promise<string[]>
 }>) {
@@ -100,9 +104,10 @@ async function RecommendationQueries({
 export default function SchedulePage() {
   const videosPromise = fetchNotEndedVideos({})
   const queriesPromise = redisClient
-    .srandmember<
-      string[]
-    >('recommendation_queries', RECOMMENDATION_QUERIES_COUNT)
+    .srandmember<string[]>(
+      'recommendation_queries',
+      RECOMMENDATION_QUERIES_COUNT,
+    )
     .then((queries) => queries ?? [])
 
   return (

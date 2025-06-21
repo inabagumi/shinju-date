@@ -18,10 +18,12 @@ export async function POST(request: Request): Promise<Response> {
     payload = await parseRequest(request)
   } catch (error) {
     Sentry.logger.warn('Incorrect request received.', {
-      cause: error
+      cause: error,
     })
 
-    return createErrorResponse('Unprocessable Entity', { status: 422 })
+    return createErrorResponse('Unprocessable Entity', {
+      status: 422,
+    })
   }
 
   for (const tag of payload.tags) {
@@ -29,8 +31,10 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   Sentry.logger.info('Revalidation was successful.', {
-    tags: payload.tags
+    tags: payload.tags,
   })
 
-  return new Response(null, { status: 204 })
+  return new Response(null, {
+    status: 204,
+  })
 }

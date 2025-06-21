@@ -9,18 +9,20 @@ type RevalidateOptions = {
 
 export async function revalidateTags(
   tags: string[],
-  { signal }: RevalidateOptions = {}
+  { signal }: RevalidateOptions = {},
 ): Promise<void> {
   if (!IS_PRODUCTION || tags.length < 1) {
     return
   }
 
   await fetch(REVALIDATE_URL, {
-    body: JSON.stringify({ tags }),
+    body: JSON.stringify({
+      tags,
+    }),
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
     method: 'POST',
-    signal: signal ?? null
+    signal: signal ?? null,
   })
 }

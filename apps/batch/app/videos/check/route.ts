@@ -1,14 +1,14 @@
 import * as Sentry from '@sentry/nextjs'
-import { type default as Database } from '@shinju-date/database'
+import type { default as Database } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
-import { type NextRequest, after } from 'next/server'
+import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import {
   videosCheckAll as ratelimitAll,
-  videosCheck as ratelimitRecent
+  videosCheck as ratelimitRecent,
 } from '@/lib/ratelimit'
 import { revalidateTags } from '@/lib/revalidate'
-import { type TypedSupabaseClient, supabaseClient } from '@/lib/supabase'
+import { supabaseClient, type TypedSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 
 function getMonitorSlug({ all }: { all?: boolean | undefined }) {
@@ -36,14 +36,17 @@ type GetSavedVideos = {
 
 async function* getSavedVideos({
   all = false,
-  supabaseClient
+  supabaseClient,
 }: GetSavedVideos): AsyncGenerator<Video, void, undefined> {
-  const { count, error } = await supabaseClient
-    .from('videos')
-    .select('*', { count: 'exact', head: true })
+  const { count, error } = await supabaseClient.from('videos').select('*', {
+    count: 'exact',
+    head: true,
+  })
 
   if (error) {
-    throw new TypeError(error.message, { cause: error })
+    throw new TypeError(error.message, {
+      cause: error,
+    })
   }
 
   if (!count) return
@@ -54,11 +57,15 @@ async function* getSavedVideos({
       .from('videos')
       .select('id, slug, thumbnails (id)')
       .is('deleted_at', null)
-      .order('published_at', { ascending: false })
+      .order('published_at', {
+        ascending: false,
+      })
       .range(i, i + (limit - 1))
 
     if (error) {
-      throw new TypeError(error.message, { cause: error })
+      throw new TypeError(error.message, {
+        cause: error,
+      })
     }
 
     for (const savedVideo of savedVideos) {
@@ -72,17 +79,17 @@ async function* getSavedVideos({
 }
 
 async function* getVideoIDs(
-  ids: string[]
+  ids: string[],
 ): AsyncGenerator<string, void, undefined> {
   for (let i = 0; i < ids.length; i += 50) {
     const videoIDs = ids.slice(i, i + 50)
 
     const {
-      data: { items }
+      data: { items },
     } = await youtubeClient.videos.list({
       id: videoIDs,
       maxResults: videoIDs.length,
-      part: ['id']
+      part: ['id'],
     })
 
     if (!items || items.length < 1) {
@@ -110,19 +117,25 @@ async function softDeleteRows({
   currentDateTime,
   ids,
   supabaseClient,
-  table
-}: SoftDeleteRowsOptions): Promise<{ id: number }[]> {
+  table,
+}: SoftDeleteRowsOptions): Promise<
+  {
+    id: number
+  }[]
+> {
   const { data, error } = await supabaseClient
     .from(table)
     .update({
       deleted_at: currentDateTime.toJSON(),
-      updated_at: currentDateTime.toJSON()
+      updated_at: currentDateTime.toJSON(),
     })
     .in('id', ids)
     .select('id')
 
   if (error) {
-    throw new TypeError(error.message, { cause: error })
+    throw new TypeError(error.message, {
+      cause: error,
+    })
   }
 
   return data
@@ -137,11 +150,17 @@ type DeleteOptions = {
 function deleteVideos({
   currentDateTime,
   supabaseClient,
-  videos
-}: DeleteOptions): Promise<PromiseSettledResult<{ id: number }[]>[]> {
+  videos,
+}: DeleteOptions): Promise<
+  PromiseSettledResult<
+    {
+      id: number
+    }[]
+  >[]
+> {
   const thumbnails = videos
     .map((video) =>
-      Array.isArray(video.thumbnails) ? video.thumbnails[0] : video.thumbnails
+      Array.isArray(video.thumbnails) ? video.thumbnails[0] : video.thumbnails,
     )
     .filter(Boolean) as Thumbnail[]
 
@@ -150,23 +169,30 @@ function deleteVideos({
       currentDateTime,
       ids: videos.map((video) => video.id),
       supabaseClient,
-      table: 'videos'
+      table: 'videos',
     }),
     softDeleteRows({
       currentDateTime,
       ids: thumbnails.map((thumbnail) => thumbnail.id),
       supabaseClient,
-      table: 'thumbnails'
-    })
+      table: 'thumbnails',
+    }),
   ])
 }
 
 export async function POST(request: NextRequest): Promise<Response> {
   const cronSecure = process.env['CRON_SECRET']
-  if (cronSecure && !verifyCronRequest(request, { cronSecure })) {
+  if (
+    cronSecure &&
+    !verifyCronRequest(request, {
+      cronSecure,
+    })
+  ) {
     Sentry.logger.warn('CRON_SECRET did not match.')
 
-    return createErrorResponse('Unauthorized', { status: 401 })
+    return createErrorResponse('Unauthorized', {
+      status: 401,
+    })
   }
 
   const { searchParams } = request.nextUrl
@@ -175,7 +201,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     ['1', 'true', 'yes'].includes(searchParams.get('all') ?? 'false')
   const ratelimit = all ? ratelimitAll : ratelimitRecent
   const { success } = await ratelimit.limit(
-    all ? 'videos:check:all' : 'videos:check'
+    all ? 'videos:check:all' : 'videos:check',
   )
 
   if (!success) {
@@ -183,23 +209,27 @@ export async function POST(request: NextRequest): Promise<Response> {
 
     return createErrorResponse(
       'There has been no interval since the last run.',
-      { status: 429 }
+      {
+        status: 429,
+      },
     )
   }
 
-  const monitorSlug = getMonitorSlug({ all })
+  const monitorSlug = getMonitorSlug({
+    all,
+  })
   const checkInId = Sentry.captureCheckIn(
     {
       monitorSlug,
-      status: 'in_progress'
+      status: 'in_progress',
     },
     {
       schedule: {
         type: 'crontab',
-        value: all ? '4 23 * * 2' : '27/30 * * * *'
+        value: all ? '4 23 * * 2' : '27/30 * * * *',
       },
-      timezone: 'Etc/UTC'
-    }
+      timezone: 'Etc/UTC',
+    },
   )
 
   const currentDateTime = Temporal.Now.instant()
@@ -207,7 +237,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   for await (const savedVideo of getSavedVideos({
     all,
-    supabaseClient
+    supabaseClient,
   })) {
     savedVideos.push(savedVideo)
   }
@@ -215,25 +245,25 @@ export async function POST(request: NextRequest): Promise<Response> {
   const videoIDs: string[] = []
 
   for await (const videoID of getVideoIDs(
-    savedVideos.map((savedVideo) => savedVideo.slug)
+    savedVideos.map((savedVideo) => savedVideo.slug),
   )) {
     videoIDs.push(videoID)
   }
 
   if (savedVideos.length !== videoIDs.length) {
     const deletedVideos = savedVideos.filter(
-      (savedVideo) => !videoIDs.includes(savedVideo.slug)
+      (savedVideo) => !videoIDs.includes(savedVideo.slug),
     )
 
     if (deletedVideos.length > 0) {
       const results = await deleteVideos({
         currentDateTime,
         supabaseClient,
-        videos: deletedVideos
+        videos: deletedVideos,
       })
       const rejectedResults = results.filter(
         (result): result is PromiseRejectedResult =>
-          result.status === 'rejected'
+          result.status === 'rejected',
       )
 
       for (const result of rejectedResults) {
@@ -241,11 +271,11 @@ export async function POST(request: NextRequest): Promise<Response> {
       }
 
       Sentry.logger.info('The videos has been deleted.', {
-        ids: deletedVideos.map((video) => video.slug)
+        ids: deletedVideos.map((video) => video.slug),
       })
 
       await revalidateTags(['videos'], {
-        signal: request.signal
+        signal: request.signal,
       })
     }
   } else {
@@ -256,14 +286,14 @@ export async function POST(request: NextRequest): Promise<Response> {
     Sentry.captureCheckIn({
       checkInId,
       monitorSlug,
-      status: 'ok'
+      status: 'ok',
     })
 
     await Sentry.flush(10_000)
   })
 
   return new Response(null, {
-    status: 204
+    status: 204,
   })
 }
 

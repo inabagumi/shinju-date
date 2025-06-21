@@ -3,10 +3,8 @@
   "dependencies": {},
   "description": "",
   "devDependencies": {
-    "@shinju-date/eslint-config": "workspace:*",
     "@tsconfig/node20": "^20.1.6",
     "@tsconfig/strictest": "^2.0.5",
-    "eslint": "^8.57.1",
     "next": "^15.3.4",
     "supabase": "^2.26.9",
     "tsup": "^8.5.0",
@@ -28,8 +26,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "generate": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > types/supabase.ts",
-    "lint": "eslint ."
+    "generate": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > types/supabase.ts"
   },
   "type": "module",
   "types": "./dist/index.d.ts",

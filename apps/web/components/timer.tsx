@@ -5,7 +5,7 @@ import {
   createContext,
   useContext,
   useEffect,
-  useState
+  useState,
 } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
@@ -16,7 +16,11 @@ type TimerContextValue = {
 
 const TimerContext = createContext<TimerContextValue>({})
 
-export function TimerProvider({ children }: Readonly<{ children: ReactNode }>) {
+export function TimerProvider({
+  children,
+}: Readonly<{
+  children: ReactNode
+}>) {
   const [now, setNow] = useState<Temporal.ZonedDateTime>()
 
   useEffect(() => {
@@ -30,7 +34,13 @@ export function TimerProvider({ children }: Readonly<{ children: ReactNode }>) {
   }, [])
 
   return (
-    <TimerContext.Provider value={{ now }}>{children}</TimerContext.Provider>
+    <TimerContext.Provider
+      value={{
+        now,
+      }}
+    >
+      {children}
+    </TimerContext.Provider>
   )
 }
 
