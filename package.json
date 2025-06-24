@@ -9,7 +9,7 @@
   "homepage": "https://shinju.date/",
   "license": "MIT",
   "name": "@shinju-date/monorepo",
-  "packageManager": "pnpm@10.12.2",
+  "packageManager": "pnpm@10.12.3",
   "pnpm": {
     "neverBuiltDependencies": [
       "@biome/biome"
