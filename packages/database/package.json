@@ -6,7 +6,7 @@
     "@tsconfig/node20": "^20.1.6",
     "@tsconfig/strictest": "^2.0.5",
     "next": "^15.3.4",
-    "supabase": "^2.26.9",
+    "supabase": "^2.30.4",
     "tsup": "^8.5.0",
     "typescript": "~5.8.3"
   },
