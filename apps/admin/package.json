@@ -3,7 +3,7 @@
   "dependencies": {
     "@sentry/nextjs": "^9.34.0",
     "@sentry/profiling-node": "^9.34.0",
-    "@supabase/supabase-js": "^2.50.2",
+    "@supabase/supabase-js": "^2.50.3",
     "next": "^15.3.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
