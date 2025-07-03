@@ -42,7 +42,7 @@ importers:
         specifier: ^4.1.11
         version: 4.1.11
       zod:
-        specifier: ^3.25.70
+        specifier: ^3.25.71
         version: 3.25.71
     devDependencies:
       '@shinju-date/database':
@@ -127,7 +127,7 @@ importers:
         specifier: ^0.3.0
         version: 0.3.0
       zod:
-        specifier: ^3.25.70
+        specifier: ^3.25.71
         version: 3.25.71
     devDependencies:
       '@shinju-date/database':
@@ -221,7 +221,7 @@ importers:
         specifier: ^1.6.1
         version: 1.6.1
       zod:
-        specifier: ^3.25.70
+        specifier: ^3.25.71
         version: 3.25.71
     devDependencies:
       '@jest/types':
