@@ -6,7 +6,7 @@
     "@sentry/profiling-node": "^9.37.0",
     "@shinju-date/helpers": "workspace:*",
     "@shinju-date/retryable-fetch": "workspace:*",
-    "@supabase/supabase-js": "^2.50.3",
+    "@supabase/supabase-js": "^2.50.5",
     "@upstash/ratelimit": "^2.0.5",
     "@upstash/redis": "^1.35.1",
     "mime": "^4.0.7",
