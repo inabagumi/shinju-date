@@ -27,8 +27,8 @@ importers:
         specifier: ^9.40.0
         version: 9.40.0
       '@supabase/supabase-js':
-        specifier: ^2.52.0
-        version: 2.52.0
+        specifier: ^2.52.1
+        version: 2.52.1
       next:
         specifier: ^15.4.3
         version: 15.4.3(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -94,8 +94,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/retryable-fetch
       '@supabase/supabase-js':
-        specifier: ^2.52.0
-        version: 2.52.0
+        specifier: ^2.52.1
+        version: 2.52.1
       '@upstash/ratelimit':
         specifier: ^2.0.5
         version: 2.0.5(@upstash/redis@1.35.1)
@@ -176,8 +176,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/temporal-fns
       '@supabase/supabase-js':
-        specifier: ^2.52.0
-        version: 2.52.0
+        specifier: ^2.52.1
+        version: 2.52.1
       '@upstash/redis':
         specifier: ^1.35.1
         version: 1.35.1
@@ -1568,8 +1568,8 @@ packages:
   '@supabase/storage-js@2.7.1':
     resolution: {integrity: sha512-asYHcyDR1fKqrMpytAS1zjyEfvxuOIp1CIXX7ji4lHHcJKqyk+sLl/Vxgm4sN6u8zvuUtae9e4kDxQP2qrwWBA==}
 
-  '@supabase/supabase-js@2.52.0':
-    resolution: {integrity: sha512-jbs3CV1f2+ge7sgBeEduboT9v/uGjF22v0yWi/5/XFn5tbM8MfWRccsMtsDwAwu24XK8H6wt2LJDiNnZLtx/bg==}
+  '@supabase/supabase-js@2.52.1':
+    resolution: {integrity: sha512-IxYljprgl381j4SuFrW4JimjTb59WJ98DqxhMvEOJjpGJWuZ7kwttIWn7E4NBnvkYwZ948zJkJ7dSI6B0oO0Xw==}
 
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
@@ -5513,7 +5513,7 @@ snapshots:
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
-  '@supabase/supabase-js@2.52.0':
+  '@supabase/supabase-js@2.52.1':
     dependencies:
       '@supabase/auth-js': 2.71.1
       '@supabase/functions-js': 2.4.5
