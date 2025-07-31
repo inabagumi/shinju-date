@@ -8,7 +8,7 @@
     "next": "^15.4.5",
     "supabase": "^2.33.7",
     "tsup": "^8.5.0",
-    "typescript": "~5.8.3"
+    "typescript": "~5.9.2"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
