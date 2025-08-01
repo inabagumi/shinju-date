@@ -8,15 +8,13 @@ export async function register() {
 
     const environment = process.env['VERCEL_ENV'] ?? 'development'
     const commonSentryOptions = {
-      _experiments: {
-        enableLogs: true,
-      },
       dsn,
       enabled: environment === 'production',
+      enableLogs: true,
       environment,
       sendDefaultPii: true,
       tracesSampleRate: 0.333,
-    }
+    } satisfies Parameters<typeof import('@sentry/nextjs').init>[0]
 
     if (process.env['NEXT_RUNTIME'] === 'nodejs') {
       const { nodeProfilingIntegration } = await import(

@@ -9,11 +9,9 @@ if (dsn) {
         'development'
 
       Sentry.init({
-        _experiments: {
-          enableLogs: true,
-        },
         dsn,
         enabled: environment === 'production',
+        enableLogs: true,
         environment,
         integrations: [
           Sentry.browserTracingIntegration(),
