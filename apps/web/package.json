@@ -17,7 +17,7 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-infinite-scroll-component": "^6.1.0",
-    "swr": "^2.3.5",
+    "swr": "^2.3.6",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.11",
     "temporal-polyfill": "^0.3.0",
