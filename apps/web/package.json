@@ -7,7 +7,7 @@
     "@shinju-date/helpers": "workspace:*",
     "@shinju-date/retryable-fetch": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
-    "@supabase/supabase-js": "^2.54.0",
+    "@supabase/supabase-js": "^2.55.0",
     "@upstash/redis": "^1.35.3",
     "@vercel/analytics": "^1.5.0",
     "dedent": "^1.6.0",
