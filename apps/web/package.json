@@ -37,7 +37,7 @@
     "@types/jest": "^30.0.0",
     "@types/lodash.groupby": "^4.6.9",
     "@types/mdx": "^2.0.13",
-    "@types/node": "^22.17.1",
+    "@types/node": "^22.17.2",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "babel-plugin-react-compiler": "19.1.0-rc.2",
