@@ -17,7 +17,7 @@
     "@tsconfig/next": "^2.0.3",
     "@tsconfig/strictest": "^2.0.5",
     "@types/node": "^22.17.2",
-    "@types/react": "^19.1.10",
+    "@types/react": "^19.1.11",
     "@types/react-dom": "^19.1.7",
     "babel-plugin-react-compiler": "19.1.0-rc.2",
     "postcss-load-config": "^6.0.1",
