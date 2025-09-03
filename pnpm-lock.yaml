@@ -185,8 +185,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0(next@15.5.2(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       dedent:
-        specifier: ^1.6.0
-        version: 1.6.0
+        specifier: ^1.7.0
+        version: 1.7.0
       ics:
         specifier: ^3.8.1
         version: 3.8.1
@@ -2308,8 +2308,8 @@ packages:
   decode-named-character-reference@1.2.0:
     resolution: {integrity: sha512-c6fcElNV6ShtZXmsgNgFFV5tVX2PaV4g+MOAkb8eXHvn6sryJBrZa9r0zV6+dtTyoCKxtDy5tyQ5ZwQuidtd+Q==}
 
-  dedent@1.6.0:
-    resolution: {integrity: sha512-F1Z+5UCFpmQUzJa11agbyPVMbpgT/qA3/SKyJ1jyBgm7dUcUEa8v9JwDkerSQXfakBwFljIxhOJqGkjUwZ9FSA==}
+  dedent@1.7.0:
+    resolution: {integrity: sha512-HGFtf8yhuhGhqO07SV79tRp+br4MnbdjeVxotpn1QBl30pcLLCQjX5b2295ll0fv8RKDKsmWYrl05usHM9CewQ==}
     peerDependencies:
       babel-plugin-macros: ^3.1.0
     peerDependenciesMeta:
@@ -6247,7 +6247,7 @@ snapshots:
     dependencies:
       character-entities: 2.0.2
 
-  dedent@1.6.0: {}
+  dedent@1.7.0: {}
 
   deepmerge@4.3.1: {}
 
@@ -6804,7 +6804,7 @@ snapshots:
       '@types/node': 22.18.0
       chalk: 4.1.2
       co: 4.6.0
-      dedent: 1.6.0
+      dedent: 1.7.0
       is-generator-fn: 2.1.0
       jest-each: 30.1.0
       jest-matcher-utils: 30.1.2
