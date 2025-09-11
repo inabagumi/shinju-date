@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod/v3'
 
 export const payloadSchema = z.object({
   tags: z.string().min(1).array().nonempty(),

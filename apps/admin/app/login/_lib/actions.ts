@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { ZodError, z } from 'zod'
+import * as z from 'zod/v3'
 import type { FormState } from '@/components/form'
 import { createSupabaseClient } from '@/lib/supabase'
 
@@ -33,7 +33,7 @@ export async function signIn(
       password: formData.get('password'),
     })
   } catch (error) {
-    if (error instanceof ZodError) {
+    if (error instanceof z.ZodError) {
       return error.issues.reduce<FormState>(
         ({ errors: previousErrors = {} }, issue) => {
           const name = issue.path.join('.')
