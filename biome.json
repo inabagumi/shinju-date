@@ -18,7 +18,12 @@
       "quoteStyle": "single"
     },
     "linter": {
-      "enabled": true
+      "enabled": true,
+      "rules": {
+        "suspicious": {
+          "noUnknownAtRules": "off"
+        }
+      }
     }
   },
   "formatter": {
