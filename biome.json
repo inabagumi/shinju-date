@@ -34,6 +34,9 @@
     "rules": {
       "complexity": {
         "useLiteralKeys": "off"
+      },
+      "suspicious": {
+        "noUnknownAtRules": "off"
       }
     }
   },
