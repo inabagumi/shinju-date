@@ -18,12 +18,7 @@
       "quoteStyle": "single"
     },
     "linter": {
-      "enabled": true,
-      "rules": {
-        "suspicious": {
-          "noUnknownAtRules": "off"
-        }
-      }
+      "enabled": true
     }
   },
   "formatter": {
@@ -39,6 +34,9 @@
     "rules": {
       "complexity": {
         "useLiteralKeys": "off"
+      },
+      "suspicious": {
+        "noUnknownAtRules": "off"
       }
     }
   },
