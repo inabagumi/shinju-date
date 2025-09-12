@@ -9,7 +9,7 @@
     "@supabase/supabase-js": "^2.55.0",
     "@upstash/ratelimit": "^2.0.6",
     "@upstash/redis": "^1.35.3",
-    "mime": "^4.0.7",
+    "mime": "^4.1.0",
     "nanoid": "^5.1.5",
     "next": "^15.5.3",
     "p-queue": "^8.1.1",
