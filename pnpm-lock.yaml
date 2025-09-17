@@ -42,8 +42,8 @@ importers:
         specifier: ^4.1.13
         version: 4.1.13
       zod:
-        specifier: ^4.1.8
-        version: 4.1.8
+        specifier: ^4.1.9
+        version: 4.1.9
     devDependencies:
       '@shinju-date/database':
         specifier: workspace:*
@@ -127,8 +127,8 @@ importers:
         specifier: ^0.3.0
         version: 0.3.0
       zod:
-        specifier: ^4.1.8
-        version: 4.1.8
+        specifier: ^4.1.9
+        version: 4.1.9
     devDependencies:
       '@shinju-date/database':
         specifier: workspace:*
@@ -221,8 +221,8 @@ importers:
         specifier: ^1.6.1
         version: 1.6.1
       zod:
-        specifier: ^4.1.8
-        version: 4.1.8
+        specifier: ^4.1.9
+        version: 4.1.9
     devDependencies:
       '@jest/types':
         specifier: ^30.0.5
@@ -4188,8 +4188,8 @@ packages:
   yup@1.7.0:
     resolution: {integrity: sha512-VJce62dBd+JQvoc+fCVq+KZfPHr+hXaxCcVgotfwWvlR0Ja3ffYKaJBT8rptPOSKOGJDCUnW2C2JWpud7aRP6Q==}
 
-  zod@4.1.8:
-    resolution: {integrity: sha512-5R1P+WwQqmmMIEACyzSvo4JXHY5WiAFHRMg+zBZKgKS+Q1viRa0C1hmUKtHltoIFKtIdki3pRxkmpP74jnNYHQ==}
+  zod@4.1.9:
+    resolution: {integrity: sha512-HI32jTq0AUAC125z30E8bQNz0RQ+9Uc+4J7V97gLYjZVKRjeydPgGt6dvQzFrav7MYOUGFqqOGiHpA/fdbd0cQ==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -8727,6 +8727,6 @@ snapshots:
       toposort: 2.0.2
       type-fest: 2.19.0
 
-  zod@4.1.8: {}
+  zod@4.1.9: {}
 
   zwitch@2.0.4: {}
