@@ -32,7 +32,7 @@
     "@shinju-date/database": "workspace:*",
     "@tailwindcss/postcss": "^4.1.13",
     "@tsconfig/next": "^2.0.3",
-    "@tsconfig/strictest": "^2.0.5",
+    "@tsconfig/strictest": "^2.0.6",
     "@types/dedent": "^0.7.2",
     "@types/jest": "^30.0.0",
     "@types/lodash.groupby": "^4.6.9",
