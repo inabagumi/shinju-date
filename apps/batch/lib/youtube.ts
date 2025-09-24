@@ -136,7 +136,7 @@ export async function* getVideos({
     const {
       data: { items },
     } = await youtubeClient.videos.list({
-      id: ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS - 1),
+      id: ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS),
       maxResults: YOUTUBE_DATA_API_MAX_RESULTS,
       part: ['contentDetails', 'liveStreamingDetails', 'snippet'],
     })
