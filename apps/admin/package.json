@@ -21,7 +21,7 @@
     "@types/react-dom": "^19.1.9",
     "babel-plugin-react-compiler": "19.1.0-rc.3",
     "postcss-load-config": "^6.0.1",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.3"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
