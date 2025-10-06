@@ -98,10 +98,10 @@ importers:
         version: 2.55.0
       '@upstash/ratelimit':
         specifier: ^2.0.6
-        version: 2.0.6(@upstash/redis@1.35.4)
+        version: 2.0.6(@upstash/redis@1.35.5)
       '@upstash/redis':
-        specifier: ^1.35.4
-        version: 1.35.4
+        specifier: ^1.35.5
+        version: 1.35.5
       mime:
         specifier: ^4.1.0
         version: 4.1.0
@@ -179,8 +179,8 @@ importers:
         specifier: ^2.55.0
         version: 2.55.0
       '@upstash/redis':
-        specifier: ^1.35.4
-        version: 1.35.4
+        specifier: ^1.35.5
+        version: 1.35.5
       '@vercel/analytics':
         specifier: ^1.5.0
         version: 1.5.0(next@15.5.4(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
@@ -1907,8 +1907,8 @@ packages:
     peerDependencies:
       '@upstash/redis': ^1.34.3
 
-  '@upstash/redis@1.35.4':
-    resolution: {integrity: sha512-WE1ZnhFyBiIjTDW13GbO6JjkiMVVjw5VsvS8ENmvvJsze/caMQ5paxVD44+U68IUVmkXcbsLSoE+VIYsHtbQEw==}
+  '@upstash/redis@1.35.5':
+    resolution: {integrity: sha512-KdLdNAspQGOTGeC++o2LDBzNbMXrfInnmW5nUJfNXabnVh8X4NPrlJ0X4j75cBUShiMpXB3uI1ql4KpFQeqrHQ==}
 
   '@vercel/analytics@1.5.0':
     resolution: {integrity: sha512-MYsBzfPki4gthY5HnYN7jgInhAZ7Ac1cYDoRWFomwGHWEX7odTEzbtg9kf/QSo7XEsEAqlQugA6gJ2WS2DEa3g==}
@@ -5831,14 +5831,14 @@ snapshots:
 
   '@upstash/core-analytics@0.0.10':
     dependencies:
-      '@upstash/redis': 1.35.4
+      '@upstash/redis': 1.35.5
 
-  '@upstash/ratelimit@2.0.6(@upstash/redis@1.35.4)':
+  '@upstash/ratelimit@2.0.6(@upstash/redis@1.35.5)':
     dependencies:
       '@upstash/core-analytics': 0.0.10
-      '@upstash/redis': 1.35.4
+      '@upstash/redis': 1.35.5
 
-  '@upstash/redis@1.35.4':
+  '@upstash/redis@1.35.5':
     dependencies:
       uncrypto: 0.1.3
 
