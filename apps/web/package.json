@@ -39,7 +39,7 @@
     "@types/mdx": "^2.0.13",
     "@types/node": "^22.18.10",
     "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.1",
+    "@types/react-dom": "^19.2.2",
     "babel-plugin-react-compiler": "19.1.0-rc.3",
     "jest": "^30.2.0",
     "postcss": "^8.5.6",
