@@ -35,6 +35,15 @@
       "complexity": {
         "useLiteralKeys": "off"
       },
+      "nursery": {
+        "useSortedClasses": {
+          "level": "warn",
+          "options": {
+            "attributes": ["className"],
+            "functions": ["twMerge"]
+          }
+        }
+      },
       "suspicious": {
         "noUnknownAtRules": "off"
       }

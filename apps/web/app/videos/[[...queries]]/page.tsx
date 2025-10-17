@@ -65,7 +65,7 @@ export default async function VideosPage({
 
   return (
     <>
-      <h1 className="text-xl font-semibold">{title}</h1>
+      <h1 className="font-semibold text-xl">{title}</h1>
 
       <SearchResults prefetchedData={[videos]} query={query} />
     </>

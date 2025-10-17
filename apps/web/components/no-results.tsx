@@ -12,7 +12,7 @@ export default function NoResults({
 }) {
   return (
     <div className="space-y-8 px-8 py-16 text-center">
-      {title && <h1 className="text-2xl font-bold">{title}</h1>}
+      {title && <h1 className="font-bold text-2xl">{title}</h1>}
 
       <p className="text-balance">{message}</p>
 
