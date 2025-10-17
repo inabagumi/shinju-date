@@ -4,7 +4,7 @@
     "@sentry/nextjs": "10.20.0",
     "@sentry/profiling-node": "10.20.0",
     "@supabase/sentry-js-integration": "0.3.0",
-    "@supabase/supabase-js": "2.75.0",
+    "@supabase/supabase-js": "2.75.1",
     "next": "15.5.6",
     "react": "19.2.0",
     "react-dom": "19.2.0",
