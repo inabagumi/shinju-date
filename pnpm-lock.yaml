@@ -26,6 +26,9 @@ importers:
       '@sentry/profiling-node':
         specifier: 10.20.0
         version: 10.20.0
+      '@supabase/sentry-js-integration':
+        specifier: 0.3.0
+        version: 0.3.0(@supabase/supabase-js@2.75.0)
       '@supabase/supabase-js':
         specifier: 2.75.0
         version: 2.75.0
@@ -93,6 +96,9 @@ importers:
       '@shinju-date/retryable-fetch':
         specifier: workspace:*
         version: link:../../packages/retryable-fetch
+      '@supabase/sentry-js-integration':
+        specifier: 0.3.0
+        version: 0.3.0(@supabase/supabase-js@2.75.0)
       '@supabase/supabase-js':
         specifier: 2.75.0
         version: 2.75.0
@@ -175,6 +181,9 @@ importers:
       '@shinju-date/temporal-fns':
         specifier: workspace:*
         version: link:../../packages/temporal-fns
+      '@supabase/sentry-js-integration':
+        specifier: 0.3.0
+        version: 0.3.0(@supabase/supabase-js@2.75.0)
       '@supabase/supabase-js':
         specifier: 2.75.0
         version: 2.75.0
@@ -1589,6 +1598,11 @@ packages:
 
   '@supabase/realtime-js@2.75.0':
     resolution: {integrity: sha512-B4Xxsf2NHd5cEnM6MGswOSPSsZKljkYXpvzKKmNxoUmNQOfB7D8HOa6NwHcUBSlxcjV+vIrYKcYXtavGJqeGrw==}
+
+  '@supabase/sentry-js-integration@0.3.0':
+    resolution: {integrity: sha512-L6tr+M9OlYu3Ge3G33Cf5BptYYs30feJmD3zovCSRQezJOdtkbA361WVNyzCpSoIbUo4rcDVY/apklAhBewFBw==}
+    peerDependencies:
+      '@supabase/supabase-js': 2.x
 
   '@supabase/storage-js@2.75.0':
     resolution: {integrity: sha512-wpJMYdfFDckDiHQaTpK+Ib14N/O2o0AAWWhguKvmmMurB6Unx17GGmYp5rrrqCTf8S1qq4IfIxTXxS4hzrUySg==}
@@ -5535,6 +5549,10 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+
+  '@supabase/sentry-js-integration@0.3.0(@supabase/supabase-js@2.75.0)':
+    dependencies:
+      '@supabase/supabase-js': 2.75.0
 
   '@supabase/storage-js@2.75.0':
     dependencies:
