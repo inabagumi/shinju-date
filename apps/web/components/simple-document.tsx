@@ -17,7 +17,7 @@ export default function SimpleDocument({
       {title && (
         <div className="bg-primary text-primary-foreground dark:bg-zinc-800">
           <div className="mx-auto max-w-6xl space-y-8 px-4 py-16">
-            <h1 className="text-3xl font-bold">{title}</h1>
+            <h1 className="font-bold text-3xl">{title}</h1>
 
             {button}
           </div>

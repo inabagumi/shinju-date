@@ -7,10 +7,10 @@ export default async function TermsPage() {
     <dl className="">
       {terms.map(({ readings, synonyms, term }) => (
         <div
-          className="space-y-4 border-secondary-blue px-2 py-4 not-last:border-b"
+          className="space-y-4 border-secondary-blue not-last:border-b px-2 py-4"
           key={term}
         >
-          <dt className="text-lg font-semibold">{term}</dt>
+          <dt className="font-semibold text-lg">{term}</dt>
           <dd className="grid grid-cols-2 gap-2">
             <form action="" encType="multipart/form-data" method="post">
               {[...(synonyms ?? []), ''].map((synonym) => (

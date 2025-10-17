@@ -51,7 +51,7 @@ export function VideoCardSkeleton() {
       </div>
 
       <div className="grid grow grid-rows-[1fr_auto] gap-6 p-2.5">
-        <h3 className="font-semibold break-all">
+        <h3 className="break-all font-semibold">
           <span className="inline-block h-4 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
           <span className="inline-block h-4 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
           <span className="inline-block h-4 w-28 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
@@ -97,14 +97,14 @@ export default function VideoCard({
         {duration.total({
           unit: 'second',
         }) > 0 && (
-          <span className="absolute bottom-0 left-0 m-2 inline-block rounded-md bg-slate-800/80 px-1.5 py-0.5 text-xs font-semibold text-white">
+          <span className="absolute bottom-0 left-0 m-2 inline-block rounded-md bg-slate-800/80 px-1.5 py-0.5 font-semibold text-white text-xs">
             <time dateTime={duration.toString()}>
               {formatDuration(duration)}
             </time>
           </span>
         )}
         <LiveNow
-          className="absolute top-0 right-0 m-2 inline-block rounded-md bg-774-pink-600 px-1.5 py-0.5 text-xs font-semibold text-774-pink-50"
+          className="absolute top-0 right-0 m-2 inline-block rounded-md bg-774-pink-600 px-1.5 py-0.5 font-semibold text-774-pink-50 text-xs"
           duration={duration}
           publishedAt={publishedAt}
         />
@@ -112,7 +112,7 @@ export default function VideoCard({
 
       <div className="grid grow grid-rows-[1fr_auto] gap-6 p-2.5">
         <h3
-          className="line-clamp-3 font-semibold break-all"
+          className="line-clamp-3 break-all font-semibold"
           title={value.title}
         >
           {value.title}

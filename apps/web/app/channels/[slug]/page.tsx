@@ -72,7 +72,7 @@ export default async function ChannelSchedulePage({
       }
       title={channel.name}
     >
-      <h2 className="text-xl font-semibold">今後の配信予定</h2>
+      <h2 className="font-semibold text-xl">今後の配信予定</h2>
 
       {videos.length > 0 ? (
         <Timeline channels={[channel]} prefetchedData={videos} />
