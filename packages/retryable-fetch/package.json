@@ -1,14 +1,14 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "p-retry": "^7.1.0"
+    "p-retry": "7.1.0"
   },
   "description": "",
   "devDependencies": {
-    "@tsconfig/node20": "^20.1.6",
-    "@tsconfig/strictest": "^2.0.6",
-    "tsup": "^8.5.0",
-    "typescript": "~5.9.3"
+    "@tsconfig/node20": "20.1.6",
+    "@tsconfig/strictest": "2.0.6",
+    "tsup": "8.5.0",
+    "typescript": "5.9.3"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
