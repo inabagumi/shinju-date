@@ -1,9 +1,5 @@
 import type { default as DefaultDatabase } from '@shinju-date/database'
-import {
-  createClient,
-  type SupabaseClient,
-  type SupabaseClientOptions,
-} from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { cookies } from 'next/headers'
 
 const isProd = process.env['NODE_ENV'] === 'production'
@@ -44,60 +40,45 @@ class CookieStorage
   }
 }
 
-export type TypedSupabaseClient<
-  Database = DefaultDatabase,
-  SchemaName extends string & keyof Database = 'public' extends keyof Database
-    ? 'public'
-    : string & keyof Database,
-> = SupabaseClient<Database, SchemaName>
+export type TypedSupabaseClient<Database = DefaultDatabase> =
+  SupabaseClient<Database>
 
-type ClientOptions<SchemaName> = SupabaseClientOptions<SchemaName> & {
-  cookieStore?: Awaited<ReturnType<typeof cookies>>
-}
-
-export function createSupabaseClient<
-  Database = DefaultDatabase,
-  SchemaName extends string & keyof Database = 'public' extends keyof Database
-    ? 'public'
-    : string & keyof Database,
->(
+export function createSupabaseClient<Database = DefaultDatabase>(
   url: string,
   key: string,
-  options?: ClientOptions<SchemaName>,
-): SupabaseClient<Database, SchemaName>
-export function createSupabaseClient<
-  Database = DefaultDatabase,
-  SchemaName extends string & keyof Database = 'public' extends keyof Database
-    ? 'public'
-    : string & keyof Database,
->(
+  options?: NonNullable<Parameters<typeof createClient<Database>>[2]> & {
+    cookieStore?: Awaited<ReturnType<typeof cookies>>
+  },
+): SupabaseClient<Database>
+export function createSupabaseClient<Database = DefaultDatabase>(
   key: string,
-  options?: ClientOptions<SchemaName>,
-): SupabaseClient<Database, SchemaName>
+  options?: NonNullable<Parameters<typeof createClient<Database>>[2]> & {
+    cookieStore?: Awaited<ReturnType<typeof cookies>>
+  },
+): SupabaseClient<Database>
+export function createSupabaseClient<Database = DefaultDatabase>(
+  options: NonNullable<Parameters<typeof createClient<Database>>[2]> & {
+    cookieStore?: Awaited<ReturnType<typeof cookies>>
+  },
+): SupabaseClient<Database>
 export function createSupabaseClient<
   Database = DefaultDatabase,
-  SchemaName extends string & keyof Database = 'public' extends keyof Database
-    ? 'public'
-    : string & keyof Database,
->(
-  options: ClientOptions<SchemaName> | undefined,
-): SupabaseClient<Database, SchemaName>
-export function createSupabaseClient<
-  Database = DefaultDatabase,
-  SchemaName extends string & keyof Database = 'public' extends keyof Database
-    ? 'public'
-    : string & keyof Database,
->(): SupabaseClient<Database, SchemaName>
-export function createSupabaseClient<
-  Database = DefaultDatabase,
-  SchemaName extends string & keyof Database = 'public' extends keyof Database
-    ? 'public'
-    : string & keyof Database,
->(
-  urlOrKeyOrOptions?: string | ClientOptions<SchemaName>,
-  keyOrOptions?: string | ClientOptions<SchemaName>,
-  options?: ClientOptions<SchemaName>,
-): SupabaseClient<Database, SchemaName> {
+>(): SupabaseClient<Database>
+export function createSupabaseClient<Database = DefaultDatabase>(
+  urlOrKeyOrOptions?:
+    | string
+    | (NonNullable<Parameters<typeof createClient<Database>>[2]> & {
+        cookieStore?: Awaited<ReturnType<typeof cookies>>
+      }),
+  keyOrOptions?:
+    | string
+    | (NonNullable<Parameters<typeof createClient<Database>>[2]> & {
+        cookieStore?: Awaited<ReturnType<typeof cookies>>
+      }),
+  options?: NonNullable<Parameters<typeof createClient<Database>>[2]> & {
+    cookieStore?: Awaited<ReturnType<typeof cookies>>
+  },
+): SupabaseClient<Database> {
   const key =
     typeof keyOrOptions === 'string'
       ? keyOrOptions
@@ -125,7 +106,7 @@ export function createSupabaseClient<
       ? urlOrKeyOrOptions
       : {})
 
-  return createClient<Database, SchemaName>(url, key, {
+  return createClient<Database>(url, key, {
     auth: {
       autoRefreshToken: true,
       flowType: 'pkce',
