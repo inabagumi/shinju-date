@@ -20,17 +20,40 @@ export async function register() {
       const { nodeProfilingIntegration } = await import(
         '@sentry/profiling-node'
       )
+      const { supabaseIntegration } = await import(
+        '@supabase/sentry-js-integration'
+      )
+      const { SupabaseClient } = await import('@supabase/supabase-js')
 
       Sentry.init({
         ...commonSentryOptions,
-        integrations: [nodeProfilingIntegration()],
+        integrations: [
+          nodeProfilingIntegration(),
+          supabaseIntegration(SupabaseClient, Sentry, {
+            breadcrumbs: true,
+            errors: true,
+            tracing: true,
+          }),
+        ],
         profilesSampleRate: 0.333,
       })
     }
 
     if (process.env['NEXT_RUNTIME'] === 'edge') {
+      const { supabaseIntegration } = await import(
+        '@supabase/sentry-js-integration'
+      )
+      const { SupabaseClient } = await import('@supabase/supabase-js')
+
       Sentry.init({
         ...commonSentryOptions,
+        integrations: [
+          supabaseIntegration(SupabaseClient, Sentry, {
+            breadcrumbs: true,
+            errors: true,
+            tracing: true,
+          }),
+        ],
       })
     }
   }
