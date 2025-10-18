@@ -374,6 +374,28 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
+  packages/youtube-scraper:
+    dependencies:
+      '@googleapis/youtube':
+        specifier: 29.0.0
+        version: 29.0.0
+      p-queue:
+        specifier: 9.0.0
+        version: 9.0.0
+    devDependencies:
+      '@tsconfig/node20':
+        specifier: 20.1.6
+        version: 20.1.6
+      '@tsconfig/strictest':
+        specifier: 2.0.6
+        version: 2.0.6
+      tsup:
+        specifier: 8.5.0
+        version: 8.5.0(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
 packages:
 
   '@alloc/quick-lru@5.2.0':
