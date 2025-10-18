@@ -1,9 +1,22 @@
 import Scraper, { type ScraperOptions } from './scraper'
 
-export function scrape(options: ScraperOptions) {
-  const scraper = new Scraper(options)
-
+/**
+ * Scrapes videos from a YouTube channel using the AsyncDisposable pattern
+ * @param options - The scraper options
+ * @returns Array of saved video objects
+ */
+export async function scrape(options: ScraperOptions) {
+  await using scraper = new Scraper(options)
   return scraper.scrape()
+}
+
+/**
+ * Creates a new Scraper instance using the factory method
+ * @param options - The scraper options
+ * @returns A new Scraper instance
+ */
+export function createScraper(options: ScraperOptions): Scraper {
+  return Scraper.create(options)
 }
 
 export { Scraper }

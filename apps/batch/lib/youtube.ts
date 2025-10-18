@@ -24,6 +24,10 @@ type NonNullableChannelRelatedPlaylists = NonNullable<
   NonNullableChannelContentDetails['relatedPlaylists']
 >
 
+/**
+ * Filtered YouTube channel type with required fields
+ * @deprecated Use YouTubeChannel from @shinju-date/youtube-scraper instead
+ */
 export type FilteredYouTubeChannel = youtube.Schema$Channel & {
   contentDetails: NonNullableChannelContentDetails & {
     relatedPlaylists: NonNullableChannelRelatedPlaylists & {
@@ -37,6 +41,11 @@ export type GetChannelsOptions = {
   ids: string[]
 }
 
+/**
+ * Gets YouTube channels by their IDs
+ * @param options - The options for getting channels
+ * @yields YouTube channel objects
+ */
 export async function* getChannels({
   ids,
 }: GetChannelsOptions): AsyncGenerator<
@@ -65,6 +74,10 @@ export async function* getChannels({
   }
 }
 
+/**
+ * Filtered YouTube playlist item type with required fields
+ * @deprecated Use YouTubePlaylistItem from @shinju-date/youtube-scraper instead
+ */
 export type FilteredYouTubePlaylistItem = youtube.Schema$PlaylistItem & {
   contentDetails: NonNullable<youtube.Schema$PlaylistItemContentDetails> & {
     videoId: NonNullable<youtube.Schema$PlaylistItemContentDetails['videoId']>
@@ -76,6 +89,12 @@ export type GetPlaylistItemsOptions = {
   playlistID: string
 }
 
+/**
+ * Gets YouTube playlist items by playlist ID
+ * @param options - The options for getting playlist items
+ * @yields YouTube playlist item objects
+ * @deprecated Use YouTubeScraper.getPlaylistItems from @shinju-date/youtube-scraper instead
+ */
 export async function* getPlaylistItems({
   all = false,
   playlistID,
@@ -117,6 +136,10 @@ export async function* getPlaylistItems({
   }
 }
 
+/**
+ * Filtered YouTube video type with required fields
+ * @deprecated Use YouTubeVideo from @shinju-date/youtube-scraper instead
+ */
 export type FilteredYouTubeVideo = youtube.Schema$Video & {
   contentDetails: NonNullable<youtube.Schema$Video['contentDetails']>
   id: NonNullable<youtube.Schema$Video['id']>
@@ -129,6 +152,12 @@ export type GetVideosOptions = {
   ids: string[]
 }
 
+/**
+ * Gets YouTube videos by their IDs
+ * @param options - The options for getting videos
+ * @yields YouTube video objects
+ * @deprecated Use YouTubeScraper.getVideos from @shinju-date/youtube-scraper instead
+ */
 export async function* getVideos({
   ids,
 }: GetVideosOptions): AsyncGenerator<FilteredYouTubeVideo, void, undefined> {

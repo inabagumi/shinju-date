@@ -96,6 +96,9 @@ importers:
       '@shinju-date/retryable-fetch':
         specifier: workspace:*
         version: link:../../packages/retryable-fetch
+      '@shinju-date/youtube-scraper':
+        specifier: workspace:*
+        version: link:../../packages/youtube-scraper
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
         version: 0.3.0(@supabase/supabase-js@2.75.1)

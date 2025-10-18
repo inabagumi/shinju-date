@@ -30,6 +30,14 @@ export async function POST(request: Request): Promise<Response> {
     })
   }
 
+  const apiKey = process.env['GOOGLE_API_KEY']
+  if (!apiKey) {
+    Sentry.logger.error('GOOGLE_API_KEY is not set.')
+    return createErrorResponse('Internal Server Error', {
+      status: 500,
+    })
+  }
+
   const { success } = await ratelimit.limit('videos:update')
 
   if (!success) {
@@ -112,6 +120,7 @@ export async function POST(request: Request): Promise<Response> {
 
       return queue.add(() =>
         scrape({
+          apiKey,
           channel: originalChannel,
           currentDateTime,
           savedChannel: savedChannel,

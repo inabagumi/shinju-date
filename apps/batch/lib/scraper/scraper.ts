@@ -2,21 +2,22 @@ import * as Sentry from '@sentry/nextjs'
 import type { TablesInsert } from '@shinju-date/database'
 import { isNonNullable } from '@shinju-date/helpers'
 import retryableFetch from '@shinju-date/retryable-fetch'
+import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import mime from 'mime'
 import { nanoid } from 'nanoid'
 import PQueue from 'p-queue'
 import sharp from 'sharp'
 import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
-import {
-  type FilteredYouTubeChannel,
-  type FilteredYouTubeVideo,
-  getPlaylistItems,
-  getVideos,
-} from '@/lib/youtube'
 import DB, { type Video } from './db'
 import { getPublishedAt } from './helpers'
-import type { SavedChannel, SavedThumbnail, SavedVideo } from './types'
+import type {
+  SavedChannel,
+  SavedThumbnail,
+  SavedVideo,
+  YouTubeChannel,
+  YouTubeVideo,
+} from './types'
 
 const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({
   days: 365,
@@ -28,7 +29,7 @@ type StaticThumbnail = {
   width: number
 }
 
-function getThumbnail(video: FilteredYouTubeVideo): StaticThumbnail {
+function getThumbnail(video: YouTubeVideo): StaticThumbnail {
   const thumbnail =
     video.snippet.thumbnails &&
     (video.snippet.thumbnails.maxres ??
@@ -52,21 +53,30 @@ async function getBlurDataURL(data: ArrayBuffer): Promise<string> {
   return `data:image/jpeg;base64,${buffer.toString('base64')}`
 }
 
+/**
+ * Options for uploading a thumbnail
+ */
 export type ThumbnailOptions = {
   currentDateTime?: Temporal.Instant
   dryRun?: boolean
-  originalVideo: FilteredYouTubeVideo
+  originalVideo: YouTubeVideo
   savedThumbnail?: SavedThumbnail
   supabaseClient: TypedSupabaseClient
 }
 
+/**
+ * Options for upserting multiple thumbnails
+ */
 export type UpsertThumbnailsOptions = {
   db: DB
   options: Omit<ThumbnailOptions, 'originalVideo' | 'savedThumbnail'>
-  originalVideos: FilteredYouTubeVideo[]
+  originalVideos: YouTubeVideo[]
   savedVideos: SavedVideo[]
 }
 
+/**
+ * Handles thumbnail operations including uploading and upserting
+ */
 export class Thumbnail {
   #currentDateTime: Temporal.Instant
   #dryRun: boolean
@@ -77,6 +87,11 @@ export class Thumbnail {
   #videoID: string
   #width: number
 
+  /**
+   * Uploads a thumbnail for a video
+   * @param options - The thumbnail options
+   * @returns The thumbnail insert data or null if no upload is needed
+   */
   static upload(
     options: ThumbnailOptions,
   ): Promise<TablesInsert<'thumbnails'> | null> {
@@ -85,6 +100,11 @@ export class Thumbnail {
     return instance.upload()
   }
 
+  /**
+   * Upserts multiple thumbnails for videos
+   * @param options - The upsert options
+   * @returns Array of upserted thumbnails with id and path
+   */
   static async upsertThumbnails({
     db,
     options,
@@ -243,22 +263,36 @@ export class Thumbnail {
   }
 }
 
+/**
+ * Options for creating a Scraper instance
+ */
 export type ScraperOptions = {
-  channel: FilteredYouTubeChannel
+  apiKey: string
+  channel: YouTubeChannel
   currentDateTime?: Temporal.Instant
   dryRun?: boolean
   savedChannel: SavedChannel
   supabaseClient: TypedSupabaseClient
 }
 
-export default class Scraper {
-  #channel: FilteredYouTubeChannel
+/**
+ * Main scraper class for fetching and processing YouTube video data
+ * Implements AsyncDisposable for proper resource cleanup
+ */
+export default class Scraper implements AsyncDisposable {
+  #channel: YouTubeChannel
   #currentDateTime: Temporal.Instant
   #db: DB
   #dryRun: boolean
   #savedChannel: SavedChannel
+  #youtubeScraper: YouTubeScraper
 
+  /**
+   * Creates a new Scraper instance
+   * @param options - The scraper options
+   */
   constructor({
+    apiKey,
     channel,
     currentDateTime = Temporal.Now.instant(),
     dryRun = false,
@@ -270,26 +304,47 @@ export default class Scraper {
     this.#db = new DB(supabaseClient)
     this.#dryRun = dryRun
     this.#savedChannel = savedChannel
+    this.#youtubeScraper = new YouTubeScraper({ apiKey })
   }
 
+  /**
+   * Factory method to create a Scraper instance
+   * @param options - The scraper options
+   * @returns A new Scraper instance
+   */
+  static create(options: ScraperOptions): Scraper {
+    return new Scraper(options)
+  }
+
+  /**
+   * Gets the playlist ID for the channel's uploads
+   */
   get playlistID(): string {
     return this.#channel.contentDetails.relatedPlaylists.uploads
   }
 
-  async *getVideos(): AsyncGenerator<FilteredYouTubeVideo, void, undefined> {
+  /**
+   * Fetches videos from the channel's upload playlist
+   * @yields YouTube video objects
+   */
+  async *getVideos(): AsyncGenerator<YouTubeVideo, void, undefined> {
     const videoIDs: string[] = []
 
-    for await (const playlistItem of getPlaylistItems({
+    for await (const playlistItem of this.#youtubeScraper.getPlaylistItems({
       playlistID: this.playlistID,
     })) {
       videoIDs.push(playlistItem.contentDetails.videoId)
     }
 
-    yield* getVideos({ ids: videoIDs })
+    yield* this.#youtubeScraper.getVideos({ ids: videoIDs })
   }
 
+  /**
+   * Scrapes videos from the channel and saves them to the database
+   * @returns Array of saved video objects
+   */
   async scrape(): Promise<Video[]> {
-    const originalVideos: FilteredYouTubeVideo[] = []
+    const originalVideos: YouTubeVideo[] = []
 
     for await (const video of this.getVideos()) {
       originalVideos.push(video)
@@ -401,5 +456,13 @@ export default class Scraper {
     }
 
     return this.#db.upsertVideos(values)
+  }
+
+  /**
+   * AsyncDisposable implementation for proper cleanup
+   * Ensures the YouTube scraper is properly disposed
+   */
+  async [Symbol.asyncDispose](): Promise<void> {
+    await this.#youtubeScraper[Symbol.asyncDispose]()
   }
 }
