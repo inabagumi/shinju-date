@@ -7,7 +7,11 @@ import { videosUpdate as ratelimit } from '@/lib/ratelimit'
 import { revalidateTags } from '@/lib/revalidate'
 import { scrape, type Video } from '@/lib/scraper'
 import { supabaseClient } from '@/lib/supabase'
-import { type FilteredYouTubeChannel, getChannels } from '@/lib/youtube'
+import {
+  type FilteredYouTubeChannel,
+  getChannels,
+  youtubeClient,
+} from '@/lib/youtube'
 
 const MONITOR_SLUG = '/videos/update'
 
@@ -27,14 +31,6 @@ export async function POST(request: Request): Promise<Response> {
 
     return createErrorResponse('Unauthorized', {
       status: 401,
-    })
-  }
-
-  const apiKey = process.env['GOOGLE_API_KEY']
-  if (!apiKey) {
-    Sentry.logger.error('GOOGLE_API_KEY is not set.')
-    return createErrorResponse('Internal Server Error', {
-      status: 500,
     })
   }
 
@@ -120,11 +116,11 @@ export async function POST(request: Request): Promise<Response> {
 
       return queue.add(() =>
         scrape({
-          apiKey,
           channel: originalChannel,
           currentDateTime,
           savedChannel: savedChannel,
           supabaseClient,
+          youtubeClient,
         }),
       )
     }),

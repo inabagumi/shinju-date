@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/nextjs'
 import type { default as Database } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
+import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import {
@@ -74,34 +75,6 @@ async function* getSavedVideos({
 
     if (!all) {
       break
-    }
-  }
-}
-
-async function* getVideoIDs(
-  ids: string[],
-): AsyncGenerator<string, void, undefined> {
-  for (let i = 0; i < ids.length; i += 50) {
-    const videoIDs = ids.slice(i, i + 50)
-
-    const {
-      data: { items },
-    } = await youtubeClient.videos.list({
-      id: videoIDs,
-      maxResults: videoIDs.length,
-      part: ['id'],
-    })
-
-    if (!items || items.length < 1) {
-      continue
-    }
-
-    for (const item of items) {
-      if (!item.id) {
-        continue
-      }
-
-      yield item.id
     }
   }
 }
@@ -242,42 +215,45 @@ export async function POST(request: NextRequest): Promise<Response> {
     savedVideos.push(savedVideo)
   }
 
-  const videoIDs: string[] = []
+  const videoIds = savedVideos.map((savedVideo) => savedVideo.slug)
+  const availableVideoIds = new Set<string>()
 
-  for await (const videoID of getVideoIDs(
-    savedVideos.map((savedVideo) => savedVideo.slug),
-  )) {
-    videoIDs.push(videoID)
-  }
+  await using scraper = new YouTubeScraper({
+    onVideoChecked: async (video) => {
+      if (video.isAvailable) {
+        availableVideoIds.add(video.id)
+      }
+    },
+    youtubeClient,
+  })
 
-  if (savedVideos.length !== videoIDs.length) {
-    const deletedVideos = savedVideos.filter(
-      (savedVideo) => !videoIDs.includes(savedVideo.slug),
+  await scraper.checkVideos(videoIds)
+
+  const deletedVideos = savedVideos.filter(
+    (savedVideo) => !availableVideoIds.has(savedVideo.slug),
+  )
+
+  if (deletedVideos.length > 0) {
+    const results = await deleteVideos({
+      currentDateTime,
+      supabaseClient,
+      videos: deletedVideos,
+    })
+    const rejectedResults = results.filter(
+      (result): result is PromiseRejectedResult => result.status === 'rejected',
     )
 
-    if (deletedVideos.length > 0) {
-      const results = await deleteVideos({
-        currentDateTime,
-        supabaseClient,
-        videos: deletedVideos,
-      })
-      const rejectedResults = results.filter(
-        (result): result is PromiseRejectedResult =>
-          result.status === 'rejected',
-      )
-
-      for (const result of rejectedResults) {
-        Sentry.captureException(result.reason)
-      }
-
-      Sentry.logger.info('The videos has been deleted.', {
-        ids: deletedVideos.map((video) => video.slug),
-      })
-
-      await revalidateTags(['videos'], {
-        signal: request.signal,
-      })
+    for (const result of rejectedResults) {
+      Sentry.captureException(result.reason)
     }
+
+    Sentry.logger.info('The videos has been deleted.', {
+      ids: deletedVideos.map((video) => video.slug),
+    })
+
+    await revalidateTags(['videos'], {
+      signal: request.signal,
+    })
   } else {
     Sentry.logger.info('Deleted videos did not exist.')
   }
