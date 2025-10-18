@@ -1,3 +1,4 @@
+import type { youtube_v3 as youtube } from '@googleapis/youtube'
 import * as Sentry from '@sentry/nextjs'
 import type { TablesInsert } from '@shinju-date/database'
 import { isNonNullable } from '@shinju-date/helpers'
@@ -267,12 +268,12 @@ export class Thumbnail {
  * Options for creating a Scraper instance
  */
 export type ScraperOptions = {
-  apiKey: string
   channel: YouTubeChannel
   currentDateTime?: Temporal.Instant
   dryRun?: boolean
   savedChannel: SavedChannel
   supabaseClient: TypedSupabaseClient
+  youtubeClient: youtube.Youtube
 }
 
 /**
@@ -292,19 +293,19 @@ export default class Scraper implements AsyncDisposable {
    * @param options - The scraper options
    */
   constructor({
-    apiKey,
     channel,
     currentDateTime = Temporal.Now.instant(),
     dryRun = false,
     savedChannel,
     supabaseClient,
+    youtubeClient,
   }: ScraperOptions) {
     this.#channel = channel
     this.#currentDateTime = currentDateTime
     this.#db = new DB(supabaseClient)
     this.#dryRun = dryRun
     this.#savedChannel = savedChannel
-    this.#youtubeScraper = new YouTubeScraper({ apiKey })
+    this.#youtubeScraper = new YouTubeScraper({ youtubeClient })
   }
 
   /**

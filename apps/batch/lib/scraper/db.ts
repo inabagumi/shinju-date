@@ -36,7 +36,7 @@ const scrapeResultSelect = `
   title
 `
 
-export default class DB {
+export default class DB implements AsyncDisposable {
   #supabaseClient: TypedSupabaseClient
 
   constructor(supabaseClient: TypedSupabaseClient) {
@@ -189,5 +189,9 @@ export default class DB {
     }
 
     return videos
+  }
+
+  async [Symbol.asyncDispose](): Promise<void> {
+    // DB cleanup if needed - currently no resources to dispose
   }
 }

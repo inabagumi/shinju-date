@@ -1,4 +1,4 @@
-import { youtube_v3 as youtube } from '@googleapis/youtube'
+import type { youtube_v3 as youtube } from '@googleapis/youtube'
 import PQueue from 'p-queue'
 import type {
   GetChannelsOptions,
@@ -20,12 +20,16 @@ import {
 export class YouTubeScraper implements AsyncDisposable {
   #client: youtube.Youtube
   #queue: PQueue
-  #onChannelScraped: ((channel: YouTubeChannel) => void | Promise<void>) | undefined
+  #onChannelScraped:
+    | ((channel: YouTubeChannel) => void | Promise<void>)
+    | undefined
   #onPlaylistItemScraped:
     | ((item: YouTubePlaylistItem) => void | Promise<void>)
     | undefined
   #onVideoScraped: ((video: YouTubeVideo) => void | Promise<void>) | undefined
-  #onVideoChecked: ((video: { id: string; isAvailable: boolean }) => Promise<void>) | undefined
+  #onVideoChecked:
+    | ((video: { id: string; isAvailable: boolean }) => Promise<void>)
+    | undefined
 
   constructor(options: ScraperOptions) {
     if (!options.youtubeClient) {
@@ -188,7 +192,7 @@ export class YouTubeScraper implements AsyncDisposable {
   async checkVideos(videoIds: string[]): Promise<void> {
     for (let i = 0; i < videoIds.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
       const batchIds = videoIds.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS)
-      
+
       const {
         data: { items },
       } = await this.#client.videos.list({
@@ -198,7 +202,7 @@ export class YouTubeScraper implements AsyncDisposable {
       })
 
       const availableVideoIds = new Set(
-        items?.filter((item) => item.id).map((item) => item.id as string) ?? []
+        items?.filter((item) => item.id).map((item) => item.id as string) ?? [],
       )
 
       for (const videoId of batchIds) {
