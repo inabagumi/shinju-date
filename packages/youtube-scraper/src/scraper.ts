@@ -20,16 +20,6 @@ import {
 export class YouTubeScraper implements AsyncDisposable {
   #client: youtube.Youtube
   #queue: PQueue
-  #onChannelScraped:
-    | ((channel: YouTubeChannel) => void | Promise<void>)
-    | undefined
-  #onPlaylistItemScraped:
-    | ((item: YouTubePlaylistItem) => void | Promise<void>)
-    | undefined
-  #onVideoScraped: ((video: YouTubeVideo) => void | Promise<void>) | undefined
-  #onVideoChecked:
-    | ((video: { id: string; isAvailable: boolean }) => Promise<void>)
-    | undefined
 
   constructor(options: ScraperOptions) {
     if (!options.youtubeClient) {
@@ -41,15 +31,14 @@ export class YouTubeScraper implements AsyncDisposable {
       concurrency: 5,
       interval: 100,
     })
-    this.#onChannelScraped = options.onChannelScraped
-    this.#onPlaylistItemScraped = options.onPlaylistItemScraped
-    this.#onVideoScraped = options.onVideoScraped
-    this.#onVideoChecked = options.onVideoChecked
   }
 
   async *getChannels({
     ids,
-  }: GetChannelsOptions): AsyncGenerator<YouTubeChannel, void, undefined> {
+    onChannelScraped,
+  }: GetChannelsOptions & {
+    onChannelScraped?: (channel: YouTubeChannel) => void | Promise<void>
+  }): AsyncGenerator<YouTubeChannel, void, undefined> {
     for (let i = 0; i < ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
       const {
         data: { items },
@@ -66,8 +55,8 @@ export class YouTubeScraper implements AsyncDisposable {
       const validChannels = items.filter(isValidChannel)
 
       for (const channel of validChannels) {
-        if (this.#onChannelScraped) {
-          await this.#onChannelScraped(channel)
+        if (onChannelScraped) {
+          await onChannelScraped(channel)
         }
         yield channel
       }
@@ -77,11 +66,10 @@ export class YouTubeScraper implements AsyncDisposable {
   async *getPlaylistItems({
     all = false,
     playlistID,
-  }: GetPlaylistItemsOptions): AsyncGenerator<
-    YouTubePlaylistItem,
-    void,
-    undefined
-  > {
+    onPlaylistItemScraped,
+  }: GetPlaylistItemsOptions & {
+    onPlaylistItemScraped?: (item: YouTubePlaylistItem) => void | Promise<void>
+  }): AsyncGenerator<YouTubePlaylistItem, void, undefined> {
     let pageToken: string | undefined
 
     while (true) {
@@ -105,8 +93,8 @@ export class YouTubeScraper implements AsyncDisposable {
       const validItems = items.filter(isValidPlaylistItem)
 
       for (const item of validItems) {
-        if (this.#onPlaylistItemScraped) {
-          await this.#onPlaylistItemScraped(item)
+        if (onPlaylistItemScraped) {
+          await onPlaylistItemScraped(item)
         }
         yield item
       }
@@ -121,7 +109,10 @@ export class YouTubeScraper implements AsyncDisposable {
 
   async *getVideos({
     ids,
-  }: GetVideosOptions): AsyncGenerator<YouTubeVideo, void, undefined> {
+    onVideoScraped,
+  }: GetVideosOptions & {
+    onVideoScraped?: (video: YouTubeVideo) => void | Promise<void>
+  }): AsyncGenerator<YouTubeVideo, void, undefined> {
     for (let i = 0; i < ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
       const {
         data: { items },
@@ -138,16 +129,22 @@ export class YouTubeScraper implements AsyncDisposable {
       const validVideos = items.filter(isValidVideo)
 
       for (const video of validVideos) {
-        if (this.#onVideoScraped) {
-          await this.#onVideoScraped(video)
+        if (onVideoScraped) {
+          await onVideoScraped(video)
         }
         yield video
       }
     }
   }
 
-  async scrapeChannels(channelIds: string[]): Promise<void> {
-    for await (const _channel of this.getChannels({ ids: channelIds })) {
+  async scrapeChannels(options: {
+    channelIds: string[]
+    onChannelScraped: (channel: YouTubeChannel) => Promise<void>
+  }): Promise<void> {
+    for await (const _channel of this.getChannels({
+      ids: options.channelIds,
+      onChannelScraped: options.onChannelScraped,
+    })) {
       // Channel is already handled via onChannelScraped callback
     }
   }
@@ -174,24 +171,45 @@ export class YouTubeScraper implements AsyncDisposable {
     return videos
   }
 
-  async scrapePlaylistVideos(playlistId: string): Promise<void> {
+  async scrapePlaylistVideos(options: {
+    playlistId: string
+    onVideoScraped: (video: YouTubeVideo) => Promise<void>
+    onThumbnailScraped: (thumbnail: YouTubePlaylistItem) => Promise<void>
+  }): Promise<void> {
     const videoIDs: string[] = []
 
     for await (const playlistItem of this.getPlaylistItems({
       all: false,
-      playlistID: playlistId,
+      onPlaylistItemScraped: options.onThumbnailScraped,
+      playlistID: options.playlistId,
     })) {
       videoIDs.push(playlistItem.contentDetails.videoId)
     }
 
-    for await (const _video of this.getVideos({ ids: videoIDs })) {
+    for await (const _video of this.getVideos({
+      ids: videoIDs,
+      onVideoScraped: options.onVideoScraped,
+    })) {
       // Video is already handled via onVideoScraped callback
     }
   }
 
-  async checkVideos(videoIds: string[]): Promise<void> {
-    for (let i = 0; i < videoIds.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
-      const batchIds = videoIds.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS)
+  async checkVideos(options: {
+    videoIds: string[]
+    onVideoChecked: (video: {
+      id: string
+      isAvailable: boolean
+    }) => Promise<void>
+  }): Promise<void> {
+    for (
+      let i = 0;
+      i < options.videoIds.length;
+      i += YOUTUBE_DATA_API_MAX_RESULTS
+    ) {
+      const batchIds = options.videoIds.slice(
+        i,
+        i + YOUTUBE_DATA_API_MAX_RESULTS,
+      )
 
       const {
         data: { items },
@@ -206,12 +224,10 @@ export class YouTubeScraper implements AsyncDisposable {
       )
 
       for (const videoId of batchIds) {
-        if (this.#onVideoChecked) {
-          await this.#onVideoChecked({
-            id: videoId,
-            isAvailable: availableVideoIds.has(videoId),
-          })
-        }
+        await options.onVideoChecked({
+          id: videoId,
+          isAvailable: availableVideoIds.has(videoId),
+        })
       }
     }
   }
