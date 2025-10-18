@@ -44,10 +44,11 @@ export type GetVideosOptions = {
 }
 
 export type ScraperOptions = {
-  apiKey: string
-  onChannel?: (channel: YouTubeChannel) => void | Promise<void>
-  onPlaylistItem?: (item: YouTubePlaylistItem) => void | Promise<void>
-  onVideo?: (video: YouTubeVideo) => void | Promise<void>
+  youtubeClient: youtube.Youtube
+  onChannelScraped?: (channel: YouTubeChannel) => void | Promise<void>
+  onPlaylistItemScraped?: (item: YouTubePlaylistItem) => void | Promise<void>
+  onVideoScraped?: (video: YouTubeVideo) => void | Promise<void>
+  onVideoChecked?: (video: { id: string; isAvailable: boolean }) => Promise<void>
 }
 
 export type ScrapeChannelsOptions = {
