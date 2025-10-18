@@ -219,15 +219,17 @@ export async function POST(request: NextRequest): Promise<Response> {
   const availableVideoIds = new Set<string>()
 
   await using scraper = new YouTubeScraper({
+    youtubeClient,
+  })
+
+  await scraper.checkVideos({
     onVideoChecked: async (video) => {
       if (video.isAvailable) {
         availableVideoIds.add(video.id)
       }
     },
-    youtubeClient,
+    videoIds,
   })
-
-  await scraper.checkVideos(videoIds)
 
   const deletedVideos = savedVideos.filter(
     (savedVideo) => !availableVideoIds.has(savedVideo.slug),

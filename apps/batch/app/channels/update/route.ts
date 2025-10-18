@@ -88,57 +88,59 @@ export async function POST(request: Request): Promise<Response> {
   const results: PromiseSettledResult<Channel | null>[] = []
 
   await using scraper = new YouTubeScraper({
-    onChannelScraped: async (youtubeChannel: YouTubeChannel) => {
-      const result = await (async (): Promise<Channel | null> => {
-        const channel = channels.find((c) => c.slug === youtubeChannel.id)
-
-        if (!channel) {
-          throw new TypeError('A channel does not exist.')
-        }
-
-        // Note: YouTubeChannel from scraper doesn't include snippet with title
-        // We need to fetch snippet data separately for this endpoint
-        const {
-          data: { items = [] },
-        } = await youtubeClient.channels.list({
-          id: [youtubeChannel.id],
-          maxResults: 1,
-          part: ['snippet'],
-        })
-
-        const item = items[0]
-        if (!item?.snippet?.title) {
-          throw new TypeError('A snippet is empty.')
-        }
-
-        if (item.snippet.title === channel.name) {
-          return null
-        }
-
-        const { data, error } = await supabaseClient
-          .from('channels')
-          .update({
-            name: item.snippet.title,
-            updated_at: currentDateTime.toJSON(),
-          })
-          .eq('slug', youtubeChannel.id)
-          .select('name, slug')
-          .single()
-
-        if (error) {
-          throw error
-        }
-
-        return data
-      })()
-
-      results.push({ status: 'fulfilled', value: result })
-    },
     youtubeClient,
   })
 
   try {
-    await scraper.scrapeChannels(channelIds)
+    await scraper.scrapeChannels({
+      channelIds,
+      onChannelScraped: async (youtubeChannel: YouTubeChannel) => {
+        const result = await (async (): Promise<Channel | null> => {
+          const channel = channels.find((c) => c.slug === youtubeChannel.id)
+
+          if (!channel) {
+            throw new TypeError('A channel does not exist.')
+          }
+
+          // Note: YouTubeChannel from scraper doesn't include snippet with title
+          // We need to fetch snippet data separately for this endpoint
+          const {
+            data: { items = [] },
+          } = await youtubeClient.channels.list({
+            id: [youtubeChannel.id],
+            maxResults: 1,
+            part: ['snippet'],
+          })
+
+          const item = items[0]
+          if (!item?.snippet?.title) {
+            throw new TypeError('A snippet is empty.')
+          }
+
+          if (item.snippet.title === channel.name) {
+            return null
+          }
+
+          const { data, error } = await supabaseClient
+            .from('channels')
+            .update({
+              name: item.snippet.title,
+              updated_at: currentDateTime.toJSON(),
+            })
+            .eq('slug', youtubeChannel.id)
+            .select('name, slug')
+            .single()
+
+          if (error) {
+            throw error
+          }
+
+          return data
+        })()
+
+        results.push({ status: 'fulfilled', value: result })
+      },
+    })
   } catch (error) {
     results.push({ reason: error, status: 'rejected' })
   }
