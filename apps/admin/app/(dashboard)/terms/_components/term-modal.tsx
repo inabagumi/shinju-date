@@ -2,6 +2,7 @@
 
 import * as Dialog from '@radix-ui/react-dialog'
 import { useEffect, useState } from 'react'
+import type { FormState } from '@/components/form'
 import Form, {
   Button,
   ErrorMessage,
@@ -21,21 +22,36 @@ type Term = {
 
 type TermModalProps = {
   term?: Term
-  onSuccess?: () => void
 }
 
-export function TermModal({ term, onSuccess }: TermModalProps) {
+export function TermModal({ term }: TermModalProps) {
   const [open, setOpen] = useState(false)
   const isEditing = !!term
 
+  const handleAction = async (
+    currentState: FormState,
+    formData: FormData,
+  ): Promise<FormState> => {
+    const action = isEditing ? updateTermAction : createTermAction
+    const result = await action(currentState, formData)
+
+    // Close modal if there are no errors
+    if (!result.errors || Object.keys(result.errors).length === 0) {
+      setOpen(false)
+    }
+
+    return result
+  }
+
   useEffect(() => {
     if (!open) {
-      // Reset form state when modal closes
-      setTimeout(() => {
-        onSuccess?.()
+      // Small delay to allow the modal to close before resetting
+      const timer = setTimeout(() => {
+        // Any cleanup if needed
       }, 100)
+      return () => clearTimeout(timer)
     }
-  }, [open, onSuccess])
+  }, [open])
 
   return (
     <Dialog.Root onOpenChange={setOpen} open={open}>
@@ -53,10 +69,7 @@ export function TermModal({ term, onSuccess }: TermModalProps) {
           <Dialog.Title className="mb-4 font-semibold text-xl">
             {isEditing ? '用語を編集' : '新しい用語を追加'}
           </Dialog.Title>
-          <Form
-            action={isEditing ? updateTermAction : createTermAction}
-            className="space-y-4"
-          >
+          <Form action={handleAction} className="space-y-4">
             {isEditing && (
               <input name="id" type="hidden" value={term.id.toString()} />
             )}
