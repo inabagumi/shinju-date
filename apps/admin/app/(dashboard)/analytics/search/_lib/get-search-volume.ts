@@ -1,9 +1,8 @@
 'use server'
 
-import { REDIS_KEYS } from '@shinju-date/constants'
+import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-import { timeZone } from '@/lib/constants'
 import { redisClient } from '@/lib/redis'
 
 export type DailySearchVolume = {
@@ -16,7 +15,7 @@ export type DailySearchVolume = {
  */
 export async function getSearchVolume(days = 7): Promise<DailySearchVolume[]> {
   try {
-    const today = Temporal.Now.zonedDateTimeISO(timeZone)
+    const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
     const volumes: DailySearchVolume[] = []
 
     // Get volume for each day

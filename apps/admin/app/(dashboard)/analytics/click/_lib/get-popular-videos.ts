@@ -1,8 +1,8 @@
 'use server'
 
+import { TIME_ZONE } from '@shinju-date/constants'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-import { timeZone } from '@/lib/constants'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
 
@@ -20,7 +20,7 @@ export async function getPopularVideos(
   days = 7,
 ): Promise<VideoClick[]> {
   try {
-    const today = Temporal.Now.zonedDateTimeISO(timeZone)
+    const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
     const videoClicks = new Map<string, number>()
 
     // Aggregate clicks from the past N days

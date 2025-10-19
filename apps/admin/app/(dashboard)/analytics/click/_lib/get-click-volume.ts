@@ -1,8 +1,8 @@
 'use server'
 
+import { TIME_ZONE } from '@shinju-date/constants'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-import { timeZone } from '@/lib/constants'
 import { redisClient } from '@/lib/redis'
 
 export type DailyClickVolume = {
@@ -15,7 +15,7 @@ export type DailyClickVolume = {
  */
 export async function getClickVolume(days = 7): Promise<DailyClickVolume[]> {
   try {
-    const today = Temporal.Now.zonedDateTimeISO(timeZone)
+    const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
     const volumes: DailyClickVolume[] = []
 
     // Get volume for each day
