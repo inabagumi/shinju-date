@@ -35,6 +35,12 @@ export default function DashboardLayout({ children }: Props) {
           </Link>
           <Link
             className="rounded-md px-3 py-1 hover:bg-slate-700"
+            href="/recommended-queries"
+          >
+            オススメクエリ管理
+          </Link>
+          <Link
+            className="rounded-md px-3 py-1 hover:bg-slate-700"
             href="/analytics/search"
           >
             検索アナリティクス
