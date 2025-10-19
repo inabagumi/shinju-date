@@ -1,9 +1,10 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useTransition } from 'react'
 import { supabaseClient } from '@/lib/supabase'
+import { softDeleteAction, toggleVisibilityAction } from '../_actions'
 import type { Video } from '../_lib/get-videos'
-import { softDeleteAction, toggleVisibilityAction } from '../actions'
 
 type Props = {
   videos: Video[]
@@ -131,18 +132,21 @@ export default function VideoList({ videos }: Props) {
                 </td>
                 <td className="p-3">
                   {video.thumbnail ? (
-                    // biome-ignore lint/performance/noImgElement: Admin UI does not need image optimization
-                    <img
-                      alt=""
-                      className="h-16 w-28 object-cover"
-                      src={
-                        supabaseClient.storage
-                          .from('thumbnails')
-                          .getPublicUrl(video.thumbnail.path).data.publicUrl
-                      }
-                    />
+                    <div className="relative aspect-video w-28">
+                      <Image
+                        alt=""
+                        className="object-cover"
+                        fill
+                        sizes="112px"
+                        src={
+                          supabaseClient.storage
+                            .from('thumbnails')
+                            .getPublicUrl(video.thumbnail.path).data.publicUrl
+                        }
+                      />
+                    </div>
                   ) : (
-                    <div className="flex h-16 w-28 items-center justify-center bg-gray-200">
+                    <div className="flex aspect-video w-28 items-center justify-center bg-gray-200">
                       No Image
                     </div>
                   )}
