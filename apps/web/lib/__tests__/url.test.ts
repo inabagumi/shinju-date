@@ -1,5 +1,5 @@
 import type { ParsedUrlQuery } from 'node:querystring'
-import { getQueryValue } from '../url'
+import { getQueryValue, parseQueries } from '../url'
 
 const DUMMY_QUERY: ParsedUrlQuery = {
   a: 'test',
@@ -23,5 +23,25 @@ describe('getQueryValue', () => {
     const result = getQueryValue('c', DUMMY_QUERY)
 
     expect(result).toBeUndefined()
+  })
+})
+
+describe('parseQueries', () => {
+  it('should return empty string when queries is undefined', () => {
+    const result = parseQueries(undefined)
+
+    expect(result).toBe('')
+  })
+
+  it('should decode and join queries with slash', () => {
+    const result = parseQueries(['hello', 'world'])
+
+    expect(result).toBe('hello/world')
+  })
+
+  it('should decode URI components', () => {
+    const result = parseQueries(['hello%20world', 'test'])
+
+    expect(result).toBe('hello world/test')
   })
 })
