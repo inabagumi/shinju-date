@@ -14,11 +14,22 @@ export type Video = {
     blur_data_url: string
   } | null
   clicks: number
+  channel: {
+    id: number
+    name: string
+    slug: string
+  }
+}
+
+export type VideoFilters = {
+  channelId?: number
+  visible?: boolean
 }
 
 export async function getVideos(
   page = 1,
   perPage = 20,
+  filters?: VideoFilters,
 ): Promise<{
   videos: Video[]
   total: number
@@ -26,19 +37,28 @@ export async function getVideos(
   const from = (page - 1) * perPage
   const to = from + perPage - 1
 
+  // Start building the query
+  let query = supabaseClient
+    .from('videos')
+    .select(
+      'slug, title, visible, deleted_at, thumbnails(path, blur_data_url), channels(id, name, slug)',
+      { count: 'exact' },
+    )
+
+  // Apply filters
+  if (filters?.channelId) {
+    query = query.eq('channel_id', filters.channelId)
+  }
+  if (filters?.visible !== undefined) {
+    query = query.eq('visible', filters.visible)
+  }
+
   // Fetch videos from Supabase with pagination
   const {
     data: videos,
     error,
     count,
-  } = await supabaseClient
-    .from('videos')
-    .select(
-      'slug, title, visible, deleted_at, thumbnails(path, blur_data_url)',
-      { count: 'exact' },
-    )
-    .order('created_at', { ascending: false })
-    .range(from, to)
+  } = await query.order('created_at', { ascending: false }).range(from, to)
 
   if (error) {
     throw new TypeError(error.message, {
@@ -68,6 +88,7 @@ export async function getVideos(
 
   // Combine video data with click counts
   const videosWithClicks: Video[] = videos.map((video, index) => ({
+    channel: video.channels,
     clicks: clickCounts[index] ?? 0,
     deleted_at: video.deleted_at,
     slug: video.slug,
