@@ -62,8 +62,10 @@ export async function getPopularVideos(
       )
 
       if (dailyKeys.length > 0) {
-        await redisClient.zunionstore(cacheKey, dailyKeys.length, dailyKeys)
-        await redisClient.expire(cacheKey, POPULAR_VIDEOS_CACHE_TTL_SECONDS)
+        const pipeline = redisClient.multi()
+        pipeline.zunionstore(cacheKey, dailyKeys.length, dailyKeys)
+        pipeline.expire(cacheKey, POPULAR_VIDEOS_CACHE_TTL_SECONDS)
+        await pipeline.exec()
       }
 
       const newResults = await redisClient.zrange<number[]>(
