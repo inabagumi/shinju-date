@@ -20,6 +20,7 @@ import {
 } from '../_actions'
 import type { Video } from '../_lib/get-videos'
 import { SortIcon } from './sort-icon'
+import { VideoFilters } from './video-filters'
 
 type Channel = {
   created_at: string
@@ -32,17 +33,6 @@ type Channel = {
 type Props = {
   channels: Channel[]
   videos: Video[]
-}
-
-function getStatusBadgeClasses(video: Video): string {
-  return twMerge(
-    'whitespace-nowrap rounded px-2 py-1 text-xs',
-    video.deleted_at
-      ? 'bg-red-100 text-red-800'
-      : video.visible
-        ? 'bg-green-100 text-green-800'
-        : 'bg-gray-100 text-gray-800',
-  )
 }
 
 function getStatusText(video: Video): string {
@@ -138,21 +128,6 @@ export default function VideoList({ channels, videos }: Props) {
     })
   }
 
-  const handleFilterChange = (
-    key: 'channelId' | 'deleted' | 'visible' | 'search',
-    value: string,
-  ) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value === '') {
-      params.delete(key)
-    } else {
-      params.set(key, value)
-    }
-    // Reset to page 1 when filters change
-    params.delete('page')
-    router.push(`/videos?${params.toString()}`)
-  }
-
   const getSortUrl = (field: 'published_at' | 'updated_at') => {
     const params = new URLSearchParams(searchParams.toString())
     // Toggle sort order if clicking the same field, otherwise default to desc
@@ -170,10 +145,6 @@ export default function VideoList({ channels, videos }: Props) {
   const allSelected =
     videos.length > 0 && selectedSlugs.length === videos.length
 
-  const currentChannelId = searchParams.get('channelId') || ''
-  const currentDeleted = searchParams.get('deleted') || ''
-  const currentVisible = searchParams.get('visible') || ''
-  const currentSearch = searchParams.get('search') || ''
   const currentSortField = searchParams.get('sortField') || 'updated_at'
   const currentSortOrder = (searchParams.get('sortOrder') || 'desc') as
     | 'asc'
@@ -182,81 +153,7 @@ export default function VideoList({ channels, videos }: Props) {
   return (
     <div>
       {/* Filters and Sort Controls */}
-      <div className="mb-4 flex flex-wrap gap-4">
-        <div>
-          <label
-            className="mb-1 block font-medium text-gray-700 text-sm"
-            htmlFor="search-filter"
-          >
-            タイトルまたはIDで検索
-          </label>
-          <input
-            className="rounded-md border border-gray-300 px-3 py-2"
-            id="search-filter"
-            onChange={(e) => handleFilterChange('search', e.target.value)}
-            placeholder="検索..."
-            type="text"
-            value={currentSearch}
-          />
-        </div>
-        <div>
-          <label
-            className="mb-1 block font-medium text-gray-700 text-sm"
-            htmlFor="channel-filter"
-          >
-            チャンネルで絞り込み
-          </label>
-          <select
-            className="rounded-md border border-gray-300 px-3 py-2"
-            id="channel-filter"
-            onChange={(e) => handleFilterChange('channelId', e.target.value)}
-            value={currentChannelId}
-          >
-            <option value="">すべてのチャンネル</option>
-            {channels.map((channel) => (
-              <option key={channel.id} value={channel.id}>
-                {channel.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label
-            className="mb-1 block font-medium text-gray-700 text-sm"
-            htmlFor="status-filter"
-          >
-            ステータスで絞り込み
-          </label>
-          <select
-            className="rounded-md border border-gray-300 px-3 py-2"
-            id="status-filter"
-            onChange={(e) => handleFilterChange('visible', e.target.value)}
-            value={currentVisible}
-          >
-            <option value="">すべて</option>
-            <option value="true">公開中のみ</option>
-            <option value="false">非表示のみ</option>
-          </select>
-        </div>
-        <div>
-          <label
-            className="mb-1 block font-medium text-gray-700 text-sm"
-            htmlFor="deleted-filter"
-          >
-            削除状態で絞り込み
-          </label>
-          <select
-            className="rounded-md border border-gray-300 px-3 py-2"
-            id="deleted-filter"
-            onChange={(e) => handleFilterChange('deleted', e.target.value)}
-            value={currentDeleted}
-          >
-            <option value="">すべて</option>
-            <option value="false">削除されていないもののみ</option>
-            <option value="true">削除済みのみ</option>
-          </select>
-        </div>
-      </div>
+      <VideoFilters channels={channels} />
 
       {/* Action bar */}
       {selectedSlugs.length > 0 && (
@@ -396,7 +293,16 @@ export default function VideoList({ channels, videos }: Props) {
                 </td>
                 <td className="p-3">{video.clicks}</td>
                 <td className="p-3">
-                  <span className={getStatusBadgeClasses(video)}>
+                  <span
+                    className={twMerge(
+                      'whitespace-nowrap rounded px-2 py-1 text-xs',
+                      video.deleted_at
+                        ? 'bg-red-100 text-red-800'
+                        : video.visible
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800',
+                    )}
+                  >
                     {getStatusText(video)}
                   </span>
                 </td>
