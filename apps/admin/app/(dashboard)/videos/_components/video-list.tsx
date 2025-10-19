@@ -119,7 +119,7 @@ export default function VideoList({ channels, videos }: Props) {
   }
 
   const handleFilterChange = (
-    key: 'channelId' | 'deleted' | 'visible',
+    key: 'channelId' | 'deleted' | 'visible' | 'search',
     value: string,
   ) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -147,6 +147,7 @@ export default function VideoList({ channels, videos }: Props) {
   const currentChannelId = searchParams.get('channelId') || ''
   const currentDeleted = searchParams.get('deleted') || ''
   const currentVisible = searchParams.get('visible') || ''
+  const currentSearch = searchParams.get('search') || ''
   const currentSortField = searchParams.get('sortField') || 'updated_at'
   const currentSortOrder = searchParams.get('sortOrder') || 'desc'
 
@@ -154,6 +155,22 @@ export default function VideoList({ channels, videos }: Props) {
     <div>
       {/* Filters and Sort Controls */}
       <div className="mb-4 flex flex-wrap gap-4">
+        <div>
+          <label
+            className="mb-1 block font-medium text-gray-700 text-sm"
+            htmlFor="search-filter"
+          >
+            タイトルまたはIDで検索
+          </label>
+          <input
+            className="rounded-md border border-gray-300 px-3 py-2"
+            id="search-filter"
+            onChange={(e) => handleFilterChange('search', e.target.value)}
+            placeholder="検索..."
+            type="text"
+            value={currentSearch}
+          />
+        </div>
         <div>
           <label
             className="mb-1 block font-medium text-gray-700 text-sm"
@@ -291,8 +308,10 @@ export default function VideoList({ channels, videos }: Props) {
               <th className="p-3 text-left">サムネイル</th>
               <th className="p-3 text-left">タイトル</th>
               <th className="p-3 text-left">チャンネル</th>
+              <th className="p-3 text-left">公開日時</th>
+              <th className="p-3 text-left">更新日時</th>
               <th className="p-3 text-left">クリック数</th>
-              <th className="p-3 text-left">表示状態</th>
+              <th className="p-3 text-left">ステータス</th>
               <th className="p-3 text-left">アクション</th>
             </tr>
           </thead>
@@ -339,16 +358,40 @@ export default function VideoList({ channels, videos }: Props) {
                     {video.channel.name}
                   </span>
                 </td>
+                <td className="p-3">
+                  <span className="text-gray-600 text-sm">
+                    {new Date(video.published_at).toLocaleDateString('ja-JP', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </td>
+                <td className="p-3">
+                  <span className="text-gray-600 text-sm">
+                    {new Date(video.updated_at).toLocaleDateString('ja-JP', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </td>
                 <td className="p-3">{video.clicks}</td>
                 <td className="p-3">
                   <span
                     className={`rounded px-2 py-1 text-xs ${
-                      video.visible
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
+                      video.deleted_at
+                        ? 'bg-red-100 text-red-800'
+                        : video.visible
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
                     }`}
                   >
-                    {video.visible ? '公開中' : '非表示'}
+                    {video.deleted_at
+                      ? '削除済み'
+                      : video.visible
+                        ? '公開中'
+                        : '非表示'}
                   </span>
                 </td>
                 <td className="p-3">

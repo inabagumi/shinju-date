@@ -13,6 +13,7 @@ type Props = {
     channelId?: string
     deleted?: string
     page?: string
+    search?: string
     slug?: string
     sortField?: string
     sortOrder?: string
@@ -35,6 +36,9 @@ export default async function VideosPage({ searchParams }: Props) {
   }
   if (params.slug) {
     filters.slug = params.slug
+  }
+  if (params.search) {
+    filters.search = params.search
   }
   if (params.deleted === 'true') {
     filters.deleted = true

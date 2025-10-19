@@ -10,6 +10,8 @@ export type Video = {
   title: string
   visible: boolean
   deleted_at: string | null
+  published_at: string
+  updated_at: string
   thumbnail: {
     path: string
     blur_data_url: string
@@ -27,6 +29,7 @@ export type VideoFilters = {
   deleted?: boolean
   slug?: string
   visible?: boolean
+  search?: string
 }
 
 export type VideoSortField = 'published_at' | 'updated_at'
@@ -54,7 +57,7 @@ export async function getVideos(
   let query = supabaseClient
     .from('videos')
     .select(
-      'slug, title, visible, deleted_at, thumbnails(path, blur_data_url), channels(id, name, slug)',
+      'slug, title, visible, deleted_at, published_at, updated_at, thumbnails(path, blur_data_url), channels(id, name, slug)',
       { count: 'exact' },
     )
 
@@ -67,6 +70,12 @@ export async function getVideos(
   }
   if (filters?.slug) {
     query = query.eq('slug', filters.slug)
+  }
+  // Handle text search
+  if (filters?.search) {
+    query = query.or(
+      `title.ilike.%${filters.search}%,slug.ilike.%${filters.search}%`,
+    )
   }
   // Handle deleted filter
   if (filters?.deleted === true) {
@@ -126,9 +135,11 @@ export async function getVideos(
     channel: video.channels,
     clicks: clickCounts[index] ?? 0,
     deleted_at: video.deleted_at,
+    published_at: video.published_at,
     slug: video.slug,
     thumbnail: video.thumbnails,
     title: video.title,
+    updated_at: video.updated_at,
     visible: video.visible,
   }))
 
