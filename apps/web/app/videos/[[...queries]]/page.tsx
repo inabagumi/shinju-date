@@ -3,6 +3,7 @@ import NoResults from '@/components/no-results'
 import SearchResults from '@/components/search-results'
 import { title as siteName } from '@/lib/constants'
 import { fetchVideosByChannelIDs } from '@/lib/fetchers'
+import { logSearchQuery } from '@/lib/search-analytics'
 import { parseQueries } from '@/lib/url'
 
 export const revalidate = 300 // 5 minutes
@@ -54,6 +55,11 @@ export default async function VideosPage({
   const videos = await fetchVideosByChannelIDs({
     query,
   })
+
+  // Log search query for analytics (only when there's a query)
+  if (query) {
+    await logSearchQuery(query, videos.length)
+  }
 
   if (videos.length < 1) {
     const message = query
