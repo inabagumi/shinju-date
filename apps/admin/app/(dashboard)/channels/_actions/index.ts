@@ -126,7 +126,9 @@ export async function deleteChannelAction(id: number): Promise<{
   try {
     const { error } = await supabaseClient
       .from('channels')
-      .delete()
+      .update({
+        deleted_at: new Date().toISOString(),
+      })
       .eq('id', id)
 
     if (error) {
