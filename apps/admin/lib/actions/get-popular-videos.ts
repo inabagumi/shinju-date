@@ -1,9 +1,16 @@
+'use server'
+
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { isNonNullable } from '@shinju-date/helpers'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
+
+/**
+ * 人気動画のキャッシュ有効期間（秒）
+ */
+const POPULAR_VIDEOS_CACHE_TTL_SECONDS = 60 * 10 // 10 minutes
 
 export type PopularVideo = {
   clicks: number
@@ -19,46 +26,80 @@ export async function getPopularVideos(
   limit = 10,
   days = 7,
 ): Promise<PopularVideo[]> {
-  // Get today's date in JST timezone
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-  const videoClicks = new Map<number, number>()
+  const cacheKey = `${REDIS_KEYS.POPULAR_VIDEOS_PREFIX}${days}_days`
+  const videoScores: [number, number][] = []
 
-  // Aggregate clicks from the past N days
-  for (let i = 0; i < days; i++) {
-    const date = today.subtract({ days: i })
-    const dateKey = formatDate(date)
-    const key = `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${dateKey}`
+  try {
+    const cachedResults = await redisClient.zrange<number[]>(
+      cacheKey,
+      0,
+      limit - 1,
+      {
+        rev: true,
+        withScores: true,
+      },
+    )
 
-    const results = await redisClient.zrange<string[]>(key, 0, -1, {
-      rev: false,
-      withScores: true,
-    })
+    if (cachedResults.length > 0) {
+      for (let i = 0; i < cachedResults.length; i += 2) {
+        const videoId = cachedResults[i]
+        const score = cachedResults[i + 1]
 
-    // Parse results: [videoId1, score1, videoId2, score2, ...]
-    for (let j = 0; j < results.length; j += 2) {
-      const videoIdStr = results[j]
-      const scoreStr = results[j + 1]
+        if (typeof videoId !== 'number' || typeof score !== 'number') {
+          continue
+        }
 
-      if (!videoIdStr || !scoreStr) continue
+        videoScores.push([videoId, score])
+      }
+    } else {
+      const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
+      const dailyKeys = Array.from(
+        { length: days },
+        (_, i) =>
+          `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${formatDate(
+            today.subtract({ days: i }),
+          )}`,
+      )
 
-      const videoId = Number.parseInt(videoIdStr, 10)
-      const score = Number.parseInt(scoreStr, 10)
+      if (dailyKeys.length > 0) {
+        const pipeline = redisClient.multi()
+        pipeline.zunionstore(cacheKey, dailyKeys.length, dailyKeys)
+        pipeline.expire(cacheKey, POPULAR_VIDEOS_CACHE_TTL_SECONDS)
+        await pipeline.exec()
+      }
 
-      videoClicks.set(videoId, (videoClicks.get(videoId) ?? 0) + score)
+      const newResults = await redisClient.zrange<number[]>(
+        cacheKey,
+        0,
+        limit - 1,
+        {
+          rev: true,
+          withScores: true,
+        },
+      )
+
+      for (let i = 0; i < newResults.length; i += 2) {
+        const videoId = newResults[i]
+        const score = newResults[i + 1]
+
+        if (typeof videoId !== 'number' || typeof score !== 'number') {
+          continue
+        }
+
+        videoScores.push([videoId, score])
+      }
     }
-  }
+  } catch (error) {
+    console.error('Failed to communicate with Redis for popular videos:', error)
 
-  // Sort by clicks and get top N
-  const sortedVideos = Array.from(videoClicks.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limit)
-
-  if (sortedVideos.length === 0) {
     return []
   }
 
-  // Fetch video details from Supabase
-  const videoIds = sortedVideos.map(([id]) => id)
+  if (videoScores.length === 0) {
+    return []
+  }
+
+  const videoIds = videoScores.map(([id]) => id)
   const { data: videos, error } = await supabaseClient
     .from('videos')
     .select('id, slug, thumbnails(path, blur_data_url), title')
@@ -70,13 +111,11 @@ export async function getPopularVideos(
     return []
   }
 
-  // Map videos with their click counts
   const videoMap = new Map(videos.map((v) => [v.id, v]))
 
-  return sortedVideos
+  return videoScores
     .map(([id, clicks]) => {
       const video = videoMap.get(id)
-
       if (!video) return null
 
       return {
