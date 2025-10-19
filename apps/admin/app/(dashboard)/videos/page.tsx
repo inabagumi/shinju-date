@@ -68,15 +68,9 @@ export default async function VideosPage({ searchParams }: Props) {
         <p className="text-gray-600">全 {total} 件の動画</p>
       </div>
 
-      {videos.length > 0 ? (
-        <>
-          <VideoList channels={channels} videos={videos} />
-          {totalPages > 1 && (
-            <Pagination currentPage={currentPage} totalPages={totalPages} />
-          )}
-        </>
-      ) : (
-        <p className="p-4 text-gray-500">動画がありません。</p>
+      <VideoList channels={channels} videos={videos} />
+      {totalPages > 1 && (
+        <Pagination currentPage={currentPage} totalPages={totalPages} />
       )}
     </div>
   )

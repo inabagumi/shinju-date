@@ -231,116 +231,131 @@ export default function VideoList({ channels, videos }: Props) {
             </tr>
           </thead>
           <tbody>
-            {videos.map((video) => (
-              <tr className="border-b hover:bg-gray-50" key={video.slug}>
-                <td className="p-3">
-                  <input
-                    checked={selectedSlugs.includes(video.slug)}
-                    onChange={(e) =>
-                      handleSelectVideo(video.slug, e.target.checked)
-                    }
-                    type="checkbox"
-                  />
-                </td>
-                <td className="p-3">
-                  {video.thumbnail ? (
-                    <div className="relative aspect-video w-20 md:w-28">
-                      <Image
-                        alt=""
-                        className="object-cover"
-                        fill
-                        sizes="(max-width: 768px) 80px, 112px"
-                        src={
-                          supabaseClient.storage
-                            .from('thumbnails')
-                            .getPublicUrl(video.thumbnail.path).data.publicUrl
-                        }
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex aspect-video w-20 items-center justify-center bg-gray-200 text-xs md:w-28">
-                      No Image
-                    </div>
-                  )}
-                </td>
-                <td className="max-w-xs p-3">
-                  <div className="line-clamp-2" title={video.title}>
-                    {video.title}
-                  </div>
-                </td>
-                <td className="p-3">
-                  <span className="text-gray-600 text-sm">
-                    {video.channel.name}
-                  </span>
-                </td>
-                <td className="p-3">
-                  <span className="text-gray-600 text-sm">
-                    {new Date(video.published_at).toLocaleDateString('ja-JP', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                    })}
-                  </span>
-                </td>
-                <td className="p-3">
-                  <span className="text-gray-600 text-sm">
-                    {new Date(video.updated_at).toLocaleDateString('ja-JP', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                    })}
-                  </span>
-                </td>
-                <td className="p-3">{video.clicks}</td>
-                <td className="p-3">
-                  <span
-                    className={twMerge(
-                      'whitespace-nowrap rounded px-2 py-1 text-xs',
-                      video.deleted_at
-                        ? 'bg-red-100 text-red-800'
-                        : video.visible
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800',
+            {videos.length > 0 ? (
+              videos.map((video) => (
+                <tr className="border-b hover:bg-gray-50" key={video.slug}>
+                  <td className="p-3">
+                    <input
+                      checked={selectedSlugs.includes(video.slug)}
+                      onChange={(e) =>
+                        handleSelectVideo(video.slug, e.target.checked)
+                      }
+                      type="checkbox"
+                    />
+                  </td>
+                  <td className="p-3">
+                    {video.thumbnail ? (
+                      <div className="relative aspect-video w-20 md:w-28">
+                        <Image
+                          alt=""
+                          className="object-cover"
+                          fill
+                          sizes="(max-width: 768px) 80px, 112px"
+                          src={
+                            supabaseClient.storage
+                              .from('thumbnails')
+                              .getPublicUrl(video.thumbnail.path).data.publicUrl
+                          }
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex aspect-video w-20 items-center justify-center bg-gray-200 text-xs md:w-28">
+                        No Image
+                      </div>
                     )}
-                  >
-                    {getStatusText(video)}
-                  </span>
-                </td>
-                <td className="p-3">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger aria-label="アクションメニュー">
-                      <svg
-                        aria-hidden="true"
-                        className="h-5 w-5"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <title>アクションメニュー</title>
-                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                      </svg>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem
-                        onClick={() => router.push(`/videos/${video.slug}`)}
-                      >
-                        編集
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleSingleAction('toggle', video.slug)}
-                      >
-                        表示/非表示を切り替え
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleSingleAction('delete', video.slug)}
-                        variant="danger"
-                      >
-                        削除
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  </td>
+                  <td className="max-w-xs p-3">
+                    <div className="line-clamp-2" title={video.title}>
+                      {video.title}
+                    </div>
+                  </td>
+                  <td className="p-3">
+                    <span className="text-gray-600 text-sm">
+                      {video.channel.name}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <span className="text-gray-600 text-sm">
+                      {new Date(video.published_at).toLocaleDateString(
+                        'ja-JP',
+                        {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                        },
+                      )}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <span className="text-gray-600 text-sm">
+                      {new Date(video.updated_at).toLocaleDateString('ja-JP', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                      })}
+                    </span>
+                  </td>
+                  <td className="p-3">{video.clicks}</td>
+                  <td className="p-3">
+                    <span
+                      className={twMerge(
+                        'whitespace-nowrap rounded px-2 py-1 text-xs',
+                        video.deleted_at
+                          ? 'bg-red-100 text-red-800'
+                          : video.visible
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800',
+                      )}
+                    >
+                      {getStatusText(video)}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger aria-label="アクションメニュー">
+                        <svg
+                          aria-hidden="true"
+                          className="h-5 w-5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <title>アクションメニュー</title>
+                          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                        </svg>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem
+                          onClick={() => router.push(`/videos/${video.slug}`)}
+                        >
+                          編集
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleSingleAction('toggle', video.slug)
+                          }
+                        >
+                          表示/非表示を切り替え
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleSingleAction('delete', video.slug)
+                          }
+                          variant="danger"
+                        >
+                          削除
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td className="p-8 text-center text-gray-500" colSpan={9}>
+                  動画がありません。
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
