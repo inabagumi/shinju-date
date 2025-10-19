@@ -3,8 +3,8 @@ import { supabaseClient } from '@/lib/supabase'
 export default async function getTerms() {
   const { data: terms, error } = await supabaseClient
     .from('terms')
-    .select('readings, synonyms, term')
-    .order('updated_at', {
+    .select('id, readings, synonyms, term')
+    .order('term', {
       ascending: true,
     })
 
