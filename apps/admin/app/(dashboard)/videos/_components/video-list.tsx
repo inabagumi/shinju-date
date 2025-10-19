@@ -147,7 +147,7 @@ export default function VideoList({ channels, videos }: Props) {
   const currentChannelId = searchParams.get('channelId') || ''
   const currentDeleted = searchParams.get('deleted') || ''
   const currentVisible = searchParams.get('visible') || ''
-  const currentSortField = searchParams.get('sortField') || 'published_at'
+  const currentSortField = searchParams.get('sortField') || 'updated_at'
   const currentSortOrder = searchParams.get('sortOrder') || 'desc'
 
   return (
@@ -224,7 +224,6 @@ export default function VideoList({ channels, videos }: Props) {
             onChange={(e) => handleSortChange('sortField', e.target.value)}
             value={currentSortField}
           >
-            <option value="published_at">公開日時</option>
             <option value="updated_at">更新日時</option>
             <option value="created_at">作成日時</option>
           </select>

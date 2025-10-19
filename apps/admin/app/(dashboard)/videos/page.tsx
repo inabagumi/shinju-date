@@ -40,7 +40,7 @@ export default async function VideosPage({ searchParams }: Props) {
   // If params.deleted is undefined or empty, don't set filters.deleted (will show all)
 
   // Get sort parameters
-  const sortField = (params.sortField as VideoSortField) || 'published_at'
+  const sortField = (params.sortField as VideoSortField) || 'updated_at'
   const sortOrder = (params.sortOrder as VideoSortOrder) || 'desc'
 
   const { videos, total } = await getVideos(

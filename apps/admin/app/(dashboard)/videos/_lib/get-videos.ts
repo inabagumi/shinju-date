@@ -27,14 +27,14 @@ export type VideoFilters = {
   visible?: boolean
 }
 
-export type VideoSortField = 'created_at' | 'published_at' | 'updated_at'
+export type VideoSortField = 'created_at' | 'updated_at'
 export type VideoSortOrder = 'asc' | 'desc'
 
 export async function getVideos(
   page = 1,
   perPage = 20,
   filters?: VideoFilters,
-  sortField: VideoSortField = 'published_at',
+  sortField: VideoSortField = 'updated_at',
   sortOrder: VideoSortOrder = 'desc',
 ): Promise<{
   videos: Video[]
