@@ -1,4 +1,5 @@
-import { supabaseClient } from '@/lib/supabase'
+import { cookies } from 'next/headers'
+import { createSupabaseClient } from '@/lib/supabase'
 
 export type SummaryStats = {
   totalVideos: number
@@ -8,6 +9,11 @@ export type SummaryStats = {
 }
 
 export async function getSummaryStats(): Promise<SummaryStats> {
+  const cookieStore = await cookies()
+  const supabaseClient = createSupabaseClient({
+    cookieStore,
+  })
+
   // Get total video count
   const { count: totalVideos, error: totalError } = await supabaseClient
     .from('videos')
