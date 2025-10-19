@@ -70,19 +70,25 @@ export async function getVideos(
     return { total: 0, videos: [] }
   }
 
-  // Get today's date in JST timezone
+  // Get last 7 days in JST timezone
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-  const keySuffix = formatDate(today)
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const date = today.subtract({ days: i })
+    return formatDate(date)
+  })
 
-  // Fetch click counts for all videos
+  // Fetch click counts for all videos for the last 7 days
   const videoIds = videos.map((video) => video.slug)
   const clickCounts = await Promise.all(
     videoIds.map(async (slug) => {
-      const score = await redisClient.zscore(
-        `videos:clicked:${keySuffix}`,
-        slug,
+      // Sum up clicks from all 7 days
+      const scores = await Promise.all(
+        days.map((day) => redisClient.zscore(`videos:clicked:${day}`, slug)),
       )
-      return typeof score === 'number' ? score : 0
+      return scores.reduce(
+        (sum, score) => sum + (typeof score === 'number' ? score : 0),
+        0,
+      )
     }),
   )
 

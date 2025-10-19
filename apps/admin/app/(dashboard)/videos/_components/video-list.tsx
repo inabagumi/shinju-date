@@ -9,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/dropdown-menu'
-import ToggleSwitch from '@/components/toggle-switch'
 import { supabaseClient } from '@/lib/supabase'
 import {
   softDeleteAction,
@@ -65,19 +64,6 @@ export default function VideoList({ channels, videos }: Props) {
 
   const handleSingleAction = (action: 'toggle' | 'delete', slug: string) => {
     setShowConfirmModal({ action, open: true, slug })
-  }
-
-  const handleToggleVisibility = async (slug: string) => {
-    startTransition(async () => {
-      try {
-        const result = await toggleSingleVideoVisibilityAction(slug)
-        if (!result.success) {
-          alert(result.error || '更新に失敗しました。')
-        }
-      } catch (_error) {
-        alert('エラーが発生しました。')
-      }
-    })
   }
 
   const handleConfirm = () => {
@@ -258,12 +244,12 @@ export default function VideoList({ channels, videos }: Props) {
                 </td>
                 <td className="p-3">
                   {video.thumbnail ? (
-                    <div className="relative aspect-video w-20">
+                    <div className="relative aspect-video w-20 md:w-28">
                       <Image
                         alt=""
                         className="object-cover"
                         fill
-                        sizes="80px"
+                        sizes="(max-width: 768px) 80px, 112px"
                         src={
                           supabaseClient.storage
                             .from('thumbnails')
@@ -272,7 +258,7 @@ export default function VideoList({ channels, videos }: Props) {
                       />
                     </div>
                   ) : (
-                    <div className="flex aspect-video w-20 items-center justify-center bg-gray-200 text-xs">
+                    <div className="flex aspect-video w-20 items-center justify-center bg-gray-200 text-xs md:w-28">
                       No Image
                     </div>
                   )}
@@ -289,12 +275,15 @@ export default function VideoList({ channels, videos }: Props) {
                 </td>
                 <td className="p-3">{video.clicks}</td>
                 <td className="p-3">
-                  <ToggleSwitch
-                    checked={video.visible}
-                    disabled={isPending}
-                    label={video.visible ? '公開中' : '非表示'}
-                    onChange={() => handleToggleVisibility(video.slug)}
-                  />
+                  <span
+                    className={`rounded px-2 py-1 text-xs ${
+                      video.visible
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
+                    {video.visible ? '公開中' : '非表示'}
+                  </span>
                 </td>
                 <td className="p-3">
                   <DropdownMenu>
