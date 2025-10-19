@@ -15,12 +15,12 @@ describe('YOUTUBE_DATA_API_MAX_RESULTS', () => {
 describe('isValidChannel', () => {
   it('should return true for valid channel', () => {
     const channel: youtube.Schema$Channel = {
-      id: 'UC1234567890',
       contentDetails: {
         relatedPlaylists: {
           uploads: 'UU1234567890',
         },
       },
+      id: 'UC1234567890',
     }
 
     expect(isValidChannel(channel)).toBe(true)
@@ -48,8 +48,8 @@ describe('isValidChannel', () => {
 
   it('should return false when relatedPlaylists is missing', () => {
     const channel: youtube.Schema$Channel = {
-      id: 'UC1234567890',
       contentDetails: {},
+      id: 'UC1234567890',
     }
 
     expect(isValidChannel(channel)).toBe(false)
@@ -57,10 +57,10 @@ describe('isValidChannel', () => {
 
   it('should return false when uploads playlist is missing', () => {
     const channel: youtube.Schema$Channel = {
-      id: 'UC1234567890',
       contentDetails: {
         relatedPlaylists: {},
       },
+      id: 'UC1234567890',
     }
 
     expect(isValidChannel(channel)).toBe(false)
@@ -96,11 +96,11 @@ describe('isValidPlaylistItem', () => {
 describe('isValidVideo', () => {
   it('should return true for valid video', () => {
     const video: youtube.Schema$Video = {
+      contentDetails: {},
       id: 'dQw4w9WgXcQ',
       snippet: {
         publishedAt: '2023-01-01T00:00:00Z',
       },
-      contentDetails: {},
     }
 
     expect(isValidVideo(video)).toBe(true)
@@ -108,10 +108,10 @@ describe('isValidVideo', () => {
 
   it('should return false when id is missing', () => {
     const video: youtube.Schema$Video = {
+      contentDetails: {},
       snippet: {
         publishedAt: '2023-01-01T00:00:00Z',
       },
-      contentDetails: {},
     }
 
     expect(isValidVideo(video)).toBe(false)
@@ -119,8 +119,8 @@ describe('isValidVideo', () => {
 
   it('should return false when snippet is missing', () => {
     const video: youtube.Schema$Video = {
-      id: 'dQw4w9WgXcQ',
       contentDetails: {},
+      id: 'dQw4w9WgXcQ',
     }
 
     expect(isValidVideo(video)).toBe(false)
@@ -128,9 +128,9 @@ describe('isValidVideo', () => {
 
   it('should return false when publishedAt is missing', () => {
     const video: youtube.Schema$Video = {
+      contentDetails: {},
       id: 'dQw4w9WgXcQ',
       snippet: {},
-      contentDetails: {},
     }
 
     expect(isValidVideo(video)).toBe(false)

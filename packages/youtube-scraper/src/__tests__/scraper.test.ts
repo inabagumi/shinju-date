@@ -1,11 +1,16 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
 import { YouTubeScraper } from '../scraper.js'
-import type { YouTubeChannel, YouTubePlaylistItem, YouTubeVideo } from '../types/index.js'
+import type {
+  YouTubeChannel,
+  YouTubePlaylistItem,
+  YouTubeVideo,
+} from '../types/index.js'
 
 describe('YouTubeScraper', () => {
   describe('constructor', () => {
     it('should throw error when youtubeClient is not provided', () => {
       expect(() => {
+        // biome-ignore lint/suspicious/noExplicitAny: Testing error handling for invalid input
         new YouTubeScraper({ youtubeClient: undefined as any })
       }).toThrow('youtubeClient is required')
     })
@@ -27,20 +32,20 @@ describe('YouTubeScraper', () => {
     it('should yield channels and call onChannelScraped callback', async () => {
       const mockChannels: YouTubeChannel[] = [
         {
-          id: 'UC123',
           contentDetails: {
             relatedPlaylists: {
               uploads: 'UU123',
             },
           },
+          id: 'UC123',
         },
         {
-          id: 'UC456',
           contentDetails: {
             relatedPlaylists: {
               uploads: 'UU456',
             },
           },
+          id: 'UC456',
         },
       ]
 
@@ -99,12 +104,12 @@ describe('YouTubeScraper', () => {
             data: {
               items: [
                 {
-                  id: 'UC123',
                   contentDetails: {
                     relatedPlaylists: {
                       uploads: 'UU123',
                     },
                   },
+                  id: 'UC123',
                 },
                 {
                   // Invalid: missing contentDetails
@@ -150,8 +155,8 @@ describe('YouTubeScraper', () => {
       const items: YouTubePlaylistItem[] = []
 
       for await (const item of scraper.getPlaylistItems({
-        playlistID: 'PL123',
         onPlaylistItemScraped,
+        playlistID: 'PL123',
       })) {
         items.push(item)
       }
@@ -186,8 +191,8 @@ describe('YouTubeScraper', () => {
       const items: YouTubePlaylistItem[] = []
 
       for await (const item of scraper.getPlaylistItems({
-        playlistID: 'PL123',
         all: true,
+        playlistID: 'PL123',
       })) {
         items.push(item)
       }
@@ -212,8 +217,8 @@ describe('YouTubeScraper', () => {
       const items: YouTubePlaylistItem[] = []
 
       for await (const item of scraper.getPlaylistItems({
-        playlistID: 'PL123',
         all: false,
+        playlistID: 'PL123',
       })) {
         items.push(item)
       }
@@ -227,14 +232,14 @@ describe('YouTubeScraper', () => {
     it('should yield videos with callback', async () => {
       const mockVideos: YouTubeVideo[] = [
         {
+          contentDetails: {},
           id: 'video1',
           snippet: { publishedAt: '2023-01-01T00:00:00Z' },
-          contentDetails: {},
         },
         {
+          contentDetails: {},
           id: 'video2',
           snippet: { publishedAt: '2023-01-02T00:00:00Z' },
-          contentDetails: {},
         },
       ]
 
@@ -264,11 +269,14 @@ describe('YouTubeScraper', () => {
     })
 
     it('should batch requests for large video arrays', async () => {
-      const mockVideos: YouTubeVideo[] = Array.from({ length: 100 }, (_, i) => ({
-        id: `video${i}`,
-        snippet: { publishedAt: '2023-01-01T00:00:00Z' },
-        contentDetails: {},
-      }))
+      const mockVideos: YouTubeVideo[] = Array.from(
+        { length: 100 },
+        (_, i) => ({
+          contentDetails: {},
+          id: `video${i}`,
+          snippet: { publishedAt: '2023-01-01T00:00:00Z' },
+        }),
+      )
 
       const mockClient = {
         videos: {
@@ -300,12 +308,12 @@ describe('YouTubeScraper', () => {
     it('should call onChannelScraped for each channel', async () => {
       const mockChannels: YouTubeChannel[] = [
         {
-          id: 'UC123',
           contentDetails: {
             relatedPlaylists: {
               uploads: 'UU123',
             },
           },
+          id: 'UC123',
         },
       ]
 
@@ -339,14 +347,14 @@ describe('YouTubeScraper', () => {
 
       const mockVideos: YouTubeVideo[] = [
         {
+          contentDetails: {},
           id: 'video1',
           snippet: { publishedAt: '2023-01-01T00:00:00Z' },
-          contentDetails: {},
         },
         {
+          contentDetails: {},
           id: 'video2',
           snippet: { publishedAt: '2023-01-02T00:00:00Z' },
-          contentDetails: {},
         },
       ]
 
@@ -368,9 +376,9 @@ describe('YouTubeScraper', () => {
       const onThumbnailScraped = vi.fn()
 
       await scraper.scrapePlaylistVideos({
-        playlistId: 'PL123',
-        onVideoScraped,
         onThumbnailScraped,
+        onVideoScraped,
+        playlistId: 'PL123',
       })
 
       expect(onThumbnailScraped).toHaveBeenCalledTimes(2)
@@ -394,8 +402,8 @@ describe('YouTubeScraper', () => {
       const onVideoChecked = vi.fn()
 
       await scraper.checkVideos({
-        videoIds: ['video1', 'video2', 'video3'],
         onVideoChecked,
+        videoIds: ['video1', 'video2', 'video3'],
       })
 
       expect(onVideoChecked).toHaveBeenCalledTimes(3)
@@ -437,8 +445,8 @@ describe('YouTubeScraper', () => {
       const onVideoChecked = vi.fn()
 
       await scraper.checkVideos({
-        videoIds,
         onVideoChecked,
+        videoIds,
       })
 
       expect(onVideoChecked).toHaveBeenCalledTimes(100)
@@ -454,9 +462,9 @@ describe('YouTubeScraper', () => {
 
       const mockVideos: YouTubeVideo[] = [
         {
+          contentDetails: {},
           id: 'video1',
           snippet: { publishedAt: '2023-01-01T00:00:00Z' },
-          contentDetails: {},
         },
       ]
 
