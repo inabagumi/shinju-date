@@ -1,13 +1,12 @@
 'use server'
 
+import { REDIS_KEYS } from '@shinju-date/constants'
 import { redisClient } from '@/lib/redis'
 
 export type PopularKeyword = {
   keyword: string
   count: number
 }
-
-const POPULAR_KEY = 'search:popular'
 
 /**
  * Get the most popular search keywords from Redis
@@ -18,7 +17,7 @@ export async function getPopularKeywords(
   try {
     // Get top keywords with scores
     const results = await redisClient.zrange<string[]>(
-      POPULAR_KEY,
+      REDIS_KEYS.SEARCH_POPULAR,
       0,
       limit - 1,
       {
@@ -30,10 +29,16 @@ export async function getPopularKeywords(
     // Parse results: [keyword1, score1, keyword2, score2, ...]
     const keywords: PopularKeyword[] = []
     for (let i = 0; i < results.length; i += 2) {
-      keywords.push({
-        count: Number.parseInt(results[i + 1], 10),
-        keyword: results[i],
-      })
+      const keyword = results[i]
+      const scoreStr = results[i + 1]
+
+      // Type guard to ensure we have valid data
+      if (keyword && scoreStr) {
+        keywords.push({
+          count: Number.parseInt(scoreStr, 10),
+          keyword,
+        })
+      }
     }
 
     return keywords

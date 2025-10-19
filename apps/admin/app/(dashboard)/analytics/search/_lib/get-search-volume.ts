@@ -1,13 +1,12 @@
 'use server'
 
+import { REDIS_KEYS } from '@shinju-date/constants'
 import { redisClient } from '@/lib/redis'
 
 export type DailySearchVolume = {
   date: string
   count: number
 }
-
-const VOLUME_KEY_PREFIX = 'search:volume:'
 
 /**
  * Get daily search volume for the past N days
@@ -25,7 +24,7 @@ export async function getSearchVolume(days = 7): Promise<DailySearchVolume[]> {
       const dateKey = dateStr.replace(/-/g, '')
 
       const count = await redisClient.get<number>(
-        `${VOLUME_KEY_PREFIX}${dateKey}`,
+        `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${dateKey}`,
       )
 
       volumes.push({

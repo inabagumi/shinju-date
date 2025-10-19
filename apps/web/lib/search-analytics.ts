@@ -1,10 +1,7 @@
 'use server'
 
+import { REDIS_KEYS } from '@shinju-date/constants'
 import { redisClient } from './redis'
-
-const POPULAR_KEY = 'search:popular'
-const ZERO_RESULTS_KEY = 'search:zero_results'
-const VOLUME_KEY_PREFIX = 'search:volume:'
 
 /**
  * Log a search query to Redis for analytics
@@ -23,17 +20,21 @@ export async function logSearchQuery(
     // Run all Redis operations in parallel for better performance
     const operations: Promise<unknown>[] = [
       // Increment popular keyword count
-      redisClient.zincrby(POPULAR_KEY, 1, normalizedQuery),
+      redisClient.zincrby(REDIS_KEYS.SEARCH_POPULAR, 1, normalizedQuery),
     ]
 
     // Track zero-result searches
     if (resultCount === 0) {
-      operations.push(redisClient.sadd(ZERO_RESULTS_KEY, normalizedQuery))
+      operations.push(
+        redisClient.sadd(REDIS_KEYS.SEARCH_ZERO_RESULTS, normalizedQuery),
+      )
     }
 
     // Track daily search volume
     const today = new Date().toISOString().slice(0, 10).replace(/-/g, '')
-    operations.push(redisClient.incr(`${VOLUME_KEY_PREFIX}${today}`))
+    operations.push(
+      redisClient.incr(`${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${today}`),
+    )
 
     await Promise.all(operations)
   } catch (error) {

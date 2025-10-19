@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { after } from 'next/server'
 import NoResults from '@/components/no-results'
 import SearchResults from '@/components/search-results'
 import { title as siteName } from '@/lib/constants'
@@ -56,9 +57,11 @@ export default async function VideosPage({
     query,
   })
 
-  // Log search query for analytics (only when there's a query)
+  // Log search query for analytics using after() to avoid blocking rendering
   if (query) {
-    await logSearchQuery(query, videos.length)
+    after(async () => {
+      await logSearchQuery(query, videos.length)
+    })
   }
 
   if (videos.length < 1) {
