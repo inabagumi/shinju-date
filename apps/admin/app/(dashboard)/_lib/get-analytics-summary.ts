@@ -30,7 +30,7 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
     )
 
     // Get today's click volume
-    const clickKey = `videos:clicked:${dateKey}`
+    const clickKey = `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${dateKey}`
     const clickResults = await redisClient.zrange<string[]>(clickKey, 0, -1, {
       rev: false,
       withScores: true,

@@ -1,4 +1,4 @@
-import { TIME_ZONE } from '@shinju-date/constants'
+import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
@@ -100,7 +100,9 @@ export async function getVideos(
     videoIds.map(async (slug) => {
       // Sum up clicks from all 7 days
       const scores = await Promise.all(
-        days.map((day) => redisClient.zscore(`videos:clicked:${day}`, slug)),
+        days.map((day) =>
+          redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, slug),
+        ),
       )
       return scores.reduce<number>(
         (sum, score) => sum + (typeof score === 'number' ? score : 0),
