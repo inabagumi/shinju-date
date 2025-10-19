@@ -2,13 +2,7 @@ import { defineConfig } from 'tsup'
 
 export default defineConfig({
   dts: true,
-  entry: [
-    './src/index.ts',
-    './src/format-date.ts',
-    './src/max.ts',
-    './src/min.ts',
-    './src/start-of-hour.ts',
-  ],
+  entry: ['./src/index.ts'],
   format: 'esm',
   sourcemap: true,
   target: 'es2022',

@@ -35,12 +35,21 @@ importers:
       '@sentry/profiling-node':
         specifier: 10.20.0
         version: 10.20.0
+      '@shinju-date/constants':
+        specifier: workspace:*
+        version: link:../../packages/constants
+      '@shinju-date/temporal-fns':
+        specifier: workspace:*
+        version: link:../../packages/temporal-fns
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
         version: 0.3.0(@supabase/supabase-js@2.75.1)
       '@supabase/supabase-js':
         specifier: 2.75.1
         version: 2.75.1
+      '@upstash/redis':
+        specifier: 1.35.6
+        version: 1.35.6
       next:
         specifier: 15.5.6
         version: 15.5.6(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -53,6 +62,9 @@ importers:
       tailwindcss:
         specifier: 4.1.14
         version: 4.1.14
+      temporal-polyfill:
+        specifier: 0.3.0
+        version: 0.3.0
       zod:
         specifier: 4.1.12
         version: 4.1.12
@@ -299,6 +311,21 @@ importers:
       remark-gfm:
         specifier: 4.0.1
         version: 4.0.1
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/constants:
+    devDependencies:
+      '@tsconfig/node20':
+        specifier: 20.1.6
+        version: 20.1.6
+      '@tsconfig/strictest':
+        specifier: 2.0.6
+        version: 2.0.6
+      tsup:
+        specifier: 8.5.0
+        version: 8.5.0(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)
       typescript:
         specifier: 5.9.3
         version: 5.9.3

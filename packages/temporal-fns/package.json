@@ -15,6 +15,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./format-date": {
+      "types": "./dist/format-date.d.ts",
+      "default": "./dist/format-date.js"
+    },
     "./max": {
       "types": "./dist/max.d.ts",
       "default": "./dist/max.js"
@@ -48,6 +52,9 @@
     "*": {
       ".": [
         "./dist/index.d.ts"
+      ],
+      "./format-date": [
+        "./dist/format-date.d.ts"
       ],
       "./max": [
         "./dist/max.d.ts"
