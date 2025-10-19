@@ -49,8 +49,11 @@ export function TermModal({ term }: TermModalProps) {
       const timer = setTimeout(() => {
         // Any cleanup if needed
       }, 100)
-      return () => clearTimeout(timer)
+      return () => {
+        clearTimeout(timer)
+      }
     }
+    return undefined
   }, [open])
 
   return (
