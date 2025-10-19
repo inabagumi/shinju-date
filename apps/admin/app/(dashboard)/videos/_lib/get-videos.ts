@@ -23,13 +23,19 @@ export type Video = {
 
 export type VideoFilters = {
   channelId?: number
+  deleted?: boolean
   visible?: boolean
 }
+
+export type VideoSortField = 'created_at' | 'published_at' | 'updated_at'
+export type VideoSortOrder = 'asc' | 'desc'
 
 export async function getVideos(
   page = 1,
   perPage = 20,
   filters?: VideoFilters,
+  sortField: VideoSortField = 'published_at',
+  sortOrder: VideoSortOrder = 'desc',
 ): Promise<{
   videos: Video[]
   total: number
@@ -52,13 +58,24 @@ export async function getVideos(
   if (filters?.visible !== undefined) {
     query = query.eq('visible', filters.visible)
   }
+  // Handle deleted filter
+  if (filters?.deleted === true) {
+    // Show only deleted videos
+    query = query.not('deleted_at', 'is', null)
+  } else if (filters?.deleted === false) {
+    // Show only non-deleted videos
+    query = query.is('deleted_at', null)
+  }
+  // If deleted is undefined, show all videos (both deleted and non-deleted)
 
   // Fetch videos from Supabase with pagination
   const {
     data: videos,
     error,
     count,
-  } = await query.order('created_at', { ascending: false }).range(from, to)
+  } = await query
+    .order(sortField, { ascending: sortOrder === 'asc' })
+    .range(from, to)
 
   if (error) {
     throw new TypeError(error.message, {

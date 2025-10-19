@@ -118,7 +118,10 @@ export default function VideoList({ channels, videos }: Props) {
     })
   }
 
-  const handleFilterChange = (key: 'channelId' | 'visible', value: string) => {
+  const handleFilterChange = (
+    key: 'channelId' | 'deleted' | 'visible',
+    value: string,
+  ) => {
     const params = new URLSearchParams(searchParams.toString())
     if (value === '') {
       params.delete(key)
@@ -130,16 +133,27 @@ export default function VideoList({ channels, videos }: Props) {
     router.push(`/videos?${params.toString()}`)
   }
 
+  const handleSortChange = (key: 'sortField' | 'sortOrder', value: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set(key, value)
+    // Reset to page 1 when sort changes
+    params.delete('page')
+    router.push(`/videos?${params.toString()}`)
+  }
+
   const allSelected =
     videos.length > 0 && selectedSlugs.length === videos.length
 
   const currentChannelId = searchParams.get('channelId') || ''
+  const currentDeleted = searchParams.get('deleted') || ''
   const currentVisible = searchParams.get('visible') || ''
+  const currentSortField = searchParams.get('sortField') || 'published_at'
+  const currentSortOrder = searchParams.get('sortOrder') || 'desc'
 
   return (
     <div>
-      {/* Filters */}
-      <div className="mb-4 flex gap-4">
+      {/* Filters and Sort Controls */}
+      <div className="mb-4 flex flex-wrap gap-4">
         <div>
           <label
             className="mb-1 block font-medium text-gray-700 text-sm"
@@ -177,6 +191,59 @@ export default function VideoList({ channels, videos }: Props) {
             <option value="">すべて</option>
             <option value="true">公開中のみ</option>
             <option value="false">非表示のみ</option>
+          </select>
+        </div>
+        <div>
+          <label
+            className="mb-1 block font-medium text-gray-700 text-sm"
+            htmlFor="deleted-filter"
+          >
+            削除状態で絞り込み
+          </label>
+          <select
+            className="rounded-md border border-gray-300 px-3 py-2"
+            id="deleted-filter"
+            onChange={(e) => handleFilterChange('deleted', e.target.value)}
+            value={currentDeleted}
+          >
+            <option value="">すべて</option>
+            <option value="false">削除されていないもののみ</option>
+            <option value="true">削除済みのみ</option>
+          </select>
+        </div>
+        <div>
+          <label
+            className="mb-1 block font-medium text-gray-700 text-sm"
+            htmlFor="sort-field"
+          >
+            並び替え
+          </label>
+          <select
+            className="rounded-md border border-gray-300 px-3 py-2"
+            id="sort-field"
+            onChange={(e) => handleSortChange('sortField', e.target.value)}
+            value={currentSortField}
+          >
+            <option value="published_at">公開日時</option>
+            <option value="updated_at">更新日時</option>
+            <option value="created_at">作成日時</option>
+          </select>
+        </div>
+        <div>
+          <label
+            className="mb-1 block font-medium text-gray-700 text-sm"
+            htmlFor="sort-order"
+          >
+            順序
+          </label>
+          <select
+            className="rounded-md border border-gray-300 px-3 py-2"
+            id="sort-order"
+            onChange={(e) => handleSortChange('sortOrder', e.target.value)}
+            value={currentSortOrder}
+          >
+            <option value="desc">降順 (新しい順)</option>
+            <option value="asc">昇順 (古い順)</option>
           </select>
         </div>
       </div>

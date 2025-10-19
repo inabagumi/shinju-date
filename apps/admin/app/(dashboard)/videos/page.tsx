@@ -1,12 +1,20 @@
 import getChannels from '../channels/_lib/get-channels'
 import Pagination from './_components/pagination'
 import VideoList from './_components/video-list'
-import { getVideos, type VideoFilters } from './_lib/get-videos'
+import {
+  getVideos,
+  type VideoFilters,
+  type VideoSortField,
+  type VideoSortOrder,
+} from './_lib/get-videos'
 
 type Props = {
   searchParams: Promise<{
     channelId?: string
+    deleted?: string
     page?: string
+    sortField?: string
+    sortOrder?: string
     visible?: string
   }>
 }
@@ -24,8 +32,24 @@ export default async function VideosPage({ searchParams }: Props) {
   if (params.visible !== undefined && params.visible !== '') {
     filters.visible = params.visible === 'true'
   }
+  if (params.deleted === 'true') {
+    filters.deleted = true
+  } else if (params.deleted === 'false') {
+    filters.deleted = false
+  }
+  // If params.deleted is undefined or empty, don't set filters.deleted (will show all)
 
-  const { videos, total } = await getVideos(currentPage, perPage, filters)
+  // Get sort parameters
+  const sortField = (params.sortField as VideoSortField) || 'published_at'
+  const sortOrder = (params.sortOrder as VideoSortOrder) || 'desc'
+
+  const { videos, total } = await getVideos(
+    currentPage,
+    perPage,
+    filters,
+    sortField,
+    sortOrder,
+  )
   const channels = await getChannels()
   const totalPages = Math.ceil(total / perPage)
 
