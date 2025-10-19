@@ -1,8 +1,10 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
+import { twMerge } from 'tailwind-merge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +19,8 @@ import {
   toggleVisibilityAction,
 } from '../_actions'
 import type { Video } from '../_lib/get-videos'
+import { SortIcon } from './sort-icon'
+import { VideoFilters } from './video-filters'
 
 type Channel = {
   created_at: string
@@ -29,6 +33,12 @@ type Channel = {
 type Props = {
   channels: Channel[]
   videos: Video[]
+}
+
+function getStatusText(video: Video): string {
+  if (video.deleted_at) return '削除済み'
+  if (video.visible) return '公開中'
+  return '非表示'
 }
 
 export default function VideoList({ channels, videos }: Props) {
@@ -118,134 +128,32 @@ export default function VideoList({ channels, videos }: Props) {
     })
   }
 
-  const handleFilterChange = (
-    key: 'channelId' | 'deleted' | 'visible',
-    value: string,
-  ) => {
+  const getSortUrl = (field: 'published_at' | 'updated_at') => {
     const params = new URLSearchParams(searchParams.toString())
-    if (value === '') {
-      params.delete(key)
+    // Toggle sort order if clicking the same field, otherwise default to desc
+    if (currentSortField === field) {
+      params.set('sortOrder', currentSortOrder === 'asc' ? 'desc' : 'asc')
     } else {
-      params.set(key, value)
+      params.set('sortField', field)
+      params.set('sortOrder', 'desc')
     }
-    // Reset to page 1 when filters change
-    params.delete('page')
-    router.push(`/videos?${params.toString()}`)
-  }
-
-  const handleSortChange = (key: 'sortField' | 'sortOrder', value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    params.set(key, value)
     // Reset to page 1 when sort changes
     params.delete('page')
-    router.push(`/videos?${params.toString()}`)
+    return `/videos?${params.toString()}`
   }
 
   const allSelected =
     videos.length > 0 && selectedSlugs.length === videos.length
 
-  const currentChannelId = searchParams.get('channelId') || ''
-  const currentDeleted = searchParams.get('deleted') || ''
-  const currentVisible = searchParams.get('visible') || ''
   const currentSortField = searchParams.get('sortField') || 'updated_at'
-  const currentSortOrder = searchParams.get('sortOrder') || 'desc'
+  const currentSortOrder = (searchParams.get('sortOrder') || 'desc') as
+    | 'asc'
+    | 'desc'
 
   return (
     <div>
       {/* Filters and Sort Controls */}
-      <div className="mb-4 flex flex-wrap gap-4">
-        <div>
-          <label
-            className="mb-1 block font-medium text-gray-700 text-sm"
-            htmlFor="channel-filter"
-          >
-            チャンネルで絞り込み
-          </label>
-          <select
-            className="rounded-md border border-gray-300 px-3 py-2"
-            id="channel-filter"
-            onChange={(e) => handleFilterChange('channelId', e.target.value)}
-            value={currentChannelId}
-          >
-            <option value="">すべてのチャンネル</option>
-            {channels.map((channel) => (
-              <option key={channel.id} value={channel.id}>
-                {channel.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label
-            className="mb-1 block font-medium text-gray-700 text-sm"
-            htmlFor="status-filter"
-          >
-            ステータスで絞り込み
-          </label>
-          <select
-            className="rounded-md border border-gray-300 px-3 py-2"
-            id="status-filter"
-            onChange={(e) => handleFilterChange('visible', e.target.value)}
-            value={currentVisible}
-          >
-            <option value="">すべて</option>
-            <option value="true">公開中のみ</option>
-            <option value="false">非表示のみ</option>
-          </select>
-        </div>
-        <div>
-          <label
-            className="mb-1 block font-medium text-gray-700 text-sm"
-            htmlFor="deleted-filter"
-          >
-            削除状態で絞り込み
-          </label>
-          <select
-            className="rounded-md border border-gray-300 px-3 py-2"
-            id="deleted-filter"
-            onChange={(e) => handleFilterChange('deleted', e.target.value)}
-            value={currentDeleted}
-          >
-            <option value="">すべて</option>
-            <option value="false">削除されていないもののみ</option>
-            <option value="true">削除済みのみ</option>
-          </select>
-        </div>
-        <div>
-          <label
-            className="mb-1 block font-medium text-gray-700 text-sm"
-            htmlFor="sort-field"
-          >
-            並び替え
-          </label>
-          <select
-            className="rounded-md border border-gray-300 px-3 py-2"
-            id="sort-field"
-            onChange={(e) => handleSortChange('sortField', e.target.value)}
-            value={currentSortField}
-          >
-            <option value="updated_at">更新日時</option>
-            <option value="published_at">公開日時</option>
-          </select>
-        </div>
-        <div>
-          <label
-            className="mb-1 block font-medium text-gray-700 text-sm"
-            htmlFor="sort-order"
-          >
-            順序
-          </label>
-          <select
-            className="rounded-md border border-gray-300 px-3 py-2"
-            id="sort-order"
-            onChange={(e) => handleSortChange('sortOrder', e.target.value)}
-            value={currentSortOrder}
-          >
-            <option value="desc">降順 (新しい順)</option>
-            <option value="asc">昇順 (古い順)</option>
-          </select>
-        </div>
-      </div>
+      <VideoFilters channels={channels} />
 
       {/* Action bar */}
       {selectedSlugs.length > 0 && (
@@ -291,101 +199,163 @@ export default function VideoList({ channels, videos }: Props) {
               <th className="p-3 text-left">サムネイル</th>
               <th className="p-3 text-left">タイトル</th>
               <th className="p-3 text-left">チャンネル</th>
+              <th className="p-3 text-left">
+                <Link
+                  className="flex items-center hover:text-blue-600"
+                  href={getSortUrl('published_at')}
+                >
+                  公開日時
+                  <SortIcon
+                    currentSortField={currentSortField}
+                    currentSortOrder={currentSortOrder}
+                    field="published_at"
+                  />
+                </Link>
+              </th>
+              <th className="p-3 text-left">
+                <Link
+                  className="flex items-center hover:text-blue-600"
+                  href={getSortUrl('updated_at')}
+                >
+                  更新日時
+                  <SortIcon
+                    currentSortField={currentSortField}
+                    currentSortOrder={currentSortOrder}
+                    field="updated_at"
+                  />
+                </Link>
+              </th>
               <th className="p-3 text-left">クリック数</th>
-              <th className="p-3 text-left">表示状態</th>
+              <th className="p-3 text-left">ステータス</th>
               <th className="p-3 text-left">アクション</th>
             </tr>
           </thead>
           <tbody>
-            {videos.map((video) => (
-              <tr className="border-b hover:bg-gray-50" key={video.slug}>
-                <td className="p-3">
-                  <input
-                    checked={selectedSlugs.includes(video.slug)}
-                    onChange={(e) =>
-                      handleSelectVideo(video.slug, e.target.checked)
-                    }
-                    type="checkbox"
-                  />
-                </td>
-                <td className="p-3">
-                  {video.thumbnail ? (
-                    <div className="relative aspect-video w-20 md:w-28">
-                      <Image
-                        alt=""
-                        className="object-cover"
-                        fill
-                        sizes="(max-width: 768px) 80px, 112px"
-                        src={
-                          supabaseClient.storage
-                            .from('thumbnails')
-                            .getPublicUrl(video.thumbnail.path).data.publicUrl
-                        }
-                      />
+            {videos.length > 0 ? (
+              videos.map((video) => (
+                <tr className="border-b hover:bg-gray-50" key={video.slug}>
+                  <td className="p-3">
+                    <input
+                      checked={selectedSlugs.includes(video.slug)}
+                      onChange={(e) =>
+                        handleSelectVideo(video.slug, e.target.checked)
+                      }
+                      type="checkbox"
+                    />
+                  </td>
+                  <td className="p-3">
+                    {video.thumbnail ? (
+                      <div className="relative aspect-video w-20 md:w-28">
+                        <Image
+                          alt=""
+                          className="object-cover"
+                          fill
+                          sizes="(max-width: 768px) 80px, 112px"
+                          src={
+                            supabaseClient.storage
+                              .from('thumbnails')
+                              .getPublicUrl(video.thumbnail.path).data.publicUrl
+                          }
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex aspect-video w-20 items-center justify-center bg-gray-200 text-xs md:w-28">
+                        No Image
+                      </div>
+                    )}
+                  </td>
+                  <td className="max-w-xs p-3">
+                    <div className="line-clamp-2" title={video.title}>
+                      {video.title}
                     </div>
-                  ) : (
-                    <div className="flex aspect-video w-20 items-center justify-center bg-gray-200 text-xs md:w-28">
-                      No Image
-                    </div>
-                  )}
-                </td>
-                <td className="max-w-xs p-3">
-                  <div className="line-clamp-2" title={video.title}>
-                    {video.title}
-                  </div>
-                </td>
-                <td className="p-3">
-                  <span className="text-gray-600 text-sm">
-                    {video.channel.name}
-                  </span>
-                </td>
-                <td className="p-3">{video.clicks}</td>
-                <td className="p-3">
-                  <span
-                    className={`rounded px-2 py-1 text-xs ${
-                      video.visible
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {video.visible ? '公開中' : '非表示'}
-                  </span>
-                </td>
-                <td className="p-3">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger aria-label="アクションメニュー">
-                      <svg
-                        aria-hidden="true"
-                        className="h-5 w-5"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <title>アクションメニュー</title>
-                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                      </svg>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem
-                        onClick={() => router.push(`/videos/${video.slug}`)}
-                      >
-                        編集
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleSingleAction('toggle', video.slug)}
-                      >
-                        表示/非表示を切り替え
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleSingleAction('delete', video.slug)}
-                        variant="danger"
-                      >
-                        削除
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  </td>
+                  <td className="p-3">
+                    <span className="text-gray-600 text-sm">
+                      {video.channel.name}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <span className="text-gray-600 text-sm">
+                      {new Date(video.published_at).toLocaleDateString(
+                        'ja-JP',
+                        {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                        },
+                      )}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <span className="text-gray-600 text-sm">
+                      {new Date(video.updated_at).toLocaleDateString('ja-JP', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                      })}
+                    </span>
+                  </td>
+                  <td className="p-3">{video.clicks}</td>
+                  <td className="p-3">
+                    <span
+                      className={twMerge(
+                        'whitespace-nowrap rounded px-2 py-1 text-xs',
+                        video.deleted_at
+                          ? 'bg-red-100 text-red-800'
+                          : video.visible
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800',
+                      )}
+                    >
+                      {getStatusText(video)}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger aria-label="アクションメニュー">
+                        <svg
+                          aria-hidden="true"
+                          className="h-5 w-5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <title>アクションメニュー</title>
+                          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                        </svg>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem
+                          onClick={() => router.push(`/videos/${video.slug}`)}
+                        >
+                          編集
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleSingleAction('toggle', video.slug)
+                          }
+                        >
+                          表示/非表示を切り替え
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleSingleAction('delete', video.slug)
+                          }
+                          variant="danger"
+                        >
+                          削除
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td className="p-8 text-center text-gray-500" colSpan={9}>
+                  動画がありません。
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

@@ -13,6 +13,7 @@ type Props = {
     channelId?: string
     deleted?: string
     page?: string
+    search?: string
     slug?: string
     sortField?: string
     sortOrder?: string
@@ -35,6 +36,9 @@ export default async function VideosPage({ searchParams }: Props) {
   }
   if (params.slug) {
     filters.slug = params.slug
+  }
+  if (params.search) {
+    filters.search = params.search
   }
   if (params.deleted === 'true') {
     filters.deleted = true
@@ -64,15 +68,9 @@ export default async function VideosPage({ searchParams }: Props) {
         <p className="text-gray-600">全 {total} 件の動画</p>
       </div>
 
-      {videos.length > 0 ? (
-        <>
-          <VideoList channels={channels} videos={videos} />
-          {totalPages > 1 && (
-            <Pagination currentPage={currentPage} totalPages={totalPages} />
-          )}
-        </>
-      ) : (
-        <p className="p-4 text-gray-500">動画がありません。</p>
+      <VideoList channels={channels} videos={videos} />
+      {totalPages > 1 && (
+        <Pagination currentPage={currentPage} totalPages={totalPages} />
       )}
     </div>
   )
