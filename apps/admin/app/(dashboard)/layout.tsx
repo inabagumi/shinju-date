@@ -23,6 +23,12 @@ export default function DashboardLayout({ children }: Props) {
           </Link>
           <Link
             className="rounded-md px-3 py-1 hover:bg-slate-700"
+            href="/channels"
+          >
+            チャンネル管理
+          </Link>
+          <Link
+            className="rounded-md px-3 py-1 hover:bg-slate-700"
             href="/terms"
           >
             用語管理
