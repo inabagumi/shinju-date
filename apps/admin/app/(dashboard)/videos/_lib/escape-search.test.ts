@@ -39,4 +39,22 @@ describe('escapeSearchString', () => {
     const escaped = escapeSearchString(malicious)
     expect(escaped).toBe('xxx\\%other\\_column.ilike.\\%malicious\\_phrase')
   })
+
+  it('escapes backslash character', () => {
+    expect(escapeSearchString('test\\value')).toBe('test\\\\value')
+  })
+
+  it('escapes backslash followed by special characters', () => {
+    expect(escapeSearchString('test\\%value')).toBe('test\\\\\\%value')
+  })
+
+  it('handles multiple backslashes', () => {
+    expect(escapeSearchString('test\\\\value')).toBe('test\\\\\\\\value')
+  })
+
+  it('escapes backslash, %, and _ together', () => {
+    expect(escapeSearchString('test\\%value_name')).toBe(
+      'test\\\\\\%value\\_name',
+    )
+  })
 })

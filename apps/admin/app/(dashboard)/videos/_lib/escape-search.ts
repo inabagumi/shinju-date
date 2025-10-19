@@ -3,8 +3,9 @@
  * when used with Supabase's ilike filter.
  *
  * @param search - The search string to escape
- * @returns The escaped search string with % and _ characters escaped
+ * @returns The escaped search string with \, %, and _ characters escaped
  */
 export function escapeSearchString(search: string): string {
-  return search.replace(/[%_]/g, '\\$&')
+  // Escape backslashes first to prevent double-escaping
+  return search.replace(/\\/g, '\\\\').replace(/[%_]/g, '\\$&')
 }
