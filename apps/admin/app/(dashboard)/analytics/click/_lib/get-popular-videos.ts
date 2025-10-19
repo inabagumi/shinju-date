@@ -56,7 +56,7 @@ export async function getPopularVideos(
     }
 
     // Fetch video details from Supabase
-    const videoIds = sortedVideos.map(([id]) => id)
+    const videoIds = sortedVideos.map(([id]) => Number.parseInt(id, 10))
     const { data: videos, error } = await supabaseClient
       .from('videos')
       .select('id, slug, title')
@@ -68,7 +68,7 @@ export async function getPopularVideos(
     }
 
     // Map videos with their click counts
-    const videoMap = new Map(videos.map((v) => [v.id, v]))
+    const videoMap = new Map(videos.map((v) => [v.id.toString(), v]))
     return sortedVideos
       .map(([id, clicks]) => {
         const video = videoMap.get(id)
