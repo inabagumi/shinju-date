@@ -1,9 +1,8 @@
 'use server'
 
+import { REDIS_KEYS } from '@shinju-date/constants'
 import { revalidatePath } from 'next/cache'
 import { redisClient } from '@/lib/redis'
-
-const RECOMMENDATION_QUERIES_KEY = 'recommendation_queries'
 
 export async function addQueryAction(query: string): Promise<{
   success: boolean
@@ -16,7 +15,7 @@ export async function addQueryAction(query: string): Promise<{
   const trimmedQuery = query.trim()
 
   try {
-    await redisClient.sadd(RECOMMENDATION_QUERIES_KEY, trimmedQuery)
+    await redisClient.sadd(REDIS_KEYS.RECOMMENDATION_QUERIES, trimmedQuery)
 
     revalidatePath('/recommended-queries')
     revalidatePath('/', 'page')
@@ -40,7 +39,7 @@ export async function deleteQueryAction(query: string): Promise<{
   }
 
   try {
-    await redisClient.srem(RECOMMENDATION_QUERIES_KEY, query)
+    await redisClient.srem(REDIS_KEYS.RECOMMENDATION_QUERIES, query)
 
     revalidatePath('/recommended-queries')
     revalidatePath('/', 'page')
