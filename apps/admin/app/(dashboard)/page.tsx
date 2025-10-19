@@ -1,14 +1,14 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { getPopularVideos } from '@/lib/actions/get-popular-videos'
 import { supabaseClient } from '@/lib/supabase'
 import { getAnalyticsSummary } from './_lib/get-analytics-summary'
-import { getPopularVideos } from './_lib/get-popular-videos'
 import { getSummaryStats } from './_lib/get-summary-stats'
 
 export default async function DashboardPage() {
   const [stats, popularVideos, analytics] = await Promise.all([
     getSummaryStats(),
-    getPopularVideos(10),
+    getPopularVideos(10, 30),
     getAnalyticsSummary(),
   ])
 

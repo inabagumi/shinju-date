@@ -1,3 +1,4 @@
+import { REDIS_KEYS } from '@shinju-date/constants'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
 import { redisClient } from '@/lib/redis'
@@ -24,8 +25,12 @@ export default async function increment(
   const keySuffix = format(timestamp)
   const multi = redisClient.multi()
 
-  multi.zincrby(`videos:clicked:${keySuffix}`, 1, video.id)
-  multi.zincrby(`channels:clicked:${keySuffix}`, 1, video.channel.id)
+  multi.zincrby(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${keySuffix}`, 1, video.id)
+  multi.zincrby(
+    `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}${keySuffix}`,
+    1,
+    video.channel.id,
+  )
 
   await multi.exec()
 }

@@ -1,6 +1,6 @@
 'use server'
 
-import { TIME_ZONE } from '@shinju-date/constants'
+import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
@@ -23,7 +23,7 @@ export async function getClickVolume(days = 7): Promise<DailyClickVolume[]> {
       const date = today.subtract({ days: i })
       const dateKey = formatDate(date)
       const dateStr = date.toPlainDate().toString()
-      const key = `videos:clicked:${dateKey}`
+      const key = `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${dateKey}`
 
       // Get the sum of all video clicks for this day
       const results = await redisClient.zrange<string[]>(key, 0, -1, {

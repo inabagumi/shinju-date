@@ -14,8 +14,6 @@ function isVideosPage(pathname: string): boolean {
 }
 
 export function middleware(request: NextRequest): ReturnType<NextMiddleware> {
-  console.log(process.env['UPSTASH_REDIS_REST_URL'])
-
   if (
     isVideosPage(request.nextUrl.pathname) &&
     request.nextUrl.searchParams.has('q')

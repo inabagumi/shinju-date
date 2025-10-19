@@ -1,7 +1,7 @@
 import Link from 'next/link'
+import { getPopularVideos } from '@/lib/actions/get-popular-videos'
 import ClickVolumeChart from './_components/click-volume-chart'
 import { getClickVolume } from './_lib/get-click-volume'
-import { getPopularVideos } from './_lib/get-popular-videos'
 
 export default async function ClickAnalyticsPage() {
   const [popularVideos, clickVolume] = await Promise.all([
@@ -47,9 +47,9 @@ export default async function ClickAnalyticsPage() {
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 font-semibold text-green-600 text-sm">
                     {index + 1}
                   </div>
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 truncate">
                     <Link
-                      className="truncate font-medium hover:underline"
+                      className="font-medium hover:underline"
                       href={`/videos?slug=${item.slug}`}
                     >
                       {item.title}
