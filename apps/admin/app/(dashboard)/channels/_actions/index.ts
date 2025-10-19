@@ -114,3 +114,35 @@ export async function updateChannelAction(
     }
   }
 }
+
+export async function deleteChannelAction(id: number): Promise<{
+  success: boolean
+  error?: string
+}> {
+  if (!id) {
+    return { error: 'IDが指定されていません。', success: false }
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from('channels')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      throw error
+    }
+
+    revalidatePath('/channels')
+    return { success: true }
+  } catch (error) {
+    console.error('Delete channel error:', error)
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : 'チャンネルの削除に失敗しました。',
+      success: false,
+    }
+  }
+}
