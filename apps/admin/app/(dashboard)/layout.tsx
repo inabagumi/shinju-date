@@ -33,6 +33,12 @@ export default function DashboardLayout({ children }: Props) {
           >
             検索アナリティクス
           </Link>
+          <Link
+            className="rounded-md px-3 py-1 hover:bg-slate-700"
+            href="/analytics/click"
+          >
+            クリックアナリティクス
+          </Link>
         </div>
         <div className="flex items-center">
           <Form action={signOut}>
