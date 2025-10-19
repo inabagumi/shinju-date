@@ -63,7 +63,7 @@
     "dev": "next --port 3000 --turbopack",
     "lint": "next lint",
     "start": "next start --port 3000",
-    "test": "jest"
+    "test": "vitest run"
   },
   "type": "module",
   "version": "1.0.0"
