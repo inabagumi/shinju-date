@@ -14,11 +14,28 @@ export type Video = {
     blur_data_url: string
   } | null
   clicks: number
+  channel: {
+    id: number
+    name: string
+    slug: string
+  }
 }
+
+export type VideoFilters = {
+  channelId?: number
+  deleted?: boolean
+  visible?: boolean
+}
+
+export type VideoSortField = 'published_at' | 'updated_at'
+export type VideoSortOrder = 'asc' | 'desc'
 
 export async function getVideos(
   page = 1,
   perPage = 20,
+  filters?: VideoFilters,
+  sortField: VideoSortField = 'updated_at',
+  sortOrder: VideoSortOrder = 'desc',
 ): Promise<{
   videos: Video[]
   total: number
@@ -26,18 +43,38 @@ export async function getVideos(
   const from = (page - 1) * perPage
   const to = from + perPage - 1
 
+  // Start building the query
+  let query = supabaseClient
+    .from('videos')
+    .select(
+      'slug, title, visible, deleted_at, thumbnails(path, blur_data_url), channels(id, name, slug)',
+      { count: 'exact' },
+    )
+
+  // Apply filters
+  if (filters?.channelId) {
+    query = query.eq('channel_id', filters.channelId)
+  }
+  if (filters?.visible !== undefined) {
+    query = query.eq('visible', filters.visible)
+  }
+  // Handle deleted filter
+  if (filters?.deleted === true) {
+    // Show only deleted videos
+    query = query.not('deleted_at', 'is', null)
+  } else if (filters?.deleted === false) {
+    // Show only non-deleted videos
+    query = query.is('deleted_at', null)
+  }
+  // If deleted is undefined, show all videos (both deleted and non-deleted)
+
   // Fetch videos from Supabase with pagination
   const {
     data: videos,
     error,
     count,
-  } = await supabaseClient
-    .from('videos')
-    .select(
-      'slug, title, visible, deleted_at, thumbnails(path, blur_data_url)',
-      { count: 'exact' },
-    )
-    .order('created_at', { ascending: false })
+  } = await query
+    .order(sortField, { ascending: sortOrder === 'asc' })
     .range(from, to)
 
   if (error) {
@@ -50,24 +87,31 @@ export async function getVideos(
     return { total: 0, videos: [] }
   }
 
-  // Get today's date in JST timezone
+  // Get last 7 days in JST timezone
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-  const keySuffix = formatDate(today)
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const date = today.subtract({ days: i })
+    return formatDate(date)
+  })
 
-  // Fetch click counts for all videos
+  // Fetch click counts for all videos for the last 7 days
   const videoIds = videos.map((video) => video.slug)
   const clickCounts = await Promise.all(
     videoIds.map(async (slug) => {
-      const score = await redisClient.zscore(
-        `videos:clicked:${keySuffix}`,
-        slug,
+      // Sum up clicks from all 7 days
+      const scores = await Promise.all(
+        days.map((day) => redisClient.zscore(`videos:clicked:${day}`, slug)),
       )
-      return typeof score === 'number' ? score : 0
+      return scores.reduce<number>(
+        (sum, score) => sum + (typeof score === 'number' ? score : 0),
+        0,
+      )
     }),
   )
 
   // Combine video data with click counts
   const videosWithClicks: Video[] = videos.map((video, index) => ({
+    channel: video.channels,
     clicks: clickCounts[index] ?? 0,
     deleted_at: video.deleted_at,
     slug: video.slug,

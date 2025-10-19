@@ -1,20 +1,44 @@
 'use client'
 
 import Image from 'next/image'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/dropdown-menu'
 import { supabaseClient } from '@/lib/supabase'
-import { softDeleteAction, toggleVisibilityAction } from '../_actions'
+import {
+  softDeleteAction,
+  softDeleteSingleVideoAction,
+  toggleSingleVideoVisibilityAction,
+  toggleVisibilityAction,
+} from '../_actions'
 import type { Video } from '../_lib/get-videos'
 
+type Channel = {
+  created_at: string
+  id: number
+  name: string
+  slug: string
+  updated_at: string
+}
+
 type Props = {
+  channels: Channel[]
   videos: Video[]
 }
 
-export default function VideoList({ videos }: Props) {
+export default function VideoList({ channels, videos }: Props) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>([])
   const [showConfirmModal, setShowConfirmModal] = useState<{
     action: 'toggle' | 'delete'
     open: boolean
+    slug?: string
   }>({ action: 'toggle', open: false })
   const [isPending, startTransition] = useTransition()
 
@@ -34,28 +58,56 @@ export default function VideoList({ videos }: Props) {
     }
   }
 
-  const handleAction = (action: 'toggle' | 'delete') => {
+  const handleBulkAction = (action: 'toggle' | 'delete') => {
     setShowConfirmModal({ action, open: true })
+  }
+
+  const handleSingleAction = (action: 'toggle' | 'delete', slug: string) => {
+    setShowConfirmModal({ action, open: true, slug })
   }
 
   const handleConfirm = () => {
     startTransition(async () => {
       try {
-        if (showConfirmModal.action === 'toggle') {
-          const result = await toggleVisibilityAction(selectedSlugs)
-          if (result.success) {
-            setSelectedSlugs([])
-            alert('表示状態を更新しました。')
-          } else {
-            alert(result.error || '更新に失敗しました。')
+        // If slug is provided, it's a single action
+        if (showConfirmModal.slug) {
+          if (showConfirmModal.action === 'toggle') {
+            const result = await toggleSingleVideoVisibilityAction(
+              showConfirmModal.slug,
+            )
+            if (result.success) {
+              alert('表示状態を更新しました。')
+            } else {
+              alert(result.error || '更新に失敗しました。')
+            }
+          } else if (showConfirmModal.action === 'delete') {
+            const result = await softDeleteSingleVideoAction(
+              showConfirmModal.slug,
+            )
+            if (result.success) {
+              alert('動画を削除しました。')
+            } else {
+              alert(result.error || '削除に失敗しました。')
+            }
           }
-        } else if (showConfirmModal.action === 'delete') {
-          const result = await softDeleteAction(selectedSlugs)
-          if (result.success) {
-            setSelectedSlugs([])
-            alert('動画を削除しました。')
-          } else {
-            alert(result.error || '削除に失敗しました。')
+        } else {
+          // Bulk action
+          if (showConfirmModal.action === 'toggle') {
+            const result = await toggleVisibilityAction(selectedSlugs)
+            if (result.success) {
+              setSelectedSlugs([])
+              alert('表示状態を更新しました。')
+            } else {
+              alert(result.error || '更新に失敗しました。')
+            }
+          } else if (showConfirmModal.action === 'delete') {
+            const result = await softDeleteAction(selectedSlugs)
+            if (result.success) {
+              setSelectedSlugs([])
+              alert('動画を削除しました。')
+            } else {
+              alert(result.error || '削除に失敗しました。')
+            }
           }
         }
       } catch (_error) {
@@ -66,14 +118,138 @@ export default function VideoList({ videos }: Props) {
     })
   }
 
+  const handleFilterChange = (
+    key: 'channelId' | 'deleted' | 'visible',
+    value: string,
+  ) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value === '') {
+      params.delete(key)
+    } else {
+      params.set(key, value)
+    }
+    // Reset to page 1 when filters change
+    params.delete('page')
+    router.push(`/videos?${params.toString()}`)
+  }
+
+  const handleSortChange = (key: 'sortField' | 'sortOrder', value: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set(key, value)
+    // Reset to page 1 when sort changes
+    params.delete('page')
+    router.push(`/videos?${params.toString()}`)
+  }
+
   const allSelected =
     videos.length > 0 && selectedSlugs.length === videos.length
 
+  const currentChannelId = searchParams.get('channelId') || ''
+  const currentDeleted = searchParams.get('deleted') || ''
+  const currentVisible = searchParams.get('visible') || ''
+  const currentSortField = searchParams.get('sortField') || 'updated_at'
+  const currentSortOrder = searchParams.get('sortOrder') || 'desc'
+
   return (
     <div>
+      {/* Filters and Sort Controls */}
+      <div className="mb-4 flex flex-wrap gap-4">
+        <div>
+          <label
+            className="mb-1 block font-medium text-gray-700 text-sm"
+            htmlFor="channel-filter"
+          >
+            チャンネルで絞り込み
+          </label>
+          <select
+            className="rounded-md border border-gray-300 px-3 py-2"
+            id="channel-filter"
+            onChange={(e) => handleFilterChange('channelId', e.target.value)}
+            value={currentChannelId}
+          >
+            <option value="">すべてのチャンネル</option>
+            {channels.map((channel) => (
+              <option key={channel.id} value={channel.id}>
+                {channel.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label
+            className="mb-1 block font-medium text-gray-700 text-sm"
+            htmlFor="status-filter"
+          >
+            ステータスで絞り込み
+          </label>
+          <select
+            className="rounded-md border border-gray-300 px-3 py-2"
+            id="status-filter"
+            onChange={(e) => handleFilterChange('visible', e.target.value)}
+            value={currentVisible}
+          >
+            <option value="">すべて</option>
+            <option value="true">公開中のみ</option>
+            <option value="false">非表示のみ</option>
+          </select>
+        </div>
+        <div>
+          <label
+            className="mb-1 block font-medium text-gray-700 text-sm"
+            htmlFor="deleted-filter"
+          >
+            削除状態で絞り込み
+          </label>
+          <select
+            className="rounded-md border border-gray-300 px-3 py-2"
+            id="deleted-filter"
+            onChange={(e) => handleFilterChange('deleted', e.target.value)}
+            value={currentDeleted}
+          >
+            <option value="">すべて</option>
+            <option value="false">削除されていないもののみ</option>
+            <option value="true">削除済みのみ</option>
+          </select>
+        </div>
+        <div>
+          <label
+            className="mb-1 block font-medium text-gray-700 text-sm"
+            htmlFor="sort-field"
+          >
+            並び替え
+          </label>
+          <select
+            className="rounded-md border border-gray-300 px-3 py-2"
+            id="sort-field"
+            onChange={(e) => handleSortChange('sortField', e.target.value)}
+            value={currentSortField}
+          >
+            <option value="updated_at">更新日時</option>
+            <option value="published_at">公開日時</option>
+          </select>
+        </div>
+        <div>
+          <label
+            className="mb-1 block font-medium text-gray-700 text-sm"
+            htmlFor="sort-order"
+          >
+            順序
+          </label>
+          <select
+            className="rounded-md border border-gray-300 px-3 py-2"
+            id="sort-order"
+            onChange={(e) => handleSortChange('sortOrder', e.target.value)}
+            value={currentSortOrder}
+          >
+            <option value="desc">降順 (新しい順)</option>
+            <option value="asc">昇順 (古い順)</option>
+          </select>
+        </div>
+      </div>
+
       {/* Action bar */}
       {selectedSlugs.length > 0 && (
-        <div className="sticky top-0 z-10 bg-blue-600 p-4 text-white shadow-lg">
+        <div className="sticky top-0 z-10 mb-4 bg-blue-600 p-4 text-white shadow-lg">
           <div className="flex items-center justify-between">
             <span className="font-semibold">
               {selectedSlugs.length} 件選択中
@@ -82,7 +258,7 @@ export default function VideoList({ videos }: Props) {
               <button
                 className="rounded-md bg-blue-700 px-4 py-2 hover:bg-blue-800 disabled:bg-gray-400"
                 disabled={isPending}
-                onClick={() => handleAction('toggle')}
+                onClick={() => handleBulkAction('toggle')}
                 type="button"
               >
                 表示/非表示を切り替え
@@ -90,7 +266,7 @@ export default function VideoList({ videos }: Props) {
               <button
                 className="rounded-md bg-red-600 px-4 py-2 hover:bg-red-700 disabled:bg-gray-400"
                 disabled={isPending}
-                onClick={() => handleAction('delete')}
+                onClick={() => handleBulkAction('delete')}
                 type="button"
               >
                 削除
@@ -114,8 +290,10 @@ export default function VideoList({ videos }: Props) {
               </th>
               <th className="p-3 text-left">サムネイル</th>
               <th className="p-3 text-left">タイトル</th>
+              <th className="p-3 text-left">チャンネル</th>
               <th className="p-3 text-left">クリック数</th>
               <th className="p-3 text-left">表示状態</th>
+              <th className="p-3 text-left">アクション</th>
             </tr>
           </thead>
           <tbody>
@@ -132,12 +310,12 @@ export default function VideoList({ videos }: Props) {
                 </td>
                 <td className="p-3">
                   {video.thumbnail ? (
-                    <div className="relative aspect-video w-28">
+                    <div className="relative aspect-video w-20 md:w-28">
                       <Image
                         alt=""
                         className="object-cover"
                         fill
-                        sizes="112px"
+                        sizes="(max-width: 768px) 80px, 112px"
                         src={
                           supabaseClient.storage
                             .from('thumbnails')
@@ -146,12 +324,21 @@ export default function VideoList({ videos }: Props) {
                       />
                     </div>
                   ) : (
-                    <div className="flex aspect-video w-28 items-center justify-center bg-gray-200">
+                    <div className="flex aspect-video w-20 items-center justify-center bg-gray-200 text-xs md:w-28">
                       No Image
                     </div>
                   )}
                 </td>
-                <td className="p-3">{video.title}</td>
+                <td className="max-w-xs p-3">
+                  <div className="line-clamp-2" title={video.title}>
+                    {video.title}
+                  </div>
+                </td>
+                <td className="p-3">
+                  <span className="text-gray-600 text-sm">
+                    {video.channel.name}
+                  </span>
+                </td>
                 <td className="p-3">{video.clicks}</td>
                 <td className="p-3">
                   <span
@@ -161,8 +348,41 @@ export default function VideoList({ videos }: Props) {
                         : 'bg-gray-100 text-gray-800'
                     }`}
                   >
-                    {video.visible ? '表示' : '非表示'}
+                    {video.visible ? '公開中' : '非表示'}
                   </span>
+                </td>
+                <td className="p-3">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger aria-label="アクションメニュー">
+                      <svg
+                        aria-hidden="true"
+                        className="h-5 w-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <title>アクションメニュー</title>
+                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                      </svg>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem
+                        onClick={() => router.push(`/videos/${video.slug}`)}
+                      >
+                        編集
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleSingleAction('toggle', video.slug)}
+                      >
+                        表示/非表示を切り替え
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleSingleAction('delete', video.slug)}
+                        variant="danger"
+                      >
+                        削除
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </td>
               </tr>
             ))}
@@ -177,8 +397,12 @@ export default function VideoList({ videos }: Props) {
             <h3 className="mb-4 font-semibold text-lg">確認</h3>
             <p className="mb-6 text-gray-700">
               {showConfirmModal.action === 'delete'
-                ? `本当に${selectedSlugs.length}件の動画を削除しますか？`
-                : `本当に${selectedSlugs.length}件の動画の表示状態を切り替えますか？`}
+                ? showConfirmModal.slug
+                  ? 'この動画を削除しますか？'
+                  : `本当に${selectedSlugs.length}件の動画を削除しますか？`
+                : showConfirmModal.slug
+                  ? 'この動画の表示状態を切り替えますか？'
+                  : `本当に${selectedSlugs.length}件の動画の表示状態を切り替えますか？`}
             </p>
             <div className="flex justify-end gap-2">
               <button
