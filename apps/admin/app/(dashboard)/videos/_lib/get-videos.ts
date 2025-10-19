@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
 import { createSupabaseClient } from '@/lib/supabase'
+import { escapeSearchString } from './escape-search'
 
 export type Video = {
   slug: string
@@ -73,9 +74,9 @@ export async function getVideos(
   }
   // Handle text search
   if (filters?.search) {
-    // Use textSearch or ilike with proper escaping to prevent injection
+    const escapedSearch = escapeSearchString(filters.search)
     query = query.or(
-      `title.ilike.%${filters.search.replace(/[%_]/g, '\\$&')}%,slug.ilike.%${filters.search.replace(/[%_]/g, '\\$&')}%`,
+      `title.ilike.%${escapedSearch}%,slug.ilike.%${escapedSearch}%`,
     )
   }
   // Handle deleted filter

@@ -1,8 +1,10 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
+import { twMerge } from 'tailwind-merge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +19,7 @@ import {
   toggleVisibilityAction,
 } from '../_actions'
 import type { Video } from '../_lib/get-videos'
+import { SortIcon } from './sort-icon'
 
 type Channel = {
   created_at: string
@@ -32,14 +35,14 @@ type Props = {
 }
 
 function getStatusBadgeClasses(video: Video): string {
-  const baseClasses = 'whitespace-nowrap rounded px-2 py-1 text-xs'
-  if (video.deleted_at) {
-    return `${baseClasses} bg-red-100 text-red-800`
-  }
-  if (video.visible) {
-    return `${baseClasses} bg-green-100 text-green-800`
-  }
-  return `${baseClasses} bg-gray-100 text-gray-800`
+  return twMerge(
+    'whitespace-nowrap rounded px-2 py-1 text-xs',
+    video.deleted_at
+      ? 'bg-red-100 text-red-800'
+      : video.visible
+        ? 'bg-green-100 text-green-800'
+        : 'bg-gray-100 text-gray-800',
+  )
 }
 
 function getStatusText(video: Video): string {
@@ -150,7 +153,7 @@ export default function VideoList({ channels, videos }: Props) {
     router.push(`/videos?${params.toString()}`)
   }
 
-  const handleSort = (field: 'published_at' | 'updated_at') => {
+  const getSortUrl = (field: 'published_at' | 'updated_at') => {
     const params = new URLSearchParams(searchParams.toString())
     // Toggle sort order if clicking the same field, otherwise default to desc
     if (currentSortField === field) {
@@ -161,65 +164,7 @@ export default function VideoList({ channels, videos }: Props) {
     }
     // Reset to page 1 when sort changes
     params.delete('page')
-    router.push(`/videos?${params.toString()}`)
-  }
-
-  const getSortIcon = (field: 'published_at' | 'updated_at') => {
-    if (currentSortField !== field) {
-      return (
-        <svg
-          aria-hidden="true"
-          className="ml-1 inline-block h-4 w-4 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <title>並び替え可能</title>
-          <path
-            d="M7 10l5 5 5-5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-          />
-        </svg>
-      )
-    }
-    if (currentSortOrder === 'asc') {
-      return (
-        <svg
-          aria-hidden="true"
-          className="ml-1 inline-block h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <title>昇順</title>
-          <path
-            d="M7 14l5-5 5 5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-          />
-        </svg>
-      )
-    }
-    return (
-      <svg
-        aria-hidden="true"
-        className="ml-1 inline-block h-4 w-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <title>降順</title>
-        <path
-          d="M7 10l5 5 5-5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-        />
-      </svg>
-    )
+    return `/videos?${params.toString()}`
   }
 
   const allSelected =
@@ -230,7 +175,9 @@ export default function VideoList({ channels, videos }: Props) {
   const currentVisible = searchParams.get('visible') || ''
   const currentSearch = searchParams.get('search') || ''
   const currentSortField = searchParams.get('sortField') || 'updated_at'
-  const currentSortOrder = searchParams.get('sortOrder') || 'desc'
+  const currentSortOrder = (searchParams.get('sortOrder') || 'desc') as
+    | 'asc'
+    | 'desc'
 
   return (
     <div>
@@ -356,24 +303,30 @@ export default function VideoList({ channels, videos }: Props) {
               <th className="p-3 text-left">タイトル</th>
               <th className="p-3 text-left">チャンネル</th>
               <th className="p-3 text-left">
-                <button
+                <Link
                   className="flex items-center hover:text-blue-600"
-                  onClick={() => handleSort('published_at')}
-                  type="button"
+                  href={getSortUrl('published_at')}
                 >
                   公開日時
-                  {getSortIcon('published_at')}
-                </button>
+                  <SortIcon
+                    currentSortField={currentSortField}
+                    currentSortOrder={currentSortOrder}
+                    field="published_at"
+                  />
+                </Link>
               </th>
               <th className="p-3 text-left">
-                <button
+                <Link
                   className="flex items-center hover:text-blue-600"
-                  onClick={() => handleSort('updated_at')}
-                  type="button"
+                  href={getSortUrl('updated_at')}
                 >
                   更新日時
-                  {getSortIcon('updated_at')}
-                </button>
+                  <SortIcon
+                    currentSortField={currentSortField}
+                    currentSortOrder={currentSortOrder}
+                    field="updated_at"
+                  />
+                </Link>
               </th>
               <th className="p-3 text-left">クリック数</th>
               <th className="p-3 text-left">ステータス</th>
