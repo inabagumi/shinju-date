@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { supabaseClient } from '@/lib/supabase'
 import type { Video } from '../_lib/get-videos'
 import { softDeleteAction, toggleVisibilityAction } from '../actions'
 
@@ -134,7 +135,11 @@ export default function VideoList({ videos }: Props) {
                     <img
                       alt=""
                       className="h-16 w-28 object-cover"
-                      src={`https://img.shinju.date/${video.thumbnail.path}`}
+                      src={
+                        supabaseClient.storage
+                          .from('thumbnails')
+                          .getPublicUrl(video.thumbnail.path).data.publicUrl
+                      }
                     />
                   ) : (
                     <div className="flex h-16 w-28 items-center justify-center bg-gray-200">

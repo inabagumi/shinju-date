@@ -35,6 +35,12 @@ importers:
       '@sentry/profiling-node':
         specifier: 10.20.0
         version: 10.20.0
+      '@shinju-date/constants':
+        specifier: workspace:*
+        version: link:../../packages/constants
+      '@shinju-date/temporal-fns':
+        specifier: workspace:*
+        version: link:../../packages/temporal-fns
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
         version: 0.3.0(@supabase/supabase-js@2.75.1)
@@ -302,6 +308,21 @@ importers:
       remark-gfm:
         specifier: 4.0.1
         version: 4.0.1
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/constants:
+    devDependencies:
+      '@tsconfig/node20':
+        specifier: 20.1.6
+        version: 20.1.6
+      '@tsconfig/strictest':
+        specifier: 2.0.6
+        version: 2.0.6
+      tsup:
+        specifier: 8.5.0
+        version: 8.5.0(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)
       typescript:
         specifier: 5.9.3
         version: 5.9.3

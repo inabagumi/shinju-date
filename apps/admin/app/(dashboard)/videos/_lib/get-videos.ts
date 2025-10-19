@@ -1,16 +1,8 @@
+import { TIME_ZONE } from '@shinju-date/constants'
+import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
-
-const timeZone = 'Asia/Tokyo'
-
-function format(timestamp: Temporal.ZonedDateTime): string {
-  return [
-    timestamp.year.toString(10).padStart(4, '0'),
-    timestamp.month.toString(10).padStart(2, '0'),
-    timestamp.day.toString(10).padStart(2, '0'),
-  ].join('')
-}
 
 export type Video = {
   slug: string
@@ -59,8 +51,8 @@ export async function getVideos(
   }
 
   // Get today's date in JST timezone
-  const today = Temporal.Now.zonedDateTimeISO(timeZone)
-  const keySuffix = format(today)
+  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
+  const keySuffix = formatDate(today)
 
   // Fetch click counts for all videos
   const videoIds = videos.map((video) => video.slug)
