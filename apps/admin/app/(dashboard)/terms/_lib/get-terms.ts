@@ -1,10 +1,16 @@
-import { supabaseClient } from '@/lib/supabase'
+import { cookies } from 'next/headers'
+import { createSupabaseClient } from '@/lib/supabase'
 
 export default async function getTerms() {
+  const cookieStore = await cookies()
+  const supabaseClient = createSupabaseClient({
+    cookieStore,
+  })
+
   const { data: terms, error } = await supabaseClient
     .from('terms')
     .select('id, readings, synonyms, term')
-    .order('term', {
+    .order('readings->0', {
       ascending: true,
     })
 

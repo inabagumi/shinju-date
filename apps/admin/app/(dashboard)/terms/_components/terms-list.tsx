@@ -18,19 +18,19 @@ type TermsListProps = {
 
 // Helper function to get the first character for grouping
 function getFirstCharacter(term: string): string {
-  const firstChar = term.charAt(0)
+  const firstChar = term.charAt(0).toUpperCase()
   // Hiragana ranges
   const hiraganaRanges = [
-    { end: 'お', group: 'あ', start: 'あ' },
-    { end: 'ご', group: 'か', start: 'か' },
-    { end: 'ぞ', group: 'さ', start: 'さ' },
-    { end: 'ど', group: 'た', start: 'た' },
-    { end: 'の', group: 'な', start: 'な' },
-    { end: 'ぽ', group: 'は', start: 'は' },
-    { end: 'も', group: 'ま', start: 'ま' },
-    { end: 'よ', group: 'や', start: 'や' },
-    { end: 'ろ', group: 'ら', start: 'ら' },
-    { end: 'ん', group: 'わ', start: 'わ' },
+    { end: 'オ', group: 'ア', start: 'ア' },
+    { end: 'ゴ', group: 'カ', start: 'カ' },
+    { end: 'ゾ', group: 'サ', start: 'サ' },
+    { end: 'ド', group: 'タ', start: 'タ' },
+    { end: 'ノ', group: 'ナ', start: 'ナ' },
+    { end: 'ポ', group: 'ハ', start: 'ハ' },
+    { end: 'モ', group: 'マ', start: 'マ' },
+    { end: 'ヨ', group: 'ヤ', start: 'ヤ' },
+    { end: 'ロ', group: 'ラ', start: 'ラ' },
+    { end: 'ン', group: 'ワ', start: 'ワ' },
   ]
 
   for (const range of hiraganaRanges) {
@@ -66,7 +66,7 @@ export function TermsList({ terms }: TermsListProps) {
     const groups = new Map<string, Term[]>()
 
     for (const term of filteredTerms) {
-      const group = getFirstCharacter(term.term)
+      const group = getFirstCharacter(term.readings[0] || term.term)
       if (!groups.has(group)) {
         groups.set(group, [])
       }

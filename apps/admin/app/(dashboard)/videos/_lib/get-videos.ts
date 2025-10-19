@@ -1,8 +1,9 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { formatDate } from '@shinju-date/temporal-fns'
+import { cookies } from 'next/headers'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
-import { supabaseClient } from '@/lib/supabase'
+import { createSupabaseClient } from '@/lib/supabase'
 
 export type Video = {
   slug: string
@@ -40,6 +41,11 @@ export async function getVideos(
   videos: Video[]
   total: number
 }> {
+  const cookieStore = await cookies()
+  const supabaseClient = createSupabaseClient({
+    cookieStore,
+  })
+
   const from = (page - 1) * perPage
   const to = from + perPage - 1
 
