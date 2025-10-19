@@ -47,4 +47,25 @@
   --color-secondary-pink-foreground: var(--color-774-pink-50);
   --color-secondary-blue: var(--color-774-blue-700);
   --color-secondary-blue-foreground: var(--color-774-blue-50);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
 }
