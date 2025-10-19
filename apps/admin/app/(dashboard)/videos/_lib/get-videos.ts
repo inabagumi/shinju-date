@@ -85,7 +85,7 @@ export async function getVideos(
       const scores = await Promise.all(
         days.map((day) => redisClient.zscore(`videos:clicked:${day}`, slug)),
       )
-      return scores.reduce(
+      return scores.reduce<number>(
         (sum, score) => sum + (typeof score === 'number' ? score : 0),
         0,
       )
