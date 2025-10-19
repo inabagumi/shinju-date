@@ -1,3 +1,4 @@
+import SearchVolumeChart from './_components/search-volume-chart'
 import { getPopularKeywords } from './_lib/get-popular-keywords'
 import { getSearchVolume } from './_lib/get-search-volume'
 import { getZeroResultKeywords } from './_lib/get-zero-result-keywords'
@@ -16,29 +17,15 @@ export default async function SearchAnalyticsPage() {
       {/* Grid layout for widgets */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Search Volume Summary */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
           <h2 className="mb-4 font-semibold text-xl">
             検索ボリューム (過去7日間)
           </h2>
-          <div className="space-y-3">
-            <div className="rounded-lg bg-blue-50 p-4">
-              <p className="text-gray-600 text-sm">総検索数</p>
-              <p className="font-bold text-2xl text-blue-600">
-                {totalSearches}
-              </p>
-            </div>
-            <div className="space-y-2">
-              {searchVolume.map((day) => (
-                <div
-                  className="flex items-center justify-between"
-                  key={day.date}
-                >
-                  <span className="text-gray-600 text-sm">{day.date}</span>
-                  <span className="font-medium">{day.count} 回</span>
-                </div>
-              ))}
-            </div>
+          <div className="mb-4 rounded-lg bg-blue-50 p-4">
+            <p className="text-gray-600 text-sm">総検索数</p>
+            <p className="font-bold text-2xl text-blue-600">{totalSearches}</p>
           </div>
+          <SearchVolumeChart data={searchVolume} />
         </div>
 
         {/* Zero Results Keywords */}
@@ -66,7 +53,7 @@ export default async function SearchAnalyticsPage() {
         </div>
 
         {/* Popular Keywords - Full width */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="mb-4 font-semibold text-xl">
             人気キーワードランキング
           </h2>
@@ -74,7 +61,7 @@ export default async function SearchAnalyticsPage() {
             最も検索されているキーワードのランキング。ユーザーの関心を把握できます。
           </p>
           {popularKeywords.length > 0 ? (
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div className="max-h-96 space-y-2 overflow-y-auto">
               {popularKeywords.map((item, index) => (
                 <div
                   className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
