@@ -3,9 +3,10 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { isNonNullable } from '@shinju-date/helpers'
 import { formatDate } from '@shinju-date/temporal-fns'
+import { cookies } from 'next/headers'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
-import { supabaseClient } from '@/lib/supabase'
+import { createSupabaseClient } from '@/lib/supabase'
 
 /**
  * 人気動画のキャッシュ有効期間（秒）
@@ -98,6 +99,11 @@ export async function getPopularVideos(
   if (videoScores.length === 0) {
     return []
   }
+
+  const cookieStore = await cookies()
+  const supabaseClient = createSupabaseClient({
+    cookieStore,
+  })
 
   const videoIds = videoScores.map(([id]) => id)
   const { data: videos, error } = await supabaseClient

@@ -1,7 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { supabaseClient } from '@/lib/supabase'
+import { cookies } from 'next/headers'
+import { createSupabaseClient } from '@/lib/supabase'
 
 export async function toggleVisibilityAction(slugs: string[]): Promise<{
   success: boolean
@@ -10,6 +11,11 @@ export async function toggleVisibilityAction(slugs: string[]): Promise<{
   if (!slugs || slugs.length === 0) {
     return { error: '動画が選択されていません。', success: false }
   }
+
+  const cookieStore = await cookies()
+  const supabaseClient = createSupabaseClient({
+    cookieStore,
+  })
 
   try {
     // Get current visibility status of all videos
@@ -61,6 +67,11 @@ export async function toggleSingleVideoVisibilityAction(slug: string): Promise<{
   success: boolean
   error?: string
 }> {
+  const cookieStore = await cookies()
+  const supabaseClient = createSupabaseClient({
+    cookieStore,
+  })
+
   try {
     // Get current visibility status
     const { data: video, error: fetchError } = await supabaseClient
@@ -108,6 +119,11 @@ export async function softDeleteAction(slugs: string[]): Promise<{
   if (!slugs || slugs.length === 0) {
     return { error: '動画が選択されていません。', success: false }
   }
+
+  const cookieStore = await cookies()
+  const supabaseClient = createSupabaseClient({
+    cookieStore,
+  })
 
   try {
     const now = new Date().toISOString()
@@ -170,6 +186,11 @@ export async function softDeleteSingleVideoAction(slug: string): Promise<{
   success: boolean
   error?: string
 }> {
+  const cookieStore = await cookies()
+  const supabaseClient = createSupabaseClient({
+    cookieStore,
+  })
+
   try {
     const now = new Date().toISOString()
 
