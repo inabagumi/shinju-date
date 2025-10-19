@@ -73,8 +73,9 @@ export async function getVideos(
   }
   // Handle text search
   if (filters?.search) {
+    // Use textSearch or ilike with proper escaping to prevent injection
     query = query.or(
-      `title.ilike.%${filters.search}%,slug.ilike.%${filters.search}%`,
+      `title.ilike.%${filters.search.replace(/[%_]/g, '\\$&')}%,slug.ilike.%${filters.search.replace(/[%_]/g, '\\$&')}%`,
     )
   }
   // Handle deleted filter

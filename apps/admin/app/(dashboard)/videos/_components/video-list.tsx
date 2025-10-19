@@ -31,6 +31,23 @@ type Props = {
   videos: Video[]
 }
 
+function getStatusBadgeClasses(video: Video): string {
+  const baseClasses = 'whitespace-nowrap rounded px-2 py-1 text-xs'
+  if (video.deleted_at) {
+    return `${baseClasses} bg-red-100 text-red-800`
+  }
+  if (video.visible) {
+    return `${baseClasses} bg-green-100 text-green-800`
+  }
+  return `${baseClasses} bg-gray-100 text-gray-800`
+}
+
+function getStatusText(video: Video): string {
+  if (video.deleted_at) return '削除済み'
+  if (video.visible) return '公開中'
+  return '非表示'
+}
+
 export default function VideoList({ channels, videos }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -133,12 +150,76 @@ export default function VideoList({ channels, videos }: Props) {
     router.push(`/videos?${params.toString()}`)
   }
 
-  const handleSortChange = (key: 'sortField' | 'sortOrder', value: string) => {
+  const handleSort = (field: 'published_at' | 'updated_at') => {
     const params = new URLSearchParams(searchParams.toString())
-    params.set(key, value)
+    // Toggle sort order if clicking the same field, otherwise default to desc
+    if (currentSortField === field) {
+      params.set('sortOrder', currentSortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      params.set('sortField', field)
+      params.set('sortOrder', 'desc')
+    }
     // Reset to page 1 when sort changes
     params.delete('page')
     router.push(`/videos?${params.toString()}`)
+  }
+
+  const getSortIcon = (field: 'published_at' | 'updated_at') => {
+    if (currentSortField !== field) {
+      return (
+        <svg
+          aria-hidden="true"
+          className="ml-1 inline-block h-4 w-4 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <title>並び替え可能</title>
+          <path
+            d="M7 10l5 5 5-5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+          />
+        </svg>
+      )
+    }
+    if (currentSortOrder === 'asc') {
+      return (
+        <svg
+          aria-hidden="true"
+          className="ml-1 inline-block h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <title>昇順</title>
+          <path
+            d="M7 14l5-5 5 5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+          />
+        </svg>
+      )
+    }
+    return (
+      <svg
+        aria-hidden="true"
+        className="ml-1 inline-block h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <title>降順</title>
+        <path
+          d="M7 10l5 5 5-5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+        />
+      </svg>
+    )
   }
 
   const allSelected =
@@ -228,40 +309,6 @@ export default function VideoList({ channels, videos }: Props) {
             <option value="true">削除済みのみ</option>
           </select>
         </div>
-        <div>
-          <label
-            className="mb-1 block font-medium text-gray-700 text-sm"
-            htmlFor="sort-field"
-          >
-            並び替え
-          </label>
-          <select
-            className="rounded-md border border-gray-300 px-3 py-2"
-            id="sort-field"
-            onChange={(e) => handleSortChange('sortField', e.target.value)}
-            value={currentSortField}
-          >
-            <option value="updated_at">更新日時</option>
-            <option value="published_at">公開日時</option>
-          </select>
-        </div>
-        <div>
-          <label
-            className="mb-1 block font-medium text-gray-700 text-sm"
-            htmlFor="sort-order"
-          >
-            順序
-          </label>
-          <select
-            className="rounded-md border border-gray-300 px-3 py-2"
-            id="sort-order"
-            onChange={(e) => handleSortChange('sortOrder', e.target.value)}
-            value={currentSortOrder}
-          >
-            <option value="desc">降順 (新しい順)</option>
-            <option value="asc">昇順 (古い順)</option>
-          </select>
-        </div>
       </div>
 
       {/* Action bar */}
@@ -308,8 +355,26 @@ export default function VideoList({ channels, videos }: Props) {
               <th className="p-3 text-left">サムネイル</th>
               <th className="p-3 text-left">タイトル</th>
               <th className="p-3 text-left">チャンネル</th>
-              <th className="p-3 text-left">公開日時</th>
-              <th className="p-3 text-left">更新日時</th>
+              <th className="p-3 text-left">
+                <button
+                  className="flex items-center hover:text-blue-600"
+                  onClick={() => handleSort('published_at')}
+                  type="button"
+                >
+                  公開日時
+                  {getSortIcon('published_at')}
+                </button>
+              </th>
+              <th className="p-3 text-left">
+                <button
+                  className="flex items-center hover:text-blue-600"
+                  onClick={() => handleSort('updated_at')}
+                  type="button"
+                >
+                  更新日時
+                  {getSortIcon('updated_at')}
+                </button>
+              </th>
               <th className="p-3 text-left">クリック数</th>
               <th className="p-3 text-left">ステータス</th>
               <th className="p-3 text-left">アクション</th>
@@ -378,20 +443,8 @@ export default function VideoList({ channels, videos }: Props) {
                 </td>
                 <td className="p-3">{video.clicks}</td>
                 <td className="p-3">
-                  <span
-                    className={`rounded px-2 py-1 text-xs ${
-                      video.deleted_at
-                        ? 'bg-red-100 text-red-800'
-                        : video.visible
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {video.deleted_at
-                      ? '削除済み'
-                      : video.visible
-                        ? '公開中'
-                        : '非表示'}
+                  <span className={getStatusBadgeClasses(video)}>
+                    {getStatusText(video)}
                   </span>
                 </td>
                 <td className="p-3">
