@@ -1,13 +1,15 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { supabaseClient } from '@/lib/supabase'
+import { getAnalyticsSummary } from './_lib/get-analytics-summary'
 import { getPopularVideos } from './_lib/get-popular-videos'
 import { getSummaryStats } from './_lib/get-summary-stats'
 
 export default async function DashboardPage() {
-  const [stats, popularVideos] = await Promise.all([
+  const [stats, popularVideos, analytics] = await Promise.all([
     getSummaryStats(),
     getPopularVideos(10),
+    getAnalyticsSummary(),
   ])
 
   return (
@@ -47,6 +49,40 @@ export default async function DashboardPage() {
           </div>
         </div>
 
+        {/* Analytics Summary Widget */}
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 font-semibold text-xl">アナリティクス</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <Link
+              className="rounded-lg bg-blue-50 p-4 transition-colors hover:bg-blue-100"
+              href="/analytics/search"
+            >
+              <p className="text-gray-600 text-sm">本日の検索数</p>
+              <p className="font-bold text-2xl text-blue-600">
+                {analytics.recentSearches}
+              </p>
+            </Link>
+            <Link
+              className="rounded-lg bg-green-50 p-4 transition-colors hover:bg-green-100"
+              href="/analytics/click"
+            >
+              <p className="text-gray-600 text-sm">本日のクリック数</p>
+              <p className="font-bold text-2xl text-green-600">
+                {analytics.recentClicks}
+              </p>
+            </Link>
+            <Link
+              className="col-span-2 rounded-lg bg-purple-50 p-4 transition-colors hover:bg-purple-100"
+              href="/analytics/search"
+            >
+              <p className="text-gray-600 text-sm">人気キーワード数</p>
+              <p className="font-bold text-2xl text-purple-600">
+                {analytics.totalPopularKeywords}
+              </p>
+            </Link>
+          </div>
+        </div>
+
         {/* Quick Access Widget */}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="mb-4 font-semibold text-xl">クイックアクセス</h2>
@@ -62,6 +98,18 @@ export default async function DashboardPage() {
               href="/terms"
             >
               <span className="font-medium">用語集を編集する</span>
+            </Link>
+            <Link
+              className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"
+              href="/analytics/search"
+            >
+              <span className="font-medium">検索アナリティクス</span>
+            </Link>
+            <Link
+              className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"
+              href="/analytics/click"
+            >
+              <span className="font-medium">クリックアナリティクス</span>
             </Link>
             <a
               className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"
