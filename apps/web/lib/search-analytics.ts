@@ -1,6 +1,9 @@
 'use server'
 
 import { REDIS_KEYS } from '@shinju-date/constants'
+import { formatDate } from '@shinju-date/temporal-fns'
+import { Temporal } from 'temporal-polyfill'
+import { timeZone } from './constants'
 import { redisClient } from './redis'
 
 /**
@@ -31,7 +34,7 @@ export async function logSearchQuery(
     }
 
     // Track daily search volume
-    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+    const today = formatDate(Temporal.Now.zonedDateTimeISO(timeZone))
     operations.push(
       redisClient.incr(`${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${today}`),
     )

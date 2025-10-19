@@ -1,11 +1,14 @@
 'use server'
 
 import { REDIS_KEYS } from '@shinju-date/constants'
+import { formatDate } from '@shinju-date/temporal-fns'
+import { Temporal } from 'temporal-polyfill'
+import { timeZone } from '@/lib/constants'
 import { redisClient } from '@/lib/redis'
 
 export type DailySearchVolume = {
-  date: string
   count: number
+  date: string
 }
 
 /**
@@ -13,15 +16,14 @@ export type DailySearchVolume = {
  */
 export async function getSearchVolume(days = 7): Promise<DailySearchVolume[]> {
   try {
-    const today = new Date()
+    const today = Temporal.Now.zonedDateTimeISO(timeZone)
     const volumes: DailySearchVolume[] = []
 
     // Get volume for each day
     for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(today)
-      date.setDate(date.getDate() - i)
-      const dateStr = date.toISOString().slice(0, 10)
-      const dateKey = dateStr.replace(/-/g, '')
+      const date = today.subtract({ days: i })
+      const dateKey = formatDate(date)
+      const dateStr = date.toPlainDate().toString()
 
       const count = await redisClient.get<number>(
         `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${dateKey}`,
