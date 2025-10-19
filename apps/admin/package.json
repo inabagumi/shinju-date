@@ -13,7 +13,7 @@
     "next": "15.5.6",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "recharts": "2.15.0",
+    "recharts": "2.15.4",
     "tailwindcss": "4.1.14",
     "temporal-polyfill": "0.3.0",
     "zod": "4.1.12"
