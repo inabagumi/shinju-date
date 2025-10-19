@@ -62,15 +62,24 @@ export async function updateTermAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const id = formData.get('id') as string
+  const idString = formData.get('id') as string
   const term = formData.get('term') as string
   const readings = formData.get('readings') as string
   const synonyms = formData.get('synonyms') as string
 
-  if (!id || !term || term.trim() === '') {
+  if (!idString || !term || term.trim() === '') {
     return {
       errors: {
         term: ['用語を入力してください。'],
+      },
+    }
+  }
+
+  const id = Number.parseInt(idString, 10)
+  if (Number.isNaN(id)) {
+    return {
+      errors: {
+        generic: ['無効なIDです。'],
       },
     }
   }
