@@ -225,7 +225,7 @@ export default function VideoList({ channels, videos }: Props) {
             value={currentSortField}
           >
             <option value="updated_at">更新日時</option>
-            <option value="created_at">作成日時</option>
+            <option value="published_at">公開日時</option>
           </select>
         </div>
         <div>

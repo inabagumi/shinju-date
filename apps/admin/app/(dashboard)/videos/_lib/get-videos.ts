@@ -27,7 +27,7 @@ export type VideoFilters = {
   visible?: boolean
 }
 
-export type VideoSortField = 'created_at' | 'updated_at'
+export type VideoSortField = 'published_at' | 'updated_at'
 export type VideoSortOrder = 'asc' | 'desc'
 
 export async function getVideos(
