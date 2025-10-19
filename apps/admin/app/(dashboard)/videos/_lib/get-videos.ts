@@ -25,6 +25,7 @@ export type Video = {
 export type VideoFilters = {
   channelId?: number
   deleted?: boolean
+  slug?: string
   visible?: boolean
 }
 
@@ -63,6 +64,9 @@ export async function getVideos(
   }
   if (filters?.visible !== undefined) {
     query = query.eq('visible', filters.visible)
+  }
+  if (filters?.slug) {
+    query = query.eq('slug', filters.slug)
   }
   // Handle deleted filter
   if (filters?.deleted === true) {
