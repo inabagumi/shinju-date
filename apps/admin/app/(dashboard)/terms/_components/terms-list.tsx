@@ -19,7 +19,7 @@ type TermsListProps = {
 // Helper function to get the first character for grouping
 function getFirstCharacter(term: string): string {
   const firstChar = term.charAt(0).toUpperCase()
-  // Hiragana ranges
+  // Katakana ranges
   const hiraganaRanges = [
     { end: 'オ', group: 'ア', start: 'ア' },
     { end: 'ゴ', group: 'カ', start: 'カ' },
