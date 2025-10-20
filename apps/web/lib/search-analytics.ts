@@ -1,7 +1,7 @@
 'use server'
 
 import { REDIS_KEYS } from '@shinju-date/constants'
-import { formatDate } from '@shinju-date/temporal-fns'
+import { formatDate, getMondayOfWeek } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from './constants'
 import { redisClient } from './redis'
@@ -9,16 +9,6 @@ import { redisClient } from './redis'
 // TTL settings for time-based search keys
 const DAILY_TTL_SECONDS = 7 * 24 * 60 * 60 // 7 days
 const WEEKLY_TTL_SECONDS = 35 * 24 * 60 * 60 // 35 days
-
-/**
- * Get the Monday of the week for a given date
- */
-function getMondayOfWeek(dateTime: Temporal.ZonedDateTime): string {
-  const dayOfWeek = dateTime.dayOfWeek // 1 = Monday, 7 = Sunday
-  const daysToSubtract = dayOfWeek - 1
-  const monday = dateTime.subtract({ days: daysToSubtract })
-  return formatDate(monday)
-}
 
 /**
  * Log a search query to Redis for analytics

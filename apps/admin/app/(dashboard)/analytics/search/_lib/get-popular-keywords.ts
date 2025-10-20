@@ -1,23 +1,13 @@
 'use server'
 
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
-import { formatDate } from '@shinju-date/temporal-fns'
+import { getMondayOfWeek } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
 
 export type PopularKeyword = {
   keyword: string
   count: number
-}
-
-/**
- * Get the Monday of the week for a given date
- */
-function getMondayOfWeek(dateTime: Temporal.ZonedDateTime): string {
-  const dayOfWeek = dateTime.dayOfWeek // 1 = Monday, 7 = Sunday
-  const daysToSubtract = dayOfWeek - 1
-  const monday = dateTime.subtract({ days: daysToSubtract })
-  return formatDate(monday)
 }
 
 /**

@@ -13,6 +13,7 @@ export const REDIS_KEYS = {
   SEARCH_POPULAR: 'search:popular',
   SEARCH_POPULAR_ALL_TIME: 'search:popular:all_time',
   SEARCH_POPULAR_DAILY_PREFIX: 'search:popular:daily:',
+  SEARCH_POPULAR_TEMP_UNION: 'search:popular:temp_union',
   SEARCH_POPULAR_WEEKLY_PREFIX: 'search:popular:weekly:',
   SEARCH_VOLUME_PREFIX: 'search:volume:',
   SEARCH_ZERO_RESULTS: 'search:zero_results',

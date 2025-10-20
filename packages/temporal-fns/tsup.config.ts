@@ -5,6 +5,7 @@ export default defineConfig({
   entry: [
     './src/index.ts',
     './src/format-date.ts',
+    './src/get-monday-of-week.ts',
     './src/max.ts',
     './src/min.ts',
     './src/start-of-hour.ts',

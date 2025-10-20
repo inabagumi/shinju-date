@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/nextjs'
-import { REDIS_KEYS } from '@shinju-date/constants'
+import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
-import { formatDate } from '@shinju-date/temporal-fns'
+import { formatDate, getMondayOfWeek } from '@shinju-date/temporal-fns'
 import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import { recommendationQueriesUpdate as ratelimit } from '@/lib/ratelimit'
@@ -9,8 +9,6 @@ import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
 
 const MONITOR_SLUG = '/recommendation/queries/update'
-const TIME_ZONE = 'Asia/Tokyo'
-const TEMP_UNION_KEY = 'search:popular:temp_union'
 
 // Weights for different time periods
 const WEIGHT_DAILY = 10.0
@@ -21,16 +19,6 @@ export const runtime = 'nodejs'
 export const revalidate = 0
 export const maxDuration = 120
 
-/**
- * Get the Monday of the week for a given date
- */
-function getMondayOfWeek(dateTime: Temporal.ZonedDateTime): string {
-  const dayOfWeek = dateTime.dayOfWeek // 1 = Monday, 7 = Sunday
-  const daysToSubtract = dayOfWeek - 1
-  const monday = dateTime.subtract({ days: daysToSubtract })
-  return formatDate(monday)
-}
-
 async function getAllTerms({
   page = 1,
   perPage = 1_000,
@@ -40,7 +28,7 @@ async function getAllTerms({
 } = {}) {
   const { data: terms, error } = await supabaseClient
     .from('terms')
-    .select('term')
+    .select('term, synonyms')
     .order('updated_at', {
       ascending: true,
     })
@@ -166,16 +154,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Perform ZUNIONSTORE with weights
-    await redisClient.zunionstore(TEMP_UNION_KEY, keysToUnion.length, [
-      ...keysToUnion,
-      'WEIGHTS',
-      ...weights.map(String),
-    ])
+    await redisClient.zunionstore(
+      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
+      keysToUnion.length,
+      [...keysToUnion, 'WEIGHTS', ...weights.map(String)],
+    )
 
     // Get all members with their scores from the union
-    const weightedQueries = await redisClient.zrange(TEMP_UNION_KEY, 0, -1, {
-      withScores: true,
-    })
+    const weightedQueries = await redisClient.zrange(
+      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
+      0,
+      -1,
+      {
+        withScores: true,
+      },
+    )
 
     // Parse the results (format: [member, score, member, score, ...])
     const queriesWithScores: Array<{ query: string; score: number }> = []
@@ -187,9 +180,18 @@ export async function POST(request: NextRequest) {
 
     // Get all terms from the database
     const terms = await getAllTerms()
-    const termSet = new Set(terms.map(({ term }) => term.toLowerCase()))
 
-    // Filter queries that match terms exactly
+    // Build a set of all terms and their synonyms (normalized to lowercase)
+    const termSet = new Set<string>()
+    for (const { term, synonyms } of terms) {
+      termSet.add(term.toLowerCase())
+      // Add all synonyms
+      for (const synonym of synonyms) {
+        termSet.add(synonym.toLowerCase())
+      }
+    }
+
+    // Filter queries that match terms or synonyms exactly
     const matchingQueries = queriesWithScores.filter(({ query }) =>
       termSet.has(query.toLowerCase()),
     )
@@ -212,7 +214,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Delete temporary union key
-    multi.del(TEMP_UNION_KEY)
+    multi.del(REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION)
 
     // Invalidate combined cache
     multi.del(REDIS_KEYS.QUERIES_COMBINED_CACHE)

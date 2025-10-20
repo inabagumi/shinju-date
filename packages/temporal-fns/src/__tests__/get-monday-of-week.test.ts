@@ -1,16 +1,6 @@
-import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-
-/**
- * Get the Monday of the week for a given date
- * This is a helper function extracted for testing purposes
- */
-export function getMondayOfWeek(dateTime: Temporal.ZonedDateTime): string {
-  const dayOfWeek = dateTime.dayOfWeek // 1 = Monday, 7 = Sunday
-  const daysToSubtract = dayOfWeek - 1
-  const monday = dateTime.subtract({ days: daysToSubtract })
-  return formatDate(monday)
-}
+import { describe, expect, it } from 'vitest'
+import getMondayOfWeek from '../get-monday-of-week.js'
 
 describe('getMondayOfWeek', () => {
   it('should return the Monday date for a Monday', () => {
@@ -31,6 +21,20 @@ describe('getMondayOfWeek', () => {
     // Tuesday, October 14, 2025 -> Monday, October 13, 2025
     const dateTime = Temporal.ZonedDateTime.from({
       day: 14,
+      hour: 12,
+      month: 10,
+      timeZone: 'Asia/Tokyo',
+      year: 2025,
+    })
+
+    const result = getMondayOfWeek(dateTime)
+    expect(result).toBe('20251013')
+  })
+
+  it('should return the Monday date for a Wednesday', () => {
+    // Wednesday, October 15, 2025 -> Monday, October 13, 2025
+    const dateTime = Temporal.ZonedDateTime.from({
+      day: 15,
       hour: 12,
       month: 10,
       timeZone: 'Asia/Tokyo',
@@ -67,5 +71,33 @@ describe('getMondayOfWeek', () => {
 
     const result = getMondayOfWeek(dateTime)
     expect(result).toBe('20241230')
+  })
+
+  it('should handle different time zones correctly', () => {
+    // Tuesday, October 14, 2025 in UTC -> Monday, October 13, 2025
+    const dateTime = Temporal.ZonedDateTime.from({
+      day: 14,
+      hour: 12,
+      month: 10,
+      timeZone: 'UTC',
+      year: 2025,
+    })
+
+    const result = getMondayOfWeek(dateTime)
+    expect(result).toBe('20251013')
+  })
+
+  it('should handle dates at the beginning of a month', () => {
+    // Sunday, June 1, 2025 -> Monday, May 26, 2025
+    const dateTime = Temporal.ZonedDateTime.from({
+      day: 1,
+      hour: 12,
+      month: 6,
+      timeZone: 'Asia/Tokyo',
+      year: 2025,
+    })
+
+    const result = getMondayOfWeek(dateTime)
+    expect(result).toBe('20250526')
   })
 })
