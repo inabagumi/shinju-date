@@ -26,11 +26,31 @@ export type PopularVideo = {
 export async function getPopularVideos(
   limit = 10,
   days = 7,
+  startDate?: string,
+  endDate?: string,
 ): Promise<PopularVideo[]> {
-  const cacheKey = `${REDIS_KEYS.POPULAR_VIDEOS_PREFIX}${days}_days`
   const videoScores: [number, number][] = []
 
   try {
+    const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
+
+    // Determine date range
+    let start: Temporal.PlainDate
+    let end: Temporal.PlainDate
+
+    if (startDate && endDate) {
+      start = Temporal.PlainDate.from(startDate)
+      end = Temporal.PlainDate.from(endDate)
+      // Calculate days for cache key
+      const duration = end.since(start)
+      days = duration.days + 1
+    } else {
+      end = today.toPlainDate()
+      start = end.subtract({ days: days - 1 })
+    }
+
+    const cacheKey = `${REDIS_KEYS.POPULAR_VIDEOS_PREFIX}${start}_${end}`
+
     const cachedResults = await redisClient.zrange<number[]>(
       cacheKey,
       0,
@@ -53,14 +73,19 @@ export async function getPopularVideos(
         videoScores.push([videoId, score])
       }
     } else {
-      const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-      const dailyKeys = Array.from(
-        { length: days },
-        (_, i) =>
-          `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${formatDate(
-            today.subtract({ days: i }),
-          )}`,
-      )
+      // Build daily keys for the date range
+      const dailyKeys: string[] = []
+      let currentDate = start
+      while (Temporal.PlainDate.compare(currentDate, end) <= 0) {
+        const zonedDate = currentDate.toZonedDateTime({
+          plainTime: Temporal.PlainTime.from('00:00:00'),
+          timeZone: TIME_ZONE,
+        })
+        dailyKeys.push(
+          `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${formatDate(zonedDate)}`,
+        )
+        currentDate = currentDate.add({ days: 1 })
+      }
 
       if (dailyKeys.length > 0) {
         const pipeline = redisClient.multi()

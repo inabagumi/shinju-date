@@ -15,13 +15,23 @@ type SearchVolumeChartProps = {
     count: number
     date: string
   }>
+  onDateClick?: (date: string) => void
 }
 
-export default function SearchVolumeChart({ data }: SearchVolumeChartProps) {
+export default function SearchVolumeChart({
+  data,
+  onDateClick,
+}: SearchVolumeChartProps) {
+  const handleClick = (entry: { activeLabel?: string }) => {
+    if (onDateClick && entry.activeLabel) {
+      onDateClick(entry.activeLabel)
+    }
+  }
+
   return (
     <div className="h-64 w-full">
       <ResponsiveContainer height="100%" width="100%">
-        <AreaChart data={data}>
+        <AreaChart data={data} onClick={handleClick}>
           <defs>
             <linearGradient id="colorVolume" x1="0" x2="0" y1="0" y2="1">
               <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -48,6 +58,7 @@ export default function SearchVolumeChart({ data }: SearchVolumeChartProps) {
             labelStyle={{ color: '#374151', fontWeight: 600 }}
           />
           <Area
+            cursor={onDateClick ? 'pointer' : 'default'}
             dataKey="count"
             fill="url(#colorVolume)"
             fillOpacity={1}
