@@ -1,6 +1,7 @@
 'use server'
 
 import { REDIS_KEYS } from '@shinju-date/constants'
+import { logger } from '@shinju-date/logger'
 import { formatDate, getMondayOfWeek } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from './constants'
@@ -84,6 +85,6 @@ export async function logSearchQuery(
     await Promise.all(ttlOperations)
   } catch (error) {
     // Log error but don't throw - we don't want analytics to break search
-    console.error('Failed to log search query to Redis:', error)
+    logger.error('Redisへの検索クエリのログ記録に失敗しました', error)
   }
 }

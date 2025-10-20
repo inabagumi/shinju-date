@@ -7,6 +7,7 @@
     "@sentry/profiling-node": "10.20.0",
     "@shinju-date/constants": "workspace:*",
     "@shinju-date/helpers": "workspace:*",
+    "@shinju-date/logger": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
     "@supabase/sentry-js-integration": "0.3.0",
     "@supabase/supabase-js": "2.75.1",

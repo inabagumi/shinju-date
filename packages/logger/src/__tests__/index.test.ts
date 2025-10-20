@@ -25,12 +25,12 @@ describe('logger', () => {
     })
 
     it('should add debug breadcrumb with attributes', () => {
-      logger.debug('デバッグメッセージ', { userId: 123, action: 'test' })
+      logger.debug('デバッグメッセージ', { action: 'test', userId: 123 })
 
       expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
+        data: { action: 'test', userId: 123 },
         level: 'debug',
         message: 'デバッグメッセージ',
-        data: { userId: 123, action: 'test' },
       })
     })
   })
@@ -49,9 +49,9 @@ describe('logger', () => {
       logger.info('情報メッセージ', { videoId: 'abc123' })
 
       expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
+        data: { videoId: 'abc123' },
         level: 'info',
         message: '情報メッセージ',
-        data: { videoId: 'abc123' },
       })
     })
   })
@@ -70,9 +70,9 @@ describe('logger', () => {
       logger.warn('警告メッセージ', { retryCount: 3 })
 
       expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
+        data: { retryCount: 3 },
         level: 'warning',
         message: '警告メッセージ',
-        data: { retryCount: 3 },
       })
     })
   })
@@ -86,10 +86,10 @@ describe('logger', () => {
         message: 'エラーメッセージ',
       })
       expect(Sentry.captureMessage).toHaveBeenCalledWith('エラーメッセージ', {
-        level: 'error',
         contexts: {
           custom: undefined,
         },
+        level: 'error',
       })
     })
 
@@ -98,9 +98,9 @@ describe('logger', () => {
       logger.error('エラーメッセージ', error, { operation: 'fetch' })
 
       expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
+        data: { operation: 'fetch' },
         level: 'error',
         message: 'エラーメッセージ',
-        data: { operation: 'fetch' },
       })
       expect(Sentry.captureException).toHaveBeenCalledWith(error, {
         contexts: {
@@ -114,15 +114,15 @@ describe('logger', () => {
       logger.error('エラーメッセージ', error, { source: 'api' })
 
       expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
+        data: { source: 'api' },
         level: 'error',
         message: 'エラーメッセージ',
-        data: { source: 'api' },
       })
       expect(Sentry.captureMessage).toHaveBeenCalledWith('エラーメッセージ', {
-        level: 'error',
         contexts: {
-          custom: { source: 'api', error: { message: 'Custom error' } },
+          custom: { error: { message: 'Custom error' }, source: 'api' },
         },
+        level: 'error',
       })
     })
 
@@ -130,15 +130,15 @@ describe('logger', () => {
       logger.error('エラーメッセージ', undefined, { requestId: 'req-123' })
 
       expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
+        data: { requestId: 'req-123' },
         level: 'error',
         message: 'エラーメッセージ',
-        data: { requestId: 'req-123' },
       })
       expect(Sentry.captureMessage).toHaveBeenCalledWith('エラーメッセージ', {
-        level: 'error',
         contexts: {
           custom: { requestId: 'req-123' },
         },
+        level: 'error',
       })
     })
   })

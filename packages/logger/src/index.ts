@@ -25,32 +25,6 @@ export const logger = {
   },
 
   /**
-   * 情報レベルのログを記録
-   * @param message - ログメッセージ（日本語）
-   * @param attributes - ログの属性オブジェクト（キーと値は英単語または数値）
-   */
-  info: (message: string, attributes?: LogAttributes): void => {
-    Sentry.addBreadcrumb({
-      level: 'info',
-      message,
-      ...(attributes && { data: attributes }),
-    })
-  },
-
-  /**
-   * 警告レベルのログを記録
-   * @param message - ログメッセージ（日本語）
-   * @param attributes - ログの属性オブジェクト（キーと値は英単語または数値）
-   */
-  warn: (message: string, attributes?: LogAttributes): void => {
-    Sentry.addBreadcrumb({
-      level: 'warning',
-      message,
-      ...(attributes && { data: attributes }),
-    })
-  },
-
-  /**
    * エラーレベルのログを記録
    * @param message - ログメッセージ（日本語）
    * @param error - エラーオブジェクト（オプション）
@@ -75,18 +49,44 @@ export const logger = {
       })
     } else if (error) {
       Sentry.captureMessage(message, {
-        level: 'error',
         contexts: {
           custom: { ...attributes, error },
         },
+        level: 'error',
       })
     } else {
       Sentry.captureMessage(message, {
-        level: 'error',
         contexts: {
           custom: attributes,
         },
+        level: 'error',
       })
     }
+  },
+
+  /**
+   * 情報レベルのログを記録
+   * @param message - ログメッセージ（日本語）
+   * @param attributes - ログの属性オブジェクト（キーと値は英単語または数値）
+   */
+  info: (message: string, attributes?: LogAttributes): void => {
+    Sentry.addBreadcrumb({
+      level: 'info',
+      message,
+      ...(attributes && { data: attributes }),
+    })
+  },
+
+  /**
+   * 警告レベルのログを記録
+   * @param message - ログメッセージ（日本語）
+   * @param attributes - ログの属性オブジェクト（キーと値は英単語または数値）
+   */
+  warn: (message: string, attributes?: LogAttributes): void => {
+    Sentry.addBreadcrumb({
+      level: 'warning',
+      message,
+      ...(attributes && { data: attributes }),
+    })
   },
 }

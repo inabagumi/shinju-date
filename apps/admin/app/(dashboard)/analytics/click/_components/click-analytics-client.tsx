@@ -1,6 +1,7 @@
 'use client'
 
 import { TIME_ZONE } from '@shinju-date/constants'
+import { logger } from '@shinju-date/logger'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Temporal } from 'temporal-polyfill'
@@ -101,7 +102,10 @@ export default function ClickAnalyticsClient({
           setPreviousClickVolume([])
         }
       } catch (error) {
-        console.error('Failed to fetch analytics data:', error)
+        logger.error('分析データの取得に失敗しました', error, {
+          endDate: dateRange.endDate,
+          startDate: dateRange.startDate,
+        })
       } finally {
         setLoading(false)
       }
@@ -117,7 +121,7 @@ export default function ClickAnalyticsClient({
       const dateVideos = await fetchPopularVideosForDate(date, 20)
       setPopularVideos(dateVideos)
     } catch (error) {
-      console.error('Failed to fetch videos for date:', error)
+      logger.error('日付別動画の取得に失敗しました', error, { date })
     } finally {
       setLoading(false)
     }

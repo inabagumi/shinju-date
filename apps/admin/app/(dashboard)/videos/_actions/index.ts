@@ -1,5 +1,6 @@
 'use server'
 
+import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 import { createSupabaseClient } from '@/lib/supabase'
@@ -101,7 +102,7 @@ export async function toggleSingleVideoVisibilityAction(slug: string): Promise<{
     revalidatePath('/videos')
     return { success: true }
   } catch (error) {
-    console.error('Toggle visibility error:', error)
+    logger.error('動画の表示切替に失敗しました', error, { slug })
     return {
       error:
         error instanceof Error
@@ -171,7 +172,9 @@ export async function softDeleteAction(slugs: string[]): Promise<{
     revalidatePath('/videos')
     return { success: true }
   } catch (error) {
-    console.error('Soft delete error:', error)
+    logger.error('動画の削除に失敗しました', error, {
+      slugs: slugs.join(','),
+    })
     return {
       error:
         error instanceof Error
@@ -234,7 +237,7 @@ export async function softDeleteSingleVideoAction(slug: string): Promise<{
     revalidatePath('/videos')
     return { success: true }
   } catch (error) {
-    console.error('Soft delete error:', error)
+    logger.error('動画の削除に失敗しました', error, { slug })
     return {
       error:
         error instanceof Error

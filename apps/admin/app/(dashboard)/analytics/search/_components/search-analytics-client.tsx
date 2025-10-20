@@ -1,6 +1,7 @@
 'use client'
 
 import { TIME_ZONE } from '@shinju-date/constants'
+import { logger } from '@shinju-date/logger'
 import { useEffect, useState } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import type { DateRange } from '../../_components/date-range-picker'
@@ -97,7 +98,10 @@ export default function SearchAnalyticsClient({
           setPreviousSearchVolume([])
         }
       } catch (error) {
-        console.error('Failed to fetch analytics data:', error)
+        logger.error('分析データの取得に失敗しました', error, {
+          endDate: dateRange.endDate,
+          startDate: dateRange.startDate,
+        })
       } finally {
         setLoading(false)
       }

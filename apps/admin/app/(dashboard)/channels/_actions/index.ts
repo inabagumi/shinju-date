@@ -1,5 +1,6 @@
 'use server'
 
+import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 import type { FormState } from '@/components/form'
@@ -46,7 +47,10 @@ export async function createChannelAction(
     revalidatePath('/channels')
     return {}
   } catch (error) {
-    console.error('Create channel error:', error)
+    logger.error('チャンネルの追加に失敗しました', error, {
+      name: name.trim(),
+      slug: slug.trim(),
+    })
     return {
       errors: {
         generic: [
@@ -113,7 +117,11 @@ export async function updateChannelAction(
     revalidatePath('/channels')
     return {}
   } catch (error) {
-    console.error('Update channel error:', error)
+    logger.error('チャンネルの更新に失敗しました', error, {
+      id,
+      name: name.trim(),
+      slug: slug.trim(),
+    })
     return {
       errors: {
         generic: [
@@ -154,7 +162,7 @@ export async function deleteChannelAction(id: number): Promise<{
     revalidatePath('/channels')
     return { success: true }
   } catch (error) {
-    console.error('Delete channel error:', error)
+    logger.error('チャンネルの削除に失敗しました', error, { id })
     return {
       error:
         error instanceof Error
