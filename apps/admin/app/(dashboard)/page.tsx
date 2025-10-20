@@ -126,7 +126,7 @@ export default async function DashboardPage() {
 
         {/* Popular Videos Widget - Full width */}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-full">
-          <h2 className="mb-4 font-semibold text-xl">人気動画ランキング</h2>
+          <h2 className="mb-4 font-semibold text-xl">人気動画ランキング (過去30日間)</h2>
           {popularVideos.length > 0 ? (
             <div className="space-y-3">
               {popularVideos.map((video, index) => (
