@@ -135,6 +135,9 @@ importers:
       '@shinju-date/retryable-fetch':
         specifier: workspace:*
         version: link:../../packages/retryable-fetch
+      '@shinju-date/temporal-fns':
+        specifier: workspace:*
+        version: link:../../packages/temporal-fns
       '@shinju-date/youtube-api-client':
         specifier: workspace:*
         version: link:../../packages/youtube-api-client

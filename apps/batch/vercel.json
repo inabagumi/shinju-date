@@ -6,12 +6,8 @@
       "schedule": "21 1/3 * * *"
     },
     {
-      "path": "/recommendation/queries/auto",
-      "schedule": "17 1 * * *"
-    },
-    {
       "path": "/recommendation/queries/update",
-      "schedule": "7/30 * * * *"
+      "schedule": "17 1 * * *"
     },
     {
       "path": "/videos/check",

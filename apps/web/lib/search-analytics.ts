@@ -6,6 +6,10 @@ import { Temporal } from 'temporal-polyfill'
 import { timeZone } from './constants'
 import { redisClient } from './redis'
 
+// TTL settings for time-based search keys
+const DAILY_TTL_SECONDS = 7 * 24 * 60 * 60 // 7 days
+const WEEKLY_TTL_SECONDS = 35 * 24 * 60 * 60 // 35 days
+
 /**
  * Get the Monday of the week for a given date
  */
@@ -81,12 +85,12 @@ export async function logSearchQuery(
       // Daily key: 7 days TTL
       redisClient.expire(
         `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`,
-        7 * 24 * 60 * 60,
+        DAILY_TTL_SECONDS,
       ),
       // Weekly key: 35 days TTL
       redisClient.expire(
         `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}${mondayOfWeek}`,
-        35 * 24 * 60 * 60,
+        WEEKLY_TTL_SECONDS,
       ),
     ]
 
