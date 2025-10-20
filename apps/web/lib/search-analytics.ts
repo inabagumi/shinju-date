@@ -7,6 +7,16 @@ import { timeZone } from './constants'
 import { redisClient } from './redis'
 
 /**
+ * Get the Monday of the week for a given date
+ */
+function getMondayOfWeek(dateTime: Temporal.ZonedDateTime): string {
+  const dayOfWeek = dateTime.dayOfWeek // 1 = Monday, 7 = Sunday
+  const daysToSubtract = dayOfWeek - 1
+  const monday = dateTime.subtract({ days: daysToSubtract })
+  return formatDate(monday)
+}
+
+/**
  * Log a search query to Redis for analytics
  */
 export async function logSearchQuery(
@@ -20,10 +30,35 @@ export async function logSearchQuery(
   const normalizedQuery = query.trim().toLowerCase()
 
   try {
+    const now = Temporal.Now.zonedDateTimeISO(timeZone)
+    const today = formatDate(now)
+    const mondayOfWeek = getMondayOfWeek(now)
+
     // Run all Redis operations in parallel for better performance
     const operations: Promise<unknown>[] = [
-      // Increment popular keyword count
+      // Increment popular keyword count (legacy)
       redisClient.zincrby(REDIS_KEYS.SEARCH_POPULAR, 1, normalizedQuery),
+
+      // Increment daily search count
+      redisClient.zincrby(
+        `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`,
+        1,
+        normalizedQuery,
+      ),
+
+      // Increment weekly search count
+      redisClient.zincrby(
+        `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}${mondayOfWeek}`,
+        1,
+        normalizedQuery,
+      ),
+
+      // Increment all-time search count
+      redisClient.zincrby(
+        REDIS_KEYS.SEARCH_POPULAR_ALL_TIME,
+        1,
+        normalizedQuery,
+      ),
     ]
 
     // Track zero-result searches
@@ -34,12 +69,28 @@ export async function logSearchQuery(
     }
 
     // Track daily search volume
-    const today = formatDate(Temporal.Now.zonedDateTimeISO(timeZone))
     operations.push(
       redisClient.incr(`${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${today}`),
     )
 
     await Promise.all(operations)
+
+    // Set TTL for daily and weekly keys after incrementing
+    // We do this separately to avoid blocking the main operations
+    const ttlOperations: Promise<unknown>[] = [
+      // Daily key: 7 days TTL
+      redisClient.expire(
+        `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`,
+        7 * 24 * 60 * 60,
+      ),
+      // Weekly key: 35 days TTL
+      redisClient.expire(
+        `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}${mondayOfWeek}`,
+        35 * 24 * 60 * 60,
+      ),
+    ]
+
+    await Promise.all(ttlOperations)
   } catch (error) {
     // Log error but don't throw - we don't want analytics to break search
     console.error('Failed to log search query to Redis:', error)

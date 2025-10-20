@@ -1,4 +1,3 @@
-import { REDIS_KEYS } from '@shinju-date/constants'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -7,7 +6,7 @@ import NoResults from '@/components/no-results'
 import Timeline, { TimelineSkeleton } from '@/components/timeline'
 import { description, tagline, title } from '@/lib/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
-import { redisClient } from '@/lib/redis'
+import { getCombinedRecommendationQueries } from '@/lib/recommendations/get-combined-queries'
 import hero from './_assets/hero.jpg'
 
 const RECOMMENDATION_QUERIES_COUNT = 4
@@ -76,11 +75,15 @@ async function RecommendationQueries({
 }: Readonly<{
   queriesPromise: Promise<string[]>
 }>) {
-  const queries = await queriesPromise
+  const allQueries = await queriesPromise
 
-  if (queries.length < 1) {
+  if (allQueries.length < 1) {
     return <RecommendationQueriesSkeleton />
   }
+
+  // Take the first RECOMMENDATION_QUERIES_COUNT queries
+  // Manual queries appear first, so they get priority
+  const queries = allQueries.slice(0, RECOMMENDATION_QUERIES_COUNT)
 
   return (
     <nav className="py-4">
@@ -104,12 +107,7 @@ async function RecommendationQueries({
 
 export default function SchedulePage() {
   const videosPromise = fetchNotEndedVideos({})
-  const queriesPromise = redisClient
-    .srandmember<string[]>(
-      REDIS_KEYS.RECOMMENDATION_QUERIES,
-      RECOMMENDATION_QUERIES_COUNT,
-    )
-    .then((queries) => queries ?? [])
+  const queriesPromise = getCombinedRecommendationQueries()
 
   return (
     <>

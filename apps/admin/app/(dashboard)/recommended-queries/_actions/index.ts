@@ -15,7 +15,10 @@ export async function addQueryAction(query: string): Promise<{
   const trimmedQuery = query.trim()
 
   try {
-    await redisClient.sadd(REDIS_KEYS.RECOMMENDATION_QUERIES, trimmedQuery)
+    await redisClient.sadd(REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED, trimmedQuery)
+
+    // Invalidate combined cache
+    await redisClient.del(REDIS_KEYS.QUERIES_COMBINED_CACHE)
 
     revalidatePath('/recommended-queries')
     revalidatePath('/', 'page')
@@ -39,7 +42,10 @@ export async function deleteQueryAction(query: string): Promise<{
   }
 
   try {
-    await redisClient.srem(REDIS_KEYS.RECOMMENDATION_QUERIES, query)
+    await redisClient.srem(REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED, query)
+
+    // Invalidate combined cache
+    await redisClient.del(REDIS_KEYS.QUERIES_COMBINED_CACHE)
 
     revalidatePath('/recommended-queries')
     revalidatePath('/', 'page')
