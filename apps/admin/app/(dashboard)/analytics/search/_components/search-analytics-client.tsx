@@ -45,8 +45,9 @@ export default function SearchAnalyticsClient({
   const [previousSearchVolume, setPreviousSearchVolume] = useState<
     DailySearchVolume[]
   >([])
-  const [popularKeywords, setPopularKeywords] =
-    useState<PopularKeyword[]>(initialPopularKeywords)
+  const [popularKeywords, setPopularKeywords] = useState<PopularKeyword[]>(
+    initialPopularKeywords,
+  )
   const [zeroResultKeywords, setZeroResultKeywords] = useState<string[]>(
     initialZeroResultKeywords,
   )
