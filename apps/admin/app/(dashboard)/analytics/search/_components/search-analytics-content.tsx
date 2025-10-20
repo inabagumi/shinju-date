@@ -1,9 +1,9 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { Temporal } from 'temporal-polyfill'
-import SearchAnalyticsClient from './_components/search-analytics-client'
-import { getPopularKeywords } from './_lib/get-popular-keywords'
-import { getSearchVolume } from './_lib/get-search-volume'
-import { getZeroResultKeywords } from './_lib/get-zero-result-keywords'
+import { getPopularKeywords } from '../_lib/get-popular-keywords'
+import { getSearchVolume } from '../_lib/get-search-volume'
+import { getZeroResultKeywords } from '../_lib/get-zero-result-keywords'
+import SearchAnalyticsClient from './search-analytics-client'
 
 /**
  * SearchAnalyticsContent - Async component that fetches search analytics data

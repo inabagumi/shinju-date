@@ -1,9 +1,9 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { Temporal } from 'temporal-polyfill'
 import { getPopularVideos } from '@/lib/actions/get-popular-videos'
-import ClickAnalyticsClient from './_components/click-analytics-client'
-import { getClickVolume } from './_lib/get-click-volume'
-import { getPopularVideosForDate } from './_lib/get-popular-videos-for-date'
+import { getClickVolume } from '../_lib/get-click-volume'
+import { getPopularVideosForDate } from '../_lib/get-popular-videos-for-date'
+import ClickAnalyticsClient from './click-analytics-client'
 
 /**
  * ClickAnalyticsContent - Async component that fetches click analytics data
