@@ -2,6 +2,7 @@
 
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { isNonNullable } from '@shinju-date/helpers'
+import { logger } from '@shinju-date/logger'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { cookies } from 'next/headers'
 import { Temporal } from 'temporal-polyfill'
@@ -124,7 +125,12 @@ export async function getPopularVideos(
       }
     }
   } catch (error) {
-    console.error('Failed to communicate with Redis for popular videos:', error)
+    logger.error('Redis通信で人気動画の取得に失敗しました', error, {
+      days,
+      endDate: endDate ?? 'undefined',
+      limit,
+      startDate: startDate ?? 'undefined',
+    })
 
     return []
   }
@@ -145,7 +151,9 @@ export async function getPopularVideos(
     .in('id', videoIds)
 
   if (error) {
-    console.error('Failed to fetch video details:', error)
+    logger.error('動画の詳細取得に失敗しました', error, {
+      videoIds: videoIds.join(','),
+    })
 
     return []
   }

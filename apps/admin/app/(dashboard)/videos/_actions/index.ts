@@ -53,7 +53,9 @@ export async function toggleVisibilityAction(slugs: string[]): Promise<{
     revalidatePath('/videos')
     return { success: true }
   } catch (error) {
-    console.error('Toggle visibility error:', error)
+    logger.error('動画の表示切替に失敗しました', error, {
+      slugs: slugs.join(','),
+    })
     return {
       error:
         error instanceof Error
