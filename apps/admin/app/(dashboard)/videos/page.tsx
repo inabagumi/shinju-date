@@ -1,3 +1,4 @@
+import { formatNumber } from '@shinju-date/helpers'
 import getChannels from '../channels/_lib/get-channels'
 import Pagination from './_components/pagination'
 import VideoList from './_components/video-list'
@@ -65,7 +66,7 @@ export default async function VideosPage({ searchParams }: Props) {
     <div className="p-4">
       <div className="mb-4">
         <h1 className="font-bold text-2xl">動画管理</h1>
-        <p className="text-gray-600">全 {total} 件の動画</p>
+        <p className="text-gray-600">全 {formatNumber(total)} 件の動画</p>
       </div>
 
       <VideoList channels={channels} videos={videos} />
