@@ -1,0 +1,17 @@
+-- Initial schema migration
+-- 
+-- To populate this migration with your production schema:
+-- 1. Connect to your production database
+-- 2. Run: supabase db dump --project-ref YOUR_PROJECT_ID --schema public --data-only=false > initial_schema.sql
+-- 3. Copy the relevant DDL statements (CREATE TABLE, CREATE FUNCTION, ALTER TABLE, etc.) to this file
+-- 4. Include RLS policies with: supabase db dump --project-ref YOUR_PROJECT_ID --schema public --include-roles=false
+--
+-- This migration should include:
+-- - Table definitions
+-- - Indexes
+-- - Foreign key constraints
+-- - Row Level Security (RLS) policies
+-- - Functions and triggers
+-- - Views
+--
+-- Note: Do not include any sensitive data in this file. This is for schema only.

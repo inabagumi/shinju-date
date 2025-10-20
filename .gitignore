@@ -131,3 +131,6 @@ dist
 
 # turbo
 .turbo
+
+# Supabase data exports
+supabase/data-exports/

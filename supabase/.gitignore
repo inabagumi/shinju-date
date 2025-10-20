@@ -1,0 +1,7 @@
+# Supabase local development volumes
+.branches
+.temp
+.env
+
+# Local Supabase data
+volumes/
