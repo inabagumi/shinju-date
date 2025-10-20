@@ -27,15 +27,10 @@ export async function getPopularKeywords(
     const dailyKey = `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${dateKey}`
 
     // Get top keywords with scores from the specified date
-    const results = await redisClient.zrange<string[]>(
-      dailyKey,
-      0,
-      limit - 1,
-      {
-        rev: true,
-        withScores: true,
-      },
-    )
+    const results = await redisClient.zrange<string[]>(dailyKey, 0, limit - 1, {
+      rev: true,
+      withScores: true,
+    })
 
     // Parse results: [keyword1, score1, keyword2, score2, ...]
     const keywords: PopularKeyword[] = []
