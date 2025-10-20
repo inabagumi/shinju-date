@@ -15,13 +15,31 @@ type ClickVolumeChartProps = {
     clicks: number
     date: string
   }>
+  onDateClick?: (date: string) => void
 }
 
-export default function ClickVolumeChart({ data }: ClickVolumeChartProps) {
+export default function ClickVolumeChart({
+  data,
+  onDateClick,
+}: ClickVolumeChartProps) {
+  const handleBarClick = (data: unknown) => {
+    if (
+      onDateClick &&
+      data &&
+      typeof data === 'object' &&
+      'activeLabel' in data
+    ) {
+      const label = (data as { activeLabel?: string }).activeLabel
+      if (label) {
+        onDateClick(label)
+      }
+    }
+  }
+
   return (
     <div className="h-64 w-full">
       <ResponsiveContainer height="100%" width="100%">
-        <BarChart data={data}>
+        <BarChart data={data} onClick={handleBarClick}>
           <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
@@ -42,7 +60,12 @@ export default function ClickVolumeChart({ data }: ClickVolumeChartProps) {
             formatter={(value: number) => [`${value} 回`, 'クリック数']}
             labelStyle={{ color: '#374151', fontWeight: 600 }}
           />
-          <Bar dataKey="clicks" fill="#10b981" radius={[4, 4, 0, 0]} />
+          <Bar
+            cursor={onDateClick ? 'pointer' : 'default'}
+            dataKey="clicks"
+            fill="#10b981"
+            radius={[4, 4, 0, 0]}
+          />
         </BarChart>
       </ResponsiveContainer>
     </div>
