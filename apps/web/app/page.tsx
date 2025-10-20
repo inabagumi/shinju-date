@@ -6,7 +6,7 @@ import NoResults from '@/components/no-results'
 import Timeline, { TimelineSkeleton } from '@/components/timeline'
 import { description, tagline, title } from '@/lib/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
-import { getCombinedRecommendationQueries } from '@/lib/recommendations/get-combined-queries'
+import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
 import hero from './_assets/hero.jpg'
 
 const RECOMMENDATION_QUERIES_COUNT = 4
@@ -75,15 +75,11 @@ async function RecommendationQueries({
 }: Readonly<{
   queriesPromise: Promise<string[]>
 }>) {
-  const allQueries = await queriesPromise
+  const queries = await queriesPromise
 
-  if (allQueries.length < 1) {
+  if (queries.length < 1) {
     return <RecommendationQueriesSkeleton />
   }
-
-  // Take the first RECOMMENDATION_QUERIES_COUNT queries
-  // Manual queries appear first, so they get priority
-  const queries = allQueries.slice(0, RECOMMENDATION_QUERIES_COUNT)
 
   return (
     <nav className="py-4">
@@ -107,7 +103,7 @@ async function RecommendationQueries({
 
 export default function SchedulePage() {
   const videosPromise = fetchNotEndedVideos({})
-  const queriesPromise = getCombinedRecommendationQueries()
+  const queriesPromise = getDisplayRecommendationQueries()
 
   return (
     <>
