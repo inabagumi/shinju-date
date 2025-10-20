@@ -4,6 +4,7 @@ export const TIME_ZONE = 'Asia/Tokyo'
 export const REDIS_KEYS = {
   CLICK_CHANNEL_PREFIX: 'channels:clicked:',
   CLICK_VIDEO_PREFIX: 'videos:clicked:',
+  LAST_VIDEO_SYNC: 'status:last_video_sync',
   POPULAR_VIDEOS_PREFIX: 'videos:popular:cache:',
   RECOMMENDATION_QUERIES: 'recommendation_queries',
   SEARCH_POPULAR: 'search:popular',

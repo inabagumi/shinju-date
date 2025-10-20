@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
+import { REDIS_KEYS } from '@shinju-date/constants'
 import type { default as Database } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
@@ -8,6 +9,7 @@ import {
   videosCheckAll as ratelimitAll,
   videosCheck as ratelimitRecent,
 } from '@/lib/ratelimit'
+import { redisClient } from '@/lib/redis'
 import { revalidateTags } from '@/lib/revalidate'
 import { supabaseClient, type TypedSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
@@ -259,6 +261,9 @@ export async function POST(request: NextRequest): Promise<Response> {
   } else {
     Sentry.logger.info('Deleted videos did not exist.')
   }
+
+  // Update last sync timestamp in Redis
+  await redisClient.set(REDIS_KEYS.LAST_VIDEO_SYNC, currentDateTime.toString())
 
   after(async () => {
     Sentry.captureCheckIn({

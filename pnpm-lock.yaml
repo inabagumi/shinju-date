@@ -126,6 +126,9 @@ importers:
       '@sentry/profiling-node':
         specifier: 10.20.0
         version: 10.20.0
+      '@shinju-date/constants':
+        specifier: workspace:*
+        version: link:../../packages/constants
       '@shinju-date/helpers':
         specifier: workspace:*
         version: link:../../packages/helpers

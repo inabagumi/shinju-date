@@ -1,4 +1,4 @@
-import { NavigationBar } from './_components/navigation-bar'
+import { Header } from './_components/header'
 
 export type Props = {
   children: React.ReactNode
@@ -7,7 +7,7 @@ export type Props = {
 export default function DashboardLayout({ children }: Props) {
   return (
     <div>
-      <NavigationBar />
+      <Header />
       <main>{children}</main>
     </div>
   )
