@@ -22,9 +22,17 @@ export default function SearchVolumeChart({
   data,
   onDateClick,
 }: SearchVolumeChartProps) {
-  const handleClick = (entry: { activeLabel?: string }) => {
-    if (onDateClick && entry.activeLabel) {
-      onDateClick(entry.activeLabel)
+  const handleClick = (data: unknown) => {
+    if (
+      onDateClick &&
+      data &&
+      typeof data === 'object' &&
+      'activeLabel' in data
+    ) {
+      const label = (data as { activeLabel?: string }).activeLabel
+      if (label) {
+        onDateClick(label)
+      }
     }
   }
 

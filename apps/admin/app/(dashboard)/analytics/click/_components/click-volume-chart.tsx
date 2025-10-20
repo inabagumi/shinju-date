@@ -22,9 +22,17 @@ export default function ClickVolumeChart({
   data,
   onDateClick,
 }: ClickVolumeChartProps) {
-  const handleBarClick = (entry: { date: string }) => {
-    if (onDateClick && entry.date) {
-      onDateClick(entry.date)
+  const handleBarClick = (data: unknown) => {
+    if (
+      onDateClick &&
+      data &&
+      typeof data === 'object' &&
+      'activeLabel' in data
+    ) {
+      const label = (data as { activeLabel?: string }).activeLabel
+      if (label) {
+        onDateClick(label)
+      }
     }
   }
 

@@ -7,7 +7,10 @@ export function exportToCSV(
   }
 
   // Get headers from first row
-  const headers = Object.keys(data[0])
+  const firstRow = data[0]
+  if (!firstRow) return
+
+  const headers = Object.keys(firstRow)
   const csvContent = [
     // Header row
     headers.join(','),
