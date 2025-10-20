@@ -1,9 +1,11 @@
 import * as Sentry from '@sentry/nextjs'
+import { REDIS_KEYS } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { after } from 'next/server'
 import PQueue from 'p-queue'
 import { Temporal } from 'temporal-polyfill'
 import { videosUpdate as ratelimit } from '@/lib/ratelimit'
+import { redisClient } from '@/lib/redis'
 import { revalidateTags } from '@/lib/revalidate'
 import { scrape, type Video } from '@/lib/scraper'
 import { supabaseClient } from '@/lib/supabase'
@@ -156,6 +158,9 @@ export async function POST(request: Request): Promise<Response> {
   } else {
     Sentry.logger.info('No updated channels existed.')
   }
+
+  // Update last sync timestamp in Redis
+  await redisClient.set(REDIS_KEYS.LAST_VIDEO_SYNC, currentDateTime.toString())
 
   after(async () => {
     Sentry.captureCheckIn({

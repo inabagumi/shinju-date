@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
+import { after } from 'next/server'
 import NoResults from '@/components/no-results'
 import SearchResults from '@/components/search-results'
 import { title as siteName } from '@/lib/constants'
 import { fetchVideosByChannelIDs } from '@/lib/fetchers'
+import { logSearchQuery } from '@/lib/search-analytics'
 import { parseQueries } from '@/lib/url'
 
 export const revalidate = 300 // 5 minutes
@@ -54,6 +56,13 @@ export default async function VideosPage({
   const videos = await fetchVideosByChannelIDs({
     query,
   })
+
+  // Log search query for analytics using after() to avoid blocking rendering
+  if (query) {
+    after(async () => {
+      await logSearchQuery(query, videos.length)
+    })
+  }
 
   if (videos.length < 1) {
     const message = query

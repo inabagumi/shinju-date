@@ -1,8 +1,9 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { cookies } from 'next/headers'
 import type { FormState } from '@/components/form'
-import { supabaseClient } from '@/lib/supabase'
+import { createSupabaseClient } from '@/lib/supabase'
 
 export async function createTermAction(
   _currentState: FormState,
@@ -32,6 +33,11 @@ export async function createTermAction(
         .map((s) => s.trim())
         .filter(Boolean)
     : []
+
+  const cookieStore = await cookies()
+  const supabaseClient = createSupabaseClient({
+    cookieStore,
+  })
 
   try {
     const { error } = await supabaseClient.from('terms').insert({
@@ -97,6 +103,11 @@ export async function updateTermAction(
         .filter(Boolean)
     : []
 
+  const cookieStore = await cookies()
+  const supabaseClient = createSupabaseClient({
+    cookieStore,
+  })
+
   try {
     const { error } = await supabaseClient
       .from('terms')
@@ -132,6 +143,11 @@ export async function deleteTermAction(id: number): Promise<{
   if (!id) {
     return { error: 'IDが指定されていません。', success: false }
   }
+
+  const cookieStore = await cookies()
+  const supabaseClient = createSupabaseClient({
+    cookieStore,
+  })
 
   try {
     const { error } = await supabaseClient.from('terms').delete().eq('id', id)

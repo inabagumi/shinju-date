@@ -1,3 +1,4 @@
+import { REDIS_KEYS } from '@shinju-date/constants'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -105,7 +106,7 @@ export default function SchedulePage() {
   const videosPromise = fetchNotEndedVideos({})
   const queriesPromise = redisClient
     .srandmember<string[]>(
-      'recommendation_queries',
+      REDIS_KEYS.RECOMMENDATION_QUERIES,
       RECOMMENDATION_QUERIES_COUNT,
     )
     .then((queries) => queries ?? [])

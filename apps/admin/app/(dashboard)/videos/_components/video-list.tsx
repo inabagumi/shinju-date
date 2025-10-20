@@ -1,20 +1,55 @@
 'use client'
 
+import { formatNumber } from '@shinju-date/helpers'
 import Image from 'next/image'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
+import { twMerge } from 'tailwind-merge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/dropdown-menu'
 import { supabaseClient } from '@/lib/supabase'
-import { softDeleteAction, toggleVisibilityAction } from '../_actions'
+import {
+  softDeleteAction,
+  softDeleteSingleVideoAction,
+  toggleSingleVideoVisibilityAction,
+  toggleVisibilityAction,
+} from '../_actions'
 import type { Video } from '../_lib/get-videos'
+import { SortIcon } from './sort-icon'
+import { VideoFilters } from './video-filters'
+
+type Channel = {
+  created_at: string
+  id: number
+  name: string
+  slug: string
+  updated_at: string
+}
 
 type Props = {
+  channels: Channel[]
   videos: Video[]
 }
 
-export default function VideoList({ videos }: Props) {
+function getStatusText(video: Video): string {
+  if (video.deleted_at) return '削除済み'
+  if (video.visible) return '公開中'
+  return '非表示'
+}
+
+export default function VideoList({ channels, videos }: Props) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>([])
   const [showConfirmModal, setShowConfirmModal] = useState<{
     action: 'toggle' | 'delete'
     open: boolean
+    slug?: string
   }>({ action: 'toggle', open: false })
   const [isPending, startTransition] = useTransition()
 
@@ -34,28 +69,56 @@ export default function VideoList({ videos }: Props) {
     }
   }
 
-  const handleAction = (action: 'toggle' | 'delete') => {
+  const handleBulkAction = (action: 'toggle' | 'delete') => {
     setShowConfirmModal({ action, open: true })
+  }
+
+  const handleSingleAction = (action: 'toggle' | 'delete', slug: string) => {
+    setShowConfirmModal({ action, open: true, slug })
   }
 
   const handleConfirm = () => {
     startTransition(async () => {
       try {
-        if (showConfirmModal.action === 'toggle') {
-          const result = await toggleVisibilityAction(selectedSlugs)
-          if (result.success) {
-            setSelectedSlugs([])
-            alert('表示状態を更新しました。')
-          } else {
-            alert(result.error || '更新に失敗しました。')
+        // If slug is provided, it's a single action
+        if (showConfirmModal.slug) {
+          if (showConfirmModal.action === 'toggle') {
+            const result = await toggleSingleVideoVisibilityAction(
+              showConfirmModal.slug,
+            )
+            if (result.success) {
+              alert('表示状態を更新しました。')
+            } else {
+              alert(result.error || '更新に失敗しました。')
+            }
+          } else if (showConfirmModal.action === 'delete') {
+            const result = await softDeleteSingleVideoAction(
+              showConfirmModal.slug,
+            )
+            if (result.success) {
+              alert('動画を削除しました。')
+            } else {
+              alert(result.error || '削除に失敗しました。')
+            }
           }
-        } else if (showConfirmModal.action === 'delete') {
-          const result = await softDeleteAction(selectedSlugs)
-          if (result.success) {
-            setSelectedSlugs([])
-            alert('動画を削除しました。')
-          } else {
-            alert(result.error || '削除に失敗しました。')
+        } else {
+          // Bulk action
+          if (showConfirmModal.action === 'toggle') {
+            const result = await toggleVisibilityAction(selectedSlugs)
+            if (result.success) {
+              setSelectedSlugs([])
+              alert('表示状態を更新しました。')
+            } else {
+              alert(result.error || '更新に失敗しました。')
+            }
+          } else if (showConfirmModal.action === 'delete') {
+            const result = await softDeleteAction(selectedSlugs)
+            if (result.success) {
+              setSelectedSlugs([])
+              alert('動画を削除しました。')
+            } else {
+              alert(result.error || '削除に失敗しました。')
+            }
           }
         }
       } catch (_error) {
@@ -66,14 +129,36 @@ export default function VideoList({ videos }: Props) {
     })
   }
 
+  const getSortUrl = (field: 'published_at' | 'updated_at') => {
+    const params = new URLSearchParams(searchParams.toString())
+    // Toggle sort order if clicking the same field, otherwise default to desc
+    if (currentSortField === field) {
+      params.set('sortOrder', currentSortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      params.set('sortField', field)
+      params.set('sortOrder', 'desc')
+    }
+    // Reset to page 1 when sort changes
+    params.delete('page')
+    return `/videos?${params.toString()}`
+  }
+
   const allSelected =
     videos.length > 0 && selectedSlugs.length === videos.length
 
+  const currentSortField = searchParams.get('sortField') || 'updated_at'
+  const currentSortOrder = (searchParams.get('sortOrder') || 'desc') as
+    | 'asc'
+    | 'desc'
+
   return (
     <div>
+      {/* Filters and Sort Controls */}
+      <VideoFilters channels={channels} />
+
       {/* Action bar */}
       {selectedSlugs.length > 0 && (
-        <div className="sticky top-0 z-10 bg-blue-600 p-4 text-white shadow-lg">
+        <div className="sticky top-0 z-10 mb-4 bg-blue-600 p-4 text-white shadow-lg">
           <div className="flex items-center justify-between">
             <span className="font-semibold">
               {selectedSlugs.length} 件選択中
@@ -82,7 +167,7 @@ export default function VideoList({ videos }: Props) {
               <button
                 className="rounded-md bg-blue-700 px-4 py-2 hover:bg-blue-800 disabled:bg-gray-400"
                 disabled={isPending}
-                onClick={() => handleAction('toggle')}
+                onClick={() => handleBulkAction('toggle')}
                 type="button"
               >
                 表示/非表示を切り替え
@@ -90,7 +175,7 @@ export default function VideoList({ videos }: Props) {
               <button
                 className="rounded-md bg-red-600 px-4 py-2 hover:bg-red-700 disabled:bg-gray-400"
                 disabled={isPending}
-                onClick={() => handleAction('delete')}
+                onClick={() => handleBulkAction('delete')}
                 type="button"
               >
                 削除
@@ -114,58 +199,164 @@ export default function VideoList({ videos }: Props) {
               </th>
               <th className="p-3 text-left">サムネイル</th>
               <th className="p-3 text-left">タイトル</th>
+              <th className="p-3 text-left">チャンネル</th>
+              <th className="p-3 text-left">
+                <Link
+                  className="flex items-center hover:text-blue-600"
+                  href={getSortUrl('published_at')}
+                >
+                  公開日時
+                  <SortIcon
+                    currentSortField={currentSortField}
+                    currentSortOrder={currentSortOrder}
+                    field="published_at"
+                  />
+                </Link>
+              </th>
+              <th className="p-3 text-left">
+                <Link
+                  className="flex items-center hover:text-blue-600"
+                  href={getSortUrl('updated_at')}
+                >
+                  更新日時
+                  <SortIcon
+                    currentSortField={currentSortField}
+                    currentSortOrder={currentSortOrder}
+                    field="updated_at"
+                  />
+                </Link>
+              </th>
               <th className="p-3 text-left">クリック数</th>
-              <th className="p-3 text-left">表示状態</th>
+              <th className="p-3 text-left">ステータス</th>
+              <th className="p-3 text-left">アクション</th>
             </tr>
           </thead>
           <tbody>
-            {videos.map((video) => (
-              <tr className="border-b hover:bg-gray-50" key={video.slug}>
-                <td className="p-3">
-                  <input
-                    checked={selectedSlugs.includes(video.slug)}
-                    onChange={(e) =>
-                      handleSelectVideo(video.slug, e.target.checked)
-                    }
-                    type="checkbox"
-                  />
-                </td>
-                <td className="p-3">
-                  {video.thumbnail ? (
-                    <div className="relative aspect-video w-28">
-                      <Image
-                        alt=""
-                        className="object-cover"
-                        fill
-                        sizes="112px"
-                        src={
-                          supabaseClient.storage
-                            .from('thumbnails')
-                            .getPublicUrl(video.thumbnail.path).data.publicUrl
-                        }
-                      />
+            {videos.length > 0 ? (
+              videos.map((video) => (
+                <tr className="border-b hover:bg-gray-50" key={video.slug}>
+                  <td className="p-3">
+                    <input
+                      checked={selectedSlugs.includes(video.slug)}
+                      onChange={(e) =>
+                        handleSelectVideo(video.slug, e.target.checked)
+                      }
+                      type="checkbox"
+                    />
+                  </td>
+                  <td className="p-3">
+                    {video.thumbnail ? (
+                      <div className="relative aspect-video w-20 md:w-28">
+                        <Image
+                          alt=""
+                          className="object-cover"
+                          fill
+                          sizes="(max-width: 768px) 80px, 112px"
+                          src={
+                            supabaseClient.storage
+                              .from('thumbnails')
+                              .getPublicUrl(video.thumbnail.path).data.publicUrl
+                          }
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex aspect-video w-20 items-center justify-center bg-gray-200 text-xs md:w-28">
+                        No Image
+                      </div>
+                    )}
+                  </td>
+                  <td className="max-w-xs p-3">
+                    <div className="line-clamp-2" title={video.title}>
+                      {video.title}
                     </div>
-                  ) : (
-                    <div className="flex aspect-video w-28 items-center justify-center bg-gray-200">
-                      No Image
-                    </div>
-                  )}
-                </td>
-                <td className="p-3">{video.title}</td>
-                <td className="p-3">{video.clicks}</td>
-                <td className="p-3">
-                  <span
-                    className={`rounded px-2 py-1 text-xs ${
-                      video.visible
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {video.visible ? '表示' : '非表示'}
-                  </span>
+                  </td>
+                  <td className="p-3">
+                    <span className="text-gray-600 text-sm">
+                      {video.channel.name}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <span className="text-gray-600 text-sm">
+                      {new Date(video.published_at).toLocaleDateString(
+                        'ja-JP',
+                        {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                        },
+                      )}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <span className="text-gray-600 text-sm">
+                      {new Date(video.updated_at).toLocaleDateString('ja-JP', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                      })}
+                    </span>
+                  </td>
+                  <td className="p-3">{formatNumber(video.clicks)}</td>
+                  <td className="p-3">
+                    <span
+                      className={twMerge(
+                        'whitespace-nowrap rounded px-2 py-1 text-xs',
+                        video.deleted_at
+                          ? 'bg-red-100 text-red-800'
+                          : video.visible
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800',
+                      )}
+                    >
+                      {getStatusText(video)}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger aria-label="アクションメニュー">
+                        <svg
+                          aria-hidden="true"
+                          className="h-5 w-5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <title>アクションメニュー</title>
+                          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                        </svg>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem
+                          onClick={() => router.push(`/videos/${video.slug}`)}
+                        >
+                          編集
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleSingleAction('toggle', video.slug)
+                          }
+                        >
+                          表示/非表示を切り替え
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleSingleAction('delete', video.slug)
+                          }
+                          variant="danger"
+                        >
+                          削除
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td className="p-8 text-center text-gray-500" colSpan={9}>
+                  動画がありません。
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
@@ -177,8 +368,12 @@ export default function VideoList({ videos }: Props) {
             <h3 className="mb-4 font-semibold text-lg">確認</h3>
             <p className="mb-6 text-gray-700">
               {showConfirmModal.action === 'delete'
-                ? `本当に${selectedSlugs.length}件の動画を削除しますか？`
-                : `本当に${selectedSlugs.length}件の動画の表示状態を切り替えますか？`}
+                ? showConfirmModal.slug
+                  ? 'この動画を削除しますか？'
+                  : `本当に${selectedSlugs.length}件の動画を削除しますか？`
+                : showConfirmModal.slug
+                  ? 'この動画の表示状態を切り替えますか？'
+                  : `本当に${selectedSlugs.length}件の動画の表示状態を切り替えますか？`}
             </p>
             <div className="flex justify-end gap-2">
               <button

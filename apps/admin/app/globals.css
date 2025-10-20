@@ -50,6 +50,8 @@
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  --widget-min-width: calc(var(--spacing) * 96);
 }
 
 @keyframes accordion-down {
@@ -68,4 +70,8 @@
   to {
     height: 0;
   }
+}
+
+.recharts-wrapper:focus:not(:focus-visible) {
+  outline: none;
 }
