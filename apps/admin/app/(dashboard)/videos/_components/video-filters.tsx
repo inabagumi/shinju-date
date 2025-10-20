@@ -84,7 +84,7 @@ export function VideoFilters({ channels }: Props) {
           チャンネルで絞り込み
         </label>
         <select
-          className="rounded-md border border-gray-300 px-3 py-2"
+          className="w-full max-w-full rounded-md border border-gray-300 px-3 py-2 sm:w-auto"
           id="channel-filter"
           onChange={(e) => handleFilterChange('channelId', e.target.value)}
           value={currentChannelId}

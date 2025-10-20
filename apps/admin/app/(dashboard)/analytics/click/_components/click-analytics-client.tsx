@@ -217,7 +217,7 @@ export default function ClickAnalyticsClient({
                   <div className="min-w-0 flex-1 truncate">
                     <Link
                       className="font-medium hover:underline"
-                      href={`/videos?slug=${item.slug}`}
+                      href={`/videos?search=${item.slug}`}
                     >
                       {item.title}
                     </Link>

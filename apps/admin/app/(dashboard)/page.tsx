@@ -165,7 +165,7 @@ export default async function DashboardPage() {
                   <div className="flex shrink-0 gap-2">
                     <Link
                       className="rounded bg-blue-600 px-3 py-1 text-sm text-white transition-colors hover:bg-blue-700"
-                      href={`/videos?slug=${video.slug}`}
+                      href={`/videos?search=${video.slug}`}
                     >
                       編集
                     </Link>
