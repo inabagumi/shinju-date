@@ -1,11 +1,13 @@
 'use client'
 
-import { formatDuration, formatNumber } from '@shinju-date/helpers'
+import { formatNumber } from '@shinju-date/helpers'
+import { formatDuration } from '@shinju-date/temporal-fns'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { twMerge } from 'tailwind-merge'
+import { Temporal } from 'temporal-polyfill'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -298,7 +300,7 @@ export default function VideoList({ channels, videos }: Props) {
                   </td>
                   <td className="p-3">
                     <span className="text-gray-600 text-sm">
-                      {formatDuration(video.duration)}
+                      {formatDuration(Temporal.Duration.from(video.duration))}
                     </span>
                   </td>
                   <td className="p-3">{formatNumber(video.clicks)}</td>
@@ -338,7 +340,24 @@ export default function VideoList({ channels, videos }: Props) {
                             )
                           }
                         >
-                          YouTubeで見る
+                          <span className="flex items-center gap-1">
+                            YouTubeで見る
+                            <svg
+                              aria-hidden="true"
+                              className="h-4 w-4"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              viewBox="0 0 24 24"
+                            >
+                              <title>外部リンク</title>
+                              <path
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() =>
