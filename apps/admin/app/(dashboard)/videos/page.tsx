@@ -1,7 +1,8 @@
 import { formatNumber } from '@shinju-date/helpers'
-import getChannels from '../channels/_lib/get-channels'
+import { Suspense } from 'react'
+import { TableSkeleton } from '@/components/skeletons'
 import Pagination from './_components/pagination'
-import VideoList from './_components/video-list'
+import { VideoTable } from './_components/video-table'
 import {
   getVideos,
   type VideoFilters,
@@ -48,14 +49,14 @@ export default async function VideosPage({ searchParams }: Props) {
   const sortField = (params.sortField as VideoSortField) || 'updated_at'
   const sortOrder = (params.sortOrder as VideoSortOrder) || 'desc'
 
-  const { videos, total } = await getVideos(
+  // Fetch total count for pagination (lightweight query)
+  const { total } = await getVideos(
     currentPage,
     perPage,
     filters,
     sortField,
     sortOrder,
   )
-  const channels = await getChannels()
   const totalPages = Math.ceil(total / perPage)
 
   return (
@@ -65,7 +66,15 @@ export default async function VideosPage({ searchParams }: Props) {
         <p className="text-gray-600">全 {formatNumber(total)} 件の動画</p>
       </div>
 
-      <VideoList channels={channels} videos={videos} />
+      <Suspense fallback={<TableSkeleton rows={perPage} />}>
+        <VideoTable
+          currentPage={currentPage}
+          filters={filters}
+          perPage={perPage}
+          sortField={sortField}
+          sortOrder={sortOrder}
+        />
+      </Suspense>
       {totalPages > 1 && (
         <Pagination currentPage={currentPage} totalPages={totalPages} />
       )}
