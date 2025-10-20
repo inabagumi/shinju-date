@@ -30,7 +30,10 @@ export function NavigationBar() {
                 setIsDataMenuOpen(!isDataMenuOpen)
                 setIsAnalyticsMenuOpen(false)
               }}
-              onMouseEnter={() => setIsDataMenuOpen(true)}
+              onMouseEnter={() => {
+                setIsDataMenuOpen(true)
+                setIsAnalyticsMenuOpen(false)
+              }}
               type="button"
             >
               データ管理 ▾
@@ -42,28 +45,36 @@ export function NavigationBar() {
                 role="menu"
               >
                 <Link
-                  className={`block px-4 py-2 hover:bg-slate-600 ${isActive('/videos') ? 'bg-slate-600' : ''}`}
+                  className={`block px-4 py-2 hover:bg-slate-600 ${
+                    isActive('/videos') ? 'bg-slate-600' : ''
+                  }`}
                   href="/videos"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
                   動画管理
                 </Link>
                 <Link
-                  className={`block px-4 py-2 hover:bg-slate-600 ${isActive('/channels') ? 'bg-slate-600' : ''}`}
+                  className={`block px-4 py-2 hover:bg-slate-600 ${
+                    isActive('/channels') ? 'bg-slate-600' : ''
+                  }`}
                   href="/channels"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
                   チャンネル管理
                 </Link>
                 <Link
-                  className={`block px-4 py-2 hover:bg-slate-600 ${isActive('/terms') ? 'bg-slate-600' : ''}`}
+                  className={`block px-4 py-2 hover:bg-slate-600 ${
+                    isActive('/terms') ? 'bg-slate-600' : ''
+                  }`}
                   href="/terms"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
                   用語管理
                 </Link>
                 <Link
-                  className={`block px-4 py-2 hover:bg-slate-600 ${isActive('/recommended-queries') ? 'bg-slate-600' : ''}`}
+                  className={`block px-4 py-2 hover:bg-slate-600 ${
+                    isActive('/recommended-queries') ? 'bg-slate-600' : ''
+                  }`}
                   href="/recommended-queries"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
@@ -81,7 +92,10 @@ export function NavigationBar() {
                 setIsAnalyticsMenuOpen(!isAnalyticsMenuOpen)
                 setIsDataMenuOpen(false)
               }}
-              onMouseEnter={() => setIsAnalyticsMenuOpen(true)}
+              onMouseEnter={() => {
+                setIsAnalyticsMenuOpen(true)
+                setIsDataMenuOpen(false)
+              }}
               type="button"
             >
               アナリティクス ▾
@@ -93,14 +107,18 @@ export function NavigationBar() {
                 role="menu"
               >
                 <Link
-                  className={`block px-4 py-2 hover:bg-slate-600 ${isActive('/analytics/search') ? 'bg-slate-600' : ''}`}
+                  className={`block px-4 py-2 hover:bg-slate-600 ${
+                    isActive('/analytics/search') ? 'bg-slate-600' : ''
+                  }`}
                   href="/analytics/search"
                   onClick={() => setIsAnalyticsMenuOpen(false)}
                 >
                   検索アナリティクス
                 </Link>
                 <Link
-                  className={`block px-4 py-2 hover:bg-slate-600 ${isActive('/analytics/click') ? 'bg-slate-600' : ''}`}
+                  className={`block px-4 py-2 hover:bg-slate-600 ${
+                    isActive('/analytics/click') ? 'bg-slate-600' : ''
+                  }`}
                   href="/analytics/click"
                   onClick={() => setIsAnalyticsMenuOpen(false)}
                 >
@@ -166,28 +184,36 @@ export function NavigationBar() {
             <div className="space-y-1">
               <div className="px-3 py-2 font-semibold text-sm">データ管理</div>
               <Link
-                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${isActive('/videos') ? 'bg-slate-700' : ''}`}
+                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
+                  isActive('/videos') ? 'bg-slate-700' : ''
+                }`}
                 href="/videos"
                 onClick={() => setIsMenuOpen(false)}
               >
                 動画管理
               </Link>
               <Link
-                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${isActive('/channels') ? 'bg-slate-700' : ''}`}
+                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
+                  isActive('/channels') ? 'bg-slate-700' : ''
+                }`}
                 href="/channels"
                 onClick={() => setIsMenuOpen(false)}
               >
                 チャンネル管理
               </Link>
               <Link
-                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${isActive('/terms') ? 'bg-slate-700' : ''}`}
+                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
+                  isActive('/terms') ? 'bg-slate-700' : ''
+                }`}
                 href="/terms"
                 onClick={() => setIsMenuOpen(false)}
               >
                 用語管理
               </Link>
               <Link
-                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${isActive('/recommended-queries') ? 'bg-slate-700' : ''}`}
+                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
+                  isActive('/recommended-queries') ? 'bg-slate-700' : ''
+                }`}
                 href="/recommended-queries"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -199,14 +225,18 @@ export function NavigationBar() {
                 アナリティクス
               </div>
               <Link
-                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${isActive('/analytics/search') ? 'bg-slate-700' : ''}`}
+                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
+                  isActive('/analytics/search') ? 'bg-slate-700' : ''
+                }`}
                 href="/analytics/search"
                 onClick={() => setIsMenuOpen(false)}
               >
                 検索アナリティクス
               </Link>
               <Link
-                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${isActive('/analytics/click') ? 'bg-slate-700' : ''}`}
+                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
+                  isActive('/analytics/click') ? 'bg-slate-700' : ''
+                }`}
                 href="/analytics/click"
                 onClick={() => setIsMenuOpen(false)}
               >
