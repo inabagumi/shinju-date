@@ -73,7 +73,7 @@ To apply the database schema changes:
 
 1. Navigate to your Supabase Dashboard
 2. Go to the SQL Editor
-3. Execute the SQL from `migrations/001_create_audit_logs_table.sql`
+3. Execute the SQL migrations in order from `migrations/001_create_channels_table.sql` through `migrations/005_create_audit_logs_table.sql`
 
 ## UI Preview
 

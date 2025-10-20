@@ -11,7 +11,7 @@
 1. **データベーススキーマ**
    - `audit_logs` テーブルを追加
    - 必要なインデックスを設定
-   - マイグレーションファイルを作成 (`migrations/001_create_audit_logs_table.sql`)
+   - マイグレーションファイルを作成 (`migrations/001-005_*.sql`、audit_logsは`005_create_audit_logs_table.sql`)
 
 2. **監査ログシステム**
    - 汎用的なログ記録関数を実装 (`lib/audit-log.ts`)
@@ -42,7 +42,8 @@
 Supabase ダッシュボードで以下の SQL を実行してください:
 
 ```sql
--- migrations/001_create_audit_logs_table.sql の内容を実行
+-- migrations/001_create_channels_table.sql から順番に実行
+-- migrations/005_create_audit_logs_table.sql まで
 ```
 
 詳細は `migrations/README.md` を参照してください。
@@ -100,7 +101,11 @@ packages/database/
 └── types/supabase.ts                   # データベース型定義（更新）
 
 migrations/
-├── 001_create_audit_logs_table.sql     # マイグレーションSQL
+├── 001_create_channels_table.sql       # チャンネルテーブル
+├── 002_create_thumbnails_table.sql     # サムネイルテーブル
+├── 003_create_videos_table.sql         # 動画テーブル
+├── 004_create_terms_table.sql          # 用語テーブル
+├── 005_create_audit_logs_table.sql     # 監査ログテーブル
 └── README.md                           # マイグレーション手順
 ```
 
