@@ -1,6 +1,8 @@
 'use server'
 
-import { REDIS_KEYS } from '@shinju-date/constants'
+import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import { formatDate } from '@shinju-date/temporal-fns'
+import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
 
 export type PopularKeyword = {
@@ -9,22 +11,26 @@ export type PopularKeyword = {
 }
 
 /**
- * Get the most popular search keywords from Redis
+ * Get the most popular search keywords from Redis for a specific date (daily data)
  */
 export async function getPopularKeywords(
+  date: string,
   limit = 20,
 ): Promise<PopularKeyword[]> {
   try {
-    // Get top keywords with scores
-    const results = await redisClient.zrange<string[]>(
-      REDIS_KEYS.SEARCH_POPULAR,
-      0,
-      limit - 1,
-      {
-        rev: true,
-        withScores: true,
-      },
-    )
+    const plainDate = Temporal.PlainDate.from(date)
+    const zonedDate = plainDate.toZonedDateTime({
+      plainTime: Temporal.PlainTime.from('00:00:00'),
+      timeZone: TIME_ZONE,
+    })
+    const dateKey = formatDate(zonedDate)
+    const dailyKey = `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${dateKey}`
+
+    // Get top keywords with scores from the specified date
+    const results = await redisClient.zrange<string[]>(dailyKey, 0, limit - 1, {
+      rev: true,
+      withScores: true,
+    })
 
     // Parse results: [keyword1, score1, keyword2, score2, ...]
     const keywords: PopularKeyword[] = []

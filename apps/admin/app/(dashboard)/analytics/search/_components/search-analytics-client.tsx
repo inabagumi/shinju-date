@@ -22,7 +22,10 @@ type SearchAnalyticsClientProps = {
     startDate: string,
     endDate: string,
   ) => Promise<DailySearchVolume[]>
-  fetchPopularKeywords: (limit: number) => Promise<PopularKeyword[]>
+  fetchPopularKeywords: (
+    date: string,
+    limit: number,
+  ) => Promise<PopularKeyword[]>
   fetchZeroResultKeywords: () => Promise<string[]>
 }
 
@@ -70,7 +73,7 @@ export default function SearchAnalyticsClient({
       try {
         const [volumeData, keywordsData, zeroData] = await Promise.all([
           fetchSearchVolume(dateRange.startDate, dateRange.endDate),
-          fetchPopularKeywords(20),
+          fetchPopularKeywords(dateRange.endDate, 20),
           fetchZeroResultKeywords(),
         ])
         setSearchVolume(volumeData)

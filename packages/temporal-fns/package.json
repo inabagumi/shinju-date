@@ -19,6 +19,10 @@
       "types": "./dist/format-date.d.ts",
       "default": "./dist/format-date.js"
     },
+    "./get-monday-of-week": {
+      "types": "./dist/get-monday-of-week.d.ts",
+      "default": "./dist/get-monday-of-week.js"
+    },
     "./max": {
       "types": "./dist/max.d.ts",
       "default": "./dist/max.js"
@@ -55,6 +59,9 @@
       ],
       "./format-date": [
         "./dist/format-date.d.ts"
+      ],
+      "./get-monday-of-week": [
+        "./dist/get-monday-of-week.d.ts"
       ],
       "./max": [
         "./dist/max.d.ts"

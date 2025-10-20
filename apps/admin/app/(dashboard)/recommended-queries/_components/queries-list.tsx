@@ -4,22 +4,32 @@ import { useMemo, useState, useTransition } from 'react'
 import { addQueryAction, deleteQueryAction } from '../_actions'
 
 type QueriesListProps = {
-  queries: string[]
+  manualQueries: string[]
+  autoQueries: Array<{ query: string; score: number }>
 }
 
-export function QueriesList({ queries }: QueriesListProps) {
+export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [newQuery, setNewQuery] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   // Filter queries based on search query
-  const filteredQueries = useMemo(() => {
-    if (!searchQuery.trim()) return queries
+  const filteredManualQueries = useMemo(() => {
+    if (!searchQuery.trim()) return manualQueries
 
     const query = searchQuery.toLowerCase()
-    return queries.filter((q) => q.toLowerCase().includes(query))
-  }, [queries, searchQuery])
+    return manualQueries.filter((q) => q.toLowerCase().includes(query))
+  }, [manualQueries, searchQuery])
+
+  const filteredAutoQueries = useMemo(() => {
+    if (!searchQuery.trim()) return autoQueries
+
+    const query = searchQuery.toLowerCase()
+    return autoQueries.filter((item) =>
+      item.query.toLowerCase().includes(query),
+    )
+  }, [autoQueries, searchQuery])
 
   const handleAddQuery = () => {
     setError(null)
@@ -56,7 +66,7 @@ export function QueriesList({ queries }: QueriesListProps) {
               className="mb-2 block font-medium text-sm"
               htmlFor="new-query"
             >
-              新しいクエリを追加
+              新しい手動クエリを追加
             </label>
             <input
               className="w-full rounded-md border border-774-blue-300 px-4 py-2 focus:border-secondary-blue focus:outline-none"
@@ -100,49 +110,89 @@ export function QueriesList({ queries }: QueriesListProps) {
         />
       </div>
 
-      {/* Queries List */}
-      {filteredQueries.length === 0 ? (
-        <p className="py-8 text-center text-gray-500">
-          {searchQuery
-            ? '検索結果がありません。'
-            : 'オススメクエリがありません。'}
-        </p>
-      ) : (
-        <div className="overflow-x-auto rounded-lg border border-774-blue-300">
-          <table className="w-full">
-            <thead className="bg-774-blue-50">
-              <tr>
-                <th className="px-4 py-3 text-left font-semibold">クエリ</th>
-                <th className="w-24 px-4 py-3 text-right font-semibold">
-                  操作
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-774-blue-200 bg-white">
-              {filteredQueries.map((query) => (
-                <tr className="hover:bg-774-blue-50" key={query}>
-                  <td className="px-4 py-3">{query}</td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      className="rounded-md bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 active:bg-red-700 disabled:pointer-events-none disabled:opacity-50"
-                      disabled={isPending}
-                      onClick={() => handleDeleteQuery(query)}
-                      type="button"
-                    >
-                      削除
-                    </button>
-                  </td>
+      {/* Manual Queries List */}
+      <div className="space-y-3">
+        <h2 className="font-semibold text-lg">
+          手動追加クエリ ({manualQueries.length}件)
+        </h2>
+        {filteredManualQueries.length === 0 ? (
+          <p className="py-8 text-center text-gray-500">
+            {searchQuery
+              ? '検索結果がありません。'
+              : '手動追加されたオススメクエリがありません。'}
+          </p>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border border-774-blue-300">
+            <table className="w-full">
+              <thead className="bg-774-blue-50">
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold">クエリ</th>
+                  <th className="w-24 px-4 py-3 text-right font-semibold">
+                    操作
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody className="divide-y divide-774-blue-200 bg-white">
+                {filteredManualQueries.map((query) => (
+                  <tr className="hover:bg-774-blue-50" key={query}>
+                    <td className="px-4 py-3">{query}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        className="rounded-md bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 active:bg-red-700 disabled:pointer-events-none disabled:opacity-50"
+                        disabled={isPending}
+                        onClick={() => handleDeleteQuery(query)}
+                        type="button"
+                      >
+                        削除
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
-      {/* Query Count */}
-      <p className="text-center text-gray-600 text-sm">
-        合計: {queries.length}件のクエリ
-      </p>
+      {/* Auto Queries List */}
+      <div className="space-y-3">
+        <h2 className="font-semibold text-lg">
+          自動選出クエリ ({autoQueries.length}件)
+        </h2>
+        <p className="text-gray-600 text-sm">
+          検索トレンドに基づいて自動的に選出されたクエリです。スコアは時間減衰を考慮した重み付けスコアです。
+        </p>
+        {filteredAutoQueries.length === 0 ? (
+          <p className="py-8 text-center text-gray-500">
+            {searchQuery
+              ? '検索結果がありません。'
+              : '自動選出されたオススメクエリがありません。'}
+          </p>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border border-774-blue-300">
+            <table className="w-full">
+              <thead className="bg-774-blue-50">
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold">クエリ</th>
+                  <th className="w-32 px-4 py-3 text-right font-semibold">
+                    スコア
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-774-blue-200 bg-white">
+                {filteredAutoQueries.map(({ query, score }) => (
+                  <tr className="hover:bg-774-blue-50" key={query}>
+                    <td className="px-4 py-3">{query}</td>
+                    <td className="px-4 py-3 text-right font-mono text-gray-600 text-sm">
+                      {score.toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
