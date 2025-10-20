@@ -148,13 +148,14 @@ export default function ClickAnalyticsClient({
         />
       </div>
 
-      {loading && (
-        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4 text-center text-blue-700">
-          読み込み中...
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {loading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/80 backdrop-blur-sm">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 px-6 py-3 text-blue-700 shadow-lg">
+              読み込み中...
+            </div>
+          </div>
+        )}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
           <h2 className="mb-4 font-semibold text-xl">クリックボリューム</h2>
           <div className="mb-4 rounded-lg bg-green-50 p-4">

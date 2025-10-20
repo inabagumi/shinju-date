@@ -7,7 +7,6 @@ import type { DateRange } from '../../_components/date-range-picker'
 import DateRangePicker from '../../_components/date-range-picker'
 import { exportToCSV } from '../../_lib/export-csv'
 import SearchVolumeChart from '../_components/search-volume-chart'
-import type { KeywordForDate } from '../_lib/get-popular-keywords-for-date'
 import type { DailySearchVolume } from '../_lib/get-search-volume'
 
 type PopularKeyword = {
@@ -24,10 +23,6 @@ type SearchAnalyticsClientProps = {
     endDate: string,
   ) => Promise<DailySearchVolume[]>
   fetchPopularKeywords: (limit: number) => Promise<PopularKeyword[]>
-  fetchPopularKeywordsForDate: (
-    date: string,
-    limit: number,
-  ) => Promise<KeywordForDate[]>
   fetchZeroResultKeywords: () => Promise<string[]>
 }
 
@@ -37,7 +32,6 @@ export default function SearchAnalyticsClient({
   initialZeroResultKeywords,
   fetchSearchVolume,
   fetchPopularKeywords,
-  fetchPopularKeywordsForDate,
   fetchZeroResultKeywords,
 }: SearchAnalyticsClientProps) {
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
@@ -51,9 +45,8 @@ export default function SearchAnalyticsClient({
   const [previousSearchVolume, setPreviousSearchVolume] = useState<
     DailySearchVolume[]
   >([])
-  const [popularKeywords, setPopularKeywords] = useState<
-    PopularKeyword[] | KeywordForDate[]
-  >(initialPopularKeywords)
+  const [popularKeywords, setPopularKeywords] =
+    useState<PopularKeyword[]>(initialPopularKeywords)
   const [zeroResultKeywords, setZeroResultKeywords] = useState<string[]>(
     initialZeroResultKeywords,
   )
@@ -115,17 +108,11 @@ export default function SearchAnalyticsClient({
     fetchZeroResultKeywords,
   ])
 
+  // Note: Search keywords are not tracked by date in Redis, so drill-down is not available
+  // We keep the chart interactive but don't filter keywords by date
   const handleDateClick = async (date: string) => {
     setSelectedDate(date)
-    setLoading(true)
-    try {
-      const dateKeywords = await fetchPopularKeywordsForDate(date, 20)
-      setPopularKeywords(dateKeywords)
-    } catch (error) {
-      console.error('Failed to fetch keywords for date:', error)
-    } finally {
-      setLoading(false)
-    }
+    // Keywords are tracked globally, not by date, so we don't refetch
   }
 
   const handleExportKeywords = () => {
@@ -159,13 +146,14 @@ export default function SearchAnalyticsClient({
         />
       </div>
 
-      {loading && (
-        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4 text-center text-blue-700">
-          読み込み中...
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {loading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/80 backdrop-blur-sm">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 px-6 py-3 text-blue-700 shadow-lg">
+              読み込み中...
+            </div>
+          </div>
+        )}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
           <h2 className="mb-4 font-semibold text-xl">検索ボリューム</h2>
           <div className="mb-4 rounded-lg bg-blue-50 p-4">
@@ -193,6 +181,7 @@ export default function SearchAnalyticsClient({
           {selectedDate && (
             <p className="mt-2 text-center text-gray-600 text-sm">
               選択された日付: {selectedDate}
+              （キーワードは全期間の集計データです）
             </p>
           )}
         </div>
@@ -229,11 +218,7 @@ export default function SearchAnalyticsClient({
 
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-semibold text-xl">
-              {selectedDate
-                ? `人気キーワードランキング (${selectedDate})`
-                : '人気キーワードランキング'}
-            </h2>
+            <h2 className="font-semibold text-xl">人気キーワードランキング</h2>
             <button
               className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm transition-colors hover:bg-gray-50"
               onClick={handleExportKeywords}

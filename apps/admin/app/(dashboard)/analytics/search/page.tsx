@@ -2,7 +2,6 @@ import { TIME_ZONE } from '@shinju-date/constants'
 import { Temporal } from 'temporal-polyfill'
 import SearchAnalyticsClient from './_components/search-analytics-client'
 import { getPopularKeywords } from './_lib/get-popular-keywords'
-import { getPopularKeywordsForDate } from './_lib/get-popular-keywords-for-date'
 import { getSearchVolume } from './_lib/get-search-volume'
 import { getZeroResultKeywords } from './_lib/get-zero-result-keywords'
 
@@ -29,11 +28,6 @@ export default async function SearchAnalyticsPage() {
     return getPopularKeywords(limit)
   }
 
-  const fetchPopularKeywordsForDate = async (date: string, limit: number) => {
-    'use server'
-    return getPopularKeywordsForDate(date, limit)
-  }
-
   const fetchZeroResultKeywords = async () => {
     'use server'
     return getZeroResultKeywords()
@@ -42,7 +36,6 @@ export default async function SearchAnalyticsPage() {
   return (
     <SearchAnalyticsClient
       fetchPopularKeywords={fetchPopularKeywords}
-      fetchPopularKeywordsForDate={fetchPopularKeywordsForDate}
       fetchSearchVolume={fetchSearchVolume}
       fetchZeroResultKeywords={fetchZeroResultKeywords}
       initialPopularKeywords={popularKeywords}

@@ -49,7 +49,7 @@ export async function getPopularVideos(
       start = end.subtract({ days: days - 1 })
     }
 
-    const cacheKey = `${REDIS_KEYS.POPULAR_VIDEOS_PREFIX}${start}_${end}`
+    const cacheKey = `${REDIS_KEYS.POPULAR_VIDEOS_PREFIX}${start.toString().replace(/-/g, '')}/${end.toString().replace(/-/g, '')}`
 
     const cachedResults = await redisClient.zrange<number[]>(
       cacheKey,
