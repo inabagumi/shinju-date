@@ -4,9 +4,14 @@ import { logger } from '../index.js'
 
 // Mock Sentry module
 vi.mock('@sentry/nextjs', () => ({
-  addBreadcrumb: vi.fn(),
   captureException: vi.fn(),
   captureMessage: vi.fn(),
+  logger: {
+    debug: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+  },
 }))
 
 describe('logger', () => {
@@ -15,76 +20,59 @@ describe('logger', () => {
   })
 
   describe('debug', () => {
-    it('should add debug breadcrumb without attributes', () => {
+    it('should call Sentry.logger.debug without attributes', () => {
       logger.debug('デバッグメッセージ')
 
-      expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
-        level: 'debug',
-        message: 'デバッグメッセージ',
-      })
+      expect(Sentry.logger.debug).toHaveBeenCalledWith('デバッグメッセージ')
     })
 
-    it('should add debug breadcrumb with attributes', () => {
+    it('should call Sentry.logger.debug with attributes', () => {
       logger.debug('デバッグメッセージ', { action: 'test', userId: 123 })
 
-      expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
-        data: { action: 'test', userId: 123 },
-        level: 'debug',
-        message: 'デバッグメッセージ',
+      expect(Sentry.logger.debug).toHaveBeenCalledWith('デバッグメッセージ', {
+        action: 'test',
+        userId: 123,
       })
     })
   })
 
   describe('info', () => {
-    it('should add info breadcrumb without attributes', () => {
+    it('should call Sentry.logger.info without attributes', () => {
       logger.info('情報メッセージ')
 
-      expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
-        level: 'info',
-        message: '情報メッセージ',
-      })
+      expect(Sentry.logger.info).toHaveBeenCalledWith('情報メッセージ')
     })
 
-    it('should add info breadcrumb with attributes', () => {
+    it('should call Sentry.logger.info with attributes', () => {
       logger.info('情報メッセージ', { videoId: 'abc123' })
 
-      expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
-        data: { videoId: 'abc123' },
-        level: 'info',
-        message: '情報メッセージ',
+      expect(Sentry.logger.info).toHaveBeenCalledWith('情報メッセージ', {
+        videoId: 'abc123',
       })
     })
   })
 
   describe('warn', () => {
-    it('should add warning breadcrumb without attributes', () => {
+    it('should call Sentry.logger.warn without attributes', () => {
       logger.warn('警告メッセージ')
 
-      expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
-        level: 'warning',
-        message: '警告メッセージ',
-      })
+      expect(Sentry.logger.warn).toHaveBeenCalledWith('警告メッセージ')
     })
 
-    it('should add warning breadcrumb with attributes', () => {
+    it('should call Sentry.logger.warn with attributes', () => {
       logger.warn('警告メッセージ', { retryCount: 3 })
 
-      expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
-        data: { retryCount: 3 },
-        level: 'warning',
-        message: '警告メッセージ',
+      expect(Sentry.logger.warn).toHaveBeenCalledWith('警告メッセージ', {
+        retryCount: 3,
       })
     })
   })
 
   describe('error', () => {
-    it('should add error breadcrumb and capture message when no error object', () => {
+    it('should log and capture message when no error object', () => {
       logger.error('エラーメッセージ')
 
-      expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
-        level: 'error',
-        message: 'エラーメッセージ',
-      })
+      expect(Sentry.logger.error).toHaveBeenCalledWith('エラーメッセージ')
       expect(Sentry.captureMessage).toHaveBeenCalledWith('エラーメッセージ', {
         contexts: {
           custom: undefined,
@@ -93,14 +81,12 @@ describe('logger', () => {
       })
     })
 
-    it('should add error breadcrumb and capture exception when Error object', () => {
+    it('should log and capture exception when Error object', () => {
       const error = new Error('Test error')
       logger.error('エラーメッセージ', error, { operation: 'fetch' })
 
-      expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
-        data: { operation: 'fetch' },
-        level: 'error',
-        message: 'エラーメッセージ',
+      expect(Sentry.logger.error).toHaveBeenCalledWith('エラーメッセージ', {
+        operation: 'fetch',
       })
       expect(Sentry.captureException).toHaveBeenCalledWith(error, {
         contexts: {
@@ -113,10 +99,9 @@ describe('logger', () => {
       const error = { message: 'Custom error' }
       logger.error('エラーメッセージ', error, { source: 'api' })
 
-      expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
-        data: { source: 'api' },
-        level: 'error',
-        message: 'エラーメッセージ',
+      expect(Sentry.logger.error).toHaveBeenCalledWith('エラーメッセージ', {
+        error: { message: 'Custom error' },
+        source: 'api',
       })
       expect(Sentry.captureMessage).toHaveBeenCalledWith('エラーメッセージ', {
         contexts: {
@@ -129,10 +114,8 @@ describe('logger', () => {
     it('should work with attributes but no error', () => {
       logger.error('エラーメッセージ', undefined, { requestId: 'req-123' })
 
-      expect(Sentry.addBreadcrumb).toHaveBeenCalledWith({
-        data: { requestId: 'req-123' },
-        level: 'error',
-        message: 'エラーメッセージ',
+      expect(Sentry.logger.error).toHaveBeenCalledWith('エラーメッセージ', {
+        requestId: 'req-123',
       })
       expect(Sentry.captureMessage).toHaveBeenCalledWith('エラーメッセージ', {
         contexts: {

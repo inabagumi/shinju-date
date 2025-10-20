@@ -17,11 +17,11 @@ export const logger = {
    * @param attributes - ログの属性オブジェクト（キーと値は英単語または数値）
    */
   debug: (message: string, attributes?: LogAttributes): void => {
-    Sentry.addBreadcrumb({
-      level: 'debug',
-      message,
-      ...(attributes && { data: attributes }),
-    })
+    if (attributes) {
+      Sentry.logger.debug(message, attributes)
+    } else {
+      Sentry.logger.debug(message)
+    }
   },
 
   /**
@@ -35,26 +35,36 @@ export const logger = {
     error?: Error | unknown,
     attributes?: LogAttributes,
   ): void => {
-    Sentry.addBreadcrumb({
-      level: 'error',
-      message,
-      ...(attributes && { data: attributes }),
-    })
-
     if (error instanceof Error) {
+      // Log error with attributes using Sentry.logger
+      if (attributes) {
+        Sentry.logger.error(message, attributes)
+      } else {
+        Sentry.logger.error(message)
+      }
+      // Also capture the exception for notification
       Sentry.captureException(error, {
         contexts: {
           custom: attributes,
         },
       })
     } else if (error) {
+      // Log with error object in attributes
+      const errorAttributes = { ...attributes, error }
+      Sentry.logger.error(message, errorAttributes)
       Sentry.captureMessage(message, {
         contexts: {
-          custom: { ...attributes, error },
+          custom: errorAttributes,
         },
         level: 'error',
       })
     } else {
+      // Log without error object
+      if (attributes) {
+        Sentry.logger.error(message, attributes)
+      } else {
+        Sentry.logger.error(message)
+      }
       Sentry.captureMessage(message, {
         contexts: {
           custom: attributes,
@@ -70,11 +80,11 @@ export const logger = {
    * @param attributes - ログの属性オブジェクト（キーと値は英単語または数値）
    */
   info: (message: string, attributes?: LogAttributes): void => {
-    Sentry.addBreadcrumb({
-      level: 'info',
-      message,
-      ...(attributes && { data: attributes }),
-    })
+    if (attributes) {
+      Sentry.logger.info(message, attributes)
+    } else {
+      Sentry.logger.info(message)
+    }
   },
 
   /**
@@ -83,10 +93,10 @@ export const logger = {
    * @param attributes - ログの属性オブジェクト（キーと値は英単語または数値）
    */
   warn: (message: string, attributes?: LogAttributes): void => {
-    Sentry.addBreadcrumb({
-      level: 'warning',
-      message,
-      ...(attributes && { data: attributes }),
-    })
+    if (attributes) {
+      Sentry.logger.warn(message, attributes)
+    } else {
+      Sentry.logger.warn(message)
+    }
   },
 }
