@@ -72,6 +72,6 @@
   }
 }
 
-.recharts-wrapper:focus:not(:focus-visible) {
+.recharts-surface:focus:not(:focus-visible) {
   outline: none;
 }
