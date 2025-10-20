@@ -1,6 +1,7 @@
 'use server'
 
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import { logger } from '@shinju-date/logger'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
@@ -49,7 +50,10 @@ export async function getPopularKeywords(
 
     return keywords
   } catch (error) {
-    console.error('Failed to fetch popular keywords from Redis:', error)
+    logger.error('Redisから人気キーワードの取得に失敗しました', error, {
+      date,
+      limit,
+    })
     return []
   }
 }

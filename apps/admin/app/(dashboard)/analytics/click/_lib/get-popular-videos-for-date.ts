@@ -2,6 +2,7 @@
 
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { isNonNullable } from '@shinju-date/helpers'
+import { logger } from '@shinju-date/logger'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { cookies } from 'next/headers'
 import { Temporal } from 'temporal-polyfill'
@@ -67,7 +68,9 @@ export async function getPopularVideosForDate(
       .in('id', videoIds)
 
     if (error) {
-      console.error('Failed to fetch video details:', error)
+      logger.error('動画の詳細取得に失敗しました', error, {
+        videoIds: videoIds.join(','),
+      })
       return []
     }
 
@@ -87,7 +90,10 @@ export async function getPopularVideosForDate(
       })
       .filter(isNonNullable)
   } catch (error) {
-    console.error('Failed to fetch popular videos for date:', error)
+    logger.error('日付別の人気動画取得に失敗しました', error, {
+      date,
+      limit,
+    })
     return []
   }
 }

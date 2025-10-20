@@ -1,6 +1,7 @@
 'use server'
 
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import { logger } from '@shinju-date/logger'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
@@ -72,7 +73,11 @@ export async function getClickVolume(
 
     return volumes
   } catch (error) {
-    console.error('Failed to fetch click volume from Redis:', error)
+    logger.error('Redisからクリックボリュームの取得に失敗しました', error, {
+      days,
+      endDate: endDate ?? 'undefined',
+      startDate: startDate ?? 'undefined',
+    })
     return []
   }
 }

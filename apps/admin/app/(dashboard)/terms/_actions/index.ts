@@ -1,5 +1,6 @@
 'use server'
 
+import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 import type { FormState } from '@/components/form'
@@ -53,7 +54,7 @@ export async function createTermAction(
     revalidatePath('/terms')
     return {}
   } catch (error) {
-    console.error('Create term error:', error)
+    logger.error('用語の追加に失敗しました', error, { term: term.trim() })
     return {
       errors: {
         generic: [
@@ -125,7 +126,7 @@ export async function updateTermAction(
     revalidatePath('/terms')
     return {}
   } catch (error) {
-    console.error('Update term error:', error)
+    logger.error('用語の更新に失敗しました', error, { id, term: term.trim() })
     return {
       errors: {
         generic: [
@@ -159,7 +160,7 @@ export async function deleteTermAction(id: number): Promise<{
     revalidatePath('/terms')
     return { success: true }
   } catch (error) {
-    console.error('Delete term error:', error)
+    logger.error('用語の削除に失敗しました', error, { id })
     return {
       error:
         error instanceof Error ? error.message : '用語の削除に失敗しました。',
