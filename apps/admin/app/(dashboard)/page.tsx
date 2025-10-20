@@ -17,7 +17,7 @@ export default async function DashboardPage() {
       <h1 className="mb-6 font-bold text-3xl">ダッシュボード</h1>
 
       {/* Grid layout for widgets */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[repeat(auto-fit,minmax(var(--widget-min-width),1fr))]">
         {/* Summary Widget */}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="mb-4 font-semibold text-xl">サマリー</h2>
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Popular Videos Widget - Full width */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-full">
           <h2 className="mb-4 font-semibold text-xl">人気動画ランキング</h2>
           {popularVideos.length > 0 ? (
             <div className="space-y-3">
