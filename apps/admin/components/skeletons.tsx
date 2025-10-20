@@ -43,6 +43,52 @@ export function WidgetSkeleton() {
   )
 }
 
+export function AnalyticsPageSkeleton() {
+  const skeletonItems = Array.from({ length: 5 }, (_, i) => ({
+    id: `skeleton-analytics-${i}-${Math.random().toString(36).substring(2, 9)}`,
+  }))
+
+  return (
+    <div className="animate-pulse p-6">
+      <div className="mb-6 h-8 w-64 rounded bg-gray-200" />
+      <div className="mb-6 flex gap-4">
+        <div className="h-10 w-64 rounded bg-gray-200" />
+        <div className="h-10 w-48 rounded bg-gray-200" />
+      </div>
+      <div className="mb-6 h-64 rounded-lg border border-gray-200 bg-white p-6">
+        <div className="mb-4 h-6 w-32 rounded bg-gray-200" />
+        <div className="h-48 rounded bg-gray-100" />
+      </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded-lg border border-gray-200 bg-white p-6">
+          <div className="mb-4 h-6 w-40 rounded bg-gray-200" />
+          <div className="space-y-3">
+            {skeletonItems.map((item) => (
+              <div className="flex items-center gap-4" key={item.id}>
+                <div className="h-4 w-4 rounded-full bg-gray-200" />
+                <div className="h-4 flex-1 rounded bg-gray-200" />
+                <div className="h-4 w-12 rounded bg-gray-200" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-lg border border-gray-200 bg-white p-6">
+          <div className="mb-4 h-6 w-40 rounded bg-gray-200" />
+          <div className="space-y-3">
+            {skeletonItems.map((item) => (
+              <div className="flex items-center gap-4" key={`${item.id}-2`}>
+                <div className="h-4 w-4 rounded-full bg-gray-200" />
+                <div className="h-4 flex-1 rounded bg-gray-200" />
+                <div className="h-4 w-12 rounded bg-gray-200" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function TableSkeleton({ rows = 5 }: { rows?: number }) {
   const skeletonRows = Array.from({ length: rows }, (_, i) => ({
     id: `skeleton-row-${i}-${Math.random().toString(36).substring(2, 9)}`,
