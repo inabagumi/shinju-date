@@ -49,7 +49,15 @@ export async function getPopularVideos(
       start = end.subtract({ days: days - 1 })
     }
 
-    const cacheKey = `${REDIS_KEYS.POPULAR_VIDEOS_PREFIX}${start.toString().replace(/-/g, '')}/${end.toString().replace(/-/g, '')}`
+    const startZoned = start.toZonedDateTime({
+      plainTime: Temporal.PlainTime.from('00:00:00'),
+      timeZone: TIME_ZONE,
+    })
+    const endZoned = end.toZonedDateTime({
+      plainTime: Temporal.PlainTime.from('00:00:00'),
+      timeZone: TIME_ZONE,
+    })
+    const cacheKey = `${REDIS_KEYS.POPULAR_VIDEOS_PREFIX}${formatDate(startZoned)}/${formatDate(endZoned)}`
 
     const cachedResults = await redisClient.zrange<number[]>(
       cacheKey,
