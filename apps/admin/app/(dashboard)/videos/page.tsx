@@ -69,7 +69,6 @@ export default async function VideosPage({ searchParams }: Props) {
 
       <Suspense fallback={<TableSkeleton rows={perPage} />}>
         <VideoTable
-          channels={channels}
           currentPage={currentPage}
           filters={filters}
           perPage={perPage}

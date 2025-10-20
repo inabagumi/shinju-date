@@ -12,13 +12,6 @@ type Props = {
   filters: VideoFilters
   sortField: VideoSortField
   sortOrder: VideoSortOrder
-  channels: Array<{
-    created_at: string
-    id: number
-    name: string
-    slug: string
-    updated_at: string
-  }>
 }
 
 /**
@@ -31,7 +24,6 @@ export async function VideoTable({
   filters,
   sortField,
   sortOrder,
-  channels,
 }: Props) {
   const { videos } = await getVideos(
     currentPage,
@@ -41,5 +33,5 @@ export async function VideoTable({
     sortOrder,
   )
 
-  return <VideoList channels={channels} videos={videos} />
+  return <VideoList videos={videos} />
 }
