@@ -1,3 +1,5 @@
+export { formatNumber } from './format-number.js'
+
 type CreateErrorResponseOptions = {
   status?: number
 }
