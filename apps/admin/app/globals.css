@@ -71,3 +71,7 @@
     height: 0;
   }
 }
+
+.recharts-wrapper:focus:not(:focus-visible) {
+  outline: none;
+}
