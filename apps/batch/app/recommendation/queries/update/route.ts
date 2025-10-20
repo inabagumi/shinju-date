@@ -181,22 +181,35 @@ export async function POST(request: NextRequest) {
     // Get all terms from the database
     const terms = await getAllTerms()
 
-    // Build a set of all terms and their synonyms (normalized to lowercase)
-    const termSet = new Set<string>()
+    // Build a map from all terms/synonyms (lowercase) to their canonical term
+    const termMap = new Map<string, string>()
     for (const { term, synonyms } of terms) {
-      termSet.add(term.toLowerCase())
-      // Add all synonyms
+      const lowerTerm = term.toLowerCase()
+      // Map the term to itself
+      termMap.set(lowerTerm, term)
+      // Map all synonyms to the main term
       for (const synonym of synonyms) {
-        termSet.add(synonym.toLowerCase())
+        termMap.set(synonym.toLowerCase(), term)
       }
     }
 
-    // Filter queries that match terms or synonyms exactly
-    const matchingQueries = queriesWithScores.filter(({ query }) =>
-      termSet.has(query.toLowerCase()),
-    )
+    // Filter queries that match terms or synonyms, and map to canonical term
+    const matchingQueriesMap = new Map<string, number>()
+    for (const { query, score } of queriesWithScores) {
+      const canonicalTerm = termMap.get(query.toLowerCase())
+      if (canonicalTerm) {
+        // If this canonical term is already in the map, use the higher score
+        const existingScore = matchingQueriesMap.get(canonicalTerm) ?? 0
+        if (score > existingScore) {
+          matchingQueriesMap.set(canonicalTerm, score)
+        }
+      }
+    }
 
-    // Sort by score descending
+    // Convert map to array and sort by score descending
+    const matchingQueries = Array.from(matchingQueriesMap.entries()).map(
+      ([query, score]) => ({ query, score }),
+    )
     matchingQueries.sort((a, b) => b.score - a.score)
 
     // Delete old auto_recommended ZSET and create new one
