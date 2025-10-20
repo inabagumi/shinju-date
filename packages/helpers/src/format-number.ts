@@ -1,4 +1,3 @@
-// このインスタンスは、モジュールがインポートされた時に一度だけ生成されます。
 const numberFormatter = new Intl.NumberFormat('ja-JP')
 
 /**
@@ -7,6 +6,5 @@ const numberFormatter = new Intl.NumberFormat('ja-JP')
  * @returns フォーマット済みの文字列
  */
 export function formatNumber(value: number): string {
-  // 毎回生成するのではなく、既存のインスタンスを使いまわします。
   return numberFormatter.format(value)
 }
