@@ -1,3 +1,4 @@
+import { formatNumber } from '@shinju-date/helpers'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getPopularVideos } from '@/lib/actions/get-popular-videos'
@@ -25,25 +26,25 @@ export default async function DashboardPage() {
             <div className="rounded-lg bg-blue-50 p-4">
               <p className="text-gray-600 text-sm">総動画数</p>
               <p className="font-bold text-2xl text-blue-600">
-                {stats.totalVideos}
+                {formatNumber(stats.totalVideos)}
               </p>
             </div>
             <div className="rounded-lg bg-green-50 p-4">
               <p className="text-gray-600 text-sm">公開中</p>
               <p className="font-bold text-2xl text-green-600">
-                {stats.visibleVideos}
+                {formatNumber(stats.visibleVideos)}
               </p>
             </div>
             <div className="rounded-lg bg-yellow-50 p-4">
               <p className="text-gray-600 text-sm">非表示</p>
               <p className="font-bold text-2xl text-yellow-600">
-                {stats.hiddenVideos}
+                {formatNumber(stats.hiddenVideos)}
               </p>
             </div>
             <div className="rounded-lg bg-purple-50 p-4">
               <p className="text-gray-600 text-sm">総用語数</p>
               <p className="font-bold text-2xl text-purple-600">
-                {stats.totalTerms}
+                {formatNumber(stats.totalTerms)}
               </p>
             </div>
           </div>
@@ -59,7 +60,7 @@ export default async function DashboardPage() {
             >
               <p className="text-gray-600 text-sm">本日の検索数</p>
               <p className="font-bold text-2xl text-blue-600">
-                {analytics.recentSearches}
+                {formatNumber(analytics.recentSearches)}
               </p>
             </Link>
             <Link
@@ -68,7 +69,7 @@ export default async function DashboardPage() {
             >
               <p className="text-gray-600 text-sm">本日のクリック数</p>
               <p className="font-bold text-2xl text-green-600">
-                {analytics.recentClicks}
+                {formatNumber(analytics.recentClicks)}
               </p>
             </Link>
             <Link
@@ -77,7 +78,7 @@ export default async function DashboardPage() {
             >
               <p className="text-gray-600 text-sm">人気キーワード数</p>
               <p className="font-bold text-2xl text-purple-600">
-                {analytics.totalPopularKeywords}
+                {formatNumber(analytics.totalPopularKeywords)}
               </p>
             </Link>
           </div>
@@ -156,7 +157,7 @@ export default async function DashboardPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{video.title}</p>
                     <p className="text-gray-500 text-sm">
-                      クリック数: {video.clicks}
+                      クリック数: {formatNumber(video.clicks)}
                     </p>
                   </div>
                   <div className="flex shrink-0 gap-2">

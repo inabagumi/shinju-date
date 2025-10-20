@@ -1,5 +1,6 @@
 'use client'
 
+import { formatNumber } from '@shinju-date/helpers'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -295,7 +296,7 @@ export default function VideoList({ channels, videos }: Props) {
                       })}
                     </span>
                   </td>
-                  <td className="p-3">{video.clicks}</td>
+                  <td className="p-3">{formatNumber(video.clicks)}</td>
                   <td className="p-3">
                     <span
                       className={twMerge(
