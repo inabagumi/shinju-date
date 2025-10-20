@@ -30,9 +30,6 @@ export async function logSearchQuery(
 
     // Run all Redis operations in parallel for better performance
     const operations: Promise<unknown>[] = [
-      // Increment popular keyword count (legacy)
-      redisClient.zincrby(REDIS_KEYS.SEARCH_POPULAR, 1, normalizedQuery),
-
       // Increment daily search count
       redisClient.zincrby(
         `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`,

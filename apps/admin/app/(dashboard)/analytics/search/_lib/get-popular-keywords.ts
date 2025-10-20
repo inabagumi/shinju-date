@@ -1,7 +1,7 @@
 'use server'
 
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
-import { getMondayOfWeek } from '@shinju-date/temporal-fns'
+import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
 
@@ -11,19 +11,24 @@ export type PopularKeyword = {
 }
 
 /**
- * Get the most popular search keywords from Redis (weekly data)
+ * Get the most popular search keywords from Redis for a specific date (daily data)
  */
 export async function getPopularKeywords(
+  date: string,
   limit = 20,
 ): Promise<PopularKeyword[]> {
   try {
-    const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-    const mondayOfWeek = getMondayOfWeek(now)
-    const weeklyKey = `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}${mondayOfWeek}`
+    const plainDate = Temporal.PlainDate.from(date)
+    const zonedDate = plainDate.toZonedDateTime({
+      plainTime: Temporal.PlainTime.from('00:00:00'),
+      timeZone: TIME_ZONE,
+    })
+    const dateKey = formatDate(zonedDate)
+    const dailyKey = `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${dateKey}`
 
-    // Get top keywords with scores from current week
+    // Get top keywords with scores from the specified date
     const results = await redisClient.zrange<string[]>(
-      weeklyKey,
+      dailyKey,
       0,
       limit - 1,
       {

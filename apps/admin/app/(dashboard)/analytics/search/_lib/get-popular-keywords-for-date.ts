@@ -11,7 +11,7 @@ export type KeywordForDate = {
 }
 
 /**
- * Get popular keywords for a specific date
+ * Get popular keywords for a specific date (daily data)
  */
 export async function getPopularKeywordsForDate(
   date: string,
@@ -24,12 +24,17 @@ export async function getPopularKeywordsForDate(
       timeZone: TIME_ZONE,
     })
     const dateKey = formatDate(zonedDate)
-    const key = `${REDIS_KEYS.SEARCH_POPULAR}:${dateKey}`
+    const dailyKey = `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${dateKey}`
 
-    const results = await redisClient.zrange<string[]>(key, 0, limit - 1, {
-      rev: true,
-      withScores: true,
-    })
+    const results = await redisClient.zrange<string[]>(
+      dailyKey,
+      0,
+      limit - 1,
+      {
+        rev: true,
+        withScores: true,
+      },
+    )
 
     const keywords: KeywordForDate[] = []
     for (let i = 0; i < results.length; i += 2) {

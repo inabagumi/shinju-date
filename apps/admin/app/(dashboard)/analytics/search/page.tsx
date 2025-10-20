@@ -12,7 +12,7 @@ export default async function SearchAnalyticsPage() {
 
   const [popularKeywords, zeroResultKeywords, searchVolume] = await Promise.all(
     [
-      getPopularKeywords(20),
+      getPopularKeywords(endDate, 20),
       getZeroResultKeywords(),
       getSearchVolume(7, startDate, endDate),
     ],
@@ -23,9 +23,9 @@ export default async function SearchAnalyticsPage() {
     return getSearchVolume(7, start, end)
   }
 
-  const fetchPopularKeywords = async (limit: number) => {
+  const fetchPopularKeywords = async (date: string, limit: number) => {
     'use server'
-    return getPopularKeywords(limit)
+    return getPopularKeywords(date, limit)
   }
 
   const fetchZeroResultKeywords = async () => {
