@@ -3,6 +3,7 @@
 import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
+import { createAuditLog } from '@/lib/audit-log'
 import { createSupabaseClient } from '@/lib/supabase'
 
 export async function toggleVisibilityAction(slugs: string[]): Promise<{
@@ -49,6 +50,13 @@ export async function toggleVisibilityAction(slugs: string[]): Promise<{
     if (hasError) {
       return { error: '一部の動画の更新に失敗しました。', success: false }
     }
+
+    // Log audit entries for each video
+    await Promise.all(
+      videos.map((video) =>
+        createAuditLog(supabaseClient, 'VIDEO_VISIBILITY_TOGGLE', video.slug),
+      ),
+    )
 
     revalidatePath('/videos')
     return { success: true }
@@ -170,6 +178,13 @@ export async function softDeleteAction(slugs: string[]): Promise<{
         throw thumbnailError
       }
     }
+
+    // Log audit entries for each video
+    await Promise.all(
+      videos.map((video) =>
+        createAuditLog(supabaseClient, 'VIDEO_DELETE', video.slug),
+      ),
+    )
 
     revalidatePath('/videos')
     return { success: true }

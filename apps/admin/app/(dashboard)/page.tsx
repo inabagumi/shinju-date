@@ -3,15 +3,20 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getPopularVideos } from '@/lib/actions/get-popular-videos'
 import { supabaseClient } from '@/lib/supabase'
+import RecentActivity from './_components/recent-activity'
 import { getAnalyticsSummary } from './_lib/get-analytics-summary'
+import getAuditLogs from './_lib/get-audit-logs'v
+import { getPopularVideos } from './_lib/get-popular-videos'
 import { getSummaryStats } from './_lib/get-summary-stats'
 
 export default async function DashboardPage() {
-  const [stats, popularVideos, analytics] = await Promise.all([
+  const [logs, stats, popularVideos, analytics] = await Promise.all([
+    getAuditLogs(10),
     getSummaryStats(),
     getPopularVideos(10, 30),
     getAnalyticsSummary(),
   ])
+  const logs = await getAuditLogs(10)
 
   return (
     <div className="p-6">
@@ -201,6 +206,8 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
+
+      <RecentActivity logs={logs} />
     </div>
   )
 }

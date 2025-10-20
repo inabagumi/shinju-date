@@ -11,6 +11,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: number
+          target_slug: string | null
+          user_email: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: number
+          target_slug?: string | null
+          user_email: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: number
+          target_slug?: string | null
+          user_email?: string
+        }
+        Relationships: []
+      }
       channels: {
         Row: {
           created_at: string
