@@ -3,7 +3,8 @@ import { getCombinedRecommendationQueries } from './get-combined-queries'
 const CHAMPION_COUNT = 2 // Top 1-2 queries always shown
 const RANDOM_POOL_START = 2 // Start index for random pool (0-based, so 3rd position)
 const RANDOM_POOL_END = 20 // End index for random pool (up to 20th position)
-const TOTAL_DISPLAY_COUNT = 4 // Total queries to display
+
+export const TOTAL_DISPLAY_COUNT = 4 // Total queries to display
 
 /**
  * Get recommendation queries for display with diversity

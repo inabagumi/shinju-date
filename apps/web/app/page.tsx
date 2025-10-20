@@ -6,10 +6,11 @@ import NoResults from '@/components/no-results'
 import Timeline, { TimelineSkeleton } from '@/components/timeline'
 import { description, tagline, title } from '@/lib/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
-import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
+import {
+  getDisplayRecommendationQueries,
+  TOTAL_DISPLAY_COUNT,
+} from '@/lib/recommendations/get-display-queries'
 import hero from './_assets/hero.jpg'
-
-const RECOMMENDATION_QUERIES_COUNT = 4
 
 // export const experimental_ppr = true
 export const revalidate = 600 // 10 minutes
@@ -52,7 +53,7 @@ function RecommendationQueriesSkeleton() {
   return (
     <div className="py-4">
       <ul className="mx-auto grid max-w-6xl grid-cols-2 gap-2 px-2 md:grid-cols-4">
-        {Array(RECOMMENDATION_QUERIES_COUNT)
+        {Array(TOTAL_DISPLAY_COUNT)
           .fill(0)
           .map((_, i) => (
             <li
