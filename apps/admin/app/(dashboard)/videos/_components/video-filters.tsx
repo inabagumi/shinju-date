@@ -76,7 +76,7 @@ export function VideoFilters({ channels }: Props) {
           value={searchInput}
         />
       </div>
-      <div>
+      <div className="w-full">
         <label
           className="mb-1 block font-medium text-gray-700 text-sm"
           htmlFor="channel-filter"
@@ -84,7 +84,7 @@ export function VideoFilters({ channels }: Props) {
           チャンネルで絞り込み
         </label>
         <select
-          className="rounded-md border border-gray-300 px-3 py-2"
+          className="w-full max-w-full rounded-md border border-gray-300 px-3 py-2"
           id="channel-filter"
           onChange={(e) => handleFilterChange('channelId', e.target.value)}
           value={currentChannelId}

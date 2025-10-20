@@ -1,9 +1,9 @@
 'use client'
 
-import { formatNumber } from '@shinju-date/helpers'
+import { formatDuration, formatNumber } from '@shinju-date/helpers'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { twMerge } from 'tailwind-merge'
 import {
@@ -43,7 +43,6 @@ function getStatusText(video: Video): string {
 }
 
 export default function VideoList({ channels, videos }: Props) {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>([])
   const [showConfirmModal, setShowConfirmModal] = useState<{
@@ -197,10 +196,10 @@ export default function VideoList({ channels, videos }: Props) {
                   type="checkbox"
                 />
               </th>
-              <th className="p-3 text-left">サムネイル</th>
-              <th className="p-3 text-left">タイトル</th>
-              <th className="p-3 text-left">チャンネル</th>
-              <th className="p-3 text-left">
+              <th className="whitespace-nowrap p-3 text-left">サムネイル</th>
+              <th className="whitespace-nowrap p-3 text-left">タイトル</th>
+              <th className="whitespace-nowrap p-3 text-left">チャンネル</th>
+              <th className="whitespace-nowrap p-3 text-left">
                 <Link
                   className="flex items-center hover:text-blue-600"
                   href={getSortUrl('published_at')}
@@ -213,7 +212,7 @@ export default function VideoList({ channels, videos }: Props) {
                   />
                 </Link>
               </th>
-              <th className="p-3 text-left">
+              <th className="whitespace-nowrap p-3 text-left">
                 <Link
                   className="flex items-center hover:text-blue-600"
                   href={getSortUrl('updated_at')}
@@ -226,9 +225,10 @@ export default function VideoList({ channels, videos }: Props) {
                   />
                 </Link>
               </th>
-              <th className="p-3 text-left">クリック数</th>
-              <th className="p-3 text-left">ステータス</th>
-              <th className="p-3 text-left">アクション</th>
+              <th className="whitespace-nowrap p-3 text-left">再生時間</th>
+              <th className="whitespace-nowrap p-3 text-left">クリック数</th>
+              <th className="whitespace-nowrap p-3 text-left">ステータス</th>
+              <th className="whitespace-nowrap p-3 text-left">アクション</th>
             </tr>
           </thead>
           <tbody>
@@ -296,6 +296,11 @@ export default function VideoList({ channels, videos }: Props) {
                       })}
                     </span>
                   </td>
+                  <td className="p-3">
+                    <span className="text-gray-600 text-sm">
+                      {formatDuration(video.duration)}
+                    </span>
+                  </td>
                   <td className="p-3">{formatNumber(video.clicks)}</td>
                   <td className="p-3">
                     <span
@@ -326,9 +331,14 @@ export default function VideoList({ channels, videos }: Props) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem
-                          onClick={() => router.push(`/videos/${video.slug}`)}
+                          onClick={() =>
+                            window.open(
+                              `https://www.youtube.com/watch?v=${video.slug}`,
+                              '_blank',
+                            )
+                          }
                         >
-                          編集
+                          YouTubeで見る
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() =>
@@ -352,7 +362,7 @@ export default function VideoList({ channels, videos }: Props) {
               ))
             ) : (
               <tr>
-                <td className="p-8 text-center text-gray-500" colSpan={9}>
+                <td className="p-8 text-center text-gray-500" colSpan={10}>
                   動画がありません。
                 </td>
               </tr>
