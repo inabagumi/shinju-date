@@ -2,11 +2,14 @@ import { Suspense } from 'react'
 import { AsyncInput, InputSkeleton } from './_components/async-input'
 import { SearchModal, SearchModalTitle } from './_components/search-modal'
 import { Suggestions } from './_components/suggestions'
+import { searchAction } from './_lib/actions'
 import { searchParamsSchema } from './_lib/search-params-schema'
 
 export default function SearchModalPage({
   searchParams,
-}: PageProps<'/search'>) {
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const parsedSearchParams = searchParams.then((params) => {
     const { data, error } = searchParamsSchema.safeParse(params)
 
@@ -20,7 +23,10 @@ export default function SearchModalPage({
   return (
     <SearchModal>
       <div className="flex flex-col">
-        <form className="flex items-center border-774-nevy-200 border-b dark:border-zinc-700">
+        <form
+          action={searchAction}
+          className="flex items-center border-774-nevy-200 border-b dark:border-zinc-700"
+        >
           <svg
             aria-hidden="true"
             className="ml-4 size-5 text-774-nevy-400 dark:text-774-nevy-300"

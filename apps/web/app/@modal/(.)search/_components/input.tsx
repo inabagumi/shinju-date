@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import {
   type ChangeEventHandler,
   type ComponentPropsWithRef,
+  type KeyboardEventHandler,
   startTransition,
   useCallback,
   useOptimistic,
@@ -15,6 +16,7 @@ import type { searchParamsSchema } from '../_lib/search-params-schema'
 export function Input({
   className,
   onChange,
+  onKeyDown,
   searchParams,
   ...props
 }: Omit<ComponentPropsWithRef<'input'>, 'placeholder' | 'type' | 'value'> & {
@@ -39,13 +41,34 @@ export function Input({
     [onChange, addOptimisticSearchParams, router],
   )
 
+  const handleKeyDown = useCallback<KeyboardEventHandler<HTMLInputElement>>(
+    (event) => {
+      onKeyDown?.(event)
+
+      // Handle down arrow key to focus first suggestion
+      if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        // Find the first suggestion link and focus it
+        const firstSuggestion = document.querySelector<HTMLAnchorElement>(
+          '[data-suggestion-link]',
+        )
+        if (firstSuggestion) {
+          firstSuggestion.focus()
+        }
+      }
+    },
+    [onKeyDown],
+  )
+
   return (
     <input
       className={twMerge(
         'w-full border-0 bg-transparent px-4 py-4 text-primary outline-none placeholder:text-774-nevy-300 dark:text-774-nevy-50 dark:placeholder:text-774-nevy-400',
         className,
       )}
+      name="q"
       onChange={handleChange}
+      onKeyDown={handleKeyDown}
       placeholder="動画を検索..."
       type="text"
       value={optimisticSearchParams?.q ?? ''}

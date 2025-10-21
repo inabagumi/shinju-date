@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 
 export function SearchButton() {
   const router = useRouter()
+  const [isMounted, setIsMounted] = useState(false)
   const [isMac, setIsMac] = useState(false)
 
   useEffect(() => {
@@ -13,6 +14,7 @@ export function SearchButton() {
       typeof window !== 'undefined' &&
         navigator.userAgent.toUpperCase().includes('MAC'),
     )
+    setIsMounted(true)
   }, [])
 
   useEffect(() => {
@@ -45,9 +47,11 @@ export function SearchButton() {
         <path d="m21 21-4.35-4.35" />
       </svg>
       <span className="flex-1">検索</span>
-      <kbd className="hidden rounded border border-774-nevy-200 bg-primary-foreground px-2 py-0.5 font-mono text-774-nevy-500 text-xs sm:inline-block dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-300">
-        {isMac ? '⌘' : 'Ctrl'}K
-      </kbd>
+      {isMounted && (
+        <kbd className="hidden rounded border border-774-nevy-200 bg-primary-foreground px-2 py-0.5 font-mono text-774-nevy-500 text-xs sm:inline-block dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-300">
+          {isMac ? '⌘' : 'Ctrl'}K
+        </kbd>
+      )}
     </Link>
   )
 }

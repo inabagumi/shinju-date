@@ -37,6 +37,7 @@ export async function Suggestions({
             {suggestions.map((suggestion: { term: string }) => (
               <SearchModalLink
                 className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left hover:bg-774-nevy-100 dark:hover:bg-zinc-800"
+                data-suggestion-link
                 href={`/videos/${encodeURIComponent(suggestion.term)}`}
                 key={suggestion.term}
               >
