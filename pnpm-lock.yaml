@@ -64,10 +64,10 @@ importers:
         version: link:../../packages/temporal-fns
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
-        version: 0.3.0(@supabase/supabase-js@2.76.0)
+        version: 0.3.0(@supabase/supabase-js@2.76.1)
       '@supabase/supabase-js':
-        specifier: 2.76.0
-        version: 2.76.0
+        specifier: 2.76.1
+        version: 2.76.1
       '@upstash/redis':
         specifier: 1.35.6
         version: 1.35.6
@@ -158,10 +158,10 @@ importers:
         version: link:../../packages/youtube-scraper
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
-        version: 0.3.0(@supabase/supabase-js@2.76.0)
+        version: 0.3.0(@supabase/supabase-js@2.76.1)
       '@supabase/supabase-js':
-        specifier: 2.76.0
-        version: 2.76.0
+        specifier: 2.76.1
+        version: 2.76.1
       '@upstash/ratelimit':
         specifier: 2.0.6
         version: 2.0.6(@upstash/redis@1.35.6)
@@ -249,10 +249,10 @@ importers:
         version: link:../../packages/temporal-fns
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
-        version: 0.3.0(@supabase/supabase-js@2.76.0)
+        version: 0.3.0(@supabase/supabase-js@2.76.1)
       '@supabase/supabase-js':
-        specifier: 2.76.0
-        version: 2.76.0
+        specifier: 2.76.1
+        version: 2.76.1
       '@upstash/redis':
         specifier: 1.35.6
         version: 1.35.6
@@ -1783,32 +1783,32 @@ packages:
   '@standard-schema/utils@0.3.0':
     resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
 
-  '@supabase/auth-js@2.76.0':
-    resolution: {integrity: sha512-3dXiy0e6h/I7PmtoHDd78LnaZaJGGGi175siUiZRUAZNm7anfmxuLBUFZH+AkRZXOj63/cmmMb2Y/eUvwLjL2A==}
+  '@supabase/auth-js@2.76.1':
+    resolution: {integrity: sha512-bxmcgPuyjTUBg7+jAohJ15TDh3ph4hXcv7QkRsQgnIpszurD5LYaJPzX638ETQ8zDL4fvHZRHfGrcmHV8C91jA==}
 
-  '@supabase/functions-js@2.76.0':
-    resolution: {integrity: sha512-KQiC0crFWcS9zKXd+wPue6o/Q1xjGCodI9/cZTRIlVMUB/5YhAOg9HWK5fLt0NRTBSkLhXgz/vjl0KRxg0GoQA==}
+  '@supabase/functions-js@2.76.1':
+    resolution: {integrity: sha512-+zJym/GC1sofm5QYKGxHSszCpMW4Ao2dj/WC3YlffAGuIlIhUtWTJvKsv5q7sWaSKUKdDhGpWhZ2OD++fW5BtQ==}
 
   '@supabase/node-fetch@2.6.15':
     resolution: {integrity: sha512-1ibVeYUacxWYi9i0cf5efil6adJ9WRyZBLivgjs+AUpewx1F3xPi7gLgaASI2SmIQxPoCEjAsLAzKPgMJVgOUQ==}
     engines: {node: 4.x || >=6.0.0}
 
-  '@supabase/postgrest-js@2.76.0':
-    resolution: {integrity: sha512-Ty+AB73Cmcjn0sQcyoy+IEOHe0n8PbzXq3Ezyq5ijjU0++BqqzWFRO8zsGkb47KCUL0M5VWaCZxs0/wlhehMvw==}
+  '@supabase/postgrest-js@2.76.1':
+    resolution: {integrity: sha512-QJ1Cwim6L9gzWKP8U4Lgw9x/4lMWkZSVMDRYFCH+vVGitVbtfU885swTiioOjjUe4EYGZm+Xktg90twzSVv6IA==}
 
-  '@supabase/realtime-js@2.76.0':
-    resolution: {integrity: sha512-1C4RXOS7v1Go8GIJGtfwUwJDG7RxzlU1WdgeqRBX8u+2vnl0qQ+2HQl21mHvbKPLrKGxP/1iwYhj8kwFuExX3g==}
+  '@supabase/realtime-js@2.76.1':
+    resolution: {integrity: sha512-B5Lfmprea2fx2FS7obp4uAWiRUlEa6j9J3+BvvETGp/2LdkSRBaLEJCBylfcZTXk67ajNPX6ppvKvAZsckqXYg==}
 
   '@supabase/sentry-js-integration@0.3.0':
     resolution: {integrity: sha512-L6tr+M9OlYu3Ge3G33Cf5BptYYs30feJmD3zovCSRQezJOdtkbA361WVNyzCpSoIbUo4rcDVY/apklAhBewFBw==}
     peerDependencies:
       '@supabase/supabase-js': 2.x
 
-  '@supabase/storage-js@2.76.0':
-    resolution: {integrity: sha512-v011IlS2eZz4Xkutkw8x8Lm9lGjV8tK1vqQeoVkX5hrXYJE/jTg2++Xt/ENG5jp8MErDY/P5JcWAOlAsuumnvQ==}
+  '@supabase/storage-js@2.76.1':
+    resolution: {integrity: sha512-OJiNT8tocI9tcTjTjv1SBVLabzgEnS1NorZuqivkiJ0gTYmeg2c2PFmqCARhoQ4whF6zR9MVsX/Mtj2oSv4i/w==}
 
-  '@supabase/supabase-js@2.76.0':
-    resolution: {integrity: sha512-fPqdcelzZj2eA4M3ybqt8JsFnzKXjWRH7rXr45gVaMAtMkfsaQpq1itDWFHeVJSgHXudQo3Yi4QQ9U/nvTs7PA==}
+  '@supabase/supabase-js@2.76.1':
+    resolution: {integrity: sha512-dYMh9EsTVXZ6WbQ0QmMGIhbXct5+x636tXXaaxUmwjj3kY1jyBTQU8QehxAIfjyRu1mWGV07hoYmTYakkxdSGQ==}
 
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
@@ -5463,48 +5463,53 @@ snapshots:
 
   '@standard-schema/utils@0.3.0': {}
 
-  '@supabase/auth-js@2.76.0':
+  '@supabase/auth-js@2.76.1':
     dependencies:
       '@supabase/node-fetch': 2.6.15
+      tslib: 2.8.1
 
-  '@supabase/functions-js@2.76.0':
+  '@supabase/functions-js@2.76.1':
     dependencies:
       '@supabase/node-fetch': 2.6.15
+      tslib: 2.8.1
 
   '@supabase/node-fetch@2.6.15':
     dependencies:
       whatwg-url: 5.0.0
 
-  '@supabase/postgrest-js@2.76.0':
+  '@supabase/postgrest-js@2.76.1':
     dependencies:
       '@supabase/node-fetch': 2.6.15
+      tslib: 2.8.1
 
-  '@supabase/realtime-js@2.76.0':
+  '@supabase/realtime-js@2.76.1':
     dependencies:
       '@supabase/node-fetch': 2.6.15
       '@types/phoenix': 1.6.6
       '@types/ws': 8.18.1
+      tslib: 2.8.1
       ws: 8.18.3
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@supabase/sentry-js-integration@0.3.0(@supabase/supabase-js@2.76.0)':
+  '@supabase/sentry-js-integration@0.3.0(@supabase/supabase-js@2.76.1)':
     dependencies:
-      '@supabase/supabase-js': 2.76.0
+      '@supabase/supabase-js': 2.76.1
 
-  '@supabase/storage-js@2.76.0':
+  '@supabase/storage-js@2.76.1':
     dependencies:
       '@supabase/node-fetch': 2.6.15
+      tslib: 2.8.1
 
-  '@supabase/supabase-js@2.76.0':
+  '@supabase/supabase-js@2.76.1':
     dependencies:
-      '@supabase/auth-js': 2.76.0
-      '@supabase/functions-js': 2.76.0
+      '@supabase/auth-js': 2.76.1
+      '@supabase/functions-js': 2.76.1
       '@supabase/node-fetch': 2.6.15
-      '@supabase/postgrest-js': 2.76.0
-      '@supabase/realtime-js': 2.76.0
-      '@supabase/storage-js': 2.76.0
+      '@supabase/postgrest-js': 2.76.1
+      '@supabase/realtime-js': 2.76.1
+      '@supabase/storage-js': 2.76.1
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
