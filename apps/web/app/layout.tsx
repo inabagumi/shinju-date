@@ -6,7 +6,6 @@ import type { ReactNode } from 'react'
 import { TimerProvider } from '@/components/timer'
 import { title as siteName, themeColor } from '@/lib/constants'
 import { SearchButton } from './_components/search-button'
-import { SearchModal } from './_components/search-modal'
 import SVGSymbols from './_components/svg-symbols'
 import { lato } from './_lib/fonts'
 
@@ -24,7 +23,13 @@ export const viewport: Viewport = {
   themeColor,
 }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+  modal,
+}: {
+  children: ReactNode
+  modal: ReactNode
+}) {
   return (
     <html className={lato.variable} lang="ja">
       <head prefix="og: http://ogp.me/ns#">
@@ -69,7 +74,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </search>
         </nav>
 
-        <SearchModal />
+        {modal}
 
         <div className="pb-20 md:pb-40">
           <TimerProvider>{children}</TimerProvider>

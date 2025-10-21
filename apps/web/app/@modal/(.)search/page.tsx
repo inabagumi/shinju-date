@@ -1,7 +1,7 @@
 'use client'
 
 import * as Dialog from '@radix-ui/react-dialog'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   type ChangeEventHandler,
   type FormEventHandler,
@@ -10,25 +10,50 @@ import {
   useRef,
   useState,
 } from 'react'
-import { useSearchModal } from '@/lib/search-modal-store'
-import { useKeyboardShortcut } from '@/lib/use-keyboard-shortcut'
+import useSWR from 'swr'
+import { supabaseClient } from '@/lib/supabase'
 
-export function SearchModal() {
-  const { isOpen, close, open } = useSearchModal()
-  const [query, setQuery] = useState('')
+async function fetchSuggestions(query: string) {
+  if (!query || query.trim().length < 2) {
+    return []
+  }
+
+  const { data, error } = await supabaseClient.rpc('suggestions', {
+    query: query.trim(),
+  })
+
+  if (error) {
+    console.error('Failed to fetch suggestions:', error)
+    return []
+  }
+
+  return data ?? []
+}
+
+export default function SearchModalPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const initialQuery = searchParams.get('q') ?? ''
+  const [query, setQuery] = useState(initialQuery)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const router = useRouter()
 
-  // Keyboard shortcut: Cmd+K or Ctrl+K
-  useKeyboardShortcut('k', open, { ctrl: true, meta: true })
+  // Fetch suggestions with SWR
+  const { data: suggestions = [] } = useSWR(
+    query.trim().length >= 2 ? ['suggestions', query] : null,
+    () => fetchSuggestions(query),
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+    },
+  )
 
   // Focus input when modal opens
   useEffect(() => {
-    if (isOpen && inputRef.current) {
+    if (inputRef.current) {
       inputRef.current.focus()
     }
-  }, [isOpen])
+  }, [])
 
   const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (event) => {
@@ -42,29 +67,26 @@ export function SearchModal() {
       event.preventDefault()
       if (query.trim() && !isSubmitting) {
         setIsSubmitting(true)
-        close()
         router.push(`/videos/${encodeURIComponent(query.trim())}`)
-        // Reset after navigation
-        setTimeout(() => {
-          setQuery('')
-          setIsSubmitting(false)
-        }, 100)
       }
     },
-    [query, close, router, isSubmitting],
+    [query, router, isSubmitting],
   )
 
-  const handleOpenChange = useCallback(
-    (open: boolean) => {
-      if (!open) {
-        close()
-      }
+  const handleClose = useCallback(() => {
+    router.back()
+  }, [router])
+
+  const handleSuggestionClick = useCallback(
+    (suggestion: string) => {
+      setIsSubmitting(true)
+      router.push(`/videos/${encodeURIComponent(suggestion)}`)
     },
-    [close],
+    [router],
   )
 
   return (
-    <Dialog.Root onOpenChange={handleOpenChange} open={isOpen}>
+    <Dialog.Root onOpenChange={handleClose} open>
       <Dialog.Portal>
         <Dialog.Overlay className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50 backdrop-blur-sm data-[state=closed]:animate-out data-[state=open]:animate-in" />
         <Dialog.Content className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[20%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[20%] fixed top-[20%] left-[50%] z-50 w-full max-w-2xl translate-x-[-50%] translate-y-[-20%] rounded-xl border border-774-nevy-200 bg-primary-foreground shadow-2xl data-[state=closed]:animate-out data-[state=open]:animate-in sm:max-w-3xl dark:border-zinc-700 dark:bg-zinc-900">
@@ -101,11 +123,37 @@ export function SearchModal() {
               </div>
             </form>
 
-            {query.trim() ? (
-              <div className="max-h-96 overflow-y-auto p-4">
-                <div className="text-center text-774-nevy-400 text-sm dark:text-774-nevy-400">
-                  Enterキーを押して「{query}」を検索
+            {query.trim().length >= 2 && suggestions.length > 0 ? (
+              <div className="max-h-96 overflow-y-auto">
+                <div className="p-2">
+                  {suggestions.map((suggestion: { term: string }) => (
+                    <button
+                      className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left hover:bg-774-nevy-100 dark:hover:bg-zinc-800"
+                      key={suggestion.term}
+                      onClick={() => handleSuggestionClick(suggestion.term)}
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        className="size-4 text-774-nevy-400 dark:text-774-nevy-300"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        viewBox="0 0 24 24"
+                      >
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                      </svg>
+                      <span className="text-primary dark:text-774-nevy-50">
+                        {suggestion.term}
+                      </span>
+                    </button>
+                  ))}
                 </div>
+              </div>
+            ) : query.trim() ? (
+              <div className="p-4 text-center text-774-nevy-400 text-sm dark:text-774-nevy-400">
+                Enterキーを押して「{query}」を検索
               </div>
             ) : (
               <div className="p-8 text-center text-774-nevy-400 text-sm dark:text-774-nevy-400">
