@@ -5,9 +5,9 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { TimerProvider } from '@/components/timer'
 import { title as siteName, themeColor } from '@/lib/constants'
-import { SearchTextField } from './_components/search-form'
+import { SearchButton } from './_components/search-button'
+import { SearchModal } from './_components/search-modal'
 import SVGSymbols from './_components/svg-symbols'
-import { search } from './_lib/actions'
 import { lato } from './_lib/fonts'
 
 export const metadata: Metadata = {
@@ -65,17 +65,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </div>
 
           <search className="flex items-center">
-            <form action={search} className="contents">
-              <SearchTextField
-                aria-label="検索"
-                className="appearance-none rounded-full border-0 bg-774-nevy-100 bg-[0.6em_center] bg-[size:1.5em] bg-search-icon bg-no-repeat py-1.5 pr-4 pl-[2.25em] text-774-nevy-300 placeholder:text-774-nevy-300 hover:bg-774-nevy-200 hover:text-primary focus:outline-0 focus-visible:bg-774-nevy-200 focus-visible:text-primary focus-visible:placeholder:text-774-nevy-400 dark:bg-search-icon-invert dark:bg-zinc-700 dark:text-774-nevy-100 dark:focus-visible:bg-zinc-600 dark:focus-visible:text-774-nevy-100 dark:hover:bg-zinc-600 dark:hover:text-774-nevy-100 dark:placeholder:text-774-nevy-200 dark:focus-visible:placeholder:text-774-nevy-100"
-                name="query"
-                placeholder="検索"
-                type="search"
-              />
-            </form>
+            <SearchButton />
           </search>
         </nav>
+
+        <SearchModal />
 
         <div className="pb-20 md:pb-40">
           <TimerProvider>{children}</TimerProvider>
