@@ -2,7 +2,6 @@ import './globals.css'
 import { Analytics } from '@vercel/analytics/react'
 import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
-import type { ReactNode } from 'react'
 import { TimerProvider } from '@/components/timer'
 import { title as siteName, themeColor } from '@/lib/constants'
 import { SearchButton } from './_components/search-button'
@@ -23,13 +22,7 @@ export const viewport: Viewport = {
   themeColor,
 }
 
-export default function RootLayout({
-  children,
-  modal,
-}: {
-  children: ReactNode
-  modal: ReactNode
-}) {
+export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
   return (
     <html className={lato.variable} lang="ja">
       <head prefix="og: http://ogp.me/ns#">

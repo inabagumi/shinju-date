@@ -2,14 +2,18 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export function SearchButton() {
   const router = useRouter()
+  const [isMac, setIsMac] = useState(false)
 
-  const isMac =
-    typeof window !== 'undefined' &&
-    navigator.platform.toUpperCase().includes('MAC')
+  useEffect(() => {
+    setIsMac(
+      typeof window !== 'undefined' &&
+        navigator.userAgent.toUpperCase().includes('MAC'),
+    )
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
