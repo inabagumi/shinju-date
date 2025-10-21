@@ -84,3 +84,15 @@ export async function getPopularVideos(
     })
     .filter(isNonNullable)
 }
+
+/**
+ * Get popular videos for a specific date (backward compatibility)
+ * @param date - Date in ISO 8601 format (YYYY-MM-DD)
+ * @param limit - Maximum number of videos to return (default: 20)
+ */
+export async function getPopularVideosForDate(
+  date: string,
+  limit = 20,
+): Promise<PopularVideo[]> {
+  return getPopularVideos(limit, 1, date, undefined)
+}

@@ -6,23 +6,13 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import type { PopularChannel } from '@/lib/analytics/get-popular-channels'
+import type { PopularVideo } from '@/lib/analytics/get-popular-videos'
 import type { DateRange } from '../../_components/date-range-picker'
 import DateRangePicker from '../../_components/date-range-picker'
 import { exportToCSV } from '../../_lib/export-csv'
 import ClickVolumeChart from '../_components/click-volume-chart'
 import type { DailyClickVolume } from '../_lib/get-click-volume'
-import type { PopularVideoForDate } from '../_lib/get-popular-videos-for-date'
 import { PopularChannelsWidget } from './popular-channels-widget'
-
-type PopularVideo = {
-  clicks: number
-  slug: string
-  thumbnail: {
-    path: string
-    blur_data_url: string
-  } | null
-  title: string
-}
 
 type ClickAnalyticsClientProps = {
   initialClickVolume: DailyClickVolume[]

@@ -4,9 +4,11 @@ import {
   getPopularChannels,
   getPopularChannelsForDate,
 } from '@/lib/analytics/get-popular-channels'
-import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
+import {
+  getPopularVideos,
+  getPopularVideosForDate,
+} from '@/lib/analytics/get-popular-videos'
 import { getClickVolume } from '../_lib/get-click-volume'
-import { getPopularVideosForDate } from '../_lib/get-popular-videos-for-date'
 import ClickAnalyticsClient from './click-analytics-client'
 
 /**
