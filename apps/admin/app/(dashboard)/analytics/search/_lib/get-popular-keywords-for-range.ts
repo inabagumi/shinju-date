@@ -48,16 +48,11 @@ export async function getPopularKeywordsForRange(
     const tempUnionKey = `${REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION}:${Date.now()}`
 
     try {
-      // ZUNIONSTORE to aggregate all daily keys
-      // This sums up the scores (search counts) across all days
-      await redisClient.zunionstore(
-        tempUnionKey,
-        dailyKeys.length,
-        ...dailyKeys,
-      )
-
-      // Set expiration for the temporary key (5 minutes)
-      await redisClient.expire(tempUnionKey, 300)
+      // Use Redis pipeline for better performance
+      const pipeline = redisClient.multi()
+      pipeline.zunionstore(tempUnionKey, dailyKeys.length, ...dailyKeys)
+      pipeline.expire(tempUnionKey, 300) // 5 minutes TTL
+      await pipeline.exec()
 
       // Get top keywords with scores from the aggregated result
       const results = await redisClient.zrange<string[]>(
