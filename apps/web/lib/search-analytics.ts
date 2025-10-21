@@ -8,8 +8,8 @@ import { timeZone } from './constants'
 import { redisClient } from './redis'
 
 // TTL settings for time-based search keys
-const DAILY_TTL_SECONDS = 7 * 24 * 60 * 60 // 7 days
-const WEEKLY_TTL_SECONDS = 35 * 24 * 60 * 60 // 35 days
+const DAILY_TTL_SECONDS = 90 * 24 * 60 * 60 // 90 days
+const WEEKLY_TTL_SECONDS = 90 * 24 * 60 * 60 // 90 days
 
 /**
  * Log a search query to Redis for analytics
@@ -70,12 +70,12 @@ export async function logSearchQuery(
     // Set TTL for daily and weekly keys after incrementing
     // We do this separately to avoid blocking the main operations
     const ttlOperations: Promise<unknown>[] = [
-      // Daily key: 7 days TTL
+      // Daily key: 90 days TTL
       redisClient.expire(
         `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`,
         DAILY_TTL_SECONDS,
       ),
-      // Weekly key: 35 days TTL
+      // Weekly key: 90 days TTL
       redisClient.expire(
         `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}${mondayOfWeek}`,
         WEEKLY_TTL_SECONDS,

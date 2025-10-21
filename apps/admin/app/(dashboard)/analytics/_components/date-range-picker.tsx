@@ -16,6 +16,9 @@ type DateRangePickerProps = {
   onComparisonToggle?: (enabled: boolean) => void
 }
 
+// Maximum allowed period in days (90 days data retention policy)
+const MAX_PERIOD_DAYS = 90
+
 export default function DateRangePicker({
   value,
   onChange,
@@ -26,8 +29,10 @@ export default function DateRangePicker({
   const [customStart, setCustomStart] = useState(value.startDate)
   const [customEnd, setCustomEnd] = useState(value.endDate)
   const [comparisonEnabled, setComparisonEnabled] = useState(false)
+  const [validationError, setValidationError] = useState('')
 
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
+  const maxStartDate = today.subtract({ days: MAX_PERIOD_DAYS - 1 }) // Allow up to 90 days ago
 
   const presets = [
     {
@@ -45,26 +50,11 @@ export default function DateRangePicker({
       label: '過去30日間',
     },
     {
-      getValue: () => {
-        const firstDay = today.with({ day: 1 })
-        return {
-          endDate: today.toString(),
-          startDate: firstDay.toString(),
-        }
-      },
-      label: '今月',
-    },
-    {
-      getValue: () => {
-        const lastMonth = today.subtract({ months: 1 })
-        const firstDay = lastMonth.with({ day: 1 })
-        const lastDay = firstDay.add({ months: 1 }).subtract({ days: 1 })
-        return {
-          endDate: lastDay.toString(),
-          startDate: firstDay.toString(),
-        }
-      },
-      label: '先月',
+      getValue: () => ({
+        endDate: today.toString(),
+        startDate: today.subtract({ days: 89 }).toString(),
+      }),
+      label: '過去90日間',
     },
   ]
 
@@ -75,11 +65,52 @@ export default function DateRangePicker({
   }
 
   const handleCustomApply = () => {
+    const startDate = Temporal.PlainDate.from(customStart)
+    const endDate = Temporal.PlainDate.from(customEnd)
+
+    // Validate date range
+    if (startDate.compare(endDate) > 0) {
+      setValidationError('開始日は終了日より前である必要があります')
+      return
+    }
+
+    // Validate maximum period constraint
+    const daysDifference = endDate.since(startDate).days + 1
+    if (daysDifference > MAX_PERIOD_DAYS) {
+      setValidationError(`期間は最大${MAX_PERIOD_DAYS}日間まで選択できます`)
+      return
+    }
+
+    // Validate that start date is not too far in the past
+    if (startDate.compare(maxStartDate) < 0) {
+      setValidationError(
+        `開始日は${maxStartDate.toString()}以降である必要があります`,
+      )
+      return
+    }
+
+    // Validate that end date is not in the future
+    if (endDate.compare(today) > 0) {
+      setValidationError('終了日は今日以降にできません')
+      return
+    }
+
+    setValidationError('')
     onChange({
       endDate: customEnd,
       startDate: customStart,
     })
     setIsCustomMode(false)
+  }
+
+  const handleCustomStartChange = (value: string) => {
+    setCustomStart(value)
+    setValidationError('')
+  }
+
+  const handleCustomEndChange = (value: string) => {
+    setCustomEnd(value)
+    setValidationError('')
   }
 
   const handleComparisonToggle = () => {
@@ -140,7 +171,9 @@ export default function DateRangePicker({
               <input
                 className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                 id="start-date"
-                onChange={(e) => setCustomStart(e.target.value)}
+                max={today.toString()}
+                min={maxStartDate.toString()}
+                onChange={(e) => handleCustomStartChange(e.target.value)}
                 type="date"
                 value={customStart}
               />
@@ -155,16 +188,25 @@ export default function DateRangePicker({
               <input
                 className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
                 id="end-date"
-                onChange={(e) => setCustomEnd(e.target.value)}
+                max={today.toString()}
+                onChange={(e) => handleCustomEndChange(e.target.value)}
                 type="date"
                 value={customEnd}
               />
             </div>
           </div>
+          {validationError && (
+            <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-red-700 text-xs">
+              {validationError}
+            </div>
+          )}
           <div className="flex gap-2">
             <button
               className="flex-1 rounded border border-gray-300 bg-white px-3 py-1.5 text-sm transition-colors hover:bg-gray-50"
-              onClick={() => setIsCustomMode(false)}
+              onClick={() => {
+                setIsCustomMode(false)
+                setValidationError('')
+              }}
               type="button"
             >
               キャンセル
@@ -182,6 +224,8 @@ export default function DateRangePicker({
 
       <div className="mt-3 rounded bg-gray-50 px-3 py-2 text-gray-600 text-xs">
         現在の期間: {value.startDate} 〜 {value.endDate}
+        <br />
+        最大90日間まで選択可能です
       </div>
     </div>
   )

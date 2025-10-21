@@ -4,6 +4,9 @@ import { timeZone } from '@/lib/constants'
 import { redisClient } from '@/lib/redis'
 import type { Video } from './types'
 
+// TTL settings for click analytics keys
+const DAILY_TTL_SECONDS = 90 * 24 * 60 * 60 // 90 days
+
 function format(timestamp: Temporal.ZonedDateTime): string {
   return [
     timestamp.year.toString(10).padStart(4, '0'),
@@ -33,4 +36,21 @@ export default async function increment(
   )
 
   await multi.exec()
+
+  // Set TTL for click analytics keys after incrementing
+  // We do this separately to avoid blocking the main operations
+  const ttlOperations: Promise<unknown>[] = [
+    // Video click key: 90 days TTL
+    redisClient.expire(
+      `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${keySuffix}`,
+      DAILY_TTL_SECONDS,
+    ),
+    // Channel click key: 90 days TTL
+    redisClient.expire(
+      `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}${keySuffix}`,
+      DAILY_TTL_SECONDS,
+    ),
+  ]
+
+  await Promise.all(ttlOperations)
 }
