@@ -2,8 +2,10 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { CardSkeleton } from '@/components/skeletons'
 import { AnalyticsWidget } from './_components/analytics-widget'
-import { PopularVideosWidget } from './_components/popular-videos-widget'
-import { PopularVideosWidgetSkeleton } from './_components/popular-videos-widget-skeleton'
+import {
+  PopularVideosWidget,
+  PopularVideosWidgetSkeleton,
+} from './_components/popular-videos-widget'
 import { SummaryWidget } from './_components/summary-widget'
 
 export default function DashboardPage() {

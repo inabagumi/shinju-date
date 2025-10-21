@@ -3,7 +3,7 @@
  * Used with Suspense boundaries to show loading UI while data is being fetched
  */
 
-import { range } from '@/lib/range'
+import { range } from '@shinju-date/helpers'
 
 export function CardSkeleton() {
   return (
