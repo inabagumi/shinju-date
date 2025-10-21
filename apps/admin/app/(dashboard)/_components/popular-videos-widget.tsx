@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { PopularVideosListSkeleton } from '@/components/skeletons'
 import { getPopularVideos } from '@/lib/actions/get-popular-videos'
-import { supabaseClient } from '@/lib/supabase'
+import { supabaseClient } from '@/lib/supabase-client'
 
 export function PopularVideosWidgetSkeleton() {
   return (

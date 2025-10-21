@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/dropdown-menu'
-import { supabaseClient } from '@/lib/supabase'
+import { supabaseClient } from '@/lib/supabase-client'
 import {
   softDeleteAction,
   softDeleteSingleVideoAction,
