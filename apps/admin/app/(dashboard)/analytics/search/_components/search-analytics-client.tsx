@@ -27,6 +27,11 @@ type SearchAnalyticsClientProps = {
     date: string,
     limit: number,
   ) => Promise<PopularKeyword[]>
+  fetchPopularKeywordsForRange: (
+    startDate: string,
+    endDate: string,
+    limit: number,
+  ) => Promise<PopularKeyword[]>
   fetchZeroResultKeywords: () => Promise<string[]>
 }
 
@@ -36,6 +41,7 @@ export default function SearchAnalyticsClient({
   initialZeroResultKeywords,
   fetchSearchVolume,
   fetchPopularKeywords,
+  fetchPopularKeywordsForRange,
   fetchZeroResultKeywords,
 }: SearchAnalyticsClientProps) {
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
@@ -74,7 +80,12 @@ export default function SearchAnalyticsClient({
       try {
         const [volumeData, keywordsData, zeroData] = await Promise.all([
           fetchSearchVolume(dateRange.startDate, dateRange.endDate),
-          fetchPopularKeywords(dateRange.endDate, 20),
+          // Use range aggregation when no specific date is selected
+          fetchPopularKeywordsForRange(
+            dateRange.startDate,
+            dateRange.endDate,
+            20,
+          ),
           fetchZeroResultKeywords(),
         ])
         setSearchVolume(volumeData)
@@ -112,11 +123,34 @@ export default function SearchAnalyticsClient({
     dateRange,
     comparisonEnabled,
     fetchSearchVolume,
-    fetchPopularKeywords,
+    fetchPopularKeywordsForRange,
     fetchZeroResultKeywords,
   ])
 
   const handleDateClick = async (date: string) => {
+    // If clicking the same date, clear selection and return to range view
+    if (selectedDate === date) {
+      setSelectedDate(null)
+      setLoading(true)
+      try {
+        const keywordsData = await fetchPopularKeywordsForRange(
+          dateRange.startDate,
+          dateRange.endDate,
+          20,
+        )
+        setPopularKeywords(keywordsData)
+      } catch (error) {
+        logger.error('期間別キーワードの取得に失敗しました', error, {
+          endDate: dateRange.endDate,
+          startDate: dateRange.startDate,
+        })
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+
+    // Set new selected date and fetch data for that specific date
     setSelectedDate(date)
     setLoading(true)
     try {
@@ -235,9 +269,13 @@ export default function SearchAnalyticsClient({
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-semibold text-xl">
               人気キーワードランキング
-              {selectedDate && (
+              {selectedDate ? (
                 <span className="ml-2 text-blue-600 text-sm">
                   ({selectedDate})
+                </span>
+              ) : (
+                <span className="ml-2 text-green-600 text-sm">
+                  ({dateRange.startDate}〜{dateRange.endDate})
                 </span>
               )}
             </h2>
@@ -251,8 +289,8 @@ export default function SearchAnalyticsClient({
           </div>
           <p className="mb-4 text-gray-600 text-sm">
             {selectedDate
-              ? `${selectedDate}に検索されたキーワードのランキング。グラフの別の日付をクリックすると、その日のランキングが表示されます。`
-              : '最も検索されているキーワードのランキング。ユーザーの関心を把握できます。グラフの日付をクリックすると、その日のランキングが表示されます。'}
+              ? `${selectedDate}に検索されたキーワードのランキング。同じ日付をもう一度クリックすると期間全体の表示に戻ります。`
+              : `${dateRange.startDate}から${dateRange.endDate}の期間で最も検索されたキーワードのランキング。グラフの日付をクリックすると、その日のランキングが表示されます。`}
           </p>
           {popularKeywords.length > 0 ? (
             <div className="max-h-96 space-y-2 overflow-y-auto">
