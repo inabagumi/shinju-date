@@ -1,10 +1,9 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { range } from '@shinju-date/helpers'
 import { formatDate } from '@shinju-date/temporal-fns'
-import { cookies } from 'next/headers'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
 import { escapeSearchString } from './escape-search'
 
 export type Video = {
@@ -47,10 +46,7 @@ export async function getVideos(
   videos: Video[]
   total: number
 }> {
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   const from = (page - 1) * perPage
   const to = from + perPage - 1

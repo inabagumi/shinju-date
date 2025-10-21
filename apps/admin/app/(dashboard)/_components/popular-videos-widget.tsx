@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { PopularVideosListSkeleton } from '@/components/skeletons'
 import { getPopularVideos } from '@/lib/actions/get-popular-videos'
-import { supabaseClient } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
 
 export function PopularVideosWidgetSkeleton() {
   return (
@@ -20,6 +20,7 @@ export function PopularVideosWidgetSkeleton() {
  */
 export async function PopularVideosWidget() {
   const popularVideos = await getPopularVideos(10, 30)
+  const supabaseClient = await createSupabaseServerClient()
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-full">

@@ -1,11 +1,7 @@
-import { cookies } from 'next/headers'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
 
 export default async function getTerms() {
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   const { data: terms, error } = await supabaseClient
     .from('terms')
