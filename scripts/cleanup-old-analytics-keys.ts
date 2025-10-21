@@ -32,9 +32,10 @@ async function main() {
   let deletedKeys = 0
 
   // Get all Redis keys matching analytics patterns
-  // Note: Weekly keys are not included as they are temporary and don't need TTL
+  // Note: Weekly keys are included again since they now have 35-day TTL
   const keyPatterns = [
     `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}*`,
+    `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}*`,
     `${REDIS_KEYS.CLICK_VIDEO_PREFIX}*`,
     `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}*`,
   ]

@@ -9,6 +9,7 @@ import { redisClient } from './redis'
 
 // TTL settings for time-based search keys
 const DAILY_TTL_SECONDS = 90 * 24 * 60 * 60 // 90 days
+const WEEKLY_TTL_SECONDS = 35 * 24 * 60 * 60 // 35 days
 
 /**
  * Log a search query to Redis for analytics
@@ -55,10 +56,14 @@ export async function logSearchQuery(
     // Track daily search volume
     multi.incr(`${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${today}`)
 
-    // Set TTL for daily keys in the same pipeline
+    // Set TTL for daily and weekly keys in the same pipeline
     multi.expire(
       `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`,
       DAILY_TTL_SECONDS,
+    )
+    multi.expire(
+      `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}${mondayOfWeek}`,
+      WEEKLY_TTL_SECONDS,
     )
 
     await multi.exec()
