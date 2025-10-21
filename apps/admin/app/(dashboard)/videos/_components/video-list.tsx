@@ -23,18 +23,8 @@ import {
 } from '../_actions'
 import type { Video } from '../_lib/get-videos'
 import { SortIcon } from './sort-icon'
-import { VideoFilters } from './video-filters'
-
-type Channel = {
-  created_at: string
-  id: number
-  name: string
-  slug: string
-  updated_at: string
-}
 
 type Props = {
-  channels: Channel[]
   videos: Video[]
 }
 
@@ -44,7 +34,7 @@ function getStatusText(video: Video): string {
   return '非表示'
 }
 
-export default function VideoList({ channels, videos }: Props) {
+export default function VideoList({ videos }: Props) {
   const searchParams = useSearchParams()
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>([])
   const [showConfirmModal, setShowConfirmModal] = useState<{
@@ -154,9 +144,6 @@ export default function VideoList({ channels, videos }: Props) {
 
   return (
     <div>
-      {/* Filters and Sort Controls */}
-      <VideoFilters channels={channels} />
-
       {/* Action bar */}
       {selectedSlugs.length > 0 && (
         <div className="sticky top-0 z-10 mb-4 bg-blue-600 p-4 text-white shadow-lg">

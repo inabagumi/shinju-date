@@ -1,4 +1,5 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
+import { range } from '@shinju-date/helpers'
 import { YouTubeScraper } from '../scraper.js'
 import type {
   YouTubeChannel,
@@ -269,14 +270,11 @@ describe('YouTubeScraper', () => {
     })
 
     it('should batch requests for large video arrays', async () => {
-      const mockVideos: YouTubeVideo[] = Array.from(
-        { length: 100 },
-        (_, i) => ({
-          contentDetails: {},
-          id: `video${i}`,
-          snippet: { publishedAt: '2023-01-01T00:00:00Z' },
-        }),
-      )
+      const mockVideos: YouTubeVideo[] = range(100).map((i) => ({
+        contentDetails: {},
+        id: `video${i}`,
+        snippet: { publishedAt: '2023-01-01T00:00:00Z' },
+      }))
 
       const mockClient = {
         videos: {
@@ -293,7 +291,7 @@ describe('YouTubeScraper', () => {
 
       const scraper = new YouTubeScraper({ youtubeClient: mockClient })
       const videos: YouTubeVideo[] = []
-      const videoIds = Array.from({ length: 100 }, (_, i) => `video${i}`)
+      const videoIds = range(100).map((i) => `video${i}`)
 
       for await (const video of scraper.getVideos({ ids: videoIds })) {
         videos.push(video)
@@ -422,7 +420,7 @@ describe('YouTubeScraper', () => {
     })
 
     it('should batch check large video arrays', async () => {
-      const videoIds = Array.from({ length: 100 }, (_, i) => `video${i}`)
+      const videoIds = range(100).map((i) => `video${i}`)
 
       const mockClient = {
         videos: {

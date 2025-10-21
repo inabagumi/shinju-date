@@ -1,4 +1,5 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import { range } from '@shinju-date/helpers'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { cookies } from 'next/headers'
 import { Temporal } from 'temporal-polyfill'
@@ -107,7 +108,7 @@ export async function getVideos(
 
   // Get last 7 days in JST timezone
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-  const days = Array.from({ length: 7 }, (_, i) => {
+  const days = range(7).map((i) => {
     const date = today.subtract({ days: i })
     return formatDate(date)
   })

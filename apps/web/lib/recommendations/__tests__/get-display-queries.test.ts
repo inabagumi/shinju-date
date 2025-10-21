@@ -1,3 +1,4 @@
+import { range } from '@shinju-date/helpers'
 import { describe, expect, it, vi } from 'vitest'
 import * as getCombinedQueriesModule from '../get-combined-queries'
 import { getDisplayRecommendationQueries } from '../get-display-queries'
@@ -42,7 +43,7 @@ describe('getDisplayRecommendationQueries', () => {
   })
 
   it('should include top 2 champion queries when there are many queries', async () => {
-    const mockQueries = Array.from({ length: 25 }, (_, i) => `query${i + 1}`)
+    const mockQueries = range(1, 26).map((i) => `query${i}`)
     vi.mocked(
       getCombinedQueriesModule.getCombinedRecommendationQueries,
     ).mockResolvedValue(mockQueries)
@@ -56,7 +57,7 @@ describe('getDisplayRecommendationQueries', () => {
   })
 
   it('should select random queries from positions 3-20', async () => {
-    const mockQueries = Array.from({ length: 25 }, (_, i) => `query${i + 1}`)
+    const mockQueries = range(1, 26).map((i) => `query${i}`)
     vi.mocked(
       getCombinedQueriesModule.getCombinedRecommendationQueries,
     ).mockResolvedValue(mockQueries)
@@ -79,14 +80,14 @@ describe('getDisplayRecommendationQueries', () => {
   })
 
   it('should not include queries beyond position 20 in random selection', async () => {
-    const mockQueries = Array.from({ length: 30 }, (_, i) => `query${i + 1}`)
+    const mockQueries = range(1, 31).map((i) => `query${i}`)
     vi.mocked(
       getCombinedQueriesModule.getCombinedRecommendationQueries,
     ).mockResolvedValue(mockQueries)
 
     // Run multiple times to check randomness doesn't pick beyond position 20
     const results = await Promise.all(
-      Array.from({ length: 10 }, () => getDisplayRecommendationQueries()),
+      range(10).map(() => getDisplayRecommendationQueries()),
     )
 
     for (const result of results) {
@@ -103,14 +104,14 @@ describe('getDisplayRecommendationQueries', () => {
   })
 
   it('should provide different results on multiple calls (randomness)', async () => {
-    const mockQueries = Array.from({ length: 25 }, (_, i) => `query${i + 1}`)
+    const mockQueries = range(1, 26).map((i) => `query${i}`)
     vi.mocked(
       getCombinedQueriesModule.getCombinedRecommendationQueries,
     ).mockResolvedValue(mockQueries)
 
     // Get multiple results
     const results = await Promise.all(
-      Array.from({ length: 5 }, () => getDisplayRecommendationQueries()),
+      range(5).map(() => getDisplayRecommendationQueries()),
     )
 
     // Check that champions are always the same
@@ -147,14 +148,14 @@ describe('getDisplayRecommendationQueries', () => {
   })
 
   it('should not contain duplicate queries', async () => {
-    const mockQueries = Array.from({ length: 25 }, (_, i) => `query${i + 1}`)
+    const mockQueries = range(1, 26).map((i) => `query${i}`)
     vi.mocked(
       getCombinedQueriesModule.getCombinedRecommendationQueries,
     ).mockResolvedValue(mockQueries)
 
     // Run multiple times to ensure no duplicates in any result
     const results = await Promise.all(
-      Array.from({ length: 10 }, () => getDisplayRecommendationQueries()),
+      range(10).map(() => getDisplayRecommendationQueries()),
     )
 
     for (const result of results) {
