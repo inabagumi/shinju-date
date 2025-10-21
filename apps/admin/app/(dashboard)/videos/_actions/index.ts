@@ -49,7 +49,8 @@ export async function toggleVisibilityAction(slugs: string[]): Promise<{
     revalidatePath('/videos')
     return { success: true }
   } catch (error) {
-    logger.error('動画の表示切替に失敗しました', error, {
+    logger.error('動画の表示切替に失敗しました', {
+      error,
       slugs: slugs.join(','),
     })
     return {
@@ -97,7 +98,7 @@ export async function toggleSingleVideoVisibilityAction(slug: string): Promise<{
     revalidatePath('/videos')
     return { success: true }
   } catch (error) {
-    logger.error('動画の表示切替に失敗しました', error, { slug })
+    logger.error('動画の表示切替に失敗しました', { error, slug })
     return {
       error:
         error instanceof Error
@@ -164,9 +165,7 @@ export async function softDeleteAction(slugs: string[]): Promise<{
     revalidatePath('/videos')
     return { success: true }
   } catch (error) {
-    logger.error('動画の削除に失敗しました', error, {
-      slugs: slugs.join(','),
-    })
+    logger.error('動画の削除に失敗しました', { error, slugs: slugs.join(',') })
     return {
       error:
         error instanceof Error
@@ -226,7 +225,7 @@ export async function softDeleteSingleVideoAction(slug: string): Promise<{
     revalidatePath('/videos')
     return { success: true }
   } catch (error) {
-    logger.error('動画の削除に失敗しました', error, { slug })
+    logger.error('動画の削除に失敗しました', { error, slug })
     return {
       error:
         error instanceof Error

@@ -109,8 +109,9 @@ export default function SearchAnalyticsClient({
           setPreviousSearchVolume([])
         }
       } catch (error) {
-        logger.error('分析データの取得に失敗しました', error, {
+        logger.error('分析データの取得に失敗しました', {
           endDate: dateRange.endDate,
+          error,
           startDate: dateRange.startDate,
         })
       } finally {
@@ -140,8 +141,9 @@ export default function SearchAnalyticsClient({
         )
         setPopularKeywords(keywordsData)
       } catch (error) {
-        logger.error('期間別キーワードの取得に失敗しました', error, {
+        logger.error('期間別キーワードの取得に失敗しました', {
           endDate: dateRange.endDate,
+          error,
           startDate: dateRange.startDate,
         })
       } finally {
@@ -157,8 +159,9 @@ export default function SearchAnalyticsClient({
       const keywordsData = await fetchPopularKeywords(date, 20)
       setPopularKeywords(keywordsData)
     } catch (error) {
-      logger.error('日別キーワードの取得に失敗しました', error, {
+      logger.error('日別キーワードの取得に失敗しました', {
         date,
+        error,
       })
     } finally {
       setLoading(false)

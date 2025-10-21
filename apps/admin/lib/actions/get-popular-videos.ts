@@ -57,7 +57,9 @@ export async function getPopularVideos(
       plainTime: Temporal.PlainTime.from('00:00:00'),
       timeZone: TIME_ZONE,
     })
-    const cacheKey = `${REDIS_KEYS.POPULAR_VIDEOS_PREFIX}${formatDate(startZoned)}/${formatDate(endZoned)}`
+    const cacheKey = `${REDIS_KEYS.POPULAR_VIDEOS_PREFIX}${formatDate(
+      startZoned,
+    )}/${formatDate(endZoned)}`
 
     const cachedResults = await redisClient.zrange<number[]>(
       cacheKey,
@@ -124,9 +126,10 @@ export async function getPopularVideos(
       }
     }
   } catch (error) {
-    logger.error('Redis通信で人気動画の取得に失敗しました', error, {
+    logger.error('Redis通信で人気動画の取得に失敗しました', {
       days,
       endDate: endDate ?? 'undefined',
+      error,
       limit,
       startDate: startDate ?? 'undefined',
     })
@@ -147,7 +150,8 @@ export async function getPopularVideos(
     .in('id', videoIds)
 
   if (error) {
-    logger.error('動画の詳細取得に失敗しました', error, {
+    logger.error('動画の詳細取得に失敗しました', {
+      error,
       videoIds: videoIds.join(','),
     })
 

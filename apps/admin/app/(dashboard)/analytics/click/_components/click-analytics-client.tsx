@@ -102,8 +102,9 @@ export default function ClickAnalyticsClient({
           setPreviousClickVolume([])
         }
       } catch (error) {
-        logger.error('分析データの取得に失敗しました', error, {
+        logger.error('分析データの取得に失敗しました', {
           endDate: dateRange.endDate,
+          error,
           startDate: dateRange.startDate,
         })
       } finally {
@@ -121,7 +122,7 @@ export default function ClickAnalyticsClient({
       const dateVideos = await fetchPopularVideosForDate(date, 20)
       setPopularVideos(dateVideos)
     } catch (error) {
-      logger.error('日付別動画の取得に失敗しました', error, { date })
+      logger.error('日付別動画の取得に失敗しました', { date, error })
     } finally {
       setLoading(false)
     }

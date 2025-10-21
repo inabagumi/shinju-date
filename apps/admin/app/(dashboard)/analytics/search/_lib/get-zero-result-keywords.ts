@@ -14,7 +14,7 @@ export async function getZeroResultKeywords(): Promise<string[]> {
     )
     return keywords.sort()
   } catch (error) {
-    logger.error('Redisからゼロ結果キーワードの取得に失敗しました', error)
+    logger.error('Redisからゼロ結果キーワードの取得に失敗しました', { error })
     return []
   }
 }

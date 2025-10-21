@@ -73,9 +73,10 @@ export async function getClickVolume(
 
     return volumes
   } catch (error) {
-    logger.error('Redisからクリックボリュームの取得に失敗しました', error, {
+    logger.error('Redisからクリックボリュームの取得に失敗しました', {
       days,
       endDate: endDate ?? 'undefined',
+      error,
       startDate: startDate ?? 'undefined',
     })
     return []

@@ -59,6 +59,6 @@ export async function logSearchQuery(
     await multi.exec()
   } catch (error) {
     // Log error but don't throw - we don't want analytics to break search
-    logger.error('Redisへの検索クエリのログ記録に失敗しました', error)
+    logger.error('Redisへの検索クエリのログ記録に失敗しました', { error })
   }
 }

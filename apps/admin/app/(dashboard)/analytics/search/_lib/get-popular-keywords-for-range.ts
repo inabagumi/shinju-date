@@ -84,14 +84,16 @@ export async function getPopularKeywordsForRange(
     } finally {
       // Clean up the temporary key
       await redisClient.del(tempUnionKey).catch((error) => {
-        logger.warn('一時的なRedisキーの削除に失敗しました', error, {
+        logger.warn('一時的なRedisキーの削除に失敗しました', {
+          error,
           tempUnionKey,
         })
       })
     }
   } catch (error) {
-    logger.error('期間指定での人気キーワード取得に失敗しました', error, {
+    logger.error('期間指定での人気キーワード取得に失敗しました', {
       endDate,
+      error,
       limit,
       startDate,
     })
