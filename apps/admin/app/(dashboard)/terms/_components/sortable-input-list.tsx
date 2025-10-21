@@ -164,12 +164,19 @@ export function SortableInputList({
 
     setItems((items) => {
       const currentIndex = items.findIndex((item) => item.id === id)
+      if (currentIndex === -1) return items // Item not found, return unchanged
+
       const newItems = [...items]
+      const currentItem = newItems[currentIndex]
+      if (!currentItem) return items // Safety check, should never happen
 
       // Set first line to current field
       // We know lines[0] exists because we checked lines.length > 0
       const firstLine = lines[0] as string
-      newItems[currentIndex] = { ...newItems[currentIndex], value: firstLine }
+      newItems[currentIndex] = {
+        id: currentItem.id,
+        value: firstLine,
+      }
 
       // Create new items for remaining lines
       const additionalItems = lines.slice(1).map((line, index) => ({
@@ -222,9 +229,9 @@ export function SortableInputList({
               onChange={handleChange}
               onPaste={handlePaste}
               onRemove={handleRemove}
-              placeholder={placeholder}
               showRemove={items.length > 1}
               value={item.value}
+              {...(placeholder ? { placeholder } : {})}
             />
           ))}
         </SortableContext>
