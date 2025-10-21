@@ -43,7 +43,8 @@ export async function createChannelAction(
     revalidatePath('/channels')
     return {}
   } catch (error) {
-    logger.error('チャンネルの追加に失敗しました', error, {
+    logger.error('チャンネルの追加に失敗しました', {
+      error,
       name: name.trim(),
       slug: slug.trim(),
     })
@@ -110,7 +111,8 @@ export async function updateChannelAction(
     revalidatePath('/channels')
     return {}
   } catch (error) {
-    logger.error('チャンネルの更新に失敗しました', error, {
+    logger.error('チャンネルの更新に失敗しました', {
+      error,
       id,
       name: name.trim(),
       slug: slug.trim(),
@@ -152,7 +154,7 @@ export async function deleteChannelAction(id: number): Promise<{
     revalidatePath('/channels')
     return { success: true }
   } catch (error) {
-    logger.error('チャンネルの削除に失敗しました', error, { id })
+    logger.error('チャンネルの削除に失敗しました', { error, id })
     return {
       error:
         error instanceof Error

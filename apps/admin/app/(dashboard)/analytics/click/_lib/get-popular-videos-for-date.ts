@@ -64,7 +64,8 @@ export async function getPopularVideosForDate(
       .in('id', videoIds)
 
     if (error) {
-      logger.error('動画の詳細取得に失敗しました', error, {
+      logger.error('動画の詳細取得に失敗しました', {
+        error,
         videoIds: videoIds.join(','),
       })
       return []
@@ -86,8 +87,9 @@ export async function getPopularVideosForDate(
       })
       .filter(isNonNullable)
   } catch (error) {
-    logger.error('日付別の人気動画取得に失敗しました', error, {
+    logger.error('日付別の人気動画取得に失敗しました', {
       date,
+      error,
       limit,
     })
     return []

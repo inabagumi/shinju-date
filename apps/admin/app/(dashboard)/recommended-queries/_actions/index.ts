@@ -25,7 +25,7 @@ export async function addQueryAction(query: string): Promise<{
     revalidatePath('/', 'page')
     return { success: true }
   } catch (error) {
-    logger.error('クエリの追加に失敗しました', error, { query: trimmedQuery })
+    logger.error('クエリの追加に失敗しました', { error, query: trimmedQuery })
     return {
       error:
         error instanceof Error ? error.message : 'クエリの追加に失敗しました。',
@@ -52,7 +52,7 @@ export async function deleteQueryAction(query: string): Promise<{
     revalidatePath('/', 'page')
     return { success: true }
   } catch (error) {
-    logger.error('クエリの削除に失敗しました', error, { query })
+    logger.error('クエリの削除に失敗しました', { error, query })
     return {
       error:
         error instanceof Error ? error.message : 'クエリの削除に失敗しました。',

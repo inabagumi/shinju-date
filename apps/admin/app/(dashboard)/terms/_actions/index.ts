@@ -51,7 +51,7 @@ export async function createTermAction(
     revalidatePath('/terms')
     return {}
   } catch (error) {
-    logger.error('用語の追加に失敗しました', error, { term: term.trim() })
+    logger.error('用語の追加に失敗しました', { error, term: term.trim() })
     return {
       errors: {
         generic: [
@@ -121,7 +121,7 @@ export async function updateTermAction(
     revalidatePath('/terms')
     return {}
   } catch (error) {
-    logger.error('用語の更新に失敗しました', error, { id, term: term.trim() })
+    logger.error('用語の更新に失敗しました', { error, id, term: term.trim() })
     return {
       errors: {
         generic: [
@@ -152,7 +152,7 @@ export async function deleteTermAction(id: number): Promise<{
     revalidatePath('/terms')
     return { success: true }
   } catch (error) {
-    logger.error('用語の削除に失敗しました', error, { id })
+    logger.error('用語の削除に失敗しました', { error, id })
     return {
       error:
         error instanceof Error ? error.message : '用語の削除に失敗しました。',

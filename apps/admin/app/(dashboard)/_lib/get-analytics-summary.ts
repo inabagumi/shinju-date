@@ -51,7 +51,8 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
       totalPopularKeywords: totalPopularKeywords ?? 0,
     }
   } catch (error) {
-    logger.error('分析サマリーの取得に失敗しました', error)
+    logger.error('分析サマリーの取得に失敗しました', { error })
+
     return {
       recentClicks: 0,
       recentSearches: 0,

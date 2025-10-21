@@ -62,9 +62,10 @@ export async function getSearchVolume(
 
     return volumes
   } catch (error) {
-    logger.error('Redisから検索ボリュームの取得に失敗しました', error, {
+    logger.error('Redisから検索ボリュームの取得に失敗しました', {
       days,
       endDate: endDate ?? 'undefined',
+      error,
       startDate: startDate ?? 'undefined',
     })
     return []
