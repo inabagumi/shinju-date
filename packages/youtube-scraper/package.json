@@ -6,6 +6,7 @@
   },
   "description": "YouTube scraper package for SHINJU DATE",
   "devDependencies": {
+    "@shinju-date/helpers": "workspace:*",
     "@tsconfig/node20": "20.1.6",
     "@tsconfig/strictest": "2.0.6",
     "tsup": "8.5.0",
