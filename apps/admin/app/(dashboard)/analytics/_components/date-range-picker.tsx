@@ -69,7 +69,7 @@ export default function DateRangePicker({
     const endDate = Temporal.PlainDate.from(customEnd)
 
     // Validate date range
-    if (startDate.compare(endDate) > 0) {
+    if (Temporal.PlainDate.compare(startDate, endDate) > 0) {
       setValidationError('開始日は終了日より前である必要があります')
       return
     }
@@ -82,7 +82,7 @@ export default function DateRangePicker({
     }
 
     // Validate that start date is not too far in the past
-    if (startDate.compare(maxStartDate) < 0) {
+    if (Temporal.PlainDate.compare(startDate, maxStartDate) < 0) {
       setValidationError(
         `開始日は${maxStartDate.toString()}以降である必要があります`,
       )
@@ -90,7 +90,7 @@ export default function DateRangePicker({
     }
 
     // Validate that end date is not in the future
-    if (endDate.compare(today) > 0) {
+    if (Temporal.PlainDate.compare(endDate, today) > 0) {
       setValidationError('終了日は今日以降にできません')
       return
     }
