@@ -28,7 +28,7 @@ describe('SortableInputList data handling', () => {
   it('should detect newlines in pasted text', () => {
     const textWithNewlines = 'line1\nline2'
     const textWithoutNewlines = 'single line'
-    
+
     expect(textWithNewlines.includes('\n')).toBe(true)
     expect(textWithoutNewlines.includes('\n')).toBe(false)
   })

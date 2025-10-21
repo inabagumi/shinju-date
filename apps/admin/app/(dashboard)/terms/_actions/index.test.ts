@@ -91,28 +91,28 @@ describe('Term action FormData processing', () => {
     it('should filter out empty values', () => {
       const values = ['reading1', '', 'reading2', '   ', 'reading3']
       const filtered = values.map((r) => r.trim()).filter(Boolean)
-      
+
       expect(filtered).toEqual(['reading1', 'reading2', 'reading3'])
     })
 
     it('should trim whitespace from values', () => {
       const values = ['  reading1  ', ' reading2 ', 'reading3']
       const trimmed = values.map((r) => r.trim()).filter(Boolean)
-      
+
       expect(trimmed).toEqual(['reading1', 'reading2', 'reading3'])
     })
 
     it('should handle all empty values', () => {
       const values = ['', '  ', '   ']
       const filtered = values.map((r) => r.trim()).filter(Boolean)
-      
+
       expect(filtered).toEqual([])
     })
 
     it('should preserve order after filtering', () => {
       const values = ['third', '', 'first', '  ', 'second']
       const filtered = values.map((r) => r.trim()).filter(Boolean)
-      
+
       expect(filtered).toEqual(['third', 'first', 'second'])
     })
   })
