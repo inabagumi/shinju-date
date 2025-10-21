@@ -10,7 +10,10 @@ import DateRangePicker from '../../_components/date-range-picker'
 import { exportToCSV } from '../../_lib/export-csv'
 import ClickVolumeChart from '../_components/click-volume-chart'
 import type { DailyClickVolume } from '../_lib/get-click-volume'
+import type { PopularChannel } from '../_lib/get-popular-channels'
+import type { PopularChannelForDate } from '../_lib/get-popular-channels-for-date'
 import type { PopularVideoForDate } from '../_lib/get-popular-videos-for-date'
+import { PopularChannelsWidget } from './popular-channels-widget'
 
 type PopularVideo = {
   clicks: number
@@ -25,6 +28,7 @@ type PopularVideo = {
 type ClickAnalyticsClientProps = {
   initialClickVolume: DailyClickVolume[]
   initialPopularVideos: PopularVideo[]
+  initialPopularChannels: PopularChannel[]
   fetchClickVolume: (
     startDate: string,
     endDate: string,
@@ -38,14 +42,26 @@ type ClickAnalyticsClientProps = {
     date: string,
     limit: number,
   ) => Promise<PopularVideoForDate[]>
+  fetchPopularChannels: (
+    startDate: string,
+    endDate: string,
+    limit: number,
+  ) => Promise<PopularChannel[]>
+  fetchPopularChannelsForDate: (
+    date: string,
+    limit: number,
+  ) => Promise<PopularChannelForDate[]>
 }
 
 export default function ClickAnalyticsClient({
   initialClickVolume,
   initialPopularVideos,
+  initialPopularChannels,
   fetchClickVolume,
   fetchPopularVideos,
   fetchPopularVideosForDate,
+  fetchPopularChannels,
+  fetchPopularChannelsForDate,
 }: ClickAnalyticsClientProps) {
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -61,6 +77,9 @@ export default function ClickAnalyticsClient({
   const [popularVideos, setPopularVideos] = useState<
     PopularVideo[] | PopularVideoForDate[]
   >(initialPopularVideos)
+  const [popularChannels, setPopularChannels] = useState<
+    PopularChannel[] | PopularChannelForDate[]
+  >(initialPopularChannels)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -78,12 +97,14 @@ export default function ClickAnalyticsClient({
     const fetchData = async () => {
       setLoading(true)
       try {
-        const [volumeData, videosData] = await Promise.all([
+        const [volumeData, videosData, channelsData] = await Promise.all([
           fetchClickVolume(dateRange.startDate, dateRange.endDate),
           fetchPopularVideos(dateRange.startDate, dateRange.endDate, 20),
+          fetchPopularChannels(dateRange.startDate, dateRange.endDate, 20),
         ])
         setClickVolume(volumeData)
         setPopularVideos(videosData)
+        setPopularChannels(channelsData)
         setSelectedDate(null)
 
         if (comparisonEnabled) {
@@ -113,16 +134,26 @@ export default function ClickAnalyticsClient({
     }
 
     fetchData()
-  }, [dateRange, comparisonEnabled, fetchClickVolume, fetchPopularVideos])
+  }, [
+    dateRange,
+    comparisonEnabled,
+    fetchClickVolume,
+    fetchPopularVideos,
+    fetchPopularChannels,
+  ])
 
   const handleDateClick = async (date: string) => {
     setSelectedDate(date)
     setLoading(true)
     try {
-      const dateVideos = await fetchPopularVideosForDate(date, 20)
+      const [dateVideos, dateChannels] = await Promise.all([
+        fetchPopularVideosForDate(date, 20),
+        fetchPopularChannelsForDate(date, 20),
+      ])
       setPopularVideos(dateVideos)
+      setPopularChannels(dateChannels)
     } catch (error) {
-      logger.error('日付別動画の取得に失敗しました', { date, error })
+      logger.error('日付別データの取得に失敗しました', { date, error })
     } finally {
       setLoading(false)
     }
@@ -137,7 +168,19 @@ export default function ClickAnalyticsClient({
     }))
     const dateStr =
       selectedDate || `${dateRange.startDate}_${dateRange.endDate}`
-    exportToCSV(csvData, `click-analytics-${dateStr}.csv`)
+    exportToCSV(csvData, `click-analytics-videos-${dateStr}.csv`)
+  }
+
+  const handleChannelsExportCSV = () => {
+    const csvData = popularChannels.map((channel, index) => ({
+      クリック数: channel.clicks,
+      スラッグ: channel.slug,
+      チャンネル名: channel.name,
+      順位: index + 1,
+    }))
+    const dateStr =
+      selectedDate || `${dateRange.startDate}_${dateRange.endDate}`
+    exportToCSV(csvData, `click-analytics-channels-${dateStr}.csv`)
   }
 
   return (
@@ -234,6 +277,14 @@ export default function ClickAnalyticsClient({
             <p className="py-8 text-center text-gray-500">データがありません</p>
           )}
         </div>
+
+        <PopularChannelsWidget
+          channels={popularChannels}
+          dateRange={dateRange}
+          loading={loading}
+          onExportCSV={handleChannelsExportCSV}
+          selectedDate={selectedDate}
+        />
       </div>
     </div>
   )
