@@ -116,11 +116,19 @@ export default function SearchAnalyticsClient({
     fetchZeroResultKeywords,
   ])
 
-  // Note: Search keywords are not tracked by date in Redis, so drill-down is not available
-  // We keep the chart interactive but don't filter keywords by date
   const handleDateClick = async (date: string) => {
     setSelectedDate(date)
-    // Keywords are tracked globally, not by date, so we don't refetch
+    setLoading(true)
+    try {
+      const keywordsData = await fetchPopularKeywords(date, 20)
+      setPopularKeywords(keywordsData)
+    } catch (error) {
+      logger.error('日別キーワードの取得に失敗しました', error, {
+        date,
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleExportKeywords = () => {
@@ -189,7 +197,6 @@ export default function SearchAnalyticsClient({
           {selectedDate && (
             <p className="mt-2 text-center text-gray-600 text-sm">
               選択された日付: {selectedDate}
-              （キーワードは全期間の集計データです）
             </p>
           )}
         </div>
@@ -226,7 +233,14 @@ export default function SearchAnalyticsClient({
 
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-semibold text-xl">人気キーワードランキング</h2>
+            <h2 className="font-semibold text-xl">
+              人気キーワードランキング
+              {selectedDate && (
+                <span className="ml-2 text-blue-600 text-sm">
+                  ({selectedDate})
+                </span>
+              )}
+            </h2>
             <button
               className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm transition-colors hover:bg-gray-50"
               onClick={handleExportKeywords}
@@ -236,7 +250,9 @@ export default function SearchAnalyticsClient({
             </button>
           </div>
           <p className="mb-4 text-gray-600 text-sm">
-            最も検索されているキーワードのランキング。ユーザーの関心を把握できます。
+            {selectedDate
+              ? `${selectedDate}に検索されたキーワードのランキング。グラフの別の日付をクリックすると、その日のランキングが表示されます。`
+              : '最も検索されているキーワードのランキング。ユーザーの関心を把握できます。グラフの日付をクリックすると、その日のランキングが表示されます。'}
           </p>
           {popularKeywords.length > 0 ? (
             <div className="max-h-96 space-y-2 overflow-y-auto">
