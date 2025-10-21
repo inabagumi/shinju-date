@@ -35,22 +35,15 @@ export default async function increment(
     video.channel.id,
   )
 
+  // Set TTL for click analytics keys in the same pipeline
+  multi.expire(
+    `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${keySuffix}`,
+    DAILY_TTL_SECONDS,
+  )
+  multi.expire(
+    `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}${keySuffix}`,
+    DAILY_TTL_SECONDS,
+  )
+
   await multi.exec()
-
-  // Set TTL for click analytics keys after incrementing
-  // We do this separately to avoid blocking the main operations
-  const ttlOperations: Promise<unknown>[] = [
-    // Video click key: 90 days TTL
-    redisClient.expire(
-      `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${keySuffix}`,
-      DAILY_TTL_SECONDS,
-    ),
-    // Channel click key: 90 days TTL
-    redisClient.expire(
-      `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}${keySuffix}`,
-      DAILY_TTL_SECONDS,
-    ),
-  ]
-
-  await Promise.all(ttlOperations)
 }

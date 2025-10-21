@@ -9,7 +9,6 @@ import { redisClient } from './redis'
 
 // TTL settings for time-based search keys
 const DAILY_TTL_SECONDS = 90 * 24 * 60 * 60 // 90 days
-const WEEKLY_TTL_SECONDS = 90 * 24 * 60 * 60 // 90 days
 
 /**
  * Log a search query to Redis for analytics
@@ -29,60 +28,40 @@ export async function logSearchQuery(
     const today = formatDate(now)
     const mondayOfWeek = getMondayOfWeek(now)
 
-    // Run all Redis operations in parallel for better performance
-    const operations: Promise<unknown>[] = [
-      // Increment daily search count
-      redisClient.zincrby(
-        `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`,
-        1,
-        normalizedQuery,
-      ),
+    const multi = redisClient.multi()
 
-      // Increment weekly search count
-      redisClient.zincrby(
-        `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}${mondayOfWeek}`,
-        1,
-        normalizedQuery,
-      ),
+    // Increment daily search count
+    multi.zincrby(
+      `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`,
+      1,
+      normalizedQuery,
+    )
 
-      // Increment all-time search count
-      redisClient.zincrby(
-        REDIS_KEYS.SEARCH_POPULAR_ALL_TIME,
-        1,
-        normalizedQuery,
-      ),
-    ]
+    // Increment weekly search count
+    multi.zincrby(
+      `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}${mondayOfWeek}`,
+      1,
+      normalizedQuery,
+    )
+
+    // Increment all-time search count
+    multi.zincrby(REDIS_KEYS.SEARCH_POPULAR_ALL_TIME, 1, normalizedQuery)
 
     // Track zero-result searches
     if (resultCount === 0) {
-      operations.push(
-        redisClient.sadd(REDIS_KEYS.SEARCH_ZERO_RESULTS, normalizedQuery),
-      )
+      multi.sadd(REDIS_KEYS.SEARCH_ZERO_RESULTS, normalizedQuery)
     }
 
     // Track daily search volume
-    operations.push(
-      redisClient.incr(`${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${today}`),
+    multi.incr(`${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${today}`)
+
+    // Set TTL for daily keys in the same pipeline
+    multi.expire(
+      `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`,
+      DAILY_TTL_SECONDS,
     )
 
-    await Promise.all(operations)
-
-    // Set TTL for daily and weekly keys after incrementing
-    // We do this separately to avoid blocking the main operations
-    const ttlOperations: Promise<unknown>[] = [
-      // Daily key: 90 days TTL
-      redisClient.expire(
-        `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`,
-        DAILY_TTL_SECONDS,
-      ),
-      // Weekly key: 90 days TTL
-      redisClient.expire(
-        `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}${mondayOfWeek}`,
-        WEEKLY_TTL_SECONDS,
-      ),
-    ]
-
-    await Promise.all(ttlOperations)
+    await multi.exec()
   } catch (error) {
     // Log error but don't throw - we don't want analytics to break search
     logger.error('Redisへの検索クエリのログ記録に失敗しました', error)

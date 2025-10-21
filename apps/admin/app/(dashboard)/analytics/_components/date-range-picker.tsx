@@ -56,10 +56,49 @@ export default function DateRangePicker({
       }),
       label: '過去90日間',
     },
+    {
+      getValue: () => {
+        const firstDay = today.with({ day: 1 })
+        return {
+          endDate: today.toString(),
+          startDate: firstDay.toString(),
+        }
+      },
+      label: '今月',
+    },
+    {
+      getValue: () => {
+        const lastMonth = today.subtract({ months: 1 })
+        const firstDay = lastMonth.with({ day: 1 })
+        const lastDay = firstDay.add({ months: 1 }).subtract({ days: 1 })
+        return {
+          endDate: lastDay.toString(),
+          startDate: firstDay.toString(),
+        }
+      },
+      label: '先月',
+    },
   ]
 
   const handlePresetClick = (preset: (typeof presets)[number]) => {
     const range = preset.getValue()
+
+    // Validate the preset range doesn't exceed 90 days
+    const startDate = Temporal.PlainDate.from(range.startDate)
+    const endDate = Temporal.PlainDate.from(range.endDate)
+    const daysDifference = endDate.since(startDate).days + 1
+
+    // If preset exceeds 90 days, adjust the start date
+    if (daysDifference > MAX_PERIOD_DAYS) {
+      const adjustedStartDate = endDate.subtract({ days: MAX_PERIOD_DAYS - 1 })
+      range.startDate = adjustedStartDate.toString()
+    }
+
+    // Ensure start date is not beyond the 90-day limit
+    if (Temporal.PlainDate.compare(startDate, maxStartDate) < 0) {
+      range.startDate = maxStartDate.toString()
+    }
+
     onChange(range)
     setIsCustomMode(false)
   }
