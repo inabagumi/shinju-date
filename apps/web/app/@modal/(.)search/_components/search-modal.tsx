@@ -66,6 +66,7 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
 
 export function SearchModalLink({
   onClick,
+  onKeyDown,
   ...props
 }: ComponentPropsWithRef<typeof Link>) {
   const { onNavigate } = useModalNavigation()
@@ -79,7 +80,43 @@ export function SearchModalLink({
     [onClick, onNavigate],
   )
 
-  return <Link onClick={handleClick} {...props} />
+  const handleKeyDown = useCallback<
+    React.KeyboardEventHandler<HTMLAnchorElement>
+  >(
+    (event) => {
+      onKeyDown?.(event)
+
+      // Handle arrow key navigation
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault()
+        const allSuggestions = Array.from(
+          document.querySelectorAll<HTMLAnchorElement>(
+            '[data-suggestion-link]',
+          ),
+        )
+        const currentIndex = allSuggestions.indexOf(event.currentTarget)
+
+        if (
+          event.key === 'ArrowDown' &&
+          currentIndex < allSuggestions.length - 1
+        ) {
+          allSuggestions[currentIndex + 1]?.focus()
+        } else if (event.key === 'ArrowUp') {
+          if (currentIndex > 0) {
+            allSuggestions[currentIndex - 1]?.focus()
+          } else {
+            // Focus back to the input field
+            const input =
+              document.querySelector<HTMLInputElement>('input[name="q"]')
+            input?.focus()
+          }
+        }
+      }
+    },
+    [onKeyDown],
+  )
+
+  return <Link onClick={handleClick} onKeyDown={handleKeyDown} {...props} />
 }
 
 export const SearchModalClose = Dialog.Close
