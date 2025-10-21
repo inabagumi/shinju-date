@@ -11,8 +11,6 @@ export async function createTermAction(
   formData: FormData,
 ): Promise<FormState> {
   const term = formData.get('term') as string
-  const readings = formData.get('readings') as string
-  const synonyms = formData.get('synonyms') as string
 
   if (!term || term.trim() === '') {
     return {
@@ -22,18 +20,21 @@ export async function createTermAction(
     }
   }
 
-  const readingsArray = readings
-    ? readings
-        .split('\n')
-        .map((r) => r.trim())
-        .filter(Boolean)
-    : []
-  const synonymsArray = synonyms
-    ? synonyms
-        .split('\n')
-        .map((s) => s.trim())
-        .filter(Boolean)
-    : []
+  // Extract array values from FormData
+  const readingsArray: string[] = []
+  const synonymsArray: string[] = []
+
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith('readings[') && typeof value === 'string') {
+      readingsArray.push(value)
+    } else if (key.startsWith('synonyms[') && typeof value === 'string') {
+      synonymsArray.push(value)
+    }
+  }
+
+  // Filter out empty values
+  const filteredReadings = readingsArray.map((r) => r.trim()).filter(Boolean)
+  const filteredSynonyms = synonymsArray.map((s) => s.trim()).filter(Boolean)
 
   const cookieStore = await cookies()
   const supabaseClient = createSupabaseClient({
@@ -42,8 +43,8 @@ export async function createTermAction(
 
   try {
     const { error } = await supabaseClient.from('terms').insert({
-      readings: readingsArray,
-      synonyms: synonymsArray,
+      readings: filteredReadings,
+      synonyms: filteredSynonyms,
       term: term.trim(),
     })
 
@@ -71,8 +72,6 @@ export async function updateTermAction(
 ): Promise<FormState> {
   const idString = formData.get('id') as string
   const term = formData.get('term') as string
-  const readings = formData.get('readings') as string
-  const synonyms = formData.get('synonyms') as string
 
   if (!idString || !term || term.trim() === '') {
     return {
@@ -91,18 +90,21 @@ export async function updateTermAction(
     }
   }
 
-  const readingsArray = readings
-    ? readings
-        .split('\n')
-        .map((r) => r.trim())
-        .filter(Boolean)
-    : []
-  const synonymsArray = synonyms
-    ? synonyms
-        .split('\n')
-        .map((s) => s.trim())
-        .filter(Boolean)
-    : []
+  // Extract array values from FormData
+  const readingsArray: string[] = []
+  const synonymsArray: string[] = []
+
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith('readings[') && typeof value === 'string') {
+      readingsArray.push(value)
+    } else if (key.startsWith('synonyms[') && typeof value === 'string') {
+      synonymsArray.push(value)
+    }
+  }
+
+  // Filter out empty values
+  const filteredReadings = readingsArray.map((r) => r.trim()).filter(Boolean)
+  const filteredSynonyms = synonymsArray.map((s) => s.trim()).filter(Boolean)
 
   const cookieStore = await cookies()
   const supabaseClient = createSupabaseClient({
@@ -113,8 +115,8 @@ export async function updateTermAction(
     const { error } = await supabaseClient
       .from('terms')
       .update({
-        readings: readingsArray,
-        synonyms: synonymsArray,
+        readings: filteredReadings,
+        synonyms: filteredSynonyms,
         term: term.trim(),
       })
       .eq('id', id)
