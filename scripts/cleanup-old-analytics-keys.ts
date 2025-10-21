@@ -1,9 +1,9 @@
 /**
  * One-time cleanup script to remove old analytics keys without TTL
- * that are older than 90 days.
+ * based on their respective TTL periods.
  *
  * This script should be run after deploying the TTL changes to ensure
- * old data is properly cleaned up.
+ * old data is properly cleaned up according to each key type's retention policy.
  */
 
 import { REDIS_KEYS } from '@shinju-date/constants'
@@ -17,31 +17,47 @@ const redis = new Redis({
 })
 
 const TIME_ZONE = 'Asia/Tokyo'
-const CUTOFF_DAYS = 90
 
 async function main() {
   console.log('Starting cleanup of old analytics keys...')
 
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
-  const cutoffDate = today.subtract({ days: CUTOFF_DAYS })
-
-  console.log(
-    `Removing keys older than ${cutoffDate.toString()} (${CUTOFF_DAYS} days ago)`,
-  )
 
   let deletedKeys = 0
 
   // Get all Redis keys matching analytics patterns
-  // Note: Weekly keys are included again since they now have 35-day TTL
+  // Daily and click keys: clean older than 90 days (matches their TTL)
+  // Weekly keys: clean older than 35 days (matches their TTL)
   const keyPatterns = [
-    `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}*`,
-    `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}*`,
-    `${REDIS_KEYS.CLICK_VIDEO_PREFIX}*`,
-    `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}*`,
+    {
+      cutoffDays: 90,
+      description: 'Daily search keys (90-day TTL)',
+      pattern: `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}*`,
+    },
+    {
+      cutoffDays: 35,
+      description: 'Weekly search keys (35-day TTL)',
+      pattern: `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}*`,
+    },
+    {
+      cutoffDays: 90,
+      description: 'Video click keys (90-day TTL)',
+      pattern: `${REDIS_KEYS.CLICK_VIDEO_PREFIX}*`,
+    },
+    {
+      cutoffDays: 90,
+      description: 'Channel click keys (90-day TTL)',
+      pattern: `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}*`,
+    },
   ]
 
-  for (const pattern of keyPatterns) {
-    console.log(`\nScanning pattern: ${pattern}`)
+  for (const { pattern, cutoffDays, description } of keyPatterns) {
+    console.log(`\nScanning pattern: ${pattern} (${description})`)
+
+    const cutoffDate = today.subtract({ days: cutoffDays })
+    console.log(
+      `  Cutoff date: ${cutoffDate.toString()} (${cutoffDays} days ago)`,
+    )
 
     try {
       // Use SCAN to get all keys matching the pattern
@@ -74,14 +90,14 @@ async function main() {
                 await redis.del(key)
                 deletedKeys++
                 console.log(
-                  `Deleted old key: ${key} (date: ${keyDate.toString()})`,
+                  `  Deleted old key: ${key} (date: ${keyDate.toString()})`,
                 )
               } else {
-                console.log(`Skipped key with TTL: ${key} (TTL: ${ttl}s)`)
+                console.log(`  Skipped key with TTL: ${key} (TTL: ${ttl}s)`)
               }
             }
           } catch (error) {
-            console.error(`Error processing key ${key}:`, error)
+            console.error(`  Error processing key ${key}:`, error)
           }
         }
       } while (cursor !== 0)

@@ -29,21 +29,17 @@ export async function logSearchQuery(
     const today = formatDate(now)
     const mondayOfWeek = getMondayOfWeek(now)
 
+    const dailyKey = `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`
+    const weeklyKey = `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}${mondayOfWeek}`
+    const volumeKey = `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${today}`
+
     const multi = redisClient.multi()
 
     // Increment daily search count
-    multi.zincrby(
-      `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`,
-      1,
-      normalizedQuery,
-    )
+    multi.zincrby(dailyKey, 1, normalizedQuery)
 
     // Increment weekly search count
-    multi.zincrby(
-      `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}${mondayOfWeek}`,
-      1,
-      normalizedQuery,
-    )
+    multi.zincrby(weeklyKey, 1, normalizedQuery)
 
     // Increment all-time search count
     multi.zincrby(REDIS_KEYS.SEARCH_POPULAR_ALL_TIME, 1, normalizedQuery)
@@ -54,17 +50,11 @@ export async function logSearchQuery(
     }
 
     // Track daily search volume
-    multi.incr(`${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${today}`)
+    multi.incr(volumeKey)
 
     // Set TTL for daily and weekly keys in the same pipeline
-    multi.expire(
-      `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`,
-      DAILY_TTL_SECONDS,
-    )
-    multi.expire(
-      `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}${mondayOfWeek}`,
-      WEEKLY_TTL_SECONDS,
-    )
+    multi.expire(dailyKey, DAILY_TTL_SECONDS)
+    multi.expire(weeklyKey, WEEKLY_TTL_SECONDS)
 
     await multi.exec()
   } catch (error) {
