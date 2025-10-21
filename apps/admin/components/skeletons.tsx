@@ -3,6 +3,8 @@
  * Used with Suspense boundaries to show loading UI while data is being fetched
  */
 
+import { range } from '@/lib/range'
+
 export function CardSkeleton() {
   return (
     <div className="animate-pulse rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
@@ -44,10 +46,6 @@ export function WidgetSkeleton() {
 }
 
 export function AnalyticsPageSkeleton() {
-  const skeletonItems = Array.from({ length: 5 }, (_, i) => ({
-    id: `skeleton-analytics-${i}-${Math.random().toString(36).substring(2, 9)}`,
-  }))
-
   return (
     <div className="animate-pulse p-6">
       <div className="mb-6 h-8 w-64 rounded bg-gray-200" />
@@ -63,8 +61,11 @@ export function AnalyticsPageSkeleton() {
         <div className="rounded-lg border border-gray-200 bg-white p-6">
           <div className="mb-4 h-6 w-40 rounded bg-gray-200" />
           <div className="space-y-3">
-            {skeletonItems.map((item) => (
-              <div className="flex items-center gap-4" key={item.id}>
+            {range(5).map((i) => (
+              <div
+                className="flex items-center gap-4"
+                key={`analytics-item-${i}`}
+              >
                 <div className="h-4 w-4 rounded-full bg-gray-200" />
                 <div className="h-4 flex-1 rounded bg-gray-200" />
                 <div className="h-4 w-12 rounded bg-gray-200" />
@@ -75,8 +76,11 @@ export function AnalyticsPageSkeleton() {
         <div className="rounded-lg border border-gray-200 bg-white p-6">
           <div className="mb-4 h-6 w-40 rounded bg-gray-200" />
           <div className="space-y-3">
-            {skeletonItems.map((item) => (
-              <div className="flex items-center gap-4" key={`${item.id}-2`}>
+            {range(5).map((i) => (
+              <div
+                className="flex items-center gap-4"
+                key={`analytics-item-2-${i}`}
+              >
                 <div className="h-4 w-4 rounded-full bg-gray-200" />
                 <div className="h-4 flex-1 rounded bg-gray-200" />
                 <div className="h-4 w-12 rounded bg-gray-200" />
@@ -90,10 +94,6 @@ export function AnalyticsPageSkeleton() {
 }
 
 export function TableSkeleton({ rows = 5 }: { rows?: number }) {
-  const skeletonRows = Array.from({ length: rows }, (_, i) => ({
-    id: `skeleton-row-${i}-${Math.random().toString(36).substring(2, 9)}`,
-  }))
-
   return (
     <div className="animate-pulse overflow-x-auto">
       <table className="w-full">
@@ -132,8 +132,8 @@ export function TableSkeleton({ rows = 5 }: { rows?: number }) {
           </tr>
         </thead>
         <tbody>
-          {skeletonRows.map((row) => (
-            <tr className="border-b" key={row.id}>
+          {range(rows).map((i) => (
+            <tr className="border-b" key={`skeleton-row-${i}`}>
               <td className="p-3">
                 <div className="h-4 w-4 rounded bg-gray-200" />
               </td>
@@ -173,16 +173,12 @@ export function TableSkeleton({ rows = 5 }: { rows?: number }) {
 }
 
 export function PopularVideosListSkeleton({ count = 10 }: { count?: number }) {
-  const skeletonItems = Array.from({ length: count }, (_, i) => ({
-    id: `skeleton-video-${i}-${Math.random().toString(36).substring(2, 9)}`,
-  }))
-
   return (
     <div className="animate-pulse space-y-3">
-      {skeletonItems.map((item) => (
+      {range(count).map((i) => (
         <div
           className="flex items-center gap-4 rounded-lg border border-gray-100 p-3"
-          key={item.id}
+          key={`skeleton-video-${i}`}
         >
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200" />
           <div className="h-16 w-28 rounded bg-gray-200" />

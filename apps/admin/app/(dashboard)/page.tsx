@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { Suspense } from 'react'
-import { CardSkeleton, PopularVideosListSkeleton } from '@/components/skeletons'
+import { CardSkeleton } from '@/components/skeletons'
 import { AnalyticsWidget } from './_components/analytics-widget'
 import { PopularVideosWidget } from './_components/popular-videos-widget'
+import { PopularVideosWidgetSkeleton } from './_components/popular-videos-widget-skeleton'
 import { SummaryWidget } from './_components/summary-widget'
 
 export default function DashboardPage() {
@@ -63,14 +64,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Popular Videos Widget - Full width */}
-        <Suspense
-          fallback={
-            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-full">
-              <div className="mb-4 h-6 w-64 rounded bg-gray-200" />
-              <PopularVideosListSkeleton />
-            </div>
-          }
-        >
+        <Suspense fallback={<PopularVideosWidgetSkeleton />}>
           <PopularVideosWidget />
         </Suspense>
       </div>
