@@ -2,18 +2,14 @@
 
 import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
-import { cookies } from 'next/headers'
 import type { FormState } from '@/components/form'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
 
 export async function createChannelAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   const name = formData.get('name') as string
   const slug = formData.get('slug') as string
@@ -67,10 +63,7 @@ export async function updateChannelAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   const idString = formData.get('id') as string
   const name = formData.get('name') as string
@@ -138,10 +131,7 @@ export async function deleteChannelAction(id: number): Promise<{
   success: boolean
   error?: string
 }> {
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   if (!id) {
     return { error: 'IDが指定されていません。', success: false }

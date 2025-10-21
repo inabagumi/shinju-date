@@ -2,8 +2,7 @@
 
 import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
-import { cookies } from 'next/headers'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
 
 export async function toggleVisibilityAction(slugs: string[]): Promise<{
   success: boolean
@@ -13,10 +12,7 @@ export async function toggleVisibilityAction(slugs: string[]): Promise<{
     return { error: '動画が選択されていません。', success: false }
   }
 
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   try {
     // Get current visibility status of all videos
@@ -70,10 +66,7 @@ export async function toggleSingleVideoVisibilityAction(slug: string): Promise<{
   success: boolean
   error?: string
 }> {
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   try {
     // Get current visibility status
@@ -123,10 +116,7 @@ export async function softDeleteAction(slugs: string[]): Promise<{
     return { error: '動画が選択されていません。', success: false }
   }
 
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const now = new Date().toISOString()
@@ -191,10 +181,7 @@ export async function softDeleteSingleVideoAction(slug: string): Promise<{
   success: boolean
   error?: string
 }> {
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const now = new Date().toISOString()

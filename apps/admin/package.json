@@ -13,6 +13,7 @@
     "@shinju-date/logger": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
     "@supabase/sentry-js-integration": "0.3.0",
+    "@supabase/ssr": "0.7.0",
     "@supabase/supabase-js": "2.76.1",
     "@upstash/redis": "1.35.6",
     "next": "15.5.6",

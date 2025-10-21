@@ -2,9 +2,8 @@
 
 import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
-import { cookies } from 'next/headers'
 import type { FormState } from '@/components/form'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
 
 export async function createTermAction(
   _currentState: FormState,
@@ -36,10 +35,7 @@ export async function createTermAction(
   const filteredReadings = readingsArray.map((r) => r.trim()).filter(Boolean)
   const filteredSynonyms = synonymsArray.map((s) => s.trim()).filter(Boolean)
 
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const { error } = await supabaseClient.from('terms').insert({
@@ -106,10 +102,7 @@ export async function updateTermAction(
   const filteredReadings = readingsArray.map((r) => r.trim()).filter(Boolean)
   const filteredSynonyms = synonymsArray.map((s) => s.trim()).filter(Boolean)
 
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const { error } = await supabaseClient
@@ -147,10 +140,7 @@ export async function deleteTermAction(id: number): Promise<{
     return { error: 'IDが指定されていません。', success: false }
   }
 
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const { error } = await supabaseClient.from('terms').delete().eq('id', id)

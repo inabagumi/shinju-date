@@ -4,10 +4,9 @@ import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { isNonNullable } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { formatDate } from '@shinju-date/temporal-fns'
-import { cookies } from 'next/headers'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type PopularVideoForDate = {
   clicks: number
@@ -56,10 +55,7 @@ export async function getPopularVideosForDate(
       return []
     }
 
-    const cookieStore = await cookies()
-    const supabaseClient = createSupabaseClient({
-      cookieStore,
-    })
+    const supabaseClient = await createSupabaseServerClient()
 
     const videoIds = videoScores.map(([id]) => id)
     const { data: videos, error } = await supabaseClient

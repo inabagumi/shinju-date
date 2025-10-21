@@ -1,33 +1,36 @@
+import type { default as DefaultDatabase } from '@shinju-date/database'
+import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
-import { createSupabaseClient } from '@/lib/supabase'
 
 const isProd = process.env['NODE_ENV'] === 'production'
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
-  const response = NextResponse.next()
+  const url = process.env['NEXT_PUBLIC_SUPABASE_URL']
+  const key = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']
 
-  const supabaseClient = createSupabaseClient({
-    auth: {
-      storage: {
-        getItem(key) {
-          return request.cookies.get(key)?.value ?? null
-        },
-        removeItem(key) {
-          response.cookies.delete({
+  if (!url || !key) {
+    throw new TypeError('Supabase URL and key are required.')
+  }
+
+  const response = NextResponse.next({
+    request,
+  })
+
+  const supabaseClient = createServerClient<DefaultDatabase>(url, key, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll()
+      },
+      setAll(cookiesToSet) {
+        for (const { name, value, options } of cookiesToSet) {
+          request.cookies.set(name, value)
+          response.cookies.set(name, value, {
+            ...options,
             httpOnly: true,
-            name: key,
             sameSite: 'strict',
             secure: isProd,
           })
-        },
-        setItem(key, value) {
-          response.cookies.set(key, value, {
-            httpOnly: true,
-            maxAge: 30 * 24 * 60 * 60,
-            sameSite: 'strict',
-            secure: isProd,
-          })
-        },
+        }
       },
     },
   })
