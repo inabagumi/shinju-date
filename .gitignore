@@ -132,3 +132,7 @@ dist
 # turbo
 .turbo
 tsup.config.bundled_*.mjs
+
+# Package manager lock files (this project uses pnpm)
+package-lock.json
+yarn.lock

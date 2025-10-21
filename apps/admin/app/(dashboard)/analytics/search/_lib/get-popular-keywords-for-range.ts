@@ -50,7 +50,7 @@ export async function getPopularKeywordsForRange(
     try {
       // Use Redis pipeline for better performance
       const pipeline = redisClient.multi()
-      pipeline.zunionstore(tempUnionKey, dailyKeys.length, ...dailyKeys)
+      pipeline.zunionstore(tempUnionKey, dailyKeys.length, dailyKeys)
       pipeline.expire(tempUnionKey, 300) // 5 minutes TTL
       await pipeline.exec()
 
