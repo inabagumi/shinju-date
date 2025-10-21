@@ -5,13 +5,9 @@ import { Suggestions } from './_components/suggestions'
 import { searchAction } from './_lib/actions'
 import { searchParamsSchema } from './_lib/search-params-schema'
 
-interface SearchModalPageProps {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}
-
 export default function SearchModalPage({
   searchParams,
-}: SearchModalPageProps) {
+}: PageProps<'/search'>) {
   const parsedSearchParams = searchParams.then((params) => {
     const { data, error } = searchParamsSchema.safeParse(params)
 
