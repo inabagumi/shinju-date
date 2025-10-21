@@ -21,7 +21,7 @@ export function PopularChannelsWidget({
   loading = false,
 }: PopularChannelsWidgetProps) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-semibold text-xl">
           {selectedDate
