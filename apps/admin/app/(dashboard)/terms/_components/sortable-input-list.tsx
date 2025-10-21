@@ -167,7 +167,9 @@ export function SortableInputList({
       const newItems = [...items]
 
       // Set first line to current field
-      newItems[currentIndex] = { ...newItems[currentIndex], value: lines[0] }
+      // We know lines[0] exists because we checked lines.length > 0
+      const firstLine = lines[0] as string
+      newItems[currentIndex] = { ...newItems[currentIndex], value: firstLine }
 
       // Create new items for remaining lines
       const additionalItems = lines.slice(1).map((line, index) => ({
