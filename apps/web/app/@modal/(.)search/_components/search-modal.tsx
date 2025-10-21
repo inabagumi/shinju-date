@@ -15,7 +15,9 @@ import {
 
 const ModalNavigationContext = createContext<{
   onNavigate: () => void
+  closeModal: () => void
 }>({
+  closeModal: () => {},
   onNavigate: () => {},
 })
 
@@ -43,7 +45,13 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
 
   const handleNavigate = useCallback(() => {
     isNavigating.current = true
+    setIsOpen(false)
   }, [])
+
+  const closeModal = useCallback(() => {
+    setIsOpen(false)
+    router.back()
+  }, [router])
 
   useEffect(() => {
     setIsOpen(true)
@@ -55,7 +63,9 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
         <Dialog.Overlay className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50 backdrop-blur-sm data-[state=closed]:animate-out data-[state=open]:animate-in" />
 
         <Dialog.Content className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[20%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[20%] fixed top-[20%] left-[50%] z-50 w-full max-w-2xl translate-x-[-50%] translate-y-[-20%] rounded-xl border border-774-nevy-200 bg-primary-foreground shadow-2xl data-[state=closed]:animate-out data-[state=open]:animate-in sm:max-w-3xl dark:border-zinc-700 dark:bg-zinc-900">
-          <ModalNavigationContext value={{ onNavigate: handleNavigate }}>
+          <ModalNavigationContext
+            value={{ closeModal, onNavigate: handleNavigate }}
+          >
             {children}
           </ModalNavigationContext>
         </Dialog.Content>
