@@ -2,7 +2,7 @@ import { formatNumber } from '@shinju-date/helpers'
 import Image from 'next/image'
 import Link from 'next/link'
 import { PopularVideosListSkeleton } from '@/components/skeletons'
-import { getPopularVideos } from '@/lib/actions/get-popular-videos'
+import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export function PopularVideosWidgetSkeleton() {

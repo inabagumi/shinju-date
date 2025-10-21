@@ -1,9 +1,8 @@
 import Link from 'next/link'
-import type { PopularChannel } from '../_lib/get-popular-channels'
-import type { PopularChannelForDate } from '../_lib/get-popular-channels-for-date'
+import type { PopularChannel } from '@/lib/analytics/get-popular-channels'
 
 type PopularChannelsWidgetProps = {
-  channels: PopularChannel[] | PopularChannelForDate[]
+  channels: PopularChannel[]
   dateRange?: {
     startDate: string
     endDate: string
