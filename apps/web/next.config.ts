@@ -10,14 +10,6 @@ const supabaseBaseURL =
     : undefined
 
 const nextConfig: NextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  experimental: {
-    // dynamicIO: true,
-    // ppr: 'incremental',
-    reactCompiler: true,
-  },
   headers() {
     return Promise.resolve([
       {
@@ -72,6 +64,7 @@ const nextConfig: NextConfig = {
     ],
   },
   pageExtensions: ['tsx', 'ts', 'mdx'],
+  reactCompiler: true,
   reactStrictMode: true,
   redirects() {
     return Promise.resolve([
@@ -106,21 +99,14 @@ const withMDX = createMDX({
   options: {
     rehypePlugins: [
       [
-        // biome-ignore lint/suspicious/noExplicitAny: Turbopackでは文字列でしかrehypePluginの設定ができないため`any`にしている。
-        'rehype-external-links' as any,
+        'rehype-external-links',
         {
           rel: ['noopener', 'noreferrer'],
           target: '_blank',
         },
       ],
     ],
-    remarkPlugins: [
-      [
-        // biome-ignore lint/suspicious/noExplicitAny: Turbopackでは文字列でしかrehypePluginの設定ができないため`any`にしている。
-        'remark-gfm' as any,
-        {},
-      ],
-    ],
+    remarkPlugins: [['remark-gfm', {}]],
   },
 })
 
