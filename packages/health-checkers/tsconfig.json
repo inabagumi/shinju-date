@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "target": "es2022"
+  },
+  "extends": "@tsconfig/strictest/tsconfig",
+  "include": ["src/**/*.ts"]
+}
