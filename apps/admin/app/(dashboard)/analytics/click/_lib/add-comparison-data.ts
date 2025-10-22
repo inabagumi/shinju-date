@@ -1,7 +1,14 @@
-import type {
-  PopularChannel,
-  PopularChannelWithComparison,
-} from '@/lib/analytics/get-popular-channels'
+import type { PopularChannel } from '@/lib/analytics/get-popular-channels'
+
+export type PopularChannelWithComparison = PopularChannel & {
+  comparison: {
+    previousClicks: number
+    previousRank?: number | undefined
+    currentRank: number
+    clicksChangePercent: number
+    rankChange?: number | undefined // positive means rank improved (lower number), negative means rank worsened
+  }
+}
 
 /**
  * Add comparison data to current period channels by comparing with previous period channels

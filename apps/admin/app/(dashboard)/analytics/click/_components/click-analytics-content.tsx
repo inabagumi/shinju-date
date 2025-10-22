@@ -1,11 +1,11 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { Temporal } from 'temporal-polyfill'
-import {
-  getPopularChannels,
-  type PopularChannelWithComparison,
-} from '@/lib/analytics/get-popular-channels'
+import { getPopularChannels } from '@/lib/analytics/get-popular-channels'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
-import { addComparisonData } from '../_lib/add-comparison-data'
+import {
+  addComparisonData,
+  type PopularChannelWithComparison,
+} from '../_lib/add-comparison-data'
 import { getClickVolume } from '../_lib/get-click-volume'
 import ClickAnalyticsClient from './click-analytics-client'
 

@@ -14,16 +14,6 @@ export type PopularChannel = {
   slug: string
 }
 
-export type PopularChannelWithComparison = PopularChannel & {
-  comparison: {
-    previousClicks: number
-    previousRank?: number | undefined
-    currentRank: number
-    clicksChangePercent: number
-    rankChange?: number | undefined // positive means rank improved (lower number), negative means rank worsened
-  }
-}
-
 /**
  * Get popular channels based on click data for a date range
  * @param limit - Number of channels to return

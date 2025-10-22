@@ -5,15 +5,13 @@ import { logger } from '@shinju-date/logger'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Temporal } from 'temporal-polyfill'
-import type {
-  PopularChannel,
-  PopularChannelWithComparison,
-} from '@/lib/analytics/get-popular-channels'
+import type { PopularChannel } from '@/lib/analytics/get-popular-channels'
 import type { PopularVideo } from '@/lib/analytics/get-popular-videos'
 import type { DateRange } from '../../_components/date-range-picker'
 import DateRangePicker from '../../_components/date-range-picker'
 import { exportToCSV } from '../../_lib/export-csv'
 import ClickVolumeChart from '../_components/click-volume-chart'
+import type { PopularChannelWithComparison } from '../_lib/add-comparison-data'
 import type { DailyClickVolume } from '../_lib/get-click-volume'
 import { PopularChannelsWidget } from './popular-channels-widget'
 

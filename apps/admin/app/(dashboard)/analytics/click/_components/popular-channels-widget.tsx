@@ -1,8 +1,6 @@
 import Link from 'next/link'
-import type {
-  PopularChannel,
-  PopularChannelWithComparison,
-} from '@/lib/analytics/get-popular-channels'
+import type { PopularChannel } from '@/lib/analytics/get-popular-channels'
+import type { PopularChannelWithComparison } from '../_lib/add-comparison-data'
 
 type PopularChannelsWidgetProps = {
   channels: PopularChannel[] | PopularChannelWithComparison[]
@@ -17,9 +15,7 @@ type PopularChannelsWidgetProps = {
 }
 
 function formatRankChange(
-  comparison:
-    | PopularChannel['comparison']
-    | PopularChannelWithComparison['comparison'],
+  comparison: PopularChannelWithComparison['comparison'] | undefined,
 ): {
   icon: string
   text: string
@@ -61,9 +57,7 @@ function formatRankChange(
 }
 
 function formatClicksChange(
-  comparison:
-    | PopularChannel['comparison']
-    | PopularChannelWithComparison['comparison'],
+  comparison: PopularChannelWithComparison['comparison'] | undefined,
 ): {
   text: string
   className: string
@@ -125,8 +119,12 @@ export function PopularChannelsWidget({
       ) : channels.length > 0 ? (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {channels.map((channel, index) => {
-            const rankChange = formatRankChange(channel.comparison)
-            const clicksChange = formatClicksChange(channel.comparison)
+            const rankChange = formatRankChange(
+              'comparison' in channel ? channel.comparison : undefined,
+            )
+            const clicksChange = formatClicksChange(
+              'comparison' in channel ? channel.comparison : undefined,
+            )
 
             return (
               <div
@@ -143,18 +141,20 @@ export function PopularChannelsWidget({
                   >
                     {channel.name}
                   </Link>
-                  {comparisonEnabled && channel.comparison && (
-                    <div className="mt-1 flex items-center gap-2">
-                      <span
-                        className={`font-medium text-xs ${rankChange.className}`}
-                      >
-                        {rankChange.text}
-                      </span>
-                      <span className={`text-xs ${clicksChange.className}`}>
-                        {clicksChange.text}
-                      </span>
-                    </div>
-                  )}
+                  {comparisonEnabled &&
+                    'comparison' in channel &&
+                    channel.comparison && (
+                      <div className="mt-1 flex items-center gap-2">
+                        <span
+                          className={`font-medium text-xs ${rankChange.className}`}
+                        >
+                          {rankChange.text}
+                        </span>
+                        <span className={`text-xs ${clicksChange.className}`}>
+                          {clicksChange.text}
+                        </span>
+                      </div>
+                    )}
                 </div>
                 <div className="shrink-0 text-right">
                   <p className="font-semibold text-gray-900">
@@ -162,6 +162,7 @@ export function PopularChannelsWidget({
                   </p>
                   <p className="text-gray-500 text-xs">回</p>
                   {comparisonEnabled &&
+                    'comparison' in channel &&
                     channel.comparison &&
                     channel.comparison.previousClicks > 0 && (
                       <p className="text-gray-400 text-xs">
