@@ -2,15 +2,17 @@
   "author": "Haneru Developers",
   "description": "Health check utilities for web services",
   "devDependencies": {
+    "@supabase/supabase-js": "2.76.1",
     "@tsconfig/strictest": "2.0.6",
+    "@upstash/redis": "1.35.6",
     "tsup": "8.5.0",
     "typescript": "5.9.3",
     "vitest": "3.2.4"
   },
   "exports": {
     ".": {
-      "default": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "homepage": "https://shinju.date/",

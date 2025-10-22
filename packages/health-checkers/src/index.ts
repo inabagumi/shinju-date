@@ -96,15 +96,15 @@ export function createReadinessResponse(
   }
 
   if (results) {
-    errorResponse.message = 'Service not ready'
-    errorResponse.checks = results
+    errorResponse['message'] = 'Service not ready'
+    errorResponse['checks'] = results
   } else if (errorDetails) {
-    errorResponse.message = errorDetails.message || 'Health check failed'
+    errorResponse['message'] = errorDetails.message || 'Health check failed'
     if (errorDetails.details) {
-      errorResponse.details = errorDetails.details
+      errorResponse['details'] = errorDetails.details
     }
   } else {
-    errorResponse.message = 'Health check failed'
+    errorResponse['message'] = 'Health check failed'
   }
 
   return Response.json(errorResponse, { status: 503 })

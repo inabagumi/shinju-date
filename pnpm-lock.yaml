@@ -406,17 +406,16 @@ importers:
         version: 5.9.3
 
   packages/health-checkers:
-    dependencies:
+    devDependencies:
       '@supabase/supabase-js':
         specifier: 2.76.1
         version: 2.76.1
-      '@upstash/redis':
-        specifier: 1.35.6
-        version: 1.35.6
-    devDependencies:
       '@tsconfig/strictest':
         specifier: 2.0.6
         version: 2.0.6
+      '@upstash/redis':
+        specifier: 1.35.6
+        version: 1.35.6
       tsup:
         specifier: 8.5.0
         version: 8.5.0(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)
