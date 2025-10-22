@@ -85,17 +85,27 @@ export async function runHealthChecks(
 export function createReadinessResponse(
   status: 'ok' | 'error',
   results?: HealthCheckResult[],
+  errorDetails?: { message?: string; details?: string },
 ): Response {
   if (status === 'ok') {
     return Response.json({ status: 'ok' })
   }
 
-  return Response.json(
-    {
-      checks: results,
-      message: 'Service not ready',
-      status: 'error',
-    },
-    { status: 503 },
-  )
+  const errorResponse: Record<string, unknown> = {
+    status: 'error',
+  }
+
+  if (results) {
+    errorResponse.message = 'Service not ready'
+    errorResponse.checks = results
+  } else if (errorDetails) {
+    errorResponse.message = errorDetails.message || 'Health check failed'
+    if (errorDetails.details) {
+      errorResponse.details = errorDetails.details
+    }
+  } else {
+    errorResponse.message = 'Health check failed'
+  }
+
+  return Response.json(errorResponse, { status: 503 })
 }

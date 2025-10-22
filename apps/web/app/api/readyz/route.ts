@@ -18,13 +18,9 @@ export async function GET(): Promise<Response> {
 
     return createReadinessResponse(status, results)
   } catch (error) {
-    return Response.json(
-      {
-        details: error instanceof Error ? error.message : 'Unknown error',
-        message: 'Health check failed',
-        status: 'error',
-      },
-      { status: 503 },
-    )
+    return createReadinessResponse('error', undefined, {
+      details: error instanceof Error ? error.message : 'Unknown error',
+      message: 'Health check failed',
+    })
   }
 }
