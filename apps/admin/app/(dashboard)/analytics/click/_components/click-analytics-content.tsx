@@ -1,6 +1,10 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { Temporal } from 'temporal-polyfill'
-import { getPopularChannels } from '@/lib/analytics/get-popular-channels'
+import {
+  getPopularChannels,
+  getPopularChannelsWithComparison,
+  type PopularChannelWithComparison,
+} from '@/lib/analytics/get-popular-channels'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
 import { getClickVolume } from '../_lib/get-click-volume'
 import ClickAnalyticsClient from './click-analytics-client'
@@ -47,6 +51,17 @@ export async function ClickAnalyticsContent() {
     return getPopularChannels(limit, startDate, endDate)
   }
 
+  const fetchPopularChannelsWithComparison = async (
+    start: string,
+    end: string,
+    limit: number,
+  ): Promise<PopularChannelWithComparison[]> => {
+    'use server'
+    const startDate = Temporal.PlainDate.from(start)
+    const endDate = Temporal.PlainDate.from(end)
+    return getPopularChannelsWithComparison(limit, startDate, endDate)
+  }
+
   const fetchPopularVideosForDate = async (date: string, limit: number) => {
     'use server'
     const plainDate = Temporal.PlainDate.from(date)
@@ -64,6 +79,7 @@ export async function ClickAnalyticsContent() {
       fetchClickVolume={fetchClickVolume}
       fetchPopularChannels={fetchPopularChannels}
       fetchPopularChannelsForDate={fetchPopularChannelsForDate}
+      fetchPopularChannelsWithComparison={fetchPopularChannelsWithComparison}
       fetchPopularVideos={fetchPopularVideos}
       fetchPopularVideosForDate={fetchPopularVideosForDate}
       initialClickVolume={clickVolume}

@@ -5,7 +5,10 @@ import { logger } from '@shinju-date/logger'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Temporal } from 'temporal-polyfill'
-import type { PopularChannel } from '@/lib/analytics/get-popular-channels'
+import type {
+  PopularChannel,
+  PopularChannelWithComparison,
+} from '@/lib/analytics/get-popular-channels'
 import type { PopularVideo } from '@/lib/analytics/get-popular-videos'
 import type { DateRange } from '../../_components/date-range-picker'
 import DateRangePicker from '../../_components/date-range-picker'
@@ -36,6 +39,11 @@ type ClickAnalyticsClientProps = {
     endDate: string,
     limit: number,
   ) => Promise<PopularChannel[]>
+  fetchPopularChannelsWithComparison: (
+    startDate: string,
+    endDate: string,
+    limit: number,
+  ) => Promise<PopularChannelWithComparison[]>
   fetchPopularChannelsForDate: (
     date: string,
     limit: number,
@@ -50,6 +58,7 @@ export default function ClickAnalyticsClient({
   fetchPopularVideos,
   fetchPopularVideosForDate,
   fetchPopularChannels,
+  fetchPopularChannelsWithComparison,
   fetchPopularChannelsForDate,
 }: ClickAnalyticsClientProps) {
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
@@ -65,9 +74,9 @@ export default function ClickAnalyticsClient({
   >([])
   const [popularVideos, setPopularVideos] =
     useState<PopularVideo[]>(initialPopularVideos)
-  const [popularChannels, setPopularChannels] = useState<PopularChannel[]>(
-    initialPopularChannels,
-  )
+  const [popularChannels, setPopularChannels] = useState<
+    PopularChannel[] | PopularChannelWithComparison[]
+  >(initialPopularChannels)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -85,10 +94,18 @@ export default function ClickAnalyticsClient({
     const fetchData = async () => {
       setLoading(true)
       try {
+        const channelsDataPromise = comparisonEnabled
+          ? fetchPopularChannelsWithComparison(
+              dateRange.startDate,
+              dateRange.endDate,
+              20,
+            )
+          : fetchPopularChannels(dateRange.startDate, dateRange.endDate, 20)
+
         const [volumeData, videosData, channelsData] = await Promise.all([
           fetchClickVolume(dateRange.startDate, dateRange.endDate),
           fetchPopularVideos(dateRange.startDate, dateRange.endDate, 20),
-          fetchPopularChannels(dateRange.startDate, dateRange.endDate, 20),
+          channelsDataPromise,
         ])
         setClickVolume(volumeData)
         setPopularVideos(videosData)
@@ -128,6 +145,7 @@ export default function ClickAnalyticsClient({
     fetchClickVolume,
     fetchPopularVideos,
     fetchPopularChannels,
+    fetchPopularChannelsWithComparison,
   ])
 
   const handleDateClick = async (date: string) => {
@@ -268,6 +286,7 @@ export default function ClickAnalyticsClient({
 
         <PopularChannelsWidget
           channels={popularChannels}
+          comparisonEnabled={comparisonEnabled}
           dateRange={dateRange}
           loading={loading}
           onExportCSV={handleChannelsExportCSV}
