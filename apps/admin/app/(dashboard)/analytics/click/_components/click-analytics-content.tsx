@@ -1,8 +1,8 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { Temporal } from 'temporal-polyfill'
 import {
+  addComparisonData,
   getPopularChannels,
-  getPopularChannelsWithComparison,
   type PopularChannelWithComparison,
 } from '@/lib/analytics/get-popular-channels'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
@@ -59,7 +59,20 @@ export async function ClickAnalyticsContent() {
     'use server'
     const startDate = Temporal.PlainDate.from(start)
     const endDate = Temporal.PlainDate.from(end)
-    return getPopularChannelsWithComparison(limit, startDate, endDate)
+
+    // Calculate previous period dates
+    const duration = endDate.since(startDate).days + 1
+    const previousEnd = startDate.subtract({ days: 1 })
+    const previousStart = previousEnd.subtract({ days: duration - 1 })
+
+    // Get both current and previous period data
+    const [currentChannels, previousChannels] = await Promise.all([
+      getPopularChannels(limit, startDate, endDate),
+      getPopularChannels(limit * 2, previousStart, previousEnd), // Get more results to account for rank changes
+    ])
+
+    // Add comparison data
+    return addComparisonData(currentChannels, previousChannels)
   }
 
   const fetchPopularVideosForDate = async (date: string, limit: number) => {
