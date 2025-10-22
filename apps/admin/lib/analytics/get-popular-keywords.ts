@@ -1,6 +1,7 @@
 'use server'
 
 import { REDIS_KEYS } from '@shinju-date/constants'
+import { Temporal } from 'temporal-polyfill'
 import { _getPopularItemsFromRedis } from './_get-popular-items-from-redis'
 
 export type PopularKeyword = {
