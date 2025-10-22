@@ -1,7 +1,6 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { Temporal } from 'temporal-polyfill'
-import { getPopularKeywords } from '../_lib/get-popular-keywords'
-import { getPopularKeywordsForRange } from '../_lib/get-popular-keywords-for-range'
+import { getPopularKeywords } from '@/lib/analytics/get-popular-keywords'
 import { getSearchVolume } from '../_lib/get-search-volume'
 import { getZeroResultKeywords } from '../_lib/get-zero-result-keywords'
 import SearchAnalyticsClient from './search-analytics-client'
@@ -12,14 +11,14 @@ import SearchAnalyticsClient from './search-analytics-client'
  */
 export async function SearchAnalyticsContent() {
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
-  const startDate = today.subtract({ days: 6 }).toString()
-  const endDate = today.toString()
+  const startDate = today.subtract({ days: 6 })
+  const endDate = today
 
   const [popularKeywords, zeroResultKeywords, searchVolume] = await Promise.all(
     [
-      getPopularKeywordsForRange(startDate, endDate, 20),
+      getPopularKeywords(20, startDate, endDate),
       getZeroResultKeywords(),
-      getSearchVolume(7, startDate, endDate),
+      getSearchVolume(7, startDate.toString(), endDate.toString()),
     ],
   )
 
@@ -30,7 +29,8 @@ export async function SearchAnalyticsContent() {
 
   const fetchPopularKeywords = async (date: string, limit: number) => {
     'use server'
-    return getPopularKeywords(date, limit)
+    const plainDate = Temporal.PlainDate.from(date)
+    return getPopularKeywords(limit, plainDate)
   }
 
   const fetchPopularKeywordsForRange = async (
@@ -39,7 +39,9 @@ export async function SearchAnalyticsContent() {
     limit: number,
   ) => {
     'use server'
-    return getPopularKeywordsForRange(startDate, endDate, limit)
+    const start = Temporal.PlainDate.from(startDate)
+    const end = Temporal.PlainDate.from(endDate)
+    return getPopularKeywords(limit, start, end)
   }
 
   const fetchZeroResultKeywords = async () => {

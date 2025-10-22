@@ -5,25 +5,14 @@ import { logger } from '@shinju-date/logger'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Temporal } from 'temporal-polyfill'
+import type { PopularChannel } from '@/lib/analytics/get-popular-channels'
+import type { PopularVideo } from '@/lib/analytics/get-popular-videos'
 import type { DateRange } from '../../_components/date-range-picker'
 import DateRangePicker from '../../_components/date-range-picker'
 import { exportToCSV } from '../../_lib/export-csv'
 import ClickVolumeChart from '../_components/click-volume-chart'
 import type { DailyClickVolume } from '../_lib/get-click-volume'
-import type { PopularChannel } from '../_lib/get-popular-channels'
-import type { PopularChannelForDate } from '../_lib/get-popular-channels-for-date'
-import type { PopularVideoForDate } from '../_lib/get-popular-videos-for-date'
 import { PopularChannelsWidget } from './popular-channels-widget'
-
-type PopularVideo = {
-  clicks: number
-  slug: string
-  thumbnail: {
-    path: string
-    blur_data_url: string
-  } | null
-  title: string
-}
 
 type ClickAnalyticsClientProps = {
   initialClickVolume: DailyClickVolume[]
@@ -41,7 +30,7 @@ type ClickAnalyticsClientProps = {
   fetchPopularVideosForDate: (
     date: string,
     limit: number,
-  ) => Promise<PopularVideoForDate[]>
+  ) => Promise<PopularVideo[]>
   fetchPopularChannels: (
     startDate: string,
     endDate: string,
@@ -50,7 +39,7 @@ type ClickAnalyticsClientProps = {
   fetchPopularChannelsForDate: (
     date: string,
     limit: number,
-  ) => Promise<PopularChannelForDate[]>
+  ) => Promise<PopularChannel[]>
 }
 
 export default function ClickAnalyticsClient({
@@ -74,12 +63,11 @@ export default function ClickAnalyticsClient({
   const [previousClickVolume, setPreviousClickVolume] = useState<
     DailyClickVolume[]
   >([])
-  const [popularVideos, setPopularVideos] = useState<
-    PopularVideo[] | PopularVideoForDate[]
-  >(initialPopularVideos)
-  const [popularChannels, setPopularChannels] = useState<
-    PopularChannel[] | PopularChannelForDate[]
-  >(initialPopularChannels)
+  const [popularVideos, setPopularVideos] =
+    useState<PopularVideo[]>(initialPopularVideos)
+  const [popularChannels, setPopularChannels] = useState<PopularChannel[]>(
+    initialPopularChannels,
+  )
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
