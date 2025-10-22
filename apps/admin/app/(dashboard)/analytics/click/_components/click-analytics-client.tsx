@@ -63,9 +63,8 @@ export default function ClickAnalyticsClient({
   const [previousClickVolume, setPreviousClickVolume] = useState<
     DailyClickVolume[]
   >([])
-  const [popularVideos, setPopularVideos] = useState<PopularVideo[]>(
-    initialPopularVideos,
-  )
+  const [popularVideos, setPopularVideos] =
+    useState<PopularVideo[]>(initialPopularVideos)
   const [popularChannels, setPopularChannels] = useState<PopularChannel[]>(
     initialPopularChannels,
   )

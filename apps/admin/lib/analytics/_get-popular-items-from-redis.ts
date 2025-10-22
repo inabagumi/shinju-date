@@ -120,11 +120,11 @@ export async function _getPopularItemsFromRedis<T extends string | number>(
     }
   } catch (error) {
     logger.error('Redis通信で人気アイテムの取得に失敗しました', {
+      endDate: endDate?.toString() ?? 'undefined',
       error,
       keyPrefix,
       limit,
       startDate: startDate.toString(),
-      endDate: endDate?.toString() ?? 'undefined',
     })
 
     return []
