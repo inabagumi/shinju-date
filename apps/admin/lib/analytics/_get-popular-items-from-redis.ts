@@ -18,22 +18,22 @@ const CACHE_TTL_SECONDS = 60 * 10 // 10 minutes
  * @param keyPrefix - Redis key prefix for the item type (e.g., 'videos:click:', 'channels:click:')
  * @param cacheKeyPrefix - Cache key prefix for multi-day aggregations
  * @param limit - Maximum number of items to return
- * @param startDate - Start date in ISO 8601 format (YYYY-MM-DD)
- * @param endDate - End date in ISO 8601 format (YYYY-MM-DD). If undefined or equals startDate, uses single-day operation
+ * @param startDate - Start date as Temporal.PlainDate
+ * @param endDate - End date as Temporal.PlainDate. If undefined or equals startDate, uses single-day operation
  * @returns Array of [itemId, score] tuples
  */
 export async function _getPopularItemsFromRedis<T extends string | number>(
   keyPrefix: string,
   cacheKeyPrefix: string,
   limit: number,
-  startDate: string,
-  endDate?: string,
+  startDate: Temporal.PlainDate,
+  endDate?: Temporal.PlainDate,
 ): Promise<[T, number][]> {
   const itemScores: [T, number][] = []
 
   try {
-    const start = Temporal.PlainDate.from(startDate)
-    const end = endDate ? Temporal.PlainDate.from(endDate) : start
+    const start = startDate
+    const end = endDate ?? startDate
 
     // Check if this is a single-day operation
     const isSingleDay = Temporal.PlainDate.compare(start, end) === 0
@@ -138,11 +138,11 @@ export async function _getPopularItemsFromRedis<T extends string | number>(
   } catch (error) {
     logger.error('Redis通信で人気アイテムの取得に失敗しました', {
       cacheKeyPrefix,
-      endDate: endDate ?? 'undefined',
+      endDate: endDate?.toString() ?? 'undefined',
       error,
       keyPrefix,
       limit,
-      startDate,
+      startDate: startDate.toString(),
     })
 
     return []

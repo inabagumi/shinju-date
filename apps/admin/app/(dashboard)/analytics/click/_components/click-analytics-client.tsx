@@ -30,7 +30,7 @@ type ClickAnalyticsClientProps = {
   fetchPopularVideosForDate: (
     date: string,
     limit: number,
-  ) => Promise<PopularVideoForDate[]>
+  ) => Promise<PopularVideo[]>
   fetchPopularChannels: (
     startDate: string,
     endDate: string,
@@ -63,12 +63,12 @@ export default function ClickAnalyticsClient({
   const [previousClickVolume, setPreviousClickVolume] = useState<
     DailyClickVolume[]
   >([])
-  const [popularVideos, setPopularVideos] = useState<
-    PopularVideo[] | PopularVideoForDate[]
-  >(initialPopularVideos)
-  const [popularChannels, setPopularChannels] = useState<
-    PopularChannel[] | PopularChannelForDate[]
-  >(initialPopularChannels)
+  const [popularVideos, setPopularVideos] = useState<PopularVideo[]>(
+    initialPopularVideos,
+  )
+  const [popularChannels, setPopularChannels] = useState<PopularChannel[]>(
+    initialPopularChannels,
+  )
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 

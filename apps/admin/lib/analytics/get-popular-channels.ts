@@ -16,39 +16,21 @@ export type PopularChannel = {
 
 /**
  * Get popular channels based on click data for a date range
- * @param limit - Number of channels to return (default: 10)
- * @param days - Number of days (legacy parameter, ignored if startDate/endDate provided)
- * @param startDate - Start date in ISO 8601 format (YYYY-MM-DD)
- * @param endDate - End date in ISO 8601 format (YYYY-MM-DD)
+ * @param limit - Number of channels to return
+ * @param startDate - Start date as Temporal.PlainDate
+ * @param endDate - End date as Temporal.PlainDate. If undefined, gets data for single date
  */
 export async function getPopularChannels(
-  limit = 10,
-  days = 7,
-  startDate?: string,
-  endDate?: string,
+  limit: number,
+  startDate: Temporal.PlainDate,
+  endDate?: Temporal.PlainDate,
 ): Promise<PopularChannel[]> {
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-
-  // Determine date range
-  let start: string
-  let end: string | undefined
-
-  if (startDate && endDate) {
-    start = startDate
-    end = endDate
-  } else {
-    const endPlainDate = today.toPlainDate()
-    const startPlainDate = endPlainDate.subtract({ days: days - 1 })
-    start = startPlainDate.toString()
-    end = endPlainDate.toString()
-  }
-
   const channelScores = await _getPopularItemsFromRedis<number>(
     REDIS_KEYS.CLICK_CHANNEL_PREFIX,
     'channels:popular:cache:',
     limit,
-    start,
-    end,
+    startDate,
+    endDate,
   )
 
   if (channelScores.length === 0) {
@@ -87,16 +69,4 @@ export async function getPopularChannels(
       }
     })
     .filter(isNonNullable)
-}
-
-/**
- * Get popular channels for a specific date (backward compatibility)
- * @param date - Date in ISO 8601 format (YYYY-MM-DD)
- * @param limit - Maximum number of channels to return (default: 20)
- */
-export async function getPopularChannelsForDate(
-  date: string,
-  limit = 20,
-): Promise<PopularChannel[]> {
-  return getPopularChannels(limit, 1, date, undefined)
 }

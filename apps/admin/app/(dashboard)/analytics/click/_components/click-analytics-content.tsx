@@ -17,13 +17,13 @@ import ClickAnalyticsClient from './click-analytics-client'
  */
 export async function ClickAnalyticsContent() {
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
-  const startDate = today.subtract({ days: 6 }).toString()
-  const endDate = today.toString()
+  const startDate = today.subtract({ days: 6 })
+  const endDate = today
 
   const [popularVideos, clickVolume, popularChannels] = await Promise.all([
-    getPopularVideos(20, 7, startDate, endDate),
-    getClickVolume(7, startDate, endDate),
-    getPopularChannels(20, 7, startDate, endDate),
+    getPopularVideos(20, startDate, endDate),
+    getClickVolume(7, startDate.toString(), endDate.toString()),
+    getPopularChannels(20, startDate, endDate),
   ])
 
   const fetchClickVolume = async (start: string, end: string) => {
@@ -37,7 +37,9 @@ export async function ClickAnalyticsContent() {
     limit: number,
   ) => {
     'use server'
-    return getPopularVideos(limit, 7, start, end)
+    const startDate = Temporal.PlainDate.from(start)
+    const endDate = Temporal.PlainDate.from(end)
+    return getPopularVideos(limit, startDate, endDate)
   }
 
   const fetchPopularChannels = async (
@@ -46,17 +48,21 @@ export async function ClickAnalyticsContent() {
     limit: number,
   ) => {
     'use server'
-    return getPopularChannels(limit, 7, start, end)
+    const startDate = Temporal.PlainDate.from(start)
+    const endDate = Temporal.PlainDate.from(end)
+    return getPopularChannels(limit, startDate, endDate)
   }
 
   const fetchPopularVideosForDate = async (date: string, limit: number) => {
     'use server'
-    return getPopularVideosForDate(date, limit)
+    const plainDate = Temporal.PlainDate.from(date)
+    return getPopularVideos(limit, plainDate)
   }
 
   const fetchPopularChannelsForDate = async (date: string, limit: number) => {
     'use server'
-    return getPopularChannelsForDate(date, limit)
+    const plainDate = Temporal.PlainDate.from(date)
+    return getPopularChannels(limit, plainDate)
   }
 
   return (

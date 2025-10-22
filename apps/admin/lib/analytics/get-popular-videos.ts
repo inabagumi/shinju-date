@@ -18,33 +18,16 @@ export type PopularVideo = {
 }
 
 export async function getPopularVideos(
-  limit = 10,
-  days = 7,
-  startDate?: string,
-  endDate?: string,
+  limit: number,
+  startDate: Temporal.PlainDate,
+  endDate?: Temporal.PlainDate,
 ): Promise<PopularVideo[]> {
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-
-  // Determine date range
-  let start: string
-  let end: string | undefined
-
-  if (startDate && endDate) {
-    start = startDate
-    end = endDate
-  } else {
-    const endPlainDate = today.toPlainDate()
-    const startPlainDate = endPlainDate.subtract({ days: days - 1 })
-    start = startPlainDate.toString()
-    end = endPlainDate.toString()
-  }
-
   const videoScores = await _getPopularItemsFromRedis<number>(
     REDIS_KEYS.CLICK_VIDEO_PREFIX,
     REDIS_KEYS.POPULAR_VIDEOS_PREFIX,
     limit,
-    start,
-    end,
+    startDate,
+    endDate,
   )
 
   if (videoScores.length === 0) {
@@ -83,16 +66,4 @@ export async function getPopularVideos(
       }
     })
     .filter(isNonNullable)
-}
-
-/**
- * Get popular videos for a specific date (backward compatibility)
- * @param date - Date in ISO 8601 format (YYYY-MM-DD)
- * @param limit - Maximum number of videos to return (default: 20)
- */
-export async function getPopularVideosForDate(
-  date: string,
-  limit = 20,
-): Promise<PopularVideo[]> {
-  return getPopularVideos(limit, 1, date, undefined)
 }

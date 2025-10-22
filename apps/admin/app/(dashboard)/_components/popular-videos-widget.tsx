@@ -1,4 +1,6 @@
 import { formatNumber } from '@shinju-date/helpers'
+import { TIME_ZONE } from '@shinju-date/constants'
+import { Temporal } from 'temporal-polyfill'
 import Image from 'next/image'
 import Link from 'next/link'
 import { PopularVideosListSkeleton } from '@/components/skeletons'
@@ -19,7 +21,9 @@ export function PopularVideosWidgetSkeleton() {
  * This is an async Server Component that fetches its own data
  */
 export async function PopularVideosWidget() {
-  const popularVideos = await getPopularVideos(10, 30)
+  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
+  const startDate = today.subtract({ days: 29 })
+  const popularVideos = await getPopularVideos(10, startDate, today)
   const supabaseClient = await createSupabaseServerClient()
 
   return (
