@@ -27,7 +27,6 @@ export async function getPopularChannels(
 ): Promise<PopularChannel[]> {
   const channelScores = await _getPopularItemsFromRedis<number>(
     REDIS_KEYS.CLICK_CHANNEL_PREFIX,
-    'channels:popular:cache:',
     limit,
     startDate,
     endDate,

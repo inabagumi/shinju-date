@@ -1,9 +1,6 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { Temporal } from 'temporal-polyfill'
-import {
-  getPopularKeywords,
-  getPopularKeywordsForRange,
-} from '@/lib/analytics/get-popular-keywords'
+import { getPopularKeywords } from '@/lib/analytics/get-popular-keywords'
 import { getSearchVolume } from '../_lib/get-search-volume'
 import { getZeroResultKeywords } from '../_lib/get-zero-result-keywords'
 import SearchAnalyticsClient from './search-analytics-client'

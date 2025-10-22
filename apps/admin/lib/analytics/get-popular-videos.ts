@@ -24,7 +24,6 @@ export async function getPopularVideos(
 ): Promise<PopularVideo[]> {
   const videoScores = await _getPopularItemsFromRedis<number>(
     REDIS_KEYS.CLICK_VIDEO_PREFIX,
-    REDIS_KEYS.POPULAR_VIDEOS_PREFIX,
     limit,
     startDate,
     endDate,

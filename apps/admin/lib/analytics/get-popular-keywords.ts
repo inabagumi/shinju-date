@@ -21,7 +21,6 @@ export async function getPopularKeywords(
 ): Promise<PopularKeyword[]> {
   const keywordScores = await _getPopularItemsFromRedis<string>(
     REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX,
-    REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
     limit,
     startDate,
     endDate,

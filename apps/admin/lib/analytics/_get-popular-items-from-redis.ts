@@ -16,7 +16,6 @@ const CACHE_TTL_SECONDS = 60 * 10 // 10 minutes
  * Automatically handles single-day (ZRANGE) vs multi-day (ZUNIONSTORE) operations
  *
  * @param keyPrefix - Redis key prefix for the item type (e.g., 'videos:click:', 'channels:click:')
- * @param cacheKeyPrefix - Cache key prefix for multi-day aggregations
  * @param limit - Maximum number of items to return
  * @param startDate - Start date as Temporal.PlainDate
  * @param endDate - End date as Temporal.PlainDate. If undefined or equals startDate, uses single-day operation
@@ -24,7 +23,6 @@ const CACHE_TTL_SECONDS = 60 * 10 // 10 minutes
  */
 export async function _getPopularItemsFromRedis<T extends string | number>(
   keyPrefix: string,
-  cacheKeyPrefix: string,
   limit: number,
   startDate: Temporal.PlainDate,
   endDate?: Temporal.PlainDate,
@@ -40,11 +38,7 @@ export async function _getPopularItemsFromRedis<T extends string | number>(
 
     if (isSingleDay) {
       // Single day operation - use direct ZRANGE
-      const zonedDate = start.toZonedDateTime({
-        plainTime: Temporal.PlainTime.from('00:00:00'),
-        timeZone: TIME_ZONE,
-      })
-      const dailyKey = `${keyPrefix}${formatDate(zonedDate)}`
+      const dailyKey = `${keyPrefix}${formatDate(start)}`
 
       const results = await redisClient.zrange<T[]>(dailyKey, 0, limit - 1, {
         rev: true,
@@ -62,15 +56,9 @@ export async function _getPopularItemsFromRedis<T extends string | number>(
       }
     } else {
       // Multi-day operation - use ZUNIONSTORE with caching
-      const startZoned = start.toZonedDateTime({
-        plainTime: Temporal.PlainTime.from('00:00:00'),
-        timeZone: TIME_ZONE,
-      })
-      const endZoned = end.toZonedDateTime({
-        plainTime: Temporal.PlainTime.from('00:00:00'),
-        timeZone: TIME_ZONE,
-      })
-      const cacheKey = `${cacheKeyPrefix}${formatDate(startZoned)}/${formatDate(endZoned)}`
+      const cleanedPrefix = keyPrefix.replace(/:$/, '') // Remove trailing ':'
+      const rangeKey = `${formatDate(start)}/${formatDate(end)}`
+      const cacheKey = `cache:popular_items:${cleanedPrefix}:${rangeKey}`
 
       // Try to get cached results first
       const cachedResults = await redisClient.zrange<T[]>(
@@ -98,11 +86,7 @@ export async function _getPopularItemsFromRedis<T extends string | number>(
         const dailyKeys: string[] = []
         let currentDate = start
         while (Temporal.PlainDate.compare(currentDate, end) <= 0) {
-          const zonedDate = currentDate.toZonedDateTime({
-            plainTime: Temporal.PlainTime.from('00:00:00'),
-            timeZone: TIME_ZONE,
-          })
-          dailyKeys.push(`${keyPrefix}${formatDate(zonedDate)}`)
+          dailyKeys.push(`${keyPrefix}${formatDate(currentDate)}`)
           currentDate = currentDate.add({ days: 1 })
         }
 
@@ -137,12 +121,11 @@ export async function _getPopularItemsFromRedis<T extends string | number>(
     }
   } catch (error) {
     logger.error('Redis通信で人気アイテムの取得に失敗しました', {
-      cacheKeyPrefix,
-      endDate: endDate?.toString() ?? 'undefined',
       error,
       keyPrefix,
       limit,
       startDate: startDate.toString(),
+      endDate: endDate?.toString() ?? 'undefined',
     })
 
     return []
