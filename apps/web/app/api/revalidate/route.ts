@@ -27,7 +27,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   for (const tag of payload.tags) {
-    revalidateTag(tag)
+    revalidateTag(tag, 'hours')
   }
 
   Sentry.logger.info('Revalidation was successful.', {

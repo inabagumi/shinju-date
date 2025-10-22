@@ -1,4 +1,4 @@
-import type { NextMiddleware, NextRequest } from 'next/server'
+import type { NextProxy, NextRequest } from 'next/server'
 import { joinURL } from 'ufo'
 
 function isVideosPage(pathname: string): boolean {
@@ -13,7 +13,7 @@ function isVideosPage(pathname: string): boolean {
   return false
 }
 
-export function middleware(request: NextRequest): ReturnType<NextMiddleware> {
+export function proxy(request: NextRequest): ReturnType<NextProxy> {
   if (
     isVideosPage(request.nextUrl.pathname) &&
     request.nextUrl.searchParams.has('q')
