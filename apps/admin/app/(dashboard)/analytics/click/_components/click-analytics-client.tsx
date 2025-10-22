@@ -39,7 +39,7 @@ type ClickAnalyticsClientProps = {
   fetchPopularChannelsForDate: (
     date: string,
     limit: number,
-  ) => Promise<PopularChannelForDate[]>
+  ) => Promise<PopularChannel[]>
 }
 
 export default function ClickAnalyticsClient({
