@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "target": "es2022"
+  },
+  "extends": "@tsconfig/strictest/tsconfig",
+  "include": ["src/**/*.ts"]
+}

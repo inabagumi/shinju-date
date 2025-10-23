@@ -1,0 +1,40 @@
+[project]
+name = "insights"
+version = "1.0.0"
+description = ""
+authors = [
+  { name = "Your Name", email = "you@example.com" },
+]
+readme = "README.md"
+dependencies = [
+    "fastapi>=0.111.0",
+    "uvicorn>=0.29.0",
+    "janome>=0.5.0",
+    "supabase>=2.4.2",
+    "python-dotenv>=1.0.1",
+]
+
+[tool.poetry]
+package-mode = false
+packages = [{include = "api"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.4.5"
+poethepoet = "^0.27.0"
+
+[tool.poe.tasks]
+dev = "uvicorn api.index:app --reload --host 0.0.0.0"
+format = "ruff format ."
+lint = "ruff check ."
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.ruff.format]
+quote-style = "double"

@@ -27,6 +27,11 @@ type SearchAnalyticsClientProps = {
     date: string,
     limit: number,
   ) => Promise<PopularKeyword[]>
+  fetchPopularKeywordsForRange: (
+    startDate: string,
+    endDate: string,
+    limit: number,
+  ) => Promise<PopularKeyword[]>
   fetchZeroResultKeywords: () => Promise<string[]>
 }
 
@@ -36,6 +41,7 @@ export default function SearchAnalyticsClient({
   initialZeroResultKeywords,
   fetchSearchVolume,
   fetchPopularKeywords,
+  fetchPopularKeywordsForRange,
   fetchZeroResultKeywords,
 }: SearchAnalyticsClientProps) {
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
@@ -74,7 +80,12 @@ export default function SearchAnalyticsClient({
       try {
         const [volumeData, keywordsData, zeroData] = await Promise.all([
           fetchSearchVolume(dateRange.startDate, dateRange.endDate),
-          fetchPopularKeywords(dateRange.endDate, 20),
+          // Use range aggregation when no specific date is selected
+          fetchPopularKeywordsForRange(
+            dateRange.startDate,
+            dateRange.endDate,
+            20,
+          ),
           fetchZeroResultKeywords(),
         ])
         setSearchVolume(volumeData)
@@ -98,8 +109,9 @@ export default function SearchAnalyticsClient({
           setPreviousSearchVolume([])
         }
       } catch (error) {
-        logger.error('分析データの取得に失敗しました', error, {
+        logger.error('分析データの取得に失敗しました', {
           endDate: dateRange.endDate,
+          error,
           startDate: dateRange.startDate,
         })
       } finally {
@@ -112,15 +124,48 @@ export default function SearchAnalyticsClient({
     dateRange,
     comparisonEnabled,
     fetchSearchVolume,
-    fetchPopularKeywords,
+    fetchPopularKeywordsForRange,
     fetchZeroResultKeywords,
   ])
 
-  // Note: Search keywords are not tracked by date in Redis, so drill-down is not available
-  // We keep the chart interactive but don't filter keywords by date
   const handleDateClick = async (date: string) => {
+    // If clicking the same date, clear selection and return to range view
+    if (selectedDate === date) {
+      setSelectedDate(null)
+      setLoading(true)
+      try {
+        const keywordsData = await fetchPopularKeywordsForRange(
+          dateRange.startDate,
+          dateRange.endDate,
+          20,
+        )
+        setPopularKeywords(keywordsData)
+      } catch (error) {
+        logger.error('期間別キーワードの取得に失敗しました', {
+          endDate: dateRange.endDate,
+          error,
+          startDate: dateRange.startDate,
+        })
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+
+    // Set new selected date and fetch data for that specific date
     setSelectedDate(date)
-    // Keywords are tracked globally, not by date, so we don't refetch
+    setLoading(true)
+    try {
+      const keywordsData = await fetchPopularKeywords(date, 20)
+      setPopularKeywords(keywordsData)
+    } catch (error) {
+      logger.error('日別キーワードの取得に失敗しました', {
+        date,
+        error,
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleExportKeywords = () => {
@@ -189,7 +234,6 @@ export default function SearchAnalyticsClient({
           {selectedDate && (
             <p className="mt-2 text-center text-gray-600 text-sm">
               選択された日付: {selectedDate}
-              （キーワードは全期間の集計データです）
             </p>
           )}
         </div>
@@ -226,7 +270,18 @@ export default function SearchAnalyticsClient({
 
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-semibold text-xl">人気キーワードランキング</h2>
+            <h2 className="font-semibold text-xl">
+              人気キーワードランキング
+              {selectedDate ? (
+                <span className="ml-2 text-blue-600 text-sm">
+                  ({selectedDate})
+                </span>
+              ) : (
+                <span className="ml-2 text-green-600 text-sm">
+                  ({dateRange.startDate}〜{dateRange.endDate})
+                </span>
+              )}
+            </h2>
             <button
               className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm transition-colors hover:bg-gray-50"
               onClick={handleExportKeywords}
@@ -236,7 +291,9 @@ export default function SearchAnalyticsClient({
             </button>
           </div>
           <p className="mb-4 text-gray-600 text-sm">
-            最も検索されているキーワードのランキング。ユーザーの関心を把握できます。
+            {selectedDate
+              ? `${selectedDate}に検索されたキーワードのランキング。同じ日付をもう一度クリックすると期間全体の表示に戻ります。`
+              : `${dateRange.startDate}から${dateRange.endDate}の期間で最も検索されたキーワードのランキング。グラフの日付をクリックすると、その日のランキングが表示されます。`}
           </p>
           {popularKeywords.length > 0 ? (
             <div className="max-h-96 space-y-2 overflow-y-auto">

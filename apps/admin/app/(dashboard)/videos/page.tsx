@@ -1,10 +1,13 @@
 import { formatNumber } from '@shinju-date/helpers'
+import { Suspense } from 'react'
+import { TableSkeleton } from '@/components/skeletons'
 import getChannels from '../channels/_lib/get-channels'
 import Pagination from './_components/pagination'
-import VideoList from './_components/video-list'
+import { VideoFilters } from './_components/video-filters'
+import { VideoTable } from './_components/video-table'
 import {
   getVideos,
-  type VideoFilters,
+  type VideoFilters as VideoFiltersType,
   type VideoSortField,
   type VideoSortOrder,
 } from './_lib/get-videos'
@@ -15,7 +18,6 @@ type Props = {
     deleted?: string
     page?: string
     search?: string
-    slug?: string
     sortField?: string
     sortOrder?: string
     visible?: string
@@ -28,15 +30,12 @@ export default async function VideosPage({ searchParams }: Props) {
   const perPage = 20
 
   // Build filters
-  const filters: VideoFilters = {}
+  const filters: VideoFiltersType = {}
   if (params.channelId) {
     filters.channelId = Number(params.channelId)
   }
   if (params.visible !== undefined && params.visible !== '') {
     filters.visible = params.visible === 'true'
-  }
-  if (params.slug) {
-    filters.slug = params.slug
   }
   if (params.search) {
     filters.search = params.search
@@ -52,14 +51,11 @@ export default async function VideosPage({ searchParams }: Props) {
   const sortField = (params.sortField as VideoSortField) || 'updated_at'
   const sortOrder = (params.sortOrder as VideoSortOrder) || 'desc'
 
-  const { videos, total } = await getVideos(
-    currentPage,
-    perPage,
-    filters,
-    sortField,
-    sortOrder,
-  )
-  const channels = await getChannels()
+  // Fetch channels and total count outside Suspense to avoid layout shift
+  const [channels, { total }] = await Promise.all([
+    getChannels(),
+    getVideos(currentPage, perPage, filters, sortField, sortOrder),
+  ])
   const totalPages = Math.ceil(total / perPage)
 
   return (
@@ -69,7 +65,17 @@ export default async function VideosPage({ searchParams }: Props) {
         <p className="text-gray-600">全 {formatNumber(total)} 件の動画</p>
       </div>
 
-      <VideoList channels={channels} videos={videos} />
+      <VideoFilters channels={channels} />
+
+      <Suspense fallback={<TableSkeleton rows={perPage} />}>
+        <VideoTable
+          currentPage={currentPage}
+          filters={filters}
+          perPage={perPage}
+          sortField={sortField}
+          sortOrder={sortOrder}
+        />
+      </Suspense>
       {totalPages > 1 && (
         <Pagination currentPage={currentPage} totalPages={totalPages} />
       )}

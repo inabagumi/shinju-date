@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "lib": ["ESNext"],
+    "target": "ES2022"
+  },
+  "exclude": ["node_modules", "dist"],
+  "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/node20/tsconfig"],
+  "include": ["./src/**/*.ts", "./tsup.config.ts"]
+}

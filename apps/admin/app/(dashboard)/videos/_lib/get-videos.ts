@@ -1,9 +1,9 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import { range } from '@shinju-date/helpers'
 import { formatDate } from '@shinju-date/temporal-fns'
-import { cookies } from 'next/headers'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
 import { escapeSearchString } from './escape-search'
 
 export type Video = {
@@ -13,6 +13,7 @@ export type Video = {
   deleted_at: string | null
   published_at: string
   updated_at: string
+  duration: string
   thumbnail: {
     path: string
     blur_data_url: string
@@ -28,7 +29,6 @@ export type Video = {
 export type VideoFilters = {
   channelId?: number
   deleted?: boolean
-  slug?: string
   visible?: boolean
   search?: string
 }
@@ -46,10 +46,7 @@ export async function getVideos(
   videos: Video[]
   total: number
 }> {
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   const from = (page - 1) * perPage
   const to = from + perPage - 1
@@ -58,7 +55,7 @@ export async function getVideos(
   let query = supabaseClient
     .from('videos')
     .select(
-      'slug, title, visible, deleted_at, published_at, updated_at, thumbnails(path, blur_data_url), channels(id, name, slug)',
+      'slug, title, visible, deleted_at, published_at, updated_at, duration, thumbnails(path, blur_data_url), channels(id, name, slug)',
       { count: 'exact' },
     )
 
@@ -68,9 +65,6 @@ export async function getVideos(
   }
   if (filters?.visible !== undefined) {
     query = query.eq('visible', filters.visible)
-  }
-  if (filters?.slug) {
-    query = query.eq('slug', filters.slug)
   }
   // Handle text search
   if (filters?.search) {
@@ -110,7 +104,7 @@ export async function getVideos(
 
   // Get last 7 days in JST timezone
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-  const days = Array.from({ length: 7 }, (_, i) => {
+  const days = range(7).map((i) => {
     const date = today.subtract({ days: i })
     return formatDate(date)
   })
@@ -137,6 +131,7 @@ export async function getVideos(
     channel: video.channels,
     clicks: clickCounts[index] ?? 0,
     deleted_at: video.deleted_at,
+    duration: video.duration,
     published_at: video.published_at,
     slug: video.slug,
     thumbnail: video.thumbnails,

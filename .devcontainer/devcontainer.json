@@ -13,6 +13,7 @@
   "features": {
     "ghcr.io/devcontainers-extra/features/supabase-cli:1": {},
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+    "ghcr.io/devcontainers/features/python:1": {},
     "ghcr.io/devcontainers/features/terraform:1": {
       "terragrunt": "none",
       "tflint": "none",

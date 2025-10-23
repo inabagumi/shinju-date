@@ -1,18 +1,20 @@
 'use client'
 
 import { formatNumber } from '@shinju-date/helpers'
+import { formatDuration } from '@shinju-date/temporal-fns'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { twMerge } from 'tailwind-merge'
+import { Temporal } from 'temporal-polyfill'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/dropdown-menu'
-import { supabaseClient } from '@/lib/supabase'
+import { supabaseClient } from '@/lib/supabase/public'
 import {
   softDeleteAction,
   softDeleteSingleVideoAction,
@@ -21,18 +23,8 @@ import {
 } from '../_actions'
 import type { Video } from '../_lib/get-videos'
 import { SortIcon } from './sort-icon'
-import { VideoFilters } from './video-filters'
-
-type Channel = {
-  created_at: string
-  id: number
-  name: string
-  slug: string
-  updated_at: string
-}
 
 type Props = {
-  channels: Channel[]
   videos: Video[]
 }
 
@@ -42,8 +34,7 @@ function getStatusText(video: Video): string {
   return '非表示'
 }
 
-export default function VideoList({ channels, videos }: Props) {
-  const router = useRouter()
+export default function VideoList({ videos }: Props) {
   const searchParams = useSearchParams()
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>([])
   const [showConfirmModal, setShowConfirmModal] = useState<{
@@ -153,9 +144,6 @@ export default function VideoList({ channels, videos }: Props) {
 
   return (
     <div>
-      {/* Filters and Sort Controls */}
-      <VideoFilters channels={channels} />
-
       {/* Action bar */}
       {selectedSlugs.length > 0 && (
         <div className="sticky top-0 z-10 mb-4 bg-blue-600 p-4 text-white shadow-lg">
@@ -197,10 +185,10 @@ export default function VideoList({ channels, videos }: Props) {
                   type="checkbox"
                 />
               </th>
-              <th className="p-3 text-left">サムネイル</th>
-              <th className="p-3 text-left">タイトル</th>
-              <th className="p-3 text-left">チャンネル</th>
-              <th className="p-3 text-left">
+              <th className="whitespace-nowrap p-3 text-left">サムネイル</th>
+              <th className="whitespace-nowrap p-3 text-left">タイトル</th>
+              <th className="whitespace-nowrap p-3 text-left">チャンネル</th>
+              <th className="whitespace-nowrap p-3 text-left">
                 <Link
                   className="flex items-center hover:text-blue-600"
                   href={getSortUrl('published_at')}
@@ -213,7 +201,7 @@ export default function VideoList({ channels, videos }: Props) {
                   />
                 </Link>
               </th>
-              <th className="p-3 text-left">
+              <th className="whitespace-nowrap p-3 text-left">
                 <Link
                   className="flex items-center hover:text-blue-600"
                   href={getSortUrl('updated_at')}
@@ -226,9 +214,10 @@ export default function VideoList({ channels, videos }: Props) {
                   />
                 </Link>
               </th>
-              <th className="p-3 text-left">クリック数</th>
-              <th className="p-3 text-left">ステータス</th>
-              <th className="p-3 text-left">アクション</th>
+              <th className="whitespace-nowrap p-3 text-left">再生時間</th>
+              <th className="whitespace-nowrap p-3 text-left">クリック数</th>
+              <th className="whitespace-nowrap p-3 text-left">ステータス</th>
+              <th className="whitespace-nowrap p-3 text-left">アクション</th>
             </tr>
           </thead>
           <tbody>
@@ -296,6 +285,11 @@ export default function VideoList({ channels, videos }: Props) {
                       })}
                     </span>
                   </td>
+                  <td className="p-3">
+                    <span className="text-gray-600 text-sm">
+                      {formatDuration(Temporal.Duration.from(video.duration))}
+                    </span>
+                  </td>
                   <td className="p-3">{formatNumber(video.clicks)}</td>
                   <td className="p-3">
                     <span
@@ -326,9 +320,31 @@ export default function VideoList({ channels, videos }: Props) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem
-                          onClick={() => router.push(`/videos/${video.slug}`)}
+                          onClick={() =>
+                            window.open(
+                              `https://www.youtube.com/watch?v=${video.slug}`,
+                              '_blank',
+                            )
+                          }
                         >
-                          編集
+                          <span className="flex items-center gap-1">
+                            YouTubeで見る
+                            <svg
+                              aria-hidden="true"
+                              className="h-4 w-4"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              viewBox="0 0 24 24"
+                            >
+                              <title>外部リンク</title>
+                              <path
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() =>
@@ -352,7 +368,7 @@ export default function VideoList({ channels, videos }: Props) {
               ))
             ) : (
               <tr>
-                <td className="p-8 text-center text-gray-500" colSpan={9}>
+                <td className="p-8 text-center text-gray-500" colSpan={10}>
                   動画がありません。
                 </td>
               </tr>

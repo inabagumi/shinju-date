@@ -47,8 +47,9 @@ export async function getPopularKeywordsForDate(
 
     return keywords
   } catch (error) {
-    logger.error('日付別のキーワード取得に失敗しました', error, {
+    logger.error('日付別のキーワード取得に失敗しました', {
       date,
+      error,
       limit,
     })
     return []

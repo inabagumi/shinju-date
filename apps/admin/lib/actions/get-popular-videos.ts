@@ -4,10 +4,9 @@ import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { isNonNullable } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { formatDate } from '@shinju-date/temporal-fns'
-import { cookies } from 'next/headers'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
 
 /**
  * 人気動画のキャッシュ有効期間（秒）
@@ -58,7 +57,9 @@ export async function getPopularVideos(
       plainTime: Temporal.PlainTime.from('00:00:00'),
       timeZone: TIME_ZONE,
     })
-    const cacheKey = `${REDIS_KEYS.POPULAR_VIDEOS_PREFIX}${formatDate(startZoned)}/${formatDate(endZoned)}`
+    const cacheKey = `${REDIS_KEYS.POPULAR_VIDEOS_PREFIX}${formatDate(
+      startZoned,
+    )}/${formatDate(endZoned)}`
 
     const cachedResults = await redisClient.zrange<number[]>(
       cacheKey,
@@ -125,9 +126,10 @@ export async function getPopularVideos(
       }
     }
   } catch (error) {
-    logger.error('Redis通信で人気動画の取得に失敗しました', error, {
+    logger.error('Redis通信で人気動画の取得に失敗しました', {
       days,
       endDate: endDate ?? 'undefined',
+      error,
       limit,
       startDate: startDate ?? 'undefined',
     })
@@ -139,10 +141,7 @@ export async function getPopularVideos(
     return []
   }
 
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   const videoIds = videoScores.map(([id]) => id)
   const { data: videos, error } = await supabaseClient
@@ -151,7 +150,8 @@ export async function getPopularVideos(
     .in('id', videoIds)
 
   if (error) {
-    logger.error('動画の詳細取得に失敗しました', error, {
+    logger.error('動画の詳細取得に失敗しました', {
+      error,
       videoIds: videoIds.join(','),
     })
 

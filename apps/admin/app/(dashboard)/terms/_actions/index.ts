@@ -2,17 +2,14 @@
 
 import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
-import { cookies } from 'next/headers'
 import type { FormState } from '@/components/form'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
 
 export async function createTermAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
   const term = formData.get('term') as string
-  const readings = formData.get('readings') as string
-  const synonyms = formData.get('synonyms') as string
 
   if (!term || term.trim() === '') {
     return {
@@ -22,28 +19,28 @@ export async function createTermAction(
     }
   }
 
-  const readingsArray = readings
-    ? readings
-        .split('\n')
-        .map((r) => r.trim())
-        .filter(Boolean)
-    : []
-  const synonymsArray = synonyms
-    ? synonyms
-        .split('\n')
-        .map((s) => s.trim())
-        .filter(Boolean)
-    : []
+  // Extract array values from FormData
+  const readingsArray: string[] = []
+  const synonymsArray: string[] = []
 
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith('readings[') && typeof value === 'string') {
+      readingsArray.push(value)
+    } else if (key.startsWith('synonyms[') && typeof value === 'string') {
+      synonymsArray.push(value)
+    }
+  }
+
+  // Filter out empty values
+  const filteredReadings = readingsArray.map((r) => r.trim()).filter(Boolean)
+  const filteredSynonyms = synonymsArray.map((s) => s.trim()).filter(Boolean)
+
+  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const { error } = await supabaseClient.from('terms').insert({
-      readings: readingsArray,
-      synonyms: synonymsArray,
+      readings: filteredReadings,
+      synonyms: filteredSynonyms,
       term: term.trim(),
     })
 
@@ -54,7 +51,7 @@ export async function createTermAction(
     revalidatePath('/terms')
     return {}
   } catch (error) {
-    logger.error('用語の追加に失敗しました', error, { term: term.trim() })
+    logger.error('用語の追加に失敗しました', { error, term: term.trim() })
     return {
       errors: {
         generic: [
@@ -71,8 +68,6 @@ export async function updateTermAction(
 ): Promise<FormState> {
   const idString = formData.get('id') as string
   const term = formData.get('term') as string
-  const readings = formData.get('readings') as string
-  const synonyms = formData.get('synonyms') as string
 
   if (!idString || !term || term.trim() === '') {
     return {
@@ -91,30 +86,30 @@ export async function updateTermAction(
     }
   }
 
-  const readingsArray = readings
-    ? readings
-        .split('\n')
-        .map((r) => r.trim())
-        .filter(Boolean)
-    : []
-  const synonymsArray = synonyms
-    ? synonyms
-        .split('\n')
-        .map((s) => s.trim())
-        .filter(Boolean)
-    : []
+  // Extract array values from FormData
+  const readingsArray: string[] = []
+  const synonymsArray: string[] = []
 
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith('readings[') && typeof value === 'string') {
+      readingsArray.push(value)
+    } else if (key.startsWith('synonyms[') && typeof value === 'string') {
+      synonymsArray.push(value)
+    }
+  }
+
+  // Filter out empty values
+  const filteredReadings = readingsArray.map((r) => r.trim()).filter(Boolean)
+  const filteredSynonyms = synonymsArray.map((s) => s.trim()).filter(Boolean)
+
+  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const { error } = await supabaseClient
       .from('terms')
       .update({
-        readings: readingsArray,
-        synonyms: synonymsArray,
+        readings: filteredReadings,
+        synonyms: filteredSynonyms,
         term: term.trim(),
       })
       .eq('id', id)
@@ -126,7 +121,7 @@ export async function updateTermAction(
     revalidatePath('/terms')
     return {}
   } catch (error) {
-    logger.error('用語の更新に失敗しました', error, { id, term: term.trim() })
+    logger.error('用語の更新に失敗しました', { error, id, term: term.trim() })
     return {
       errors: {
         generic: [
@@ -145,10 +140,7 @@ export async function deleteTermAction(id: number): Promise<{
     return { error: 'IDが指定されていません。', success: false }
   }
 
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const { error } = await supabaseClient.from('terms').delete().eq('id', id)
@@ -160,7 +152,7 @@ export async function deleteTermAction(id: number): Promise<{
     revalidatePath('/terms')
     return { success: true }
   } catch (error) {
-    logger.error('用語の削除に失敗しました', error, { id })
+    logger.error('用語の削除に失敗しました', { error, id })
     return {
       error:
         error instanceof Error ? error.message : '用語の削除に失敗しました。',

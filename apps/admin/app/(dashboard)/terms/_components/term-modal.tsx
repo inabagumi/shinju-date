@@ -12,6 +12,7 @@ import Form, {
   Label,
 } from '@/components/form'
 import { createTermAction, updateTermAction } from '../_actions'
+import { SortableInputList } from './sortable-input-list'
 
 type Term = {
   id: number
@@ -86,26 +87,22 @@ export function TermModal({ term }: TermModalProps) {
               <ErrorMessage className="mt-1 text-red-600 text-sm" />
             </FormField>
             <FormField name="readings">
-              <Label className="mb-2 block font-medium">
-                読み方（1行に1つ）
-              </Label>
-              <textarea
-                className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
-                defaultValue={term?.readings.join('\n') ?? ''}
+              <Label className="mb-2 block font-medium">読み方</Label>
+              <SortableInputList
+                addButtonLabel="読み方を追加"
+                defaultValues={term?.readings ?? []}
                 name="readings"
-                rows={3}
+                placeholder="読み方を入力"
               />
               <ErrorMessage className="mt-1 text-red-600 text-sm" />
             </FormField>
             <FormField name="synonyms">
-              <Label className="mb-2 block font-medium">
-                類義語（1行に1つ）
-              </Label>
-              <textarea
-                className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
-                defaultValue={term?.synonyms.join('\n') ?? ''}
+              <Label className="mb-2 block font-medium">類義語</Label>
+              <SortableInputList
+                addButtonLabel="類義語を追加"
+                defaultValues={term?.synonyms ?? []}
                 name="synonyms"
-                rows={3}
+                placeholder="類義語を入力"
               />
               <ErrorMessage className="mt-1 text-red-600 text-sm" />
             </FormField>

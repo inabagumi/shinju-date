@@ -12,7 +12,8 @@ export async function getLastVideoSync(): Promise<Temporal.ZonedDateTime | null>
     const instant = Temporal.Instant.from(timestamp)
     return instant.toZonedDateTimeISO(TIME_ZONE)
   } catch (error) {
-    logger.error('最終動画同期タイムスタンプの取得に失敗しました', error)
+    logger.error('最終動画同期タイムスタンプの取得に失敗しました', { error })
+
     return null
   }
 }

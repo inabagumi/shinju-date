@@ -50,8 +50,9 @@ export async function getPopularKeywords(
 
     return keywords
   } catch (error) {
-    logger.error('Redisから人気キーワードの取得に失敗しました', error, {
+    logger.error('Redisから人気キーワードの取得に失敗しました', {
       date,
+      error,
       limit,
     })
     return []
