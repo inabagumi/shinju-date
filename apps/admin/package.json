@@ -54,6 +54,7 @@
     "build": "next build",
     "dev": "next --port 4000 --turbopack",
     "lint": "next lint",
+    "msw:init": "msw init public/",
     "start": "next start --port 4000"
   },
   "type": "module",

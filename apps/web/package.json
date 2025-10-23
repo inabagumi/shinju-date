@@ -65,6 +65,7 @@
     "build": "next build",
     "dev": "next --port 3000 --turbopack",
     "lint": "next lint",
+    "msw:init": "msw init public/",
     "start": "next start --port 3000",
     "test": "vitest run"
   },
