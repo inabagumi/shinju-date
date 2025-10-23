@@ -1,25 +1,18 @@
-[project]
+[tool.poetry]
 name = "insights"
 version = "1.0.0"
-description = ""
-authors = [
-  { name = "Your Name", email = "you@example.com" },
-]
+description = "SHINJU DATE Insights API for video analytics"
+authors = ["SHINJU DATE Team"]
 readme = "README.md"
-dependencies = [
-    "fastapi>=0.119.1",
-    "uvicorn>=0.38.0",
-    "janome>=0.5.0",
-    "supabase>=2.22.1",
-    "python-dotenv>=1.1.1",
-]
-
-[tool.poetry]
 package-mode = false
-packages = [{include = "api"}]
 
 [tool.poetry.dependencies]
-python = "^3.14.0"
+python = "^3.12"
+fastapi = "^0.119.1"
+uvicorn = "^0.38.0"
+janome = "^0.5.0"
+supabase = "^2.22.1"
+python-dotenv = "^1.1.1"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.14.1"
