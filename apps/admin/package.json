@@ -57,5 +57,10 @@
     "start": "next start --port 4000"
   },
   "type": "module",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
+  }
 }
