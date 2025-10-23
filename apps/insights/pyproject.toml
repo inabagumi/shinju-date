@@ -22,7 +22,7 @@ packages = [{include = "api"}]
 python = "^3.14.0"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.14.1"
+ruff = "^0.14.2"
 poethepoet = "^0.37.0"
 
 [tool.poe.tasks]
