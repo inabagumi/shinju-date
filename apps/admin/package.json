@@ -22,14 +22,14 @@
     "react-dom": "19.2.0",
     "recharts": "3.3.0",
     "tailwind-merge": "3.3.1",
-    "tailwindcss": "4.1.15",
+    "tailwindcss": "4.1.16",
     "temporal-polyfill": "0.3.0",
     "zod": "4.1.12"
   },
   "description": "",
   "devDependencies": {
     "@shinju-date/database": "workspace:*",
-    "@tailwindcss/postcss": "4.1.15",
+    "@tailwindcss/postcss": "4.1.16",
     "@tsconfig/next": "2.0.3",
     "@tsconfig/strictest": "2.0.6",
     "@types/node": "22.18.12",
