@@ -3,12 +3,12 @@ import { setupWorker } from 'msw/browser'
 
 export const worker = setupWorker(...allHandlers)
 
-// Start the worker in development
+// Start the worker when explicitly enabled
 export const startMocking = async () => {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env['ENABLE_MSW'] === 'true') {
     await worker.start({
       onUnhandledRequest: 'warn',
     })
-    console.log('🚀 MSW enabled for development')
+    console.log('🚀 MSW enabled')
   }
 }

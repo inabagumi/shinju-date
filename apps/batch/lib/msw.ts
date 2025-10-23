@@ -9,10 +9,7 @@ import {
  * Call this at the start of your batch processes to enable API mocking
  */
 export function initializeMocking() {
-  if (
-    process.env['NODE_ENV'] === 'development' ||
-    process.env['ENABLE_MSW'] === 'true'
-  ) {
+  if (process.env['ENABLE_MSW'] === 'true') {
     startServer()
     console.log('🚀 MSW enabled for batch processing')
 
