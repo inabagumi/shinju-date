@@ -1,31 +1,47 @@
-# Setup steps for GitHub Copilot Coding Agent
-# This file contains the necessary steps to set up a consistent development environment
-# for AI agents working on the SHINJU DATE project.
+name: "Copilot Setup Steps"
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
 
 env:
   # renovate: datasource=npm depName=corepack
   COREPACK_VERSION: 0.31.0
 
-steps:
-  - name: "Enable Corepack for pnpm"
-    run: |
-      npm install -g corepack@${COREPACK_VERSION}
-      corepack enable
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-24.04
 
-  - name: "Install project dependencies"
-    run: "pnpm install"
+    permissions:
+      contents: read
 
-  - name: "Set MSW environment variable"
-    run: "echo 'ENABLE_MSW=true' >> $GITHUB_ENV"
+    steps:
+      - uses: actions/checkout@v5
 
-  - name: "Create public directory for admin app"
-    run: "mkdir -p apps/admin/public"
+      - name: "Enable Corepack for pnpm"
+        run: |
+          npm install -g corepack@${COREPACK_VERSION}
+          corepack enable
 
-  - name: "Initialize MSW service workers for apps"
-    run: "pnpm --filter './apps/*' run msw:init"
+      - name: "Install project dependencies"
+        run: "pnpm install"
 
-  - name: "Run code quality checks and auto-fix issues"
-    run: "pnpm run check --fix"
+      - name: "Set MSW environment variable"
+        run: "echo 'ENABLE_MSW=true' >> $GITHUB_ENV"
 
-  - name: "Run tests to verify functionality"
-    run: pnpm run test
+      - name: "Create public directory for admin app"
+        run: "mkdir -p apps/admin/public"
+
+      - name: "Initialize MSW service workers for apps"
+        run: "pnpm --filter './apps/*' run msw:init"
+
+      - name: "Run code quality checks and auto-fix issues"
+        run: "pnpm run check --fix"
+
+      - name: "Run tests to verify functionality"
+        run: pnpm run test
