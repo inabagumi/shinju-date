@@ -1,0 +1,28 @@
+# Setup steps for GitHub Copilot Coding Agent
+# This file contains the necessary steps to set up a consistent development environment
+# for AI agents working on the SHINJU DATE project.
+
+steps:
+  - name: "Enable Corepack for pnpm"
+    command: "npm install -g corepack@0.31.0 && corepack enable"
+
+  - name: "Install project dependencies"
+    command: "pnpm install"
+
+  - name: "Set MSW environment variable"
+    command: "export ENABLE_MSW=true"
+
+  - name: "Initialize MSW service worker for web app"
+    command: "cd apps/web && pnpm run msw:init"
+
+  - name: "Create public directory for admin app"
+    command: "mkdir -p apps/admin/public"
+
+  - name: "Initialize MSW service worker for admin app"
+    command: "cd apps/admin && pnpm run msw:init"
+
+  - name: "Run code quality checks and auto-fix issues"
+    command: "pnpm run check --fix"
+
+  - name: "Run tests to verify functionality"
+    command: "pnpm run test"
