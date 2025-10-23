@@ -1,4 +1,5 @@
 import { formatNumber } from '@shinju-date/helpers'
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { TableSkeleton } from '@/components/skeletons'
 import getChannels from '../channels/_lib/get-channels'
@@ -11,6 +12,10 @@ import {
   type VideoSortField,
   type VideoSortOrder,
 } from './_lib/get-videos'
+
+export const metadata: Metadata = {
+  title: '動画管理',
+}
 
 type Props = {
   searchParams: Promise<{

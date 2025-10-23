@@ -9,7 +9,19 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Admin UI - SHINJU DATE',
+  description:
+    'SHINJU DATEの管理画面です。動画、用語集の管理とアナリティクスの閲覧ができます。',
+  robots: {
+    follow: false,
+    index: false,
+    noarchive: true,
+    noimageindex: true,
+    nosnippet: true,
+  },
+  title: {
+    default: 'Admin UI - SHINJU DATE',
+    template: '%s - Admin UI - SHINJU DATE',
+  },
 }
 
 type Props = {
