@@ -2,7 +2,7 @@
   "author": "Haneru Developers",
   "description": "Common mock server handlers using MSW for SHINJU DATE monorepo",
   "dependencies": {
-    "msw": "2.8.1"
+    "msw": "2.11.6"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.6",
