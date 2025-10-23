@@ -29,6 +29,7 @@
   "description": "",
   "devDependencies": {
     "@shinju-date/database": "workspace:*",
+    "@shinju-date/msw-handlers": "workspace:*",
     "@tailwindcss/postcss": "4.1.15",
     "@tsconfig/next": "2.0.3",
     "@tsconfig/strictest": "2.0.6",
@@ -36,6 +37,7 @@
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "babel-plugin-react-compiler": "1.0.0",
+    "msw": "^2.8.1",
     "postcss-load-config": "6.0.1",
     "typescript": "5.9.3"
   },

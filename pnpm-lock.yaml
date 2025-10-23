@@ -105,6 +105,9 @@ importers:
       '@shinju-date/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@shinju-date/msw-handlers':
+        specifier: workspace:*
+        version: link:../../packages/msw-handlers
       '@tailwindcss/postcss':
         specifier: 4.1.15
         version: 4.1.15
@@ -126,6 +129,9 @@ importers:
       babel-plugin-react-compiler:
         specifier: 1.0.0
         version: 1.0.0
+      msw:
+        specifier: ^2.8.1
+        version: 2.11.6(@types/node@22.18.12)(typescript@5.9.3)
       postcss-load-config:
         specifier: 6.0.1
         version: 6.0.1(jiti@2.6.1)(postcss@8.5.6)
@@ -208,6 +214,9 @@ importers:
       '@shinju-date/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@shinju-date/msw-handlers':
+        specifier: workspace:*
+        version: link:../../packages/msw-handlers
       '@tsconfig/next':
         specifier: 2.0.3
         version: 2.0.3
@@ -226,6 +235,9 @@ importers:
       babel-plugin-react-compiler:
         specifier: 1.0.0
         version: 1.0.0
+      msw:
+        specifier: ^2.8.1
+        version: 2.11.6(@types/node@22.18.12)(typescript@5.9.3)
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -323,6 +335,9 @@ importers:
       '@shinju-date/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@shinju-date/msw-handlers':
+        specifier: workspace:*
+        version: link:../../packages/msw-handlers
       '@tailwindcss/postcss':
         specifier: 4.1.15
         version: 4.1.15
@@ -353,6 +368,9 @@ importers:
       babel-plugin-react-compiler:
         specifier: 1.0.0
         version: 1.0.0
+      msw:
+        specifier: ^2.8.1
+        version: 2.11.6(@types/node@22.18.12)(typescript@5.9.3)
       postcss:
         specifier: 8.5.6
         version: 8.5.6
