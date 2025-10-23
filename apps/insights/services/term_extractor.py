@@ -40,7 +40,10 @@ def extract_frequent_terms(titles: list[str], min_count: int = 2) -> list[dict]:
     term_counts = Counter(item["term"] for item in all_nouns)
 
     # 各単語の読み仮名候補を整理 (最初に見つかった読みを採用)
-    readings = {item["term"]: item["reading"] for item in reversed(all_nouns)}
+    readings = {}
+    for item in all_nouns:
+        if item["term"] not in readings:
+            readings[item["term"]] = item["reading"]
 
     # 結果を整形
     frequent_terms = []
