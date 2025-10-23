@@ -6,16 +6,16 @@ const mockChannels = [
     created_at: '2023-01-01T00:00:00.000Z',
     deleted_at: null,
     id: 1,
-    name: 'ほろライブ',
-    slug: 'hololive',
+    name: 'Test Channel Alpha',
+    slug: 'test-channel-alpha',
     updated_at: '2023-01-01T00:00:00.000Z',
   },
   {
     created_at: '2023-01-01T00:00:00.000Z',
     deleted_at: null,
     id: 2,
-    name: 'にじさんじ',
-    slug: 'nijisanji',
+    name: 'Sample Channel Beta',
+    slug: 'sample-channel-beta',
     updated_at: '2023-01-01T00:00:00.000Z',
   },
 ]
@@ -78,9 +78,9 @@ const mockTerms = [
   {
     created_at: '2023-01-01T00:00:00.000Z',
     id: 1,
-    readings: ['ほろらいぶ'],
-    synonyms: ['hololive'],
-    term: 'ホロライブ',
+    readings: ['test', 'sample'],
+    synonyms: ['example', 'demo'],
+    term: 'Test Term',
     updated_at: '2023-01-01T00:00:00.000Z',
   },
 ]

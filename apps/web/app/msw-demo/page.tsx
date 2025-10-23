@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import { supabaseClient } from '@/lib/supabase'
 
 export const metadata: Metadata = {
@@ -22,6 +23,14 @@ async function getDemoData() {
 }
 
 export default async function MSWDemoPage() {
+  // Only show this page in development or when MSW is explicitly enabled
+  if (
+    process.env['NODE_ENV'] !== 'development' &&
+    process.env['ENABLE_MSW'] !== 'true'
+  ) {
+    notFound()
+  }
+
   const videos = await getDemoData()
 
   return (

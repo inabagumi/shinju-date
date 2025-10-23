@@ -19,8 +19,8 @@ const initializeRedisData = () => {
 
   // Sample search data
   mockRedisStore.set('search:popular:daily:2023-10-23', [
-    { member: 'ホロライブ', score: 50 },
-    { member: 'にじさんじ', score: 30 },
+    { member: 'Test Search Term', score: 50 },
+    { member: 'Sample Query', score: 30 },
   ])
 
   // Sample cache data

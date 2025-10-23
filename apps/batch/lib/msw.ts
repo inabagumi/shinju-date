@@ -10,8 +10,8 @@ import {
  */
 export function initializeMocking() {
   if (
-    process.env.NODE_ENV === 'development' ||
-    process.env.ENABLE_MSW === 'true'
+    process.env['NODE_ENV'] === 'development' ||
+    process.env['ENABLE_MSW'] === 'true'
   ) {
     startServer()
     console.log('🚀 MSW enabled for batch processing')
