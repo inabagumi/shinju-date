@@ -42,9 +42,48 @@ cd apps/admin && pnpm run msw:init
 
 **注意**: `mockServiceWorker.js` ファイルは `.gitignore` に含まれており、必要に応じて各開発者が生成する必要があります。これは、MSWが生成する一時的なファイルであり、バージョン管理に含める必要がないためです。
 
+### Python 開発環境 (Insights API)
+
+`apps/insights` プロジェクトでは **Poetry** を使用して Python の依存関係を管理しています。
+
+#### Poetry の基本コマンド
+
+```bash
+# 依存関係のインストール
+cd apps/insights && poetry install
+
+# 開発サーバーの起動
+cd apps/insights && poetry run poe dev
+
+# リンティングの実行
+cd apps/insights && poetry run poe lint
+
+# フォーマットの実行  
+cd apps/insights && poetry run poe format
+
+# フォーマットチェック（CI用）
+cd apps/insights && poetry run poe format-check
+```
+
+#### Python コード変更時の必須作業
+
+**Python ファイルを変更した場合は、以下を必ず実行してください：**
+
+```bash
+cd apps/insights
+poetry run poe format  # フォーマット適用
+poetry run poe lint     # リンティングチェック
+```
+
+これらのコマンドを実行せずにコミットすると、CI で失敗する原因となります。
+
 ### 必須の品質チェック
 
-**すべてのコード変更後に `pnpm run check --fix` を実行することは必須要件です。**
+**すべてのコード変更後の品質チェックは必須要件です。**
+
+#### JavaScript/TypeScript の場合
+
+`pnpm run check --fix` を実行してください。
 
 このコマンドは以下を自動的に実行します：
 - Biomeによるコードフォーマット
@@ -52,7 +91,15 @@ cd apps/admin && pnpm run msw:init
 - 未使用インポートの削除
 - コードスタイルの統一
 
-AIエージェントは、いかなるコード変更を行った場合も、変更をコミットする前に必ずこのコマンドを実行してください。これを怠ると、ビルド失敗や品質問題の原因となります。
+#### Python (Insights API) の場合
+
+```bash
+cd apps/insights
+poetry run poe format  # フォーマット適用
+poetry run poe lint     # リンティングチェック
+```
+
+**AIエージェントは、いかなるコード変更を行った場合も、変更をコミットする前に必ず該当する品質チェックコマンドを実行してください。** これを怠ると、ビルド失敗や品質問題の原因となります。
 
 ## AIエージェントの種類と役割
 
@@ -142,11 +189,24 @@ AIツールは常に進化しています。
 
 ### コードスタイル
 
-* Biomeによるフォーマットとリンティングを必ず実行する
-* AI生成コードも `pnpm run check` でチェックする
+* JavaScript/TypeScript: Biomeによるフォーマットとリンティングを必ず実行する
+* Python (Insights API): Ruffによるフォーマットとリンティングを必ず実行する  
+* AI生成コードも該当する品質チェックツールでチェックする
 * プロジェクトの既存のパターンやコンベンションに従う
 
-**重要**: AIエージェントは、コード変更後に必ず `pnpm run check --fix` を実行することが必須です。このコマンドを実行し忘れると、ビルドエラーやフォーマットの問題が発生し、プルリクエストの品質が低下します。特に以下の場合は必ず実行してください：
+**重要**: AIエージェントは、コード変更後に必ず品質チェックコマンドを実行することが必須です。このコマンドを実行し忘れると、ビルドエラーやフォーマットの問題が発生し、プルリクエストの品質が低下します。
+
+#### JavaScript/TypeScript の場合:
+`pnpm run check --fix` を実行
+
+#### Python (Insights API) の場合:
+```bash
+cd apps/insights
+poetry run poe format
+poetry run poe lint
+```
+
+特に以下の場合は必ず実行してください：
 
 * コードファイルを新規作成・編集した後
 * インポート文を追加・削除・変更した後  
@@ -158,7 +218,7 @@ AIツールは常に進化しています。
 ### コミットメッセージ
 
 * AI支援で作成したコードも、通常通り明確で意味のあるコミットメッセージを記述する
-* Conventional Commitsの形式に従う（例: `feat(web): add new feature`、`fix(batch): resolve issue`）
+* Conventional Commitsの形式に従う（例: `feat(web): add new feature`、`fix(insights): resolve API issue`、`refactor(admin): improve component`）
   * スコープは`apps/*`や`packages/*`にある各アプリやパッケージを単位とする
   * 1行目はGitHubのUIに収まる平易な英文で記述する
 * 大きな変更は小さなコミットに分割する
