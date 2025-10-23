@@ -133,6 +133,9 @@ dist
 .turbo
 tsup.config.bundled_*.mjs
 
+# MSW Service Worker files (generated when needed)
+**/public/mockServiceWorker.js
+
 # Package manager lock files (this project uses pnpm)
 package-lock.json
 yarn.lock

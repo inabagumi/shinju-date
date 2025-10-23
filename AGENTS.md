@@ -18,6 +18,30 @@
 
 `npm`や`yarn`は使用せず、`package-lock.json`や`yarn.lock`ファイルも不要です。
 
+### MSW (Mock Service Worker) の有効化
+
+GitHub ActionsやGitHub CopilotなどのAIエージェント環境でAPIモックを有効にする場合は、環境変数 `ENABLE_MSW=true` を設定してください。
+
+```bash
+export ENABLE_MSW=true
+```
+
+この設定により、一貫したAPIレスポンスが提供され、AIエージェントがより精度の高いコード補完を行えるようになります。
+
+#### MSWサービスワーカーの初期設定
+
+MSWを初回使用する際、または `mockServiceWorker.js` ファイルが存在しない場合は、以下のコマンドでサービスワーカーファイルを生成してください：
+
+```bash
+# Web アプリの場合
+cd apps/web && pnpm run msw:init
+
+# Admin アプリの場合  
+cd apps/admin && pnpm run msw:init
+```
+
+**注意**: `mockServiceWorker.js` ファイルは `.gitignore` に含まれており、必要に応じて各開発者が生成する必要があります。これは、MSWが生成する一時的なファイルであり、バージョン管理に含める必要がないためです。
+
 ### 必須の品質チェック
 
 **すべてのコード変更後に `pnpm run check --fix` を実行することは必須要件です。**
