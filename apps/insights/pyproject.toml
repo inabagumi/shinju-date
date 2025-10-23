@@ -19,7 +19,7 @@ package-mode = false
 packages = [{include = "api"}]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.14.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.4.5"
