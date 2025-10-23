@@ -9,7 +9,8 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  description: 'SHINJU DATE管理画面 - 動画、用語集、アナリティクスの管理。',
+  description:
+    'SHINJU DATEの管理画面です。動画、用語集、アナリティクスを管理できます。',
   robots: {
     follow: false,
     index: false,
