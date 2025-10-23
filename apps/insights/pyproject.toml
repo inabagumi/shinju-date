@@ -21,6 +21,7 @@ poethepoet = "^0.37.0"
 [tool.poe.tasks]
 dev = "uvicorn api.index:app --reload --host 0.0.0.0"
 format = "ruff format ."
+format-check = "ruff format --check ."
 lint = "ruff check ."
 
 [tool.ruff]
