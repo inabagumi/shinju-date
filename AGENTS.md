@@ -44,25 +44,25 @@ cd apps/admin && pnpm run msw:init
 
 ### Python 開発環境 (Insights API)
 
-`apps/insights` プロジェクトでは **Poetry** を使用して Python の依存関係を管理しています。
+`apps/insights` プロジェクトでは **uv** を使用して Python の依存関係を管理しています。
 
-#### Poetry の基本コマンド
+#### uv の基本コマンド
 
 ```bash
 # 依存関係のインストール
-cd apps/insights && poetry install
+cd apps/insights && uv sync --extra dev
 
 # 開発サーバーの起動
-cd apps/insights && poetry run poe dev
+cd apps/insights && uv run poe dev
 
 # リンティングの実行
-cd apps/insights && poetry run poe lint
+cd apps/insights && uv run poe lint
 
 # フォーマットの実行  
-cd apps/insights && poetry run poe format
+cd apps/insights && uv run poe format
 
 # フォーマットチェック（CI用）
-cd apps/insights && poetry run poe format-check
+cd apps/insights && uv run poe format-check
 ```
 
 #### Python コード変更時の必須作業
@@ -71,8 +71,8 @@ cd apps/insights && poetry run poe format-check
 
 ```bash
 cd apps/insights
-poetry run poe format  # フォーマット適用
-poetry run poe lint     # リンティングチェック
+uv run poe format  # フォーマット適用
+uv run poe lint     # リンティングチェック
 ```
 
 これらのコマンドを実行せずにコミットすると、CI で失敗する原因となります。
@@ -95,8 +95,8 @@ poetry run poe lint     # リンティングチェック
 
 ```bash
 cd apps/insights
-poetry run poe format  # フォーマット適用
-poetry run poe lint     # リンティングチェック
+uv run poe format  # フォーマット適用
+uv run poe lint     # リンティングチェック
 ```
 
 **AIエージェントは、いかなるコード変更を行った場合も、変更をコミットする前に必ず該当する品質チェックコマンドを実行してください。** これを怠ると、ビルド失敗や品質問題の原因となります。

@@ -6,7 +6,7 @@ SHINJU DATE の動画タイトルから頻出用語を抽出・分析するた�
 
 - **Python**: ^3.12
 - **FastAPI**: Web フレームワーク
-- **Poetry**: 依存関係管理
+- **uv**: 依存関係管理・高速Python環境
 - **Ruff**: リンティング・フォーマッティング
 - **Janome**: 日本語形態素解析
 - **Supabase**: データベース接続
@@ -16,18 +16,22 @@ SHINJU DATE の動画タイトルから頻出用語を抽出・分析するた�
 ### 前提条件
 
 - Python 3.12 以上
-- Poetry
+- uv
 
-### Poetry のインストール
+### uv のインストール
 
 ```bash
-pip install poetry
+# Linux/macOS
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# または pip で
+pip install uv
 ```
 
 ### 依存関係のインストール
 
 ```bash
-poetry install
+uv sync --extra dev
 ```
 
 ## 開発
@@ -44,7 +48,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ### サーバー起動
 
 ```bash
-poetry run poe dev
+uv run poe dev
 ```
 
 API は `http://localhost:8000` で起動します。
@@ -54,19 +58,19 @@ API は `http://localhost:8000` で起動します。
 #### リンティング
 
 ```bash
-poetry run poe lint
+uv run poe lint
 ```
 
 #### フォーマット
 
 ```bash
-poetry run poe format
+uv run poe format
 ```
 
 #### フォーマットチェック
 
 ```bash
-poetry run poe format-check
+uv run poe format-check
 ```
 
 ## API エンドポイント
@@ -99,11 +103,12 @@ Supabase から動画タイトルを取得し、頻出用語を抽出します�
 
 ```
 apps/insights/
-├── api/
-│   └── index.py          # FastAPI アプリケーション
+├── app.py                 # FastAPI アプリケーション（Vercel対応）
 ├── services/
-│   └── term_extractor.py # 用語抽出ロジック
-├── pyproject.toml        # Poetry 設定
-├── poetry.lock           # 依存関係ロック
+│   ├── database.py        # データベース接続
+│   └── term_extractor.py  # 用語抽出ロジック
+├── tests/                 # テストファイル
+├── pyproject.toml         # プロジェクト設定（uv対応）
+├── uv.lock               # 依存関係ロック
 └── README.md
 ```
