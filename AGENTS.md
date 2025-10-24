@@ -49,20 +49,22 @@ cd apps/admin && pnpm run msw:init
 #### uv の基本コマンド
 
 ```bash
+cd apps/insights
+
 # 依存関係のインストール
-cd apps/insights && uv sync --extra dev
+uv sync --extra dev
 
 # 開発サーバーの起動
-cd apps/insights && uv run poe dev
+uv run poe dev
 
 # リンティングの実行
-cd apps/insights && uv run poe lint
+uv run poe lint
 
 # フォーマットの実行  
-cd apps/insights && uv run poe format
+uv run poe format
 
 # フォーマットチェック（CI用）
-cd apps/insights && uv run poe format-check
+uv run poe format-check
 ```
 
 #### Python コード変更時の必須作業
