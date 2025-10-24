@@ -168,7 +168,18 @@ function parseSupabaseQuery(url: URL) {
   const filters: Record<string, string> = {}
   for (const [key, value] of url.searchParams.entries()) {
     if (!['select', 'limit', 'offset', 'prefer'].includes(key)) {
-      filters[key] = value
+      // Handle Supabase query syntax like id.in.(1,2) where the filter is in the key
+      if (key.includes('.')) {
+        const parts = key.split('.')
+        if (parts.length >= 2 && parts[0]) {
+          const field = parts[0]
+          const operator = parts.slice(1).join('.')
+          filters[field] = operator + (value ? `.${value}` : '')
+        }
+      } else {
+        // Handle regular field=value filters
+        filters[key] = value
+      }
     }
   }
 
