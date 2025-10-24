@@ -19,7 +19,7 @@ dependencies = [
 dev = [
     "ruff>=0.14.1",
     "poethepoet>=0.37.0",
-    "pytest>=8.0.0",
+    "pytest>=8.4.2",
 ]
 
 [tool.poetry]
@@ -29,7 +29,7 @@ package-mode = false
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.14.2"
 poethepoet = "^0.37.0"
-pytest = "^8.0.0"
+pytest = "^8.4.2"
 
 [tool.poe.tasks]
 dev = "uvicorn api.index:app --reload --host 0.0.0.0"
