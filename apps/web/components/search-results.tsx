@@ -1,9 +1,9 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import { useCallback } from 'react'
-import InfiniteScroll from 'react-infinite-scroll-component'
-import useSWRInfinite from 'swr/infinite'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
+import { useInView } from 'react-intersection-observer'
 import { Temporal } from 'temporal-polyfill'
 import { SEARCH_RESULT_COUNT } from '@/lib/constants'
 import { fetchVideosByChannelIDs, type Video } from '@/lib/fetchers'
@@ -28,47 +28,66 @@ export default function SearchResults({
   prefetchedData?: Video[][]
   query?: string
 }) {
-  const { data = [], setSize } = useSWRInfinite(
-    (_index, previousVideos: Video[] | null) => {
-      const lastVideo = previousVideos?.at(-1)
-      const until = lastVideo
-        ? Temporal.Instant.from(lastVideo.published_at).subtract({
-            nanoseconds: 1,
-          })
-        : undefined
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteQuery({
+      getNextPageParam: (lastPage) => {
+        if (lastPage.length < SEARCH_RESULT_COUNT) {
+          return undefined
+        }
+        const lastVideo = lastPage.at(-1)
+        if (!lastVideo) {
+          return undefined
+        }
+        return Temporal.Instant.from(lastVideo.published_at).subtract({
+          nanoseconds: 1,
+        }).epochNanoseconds
+      },
+      ...(prefetchedData
+        ? {
+            initialData: {
+              pageParams: [undefined],
+              pages: prefetchedData,
+            },
+          }
+        : {}),
+      initialPageParam: undefined as bigint | undefined,
+      queryFn: ({ pageParam }) => {
+        return fetchVideosByChannelIDs({
+          channelIDs: channels?.map((channel) => channel.id),
+          query,
+          until: pageParam,
+        })
+      },
+      queryKey: [
+        'videos',
+        { channelIDs: channels?.map((channel) => channel.id), query },
+      ],
+    })
 
-      return {
-        channelIDs: channels?.map((channel) => channel.id),
-        query,
-        until: until?.epochNanoseconds,
-      }
-    },
-    fetchVideosByChannelIDs,
-    prefetchedData && {
-      fallbackData: prefetchedData,
-    },
-  )
+  const { ref: loadMoreRef, inView } = useInView({
+    rootMargin: '200px',
+    threshold: 0,
+  })
 
-  const loadMore = useCallback(() => setSize((x) => x + 1), [setSize])
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage])
 
-  const items = data.flat()
+  if (isLoading && !data) {
+    return <SearchResultsSkeleton />
+  }
+
+  const items = data?.pages.flat() ?? []
   const isEmpty = items.length === 0
-  const lastData = data.at(-1)
-  const isReachingEnd = isEmpty || (lastData?.length ?? 0) < SEARCH_RESULT_COUNT
+
+  if (isEmpty) {
+    return null // Let the parent handle empty state
+  }
 
   return (
-    <InfiniteScroll
-      dataLength={items.length}
-      hasMore={!isReachingEnd}
-      loader={<VideoCardListSkeleton className="mt-12" />}
-      next={loadMore}
-      scrollThreshold={0.8}
-      style={{
-        height: undefined,
-        overflow: undefined,
-        WebkitOverflowScrolling: undefined,
-      }}
-    >
+    <div>
       <VideoCardList
         dateTimeFormatOptions={{
           dateStyle: 'short',
@@ -76,6 +95,18 @@ export default function SearchResults({
         }}
         values={items}
       />
-    </InfiniteScroll>
+
+      {/* Loading trigger element */}
+      <div className="flex h-10 items-center justify-center" ref={loadMoreRef}>
+        {isFetchingNextPage && <VideoCardListSkeleton className="mt-12" />}
+      </div>
+
+      {/* End of data message */}
+      {!hasNextPage && items.length > 0 && (
+        <div className="py-8 text-center text-gray-500 text-sm">
+          これ以上データはありません
+        </div>
+      )}
+    </div>
   )
 }
