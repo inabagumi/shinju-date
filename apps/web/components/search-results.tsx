@@ -98,10 +98,7 @@ export default function SearchResults({
 
       {/* Loading trigger element - only show when there might be more data */}
       {hasNextPage && (
-        <div
-          className="flex h-10 items-center justify-center"
-          ref={loadMoreRef}
-        >
+        <div className="flex items-center justify-center" ref={loadMoreRef}>
           {isFetchingNextPage && <VideoCardListSkeleton className="mt-12" />}
         </div>
       )}
