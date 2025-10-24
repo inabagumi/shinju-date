@@ -7,8 +7,8 @@ sudo corepack enable
 
 COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm --version
 
-# Install Poetry for Python development
-pip3 install poetry
+# Install uv for Python development
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
 pnpm install
 pnpm build --filter={./packages/*}...

@@ -12,8 +12,8 @@ on:
 env:
   # renovate: datasource=npm depName=corepack
   COREPACK_VERSION: 0.31.0
-  # renovate: datasource=pypi depName=poetry
-  POETRY_VERSION: 2.2.1
+  # renovate: datasource=github-releases depName=astral-sh/uv
+  UV_VERSION: 0.9.5
 
 jobs:
   copilot-setup-steps:
@@ -25,15 +25,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: "Set up Python"
-        uses: actions/setup-python@v6
+      - name: "Set up uv"
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: "3.14.0"
-
-      - name: "Install Poetry"
-        run: |
-          pip install poetry==${{ env.POETRY_VERSION }}
-          poetry --version
+          version: ${{ env.UV_VERSION }}
 
       - name: "Enable Corepack for pnpm"
         run: |
@@ -55,7 +50,7 @@ jobs:
       - name: "Install Python dependencies for insights app"
         run: |
           cd apps/insights
-          poetry install
+          uv sync --extra dev
 
       - name: "Run code quality checks and auto-fix issues"
         run: "pnpm run check --fix"

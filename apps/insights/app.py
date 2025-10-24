@@ -12,7 +12,11 @@ load_dotenv()
 SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+if SUPABASE_URL and SUPABASE_KEY:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+else:
+    supabase = None
+
 app = FastAPI()
 
 
@@ -24,7 +28,7 @@ def read_root():
 @app.post("/api/v1/terms/analysis")
 def analysis_terms_endpoint():
     """Extract frequent terms from video titles stored in Supabase."""
-    if not SUPABASE_URL or not SUPABASE_KEY:
+    if not SUPABASE_URL or not SUPABASE_KEY or not supabase:
         raise HTTPException(
             status_code=500, detail="Supabase URL/Key is not configured."
         )

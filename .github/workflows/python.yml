@@ -11,8 +11,8 @@ on:
       - "apps/insights/**"
 
 env:
-  # renovate: datasource=pypi depName=poetry
-  POETRY_VERSION: 2.2.1
+  # renovate: datasource=github-releases depName=astral-sh/uv
+  UV_VERSION: 0.9.5
 
 jobs:
   python:
@@ -29,39 +29,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: ${{ env.UV_VERSION }}
+
       - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.14.0"
-
-      - name: Install Poetry
-        run: |
-          pip install poetry==${{ env.POETRY_VERSION }}
-          poetry --version
-
-      - name: Configure Poetry
-        run: |
-          poetry config virtualenvs.create true
-          poetry config virtualenvs.in-project true
-
-      - name: Cache Poetry dependencies
-        uses: actions/cache@v4
-        with:
-          path: ./apps/insights/.venv
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-
+        run: uv python install
 
       - name: Install dependencies
-        run: poetry install
+        run: uv sync --extra dev
 
       - name: Run ruff linting
-        run: poetry run poe lint
+        run: uv run poe lint
 
       - name: Check formatting
-        run: |
-          poetry run poe format-check
+        run: uv run poe format-check
 
       - name: Run tests
-        run: |
-          poetry run poe test || echo "No tests found"
+        run: uv run poe test || echo "No tests found"
