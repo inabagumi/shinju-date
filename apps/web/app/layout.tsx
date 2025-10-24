@@ -2,9 +2,9 @@ import './globals.css'
 import { Analytics } from '@vercel/analytics/react'
 import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
-import { MSWProvider } from '@/components/msw-provider'
 import { TimerProvider } from '@/components/timer'
 import { title as siteName, themeColor } from '@/lib/constants'
+import { Providers } from './_components/providers'
 import { SearchButton } from './_components/search-button'
 import SVGSymbols from './_components/svg-symbols'
 import { lato } from './_lib/fonts'
@@ -34,7 +34,7 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
         />
       </head>
       <body className="grid min-h-svh grid-rows-[auto_1fr_auto] bg-primary-foreground text-primary antialiased dark:bg-zinc-900 dark:text-774-nevy-50">
-        <MSWProvider>
+        <Providers>
           <SVGSymbols />
 
           <nav className="sticky top-0 z-50 flex justify-between gap-6 bg-primary-foreground/60 px-2 py-3 shadow-md backdrop-blur dark:bg-zinc-900/60">
@@ -120,7 +120,7 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
           </footer>
 
           <Analytics />
-        </MSWProvider>
+        </Providers>
       </body>
     </html>
   )
