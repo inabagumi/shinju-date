@@ -72,6 +72,58 @@ const mockVideos = [
     updated_at: '2023-01-02T00:00:00.000Z',
     visible: true,
   },
+  {
+    channel_id: 1,
+    created_at: '2023-01-03T00:00:00.000Z',
+    deleted_at: null,
+    duration: 'PT8M15S',
+    id: 3,
+    published_at: '2023-01-03T12:00:00.000Z',
+    slug: 'sample-video-3',
+    thumbnail_id: 1,
+    title: 'Sample Video 3',
+    updated_at: '2023-01-03T00:00:00.000Z',
+    visible: false,
+  },
+  {
+    channel_id: 2,
+    created_at: '2023-01-04T00:00:00.000Z',
+    deleted_at: null,
+    duration: 'PT12M30S',
+    id: 4,
+    published_at: '2023-01-04T12:00:00.000Z',
+    slug: 'sample-video-4',
+    thumbnail_id: 2,
+    title: 'Sample Video 4',
+    updated_at: '2023-01-04T00:00:00.000Z',
+    visible: false,
+  },
+  {
+    channel_id: 1,
+    created_at: '2023-01-05T00:00:00.000Z',
+    deleted_at: '2023-01-10T00:00:00.000Z',
+    duration: 'PT20M45S',
+    id: 5,
+    published_at: '2023-01-05T12:00:00.000Z',
+    slug: 'deleted-video-1',
+    thumbnail_id: 1,
+    title: 'Deleted Video 1',
+    updated_at: '2023-01-05T00:00:00.000Z',
+    visible: true,
+  },
+  {
+    channel_id: 2,
+    created_at: '2023-01-06T00:00:00.000Z',
+    deleted_at: '2023-01-11T00:00:00.000Z',
+    duration: 'PT18M20S',
+    id: 6,
+    published_at: '2023-01-06T12:00:00.000Z',
+    slug: 'deleted-video-2',
+    thumbnail_id: 2,
+    title: 'Deleted Video 2',
+    updated_at: '2023-01-06T00:00:00.000Z',
+    visible: false,
+  },
 ]
 
 const mockTerms = [
@@ -83,6 +135,22 @@ const mockTerms = [
     term: 'Test Term',
     updated_at: '2023-01-01T00:00:00.000Z',
   },
+  {
+    created_at: '2023-01-02T00:00:00.000Z',
+    id: 2,
+    readings: ['mock', 'fake'],
+    synonyms: ['simulated', 'dummy'],
+    term: 'Mock Term',
+    updated_at: '2023-01-02T00:00:00.000Z',
+  },
+  {
+    created_at: '2023-01-03T00:00:00.000Z',
+    id: 3,
+    readings: ['example', 'illustration'],
+    synonyms: ['instance', 'case'],
+    term: 'Example Term',
+    updated_at: '2023-01-03T00:00:00.000Z',
+  },
 ]
 
 /**
@@ -90,12 +158,32 @@ const mockTerms = [
  */
 function parseSupabaseQuery(url: URL) {
   const select = url.searchParams.get('select') || '*'
-  const eq = url.searchParams.get('eq')
-  const in_ = url.searchParams.get('in')
   const limit = url.searchParams.get('limit')
   const offset = url.searchParams.get('offset')
+  // Prefer header is preferred for count, but also check query param
+  const prefer = url.searchParams.get('prefer') || ''
+  const returnCount = prefer.includes('count=exact')
 
-  return { eq, in_, limit, offset, select }
+  // Get all query parameters as individual filters
+  const filters: Record<string, string> = {}
+  for (const [key, value] of url.searchParams.entries()) {
+    if (!['select', 'limit', 'offset', 'prefer'].includes(key)) {
+      // Handle Supabase query syntax like id.in.(1,2) where the filter is in the key
+      if (key.includes('.')) {
+        const parts = key.split('.')
+        if (parts.length >= 2 && parts[0]) {
+          const field = parts[0]
+          const operator = parts.slice(1).join('.')
+          filters[field] = operator + (value ? `.${value}` : '')
+        }
+      } else {
+        // Handle regular field=value filters
+        filters[key] = value
+      }
+    }
+  }
+
+  return { filters, limit, offset, returnCount, select }
 }
 
 /**
@@ -107,32 +195,47 @@ function applySupabaseFilters(
 ) {
   let filteredData = [...data]
 
-  // Apply 'in' filter (e.g., id.in.(1,2,3))
-  if (query.in_) {
-    const fieldMatch = query.in_.match(/^(\w+)\.in\.\(([^)]+)\)$/)
-    if (fieldMatch) {
-      const [, field, values] = fieldMatch
-      if (field && values) {
-        const valueArray = values.split(',').map((v) => {
-          const trimmed = v.trim()
-          return Number.isNaN(Number(trimmed)) ? trimmed : Number(trimmed)
-        })
+  // Apply field-specific filters
+  for (const [field, filterValue] of Object.entries(query.filters)) {
+    if (filterValue.startsWith('eq.')) {
+      // Handle equals filter (e.g., visible=eq.true)
+      const value = filterValue.substring(3)
+      const parsedValue =
+        value === 'true'
+          ? true
+          : value === 'false'
+            ? false
+            : value === 'null'
+              ? null
+              : Number.isNaN(Number(value))
+                ? value
+                : Number(value)
+      filteredData = filteredData.filter((item) => item[field] === parsedValue)
+    } else if (filterValue.startsWith('is.')) {
+      // Handle is filter (e.g., deleted_at=is.null)
+      const value = filterValue.substring(3)
+      if (value === 'null') {
+        filteredData = filteredData.filter((item) => item[field] === null)
+      }
+    } else if (filterValue.startsWith('not.is.')) {
+      // Handle not is filter (e.g., deleted_at=not.is.null)
+      const value = filterValue.substring(7)
+      if (value === 'null') {
+        filteredData = filteredData.filter((item) => item[field] !== null)
+      }
+    } else if (filterValue.startsWith('in.')) {
+      // Handle in filter (e.g., id=in.(1,2,3))
+      const values = filterValue.substring(3)
+      if (values.startsWith('(') && values.endsWith(')')) {
+        const valueArray = values
+          .slice(1, -1)
+          .split(',')
+          .map((v) => {
+            const trimmed = v.trim()
+            return Number.isNaN(Number(trimmed)) ? trimmed : Number(trimmed)
+          })
         filteredData = filteredData.filter((item) =>
           valueArray.includes(item[field]),
-        )
-      }
-    }
-  }
-
-  // Apply 'eq' filter
-  if (query.eq) {
-    const fieldMatch = query.eq.match(/^(\w+)\.eq\.(.+)$/)
-    if (fieldMatch) {
-      const [, field, value] = fieldMatch
-      if (field && value !== undefined) {
-        const parsedValue = Number.isNaN(Number(value)) ? value : Number(value)
-        filteredData = filteredData.filter(
-          (item) => item[field] === parsedValue,
         )
       }
     }
@@ -207,10 +310,54 @@ export const supabaseHandlers = [
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
+    // Check if count is requested via Prefer header
+    const preferHeader = request.headers.get('prefer') || ''
+    const returnCount =
+      preferHeader.includes('count=exact') || query.returnCount
+
     let filteredData = applySupabaseFilters(mockVideos, query)
+    const count = filteredData.length
+
+    // If this is a HEAD request, return empty body with count header
+    if (
+      request.method === 'HEAD' ||
+      (returnCount && preferHeader.includes('head=true'))
+    ) {
+      return new HttpResponse(null, {
+        headers: {
+          'Content-Range': `0-0/${count}`,
+          'Content-Type': 'application/json',
+        },
+      })
+    }
+
     filteredData = applySelect(filteredData, query.select)
 
-    return HttpResponse.json(filteredData)
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (returnCount) {
+      headers['Content-Range'] =
+        `0-${Math.max(0, filteredData.length - 1)}/${count}`
+    }
+
+    return HttpResponse.json(filteredData, { headers })
+  }),
+
+  // Videos table HEAD requests
+  http.head('*/rest/v1/videos', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const filteredData = applySupabaseFilters(mockVideos, query)
+    const count = filteredData.length
+
+    return new HttpResponse(null, {
+      headers: {
+        'Content-Range': `0-0/${count}`,
+        'Content-Type': 'application/json',
+      },
+    })
   }),
 
   // Channels table
@@ -218,10 +365,52 @@ export const supabaseHandlers = [
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
+    const preferHeader = request.headers.get('prefer') || ''
+    const returnCount =
+      preferHeader.includes('count=exact') || query.returnCount
+
     let filteredData = applySupabaseFilters(mockChannels, query)
+    const count = filteredData.length
+
+    if (
+      request.method === 'HEAD' ||
+      (returnCount && preferHeader.includes('head=true'))
+    ) {
+      return new HttpResponse(null, {
+        headers: {
+          'Content-Range': `0-0/${count}`,
+          'Content-Type': 'application/json',
+        },
+      })
+    }
+
     filteredData = applySelect(filteredData, query.select)
 
-    return HttpResponse.json(filteredData)
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (returnCount) {
+      headers['Content-Range'] =
+        `0-${Math.max(0, filteredData.length - 1)}/${count}`
+    }
+
+    return HttpResponse.json(filteredData, { headers })
+  }),
+
+  // Channels table HEAD requests
+  http.head('*/rest/v1/channels', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const filteredData = applySupabaseFilters(mockChannels, query)
+    const count = filteredData.length
+
+    return new HttpResponse(null, {
+      headers: {
+        'Content-Range': `0-0/${count}`,
+        'Content-Type': 'application/json',
+      },
+    })
   }),
 
   // Thumbnails table
@@ -229,10 +418,36 @@ export const supabaseHandlers = [
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
+    const preferHeader = request.headers.get('prefer') || ''
+    const returnCount =
+      preferHeader.includes('count=exact') || query.returnCount
+
     let filteredData = applySupabaseFilters(mockThumbnails, query)
+    const count = filteredData.length
+
+    if (
+      request.method === 'HEAD' ||
+      (returnCount && preferHeader.includes('head=true'))
+    ) {
+      return new HttpResponse(null, {
+        headers: {
+          'Content-Range': `0-0/${count}`,
+          'Content-Type': 'application/json',
+        },
+      })
+    }
+
     filteredData = applySelect(filteredData, query.select)
 
-    return HttpResponse.json(filteredData)
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (returnCount) {
+      headers['Content-Range'] =
+        `0-${Math.max(0, filteredData.length - 1)}/${count}`
+    }
+
+    return HttpResponse.json(filteredData, { headers })
   }),
 
   // Terms table
@@ -240,10 +455,82 @@ export const supabaseHandlers = [
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
+    const preferHeader = request.headers.get('prefer') || ''
+    const returnCount =
+      preferHeader.includes('count=exact') || query.returnCount
+
     let filteredData = applySupabaseFilters(mockTerms, query)
+    const count = filteredData.length
+
+    if (
+      request.method === 'HEAD' ||
+      (returnCount && preferHeader.includes('head=true'))
+    ) {
+      return new HttpResponse(null, {
+        headers: {
+          'Content-Range': `0-0/${count}`,
+          'Content-Type': 'application/json',
+        },
+      })
+    }
+
     filteredData = applySelect(filteredData, query.select)
 
-    return HttpResponse.json(filteredData)
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (returnCount) {
+      headers['Content-Range'] =
+        `0-${Math.max(0, filteredData.length - 1)}/${count}`
+    }
+
+    return HttpResponse.json(filteredData, { headers })
+  }),
+
+  // Terms table HEAD requests
+  http.head('*/rest/v1/terms', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const filteredData = applySupabaseFilters(mockTerms, query)
+    const count = filteredData.length
+
+    return new HttpResponse(null, {
+      headers: {
+        'Content-Range': `0-0/${count}`,
+        'Content-Type': 'application/json',
+      },
+    })
+  }),
+
+  // Authentication endpoints
+  http.post('*/auth/v1/token*', async ({ request }) => {
+    const body = (await request.json()) as { email: string; password: string }
+
+    // Accept any credentials that match the admin pattern for MSW
+    if (body.email === 'admin@example.com' && body.password === 'password123') {
+      return HttpResponse.json({
+        access_token: 'mock_access_token',
+        expires_in: 3600,
+        refresh_token: 'mock_refresh_token',
+        token_type: 'bearer',
+        user: {
+          created_at: '2023-01-01T00:00:00.000Z',
+          email: body.email,
+          id: 'mock-user-id',
+        },
+      })
+    }
+
+    return HttpResponse.json({ error: 'Invalid credentials' }, { status: 400 })
+  }),
+
+  http.get('*/auth/v1/user', () => {
+    return HttpResponse.json({
+      created_at: '2023-01-01T00:00:00.000Z',
+      email: 'admin@example.com',
+      id: 'mock-user-id',
+    })
   }),
 
   // Health check endpoint - simple SELECT query
