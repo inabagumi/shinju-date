@@ -1,21 +1,32 @@
-[tool.poetry]
+[project]
 name = "insights"
 version = "1.0.0"
 description = "SHINJU DATE Insights API for video analytics"
-authors = ["SHINJU DATE Team"]
+authors = [
+    {name = "Haneru Developers"}
+]
 readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.119.1",
+    "uvicorn>=0.38.0",
+    "janome>=0.5.0",
+    "supabase>=2.22.1",
+    "python-dotenv>=1.1.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.14.1",
+    "poethepoet>=0.37.0",
+]
+
+[tool.poetry]
 package-mode = false
 
-[tool.poetry.dependencies]
-python = "^3.12"
-fastapi = "^0.119.1"
-uvicorn = "^0.38.0"
-janome = "^0.5.0"
-supabase = "^2.22.1"
-python-dotenv = "^1.1.1"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.14.1"
+ruff = "^0.14.2"
 poethepoet = "^0.37.0"
 
 [tool.poe.tasks]

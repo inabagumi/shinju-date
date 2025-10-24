@@ -39,7 +39,9 @@ def analysis_terms_endpoint():
                 "extracted_terms": [],
             }
 
-        terms = extract_frequent_terms(video_titles, min_count=10)
+        terms = extract_frequent_terms(
+            video_titles, min_count=10, supabase_client=supabase
+        )
 
         return {
             "status": "success",
