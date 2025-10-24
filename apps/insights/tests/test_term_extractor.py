@@ -49,7 +49,7 @@ class TestExtractFrequentTerms:
         titles = [
             "Pythonプログラミング入門",
             "Pythonプログラミング応用",
-            "JavaScript開発技法"
+            "JavaScript開発技法",
         ]
         result = extract_frequent_terms(titles, min_count=1, min_length=3)
 
@@ -64,10 +64,7 @@ class TestExtractFrequentTerms:
 
     def test_min_count_filtering(self):
         """Test that min_count parameter filters terms correctly."""
-        titles = [
-            "Pythonプログラミング",
-            "JavaScript開発"
-        ]
+        titles = ["Pythonプログラミング", "JavaScript開発"]
 
         # With min_count=1, should get all valid terms
         result_min1 = extract_frequent_terms(titles, min_count=1, min_length=3)
@@ -83,10 +80,7 @@ class TestExtractFrequentTerms:
         existing_terms = {"Python"}
 
         result = extract_frequent_terms(
-            titles,
-            min_count=1,
-            min_length=3,
-            existing_terms=existing_terms
+            titles, min_count=1, min_length=3, existing_terms=existing_terms
         )
 
         # Python should be excluded from results

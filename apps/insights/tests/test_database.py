@@ -16,7 +16,7 @@ class TestGetVideoTitles:
         mock_response.data = [
             {"title": "Python入門講座"},
             {"title": "JavaScript基礎"},
-            {"title": "React開発ガイド"}
+            {"title": "React開発ガイド"},
         ]
 
         (
@@ -58,7 +58,7 @@ class TestGetExistingTerms:
         mock_response.data = [
             {"term": "Python"},
             {"term": "JavaScript"},
-            {"term": "React"}
+            {"term": "React"},
         ]
 
         (

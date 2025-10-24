@@ -6,9 +6,8 @@ from janome.tokenizer import Tokenizer
 
 def _is_valid_term(token, min_length: int = 3) -> bool:
     """Check if a token is a valid term for extraction."""
-    return (
-        len(token.base_form) >= min_length
-        and token.part_of_speech.startswith("名詞")
+    return len(token.base_form) >= min_length and token.part_of_speech.startswith(
+        "名詞"
     )
 
 
