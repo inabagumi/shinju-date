@@ -297,7 +297,7 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.4.2" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.14.2" },
-    { name = "supabase", specifier = ">=2.22.1" },
+    { name = "supabase", specifier = ">=2.22.2" },
     { name = "uvicorn", specifier = ">=0.38.0" },
 ]
 provides-extras = ["dev"]
@@ -665,7 +665,7 @@ wheels = [
 
 [[package]]
 name = "supabase"
-version = "2.22.1"
+version = "2.22.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -675,9 +675,9 @@ dependencies = [
     { name = "supabase-auth" },
     { name = "supabase-functions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e1/52/93042e617c51d4d42df6b0e8fc2d3f6462749da50a88dea620117e498146/supabase-2.22.1.tar.gz", hash = "sha256:abc0beba9924073441ff547ebee602f765bb7391ab66911035a2e70e9dcb648a", size = 9334, upload-time = "2025-10-21T19:24:04.881Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/03/2c/f232b07f07485fa19b841eb46bf51c2cb05244b2665102a04fe38f01d1b4/supabase-2.22.2.tar.gz", hash = "sha256:d9a163b73a97f737b5b16496ccd4735c2d1fd7ed1bea390a86490f6b3b416c21", size = 9334, upload-time = "2025-10-24T19:15:03.081Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f5/50/9f9ff057d1420a75f71f9bfc8d9a21e8aff4492917ac90df5998a456f92e/supabase-2.22.1-py3-none-any.whl", hash = "sha256:31c4f8a65d3e457622bc146ec62956ebc96cd7637d8fde510d53538ee79530cc", size = 16364, upload-time = "2025-10-21T19:24:03.695Z" },
+    { url = "https://files.pythonhosted.org/packages/15/0c/9666bd21db0a16c06461bce6b65c5b90102c3c633beebceee860a34fba89/supabase-2.22.2-py3-none-any.whl", hash = "sha256:3736a480730f62974dc57b683f465d2c6d49de20741b2d55b206572f501074c8", size = 16364, upload-time = "2025-10-24T19:15:02.145Z" },
 ]
 
 [[package]]
