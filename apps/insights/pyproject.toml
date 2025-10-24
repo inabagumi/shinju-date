@@ -7,7 +7,7 @@ authors = [
 ]
 readme = "README.md"
 dependencies = [
-    "fastapi>=0.119.1",
+    "fastapi>=0.120.0",
     "uvicorn>=0.38.0",
     "janome>=0.5.0",
     "supabase>=2.22.1",
