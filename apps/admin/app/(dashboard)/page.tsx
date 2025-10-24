@@ -15,7 +15,7 @@ export default function DashboardPage() {
 
       {/* Grid layout for widgets */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[repeat(auto-fit,minmax(var(--widget-min-width),1fr))]">
-        {/* Summary Widget */}
+        {/* Summary Widgets - Video and Content Summary */}
         <Suspense fallback={<CardSkeleton />}>
           <SummaryWidget />
         </Suspense>
