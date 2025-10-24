@@ -32,20 +32,20 @@ export default async function MSWDemoPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-8 text-3xl font-bold">MSW Handlers Demo</h1>
+      <h1 className="mb-8 font-bold text-3xl">MSW Handlers Demo</h1>
 
       <div className="mb-8 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
-        <h2 className="mb-2 text-lg font-semibold">
+        <h2 className="mb-2 font-semibold text-lg">
           🎯 What's happening here?
         </h2>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+        <p className="text-gray-600 text-sm dark:text-gray-300">
           In development mode, MSW intercepts the Supabase API calls and returns
           mock data. In production, this would make real API calls to Supabase.
         </p>
       </div>
 
       <section>
-        <h2 className="mb-4 text-xl font-semibold">
+        <h2 className="mb-4 font-semibold text-xl">
           📹 Sample Videos from MSW
         </h2>
 
@@ -57,11 +57,11 @@ export default async function MSWDemoPage() {
                 key={video.id}
               >
                 <h3 className="mb-2 font-semibold">{video.title}</h3>
-                <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
+                <p className="mb-2 text-gray-600 text-sm dark:text-gray-400">
                   Slug: {video.slug}
                 </p>
                 {video.thumbnails && (
-                  <div className="text-xs text-gray-500">
+                  <div className="text-gray-500 text-xs">
                     <p>Thumbnail: {video.thumbnails.path}</p>
                     <p>
                       Has blur data:{' '}
@@ -82,7 +82,7 @@ export default async function MSWDemoPage() {
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-4 text-xl font-semibold">🛠️ Technical Details</h2>
+        <h2 className="mb-4 font-semibold text-xl">🛠️ Technical Details</h2>
         <div className="space-y-2 text-sm">
           <p>
             <strong>Environment:</strong> {process.env.NODE_ENV}
@@ -101,7 +101,7 @@ export default async function MSWDemoPage() {
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-4 text-xl font-semibold">📚 How to Use</h2>
+        <h2 className="mb-4 font-semibold text-xl">📚 How to Use</h2>
         <div className="prose prose-sm dark:prose-invert">
           <ol>
             <li>MSW automatically starts in development mode</li>
