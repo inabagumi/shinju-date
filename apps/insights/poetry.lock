@@ -1537,4 +1537,4 @@ dev = ["poethepoet", "pytest", "ruff"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12"
-content-hash = "19a9d374889534e9f3d92c0a1c539bfb6d93f998b572e88a840c5d84274abd3d"
+content-hash = "4b095f878deeb92dc2655d7fb3beb5d0b589862ee1df590d1395226f8390b11f"
