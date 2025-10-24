@@ -96,14 +96,19 @@ export default function SearchResults({
         values={items}
       />
 
-      {/* Loading trigger element */}
-      <div className="flex h-10 items-center justify-center" ref={loadMoreRef}>
-        {isFetchingNextPage && <VideoCardListSkeleton className="mt-12" />}
-      </div>
+      {/* Loading trigger element - only show when there might be more data */}
+      {hasNextPage && (
+        <div
+          className="flex h-10 items-center justify-center"
+          ref={loadMoreRef}
+        >
+          {isFetchingNextPage && <VideoCardListSkeleton className="mt-12" />}
+        </div>
+      )}
 
       {/* End of data message */}
-      {!hasNextPage && items.length > 0 && (
-        <div className="py-8 text-center text-gray-500 text-sm">
+      {!hasNextPage && !isFetchingNextPage && items.length > 0 && (
+        <div className="mt-8 py-4 text-center text-gray-500 text-sm">
           これ以上データはありません
         </div>
       )}
