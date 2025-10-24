@@ -3,75 +3,79 @@ from collections import Counter
 
 from janome.tokenizer import Tokenizer
 
-STOPWORDS = [
-    "方法",
-    "解説",
-    "入門",
-    "初心者",
-    "完全",
-    "徹底",
-    "講座",
-    "基本",
-    "使い方",
-    "マスター",
-    "ガイド",
-    "実装",
-    "違い",
-    "比較",
-    "開発",
-    "連携",
-    "最新",
-    "基礎",
-    "完全",
-    "版",
-    "こと",
-    "もの",
-    "ため",
-    "よう",
-]
 
-
-def _is_valid_term(token) -> bool:
+def _is_valid_term(token, min_length: int = 3, stopwords: set = None) -> bool:
     """Check if a token is a valid term for extraction."""
+    if stopwords is None:
+        stopwords = set()
+
     return (
-        len(token.base_form) > 2
+        len(token.base_form) >= min_length
         and token.part_of_speech.startswith("名詞")
-        and token.base_form not in STOPWORDS
+        and token.base_form not in stopwords
     )
 
 
-def _get_existing_terms(supabase_client) -> set:
-    """Fetch existing terms from the terms table to avoid duplicates."""
-    try:
-        response = supabase_client.table("terms").select("term").execute()
-        return {item["term"] for item in response.data}
-    except Exception:
-        # If terms table doesn't exist or query fails, return empty set
-        return set()
-
-
 def extract_frequent_terms(
-    titles: list[str], min_count: int = 2, supabase_client=None
+    titles: list[str],
+    min_count: int = 2,
+    min_length: int = 3,
+    stopwords: set = None,
+    existing_terms: set = None,
 ) -> list[dict]:
     """Extract frequent nouns from video titles with their readings and counts.
 
     Args:
         titles: List of video titles
         min_count: Minimum occurrence count for term extraction
-        supabase_client: Supabase client to check existing terms
+        min_length: Minimum character length for terms
+        stopwords: Set of words to exclude from extraction
+        existing_terms: Set of existing terms to exclude from extraction
 
     Returns:
         List of dictionaries containing term, reading, and count
     """
     tokenizer = Tokenizer()
-    existing_terms = _get_existing_terms(supabase_client) if supabase_client else set()
+
+    if stopwords is None:
+        stopwords = {
+            "方法",
+            "解説",
+            "入門",
+            "初心者",
+            "完全",
+            "徹底",
+            "講座",
+            "基本",
+            "使い方",
+            "マスター",
+            "ガイド",
+            "実装",
+            "違い",
+            "比較",
+            "開発",
+            "連携",
+            "最新",
+            "基礎",
+            "版",
+            "こと",
+            "もの",
+            "ため",
+            "よう",
+        }
+
+    if existing_terms is None:
+        existing_terms = set()
 
     all_nouns = []
     for title in titles:
         cleaned_title = re.sub(r"[【】「」『』ー!?/#\s]", "", title)
 
         for token in tokenizer.tokenize(cleaned_title):
-            if _is_valid_term(token) and token.base_form not in existing_terms:
+            if (
+                _is_valid_term(token, min_length, stopwords)
+                and token.base_form not in existing_terms
+            ):
                 all_nouns.append(
                     {
                         "term": token.base_form,

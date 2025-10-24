@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from supabase import Client, create_client
 
+from services.database import get_existing_terms, get_video_titles
 from services.term_extractor import extract_frequent_terms
 
 load_dotenv()
@@ -29,8 +30,7 @@ def analysis_terms_endpoint():
         )
 
     try:
-        response = supabase.table("videos").select("title").execute()
-        video_titles = [item["title"] for item in response.data]
+        video_titles = get_video_titles(supabase)
 
         if not video_titles:
             return {
@@ -39,8 +39,9 @@ def analysis_terms_endpoint():
                 "extracted_terms": [],
             }
 
+        existing_terms = get_existing_terms(supabase)
         terms = extract_frequent_terms(
-            video_titles, min_count=10, supabase_client=supabase
+            video_titles, min_count=10, min_length=3, existing_terms=existing_terms
         )
 
         return {
