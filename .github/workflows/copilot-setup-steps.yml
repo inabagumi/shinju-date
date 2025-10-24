@@ -12,6 +12,8 @@ on:
 env:
   # renovate: datasource=npm depName=corepack
   COREPACK_VERSION: 0.31.0
+  # renovate: datasource=pypi depName=poetry
+  POETRY_VERSION: 2.2.1
 
 jobs:
   copilot-setup-steps:
@@ -22,6 +24,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+
+      - name: "Set up Python"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: "Install Poetry"
+        run: |
+          pip install poetry==${{ env.POETRY_VERSION }}
+          poetry --version
 
       - name: "Enable Corepack for pnpm"
         run: |
@@ -39,6 +51,11 @@ jobs:
 
       - name: "Initialize MSW service workers for apps"
         run: "pnpm --filter './apps/*' run msw:init --save"
+
+      - name: "Install Python dependencies for insights app"
+        run: |
+          cd apps/insights
+          poetry install
 
       - name: "Run code quality checks and auto-fix issues"
         run: "pnpm run check --fix"

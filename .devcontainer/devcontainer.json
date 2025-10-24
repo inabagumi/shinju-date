@@ -5,7 +5,9 @@
         "EditorConfig.EditorConfig",
         "biomejs.biome",
         "bradlc.vscode-tailwindcss@prerelease",
-        "unifiedjs.vscode-mdx"
+        "unifiedjs.vscode-mdx",
+        "ms-python.python",
+        "ms-python.ruff"
       ],
       "settings": {}
     }
@@ -18,7 +20,7 @@
       "version": "1.6.4"
     }
   },
-  "forwardPorts": [3000, 4000],
+  "forwardPorts": [3000, 4000, 8000],
   "hostRequirements": {
     "cpus": 4,
     "memory": "8gb",
@@ -33,6 +35,10 @@
     },
     "4000": {
       "label": "Admin",
+      "onAutoForward": "silent"
+    },
+    "8000": {
+      "label": "Insights API",
       "onAutoForward": "silent"
     }
   },

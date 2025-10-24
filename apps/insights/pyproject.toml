@@ -1,11 +1,12 @@
 [project]
 name = "insights"
 version = "1.0.0"
-description = ""
+description = "SHINJU DATE Insights API for video analytics"
 authors = [
-  { name = "Your Name", email = "you@example.com" },
+    {name = "Haneru Developers"}
 ]
 readme = "README.md"
+requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.120.0",
     "uvicorn>=0.38.0",
@@ -14,21 +15,28 @@ dependencies = [
     "python-dotenv>=1.1.1",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.14.1",
+    "poethepoet>=0.37.0",
+    "pytest>=8.0.0",
+]
+
 [tool.poetry]
 package-mode = false
-packages = [{include = "api"}]
 
-[tool.poetry.dependencies]
-python = "^3.14.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.14.2"
 poethepoet = "^0.37.0"
+pytest = "^8.0.0"
 
 [tool.poe.tasks]
 dev = "uvicorn api.index:app --reload --host 0.0.0.0"
 format = "ruff format ."
+format-check = "ruff format --check ."
 lint = "ruff check ."
+test = "pytest -v"
 
 [tool.ruff]
 line-length = 88
