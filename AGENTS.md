@@ -228,7 +228,21 @@ poetry run poe lint
 ### Pull Request
 
 * AI生成コードを含むPull Requestでも、通常のレビュープロセスに従う
-* Pull Requestのタイトルもコミットメッセージの1行目となるため、Conventional Commitsの形式に準じる
+
+**🚨 重要: Pull Requestのタイトルについて**
+
+* **Pull Requestのタイトルは必ずConventional Commitsの形式に従った平易な英語で記述してください**
+  * Pull Requestのタイトルはgitのコミットメッセージとして使用されるため、この要件は絶対に守る必要があります
+  * 例: `feat(admin): renovate dashboard with accurate summary stats`
+  * 例: `fix(web): resolve video filtering issue`
+  * 例: `refactor(api): improve data processing logic`
+
+* **タイトルの記述ガイドライン:**
+  * 必ずConventional Commitsの形式を使用する (`type(scope): description`)
+  * GitHubのUIに収まりやすいよう、シンプルで平易な英語を使用する
+  * 日本語は使用しない（gitコミットメッセージとして適切でないため）
+  * 1行で完結させ、簡潔で明確な表現にする
+
 * 変更内容を明確に説明し、必要に応じてAIツールの使用方法を記載する
 
 ## 透明性とドキュメント化
