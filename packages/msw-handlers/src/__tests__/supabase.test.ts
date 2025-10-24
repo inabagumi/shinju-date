@@ -1,6 +1,4 @@
-import { HttpResponse, http } from 'msw'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { supabaseHandlers } from '../handlers/supabase.js'
 import { server } from '../server.js'
 
 describe('Supabase Handlers', () => {
@@ -31,7 +29,7 @@ describe('Supabase Handlers', () => {
       expect(response.ok).toBe(true)
       expect(Array.isArray(data)).toBe(true)
       // The relation handling should return thumbnails for videos that have them
-      if (data[0] && data[0].thumbnail_id) {
+      if (data[0]?.thumbnail_id) {
         expect(data[0]).toHaveProperty('thumbnails')
       } else {
         // Just verify the basic structure is there
