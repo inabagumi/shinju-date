@@ -7,13 +7,21 @@ const VALID_SORT_ORDERS: VideoSortOrder[] = ['asc', 'desc']
 
 // Default values - shared constants to avoid duplication
 export const DEFAULT_VALUES = {
+  channelId: undefined,
+  deleted: undefined,
   page: 1,
+  search: undefined,
   sortField: 'updated_at' as const,
   sortOrder: 'desc' as const,
+  visible: undefined,
 } satisfies {
   page: number
   sortField: VideoSortField
   sortOrder: VideoSortOrder
+  channelId: number | undefined
+  deleted: boolean | undefined
+  search: string | undefined
+  visible: boolean | undefined
 }
 
 /**
