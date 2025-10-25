@@ -9,52 +9,56 @@ import { VideoTable } from './_components/video-table'
 import {
   getVideos,
   type VideoFilters as VideoFiltersType,
-  type VideoSortField,
-  type VideoSortOrder,
 } from './_lib/get-videos'
+import {
+  DEFAULT_VALUES,
+  type VideoSearchParams,
+  videoSearchParamsSchema,
+} from './_lib/search-params-schema'
 
 export const metadata: Metadata = {
   title: '動画管理',
 }
 
 type Props = {
-  searchParams: Promise<{
-    channelId?: string
-    deleted?: string
-    page?: string
-    search?: string
-    sortField?: string
-    sortOrder?: string
-    visible?: string
-  }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
 export default async function VideosPage({ searchParams }: Props) {
-  const params = await searchParams
-  const currentPage = Number(params.page) || 1
+  const rawParams = await searchParams
+
+  // Validate and parse search parameters using zod schema
+  // If validation fails, use default values to prevent crashes
+  let validatedParams: VideoSearchParams
+  try {
+    validatedParams = videoSearchParamsSchema.parse(rawParams)
+  } catch (_error) {
+    // If parsing fails, use safeParse to get default values
+    const result = videoSearchParamsSchema.safeParse({})
+    validatedParams = result.success ? result.data : DEFAULT_VALUES
+  }
+
+  const currentPage = validatedParams.page
   const perPage = 20
 
-  // Build filters
+  // Build filters from validated parameters
   const filters: VideoFiltersType = {}
-  if (params.channelId) {
-    filters.channelId = Number(params.channelId)
+  if (validatedParams.channelId !== undefined) {
+    filters.channelId = validatedParams.channelId
   }
-  if (params.visible !== undefined && params.visible !== '') {
-    filters.visible = params.visible === 'true'
+  if (validatedParams.visible !== undefined) {
+    filters.visible = validatedParams.visible
   }
-  if (params.search) {
-    filters.search = params.search
+  if (validatedParams.search) {
+    filters.search = validatedParams.search
   }
-  if (params.deleted === 'true') {
-    filters.deleted = true
-  } else if (params.deleted === 'false') {
-    filters.deleted = false
+  if (validatedParams.deleted !== undefined) {
+    filters.deleted = validatedParams.deleted
   }
-  // If params.deleted is undefined or empty, don't set filters.deleted (will show all)
 
-  // Get sort parameters
-  const sortField = (params.sortField as VideoSortField) || 'updated_at'
-  const sortOrder = (params.sortOrder as VideoSortOrder) || 'desc'
+  // Get sort parameters from validated data
+  const sortField = validatedParams.sortField
+  const sortOrder = validatedParams.sortOrder
 
   // Fetch channels and total count outside Suspense to avoid layout shift
   const [channels, { total }] = await Promise.all([
