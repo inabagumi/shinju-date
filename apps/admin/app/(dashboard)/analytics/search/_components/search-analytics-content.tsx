@@ -1,22 +1,47 @@
-import { TIME_ZONE } from '@shinju-date/constants'
 import { Temporal } from 'temporal-polyfill'
 import { getPopularKeywords } from '@/lib/analytics/get-popular-keywords'
+import {
+  getDefaultDateRange,
+  parseDateRangeFromUrl,
+  parseSelectedDateFromUrl,
+} from '../../_lib/url-state'
 import { getSearchVolume } from '../_lib/get-search-volume'
 import { getZeroResultKeywords } from '../_lib/get-zero-result-keywords'
 import SearchAnalyticsClient from './search-analytics-client'
+
+type Props = {
+  searchParams: { [key: string]: string | string[] | undefined }
+}
 
 /**
  * SearchAnalyticsContent - Async component that fetches search analytics data
  * This component is wrapped with Suspense in the parent page
  */
-export async function SearchAnalyticsContent() {
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
-  const startDate = today.subtract({ days: 6 })
-  const endDate = today
+export async function SearchAnalyticsContent({ searchParams }: Props) {
+  // Parse date range from URL parameters or use default
+  const urlSearchParams = new URLSearchParams()
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (typeof value === 'string') {
+      urlSearchParams.set(key, value)
+    } else if (Array.isArray(value)) {
+      urlSearchParams.set(key, value[0] || '')
+    }
+  }
 
+  const dateRangeFromUrl = parseDateRangeFromUrl(urlSearchParams)
+  const dateRange = dateRangeFromUrl || getDefaultDateRange()
+  const selectedDateFromUrl = parseSelectedDateFromUrl(urlSearchParams)
+
+  const startDate = Temporal.PlainDate.from(dateRange.startDate)
+  const endDate = Temporal.PlainDate.from(dateRange.endDate)
+
+  // If there's a selected date, fetch data for that specific date
+  // Otherwise, fetch data for the date range
   const [popularKeywords, zeroResultKeywords, searchVolume] = await Promise.all(
     [
-      getPopularKeywords(20, startDate, endDate),
+      selectedDateFromUrl
+        ? getPopularKeywords(20, Temporal.PlainDate.from(selectedDateFromUrl))
+        : getPopularKeywords(20, startDate, endDate),
       getZeroResultKeywords(),
       getSearchVolume(7, startDate.toString(), endDate.toString()),
     ],
@@ -55,8 +80,10 @@ export async function SearchAnalyticsContent() {
       fetchPopularKeywordsForRange={fetchPopularKeywordsForRange}
       fetchSearchVolume={fetchSearchVolume}
       fetchZeroResultKeywords={fetchZeroResultKeywords}
+      initialDateRange={dateRange}
       initialPopularKeywords={popularKeywords}
       initialSearchVolume={searchVolume}
+      initialSelectedDate={selectedDateFromUrl}
       initialZeroResultKeywords={zeroResultKeywords}
     />
   )

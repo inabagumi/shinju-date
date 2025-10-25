@@ -1,7 +1,7 @@
 'use client'
 
-import { TIME_ZONE } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { Tabs } from '@/components/tabs'
@@ -10,6 +10,7 @@ import type { PopularVideo } from '@/lib/analytics/get-popular-videos'
 import type { DateRange } from '../../_components/date-range-picker'
 import DateRangePicker from '../../_components/date-range-picker'
 import { exportToCSV } from '../../_lib/export-csv'
+import { createDateRangeUrlParams } from '../../_lib/url-state'
 import ClickVolumeChart from '../_components/click-volume-chart'
 import type { PopularChannelWithComparison } from '../_lib/add-comparison-data'
 import type { DailyClickVolume } from '../_lib/get-click-volume'
@@ -17,9 +18,11 @@ import { PopularChannelsWidget } from './popular-channels-widget'
 import { PopularVideosWidget } from './popular-videos-widget'
 
 type ClickAnalyticsClientProps = {
+  initialDateRange: DateRange
   initialClickVolume: DailyClickVolume[]
   initialPopularVideos: PopularVideo[]
   initialPopularChannels: PopularChannel[]
+  initialSelectedDate: string | null
   fetchClickVolume: (
     startDate: string,
     endDate: string,
@@ -50,9 +53,11 @@ type ClickAnalyticsClientProps = {
 }
 
 export default function ClickAnalyticsClient({
+  initialDateRange,
   initialClickVolume,
   initialPopularVideos,
   initialPopularChannels,
+  initialSelectedDate,
   fetchClickVolume,
   fetchPopularVideos,
   fetchPopularVideosForDate,
@@ -60,11 +65,9 @@ export default function ClickAnalyticsClient({
   fetchPopularChannelsWithComparison,
   fetchPopularChannelsForDate,
 }: ClickAnalyticsClientProps) {
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
-  const [dateRange, setDateRange] = useState<DateRange>({
-    endDate: today.toString(),
-    startDate: today.subtract({ days: 6 }).toString(),
-  })
+  const router = useRouter()
+  const pathname = usePathname()
+  const [dateRange, setDateRange] = useState<DateRange>(initialDateRange)
   const [comparisonEnabled, setComparisonEnabled] = useState(false)
   const [clickVolume, setClickVolume] =
     useState<DailyClickVolume[]>(initialClickVolume)
@@ -76,7 +79,9 @@ export default function ClickAnalyticsClient({
   const [popularChannels, setPopularChannels] = useState<
     PopularChannel[] | PopularChannelWithComparison[]
   >(initialPopularChannels)
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [selectedDate, setSelectedDate] = useState<string | null>(
+    initialSelectedDate,
+  )
   const [loading, setLoading] = useState(false)
 
   const totalClicks = clickVolume.reduce((sum, day) => sum + day.clicks, 0)
@@ -88,6 +93,24 @@ export default function ClickAnalyticsClient({
     previousTotalClicks > 0
       ? ((totalClicks - previousTotalClicks) / previousTotalClicks) * 100
       : 0
+
+  // Update URL when date range changes
+  const handleDateRangeChange = (newDateRange: DateRange) => {
+    setDateRange(newDateRange)
+
+    // Clear selected date when date range changes
+    setSelectedDate(null)
+
+    // Update URL with new date range using replace to avoid browser history pollution
+    const queryString = createDateRangeUrlParams(newDateRange)
+    router.replace(`${pathname}?${queryString}`)
+  }
+
+  // Update URL when specific date is selected
+  const updateUrlWithSelectedDate = (date: string | null) => {
+    const queryString = createDateRangeUrlParams(dateRange, date)
+    router.replace(`${pathname}?${queryString}`)
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -148,7 +171,41 @@ export default function ClickAnalyticsClient({
   ])
 
   const handleDateClick = async (date: string) => {
+    // If clicking the same date, clear selection and return to range view
+    if (selectedDate === date) {
+      setSelectedDate(null)
+      updateUrlWithSelectedDate(null)
+      setLoading(true)
+      try {
+        const channelsDataPromise = comparisonEnabled
+          ? fetchPopularChannelsWithComparison(
+              dateRange.startDate,
+              dateRange.endDate,
+              20,
+            )
+          : fetchPopularChannels(dateRange.startDate, dateRange.endDate, 20)
+
+        const [rangeVideos, rangeChannels] = await Promise.all([
+          fetchPopularVideos(dateRange.startDate, dateRange.endDate, 20),
+          channelsDataPromise,
+        ])
+        setPopularVideos(rangeVideos)
+        setPopularChannels(rangeChannels)
+      } catch (error) {
+        logger.error('期間別データの取得に失敗しました', {
+          endDate: dateRange.endDate,
+          error,
+          startDate: dateRange.startDate,
+        })
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+
+    // Set new selected date and fetch data for that specific date
     setSelectedDate(date)
+    updateUrlWithSelectedDate(date)
     setLoading(true)
     try {
       const [dateVideos, dateChannels] = await Promise.all([
@@ -194,7 +251,7 @@ export default function ClickAnalyticsClient({
 
       <div className="mb-6">
         <DateRangePicker
-          onChange={setDateRange}
+          onChange={handleDateRangeChange}
           onComparisonToggle={setComparisonEnabled}
           showComparison={true}
           value={dateRange}

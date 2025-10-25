@@ -1,7 +1,11 @@
-import { TIME_ZONE } from '@shinju-date/constants'
 import { Temporal } from 'temporal-polyfill'
 import { getPopularChannels } from '@/lib/analytics/get-popular-channels'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
+import {
+  getDefaultDateRange,
+  parseDateRangeFromUrl,
+  parseSelectedDateFromUrl,
+} from '../../_lib/url-state'
 import {
   addComparisonData,
   type PopularChannelWithComparison,
@@ -9,19 +13,42 @@ import {
 import { getClickVolume } from '../_lib/get-click-volume'
 import ClickAnalyticsClient from './click-analytics-client'
 
+type Props = {
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
 /**
  * ClickAnalyticsContent - Async component that fetches click analytics data
  * This component is wrapped with Suspense in the parent page
  */
-export async function ClickAnalyticsContent() {
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
-  const startDate = today.subtract({ days: 6 })
-  const endDate = today
+export async function ClickAnalyticsContent({ searchParams }: Props) {
+  // Parse date range from URL parameters or use default
+  const urlSearchParams = new URLSearchParams()
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (typeof value === 'string') {
+      urlSearchParams.set(key, value)
+    } else if (Array.isArray(value)) {
+      urlSearchParams.set(key, value[0] || '')
+    }
+  }
 
+  const dateRangeFromUrl = parseDateRangeFromUrl(urlSearchParams)
+  const dateRange = dateRangeFromUrl || getDefaultDateRange()
+  const selectedDateFromUrl = parseSelectedDateFromUrl(urlSearchParams)
+
+  const startDate = Temporal.PlainDate.from(dateRange.startDate)
+  const endDate = Temporal.PlainDate.from(dateRange.endDate)
+
+  // If there's a selected date, fetch data for that specific date
+  // Otherwise, fetch data for the date range
   const [popularVideos, clickVolume, popularChannels] = await Promise.all([
-    getPopularVideos(20, startDate, endDate),
+    selectedDateFromUrl
+      ? getPopularVideos(20, Temporal.PlainDate.from(selectedDateFromUrl))
+      : getPopularVideos(20, startDate, endDate),
     getClickVolume(7, startDate.toString(), endDate.toString()),
-    getPopularChannels(20, startDate, endDate),
+    selectedDateFromUrl
+      ? getPopularChannels(20, Temporal.PlainDate.from(selectedDateFromUrl))
+      : getPopularChannels(20, startDate, endDate),
   ])
 
   const fetchClickVolume = async (start: string, end: string) => {
@@ -96,8 +123,10 @@ export async function ClickAnalyticsContent() {
       fetchPopularVideos={fetchPopularVideos}
       fetchPopularVideosForDate={fetchPopularVideosForDate}
       initialClickVolume={clickVolume}
+      initialDateRange={dateRange}
       initialPopularChannels={popularChannels}
       initialPopularVideos={popularVideos}
+      initialSelectedDate={selectedDateFromUrl}
     />
   )
 }

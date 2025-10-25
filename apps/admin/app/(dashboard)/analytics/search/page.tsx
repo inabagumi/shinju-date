@@ -7,10 +7,16 @@ export const metadata: Metadata = {
   title: '検索アナリティクス',
 }
 
-export default function SearchAnalyticsPage() {
+type Props = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+export default async function SearchAnalyticsPage({ searchParams }: Props) {
+  const params = await searchParams
+
   return (
     <Suspense fallback={<AnalyticsPageSkeleton />}>
-      <SearchAnalyticsContent />
+      <SearchAnalyticsContent searchParams={params} />
     </Suspense>
   )
 }
