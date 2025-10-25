@@ -28,6 +28,13 @@ export function VideoFilters({ channels }: Props) {
 
   // Debounce search input
   useEffect(() => {
+    const currentSearch = searchParams.get('search') || ''
+
+    // Only trigger navigation if the search input actually changed from URL
+    if (searchInput === currentSearch) {
+      return
+    }
+
     const timer = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString())
       if (searchInput === '') {
@@ -41,7 +48,7 @@ export function VideoFilters({ channels }: Props) {
     }, 500) // 500ms debounce
 
     return () => clearTimeout(timer)
-  }, [searchInput, router, searchParams])
+  }, [searchInput, router, searchParams]) // Re-added searchParams since we need it to check current value
 
   const handleFilterChange = (
     key: 'channelId' | 'deleted' | 'visible',
