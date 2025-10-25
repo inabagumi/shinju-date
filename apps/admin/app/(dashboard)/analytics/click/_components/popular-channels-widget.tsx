@@ -137,7 +137,7 @@ export function PopularChannelsWidget({
                 <div className="min-w-0 flex-1 truncate">
                   <Link
                     className="font-medium hover:underline"
-                    href={`/videos?channel=${channel.slug}`}
+                    href={`/videos?channelId=${channel.id}`}
                   >
                     {channel.name}
                   </Link>

@@ -19,6 +19,9 @@
     },
     "linter": {
       "enabled": true
+    },
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "formatter": {
@@ -43,9 +46,6 @@
             "functions": ["twMerge"]
           }
         }
-      },
-      "suspicious": {
-        "noUnknownAtRules": "off"
       }
     }
   },

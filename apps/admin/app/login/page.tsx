@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Form, {
   Button,
   ErrorMessage,
@@ -7,6 +8,10 @@ import Form, {
   Label,
 } from '@/components/form'
 import { signIn } from './_lib/actions'
+
+export const metadata: Metadata = {
+  title: 'ログイン',
+}
 
 export default function Login() {
   return (
