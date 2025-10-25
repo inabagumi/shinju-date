@@ -20,6 +20,7 @@ type SearchAnalyticsClientProps = {
   initialDateRange: DateRange
   initialSearchVolume: DailySearchVolume[]
   initialPopularKeywords: PopularKeyword[]
+  initialSelectedDate: string | null
   initialZeroResultKeywords: string[]
   fetchSearchVolume: (
     startDate: string,
@@ -41,6 +42,7 @@ export default function SearchAnalyticsClient({
   initialDateRange,
   initialSearchVolume,
   initialPopularKeywords,
+  initialSelectedDate,
   initialZeroResultKeywords,
   fetchSearchVolume,
   fetchPopularKeywords,
@@ -62,7 +64,9 @@ export default function SearchAnalyticsClient({
   const [zeroResultKeywords, setZeroResultKeywords] = useState<string[]>(
     initialZeroResultKeywords,
   )
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [selectedDate, setSelectedDate] = useState<string | null>(
+    initialSelectedDate,
+  )
   const [loading, setLoading] = useState(false)
 
   const totalSearches = searchVolume.reduce((sum, day) => sum + day.count, 0)
@@ -79,8 +83,17 @@ export default function SearchAnalyticsClient({
   const handleDateRangeChange = (newDateRange: DateRange) => {
     setDateRange(newDateRange)
 
+    // Clear selected date when date range changes
+    setSelectedDate(null)
+
     // Update URL with new date range using replace to avoid browser history pollution
     const queryString = createDateRangeUrlParams(newDateRange)
+    router.replace(`${pathname}?${queryString}`)
+  }
+
+  // Update URL when specific date is selected
+  const updateUrlWithSelectedDate = (date: string | null) => {
+    const queryString = createDateRangeUrlParams(dateRange, date)
     router.replace(`${pathname}?${queryString}`)
   }
 
@@ -142,6 +155,7 @@ export default function SearchAnalyticsClient({
     // If clicking the same date, clear selection and return to range view
     if (selectedDate === date) {
       setSelectedDate(null)
+      updateUrlWithSelectedDate(null)
       setLoading(true)
       try {
         const keywordsData = await fetchPopularKeywordsForRange(
@@ -164,6 +178,7 @@ export default function SearchAnalyticsClient({
 
     // Set new selected date and fetch data for that specific date
     setSelectedDate(date)
+    updateUrlWithSelectedDate(date)
     setLoading(true)
     try {
       const keywordsData = await fetchPopularKeywords(date, 20)

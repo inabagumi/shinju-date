@@ -3,6 +3,7 @@ import { getPopularKeywords } from '@/lib/analytics/get-popular-keywords'
 import {
   getDefaultDateRange,
   parseDateRangeFromUrl,
+  parseSelectedDateFromUrl,
 } from '../../_lib/url-state'
 import { getSearchVolume } from '../_lib/get-search-volume'
 import { getZeroResultKeywords } from '../_lib/get-zero-result-keywords'
@@ -29,13 +30,18 @@ export async function SearchAnalyticsContent({ searchParams }: Props) {
 
   const dateRangeFromUrl = parseDateRangeFromUrl(urlSearchParams)
   const dateRange = dateRangeFromUrl || getDefaultDateRange()
+  const selectedDateFromUrl = parseSelectedDateFromUrl(urlSearchParams)
 
   const startDate = Temporal.PlainDate.from(dateRange.startDate)
   const endDate = Temporal.PlainDate.from(dateRange.endDate)
 
+  // If there's a selected date, fetch data for that specific date
+  // Otherwise, fetch data for the date range
   const [popularKeywords, zeroResultKeywords, searchVolume] = await Promise.all(
     [
-      getPopularKeywords(20, startDate, endDate),
+      selectedDateFromUrl
+        ? getPopularKeywords(20, Temporal.PlainDate.from(selectedDateFromUrl))
+        : getPopularKeywords(20, startDate, endDate),
       getZeroResultKeywords(),
       getSearchVolume(7, startDate.toString(), endDate.toString()),
     ],
@@ -77,6 +83,7 @@ export async function SearchAnalyticsContent({ searchParams }: Props) {
       initialDateRange={dateRange}
       initialPopularKeywords={popularKeywords}
       initialSearchVolume={searchVolume}
+      initialSelectedDate={selectedDateFromUrl}
       initialZeroResultKeywords={zeroResultKeywords}
     />
   )

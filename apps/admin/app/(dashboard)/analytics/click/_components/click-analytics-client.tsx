@@ -22,6 +22,7 @@ type ClickAnalyticsClientProps = {
   initialClickVolume: DailyClickVolume[]
   initialPopularVideos: PopularVideo[]
   initialPopularChannels: PopularChannel[]
+  initialSelectedDate: string | null
   fetchClickVolume: (
     startDate: string,
     endDate: string,
@@ -56,6 +57,7 @@ export default function ClickAnalyticsClient({
   initialClickVolume,
   initialPopularVideos,
   initialPopularChannels,
+  initialSelectedDate,
   fetchClickVolume,
   fetchPopularVideos,
   fetchPopularVideosForDate,
@@ -77,7 +79,9 @@ export default function ClickAnalyticsClient({
   const [popularChannels, setPopularChannels] = useState<
     PopularChannel[] | PopularChannelWithComparison[]
   >(initialPopularChannels)
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [selectedDate, setSelectedDate] = useState<string | null>(
+    initialSelectedDate,
+  )
   const [loading, setLoading] = useState(false)
 
   const totalClicks = clickVolume.reduce((sum, day) => sum + day.clicks, 0)
@@ -94,8 +98,17 @@ export default function ClickAnalyticsClient({
   const handleDateRangeChange = (newDateRange: DateRange) => {
     setDateRange(newDateRange)
 
+    // Clear selected date when date range changes
+    setSelectedDate(null)
+
     // Update URL with new date range using replace to avoid browser history pollution
     const queryString = createDateRangeUrlParams(newDateRange)
+    router.replace(`${pathname}?${queryString}`)
+  }
+
+  // Update URL when specific date is selected
+  const updateUrlWithSelectedDate = (date: string | null) => {
+    const queryString = createDateRangeUrlParams(dateRange, date)
     router.replace(`${pathname}?${queryString}`)
   }
 
@@ -158,7 +171,41 @@ export default function ClickAnalyticsClient({
   ])
 
   const handleDateClick = async (date: string) => {
+    // If clicking the same date, clear selection and return to range view
+    if (selectedDate === date) {
+      setSelectedDate(null)
+      updateUrlWithSelectedDate(null)
+      setLoading(true)
+      try {
+        const channelsDataPromise = comparisonEnabled
+          ? fetchPopularChannelsWithComparison(
+              dateRange.startDate,
+              dateRange.endDate,
+              20,
+            )
+          : fetchPopularChannels(dateRange.startDate, dateRange.endDate, 20)
+
+        const [rangeVideos, rangeChannels] = await Promise.all([
+          fetchPopularVideos(dateRange.startDate, dateRange.endDate, 20),
+          channelsDataPromise,
+        ])
+        setPopularVideos(rangeVideos)
+        setPopularChannels(rangeChannels)
+      } catch (error) {
+        logger.error('期間別データの取得に失敗しました', {
+          endDate: dateRange.endDate,
+          error,
+          startDate: dateRange.startDate,
+        })
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+
+    // Set new selected date and fetch data for that specific date
     setSelectedDate(date)
+    updateUrlWithSelectedDate(date)
     setLoading(true)
     try {
       const [dateVideos, dateChannels] = await Promise.all([

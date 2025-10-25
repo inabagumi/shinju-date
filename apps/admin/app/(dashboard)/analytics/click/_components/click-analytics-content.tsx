@@ -4,6 +4,7 @@ import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
 import {
   getDefaultDateRange,
   parseDateRangeFromUrl,
+  parseSelectedDateFromUrl,
 } from '../../_lib/url-state'
 import {
   addComparisonData,
@@ -33,14 +34,21 @@ export async function ClickAnalyticsContent({ searchParams }: Props) {
 
   const dateRangeFromUrl = parseDateRangeFromUrl(urlSearchParams)
   const dateRange = dateRangeFromUrl || getDefaultDateRange()
+  const selectedDateFromUrl = parseSelectedDateFromUrl(urlSearchParams)
 
   const startDate = Temporal.PlainDate.from(dateRange.startDate)
   const endDate = Temporal.PlainDate.from(dateRange.endDate)
 
+  // If there's a selected date, fetch data for that specific date
+  // Otherwise, fetch data for the date range
   const [popularVideos, clickVolume, popularChannels] = await Promise.all([
-    getPopularVideos(20, startDate, endDate),
+    selectedDateFromUrl
+      ? getPopularVideos(20, Temporal.PlainDate.from(selectedDateFromUrl))
+      : getPopularVideos(20, startDate, endDate),
     getClickVolume(7, startDate.toString(), endDate.toString()),
-    getPopularChannels(20, startDate, endDate),
+    selectedDateFromUrl
+      ? getPopularChannels(20, Temporal.PlainDate.from(selectedDateFromUrl))
+      : getPopularChannels(20, startDate, endDate),
   ])
 
   const fetchClickVolume = async (start: string, end: string) => {
@@ -118,6 +126,7 @@ export async function ClickAnalyticsContent({ searchParams }: Props) {
       initialDateRange={dateRange}
       initialPopularChannels={popularChannels}
       initialPopularVideos={popularVideos}
+      initialSelectedDate={selectedDateFromUrl}
     />
   )
 }

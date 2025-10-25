@@ -67,13 +67,59 @@ export function getDefaultDateRange(): DateRange {
 }
 
 /**
+ * Parse selected date from URL search params
+ * @param searchParams URLSearchParams instance
+ * @returns Selected date string or null
+ */
+export function parseSelectedDateFromUrl(
+  searchParams: URLSearchParams,
+): string | null {
+  const dateParam = searchParams.get('date')
+
+  if (!dateParam) {
+    return null
+  }
+
+  try {
+    // Validate date format
+    const selectedDate = Temporal.PlainDate.from(dateParam)
+    const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
+
+    // Validate that selected date is not in the future
+    if (Temporal.PlainDate.compare(selectedDate, today) > 0) {
+      return null
+    }
+
+    // Validate that selected date is not too far in the past (90 days retention)
+    const maxStartDate = today.subtract({ days: 89 })
+    if (Temporal.PlainDate.compare(selectedDate, maxStartDate) < 0) {
+      return null
+    }
+
+    return selectedDate.toString()
+  } catch {
+    // Invalid date format
+    return null
+  }
+}
+
+/**
  * Create URL search params string for date range
  * @param dateRange DateRange object
- * @returns Query string with from and to parameters
+ * @param selectedDate Optional selected date string
+ * @returns Query string with from, to, and optionally date parameters
  */
-export function createDateRangeUrlParams(dateRange: DateRange): string {
+export function createDateRangeUrlParams(
+  dateRange: DateRange,
+  selectedDate?: string | null,
+): string {
   const params = new URLSearchParams()
   params.set('from', dateRange.startDate)
   params.set('to', dateRange.endDate)
+
+  if (selectedDate) {
+    params.set('date', selectedDate)
+  }
+
   return params.toString()
 }
