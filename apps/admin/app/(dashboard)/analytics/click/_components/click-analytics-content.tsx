@@ -39,22 +39,15 @@ export async function ClickAnalyticsContent({ searchParams }: Props) {
   const startDate = Temporal.PlainDate.from(dateRange.startDate)
   const endDate = Temporal.PlainDate.from(dateRange.endDate)
 
-  // Check if this is a single-date scenario:
-  // 1. Explicit date parameter exists (selectedDateFromUrl)
-  // 2. Date range is a single day (startDate === endDate)
-  const isSingleDateRange = Temporal.PlainDate.compare(startDate, endDate) === 0
-  const effectiveSelectedDate =
-    selectedDateFromUrl || (isSingleDateRange ? startDate.toString() : null)
-
   // If there's a selected date, fetch data for that specific date
   // Otherwise, fetch data for the date range
   const [popularVideos, clickVolume, popularChannels] = await Promise.all([
-    effectiveSelectedDate
-      ? getPopularVideos(20, Temporal.PlainDate.from(effectiveSelectedDate))
+    selectedDateFromUrl
+      ? getPopularVideos(20, Temporal.PlainDate.from(selectedDateFromUrl))
       : getPopularVideos(20, startDate, endDate),
     getClickVolume(7, startDate.toString(), endDate.toString()),
-    effectiveSelectedDate
-      ? getPopularChannels(20, Temporal.PlainDate.from(effectiveSelectedDate))
+    selectedDateFromUrl
+      ? getPopularChannels(20, Temporal.PlainDate.from(selectedDateFromUrl))
       : getPopularChannels(20, startDate, endDate),
   ])
 
@@ -133,7 +126,7 @@ export async function ClickAnalyticsContent({ searchParams }: Props) {
       initialDateRange={dateRange}
       initialPopularChannels={popularChannels}
       initialPopularVideos={popularVideos}
-      initialSelectedDate={effectiveSelectedDate}
+      initialSelectedDate={selectedDateFromUrl}
     />
   )
 }
