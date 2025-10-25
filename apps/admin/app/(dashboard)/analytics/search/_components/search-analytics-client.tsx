@@ -111,20 +111,33 @@ export default function SearchAnalyticsClient({
     const fetchData = async () => {
       setLoading(true)
       try {
+        // Check if this is a single-day range (graph click)
+        const start = Temporal.PlainDate.from(dateRange.startDate)
+        const end = Temporal.PlainDate.from(dateRange.endDate)
+        const isSingleDay = Temporal.PlainDate.compare(start, end) === 0
+
         const [volumeData, keywordsData, zeroData] = await Promise.all([
           fetchSearchVolume(dateRange.startDate, dateRange.endDate),
-          // Use range aggregation when no specific date is selected
-          fetchPopularKeywordsForRange(
-            dateRange.startDate,
-            dateRange.endDate,
-            20,
-          ),
+          // Use single-date or range aggregation based on the date range
+          isSingleDay
+            ? fetchPopularKeywords(dateRange.startDate, 20)
+            : fetchPopularKeywordsForRange(
+                dateRange.startDate,
+                dateRange.endDate,
+                20,
+              ),
           fetchZeroResultKeywords(),
         ])
         setSearchVolume(volumeData)
         setPopularKeywords(keywordsData)
         setZeroResultKeywords(zeroData)
-        setSelectedDate(null)
+
+        // Set selected date for single-day ranges, clear for multi-day ranges
+        if (isSingleDay) {
+          setSelectedDate(dateRange.startDate)
+        } else {
+          setSelectedDate(null)
+        }
 
         if (comparisonEnabled) {
           const start = Temporal.PlainDate.from(dateRange.startDate)
@@ -159,6 +172,7 @@ export default function SearchAnalyticsClient({
     fetchSearchVolume,
     fetchPopularKeywordsForRange,
     fetchZeroResultKeywords,
+    fetchPopularKeywords,
   ])
 
   const handleDateClick = async (date: string) => {

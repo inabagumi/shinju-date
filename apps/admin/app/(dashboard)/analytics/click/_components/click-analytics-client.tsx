@@ -134,15 +134,30 @@ export default function ClickAnalyticsClient({
             )
           : fetchPopularChannels(dateRange.startDate, dateRange.endDate, 20)
 
+        // Check if this is a single-day range (graph click)
+        const start = Temporal.PlainDate.from(dateRange.startDate)
+        const end = Temporal.PlainDate.from(dateRange.endDate)
+        const isSingleDay = Temporal.PlainDate.compare(start, end) === 0
+
         const [volumeData, videosData, channelsData] = await Promise.all([
           fetchClickVolume(dateRange.startDate, dateRange.endDate),
-          fetchPopularVideos(dateRange.startDate, dateRange.endDate, 20),
-          channelsDataPromise,
+          isSingleDay
+            ? fetchPopularVideosForDate(dateRange.startDate, 20)
+            : fetchPopularVideos(dateRange.startDate, dateRange.endDate, 20),
+          isSingleDay
+            ? fetchPopularChannelsForDate(dateRange.startDate, 20)
+            : channelsDataPromise,
         ])
         setClickVolume(volumeData)
         setPopularVideos(videosData)
         setPopularChannels(channelsData)
-        setSelectedDate(null)
+
+        // Set selected date for single-day ranges, clear for multi-day ranges
+        if (isSingleDay) {
+          setSelectedDate(dateRange.startDate)
+        } else {
+          setSelectedDate(null)
+        }
 
         if (comparisonEnabled) {
           const start = Temporal.PlainDate.from(dateRange.startDate)
@@ -178,6 +193,8 @@ export default function ClickAnalyticsClient({
     fetchPopularVideos,
     fetchPopularChannels,
     fetchPopularChannelsWithComparison,
+    fetchPopularVideosForDate,
+    fetchPopularChannelsForDate,
   ])
 
   const handleDateClick = async (date: string) => {
