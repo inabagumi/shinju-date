@@ -108,7 +108,17 @@ export default function ClickAnalyticsClient({
 
   // Update URL when specific date is selected
   const updateUrlWithSelectedDate = (date: string | null) => {
-    const queryString = createDateRangeUrlParams(dateRange, date)
+    let queryString: string
+    if (date) {
+      // Set both from and to to the selected date for single-date view
+      const params = new URLSearchParams()
+      params.set('from', date)
+      params.set('to', date)
+      queryString = params.toString()
+    } else {
+      // Return to original date range
+      queryString = createDateRangeUrlParams(dateRange)
+    }
     router.replace(`${pathname}?${queryString}`)
   }
 
