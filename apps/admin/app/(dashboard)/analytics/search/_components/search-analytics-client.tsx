@@ -1,12 +1,13 @@
 'use client'
 
-import { TIME_ZONE } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import type { DateRange } from '../../_components/date-range-picker'
 import DateRangePicker from '../../_components/date-range-picker'
 import { exportToCSV } from '../../_lib/export-csv'
+import { createDateRangeUrlParams } from '../../_lib/url-state'
 import SearchVolumeChart from '../_components/search-volume-chart'
 import type { DailySearchVolume } from '../_lib/get-search-volume'
 
@@ -16,6 +17,7 @@ type PopularKeyword = {
 }
 
 type SearchAnalyticsClientProps = {
+  initialDateRange: DateRange
   initialSearchVolume: DailySearchVolume[]
   initialPopularKeywords: PopularKeyword[]
   initialZeroResultKeywords: string[]
@@ -36,6 +38,7 @@ type SearchAnalyticsClientProps = {
 }
 
 export default function SearchAnalyticsClient({
+  initialDateRange,
   initialSearchVolume,
   initialPopularKeywords,
   initialZeroResultKeywords,
@@ -44,11 +47,9 @@ export default function SearchAnalyticsClient({
   fetchPopularKeywordsForRange,
   fetchZeroResultKeywords,
 }: SearchAnalyticsClientProps) {
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
-  const [dateRange, setDateRange] = useState<DateRange>({
-    endDate: today.toString(),
-    startDate: today.subtract({ days: 6 }).toString(),
-  })
+  const router = useRouter()
+  const pathname = usePathname()
+  const [dateRange, setDateRange] = useState<DateRange>(initialDateRange)
   const [comparisonEnabled, setComparisonEnabled] = useState(false)
   const [searchVolume, setSearchVolume] =
     useState<DailySearchVolume[]>(initialSearchVolume)
@@ -73,6 +74,15 @@ export default function SearchAnalyticsClient({
     previousTotalSearches > 0
       ? ((totalSearches - previousTotalSearches) / previousTotalSearches) * 100
       : 0
+
+  // Update URL when date range changes
+  const handleDateRangeChange = (newDateRange: DateRange) => {
+    setDateRange(newDateRange)
+
+    // Update URL with new date range using replace to avoid browser history pollution
+    const queryString = createDateRangeUrlParams(newDateRange)
+    router.replace(`${pathname}?${queryString}`)
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -192,7 +202,7 @@ export default function SearchAnalyticsClient({
 
       <div className="mb-6">
         <DateRangePicker
-          onChange={setDateRange}
+          onChange={handleDateRangeChange}
           onComparisonToggle={setComparisonEnabled}
           showComparison={true}
           value={dateRange}
