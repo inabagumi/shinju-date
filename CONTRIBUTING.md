@@ -57,6 +57,61 @@ SHINJU DATEプロジェクトへの貢献をご検討いただき、ありがと
    uv sync --extra dev
    ```
 
+### Supabase ローカル開発環境
+
+このプロジェクトでは、安全で効率的な開発のために OSS版 Supabase をローカルで実行します。
+
+#### GitHub Codespaces / Dev Containers
+
+**推奨**: 自動で環境が構築される Codespaces または Dev Containers を使用してください。
+
+1. **Codespaces で開始**
+   - GitHubリポジトリページで「Code」→「Codespaces」→「Create codespace」
+   - 自動的にSupabaseが起動します
+
+2. **VS Code Dev Containers で開始**
+   - `code .` でプロジェクトを開く
+   - 「Dev Container で再度開く」を選択
+
+#### 手動セットアップ（Codespaces/Dev Containers以外）
+
+```bash
+# Supabase CLI のインストール
+npm install -g supabase
+
+# Supabase の起動
+supabase start
+
+# 状態確認
+supabase status
+```
+
+#### データベース操作
+
+```bash
+# 本番データのインポート
+pnpm db:import
+
+# 本番データのエクスポート（管理者のみ）
+pnpm db:export
+
+# マイグレーションの作成
+supabase migration new <migration_name>
+
+# マイグレーションの適用
+supabase db reset
+```
+
+**重要**: 本番データベースは絶対に直接操作しないでください。すべての開発作業はローカル環境で行います。
+
+#### アクセス
+
+- **Supabase Studio**: http://localhost:54323
+- **API エンドポイント**: http://localhost:54321
+- **PostgreSQL**: `postgresql://postgres:postgres@localhost:54322/postgres`
+
+詳細は [docs/supabase-local-development.md](docs/supabase-local-development.md) を参照してください。
+
 ### 開発サーバーの起動
 
 ```bash
@@ -208,6 +263,52 @@ pnpm run test --watch
 - **統合テスト**: API エンドポイントや機能の統合テスト
 - **E2Eテスト**: 主要なユーザーフローのテスト
 
+## データベース開発ワークフロー
+
+### スキーマ変更の手順
+
+1. **ローカル環境でマイグレーション作成**
+   ```bash
+   supabase migration new add_new_feature
+   ```
+
+2. **マイグレーションファイルを編集**
+   - `supabase/migrations/` にSQLファイルが作成される
+   - DDL、RLSポリシー、関数などを記述
+
+3. **ローカルで適用・テスト**
+   ```bash
+   supabase db reset  # 全マイグレーションを適用
+   ```
+
+4. **本番適用（レビュー後）**
+   ```bash
+   supabase db push --project-ref YOUR_PROJECT_ID
+   ```
+
+### データ操作のベストプラクティス
+
+- **本番データベースは直接操作禁止**
+- **ローカル環境で全てのテストを実施**
+- **RLSポリシーは必ずローカルでテスト**
+- **マイグレーションファイルはGitで管理**
+- **個人情報を含むテーブルのエクスポートは禁止**
+
+### データインポート・エクスポート
+
+```bash
+# 本番データをローカルにインポート
+pnpm db:import
+
+# 特定のファイルからインポート
+IMPORT_FILENAME=backup_20241025.sql.gz pnpm db:import
+
+# 本番データをエクスポート（管理者のみ）
+export SUPABASE_PROJECT_ID=your-project-id
+export SUPABASE_DB_PASSWORD=your-password
+pnpm db:export
+```
+
 ## AI エージェントとの協業
 
 このプロジェクトでは GitHub Copilot などの AI ツールを積極的に活用しています。詳細は [AGENTS.md](AGENTS.md) を参照してください。
@@ -245,6 +346,64 @@ shinju-date/
 
 - **GitHub Issues**: 技術的な質問や提案
 - **GitHub Discussions**: 一般的な議論
+
+### よくある問題と解決方法
+
+#### Supabase が起動しない
+
+```bash
+# Docker を確認
+docker ps
+
+# Supabase を完全にリセット
+supabase stop --no-backup
+docker system prune -f
+supabase start
+```
+
+#### ポート競合エラー
+
+Supabase のポートが他のサービスと競合する場合：
+
+```bash
+# 使用中のポートを確認
+lsof -i :54321
+lsof -i :54323
+
+# 他のサービスを停止するか、supabase/config.toml でポートを変更
+```
+
+#### データベース接続エラー
+
+```bash
+# Supabase の状態を確認
+supabase status
+
+# 接続URLを確認
+supabase status | grep "DB URL"
+```
+
+#### MSW が動作しない
+
+```bash
+# MSW サービスワーカーを初期化
+cd apps/web && pnpm run msw:init
+cd apps/admin && pnpm run msw:init
+
+# 環境変数を設定
+export ENABLE_MSW=true
+```
+
+#### Python 依存関係の問題
+
+```bash
+# uv の更新
+pip install --upgrade uv
+
+# 依存関係の再インストール
+cd apps/insights
+uv sync --extra dev --reinstall
+```
 
 ### ドキュメント
 

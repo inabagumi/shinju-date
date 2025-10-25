@@ -1,14 +1,14 @@
 name: Database Backup
 
 on:
-  schedule:
-    # Run every day at 2 AM UTC (adjust as needed)
-    - cron: '0 2 * * *'
+  # schedule:
+  #   # Run every day at 2 AM UTC (adjust as needed)
+  #   - cron: '0 2 * * *'
   workflow_dispatch: # Allow manual trigger
 
 jobs:
   backup:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     
