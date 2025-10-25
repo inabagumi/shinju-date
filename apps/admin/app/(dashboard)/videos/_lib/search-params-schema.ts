@@ -1,4 +1,20 @@
 import { z } from 'zod'
+import type { VideoSortField, VideoSortOrder } from './get-videos'
+
+// Define the valid sort field and order values based on the types
+const VALID_SORT_FIELDS: VideoSortField[] = ['published_at', 'updated_at']
+const VALID_SORT_ORDERS: VideoSortOrder[] = ['asc', 'desc']
+
+// Default values - shared constants to avoid duplication
+export const DEFAULT_VALUES = {
+  page: 1,
+  sortField: 'updated_at' as const,
+  sortOrder: 'desc' as const,
+} satisfies {
+  page: number
+  sortField: VideoSortField
+  sortOrder: VideoSortOrder
+}
 
 /**
  * Zod schema for video management page search parameters
@@ -38,9 +54,9 @@ export const videoSearchParamsSchema = z.object({
       if (Array.isArray(val)) {
         val = val[0] // Take first element if array
       }
-      if (!val) return 1
+      if (!val) return DEFAULT_VALUES.page
       const num = Number(val)
-      return Number.isNaN(num) || num < 1 ? 1 : num
+      return Number.isNaN(num) || num < 1 ? DEFAULT_VALUES.page : num
     }),
 
   // Search query string (optional) - handle arrays by taking first element
@@ -62,7 +78,9 @@ export const videoSearchParamsSchema = z.object({
       if (Array.isArray(val)) {
         val = val[0]
       }
-      return val === 'published_at' || val === 'updated_at' ? val : 'updated_at'
+      return VALID_SORT_FIELDS.includes(val as VideoSortField)
+        ? (val as VideoSortField)
+        : DEFAULT_VALUES.sortField
     }),
 
   // Sort order - only allow valid values, handle arrays
@@ -73,7 +91,9 @@ export const videoSearchParamsSchema = z.object({
       if (Array.isArray(val)) {
         val = val[0]
       }
-      return val === 'asc' || val === 'desc' ? val : 'desc'
+      return VALID_SORT_ORDERS.includes(val as VideoSortOrder)
+        ? (val as VideoSortOrder)
+        : DEFAULT_VALUES.sortOrder
     }),
 
   // Visibility filter (true/false or undefined) - handle arrays

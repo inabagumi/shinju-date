@@ -11,6 +11,7 @@ import {
   type VideoFilters as VideoFiltersType,
 } from './_lib/get-videos'
 import {
+  DEFAULT_VALUES,
   type VideoSearchParams,
   videoSearchParamsSchema,
 } from './_lib/search-params-schema'
@@ -34,13 +35,7 @@ export default async function VideosPage({ searchParams }: Props) {
   } catch (_error) {
     // If parsing fails, use safeParse to get default values
     const result = videoSearchParamsSchema.safeParse({})
-    validatedParams = result.success
-      ? result.data
-      : {
-          page: 1,
-          sortField: 'updated_at' as const,
-          sortOrder: 'desc' as const,
-        }
+    validatedParams = result.success ? result.data : DEFAULT_VALUES
   }
 
   const currentPage = validatedParams.page
