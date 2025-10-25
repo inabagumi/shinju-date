@@ -11,6 +11,8 @@ import {
   type PopularChannelWithComparison,
 } from '../_lib/add-comparison-data'
 import { getClickVolume } from '../_lib/get-click-volume'
+import { getPopularChannelsForDate } from '../_lib/get-popular-channels-for-date'
+import { getPopularVideosForDate } from '../_lib/get-popular-videos-for-date'
 import ClickAnalyticsClient from './click-analytics-client'
 
 type Props = {
@@ -43,11 +45,11 @@ export async function ClickAnalyticsContent({ searchParams }: Props) {
   // Otherwise, fetch data for the date range
   const [popularVideos, clickVolume, popularChannels] = await Promise.all([
     selectedDateFromUrl
-      ? getPopularVideos(20, Temporal.PlainDate.from(selectedDateFromUrl))
+      ? getPopularVideosForDate(selectedDateFromUrl, 20)
       : getPopularVideos(20, startDate, endDate),
     getClickVolume(7, startDate.toString(), endDate.toString()),
     selectedDateFromUrl
-      ? getPopularChannels(20, Temporal.PlainDate.from(selectedDateFromUrl))
+      ? getPopularChannelsForDate(selectedDateFromUrl, 20)
       : getPopularChannels(20, startDate, endDate),
   ])
 
@@ -104,14 +106,12 @@ export async function ClickAnalyticsContent({ searchParams }: Props) {
 
   const fetchPopularVideosForDate = async (date: string, limit: number) => {
     'use server'
-    const plainDate = Temporal.PlainDate.from(date)
-    return getPopularVideos(limit, plainDate)
+    return getPopularVideosForDate(date, limit)
   }
 
   const fetchPopularChannelsForDate = async (date: string, limit: number) => {
     'use server'
-    const plainDate = Temporal.PlainDate.from(date)
-    return getPopularChannels(limit, plainDate)
+    return getPopularChannelsForDate(date, limit)
   }
 
   return (

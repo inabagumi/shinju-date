@@ -5,6 +5,7 @@ import {
   parseDateRangeFromUrl,
   parseSelectedDateFromUrl,
 } from '../../_lib/url-state'
+import { getPopularKeywordsForDate } from '../_lib/get-popular-keywords-for-date'
 import { getSearchVolume } from '../_lib/get-search-volume'
 import { getZeroResultKeywords } from '../_lib/get-zero-result-keywords'
 import SearchAnalyticsClient from './search-analytics-client'
@@ -40,7 +41,7 @@ export async function SearchAnalyticsContent({ searchParams }: Props) {
   const [popularKeywords, zeroResultKeywords, searchVolume] = await Promise.all(
     [
       selectedDateFromUrl
-        ? getPopularKeywords(20, Temporal.PlainDate.from(selectedDateFromUrl))
+        ? getPopularKeywordsForDate(selectedDateFromUrl, 20)
         : getPopularKeywords(20, startDate, endDate),
       getZeroResultKeywords(),
       getSearchVolume(7, startDate.toString(), endDate.toString()),
@@ -54,8 +55,7 @@ export async function SearchAnalyticsContent({ searchParams }: Props) {
 
   const fetchPopularKeywords = async (date: string, limit: number) => {
     'use server'
-    const plainDate = Temporal.PlainDate.from(date)
-    return getPopularKeywords(limit, plainDate)
+    return getPopularKeywordsForDate(date, limit)
   }
 
   const fetchPopularKeywordsForRange = async (
