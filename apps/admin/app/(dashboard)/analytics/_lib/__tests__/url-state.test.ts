@@ -4,7 +4,7 @@ import { parseDateRangeFromUrl, getDefaultDateRange, createDateRangeUrlParams } 
 describe('url-state utilities', () => {
   describe('parseDateRangeFromUrl', () => {
     it('should parse valid date range from URL params', () => {
-      // Use a recent date range that would be valid 
+      // Use a recent date range that would be valid for testing
       const today = new Date()
       const sevenDaysAgo = new Date(today)
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
