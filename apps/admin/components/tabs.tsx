@@ -17,8 +17,6 @@ type TabsProps = {
 export function Tabs({ tabs, defaultTab, className = '' }: TabsProps) {
   const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id || '')
 
-  const activeTabContent = tabs.find((tab) => tab.id === activeTab)?.content
-
   return (
     <div className={className}>
       {/* Tab Navigation */}
@@ -42,9 +40,14 @@ export function Tabs({ tabs, defaultTab, className = '' }: TabsProps) {
       </div>
 
       {/* Tab Content */}
-      <Activity>
-        <div className="mt-6">{activeTabContent}</div>
-      </Activity>
+      {tabs.map((tab) => (
+        <Activity
+          key={tab.id}
+          mode={tab.id === activeTab ? 'visible' : 'hidden'}
+        >
+          <div className="mt-6">{tab.content}</div>
+        </Activity>
+      ))}
     </div>
   )
 }
