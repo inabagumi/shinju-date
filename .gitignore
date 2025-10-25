@@ -131,7 +131,11 @@ dist
 
 # turbo
 .turbo
+
 tsup.config.bundled_*.mjs
+
+# Supabase data exports
+supabase/data-exports/
 
 # MSW Service Worker files (generated when needed)
 **/public/mockServiceWorker.js

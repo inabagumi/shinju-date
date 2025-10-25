@@ -73,6 +73,39 @@ pnpm run dev --filter=web
 - **[docs/](docs/)** - プロジェクト固有のドキュメント
   - [MSW Integration](docs/MSW_INTEGRATION.md) - MSW モック統合の詳細
   - [Hybrid Recommendation System](docs/hybrid-recommendation-system.md) - ハイブリッドオススメシステム
+  - [Supabase Local Development](docs/supabase-local-development.md) - Supabaseローカル開発環境ガイド
+  - [Supabase Implementation](docs/SUPABASE_IMPLEMENTATION.md) - Supabase実装サマリー
+
+## ローカル開発環境
+
+### GitHub Codespaces / Dev Containers
+
+このプロジェクトは [GitHub Codespaces](https://github.com/features/codespaces) および [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers) に対応しています。
+
+#### Codespaces で開始
+
+1. GitHubリポジトリページで「Code」→「Codespaces」→「Create codespace on main」をクリック
+2. 自動的に以下が実行されます：
+   - 依存関係のインストール（`pnpm install`）
+   - Supabaseローカル環境の起動（`supabase start`）
+   - パッケージのビルド
+
+#### Supabase ローカル環境
+
+ローカル開発では OSS版 Supabase を使用します：
+
+```bash
+# Supabaseの状態確認
+supabase status
+
+# データのインポート
+pnpm db:import
+
+# データのエクスポート（本番環境から）
+pnpm db:export
+```
+
+詳細は [Supabaseローカル開発ガイド](docs/supabase-local-development.md) を参照してください。
 
 ## コマンド
 
@@ -93,3 +126,4 @@ pnpm run check --fix
 ## ライセンス
 
 [MIT](LICENSE)
+

@@ -1,0 +1,2 @@
+-- This file contains seed data that will be applied when running `supabase db reset`
+-- Add your seed data here, or use the data import scripts

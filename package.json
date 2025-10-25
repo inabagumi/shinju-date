@@ -22,6 +22,8 @@
   "scripts": {
     "build": "turbo build",
     "check": "biome check",
+    "db:export": "./scripts/export-production-data.sh",
+    "db:import": "./scripts/import-data.sh",
     "dev": "turbo dev",
     "test": "turbo test"
   },
