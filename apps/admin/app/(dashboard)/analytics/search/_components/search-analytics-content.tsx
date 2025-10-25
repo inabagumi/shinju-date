@@ -5,7 +5,6 @@ import {
   parseDateRangeFromUrl,
   parseSelectedDateFromUrl,
 } from '../../_lib/url-state'
-import { getPopularKeywordsForDate } from '../_lib/get-popular-keywords-for-date'
 import { getSearchVolume } from '../_lib/get-search-volume'
 import { getZeroResultKeywords } from '../_lib/get-zero-result-keywords'
 import SearchAnalyticsClient from './search-analytics-client'
@@ -36,12 +35,19 @@ export async function SearchAnalyticsContent({ searchParams }: Props) {
   const startDate = Temporal.PlainDate.from(dateRange.startDate)
   const endDate = Temporal.PlainDate.from(dateRange.endDate)
 
+  // Check if this is a single-date scenario:
+  // 1. Explicit date parameter exists (selectedDateFromUrl)
+  // 2. Date range is a single day (startDate === endDate)
+  const isSingleDateRange = Temporal.PlainDate.compare(startDate, endDate) === 0
+  const effectiveSelectedDate =
+    selectedDateFromUrl || (isSingleDateRange ? startDate.toString() : null)
+
   // If there's a selected date, fetch data for that specific date
   // Otherwise, fetch data for the date range
   const [popularKeywords, zeroResultKeywords, searchVolume] = await Promise.all(
     [
-      selectedDateFromUrl
-        ? getPopularKeywordsForDate(selectedDateFromUrl, 20)
+      effectiveSelectedDate
+        ? getPopularKeywords(20, Temporal.PlainDate.from(effectiveSelectedDate))
         : getPopularKeywords(20, startDate, endDate),
       getZeroResultKeywords(),
       getSearchVolume(7, startDate.toString(), endDate.toString()),
@@ -55,7 +61,8 @@ export async function SearchAnalyticsContent({ searchParams }: Props) {
 
   const fetchPopularKeywords = async (date: string, limit: number) => {
     'use server'
-    return getPopularKeywordsForDate(date, limit)
+    const plainDate = Temporal.PlainDate.from(date)
+    return getPopularKeywords(limit, plainDate)
   }
 
   const fetchPopularKeywordsForRange = async (
@@ -83,7 +90,7 @@ export async function SearchAnalyticsContent({ searchParams }: Props) {
       initialDateRange={dateRange}
       initialPopularKeywords={popularKeywords}
       initialSearchVolume={searchVolume}
-      initialSelectedDate={selectedDateFromUrl}
+      initialSelectedDate={effectiveSelectedDate}
       initialZeroResultKeywords={zeroResultKeywords}
     />
   )
