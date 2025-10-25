@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Activity, useState } from 'react'
 
 type Tab = {
   id: string
@@ -42,7 +42,9 @@ export function Tabs({ tabs, defaultTab, className = '' }: TabsProps) {
       </div>
 
       {/* Tab Content */}
-      <div className="mt-6">{activeTabContent}</div>
+      <Activity>
+        <div className="mt-6">{activeTabContent}</div>
+      </Activity>
     </div>
   )
 }
