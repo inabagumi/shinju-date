@@ -295,7 +295,7 @@ requires-dist = [
     { name = "janome", specifier = ">=0.5.0" },
     { name = "poethepoet", marker = "extra == 'dev'", specifier = ">=0.37.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.4.2" },
-    { name = "python-dotenv", specifier = ">=1.2.0" },
+    { name = "python-dotenv", specifier = ">=1.2.1" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.14.2" },
     { name = "supabase", specifier = ">=2.22.2" },
     { name = "uvicorn", specifier = ">=0.38.0" },
@@ -545,11 +545,11 @@ wheels = [
 
 [[package]]
 name = "python-dotenv"
-version = "1.2.0"
+version = "1.2.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/28/11/8b54f93cfa36d85cff2b52b3e8e7068a45cb995cd7732a6ac12221c686ff/python_dotenv-1.2.0.tar.gz", hash = "sha256:285503127438c87e67735623884bef7bf67d696422237a197530e2d9f7009986", size = 43431, upload-time = "2025-10-26T13:37:11.205Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f0/26/19cadc79a718c5edbec86fd4919a6b6d3f681039a2f6d66d14be94e75fb9/python_dotenv-1.2.1.tar.gz", hash = "sha256:42667e897e16ab0d66954af0e60a9caa94f0fd4ecf3aaf6d2d260eec1aa36ad6", size = 44221, upload-time = "2025-10-26T15:12:10.434Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f0/26/4689baa3a3cb3262e2f0ec5f9df43aca6ede51e6bf982db7c80f12ca2527/python_dotenv-1.2.0-py3-none-any.whl", hash = "sha256:26010671bc0310b579dc981d8ae69047138bfdfc224df80211b196e5716150db", size = 21012, upload-time = "2025-10-26T13:37:09.979Z" },
+    { url = "https://files.pythonhosted.org/packages/14/1b/a298b06749107c305e1fe0f814c6c74aea7b2f1e10989cb30f544a1b3253/python_dotenv-1.2.1-py3-none-any.whl", hash = "sha256:b81ee9561e9ca4004139c6cbba3a238c32b03e4894671e181b671e8cb8425d61", size = 21230, upload-time = "2025-10-26T15:12:09.109Z" },
 ]
 
 [[package]]
