@@ -3,6 +3,7 @@ import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { getPopularChannels } from '@/lib/analytics/get-popular-channels'
 import { getAnalyticsDateParams } from '../../_lib/cached-params'
+import { ADMIN_ROUTES } from '../../_lib/routes'
 
 type Props = {
   searchParams: { [key: string]: string | string[] | undefined }
@@ -56,7 +57,7 @@ function SimplePopularChannelsWidget({
               <div className="min-w-0 flex-1 truncate">
                 <Link
                   className="font-medium hover:underline"
-                  href={`/videos?channelId=${channel.slug}`}
+                  href={`${ADMIN_ROUTES.VIDEOS}?channelId=${channel.slug}`}
                 >
                   {channel.name}
                 </Link>

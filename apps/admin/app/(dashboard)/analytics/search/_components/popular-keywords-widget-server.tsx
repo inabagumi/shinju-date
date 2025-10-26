@@ -36,8 +36,7 @@ const fetchPopularKeywordsData = cache(
  */
 function PopularKeywordsWidget({ keywords }: { keywords: PopularKeyword[] }) {
   return (
-    <div className="rounded-lg border bg-white p-6">
-      <h3 className="mb-4 font-medium text-lg">人気検索キーワード</h3>
+    <div>
       <div className="space-y-2">
         {keywords.map((keyword, index) => (
           <div

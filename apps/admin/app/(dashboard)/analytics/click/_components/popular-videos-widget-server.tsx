@@ -3,6 +3,7 @@ import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
 import { getAnalyticsDateParams } from '../../_lib/cached-params'
+import { ADMIN_ROUTES } from '../../_lib/routes'
 
 type Props = {
   searchParams: { [key: string]: string | string[] | undefined }
@@ -56,7 +57,7 @@ function SimplePopularVideosWidget({
               <div className="min-w-0 flex-1 truncate">
                 <Link
                   className="font-medium hover:underline"
-                  href={`/videos?search=${video.slug}`}
+                  href={`${ADMIN_ROUTES.VIDEOS}?search=${video.slug}`}
                 >
                   {video.title}
                 </Link>

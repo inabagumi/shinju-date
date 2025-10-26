@@ -48,6 +48,7 @@ export default function SearchAnalyticsPage({ searchParams }: Props) {
       </div>
 
       {/* Zero Result Keywords Section - Independent Async Server Component */}
+      {/* Note: Zero result keywords are not date-filtered, so no searchParams needed */}
       <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 className="mb-4 font-semibold text-xl">検索結果0件のキーワード</h2>
         <Suspense

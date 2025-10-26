@@ -13,8 +13,7 @@ const fetchZeroResultKeywordsData = cache(async () => {
  */
 function ZeroResultKeywordsWidget({ keywords }: { keywords: string[] }) {
   return (
-    <div className="rounded-lg border bg-white p-6">
-      <h3 className="mb-4 font-medium text-lg">検索結果0件のキーワード</h3>
+    <div>
       <div className="space-y-2">
         {keywords.length === 0 ? (
           <p className="text-gray-500 text-sm">
