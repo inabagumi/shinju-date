@@ -71,7 +71,7 @@ function validateDateRange(
 
 /**
  * Zod schema for analytics page search parameters
- * Validates and normalizes from, to, and date parameters with appropriate defaults
+ * Validates and normalizes from, to, date, and tab parameters with appropriate defaults
  */
 export const analyticsSearchParamsSchema = z
   .object({
@@ -86,8 +86,20 @@ export const analyticsSearchParamsSchema = z
         if (!val) return undefined
         return validateDateString(val)
       }),
+
     // Start date of the range (from parameter)
     from: z
+      .union([z.string(), z.array(z.string())])
+      .optional()
+      .transform((val) => {
+        if (Array.isArray(val)) {
+          val = val[0]
+        }
+        return val || undefined
+      }),
+
+    // Active tab for tabbed interfaces (tab parameter)
+    tab: z
       .union([z.string(), z.array(z.string())])
       .optional()
       .transform((val) => {
@@ -109,13 +121,14 @@ export const analyticsSearchParamsSchema = z
       }),
   })
   .transform((data) => {
-    const { from, to, date } = data
+    const { from, to, date, tab } = data
 
     // If a specific date is provided and valid, use it
     if (date) {
       return {
         dateRange: { endDate: date, startDate: date },
         selectedDate: date,
+        tab: tab || null,
       }
     }
 
@@ -128,6 +141,7 @@ export const analyticsSearchParamsSchema = z
         return {
           dateRange: validRange,
           selectedDate: isSingleDay ? validRange.startDate : null,
+          tab: tab || null,
         }
       }
     }
@@ -137,17 +151,19 @@ export const analyticsSearchParamsSchema = z
     return {
       dateRange: defaultRange,
       selectedDate: null,
+      tab: tab || null,
     }
   })
 
 export type AnalyticsSearchParams = z.infer<typeof analyticsSearchParamsSchema>
 
 /**
- * Create URL search params string for analytics date range
+ * Create URL search params string for analytics date range and tab
  */
 export function createAnalyticsUrlParams(
   dateRange: { startDate: string; endDate: string },
   selectedDate?: string | null,
+  tab?: string | null,
 ): string {
   const params = new URLSearchParams()
 
@@ -156,6 +172,10 @@ export function createAnalyticsUrlParams(
   } else {
     params.set('from', dateRange.startDate)
     params.set('to', dateRange.endDate)
+  }
+
+  if (tab) {
+    params.set('tab', tab)
   }
 
   return params.toString()

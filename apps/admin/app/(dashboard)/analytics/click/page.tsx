@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { DateRangePickerClient } from '../_components/date-range-picker-client'
+import { ServerTabs } from '../_components/server-tabs'
 import { ClickVolumeChart } from './_components/click-volume-chart'
 import { PopularChannelsWidget } from './_components/popular-channels-widget'
 import { PopularVideosWidget } from './_components/popular-videos-widget'
@@ -33,28 +34,39 @@ export default function ClickAnalyticsPage({
         </Suspense>
       </div>
 
-      {/* Popular Videos Section - Independent Async Server Component */}
+      {/* Popular Rankings Section - Tabbed Interface with Server Components */}
       <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 font-semibold text-xl">人気動画ランキング</h2>
-        <Suspense
-          fallback={
-            <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-          }
-        >
-          <PopularVideosWidget searchParams={searchParams} />
-        </Suspense>
-      </div>
-
-      {/* Popular Channels Section - Independent Async Server Component */}
-      <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 font-semibold text-xl">人気チャンネルランキング</h2>
-        <Suspense
-          fallback={
-            <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-          }
-        >
-          <PopularChannelsWidget searchParams={searchParams} />
-        </Suspense>
+        <ServerTabs
+          defaultTab="videos"
+          tabs={[
+            {
+              content: (
+                <Suspense
+                  fallback={
+                    <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
+                  }
+                >
+                  <PopularVideosWidget searchParams={searchParams} />
+                </Suspense>
+              ),
+              id: 'videos',
+              label: '人気動画',
+            },
+            {
+              content: (
+                <Suspense
+                  fallback={
+                    <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
+                  }
+                >
+                  <PopularChannelsWidget searchParams={searchParams} />
+                </Suspense>
+              ),
+              id: 'channels',
+              label: '人気チャンネル',
+            },
+          ]}
+        />
       </div>
     </div>
   )

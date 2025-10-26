@@ -25,6 +25,7 @@ describe('analyticsSearchParamsSchema', () => {
         startDate: weekAgo.toString(),
       },
       selectedDate: null,
+      tab: null,
     })
   })
 
@@ -41,6 +42,7 @@ describe('analyticsSearchParamsSchema', () => {
         startDate: yesterday.toString(),
       },
       selectedDate: yesterday.toString(),
+      tab: null,
     })
   })
 
@@ -58,6 +60,7 @@ describe('analyticsSearchParamsSchema', () => {
         startDate: yesterday.toString(),
       },
       selectedDate: yesterday.toString(),
+      tab: null,
     })
   })
 
@@ -70,6 +73,7 @@ describe('analyticsSearchParamsSchema', () => {
     expect(result).toEqual({
       dateRange: defaultRange,
       selectedDate: null,
+      tab: null,
     })
   })
 
@@ -97,6 +101,7 @@ describe('analyticsSearchParamsSchema', () => {
     expect(result).toEqual({
       dateRange: defaultRange,
       selectedDate: null,
+      tab: null,
     })
   })
 
@@ -112,6 +117,7 @@ describe('analyticsSearchParamsSchema', () => {
     expect(result).toEqual({
       dateRange: defaultRange,
       selectedDate: null,
+      tab: null,
     })
   })
 
@@ -127,6 +133,7 @@ describe('analyticsSearchParamsSchema', () => {
     expect(result).toEqual({
       dateRange: defaultRange,
       selectedDate: null,
+      tab: null,
     })
   })
 
@@ -146,6 +153,7 @@ describe('analyticsSearchParamsSchema', () => {
     expect(result).toEqual({
       dateRange: defaultRange,
       selectedDate: null,
+      tab: null,
     })
   })
 
@@ -160,6 +168,7 @@ describe('analyticsSearchParamsSchema', () => {
     expect(result).toEqual({
       dateRange: defaultRange,
       selectedDate: null,
+      tab: null,
     })
   })
 
@@ -178,6 +187,7 @@ describe('analyticsSearchParamsSchema', () => {
         startDate: today.subtract({ days: 2 }).toString(),
       },
       selectedDate: today.subtract({ days: 2 }).toString(),
+      tab: null,
     })
   })
 
@@ -193,6 +203,45 @@ describe('analyticsSearchParamsSchema', () => {
     expect(result).toEqual({
       dateRange: defaultRange,
       selectedDate: null,
+      tab: null,
+    })
+  })
+
+  it('should handle tab parameter correctly', () => {
+    const input = {
+      from: weekAgo.toString(),
+      tab: 'channels',
+      to: yesterday.toString(),
+    }
+
+    const result = analyticsSearchParamsSchema.parse(input)
+
+    expect(result).toEqual({
+      dateRange: {
+        endDate: yesterday.toString(),
+        startDate: weekAgo.toString(),
+      },
+      selectedDate: null,
+      tab: 'channels',
+    })
+  })
+
+  it('should handle tab parameter as array', () => {
+    const input = {
+      from: weekAgo.toString(),
+      tab: ['videos', 'ignored'],
+      to: yesterday.toString(),
+    }
+
+    const result = analyticsSearchParamsSchema.parse(input)
+
+    expect(result).toEqual({
+      dateRange: {
+        endDate: yesterday.toString(),
+        startDate: weekAgo.toString(),
+      },
+      selectedDate: null,
+      tab: 'videos',
     })
   })
 })

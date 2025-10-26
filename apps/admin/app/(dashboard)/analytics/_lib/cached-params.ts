@@ -11,7 +11,7 @@ export const parseAnalyticsSearchParams = cache(
 )
 
 /**
- * Cached function to get validated date range and selected date from search params
+ * Cached function to get validated date range, selected date, and tab from search params
  * This ensures multiple components can access the same parsed values without re-validation
  */
 export const getAnalyticsDateParams = cache(
@@ -20,6 +20,7 @@ export const getAnalyticsDateParams = cache(
     return {
       dateRange: parsed.dateRange,
       selectedDate: parsed.selectedDate,
+      tab: parsed.tab,
     }
   },
 )
