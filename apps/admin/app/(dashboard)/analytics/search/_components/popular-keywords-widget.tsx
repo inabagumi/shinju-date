@@ -32,9 +32,13 @@ const fetchPopularKeywordsData = cache(
 )
 
 /**
- * Popular Keywords Widget Component
+ * Simple Popular Keywords Widget Component for server rendering
  */
-function PopularKeywordsWidget({ keywords }: { keywords: PopularKeyword[] }) {
+function PopularKeywordsWidgetComponent({
+  keywords,
+}: {
+  keywords: PopularKeyword[]
+}) {
   return (
     <div>
       <div className="space-y-2">
@@ -60,7 +64,7 @@ function PopularKeywordsWidget({ keywords }: { keywords: PopularKeyword[] }) {
 /**
  * Async server component that fetches and displays popular keywords widget
  */
-export async function PopularKeywordsWidgetServer({ searchParams }: Props) {
+export async function PopularKeywordsWidget({ searchParams }: Props) {
   const { dateRange, selectedDate } = getAnalyticsDateParams(searchParams)
 
   const popularKeywords = await fetchPopularKeywordsData(
@@ -69,5 +73,5 @@ export async function PopularKeywordsWidgetServer({ searchParams }: Props) {
     selectedDate,
   )
 
-  return <PopularKeywordsWidget keywords={popularKeywords} />
+  return <PopularKeywordsWidgetComponent keywords={popularKeywords} />
 }

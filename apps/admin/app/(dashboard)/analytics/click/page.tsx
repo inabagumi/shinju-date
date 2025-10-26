@@ -1,19 +1,17 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { DateRangePickerClient } from '../_components/date-range-picker-client'
-import { ClickVolumeChartServer } from './_components/click-volume-chart-server'
-import { PopularChannelsWidgetServer } from './_components/popular-channels-widget-server'
-import { PopularVideosWidgetServer } from './_components/popular-videos-widget-server'
+import { ClickVolumeChart } from './_components/click-volume-chart'
+import { PopularChannelsWidget } from './_components/popular-channels-widget'
+import { PopularVideosWidget } from './_components/popular-videos-widget'
 
 export const metadata: Metadata = {
   title: 'クリックアナリティクス',
 }
 
-type Props = {
-  searchParams: { [key: string]: string | string[] | undefined }
-}
-
-export default function ClickAnalyticsPage({ searchParams }: Props) {
+export default function ClickAnalyticsPage({
+  searchParams,
+}: PageProps<'/analytics/click'>) {
   return (
     <div className="p-6">
       <h1 className="mb-6 font-bold text-3xl">クリックアナリティクス</h1>
@@ -31,7 +29,7 @@ export default function ClickAnalyticsPage({ searchParams }: Props) {
             <div className="h-96 animate-pulse rounded-lg bg-gray-200" />
           }
         >
-          <ClickVolumeChartServer searchParams={searchParams} />
+          <ClickVolumeChart searchParams={searchParams} />
         </Suspense>
       </div>
 
@@ -43,7 +41,7 @@ export default function ClickAnalyticsPage({ searchParams }: Props) {
             <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
           }
         >
-          <PopularVideosWidgetServer searchParams={searchParams} />
+          <PopularVideosWidget searchParams={searchParams} />
         </Suspense>
       </div>
 
@@ -55,7 +53,7 @@ export default function ClickAnalyticsPage({ searchParams }: Props) {
             <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
           }
         >
-          <PopularChannelsWidgetServer searchParams={searchParams} />
+          <PopularChannelsWidget searchParams={searchParams} />
         </Suspense>
       </div>
     </div>

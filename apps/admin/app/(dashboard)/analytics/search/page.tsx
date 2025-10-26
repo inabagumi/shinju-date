@@ -1,19 +1,17 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { DateRangePickerClient } from '../_components/date-range-picker-client'
-import { PopularKeywordsWidgetServer } from './_components/popular-keywords-widget-server'
-import { SearchVolumeChartServer } from './_components/search-volume-chart-server'
-import { ZeroResultKeywordsWidgetServer } from './_components/zero-result-keywords-widget-server'
+import { PopularKeywordsWidget } from './_components/popular-keywords-widget'
+import { SearchVolumeChart } from './_components/search-volume-chart'
+import { ZeroResultKeywordsWidget } from './_components/zero-result-keywords-widget'
 
 export const metadata: Metadata = {
   title: '検索アナリティクス',
 }
 
-type Props = {
-  searchParams: { [key: string]: string | string[] | undefined }
-}
-
-export default function SearchAnalyticsPage({ searchParams }: Props) {
+export default function SearchAnalyticsPage({
+  searchParams,
+}: PageProps<'/analytics/search'>) {
   return (
     <div className="p-6">
       <h1 className="mb-6 font-bold text-3xl">検索アナリティクス</h1>
@@ -31,7 +29,7 @@ export default function SearchAnalyticsPage({ searchParams }: Props) {
             <div className="h-96 animate-pulse rounded-lg bg-gray-200" />
           }
         >
-          <SearchVolumeChartServer searchParams={searchParams} />
+          <SearchVolumeChart searchParams={searchParams} />
         </Suspense>
       </div>
 
@@ -43,7 +41,7 @@ export default function SearchAnalyticsPage({ searchParams }: Props) {
             <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
           }
         >
-          <PopularKeywordsWidgetServer searchParams={searchParams} />
+          <PopularKeywordsWidget searchParams={searchParams} />
         </Suspense>
       </div>
 
@@ -56,7 +54,7 @@ export default function SearchAnalyticsPage({ searchParams }: Props) {
             <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
           }
         >
-          <ZeroResultKeywordsWidgetServer />
+          <ZeroResultKeywordsWidget />
         </Suspense>
       </div>
     </div>

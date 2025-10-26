@@ -11,7 +11,11 @@ const fetchZeroResultKeywordsData = cache(async () => {
 /**
  * Zero Result Keywords Widget Component
  */
-function ZeroResultKeywordsWidget({ keywords }: { keywords: string[] }) {
+function ZeroResultKeywordsWidgetComponent({
+  keywords,
+}: {
+  keywords: string[]
+}) {
   return (
     <div>
       <div className="space-y-2">
@@ -35,8 +39,8 @@ function ZeroResultKeywordsWidget({ keywords }: { keywords: string[] }) {
 /**
  * Async server component that fetches and displays zero result keywords widget
  */
-export async function ZeroResultKeywordsWidgetServer() {
+export async function ZeroResultKeywordsWidget() {
   const zeroResultKeywords = await fetchZeroResultKeywordsData()
 
-  return <ZeroResultKeywordsWidget keywords={zeroResultKeywords} />
+  return <ZeroResultKeywordsWidgetComponent keywords={zeroResultKeywords} />
 }
