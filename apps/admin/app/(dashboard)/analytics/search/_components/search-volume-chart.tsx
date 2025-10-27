@@ -21,17 +21,33 @@ const fetchSearchVolumeData = cache(
  * Async server component that fetches and displays search volume chart
  */
 export async function SearchVolumeChart({ searchParams }: Props) {
-  const { dateRange } = await searchParams
+  const { dateRange, selectedDate } = await searchParams
 
   const searchVolume = await fetchSearchVolumeData(
     dateRange.startDate,
     dateRange.endDate,
   )
 
+  const totalSearches = searchVolume.reduce((sum, day) => sum + day.searches, 0)
+
   return (
-    <SearchVolumeChartWithNavigation
-      ChartComponent={SearchVolumeChartUI}
-      data={searchVolume}
-    />
+    <>
+      <h2 className="mb-4 font-semibold text-xl">検索ボリューム</h2>
+      <div className="mb-4 rounded-lg bg-green-50 p-4">
+        <p className="text-gray-600 text-sm">総検索数</p>
+        <div className="flex items-baseline gap-2">
+          <p className="font-bold text-2xl text-green-600">{totalSearches}</p>
+        </div>
+      </div>
+      <SearchVolumeChartWithNavigation
+        ChartComponent={SearchVolumeChartUI}
+        data={searchVolume}
+      />
+      {selectedDate && (
+        <p className="mt-2 text-center text-gray-600 text-sm">
+          選択された日付: {selectedDate}
+        </p>
+      )}
+    </>
   )
 }

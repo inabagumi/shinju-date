@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
+import { CSVExportButton } from '../../_components/csv-export-button'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 type Props = {
@@ -35,12 +36,27 @@ function SimplePopularVideosWidget({
   dateRange: { startDate: string; endDate: string }
   selectedDate: string | null
 }) {
+  const csvData = videos.map((video, index) => ({
+    クリック数: video.clicks,
+    スラッグ: video.slug,
+    タイトル: video.title,
+    順位: index + 1,
+  }))
+  const dateStr = selectedDate || `${dateRange.startDate}_${dateRange.endDate}`
+  const filename = `click-analytics-videos-${dateStr}.csv`
+
   return (
     <div>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="font-semibold text-xl">
+          {selectedDate
+            ? `人気動画ランキング (${selectedDate})`
+            : `人気動画ランキング (${dateRange.startDate} 〜 ${dateRange.endDate})`}
+        </h2>
+        <CSVExportButton data={csvData} filename={filename} />
+      </div>
       <p className="mb-4 text-gray-600 text-sm">
-        {selectedDate
-          ? `${selectedDate} の人気動画ランキング`
-          : `${dateRange.startDate} 〜 ${dateRange.endDate} の人気動画ランキング`}
+        最もクリックされている動画のランキング。ユーザーの興味を把握できます。
       </p>
 
       {videos.length > 0 ? (

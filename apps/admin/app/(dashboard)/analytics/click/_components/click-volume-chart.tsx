@@ -21,17 +21,33 @@ const fetchClickVolumeData = cache(
  * Async server component that fetches and displays click volume chart
  */
 export async function ClickVolumeChart({ searchParams }: Props) {
-  const { dateRange } = await searchParams
+  const { dateRange, selectedDate } = await searchParams
 
   const clickVolume = await fetchClickVolumeData(
     dateRange.startDate,
     dateRange.endDate,
   )
 
+  const totalClicks = clickVolume.reduce((sum, day) => sum + day.clicks, 0)
+
   return (
-    <ClickVolumeChartWithNavigation
-      ChartComponent={ClickVolumeChartUI}
-      data={clickVolume}
-    />
+    <>
+      <h2 className="mb-4 font-semibold text-xl">クリックボリューム</h2>
+      <div className="mb-4 rounded-lg bg-green-50 p-4">
+        <p className="text-gray-600 text-sm">総クリック数</p>
+        <div className="flex items-baseline gap-2">
+          <p className="font-bold text-2xl text-green-600">{totalClicks}</p>
+        </div>
+      </div>
+      <ClickVolumeChartWithNavigation
+        ChartComponent={ClickVolumeChartUI}
+        data={clickVolume}
+      />
+      {selectedDate && (
+        <p className="mt-2 text-center text-gray-600 text-sm">
+          選択された日付: {selectedDate}
+        </p>
+      )}
+    </>
   )
 }

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { getPopularChannels } from '@/lib/analytics/get-popular-channels'
+import { CSVExportButton } from '../../_components/csv-export-button'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 type Props = {
@@ -31,16 +32,31 @@ function SimplePopularChannelsWidget({
   dateRange,
   selectedDate,
 }: {
-  channels: Array<{ name: string; slug: string; clicks: number }>
+  channels: Array<{ name: string; slug: string; clicks: number; id: string }>
   dateRange: { startDate: string; endDate: string }
   selectedDate: string | null
 }) {
+  const csvData = channels.map((channel, index) => ({
+    クリック数: channel.clicks,
+    スラッグ: channel.slug,
+    チャンネル名: channel.name,
+    順位: index + 1,
+  }))
+  const dateStr = selectedDate || `${dateRange.startDate}_${dateRange.endDate}`
+  const filename = `click-analytics-channels-${dateStr}.csv`
+
   return (
     <div>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="font-semibold text-xl">
+          {selectedDate
+            ? `人気チャンネルランキング (${selectedDate})`
+            : `人気チャンネルランキング (${dateRange.startDate} 〜 ${dateRange.endDate})`}
+        </h2>
+        <CSVExportButton data={csvData} filename={filename} />
+      </div>
       <p className="mb-4 text-gray-600 text-sm">
-        {selectedDate
-          ? `${selectedDate} の人気チャンネルランキング`
-          : `${dateRange.startDate} 〜 ${dateRange.endDate} の人気チャンネルランキング`}
+        最もクリックされているチャンネルのランキング。どのタレントが人気かを把握できます。
       </p>
 
       {channels.length > 0 ? (
@@ -50,13 +66,13 @@ function SimplePopularChannelsWidget({
               className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
               key={channel.slug}
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-600 text-sm">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-100 font-semibold text-purple-600 text-sm">
                 {index + 1}
               </div>
               <div className="min-w-0 flex-1 truncate">
                 <Link
                   className="font-medium hover:underline"
-                  href={`/videos?channelId=${channel.slug}`}
+                  href={`/videos?channelId=${channel.id}`}
                 >
                   {channel.name}
                 </Link>

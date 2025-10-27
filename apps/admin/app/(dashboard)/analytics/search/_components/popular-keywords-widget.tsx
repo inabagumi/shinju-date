@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { getPopularKeywords } from '@/lib/analytics/get-popular-keywords'
+import { CSVExportButton } from '../../_components/csv-export-button'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 type Props = {
@@ -43,6 +44,14 @@ function PopularKeywordsWidgetComponent({
   dateRange: { startDate: string; endDate: string }
   selectedDate: string | null
 }) {
+  const csvData = keywords.map((keyword, index) => ({
+    キーワード: keyword.keyword,
+    検索回数: keyword.count,
+    順位: index + 1,
+  }))
+  const dateStr = selectedDate || `${dateRange.startDate}_${dateRange.endDate}`
+  const filename = `search-analytics-keywords-${dateStr}.csv`
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
@@ -56,6 +65,7 @@ function PopularKeywordsWidgetComponent({
             </span>
           )}
         </h2>
+        <CSVExportButton data={csvData} filename={filename} />
       </div>
       <p className="mb-4 text-gray-600 text-sm">
         {selectedDate
