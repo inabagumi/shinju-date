@@ -1,11 +1,10 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { DateRangePickerClient } from '../_components/date-range-picker-client'
-import { ServerTabs } from '../_components/server-tabs'
 import { analyticsSearchParamsSchema } from '../_lib/search-params-schema'
 import { ClickVolumeChart } from './_components/click-volume-chart'
-import { PopularChannelsWidget } from './_components/popular-channels-widget'
-import { PopularVideosWidget } from './_components/popular-videos-widget'
+import { PopularRankingsTabs } from './_components/popular-rankings-tabs'
+import { TabNavigation } from './_components/tab-navigation'
 
 export const metadata: Metadata = {
   title: 'クリックアナリティクス',
@@ -41,38 +40,17 @@ export default function ClickAnalyticsPage({
 
       {/* Popular Rankings Section - Tabbed Interface with Server Components */}
       <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <ServerTabs
+        <TabNavigation
           defaultTab="videos"
           searchParams={parsedSearchParams}
           tabs={[
-            {
-              content: (
-                <Suspense
-                  fallback={
-                    <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-                  }
-                >
-                  <PopularVideosWidget searchParams={parsedSearchParams} />
-                </Suspense>
-              ),
-              id: 'videos',
-              label: '人気動画',
-            },
-            {
-              content: (
-                <Suspense
-                  fallback={
-                    <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-                  }
-                >
-                  <PopularChannelsWidget searchParams={parsedSearchParams} />
-                </Suspense>
-              ),
-              id: 'channels',
-              label: '人気チャンネル',
-            },
+            { id: 'videos', label: '人気動画' },
+            { id: 'channels', label: '人気チャンネル' },
           ]}
         />
+        <div className="mt-6">
+          <PopularRankingsTabs searchParams={parsedSearchParams} />
+        </div>
       </div>
     </div>
   )

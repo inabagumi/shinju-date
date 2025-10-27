@@ -2,8 +2,6 @@ import Link from 'next/link'
 import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { getPopularChannels } from '@/lib/analytics/get-popular-channels'
-import { getAnalyticsDateParams } from '../../_lib/cached-params'
-import { ADMIN_ROUTES } from '../../_lib/routes'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 type Props = {
@@ -58,7 +56,7 @@ function SimplePopularChannelsWidget({
               <div className="min-w-0 flex-1 truncate">
                 <Link
                   className="font-medium hover:underline"
-                  href={`${ADMIN_ROUTES.VIDEOS}?channelId=${channel.slug}`}
+                  href={`/videos?channelId=${channel.slug}`}
                 >
                   {channel.name}
                 </Link>
@@ -81,7 +79,7 @@ function SimplePopularChannelsWidget({
  * Async server component that fetches and displays popular channels widget
  */
 export async function PopularChannelsWidget({ searchParams }: Props) {
-  const { dateRange, selectedDate } = await getAnalyticsDateParams(searchParams)
+  const { dateRange, selectedDate } = await searchParams
 
   const popularChannels = await fetchPopularChannelsData(
     dateRange.startDate,

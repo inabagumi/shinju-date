@@ -2,8 +2,6 @@ import Link from 'next/link'
 import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
-import { getAnalyticsDateParams } from '../../_lib/cached-params'
-import { ADMIN_ROUTES } from '../../_lib/routes'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 type Props = {
@@ -58,7 +56,7 @@ function SimplePopularVideosWidget({
               <div className="min-w-0 flex-1 truncate">
                 <Link
                   className="font-medium hover:underline"
-                  href={`${ADMIN_ROUTES.VIDEOS}?search=${video.slug}`}
+                  href={`/videos?search=${video.slug}`}
                 >
                   {video.title}
                 </Link>
@@ -81,7 +79,7 @@ function SimplePopularVideosWidget({
  * Async server component that fetches and displays popular videos widget
  */
 export async function PopularVideosWidget({ searchParams }: Props) {
-  const { dateRange, selectedDate } = await getAnalyticsDateParams(searchParams)
+  const { dateRange, selectedDate } = await searchParams
 
   const popularVideos = await fetchPopularVideosData(
     dateRange.startDate,
