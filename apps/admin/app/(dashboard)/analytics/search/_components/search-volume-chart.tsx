@@ -1,81 +1,52 @@
-'use client'
+import { cache } from 'react'
+import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
+import { getSearchVolume } from '../_lib/get-search-volume'
+import SearchVolumeChartUI from './search-volume-chart-ui'
+import { SearchVolumeChartWithNavigation } from './search-volume-chart-with-navigation'
 
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
-
-type SearchVolumeChartProps = {
-  data: Array<{
-    count: number
-    date: string
-  }>
-  onDateClick?: (date: string) => void
+type Props = {
+  searchParams: Promise<AnalyticsSearchParams>
 }
 
-export default function SearchVolumeChart({
-  data,
-  onDateClick,
-}: SearchVolumeChartProps) {
-  const handleClick = (data: unknown) => {
-    if (
-      onDateClick &&
-      data &&
-      typeof data === 'object' &&
-      'activeLabel' in data
-    ) {
-      const label = (data as { activeLabel?: string }).activeLabel
-      if (label) {
-        onDateClick(label)
-      }
-    }
-  }
+/**
+ * Cached function to fetch search volume data based on date range
+ */
+const fetchSearchVolumeData = cache(
+  async (startDate: string, endDate: string) => {
+    return getSearchVolume(7, startDate, endDate)
+  },
+)
+
+/**
+ * Async server component that fetches and displays search volume chart
+ */
+export async function SearchVolumeChart({ searchParams }: Props) {
+  const { dateRange, selectedDate } = await searchParams
+
+  const searchVolume = await fetchSearchVolumeData(
+    dateRange.startDate,
+    dateRange.endDate,
+  )
+
+  const totalSearches = searchVolume.reduce((sum, day) => sum + day.count, 0)
 
   return (
-    <div className="h-64 w-full">
-      <ResponsiveContainer height="100%" width="100%">
-        <AreaChart data={data} onClick={handleClick}>
-          <defs>
-            <linearGradient id="colorVolume" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
-          <XAxis
-            dataKey="date"
-            tick={{ fill: '#6b7280', fontSize: 12 }}
-            tickLine={{ stroke: '#e5e7eb' }}
-          />
-          <YAxis
-            tick={{ fill: '#6b7280', fontSize: 12 }}
-            tickLine={{ stroke: '#e5e7eb' }}
-          />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: '#fff',
-              border: '1px solid #e5e7eb',
-              borderRadius: '0.5rem',
-            }}
-            formatter={(value: number) => [`${value} 回`, '検索数']}
-            labelStyle={{ color: '#374151', fontWeight: 600 }}
-          />
-          <Area
-            cursor={onDateClick ? 'pointer' : 'default'}
-            dataKey="count"
-            fill="url(#colorVolume)"
-            fillOpacity={1}
-            stroke="#3b82f6"
-            strokeWidth={2}
-            type="monotone"
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
+    <>
+      <div className="mb-4 rounded-lg bg-green-50 p-4">
+        <p className="text-gray-600 text-sm">総検索数</p>
+        <div className="flex items-baseline gap-2">
+          <p className="font-bold text-2xl text-green-600">{totalSearches}</p>
+        </div>
+      </div>
+      <SearchVolumeChartWithNavigation
+        ChartComponent={SearchVolumeChartUI}
+        data={searchVolume}
+      />
+      {selectedDate && (
+        <p className="mt-2 text-center text-gray-600 text-sm">
+          選択された日付: {selectedDate}
+        </p>
+      )}
+    </>
   )
 }

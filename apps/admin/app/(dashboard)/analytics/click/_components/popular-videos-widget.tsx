@@ -1,59 +1,70 @@
 import Link from 'next/link'
-import type { PopularVideo } from '@/lib/analytics/get-popular-videos'
+import { cache } from 'react'
+import { Temporal } from 'temporal-polyfill'
+import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
+import { CSVExportButton } from '../../_components/csv-export-button'
+import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
-type PopularVideosWidgetProps = {
-  videos: PopularVideo[]
-  dateRange?: {
-    startDate: string
-    endDate: string
-  }
-  selectedDate?: string | null
-  onExportCSV: () => void
-  loading?: boolean
+type Props = {
+  searchParams: Promise<AnalyticsSearchParams>
 }
 
-export function PopularVideosWidget({
+/**
+ * Cached function to fetch popular videos data
+ */
+const fetchPopularVideosData = cache(
+  async (startDate: string, endDate: string, selectedDate: string | null) => {
+    if (selectedDate) {
+      return getPopularVideos(20, Temporal.PlainDate.from(selectedDate))
+    }
+
+    const start = Temporal.PlainDate.from(startDate)
+    const end = Temporal.PlainDate.from(endDate)
+    return getPopularVideos(20, start, end)
+  },
+)
+
+/**
+ * Simple Popular Videos Widget Component for server rendering
+ */
+function SimplePopularVideosWidget({
   videos,
   dateRange,
   selectedDate,
-  onExportCSV,
-  loading = false,
-}: PopularVideosWidgetProps) {
+}: {
+  videos: Array<{ title: string; slug: string; clicks: number }>
+  dateRange: { startDate: string; endDate: string }
+  selectedDate: string | null
+}) {
+  const csvData = videos.map((video, index) => ({
+    クリック数: video.clicks,
+    スラッグ: video.slug,
+    タイトル: video.title,
+    順位: index + 1,
+  }))
+  const dateStr = selectedDate || `${dateRange.startDate}_${dateRange.endDate}`
+  const filename = `click-analytics-videos-${dateStr}.csv`
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-semibold text-xl">
           {selectedDate
             ? `人気動画ランキング (${selectedDate})`
-            : dateRange
-              ? `人気動画ランキング (${dateRange.startDate} 〜 ${dateRange.endDate})`
-              : '人気動画ランキング'}
+            : `人気動画ランキング (${dateRange.startDate} 〜 ${dateRange.endDate})`}
         </h2>
-        <button
-          className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm transition-colors hover:bg-gray-50"
-          disabled={loading}
-          onClick={onExportCSV}
-          type="button"
-        >
-          CSV エクスポート
-        </button>
+        <CSVExportButton data={csvData} filename={filename} />
       </div>
       <p className="mb-4 text-gray-600 text-sm">
         最もクリックされている動画のランキング。ユーザーの興味を把握できます。
       </p>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-8">
-          <div className="rounded-lg border border-blue-200 bg-blue-50 px-6 py-3 text-blue-700">
-            読み込み中...
-          </div>
-        </div>
-      ) : videos.length > 0 ? (
+      {videos.length > 0 ? (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {videos.map((item, index) => (
+          {videos.map((video, index) => (
             <div
               className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
-              key={item.slug}
+              key={video.slug}
             >
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 font-semibold text-green-600 text-sm">
                 {index + 1}
@@ -61,13 +72,13 @@ export function PopularVideosWidget({
               <div className="min-w-0 flex-1 truncate">
                 <Link
                   className="font-medium hover:underline"
-                  href={`/videos?search=${item.slug}`}
+                  href={`/videos?search=${video.slug}`}
                 >
-                  {item.title}
+                  {video.title}
                 </Link>
               </div>
               <div className="shrink-0 text-right">
-                <p className="font-semibold text-gray-900">{item.clicks}</p>
+                <p className="font-semibold text-gray-900">{video.clicks}</p>
                 <p className="text-gray-500 text-xs">回</p>
               </div>
             </div>
@@ -77,5 +88,26 @@ export function PopularVideosWidget({
         <p className="py-8 text-center text-gray-500">データがありません</p>
       )}
     </div>
+  )
+}
+
+/**
+ * Async server component that fetches and displays popular videos widget
+ */
+export async function PopularVideosWidget({ searchParams }: Props) {
+  const { dateRange, selectedDate } = await searchParams
+
+  const popularVideos = await fetchPopularVideosData(
+    dateRange.startDate,
+    dateRange.endDate,
+    selectedDate,
+  )
+
+  return (
+    <SimplePopularVideosWidget
+      dateRange={dateRange}
+      selectedDate={selectedDate}
+      videos={popularVideos}
+    />
   )
 }
