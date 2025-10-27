@@ -28,7 +28,7 @@ export async function SearchVolumeChart({ searchParams }: Props) {
     dateRange.endDate,
   )
 
-  const totalSearches = searchVolume.reduce((sum, day) => sum + day.searches, 0)
+  const totalSearches = searchVolume.reduce((sum, day) => sum + day.count, 0)
 
   return (
     <>
