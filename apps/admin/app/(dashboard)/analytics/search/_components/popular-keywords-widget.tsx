@@ -36,27 +36,55 @@ const fetchPopularKeywordsData = cache(
  */
 function PopularKeywordsWidgetComponent({
   keywords,
+  dateRange,
+  selectedDate,
 }: {
   keywords: PopularKeyword[]
+  dateRange: { startDate: string; endDate: string }
+  selectedDate: string | null
 }) {
   return (
     <div>
-      <div className="space-y-2">
-        {keywords.map((keyword, index) => (
-          <div
-            className="flex items-center justify-between"
-            key={keyword.keyword}
-          >
-            <div className="flex items-center space-x-3">
-              <span className="text-gray-500 text-sm">#{index + 1}</span>
-              <span className="font-medium">{keyword.keyword}</span>
-            </div>
-            <span className="text-gray-600 text-sm">
-              {keyword.count.toLocaleString()}回
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="font-semibold text-xl">
+          人気キーワードランキング
+          {selectedDate ? (
+            <span className="ml-2 text-blue-600 text-sm">({selectedDate})</span>
+          ) : (
+            <span className="ml-2 text-green-600 text-sm">
+              ({dateRange.startDate}〜{dateRange.endDate})
             </span>
-          </div>
-        ))}
+          )}
+        </h2>
       </div>
+      <p className="mb-4 text-gray-600 text-sm">
+        {selectedDate
+          ? `${selectedDate}に検索されたキーワードのランキング。同じ日付をもう一度クリックすると期間全体の表示に戻ります。`
+          : `${dateRange.startDate}から${dateRange.endDate}の期間で最も検索されたキーワードのランキング。グラフの日付をクリックすると、その日のランキングが表示されます。`}
+      </p>
+      {keywords.length > 0 ? (
+        <div className="max-h-96 space-y-2 overflow-y-auto">
+          {keywords.map((item, index) => (
+            <div
+              className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
+              key={item.keyword}
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-600 text-sm">
+                {index + 1}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium">{item.keyword}</p>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className="font-semibold text-gray-900">{item.count}</p>
+                <p className="text-gray-500 text-xs">回</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="py-8 text-center text-gray-500">データがありません</p>
+      )}
     </div>
   )
 }
@@ -73,5 +101,11 @@ export async function PopularKeywordsWidget({ searchParams }: Props) {
     selectedDate,
   )
 
-  return <PopularKeywordsWidgetComponent keywords={popularKeywords} />
+  return (
+    <PopularKeywordsWidgetComponent
+      dateRange={dateRange}
+      keywords={popularKeywords}
+      selectedDate={selectedDate}
+    />
+  )
 }
