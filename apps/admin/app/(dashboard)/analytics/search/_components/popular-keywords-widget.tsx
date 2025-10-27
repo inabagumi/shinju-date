@@ -2,9 +2,10 @@ import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { getPopularKeywords } from '@/lib/analytics/get-popular-keywords'
 import { getAnalyticsDateParams } from '../../_lib/cached-params'
+import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 type Props = {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<AnalyticsSearchParams>
 }
 
 type PopularKeyword = {
@@ -65,7 +66,7 @@ function PopularKeywordsWidgetComponent({
  * Async server component that fetches and displays popular keywords widget
  */
 export async function PopularKeywordsWidget({ searchParams }: Props) {
-  const { dateRange, selectedDate } = getAnalyticsDateParams(searchParams)
+  const { dateRange, selectedDate } = await getAnalyticsDateParams(searchParams)
 
   const popularKeywords = await fetchPopularKeywordsData(
     dateRange.startDate,

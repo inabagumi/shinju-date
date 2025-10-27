@@ -1,10 +1,11 @@
 import { cache } from 'react'
 import { getAnalyticsDateParams } from '../../_lib/cached-params'
+import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 import { getSearchVolume } from '../_lib/get-search-volume'
 import SearchVolumeChartComponent from './search-volume-chart'
 
 type Props = {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<AnalyticsSearchParams>
 }
 
 /**
@@ -20,7 +21,7 @@ const fetchSearchVolumeData = cache(
  * Async server component that fetches and displays search volume chart
  */
 export async function SearchVolumeChart({ searchParams }: Props) {
-  const { dateRange } = getAnalyticsDateParams(searchParams)
+  const { dateRange } = await getAnalyticsDateParams(searchParams)
 
   const searchVolume = await fetchSearchVolumeData(
     dateRange.startDate,

@@ -1,7 +1,8 @@
 'use client'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Activity } from 'react'
+import { Activity, use } from 'react'
+import type { AnalyticsSearchParams } from '../_lib/search-params-schema'
 
 type ServerTab = {
   id: string
@@ -13,6 +14,7 @@ type ServerTabsProps = {
   tabs: ServerTab[]
   defaultTab?: string
   className?: string
+  searchParams: Promise<AnalyticsSearchParams>
 }
 
 /**
@@ -23,15 +25,17 @@ export function ServerTabs({
   tabs,
   defaultTab,
   className = '',
+  searchParams,
 }: ServerTabsProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const urlSearchParams = useSearchParams()
+  const { tab } = use(searchParams)
 
-  const currentTab = searchParams.get('tab') || defaultTab || tabs[0]?.id || ''
+  const currentTab = tab || defaultTab || tabs[0]?.id || ''
 
   const setActiveTab = (tabId: string) => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(urlSearchParams.toString())
     if (tabId === defaultTab) {
       params.delete('tab') // Remove tab param if it's the default
     } else {

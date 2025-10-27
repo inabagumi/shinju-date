@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { DateRangePickerClient } from '../_components/date-range-picker-client'
+import { analyticsSearchParamsSchema } from '../_lib/search-params-schema'
 import { PopularKeywordsWidget } from './_components/popular-keywords-widget'
 import { SearchVolumeChart } from './_components/search-volume-chart'
 import { ZeroResultKeywordsWidget } from './_components/zero-result-keywords-widget'
@@ -12,13 +13,17 @@ export const metadata: Metadata = {
 export default function SearchAnalyticsPage({
   searchParams,
 }: PageProps<'/analytics/search'>) {
+  const parsedSearchParams = searchParams.then((params) =>
+    analyticsSearchParamsSchema.parse(params),
+  )
+
   return (
     <div className="p-6">
       <h1 className="mb-6 font-bold text-3xl">検索アナリティクス</h1>
 
       {/* Date Range Picker Section - Client component for interactivity */}
       <div className="mb-6">
-        <DateRangePickerClient searchParams={searchParams} />
+        <DateRangePickerClient searchParams={parsedSearchParams} />
       </div>
 
       {/* Search Volume Chart Section - Independent Async Server Component */}
@@ -29,7 +34,7 @@ export default function SearchAnalyticsPage({
             <div className="h-96 animate-pulse rounded-lg bg-gray-200" />
           }
         >
-          <SearchVolumeChart searchParams={searchParams} />
+          <SearchVolumeChart searchParams={parsedSearchParams} />
         </Suspense>
       </div>
 
@@ -41,7 +46,7 @@ export default function SearchAnalyticsPage({
             <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
           }
         >
-          <PopularKeywordsWidget searchParams={searchParams} />
+          <PopularKeywordsWidget searchParams={parsedSearchParams} />
         </Suspense>
       </div>
 

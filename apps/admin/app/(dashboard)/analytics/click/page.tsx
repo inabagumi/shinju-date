@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { DateRangePickerClient } from '../_components/date-range-picker-client'
 import { ServerTabs } from '../_components/server-tabs'
+import { analyticsSearchParamsSchema } from '../_lib/search-params-schema'
 import { ClickVolumeChart } from './_components/click-volume-chart'
 import { PopularChannelsWidget } from './_components/popular-channels-widget'
 import { PopularVideosWidget } from './_components/popular-videos-widget'
@@ -13,13 +14,17 @@ export const metadata: Metadata = {
 export default function ClickAnalyticsPage({
   searchParams,
 }: PageProps<'/analytics/click'>) {
+  const parsedSearchParams = searchParams.then((params) =>
+    analyticsSearchParamsSchema.parse(params),
+  )
+
   return (
     <div className="p-6">
       <h1 className="mb-6 font-bold text-3xl">クリックアナリティクス</h1>
 
       {/* Date Range Picker Section - Client component for interactivity */}
       <div className="mb-6">
-        <DateRangePickerClient searchParams={searchParams} />
+        <DateRangePickerClient searchParams={parsedSearchParams} />
       </div>
 
       {/* Click Volume Chart Section - Independent Async Server Component */}
@@ -30,7 +35,7 @@ export default function ClickAnalyticsPage({
             <div className="h-96 animate-pulse rounded-lg bg-gray-200" />
           }
         >
-          <ClickVolumeChart searchParams={searchParams} />
+          <ClickVolumeChart searchParams={parsedSearchParams} />
         </Suspense>
       </div>
 
@@ -38,6 +43,7 @@ export default function ClickAnalyticsPage({
       <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <ServerTabs
           defaultTab="videos"
+          searchParams={parsedSearchParams}
           tabs={[
             {
               content: (
@@ -46,7 +52,7 @@ export default function ClickAnalyticsPage({
                     <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
                   }
                 >
-                  <PopularVideosWidget searchParams={searchParams} />
+                  <PopularVideosWidget searchParams={parsedSearchParams} />
                 </Suspense>
               ),
               id: 'videos',
@@ -59,7 +65,7 @@ export default function ClickAnalyticsPage({
                     <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
                   }
                 >
-                  <PopularChannelsWidget searchParams={searchParams} />
+                  <PopularChannelsWidget searchParams={parsedSearchParams} />
                 </Suspense>
               ),
               id: 'channels',

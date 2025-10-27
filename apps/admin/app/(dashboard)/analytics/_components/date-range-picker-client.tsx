@@ -1,12 +1,13 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import { getAnalyticsDateParams } from '../_lib/cached-params'
+import { use } from 'react'
+import type { AnalyticsSearchParams } from '../_lib/search-params-schema'
 import { createAnalyticsUrlParams } from '../_lib/search-params-schema'
 import DateRangePicker from './date-range-picker'
 
 type Props = {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<AnalyticsSearchParams>
 }
 
 /**
@@ -15,7 +16,7 @@ type Props = {
 export function DateRangePickerClient({ searchParams }: Props) {
   const router = useRouter()
   const pathname = usePathname()
-  const { dateRange } = getAnalyticsDateParams(searchParams)
+  const { dateRange } = use(searchParams)
 
   const handleDateRangeChange = (newDateRange: {
     startDate: string

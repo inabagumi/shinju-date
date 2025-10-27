@@ -4,9 +4,10 @@ import { Temporal } from 'temporal-polyfill'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
 import { getAnalyticsDateParams } from '../../_lib/cached-params'
 import { ADMIN_ROUTES } from '../../_lib/routes'
+import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 type Props = {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<AnalyticsSearchParams>
 }
 
 /**
@@ -80,7 +81,7 @@ function SimplePopularVideosWidget({
  * Async server component that fetches and displays popular videos widget
  */
 export async function PopularVideosWidget({ searchParams }: Props) {
-  const { dateRange, selectedDate } = getAnalyticsDateParams(searchParams)
+  const { dateRange, selectedDate } = await getAnalyticsDateParams(searchParams)
 
   const popularVideos = await fetchPopularVideosData(
     dateRange.startDate,
