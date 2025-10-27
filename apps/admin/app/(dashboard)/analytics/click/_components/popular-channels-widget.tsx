@@ -32,7 +32,7 @@ function SimplePopularChannelsWidget({
   dateRange,
   selectedDate,
 }: {
-  channels: Array<{ name: string; slug: string; clicks: number; id: string }>
+  channels: Array<{ name: string; slug: string; clicks: number; id: number }>
   dateRange: { startDate: string; endDate: string }
   selectedDate: string | null
 }) {
