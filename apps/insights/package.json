@@ -1,6 +1,6 @@
 {
   "author": "Haneru Developers",
-  "description": "",
+  "description": "An application for providing insights and analytics for the Shinju Date platform.",
   "homepage": "https://shinju.date/",
   "license": "MIT",
   "name": "@shinju-date/insights",
