@@ -32,7 +32,6 @@ export async function ClickVolumeChart({ searchParams }: Props) {
 
   return (
     <>
-      <h2 className="mb-4 font-semibold text-xl">クリックボリューム</h2>
       <div className="mb-4 rounded-lg bg-green-50 p-4">
         <p className="text-gray-600 text-sm">総クリック数</p>
         <div className="flex items-baseline gap-2">
