@@ -29,18 +29,16 @@ describe('analyticsSearchParamsSchema', () => {
     })
   })
 
-  it('should parse single date parameter and create single-day range', () => {
+  it('should parse single date parameter with default chart range', () => {
     const input = {
       date: yesterday.toString(),
     }
 
     const result = analyticsSearchParamsSchema.parse(input)
+    const defaultRange = getDefaultDateRange()
 
     expect(result).toEqual({
-      dateRange: {
-        endDate: yesterday.toString(),
-        startDate: yesterday.toString(),
-      },
+      dateRange: defaultRange,
       selectedDate: yesterday.toString(),
       tab: null,
     })
@@ -59,7 +57,7 @@ describe('analyticsSearchParamsSchema', () => {
         endDate: yesterday.toString(),
         startDate: yesterday.toString(),
       },
-      selectedDate: yesterday.toString(),
+      selectedDate: null,
       tab: null,
     })
   })
@@ -172,7 +170,7 @@ describe('analyticsSearchParamsSchema', () => {
     })
   })
 
-  it('should prioritize date parameter over from/to range', () => {
+  it('should use date for filtering while maintaining from/to chart range', () => {
     const input = {
       date: today.subtract({ days: 2 }).toString(),
       from: weekAgo.toString(),
@@ -183,8 +181,8 @@ describe('analyticsSearchParamsSchema', () => {
 
     expect(result).toEqual({
       dateRange: {
-        endDate: today.subtract({ days: 2 }).toString(),
-        startDate: today.subtract({ days: 2 }).toString(),
+        endDate: yesterday.toString(),
+        startDate: weekAgo.toString(),
       },
       selectedDate: today.subtract({ days: 2 }).toString(),
       tab: null,

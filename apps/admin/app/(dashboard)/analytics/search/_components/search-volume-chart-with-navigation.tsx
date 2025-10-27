@@ -1,20 +1,20 @@
 'use client'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import type { DailyClickVolume } from '../_lib/get-click-volume'
+import type { DailySearchVolume } from '../_lib/get-search-volume'
 
 type Props = {
-  data: DailyClickVolume[]
+  data: DailySearchVolume[]
   ChartComponent: React.ComponentType<{
-    data: DailyClickVolume[]
+    data: DailySearchVolume[]
     onDateClick?: (date: string) => void
   }>
 }
 
 /**
- * Client wrapper that adds date click functionality to the chart
+ * Client wrapper that adds date click functionality to the search volume chart
  */
-export function ClickVolumeChartWithNavigation({
+export function SearchVolumeChartWithNavigation({
   data,
   ChartComponent,
 }: Props) {

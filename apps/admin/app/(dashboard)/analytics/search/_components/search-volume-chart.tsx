@@ -2,6 +2,7 @@ import { cache } from 'react'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 import { getSearchVolume } from '../_lib/get-search-volume'
 import SearchVolumeChartUI from './search-volume-chart-ui'
+import { SearchVolumeChartWithNavigation } from './search-volume-chart-with-navigation'
 
 type Props = {
   searchParams: Promise<AnalyticsSearchParams>
@@ -27,5 +28,10 @@ export async function SearchVolumeChart({ searchParams }: Props) {
     dateRange.endDate,
   )
 
-  return <SearchVolumeChartUI data={searchVolume} />
+  return (
+    <SearchVolumeChartWithNavigation
+      ChartComponent={SearchVolumeChartUI}
+      data={searchVolume}
+    />
+  )
 }

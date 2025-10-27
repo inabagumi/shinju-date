@@ -123,34 +123,28 @@ export const analyticsSearchParamsSchema = z
   .transform((data) => {
     const { from, to, date, tab } = data
 
-    // If a specific date is provided and valid, use it
-    if (date) {
-      return {
-        dateRange: { endDate: date, startDate: date },
-        selectedDate: date,
-        tab: tab || null,
-      }
-    }
+    // Determine the date range for the chart
+    let dateRange: { startDate: string; endDate: string }
 
-    // If both from and to are provided, validate the range
+    // If both from and to are provided, use them for the chart range
     if (from && to) {
       const validRange = validateDateRange(from, to)
       if (validRange) {
-        // Check if it's a single-day range
-        const isSingleDay = validRange.startDate === validRange.endDate
-        return {
-          dateRange: validRange,
-          selectedDate: isSingleDay ? validRange.startDate : null,
-          tab: tab || null,
-        }
+        dateRange = validRange
+      } else {
+        dateRange = getDefaultDateRange()
       }
+    } else {
+      // Fall back to default range
+      dateRange = getDefaultDateRange()
     }
 
-    // Fall back to default range
-    const defaultRange = getDefaultDateRange()
+    // The selected date is used for filtering rankings independently
+    const selectedDate = date || null
+
     return {
-      dateRange: defaultRange,
-      selectedDate: null,
+      dateRange,
+      selectedDate,
       tab: tab || null,
     }
   })
