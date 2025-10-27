@@ -2,7 +2,7 @@ import { cache } from 'react'
 import { getAnalyticsDateParams } from '../../_lib/cached-params'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 import { getClickVolume } from '../_lib/get-click-volume'
-import ClickVolumeChartComponent from './click-volume-chart'
+import ClickVolumeChartUI from './click-volume-chart-ui'
 
 type Props = {
   searchParams: Promise<AnalyticsSearchParams>
@@ -28,5 +28,5 @@ export async function ClickVolumeChart({ searchParams }: Props) {
     dateRange.endDate,
   )
 
-  return <ClickVolumeChartComponent data={clickVolume} />
+  return <ClickVolumeChartUI data={clickVolume} />
 }
