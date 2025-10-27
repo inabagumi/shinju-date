@@ -19,17 +19,16 @@ export default function SearchQueryTracker({
 }: SearchQueryTrackerProps) {
   // useEffectEvent ensures we always use the latest resultsCount
   // while keeping the function reference stable
-  const trackQuery = useEffectEvent(async () => {
-    if (query) {
-      await logSearchQuery(query, resultsCount)
+  const trackQuery = useEffectEvent(async (searchQuery: string) => {
+    if (searchQuery) {
+      await logSearchQuery(searchQuery, resultsCount)
     }
   })
 
   // Effect runs only when query changes, avoiding duplicate tracking
   // when resultsCount updates during infinite scroll
-  // biome-ignore lint/correctness/useExhaustiveDependencies: trackQuery is stable from useEffectEvent
   useEffect(() => {
-    trackQuery()
+    trackQuery(query)
   }, [query])
 
   // This component doesn't render anything
