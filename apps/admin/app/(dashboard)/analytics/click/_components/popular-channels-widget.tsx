@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { getPopularChannels } from '@/lib/analytics/get-popular-channels'
-import { CSVExportButton } from '../../_components/csv-export-button'
+import { ExportMenu } from '../../_components/export-menu'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 type Props = {
@@ -36,15 +36,6 @@ function SimplePopularChannelsWidget({
   dateRange: { startDate: string; endDate: string }
   selectedDate: string | null
 }) {
-  const csvData = channels.map((channel, index) => ({
-    クリック数: channel.clicks,
-    スラッグ: channel.slug,
-    チャンネル名: channel.name,
-    順位: index + 1,
-  }))
-  const dateStr = selectedDate || `${dateRange.startDate}_${dateRange.endDate}`
-  const filename = `click-analytics-channels-${dateStr}.csv`
-
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
@@ -53,7 +44,11 @@ function SimplePopularChannelsWidget({
             ? `人気チャンネルランキング (${selectedDate})`
             : `人気チャンネルランキング (${dateRange.startDate} 〜 ${dateRange.endDate})`}
         </h2>
-        <CSVExportButton data={csvData} filename={filename} />
+        <ExportMenu
+          dateRange={dateRange}
+          selectedDate={selectedDate}
+          type="channels"
+        />
       </div>
       <p className="mb-4 text-gray-600 text-sm">
         最もクリックされているチャンネルのランキング。どのタレントが人気かを把握できます。

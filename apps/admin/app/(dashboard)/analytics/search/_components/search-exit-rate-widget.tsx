@@ -1,7 +1,7 @@
 import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { getSearchExitRates } from '@/lib/analytics/get-search-quality-metrics'
-import { CSVExportButton } from '../../_components/csv-export-button'
+import { ExportMenu } from '../../_components/export-menu'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 type Props = {
@@ -49,15 +49,6 @@ function SearchExitRateWidgetComponent({
   dateRange: { startDate: string; endDate: string }
   selectedDate: string | null
 }) {
-  const csvData = exitRates.map((item, index) => ({
-    キーワード: item.keyword,
-    検索回数: item.searchCount,
-    離脱率: `${item.exitRate.toFixed(1)}%`,
-    順位: index + 1,
-  }))
-  const dateStr = selectedDate || `${dateRange.startDate}_${dateRange.endDate}`
-  const filename = `search-exit-rates-${dateStr}.csv`
-
   // Helper to get exit rate styling
   const getExitRateStyle = (exitRate: number) => {
     if (exitRate >= 70) return 'bg-red-100 text-red-800'
@@ -86,7 +77,11 @@ function SearchExitRateWidgetComponent({
             </span>
           )}
         </h2>
-        <CSVExportButton data={csvData} filename={filename} />
+        <ExportMenu
+          dateRange={dateRange}
+          selectedDate={selectedDate}
+          type="search-exit-rates"
+        />
       </div>
 
       <p className="mb-4 text-gray-600 text-sm">
