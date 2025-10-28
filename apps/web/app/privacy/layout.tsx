@@ -3,8 +3,6 @@ import type { ReactNode } from 'react'
 import SimpleDocument from '@/components/simple-document'
 import { title as siteName } from '@/lib/constants'
 
-export const dynamic = 'force-static'
-
 export const metadata: Metadata = {
   alternates: {
     canonical: '/privacy',
@@ -20,7 +18,7 @@ export const metadata: Metadata = {
   },
 }
 
-export default function Template({ children }: { children: ReactNode }) {
+export default function PrivacyLayout({ children }: { children: ReactNode }) {
   return (
     <SimpleDocument title="プライバシーポリシー" withBreadcrumbs>
       <div className="markdown">{children}</div>

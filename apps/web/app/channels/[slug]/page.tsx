@@ -1,3 +1,5 @@
+// 'use cache'
+
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -8,8 +10,6 @@ import { title as siteName } from '@/lib/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
 import { getChannelBySlug } from '@/lib/supabase'
 
-export const revalidate = 600 // 10 minutes
-
 export async function generateMetadata({
   params,
 }: Readonly<{
@@ -17,6 +17,8 @@ export async function generateMetadata({
     slug: string
   }>
 }>): Promise<Metadata | null> {
+  // cacheLife('minutes')
+
   const { slug } = await params
   const channel = await getChannelBySlug(slug)
 

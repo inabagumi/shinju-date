@@ -49,7 +49,7 @@
   },
   "scripts": {
     "build": "next build",
-    "dev": "next --port 5000 --turbopack",
+    "dev": "next --port 5000",
     "lint": "next lint",
     "start": "next start --port 5000"
   },

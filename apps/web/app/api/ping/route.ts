@@ -5,8 +5,6 @@ import increment from './_lib/increment'
 import track from './_lib/track'
 import type { Video } from './_lib/types'
 
-export const runtime = 'edge'
-
 export async function POST(request: Request): Promise<Response> {
   const requestType = request.headers.get('Content-Type')
   const userAgent = request.headers.get('User-Agent')

@@ -18,8 +18,6 @@ function getMonitorSlug({ all }: { all?: boolean | undefined }) {
   return all ? '/videos/check?all=1' : '/videos/check'
 }
 
-export const runtime = 'nodejs'
-export const revalidate = 0
 export const maxDuration = 120
 
 type Thumbnail = {

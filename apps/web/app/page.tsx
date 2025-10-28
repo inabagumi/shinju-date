@@ -12,9 +12,6 @@ import {
 } from '@/lib/recommendations/get-display-queries'
 import hero from './_assets/hero.jpg'
 
-// export const experimental_ppr = true
-export const revalidate = 600 // 10 minutes
-
 export const metadata: Metadata = {
   alternates: {
     canonical: '/',
@@ -35,12 +32,12 @@ export const metadata: Metadata = {
   },
 }
 
-async function HomeTimeline({
-  videosPromise,
-}: Readonly<{
-  videosPromise: ReturnType<typeof fetchNotEndedVideos>
-}>) {
-  const videos = await videosPromise
+async function HomeTimeline() {
+  // 'use cache'
+
+  // cacheLife('seconds')
+
+  const videos = await fetchNotEndedVideos({})
 
   return videos.length > 0 ? (
     <Timeline prefetchedData={videos} />
@@ -71,12 +68,12 @@ function RecommendationQueriesSkeleton() {
   )
 }
 
-async function RecommendationQueries({
-  queriesPromise,
-}: Readonly<{
-  queriesPromise: Promise<string[]>
-}>) {
-  const queries = await queriesPromise
+async function RecommendationQueries() {
+  // 'use cache'
+
+  // cacheLife('days')
+
+  const queries = await getDisplayRecommendationQueries()
 
   if (queries.length < 1) {
     return <RecommendationQueriesSkeleton />
@@ -103,13 +100,10 @@ async function RecommendationQueries({
 }
 
 export default function SchedulePage() {
-  const videosPromise = fetchNotEndedVideos({})
-  const queriesPromise = getDisplayRecommendationQueries()
-
   return (
     <>
-      <div className="relative aspect-[4/3] bg-slate-700 sm:aspect-video">
-        <div className="absolute right-0 bottom-0 left-0 z-20 bg-gradient-to-t from-slate-900/80 text-white">
+      <div className="relative aspect-4/3 bg-slate-700 sm:aspect-video">
+        <div className="absolute right-0 bottom-0 left-0 z-20 bg-linear-to-t from-slate-900/80 text-white">
           <h1 className="px-8 py-6 text-center md:text-left">
             <svg
               aria-label="SHINJU DATE"
@@ -135,11 +129,11 @@ export default function SchedulePage() {
 
       <main className="mx-auto max-w-6xl space-y-12 px-4">
         <Suspense fallback={<RecommendationQueriesSkeleton />}>
-          <RecommendationQueries queriesPromise={queriesPromise} />
+          <RecommendationQueries />
         </Suspense>
 
         <Suspense fallback={<TimelineSkeleton />}>
-          <HomeTimeline videosPromise={videosPromise} />
+          <HomeTimeline />
         </Suspense>
       </main>
     </>
