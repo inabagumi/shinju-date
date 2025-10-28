@@ -9,7 +9,7 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 
 export function PopularVideosWidgetSkeleton() {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-full">
+    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       <div className="mb-4 h-6 w-64 rounded bg-gray-200" />
       <PopularVideosListSkeleton />
     </div>
@@ -27,7 +27,7 @@ export async function PopularVideosWidget() {
   const supabaseClient = await createSupabaseServerClient()
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-full">
+    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       <h2 className="mb-4 font-semibold text-xl">
         人気動画ランキング (過去30日間)
       </h2>

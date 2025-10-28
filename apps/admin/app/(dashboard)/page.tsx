@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { Suspense } from 'react'
 import { CardSkeleton } from '@/components/skeletons'
 import { AnalyticsWidget } from './_components/analytics-widget'
@@ -6,6 +5,7 @@ import {
   PopularVideosWidget,
   PopularVideosWidgetSkeleton,
 } from './_components/popular-videos-widget'
+import { QuickAccessWidget } from './_components/quick-access-widget'
 import { SummaryWidget } from './_components/summary-widget'
 
 export default function DashboardPage() {
@@ -13,59 +13,32 @@ export default function DashboardPage() {
     <div className="p-6">
       <h1 className="mb-6 font-bold text-3xl">ダッシュボード</h1>
 
-      {/* Grid layout for widgets */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[repeat(auto-fit,minmax(var(--widget-min-width),1fr))]">
-        {/* Summary Widgets - Video and Content Summary */}
-        <Suspense fallback={<CardSkeleton />}>
-          <SummaryWidget />
-        </Suspense>
+      {/* New layout: Left sidebar + Main content area */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr]">
+        {/* Left Sidebar - Quick Access */}
+        <aside className="lg:sticky lg:top-6 lg:self-start">
+          <QuickAccessWidget />
+        </aside>
 
-        {/* Analytics Summary Widget */}
-        <Suspense fallback={<CardSkeleton />}>
-          <AnalyticsWidget />
-        </Suspense>
+        {/* Main Content Area */}
+        <main className="space-y-6">
+          {/* Top row: Summary and Analytics widgets */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {/* Summary Widgets - Video and Content Summary (2 columns) */}
+            <Suspense fallback={<CardSkeleton />}>
+              <SummaryWidget />
+            </Suspense>
 
-        {/* Quick Access Widget - Static, no Suspense needed */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 font-semibold text-xl">クイックアクセス</h2>
-          <div className="flex flex-col gap-3">
-            <Link
-              className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"
-              href="/videos"
-            >
-              <span className="font-medium">動画を管理する</span>
-            </Link>
-            <Link
-              className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"
-              href="/terms"
-            >
-              <span className="font-medium">用語集を編集する</span>
-            </Link>
-            <Link
-              className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"
-              href="/analytics/search"
-            >
-              <span className="font-medium">検索アナリティクス</span>
-            </Link>
-            <Link
-              className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"
-              href="/analytics/click"
-            >
-              <span className="font-medium">クリックアナリティクス</span>
-            </Link>
-            <a
-              className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"
-              href="https://shinju.date"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <span className="font-medium">公開サイトを確認する</span>
-              <span className="ml-1 text-gray-500 text-sm">↗</span>
-            </a>
+            {/* Analytics Summary Widget (1 column) */}
+            <Suspense fallback={<CardSkeleton />}>
+              <AnalyticsWidget />
+            </Suspense>
           </div>
-        </div>
+        </main>
+      </div>
 
-        {/* Popular Videos Widget - Full width */}
+      {/* Bottom row: Popular Videos - Full width including Quick Access area */}
+      <div className="mt-6">
         <Suspense fallback={<PopularVideosWidgetSkeleton />}>
           <PopularVideosWidget />
         </Suspense>
