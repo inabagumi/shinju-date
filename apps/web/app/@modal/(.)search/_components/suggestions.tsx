@@ -4,7 +4,7 @@ import type { searchParamsSchema } from '../_lib/search-params-schema'
 import { SearchModalLink } from './search-modal'
 
 async function fetchSuggestions(query: string) {
-  if (!query || query.length === 0) {
+  if (!query) {
     return []
   }
 
