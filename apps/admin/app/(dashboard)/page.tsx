@@ -23,7 +23,7 @@ export default function DashboardPage() {
         {/* Main Content Area */}
         <main className="space-y-6">
           {/* Top row: Summary and Analytics widgets */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Summary Widgets - Video and Content Summary (2 columns) */}
             <Suspense fallback={<CardSkeleton />}>
               <SummaryWidget />

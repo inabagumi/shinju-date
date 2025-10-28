@@ -17,9 +17,21 @@ export function QuickAccessWidget() {
         </Link>
         <Link
           className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"
+          href="/channels"
+        >
+          <span className="font-medium">チャンネル管理</span>
+        </Link>
+        <Link
+          className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"
           href="/terms"
         >
           <span className="font-medium">用語集を編集する</span>
+        </Link>
+        <Link
+          className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"
+          href="/recommended-queries"
+        >
+          <span className="font-medium">オススメクエリ管理</span>
         </Link>
         <Link
           className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"
