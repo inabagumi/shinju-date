@@ -15,8 +15,8 @@ const DAILY_TTL_SECONDS = 90 * 24 * 60 * 60 // 90 days
  * Generate a simple session ID based on IP address and User-Agent
  * This creates a stable identifier for the same user session across pages
  */
-function generateSessionId(): string {
-  const headersList = headers()
+async function generateSessionId(): Promise<string> {
+  const headersList = await headers()
   const ip =
     headersList.get('x-forwarded-for') ||
     headersList.get('x-real-ip') ||
@@ -42,7 +42,7 @@ function generateSessionId(): string {
  */
 export async function trackPageVisit(): Promise<void> {
   try {
-    const sessionId = generateSessionId()
+    const sessionId = await generateSessionId()
     const now = Temporal.Now.zonedDateTimeISO(timeZone)
     const today = formatDate(now)
 
@@ -70,7 +70,7 @@ export async function trackSearchSession(query: string): Promise<void> {
   }
 
   try {
-    const sessionId = generateSessionId()
+    const sessionId = await generateSessionId()
     const now = Temporal.Now.zonedDateTimeISO(timeZone)
     const today = formatDate(now)
 
