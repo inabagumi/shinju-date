@@ -7,8 +7,6 @@ import {
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
 
-export const runtime = 'edge'
-
 export async function GET(): Promise<Response> {
   try {
     const { status, results } = await runHealthChecks([

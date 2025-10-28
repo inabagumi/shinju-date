@@ -10,6 +10,7 @@ const supabaseBaseURL =
     : undefined
 
 const nextConfig: NextConfig = {
+  // cacheComponents: true,
   headers() {
     return Promise.resolve([
       {

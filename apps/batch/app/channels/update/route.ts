@@ -12,8 +12,6 @@ import { youtubeClient } from '@/lib/youtube'
 
 const MONITOR_SLUG = '/channels/update'
 
-export const runtime = 'nodejs'
-export const revalidate = 0
 export const maxDuration = 120
 
 type Channel = Pick<Tables<'channels'>, 'name' | 'slug'>

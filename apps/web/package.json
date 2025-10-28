@@ -64,7 +64,7 @@
   },
   "scripts": {
     "build": "next build",
-    "dev": "next --port 3000 --turbopack",
+    "dev": "next --port 3000",
     "lint": "next lint",
     "msw:init": "msw init public/",
     "start": "next start --port 3000",

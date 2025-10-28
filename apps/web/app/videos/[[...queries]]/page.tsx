@@ -1,3 +1,5 @@
+// 'use cache'
+
 import type { Metadata } from 'next'
 import NoResults from '@/components/no-results'
 import SearchExitTracker from '@/components/search-exit-tracker'
@@ -7,8 +9,6 @@ import { title as siteName } from '@/lib/constants'
 import { fetchVideosByChannelIDs } from '@/lib/fetchers'
 import { parseQueries } from '@/lib/url'
 
-export const revalidate = 300 // 5 minutes
-
 export async function generateMetadata({
   params,
 }: Readonly<{
@@ -16,6 +16,8 @@ export async function generateMetadata({
     queries?: string[]
   }>
 }>): Promise<Metadata> {
+  // cacheLife('minutes')
+
   const { queries } = await params
   const query = parseQueries(queries)
   const title = query ? `『${query}』の検索結果` : '動画一覧'

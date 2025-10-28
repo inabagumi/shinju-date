@@ -15,8 +15,6 @@ const WEIGHT_DAILY = 10.0
 const WEIGHT_WEEKLY = 5.0
 const WEIGHT_ALL_TIME = 1.0
 
-export const runtime = 'nodejs'
-export const revalidate = 0
 export const maxDuration = 120
 
 async function getAllTerms({

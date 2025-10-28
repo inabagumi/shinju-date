@@ -7,6 +7,8 @@ const supabaseBaseURL =
     : undefined
 
 const nextConfig: NextConfig = {
+  // `'use cache: private'`ディレクティブがstableになったら`cacheComponents`を有効化する
+  // cacheComponents: true,
   headers() {
     return Promise.resolve([
       {

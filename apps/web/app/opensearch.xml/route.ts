@@ -1,8 +1,6 @@
 import dedent from 'dedent'
 import { description, title as siteName } from '@/lib/constants'
 
-export const dynamic = 'force-static'
-
 export function GET(): Response {
   const baseURL = process.env['NEXT_PUBLIC_BASE_URL'] ?? 'http://localhost:3000'
   const body = dedent`

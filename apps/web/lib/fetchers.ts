@@ -3,7 +3,6 @@
 import type { Tables } from '@shinju-date/database'
 import { startOfHour } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-import { getCurrentTime } from '@/lib/cached-functions'
 import { SEARCH_RESULT_COUNT, timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
 
@@ -38,7 +37,7 @@ type FetchNotEndedVideosOptions = {
 export const fetchNotEndedVideos = async ({
   channelIDs = [],
 }: FetchNotEndedVideosOptions): Promise<Video[]> => {
-  const epochNanoseconds = await getCurrentTime()
+  const epochNanoseconds = Temporal.Now.instant().epochNanoseconds
   const baseTime = Temporal.Instant.fromEpochNanoseconds(epochNanoseconds)
   const hour = startOfHour(baseTime.toZonedDateTimeISO(timeZone))
   const since = hour.toInstant().subtract({
@@ -106,7 +105,7 @@ export const fetchNotEndedVideos = async ({
 }
 
 async function getDefaultBaseTime() {
-  const epochNanoseconds = await getCurrentTime()
+  const epochNanoseconds = Temporal.Now.instant().epochNanoseconds
 
   return Temporal.Instant.fromEpochNanoseconds(epochNanoseconds)
     .toZonedDateTimeISO(timeZone)

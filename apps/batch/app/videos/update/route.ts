@@ -17,8 +17,6 @@ import {
 
 const MONITOR_SLUG = '/videos/update'
 
-export const runtime = 'nodejs'
-export const revalidate = 0
 export const maxDuration = 120
 
 export async function POST(request: Request): Promise<Response> {
