@@ -11,9 +11,12 @@ const contactFormSchema = z.object({
   wantsReply: z.boolean().default(false),
 })
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env['RESEND_API_KEY'])
 
-export async function submitContactForm(formData: FormData) {
+export async function submitContactForm(
+  _prevState: any,
+  formData: FormData,
+): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
     // Parse form data
     const rawData = {
@@ -39,7 +42,7 @@ export async function submitContactForm(formData: FormData) {
 
     if (!result.success) {
       return {
-        error: result.error.errors.map((e) => e.message).join(', '),
+        error: result.error.issues.map((e) => e.message).join(', '),
         success: false,
       }
     }
@@ -77,11 +80,11 @@ ${message}
 `
 
     // Send email to administrator
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com'
+    const adminEmail = process.env['ADMIN_EMAIL'] || 'admin@example.com'
 
     await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'noreply@shinju.date',
-      replyTo: wantsReply && email ? email : undefined,
+      from: process.env['FROM_EMAIL'] || 'noreply@shinju.date',
+      ...(wantsReply && email && { replyTo: email }),
       subject: emailSubject,
       text: emailText,
       to: adminEmail,
