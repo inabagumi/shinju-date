@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { twMerge } from 'tailwind-merge'
 
 /**
  * QuickAccessWidget - Displays navigation links for quick access
@@ -42,7 +43,11 @@ export function QuickAccessWidget() {
 
       {/* Navigation links - collapsible on mobile, always visible on desktop */}
       <div
-        className={`flex flex-col gap-3 ${isMobileMenuOpen ? 'block' : 'hidden'} lg:block`}
+        className={twMerge(
+          'flex flex-col gap-3',
+          isMobileMenuOpen ? 'flex' : 'hidden',
+          'lg:flex',
+        )}
       >
         <Link
           className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"
