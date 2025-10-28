@@ -3,6 +3,15 @@
 import { Resend } from 'resend'
 import { z } from 'zod'
 
+// Check if contact form is enabled
+export function isContactFormEnabled(): boolean {
+  return !!(
+    process.env['RESEND_API_KEY'] &&
+    process.env['FROM_EMAIL'] &&
+    process.env['ADMIN_EMAIL']
+  )
+}
+
 const contactFormSchema = z.object({
   email: z.string().email().optional(),
   message: z.string().min(1, 'メッセージは必須です'),
@@ -14,10 +23,17 @@ const contactFormSchema = z.object({
 const resend = new Resend(process.env['RESEND_API_KEY'])
 
 export async function submitContactForm(
-  _prevState: any,
+  _prevState: unknown,
   formData: FormData,
 ): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
+    // Check if contact form is enabled
+    if (!isContactFormEnabled()) {
+      return {
+        error: 'お問い合わせ機能は現在ご利用いただけません。',
+        success: false,
+      }
+    }
     // Parse form data
     const rawData = {
       email: formData.get('email') || undefined,
