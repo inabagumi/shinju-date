@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
 import { TimerProvider } from '@/components/timer'
 import { title as siteName, themeColor } from '@/lib/constants'
+import { ContactLink } from './_components/contact-link'
 import { Providers } from './_components/providers'
 import { SearchButton } from './_components/search-button'
 import SVGSymbols from './_components/svg-symbols'
@@ -65,6 +66,9 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
               >
                 動画一覧
               </Link>
+              <ContactLink className="hover:text-secondary-pink hover:underline">
+                お問い合わせ
+              </ContactLink>
             </div>
 
             <search className="flex items-center">
@@ -98,6 +102,11 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
                   >
                     {siteName}とは
                   </Link>
+                </li>
+                <li className="md:hidden">
+                  <ContactLink className="hover:text-secondary-pink hover:underline">
+                    お問い合わせ
+                  </ContactLink>
                 </li>
                 <li>
                   <Link
