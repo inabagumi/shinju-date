@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 }
 
 export default async function ContactPage() {
-  const enabled = await isContactFormEnabled()
+  const enabled = isContactFormEnabled()
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">

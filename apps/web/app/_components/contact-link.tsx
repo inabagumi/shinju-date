@@ -7,7 +7,7 @@ interface ContactLinkProps {
 }
 
 export async function ContactLink({ className, children }: ContactLinkProps) {
-  const enabled = await isContactFormEnabled()
+  const enabled = isContactFormEnabled()
 
   if (!enabled) {
     return null
