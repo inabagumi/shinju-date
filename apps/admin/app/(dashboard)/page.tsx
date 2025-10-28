@@ -34,12 +34,14 @@ export default function DashboardPage() {
               <AnalyticsWidget />
             </Suspense>
           </div>
-
-          {/* Bottom row: Popular Videos - Full width */}
-          <Suspense fallback={<PopularVideosWidgetSkeleton />}>
-            <PopularVideosWidget />
-          </Suspense>
         </main>
+      </div>
+
+      {/* Bottom row: Popular Videos - Full width including Quick Access area */}
+      <div className="mt-6">
+        <Suspense fallback={<PopularVideosWidgetSkeleton />}>
+          <PopularVideosWidget />
+        </Suspense>
       </div>
     </div>
   )

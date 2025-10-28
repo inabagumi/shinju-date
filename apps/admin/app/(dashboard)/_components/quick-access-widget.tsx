@@ -1,14 +1,49 @@
+'use client'
+
 import Link from 'next/link'
+import { useState } from 'react'
 
 /**
  * QuickAccessWidget - Displays navigation links for quick access
- * This is a static component that provides navigation shortcuts
+ * This component provides navigation shortcuts with mobile-responsive collapsible design
  */
 export function QuickAccessWidget() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 font-semibold text-xl">クイックアクセス</h2>
-      <div className="flex flex-col gap-3">
+      {/* Header with mobile toggle button */}
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="font-semibold text-xl">クイックアクセス</h2>
+        <button
+          className="lg:hidden rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            className={`h-5 w-5 transition-transform ${isMobileMenuOpen ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M19 9l-7 7-7-7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span className="sr-only">
+            {isMobileMenuOpen ? 'メニューを閉じる' : 'メニューを開く'}
+          </span>
+        </button>
+      </div>
+
+      {/* Navigation links - collapsible on mobile, always visible on desktop */}
+      <div
+        className={`flex flex-col gap-3 ${isMobileMenuOpen ? 'block' : 'hidden'} lg:block`}
+      >
         <Link
           className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"
           href="/videos"
