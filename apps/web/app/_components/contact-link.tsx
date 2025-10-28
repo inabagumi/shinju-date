@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { isContactFormEnabled } from '@/app/contact/_lib/actions'
+import { isContactFormEnabled } from '@/app/contact/_lib/utils'
 
 interface ContactLinkProps {
   className?: string

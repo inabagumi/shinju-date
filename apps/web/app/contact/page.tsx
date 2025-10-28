@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { ContactForm } from './_components/contact-form'
-import { isContactFormEnabled } from './_lib/actions'
+import { isContactFormEnabled } from './_lib/utils'
 
 export const metadata: Metadata = {
   description:
