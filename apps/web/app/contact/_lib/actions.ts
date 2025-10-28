@@ -4,7 +4,7 @@ import { Resend } from 'resend'
 import { z } from 'zod'
 
 // Check if contact form is enabled
-export function isContactFormEnabled(): boolean {
+export async function isContactFormEnabled(): Promise<boolean> {
   return !!(
     process.env['RESEND_API_KEY'] &&
     process.env['FROM_EMAIL'] &&
@@ -28,7 +28,7 @@ export async function submitContactForm(
 ): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
     // Check if contact form is enabled
-    if (!isContactFormEnabled()) {
+    if (!(await isContactFormEnabled())) {
       return {
         error: 'お問い合わせ機能は現在ご利用いただけません。',
         success: false,

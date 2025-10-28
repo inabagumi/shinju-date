@@ -26,7 +26,7 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
         )}
         <input
           className={twMerge(
-            'w-full rounded-lg border border-774-nevy-300 bg-white px-4 py-3 text-primary placeholder:text-774-nevy-400 focus:border-secondary-pink focus:outline-none focus:ring-2 focus:ring-secondary-pink/20 dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-50 dark:placeholder:text-774-nevy-400',
+            'w-full rounded-lg border border-774-nevy-300 bg-white px-4 py-3 text-primary placeholder:text-774-nevy-400 focus:border-secondary-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/20 dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-50 dark:placeholder:text-774-nevy-400',
             className,
           )}
           id={inputId}
@@ -67,7 +67,7 @@ export const TextareaField = forwardRef<
       )}
       <textarea
         className={twMerge(
-          'w-full rounded-lg border border-774-nevy-300 bg-white px-4 py-3 text-primary placeholder:text-774-nevy-400 focus:border-secondary-pink focus:outline-none focus:ring-2 focus:ring-secondary-pink/20 dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-50 dark:placeholder:text-774-nevy-400',
+          'w-full rounded-lg border border-774-nevy-300 bg-white px-4 py-3 text-primary placeholder:text-774-nevy-400 focus:border-secondary-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/20 dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-50 dark:placeholder:text-774-nevy-400',
           className,
         )}
         id={inputId}
@@ -106,7 +106,7 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(
         )}
         <select
           className={twMerge(
-            'w-full rounded-lg border border-774-nevy-300 bg-white px-4 py-3 text-primary focus:border-secondary-pink focus:outline-none focus:ring-2 focus:ring-secondary-pink/20 dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-50',
+            'w-full rounded-lg border border-774-nevy-300 bg-white px-4 py-3 text-primary focus:border-secondary-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/20 dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-50',
             className,
           )}
           id={inputId}
@@ -141,7 +141,7 @@ export function CheckboxField({
       <label className="flex items-center gap-3">
         <input
           className={twMerge(
-            'h-4 w-4 rounded border-774-nevy-300 text-secondary-pink focus:ring-secondary-pink/20 dark:border-zinc-600',
+            'h-4 w-4 rounded border-774-nevy-300 text-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600',
             className,
           )}
           id={inputId}
