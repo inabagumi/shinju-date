@@ -21,12 +21,16 @@ export function ExportMenu({
 
   const handleExport = () => {
     const params = new URLSearchParams()
-    params.set('startDate', dateRange.startDate)
-    if (dateRange.endDate !== dateRange.startDate) {
-      params.set('endDate', dateRange.endDate)
-    }
+
     if (selectedDate) {
-      params.set('selectedDate', selectedDate)
+      // Single date export
+      params.set('date', selectedDate)
+    } else {
+      // Date range export
+      params.set('from', dateRange.startDate)
+      if (dateRange.endDate !== dateRange.startDate) {
+        params.set('to', dateRange.endDate)
+      }
     }
 
     const url = `/api/export/${type}?${params.toString()}`

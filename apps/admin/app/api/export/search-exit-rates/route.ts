@@ -1,6 +1,9 @@
+import { createErrorResponse } from '@shinju-date/helpers'
+import { stringify } from 'csv-stringify/sync'
 import { type NextRequest, NextResponse } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import { getSearchExitRates } from '@/lib/analytics/get-search-quality-metrics'
+import { exportSearchParamsSchema } from '../_lib/schema'
 
 type SearchExitRate = {
   keyword: string
@@ -13,86 +16,66 @@ type SearchExitRate = {
  */
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-
-    // Get query parameters
-    const startDate = searchParams.get('startDate')
-    const endDate = searchParams.get('endDate')
-    const selectedDate = searchParams.get('selectedDate')
-    const limit = Number.parseInt(searchParams.get('limit') || '50', 10)
-
-    // Validate required parameters
-    if (!startDate) {
-      return NextResponse.json(
-        { error: 'startDate parameter is required' },
-        { status: 400 },
-      )
-    }
+    // Parse and validate query parameters
+    const searchParams = Object.fromEntries(
+      request.nextUrl.searchParams.entries(),
+    )
+    const validatedParams = exportSearchParamsSchema.parse(searchParams)
 
     // Fetch data based on parameters
     let exitRates: SearchExitRate[]
-    if (selectedDate) {
+    if (validatedParams.selectedDate) {
       exitRates = await getSearchExitRates(
-        Temporal.PlainDate.from(selectedDate),
+        Temporal.PlainDate.from(validatedParams.selectedDate),
         undefined,
-        limit,
+        validatedParams.limit,
       )
-    } else if (endDate) {
-      const start = Temporal.PlainDate.from(startDate)
-      const end = Temporal.PlainDate.from(endDate)
-      exitRates = await getSearchExitRates(start, end, limit)
+    } else if (validatedParams.endDate) {
+      const start = Temporal.PlainDate.from(validatedParams.startDate)
+      const end = Temporal.PlainDate.from(validatedParams.endDate)
+      exitRates = await getSearchExitRates(start, end, validatedParams.limit)
     } else {
       exitRates = await getSearchExitRates(
-        Temporal.PlainDate.from(startDate),
+        Temporal.PlainDate.from(validatedParams.startDate),
         undefined,
-        limit,
+        validatedParams.limit,
       )
     }
 
-    // Generate CSV content
-    const csvData = exitRates.map((item, index) => ({
-      キーワード: item.keyword,
-      検索回数: item.searchCount,
-      離脱率: `${item.exitRate.toFixed(1)}%`,
-      順位: index + 1,
-    }))
-
-    if (csvData.length === 0) {
-      return NextResponse.json(
-        { error: 'No data available for the specified date range' },
-        { status: 404 },
+    // Check if data is available
+    if (exitRates.length === 0) {
+      return createErrorResponse(
+        'No data available for the specified date range',
+        {
+          status: 404,
+        },
       )
     }
 
-    // Convert to CSV format
-    const headers = Object.keys(csvData[0])
-    const csvContent = [
-      // Header row
-      headers.join(','),
-      // Data rows
-      ...csvData.map((row) =>
-        headers
-          .map((header) => {
-            const value = row[header as keyof typeof row]
-            // Escape values containing commas or quotes
-            if (
-              typeof value === 'string' &&
-              (value.includes(',') || value.includes('"'))
-            ) {
-              return `"${value.replace(/"/g, '""')}"`
-            }
-            return value
-          })
-          .join(','),
-      ),
-    ].join('\n')
+    // Prepare data for CSV export
+    const csvData = [
+      ['順位', 'キーワード', '検索回数', '離脱率'],
+      ...exitRates.map((item, index) => [
+        index + 1,
+        item.keyword,
+        item.searchCount,
+        `${item.exitRate.toFixed(1)}%`,
+      ]),
+    ]
+
+    // Generate CSV content using csv-stringify
+    const csvContent = stringify(csvData, {
+      bom: true, // Add BOM for Excel compatibility
+    })
 
     // Generate filename
-    const dateStr = selectedDate || `${startDate}_${endDate || startDate}`
+    const dateStr =
+      validatedParams.selectedDate ||
+      `${validatedParams.startDate}_${validatedParams.endDate || validatedParams.startDate}`
     const filename = `search-exit-rates-${dateStr}.csv`
 
     // Return CSV response
-    return new NextResponse(`\uFEFF${csvContent}`, {
+    return new NextResponse(csvContent, {
       headers: {
         'Content-Disposition': `attachment; filename="${filename}"`,
         'Content-Type': 'text/csv;charset=utf-8',
@@ -100,9 +83,12 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('CSV export error:', error)
-    return NextResponse.json(
-      { error: 'Failed to generate CSV export' },
-      { status: 500 },
-    )
+
+    // Handle validation errors
+    if (error instanceof Error && 'issues' in error) {
+      return createErrorResponse('Invalid parameters provided', { status: 400 })
+    }
+
+    return createErrorResponse('Failed to generate CSV export', { status: 500 })
   }
 }

@@ -1,92 +1,75 @@
+import { createErrorResponse } from '@shinju-date/helpers'
+import { stringify } from 'csv-stringify/sync'
 import { type NextRequest, NextResponse } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import {
   getPopularKeywords,
   type PopularKeyword,
 } from '@/lib/analytics/get-popular-keywords'
+import { exportSearchParamsSchema } from '../_lib/schema'
 
 /**
  * Export popular keywords data as CSV
  */
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-
-    // Get query parameters
-    const startDate = searchParams.get('startDate')
-    const endDate = searchParams.get('endDate')
-    const selectedDate = searchParams.get('selectedDate')
-    const limit = Number.parseInt(searchParams.get('limit') || '50', 10)
-
-    // Validate required parameters
-    if (!startDate) {
-      return NextResponse.json(
-        { error: 'startDate parameter is required' },
-        { status: 400 },
-      )
-    }
+    // Parse and validate query parameters
+    const searchParams = Object.fromEntries(
+      request.nextUrl.searchParams.entries(),
+    )
+    const validatedParams = exportSearchParamsSchema.parse(searchParams)
 
     // Fetch data based on parameters
     let keywords: PopularKeyword[]
-    if (selectedDate) {
+    if (validatedParams.selectedDate) {
       keywords = await getPopularKeywords(
-        limit,
-        Temporal.PlainDate.from(selectedDate),
+        validatedParams.limit,
+        Temporal.PlainDate.from(validatedParams.selectedDate),
       )
-    } else if (endDate) {
-      const start = Temporal.PlainDate.from(startDate)
-      const end = Temporal.PlainDate.from(endDate)
-      keywords = await getPopularKeywords(limit, start, end)
+    } else if (validatedParams.endDate) {
+      const start = Temporal.PlainDate.from(validatedParams.startDate)
+      const end = Temporal.PlainDate.from(validatedParams.endDate)
+      keywords = await getPopularKeywords(validatedParams.limit, start, end)
     } else {
       keywords = await getPopularKeywords(
-        limit,
-        Temporal.PlainDate.from(startDate),
+        validatedParams.limit,
+        Temporal.PlainDate.from(validatedParams.startDate),
       )
     }
 
-    // Generate CSV content
-    const csvData = keywords.map((keyword, index) => ({
-      キーワード: keyword.keyword,
-      検索回数: keyword.count,
-      順位: index + 1,
-    }))
-
-    if (csvData.length === 0) {
-      return NextResponse.json(
-        { error: 'No data available for the specified date range' },
-        { status: 404 },
+    // Check if data is available
+    if (keywords.length === 0) {
+      return createErrorResponse(
+        'No data available for the specified date range',
+        {
+          status: 404,
+        },
       )
     }
 
-    // Convert to CSV format
-    const headers = Object.keys(csvData[0])
-    const csvContent = [
-      // Header row
-      headers.join(','),
-      // Data rows
-      ...csvData.map((row) =>
-        headers
-          .map((header) => {
-            const value = row[header as keyof typeof row]
-            // Escape values containing commas or quotes
-            if (
-              typeof value === 'string' &&
-              (value.includes(',') || value.includes('"'))
-            ) {
-              return `"${value.replace(/"/g, '""')}"`
-            }
-            return value
-          })
-          .join(','),
-      ),
-    ].join('\n')
+    // Prepare data for CSV export
+    const csvData = [
+      ['順位', 'キーワード', '検索回数'],
+      ...keywords.map((keyword, index) => [
+        index + 1,
+        keyword.keyword,
+        keyword.count,
+      ]),
+    ]
+
+    // Generate CSV content using csv-stringify
+    const csvContent = stringify(csvData, {
+      bom: true, // Add BOM for Excel compatibility
+    })
 
     // Generate filename
-    const dateStr = selectedDate || `${startDate}_${endDate || startDate}`
+    const dateStr =
+      validatedParams.selectedDate ||
+      `${validatedParams.startDate}_${validatedParams.endDate || validatedParams.startDate}`
     const filename = `search-analytics-keywords-${dateStr}.csv`
 
     // Return CSV response
-    return new NextResponse(`\uFEFF${csvContent}`, {
+    return new NextResponse(csvContent, {
       headers: {
         'Content-Disposition': `attachment; filename="${filename}"`,
         'Content-Type': 'text/csv;charset=utf-8',
@@ -94,9 +77,12 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('CSV export error:', error)
-    return NextResponse.json(
-      { error: 'Failed to generate CSV export' },
-      { status: 500 },
-    )
+
+    // Handle validation errors
+    if (error instanceof Error && 'issues' in error) {
+      return createErrorResponse('Invalid parameters provided', { status: 400 })
+    }
+
+    return createErrorResponse('Failed to generate CSV export', { status: 500 })
   }
 }
