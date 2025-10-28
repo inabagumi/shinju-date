@@ -65,6 +65,12 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
               >
                 動画一覧
               </Link>
+              <Link
+                className="hover:text-secondary-pink hover:underline"
+                href="/contact"
+              >
+                お問い合わせ
+              </Link>
             </div>
 
             <search className="flex items-center">
@@ -97,6 +103,14 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
                     href="/about"
                   >
                     {siteName}とは
+                  </Link>
+                </li>
+                <li className="md:hidden">
+                  <Link
+                    className="hover:text-secondary-pink hover:underline"
+                    href="/contact"
+                  >
+                    お問い合わせ
                   </Link>
                 </li>
                 <li>
