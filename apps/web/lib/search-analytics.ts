@@ -6,6 +6,7 @@ import { formatDate, getMondayOfWeek } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from './constants'
 import { redisClient } from './redis'
+import { trackSearchSession } from './session-analytics'
 
 // TTL settings for time-based search keys
 const DAILY_TTL_SECONDS = 90 * 24 * 60 * 60 // 90 days
@@ -57,6 +58,9 @@ export async function logSearchQuery(
     multi.expire(weeklyKey, WEEKLY_TTL_SECONDS)
 
     await multi.exec()
+
+    // Track session-based analytics
+    await trackSearchSession(query)
   } catch (error) {
     // Log error but don't throw - we don't want analytics to break search
     logger.error('Redisへの検索クエリのログ記録に失敗しました', { error })

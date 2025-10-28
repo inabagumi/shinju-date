@@ -2,6 +2,7 @@ import './globals.css'
 import { Analytics } from '@vercel/analytics/react'
 import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
+import PageVisitTracker from '@/components/page-visit-tracker'
 import { TimerProvider } from '@/components/timer'
 import { title as siteName, themeColor } from '@/lib/constants'
 import { ContactLink } from './_components/contact-link'
@@ -35,6 +36,7 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
         />
       </head>
       <body className="grid min-h-svh grid-rows-[auto_1fr_auto] bg-primary-foreground text-primary antialiased dark:bg-zinc-900 dark:text-774-nevy-50">
+        <PageVisitTracker />
         <Providers>
           <SVGSymbols />
 

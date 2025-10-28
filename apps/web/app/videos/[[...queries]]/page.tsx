@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import NoResults from '@/components/no-results'
+import SearchExitTracker from '@/components/search-exit-tracker'
 import SearchQueryTracker from '@/components/search-query-tracker'
 import SearchResults from '@/components/search-results'
 import { title as siteName } from '@/lib/constants'
@@ -61,7 +62,17 @@ export default async function VideosPage({
       ? `『${query}』で検索しましたが一致する動画は見つかりませんでした。`
       : '動画は見つかりませんでした。'
 
-    return <NoResults message={message} title="検索結果はありません" />
+    return (
+      <>
+        {query && (
+          <>
+            <SearchQueryTracker query={query} resultsCount={0} />
+            <SearchExitTracker hasResults={false} query={query} />
+          </>
+        )}
+        <NoResults message={message} title="検索結果はありません" />
+      </>
+    )
   }
 
   return (
@@ -69,7 +80,10 @@ export default async function VideosPage({
       <h1 className="font-semibold text-xl">{title}</h1>
 
       {query && (
-        <SearchQueryTracker query={query} resultsCount={videos.length} />
+        <>
+          <SearchQueryTracker query={query} resultsCount={videos.length} />
+          <SearchExitTracker hasResults={true} query={query} />
+        </>
       )}
 
       <SearchResults prefetchedData={[videos]} query={query} />
