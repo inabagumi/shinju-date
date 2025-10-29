@@ -428,6 +428,7 @@ export default class Scraper implements AsyncDisposable {
           created_at: this.#currentDateTime.toString(),
           deleted_at: null,
           duration: originalVideo.contentDetails.duration ?? 'P0D',
+          platform: 'youtube',
           published_at: publishedAt.toString(),
           slug: originalVideo.id,
           title: originalVideo.snippet.title ?? '',

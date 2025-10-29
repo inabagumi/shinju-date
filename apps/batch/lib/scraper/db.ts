@@ -59,6 +59,7 @@ export default class DB implements AsyncDisposable {
             created_at,
             deleted_at,
             duration,
+            platform,
             published_at,
             slug,
             thumbnail_id,
