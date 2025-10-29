@@ -28,7 +28,9 @@ export default async function getVideoByURL(url: URL): Promise<Video> {
 
   const { data: video, error } = await supabaseClient
     .from('videos')
-    .select('channel:channels!inner (id, name, slug), id, slug, title')
+    .select(
+      'channel:channels!inner (id, name, slug), id, slug, title, youtube_videos(youtube_video_id)',
+    )
     .eq('slug', videoID)
     .single()
 

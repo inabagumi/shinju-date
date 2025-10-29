@@ -12,7 +12,8 @@ const DEFAULT_SEARCH_SELECT = `
   slug,
   thumbnail:thumbnails (blur_data_url, height, path, width),
   published_at,
-  title
+  title,
+  youtube_videos (youtube_video_id)
 `
 
 export type Channel = Pick<Tables<'channels'>, 'name' | 'slug'>
@@ -28,6 +29,7 @@ export type Video = Pick<
 > & {
   channel: Channel
   thumbnail?: Thumbnail | null
+  youtube_videos: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
 }
 
 type FetchNotEndedVideosOptions = {
