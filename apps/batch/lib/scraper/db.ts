@@ -76,7 +76,7 @@ export default class DB implements AsyncDisposable {
             ),
             title,
             visible,
-            youtube_videos (
+            youtube_video:youtube_videos (
               youtube_video_id
             )
           `,

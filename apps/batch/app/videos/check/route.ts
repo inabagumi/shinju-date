@@ -56,7 +56,9 @@ async function* getSavedVideos({
   for (let i = 0; i < count; i += limit) {
     const { data: savedVideos, error } = await supabaseClient
       .from('videos')
-      .select('id, slug, thumbnails (id), youtube_videos (youtube_video_id)')
+      .select(
+        'id, slug, thumbnails (id), youtube_video:youtube_videos (youtube_video_id)',
+      )
       .is('deleted_at', null)
       .order('published_at', {
         ascending: false,

@@ -248,7 +248,7 @@ export default async function ChannelDetailPage({ params }: Props) {
           <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
             <a
               className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
-              href={`https://www.youtube.com/channel/${channel.youtube_channels?.youtube_channel_id ?? channel.slug}`}
+              href={`https://www.youtube.com/channel/${channel.youtube_channel?.youtube_channel_id ?? channel.slug}`}
               rel="noopener noreferrer"
               target="_blank"
             >

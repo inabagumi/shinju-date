@@ -8,7 +8,7 @@ export type Channel = {
   created_at: string
   updated_at: string
   deleted_at: string | null
-  youtube_channels: {
+  youtube_channel: {
     youtube_channel_id: string
   } | null
 }
@@ -21,7 +21,7 @@ const getChannel = cache(async function getChannel(
   const { data: channel, error } = await supabaseClient
     .from('channels')
     .select(
-      'id, name, slug, created_at, updated_at, deleted_at, youtube_channels(youtube_channel_id)',
+      'id, name, slug, created_at, updated_at, deleted_at, youtube_channel:youtube_channels(youtube_channel_id)',
     )
     .eq('slug', slug)
     .single()

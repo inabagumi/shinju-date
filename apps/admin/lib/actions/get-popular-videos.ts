@@ -21,7 +21,7 @@ export type PopularVideo = {
     blur_data_url: string
   } | null
   title: string
-  youtube_videos: {
+  youtube_video: {
     youtube_video_id: string
   } | null
 }
@@ -154,7 +154,7 @@ export async function getPopularVideos(
   const { data: videos, error } = await supabaseClient
     .from('videos')
     .select(
-      'id, slug, thumbnails(path, blur_data_url), title, youtube_videos(youtube_video_id)',
+      'id, slug, thumbnails(path, blur_data_url), title, youtube_video:youtube_videos(youtube_video_id)',
     )
     .in('id', videoIds)
 
@@ -179,7 +179,7 @@ export async function getPopularVideos(
         slug: video.slug,
         thumbnail: video.thumbnails,
         title: video.title,
-        youtube_videos: video.youtube_videos,
+        youtube_video: video.youtube_video,
       }
     })
     .filter(isNonNullable)

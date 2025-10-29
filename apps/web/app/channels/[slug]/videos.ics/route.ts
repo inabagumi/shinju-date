@@ -21,7 +21,7 @@ export async function GET(
   const { slug } = await params
   const { count, error } = await supabaseClient
     .from('channels')
-    .select('*, youtube_channels(youtube_channel_id)', {
+    .select('*, youtube_channel:youtube_channels(youtube_channel_id)', {
       count: 'exact',
       head: true,
     })
@@ -52,7 +52,7 @@ export async function GET(
         published_at,
         slug,
         title,
-        youtube_videos (youtube_video_id)
+        youtube_video:youtube_videos (youtube_video_id)
       `,
     )
     .eq('channels.slug', slug)

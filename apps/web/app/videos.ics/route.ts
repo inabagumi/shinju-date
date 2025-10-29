@@ -21,7 +21,7 @@ export async function GET(): Promise<Response> {
         published_at,
         slug,
         title,
-        youtube_videos (youtube_video_id)
+        youtube_video:youtube_videos (youtube_video_id)
       `,
     )
     .lt(

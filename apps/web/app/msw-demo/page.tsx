@@ -12,7 +12,7 @@ async function getDemoData() {
   const { data: videos, error } = await supabaseClient
     .from('videos')
     .select(
-      'id, title, slug, thumbnails(path, blur_data_url), youtube_videos(youtube_video_id)',
+      'id, title, slug, thumbnails(path, blur_data_url), youtube_video:youtube_videos(youtube_video_id)',
     )
     .limit(3)
 

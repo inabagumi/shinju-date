@@ -12,7 +12,7 @@ export type PopularChannel = {
   id: string
   name: string
   slug: string
-  youtube_channels: {
+  youtube_channel: {
     youtube_channel_id: string
   } | null
 }
@@ -44,7 +44,9 @@ export async function getPopularChannels(
   const channelIds = channelScores.map(([id]) => id)
   const { data: channels, error } = await supabaseClient
     .from('channels')
-    .select('id, name, slug, youtube_channels(youtube_channel_id)')
+    .select(
+      'id, name, slug, youtube_channel:youtube_channels(youtube_channel_id)',
+    )
     .in('id', channelIds)
 
   if (error) {
@@ -68,7 +70,7 @@ export async function getPopularChannels(
         id: channel.id,
         name: channel.name,
         slug: channel.slug,
-        youtube_channels: channel.youtube_channels,
+        youtube_channel: channel.youtube_channel,
       }
     })
     .filter(isNonNullable)
