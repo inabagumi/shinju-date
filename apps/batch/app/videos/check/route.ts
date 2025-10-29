@@ -83,7 +83,10 @@ type SoftDeleteRowsOptions = {
   currentDateTime: Temporal.Instant
   ids: string[]
   supabaseClient: TypedSupabaseClient
-  table: keyof Database['public']['Tables']
+  table: Exclude<
+    keyof Database['public']['Tables'],
+    'twitch_users' | 'twitch_videos' | 'youtube_channels' | 'youtube_videos'
+  >
 }
 
 async function softDeleteRows({

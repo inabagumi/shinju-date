@@ -104,6 +104,58 @@ export type Database = {
         }
         Relationships: []
       }
+      twitch_users: {
+        Row: {
+          channel_id: string
+          twitch_login_name: string | null
+          twitch_user_id: string
+        }
+        Insert: {
+          channel_id: string
+          twitch_login_name?: string | null
+          twitch_user_id: string
+        }
+        Update: {
+          channel_id?: string
+          twitch_login_name?: string | null
+          twitch_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'twitch_users_channel_id_fkey'
+            columns: ['channel_id']
+            isOneToOne: true
+            referencedRelation: 'channels'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      twitch_videos: {
+        Row: {
+          twitch_video_id: string
+          type: Database['public']['Enums']['twitch_video_type'] | null
+          video_id: string
+        }
+        Insert: {
+          twitch_video_id: string
+          type?: Database['public']['Enums']['twitch_video_type'] | null
+          video_id: string
+        }
+        Update: {
+          twitch_video_id?: string
+          type?: Database['public']['Enums']['twitch_video_type'] | null
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'twitch_videos_video_id_fkey'
+            columns: ['video_id']
+            isOneToOne: true
+            referencedRelation: 'videos'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       videos: {
         Row: {
           channel_id: string
@@ -111,6 +163,7 @@ export type Database = {
           deleted_at: string | null
           duration: string
           id: string
+          platform: Database['public']['Enums']['platform_type'] | null
           published_at: string
           slug: string
           thumbnail_id: string | null
@@ -124,6 +177,7 @@ export type Database = {
           deleted_at?: string | null
           duration: string
           id?: string
+          platform?: Database['public']['Enums']['platform_type'] | null
           published_at: string
           slug: string
           thumbnail_id?: string | null
@@ -137,6 +191,7 @@ export type Database = {
           deleted_at?: string | null
           duration?: string
           id?: string
+          platform?: Database['public']['Enums']['platform_type'] | null
           published_at?: string
           slug?: string
           thumbnail_id?: string | null
@@ -157,6 +212,55 @@ export type Database = {
             columns: ['thumbnail_id']
             isOneToOne: false
             referencedRelation: 'thumbnails'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      youtube_channels: {
+        Row: {
+          channel_id: string
+          youtube_channel_id: string
+          youtube_handle: string | null
+        }
+        Insert: {
+          channel_id: string
+          youtube_channel_id: string
+          youtube_handle?: string | null
+        }
+        Update: {
+          channel_id?: string
+          youtube_channel_id?: string
+          youtube_handle?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'youtube_channels_channel_id_fkey'
+            columns: ['channel_id']
+            isOneToOne: true
+            referencedRelation: 'channels'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      youtube_videos: {
+        Row: {
+          video_id: string
+          youtube_video_id: string
+        }
+        Insert: {
+          video_id: string
+          youtube_video_id: string
+        }
+        Update: {
+          video_id?: string
+          youtube_video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'youtube_videos_video_id_fkey'
+            columns: ['video_id']
+            isOneToOne: true
+            referencedRelation: 'videos'
             referencedColumns: ['id']
           },
         ]
@@ -190,6 +294,7 @@ export type Database = {
           deleted_at: string | null
           duration: string
           id: string
+          platform: Database['public']['Enums']['platform_type'] | null
           published_at: string
           slug: string
           thumbnail_id: string | null
@@ -212,7 +317,8 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      platform_type: 'youtube' | 'twitch'
+      twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -339,6 +445,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      platform_type: ['youtube', 'twitch'],
+      twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],
+    },
   },
 } as const
