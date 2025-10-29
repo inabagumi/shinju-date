@@ -18,7 +18,7 @@ export const DEFAULT_VALUES = {
   page: number
   sortField: VideoSortField
   sortOrder: VideoSortOrder
-  channelId: number | undefined
+  channelId: string | undefined
   deleted: boolean | undefined
   search: string | undefined
   visible: boolean | undefined
@@ -37,9 +37,7 @@ export const videoSearchParamsSchema = z.object({
       if (Array.isArray(val)) {
         val = val[0]
       }
-      if (!val) return undefined
-      const num = Number(val)
-      return Number.isNaN(num) || num < 1 ? undefined : num
+      return val || undefined
     }),
 
   // Deleted filter (true/false or undefined) - handle arrays

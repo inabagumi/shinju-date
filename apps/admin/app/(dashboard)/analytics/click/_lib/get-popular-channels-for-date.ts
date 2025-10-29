@@ -10,7 +10,7 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type PopularChannelForDate = {
   clicks: number
-  id: number
+  id: string
   name: string
   slug: string
 }
@@ -36,12 +36,12 @@ export async function getPopularChannelsForDate(
       withScores: true,
     })
 
-    const channelScores: [number, number][] = []
+    const channelScores: [string, number][] = []
     for (let i = 0; i < results.length; i += 2) {
       const channelId = results[i]
       const score = results[i + 1]
 
-      if (typeof channelId !== 'number' || typeof score !== 'number') {
+      if (typeof channelId !== 'string' || typeof score !== 'number') {
         continue
       }
 

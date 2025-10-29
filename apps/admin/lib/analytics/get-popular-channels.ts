@@ -9,7 +9,7 @@ import { _getPopularItemsFromRedis } from './_get-popular-items-from-redis'
 
 export type PopularChannel = {
   clicks: number
-  id: number
+  id: string
   name: string
   slug: string
 }
@@ -25,7 +25,7 @@ export async function getPopularChannels(
   startDate: Temporal.PlainDate,
   endDate?: Temporal.PlainDate,
 ): Promise<PopularChannel[]> {
-  const channelScores = await _getPopularItemsFromRedis<number>(
+  const channelScores = await _getPopularItemsFromRedis<string>(
     REDIS_KEYS.CLICK_CHANNEL_PREFIX,
     limit,
     startDate,

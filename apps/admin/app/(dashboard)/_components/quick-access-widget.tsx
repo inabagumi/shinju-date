@@ -17,7 +17,7 @@ export function QuickAccessWidget() {
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-semibold text-xl">クイックアクセス</h2>
         <button
-          className="lg:hidden rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 lg:hidden"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           type="button"
         >

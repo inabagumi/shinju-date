@@ -29,7 +29,7 @@ export async function getPopularVideos(
   startDate?: string,
   endDate?: string,
 ): Promise<PopularVideo[]> {
-  const videoScores: [number, number][] = []
+  const videoScores: [string, number][] = []
 
   try {
     const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
@@ -61,7 +61,7 @@ export async function getPopularVideos(
       startZoned,
     )}/${formatDate(endZoned)}`
 
-    const cachedResults = await redisClient.zrange<number[]>(
+    const cachedResults = await redisClient.zrange<string[]>(
       cacheKey,
       0,
       limit - 1,
@@ -74,9 +74,11 @@ export async function getPopularVideos(
     if (cachedResults.length > 0) {
       for (let i = 0; i < cachedResults.length; i += 2) {
         const videoId = cachedResults[i]
-        const score = cachedResults[i + 1]
+        const scoreValue = cachedResults[i + 1]
+        const score =
+          typeof scoreValue === 'string' ? parseInt(scoreValue, 10) : scoreValue
 
-        if (typeof videoId !== 'number' || typeof score !== 'number') {
+        if (typeof videoId !== 'string' || typeof score !== 'number') {
           continue
         }
 
@@ -104,7 +106,7 @@ export async function getPopularVideos(
         await pipeline.exec()
       }
 
-      const newResults = await redisClient.zrange<number[]>(
+      const newResults = await redisClient.zrange<string[]>(
         cacheKey,
         0,
         limit - 1,
@@ -116,9 +118,11 @@ export async function getPopularVideos(
 
       for (let i = 0; i < newResults.length; i += 2) {
         const videoId = newResults[i]
-        const score = newResults[i + 1]
+        const scoreValue = newResults[i + 1]
+        const score =
+          typeof scoreValue === 'string' ? parseInt(scoreValue, 10) : scoreValue
 
-        if (typeof videoId !== 'number' || typeof score !== 'number') {
+        if (typeof videoId !== 'string' || typeof score !== 'number') {
           continue
         }
 

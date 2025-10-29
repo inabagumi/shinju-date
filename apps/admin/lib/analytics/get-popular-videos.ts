@@ -22,7 +22,7 @@ export async function getPopularVideos(
   startDate: Temporal.PlainDate,
   endDate?: Temporal.PlainDate,
 ): Promise<PopularVideo[]> {
-  const videoScores = await _getPopularItemsFromRedis<number>(
+  const videoScores = await _getPopularItemsFromRedis<string>(
     REDIS_KEYS.CLICK_VIDEO_PREFIX,
     limit,
     startDate,

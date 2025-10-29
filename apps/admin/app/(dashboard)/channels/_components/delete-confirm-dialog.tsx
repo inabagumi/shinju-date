@@ -5,7 +5,7 @@ import { useState, useTransition } from 'react'
 import { deleteChannelAction } from '../_actions'
 
 type DeleteConfirmDialogProps = {
-  channelId: number
+  channelId: string
   channelName: string
 }
 

@@ -20,14 +20,14 @@ export type Video = {
   } | null
   clicks: number
   channel: {
-    id: number
+    id: string
     name: string
     slug: string
   }
 }
 
 export type VideoFilters = {
-  channelId?: number
+  channelId?: string
   deleted?: boolean
   visible?: boolean
   search?: string

@@ -66,11 +66,11 @@ export async function updateChannelAction(
 ): Promise<FormState> {
   const supabaseClient = await createSupabaseServerClient()
 
-  const idString = formData.get('id') as string
+  const id = formData.get('id') as string
   const name = formData.get('name') as string
   const slug = formData.get('slug') as string
 
-  if (!idString || !name || name.trim() === '') {
+  if (!id || !name || name.trim() === '') {
     return {
       errors: {
         name: ['チャンネル名を入力してください。'],
@@ -82,15 +82,6 @@ export async function updateChannelAction(
     return {
       errors: {
         slug: ['チャンネルIDを入力してください。'],
-      },
-    }
-  }
-
-  const id = Number.parseInt(idString, 10)
-  if (Number.isNaN(id)) {
-    return {
-      errors: {
-        generic: ['無効なIDです。'],
       },
     }
   }
@@ -129,7 +120,7 @@ export async function updateChannelAction(
   }
 }
 
-export async function deleteChannelAction(id: number): Promise<{
+export async function deleteChannelAction(id: string): Promise<{
   success: boolean
   error?: string
 }> {

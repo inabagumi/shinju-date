@@ -149,7 +149,7 @@ export async function softDeleteAction(slugs: string[]): Promise<{
     // Soft delete associated thumbnails
     const thumbnailIds = videos
       .map((video) => video.thumbnail_id)
-      .filter((id): id is number => id !== null)
+      .filter((id): id is string => id !== null)
 
     if (thumbnailIds.length > 0) {
       const { error: thumbnailError } = await supabaseClient

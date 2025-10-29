@@ -5,7 +5,7 @@ import { useState, useTransition } from 'react'
 import { deleteTermAction } from '../_actions'
 
 type DeleteConfirmDialogProps = {
-  termId: number
+  termId: string
   termName: string
 }
 

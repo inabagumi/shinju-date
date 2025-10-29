@@ -1,4 +1,3 @@
-import { formatNumber } from '@shinju-date/helpers'
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import type { Metadata } from 'next'
 import Image from 'next/image'
@@ -97,7 +96,7 @@ export default async function ChannelDetailPage({ params }: Props) {
             現在データベースに保存されている情報
           </p>
         </div>
-        <div className="border-t border-gray-200">
+        <div className="border-gray-200 border-t">
           <dl>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500 text-sm">
@@ -122,7 +121,7 @@ export default async function ChannelDetailPage({ params }: Props) {
                 データベースID
               </dt>
               <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                {formatNumber(channel.id)}
+                {channel.id}
               </dd>
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -164,7 +163,7 @@ export default async function ChannelDetailPage({ params }: Props) {
               直近に公開された動画一覧
             </p>
           </div>
-          <div className="border-t border-gray-200">
+          <div className="border-gray-200 border-t">
             {recentVideos.length === 0 ? (
               <div className="px-4 py-8 text-center text-gray-500">
                 動画がありません。
@@ -179,7 +178,7 @@ export default async function ChannelDetailPage({ params }: Props) {
                           <div className="relative h-12 w-20">
                             <Image
                               alt={video.title}
-                              className="object-cover rounded"
+                              className="rounded object-cover"
                               fill
                               sizes="80px"
                               src={
@@ -191,7 +190,7 @@ export default async function ChannelDetailPage({ params }: Props) {
                             />
                           </div>
                         ) : (
-                          <div className="flex h-12 w-20 items-center justify-center bg-gray-200 text-gray-500 text-xs rounded">
+                          <div className="flex h-12 w-20 items-center justify-center rounded bg-gray-200 text-gray-500 text-xs">
                             No Image
                           </div>
                         )}
@@ -201,7 +200,7 @@ export default async function ChannelDetailPage({ params }: Props) {
                           className="text-blue-600 hover:text-blue-800"
                           href={`/videos/${video.slug}`}
                         >
-                          <p className="font-medium text-sm truncate">
+                          <p className="truncate font-medium text-sm">
                             {video.title}
                           </p>
                         </Link>
@@ -246,9 +245,9 @@ export default async function ChannelDetailPage({ params }: Props) {
               YouTube上のオリジナルチャンネルへのリンク
             </p>
           </div>
-          <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
+          <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
             <a
-              className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 text-sm font-medium shadow-sm hover:bg-gray-50"
+              className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
               href={`https://www.youtube.com/channel/${channel.slug}`}
               rel="noopener noreferrer"
               target="_blank"

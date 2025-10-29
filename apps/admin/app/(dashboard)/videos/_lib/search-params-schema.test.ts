@@ -4,7 +4,7 @@ import { DEFAULT_VALUES, videoSearchParamsSchema } from './search-params-schema'
 describe('videoSearchParamsSchema', () => {
   it('should parse valid parameters with all fields', () => {
     const input = {
-      channelId: '123',
+      channelId: '201a9ee4-176f-4092-b769-ac0af8befb66',
       deleted: 'false',
       page: '2',
       search: 'test video',
@@ -16,7 +16,7 @@ describe('videoSearchParamsSchema', () => {
     const result = videoSearchParamsSchema.parse(input)
 
     expect(result).toEqual({
-      channelId: 123,
+      channelId: '201a9ee4-176f-4092-b769-ac0af8befb66',
       deleted: false,
       page: 2,
       search: 'test video',
@@ -90,7 +90,7 @@ describe('videoSearchParamsSchema', () => {
 
   it('should handle array inputs (URLSearchParams may provide arrays)', () => {
     const input = {
-      channelId: ['456'],
+      channelId: ['3de58e38-8314-41c1-a75a-c1658dae6d5a'],
       page: ['3'],
       search: ['multiple', 'values'], // Only first value should be used
     }
@@ -98,7 +98,7 @@ describe('videoSearchParamsSchema', () => {
     const result = videoSearchParamsSchema.parse(input)
 
     expect(result.page).toBe(3)
-    expect(result.channelId).toBe(456)
+    expect(result.channelId).toBe('3de58e38-8314-41c1-a75a-c1658dae6d5a')
     // For string fields, zod should handle array by taking first value
   })
 
@@ -111,19 +111,11 @@ describe('videoSearchParamsSchema', () => {
   })
 
   it('should coerce channelId to number correctly', () => {
-    const input = { channelId: '789' }
+    const input = { channelId: '319cb587-3b05-44d0-8ed6-2307a07e1817' }
 
     const result = videoSearchParamsSchema.parse(input)
 
-    expect(result.channelId).toBe(789)
-  })
-
-  it('should handle invalid channelId gracefully by returning undefined', () => {
-    const input = { channelId: 'not-a-number' }
-
-    const result = videoSearchParamsSchema.parse(input)
-
-    expect(result.channelId).toBeUndefined() // Should return undefined for invalid values
+    expect(result.channelId).toBe('319cb587-3b05-44d0-8ed6-2307a07e1817')
   })
 
   it('should preserve optional fields when they are undefined', () => {

@@ -1,3 +1,5 @@
+// biome-ignore-all lint/suspicious/noExplicitAny: Mocking Supabase with any type for simplicity
+
 import { HttpResponse, http } from 'msw'
 
 // Mock data for Supabase tables
@@ -386,8 +388,10 @@ export const supabaseHandlers = [
       'Content-Type': 'application/json',
     }
     if (returnCount) {
-      headers['Content-Range'] =
-        `0-${Math.max(0, filteredData.length - 1)}/${count}`
+      headers['Content-Range'] = `0-${Math.max(
+        0,
+        filteredData.length - 1,
+      )}/${count}`
     }
 
     return HttpResponse.json(filteredData, { headers })
@@ -439,8 +443,10 @@ export const supabaseHandlers = [
       'Content-Type': 'application/json',
     }
     if (returnCount) {
-      headers['Content-Range'] =
-        `0-${Math.max(0, filteredData.length - 1)}/${count}`
+      headers['Content-Range'] = `0-${Math.max(
+        0,
+        filteredData.length - 1,
+      )}/${count}`
     }
 
     return HttpResponse.json(filteredData, { headers })
@@ -492,8 +498,10 @@ export const supabaseHandlers = [
       'Content-Type': 'application/json',
     }
     if (returnCount) {
-      headers['Content-Range'] =
-        `0-${Math.max(0, filteredData.length - 1)}/${count}`
+      headers['Content-Range'] = `0-${Math.max(
+        0,
+        filteredData.length - 1,
+      )}/${count}`
     }
 
     return HttpResponse.json(filteredData, { headers })
@@ -529,8 +537,10 @@ export const supabaseHandlers = [
       'Content-Type': 'application/json',
     }
     if (returnCount) {
-      headers['Content-Range'] =
-        `0-${Math.max(0, filteredData.length - 1)}/${count}`
+      headers['Content-Range'] = `0-${Math.max(
+        0,
+        filteredData.length - 1,
+      )}/${count}`
     }
 
     return HttpResponse.json(filteredData, { headers })

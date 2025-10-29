@@ -75,7 +75,7 @@ export function VideoActionsButtons({ videoSlug, visible, isDeleted }: Props) {
     <div className="flex flex-col gap-2">
       <div className="flex gap-2">
         <button
-          className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-700 text-sm font-medium shadow-sm hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-100"
           disabled={isPending}
           onClick={handleToggleVisibility}
           type="button"
@@ -83,7 +83,7 @@ export function VideoActionsButtons({ videoSlug, visible, isDeleted }: Props) {
           {visible ? '非表示にする' : '表示する'}
         </button>
         <button
-          className="inline-flex items-center rounded-md border border-red-300 bg-white px-3 py-2 text-red-700 text-sm font-medium shadow-sm hover:bg-red-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          className="inline-flex items-center rounded-md border border-red-300 bg-white px-3 py-2 font-medium text-red-700 text-sm shadow-sm hover:bg-red-50 disabled:cursor-not-allowed disabled:bg-gray-100"
           disabled={isPending}
           onClick={handleDelete}
           type="button"

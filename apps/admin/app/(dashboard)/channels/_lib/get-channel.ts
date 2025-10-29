@@ -2,7 +2,7 @@ import { cache } from 'react'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type Channel = {
-  id: number
+  id: string
   name: string
   slug: string
   created_at: string

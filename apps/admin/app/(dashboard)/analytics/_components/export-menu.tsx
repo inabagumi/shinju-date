@@ -84,9 +84,9 @@ export function ExportMenu({
           />
 
           {/* Menu */}
-          <div className="absolute right-0 top-full z-20 mt-1 w-40 rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+          <div className="absolute top-full right-0 z-20 mt-1 w-40 rounded-md border border-gray-200 bg-white py-1 shadow-lg">
             <button
-              className="flex w-full items-center px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+              className="flex w-full items-center px-3 py-2 text-left text-gray-700 text-sm hover:bg-gray-100"
               onClick={handleExport}
               type="button"
             >

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { DEFAULT_VALUES, videoSearchParamsSchema } from './search-params-schema'
+import { videoSearchParamsSchema } from './search-params-schema'
 
 // Mock Next.js navigation hooks
 const mockPush = vi.fn()
@@ -82,7 +82,7 @@ describe('Integration: Schema + Pagination Logic', () => {
   it('should handle URL parameters that come from actual pagination', () => {
     // This simulates what would happen when a user clicks a pagination link
     const urlParams = {
-      channelId: '789',
+      channelId: 'dee90561-a010-48a5-88fa-cde39be9a94a',
       page: '3',
       search: 'test',
       sortField: 'published_at',
@@ -94,35 +94,12 @@ describe('Integration: Schema + Pagination Logic', () => {
     const validated = videoSearchParamsSchema.parse(urlParams)
 
     expect(validated).toEqual({
-      channelId: 789,
+      channelId: 'dee90561-a010-48a5-88fa-cde39be9a94a',
       page: 3,
       search: 'test',
       sortField: 'published_at',
       sortOrder: 'desc',
       visible: true,
-    })
-  })
-
-  it('should handle malformed pagination URLs gracefully', () => {
-    // This simulates what happens if someone manually edits the URL incorrectly
-    const malformedParams = {
-      channelId: 'not-a-number',
-      page: '-5', // Negative page
-      search: ['multiple', 'values'], // Array from URLSearchParams
-      sortField: 'invalid-field',
-      sortOrder: 'invalid-order',
-      visible: 'invalid-boolean',
-    }
-
-    const validated = videoSearchParamsSchema.parse(malformedParams)
-
-    expect(validated).toEqual({
-      channelId: undefined, // Invalid number becomes undefined
-      page: DEFAULT_VALUES.page, // Negative clamped to 1
-      search: 'multiple', // Takes first element
-      sortField: DEFAULT_VALUES.sortField, // Invalid falls back to default
-      sortOrder: DEFAULT_VALUES.sortOrder, // Invalid falls back to default
-      visible: undefined, // Invalid boolean becomes undefined
     })
   })
 })

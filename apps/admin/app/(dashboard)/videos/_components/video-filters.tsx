@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 
 type Channel = {
   created_at: string
-  id: number
+  id: string
   name: string
   slug: string
   updated_at: string
