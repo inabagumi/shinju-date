@@ -6,10 +6,12 @@ SHINJU DATEプロジェクトへの貢献をご検討いただき、ありがと
 
 ### 前提条件
 
-- **Node.js**: バージョン 18 以上
+- **Node.js**: バージョン 18 以上（ただし、`Array.fromAsync()` の完全なサポートには Node.js v22+ を推奨）
 - **pnpm**: パッケージマネージャー（`npm install -g pnpm` でインストール）
 - **Python**: 3.12 以上（Insights API開発時）
 - **uv**: Python依存関係管理（Insights API開発時）
+
+> **注意**: 本プロジェクトでは ECMAScript 2023 で導入された `Array.fromAsync()` を使用しています。Node.js v20 以下の環境では自動的にポリフィルが適用されますが、パフォーマンスと完全な機能を利用するには Node.js v22 以上の使用を推奨します。
 
 ### 初期セットアップ
 

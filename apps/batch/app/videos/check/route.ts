@@ -13,6 +13,8 @@ import { redisClient } from '@/lib/redis'
 import { revalidateTags } from '@/lib/revalidate'
 import { supabaseClient, type TypedSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
+// Ensure Array.fromAsync polyfill is available
+import '@shinju-date/helpers'
 
 function getMonitorSlug({ all }: { all?: boolean | undefined }) {
   return all ? '/videos/check?all=1' : '/videos/check'

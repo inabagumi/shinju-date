@@ -16,6 +16,8 @@ import {
   isValidVideo,
   YOUTUBE_DATA_API_MAX_RESULTS,
 } from './utils/helpers.js'
+// Ensure Array.fromAsync polyfill is available
+import '@shinju-date/helpers'
 
 export class YouTubeScraper implements AsyncDisposable {
   #client: youtube.Youtube
