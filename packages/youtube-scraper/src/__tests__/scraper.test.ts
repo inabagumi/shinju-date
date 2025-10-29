@@ -6,8 +6,6 @@ import type {
   YouTubePlaylistItem,
   YouTubeVideo,
 } from '../types/index.js'
-// Ensure Array.fromAsync polyfill is available
-import '@shinju-date/helpers'
 
 describe('YouTubeScraper', () => {
   describe('constructor', () => {

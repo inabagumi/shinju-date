@@ -1,7 +1,5 @@
 import type { MetadataRoute } from 'next'
 import { getAllChannels } from '@/lib/supabase'
-// Ensure Array.fromAsync polyfill is available
-import '@shinju-date/helpers'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseURL = new URL(

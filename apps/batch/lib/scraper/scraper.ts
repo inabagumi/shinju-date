@@ -8,8 +8,6 @@ import mime from 'mime'
 import { nanoid } from 'nanoid'
 import PQueue from 'p-queue'
 import sharp from 'sharp'
-// Ensure Array.fromAsync polyfill is available
-import '@shinju-date/helpers'
 import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 import DB, { type Video } from './db'

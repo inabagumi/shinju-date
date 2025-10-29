@@ -10,8 +10,6 @@ import { revalidateTags } from '@/lib/revalidate'
 import { scrape, type Video } from '@/lib/scraper'
 import { supabaseClient } from '@/lib/supabase'
 import { getChannels, youtubeClient } from '@/lib/youtube'
-// Ensure Array.fromAsync polyfill is available
-import '@shinju-date/helpers'
 
 const MONITOR_SLUG = '/videos/update'
 
