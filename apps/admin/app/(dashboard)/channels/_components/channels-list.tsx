@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
+import { ChannelActions } from './channel-actions'
 import { ChannelModal } from './channel-modal'
 
 type Channel = {
@@ -85,7 +86,7 @@ export function ChannelsList({ channels }: ChannelsListProps) {
                     {channel.slug}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <ChannelModal channel={channel} />
+                    <ChannelActions channel={channel} />
                   </td>
                 </tr>
               ))}
