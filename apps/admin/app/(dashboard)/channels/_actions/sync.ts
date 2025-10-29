@@ -16,7 +16,9 @@ export async function syncChannelWithYouTube(channelId: string): Promise<{
     // Get the channel from database
     const { data: channel, error: fetchError } = await supabaseClient
       .from('channels')
-      .select('id, name, slug')
+      .select(
+        'id, name, slug, youtube_channel:youtube_channels(youtube_channel_id)',
+      )
       .eq('id', channelId)
       .single()
 
