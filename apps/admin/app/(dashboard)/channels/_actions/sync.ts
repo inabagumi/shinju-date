@@ -17,7 +17,7 @@ export async function syncChannelWithYouTube(channelId: string): Promise<{
     const { data: channel, error: fetchError } = await supabaseClient
       .from('channels')
       .select(
-        'id, name, slug, youtube_channel:youtube_channels(youtube_channel_id)',
+        'id, name, youtube_channel:youtube_channels!inner(youtube_channel_id)',
       )
       .eq('id', channelId)
       .single()
@@ -30,9 +30,16 @@ export async function syncChannelWithYouTube(channelId: string): Promise<{
       return { error: 'チャンネルが見つかりませんでした。', success: false }
     }
 
+    if (!channel.youtube_channel?.youtube_channel_id) {
+      return {
+        error: 'このチャンネルはYouTubeチャンネルではありません。',
+        success: false,
+      }
+    }
+
     // Fetch channel data from YouTube API
     const youtubeChannels = await Array.fromAsync(
-      getChannels({ ids: [channel.slug] }),
+      getChannels({ ids: [channel.youtube_channel.youtube_channel_id] }),
     )
 
     if (youtubeChannels.length === 0) {
@@ -68,7 +75,7 @@ export async function syncChannelWithYouTube(channelId: string): Promise<{
       .upsert(
         {
           channel_id: channel.id,
-          youtube_channel_id: channel.slug,
+          youtube_channel_id: channel.youtube_channel.youtube_channel_id,
           youtube_handle: youtubeHandle,
         },
         { onConflict: 'channel_id' },

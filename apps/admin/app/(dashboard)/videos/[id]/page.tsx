@@ -199,7 +199,7 @@ export default async function VideoDetailPage({ params }: Props) {
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   <Link
                     className="text-blue-600 hover:text-blue-800"
-                    href={`/channels/${video.channel.slug}`}
+                    href={`/channels/${video.channel.id}`}
                   >
                     {video.channel.name}
                   </Link>
