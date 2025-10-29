@@ -17,10 +17,7 @@ if (typeof Array.fromAsync === 'undefined') {
     let index = 0
 
     // Handle async iterables
-    if (
-      Symbol.asyncIterator &&
-      arrayLike[Symbol.asyncIterator as keyof typeof arrayLike]
-    ) {
+    if (Symbol.asyncIterator in arrayLike) {
       for await (const item of arrayLike as AsyncIterable<T>) {
         const mappedValue = mapFn
           ? await mapFn.call(thisArg, item, index++)
@@ -31,10 +28,7 @@ if (typeof Array.fromAsync === 'undefined') {
     }
 
     // Handle regular iterables
-    if (
-      Symbol.iterator &&
-      arrayLike[Symbol.iterator as keyof typeof arrayLike]
-    ) {
+    if (Symbol.iterator in arrayLike) {
       for (const item of arrayLike as Iterable<T | Promise<T>>) {
         const resolvedItem = await Promise.resolve(item)
         const mappedValue = mapFn
@@ -54,7 +48,7 @@ if (typeof Array.fromAsync === 'undefined') {
 // Export the function for explicit import if needed
 export const fromAsync = Array.fromAsync
 
-// Augment the global Array interface
+// Type augmentation for Array.fromAsync polyfill
 declare global {
   interface ArrayConstructor {
     fromAsync<T, U = T>(
