@@ -86,10 +86,14 @@ export function ChannelModal({ channel }: ChannelModalProps) {
               <ErrorMessage className="mt-1 text-red-600 text-sm" />
             </FormField>
             <FormField name="slug">
-              <Label className="mb-2 block font-medium">チャンネルID</Label>
+              <Label className="mb-2 block font-medium">
+                YouTubeチャンネルID
+              </Label>
               <Input
                 className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
-                defaultValue={channel?.slug ?? ''}
+                defaultValue={
+                  channel?.youtube_channel?.youtube_channel_id ?? ''
+                }
                 required
               />
               <ErrorMessage className="mt-1 text-red-600 text-sm" />

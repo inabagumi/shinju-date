@@ -91,7 +91,7 @@ export async function updateChannelAction(
 
   const id = formData.get('id') as string
   const name = formData.get('name') as string
-  const slug = formData.get('slug') as string
+  const youtubeChannelId = formData.get('slug') as string // Field still named 'slug' in form for now
 
   if (!id || !name || name.trim() === '') {
     return {
@@ -101,31 +101,32 @@ export async function updateChannelAction(
     }
   }
 
-  if (!slug || slug.trim() === '') {
+  if (!youtubeChannelId || youtubeChannelId.trim() === '') {
     return {
       errors: {
-        slug: ['チャンネルIDを入力してください。'],
+        slug: ['YouTubeチャンネルIDを入力してください。'],
       },
     }
   }
 
   try {
-    // First, get the current channel data to check if slug changed
-    const { data: currentChannel, error: fetchError } = await supabaseClient
-      .from('channels')
-      .select('slug')
-      .eq('id', id)
-      .single()
+    // First, get the current youtube_channel_id to check if it changed
+    const { data: currentYoutubeChannel, error: fetchError } =
+      await supabaseClient
+        .from('youtube_channels')
+        .select('youtube_channel_id')
+        .eq('channel_id', id)
+        .single()
 
-    if (fetchError) {
+    if (fetchError && fetchError.code !== 'PGRST116') {
       throw fetchError
     }
 
+    // Update channels table (only name now)
     const { error } = await supabaseClient
       .from('channels')
       .update({
         name: name.trim(),
-        slug: slug.trim(),
       })
       .eq('id', id)
 
@@ -133,23 +134,25 @@ export async function updateChannelAction(
       throw error
     }
 
-    // Update youtube_channels if slug changed
-    if (currentChannel && currentChannel.slug !== slug.trim()) {
-      await supabaseClient
+    // Update or insert youtube_channels if youtube_channel_id changed or doesn't exist
+    if (
+      !currentYoutubeChannel ||
+      currentYoutubeChannel.youtube_channel_id !== youtubeChannelId.trim()
+    ) {
+      const { error: youtubeError } = await supabaseClient
         .from('youtube_channels')
-        .update({
-          youtube_channel_id: slug.trim(),
+        .upsert({
+          channel_id: id,
+          youtube_channel_id: youtubeChannelId.trim(),
         })
-        .eq('channel_id', id)
-        .then(({ error: youtubeError }) => {
-          if (youtubeError) {
-            logger.error('youtube_channelsテーブルの更新に失敗しました', {
-              error: youtubeError,
-              id,
-              slug: slug.trim(),
-            })
-          }
+
+      if (youtubeError) {
+        logger.error('youtube_channelsテーブルの更新に失敗しました', {
+          error: youtubeError,
+          id,
+          youtube_channel_id: youtubeChannelId.trim(),
         })
+      }
     }
 
     revalidatePath('/channels')
@@ -159,7 +162,7 @@ export async function updateChannelAction(
       error,
       id,
       name: name.trim(),
-      slug: slug.trim(),
+      youtube_channel_id: youtubeChannelId.trim(),
     })
     return {
       errors: {

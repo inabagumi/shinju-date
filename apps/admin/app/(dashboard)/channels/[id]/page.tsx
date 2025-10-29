@@ -171,7 +171,7 @@ export default async function ChannelDetailPage({ params }: Props) {
             ) : (
               <ul className="divide-y divide-gray-200">
                 {recentVideos.map((video) => (
-                  <li className="px-4 py-4" key={video.slug}>
+                  <li className="px-4 py-4" key={video.id}>
                     <div className="flex items-center space-x-4">
                       <div className="flex-shrink-0">
                         {video.thumbnail ? (
@@ -198,7 +198,7 @@ export default async function ChannelDetailPage({ params }: Props) {
                       <div className="min-w-0 flex-1">
                         <Link
                           className="text-blue-600 hover:text-blue-800"
-                          href={`/videos/${video.slug}`}
+                          href={`/videos/${video.id}`}
                         >
                           <p className="truncate font-medium text-sm">
                             {video.title}
