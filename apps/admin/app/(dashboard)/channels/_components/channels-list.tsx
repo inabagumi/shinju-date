@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { ChannelActions } from './channel-actions'
@@ -19,18 +20,32 @@ type ChannelsListProps = {
 
 export function ChannelsList({ channels }: ChannelsListProps) {
   const [searchQuery, setSearchQuery] = useState('')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
-  // Filter channels based on search query
-  const filteredChannels = useMemo(() => {
-    if (!searchQuery.trim()) return channels
+  // Filter and sort channels
+  const filteredAndSortedChannels = useMemo(() => {
+    let filtered = channels
 
-    const query = searchQuery.toLowerCase()
-    return channels.filter(
-      (channel) =>
-        channel.name.toLowerCase().includes(query) ||
-        channel.slug.toLowerCase().includes(query),
-    )
-  }, [channels, searchQuery])
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = channels.filter(
+        (channel) =>
+          channel.name.toLowerCase().includes(query) ||
+          channel.slug.toLowerCase().includes(query),
+      )
+    }
+
+    // Sort by updated_at
+    return filtered.sort((a, b) => {
+      const dateA = new Date(a.updated_at).getTime()
+      const dateB = new Date(b.updated_at).getTime()
+      return sortOrder === 'desc' ? dateB - dateA : dateA - dateB
+    })
+  }, [channels, searchQuery, sortOrder])
+
+  const toggleSortOrder = () => {
+    setSortOrder((current) => (current === 'desc' ? 'asc' : 'desc'))
+  }
 
   return (
     <div className="space-y-6 p-4">
@@ -51,7 +66,7 @@ export function ChannelsList({ channels }: ChannelsListProps) {
       </div>
 
       {/* Channels table */}
-      {filteredChannels.length === 0 ? (
+      {filteredAndSortedChannels.length === 0 ? (
         <p className="py-8 text-center text-gray-500">
           {searchQuery ? '検索結果がありません。' : 'チャンネルがありません。'}
         </p>
@@ -63,8 +78,18 @@ export function ChannelsList({ channels }: ChannelsListProps) {
                 <th className="px-4 py-3 text-left font-semibold">
                   チャンネル名
                 </th>
+                <th className="px-4 py-3 text-left font-semibold">作成日時</th>
                 <th className="px-4 py-3 text-left font-semibold">
-                  チャンネルID
+                  <button
+                    className="flex items-center gap-1 hover:text-blue-600"
+                    onClick={toggleSortOrder}
+                    type="button"
+                  >
+                    最終更新日時
+                    <span className="text-xs">
+                      {sortOrder === 'desc' ? '↓' : '↑'}
+                    </span>
+                  </button>
                 </th>
                 <th className="w-24 px-4 py-3 text-right font-semibold">
                   操作
@@ -72,18 +97,26 @@ export function ChannelsList({ channels }: ChannelsListProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-774-blue-200 bg-white">
-              {filteredChannels.map((channel) => (
+              {filteredAndSortedChannels.map((channel) => (
                 <tr className="hover:bg-774-blue-50" key={channel.id}>
                   <td className="px-4 py-3">
-                    <Link
-                      className="text-blue-600 hover:text-blue-800"
-                      href={`/channels/${channel.slug}`}
-                    >
-                      {channel.name}
-                    </Link>
+                    <div>
+                      <Link
+                        className="text-blue-600 hover:text-blue-800"
+                        href={`/channels/${channel.slug}`}
+                      >
+                        {channel.name}
+                      </Link>
+                      <div className="text-gray-500 text-xs font-mono">
+                        {channel.slug}
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-4 py-3 font-mono text-sm">
-                    {channel.slug}
+                  <td className="px-4 py-3 text-gray-600 text-sm">
+                    {formatDateTimeFromISO(channel.created_at)}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 text-sm">
+                    {formatDateTimeFromISO(channel.updated_at)}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <ChannelActions channel={channel} />

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { twMerge } from 'tailwind-merge'
 import { deleteChannelAction } from '../_actions'
 import { syncChannelWithYouTube } from '../_actions/sync'
 
@@ -37,7 +38,7 @@ export function ChannelActions({ channel }: ChannelActionsProps) {
             type: 'error',
           })
         }
-      } catch (_error) {
+      } catch {
         setMessage({ text: '予期しないエラーが発生しました。', type: 'error' })
       }
     })
@@ -67,7 +68,7 @@ export function ChannelActions({ channel }: ChannelActionsProps) {
             type: 'error',
           })
         }
-      } catch (_error) {
+      } catch {
         setMessage({ text: '予期しないエラーが発生しました。', type: 'error' })
       }
     })
@@ -96,11 +97,12 @@ export function ChannelActions({ channel }: ChannelActionsProps) {
 
       {message && (
         <div
-          className={`rounded p-2 text-xs ${
+          className={twMerge(
+            'rounded p-2 text-xs',
             message.type === 'success'
               ? 'bg-green-50 text-green-800'
-              : 'bg-red-50 text-red-800'
-          }`}
+              : 'bg-red-50 text-red-800',
+          )}
         >
           {message.text}
         </div>

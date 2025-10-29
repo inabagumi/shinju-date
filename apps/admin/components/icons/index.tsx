@@ -1,13 +1,13 @@
+import { twMerge } from 'tailwind-merge'
+
 type ChevronLeftIconProps = {
   className?: string
 }
 
-export function ChevronLeftIcon({
-  className = 'h-4 w-4',
-}: ChevronLeftIconProps) {
+export function ChevronLeftIcon({ className }: ChevronLeftIconProps) {
   return (
     <svg
-      className={className}
+      className={twMerge('h-4 w-4', className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -27,12 +27,10 @@ type ExternalLinkIconProps = {
   className?: string
 }
 
-export function ExternalLinkIcon({
-  className = 'h-4 w-4',
-}: ExternalLinkIconProps) {
+export function ExternalLinkIcon({ className }: ExternalLinkIconProps) {
   return (
     <svg
-      className={className}
+      className={twMerge('h-4 w-4', className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -52,11 +50,13 @@ type SpinnerIconProps = {
   className?: string
 }
 
-export function SpinnerIcon({
-  className = 'h-4 w-4 animate-spin',
-}: SpinnerIconProps) {
+export function SpinnerIcon({ className }: SpinnerIconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24">
+    <svg
+      className={twMerge('h-4 w-4 animate-spin', className)}
+      fill="none"
+      viewBox="0 0 24 24"
+    >
       <title>読み込み中</title>
       <circle
         className="opacity-25"

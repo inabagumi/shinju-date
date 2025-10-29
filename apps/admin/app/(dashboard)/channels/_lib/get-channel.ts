@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type Channel = {
@@ -9,7 +10,7 @@ export type Channel = {
   deleted_at: string | null
 }
 
-export default async function getChannel(
+const getChannel = cache(async function getChannel(
   slug: string,
 ): Promise<Channel | null> {
   const supabaseClient = await createSupabaseServerClient()
@@ -31,4 +32,6 @@ export default async function getChannel(
   }
 
   return channel
-}
+})
+
+export default getChannel

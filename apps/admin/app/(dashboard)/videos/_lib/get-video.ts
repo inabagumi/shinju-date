@@ -1,6 +1,7 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { range } from '@shinju-date/helpers'
 import { formatDate } from '@shinju-date/temporal-fns'
+import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
@@ -28,7 +29,7 @@ export type VideoDetail = {
   }
 }
 
-export default async function getVideo(
+const getVideo = cache(async function getVideo(
   slug: string,
 ): Promise<VideoDetail | null> {
   const supabaseClient = await createSupabaseServerClient()
@@ -89,4 +90,6 @@ export default async function getVideo(
     updated_at: video.updated_at,
     visible: video.visible,
   }
-}
+})
+
+export default getVideo

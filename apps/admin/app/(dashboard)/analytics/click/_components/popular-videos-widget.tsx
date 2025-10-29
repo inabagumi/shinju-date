@@ -67,7 +67,7 @@ function SimplePopularVideosWidget({
               <div className="min-w-0 flex-1 truncate">
                 <Link
                   className="font-medium hover:underline"
-                  href={`/videos?search=${video.slug}`}
+                  href={`/videos/${video.slug}`}
                 >
                   {video.title}
                 </Link>

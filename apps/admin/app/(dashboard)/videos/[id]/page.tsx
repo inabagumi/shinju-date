@@ -80,21 +80,21 @@ export default async function VideoDetailPage({ params }: Props) {
 
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-bold text-2xl line-clamp-2">{video.title}</h1>
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="min-w-0 flex-1">
+            <h1 className="font-bold text-2xl break-words">{video.title}</h1>
             <p className="text-gray-600">動画詳細</p>
           </div>
-          <div className="flex items-center gap-4">
-            {!isDeleted && (
+          {!isDeleted && (
+            <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
               <VideoActionsButtons
                 isDeleted={isDeleted}
                 videoSlug={video.slug}
                 visible={video.visible}
               />
-            )}
-            {!isDeleted && <SyncVideoButton videoSlug={video.slug} />}
-          </div>
+              <SyncVideoButton videoSlug={video.slug} />
+            </div>
+          )}
         </div>
       </div>
 
