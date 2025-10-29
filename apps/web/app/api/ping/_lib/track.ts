@@ -11,14 +11,17 @@ type TrackProperties = {
 }
 
 function generateTrackProperties(video: Video): TrackProperties {
-  const youtubeVideoId = video.youtube_video?.youtube_video_id ?? video.slug
+  const youtubeVideoId = video.youtube_video?.youtube_video_id
+  if (!youtubeVideoId) {
+    throw new Error('Video must have youtube_video_id')
+  }
   return {
     channel_id: video.channel.slug,
     channel_name: video.channel.name,
     provider: 'YouTube',
     title: video.title,
     url: `https://www.youtube.com/watch?v=${youtubeVideoId}`,
-    video_id: video.slug,
+    video_id: video.id,
   }
 }
 

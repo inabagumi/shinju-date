@@ -9,7 +9,7 @@ import { supabaseClient } from '@/lib/supabase'
 const DEFAULT_SEARCH_SELECT = `
   channel:channels!inner (name, slug),
   duration,
-  slug,
+  id,
   thumbnail:thumbnails (blur_data_url, height, path, width),
   published_at,
   title,
@@ -25,7 +25,7 @@ export type Thumbnail = Pick<
 
 export type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'slug' | 'published_at' | 'title'
+  'duration' | 'id' | 'published_at' | 'title'
 > & {
   channel: Channel
   thumbnail?: Thumbnail | null

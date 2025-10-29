@@ -12,7 +12,7 @@ async function getDemoData() {
   const { data: videos, error } = await supabaseClient
     .from('videos')
     .select(
-      'id, title, slug, thumbnails(path, blur_data_url), youtube_video:youtube_videos(youtube_video_id)',
+      'id, title, thumbnails(path, blur_data_url), youtube_video:youtube_videos(youtube_video_id)',
     )
     .limit(3)
 
@@ -60,7 +60,7 @@ export default async function MSWDemoPage() {
               >
                 <h3 className="mb-2 font-semibold">{video.title}</h3>
                 <p className="mb-2 text-gray-600 text-sm dark:text-gray-400">
-                  Slug: {video.slug}
+                  ID: {video.id}
                 </p>
                 {video.thumbnails && (
                   <div className="text-gray-500 text-xs">

@@ -89,7 +89,10 @@ export function createEventAttributesList(
     const [publishedAt, endedAt] = getPublishedAtAndEndedAt(video, {
       now,
     })
-    const youtubeVideoId = video.youtube_video?.youtube_video_id ?? video.slug
+    const youtubeVideoId = video.youtube_video?.youtube_video_id
+    if (!youtubeVideoId) {
+      throw new Error('Video must have youtube_video_id')
+    }
     const url = `https://www.youtube.com/watch?v=${encodeURIComponent(youtubeVideoId)}`
 
     return {
@@ -104,7 +107,7 @@ export function createEventAttributesList(
       startInputType: 'utc',
       startOutputType: 'utc',
       title: video.title,
-      uid: `${video.slug}@shinju.date`,
+      uid: `${video.id}@shinju.date`,
       url,
     }
   })
