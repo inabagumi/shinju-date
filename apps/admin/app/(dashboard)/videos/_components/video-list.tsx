@@ -322,12 +322,14 @@ export default function VideoList({ videos }: Props) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem
-                          onClick={() =>
-                            window.open(
-                              `https://www.youtube.com/watch?v=${video.youtube_video?.youtube_video_id ?? video.slug}`,
-                              '_blank',
-                            )
-                          }
+                          onClick={() => {
+                            if (video.youtube_video?.youtube_video_id) {
+                              window.open(
+                                `https://www.youtube.com/watch?v=${video.youtube_video.youtube_video_id}`,
+                                '_blank',
+                              )
+                            }
+                          }}
                         >
                           <span className="flex items-center gap-1">
                             YouTubeで見る

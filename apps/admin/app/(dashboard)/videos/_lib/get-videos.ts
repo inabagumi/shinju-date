@@ -8,7 +8,6 @@ import { escapeSearchString } from './escape-search'
 
 export type Video = {
   id: string
-  slug: string
   title: string
   visible: boolean
   deleted_at: string | null
@@ -59,7 +58,7 @@ export async function getVideos(
   let query = supabaseClient
     .from('videos')
     .select(
-      'id, slug, title, visible, deleted_at, published_at, updated_at, duration, thumbnails(path, blur_data_url), channels(id, name, slug), youtube_video:youtube_videos(youtube_video_id)',
+      'id, title, visible, deleted_at, published_at, updated_at, duration, thumbnails(path, blur_data_url), channels(id, name, slug), youtube_video:youtube_videos(youtube_video_id)',
       { count: 'exact' },
     )
 
@@ -73,9 +72,7 @@ export async function getVideos(
   // Handle text search
   if (filters?.search) {
     const escapedSearch = escapeSearchString(filters.search)
-    query = query.or(
-      `title.ilike.%${escapedSearch}%,slug.ilike.%${escapedSearch}%`,
-    )
+    query = query.ilike('title', `%${escapedSearch}%`)
   }
   // Handle deleted filter
   if (filters?.deleted === true) {
@@ -114,16 +111,14 @@ export async function getVideos(
   })
 
   // Fetch click counts for all videos for the last 7 days
-  // NOTE: Redis analytics currently use slug as the key (YouTube video ID).
-  // This maintains backwards compatibility with existing analytics data.
-  // TODO: Migrate analytics to use internal video ID as key, then remove slug dependency.
-  const videoIds = videos.map((video) => video.slug)
+  // Using video.id as the Redis key (matches the write side in increment.ts)
+  const videoIds = videos.map((video) => video.id)
   const clickCounts = await Promise.all(
-    videoIds.map(async (slug) => {
+    videoIds.map(async (id) => {
       // Sum up clicks from all 7 days
       const scores = await Promise.all(
         days.map((day) =>
-          redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, slug),
+          redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, id),
         ),
       )
       return scores.reduce<number>(
@@ -141,7 +136,6 @@ export async function getVideos(
     duration: video.duration,
     id: video.id,
     published_at: video.published_at,
-    slug: video.slug,
     thumbnail: video.thumbnails,
     title: video.title,
     updated_at: video.updated_at,

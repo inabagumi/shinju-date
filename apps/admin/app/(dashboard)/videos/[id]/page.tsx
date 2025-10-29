@@ -183,10 +183,12 @@ export default async function VideoDetailPage({ params }: Props) {
                 </dd>
               </div>
               <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="font-medium text-gray-500 text-sm">動画ID</dt>
+                <dt className="font-medium text-gray-500 text-sm">
+                  YouTube動画ID
+                </dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   <code className="rounded bg-gray-100 px-2 py-1 font-mono text-xs">
-                    {video.slug}
+                    {video.youtube_video?.youtube_video_id || 'N/A'}
                   </code>
                 </dd>
               </div>
@@ -266,15 +268,17 @@ export default async function VideoDetailPage({ params }: Props) {
             </p>
           </div>
           <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
-            <a
-              className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
-              href={`https://www.youtube.com/watch?v=${video.youtube_video?.youtube_video_id ?? video.slug}`}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              YouTubeで見る
-              <ExternalLinkIcon className="ml-2 h-4 w-4" />
-            </a>
+            {video.youtube_video?.youtube_video_id && (
+              <a
+                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
+                href={`https://www.youtube.com/watch?v=${video.youtube_video.youtube_video_id}`}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                YouTubeで見る
+                <ExternalLinkIcon className="ml-2 h-4 w-4" />
+              </a>
+            )}
           </div>
         </div>
       </div>

@@ -8,7 +8,6 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type VideoDetail = {
   id: string
-  slug: string
   title: string
   visible: boolean
   deleted_at: string | null
@@ -40,7 +39,7 @@ const getVideo = cache(async function getVideo(
   const { data: video, error } = await supabaseClient
     .from('videos')
     .select(
-      'id, slug, title, visible, deleted_at, published_at, updated_at, created_at, duration, channel_id, thumbnails(path, blur_data_url), channels(id, name, slug), youtube_video:youtube_videos(youtube_video_id)',
+      'id, title, visible, deleted_at, published_at, updated_at, created_at, duration, channel_id, thumbnails(path, blur_data_url), channels(id, name, slug), youtube_video:youtube_videos(youtube_video_id)',
     )
     .eq('id', id)
     .single()
@@ -67,12 +66,10 @@ const getVideo = cache(async function getVideo(
   })
 
   // Fetch click counts for the video for the last 7 days
-  // NOTE: Redis analytics currently use slug as the key (YouTube video ID).
-  // This maintains backwards compatibility with existing analytics data.
-  // TODO: Migrate analytics to use internal video ID as key, then remove slug dependency.
+  // Using video.id as the Redis key (matches the write side in increment.ts)
   const scores = await Promise.all(
     days.map((day) =>
-      redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, video.slug),
+      redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, video.id),
     ),
   )
 
@@ -90,7 +87,6 @@ const getVideo = cache(async function getVideo(
     duration: video.duration,
     id: video.id,
     published_at: video.published_at,
-    slug: video.slug,
     thumbnail: video.thumbnails,
     title: video.title,
     updated_at: video.updated_at,
