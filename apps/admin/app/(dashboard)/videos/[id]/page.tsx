@@ -89,7 +89,7 @@ export default async function VideoDetailPage({ params }: Props) {
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
               <VideoActionsButtons
                 isDeleted={isDeleted}
-                videoSlug={video.slug}
+                videoId={video.id}
                 visible={video.visible}
               />
               <SyncVideoButton videoId={video.id} />
