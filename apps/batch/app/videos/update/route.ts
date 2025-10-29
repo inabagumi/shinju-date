@@ -9,11 +9,7 @@ import { redisClient } from '@/lib/redis'
 import { revalidateTags } from '@/lib/revalidate'
 import { scrape, type Video } from '@/lib/scraper'
 import { supabaseClient } from '@/lib/supabase'
-import {
-  type FilteredYouTubeChannel,
-  getChannels,
-  youtubeClient,
-} from '@/lib/youtube'
+import { getChannels, youtubeClient } from '@/lib/youtube'
 
 const MONITOR_SLUG = '/videos/update'
 
@@ -87,13 +83,11 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const channelIDs = savedChannels.map((savedChannel) => savedChannel.slug)
-  const channels: FilteredYouTubeChannel[] = []
-
-  for await (const channel of getChannels({
-    ids: channelIDs,
-  })) {
-    channels.push(channel)
-  }
+  const channels = await Array.fromAsync(
+    getChannels({
+      ids: channelIDs,
+    }),
+  )
 
   if (channels.length < 1) {
     throw new TypeError('There are no channels.')
