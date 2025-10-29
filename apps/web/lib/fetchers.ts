@@ -117,7 +117,7 @@ async function getDefaultBaseTime() {
 }
 
 type FetchVideosByChannelIDsOptions = {
-  channelIDs?: number[] | undefined
+  channelIDs?: string[] | undefined
   query?: string
   until?: bigint | undefined
 }

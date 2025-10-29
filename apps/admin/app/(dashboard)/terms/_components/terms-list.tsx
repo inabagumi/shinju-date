@@ -6,7 +6,7 @@ import { DeleteConfirmDialog } from './delete-confirm-dialog'
 import { TermModal } from './term-modal'
 
 type Term = {
-  id: number
+  id: string
   term: string
   readings: string[]
   synonyms: string[]

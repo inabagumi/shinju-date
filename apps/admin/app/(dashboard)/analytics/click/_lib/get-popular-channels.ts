@@ -15,7 +15,7 @@ const POPULAR_CHANNELS_CACHE_TTL_SECONDS = 60 * 10 // 10 minutes
 
 export type PopularChannel = {
   clicks: number
-  id: number
+  id: string
   name: string
   slug: string
 }
@@ -33,7 +33,7 @@ export async function getPopularChannels(
   startDate?: string,
   endDate?: string,
 ): Promise<PopularChannel[]> {
-  const channelScores: [number, number][] = []
+  const channelScores: [string, number][] = []
 
   try {
     const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
@@ -65,7 +65,7 @@ export async function getPopularChannels(
       startZoned,
     )}/${formatDate(endZoned)}`
 
-    const cachedResults = await redisClient.zrange<number[]>(
+    const cachedResults = await redisClient.zrange<string[]>(
       cacheKey,
       0,
       limit - 1,
@@ -78,9 +78,11 @@ export async function getPopularChannels(
     if (cachedResults.length > 0) {
       for (let i = 0; i < cachedResults.length; i += 2) {
         const channelId = cachedResults[i]
-        const score = cachedResults[i + 1]
+        const scoreValue = cachedResults[i + 1]
+        const score =
+          typeof scoreValue === 'string' ? parseInt(scoreValue, 10) : scoreValue
 
-        if (typeof channelId !== 'number' || typeof score !== 'number') {
+        if (typeof channelId !== 'string' || typeof score !== 'number') {
           continue
         }
 
@@ -108,7 +110,7 @@ export async function getPopularChannels(
         await pipeline.exec()
       }
 
-      const newResults = await redisClient.zrange<number[]>(
+      const newResults = await redisClient.zrange<string[]>(
         cacheKey,
         0,
         limit - 1,
@@ -120,9 +122,11 @@ export async function getPopularChannels(
 
       for (let i = 0; i < newResults.length; i += 2) {
         const channelId = newResults[i]
-        const score = newResults[i + 1]
+        const scoreValue = newResults[i + 1]
+        const score =
+          typeof scoreValue === 'string' ? parseInt(scoreValue, 10) : scoreValue
 
-        if (typeof channelId !== 'number' || typeof score !== 'number') {
+        if (typeof channelId !== 'string' || typeof score !== 'number') {
           continue
         }
 

@@ -20,11 +20,7 @@ export const metadata: Metadata = {
   title: '動画管理',
 }
 
-type Props = {
-  searchParams: Promise<Record<string, string | string[] | undefined>>
-}
-
-export default async function VideosPage({ searchParams }: Props) {
+export default async function VideosPage({ searchParams }: PageProps<'/'>) {
   const rawParams = await searchParams
 
   // Validate and parse search parameters using zod schema

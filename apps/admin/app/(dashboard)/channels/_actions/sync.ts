@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
-export async function syncChannelWithYouTube(channelId: number): Promise<{
+export async function syncChannelWithYouTube(channelId: string): Promise<{
   success: boolean
   error?: string
 }> {

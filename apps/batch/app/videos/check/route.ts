@@ -21,11 +21,11 @@ function getMonitorSlug({ all }: { all?: boolean | undefined }) {
 export const maxDuration = 120
 
 type Thumbnail = {
-  id: number
+  id: string
 }
 
 type Video = {
-  id: number
+  id: string
   slug: string
   thumbnails: Thumbnail[] | Thumbnail | null
 }
@@ -81,7 +81,7 @@ async function* getSavedVideos({
 
 type SoftDeleteRowsOptions = {
   currentDateTime: Temporal.Instant
-  ids: number[]
+  ids: string[]
   supabaseClient: TypedSupabaseClient
   table: keyof Database['public']['Tables']
 }
@@ -93,7 +93,7 @@ async function softDeleteRows({
   table,
 }: SoftDeleteRowsOptions): Promise<
   {
-    id: number
+    id: string
   }[]
 > {
   const { data, error } = await supabaseClient
@@ -127,7 +127,7 @@ function deleteVideos({
 }: DeleteOptions): Promise<
   PromiseSettledResult<
     {
-      id: number
+      id: string
     }[]
   >[]
 > {

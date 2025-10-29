@@ -111,7 +111,7 @@ export class Thumbnail {
     options,
     originalVideos,
     savedVideos,
-  }: UpsertThumbnailsOptions): Promise<{ id: number; path: string }[]> {
+  }: UpsertThumbnailsOptions): Promise<{ id: string; path: string }[]> {
     const queue = new PQueue({
       concurrency: 12,
       interval: 250,

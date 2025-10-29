@@ -90,7 +90,7 @@ export default class DB implements AsyncDisposable {
 
   async upsertThumbnails(values: TablesInsert<'thumbnails'>[]): Promise<
     {
-      id: number
+      id: string
       path: string
     }[]
   > {
@@ -126,7 +126,7 @@ export default class DB implements AsyncDisposable {
     ])
 
     const thumbnails: {
-      id: number
+      id: string
       path: string
     }[] = []
 

@@ -82,7 +82,7 @@ export default async function VideoDetailPage({ params }: Props) {
       <div className="mb-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0 flex-1">
-            <h1 className="font-bold text-2xl break-words">{video.title}</h1>
+            <h1 className="break-words font-bold text-2xl">{video.title}</h1>
             <p className="text-gray-600">動画詳細</p>
           </div>
           {!isDeleted && (
@@ -124,7 +124,7 @@ export default async function VideoDetailPage({ params }: Props) {
                 サムネイル
               </h3>
             </div>
-            <div className="border-t border-gray-200 p-4">
+            <div className="border-gray-200 border-t p-4">
               {video.thumbnail ? (
                 <div className="relative aspect-video w-full">
                   <Image
@@ -154,7 +154,7 @@ export default async function VideoDetailPage({ params }: Props) {
                 ステータス
               </h3>
             </div>
-            <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
+            <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
               <span
                 className={`inline-flex rounded-full px-2 py-1 font-semibold text-xs leading-5 ${getStatusColor(video)}`}
               >
@@ -174,7 +174,7 @@ export default async function VideoDetailPage({ params }: Props) {
               現在データベースに保存されている情報
             </p>
           </div>
-          <div className="border-t border-gray-200">
+          <div className="border-gray-200 border-t">
             <dl>
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">タイトル</dt>
@@ -265,9 +265,9 @@ export default async function VideoDetailPage({ params }: Props) {
               YouTube上のオリジナル動画へのリンク
             </p>
           </div>
-          <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
+          <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
             <a
-              className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 text-sm font-medium shadow-sm hover:bg-gray-50"
+              className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
               href={`https://www.youtube.com/watch?v=${video.slug}`}
               rel="noopener noreferrer"
               target="_blank"

@@ -34,17 +34,19 @@ export async function getPopularVideosForDate(
     const dateKey = formatDate(zonedDate)
     const key = `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${dateKey}`
 
-    const results = await redisClient.zrange<number[]>(key, 0, limit - 1, {
+    const results = await redisClient.zrange<string[]>(key, 0, limit - 1, {
       rev: true,
       withScores: true,
     })
 
-    const videoScores: [number, number][] = []
+    const videoScores: [string, number][] = []
     for (let i = 0; i < results.length; i += 2) {
       const videoId = results[i]
-      const score = results[i + 1]
+      const scoreValue = results[i + 1]
+      const score =
+        typeof scoreValue === 'string' ? parseInt(scoreValue, 10) : scoreValue
 
-      if (typeof videoId !== 'number' || typeof score !== 'number') {
+      if (typeof videoId !== 'string' || typeof score !== 'number') {
         continue
       }
 

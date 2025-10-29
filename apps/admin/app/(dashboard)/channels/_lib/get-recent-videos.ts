@@ -13,7 +13,7 @@ export type RecentVideo = {
 }
 
 export default async function getRecentVideosForChannel(
-  channelId: number,
+  channelId: string,
   limit = 5,
 ): Promise<RecentVideo[]> {
   const supabaseClient = await createSupabaseServerClient()

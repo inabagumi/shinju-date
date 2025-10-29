@@ -66,22 +66,13 @@ export async function updateTermAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const idString = formData.get('id') as string
+  const id = formData.get('id') as string
   const term = formData.get('term') as string
 
-  if (!idString || !term || term.trim() === '') {
+  if (!id || !term || term.trim() === '') {
     return {
       errors: {
         term: ['用語を入力してください。'],
-      },
-    }
-  }
-
-  const id = Number.parseInt(idString, 10)
-  if (Number.isNaN(id)) {
-    return {
-      errors: {
-        generic: ['無効なIDです。'],
       },
     }
   }
@@ -132,7 +123,7 @@ export async function updateTermAction(
   }
 }
 
-export async function deleteTermAction(id: number): Promise<{
+export async function deleteTermAction(id: string): Promise<{
   success: boolean
   error?: string
 }> {

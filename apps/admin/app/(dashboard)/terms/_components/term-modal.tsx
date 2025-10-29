@@ -15,7 +15,7 @@ import { createTermAction, updateTermAction } from '../_actions'
 import { SortableInputList } from './sortable-input-list'
 
 type Term = {
-  id: number
+  id: string
   term: string
   readings: string[]
   synonyms: string[]

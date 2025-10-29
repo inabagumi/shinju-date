@@ -7,7 +7,7 @@ import { redisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type VideoDetail = {
-  id: number
+  id: string
   slug: string
   title: string
   visible: boolean
@@ -16,14 +16,14 @@ export type VideoDetail = {
   updated_at: string
   created_at: string
   duration: string
-  channel_id: number
+  channel_id: string
   thumbnail: {
     path: string
     blur_data_url: string
   } | null
   clicks: number
   channel: {
-    id: number
+    id: string
     name: string
     slug: string
   }

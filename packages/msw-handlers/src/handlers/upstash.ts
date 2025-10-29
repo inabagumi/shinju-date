@@ -1,3 +1,5 @@
+// biome-ignore-all lint/suspicious/noExplicitAny: Mocking Redis with any type for simplicity
+
 import { HttpResponse, http } from 'msw'
 
 // Mock Redis store

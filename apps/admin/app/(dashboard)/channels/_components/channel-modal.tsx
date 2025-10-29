@@ -15,7 +15,7 @@ import { createChannelAction, updateChannelAction } from '../_actions'
 import { DeleteConfirmDialog } from './delete-confirm-dialog'
 
 type Channel = {
-  id: number
+  id: string
   name: string
   slug: string
 }

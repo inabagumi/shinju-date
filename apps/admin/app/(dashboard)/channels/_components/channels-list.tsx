@@ -7,7 +7,7 @@ import { ChannelActions } from './channel-actions'
 import { ChannelModal } from './channel-modal'
 
 type Channel = {
-  id: number
+  id: string
   name: string
   slug: string
   created_at: string
@@ -107,7 +107,7 @@ export function ChannelsList({ channels }: ChannelsListProps) {
                       >
                         {channel.name}
                       </Link>
-                      <div className="text-gray-500 text-xs font-mono">
+                      <div className="font-mono text-gray-500 text-xs">
                         {channel.slug}
                       </div>
                     </div>
