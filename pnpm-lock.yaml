@@ -68,6 +68,9 @@ importers:
       '@shinju-date/temporal-fns':
         specifier: workspace:*
         version: link:../../packages/temporal-fns
+      '@shinju-date/youtube-api-client':
+        specifier: workspace:*
+        version: link:../../packages/youtube-api-client
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
         version: 0.3.0(@supabase/supabase-js@2.76.1)

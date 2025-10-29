@@ -255,9 +255,14 @@ export default function VideoList({ videos }: Props) {
                     )}
                   </td>
                   <td className="max-w-xs p-3">
-                    <div className="line-clamp-2" title={video.title}>
-                      {video.title}
-                    </div>
+                    <Link
+                      className="text-blue-600 hover:text-blue-800"
+                      href={`/videos/${video.slug}`}
+                    >
+                      <div className="line-clamp-2" title={video.title}>
+                        {video.title}
+                      </div>
+                    </Link>
                   </td>
                   <td className="p-3">
                     <span className="text-gray-600 text-sm">

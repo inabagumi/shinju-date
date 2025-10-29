@@ -67,7 +67,7 @@ function SimplePopularChannelsWidget({
               <div className="min-w-0 flex-1 truncate">
                 <Link
                   className="font-medium hover:underline"
-                  href={`/videos?channelId=${channel.id}`}
+                  href={`/channels/${channel.slug}`}
                 >
                   {channel.name}
                 </Link>

@@ -13,6 +13,7 @@
     "@shinju-date/helpers": "workspace:*",
     "@shinju-date/logger": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
+    "@shinju-date/youtube-api-client": "workspace:*",
     "@supabase/sentry-js-integration": "0.3.0",
     "@supabase/ssr": "0.7.0",
     "@supabase/supabase-js": "2.76.1",
