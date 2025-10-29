@@ -15,6 +15,7 @@ type Video = Pick<
   'duration' | 'published_at' | 'slug' | 'title'
 > & {
   channel: Channel
+  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
 }
 
 type GetPublishedAtAndEndedAtOptions = {
@@ -88,7 +89,8 @@ export function createEventAttributesList(
     const [publishedAt, endedAt] = getPublishedAtAndEndedAt(video, {
       now,
     })
-    const url = `https://www.youtube.com/watch?v=${encodeURIComponent(video.slug)}`
+    const youtubeVideoId = video.youtube_video?.youtube_video_id ?? video.slug
+    const url = `https://www.youtube.com/watch?v=${encodeURIComponent(youtubeVideoId)}`
 
     return {
       calName: video.channel.name,

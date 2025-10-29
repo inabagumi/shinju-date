@@ -61,7 +61,9 @@ export async function POST(request: Request): Promise<Response> {
   const currentDateTime = Temporal.Now.instant()
   const { data: channels, error } = await supabaseClient
     .from('channels')
-    .select('id, name, slug')
+    .select(
+      'id, name, slug, youtube_channel:youtube_channels(youtube_channel_id)',
+    )
     .is('deleted_at', null)
 
   if (error) {

@@ -11,7 +11,9 @@ async function getDemoData() {
   // This will be intercepted by MSW in development
   const { data: videos, error } = await supabaseClient
     .from('videos')
-    .select('id, title, slug, thumbnails(path, blur_data_url)')
+    .select(
+      'id, title, slug, thumbnails(path, blur_data_url), youtube_video:youtube_videos(youtube_video_id)',
+    )
     .limit(3)
 
   if (error) {

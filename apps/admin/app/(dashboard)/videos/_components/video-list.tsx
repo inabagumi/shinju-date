@@ -327,7 +327,7 @@ export default function VideoList({ videos }: Props) {
                         <DropdownMenuItem
                           onClick={() =>
                             window.open(
-                              `https://www.youtube.com/watch?v=${video.slug}`,
+                              `https://www.youtube.com/watch?v=${video.youtube_video?.youtube_video_id ?? video.slug}`,
                               '_blank',
                             )
                           }

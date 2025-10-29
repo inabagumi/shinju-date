@@ -75,7 +75,10 @@ export default class DB implements AsyncDisposable {
               width
             ),
             title,
-            visible
+            visible,
+            youtube_video:youtube_videos (
+              youtube_video_id
+            )
           `,
         )
         .in('slug', ids.slice(i, i + 100))

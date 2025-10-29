@@ -5,7 +5,9 @@ export default async function getChannels() {
 
   const { data: channels, error } = await supabaseClient
     .from('channels')
-    .select('id, name, slug, created_at, updated_at')
+    .select(
+      'id, name, slug, created_at, updated_at, youtube_channel:youtube_channels(youtube_channel_id)',
+    )
     .is('deleted_at', null)
     .order('name', {
       ascending: true,

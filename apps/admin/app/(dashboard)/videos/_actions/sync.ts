@@ -16,7 +16,9 @@ export async function syncVideoWithYouTube(videoSlug: string): Promise<{
     // Get the video from database
     const { data: video, error: fetchError } = await supabaseClient
       .from('videos')
-      .select('id, slug, title, visible, duration, published_at')
+      .select(
+        'id, slug, title, visible, duration, published_at, youtube_video:youtube_videos(youtube_video_id)',
+      )
       .eq('slug', videoSlug)
       .single()
 

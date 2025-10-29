@@ -73,7 +73,7 @@ export async function PopularVideosWidget() {
                 </Link>
                 <a
                   className="flex items-center justify-center rounded border border-gray-300 bg-white p-1 transition-colors hover:bg-gray-50"
-                  href={`https://www.youtube.com/watch?v=${video.slug}`}
+                  href={`https://www.youtube.com/watch?v=${video.youtube_video?.youtube_video_id ?? video.slug}`}
                   rel="noopener noreferrer"
                   target="_blank"
                 >

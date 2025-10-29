@@ -15,6 +15,9 @@ export type PopularVideo = {
     blur_data_url: string
   } | null
   title: string
+  youtube_video: {
+    youtube_video_id: string
+  } | null
 }
 
 export async function getPopularVideos(
@@ -38,7 +41,9 @@ export async function getPopularVideos(
   const videoIds = videoScores.map(([id]) => id)
   const { data: videos, error } = await supabaseClient
     .from('videos')
-    .select('id, slug, thumbnails(path, blur_data_url), title')
+    .select(
+      'id, slug, thumbnails(path, blur_data_url), title, youtube_video:youtube_videos(youtube_video_id)',
+    )
     .in('id', videoIds)
 
   if (error) {
@@ -62,6 +67,7 @@ export async function getPopularVideos(
         slug: video.slug,
         thumbnail: video.thumbnails,
         title: video.title,
+        youtube_video: video.youtube_video,
       }
     })
     .filter(isNonNullable)

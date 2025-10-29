@@ -6,19 +6,24 @@ import { supabaseClient } from '@/lib/supabase'
 import FormattedTime from './formatted-time'
 import LiveNow from './live-now'
 
-function getThumbnailURL({
-  slug,
-  thumbnail,
-}: Video): [src: string, blurDataURL: string | undefined] {
-  if (!thumbnail) {
-    return [`https://i.ytimg.com/vi/${slug}/maxresdefault.jpg`, undefined]
+function getThumbnailURL(
+  video: Video,
+): [src: string, blurDataURL: string | undefined] {
+  if (!video.thumbnail) {
+    const youtubeVideoId = video.youtube_video?.youtube_video_id ?? video.slug
+    return [
+      `https://i.ytimg.com/vi/${youtubeVideoId}/maxresdefault.jpg`,
+      undefined,
+    ]
   }
 
   const {
     data: { publicUrl: url },
-  } = supabaseClient.storage.from('thumbnails').getPublicUrl(thumbnail.path)
+  } = supabaseClient.storage
+    .from('thumbnails')
+    .getPublicUrl(video.thumbnail.path)
 
-  return [url, thumbnail?.blur_data_url]
+  return [url, video.thumbnail.blur_data_url]
 }
 
 function formatDuration(duration: Temporal.Duration): string {
@@ -82,11 +87,12 @@ export default function VideoCard({
     value.published_at,
   ).toZonedDateTimeISO(timeZone)
   const duration = Temporal.Duration.from(value?.duration ?? 'P0D')
+  const youtubeVideoId = value.youtube_video?.youtube_video_id ?? value.slug
 
   return (
     <a
       className="flex flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none"
-      href={`https://www.youtube.com/watch?v=${encodeURIComponent(value.slug)}`}
+      href={`https://www.youtube.com/watch?v=${encodeURIComponent(youtubeVideoId)}`}
       ping="/api/ping"
       rel="noopener noreferrer"
       target="_blank"
