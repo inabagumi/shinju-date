@@ -44,6 +44,14 @@ export async function syncVideoWithYouTube(videoSlug: string): Promise<{
 
     const youtubeVideo = youtubeVideos[0]
 
+    if (!youtubeVideo) {
+      return {
+        error:
+          'YouTubeで動画が見つかりませんでした。動画が削除されている可能性があります。',
+        success: false,
+      }
+    }
+
     // Check if snippet and contentDetails exist
     if (!youtubeVideo.snippet?.title || !youtubeVideo.contentDetails) {
       return {
@@ -63,14 +71,14 @@ export async function syncVideoWithYouTube(videoSlug: string): Promise<{
 
     // Check title
     if (youtubeVideo.snippet.title !== video.title) {
-      updateData.title = youtubeVideo.snippet.title
+      updateData['title'] = youtubeVideo.snippet.title
       hasChanges = true
     }
 
     // Check duration
     const youtubeDuration = youtubeVideo.contentDetails.duration ?? 'P0D'
     if (youtubeDuration !== video.duration) {
-      updateData.duration = youtubeDuration
+      updateData['duration'] = youtubeDuration
       hasChanges = true
     }
 
@@ -85,7 +93,7 @@ export async function syncVideoWithYouTube(videoSlug: string): Promise<{
       const currentPublishedAt = Temporal.Instant.from(video.published_at)
 
       if (!publishedAt.equals(currentPublishedAt)) {
-        updateData.published_at = publishedAt.toString()
+        updateData['published_at'] = publishedAt.toString()
         hasChanges = true
       }
     }

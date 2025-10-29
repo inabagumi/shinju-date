@@ -44,6 +44,14 @@ export async function syncChannelWithYouTube(channelId: number): Promise<{
 
     const youtubeChannel = youtubeChannels[0]
 
+    if (!youtubeChannel) {
+      return {
+        error:
+          'YouTubeでチャンネルが見つかりませんでした。チャンネルIDが正しいか確認してください。',
+        success: false,
+      }
+    }
+
     // Check if snippet exists and has title
     if (!youtubeChannel.snippet?.title) {
       return {
