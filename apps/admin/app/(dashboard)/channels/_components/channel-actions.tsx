@@ -77,7 +77,7 @@ export function ChannelActions({ channel }: ChannelActionsProps) {
     <div className="flex flex-col gap-2">
       <div className="flex gap-1">
         <button
-          className="rounded bg-blue-50 px-2 py-1 text-blue-600 text-xs hover:bg-blue-100 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400"
+          className="rounded bg-blue-50 px-2 py-1 text-blue-600 text-xs hover:bg-blue-100 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400 whitespace-nowrap"
           disabled={isPending}
           onClick={handleSync}
           type="button"
@@ -85,7 +85,7 @@ export function ChannelActions({ channel }: ChannelActionsProps) {
           同期
         </button>
         <button
-          className="rounded bg-red-50 px-2 py-1 text-red-600 text-xs hover:bg-red-100 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400"
+          className="rounded bg-red-50 px-2 py-1 text-red-600 text-xs hover:bg-red-100 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400 whitespace-nowrap"
           disabled={isPending}
           onClick={handleDelete}
           type="button"
