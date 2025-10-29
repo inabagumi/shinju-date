@@ -31,14 +31,37 @@ export async function createChannelAction(
   }
 
   try {
-    const { error } = await supabaseClient.from('channels').insert({
-      name: name.trim(),
-      slug: slug.trim(),
-    })
+    const { data: newChannel, error } = await supabaseClient
+      .from('channels')
+      .insert({
+        name: name.trim(),
+        slug: slug.trim(),
+      })
+      .select('id')
+      .single()
 
     if (error) {
       throw error
     }
+
+    // Dual-write to youtube_channels table
+    // Note: youtube_handle is null for manually created channels initially
+    // It will be populated when the channel sync runs
+    await supabaseClient
+      .from('youtube_channels')
+      .insert({
+        channel_id: newChannel.id,
+        youtube_channel_id: slug.trim(),
+        youtube_handle: null,
+      })
+      .then(({ error: youtubeError }) => {
+        if (youtubeError) {
+          logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
+            error: youtubeError,
+            slug: slug.trim(),
+          })
+        }
+      })
 
     revalidatePath('/channels')
     return {}
@@ -87,6 +110,17 @@ export async function updateChannelAction(
   }
 
   try {
+    // First, get the current channel data to check if slug changed
+    const { data: currentChannel, error: fetchError } = await supabaseClient
+      .from('channels')
+      .select('slug')
+      .eq('id', id)
+      .single()
+
+    if (fetchError) {
+      throw fetchError
+    }
+
     const { error } = await supabaseClient
       .from('channels')
       .update({
@@ -97,6 +131,25 @@ export async function updateChannelAction(
 
     if (error) {
       throw error
+    }
+
+    // Update youtube_channels if slug changed
+    if (currentChannel && currentChannel.slug !== slug.trim()) {
+      await supabaseClient
+        .from('youtube_channels')
+        .update({
+          youtube_channel_id: slug.trim(),
+        })
+        .eq('channel_id', id)
+        .then(({ error: youtubeError }) => {
+          if (youtubeError) {
+            logger.error('youtube_channelsテーブルの更新に失敗しました', {
+              error: youtubeError,
+              id,
+              slug: slug.trim(),
+            })
+          }
+        })
     }
 
     revalidatePath('/channels')
