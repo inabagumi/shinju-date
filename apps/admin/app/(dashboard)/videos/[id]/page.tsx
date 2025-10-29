@@ -92,7 +92,7 @@ export default async function VideoDetailPage({ params }: Props) {
                 videoSlug={video.slug}
                 visible={video.visible}
               />
-              <SyncVideoButton videoSlug={video.slug} />
+              <SyncVideoButton videoId={video.id} />
             </div>
           )}
         </div>
