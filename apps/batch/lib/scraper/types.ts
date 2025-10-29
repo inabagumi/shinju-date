@@ -16,6 +16,7 @@ export type SavedThumbnail = Omit<Tables<'thumbnails'>, 'created_at'>
  */
 export type SavedVideo = Omit<Tables<'videos'>, 'channel_id' | 'updated_at'> & {
   thumbnails: SavedThumbnail | SavedThumbnail[] | null
+  youtube_video?: { youtube_video_id: string } | null
 }
 
 /**

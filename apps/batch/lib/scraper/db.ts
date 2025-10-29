@@ -53,35 +53,34 @@ export default class DB implements AsyncDisposable {
   ): AsyncGenerator<SavedVideo, void, undefined> {
     for (let i = 0; i < ids.length; i += 100) {
       const { data: videos, error } = await this.#supabaseClient
-        .from('videos')
+        .from('youtube_videos')
         .select(
           `
-            id,
-            created_at,
-            deleted_at,
-            duration,
-            platform,
-            published_at,
-            slug,
-            thumbnail_id,
-            thumbnails (
-              blur_data_url,
-              deleted_at,
-              etag,
-              height,
+            video:videos!inner (
               id,
-              path,
-              updated_at,
-              width
+              created_at,
+              deleted_at,
+              duration,
+              platform,
+              published_at,
+              thumbnail_id,
+              thumbnails (
+                blur_data_url,
+                deleted_at,
+                etag,
+                height,
+                id,
+                path,
+                updated_at,
+                width
+              ),
+              title,
+              visible
             ),
-            title,
-            visible,
-            youtube_video:youtube_videos (
-              youtube_video_id
-            )
+            youtube_video_id
           `,
         )
-        .in('slug', ids.slice(i, i + 100))
+        .in('youtube_video_id', ids.slice(i, i + 100))
 
       if (error) {
         throw new TypeError(error.message, {
@@ -89,7 +88,18 @@ export default class DB implements AsyncDisposable {
         })
       }
 
-      yield* videos
+      // Transform the response to match expected SavedVideo structure
+      const transformedVideos = videos.map((row) => {
+        const video = Array.isArray(row.video) ? row.video[0] : row.video
+        return {
+          ...video,
+          youtube_video: {
+            youtube_video_id: row.youtube_video_id,
+          },
+        }
+      })
+
+      yield* transformedVideos
     }
   }
 

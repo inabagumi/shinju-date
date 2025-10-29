@@ -119,7 +119,8 @@ export class Thumbnail {
     const results = await Promise.allSettled(
       originalVideos.map((originalVideo) => {
         const savedVideo = savedVideos.find(
-          (savedVideo) => savedVideo.slug === originalVideo.id,
+          (savedVideo) =>
+            savedVideo.youtube_video?.youtube_video_id === originalVideo.id,
         )
         const savedThumbnail = savedVideo?.thumbnails
           ? Array.isArray(savedVideo.thumbnails)
@@ -363,7 +364,8 @@ export default class Scraper implements AsyncDisposable {
     const values = originalVideos
       .map<TablesInsert<'videos'> | null>((originalVideo) => {
         const savedVideo = savedVideos.find(
-          (savedVideo) => savedVideo.slug === originalVideo.id,
+          (savedVideo) =>
+            savedVideo.youtube_video?.youtube_video_id === originalVideo.id,
         )
         const thumbnail = thumbnails.find((thumbnail) =>
           thumbnail.path.startsWith(`${originalVideo.id}/`),
