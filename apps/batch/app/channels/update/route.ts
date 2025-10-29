@@ -14,7 +14,7 @@ const MONITOR_SLUG = '/channels/update'
 
 export const maxDuration = 120
 
-type Channel = Pick<Tables<'channels'>, 'name' | 'slug'>
+type Channel = Pick<Tables<'channels'>, 'id' | 'name' | 'slug'>
 
 export async function POST(request: Request): Promise<Response> {
   const cronSecure = process.env['CRON_SECRET']
@@ -61,7 +61,7 @@ export async function POST(request: Request): Promise<Response> {
   const currentDateTime = Temporal.Now.instant()
   const { data: channels, error } = await supabaseClient
     .from('channels')
-    .select('name, slug')
+    .select('id, name, slug')
     .is('deleted_at', null)
 
   if (error) {
@@ -115,6 +115,24 @@ export async function POST(request: Request): Promise<Response> {
             throw new TypeError('A snippet is empty.')
           }
 
+          // Dual-write to youtube_channels table (always upsert regardless of name change)
+          const youtubeHandle = item.snippet.customUrl || null
+          await supabaseClient
+            .from('youtube_channels')
+            .upsert(
+              {
+                channel_id: channel.id,
+                youtube_channel_id: youtubeChannel.id,
+                youtube_handle: youtubeHandle,
+              },
+              { onConflict: 'channel_id' },
+            )
+            .then(({ error: youtubeError }) => {
+              if (youtubeError) {
+                Sentry.captureException(youtubeError)
+              }
+            })
+
           if (item.snippet.title === channel.name) {
             return null
           }
@@ -126,7 +144,7 @@ export async function POST(request: Request): Promise<Response> {
               updated_at: currentDateTime.toJSON(),
             })
             .eq('slug', youtubeChannel.id)
-            .select('name, slug')
+            .select('id, name, slug')
             .single()
 
           if (error) {

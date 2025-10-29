@@ -59,6 +59,27 @@ export async function syncChannelWithYouTube(channelId: string): Promise<{
       }
     }
 
+    // Dual-write to youtube_channels table (always upsert regardless of name change)
+    const youtubeHandle = youtubeChannel.snippet.customUrl || null
+    await supabaseClient
+      .from('youtube_channels')
+      .upsert(
+        {
+          channel_id: channel.id,
+          youtube_channel_id: channel.slug,
+          youtube_handle: youtubeHandle,
+        },
+        { onConflict: 'channel_id' },
+      )
+      .then(({ error: youtubeError }) => {
+        if (youtubeError) {
+          logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
+            channelId,
+            error: youtubeError,
+          })
+        }
+      })
+
     // Check if update is needed
     if (youtubeChannel.snippet.title === channel.name) {
       return {

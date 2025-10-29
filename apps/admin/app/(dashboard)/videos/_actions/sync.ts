@@ -59,6 +59,25 @@ export async function syncVideoWithYouTube(videoSlug: string): Promise<{
       }
     }
 
+    // Dual-write to youtube_videos table (always upsert)
+    await supabaseClient
+      .from('youtube_videos')
+      .upsert(
+        {
+          video_id: video.id,
+          youtube_video_id: video.slug,
+        },
+        { onConflict: 'video_id' },
+      )
+      .then(({ error: youtubeError }) => {
+        if (youtubeError) {
+          logger.error('youtube_videosテーブルへの書き込みに失敗しました', {
+            error: youtubeError,
+            videoSlug,
+          })
+        }
+      })
+
     const currentDateTime = Temporal.Now.zonedDateTimeISO()
 
     // Prepare update data - check what needs to be updated

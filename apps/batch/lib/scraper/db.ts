@@ -13,7 +13,7 @@ export type VideoThumbnail = Omit<
 
 export type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'published_at' | 'slug' | 'title'
+  'duration' | 'id' | 'published_at' | 'slug' | 'title'
 > & {
   channels: VideoChannel | VideoChannel[] | null
   thumbnails: VideoThumbnail | VideoThumbnail[] | null
@@ -25,6 +25,7 @@ const scrapeResultSelect = `
     slug
   ),
   duration,
+  id,
   published_at,
   slug,
   thumbnails (
@@ -187,6 +188,27 @@ export default class DB implements AsyncDisposable {
       } else {
         Sentry.captureException(result.reason)
       }
+    }
+
+    // Dual-write to youtube_videos table
+    if (videos.length > 0) {
+      const youtubeVideoValues: TablesInsert<'youtube_videos'>[] = videos.map(
+        (video) => ({
+          video_id: video.id,
+          youtube_video_id: video.slug,
+        }),
+      )
+
+      await Promise.allSettled([
+        this.#supabaseClient
+          .from('youtube_videos')
+          .upsert(youtubeVideoValues, { onConflict: 'video_id' })
+          .then(({ error }) => {
+            if (error) {
+              Sentry.captureException(new DatabaseError(error))
+            }
+          }),
+      ])
     }
 
     return videos
