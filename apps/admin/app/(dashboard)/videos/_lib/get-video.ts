@@ -27,6 +27,9 @@ export type VideoDetail = {
     name: string
     slug: string
   }
+  youtube_videos: {
+    youtube_video_id: string
+  } | null
 }
 
 const getVideo = cache(async function getVideo(
@@ -37,7 +40,7 @@ const getVideo = cache(async function getVideo(
   const { data: video, error } = await supabaseClient
     .from('videos')
     .select(
-      'id, slug, title, visible, deleted_at, published_at, updated_at, created_at, duration, channel_id, thumbnails(path, blur_data_url), channels(id, name, slug)',
+      'id, slug, title, visible, deleted_at, published_at, updated_at, created_at, duration, channel_id, thumbnails(path, blur_data_url), channels(id, name, slug), youtube_videos(youtube_video_id)',
     )
     .eq('slug', slug)
     .single()
@@ -89,6 +92,7 @@ const getVideo = cache(async function getVideo(
     title: video.title,
     updated_at: video.updated_at,
     visible: video.visible,
+    youtube_videos: video.youtube_videos,
   }
 })
 

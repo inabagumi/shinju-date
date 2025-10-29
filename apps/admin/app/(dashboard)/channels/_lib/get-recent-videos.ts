@@ -10,6 +10,9 @@ export type RecentVideo = {
     path: string
     blur_data_url: string
   } | null
+  youtube_videos: {
+    youtube_video_id: string
+  } | null
 }
 
 export default async function getRecentVideosForChannel(
@@ -21,7 +24,7 @@ export default async function getRecentVideosForChannel(
   const { data: videos, error } = await supabaseClient
     .from('videos')
     .select(
-      'slug, title, published_at, visible, deleted_at, thumbnails(path, blur_data_url)',
+      'slug, title, published_at, visible, deleted_at, thumbnails(path, blur_data_url), youtube_videos(youtube_video_id)',
     )
     .eq('channel_id', channelId)
     .order('published_at', { ascending: false })
@@ -41,6 +44,7 @@ export default async function getRecentVideosForChannel(
       thumbnail: video.thumbnails,
       title: video.title,
       visible: video.visible,
+      youtube_videos: video.youtube_videos,
     })) || []
   )
 }

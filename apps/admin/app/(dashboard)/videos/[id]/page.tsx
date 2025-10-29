@@ -268,7 +268,7 @@ export default async function VideoDetailPage({ params }: Props) {
           <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
             <a
               className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
-              href={`https://www.youtube.com/watch?v=${video.slug}`}
+              href={`https://www.youtube.com/watch?v=${video.youtube_videos?.youtube_video_id ?? video.slug}`}
               rel="noopener noreferrer"
               target="_blank"
             >

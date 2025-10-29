@@ -24,6 +24,9 @@ export type Video = {
     name: string
     slug: string
   }
+  youtube_videos: {
+    youtube_video_id: string
+  } | null
 }
 
 export type VideoFilters = {
@@ -55,7 +58,7 @@ export async function getVideos(
   let query = supabaseClient
     .from('videos')
     .select(
-      'slug, title, visible, deleted_at, published_at, updated_at, duration, thumbnails(path, blur_data_url), channels(id, name, slug)',
+      'slug, title, visible, deleted_at, published_at, updated_at, duration, thumbnails(path, blur_data_url), channels(id, name, slug), youtube_videos(youtube_video_id)',
       { count: 'exact' },
     )
 
@@ -138,6 +141,7 @@ export async function getVideos(
     title: video.title,
     updated_at: video.updated_at,
     visible: video.visible,
+    youtube_videos: video.youtube_videos,
   }))
 
   return {
