@@ -76,7 +76,7 @@ export function ChannelsList({ channels }: ChannelsListProps) {
                   <td className="px-4 py-3">
                     <Link
                       className="text-blue-600 hover:text-blue-800"
-                      href={`/channels/${channel.id}`}
+                      href={`/channels/${channel.slug}`}
                     >
                       {channel.name}
                     </Link>

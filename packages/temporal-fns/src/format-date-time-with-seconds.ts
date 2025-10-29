@@ -1,5 +1,4 @@
-import { TIME_ZONE } from '@shinju-date/constants'
-import type { Temporal } from 'temporal-polyfill'
+import { Temporal } from 'temporal-polyfill'
 
 export default function formatDateTimeWithSeconds(
   timestamp: Temporal.ZonedDateTime,
@@ -16,6 +15,7 @@ export default function formatDateTimeWithSeconds(
 
 export function formatDateTimeFromISO(isoString: string): string {
   const instant = Temporal.Instant.from(isoString)
-  const zonedDateTime = instant.toZonedDateTimeISO(TIME_ZONE)
+  // Use JST timezone
+  const zonedDateTime = instant.toZonedDateTimeISO('Asia/Tokyo')
   return formatDateTimeWithSeconds(zonedDateTime)
 }

@@ -9,13 +9,15 @@ export type Channel = {
   deleted_at: string | null
 }
 
-export default async function getChannel(id: number): Promise<Channel | null> {
+export default async function getChannel(
+  slug: string,
+): Promise<Channel | null> {
   const supabaseClient = await createSupabaseServerClient()
 
   const { data: channel, error } = await supabaseClient
     .from('channels')
     .select('id, name, slug, created_at, updated_at, deleted_at')
-    .eq('id', id)
+    .eq('slug', slug)
     .single()
 
   if (error) {

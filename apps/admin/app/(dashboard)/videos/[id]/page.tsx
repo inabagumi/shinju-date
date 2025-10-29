@@ -12,6 +12,7 @@ import { ChevronLeftIcon, ExternalLinkIcon } from '@/components/icons'
 import { supabaseClient } from '@/lib/supabase/public'
 import getVideo from '../_lib/get-video'
 import { SyncVideoButton } from './_components/sync-video-button'
+import { VideoActionsButtons } from './_components/video-actions-buttons'
 
 type Props = {
   params: Promise<{
@@ -84,7 +85,16 @@ export default async function VideoDetailPage({ params }: Props) {
             <h1 className="font-bold text-2xl line-clamp-2">{video.title}</h1>
             <p className="text-gray-600">動画詳細</p>
           </div>
-          {!isDeleted && <SyncVideoButton videoSlug={video.slug} />}
+          <div className="flex items-center gap-4">
+            {!isDeleted && (
+              <VideoActionsButtons
+                isDeleted={isDeleted}
+                videoSlug={video.slug}
+                visible={video.visible}
+              />
+            )}
+            {!isDeleted && <SyncVideoButton videoSlug={video.slug} />}
+          </div>
         </div>
       </div>
 
@@ -187,7 +197,7 @@ export default async function VideoDetailPage({ params }: Props) {
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   <Link
                     className="text-blue-600 hover:text-blue-800"
-                    href={`/channels/${video.channel.id}`}
+                    href={`/channels/${video.channel.slug}`}
                   >
                     {video.channel.name}
                   </Link>

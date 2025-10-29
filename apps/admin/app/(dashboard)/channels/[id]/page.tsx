@@ -1,10 +1,13 @@
 import { formatNumber } from '@shinju-date/helpers'
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ChevronLeftIcon, ExternalLinkIcon } from '@/components/icons'
+import { supabaseClient } from '@/lib/supabase/public'
 import getChannel from '../_lib/get-channel'
+import getRecentVideosForChannel from '../_lib/get-recent-videos'
 import { SyncChannelButton } from './_components/sync-channel-button'
 
 type Props = {
@@ -15,15 +18,8 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
-  const channelId = Number.parseInt(id, 10)
 
-  if (Number.isNaN(channelId)) {
-    return {
-      title: 'チャンネルが見つかりません',
-    }
-  }
-
-  const channel = await getChannel(channelId)
+  const channel = await getChannel(id)
 
   if (!channel) {
     return {
@@ -38,17 +34,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ChannelDetailPage({ params }: Props) {
   const { id } = await params
-  const channelId = Number.parseInt(id, 10)
 
-  if (Number.isNaN(channelId)) {
-    notFound()
-  }
-
-  const channel = await getChannel(channelId)
+  const channel = await getChannel(id)
 
   if (!channel) {
     notFound()
   }
+
+  const [recentVideos] = await Promise.all([
+    getRecentVideosForChannel(channel.id, 5),
+  ])
 
   const isDeleted = channel.deleted_at !== null
 
@@ -72,7 +67,7 @@ export default async function ChannelDetailPage({ params }: Props) {
             <h1 className="font-bold text-2xl">{channel.name}</h1>
             <p className="text-gray-600">チャンネル詳細</p>
           </div>
-          {!isDeleted && <SyncChannelButton channelId={channelId} />}
+          {!isDeleted && <SyncChannelButton channelId={channel.id} />}
         </div>
       </div>
 
@@ -155,6 +150,88 @@ export default async function ChannelDetailPage({ params }: Props) {
               </div>
             )}
           </dl>
+        </div>
+      </div>
+
+      {/* Recent Videos */}
+      <div className="mt-6">
+        <div className="bg-white shadow sm:rounded-lg">
+          <div className="px-4 py-5 sm:px-6">
+            <h3 className="font-medium text-gray-900 text-lg leading-6">
+              最新動画
+            </h3>
+            <p className="mt-1 max-w-2xl text-gray-500 text-sm">
+              直近に公開された動画一覧
+            </p>
+          </div>
+          <div className="border-t border-gray-200">
+            {recentVideos.length === 0 ? (
+              <div className="px-4 py-8 text-center text-gray-500">
+                動画がありません。
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-200">
+                {recentVideos.map((video) => (
+                  <li className="px-4 py-4" key={video.slug}>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-shrink-0">
+                        {video.thumbnail ? (
+                          <div className="relative h-12 w-20">
+                            <Image
+                              alt={video.title}
+                              className="object-cover rounded"
+                              fill
+                              sizes="80px"
+                              src={
+                                supabaseClient.storage
+                                  .from('thumbnails')
+                                  .getPublicUrl(video.thumbnail.path).data
+                                  .publicUrl
+                              }
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex h-12 w-20 items-center justify-center bg-gray-200 text-gray-500 text-xs rounded">
+                            No Image
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <Link
+                          className="text-blue-600 hover:text-blue-800"
+                          href={`/videos/${video.slug}`}
+                        >
+                          <p className="font-medium text-sm truncate">
+                            {video.title}
+                          </p>
+                        </Link>
+                        <p className="text-gray-500 text-sm">
+                          {formatDateTimeFromISO(video.published_at)}
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <span
+                          className={`inline-flex rounded-full px-2 py-1 font-semibold text-xs leading-5 ${
+                            video.deleted_at
+                              ? 'bg-red-100 text-red-800'
+                              : video.visible
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
+                          {video.deleted_at
+                            ? '削除済み'
+                            : video.visible
+                              ? '公開中'
+                              : '非表示'}
+                        </span>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </div>
 
