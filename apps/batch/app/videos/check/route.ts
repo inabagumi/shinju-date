@@ -206,14 +206,12 @@ export async function POST(request: NextRequest): Promise<Response> {
   )
 
   const currentDateTime = Temporal.Now.instant()
-  const savedVideos: Video[] = []
-
-  for await (const savedVideo of getSavedVideos({
-    all,
-    supabaseClient,
-  })) {
-    savedVideos.push(savedVideo)
-  }
+  const savedVideos = await Array.fromAsync(
+    getSavedVideos({
+      all,
+      supabaseClient,
+    }),
+  )
 
   const videoIds = savedVideos.map((savedVideo) => savedVideo.slug)
   const availableVideoIds = new Set<string>()

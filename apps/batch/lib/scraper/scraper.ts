@@ -329,13 +329,12 @@ export default class Scraper implements AsyncDisposable {
    * @yields YouTube video objects
    */
   async *getVideos(): AsyncGenerator<YouTubeVideo, void, undefined> {
-    const videoIDs: string[] = []
-
-    for await (const playlistItem of this.#youtubeScraper.getPlaylistItems({
-      playlistID: this.playlistID,
-    })) {
-      videoIDs.push(playlistItem.contentDetails.videoId)
-    }
+    const videoIDs = await Array.fromAsync(
+      this.#youtubeScraper.getPlaylistItems({
+        playlistID: this.playlistID,
+      }),
+      (playlistItem) => playlistItem.contentDetails.videoId,
+    )
 
     yield* this.#youtubeScraper.getVideos({ ids: videoIDs })
   }
@@ -345,18 +344,10 @@ export default class Scraper implements AsyncDisposable {
    * @returns Array of saved video objects
    */
   async scrape(): Promise<Video[]> {
-    const originalVideos: YouTubeVideo[] = []
-
-    for await (const video of this.getVideos()) {
-      originalVideos.push(video)
-    }
+    const originalVideos = await Array.fromAsync(this.getVideos())
 
     const videoIDs = originalVideos.map((video) => video.id)
-    const savedVideos: SavedVideo[] = []
-
-    for await (const savedVideo of this.#db.getSavedVideos(videoIDs)) {
-      savedVideos.push(savedVideo)
-    }
+    const savedVideos = await Array.fromAsync(this.#db.getSavedVideos(videoIDs))
 
     const thumbnails = await Thumbnail.upsertThumbnails({
       db: this.#db,

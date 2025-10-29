@@ -6,7 +6,7 @@ SHINJU DATEプロジェクトへの貢献をご検討いただき、ありがと
 
 ### 前提条件
 
-- **Node.js**: バージョン 18 以上
+- **Node.js**: バージョン 22 以上
 - **pnpm**: パッケージマネージャー（`npm install -g pnpm` でインストール）
 - **Python**: 3.12 以上（Insights API開発時）
 - **uv**: Python依存関係管理（Insights API開発時）
