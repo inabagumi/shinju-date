@@ -9,7 +9,6 @@ const mockChannels = [
     deleted_at: null,
     id: 1,
     name: 'Daily Analytics Channel',
-    slug: 'daily-analytics-channel',
     updated_at: '2023-01-01T00:00:00.000Z',
   },
   {
@@ -17,7 +16,6 @@ const mockChannels = [
     deleted_at: null,
     id: 2,
     name: 'Trending Topics Channel',
-    slug: 'trending-topics-channel',
     updated_at: '2023-01-01T00:00:00.000Z',
   },
   {
@@ -25,7 +23,6 @@ const mockChannels = [
     deleted_at: null,
     id: 3,
     name: 'Popular Content Channel',
-    slug: 'popular-content-channel',
     updated_at: '2023-01-01T00:00:00.000Z',
   },
   {
@@ -33,7 +30,6 @@ const mockChannels = [
     deleted_at: null,
     id: 4,
     name: 'Test Channel Four',
-    slug: 'test-channel-four',
     updated_at: '2023-01-01T00:00:00.000Z',
   },
 ]
