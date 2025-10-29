@@ -1,7 +1,9 @@
 import { formatNumber } from '@shinju-date/helpers'
+import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { ChevronLeftIcon, ExternalLinkIcon } from '@/components/icons'
 import getChannel from '../_lib/get-channel'
 import { SyncChannelButton } from './_components/sync-channel-button'
 
@@ -48,7 +50,7 @@ export default async function ChannelDetailPage({ params }: Props) {
     notFound()
   }
 
-  const isDeleted = !!channel.deleted_at
+  const isDeleted = channel.deleted_at !== null
 
   return (
     <div className="p-4">
@@ -58,20 +60,7 @@ export default async function ChannelDetailPage({ params }: Props) {
           className="inline-flex items-center text-blue-600 hover:text-blue-800"
           href="/channels"
         >
-          <svg
-            className="mr-1 h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <title>戻る</title>
-            <path
-              d="M15 19l-7-7 7-7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-            />
-          </svg>
+          <ChevronLeftIcon className="mr-1 h-4 w-4" />
           チャンネル一覧に戻る
         </Link>
       </div>
@@ -144,14 +133,7 @@ export default async function ChannelDetailPage({ params }: Props) {
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500 text-sm">作成日時</dt>
               <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                {new Date(channel.created_at).toLocaleString('ja-JP', {
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  month: '2-digit',
-                  second: '2-digit',
-                  year: 'numeric',
-                })}
+                {formatDateTimeFromISO(channel.created_at)}
               </dd>
             </div>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -159,28 +141,16 @@ export default async function ChannelDetailPage({ params }: Props) {
                 最終更新日時
               </dt>
               <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                {new Date(channel.updated_at).toLocaleString('ja-JP', {
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  month: '2-digit',
-                  second: '2-digit',
-                  year: 'numeric',
-                })}
+                {formatDateTimeFromISO(channel.updated_at)}
               </dd>
             </div>
             {isDeleted && (
               <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">削除日時</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                  {new Date(channel.deleted_at!).toLocaleString('ja-JP', {
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    month: '2-digit',
-                    second: '2-digit',
-                    year: 'numeric',
-                  })}
+                  {channel.deleted_at
+                    ? formatDateTimeFromISO(channel.deleted_at)
+                    : '-'}
                 </dd>
               </div>
             )}
@@ -207,20 +177,7 @@ export default async function ChannelDetailPage({ params }: Props) {
               target="_blank"
             >
               YouTubeで見る
-              <svg
-                className="ml-2 h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <title>外部リンク</title>
-                <path
-                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                />
-              </svg>
+              <ExternalLinkIcon className="ml-2 h-4 w-4" />
             </a>
           </div>
         </div>
