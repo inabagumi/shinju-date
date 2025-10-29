@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { ChannelModal } from './channel-modal'
 
@@ -72,7 +73,14 @@ export function ChannelsList({ channels }: ChannelsListProps) {
             <tbody className="divide-y divide-774-blue-200 bg-white">
               {filteredChannels.map((channel) => (
                 <tr className="hover:bg-774-blue-50" key={channel.id}>
-                  <td className="px-4 py-3">{channel.name}</td>
+                  <td className="px-4 py-3">
+                    <Link
+                      className="text-blue-600 hover:text-blue-800"
+                      href={`/channels/${channel.id}`}
+                    >
+                      {channel.name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 font-mono text-sm">
                     {channel.slug}
                   </td>
