@@ -9,6 +9,7 @@ import { _getPopularItemsFromRedis } from './_get-popular-items-from-redis'
 
 export type PopularVideo = {
   clicks: number
+  id: string
   thumbnail: {
     path: string
     blur_data_url: string
@@ -63,6 +64,7 @@ export async function getPopularVideos(
 
       return {
         clicks,
+        id: video.id,
         thumbnail: video.thumbnails,
         title: video.title,
         youtube_video: video.youtube_video,

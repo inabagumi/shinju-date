@@ -15,6 +15,7 @@ const POPULAR_VIDEOS_CACHE_TTL_SECONDS = 60 * 10 // 10 minutes
 
 export type PopularVideo = {
   clicks: number
+  id: string
   thumbnail: {
     path: string
     blur_data_url: string
@@ -175,6 +176,7 @@ export async function getPopularVideos(
 
       return {
         clicks,
+        id: video.id,
         thumbnail: video.thumbnails,
         title: video.title,
         youtube_video: video.youtube_video,
