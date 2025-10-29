@@ -67,7 +67,9 @@ const getVideo = cache(async function getVideo(
   })
 
   // Fetch click counts for the video for the last 7 days
-  // Use slug for Redis key lookup (backwards compatible with existing analytics)
+  // NOTE: Redis analytics currently use slug as the key (YouTube video ID).
+  // This maintains backwards compatibility with existing analytics data.
+  // TODO: Migrate analytics to use internal video ID as key, then remove slug dependency.
   const scores = await Promise.all(
     days.map((day) =>
       redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, video.slug),

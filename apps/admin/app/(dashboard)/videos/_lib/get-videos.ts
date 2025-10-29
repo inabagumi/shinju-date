@@ -114,6 +114,9 @@ export async function getVideos(
   })
 
   // Fetch click counts for all videos for the last 7 days
+  // NOTE: Redis analytics currently use slug as the key (YouTube video ID).
+  // This maintains backwards compatibility with existing analytics data.
+  // TODO: Migrate analytics to use internal video ID as key, then remove slug dependency.
   const videoIds = videos.map((video) => video.slug)
   const clickCounts = await Promise.all(
     videoIds.map(async (slug) => {
