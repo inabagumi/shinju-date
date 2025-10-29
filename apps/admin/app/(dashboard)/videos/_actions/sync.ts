@@ -29,10 +29,9 @@ export async function syncVideoWithYouTube(videoSlug: string): Promise<{
     }
 
     // Fetch video data from YouTube API
-    const youtubeVideos = []
-    for await (const youtubeVideo of getVideos({ ids: [video.slug] })) {
-      youtubeVideos.push(youtubeVideo)
-    }
+    const youtubeVideos = await Array.fromAsync(
+      getVideos({ ids: [video.slug] }),
+    )
 
     if (youtubeVideos.length === 0) {
       return {

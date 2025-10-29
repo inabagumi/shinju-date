@@ -29,10 +29,9 @@ export async function syncChannelWithYouTube(channelId: string): Promise<{
     }
 
     // Fetch channel data from YouTube API
-    const youtubeChannels = []
-    for await (const youtubeChannel of getChannels({ ids: [channel.slug] })) {
-      youtubeChannels.push(youtubeChannel)
-    }
+    const youtubeChannels = await Array.fromAsync(
+      getChannels({ ids: [channel.slug] }),
+    )
 
     if (youtubeChannels.length === 0) {
       return {
