@@ -33,7 +33,7 @@ export type VideoDetail = {
 }
 
 const getVideo = cache(async function getVideo(
-  slug: string,
+  id: string,
 ): Promise<VideoDetail | null> {
   const supabaseClient = await createSupabaseServerClient()
 
@@ -42,7 +42,7 @@ const getVideo = cache(async function getVideo(
     .select(
       'id, slug, title, visible, deleted_at, published_at, updated_at, created_at, duration, channel_id, thumbnails(path, blur_data_url), channels(id, name, slug), youtube_video:youtube_videos(youtube_video_id)',
     )
-    .eq('slug', slug)
+    .eq('id', id)
     .single()
 
   if (error) {
@@ -67,9 +67,10 @@ const getVideo = cache(async function getVideo(
   })
 
   // Fetch click counts for the video for the last 7 days
+  // Use slug for Redis key lookup (backwards compatible with existing analytics)
   const scores = await Promise.all(
     days.map((day) =>
-      redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, slug),
+      redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, video.slug),
     ),
   )
 

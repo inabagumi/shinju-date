@@ -7,6 +7,7 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 import { escapeSearchString } from './escape-search'
 
 export type Video = {
+  id: string
   slug: string
   title: string
   visible: boolean
@@ -58,7 +59,7 @@ export async function getVideos(
   let query = supabaseClient
     .from('videos')
     .select(
-      'slug, title, visible, deleted_at, published_at, updated_at, duration, thumbnails(path, blur_data_url), channels(id, name, slug), youtube_video:youtube_videos(youtube_video_id)',
+      'id, slug, title, visible, deleted_at, published_at, updated_at, duration, thumbnails(path, blur_data_url), channels(id, name, slug), youtube_video:youtube_videos(youtube_video_id)',
       { count: 'exact' },
     )
 
@@ -135,6 +136,7 @@ export async function getVideos(
     clicks: clickCounts[index] ?? 0,
     deleted_at: video.deleted_at,
     duration: video.duration,
+    id: video.id,
     published_at: video.published_at,
     slug: video.slug,
     thumbnail: video.thumbnails,
