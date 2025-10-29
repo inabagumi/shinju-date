@@ -6,7 +6,7 @@ import NoResults from '@/components/no-results'
 import SearchResults from '@/components/search-results'
 import { title as siteName } from '@/lib/constants'
 import { fetchVideosByChannelIDs } from '@/lib/fetchers'
-import { getChannelBySlug } from '@/lib/supabase'
+import { getChannelById } from '@/lib/supabase'
 import { parseQueries } from '@/lib/url'
 
 export async function generateMetadata({
@@ -14,13 +14,13 @@ export async function generateMetadata({
 }: Readonly<{
   params: Promise<{
     queries?: string[]
-    slug: string
+    id: string
   }>
 }>): Promise<Metadata | null> {
   // cacheLife('minutes')
 
-  const { queries, slug } = await params
-  const channel = await getChannelBySlug(slug)
+  const { queries, id } = await params
+  const channel = await getChannelById(id)
 
   if (!channel) {
     return null
@@ -34,10 +34,10 @@ export async function generateMetadata({
   return {
     alternates: {
       canonical: query
-        ? `/channels/${channel.slug}/videos/${encodeURIComponent(query)}`
-        : `/channels/${channel.slug}/videos`,
+        ? `/channels/${channel.id}/videos/${encodeURIComponent(query)}`
+        : `/channels/${channel.id}/videos`,
       types: {
-        'text/calendar': !query ? `/channels/${channel.slug}/videos.ics` : null,
+        'text/calendar': !query ? `/channels/${channel.id}/videos.ics` : null,
       },
     },
     openGraph: {
@@ -60,11 +60,11 @@ export default async function VideosPage({
 }: Readonly<{
   params: Promise<{
     queries?: string[]
-    slug: string
+    id: string
   }>
 }>) {
-  const { queries, slug } = await params
-  const channel = await getChannelBySlug(slug)
+  const { queries, id } = await params
+  const channel = await getChannelById(id)
 
   if (!channel) {
     notFound()

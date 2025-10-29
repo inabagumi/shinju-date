@@ -8,19 +8,19 @@ import SimpleDocument from '@/components/simple-document'
 import Timeline from '@/components/timeline'
 import { title as siteName } from '@/lib/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
-import { getChannelBySlug } from '@/lib/supabase'
+import { getChannelById } from '@/lib/supabase'
 
 export async function generateMetadata({
   params,
 }: Readonly<{
   params: Promise<{
-    slug: string
+    id: string
   }>
 }>): Promise<Metadata | null> {
   // cacheLife('minutes')
 
-  const { slug } = await params
-  const channel = await getChannelBySlug(slug)
+  const { id } = await params
+  const channel = await getChannelById(id)
 
   if (!channel) {
     return null
@@ -30,7 +30,7 @@ export async function generateMetadata({
 
   return {
     alternates: {
-      canonical: `/channels/${channel.slug}`,
+      canonical: `/channels/${channel.id}`,
     },
     openGraph: {
       siteName,
@@ -48,18 +48,18 @@ export default async function ChannelSchedulePage({
   params,
 }: Readonly<{
   params: Promise<{
-    slug: string
+    id: string
   }>
 }>) {
-  const { slug } = await params
-  const channel = await getChannelBySlug(slug)
+  const { id } = await params
+  const channel = await getChannelById(id)
 
   if (!channel) {
     notFound()
   }
 
   const videos = await fetchNotEndedVideos({
-    channelIDs: [channel.slug],
+    channelIDs: [channel.id],
   })
 
   return (
@@ -67,7 +67,7 @@ export default async function ChannelSchedulePage({
       button={
         <Link
           className="inline-block rounded-lg bg-primary-foreground px-6 py-1.5 text-primary hover:bg-774-nevy-100"
-          href={`/channels/${channel.slug}/videos`}
+          href={`/channels/${channel.id}/videos`}
         >
           動画一覧
         </Link>
@@ -80,7 +80,7 @@ export default async function ChannelSchedulePage({
         <Timeline channels={[channel]} prefetchedData={videos} />
       ) : (
         <NoResults
-          basePath={`/channels/${channel.slug}`}
+          basePath={`/channels/${channel.id}`}
           message="YouTubeに登録されている配信予定の動画がありません。"
         />
       )}

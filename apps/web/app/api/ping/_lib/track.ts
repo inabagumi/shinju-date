@@ -16,7 +16,7 @@ function generateTrackProperties(video: Video): TrackProperties {
     throw new Error('Video must have youtube_video_id')
   }
   return {
-    channel_id: video.channel.slug,
+    channel_id: video.channel.id,
     channel_name: video.channel.name,
     provider: 'YouTube',
     title: video.title,

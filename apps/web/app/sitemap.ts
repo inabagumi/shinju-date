@@ -39,12 +39,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       {
         changeFrequency: 'daily' as const,
         priority: 0.7,
-        url: new URL(`/channels/${channel.slug}`, baseURL).toString(),
+        url: new URL(`/channels/${channel.id}`, baseURL).toString(),
       },
       {
         changeFrequency: 'daily' as const,
         priority: 0.5,
-        url: new URL(`/channels/${channel.slug}/videos`, baseURL).toString(),
+        url: new URL(`/channels/${channel.id}/videos`, baseURL).toString(),
       },
     ],
   )
