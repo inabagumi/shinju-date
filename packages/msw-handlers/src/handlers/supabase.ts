@@ -90,6 +90,61 @@ const mockThumbnails = [
     updated_at: '2023-01-01T00:00:00.000Z',
     width: 1280,
   },
+  {
+    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
+    created_at: '2023-01-07T00:00:00.000Z',
+    deleted_at: null,
+    etag: 'pqr678',
+    height: 720,
+    id: 6,
+    path: '/thumbnails/video6.jpg',
+    updated_at: '2023-01-07T00:00:00.000Z',
+    width: 1280,
+  },
+  {
+    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
+    created_at: '2023-01-08T00:00:00.000Z',
+    deleted_at: null,
+    etag: 'stu901',
+    height: 720,
+    id: 7,
+    path: '/thumbnails/video7.jpg',
+    updated_at: '2023-01-08T00:00:00.000Z',
+    width: 1280,
+  },
+  {
+    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
+    created_at: '2023-01-09T00:00:00.000Z',
+    deleted_at: null,
+    etag: 'vwx234',
+    height: 720,
+    id: 8,
+    path: '/thumbnails/video8.jpg',
+    updated_at: '2023-01-09T00:00:00.000Z',
+    width: 1280,
+  },
+  {
+    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
+    created_at: '2023-01-10T00:00:00.000Z',
+    deleted_at: null,
+    etag: 'yza567',
+    height: 720,
+    id: 9,
+    path: '/thumbnails/video9.jpg',
+    updated_at: '2023-01-10T00:00:00.000Z',
+    width: 1280,
+  },
+  {
+    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
+    created_at: '2023-01-11T00:00:00.000Z',
+    deleted_at: null,
+    etag: 'bcd890',
+    height: 720,
+    id: 10,
+    path: '/thumbnails/video10.jpg',
+    updated_at: '2023-01-11T00:00:00.000Z',
+    width: 1280,
+  },
 ]
 
 const mockVideos = [
@@ -165,6 +220,54 @@ const mockVideos = [
     updated_at: '2023-01-06T00:00:00.000Z',
     visible: false,
   },
+  {
+    channel_id: 3,
+    created_at: '2023-01-07T00:00:00.000Z',
+    deleted_at: null,
+    duration: 'PT14M22S',
+    id: 7,
+    published_at: '2023-01-07T12:00:00.000Z',
+    thumbnail_id: 6,
+    title: 'New Content Video #7',
+    updated_at: '2023-01-07T00:00:00.000Z',
+    visible: true,
+  },
+  {
+    channel_id: 4,
+    created_at: '2023-01-08T00:00:00.000Z',
+    deleted_at: null,
+    duration: 'PT9M45S',
+    id: 8,
+    published_at: '2023-01-08T12:00:00.000Z',
+    thumbnail_id: 7,
+    title: 'Tutorial Video #8',
+    updated_at: '2023-01-08T00:00:00.000Z',
+    visible: true,
+  },
+  {
+    channel_id: 1,
+    created_at: '2023-01-09T00:00:00.000Z',
+    deleted_at: null,
+    duration: 'PT22M10S',
+    id: 9,
+    published_at: '2023-01-09T12:00:00.000Z',
+    thumbnail_id: 8,
+    title: 'Analytics Deep Dive #9',
+    updated_at: '2023-01-09T00:00:00.000Z',
+    visible: true,
+  },
+  {
+    channel_id: 2,
+    created_at: '2023-01-10T00:00:00.000Z',
+    deleted_at: null,
+    duration: 'PT16M33S',
+    id: 10,
+    published_at: '2023-01-10T12:00:00.000Z',
+    thumbnail_id: 9,
+    title: 'Trending Topics #10',
+    updated_at: '2023-01-10T00:00:00.000Z',
+    visible: true,
+  },
 ]
 
 const mockYoutubeChannels = [
@@ -193,27 +296,44 @@ const mockYoutubeChannels = [
 const mockYoutubeVideos = [
   {
     video_id: 1,
-    youtube_video_id: 'video1abc',
+    youtube_video_id: 'YT_video1abc',
   },
   {
     video_id: 2,
-    youtube_video_id: 'video2def',
+    youtube_video_id: 'YT_video2def',
   },
   {
     video_id: 3,
-    youtube_video_id: 'video3ghi',
+    youtube_video_id: 'YT_video3ghi',
   },
   {
     video_id: 4,
-    youtube_video_id: 'video4jkl',
+    youtube_video_id: 'YT_video4jkl',
   },
   {
     video_id: 5,
-    youtube_video_id: 'video5mno',
+    youtube_video_id: 'YT_video5mno',
   },
   {
     video_id: 6,
-    youtube_video_id: 'video6pqr',
+    youtube_video_id: 'YT_video6pqr',
+  },
+  // Additional test data for comprehensive testing
+  {
+    video_id: 7,
+    youtube_video_id: 'YT_newVideo01',
+  },
+  {
+    video_id: 8,
+    youtube_video_id: 'YT_newVideo02',
+  },
+  {
+    video_id: 9,
+    youtube_video_id: 'YT_newVideo03',
+  },
+  {
+    video_id: 10,
+    youtube_video_id: 'YT_testVideo1',
   },
 ]
 
@@ -666,6 +786,91 @@ export const supabaseHandlers = [
         'Content-Type': 'application/json',
       },
     })
+  }),
+
+  // YouTube Videos POST (upsert/insert)
+  http.post('*/rest/v1/youtube_videos', async ({ request }) => {
+    const preferHeader = request.headers.get('prefer') || ''
+    const body = (await request.json()) as any
+
+    // Handle both single object and array of objects
+    const items = Array.isArray(body) ? body : [body]
+
+    // Mock upsert behavior: update existing or add new
+    for (const item of items) {
+      const existingIndex = mockYoutubeVideos.findIndex(
+        (v) => v.video_id === item.video_id,
+      )
+      if (existingIndex !== -1) {
+        // Update existing
+        mockYoutubeVideos[existingIndex] = {
+          ...mockYoutubeVideos[existingIndex],
+          ...item,
+        }
+      } else {
+        // Insert new
+        mockYoutubeVideos.push(item)
+      }
+    }
+
+    // Return the inserted/updated items if representation is requested
+    if (preferHeader.includes('return=representation')) {
+      return HttpResponse.json(items, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        status: 201,
+      })
+    }
+
+    return new HttpResponse(null, { status: 201 })
+  }),
+
+  // YouTube Videos PATCH (update)
+  http.patch('*/rest/v1/youtube_videos', async ({ request }) => {
+    const url = new URL(request.url)
+    const preferHeader = request.headers.get('prefer') || ''
+    const query = parseSupabaseQuery(url)
+    const body = (await request.json()) as any
+
+    // Find matching records and update them
+    const updatedItems: any[] = []
+    for (const [field, filterValue] of Object.entries(query.filters)) {
+      if (filterValue.startsWith('eq.')) {
+        const value = filterValue.substring(3)
+        const parsedValue =
+          value === 'true'
+            ? true
+            : value === 'false'
+              ? false
+              : value === 'null'
+                ? null
+                : Number.isNaN(Number(value))
+                  ? value
+                  : Number(value)
+
+        for (let i = 0; i < mockYoutubeVideos.length; i++) {
+          const video = mockYoutubeVideos[i]
+          if (video && (video as any)[field] === parsedValue) {
+            mockYoutubeVideos[i] = {
+              ...video,
+              ...body,
+            }
+            updatedItems.push(mockYoutubeVideos[i])
+          }
+        }
+      }
+    }
+
+    if (preferHeader.includes('return=representation')) {
+      return HttpResponse.json(updatedItems, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    }
+
+    return new HttpResponse(null, { status: 204 })
   }),
 
   // Authentication endpoints
