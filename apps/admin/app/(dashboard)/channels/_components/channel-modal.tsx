@@ -17,7 +17,9 @@ import { DeleteConfirmDialog } from './delete-confirm-dialog'
 type Channel = {
   id: string
   name: string
-  slug: string
+  youtube_channel: {
+    youtube_channel_id: string
+  } | null
 }
 
 type ChannelModalProps = {
