@@ -1,0 +1,51 @@
+{
+  "author": "Haneru Developers",
+  "description": "Shared UI components for SHINJU DATE applications",
+  "dependencies": {
+    "@radix-ui/react-dialog": "1.1.15",
+    "class-variance-authority": "0.7.1",
+    "tailwind-merge": "3.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.1.16",
+    "@tsconfig/node20": "^20.1.6",
+    "@tsconfig/strictest": "^2.0.7",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "postcss": "8.5.6",
+    "postcss-load-config": "6.0.1",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "tailwindcss": "4.1.16",
+    "tsup": "^8.5.0",
+    "typescript": "5.9.3"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "name": "@shinju-date/ui",
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "private": true,
+  "repository": {
+    "directory": "packages/ui",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "1.0.0"
+}
