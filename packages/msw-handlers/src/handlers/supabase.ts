@@ -9,7 +9,6 @@ const mockChannels = [
     deleted_at: null,
     id: 1,
     name: 'Daily Analytics Channel',
-    slug: 'daily-analytics-channel',
     updated_at: '2023-01-01T00:00:00.000Z',
   },
   {
@@ -17,7 +16,6 @@ const mockChannels = [
     deleted_at: null,
     id: 2,
     name: 'Trending Topics Channel',
-    slug: 'trending-topics-channel',
     updated_at: '2023-01-01T00:00:00.000Z',
   },
   {
@@ -25,7 +23,6 @@ const mockChannels = [
     deleted_at: null,
     id: 3,
     name: 'Popular Content Channel',
-    slug: 'popular-content-channel',
     updated_at: '2023-01-01T00:00:00.000Z',
   },
   {
@@ -33,7 +30,6 @@ const mockChannels = [
     deleted_at: null,
     id: 4,
     name: 'Test Channel Four',
-    slug: 'test-channel-four',
     updated_at: '2023-01-01T00:00:00.000Z',
   },
 ]
@@ -104,7 +100,6 @@ const mockVideos = [
     duration: 'PT10M30S',
     id: 1,
     published_at: '2023-01-01T12:00:00.000Z',
-    slug: 'analytics-video-one',
     thumbnail_id: 1,
     title: 'Analytics Test Video #1',
     updated_at: '2023-01-01T00:00:00.000Z',
@@ -117,7 +112,6 @@ const mockVideos = [
     duration: 'PT15M45S',
     id: 2,
     published_at: '2023-01-02T12:00:00.000Z',
-    slug: 'trending-video-two',
     thumbnail_id: 2,
     title: 'Trending Test Video #2',
     updated_at: '2023-01-02T00:00:00.000Z',
@@ -130,7 +124,6 @@ const mockVideos = [
     duration: 'PT8M15S',
     id: 3,
     published_at: '2023-01-03T12:00:00.000Z',
-    slug: 'popular-video-three',
     thumbnail_id: 3,
     title: 'Popular Test Video #3',
     updated_at: '2023-01-03T00:00:00.000Z',
@@ -143,7 +136,6 @@ const mockVideos = [
     duration: 'PT12M30S',
     id: 4,
     published_at: '2023-01-04T12:00:00.000Z',
-    slug: 'test-video-four',
     thumbnail_id: 4,
     title: 'Test Video #4',
     updated_at: '2023-01-04T00:00:00.000Z',
@@ -156,7 +148,6 @@ const mockVideos = [
     duration: 'PT20M45S',
     id: 5,
     published_at: '2023-01-05T12:00:00.000Z',
-    slug: 'daily-video-five',
     thumbnail_id: 5,
     title: 'Daily Test Video #5',
     updated_at: '2023-01-05T00:00:00.000Z',
@@ -169,11 +160,60 @@ const mockVideos = [
     duration: 'PT18M20S',
     id: 6,
     published_at: '2023-01-06T12:00:00.000Z',
-    slug: 'deleted-video-2',
     thumbnail_id: 2,
     title: 'Deleted Video 2',
     updated_at: '2023-01-06T00:00:00.000Z',
     visible: false,
+  },
+]
+
+const mockYoutubeChannels = [
+  {
+    channel_id: 1,
+    youtube_channel_id: 'UCtest123',
+    youtube_handle: '@dailyanalytics',
+  },
+  {
+    channel_id: 2,
+    youtube_channel_id: 'UCtest456',
+    youtube_handle: '@trendingtopics',
+  },
+  {
+    channel_id: 3,
+    youtube_channel_id: 'UCtest789',
+    youtube_handle: '@popularcontent',
+  },
+  {
+    channel_id: 4,
+    youtube_channel_id: 'UCtest012',
+    youtube_handle: '@testchannelfour',
+  },
+]
+
+const mockYoutubeVideos = [
+  {
+    video_id: 1,
+    youtube_video_id: 'video1abc',
+  },
+  {
+    video_id: 2,
+    youtube_video_id: 'video2def',
+  },
+  {
+    video_id: 3,
+    youtube_video_id: 'video3ghi',
+  },
+  {
+    video_id: 4,
+    youtube_video_id: 'video4jkl',
+  },
+  {
+    video_id: 5,
+    youtube_video_id: 'video5mno',
+  },
+  {
+    video_id: 6,
+    youtube_video_id: 'video6pqr',
   },
 ]
 
@@ -552,6 +592,72 @@ export const supabaseHandlers = [
     const query = parseSupabaseQuery(url)
 
     const filteredData = applySupabaseFilters(mockTerms, query)
+    const count = filteredData.length
+
+    return new HttpResponse(null, {
+      headers: {
+        'Content-Range': `0-0/${count}`,
+        'Content-Type': 'application/json',
+      },
+    })
+  }),
+
+  // YouTube Channels Table
+  http.get('*/rest/v1/youtube_channels', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const filteredData = applySupabaseFilters(mockYoutubeChannels, query)
+
+    if (query.returnCount) {
+      return HttpResponse.json(filteredData, {
+        headers: {
+          'Content-Range': `0-${filteredData.length - 1}/${filteredData.length}`,
+        },
+      })
+    }
+
+    return HttpResponse.json(filteredData)
+  }),
+
+  http.head('*/rest/v1/youtube_channels', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const filteredData = applySupabaseFilters(mockYoutubeChannels, query)
+    const count = filteredData.length
+
+    return new HttpResponse(null, {
+      headers: {
+        'Content-Range': `0-0/${count}`,
+        'Content-Type': 'application/json',
+      },
+    })
+  }),
+
+  // YouTube Videos Table
+  http.get('*/rest/v1/youtube_videos', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const filteredData = applySupabaseFilters(mockYoutubeVideos, query)
+
+    if (query.returnCount) {
+      return HttpResponse.json(filteredData, {
+        headers: {
+          'Content-Range': `0-${filteredData.length - 1}/${filteredData.length}`,
+        },
+      })
+    }
+
+    return HttpResponse.json(filteredData)
+  }),
+
+  http.head('*/rest/v1/youtube_videos', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const filteredData = applySupabaseFilters(mockYoutubeVideos, query)
     const count = filteredData.length
 
     return new HttpResponse(null, {

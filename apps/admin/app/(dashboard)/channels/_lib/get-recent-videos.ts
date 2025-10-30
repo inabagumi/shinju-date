@@ -1,7 +1,7 @@
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type RecentVideo = {
-  slug: string
+  id: string
   title: string
   published_at: string
   visible: boolean
@@ -24,7 +24,7 @@ export default async function getRecentVideosForChannel(
   const { data: videos, error } = await supabaseClient
     .from('videos')
     .select(
-      'slug, title, published_at, visible, deleted_at, thumbnails(path, blur_data_url), youtube_video:youtube_videos(youtube_video_id)',
+      'id, title, published_at, visible, deleted_at, thumbnail:thumbnails(path, blur_data_url), youtube_video:youtube_videos(youtube_video_id)',
     )
     .eq('channel_id', channelId)
     .order('published_at', { ascending: false })
@@ -39,9 +39,9 @@ export default async function getRecentVideosForChannel(
   return (
     videos?.map((video) => ({
       deleted_at: video.deleted_at,
+      id: video.id,
       published_at: video.published_at,
-      slug: video.slug,
-      thumbnail: video.thumbnails,
+      thumbnail: video.thumbnail,
       title: video.title,
       visible: video.visible,
       youtube_video: video.youtube_video,

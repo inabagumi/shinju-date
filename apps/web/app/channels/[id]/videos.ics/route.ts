@@ -14,18 +14,18 @@ export async function GET(
     params,
   }: Readonly<{
     params: Promise<{
-      slug: string
+      id: string
     }>
   }>,
 ): Promise<Response> {
-  const { slug } = await params
+  const { id } = await params
   const { count, error } = await supabaseClient
     .from('channels')
     .select('*, youtube_channel:youtube_channels(youtube_channel_id)', {
       count: 'exact',
       head: true,
     })
-    .eq('slug', slug)
+    .eq('id', id)
 
   if (error) {
     return createErrorResponse(error.message, {
@@ -45,17 +45,17 @@ export async function GET(
     .select(
       `
         channel:channels!inner (
-          name,
-          slug
+          id,
+          name
         ),
         duration,
+        id,
         published_at,
-        slug,
         title,
-        youtube_video:youtube_videos (youtube_video_id)
+        youtube_video:youtube_videos!inner (youtube_video_id)
       `,
     )
-    .eq('channels.slug', slug)
+    .eq('channel_id', id)
     .lt(
       'published_at',
       now

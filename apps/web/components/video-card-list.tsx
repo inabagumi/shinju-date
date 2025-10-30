@@ -30,7 +30,7 @@ export default function VideoCardList({
   return (
     <div className="grid grid-cols-1 gap-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
       {values.map((value) => (
-        <VideoCard key={value.slug} value={value} {...props} />
+        <VideoCard key={value.id} value={value} {...props} />
       ))}
     </div>
   )

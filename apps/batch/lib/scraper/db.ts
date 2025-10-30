@@ -1,10 +1,11 @@
 import * as Sentry from '@sentry/nextjs'
 import type { Tables, TablesInsert } from '@shinju-date/database'
+import { isNonNullable } from '@shinju-date/helpers'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 import { DatabaseError } from './errors'
 import type { SavedVideo } from './types'
 
-export type VideoChannel = Pick<Tables<'channels'>, 'name' | 'slug'>
+export type VideoChannel = Pick<Tables<'channels'>, 'name'>
 
 export type VideoThumbnail = Omit<
   Tables<'thumbnails'>,
@@ -13,21 +14,22 @@ export type VideoThumbnail = Omit<
 
 export type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'id' | 'published_at' | 'slug' | 'title'
+  'duration' | 'id' | 'published_at' | 'title'
 > & {
   channels: VideoChannel | VideoChannel[] | null
   thumbnails: VideoThumbnail | VideoThumbnail[] | null
+  youtube_video?: {
+    youtube_video_id: string
+  }
 }
 
 const scrapeResultSelect = `
   channels (
-    name,
-    slug
+    name
   ),
   duration,
   id,
   published_at,
-  slug,
   thumbnails (
     blur_data_url,
     height,
@@ -53,35 +55,34 @@ export default class DB implements AsyncDisposable {
   ): AsyncGenerator<SavedVideo, void, undefined> {
     for (let i = 0; i < ids.length; i += 100) {
       const { data: videos, error } = await this.#supabaseClient
-        .from('videos')
+        .from('youtube_videos')
         .select(
           `
-            id,
-            created_at,
-            deleted_at,
-            duration,
-            platform,
-            published_at,
-            slug,
-            thumbnail_id,
-            thumbnails (
-              blur_data_url,
-              deleted_at,
-              etag,
-              height,
+            video:videos!inner (
               id,
-              path,
-              updated_at,
-              width
+              created_at,
+              deleted_at,
+              duration,
+              platform,
+              published_at,
+              thumbnail_id,
+              thumbnails (
+                blur_data_url,
+                deleted_at,
+                etag,
+                height,
+                id,
+                path,
+                updated_at,
+                width
+              ),
+              title,
+              visible
             ),
-            title,
-            visible,
-            youtube_video:youtube_videos (
-              youtube_video_id
-            )
+            youtube_video_id
           `,
         )
-        .in('slug', ids.slice(i, i + 100))
+        .in('youtube_video_id', ids.slice(i, i + 100))
 
       if (error) {
         throw new TypeError(error.message, {
@@ -89,7 +90,18 @@ export default class DB implements AsyncDisposable {
         })
       }
 
-      yield* videos
+      // Transform the response to match expected SavedVideo structure
+      const transformedVideos = videos.map((row) => {
+        const video = Array.isArray(row.video) ? row.video[0] : row.video
+        return {
+          ...video,
+          youtube_video: {
+            youtube_video_id: row.youtube_video_id,
+          },
+        }
+      })
+
+      yield* transformedVideos
     }
   }
 
@@ -148,7 +160,10 @@ export default class DB implements AsyncDisposable {
     return thumbnails
   }
 
-  async upsertVideos(values: TablesInsert<'videos'>[]): Promise<Video[]> {
+  async upsertVideos(
+    values: TablesInsert<'videos'>[],
+    youtubeVideoIds: string[],
+  ): Promise<Video[]> {
     const upsertValues = values.filter((value) => value.id)
     const insertValues = values.filter((value) => !value.id)
 
@@ -193,14 +208,18 @@ export default class DB implements AsyncDisposable {
       }
     }
 
-    // Dual-write to youtube_videos table
-    if (videos.length > 0) {
-      const youtubeVideoValues: TablesInsert<'youtube_videos'>[] = videos.map(
-        (video) => ({
-          video_id: video.id,
-          youtube_video_id: video.slug,
-        }),
-      )
+    // Write to youtube_videos table
+    if (videos.length > 0 && youtubeVideoIds.length === videos.length) {
+      const youtubeVideoValues: TablesInsert<'youtube_videos'>[] = videos
+        .map((video, index) =>
+          youtubeVideoIds[index]
+            ? {
+                video_id: video.id,
+                youtube_video_id: youtubeVideoIds[index],
+              }
+            : null,
+        )
+        .filter(isNonNullable)
 
       await Promise.allSettled([
         this.#supabaseClient
@@ -212,6 +231,15 @@ export default class DB implements AsyncDisposable {
             }
           }),
       ])
+
+      // Add youtube_video_id to the returned videos
+      videos.forEach((video, index) => {
+        if (!youtubeVideoIds[index]) return
+
+        video.youtube_video = {
+          youtube_video_id: youtubeVideoIds[index],
+        }
+      })
     }
 
     return videos

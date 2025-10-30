@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
+import type { PopularChannel } from '@/lib/analytics/get-popular-channels'
 import { getPopularChannels } from '@/lib/analytics/get-popular-channels'
 import { ExportMenu } from '../../_components/export-menu'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
@@ -32,7 +33,7 @@ function SimplePopularChannelsWidget({
   dateRange,
   selectedDate,
 }: {
-  channels: Array<{ name: string; slug: string; clicks: number; id: string }>
+  channels: PopularChannel[]
   dateRange: { startDate: string; endDate: string }
   selectedDate: string | null
 }) {
@@ -59,7 +60,7 @@ function SimplePopularChannelsWidget({
           {channels.map((channel, index) => (
             <div
               className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
-              key={channel.slug}
+              key={channel.id}
             >
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-100 font-semibold text-purple-600 text-sm">
                 {index + 1}
@@ -67,7 +68,7 @@ function SimplePopularChannelsWidget({
               <div className="min-w-0 flex-1 truncate">
                 <Link
                   className="font-medium hover:underline"
-                  href={`/channels/${channel.slug}`}
+                  href={`/channels/${channel.id}`}
                 >
                   {channel.name}
                 </Link>

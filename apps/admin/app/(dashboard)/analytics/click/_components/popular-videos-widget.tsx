@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
+import type { PopularVideo } from '@/lib/analytics/get-popular-videos'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
 import { ExportMenu } from '../../_components/export-menu'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
@@ -32,7 +33,7 @@ function SimplePopularVideosWidget({
   dateRange,
   selectedDate,
 }: {
-  videos: Array<{ title: string; slug: string; clicks: number }>
+  videos: PopularVideo[]
   dateRange: { startDate: string; endDate: string }
   selectedDate: string | null
 }) {
@@ -59,7 +60,7 @@ function SimplePopularVideosWidget({
           {videos.map((video, index) => (
             <div
               className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
-              key={video.slug}
+              key={video.id}
             >
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 font-semibold text-green-600 text-sm">
                 {index + 1}
@@ -67,7 +68,7 @@ function SimplePopularVideosWidget({
               <div className="min-w-0 flex-1 truncate">
                 <Link
                   className="font-medium hover:underline"
-                  href={`/videos/${video.slug}`}
+                  href={`/videos/${video.id}`}
                 >
                   {video.title}
                 </Link>

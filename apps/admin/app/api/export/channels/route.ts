@@ -49,11 +49,11 @@ export async function GET(request: NextRequest) {
 
     // Prepare data for CSV export
     const csvData = [
-      ['順位', 'チャンネル名', 'スラッグ', 'クリック数'],
+      ['順位', 'チャンネル名', 'YouTubeチャンネルID', 'クリック数'],
       ...channels.map((channel, index) => [
         index + 1,
         channel.name,
-        channel.slug,
+        channel.youtube_channel?.youtube_channel_id || 'N/A',
         channel.clicks,
       ]),
     ]

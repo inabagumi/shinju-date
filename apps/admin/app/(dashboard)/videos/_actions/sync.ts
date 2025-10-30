@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
-export async function syncVideoWithYouTube(videoSlug: string): Promise<{
+export async function syncVideoWithYouTube(videoId: string): Promise<{
   success: boolean
   error?: string
 }> {
@@ -17,9 +17,9 @@ export async function syncVideoWithYouTube(videoSlug: string): Promise<{
     const { data: video, error: fetchError } = await supabaseClient
       .from('videos')
       .select(
-        'id, slug, title, visible, duration, published_at, youtube_video:youtube_videos(youtube_video_id)',
+        'id, title, visible, duration, published_at, youtube_video:youtube_videos!inner(youtube_video_id)',
       )
-      .eq('slug', videoSlug)
+      .eq('id', videoId)
       .single()
 
     if (fetchError) {
@@ -30,9 +30,16 @@ export async function syncVideoWithYouTube(videoSlug: string): Promise<{
       return { error: '動画が見つかりませんでした。', success: false }
     }
 
+    if (!video.youtube_video?.youtube_video_id) {
+      return {
+        error: 'この動画はYouTube動画ではありません。',
+        success: false,
+      }
+    }
+
     // Fetch video data from YouTube API
     const youtubeVideos = await Array.fromAsync(
-      getVideos({ ids: [video.slug] }),
+      getVideos({ ids: [video.youtube_video.youtube_video_id] }),
     )
 
     if (youtubeVideos.length === 0) {
@@ -61,24 +68,8 @@ export async function syncVideoWithYouTube(videoSlug: string): Promise<{
       }
     }
 
-    // Dual-write to youtube_videos table (always upsert)
-    await supabaseClient
-      .from('youtube_videos')
-      .upsert(
-        {
-          video_id: video.id,
-          youtube_video_id: video.slug,
-        },
-        { onConflict: 'video_id' },
-      )
-      .then(({ error: youtubeError }) => {
-        if (youtubeError) {
-          logger.error('youtube_videosテーブルへの書き込みに失敗しました', {
-            error: youtubeError,
-            videoSlug,
-          })
-        }
-      })
+    // Note: youtube_videos table already has this video's record since we queried with inner join
+    // No need for dual-write here as the record must exist
 
     const currentDateTime = Temporal.Now.zonedDateTimeISO()
 
@@ -129,17 +120,17 @@ export async function syncVideoWithYouTube(videoSlug: string): Promise<{
     const { error: updateError } = await supabaseClient
       .from('videos')
       .update(updateData)
-      .eq('slug', videoSlug)
+      .eq('id', videoId)
 
     if (updateError) {
       throw updateError
     }
 
-    revalidatePath(`/videos/${videoSlug}`)
+    revalidatePath(`/videos/${videoId}`)
     revalidatePath('/videos')
     return { success: true }
   } catch (error) {
-    logger.error('動画の同期に失敗しました', { error, videoSlug })
+    logger.error('動画の同期に失敗しました', { error, videoId })
     return {
       error:
         error instanceof Error

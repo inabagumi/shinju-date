@@ -5,10 +5,10 @@ import { SpinnerIcon } from '@/components/icons'
 import { syncVideoWithYouTube } from '../../_actions/sync'
 
 type Props = {
-  videoSlug: string
+  videoId: string
 }
 
-export function SyncVideoButton({ videoSlug }: Props) {
+export function SyncVideoButton({ videoId }: Props) {
   const [isPending, startTransition] = useTransition()
   const [message, setMessage] = useState<{
     type: 'success' | 'error'
@@ -19,7 +19,7 @@ export function SyncVideoButton({ videoSlug }: Props) {
     setMessage(null)
     startTransition(async () => {
       try {
-        const result = await syncVideoWithYouTube(videoSlug)
+        const result = await syncVideoWithYouTube(videoId)
         if (result.success) {
           setMessage({ text: '動画情報を同期しました。', type: 'success' })
         } else {

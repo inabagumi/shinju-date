@@ -8,7 +8,6 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type VideoDetail = {
   id: string
-  slug: string
   title: string
   visible: boolean
   deleted_at: string | null
@@ -25,7 +24,6 @@ export type VideoDetail = {
   channel: {
     id: string
     name: string
-    slug: string
   }
   youtube_video: {
     youtube_video_id: string
@@ -33,16 +31,16 @@ export type VideoDetail = {
 }
 
 const getVideo = cache(async function getVideo(
-  slug: string,
+  id: string,
 ): Promise<VideoDetail | null> {
   const supabaseClient = await createSupabaseServerClient()
 
   const { data: video, error } = await supabaseClient
     .from('videos')
     .select(
-      'id, slug, title, visible, deleted_at, published_at, updated_at, created_at, duration, channel_id, thumbnails(path, blur_data_url), channels(id, name, slug), youtube_video:youtube_videos(youtube_video_id)',
+      'id, title, visible, deleted_at, published_at, updated_at, created_at, duration, channel_id, thumbnail:thumbnails(path, blur_data_url), channel:channels(id, name), youtube_video:youtube_videos(youtube_video_id)',
     )
-    .eq('slug', slug)
+    .eq('id', id)
     .single()
 
   if (error) {
@@ -67,9 +65,10 @@ const getVideo = cache(async function getVideo(
   })
 
   // Fetch click counts for the video for the last 7 days
+  // Using video.id as the Redis key (matches the write side in increment.ts)
   const scores = await Promise.all(
     days.map((day) =>
-      redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, slug),
+      redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, video.id),
     ),
   )
 
@@ -79,7 +78,7 @@ const getVideo = cache(async function getVideo(
   )
 
   return {
-    channel: video.channels,
+    channel: video.channel,
     channel_id: video.channel_id,
     clicks: totalClicks,
     created_at: video.created_at,
@@ -87,8 +86,7 @@ const getVideo = cache(async function getVideo(
     duration: video.duration,
     id: video.id,
     published_at: video.published_at,
-    slug: video.slug,
-    thumbnail: video.thumbnails,
+    thumbnail: video.thumbnail,
     title: video.title,
     updated_at: video.updated_at,
     visible: video.visible,

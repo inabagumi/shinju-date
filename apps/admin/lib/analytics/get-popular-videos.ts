@@ -9,7 +9,7 @@ import { _getPopularItemsFromRedis } from './_get-popular-items-from-redis'
 
 export type PopularVideo = {
   clicks: number
-  slug: string
+  id: string
   thumbnail: {
     path: string
     blur_data_url: string
@@ -42,7 +42,7 @@ export async function getPopularVideos(
   const { data: videos, error } = await supabaseClient
     .from('videos')
     .select(
-      'id, slug, thumbnails(path, blur_data_url), title, youtube_video:youtube_videos(youtube_video_id)',
+      'id, thumbnails(path, blur_data_url), title, youtube_video:youtube_videos(youtube_video_id)',
     )
     .in('id', videoIds)
 
@@ -64,7 +64,7 @@ export async function getPopularVideos(
 
       return {
         clicks,
-        slug: video.slug,
+        id: video.id,
         thumbnail: video.thumbnails,
         title: video.title,
         youtube_video: video.youtube_video,

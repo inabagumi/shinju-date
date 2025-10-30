@@ -18,10 +18,10 @@ export async function GET(): Promise<Response> {
           name
         ),
         duration,
+        id,
         published_at,
-        slug,
         title,
-        youtube_video:youtube_videos (youtube_video_id)
+        youtube_video:youtube_videos!inner (youtube_video_id)
       `,
     )
     .lt(

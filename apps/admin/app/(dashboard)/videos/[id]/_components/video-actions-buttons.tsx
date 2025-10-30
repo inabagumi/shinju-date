@@ -7,12 +7,12 @@ import {
 } from '../../_actions'
 
 type Props = {
-  videoSlug: string
+  videoId: string
   visible: boolean
   isDeleted: boolean
 }
 
-export function VideoActionsButtons({ videoSlug, visible, isDeleted }: Props) {
+export function VideoActionsButtons({ videoId, visible, isDeleted }: Props) {
   const [isPending, startTransition] = useTransition()
   const [message, setMessage] = useState<{
     type: 'success' | 'error'
@@ -23,7 +23,7 @@ export function VideoActionsButtons({ videoSlug, visible, isDeleted }: Props) {
     setMessage(null)
     startTransition(async () => {
       try {
-        const result = await toggleSingleVideoVisibilityAction(videoSlug)
+        const result = await toggleSingleVideoVisibilityAction(videoId)
         if (result.success) {
           setMessage({
             text: `動画を${visible ? '非表示' : '表示'}に変更しました。`,
@@ -49,7 +49,7 @@ export function VideoActionsButtons({ videoSlug, visible, isDeleted }: Props) {
     setMessage(null)
     startTransition(async () => {
       try {
-        const result = await softDeleteSingleVideoAction(videoSlug)
+        const result = await softDeleteSingleVideoAction(videoId)
         if (result.success) {
           setMessage({
             text: '動画を削除しました。',

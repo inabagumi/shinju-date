@@ -7,16 +7,16 @@ import { SEARCH_RESULT_COUNT, timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
 
 const DEFAULT_SEARCH_SELECT = `
-  channel:channels!inner (name, slug),
+  channel:channels!inner (id, name),
   duration,
-  slug,
+  id,
   thumbnail:thumbnails (blur_data_url, height, path, width),
   published_at,
   title,
-  youtube_video:youtube_videos (youtube_video_id)
+  youtube_video:youtube_videos!inner (youtube_video_id)
 `
 
-export type Channel = Pick<Tables<'channels'>, 'name' | 'slug'>
+export type Channel = Pick<Tables<'channels'>, 'id' | 'name'>
 
 export type Thumbnail = Pick<
   Tables<'thumbnails'>,
@@ -25,11 +25,11 @@ export type Thumbnail = Pick<
 
 export type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'slug' | 'published_at' | 'title'
+  'duration' | 'id' | 'published_at' | 'title'
 > & {
   channel: Channel
-  thumbnail?: Thumbnail | null
-  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
+  thumbnail: Thumbnail | null
+  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'>
 }
 
 type FetchNotEndedVideosOptions = {
@@ -62,7 +62,7 @@ export const fetchNotEndedVideos = async ({
     .limit(100)
 
   if (channelIDs && channelIDs.length > 0) {
-    builder = builder.in('channels.slug', channelIDs)
+    builder = builder.in('channel_id', channelIDs)
   }
 
   const { data: videos, error } = await builder
@@ -147,5 +147,5 @@ export const fetchVideosByChannelIDs = async ({
     })
   }
 
-  return videos
+  return videos.filter((video) => video.youtube_video != null)
 }

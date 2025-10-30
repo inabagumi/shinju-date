@@ -12,7 +12,6 @@ export type PopularChannelForDate = {
   clicks: number
   id: string
   name: string
-  slug: string
   youtube_channel: {
     youtube_channel_id: string
   } | null
@@ -60,9 +59,7 @@ export async function getPopularChannelsForDate(
     const channelIds = channelScores.map(([id]) => id)
     const { data: channels, error } = await supabaseClient
       .from('channels')
-      .select(
-        'id, name, slug, youtube_channel:youtube_channels(youtube_channel_id)',
-      )
+      .select('id, name, youtube_channel:youtube_channels(youtube_channel_id)')
       .in('id', channelIds)
 
     if (error) {
@@ -84,7 +81,6 @@ export async function getPopularChannelsForDate(
           clicks,
           id: channel.id,
           name: channel.name,
-          slug: channel.slug,
           youtube_channel: channel.youtube_channel,
         }
       })

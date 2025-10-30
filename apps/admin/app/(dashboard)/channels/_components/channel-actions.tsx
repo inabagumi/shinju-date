@@ -8,7 +8,6 @@ import { syncChannelWithYouTube } from '../_actions/sync'
 type Channel = {
   id: string
   name: string
-  slug: string
 }
 
 type ChannelActionsProps = {

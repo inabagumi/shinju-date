@@ -7,7 +7,7 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 import { escapeSearchString } from './escape-search'
 
 export type Video = {
-  slug: string
+  id: string
   title: string
   visible: boolean
   deleted_at: string | null
@@ -22,7 +22,6 @@ export type Video = {
   channel: {
     id: string
     name: string
-    slug: string
   }
   youtube_video: {
     youtube_video_id: string
@@ -58,7 +57,7 @@ export async function getVideos(
   let query = supabaseClient
     .from('videos')
     .select(
-      'slug, title, visible, deleted_at, published_at, updated_at, duration, thumbnails(path, blur_data_url), channels(id, name, slug), youtube_video:youtube_videos(youtube_video_id)',
+      'id, title, visible, deleted_at, published_at, updated_at, duration, thumbnail:thumbnails(path, blur_data_url), channel:channels(id, name), youtube_video:youtube_videos(youtube_video_id)',
       { count: 'exact' },
     )
 
@@ -72,9 +71,7 @@ export async function getVideos(
   // Handle text search
   if (filters?.search) {
     const escapedSearch = escapeSearchString(filters.search)
-    query = query.or(
-      `title.ilike.%${escapedSearch}%,slug.ilike.%${escapedSearch}%`,
-    )
+    query = query.ilike('title', `%${escapedSearch}%`)
   }
   // Handle deleted filter
   if (filters?.deleted === true) {
@@ -113,13 +110,14 @@ export async function getVideos(
   })
 
   // Fetch click counts for all videos for the last 7 days
-  const videoIds = videos.map((video) => video.slug)
+  // Using video.id as the Redis key (matches the write side in increment.ts)
+  const videoIds = videos.map((video) => video.id)
   const clickCounts = await Promise.all(
-    videoIds.map(async (slug) => {
+    videoIds.map(async (id) => {
       // Sum up clicks from all 7 days
       const scores = await Promise.all(
         days.map((day) =>
-          redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, slug),
+          redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, id),
         ),
       )
       return scores.reduce<number>(
@@ -131,13 +129,13 @@ export async function getVideos(
 
   // Combine video data with click counts
   const videosWithClicks: Video[] = videos.map((video, index) => ({
-    channel: video.channels,
+    channel: video.channel,
     clicks: clickCounts[index] ?? 0,
     deleted_at: video.deleted_at,
     duration: video.duration,
+    id: video.id,
     published_at: video.published_at,
-    slug: video.slug,
-    thumbnail: video.thumbnails,
+    thumbnail: video.thumbnail,
     title: video.title,
     updated_at: video.updated_at,
     visible: video.visible,

@@ -9,9 +9,11 @@ import { ChannelModal } from './channel-modal'
 type Channel = {
   id: string
   name: string
-  slug: string
   created_at: string
   updated_at: string
+  youtube_channel: {
+    youtube_channel_id: string
+  } | null
 }
 
 type ChannelsListProps = {
@@ -28,10 +30,8 @@ export function ChannelsList({ channels }: ChannelsListProps) {
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
-      filtered = channels.filter(
-        (channel) =>
-          channel.name.toLowerCase().includes(query) ||
-          channel.slug.toLowerCase().includes(query),
+      filtered = channels.filter((channel) =>
+        channel.name.toLowerCase().includes(query),
       )
     }
 
@@ -103,12 +103,13 @@ export function ChannelsList({ channels }: ChannelsListProps) {
                     <div>
                       <Link
                         className="text-blue-600 hover:text-blue-800"
-                        href={`/channels/${channel.slug}`}
+                        href={`/channels/${channel.id}`}
                       >
                         {channel.name}
                       </Link>
                       <div className="font-mono text-gray-500 text-xs">
-                        {channel.slug}
+                        {channel.youtube_channel?.youtube_channel_id ||
+                          channel.id}
                       </div>
                     </div>
                   </td>

@@ -119,7 +119,8 @@ export class Thumbnail {
     const results = await Promise.allSettled(
       originalVideos.map((originalVideo) => {
         const savedVideo = savedVideos.find(
-          (savedVideo) => savedVideo.slug === originalVideo.id,
+          (savedVideo) =>
+            savedVideo.youtube_video?.youtube_video_id === originalVideo.id,
         )
         const savedThumbnail = savedVideo?.thumbnails
           ? Array.isArray(savedVideo.thumbnails)
@@ -363,7 +364,8 @@ export default class Scraper implements AsyncDisposable {
     const values = originalVideos
       .map<TablesInsert<'videos'> | null>((originalVideo) => {
         const savedVideo = savedVideos.find(
-          (savedVideo) => savedVideo.slug === originalVideo.id,
+          (savedVideo) =>
+            savedVideo.youtube_video?.youtube_video_id === originalVideo.id,
         )
         const thumbnail = thumbnails.find((thumbnail) =>
           thumbnail.path.startsWith(`${originalVideo.id}/`),
@@ -430,7 +432,6 @@ export default class Scraper implements AsyncDisposable {
           duration: originalVideo.contentDetails.duration ?? 'P0D',
           platform: 'youtube',
           published_at: publishedAt.toString(),
-          slug: originalVideo.id,
           title: originalVideo.snippet.title ?? '',
           updated_at: this.#currentDateTime.toString(),
           visible: savedVideo?.visible ?? true,
@@ -448,7 +449,17 @@ export default class Scraper implements AsyncDisposable {
       return []
     }
 
-    return this.#db.upsertVideos(values)
+    // Extract YouTube video IDs to pass along with values
+    const youtubeVideoIds = values
+      .map((video, index) => {
+        if (values[index]) {
+          return video.id
+        }
+        return null
+      })
+      .filter((id): id is string => id !== null)
+
+    return this.#db.upsertVideos(values, youtubeVideoIds)
   }
 
   /**

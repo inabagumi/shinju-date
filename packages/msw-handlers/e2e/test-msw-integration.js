@@ -13,7 +13,7 @@ async function testSupabaseHandlers() {
   try {
     // Test basic videos query
     const response = await fetch(
-      'http://localhost:3000/rest/v1/videos?select=id,title,slug&limit=5',
+      'http://localhost:3000/rest/v1/videos?select=id,title&limit=5',
     )
     const data = await response.json()
 

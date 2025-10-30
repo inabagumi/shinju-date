@@ -59,11 +59,11 @@ export default function Timeline({
     initialData: prefetchedData,
     queryFn: () =>
       fetchNotEndedVideos({
-        channelIDs: channels?.map((channel) => channel.slug),
+        channelIDs: channels?.map((channel) => channel.id),
       }),
     queryKey: [
       'not-ended-videos',
-      { channelIDs: channels?.map((channel) => channel.slug) },
+      { channelIDs: channels?.map((channel) => channel.id) },
     ],
     refetchInterval: 60_000,
   })

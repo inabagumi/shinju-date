@@ -7,7 +7,6 @@ type Channel = {
   created_at: string
   id: string
   name: string
-  slug: string
   updated_at: string
 }
 

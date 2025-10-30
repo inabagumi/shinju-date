@@ -58,7 +58,7 @@ describe('Supabase Handlers', () => {
       expect(response.ok).toBe(true)
       expect(Array.isArray(data)).toBe(true)
       expect(data[0]).toHaveProperty('name')
-      expect(data[0]).toHaveProperty('slug')
+      expect(data[0]).toHaveProperty('id')
     })
   })
 

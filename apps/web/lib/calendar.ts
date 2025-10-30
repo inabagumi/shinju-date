@@ -12,10 +12,10 @@ type Channel = Pick<Tables<'channels'>, 'name'>
 
 type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'published_at' | 'slug' | 'title'
+  'duration' | 'id' | 'published_at' | 'title'
 > & {
   channel: Channel
-  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
+  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'>
 }
 
 type GetPublishedAtAndEndedAtOptions = {
@@ -85,14 +85,20 @@ export function createEventAttributesList(
   videos: Video[],
   { now }: CreateEventAttributesListOptions,
 ): EventAttributes[] {
-  return videos.map((video): EventAttributes => {
+  const events: EventAttributes[] = []
+
+  for (const video of videos) {
+    if (!video.youtube_video) continue
+
     const [publishedAt, endedAt] = getPublishedAtAndEndedAt(video, {
       now,
     })
-    const youtubeVideoId = video.youtube_video?.youtube_video_id ?? video.slug
-    const url = `https://www.youtube.com/watch?v=${encodeURIComponent(youtubeVideoId)}`
+    const youtubeVideoId = video.youtube_video.youtube_video_id
+    const url = `https://www.youtube.com/watch?v=${encodeURIComponent(
+      youtubeVideoId,
+    )}`
 
-    return {
+    events.push({
       calName: video.channel.name,
       description: url,
       end: convertTimestampToArray(endedAt.epochMilliseconds, 'utc'),
@@ -104,8 +110,10 @@ export function createEventAttributesList(
       startInputType: 'utc',
       startOutputType: 'utc',
       title: video.title,
-      uid: `${video.slug}@shinju.date`,
+      uid: `${video.id}@shinju.date`,
       url,
-    }
-  })
+    })
+  }
+
+  return events
 }

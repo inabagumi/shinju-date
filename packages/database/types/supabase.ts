@@ -20,7 +20,6 @@ export type Database = {
           deleted_at: string | null
           id: string
           name: string
-          slug: string
           updated_at: string
         }
         Insert: {
@@ -28,7 +27,6 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           name: string
-          slug: string
           updated_at?: string
         }
         Update: {
@@ -36,7 +34,6 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           name?: string
-          slug?: string
           updated_at?: string
         }
         Relationships: []
@@ -165,7 +162,6 @@ export type Database = {
           id: string
           platform: Database['public']['Enums']['platform_type'] | null
           published_at: string
-          slug: string
           thumbnail_id: string | null
           title: string
           updated_at: string
@@ -179,7 +175,6 @@ export type Database = {
           id?: string
           platform?: Database['public']['Enums']['platform_type'] | null
           published_at: string
-          slug: string
           thumbnail_id?: string | null
           title: string
           updated_at?: string
@@ -193,7 +188,6 @@ export type Database = {
           id?: string
           platform?: Database['public']['Enums']['platform_type'] | null
           published_at?: string
-          slug?: string
           thumbnail_id?: string | null
           title?: string
           updated_at?: string
@@ -284,7 +278,7 @@ export type Database = {
       search_videos_v2: {
         Args: {
           channel_ids: string[]
-          perpage: number
+          perpage?: number
           query: string
           until: string
         }
@@ -296,7 +290,6 @@ export type Database = {
           id: string
           platform: Database['public']['Enums']['platform_type'] | null
           published_at: string
-          slug: string
           thumbnail_id: string | null
           title: string
           updated_at: string

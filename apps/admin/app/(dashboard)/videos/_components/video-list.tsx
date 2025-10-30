@@ -36,27 +36,27 @@ function getStatusText(video: Video): string {
 
 export default function VideoList({ videos }: Props) {
   const searchParams = useSearchParams()
-  const [selectedSlugs, setSelectedSlugs] = useState<string[]>([])
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [showConfirmModal, setShowConfirmModal] = useState<{
     action: 'toggle' | 'delete'
     open: boolean
-    slug?: string
+    id?: string
   }>({ action: 'toggle', open: false })
   const [isPending, startTransition] = useTransition()
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedSlugs(videos.map((v) => v.slug))
+      setSelectedIds(videos.map((v) => v.id))
     } else {
-      setSelectedSlugs([])
+      setSelectedIds([])
     }
   }
 
-  const handleSelectVideo = (slug: string, checked: boolean) => {
+  const handleSelectVideo = (id: string, checked: boolean) => {
     if (checked) {
-      setSelectedSlugs((prev) => [...prev, slug])
+      setSelectedIds((prev) => [...prev, id])
     } else {
-      setSelectedSlugs((prev) => prev.filter((s) => s !== slug))
+      setSelectedIds((prev) => prev.filter((i) => i !== id))
     }
   }
 
@@ -64,18 +64,18 @@ export default function VideoList({ videos }: Props) {
     setShowConfirmModal({ action, open: true })
   }
 
-  const handleSingleAction = (action: 'toggle' | 'delete', slug: string) => {
-    setShowConfirmModal({ action, open: true, slug })
+  const handleSingleAction = (action: 'toggle' | 'delete', id: string) => {
+    setShowConfirmModal({ action, id, open: true })
   }
 
   const handleConfirm = () => {
     startTransition(async () => {
       try {
-        // If slug is provided, it's a single action
-        if (showConfirmModal.slug) {
+        // If id is provided, it's a single action
+        if (showConfirmModal.id) {
           if (showConfirmModal.action === 'toggle') {
             const result = await toggleSingleVideoVisibilityAction(
-              showConfirmModal.slug,
+              showConfirmModal.id,
             )
             if (result.success) {
               alert('表示状態を更新しました。')
@@ -84,7 +84,7 @@ export default function VideoList({ videos }: Props) {
             }
           } else if (showConfirmModal.action === 'delete') {
             const result = await softDeleteSingleVideoAction(
-              showConfirmModal.slug,
+              showConfirmModal.id,
             )
             if (result.success) {
               alert('動画を削除しました。')
@@ -95,17 +95,17 @@ export default function VideoList({ videos }: Props) {
         } else {
           // Bulk action
           if (showConfirmModal.action === 'toggle') {
-            const result = await toggleVisibilityAction(selectedSlugs)
+            const result = await toggleVisibilityAction(selectedIds)
             if (result.success) {
-              setSelectedSlugs([])
+              setSelectedIds([])
               alert('表示状態を更新しました。')
             } else {
               alert(result.error || '更新に失敗しました。')
             }
           } else if (showConfirmModal.action === 'delete') {
-            const result = await softDeleteAction(selectedSlugs)
+            const result = await softDeleteAction(selectedIds)
             if (result.success) {
-              setSelectedSlugs([])
+              setSelectedIds([])
               alert('動画を削除しました。')
             } else {
               alert(result.error || '削除に失敗しました。')
@@ -134,8 +134,7 @@ export default function VideoList({ videos }: Props) {
     return `/videos?${params.toString()}`
   }
 
-  const allSelected =
-    videos.length > 0 && selectedSlugs.length === videos.length
+  const allSelected = videos.length > 0 && selectedIds.length === videos.length
 
   const currentSortField = searchParams.get('sortField') || 'updated_at'
   const currentSortOrder = (searchParams.get('sortOrder') || 'desc') as
@@ -145,12 +144,10 @@ export default function VideoList({ videos }: Props) {
   return (
     <div>
       {/* Action bar */}
-      {selectedSlugs.length > 0 && (
+      {selectedIds.length > 0 && (
         <div className="sticky top-0 z-10 mb-4 bg-blue-600 p-4 text-white shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="font-semibold">
-              {selectedSlugs.length} 件選択中
-            </span>
+            <span className="font-semibold">{selectedIds.length} 件選択中</span>
             <div className="flex gap-2">
               <button
                 className="rounded-md bg-blue-700 px-4 py-2 hover:bg-blue-800 disabled:bg-gray-400"
@@ -223,12 +220,12 @@ export default function VideoList({ videos }: Props) {
           <tbody>
             {videos.length > 0 ? (
               videos.map((video) => (
-                <tr className="border-b hover:bg-gray-50" key={video.slug}>
+                <tr className="border-b hover:bg-gray-50" key={video.id}>
                   <td className="p-3">
                     <input
-                      checked={selectedSlugs.includes(video.slug)}
+                      checked={selectedIds.includes(video.id)}
                       onChange={(e) =>
-                        handleSelectVideo(video.slug, e.target.checked)
+                        handleSelectVideo(video.id, e.target.checked)
                       }
                       type="checkbox"
                     />
@@ -257,7 +254,7 @@ export default function VideoList({ videos }: Props) {
                   <td className="max-w-xs p-3">
                     <Link
                       className="text-blue-600 hover:text-blue-800"
-                      href={`/videos/${video.slug}`}
+                      href={`/videos/${video.id}`}
                     >
                       <div className="line-clamp-2" title={video.title}>
                         {video.title}
@@ -325,12 +322,14 @@ export default function VideoList({ videos }: Props) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem
-                          onClick={() =>
-                            window.open(
-                              `https://www.youtube.com/watch?v=${video.youtube_video?.youtube_video_id ?? video.slug}`,
-                              '_blank',
-                            )
-                          }
+                          onClick={() => {
+                            if (video.youtube_video?.youtube_video_id) {
+                              window.open(
+                                `https://www.youtube.com/watch?v=${video.youtube_video.youtube_video_id}`,
+                                '_blank',
+                              )
+                            }
+                          }}
                         >
                           <span className="flex items-center gap-1">
                             YouTubeで見る
@@ -352,16 +351,12 @@ export default function VideoList({ videos }: Props) {
                           </span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() =>
-                            handleSingleAction('toggle', video.slug)
-                          }
+                          onClick={() => handleSingleAction('toggle', video.id)}
                         >
                           表示/非表示を切り替え
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() =>
-                            handleSingleAction('delete', video.slug)
-                          }
+                          onClick={() => handleSingleAction('delete', video.id)}
                           variant="danger"
                         >
                           削除
@@ -389,12 +384,12 @@ export default function VideoList({ videos }: Props) {
             <h3 className="mb-4 font-semibold text-lg">確認</h3>
             <p className="mb-6 text-gray-700">
               {showConfirmModal.action === 'delete'
-                ? showConfirmModal.slug
+                ? showConfirmModal.id
                   ? 'この動画を削除しますか？'
-                  : `本当に${selectedSlugs.length}件の動画を削除しますか？`
-                : showConfirmModal.slug
+                  : `本当に${selectedIds.length}件の動画を削除しますか？`
+                : showConfirmModal.id
                   ? 'この動画の表示状態を切り替えますか？'
-                  : `本当に${selectedSlugs.length}件の動画の表示状態を切り替えますか？`}
+                  : `本当に${selectedIds.length}件の動画の表示状態を切り替えますか？`}
             </p>
             <div className="flex justify-end gap-2">
               <button

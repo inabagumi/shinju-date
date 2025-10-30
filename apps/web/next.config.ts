@@ -67,32 +67,6 @@ const nextConfig: NextConfig = {
   pageExtensions: ['tsx', 'ts', 'mdx'],
   reactCompiler: true,
   reactStrictMode: true,
-  redirects() {
-    return Promise.resolve([
-      {
-        destination: '/',
-        permanent: true,
-        source: '/groups/:slug',
-      },
-      {
-        destination: '/videos/:query*',
-        permanent: true,
-        source: '/groups/:slug/videos/:query*',
-      },
-    ])
-  },
-  rewrites() {
-    return Promise.resolve({
-      afterFiles: [
-        {
-          destination: '/manifest.webmanifest',
-          source: '/manifest.json',
-        },
-      ],
-      beforeFiles: [],
-      fallback: [],
-    })
-  },
   serverExternalPackages: ['@sentry/profiling-node'],
 }
 
