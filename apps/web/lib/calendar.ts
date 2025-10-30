@@ -15,7 +15,7 @@ type Video = Pick<
   'duration' | 'id' | 'published_at' | 'title'
 > & {
   channel: Channel
-  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
+  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'>
 }
 
 type GetPublishedAtAndEndedAtOptions = {

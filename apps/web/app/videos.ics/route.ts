@@ -14,14 +14,14 @@ export async function GET(): Promise<Response> {
     .from('videos')
     .select(
       `
-        channel:channels (
+        channel:channels!inner (
           name
         ),
         duration,
         id,
         published_at,
         title,
-        youtube_video:youtube_videos (youtube_video_id)
+        youtube_video:youtube_videos!inner (youtube_video_id)
       `,
     )
     .lt(

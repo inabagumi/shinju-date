@@ -29,7 +29,7 @@ type Video = {
   thumbnails: Thumbnail[] | Thumbnail | null
   youtube_video: {
     youtube_video_id: string
-  } | null
+  }
 }
 
 type GetSavedVideos = {
@@ -59,7 +59,7 @@ async function* getSavedVideos({
     const { data: savedVideos, error } = await supabaseClient
       .from('videos')
       .select(
-        'id, thumbnails (id), youtube_video:youtube_videos (youtube_video_id)',
+        'id, thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
       )
       .is('deleted_at', null)
       .order('published_at', {
