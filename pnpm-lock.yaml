@@ -250,6 +250,9 @@ importers:
       typescript:
         specifier: 5.9.3
         version: 5.9.3
+      vitest:
+        specifier: 4.0.5
+        version: 4.0.5(@types/debug@4.1.12)(@types/node@22.18.13)(@vitest/ui@4.0.5)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.11.6(@types/node@22.18.13)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)
 
   apps/insights: {}
 
