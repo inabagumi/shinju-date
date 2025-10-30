@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Button } from '../src/button'
+import { Button } from '../button'
 
 describe('Button', () => {
   it('should export Button component', () => {

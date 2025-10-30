@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Input } from '../src/input'
+import { Input } from '../input'
 
 describe('Input', () => {
   it('should export Input component', () => {

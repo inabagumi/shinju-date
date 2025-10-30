@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Card, CardContent, CardFooter, CardHeader } from '../src/card'
+import { Card, CardContent, CardFooter, CardHeader } from '../card'
 
 describe('Card components', () => {
   it('should export Card component', () => {
