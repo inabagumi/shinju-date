@@ -10,6 +10,7 @@
     "@shinju-date/helpers": "workspace:*",
     "@shinju-date/logger": "workspace:*",
     "@shinju-date/retryable-fetch": "workspace:*",
+    "@shinju-date/tailwind-config": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
     "@shinju-date/ui": "workspace:*",
     "@supabase/sentry-js-integration": "0.3.0",
