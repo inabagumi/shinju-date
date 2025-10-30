@@ -8,7 +8,7 @@ describe('Upstash Redis Handlers', () => {
 
   describe('PING command', () => {
     it('should respond with PONG', async () => {
-      const response = await fetch('http://localhost:3000/v2/ping', {
+      const response = await fetch('https://fake.upstash.test/v2/ping', {
         body: JSON.stringify([]),
         headers: { 'Content-Type': 'application/json' },
         method: 'POST',
@@ -22,7 +22,7 @@ describe('Upstash Redis Handlers', () => {
 
   describe('ZRANGE command', () => {
     it('should return sorted set data', async () => {
-      const response = await fetch('http://localhost:3000/v2/zrange', {
+      const response = await fetch('https://fake.upstash.test/v2/zrange', {
         body: JSON.stringify([
           'videos:clicked:2023-10-23',
           '0',
@@ -43,7 +43,7 @@ describe('Upstash Redis Handlers', () => {
 
   describe('Pipeline commands', () => {
     it('should handle multiple commands', async () => {
-      const response = await fetch('http://localhost:3000/v2/pipeline', {
+      const response = await fetch('https://fake.upstash.test/v2/pipeline', {
         body: JSON.stringify([
           ['PING'],
           [
@@ -75,7 +75,7 @@ describe('Upstash Redis Handlers', () => {
   describe('GET/SET commands', () => {
     it('should handle basic key-value operations', async () => {
       // Test SET
-      const setResponse = await fetch('http://localhost:3000/v2/set', {
+      const setResponse = await fetch('https://fake.upstash.test/v2/set', {
         body: JSON.stringify(['test:key', 'test:value']),
         headers: { 'Content-Type': 'application/json' },
         method: 'POST',
@@ -86,7 +86,7 @@ describe('Upstash Redis Handlers', () => {
       expect(setData.result).toBe('OK')
 
       // Test GET
-      const getResponse = await fetch('http://localhost:3000/v2/get', {
+      const getResponse = await fetch('https://fake.upstash.test/v2/get', {
         body: JSON.stringify(['test:key']),
         headers: { 'Content-Type': 'application/json' },
         method: 'POST',

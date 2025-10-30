@@ -12,6 +12,8 @@ on:
 env:
   # renovate: datasource=npm depName=corepack
   COREPACK_VERSION: 0.31.0
+  # renovate: datasource=node-version depName=node
+  NODE_VERSION: 22.13.1
   # renovate: datasource=github-releases depName=astral-sh/uv
   UV_VERSION: 0.9.5
 
@@ -35,8 +37,22 @@ jobs:
           npm install -g corepack@${COREPACK_VERSION}
           corepack enable
 
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
       - name: "Install project dependencies"
         run: "pnpm install"
+
+      - name: "Set environment variables for Supabase and Upstash"
+        run: |
+          echo "NEXT_PUBLIC_SUPABASE_URL=https://fake.supabase.test" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=fake-anon-key" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=fake-service-role-key" >> $GITHUB_ENV
+
+          echo "UPSTASH_REDIS_REST_TOKEN=fake-upstash-token" >> $GITHUB_ENV
+          echo "UPSTASH_REDIS_REST_URL=https://fake.upstash.test" >> $GITHUB_ENV
 
       - name: "Set MSW environment variable"
         run: "echo 'ENABLE_MSW=true' >> $GITHUB_ENV"
@@ -51,9 +67,3 @@ jobs:
         run: |
           cd apps/insights
           uv sync --extra dev
-
-      - name: "Run code quality checks and auto-fix issues"
-        run: "pnpm run check --fix"
-
-      - name: "Run tests to verify functionality"
-        run: pnpm run test

@@ -9,7 +9,7 @@ describe('Supabase Handlers', () => {
   describe('Videos endpoint', () => {
     it('should return mock videos data', async () => {
       const response = await fetch(
-        'http://localhost:3000/rest/v1/videos?select=id,title&limit=2',
+        'https://fake.supabase.test/rest/v1/videos?select=id,title&limit=2',
       )
       const data = await response.json()
 
@@ -22,7 +22,7 @@ describe('Supabase Handlers', () => {
 
     it('should handle select with relations', async () => {
       const response = await fetch(
-        'http://localhost:3000/rest/v1/videos?select=id,title,thumbnails(path,blur_data_url)',
+        'https://fake.supabase.test/rest/v1/videos?select=id,title,thumbnails(path,blur_data_url)',
       )
       const data = await response.json()
 
@@ -40,7 +40,7 @@ describe('Supabase Handlers', () => {
 
     it('should handle filtering with id.in', async () => {
       const response = await fetch(
-        'http://localhost:3000/rest/v1/videos?select=*&id.in.(1,2)',
+        'https://fake.supabase.test/rest/v1/videos?select=*&id.in.(1,2)',
       )
       const data = await response.json()
 
@@ -52,7 +52,9 @@ describe('Supabase Handlers', () => {
 
   describe('Channels endpoint', () => {
     it('should return mock channels data', async () => {
-      const response = await fetch('http://localhost:3000/rest/v1/channels')
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/channels',
+      )
       const data = await response.json()
 
       expect(response.ok).toBe(true)
@@ -65,7 +67,7 @@ describe('Supabase Handlers', () => {
   describe('Query parameter parsing', () => {
     it('should handle limit parameter', async () => {
       const response = await fetch(
-        'http://localhost:3000/rest/v1/videos?limit=1',
+        'https://fake.supabase.test/rest/v1/videos?limit=1',
       )
       const data = await response.json()
 

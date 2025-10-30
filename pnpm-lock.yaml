@@ -253,6 +253,70 @@ importers:
 
   apps/insights: {}
 
+  apps/msw-demo:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: 2.77.0
+        version: 2.77.0
+      '@upstash/redis':
+        specifier: 1.35.6
+        version: 1.35.6
+      next:
+        specifier: 16.0.1
+        version: 16.0.1(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      react:
+        specifier: 19.2.0
+        version: 19.2.0
+      react-dom:
+        specifier: 19.2.0
+        version: 19.2.0(react@19.2.0)
+      tailwind-merge:
+        specifier: 3.3.1
+        version: 3.3.1
+      tailwindcss:
+        specifier: 4.1.16
+        version: 4.1.16
+    devDependencies:
+      '@shinju-date/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@shinju-date/msw-handlers':
+        specifier: workspace:*
+        version: link:../../packages/msw-handlers
+      '@tailwindcss/postcss':
+        specifier: 4.1.16
+        version: 4.1.16
+      '@tsconfig/next':
+        specifier: 2.0.3
+        version: 2.0.3
+      '@tsconfig/strictest':
+        specifier: 2.0.7
+        version: 2.0.7
+      '@types/node':
+        specifier: 22.18.13
+        version: 22.18.13
+      '@types/react':
+        specifier: 19.2.2
+        version: 19.2.2
+      '@types/react-dom':
+        specifier: 19.2.2
+        version: 19.2.2(@types/react@19.2.2)
+      babel-plugin-react-compiler:
+        specifier: 1.0.0
+        version: 1.0.0
+      msw:
+        specifier: 2.11.6
+        version: 2.11.6(@types/node@22.18.13)(typescript@5.9.3)
+      postcss:
+        specifier: 8.5.6
+        version: 8.5.6
+      postcss-load-config:
+        specifier: 6.0.1
+        version: 6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
   apps/web:
     dependencies:
       '@mdx-js/react':

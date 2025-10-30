@@ -22,7 +22,7 @@
       "version": "1.6.4"
     }
   },
-  "forwardPorts": [3000, 4000, 8000, 54321, 54323],
+  "forwardPorts": [3000, 4000, 8000, 10000, 54321, 54323],
   "hostRequirements": {
     "cpus": 4,
     "memory": "8gb",
