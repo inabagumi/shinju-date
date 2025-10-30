@@ -164,7 +164,7 @@ export default class DB implements AsyncDisposable {
     values: TablesInsert<'videos'>[],
     youtubeVideoIds: string[],
   ): Promise<Video[]> {
-    // Create a mapping from video values to YouTube video IDs
+    // Create a mapping from video values to YouTube video IDs for existing videos
     const videoIdMap = new Map<string, string>()
     for (let i = 0; i < values.length; i++) {
       const value = values[i]
@@ -174,14 +174,26 @@ export default class DB implements AsyncDisposable {
       }
     }
 
-    const upsertValues = values.filter((value) => value.id)
-    const insertValues = values.filter((value) => !value.id)
+    // Separate upsert and insert values, tracking indices for new inserts
+    const upsertItems: Array<{ value: TablesInsert<'videos'>; index: number }> =
+      []
+    const insertItems: Array<{ value: TablesInsert<'videos'>; index: number }> =
+      []
+
+    for (let i = 0; i < values.length; i++) {
+      const value = values[i]
+      if (value?.id) {
+        upsertItems.push({ index: i, value })
+      } else {
+        insertItems.push({ index: i, value })
+      }
+    }
 
     const results = await Promise.allSettled([
-      upsertValues.length > 0
+      upsertItems.length > 0
         ? this.#supabaseClient
             .from('videos')
-            .upsert(upsertValues)
+            .upsert(upsertItems.map((item) => item.value))
             .select(scrapeResultSelect)
             .then(({ data, error }) => {
               if (error) {
@@ -191,10 +203,10 @@ export default class DB implements AsyncDisposable {
               return data
             })
         : Promise.resolve([]),
-      insertValues.length > 0
+      insertItems.length > 0
         ? this.#supabaseClient
             .from('videos')
-            .insert(insertValues)
+            .insert(insertItems.map((item) => item.value))
             .select(scrapeResultSelect)
             .then(({ data, error }) => {
               if (error) {
@@ -219,8 +231,26 @@ export default class DB implements AsyncDisposable {
     }
 
     // Write to youtube_videos table
-    // Match YouTube video IDs to videos using the video.id from the map
+    // For new inserts, we need to match by order since IDs are newly generated
     if (videos.length > 0) {
+      // Add newly inserted videos to the map by matching order
+      const insertedVideos =
+        results[1]?.status === 'fulfilled' ? results[1].value : []
+      for (
+        let i = 0;
+        i < insertedVideos.length && i < insertItems.length;
+        i++
+      ) {
+        const video = insertedVideos[i]
+        const originalIndex = insertItems[i]?.index
+        if (video && originalIndex !== undefined) {
+          const youtubeVideoId = youtubeVideoIds[originalIndex]
+          if (youtubeVideoId) {
+            videoIdMap.set(video.id, youtubeVideoId)
+          }
+        }
+      }
+
       const youtubeVideoValues: TablesInsert<'youtube_videos'>[] = videos
         .map((video) => {
           const youtubeVideoId = videoIdMap.get(video.id)
