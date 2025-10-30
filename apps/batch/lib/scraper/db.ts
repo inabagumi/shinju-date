@@ -164,6 +164,16 @@ export default class DB implements AsyncDisposable {
     values: TablesInsert<'videos'>[],
     youtubeVideoIds: string[],
   ): Promise<Video[]> {
+    // Create a mapping from video values to YouTube video IDs
+    const videoIdMap = new Map<string | undefined, string>()
+    for (let i = 0; i < values.length; i++) {
+      const value = values[i]
+      const youtubeVideoId = youtubeVideoIds[i]
+      if (value && youtubeVideoId) {
+        videoIdMap.set(value.id, youtubeVideoId)
+      }
+    }
+
     const upsertValues = values.filter((value) => value.id)
     const insertValues = values.filter((value) => !value.id)
 
@@ -209,37 +219,42 @@ export default class DB implements AsyncDisposable {
     }
 
     // Write to youtube_videos table
-    if (videos.length > 0 && youtubeVideoIds.length === videos.length) {
+    // Match YouTube video IDs to videos using the video.id from the map
+    if (videos.length > 0) {
       const youtubeVideoValues: TablesInsert<'youtube_videos'>[] = videos
-        .map((video, index) =>
-          youtubeVideoIds[index]
+        .map((video) => {
+          const youtubeVideoId = videoIdMap.get(video.id)
+          return youtubeVideoId
             ? {
                 video_id: video.id,
-                youtube_video_id: youtubeVideoIds[index],
+                youtube_video_id: youtubeVideoId,
               }
-            : null,
-        )
+            : null
+        })
         .filter(isNonNullable)
 
-      await Promise.allSettled([
-        this.#supabaseClient
-          .from('youtube_videos')
-          .upsert(youtubeVideoValues, { onConflict: 'video_id' })
-          .then(({ error }) => {
-            if (error) {
-              Sentry.captureException(new DatabaseError(error))
+      if (youtubeVideoValues.length > 0) {
+        await Promise.allSettled([
+          this.#supabaseClient
+            .from('youtube_videos')
+            .upsert(youtubeVideoValues, { onConflict: 'video_id' })
+            .then(({ error }) => {
+              if (error) {
+                Sentry.captureException(new DatabaseError(error))
+              }
+            }),
+        ])
+
+        // Add youtube_video_id to the returned videos
+        for (const video of videos) {
+          const youtubeVideoId = videoIdMap.get(video.id)
+          if (youtubeVideoId) {
+            video.youtube_video = {
+              youtube_video_id: youtubeVideoId,
             }
-          }),
-      ])
-
-      // Add youtube_video_id to the returned videos
-      videos.forEach((video, index) => {
-        if (!youtubeVideoIds[index]) return
-
-        video.youtube_video = {
-          youtube_video_id: youtubeVideoIds[index],
+          }
         }
-      })
+      }
     }
 
     return videos
