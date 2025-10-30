@@ -57,6 +57,9 @@ jobs:
       - name: "Set MSW environment variable"
         run: "echo 'ENABLE_MSW=true' >> $GITHUB_ENV"
 
+      - name: "Set Next.js Turbopack TLS environment variable"
+        run: "echo 'NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1' >> $GITHUB_ENV"
+
       - name: "Create public directory for admin app"
         run: "mkdir -p apps/admin/public"
 

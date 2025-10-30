@@ -28,7 +28,7 @@
     "temporal-polyfill": "0.3.0",
     "zod": "4.1.12"
   },
-  "description": "",
+  "description": "Content management admin dashboard for SHINJU DATE",
   "devDependencies": {
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
