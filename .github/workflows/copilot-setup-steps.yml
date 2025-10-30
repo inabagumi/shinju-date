@@ -9,14 +9,6 @@ on:
     paths:
       - .github/workflows/copilot-setup-steps.yml
 
-env:
-  # renovate: datasource=npm depName=corepack
-  COREPACK_VERSION: 0.31.0
-  # renovate: datasource=node-version depName=node
-  NODE_VERSION: 22.13.1
-  # renovate: datasource=github-releases depName=astral-sh/uv
-  UV_VERSION: 0.9.5
-
 jobs:
   copilot-setup-steps:
     runs-on: ubuntu-24.04
@@ -30,16 +22,19 @@ jobs:
       - name: "Set up uv"
         uses: astral-sh/setup-uv@v7
         with:
-          version: ${{ env.UV_VERSION }}
+          # renovate: datasource=github-releases depName=astral-sh/uv
+          version: "0.9.5"
 
       - name: "Enable Corepack for pnpm"
         run: |
-          npm install -g corepack@${COREPACK_VERSION}
+          # renovate: datasource=npm depName=corepack
+          npm install -g corepack@0.31.0
           corepack enable
 
       - uses: actions/setup-node@v6
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          # renovate: datasource=node-version depName=node
+          node-version: "22.13.1"
           cache: pnpm
 
       - name: "Install project dependencies"
