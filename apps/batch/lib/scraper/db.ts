@@ -165,11 +165,11 @@ export default class DB implements AsyncDisposable {
     youtubeVideoIds: string[],
   ): Promise<Video[]> {
     // Create a mapping from video values to YouTube video IDs
-    const videoIdMap = new Map<string | undefined, string>()
+    const videoIdMap = new Map<string, string>()
     for (let i = 0; i < values.length; i++) {
       const value = values[i]
       const youtubeVideoId = youtubeVideoIds[i]
-      if (value && youtubeVideoId) {
+      if (value?.id && youtubeVideoId) {
         videoIdMap.set(value.id, youtubeVideoId)
       }
     }
