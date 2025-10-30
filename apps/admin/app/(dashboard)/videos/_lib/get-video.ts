@@ -38,7 +38,7 @@ const getVideo = cache(async function getVideo(
   const { data: video, error } = await supabaseClient
     .from('videos')
     .select(
-      'id, title, visible, deleted_at, published_at, updated_at, created_at, duration, channel_id, thumbnails(path, blur_data_url), channels(id, name), youtube_video:youtube_videos(youtube_video_id)',
+      'id, title, visible, deleted_at, published_at, updated_at, created_at, duration, channel_id, thumbnail:thumbnails(path, blur_data_url), channel:channels(id, name), youtube_video:youtube_videos(youtube_video_id)',
     )
     .eq('id', id)
     .single()
@@ -78,7 +78,7 @@ const getVideo = cache(async function getVideo(
   )
 
   return {
-    channel: video.channels,
+    channel: video.channel,
     channel_id: video.channel_id,
     clicks: totalClicks,
     created_at: video.created_at,
@@ -86,7 +86,7 @@ const getVideo = cache(async function getVideo(
     duration: video.duration,
     id: video.id,
     published_at: video.published_at,
-    thumbnail: video.thumbnails,
+    thumbnail: video.thumbnail,
     title: video.title,
     updated_at: video.updated_at,
     visible: video.visible,

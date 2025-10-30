@@ -57,7 +57,7 @@ export async function getVideos(
   let query = supabaseClient
     .from('videos')
     .select(
-      'id, title, visible, deleted_at, published_at, updated_at, duration, thumbnails(path, blur_data_url), channels(id, name), youtube_video:youtube_videos(youtube_video_id)',
+      'id, title, visible, deleted_at, published_at, updated_at, duration, thumbnail:thumbnails(path, blur_data_url), channel:channels(id, name), youtube_video:youtube_videos(youtube_video_id)',
       { count: 'exact' },
     )
 
@@ -129,13 +129,13 @@ export async function getVideos(
 
   // Combine video data with click counts
   const videosWithClicks: Video[] = videos.map((video, index) => ({
-    channel: video.channels,
+    channel: video.channel,
     clicks: clickCounts[index] ?? 0,
     deleted_at: video.deleted_at,
     duration: video.duration,
     id: video.id,
     published_at: video.published_at,
-    thumbnail: video.thumbnails,
+    thumbnail: video.thumbnail,
     title: video.title,
     updated_at: video.updated_at,
     visible: video.visible,
