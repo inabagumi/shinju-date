@@ -146,7 +146,34 @@ describe('DB class', () => {
     )
     const db = new DB(supabaseClient)
 
-    // Mock video data without IDs (new inserts)
+    let capturedYoutubeVideos: Array<{
+      video_id: string
+      youtube_video_id: string
+    }> = []
+    server.use(
+      http.get('*/rest/v1/youtube_videos', () => {
+        return HttpResponse.json([])
+      }),
+      http.post('*/rest/v1/youtube_videos', async ({ request }) => {
+        const body = await request.json()
+        capturedYoutubeVideos = Array.isArray(body) ? body : [body]
+        return HttpResponse.json(capturedYoutubeVideos, { status: 201 })
+      }),
+      http.post('*/rest/v1/videos', async ({ request }) => {
+        const body = await request.json()
+        const items = Array.isArray(body) ? body : [body]
+
+        const insertedVideos = items.map((item, index) => ({
+          ...item,
+          channels: { name: 'Test Channel' },
+          id: `generated-uuid-${index + 1}`,
+          thumbnails: null,
+        }))
+
+        return HttpResponse.json(insertedVideos, { status: 201 })
+      }),
+    )
+
     const values = [
       {
         channel_id: '1',
@@ -160,13 +187,45 @@ describe('DB class', () => {
         updated_at: '2023-01-01T00:00:00.000Z',
         visible: true,
       },
+      {
+        channel_id: '1',
+        created_at: '2023-01-02T00:00:00.000Z',
+        deleted_at: null,
+        duration: 'PT8M15S',
+        platform: 'youtube' as const,
+        published_at: '2023-01-02T12:00:00.000Z',
+        thumbnail_id: '2',
+        title: 'New Video 2',
+        updated_at: '2023-01-02T00:00:00.000Z',
+        visible: true,
+      },
     ]
 
-    const youtubeVideoIds = ['YT_brandNew1']
+    const youtubeVideoIds = ['YT_brandNew1', 'YT_brandNew2']
 
     const result = await db.upsertVideos(values, youtubeVideoIds)
 
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
     expect(result).toBeDefined()
+    expect(result.length).toBe(2)
+
+    expect(capturedYoutubeVideos.length).toBeGreaterThan(0)
+    expect(capturedYoutubeVideos).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          video_id: 'generated-uuid-1',
+          youtube_video_id: 'YT_brandNew1',
+        }),
+        expect.objectContaining({
+          video_id: 'generated-uuid-2',
+          youtube_video_id: 'YT_brandNew2',
+        }),
+      ]),
+    )
+
+    expect(result[0]?.youtube_video?.youtube_video_id).toBe('YT_brandNew1')
+    expect(result[1]?.youtube_video?.youtube_video_id).toBe('YT_brandNew2')
   })
 })
 
@@ -356,7 +415,6 @@ describe('YouTube video ID association bug fix', () => {
     )
     const db = new DB(supabaseClient)
 
-    // Simulate the scenario where videos come back in different order
     const values = [
       {
         channel_id: '1',
@@ -399,30 +457,42 @@ describe('YouTube video ID association bug fix', () => {
       },
     ]
 
-    // YouTube IDs in same order
     const youtubeVideoIds = [
       'YT_videoA_youtube_id',
       'YT_videoB_youtube_id',
       'YT_videoC_youtube_id',
     ]
 
-    // Capture what gets sent to youtube_videos
     let capturedYoutubeVideos: Array<{
       video_id: string
       youtube_video_id: string
     }> = []
     server.use(
+      http.get('*/rest/v1/youtube_videos', () => {
+        return HttpResponse.json([
+          {
+            video_id: 'uuid-video-a',
+            youtube_video_id: 'YT_videoA_youtube_id',
+          },
+          {
+            video_id: 'uuid-video-b',
+            youtube_video_id: 'YT_videoB_youtube_id',
+          },
+          {
+            video_id: 'uuid-video-c',
+            youtube_video_id: 'YT_videoC_youtube_id',
+          },
+        ])
+      }),
       http.post('*/rest/v1/youtube_videos', async ({ request }) => {
         const body = await request.json()
         capturedYoutubeVideos = Array.isArray(body) ? body : [body]
         return HttpResponse.json(capturedYoutubeVideos, { status: 201 })
       }),
-      // Mock videos endpoint to return in different order
       http.post('*/rest/v1/videos', async ({ request }) => {
         const body = await request.json()
         const items = Array.isArray(body) ? body : [body]
 
-        // Return in reversed order to simulate non-deterministic ordering
         const reordered = [...items].reverse()
         return HttpResponse.json(reordered, { status: 201 })
       }),
@@ -430,24 +500,19 @@ describe('YouTube video ID association bug fix', () => {
 
     await db.upsertVideos(values, youtubeVideoIds)
 
-    // Wait for async operations
     await new Promise((resolve) => setTimeout(resolve, 100))
 
-    // Verify the association is correct despite order changes
     if (capturedYoutubeVideos.length > 0) {
-      // Find the association for uuid-video-a
       const videoAAssoc = capturedYoutubeVideos.find(
         (v) => v.video_id === 'uuid-video-a',
       )
       expect(videoAAssoc?.youtube_video_id).toBe('YT_videoA_youtube_id')
 
-      // Find the association for uuid-video-b
       const videoBAssoc = capturedYoutubeVideos.find(
         (v) => v.video_id === 'uuid-video-b',
       )
       expect(videoBAssoc?.youtube_video_id).toBe('YT_videoB_youtube_id')
 
-      // Find the association for uuid-video-c
       const videoCAssoc = capturedYoutubeVideos.find(
         (v) => v.video_id === 'uuid-video-c',
       )
