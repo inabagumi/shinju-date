@@ -397,7 +397,7 @@ function applySelect(data: any[], selectStr: string) {
 
 export const supabaseHandlers = [
   // Videos table
-  http.get('*/rest/v1/videos', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/videos', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -438,7 +438,7 @@ export const supabaseHandlers = [
   }),
 
   // Videos table HEAD requests
-  http.head('*/rest/v1/videos', ({ request }) => {
+  http.head('https://fake.supabase.test/rest/v1/videos', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -454,7 +454,7 @@ export const supabaseHandlers = [
   }),
 
   // Channels table
-  http.get('*/rest/v1/channels', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/channels', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -493,7 +493,7 @@ export const supabaseHandlers = [
   }),
 
   // Channels table HEAD requests
-  http.head('*/rest/v1/channels', ({ request }) => {
+  http.head('https://fake.supabase.test/rest/v1/channels', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -509,7 +509,7 @@ export const supabaseHandlers = [
   }),
 
   // Thumbnails table
-  http.get('*/rest/v1/thumbnails', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/thumbnails', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -548,7 +548,7 @@ export const supabaseHandlers = [
   }),
 
   // Terms table
-  http.get('*/rest/v1/terms', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/terms', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -587,7 +587,7 @@ export const supabaseHandlers = [
   }),
 
   // Terms table HEAD requests
-  http.head('*/rest/v1/terms', ({ request }) => {
+  http.head('https://fake.supabase.test/rest/v1/terms', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -669,26 +669,38 @@ export const supabaseHandlers = [
   }),
 
   // Authentication endpoints
-  http.post('*/auth/v1/token*', async ({ request }) => {
-    const body = (await request.json()) as { email: string; password: string }
+  http.post(
+    'https://fake.supabase.test/auth/v1/token*',
+    async ({ request }) => {
+      const body = (await request.json()) as {
+        email: string
+        password: string
+      }
 
-    // Accept any credentials that match the admin pattern for MSW
-    if (body.email === 'admin@example.com' && body.password === 'password123') {
-      return HttpResponse.json({
-        access_token: 'mock_access_token',
-        expires_in: 3600,
-        refresh_token: 'mock_refresh_token',
-        token_type: 'bearer',
-        user: {
-          created_at: '2023-01-01T00:00:00.000Z',
-          email: body.email,
-          id: 'mock-user-id',
-        },
-      })
-    }
+      // Accept any credentials that match the admin pattern for MSW
+      if (
+        body.email === 'admin@example.com' &&
+        body.password === 'password123'
+      ) {
+        return HttpResponse.json({
+          access_token: 'mock_access_token',
+          expires_in: 3600,
+          refresh_token: 'mock_refresh_token',
+          token_type: 'bearer',
+          user: {
+            created_at: '2023-01-01T00:00:00.000Z',
+            email: body.email,
+            id: 'mock-user-id',
+          },
+        })
+      }
 
-    return HttpResponse.json({ error: 'Invalid credentials' }, { status: 400 })
-  }),
+      return HttpResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 400 },
+      )
+    },
+  ),
 
   http.get('*/auth/v1/user', () => {
     return HttpResponse.json({
@@ -699,7 +711,7 @@ export const supabaseHandlers = [
   }),
 
   // Health check endpoint - simple SELECT query
-  http.get('*/rest/v1/*', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/*', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
