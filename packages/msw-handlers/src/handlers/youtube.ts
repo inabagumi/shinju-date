@@ -352,7 +352,7 @@ function parseYouTubeQuery(url: URL) {
 
 export const youtubeHandlers = [
   // YouTube Data API - channels.list
-  http.get('https://www.googleapis.com/youtube/v3/channels', ({ request }) => {
+  http.get('*/youtube/v3/channels', ({ request }) => {
     const url = new URL(request.url)
     const { id } = parseYouTubeQuery(url)
 
@@ -381,41 +381,38 @@ export const youtubeHandlers = [
   }),
 
   // YouTube Data API - playlistItems.list
-  http.get(
-    'https://www.googleapis.com/youtube/v3/playlistItems',
-    ({ request }) => {
-      const url = new URL(request.url)
-      const { playlistId, maxResults, pageToken } = parseYouTubeQuery(url)
+  http.get('*/youtube/v3/playlistItems', ({ request }) => {
+    const url = new URL(request.url)
+    const { playlistId, maxResults, pageToken } = parseYouTubeQuery(url)
 
-      if (!playlistId) {
-        return HttpResponse.json(
-          { error: { code: 400, message: 'Required parameter: playlistId' } },
-          { status: 400 },
-        )
-      }
+    if (!playlistId) {
+      return HttpResponse.json(
+        { error: { code: 400, message: 'Required parameter: playlistId' } },
+        { status: 400 },
+      )
+    }
 
-      const items = mockYouTubePlaylistItems[playlistId] || []
-      const startIndex = pageToken ? Number.parseInt(pageToken, 10) : 0
-      const paginatedItems = items.slice(startIndex, startIndex + maxResults)
-      const nextPageToken =
-        startIndex + maxResults < items.length
-          ? String(startIndex + maxResults)
-          : undefined
+    const items = mockYouTubePlaylistItems[playlistId] || []
+    const startIndex = pageToken ? Number.parseInt(pageToken, 10) : 0
+    const paginatedItems = items.slice(startIndex, startIndex + maxResults)
+    const nextPageToken =
+      startIndex + maxResults < items.length
+        ? String(startIndex + maxResults)
+        : undefined
 
-      return HttpResponse.json({
-        items: paginatedItems,
-        kind: 'youtube#playlistItemListResponse',
-        ...(nextPageToken ? { nextPageToken } : {}),
-        pageInfo: {
-          resultsPerPage: paginatedItems.length,
-          totalResults: items.length,
-        },
-      })
-    },
-  ),
+    return HttpResponse.json({
+      items: paginatedItems,
+      kind: 'youtube#playlistItemListResponse',
+      ...(nextPageToken ? { nextPageToken } : {}),
+      pageInfo: {
+        resultsPerPage: paginatedItems.length,
+        totalResults: items.length,
+      },
+    })
+  }),
 
   // YouTube Data API - videos.list
-  http.get('https://www.googleapis.com/youtube/v3/videos', ({ request }) => {
+  http.get('*/youtube/v3/videos', ({ request }) => {
     const url = new URL(request.url)
     const { id } = parseYouTubeQuery(url)
 

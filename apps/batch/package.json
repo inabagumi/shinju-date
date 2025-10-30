@@ -36,7 +36,8 @@
     "@types/react-dom": "19.2.2",
     "babel-plugin-react-compiler": "1.0.0",
     "msw": "2.11.6",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.0.5"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
@@ -51,7 +52,8 @@
     "build": "next build",
     "dev": "next --port 5000",
     "lint": "next lint",
-    "start": "next start --port 5000"
+    "start": "next start --port 5000",
+    "test": "vitest run"
   },
   "type": "module",
   "version": "1.0.0"
