@@ -146,6 +146,34 @@ describe('DB class', () => {
     )
     const db = new DB(supabaseClient)
 
+    // Track what gets posted to youtube_videos
+    let capturedYoutubeVideos: Array<{
+      video_id: string
+      youtube_video_id: string
+    }> = []
+    server.use(
+      http.post('*/rest/v1/youtube_videos', async ({ request }) => {
+        const body = await request.json()
+        capturedYoutubeVideos = Array.isArray(body) ? body : [body]
+        return HttpResponse.json(capturedYoutubeVideos, { status: 201 })
+      }),
+      // Mock videos POST to return inserted videos with generated IDs
+      http.post('*/rest/v1/videos', async ({ request }) => {
+        const body = await request.json()
+        const items = Array.isArray(body) ? body : [body]
+
+        // Simulate database inserting videos with generated IDs
+        const insertedVideos = items.map((item, index) => ({
+          ...item,
+          channels: { name: 'Test Channel' },
+          id: `generated-uuid-${index + 1}`,
+          thumbnails: null,
+        }))
+
+        return HttpResponse.json(insertedVideos, { status: 201 })
+      }),
+    )
+
     // Mock video data without IDs (new inserts)
     const values = [
       {
@@ -160,13 +188,48 @@ describe('DB class', () => {
         updated_at: '2023-01-01T00:00:00.000Z',
         visible: true,
       },
+      {
+        channel_id: '1',
+        created_at: '2023-01-02T00:00:00.000Z',
+        deleted_at: null,
+        duration: 'PT8M15S',
+        platform: 'youtube' as const,
+        published_at: '2023-01-02T12:00:00.000Z',
+        thumbnail_id: '2',
+        title: 'New Video 2',
+        updated_at: '2023-01-02T00:00:00.000Z',
+        visible: true,
+      },
     ]
 
-    const youtubeVideoIds = ['YT_brandNew1']
+    const youtubeVideoIds = ['YT_brandNew1', 'YT_brandNew2']
 
     const result = await db.upsertVideos(values, youtubeVideoIds)
 
+    // Wait for async operations
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
     expect(result).toBeDefined()
+    expect(result.length).toBe(2)
+
+    // Verify that youtube_videos associations were created
+    expect(capturedYoutubeVideos.length).toBeGreaterThan(0)
+    expect(capturedYoutubeVideos).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          video_id: 'generated-uuid-1',
+          youtube_video_id: 'YT_brandNew1',
+        }),
+        expect.objectContaining({
+          video_id: 'generated-uuid-2',
+          youtube_video_id: 'YT_brandNew2',
+        }),
+      ]),
+    )
+
+    // Verify that returned videos have youtube_video data
+    expect(result[0]?.youtube_video?.youtube_video_id).toBe('YT_brandNew1')
+    expect(result[1]?.youtube_video?.youtube_video_id).toBe('YT_brandNew2')
   })
 })
 
