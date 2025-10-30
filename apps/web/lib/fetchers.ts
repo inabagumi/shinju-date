@@ -28,8 +28,8 @@ export type Video = Pick<
   'duration' | 'id' | 'published_at' | 'title'
 > & {
   channel: Channel
-  thumbnail?: Thumbnail | null
-  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'>
+  thumbnail: Thumbnail | null
+  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
 }
 
 type FetchNotEndedVideosOptions = {
@@ -73,39 +73,37 @@ export const fetchNotEndedVideos = async ({
     })
   }
 
-  return videos
-    .filter((video) => video.youtube_video != null)
-    .filter((video) => {
-      const publishedAt = Temporal.Instant.from(video.published_at)
-      const duration = Temporal.Duration.from(video.duration)
-      const endedAt =
-        duration.total({
-          unit: 'second',
-        }) > 0
-          ? publishedAt.add(duration)
-          : undefined
+  return videos.filter((video) => {
+    const publishedAt = Temporal.Instant.from(video.published_at)
+    const duration = Temporal.Duration.from(video.duration)
+    const endedAt =
+      duration.total({
+        unit: 'second',
+      }) > 0
+        ? publishedAt.add(duration)
+        : undefined
 
-      // 終了時刻がわかっている動画
-      if (endedAt) {
-        // プレミア公開中の動画
-        return Temporal.Instant.compare(endedAt, baseTime) >= 0
-      }
+    // 終了時刻がわかっている動画
+    if (endedAt) {
+      // プレミア公開中の動画
+      return Temporal.Instant.compare(endedAt, baseTime) >= 0
+    }
 
-      // (おそらく) ライブ配信中の動画
-      if ((publishedAt.epochMilliseconds / 1_000) % 60 > 0) {
-        return true
-      }
+    // (おそらく) ライブ配信中の動画
+    if ((publishedAt.epochMilliseconds / 1_000) % 60 > 0) {
+      return true
+    }
 
-      // まだ配信開始前やプレミア公開開始前の動画 (30分のゆとりあり)
-      return (
-        Temporal.Instant.compare(
-          baseTime.subtract({
-            minutes: 30,
-          }),
-          publishedAt,
-        ) < 0
-      )
-    })
+    // まだ配信開始前やプレミア公開開始前の動画 (30分のゆとりあり)
+    return (
+      Temporal.Instant.compare(
+        baseTime.subtract({
+          minutes: 30,
+        }),
+        publishedAt,
+      ) < 0
+    )
+  })
 }
 
 async function getDefaultBaseTime() {

@@ -156,7 +156,9 @@ export default async function VideoDetailPage({ params }: Props) {
             </div>
             <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
               <span
-                className={`inline-flex rounded-full px-2 py-1 font-semibold text-xs leading-5 ${getStatusColor(video)}`}
+                className={`inline-flex rounded-full px-2 py-1 font-semibold text-xs leading-5 ${getStatusColor(
+                  video,
+                )}`}
               >
                 {getStatusText(video)}
               </span>
