@@ -38,7 +38,7 @@
     "@shinju-date/msw-handlers": "workspace:*",
     "@tailwindcss/postcss": "4.1.16",
     "@tsconfig/next": "2.0.3",
-    "@tsconfig/strictest": "2.0.6",
+    "@tsconfig/strictest": "2.0.7",
     "@types/dedent": "0.7.2",
     "@types/lodash.groupby": "4.6.9",
     "@types/mdx": "2.0.13",
