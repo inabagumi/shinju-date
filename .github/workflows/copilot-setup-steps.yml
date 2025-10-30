@@ -9,14 +9,6 @@ on:
     paths:
       - .github/workflows/copilot-setup-steps.yml
 
-env:
-  # renovate: datasource=npm depName=corepack
-  COREPACK_VERSION: 0.31.0
-  # renovate: datasource=node-version depName=node
-  NODE_VERSION: 22.13.1
-  # renovate: datasource=github-releases depName=astral-sh/uv
-  UV_VERSION: 0.9.5
-
 jobs:
   copilot-setup-steps:
     runs-on: ubuntu-24.04
@@ -30,16 +22,16 @@ jobs:
       - name: "Set up uv"
         uses: astral-sh/setup-uv@v7
         with:
-          version: ${{ env.UV_VERSION }}
+          version: "0.9.5"
 
       - name: "Enable Corepack for pnpm"
         run: |
-          npm install -g corepack@${COREPACK_VERSION}
+          npm install -g corepack@0.31.0
           corepack enable
 
       - uses: actions/setup-node@v6
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: "22.13.1"
           cache: pnpm
 
       - name: "Install project dependencies"
@@ -56,6 +48,9 @@ jobs:
 
       - name: "Set MSW environment variable"
         run: "echo 'ENABLE_MSW=true' >> $GITHUB_ENV"
+
+      - name: "Set Next.js Turbopack TLS environment variable"
+        run: "echo 'NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1' >> $GITHUB_ENV"
 
       - name: "Create public directory for admin app"
         run: "mkdir -p apps/admin/public"

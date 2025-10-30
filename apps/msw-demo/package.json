@@ -9,7 +9,7 @@
     "tailwind-merge": "3.3.1",
     "tailwindcss": "4.1.16"
   },
-  "description": "",
+  "description": "MSW (Mock Service Worker) integration demonstration and reference implementation for SHINJU DATE",
   "devDependencies": {
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
@@ -40,10 +40,10 @@
     "url": "https://github.com/inabagumi/shinju-date.git"
   },
   "scripts": {
-    "build": "NEXT_PUBLIC_SUPABASE_URL=https://fake.supabase.test NEXT_PUBLIC_SUPABASE_ANON_KEY=fake-anon-key SUPABASE_SERVICE_ROLE_KEY=fake-service-role-key UPSTASH_REDIS_REST_TOKEN=fake-upstash-token UPSTASH_REDIS_REST_URL=https://fake.upstash.test next build",
-    "dev": "NEXT_PUBLIC_SUPABASE_URL=https://fake.supabase.test NEXT_PUBLIC_SUPABASE_ANON_KEY=fake-anon-key SUPABASE_SERVICE_ROLE_KEY=fake-service-role-key UPSTASH_REDIS_REST_TOKEN=fake-upstash-token UPSTASH_REDIS_REST_URL=https://fake.upstash.test next --port 10000",
+    "build": "next build",
+    "dev": "next --port 10000",
     "msw:init": "msw init public/",
-    "start": "NEXT_PUBLIC_SUPABASE_URL=https://fake.supabase.test NEXT_PUBLIC_SUPABASE_ANON_KEY=fake-anon-key SUPABASE_SERVICE_ROLE_KEY=fake-service-role-key UPSTASH_REDIS_REST_TOKEN=fake-upstash-token UPSTASH_REDIS_REST_URL=https://fake.upstash.test next start --port 10000"
+    "start": "next start --port 10000"
   },
   "type": "module",
   "version": "1.0.0"
