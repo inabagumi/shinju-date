@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
+import type { PopularChannel } from '@/lib/analytics/get-popular-channels'
 import { getPopularChannels } from '@/lib/analytics/get-popular-channels'
 import { ExportMenu } from '../../_components/export-menu'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
@@ -32,7 +33,7 @@ function SimplePopularChannelsWidget({
   dateRange,
   selectedDate,
 }: {
-  channels: Array<{ name: string; slug: string; clicks: number; id: string }>
+  channels: PopularChannel[]
   dateRange: { startDate: string; endDate: string }
   selectedDate: string | null
 }) {
