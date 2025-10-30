@@ -1,3 +1,4 @@
+import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentPropsWithRef } from 'react'
 import { twMerge } from 'tailwind-merge'
@@ -29,19 +30,23 @@ const buttonVariants = cva(
 )
 
 export type ButtonProps = ComponentPropsWithRef<'button'> &
-  VariantProps<typeof buttonVariants>
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean
+  }
 
 export function Button({
+  asChild = false,
   className,
   variant,
   size,
   type = 'button',
   ...props
 }: ButtonProps) {
+  const Comp = asChild ? Slot : 'button'
   return (
-    <button
+    <Comp
       className={twMerge(buttonVariants({ size, variant }), className)}
-      type={type}
+      type={asChild ? undefined : type}
       {...props}
     />
   )

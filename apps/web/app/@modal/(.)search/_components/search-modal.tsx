@@ -1,6 +1,13 @@
 'use client'
 
-import * as Dialog from '@radix-ui/react-dialog'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+} from '@shinju-date/ui'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
@@ -54,17 +61,17 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <Dialog.Root onOpenChange={handleClose} open={isOpen}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50 backdrop-blur-sm data-[state=closed]:animate-out data-[state=open]:animate-in" />
+    <Dialog onOpenChange={handleClose} open={isOpen}>
+      <DialogPortal>
+        <DialogOverlay className="z-50 backdrop-blur-sm" />
 
-        <Dialog.Content className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[20%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[20%] fixed top-[20%] left-[50%] z-50 w-full max-w-2xl translate-x-[-50%] translate-y-[-20%] rounded-xl border border-774-nevy-200 bg-primary-foreground shadow-2xl data-[state=closed]:animate-out data-[state=open]:animate-in sm:max-w-3xl dark:border-zinc-700 dark:bg-zinc-900">
+        <DialogContent className="data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[20%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[20%] top-[20%] left-[50%] z-50 w-full max-w-2xl translate-x-[-50%] translate-y-[-20%] rounded-xl border-774-nevy-200 bg-primary-foreground shadow-2xl sm:max-w-3xl dark:border-zinc-700 dark:bg-zinc-900">
           <ModalNavigationContext value={{ onNavigate: handleNavigate }}>
             {children}
           </ModalNavigationContext>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+        </DialogContent>
+      </DialogPortal>
+    </Dialog>
   )
 }
 
@@ -123,5 +130,5 @@ export function SearchModalLink({
   return <Link onClick={handleClick} onKeyDown={handleKeyDown} {...props} />
 }
 
-export const SearchModalClose = Dialog.Close
-export const SearchModalTitle = Dialog.Title
+export const SearchModalClose = DialogClose
+export const SearchModalTitle = DialogTitle

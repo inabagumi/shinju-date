@@ -68,6 +68,9 @@ importers:
       '@shinju-date/temporal-fns':
         specifier: workspace:*
         version: link:../../packages/temporal-fns
+      '@shinju-date/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@shinju-date/youtube-api-client':
         specifier: workspace:*
         version: link:../../packages/youtube-api-client
@@ -349,6 +352,9 @@ importers:
       '@shinju-date/temporal-fns':
         specifier: workspace:*
         version: link:../../packages/temporal-fns
+      '@shinju-date/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
         version: 0.3.0(@supabase/supabase-js@2.78.0)
@@ -623,6 +629,9 @@ importers:
       '@radix-ui/react-dialog':
         specifier: 1.1.15
         version: 1.1.15(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@radix-ui/react-slot':
+        specifier: 1.2.3
+        version: 1.2.3(@types/react@19.2.2)(react@19.2.0)
       class-variance-authority:
         specifier: 0.7.1
         version: 0.7.1
