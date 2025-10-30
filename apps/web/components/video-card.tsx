@@ -10,10 +10,7 @@ function getThumbnailURL(
   video: Video,
 ): [src: string, blurDataURL: string | undefined] {
   if (!video.thumbnail) {
-    const youtubeVideoId = video.youtube_video?.youtube_video_id
-    if (!youtubeVideoId) {
-      throw new Error('Video must have youtube_video_id')
-    }
+    const youtubeVideoId = video.youtube_video.youtube_video_id
     return [
       `https://i.ytimg.com/vi/${youtubeVideoId}/maxresdefault.jpg`,
       undefined,
@@ -90,10 +87,7 @@ export default function VideoCard({
     value.published_at,
   ).toZonedDateTimeISO(timeZone)
   const duration = Temporal.Duration.from(value?.duration ?? 'P0D')
-  const youtubeVideoId = value.youtube_video?.youtube_video_id
-  if (!youtubeVideoId) {
-    throw new Error('Video must have youtube_video_id')
-  }
+  const youtubeVideoId = value.youtube_video.youtube_video_id
 
   return (
     <a
