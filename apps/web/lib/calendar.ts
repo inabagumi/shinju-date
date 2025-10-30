@@ -15,7 +15,7 @@ type Video = Pick<
   'duration' | 'id' | 'published_at' | 'title'
 > & {
   channel: Channel
-  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'>
+  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
 }
 
 type GetPublishedAtAndEndedAtOptions = {
@@ -86,6 +86,9 @@ export function createEventAttributesList(
   { now }: CreateEventAttributesListOptions,
 ): EventAttributes[] {
   return videos.map((video): EventAttributes => {
+    if (!video.youtube_video?.youtube_video_id) {
+      throw new Error('Video must have youtube_video_id')
+    }
     const [publishedAt, endedAt] = getPublishedAtAndEndedAt(video, {
       now,
     })

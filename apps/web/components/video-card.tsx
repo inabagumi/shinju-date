@@ -10,6 +10,9 @@ function getThumbnailURL(
   video: Video,
 ): [src: string, blurDataURL: string | undefined] {
   if (!video.thumbnail) {
+    if (!video.youtube_video?.youtube_video_id) {
+      throw new Error('Video must have youtube_video_id')
+    }
     const youtubeVideoId = video.youtube_video.youtube_video_id
     return [
       `https://i.ytimg.com/vi/${youtubeVideoId}/maxresdefault.jpg`,

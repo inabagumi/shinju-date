@@ -44,7 +44,7 @@ export async function GET(
     .from('videos')
     .select(
       `
-        channel:channels!inner (
+        channel:channels (
           id,
           name
         ),
@@ -52,7 +52,7 @@ export async function GET(
         id,
         published_at,
         title,
-        youtube_video:youtube_videos!inner (youtube_video_id)
+        youtube_video:youtube_videos (youtube_video_id)
       `,
     )
     .eq('channel_id', id)

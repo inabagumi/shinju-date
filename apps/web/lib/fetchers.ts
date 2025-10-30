@@ -7,13 +7,13 @@ import { SEARCH_RESULT_COUNT, timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
 
 const DEFAULT_SEARCH_SELECT = `
-  channel:channels!inner (id, name),
+  channel:channels (id, name),
   duration,
   id,
   thumbnail:thumbnails (blur_data_url, height, path, width),
   published_at,
   title,
-  youtube_video:youtube_videos!inner (youtube_video_id)
+  youtube_video:youtube_videos (youtube_video_id)
 `
 
 export type Channel = Pick<Tables<'channels'>, 'id' | 'name'>
@@ -29,7 +29,7 @@ export type Video = Pick<
 > & {
   channel: Channel
   thumbnail?: Thumbnail | null
-  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'>
+  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
 }
 
 type FetchNotEndedVideosOptions = {

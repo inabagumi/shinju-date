@@ -61,7 +61,7 @@ export async function POST(request: Request): Promise<Response> {
 
   const { data: savedChannels, error } = await supabaseClient
     .from('channels')
-    .select('id, youtube_channel:youtube_channels!inner(youtube_channel_id)')
+    .select('id, youtube_channel:youtube_channels(youtube_channel_id)')
     .is('deleted_at', null)
 
   if (error) {
