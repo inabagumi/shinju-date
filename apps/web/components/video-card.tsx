@@ -90,6 +90,10 @@ export default function VideoCard({
     value.published_at,
   ).toZonedDateTimeISO(timeZone)
   const duration = Temporal.Duration.from(value?.duration ?? 'P0D')
+
+  if (!value.youtube_video?.youtube_video_id) {
+    throw new Error('Video must have youtube_video_id')
+  }
   const youtubeVideoId = value.youtube_video.youtube_video_id
 
   return (
