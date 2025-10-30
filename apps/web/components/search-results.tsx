@@ -17,7 +17,7 @@ export function SearchResultsSkeleton() {
   )
 }
 
-type Channel = Pick<Tables<'channels'>, 'id' | 'name' | 'slug'>
+type Channel = Pick<Tables<'channels'>, 'id' | 'name'>
 
 export default function SearchResults({
   channels,

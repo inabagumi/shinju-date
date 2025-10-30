@@ -9,7 +9,6 @@ import { ChannelModal } from './channel-modal'
 type Channel = {
   id: string
   name: string
-  slug: string
   created_at: string
   updated_at: string
 }

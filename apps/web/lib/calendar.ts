@@ -12,7 +12,7 @@ type Channel = Pick<Tables<'channels'>, 'name'>
 
 type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'published_at' | 'slug' | 'title'
+  'duration' | 'id' | 'published_at' | 'title'
 > & {
   channel: Channel
   youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null

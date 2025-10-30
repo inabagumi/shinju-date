@@ -4,7 +4,6 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 export type Channel = {
   id: string
   name: string
-  slug: string
   created_at: string
   updated_at: string
   deleted_at: string | null
@@ -14,16 +13,16 @@ export type Channel = {
 }
 
 const getChannel = cache(async function getChannel(
-  slug: string,
+  id: string,
 ): Promise<Channel | null> {
   const supabaseClient = await createSupabaseServerClient()
 
   const { data: channel, error } = await supabaseClient
     .from('channels')
     .select(
-      'id, name, slug, created_at, updated_at, deleted_at, youtube_channel:youtube_channels(youtube_channel_id)',
+      'id, name, created_at, updated_at, deleted_at, youtube_channel:youtube_channels(youtube_channel_id)',
     )
-    .eq('slug', slug)
+    .eq('id', id)
     .single()
 
   if (error) {

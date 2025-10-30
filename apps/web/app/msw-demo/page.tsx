@@ -95,7 +95,7 @@ export default async function MSWDemoPage() {
           <p>
             <strong>Query Used:</strong>{' '}
             <code className="rounded bg-gray-100 px-1 dark:bg-gray-800">
-              videos.select('id, title, slug, thumbnails(path,
+              videos.select('id, title, thumbnails(path,
               blur_data_url)').limit(3)
             </code>
           </p>
