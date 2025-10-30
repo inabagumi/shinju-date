@@ -113,15 +113,15 @@ const worker = setupWorker(...supabaseHandlers, ...myCustomHandlers)
 The package mocks the following Supabase tables and operations:
 
 #### Tables
-- `videos` - Video content with title, slug, duration, etc.
-- `channels` - Channel information with name and slug
+- `videos` - Video content with title, duration, etc.
+- `channels` - Channel information with name
 - `thumbnails` - Thumbnail images with blur data URLs
 - `terms` - Search terms with readings and synonyms
 
 #### Query Parameters
 - `select` - Column selection (supports nested relations)
 - `eq` - Equality filters
-- `in` - Array inclusion filters  
+- `in` - Array inclusion filters
 - `limit` - Result limiting
 - `offset` - Result pagination
 
@@ -129,7 +129,7 @@ The package mocks the following Supabase tables and operations:
 
 ```typescript
 // Basic select
-GET /rest/v1/videos?select=id,title,slug
+GET /rest/v1/videos?select=id,title
 
 // With relations
 GET /rest/v1/videos?select=id,title,thumbnails(path,blur_data_url)
@@ -157,9 +157,9 @@ The package mocks the following Redis operations:
 
 ```typescript
 // The handlers automatically mock calls like:
-await redisClient.zrange('videos:clicked:2023-10-23', 0, 10, { 
-  rev: true, 
-  withScores: true 
+await redisClient.zrange('videos:clicked:2023-10-23', 0, 10, {
+  rev: true,
+  withScores: true
 })
 
 await redisClient.ping()
@@ -173,7 +173,6 @@ await redisClient.ping()
   {
     id: 1,
     title: 'Sample Video 1',
-    slug: 'sample-video-1', 
     duration: 'PT10M30S',
     channel_id: 1,
     thumbnail_id: 1,
@@ -189,7 +188,7 @@ await redisClient.ping()
 'videos:clicked:2023-10-23' => [{ member: '1', score: 150 }, ...]
 'channels:clicked:2023-10-23' => [{ member: '1', score: 200 }, ...]
 
-// Search popularity  
+// Search popularity
 'search:popular:daily:2023-10-23' => [{ member: 'ホロライブ', score: 50 }, ...]
 ```
 
@@ -215,10 +214,10 @@ const mockNewTable = [
 http.get('*/rest/v1/new_table', ({ request }) => {
   const url = new URL(request.url)
   const query = parseSupabaseQuery(url)
-  
+
   let filteredData = applySupabaseFilters(mockNewTable, query)
   filteredData = applySelect(filteredData, query.select)
-  
+
   return HttpResponse.json(filteredData)
 })
 ```

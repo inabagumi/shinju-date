@@ -65,9 +65,7 @@ export async function POST(request: Request): Promise<Response> {
   const currentDateTime = Temporal.Now.instant()
   const { data: channels, error } = await supabaseClient
     .from('channels')
-    .select(
-      'id, name, slug, youtube_channel:youtube_channels(youtube_channel_id)',
-    )
+    .select('id, name, youtube_channel:youtube_channels(youtube_channel_id)')
     .is('deleted_at', null)
 
   if (error) {
@@ -103,8 +101,7 @@ export async function POST(request: Request): Promise<Response> {
       onChannelScraped: async (youtubeChannel: YouTubeChannel) => {
         const result = await (async (): Promise<Channel | null> => {
           const channel = channels.find(
-            (c) =>
-              c.youtube_channel?.youtube_channel_id === youtubeChannel.id,
+            (c) => c.youtube_channel?.youtube_channel_id === youtubeChannel.id,
           )
 
           if (!channel) {
@@ -148,14 +145,16 @@ export async function POST(request: Request): Promise<Response> {
             return null
           }
 
-          const { data, error} = await supabaseClient
+          const { data, error } = await supabaseClient
             .from('channels')
             .update({
               name: item.snippet.title,
               updated_at: currentDateTime.toJSON(),
             })
             .eq('id', channel.id)
-            .select('id, name, youtube_channel:youtube_channels(youtube_channel_id)')
+            .select(
+              'id, name, youtube_channel:youtube_channels(youtube_channel_id)',
+            )
             .single()
 
           if (error) {

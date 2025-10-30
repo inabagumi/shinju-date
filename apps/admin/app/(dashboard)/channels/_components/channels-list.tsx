@@ -11,6 +11,9 @@ type Channel = {
   name: string
   created_at: string
   updated_at: string
+  youtube_channel: {
+    youtube_channel_id: string
+  } | null
 }
 
 type ChannelsListProps = {

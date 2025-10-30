@@ -4,7 +4,7 @@ import type { YouTubeChannel, YouTubeVideo } from '@shinju-date/youtube-scraper'
 /**
  * Saved channel data from the database
  */
-export type SavedChannel = Pick<Tables<'channels'>, 'id' | 'slug'>
+export type SavedChannel = Pick<Tables<'channels'>, 'id'>
 
 /**
  * Saved thumbnail data from the database

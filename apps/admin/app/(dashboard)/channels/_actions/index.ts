@@ -12,7 +12,7 @@ export async function createChannelAction(
   const supabaseClient = await createSupabaseServerClient()
 
   const name = formData.get('name') as string
-  const slug = formData.get('slug') as string
+  const channelId = formData.get('channel_id') as string
 
   if (!name || name.trim() === '') {
     return {
@@ -22,10 +22,10 @@ export async function createChannelAction(
     }
   }
 
-  if (!slug || slug.trim() === '') {
+  if (!channelId || channelId.trim() === '') {
     return {
       errors: {
-        slug: ['チャンネルIDを入力してください。'],
+        channel_id: ['チャンネルIDを入力してください。'],
       },
     }
   }
@@ -50,14 +50,14 @@ export async function createChannelAction(
       .from('youtube_channels')
       .insert({
         channel_id: newChannel.id,
-        youtube_channel_id: slug.trim(),
+        youtube_channel_id: channelId.trim(),
         youtube_handle: null,
       })
       .then(({ error: youtubeError }) => {
         if (youtubeError) {
           logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
             error: youtubeError,
-            youtube_channel_id: slug.trim(),
+            youtube_channel_id: channelId.trim(),
           })
         }
       })
@@ -66,9 +66,9 @@ export async function createChannelAction(
     return {}
   } catch (error) {
     logger.error('チャンネルの追加に失敗しました', {
+      channel_id: channelId.trim(),
       error,
       name: name.trim(),
-      slug: slug.trim(),
     })
     return {
       errors: {
@@ -90,7 +90,7 @@ export async function updateChannelAction(
 
   const id = formData.get('id') as string
   const name = formData.get('name') as string
-  const youtubeChannelId = formData.get('slug') as string // Field still named 'slug' in form for now
+  const youtubeChannelId = formData.get('channel_id') as string
 
   if (!id || !name || name.trim() === '') {
     return {
@@ -103,7 +103,7 @@ export async function updateChannelAction(
   if (!youtubeChannelId || youtubeChannelId.trim() === '') {
     return {
       errors: {
-        slug: ['YouTubeチャンネルIDを入力してください。'],
+        channel_id: ['YouTubeチャンネルIDを入力してください。'],
       },
     }
   }

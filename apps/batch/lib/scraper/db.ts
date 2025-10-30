@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/nextjs'
 import type { Tables, TablesInsert } from '@shinju-date/database'
+import { isNonNullable } from '@shinju-date/helpers'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 import { DatabaseError } from './errors'
 import type { SavedVideo } from './types'
@@ -209,12 +210,16 @@ export default class DB implements AsyncDisposable {
 
     // Write to youtube_videos table
     if (videos.length > 0 && youtubeVideoIds.length === videos.length) {
-      const youtubeVideoValues: TablesInsert<'youtube_videos'>[] = videos.map(
-        (video, index) => ({
-          video_id: video.id,
-          youtube_video_id: youtubeVideoIds[index],
-        }),
-      )
+      const youtubeVideoValues: TablesInsert<'youtube_videos'>[] = videos
+        .map((video, index) =>
+          youtubeVideoIds[index]
+            ? {
+                video_id: video.id,
+                youtube_video_id: youtubeVideoIds[index],
+              }
+            : null,
+        )
+        .filter(isNonNullable)
 
       await Promise.allSettled([
         this.#supabaseClient
@@ -229,6 +234,8 @@ export default class DB implements AsyncDisposable {
 
       // Add youtube_video_id to the returned videos
       videos.forEach((video, index) => {
+        if (!youtubeVideoIds[index]) return
+
         video.youtube_video = {
           youtube_video_id: youtubeVideoIds[index],
         }

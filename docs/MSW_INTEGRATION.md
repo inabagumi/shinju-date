@@ -97,7 +97,6 @@ afterAll(() => server.close())
 {
   "id": 1,
   "title": "Sample Video 1",
-  "slug": "sample-video-1",
   "duration": "PT10M30S",
   "channel_id": 1,
   "thumbnail_id": 1,
@@ -139,9 +138,9 @@ With consistent mock data, GitHub Copilot provides better code completion:
 const { data: videos } = await supabase.from('videos').select('*')
 
 videos?.forEach(video => {
-  // ✅ Copilot suggests: title, slug, duration, channel_id, etc.
+  // ✅ Copilot suggests: title, duration, channel_id, etc.
   console.log(video.title)
-  
+
   // ✅ Copilot understands nested structures
   console.log(video.thumbnails?.path)
 })

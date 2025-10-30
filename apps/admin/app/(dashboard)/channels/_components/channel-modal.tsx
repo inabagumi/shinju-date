@@ -87,7 +87,7 @@ export function ChannelModal({ channel }: ChannelModalProps) {
               />
               <ErrorMessage className="mt-1 text-red-600 text-sm" />
             </FormField>
-            <FormField name="slug">
+            <FormField name="channel_id">
               <Label className="mb-2 block font-medium">
                 YouTubeチャンネルID
               </Label>

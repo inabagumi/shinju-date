@@ -450,7 +450,7 @@ export default class Scraper implements AsyncDisposable {
     }
 
     // Extract YouTube video IDs to pass along with values
-    const youtubeVideoIds = processedVideos
+    const youtubeVideoIds = values
       .map((video, index) => {
         if (values[index]) {
           return video.id
