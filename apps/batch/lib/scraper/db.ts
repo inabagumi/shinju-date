@@ -4,7 +4,7 @@ import type { TypedSupabaseClient } from '@/lib/supabase'
 import { DatabaseError } from './errors'
 import type { SavedVideo } from './types'
 
-export type VideoChannel = Pick<Tables<'channels'>, 'name' | 'slug'>
+export type VideoChannel = Pick<Tables<'channels'>, 'name'>
 
 export type VideoThumbnail = Omit<
   Tables<'thumbnails'>,
@@ -13,21 +13,22 @@ export type VideoThumbnail = Omit<
 
 export type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'id' | 'published_at' | 'slug' | 'title'
+  'duration' | 'id' | 'published_at' | 'title'
 > & {
   channels: VideoChannel | VideoChannel[] | null
   thumbnails: VideoThumbnail | VideoThumbnail[] | null
+  youtube_video?: {
+    youtube_video_id: string
+  }
 }
 
 const scrapeResultSelect = `
   channels (
-    name,
-    slug
+    name
   ),
   duration,
   id,
   published_at,
-  slug,
   thumbnails (
     blur_data_url,
     height,
@@ -158,7 +159,10 @@ export default class DB implements AsyncDisposable {
     return thumbnails
   }
 
-  async upsertVideos(values: TablesInsert<'videos'>[]): Promise<Video[]> {
+  async upsertVideos(
+    values: TablesInsert<'videos'>[],
+    youtubeVideoIds: string[],
+  ): Promise<Video[]> {
     const upsertValues = values.filter((value) => value.id)
     const insertValues = values.filter((value) => !value.id)
 
@@ -203,12 +207,12 @@ export default class DB implements AsyncDisposable {
       }
     }
 
-    // Dual-write to youtube_videos table
-    if (videos.length > 0) {
+    // Write to youtube_videos table
+    if (videos.length > 0 && youtubeVideoIds.length === videos.length) {
       const youtubeVideoValues: TablesInsert<'youtube_videos'>[] = videos.map(
-        (video) => ({
+        (video, index) => ({
           video_id: video.id,
-          youtube_video_id: video.slug,
+          youtube_video_id: youtubeVideoIds[index],
         }),
       )
 
@@ -222,6 +226,13 @@ export default class DB implements AsyncDisposable {
             }
           }),
       ])
+
+      // Add youtube_video_id to the returned videos
+      videos.forEach((video, index) => {
+        video.youtube_video = {
+          youtube_video_id: youtubeVideoIds[index],
+        }
+      })
     }
 
     return videos

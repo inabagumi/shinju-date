@@ -3,6 +3,7 @@ import { formatNumber } from '@shinju-date/helpers'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Temporal } from 'temporal-polyfill'
+import { ExternalLinkIcon } from '@/components/icons'
 import { PopularVideosListSkeleton } from '@/components/skeletons'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
 import { createSupabaseServerClient } from '@/lib/supabase'
@@ -78,21 +79,7 @@ export async function PopularVideosWidget() {
                     rel="noopener noreferrer"
                     target="_blank"
                   >
-                    <svg
-                      aria-hidden="true"
-                      className="h-5 w-5 text-gray-600"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <title>外部リンク</title>
-                      <path
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
+                    <ExternalLinkIcon className="h-5 w-5 text-gray-600" />
                     <span className="sr-only">YouTubeで視聴</span>
                   </a>
                 )}

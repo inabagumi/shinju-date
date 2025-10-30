@@ -167,6 +167,56 @@ const mockVideos = [
   },
 ]
 
+const mockYoutubeChannels = [
+  {
+    channel_id: 1,
+    youtube_channel_id: 'UCtest123',
+    youtube_handle: '@dailyanalytics',
+  },
+  {
+    channel_id: 2,
+    youtube_channel_id: 'UCtest456',
+    youtube_handle: '@trendingtopics',
+  },
+  {
+    channel_id: 3,
+    youtube_channel_id: 'UCtest789',
+    youtube_handle: '@popularcontent',
+  },
+  {
+    channel_id: 4,
+    youtube_channel_id: 'UCtest012',
+    youtube_handle: '@testchannelfour',
+  },
+]
+
+const mockYoutubeVideos = [
+  {
+    video_id: 1,
+    youtube_video_id: 'video1abc',
+  },
+  {
+    video_id: 2,
+    youtube_video_id: 'video2def',
+  },
+  {
+    video_id: 3,
+    youtube_video_id: 'video3ghi',
+  },
+  {
+    video_id: 4,
+    youtube_video_id: 'video4jkl',
+  },
+  {
+    video_id: 5,
+    youtube_video_id: 'video5mno',
+  },
+  {
+    video_id: 6,
+    youtube_video_id: 'video6pqr',
+  },
+]
+
 const mockTerms = [
   {
     created_at: '2023-01-01T00:00:00.000Z',
@@ -542,6 +592,72 @@ export const supabaseHandlers = [
     const query = parseSupabaseQuery(url)
 
     const filteredData = applySupabaseFilters(mockTerms, query)
+    const count = filteredData.length
+
+    return new HttpResponse(null, {
+      headers: {
+        'Content-Range': `0-0/${count}`,
+        'Content-Type': 'application/json',
+      },
+    })
+  }),
+
+  // YouTube Channels Table
+  http.get('*/rest/v1/youtube_channels', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const filteredData = applySupabaseFilters(mockYoutubeChannels, query)
+
+    if (query.returnCount) {
+      return HttpResponse.json(filteredData, {
+        headers: {
+          'Content-Range': `0-${filteredData.length - 1}/${filteredData.length}`,
+        },
+      })
+    }
+
+    return HttpResponse.json(filteredData)
+  }),
+
+  http.head('*/rest/v1/youtube_channels', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const filteredData = applySupabaseFilters(mockYoutubeChannels, query)
+    const count = filteredData.length
+
+    return new HttpResponse(null, {
+      headers: {
+        'Content-Range': `0-0/${count}`,
+        'Content-Type': 'application/json',
+      },
+    })
+  }),
+
+  // YouTube Videos Table
+  http.get('*/rest/v1/youtube_videos', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const filteredData = applySupabaseFilters(mockYoutubeVideos, query)
+
+    if (query.returnCount) {
+      return HttpResponse.json(filteredData, {
+        headers: {
+          'Content-Range': `0-${filteredData.length - 1}/${filteredData.length}`,
+        },
+      })
+    }
+
+    return HttpResponse.json(filteredData)
+  }),
+
+  http.head('*/rest/v1/youtube_videos', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const filteredData = applySupabaseFilters(mockYoutubeVideos, query)
     const count = filteredData.length
 
     return new HttpResponse(null, {

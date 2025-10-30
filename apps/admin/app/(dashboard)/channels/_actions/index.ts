@@ -35,7 +35,6 @@ export async function createChannelAction(
       .from('channels')
       .insert({
         name: name.trim(),
-        slug: slug.trim(),
       })
       .select('id')
       .single()
@@ -44,7 +43,7 @@ export async function createChannelAction(
       throw error
     }
 
-    // Dual-write to youtube_channels table
+    // Write to youtube_channels table
     // Note: youtube_handle is null for manually created channels initially
     // It will be populated when the channel sync runs
     await supabaseClient
@@ -58,7 +57,7 @@ export async function createChannelAction(
         if (youtubeError) {
           logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
             error: youtubeError,
-            slug: slug.trim(),
+            youtube_channel_id: slug.trim(),
           })
         }
       })

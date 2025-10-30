@@ -26,8 +26,10 @@ type Thumbnail = {
 
 type Video = {
   id: string
-  slug: string
   thumbnails: Thumbnail[] | Thumbnail | null
+  youtube_video: {
+    youtube_video_id: string
+  } | null
 }
 
 type GetSavedVideos = {
@@ -57,7 +59,7 @@ async function* getSavedVideos({
     const { data: savedVideos, error } = await supabaseClient
       .from('videos')
       .select(
-        'id, slug, thumbnails (id), youtube_video:youtube_videos (youtube_video_id)',
+        'id, thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
       )
       .is('deleted_at', null)
       .order('published_at', {
@@ -218,7 +220,9 @@ export async function POST(request: NextRequest): Promise<Response> {
     }),
   )
 
-  const videoIds = savedVideos.map((savedVideo) => savedVideo.slug)
+  const videoIds = savedVideos
+    .map((savedVideo) => savedVideo.youtube_video?.youtube_video_id)
+    .filter((id): id is string => Boolean(id))
   const availableVideoIds = new Set<string>()
 
   await using scraper = new YouTubeScraper({
@@ -235,7 +239,9 @@ export async function POST(request: NextRequest): Promise<Response> {
   })
 
   const deletedVideos = savedVideos.filter(
-    (savedVideo) => !availableVideoIds.has(savedVideo.slug),
+    (savedVideo) =>
+      savedVideo.youtube_video?.youtube_video_id &&
+      !availableVideoIds.has(savedVideo.youtube_video.youtube_video_id),
   )
 
   if (deletedVideos.length > 0) {
@@ -253,7 +259,9 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
 
     Sentry.logger.info('The videos has been deleted.', {
-      ids: deletedVideos.map((video) => video.slug),
+      ids: deletedVideos
+        .map((video) => video.youtube_video?.youtube_video_id)
+        .filter(Boolean),
     })
 
     await revalidateTags(['videos'], {

@@ -432,7 +432,6 @@ export default class Scraper implements AsyncDisposable {
           duration: originalVideo.contentDetails.duration ?? 'P0D',
           platform: 'youtube',
           published_at: publishedAt.toString(),
-          slug: originalVideo.id,
           title: originalVideo.snippet.title ?? '',
           updated_at: this.#currentDateTime.toString(),
           visible: savedVideo?.visible ?? true,
@@ -450,7 +449,17 @@ export default class Scraper implements AsyncDisposable {
       return []
     }
 
-    return this.#db.upsertVideos(values)
+    // Extract YouTube video IDs to pass along with values
+    const youtubeVideoIds = processedVideos
+      .map((video, index) => {
+        if (values[index]) {
+          return video.id
+        }
+        return null
+      })
+      .filter((id): id is string => id !== null)
+
+    return this.#db.upsertVideos(values, youtubeVideoIds)
   }
 
   /**

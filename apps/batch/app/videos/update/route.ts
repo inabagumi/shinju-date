@@ -61,7 +61,7 @@ export async function POST(request: Request): Promise<Response> {
 
   const { data: savedChannels, error } = await supabaseClient
     .from('channels')
-    .select('id, slug, youtube_channel:youtube_channels(youtube_channel_id)')
+    .select('id, youtube_channel:youtube_channels!inner(youtube_channel_id)')
     .is('deleted_at', null)
 
   if (error) {
@@ -82,7 +82,14 @@ export async function POST(request: Request): Promise<Response> {
     })
   }
 
-  const channelIDs = savedChannels.map((savedChannel) => savedChannel.slug)
+  const channelIDs = savedChannels
+    .map((savedChannel) => {
+      const ytChannel = Array.isArray(savedChannel.youtube_channel)
+        ? savedChannel.youtube_channel[0]
+        : savedChannel.youtube_channel
+      return ytChannel?.youtube_channel_id
+    })
+    .filter((id): id is string => Boolean(id))
   const channels = await Array.fromAsync(
     getChannels({
       ids: channelIDs,
@@ -100,8 +107,13 @@ export async function POST(request: Request): Promise<Response> {
 
   const results = await Promise.allSettled(
     savedChannels.map((savedChannel) => {
+      const ytChannel = Array.isArray(savedChannel.youtube_channel)
+        ? savedChannel.youtube_channel[0]
+        : savedChannel.youtube_channel
+      const youtubeChannelId = ytChannel?.youtube_channel_id
+
       const originalChannel = channels.find(
-        (item) => item.id === savedChannel.slug,
+        (item) => item.id === youtubeChannelId,
       )
 
       if (!originalChannel) {
@@ -135,10 +147,11 @@ export async function POST(request: Request): Promise<Response> {
   if (videos.length > 0) {
     for (const video of videos) {
       const publishedAt = Temporal.Instant.from(video.published_at)
+      const youtubeVideoId = video.youtube_video?.youtube_video_id
 
       Sentry.logger.info('The video has been saved.', {
         duration: video.duration,
-        id: video.slug,
+        id: youtubeVideoId,
         publishedAt: publishedAt.toString(),
         title: video.title,
       })
