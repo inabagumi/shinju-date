@@ -17,6 +17,7 @@
 
 ### 共有パッケージ (`packages/`)
 
+- **[ui](packages/ui/)** - 共有UIコンポーネント (Button, Input, Dialog, Cardなど)
 - **[database](packages/database/)** - データベース接続と型定義
 - **[msw-handlers](packages/msw-handlers/)** - 開発・テスト用 MSW モックハンドラ
 - **[youtube-api-client](packages/youtube-api-client/)** - YouTube API クライアント
