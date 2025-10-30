@@ -100,17 +100,26 @@ pnpm run start
 
 ## 環境変数
 
-このデモアプリでは、すべての環境変数がダミー値としてスクリプトに直接埋め込まれています:
+このデモアプリを実行するには、以下の環境変数を設定する必要があります。すべて **ダミー値** で問題ありません（MSWによってモックされるため、実際のAPIには接続されません）:
 
 ```bash
+export NEXT_PUBLIC_SUPABASE_URL=https://fake.supabase.test
+export NEXT_PUBLIC_SUPABASE_ANON_KEY=fake-anon-key
+export SUPABASE_SERVICE_ROLE_KEY=fake-service-role-key
+export UPSTASH_REDIS_REST_TOKEN=fake-upstash-token
+export UPSTASH_REDIS_REST_URL=https://fake.upstash.test
+```
+
+または、`.env.local` ファイルを作成して設定することもできます:
+
+```bash
+# apps/msw-demo/.env.local
 NEXT_PUBLIC_SUPABASE_URL=https://fake.supabase.test
 NEXT_PUBLIC_SUPABASE_ANON_KEY=fake-anon-key
 SUPABASE_SERVICE_ROLE_KEY=fake-service-role-key
 UPSTASH_REDIS_REST_TOKEN=fake-upstash-token
 UPSTASH_REDIS_REST_URL=https://fake.upstash.test
 ```
-
-これらはすべて **ダミー値** であり、MSWによってモックされます。実際のAPIには接続されません。
 
 ## MSW統合の仕組み
 

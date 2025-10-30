@@ -22,18 +22,15 @@ jobs:
       - name: "Set up uv"
         uses: astral-sh/setup-uv@v7
         with:
-          # renovate: datasource=github-releases depName=astral-sh/uv
           version: "0.9.5"
 
       - name: "Enable Corepack for pnpm"
         run: |
-          # renovate: datasource=npm depName=corepack
           npm install -g corepack@0.31.0
           corepack enable
 
       - uses: actions/setup-node@v6
         with:
-          # renovate: datasource=node-version depName=node
           node-version: "22.13.1"
           cache: pnpm
 
