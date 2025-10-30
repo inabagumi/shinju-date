@@ -47,13 +47,15 @@ import { Button } from '@shinju-date/ui'
 - `md` (デフォルト): 中サイズ
 - `lg`: 大サイズ
 
+**注意**: `size` プロップ名はHTML input要素のネイティブ属性と競合するため、`inputSize` を使用します。
+
 ```tsx
 import { Input } from '@shinju-date/ui'
 
 <Input 
   placeholder="テキストを入力..." 
   variant="default"
-  size="md"
+  inputSize="md"
 />
 
 <Input 

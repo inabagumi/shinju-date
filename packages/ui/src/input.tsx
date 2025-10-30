@@ -6,11 +6,11 @@ const inputVariants = cva(
   'w-full rounded-md border bg-white px-4 py-2 text-gray-900 outline-none transition-colors placeholder:text-gray-400 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500',
   {
     defaultVariants: {
-      size: 'md',
+      inputSize: 'md',
       variant: 'default',
     },
     variants: {
-      size: {
+      inputSize: {
         lg: 'px-4 py-3 text-lg',
         md: 'px-4 py-2 text-base',
         sm: 'px-3 py-1.5 text-sm',
@@ -31,13 +31,13 @@ export type InputProps = ComponentPropsWithRef<'input'> &
 export function Input({
   className,
   variant,
-  size,
+  inputSize,
   type = 'text',
   ...props
 }: InputProps) {
   return (
     <input
-      className={twMerge(inputVariants({ size, variant }), className)}
+      className={twMerge(inputVariants({ inputSize, variant }), className)}
       type={type}
       {...props}
     />
