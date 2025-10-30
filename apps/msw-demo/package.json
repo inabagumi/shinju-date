@@ -1,7 +1,7 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@supabase/supabase-js": "2.77.0",
+    "@supabase/supabase-js": "2.78.0",
     "@upstash/redis": "1.35.6",
     "next": "16.0.1",
     "react": "19.2.0",
