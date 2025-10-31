@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   id BIGSERIAL PRIMARY KEY,
   user_email TEXT NOT NULL,
   action TEXT NOT NULL,
-  target_slug TEXT,
+  target_id TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

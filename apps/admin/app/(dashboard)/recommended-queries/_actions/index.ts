@@ -3,7 +3,9 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
+import { createAuditLog } from '@/lib/audit-log'
 import { redisClient } from '@/lib/redis'
+import { createSupabaseServerClient } from '@/lib/supabase'
 
 export async function addQueryAction(query: string): Promise<{
   success: boolean
@@ -20,6 +22,14 @@ export async function addQueryAction(query: string): Promise<{
 
     // Invalidate combined cache
     await redisClient.del(REDIS_KEYS.QUERIES_COMBINED_CACHE)
+
+    // Log audit entry
+    const supabaseClient = await createSupabaseServerClient()
+    await createAuditLog(
+      supabaseClient,
+      'RECOMMENDED_QUERY_CREATE',
+      trimmedQuery,
+    )
 
     revalidatePath('/recommended-queries')
     revalidatePath('/', 'page')
@@ -47,6 +57,10 @@ export async function deleteQueryAction(query: string): Promise<{
 
     // Invalidate combined cache
     await redisClient.del(REDIS_KEYS.QUERIES_COMBINED_CACHE)
+
+    // Log audit entry
+    const supabaseClient = await createSupabaseServerClient()
+    await createAuditLog(supabaseClient, 'RECOMMENDED_QUERY_DELETE', query)
 
     revalidatePath('/recommended-queries')
     revalidatePath('/', 'page')

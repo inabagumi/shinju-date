@@ -19,21 +19,21 @@ export type Database = {
           action: string
           created_at: string
           id: number
-          target_slug: string | null
+          target_id: string | null
           user_email: string
         }
         Insert: {
           action: string
           created_at?: string
           id?: number
-          target_slug?: string | null
+          target_id?: string | null
           user_email: string
         }
         Update: {
           action?: string
           created_at?: string
           id?: number
-          target_slug?: string | null
+          target_id?: string | null
           user_email?: string
         }
         Relationships: []

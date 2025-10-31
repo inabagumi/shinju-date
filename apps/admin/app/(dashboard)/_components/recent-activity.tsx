@@ -1,13 +1,13 @@
-import type { Tables } from '@shinju-date/database'
-import { formatRelativeTime } from '@/lib/format-time'
-
-type AuditLog = Tables<'audit_logs'>
-
-type Props = {
-  logs: AuditLog[]
-}
+import { formatRelativeTime } from '@shinju-date/temporal-fns'
+import { Temporal } from 'temporal-polyfill'
+import getAuditLogs from '../_lib/get-audit-logs'
 
 const ACTION_LABELS: Record<string, string> = {
+  CHANNEL_CREATE: 'チャンネルを作成',
+  CHANNEL_DELETE: 'チャンネルを削除',
+  CHANNEL_UPDATE: 'チャンネルを更新',
+  RECOMMENDED_QUERY_CREATE: 'おすすめクエリを作成',
+  RECOMMENDED_QUERY_DELETE: 'おすすめクエリを削除',
   TERM_CREATE: '用語を作成',
   TERM_DELETE: '用語を削除',
   TERM_UPDATE: '用語を更新',
@@ -15,7 +15,8 @@ const ACTION_LABELS: Record<string, string> = {
   VIDEO_VISIBILITY_TOGGLE: '動画の表示設定を変更',
 }
 
-export default function RecentActivity({ logs }: Props) {
+export default async function RecentActivity() {
+  const logs = await getAuditLogs(10)
   if (logs.length === 0) {
     return (
       <div className="rounded-lg bg-white p-6 shadow-md">
@@ -43,14 +44,14 @@ export default function RecentActivity({ logs }: Props) {
                   {' '}
                   が{ACTION_LABELS[log.action] ?? log.action}しました
                 </span>
-                {log.target_slug && (
+                {log.target_id && (
                   <span className="text-gray-600">
-                    : <code className="text-gray-700">{log.target_slug}</code>
+                    : <code className="text-gray-700">{log.target_id}</code>
                   </span>
                 )}
               </div>
               <time className="text-gray-500 text-xs">
-                {formatRelativeTime(new Date(log.created_at))}
+                {formatRelativeTime(Temporal.Instant.from(log.created_at))}
               </time>
             </div>
           </li>

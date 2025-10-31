@@ -50,7 +50,7 @@ export async function toggleVisibilityAction(ids: string[]): Promise<{
     // Log audit entries for each video
     await Promise.all(
       videos.map((video) =>
-        createAuditLog(supabaseClient, 'VIDEO_VISIBILITY_TOGGLE', video.slug),
+        createAuditLog(supabaseClient, 'VIDEO_VISIBILITY_TOGGLE', video.id),
       ),
     )
 
@@ -173,7 +173,7 @@ export async function softDeleteAction(ids: string[]): Promise<{
     // Log audit entries for each video
     await Promise.all(
       videos.map((video) =>
-        createAuditLog(supabaseClient, 'VIDEO_DELETE', video.slug),
+        createAuditLog(supabaseClient, 'VIDEO_DELETE', video.id),
       ),
     )
 

@@ -8,11 +8,8 @@ import {
 import { QuickAccessWidget } from './_components/quick-access-widget'
 import RecentActivity from './_components/recent-activity'
 import { SummaryWidget } from './_components/summary-widget'
-import getAuditLogs from './_lib/get-audit-logs'
 
-export default async function DashboardPage() {
-  const logs = await getAuditLogs(10)
-
+export default function DashboardPage() {
   return (
     <div className="p-6">
       <h1 className="mb-6 font-bold text-3xl">ダッシュボード</h1>
@@ -48,7 +45,12 @@ export default async function DashboardPage() {
         </Suspense>
       </div>
 
-      <RecentActivity logs={logs} />
+      {/* Recent Activity Widget */}
+      <div className="mt-6">
+        <Suspense fallback={<CardSkeleton />}>
+          <RecentActivity />
+        </Suspense>
+      </div>
     </div>
   )
 }

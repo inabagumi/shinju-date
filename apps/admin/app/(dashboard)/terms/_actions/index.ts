@@ -3,6 +3,7 @@
 import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
 import type { FormState } from '@/components/form'
+import { createAuditLog } from '@/lib/audit-log'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export async function createTermAction(
@@ -38,15 +39,22 @@ export async function createTermAction(
   const supabaseClient = await createSupabaseServerClient()
 
   try {
-    const { error } = await supabaseClient.from('terms').insert({
-      readings: filteredReadings,
-      synonyms: filteredSynonyms,
-      term: term.trim(),
-    })
+    const { data: newTerm, error } = await supabaseClient
+      .from('terms')
+      .insert({
+        readings: filteredReadings,
+        synonyms: filteredSynonyms,
+        term: term.trim(),
+      })
+      .select('id')
+      .single()
 
     if (error) {
       throw error
     }
+
+    // Log audit entry
+    await createAuditLog(supabaseClient, 'TERM_CREATE', String(newTerm.id))
 
     revalidatePath('/terms')
     return {}
@@ -109,6 +117,9 @@ export async function updateTermAction(
       throw error
     }
 
+    // Log audit entry
+    await createAuditLog(supabaseClient, 'TERM_UPDATE', id)
+
     revalidatePath('/terms')
     return {}
   } catch (error) {
@@ -139,6 +150,9 @@ export async function deleteTermAction(id: string): Promise<{
     if (error) {
       throw error
     }
+
+    // Log audit entry
+    await createAuditLog(supabaseClient, 'TERM_DELETE', id)
 
     revalidatePath('/terms')
     return { success: true }

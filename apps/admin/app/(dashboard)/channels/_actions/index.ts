@@ -3,6 +3,7 @@
 import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
 import type { FormState } from '@/components/form'
+import { createAuditLog } from '@/lib/audit-log'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export async function createChannelAction(
@@ -61,6 +62,9 @@ export async function createChannelAction(
           })
         }
       })
+
+    // Log audit entry
+    await createAuditLog(supabaseClient, 'CHANNEL_CREATE', newChannel.id)
 
     revalidatePath('/channels')
     return {}
@@ -154,6 +158,9 @@ export async function updateChannelAction(
       }
     }
 
+    // Log audit entry
+    await createAuditLog(supabaseClient, 'CHANNEL_UPDATE', id)
+
     revalidatePath('/channels')
     return {}
   } catch (error) {
@@ -196,6 +203,9 @@ export async function deleteChannelAction(id: string): Promise<{
     if (error) {
       throw error
     }
+
+    // Log audit entry
+    await createAuditLog(supabaseClient, 'CHANNEL_DELETE', id)
 
     revalidatePath('/channels')
     return { success: true }

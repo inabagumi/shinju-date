@@ -6,11 +6,16 @@ export type AuditAction =
   | 'TERM_CREATE'
   | 'TERM_UPDATE'
   | 'TERM_DELETE'
+  | 'CHANNEL_CREATE'
+  | 'CHANNEL_UPDATE'
+  | 'CHANNEL_DELETE'
+  | 'RECOMMENDED_QUERY_CREATE'
+  | 'RECOMMENDED_QUERY_DELETE'
 
 export async function createAuditLog(
   supabaseClient: TypedSupabaseClient,
   action: AuditAction,
-  targetSlug: string | null = null,
+  targetId: string | null = null,
 ): Promise<void> {
   try {
     const {
@@ -25,7 +30,7 @@ export async function createAuditLog(
 
     const { error } = await supabaseClient.from('audit_logs').insert({
       action,
-      target_slug: targetSlug,
+      target_id: targetId,
       user_email: user.email,
     })
 
