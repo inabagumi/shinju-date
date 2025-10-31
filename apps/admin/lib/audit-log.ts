@@ -1,16 +1,18 @@
-import type { Database } from '@shinju-date/database'
+import type { Database, Tables } from '@shinju-date/database'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type AuditAction = Database['public']['Enums']['audit_action']
 
-export type AuditDetails<T> =
+export type AuditDetails<T = unknown> =
   | {
       before?: Partial<T>
       after?: Partial<T>
     }
   | T
 
-export async function createAuditLog<T>(
+export async function createAuditLog<
+  T = Tables<'audit_logs' | 'channels' | 'terms' | 'thumbnails' | 'videos'>,
+>(
   action: AuditAction,
   targetTable: string,
   targetRecordId: string | null,
