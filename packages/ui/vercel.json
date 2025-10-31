@@ -1,8 +1,0 @@
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd ../.. && pnpm install && cd packages/ui && pnpm build-storybook",
-  "framework": null,
-  "ignoreCommand": "npx turbo-ignore",
-  "installCommand": "echo 'Skipping install, done in buildCommand'",
-  "outputDirectory": "storybook-static"
-}
