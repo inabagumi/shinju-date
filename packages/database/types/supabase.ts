@@ -307,7 +307,12 @@ export type Database = {
     }
     Functions: {
       get_audit_logs: {
-        Args: { p_limit?: number; p_offset?: number }
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_sort_by?: string
+          p_sort_direction?: string
+        }
         Returns: {
           action: Database['public']['Enums']['audit_action']
           created_at: string
@@ -385,6 +390,9 @@ export type Database = {
         | 'TERM_UPDATE'
         | 'VIDEO_DELETE'
         | 'VIDEO_VISIBILITY_TOGGLE'
+        | 'VIDEO_UPDATE'
+        | 'VIDEO_SYNC'
+        | 'CHANNEL_SYNC'
       platform_type: 'youtube' | 'twitch'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
     }
@@ -525,6 +533,9 @@ export const Constants = {
         'TERM_UPDATE',
         'VIDEO_DELETE',
         'VIDEO_VISIBILITY_TOGGLE',
+        'VIDEO_UPDATE',
+        'VIDEO_SYNC',
+        'CHANNEL_SYNC',
       ],
       platform_type: ['youtube', 'twitch'],
       twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],
