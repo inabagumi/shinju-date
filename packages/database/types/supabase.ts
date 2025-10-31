@@ -393,6 +393,8 @@ export type Database = {
         | 'VIDEO_UPDATE'
         | 'VIDEO_SYNC'
         | 'CHANNEL_SYNC'
+        | 'MAINTENANCE_MODE_ENABLE'
+        | 'MAINTENANCE_MODE_DISABLE'
       platform_type: 'youtube' | 'twitch'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
     }
@@ -536,6 +538,8 @@ export const Constants = {
         'VIDEO_UPDATE',
         'VIDEO_SYNC',
         'CHANNEL_SYNC',
+        'MAINTENANCE_MODE_ENABLE',
+        'MAINTENANCE_MODE_DISABLE',
       ],
       platform_type: ['youtube', 'twitch'],
       twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],

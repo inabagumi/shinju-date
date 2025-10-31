@@ -1,5 +1,7 @@
 import type { NextProxy, NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 import { joinURL } from 'ufo'
+import { redisClient } from '@/lib/redis'
 
 function isVideosPage(pathname: string): boolean {
   if (pathname === '/videos') {
@@ -13,7 +15,25 @@ function isVideosPage(pathname: string): boolean {
   return false
 }
 
-export function proxy(request: NextRequest): ReturnType<NextProxy> {
+export async function proxy(
+  request: NextRequest,
+): Promise<ReturnType<NextProxy>> {
+  // Check for maintenance mode
+  try {
+    const maintenanceMode = await redisClient.get<string>('maintenance_mode')
+
+    if (maintenanceMode === 'true') {
+      // Don't redirect if already on maintenance page
+      if (request.nextUrl.pathname !== '/maintenance') {
+        return NextResponse.rewrite(new URL('/maintenance', request.url))
+      }
+      return NextResponse.next()
+    }
+  } catch (error) {
+    // If Redis is unavailable, continue normally
+    console.error('Failed to check maintenance mode:', error)
+  }
+
   if (
     isVideosPage(request.nextUrl.pathname) &&
     request.nextUrl.searchParams.has('q')
@@ -26,6 +46,8 @@ export function proxy(request: NextRequest): ReturnType<NextProxy> {
 
     return Response.redirect(new URL(pathname, request.nextUrl), 308)
   }
+
+  return NextResponse.next()
 }
 
 export const config = {
