@@ -114,7 +114,7 @@ export async function syncChannelWithYouTube(channelId: string): Promise<{
     }
 
     // Log audit entry
-    await createAuditLog('CHANNEL_UPDATE', 'channels', channelId, {
+    await createAuditLog('CHANNEL_SYNC', 'channels', channelId, {
       after: { name: youtubeChannel.snippet.title },
       before: { name: channel.name },
     })
