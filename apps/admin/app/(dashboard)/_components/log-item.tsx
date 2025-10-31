@@ -12,6 +12,8 @@ const ACTION_LABELS: Record<
   CHANNEL_DELETE: 'チャンネルを削除',
   CHANNEL_SYNC: 'チャンネルを同期',
   CHANNEL_UPDATE: 'チャンネルを更新',
+  MAINTENANCE_MODE_DISABLE: 'メンテナンスモードを無効化',
+  MAINTENANCE_MODE_ENABLE: 'メンテナンスモードを有効化',
   RECOMMENDED_QUERY_CREATE: 'おすすめクエリを作成',
   RECOMMENDED_QUERY_DELETE: 'おすすめクエリを削除',
   TERM_CREATE: '用語を作成',

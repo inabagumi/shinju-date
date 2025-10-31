@@ -5,6 +5,7 @@ export const REDIS_KEYS = {
   CLICK_CHANNEL_PREFIX: 'channels:clicked:',
   CLICK_VIDEO_PREFIX: 'videos:clicked:',
   LAST_VIDEO_SYNC: 'status:last_video_sync',
+  MAINTENANCE_MODE: 'maintenance_mode',
   POPULAR_VIDEOS_PREFIX: 'videos:popular:cache:',
   QUERIES_AUTO_RECOMMENDED: 'queries:auto_recommended',
   QUERIES_COMBINED_CACHE: 'queries:combined_cache',

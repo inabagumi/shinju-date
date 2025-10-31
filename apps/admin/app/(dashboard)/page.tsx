@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { CardSkeleton } from '@/components/skeletons'
 import { AnalyticsWidget } from './_components/analytics-widget'
+import { MaintenanceModeWidgetWrapper } from './_components/maintenance-mode-widget-wrapper'
 import {
   PopularVideosWidget,
   PopularVideosWidgetSkeleton,
@@ -16,9 +17,12 @@ export default function DashboardPage() {
 
       {/* New layout: Left sidebar + Main content area */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr]">
-        {/* Left Sidebar - Quick Access */}
-        <aside className="lg:sticky lg:top-6 lg:self-start">
+        {/* Left Sidebar - Quick Access and Maintenance Mode */}
+        <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
           <QuickAccessWidget />
+          <Suspense fallback={<CardSkeleton />}>
+            <MaintenanceModeWidgetWrapper />
+          </Suspense>
         </aside>
 
         {/* Main Content Area */}
