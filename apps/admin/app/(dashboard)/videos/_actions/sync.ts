@@ -1,5 +1,6 @@
 'use server'
 
+import type { TablesUpdate } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { getVideos } from '@shinju-date/youtube-api-client'
 import { revalidatePath } from 'next/cache'
@@ -75,7 +76,7 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
     const currentDateTime = Temporal.Now.zonedDateTimeISO()
 
     // Prepare update data - check what needs to be updated
-    const updateData: Record<string, unknown> = {
+    const updateData: TablesUpdate<'videos'> = {
       updated_at: currentDateTime.toJSON(),
     }
 
@@ -83,14 +84,14 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
 
     // Check title
     if (youtubeVideo.snippet.title !== video.title) {
-      updateData['title'] = youtubeVideo.snippet.title
+      updateData.title = youtubeVideo.snippet.title
       hasChanges = true
     }
 
     // Check duration
     const youtubeDuration = youtubeVideo.contentDetails.duration ?? 'P0D'
     if (youtubeDuration !== video.duration) {
-      updateData['duration'] = youtubeDuration
+      updateData.duration = youtubeDuration
       hasChanges = true
     }
 
@@ -105,7 +106,7 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
       const currentPublishedAt = Temporal.Instant.from(video.published_at)
 
       if (!publishedAt.equals(currentPublishedAt)) {
-        updateData['published_at'] = publishedAt.toString()
+        updateData.published_at = publishedAt.toString()
         hasChanges = true
       }
     }
@@ -128,20 +129,20 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
     }
 
     // Log audit entry with before/after details
-    const beforeData: Record<string, unknown> = {}
-    const afterData: Record<string, unknown> = {}
+    const beforeData: Partial<TablesUpdate<'videos'>> = {}
+    const afterData: Partial<TablesUpdate<'videos'>> = {}
 
     if ('title' in updateData) {
-      beforeData['title'] = video.title
-      afterData['title'] = updateData['title']
+      beforeData.title = video.title
+      afterData.title = updateData.title
     }
     if ('duration' in updateData) {
-      beforeData['duration'] = video.duration
-      afterData['duration'] = updateData['duration']
+      beforeData.duration = video.duration
+      afterData.duration = updateData.duration
     }
     if ('published_at' in updateData) {
-      beforeData['published_at'] = video.published_at
-      afterData['published_at'] = updateData['published_at']
+      beforeData.published_at = video.published_at
+      afterData.published_at = updateData.published_at
     }
 
     await createAuditLog('VIDEO_SYNC', 'videos', videoId, {
