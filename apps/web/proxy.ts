@@ -26,11 +26,8 @@ export async function proxy(
     )
 
     if (maintenanceMode === true) {
-      // Don't redirect if already on maintenance page
-      if (request.nextUrl.pathname !== '/maintenance') {
-        return NextResponse.rewrite(new URL('/maintenance', request.url))
-      }
-      return NextResponse.next()
+      // Serve static maintenance.html page
+      return NextResponse.rewrite(new URL('/maintenance.html', request.url))
     }
   } catch (error) {
     // If Redis is unavailable, continue normally
