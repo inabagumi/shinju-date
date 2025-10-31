@@ -132,16 +132,16 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
     const afterData: Record<string, unknown> = {}
 
     if ('title' in updateData) {
-      beforeData.title = video.title
-      afterData.title = updateData.title
+      beforeData['title'] = video.title
+      afterData['title'] = updateData['title']
     }
     if ('duration' in updateData) {
-      beforeData.duration = video.duration
-      afterData.duration = updateData.duration
+      beforeData['duration'] = video.duration
+      afterData['duration'] = updateData['duration']
     }
     if ('published_at' in updateData) {
-      beforeData.published_at = video.published_at
-      afterData.published_at = updateData.published_at
+      beforeData['published_at'] = video.published_at
+      afterData['published_at'] = updateData['published_at']
     }
 
     await createAuditLog('VIDEO_SYNC', 'videos', videoId, {
