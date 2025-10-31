@@ -2,6 +2,36 @@
 
 このパッケージには SHINJU DATE アプリケーション全体で共有されるUIコンポーネントが含まれています。
 
+## Storybook
+
+UIコンポーネントのインタラクティブなドキュメントと開発環境として、Storybookを導入しています。
+
+### Storybookの起動
+
+```bash
+# 開発サーバーを起動
+pnpm storybook
+
+# ブラウザで http://localhost:6006 を開く
+```
+
+### Storybookのビルド
+
+```bash
+# 本番用の静的ファイルを生成
+pnpm build-storybook
+
+# 出力先: storybook-static/
+```
+
+### Storybookで確認できる内容
+
+- すべてのUIコンポーネントのバリエーション
+- 各コンポーネントのProps一覧と説明
+- インタラクティブなコントロールでのプロパティ変更
+- 使用例とコードスニペット
+- ダークモード対応の確認
+
 ## コンポーネント
 
 ### Button
