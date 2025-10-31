@@ -59,7 +59,7 @@ export const supabaseClient = createClient()
 export async function* getAllChannels() {
   const { data, error } = await supabaseClient
     .from('channels')
-    .select('id, name, slug')
+    .select('id, name, youtube_channel:youtube_channels(youtube_channel_id)')
     .order('created_at', {
       ascending: true,
     })
@@ -75,11 +75,11 @@ export async function* getAllChannels() {
   }
 }
 
-export async function getChannelBySlug(slug: string) {
+export async function getChannelById(id: string) {
   const { data: channel, error } = await supabaseClient
     .from('channels')
-    .select('id, name, slug')
-    .eq('slug', slug)
+    .select('id, name, youtube_channel:youtube_channels(youtube_channel_id)')
+    .eq('id', id)
 
   if (error) {
     throw new TypeError(error.message, {

@@ -8,9 +8,6 @@ import {
 import { timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
 
-export const revalidate = 600
-export const runtime = 'edge'
-
 export async function GET(): Promise<Response> {
   const now = startOfHour(Temporal.Now.zonedDateTimeISO(timeZone))
   const { data: videos, error } = await supabaseClient
@@ -21,9 +18,10 @@ export async function GET(): Promise<Response> {
           name
         ),
         duration,
+        id,
         published_at,
-        slug,
-        title
+        title,
+        youtube_video:youtube_videos!inner (youtube_video_id)
       `,
     )
     .lt(

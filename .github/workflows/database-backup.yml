@@ -1,0 +1,63 @@
+name: Database Backup
+
+on:
+  # schedule:
+  #   # Run every day at 2 AM UTC (adjust as needed)
+  #   - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  backup:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Export production data
+        env:
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          UPLOAD_TO_CLOUD: 'true'
+        run: |
+          # Choose one of the following based on your cloud storage provider:
+          
+          # For Google Cloud Storage:
+          # export GCS_BUCKET="${{ secrets.GCS_BACKUP_BUCKET }}"
+          
+          # For Amazon S3:
+          # export S3_BUCKET="${{ secrets.S3_BACKUP_BUCKET }}"
+          
+          ./scripts/export-production-data.sh
+
+      # Uncomment and configure the appropriate cloud storage authentication:
+      
+      # For Google Cloud Storage:
+      # - name: Authenticate to Google Cloud
+      #   uses: google-github-actions/auth@v2
+      #   with:
+      #     credentials_json: ${{ secrets.GCP_SA_KEY }}
+      
+      # - name: Set up Cloud SDK
+      #   uses: google-github-actions/setup-gcloud@v2
+      
+      # For Amazon S3:
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Cleanup old backups
+        run: |
+          # Optional: Add logic to delete backups older than X days
+          # This helps manage storage costs
+          echo "Cleanup step - implement based on your retention policy"

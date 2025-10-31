@@ -1,8 +1,8 @@
 'use client'
 
+import { useQuery } from '@tanstack/react-query'
 import groupBy from 'lodash.groupby'
 import { useMemo } from 'react'
-import useSWR from 'swr'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
 import { type Channel, fetchNotEndedVideos, type Video } from '@/lib/fetchers'
@@ -55,16 +55,18 @@ export default function Timeline({
   channels?: Channel[]
   prefetchedData: Video[]
 }) {
-  const { data: videos } = useSWR(
-    {
-      channelIDs: channels?.map((channel) => channel.slug),
-    },
-    fetchNotEndedVideos,
-    {
-      fallbackData: prefetchedData,
-      refreshInterval: 60_000,
-    },
-  )
+  const { data: videos = prefetchedData } = useQuery({
+    initialData: prefetchedData,
+    queryFn: () =>
+      fetchNotEndedVideos({
+        channelIDs: channels?.map((channel) => channel.id),
+      }),
+    queryKey: [
+      'not-ended-videos',
+      { channelIDs: channels?.map((channel) => channel.id) },
+    ],
+    refetchInterval: 60_000,
+  })
   const schedule = useMemo<Record<string, Video[]>>(() => {
     const sortedValues = [...videos].sort((videoA, videoB) =>
       Temporal.Instant.compare(

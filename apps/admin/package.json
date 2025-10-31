@@ -1,35 +1,47 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/sortable": "10.0.0",
+    "@dnd-kit/utilities": "3.2.2",
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-dialog": "1.1.15",
-    "@sentry/nextjs": "10.20.0",
-    "@sentry/profiling-node": "10.20.0",
+    "@sentry/nextjs": "10.22.0",
+    "@sentry/profiling-node": "10.22.0",
     "@shinju-date/constants": "workspace:*",
+    "@shinju-date/health-checkers": "workspace:*",
     "@shinju-date/helpers": "workspace:*",
+    "@shinju-date/logger": "workspace:*",
+    "@shinju-date/tailwind-config": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
+    "@shinju-date/ui": "workspace:*",
+    "@shinju-date/youtube-api-client": "workspace:*",
     "@supabase/sentry-js-integration": "0.3.0",
-    "@supabase/supabase-js": "2.75.1",
+    "@supabase/ssr": "0.7.0",
+    "@supabase/supabase-js": "2.78.0",
     "@upstash/redis": "1.35.6",
-    "next": "15.5.6",
+    "csv-stringify": "6.6.0",
+    "next": "16.0.1",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "recharts": "3.3.0",
     "tailwind-merge": "3.3.1",
-    "tailwindcss": "4.1.14",
+    "tailwindcss": "4.1.16",
     "temporal-polyfill": "0.3.0",
     "zod": "4.1.12"
   },
-  "description": "",
+  "description": "Content management admin dashboard for SHINJU DATE",
   "devDependencies": {
     "@shinju-date/database": "workspace:*",
-    "@tailwindcss/postcss": "4.1.14",
+    "@shinju-date/msw-handlers": "workspace:*",
+    "@tailwindcss/postcss": "4.1.16",
     "@tsconfig/next": "2.0.3",
-    "@tsconfig/strictest": "2.0.6",
-    "@types/node": "22.18.11",
+    "@tsconfig/strictest": "2.0.7",
+    "@types/node": "22.18.13",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "babel-plugin-react-compiler": "1.0.0",
+    "msw": "2.11.6",
     "postcss-load-config": "6.0.1",
     "typescript": "5.9.3"
   },
@@ -44,10 +56,17 @@
   },
   "scripts": {
     "build": "next build",
-    "dev": "next --port 4000 --turbopack",
+    "dev": "next --port 4000",
     "lint": "next lint",
-    "start": "next start --port 4000"
+    "msw:init": "msw init public/",
+    "start": "next start --port 4000",
+    "test": "vitest run"
   },
   "type": "module",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
+  }
 }

@@ -1,46 +1,56 @@
-import { TIME_ZONE } from '@shinju-date/constants'
-import { Temporal } from 'temporal-polyfill'
-import { getPopularVideos } from '@/lib/actions/get-popular-videos'
-import ClickAnalyticsClient from './_components/click-analytics-client'
-import { getClickVolume } from './_lib/get-click-volume'
-import { getPopularVideosForDate } from './_lib/get-popular-videos-for-date'
+import type { Metadata } from 'next'
+import { Suspense } from 'react'
+import { DateRangePickerClient } from '../_components/date-range-picker-client'
+import { analyticsSearchParamsSchema } from '../_lib/search-params-schema'
+import { ClickVolumeChart } from './_components/click-volume-chart'
+import { PopularRankingsTabs } from './_components/popular-rankings-tabs'
+import { TabNavigation } from './_components/tab-navigation'
 
-export default async function ClickAnalyticsPage() {
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
-  const startDate = today.subtract({ days: 6 }).toString()
-  const endDate = today.toString()
+export const metadata: Metadata = {
+  title: 'クリックアナリティクス',
+}
 
-  const [popularVideos, clickVolume] = await Promise.all([
-    getPopularVideos(20, 7, startDate, endDate),
-    getClickVolume(7, startDate, endDate),
-  ])
-
-  const fetchClickVolume = async (start: string, end: string) => {
-    'use server'
-    return getClickVolume(7, start, end)
-  }
-
-  const fetchPopularVideos = async (
-    start: string,
-    end: string,
-    limit: number,
-  ) => {
-    'use server'
-    return getPopularVideos(limit, 7, start, end)
-  }
-
-  const fetchPopularVideosForDate = async (date: string, limit: number) => {
-    'use server'
-    return getPopularVideosForDate(date, limit)
-  }
+export default function ClickAnalyticsPage({
+  searchParams,
+}: PageProps<'/analytics/click'>) {
+  const parsedSearchParams = searchParams.then((params) =>
+    analyticsSearchParamsSchema.parse(params),
+  )
 
   return (
-    <ClickAnalyticsClient
-      fetchClickVolume={fetchClickVolume}
-      fetchPopularVideos={fetchPopularVideos}
-      fetchPopularVideosForDate={fetchPopularVideosForDate}
-      initialClickVolume={clickVolume}
-      initialPopularVideos={popularVideos}
-    />
+    <div className="p-6">
+      <h1 className="mb-6 font-bold text-3xl">クリックアナリティクス</h1>
+
+      <div className="mb-6">
+        <DateRangePickerClient searchParams={parsedSearchParams} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
+          <h2 className="mb-4 font-semibold text-xl">クリックボリューム</h2>
+          <Suspense
+            fallback={
+              <div className="h-96 animate-pulse rounded-lg bg-gray-200" />
+            }
+          >
+            <ClickVolumeChart searchParams={parsedSearchParams} />
+          </Suspense>
+        </div>
+
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
+          <TabNavigation
+            defaultTab="videos"
+            searchParams={parsedSearchParams}
+            tabs={[
+              { id: 'videos', label: '人気動画' },
+              { id: 'channels', label: '人気チャンネル' },
+            ]}
+          />
+          <div className="mt-6">
+            <PopularRankingsTabs searchParams={parsedSearchParams} />
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

@@ -1,4 +1,5 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
+import { range } from '@shinju-date/helpers'
 import { YouTubeScraper } from '../scraper.js'
 import type {
   YouTubeChannel,
@@ -59,14 +60,12 @@ describe('YouTubeScraper', () => {
 
       const scraper = new YouTubeScraper({ youtubeClient: mockClient })
       const onChannelScraped = vi.fn()
-      const channels: YouTubeChannel[] = []
-
-      for await (const channel of scraper.getChannels({
-        ids: ['UC123', 'UC456'],
-        onChannelScraped,
-      })) {
-        channels.push(channel)
-      }
+      const channels = await Array.fromAsync(
+        scraper.getChannels({
+          ids: ['UC123', 'UC456'],
+          onChannelScraped,
+        }),
+      )
 
       expect(channels).toHaveLength(2)
       expect(channels[0].id).toBe('UC123')
@@ -86,13 +85,11 @@ describe('YouTubeScraper', () => {
       } as unknown as youtube.Youtube
 
       const scraper = new YouTubeScraper({ youtubeClient: mockClient })
-      const channels: YouTubeChannel[] = []
-
-      for await (const channel of scraper.getChannels({
-        ids: ['UC123'],
-      })) {
-        channels.push(channel)
-      }
+      const channels = await Array.fromAsync(
+        scraper.getChannels({
+          ids: ['UC123'],
+        }),
+      )
 
       expect(channels).toHaveLength(0)
     })
@@ -269,14 +266,11 @@ describe('YouTubeScraper', () => {
     })
 
     it('should batch requests for large video arrays', async () => {
-      const mockVideos: YouTubeVideo[] = Array.from(
-        { length: 100 },
-        (_, i) => ({
-          contentDetails: {},
-          id: `video${i}`,
-          snippet: { publishedAt: '2023-01-01T00:00:00Z' },
-        }),
-      )
+      const mockVideos: YouTubeVideo[] = range(100).map((i) => ({
+        contentDetails: {},
+        id: `video${i}`,
+        snippet: { publishedAt: '2023-01-01T00:00:00Z' },
+      }))
 
       const mockClient = {
         videos: {
@@ -292,12 +286,8 @@ describe('YouTubeScraper', () => {
       } as unknown as youtube.Youtube
 
       const scraper = new YouTubeScraper({ youtubeClient: mockClient })
-      const videos: YouTubeVideo[] = []
-      const videoIds = Array.from({ length: 100 }, (_, i) => `video${i}`)
-
-      for await (const video of scraper.getVideos({ ids: videoIds })) {
-        videos.push(video)
-      }
+      const videoIds = range(100).map((i) => `video${i}`)
+      const videos = await Array.fromAsync(scraper.getVideos({ ids: videoIds }))
 
       expect(videos).toHaveLength(100)
       expect(mockClient.videos.list).toHaveBeenCalledTimes(2)
@@ -422,7 +412,7 @@ describe('YouTubeScraper', () => {
     })
 
     it('should batch check large video arrays', async () => {
-      const videoIds = Array.from({ length: 100 }, (_, i) => `video${i}`)
+      const videoIds = range(100).map((i) => `video${i}`)
 
       const mockClient = {
         videos: {

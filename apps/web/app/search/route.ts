@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 export function GET(req: Request): Response {
   const basePath = '/videos'
   const nextURL = new URL(req.url)

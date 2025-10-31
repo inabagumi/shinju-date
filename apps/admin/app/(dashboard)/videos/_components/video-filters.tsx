@@ -1,13 +1,13 @@
 'use client'
 
+import { Input } from '@shinju-date/ui'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 type Channel = {
   created_at: string
-  id: number
+  id: string
   name: string
-  slug: string
   updated_at: string
 }
 
@@ -28,6 +28,13 @@ export function VideoFilters({ channels }: Props) {
 
   // Debounce search input
   useEffect(() => {
+    const currentSearch = searchParams.get('search') || ''
+
+    // Only trigger navigation if the search input actually changed from URL
+    if (searchInput === currentSearch) {
+      return
+    }
+
     const timer = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString())
       if (searchInput === '') {
@@ -41,7 +48,7 @@ export function VideoFilters({ channels }: Props) {
     }, 500) // 500ms debounce
 
     return () => clearTimeout(timer)
-  }, [searchInput, router, searchParams])
+  }, [searchInput, router, searchParams]) // Re-added searchParams since we need it to check current value
 
   const handleFilterChange = (
     key: 'channelId' | 'deleted' | 'visible',
@@ -67,13 +74,13 @@ export function VideoFilters({ channels }: Props) {
         >
           タイトルまたはIDで検索
         </label>
-        <input
-          className="rounded-md border border-gray-300 px-3 py-2"
+        <Input
           id="search-filter"
+          inputSize="md"
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="検索..."
-          type="text"
           value={searchInput}
+          variant="default"
         />
       </div>
       <div>
@@ -84,7 +91,7 @@ export function VideoFilters({ channels }: Props) {
           チャンネルで絞り込み
         </label>
         <select
-          className="rounded-md border border-gray-300 px-3 py-2"
+          className="w-full max-w-full appearance-none rounded-md border border-gray-300 bg-[length:1em] bg-[position:right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3e%3cpath%20fill=%27none%27%20stroke=%27%23333%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%272%27%20d=%27m2%205%206%206%206-6%27/%3e%3c/svg%3e')] bg-no-repeat px-3 py-2 pr-8 sm:w-auto"
           id="channel-filter"
           onChange={(e) => handleFilterChange('channelId', e.target.value)}
           value={currentChannelId}
@@ -105,7 +112,7 @@ export function VideoFilters({ channels }: Props) {
           ステータスで絞り込み
         </label>
         <select
-          className="rounded-md border border-gray-300 px-3 py-2"
+          className="appearance-none rounded-md border border-gray-300 bg-[length:1em] bg-[position:right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3e%3cpath%20fill=%27none%27%20stroke=%27%23333%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%272%27%20d=%27m2%205%206%206%206-6%27/%3e%3c/svg%3e')] bg-no-repeat px-3 py-2 pr-8"
           id="status-filter"
           onChange={(e) => handleFilterChange('visible', e.target.value)}
           value={currentVisible}
@@ -123,7 +130,7 @@ export function VideoFilters({ channels }: Props) {
           削除状態で絞り込み
         </label>
         <select
-          className="rounded-md border border-gray-300 px-3 py-2"
+          className="appearance-none rounded-md border border-gray-300 bg-[length:1em] bg-[position:right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3e%3cpath%20fill=%27none%27%20stroke=%27%23333%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%272%27%20d=%27m2%205%206%206%206-6%27/%3e%3c/svg%3e')] bg-no-repeat px-3 py-2 pr-8"
           id="deleted-filter"
           onChange={(e) => handleFilterChange('deleted', e.target.value)}
           value={currentDeleted}

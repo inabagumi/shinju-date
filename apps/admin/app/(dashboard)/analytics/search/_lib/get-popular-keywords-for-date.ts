@@ -1,6 +1,7 @@
 'use server'
 
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import { logger } from '@shinju-date/logger'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
@@ -11,7 +12,7 @@ export type KeywordForDate = {
 }
 
 /**
- * Get popular keywords for a specific date
+ * Get popular keywords for a specific date (daily data)
  */
 export async function getPopularKeywordsForDate(
   date: string,
@@ -24,9 +25,9 @@ export async function getPopularKeywordsForDate(
       timeZone: TIME_ZONE,
     })
     const dateKey = formatDate(zonedDate)
-    const key = `${REDIS_KEYS.SEARCH_POPULAR}:${dateKey}`
+    const dailyKey = `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${dateKey}`
 
-    const results = await redisClient.zrange<string[]>(key, 0, limit - 1, {
+    const results = await redisClient.zrange<string[]>(dailyKey, 0, limit - 1, {
       rev: true,
       withScores: true,
     })
@@ -46,7 +47,11 @@ export async function getPopularKeywordsForDate(
 
     return keywords
   } catch (error) {
-    console.error('Failed to fetch keywords for date:', error)
+    logger.error('日付別のキーワード取得に失敗しました', {
+      date,
+      error,
+      limit,
+    })
     return []
   }
 }

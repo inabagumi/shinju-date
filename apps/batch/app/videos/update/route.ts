@@ -9,16 +9,10 @@ import { redisClient } from '@/lib/redis'
 import { revalidateTags } from '@/lib/revalidate'
 import { scrape, type Video } from '@/lib/scraper'
 import { supabaseClient } from '@/lib/supabase'
-import {
-  type FilteredYouTubeChannel,
-  getChannels,
-  youtubeClient,
-} from '@/lib/youtube'
+import { getChannels, youtubeClient } from '@/lib/youtube'
 
 const MONITOR_SLUG = '/videos/update'
 
-export const runtime = 'nodejs'
-export const revalidate = 0
 export const maxDuration = 120
 
 export async function POST(request: Request): Promise<Response> {
@@ -67,7 +61,7 @@ export async function POST(request: Request): Promise<Response> {
 
   const { data: savedChannels, error } = await supabaseClient
     .from('channels')
-    .select('id, slug')
+    .select('id, youtube_channel:youtube_channels!inner(youtube_channel_id)')
     .is('deleted_at', null)
 
   if (error) {
@@ -88,14 +82,19 @@ export async function POST(request: Request): Promise<Response> {
     })
   }
 
-  const channelIDs = savedChannels.map((savedChannel) => savedChannel.slug)
-  const channels: FilteredYouTubeChannel[] = []
-
-  for await (const channel of getChannels({
-    ids: channelIDs,
-  })) {
-    channels.push(channel)
-  }
+  const channelIDs = savedChannels
+    .map((savedChannel) => {
+      const ytChannel = Array.isArray(savedChannel.youtube_channel)
+        ? savedChannel.youtube_channel[0]
+        : savedChannel.youtube_channel
+      return ytChannel?.youtube_channel_id
+    })
+    .filter((id): id is string => Boolean(id))
+  const channels = await Array.fromAsync(
+    getChannels({
+      ids: channelIDs,
+    }),
+  )
 
   if (channels.length < 1) {
     throw new TypeError('There are no channels.')
@@ -108,8 +107,13 @@ export async function POST(request: Request): Promise<Response> {
 
   const results = await Promise.allSettled(
     savedChannels.map((savedChannel) => {
+      const ytChannel = Array.isArray(savedChannel.youtube_channel)
+        ? savedChannel.youtube_channel[0]
+        : savedChannel.youtube_channel
+      const youtubeChannelId = ytChannel?.youtube_channel_id
+
       const originalChannel = channels.find(
-        (item) => item.id === savedChannel.slug,
+        (item) => item.id === youtubeChannelId,
       )
 
       if (!originalChannel) {
@@ -143,10 +147,11 @@ export async function POST(request: Request): Promise<Response> {
   if (videos.length > 0) {
     for (const video of videos) {
       const publishedAt = Temporal.Instant.from(video.published_at)
+      const youtubeVideoId = video.youtube_video?.youtube_video_id
 
       Sentry.logger.info('The video has been saved.', {
         duration: video.duration,
-        id: video.slug,
+        id: youtubeVideoId,
         publishedAt: publishedAt.toString(),
         title: video.title,
       })

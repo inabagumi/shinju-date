@@ -1,65 +1,66 @@
 import { formatNumber } from '@shinju-date/helpers'
+import type { Metadata } from 'next'
+import { Suspense } from 'react'
+import { TableSkeleton } from '@/components/skeletons'
 import getChannels from '../channels/_lib/get-channels'
 import Pagination from './_components/pagination'
-import VideoList from './_components/video-list'
+import { VideoFilters } from './_components/video-filters'
+import { VideoTable } from './_components/video-table'
 import {
   getVideos,
-  type VideoFilters,
-  type VideoSortField,
-  type VideoSortOrder,
+  type VideoFilters as VideoFiltersType,
 } from './_lib/get-videos'
+import {
+  DEFAULT_VALUES,
+  type VideoSearchParams,
+  videoSearchParamsSchema,
+} from './_lib/search-params-schema'
 
-type Props = {
-  searchParams: Promise<{
-    channelId?: string
-    deleted?: string
-    page?: string
-    search?: string
-    slug?: string
-    sortField?: string
-    sortOrder?: string
-    visible?: string
-  }>
+export const metadata: Metadata = {
+  title: '動画管理',
 }
 
-export default async function VideosPage({ searchParams }: Props) {
-  const params = await searchParams
-  const currentPage = Number(params.page) || 1
+export default async function VideosPage({ searchParams }: PageProps<'/'>) {
+  const rawParams = await searchParams
+
+  // Validate and parse search parameters using zod schema
+  // If validation fails, use default values to prevent crashes
+  let validatedParams: VideoSearchParams
+  try {
+    validatedParams = videoSearchParamsSchema.parse(rawParams)
+  } catch (_error) {
+    // If parsing fails, use safeParse to get default values
+    const result = videoSearchParamsSchema.safeParse({})
+    validatedParams = result.success ? result.data : DEFAULT_VALUES
+  }
+
+  const currentPage = validatedParams.page
   const perPage = 20
 
-  // Build filters
-  const filters: VideoFilters = {}
-  if (params.channelId) {
-    filters.channelId = Number(params.channelId)
+  // Build filters from validated parameters
+  const filters: VideoFiltersType = {}
+  if (validatedParams.channelId !== undefined) {
+    filters.channelId = validatedParams.channelId
   }
-  if (params.visible !== undefined && params.visible !== '') {
-    filters.visible = params.visible === 'true'
+  if (validatedParams.visible !== undefined) {
+    filters.visible = validatedParams.visible
   }
-  if (params.slug) {
-    filters.slug = params.slug
+  if (validatedParams.search) {
+    filters.search = validatedParams.search
   }
-  if (params.search) {
-    filters.search = params.search
+  if (validatedParams.deleted !== undefined) {
+    filters.deleted = validatedParams.deleted
   }
-  if (params.deleted === 'true') {
-    filters.deleted = true
-  } else if (params.deleted === 'false') {
-    filters.deleted = false
-  }
-  // If params.deleted is undefined or empty, don't set filters.deleted (will show all)
 
-  // Get sort parameters
-  const sortField = (params.sortField as VideoSortField) || 'updated_at'
-  const sortOrder = (params.sortOrder as VideoSortOrder) || 'desc'
+  // Get sort parameters from validated data
+  const sortField = validatedParams.sortField
+  const sortOrder = validatedParams.sortOrder
 
-  const { videos, total } = await getVideos(
-    currentPage,
-    perPage,
-    filters,
-    sortField,
-    sortOrder,
-  )
-  const channels = await getChannels()
+  // Fetch channels and total count outside Suspense to avoid layout shift
+  const [channels, { total }] = await Promise.all([
+    getChannels(),
+    getVideos(currentPage, perPage, filters, sortField, sortOrder),
+  ])
   const totalPages = Math.ceil(total / perPage)
 
   return (
@@ -69,7 +70,17 @@ export default async function VideosPage({ searchParams }: Props) {
         <p className="text-gray-600">全 {formatNumber(total)} 件の動画</p>
       </div>
 
-      <VideoList channels={channels} videos={videos} />
+      <VideoFilters channels={channels} />
+
+      <Suspense fallback={<TableSkeleton rows={perPage} />}>
+        <VideoTable
+          currentPage={currentPage}
+          filters={filters}
+          perPage={perPage}
+          sortField={sortField}
+          sortOrder={sortOrder}
+        />
+      </Suspense>
       {totalPages > 1 && (
         <Pagination currentPage={currentPage} totalPages={totalPages} />
       )}

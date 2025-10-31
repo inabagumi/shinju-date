@@ -1,0 +1,42 @@
+{
+  "author": "Haneru Developers",
+  "description": "Common mock server handlers using MSW for SHINJU DATE monorepo",
+  "dependencies": {
+    "msw": "2.11.6"
+  },
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.6",
+    "@tsconfig/strictest": "^2.0.7",
+    "@types/node": "22.18.13",
+    "tsup": "^8.5.0",
+    "typescript": "5.9.3"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    }
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "name": "@shinju-date/msw-handlers",
+  "private": true,
+  "repository": {
+    "directory": "packages/msw-handlers",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "1.0.0"
+}

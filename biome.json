@@ -19,6 +19,9 @@
     },
     "linter": {
       "enabled": true
+    },
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "formatter": {
@@ -40,12 +43,9 @@
           "level": "warn",
           "options": {
             "attributes": ["className"],
-            "functions": ["twMerge"]
+            "functions": ["twMerge", "cva"]
           }
         }
-      },
-      "suspicious": {
-        "noUnknownAtRules": "off"
       }
     }
   },

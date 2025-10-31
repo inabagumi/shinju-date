@@ -1,0 +1,109 @@
+import Link from 'next/link'
+import { cache } from 'react'
+import { Temporal } from 'temporal-polyfill'
+import type { PopularChannel } from '@/lib/analytics/get-popular-channels'
+import { getPopularChannels } from '@/lib/analytics/get-popular-channels'
+import { ExportMenu } from '../../_components/export-menu'
+import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
+
+type Props = {
+  searchParams: Promise<AnalyticsSearchParams>
+}
+
+/**
+ * Cached function to fetch popular channels data
+ */
+const fetchPopularChannelsData = cache(
+  async (startDate: string, endDate: string, selectedDate: string | null) => {
+    if (selectedDate) {
+      return getPopularChannels(20, Temporal.PlainDate.from(selectedDate))
+    }
+
+    const start = Temporal.PlainDate.from(startDate)
+    const end = Temporal.PlainDate.from(endDate)
+    return getPopularChannels(20, start, end)
+  },
+)
+
+/**
+ * Simple Popular Channels Widget Component for server rendering
+ */
+function SimplePopularChannelsWidget({
+  channels,
+  dateRange,
+  selectedDate,
+}: {
+  channels: PopularChannel[]
+  dateRange: { startDate: string; endDate: string }
+  selectedDate: string | null
+}) {
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="font-semibold text-xl">
+          {selectedDate
+            ? `人気チャンネルランキング (${selectedDate})`
+            : `人気チャンネルランキング (${dateRange.startDate} 〜 ${dateRange.endDate})`}
+        </h2>
+        <ExportMenu
+          dateRange={dateRange}
+          selectedDate={selectedDate}
+          type="channels"
+        />
+      </div>
+      <p className="mb-4 text-gray-600 text-sm">
+        最もクリックされているチャンネルのランキング。どのタレントが人気かを把握できます。
+      </p>
+
+      {channels.length > 0 ? (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {channels.map((channel, index) => (
+            <div
+              className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
+              key={channel.id}
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-100 font-semibold text-purple-600 text-sm">
+                {index + 1}
+              </div>
+              <div className="min-w-0 flex-1 truncate">
+                <Link
+                  className="font-medium hover:underline"
+                  href={`/channels/${channel.id}`}
+                >
+                  {channel.name}
+                </Link>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className="font-semibold text-gray-900">{channel.clicks}</p>
+                <p className="text-gray-500 text-xs">回</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="py-8 text-center text-gray-500">データがありません</p>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Async server component that fetches and displays popular channels widget
+ */
+export async function PopularChannelsWidget({ searchParams }: Props) {
+  const { dateRange, selectedDate } = await searchParams
+
+  const popularChannels = await fetchPopularChannelsData(
+    dateRange.startDate,
+    dateRange.endDate,
+    selectedDate,
+  )
+
+  return (
+    <SimplePopularChannelsWidget
+      channels={popularChannels}
+      dateRange={dateRange}
+      selectedDate={selectedDate}
+    />
+  )
+}

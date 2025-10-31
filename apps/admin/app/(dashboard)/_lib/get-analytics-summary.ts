@@ -1,6 +1,7 @@
 'use server'
 
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import { logger } from '@shinju-date/logger'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
@@ -50,7 +51,8 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
       totalPopularKeywords: totalPopularKeywords ?? 0,
     }
   } catch (error) {
-    console.error('Failed to fetch analytics summary:', error)
+    logger.error('分析サマリーの取得に失敗しました', { error })
+
     return {
       recentClicks: 0,
       recentSearches: 0,

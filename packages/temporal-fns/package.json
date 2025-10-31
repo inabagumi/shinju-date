@@ -6,7 +6,7 @@
   "description": "",
   "devDependencies": {
     "@tsconfig/node20": "20.1.6",
-    "@tsconfig/strictest": "2.0.6",
+    "@tsconfig/strictest": "2.0.7",
     "tsup": "8.5.0",
     "typescript": "5.9.3"
   },
@@ -18,6 +18,10 @@
     "./format-date": {
       "types": "./dist/format-date.d.ts",
       "default": "./dist/format-date.js"
+    },
+    "./get-monday-of-week": {
+      "types": "./dist/get-monday-of-week.d.ts",
+      "default": "./dist/get-monday-of-week.js"
     },
     "./max": {
       "types": "./dist/max.d.ts",
@@ -55,6 +59,9 @@
       ],
       "./format-date": [
         "./dist/format-date.d.ts"
+      ],
+      "./get-monday-of-week": [
+        "./dist/get-monday-of-week.d.ts"
       ],
       "./max": [
         "./dist/max.d.ts"

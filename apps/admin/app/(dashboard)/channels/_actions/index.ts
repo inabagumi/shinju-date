@@ -1,21 +1,18 @@
 'use server'
 
+import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
-import { cookies } from 'next/headers'
 import type { FormState } from '@/components/form'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
 
 export async function createChannelAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   const name = formData.get('name') as string
-  const slug = formData.get('slug') as string
+  const channelId = formData.get('channel_id') as string
 
   if (!name || name.trim() === '') {
     return {
@@ -25,28 +22,54 @@ export async function createChannelAction(
     }
   }
 
-  if (!slug || slug.trim() === '') {
+  if (!channelId || channelId.trim() === '') {
     return {
       errors: {
-        slug: ['チャンネルIDを入力してください。'],
+        channel_id: ['チャンネルIDを入力してください。'],
       },
     }
   }
 
   try {
-    const { error } = await supabaseClient.from('channels').insert({
-      name: name.trim(),
-      slug: slug.trim(),
-    })
+    const { data: newChannel, error } = await supabaseClient
+      .from('channels')
+      .insert({
+        name: name.trim(),
+      })
+      .select('id')
+      .single()
 
     if (error) {
       throw error
     }
 
+    // Write to youtube_channels table
+    // Note: youtube_handle is null for manually created channels initially
+    // It will be populated when the channel sync runs
+    await supabaseClient
+      .from('youtube_channels')
+      .insert({
+        channel_id: newChannel.id,
+        youtube_channel_id: channelId.trim(),
+        youtube_handle: null,
+      })
+      .then(({ error: youtubeError }) => {
+        if (youtubeError) {
+          logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
+            error: youtubeError,
+            youtube_channel_id: channelId.trim(),
+          })
+        }
+      })
+
     revalidatePath('/channels')
     return {}
   } catch (error) {
-    console.error('Create channel error:', error)
+    logger.error('チャンネルの追加に失敗しました', {
+      channel_id: channelId.trim(),
+      error,
+      name: name.trim(),
+    })
     return {
       errors: {
         generic: [
@@ -63,16 +86,13 @@ export async function updateChannelAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
-  const idString = formData.get('id') as string
+  const id = formData.get('id') as string
   const name = formData.get('name') as string
-  const slug = formData.get('slug') as string
+  const youtubeChannelId = formData.get('channel_id') as string
 
-  if (!idString || !name || name.trim() === '') {
+  if (!id || !name || name.trim() === '') {
     return {
       errors: {
         name: ['チャンネル名を入力してください。'],
@@ -80,29 +100,32 @@ export async function updateChannelAction(
     }
   }
 
-  if (!slug || slug.trim() === '') {
+  if (!youtubeChannelId || youtubeChannelId.trim() === '') {
     return {
       errors: {
-        slug: ['チャンネルIDを入力してください。'],
-      },
-    }
-  }
-
-  const id = Number.parseInt(idString, 10)
-  if (Number.isNaN(id)) {
-    return {
-      errors: {
-        generic: ['無効なIDです。'],
+        channel_id: ['YouTubeチャンネルIDを入力してください。'],
       },
     }
   }
 
   try {
+    // First, get the current youtube_channel_id to check if it changed
+    const { data: currentYoutubeChannel, error: fetchError } =
+      await supabaseClient
+        .from('youtube_channels')
+        .select('youtube_channel_id')
+        .eq('channel_id', id)
+        .single()
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      throw fetchError
+    }
+
+    // Update channels table (only name now)
     const { error } = await supabaseClient
       .from('channels')
       .update({
         name: name.trim(),
-        slug: slug.trim(),
       })
       .eq('id', id)
 
@@ -110,10 +133,36 @@ export async function updateChannelAction(
       throw error
     }
 
+    // Update or insert youtube_channels if youtube_channel_id changed or doesn't exist
+    if (
+      !currentYoutubeChannel ||
+      currentYoutubeChannel.youtube_channel_id !== youtubeChannelId.trim()
+    ) {
+      const { error: youtubeError } = await supabaseClient
+        .from('youtube_channels')
+        .upsert({
+          channel_id: id,
+          youtube_channel_id: youtubeChannelId.trim(),
+        })
+
+      if (youtubeError) {
+        logger.error('youtube_channelsテーブルの更新に失敗しました', {
+          error: youtubeError,
+          id,
+          youtube_channel_id: youtubeChannelId.trim(),
+        })
+      }
+    }
+
     revalidatePath('/channels')
     return {}
   } catch (error) {
-    console.error('Update channel error:', error)
+    logger.error('チャンネルの更新に失敗しました', {
+      error,
+      id,
+      name: name.trim(),
+      youtube_channel_id: youtubeChannelId.trim(),
+    })
     return {
       errors: {
         generic: [
@@ -126,14 +175,11 @@ export async function updateChannelAction(
   }
 }
 
-export async function deleteChannelAction(id: number): Promise<{
+export async function deleteChannelAction(id: string): Promise<{
   success: boolean
   error?: string
 }> {
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   if (!id) {
     return { error: 'IDが指定されていません。', success: false }
@@ -154,7 +200,7 @@ export async function deleteChannelAction(id: number): Promise<{
     revalidatePath('/channels')
     return { success: true }
   } catch (error) {
-    console.error('Delete channel error:', error)
+    logger.error('チャンネルの削除に失敗しました', { error, id })
     return {
       error:
         error instanceof Error

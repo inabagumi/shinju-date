@@ -4,7 +4,7 @@ import type { TypedSupabaseClient } from '@/lib/supabase'
 import { DatabaseError } from './errors'
 import type { SavedVideo } from './types'
 
-export type VideoChannel = Pick<Tables<'channels'>, 'name' | 'slug'>
+export type VideoChannel = Pick<Tables<'channels'>, 'name'>
 
 export type VideoThumbnail = Omit<
   Tables<'thumbnails'>,
@@ -13,20 +13,22 @@ export type VideoThumbnail = Omit<
 
 export type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'published_at' | 'slug' | 'title'
+  'duration' | 'id' | 'published_at' | 'title'
 > & {
   channels: VideoChannel | VideoChannel[] | null
   thumbnails: VideoThumbnail | VideoThumbnail[] | null
+  youtube_video?: {
+    youtube_video_id: string
+  }
 }
 
 const scrapeResultSelect = `
   channels (
-    name,
-    slug
+    name
   ),
   duration,
+  id,
   published_at,
-  slug,
   thumbnails (
     blur_data_url,
     height,
@@ -52,31 +54,34 @@ export default class DB implements AsyncDisposable {
   ): AsyncGenerator<SavedVideo, void, undefined> {
     for (let i = 0; i < ids.length; i += 100) {
       const { data: videos, error } = await this.#supabaseClient
-        .from('videos')
+        .from('youtube_videos')
         .select(
           `
-            id,
-            created_at,
-            deleted_at,
-            duration,
-            published_at,
-            slug,
-            thumbnail_id,
-            thumbnails (
-              blur_data_url,
-              deleted_at,
-              etag,
-              height,
+            video:videos!inner (
               id,
-              path,
-              updated_at,
-              width
+              created_at,
+              deleted_at,
+              duration,
+              platform,
+              published_at,
+              thumbnail_id,
+              thumbnails (
+                blur_data_url,
+                deleted_at,
+                etag,
+                height,
+                id,
+                path,
+                updated_at,
+                width
+              ),
+              title,
+              visible
             ),
-            title,
-            visible
+            youtube_video_id
           `,
         )
-        .in('slug', ids.slice(i, i + 100))
+        .in('youtube_video_id', ids.slice(i, i + 100))
 
       if (error) {
         throw new TypeError(error.message, {
@@ -84,13 +89,24 @@ export default class DB implements AsyncDisposable {
         })
       }
 
-      yield* videos
+      // Transform the response to match expected SavedVideo structure
+      const transformedVideos = videos.map((row) => {
+        const video = Array.isArray(row.video) ? row.video[0] : row.video
+        return {
+          ...video,
+          youtube_video: {
+            youtube_video_id: row.youtube_video_id,
+          },
+        }
+      })
+
+      yield* transformedVideos
     }
   }
 
   async upsertThumbnails(values: TablesInsert<'thumbnails'>[]): Promise<
     {
-      id: number
+      id: string
       path: string
     }[]
   > {
@@ -126,7 +142,7 @@ export default class DB implements AsyncDisposable {
     ])
 
     const thumbnails: {
-      id: number
+      id: string
       path: string
     }[] = []
 
@@ -143,52 +159,127 @@ export default class DB implements AsyncDisposable {
     return thumbnails
   }
 
-  async upsertVideos(values: TablesInsert<'videos'>[]): Promise<Video[]> {
-    const upsertValues = values.filter((value) => value.id)
-    const insertValues = values.filter((value) => !value.id)
-
-    const results = await Promise.allSettled([
-      upsertValues.length > 0
-        ? this.#supabaseClient
-            .from('videos')
-            .upsert(upsertValues)
-            .select(scrapeResultSelect)
-            .then(({ data, error }) => {
-              if (error) {
-                throw new DatabaseError(error)
-              }
-
-              return data
-            })
-        : Promise.resolve([]),
-      insertValues.length > 0
-        ? this.#supabaseClient
-            .from('videos')
-            .insert(insertValues)
-            .select(scrapeResultSelect)
-            .then(({ data, error }) => {
-              if (error) {
-                throw new DatabaseError(error)
-              }
-
-              return data
-            })
-        : Promise.resolve([]),
-    ])
-
-    const videos: Video[] = []
-
-    for (const result of results) {
-      if (result.status === 'fulfilled') {
-        for (const video of result.value) {
-          videos.push(video)
-        }
-      } else {
-        Sentry.captureException(result.reason)
+  async upsertVideos(
+    values: TablesInsert<'videos'>[],
+    youtubeVideoIds: string[],
+  ): Promise<Video[]> {
+    const originalVideoMap = new Map<string, TablesInsert<'videos'>>()
+    for (let i = 0; i < youtubeVideoIds.length; i++) {
+      const value = values[i]
+      const youtubeVideoId = youtubeVideoIds[i]
+      if (value && youtubeVideoId) {
+        originalVideoMap.set(youtubeVideoId, value)
       }
     }
 
-    return videos
+    const { data: existingYoutubeVideos, error: selectError } =
+      await this.#supabaseClient
+        .from('youtube_videos')
+        .select('video_id, youtube_video_id')
+        .in('youtube_video_id', youtubeVideoIds)
+
+    if (selectError) {
+      throw new DatabaseError(selectError)
+    }
+
+    const existingVideoMap = new Map<string, string>()
+    for (const v of existingYoutubeVideos ?? []) {
+      existingVideoMap.set(v.youtube_video_id, v.video_id)
+    }
+
+    const videosToUpsert: TablesInsert<'videos'>[] = []
+    const videosToInsert: {
+      value: TablesInsert<'videos'>
+      youtubeVideoId: string
+    }[] = []
+
+    for (const [youtubeVideoId, value] of originalVideoMap.entries()) {
+      const existingVideoId = existingVideoMap.get(youtubeVideoId)
+      if (existingVideoId) {
+        videosToUpsert.push({ ...value, id: existingVideoId })
+      } else {
+        videosToInsert.push({ value, youtubeVideoId })
+      }
+    }
+
+    const [upsertResult, insertResult] = await Promise.allSettled([
+      videosToUpsert.length > 0
+        ? this.#supabaseClient
+            .from('videos')
+            .upsert(videosToUpsert)
+            .select(scrapeResultSelect)
+        : Promise.resolve({ data: [], error: null }),
+      videosToInsert.length > 0
+        ? this.#supabaseClient
+            .from('videos')
+            .insert(videosToInsert.map((v) => v.value))
+            .select(scrapeResultSelect)
+        : Promise.resolve({ data: [], error: null }),
+    ])
+
+    if (upsertResult.status === 'rejected') {
+      throw new DatabaseError(upsertResult.reason)
+    }
+    if (insertResult.status === 'rejected') {
+      throw new DatabaseError(insertResult.reason)
+    }
+
+    const { data: upsertedVideos, error: upsertError } = upsertResult.value
+    const { data: insertedVideos, error: insertError } = insertResult.value
+
+    if (upsertError) throw new DatabaseError(upsertError)
+    if (insertError) throw new DatabaseError(insertError)
+
+    const allVideos: Video[] = [
+      ...(upsertedVideos ?? []),
+      ...(insertedVideos ?? []),
+    ]
+
+    const youtubeVideoValues: TablesInsert<'youtube_videos'>[] = []
+    if (insertedVideos && insertedVideos.length > 0) {
+      for (const [index, video] of insertedVideos.entries()) {
+        const originalData = videosToInsert[index]
+        if (originalData) {
+          youtubeVideoValues.push({
+            video_id: video.id,
+            youtube_video_id: originalData.youtubeVideoId,
+          })
+        }
+      }
+
+      const { error: youtubeVideosError } = await this.#supabaseClient
+        .from('youtube_videos')
+        .insert(youtubeVideoValues)
+
+      if (youtubeVideosError) {
+        Sentry.captureException(new DatabaseError(youtubeVideosError))
+      }
+    }
+
+    for (const video of allVideos) {
+      let youtubeVideoId: string | undefined
+      for (const [ytId, videoId] of existingVideoMap.entries()) {
+        if (videoId === video.id) {
+          youtubeVideoId = ytId
+          break
+        }
+      }
+
+      if (!youtubeVideoId) {
+        const entry = youtubeVideoValues.find((yv) => yv.video_id === video.id)
+        if (entry) {
+          youtubeVideoId = entry.youtube_video_id
+        }
+      }
+
+      if (youtubeVideoId) {
+        video.youtube_video = {
+          youtube_video_id: youtubeVideoId,
+        }
+      }
+    }
+
+    return allVideos
   }
 
   async [Symbol.asyncDispose](): Promise<void> {

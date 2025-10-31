@@ -2,23 +2,21 @@
 
 import type { Tables } from '@shinju-date/database'
 import { startOfHour } from '@shinju-date/temporal-fns'
-import type { Fetcher } from 'swr'
-import type { SWRInfiniteFetcher } from 'swr/infinite'
 import { Temporal } from 'temporal-polyfill'
-import { getCurrentTime } from '@/lib/cached-functions'
 import { SEARCH_RESULT_COUNT, timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
 
 const DEFAULT_SEARCH_SELECT = `
-  channel:channels!inner (name, slug),
+  channel:channels!inner (id, name),
   duration,
-  slug,
+  id,
   thumbnail:thumbnails (blur_data_url, height, path, width),
   published_at,
-  title
+  title,
+  youtube_video:youtube_videos!inner (youtube_video_id)
 `
 
-export type Channel = Pick<Tables<'channels'>, 'name' | 'slug'>
+export type Channel = Pick<Tables<'channels'>, 'id' | 'name'>
 
 export type Thumbnail = Pick<
   Tables<'thumbnails'>,
@@ -27,21 +25,21 @@ export type Thumbnail = Pick<
 
 export type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'slug' | 'published_at' | 'title'
+  'duration' | 'id' | 'published_at' | 'title'
 > & {
   channel: Channel
-  thumbnail?: Thumbnail | null
+  thumbnail: Thumbnail | null
+  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'>
 }
 
 type FetchNotEndedVideosOptions = {
-  channelIDs?: string[]
+  channelIDs?: string[] | undefined
 }
 
-export const fetchNotEndedVideos: Fetcher<
-  Video[],
-  FetchNotEndedVideosOptions
-> = async ({ channelIDs = [] }) => {
-  const epochNanoseconds = await getCurrentTime()
+export const fetchNotEndedVideos = async ({
+  channelIDs = [],
+}: FetchNotEndedVideosOptions): Promise<Video[]> => {
+  const epochNanoseconds = Temporal.Now.instant().epochNanoseconds
   const baseTime = Temporal.Instant.fromEpochNanoseconds(epochNanoseconds)
   const hour = startOfHour(baseTime.toZonedDateTimeISO(timeZone))
   const since = hour.toInstant().subtract({
@@ -64,7 +62,7 @@ export const fetchNotEndedVideos: Fetcher<
     .limit(100)
 
   if (channelIDs && channelIDs.length > 0) {
-    builder = builder.in('channels.slug', channelIDs)
+    builder = builder.in('channel_id', channelIDs)
   }
 
   const { data: videos, error } = await builder
@@ -109,7 +107,7 @@ export const fetchNotEndedVideos: Fetcher<
 }
 
 async function getDefaultBaseTime() {
-  const epochNanoseconds = await getCurrentTime()
+  const epochNanoseconds = Temporal.Now.instant().epochNanoseconds
 
   return Temporal.Instant.fromEpochNanoseconds(epochNanoseconds)
     .toZonedDateTimeISO(timeZone)
@@ -121,20 +119,16 @@ async function getDefaultBaseTime() {
 }
 
 type FetchVideosByChannelIDsOptions = {
-  channelIDs?: number[]
+  channelIDs?: string[] | undefined
   query?: string
-  until?: bigint
+  until?: bigint | undefined
 }
 
-type KeyLoader = (
-  index: number,
-  previousPageData: Video[],
-) => FetchVideosByChannelIDsOptions
-
-export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
-  Video[],
-  KeyLoader
-> = async ({ channelIDs, query = '', until }) => {
+export const fetchVideosByChannelIDs = async ({
+  channelIDs = [],
+  query = '',
+  until,
+}: FetchVideosByChannelIDsOptions): Promise<Video[]> => {
   const baseTime = until
     ? Temporal.Instant.fromEpochNanoseconds(until)
     : await getDefaultBaseTime()
@@ -153,5 +147,5 @@ export const fetchVideosByChannelIDs: SWRInfiniteFetcher<
     })
   }
 
-  return videos
+  return videos.filter((video) => video.youtube_video != null)
 }

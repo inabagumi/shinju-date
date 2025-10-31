@@ -3,8 +3,6 @@ import { createErrorResponse } from '@shinju-date/helpers'
 import { revalidateTag } from 'next/cache'
 import { type Payload, payloadSchema } from './_lib/schemas'
 
-export const runtime = 'edge'
-
 async function parseRequest(request: Request): Promise<Payload> {
   const rawPayload = (await request.json()) as unknown
 
@@ -27,7 +25,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   for (const tag of payload.tags) {
-    revalidateTag(tag)
+    revalidateTag(tag, 'hours')
   }
 
   Sentry.logger.info('Revalidation was successful.', {

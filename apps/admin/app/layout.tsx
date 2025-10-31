@@ -1,6 +1,7 @@
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
+import { MSWProvider } from '@/components/msw-provider'
 import { lato } from './fonts'
 
 export const viewport: Viewport = {
@@ -8,7 +9,19 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Admin UI - SHINJU DATE',
+  description:
+    'SHINJU DATEの管理画面です。動画、用語集の管理とアナリティクスの閲覧ができます。',
+  robots: {
+    follow: false,
+    index: false,
+    noarchive: true,
+    noimageindex: true,
+    nosnippet: true,
+  },
+  title: {
+    default: 'Admin UI - SHINJU DATE',
+    template: '%s - Admin UI - SHINJU DATE',
+  },
 }
 
 type Props = {
@@ -18,7 +31,9 @@ type Props = {
 export default function RootLayout({ children }: Props) {
   return (
     <html className={lato.variable} lang="ja">
-      <body className="font-sans text-primary">{children}</body>
+      <body className="font-sans text-primary">
+        <MSWProvider>{children}</MSWProvider>
+      </body>
     </html>
   )
 }

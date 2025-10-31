@@ -111,7 +111,7 @@ export class Thumbnail {
     options,
     originalVideos,
     savedVideos,
-  }: UpsertThumbnailsOptions): Promise<{ id: number; path: string }[]> {
+  }: UpsertThumbnailsOptions): Promise<{ id: string; path: string }[]> {
     const queue = new PQueue({
       concurrency: 12,
       interval: 250,
@@ -119,7 +119,8 @@ export class Thumbnail {
     const results = await Promise.allSettled(
       originalVideos.map((originalVideo) => {
         const savedVideo = savedVideos.find(
-          (savedVideo) => savedVideo.slug === originalVideo.id,
+          (savedVideo) =>
+            savedVideo.youtube_video?.youtube_video_id === originalVideo.id,
         )
         const savedThumbnail = savedVideo?.thumbnails
           ? Array.isArray(savedVideo.thumbnails)
@@ -329,13 +330,12 @@ export default class Scraper implements AsyncDisposable {
    * @yields YouTube video objects
    */
   async *getVideos(): AsyncGenerator<YouTubeVideo, void, undefined> {
-    const videoIDs: string[] = []
-
-    for await (const playlistItem of this.#youtubeScraper.getPlaylistItems({
-      playlistID: this.playlistID,
-    })) {
-      videoIDs.push(playlistItem.contentDetails.videoId)
-    }
+    const videoIDs = await Array.fromAsync(
+      this.#youtubeScraper.getPlaylistItems({
+        playlistID: this.playlistID,
+      }),
+      (playlistItem) => playlistItem.contentDetails.videoId,
+    )
 
     yield* this.#youtubeScraper.getVideos({ ids: videoIDs })
   }
@@ -345,18 +345,10 @@ export default class Scraper implements AsyncDisposable {
    * @returns Array of saved video objects
    */
   async scrape(): Promise<Video[]> {
-    const originalVideos: YouTubeVideo[] = []
-
-    for await (const video of this.getVideos()) {
-      originalVideos.push(video)
-    }
+    const originalVideos = await Array.fromAsync(this.getVideos())
 
     const videoIDs = originalVideos.map((video) => video.id)
-    const savedVideos: SavedVideo[] = []
-
-    for await (const savedVideo of this.#db.getSavedVideos(videoIDs)) {
-      savedVideos.push(savedVideo)
-    }
+    const savedVideos = await Array.fromAsync(this.#db.getSavedVideos(videoIDs))
 
     const thumbnails = await Thumbnail.upsertThumbnails({
       db: this.#db,
@@ -369,86 +361,93 @@ export default class Scraper implements AsyncDisposable {
       savedVideos,
     })
 
-    const values = originalVideos
-      .map<TablesInsert<'videos'> | null>((originalVideo) => {
-        const savedVideo = savedVideos.find(
-          (savedVideo) => savedVideo.slug === originalVideo.id,
-        )
-        const thumbnail = thumbnails.find((thumbnail) =>
-          thumbnail.path.startsWith(`${originalVideo.id}/`),
-        )
-        const publishedAt = getPublishedAt(originalVideo)
-        const updateValue: Partial<TablesInsert<'videos'>> = {}
-
-        if (savedVideo) {
-          const savedPublishedAt = Temporal.Instant.from(
-            savedVideo.published_at,
+    // Create tuples of video data and YouTube video ID to maintain association
+    const videoDataWithYouTubeIds = originalVideos
+      .map<{ value: TablesInsert<'videos'>; youtubeVideoId: string } | null>(
+        (originalVideo) => {
+          const savedVideo = savedVideos.find(
+            (savedVideo) =>
+              savedVideo.youtube_video?.youtube_video_id === originalVideo.id,
           )
-          const newDuration = originalVideo.contentDetails.duration ?? 'P0D'
+          const thumbnail = thumbnails.find((thumbnail) =>
+            thumbnail.path.startsWith(`${originalVideo.id}/`),
+          )
+          const publishedAt = getPublishedAt(originalVideo)
+          const updateValue: Partial<TablesInsert<'videos'>> = {}
 
-          let detectUpdate = false
+          if (savedVideo) {
+            const savedPublishedAt = Temporal.Instant.from(
+              savedVideo.published_at,
+            )
+            const newDuration = originalVideo.contentDetails.duration ?? 'P0D'
 
-          if (savedVideo.duration !== newDuration) {
-            updateValue.duration = newDuration
+            let detectUpdate = false
 
-            detectUpdate = true
-          } else {
-            updateValue.duration = savedVideo.duration
+            if (savedVideo.duration !== newDuration) {
+              updateValue.duration = newDuration
+
+              detectUpdate = true
+            } else {
+              updateValue.duration = savedVideo.duration
+            }
+
+            if (!savedPublishedAt.equals(publishedAt)) {
+              updateValue.published_at = publishedAt.toString()
+
+              detectUpdate = true
+            } else {
+              updateValue.published_at = savedVideo.published_at
+            }
+
+            if (thumbnail && savedVideo.thumbnail_id !== thumbnail.id) {
+              updateValue.thumbnail_id = thumbnail.id
+
+              detectUpdate = true
+            } else {
+              updateValue.thumbnail_id = savedVideo.thumbnail_id
+            }
+
+            if (savedVideo.title !== originalVideo.snippet.title) {
+              updateValue.title = originalVideo.snippet.title ?? ''
+
+              detectUpdate = true
+            } else {
+              updateValue.title = savedVideo.title
+            }
+
+            if (savedVideo.deleted_at) {
+              detectUpdate = true
+            }
+
+            if (!detectUpdate) {
+              return null
+            }
+
+            updateValue.id = savedVideo.id
+            updateValue.created_at = savedVideo.created_at
           }
 
-          if (!savedPublishedAt.equals(publishedAt)) {
-            updateValue.published_at = publishedAt.toString()
-
-            detectUpdate = true
-          } else {
-            updateValue.published_at = savedVideo.published_at
+          return {
+            value: {
+              channel_id: this.#savedChannel.id,
+              created_at: this.#currentDateTime.toString(),
+              deleted_at: null,
+              duration: originalVideo.contentDetails.duration ?? 'P0D',
+              platform: 'youtube',
+              published_at: publishedAt.toString(),
+              title: originalVideo.snippet.title ?? '',
+              updated_at: this.#currentDateTime.toString(),
+              visible: savedVideo?.visible ?? true,
+              ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
+              ...updateValue,
+            },
+            youtubeVideoId: originalVideo.id,
           }
-
-          if (thumbnail && savedVideo.thumbnail_id !== thumbnail.id) {
-            updateValue.thumbnail_id = thumbnail.id
-
-            detectUpdate = true
-          } else {
-            updateValue.thumbnail_id = savedVideo.thumbnail_id
-          }
-
-          if (savedVideo.title !== originalVideo.snippet.title) {
-            updateValue.title = originalVideo.snippet.title ?? ''
-
-            detectUpdate = true
-          } else {
-            updateValue.title = savedVideo.title
-          }
-
-          if (savedVideo.deleted_at) {
-            detectUpdate = true
-          }
-
-          if (!detectUpdate) {
-            return null
-          }
-
-          updateValue.id = savedVideo.id
-          updateValue.created_at = savedVideo.created_at
-        }
-
-        return {
-          channel_id: this.#savedChannel.id,
-          created_at: this.#currentDateTime.toString(),
-          deleted_at: null,
-          duration: originalVideo.contentDetails.duration ?? 'P0D',
-          published_at: publishedAt.toString(),
-          slug: originalVideo.id,
-          title: originalVideo.snippet.title ?? '',
-          updated_at: this.#currentDateTime.toString(),
-          visible: savedVideo?.visible ?? true,
-          ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
-          ...updateValue,
-        }
-      })
+        },
+      )
       .filter(isNonNullable)
 
-    if (values.length < 1) {
+    if (videoDataWithYouTubeIds.length < 1) {
       return []
     }
 
@@ -456,7 +455,13 @@ export default class Scraper implements AsyncDisposable {
       return []
     }
 
-    return this.#db.upsertVideos(values)
+    // Extract values and YouTube video IDs in matching order
+    const values = videoDataWithYouTubeIds.map((item) => item.value)
+    const youtubeVideoIds = videoDataWithYouTubeIds.map(
+      (item) => item.youtubeVideoId,
+    )
+
+    return this.#db.upsertVideos(values, youtubeVideoIds)
   }
 
   /**

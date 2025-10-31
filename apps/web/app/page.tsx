@@ -1,4 +1,3 @@
-import { REDIS_KEYS } from '@shinju-date/constants'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -7,13 +6,11 @@ import NoResults from '@/components/no-results'
 import Timeline, { TimelineSkeleton } from '@/components/timeline'
 import { description, tagline, title } from '@/lib/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
-import { redisClient } from '@/lib/redis'
+import {
+  getDisplayRecommendationQueries,
+  TOTAL_DISPLAY_COUNT,
+} from '@/lib/recommendations/get-display-queries'
 import hero from './_assets/hero.jpg'
-
-const RECOMMENDATION_QUERIES_COUNT = 4
-
-// export const experimental_ppr = true
-export const revalidate = 600 // 10 minutes
 
 export const metadata: Metadata = {
   alternates: {
@@ -35,12 +32,12 @@ export const metadata: Metadata = {
   },
 }
 
-async function HomeTimeline({
-  videosPromise,
-}: Readonly<{
-  videosPromise: ReturnType<typeof fetchNotEndedVideos>
-}>) {
-  const videos = await videosPromise
+async function HomeTimeline() {
+  // 'use cache'
+
+  // cacheLife('seconds')
+
+  const videos = await fetchNotEndedVideos({})
 
   return videos.length > 0 ? (
     <Timeline prefetchedData={videos} />
@@ -53,7 +50,7 @@ function RecommendationQueriesSkeleton() {
   return (
     <div className="py-4">
       <ul className="mx-auto grid max-w-6xl grid-cols-2 gap-2 px-2 md:grid-cols-4">
-        {Array(RECOMMENDATION_QUERIES_COUNT)
+        {Array(TOTAL_DISPLAY_COUNT)
           .fill(0)
           .map((_, i) => (
             <li
@@ -71,12 +68,12 @@ function RecommendationQueriesSkeleton() {
   )
 }
 
-async function RecommendationQueries({
-  queriesPromise,
-}: Readonly<{
-  queriesPromise: Promise<string[]>
-}>) {
-  const queries = await queriesPromise
+async function RecommendationQueries() {
+  // 'use cache'
+
+  // cacheLife('days')
+
+  const queries = await getDisplayRecommendationQueries()
 
   if (queries.length < 1) {
     return <RecommendationQueriesSkeleton />
@@ -103,18 +100,10 @@ async function RecommendationQueries({
 }
 
 export default function SchedulePage() {
-  const videosPromise = fetchNotEndedVideos({})
-  const queriesPromise = redisClient
-    .srandmember<string[]>(
-      REDIS_KEYS.RECOMMENDATION_QUERIES,
-      RECOMMENDATION_QUERIES_COUNT,
-    )
-    .then((queries) => queries ?? [])
-
   return (
     <>
-      <div className="relative aspect-[4/3] bg-slate-700 sm:aspect-video">
-        <div className="absolute right-0 bottom-0 left-0 z-20 bg-gradient-to-t from-slate-900/80 text-white">
+      <div className="relative aspect-4/3 bg-slate-700 sm:aspect-video">
+        <div className="absolute right-0 bottom-0 left-0 z-20 bg-linear-to-t from-slate-900/80 text-white">
           <h1 className="px-8 py-6 text-center md:text-left">
             <svg
               aria-label="SHINJU DATE"
@@ -140,11 +129,11 @@ export default function SchedulePage() {
 
       <main className="mx-auto max-w-6xl space-y-12 px-4">
         <Suspense fallback={<RecommendationQueriesSkeleton />}>
-          <RecommendationQueries queriesPromise={queriesPromise} />
+          <RecommendationQueries />
         </Suspense>
 
         <Suspense fallback={<TimelineSkeleton />}>
-          <HomeTimeline videosPromise={videosPromise} />
+          <HomeTimeline />
         </Suspense>
       </main>
     </>

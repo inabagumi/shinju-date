@@ -7,7 +7,7 @@
     },
     {
       "path": "/recommendation/queries/update",
-      "schedule": "7/30 * * * *"
+      "schedule": "17 1 * * *"
     },
     {
       "path": "/videos/check",

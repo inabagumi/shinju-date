@@ -1,6 +1,7 @@
 'use server'
 
 import { REDIS_KEYS } from '@shinju-date/constants'
+import { logger } from '@shinju-date/logger'
 import { redisClient } from '@/lib/redis'
 
 /**
@@ -13,7 +14,7 @@ export async function getZeroResultKeywords(): Promise<string[]> {
     )
     return keywords.sort()
   } catch (error) {
-    console.error('Failed to fetch zero-result keywords from Redis:', error)
+    logger.error('Redisからゼロ結果キーワードの取得に失敗しました', { error })
     return []
   }
 }

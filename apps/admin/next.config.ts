@@ -7,12 +7,8 @@ const supabaseBaseURL =
     : undefined
 
 const nextConfig: NextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  experimental: {
-    reactCompiler: true,
-  },
+  // `'use cache: private'`ディレクティブがstableになったら`cacheComponents`を有効化する
+  // cacheComponents: true,
   headers() {
     return Promise.resolve([
       {
@@ -43,6 +39,7 @@ const nextConfig: NextConfig = {
         : []),
     ],
   },
+  reactCompiler: true,
   reactStrictMode: true,
   serverExternalPackages: ['@sentry/profiling-node'],
 }

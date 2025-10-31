@@ -1,29 +1,26 @@
 'use server'
 
+import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
-import { cookies } from 'next/headers'
 import { createAuditLog } from '@/lib/audit-log'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
 
-export async function toggleVisibilityAction(slugs: string[]): Promise<{
+export async function toggleVisibilityAction(ids: string[]): Promise<{
   success: boolean
   error?: string
 }> {
-  if (!slugs || slugs.length === 0) {
+  if (!ids || ids.length === 0) {
     return { error: '動画が選択されていません。', success: false }
   }
 
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   try {
     // Get current visibility status of all videos
     const { data: videos, error: fetchError } = await supabaseClient
       .from('videos')
-      .select('slug, visible')
-      .in('slug', slugs)
+      .select('id, visible')
+      .in('id', ids)
 
     if (fetchError) {
       throw fetchError
@@ -38,7 +35,7 @@ export async function toggleVisibilityAction(slugs: string[]): Promise<{
       supabaseClient
         .from('videos')
         .update({ visible: !video.visible })
-        .eq('slug', video.slug),
+        .eq('id', video.id),
     )
 
     const results = await Promise.all(updatePromises)
@@ -60,7 +57,10 @@ export async function toggleVisibilityAction(slugs: string[]): Promise<{
     revalidatePath('/videos')
     return { success: true }
   } catch (error) {
-    console.error('Toggle visibility error:', error)
+    logger.error('動画の表示切替に失敗しました', {
+      error,
+      ids: ids.join(','),
+    })
     return {
       error:
         error instanceof Error
@@ -71,21 +71,18 @@ export async function toggleVisibilityAction(slugs: string[]): Promise<{
   }
 }
 
-export async function toggleSingleVideoVisibilityAction(slug: string): Promise<{
+export async function toggleSingleVideoVisibilityAction(id: string): Promise<{
   success: boolean
   error?: string
 }> {
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   try {
     // Get current visibility status
     const { data: video, error: fetchError } = await supabaseClient
       .from('videos')
-      .select('slug, visible')
-      .eq('slug', slug)
+      .select('id, visible')
+      .eq('id', id)
       .single()
 
     if (fetchError) {
@@ -100,7 +97,7 @@ export async function toggleSingleVideoVisibilityAction(slug: string): Promise<{
     const { error: updateError } = await supabaseClient
       .from('videos')
       .update({ visible: !video.visible })
-      .eq('slug', slug)
+      .eq('id', id)
 
     if (updateError) {
       throw updateError
@@ -109,7 +106,7 @@ export async function toggleSingleVideoVisibilityAction(slug: string): Promise<{
     revalidatePath('/videos')
     return { success: true }
   } catch (error) {
-    console.error('Toggle visibility error:', error)
+    logger.error('動画の表示切替に失敗しました', { error, id })
     return {
       error:
         error instanceof Error
@@ -120,18 +117,15 @@ export async function toggleSingleVideoVisibilityAction(slug: string): Promise<{
   }
 }
 
-export async function softDeleteAction(slugs: string[]): Promise<{
+export async function softDeleteAction(ids: string[]): Promise<{
   success: boolean
   error?: string
 }> {
-  if (!slugs || slugs.length === 0) {
+  if (!ids || ids.length === 0) {
     return { error: '動画が選択されていません。', success: false }
   }
 
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const now = new Date().toISOString()
@@ -139,8 +133,8 @@ export async function softDeleteAction(slugs: string[]): Promise<{
     // Get thumbnail IDs before soft deleting videos
     const { data: videos, error: fetchError } = await supabaseClient
       .from('videos')
-      .select('slug, thumbnail_id')
-      .in('slug', slugs)
+      .select('id, thumbnail_id')
+      .in('id', ids)
 
     if (fetchError) {
       throw fetchError
@@ -154,7 +148,7 @@ export async function softDeleteAction(slugs: string[]): Promise<{
     const { error: videoError } = await supabaseClient
       .from('videos')
       .update({ deleted_at: now })
-      .in('slug', slugs)
+      .in('id', ids)
 
     if (videoError) {
       throw videoError
@@ -163,7 +157,7 @@ export async function softDeleteAction(slugs: string[]): Promise<{
     // Soft delete associated thumbnails
     const thumbnailIds = videos
       .map((video) => video.thumbnail_id)
-      .filter((id): id is number => id !== null)
+      .filter((id): id is string => id !== null)
 
     if (thumbnailIds.length > 0) {
       const { error: thumbnailError } = await supabaseClient
@@ -186,7 +180,7 @@ export async function softDeleteAction(slugs: string[]): Promise<{
     revalidatePath('/videos')
     return { success: true }
   } catch (error) {
-    console.error('Soft delete error:', error)
+    logger.error('動画の削除に失敗しました', { error, ids: ids.join(',') })
     return {
       error:
         error instanceof Error
@@ -197,14 +191,11 @@ export async function softDeleteAction(slugs: string[]): Promise<{
   }
 }
 
-export async function softDeleteSingleVideoAction(slug: string): Promise<{
+export async function softDeleteSingleVideoAction(id: string): Promise<{
   success: boolean
   error?: string
 }> {
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const now = new Date().toISOString()
@@ -212,8 +203,8 @@ export async function softDeleteSingleVideoAction(slug: string): Promise<{
     // Get thumbnail ID before soft deleting video
     const { data: video, error: fetchError } = await supabaseClient
       .from('videos')
-      .select('slug, thumbnail_id')
-      .eq('slug', slug)
+      .select('id, thumbnail_id')
+      .eq('id', id)
       .single()
 
     if (fetchError) {
@@ -228,7 +219,7 @@ export async function softDeleteSingleVideoAction(slug: string): Promise<{
     const { error: videoError } = await supabaseClient
       .from('videos')
       .update({ deleted_at: now })
-      .eq('slug', slug)
+      .eq('id', id)
 
     if (videoError) {
       throw videoError
@@ -249,7 +240,7 @@ export async function softDeleteSingleVideoAction(slug: string): Promise<{
     revalidatePath('/videos')
     return { success: true }
   } catch (error) {
-    console.error('Soft delete error:', error)
+    logger.error('動画の削除に失敗しました', { error, id })
     return {
       error:
         error instanceof Error

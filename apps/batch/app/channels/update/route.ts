@@ -12,11 +12,13 @@ import { youtubeClient } from '@/lib/youtube'
 
 const MONITOR_SLUG = '/channels/update'
 
-export const runtime = 'nodejs'
-export const revalidate = 0
 export const maxDuration = 120
 
-type Channel = Pick<Tables<'channels'>, 'name' | 'slug'>
+type Channel = Pick<Tables<'channels'>, 'id' | 'name'> & {
+  youtube_channel: {
+    youtube_channel_id: string
+  } | null
+}
 
 export async function POST(request: Request): Promise<Response> {
   const cronSecure = process.env['CRON_SECRET']
@@ -63,7 +65,7 @@ export async function POST(request: Request): Promise<Response> {
   const currentDateTime = Temporal.Now.instant()
   const { data: channels, error } = await supabaseClient
     .from('channels')
-    .select('name, slug')
+    .select('id, name, youtube_channel:youtube_channels(youtube_channel_id)')
     .is('deleted_at', null)
 
   if (error) {
@@ -84,7 +86,9 @@ export async function POST(request: Request): Promise<Response> {
     })
   }
 
-  const channelIds = channels.map((channel) => channel.slug)
+  const channelIds = channels
+    .map((channel) => channel.youtube_channel?.youtube_channel_id)
+    .filter((id): id is string => Boolean(id))
   const results: PromiseSettledResult<Channel | null>[] = []
 
   await using scraper = new YouTubeScraper({
@@ -96,7 +100,9 @@ export async function POST(request: Request): Promise<Response> {
       channelIds,
       onChannelScraped: async (youtubeChannel: YouTubeChannel) => {
         const result = await (async (): Promise<Channel | null> => {
-          const channel = channels.find((c) => c.slug === youtubeChannel.id)
+          const channel = channels.find(
+            (c) => c.youtube_channel?.youtube_channel_id === youtubeChannel.id,
+          )
 
           if (!channel) {
             throw new TypeError('A channel does not exist.')
@@ -117,6 +123,24 @@ export async function POST(request: Request): Promise<Response> {
             throw new TypeError('A snippet is empty.')
           }
 
+          // Dual-write to youtube_channels table (always upsert regardless of name change)
+          const youtubeHandle = item.snippet.customUrl || null
+          await supabaseClient
+            .from('youtube_channels')
+            .upsert(
+              {
+                channel_id: channel.id,
+                youtube_channel_id: youtubeChannel.id,
+                youtube_handle: youtubeHandle,
+              },
+              { onConflict: 'channel_id' },
+            )
+            .then(({ error: youtubeError }) => {
+              if (youtubeError) {
+                Sentry.captureException(youtubeError)
+              }
+            })
+
           if (item.snippet.title === channel.name) {
             return null
           }
@@ -127,8 +151,10 @@ export async function POST(request: Request): Promise<Response> {
               name: item.snippet.title,
               updated_at: currentDateTime.toJSON(),
             })
-            .eq('slug', youtubeChannel.id)
-            .select('name, slug')
+            .eq('id', channel.id)
+            .select(
+              'id, name, youtube_channel:youtube_channels(youtube_channel_id)',
+            )
             .single()
 
           if (error) {
@@ -150,8 +176,10 @@ export async function POST(request: Request): Promise<Response> {
   for (const result of results) {
     if (result.status === 'fulfilled' && result.value) {
       const newChannel = result.value
-      const channelID = newChannel.slug
-      const channel = channels.find((channel) => channel.slug === channelID)
+      const channelID = newChannel.youtube_channel?.youtube_channel_id
+      const channel = channels.find(
+        (c) => c.youtube_channel?.youtube_channel_id === channelID,
+      )
 
       if (!channel) {
         continue

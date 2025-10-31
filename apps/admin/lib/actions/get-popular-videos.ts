@@ -2,11 +2,11 @@
 
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { isNonNullable } from '@shinju-date/helpers'
+import { logger } from '@shinju-date/logger'
 import { formatDate } from '@shinju-date/temporal-fns'
-import { cookies } from 'next/headers'
 import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
 
 /**
  * 人気動画のキャッシュ有効期間（秒）
@@ -15,12 +15,15 @@ const POPULAR_VIDEOS_CACHE_TTL_SECONDS = 60 * 10 // 10 minutes
 
 export type PopularVideo = {
   clicks: number
-  slug: string
+  id: string
   thumbnail: {
     path: string
     blur_data_url: string
   } | null
   title: string
+  youtube_video: {
+    youtube_video_id: string
+  } | null
 }
 
 export async function getPopularVideos(
@@ -29,7 +32,7 @@ export async function getPopularVideos(
   startDate?: string,
   endDate?: string,
 ): Promise<PopularVideo[]> {
-  const videoScores: [number, number][] = []
+  const videoScores: [string, number][] = []
 
   try {
     const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
@@ -57,9 +60,11 @@ export async function getPopularVideos(
       plainTime: Temporal.PlainTime.from('00:00:00'),
       timeZone: TIME_ZONE,
     })
-    const cacheKey = `${REDIS_KEYS.POPULAR_VIDEOS_PREFIX}${formatDate(startZoned)}/${formatDate(endZoned)}`
+    const cacheKey = `${REDIS_KEYS.POPULAR_VIDEOS_PREFIX}${formatDate(
+      startZoned,
+    )}/${formatDate(endZoned)}`
 
-    const cachedResults = await redisClient.zrange<number[]>(
+    const cachedResults = await redisClient.zrange<string[]>(
       cacheKey,
       0,
       limit - 1,
@@ -72,9 +77,11 @@ export async function getPopularVideos(
     if (cachedResults.length > 0) {
       for (let i = 0; i < cachedResults.length; i += 2) {
         const videoId = cachedResults[i]
-        const score = cachedResults[i + 1]
+        const scoreValue = cachedResults[i + 1]
+        const score =
+          typeof scoreValue === 'string' ? parseInt(scoreValue, 10) : scoreValue
 
-        if (typeof videoId !== 'number' || typeof score !== 'number') {
+        if (typeof videoId !== 'string' || typeof score !== 'number') {
           continue
         }
 
@@ -102,7 +109,7 @@ export async function getPopularVideos(
         await pipeline.exec()
       }
 
-      const newResults = await redisClient.zrange<number[]>(
+      const newResults = await redisClient.zrange<string[]>(
         cacheKey,
         0,
         limit - 1,
@@ -114,9 +121,11 @@ export async function getPopularVideos(
 
       for (let i = 0; i < newResults.length; i += 2) {
         const videoId = newResults[i]
-        const score = newResults[i + 1]
+        const scoreValue = newResults[i + 1]
+        const score =
+          typeof scoreValue === 'string' ? parseInt(scoreValue, 10) : scoreValue
 
-        if (typeof videoId !== 'number' || typeof score !== 'number') {
+        if (typeof videoId !== 'string' || typeof score !== 'number') {
           continue
         }
 
@@ -124,7 +133,13 @@ export async function getPopularVideos(
       }
     }
   } catch (error) {
-    console.error('Failed to communicate with Redis for popular videos:', error)
+    logger.error('Redis通信で人気動画の取得に失敗しました', {
+      days,
+      endDate: endDate ?? 'undefined',
+      error,
+      limit,
+      startDate: startDate ?? 'undefined',
+    })
 
     return []
   }
@@ -133,19 +148,21 @@ export async function getPopularVideos(
     return []
   }
 
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   const videoIds = videoScores.map(([id]) => id)
   const { data: videos, error } = await supabaseClient
     .from('videos')
-    .select('id, slug, thumbnails(path, blur_data_url), title')
+    .select(
+      'id, thumbnails(path, blur_data_url), title, youtube_video:youtube_videos(youtube_video_id)',
+    )
     .in('id', videoIds)
 
   if (error) {
-    console.error('Failed to fetch video details:', error)
+    logger.error('動画の詳細取得に失敗しました', {
+      error,
+      videoIds: videoIds.join(','),
+    })
 
     return []
   }
@@ -159,9 +176,10 @@ export async function getPopularVideos(
 
       return {
         clicks,
-        slug: video.slug,
+        id: video.id,
         thumbnail: video.thumbnails,
         title: video.title,
+        youtube_video: video.youtube_video,
       }
     })
     .filter(isNonNullable)

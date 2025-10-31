@@ -1,0 +1,40 @@
+{
+  "author": "Haneru Developers",
+  "description": "Health check utilities for web services",
+  "devDependencies": {
+    "@supabase/supabase-js": "2.78.0",
+    "@tsconfig/strictest": "2.0.7",
+    "@upstash/redis": "1.35.6",
+    "tsup": "8.5.0",
+    "typescript": "5.9.3",
+    "vitest": "4.0.5"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "name": "@shinju-date/health-checkers",
+  "peerDependencies": {
+    "@supabase/supabase-js": "2.78.0",
+    "@upstash/redis": "1.35.6"
+  },
+  "private": true,
+  "repository": {
+    "directory": "packages/health-checkers",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "1.0.0"
+}

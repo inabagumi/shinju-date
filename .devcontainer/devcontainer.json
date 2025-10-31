@@ -5,25 +5,30 @@
         "EditorConfig.EditorConfig",
         "biomejs.biome",
         "bradlc.vscode-tailwindcss@prerelease",
-        "unifiedjs.vscode-mdx"
+        "unifiedjs.vscode-mdx",
+        "ms-python.python",
+        "ms-python.ruff"
       ],
       "settings": {}
     }
   },
   "features": {
+    "ghcr.io/devcontainers-extra/features/supabase-cli:1": {},
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+    "ghcr.io/devcontainers/features/python:1": {},
     "ghcr.io/devcontainers/features/terraform:1": {
       "terragrunt": "none",
       "tflint": "none",
       "version": "1.6.4"
     }
   },
-  "forwardPorts": [3000, 4000],
+  "forwardPorts": [3000, 4000, 8000, 10000, 54321, 54323],
   "hostRequirements": {
     "cpus": 4,
     "memory": "8gb",
     "storage": "32gb"
   },
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:4-20-bookworm",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:4-22-bookworm",
   "name": "SHINJU DATE",
   "portsAttributes": {
     "3000": {
@@ -33,8 +38,21 @@
     "4000": {
       "label": "Admin",
       "onAutoForward": "silent"
+    },
+    "8000": {
+      "label": "Insights API",
+      "onAutoForward": "silent"
+    },
+    "54321": {
+      "label": "Supabase API",
+      "onAutoForward": "silent"
+    },
+    "54323": {
+      "label": "Supabase Studio",
+      "onAutoForward": "notify"
     }
   },
   "postCreateCommand": "./.devcontainer/post-create.sh",
+  "postStartCommand": "supabase start || true",
   "waitFor": "postCreateCommand"
 }

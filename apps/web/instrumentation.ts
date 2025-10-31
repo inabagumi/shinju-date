@@ -1,6 +1,14 @@
 import type { Instrumentation } from 'next'
 
 export async function register() {
+  // Initialize MSW when explicitly enabled
+  if (process.env['ENABLE_MSW'] === 'true') {
+    if (process.env['NEXT_RUNTIME'] === 'nodejs') {
+      const { startServer } = await import('@shinju-date/msw-handlers/server')
+      startServer()
+    }
+  }
+
   const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
 
   if (dsn) {

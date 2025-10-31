@@ -1,15 +1,13 @@
-import { cookies } from 'next/headers'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
 
 export default async function getChannels() {
-  const cookieStore = await cookies()
-  const supabaseClient = createSupabaseClient({
-    cookieStore,
-  })
+  const supabaseClient = await createSupabaseServerClient()
 
   const { data: channels, error } = await supabaseClient
     .from('channels')
-    .select('id, name, slug, created_at, updated_at')
+    .select(
+      'id, name, created_at, updated_at, youtube_channel:youtube_channels(youtube_channel_id)',
+    )
     .is('deleted_at', null)
     .order('name', {
       ascending: true,

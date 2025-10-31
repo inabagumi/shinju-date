@@ -6,19 +6,27 @@ import { supabaseClient } from '@/lib/supabase'
 import FormattedTime from './formatted-time'
 import LiveNow from './live-now'
 
-function getThumbnailURL({
-  slug,
-  thumbnail,
-}: Video): [src: string, blurDataURL: string | undefined] {
-  if (!thumbnail) {
-    return [`https://i.ytimg.com/vi/${slug}/maxresdefault.jpg`, undefined]
+type YouTubeVideo = Omit<Video, 'youtube_video'> & {
+  youtube_video: NonNullable<Video['youtube_video']>
+}
+
+function getThumbnailURL(
+  video: YouTubeVideo,
+): [src: string, blurDataURL: string | undefined] {
+  if (!video.thumbnail) {
+    return [
+      `https://i.ytimg.com/vi/${video.youtube_video.youtube_video_id}/maxresdefault.jpg`,
+      undefined,
+    ]
   }
 
   const {
     data: { publicUrl: url },
-  } = supabaseClient.storage.from('thumbnails').getPublicUrl(thumbnail.path)
+  } = supabaseClient.storage
+    .from('thumbnails')
+    .getPublicUrl(video.thumbnail.path)
 
-  return [url, thumbnail?.blur_data_url]
+  return [url, video.thumbnail.blur_data_url]
 }
 
 function formatDuration(duration: Temporal.Duration): string {
@@ -27,7 +35,7 @@ function formatDuration(duration: Temporal.Duration): string {
     .join(':')
 }
 
-function Thumbnail({ video }: { video: Video }) {
+function Thumbnail({ video }: { video: YouTubeVideo }) {
   const [publicURL, blurDataURL] = getThumbnailURL(video)
 
   return (
@@ -83,16 +91,22 @@ export default function VideoCard({
   ).toZonedDateTimeISO(timeZone)
   const duration = Temporal.Duration.from(value?.duration ?? 'P0D')
 
+  if (!value.youtube_video) {
+    return null
+  }
+
   return (
     <a
       className="flex flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none"
-      href={`https://www.youtube.com/watch?v=${encodeURIComponent(value.slug)}`}
+      href={`https://www.youtube.com/watch?v=${encodeURIComponent(
+        value.youtube_video.youtube_video_id,
+      )}`}
       ping="/api/ping"
       rel="noopener noreferrer"
       target="_blank"
     >
       <div className="relative aspect-video">
-        <Thumbnail video={value} />
+        <Thumbnail video={value as YouTubeVideo} />
 
         {duration.total({
           unit: 'second',

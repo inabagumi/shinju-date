@@ -18,18 +18,18 @@ function getMonitorSlug({ all }: { all?: boolean | undefined }) {
   return all ? '/videos/check?all=1' : '/videos/check'
 }
 
-export const runtime = 'nodejs'
-export const revalidate = 0
 export const maxDuration = 120
 
 type Thumbnail = {
-  id: number
+  id: string
 }
 
 type Video = {
-  id: number
-  slug: string
+  id: string
   thumbnails: Thumbnail[] | Thumbnail | null
+  youtube_video: {
+    youtube_video_id: string
+  }
 }
 
 type GetSavedVideos = {
@@ -58,7 +58,9 @@ async function* getSavedVideos({
   for (let i = 0; i < count; i += limit) {
     const { data: savedVideos, error } = await supabaseClient
       .from('videos')
-      .select('id, slug, thumbnails (id)')
+      .select(
+        'id, thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
+      )
       .is('deleted_at', null)
       .order('published_at', {
         ascending: false,
@@ -83,9 +85,12 @@ async function* getSavedVideos({
 
 type SoftDeleteRowsOptions = {
   currentDateTime: Temporal.Instant
-  ids: number[]
+  ids: string[]
   supabaseClient: TypedSupabaseClient
-  table: keyof Database['public']['Tables']
+  table: Exclude<
+    keyof Database['public']['Tables'],
+    'twitch_users' | 'twitch_videos' | 'youtube_channels' | 'youtube_videos'
+  >
 }
 
 async function softDeleteRows({
@@ -95,7 +100,7 @@ async function softDeleteRows({
   table,
 }: SoftDeleteRowsOptions): Promise<
   {
-    id: number
+    id: string
   }[]
 > {
   const { data, error } = await supabaseClient
@@ -129,7 +134,7 @@ function deleteVideos({
 }: DeleteOptions): Promise<
   PromiseSettledResult<
     {
-      id: number
+      id: string
     }[]
   >[]
 > {
@@ -208,16 +213,16 @@ export async function POST(request: NextRequest): Promise<Response> {
   )
 
   const currentDateTime = Temporal.Now.instant()
-  const savedVideos: Video[] = []
+  const savedVideos = await Array.fromAsync(
+    getSavedVideos({
+      all,
+      supabaseClient,
+    }),
+  )
 
-  for await (const savedVideo of getSavedVideos({
-    all,
-    supabaseClient,
-  })) {
-    savedVideos.push(savedVideo)
-  }
-
-  const videoIds = savedVideos.map((savedVideo) => savedVideo.slug)
+  const videoIds = savedVideos
+    .map((savedVideo) => savedVideo.youtube_video?.youtube_video_id)
+    .filter((id): id is string => Boolean(id))
   const availableVideoIds = new Set<string>()
 
   await using scraper = new YouTubeScraper({
@@ -234,7 +239,9 @@ export async function POST(request: NextRequest): Promise<Response> {
   })
 
   const deletedVideos = savedVideos.filter(
-    (savedVideo) => !availableVideoIds.has(savedVideo.slug),
+    (savedVideo) =>
+      savedVideo.youtube_video?.youtube_video_id &&
+      !availableVideoIds.has(savedVideo.youtube_video.youtube_video_id),
   )
 
   if (deletedVideos.length > 0) {
@@ -252,7 +259,9 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
 
     Sentry.logger.info('The videos has been deleted.', {
-      ids: deletedVideos.map((video) => video.slug),
+      ids: deletedVideos
+        .map((video) => video.youtube_video?.youtube_video_id)
+        .filter(Boolean),
     })
 
     await revalidateTags(['videos'], {

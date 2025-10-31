@@ -1,18 +1,20 @@
 'use client'
 
 import { formatNumber } from '@shinju-date/helpers'
+import { formatDuration } from '@shinju-date/temporal-fns'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { twMerge } from 'tailwind-merge'
+import { Temporal } from 'temporal-polyfill'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/dropdown-menu'
-import { supabaseClient } from '@/lib/supabase'
+import { supabaseClient } from '@/lib/supabase/public'
 import {
   softDeleteAction,
   softDeleteSingleVideoAction,
@@ -21,18 +23,8 @@ import {
 } from '../_actions'
 import type { Video } from '../_lib/get-videos'
 import { SortIcon } from './sort-icon'
-import { VideoFilters } from './video-filters'
-
-type Channel = {
-  created_at: string
-  id: number
-  name: string
-  slug: string
-  updated_at: string
-}
 
 type Props = {
-  channels: Channel[]
   videos: Video[]
 }
 
@@ -42,30 +34,29 @@ function getStatusText(video: Video): string {
   return '非表示'
 }
 
-export default function VideoList({ channels, videos }: Props) {
-  const router = useRouter()
+export default function VideoList({ videos }: Props) {
   const searchParams = useSearchParams()
-  const [selectedSlugs, setSelectedSlugs] = useState<string[]>([])
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [showConfirmModal, setShowConfirmModal] = useState<{
     action: 'toggle' | 'delete'
     open: boolean
-    slug?: string
+    id?: string
   }>({ action: 'toggle', open: false })
   const [isPending, startTransition] = useTransition()
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedSlugs(videos.map((v) => v.slug))
+      setSelectedIds(videos.map((v) => v.id))
     } else {
-      setSelectedSlugs([])
+      setSelectedIds([])
     }
   }
 
-  const handleSelectVideo = (slug: string, checked: boolean) => {
+  const handleSelectVideo = (id: string, checked: boolean) => {
     if (checked) {
-      setSelectedSlugs((prev) => [...prev, slug])
+      setSelectedIds((prev) => [...prev, id])
     } else {
-      setSelectedSlugs((prev) => prev.filter((s) => s !== slug))
+      setSelectedIds((prev) => prev.filter((i) => i !== id))
     }
   }
 
@@ -73,18 +64,18 @@ export default function VideoList({ channels, videos }: Props) {
     setShowConfirmModal({ action, open: true })
   }
 
-  const handleSingleAction = (action: 'toggle' | 'delete', slug: string) => {
-    setShowConfirmModal({ action, open: true, slug })
+  const handleSingleAction = (action: 'toggle' | 'delete', id: string) => {
+    setShowConfirmModal({ action, id, open: true })
   }
 
   const handleConfirm = () => {
     startTransition(async () => {
       try {
-        // If slug is provided, it's a single action
-        if (showConfirmModal.slug) {
+        // If id is provided, it's a single action
+        if (showConfirmModal.id) {
           if (showConfirmModal.action === 'toggle') {
             const result = await toggleSingleVideoVisibilityAction(
-              showConfirmModal.slug,
+              showConfirmModal.id,
             )
             if (result.success) {
               alert('表示状態を更新しました。')
@@ -93,7 +84,7 @@ export default function VideoList({ channels, videos }: Props) {
             }
           } else if (showConfirmModal.action === 'delete') {
             const result = await softDeleteSingleVideoAction(
-              showConfirmModal.slug,
+              showConfirmModal.id,
             )
             if (result.success) {
               alert('動画を削除しました。')
@@ -104,17 +95,17 @@ export default function VideoList({ channels, videos }: Props) {
         } else {
           // Bulk action
           if (showConfirmModal.action === 'toggle') {
-            const result = await toggleVisibilityAction(selectedSlugs)
+            const result = await toggleVisibilityAction(selectedIds)
             if (result.success) {
-              setSelectedSlugs([])
+              setSelectedIds([])
               alert('表示状態を更新しました。')
             } else {
               alert(result.error || '更新に失敗しました。')
             }
           } else if (showConfirmModal.action === 'delete') {
-            const result = await softDeleteAction(selectedSlugs)
+            const result = await softDeleteAction(selectedIds)
             if (result.success) {
-              setSelectedSlugs([])
+              setSelectedIds([])
               alert('動画を削除しました。')
             } else {
               alert(result.error || '削除に失敗しました。')
@@ -143,8 +134,7 @@ export default function VideoList({ channels, videos }: Props) {
     return `/videos?${params.toString()}`
   }
 
-  const allSelected =
-    videos.length > 0 && selectedSlugs.length === videos.length
+  const allSelected = videos.length > 0 && selectedIds.length === videos.length
 
   const currentSortField = searchParams.get('sortField') || 'updated_at'
   const currentSortOrder = (searchParams.get('sortOrder') || 'desc') as
@@ -153,16 +143,11 @@ export default function VideoList({ channels, videos }: Props) {
 
   return (
     <div>
-      {/* Filters and Sort Controls */}
-      <VideoFilters channels={channels} />
-
       {/* Action bar */}
-      {selectedSlugs.length > 0 && (
+      {selectedIds.length > 0 && (
         <div className="sticky top-0 z-10 mb-4 bg-blue-600 p-4 text-white shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="font-semibold">
-              {selectedSlugs.length} 件選択中
-            </span>
+            <span className="font-semibold">{selectedIds.length} 件選択中</span>
             <div className="flex gap-2">
               <button
                 className="rounded-md bg-blue-700 px-4 py-2 hover:bg-blue-800 disabled:bg-gray-400"
@@ -197,10 +182,10 @@ export default function VideoList({ channels, videos }: Props) {
                   type="checkbox"
                 />
               </th>
-              <th className="p-3 text-left">サムネイル</th>
-              <th className="p-3 text-left">タイトル</th>
-              <th className="p-3 text-left">チャンネル</th>
-              <th className="p-3 text-left">
+              <th className="whitespace-nowrap p-3 text-left">サムネイル</th>
+              <th className="whitespace-nowrap p-3 text-left">タイトル</th>
+              <th className="whitespace-nowrap p-3 text-left">チャンネル</th>
+              <th className="whitespace-nowrap p-3 text-left">
                 <Link
                   className="flex items-center hover:text-blue-600"
                   href={getSortUrl('published_at')}
@@ -213,7 +198,7 @@ export default function VideoList({ channels, videos }: Props) {
                   />
                 </Link>
               </th>
-              <th className="p-3 text-left">
+              <th className="whitespace-nowrap p-3 text-left">
                 <Link
                   className="flex items-center hover:text-blue-600"
                   href={getSortUrl('updated_at')}
@@ -226,20 +211,21 @@ export default function VideoList({ channels, videos }: Props) {
                   />
                 </Link>
               </th>
-              <th className="p-3 text-left">クリック数</th>
-              <th className="p-3 text-left">ステータス</th>
-              <th className="p-3 text-left">アクション</th>
+              <th className="whitespace-nowrap p-3 text-left">再生時間</th>
+              <th className="whitespace-nowrap p-3 text-left">クリック数</th>
+              <th className="whitespace-nowrap p-3 text-left">ステータス</th>
+              <th className="whitespace-nowrap p-3 text-left">アクション</th>
             </tr>
           </thead>
           <tbody>
             {videos.length > 0 ? (
               videos.map((video) => (
-                <tr className="border-b hover:bg-gray-50" key={video.slug}>
+                <tr className="border-b hover:bg-gray-50" key={video.id}>
                   <td className="p-3">
                     <input
-                      checked={selectedSlugs.includes(video.slug)}
+                      checked={selectedIds.includes(video.id)}
                       onChange={(e) =>
-                        handleSelectVideo(video.slug, e.target.checked)
+                        handleSelectVideo(video.id, e.target.checked)
                       }
                       type="checkbox"
                     />
@@ -266,9 +252,14 @@ export default function VideoList({ channels, videos }: Props) {
                     )}
                   </td>
                   <td className="max-w-xs p-3">
-                    <div className="line-clamp-2" title={video.title}>
-                      {video.title}
-                    </div>
+                    <Link
+                      className="text-blue-600 hover:text-blue-800"
+                      href={`/videos/${video.id}`}
+                    >
+                      <div className="line-clamp-2" title={video.title}>
+                        {video.title}
+                      </div>
+                    </Link>
                   </td>
                   <td className="p-3">
                     <span className="text-gray-600 text-sm">
@@ -294,6 +285,11 @@ export default function VideoList({ channels, videos }: Props) {
                         month: '2-digit',
                         year: 'numeric',
                       })}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <span className="text-gray-600 text-sm">
+                      {formatDuration(Temporal.Duration.from(video.duration))}
                     </span>
                   </td>
                   <td className="p-3">{formatNumber(video.clicks)}</td>
@@ -326,21 +322,41 @@ export default function VideoList({ channels, videos }: Props) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem
-                          onClick={() => router.push(`/videos/${video.slug}`)}
+                          onClick={() => {
+                            if (video.youtube_video?.youtube_video_id) {
+                              window.open(
+                                `https://www.youtube.com/watch?v=${video.youtube_video.youtube_video_id}`,
+                                '_blank',
+                              )
+                            }
+                          }}
                         >
-                          編集
+                          <span className="flex items-center gap-1">
+                            YouTubeで見る
+                            <svg
+                              aria-hidden="true"
+                              className="h-4 w-4"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              viewBox="0 0 24 24"
+                            >
+                              <title>外部リンク</title>
+                              <path
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() =>
-                            handleSingleAction('toggle', video.slug)
-                          }
+                          onClick={() => handleSingleAction('toggle', video.id)}
                         >
                           表示/非表示を切り替え
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() =>
-                            handleSingleAction('delete', video.slug)
-                          }
+                          onClick={() => handleSingleAction('delete', video.id)}
                           variant="danger"
                         >
                           削除
@@ -352,7 +368,7 @@ export default function VideoList({ channels, videos }: Props) {
               ))
             ) : (
               <tr>
-                <td className="p-8 text-center text-gray-500" colSpan={9}>
+                <td className="p-8 text-center text-gray-500" colSpan={10}>
                   動画がありません。
                 </td>
               </tr>
@@ -368,12 +384,12 @@ export default function VideoList({ channels, videos }: Props) {
             <h3 className="mb-4 font-semibold text-lg">確認</h3>
             <p className="mb-6 text-gray-700">
               {showConfirmModal.action === 'delete'
-                ? showConfirmModal.slug
+                ? showConfirmModal.id
                   ? 'この動画を削除しますか？'
-                  : `本当に${selectedSlugs.length}件の動画を削除しますか？`
-                : showConfirmModal.slug
+                  : `本当に${selectedIds.length}件の動画を削除しますか？`
+                : showConfirmModal.id
                   ? 'この動画の表示状態を切り替えますか？'
-                  : `本当に${selectedSlugs.length}件の動画の表示状態を切り替えますか？`}
+                  : `本当に${selectedIds.length}件の動画の表示状態を切り替えますか？`}
             </p>
             <div className="flex justify-end gap-2">
               <button

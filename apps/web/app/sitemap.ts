@@ -33,18 +33,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ]
 
-  for await (const channel of getAllChannels()) {
-    sitemapItems.push({
-      changeFrequency: 'daily',
-      priority: 0.7,
-      url: new URL(`/channels/${channel.slug}`, baseURL).toString(),
-    })
-    sitemapItems.push({
-      changeFrequency: 'daily',
-      priority: 0.5,
-      url: new URL(`/channels/${channel.slug}/videos`, baseURL).toString(),
-    })
-  }
+  const channelSitemapItems = await Array.fromAsync(
+    getAllChannels(),
+    (channel) => [
+      {
+        changeFrequency: 'daily' as const,
+        priority: 0.7,
+        url: new URL(`/channels/${channel.id}`, baseURL).toString(),
+      },
+      {
+        changeFrequency: 'daily' as const,
+        priority: 0.5,
+        url: new URL(`/channels/${channel.id}/videos`, baseURL).toString(),
+      },
+    ],
+  )
+
+  sitemapItems.push(...channelSitemapItems.flat())
 
   return sitemapItems
 }

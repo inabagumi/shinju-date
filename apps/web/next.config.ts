@@ -10,14 +10,7 @@ const supabaseBaseURL =
     : undefined
 
 const nextConfig: NextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  experimental: {
-    // dynamicIO: true,
-    // ppr: 'incremental',
-    reactCompiler: true,
-  },
+  // cacheComponents: true,
   headers() {
     return Promise.resolve([
       {
@@ -72,33 +65,8 @@ const nextConfig: NextConfig = {
     ],
   },
   pageExtensions: ['tsx', 'ts', 'mdx'],
+  reactCompiler: true,
   reactStrictMode: true,
-  redirects() {
-    return Promise.resolve([
-      {
-        destination: '/',
-        permanent: true,
-        source: '/groups/:slug',
-      },
-      {
-        destination: '/videos/:query*',
-        permanent: true,
-        source: '/groups/:slug/videos/:query*',
-      },
-    ])
-  },
-  rewrites() {
-    return Promise.resolve({
-      afterFiles: [
-        {
-          destination: '/manifest.webmanifest',
-          source: '/manifest.json',
-        },
-      ],
-      beforeFiles: [],
-      fallback: [],
-    })
-  },
   serverExternalPackages: ['@sentry/profiling-node'],
 }
 
@@ -106,21 +74,14 @@ const withMDX = createMDX({
   options: {
     rehypePlugins: [
       [
-        // biome-ignore lint/suspicious/noExplicitAny: Turbopackでは文字列でしかrehypePluginの設定ができないため`any`にしている。
-        'rehype-external-links' as any,
+        'rehype-external-links',
         {
           rel: ['noopener', 'noreferrer'],
           target: '_blank',
         },
       ],
     ],
-    remarkPlugins: [
-      [
-        // biome-ignore lint/suspicious/noExplicitAny: Turbopackでは文字列でしかrehypePluginの設定ができないため`any`にしている。
-        'remark-gfm' as any,
-        {},
-      ],
-    ],
+    remarkPlugins: [['remark-gfm', {}]],
   },
 })
 
