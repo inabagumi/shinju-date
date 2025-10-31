@@ -1,3 +1,4 @@
+import { REDIS_KEYS } from '@shinju-date/constants'
 import type { NextProxy, NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { redisClient } from '@/lib/redis'
@@ -7,9 +8,11 @@ export async function proxy(
 ): Promise<ReturnType<NextProxy>> {
   // Check for maintenance mode
   try {
-    const maintenanceMode = await redisClient.get<string>('maintenance_mode')
+    const maintenanceMode = await redisClient.get<boolean>(
+      REDIS_KEYS.MAINTENANCE_MODE,
+    )
 
-    if (maintenanceMode === 'true') {
+    if (maintenanceMode === true) {
       // Return 503 Service Unavailable during maintenance
       return new NextResponse(
         JSON.stringify({

@@ -1,14 +1,13 @@
 'use server'
 
+import { REDIS_KEYS } from '@shinju-date/constants'
+import { createAuditLog } from '@/lib/audit-log'
 import { redisClient } from '@/lib/redis'
-import { createSupabaseServerClient } from '@/lib/supabase'
-
-const MAINTENANCE_MODE_KEY = 'maintenance_mode'
 
 export async function getMaintenanceModeStatus(): Promise<boolean> {
   try {
-    const value = await redisClient.get<string>(MAINTENANCE_MODE_KEY)
-    return value === 'true'
+    const value = await redisClient.get<boolean>(REDIS_KEYS.MAINTENANCE_MODE)
+    return value === true
   } catch (error) {
     console.error('Failed to get maintenance mode status:', error)
     return false
@@ -21,23 +20,10 @@ export async function enableMaintenanceMode(): Promise<{
 }> {
   try {
     // Set maintenance mode in Redis
-    await redisClient.set(MAINTENANCE_MODE_KEY, 'true')
+    await redisClient.set(REDIS_KEYS.MAINTENANCE_MODE, 'true')
 
     // Log audit event
-    const supabaseClient = await createSupabaseServerClient()
-    const {
-      data: { user },
-    } = await supabaseClient.auth.getUser()
-
-    if (user) {
-      await supabaseClient.from('audit_logs').insert({
-        action: 'MAINTENANCE_MODE_ENABLE',
-        details: {
-          message: 'メンテナンスモードを有効化しました',
-        },
-        user_id: user.id,
-      })
-    }
+    await createAuditLog('MAINTENANCE_MODE_ENABLE', 'system', null, {})
 
     return {
       success: true,
@@ -57,23 +43,10 @@ export async function disableMaintenanceMode(): Promise<{
 }> {
   try {
     // Delete maintenance mode key from Redis
-    await redisClient.del(MAINTENANCE_MODE_KEY)
+    await redisClient.del(REDIS_KEYS.MAINTENANCE_MODE)
 
     // Log audit event
-    const supabaseClient = await createSupabaseServerClient()
-    const {
-      data: { user },
-    } = await supabaseClient.auth.getUser()
-
-    if (user) {
-      await supabaseClient.from('audit_logs').insert({
-        action: 'MAINTENANCE_MODE_DISABLE',
-        details: {
-          message: 'メンテナンスモードを無効化しました',
-        },
-        user_id: user.id,
-      })
-    }
+    await createAuditLog('MAINTENANCE_MODE_DISABLE', 'system', null, {})
 
     return {
       success: true,

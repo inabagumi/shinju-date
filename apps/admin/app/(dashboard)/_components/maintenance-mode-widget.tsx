@@ -66,8 +66,8 @@ export function MaintenanceModeWidget({
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex-1">
             <p className="font-medium text-gray-900">
               現在の状態:{' '}
               <span
@@ -85,13 +85,15 @@ export function MaintenanceModeWidget({
                 : '通常運転中です'}
             </p>
           </div>
-          <ToggleSwitch
-            checked={isEnabled}
-            disabled={isPending}
-            label="メンテナンスモード切り替え"
-            // @ts-expect-error - TypeScript incorrectly infers intersection type
-            onChange={handleToggle}
-          />
+          <div className="flex-shrink-0">
+            <ToggleSwitch
+              checked={isEnabled}
+              disabled={isPending}
+              label="メンテナンスモード切り替え"
+              // @ts-expect-error - TypeScript incorrectly infers intersection type
+              onChange={handleToggle}
+            />
+          </div>
         </div>
 
         {showConfirmation && (

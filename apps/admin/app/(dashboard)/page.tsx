@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { CardSkeleton } from '@/components/skeletons'
 import { AnalyticsWidget } from './_components/analytics-widget'
-import { MaintenanceModeWidget } from './_components/maintenance-mode-widget'
+import { MaintenanceModeWidgetWrapper } from './_components/maintenance-mode-widget-wrapper'
 import {
   PopularVideosWidget,
   PopularVideosWidgetSkeleton,
@@ -9,10 +9,8 @@ import {
 import { QuickAccessWidget } from './_components/quick-access-widget'
 import { RecentActivity } from './_components/recent-activity'
 import { SummaryWidget } from './_components/summary-widget'
-import { getMaintenanceModeStatus } from './_lib/maintenance-mode-actions'
 
-export default async function DashboardPage() {
-  const maintenanceModeStatus = await getMaintenanceModeStatus()
+export default function DashboardPage() {
   return (
     <div className="p-6">
       <h1 className="mb-6 font-bold text-3xl">ダッシュボード</h1>
@@ -22,7 +20,9 @@ export default async function DashboardPage() {
         {/* Left Sidebar - Quick Access and Maintenance Mode */}
         <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
           <QuickAccessWidget />
-          <MaintenanceModeWidget initialStatus={maintenanceModeStatus} />
+          <Suspense fallback={<CardSkeleton />}>
+            <MaintenanceModeWidgetWrapper />
+          </Suspense>
         </aside>
 
         {/* Main Content Area */}
