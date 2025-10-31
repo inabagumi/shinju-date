@@ -56,4 +56,29 @@ describe('getChannel', () => {
       'Database connection error',
     )
   })
+
+  it('should return null when channel ID has invalid UUID format', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+
+    const mockSupabaseClient = {
+      eq: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: null,
+        error: {
+          code: '22P02',
+          message: 'invalid input syntax for type uuid: "a"',
+        },
+      }),
+    }
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    const result = await getChannel('a')
+
+    expect(result).toBeNull()
+  })
 })

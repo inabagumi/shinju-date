@@ -30,6 +30,14 @@ const getChannel = cache(async function getChannel(
       // Row not found
       return null
     }
+    // Check for invalid UUID format error
+    if (
+      error.message?.includes('invalid input syntax for type uuid') ||
+      error.code === '22P02'
+    ) {
+      // Invalid UUID format - treat as not found
+      return null
+    }
     throw new TypeError(error.message, {
       cause: error,
     })
