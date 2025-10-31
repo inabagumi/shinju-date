@@ -4,6 +4,7 @@ import { logger } from '@shinju-date/logger'
 import { getChannels } from '@shinju-date/youtube-api-client'
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
+import { createAuditLog } from '@/lib/audit-log'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export async function syncChannelWithYouTube(channelId: string): Promise<{
@@ -111,6 +112,12 @@ export async function syncChannelWithYouTube(channelId: string): Promise<{
     if (updateError) {
       throw updateError
     }
+
+    // Log audit entry
+    await createAuditLog('CHANNEL_SYNC', 'channels', channelId, {
+      after: { name: youtubeChannel.snippet.title },
+      before: { name: channel.name },
+    })
 
     revalidatePath(`/channels/${channelId}`)
     revalidatePath('/channels')

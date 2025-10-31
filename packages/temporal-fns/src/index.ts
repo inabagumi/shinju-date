@@ -5,6 +5,7 @@ export {
   formatDateTimeWithSeconds,
 } from './format-date-time.js'
 export { default as formatDuration } from './format-duration.js'
+export { formatRelativeTime } from './format-relative-time.js'
 export { default as getMondayOfWeek } from './get-monday-of-week.js'
 export { default as max } from './max.js'
 export { default as min } from './min.js'

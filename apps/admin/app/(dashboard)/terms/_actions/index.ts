@@ -3,6 +3,7 @@
 import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
 import type { FormState } from '@/components/form'
+import { createAuditLog } from '@/lib/audit-log'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export async function createTermAction(
@@ -38,15 +39,24 @@ export async function createTermAction(
   const supabaseClient = await createSupabaseServerClient()
 
   try {
-    const { error } = await supabaseClient.from('terms').insert({
-      readings: filteredReadings,
-      synonyms: filteredSynonyms,
-      term: term.trim(),
-    })
+    const { data: newTerm, error } = await supabaseClient
+      .from('terms')
+      .insert({
+        readings: filteredReadings,
+        synonyms: filteredSynonyms,
+        term: term.trim(),
+      })
+      .select('id, term')
+      .single()
 
     if (error) {
       throw error
     }
+
+    // Log audit entry
+    await createAuditLog('TERM_CREATE', 'terms', newTerm.id, {
+      entityName: newTerm.term,
+    })
 
     revalidatePath('/terms')
     return {}
@@ -96,7 +106,7 @@ export async function updateTermAction(
   const supabaseClient = await createSupabaseServerClient()
 
   try {
-    const { error } = await supabaseClient
+    const { data: newTerm, error } = await supabaseClient
       .from('terms')
       .update({
         readings: filteredReadings,
@@ -104,10 +114,17 @@ export async function updateTermAction(
         term: term.trim(),
       })
       .eq('id', id)
+      .select('term')
+      .single()
 
     if (error) {
       throw error
     }
+
+    // Log audit entry
+    await createAuditLog('TERM_UPDATE', 'terms', id, {
+      entityName: newTerm.term,
+    })
 
     revalidatePath('/terms')
     return {}
@@ -134,11 +151,21 @@ export async function deleteTermAction(id: string): Promise<{
   const supabaseClient = await createSupabaseServerClient()
 
   try {
-    const { error } = await supabaseClient.from('terms').delete().eq('id', id)
+    const { data: deletedTerm, error } = await supabaseClient
+      .from('terms')
+      .delete()
+      .eq('id', id)
+      .select('term')
+      .single()
 
     if (error) {
       throw error
     }
+
+    // Log audit entry
+    await createAuditLog('TERM_DELETE', 'terms', id, {
+      entityName: deletedTerm.term,
+    })
 
     revalidatePath('/terms')
     return { success: true }

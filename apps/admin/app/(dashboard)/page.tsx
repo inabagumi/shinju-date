@@ -6,6 +6,7 @@ import {
   PopularVideosWidgetSkeleton,
 } from './_components/popular-videos-widget'
 import { QuickAccessWidget } from './_components/quick-access-widget'
+import { RecentActivity } from './_components/recent-activity'
 import { SummaryWidget } from './_components/summary-widget'
 
 export default function DashboardPage() {
@@ -41,6 +42,13 @@ export default function DashboardPage() {
       <div className="mt-6">
         <Suspense fallback={<PopularVideosWidgetSkeleton />}>
           <PopularVideosWidget />
+        </Suspense>
+      </div>
+
+      {/* Recent Activity Widget */}
+      <div className="mt-6">
+        <Suspense fallback={<CardSkeleton />}>
+          <RecentActivity />
         </Suspense>
       </div>
     </div>
