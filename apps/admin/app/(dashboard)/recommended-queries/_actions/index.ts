@@ -25,8 +25,9 @@ export async function addQueryAction(query: string): Promise<{
     // Log audit entry
     await createAuditLog(
       'RECOMMENDED_QUERY_CREATE',
-      'recommended_queries',
-      trimmedQuery,
+      'redis:recommended_queries',
+      null,
+      { query: trimmedQuery },
     )
 
     revalidatePath('/recommended-queries')
@@ -59,8 +60,9 @@ export async function deleteQueryAction(query: string): Promise<{
     // Log audit entry
     await createAuditLog(
       'RECOMMENDED_QUERY_DELETE',
-      'recommended_queries',
-      query,
+      'redis:recommended_queries',
+      null,
+      { query },
     )
 
     revalidatePath('/recommended-queries')

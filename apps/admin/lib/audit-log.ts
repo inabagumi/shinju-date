@@ -13,7 +13,7 @@ export type AuditDetails<T> =
 export async function createAuditLog<T>(
   action: AuditAction,
   targetTable: string,
-  targetRecordId: string,
+  targetRecordId: string | null,
   details?: AuditDetails<T>,
 ): Promise<void> {
   try {
