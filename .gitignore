@@ -143,3 +143,6 @@ supabase/data-exports/
 # Package manager lock files (this project uses pnpm)
 package-lock.json
 yarn.lock
+
+*storybook.log
+storybook-static
