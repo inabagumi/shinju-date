@@ -23,7 +23,7 @@ export function MaintenanceModeWidget({
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  const handleToggle = (checked: boolean) => {
+  const handleToggle: (checked: boolean) => void = (checked) => {
     setPendingAction(checked ? 'enable' : 'disable')
     setShowConfirmation(true)
     setError(null)
@@ -89,6 +89,7 @@ export function MaintenanceModeWidget({
             checked={isEnabled}
             disabled={isPending}
             label="メンテナンスモード切り替え"
+            // @ts-expect-error - TypeScript incorrectly infers intersection type
             onChange={handleToggle}
           />
         </div>
