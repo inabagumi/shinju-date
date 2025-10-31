@@ -23,7 +23,7 @@ export async function enableMaintenanceMode(): Promise<{
     await redisClient.set(REDIS_KEYS.MAINTENANCE_MODE, 'true')
 
     // Log audit event
-    await createAuditLog('MAINTENANCE_MODE_ENABLE', 'system', null, {})
+    await createAuditLog('MAINTENANCE_MODE_ENABLE', 'redis:system')
 
     return {
       success: true,
@@ -46,7 +46,7 @@ export async function disableMaintenanceMode(): Promise<{
     await redisClient.del(REDIS_KEYS.MAINTENANCE_MODE)
 
     // Log audit event
-    await createAuditLog('MAINTENANCE_MODE_DISABLE', 'system', null, {})
+    await createAuditLog('MAINTENANCE_MODE_DISABLE', 'redis:system')
 
     return {
       success: true,

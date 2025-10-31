@@ -21,7 +21,7 @@ export async function createAuditLog<
 >(
   action: AuditAction,
   targetTable: TTarget,
-  targetRecordId: string | null,
+  targetRecordId?: string | null,
   details?: AuditDetails<
     [TDetails] extends [never]
       ? TTarget extends TableName
