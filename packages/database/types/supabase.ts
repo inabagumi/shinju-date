@@ -16,25 +16,31 @@ export type Database = {
     Tables: {
       audit_logs: {
         Row: {
-          action: string
+          action: Database['public']['Enums']['audit_action']
           created_at: string
-          id: number
-          target_id: string | null
-          user_email: string
+          details: Json | null
+          id: string
+          target_record_id: string | null
+          target_table: string | null
+          user_id: string | null
         }
         Insert: {
-          action: string
+          action: Database['public']['Enums']['audit_action']
           created_at?: string
-          id?: number
-          target_id?: string | null
-          user_email: string
+          details?: Json | null
+          id?: string
+          target_record_id?: string | null
+          target_table?: string | null
+          user_id?: string | null
         }
         Update: {
-          action?: string
+          action?: Database['public']['Enums']['audit_action']
           created_at?: string
-          id?: number
-          target_id?: string | null
-          user_email?: string
+          details?: Json | null
+          id?: string
+          target_record_id?: string | null
+          target_table?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -128,16 +134,19 @@ export type Database = {
       twitch_users: {
         Row: {
           channel_id: string
+          id: string
           twitch_login_name: string | null
           twitch_user_id: string
         }
         Insert: {
           channel_id: string
+          id?: string
           twitch_login_name?: string | null
           twitch_user_id: string
         }
         Update: {
           channel_id?: string
+          id?: string
           twitch_login_name?: string | null
           twitch_user_id?: string
         }
@@ -153,16 +162,19 @@ export type Database = {
       }
       twitch_videos: {
         Row: {
+          id: string
           twitch_video_id: string
           type: Database['public']['Enums']['twitch_video_type'] | null
           video_id: string
         }
         Insert: {
+          id?: string
           twitch_video_id: string
           type?: Database['public']['Enums']['twitch_video_type'] | null
           video_id: string
         }
         Update: {
+          id?: string
           twitch_video_id?: string
           type?: Database['public']['Enums']['twitch_video_type'] | null
           video_id?: string
@@ -237,16 +249,19 @@ export type Database = {
       youtube_channels: {
         Row: {
           channel_id: string
+          id: string
           youtube_channel_id: string
           youtube_handle: string | null
         }
         Insert: {
           channel_id: string
+          id?: string
           youtube_channel_id: string
           youtube_handle?: string | null
         }
         Update: {
           channel_id?: string
+          id?: string
           youtube_channel_id?: string
           youtube_handle?: string | null
         }
@@ -262,14 +277,17 @@ export type Database = {
       }
       youtube_videos: {
         Row: {
+          id: string
           video_id: string
           youtube_video_id: string
         }
         Insert: {
+          id?: string
           video_id: string
           youtube_video_id: string
         }
         Update: {
+          id?: string
           video_id?: string
           youtube_video_id?: string
         }
@@ -298,6 +316,15 @@ export type Database = {
           total_cost_after: Json
           total_cost_before: Json
         }[]
+      }
+      insert_audit_log: {
+        Args: {
+          p_action: Database['public']['Enums']['audit_action']
+          p_details?: Json
+          p_target_record_id: string
+          p_target_table: string
+        }
+        Returns: undefined
       }
       search_videos_v2: {
         Args: {
@@ -334,6 +361,17 @@ export type Database = {
       }
     }
     Enums: {
+      audit_action:
+        | 'CHANNEL_CREATE'
+        | 'CHANNEL_DELETE'
+        | 'CHANNEL_UPDATE'
+        | 'RECOMMENDED_QUERY_CREATE'
+        | 'RECOMMENDED_QUERY_DELETE'
+        | 'TERM_CREATE'
+        | 'TERM_DELETE'
+        | 'TERM_UPDATE'
+        | 'VIDEO_DELETE'
+        | 'VIDEO_VISIBILITY_TOGGLE'
       platform_type: 'youtube' | 'twitch'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
     }
@@ -463,6 +501,18 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      audit_action: [
+        'CHANNEL_CREATE',
+        'CHANNEL_DELETE',
+        'CHANNEL_UPDATE',
+        'RECOMMENDED_QUERY_CREATE',
+        'RECOMMENDED_QUERY_DELETE',
+        'TERM_CREATE',
+        'TERM_DELETE',
+        'TERM_UPDATE',
+        'VIDEO_DELETE',
+        'VIDEO_VISIBILITY_TOGGLE',
+      ],
       platform_type: ['youtube', 'twitch'],
       twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],
     },
