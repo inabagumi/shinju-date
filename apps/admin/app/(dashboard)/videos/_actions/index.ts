@@ -83,7 +83,7 @@ export async function toggleSingleVideoVisibilityAction(id: string): Promise<{
     // Get current visibility status
     const { data: video, error: fetchError } = await supabaseClient
       .from('videos')
-      .select('id, visible')
+      .select('id, title, visible')
       .eq('id', id)
       .single()
 
@@ -104,6 +104,11 @@ export async function toggleSingleVideoVisibilityAction(id: string): Promise<{
     if (updateError) {
       throw updateError
     }
+
+    // Log audit entry
+    await createAuditLog('VIDEO_VISIBILITY_TOGGLE', 'videos', video.id, {
+      entityName: video.title,
+    })
 
     revalidatePath('/videos')
     return { success: true }
@@ -207,7 +212,7 @@ export async function softDeleteSingleVideoAction(id: string): Promise<{
     // Get thumbnail ID before soft deleting video
     const { data: video, error: fetchError } = await supabaseClient
       .from('videos')
-      .select('id, thumbnail_id')
+      .select('id, title, thumbnail_id')
       .eq('id', id)
       .single()
 
@@ -240,6 +245,11 @@ export async function softDeleteSingleVideoAction(id: string): Promise<{
         throw thumbnailError
       }
     }
+
+    // Log audit entry
+    await createAuditLog('VIDEO_DELETE', 'videos', video.id, {
+      entityName: video.title,
+    })
 
     revalidatePath('/videos')
     return { success: true }
