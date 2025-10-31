@@ -65,9 +65,15 @@ importers:
       '@shinju-date/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@shinju-date/tailwind-config':
+        specifier: workspace:*
+        version: link:../../packages/tailwind-config
       '@shinju-date/temporal-fns':
         specifier: workspace:*
         version: link:../../packages/temporal-fns
+      '@shinju-date/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@shinju-date/youtube-api-client':
         specifier: workspace:*
         version: link:../../packages/youtube-api-client
@@ -349,9 +355,15 @@ importers:
       '@shinju-date/retryable-fetch':
         specifier: workspace:*
         version: link:../../packages/retryable-fetch
+      '@shinju-date/tailwind-config':
+        specifier: workspace:*
+        version: link:../../packages/tailwind-config
       '@shinju-date/temporal-fns':
         specifier: workspace:*
         version: link:../../packages/temporal-fns
+      '@shinju-date/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
         version: 0.3.0(@supabase/supabase-js@2.78.0)
@@ -602,6 +614,8 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
+  packages/tailwind-config: {}
+
   packages/temporal-fns:
     dependencies:
       temporal-polyfill:
@@ -616,6 +630,61 @@ importers:
         version: 2.0.7
       tsup:
         specifier: 8.5.0
+        version: 8.5.0(@swc/core@1.13.5)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/ui:
+    dependencies:
+      '@radix-ui/react-dialog':
+        specifier: 1.1.15
+        version: 1.1.15(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@radix-ui/react-slot':
+        specifier: 1.2.3
+        version: 1.2.3(@types/react@19.2.2)(react@19.2.0)
+      '@shinju-date/tailwind-config':
+        specifier: workspace:*
+        version: link:../tailwind-config
+      class-variance-authority:
+        specifier: 0.7.1
+        version: 0.7.1
+      tailwind-merge:
+        specifier: 3.3.1
+        version: 3.3.1
+    devDependencies:
+      '@tailwindcss/postcss':
+        specifier: 4.1.16
+        version: 4.1.16
+      '@tsconfig/node20':
+        specifier: ^20.1.6
+        version: 20.1.6
+      '@tsconfig/strictest':
+        specifier: ^2.0.7
+        version: 2.0.7
+      '@types/react':
+        specifier: 19.2.2
+        version: 19.2.2
+      '@types/react-dom':
+        specifier: 19.2.2
+        version: 19.2.2(@types/react@19.2.2)
+      postcss:
+        specifier: 8.5.6
+        version: 8.5.6
+      postcss-load-config:
+        specifier: 6.0.1
+        version: 6.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)
+      react:
+        specifier: 19.2.0
+        version: 19.2.0
+      react-dom:
+        specifier: 19.2.0
+        version: 19.2.0(react@19.2.0)
+      tailwindcss:
+        specifier: 4.1.16
+        version: 4.1.16
+      tsup:
+        specifier: ^8.5.0
         version: 8.5.0(@swc/core@1.13.5)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)
       typescript:
         specifier: 5.9.3
@@ -2834,6 +2903,9 @@ packages:
 
   cjs-module-lexer@1.4.3:
     resolution: {integrity: sha512-9z8TZaGM1pfswYeXrUpzPrkx8UnWYdhJclsiYMm6x/w5+nN+8Tf/LnAgfLGQCm59qAOxU8WwHEq2vNwF6i4j+Q==}
+
+  class-variance-authority@0.7.1:
+    resolution: {integrity: sha512-Ka+9Trutv7G8M6WT6SeiRWz792K5qEqIGEGzXKhAE6xOWAY6pPH8U+9IY3oCMv6kqTmLsv7Xh/2w2RigkePMsg==}
 
   clean-stack@4.2.0:
     resolution: {integrity: sha512-LYv6XPxoyODi36Dp976riBtSY27VmFo+MKqEU9QCCWyTrdEPDog+RWA7xQWHi6Vbp61j5c4cdzzX1NidnwtUWg==}
@@ -7634,6 +7706,10 @@ snapshots:
   chrome-trace-event@1.0.4: {}
 
   cjs-module-lexer@1.4.3: {}
+
+  class-variance-authority@0.7.1:
+    dependencies:
+      clsx: 2.1.1
 
   clean-stack@4.2.0:
     dependencies:

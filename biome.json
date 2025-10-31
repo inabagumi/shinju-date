@@ -43,7 +43,7 @@
           "level": "warn",
           "options": {
             "attributes": ["className"],
-            "functions": ["twMerge"]
+            "functions": ["twMerge", "cva"]
           }
         }
       }

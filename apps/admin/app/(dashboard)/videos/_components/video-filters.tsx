@@ -1,5 +1,6 @@
 'use client'
 
+import { Input } from '@shinju-date/ui'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
@@ -73,13 +74,13 @@ export function VideoFilters({ channels }: Props) {
         >
           タイトルまたはIDで検索
         </label>
-        <input
-          className="rounded-md border border-gray-300 px-3 py-2"
+        <Input
           id="search-filter"
+          inputSize="md"
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="検索..."
-          type="text"
           value={searchInput}
+          variant="default"
         />
       </div>
       <div>

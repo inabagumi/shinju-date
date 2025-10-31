@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@shinju-date/ui'
 import { useState, useTransition } from 'react'
 import {
   softDeleteSingleVideoAction,
@@ -74,22 +75,21 @@ export function VideoActionsButtons({ videoId, visible, isDeleted }: Props) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex gap-2">
-        <button
-          className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-100"
+        <Button
           disabled={isPending}
           onClick={handleToggleVisibility}
-          type="button"
+          variant="secondary"
         >
           {visible ? '非表示にする' : '表示する'}
-        </button>
-        <button
-          className="inline-flex items-center rounded-md border border-red-300 bg-white px-3 py-2 font-medium text-red-700 text-sm shadow-sm hover:bg-red-50 disabled:cursor-not-allowed disabled:bg-gray-100"
+        </Button>
+        <Button
+          className="border-red-300 text-red-700 hover:bg-red-50"
           disabled={isPending}
           onClick={handleDelete}
-          type="button"
+          variant="secondary"
         >
           削除
-        </button>
+        </Button>
       </div>
 
       {message && (
