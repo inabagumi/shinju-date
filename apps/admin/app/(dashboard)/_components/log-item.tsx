@@ -1,4 +1,4 @@
-import type { Database } from '@shinju-date/database'
+import type Database from '@shinju-date/database'
 import { formatRelativeTime } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { AuditLogTarget } from '../_components/audit-log-target'
