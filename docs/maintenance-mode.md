@@ -37,12 +37,12 @@
 
 **ファイル**:
 - `proxy.ts` - Edge Middleware
-- `app/maintenance/page.tsx` - メンテナンスページ
+- `public/maintenance.html` - 静的メンテナンスページ
 
 **動作**:
 1. すべてのリクエストに対してRedisの`maintenance_mode`キーをチェック
-2. 値が`'true'`の場合、`/maintenance`ページへリライト
-3. `/maintenance`ページ自体へのアクセスはリライト対象外
+2. 値が`true`の場合、静的な`/maintenance.html`ページへリライト
+3. 静的HTMLファイルのため、Next.jsのレイアウトやルーティングの影響を受けない
 
 #### 3. バッチ処理 (`apps/batch`)
 
