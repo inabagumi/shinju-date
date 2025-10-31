@@ -28,6 +28,7 @@ export async function addQueryAction(query: string): Promise<{
     await createAuditLog(
       supabaseClient,
       'RECOMMENDED_QUERY_CREATE',
+      'recommended_queries',
       trimmedQuery,
     )
 
@@ -60,7 +61,12 @@ export async function deleteQueryAction(query: string): Promise<{
 
     // Log audit entry
     const supabaseClient = await createSupabaseServerClient()
-    await createAuditLog(supabaseClient, 'RECOMMENDED_QUERY_DELETE', query)
+    await createAuditLog(
+      supabaseClient,
+      'RECOMMENDED_QUERY_DELETE',
+      'recommended_queries',
+      query,
+    )
 
     revalidatePath('/recommended-queries')
     revalidatePath('/', 'page')

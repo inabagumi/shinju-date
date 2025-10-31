@@ -1,37 +1,27 @@
+import type { Database } from '@shinju-date/database'
 import type { TypedSupabaseClient } from './supabase'
 
-export type AuditAction =
-  | 'VIDEO_DELETE'
-  | 'VIDEO_VISIBILITY_TOGGLE'
-  | 'TERM_CREATE'
-  | 'TERM_UPDATE'
-  | 'TERM_DELETE'
-  | 'CHANNEL_CREATE'
-  | 'CHANNEL_UPDATE'
-  | 'CHANNEL_DELETE'
-  | 'RECOMMENDED_QUERY_CREATE'
-  | 'RECOMMENDED_QUERY_DELETE'
+export type AuditAction = Database['public']['Enums']['audit_action']
+
+export type AuditDetails = {
+  before?: Record<string, unknown>
+  after?: Record<string, unknown>
+  [key: string]: unknown
+}
 
 export async function createAuditLog(
   supabaseClient: TypedSupabaseClient,
   action: AuditAction,
-  targetId: string | null = null,
+  targetTable: string,
+  targetRecordId: string,
+  details?: AuditDetails,
 ): Promise<void> {
   try {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser()
-
-    if (userError || !user?.email) {
-      console.error('Failed to get user for audit log:', userError)
-      return
-    }
-
-    const { error } = await supabaseClient.from('audit_logs').insert({
-      action,
-      target_id: targetId,
-      user_email: user.email,
+    const { error } = await supabaseClient.rpc('insert_audit_log', {
+      p_action: action,
+      p_details: details ?? null,
+      p_target_record_id: targetRecordId,
+      p_target_table: targetTable,
     })
 
     if (error) {
