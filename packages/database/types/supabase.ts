@@ -321,7 +321,7 @@ export type Database = {
         Args: {
           p_action: Database['public']['Enums']['audit_action']
           p_details?: Json
-          p_target_record_id: string
+          p_target_record_id?: string
           p_target_table: string
         }
         Returns: undefined

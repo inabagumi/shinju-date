@@ -1,4 +1,4 @@
-import type { Database, Tables } from '@shinju-date/database'
+import type { default as Database, Tables } from '@shinju-date/database'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type AuditAction = Database['public']['Enums']['audit_action']
@@ -10,21 +10,30 @@ export type AuditDetails<T = unknown> =
     }
   | T
 
+type TableName = keyof Database['public']['Tables']
+
 export async function createAuditLog<
-  T = Tables<'audit_logs' | 'channels' | 'terms' | 'thumbnails' | 'videos'>,
+  TDetails = never,
+  TTarget extends string = string,
 >(
   action: AuditAction,
-  targetTable: string,
+  targetTable: TTarget,
   targetRecordId: string | null,
-  details?: AuditDetails<T>,
+  details?: AuditDetails<
+    [TDetails] extends [never]
+      ? TTarget extends TableName
+        ? Tables<TTarget>
+        : unknown
+      : TDetails
+  >,
 ): Promise<void> {
   try {
     const supabaseClient = await createSupabaseServerClient()
     const { error } = await supabaseClient.rpc('insert_audit_log', {
       p_action: action,
       p_details: details ?? null,
-      p_target_record_id: targetRecordId,
       p_target_table: targetTable,
+      ...(targetRecordId ? { p_target_record_id: targetRecordId } : {}),
     })
 
     if (error) {
