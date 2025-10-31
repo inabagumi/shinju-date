@@ -4,8 +4,14 @@ import { NextResponse } from 'next/server'
 import { redisClient } from '@/lib/redis'
 
 export async function proxy(
-  _request: NextRequest,
+  request: NextRequest,
 ): Promise<ReturnType<NextProxy>> {
+  // Allow health check endpoints during maintenance
+  const pathname = request.nextUrl.pathname
+  if (pathname === '/api/healthz' || pathname === '/api/readyz') {
+    return NextResponse.next()
+  }
+
   // Check for maintenance mode
   try {
     const maintenanceMode = await redisClient.get<boolean>(
