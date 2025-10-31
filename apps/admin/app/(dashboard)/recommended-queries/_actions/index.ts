@@ -27,7 +27,7 @@ export async function addQueryAction(query: string): Promise<{
       'RECOMMENDED_QUERY_CREATE',
       'redis:recommended_queries',
       null,
-      { query: trimmedQuery },
+      { entityName: trimmedQuery },
     )
 
     revalidatePath('/recommended-queries')
@@ -62,7 +62,7 @@ export async function deleteQueryAction(query: string): Promise<{
       'RECOMMENDED_QUERY_DELETE',
       'redis:recommended_queries',
       null,
-      { query },
+      { entityName: query },
     )
 
     revalidatePath('/recommended-queries')

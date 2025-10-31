@@ -19,7 +19,7 @@ export async function toggleVisibilityAction(ids: string[]): Promise<{
     // Get current visibility status of all videos
     const { data: videos, error: fetchError } = await supabaseClient
       .from('videos')
-      .select('id, visible')
+      .select('id, title, visible')
       .in('id', ids)
 
     if (fetchError) {
@@ -50,7 +50,9 @@ export async function toggleVisibilityAction(ids: string[]): Promise<{
     // Log audit entries for each video
     await Promise.all(
       videos.map((video) =>
-        createAuditLog('VIDEO_VISIBILITY_TOGGLE', 'videos', video.id),
+        createAuditLog('VIDEO_VISIBILITY_TOGGLE', 'videos', video.id, {
+          entityName: video.title,
+        }),
       ),
     )
 
@@ -133,7 +135,7 @@ export async function softDeleteAction(ids: string[]): Promise<{
     // Get thumbnail IDs before soft deleting videos
     const { data: videos, error: fetchError } = await supabaseClient
       .from('videos')
-      .select('id, thumbnail_id')
+      .select('id, title, thumbnail_id')
       .in('id', ids)
 
     if (fetchError) {
@@ -172,7 +174,11 @@ export async function softDeleteAction(ids: string[]): Promise<{
 
     // Log audit entries for each video
     await Promise.all(
-      videos.map((video) => createAuditLog('VIDEO_DELETE', 'videos', video.id)),
+      videos.map((video) =>
+        createAuditLog('VIDEO_DELETE', 'videos', video.id, {
+          entityName: video.title,
+        }),
+      ),
     )
 
     revalidatePath('/videos')

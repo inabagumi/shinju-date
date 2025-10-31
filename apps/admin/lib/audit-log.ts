@@ -3,12 +3,15 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type AuditAction = Database['public']['Enums']['audit_action']
 
-export type AuditDetails<T = unknown> =
-  | {
-      before?: Partial<T>
-      after?: Partial<T>
-    }
-  | T
+export type AuditDetails<T = unknown> = {
+  changes?: {
+    before?: Partial<T>
+    after?: Partial<T>
+  }
+  entityName?: string
+  // biome-ignore lint/suspicious/noExplicitAny: アクション固有の追加情報をdetailsに柔軟に格納できるようにするため
+  [key: string]: any
+}
 
 type TableName = keyof Database['public']['Tables']
 

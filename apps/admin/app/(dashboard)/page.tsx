@@ -6,7 +6,7 @@ import {
   PopularVideosWidgetSkeleton,
 } from './_components/popular-videos-widget'
 import { QuickAccessWidget } from './_components/quick-access-widget'
-import RecentActivity from './_components/recent-activity'
+import { RecentActivity } from './_components/recent-activity'
 import { SummaryWidget } from './_components/summary-widget'
 
 export default function DashboardPage() {

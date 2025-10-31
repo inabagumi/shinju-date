@@ -37,7 +37,7 @@ export async function createChannelAction(
       .insert({
         name: name.trim(),
       })
-      .select('id')
+      .select('id, name')
       .single()
 
     if (error) {
@@ -64,7 +64,9 @@ export async function createChannelAction(
       })
 
     // Log audit entry
-    await createAuditLog('CHANNEL_CREATE', 'channels', newChannel.id)
+    await createAuditLog('CHANNEL_CREATE', 'channels', newChannel.id, {
+      entityName: newChannel.name,
+    })
 
     revalidatePath('/channels')
     return {}
@@ -126,12 +128,14 @@ export async function updateChannelAction(
     }
 
     // Update channels table (only name now)
-    const { error } = await supabaseClient
+    const { data: channel, error } = await supabaseClient
       .from('channels')
       .update({
         name: name.trim(),
       })
       .eq('id', id)
+      .select('name')
+      .single()
 
     if (error) {
       throw error
@@ -159,7 +163,9 @@ export async function updateChannelAction(
     }
 
     // Log audit entry
-    await createAuditLog('CHANNEL_UPDATE', 'channels', id)
+    await createAuditLog('CHANNEL_UPDATE', 'channels', id, {
+      entityName: channel.name,
+    })
 
     revalidatePath('/channels')
     return {}
@@ -193,19 +199,23 @@ export async function deleteChannelAction(id: string): Promise<{
   }
 
   try {
-    const { error } = await supabaseClient
+    const { data: channel, error } = await supabaseClient
       .from('channels')
       .update({
         deleted_at: new Date().toISOString(),
       })
       .eq('id', id)
+      .select('name')
+      .single()
 
     if (error) {
       throw error
     }
 
     // Log audit entry
-    await createAuditLog('CHANNEL_DELETE', 'channels', id)
+    await createAuditLog('CHANNEL_DELETE', 'channels', id, {
+      entityName: channel.name,
+    })
 
     revalidatePath('/channels')
     return { success: true }

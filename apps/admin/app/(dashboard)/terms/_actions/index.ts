@@ -46,7 +46,7 @@ export async function createTermAction(
         synonyms: filteredSynonyms,
         term: term.trim(),
       })
-      .select('id')
+      .select('id, term')
       .single()
 
     if (error) {
@@ -54,7 +54,9 @@ export async function createTermAction(
     }
 
     // Log audit entry
-    await createAuditLog('TERM_CREATE', 'terms', newTerm.id)
+    await createAuditLog('TERM_CREATE', 'terms', newTerm.id, {
+      entityName: newTerm.term,
+    })
 
     revalidatePath('/terms')
     return {}
@@ -104,7 +106,7 @@ export async function updateTermAction(
   const supabaseClient = await createSupabaseServerClient()
 
   try {
-    const { error } = await supabaseClient
+    const { data: newTerm, error } = await supabaseClient
       .from('terms')
       .update({
         readings: filteredReadings,
@@ -112,13 +114,17 @@ export async function updateTermAction(
         term: term.trim(),
       })
       .eq('id', id)
+      .select('term')
+      .single()
 
     if (error) {
       throw error
     }
 
     // Log audit entry
-    await createAuditLog('TERM_UPDATE', 'terms', id)
+    await createAuditLog('TERM_UPDATE', 'terms', id, {
+      entityName: newTerm.term,
+    })
 
     revalidatePath('/terms')
     return {}
@@ -145,14 +151,21 @@ export async function deleteTermAction(id: string): Promise<{
   const supabaseClient = await createSupabaseServerClient()
 
   try {
-    const { error } = await supabaseClient.from('terms').delete().eq('id', id)
+    const { data: deletedTerm, error } = await supabaseClient
+      .from('terms')
+      .delete()
+      .eq('id', id)
+      .select('term')
+      .single()
 
     if (error) {
       throw error
     }
 
     // Log audit entry
-    await createAuditLog('TERM_DELETE', 'terms', id)
+    await createAuditLog('TERM_DELETE', 'terms', id, {
+      entityName: deletedTerm.term,
+    })
 
     revalidatePath('/terms')
     return { success: true }

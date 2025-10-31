@@ -306,6 +306,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_audit_logs: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: {
+          action: Database['public']['Enums']['audit_action']
+          created_at: string
+          details: Json
+          id: string
+          target_record_id: string
+          target_table: string
+          user_email: string
+          user_id: string
+        }[]
+      }
       index_advisor: {
         Args: { query: string }
         Returns: {
