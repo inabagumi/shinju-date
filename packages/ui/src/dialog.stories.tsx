@@ -136,14 +136,16 @@ export const LongContent: Story = {
             Please read the following terms and conditions carefully.
           </DialogDescription>
           <div className="mt-4 max-h-[40vh] overflow-y-auto">
-            {Array.from({ length: 20 }).map((_, i) => (
+            {Array.from({ length: 20 }, (_, i) => ({
+              id: `term-${i}`,
+              text: `${i + 1}. Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+                Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.`,
+            })).map((term) => (
               <p
                 className="mb-2 text-gray-700 text-sm dark:text-zinc-300"
-                // biome-ignore lint/suspicious/noArrayIndexKey: static list that never reorders
-                key={`term-${i}`}
+                key={term.id}
               >
-                {`${i + 1}. Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-                Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.`}
+                {term.text}
               </p>
             ))}
           </div>
