@@ -1,22 +1,23 @@
 import type { Database } from '@shinju-date/database'
-import type { TypedSupabaseClient } from './supabase'
+import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type AuditAction = Database['public']['Enums']['audit_action']
 
-export type AuditDetails = {
-  before?: Record<string, unknown>
-  after?: Record<string, unknown>
-  [key: string]: unknown
-}
+export type AuditDetails<T> =
+  | {
+      before?: Partial<T>
+      after?: Partial<T>
+    }
+  | T
 
-export async function createAuditLog(
-  supabaseClient: TypedSupabaseClient,
+export async function createAuditLog<T>(
   action: AuditAction,
   targetTable: string,
   targetRecordId: string,
-  details?: AuditDetails,
+  details?: AuditDetails<T>,
 ): Promise<void> {
   try {
+    const supabaseClient = await createSupabaseServerClient()
     const { error } = await supabaseClient.rpc('insert_audit_log', {
       p_action: action,
       p_details: details ?? null,

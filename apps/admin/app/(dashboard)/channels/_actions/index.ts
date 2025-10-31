@@ -64,12 +64,7 @@ export async function createChannelAction(
       })
 
     // Log audit entry
-    await createAuditLog(
-      supabaseClient,
-      'CHANNEL_CREATE',
-      'channels',
-      newChannel.id,
-    )
+    await createAuditLog('CHANNEL_CREATE', 'channels', newChannel.id)
 
     revalidatePath('/channels')
     return {}
@@ -164,7 +159,7 @@ export async function updateChannelAction(
     }
 
     // Log audit entry
-    await createAuditLog(supabaseClient, 'CHANNEL_UPDATE', 'channels', id)
+    await createAuditLog('CHANNEL_UPDATE', 'channels', id)
 
     revalidatePath('/channels')
     return {}
@@ -210,7 +205,7 @@ export async function deleteChannelAction(id: string): Promise<{
     }
 
     // Log audit entry
-    await createAuditLog(supabaseClient, 'CHANNEL_DELETE', 'channels', id)
+    await createAuditLog('CHANNEL_DELETE', 'channels', id)
 
     revalidatePath('/channels')
     return { success: true }
