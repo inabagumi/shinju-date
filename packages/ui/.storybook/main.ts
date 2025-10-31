@@ -19,19 +19,5 @@ const config: StorybookConfig = {
     options: {},
   },
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
-  async viteFinal(config) {
-    // Ensure PostCSS is properly configured for Tailwind CSS v4
-    return {
-      ...config,
-      css: {
-        ...config.css,
-        postcss: {
-          plugins: [
-            // PostCSS plugins are loaded from postcss.config.js
-          ],
-        },
-      },
-    }
-  },
 }
 export default config
