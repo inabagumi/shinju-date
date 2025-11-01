@@ -1,12 +1,11 @@
 'use client'
 
-import type { Tables } from '@shinju-date/database'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
 import { Temporal } from 'temporal-polyfill'
 import { SEARCH_RESULT_COUNT } from '@/lib/constants'
-import { fetchVideosByChannelIDs, type Video } from '@/lib/fetchers'
+import { fetchVideos, type Video } from '@/lib/fetchers'
 import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 
 export function SearchResultsSkeleton() {
@@ -17,14 +16,10 @@ export function SearchResultsSkeleton() {
   )
 }
 
-type Channel = Pick<Tables<'channels'>, 'id' | 'name'>
-
 export default function SearchResults({
-  channels,
   prefetchedData,
   query = '',
 }: {
-  channels?: Channel[]
   prefetchedData?: Video[][]
   query?: string
 }) {
@@ -52,16 +47,12 @@ export default function SearchResults({
         : {}),
       initialPageParam: undefined as bigint | undefined,
       queryFn: ({ pageParam }) => {
-        return fetchVideosByChannelIDs({
-          channelIDs: channels?.map((channel) => channel.id),
+        return fetchVideos({
           query,
           until: pageParam,
         })
       },
-      queryKey: [
-        'videos',
-        { channelIDs: channels?.map((channel) => channel.id), query },
-      ],
+      queryKey: ['videos', { query }],
     })
 
   const { ref: loadMoreRef, inView } = useInView({

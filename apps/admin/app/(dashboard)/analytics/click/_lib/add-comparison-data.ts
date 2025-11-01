@@ -1,6 +1,6 @@
-import type { PopularChannel } from '@/lib/analytics/get-popular-channels'
+import type { PopularTalent } from '@/lib/analytics/get-popular-talents'
 
-export type PopularChannelWithComparison = PopularChannel & {
+export type PopularTalentWithComparison = PopularTalent & {
   comparison: {
     previousClicks: number
     previousRank?: number | undefined
@@ -11,33 +11,33 @@ export type PopularChannelWithComparison = PopularChannel & {
 }
 
 /**
- * Add comparison data to current period channels by comparing with previous period channels
- * @param currentChannels - Channels from current period
- * @param previousChannels - Channels from previous period
- * @returns Channels with comparison data added
+ * Add comparison data to current period talents by comparing with previous period talents
+ * @param currentTalents - Talents from current period
+ * @param previousTalents - Talents from previous period
+ * @returns Talents with comparison data added
  */
 export function addComparisonData(
-  currentChannels: PopularChannel[],
-  previousChannels: PopularChannel[],
-): PopularChannelWithComparison[] {
-  // Create a map of previous channels for easy lookup
-  const previousChannelMap = new Map(
-    previousChannels.map((channel, index) => [
-      channel.id,
-      { ...channel, rank: index + 1 },
+  currentTalents: PopularTalent[],
+  previousTalents: PopularTalent[],
+): PopularTalentWithComparison[] {
+  // Create a map of previous talents for easy lookup
+  const previousTalentsMap = new Map(
+    previousTalents.map((talent, index) => [
+      talent.id,
+      { ...talent, rank: index + 1 },
     ]),
   )
 
-  return currentChannels.map((channel, currentIndex) => {
+  return currentTalents.map((talent, currentIndex) => {
     const currentRank = currentIndex + 1
-    const previousData = previousChannelMap.get(channel.id)
+    const previousData = previousTalentsMap.get(talent.id)
 
-    let comparison: PopularChannelWithComparison['comparison']
+    let comparison: PopularTalentWithComparison['comparison']
 
     if (previousData) {
       const clicksChangePercent =
         previousData.clicks > 0
-          ? ((channel.clicks - previousData.clicks) / previousData.clicks) * 100
+          ? ((talent.clicks - previousData.clicks) / previousData.clicks) * 100
           : 0
 
       const rankChange = previousData.rank - currentRank // positive means rank improved
@@ -61,7 +61,7 @@ export function addComparisonData(
     }
 
     return {
-      ...channel,
+      ...talent,
       comparison,
     }
   })

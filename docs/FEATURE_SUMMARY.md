@@ -101,7 +101,7 @@ packages/database/
 └── types/supabase.ts                   # データベース型定義（更新）
 
 migrations/
-├── 001_create_channels_table.sql       # チャンネルテーブル
+├── 001_create_channels_table.sql       # タレントテーブル
 ├── 002_create_thumbnails_table.sql     # サムネイルテーブル
 ├── 003_create_videos_table.sql         # 動画テーブル
 ├── 004_create_terms_table.sql          # 用語テーブル

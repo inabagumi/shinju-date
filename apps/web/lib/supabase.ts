@@ -55,37 +55,3 @@ function createClient(
 }
 
 export const supabaseClient = createClient()
-
-export async function* getAllChannels() {
-  const { data, error } = await supabaseClient
-    .from('channels')
-    .select('id, name, youtube_channel:youtube_channels(youtube_channel_id)')
-    .order('created_at', {
-      ascending: true,
-    })
-
-  if (error) {
-    throw new TypeError(error.message, {
-      cause: error,
-    })
-  }
-
-  for (const channel of data ?? []) {
-    yield channel
-  }
-}
-
-export async function getChannelById(id: string) {
-  const { data: channel, error } = await supabaseClient
-    .from('channels')
-    .select('id, name, youtube_channel:youtube_channels(youtube_channel_id)')
-    .eq('id', id)
-
-  if (error) {
-    throw new TypeError(error.message, {
-      cause: error,
-    })
-  }
-
-  return channel[0] ?? null
-}

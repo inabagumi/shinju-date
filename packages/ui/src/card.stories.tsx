@@ -109,7 +109,7 @@ export const VideoCard: Story = {
         </CardHeader>
         <CardContent>
           <p className="text-gray-600 text-xs dark:text-zinc-400">
-            Channel Name
+            Talent Name
           </p>
           <p className="text-gray-500 text-xs dark:text-zinc-500">
             1.2M views • 2 days ago

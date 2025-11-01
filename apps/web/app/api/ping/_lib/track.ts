@@ -2,9 +2,9 @@ import { track as vercelTrack } from '@vercel/analytics/server'
 import type { Video } from './types'
 
 type TrackProperties = {
-  channel_id: string
-  channel_name: string
   provider: 'YouTube'
+  talent_id: string
+  talent_name: string
   title: string
   url: string
   video_id: string
@@ -16,9 +16,9 @@ function generateTrackProperties(video: Video): TrackProperties {
   }
   const youtubeVideoId = video.youtube_video.youtube_video_id
   return {
-    channel_id: video.channel.id,
-    channel_name: video.channel.name,
     provider: 'YouTube',
+    talent_id: video.talent.id,
+    talent_name: video.talent.name,
     title: video.title,
     url: `https://www.youtube.com/watch?v=${youtubeVideoId}`,
     video_id: video.id,

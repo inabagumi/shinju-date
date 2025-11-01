@@ -79,8 +79,8 @@ export async function POST(request: Request): Promise<Response> {
   ])
 
   Sentry.logger.info('A click event has been sent.', {
-    channel_name: video.channel.name,
     id: video.id,
+    talent_name: video.talent.name,
     title: video.title,
   })
 

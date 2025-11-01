@@ -7,20 +7,20 @@ const VALID_SORT_ORDERS: VideoSortOrder[] = ['asc', 'desc']
 
 // Default values - shared constants to avoid duplication
 export const DEFAULT_VALUES = {
-  channelId: undefined,
   deleted: undefined,
   page: 1,
   search: undefined,
   sortField: 'updated_at' as const,
   sortOrder: 'desc' as const,
+  talentId: undefined,
   visible: undefined,
 } satisfies {
+  deleted: boolean | undefined
   page: number
+  search: string | undefined
   sortField: VideoSortField
   sortOrder: VideoSortOrder
-  channelId: string | undefined
-  deleted: boolean | undefined
-  search: string | undefined
+  talentId: string | undefined
   visible: boolean | undefined
 }
 
@@ -29,17 +29,6 @@ export const DEFAULT_VALUES = {
  * Validates and normalizes all query parameters with appropriate defaults
  */
 export const videoSearchParamsSchema = z.object({
-  // Channel ID filter (optional, coerced to number) - handle arrays
-  channelId: z
-    .union([z.string(), z.array(z.string())])
-    .optional()
-    .transform((val) => {
-      if (Array.isArray(val)) {
-        val = val[0]
-      }
-      return val || undefined
-    }),
-
   // Deleted filter (true/false or undefined) - handle arrays
   deleted: z
     .union([z.string(), z.array(z.string())])
@@ -52,6 +41,7 @@ export const videoSearchParamsSchema = z.object({
       if (val === 'false') return false
       return undefined
     }),
+
   // Page number with default of 1, coerced to number, clamped to minimum 1
   page: z
     .union([z.string(), z.array(z.string())])
@@ -100,6 +90,17 @@ export const videoSearchParamsSchema = z.object({
       return VALID_SORT_ORDERS.includes(val as VideoSortOrder)
         ? (val as VideoSortOrder)
         : DEFAULT_VALUES.sortOrder
+    }),
+
+  // Talent ID filter (optional, coerced to number) - handle arrays
+  talentId: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((val) => {
+      if (Array.isArray(val)) {
+        val = val[0]
+      }
+      return val || undefined
     }),
 
   // Visibility filter (true/false or undefined) - handle arrays

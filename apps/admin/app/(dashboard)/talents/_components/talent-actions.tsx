@@ -2,19 +2,19 @@
 
 import { useState, useTransition } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { deleteChannelAction } from '../_actions'
-import { syncChannelWithYouTube } from '../_actions/sync'
+import { deleteTalentAction } from '../_actions'
+import { syncTalentWithYouTube } from '../_actions/sync'
 
-type Channel = {
+type Talent = {
   id: string
   name: string
 }
 
-type ChannelActionsProps = {
-  channel: Channel
+type TalentActionsProps = {
+  talent: Talent
 }
 
-export function ChannelActions({ channel }: ChannelActionsProps) {
+export function TalentActions({ talent }: TalentActionsProps) {
   const [isPending, startTransition] = useTransition()
   const [message, setMessage] = useState<{
     type: 'success' | 'error'
@@ -25,10 +25,10 @@ export function ChannelActions({ channel }: ChannelActionsProps) {
     setMessage(null)
     startTransition(async () => {
       try {
-        const result = await syncChannelWithYouTube(channel.id)
+        const result = await syncTalentWithYouTube(talent.id)
         if (result.success) {
           setMessage({
-            text: 'チャンネル情報を同期しました。',
+            text: 'タレント情報を同期しました。',
             type: 'success',
           })
         } else {
@@ -46,7 +46,7 @@ export function ChannelActions({ channel }: ChannelActionsProps) {
   const handleDelete = () => {
     if (
       !confirm(
-        `チャンネル「${channel.name}」を削除しますか？この操作は元に戻せません。`,
+        `タレント「${talent.name}」を削除しますか？この操作は元に戻せません。`,
       )
     ) {
       return
@@ -55,10 +55,10 @@ export function ChannelActions({ channel }: ChannelActionsProps) {
     setMessage(null)
     startTransition(async () => {
       try {
-        const result = await deleteChannelAction(channel.id)
+        const result = await deleteTalentAction(talent.id)
         if (result.success) {
           setMessage({
-            text: 'チャンネルを削除しました。',
+            text: 'タレントを削除しました。',
             type: 'success',
           })
         } else {

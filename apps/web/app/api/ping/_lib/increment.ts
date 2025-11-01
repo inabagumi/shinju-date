@@ -27,16 +27,16 @@ export default async function increment(
 ): Promise<void> {
   const keySuffix = format(timestamp)
   const videoKey = `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${keySuffix}`
-  const channelKey = `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}${keySuffix}`
+  const talentKey = `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}${keySuffix}`
 
   const multi = redisClient.multi()
 
   multi.zincrby(videoKey, 1, video.id)
-  multi.zincrby(channelKey, 1, video.channel.id)
+  multi.zincrby(talentKey, 1, video.talent.id)
 
   // Set TTL for click analytics keys in the same pipeline
   multi.expire(videoKey, DAILY_TTL_SECONDS)
-  multi.expire(channelKey, DAILY_TTL_SECONDS)
+  multi.expire(talentKey, DAILY_TTL_SECONDS)
 
   await multi.exec()
 }

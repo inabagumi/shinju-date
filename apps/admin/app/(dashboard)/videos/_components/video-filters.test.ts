@@ -67,7 +67,7 @@ describe('VideoFilters pagination fix', () => {
     // when the component re-renders with the same search term
 
     const initialParams = new URLSearchParams(
-      'search=anime&channelId=123&page=3',
+      'search=anime&talentId=123&page=3',
     )
     const currentSearch = initialParams.get('search') || ''
     const searchInput = 'anime' // Same as current URL
@@ -81,7 +81,7 @@ describe('VideoFilters pagination fix', () => {
   })
 
   it('should remove page parameter only when search actually changes', () => {
-    const initialParams = new URLSearchParams('search=old&channelId=123&page=3')
+    const initialParams = new URLSearchParams('search=old&talentId=123&page=3')
     const currentSearch = initialParams.get('search') || ''
     const searchInput = 'new search' // Different from URL
 

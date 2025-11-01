@@ -12,16 +12,16 @@ import {
   DialogTrigger,
 } from '@shinju-date/ui'
 import { useState, useTransition } from 'react'
-import { deleteChannelAction } from '../_actions'
+import { deleteTalentAction } from '../_actions'
 
 type DeleteConfirmDialogProps = {
-  channelId: string
-  channelName: string
+  talentId: string
+  talentName: string
 }
 
 export function DeleteConfirmDialog({
-  channelId,
-  channelName,
+  talentId,
+  talentName,
 }: DeleteConfirmDialogProps) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -29,7 +29,7 @@ export function DeleteConfirmDialog({
 
   const handleDelete = () => {
     startTransition(async () => {
-      const result = await deleteChannelAction(channelId)
+      const result = await deleteTalentAction(talentId)
       if (result.success) {
         setOpen(false)
       } else {
@@ -48,9 +48,9 @@ export function DeleteConfirmDialog({
       <DialogPortal>
         <DialogOverlay />
         <DialogContent>
-          <DialogTitle>チャンネルを削除</DialogTitle>
+          <DialogTitle>タレントを削除</DialogTitle>
           <DialogDescription>
-            本当に「{channelName}」を削除しますか？この操作は取り消せません。
+            本当に「{talentName}」を削除しますか？この操作は取り消せません。
           </DialogDescription>
           {error && <p className="mb-4 text-red-600 text-sm">{error}</p>}
           <div className="flex justify-end gap-2">

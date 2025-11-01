@@ -4,7 +4,7 @@ import { Input } from '@shinju-date/ui'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-type Channel = {
+type Talent = {
   created_at: string
   id: string
   name: string
@@ -12,17 +12,17 @@ type Channel = {
 }
 
 type Props = {
-  channels: Channel[]
+  talents: Talent[]
 }
 
-export function VideoFilters({ channels }: Props) {
+export function VideoFilters({ talents }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchInput, setSearchInput] = useState(
     searchParams.get('search') || '',
   )
 
-  const currentChannelId = searchParams.get('channelId') || ''
+  const currentTalentId = searchParams.get('talentId') || ''
   const currentDeleted = searchParams.get('deleted') || ''
   const currentVisible = searchParams.get('visible') || ''
 
@@ -51,7 +51,7 @@ export function VideoFilters({ channels }: Props) {
   }, [searchInput, router, searchParams]) // Re-added searchParams since we need it to check current value
 
   const handleFilterChange = (
-    key: 'channelId' | 'deleted' | 'visible',
+    key: 'deleted' | 'talentId' | 'visible',
     value: string,
   ) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -86,20 +86,20 @@ export function VideoFilters({ channels }: Props) {
       <div>
         <label
           className="mb-1 block font-medium text-gray-700 text-sm"
-          htmlFor="channel-filter"
+          htmlFor="talent-filter"
         >
-          チャンネルで絞り込み
+          タレントで絞り込み
         </label>
         <select
-          className="w-full max-w-full appearance-none rounded-md border border-gray-300 bg-[length:1em] bg-[position:right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3e%3cpath%20fill=%27none%27%20stroke=%27%23333%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%272%27%20d=%27m2%205%206%206%206-6%27/%3e%3c/svg%3e')] bg-no-repeat px-3 py-2 pr-8 sm:w-auto"
-          id="channel-filter"
-          onChange={(e) => handleFilterChange('channelId', e.target.value)}
-          value={currentChannelId}
+          className="w-full max-w-full appearance-none rounded-md border border-gray-300 bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3e%3cpath%20fill=%27none%27%20stroke=%27%23333%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%272%27%20d=%27m2%205%206%206%206-6%27/%3e%3c/svg%3e')] bg-position-[right_0.5rem_center] bg-size-[1em] bg-no-repeat px-3 py-2 pr-8 sm:w-auto"
+          id="talent-filter"
+          onChange={(e) => handleFilterChange('talentId', e.target.value)}
+          value={currentTalentId}
         >
-          <option value="">すべてのチャンネル</option>
-          {channels.map((channel) => (
-            <option key={channel.id} value={channel.id}>
-              {channel.name}
+          <option value="">すべてのタレント</option>
+          {talents.map((talent) => (
+            <option key={talent.id} value={talent.id}>
+              {talent.name}
             </option>
           ))}
         </select>
@@ -130,7 +130,7 @@ export function VideoFilters({ channels }: Props) {
           削除状態で絞り込み
         </label>
         <select
-          className="appearance-none rounded-md border border-gray-300 bg-[length:1em] bg-[position:right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3e%3cpath%20fill=%27none%27%20stroke=%27%23333%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%272%27%20d=%27m2%205%206%206%206-6%27/%3e%3c/svg%3e')] bg-no-repeat px-3 py-2 pr-8"
+          className="appearance-none rounded-md border border-gray-300 bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3e%3cpath%20fill=%27none%27%20stroke=%27%23333%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%272%27%20d=%27m2%205%206%206%206-6%27/%3e%3c/svg%3e')] bg-position-[right_0.5rem_center] bg-size-[1em] bg-no-repeat px-3 py-2 pr-8"
           id="deleted-filter"
           onChange={(e) => handleFilterChange('deleted', e.target.value)}
           value={currentDeleted}

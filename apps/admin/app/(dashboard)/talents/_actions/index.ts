@@ -7,14 +7,14 @@ import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
-export async function createChannelAction(
+export async function createTalentAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
   const supabaseClient = await createSupabaseServerClient()
 
   const name = formData.get('name') as string
-  const channelId = formData.get('channel_id') as string
+  const youtubeChannelId = formData.get('youtube_channel_id') as string
 
   if (!name || name.trim() === '') {
     return {
@@ -25,7 +25,7 @@ export async function createChannelAction(
   }
 
   try {
-    const { data: newChannel, error } = await supabaseClient
+    const { data: newTalent, error } = await supabaseClient
       .from('channels')
       .insert({
         name: name.trim(),
@@ -40,50 +40,50 @@ export async function createChannelAction(
     // Write to youtube_channels table if channel_id is provided
     // Note: youtube_handle is null for manually created channels initially
     // It will be populated when the channel sync runs
-    if (channelId && channelId.trim() !== '') {
+    if (youtubeChannelId && youtubeChannelId.trim() !== '') {
       await supabaseClient
         .from('youtube_channels')
         .insert({
-          channel_id: newChannel.id,
-          youtube_channel_id: channelId.trim(),
+          channel_id: newTalent.id,
+          youtube_channel_id: youtubeChannelId.trim(),
           youtube_handle: null,
         })
         .then(({ error: youtubeError }) => {
           if (youtubeError) {
             logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
               error: youtubeError,
-              youtube_channel_id: channelId.trim(),
+              youtube_channel_id: youtubeChannelId.trim(),
             })
           }
         })
     }
 
     // Log audit entry
-    await createAuditLog('CHANNEL_CREATE', 'channels', newChannel.id, {
-      entityName: newChannel.name,
+    await createAuditLog('CHANNEL_CREATE', 'channels', newTalent.id, {
+      entityName: newTalent.name,
     })
 
-    revalidatePath('/channels')
+    revalidatePath('/talents')
     return {}
   } catch (error) {
-    logger.error('チャンネルの追加に失敗しました', {
-      channel_id: channelId?.trim(),
+    logger.error('タレントの追加に失敗しました', {
       error,
       name: name.trim(),
+      youtube_channel_id: youtubeChannelId?.trim(),
     })
     return {
       errors: {
         generic: [
           error instanceof Error
             ? error.message
-            : 'チャンネルの追加に失敗しました。',
+            : 'タレントの追加に失敗しました。',
         ],
       },
     }
   }
 }
 
-export async function updateChannelAction(
+export async function updateTalentAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
@@ -91,7 +91,7 @@ export async function updateChannelAction(
 
   const id = formData.get('id') as string
   const name = formData.get('name') as string
-  const youtubeChannelId = formData.get('channel_id') as string
+  const youtubeChannelId = formData.get('youtube_channel_id') as string
 
   if (!id || !name || name.trim() === '') {
     return {
@@ -114,8 +114,8 @@ export async function updateChannelAction(
       throw fetchError
     }
 
-    // Update channels table (only name now)
-    const { data: channel, error } = await supabaseClient
+    // Update talents table (only name now)
+    const { data: talent, error } = await supabaseClient
       .from('channels')
       .update({
         name: name.trim(),
@@ -153,13 +153,13 @@ export async function updateChannelAction(
 
     // Log audit entry
     await createAuditLog('CHANNEL_UPDATE', 'channels', id, {
-      entityName: channel.name,
+      entityName: talent.name,
     })
 
-    revalidatePath('/channels')
+    revalidatePath('/talents')
     return {}
   } catch (error) {
-    logger.error('チャンネルの更新に失敗しました', {
+    logger.error('タレントの更新に失敗しました', {
       error,
       id,
       name: name.trim(),
@@ -170,14 +170,14 @@ export async function updateChannelAction(
         generic: [
           error instanceof Error
             ? error.message
-            : 'チャンネルの更新に失敗しました。',
+            : 'タレントの更新に失敗しました。',
         ],
       },
     }
   }
 }
 
-export async function deleteChannelAction(id: string): Promise<{
+export async function deleteTalentAction(id: string): Promise<{
   success: boolean
   error?: string
 }> {
@@ -188,7 +188,7 @@ export async function deleteChannelAction(id: string): Promise<{
   }
 
   try {
-    const { data: channel, error } = await supabaseClient
+    const { data: talent, error } = await supabaseClient
       .from('channels')
       .update({
         deleted_at: Temporal.Now.instant().toString(),
@@ -203,18 +203,18 @@ export async function deleteChannelAction(id: string): Promise<{
 
     // Log audit entry
     await createAuditLog('CHANNEL_DELETE', 'channels', id, {
-      entityName: channel.name,
+      entityName: talent.name,
     })
 
-    revalidatePath('/channels')
+    revalidatePath('/talents')
     return { success: true }
   } catch (error) {
-    logger.error('チャンネルの削除に失敗しました', { error, id })
+    logger.error('タレントの削除に失敗しました', { error, id })
     return {
       error:
         error instanceof Error
           ? error.message
-          : 'チャンネルの削除に失敗しました。',
+          : 'タレントの削除に失敗しました。',
       success: false,
     }
   }

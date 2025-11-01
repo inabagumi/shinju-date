@@ -2,13 +2,13 @@
 
 import { useState, useTransition } from 'react'
 import { SpinnerIcon } from '@/components/icons'
-import { syncChannelWithYouTube } from '../../_actions/sync'
+import { syncTalentWithYouTube } from '../../_actions/sync'
 
 type Props = {
-  channelId: string
+  talentId: string
 }
 
-export function SyncChannelButton({ channelId }: Props) {
+export function SyncTalentButton({ talentId }: Props) {
   const [isPending, startTransition] = useTransition()
   const [message, setMessage] = useState<{
     type: 'success' | 'error'
@@ -19,10 +19,10 @@ export function SyncChannelButton({ channelId }: Props) {
     setMessage(null)
     startTransition(async () => {
       try {
-        const result = await syncChannelWithYouTube(channelId)
+        const result = await syncTalentWithYouTube(talentId)
         if (result.success) {
           setMessage({
-            text: 'チャンネル情報を同期しました。',
+            text: 'タレント情報を同期しました。',
             type: 'success',
           })
         } else {

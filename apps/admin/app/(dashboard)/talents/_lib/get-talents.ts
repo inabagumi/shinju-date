@@ -1,9 +1,9 @@
 import { createSupabaseServerClient } from '@/lib/supabase'
 
-export default async function getChannels() {
+export async function getTalents() {
   const supabaseClient = await createSupabaseServerClient()
 
-  const { data: channels, error } = await supabaseClient
+  const { data: talents, error } = await supabaseClient
     .from('channels')
     .select(
       'id, name, created_at, updated_at, youtube_channel:youtube_channels(name, youtube_channel_id)',
@@ -19,5 +19,5 @@ export default async function getChannels() {
     })
   }
 
-  return channels
+  return talents
 }

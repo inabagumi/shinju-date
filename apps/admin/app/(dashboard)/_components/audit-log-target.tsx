@@ -4,7 +4,7 @@ import type { Log } from '../_lib/get-audit-logs'
 const getAdminPagePath = (table: string, id: string): string | null => {
   switch (table) {
     case 'channels':
-      return `/channels/${id}`
+      return `/talents/${id}`
     case 'videos':
       return `/videos/${id}`
     case 'terms':

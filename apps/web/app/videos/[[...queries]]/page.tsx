@@ -6,7 +6,7 @@ import SearchExitTracker from '@/components/search-exit-tracker'
 import SearchQueryTracker from '@/components/search-query-tracker'
 import SearchResults from '@/components/search-results'
 import { title as siteName } from '@/lib/constants'
-import { fetchVideosByChannelIDs } from '@/lib/fetchers'
+import { fetchVideos } from '@/lib/fetchers'
 import { parseQueries } from '@/lib/url'
 
 export async function generateMetadata({
@@ -55,7 +55,7 @@ export default async function VideosPage({
   const query = parseQueries(queries)
 
   const title = query ? `『${query}』の検索結果` : '動画一覧'
-  const videos = await fetchVideosByChannelIDs({
+  const videos = await fetchVideos({
     query,
   })
 

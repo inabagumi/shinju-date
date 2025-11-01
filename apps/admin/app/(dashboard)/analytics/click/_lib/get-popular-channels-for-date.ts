@@ -8,7 +8,7 @@ import { Temporal } from 'temporal-polyfill'
 import { redisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
-export type PopularChannelForDate = {
+export type PopularTalentForDate = {
   clicks: number
   id: string
   name: string
@@ -18,12 +18,12 @@ export type PopularChannelForDate = {
 }
 
 /**
- * Get popular channels for a specific date
+ * Get popular talents for a specific date
  */
-export async function getPopularChannelsForDate(
+export async function getPopularTalentsForDate(
   date: string,
   limit = 20,
-): Promise<PopularChannelForDate[]> {
+): Promise<PopularTalentForDate[]> {
   try {
     const plainDate = Temporal.PlainDate.from(date)
     const zonedDate = plainDate.toZonedDateTime({
@@ -38,55 +38,55 @@ export async function getPopularChannelsForDate(
       withScores: true,
     })
 
-    const channelScores: [string, number][] = []
+    const talentScores: [string, number][] = []
     for (let i = 0; i < results.length; i += 2) {
-      const channelId = results[i]
+      const talentId = results[i]
       const score = results[i + 1]
 
-      if (typeof channelId !== 'string' || typeof score !== 'number') {
+      if (typeof talentId !== 'string' || typeof score !== 'number') {
         continue
       }
 
-      channelScores.push([channelId, score])
+      talentScores.push([talentId, score])
     }
 
-    if (channelScores.length === 0) {
+    if (talentScores.length === 0) {
       return []
     }
 
     const supabaseClient = await createSupabaseServerClient()
 
-    const channelIds = channelScores.map(([id]) => id)
-    const { data: channels, error } = await supabaseClient
+    const talentIds = talentScores.map(([id]) => id)
+    const { data: talents, error } = await supabaseClient
       .from('channels')
       .select('id, name, youtube_channel:youtube_channels(youtube_channel_id)')
-      .in('id', channelIds)
+      .in('id', talentIds)
 
     if (error) {
-      logger.error('チャンネルの詳細取得に失敗しました', {
-        channelIds: channelIds.join(','),
+      logger.error('タレントの詳細取得に失敗しました', {
         error,
+        talentIds: talentIds.join(','),
       })
       return []
     }
 
-    const channelMap = new Map(channels.map((c) => [c.id, c]))
+    const talentMap = new Map(talents.map((c) => [c.id, c]))
 
-    return channelScores
+    return talentScores
       .map(([id, clicks]) => {
-        const channel = channelMap.get(id)
-        if (!channel) return null
+        const talent = talentMap.get(id)
+        if (!talent) return null
 
         return {
           clicks,
-          id: channel.id,
-          name: channel.name,
-          youtube_channel: channel.youtube_channel,
+          id: talent.id,
+          name: talent.name,
+          youtube_channel: talent.youtube_channel,
         }
       })
       .filter(isNonNullable)
   } catch (error) {
-    logger.error('日付別の人気チャンネル取得に失敗しました', {
+    logger.error('日付別の人気タレント取得に失敗しました', {
       date,
       error,
       limit,

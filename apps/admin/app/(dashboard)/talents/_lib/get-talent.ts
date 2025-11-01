@@ -1,7 +1,7 @@
 import { cache } from 'react'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
-export type Channel = {
+export type Talent = {
   id: string
   name: string
   created_at: string
@@ -13,12 +13,12 @@ export type Channel = {
   } | null
 }
 
-const getChannel = cache(async function getChannel(
+export const getTalent = cache(async function getTalent(
   id: string,
-): Promise<Channel | null> {
+): Promise<Talent | null> {
   const supabaseClient = await createSupabaseServerClient()
 
-  const { data: channel, error } = await supabaseClient
+  const { data: talent, error } = await supabaseClient
     .from('channels')
     .select(
       'id, name, created_at, updated_at, deleted_at, youtube_channel:youtube_channels(name, youtube_channel_id)',
@@ -44,7 +44,5 @@ const getChannel = cache(async function getChannel(
     })
   }
 
-  return channel
+  return talent
 })
-
-export default getChannel

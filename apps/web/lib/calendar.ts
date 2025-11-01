@@ -8,13 +8,13 @@ import {
 import { Temporal } from 'temporal-polyfill'
 import { title as siteName } from '@/lib/constants'
 
-type Channel = Pick<Tables<'channels'>, 'name'>
+type Talent = Pick<Tables<'channels'>, 'name'>
 
 type Video = Pick<
   Tables<'videos'>,
   'duration' | 'id' | 'published_at' | 'title'
 > & {
-  channel: Channel
+  talent: Talent
   youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'>
 }
 
@@ -99,7 +99,7 @@ export function createEventAttributesList(
     )}`
 
     events.push({
-      calName: video.channel.name,
+      calName: video.talent.name,
       description: url,
       end: convertTimestampToArray(endedAt.epochMilliseconds, 'utc'),
       endInputType: 'utc',

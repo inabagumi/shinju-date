@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-type ExportType = 'videos' | 'channels' | 'keywords' | 'search-exit-rates'
+type ExportType = 'videos' | 'talents' | 'keywords' | 'search-exit-rates'
 
 type Props = {
   type: ExportType

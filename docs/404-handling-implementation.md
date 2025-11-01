@@ -2,11 +2,11 @@
 
 ## Overview
 
-This document explains how the admin application handles 404 Not Found errors when users access detail pages for non-existent content (videos or channels).
+This document explains how the admin application handles 404 Not Found errors when users access detail pages for non-existent content (videos or talents).
 
 ## Implementation Summary
 
-Both video and channel detail pages in the admin application properly handle cases where the requested resource does not exist in the database or when an invalid ID is provided. Instead of throwing a 500 server error, the application returns a proper 404 Not Found response.
+Both video and talent detail pages in the admin application properly handle cases where the requested resource does not exist in the database or when an invalid ID is provided. Instead of throwing a 500 server error, the application returns a proper 404 Not Found response.
 
 ## Affected Pages
 
@@ -14,9 +14,9 @@ Both video and channel detail pages in the admin application properly handle cas
 - **Path**: `apps/admin/app/(dashboard)/videos/[id]/page.tsx`
 - **Route**: `/videos/[id]`
 
-### Channel Detail Page
-- **Path**: `apps/admin/app/(dashboard)/channels/[id]/page.tsx`
-- **Route**: `/channels/[id]`
+### Talent Detail Page
+- **Path**: `apps/admin/app/(dashboard)/talents/[id]/page.tsx`
+- **Route**: `/talents/[id]`
 
 ## Implementation Details
 
@@ -24,7 +24,7 @@ Both video and channel detail pages in the admin application properly handle cas
 
 Both pages use helper functions to fetch data from the database:
 
-#### `getVideo(id: string)` 
+#### `getVideo(id: string)`
 Location: `apps/admin/app/(dashboard)/videos/_lib/get-video.ts`
 
 ```typescript
@@ -52,16 +52,16 @@ if (error) {
 }
 ```
 
-**Key behavior**: 
+**Key behavior**:
 - Returns `null` when the video is not found (Supabase error code `PGRST116`)
 - Returns `null` when the ID has invalid UUID format (error code `22P02` or error message contains "invalid input syntax for type uuid")
 - Throws an error for other database issues
 
-#### `getChannel(id: string)`
-Location: `apps/admin/app/(dashboard)/channels/_lib/get-channel.ts`
+#### `getTalent(id: string)`
+Location: `apps/admin/app/(dashboard)/talents/_lib/get-talent.ts`
 
 ```typescript
-const { data: channel, error } = await supabaseClient
+const { data: talent, error } = await supabaseClient
   .from('channels')
   .select('...')
   .eq('id', id)
@@ -85,8 +85,8 @@ if (error) {
 }
 ```
 
-**Key behavior**: 
-- Returns `null` when the channel is not found (Supabase error code `PGRST116`)
+**Key behavior**:
+- Returns `null` when the talent is not found (Supabase error code `PGRST116`)
 - Returns `null` when the ID has invalid UUID format (error code `22P02` or error message contains "invalid input syntax for type uuid")
 - Throws an error for other database issues
 
@@ -108,17 +108,17 @@ export default async function VideoDetailPage({ params }: Props) {
 }
 ```
 
-#### Channel Detail Page
+#### Talent Detail Page
 ```typescript
-export default async function ChannelDetailPage({ params }: Props) {
+export default async function TalentDetailPage({ params }: Props) {
   const { id } = await params
-  const channel = await getChannel(id)
+  const talent = await getTalent(id)
 
-  if (!channel) {
+  if (!talent) {
     notFound()  // Returns 404 response
   }
 
-  // Render the channel detail page...
+  // Render the talent detail page...
 }
 ```
 
@@ -152,21 +152,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!channel) {
     return {
-      title: 'チャンネルが見つかりません',  // "Channel not found"
+      title: 'タレントが見つかりません',  // "Talent not found"
     }
   }
 
   return {
-    title: `${channel.name} - チャンネル詳細`,
+    title: `${channel.name} - タレント詳細`,
   }
 }
 ```
 
 ## How It Works
 
-1. **User accesses a detail page** with an ID (e.g., `/videos/abc123` or `/channels/a`)
+1. **User accesses a detail page** with an ID (e.g., `/videos/abc123` or `/talents/a`)
 
-2. **Data fetching function is called** (`getVideo(id)` or `getChannel(id)`)
+2. **Data fetching function is called** (`getVideo(id)` or `getTalent(id)`)
 
 3. **Database query is executed** using Supabase client with `.single()` to fetch exactly one row
 
@@ -221,26 +221,26 @@ A custom 404 page has been created for the dashboard that provides:
 
 Tests have been added to verify the 404 handling behavior:
 
-**Location**: `apps/admin/app/(dashboard)/channels/_lib/get-channel.test.ts`
+**Location**: `apps/admin/app/(dashboard)/talents/_lib/get-talent.test.ts`
 
 The tests verify:
-- ✅ `getChannel()` returns `null` when receiving PGRST116 error (row not found)
-- ✅ `getChannel()` returns `null` when receiving invalid UUID format error (22P02 or error message check)
-- ✅ `getChannel()` throws an error for other database errors
+- ✅ `getTalent()` returns `null` when receiving PGRST116 error (row not found)
+- ✅ `getTalent()` returns `null` when receiving invalid UUID format error (22P02 or error message check)
+- ✅ `getTalent()` throws an error for other database errors
 
 ### Example Test Cases
 
 1. **Valid UUID but record not found**: `/videos/00000000-0000-0000-0000-000000000000` → 404
 2. **Invalid UUID format**: `/videos/a` → 404 (not 500)
-3. **Invalid UUID format**: `/channels/invalid-id-123` → 404 (not 500)
+3. **Invalid UUID format**: `/talents/invalid-id-123` → 404 (not 500)
 
 ## Related Code
 
 - Video detail page: `apps/admin/app/(dashboard)/videos/[id]/page.tsx`
-- Channel detail page: `apps/admin/app/(dashboard)/channels/[id]/page.tsx`
+- Talent detail page: `apps/admin/app/(dashboard)/talents/[id]/page.tsx`
 - Get video function: `apps/admin/app/(dashboard)/videos/_lib/get-video.ts`
-- Get channel function: `apps/admin/app/(dashboard)/channels/_lib/get-channel.ts`
-- Channel test: `apps/admin/app/(dashboard)/channels/_lib/get-channel.test.ts`
+- Get talent function: `apps/admin/app/(dashboard)/talents/_lib/get-talent.ts`
+- Talent test: `apps/admin/app/(dashboard)/talents/_lib/get-talent.test.ts`
 - Custom 404 page: `apps/admin/app/(dashboard)/not-found.tsx`
 
 ## Next.js `notFound()` Documentation
