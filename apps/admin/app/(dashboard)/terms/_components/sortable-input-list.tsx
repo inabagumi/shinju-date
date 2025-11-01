@@ -23,6 +23,7 @@ import {
   useCallback,
   useState,
 } from 'react'
+import { Temporal } from 'temporal-polyfill'
 
 type SortableItemProps = {
   id: string
@@ -127,10 +128,15 @@ export function SortableInputList({
   const [items, setItems] = useState<Item[]>(() =>
     defaultValues.length > 0
       ? defaultValues.map((value, index) => ({
-          id: `${name}-${index}-${Date.now()}`,
+          id: `${name}-${index}-${Temporal.Now.instant().epochMilliseconds}`,
           value,
         }))
-      : [{ id: `${name}-0-${Date.now()}`, value: '' }],
+      : [
+          {
+            id: `${name}-0-${Temporal.Now.instant().epochMilliseconds}`,
+            value: '',
+          },
+        ],
   )
 
   const sensors = useSensors(
@@ -180,7 +186,7 @@ export function SortableInputList({
 
       // Create new items for remaining lines
       const additionalItems = lines.slice(1).map((line, index) => ({
-        id: `${id}-paste-${index}-${Date.now()}`,
+        id: `${id}-paste-${index}-${Temporal.Now.instant().epochMilliseconds}`,
         value: line,
       }))
 
@@ -198,7 +204,12 @@ export function SortableInputList({
         // Keep at least one empty field
         return filtered.length > 0
           ? filtered
-          : [{ id: `${name}-0-${Date.now()}`, value: '' }]
+          : [
+              {
+                id: `${name}-0-${Temporal.Now.instant().epochMilliseconds}`,
+                value: '',
+              },
+            ]
       })
     },
     [name],
@@ -207,7 +218,10 @@ export function SortableInputList({
   const handleAdd = useCallback(() => {
     setItems((items) => [
       ...items,
-      { id: `${name}-${items.length}-${Date.now()}`, value: '' },
+      {
+        id: `${name}-${items.length}-${Temporal.Now.instant().epochMilliseconds}`,
+        value: '',
+      },
     ])
   }, [name])
 

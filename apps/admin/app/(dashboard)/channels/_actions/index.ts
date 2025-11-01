@@ -2,6 +2,7 @@
 
 import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
+import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
 import { createSupabaseServerClient } from '@/lib/supabase'
@@ -202,7 +203,7 @@ export async function deleteChannelAction(id: string): Promise<{
     const { data: channel, error } = await supabaseClient
       .from('channels')
       .update({
-        deleted_at: new Date().toISOString(),
+        deleted_at: Temporal.Now.instant().toString(),
       })
       .eq('id', id)
       .select('name')
