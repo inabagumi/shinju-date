@@ -19,15 +19,7 @@ export async function createChannelAction(
   if (!name || name.trim() === '') {
     return {
       errors: {
-        name: ['チャンネル名を入力してください。'],
-      },
-    }
-  }
-
-  if (!channelId || channelId.trim() === '') {
-    return {
-      errors: {
-        channel_id: ['チャンネルIDを入力してください。'],
+        name: ['タレント名を入力してください。'],
       },
     }
   }
@@ -45,24 +37,26 @@ export async function createChannelAction(
       throw error
     }
 
-    // Write to youtube_channels table
+    // Write to youtube_channels table if channel_id is provided
     // Note: youtube_handle is null for manually created channels initially
     // It will be populated when the channel sync runs
-    await supabaseClient
-      .from('youtube_channels')
-      .insert({
-        channel_id: newChannel.id,
-        youtube_channel_id: channelId.trim(),
-        youtube_handle: null,
-      })
-      .then(({ error: youtubeError }) => {
-        if (youtubeError) {
-          logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
-            error: youtubeError,
-            youtube_channel_id: channelId.trim(),
-          })
-        }
-      })
+    if (channelId && channelId.trim() !== '') {
+      await supabaseClient
+        .from('youtube_channels')
+        .insert({
+          channel_id: newChannel.id,
+          youtube_channel_id: channelId.trim(),
+          youtube_handle: null,
+        })
+        .then(({ error: youtubeError }) => {
+          if (youtubeError) {
+            logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
+              error: youtubeError,
+              youtube_channel_id: channelId.trim(),
+            })
+          }
+        })
+    }
 
     // Log audit entry
     await createAuditLog('CHANNEL_CREATE', 'channels', newChannel.id, {
@@ -73,7 +67,7 @@ export async function createChannelAction(
     return {}
   } catch (error) {
     logger.error('チャンネルの追加に失敗しました', {
-      channel_id: channelId.trim(),
+      channel_id: channelId?.trim(),
       error,
       name: name.trim(),
     })
@@ -102,15 +96,7 @@ export async function updateChannelAction(
   if (!id || !name || name.trim() === '') {
     return {
       errors: {
-        name: ['チャンネル名を入力してください。'],
-      },
-    }
-  }
-
-  if (!youtubeChannelId || youtubeChannelId.trim() === '') {
-    return {
-      errors: {
-        channel_id: ['YouTubeチャンネルIDを入力してください。'],
+        name: ['タレント名を入力してください。'],
       },
     }
   }
@@ -142,24 +128,26 @@ export async function updateChannelAction(
       throw error
     }
 
-    // Update or insert youtube_channels if youtube_channel_id changed or doesn't exist
-    if (
-      !currentYoutubeChannel ||
-      currentYoutubeChannel.youtube_channel_id !== youtubeChannelId.trim()
-    ) {
-      const { error: youtubeError } = await supabaseClient
-        .from('youtube_channels')
-        .upsert({
-          channel_id: id,
-          youtube_channel_id: youtubeChannelId.trim(),
-        })
+    // Update or insert youtube_channels if youtube_channel_id is provided
+    if (youtubeChannelId && youtubeChannelId.trim() !== '') {
+      if (
+        !currentYoutubeChannel ||
+        currentYoutubeChannel.youtube_channel_id !== youtubeChannelId.trim()
+      ) {
+        const { error: youtubeError } = await supabaseClient
+          .from('youtube_channels')
+          .upsert({
+            channel_id: id,
+            youtube_channel_id: youtubeChannelId.trim(),
+          })
 
-      if (youtubeError) {
-        logger.error('youtube_channelsテーブルの更新に失敗しました', {
-          error: youtubeError,
-          id,
-          youtube_channel_id: youtubeChannelId.trim(),
-        })
+        if (youtubeError) {
+          logger.error('youtube_channelsテーブルの更新に失敗しました', {
+            error: youtubeError,
+            id,
+            youtube_channel_id: youtubeChannelId.trim(),
+          })
+        }
       }
     }
 
@@ -175,7 +163,7 @@ export async function updateChannelAction(
       error,
       id,
       name: name.trim(),
-      youtube_channel_id: youtubeChannelId.trim(),
+      youtube_channel_id: youtubeChannelId?.trim(),
     })
     return {
       errors: {

@@ -95,15 +95,18 @@ export function ChannelModal({ channel }: ChannelModalProps) {
             </FormField>
             <FormField name="channel_id">
               <Label className="mb-2 block font-medium">
-                YouTubeチャンネルID
+                YouTubeチャンネルID（任意）
               </Label>
               <Input
                 className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
                 defaultValue={
                   channel?.youtube_channel?.youtube_channel_id ?? ''
                 }
-                required
+                placeholder="UCから始まるチャンネルID"
               />
+              <p className="mt-1 text-gray-500 text-xs">
+                後から個別ページで設定することもできます
+              </p>
               <ErrorMessage className="mt-1 text-red-600 text-sm" />
             </FormField>
             <GenericErrorMessage className="text-red-600 text-sm" />
