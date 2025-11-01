@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { twMerge } from 'tailwind-merge'
 import Form, { Button } from '@/components/form'
 import { signOut } from '../_lib/actions'
 
@@ -173,15 +174,16 @@ export function NavigationBar() {
                 role="menu"
               >
                 <Link
-                  className={`block px-4 py-2 hover:bg-slate-600 ${
-                    isActive('/account') ? 'bg-slate-600' : ''
-                  }`}
+                  className={twMerge(
+                    'block px-4 py-2 hover:bg-slate-600',
+                    isActive('/account') && 'bg-slate-600',
+                  )}
                   href="/account"
                   onClick={() => setIsUserMenuOpen(false)}
                 >
                   アカウント設定
                 </Link>
-                <div className="my-1 border-slate-600 border-t" />
+                <div className="my-2 border-slate-600 border-t" />
                 <Form action={signOut}>
                   <Button
                     className="w-full px-4 py-2 text-left hover:bg-slate-600 focus-visible:bg-slate-600 focus-visible:outline-none"
@@ -301,14 +303,16 @@ export function NavigationBar() {
             </div>
             <div className="border-slate-700 border-t pt-2">
               <Link
-                className={`block rounded-md px-4 py-2 hover:bg-slate-700 ${
-                  isActive('/account') ? 'bg-slate-700' : ''
-                }`}
+                className={twMerge(
+                  'block rounded-md px-4 py-2 hover:bg-slate-700',
+                  isActive('/account') && 'bg-slate-700',
+                )}
                 href="/account"
                 onClick={() => setIsMenuOpen(false)}
               >
                 アカウント設定
               </Link>
+              <div className="my-2 border-slate-700 border-t" />
               <Form action={signOut}>
                 <Button
                   className="w-full rounded-md bg-slate-500 px-4 py-2 text-slate-50 hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 active:bg-slate-600 active:shadow-inner disabled:pointer-events-none disabled:bg-slate-400"

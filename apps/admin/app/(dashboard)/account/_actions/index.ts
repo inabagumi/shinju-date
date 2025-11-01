@@ -5,14 +5,12 @@ import * as z from 'zod/v3'
 import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
 import { createSupabaseServerClient } from '@/lib/supabase'
+import { zodErrorToFormState } from '../_lib/form-helpers'
 
 const emailSchema = z.object({
-  email: z
-    .string({
-      invalid_type_error: 'メールアドレスの形式が正しくありません。',
-      required_error: 'メールアドレスは必須です。',
-    })
-    .email('メールアドレスの形式が正しくありません。'),
+  email: z.string().email({
+    message: 'メールアドレスの形式が正しくありません。',
+  }),
 })
 
 const passwordSchema = z
@@ -53,20 +51,7 @@ export async function updateUserEmail(
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return error.issues.reduce<FormState>(
-        ({ errors: previousErrors = {} }, issue) => {
-          const name = issue.path.join('.')
-          const previousMessages = previousErrors[name] ?? []
-
-          return {
-            errors: {
-              ...previousErrors,
-              [name]: [...previousMessages, issue.message],
-            },
-          }
-        },
-        {},
-      )
+      return zodErrorToFormState(error)
     }
 
     return {
@@ -94,7 +79,8 @@ export async function updateUserEmail(
 
   const oldEmail = currentUser.email
 
-  // Update email
+  // Update email - this will send a confirmation email to the new address
+  // The email won't be changed until the user clicks the confirmation link
   const { error } = await supabaseClient.auth.updateUser({
     email: email.email,
   })
@@ -107,7 +93,7 @@ export async function updateUserEmail(
     }
   }
 
-  // Log the email change
+  // Log the email change request
   await createAuditLog('ACCOUNT_EMAIL_UPDATE', 'auth.users', currentUser.id, {
     changes: {
       after: { email: email.email },
@@ -135,20 +121,7 @@ export async function updateUserPassword(
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return error.issues.reduce<FormState>(
-        ({ errors: previousErrors = {} }, issue) => {
-          const name = issue.path.join('.')
-          const previousMessages = previousErrors[name] ?? []
-
-          return {
-            errors: {
-              ...previousErrors,
-              [name]: [...previousMessages, issue.message],
-            },
-          }
-        },
-        {},
-      )
+      return zodErrorToFormState(error)
     }
 
     return {
