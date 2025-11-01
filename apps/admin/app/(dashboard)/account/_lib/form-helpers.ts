@@ -1,4 +1,4 @@
-import type * as z from 'zod/v3'
+import type * as z from 'zod'
 import type { FormState } from '@/components/form'
 
 /**

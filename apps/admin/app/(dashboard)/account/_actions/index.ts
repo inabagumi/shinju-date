@@ -1,14 +1,14 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import * as z from 'zod/v3'
+import * as z from 'zod'
 import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
 import { createSupabaseServerClient } from '@/lib/supabase'
 import { zodErrorToFormState } from '../_lib/form-helpers'
 
 const emailSchema = z.object({
-  email: z.string().email({
+  email: z.email({
     message: 'メールアドレスの形式が正しくありません。',
   }),
 })
@@ -16,22 +16,13 @@ const emailSchema = z.object({
 const passwordSchema = z
   .object({
     confirmPassword: z
-      .string({
-        invalid_type_error: 'パスワードの形式が正しくありません。',
-        required_error: 'パスワードの確認は必須です。',
-      })
+      .string({ message: 'パスワードの確認は必須です。' })
       .min(8, 'パスワードは8文字以上入力する必要があります。'),
     currentPassword: z
-      .string({
-        invalid_type_error: 'パスワードの形式が正しくありません。',
-        required_error: '現在のパスワードは必須です。',
-      })
+      .string({ message: '現在のパスワードは必須です。' })
       .min(8, 'パスワードは8文字以上入力する必要があります。'),
     newPassword: z
-      .string({
-        invalid_type_error: 'パスワードの形式が正しくありません。',
-        required_error: '新しいパスワードは必須です。',
-      })
+      .string({ message: '新しいパスワードは必須です。' })
       .min(8, 'パスワードは8文字以上入力する必要があります。'),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
