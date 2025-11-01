@@ -247,7 +247,7 @@ const fromString = Temporal.Instant.from('2025-11-01T12:00:00Z');
 // 日本時間で表示する場合
 const tokyoTime = now.toZonedDateTimeISO(TIME_ZONE);
 console.log(tokyoTime.toString());
-// > 2025-11-01T21:00:00+09:00[Asia/Tokyo] のような形式
+// > 例: 2025-11-01T21:00:00+09:00[Asia/Tokyo] のような形式 (実際の出力は now の値によって異なります)
 ```
 
 ### コミットメッセージ
