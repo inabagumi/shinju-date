@@ -18,7 +18,7 @@ export async function GET(request: NextRequest): Promise<Response> {
       // Check if this is an email change event
       // Supabase sends the user with the new email after confirmation
       const user = data.user
-      
+
       // Only log if user has an email
       if (user.email) {
         // Log the email change to audit log
