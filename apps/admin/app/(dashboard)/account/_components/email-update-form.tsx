@@ -28,7 +28,7 @@ export function EmailUpdateForm({ currentEmail }: Props) {
 
           <SuccessMessage
             className="rounded-md bg-green-100 p-2 text-green-800 text-sm leading-normal"
-            message="メールアドレスを更新しました。確認メールをご確認ください。"
+            message="確認メールを送信しました。新しいメールアドレスに届いたリンクをクリックして変更を完了してください。"
           />
 
           <GenericErrorMessage className="rounded-md bg-secondary-pink p-2 text-slate-50 text-sm leading-normal" />

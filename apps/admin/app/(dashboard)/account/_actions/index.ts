@@ -68,10 +68,9 @@ export async function updateUserEmail(
     }
   }
 
-  const oldEmail = currentUser.email
-
   // Update email - this will send a confirmation email to the new address
   // The email won't be changed until the user clicks the confirmation link
+  // Audit log will be created in the callback handler after email confirmation
   const { error } = await supabaseClient.auth.updateUser({
     email: email.email,
   })
@@ -83,15 +82,6 @@ export async function updateUserEmail(
       },
     }
   }
-
-  // Log the email change request
-  await createAuditLog('ACCOUNT_EMAIL_UPDATE', 'auth.users', currentUser.id, {
-    changes: {
-      after: { email: email.email },
-      before: { email: oldEmail },
-    },
-    entityName: 'user_email',
-  })
 
   revalidatePath('/account')
 
