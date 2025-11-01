@@ -4,18 +4,6 @@ import { NextResponse } from 'next/server'
 import { joinURL } from 'ufo'
 import { redisClient } from '@/lib/redis'
 
-function isVideosPage(pathname: string): boolean {
-  if (pathname === '/videos') {
-    return true
-  }
-
-  if (pathname.startsWith('/channels/') && pathname.endsWith('/videos')) {
-    return true
-  }
-
-  return false
-}
-
 export async function proxy(
   request: NextRequest,
 ): Promise<ReturnType<NextProxy>> {
@@ -35,7 +23,7 @@ export async function proxy(
   }
 
   if (
-    isVideosPage(request.nextUrl.pathname) &&
+    request.nextUrl.pathname === '/videos' &&
     request.nextUrl.searchParams.has('q')
   ) {
     const queries = request.nextUrl.searchParams.getAll('q')

@@ -11,4 +11,4 @@ COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm --version
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 pnpm install
-pnpm build --filter={./packages/*}...
+pnpm typegen

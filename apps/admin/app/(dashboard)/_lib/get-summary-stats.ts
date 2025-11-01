@@ -6,7 +6,7 @@ export type SummaryStats = {
   hiddenVideos: number
   deletedVideos: number
   totalTerms: number
-  totalChannels: number
+  totalTalents: number
 }
 
 export async function getSummaryStats(): Promise<SummaryStats> {
@@ -73,22 +73,22 @@ export async function getSummaryStats(): Promise<SummaryStats> {
     })
   }
 
-  // Get total channels count
-  const { count: totalChannels, error: channelsError } = await supabaseClient
+  // Get total talents count
+  const { count: totalTalents, error: talentsError } = await supabaseClient
     .from('channels')
     .select('*', { count: 'exact', head: true })
     .is('deleted_at', null)
 
-  if (channelsError) {
-    throw new TypeError(channelsError.message, {
-      cause: channelsError,
+  if (talentsError) {
+    throw new TypeError(talentsError.message, {
+      cause: talentsError,
     })
   }
 
   return {
     deletedVideos: deletedVideos ?? 0,
     hiddenVideos: hiddenVideos ?? 0,
-    totalChannels: totalChannels ?? 0,
+    totalTalents: totalTalents ?? 0,
     totalTerms: totalTerms ?? 0,
     totalVideos: totalVideos ?? 0,
     visibleVideos: visibleVideos ?? 0,

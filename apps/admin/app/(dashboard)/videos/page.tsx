@@ -2,7 +2,7 @@ import { formatNumber } from '@shinju-date/helpers'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { TableSkeleton } from '@/components/skeletons'
-import getChannels from '../channels/_lib/get-channels'
+import { getTalents } from '../talents/_lib/get-talents'
 import Pagination from './_components/pagination'
 import { VideoFilters } from './_components/video-filters'
 import { VideoTable } from './_components/video-table'
@@ -39,8 +39,8 @@ export default async function VideosPage({ searchParams }: PageProps<'/'>) {
 
   // Build filters from validated parameters
   const filters: VideoFiltersType = {}
-  if (validatedParams.channelId !== undefined) {
-    filters.channelId = validatedParams.channelId
+  if (validatedParams.talentId !== undefined) {
+    filters.talentId = validatedParams.talentId
   }
   if (validatedParams.visible !== undefined) {
     filters.visible = validatedParams.visible
@@ -56,9 +56,9 @@ export default async function VideosPage({ searchParams }: PageProps<'/'>) {
   const sortField = validatedParams.sortField
   const sortOrder = validatedParams.sortOrder
 
-  // Fetch channels and total count outside Suspense to avoid layout shift
-  const [channels, { total }] = await Promise.all([
-    getChannels(),
+  // Fetch talents and total count outside Suspense to avoid layout shift
+  const [talents, { total }] = await Promise.all([
+    getTalents(),
     getVideos(currentPage, perPage, filters, sortField, sortOrder),
   ])
   const totalPages = Math.ceil(total / perPage)
@@ -70,7 +70,7 @@ export default async function VideosPage({ searchParams }: PageProps<'/'>) {
         <p className="text-gray-600">全 {formatNumber(total)} 件の動画</p>
       </div>
 
-      <VideoFilters channels={channels} />
+      <VideoFilters talents={talents} />
 
       <Suspense fallback={<TableSkeleton rows={perPage} />}>
         <VideoTable

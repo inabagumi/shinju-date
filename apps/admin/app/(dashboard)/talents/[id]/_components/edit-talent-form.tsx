@@ -10,9 +10,9 @@ import Form, {
   Input,
   Label,
 } from '@/components/form'
-import { updateChannelAction } from '../../_actions'
+import { updateTalentAction } from '../../_actions'
 
-type Channel = {
+type Talent = {
   id: string
   name: string
   youtube_channel: {
@@ -21,18 +21,18 @@ type Channel = {
   } | null
 }
 
-type EditChannelFormProps = {
-  channel: Channel
+type EditTalentFormProps = {
+  talent: Talent
 }
 
-export function EditChannelForm({ channel }: EditChannelFormProps) {
+export function EditTalentForm({ talent }: EditTalentFormProps) {
   const [isEditing, setIsEditing] = useState(false)
 
   const handleAction = async (
     currentState: FormState,
     formData: FormData,
   ): Promise<FormState> => {
-    const result = await updateChannelAction(currentState, formData)
+    const result = await updateTalentAction(currentState, formData)
 
     // Exit edit mode if there are no errors
     if (!result.errors || Object.keys(result.errors).length === 0) {
@@ -49,7 +49,7 @@ export function EditChannelForm({ channel }: EditChannelFormProps) {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-medium text-gray-900 text-lg leading-6">
-                チャンネル情報
+                タレント情報
               </h3>
               <p className="mt-1 max-w-2xl text-gray-500 text-sm">
                 現在データベースに保存されている情報
@@ -69,7 +69,7 @@ export function EditChannelForm({ channel }: EditChannelFormProps) {
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500 text-sm">タレント名</dt>
               <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                {channel.name}
+                {talent.name}
                 <p className="mt-1 text-gray-500 text-xs">
                   管理画面から編集可能な表示名
                 </p>
@@ -80,7 +80,7 @@ export function EditChannelForm({ channel }: EditChannelFormProps) {
                 YouTubeチャンネル名
               </dt>
               <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                {channel.youtube_channel?.name || 'N/A'}
+                {talent.youtube_channel?.name || 'N/A'}
                 <p className="mt-1 text-gray-500 text-xs">
                   YouTube APIから自動更新される名前
                 </p>
@@ -91,9 +91,9 @@ export function EditChannelForm({ channel }: EditChannelFormProps) {
                 YouTubeチャンネルID
               </dt>
               <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                {channel.youtube_channel?.youtube_channel_id ? (
+                {talent.youtube_channel?.youtube_channel_id ? (
                   <code className="rounded bg-gray-100 px-2 py-1 font-mono text-xs">
-                    {channel.youtube_channel.youtube_channel_id}
+                    {talent.youtube_channel.youtube_channel_id}
                   </code>
                 ) : (
                   <span className="text-gray-500">未設定</span>
@@ -110,7 +110,7 @@ export function EditChannelForm({ channel }: EditChannelFormProps) {
     <div className="overflow-hidden bg-white shadow sm:rounded-lg">
       <div className="px-4 py-5 sm:px-6">
         <h3 className="font-medium text-gray-900 text-lg leading-6">
-          チャンネル情報を編集
+          タレント情報を編集
         </h3>
         <p className="mt-1 max-w-2xl text-gray-500 text-sm">
           タレント名とYouTubeチャンネルIDを編集できます
@@ -118,12 +118,12 @@ export function EditChannelForm({ channel }: EditChannelFormProps) {
       </div>
       <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
         <Form action={handleAction} className="space-y-4">
-          <input name="id" type="hidden" value={channel.id} />
+          <input name="id" type="hidden" value={talent.id} />
           <FormField name="name">
             <Label className="mb-2 block font-medium text-sm">タレント名</Label>
             <Input
               className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
-              defaultValue={channel.name}
+              defaultValue={talent.name}
               placeholder="表示に使用される名前"
               required
             />
@@ -132,13 +132,13 @@ export function EditChannelForm({ channel }: EditChannelFormProps) {
             </p>
             <ErrorMessage className="mt-1 text-red-600 text-sm" />
           </FormField>
-          <FormField name="channel_id">
+          <FormField name="youtube_channel_id">
             <Label className="mb-2 block font-medium text-sm">
               YouTubeチャンネルID（任意）
             </Label>
             <Input
               className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
-              defaultValue={channel.youtube_channel?.youtube_channel_id ?? ''}
+              defaultValue={talent.youtube_channel?.youtube_channel_id ?? ''}
               placeholder="UCから始まるチャンネルID"
             />
             <p className="mt-1 text-gray-500 text-xs">

@@ -43,7 +43,7 @@ export default function ClickAnalyticsPage({
             searchParams={parsedSearchParams}
             tabs={[
               { id: 'videos', label: '人気動画' },
-              { id: 'channels', label: '人気チャンネル' },
+              { id: 'talents', label: '人気タレント' },
             ]}
           />
           <div className="mt-6">

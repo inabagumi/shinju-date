@@ -44,7 +44,7 @@ export async function GET(
     .from('videos')
     .select(
       `
-        channel:channels!inner (
+        talent:channels!inner (
           id,
           name
         ),

@@ -184,7 +184,7 @@ export default function VideoList({ videos }: Props) {
               </th>
               <th className="whitespace-nowrap p-3 text-left">サムネイル</th>
               <th className="whitespace-nowrap p-3 text-left">タイトル</th>
-              <th className="whitespace-nowrap p-3 text-left">チャンネル</th>
+              <th className="whitespace-nowrap p-3 text-left">タレント</th>
               <th className="whitespace-nowrap p-3 text-left">
                 <Link
                   className="flex items-center hover:text-blue-600"
@@ -263,7 +263,7 @@ export default function VideoList({ videos }: Props) {
                   </td>
                   <td className="p-3">
                     <span className="text-gray-600 text-sm">
-                      {video.channel.name}
+                      {video.talent.name}
                     </span>
                   </td>
                   <td className="p-3">

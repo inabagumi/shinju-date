@@ -37,7 +37,7 @@ async function HomeTimeline() {
 
   // cacheLife('seconds')
 
-  const videos = await fetchNotEndedVideos({})
+  const videos = await fetchNotEndedVideos()
 
   return videos.length > 0 ? (
     <Timeline prefetchedData={videos} />

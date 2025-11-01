@@ -5,7 +5,7 @@ import groupBy from 'lodash.groupby'
 import { useMemo } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
-import { type Channel, fetchNotEndedVideos, type Video } from '@/lib/fetchers'
+import { fetchNotEndedVideos, type Video } from '@/lib/fetchers'
 import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 
 function TimelineSection({
@@ -49,22 +49,14 @@ export function TimelineSkeleton() {
 }
 
 export default function Timeline({
-  channels,
   prefetchedData,
 }: {
-  channels?: Channel[]
   prefetchedData: Video[]
 }) {
   const { data: videos = prefetchedData } = useQuery({
     initialData: prefetchedData,
-    queryFn: () =>
-      fetchNotEndedVideos({
-        channelIDs: channels?.map((channel) => channel.id),
-      }),
-    queryKey: [
-      'not-ended-videos',
-      { channelIDs: channels?.map((channel) => channel.id) },
-    ],
+    queryFn: () => fetchNotEndedVideos(),
+    queryKey: ['not-ended-videos'],
     refetchInterval: 60_000,
   })
   const schedule = useMemo<Record<string, Video[]>>(() => {

@@ -4,24 +4,24 @@ import { DEFAULT_VALUES, videoSearchParamsSchema } from './search-params-schema'
 describe('videoSearchParamsSchema', () => {
   it('should parse valid parameters with all fields', () => {
     const input = {
-      channelId: '201a9ee4-176f-4092-b769-ac0af8befb66',
       deleted: 'false',
       page: '2',
       search: 'test video',
       sortField: 'published_at',
       sortOrder: 'asc',
+      talentId: '201a9ee4-176f-4092-b769-ac0af8befb66',
       visible: 'true',
     }
 
     const result = videoSearchParamsSchema.parse(input)
 
     expect(result).toEqual({
-      channelId: '201a9ee4-176f-4092-b769-ac0af8befb66',
       deleted: false,
       page: 2,
       search: 'test video',
       sortField: 'published_at',
       sortOrder: 'asc',
+      talentId: '201a9ee4-176f-4092-b769-ac0af8befb66',
       visible: true,
     })
   })
@@ -90,15 +90,15 @@ describe('videoSearchParamsSchema', () => {
 
   it('should handle array inputs (URLSearchParams may provide arrays)', () => {
     const input = {
-      channelId: ['3de58e38-8314-41c1-a75a-c1658dae6d5a'],
       page: ['3'],
       search: ['multiple', 'values'], // Only first value should be used
+      talentId: ['3de58e38-8314-41c1-a75a-c1658dae6d5a'],
     }
 
     const result = videoSearchParamsSchema.parse(input)
 
     expect(result.page).toBe(3)
-    expect(result.channelId).toBe('3de58e38-8314-41c1-a75a-c1658dae6d5a')
+    expect(result.talentId).toBe('3de58e38-8314-41c1-a75a-c1658dae6d5a')
     // For string fields, zod should handle array by taking first value
   })
 
@@ -110,12 +110,12 @@ describe('videoSearchParamsSchema', () => {
     expect(result.page).toBe(DEFAULT_VALUES.page) // Should be coerced to minimum of 1
   })
 
-  it('should coerce channelId to number correctly', () => {
-    const input = { channelId: '319cb587-3b05-44d0-8ed6-2307a07e1817' }
+  it('should coerce talentId to number correctly', () => {
+    const input = { talentId: '319cb587-3b05-44d0-8ed6-2307a07e1817' }
 
     const result = videoSearchParamsSchema.parse(input)
 
-    expect(result.channelId).toBe('319cb587-3b05-44d0-8ed6-2307a07e1817')
+    expect(result.talentId).toBe('319cb587-3b05-44d0-8ed6-2307a07e1817')
   })
 
   it('should preserve optional fields when they are undefined', () => {
@@ -133,7 +133,7 @@ describe('videoSearchParamsSchema', () => {
       // Optional fields should not be present
     })
     expect('search' in result).toBe(false)
-    expect('channelId' in result).toBe(false)
+    expect('talentId' in result).toBe(false)
     expect('visible' in result).toBe(false)
     expect('deleted' in result).toBe(false)
   })

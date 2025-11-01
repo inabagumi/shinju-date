@@ -82,7 +82,9 @@ export default async function VideoDetailPage({ params }: Props) {
       <div className="mb-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0 flex-1">
-            <h1 className="break-words font-bold text-2xl">{video.title}</h1>
+            <h1 className="wrap-break-word font-bold text-2xl">
+              {video.title}
+            </h1>
             <p className="text-gray-600">動画詳細</p>
           </div>
           {!isDeleted && (
@@ -195,15 +197,13 @@ export default async function VideoDetailPage({ params }: Props) {
                 </dd>
               </div>
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="font-medium text-gray-500 text-sm">
-                  チャンネル
-                </dt>
+                <dt className="font-medium text-gray-500 text-sm">タレント</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   <Link
                     className="text-blue-600 hover:text-blue-800"
-                    href={`/channels/${video.channel.id}`}
+                    href={`/talents/${video.talent.id}`}
                   >
-                    {video.channel.name}
+                    {video.talent.name}
                   </Link>
                 </dd>
               </div>

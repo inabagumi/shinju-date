@@ -19,14 +19,14 @@ const scraper = new YouTubeScraper()
 // 動画情報の取得
 const videoData = await scraper.getVideoData(videoId)
 
-// チャンネル情報の取得
-const channelData = await scraper.getChannelData(channelId)
+// タレント情報の取得
+const talentData = await scraper.getTalentData(talentId)
 ```
 
 ## 機能
 
 - YouTube 動画メタデータの取得
-- チャンネル情報の取得
+- タレント情報の取得
 - レート制限に対応した効率的なデータ取得
 - キューを使用した並行処理制御
 

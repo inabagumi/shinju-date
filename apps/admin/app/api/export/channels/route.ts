@@ -3,13 +3,13 @@ import { stringify } from 'csv-stringify/sync'
 import { type NextRequest, NextResponse } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import {
-  getPopularChannels,
-  type PopularChannel,
-} from '@/lib/analytics/get-popular-channels'
+  getPopularTalents,
+  type PopularTalent,
+} from '@/lib/analytics/get-popular-talents'
 import { exportSearchParamsSchema } from '../_lib/schema'
 
 /**
- * Export popular channels data as CSV
+ * Export popular talents data as CSV
  */
 export async function GET(request: NextRequest) {
   try {
@@ -20,25 +20,25 @@ export async function GET(request: NextRequest) {
     const validatedParams = exportSearchParamsSchema.parse(searchParams)
 
     // Fetch data based on parameters
-    let channels: PopularChannel[]
+    let talents: PopularTalent[]
     if (validatedParams.selectedDate) {
-      channels = await getPopularChannels(
+      talents = await getPopularTalents(
         validatedParams.limit,
         Temporal.PlainDate.from(validatedParams.selectedDate),
       )
     } else if (validatedParams.endDate) {
       const start = Temporal.PlainDate.from(validatedParams.startDate)
       const end = Temporal.PlainDate.from(validatedParams.endDate)
-      channels = await getPopularChannels(validatedParams.limit, start, end)
+      talents = await getPopularTalents(validatedParams.limit, start, end)
     } else {
-      channels = await getPopularChannels(
+      talents = await getPopularTalents(
         validatedParams.limit,
         Temporal.PlainDate.from(validatedParams.startDate),
       )
     }
 
     // Check if data is available
-    if (channels.length === 0) {
+    if (talents.length === 0) {
       return createErrorResponse(
         'No data available for the specified date range',
         {
@@ -49,12 +49,12 @@ export async function GET(request: NextRequest) {
 
     // Prepare data for CSV export
     const csvData = [
-      ['順位', 'チャンネル名', 'YouTubeチャンネルID', 'クリック数'],
-      ...channels.map((channel, index) => [
+      ['順位', 'タレント名', 'YouTubeチャンネルID', 'クリック数'],
+      ...talents.map((talent, index) => [
         index + 1,
-        channel.name,
-        channel.youtube_channel?.youtube_channel_id || 'N/A',
-        channel.clicks,
+        talent.name,
+        talent.youtube_channel?.youtube_channel_id || 'N/A',
+        talent.clicks,
       ]),
     ]
 
@@ -66,8 +66,10 @@ export async function GET(request: NextRequest) {
     // Generate filename
     const dateStr =
       validatedParams.selectedDate ||
-      `${validatedParams.startDate}_${validatedParams.endDate || validatedParams.startDate}`
-    const filename = `click-analytics-channels-${dateStr}.csv`
+      `${validatedParams.startDate}_${
+        validatedParams.endDate || validatedParams.startDate
+      }`
+    const filename = `click-analytics-talent-${dateStr}.csv`
 
     // Return CSV response
     return new NextResponse(csvContent, {
@@ -81,9 +83,13 @@ export async function GET(request: NextRequest) {
 
     // Handle validation errors
     if (error instanceof Error && 'issues' in error) {
-      return createErrorResponse('Invalid parameters provided', { status: 400 })
+      return createErrorResponse('Invalid parameters provided', {
+        status: 400,
+      })
     }
 
-    return createErrorResponse('Failed to generate CSV export', { status: 500 })
+    return createErrorResponse('Failed to generate CSV export', {
+      status: 500,
+    })
   }
 }

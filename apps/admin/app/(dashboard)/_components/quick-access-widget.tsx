@@ -23,7 +23,9 @@ export function QuickAccessWidget() {
         >
           <svg
             aria-hidden="true"
-            className={`h-5 w-5 transition-transform ${isMobileMenuOpen ? 'rotate-180' : ''}`}
+            className={`h-5 w-5 transition-transform ${
+              isMobileMenuOpen ? 'rotate-180' : ''
+            }`}
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -57,9 +59,9 @@ export function QuickAccessWidget() {
         </Link>
         <Link
           className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"
-          href="/channels"
+          href="/talents"
         >
-          <span className="font-medium">チャンネル管理</span>
+          <span className="font-medium">タレント管理</span>
         </Link>
         <Link
           className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-center transition-colors hover:bg-gray-50"

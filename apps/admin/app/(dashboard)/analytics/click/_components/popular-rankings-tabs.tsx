@@ -1,6 +1,6 @@
 import { Activity, Suspense } from 'react'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
-import { PopularChannelsWidget } from './popular-channels-widget'
+import { PopularTalentsWidget } from './popular-talents-widget'
 import { PopularVideosWidget } from './popular-videos-widget'
 
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
 }
 
 /**
- * Server component that renders popular videos and channels tabs
+ * Server component that renders popular videos and talents tabs
  * Uses Activity component to show/hide content based on tab parameter
  */
 export async function PopularRankingsTabs({ searchParams }: Props) {
@@ -27,13 +27,13 @@ export async function PopularRankingsTabs({ searchParams }: Props) {
         </Suspense>
       </Activity>
 
-      <Activity mode={activeTab === 'channels' ? 'visible' : 'hidden'}>
+      <Activity mode={activeTab === 'talents' ? 'visible' : 'hidden'}>
         <Suspense
           fallback={
             <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
           }
         >
-          <PopularChannelsWidget searchParams={searchParams} />
+          <PopularTalentsWidget searchParams={searchParams} />
         </Suspense>
       </Activity>
     </div>

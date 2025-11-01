@@ -23,7 +23,7 @@ describe('Tabs component', () => {
   it('should handle default tab selection logic', () => {
     const tabs = [
       { content: 'Video content', id: 'videos', label: '人気動画' },
-      { content: 'Channel content', id: 'channels', label: '人気チャンネル' },
+      { content: 'Talent content', id: 'talents', label: '人気タレント' },
     ]
 
     // Test default tab logic
@@ -36,14 +36,14 @@ describe('Tabs component', () => {
   it('should handle custom default tab selection', () => {
     const tabs = [
       { content: 'Video content', id: 'videos', label: '人気動画' },
-      { content: 'Channel content', id: 'channels', label: '人気チャンネル' },
+      { content: 'Talent content', id: 'talents', label: '人気タレント' },
     ]
 
     // Test custom default tab logic
-    const defaultTab = 'channels'
+    const defaultTab = 'talents'
     const selectedTab = defaultTab || tabs[0]?.id || ''
 
-    expect(selectedTab).toBe('channels')
+    expect(selectedTab).toBe('talents')
   })
 
   it('should handle empty tabs array gracefully', () => {

@@ -17,12 +17,12 @@ describe('Pagination URL Generation Logic', () => {
   it('should preserve all query parameters when changing page', () => {
     // Mock current search params with filters applied
     const currentParams = new URLSearchParams({
-      channelId: '123',
       deleted: 'false',
       page: '2',
       search: 'test video',
       sortField: 'published_at',
       sortOrder: 'asc',
+      talentId: '123',
       visible: 'true',
     })
 
@@ -34,7 +34,7 @@ describe('Pagination URL Generation Logic', () => {
     const expectedUrl = `/videos?${newParams.toString()}`
 
     expect(expectedUrl).toContain('search=test+video')
-    expect(expectedUrl).toContain('channelId=123')
+    expect(expectedUrl).toContain('talentId=123')
     expect(expectedUrl).toContain('visible=true')
     expect(expectedUrl).toContain('deleted=false')
     expect(expectedUrl).toContain('sortField=published_at')
@@ -55,10 +55,10 @@ describe('Pagination URL Generation Logic', () => {
 
   it('should handle complex filter combinations', () => {
     const currentParams = new URLSearchParams({
-      channelId: '456',
       page: '5',
       search: 'anime music',
       sortField: 'updated_at',
+      talentId: '456',
       visible: 'false',
     })
 
@@ -70,7 +70,7 @@ describe('Pagination URL Generation Logic', () => {
     const expectedUrl = `/videos?${newParams.toString()}`
 
     expect(expectedUrl).toContain('search=anime+music')
-    expect(expectedUrl).toContain('channelId=456')
+    expect(expectedUrl).toContain('talentId=456')
     expect(expectedUrl).toContain('visible=false')
     expect(expectedUrl).toContain('sortField=updated_at')
     expect(expectedUrl).toContain('page=4')
@@ -82,11 +82,11 @@ describe('Integration: Schema + Pagination Logic', () => {
   it('should handle URL parameters that come from actual pagination', () => {
     // This simulates what would happen when a user clicks a pagination link
     const urlParams = {
-      channelId: 'dee90561-a010-48a5-88fa-cde39be9a94a',
       page: '3',
       search: 'test',
       sortField: 'published_at',
       sortOrder: 'desc',
+      talentId: 'dee90561-a010-48a5-88fa-cde39be9a94a',
       visible: 'true',
     }
 
@@ -94,11 +94,11 @@ describe('Integration: Schema + Pagination Logic', () => {
     const validated = videoSearchParamsSchema.parse(urlParams)
 
     expect(validated).toEqual({
-      channelId: 'dee90561-a010-48a5-88fa-cde39be9a94a',
       page: 3,
       search: 'test',
       sortField: 'published_at',
       sortOrder: 'desc',
+      talentId: 'dee90561-a010-48a5-88fa-cde39be9a94a',
       visible: true,
     })
   })

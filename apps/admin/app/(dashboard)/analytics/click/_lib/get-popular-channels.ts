@@ -9,11 +9,11 @@ import { redisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 /**
- * チャンネルクリックデータのキャッシュ有効期間（秒）
+ * タレントクリックデータのキャッシュ有効期間（秒）
  */
-const POPULAR_CHANNELS_CACHE_TTL_SECONDS = 60 * 10 // 10 minutes
+const POPULAR_TALENTS_CACHE_TTL_SECONDS = 60 * 10 // 10 minutes
 
-export type PopularChannel = {
+export type PopularTalent = {
   clicks: number
   id: string
   name: string
@@ -23,19 +23,19 @@ export type PopularChannel = {
 }
 
 /**
- * Get popular channels based on click data for a date range
- * @param limit - Number of channels to return (default: 10)
+ * Get popular talents based on click data for a date range
+ * @param limit - Number of talents to return (default: 10)
  * @param days - Number of days (legacy parameter, ignored if startDate/endDate provided)
  * @param startDate - Start date in ISO 8601 format (YYYY-MM-DD)
  * @param endDate - End date in ISO 8601 format (YYYY-MM-DD)
  */
-export async function getPopularChannels(
+export async function getPopularTalents(
   limit = 10,
   days = 7,
   startDate?: string,
   endDate?: string,
-): Promise<PopularChannel[]> {
-  const channelScores: [string, number][] = []
+): Promise<PopularTalent[]> {
+  const talentScores: [string, number][] = []
 
   try {
     const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
@@ -79,16 +79,16 @@ export async function getPopularChannels(
 
     if (cachedResults.length > 0) {
       for (let i = 0; i < cachedResults.length; i += 2) {
-        const channelId = cachedResults[i]
+        const talentId = cachedResults[i]
         const scoreValue = cachedResults[i + 1]
         const score =
           typeof scoreValue === 'string' ? parseInt(scoreValue, 10) : scoreValue
 
-        if (typeof channelId !== 'string' || typeof score !== 'number') {
+        if (typeof talentId !== 'string' || typeof score !== 'number') {
           continue
         }
 
-        channelScores.push([channelId, score])
+        talentScores.push([talentId, score])
       }
     } else {
       // Build daily keys for the date range
@@ -108,7 +108,7 @@ export async function getPopularChannels(
       if (dailyKeys.length > 0) {
         const pipeline = redisClient.multi()
         pipeline.zunionstore(cacheKey, dailyKeys.length, dailyKeys)
-        pipeline.expire(cacheKey, POPULAR_CHANNELS_CACHE_TTL_SECONDS)
+        pipeline.expire(cacheKey, POPULAR_TALENTS_CACHE_TTL_SECONDS)
         await pipeline.exec()
       }
 
@@ -123,20 +123,20 @@ export async function getPopularChannels(
       )
 
       for (let i = 0; i < newResults.length; i += 2) {
-        const channelId = newResults[i]
+        const talentId = newResults[i]
         const scoreValue = newResults[i + 1]
         const score =
           typeof scoreValue === 'string' ? parseInt(scoreValue, 10) : scoreValue
 
-        if (typeof channelId !== 'string' || typeof score !== 'number') {
+        if (typeof talentId !== 'string' || typeof score !== 'number') {
           continue
         }
 
-        channelScores.push([channelId, score])
+        talentScores.push([talentId, score])
       }
     }
   } catch (error) {
-    logger.error('Redis通信で人気チャンネルの取得に失敗しました', {
+    logger.error('Redis通信で人気タレントの取得に失敗しました', {
       days,
       endDate: endDate ?? 'undefined',
       error,
@@ -147,39 +147,39 @@ export async function getPopularChannels(
     return []
   }
 
-  if (channelScores.length === 0) {
+  if (talentScores.length === 0) {
     return []
   }
 
   const supabaseClient = await createSupabaseServerClient()
 
-  const channelIds = channelScores.map(([id]) => id)
-  const { data: channels, error } = await supabaseClient
+  const talentIds = talentScores.map(([id]) => id)
+  const { data: talents, error } = await supabaseClient
     .from('channels')
     .select('id, name, youtube_channel:youtube_channels(youtube_channel_id)')
-    .in('id', channelIds)
+    .in('id', talentIds)
 
   if (error) {
-    logger.error('チャンネルの詳細取得に失敗しました', {
-      channelIds: channelIds.join(','),
+    logger.error('タレントの詳細取得に失敗しました', {
       error,
+      talentIds: talentIds.join(','),
     })
 
     return []
   }
 
-  const channelMap = new Map(channels.map((c) => [c.id, c]))
+  const talentMap = new Map(talents.map((c) => [c.id, c]))
 
-  return channelScores
+  return talentScores
     .map(([id, clicks]) => {
-      const channel = channelMap.get(id)
-      if (!channel) return null
+      const talent = talentMap.get(id)
+      if (!talent) return null
 
       return {
         clicks,
-        id: channel.id,
-        name: channel.name,
-        youtube_channel: channel.youtube_channel,
+        id: talent.id,
+        name: talent.name,
+        youtube_channel: talent.youtube_channel,
       }
     })
     .filter(isNonNullable)

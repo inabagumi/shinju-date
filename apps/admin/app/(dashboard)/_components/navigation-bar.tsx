@@ -59,12 +59,12 @@ export function NavigationBar() {
                 </Link>
                 <Link
                   className={`block px-4 py-2 hover:bg-slate-600 ${
-                    isActive('/channels') ? 'bg-slate-600' : ''
+                    isActive('/talents') ? 'bg-slate-600' : ''
                   }`}
-                  href="/channels"
+                  href="/talents"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
-                  チャンネル管理
+                  タレント管理
                 </Link>
                 <Link
                   className={`block px-4 py-2 hover:bg-slate-600 ${
@@ -252,12 +252,12 @@ export function NavigationBar() {
               </Link>
               <Link
                 className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
-                  isActive('/channels') ? 'bg-slate-700' : ''
+                  isActive('/talents') ? 'bg-slate-700' : ''
                 }`}
-                href="/channels"
+                href="/talents"
                 onClick={() => setIsMenuOpen(false)}
               >
-                チャンネル管理
+                タレント管理
               </Link>
               <Link
                 className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${

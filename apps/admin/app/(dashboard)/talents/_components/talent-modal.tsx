@@ -11,10 +11,10 @@ import Form, {
   Input,
   Label,
 } from '@/components/form'
-import { createChannelAction, updateChannelAction } from '../_actions'
+import { createTalentAction, updateTalentAction } from '../_actions'
 import { DeleteConfirmDialog } from './delete-confirm-dialog'
 
-type Channel = {
+type Talent = {
   id: string
   name: string
   youtube_channel: {
@@ -23,19 +23,19 @@ type Channel = {
   } | null
 }
 
-type ChannelModalProps = {
-  channel?: Channel
+type TalentModalProps = {
+  talent?: Talent
 }
 
-export function ChannelModal({ channel }: ChannelModalProps) {
+export function TalentModal({ talent }: TalentModalProps) {
   const [open, setOpen] = useState(false)
-  const isEditing = !!channel
+  const isEditing = !!talent
 
   const handleAction = async (
     currentState: FormState,
     formData: FormData,
   ): Promise<FormState> => {
-    const action = isEditing ? updateChannelAction : createChannelAction
+    const action = isEditing ? updateTalentAction : createTalentAction
     const result = await action(currentState, formData)
 
     // Close modal if there are no errors
@@ -66,24 +66,24 @@ export function ChannelModal({ channel }: ChannelModalProps) {
           className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90"
           type="button"
         >
-          {isEditing ? '編集' : '新しいチャンネルを追加'}
+          {isEditing ? '編集' : '新しいタレントを追加'}
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 bg-black/50 data-[state=closed]:animate-out data-[state=open]:animate-in" />
         <Dialog.Content className="-translate-x-1/2 -translate-y-1/2 data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-1/2 left-1/2 max-h-[85vh] w-[90vw] max-w-[500px] overflow-y-auto rounded-lg bg-white p-6 shadow-lg data-[state=closed]:animate-out data-[state=open]:animate-in">
           <Dialog.Title className="mb-4 font-semibold text-xl">
-            {isEditing ? 'チャンネルを編集' : '新しいチャンネルを追加'}
+            {isEditing ? 'タレントを編集' : '新しいタレントを追加'}
           </Dialog.Title>
           <Form action={handleAction} className="space-y-4">
             {isEditing && (
-              <input name="id" type="hidden" value={channel.id.toString()} />
+              <input name="id" type="hidden" value={talent.id.toString()} />
             )}
             <FormField name="name">
               <Label className="mb-2 block font-medium">タレント名</Label>
               <Input
                 className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
-                defaultValue={channel?.name ?? ''}
+                defaultValue={talent?.name ?? ''}
                 placeholder="表示に使用される名前"
                 required
               />
@@ -93,15 +93,13 @@ export function ChannelModal({ channel }: ChannelModalProps) {
               </p>
               <ErrorMessage className="mt-1 text-red-600 text-sm" />
             </FormField>
-            <FormField name="channel_id">
+            <FormField name="youtube_channel_id">
               <Label className="mb-2 block font-medium">
                 YouTubeチャンネルID（任意）
               </Label>
               <Input
                 className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
-                defaultValue={
-                  channel?.youtube_channel?.youtube_channel_id ?? ''
-                }
+                defaultValue={talent?.youtube_channel?.youtube_channel_id ?? ''}
                 placeholder="UCから始まるチャンネルID"
               />
               <p className="mt-1 text-gray-500 text-xs">
@@ -111,10 +109,10 @@ export function ChannelModal({ channel }: ChannelModalProps) {
             </FormField>
             <GenericErrorMessage className="text-red-600 text-sm" />
             <div className="flex items-center justify-between gap-2 pt-2">
-              {isEditing && channel ? (
+              {isEditing && talent ? (
                 <DeleteConfirmDialog
-                  channelId={channel.id}
-                  channelName={channel.name}
+                  talentId={talent.id}
+                  talentName={talent.name}
                 />
               ) : (
                 <div />

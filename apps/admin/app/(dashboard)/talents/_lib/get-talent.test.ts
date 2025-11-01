@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
-import getChannel from './get-channel'
+import { getTalent } from './get-talent'
 
 // Mock dependencies
 vi.mock('@/lib/supabase', () => ({
   createSupabaseServerClient: vi.fn(),
 }))
 
-describe('getChannel', () => {
-  it('should return null when channel is not found (PGRST116 error)', async () => {
+describe('getTalent', () => {
+  it('should return null when talent is not found (PGRST116 error)', async () => {
     const { createSupabaseServerClient } = await import('@/lib/supabase')
 
     const mockSupabaseClient = {
@@ -27,7 +27,7 @@ describe('getChannel', () => {
       mockSupabaseClient as never,
     )
 
-    const result = await getChannel('non-existent-id')
+    const result = await getTalent('non-existent-id')
 
     expect(result).toBeNull()
   })
@@ -52,12 +52,12 @@ describe('getChannel', () => {
       mockSupabaseClient as never,
     )
 
-    await expect(getChannel('some-id')).rejects.toThrow(
+    await expect(getTalent('some-id')).rejects.toThrow(
       'Database connection error',
     )
   })
 
-  it('should return null when channel ID has invalid UUID format', async () => {
+  it('should return null when talent ID has invalid UUID format', async () => {
     const { createSupabaseServerClient } = await import('@/lib/supabase')
 
     const mockSupabaseClient = {
@@ -77,7 +77,7 @@ describe('getChannel', () => {
       mockSupabaseClient as never,
     )
 
-    const result = await getChannel('a')
+    const result = await getTalent('a')
 
     expect(result).toBeNull()
   })

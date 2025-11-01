@@ -63,7 +63,7 @@ export async function Suggestions({
         <div className="p-8 text-center text-774-nevy-400 text-sm dark:text-774-nevy-400">
           {query
             ? `Enterキーを押して「${query}」を検索`
-            : '動画のタイトルやチャンネル名で検索できます'}
+            : '動画のタイトルやタレント名で検索できます'}
         </div>
       )}
     </div>

@@ -7,7 +7,7 @@ import { SEARCH_RESULT_COUNT, timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
 
 const DEFAULT_SEARCH_SELECT = `
-  channel:channels!inner (id, name),
+  talent:channels!inner (id, name),
   duration,
   id,
   thumbnail:thumbnails (blur_data_url, height, path, width),
@@ -16,7 +16,7 @@ const DEFAULT_SEARCH_SELECT = `
   youtube_video:youtube_videos!inner (youtube_video_id)
 `
 
-export type Channel = Pick<Tables<'channels'>, 'id' | 'name'>
+export type Talent = Pick<Tables<'channels'>, 'id' | 'name'>
 
 export type Thumbnail = Pick<
   Tables<'thumbnails'>,
@@ -27,18 +27,12 @@ export type Video = Pick<
   Tables<'videos'>,
   'duration' | 'id' | 'published_at' | 'title'
 > & {
-  channel: Channel
+  talent: Talent
   thumbnail: Thumbnail | null
   youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'>
 }
 
-type FetchNotEndedVideosOptions = {
-  channelIDs?: string[] | undefined
-}
-
-export const fetchNotEndedVideos = async ({
-  channelIDs = [],
-}: FetchNotEndedVideosOptions): Promise<Video[]> => {
+export const fetchNotEndedVideos = async (): Promise<Video[]> => {
   const epochNanoseconds = Temporal.Now.instant().epochNanoseconds
   const baseTime = Temporal.Instant.fromEpochNanoseconds(epochNanoseconds)
   const hour = startOfHour(baseTime.toZonedDateTimeISO(timeZone))
@@ -51,7 +45,7 @@ export const fetchNotEndedVideos = async ({
     })
     .toInstant()
 
-  let builder = supabaseClient
+  const builder = supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
     .gte('published_at', since.toJSON())
@@ -60,10 +54,6 @@ export const fetchNotEndedVideos = async ({
       ascending: false,
     })
     .limit(100)
-
-  if (channelIDs && channelIDs.length > 0) {
-    builder = builder.in('channel_id', channelIDs)
-  }
 
   const { data: videos, error } = await builder
 
@@ -118,23 +108,21 @@ async function getDefaultBaseTime() {
     .toInstant()
 }
 
-type FetchVideosByChannelIDsOptions = {
-  channelIDs?: string[] | undefined
+type FetchVideosOptions = {
   query?: string
   until?: bigint | undefined
 }
 
-export const fetchVideosByChannelIDs = async ({
-  channelIDs = [],
+export const fetchVideos = async ({
   query = '',
   until,
-}: FetchVideosByChannelIDsOptions): Promise<Video[]> => {
+}: FetchVideosOptions): Promise<Video[]> => {
   const baseTime = until
     ? Temporal.Instant.fromEpochNanoseconds(until)
     : await getDefaultBaseTime()
   const { data: videos, error } = await supabaseClient
     .rpc('search_videos_v2', {
-      channel_ids: channelIDs ?? [],
+      channel_ids: [],
       perpage: SEARCH_RESULT_COUNT,
       query,
       until: baseTime.toJSON(),

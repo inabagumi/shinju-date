@@ -15,8 +15,8 @@ export type RecentVideo = {
   } | null
 }
 
-export default async function getRecentVideosForChannel(
-  channelId: string,
+export async function getRecentVideosForTalent(
+  talentId: string,
   limit = 5,
 ): Promise<RecentVideo[]> {
   const supabaseClient = await createSupabaseServerClient()
@@ -26,7 +26,9 @@ export default async function getRecentVideosForChannel(
     .select(
       'id, title, published_at, visible, deleted_at, thumbnail:thumbnails(path, blur_data_url), youtube_video:youtube_videos(youtube_video_id)',
     )
-    .eq('channel_id', channelId)
+    .is('deleted_at', null)
+    .is('visible', true)
+    .eq('channel_id', talentId)
     .order('published_at', { ascending: false })
     .limit(limit)
 

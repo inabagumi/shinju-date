@@ -69,11 +69,11 @@ export async function SummaryWidget() {
           </Link>
           <Link
             className="rounded-lg bg-indigo-50 p-4 transition-colors hover:bg-indigo-100"
-            href="/channels"
+            href="/talents"
           >
-            <p className="text-gray-600 text-sm">総チャンネル数</p>
+            <p className="text-gray-600 text-sm">総タレント数</p>
             <p className="font-bold text-2xl text-indigo-600">
-              {formatNumber(stats.totalChannels)}
+              {formatNumber(stats.totalTalents)}
             </p>
           </Link>
         </div>

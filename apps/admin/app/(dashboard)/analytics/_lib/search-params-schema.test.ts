@@ -208,7 +208,7 @@ describe('analyticsSearchParamsSchema', () => {
   it('should handle tab parameter correctly', () => {
     const input = {
       from: weekAgo.toString(),
-      tab: 'channels',
+      tab: 'talents',
       to: yesterday.toString(),
     }
 
@@ -220,7 +220,7 @@ describe('analyticsSearchParamsSchema', () => {
         startDate: weekAgo.toString(),
       },
       selectedDate: null,
-      tab: 'channels',
+      tab: 'talents',
     })
   })
 
