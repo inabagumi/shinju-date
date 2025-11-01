@@ -4,7 +4,6 @@ import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import type { YouTubeChannel } from '@shinju-date/youtube-scraper'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after } from 'next/server'
-import { Temporal } from 'temporal-polyfill'
 import { channelsUpdate as ratelimit } from '@/lib/ratelimit'
 import { revalidateTags } from '@/lib/revalidate'
 import { supabaseClient } from '@/lib/supabase'
@@ -16,6 +15,7 @@ export const maxDuration = 120
 
 type Channel = Pick<Tables<'channels'>, 'id' | 'name'> & {
   youtube_channel: {
+    name: string | null
     youtube_channel_id: string
   } | null
 }
@@ -62,10 +62,11 @@ export async function POST(request: Request): Promise<Response> {
     },
   )
 
-  const currentDateTime = Temporal.Now.instant()
   const { data: channels, error } = await supabaseClient
     .from('channels')
-    .select('id, name, youtube_channel:youtube_channels(youtube_channel_id)')
+    .select(
+      'id, name, youtube_channel:youtube_channels(name, youtube_channel_id)',
+    )
     .is('deleted_at', null)
 
   if (error) {
@@ -123,13 +124,17 @@ export async function POST(request: Request): Promise<Response> {
             throw new TypeError('A snippet is empty.')
           }
 
-          // Dual-write to youtube_channels table (always upsert regardless of name change)
+          // Get current YouTube channel name from database
+          const currentYouTubeChannelName = channel.youtube_channel?.name
+
+          // Update youtube_channels table with YouTube channel name
           const youtubeHandle = item.snippet.customUrl || null
           await supabaseClient
             .from('youtube_channels')
             .upsert(
               {
                 channel_id: channel.id,
+                name: item.snippet.title,
                 youtube_channel_id: youtubeChannel.id,
                 youtube_handle: youtubeHandle,
               },
@@ -141,20 +146,18 @@ export async function POST(request: Request): Promise<Response> {
               }
             })
 
-          if (item.snippet.title === channel.name) {
+          // Return null if YouTube channel name hasn't changed
+          if (item.snippet.title === currentYouTubeChannelName) {
             return null
           }
 
+          // Fetch updated channel data to return
           const { data, error } = await supabaseClient
             .from('channels')
-            .update({
-              name: item.snippet.title,
-              updated_at: currentDateTime.toJSON(),
-            })
-            .eq('id', channel.id)
             .select(
-              'id, name, youtube_channel:youtube_channels(youtube_channel_id)',
+              'id, name, youtube_channel:youtube_channels(name, youtube_channel_id)',
             )
+            .eq('id', channel.id)
             .single()
 
           if (error) {
@@ -185,14 +188,18 @@ export async function POST(request: Request): Promise<Response> {
         continue
       }
 
-      const changedColumns: Partial<typeof channel> = {}
+      const changedColumns: {
+        talent_name?: string
+        youtube_channel_name?: string
+      } = {}
 
-      if (channel.name !== newChannel.name) {
-        changedColumns.name = `${channel.name} -> ${newChannel.name}`
+      // Log if YouTube channel name changed (not talent name)
+      if (channel.youtube_channel?.name !== newChannel.youtube_channel?.name) {
+        changedColumns.youtube_channel_name = `${channel.youtube_channel?.name} -> ${newChannel.youtube_channel?.name}`
       }
 
       Sentry.logger.info(
-        'Channel information has been updated.',
+        'YouTube channel name has been updated.',
         changedColumns,
       )
 

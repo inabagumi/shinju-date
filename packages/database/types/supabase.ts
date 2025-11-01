@@ -250,18 +250,21 @@ export type Database = {
         Row: {
           channel_id: string
           id: string
+          name: string | null
           youtube_channel_id: string
           youtube_handle: string | null
         }
         Insert: {
           channel_id: string
           id?: string
+          name?: string | null
           youtube_channel_id: string
           youtube_handle?: string | null
         }
         Update: {
           channel_id?: string
           id?: string
+          name?: string | null
           youtube_channel_id?: string
           youtube_handle?: string | null
         }

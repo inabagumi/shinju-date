@@ -7,6 +7,7 @@ import { ChevronLeftIcon, ExternalLinkIcon } from '@/components/icons'
 import { supabaseClient } from '@/lib/supabase/public'
 import getChannel from '../_lib/get-channel'
 import getRecentVideosForChannel from '../_lib/get-recent-videos'
+import { EditChannelForm } from './_components/edit-channel-form'
 import { SyncChannelButton } from './_components/sync-channel-button'
 
 type Props = {
@@ -86,36 +87,18 @@ export default async function ChannelDetailPage({ params }: Props) {
         </div>
       )}
 
-      {/* Channel information */}
-      <div className="overflow-hidden bg-white shadow sm:rounded-lg">
+      {/* Channel information - Editable form */}
+      <EditChannelForm channel={channel} />
+
+      {/* Additional metadata */}
+      <div className="mt-6 overflow-hidden bg-white shadow sm:rounded-lg">
         <div className="px-4 py-5 sm:px-6">
           <h3 className="font-medium text-gray-900 text-lg leading-6">
-            チャンネル情報
+            メタデータ
           </h3>
-          <p className="mt-1 max-w-2xl text-gray-500 text-sm">
-            現在データベースに保存されている情報
-          </p>
         </div>
         <div className="border-gray-200 border-t">
           <dl>
-            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="font-medium text-gray-500 text-sm">
-                チャンネル名
-              </dt>
-              <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                {channel.name}
-              </dd>
-            </div>
-            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="font-medium text-gray-500 text-sm">
-                YouTubeチャンネルID
-              </dt>
-              <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                <code className="rounded bg-gray-100 px-2 py-1 font-mono text-xs">
-                  {channel.youtube_channel?.youtube_channel_id || 'N/A'}
-                </code>
-              </dd>
-            </div>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500 text-sm">
                 データベースID

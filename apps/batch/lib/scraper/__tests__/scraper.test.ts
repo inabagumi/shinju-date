@@ -251,7 +251,6 @@ describe('Scraper class', () => {
       },
       savedChannel: {
         id: '1',
-        name: 'Test Channel',
       },
       supabaseClient,
       youtubeClient,
@@ -282,7 +281,6 @@ describe('Scraper class', () => {
       dryRun: true, // Use dry run to avoid actual DB writes
       savedChannel: {
         id: '1',
-        name: 'Test Channel',
       },
       supabaseClient,
       youtubeClient,
@@ -337,7 +335,6 @@ describe('Scraper class', () => {
       },
       savedChannel: {
         id: '1',
-        name: 'Test Channel',
       },
       supabaseClient,
       youtubeClient,
@@ -394,7 +391,6 @@ describe('Scraper class', () => {
       },
       savedChannel: {
         id: '999',
-        name: 'Empty Channel',
       },
       supabaseClient,
       youtubeClient,
