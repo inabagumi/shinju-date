@@ -18,15 +18,18 @@ export async function GET(request: NextRequest): Promise<Response> {
       // Check if this is an email change event
       // Supabase sends the user with the new email after confirmation
       const user = data.user
-
-      // Log the email change to audit log
-      // Note: We can't get the old email here, but we log that the change was confirmed
-      await createAuditLog('ACCOUNT_EMAIL_UPDATE', 'auth.users', user.id, {
-        changes: {
-          after: { email: user.email },
-        },
-        entityName: 'user_email',
-      })
+      
+      // Only log if user has an email
+      if (user.email) {
+        // Log the email change to audit log
+        // Note: We can't get the old email here, but we log that the change was confirmed
+        await createAuditLog('ACCOUNT_EMAIL_UPDATE', 'auth.users', user.id, {
+          changes: {
+            after: { email: user.email },
+          },
+          entityName: user.email,
+        })
+      }
 
       return NextResponse.redirect(new URL(next, request.url))
     }

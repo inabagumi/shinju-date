@@ -76,7 +76,7 @@ export async function updateUserEmail(
       email: email.email,
     },
     {
-      emailRedirectTo: `${process.env['NEXT_PUBLIC_SITE_URL'] || 'http://localhost:4000'}/api/auth/callback`,
+      emailRedirectTo: `${process.env['NEXT_PUBLIC_BASE_URL'] || 'http://localhost:4000'}/api/auth/callback`,
     },
   )
 
@@ -167,14 +167,7 @@ export async function updateUserPassword(
   }
 
   // Log password change (without storing the actual password for security)
-  await createAuditLog(
-    'ACCOUNT_PASSWORD_UPDATE',
-    'auth.users',
-    currentUser.id,
-    {
-      entityName: 'user_password',
-    },
-  )
+  await createAuditLog('ACCOUNT_PASSWORD_UPDATE', 'auth.users', currentUser.id)
 
   revalidatePath('/account')
 
