@@ -57,6 +57,11 @@
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
+  },
   "name": "@shinju-date/web",
   "private": true,
   "repository": {
@@ -67,16 +72,11 @@
   "scripts": {
     "build": "next build",
     "dev": "next --port 3000",
-    "lint": "next lint",
-    "msw:init": "msw init public/",
+    "msw:init": "msw init public/ --save",
     "start": "next start --port 3000",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typegen": "next typegen"
   },
   "type": "module",
-  "version": "1.0.0",
-  "msw": {
-    "workerDirectory": [
-      "public"
-    ]
-  }
+  "version": "1.0.0"
 }

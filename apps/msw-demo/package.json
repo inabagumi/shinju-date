@@ -42,8 +42,9 @@
   "scripts": {
     "build": "next build",
     "dev": "next --port 10000",
-    "msw:init": "msw init public/",
-    "start": "next start --port 10000"
+    "msw:init": "msw init public/ --save",
+    "start": "next start --port 10000",
+    "typegen": "next typegen"
   },
   "type": "module",
   "version": "1.0.0"

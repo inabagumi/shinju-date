@@ -26,7 +26,8 @@
     "db:export": "./scripts/export-production-data.sh",
     "db:import": "./scripts/import-data.sh",
     "dev": "turbo dev",
-    "test": "turbo test"
+    "test": "turbo test",
+    "typegen": "turbo typegen"
   },
   "type": "module",
   "version": "1.0.0"

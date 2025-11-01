@@ -28,6 +28,10 @@
     },
     "test": {
       "dependsOn": ["^build"]
+    },
+    "typegen": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/types"]
     }
   },
   "ui": "tui"
