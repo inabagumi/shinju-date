@@ -1,6 +1,7 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: Mocking Redis with any type for simplicity
 
 import { HttpResponse, http } from 'msw'
+import { Temporal } from 'temporal-polyfill'
 
 // Mock Redis store
 const mockRedisStore = new Map<string, any>()
@@ -8,12 +9,11 @@ const mockRedisStore = new Map<string, any>()
 // Initialize with some sample data based on the Redis keys used in the app
 const initializeRedisData = () => {
   // Get current date range for testing (last 7 days)
-  const today = new Date()
+  const today = Temporal.Now.plainDateISO()
   const dates = []
   for (let i = 6; i >= 0; i--) {
-    const date = new Date(today)
-    date.setDate(date.getDate() - i)
-    const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '') // YYYYMMDD format
+    const date = today.subtract({ days: i })
+    const dateStr = date.toString().replace(/-/g, '') // YYYYMMDD format
     dates.push(dateStr)
   }
 
@@ -77,7 +77,10 @@ const initializeRedisData = () => {
   ])
 
   // Sample status data
-  mockRedisStore.set('status:last_video_sync', new Date().toISOString())
+  mockRedisStore.set(
+    'status:last_video_sync',
+    Temporal.Now.instant().toString(),
+  )
 
   console.log('🎯 MSW Redis mock data initialized with dates:', dates)
 }

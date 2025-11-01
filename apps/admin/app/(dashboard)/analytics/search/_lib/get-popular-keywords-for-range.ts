@@ -45,7 +45,7 @@ export async function getPopularKeywordsForRange(
     }
 
     // Use a temporary key for the union result
-    const tempUnionKey = `${REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION}:${Date.now()}`
+    const tempUnionKey = `${REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION}:${Temporal.Now.instant().epochMilliseconds}`
 
     try {
       // Use Redis pipeline for better performance

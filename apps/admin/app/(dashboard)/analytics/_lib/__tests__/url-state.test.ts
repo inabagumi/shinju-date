@@ -1,3 +1,4 @@
+import { Temporal } from 'temporal-polyfill'
 import { describe, expect, it } from 'vitest'
 import {
   createDateRangeUrlParams,
@@ -10,12 +11,11 @@ describe('url-state utilities', () => {
   describe('parseDateRangeFromUrl', () => {
     it('should parse valid date range from URL params', () => {
       // Use a recent date range that would be valid for testing
-      const today = new Date()
-      const sevenDaysAgo = new Date(today)
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      const today = Temporal.Now.plainDateISO()
+      const sevenDaysAgo = today.subtract({ days: 7 })
 
-      const startDate = sevenDaysAgo.toISOString().split('T')[0]
-      const endDate = today.toISOString().split('T')[0]
+      const startDate = sevenDaysAgo.toString()
+      const endDate = today.toString()
 
       const params = new URLSearchParams(`from=${startDate}&to=${endDate}`)
       const result = parseDateRangeFromUrl(params)
@@ -34,12 +34,11 @@ describe('url-state utilities', () => {
     })
 
     it('should return null when date range is invalid (start > end)', () => {
-      const today = new Date()
-      const sevenDaysAgo = new Date(today)
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      const today = Temporal.Now.plainDateISO()
+      const sevenDaysAgo = today.subtract({ days: 7 })
 
-      const startDate = today.toISOString().split('T')[0]
-      const endDate = sevenDaysAgo.toISOString().split('T')[0]
+      const startDate = today.toString()
+      const endDate = sevenDaysAgo.toString()
 
       const params = new URLSearchParams(`from=${startDate}&to=${endDate}`)
       const result = parseDateRangeFromUrl(params)
@@ -48,12 +47,11 @@ describe('url-state utilities', () => {
     })
 
     it('should return null when date range exceeds 90 days', () => {
-      const today = new Date()
-      const ninetyOneDaysAgo = new Date(today)
-      ninetyOneDaysAgo.setDate(ninetyOneDaysAgo.getDate() - 91)
+      const today = Temporal.Now.plainDateISO()
+      const ninetyOneDaysAgo = today.subtract({ days: 91 })
 
-      const startDate = ninetyOneDaysAgo.toISOString().split('T')[0]
-      const endDate = today.toISOString().split('T')[0]
+      const startDate = ninetyOneDaysAgo.toString()
+      const endDate = today.toString()
 
       const params = new URLSearchParams(`from=${startDate}&to=${endDate}`)
       const result = parseDateRangeFromUrl(params)
@@ -84,11 +82,10 @@ describe('url-state utilities', () => {
 
   describe('parseSelectedDateFromUrl', () => {
     it('should parse valid selected date from URL params', () => {
-      const today = new Date()
-      const threeDaysAgo = new Date(today)
-      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
+      const today = Temporal.Now.plainDateISO()
+      const threeDaysAgo = today.subtract({ days: 3 })
 
-      const selectedDate = threeDaysAgo.toISOString().split('T')[0]
+      const selectedDate = threeDaysAgo.toString()
       const params = new URLSearchParams(`date=${selectedDate}`)
       const result = parseSelectedDateFromUrl(params)
 
@@ -127,9 +124,9 @@ describe('url-state utilities', () => {
       expect(typeof result.startDate).toBe('string')
       expect(typeof result.endDate).toBe('string')
 
-      // Should be valid date format
-      expect(() => new Date(result.startDate)).not.toThrow()
-      expect(() => new Date(result.endDate)).not.toThrow()
+      // Should be valid date format (can be parsed by Temporal.PlainDate.from)
+      expect(() => Temporal.PlainDate.from(result.startDate)).not.toThrow()
+      expect(() => Temporal.PlainDate.from(result.endDate)).not.toThrow()
     })
   })
 

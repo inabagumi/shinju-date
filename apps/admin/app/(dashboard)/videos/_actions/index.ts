@@ -2,6 +2,7 @@
 
 import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
+import { Temporal } from 'temporal-polyfill'
 import { createAuditLog } from '@/lib/audit-log'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
@@ -135,7 +136,7 @@ export async function softDeleteAction(ids: string[]): Promise<{
   const supabaseClient = await createSupabaseServerClient()
 
   try {
-    const now = new Date().toISOString()
+    const now = Temporal.Now.instant().toString()
 
     // Get thumbnail IDs before soft deleting videos
     const { data: videos, error: fetchError } = await supabaseClient
@@ -207,7 +208,7 @@ export async function softDeleteSingleVideoAction(id: string): Promise<{
   const supabaseClient = await createSupabaseServerClient()
 
   try {
-    const now = new Date().toISOString()
+    const now = Temporal.Now.instant().toString()
 
     // Get thumbnail ID before soft deleting video
     const { data: video, error: fetchError } = await supabaseClient
