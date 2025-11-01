@@ -383,6 +383,8 @@ export type Database = {
     }
     Enums: {
       audit_action:
+        | 'ACCOUNT_EMAIL_UPDATE'
+        | 'ACCOUNT_PASSWORD_UPDATE'
         | 'CHANNEL_CREATE'
         | 'CHANNEL_DELETE'
         | 'CHANNEL_UPDATE'
@@ -528,6 +530,8 @@ export const Constants = {
   public: {
     Enums: {
       audit_action: [
+        'ACCOUNT_EMAIL_UPDATE',
+        'ACCOUNT_PASSWORD_UPDATE',
         'CHANNEL_CREATE',
         'CHANNEL_DELETE',
         'CHANNEL_UPDATE',

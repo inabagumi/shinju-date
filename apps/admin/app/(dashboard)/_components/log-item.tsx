@@ -8,6 +8,8 @@ const ACTION_LABELS: Record<
   Database['public']['Enums']['audit_action'],
   string
 > = {
+  ACCOUNT_EMAIL_UPDATE: 'メールアドレスを更新',
+  ACCOUNT_PASSWORD_UPDATE: 'パスワードを更新',
   CHANNEL_CREATE: 'チャンネルを作成',
   CHANNEL_DELETE: 'チャンネルを削除',
   CHANNEL_SYNC: 'チャンネルを同期',
