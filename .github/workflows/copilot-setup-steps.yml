@@ -1,4 +1,4 @@
-name: "Copilot Setup Steps"
+name: Copilot Setup Steps
 
 on:
   workflow_dispatch:
@@ -19,46 +19,46 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: "Set up uv"
+      - name: Set up uv
         uses: astral-sh/setup-uv@v7
         with:
-          version: "0.9.7"
+          version: '0.9.7'
 
-      - name: "Enable Corepack for pnpm"
+      - name: Enable Corepack for pnpm
         run: |
           npm install -g corepack@0.31.0
           corepack enable
 
       - uses: actions/setup-node@v6
         with:
-          node-version: "22.21.1"
           cache: pnpm
+          node-version-file: .node-version
 
-      - name: "Install project dependencies"
-        run: "pnpm install"
+      - name: Install project dependencies
+        run: pnpm install
 
-      - name: "Set environment variables for Supabase and Upstash"
-        run: |
-          echo "NEXT_PUBLIC_SUPABASE_URL=https://fake.supabase.test" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=fake-anon-key" >> $GITHUB_ENV
-          echo "SUPABASE_SERVICE_ROLE_KEY=fake-service-role-key" >> $GITHUB_ENV
-
-          echo "UPSTASH_REDIS_REST_TOKEN=fake-upstash-token" >> $GITHUB_ENV
-          echo "UPSTASH_REDIS_REST_URL=https://fake.upstash.test" >> $GITHUB_ENV
-
-      - name: "Set MSW environment variable"
-        run: "echo 'ENABLE_MSW=true' >> $GITHUB_ENV"
-
-      - name: "Set Next.js Turbopack TLS environment variable"
-        run: "echo 'NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1' >> $GITHUB_ENV"
-
-      - name: "Create public directory for admin app"
-        run: "mkdir -p apps/admin/public"
-
-      - name: "Initialize MSW service workers for apps"
-        run: "pnpm --filter './apps/*' run msw:init --save"
-
-      - name: "Install Python dependencies for insights app"
+      - name: Install Python dependencies for insights app
         run: |
           cd apps/insights
           uv sync --extra dev
+
+      - name: Build internal packages to generate type definitions
+        run: pnpm typegen
+
+      - name: Set Next.js Turbopack TLS environment variable
+        run: echo 'NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1' >> $GITHUB_ENV
+
+      - name: Set environment variables for Supabase and Upstash
+        run: |
+          echo 'NEXT_PUBLIC_SUPABASE_URL=https://fake.supabase.test' >> $GITHUB_ENV
+          echo 'NEXT_PUBLIC_SUPABASE_ANON_KEY=fake-anon-key' >> $GITHUB_ENV
+          echo 'SUPABASE_SERVICE_ROLE_KEY=fake-service-role-key' >> $GITHUB_ENV
+
+          echo 'UPSTASH_REDIS_REST_TOKEN=fake-upstash-token' >> $GITHUB_ENV
+          echo 'UPSTASH_REDIS_REST_URL=https://fake.upstash.test' >> $GITHUB_ENV
+
+      - name: Set MSW environment variable
+        run: echo 'ENABLE_MSW=true' >> $GITHUB_ENV
+
+      - name: Initialize MSW service workers for apps
+        run: pnpm --filter './apps/*' run msw:init
