@@ -26,7 +26,20 @@ GitHub ActionsやGitHub CopilotなどのAIエージェント環境でAPIモッ�
 export ENABLE_MSW=true
 ```
 
-この設定により、一貫したAPIレスポンスが提供され、AIエージェントがより精度の高いコード補完を行えるようになります。
+この設定により、MSWがリクエストをインターセプトし、一貫したAPIレスポンスを提供します。
+
+重要: MSWを有効にする際は、意図しない外部サービスへのリクエストを完全に防ぐため、SupabaseやUpstashなどの連携サービスの環境変数を、以下のようなダミーの値に必ず上書きしてください。これらの設定は、プロジェクトルートの.envファイルや、各アプリケーションの.env.localファイルに記述します。
+
+```bash
+# .env や .env.local に記述する内容
+NEXT_PUBLIC_SUPABASE_URL=https://fake.supabase.test
+NEXT_PUBLIC_SUPABASE_ANON_KEY=fake-anon-key
+SUPABASE_SERVICE_ROLE_KEY=fake-service-role-key
+UPSTASH_REDIS_REST_TOKEN=fake-upstash-token
+UPSTASH_REDIS_REST_URL=https://fake.upstash.test
+```
+
+この設定がない場合、MSWが対応していないリクエストが外部サービスに送信されてしまう可能性があります。
 
 #### MSWサービスワーカーの初期設定
 
@@ -66,42 +79,6 @@ uv run poe format
 # フォーマットチェック（CI用）
 uv run poe format-check
 ```
-
-#### Python コード変更時の必須作業
-
-**Python ファイルを変更した場合は、以下を必ず実行してください：**
-
-```bash
-cd apps/insights
-uv run poe format  # フォーマット適用
-uv run poe lint     # リンティングチェック
-```
-
-これらのコマンドを実行せずにコミットすると、CI で失敗する原因となります。
-
-### 必須の品質チェック
-
-**すべてのコード変更後の品質チェックは必須要件です。**
-
-#### JavaScript/TypeScript の場合
-
-`pnpm run check --fix` を実行してください。
-
-このコマンドは以下を自動的に実行します：
-- Biomeによるコードフォーマット
-- リンティングチェックと自動修正
-- 未使用インポートの削除
-- コードスタイルの統一
-
-#### Python (Insights API) の場合
-
-```bash
-cd apps/insights
-uv run poe format  # フォーマット適用
-uv run poe lint     # リンティングチェック
-```
-
-**AIエージェントは、いかなるコード変更を行った場合も、変更をコミットする前に必ず該当する品質チェックコマンドを実行してください。** これを怠ると、ビルド失敗や品質問題の原因となります。
 
 ## AIエージェントの種類と役割
 
@@ -189,7 +166,7 @@ AIツールは常に進化しています。
 
 ## プロジェクト固有のガイドライン
 
-### コードスタイル
+### コードスタイルと品質チェック
 
 * JavaScript/TypeScript: Biomeによるフォーマットとリンティングを必ず実行する
 * Python (Insights API): Ruffによるフォーマットとリンティングを必ず実行する  
@@ -199,13 +176,20 @@ AIツールは常に進化しています。
 **重要**: AIエージェントは、コード変更後に必ず品質チェックコマンドを実行することが必須です。このコマンドを実行し忘れると、ビルドエラーやフォーマットの問題が発生し、プルリクエストの品質が低下します。
 
 #### JavaScript/TypeScript の場合:
+
 `pnpm run check --fix` を実行
+
+このコマンドは以下を自動的に実行します：
+- Biomeによるコードフォーマット
+- リンティングチェックと自動修正
+- 未使用インポートの削除
+- コードスタイルの統一
 
 #### Python (Insights API) の場合:
 ```bash
 cd apps/insights
-poetry run poe format
-poetry run poe lint
+uv run poe format
+uv run poe lint
 ```
 
 特に以下の場合は必ず実行してください：
@@ -216,6 +200,54 @@ poetry run poe lint
 * リファクタリングを行った後
 
 この作業を怠ると、未使用のインポート、フォーマットの不整合、型エラーなどの問題が蓄積し、開発プロセスを大幅に遅らせる原因となります。
+
+### 時刻の取り扱い (Date/Time Handling)
+
+**重要**: このプロジェクトでは、Reactのハイドレーションエラーを防ぎ、時刻の計算を正確に行うため、JavaScript標準の`Date`オブジェクトの利用に関して以下のルールを定めます。
+
+#### ルール
+
+1.  **`Date`オブジェクトの原則使用不可**
+    * `new Date()`や`Date.now()`は、ハイドレーションエラーの主な原因となるため、**原則として使用を避けてください**。
+    * 例外として、ライブラリの互換性など、やむを得ない場合に限り使用を許可しますが、その場合もサーバーとクライアントで値が異なる可能性があることを十分に認識し、慎重に扱う必要があります。
+
+2.  **`Temporal`の使用を推奨**
+    * 時刻の管理には、`temporal-polyfill`パッケージが提供する`Temporal`オブジェクトの使用を強く推奨します。
+    * **現在時刻の取得**: タイムゾーンに依存しない絶対時刻を取得する場合は`Temporal.Now.instant()`を使用します。
+    * **時刻の保存と通信**: データベースへの保存やAPIでの送受信には、`Temporal.Instant`オブジェクトをISO 8601形式の文字列（例: `instant.toString()`）に変換して使用します。
+
+3.  **タイムゾーンの指定**
+    * ユーザーに時刻を表示するなど、タイムゾーンが必要な場合は、ハードコーディング（`'Asia/Tokyo'`など）を**絶対に行わず**、必ず`@shinju-date/constants`パッケージから`TIME_ZONE`定数をインポートして使用してください。
+
+#### コード例
+
+**推奨されない例 (Bad Practice):**
+
+```typescript
+const now = new Date();
+const tokyoTime = now.toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' });
+```
+
+**推奨される例 (Good Practice):**
+
+```typescript
+import { TIME_ZONE } from '@shinju-date/constants';
+import { Temporal } from 'temporal-polyfill';
+
+// 現在の絶対時刻 (UTC) を取得
+const now = Temporal.Now.instant();
+
+// DB保存やAPI送信用に文字列に変換
+const isoString = now.toString();
+
+// 文字列からInstantオブジェクトを復元
+const fromString = Temporal.Instant.from('2025-11-01T12:00:00Z');
+
+// 日本時間で表示する場合
+const tokyoTime = now.toZonedDateTimeISO(TIME_ZONE);
+console.log(tokyoTime.toString());
+// > 2025-11-01T21:00:00+09:00[Asia/Tokyo] のような形式
+```
 
 ### コミットメッセージ
 
