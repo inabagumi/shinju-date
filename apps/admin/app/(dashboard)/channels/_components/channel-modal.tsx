@@ -18,6 +18,7 @@ type Channel = {
   id: string
   name: string
   youtube_channel: {
+    name: string | null
     youtube_channel_id: string
   } | null
 }
@@ -79,12 +80,17 @@ export function ChannelModal({ channel }: ChannelModalProps) {
               <input name="id" type="hidden" value={channel.id.toString()} />
             )}
             <FormField name="name">
-              <Label className="mb-2 block font-medium">チャンネル名</Label>
+              <Label className="mb-2 block font-medium">タレント名</Label>
               <Input
                 className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
                 defaultValue={channel?.name ?? ''}
+                placeholder="表示に使用される名前"
                 required
               />
+              <p className="mt-1 text-gray-500 text-xs">
+                管理画面から編集可能な表示名（YouTube
+                APIによる自動更新の対象外）
+              </p>
               <ErrorMessage className="mt-1 text-red-600 text-sm" />
             </FormField>
             <FormField name="channel_id">

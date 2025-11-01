@@ -99,14 +99,26 @@ export default async function ChannelDetailPage({ params }: Props) {
         <div className="border-gray-200 border-t">
           <dl>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="font-medium text-gray-500 text-sm">
-                チャンネル名
-              </dt>
+              <dt className="font-medium text-gray-500 text-sm">タレント名</dt>
               <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                 {channel.name}
+                <p className="mt-1 text-gray-500 text-xs">
+                  管理画面から編集可能な表示名
+                </p>
               </dd>
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="font-medium text-gray-500 text-sm">
+                YouTubeチャンネル名
+              </dt>
+              <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                {channel.youtube_channel?.name || 'N/A'}
+                <p className="mt-1 text-gray-500 text-xs">
+                  YouTube APIから自動更新される名前
+                </p>
+              </dd>
+            </div>
+            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500 text-sm">
                 YouTubeチャンネルID
               </dt>

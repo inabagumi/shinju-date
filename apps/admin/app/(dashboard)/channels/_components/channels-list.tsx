@@ -12,6 +12,7 @@ type Channel = {
   created_at: string
   updated_at: string
   youtube_channel: {
+    name: string | null
     youtube_channel_id: string
   } | null
 }
@@ -107,6 +108,12 @@ export function ChannelsList({ channels }: ChannelsListProps) {
                       >
                         {channel.name}
                       </Link>
+                      {channel.youtube_channel?.name &&
+                        channel.youtube_channel.name !== channel.name && (
+                          <div className="text-gray-600 text-xs">
+                            YouTube: {channel.youtube_channel.name}
+                          </div>
+                        )}
                       <div className="font-mono text-gray-500 text-xs">
                         {channel.youtube_channel?.youtube_channel_id ||
                           channel.id}
