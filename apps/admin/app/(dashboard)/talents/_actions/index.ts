@@ -119,6 +119,7 @@ export async function updateTalentAction(
       .from('channels')
       .update({
         name: name.trim(),
+        updated_at: Temporal.Now.instant().toString(),
       })
       .eq('id', id)
       .select('name')
@@ -188,10 +189,13 @@ export async function deleteTalentAction(id: string): Promise<{
   }
 
   try {
+    const now = Temporal.Now.instant().toString()
+
     const { data: talent, error } = await supabaseClient
       .from('channels')
       .update({
-        deleted_at: Temporal.Now.instant().toString(),
+        deleted_at: now,
+        updated_at: now,
       })
       .eq('id', id)
       .select('name')

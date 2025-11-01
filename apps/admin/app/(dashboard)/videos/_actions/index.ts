@@ -31,11 +31,16 @@ export async function toggleVisibilityAction(ids: string[]): Promise<{
       return { error: '動画が見つかりませんでした。', success: false }
     }
 
+    const now = Temporal.Now.instant().toString()
+
     // Toggle visibility for each video
     const updatePromises = videos.map((video) =>
       supabaseClient
         .from('videos')
-        .update({ visible: !video.visible })
+        .update({
+          updated_at: now,
+          visible: !video.visible,
+        })
         .eq('id', video.id),
     )
 
@@ -99,7 +104,10 @@ export async function toggleSingleVideoVisibilityAction(id: string): Promise<{
     // Toggle visibility
     const { error: updateError } = await supabaseClient
       .from('videos')
-      .update({ visible: !video.visible })
+      .update({
+        updated_at: Temporal.Now.instant().toString(),
+        visible: !video.visible,
+      })
       .eq('id', id)
 
     if (updateError) {
@@ -155,7 +163,10 @@ export async function softDeleteAction(ids: string[]): Promise<{
     // Soft delete videos
     const { error: videoError } = await supabaseClient
       .from('videos')
-      .update({ deleted_at: now })
+      .update({
+        deleted_at: now,
+        updated_at: now,
+      })
       .in('id', ids)
 
     if (videoError) {
@@ -228,7 +239,10 @@ export async function softDeleteSingleVideoAction(id: string): Promise<{
     // Soft delete video
     const { error: videoError } = await supabaseClient
       .from('videos')
-      .update({ deleted_at: now })
+      .update({
+        deleted_at: now,
+        updated_at: now,
+      })
       .eq('id', id)
 
     if (videoError) {
