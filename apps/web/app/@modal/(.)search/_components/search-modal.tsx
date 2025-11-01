@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@shinju-date/ui'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   type ComponentPropsWithRef,
   createContext,
@@ -32,6 +32,7 @@ export function useModalNavigation() {
 
 export function SearchModal({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(true)
   const isNavigating = useRef(false)
 
@@ -58,7 +59,7 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setIsOpen(true)
-  }, [])
+  }, [pathname])
 
   return (
     <Dialog onOpenChange={handleClose} open={isOpen}>
