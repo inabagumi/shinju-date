@@ -2,6 +2,7 @@
 
 import { logger } from '@shinju-date/logger'
 import { revalidatePath } from 'next/cache'
+import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
 import { createSupabaseServerClient } from '@/lib/supabase'
@@ -112,6 +113,7 @@ export async function updateTermAction(
         readings: filteredReadings,
         synonyms: filteredSynonyms,
         term: term.trim(),
+        updated_at: Temporal.Now.instant().toString(),
       })
       .eq('id', id)
       .select('term')
