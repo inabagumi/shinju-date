@@ -130,13 +130,14 @@ export async function updateUserPassword(
 
   // Verify current password by attempting to sign in
   // Note: Supabase doesn't provide a dedicated password verification API,
-  // so we use signInWithPassword. This will refresh the session but not create a new one.
-  const { error: verifyError } = await supabaseClient.auth.signInWithPassword({
-    email: currentUser.email,
-    password: passwords.currentPassword,
-  })
+  // so we use signInWithPassword. This will refresh the session.
+  const { data: signInData, error: verifyError } =
+    await supabaseClient.auth.signInWithPassword({
+      email: currentUser.email,
+      password: passwords.currentPassword,
+    })
 
-  if (verifyError) {
+  if (verifyError || !signInData.session) {
     return {
       errors: {
         currentPassword: ['現在のパスワードが正しくありません。'],
@@ -144,15 +145,18 @@ export async function updateUserPassword(
     }
   }
 
-  // Update password
+  // Update password using the authenticated session
   const { error } = await supabaseClient.auth.updateUser({
     password: passwords.newPassword,
   })
 
   if (error) {
+    console.error('Password update error:', error)
     return {
       errors: {
-        generic: ['パスワードの更新に失敗しました。'],
+        generic: [
+          `パスワードの更新に失敗しました。${error.message ? `(${error.message})` : ''}`,
+        ],
       },
     }
   }
