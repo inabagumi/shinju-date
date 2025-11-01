@@ -7,6 +7,7 @@ import Form, {
   GenericErrorMessage,
   Input,
   Label,
+  SuccessMessage,
 } from '@/components/form'
 import { updateUserPassword } from '../_actions'
 
@@ -16,6 +17,11 @@ export function PasswordUpdateForm() {
       <h2 className="font-semibold text-xl">パスワードの変更</h2>
       <div className="rounded-lg border border-slate-300 bg-white p-6 shadow-sm">
         <Form action={updateUserPassword} className="space-y-4">
+          <SuccessMessage
+            className="rounded-md bg-green-100 p-2 text-green-800 text-sm leading-normal"
+            message="パスワードを更新しました。"
+          />
+
           <GenericErrorMessage className="rounded-md bg-secondary-pink p-2 text-slate-50 text-sm leading-normal" />
 
           <FormField className="flex flex-col space-y-2" name="currentPassword">

@@ -7,6 +7,7 @@ import Form, {
   GenericErrorMessage,
   Input,
   Label,
+  SuccessMessage,
 } from '@/components/form'
 import { updateUserEmail } from '../_actions'
 
@@ -26,6 +27,11 @@ export function EmailUpdateForm({ currentEmail }: Props) {
               <span className="font-medium text-slate-900">{currentEmail}</span>
             </p>
           </div>
+
+          <SuccessMessage
+            className="rounded-md bg-green-100 p-2 text-green-800 text-sm leading-normal"
+            message="メールアドレスを更新しました。確認メールをご確認ください。"
+          />
 
           <GenericErrorMessage className="rounded-md bg-secondary-pink p-2 text-slate-50 text-sm leading-normal" />
 

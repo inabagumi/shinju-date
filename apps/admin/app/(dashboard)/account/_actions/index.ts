@@ -118,11 +118,7 @@ export async function updateUserEmail(
 
   revalidatePath('/account')
 
-  return {
-    errors: {
-      success: ['メールアドレスを更新しました。確認メールをご確認ください。'],
-    },
-  }
+  return { success: true }
 }
 
 export async function updateUserPassword(
@@ -179,6 +175,8 @@ export async function updateUserPassword(
   }
 
   // Verify current password by attempting to sign in
+  // Note: Supabase doesn't provide a dedicated password verification API,
+  // so we use signInWithPassword. This will refresh the session but not create a new one.
   const { error: verifyError } = await supabaseClient.auth.signInWithPassword({
     email: currentUser.email,
     password: passwords.currentPassword,
@@ -217,9 +215,5 @@ export async function updateUserPassword(
 
   revalidatePath('/account')
 
-  return {
-    errors: {
-      success: ['パスワードを更新しました。'],
-    },
-  }
+  return { success: true }
 }

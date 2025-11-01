@@ -15,6 +15,8 @@ import { useFormStatus } from 'react-dom'
 
 export type FormState = Partial<{
   errors: Record<string, string[]>
+  error: string
+  success: boolean
 }>
 
 const FormContext = createContext<FormState>({})
@@ -115,6 +117,26 @@ export function GenericErrorMessage({
             {message}
           </Fragment>
         ))}
+      </p>
+    )
+  )
+}
+
+type SuccessMessageProps = ComponentPropsWithoutRef<'p'> & {
+  message?: string
+}
+
+export function SuccessMessage({
+  message = '更新が完了しました。',
+  role = 'status',
+  ...props
+}: SuccessMessageProps) {
+  const { success } = useContext(FormContext)
+
+  return (
+    success && (
+      <p role={role} {...props}>
+        {message}
       </p>
     )
   )
