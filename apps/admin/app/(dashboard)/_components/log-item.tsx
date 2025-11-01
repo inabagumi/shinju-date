@@ -8,6 +8,8 @@ const ACTION_LABELS: Record<
   Database['public']['Enums']['audit_action'],
   string
 > = {
+  ACCOUNT_EMAIL_UPDATE: 'メールアドレスを更新',
+  ACCOUNT_PASSWORD_UPDATE: 'パスワードを更新',
   CHANNEL_CREATE: 'チャンネルを作成',
   CHANNEL_DELETE: 'チャンネルを削除',
   CHANNEL_SYNC: 'チャンネルを同期',
@@ -36,6 +38,55 @@ function LogMessage({ log }: { log: Log }) {
   )
 }
 
+function ChangeDetails({ log }: { log: Log }) {
+  // Check if details has changes object
+  const detailsObject =
+    log.details &&
+    typeof log.details === 'object' &&
+    !Array.isArray(log.details)
+      ? (log.details as { changes?: { before?: unknown; after?: unknown } })
+      : null
+
+  const changes = detailsObject?.changes
+
+  if (!changes || !changes.before || !changes.after) {
+    return null
+  }
+
+  // Extract changed fields
+  const beforeObj =
+    typeof changes.before === 'object' && changes.before !== null
+      ? (changes.before as Record<string, unknown>)
+      : {}
+  const afterObj =
+    typeof changes.after === 'object' && changes.after !== null
+      ? (changes.after as Record<string, unknown>)
+      : {}
+
+  const changedFields = Object.keys(beforeObj).filter(
+    (key) => beforeObj[key] !== afterObj[key],
+  )
+
+  if (changedFields.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="mt-2 space-y-1 rounded-md bg-gray-50 p-2 text-xs">
+      {changedFields.map((field) => (
+        <div className="flex gap-2" key={field}>
+          <span className="font-medium text-gray-600">{field}:</span>
+          <span className="text-gray-500 line-through">
+            {String(beforeObj[field])}
+          </span>
+          <span className="text-gray-400">→</span>
+          <span className="text-gray-900">{String(afterObj[field])}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function LogItem({ log }: { log: Log }) {
   return (
     <li className="border-gray-200 border-b py-3 last:border-b-0">
@@ -43,6 +94,7 @@ export function LogItem({ log }: { log: Log }) {
         <div className="flex flex-col">
           <LogMessage log={log} />
           <AuditLogTarget log={log} />
+          <ChangeDetails log={log} />
         </div>
         <time className="ml-4 flex-shrink-0 text-right text-gray-500 text-xs">
           {formatRelativeTime(Temporal.Instant.from(log.created_at))}

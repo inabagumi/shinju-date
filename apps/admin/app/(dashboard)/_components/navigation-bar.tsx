@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { twMerge } from 'tailwind-merge'
 import Form, { Button } from '@/components/form'
 import { signOut } from '../_lib/actions'
 
@@ -11,6 +12,7 @@ export function NavigationBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDataMenuOpen, setIsDataMenuOpen] = useState(false)
   const [isAnalyticsMenuOpen, setIsAnalyticsMenuOpen] = useState(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
 
   const isActive = (path: string) => pathname === path
 
@@ -29,10 +31,12 @@ export function NavigationBar() {
               onClick={() => {
                 setIsDataMenuOpen(!isDataMenuOpen)
                 setIsAnalyticsMenuOpen(false)
+                setIsUserMenuOpen(false)
               }}
               onMouseEnter={() => {
                 setIsDataMenuOpen(true)
                 setIsAnalyticsMenuOpen(false)
+                setIsUserMenuOpen(false)
               }}
               type="button"
             >
@@ -91,10 +95,12 @@ export function NavigationBar() {
               onClick={() => {
                 setIsAnalyticsMenuOpen(!isAnalyticsMenuOpen)
                 setIsDataMenuOpen(false)
+                setIsUserMenuOpen(false)
               }}
               onMouseEnter={() => {
                 setIsAnalyticsMenuOpen(true)
                 setIsDataMenuOpen(false)
+                setIsUserMenuOpen(false)
               }}
               type="button"
             >
@@ -128,15 +134,67 @@ export function NavigationBar() {
             )}
           </div>
         </div>
-        <div className="flex items-center">
-          <Form action={signOut}>
-            <Button
-              className="rounded-md bg-slate-500 px-2 py-1 text-slate-50 hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 active:bg-slate-600 active:shadow-inner disabled:pointer-events-none disabled:bg-slate-400"
-              type="submit"
+        <div className="flex items-center gap-2">
+          {/* User Menu Dropdown */}
+          <div className="relative">
+            <button
+              aria-label="ユーザーメニュー"
+              className="rounded-md px-3 py-1 hover:bg-slate-700"
+              onClick={() => {
+                setIsUserMenuOpen(!isUserMenuOpen)
+                setIsDataMenuOpen(false)
+                setIsAnalyticsMenuOpen(false)
+              }}
+              onMouseEnter={() => {
+                setIsUserMenuOpen(true)
+                setIsDataMenuOpen(false)
+                setIsAnalyticsMenuOpen(false)
+              }}
+              type="button"
             >
-              ログアウト
-            </Button>
-          </Form>
+              <svg
+                aria-hidden="true"
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                />
+              </svg>
+            </button>
+            {isUserMenuOpen && (
+              <div
+                className="absolute top-full right-0 z-50 mt-1 min-w-[200px] rounded-md border border-slate-600 bg-slate-700 py-1 shadow-lg"
+                onMouseLeave={() => setIsUserMenuOpen(false)}
+                role="menu"
+              >
+                <Link
+                  className={twMerge(
+                    'block px-4 py-2 hover:bg-slate-600',
+                    isActive('/account') && 'bg-slate-600',
+                  )}
+                  href="/account"
+                  onClick={() => setIsUserMenuOpen(false)}
+                >
+                  アカウント設定
+                </Link>
+                <div className="my-2 border-slate-600 border-t" />
+                <Form action={signOut}>
+                  <Button
+                    className="w-full px-4 py-2 text-left hover:bg-slate-600 focus-visible:bg-slate-600 focus-visible:outline-none"
+                    type="submit"
+                  >
+                    ログアウト
+                  </Button>
+                </Form>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -244,6 +302,17 @@ export function NavigationBar() {
               </Link>
             </div>
             <div className="border-slate-700 border-t pt-2">
+              <Link
+                className={twMerge(
+                  'block rounded-md px-4 py-2 hover:bg-slate-700',
+                  isActive('/account') && 'bg-slate-700',
+                )}
+                href="/account"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                アカウント設定
+              </Link>
+              <div className="my-2 border-slate-700 border-t" />
               <Form action={signOut}>
                 <Button
                   className="w-full rounded-md bg-slate-500 px-4 py-2 text-slate-50 hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 active:bg-slate-600 active:shadow-inner disabled:pointer-events-none disabled:bg-slate-400"
