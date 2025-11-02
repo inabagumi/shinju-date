@@ -1,7 +1,15 @@
 'use client'
 
-import * as Dialog from '@radix-ui/react-dialog'
 import { TIME_ZONE } from '@shinju-date/constants'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+  DialogTrigger,
+} from '@shinju-date/ui'
 import { useEffect, useState } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
@@ -104,21 +112,21 @@ export function AnnouncementModal({ announcement }: AnnouncementModalProps) {
     : toDateTimeLocal(now.add({ hours: 24 }).toString())
 
   return (
-    <Dialog.Root onOpenChange={setOpen} open={open}>
-      <Dialog.Trigger asChild>
+    <Dialog onOpenChange={setOpen} open={open}>
+      <DialogTrigger asChild>
         <button
           className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90"
           type="button"
         >
           {isEditing ? '編集' : '新しいお知らせを追加'}
         </button>
-      </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 bg-black/50 data-[state=closed]:animate-out data-[state=open]:animate-in" />
-        <Dialog.Content className="-translate-x-1/2 -translate-y-1/2 data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-1/2 left-1/2 max-h-[85vh] w-[90vw] max-w-[500px] overflow-y-auto rounded-lg bg-white p-6 shadow-lg data-[state=closed]:animate-out data-[state=open]:animate-in">
-          <Dialog.Title className="mb-4 font-semibold text-xl">
+      </DialogTrigger>
+      <DialogPortal>
+        <DialogOverlay />
+        <DialogContent className="max-w-[500px] overflow-y-auto">
+          <DialogTitle>
             {isEditing ? 'お知らせを編集' : '新しいお知らせを追加'}
-          </Dialog.Title>
+          </DialogTitle>
           <Form action={handleAction} className="space-y-4">
             {isEditing && (
               <input name="id" type="hidden" value={announcement.id} />
@@ -136,7 +144,7 @@ export function AnnouncementModal({ announcement }: AnnouncementModalProps) {
             <FormField name="level">
               <Label className="mb-2 block font-medium">レベル</Label>
               <Select
-                className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
+                className="w-full appearance-none rounded-md border border-gray-300 bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3e%3cpath%20fill=%27none%27%20stroke=%27%23333%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%272%27%20d=%27m2%205%206%206%206-6%27/%3e%3c/svg%3e')] bg-position-[right_0.5rem_center] bg-size-[1em] bg-no-repeat px-3 py-2 pr-8"
                 defaultValue={announcement?.level ?? 'info'}
               >
                 <option value="info">情報 (青)</option>
@@ -180,14 +188,14 @@ export function AnnouncementModal({ announcement }: AnnouncementModalProps) {
             </FormField>
             <GenericErrorMessage className="text-red-600 text-sm" />
             <div className="flex justify-end gap-2 pt-2">
-              <Dialog.Close asChild>
+              <DialogClose asChild>
                 <button
                   className="rounded-md border border-774-blue-300 px-4 py-2 hover:bg-gray-50"
                   type="button"
                 >
                   キャンセル
                 </button>
-              </Dialog.Close>
+              </DialogClose>
               <Button
                 className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90 disabled:opacity-50"
                 type="submit"
@@ -196,8 +204,8 @@ export function AnnouncementModal({ announcement }: AnnouncementModalProps) {
               </Button>
             </div>
           </Form>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+        </DialogContent>
+      </DialogPortal>
+    </Dialog>
   )
 }

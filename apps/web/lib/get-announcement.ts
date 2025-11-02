@@ -1,3 +1,4 @@
+import { toDBString } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { supabaseClient } from './supabase'
 
@@ -14,14 +15,14 @@ export type Announcement = {
  * Returns null if no announcement is active
  */
 export async function getAnnouncement(): Promise<Announcement | null> {
-  const now = Temporal.Now.instant().toString()
+  const now = Temporal.Now.instant()
 
   const { data, error } = await supabaseClient
     .from('announcements')
     .select('id, message, level, start_at, end_at')
     .eq('enabled', true)
-    .lte('start_at', now)
-    .gte('end_at', now)
+    .lte('start_at', toDBString(now))
+    .gte('end_at', toDBString(now))
     .order('created_at', { ascending: false })
     .limit(1)
     .single()

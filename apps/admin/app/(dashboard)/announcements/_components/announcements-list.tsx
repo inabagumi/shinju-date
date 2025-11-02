@@ -1,6 +1,8 @@
 'use client'
 
 import { TIME_ZONE } from '@shinju-date/constants'
+import { formatDateTime } from '@shinju-date/temporal-fns'
+import { Badge, type BadgeVariant } from '@shinju-date/ui'
 import { Temporal } from 'temporal-polyfill'
 import { AnnouncementModal } from './announcement-modal'
 import { DeleteConfirmDialog } from './delete-confirm-dialog'
@@ -20,29 +22,15 @@ type AnnouncementsListProps = {
   announcements: Announcement[]
 }
 
-// Format datetime for display
-function formatDateTime(isoString: string): string {
-  const instant = Temporal.Instant.from(isoString)
-  const zonedDateTime = instant.toZonedDateTimeISO(TIME_ZONE)
-
-  return zonedDateTime.toLocaleString('ja-JP', {
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
-}
-
-// Get level badge color
-function getLevelBadgeClass(level: string): string {
+// Get level badge variant
+function getLevelBadgeVariant(level: string): BadgeVariant {
   switch (level) {
     case 'warning':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-300'
+      return 'warning'
     case 'alert':
-      return 'bg-red-100 text-red-800 border-red-300'
+      return 'error'
     default:
-      return 'bg-blue-100 text-blue-800 border-blue-300'
+      return 'info'
   }
 }
 
@@ -101,31 +89,32 @@ export function AnnouncementsList({ announcements }: AnnouncementsListProps) {
                   {/* Metadata */}
                   <div className="flex flex-wrap items-center gap-2 text-sm">
                     {/* Level badge */}
-                    <span
-                      className={`rounded-full border px-2 py-1 font-medium text-xs ${getLevelBadgeClass(announcement.level)}`}
-                    >
+                    <Badge variant={getLevelBadgeVariant(announcement.level)}>
                       {getLevelLabel(announcement.level)}
-                    </span>
+                    </Badge>
 
                     {/* Status badge */}
                     {isActive(announcement) ? (
-                      <span className="rounded-full bg-green-100 px-2 py-1 font-medium text-green-800 text-xs">
-                        公開中
-                      </span>
+                      <Badge variant="success">公開中</Badge>
                     ) : announcement.enabled ? (
-                      <span className="rounded-full bg-slate-100 px-2 py-1 font-medium text-slate-600 text-xs">
-                        公開予定
-                      </span>
+                      <Badge variant="secondary">公開予定</Badge>
                     ) : (
-                      <span className="rounded-full bg-slate-100 px-2 py-1 font-medium text-slate-600 text-xs">
-                        無効
-                      </span>
+                      <Badge variant="secondary">無効</Badge>
                     )}
 
                     {/* Date range */}
                     <span className="text-slate-600">
-                      {formatDateTime(announcement.start_at)} 〜{' '}
-                      {formatDateTime(announcement.end_at)}
+                      {formatDateTime(
+                        Temporal.Instant.from(
+                          announcement.start_at,
+                        ).toZonedDateTimeISO(TIME_ZONE),
+                      )}{' '}
+                      〜{' '}
+                      {formatDateTime(
+                        Temporal.Instant.from(
+                          announcement.end_at,
+                        ).toZonedDateTimeISO(TIME_ZONE),
+                      )}
                     </span>
                   </div>
                 </div>

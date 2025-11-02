@@ -1,5 +1,0 @@
--- Add announcement audit actions to the audit_action enum
-
-ALTER TYPE audit_action ADD VALUE IF NOT EXISTS 'ANNOUNCEMENT_CREATE';
-ALTER TYPE audit_action ADD VALUE IF NOT EXISTS 'ANNOUNCEMENT_UPDATE';
-ALTER TYPE audit_action ADD VALUE IF NOT EXISTS 'ANNOUNCEMENT_DELETE';
