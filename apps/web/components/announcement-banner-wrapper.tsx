@@ -11,6 +11,7 @@ async function AnnouncementContent() {
 
   return (
     <AnnouncementBanner
+      initialId={announcement.id}
       level={announcement.level}
       message={announcement.message}
     />
