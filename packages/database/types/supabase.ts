@@ -420,6 +420,9 @@ export type Database = {
     }
     Enums: {
       audit_action:
+        | 'ANNOUNCEMENT_CREATE'
+        | 'ANNOUNCEMENT_DELETE'
+        | 'ANNOUNCEMENT_UPDATE'
         | 'CHANNEL_CREATE'
         | 'CHANNEL_DELETE'
         | 'CHANNEL_UPDATE'
