@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@shinju-date/tailwind-config/theme.css';
+@source '../../node_modules/@shinju-date/ui';
 
 @theme {
   --animate-accordion-down: accordion-down 0.2s ease-out;
