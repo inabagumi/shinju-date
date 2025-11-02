@@ -41,8 +41,6 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
         <Providers>
           <SVGSymbols />
 
-          <AnnouncementBannerWrapper />
-
           <nav className="sticky top-0 z-50 flex justify-between gap-6 bg-primary-foreground/60 px-2 py-3 shadow-md backdrop-blur dark:bg-zinc-900/60">
             <Link
               className="flex items-center gap-2 p-1 font-semibold"
@@ -134,6 +132,7 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
           </footer>
 
           <Analytics />
+          <AnnouncementBannerWrapper />
         </Providers>
       </body>
     </html>

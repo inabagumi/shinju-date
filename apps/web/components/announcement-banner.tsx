@@ -31,10 +31,10 @@ export function AnnouncementBanner({
 
   return (
     <div
-      className={`sticky top-0 z-40 border-b px-4 py-3 ${getBannerClasses(level)}`}
+      className={`fixed right-4 bottom-4 z-50 max-w-md rounded-lg border p-4 shadow-lg ${getBannerClasses(level)}`}
       role="alert"
     >
-      <div className="mx-auto flex max-w-6xl items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4">
         <p className="flex-1 text-sm">{message}</p>
         <button
           aria-label="お知らせを閉じる"

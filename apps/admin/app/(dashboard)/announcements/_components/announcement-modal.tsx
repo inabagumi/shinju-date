@@ -71,7 +71,12 @@ export function AnnouncementModal({ announcement }: AnnouncementModalProps) {
     const startAtLocal = formData.get('start_at_local') as string
     const endAtLocal = formData.get('end_at_local') as string
 
-    if (startAtLocal && endAtLocal) {
+    if (
+      startAtLocal &&
+      startAtLocal.trim() !== '' &&
+      endAtLocal &&
+      endAtLocal.trim() !== ''
+    ) {
       formData.set('start_at', toISOString(startAtLocal))
       formData.set('end_at', toISOString(endAtLocal))
     }
