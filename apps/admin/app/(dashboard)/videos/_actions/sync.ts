@@ -4,6 +4,7 @@ import type { TablesUpdate } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { getVideos } from '@shinju-date/youtube-api-client'
+import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import { createAuditLog } from '@/lib/audit-log'
@@ -20,7 +21,7 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
     const { data: video, error: fetchError } = await supabaseClient
       .from('videos')
       .select(
-        'id, title, visible, duration, published_at, youtube_video:youtube_videos!inner(youtube_video_id)',
+        'id, title, visible, duration, published_at, status, youtube_video:youtube_videos!inner(youtube_video_id)',
       )
       .eq('id', videoId)
       .single()
@@ -96,20 +97,22 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
       hasChanges = true
     }
 
-    // Check published date (for live streams that might have different actual start times)
-    const youtubePublishedAt =
-      youtubeVideo.liveStreamingDetails?.actualStartTime ??
-      youtubeVideo.liveStreamingDetails?.scheduledStartTime ??
-      youtubeVideo.snippet.publishedAt
+    const publishedAt = getPublishedAt(youtubeVideo)
 
-    if (youtubePublishedAt) {
-      const publishedAt = Temporal.Instant.from(youtubePublishedAt)
+    if (publishedAt) {
       const currentPublishedAt = Temporal.Instant.from(video.published_at)
 
       if (!publishedAt.equals(currentPublishedAt)) {
         updateData.published_at = toDBString(publishedAt)
         hasChanges = true
       }
+    }
+
+    const status = getVideoStatus(youtubeVideo)
+
+    if (video.status !== status) {
+      updateData.status = status
+      hasChanges = true
     }
 
     if (!hasChanges) {
@@ -144,6 +147,10 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
     if ('published_at' in updateData) {
       beforeData.published_at = video.published_at
       afterData.published_at = updateData.published_at
+    }
+    if ('status' in updateData) {
+      beforeData.status = video.status
+      afterData.status = updateData.status
     }
 
     await createAuditLog('VIDEO_SYNC', 'videos', videoId, {

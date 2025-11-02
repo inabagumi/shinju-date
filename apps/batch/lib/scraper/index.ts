@@ -23,6 +23,5 @@ export { Scraper }
 export * from './db'
 export { default as DB } from './db'
 export * from './errors'
-export * from './helpers'
 export * from './scraper'
 export * from './types'
