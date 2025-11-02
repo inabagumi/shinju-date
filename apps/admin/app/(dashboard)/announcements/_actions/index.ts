@@ -62,10 +62,10 @@ export async function createAnnouncementAction(
       .from('announcements')
       .insert({
         enabled,
-        end_at: endAt,
+        end_at: toDBString(Temporal.Instant.from(endAt)),
         level: level || 'info',
         message: message.trim(),
-        start_at: startAt,
+        start_at: toDBString(Temporal.Instant.from(startAt)),
       })
       .select('id, message')
       .single()
@@ -159,10 +159,10 @@ export async function updateAnnouncementAction(
       .from('announcements')
       .update({
         enabled,
-        end_at: endAt,
+        end_at: toDBString(Temporal.Instant.from(endAt)),
         level: level || 'info',
         message: message.trim(),
-        start_at: startAt,
+        start_at: toDBString(Temporal.Instant.from(startAt)),
         updated_at: toDBString(Temporal.Now.instant()),
       })
       .eq('id', id)
