@@ -30,7 +30,6 @@ function formatDateTime(isoString: string): string {
     hour: '2-digit',
     minute: '2-digit',
     month: '2-digit',
-    timeZone: TIME_ZONE,
     year: 'numeric',
   })
 }
