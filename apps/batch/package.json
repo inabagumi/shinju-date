@@ -9,6 +9,7 @@
     "@shinju-date/helpers": "workspace:*",
     "@shinju-date/retryable-fetch": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
+    "@shinju-date/web-cache": "workspace:*",
     "@shinju-date/youtube-api-client": "workspace:*",
     "@shinju-date/youtube-scraper": "workspace:*",
     "@supabase/sentry-js-integration": "0.3.0",

@@ -74,6 +74,9 @@ importers:
       '@shinju-date/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@shinju-date/web-cache':
+        specifier: workspace:*
+        version: link:../../packages/web-cache
       '@shinju-date/youtube-api-client':
         specifier: workspace:*
         version: link:../../packages/youtube-api-client
@@ -183,6 +186,9 @@ importers:
       '@shinju-date/temporal-fns':
         specifier: workspace:*
         version: link:../../packages/temporal-fns
+      '@shinju-date/web-cache':
+        specifier: workspace:*
+        version: link:../../packages/web-cache
       '@shinju-date/youtube-api-client':
         specifier: workspace:*
         version: link:../../packages/youtube-api-client
@@ -703,6 +709,28 @@ importers:
         version: 4.1.16
       tsup:
         specifier: ^8.5.0
+        version: 8.5.0(@swc/core@1.13.5)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/web-cache:
+    dependencies:
+      '@shinju-date/logger':
+        specifier: workspace:*
+        version: link:../logger
+    devDependencies:
+      '@tsconfig/node20':
+        specifier: 20.1.6
+        version: 20.1.6
+      '@tsconfig/strictest':
+        specifier: 2.0.7
+        version: 2.0.7
+      '@types/node':
+        specifier: 22.18.13
+        version: 22.18.13
+      tsup:
+        specifier: 8.5.0
         version: 8.5.0(@swc/core@1.13.5)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)
       typescript:
         specifier: 5.9.3

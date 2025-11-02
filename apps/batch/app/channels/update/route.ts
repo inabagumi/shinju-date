@@ -1,11 +1,11 @@
 import * as Sentry from '@sentry/nextjs'
 import type { Tables } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
+import { revalidateTags } from '@shinju-date/web-cache'
 import type { YouTubeChannel } from '@shinju-date/youtube-scraper'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after } from 'next/server'
 import { channelsUpdate as ratelimit } from '@/lib/ratelimit'
-import { revalidateTags } from '@/lib/revalidate'
 import { supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 

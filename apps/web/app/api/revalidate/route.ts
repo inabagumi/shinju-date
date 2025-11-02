@@ -10,6 +10,23 @@ async function parseRequest(request: Request): Promise<Payload> {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  // 認証チェック
+  const secretToken = process.env['REVALIDATE_SECRET_TOKEN']
+  if (secretToken) {
+    const authHeader = request.headers.get('Authorization')
+    const expectedAuth = `Bearer ${secretToken}`
+
+    if (authHeader !== expectedAuth) {
+      Sentry.logger.warn('Unauthorized revalidation attempt.', {
+        hasAuthHeader: Boolean(authHeader),
+      })
+
+      return createErrorResponse('Unauthorized', {
+        status: 401,
+      })
+    }
+  }
+
   let payload: Payload
 
   try {
