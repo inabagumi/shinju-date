@@ -1,6 +1,7 @@
 'use server'
 
 import { logger } from '@shinju-date/logger'
+import { toDBString } from '@shinju-date/temporal-fns'
 import { getChannels } from '@shinju-date/youtube-api-client'
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
@@ -98,14 +99,14 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
       }
     }
 
-    const currentDateTime = Temporal.Now.zonedDateTimeISO()
+    const currentDateTime = Temporal.Now.instant()
 
     // Update talent with YouTube data
     const { error: updateError } = await supabaseClient
       .from('channels')
       .update({
         name: youtubeChannel.snippet.title,
-        updated_at: currentDateTime.toJSON(),
+        updated_at: toDBString(currentDateTime),
       })
       .eq('id', talentId)
 

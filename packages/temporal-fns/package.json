@@ -34,6 +34,10 @@
     "./start-of-hour": {
       "types": "./dist/start-of-hour.d.ts",
       "default": "./dist/start-of-hour.js"
+    },
+    "./to-db-string": {
+      "types": "./dist/to-db-string.d.ts",
+      "default": "./dist/to-db-string.js"
     }
   },
   "homepage": "https://shinju.date/",

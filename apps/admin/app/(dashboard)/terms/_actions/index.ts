@@ -1,6 +1,7 @@
 'use server'
 
 import { logger } from '@shinju-date/logger'
+import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
@@ -113,7 +114,7 @@ export async function updateTermAction(
         readings: filteredReadings,
         synonyms: filteredSynonyms,
         term: term.trim(),
-        updated_at: Temporal.Now.instant().toString(),
+        updated_at: toDBString(Temporal.Now.instant()),
       })
       .eq('id', id)
       .select('term')

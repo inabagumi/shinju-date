@@ -1,6 +1,7 @@
 'use server'
 
 import { logger } from '@shinju-date/logger'
+import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import { createAuditLog } from '@/lib/audit-log'
@@ -31,14 +32,14 @@ export async function toggleVisibilityAction(ids: string[]): Promise<{
       return { error: '動画が見つかりませんでした。', success: false }
     }
 
-    const now = Temporal.Now.instant().toString()
+    const now = Temporal.Now.instant()
 
     // Toggle visibility for each video
     const updatePromises = videos.map((video) =>
       supabaseClient
         .from('videos')
         .update({
-          updated_at: now,
+          updated_at: toDBString(now),
           visible: !video.visible,
         })
         .eq('id', video.id),
@@ -105,7 +106,7 @@ export async function toggleSingleVideoVisibilityAction(id: string): Promise<{
     const { error: updateError } = await supabaseClient
       .from('videos')
       .update({
-        updated_at: Temporal.Now.instant().toString(),
+        updated_at: toDBString(Temporal.Now.instant()),
         visible: !video.visible,
       })
       .eq('id', id)
@@ -144,7 +145,7 @@ export async function softDeleteAction(ids: string[]): Promise<{
   const supabaseClient = await createSupabaseServerClient()
 
   try {
-    const now = Temporal.Now.instant().toString()
+    const now = Temporal.Now.instant()
 
     // Get thumbnail IDs before soft deleting videos
     const { data: videos, error: fetchError } = await supabaseClient
@@ -164,8 +165,8 @@ export async function softDeleteAction(ids: string[]): Promise<{
     const { error: videoError } = await supabaseClient
       .from('videos')
       .update({
-        deleted_at: now,
-        updated_at: now,
+        deleted_at: toDBString(now),
+        updated_at: toDBString(now),
       })
       .in('id', ids)
 
@@ -181,7 +182,10 @@ export async function softDeleteAction(ids: string[]): Promise<{
     if (thumbnailIds.length > 0) {
       const { error: thumbnailError } = await supabaseClient
         .from('thumbnails')
-        .update({ deleted_at: now })
+        .update({
+          deleted_at: toDBString(now),
+          updated_at: toDBString(now),
+        })
         .in('id', thumbnailIds)
 
       if (thumbnailError) {
@@ -219,7 +223,7 @@ export async function softDeleteSingleVideoAction(id: string): Promise<{
   const supabaseClient = await createSupabaseServerClient()
 
   try {
-    const now = Temporal.Now.instant().toString()
+    const now = Temporal.Now.instant()
 
     // Get thumbnail ID before soft deleting video
     const { data: video, error: fetchError } = await supabaseClient
@@ -240,8 +244,8 @@ export async function softDeleteSingleVideoAction(id: string): Promise<{
     const { error: videoError } = await supabaseClient
       .from('videos')
       .update({
-        deleted_at: now,
-        updated_at: now,
+        deleted_at: toDBString(now),
+        updated_at: toDBString(now),
       })
       .eq('id', id)
 
@@ -253,7 +257,10 @@ export async function softDeleteSingleVideoAction(id: string): Promise<{
     if (video.thumbnail_id) {
       const { error: thumbnailError } = await supabaseClient
         .from('thumbnails')
-        .update({ deleted_at: now })
+        .update({
+          deleted_at: toDBString(now),
+          updated_at: toDBString(now),
+        })
         .eq('id', video.thumbnail_id)
 
       if (thumbnailError) {

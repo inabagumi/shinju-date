@@ -49,7 +49,7 @@ MSWを初回使用する際、または `mockServiceWorker.js` ファイルが�
 # Web アプリの場合
 cd apps/web && pnpm run msw:init
 
-# Admin アプリの場合  
+# Admin アプリの場合
 cd apps/admin && pnpm run msw:init
 ```
 
@@ -73,7 +73,7 @@ uv run poe dev
 # リンティングの実行
 uv run poe lint
 
-# フォーマットの実行  
+# フォーマットの実行
 uv run poe format
 
 # フォーマットチェック（CI用）
@@ -169,7 +169,7 @@ AIツールは常に進化しています。
 ### コードスタイルと品質チェック
 
 * JavaScript/TypeScript: Biomeによるフォーマットとリンティングを必ず実行する
-* Python (Insights API): Ruffによるフォーマットとリンティングを必ず実行する  
+* Python (Insights API): Ruffによるフォーマットとリンティングを必ず実行する
 * AI生成コードも該当する品質チェックツールでチェックする
 * プロジェクトの既存のパターンやコンベンションに従う
 
@@ -195,7 +195,7 @@ uv run poe lint
 特に以下の場合は必ず実行してください：
 
 * コードファイルを新規作成・編集した後
-* インポート文を追加・削除・変更した後  
+* インポート文を追加・削除・変更した後
 * 型定義やインターフェイスを変更した後
 * リファクタリングを行った後
 
@@ -248,6 +248,45 @@ const fromString = Temporal.Instant.from('2025-11-01T12:00:00Z');
 const tokyoTime = now.toZonedDateTimeISO(TIME_ZONE);
 console.log(tokyoTime.toString());
 // > 例: 2025-11-01T21:00:00+09:00[Asia/Tokyo] のような形式 (実際の出力は now の値によって異なります)
+```
+
+#### データベースへの日時の保存について
+
+データベースの `TIMESTAMPTZ` 型のカラムに `Temporal.Instant` または `Temporal.ZonedDateTime` オブジェクトの値を保存する際は、**必ず** `@shinju-date/temporal-fns` パッケージの `toDBString` ヘルパー関数を使用してください。
+
+この関数は、タイムスタンプを秒単位に正規化（ミリ秒以下を切り捨て）し、UTCのISO 8601文字列に変換します。これにより、YouTube APIから取得した日時と `Temporal.Now` で生成した日時の精度が統一され、意図しないデータ更新などのバグを防ぎます。
+
+##### 良い例 (`Good`)
+
+```typescript
+import { toDBString } from '@shinju-date/temporal-fns';
+import { Temporal } from 'temporal-polyfill';
+
+const now = Temporal.Now.instant();
+
+await supabase
+  .from('videos')
+  .update({
+    updated_at: toDBString(now) // 必ずtoDBStringを使用する
+  })
+  .eq('id', videoId);
+````
+
+##### 悪い例 (`Bad`)
+
+```typescript
+import { Temporal } from 'temporal-polyfill';
+
+const now = Temporal.Now.instant();
+
+// toDBStringを使わずに直接toString()を呼び出してはいけません。
+// ミリ秒以下の精度が残り、データ不整合の原因となります。
+await supabase
+  .from('videos')
+  .update({
+    updated_at: now.toString() // NG
+  })
+  .eq('id', videoId);
 ```
 
 ### コミットメッセージ

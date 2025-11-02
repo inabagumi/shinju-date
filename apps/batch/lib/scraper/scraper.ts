@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/nextjs'
 import type { TablesInsert } from '@shinju-date/database'
 import { isNonNullable } from '@shinju-date/helpers'
 import retryableFetch from '@shinju-date/retryable-fetch'
+import { toDBString } from '@shinju-date/temporal-fns'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import mime from 'mime'
 import { nanoid } from 'nanoid'
@@ -189,7 +190,7 @@ export class Thumbnail {
           return {
             ...this.#savedThumbnail,
             deleted_at: null,
-            updated_at: this.#currentDateTime.toString(),
+            updated_at: toDBString(this.#currentDateTime),
           }
         }
 
@@ -222,7 +223,7 @@ export class Thumbnail {
           ...this.#savedThumbnail,
           deleted_at: null,
           etag,
-          updated_at: this.#currentDateTime.toString(),
+          updated_at: toDBString(this.#currentDateTime),
         }
       }
 
@@ -259,7 +260,7 @@ export class Thumbnail {
       height: this.#height,
       ...(this.#savedThumbnail ? { id: this.#savedThumbnail.id } : {}),
       path,
-      updated_at: this.#currentDateTime.toString(),
+      updated_at: toDBString(this.#currentDateTime),
       width: this.#width,
     }
   }
@@ -392,7 +393,7 @@ export default class Scraper implements AsyncDisposable {
             }
 
             if (!savedPublishedAt.equals(publishedAt)) {
-              updateValue.published_at = publishedAt.toString()
+              updateValue.published_at = toDBString(publishedAt)
 
               detectUpdate = true
             } else {
@@ -430,13 +431,13 @@ export default class Scraper implements AsyncDisposable {
           return {
             value: {
               channel_id: this.#savedChannel.id,
-              created_at: this.#currentDateTime.toString(),
+              created_at: toDBString(this.#currentDateTime),
               deleted_at: null,
               duration: originalVideo.contentDetails.duration ?? 'P0D',
               platform: 'youtube',
-              published_at: publishedAt.toString(),
+              published_at: toDBString(publishedAt),
               title: originalVideo.snippet.title ?? '',
-              updated_at: this.#currentDateTime.toString(),
+              updated_at: toDBString(this.#currentDateTime),
               visible: savedVideo?.visible ?? true,
               ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
               ...updateValue,
