@@ -119,8 +119,7 @@ export default function VideoCard({
         )}
         <LiveNow
           className="absolute top-0 right-0 m-2 inline-block rounded-md bg-774-pink-600 px-1.5 py-0.5 font-semibold text-774-pink-50 text-xs"
-          duration={duration}
-          publishedAt={publishedAt}
+          status={value.status}
         />
       </div>
 
