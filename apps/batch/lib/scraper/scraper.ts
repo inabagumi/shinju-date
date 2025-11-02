@@ -394,6 +394,8 @@ export default class Scraper implements AsyncDisposable {
               updateValue.status = status
 
               detectUpdate = true
+            } else {
+              updateValue.status = savedVideo.status
             }
 
             if (savedVideo.duration !== newDuration) {
