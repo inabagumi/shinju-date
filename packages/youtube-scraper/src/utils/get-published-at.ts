@@ -1,5 +1,5 @@
+import type { youtube_v3 as youtube } from '@googleapis/youtube'
 import { Temporal } from 'temporal-polyfill'
-import type { YouTubeVideo } from './types'
 
 /**
  * Extracts the published date from a YouTube video.
@@ -9,11 +9,13 @@ import type { YouTubeVideo } from './types'
  * @param video - The YouTube video object
  * @returns The published date as a Temporal.Instant
  */
-export function getPublishedAt(video: YouTubeVideo): Temporal.Instant {
+export function getPublishedAt(
+  video: youtube.Schema$Video,
+): Temporal.Instant | null {
   const publishedAt =
     video.liveStreamingDetails?.actualStartTime ??
     video.liveStreamingDetails?.scheduledStartTime ??
-    video.snippet.publishedAt
+    video.snippet?.publishedAt
 
-  return Temporal.Instant.from(publishedAt)
+  return publishedAt ? Temporal.Instant.from(publishedAt) : null
 }

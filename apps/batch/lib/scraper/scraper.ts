@@ -4,7 +4,11 @@ import type { TablesInsert } from '@shinju-date/database'
 import { isNonNullable } from '@shinju-date/helpers'
 import retryableFetch from '@shinju-date/retryable-fetch'
 import { toDBString } from '@shinju-date/temporal-fns'
-import { YouTubeScraper } from '@shinju-date/youtube-scraper'
+import {
+  getPublishedAt,
+  getVideoStatus,
+  YouTubeScraper,
+} from '@shinju-date/youtube-scraper'
 import mime from 'mime'
 import { nanoid } from 'nanoid'
 import PQueue from 'p-queue'
@@ -12,7 +16,6 @@ import sharp from 'sharp'
 import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 import DB, { type Video } from './db'
-import { getPublishedAt } from './helpers'
 import type {
   SavedChannel,
   SavedThumbnail,
@@ -373,7 +376,10 @@ export default class Scraper implements AsyncDisposable {
           const thumbnail = thumbnails.find((thumbnail) =>
             thumbnail.path.startsWith(`${originalVideo.id}/`),
           )
-          const publishedAt = getPublishedAt(originalVideo)
+          const status = getVideoStatus(originalVideo)
+          const publishedAt =
+            getPublishedAt(originalVideo) ??
+            Temporal.Instant.from(originalVideo.snippet.publishedAt)
           const updateValue: Partial<TablesInsert<'videos'>> = {}
 
           if (savedVideo) {
@@ -383,6 +389,12 @@ export default class Scraper implements AsyncDisposable {
             const newDuration = originalVideo.contentDetails.duration ?? 'P0D'
 
             let detectUpdate = false
+
+            if (savedVideo.status !== status) {
+              updateValue.status = status
+
+              detectUpdate = true
+            }
 
             if (savedVideo.duration !== newDuration) {
               updateValue.duration = newDuration
@@ -436,6 +448,7 @@ export default class Scraper implements AsyncDisposable {
               duration: originalVideo.contentDetails.duration ?? 'P0D',
               platform: 'youtube',
               published_at: toDBString(publishedAt),
+              status,
               title: originalVideo.snippet.title ?? '',
               updated_at: toDBString(this.#currentDateTime),
               visible: savedVideo?.visible ?? true,

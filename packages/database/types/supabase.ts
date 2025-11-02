@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          created_at: string | null
+          enabled: boolean
+          end_at: string
+          id: string
+          level: string
+          message: string
+          start_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean
+          end_at: string
+          id?: string
+          level?: string
+          message: string
+          start_at: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean
+          end_at?: string
+          id?: string
+          level?: string
+          message?: string
+          start_at?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: Database['public']['Enums']['audit_action']
@@ -198,6 +231,7 @@ export type Database = {
           id: string
           platform: Database['public']['Enums']['platform_type'] | null
           published_at: string
+          status: Database['public']['Enums']['video_status']
           thumbnail_id: string | null
           title: string
           updated_at: string
@@ -211,6 +245,7 @@ export type Database = {
           id?: string
           platform?: Database['public']['Enums']['platform_type'] | null
           published_at: string
+          status?: Database['public']['Enums']['video_status']
           thumbnail_id?: string | null
           title: string
           updated_at?: string
@@ -224,6 +259,7 @@ export type Database = {
           id?: string
           platform?: Database['public']['Enums']['platform_type'] | null
           published_at?: string
+          status?: Database['public']['Enums']['video_status']
           thumbnail_id?: string | null
           title?: string
           updated_at?: string
@@ -362,6 +398,7 @@ export type Database = {
           id: string
           platform: Database['public']['Enums']['platform_type'] | null
           published_at: string
+          status: Database['public']['Enums']['video_status']
           thumbnail_id: string | null
           title: string
           updated_at: string
@@ -383,8 +420,6 @@ export type Database = {
     }
     Enums: {
       audit_action:
-        | 'ACCOUNT_EMAIL_UPDATE'
-        | 'ACCOUNT_PASSWORD_UPDATE'
         | 'CHANNEL_CREATE'
         | 'CHANNEL_DELETE'
         | 'CHANNEL_UPDATE'
@@ -400,8 +435,11 @@ export type Database = {
         | 'CHANNEL_SYNC'
         | 'MAINTENANCE_MODE_ENABLE'
         | 'MAINTENANCE_MODE_DISABLE'
+        | 'ACCOUNT_EMAIL_UPDATE'
+        | 'ACCOUNT_PASSWORD_UPDATE'
       platform_type: 'youtube' | 'twitch'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
+      video_status: 'UPCOMING' | 'LIVE' | 'ENDED'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -530,8 +568,6 @@ export const Constants = {
   public: {
     Enums: {
       audit_action: [
-        'ACCOUNT_EMAIL_UPDATE',
-        'ACCOUNT_PASSWORD_UPDATE',
         'CHANNEL_CREATE',
         'CHANNEL_DELETE',
         'CHANNEL_UPDATE',
@@ -547,9 +583,12 @@ export const Constants = {
         'CHANNEL_SYNC',
         'MAINTENANCE_MODE_ENABLE',
         'MAINTENANCE_MODE_DISABLE',
+        'ACCOUNT_EMAIL_UPDATE',
+        'ACCOUNT_PASSWORD_UPDATE',
       ],
       platform_type: ['youtube', 'twitch'],
       twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],
+      video_status: ['UPCOMING', 'LIVE', 'ENDED'],
     },
   },
 } as const
