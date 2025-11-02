@@ -2,6 +2,7 @@ import './globals.css'
 import { Analytics } from '@vercel/analytics/react'
 import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
+import { AnnouncementBannerWrapper } from '@/components/announcement-banner-wrapper'
 import PageVisitTracker from '@/components/page-visit-tracker'
 import { TimerProvider } from '@/components/timer'
 import { title as siteName, themeColor } from '@/lib/constants'
@@ -39,6 +40,8 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
         <PageVisitTracker />
         <Providers>
           <SVGSymbols />
+
+          <AnnouncementBannerWrapper />
 
           <nav className="sticky top-0 z-50 flex justify-between gap-6 bg-primary-foreground/60 px-2 py-3 shadow-md backdrop-blur dark:bg-zinc-900/60">
             <Link

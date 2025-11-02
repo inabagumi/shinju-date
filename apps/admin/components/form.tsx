@@ -195,3 +195,75 @@ export function Label({ htmlFor, ...props }: LabelProps) {
     />
   )
 }
+
+type SelectProps = Omit<ComponentPropsWithoutRef<'select'>, 'value'>
+
+export function Select({
+  defaultValue = '',
+  disabled,
+  id: newId,
+  name: newName,
+  ...props
+}: SelectProps) {
+  const [value, setValue] = useState(defaultValue)
+  const { pending } = useFormStatus()
+  const { errors } = useContext(FormContext)
+  const { id, name } = useContext(FormFieldContext)
+  const invalid = typeof name !== 'undefined' && !!errors?.[name]
+
+  const handleChange = useCallback<ChangeEventHandler<HTMLSelectElement>>(
+    ({ target }) => {
+      setValue(target.value)
+    },
+    [],
+  )
+
+  return (
+    <select
+      aria-describedby={invalid && id ? `${id}-error-message` : undefined}
+      aria-invalid={invalid ? true : undefined}
+      disabled={disabled ?? (pending ? true : undefined)}
+      id={newId ?? id}
+      name={newName ?? name}
+      onChange={handleChange}
+      value={value}
+      {...props}
+    />
+  )
+}
+
+type TextareaProps = Omit<ComponentPropsWithoutRef<'textarea'>, 'value'>
+
+export function Textarea({
+  defaultValue = '',
+  disabled,
+  id: newId,
+  name: newName,
+  ...props
+}: TextareaProps) {
+  const [value, setValue] = useState(defaultValue)
+  const { pending } = useFormStatus()
+  const { errors } = useContext(FormContext)
+  const { id, name } = useContext(FormFieldContext)
+  const invalid = typeof name !== 'undefined' && !!errors?.[name]
+
+  const handleChange = useCallback<ChangeEventHandler<HTMLTextAreaElement>>(
+    ({ target }) => {
+      setValue(target.value)
+    },
+    [],
+  )
+
+  return (
+    <textarea
+      aria-describedby={invalid && id ? `${id}-error-message` : undefined}
+      aria-invalid={invalid ? true : undefined}
+      disabled={disabled ?? (pending ? true : undefined)}
+      id={newId ?? id}
+      name={newName ?? name}
+      onChange={handleChange}
+      value={value}
+      {...props}
+    />
+  )
+}
