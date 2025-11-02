@@ -3,6 +3,7 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import type { default as Database } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { toDBString } from '@shinju-date/temporal-fns'
+import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
@@ -11,7 +12,6 @@ import {
   videosCheck as ratelimitRecent,
 } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
-import { revalidateTags } from '@/lib/revalidate'
 import { supabaseClient, type TypedSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 

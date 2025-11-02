@@ -3,6 +3,7 @@
 import type { TablesUpdate } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
+import { revalidateTags } from '@shinju-date/web-cache'
 import { getVideos } from '@shinju-date/youtube-api-client'
 import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
 import { revalidatePath } from 'next/cache'
@@ -160,6 +161,7 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
 
     revalidatePath(`/videos/${videoId}`)
     revalidatePath('/videos')
+    await revalidateTags(['videos'])
     return { success: true }
   } catch (error) {
     logger.error('動画の同期に失敗しました', { error, videoId })

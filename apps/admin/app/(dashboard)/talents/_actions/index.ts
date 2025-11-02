@@ -2,6 +2,7 @@
 
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
+import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
@@ -65,6 +66,7 @@ export async function createTalentAction(
     })
 
     revalidatePath('/talents')
+    await revalidateTags(['channels', 'videos'])
     return {}
   } catch (error) {
     logger.error('タレントの追加に失敗しました', {
@@ -159,6 +161,7 @@ export async function updateTalentAction(
     })
 
     revalidatePath('/talents')
+    await revalidateTags(['channels', 'videos'])
     return {}
   } catch (error) {
     logger.error('タレントの更新に失敗しました', {
@@ -212,6 +215,7 @@ export async function deleteTalentAction(id: string): Promise<{
     })
 
     revalidatePath('/talents')
+    await revalidateTags(['channels', 'videos'])
     return { success: true }
   } catch (error) {
     logger.error('タレントの削除に失敗しました', { error, id })

@@ -2,6 +2,7 @@
 
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
+import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import { createAuditLog } from '@/lib/audit-log'
@@ -64,6 +65,7 @@ export async function toggleVisibilityAction(ids: string[]): Promise<{
     )
 
     revalidatePath('/videos')
+    await revalidateTags(['videos'])
     return { success: true }
   } catch (error) {
     logger.error('動画の表示切替に失敗しました', {
@@ -121,6 +123,7 @@ export async function toggleSingleVideoVisibilityAction(id: string): Promise<{
     })
 
     revalidatePath('/videos')
+    await revalidateTags(['videos'])
     return { success: true }
   } catch (error) {
     logger.error('動画の表示切替に失敗しました', { error, id })
@@ -203,6 +206,7 @@ export async function softDeleteAction(ids: string[]): Promise<{
     )
 
     revalidatePath('/videos')
+    await revalidateTags(['videos'])
     return { success: true }
   } catch (error) {
     logger.error('動画の削除に失敗しました', { error, ids: ids.join(',') })
@@ -274,6 +278,7 @@ export async function softDeleteSingleVideoAction(id: string): Promise<{
     })
 
     revalidatePath('/videos')
+    await revalidateTags(['videos'])
     return { success: true }
   } catch (error) {
     logger.error('動画の削除に失敗しました', { error, id })

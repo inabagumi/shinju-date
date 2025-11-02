@@ -2,6 +2,7 @@
 
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
+import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog } from '@/lib/audit-log'
 import { redisClient } from '@/lib/redis'
@@ -32,6 +33,7 @@ export async function addQueryAction(query: string): Promise<{
 
     revalidatePath('/recommended-queries')
     revalidatePath('/', 'page')
+    await revalidateTags(['videos'])
     return { success: true }
   } catch (error) {
     logger.error('クエリの追加に失敗しました', { error, query: trimmedQuery })
@@ -67,6 +69,7 @@ export async function deleteQueryAction(query: string): Promise<{
 
     revalidatePath('/recommended-queries')
     revalidatePath('/', 'page')
+    await revalidateTags(['videos'])
     return { success: true }
   } catch (error) {
     logger.error('クエリの削除に失敗しました', { error, query })

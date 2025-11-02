@@ -2,6 +2,7 @@
 
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
+import { revalidateTags } from '@shinju-date/web-cache'
 import { getChannels } from '@shinju-date/youtube-api-client'
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
@@ -122,6 +123,7 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
 
     revalidatePath(`/talents/${talentId}`)
     revalidatePath('/talents')
+    await revalidateTags(['channels', 'videos'])
     return { success: true }
   } catch (error) {
     logger.error('タレントの同期に失敗しました', { error, talentId })
