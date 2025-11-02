@@ -57,6 +57,7 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
     setIsOpen(false)
   }, [])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: モーダルを再表示するためにpathnameに依存する必要があります
   useEffect(() => {
     setIsOpen(true)
   }, [pathname])
