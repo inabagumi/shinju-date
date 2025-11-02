@@ -11,9 +11,11 @@ async function AnnouncementContent() {
 
   return (
     <AnnouncementBanner
+      endAt={announcement.end_at}
       initialId={announcement.id}
       level={announcement.level}
       message={announcement.message}
+      startAt={announcement.start_at}
     />
   )
 }

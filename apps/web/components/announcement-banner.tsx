@@ -11,6 +11,8 @@ type AnnouncementBannerProps = {
   message: string
   level: string
   initialId: string
+  startAt: string
+  endAt: string
 }
 
 // Get banner background and text color based on level
@@ -29,6 +31,8 @@ export function AnnouncementBanner({
   message: initialMessage,
   level: initialLevel,
   initialId,
+  startAt: initialStartAt,
+  endAt: initialEndAt,
 }: AnnouncementBannerProps) {
   const [isVisible, setIsVisible] = useState(true)
 
@@ -36,9 +40,11 @@ export function AnnouncementBanner({
   const { data } = useQuery({
     enabled: isVisible,
     initialData: {
+      end_at: initialEndAt,
       id: initialId,
       level: initialLevel,
       message: initialMessage,
+      start_at: initialStartAt,
     },
     queryFn: async () => {
       const announcement = await getAnnouncementAction()
