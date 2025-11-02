@@ -1,17 +1,18 @@
 'use server'
 
 import type { Tables } from '@shinju-date/database'
-import { startOfHour } from '@shinju-date/temporal-fns'
+import { startOfHour, toDBString } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { SEARCH_RESULT_COUNT, timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
 
 const DEFAULT_SEARCH_SELECT = `
-  talent:channels!inner (id, name),
   duration,
   id,
-  thumbnail:thumbnails (blur_data_url, height, path, width),
   published_at,
+  status,
+  talent:channels!inner (id, name),
+  thumbnail:thumbnails (blur_data_url, height, path, width),
   title,
   youtube_video:youtube_videos!inner (youtube_video_id)
 `
@@ -25,7 +26,7 @@ export type Thumbnail = Pick<
 
 export type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'id' | 'published_at' | 'title'
+  'duration' | 'id' | 'published_at' | 'status' | 'title'
 > & {
   talent: Talent
   thumbnail: Thumbnail | null
@@ -33,29 +34,20 @@ export type Video = Pick<
 }
 
 export const fetchNotEndedVideos = async (): Promise<Video[]> => {
-  const epochNanoseconds = Temporal.Now.instant().epochNanoseconds
-  const baseTime = Temporal.Instant.fromEpochNanoseconds(epochNanoseconds)
-  const hour = startOfHour(baseTime.toZonedDateTimeISO(timeZone))
-  const since = hour.toInstant().subtract({
-    hours: 5,
+  const baseTime = startOfHour(Temporal.Now.zonedDateTimeISO(timeZone))
+  const until = baseTime.add({
+    weeks: 1,
   })
-  const until = hour
-    .add({
-      weeks: 1,
-    })
-    .toInstant()
 
-  const builder = supabaseClient
+  const { data: videos, error } = await supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
-    .gte('published_at', since.toJSON())
-    .lte('published_at', until.toJSON())
+    .neq('status', 'ENDED')
+    .lte('published_at', toDBString(until))
     .order('published_at', {
       ascending: false,
     })
     .limit(100)
-
-  const { data: videos, error } = await builder
 
   if (error) {
     throw new TypeError(error.message, {
@@ -63,37 +55,7 @@ export const fetchNotEndedVideos = async (): Promise<Video[]> => {
     })
   }
 
-  return videos.filter((video) => {
-    const publishedAt = Temporal.Instant.from(video.published_at)
-    const duration = Temporal.Duration.from(video.duration)
-    const endedAt =
-      duration.total({
-        unit: 'second',
-      }) > 0
-        ? publishedAt.add(duration)
-        : undefined
-
-    // 終了時刻がわかっている動画
-    if (endedAt) {
-      // プレミア公開中の動画
-      return Temporal.Instant.compare(endedAt, baseTime) >= 0
-    }
-
-    // (おそらく) ライブ配信中の動画
-    if ((publishedAt.epochMilliseconds / 1_000) % 60 > 0) {
-      return true
-    }
-
-    // まだ配信開始前やプレミア公開開始前の動画 (30分のゆとりあり)
-    return (
-      Temporal.Instant.compare(
-        baseTime.subtract({
-          minutes: 30,
-        }),
-        publishedAt,
-      ) < 0
-    )
-  })
+  return videos
 }
 
 async function getDefaultBaseTime() {

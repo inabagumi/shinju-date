@@ -10,6 +10,7 @@ import { notFound } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
 import { ChevronLeftIcon, ExternalLinkIcon } from '@/components/icons'
 import { supabaseClient } from '@/lib/supabase/public'
+import { StatusBadge } from '../_components/status-badge'
 import getVideo from '../_lib/get-video'
 import { SyncVideoButton } from './_components/sync-video-button'
 import { VideoActionsButtons } from './_components/video-actions-buttons'
@@ -156,7 +157,7 @@ export default async function VideoDetailPage({ params }: Props) {
                 ステータス
               </h3>
             </div>
-            <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
+            <div className="flex gap-2 border-gray-200 border-t px-4 py-5 sm:px-6">
               <span
                 className={`inline-flex rounded-full px-2 py-1 font-semibold text-xs leading-5 ${getStatusColor(
                   video,
@@ -164,6 +165,8 @@ export default async function VideoDetailPage({ params }: Props) {
               >
                 {getStatusText(video)}
               </span>
+
+              <StatusBadge status={video.status} />
             </div>
           </div>
         </div>

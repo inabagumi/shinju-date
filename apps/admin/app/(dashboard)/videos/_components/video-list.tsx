@@ -24,6 +24,7 @@ import {
 } from '../_actions'
 import type { Video } from '../_lib/get-videos'
 import { SortIcon } from './sort-icon'
+import { StatusBadge } from './status-badge'
 
 type Props = {
   videos: Video[]
@@ -298,18 +299,22 @@ export default function VideoList({ videos }: Props) {
                   </td>
                   <td className="p-3">{formatNumber(video.clicks)}</td>
                   <td className="p-3">
-                    <span
-                      className={twMerge(
-                        'whitespace-nowrap rounded px-2 py-1 text-xs',
-                        video.deleted_at
-                          ? 'bg-red-100 text-red-800'
-                          : video.visible
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800',
-                      )}
-                    >
-                      {getStatusText(video)}
-                    </span>
+                    <div className="flex flex-col items-center gap-2">
+                      <span
+                        className={twMerge(
+                          'whitespace-nowrap rounded px-2 py-1 text-xs',
+                          video.deleted_at
+                            ? 'bg-red-100 text-red-800'
+                            : video.visible
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-800',
+                        )}
+                      >
+                        {getStatusText(video)}
+                      </span>
+
+                      <StatusBadge status={video.status} />
+                    </div>
                   </td>
                   <td className="p-3">
                     <DropdownMenu>

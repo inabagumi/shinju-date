@@ -1,4 +1,5 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import type { Tables } from '@shinju-date/database'
 import { range } from '@shinju-date/helpers'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { cache } from 'react'
@@ -14,6 +15,7 @@ export type VideoDetail = {
   published_at: string
   updated_at: string
   created_at: string
+  status: Tables<'videos'>['status']
   duration: string
   thumbnail: {
     path: string
@@ -37,7 +39,7 @@ const getVideo = cache(async function getVideo(
   const { data: video, error } = await supabaseClient
     .from('videos')
     .select(
-      'id, title, visible, deleted_at, published_at, updated_at, created_at, duration, thumbnail:thumbnails(path, blur_data_url), talent:channels(id, name), youtube_video:youtube_videos(youtube_video_id)',
+      'id, title, visible, deleted_at, published_at, updated_at, created_at, status, duration, thumbnail:thumbnails(path, blur_data_url), talent:channels(id, name), youtube_video:youtube_videos(youtube_video_id)',
     )
     .eq('id', id)
     .single()
@@ -91,6 +93,7 @@ const getVideo = cache(async function getVideo(
     duration: video.duration,
     id: video.id,
     published_at: video.published_at,
+    status: video.status,
     talent: video.talent,
     thumbnail: video.thumbnail,
     title: video.title,
