@@ -71,14 +71,17 @@ export function AnnouncementModal({ announcement }: AnnouncementModalProps) {
     const startAtLocal = formData.get('start_at_local') as string
     const endAtLocal = formData.get('end_at_local') as string
 
-    if (
-      startAtLocal &&
-      startAtLocal.trim() !== '' &&
-      endAtLocal &&
-      endAtLocal.trim() !== ''
-    ) {
+    // Always set start_at and end_at, even if empty (for validation)
+    if (startAtLocal && startAtLocal.trim() !== '') {
       formData.set('start_at', toISOString(startAtLocal))
+    } else {
+      formData.set('start_at', '')
+    }
+
+    if (endAtLocal && endAtLocal.trim() !== '') {
       formData.set('end_at', toISOString(endAtLocal))
+    } else {
+      formData.set('end_at', '')
     }
 
     const action = isEditing

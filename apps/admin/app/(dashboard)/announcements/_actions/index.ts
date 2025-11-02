@@ -13,10 +13,10 @@ export async function createAnnouncementAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const message = formData.get('message') as string
-  const level = formData.get('level') as string
-  const startAt = formData.get('start_at') as string
-  const endAt = formData.get('end_at') as string
+  const message = formData.get('message') as string | null
+  const level = formData.get('level') as string | null
+  const startAt = formData.get('start_at') as string | null
+  const endAt = formData.get('end_at') as string | null
   const enabled = formData.get('enabled') === 'true'
 
   if (!message || message.trim() === '') {
@@ -111,11 +111,11 @@ export async function updateAnnouncementAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const id = formData.get('id') as string
-  const message = formData.get('message') as string
-  const level = formData.get('level') as string
-  const startAt = formData.get('start_at') as string
-  const endAt = formData.get('end_at') as string
+  const id = formData.get('id') as string | null
+  const message = formData.get('message') as string | null
+  const level = formData.get('level') as string | null
+  const startAt = formData.get('start_at') as string | null
+  const endAt = formData.get('end_at') as string | null
   const enabled = formData.get('enabled') === 'true'
 
   if (!id || !message || message.trim() === '') {
