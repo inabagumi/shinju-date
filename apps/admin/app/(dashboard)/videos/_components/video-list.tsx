@@ -1,7 +1,8 @@
 'use client'
 
+import { TIME_ZONE } from '@shinju-date/constants'
 import { formatNumber } from '@shinju-date/helpers'
-import { formatDuration } from '@shinju-date/temporal-fns'
+import { formatDateTime, formatDuration } from '@shinju-date/temporal-fns'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -267,25 +268,28 @@ export default function VideoList({ videos }: Props) {
                     </span>
                   </td>
                   <td className="p-3">
-                    <span className="text-gray-600 text-sm">
-                      {new Date(video.published_at).toLocaleDateString(
-                        'ja-JP',
-                        {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                        },
+                    <time
+                      className="text-gray-600 text-sm"
+                      dateTime={video.published_at}
+                    >
+                      {formatDateTime(
+                        Temporal.Instant.from(
+                          video.published_at,
+                        ).toZonedDateTimeISO(TIME_ZONE),
                       )}
-                    </span>
+                    </time>
                   </td>
                   <td className="p-3">
-                    <span className="text-gray-600 text-sm">
-                      {new Date(video.updated_at).toLocaleDateString('ja-JP', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                      })}
-                    </span>
+                    <time
+                      className="text-gray-600 text-sm"
+                      dateTime={video.updated_at}
+                    >
+                      {formatDateTime(
+                        Temporal.Instant.from(
+                          video.updated_at,
+                        ).toZonedDateTimeISO(TIME_ZONE),
+                      )}
+                    </time>
                   </td>
                   <td className="p-3">
                     <span className="text-gray-600 text-sm">

@@ -121,10 +121,14 @@ export function TalentsList({ talents }: TalentsListProps) {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-600 text-sm">
-                    {formatDateTimeFromISO(talent.created_at)}
+                    <time dateTime={talent.created_at}>
+                      {formatDateTimeFromISO(talent.created_at)}
+                    </time>
                   </td>
                   <td className="px-4 py-3 text-gray-600 text-sm">
-                    {formatDateTimeFromISO(talent.updated_at)}
+                    <time dateTime={talent.updated_at}>
+                      {formatDateTimeFromISO(talent.updated_at)}
+                    </time>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <TalentActions talent={talent} />
