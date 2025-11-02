@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@shinju-date/tailwind-config/theme.css';
+@source '../node_modules/@shinju-date/ui';
 
 @theme {
   --background-image-search-icon: url(./_assets/search-icon.svg);
