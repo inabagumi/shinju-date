@@ -110,7 +110,9 @@ export default async function TalentDetailPage({ params }: Props) {
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500 text-sm">作成日時</dt>
               <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                {formatDateTimeFromISO(talent.created_at)}
+                <time dateTime={talent.created_at}>
+                  {formatDateTimeFromISO(talent.created_at)}
+                </time>
               </dd>
             </div>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -118,16 +120,22 @@ export default async function TalentDetailPage({ params }: Props) {
                 最終更新日時
               </dt>
               <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                {formatDateTimeFromISO(talent.updated_at)}
+                <time dateTime={talent.updated_at}>
+                  {formatDateTimeFromISO(talent.updated_at)}
+                </time>
               </dd>
             </div>
             {isDeleted && (
               <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">削除日時</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                  {talent.deleted_at
-                    ? formatDateTimeFromISO(talent.deleted_at)
-                    : '-'}
+                  {talent.deleted_at ? (
+                    <time dateTime={talent.deleted_at}>
+                      {formatDateTimeFromISO(talent.deleted_at)}
+                    </time>
+                  ) : (
+                    '-'
+                  )}
                 </dd>
               </div>
             )}
@@ -188,7 +196,9 @@ export default async function TalentDetailPage({ params }: Props) {
                           </p>
                         </Link>
                         <p className="text-gray-500 text-sm">
-                          {formatDateTimeFromISO(video.published_at)}
+                          <time dateTime={video.published_at}>
+                            {formatDateTimeFromISO(video.published_at)}
+                          </time>
                         </p>
                       </div>
                       <div className="shrink-0">

@@ -96,7 +96,10 @@ export function LogItem({ log }: { log: Log }) {
           <AuditLogTarget log={log} />
           <ChangeDetails log={log} />
         </div>
-        <time className="ml-4 flex-shrink-0 text-right text-gray-500 text-xs">
+        <time
+          className="ml-4 flex-shrink-0 text-right text-gray-500 text-xs"
+          dateTime={log.created_at}
+        >
           {formatRelativeTime(Temporal.Instant.from(log.created_at))}
         </time>
       </div>

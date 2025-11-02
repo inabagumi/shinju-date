@@ -224,13 +224,17 @@ export default async function VideoDetailPage({ params }: Props) {
               <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">公開日時</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                  {formatDateTimeFromISO(video.published_at)}
+                  <time dateTime={video.published_at}>
+                    {formatDateTimeFromISO(video.published_at)}
+                  </time>
                 </dd>
               </div>
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">作成日時</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                  {formatDateTimeFromISO(video.created_at)}
+                  <time dateTime={video.created_at}>
+                    {formatDateTimeFromISO(video.created_at)}
+                  </time>
                 </dd>
               </div>
               <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -238,7 +242,9 @@ export default async function VideoDetailPage({ params }: Props) {
                   最終更新日時
                 </dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                  {formatDateTimeFromISO(video.updated_at)}
+                  <time dateTime={video.updated_at}>
+                    {formatDateTimeFromISO(video.updated_at)}
+                  </time>
                 </dd>
               </div>
               {isDeleted && (
@@ -247,9 +253,13 @@ export default async function VideoDetailPage({ params }: Props) {
                     削除日時
                   </dt>
                   <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                    {video.deleted_at
-                      ? formatDateTimeFromISO(video.deleted_at)
-                      : '-'}
+                    {video.deleted_at ? (
+                      <time dateTime={video.deleted_at}>
+                        {formatDateTimeFromISO(video.deleted_at)}
+                      </time>
+                    ) : (
+                      '-'
+                    )}
                   </dd>
                 </div>
               )}
