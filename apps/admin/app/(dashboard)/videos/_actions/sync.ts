@@ -2,6 +2,7 @@
 
 import type { TablesUpdate } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
+import { toDBString } from '@shinju-date/temporal-fns'
 import { getVideos } from '@shinju-date/youtube-api-client'
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
@@ -73,11 +74,11 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
     // Note: youtube_videos table already has this video's record since we queried with inner join
     // No need for dual-write here as the record must exist
 
-    const currentDateTime = Temporal.Now.zonedDateTimeISO()
+    const currentDateTime = Temporal.Now.instant()
 
     // Prepare update data - check what needs to be updated
     const updateData: TablesUpdate<'videos'> = {
-      updated_at: currentDateTime.toJSON(),
+      updated_at: toDBString(currentDateTime),
     }
 
     let hasChanges = false
@@ -106,7 +107,7 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
       const currentPublishedAt = Temporal.Instant.from(video.published_at)
 
       if (!publishedAt.equals(currentPublishedAt)) {
-        updateData.published_at = publishedAt.toString()
+        updateData.published_at = toDBString(publishedAt)
         hasChanges = true
       }
     }
@@ -129,8 +130,8 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
     }
 
     // Log audit entry with before/after details
-    const beforeData: Partial<TablesUpdate<'videos'>> = {}
-    const afterData: Partial<TablesUpdate<'videos'>> = {}
+    const beforeData: TablesUpdate<'videos'> = {}
+    const afterData: TablesUpdate<'videos'> = {}
 
     if ('title' in updateData) {
       beforeData.title = video.title

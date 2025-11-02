@@ -9,6 +9,7 @@ export default defineConfig({
     './src/max.ts',
     './src/min.ts',
     './src/start-of-hour.ts',
+    './src/to-db-string.ts',
   ],
   format: 'esm',
   sourcemap: true,

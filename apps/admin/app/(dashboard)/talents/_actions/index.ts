@@ -1,6 +1,7 @@
 'use server'
 
 import { logger } from '@shinju-date/logger'
+import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
@@ -119,7 +120,7 @@ export async function updateTalentAction(
       .from('channels')
       .update({
         name: name.trim(),
-        updated_at: Temporal.Now.instant().toString(),
+        updated_at: toDBString(Temporal.Now.instant()),
       })
       .eq('id', id)
       .select('name')
@@ -189,13 +190,13 @@ export async function deleteTalentAction(id: string): Promise<{
   }
 
   try {
-    const now = Temporal.Now.instant().toString()
+    const now = Temporal.Now.instant()
 
     const { data: talent, error } = await supabaseClient
       .from('channels')
       .update({
-        deleted_at: now,
-        updated_at: now,
+        deleted_at: toDBString(now),
+        updated_at: toDBString(now),
       })
       .eq('id', id)
       .select('name')

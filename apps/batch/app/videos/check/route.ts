@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/nextjs'
 import { REDIS_KEYS } from '@shinju-date/constants'
 import type { default as Database } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
+import { toDBString } from '@shinju-date/temporal-fns'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
@@ -106,8 +107,8 @@ async function softDeleteRows({
   const { data, error } = await supabaseClient
     .from(table)
     .update({
-      deleted_at: currentDateTime.toJSON(),
-      updated_at: currentDateTime.toJSON(),
+      deleted_at: toDBString(currentDateTime),
+      updated_at: toDBString(currentDateTime),
     })
     .in('id', ids)
     .select('id')
@@ -272,7 +273,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   }
 
   // Update last sync timestamp in Redis
-  await redisClient.set(REDIS_KEYS.LAST_VIDEO_SYNC, currentDateTime.toString())
+  await redisClient.set(REDIS_KEYS.LAST_VIDEO_SYNC, toDBString(currentDateTime))
 
   after(async () => {
     Sentry.captureCheckIn({
