@@ -26,7 +26,7 @@ export async function createAnnouncementAction(
     }
   }
 
-  if (!startAt || !endAt) {
+  if (!startAt || startAt.trim() === '' || !endAt || endAt.trim() === '') {
     return {
       errors: {
         generic: ['開始日時と終了日時を入力してください。'],
@@ -122,7 +122,7 @@ export async function updateAnnouncementAction(
     }
   }
 
-  if (!startAt || !endAt) {
+  if (!startAt || startAt.trim() === '' || !endAt || endAt.trim() === '') {
     return {
       errors: {
         generic: ['開始日時と終了日時を入力してください。'],

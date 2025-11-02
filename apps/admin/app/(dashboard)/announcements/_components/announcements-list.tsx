@@ -2,7 +2,7 @@
 
 import { TIME_ZONE } from '@shinju-date/constants'
 import { formatDateTime } from '@shinju-date/temporal-fns'
-import { Badge, type BadgeVariant } from '@shinju-date/ui'
+import { Badge } from '@shinju-date/ui'
 import { Temporal } from 'temporal-polyfill'
 import { AnnouncementModal } from './announcement-modal'
 import { DeleteConfirmDialog } from './delete-confirm-dialog'
@@ -23,7 +23,7 @@ type AnnouncementsListProps = {
 }
 
 // Get level badge variant
-function getLevelBadgeVariant(level: string): BadgeVariant {
+function getLevelBadgeVariant(level: string): 'info' | 'warning' | 'error' {
   switch (level) {
     case 'warning':
       return 'warning'

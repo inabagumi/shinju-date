@@ -1,33 +1,32 @@
+import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentPropsWithRef } from 'react'
 import { twMerge } from 'tailwind-merge'
 
-export type BadgeVariant =
-  | 'info'
-  | 'success'
-  | 'warning'
-  | 'error'
-  | 'secondary'
+const badgeVariants = cva(
+  'inline-flex items-center rounded-full border px-2 py-1 font-medium text-xs',
+  {
+    defaultVariants: {
+      variant: 'info',
+    },
+    variants: {
+      variant: {
+        error: 'border-red-300 bg-red-100 text-red-800',
+        info: 'border-blue-300 bg-blue-100 text-blue-800',
+        secondary: 'border-slate-300 bg-slate-100 text-slate-600',
+        success: 'border-green-300 bg-green-100 text-green-800',
+        warning: 'border-yellow-300 bg-yellow-100 text-yellow-800',
+      },
+    },
+  },
+)
 
-export type BadgeProps = ComponentPropsWithRef<'span'> & {
-  variant?: BadgeVariant
-}
+export type BadgeProps = ComponentPropsWithRef<'span'> &
+  VariantProps<typeof badgeVariants>
 
-const variantClasses: Record<BadgeVariant, string> = {
-  error: 'bg-red-100 text-red-800 border-red-300',
-  info: 'bg-blue-100 text-blue-800 border-blue-300',
-  secondary: 'bg-slate-100 text-slate-600 border-slate-300',
-  success: 'bg-green-100 text-green-800 border-green-300',
-  warning: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-}
-
-export function Badge({ variant = 'info', className, ...props }: BadgeProps) {
+export function Badge({ variant, className, ...props }: BadgeProps) {
   return (
     <span
-      className={twMerge(
-        'inline-flex items-center rounded-full border px-2 py-1 font-medium text-xs',
-        variantClasses[variant],
-        className,
-      )}
+      className={twMerge(badgeVariants({ variant }), className)}
       {...props}
     />
   )
