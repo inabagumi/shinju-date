@@ -1,6 +1,6 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
 import * as Sentry from '@sentry/nextjs'
-import type { TablesInsert, TablesUpdate } from '@shinju-date/database'
+import type { TablesInsert } from '@shinju-date/database'
 import { isNonNullable } from '@shinju-date/helpers'
 import retryableFetch from '@shinju-date/retryable-fetch'
 import { toDBString } from '@shinju-date/temporal-fns'
@@ -388,68 +388,82 @@ export default class Scraper implements AsyncDisposable {
         }
 
         const status = getVideoStatus(originalVideo, this.#currentDateTime)
-        const updateValue: TablesUpdate<'videos'> = {}
 
-        if (savedVideo) {
-          let hasUpdate = false
-
-          if (savedVideo.status !== status) {
-            updateValue.status = status
-            hasUpdate = true
-          }
-          const newDuration = originalVideo.contentDetails?.duration ?? 'P0D'
-          if (savedVideo.duration !== newDuration) {
-            updateValue.duration = newDuration
-            hasUpdate = true
-          }
-          const savedPublishedAt = Temporal.Instant.from(
-            savedVideo.published_at,
-          )
-          if (!savedPublishedAt.equals(publishedAt)) {
-            updateValue.published_at = toDBString(publishedAt)
-            hasUpdate = true
-          }
-          if (thumbnail && savedVideo.thumbnail_id !== thumbnail.id) {
-            updateValue.thumbnail_id = thumbnail.id
-            hasUpdate = true
-          }
-          const newTitle = originalVideo.snippet?.title ?? ''
-          if (savedVideo.title !== newTitle) {
-            updateValue.title = newTitle
-            hasUpdate = true
-          }
-          if (savedVideo.deleted_at) {
-            updateValue.deleted_at = null
-            hasUpdate = true
-          }
-
-          if (!hasUpdate) {
-            return null
-          }
-
+        if (!savedVideo) {
           return {
             value: {
-              ...savedVideo,
-              ...updateValue,
               channel_id: this.#savedChannel.id,
-              thumbnails: undefined,
-              youtube_video: undefined,
+              created_at: toDBString(this.#currentDateTime),
+              duration: originalVideo.contentDetails?.duration ?? 'P0D',
+              platform: 'youtube',
+              published_at: toDBString(publishedAt),
+              status,
+              title: originalVideo.snippet?.title ?? '',
+              updated_at: toDBString(this.#currentDateTime),
+              visible: true,
+              ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
             },
             youtubeVideoId: originalVideo.id,
           }
         }
 
+        const updateValue: Partial<TablesInsert<'videos'>> = {}
+        let hasUpdate = false
+
+        if (savedVideo.status !== status) {
+          updateValue.status = status
+          hasUpdate = true
+        }
+
+        const newDuration = originalVideo.contentDetails?.duration ?? 'P0D'
+        if (savedVideo.duration !== newDuration) {
+          updateValue.duration = newDuration
+          hasUpdate = true
+        }
+
+        const savedPublishedAt = Temporal.Instant.from(savedVideo.published_at)
+        if (!savedPublishedAt.equals(publishedAt)) {
+          updateValue.published_at = toDBString(publishedAt)
+          hasUpdate = true
+        }
+
+        if (thumbnail && savedVideo.thumbnail_id !== thumbnail.id) {
+          updateValue.thumbnail_id = thumbnail.id
+          hasUpdate = true
+        }
+
+        const newTitle = originalVideo.snippet?.title ?? ''
+        if (savedVideo.title !== newTitle) {
+          updateValue.title = newTitle
+          hasUpdate = true
+        }
+
+        if (savedVideo.deleted_at) {
+          updateValue.deleted_at = null
+          hasUpdate = true
+        }
+
+        if (!hasUpdate) {
+          return null
+        }
+
         return {
           value: {
             channel_id: this.#savedChannel.id,
-            duration: originalVideo.contentDetails?.duration ?? 'P0D',
-            platform: 'youtube',
-            published_at: toDBString(publishedAt),
-            status,
-            title: originalVideo.snippet?.title ?? '',
-            visible: true,
-            ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
-            ...updateValue,
+            created_at: savedVideo.created_at,
+            deleted_at:
+              'deleted_at' in updateValue
+                ? updateValue.deleted_at
+                : savedVideo.deleted_at,
+            duration: updateValue.duration ?? savedVideo.duration,
+            id: savedVideo.id,
+            platform: savedVideo.platform,
+            published_at: updateValue.published_at ?? savedVideo.published_at,
+            status: updateValue.status ?? savedVideo.status,
+            thumbnail_id: updateValue.thumbnail_id ?? savedVideo.thumbnail_id,
+            title: updateValue.title ?? savedVideo.title,
+            updated_at: toDBString(this.#currentDateTime),
+            visible: savedVideo.visible,
           },
           youtubeVideoId: originalVideo.id,
         }
