@@ -35,10 +35,12 @@ export async function createAnnouncementAction(
     }
   }
 
-  // Validate dates
+  // Validate dates and parse Instant objects
+  let start: Temporal.Instant
+  let end: Temporal.Instant
   try {
-    const start = Temporal.Instant.from(startAt)
-    const end = Temporal.Instant.from(endAt)
+    start = Temporal.Instant.from(startAt)
+    end = Temporal.Instant.from(endAt)
 
     if (Temporal.Instant.compare(start, end) >= 0) {
       return {
@@ -62,10 +64,10 @@ export async function createAnnouncementAction(
       .from('announcements')
       .insert({
         enabled,
-        end_at: toDBString(Temporal.Instant.from(endAt)),
+        end_at: toDBString(end),
         level: level || 'info',
         message: message.trim(),
-        start_at: toDBString(Temporal.Instant.from(startAt)),
+        start_at: toDBString(start),
       })
       .select('id, message')
       .single()
@@ -132,10 +134,12 @@ export async function updateAnnouncementAction(
     }
   }
 
-  // Validate dates
+  // Validate dates and parse Instant objects
+  let start: Temporal.Instant
+  let end: Temporal.Instant
   try {
-    const start = Temporal.Instant.from(startAt)
-    const end = Temporal.Instant.from(endAt)
+    start = Temporal.Instant.from(startAt)
+    end = Temporal.Instant.from(endAt)
 
     if (Temporal.Instant.compare(start, end) >= 0) {
       return {
@@ -159,10 +163,10 @@ export async function updateAnnouncementAction(
       .from('announcements')
       .update({
         enabled,
-        end_at: toDBString(Temporal.Instant.from(endAt)),
+        end_at: toDBString(end),
         level: level || 'info',
         message: message.trim(),
-        start_at: toDBString(Temporal.Instant.from(startAt)),
+        start_at: toDBString(start),
         updated_at: toDBString(Temporal.Now.instant()),
       })
       .eq('id', id)
