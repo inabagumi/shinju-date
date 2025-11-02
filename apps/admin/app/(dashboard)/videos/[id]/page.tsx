@@ -3,6 +3,7 @@ import {
   formatDateTimeFromISO,
   formatDuration,
 } from '@shinju-date/temporal-fns'
+import { Badge } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -30,13 +31,13 @@ function getStatusText(video: {
   return '非表示'
 }
 
-function getStatusColor(video: {
+function getStatusVariant(video: {
   visible: boolean
   deleted_at: string | null
-}): string {
-  if (video.deleted_at) return 'bg-red-100 text-red-800'
-  if (video.visible) return 'bg-green-100 text-green-800'
-  return 'bg-gray-100 text-gray-800'
+}): 'error' | 'success' | 'secondary' {
+  if (video.deleted_at) return 'error'
+  if (video.visible) return 'success'
+  return 'secondary'
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -158,13 +159,12 @@ export default async function VideoDetailPage({ params }: Props) {
               </h3>
             </div>
             <div className="flex gap-2 border-gray-200 border-t px-4 py-5 sm:px-6">
-              <span
-                className={`inline-flex rounded-full px-2 py-1 font-semibold text-xs leading-5 ${getStatusColor(
-                  video,
-                )}`}
+              <Badge
+                className="font-semibold leading-5"
+                variant={getStatusVariant(video)}
               >
                 {getStatusText(video)}
-              </span>
+              </Badge>
 
               <StatusBadge status={video.status} />
             </div>
