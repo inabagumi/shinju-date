@@ -2,6 +2,7 @@ import './globals.css'
 import { Analytics } from '@vercel/analytics/react'
 import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
+import { AnnouncementBannerWrapper } from '@/components/announcement-banner-wrapper'
 import PageVisitTracker from '@/components/page-visit-tracker'
 import { TimerProvider } from '@/components/timer'
 import { title as siteName, themeColor } from '@/lib/constants'
@@ -131,6 +132,7 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
           </footer>
 
           <Analytics />
+          <AnnouncementBannerWrapper />
         </Providers>
       </body>
     </html>

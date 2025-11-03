@@ -10,6 +10,9 @@ const ACTION_LABELS: Record<
 > = {
   ACCOUNT_EMAIL_UPDATE: 'メールアドレスを更新',
   ACCOUNT_PASSWORD_UPDATE: 'パスワードを更新',
+  ANNOUNCEMENT_CREATE: 'お知らせを作成',
+  ANNOUNCEMENT_DELETE: 'お知らせを削除',
+  ANNOUNCEMENT_UPDATE: 'お知らせを更新',
   CHANNEL_CREATE: 'タレントを作成',
   CHANNEL_DELETE: 'タレントを削除',
   CHANNEL_SYNC: 'タレントを同期',

@@ -84,6 +84,15 @@ export function NavigationBar() {
                 >
                   オススメクエリ管理
                 </Link>
+                <Link
+                  className={`block px-4 py-2 hover:bg-slate-600 ${
+                    isActive('/announcements') ? 'bg-slate-600' : ''
+                  }`}
+                  href="/announcements"
+                  onClick={() => setIsDataMenuOpen(false)}
+                >
+                  お知らせ管理
+                </Link>
               </div>
             )}
           </div>
@@ -276,6 +285,15 @@ export function NavigationBar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 オススメクエリ管理
+              </Link>
+              <Link
+                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
+                  isActive('/announcements') ? 'bg-slate-700' : ''
+                }`}
+                href="/announcements"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                お知らせ管理
               </Link>
             </div>
             <div className="space-y-1">

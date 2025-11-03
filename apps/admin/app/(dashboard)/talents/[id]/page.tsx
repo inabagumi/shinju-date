@@ -1,4 +1,5 @@
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
+import { Badge } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -202,21 +203,22 @@ export default async function TalentDetailPage({ params }: Props) {
                         </p>
                       </div>
                       <div className="shrink-0">
-                        <span
-                          className={`inline-flex rounded-full px-2 py-1 font-semibold text-xs leading-5 ${
+                        <Badge
+                          className="font-semibold leading-5"
+                          variant={
                             video.deleted_at
-                              ? 'bg-red-100 text-red-800'
+                              ? 'error'
                               : video.visible
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
-                          }`}
+                                ? 'success'
+                                : 'secondary'
+                          }
                         >
                           {video.deleted_at
                             ? '削除済み'
                             : video.visible
                               ? '公開中'
                               : '非表示'}
-                        </span>
+                        </Badge>
                       </div>
                     </div>
                   </li>
