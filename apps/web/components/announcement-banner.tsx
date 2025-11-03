@@ -35,6 +35,7 @@ export function AnnouncementBanner({
   endAt: initialEndAt,
 }: AnnouncementBannerProps) {
   const [isVisible, setIsVisible] = useState(true)
+  const [isExpanded, setIsExpanded] = useState(false)
 
   // Periodically refetch announcement data
   const { data } = useQuery({
@@ -70,22 +71,30 @@ export function AnnouncementBanner({
       role="alert"
     >
       <div className="flex items-start justify-between gap-4">
-        <div className="prose prose-sm max-w-none flex-1">
-          <ReactMarkdown
-            rehypePlugins={[
-              [
-                rehypeExternalLinks,
-                {
-                  rel: ['nofollow', 'noopener', 'noreferrer'],
-                  target: '_blank',
-                },
-              ],
-            ]}
-            remarkPlugins={[remarkGfm]}
+        <button
+          className="flex-1 cursor-pointer text-left"
+          onClick={() => setIsExpanded(!isExpanded)}
+          type="button"
+        >
+          <div
+            className={`prose prose-sm max-w-none ${!isExpanded ? 'line-clamp-1' : ''}`}
           >
-            {data.message}
-          </ReactMarkdown>
-        </div>
+            <ReactMarkdown
+              rehypePlugins={[
+                [
+                  rehypeExternalLinks,
+                  {
+                    rel: ['nofollow', 'noopener', 'noreferrer'],
+                    target: '_blank',
+                  },
+                ],
+              ]}
+              remarkPlugins={[remarkGfm]}
+            >
+              {data.message}
+            </ReactMarkdown>
+          </div>
+        </button>
         <button
           aria-label="お知らせを閉じる"
           className="flex-shrink-0 rounded-md p-1 hover:bg-black/10"
