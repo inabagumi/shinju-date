@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@shinju-date/ui'
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
 import Form, {
@@ -24,32 +24,7 @@ import Form, {
   Textarea,
 } from '@/components/form'
 import { createAnnouncementAction, updateAnnouncementAction } from '../_actions'
-
-type Announcement = {
-  id: string
-  message: string
-  level: string
-  enabled: boolean
-  start_at: string
-  end_at: string
-}
-
-type AnnouncementModalProps = {
-  announcement?: Announcement
-}
-
-// Convert ISO string to datetime-local format (YYYY-MM-DDTHH:mm)
-function toDateTimeLocal(isoString: string): string {
-  const instant = Temporal.Instant.from(isoString)
-  const zonedDateTime = instant.toZonedDateTimeISO(TIME_ZONE)
-
-  return zonedDateTime
-    .toString({
-      smallestUnit: 'minute',
-      timeZoneName: 'never',
-    })
-    .replace('[Asia/Tokyo]', '')
-}
+import type { Announcement } from '../_lib/types'
 
 // Convert datetime-local format to ISO string
 function toISOString(dateTimeLocal: string): string {
@@ -59,8 +34,34 @@ function toISOString(dateTimeLocal: string): string {
   return zonedDateTime.toInstant().toString()
 }
 
-export function AnnouncementModal({ announcement }: AnnouncementModalProps) {
+export function AnnouncementModal({
+  announcement,
+}: {
+  announcement?: Announcement
+}) {
   const [open, setOpen] = useState(false)
+  const defaultStartAt = useMemo(
+    () =>
+      (announcement
+        ? Temporal.Instant.from(announcement.start_at)
+        : Temporal.Now.instant().round({
+            roundingIncrement: 30,
+            roundingMode: 'expand',
+            smallestUnit: 'minute',
+          })
+      ).toZonedDateTimeISO(TIME_ZONE),
+    [announcement],
+  )
+  const defaultEndAt = useMemo(
+    () =>
+      announcement
+        ? Temporal.Instant.from(announcement.end_at).toZonedDateTimeISO(
+            TIME_ZONE,
+          )
+        : defaultStartAt.add({ weeks: 1 }),
+    [announcement, defaultStartAt],
+  )
+
   const isEditing = !!announcement
 
   const handleAction = async (
@@ -96,28 +97,6 @@ export function AnnouncementModal({ announcement }: AnnouncementModalProps) {
 
     return result
   }
-
-  useEffect(() => {
-    if (!open) {
-      // Small delay to allow the modal to close before resetting
-      const timer = setTimeout(() => {
-        // Any cleanup if needed
-      }, 100)
-      return () => {
-        clearTimeout(timer)
-      }
-    }
-    return undefined
-  }, [open])
-
-  // Get default datetime values
-  const now = Temporal.Now.instant()
-  const defaultStart = announcement?.start_at
-    ? toDateTimeLocal(announcement.start_at)
-    : toDateTimeLocal(now.toString())
-  const defaultEnd = announcement?.end_at
-    ? toDateTimeLocal(announcement.end_at)
-    : toDateTimeLocal(now.add({ hours: 24 }).toString())
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
@@ -165,8 +144,11 @@ export function AnnouncementModal({ announcement }: AnnouncementModalProps) {
               <Label className="mb-2 block font-medium">開始日時 (JST)</Label>
               <Input
                 className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
-                defaultValue={defaultStart}
+                defaultValue={defaultStartAt
+                  .toPlainDateTime()
+                  .toString({ smallestUnit: 'minute' })}
                 required
+                step={60 * 30}
                 type="datetime-local"
               />
               <ErrorMessage className="mt-1 text-red-600 text-sm" />
@@ -175,8 +157,11 @@ export function AnnouncementModal({ announcement }: AnnouncementModalProps) {
               <Label className="mb-2 block font-medium">終了日時 (JST)</Label>
               <Input
                 className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
-                defaultValue={defaultEnd}
+                defaultValue={defaultEndAt
+                  .toPlainDateTime()
+                  .toString({ smallestUnit: 'minute' })}
                 required
+                step={60 * 30}
                 type="datetime-local"
               />
               <ErrorMessage className="mt-1 text-red-600 text-sm" />

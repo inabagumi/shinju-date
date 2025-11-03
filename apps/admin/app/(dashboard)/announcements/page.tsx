@@ -1,12 +1,21 @@
+import { Suspense } from 'react'
+import { AnnouncementModal } from './_components/announcement-modal'
 import { AnnouncementsList } from './_components/announcements-list'
-import getAnnouncements from './_lib/get-announcements'
 
-export default async function AnnouncementsPage() {
-  const announcements = await getAnnouncements()
-
+export default function AnnouncementsPage() {
   return (
     <div className="p-6">
-      <AnnouncementsList announcements={announcements} />
+      <div className="space-y-6">
+        {/* Header with Add button */}
+        <div className="flex items-center justify-between">
+          <h1 className="font-bold text-3xl">お知らせ管理</h1>
+          <AnnouncementModal />
+        </div>
+
+        <Suspense>
+          <AnnouncementsList />
+        </Suspense>
+      </div>
     </div>
   )
 }
