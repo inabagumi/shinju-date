@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogOverlay,
   DialogPortal,
   DialogTitle,
@@ -114,6 +115,11 @@ export function AnnouncementModal({
           <DialogTitle>
             {isEditing ? 'お知らせを編集' : '新しいお知らせを追加'}
           </DialogTitle>
+          <DialogDescription>
+            {isEditing
+              ? 'お知らせの内容を編集してください。'
+              : 'サイト全体に表示するお知らせを作成してください。'}
+          </DialogDescription>
           <Form action={handleAction} className="space-y-4">
             {isEditing && (
               <input name="id" type="hidden" value={announcement.id} />
