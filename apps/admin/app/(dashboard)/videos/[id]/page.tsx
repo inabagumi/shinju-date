@@ -4,12 +4,12 @@ import {
   formatDuration,
 } from '@shinju-date/temporal-fns'
 import { Badge } from '@shinju-date/ui'
+import { ChevronLeft, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
-import { ChevronLeftIcon, ExternalLinkIcon } from '@/components/icons'
 import { supabaseClient } from '@/lib/supabase/public'
 import { StatusBadge } from '../_components/status-badge'
 import getVideo from '../_lib/get-video'
@@ -75,7 +75,7 @@ export default async function VideoDetailPage({ params }: Props) {
           className="inline-flex items-center text-blue-600 hover:text-blue-800"
           href="/videos"
         >
-          <ChevronLeftIcon className="mr-1 h-4 w-4" />
+          <ChevronLeft className="mr-1 h-4 w-4" />
           動画一覧に戻る
         </Link>
       </div>
@@ -291,7 +291,7 @@ export default async function VideoDetailPage({ params }: Props) {
                 target="_blank"
               >
                 YouTubeで見る
-                <ExternalLinkIcon className="ml-2 h-4 w-4" />
+                <ExternalLink className="ml-2 h-4 w-4" />
               </a>
             )}
           </div>

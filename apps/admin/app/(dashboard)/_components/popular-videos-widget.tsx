@@ -1,9 +1,9 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { formatNumber } from '@shinju-date/helpers'
+import { ExternalLink } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Temporal } from 'temporal-polyfill'
-import { ExternalLinkIcon } from '@/components/icons'
 import { PopularVideosListSkeleton } from '@/components/skeletons'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
 import { createSupabaseServerClient } from '@/lib/supabase'
@@ -79,7 +79,7 @@ export async function PopularVideosWidget() {
                     rel="noopener noreferrer"
                     target="_blank"
                   >
-                    <ExternalLinkIcon className="h-5 w-5 text-gray-600" />
+                    <ExternalLink className="h-5 w-5 text-gray-600" />
                     <span className="sr-only">YouTubeで視聴</span>
                   </a>
                 )}

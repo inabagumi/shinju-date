@@ -1,7 +1,7 @@
 'use client'
 
+import { Loader2 } from 'lucide-react'
 import { useState, useTransition } from 'react'
-import { SpinnerIcon } from '@/components/icons'
 import { syncTalentWithYouTube } from '../../_actions/sync'
 
 type Props = {
@@ -45,7 +45,7 @@ export function SyncTalentButton({ talentId }: Props) {
         onClick={handleSync}
         type="button"
       >
-        {isPending && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
+        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {isPending ? '同期中...' : 'YouTubeと同期'}
       </button>
 
