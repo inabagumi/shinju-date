@@ -21,10 +21,10 @@
     "tailwindcss": "4.1.16",
     "tsup": "^8.5.0",
     "typescript": "5.9.3",
-    "storybook": "^10.0.3",
-    "@storybook/react-vite": "^10.0.3",
-    "@storybook/addon-docs": "^10.0.3",
-    "@storybook/addon-onboarding": "^10.0.3"
+    "storybook": "^10.0.4",
+    "@storybook/react-vite": "^10.0.4",
+    "@storybook/addon-docs": "^10.0.4",
+    "@storybook/addon-onboarding": "^10.0.4"
   },
   "exports": {
     ".": {
