@@ -1,5 +1,5 @@
+import { Search } from 'lucide-react'
 import { Suspense } from 'react'
-import SearchIcon from '@/app/_components/search-icon'
 import { AsyncInput, InputSkeleton } from './_components/async-input'
 import { SearchModal, SearchModalTitle } from './_components/search-modal'
 import { Suggestions } from './_components/suggestions'
@@ -26,7 +26,7 @@ export default function SearchModalPage({
           action={searchAction}
           className="flex items-center border-774-nevy-200 border-b dark:border-zinc-700"
         >
-          <SearchIcon className="ml-4 size-5 text-774-nevy-400 dark:text-774-nevy-300" />
+          <Search className="ml-4 size-5 text-774-nevy-400 dark:text-774-nevy-300" />
 
           <SearchModalTitle className="sr-only">検索</SearchModalTitle>
 

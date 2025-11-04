@@ -1,5 +1,5 @@
+import { Search } from 'lucide-react'
 import type * as z from 'zod'
-import SearchIcon from '@/app/_components/search-icon'
 import { supabaseClient } from '@/lib/supabase'
 import type { searchParamsSchema } from '../_lib/search-params-schema'
 import { SearchModalLink } from './search-modal'
@@ -42,7 +42,7 @@ export async function Suggestions({
                 href={`/videos/${encodeURIComponent(suggestion.term)}`}
                 key={suggestion.term}
               >
-                <SearchIcon className="size-4 text-774-nevy-400 dark:text-774-nevy-300" />
+                <Search className="size-4 text-774-nevy-400 dark:text-774-nevy-300" />
                 <span className="text-primary dark:text-774-nevy-50">
                   {suggestion.term}
                 </span>
