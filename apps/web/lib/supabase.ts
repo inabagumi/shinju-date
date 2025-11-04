@@ -46,6 +46,7 @@ function createClient(
           ...requestInit,
           cache: 'force-cache',
           next: {
+            revalidate: 60 * 60, // 1 hour
             tags,
           },
         })
