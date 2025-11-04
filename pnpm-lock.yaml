@@ -18,8 +18,8 @@ importers:
         specifier: 4.0.6
         version: 4.0.6(vitest@4.0.6)
       next-devtools-mcp:
-        specifier: 0.2.5
-        version: 0.2.5(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+        specifier: 0.2.6
+        version: 0.2.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
       turbo:
         specifier: 2.6.0
         version: 2.6.0
@@ -1384,9 +1384,14 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  '@modelcontextprotocol/sdk@1.20.0':
-    resolution: {integrity: sha512-kOQ4+fHuT4KbR2iq2IjeV32HiihueuOf1vJkq18z08CLZ1UQrTc8BXJpVfxZkq45+inLLD+D4xx4nBjUelJa4Q==}
+  '@modelcontextprotocol/sdk@1.21.0':
+    resolution: {integrity: sha512-YFBsXJMFCyI1zP98u7gezMFKX4lgu/XpoZJk7ufI6UlFKXLj2hAMUuRlQX/nrmIPOmhRrG6tw2OQ2ZA/ZlXYpQ==}
     engines: {node: '>=18'}
+    peerDependencies:
+      '@cfworker/json-schema': ^4.1.1
+    peerDependenciesMeta:
+      '@cfworker/json-schema':
+        optional: true
 
   '@mswjs/interceptors@0.40.0':
     resolution: {integrity: sha512-EFd6cVbHsgLa6wa4RljGj6Wk75qoHxUSyc5asLyyPSyuhIcdS2Q3Phw6ImS1q+CkALthJRShiYfKANcQMuMqsQ==}
@@ -2885,6 +2890,14 @@ packages:
 
   ajv-formats@2.1.1:
     resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
+    peerDependencies:
+      ajv: ^8.0.0
+    peerDependenciesMeta:
+      ajv:
+        optional: true
+
+  ajv-formats@3.0.1:
+    resolution: {integrity: sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ==}
     peerDependencies:
       ajv: ^8.0.0
     peerDependenciesMeta:
@@ -4534,8 +4547,8 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  next-devtools-mcp@0.2.5:
-    resolution: {integrity: sha512-8zieoU81TUvOuyd0zxrfRa9ujlzPqHh6ixhu2W5mKJmYa6tzFPYd6yAlzB2fVSOo/2SUJ2fieM+7aqCGvkK/kA==}
+  next-devtools-mcp@0.2.6:
+    resolution: {integrity: sha512-UfFrFTk5/hfl0pJ1k9l1KjnYRyxiGwnkUs5ws6QIfNWyatF/a0ISL4WFUBvlfjF0Ksq4UVnEnImDoh766eSEYQ==}
     hasBin: true
 
   next@16.0.1:
@@ -5850,8 +5863,8 @@ packages:
       utf-8-validate:
         optional: true
 
-  xmcp@0.3.6:
-    resolution: {integrity: sha512-X24JSubDTrdQI2iuoECenN+XabK1utizlgGXl6iloDYl1F4QgXacoaoi79xgTIZY2NqtgGIp9k36bjcM4O+kzg==}
+  xmcp@0.4.0:
+    resolution: {integrity: sha512-3LK97d9zRy7BeV9bncVC/pV3V0yTV+crK8rCsiOQB4fdNWj8wTP6Djrn/YjzYKDxrFM6sPyiPKjvfmWreujkiw==}
     hasBin: true
     peerDependencies:
       react: '>=19.0.0'
@@ -6437,9 +6450,10 @@ snapshots:
       '@types/react': 19.2.2
       react: 19.2.0
 
-  '@modelcontextprotocol/sdk@1.20.0':
+  '@modelcontextprotocol/sdk@1.21.0':
     dependencies:
-      ajv: 6.12.6
+      ajv: 8.17.1
+      ajv-formats: 3.0.1(ajv@8.17.1)
       content-type: 1.0.5
       cors: 2.8.5
       cross-spawn: 7.0.6
@@ -8057,6 +8071,10 @@ snapshots:
       indent-string: 5.0.0
 
   ajv-formats@2.1.1(ajv@8.17.1):
+    optionalDependencies:
+      ajv: 8.17.1
+
+  ajv-formats@3.0.1(ajv@8.17.1):
     optionalDependencies:
       ajv: 8.17.1
 
@@ -10032,14 +10050,15 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  next-devtools-mcp@0.2.5(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3):
+  next-devtools-mcp@0.2.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3):
     dependencies:
-      '@modelcontextprotocol/sdk': 1.20.0
+      '@modelcontextprotocol/sdk': 1.21.0
       find-process: 2.0.0
       pid-port: 2.0.0
-      xmcp: 0.3.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)(zod@3.25.76)
+      xmcp: 0.4.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)(zod@3.25.76)
       zod: 3.25.76
     transitivePeerDependencies:
+      - '@cfworker/json-schema'
       - '@swc/helpers'
       - esbuild
       - react
@@ -11502,9 +11521,9 @@ snapshots:
 
   ws@8.18.3: {}
 
-  xmcp@0.3.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)(zod@3.25.76):
+  xmcp@0.4.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)(zod@3.25.76):
     dependencies:
-      '@modelcontextprotocol/sdk': 1.20.0
+      '@modelcontextprotocol/sdk': 1.21.0
       '@swc/core': 1.11.24
       '@types/express': 5.0.5
       '@types/webpack-node-externals': 3.0.4(@swc/core@1.11.24)
@@ -11534,6 +11553,7 @@ snapshots:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
     transitivePeerDependencies:
+      - '@cfworker/json-schema'
       - '@swc/helpers'
       - esbuild
       - supports-color
