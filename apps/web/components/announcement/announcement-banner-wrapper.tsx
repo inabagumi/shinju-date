@@ -1,6 +1,7 @@
+import { COOKIE_NAMES } from '@shinju-date/constants'
 import { cookies } from 'next/headers'
 import { Suspense } from 'react'
-import { getAnnouncement } from '@/lib/get-announcement'
+import { getAnnouncement } from '@/lib/announcement/get-announcement'
 import { AnnouncementBanner } from './announcement-banner'
 
 async function AnnouncementContent() {
@@ -12,7 +13,9 @@ async function AnnouncementContent() {
 
   // Check if the user has dismissed this announcement
   const cookieStore = await cookies()
-  const dismissedId = cookieStore.get('dismissed_announcement_id')?.value
+  const dismissedId = cookieStore.get(
+    COOKIE_NAMES.DISMISSED_ANNOUNCEMENT_ID,
+  )?.value
 
   // Don't show the banner if the user has dismissed this specific announcement
   if (dismissedId === announcement.id) {

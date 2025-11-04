@@ -5,8 +5,8 @@ import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
-import { dismissAnnouncement } from '@/lib/dismiss-announcement-action'
-import { getAnnouncementAction } from '@/lib/get-announcement-action'
+import { dismissAnnouncement } from '@/lib/announcement/dismiss-announcement-action'
+import { getAnnouncementAction } from '@/lib/announcement/get-announcement-action'
 
 type AnnouncementBannerProps = {
   message: string

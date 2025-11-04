@@ -1,6 +1,6 @@
 import { toDBString } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-import { supabaseClient } from './supabase'
+import { supabaseClient } from '../supabase'
 
 export type Announcement = {
   id: string

@@ -1,8 +1,8 @@
 'use server'
 
+import { COOKIE_NAMES } from '@shinju-date/constants'
 import { cookies } from 'next/headers'
 
-const COOKIE_NAME = 'dismissed_announcement_id'
 const ONE_DAY_IN_SECONDS = 86400
 
 /**
@@ -12,7 +12,7 @@ const ONE_DAY_IN_SECONDS = 86400
 export async function dismissAnnouncement(announcementId: string) {
   const cookieStore = await cookies()
 
-  cookieStore.set(COOKIE_NAME, announcementId, {
+  cookieStore.set(COOKIE_NAMES.DISMISSED_ANNOUNCEMENT_ID, announcementId, {
     httpOnly: true,
     maxAge: ONE_DAY_IN_SECONDS,
     path: '/',
