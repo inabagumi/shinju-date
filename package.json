@@ -5,7 +5,7 @@
     "@biomejs/biome": "2.3.3",
     "@vitest/coverage-v8": "4.0.6",
     "@vitest/ui": "4.0.6",
-    "next-devtools-mcp": "0.2.4",
+    "next-devtools-mcp": "0.2.5",
     "turbo": "2.6.0",
     "typescript": "5.9.3",
     "vitest": "4.0.6"
