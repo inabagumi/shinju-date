@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import SearchIcon from '@/app/_components/search-icon'
 import { AsyncInput, InputSkeleton } from './_components/async-input'
 import { SearchModal, SearchModalTitle } from './_components/search-modal'
 import { Suggestions } from './_components/suggestions'
@@ -25,17 +26,7 @@ export default function SearchModalPage({
           action={searchAction}
           className="flex items-center border-774-nevy-200 border-b dark:border-zinc-700"
         >
-          <svg
-            aria-hidden="true"
-            className="ml-4 size-5 text-774-nevy-400 dark:text-774-nevy-300"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
-          </svg>
+          <SearchIcon className="ml-4 size-5 text-774-nevy-400 dark:text-774-nevy-300" />
 
           <SearchModalTitle className="sr-only">検索</SearchModalTitle>
 

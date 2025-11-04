@@ -1,4 +1,5 @@
 import type * as z from 'zod'
+import SearchIcon from '@/app/_components/search-icon'
 import { supabaseClient } from '@/lib/supabase'
 import type { searchParamsSchema } from '../_lib/search-params-schema'
 import { SearchModalLink } from './search-modal'
@@ -41,17 +42,7 @@ export async function Suggestions({
                 href={`/videos/${encodeURIComponent(suggestion.term)}`}
                 key={suggestion.term}
               >
-                <svg
-                  aria-hidden="true"
-                  className="size-4 text-774-nevy-400 dark:text-774-nevy-300"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
+                <SearchIcon className="size-4 text-774-nevy-400 dark:text-774-nevy-300" />
                 <span className="text-primary dark:text-774-nevy-50">
                   {suggestion.term}
                 </span>
