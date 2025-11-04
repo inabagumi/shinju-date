@@ -1,5 +1,10 @@
 export const TIME_ZONE = 'Asia/Tokyo'
 
+// Cookie names
+export const COOKIE_NAMES = {
+  DISMISSED_ANNOUNCEMENT_ID: 'dismissed_announcement_id',
+} as const
+
 // Redis keys for search analytics
 export const REDIS_KEYS = {
   CLICK_CHANNEL_PREFIX: 'channels:clicked:',

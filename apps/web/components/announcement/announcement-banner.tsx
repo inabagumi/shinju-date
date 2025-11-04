@@ -5,7 +5,8 @@ import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
-import { getAnnouncementAction } from '@/lib/get-announcement-action'
+import { dismissAnnouncement } from '@/lib/announcement/dismiss-announcement-action'
+import { getAnnouncementAction } from '@/lib/announcement/get-announcement-action'
 
 type AnnouncementBannerProps = {
   message: string
@@ -98,7 +99,10 @@ export function AnnouncementBanner({
         <button
           aria-label="お知らせを閉じる"
           className="flex-shrink-0 rounded-md p-1 hover:bg-black/10"
-          onClick={() => setIsVisible(false)}
+          onClick={async () => {
+            await dismissAnnouncement(data.id)
+            setIsVisible(false)
+          }}
           type="button"
         >
           <svg
