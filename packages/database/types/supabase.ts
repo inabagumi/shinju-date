@@ -417,12 +417,16 @@ export type Database = {
           term: string
         }[]
       }
+      suggestions_v2: {
+        Args: { p_query: string }
+        Returns: {
+          priority: number
+          term: string
+        }[]
+      }
     }
     Enums: {
       audit_action:
-        | 'ANNOUNCEMENT_CREATE'
-        | 'ANNOUNCEMENT_DELETE'
-        | 'ANNOUNCEMENT_UPDATE'
         | 'CHANNEL_CREATE'
         | 'CHANNEL_DELETE'
         | 'CHANNEL_UPDATE'
@@ -440,6 +444,9 @@ export type Database = {
         | 'MAINTENANCE_MODE_DISABLE'
         | 'ACCOUNT_EMAIL_UPDATE'
         | 'ACCOUNT_PASSWORD_UPDATE'
+        | 'ANNOUNCEMENT_CREATE'
+        | 'ANNOUNCEMENT_DELETE'
+        | 'ANNOUNCEMENT_UPDATE'
       platform_type: 'youtube' | 'twitch'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
       video_status: 'UPCOMING' | 'LIVE' | 'ENDED'
@@ -588,6 +595,9 @@ export const Constants = {
         'MAINTENANCE_MODE_DISABLE',
         'ACCOUNT_EMAIL_UPDATE',
         'ACCOUNT_PASSWORD_UPDATE',
+        'ANNOUNCEMENT_CREATE',
+        'ANNOUNCEMENT_DELETE',
+        'ANNOUNCEMENT_UPDATE',
       ],
       platform_type: ['youtube', 'twitch'],
       twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],
