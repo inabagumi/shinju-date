@@ -7,6 +7,26 @@
   --background-image-search-icon-invert: url(./_assets/search-icon-invert.svg);
 }
 
+/* iOS overscroll handling: html should have dark footer color */
+html {
+  min-height: 100vh;
+  background-color: hsl(var(--primary));
+}
+
+html.dark {
+  background-color: rgb(39 39 42); /* zinc-800 */
+}
+
+/* Body should have light main content color */
+body {
+  min-height: 100vh;
+  background-color: hsl(var(--primary-foreground));
+}
+
+body.dark {
+  background-color: rgb(24 24 27); /* zinc-900 */
+}
+
 @layer components {
   .markdown {
     @apply space-y-4 leading-loose;
