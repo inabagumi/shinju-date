@@ -41,6 +41,7 @@
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
     "@tailwindcss/postcss": "4.1.16",
+    "@tailwindcss/typography": "0.5.19",
     "@tsconfig/next": "2.0.3",
     "@tsconfig/strictest": "2.0.7",
     "@types/dedent": "0.7.2",

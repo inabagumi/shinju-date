@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import '@shinju-date/tailwind-config/theme.css';
 @source '../node_modules/@shinju-date/ui';
+@plugin '@tailwindcss/typography';
 
 @theme {
   --background-image-search-icon: url(./_assets/search-icon.svg);
@@ -31,35 +32,4 @@
 @utility safe-area-inset-x {
   right: calc(1rem + env(safe-area-inset-right));
   left: calc(1rem + env(safe-area-inset-left));
-}
-
-@layer components {
-  .markdown {
-    @apply space-y-4 leading-loose;
-
-    h2 {
-      @apply text-xl font-semibold;
-    }
-
-    h3 {
-      @apply font-semibold;
-    }
-
-    ol,
-    ul {
-      @apply ps-6;
-    }
-
-    ol {
-      @apply list-decimal;
-    }
-
-    ul {
-      @apply list-disc;
-    }
-
-    a:any-link {
-      @apply text-secondary-blue hover:text-secondary-pink hover:underline dark:text-774-blue-400 dark:hover:text-774-pink-400;
-    }
-  }
 }

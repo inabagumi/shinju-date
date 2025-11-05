@@ -1,3 +1,4 @@
+import { logger } from '@shinju-date/logger'
 import { Search } from 'lucide-react'
 import type * as z from 'zod'
 import { supabaseClient } from '@/lib/supabase'
@@ -9,17 +10,17 @@ async function fetchSuggestions(query: string) {
     return []
   }
 
-  const { data, error } = await supabaseClient.rpc('suggestions', {
-    query,
+  const { data, error } = await supabaseClient.rpc('suggestions_v2', {
+    p_query: query,
   })
 
   if (error) {
-    console.error('Failed to fetch suggestions:', error)
+    logger.error('Failed to fetch suggestions', { error, query })
 
     return []
   }
 
-  return data ?? []
+  return data
 }
 
 export async function Suggestions({
