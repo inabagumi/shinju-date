@@ -67,7 +67,7 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
       <DialogPortal>
         <DialogOverlay className="z-50 backdrop-blur-sm" />
 
-        <DialogContent className="data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[20%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[20%] top-[20%] left-[50%] z-50 w-full max-w-2xl p-0 translate-x-[-50%] translate-y-[-20%] rounded-xl border-774-nevy-200 bg-primary-foreground shadow-2xl sm:max-w-3xl dark:border-zinc-700 dark:bg-zinc-900">
+        <DialogContent className="data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[20%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[20%] top-[20%] left-[50%] z-50 w-full max-w-2xl translate-x-[-50%] translate-y-[-20%] rounded-xl border-774-nevy-200 bg-primary-foreground p-0 shadow-2xl sm:max-w-3xl dark:border-zinc-700 dark:bg-zinc-900">
           <ModalNavigationContext value={{ onNavigate: handleNavigate }}>
             {children}
           </ModalNavigationContext>
