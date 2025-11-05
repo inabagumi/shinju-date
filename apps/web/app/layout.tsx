@@ -82,9 +82,11 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
 
           {modal}
 
-          <div className="safe-area-pb safe-area-px pb-20 md:pb-40">
+          <div className="safe-area-px pb-20 md:pb-40">
             <TimerProvider>{children}</TimerProvider>
           </div>
+
+          <AnnouncementBannerWrapper />
 
           <footer className="safe-area-pb-footer safe-area-px bg-primary py-5 text-primary-foreground text-sm dark:bg-zinc-800">
             <nav className="mx-auto max-w-6xl px-4 py-2">
@@ -133,7 +135,6 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
           </footer>
 
           <Analytics />
-          <AnnouncementBannerWrapper />
         </Providers>
       </body>
     </html>

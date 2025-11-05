@@ -68,7 +68,7 @@ export function AnnouncementBanner({
 
   return (
     <div
-      className={`safe-area-inset-bottom safe-area-inset-x fixed z-50 max-w-md rounded-lg border p-4 shadow-lg ${getBannerClasses(data.level)}`}
+      className={`safe-area-inset-x sticky bottom-0 z-50 mx-auto max-w-md rounded-t-lg border border-b-0 p-4 shadow-lg ${getBannerClasses(data.level)}`}
       role="alert"
     >
       <div className="flex items-start justify-between gap-4">
