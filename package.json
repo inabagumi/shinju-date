@@ -2,7 +2,7 @@
   "author": "Haneru Developers",
   "description": "SHINJU DATE is a web service for searching videos.",
   "devDependencies": {
-    "@biomejs/biome": "2.3.3",
+    "@biomejs/biome": "2.3.4",
     "@vitest/coverage-v8": "4.0.7",
     "@vitest/ui": "4.0.7",
     "next-devtools-mcp": "0.2.6",
