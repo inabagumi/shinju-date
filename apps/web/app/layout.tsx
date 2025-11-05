@@ -37,7 +37,7 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
           type="application/opensearchdescription+xml"
         />
       </head>
-      <body className="flex min-h-svh flex-col bg-primary-foreground text-primary antialiased dark:bg-zinc-900 dark:text-774-nevy-50">
+      <body className="grid min-h-svh grid-rows-[auto_1fr_auto] bg-primary-foreground text-primary antialiased dark:bg-zinc-900 dark:text-774-nevy-50">
         <PageVisitTracker />
         <Providers>
           <SVGSymbols />
@@ -80,26 +80,13 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
             </search>
           </nav>
 
-          <main
-            className="flex-1"
-            style={{
-              paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))',
-              paddingLeft: 'env(safe-area-inset-left)',
-              paddingRight: 'env(safe-area-inset-right)',
-            }}
-          >
-            {modal}
-            <TimerProvider>{children}</TimerProvider>
-          </main>
+          {modal}
 
-          <footer
-            className="bg-primary py-5 text-primary-foreground text-sm dark:bg-zinc-800"
-            style={{
-              paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom))',
-              paddingLeft: 'env(safe-area-inset-left)',
-              paddingRight: 'env(safe-area-inset-right)',
-            }}
-          >
+          <div className="safe-area-pb safe-area-px pb-20 md:pb-40">
+            <TimerProvider>{children}</TimerProvider>
+          </div>
+
+          <footer className="safe-area-pb-footer safe-area-px bg-primary py-5 text-primary-foreground text-sm dark:bg-zinc-800">
             <nav className="mx-auto max-w-6xl px-4 py-2">
               <ul className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-end">
                 <li>

@@ -68,13 +68,8 @@ export function AnnouncementBanner({
 
   return (
     <div
-      className={`fixed z-50 max-w-md rounded-lg border p-4 shadow-lg ${getBannerClasses(data.level)}`}
+      className={`safe-area-inset-bottom safe-area-inset-x fixed z-50 max-w-md rounded-lg border p-4 shadow-lg ${getBannerClasses(data.level)}`}
       role="alert"
-      style={{
-        bottom: 'calc(1rem + env(safe-area-inset-bottom))',
-        left: 'calc(1rem + env(safe-area-inset-left))',
-        right: 'calc(1rem + env(safe-area-inset-right))',
-      }}
     >
       <div className="flex items-start justify-between gap-4">
         <button
