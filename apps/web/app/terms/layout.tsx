@@ -20,7 +20,7 @@ export const metadata = {
 export default function TermsLayout({ children }: { children: ReactNode }) {
   return (
     <SimpleDocument title="利用規約" withBreadcrumbs>
-      <div className="markdown">{children}</div>
+      <div className="prose dark:prose-invert">{children}</div>
     </SimpleDocument>
   )
 }
