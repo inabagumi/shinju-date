@@ -11,12 +11,12 @@
 @layer base {
   /* iOS overscroll handling: html should have dark footer color */
   html {
-    @apply min-h-screen bg-primary;
+    @apply min-h-screen bg-primary dark:bg-zinc-800;
   }
 
   /* Body should have light main content color */
   body {
-    @apply min-h-screen bg-primary-foreground;
+    @apply min-h-screen bg-primary-foreground dark:bg-zinc-900;
   }
 }
 
