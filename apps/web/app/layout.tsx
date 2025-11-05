@@ -81,7 +81,7 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
           </nav>
 
           <main
-            className="flex-1 pb-20 md:pb-40"
+            className="flex-1"
             style={{
               paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))',
               paddingLeft: 'env(safe-area-inset-left)',

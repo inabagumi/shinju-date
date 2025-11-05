@@ -68,7 +68,7 @@ export function AnnouncementBanner({
 
   return (
     <div
-      className={`fixed right-4 bottom-4 z-50 max-w-md rounded-lg border p-4 shadow-lg ${getBannerClasses(data.level)}`}
+      className={`fixed z-50 max-w-md rounded-lg border p-4 shadow-lg ${getBannerClasses(data.level)}`}
       role="alert"
       style={{
         bottom: 'calc(1rem + env(safe-area-inset-bottom))',
