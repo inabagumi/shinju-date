@@ -7,3 +7,29 @@
   --background-image-search-icon: url(./_assets/search-icon.svg);
   --background-image-search-icon-invert: url(./_assets/search-icon-invert.svg);
 }
+
+@layer base {
+  /* iOS overscroll handling: html should have dark footer color */
+  html {
+    @apply min-h-screen bg-primary dark:bg-zinc-800;
+  }
+
+  /* Body should have light main content color */
+  body {
+    @apply min-h-screen bg-primary-foreground dark:bg-zinc-900;
+  }
+}
+
+@utility safe-area-pb-footer {
+  padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+}
+
+@utility safe-area-px {
+  padding-right: env(safe-area-inset-right);
+  padding-left: env(safe-area-inset-left);
+}
+
+@utility safe-area-mx {
+  margin-right: calc(1rem + env(safe-area-inset-right));
+  margin-left: calc(1rem + env(safe-area-inset-left));
+}

@@ -24,6 +24,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
@@ -81,11 +82,13 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
 
           {modal}
 
-          <div className="pb-20 md:pb-40">
+          <div className="safe-area-px pb-20 md:pb-40">
             <TimerProvider>{children}</TimerProvider>
           </div>
 
-          <footer className="bg-primary py-5 text-primary-foreground text-sm dark:bg-zinc-800">
+          <AnnouncementBannerWrapper />
+
+          <footer className="safe-area-pb-footer safe-area-px bg-primary py-5 text-primary-foreground text-sm dark:bg-zinc-800">
             <nav className="mx-auto max-w-6xl px-4 py-2">
               <ul className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-end">
                 <li>
@@ -132,7 +135,6 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
           </footer>
 
           <Analytics />
-          <AnnouncementBannerWrapper />
         </Providers>
       </body>
     </html>
