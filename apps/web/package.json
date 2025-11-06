@@ -29,7 +29,7 @@
     "react-markdown": "10.1.0",
     "resend": "6.4.1",
     "tailwind-merge": "3.3.1",
-    "tailwindcss": "4.1.16",
+    "tailwindcss": "4.1.17",
     "temporal-polyfill": "0.3.0",
     "ufo": "1.6.1",
     "zod": "4.1.12"
@@ -40,7 +40,7 @@
     "@next/mdx": "16.0.1",
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
-    "@tailwindcss/postcss": "4.1.16",
+    "@tailwindcss/postcss": "4.1.17",
     "@tailwindcss/typography": "0.5.19",
     "@tsconfig/next": "2.0.3",
     "@tsconfig/strictest": "2.0.7",

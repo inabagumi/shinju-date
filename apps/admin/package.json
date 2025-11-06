@@ -29,7 +29,7 @@
     "react-dom": "19.2.0",
     "recharts": "3.3.0",
     "tailwind-merge": "3.3.1",
-    "tailwindcss": "4.1.16",
+    "tailwindcss": "4.1.17",
     "temporal-polyfill": "0.3.0",
     "zod": "4.1.12"
   },
@@ -37,7 +37,7 @@
   "devDependencies": {
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
-    "@tailwindcss/postcss": "4.1.16",
+    "@tailwindcss/postcss": "4.1.17",
     "@tsconfig/next": "2.0.3",
     "@tsconfig/strictest": "2.0.7",
     "@types/node": "22.19.0",
