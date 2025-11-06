@@ -67,59 +67,61 @@ export function AnnouncementBanner({
   }
 
   return (
-    <div
-      className={`safe-area-mx sticky bottom-4 z-50 mb-4 ml-auto max-w-md rounded-lg border p-4 shadow-lg ${getBannerClasses(data.level)}`}
-      role="alert"
-    >
-      <div className="flex items-start justify-between gap-4">
-        <button
-          className="flex-1 cursor-pointer text-left"
-          onClick={() => setIsExpanded(!isExpanded)}
-          type="button"
-        >
-          <div
-            className={`prose prose-sm max-w-none ${!isExpanded ? 'line-clamp-1' : ''}`}
+    <div className="safe-area-mx">
+      <div
+        className={`sticky bottom-4 z-50 mb-4 ml-auto max-w-md rounded-lg border p-4 shadow-lg ${getBannerClasses(data.level)}`}
+        role="alert"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <button
+            className="flex-1 cursor-pointer text-left"
+            onClick={() => setIsExpanded(!isExpanded)}
+            type="button"
           >
-            <ReactMarkdown
-              rehypePlugins={[
-                [
-                  rehypeExternalLinks,
-                  {
-                    rel: ['nofollow', 'noopener', 'noreferrer'],
-                    target: '_blank',
-                  },
-                ],
-              ]}
-              remarkPlugins={[remarkGfm]}
+            <div
+              className={`prose prose-sm max-w-none ${!isExpanded ? 'line-clamp-1' : ''}`}
             >
-              {data.message}
-            </ReactMarkdown>
-          </div>
-        </button>
-        <button
-          aria-label="お知らせを閉じる"
-          className="flex-shrink-0 rounded-md p-1 hover:bg-black/10"
-          onClick={async () => {
-            await dismissAnnouncement(data.id)
-            setIsVisible(false)
-          }}
-          type="button"
-        >
-          <svg
-            aria-hidden="true"
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+              <ReactMarkdown
+                rehypePlugins={[
+                  [
+                    rehypeExternalLinks,
+                    {
+                      rel: ['nofollow', 'noopener', 'noreferrer'],
+                      target: '_blank',
+                    },
+                  ],
+                ]}
+                remarkPlugins={[remarkGfm]}
+              >
+                {data.message}
+              </ReactMarkdown>
+            </div>
+          </button>
+          <button
+            aria-label="お知らせを閉じる"
+            className="flex-shrink-0 rounded-md p-1 hover:bg-black/10"
+            onClick={async () => {
+              await dismissAnnouncement(data.id)
+              setIsVisible(false)
+            }}
+            type="button"
           >
-            <path
-              d="M6 18L18 6M6 6l12 12"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-            />
-          </svg>
-        </button>
+            <svg
+              aria-hidden="true"
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M6 18L18 6M6 6l12 12"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+              />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   )
