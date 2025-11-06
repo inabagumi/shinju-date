@@ -9,7 +9,7 @@
     "tailwind-merge": "3.3.1"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "4.1.16",
+    "@tailwindcss/postcss": "4.1.17",
     "@tsconfig/node20": "^20.1.6",
     "@tsconfig/strictest": "^2.0.7",
     "@types/react": "19.2.2",
@@ -18,7 +18,7 @@
     "postcss-load-config": "6.0.1",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "tailwindcss": "4.1.16",
+    "tailwindcss": "4.1.17",
     "tsup": "^8.5.0",
     "typescript": "5.9.3",
     "storybook": "^10.0.5",
