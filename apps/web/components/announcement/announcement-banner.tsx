@@ -67,9 +67,9 @@ export function AnnouncementBanner({
   }
 
   return (
-    <div className="safe-area-mx">
+    <div className="safe-area-mx sticky bottom-4 z-50">
       <div
-        className={`sticky bottom-4 z-50 mb-4 ml-auto max-w-md rounded-lg border p-4 shadow-lg ${getBannerClasses(data.level)}`}
+        className={`mb-4 ml-auto max-w-md rounded-lg border p-4 shadow-lg ${getBannerClasses(data.level)}`}
         role="alert"
       >
         <div className="flex items-start justify-between gap-4">
