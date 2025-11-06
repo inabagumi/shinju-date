@@ -85,13 +85,13 @@ importers:
         version: link:../../packages/youtube-scraper
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
-        version: 0.3.0(@supabase/supabase-js@2.79.0)
+        version: 0.3.0(@supabase/supabase-js@2.80.0)
       '@supabase/ssr':
         specifier: 0.7.0
-        version: 0.7.0(@supabase/supabase-js@2.79.0)
+        version: 0.7.0(@supabase/supabase-js@2.80.0)
       '@supabase/supabase-js':
-        specifier: 2.79.0
-        version: 2.79.0
+        specifier: 2.80.0
+        version: 2.80.0
       '@upstash/redis':
         specifier: 1.35.6
         version: 1.35.6
@@ -200,10 +200,10 @@ importers:
         version: link:../../packages/youtube-scraper
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
-        version: 0.3.0(@supabase/supabase-js@2.79.0)
+        version: 0.3.0(@supabase/supabase-js@2.80.0)
       '@supabase/supabase-js':
-        specifier: 2.79.0
-        version: 2.79.0
+        specifier: 2.80.0
+        version: 2.80.0
       '@upstash/ratelimit':
         specifier: 2.0.7
         version: 2.0.7(@upstash/redis@1.35.6)
@@ -277,8 +277,8 @@ importers:
   apps/msw-demo:
     dependencies:
       '@supabase/supabase-js':
-        specifier: 2.79.0
-        version: 2.79.0
+        specifier: 2.80.0
+        version: 2.80.0
       '@upstash/redis':
         specifier: 1.35.6
         version: 1.35.6
@@ -378,10 +378,10 @@ importers:
         version: link:../../packages/ui
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
-        version: 0.3.0(@supabase/supabase-js@2.79.0)
+        version: 0.3.0(@supabase/supabase-js@2.80.0)
       '@supabase/supabase-js':
-        specifier: 2.79.0
-        version: 2.79.0
+        specifier: 2.80.0
+        version: 2.80.0
       '@tanstack/react-query':
         specifier: 5.90.7
         version: 5.90.7(react@19.2.0)
@@ -390,7 +390,7 @@ importers:
         version: 1.35.6
       '@vercel/analytics':
         specifier: 1.5.0
-        version: 1.5.0(next@16.0.1(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
+        version: 1.5.0(next@16.0.1(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
       dedent:
         specifier: 1.7.0
         version: 1.7.0
@@ -540,8 +540,8 @@ importers:
   packages/health-checkers:
     devDependencies:
       '@supabase/supabase-js':
-        specifier: 2.79.0
-        version: 2.79.0
+        specifier: 2.80.0
+        version: 2.80.0
       '@tsconfig/strictest':
         specifier: 2.0.7
         version: 2.0.7
@@ -580,7 +580,7 @@ importers:
     devDependencies:
       '@sentry/nextjs':
         specifier: ^10.23.0
-        version: 10.23.0(@opentelemetry/context-async-hooks@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(next@16.0.1(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(webpack@5.102.1(@swc/core@1.11.24))
+        version: 10.23.0(@opentelemetry/context-async-hooks@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(next@16.0.1(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(webpack@5.102.1(@swc/core@1.11.24))
       '@tsconfig/node20':
         specifier: ^20.1.6
         version: 20.1.6
@@ -2244,20 +2244,20 @@ packages:
       typescript:
         optional: true
 
-  '@supabase/auth-js@2.79.0':
-    resolution: {integrity: sha512-p2GKvdbF9d/6C+dtS6iNcSicPr6eUfkvovD60HWlWsD+oOjC483DzFWrzGjNpBwnswhfMRP8Qn3rYA0VWaOfjw==}
+  '@supabase/auth-js@2.80.0':
+    resolution: {integrity: sha512-q2LyCVJGN4p7d92cOI7scWOoNwxJhZuFRwiimSUGJGI5zX7ubf1WUPznwOmYEn8WVo3Io+MyMinA7era6j5KPw==}
     engines: {node: '>=20.0.0'}
 
-  '@supabase/functions-js@2.79.0':
-    resolution: {integrity: sha512-WaiU6b+Z+ZfJOjFhpMKdajt42weiFUrA6TVW5oGd6WfPGajFiKZJJIAvuK0g7KDKaYowtQrOo5+Ais+PcuZ1qA==}
+  '@supabase/functions-js@2.80.0':
+    resolution: {integrity: sha512-0S/k8LRtoblrbzy4ir9m4WuvU/XTkb1EwL/33/oJexCUHCXtsqaPJ3eKfr1GWtNqTa1zryv6sXs3Fpv7lKCsMQ==}
     engines: {node: '>=20.0.0'}
 
-  '@supabase/postgrest-js@2.79.0':
-    resolution: {integrity: sha512-2i8EFm3/49ecjt6dk/TGVROBbtOmhryiC4NL3u0FBIrm2hqj+FvbELv1jjM6r+a6abnh+uzIV/bFsWHAa/k3/w==}
+  '@supabase/postgrest-js@2.80.0':
+    resolution: {integrity: sha512-yKzehXlRbDoXIQefdRQnvaI9BEogoWIp/7+y/m5enZDKW2IP9aAgq5tU72sThcwftDJvknnIpEHAABG3qviEng==}
     engines: {node: '>=20.0.0'}
 
-  '@supabase/realtime-js@2.79.0':
-    resolution: {integrity: sha512-foaZujNBycAqLizUcuLyyFyDitfPnEMVO4CiKXNwaMCDVMoVX4QR6n4gpJLUC5BGzc20Mte6vSJLbk4MN90Prw==}
+  '@supabase/realtime-js@2.80.0':
+    resolution: {integrity: sha512-cXK6Gs4UDylN8oz40omi01QK0cSCBVj0efXC1WodpENTuDnrkUs28W8/eslEnAtlawaVtikC1Q92mpz9+o85Mg==}
     engines: {node: '>=20.0.0'}
 
   '@supabase/sentry-js-integration@0.3.0':
@@ -2270,12 +2270,12 @@ packages:
     peerDependencies:
       '@supabase/supabase-js': ^2.43.4
 
-  '@supabase/storage-js@2.79.0':
-    resolution: {integrity: sha512-PLSeKX1/BZhGWCT972w4TvVOCcw/xh4TsowtUBiZvPx4OdHT7dB1q0DXKwVUfKbWk5UUC+6XAq4ZU/ZCtdgn6w==}
+  '@supabase/storage-js@2.80.0':
+    resolution: {integrity: sha512-Iepod83h2WoMCaLC9pGb3QOT67Kn3RlUdbXpo3uvbDKfPU8EgytS4RVaPmDjhqDjj8AGaiz9mk/ppd2Q2WS+gw==}
     engines: {node: '>=20.0.0'}
 
-  '@supabase/supabase-js@2.79.0':
-    resolution: {integrity: sha512-x9ndEaBSwoRnFOOZGhh2CeV69Uz4B/EOSGCbKysDhTiYakiCAdDXaNuLPluviKU/Aot+F7BglXZDZ0YJ3GpGrw==}
+  '@supabase/supabase-js@2.80.0':
+    resolution: {integrity: sha512-n8pkXQxuo5zCWXX5cbSNZj1vuWS8IVNGWTmP1m31Iq1k0e8lPZ07PF08TRV79HHq3mEPP/Ko//BQuflHvY2o8w==}
     engines: {node: '>=20.0.0'}
 
   '@swc/core-darwin-arm64@1.11.24':
@@ -6622,7 +6622,7 @@ snapshots:
 
   '@sentry/core@10.23.0': {}
 
-  '@sentry/nextjs@10.23.0(@opentelemetry/context-async-hooks@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(next@16.0.1(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(webpack@5.102.1)':
+  '@sentry/nextjs@10.23.0(@opentelemetry/context-async-hooks@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(next@16.0.1(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(webpack@5.102.1(@swc/core@1.11.24))':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/semantic-conventions': 1.37.0
@@ -6634,7 +6634,7 @@ snapshots:
       '@sentry/opentelemetry': 10.23.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.37.0)
       '@sentry/react': 10.23.0(react@19.2.0)
       '@sentry/vercel-edge': 10.23.0
-      '@sentry/webpack-plugin': 4.6.0(webpack@5.102.1)
+      '@sentry/webpack-plugin': 4.6.0(webpack@5.102.1(@swc/core@1.11.24))
       next: 16.0.1(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       resolve: 1.22.8
       rollup: 4.52.5
@@ -6648,7 +6648,7 @@ snapshots:
       - supports-color
       - webpack
 
-  '@sentry/nextjs@10.23.0(@opentelemetry/context-async-hooks@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(next@16.0.1(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(webpack@5.102.1(@swc/core@1.11.24))':
+  '@sentry/nextjs@10.23.0(@opentelemetry/context-async-hooks@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(next@16.0.1(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(webpack@5.102.1)':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/semantic-conventions': 1.37.0
@@ -6660,7 +6660,7 @@ snapshots:
       '@sentry/opentelemetry': 10.23.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.37.0)
       '@sentry/react': 10.23.0(react@19.2.0)
       '@sentry/vercel-edge': 10.23.0
-      '@sentry/webpack-plugin': 4.6.0(webpack@5.102.1(@swc/core@1.11.24))
+      '@sentry/webpack-plugin': 4.6.0(webpack@5.102.1)
       next: 16.0.1(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       resolve: 1.22.8
       rollup: 4.52.5
@@ -6875,19 +6875,19 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
-  '@supabase/auth-js@2.79.0':
+  '@supabase/auth-js@2.80.0':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/functions-js@2.79.0':
+  '@supabase/functions-js@2.80.0':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/postgrest-js@2.79.0':
+  '@supabase/postgrest-js@2.80.0':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/realtime-js@2.79.0':
+  '@supabase/realtime-js@2.80.0':
     dependencies:
       '@types/phoenix': 1.6.6
       '@types/ws': 8.18.1
@@ -6897,26 +6897,26 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@supabase/sentry-js-integration@0.3.0(@supabase/supabase-js@2.79.0)':
+  '@supabase/sentry-js-integration@0.3.0(@supabase/supabase-js@2.80.0)':
     dependencies:
-      '@supabase/supabase-js': 2.79.0
+      '@supabase/supabase-js': 2.80.0
 
-  '@supabase/ssr@0.7.0(@supabase/supabase-js@2.79.0)':
+  '@supabase/ssr@0.7.0(@supabase/supabase-js@2.80.0)':
     dependencies:
-      '@supabase/supabase-js': 2.79.0
+      '@supabase/supabase-js': 2.80.0
       cookie: 1.0.2
 
-  '@supabase/storage-js@2.79.0':
+  '@supabase/storage-js@2.80.0':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/supabase-js@2.79.0':
+  '@supabase/supabase-js@2.80.0':
     dependencies:
-      '@supabase/auth-js': 2.79.0
-      '@supabase/functions-js': 2.79.0
-      '@supabase/postgrest-js': 2.79.0
-      '@supabase/realtime-js': 2.79.0
-      '@supabase/storage-js': 2.79.0
+      '@supabase/auth-js': 2.80.0
+      '@supabase/functions-js': 2.80.0
+      '@supabase/postgrest-js': 2.80.0
+      '@supabase/realtime-js': 2.80.0
+      '@supabase/storage-js': 2.80.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -7256,7 +7256,7 @@ snapshots:
     dependencies:
       uncrypto: 0.1.3
 
-  '@vercel/analytics@1.5.0(next@16.0.1(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)':
+  '@vercel/analytics@1.5.0(next@16.0.1(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)':
     optionalDependencies:
       next: 16.0.1(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react: 19.2.0
