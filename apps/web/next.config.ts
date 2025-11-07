@@ -4,11 +4,6 @@ import { withSentryConfig } from '@sentry/nextjs'
 // import remarkGfm from 'remark-gfm'
 import type { NextConfig } from 'next'
 
-const supabaseBaseURL =
-  typeof process.env['NEXT_PUBLIC_SUPABASE_URL'] !== 'undefined'
-    ? new URL(process.env['NEXT_PUBLIC_SUPABASE_URL'])
-    : undefined
-
 const nextConfig: NextConfig = {
   // cacheComponents: true,
   headers() {
@@ -44,19 +39,6 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 365 * 24 * 60 * 60,
     remotePatterns: [
-      ...(supabaseBaseURL
-        ? [
-            {
-              hostname: supabaseBaseURL.host,
-              pathname: '/storage/v1/object/public/**',
-              ...(supabaseBaseURL.protocol === 'https:'
-                ? {
-                    protocol: 'https' as const,
-                  }
-                : {}),
-            },
-          ]
-        : []),
       {
         hostname: 'i.ytimg.com',
         pathname: '/vi/**',

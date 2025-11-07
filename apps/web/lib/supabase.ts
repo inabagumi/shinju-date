@@ -1,9 +1,6 @@
 import type { default as Database } from '@shinju-date/database'
 import retryableFetch from '@shinju-date/retryable-fetch'
-import {
-  createClient as createSupabaseClient,
-  type SupabaseClient,
-} from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 function getTags(requestInfo: RequestInfo | URL): string[] {
   const tags: string[] = []
@@ -29,7 +26,7 @@ function getTags(requestInfo: RequestInfo | URL): string[] {
   return tags
 }
 
-function createClient(
+export function createSupabaseClient(
   url = process.env['NEXT_PUBLIC_SUPABASE_URL'],
   key = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'],
 ): SupabaseClient<Database> {
@@ -37,16 +34,22 @@ function createClient(
     throw new TypeError('Supabase URL and key are required.')
   }
 
-  return createSupabaseClient<Database>(url, key, {
+  return createClient<Database>(url, key, {
     global: {
       fetch(requestInfo, requestInit) {
         const tags = getTags(requestInfo)
+        const revalidate =
+          tags.length > 0
+            ? tags.some((tag) => ['announcements', 'thumbnails'].includes(tag))
+              ? 60 // 1 minute
+              : 60 * 60 // 1 hour
+            : 0
 
         return retryableFetch(requestInfo, {
           ...requestInit,
           cache: 'force-cache',
           next: {
-            revalidate: 60 * 60, // 1 hour
+            revalidate,
             tags,
           },
         })
@@ -55,4 +58,4 @@ function createClient(
   })
 }
 
-export const supabaseClient = createClient()
+export const supabaseClient = createSupabaseClient()
