@@ -419,8 +419,8 @@ importers:
         specifier: 10.1.0
         version: 10.1.0(@types/react@19.2.2)(react@19.2.0)
       resend:
-        specifier: 6.4.1
-        version: 6.4.1
+        specifier: 6.4.2
+        version: 6.4.2
       tailwind-merge:
         specifier: 3.3.1
         version: 3.3.1
@@ -4619,8 +4619,8 @@ packages:
   reselect@5.1.1:
     resolution: {integrity: sha512-K/BG6eIky/SBpzfHZv/dd+9JBFiS4SWV7FIujVyJRux6e45+73RaUHXLmIR1f7WOMaQ0U1km6qwklRQxpJJY0w==}
 
-  resend@6.4.1:
-    resolution: {integrity: sha512-+P1gF6bYT0lKd0vsYyKKTHd6PfMH37yDgNRA6wAARQgQbYlc2BZYuo9sB/uZKkVg1oGSh0cgpnxNKGsZJutXMg==}
+  resend@6.4.2:
+    resolution: {integrity: sha512-YnxmwneltZtjc7Xff+8ZjG1/xPLdstCiqsedgO/JxWTf7vKRAPCx6CkhQ3ZXskG0mrmf8+I5wr/wNRd8PQMUfw==}
     engines: {node: '>=18'}
     peerDependencies:
       '@react-email/render': '*'
@@ -9557,7 +9557,7 @@ snapshots:
 
   reselect@5.1.1: {}
 
-  resend@6.4.1:
+  resend@6.4.2:
     dependencies:
       svix: 1.76.1
 
