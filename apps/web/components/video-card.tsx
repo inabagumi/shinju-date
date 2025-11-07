@@ -2,7 +2,6 @@ import Image from 'next/image'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
 import type { Video } from '@/lib/fetchers'
-import { supabaseClient } from '@/lib/supabase'
 import FormattedTime from './formatted-time'
 import LiveNow from './live-now'
 
@@ -20,13 +19,10 @@ function getThumbnailURL(
     ]
   }
 
-  const {
-    data: { publicUrl: url },
-  } = supabaseClient.storage
-    .from('thumbnails')
-    .getPublicUrl(video.thumbnail.path)
-
-  return [url, video.thumbnail.blur_data_url]
+  return [
+    `/images/thumbnails/${video.thumbnail.id}`,
+    video.thumbnail.blur_data_url,
+  ]
 }
 
 function formatDuration(duration: Temporal.Duration): string {
