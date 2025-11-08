@@ -59,7 +59,7 @@ export async function POST(request: Request): Promise<Response> {
 
   const currentDateTime = Temporal.Now.instant()
 
-  const { data: savedChannels, error } = await supabaseClient
+  const { data: savedTalents, error } = await supabaseClient
     .from('channels')
     .select(
       'id, youtube_channel:youtube_channels!inner(id, youtube_channel_id)',
@@ -84,14 +84,10 @@ export async function POST(request: Request): Promise<Response> {
     })
   }
 
-  const channelIDs = savedChannels
-    .map((savedChannel) => {
-      const ytChannel = Array.isArray(savedChannel.youtube_channel)
-        ? savedChannel.youtube_channel[0]
-        : savedChannel.youtube_channel
-      return ytChannel?.youtube_channel_id
-    })
-    .filter((id): id is string => Boolean(id))
+  const channelIDs = savedTalents.map((savedTalent) => {
+    const ytChannel = savedTalent.youtube_channel
+    return ytChannel.youtube_channel_id
+  })
   const channels = await Array.fromAsync(
     getChannels({
       ids: channelIDs,
@@ -108,11 +104,9 @@ export async function POST(request: Request): Promise<Response> {
   })
 
   const results = await Promise.allSettled(
-    savedChannels.map((savedChannel) => {
-      const ytChannel = Array.isArray(savedChannel.youtube_channel)
-        ? savedChannel.youtube_channel[0]
-        : savedChannel.youtube_channel
-      const youtubeChannelId = ytChannel?.youtube_channel_id
+    savedTalents.map((savedTalent) => {
+      const ytChannel = savedTalent.youtube_channel
+      const youtubeChannelId = ytChannel.youtube_channel_id
 
       const originalChannel = channels.find(
         (item) => item.id === youtubeChannelId,
@@ -126,9 +120,10 @@ export async function POST(request: Request): Promise<Response> {
         scrape({
           channel: originalChannel,
           currentDateTime,
-          savedChannel: {
-            id: savedChannel.id,
-            youtube_channel_id: ytChannel?.id ?? null,
+          savedYouTubeChannel: {
+            channel_id: savedTalent.id,
+            id: ytChannel.id,
+            youtube_channel_id: ytChannel.youtube_channel_id,
           },
           supabaseClient,
           youtubeClient,

@@ -3,7 +3,7 @@ import { redisClient } from './redis'
 
 const RATELIMIT_CACHE_KEY_PREFIX = 'ratelimit:cron'
 
-export const channelsUpdate = new Ratelimit({
+export const talentsUpdate = new Ratelimit({
   analytics: true,
   limiter: Ratelimit.fixedWindow(1, '2h'),
   prefix: RATELIMIT_CACHE_KEY_PREFIX,

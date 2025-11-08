@@ -5,7 +5,7 @@ import { revalidateTags } from '@shinju-date/web-cache'
 import type { YouTubeChannel } from '@shinju-date/youtube-scraper'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after } from 'next/server'
-import { channelsUpdate as ratelimit } from '@/lib/ratelimit'
+import { talentsUpdate as ratelimit } from '@/lib/ratelimit'
 import { supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 
@@ -13,7 +13,7 @@ const MONITOR_SLUG = '/channels/update'
 
 export const maxDuration = 120
 
-type Channel = Pick<Tables<'channels'>, 'id' | 'name'> & {
+type Talent = Pick<Tables<'channels'>, 'id' | 'name'> & {
   youtube_channel: {
     name: string | null
     youtube_channel_id: string
@@ -62,7 +62,7 @@ export async function POST(request: Request): Promise<Response> {
     },
   )
 
-  const { data: channels, error } = await supabaseClient
+  const { data: talents, error } = await supabaseClient
     .from('channels')
     .select(
       'id, name, youtube_channel:youtube_channels(name, youtube_channel_id)',
@@ -87,10 +87,10 @@ export async function POST(request: Request): Promise<Response> {
     })
   }
 
-  const channelIds = channels
-    .map((channel) => channel.youtube_channel?.youtube_channel_id)
+  const youTubeChannelIds = talents
+    .map((talent) => talent.youtube_channel?.youtube_channel_id)
     .filter((id): id is string => Boolean(id))
-  const results: PromiseSettledResult<Channel | null>[] = []
+  const results: PromiseSettledResult<Talent | null>[] = []
 
   await using scraper = new YouTubeScraper({
     youtubeClient,
@@ -98,15 +98,15 @@ export async function POST(request: Request): Promise<Response> {
 
   try {
     await scraper.scrapeChannels({
-      channelIds,
+      channelIds: youTubeChannelIds,
       onChannelScraped: async (youtubeChannel: YouTubeChannel) => {
-        const result = await (async (): Promise<Channel | null> => {
-          const channel = channels.find(
-            (c) => c.youtube_channel?.youtube_channel_id === youtubeChannel.id,
+        const result = await (async (): Promise<Talent | null> => {
+          const talent = talents.find(
+            (t) => t.youtube_channel?.youtube_channel_id === youtubeChannel.id,
           )
 
-          if (!channel) {
-            throw new TypeError('A channel does not exist.')
+          if (!talent) {
+            throw new TypeError('A talent does not exist.')
           }
 
           // Note: YouTubeChannel from scraper doesn't include snippet with title
@@ -125,7 +125,7 @@ export async function POST(request: Request): Promise<Response> {
           }
 
           // Get current YouTube channel name from database
-          const currentYouTubeChannelName = channel.youtube_channel?.name
+          const currentYouTubeChannelName = talent.youtube_channel?.name
 
           // Update youtube_channels table with YouTube channel name
           const youtubeHandle = item.snippet.customUrl || null
@@ -133,7 +133,7 @@ export async function POST(request: Request): Promise<Response> {
             .from('youtube_channels')
             .upsert(
               {
-                channel_id: channel.id,
+                channel_id: talent.id,
                 name: item.snippet.title,
                 youtube_channel_id: youtubeChannel.id,
                 youtube_handle: youtubeHandle,
@@ -151,13 +151,13 @@ export async function POST(request: Request): Promise<Response> {
             return null
           }
 
-          // Fetch updated channel data to return
+          // Fetch updated talent data to return
           const { data, error } = await supabaseClient
             .from('channels')
             .select(
               'id, name, youtube_channel:youtube_channels(name, youtube_channel_id)',
             )
-            .eq('id', channel.id)
+            .eq('id', talent.id)
             .single()
 
           if (error) {
@@ -178,13 +178,13 @@ export async function POST(request: Request): Promise<Response> {
 
   for (const result of results) {
     if (result.status === 'fulfilled' && result.value) {
-      const newChannel = result.value
-      const channelID = newChannel.youtube_channel?.youtube_channel_id
-      const channel = channels.find(
-        (c) => c.youtube_channel?.youtube_channel_id === channelID,
+      const newTalent = result.value
+      const ytChannelID = newTalent.youtube_channel?.youtube_channel_id
+      const talent = talents.find(
+        (c) => c.youtube_channel?.youtube_channel_id === ytChannelID,
       )
 
-      if (!channel) {
+      if (!talent) {
         continue
       }
 
@@ -194,8 +194,8 @@ export async function POST(request: Request): Promise<Response> {
       } = {}
 
       // Log if YouTube channel name changed (not talent name)
-      if (channel.youtube_channel?.name !== newChannel.youtube_channel?.name) {
-        changedColumns.youtube_channel_name = `${channel.youtube_channel?.name} -> ${newChannel.youtube_channel?.name}`
+      if (talent.youtube_channel?.name !== newTalent.youtube_channel?.name) {
+        changedColumns.youtube_channel_name = `${talent.youtube_channel?.name} -> ${newTalent.youtube_channel?.name}`
       }
 
       Sentry.logger.info(

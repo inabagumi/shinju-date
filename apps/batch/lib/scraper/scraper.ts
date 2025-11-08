@@ -17,9 +17,9 @@ import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 import DB, { type Video } from './db'
 import type {
-  SavedChannel,
   SavedThumbnail,
   SavedVideo,
+  SavedYouTubeChannel,
   YouTubeChannel,
   YouTubeVideo,
 } from './types'
@@ -276,7 +276,7 @@ export type ScraperOptions = {
   channel: YouTubeChannel
   currentDateTime?: Temporal.Instant
   dryRun?: boolean
-  savedChannel: SavedChannel
+  savedYouTubeChannel: SavedYouTubeChannel
   supabaseClient: TypedSupabaseClient
   youtubeClient: youtube.Youtube
 }
@@ -290,7 +290,7 @@ export default class Scraper implements AsyncDisposable {
   #currentDateTime: Temporal.Instant
   #db: DB
   #dryRun: boolean
-  #savedChannel: SavedChannel
+  #savedYouTubeChannel: SavedYouTubeChannel
   #youtubeScraper: YouTubeScraper
 
   /**
@@ -301,7 +301,7 @@ export default class Scraper implements AsyncDisposable {
     channel,
     currentDateTime = Temporal.Now.instant(),
     dryRun = false,
-    savedChannel,
+    savedYouTubeChannel,
     supabaseClient,
     youtubeClient,
   }: ScraperOptions) {
@@ -309,7 +309,7 @@ export default class Scraper implements AsyncDisposable {
     this.#currentDateTime = currentDateTime
     this.#db = new DB(supabaseClient)
     this.#dryRun = dryRun
-    this.#savedChannel = savedChannel
+    this.#savedYouTubeChannel = savedYouTubeChannel
     this.#youtubeScraper = new YouTubeScraper({ youtubeClient })
   }
 
@@ -392,7 +392,7 @@ export default class Scraper implements AsyncDisposable {
         if (!savedVideo) {
           return {
             value: {
-              channel_id: this.#savedChannel.id,
+              channel_id: this.#savedYouTubeChannel.channel_id,
               created_at: toDBString(this.#currentDateTime),
               duration: originalVideo.contentDetails?.duration ?? 'P0D',
               platform: 'youtube',
@@ -449,7 +449,7 @@ export default class Scraper implements AsyncDisposable {
 
         return {
           value: {
-            channel_id: this.#savedChannel.id,
+            channel_id: this.#savedYouTubeChannel.channel_id,
             created_at: savedVideo.created_at,
             deleted_at:
               'deleted_at' in updateValue
@@ -487,7 +487,7 @@ export default class Scraper implements AsyncDisposable {
     return this.#db.upsertVideos(
       values,
       youtubeVideoIds,
-      this.#savedChannel.youtube_channel_id,
+      this.#savedYouTubeChannel.youtube_channel_id,
     )
   }
 
