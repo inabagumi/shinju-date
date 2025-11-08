@@ -1,0 +1,56 @@
+name: "Bug Report / バグ報告"
+description: "動作の不具合やエラーを報告する"
+labels: ["Type: Bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        バグ報告にご協力いただきありがとうございます。
+        Thank you for taking the time to fill out this bug report.
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: "Bug description / バグの説明"
+      description: "バグの内容を具体的に説明してください。"
+      placeholder: "A clear and concise description of what the bug is."
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: "Steps to reproduce / 再現手順"
+      description: "バグを再現するための手順を記載してください。"
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: "Expected behavior / 期待される動作"
+      description: "本来であればどのような動作を期待していましたか？"
+      placeholder: "A clear and concise description of what you expected to happen."
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: "Screenshots / スクリーンショット"
+      description: "可能であれば、問題に関連するスクリーンショットを添付してください。"
+  - type: input
+    id: os
+    attributes:
+      label: "OS"
+      description: "例: Windows 11, macOS Sonoma 14.2"
+    validations:
+      required: false
+  - type: input
+    id: browser
+    attributes:
+      label: "Browser"
+      description: "例: Chrome 120, Safari 17.2"
+    validations:
+      required: false

@@ -1,0 +1,36 @@
+name: "Feature Request / 機能要望"
+description: "新しい機能や改善を提案する"
+labels: ["Type: Feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        機能要望にご協力いただきありがとうございます。
+        Thank you for taking the time to fill out this feature request.
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: "Feature description / 機能の説明"
+      description: "どのような機能や改善を望んでいますか？"
+      placeholder: "A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]"
+    validations:
+      required: true
+  - type: textarea
+    id: solution-description
+    attributes:
+      label: "Solution description / 解決策の説明"
+      description: "どのような解決策を考えていますか？"
+      placeholder: "A clear and concise description of what you want to happen."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives / 代替案"
+      description: "他にどのような代替案や解決策がありますか？"
+      placeholder: "A clear and concise description of any alternative solutions or features you've considered."
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: "Additional context / 補足情報"
+      description: "その他、補足情報があれば記載してください。"
