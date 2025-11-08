@@ -1,8 +1,6 @@
 import { Suspense } from 'react'
 import { CardSkeleton } from '@/components/skeletons'
 import { AnalyticsWidget } from './_components/analytics-widget'
-
-export const dynamic = 'force-dynamic'
 import { MaintenanceModeWidgetWrapper } from './_components/maintenance-mode-widget-wrapper'
 import {
   PopularVideosWidget,
@@ -11,6 +9,8 @@ import {
 import { QuickAccessWidget } from './_components/quick-access-widget'
 import { RecentActivity } from './_components/recent-activity'
 import { SummaryWidget } from './_components/summary-widget'
+
+export const dynamic = 'force-dynamic'
 
 export default function DashboardPage() {
   return (
