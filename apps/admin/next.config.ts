@@ -1,11 +1,6 @@
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
-const supabaseBaseURL =
-  typeof process.env['NEXT_PUBLIC_SUPABASE_URL'] !== 'undefined'
-    ? new URL(process.env['NEXT_PUBLIC_SUPABASE_URL'])
-    : undefined
-
 const nextConfig: NextConfig = {
   // `'use cache: private'`ディレクティブがstableになったら`cacheComponents`を有効化する
   // cacheComponents: true,
@@ -23,21 +18,7 @@ const nextConfig: NextConfig = {
     ])
   },
   images: {
-    remotePatterns: [
-      ...(supabaseBaseURL
-        ? [
-            {
-              hostname: supabaseBaseURL.host,
-              pathname: '/storage/v1/object/public/**',
-              ...(supabaseBaseURL.protocol === 'https:'
-                ? {
-                    protocol: 'https' as const,
-                  }
-                : {}),
-            },
-          ]
-        : []),
-    ],
+    remotePatterns: [],
   },
   reactCompiler: true,
   reactStrictMode: true,

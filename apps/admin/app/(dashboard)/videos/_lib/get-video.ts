@@ -18,6 +18,7 @@ export type VideoDetail = {
   status: Tables<'videos'>['status']
   duration: string
   thumbnail: {
+    id: string
     path: string
     blur_data_url: string
   } | null
@@ -39,7 +40,7 @@ const getVideo = cache(async function getVideo(
   const { data: video, error } = await supabaseClient
     .from('videos')
     .select(
-      'id, title, visible, deleted_at, published_at, updated_at, created_at, status, duration, thumbnail:thumbnails(path, blur_data_url), talent:channels(id, name), youtube_video:youtube_videos(youtube_video_id)',
+      'id, title, visible, deleted_at, published_at, updated_at, created_at, status, duration, thumbnail:thumbnails(id, path, blur_data_url), talent:channels(id, name), youtube_video:youtube_videos(youtube_video_id)',
     )
     .eq('id', id)
     .single()

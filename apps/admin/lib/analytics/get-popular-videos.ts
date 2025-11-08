@@ -11,6 +11,7 @@ export type PopularVideo = {
   clicks: number
   id: string
   thumbnail: {
+    id: string
     path: string
     blur_data_url: string
   } | null
@@ -42,7 +43,7 @@ export async function getPopularVideos(
   const { data: videos, error } = await supabaseClient
     .from('videos')
     .select(
-      'id, thumbnails(path, blur_data_url), title, youtube_video:youtube_videos(youtube_video_id)',
+      'id, thumbnails(id, path, blur_data_url), title, youtube_video:youtube_videos(youtube_video_id)',
     )
     .in('id', videoIds)
 

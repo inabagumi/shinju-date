@@ -10,7 +10,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
-import { supabaseClient } from '@/lib/supabase/public'
 import { StatusBadge } from '../_components/status-badge'
 import getVideo from '../_lib/get-video'
 import { SyncVideoButton } from './_components/sync-video-button'
@@ -136,11 +135,7 @@ export default async function VideoDetailPage({ params }: Props) {
                     className="object-cover"
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
-                    src={
-                      supabaseClient.storage
-                        .from('thumbnails')
-                        .getPublicUrl(video.thumbnail.path).data.publicUrl
-                    }
+                    src={`/images/thumbnails/${video.thumbnail.id}`}
                   />
                 </div>
               ) : (
