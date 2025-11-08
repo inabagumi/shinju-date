@@ -31,9 +31,6 @@ This document provides a complete overview of the MSW (Mock Service Worker) inte
 - `lib/msw.ts` - MSW server setup for Node.js batch processing
 - `package.json` - Updated with MSW dependencies
 
-### Test Files
-- `test-msw-integration.js` - Node.js integration test script
-
 ## 🎯 Key Features
 
 ### 1. Supabase API Mocking
@@ -153,11 +150,6 @@ videos?.forEach(video => {
 2. Visit `/msw-demo` (web app only)
 3. Check browser console for MSW startup message
 4. Verify mock data is displayed
-
-### Quick Test (Node.js)
-```bash
-node test-msw-integration.js
-```
 
 ### Manual Testing
 ```typescript
