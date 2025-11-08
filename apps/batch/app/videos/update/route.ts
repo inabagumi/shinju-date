@@ -61,7 +61,9 @@ export async function POST(request: Request): Promise<Response> {
 
   const { data: savedChannels, error } = await supabaseClient
     .from('channels')
-    .select('id, youtube_channel:youtube_channels!inner(youtube_channel_id)')
+    .select(
+      'id, youtube_channel:youtube_channels!inner(id, youtube_channel_id)',
+    )
     .is('deleted_at', null)
 
   if (error) {
@@ -124,7 +126,10 @@ export async function POST(request: Request): Promise<Response> {
         scrape({
           channel: originalChannel,
           currentDateTime,
-          savedChannel: savedChannel,
+          savedChannel: {
+            id: savedChannel.id,
+            youtube_channel_id: ytChannel?.id ?? null,
+          },
           supabaseClient,
           youtubeClient,
         }),

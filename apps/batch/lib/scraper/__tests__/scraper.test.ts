@@ -515,4 +515,66 @@ describe('YouTube video ID association bug fix', () => {
       expect(videoCAssoc?.youtube_video_id).toBe('YT_videoC_youtube_id')
     }
   })
+
+  it('should include youtube_channel_id when provided to upsertVideos', async () => {
+    const supabaseClient = createClient(
+      MOCK_SUPABASE_URL,
+      MOCK_SUPABASE_ANON_KEY,
+    )
+    const db = new DB(supabaseClient)
+
+    const youtubeChannelId = 'yt-channel-uuid-123'
+    const values = [
+      {
+        channel_id: '1',
+        created_at: '2023-01-01T00:00:00.000Z',
+        deleted_at: null,
+        duration: 'PT10M30S',
+        platform: 'youtube' as const,
+        published_at: '2023-01-01T12:00:00.000Z',
+        thumbnail_id: '1',
+        title: 'Test Video',
+        updated_at: '2023-01-01T00:00:00.000Z',
+        visible: true,
+      },
+    ]
+
+    const youtubeVideoIds = ['YT_test_video_id']
+
+    let capturedYoutubeVideos: Array<{
+      video_id: string
+      youtube_video_id: string
+      youtube_channel_id?: string
+    }> = []
+
+    server.use(
+      http.post('*/rest/v1/youtube_videos', async ({ request }) => {
+        const body = await request.json()
+        capturedYoutubeVideos = Array.isArray(body) ? body : [body]
+        return HttpResponse.json(capturedYoutubeVideos, { status: 201 })
+      }),
+      http.post('*/rest/v1/videos', async ({ request }) => {
+        const body = await request.json()
+        const items = Array.isArray(body) ? body : [body]
+
+        const insertedVideos = items.map((item, index) => ({
+          ...item,
+          channels: { name: 'Test Channel' },
+          id: `generated-uuid-${index + 1}`,
+          thumbnails: null,
+        }))
+
+        return HttpResponse.json(insertedVideos, { status: 201 })
+      }),
+    )
+
+    await db.upsertVideos(values, youtubeVideoIds, youtubeChannelId)
+
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    // Verify that youtube_channel_id was included in the upsert
+    expect(capturedYoutubeVideos.length).toBeGreaterThan(0)
+    expect(capturedYoutubeVideos[0]?.youtube_channel_id).toBe(youtubeChannelId)
+    expect(capturedYoutubeVideos[0]?.youtube_video_id).toBe('YT_test_video_id')
+  })
 })

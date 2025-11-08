@@ -164,6 +164,7 @@ export default class DB implements AsyncDisposable {
   async upsertVideos(
     values: TablesInsert<'videos'>[],
     youtubeVideoIds: string[],
+    youtubeChannelId?: string | null,
   ): Promise<Video[]> {
     const dataToUpdate: {
       value: TablesInsert<'videos'>
@@ -232,6 +233,9 @@ export default class DB implements AsyncDisposable {
           youtubeVideoValues.push({
             video_id: video.id,
             youtube_video_id: originalData.youtubeVideoId,
+            ...(youtubeChannelId
+              ? { youtube_channel_id: youtubeChannelId }
+              : {}),
           })
         }
       }
@@ -249,6 +253,9 @@ export default class DB implements AsyncDisposable {
           youtubeVideoValues.push({
             video_id: video.id,
             youtube_video_id: originalData.youtubeVideoId,
+            ...(youtubeChannelId
+              ? { youtube_channel_id: youtubeChannelId }
+              : {}),
           })
         }
       }
