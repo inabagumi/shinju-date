@@ -1,6 +1,7 @@
 import type { default as DefaultDatabase } from '@shinju-date/database'
 import { createServerClient } from '@supabase/ssr'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
 const isProd = process.env['NODE_ENV'] === 'production'
@@ -47,4 +48,19 @@ export async function createSupabaseServerClient<
       },
     },
   })
+}
+
+/**
+ * Creates a Supabase admin client with service role key for privileged operations.
+ * This client has elevated permissions and should only be used in secure server contexts.
+ */
+export function createSupabaseAdminClient<Database = DefaultDatabase>(
+  url = process.env['NEXT_PUBLIC_SUPABASE_URL'],
+  key = process.env['SUPABASE_SERVICE_ROLE_KEY'],
+): SupabaseClient<Database> {
+  if (!url || !key) {
+    throw new TypeError('Supabase URL and service role key are required.')
+  }
+
+  return createClient<Database>(url, key)
 }
