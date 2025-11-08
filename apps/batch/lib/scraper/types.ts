@@ -1,13 +1,12 @@
 import type { Tables } from '@shinju-date/database'
-import type { YouTubeChannel, YouTubeVideo } from '@shinju-date/youtube-scraper'
 
 /**
- * Saved channel data from the database
+ * Saved youtube channel data from the database
  */
-export type SavedChannel = Pick<Tables<'channels'>, 'id'> & {
-  youtube_channel_id?: string | null
-  twitch_user_id?: string | null
-}
+export type SavedYouTubeChannel = Pick<
+  Tables<'youtube_channels'>,
+  'id' | 'channel_id' | 'youtube_channel_id'
+>
 
 /**
  * Saved thumbnail data from the database
@@ -25,4 +24,4 @@ export type SavedVideo = Omit<Tables<'videos'>, 'channel_id' | 'updated_at'> & {
 /**
  * Re-export YouTube types from the youtube-scraper package
  */
-export type { YouTubeChannel, YouTubeVideo }
+export type { YouTubeChannel, YouTubeVideo } from '@shinju-date/youtube-scraper'

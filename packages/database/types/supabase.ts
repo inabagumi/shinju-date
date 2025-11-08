@@ -328,19 +328,19 @@ export type Database = {
         Row: {
           id: string
           video_id: string
-          youtube_channel_id: string | null
+          youtube_channel_id: string
           youtube_video_id: string
         }
         Insert: {
           id?: string
           video_id: string
-          youtube_channel_id?: string | null
+          youtube_channel_id: string
           youtube_video_id: string
         }
         Update: {
           id?: string
           video_id?: string
-          youtube_channel_id?: string | null
+          youtube_channel_id?: string
           youtube_video_id?: string
         }
         Relationships: [

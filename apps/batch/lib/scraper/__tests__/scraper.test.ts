@@ -113,7 +113,11 @@ describe('DB class', () => {
       }),
     )
 
-    const result = await db.upsertVideos(values, youtubeVideoIds)
+    const result = await db.upsertVideos(
+      values,
+      youtubeVideoIds,
+      'UT_channel_123',
+    )
 
     // Wait a bit for async operations
     await new Promise((resolve) => setTimeout(resolve, 100))
@@ -203,7 +207,11 @@ describe('DB class', () => {
 
     const youtubeVideoIds = ['YT_brandNew1', 'YT_brandNew2']
 
-    const result = await db.upsertVideos(values, youtubeVideoIds)
+    const result = await db.upsertVideos(
+      values,
+      youtubeVideoIds,
+      'UT_channel_123',
+    )
 
     await new Promise((resolve) => setTimeout(resolve, 100))
 
@@ -237,7 +245,6 @@ describe('Scraper class', () => {
     )
     const youtubeClient = new youtube.Youtube({
       auth: MOCK_YOUTUBE_API_KEY,
-      version: 'v3',
     })
 
     const scraper = Scraper.create({
@@ -249,8 +256,10 @@ describe('Scraper class', () => {
         },
         id: 'UCtest123',
       },
-      savedChannel: {
+      savedYouTubeChannel: {
+        channel_id: '1',
         id: '1',
+        youtube_channel_id: 'UCtest123',
       },
       supabaseClient,
       youtubeClient,
@@ -266,7 +275,6 @@ describe('Scraper class', () => {
     )
     const youtubeClient = new youtube.Youtube({
       auth: MOCK_YOUTUBE_API_KEY,
-      version: 'v3',
     })
 
     const scraper = Scraper.create({
@@ -279,8 +287,10 @@ describe('Scraper class', () => {
         id: 'UCtest123',
       },
       dryRun: true, // Use dry run to avoid actual DB writes
-      savedChannel: {
+      savedYouTubeChannel: {
+        channel_id: '1',
         id: '1',
+        youtube_channel_id: 'UCtest123',
       },
       supabaseClient,
       youtubeClient,
@@ -308,7 +318,6 @@ describe('Scraper class', () => {
     )
     const youtubeClient = new youtube.Youtube({
       auth: MOCK_YOUTUBE_API_KEY,
-      version: 'v3',
     })
 
     // Track what gets posted to youtube_videos
@@ -333,8 +342,10 @@ describe('Scraper class', () => {
         },
         id: 'UCtest123',
       },
-      savedChannel: {
+      savedYouTubeChannel: {
+        channel_id: '1',
         id: '1',
+        youtube_channel_id: 'UCtest123',
       },
       supabaseClient,
       youtubeClient,
@@ -363,7 +374,6 @@ describe('Scraper class', () => {
     )
     const youtubeClient = new youtube.Youtube({
       auth: MOCK_YOUTUBE_API_KEY,
-      version: 'v3',
     })
 
     // Mock an empty playlist
@@ -389,8 +399,10 @@ describe('Scraper class', () => {
         },
         id: 'UCempty',
       },
-      savedChannel: {
+      savedYouTubeChannel: {
+        channel_id: '999',
         id: '999',
+        youtube_channel_id: 'UUempty_uploads',
       },
       supabaseClient,
       youtubeClient,
@@ -494,7 +506,7 @@ describe('YouTube video ID association bug fix', () => {
       }),
     )
 
-    await db.upsertVideos(values, youtubeVideoIds)
+    await db.upsertVideos(values, youtubeVideoIds, 'UT_channel_456')
 
     await new Promise((resolve) => setTimeout(resolve, 100))
 
