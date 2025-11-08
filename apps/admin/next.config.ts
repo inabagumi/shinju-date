@@ -17,9 +17,6 @@ const nextConfig: NextConfig = {
       },
     ])
   },
-  images: {
-    remotePatterns: [],
-  },
   reactCompiler: true,
   reactStrictMode: true,
   serverExternalPackages: ['@sentry/profiling-node'],
