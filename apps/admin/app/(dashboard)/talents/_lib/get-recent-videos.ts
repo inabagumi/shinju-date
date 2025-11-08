@@ -7,6 +7,7 @@ export type RecentVideo = {
   visible: boolean
   deleted_at: string | null
   thumbnail: {
+    id: string
     path: string
     blur_data_url: string
   } | null
@@ -24,7 +25,7 @@ export async function getRecentVideosForTalent(
   const { data: videos, error } = await supabaseClient
     .from('videos')
     .select(
-      'id, title, published_at, visible, deleted_at, thumbnail:thumbnails(path, blur_data_url), youtube_video:youtube_videos(youtube_video_id)',
+      'id, title, published_at, visible, deleted_at, thumbnail:thumbnails(id, path, blur_data_url), youtube_video:youtube_videos(youtube_video_id)',
     )
     .is('deleted_at', null)
     .is('visible', true)

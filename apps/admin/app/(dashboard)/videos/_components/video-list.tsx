@@ -15,7 +15,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/dropdown-menu'
-import { supabaseClient } from '@/lib/supabase/public'
 import {
   softDeleteAction,
   softDeleteSingleVideoAction,
@@ -240,11 +239,7 @@ export default function VideoList({ videos }: Props) {
                           className="object-cover"
                           fill
                           sizes="(max-width: 768px) 80px, 112px"
-                          src={
-                            supabaseClient.storage
-                              .from('thumbnails')
-                              .getPublicUrl(video.thumbnail.path).data.publicUrl
-                          }
+                          src={`/images/thumbnails/${video.thumbnail.id}`}
                         />
                       </div>
                     ) : (

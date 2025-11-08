@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { Temporal } from 'temporal-polyfill'
 import { PopularVideosListSkeleton } from '@/components/skeletons'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
-import { createSupabaseServerClient } from '@/lib/supabase'
 
 export function PopularVideosWidgetSkeleton() {
   return (
@@ -25,7 +24,6 @@ export async function PopularVideosWidget() {
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
   const startDate = today.subtract({ days: 29 })
   const popularVideos = await getPopularVideos(10, startDate, today)
-  const supabaseClient = await createSupabaseServerClient()
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
@@ -49,11 +47,7 @@ export async function PopularVideosWidget() {
                     className="rounded object-cover"
                     fill
                     sizes="112px"
-                    src={
-                      supabaseClient.storage
-                        .from('thumbnails')
-                        .getPublicUrl(video.thumbnail.path).data.publicUrl
-                    }
+                    src={`/images/thumbnails/${video.thumbnail.id}`}
                   />
                 </div>
               ) : (

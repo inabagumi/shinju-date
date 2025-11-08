@@ -5,7 +5,6 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { supabaseClient } from '@/lib/supabase/public'
 import { getRecentVideosForTalent } from '../_lib/get-recent-videos'
 import { getTalent } from '../_lib/get-talent'
 import { EditTalentForm } from './_components/edit-talent-form'
@@ -173,12 +172,7 @@ export default async function TalentDetailPage({ params }: Props) {
                               className="rounded object-cover"
                               fill
                               sizes="80px"
-                              src={
-                                supabaseClient.storage
-                                  .from('thumbnails')
-                                  .getPublicUrl(video.thumbnail.path).data
-                                  .publicUrl
-                              }
+                              src={`/images/thumbnails/${video.thumbnail.id}`}
                             />
                           </div>
                         ) : (
