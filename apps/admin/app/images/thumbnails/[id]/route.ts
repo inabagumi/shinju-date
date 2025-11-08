@@ -1,6 +1,6 @@
 import { createErrorResponse } from '@shinju-date/helpers'
 import { type NextRequest, NextResponse } from 'next/server'
-import { createSupabaseAdminClient } from '@/lib/supabase'
+import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 
 const SIGNED_URL_EXPIRES_IN = 60 * 10 // 10 minutes
 
