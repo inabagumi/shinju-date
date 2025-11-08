@@ -1,3 +1,4 @@
+import { ImageIcon } from 'lucide-react'
 import Image from 'next/image'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
@@ -11,12 +12,9 @@ type YouTubeVideo = Omit<Video, 'youtube_video'> & {
 
 function getThumbnailURL(
   video: YouTubeVideo,
-): [src: string, blurDataURL: string | undefined] {
+): [src: string, blurDataURL: string] | null {
   if (!video.thumbnail) {
-    return [
-      `https://i.ytimg.com/vi/${video.youtube_video.youtube_video_id}/maxresdefault.jpg`,
-      undefined,
-    ]
+    return null
   }
 
   return [
@@ -31,8 +29,25 @@ function formatDuration(duration: Temporal.Duration): string {
     .join(':')
 }
 
+/**
+ * サムネイルが存在しない場合のプレースホルダー
+ */
+function ThumbnailPlaceholder() {
+  return (
+    <div className="relative flex h-full w-full items-center justify-center bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600">
+      <ImageIcon className="h-12 w-12" strokeWidth={1} />
+    </div>
+  )
+}
+
 function Thumbnail({ video }: { video: YouTubeVideo }) {
-  const [publicURL, blurDataURL] = getThumbnailURL(video)
+  const thumbnailData = getThumbnailURL(video)
+
+  if (!thumbnailData) {
+    return <ThumbnailPlaceholder />
+  }
+
+  const [publicURL, blurDataURL] = thumbnailData
 
   return (
     <Image
