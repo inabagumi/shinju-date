@@ -19,7 +19,7 @@ dependencies = [
 dev = [
     "ruff==0.14.4",
     "poethepoet==0.37.0",
-    "pytest==8.4.2",
+    "pytest==9.0.0",
 ]
 
 [tool.poe.tasks]
