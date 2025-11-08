@@ -487,7 +487,7 @@ export default class Scraper implements AsyncDisposable {
     return this.#db.upsertVideos(
       values,
       youtubeVideoIds,
-      this.#savedYouTubeChannel.youtube_channel_id,
+      this.#savedYouTubeChannel.id,
     )
   }
 

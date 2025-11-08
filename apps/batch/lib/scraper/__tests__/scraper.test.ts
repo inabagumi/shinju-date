@@ -71,27 +71,27 @@ describe('DB class', () => {
     // Mock video data with IDs
     const values = [
       {
-        channel_id: '1',
+        channel_id: 'channel-uuid-1',
         created_at: '2023-01-01T00:00:00.000Z',
         deleted_at: null,
         duration: 'PT10M30S',
         id: 'test-uuid-1',
         platform: 'youtube' as const,
         published_at: '2023-01-01T12:00:00.000Z',
-        thumbnail_id: '1',
+        thumbnail_id: 'thumbnail-uuid-1',
         title: 'Test Video 1',
         updated_at: '2023-01-01T00:00:00.000Z',
         visible: true,
       },
       {
-        channel_id: '2',
+        channel_id: 'channel-uuid-2',
         created_at: '2023-01-02T00:00:00.000Z',
         deleted_at: null,
         duration: 'PT15M45S',
         id: 'test-uuid-2',
         platform: 'youtube' as const,
         published_at: '2023-01-02T12:00:00.000Z',
-        thumbnail_id: '2',
+        thumbnail_id: 'thumbnail-uuid-2',
         title: 'Test Video 2',
         updated_at: '2023-01-02T00:00:00.000Z',
         visible: true,
@@ -180,25 +180,25 @@ describe('DB class', () => {
 
     const values = [
       {
-        channel_id: '1',
+        channel_id: 'channel-uuid-1',
         created_at: '2023-01-01T00:00:00.000Z',
         deleted_at: null,
         duration: 'PT10M30S',
         platform: 'youtube' as const,
         published_at: '2023-01-01T12:00:00.000Z',
-        thumbnail_id: '1',
+        thumbnail_id: 'thumbnail-uuid-1',
         title: 'New Video 1',
         updated_at: '2023-01-01T00:00:00.000Z',
         visible: true,
       },
       {
-        channel_id: '1',
+        channel_id: 'channel-uuid-1',
         created_at: '2023-01-02T00:00:00.000Z',
         deleted_at: null,
         duration: 'PT8M15S',
         platform: 'youtube' as const,
         published_at: '2023-01-02T12:00:00.000Z',
-        thumbnail_id: '2',
+        thumbnail_id: 'thumbnail-uuid-2',
         title: 'New Video 2',
         updated_at: '2023-01-02T00:00:00.000Z',
         visible: true,
@@ -257,8 +257,8 @@ describe('Scraper class', () => {
         id: 'UCtest123',
       },
       savedYouTubeChannel: {
-        channel_id: '1',
-        id: '1',
+        channel_id: 'channel-uuid-1',
+        id: 'ytc-uuid-1',
         youtube_channel_id: 'UCtest123',
       },
       supabaseClient,
@@ -343,8 +343,8 @@ describe('Scraper class', () => {
         id: 'UCtest123',
       },
       savedYouTubeChannel: {
-        channel_id: '1',
-        id: '1',
+        channel_id: 'channel-uuid-1',
+        id: 'ytc-uuid-1',
         youtube_channel_id: 'UCtest123',
       },
       supabaseClient,
@@ -506,7 +506,11 @@ describe('YouTube video ID association bug fix', () => {
       }),
     )
 
-    await db.upsertVideos(values, youtubeVideoIds, 'UT_channel_456')
+    await db.upsertVideos(
+      values,
+      youtubeVideoIds,
+      '1cabb470-5d40-4afb-aee7-9b876ffa62e7',
+    )
 
     await new Promise((resolve) => setTimeout(resolve, 100))
 
