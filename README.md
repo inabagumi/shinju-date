@@ -42,31 +42,13 @@
 
 ## 開発を始める
 
-### 前提条件
+プロジェクトの開発環境をセットアップするには、以下のガイドに従ってください。
 
-- **Node.js**: 18 以上
-- **pnpm**: `npm install -g pnpm`
-- **Python**: 3.12 以上 (Insights API 開発時)
-- **uv**: Python 依存関係管理 (Insights API 開発時)
+- **[docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md)**
 
-### セットアップ
+このガイドには、前提条件、依存関係のインストール、Supabaseのローカル設定、開発サーバーの起動方法などが含まれています。
 
-```bash
-# リポジトリのクローン
-git clone https://github.com/inabagumi/shinju-date.git
-cd shinju-date
-
-# 依存関係のインストール
-pnpm install
-
-# 開発サーバーの起動
-pnpm run dev
-
-# 特定のアプリのみ起動
-pnpm run dev --filter=web
-```
-
-詳細な開発手順は [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
+より詳細な貢献方法については、[CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
 
 ## ドキュメント
 
