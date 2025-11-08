@@ -1,44 +1,42 @@
-name: "Bug Report / バグ報告"
+name: "バグ報告"
 description: "動作の不具合やエラーを報告する"
 type: Bug
 body:
   - type: markdown
     attributes:
-      value: |
-        バグ報告にご協力いただきありがとうございます。
-        Thank you for taking the time to fill out this bug report.
+      value: "バグ報告にご協力いただきありがとうございます。"
   - type: textarea
     id: bug-description
     attributes:
-      label: "Bug description / バグの説明"
+      label: "バグの説明"
       description: "バグの内容を具体的に説明してください。"
-      placeholder: "A clear and concise description of what the bug is."
+      placeholder: "発生している問題を明確かつ簡潔に説明してください。"
     validations:
       required: true
   - type: textarea
     id: steps-to-reproduce
     attributes:
-      label: "Steps to reproduce / 再現手順"
+      label: "再現手順"
       description: "バグを再現するための手順を記載してください。"
       placeholder: |
-        1. Go to '...'
-        2. Click on '....'
-        3. Scroll down to '....'
-        4. See error
+        1. 「...」に移動する
+        2. 「....」をクリックする
+        3. 「....」までスクロールする
+        4. エラーが表示される
     validations:
       required: true
   - type: textarea
     id: expected-behavior
     attributes:
-      label: "Expected behavior / 期待される動作"
+      label: "期待される動作"
       description: "本来であればどのような動作を期待していましたか？"
-      placeholder: "A clear and concise description of what you expected to happen."
+      placeholder: "期待していた動作を明確かつ簡潔に説明してください。"
     validations:
       required: true
   - type: textarea
     id: screenshots
     attributes:
-      label: "Screenshots / スクリーンショット"
+      label: "スクリーンショット"
       description: "可能であれば、問題に関連するスクリーンショットを添付してください。"
   - type: input
     id: os
@@ -50,7 +48,7 @@ body:
   - type: input
     id: browser
     attributes:
-      label: "Browser"
+      label: "ブラウザ"
       description: "例: Chrome 120, Safari 17.2"
     validations:
       required: false
