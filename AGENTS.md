@@ -6,79 +6,9 @@
 
 本プロジェクトの開発では、複数のAIツールを積極的に活用しています。AIエージェントは開発者の生産性を向上させ、コードの品質を高め、より効率的な開発フローを実現するための重要なパートナーです。
 
-## プロジェクト環境
+## プロジェクト環境のセットアップ
 
-### パッケージマネージャー
-
-このプロジェクトでは**pnpm**を採用しています。依存関係の管理やスクリプトの実行には`pnpm`コマンドを使用してください。
-
-- 依存関係のインストール: `pnpm install`
-- スクリプトの実行: `pnpm run <script-name>`
-- パッケージの追加: `pnpm add <package-name>`
-
-`npm`や`yarn`は使用せず、`package-lock.json`や`yarn.lock`ファイルも不要です。
-
-### MSW (Mock Service Worker) の有効化
-
-GitHub ActionsやGitHub CopilotなどのAIエージェント環境でAPIモックを有効にする場合は、環境変数 `ENABLE_MSW=true` を設定してください。
-
-```bash
-export ENABLE_MSW=true
-```
-
-この設定により、MSWがリクエストをインターセプトし、一貫したAPIレスポンスを提供します。
-
-重要: MSWを有効にする際は、意図しない外部サービスへのリクエストを完全に防ぐため、SupabaseやUpstashなどの連携サービスの環境変数を、以下のようなダミーの値に必ず上書きしてください。これらの設定は、プロジェクトルートの.envファイルや、各アプリケーションの.env.localファイルに記述します。
-
-```bash
-# .env や .env.local に記述する内容
-NEXT_PUBLIC_SUPABASE_URL=https://fake.supabase.test
-NEXT_PUBLIC_SUPABASE_ANON_KEY=fake-anon-key
-SUPABASE_SERVICE_ROLE_KEY=fake-service-role-key
-UPSTASH_REDIS_REST_TOKEN=fake-upstash-token
-UPSTASH_REDIS_REST_URL=https://fake.upstash.test
-```
-
-この設定がない場合、MSWが対応していないリクエストが外部サービスに送信されてしまう可能性があります。
-
-#### MSWサービスワーカーの初期設定
-
-MSWを初回使用する際、または `mockServiceWorker.js` ファイルが存在しない場合は、以下のコマンドでサービスワーカーファイルを生成してください：
-
-```bash
-# Web アプリの場合
-cd apps/web && pnpm run msw:init
-
-# Admin アプリの場合
-cd apps/admin && pnpm run msw:init
-```
-
-**注意**: `mockServiceWorker.js` ファイルは `.gitignore` に含まれており、必要に応じて各開発者が生成する必要があります。これは、MSWが生成する一時的なファイルであり、バージョン管理に含める必要がないためです。
-
-### Python 開発環境 (Insights API)
-
-`apps/insights` プロジェクトでは **uv** を使用して Python の依存関係を管理しています。
-
-#### uv の基本コマンド
-
-```bash
-cd apps/insights
-
-# 依存関係のインストール
-uv sync --extra dev
-
-# 開発サーバーの起動
-uv run poe dev
-
-# リンティングの実行
-uv run poe lint
-
-# フォーマットの実行
-uv run poe format
-
-# フォーマットチェック（CI用）
-uv run poe format-check
-```
+**重要**: 開発環境のセットアップ手順は、[docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md) に集約されています。作業を開始する前に、必ずこのガイドを参照してください。
 
 ## AIエージェントの種類と役割
 

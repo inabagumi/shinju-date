@@ -6,7 +6,7 @@ import { formatDate } from '@shinju-date/temporal-fns'
 import { headers } from 'next/headers'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from './constants'
-import { redisClient } from './redis'
+import { getRedisClient } from './redis'
 
 // TTL settings for time-based session keys
 const DAILY_TTL_SECONDS = 90 * 24 * 60 * 60 // 90 days
@@ -42,6 +42,7 @@ async function generateSessionId(): Promise<string> {
  */
 export async function trackPageVisit(): Promise<void> {
   try {
+    const redisClient = getRedisClient()
     const sessionId = await generateSessionId()
     const now = Temporal.Now.zonedDateTimeISO(timeZone)
     const today = formatDate(now)
@@ -70,6 +71,7 @@ export async function trackSearchSession(query: string): Promise<void> {
   }
 
   try {
+    const redisClient = getRedisClient()
     const sessionId = await generateSessionId()
     const now = Temporal.Now.zonedDateTimeISO(timeZone)
     const today = formatDate(now)
@@ -106,6 +108,7 @@ export async function trackSearchExitWithoutClick(
   const normalizedQuery = query.trim().toLowerCase()
 
   try {
+    const redisClient = getRedisClient()
     const now = Temporal.Now.zonedDateTimeISO(timeZone)
     const today = formatDate(now)
 

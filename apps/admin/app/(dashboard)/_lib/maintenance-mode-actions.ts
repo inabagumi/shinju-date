@@ -2,10 +2,11 @@
 
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { createAuditLog } from '@/lib/audit-log'
-import { redisClient } from '@/lib/redis'
+import { getRedisClient } from '@/lib/redis'
 
 export async function getMaintenanceModeStatus(): Promise<boolean> {
   try {
+    const redisClient = getRedisClient()
     const value = await redisClient.get<boolean>(REDIS_KEYS.MAINTENANCE_MODE)
     return value === true
   } catch (error) {
@@ -19,6 +20,7 @@ export async function enableMaintenanceMode(): Promise<{
   error?: string
 }> {
   try {
+    const redisClient = getRedisClient()
     // Set maintenance mode in Redis
     await redisClient.set(REDIS_KEYS.MAINTENANCE_MODE, 'true')
 
@@ -42,6 +44,7 @@ export async function disableMaintenanceMode(): Promise<{
   error?: string
 }> {
   try {
+    const redisClient = getRedisClient()
     // Delete maintenance mode key from Redis
     await redisClient.del(REDIS_KEYS.MAINTENANCE_MODE)
 

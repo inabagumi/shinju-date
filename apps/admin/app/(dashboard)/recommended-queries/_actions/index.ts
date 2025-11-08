@@ -5,7 +5,7 @@ import { logger } from '@shinju-date/logger'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog } from '@/lib/audit-log'
-import { redisClient } from '@/lib/redis'
+import { getRedisClient } from '@/lib/redis'
 
 export async function addQueryAction(query: string): Promise<{
   success: boolean
@@ -18,6 +18,7 @@ export async function addQueryAction(query: string): Promise<{
   const trimmedQuery = query.trim()
 
   try {
+    const redisClient = getRedisClient()
     await redisClient.sadd(REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED, trimmedQuery)
 
     // Invalidate combined cache
@@ -54,6 +55,7 @@ export async function deleteQueryAction(query: string): Promise<{
   }
 
   try {
+    const redisClient = getRedisClient()
     await redisClient.srem(REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED, query)
 
     // Invalidate combined cache

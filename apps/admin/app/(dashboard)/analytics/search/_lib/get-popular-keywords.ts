@@ -4,7 +4,7 @@ import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-import { redisClient } from '@/lib/redis'
+import { getRedisClient } from '@/lib/redis'
 
 export type PopularKeyword = {
   keyword: string
@@ -26,6 +26,8 @@ export async function getPopularKeywords(
     })
     const dateKey = formatDate(zonedDate)
     const dailyKey = `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${dateKey}`
+
+    const redisClient = getRedisClient()
 
     // Get top keywords with scores from the specified date
     const results = await redisClient.zrange<string[]>(dailyKey, 0, limit - 1, {

@@ -1,5 +1,12 @@
 import { Redis } from '@upstash/redis'
 
-export const redisClient = Redis.fromEnv({
-  cache: 'default',
-})
+let redisClient: Redis | undefined
+
+export function getRedisClient(): Redis {
+  if (!redisClient) {
+    redisClient = Redis.fromEnv({
+      cache: 'default',
+    })
+  }
+  return redisClient
+}

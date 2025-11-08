@@ -4,7 +4,7 @@ import { range } from '@shinju-date/helpers'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
-import { redisClient } from '@/lib/redis'
+import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type VideoDetail = {
@@ -73,6 +73,8 @@ const getVideo = cache(async function getVideo(
     const date = today.subtract({ days: i })
     return formatDate(date)
   })
+
+  const redisClient = getRedisClient()
 
   // Fetch click counts for the video for the last 7 days
   // Using video.id as the Redis key (matches the write side in increment.ts)

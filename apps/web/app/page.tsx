@@ -12,6 +12,8 @@ import {
 } from '@/lib/recommendations/get-display-queries'
 import hero from './_assets/hero.jpg'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   alternates: {
     canonical: '/',
