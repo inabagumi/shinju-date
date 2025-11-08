@@ -2,13 +2,14 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import type { NextProxy, NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { joinURL } from 'ufo'
-import { redisClient } from '@/lib/redis'
+import { getRedisClient } from '@/lib/redis'
 
 export async function proxy(
   request: NextRequest,
 ): Promise<ReturnType<NextProxy>> {
   // Check for maintenance mode
   try {
+    const redisClient = getRedisClient()
     const maintenanceMode = await redisClient.get<boolean>(
       REDIS_KEYS.MAINTENANCE_MODE,
     )

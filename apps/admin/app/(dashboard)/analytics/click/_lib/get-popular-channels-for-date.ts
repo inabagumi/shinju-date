@@ -5,7 +5,7 @@ import { isNonNullable } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-import { redisClient } from '@/lib/redis'
+import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type PopularTalentForDate = {
@@ -33,6 +33,7 @@ export async function getPopularTalentsForDate(
     const dateKey = formatDate(zonedDate)
     const key = `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}${dateKey}`
 
+    const redisClient = getRedisClient()
     const results = await redisClient.zrange<number[]>(key, 0, limit - 1, {
       rev: true,
       withScores: true,

@@ -4,7 +4,7 @@ import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-import { redisClient } from '@/lib/redis'
+import { getRedisClient } from '@/lib/redis'
 
 export type AnalyticsSummary = {
   recentSearches: number
@@ -17,6 +17,7 @@ export type AnalyticsSummary = {
  */
 export async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
   try {
+    const redisClient = getRedisClient()
     const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
     const dateKey = formatDate(today)
 

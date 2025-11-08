@@ -1,7 +1,7 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
-import { redisClient } from '@/lib/redis'
+import { getRedisClient } from '@/lib/redis'
 import type { Video } from './types'
 
 // TTL settings for click analytics keys
@@ -25,6 +25,7 @@ export default async function increment(
     timestamp = Temporal.Now.zonedDateTimeISO(timeZone),
   }: IncrementOptions = {},
 ): Promise<void> {
+  const redisClient = getRedisClient()
   const keySuffix = format(timestamp)
   const videoKey = `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${keySuffix}`
   const talentKey = `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}${keySuffix}`

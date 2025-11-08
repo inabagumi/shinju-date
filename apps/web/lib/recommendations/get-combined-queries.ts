@@ -1,5 +1,5 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
-import { redisClient } from '../redis'
+import { getRedisClient } from '../redis'
 
 const CACHE_TTL = 600 // 10 minutes
 
@@ -9,6 +9,7 @@ const CACHE_TTL = 600 // 10 minutes
  * Results are cached in Redis to avoid recalculation on every page load
  */
 export async function getCombinedRecommendationQueries(): Promise<string[]> {
+  const redisClient = getRedisClient()
   // Try to get cached result first
   const cached = await redisClient.get<string[]>(
     REDIS_KEYS.QUERIES_COMBINED_CACHE,

@@ -4,7 +4,7 @@ import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-import { redisClient } from '@/lib/redis'
+import { getRedisClient } from '@/lib/redis'
 
 export type PopularKeywordForRange = {
   keyword: string
@@ -21,6 +21,7 @@ export async function getPopularKeywordsForRange(
   limit = 20,
 ): Promise<PopularKeywordForRange[]> {
   try {
+    const redisClient = getRedisClient()
     const start = Temporal.PlainDate.from(startDate)
     const end = Temporal.PlainDate.from(endDate)
 

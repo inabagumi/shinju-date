@@ -1,5 +1,5 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
-import { redisClient } from '@/lib/redis'
+import { getRedisClient } from '@/lib/redis'
 
 export type RecommendedQueriesResult = {
   manual: string[]
@@ -7,6 +7,7 @@ export type RecommendedQueriesResult = {
 }
 
 export default async function getRecommendedQueries(): Promise<RecommendedQueriesResult> {
+  const redisClient = getRedisClient()
   const [manualQueries, autoQueriesWithScores] = await Promise.all([
     redisClient.smembers<string[]>(REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED),
     redisClient.zrange(REDIS_KEYS.QUERIES_AUTO_RECOMMENDED, 0, -1, {

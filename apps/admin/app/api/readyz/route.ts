@@ -4,12 +4,13 @@ import {
   createReadinessResponse,
   runHealthChecks,
 } from '@shinju-date/health-checkers'
-import { redisClient } from '@/lib/redis'
+import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export async function GET(): Promise<Response> {
   try {
     const supabaseClient = await createSupabaseServerClient()
+    const redisClient = getRedisClient()
 
     const { status, results } = await runHealthChecks([
       () => checkSupabaseHealth(supabaseClient),

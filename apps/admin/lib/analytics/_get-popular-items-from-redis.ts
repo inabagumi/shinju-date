@@ -3,7 +3,7 @@
 import { logger } from '@shinju-date/logger'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-import { redisClient } from '@/lib/redis'
+import { getRedisClient } from '@/lib/redis'
 
 /**
  * キャッシュ有効期間（秒）
@@ -26,6 +26,7 @@ export async function _getPopularItemsFromRedis<T extends string | number>(
   startDate: Temporal.PlainDate,
   endDate?: Temporal.PlainDate,
 ): Promise<[T, number][]> {
+  const redisClient = getRedisClient()
   const itemScores: [T, number][] = []
 
   try {

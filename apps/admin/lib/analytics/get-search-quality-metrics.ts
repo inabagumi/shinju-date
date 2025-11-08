@@ -4,7 +4,7 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-import { redisClient } from '@/lib/redis'
+import { getRedisClient } from '@/lib/redis'
 
 export type SearchQualityMetrics = {
   searchEngagementRate: number
@@ -26,6 +26,7 @@ export async function getSearchEngagementRate(
   endDate?: Temporal.PlainDate,
 ): Promise<number> {
   try {
+    const redisClient = getRedisClient()
     const start = startDate
     const end = endDate ?? startDate
 
@@ -74,6 +75,7 @@ export async function getSearchExitRates(
   limit = 20,
 ): Promise<Array<{ keyword: string; exitRate: number; searchCount: number }>> {
   try {
+    const redisClient = getRedisClient()
     const start = startDate
     const end = endDate ?? startDate
 
@@ -156,6 +158,7 @@ export async function getRepeatSearchRate(
   endDate?: Temporal.PlainDate,
 ): Promise<number> {
   try {
+    const redisClient = getRedisClient()
     const start = startDate
     const end = endDate ?? startDate
 

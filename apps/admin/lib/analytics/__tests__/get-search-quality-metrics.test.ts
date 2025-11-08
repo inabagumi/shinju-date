@@ -7,13 +7,16 @@ import {
 } from '../get-search-quality-metrics'
 
 // Mock Redis client
-vi.mock('@/lib/redis', () => ({
-  redisClient: {
+vi.mock('@/lib/redis', () => {
+  const mockedRedisClient = {
     hgetall: vi.fn(),
     scard: vi.fn(),
     zrange: vi.fn(),
-  },
-}))
+  }
+  return {
+    getRedisClient: vi.fn().mockReturnValue(mockedRedisClient),
+  }
+})
 
 // Mock logger
 vi.mock('@shinju-date/logger', () => ({
@@ -22,10 +25,11 @@ vi.mock('@shinju-date/logger', () => ({
   },
 }))
 
-describe('getSearchEngagementRate', () => {
-  it('should calculate engagement rate correctly', async () => {
-    const { redisClient } = await import('@/lib/redis')
+describe('getSearchEngagementRate', async () => {
+  const { getRedisClient } = await import('@/lib/redis')
+  const redisClient = getRedisClient()
 
+  it('should calculate engagement rate correctly', async () => {
     // Mock Redis responses
     vi.mocked(redisClient.scard)
       .mockResolvedValueOnce(100) // total sessions
@@ -39,8 +43,6 @@ describe('getSearchEngagementRate', () => {
   })
 
   it('should return 0 when no sessions exist', async () => {
-    const { redisClient } = await import('@/lib/redis')
-
     vi.mocked(redisClient.scard)
       .mockResolvedValueOnce(0) // total sessions
       .mockResolvedValueOnce(0) // search sessions
@@ -53,8 +55,6 @@ describe('getSearchEngagementRate', () => {
   })
 
   it('should handle errors gracefully', async () => {
-    const { redisClient } = await import('@/lib/redis')
-
     vi.mocked(redisClient.scard).mockRejectedValue(new Error('Redis error'))
 
     const result = await getSearchEngagementRate(
@@ -65,10 +65,11 @@ describe('getSearchEngagementRate', () => {
   })
 })
 
-describe('getSearchExitRates', () => {
-  it('should calculate exit rates correctly', async () => {
-    const { redisClient } = await import('@/lib/redis')
+describe('getSearchExitRates', async () => {
+  const { getRedisClient } = await import('@/lib/redis')
+  const redisClient = getRedisClient()
 
+  it('should calculate exit rates correctly', async () => {
     // Mock search counts
     vi.mocked(redisClient.zrange).mockResolvedValue([
       'keyword1',
@@ -101,8 +102,6 @@ describe('getSearchExitRates', () => {
   })
 
   it('should handle missing exit data', async () => {
-    const { redisClient } = await import('@/lib/redis')
-
     vi.mocked(redisClient.zrange).mockResolvedValue(['keyword1', '100'])
 
     vi.mocked(redisClient.hgetall).mockResolvedValue({})
@@ -120,10 +119,11 @@ describe('getSearchExitRates', () => {
   })
 })
 
-describe('getRepeatSearchRate', () => {
-  it('should calculate repeat search rate correctly', async () => {
-    const { redisClient } = await import('@/lib/redis')
+describe('getRepeatSearchRate', async () => {
+  const { getRedisClient } = await import('@/lib/redis')
+  const redisClient = getRedisClient()
 
+  it('should calculate repeat search rate correctly', async () => {
     // Mock session search counts
     vi.mocked(redisClient.hgetall).mockResolvedValue({
       session1: '3',
@@ -139,8 +139,6 @@ describe('getRepeatSearchRate', () => {
   })
 
   it('should return 0 when no search sessions exist', async () => {
-    const { redisClient } = await import('@/lib/redis')
-
     vi.mocked(redisClient.hgetall).mockResolvedValue({})
 
     const result = await getRepeatSearchRate(

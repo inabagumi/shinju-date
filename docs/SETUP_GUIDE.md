@@ -142,18 +142,3 @@ pnpm run dev --filter=web
 ```
 
 お疲れ様でした！これで開発環境のセットアップは完了です。
-
-## 既知の問題
-
-### `pnpm build` の失敗
-
-`ENABLE_MSW=true` を設定して `pnpm build` を実行すると、`apps/web` および `apps/admin` のビルドが `TypeError: fetch failed` というエラーで失敗することがあります。
-
-これは、Next.jsのビルドプロセス中にMSW（APIモック）が正しく有効化されず、存在しないダミーのURL (`fake.upstash.test` など) へのネットワークリクエストが発生してしまうためです。
-
-**回避策:**
-
-- **開発中**: `pnpm dev` は問題なく動作するため、開発サーバーを使用して個別のアプリケーションを確認してください。
-- **ビルドの確認**: どうしてもビルドを確認したい場合は、`pnpm build --filter=!@shinju-date/web --filter=!@shinju-date/admin` のように、問題のあるアプリケーションを除外して実行してください。
-
-この問題は現在調査中です。

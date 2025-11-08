@@ -1,6 +1,8 @@
 import { Suspense } from 'react'
 import { CardSkeleton } from '@/components/skeletons'
 import { AnalyticsWidget } from './_components/analytics-widget'
+
+export const dynamic = 'force-dynamic'
 import { MaintenanceModeWidgetWrapper } from './_components/maintenance-mode-widget-wrapper'
 import {
   PopularVideosWidget,

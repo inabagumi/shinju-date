@@ -2,13 +2,14 @@
 
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
-import { redisClient } from '@/lib/redis'
+import { getRedisClient } from '@/lib/redis'
 
 /**
  * Get keywords that returned zero search results from Redis
  */
 export async function getZeroResultKeywords(): Promise<string[]> {
   try {
+    const redisClient = getRedisClient()
     const keywords = await redisClient.smembers<string[]>(
       REDIS_KEYS.SEARCH_ZERO_RESULTS,
     )
