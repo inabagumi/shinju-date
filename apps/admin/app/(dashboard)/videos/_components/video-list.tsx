@@ -236,8 +236,10 @@ export default function VideoList({ videos }: Props) {
                       <div className="relative aspect-video w-20 md:w-28">
                         <Image
                           alt=""
+                          blurDataURL={video.thumbnail.blur_data_url}
                           className="object-cover"
                           fill
+                          placeholder="blur"
                           sizes="(max-width: 768px) 80px, 112px"
                           src={`/images/thumbnails/${video.thumbnail.id}`}
                         />

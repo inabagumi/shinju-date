@@ -44,8 +44,10 @@ export async function PopularVideosWidget() {
                 <div className="relative h-16 w-28">
                   <Image
                     alt=""
+                    blurDataURL={video.thumbnail.blur_data_url}
                     className="rounded object-cover"
                     fill
+                    placeholder="blur"
                     sizes="112px"
                     src={`/images/thumbnails/${video.thumbnail.id}`}
                   />

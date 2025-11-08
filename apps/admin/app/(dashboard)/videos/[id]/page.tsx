@@ -132,8 +132,10 @@ export default async function VideoDetailPage({ params }: Props) {
                 <div className="relative aspect-video w-full">
                   <Image
                     alt={video.title}
+                    blurDataURL={video.thumbnail.blur_data_url}
                     className="object-cover"
                     fill
+                    placeholder="blur"
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     src={`/images/thumbnails/${video.thumbnail.id}`}
                   />

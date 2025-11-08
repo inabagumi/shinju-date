@@ -169,8 +169,10 @@ export default async function TalentDetailPage({ params }: Props) {
                           <div className="relative h-12 w-20">
                             <Image
                               alt={video.title}
+                              blurDataURL={video.thumbnail.blur_data_url}
                               className="rounded object-cover"
                               fill
+                              placeholder="blur"
                               sizes="80px"
                               src={`/images/thumbnails/${video.thumbnail.id}`}
                             />
