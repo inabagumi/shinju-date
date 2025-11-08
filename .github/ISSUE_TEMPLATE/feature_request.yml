@@ -1,0 +1,34 @@
+name: "機能要望"
+description: "新しい機能や改善を提案する"
+type: Feature
+body:
+  - type: markdown
+    attributes:
+      value: "機能要望にご協力いただきありがとうございます。"
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: "機能の説明"
+      description: "どのような機能や改善を望んでいますか？"
+      placeholder: "どのような問題があり、それをどう解決したいかを明確かつ簡潔に説明してください。例：〇〇をしている時にいつも不便に感じます..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution-description
+    attributes:
+      label: "解決策の説明"
+      description: "どのような解決策を考えていますか？"
+      placeholder: "期待する動作を明確かつ簡潔に説明してください。"
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "代替案"
+      description: "他にどのような代替案や解決策がありますか？"
+      placeholder: "検討した代替案や他の機能を明確かつ簡潔に説明してください。"
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: "補足情報"
+      description: "その他、補足情報があれば記載してください。"

@@ -1,0 +1,23 @@
+name: "タスク"
+description: "リファクタリング、ドキュメント作成などの作業"
+type: Task
+body:
+  - type: textarea
+    id: task-description
+    attributes:
+      label: "タスクの説明"
+      description: "タスクの内容を具体的に説明してください。"
+      placeholder: "タスクの内容を明確かつ簡潔に説明してください。"
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: "受け入れ条件"
+      description: "タスクが完了したと判断するための基準を記載してください。"
+      placeholder: |
+        - [ ] 条件1
+        - [ ] 条件2
+        - [ ] 条件3
+    validations:
+      required: true
