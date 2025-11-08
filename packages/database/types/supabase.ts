@@ -196,23 +196,33 @@ export type Database = {
       twitch_videos: {
         Row: {
           id: string
+          twitch_user_id: string
           twitch_video_id: string
           type: Database['public']['Enums']['twitch_video_type'] | null
           video_id: string
         }
         Insert: {
           id?: string
+          twitch_user_id: string
           twitch_video_id: string
           type?: Database['public']['Enums']['twitch_video_type'] | null
           video_id: string
         }
         Update: {
           id?: string
+          twitch_user_id?: string
           twitch_video_id?: string
           type?: Database['public']['Enums']['twitch_video_type'] | null
           video_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: 'twitch_videos_twitch_user_id_fkey'
+            columns: ['twitch_user_id']
+            isOneToOne: false
+            referencedRelation: 'twitch_users'
+            referencedColumns: ['id']
+          },
           {
             foreignKeyName: 'twitch_videos_video_id_fkey'
             columns: ['video_id']
@@ -318,16 +328,19 @@ export type Database = {
         Row: {
           id: string
           video_id: string
+          youtube_channel_id: string | null
           youtube_video_id: string
         }
         Insert: {
           id?: string
           video_id: string
+          youtube_channel_id?: string | null
           youtube_video_id: string
         }
         Update: {
           id?: string
           video_id?: string
+          youtube_channel_id?: string | null
           youtube_video_id?: string
         }
         Relationships: [
@@ -336,6 +349,13 @@ export type Database = {
             columns: ['video_id']
             isOneToOne: true
             referencedRelation: 'videos'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'youtube_videos_youtube_channel_id_fkey'
+            columns: ['youtube_channel_id']
+            isOneToOne: false
+            referencedRelation: 'youtube_channels'
             referencedColumns: ['id']
           },
         ]
