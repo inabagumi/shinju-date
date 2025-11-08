@@ -1,6 +1,6 @@
 name: "Task / タスク"
 description: "リファクタリング、ドキュメント作成などの作業"
-labels: ["Type: Task"]
+type: Task
 body:
   - type: textarea
     id: task-description

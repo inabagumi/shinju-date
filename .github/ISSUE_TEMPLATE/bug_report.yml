@@ -1,6 +1,6 @@
 name: "Bug Report / バグ報告"
 description: "動作の不具合やエラーを報告する"
-labels: ["Type: Bug"]
+type: Bug
 body:
   - type: markdown
     attributes:
