@@ -931,4 +931,31 @@ export const supabaseHandlers = [
 
     return HttpResponse.json([])
   }),
+
+  // RPC endpoints
+  http.post('*/rest/v1/rpc/suggestions_v2', async () => {
+    const suggestions = [
+      {
+        created_at: '2023-01-01T00:00:00.000Z',
+        id: '950e8400-e29b-41d4-a716-446655440001',
+        name: 'Test Suggestion',
+        kind: 'Test',
+        updated_at: '2023-01-01T00:00:00.000Z',
+      },
+    ]
+
+    return HttpResponse.json(suggestions)
+  }),
+
+  // Storage endpoints
+  http.get('*/storage/v1/object/public/thumbnails/*', async () => {
+    const dummyImage =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" />'
+
+    return new HttpResponse(dummyImage, {
+      headers: {
+        'Content-Type': 'image/svg+xml',
+      },
+    })
+  }),
 ]
