@@ -7,9 +7,6 @@ export default defineConfig({
       '@': path.resolve(__dirname, './'),
     },
     environment: 'jsdom',
-    environmentOptions: {
-      url: 'https://shinju-date.test',
-    },
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
   },

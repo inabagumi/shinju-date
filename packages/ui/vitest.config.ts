@@ -4,12 +4,9 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     alias: {
-      '@': path.resolve(__dirname, './'),
+      '@': path.resolve(__dirname, './src'),
     },
     environment: 'jsdom',
-    environmentOptions: {
-      url: 'https://shinju-date.test',
-    },
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
   },
