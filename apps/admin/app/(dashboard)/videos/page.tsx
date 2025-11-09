@@ -2,7 +2,6 @@ import { formatNumber } from '@shinju-date/helpers'
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
-import { TableSkeleton } from '@/components/skeletons'
 import { getTalents } from '../talents/_lib/get-talents'
 import Pagination from './_components/pagination'
 import { VideoFilters } from './_components/video-filters'
@@ -60,8 +59,8 @@ async function VideosContent({ searchParams }: { searchParams: PageProps<'/'>['s
   const sortField = validatedParams.sortField
   const sortOrder = validatedParams.sortOrder
 
-  // Fetch talents and total count outside Suspense to avoid layout shift
-  const [talents, { total }] = await Promise.all([
+  // Fetch all data at once - no nested suspense needed
+  const [talents, { videos, total }] = await Promise.all([
     getTalents(),
     getVideos(currentPage, perPage, filters, sortField, sortOrder),
   ])
@@ -76,15 +75,8 @@ async function VideosContent({ searchParams }: { searchParams: PageProps<'/'>['s
 
       <VideoFilters talents={talents} />
 
-      <Suspense fallback={<TableSkeleton rows={perPage} />}>
-        <VideoTable
-          currentPage={currentPage}
-          filters={filters}
-          perPage={perPage}
-          sortField={sortField}
-          sortOrder={sortOrder}
-        />
-      </Suspense>
+      {/* Render table directly with fetched data */}
+      <VideoTable videos={videos} />
       {totalPages > 1 && (
         <Pagination currentPage={currentPage} totalPages={totalPages} />
       )}

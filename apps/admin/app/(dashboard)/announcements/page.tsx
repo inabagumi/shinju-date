@@ -1,8 +1,15 @@
+import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
+import getAnnouncements from './_lib/get-announcements'
 import { AnnouncementModal } from './_components/announcement-modal'
 import { AnnouncementsList } from './_components/announcements-list'
 
-export default function AnnouncementsPage() {
+async function AnnouncementsContent() {
+  'use cache: private'
+  cacheLife('minutes')
+
+  const announcements = await getAnnouncements()
+
   return (
     <div className="p-6">
       <div className="space-y-6">
@@ -18,10 +25,23 @@ export default function AnnouncementsPage() {
           </Suspense>
         </div>
 
-        <Suspense>
-          <AnnouncementsList />
-        </Suspense>
+        {/* Announcements List - data already fetched */}
+        <AnnouncementsList announcements={announcements} />
       </div>
     </div>
+  )
+}
+
+export default function AnnouncementsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-6">
+          <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
+        </div>
+      }
+    >
+      <AnnouncementsContent />
+    </Suspense>
   )
 }
