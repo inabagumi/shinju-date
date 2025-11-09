@@ -1,5 +1,6 @@
 import { formatNumber } from '@shinju-date/helpers'
 import type { Metadata } from 'next'
+import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
 import { TableSkeleton } from '@/components/skeletons'
 import { getTalents } from '../talents/_lib/get-talents'
@@ -20,7 +21,10 @@ export const metadata: Metadata = {
   title: '動画管理',
 }
 
-export default async function VideosPage({ searchParams }: PageProps<'/'>) {
+async function VideosContent({ searchParams }: PageProps<'/'>) {
+  'use cache: private'
+  cacheLife('minutes')
+
   const rawParams = await searchParams
 
   // Validate and parse search parameters using zod schema
@@ -85,5 +89,19 @@ export default async function VideosPage({ searchParams }: PageProps<'/'>) {
         <Pagination currentPage={currentPage} totalPages={totalPages} />
       )}
     </div>
+  )
+}
+
+export default function VideosPage({ searchParams }: PageProps<'/'>) {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-4">
+          <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
+        </div>
+      }
+    >
+      <VideosContent searchParams={searchParams} />
+    </Suspense>
   )
 }
