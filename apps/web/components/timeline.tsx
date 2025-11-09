@@ -75,7 +75,7 @@ export default function Timeline({
 
   return (
     <div className="space-y-20">
-      {Array.from(schedule.entries()).map(([dateTime, items]) => (
+      {[...schedule.entries()].map(([dateTime, items]) => (
         <TimelineSection dateTime={dateTime} items={items} key={dateTime} />
       ))}
     </div>
