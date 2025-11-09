@@ -29,7 +29,11 @@ async function VideoFiltersData() {
   return <VideoFilters talents={talents} />
 }
 
-async function VideoTableData({ searchParams }: { searchParams: PageProps<'/'>['searchParams'] }) {
+async function VideoTableData({
+  searchParams,
+}: {
+  searchParams: PageProps<'/'>['searchParams']
+}) {
   'use cache: private'
   cacheLife('minutes')
 
@@ -68,7 +72,13 @@ async function VideoTableData({ searchParams }: { searchParams: PageProps<'/'>['
   const sortField = validatedParams.sortField
   const sortOrder = validatedParams.sortOrder
 
-  const { videos, total } = await getVideos(currentPage, perPage, filters, sortField, sortOrder)
+  const { videos, total } = await getVideos(
+    currentPage,
+    perPage,
+    filters,
+    sortField,
+    sortOrder,
+  )
   const totalPages = Math.ceil(total / perPage)
 
   return (
@@ -81,7 +91,11 @@ async function VideoTableData({ searchParams }: { searchParams: PageProps<'/'>['
   )
 }
 
-async function VideoCountData({ searchParams }: { searchParams: PageProps<'/'>['searchParams'] }) {
+async function VideoCountData({
+  searchParams,
+}: {
+  searchParams: PageProps<'/'>['searchParams']
+}) {
   'use cache: private'
   cacheLife('minutes')
 
@@ -114,7 +128,13 @@ async function VideoCountData({ searchParams }: { searchParams: PageProps<'/'>['
   const sortField = validatedParams.sortField
   const sortOrder = validatedParams.sortOrder
 
-  const { total } = await getVideos(currentPage, perPage, filters, sortField, sortOrder)
+  const { total } = await getVideos(
+    currentPage,
+    perPage,
+    filters,
+    sortField,
+    sortOrder,
+  )
 
   return <p className="text-gray-600">全 {formatNumber(total)} 件の動画</p>
 }
@@ -141,9 +161,7 @@ export default function VideosPage({ searchParams }: PageProps<'/'>) {
 
       {/* Video table with independent Suspense */}
       <Suspense
-        fallback={
-          <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-        }
+        fallback={<div className="h-64 animate-pulse rounded-lg bg-gray-200" />}
       >
         <VideoTableData searchParams={searchParams} />
       </Suspense>

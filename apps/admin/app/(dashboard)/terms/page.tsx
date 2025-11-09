@@ -17,12 +17,10 @@ export default function TermsPage() {
     <div className="p-6">
       {/* Static header */}
       <h1 className="mb-6 font-bold text-3xl">用語管理</h1>
-      
+
       {/* Dynamic content with Suspense */}
       <Suspense
-        fallback={
-          <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-        }
+        fallback={<div className="h-64 animate-pulse rounded-lg bg-gray-200" />}
       >
         <TermsListData />
       </Suspense>

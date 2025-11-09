@@ -46,7 +46,11 @@ function AnnouncementItem({ announcement }: { announcement: Announcement }) {
   )
 }
 
-export function AnnouncementsList({ announcements }: { announcements: Announcement[] }) {
+export function AnnouncementsList({
+  announcements,
+}: {
+  announcements: Announcement[]
+}) {
   return (
     <div>
       {announcements.length === 0 ? (

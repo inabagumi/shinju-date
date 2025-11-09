@@ -40,9 +40,7 @@ export default function AccountPage() {
 
       {/* Email form - requires user data */}
       <Suspense
-        fallback={
-          <div className="h-48 animate-pulse rounded-lg bg-gray-200" />
-        }
+        fallback={<div className="h-48 animate-pulse rounded-lg bg-gray-200" />}
       >
         <UserEmailData />
       </Suspense>

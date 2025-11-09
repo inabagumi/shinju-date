@@ -1,8 +1,8 @@
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
-import getAnnouncements from './_lib/get-announcements'
 import { AnnouncementModal } from './_components/announcement-modal'
 import { AnnouncementsList } from './_components/announcements-list'
+import getAnnouncements from './_lib/get-announcements'
 
 async function AnnouncementsListData() {
   'use cache: private'
