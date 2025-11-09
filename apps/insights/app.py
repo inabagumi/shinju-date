@@ -58,9 +58,7 @@ def healthz_endpoint():
 @app.get("/api/readyz")
 def readyz_endpoint():
     if not supabase:
-        raise HTTPException(
-            status_code=503, detail="Supabase client is not configured"
-        )
+        raise HTTPException(status_code=503, detail="Supabase client is not configured")
     try:
         supabase.table("videos").select("id").limit(1).execute()
         return {"status": "ok"}
@@ -68,9 +66,7 @@ def readyz_endpoint():
         raise HTTPException(status_code=503, detail=f"Database connection failed: {e}")
 
 
-@app.post(
-    "/api/v1/terms/analysis", dependencies=[Depends(verify_cron_request)]
-)
+@app.post("/api/v1/terms/analysis", dependencies=[Depends(verify_cron_request)])
 def analysis_terms_endpoint():
     """Extract frequent terms from video titles stored in Supabase."""
     if not supabase:

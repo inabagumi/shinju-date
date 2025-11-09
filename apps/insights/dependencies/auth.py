@@ -13,9 +13,7 @@ async def verify_cron_request(api_key: str = Security(api_key_header)):
     try:
         scheme, _, credentials = api_key.partition(" ")
         if scheme.lower() != "bearer":
-            raise HTTPException(
-                status_code=401, detail="Invalid authentication scheme"
-            )
+            raise HTTPException(status_code=401, detail="Invalid authentication scheme")
     except ValueError:
         raise HTTPException(
             status_code=401, detail="Invalid authorization header format"

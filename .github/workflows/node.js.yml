@@ -2,13 +2,9 @@ name: Node.js CI
 
 on:
   pull_request:
-    paths-ignore:
-      - "apps/insights/**"
     types: [opened, synchronize]
   push:
     branches: [main]
-    paths-ignore:
-      - "apps/insights/**"
 
 env:
   # renovate: datasource=npm depName=corepack
@@ -37,5 +33,5 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install
-      - run: pnpm check
-      - run: pnpm test
+      - run: pnpm check --filter=!@shinju-date/insights
+      - run: pnpm test --filter=!@shinju-date/insights
