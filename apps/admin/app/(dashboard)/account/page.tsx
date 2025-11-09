@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: 'アカウント設定',
 }
 
-async function AccountContent() {
+async function UserEmailData() {
   'use cache: private'
   cacheLife('seconds')
 
@@ -24,8 +24,13 @@ async function AccountContent() {
     redirect('/login')
   }
 
+  return <EmailUpdateForm currentEmail={user.email ?? ''} />
+}
+
+export default function AccountPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6">
+      {/* Static header */}
       <div>
         <h1 className="font-bold text-3xl">アカウント設定</h1>
         <p className="mt-2 text-slate-600">
@@ -33,23 +38,17 @@ async function AccountContent() {
         </p>
       </div>
 
-      <EmailUpdateForm currentEmail={user.email ?? ''} />
+      {/* Email form - requires user data */}
+      <Suspense
+        fallback={
+          <div className="h-48 animate-pulse rounded-lg bg-gray-200" />
+        }
+      >
+        <UserEmailData />
+      </Suspense>
+
+      {/* Password form - static component */}
       <PasswordUpdateForm />
     </div>
-  )
-}
-
-export default function AccountPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="mx-auto max-w-4xl space-y-8 p-6">
-          <div className="h-8 w-48 animate-pulse rounded bg-gray-200" />
-          <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-        </div>
-      }
-    >
-      <AccountContent />
-    </Suspense>
   )
 }

@@ -20,7 +20,16 @@ export const metadata: Metadata = {
   title: '動画管理',
 }
 
-async function VideosContent({ searchParams }: { searchParams: PageProps<'/'>['searchParams'] }) {
+async function VideoFiltersData() {
+  'use cache: private'
+  cacheLife('minutes')
+
+  const talents = await getTalents()
+
+  return <VideoFilters talents={talents} />
+}
+
+async function VideoTableData({ searchParams }: { searchParams: PageProps<'/'>['searchParams'] }) {
   'use cache: private'
   cacheLife('minutes')
 
@@ -59,41 +68,85 @@ async function VideosContent({ searchParams }: { searchParams: PageProps<'/'>['s
   const sortField = validatedParams.sortField
   const sortOrder = validatedParams.sortOrder
 
-  // Fetch all data at once - no nested suspense needed
-  const [talents, { videos, total }] = await Promise.all([
-    getTalents(),
-    getVideos(currentPage, perPage, filters, sortField, sortOrder),
-  ])
+  const { videos, total } = await getVideos(currentPage, perPage, filters, sortField, sortOrder)
   const totalPages = Math.ceil(total / perPage)
 
   return (
-    <div className="p-4">
-      <div className="mb-4">
-        <h1 className="font-bold text-2xl">動画管理</h1>
-        <p className="text-gray-600">全 {formatNumber(total)} 件の動画</p>
-      </div>
-
-      <VideoFilters talents={talents} />
-
-      {/* Render table directly with fetched data */}
+    <>
       <VideoTable videos={videos} />
       {totalPages > 1 && (
         <Pagination currentPage={currentPage} totalPages={totalPages} />
       )}
-    </div>
+    </>
   )
+}
+
+async function VideoCountData({ searchParams }: { searchParams: PageProps<'/'>['searchParams'] }) {
+  'use cache: private'
+  cacheLife('minutes')
+
+  const rawParams = await searchParams
+  let validatedParams: VideoSearchParams
+  try {
+    validatedParams = videoSearchParamsSchema.parse(rawParams)
+  } catch (_error) {
+    const result = videoSearchParamsSchema.safeParse({})
+    validatedParams = result.success ? result.data : DEFAULT_VALUES
+  }
+
+  const currentPage = validatedParams.page
+  const perPage = 20
+
+  const filters: VideoFiltersType = {}
+  if (validatedParams.talentId !== undefined) {
+    filters.talentId = validatedParams.talentId
+  }
+  if (validatedParams.visible !== undefined) {
+    filters.visible = validatedParams.visible
+  }
+  if (validatedParams.search) {
+    filters.search = validatedParams.search
+  }
+  if (validatedParams.deleted !== undefined) {
+    filters.deleted = validatedParams.deleted
+  }
+
+  const sortField = validatedParams.sortField
+  const sortOrder = validatedParams.sortOrder
+
+  const { total } = await getVideos(currentPage, perPage, filters, sortField, sortOrder)
+
+  return <p className="text-gray-600">全 {formatNumber(total)} 件の動画</p>
 }
 
 export default function VideosPage({ searchParams }: PageProps<'/'>) {
   return (
-    <Suspense
-      fallback={
-        <div className="p-4">
+    <div className="p-4">
+      {/* Static header */}
+      <div className="mb-4">
+        <h1 className="font-bold text-2xl">動画管理</h1>
+        <Suspense fallback={<p className="text-gray-600">読み込み中...</p>}>
+          <VideoCountData searchParams={searchParams} />
+        </Suspense>
+      </div>
+
+      {/* Filters with independent Suspense */}
+      <Suspense
+        fallback={
+          <div className="mb-4 h-20 animate-pulse rounded-lg bg-gray-200" />
+        }
+      >
+        <VideoFiltersData />
+      </Suspense>
+
+      {/* Video table with independent Suspense */}
+      <Suspense
+        fallback={
           <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-        </div>
-      }
-    >
-      <VideosContent searchParams={searchParams} />
-    </Suspense>
+        }
+      >
+        <VideoTableData searchParams={searchParams} />
+      </Suspense>
+    </div>
   )
 }

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: 'タレント管理',
 }
 
-async function TalentsContent() {
+async function TalentsListData() {
   'use cache: private'
   cacheLife('minutes')
 
@@ -19,14 +19,18 @@ async function TalentsContent() {
 
 export default function TalentsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="p-6">
+    <div className="p-6">
+      {/* Static header */}
+      <h1 className="mb-6 font-bold text-3xl">タレント管理</h1>
+      
+      {/* Dynamic content with Suspense */}
+      <Suspense
+        fallback={
           <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-        </div>
-      }
-    >
-      <TalentsContent />
-    </Suspense>
+        }
+      >
+        <TalentsListData />
+      </Suspense>
+    </div>
   )
 }

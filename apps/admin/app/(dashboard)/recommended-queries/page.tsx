@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: 'おすすめクエリ',
 }
 
-async function QueriesContent() {
+async function QueriesListData() {
   'use cache: private'
   cacheLife('minutes')
 
@@ -19,14 +19,18 @@ async function QueriesContent() {
 
 export default function RecommendedQueriesPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="p-6">
+    <div className="p-6">
+      {/* Static header */}
+      <h1 className="mb-6 font-bold text-3xl">おすすめクエリ</h1>
+      
+      {/* Dynamic content with Suspense */}
+      <Suspense
+        fallback={
           <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-        </div>
-      }
-    >
-      <QueriesContent />
-    </Suspense>
+        }
+      >
+        <QueriesListData />
+      </Suspense>
+    </div>
   )
 }
