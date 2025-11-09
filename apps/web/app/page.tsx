@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { cacheLife, cacheTag } from 'next/cache'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense } from 'react'
@@ -34,6 +35,8 @@ export const metadata: Metadata = {
 
 async function HomeTimeline() {
   'use cache: remote'
+  cacheLife('hours')
+  cacheTag('timeline')
 
   const videos = await fetchNotEndedVideos()
 
@@ -68,6 +71,8 @@ function RecommendationQueriesSkeleton() {
 
 async function RecommendationQueries() {
   'use cache: remote'
+  cacheLife('minutes')
+  cacheTag('recommendations')
 
   const queries = await getDisplayRecommendationQueries()
 

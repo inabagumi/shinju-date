@@ -1,4 +1,5 @@
 import { formatNumber } from '@shinju-date/helpers'
+import { cacheLife } from 'next/cache'
 import Link from 'next/link'
 import { getAnalyticsSummary } from '../_lib/get-analytics-summary'
 
@@ -7,6 +8,9 @@ import { getAnalyticsSummary } from '../_lib/get-analytics-summary'
  * This is an async Server Component that fetches its own data
  */
 export async function AnalyticsWidget() {
+  'use cache: private'
+  cacheLife('minutes')
+
   const analytics = await getAnalyticsSummary()
 
   return (
