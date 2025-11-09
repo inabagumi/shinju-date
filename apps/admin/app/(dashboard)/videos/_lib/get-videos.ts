@@ -66,7 +66,7 @@ export async function getVideos(
 
   // Apply filters
   if (filters?.talentId) {
-    query = query.eq('channel_id', filters.talentId)
+    query = query.eq('talent_id', filters.talentId)
   }
   if (filters?.visible !== undefined) {
     query = query.eq('visible', filters.visible)
