@@ -1,7 +1,6 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import groupBy from 'lodash.groupby'
 import { useMemo } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
@@ -66,7 +65,7 @@ export default function Timeline({
         Temporal.Instant.from(videoB.published_at),
       ),
     )
-    return groupBy(sortedValues, (value) =>
+    return Object.groupBy(sortedValues, (value) =>
       Temporal.Instant.from(value.published_at)
         .toZonedDateTimeISO(timeZone)
         .toPlainDate()
