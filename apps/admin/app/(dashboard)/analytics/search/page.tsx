@@ -25,7 +25,13 @@ export default function SearchAnalyticsPage({
       <h1 className="mb-6 font-bold text-3xl">検索アナリティクス</h1>
 
       <div className="mb-6">
-        <DateRangePickerClient searchParams={parsedSearchParams} />
+        <Suspense
+          fallback={
+            <div className="h-12 animate-pulse rounded-lg bg-gray-200" />
+          }
+        >
+          <DateRangePickerClient searchParams={parsedSearchParams} />
+        </Suspense>
       </div>
 
       {/* Search Volume Chart */}

@@ -22,7 +22,13 @@ export default function ClickAnalyticsPage({
       <h1 className="mb-6 font-bold text-3xl">クリックアナリティクス</h1>
 
       <div className="mb-6">
-        <DateRangePickerClient searchParams={parsedSearchParams} />
+        <Suspense
+          fallback={
+            <div className="h-12 animate-pulse rounded-lg bg-gray-200" />
+          }
+        >
+          <DateRangePickerClient searchParams={parsedSearchParams} />
+        </Suspense>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -38,14 +44,20 @@ export default function ClickAnalyticsPage({
         </div>
 
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
-          <TabNavigation
-            defaultTab="videos"
-            searchParams={parsedSearchParams}
-            tabs={[
-              { id: 'videos', label: '人気動画' },
-              { id: 'talents', label: '人気タレント' },
-            ]}
-          />
+          <Suspense
+            fallback={
+              <div className="h-12 animate-pulse rounded-lg bg-gray-200" />
+            }
+          >
+            <TabNavigation
+              defaultTab="videos"
+              searchParams={parsedSearchParams}
+              tabs={[
+                { id: 'videos', label: '人気動画' },
+                { id: 'talents', label: '人気タレント' },
+              ]}
+            />
+          </Suspense>
           <div className="mt-6">
             <PopularRankingsTabs searchParams={parsedSearchParams} />
           </div>
