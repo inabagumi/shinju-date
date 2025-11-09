@@ -1,5 +1,6 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
 import { range } from '@shinju-date/helpers'
+import { describe, expect, it, vi } from 'vitest'
 import { YouTubeScraper } from '../scraper.js'
 import type {
   YouTubeChannel,
@@ -68,8 +69,8 @@ describe('YouTubeScraper', () => {
       )
 
       expect(channels).toHaveLength(2)
-      expect(channels[0].id).toBe('UC123')
-      expect(channels[1].id).toBe('UC456')
+      expect(channels[0]?.id).toBe('UC123')
+      expect(channels[1]?.id).toBe('UC456')
       expect(onChannelScraped).toHaveBeenCalledTimes(2)
       expect(onChannelScraped).toHaveBeenCalledWith(mockChannels[0])
       expect(onChannelScraped).toHaveBeenCalledWith(mockChannels[1])
@@ -128,7 +129,7 @@ describe('YouTubeScraper', () => {
       }
 
       expect(channels).toHaveLength(1)
-      expect(channels[0].id).toBe('UC123')
+      expect(channels[0]?.id).toBe('UC123')
     })
   })
 
@@ -159,8 +160,8 @@ describe('YouTubeScraper', () => {
       }
 
       expect(items).toHaveLength(2)
-      expect(items[0].contentDetails.videoId).toBe('video1')
-      expect(items[1].contentDetails.videoId).toBe('video2')
+      expect(items[0]?.contentDetails.videoId).toBe('video1')
+      expect(items[1]?.contentDetails.videoId).toBe('video2')
       expect(onPlaylistItemScraped).toHaveBeenCalledTimes(2)
     })
 
@@ -260,8 +261,8 @@ describe('YouTubeScraper', () => {
       }
 
       expect(videos).toHaveLength(2)
-      expect(videos[0].id).toBe('video1')
-      expect(videos[1].id).toBe('video2')
+      expect(videos[0]?.id).toBe('video1')
+      expect(videos[1]?.id).toBe('video2')
       expect(onVideoScraped).toHaveBeenCalledTimes(2)
     })
 
@@ -478,7 +479,7 @@ describe('YouTubeScraper', () => {
       })
 
       expect(videos).toHaveLength(1)
-      expect(videos[0].id).toBe('video1')
+      expect(videos[0]?.id).toBe('video1')
     })
   })
 })

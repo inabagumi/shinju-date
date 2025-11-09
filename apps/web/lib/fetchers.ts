@@ -11,13 +11,13 @@ const DEFAULT_SEARCH_SELECT = `
   id,
   published_at,
   status,
-  talent:channels!inner (id, name),
+  talent:talents!inner (id, name),
   thumbnail:thumbnails (blur_data_url, height, id, path, width),
   title,
   youtube_video:youtube_videos!inner (youtube_video_id)
 `
 
-export type Talent = Pick<Tables<'channels'>, 'id' | 'name'>
+export type Talent = Pick<Tables<'talents'>, 'id' | 'name'>
 
 export type Thumbnail = Pick<
   Tables<'thumbnails'>,

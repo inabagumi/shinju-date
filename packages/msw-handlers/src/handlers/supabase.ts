@@ -149,120 +149,120 @@ const mockThumbnails = [
 
 const mockVideos = [
   {
-    channel_id: '550e8400-e29b-41d4-a716-446655440001',
     created_at: '2023-01-01T00:00:00.000Z',
     deleted_at: null,
     duration: 'PT10M30S',
     id: '750e8400-e29b-41d4-a716-446655440001',
     published_at: '2023-01-01T12:00:00.000Z',
+    talent_id: '550e8400-e29b-41d4-a716-446655440001',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440001',
     title: 'Analytics Test Video #1',
     updated_at: '2023-01-01T00:00:00.000Z',
     visible: true,
   },
   {
-    channel_id: '550e8400-e29b-41d4-a716-446655440002',
     created_at: '2023-01-02T00:00:00.000Z',
     deleted_at: null,
     duration: 'PT15M45S',
     id: '750e8400-e29b-41d4-a716-446655440002',
     published_at: '2023-01-02T12:00:00.000Z',
+    talent_id: '550e8400-e29b-41d4-a716-446655440002',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440002',
     title: 'Trending Test Video #2',
     updated_at: '2023-01-02T00:00:00.000Z',
     visible: true,
   },
   {
-    channel_id: '550e8400-e29b-41d4-a716-446655440003',
     created_at: '2023-01-03T00:00:00.000Z',
     deleted_at: null,
     duration: 'PT8M15S',
     id: '750e8400-e29b-41d4-a716-446655440003',
     published_at: '2023-01-03T12:00:00.000Z',
+    talent_id: '550e8400-e29b-41d4-a716-446655440003',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440003',
     title: 'Popular Test Video #3',
     updated_at: '2023-01-03T00:00:00.000Z',
     visible: true,
   },
   {
-    channel_id: '550e8400-e29b-41d4-a716-446655440004',
     created_at: '2023-01-04T00:00:00.000Z',
     deleted_at: null,
     duration: 'PT12M30S',
     id: '750e8400-e29b-41d4-a716-446655440004',
     published_at: '2023-01-04T12:00:00.000Z',
+    talent_id: '550e8400-e29b-41d4-a716-446655440004',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440004',
     title: 'Test Video #4',
     updated_at: '2023-01-04T00:00:00.000Z',
     visible: true,
   },
   {
-    channel_id: '550e8400-e29b-41d4-a716-446655440001',
     created_at: '2023-01-05T00:00:00.000Z',
     deleted_at: null,
     duration: 'PT20M45S',
     id: '750e8400-e29b-41d4-a716-446655440005',
     published_at: '2023-01-05T12:00:00.000Z',
+    talent_id: '550e8400-e29b-41d4-a716-446655440001',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440005',
     title: 'Daily Test Video #5',
     updated_at: '2023-01-05T00:00:00.000Z',
     visible: true,
   },
   {
-    channel_id: '550e8400-e29b-41d4-a716-446655440002',
     created_at: '2023-01-06T00:00:00.000Z',
     deleted_at: '2023-01-11T00:00:00.000Z',
     duration: 'PT18M20S',
     id: '750e8400-e29b-41d4-a716-446655440006',
     published_at: '2023-01-06T12:00:00.000Z',
+    talent_id: '550e8400-e29b-41d4-a716-446655440002',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440002',
     title: 'Deleted Video 2',
     updated_at: '2023-01-06T00:00:00.000Z',
     visible: false,
   },
   {
-    channel_id: '550e8400-e29b-41d4-a716-446655440003',
     created_at: '2023-01-07T00:00:00.000Z',
     deleted_at: null,
     duration: 'PT14M22S',
     id: '750e8400-e29b-41d4-a716-446655440007',
     published_at: '2023-01-07T12:00:00.000Z',
+    talent_id: '550e8400-e29b-41d4-a716-446655440003',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440006',
     title: 'New Content Video #7',
     updated_at: '2023-01-07T00:00:00.000Z',
     visible: true,
   },
   {
-    channel_id: '550e8400-e29b-41d4-a716-446655440004',
     created_at: '2023-01-08T00:00:00.000Z',
     deleted_at: null,
     duration: 'PT9M45S',
     id: '750e8400-e29b-41d4-a716-446655440008',
     published_at: '2023-01-08T12:00:00.000Z',
+    talent_id: '550e8400-e29b-41d4-a716-446655440004',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440007',
     title: 'Tutorial Video #8',
     updated_at: '2023-01-08T00:00:00.000Z',
     visible: true,
   },
   {
-    channel_id: '550e8400-e29b-41d4-a716-446655440001',
     created_at: '2023-01-09T00:00:00.000Z',
     deleted_at: null,
     duration: 'PT22M10S',
     id: '750e8400-e29b-41d4-a716-446655440009',
     published_at: '2023-01-09T12:00:00.000Z',
+    talent_id: '550e8400-e29b-41d4-a716-446655440001',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440008',
     title: 'Analytics Deep Dive #9',
     updated_at: '2023-01-09T00:00:00.000Z',
     visible: true,
   },
   {
-    channel_id: '550e8400-e29b-41d4-a716-446655440002',
     created_at: '2023-01-10T00:00:00.000Z',
     deleted_at: null,
     duration: 'PT16M33S',
     id: '750e8400-e29b-41d4-a716-446655440010',
     published_at: '2023-01-10T12:00:00.000Z',
+    talent_id: '550e8400-e29b-41d4-a716-446655440002',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440009',
     title: 'Trending Topics #10',
     updated_at: '2023-01-10T00:00:00.000Z',
@@ -272,22 +272,22 @@ const mockVideos = [
 
 const mockYoutubeChannels = [
   {
-    channel_id: '550e8400-e29b-41d4-a716-446655440001',
+    talent_id: '550e8400-e29b-41d4-a716-446655440001',
     youtube_channel_id: 'UCtest123',
     youtube_handle: '@dailyanalytics',
   },
   {
-    channel_id: '550e8400-e29b-41d4-a716-446655440002',
+    talent_id: '550e8400-e29b-41d4-a716-446655440002',
     youtube_channel_id: 'UCtest456',
     youtube_handle: '@trendingtopics',
   },
   {
-    channel_id: '550e8400-e29b-41d4-a716-446655440003',
+    talent_id: '550e8400-e29b-41d4-a716-446655440003',
     youtube_channel_id: 'UCtest789',
     youtube_handle: '@popularcontent',
   },
   {
-    channel_id: '550e8400-e29b-41d4-a716-446655440004',
+    talent_id: '550e8400-e29b-41d4-a716-446655440004',
     youtube_channel_id: 'UCtest012',
     youtube_handle: '@testchannelfour',
   },
@@ -732,7 +732,9 @@ export const supabaseHandlers = [
     if (query.returnCount) {
       return HttpResponse.json(filteredData, {
         headers: {
-          'Content-Range': `0-${filteredData.length - 1}/${filteredData.length}`,
+          'Content-Range': `0-${filteredData.length - 1}/${
+            filteredData.length
+          }`,
         },
       })
     }
@@ -765,7 +767,9 @@ export const supabaseHandlers = [
     if (query.returnCount) {
       return HttpResponse.json(filteredData, {
         headers: {
-          'Content-Range': `0-${filteredData.length - 1}/${filteredData.length}`,
+          'Content-Range': `0-${filteredData.length - 1}/${
+            filteredData.length
+          }`,
         },
       })
     }

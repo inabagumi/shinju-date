@@ -126,11 +126,7 @@ export class Thumbnail {
           (savedVideo) =>
             savedVideo.youtube_video?.youtube_video_id === originalVideo.id,
         )
-        const savedThumbnail = savedVideo?.thumbnails
-          ? Array.isArray(savedVideo.thumbnails)
-            ? savedVideo.thumbnails[0]
-            : savedVideo.thumbnails
-          : undefined
+        const savedThumbnail = savedVideo?.thumbnail
 
         return queue.add(() =>
           Thumbnail.upload({
@@ -392,12 +388,12 @@ export default class Scraper implements AsyncDisposable {
         if (!savedVideo) {
           return {
             value: {
-              channel_id: this.#savedYouTubeChannel.channel_id,
               created_at: toDBString(this.#currentDateTime),
               duration: originalVideo.contentDetails?.duration ?? 'P0D',
               platform: 'youtube',
               published_at: toDBString(publishedAt),
               status,
+              talent_id: this.#savedYouTubeChannel.talent_id,
               title: originalVideo.snippet?.title ?? '',
               updated_at: toDBString(this.#currentDateTime),
               visible: true,
@@ -449,7 +445,6 @@ export default class Scraper implements AsyncDisposable {
 
         return {
           value: {
-            channel_id: this.#savedYouTubeChannel.channel_id,
             created_at: savedVideo.created_at,
             deleted_at:
               'deleted_at' in updateValue
@@ -460,6 +455,7 @@ export default class Scraper implements AsyncDisposable {
             platform: savedVideo.platform,
             published_at: updateValue.published_at ?? savedVideo.published_at,
             status: updateValue.status ?? savedVideo.status,
+            talent_id: this.#savedYouTubeChannel.talent_id,
             thumbnail_id: updateValue.thumbnail_id ?? savedVideo.thumbnail_id,
             title: updateValue.title ?? savedVideo.title,
             updated_at: toDBString(this.#currentDateTime),

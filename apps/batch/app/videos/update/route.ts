@@ -60,7 +60,7 @@ export async function POST(request: Request): Promise<Response> {
   const currentDateTime = Temporal.Now.instant()
 
   const { data: savedTalents, error } = await supabaseClient
-    .from('channels')
+    .from('talents')
     .select(
       'id, youtube_channel:youtube_channels!inner(id, youtube_channel_id)',
     )
@@ -121,8 +121,8 @@ export async function POST(request: Request): Promise<Response> {
           channel: originalChannel,
           currentDateTime,
           savedYouTubeChannel: {
-            channel_id: savedTalent.id,
             id: ytChannel.id,
+            talent_id: savedTalent.id,
             youtube_channel_id: ytChannel.youtube_channel_id,
           },
           supabaseClient,

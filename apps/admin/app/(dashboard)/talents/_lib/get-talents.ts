@@ -4,7 +4,7 @@ export async function getTalents() {
   const supabaseClient = await createSupabaseServerClient()
 
   const { data: talents, error } = await supabaseClient
-    .from('channels')
+    .from('talents')
     .select(
       'id, name, created_at, updated_at, youtube_channel:youtube_channels(name, youtube_channel_id)',
     )

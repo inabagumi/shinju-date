@@ -14,7 +14,7 @@ pnpm add @shinju-date/web-cache
 import { revalidateTags } from '@shinju-date/web-cache'
 
 // キャッシュタグを再検証
-await revalidateTags(['videos', 'channels'])
+await revalidateTags(['videos', 'talents'])
 
 // AbortSignalを使用
 await revalidateTags(['videos'], { signal: request.signal })

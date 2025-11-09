@@ -29,7 +29,7 @@ export async function getRecentVideosForTalent(
     )
     .is('deleted_at', null)
     .is('visible', true)
-    .eq('channel_id', talentId)
+    .eq('talent_id', talentId)
     .order('published_at', { ascending: false })
     .limit(limit)
 

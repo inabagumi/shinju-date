@@ -8,7 +8,7 @@ import {
 import { Temporal } from 'temporal-polyfill'
 import { title as siteName } from '@/lib/constants'
 
-type Talent = Pick<Tables<'channels'>, 'name'>
+type Talent = Pick<Tables<'talents'>, 'name'>
 
 type Video = Pick<
   Tables<'videos'>,

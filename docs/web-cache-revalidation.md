@@ -122,7 +122,7 @@ import { revalidateTags } from '@shinju-date/web-cache'
 await revalidateTags(['videos'])
 
 // 複数のタグを再検証
-await revalidateTags(['channels', 'videos'])
+await revalidateTags(['talents', 'videos'])
 
 // AbortSignalを使用
 await revalidateTags(['videos'], { signal: request.signal })
