@@ -42,7 +42,7 @@ export async function getPopularTalents(
 
   const talentIds = talentScores.map(([id]) => id)
   const { data: talents, error } = await supabaseClient
-    .from('channels')
+    .from('talents')
     .select('id, name, youtube_channel:youtube_channels(youtube_channel_id)')
     .in('id', talentIds)
 

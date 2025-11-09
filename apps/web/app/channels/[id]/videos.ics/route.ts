@@ -20,7 +20,7 @@ export async function GET(
 ): Promise<Response> {
   const { id } = await params
   const { count, error } = await supabaseClient
-    .from('channels')
+    .from('talents')
     .select('*, youtube_channel:youtube_channels(youtube_channel_id)', {
       count: 'exact',
       head: true,
@@ -44,7 +44,7 @@ export async function GET(
     .from('videos')
     .select(
       `
-        talent:channels!inner (
+        talent:talents!inner (
           id,
           name
         ),
@@ -55,7 +55,7 @@ export async function GET(
         youtube_video:youtube_videos!inner (youtube_video_id)
       `,
     )
-    .eq('channel_id', id)
+    .eq('talent_id', id)
     .lt(
       'published_at',
       now

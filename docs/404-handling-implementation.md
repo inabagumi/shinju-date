@@ -62,7 +62,7 @@ Location: `apps/admin/app/(dashboard)/talents/_lib/get-talent.ts`
 
 ```typescript
 const { data: talent, error } = await supabaseClient
-  .from('channels')
+  .from('talents')
   .select('...')
   .eq('id', id)
   .single()

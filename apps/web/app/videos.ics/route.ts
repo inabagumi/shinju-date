@@ -14,7 +14,7 @@ export async function GET(): Promise<Response> {
     .from('videos')
     .select(
       `
-        talent:channels!inner (
+        talent:talents!inner (
           name
         ),
         duration,

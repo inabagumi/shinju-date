@@ -4,7 +4,7 @@ import type { TypedSupabaseClient } from '@/lib/supabase'
 import { DatabaseError } from './errors'
 import type { SavedVideo } from './types'
 
-export type VideoChannel = Pick<Tables<'channels'>, 'name'>
+export type VideoTalent = Pick<Tables<'talents'>, 'name'>
 
 export type VideoThumbnail = Omit<
   Tables<'thumbnails'>,
@@ -15,22 +15,22 @@ export type Video = Pick<
   Tables<'videos'>,
   'duration' | 'id' | 'published_at' | 'status' | 'title'
 > & {
-  channels: VideoChannel | VideoChannel[] | null
-  thumbnails: VideoThumbnail | VideoThumbnail[] | null
+  talent: VideoTalent | null
+  thumbnail?: VideoThumbnail | null
   youtube_video?: {
     youtube_video_id: string
   }
 }
 
 const scrapeResultSelect = `
-  channels (
-    name
-  ),
   duration,
   id,
   published_at,
   status,
-  thumbnails (
+  talent:talents!inner (
+    name
+  ),
+  thumbnail:thumbnails (
     blur_data_url,
     height,
     path,
@@ -67,7 +67,7 @@ export default class DB implements AsyncDisposable {
               published_at,
               status,
               thumbnail_id,
-              thumbnails (
+              thumbnail:thumbnails (
                 blur_data_url,
                 deleted_at,
                 etag,

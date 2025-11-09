@@ -19,7 +19,7 @@ export const getTalent = cache(async function getTalent(
   const supabaseClient = await createSupabaseServerClient()
 
   const { data: talent, error } = await supabaseClient
-    .from('channels')
+    .from('talents')
     .select(
       'id, name, created_at, updated_at, deleted_at, youtube_channel:youtube_channels(name, youtube_channel_id)',
     )

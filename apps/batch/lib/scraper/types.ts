@@ -5,7 +5,7 @@ import type { Tables } from '@shinju-date/database'
  */
 export type SavedYouTubeChannel = Pick<
   Tables<'youtube_channels'>,
-  'id' | 'channel_id' | 'youtube_channel_id'
+  'id' | 'talent_id' | 'youtube_channel_id'
 >
 
 /**
@@ -16,12 +16,15 @@ export type SavedThumbnail = Omit<Tables<'thumbnails'>, 'created_at'>
 /**
  * Saved video data from the database
  */
-export type SavedVideo = Omit<Tables<'videos'>, 'channel_id' | 'updated_at'> & {
-  thumbnails: SavedThumbnail | SavedThumbnail[] | null
-  youtube_video?: { youtube_video_id: string } | null
+export type SavedVideo = Omit<Tables<'videos'>, 'talent_id' | 'updated_at'> & {
+  thumbnail: SavedThumbnail | null
+  youtube_video?: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
 }
 
 /**
  * Re-export YouTube types from the youtube-scraper package
  */
-export type { YouTubeChannel, YouTubeVideo } from '@shinju-date/youtube-scraper'
+export type {
+  YouTubeChannel,
+  YouTubeVideo,
+} from '@shinju-date/youtube-scraper'

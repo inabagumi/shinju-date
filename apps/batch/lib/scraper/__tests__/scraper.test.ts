@@ -71,26 +71,26 @@ describe('DB class', () => {
     // Mock video data with IDs
     const values = [
       {
-        channel_id: 'channel-uuid-1',
         created_at: '2023-01-01T00:00:00.000Z',
         deleted_at: null,
         duration: 'PT10M30S',
         id: 'test-uuid-1',
         platform: 'youtube' as const,
         published_at: '2023-01-01T12:00:00.000Z',
+        talent_id: 'talent-uuid-1',
         thumbnail_id: 'thumbnail-uuid-1',
         title: 'Test Video 1',
         updated_at: '2023-01-01T00:00:00.000Z',
         visible: true,
       },
       {
-        channel_id: 'channel-uuid-2',
         created_at: '2023-01-02T00:00:00.000Z',
         deleted_at: null,
         duration: 'PT15M45S',
         id: 'test-uuid-2',
         platform: 'youtube' as const,
         published_at: '2023-01-02T12:00:00.000Z',
+        talent_id: 'talent-uuid-2',
         thumbnail_id: 'thumbnail-uuid-2',
         title: 'Test Video 2',
         updated_at: '2023-01-02T00:00:00.000Z',
@@ -169,9 +169,9 @@ describe('DB class', () => {
 
         const insertedVideos = items.map((item, index) => ({
           ...item,
-          channels: { name: 'Test Channel' },
           id: `generated-uuid-${index + 1}`,
-          thumbnails: null,
+          talent: { name: 'Test Talent' },
+          thumbnail: null,
         }))
 
         return HttpResponse.json(insertedVideos, { status: 201 })
@@ -180,24 +180,24 @@ describe('DB class', () => {
 
     const values = [
       {
-        channel_id: 'channel-uuid-1',
         created_at: '2023-01-01T00:00:00.000Z',
         deleted_at: null,
         duration: 'PT10M30S',
         platform: 'youtube' as const,
         published_at: '2023-01-01T12:00:00.000Z',
+        talent_id: 'talent-uuid-1',
         thumbnail_id: 'thumbnail-uuid-1',
         title: 'New Video 1',
         updated_at: '2023-01-01T00:00:00.000Z',
         visible: true,
       },
       {
-        channel_id: 'channel-uuid-1',
         created_at: '2023-01-02T00:00:00.000Z',
         deleted_at: null,
         duration: 'PT8M15S',
         platform: 'youtube' as const,
         published_at: '2023-01-02T12:00:00.000Z',
+        talent_id: 'talent-uuid-1',
         thumbnail_id: 'thumbnail-uuid-2',
         title: 'New Video 2',
         updated_at: '2023-01-02T00:00:00.000Z',
@@ -257,8 +257,8 @@ describe('Scraper class', () => {
         id: 'UCtest123',
       },
       savedYouTubeChannel: {
-        channel_id: 'channel-uuid-1',
         id: 'ytc-uuid-1',
+        talent_id: 'talent-uuid-1',
         youtube_channel_id: 'UCtest123',
       },
       supabaseClient,
@@ -288,8 +288,8 @@ describe('Scraper class', () => {
       },
       dryRun: true, // Use dry run to avoid actual DB writes
       savedYouTubeChannel: {
-        channel_id: '1',
         id: '1',
+        talent_id: '1',
         youtube_channel_id: 'UCtest123',
       },
       supabaseClient,
@@ -343,8 +343,8 @@ describe('Scraper class', () => {
         id: 'UCtest123',
       },
       savedYouTubeChannel: {
-        channel_id: 'channel-uuid-1',
         id: 'ytc-uuid-1',
+        talent_id: 'talent-uuid-1',
         youtube_channel_id: 'UCtest123',
       },
       supabaseClient,
@@ -400,8 +400,8 @@ describe('Scraper class', () => {
         id: 'UCempty',
       },
       savedYouTubeChannel: {
-        channel_id: '999',
-        id: '999',
+        id: 'yt-channel-uuid-999',
+        talent_id: 'test-talent-uuid-999',
         youtube_channel_id: 'UUempty_uploads',
       },
       supabaseClient,
@@ -425,39 +425,39 @@ describe('YouTube video ID association bug fix', () => {
 
     const values = [
       {
-        channel_id: '1',
         created_at: '2023-01-01T00:00:00.000Z',
         deleted_at: null,
         duration: 'PT10M30S',
         id: 'uuid-video-a',
         platform: 'youtube' as const,
         published_at: '2023-01-01T12:00:00.000Z',
+        talent_id: 'talent-uuid-1',
         thumbnail_id: '1',
         title: 'Video A',
         updated_at: '2023-01-01T00:00:00.000Z',
         visible: true,
       },
       {
-        channel_id: '2',
         created_at: '2023-01-02T00:00:00.000Z',
         deleted_at: null,
         duration: 'PT15M45S',
         id: 'uuid-video-b',
         platform: 'youtube' as const,
         published_at: '2023-01-02T12:00:00.000Z',
+        talent_id: 'talent-uuid-2',
         thumbnail_id: '2',
         title: 'Video B',
         updated_at: '2023-01-02T00:00:00.000Z',
         visible: true,
       },
       {
-        channel_id: '3',
         created_at: '2023-01-03T00:00:00.000Z',
         deleted_at: null,
         duration: 'PT8M15S',
         id: 'uuid-video-c',
         platform: 'youtube' as const,
         published_at: '2023-01-03T12:00:00.000Z',
+        talent_id: 'talent-uuid-3',
         thumbnail_id: '3',
         title: 'Video C',
         updated_at: '2023-01-03T00:00:00.000Z',
@@ -542,13 +542,13 @@ describe('YouTube video ID association bug fix', () => {
     const youtubeChannelId = 'yt-channel-uuid-123'
     const values = [
       {
-        channel_id: '1',
         created_at: '2023-01-01T00:00:00.000Z',
         deleted_at: null,
         duration: 'PT10M30S',
         platform: 'youtube' as const,
         published_at: '2023-01-01T12:00:00.000Z',
-        thumbnail_id: '1',
+        talent_id: 'talent-uuid-1',
+        thumbnail_id: 'thumb-uuid-1',
         title: 'Test Video',
         updated_at: '2023-01-01T00:00:00.000Z',
         visible: true,
@@ -575,9 +575,9 @@ describe('YouTube video ID association bug fix', () => {
 
         const insertedVideos = items.map((item, index) => ({
           ...item,
-          channels: { name: 'Test Channel' },
           id: `generated-uuid-${index + 1}`,
-          thumbnails: null,
+          talent: { name: 'Test Talent' },
+          thumbnail: null,
         }))
 
         return HttpResponse.json(insertedVideos, { status: 201 })

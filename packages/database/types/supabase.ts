@@ -77,7 +77,7 @@ export type Database = {
         }
         Relationships: []
       }
-      channels: {
+      talents: {
         Row: {
           created_at: string
           deleted_at: string | null
@@ -166,29 +166,29 @@ export type Database = {
       }
       twitch_users: {
         Row: {
-          channel_id: string
           id: string
+          talent_id: string
           twitch_login_name: string | null
           twitch_user_id: string
         }
         Insert: {
-          channel_id: string
           id?: string
+          talent_id: string
           twitch_login_name?: string | null
           twitch_user_id: string
         }
         Update: {
-          channel_id?: string
           id?: string
+          talent_id?: string
           twitch_login_name?: string | null
           twitch_user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'twitch_users_channel_id_fkey'
-            columns: ['channel_id']
+            foreignKeyName: 'twitch_users_talent_id_fkey'
+            columns: ['talent_id']
             isOneToOne: true
-            referencedRelation: 'channels'
+            referencedRelation: 'talents'
             referencedColumns: ['id']
           },
         ]
@@ -234,7 +234,6 @@ export type Database = {
       }
       videos: {
         Row: {
-          channel_id: string
           created_at: string
           deleted_at: string | null
           duration: string
@@ -242,13 +241,13 @@ export type Database = {
           platform: Database['public']['Enums']['platform_type'] | null
           published_at: string
           status: Database['public']['Enums']['video_status']
+          talent_id: string
           thumbnail_id: string | null
           title: string
           updated_at: string
           visible: boolean
         }
         Insert: {
-          channel_id: string
           created_at?: string
           deleted_at?: string | null
           duration: string
@@ -256,13 +255,13 @@ export type Database = {
           platform?: Database['public']['Enums']['platform_type'] | null
           published_at: string
           status?: Database['public']['Enums']['video_status']
+          talent_id: string
           thumbnail_id?: string | null
           title: string
           updated_at?: string
           visible?: boolean
         }
         Update: {
-          channel_id?: string
           created_at?: string
           deleted_at?: string | null
           duration?: string
@@ -270,6 +269,7 @@ export type Database = {
           platform?: Database['public']['Enums']['platform_type'] | null
           published_at?: string
           status?: Database['public']['Enums']['video_status']
+          talent_id?: string
           thumbnail_id?: string | null
           title?: string
           updated_at?: string
@@ -277,10 +277,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'videos_channel_id_fkey'
-            columns: ['channel_id']
+            foreignKeyName: 'videos_talent_id_fkey'
+            columns: ['talent_id']
             isOneToOne: false
-            referencedRelation: 'channels'
+            referencedRelation: 'talents'
             referencedColumns: ['id']
           },
           {
@@ -294,32 +294,32 @@ export type Database = {
       }
       youtube_channels: {
         Row: {
-          channel_id: string
           id: string
           name: string | null
+          talent_id: string
           youtube_channel_id: string
           youtube_handle: string | null
         }
         Insert: {
-          channel_id: string
           id?: string
           name?: string | null
+          talent_id: string
           youtube_channel_id: string
           youtube_handle?: string | null
         }
         Update: {
-          channel_id?: string
           id?: string
           name?: string | null
+          talent_id?: string
           youtube_channel_id?: string
           youtube_handle?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: 'youtube_channels_channel_id_fkey'
-            columns: ['channel_id']
+            foreignKeyName: 'youtube_channels_talent_id_fkey'
+            columns: ['talent_id']
             isOneToOne: true
-            referencedRelation: 'channels'
+            referencedRelation: 'talents'
             referencedColumns: ['id']
           },
         ]
@@ -383,17 +383,6 @@ export type Database = {
           user_id: string
         }[]
       }
-      index_advisor: {
-        Args: { query: string }
-        Returns: {
-          errors: string[]
-          index_statements: string[]
-          startup_cost_after: Json
-          startup_cost_before: Json
-          total_cost_after: Json
-          total_cost_before: Json
-        }[]
-      }
       insert_audit_log: {
         Args: {
           p_action: Database['public']['Enums']['audit_action']
@@ -411,7 +400,6 @@ export type Database = {
           until: string
         }
         Returns: {
-          channel_id: string
           created_at: string
           deleted_at: string | null
           duration: string
@@ -419,6 +407,7 @@ export type Database = {
           platform: Database['public']['Enums']['platform_type'] | null
           published_at: string
           status: Database['public']['Enums']['video_status']
+          talent_id: string
           thumbnail_id: string | null
           title: string
           updated_at: string
@@ -430,12 +419,6 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
-      }
-      suggestions: {
-        Args: { query: string }
-        Returns: {
-          term: string
-        }[]
       }
       suggestions_v2: {
         Args: { p_query: string }

@@ -75,7 +75,7 @@ export async function getSummaryStats(): Promise<SummaryStats> {
 
   // Get total talents count
   const { count: totalTalents, error: talentsError } = await supabaseClient
-    .from('channels')
+    .from('talents')
     .select('*', { count: 'exact', head: true })
     .is('deleted_at', null)
 

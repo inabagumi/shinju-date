@@ -18,7 +18,7 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
   try {
     // Get the talent from database
     const { data: talent, error: fetchError } = await supabaseClient
-      .from('channels')
+      .from('talents')
       .select(
         'id, name, youtube_channel:youtube_channels!inner(youtube_channel_id)',
       )
@@ -77,11 +77,11 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
       .from('youtube_channels')
       .upsert(
         {
-          channel_id: talent.id,
+          talent_id: talent.id,
           youtube_channel_id: talent.youtube_channel.youtube_channel_id,
           youtube_handle: youtubeHandle,
         },
-        { onConflict: 'channel_id' },
+        { onConflict: 'talent_id' },
       )
       .then(({ error: youtubeError }) => {
         if (youtubeError) {
@@ -104,7 +104,7 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
 
     // Update talent with YouTube data
     const { error: updateError } = await supabaseClient
-      .from('channels')
+      .from('talents')
       .update({
         name: youtubeChannel.snippet.title,
         updated_at: toDBString(currentDateTime),
@@ -123,7 +123,7 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
 
     revalidatePath(`/talents/${talentId}`)
     revalidatePath('/talents')
-    await revalidateTags(['channels', 'videos'])
+    await revalidateTags(['talents', 'videos'])
     return { success: true }
   } catch (error) {
     logger.error('タレントの同期に失敗しました', { error, talentId })

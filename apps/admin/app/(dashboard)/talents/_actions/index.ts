@@ -28,7 +28,7 @@ export async function createTalentAction(
 
   try {
     const { data: newTalent, error } = await supabaseClient
-      .from('channels')
+      .from('talents')
       .insert({
         name: name.trim(),
       })
@@ -39,14 +39,14 @@ export async function createTalentAction(
       throw error
     }
 
-    // Write to youtube_channels table if channel_id is provided
-    // Note: youtube_handle is null for manually created channels initially
-    // It will be populated when the channel sync runs
+    // Write to youtube_channels table if talent_id is provided
+    // Note: youtube_handle is null for manually created talents initially
+    // It will be populated when the talent sync runs
     if (youtubeChannelId && youtubeChannelId.trim() !== '') {
       await supabaseClient
         .from('youtube_channels')
         .insert({
-          channel_id: newTalent.id,
+          talent_id: newTalent.id,
           youtube_channel_id: youtubeChannelId.trim(),
           youtube_handle: null,
         })
@@ -66,7 +66,7 @@ export async function createTalentAction(
     })
 
     revalidatePath('/talents')
-    await revalidateTags(['channels', 'videos'])
+    await revalidateTags(['talents', 'videos'])
     return {}
   } catch (error) {
     logger.error('タレントの追加に失敗しました', {
@@ -110,7 +110,7 @@ export async function updateTalentAction(
       await supabaseClient
         .from('youtube_channels')
         .select('youtube_channel_id')
-        .eq('channel_id', id)
+        .eq('talent_id', id)
         .single()
 
     if (fetchError && fetchError.code !== 'PGRST116') {
@@ -119,7 +119,7 @@ export async function updateTalentAction(
 
     // Update talents table (only name now)
     const { data: talent, error } = await supabaseClient
-      .from('channels')
+      .from('talents')
       .update({
         name: name.trim(),
         updated_at: toDBString(Temporal.Now.instant()),
@@ -141,7 +141,7 @@ export async function updateTalentAction(
         const { error: youtubeError } = await supabaseClient
           .from('youtube_channels')
           .upsert({
-            channel_id: id,
+            talent_id: id,
             youtube_channel_id: youtubeChannelId.trim(),
           })
 
@@ -161,7 +161,7 @@ export async function updateTalentAction(
     })
 
     revalidatePath('/talents')
-    await revalidateTags(['channels', 'videos'])
+    await revalidateTags(['talents', 'videos'])
     return {}
   } catch (error) {
     logger.error('タレントの更新に失敗しました', {
@@ -196,7 +196,7 @@ export async function deleteTalentAction(id: string): Promise<{
     const now = Temporal.Now.instant()
 
     const { data: talent, error } = await supabaseClient
-      .from('channels')
+      .from('talents')
       .update({
         deleted_at: toDBString(now),
         updated_at: toDBString(now),
@@ -215,7 +215,7 @@ export async function deleteTalentAction(id: string): Promise<{
     })
 
     revalidatePath('/talents')
-    await revalidateTags(['channels', 'videos'])
+    await revalidateTags(['talents', 'videos'])
     return { success: true }
   } catch (error) {
     logger.error('タレントの削除に失敗しました', { error, id })

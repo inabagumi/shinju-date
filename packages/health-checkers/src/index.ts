@@ -14,10 +14,7 @@ export async function checkSupabaseHealth(
   supabaseClient: SupabaseClient,
 ): Promise<HealthCheckResult> {
   try {
-    const { error } = await supabaseClient
-      .from('channels')
-      .select('id')
-      .limit(1)
+    const { error } = await supabaseClient.from('talents').select('id').limit(1)
 
     if (error) {
       return {

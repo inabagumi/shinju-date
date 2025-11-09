@@ -2,7 +2,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Redis } from '@upstash/redis'
-import { vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   checkRedisHealth,
   checkSupabaseHealth,
@@ -35,7 +35,7 @@ describe('checkSupabaseHealth', () => {
     const result = await checkSupabaseHealth(mockSupabaseClient)
 
     expect(result).toEqual({ status: 'ok' })
-    expect(mockSupabaseClient.from).toHaveBeenCalledWith('channels')
+    expect(mockSupabaseClient.from).toHaveBeenCalledWith('talents')
   })
 
   it('should return error status when database query fails', async () => {
@@ -139,7 +139,7 @@ describe('runHealthChecks', () => {
 
     expect(result.status).toBe('error')
     expect(result.results).toHaveLength(2)
-    expect(result.results[1].status).toBe('error')
+    expect(result.results[1]?.status).toBe('error')
   })
 
   it('should run all checks even if some fail', async () => {

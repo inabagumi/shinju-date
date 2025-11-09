@@ -13,7 +13,7 @@ const MONITOR_SLUG = '/channels/update'
 
 export const maxDuration = 120
 
-type Talent = Pick<Tables<'channels'>, 'id' | 'name'> & {
+type Talent = Pick<Tables<'talents'>, 'id' | 'name'> & {
   youtube_channel: {
     name: string | null
     youtube_channel_id: string
@@ -63,7 +63,7 @@ export async function POST(request: Request): Promise<Response> {
   )
 
   const { data: talents, error } = await supabaseClient
-    .from('channels')
+    .from('talents')
     .select(
       'id, name, youtube_channel:youtube_channels(name, youtube_channel_id)',
     )
@@ -133,12 +133,12 @@ export async function POST(request: Request): Promise<Response> {
             .from('youtube_channels')
             .upsert(
               {
-                channel_id: talent.id,
                 name: item.snippet.title,
+                talent_id: talent.id,
                 youtube_channel_id: youtubeChannel.id,
                 youtube_handle: youtubeHandle,
               },
-              { onConflict: 'channel_id' },
+              { onConflict: 'talent_id' },
             )
             .then(({ error: youtubeError }) => {
               if (youtubeError) {
@@ -153,7 +153,7 @@ export async function POST(request: Request): Promise<Response> {
 
           // Fetch updated talent data to return
           const { data, error } = await supabaseClient
-            .from('channels')
+            .from('talents')
             .select(
               'id, name, youtube_channel:youtube_channels(name, youtube_channel_id)',
             )
@@ -212,11 +212,11 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   if (isUpdated) {
-    await revalidateTags(['channels'], {
+    await revalidateTags(['talents'], {
       signal: request.signal,
     })
   } else {
-    Sentry.logger.info('No updated channels existed.')
+    Sentry.logger.info('No updated talents existed.')
   }
 
   after(async () => {
