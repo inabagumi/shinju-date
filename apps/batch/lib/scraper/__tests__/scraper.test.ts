@@ -170,8 +170,8 @@ describe('DB class', () => {
         const insertedVideos = items.map((item, index) => ({
           ...item,
           id: `generated-uuid-${index + 1}`,
-          talents: { name: 'Test Talent' },
-          thumbnails: null,
+          talent: { name: 'Test Talent' },
+          thumbnail: null,
         }))
 
         return HttpResponse.json(insertedVideos, { status: 201 })
@@ -576,8 +576,8 @@ describe('YouTube video ID association bug fix', () => {
         const insertedVideos = items.map((item, index) => ({
           ...item,
           id: `generated-uuid-${index + 1}`,
-          talents: { name: 'Test Talent' },
-          thumbnails: null,
+          talent: { name: 'Test Talent' },
+          thumbnail: null,
         }))
 
         return HttpResponse.json(insertedVideos, { status: 201 })
