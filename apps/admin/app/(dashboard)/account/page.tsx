@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
+import { cacheLife } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { connection } from 'next/server'
+import { Suspense } from 'react'
 import { createSupabaseServerClient } from '@/lib/supabase'
 import { EmailUpdateForm } from './_components/email-update-form'
 import { PasswordUpdateForm } from './_components/password-update-form'
@@ -9,9 +10,9 @@ export const metadata: Metadata = {
   title: 'アカウント設定',
 }
 
-export default async function AccountPage() {
-  // Mark this page as dynamic (requires runtime rendering for authentication)
-  await connection()
+async function AccountContent() {
+  'use cache: private'
+  cacheLife('seconds')
 
   const supabaseClient = await createSupabaseServerClient()
   const {
@@ -35,5 +36,20 @@ export default async function AccountPage() {
       <EmailUpdateForm currentEmail={user.email ?? ''} />
       <PasswordUpdateForm />
     </div>
+  )
+}
+
+export default function AccountPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-4xl space-y-8 p-6">
+          <div className="h-8 w-48 animate-pulse rounded bg-gray-200" />
+          <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
+        </div>
+      }
+    >
+      <AccountContent />
+    </Suspense>
   )
 }
