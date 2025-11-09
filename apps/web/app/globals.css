@@ -3,11 +3,6 @@
 @source '../node_modules/@shinju-date/ui';
 @plugin '@tailwindcss/typography';
 
-@theme {
-  --background-image-search-icon: url(./_assets/search-icon.svg);
-  --background-image-search-icon-invert: url(./_assets/search-icon-invert.svg);
-}
-
 @layer base {
   /* iOS overscroll handling: html should have dark footer color */
   html {
