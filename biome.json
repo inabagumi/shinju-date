@@ -61,6 +61,15 @@
       "includes": ["**/package.json"]
     },
     {
+      "formatter": {
+        "enabled": false
+      },
+      "includes": ["apps/insights/**"],
+      "linter": {
+        "enabled": false
+      }
+    },
+    {
       "includes": ["apps/*/**"],
       "linter": {
         "domains": {
