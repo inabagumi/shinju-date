@@ -3,7 +3,7 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "target": "es2022"
+    "target": "es2024"
   },
   "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/next/tsconfig"],
   "include": [

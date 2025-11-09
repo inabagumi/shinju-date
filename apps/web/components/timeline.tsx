@@ -1,7 +1,6 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import groupBy from 'lodash.groupby'
 import { useMemo } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
@@ -59,14 +58,14 @@ export default function Timeline({
     queryKey: ['not-ended-videos'],
     refetchInterval: 60_000,
   })
-  const schedule = useMemo<Record<string, Video[]>>(() => {
-    const sortedValues = [...videos].sort((videoA, videoB) =>
+  const schedule = useMemo<Map<string, Video[]>>(() => {
+    const sortedValues = [...(videos ?? [])].sort((videoA, videoB) =>
       Temporal.Instant.compare(
         Temporal.Instant.from(videoA.published_at),
         Temporal.Instant.from(videoB.published_at),
       ),
     )
-    return groupBy(sortedValues, (value) =>
+    return Map.groupBy(sortedValues, (value) =>
       Temporal.Instant.from(value.published_at)
         .toZonedDateTimeISO(timeZone)
         .toPlainDate()
@@ -76,7 +75,7 @@ export default function Timeline({
 
   return (
     <div className="space-y-20">
-      {Object.entries(schedule).map(([dateTime, items]) => (
+      {[...schedule.entries()].map(([dateTime, items]) => (
         <TimelineSection dateTime={dateTime} items={items} key={dateTime} />
       ))}
     </div>
