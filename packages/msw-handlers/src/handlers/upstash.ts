@@ -219,6 +219,18 @@ export const upstashHandlers = [
           break
         }
 
+        case 'del': {
+          const keys = args
+          let deletedCount = 0
+          for (const key of keys) {
+            if (mockRedisStore.delete(key)) {
+              deletedCount += 1
+            }
+          }
+          results.push({ result: deletedCount })
+          break
+        }
+
         default:
           results.push({ result: null })
           break
