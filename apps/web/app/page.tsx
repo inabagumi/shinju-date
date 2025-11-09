@@ -12,8 +12,6 @@ import {
 } from '@/lib/recommendations/get-display-queries'
 import hero from './_assets/hero.jpg'
 
-export const dynamic = 'force-dynamic'
-
 export const metadata: Metadata = {
   alternates: {
     canonical: '/',
@@ -35,9 +33,7 @@ export const metadata: Metadata = {
 }
 
 async function HomeTimeline() {
-  // 'use cache'
-
-  // cacheLife('seconds')
+  'use cache'
 
   const videos = await fetchNotEndedVideos()
 
@@ -71,9 +67,7 @@ function RecommendationQueriesSkeleton() {
 }
 
 async function RecommendationQueries() {
-  // 'use cache'
-
-  // cacheLife('days')
+  'use cache'
 
   const queries = await getDisplayRecommendationQueries()
 

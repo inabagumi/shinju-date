@@ -34,6 +34,8 @@ export type Video = Pick<
 }
 
 export const fetchNotEndedVideos = async (): Promise<Video[]> => {
+  'use cache'
+
   const baseTime = startOfHour(Temporal.Now.zonedDateTimeISO(timeZone))
   const until = baseTime.add({
     weeks: 1,

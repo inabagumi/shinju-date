@@ -2,8 +2,7 @@ import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  // `'use cache: private'`ディレクティブがstableになったら`cacheComponents`を有効化する
-  // cacheComponents: true,
+  cacheComponents: true,
   headers() {
     return Promise.resolve([
       {

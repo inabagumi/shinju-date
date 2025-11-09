@@ -6,7 +6,7 @@ import { AnnouncementBanner } from './announcement-banner'
 
 async function AnnouncementContent() {
   const cookieStore = await cookies()
-  const announcement = await getAnnouncement()
+  const announcement = await getAnnouncement(cookieStore)
 
   if (!announcement) {
     return null

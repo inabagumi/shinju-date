@@ -10,8 +10,6 @@ import { QuickAccessWidget } from './_components/quick-access-widget'
 import { RecentActivity } from './_components/recent-activity'
 import { SummaryWidget } from './_components/summary-widget'
 
-export const dynamic = 'force-dynamic'
-
 export default function DashboardPage() {
   return (
     <div className="p-6">
