@@ -1,3 +1,4 @@
+import { cacheLife } from 'next/cache'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type RecentVideo = {
@@ -20,6 +21,10 @@ export async function getRecentVideosForTalent(
   talentId: string,
   limit = 5,
 ): Promise<RecentVideo[]> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   const supabaseClient = await createSupabaseServerClient()
 
   const { data: videos, error } = await supabaseClient

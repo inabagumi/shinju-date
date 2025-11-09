@@ -20,10 +20,9 @@ async function TalentsListData() {
 
 export default function TalentsPage() {
   return (
-    <div>
+    <div className="p-6">
       <div className="mb-6">
-        <h1 className="font-bold text-2xl">タレント管理</h1>
-        <p className="mt-2 text-gray-600 text-sm">
+        <p className="text-gray-600 text-sm">
           登録されているタレントの一覧を表示します。
         </p>
       </div>

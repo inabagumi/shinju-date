@@ -131,6 +131,81 @@ uv run poe lint
 
 この作業を怠ると、未使用のインポート、フォーマットの不整合、型エラーなどの問題が蓄積し、開発プロセスを大幅に遅らせる原因となります。
 
+### Next.js Cache Directives（キャッシュディレクティブ）
+
+**🚨 厳格なルール**: Next.js 16のCache Componentsを使用する際、以下のルールを**必ず**守ってください：
+
+1. **`'use cache'` ディレクティブの直後には必ず空行を1行入れる**
+2. **`cacheLife()` や `cacheTag()` などのキャッシュ設定関数の後にも必ず空行を1行入れる**
+3. **例外なくこのルールを適用する** - AIエージェントは全てのファイルでこのルールを遵守する必要があります
+
+#### ✅ 正しい例：
+
+```typescript
+async function MyComponent() {
+  'use cache: remote'
+  
+  cacheLife('hours')
+  cacheTag('my-tag')
+  
+  const data = await fetchData()
+  return <div>{data}</div>
+}
+```
+
+#### ❌ 間違った例：
+
+```typescript
+async function MyComponent() {
+  'use cache: remote'
+  const data = await fetchData() // NG: ディレクティブの後に空行がない
+  return <div>{data}</div>
+}
+```
+
+#### 間違った例：
+
+```typescript
+async function MyComponent() {
+  'use cache: remote'
+  const data = await fetchData() // ❌ ディレクティブの後に空行がない
+  return <div>{data}</div>
+}
+```
+
+#### キャッシュのベストプラクティス：
+
+1. **データ取得関数レベルでキャッシュする**：コンポーネントレベルではなく、データ取得関数でキャッシュすることで、`generateMetadata`とページコンポーネントの両方でキャッシュを再利用できます。
+
+```typescript
+// ✅ 正しい：データ取得関数でキャッシュ
+async function getTalent(id: string) {
+  'use cache: private'
+  
+  cacheLife('minutes')
+  
+  const talent = await db.query(...)
+  return talent
+}
+
+// メタデータとページの両方で再利用
+export async function generateMetadata({ params }) {
+  const talent = await getTalent(params.id) // キャッシュを再利用
+  return { title: talent.name }
+}
+
+export default async function Page({ params }) {
+  const talent = await getTalent(params.id) // 同じキャッシュを再利用
+  return <div>{talent.name}</div>
+}
+```
+
+2. **重複してキャッシュしない**：関数がすでに`'use cache'`を持っている場合、それを呼び出すコンポーネントで再度キャッシュディレクティブを使用しないでください。
+
+3. **適切なキャッシュタイプを選択**：
+   - `'use cache: remote'` - 公開データに使用（VDCに保存）
+   - `'use cache: private'` - 認証が必要なデータに使用（ユーザーごと）
+
 ### 時刻の取り扱い (Date/Time Handling)
 
 **重要**: このプロジェクトでは、Reactのハイドレーションエラーを防ぎ、時刻の計算を正確に行うため、JavaScript標準の`Date`オブジェクトの利用に関して以下のルールを定めます。

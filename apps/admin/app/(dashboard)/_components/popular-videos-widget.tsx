@@ -23,6 +23,7 @@ export function PopularVideosWidgetSkeleton() {
  */
 export async function PopularVideosWidget() {
   'use cache: private'
+
   cacheLife('minutes')
 
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()

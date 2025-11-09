@@ -9,8 +9,9 @@ import { getAnalyticsSummary } from '../_lib/get-analytics-summary'
  */
 export async function AnalyticsWidget() {
   'use cache: private'
+  
   cacheLife('minutes')
-
+  
   const analytics = await getAnalyticsSummary()
 
   return (

@@ -40,6 +40,40 @@ uv run poe format
 uv run poe lint
 ```
 
+### Next.js Cache Directives（キャッシュディレクティブ）
+
+**🚨 厳格なルール - 必ず守ること**: 
+
+1. **`'use cache'` ディレクティブの直後には必ず空行を1行入れる**
+2. **`cacheLife()` や `cacheTag()` などの後にも必ず空行を1行入れる**
+3. **全てのファイルで例外なくこのルールを適用する**
+
+```typescript
+// ✅ 正しい例
+async function MyComponent() {
+  'use cache: remote'
+  
+  cacheLife('hours')
+  cacheTag('my-tag')
+  
+  const data = await fetchData()
+  return <div>{data}</div>
+}
+
+// ❌ 間違った例
+async function MyComponent() {
+  'use cache: remote'
+  const data = await fetchData() // NG: ディレクティブの後に空行がない
+  return <div>{data}</div>
+}
+```
+
+**キャッシュのベストプラクティス**:
+- キャッシュはデータ取得関数のレベルで行い、コンポーネントとメタデータ生成関数の両方で再利用する
+- 重複してキャッシュディレクティブを使用しない
+- `'use cache: remote'` は公開データに使用し、`'use cache: private'` は認証が必要なデータに使用する
+- データ取得関数にキャッシュディレクティブがある場合、その関数を呼び出すコンポーネントでは追加のキャッシュディレクティブは不要
+
 ### コミットメッセージ
 
 [Conventional Commits](https://www.conventionalcommits.org/) の形式に従ってください：

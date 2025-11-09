@@ -4,6 +4,7 @@ import { MaintenanceModeWidget } from './maintenance-mode-widget'
 
 export async function MaintenanceModeWidgetWrapper() {
   'use cache: private'
+
   cacheLife('minutes')
 
   const maintenanceModeStatus = await getMaintenanceModeStatus()

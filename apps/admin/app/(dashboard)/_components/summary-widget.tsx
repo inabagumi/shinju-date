@@ -9,6 +9,7 @@ import { getSummaryStats } from '../_lib/get-summary-stats'
  */
 export async function SummaryWidget() {
   'use cache: private'
+
   cacheLife('minutes')
 
   const stats = await getSummaryStats()

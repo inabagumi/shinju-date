@@ -4,6 +4,7 @@ import { LogItem } from './log-item'
 
 export async function RecentActivity() {
   'use cache: private'
+
   cacheLife('minutes')
 
   const logs = await getAuditLogs(10)

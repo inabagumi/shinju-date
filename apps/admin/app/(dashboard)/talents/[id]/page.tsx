@@ -2,7 +2,6 @@ import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import { Badge } from '@shinju-date/ui'
 import { ChevronLeft, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
-import { cacheLife } from 'next/cache'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -19,9 +18,6 @@ type Props = {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  'use cache: private'
-  cacheLife('minutes')
-
   const { id } = await params
 
   const talent = await getTalent(id)
@@ -37,35 +33,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-async function TalentDetailContent({ id }: { id: string }) {
-  'use cache: private'
-  cacheLife('minutes')
-
+async function TalentProfile({ id }: { id: string }) {
   const talent = await getTalent(id)
 
   if (!talent) {
     notFound()
   }
 
-  const [recentVideos] = await Promise.all([
-    getRecentVideosForTalent(talent.id, 5),
-  ])
-
   const isDeleted = talent.deleted_at !== null
 
   return (
-    <div className="p-4">
-      {/* Back button */}
-      <div className="mb-6">
-        <Link
-          className="inline-flex items-center text-blue-600 hover:text-blue-800"
-          href="/talents"
-        >
-          <ChevronLeft className="mr-1 h-4 w-4" />
-          タレント一覧に戻る
-        </Link>
-      </div>
-
+    <>
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between">
@@ -149,88 +127,6 @@ async function TalentDetailContent({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Recent Videos */}
-      <div className="mt-6">
-        <div className="bg-white shadow sm:rounded-lg">
-          <div className="px-4 py-5 sm:px-6">
-            <h3 className="font-medium text-gray-900 text-lg leading-6">
-              最新動画
-            </h3>
-            <p className="mt-1 max-w-2xl text-gray-500 text-sm">
-              直近に公開された動画一覧
-            </p>
-          </div>
-          <div className="border-gray-200 border-t">
-            {recentVideos.length === 0 ? (
-              <div className="px-4 py-8 text-center text-gray-500">
-                動画がありません。
-              </div>
-            ) : (
-              <ul className="divide-y divide-gray-200">
-                {recentVideos.map((video) => (
-                  <li className="px-4 py-4" key={video.id}>
-                    <div className="flex items-center space-x-4">
-                      <div className="shrink-0">
-                        {video.thumbnail ? (
-                          <div className="relative h-12 w-20">
-                            <Image
-                              alt={video.title}
-                              blurDataURL={video.thumbnail.blur_data_url}
-                              className="rounded object-cover"
-                              fill
-                              placeholder="blur"
-                              sizes="80px"
-                              src={`/images/thumbnails/${video.thumbnail.id}`}
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex h-12 w-20 items-center justify-center rounded bg-gray-200 text-gray-500 text-xs">
-                            No Image
-                          </div>
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <Link
-                          className="text-blue-600 hover:text-blue-800"
-                          href={`/videos/${video.id}`}
-                        >
-                          <p className="truncate font-medium text-sm">
-                            {video.title}
-                          </p>
-                        </Link>
-                        <p className="text-gray-500 text-sm">
-                          <time dateTime={video.published_at}>
-                            {formatDateTimeFromISO(video.published_at)}
-                          </time>
-                        </p>
-                      </div>
-                      <div className="shrink-0">
-                        <Badge
-                          className="font-semibold leading-5"
-                          variant={
-                            video.deleted_at
-                              ? 'error'
-                              : video.visible
-                                ? 'success'
-                                : 'secondary'
-                          }
-                        >
-                          {video.deleted_at
-                            ? '削除済み'
-                            : video.visible
-                              ? '公開中'
-                              : '非表示'}
-                        </Badge>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* External links */}
       <div className="mt-6">
         <div className="bg-white shadow sm:rounded-lg">
@@ -257,25 +153,140 @@ async function TalentDetailContent({ id }: { id: string }) {
           </div>
         </div>
       </div>
+    </>
+  )
+}
+
+async function RecentVideosSection({ id }: { id: string }) {
+  const talent = await getTalent(id)
+
+  if (!talent) {
+    return null
+  }
+
+  const recentVideos = await getRecentVideosForTalent(talent.id, 5)
+
+  return (
+    <div className="mt-8">
+      <div className="bg-white shadow sm:rounded-lg">
+        <div className="px-4 py-5 sm:px-6">
+          <h2 className="font-medium text-gray-900 text-lg leading-6">
+            最新動画
+          </h2>
+          <p className="mt-1 max-w-2xl text-gray-500 text-sm">
+            直近に公開された動画一覧
+          </p>
+        </div>
+        <div className="border-gray-200 border-t">
+          {recentVideos.length === 0 ? (
+            <div className="px-4 py-8 text-center text-gray-500">
+              動画がありません。
+            </div>
+          ) : (
+            <ul className="divide-y divide-gray-200">
+              {recentVideos.map((video) => (
+                <li className="px-4 py-4" key={video.id}>
+                  <div className="flex items-center space-x-4">
+                    <div className="shrink-0">
+                      {video.thumbnail ? (
+                        <div className="relative h-12 w-20">
+                          <Image
+                            alt={video.title}
+                            blurDataURL={video.thumbnail.blur_data_url}
+                            className="rounded object-cover"
+                            fill
+                            placeholder="blur"
+                            sizes="80px"
+                            src={`/images/thumbnails/${video.thumbnail.id}`}
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex h-12 w-20 items-center justify-center rounded bg-gray-200 text-gray-500 text-xs">
+                          No Image
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        className="text-blue-600 hover:text-blue-800"
+                        href={`/videos/${video.id}`}
+                      >
+                        <p className="truncate font-medium text-sm">
+                          {video.title}
+                        </p>
+                      </Link>
+                      <p className="text-gray-500 text-sm">
+                        <time dateTime={video.published_at}>
+                          {formatDateTimeFromISO(video.published_at)}
+                        </time>
+                      </p>
+                    </div>
+                    <div className="shrink-0">
+                      <Badge
+                        className="font-semibold leading-5"
+                        variant={
+                          video.deleted_at
+                            ? 'error'
+                            : video.visible
+                              ? 'success'
+                              : 'secondary'
+                        }
+                      >
+                        {video.deleted_at
+                          ? '削除済み'
+                          : video.visible
+                            ? '公開中'
+                            : '非表示'}
+                      </Badge>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
 
-export default function TalentDetailPage({ params }: Props) {
-  return (
-    <Suspense
-      fallback={
-        <div className="p-4">
-          <div className="h-96 animate-pulse rounded-lg bg-gray-200" />
-        </div>
-      }
-    >
-      <TalentDetailContentWrapper params={params} />
-    </Suspense>
-  )
-}
-
-async function TalentDetailContentWrapper({ params }: Props) {
+export default async function TalentDetailPage({ params }: Props) {
   const { id } = await params
-  return <TalentDetailContent id={id} />
+
+  return (
+    <div className="container mx-auto p-4">
+      {/* Back button - static, renders immediately */}
+      <div className="mb-6">
+        <Link
+          className="inline-flex items-center text-blue-600 hover:text-blue-800"
+          href="/talents"
+        >
+          <ChevronLeft className="mr-1 size-4" />
+          タレント一覧に戻る
+        </Link>
+      </div>
+
+      {/* Talent profile section */}
+      <Suspense
+        fallback={
+          <div className="space-y-6">
+            <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
+          </div>
+        }
+      >
+        <TalentProfile id={id} />
+      </Suspense>
+
+      {/* Recent videos section */}
+      <Suspense
+        fallback={
+          <div className="mt-8">
+            <div className="h-48 animate-pulse rounded-lg bg-gray-200" />
+          </div>
+        }
+      >
+        <RecentVideosSection id={id} />
+      </Suspense>
+    </div>
+  )
 }
