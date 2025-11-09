@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
+import { connection } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase'
 import { EmailUpdateForm } from './_components/email-update-form'
 import { PasswordUpdateForm } from './_components/password-update-form'
@@ -9,6 +10,9 @@ export const metadata: Metadata = {
 }
 
 export default async function AccountPage() {
+  // Mark this page as dynamic (requires runtime rendering for authentication)
+  await connection()
+
   const supabaseClient = await createSupabaseServerClient()
   const {
     data: { user },
