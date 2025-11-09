@@ -2,9 +2,11 @@ import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import { Badge } from '@shinju-date/ui'
 import { ChevronLeft, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
+import { cacheLife } from 'next/cache'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import { getRecentVideosForTalent } from '../_lib/get-recent-videos'
 import { getTalent } from '../_lib/get-talent'
 import { EditTalentForm } from './_components/edit-talent-form'
@@ -17,6 +19,9 @@ type Props = {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  'use cache: private'
+  cacheLife('minutes')
+
   const { id } = await params
 
   const talent = await getTalent(id)
@@ -32,8 +37,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function TalentDetailPage({ params }: Props) {
-  const { id } = await params
+async function TalentDetailContent({ id }: { id: string }) {
+  'use cache: private'
+  cacheLife('minutes')
 
   const talent = await getTalent(id)
 
@@ -253,4 +259,23 @@ export default async function TalentDetailPage({ params }: Props) {
       </div>
     </div>
   )
+}
+
+export default function TalentDetailPage({ params }: Props) {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-4">
+          <div className="h-96 animate-pulse rounded-lg bg-gray-200" />
+        </div>
+      }
+    >
+      <TalentDetailContentWrapper params={params} />
+    </Suspense>
+  )
+}
+
+async function TalentDetailContentWrapper({ params }: Props) {
+  const { id } = await params
+  return <TalentDetailContent id={id} />
 }

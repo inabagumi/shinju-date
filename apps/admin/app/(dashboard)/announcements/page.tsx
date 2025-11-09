@@ -9,7 +9,13 @@ export default function AnnouncementsPage() {
         {/* Header with Add button */}
         <div className="flex items-center justify-between">
           <h1 className="font-bold text-3xl">お知らせ管理</h1>
-          <AnnouncementModal />
+          <Suspense
+            fallback={
+              <div className="h-10 w-32 animate-pulse rounded bg-gray-200" />
+            }
+          >
+            <AnnouncementModal />
+          </Suspense>
         </div>
 
         <Suspense>
