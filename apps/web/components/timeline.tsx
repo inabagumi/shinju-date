@@ -58,26 +58,24 @@ export default function Timeline({
     queryKey: ['not-ended-videos'],
     refetchInterval: 60_000,
   })
-  const schedule = useMemo<Record<string, Video[]>>(() => {
+  const schedule = useMemo<Map<string, Video[]>>(() => {
     const sortedValues = [...(videos ?? [])].sort((videoA, videoB) =>
       Temporal.Instant.compare(
         Temporal.Instant.from(videoA.published_at),
         Temporal.Instant.from(videoB.published_at),
       ),
     )
-    return {
-      ...Object.groupBy(sortedValues, (value) =>
-        Temporal.Instant.from(value.published_at)
-          .toZonedDateTimeISO(timeZone)
-          .toPlainDate()
-          .toJSON(),
-      ),
-    }
+    return Map.groupBy(sortedValues, (value) =>
+      Temporal.Instant.from(value.published_at)
+        .toZonedDateTimeISO(timeZone)
+        .toPlainDate()
+        .toJSON(),
+    )
   }, [videos])
 
   return (
     <div className="space-y-20">
-      {Object.entries(schedule).map(([dateTime, items]) => (
+      {Array.from(schedule.entries()).map(([dateTime, items]) => (
         <TimelineSection dateTime={dateTime} items={items} key={dateTime} />
       ))}
     </div>
