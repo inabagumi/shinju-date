@@ -47,4 +47,4 @@ jobs:
         run: uv run poe format-check
 
       - name: Run tests
-        run: uv run poe test || echo "No tests found"
+        run: uv run poe test

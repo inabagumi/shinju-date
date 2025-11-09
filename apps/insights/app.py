@@ -1,3 +1,5 @@
+from logging import setup_logging
+
 import sentry_sdk
 from fastapi import Depends, FastAPI, HTTPException
 from supabase import Client, create_client
@@ -8,7 +10,6 @@ from config import (
     SUPABASE_SERVICE_ROLE_KEY,
 )
 from dependencies.auth import verify_cron_request
-from logging import setup_logging
 from services.database import get_existing_terms, get_video_titles
 from services.term_extractor import extract_frequent_terms
 

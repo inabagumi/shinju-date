@@ -2,9 +2,13 @@ name: Node.js CI
 
 on:
   pull_request:
+    paths-ignore:
+      - "apps/insights/**"
     types: [opened, synchronize]
   push:
     branches: [main]
+    paths-ignore:
+      - "apps/insights/**"
 
 env:
   # renovate: datasource=npm depName=corepack
