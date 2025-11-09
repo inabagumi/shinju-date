@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 
 async function TalentsListData() {
   'use cache: private'
+
   cacheLife('minutes')
 
   const talents = await getTalents()
@@ -19,10 +20,19 @@ async function TalentsListData() {
 
 export default function TalentsPage() {
   return (
-    <Suspense
-      fallback={<div className="h-64 animate-pulse rounded-lg bg-gray-200" />}
-    >
-      <TalentsListData />
-    </Suspense>
+    <div>
+      <div className="mb-6">
+        <h1 className="font-bold text-2xl">タレント管理</h1>
+        <p className="mt-2 text-gray-600 text-sm">
+          登録されているタレントの一覧を表示します。
+        </p>
+      </div>
+
+      <Suspense
+        fallback={<div className="h-64 animate-pulse rounded-lg bg-gray-200" />}
+      >
+        <TalentsListData />
+      </Suspense>
+    </div>
   )
 }

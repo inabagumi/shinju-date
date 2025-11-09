@@ -84,6 +84,10 @@ export const fetchVideos = async ({
   query = '',
   until,
 }: FetchVideosOptions): Promise<Video[]> => {
+  'use cache: remote'
+  cacheLife('hours')
+  cacheTag('videos')
+
   const baseTime = until
     ? Temporal.Instant.fromEpochNanoseconds(until)
     : await getDefaultBaseTime()
