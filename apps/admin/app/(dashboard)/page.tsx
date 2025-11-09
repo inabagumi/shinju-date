@@ -1,3 +1,4 @@
+import { connection } from 'next/server'
 import { Suspense } from 'react'
 import { CardSkeleton } from '@/components/skeletons'
 import { AnalyticsWidget } from './_components/analytics-widget'
@@ -10,9 +11,11 @@ import { QuickAccessWidget } from './_components/quick-access-widget'
 import { RecentActivity } from './_components/recent-activity'
 import { SummaryWidget } from './_components/summary-widget'
 
-export const dynamic = 'force-dynamic'
+export default async function DashboardPage() {
+  // Mark this page as dynamic (requires runtime rendering)
+  // This is necessary because the dashboard shows real-time data
+  await connection()
 
-export default function DashboardPage() {
   return (
     <div className="p-6">
       <h1 className="mb-6 font-bold text-3xl">ダッシュボード</h1>

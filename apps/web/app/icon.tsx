@@ -1,8 +1,6 @@
 import { ImageResponse } from 'next/og'
 import SearchIcon from './_components/search-icon'
 
-export const revalidate = 86_400 // 1 day
-
 const ICON_IMAGE_SIZE_LIST: Record<
   string,
   {
