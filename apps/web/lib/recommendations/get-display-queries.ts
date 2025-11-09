@@ -20,7 +20,7 @@ export const TOTAL_DISPLAY_COUNT = 4 // Total queries to display
  * @returns Array of query strings to display (max 4)
  */
 export async function getDisplayRecommendationQueries(): Promise<string[]> {
-  'use cache'
+  'use cache: remote'
 
   const allQueries = await getCombinedRecommendationQueries()
 

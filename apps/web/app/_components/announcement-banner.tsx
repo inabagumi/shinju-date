@@ -8,7 +8,7 @@ import remarkGfm from 'remark-gfm'
 import {
   type Announcement,
   dismissAnnouncement,
-  getAnnouncementFromClient,
+  getAnnouncement,
 } from '../_lib/actions'
 
 // Get banner background and text color based on level
@@ -36,7 +36,7 @@ export function AnnouncementBanner({
     enabled: isVisible,
     initialData: initialAnnouncement,
     queryFn: async () => {
-      const announcement = await getAnnouncementFromClient()
+      const announcement = await getAnnouncement()
       if (!announcement) {
         // If no announcement is available, hide the banner
         setIsVisible(false)

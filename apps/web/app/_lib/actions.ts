@@ -5,11 +5,10 @@ import type { Tables } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { track } from '@vercel/analytics/server'
-import type { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
-import { createServerComponentClient } from '@/lib/supabase-rsc'
+import { supabaseClient } from '@/lib/supabase'
 
 const ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
@@ -21,15 +20,9 @@ export type Announcement = Pick<
 /**
  * Get the currently active announcement
  * Returns null if no announcement is active
- *
- * This version is for Server Components that have access to cookies.
- * For client components, use getAnnouncementFromClient instead.
  */
-export async function getAnnouncement(
-  cookieStore: ReadonlyRequestCookies,
-): Promise<Announcement | null> {
+export async function getAnnouncement(): Promise<Announcement | null> {
   const now = Temporal.Now.instant()
-  const supabaseClient = createServerComponentClient(cookieStore)
 
   const { data, error } = await supabaseClient
     .from('announcements')
@@ -47,15 +40,6 @@ export async function getAnnouncement(
   }
 
   return data
-}
-
-/**
- * Get the currently active announcement from a client component
- * This version fetches cookies internally and is safe to call from client components
- */
-export async function getAnnouncementFromClient(): Promise<Announcement | null> {
-  const cookieStore = await cookies()
-  return getAnnouncement(cookieStore)
 }
 
 /**

@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 }
 
 async function HomeTimeline() {
-  'use cache'
+  'use cache: remote'
 
   const videos = await fetchNotEndedVideos()
 
@@ -67,7 +67,7 @@ function RecommendationQueriesSkeleton() {
 }
 
 async function RecommendationQueries() {
-  'use cache'
+  'use cache: remote'
 
   const queries = await getDisplayRecommendationQueries()
 
