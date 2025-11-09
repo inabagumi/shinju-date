@@ -723,7 +723,7 @@ export const supabaseHandlers = [
   }),
 
   // YouTube Channels Table
-  http.get('*/rest/v1/youtube_channels', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/youtube_channels', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -742,7 +742,7 @@ export const supabaseHandlers = [
     return HttpResponse.json(filteredData)
   }),
 
-  http.head('*/rest/v1/youtube_channels', ({ request }) => {
+  http.head('https://fake.supabase.test/rest/v1/youtube_channels', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -758,7 +758,7 @@ export const supabaseHandlers = [
   }),
 
   // YouTube Videos Table
-  http.get('*/rest/v1/youtube_videos', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/youtube_videos', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -777,7 +777,7 @@ export const supabaseHandlers = [
     return HttpResponse.json(filteredData)
   }),
 
-  http.head('*/rest/v1/youtube_videos', ({ request }) => {
+  http.head('https://fake.supabase.test/rest/v1/youtube_videos', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -793,7 +793,7 @@ export const supabaseHandlers = [
   }),
 
   // YouTube Videos POST (upsert/insert)
-  http.post('*/rest/v1/youtube_videos', async ({ request }) => {
+  http.post('https://fake.supabase.test/rest/v1/youtube_videos', async ({ request }) => {
     const preferHeader = request.headers.get('prefer') || ''
     const body = (await request.json()) as any
 
@@ -831,7 +831,7 @@ export const supabaseHandlers = [
   }),
 
   // YouTube Videos PATCH (update)
-  http.patch('*/rest/v1/youtube_videos', async ({ request }) => {
+  http.patch('https://fake.supabase.test/rest/v1/youtube_videos', async ({ request }) => {
     const url = new URL(request.url)
     const preferHeader = request.headers.get('prefer') || ''
     const query = parseSupabaseQuery(url)
@@ -911,7 +911,7 @@ export const supabaseHandlers = [
     },
   ),
 
-  http.get('*/auth/v1/user', () => {
+  http.get('https://fake.supabase.test/auth/v1/user', () => {
     return HttpResponse.json({
       created_at: '2023-01-01T00:00:00.000Z',
       email: 'admin@example.com',
@@ -933,7 +933,7 @@ export const supabaseHandlers = [
   }),
 
   // RPC endpoints
-  http.post('*/rest/v1/rpc/suggestions_v2', async () => {
+  http.post('https://fake.supabase.test/rest/v1/rpc/suggestions_v2', async () => {
     const suggestions = [
       {
         created_at: '2023-01-01T00:00:00.000Z',
@@ -948,7 +948,7 @@ export const supabaseHandlers = [
   }),
 
   // Storage endpoints
-  http.get('*/storage/v1/object/public/thumbnails/*', async () => {
+  http.get('https://fake.supabase.test/storage/v1/object/public/thumbnails/*', async () => {
     const dummyImage =
       '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" />'
 
