@@ -44,7 +44,7 @@
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "babel-plugin-react-compiler": "1.0.0",
-    "msw": "2.12.0",
+    "msw": "2.12.1",
     "postcss-load-config": "6.0.1",
     "typescript": "5.9.3"
   },
