@@ -5,16 +5,11 @@ import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
-import { dismissAnnouncement } from '@/lib/announcement/dismiss-announcement-action'
-import { getAnnouncementAction } from '@/lib/announcement/get-announcement-action'
-
-type AnnouncementBannerProps = {
-  message: string
-  level: string
-  initialId: string
-  startAt: string
-  endAt: string
-}
+import {
+  type Announcement,
+  dismissAnnouncement,
+  getAnnouncement,
+} from '../_lib/actions'
 
 // Get banner background and text color based on level
 function getBannerClasses(level: string): string {
@@ -29,27 +24,19 @@ function getBannerClasses(level: string): string {
 }
 
 export function AnnouncementBanner({
-  message: initialMessage,
-  level: initialLevel,
-  initialId,
-  startAt: initialStartAt,
-  endAt: initialEndAt,
-}: AnnouncementBannerProps) {
+  announcement: initialAnnouncement,
+}: {
+  announcement: Announcement
+}) {
   const [isVisible, setIsVisible] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
 
   // Periodically refetch announcement data
   const { data } = useQuery({
     enabled: isVisible,
-    initialData: {
-      end_at: initialEndAt,
-      id: initialId,
-      level: initialLevel,
-      message: initialMessage,
-      start_at: initialStartAt,
-    },
+    initialData: initialAnnouncement,
     queryFn: async () => {
-      const announcement = await getAnnouncementAction()
+      const announcement = await getAnnouncement()
       if (!announcement) {
         // If no announcement is available, hide the banner
         setIsVisible(false)
@@ -58,7 +45,7 @@ export function AnnouncementBanner({
       return announcement
     },
     queryKey: ['announcement'],
-    refetchInterval: 60000, // Refetch every 60 seconds
+    refetchInterval: 1_000 * 60, // Refetch every 60 seconds
     refetchIntervalInBackground: true,
   })
 
@@ -69,7 +56,9 @@ export function AnnouncementBanner({
   return (
     <div className="safe-area-mx sticky bottom-4 z-50">
       <div
-        className={`mb-4 ml-auto max-w-md rounded-lg border p-4 shadow-lg ${getBannerClasses(data.level)}`}
+        className={`mb-4 ml-auto max-w-md rounded-lg border p-4 shadow-lg ${getBannerClasses(
+          data.level,
+        )}`}
         role="alert"
       >
         <div className="flex items-start justify-between gap-4">
@@ -79,7 +68,9 @@ export function AnnouncementBanner({
             type="button"
           >
             <div
-              className={`prose prose-sm max-w-none ${!isExpanded ? 'line-clamp-1' : ''}`}
+              className={`prose prose-sm max-w-none ${
+                !isExpanded ? 'line-clamp-1' : ''
+              }`}
             >
               <ReactMarkdown
                 rehypePlugins={[
@@ -99,7 +90,7 @@ export function AnnouncementBanner({
           </button>
           <button
             aria-label="お知らせを閉じる"
-            className="flex-shrink-0 rounded-md p-1 hover:bg-black/10"
+            className="shrink-0 rounded-md p-1 hover:bg-black/10"
             onClick={async () => {
               await dismissAnnouncement(data.id)
               setIsVisible(false)
