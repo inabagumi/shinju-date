@@ -24,6 +24,9 @@
       "tailwindDirectives": true
     }
   },
+  "files": {
+    "ignore": ["**/*.py"]
+  },
   "formatter": {
     "useEditorconfig": true
   },
@@ -59,15 +62,6 @@
         }
       },
       "includes": ["**/package.json"]
-    },
-    {
-      "formatter": {
-        "enabled": false
-      },
-      "includes": ["apps/insights/**"],
-      "linter": {
-        "enabled": false
-      }
     },
     {
       "includes": ["apps/*/**"],

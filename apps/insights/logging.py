@@ -1,14 +1,13 @@
 import logging
 import sys
 
-from uvicorn.logging import DefaultFormatter
+from pythonjsonlogger import jsonlogger
 
 
 def setup_logging():
-    formatter = DefaultFormatter(
-        "%(levelprefix)s %(asctime)s [%(name)s] %(message)s",
-        use_colors=None,
+    formatter = jsonlogger.JsonFormatter(
+        "%(asctime)s %(name)s %(levelname)s %(message)s"
     )
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(formatter)
-    logging.basicConfig(level=logging.INFO, handlers=[handler])
+    logging.basicConfig(level=logging.INFO, handlers=[handler], force=True)
