@@ -1,4 +1,5 @@
 import type { Tables } from '@shinju-date/database'
+import React from 'react'
 
 export default function LiveNow({
   className,
