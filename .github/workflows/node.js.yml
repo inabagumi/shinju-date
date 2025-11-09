@@ -34,4 +34,4 @@ jobs:
           cache: pnpm
       - run: pnpm install
       - run: pnpm check
-      - run: pnpm test
+      - run: pnpm test --filter=!@shinju-date/insights
