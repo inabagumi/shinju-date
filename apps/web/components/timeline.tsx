@@ -65,12 +65,14 @@ export default function Timeline({
         Temporal.Instant.from(videoB.published_at),
       ),
     )
-    return Object.groupBy(sortedValues, (value) =>
-      Temporal.Instant.from(value.published_at)
-        .toZonedDateTimeISO(timeZone)
-        .toPlainDate()
-        .toJSON(),
-    )
+    return {
+      ...Object.groupBy(sortedValues, (value) =>
+        Temporal.Instant.from(value.published_at)
+          .toZonedDateTimeISO(timeZone)
+          .toPlainDate()
+          .toJSON(),
+      ),
+    }
   }, [videos])
 
   return (
