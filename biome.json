@@ -24,9 +24,6 @@
       "tailwindDirectives": true
     }
   },
-  "files": {
-    "ignore": ["**/*.py"]
-  },
   "formatter": {
     "useEditorconfig": true
   },
