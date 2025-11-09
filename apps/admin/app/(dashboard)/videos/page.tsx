@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   title: '動画管理',
 }
 
-async function VideosContent({ searchParams }: PageProps<'/'>) {
+async function VideosContent({ searchParams }: { searchParams: PageProps<'/'>['searchParams'] }) {
   'use cache: private'
   cacheLife('minutes')
 
