@@ -52,7 +52,7 @@ export async function getDisplayRecommendationQueries(): Promise<string[]> {
   }
 
   // Shuffle random pool and take the needed number
-  const shuffledPool = [...randomPool].sort(() => Math.random() - 0.5)
+  const shuffledPool = randomPool.toSorted(() => Math.random() - 0.5)
   const randomQueries = shuffledPool.slice(0, randomCount)
 
   // Combine champion and random queries

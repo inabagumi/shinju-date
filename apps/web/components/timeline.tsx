@@ -59,7 +59,7 @@ export default function Timeline({
     refetchInterval: 60_000,
   })
   const schedule = useMemo<Map<string, Video[]>>(() => {
-    const sortedValues = [...(videos ?? [])].sort((videoA, videoB) =>
+    const sortedValues = (videos ?? []).toSorted((videoA, videoB) =>
       Temporal.Instant.compare(
         Temporal.Instant.from(videoA.published_at),
         Temporal.Instant.from(videoB.published_at),
