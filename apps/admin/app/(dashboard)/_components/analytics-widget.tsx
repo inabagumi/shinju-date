@@ -1,10 +1,11 @@
 import { formatNumber } from '@shinju-date/helpers'
 import { cacheLife } from 'next/cache'
 import Link from 'next/link'
-import { getAnalyticsSummary } from '../_lib/get-analytics-summary'
+import { getAnalyticsSummaryWithTrends } from '../_lib/get-analytics-summary-with-trends'
+import { TrendIndicator } from './trend-indicator'
 
 /**
- * AnalyticsWidget - Displays analytics summary with links to detailed pages
+ * AnalyticsWidget - Displays analytics summary with links to detailed pages and trend indicators
  * This is an async Server Component that fetches its own data
  */
 export async function AnalyticsWidget() {
@@ -12,7 +13,7 @@ export async function AnalyticsWidget() {
 
   cacheLife('minutes')
 
-  const analytics = await getAnalyticsSummary()
+  const analytics = await getAnalyticsSummaryWithTrends()
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
@@ -24,8 +25,11 @@ export async function AnalyticsWidget() {
         >
           <p className="text-gray-600 text-sm">本日の検索数</p>
           <p className="font-bold text-2xl text-blue-600">
-            {formatNumber(analytics.recentSearches)}
+            {formatNumber(analytics.recentSearches.current)}
           </p>
+          <div className="mt-2">
+            <TrendIndicator value={analytics.recentSearches.dayChange} />
+          </div>
         </Link>
         <Link
           className="rounded-lg bg-green-50 p-4 transition-colors hover:bg-green-100"
@@ -33,8 +37,11 @@ export async function AnalyticsWidget() {
         >
           <p className="text-gray-600 text-sm">本日のクリック数</p>
           <p className="font-bold text-2xl text-green-600">
-            {formatNumber(analytics.recentClicks)}
+            {formatNumber(analytics.recentClicks.current)}
           </p>
+          <div className="mt-2">
+            <TrendIndicator value={analytics.recentClicks.dayChange} />
+          </div>
         </Link>
         <Link
           className="col-span-2 rounded-lg bg-purple-50 p-4 transition-colors hover:bg-purple-100"
@@ -42,8 +49,11 @@ export async function AnalyticsWidget() {
         >
           <p className="text-gray-600 text-sm">人気キーワード数</p>
           <p className="font-bold text-2xl text-purple-600">
-            {formatNumber(analytics.totalPopularKeywords)}
+            {formatNumber(analytics.totalPopularKeywords.current)}
           </p>
+          <div className="mt-2">
+            <TrendIndicator value={analytics.totalPopularKeywords.dayChange} />
+          </div>
         </Link>
       </div>
     </div>
