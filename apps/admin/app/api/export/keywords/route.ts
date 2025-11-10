@@ -1,5 +1,6 @@
 import { createErrorResponse } from '@shinju-date/helpers'
 import { stringify } from 'csv-stringify/sync'
+import { connection } from 'next/server'
 import { type NextRequest, NextResponse } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import {
@@ -12,6 +13,9 @@ import { exportSearchParamsSchema } from '../_lib/schema'
  * Export popular keywords data as CSV
  */
 export async function GET(request: NextRequest) {
+  // Call connection() before accessing searchParams to mark as dynamic
+  await connection()
+
   try {
     // Parse and validate query parameters
     const searchParams = Object.fromEntries(

@@ -157,14 +157,8 @@ async function TalentProfile({ id }: { id: string }) {
   )
 }
 
-async function RecentVideosSection({ id }: { id: string }) {
-  const talent = await getTalent(id)
-
-  if (!talent) {
-    return null
-  }
-
-  const recentVideos = await getRecentVideosForTalent(talent.id, 5)
+async function RecentVideosSection({ talentId }: { talentId: string }) {
+  const recentVideos = await getRecentVideosForTalent(talentId, 5)
 
   return (
     <div className="mt-8">
@@ -285,7 +279,7 @@ export default async function TalentDetailPage({ params }: Props) {
           </div>
         }
       >
-        <RecentVideosSection id={id} />
+        <RecentVideosSection talentId={id} />
       </Suspense>
     </div>
   )

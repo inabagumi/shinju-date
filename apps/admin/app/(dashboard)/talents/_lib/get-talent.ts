@@ -1,5 +1,4 @@
 import { cacheLife } from 'next/cache'
-import { cache } from 'react'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export type Talent = {
@@ -14,9 +13,7 @@ export type Talent = {
   } | null
 }
 
-export const getTalent = cache(async function getTalent(
-  id: string,
-): Promise<Talent | null> {
+export async function getTalent(id: string): Promise<Talent | null> {
   'use cache: private'
 
   cacheLife('minutes')
@@ -50,4 +47,4 @@ export const getTalent = cache(async function getTalent(
   }
 
   return talent
-})
+}
