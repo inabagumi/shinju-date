@@ -1,7 +1,6 @@
 import { createErrorResponse } from '@shinju-date/helpers'
 import { stringify } from 'csv-stringify/sync'
-import { connection } from 'next/server'
-import { type NextRequest, NextResponse } from 'next/server'
+import { connection, type NextRequest, NextResponse } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import { getSearchExitRates } from '@/lib/analytics/get-search-quality-metrics'
 import { exportSearchParamsSchema } from '../_lib/schema'
