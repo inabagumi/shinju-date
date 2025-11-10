@@ -14,7 +14,7 @@ dependencies = [
     "supabase==2.24.0",
     "python-dotenv==1.2.1",
     "redis==5.3.1",
-    "sentry-sdk[fastapi]==2.10.0",
+    "sentry-sdk[fastapi]==2.43.0",
     "python-decouple==3.8",
     "python-json-logger==2.0.7",
 ]
