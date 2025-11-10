@@ -109,7 +109,7 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
                     {siteName}とは
                   </Link>
                 </li>
-                <li className="md:hidden">
+                <li className="empty:hidden md:hidden">
                   <ContactLink className="hover:text-secondary-pink hover:underline">
                     お問い合わせ
                   </ContactLink>
