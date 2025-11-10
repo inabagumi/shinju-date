@@ -1,23 +1,48 @@
-import os
+from logging import setup_logging
 
-from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+import sentry_sdk
+from fastapi import Depends, FastAPI, HTTPException
 from supabase import Client, create_client
 
+from config import (
+    NEXT_PUBLIC_SENTRY_DSN,
+    NEXT_PUBLIC_SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY,
+)
+from dependencies.auth import verify_cron_request
 from services.database import get_existing_terms, get_video_titles
 from services.term_extractor import extract_frequent_terms
 
-load_dotenv()
+setup_logging()
 
-SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+if NEXT_PUBLIC_SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=NEXT_PUBLIC_SENTRY_DSN,
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        traces_sample_rate=1.0,
+        # Set profiles_sample_rate to 1.0 to profile 100%
+        # of sampled transactions.
+        # We recommend adjusting this value in production.
+        profiles_sample_rate=1.0,
+    )
 
-if SUPABASE_URL and SUPABASE_KEY:
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+if NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
+    supabase: Client = create_client(
+        NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+    )
 else:
     supabase = None
 
 app = FastAPI()
+
+
+@app.exception_handler(Exception)
+async def sentry_exception_handler(request, exc):
+    sentry_sdk.capture_exception(exc)
+    # You can also add your own custom error handling logic here
+    # and return a custom response.
+    return HTTPException(status_code=500, detail="Internal Server Error")
 
 
 @app.get("/")
@@ -25,12 +50,28 @@ def read_root():
     return {"status": "ok", "message": "Insights API is running"}
 
 
-@app.post("/api/v1/terms/analysis")
+@app.get("/api/healthz")
+def healthz_endpoint():
+    return {"status": "ok"}
+
+
+@app.get("/api/readyz")
+def readyz_endpoint():
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Supabase client is not configured")
+    try:
+        supabase.table("videos").select("id").limit(1).execute()
+        return {"status": "ok"}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Database connection failed: {e}")
+
+
+@app.post("/api/v1/terms/analysis", dependencies=[Depends(verify_cron_request)])
 def analysis_terms_endpoint():
     """Extract frequent terms from video titles stored in Supabase."""
-    if not SUPABASE_URL or not SUPABASE_KEY or not supabase:
+    if not supabase:
         raise HTTPException(
-            status_code=500, detail="Supabase URL/Key is not configured."
+            status_code=500, detail="Supabase client is not configured."
         )
 
     try:
