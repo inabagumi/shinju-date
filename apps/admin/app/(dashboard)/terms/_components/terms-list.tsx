@@ -74,7 +74,7 @@ export function TermsList({ terms }: TermsListProps) {
     }
 
     // Sort groups by key
-    return new Map([...groups.entries()].sort())
+    return new Map(groups.entries().toSorted())
   }, [filteredTerms])
 
   const groupKeys = Array.from(groupedTerms.keys())

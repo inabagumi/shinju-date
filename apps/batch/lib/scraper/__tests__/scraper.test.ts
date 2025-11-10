@@ -501,7 +501,7 @@ describe('YouTube video ID association bug fix', () => {
         const body = await request.json()
         const items = Array.isArray(body) ? body : [body]
 
-        const reordered = [...items].reverse()
+        const reordered = items.toReversed()
         return HttpResponse.json(reordered, { status: 201 })
       }),
     )
