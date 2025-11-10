@@ -6,9 +6,11 @@ import {
 import { Badge } from '@shinju-date/ui'
 import { ChevronLeft, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
+import { cacheLife } from 'next/cache'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { StatusBadge } from '../_components/status-badge'
 import getVideo from '../_lib/get-video'
@@ -40,6 +42,9 @@ function getStatusVariant(video: {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  'use cache: private'
+  cacheLife('minutes')
+
   const { id } = await params
 
   const video = await getVideo(id)
@@ -55,8 +60,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function VideoDetailPage({ params }: Props) {
-  const { id } = await params
+async function VideoDetailContent({ id }: { id: string }) {
+  'use cache: private'
+  cacheLife('minutes')
 
   const video = await getVideo(id)
 
@@ -296,4 +302,23 @@ export default async function VideoDetailPage({ params }: Props) {
       </div>
     </div>
   )
+}
+
+export default function VideoDetailPage({ params }: Props) {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-4">
+          <div className="h-96 animate-pulse rounded-lg bg-gray-200" />
+        </div>
+      }
+    >
+      <VideoDetailContentWrapper params={params} />
+    </Suspense>
+  )
+}
+
+async function VideoDetailContentWrapper({ params }: Props) {
+  const { id } = await params
+  return <VideoDetailContent id={id} />
 }

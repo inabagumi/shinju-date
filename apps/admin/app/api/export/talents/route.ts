@@ -1,6 +1,6 @@
 import { createErrorResponse } from '@shinju-date/helpers'
 import { stringify } from 'csv-stringify/sync'
-import { type NextRequest, NextResponse } from 'next/server'
+import { connection, type NextRequest, NextResponse } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import {
   getPopularTalents,
@@ -12,6 +12,8 @@ import { exportSearchParamsSchema } from '../_lib/schema'
  * Export popular talents data as CSV
  */
 export async function GET(request: NextRequest) {
+  await connection()
+
   try {
     // Parse and validate query parameters
     const searchParams = Object.fromEntries(

@@ -1,7 +1,6 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { formatDateTime } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-import getAnnouncements from '../_lib/get-announcements'
 import type { Announcement } from '../_lib/types'
 import { AnnouncementModal } from './announcement-modal'
 import { LevelBadge, StatusBadge } from './badges'
@@ -47,9 +46,11 @@ function AnnouncementItem({ announcement }: { announcement: Announcement }) {
   )
 }
 
-export async function AnnouncementsList() {
-  const announcements = await getAnnouncements()
-
+export function AnnouncementsList({
+  announcements,
+}: {
+  announcements: Announcement[]
+}) {
   return (
     <div>
       {announcements.length === 0 ? (

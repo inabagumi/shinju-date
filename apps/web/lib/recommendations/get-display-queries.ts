@@ -1,3 +1,4 @@
+import { cacheLife, cacheTag } from 'next/cache'
 import { getCombinedRecommendationQueries } from './get-combined-queries'
 
 const CHAMPION_COUNT = 2 // Top 1-2 queries always shown
@@ -20,6 +21,10 @@ export const TOTAL_DISPLAY_COUNT = 4 // Total queries to display
  * @returns Array of query strings to display (max 4)
  */
 export async function getDisplayRecommendationQueries(): Promise<string[]> {
+  'use cache: remote'
+  cacheLife('minutes')
+  cacheTag('recommendation-queries')
+
   const allQueries = await getCombinedRecommendationQueries()
 
   if (allQueries.length === 0) {

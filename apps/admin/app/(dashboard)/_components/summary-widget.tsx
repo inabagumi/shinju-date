@@ -1,4 +1,5 @@
 import { formatNumber } from '@shinju-date/helpers'
+import { cacheLife } from 'next/cache'
 import Link from 'next/link'
 import { getSummaryStats } from '../_lib/get-summary-stats'
 
@@ -7,6 +8,10 @@ import { getSummaryStats } from '../_lib/get-summary-stats'
  * This is an async Server Component that fetches its own data
  */
 export async function SummaryWidget() {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   const stats = await getSummaryStats()
 
   return (

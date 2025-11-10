@@ -1,37 +1,14 @@
-import {
-  getVideos,
-  type VideoFilters,
-  type VideoSortField,
-  type VideoSortOrder,
-} from '../_lib/get-videos'
+import type { Video } from '../_lib/get-videos'
 import VideoList from './video-list'
 
 type Props = {
-  currentPage: number
-  perPage: number
-  filters: VideoFilters
-  sortField: VideoSortField
-  sortOrder: VideoSortOrder
+  videos: Video[]
 }
 
 /**
- * VideoTable - Async component that fetches and displays video data
- * This component is wrapped with Suspense in the parent page
+ * VideoTable - Component that displays video data
+ * Data is passed from parent to avoid nested data fetching
  */
-export async function VideoTable({
-  currentPage,
-  perPage,
-  filters,
-  sortField,
-  sortOrder,
-}: Props) {
-  const { videos } = await getVideos(
-    currentPage,
-    perPage,
-    filters,
-    sortField,
-    sortOrder,
-  )
-
+export function VideoTable({ videos }: Props) {
   return <VideoList videos={videos} />
 }

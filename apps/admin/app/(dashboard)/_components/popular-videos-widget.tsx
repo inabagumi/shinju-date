@@ -1,6 +1,7 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { formatNumber } from '@shinju-date/helpers'
 import { ExternalLink } from 'lucide-react'
+import { cacheLife } from 'next/cache'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Temporal } from 'temporal-polyfill'
@@ -21,6 +22,10 @@ export function PopularVideosWidgetSkeleton() {
  * This is an async Server Component that fetches its own data
  */
 export async function PopularVideosWidget() {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
   const startDate = today.subtract({ days: 29 })
   const popularVideos = await getPopularVideos(10, startDate, today)

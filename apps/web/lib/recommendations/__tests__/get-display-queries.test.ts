@@ -8,6 +8,12 @@ vi.mock('../get-combined-queries', () => ({
   getCombinedRecommendationQueries: vi.fn(),
 }))
 
+// Mock Next.js cache functions
+vi.mock('next/cache', () => ({
+  cacheLife: vi.fn(),
+  cacheTag: vi.fn(),
+}))
+
 describe('getDisplayRecommendationQueries', () => {
   it('should return empty array when no queries are available', async () => {
     vi.mocked(
