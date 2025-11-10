@@ -6,6 +6,11 @@ vi.mock('@/lib/supabase', () => ({
   createSupabaseServerClient: vi.fn(),
 }))
 
+vi.mock('next/cache', () => ({
+  cacheLife: vi.fn(),
+  cacheTag: vi.fn(),
+}))
+
 describe('getTalent', () => {
   it('should return null when talent is not found (PGRST116 error)', async () => {
     const { createSupabaseServerClient } = await import('@/lib/supabase')
