@@ -81,14 +81,14 @@ describe('Supabase Handlers', () => {
       const response = await fetch(
         'https://fake.supabase.test/auth/v1/token?grant_type=password',
         {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
           body: JSON.stringify({
             email: 'admin@example.com',
             password: 'password123',
           }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
         },
       )
       const data = await response.json()
@@ -132,11 +132,11 @@ describe('Supabase Handlers', () => {
       const response = await fetch(
         'https://fake.supabase.test/auth/v1/logout',
         {
-          method: 'POST',
           headers: {
             Cookie:
               'sb-access-token=mock_access_token; sb-refresh-token=mock_refresh_token',
           },
+          method: 'POST',
         },
       )
       expect(response.status).toBe(204)

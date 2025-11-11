@@ -946,10 +946,7 @@ export const supabaseHandlers = [
 
     // Clear cookies to simulate Supabase auth logout
     response.headers.append('Set-Cookie', 'sb-access-token=; HttpOnly; Path=/')
-    response.headers.append(
-      'Set-Cookie',
-      'sb-refresh-token=; HttpOnly; Path=/',
-    )
+    response.headers.append('Set-Cookie', 'sb-refresh-token=; HttpOnly; Path=/')
 
     return response
   }),
@@ -960,9 +957,9 @@ export const supabaseHandlers = [
 
     if (accessToken || isPreAuthenticated) {
       return HttpResponse.json({
-        id: 'mock-user-id',
-        email: 'admin@example.com',
         created_at: '2023-01-01T00:00:00.000Z',
+        email: 'admin@example.com',
+        id: 'mock-user-id',
       })
     }
 
@@ -972,10 +969,10 @@ export const supabaseHandlers = [
         msg: 'Unauthorized',
       }),
       {
-        status: 401,
         headers: {
           'Content-Type': 'application/json',
         },
+        status: 401,
       },
     )
   }),
