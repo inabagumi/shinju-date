@@ -1,5 +1,5 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
-import { formatDate } from '@shinju-date/temporal-fns'
+import { formatDateKey } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
@@ -131,13 +131,13 @@ export async function getSummaryStats(
   // Get yesterday's and last week's snapshots for trends
   const redisClient = getRedisClient()
   const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-  const todayKey = formatDate(now)
+  const todayKey = formatDateKey(now)
 
   const yesterday = now.subtract({ days: 1 })
   const lastWeek = now.subtract({ days: 7 })
 
-  const yesterdayKey = formatDate(yesterday)
-  const lastWeekKey = formatDate(lastWeek)
+  const yesterdayKey = formatDateKey(yesterday)
+  const lastWeekKey = formatDateKey(lastWeek)
 
   const [yesterdayStats, lastWeekStats] = await Promise.all([
     redisClient.get<SummaryStats>(
