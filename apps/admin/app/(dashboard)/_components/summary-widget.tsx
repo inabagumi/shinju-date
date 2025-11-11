@@ -1,7 +1,7 @@
 import { formatNumber } from '@shinju-date/helpers'
 import { cacheLife } from 'next/cache'
 import Link from 'next/link'
-import { getSummaryStatsWithTrends } from '../_lib/get-summary-stats-with-trends'
+import { getSummaryStats } from '../_lib/get-summary-stats'
 import { TrendIndicator } from './trend-indicator'
 
 /**
@@ -13,7 +13,7 @@ export async function SummaryWidget() {
 
   cacheLife('minutes')
 
-  const stats = await getSummaryStatsWithTrends()
+  const stats = await getSummaryStats(true)
 
   return (
     <>
