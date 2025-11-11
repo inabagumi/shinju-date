@@ -49,12 +49,12 @@ describe('Supabase Handlers', () => {
         const response = await fetch(
           'https://fake.supabase.test/auth/v1/token?grant_type=password',
           {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               email: 'admin@example.com',
               password: 'password123',
             }),
+            headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
           },
         )
         const json = await response.json()
@@ -72,12 +72,12 @@ describe('Supabase Handlers', () => {
         const response = await fetch(
           'https://fake.supabase.test/auth/v1/token?grant_type=password',
           {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               email: 'wrong@example.com',
               password: 'wrongpassword',
             }),
+            headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
           },
         )
         expect(response.status).toBe(400)

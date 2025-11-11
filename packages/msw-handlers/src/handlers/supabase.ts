@@ -938,97 +938,94 @@ export const supabaseHandlers = [
     })
   }),
 
-  http.post(
-    'https://fake.supabase.test/auth/v1/token',
-    async ({ request }) => {
-      const url = new URL(request.url)
-      const grantType = url.searchParams.get('grant_type')
+  http.post('https://fake.supabase.test/auth/v1/token', async ({ request }) => {
+    const url = new URL(request.url)
+    const grantType = url.searchParams.get('grant_type')
 
-      if (grantType === 'password') {
-        const body = (await request.json()) as {
-          email?: string
-          password?: string
-        }
-
-        if (
-          body.email === 'admin@example.com' &&
-          body.password === 'password123'
-        ) {
-          const headers = new Headers({
-            'Content-Type': 'application/json',
-          })
-          headers.append(
-            'Set-Cookie',
-            'sb-access-token=mock_access_token; Path=/; Max-Age=3600; SameSite=Lax',
-          )
-          headers.append(
-            'Set-Cookie',
-            'sb-refresh-token=mock_refresh_token; Path=/; Max-Age=604800; SameSite=Lax',
-          )
-
-          return new HttpResponse(
-            JSON.stringify({
-              access_token: 'mock_access_token',
-              expires_at: 9999999999,
-              expires_in: 3600,
-              refresh_token: 'mock_refresh_token',
-              token_type: 'bearer',
-              user: {
-                app_metadata: {
-                  provider: 'email',
-                  providers: ['email'],
-                },
-                aud: 'authenticated',
-                confirmed_at: '2023-01-01T00:00:00.000Z',
-                created_at: '2023-01-01T00:00:00.000Z',
-                email: 'admin@example.com',
-                email_confirmed_at: '2023-01-01T00:00:00.000Z',
-                id: 'mock-user-id',
-                identities: [
-                  {
-                    created_at: '2023-01-01T00:00:00.000Z',
-                    id: 'mock-user-id',
-                    identity_data: {
-                      email: 'admin@example.com',
-                      sub: 'mock-user-id',
-                    },
-                    last_sign_in_at: '2023-01-01T00:00:00.000Z',
-                    provider: 'email',
-                    updated_at: '2023-01-01T00:00:00.000Z',
-                    user_id: 'mock-user-id',
-                  },
-                ],
-                last_sign_in_at: '2023-01-01T00:00:00.000Z',
-                phone: '',
-                role: 'authenticated',
-                updated_at: '2023-01-01T00:00:00.000Z',
-                user_metadata: {},
-              },
-            }),
-            {
-              headers,
-              status: 200,
-            },
-          )
-        }
-        return HttpResponse.json(
-          {
-            error: 'invalid_grant',
-            error_description: 'Invalid credentials',
-          },
-          { status: 400 },
-        )
+    if (grantType === 'password') {
+      const body = (await request.json()) as {
+        email?: string
+        password?: string
       }
 
+      if (
+        body.email === 'admin@example.com' &&
+        body.password === 'password123'
+      ) {
+        const headers = new Headers({
+          'Content-Type': 'application/json',
+        })
+        headers.append(
+          'Set-Cookie',
+          'sb-access-token=mock_access_token; Path=/; Max-Age=3600; SameSite=Lax',
+        )
+        headers.append(
+          'Set-Cookie',
+          'sb-refresh-token=mock_refresh_token; Path=/; Max-Age=604800; SameSite=Lax',
+        )
+
+        return HttpResponse.json(
+          {
+            access_token: 'mock_access_token',
+            expires_at: 9999999999,
+            expires_in: 3600,
+            refresh_token: 'mock_refresh_token',
+            token_type: 'bearer',
+            user: {
+              app_metadata: {
+                provider: 'email',
+                providers: ['email'],
+              },
+              aud: 'authenticated',
+              confirmed_at: '2023-01-01T00:00:00.000Z',
+              created_at: '2023-01-01T00:00:00.000Z',
+              email: 'admin@example.com',
+              email_confirmed_at: '2023-01-01T00:00:00.000Z',
+              id: 'mock-user-id',
+              identities: [
+                {
+                  created_at: '2023-01-01T00:00:00.000Z',
+                  id: 'mock-user-id',
+                  identity_data: {
+                    email: 'admin@example.com',
+                    sub: 'mock-user-id',
+                  },
+                  last_sign_in_at: '2023-01-01T00:00:00.000Z',
+                  provider: 'email',
+                  updated_at: '2023-01-01T00:00:00.000Z',
+                  user_id: 'mock-user-id',
+                },
+              ],
+              last_sign_in_at: '2023-01-01T00:00:00.000Z',
+              phone: '',
+              role: 'authenticated',
+              updated_at: '2023-01-01T00:00:00.000Z',
+              user_metadata: {},
+            },
+          },
+          {
+            headers,
+            status: 200,
+          },
+        )
+      }
       return HttpResponse.json(
         {
-          error: 'unsupported_grant_type',
-          error_description: 'Unsupported grant_type',
+          error: 'invalid_grant',
+          error_description: 'Invalid credentials',
         },
         { status: 400 },
       )
-    },
-  ),
+    }
+
+    return HttpResponse.json(
+      {
+        error: 'unsupported_grant_type',
+        error_description: 'Unsupported grant_type',
+      },
+      { status: 400 },
+    )
+  }),
 
   http.post('https://fake.supabase.test/auth/v1/logout', () => {
     const headers = new Headers()
