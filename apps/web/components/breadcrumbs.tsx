@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
-import React from 'react'
 import { title as siteName } from '@/lib/constants'
 
 export default function Breadcrumbs({

@@ -45,6 +45,7 @@
     "@types/node": "22.19.0",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
+    "@vitejs/plugin-react": "5.1.0",
     "babel-plugin-react-compiler": "1.0.0",
     "jsdom": "27.1.0",
     "msw": "2.12.1",
