@@ -1,10 +1,14 @@
+import {
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TAGLINE,
+} from '@shinju-date/constants'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import NoResults from '@/components/no-results'
 import Timeline, { TimelineSkeleton } from '@/components/timeline'
-import { SITE_DESCRIPTION, SITE_TAGLINE, SITE_NAME } from '@shinju-date/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
 import {
   getDisplayRecommendationQueries,

@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/nextjs'
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
-import { formatDateKey, getMondayOfWeek } from '@shinju-date/temporal-fns'
+import { formatDate, getMondayOfWeek } from '@shinju-date/temporal-fns'
 import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import { recommendationQueriesUpdate as ratelimit } from '@/lib/ratelimit'
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-    const today = formatDateKey(now)
+    const today = formatDate(now)
     const mondayOfWeek = getMondayOfWeek(now)
 
     const dailyKey = `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`

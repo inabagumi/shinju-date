@@ -1,4 +1,4 @@
-export { default as formatDateKey } from './format-date.js'
+export { default as formatDate } from './format-date.js'
 export {
   default as formatDateTime,
   formatDateTimeFromISO,

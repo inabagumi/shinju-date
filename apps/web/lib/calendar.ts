@@ -1,3 +1,4 @@
+import { SITE_NAME as siteName } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { max, min } from '@shinju-date/temporal-fns'
 import {
@@ -6,7 +7,6 @@ import {
   type EventAttributes,
 } from 'ics'
 import { Temporal } from 'temporal-polyfill'
-import { TIME_ZONE, SITE_NAME as siteName } from '@shinju-date/constants'
 
 type Talent = Pick<Tables<'talents'>, 'name'>
 

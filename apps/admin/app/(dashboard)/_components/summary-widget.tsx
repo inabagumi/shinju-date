@@ -2,10 +2,9 @@ import { formatNumber } from '@shinju-date/helpers'
 import { cacheLife } from 'next/cache'
 import Link from 'next/link'
 import { getSummaryStats } from '../_lib/get-summary-stats'
-import { TrendIndicator } from './trend-indicator'
 
 /**
- * SummaryWidget - Displays summary statistics about videos and terms with trend indicators
+ * SummaryWidget - Displays summary statistics about videos and terms
  * This is an async Server Component that fetches its own data
  */
 export async function SummaryWidget() {
@@ -13,7 +12,7 @@ export async function SummaryWidget() {
 
   cacheLife('minutes')
 
-  const stats = await getSummaryStats(true)
+  const stats = await getSummaryStats()
 
   return (
     <>
@@ -27,11 +26,8 @@ export async function SummaryWidget() {
           >
             <p className="text-gray-600 text-sm">総動画数</p>
             <p className="font-bold text-2xl text-blue-600">
-              {formatNumber(stats.totalVideos.current)}
+              {formatNumber(stats.totalVideos)}
             </p>
-            <div className="mt-2">
-              <TrendIndicator value={stats.totalVideos.dayChange} />
-            </div>
           </Link>
           <Link
             className="rounded-lg bg-green-50 p-4 transition-colors hover:bg-green-100"
@@ -39,11 +35,8 @@ export async function SummaryWidget() {
           >
             <p className="text-gray-600 text-sm">公開中</p>
             <p className="font-bold text-2xl text-green-600">
-              {formatNumber(stats.visibleVideos.current)}
+              {formatNumber(stats.visibleVideos)}
             </p>
-            <div className="mt-2">
-              <TrendIndicator value={stats.visibleVideos.dayChange} />
-            </div>
           </Link>
           <Link
             className="rounded-lg bg-yellow-50 p-4 transition-colors hover:bg-yellow-100"
@@ -51,11 +44,8 @@ export async function SummaryWidget() {
           >
             <p className="text-gray-600 text-sm">非表示</p>
             <p className="font-bold text-2xl text-yellow-600">
-              {formatNumber(stats.hiddenVideos.current)}
+              {formatNumber(stats.hiddenVideos)}
             </p>
-            <div className="mt-2">
-              <TrendIndicator value={stats.hiddenVideos.dayChange} />
-            </div>
           </Link>
           <Link
             className="rounded-lg bg-red-50 p-4 transition-colors hover:bg-red-100"
@@ -63,11 +53,8 @@ export async function SummaryWidget() {
           >
             <p className="text-gray-600 text-sm">削除済み</p>
             <p className="font-bold text-2xl text-red-600">
-              {formatNumber(stats.deletedVideos.current)}
+              {formatNumber(stats.deletedVideos)}
             </p>
-            <div className="mt-2">
-              <TrendIndicator value={stats.deletedVideos.dayChange} />
-            </div>
           </Link>
         </div>
       </div>
@@ -82,11 +69,8 @@ export async function SummaryWidget() {
           >
             <p className="text-gray-600 text-sm">総用語数</p>
             <p className="font-bold text-2xl text-purple-600">
-              {formatNumber(stats.totalTerms.current)}
+              {formatNumber(stats.totalTerms)}
             </p>
-            <div className="mt-2">
-              <TrendIndicator value={stats.totalTerms.dayChange} />
-            </div>
           </Link>
           <Link
             className="rounded-lg bg-indigo-50 p-4 transition-colors hover:bg-indigo-100"
@@ -94,11 +78,8 @@ export async function SummaryWidget() {
           >
             <p className="text-gray-600 text-sm">総タレント数</p>
             <p className="font-bold text-2xl text-indigo-600">
-              {formatNumber(stats.totalTalents.current)}
+              {formatNumber(stats.totalTalents)}
             </p>
-            <div className="mt-2">
-              <TrendIndicator value={stats.totalTalents.dayChange} />
-            </div>
           </Link>
         </div>
       </div>
