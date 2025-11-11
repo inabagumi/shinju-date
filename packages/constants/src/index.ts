@@ -28,4 +28,7 @@ export const REDIS_KEYS = {
   // New keys for enhanced search analytics
   SESSIONS_TOTAL_PREFIX: 'sessions:total:',
   SESSIONS_WITH_SEARCH_PREFIX: 'sessions:with_search:',
+  // Dashboard summary trend snapshots (format: prefix + YYYYMMDD)
+  SUMMARY_ANALYTICS_PREFIX: 'summary:analytics:',
+  SUMMARY_STATS_PREFIX: 'summary:stats:',
 } as const

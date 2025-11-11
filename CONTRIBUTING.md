@@ -74,6 +74,41 @@ async function MyComponent() {
 - `'use cache: remote'` は公開データに使用し、`'use cache: private'` は認証が必要なデータに使用する
 - データ取得関数にキャッシュディレクティブがある場合、その関数を呼び出すコンポーネントでは追加のキャッシュディレクティブは不要
 
+### Redisキーの管理
+
+**重要**: すべてのRedisキーは`@shinju-date/constants`の`REDIS_KEYS`オブジェクトで一元管理してください。
+
+#### ルール
+
+1. **キーの定義場所**
+   - すべてのRedisキープレフィックスは`packages/constants/src/index.ts`の`REDIS_KEYS`に定義
+   - ハードコーディングは禁止
+
+2. **日付フォーマット**
+   - 日付を含むキーには`@shinju-date/temporal-fns`の`formatDate`を使用（`YYYYMMDD`形式）
+   - 例: `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDate(now)}` → `summary:stats:20251111`
+
+3. **TTL設定**
+   - すべてのキーに適切な有効期限（TTL）を設定すること
+   - 例: `{ ex: 30 * 24 * 60 * 60 }` // 30日間
+
+#### 例
+
+```typescript
+import { REDIS_KEYS } from '@shinju-date/constants'
+import { formatDate } from '@shinju-date/temporal-fns'
+
+// ✅ 正しい例
+const key = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDate(now)}`
+await redis.set(key, data, { ex: 30 * 24 * 60 * 60 })
+
+// ❌ 間違った例（ハードコーディング）
+const key = 'summary:stats:2025-11-11'
+await redis.set(key, data)
+```
+
+詳細は [AGENTS.md](AGENTS.md) の「Redisキーの管理」セクションを参照してください。
+
 ### コミットメッセージ
 
 [Conventional Commits](https://www.conventionalcommits.org/) の形式に従ってください：
