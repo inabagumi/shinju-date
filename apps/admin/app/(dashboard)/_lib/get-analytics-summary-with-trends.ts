@@ -1,6 +1,6 @@
 'use server'
 
-import { TIME_ZONE } from '@shinju-date/constants'
+import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
@@ -8,9 +8,6 @@ import {
   type AnalyticsSummary,
   getAnalyticsSummary,
 } from './get-analytics-summary'
-
-// Redis keys for daily analytics snapshots
-const ANALYTICS_SUMMARY_PREFIX = 'summary:analytics:'
 
 export type AnalyticsTrendValue = {
   current: number
@@ -44,16 +41,16 @@ export async function getAnalyticsSummaryWithTrends(): Promise<AnalyticsSummaryW
 
   const [yesterdayAnalytics, lastWeekAnalytics] = await Promise.all([
     redisClient.get<AnalyticsSummary>(
-      `${ANALYTICS_SUMMARY_PREFIX}${yesterdayKey}`,
+      `${REDIS_KEYS.SUMMARY_ANALYTICS_PREFIX}${yesterdayKey}`,
     ),
     redisClient.get<AnalyticsSummary>(
-      `${ANALYTICS_SUMMARY_PREFIX}${lastWeekKey}`,
+      `${REDIS_KEYS.SUMMARY_ANALYTICS_PREFIX}${lastWeekKey}`,
     ),
   ])
 
   // Store today's snapshot for future comparisons (with 30 days TTL)
   await redisClient.set(
-    `${ANALYTICS_SUMMARY_PREFIX}${todayKey}`,
+    `${REDIS_KEYS.SUMMARY_ANALYTICS_PREFIX}${todayKey}`,
     currentAnalytics,
     { ex: 30 * 24 * 60 * 60 }, // 30 days
   )
