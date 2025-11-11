@@ -206,6 +206,85 @@ export default async function Page({ params }) {
    - `'use cache: remote'` - 公開データに使用（VDCに保存）
    - `'use cache: private'` - 認証が必要なデータに使用（ユーザーごと）
 
+### Redisキーの管理 (Redis Key Management)
+
+**重要**: このプロジェクトでは、Redisキーを一元管理し、命名規則を統一するため、以下のルールを定めます。
+
+#### ルール
+
+1. **すべてのRedisキーは`@shinju-date/constants`の`REDIS_KEYS`で管理**
+   * Redisキーのプレフィックスや固定キーは、`packages/constants/src/index.ts`の`REDIS_KEYS`オブジェクトに定義してください
+   * コード内でハードコーディングせず、必ず`REDIS_KEYS`から参照してください
+   * これにより、キーの重複防止、変更時の影響範囲の把握、命名規則の統一が可能になります
+
+2. **日付キーのフォーマット**
+   * 日付を含むキーには、`@shinju-date/temporal-fns`の`formatDate`関数を使用してください
+   * `formatDate`は`YYYYMMDD`形式（ダッシュなし）を返すため、キーを短く保つことができます
+   * 例: `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDate(now)}` → `summary:stats:20251111`
+
+3. **キー命名規則**
+   * プレフィックスは用途を明確に示す英語で記述（例: `summary:`, `videos:`, `search:`）
+   * 複数の単語はコロン（`:`）で区切る（例: `videos:clicked:`）
+   * 末尾にコロンを付けることで、動的な値を追加しやすくする（例: `SUMMARY_STATS_PREFIX: 'summary:stats:'`）
+
+4. **TTL（有効期限）の設定**
+   * すべてのRedisキーには適切なTTLを設定してください
+   * メモリの肥大化を防ぐため、必ず有効期限を指定してください
+   * 例: `{ ex: 30 * 24 * 60 * 60 }` // 30日間
+
+#### コード例
+
+**推奨されない例 (Bad Practice):**
+
+```typescript
+// ❌ ハードコーディングされたキー
+const key = 'summary:stats:2025-11-11'
+await redis.set(key, data)
+
+// ❌ TTLなし
+await redis.set('my-key', data)
+```
+
+**推奨される例 (Good Practice):**
+
+```typescript
+import { REDIS_KEYS } from '@shinju-date/constants'
+import { formatDate } from '@shinju-date/temporal-fns'
+import { Temporal } from 'temporal-polyfill'
+
+// ✅ REDIS_KEYSを使用
+const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
+const dateKey = formatDate(now) // '20251111'（ダッシュなし）
+const key = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}`
+
+// ✅ TTLを指定
+await redis.set(key, data, { ex: 30 * 24 * 60 * 60 })
+```
+
+#### 新しいRedisキーの追加方法
+
+1. `packages/constants/src/index.ts`の`REDIS_KEYS`オブジェクトに追加する
+   ```typescript
+   export const REDIS_KEYS = {
+     // ... 既存のキー
+     YOUR_NEW_PREFIX: 'your:new:prefix:',
+   } as const
+   ```
+
+2. 必要に応じてコメントで用途を説明する
+   ```typescript
+   // Dashboard summary trend snapshots (format: prefix + YYYYMMDD)
+   SUMMARY_ANALYTICS_PREFIX: 'summary:analytics:',
+   SUMMARY_STATS_PREFIX: 'summary:stats:',
+   ```
+
+3. 使用する側でインポートして参照する
+   ```typescript
+   import { REDIS_KEYS } from '@shinju-date/constants'
+   
+   const key = `${REDIS_KEYS.YOUR_NEW_PREFIX}${someId}`
+   ```
+
 ### 時刻の取り扱い (Date/Time Handling)
 
 **重要**: このプロジェクトでは、Reactのハイドレーションエラーを防ぎ、時刻の計算を正確に行うため、JavaScript標準の`Date`オブジェクトの利用に関して以下のルールを定めます。
