@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { THEME_COLOR, TITLE } from '@shinju-date/constants'
+import { SITE_THEME_COLOR, SITE_NAME } from '@shinju-date/constants'
 
 export default function robots(): MetadataRoute.Manifest {
   return {
@@ -17,10 +17,10 @@ export default function robots(): MetadataRoute.Manifest {
         type: 'image/png',
       },
     ],
-    name: TITLE,
+    name: SITE_NAME,
     scope: '/',
-    short_name: TITLE,
+    short_name: SITE_NAME,
     start_url: '/',
-    theme_color: THEME_COLOR,
+    theme_color: SITE_THEME_COLOR,
   }
 }
