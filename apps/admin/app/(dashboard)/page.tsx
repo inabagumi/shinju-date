@@ -1,13 +1,11 @@
 import { Suspense } from 'react'
 import { CardSkeleton } from '@/components/skeletons'
 import { AnalyticsWidget } from './_components/analytics-widget'
-import { MaintenanceModeWidgetWrapper } from './_components/maintenance-mode-widget-wrapper'
 import {
   PopularVideosWidget,
   PopularVideosWidgetSkeleton,
 } from './_components/popular-videos-widget'
 import { QuickAccessWidget } from './_components/quick-access-widget'
-import { RecentActivity } from './_components/recent-activity'
 import { SummaryWidget } from './_components/summary-widget'
 
 export default function DashboardPage() {
