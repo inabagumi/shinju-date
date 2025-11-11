@@ -206,6 +206,183 @@ export default async function Page({ params }) {
    - `'use cache: remote'` - 公開データに使用（VDCに保存）
    - `'use cache: private'` - 認証が必要なデータに使用（ユーザーごと）
 
+### Next.js Partial Prerendering（部分的プリレンダリング）
+
+**🚨 重要**: Next.js 15以降では、Partial Prerenderingを活用することで、静的コンテンツと動的コンテンツを効率的に処理できます。以下のベストプラクティスを**必ず**守ってください：
+
+#### 基本原則
+
+1. **ページ全体をSuspenseで囲まない**：ページ全体を単一のSuspenseコンポーネントで囲むと、Partial Prerenderingの利点が失われます。
+2. **静的コンテンツは即座にレンダリング**：ナビゲーションリンク、ヘッダー、レイアウト要素など、静的なコンテンツはSuspenseの外に配置してください。
+3. **非同期データ取得のみをSuspenseで囲む**：データベースクエリやAPIコールなど、非同期処理が必要な要素のみをSuspenseコンポーネントで個別に囲んでください。
+4. **paramsは直接awaitする**：Next.js 15以降、動的ルートの`params`はPromiseです。余分なwrapperコンポーネントを作らず、ページコンポーネント自体で直接awaitしてください。
+
+#### ✅ 正しい例（Partial Prerenderingを活用）：
+
+```typescript
+export default async function TalentDetailPage({ params }: Props) {
+  const { id } = await params  // paramsを直接await
+
+  return (
+    <div className="container mx-auto p-4">
+      {/* 静的コンテンツ - 即座にレンダリング */}
+      <div className="mb-6">
+        <Link href="/talents">
+          <ChevronLeft className="mr-1 size-4" />
+          タレント一覧に戻る
+        </Link>
+      </div>
+
+      {/* 非同期データ - Suspenseで個別に囲む */}
+      <Suspense fallback={<TalentProfileSkeleton />}>
+        <TalentProfile id={id} />
+      </Suspense>
+
+      {/* 別の非同期データ - 個別のSuspenseで囲む */}
+      <Suspense fallback={<VideosSkeleton />}>
+        <RecentVideosSection talentId={id} />
+      </Suspense>
+    </div>
+  )
+}
+```
+
+#### ❌ 間違った例（Partial Prerenderingを妨げる）：
+
+```typescript
+// ❌ ページ全体をSuspenseで囲んでいる
+export default function TalentDetailPage({ params }: Props) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <TalentDetailPageWrapper params={params} />
+    </Suspense>
+  )
+}
+
+// ❌ 余分なwrapperコンポーネントを使用している
+async function TalentDetailPageWrapper({ params }: Props) {
+  const { id } = await params
+
+  return (
+    <div>
+      {/* 静的コンテンツもSuspense内に入ってしまっている */}
+      <Link href="/talents">戻る</Link>
+      <TalentProfile id={id} />
+      <RecentVideosSection talentId={id} />
+    </div>
+  )
+}
+```
+
+#### Partial Prerenderingのメリット
+
+- **高速な初期表示**：静的コンテンツが即座に表示され、ユーザー体験が向上します
+- **細かい読み込み制御**：各非同期セクションが独立して読み込まれ、適切なスケルトンが表示されます
+- **SEO対応**：静的コンテンツが事前にレンダリングされるため、検索エンジンに最適化されます
+
+#### Next.js 15以降の動的ルートパラメータの扱い方
+
+```typescript
+// ✅ 正しい：型定義でParamsをPromiseとして定義
+type Props = {
+  params: Promise<{
+    id: string
+  }>
+}
+
+// ✅ 正しい：generateMetadataでもawait
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params
+  const data = await fetchData(id)
+  return { title: data.name }
+}
+
+// ✅ 正しい：ページコンポーネントでawait
+export default async function Page({ params }: Props) {
+  const { id } = await params
+  // ... 残りのコード
+}
+```
+
+### Redisキーの管理 (Redis Key Management)
+
+**重要**: このプロジェクトでは、Redisキーを一元管理し、命名規則を統一するため、以下のルールを定めます。
+
+#### ルール
+
+1. **すべてのRedisキーは`@shinju-date/constants`の`REDIS_KEYS`で管理**
+   * Redisキーのプレフィックスや固定キーは、`packages/constants/src/index.ts`の`REDIS_KEYS`オブジェクトに定義してください
+   * コード内でハードコーディングせず、必ず`REDIS_KEYS`から参照してください
+   * これにより、キーの重複防止、変更時の影響範囲の把握、命名規則の統一が可能になります
+
+2. **日付キーのフォーマット**
+   * 日付を含むキーには、`@shinju-date/temporal-fns`の`formatDateKey`関数を使用してください
+   * `formatDateKey`は`YYYYMMDD`形式（ダッシュなし）を返すため、キーを短く保つことができます
+   * 例: `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDateKey(now)}` → `summary:stats:20251111`
+
+3. **キー命名規則**
+   * プレフィックスは用途を明確に示す英語で記述（例: `summary:`, `videos:`, `search:`）
+   * 複数の単語はコロン（`:`）で区切る（例: `videos:clicked:`）
+   * 末尾にコロンを付けることで、動的な値を追加しやすくする（例: `SUMMARY_STATS_PREFIX: 'summary:stats:'`）
+
+4. **TTL（有効期限）の設定**
+   * すべてのRedisキーには適切なTTLを設定してください
+   * メモリの肥大化を防ぐため、必ず有効期限を指定してください
+   * 例: `{ ex: 30 * 24 * 60 * 60 }` // 30日間
+
+#### コード例
+
+**推奨されない例 (Bad Practice):**
+
+```typescript
+// ❌ ハードコーディングされたキー
+const key = 'summary:stats:2025-11-11'
+await redis.set(key, data)
+
+// ❌ TTLなし
+await redis.set('my-key', data)
+```
+
+**推奨される例 (Good Practice):**
+
+```typescript
+import { REDIS_KEYS } from '@shinju-date/constants'
+import { formatDateKey } from '@shinju-date/temporal-fns'
+import { Temporal } from 'temporal-polyfill'
+
+// ✅ REDIS_KEYSを使用
+const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
+const dateKey = formatDateKey(now) // '20251111'（ダッシュなし）
+const key = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}`
+
+// ✅ TTLを指定
+await redis.set(key, data, { ex: 30 * 24 * 60 * 60 })
+```
+
+#### 新しいRedisキーの追加方法
+
+1. `packages/constants/src/index.ts`の`REDIS_KEYS`オブジェクトに追加する
+   ```typescript
+   export const REDIS_KEYS = {
+     // ... 既存のキー
+     YOUR_NEW_PREFIX: 'your:new:prefix:',
+   } as const
+   ```
+
+2. 必要に応じてコメントで用途を説明する
+   ```typescript
+   // Dashboard summary trend snapshots (format: prefix + YYYYMMDD)
+   SUMMARY_ANALYTICS_PREFIX: 'summary:analytics:',
+   SUMMARY_STATS_PREFIX: 'summary:stats:',
+   ```
+
+3. 使用する側でインポートして参照する
+   ```typescript
+   import { REDIS_KEYS } from '@shinju-date/constants'
+
+   const key = `${REDIS_KEYS.YOUR_NEW_PREFIX}${someId}`
+   ```
+
 ### 時刻の取り扱い (Date/Time Handling)
 
 **重要**: このプロジェクトでは、Reactのハイドレーションエラーを防ぎ、時刻の計算を正確に行うため、JavaScript標準の`Date`オブジェクトの利用に関して以下のルールを定めます。
@@ -293,6 +470,27 @@ await supabase
   })
   .eq('id', videoId);
 ```
+
+### MSW (Mock Service Worker) による認証の模擬
+
+ローカル開発やテストで認証が必要な管理画面 (`apps/admin`) の動作を確認するため、MSWにSupabase Authの認証フローを模擬するハンドラーが実装されています。
+
+#### 認証状態の切り替え方法
+
+2つの方法で認証状態を制御できます。
+
+1.  **環境変数による強制認証**
+    *   `.env.local` ファイルなどで `MSW_SUPABASE_AUTHENTICATED=true` を設定すると、APIリクエストは常に認証済みユーザーからのものとして扱われます。
+    *   これは、UIコンポーネントの表示を素早く確認したい場合に便利です。
+
+2.  **ログインフォームによる手動認証**
+    *   環境変数を設定しない場合、実際のアプリケーションと同様にログインフォームを使用して認証状態を再現できます。
+    *   以下の認証情報を使用してください。
+        *   **Email**: `admin@example.com`
+        *   **Password**: `password123`
+    *   ログインに成功すると、認証状態を保持するためのCookieがブラウザに設定されます。ログアウトするとCookieは削除されます。
+
+この機能により、実際のバックエンドに接続することなく、認証が必要な機能の開発とテストを効率的に行うことができます。
 
 ### コミットメッセージ
 
