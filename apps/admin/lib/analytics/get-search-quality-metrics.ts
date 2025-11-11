@@ -35,7 +35,7 @@ export async function getSearchEngagementRate(
 
     let currentDate = start
     while (Temporal.PlainDate.compare(currentDate, end) <= 0) {
-      const dateKey = formatDate(currentDate)
+      const dateKey = formatDateKey(currentDate)
 
       // Get total sessions for this date
       const totalKey = `${REDIS_KEYS.SESSIONS_TOTAL_PREFIX}${dateKey}`

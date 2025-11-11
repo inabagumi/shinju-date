@@ -45,7 +45,7 @@ export async function trackPageVisit(): Promise<void> {
     const redisClient = getRedisClient()
     const sessionId = await generateSessionId()
     const now = Temporal.Now.zonedDateTimeISO(timeZone)
-    const today = formatDate(now)
+    const today = formatDateKey(now)
 
     const sessionTotalKey = `${REDIS_KEYS.SESSIONS_TOTAL_PREFIX}${today}`
 
