@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import SimpleDocument from '@/components/simple-document'
-import { title as siteName } from '@/lib/constants'
+import { title as siteName } from '@shinju-date/constants'
 
 export const metadata = {
   alternates: {

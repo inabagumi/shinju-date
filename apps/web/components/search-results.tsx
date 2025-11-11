@@ -4,7 +4,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
 import { Temporal } from 'temporal-polyfill'
-import { SEARCH_RESULT_COUNT } from '@/lib/constants'
+import { SEARCH_RESULT_COUNT } from '@shinju-date/constants'
 import { fetchVideos, type Video } from '@/lib/fetchers'
 import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 

@@ -1,7 +1,7 @@
 import { ImageIcon } from 'lucide-react'
 import Image from 'next/image'
 import { Temporal } from 'temporal-polyfill'
-import { timeZone } from '@/lib/constants'
+import { TIME_ZONE } from '@shinju-date/constants'
 import type { Video } from '@/lib/fetchers'
 import FormattedTime from './formatted-time'
 import LiveNow from './live-now'
@@ -99,7 +99,7 @@ export default function VideoCard({
 }) {
   const publishedAt = Temporal.Instant.from(
     value.published_at,
-  ).toZonedDateTimeISO(timeZone)
+  ).toZonedDateTimeISO(TIME_ZONE)
   const duration = Temporal.Duration.from(value?.duration ?? 'P0D')
 
   if (!value.youtube_video) {

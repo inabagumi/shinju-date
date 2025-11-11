@@ -6,7 +6,7 @@ import {
   type EventAttributes,
 } from 'ics'
 import { Temporal } from 'temporal-polyfill'
-import { title as siteName } from '@/lib/constants'
+import { TIME_ZONE, title as siteName } from '@shinju-date/constants'
 
 type Talent = Pick<Tables<'talents'>, 'name'>
 

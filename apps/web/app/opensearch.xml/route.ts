@@ -1,5 +1,5 @@
 import dedent from 'dedent'
-import { description, title as siteName } from '@/lib/constants'
+import { description, title as siteName } from '@shinju-date/constants'
 
 export function GET(): Response {
   const baseURL = process.env['NEXT_PUBLIC_BASE_URL'] ?? 'http://localhost:3000'

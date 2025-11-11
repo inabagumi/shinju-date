@@ -5,7 +5,7 @@ import NoResults from '@/components/no-results'
 import SearchExitTracker from '@/components/search-exit-tracker'
 import SearchQueryTracker from '@/components/search-query-tracker'
 import SearchResults from '@/components/search-results'
-import { title as siteName } from '@/lib/constants'
+import { title as siteName } from '@shinju-date/constants'
 import { fetchVideos } from '@/lib/fetchers'
 import { parseQueries } from '@/lib/url'
 

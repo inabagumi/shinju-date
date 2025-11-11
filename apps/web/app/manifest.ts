@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { themeColor, title } from '@/lib/constants'
+import { themeColor, title } from '@shinju-date/constants'
 
 export default function robots(): MetadataRoute.Manifest {
   return {

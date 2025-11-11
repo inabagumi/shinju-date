@@ -4,7 +4,7 @@ import type { Tables } from '@shinju-date/database'
 import { startOfHour, toDBString } from '@shinju-date/temporal-fns'
 import { cacheLife, cacheTag } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
-import { SEARCH_RESULT_COUNT, timeZone } from '@/lib/constants'
+import { SEARCH_RESULT_COUNT, TIME_ZONE } from '@shinju-date/constants'
 import { supabaseClient } from '@/lib/supabase'
 
 const DEFAULT_SEARCH_SELECT = `
@@ -39,7 +39,7 @@ export const fetchNotEndedVideos = async (): Promise<Video[]> => {
   cacheLife('hours')
   cacheTag('videos')
 
-  const baseTime = startOfHour(Temporal.Now.zonedDateTimeISO(timeZone))
+  const baseTime = startOfHour(Temporal.Now.zonedDateTimeISO(TIME_ZONE))
   const until = baseTime.add({
     weeks: 1,
   })
@@ -67,7 +67,7 @@ async function getDefaultBaseTime() {
   const epochNanoseconds = Temporal.Now.instant().epochNanoseconds
 
   return Temporal.Instant.fromEpochNanoseconds(epochNanoseconds)
-    .toZonedDateTimeISO(timeZone)
+    .toZonedDateTimeISO(TIME_ZONE)
     .startOfDay()
     .add({
       months: 1,

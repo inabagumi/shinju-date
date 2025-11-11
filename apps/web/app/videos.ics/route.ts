@@ -5,11 +5,11 @@ import {
   createCalendarResponse,
   createEventAttributesList,
 } from '@/lib/calendar'
-import { timeZone } from '@/lib/constants'
+import { TIME_ZONE } from '@shinju-date/constants'
 import { supabaseClient } from '@/lib/supabase'
 
 export async function GET(): Promise<Response> {
-  const now = startOfHour(Temporal.Now.zonedDateTimeISO(timeZone))
+  const now = startOfHour(Temporal.Now.zonedDateTimeISO(TIME_ZONE))
   const { data: videos, error } = await supabaseClient
     .from('videos')
     .select(

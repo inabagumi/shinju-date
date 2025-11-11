@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import NoResults from '@/components/no-results'
 import Timeline, { TimelineSkeleton } from '@/components/timeline'
-import { description, tagline, title } from '@/lib/constants'
+import { description, tagline, title } from '@shinju-date/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
 import {
   getDisplayRecommendationQueries,

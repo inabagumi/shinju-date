@@ -1,6 +1,6 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { Temporal } from 'temporal-polyfill'
-import { timeZone } from '@/lib/constants'
+import { TIME_ZONE } from '@shinju-date/constants'
 import { getRedisClient } from '@/lib/redis'
 import type { Video } from './types'
 
@@ -22,7 +22,7 @@ type IncrementOptions = {
 export default async function increment(
   video: Video,
   {
-    timestamp = Temporal.Now.zonedDateTimeISO(timeZone),
+    timestamp = Temporal.Now.zonedDateTimeISO(TIME_ZONE),
   }: IncrementOptions = {},
 ): Promise<void> {
   const redisClient = getRedisClient()
