@@ -2,9 +2,103 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { server } from '../server.js'
 
 describe('Supabase Handlers', () => {
-  beforeAll(() => server.listen())
-  afterEach(() => server.resetHandlers())
-  afterAll(() => server.close())
+  beforeAll(() => {
+    server.listen()
+  })
+  afterEach(() => {
+    server.resetHandlers()
+    delete process.env['MSW_SUPABASE_AUTHENTICATED']
+  })
+  afterAll(() => {
+    server.close()
+  })
+
+  describe('Authentication', () => {
+    describe('/auth/v1/user', () => {
+      it('should return 401 if not authenticated', async () => {
+        const response = await fetch('https://fake.supabase.test/auth/v1/user')
+        expect(response.status).toBe(401)
+      })
+
+      it('should return user data if authenticated via cookie', async () => {
+        const response = await fetch(
+          'https://fake.supabase.test/auth/v1/user',
+          {
+            headers: {
+              cookie: 'sb-access-token=mock_access_token',
+            },
+          },
+        )
+        const json = await response.json()
+        expect(response.status).toBe(200)
+        expect(json.id).toBe('mock-user-id')
+        expect(json.email).toBe('admin@example.com')
+      })
+
+      it('should return user data if MSW_SUPABASE_AUTHENTICATED is true', async () => {
+        process.env['MSW_SUPABASE_AUTHENTICATED'] = 'true'
+        const response = await fetch('https://fake.supabase.test/auth/v1/user')
+        const json = await response.json()
+        expect(response.status).toBe(200)
+        expect(json.id).toBe('mock-user-id')
+      })
+    })
+
+    describe('/auth/v1/token', () => {
+      it('should return tokens and set cookies for valid credentials', async () => {
+        const response = await fetch(
+          'https://fake.supabase.test/auth/v1/token?grant_type=password',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: 'admin@example.com',
+              password: 'password123',
+            }),
+          },
+        )
+        const json = await response.json()
+        expect(response.status).toBe(200)
+        expect(json.access_token).toBe('mock_access_token')
+        expect(response.headers.get('set-cookie')).toContain(
+          'sb-access-token=mock_access_token',
+        )
+        expect(response.headers.get('set-cookie')).toContain(
+          'sb-refresh-token=mock_refresh_token',
+        )
+      })
+
+      it('should return 400 for invalid credentials', async () => {
+        const response = await fetch(
+          'https://fake.supabase.test/auth/v1/token?grant_type=password',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: 'wrong@example.com',
+              password: 'wrongpassword',
+            }),
+          },
+        )
+        expect(response.status).toBe(400)
+      })
+    })
+
+    describe('/auth/v1/logout', () => {
+      it('should return 204 and clear cookies', async () => {
+        const response = await fetch(
+          'https://fake.supabase.test/auth/v1/logout',
+          {
+            method: 'POST',
+          },
+        )
+        expect(response.status).toBe(204)
+        const cookies = response.headers.get('set-cookie')
+        expect(cookies).toContain('sb-access-token=;')
+        expect(cookies).toContain('sb-refresh-token=;')
+      })
+    })
+  })
 
   describe('Videos endpoint', () => {
     it('should return mock videos data', async () => {
@@ -73,76 +167,6 @@ describe('Supabase Handlers', () => {
 
       expect(response.ok).toBe(true)
       expect(data).toHaveLength(1)
-    })
-  })
-
-  describe('Auth endpoints', () => {
-    it('should return a user and set cookies on successful login', async () => {
-      const response = await fetch(
-        'https://fake.supabase.test/auth/v1/token?grant_type=password',
-        {
-          body: JSON.stringify({
-            email: 'admin@example.com',
-            password: 'password123',
-          }),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          method: 'POST',
-        },
-      )
-      const data = await response.json()
-      expect(response.status).toBe(200)
-      expect(data).toHaveProperty('access_token')
-      expect(data).toHaveProperty('user')
-
-      const cookies = response.headers.get('Set-Cookie')
-      expect(cookies).toContain('sb-access-token=mock_access_token')
-      expect(cookies).toContain('sb-refresh-token=mock_refresh_token')
-    })
-
-    it('should return user info if cookie is present', async () => {
-      const response = await fetch('https://fake.supabase.test/auth/v1/user', {
-        headers: {
-          Cookie: 'sb-access-token=mock_access_token',
-        },
-      })
-      const data = await response.json()
-      expect(response.status).toBe(200)
-      expect(data).toHaveProperty('id', 'mock-user-id')
-      expect(data).toHaveProperty('email', 'admin@example.com')
-    })
-
-    it('should return 401 if cookie is not present', async () => {
-      const response = await fetch('https://fake.supabase.test/auth/v1/user')
-      expect(response.status).toBe(401)
-    })
-
-    it('should return user info if pre-authenticated via env var', async () => {
-      process.env.MSW_SUPABASE_AUTHENTICATED = 'true'
-      const response = await fetch('https://fake.supabase.test/auth/v1/user')
-      const data = await response.json()
-      expect(response.status).toBe(200)
-      expect(data).toHaveProperty('id', 'mock-user-id')
-      // Reset env var
-      delete process.env.MSW_SUPABASE_AUTHENTICATED
-    })
-
-    it('should clear cookies on logout', async () => {
-      const response = await fetch(
-        'https://fake.supabase.test/auth/v1/logout',
-        {
-          headers: {
-            Cookie:
-              'sb-access-token=mock_access_token; sb-refresh-token=mock_refresh_token',
-          },
-          method: 'POST',
-        },
-      )
-      expect(response.status).toBe(204)
-      const cookies = response.headers.get('Set-Cookie')
-      expect(cookies).toContain('sb-access-token=;')
-      expect(cookies).toContain('sb-refresh-token=;')
     })
   })
 })

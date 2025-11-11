@@ -1,6 +1,7 @@
 'use client'
 
 import type { ComponentPropsWithoutRef } from 'react'
+import React from 'react'
 
 type ToggleSwitchProps = Omit<
   ComponentPropsWithoutRef<'button'>,
