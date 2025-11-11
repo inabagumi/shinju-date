@@ -1,13 +1,11 @@
 import { Suspense } from 'react'
 import { CardSkeleton } from '@/components/skeletons'
 import { AnalyticsWidget } from './_components/analytics-widget'
-import { MaintenanceModeWidgetWrapper } from './_components/maintenance-mode-widget-wrapper'
 import {
   PopularVideosWidget,
   PopularVideosWidgetSkeleton,
 } from './_components/popular-videos-widget'
 import { QuickAccessWidget } from './_components/quick-access-widget'
-import { RecentActivity } from './_components/recent-activity'
 import { SummaryWidget } from './_components/summary-widget'
 
 export default function DashboardPage() {
@@ -20,9 +18,6 @@ export default function DashboardPage() {
         {/* Left Sidebar - Quick Access and Maintenance Mode */}
         <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
           <QuickAccessWidget />
-          <Suspense fallback={<CardSkeleton />}>
-            <MaintenanceModeWidgetWrapper />
-          </Suspense>
         </aside>
 
         {/* Main Content Area */}
@@ -46,13 +41,6 @@ export default function DashboardPage() {
       <div className="mt-6">
         <Suspense fallback={<PopularVideosWidgetSkeleton />}>
           <PopularVideosWidget />
-        </Suspense>
-      </div>
-
-      {/* Recent Activity Widget */}
-      <div className="mt-6">
-        <Suspense fallback={<CardSkeleton />}>
-          <RecentActivity />
         </Suspense>
       </div>
     </div>
