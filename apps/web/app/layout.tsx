@@ -1,10 +1,10 @@
 import './globals.css'
+import { SITE_THEME_COLOR, SITE_NAME as siteName } from '@shinju-date/constants'
 import { Analytics } from '@vercel/analytics/react'
 import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
 import PageVisitTracker from '@/components/page-visit-tracker'
 import { TimerProvider } from '@/components/timer'
-import { title as siteName, themeColor } from '@/lib/constants'
 import { AnnouncementBannerWrapper } from './_components/announcement-banner-wrapper'
 import { ContactLink } from './_components/contact-link'
 import { Providers } from './_components/providers'
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor,
+  themeColor: SITE_THEME_COLOR,
   viewportFit: 'cover',
 }
 

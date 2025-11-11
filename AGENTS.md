@@ -262,7 +262,7 @@ export default function TalentDetailPage({ params }: Props) {
 // ❌ 余分なwrapperコンポーネントを使用している
 async function TalentDetailPageWrapper({ params }: Props) {
   const { id } = await params
-  
+
   return (
     <div>
       {/* 静的コンテンツもSuspense内に入ってしまっている */}
@@ -379,7 +379,7 @@ await redis.set(key, data, { ex: 30 * 24 * 60 * 60 })
 3. 使用する側でインポートして参照する
    ```typescript
    import { REDIS_KEYS } from '@shinju-date/constants'
-   
+
    const key = `${REDIS_KEYS.YOUR_NEW_PREFIX}${someId}`
    ```
 
