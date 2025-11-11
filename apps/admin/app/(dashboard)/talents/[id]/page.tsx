@@ -12,20 +12,12 @@ import { EditTalentForm } from './_components/edit-talent-form'
 import { SyncTalentButton } from './_components/sync-talent-button'
 
 type Props = {
-  params: {
-    id: string
-  }
-}
-
-type MetadataProps = {
   params: Promise<{
     id: string
   }>
 }
 
-export async function generateMetadata({
-  params,
-}: MetadataProps): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
 
   const talent = await getTalent(id)
@@ -253,7 +245,21 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
 }
 
 export default function TalentDetailPage({ params }: Props) {
-  const { id } = params
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto p-4">
+          <div className="h-96 animate-pulse rounded-lg bg-gray-200" />
+        </div>
+      }
+    >
+      <TalentDetailPageWrapper params={params} />
+    </Suspense>
+  )
+}
+
+async function TalentDetailPageWrapper({ params }: Props) {
+  const { id } = await params
 
   return (
     <div className="container mx-auto p-4">
