@@ -4,7 +4,7 @@ import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
 import PageVisitTracker from '@/components/page-visit-tracker'
 import { TimerProvider } from '@/components/timer'
-import { themeColor, title as siteName } from '@shinju-date/constants'
+import { THEME_COLOR, TITLE as siteName } from '@shinju-date/constants'
 import { AnnouncementBannerWrapper } from './_components/announcement-banner-wrapper'
 import { ContactLink } from './_components/contact-link'
 import { Providers } from './_components/providers'
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor,
+  themeColor: THEME_COLOR,
   viewportFit: 'cover',
 }
 

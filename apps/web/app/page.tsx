@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import NoResults from '@/components/no-results'
 import Timeline, { TimelineSkeleton } from '@/components/timeline'
-import { description, tagline, title } from '@shinju-date/constants'
+import { DESCRIPTION, TAGLINE, TITLE } from '@shinju-date/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
 import {
   getDisplayRecommendationQueries,
@@ -16,19 +16,19 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
-  description,
+  description: DESCRIPTION,
   openGraph: {
-    description,
-    title,
+    description: DESCRIPTION,
+    title: TITLE,
     type: 'website',
     url: '/',
   },
   title: {
-    absolute: `${title} - ${tagline}`,
+    absolute: `${TITLE} - ${TAGLINE}`,
   },
   twitter: {
     card: 'summary_large_image',
-    title,
+    title: TITLE,
   },
 }
 
