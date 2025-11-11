@@ -2,7 +2,7 @@
 
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
-import { formatDate } from '@shinju-date/temporal-fns'
+import { formatDateKey } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
 
@@ -46,7 +46,7 @@ export async function getClickVolume(
         plainTime: Temporal.PlainTime.from('00:00:00'),
         timeZone: TIME_ZONE,
       })
-      const dateKey = formatDate(zonedDate)
+      const dateKey = formatDateKey(zonedDate)
       const dateStr = currentDate.toString()
       const key = `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${dateKey}`
 

@@ -1,5 +1,5 @@
 import type { Temporal } from 'temporal-polyfill'
-import formatDate from './format-date.js'
+import formatDateKey from './format-date.js'
 
 /**
  * Get the Monday of the week for a given date.
@@ -29,5 +29,5 @@ export default function getMondayOfWeek(
   const dayOfWeek = dateTime.dayOfWeek // 1 = Monday, 7 = Sunday
   const daysToSubtract = dayOfWeek - 1
   const monday = dateTime.subtract({ days: daysToSubtract })
-  return formatDate(monday)
+  return formatDateKey(monday)
 }

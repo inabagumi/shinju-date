@@ -1,7 +1,7 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { range } from '@shinju-date/helpers'
-import { formatDate } from '@shinju-date/temporal-fns'
+import { formatDateKey } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
@@ -109,7 +109,7 @@ export async function getVideos(
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
   const days = range(7).map((i) => {
     const date = today.subtract({ days: i })
-    return formatDate(date)
+    return formatDateKey(date)
   })
 
   const redisClient = getRedisClient()
