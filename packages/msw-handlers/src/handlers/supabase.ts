@@ -922,14 +922,14 @@ export const supabaseHandlers = [
         })
 
         // Set cookies to simulate Supabase auth
-        response.cookies.set('sb-access-token', 'mock_access_token', {
-          httpOnly: true,
-          path: '/',
-        })
-        response.cookies.set('sb-refresh-token', 'mock_refresh_token', {
-          httpOnly: true,
-          path: '/',
-        })
+        response.headers.append(
+          'Set-Cookie',
+          'sb-access-token=mock_access_token; HttpOnly; Path=/',
+        )
+        response.headers.append(
+          'Set-Cookie',
+          'sb-refresh-token=mock_refresh_token; HttpOnly; Path=/',
+        )
 
         return response
       }
@@ -945,8 +945,11 @@ export const supabaseHandlers = [
     const response = new HttpResponse(null, { status: 204 })
 
     // Clear cookies to simulate Supabase auth logout
-    response.cookies.delete('sb-access-token', { path: '/' })
-    response.cookies.delete('sb-refresh-token', { path: '/' })
+    response.headers.append('Set-Cookie', 'sb-access-token=; HttpOnly; Path=/')
+    response.headers.append(
+      'Set-Cookie',
+      'sb-refresh-token=; HttpOnly; Path=/',
+    )
 
     return response
   }),
