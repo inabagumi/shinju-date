@@ -218,9 +218,9 @@ export default async function Page({ params }) {
    * これにより、キーの重複防止、変更時の影響範囲の把握、命名規則の統一が可能になります
 
 2. **日付キーのフォーマット**
-   * 日付を含むキーには、`@shinju-date/temporal-fns`の`formatDate`関数を使用してください
-   * `formatDate`は`YYYYMMDD`形式（ダッシュなし）を返すため、キーを短く保つことができます
-   * 例: `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDate(now)}` → `summary:stats:20251111`
+   * 日付を含むキーには、`@shinju-date/temporal-fns`の`formatDateKey`関数を使用してください
+   * `formatDateKey`は`YYYYMMDD`形式（ダッシュなし）を返すため、キーを短く保つことができます
+   * 例: `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDateKey(now)}` → `summary:stats:20251111`
 
 3. **キー命名規則**
    * プレフィックスは用途を明確に示す英語で記述（例: `summary:`, `videos:`, `search:`）
@@ -249,12 +249,12 @@ await redis.set('my-key', data)
 
 ```typescript
 import { REDIS_KEYS } from '@shinju-date/constants'
-import { formatDate } from '@shinju-date/temporal-fns'
+import { formatDateKey } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 
 // ✅ REDIS_KEYSを使用
 const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-const dateKey = formatDate(now) // '20251111'（ダッシュなし）
+const dateKey = formatDateKey(now) // '20251111'（ダッシュなし）
 const key = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}`
 
 // ✅ TTLを指定
