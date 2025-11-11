@@ -85,8 +85,8 @@ async function MyComponent() {
    - ハードコーディングは禁止
 
 2. **日付フォーマット**
-   - 日付を含むキーには`@shinju-date/temporal-fns`の`formatDate`を使用（`YYYYMMDD`形式）
-   - 例: `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDate(now)}` → `summary:stats:20251111`
+   - 日付を含むキーには`@shinju-date/temporal-fns`の`formatDateKey`を使用（`YYYYMMDD`形式）
+   - 例: `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDateKey(now)}` → `summary:stats:20251111`
 
 3. **TTL設定**
    - すべてのキーに適切な有効期限（TTL）を設定すること
@@ -96,10 +96,10 @@ async function MyComponent() {
 
 ```typescript
 import { REDIS_KEYS } from '@shinju-date/constants'
-import { formatDate } from '@shinju-date/temporal-fns'
+import { formatDateKey } from '@shinju-date/temporal-fns'
 
 // ✅ 正しい例
-const key = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDate(now)}`
+const key = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDateKey(now)}`
 await redis.set(key, data, { ex: 30 * 24 * 60 * 60 })
 
 // ❌ 間違った例（ハードコーディング）

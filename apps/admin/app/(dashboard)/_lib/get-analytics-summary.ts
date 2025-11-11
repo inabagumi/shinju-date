@@ -2,7 +2,7 @@
 
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
-import { formatDate } from '@shinju-date/temporal-fns'
+import { formatDateKey } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
 
@@ -38,7 +38,7 @@ export async function getAnalyticsSummary(
   try {
     const redisClient = getRedisClient()
     const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-    const dateKey = formatDate(today)
+    const dateKey = formatDateKey(today)
 
     // Get today's search volume
     const recentSearches = await redisClient.get<number>(
@@ -80,8 +80,8 @@ export async function getAnalyticsSummary(
     const yesterday = today.subtract({ days: 1 })
     const lastWeek = today.subtract({ days: 7 })
 
-    const yesterdayKey = formatDate(yesterday)
-    const lastWeekKey = formatDate(lastWeek)
+    const yesterdayKey = formatDateKey(yesterday)
+    const lastWeekKey = formatDateKey(lastWeek)
 
     const [yesterdayAnalytics, lastWeekAnalytics] = await Promise.all([
       redisClient.get<AnalyticsSummary>(

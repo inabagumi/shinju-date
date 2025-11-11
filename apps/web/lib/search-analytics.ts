@@ -2,7 +2,7 @@
 
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
-import { formatDate, getMondayOfWeek } from '@shinju-date/temporal-fns'
+import { formatDateKey, getMondayOfWeek } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from './constants'
 import { getRedisClient } from './redis'
@@ -28,7 +28,7 @@ export async function logSearchQuery(
   try {
     const redisClient = getRedisClient()
     const now = Temporal.Now.zonedDateTimeISO(timeZone)
-    const today = formatDate(now)
+    const today = formatDateKey(now)
     const mondayOfWeek = getMondayOfWeek(now)
 
     const dailyKey = `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`

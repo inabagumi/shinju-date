@@ -2,7 +2,7 @@
 
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
-import { formatDate } from '@shinju-date/temporal-fns'
+import { formatDateKey } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
 
@@ -35,7 +35,7 @@ export async function getSearchEngagementRate(
 
     let currentDate = start
     while (Temporal.PlainDate.compare(currentDate, end) <= 0) {
-      const dateKey = formatDate(currentDate)
+      const dateKey = formatDateKey(currentDate)
 
       // Get total sessions for this date
       const totalKey = `${REDIS_KEYS.SESSIONS_TOTAL_PREFIX}${dateKey}`
@@ -85,7 +85,7 @@ export async function getSearchExitRates(
 
     let currentDate = start
     while (Temporal.PlainDate.compare(currentDate, end) <= 0) {
-      const dateKey = formatDate(currentDate)
+      const dateKey = formatDateKey(currentDate)
 
       // Get search counts from popular searches
       const searchKey = `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${dateKey}`
@@ -167,7 +167,7 @@ export async function getRepeatSearchRate(
 
     let currentDate = start
     while (Temporal.PlainDate.compare(currentDate, end) <= 0) {
-      const dateKey = formatDate(currentDate)
+      const dateKey = formatDateKey(currentDate)
 
       // Get search sessions data
       const sessionKey = `${REDIS_KEYS.SEARCH_SESSIONS_PREFIX}${dateKey}`
