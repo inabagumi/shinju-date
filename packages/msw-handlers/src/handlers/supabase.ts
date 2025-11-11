@@ -953,7 +953,8 @@ export const supabaseHandlers = [
 
   http.get('https://fake.supabase.test/auth/v1/user', ({ cookies }) => {
     const accessToken = cookies['sb-access-token']
-    const isPreAuthenticated = process.env.MSW_SUPABASE_AUTHENTICATED === 'true'
+    const isPreAuthenticated =
+      process.env['MSW_SUPABASE_AUTHENTICATED'] === 'true'
 
     if (accessToken || isPreAuthenticated) {
       return HttpResponse.json({
