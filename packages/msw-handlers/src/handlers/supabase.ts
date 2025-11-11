@@ -909,7 +909,7 @@ export const supabaseHandlers = [
         body.email === 'admin@example.com' &&
         body.password === 'password123'
       ) {
-        return HttpResponse.json({
+        const response = HttpResponse.json({
           access_token: 'mock_access_token',
           expires_in: 3600,
           refresh_token: 'mock_refresh_token',
@@ -920,6 +920,18 @@ export const supabaseHandlers = [
             id: 'mock-user-id',
           },
         })
+
+        // Set cookies to simulate Supabase auth
+        response.headers.append(
+          'Set-Cookie',
+          'sb-access-token=mock_access_token; HttpOnly; Path=/',
+        )
+        response.headers.append(
+          'Set-Cookie',
+          'sb-refresh-token=mock_refresh_token; HttpOnly; Path=/',
+        )
+
+        return response
       }
 
       return HttpResponse.json(
@@ -929,12 +941,41 @@ export const supabaseHandlers = [
     },
   ),
 
-  http.get('https://fake.supabase.test/auth/v1/user', () => {
-    return HttpResponse.json({
-      created_at: '2023-01-01T00:00:00.000Z',
-      email: 'admin@example.com',
-      id: 'mock-user-id',
-    })
+  http.post('https://fake.supabase.test/auth/v1/logout', () => {
+    const response = new HttpResponse(null, { status: 204 })
+
+    // Clear cookies to simulate Supabase auth logout
+    response.headers.append('Set-Cookie', 'sb-access-token=; HttpOnly; Path=/')
+    response.headers.append('Set-Cookie', 'sb-refresh-token=; HttpOnly; Path=/')
+
+    return response
+  }),
+
+  http.get('https://fake.supabase.test/auth/v1/user', ({ cookies }) => {
+    const accessToken = cookies['sb-access-token']
+    const isPreAuthenticated =
+      process.env['MSW_SUPABASE_AUTHENTICATED'] === 'true'
+
+    if (accessToken || isPreAuthenticated) {
+      return HttpResponse.json({
+        created_at: '2023-01-01T00:00:00.000Z',
+        email: 'admin@example.com',
+        id: 'mock-user-id',
+      })
+    }
+
+    return new HttpResponse(
+      JSON.stringify({
+        code: '401',
+        msg: 'Unauthorized',
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        status: 401,
+      },
+    )
   }),
 
   // Health check endpoint - simple SELECT query
