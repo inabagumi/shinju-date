@@ -143,6 +143,7 @@ export function NavigationBar() {
               </div>
             )}
           </div>
+
         </div>
         <div className="flex items-center gap-2">
           {/* User Menu Dropdown */}
@@ -179,6 +180,16 @@ export function NavigationBar() {
                   onClick={() => setIsUserMenuOpen(false)}
                 >
                   アカウント設定
+                </Link>
+                <Link
+                  className={twMerge(
+                    'block px-4 py-2 hover:bg-slate-600',
+                    isActive('/system') && 'bg-slate-600',
+                  )}
+                  href="/system"
+                  onClick={() => setIsUserMenuOpen(false)}
+                >
+                  システム
                 </Link>
                 <div className="my-2 border-slate-600 border-t" />
                 <Form action={signOut}>
@@ -299,6 +310,16 @@ export function NavigationBar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 アカウント設定
+              </Link>
+              <Link
+                className={twMerge(
+                  'block rounded-md px-4 py-2 hover:bg-slate-700',
+                  isActive('/system') && 'bg-slate-700',
+                )}
+                href="/system"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                システム
               </Link>
               <div className="my-2 border-slate-700 border-t" />
               <Form action={signOut}>

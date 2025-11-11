@@ -20,9 +20,6 @@ export default function DashboardPage() {
         {/* Left Sidebar - Quick Access and Maintenance Mode */}
         <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
           <QuickAccessWidget />
-          <Suspense fallback={<CardSkeleton />}>
-            <MaintenanceModeWidgetWrapper />
-          </Suspense>
         </aside>
 
         {/* Main Content Area */}
@@ -46,13 +43,6 @@ export default function DashboardPage() {
       <div className="mt-6">
         <Suspense fallback={<PopularVideosWidgetSkeleton />}>
           <PopularVideosWidget />
-        </Suspense>
-      </div>
-
-      {/* Recent Activity Widget */}
-      <div className="mt-6">
-        <Suspense fallback={<CardSkeleton />}>
-          <RecentActivity />
         </Suspense>
       </div>
     </div>
