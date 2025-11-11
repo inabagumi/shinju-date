@@ -206,6 +206,104 @@ export default async function Page({ params }) {
    - `'use cache: remote'` - 公開データに使用（VDCに保存）
    - `'use cache: private'` - 認証が必要なデータに使用（ユーザーごと）
 
+### Next.js Partial Prerendering（部分的プリレンダリング）
+
+**🚨 重要**: Next.js 15以降では、Partial Prerenderingを活用することで、静的コンテンツと動的コンテンツを効率的に処理できます。以下のベストプラクティスを**必ず**守ってください：
+
+#### 基本原則
+
+1. **ページ全体をSuspenseで囲まない**：ページ全体を単一のSuspenseコンポーネントで囲むと、Partial Prerenderingの利点が失われます。
+2. **静的コンテンツは即座にレンダリング**：ナビゲーションリンク、ヘッダー、レイアウト要素など、静的なコンテンツはSuspenseの外に配置してください。
+3. **非同期データ取得のみをSuspenseで囲む**：データベースクエリやAPIコールなど、非同期処理が必要な要素のみをSuspenseコンポーネントで個別に囲んでください。
+4. **paramsは直接awaitする**：Next.js 15以降、動的ルートの`params`はPromiseです。余分なwrapperコンポーネントを作らず、ページコンポーネント自体で直接awaitしてください。
+
+#### ✅ 正しい例（Partial Prerenderingを活用）：
+
+```typescript
+export default async function TalentDetailPage({ params }: Props) {
+  const { id } = await params  // paramsを直接await
+
+  return (
+    <div className="container mx-auto p-4">
+      {/* 静的コンテンツ - 即座にレンダリング */}
+      <div className="mb-6">
+        <Link href="/talents">
+          <ChevronLeft className="mr-1 size-4" />
+          タレント一覧に戻る
+        </Link>
+      </div>
+
+      {/* 非同期データ - Suspenseで個別に囲む */}
+      <Suspense fallback={<TalentProfileSkeleton />}>
+        <TalentProfile id={id} />
+      </Suspense>
+
+      {/* 別の非同期データ - 個別のSuspenseで囲む */}
+      <Suspense fallback={<VideosSkeleton />}>
+        <RecentVideosSection talentId={id} />
+      </Suspense>
+    </div>
+  )
+}
+```
+
+#### ❌ 間違った例（Partial Prerenderingを妨げる）：
+
+```typescript
+// ❌ ページ全体をSuspenseで囲んでいる
+export default function TalentDetailPage({ params }: Props) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <TalentDetailPageWrapper params={params} />
+    </Suspense>
+  )
+}
+
+// ❌ 余分なwrapperコンポーネントを使用している
+async function TalentDetailPageWrapper({ params }: Props) {
+  const { id } = await params
+  
+  return (
+    <div>
+      {/* 静的コンテンツもSuspense内に入ってしまっている */}
+      <Link href="/talents">戻る</Link>
+      <TalentProfile id={id} />
+      <RecentVideosSection talentId={id} />
+    </div>
+  )
+}
+```
+
+#### Partial Prerenderingのメリット
+
+- **高速な初期表示**：静的コンテンツが即座に表示され、ユーザー体験が向上します
+- **細かい読み込み制御**：各非同期セクションが独立して読み込まれ、適切なスケルトンが表示されます
+- **SEO対応**：静的コンテンツが事前にレンダリングされるため、検索エンジンに最適化されます
+
+#### Next.js 15以降の動的ルートパラメータの扱い方
+
+```typescript
+// ✅ 正しい：型定義でParamsをPromiseとして定義
+type Props = {
+  params: Promise<{
+    id: string
+  }>
+}
+
+// ✅ 正しい：generateMetadataでもawait
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params
+  const data = await fetchData(id)
+  return { title: data.name }
+}
+
+// ✅ 正しい：ページコンポーネントでawait
+export default async function Page({ params }: Props) {
+  const { id } = await params
+  // ... 残りのコード
+}
+```
+
 ### Redisキーの管理 (Redis Key Management)
 
 **重要**: このプロジェクトでは、Redisキーを一元管理し、命名規則を統一するため、以下のルールを定めます。

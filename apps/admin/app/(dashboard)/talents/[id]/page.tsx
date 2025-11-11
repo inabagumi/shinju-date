@@ -246,22 +246,6 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
 
 export default function TalentDetailPage({ params }: Props) {
   return (
-    <Suspense
-      fallback={
-        <div className="container mx-auto p-4">
-          <div className="h-96 animate-pulse rounded-lg bg-gray-200" />
-        </div>
-      }
-    >
-      <TalentDetailPageWrapper params={params} />
-    </Suspense>
-  )
-}
-
-async function TalentDetailPageWrapper({ params }: Props) {
-  const { id } = await params
-
-  return (
     <div className="container mx-auto p-4">
       {/* Back button - static, renders immediately */}
       <div className="mb-6">
@@ -282,7 +266,7 @@ async function TalentDetailPageWrapper({ params }: Props) {
           </div>
         }
       >
-        <TalentProfile id={id} />
+        <TalentProfileWrapper params={params} />
       </Suspense>
 
       {/* Recent videos section */}
@@ -293,8 +277,18 @@ async function TalentDetailPageWrapper({ params }: Props) {
           </div>
         }
       >
-        <RecentVideosSection talentId={id} />
+        <RecentVideosSectionWrapper params={params} />
       </Suspense>
     </div>
   )
+}
+
+async function TalentProfileWrapper({ params }: Props) {
+  const { id } = await params
+  return <TalentProfile id={id} />
+}
+
+async function RecentVideosSectionWrapper({ params }: Props) {
+  const { id } = await params
+  return <RecentVideosSection talentId={id} />
 }
