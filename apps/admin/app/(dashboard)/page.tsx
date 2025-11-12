@@ -25,7 +25,14 @@ export default function DashboardPage() {
           {/* Top row: Summary and Analytics widgets */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Summary Widgets - Video and Content Summary (2 columns) */}
-            <Suspense fallback={<CardSkeleton />}>
+            <Suspense
+              fallback={
+                <>
+                  <CardSkeleton />
+                  <CardSkeleton />
+                </>
+              }
+            >
               <SummaryWidget />
             </Suspense>
 
