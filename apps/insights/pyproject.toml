@@ -23,7 +23,7 @@ dependencies = [
 dev = [
     "ruff==0.14.4",
     "poethepoet==0.37.0",
-    "pytest==9.0.0",
+    "pytest==9.0.1",
     "httpx==0.28.1",
 ]
 
