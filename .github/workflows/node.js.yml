@@ -16,6 +16,8 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     env:
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -39,6 +41,8 @@ jobs:
     name: Test
     runs-on: ubuntu-24.04
     needs: lint
+    permissions:
+      contents: read
     env:
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -62,6 +66,8 @@ jobs:
     name: Build
     runs-on: ubuntu-24.04
     needs: test
+    permissions:
+      contents: read
     env:
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
