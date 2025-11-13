@@ -7,7 +7,7 @@
   "description": "YouTube API client package for SHINJU DATE with Zod validation",
   "devDependencies": {
     "@tsconfig/node20": "20.1.7",
-    "@tsconfig/strictest": "2.0.7",
+    "@tsconfig/strictest": "2.0.8",
     "tsup": "8.5.1",
     "typescript": "5.9.3"
   },
