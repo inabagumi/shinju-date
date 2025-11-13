@@ -3,7 +3,7 @@
   "description": "Health check utilities for web services",
   "devDependencies": {
     "@supabase/supabase-js": "2.81.1",
-    "@tsconfig/strictest": "2.0.7",
+    "@tsconfig/strictest": "2.0.8",
     "@upstash/redis": "1.35.6",
     "tsup": "8.5.1",
     "typescript": "5.9.3",
