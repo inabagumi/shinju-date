@@ -13,8 +13,8 @@ env:
   NODE_VERSION: 22.13.1
 
 jobs:
-  build:
-    name: Build and Test
+  lint:
+    name: Lint
     runs-on: ubuntu-24.04
     env:
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
@@ -34,4 +34,49 @@ jobs:
           cache: pnpm
       - run: pnpm install
       - run: pnpm check
+
+  test:
+    name: Test
+    runs-on: ubuntu-24.04
+    needs: lint
+    env:
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+      - name: Enable Corepack
+        run: |
+          npm install -g corepack@${COREPACK_VERSION}
+          corepack enable
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install
       - run: pnpm test --filter=!@shinju-date/insights
+
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    needs: test
+    env:
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+      - name: Enable Corepack
+        run: |
+          npm install -g corepack@${COREPACK_VERSION}
+          corepack enable
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm build
