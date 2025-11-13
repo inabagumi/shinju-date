@@ -129,9 +129,10 @@ export async function getSummaryStats(
   }
 
   // Get yesterday's and last week's snapshots for trends
+  // Note: Snapshots are now saved by the daily batch job (/stats/snapshot)
+  // so we only read them here, not write them
   const redisClient = getRedisClient()
   const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-  const todayKey = formatDateKey(now)
 
   const yesterday = now.subtract({ days: 1 })
   const lastWeek = now.subtract({ days: 7 })
@@ -147,13 +148,6 @@ export async function getSummaryStats(
       `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${lastWeekKey}`,
     ),
   ])
-
-  // Store today's snapshot for future comparisons (with 30 days TTL)
-  await redisClient.set(
-    `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${todayKey}`,
-    currentStats,
-    { ex: 30 * 24 * 60 * 60 }, // 30 days
-  )
 
   // Calculate trends
   const calculateTrend = (
