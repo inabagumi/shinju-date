@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/nextjs'
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
-import { formatDateKey } from '@shinju-date/temporal-fns'
+import { formatDateKey, toDBString } from '@shinju-date/temporal-fns'
 import { after } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import { statsSnapshot as ratelimit } from '@/lib/ratelimit'
@@ -27,12 +27,19 @@ type AnalyticsSummary = {
   recentClicks: number
 }
 
-async function getSummaryStats(): Promise<SummaryStats> {
-  // Get total video count (excluding deleted videos)
+async function getSummaryStats(
+  _targetDayStart: string,
+  targetDayEnd: string,
+): Promise<SummaryStats> {
+  // Get total video count (videos that existed during the target day)
+  // A video existed during the target day if:
+  // - It was created before the end of the day (created_at < targetDayEnd)
+  // - It was not deleted OR deleted after the target day (deleted_at is null OR deleted_at >= targetDayEnd)
   const { count: totalVideos, error: totalError } = await supabaseClient
     .from('videos')
     .select('*', { count: 'exact', head: true })
-    .is('deleted_at', null)
+    .lt('created_at', targetDayEnd)
+    .or(`deleted_at.is.null,deleted_at.gte.${targetDayEnd}`)
 
   if (totalError) {
     throw new TypeError(totalError.message, {
@@ -40,12 +47,13 @@ async function getSummaryStats(): Promise<SummaryStats> {
     })
   }
 
-  // Get visible video count (excluding deleted videos)
+  // Get visible video count (visible videos that existed during the target day)
   const { count: visibleVideos, error: visibleError } = await supabaseClient
     .from('videos')
     .select('*', { count: 'exact', head: true })
     .eq('visible', true)
-    .is('deleted_at', null)
+    .lt('created_at', targetDayEnd)
+    .or(`deleted_at.is.null,deleted_at.gte.${targetDayEnd}`)
 
   if (visibleError) {
     throw new TypeError(visibleError.message, {
@@ -53,12 +61,13 @@ async function getSummaryStats(): Promise<SummaryStats> {
     })
   }
 
-  // Get hidden video count (excluding deleted videos)
+  // Get hidden video count (hidden videos that existed during the target day)
   const { count: hiddenVideos, error: hiddenError } = await supabaseClient
     .from('videos')
     .select('*', { count: 'exact', head: true })
     .eq('visible', false)
-    .is('deleted_at', null)
+    .lt('created_at', targetDayEnd)
+    .or(`deleted_at.is.null,deleted_at.gte.${targetDayEnd}`)
 
   if (hiddenError) {
     throw new TypeError(hiddenError.message, {
@@ -66,11 +75,12 @@ async function getSummaryStats(): Promise<SummaryStats> {
     })
   }
 
-  // Get deleted video count
+  // Get deleted video count (videos deleted before the end of target day)
   const { count: deletedVideos, error: deletedError } = await supabaseClient
     .from('videos')
     .select('*', { count: 'exact', head: true })
     .not('deleted_at', 'is', null)
+    .lt('deleted_at', targetDayEnd)
 
   if (deletedError) {
     throw new TypeError(deletedError.message, {
@@ -89,11 +99,12 @@ async function getSummaryStats(): Promise<SummaryStats> {
     })
   }
 
-  // Get total talents count
+  // Get total talents count (talents that existed during the target day)
   const { count: totalTalents, error: talentsError } = await supabaseClient
     .from('talents')
     .select('*', { count: 'exact', head: true })
-    .is('deleted_at', null)
+    .lt('created_at', targetDayEnd)
+    .or(`deleted_at.is.null,deleted_at.gte.${targetDayEnd}`)
 
   if (talentsError) {
     throw new TypeError(talentsError.message, {
@@ -111,11 +122,8 @@ async function getSummaryStats(): Promise<SummaryStats> {
   }
 }
 
-async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-  const dateKey = formatDateKey(today)
-
-  // Get today's search volume
+async function getAnalyticsSummary(dateKey: string): Promise<AnalyticsSummary> {
+  // Get search volume for the target date
   const recentSearches = await redisClient.get<number>(
     `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${dateKey}`,
   )
@@ -125,7 +133,7 @@ async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
     REDIS_KEYS.SEARCH_POPULAR,
   )
 
-  // Get today's click volume
+  // Get target date's click volume
   const clickKey = `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${dateKey}`
   const clickResults = await redisClient.zrange<string[]>(clickKey, 0, -1, {
     rev: false,
@@ -183,7 +191,7 @@ export async function POST(request: Request): Promise<Response> {
     {
       schedule: {
         type: 'crontab',
-        value: '0 1 * * *',
+        value: '5 0 * * *',
       },
       timezone: 'Etc/UTC',
     },
@@ -191,23 +199,45 @@ export async function POST(request: Request): Promise<Response> {
 
   try {
     const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-    const todayKey = formatDateKey(now)
+    // Calculate previous day (0:00 to 23:59:59)
+    const previousDay = now.subtract({ days: 1 })
+    const previousDayStart = previousDay.with({
+      hour: 0,
+      microsecond: 0,
+      millisecond: 0,
+      minute: 0,
+      nanosecond: 0,
+      second: 0,
+    })
+    const previousDayEnd = previousDay.with({
+      hour: 23,
+      microsecond: 999,
+      millisecond: 999,
+      minute: 59,
+      nanosecond: 999,
+      second: 59,
+    })
 
-    // Get current statistics
+    // Format for database queries (need to use the start of the next day for lt comparison)
+    const targetDayStart = toDBString(previousDayStart)
+    const targetDayEnd = toDBString(previousDayEnd.add({ nanoseconds: 1 })) // Start of next day
+    const targetDateKey = formatDateKey(previousDay)
+
+    // Get previous day's statistics
     const [summaryStats, analyticsSummary] = await Promise.all([
-      getSummaryStats(),
-      getAnalyticsSummary(),
+      getSummaryStats(targetDayStart, targetDayEnd),
+      getAnalyticsSummary(targetDateKey),
     ])
 
-    // Store today's snapshots in Redis (with 30 days TTL)
+    // Store previous day's snapshots in Redis (with 30 days TTL)
     await Promise.all([
       redisClient.set(
-        `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${todayKey}`,
+        `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${targetDateKey}`,
         summaryStats,
         { ex: 30 * 24 * 60 * 60 }, // 30 days
       ),
       redisClient.set(
-        `${REDIS_KEYS.SUMMARY_ANALYTICS_PREFIX}${todayKey}`,
+        `${REDIS_KEYS.SUMMARY_ANALYTICS_PREFIX}${targetDateKey}`,
         analyticsSummary,
         { ex: 30 * 24 * 60 * 60 }, // 30 days
       ),
@@ -215,7 +245,7 @@ export async function POST(request: Request): Promise<Response> {
 
     Sentry.logger.info('Statistics snapshot saved successfully', {
       analyticsSummary,
-      date: todayKey,
+      date: targetDateKey,
       summaryStats,
     })
 
