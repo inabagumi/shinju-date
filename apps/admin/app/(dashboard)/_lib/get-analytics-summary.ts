@@ -77,6 +77,8 @@ export async function getAnalyticsSummary(
     }
 
     // Get yesterday's and last week's snapshots for trends
+    // Note: Snapshots are now saved by the daily batch job (/stats/snapshot)
+    // so we only read them here, not write them
     const yesterday = today.subtract({ days: 1 })
     const lastWeek = today.subtract({ days: 7 })
 
@@ -91,13 +93,6 @@ export async function getAnalyticsSummary(
         `${REDIS_KEYS.SUMMARY_ANALYTICS_PREFIX}${lastWeekKey}`,
       ),
     ])
-
-    // Store today's snapshot for future comparisons (with 30 days TTL)
-    await redisClient.set(
-      `${REDIS_KEYS.SUMMARY_ANALYTICS_PREFIX}${dateKey}`,
-      currentAnalytics,
-      { ex: 30 * 24 * 60 * 60 }, // 30 days
-    )
 
     // Calculate trends
     const calculateTrend = (

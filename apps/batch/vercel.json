@@ -6,6 +6,10 @@
       "schedule": "17 1 * * *"
     },
     {
+      "path": "/stats/snapshot",
+      "schedule": "0 1 * * *"
+    },
+    {
       "path": "/talents/update",
       "schedule": "21 1/3 * * *"
     },
