@@ -142,8 +142,8 @@ importers:
         specifier: 16.3.0
         version: 16.3.0(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.4))(@types/react@19.2.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tsconfig/next':
-        specifier: 2.0.3
-        version: 2.0.3
+        specifier: 2.0.4
+        version: 2.0.4
       '@tsconfig/strictest':
         specifier: 2.0.7
         version: 2.0.7
@@ -257,8 +257,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/msw-handlers
       '@tsconfig/next':
-        specifier: 2.0.3
-        version: 2.0.3
+        specifier: 2.0.4
+        version: 2.0.4
       '@tsconfig/strictest':
         specifier: 2.0.7
         version: 2.0.7
@@ -320,8 +320,8 @@ importers:
         specifier: 4.1.17
         version: 4.1.17
       '@tsconfig/next':
-        specifier: 2.0.3
-        version: 2.0.3
+        specifier: 2.0.4
+        version: 2.0.4
       '@tsconfig/strictest':
         specifier: 2.0.7
         version: 2.0.7
@@ -471,8 +471,8 @@ importers:
         specifier: 0.5.19
         version: 0.5.19(tailwindcss@4.1.17)
       '@tsconfig/next':
-        specifier: 2.0.3
-        version: 2.0.3
+        specifier: 2.0.4
+        version: 2.0.4
       '@tsconfig/strictest':
         specifier: 2.0.7
         version: 2.0.7
@@ -2660,8 +2660,8 @@ packages:
     peerDependencies:
       '@testing-library/dom': '>=7.21.4'
 
-  '@tsconfig/next@2.0.3':
-    resolution: {integrity: sha512-b4aKvmdWnv9aUy+NStUFlefirk3SItW20OJtbi5/ue9oMRaQtUYbN5zsr7OmV3rlx6Gp6h7A82gPoCXhrNGVPQ==}
+  '@tsconfig/next@2.0.4':
+    resolution: {integrity: sha512-2myr9SPuy7iSauxOtnqehvnCyidgW8WlZQZ2MSohMvT39AglIbHtZP32lSMBC1Xs1T7hpBO5crATB+5m5mPs5w==}
 
   '@tsconfig/node20@20.1.6':
     resolution: {integrity: sha512-sz+Hqx9zwZDpZIV871WSbUzSqNIsXzghZydypnfgzPKLltVJfkINfUeTct31n/tTSa9ZE1ZOfKdRre1uHHquYQ==}
@@ -7395,7 +7395,7 @@ snapshots:
     dependencies:
       '@testing-library/dom': 10.4.1
 
-  '@tsconfig/next@2.0.3': {}
+  '@tsconfig/next@2.0.4': {}
 
   '@tsconfig/node20@20.1.6': {}
 
