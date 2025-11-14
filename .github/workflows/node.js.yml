@@ -13,8 +13,8 @@ env:
   NODE_VERSION: 22.13.1
 
 jobs:
-  lint:
-    name: Lint
+  install:
+    name: Install Dependencies
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -35,12 +35,47 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install
+      - name: Upload node_modules
+        uses: actions/upload-artifact@v4
+        with:
+          name: node_modules
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          retention-days: 1
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-24.04
+    needs: install
+    permissions:
+      contents: read
+    env:
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+      - name: Enable Corepack
+        run: |
+          npm install -g corepack@${COREPACK_VERSION}
+          corepack enable
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node_modules
       - run: pnpm check
 
   test:
     name: Test
     runs-on: ubuntu-24.04
-    needs: lint
+    needs: install
     permissions:
       contents: read
     env:
@@ -58,14 +93,16 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-      - run: pnpm install
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node_modules
       - run: pnpm test --filter=!@shinju-date/insights
 
   build:
     name: Build
     runs-on: ubuntu-24.04
-    needs: test
+    needs: install
     permissions:
       contents: read
     env:
@@ -83,6 +120,35 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-      - run: pnpm install
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node_modules
       - run: pnpm build
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-24.04
+    needs: [test, build]
+    permissions:
+      contents: read
+    env:
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+      - name: Enable Corepack
+        run: |
+          npm install -g corepack@${COREPACK_VERSION}
+          corepack enable
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node_modules
+      - run: echo "E2E tests will be added in the future"
