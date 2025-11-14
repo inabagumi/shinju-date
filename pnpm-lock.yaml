@@ -18,8 +18,8 @@ importers:
         specifier: 4.0.8
         version: 4.0.8(vitest@4.0.8)
       next-devtools-mcp:
-        specifier: 0.3.2
-        version: 0.3.2
+        specifier: 0.3.3
+        version: 0.3.3
       turbo:
         specifier: 2.6.1
         version: 2.6.1
@@ -4403,8 +4403,8 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  next-devtools-mcp@0.3.2:
-    resolution: {integrity: sha512-ApBhaKcVMA8wCGUryHKOUpmawOAR59qlrz5WyZJxRpDNqPM0L4jgvIjKCQ9JSaHBiVW20ECp3oNjYaJkLqFfYQ==}
+  next-devtools-mcp@0.3.3:
+    resolution: {integrity: sha512-r0ssAbDvuwqMX5uvJ0EdiBabXZytyj9pLTZmGMl39gqqi6SXiuMY5idgGND/nhupVr7j4+rl5Sm2LLFULI+okQ==}
     hasBin: true
 
   next@16.0.3:
@@ -9476,7 +9476,7 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  next-devtools-mcp@0.3.2:
+  next-devtools-mcp@0.3.3:
     dependencies:
       '@modelcontextprotocol/sdk': 1.21.0
       find-process: 2.0.0
