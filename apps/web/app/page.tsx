@@ -36,6 +36,9 @@ export const metadata: Metadata = {
   },
 }
 
+// Force dynamic rendering to avoid build-time data fetching issues
+export const dynamic = 'force-dynamic'
+
 async function HomeTimeline() {
   const videos = await fetchNotEndedVideos()
 
