@@ -1,6 +1,6 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Upstash } from '@upstash/redis'
+import type { Redis } from '@upstash/redis'
 
 export type SummaryStats = {
   totalVideos: number
@@ -113,7 +113,7 @@ export async function getSummaryStats(
 }
 
 export async function getAnalyticsSummary(
-  redisClient: Upstash,
+  redisClient: Redis,
   dateKey: string,
 ): Promise<AnalyticsSummary> {
   // Get search volume for the target date
