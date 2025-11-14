@@ -34,16 +34,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - run: pnpm install
-      - name: Upload node_modules
-        uses: actions/upload-artifact@v4
-        with:
-          name: node_modules
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-          retention-days: 1
+      - run: pnpm install --frozen-lockfile
 
   lint:
     name: Lint
@@ -66,10 +57,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Download node_modules
-        uses: actions/download-artifact@v4
-        with:
-          name: node_modules
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - run: pnpm check
 
   test:
@@ -93,10 +82,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Download node_modules
-        uses: actions/download-artifact@v4
-        with:
-          name: node_modules
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - run: pnpm test --filter=!@shinju-date/insights
 
   build:
@@ -120,10 +107,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Download node_modules
-        uses: actions/download-artifact@v4
-        with:
-          name: node_modules
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - run: pnpm build
 
   e2e:
@@ -147,8 +132,6 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Download node_modules
-        uses: actions/download-artifact@v4
-        with:
-          name: node_modules
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - run: echo "E2E tests will be added in the future"
