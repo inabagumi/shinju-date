@@ -96,6 +96,7 @@ jobs:
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       ENABLE_MSW: true
+      NEXT_RUNTIME: nodejs
       NEXT_PUBLIC_SUPABASE_ANON_KEY: fake
       NEXT_PUBLIC_SUPABASE_URL: https://fake.supabase.test
       SUPABASE_SERVICE_ROLE_KEY: fake
