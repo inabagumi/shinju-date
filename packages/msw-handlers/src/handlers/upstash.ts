@@ -157,7 +157,7 @@ function parseUpstashCommand(body: any) {
 
 export const upstashHandlers = [
   // Upstash Redis REST API endpoint
-  http.post('https://fake.upstash.test/v2/*/pipeline', async ({ request }) => {
+  http.post('*/v2/*/pipeline', async ({ request }) => {
     const commands = (await request.json()) as any[]
     const results = []
 
@@ -241,7 +241,7 @@ export const upstashHandlers = [
   }),
 
   // Single command endpoint
-  http.post('https://fake.upstash.test/v2/*', async ({ request }) => {
+  http.post('*/v2/*', async ({ request }) => {
     const url = new URL(request.url)
     const pathParts = url.pathname.split('/')
     const commandPart = pathParts[pathParts.length - 1]

@@ -517,7 +517,7 @@ function applySelect(data: any[], selectStr: string) {
 
 export const supabaseHandlers = [
   // Videos table
-  http.get('https://fake.supabase.test/rest/v1/videos', ({ request }) => {
+  http.get('*/rest/v1/videos', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -558,7 +558,7 @@ export const supabaseHandlers = [
   }),
 
   // Videos table HEAD requests
-  http.head('https://fake.supabase.test/rest/v1/videos', ({ request }) => {
+  http.head('*/rest/v1/videos', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -574,7 +574,7 @@ export const supabaseHandlers = [
   }),
 
   // Channels table
-  http.get('https://fake.supabase.test/rest/v1/channels', ({ request }) => {
+  http.get('*/rest/v1/channels', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -613,7 +613,7 @@ export const supabaseHandlers = [
   }),
 
   // Channels table HEAD requests
-  http.head('https://fake.supabase.test/rest/v1/channels', ({ request }) => {
+  http.head('*/rest/v1/channels', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -629,7 +629,7 @@ export const supabaseHandlers = [
   }),
 
   // Thumbnails table
-  http.get('https://fake.supabase.test/rest/v1/thumbnails', ({ request }) => {
+  http.get('*/rest/v1/thumbnails', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -668,7 +668,7 @@ export const supabaseHandlers = [
   }),
 
   // Terms table
-  http.get('https://fake.supabase.test/rest/v1/terms', ({ request }) => {
+  http.get('*/rest/v1/terms', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -707,7 +707,7 @@ export const supabaseHandlers = [
   }),
 
   // Terms table HEAD requests
-  http.head('https://fake.supabase.test/rest/v1/terms', ({ request }) => {
+  http.head('*/rest/v1/terms', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -723,177 +723,159 @@ export const supabaseHandlers = [
   }),
 
   // YouTube Channels Table
-  http.get(
-    'https://fake.supabase.test/rest/v1/youtube_channels',
-    ({ request }) => {
-      const url = new URL(request.url)
-      const query = parseSupabaseQuery(url)
+  http.get('*/rest/v1/youtube_channels', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(mockYoutubeChannels, query)
+    const filteredData = applySupabaseFilters(mockYoutubeChannels, query)
 
-      if (query.returnCount) {
-        return HttpResponse.json(filteredData, {
-          headers: {
-            'Content-Range': `0-${filteredData.length - 1}/${
-              filteredData.length
-            }`,
-          },
-        })
-      }
-
-      return HttpResponse.json(filteredData)
-    },
-  ),
-
-  http.head(
-    'https://fake.supabase.test/rest/v1/youtube_channels',
-    ({ request }) => {
-      const url = new URL(request.url)
-      const query = parseSupabaseQuery(url)
-
-      const filteredData = applySupabaseFilters(mockYoutubeChannels, query)
-      const count = filteredData.length
-
-      return new HttpResponse(null, {
+    if (query.returnCount) {
+      return HttpResponse.json(filteredData, {
         headers: {
-          'Content-Range': `0-0/${count}`,
-          'Content-Type': 'application/json',
+          'Content-Range': `0-${filteredData.length - 1}/${
+            filteredData.length
+          }`,
         },
       })
-    },
-  ),
+    }
+
+    return HttpResponse.json(filteredData)
+  }),
+
+  http.head('*/rest/v1/youtube_channels', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const filteredData = applySupabaseFilters(mockYoutubeChannels, query)
+    const count = filteredData.length
+
+    return new HttpResponse(null, {
+      headers: {
+        'Content-Range': `0-0/${count}`,
+        'Content-Type': 'application/json',
+      },
+    })
+  }),
 
   // YouTube Videos Table
-  http.get(
-    'https://fake.supabase.test/rest/v1/youtube_videos',
-    ({ request }) => {
-      const url = new URL(request.url)
-      const query = parseSupabaseQuery(url)
+  http.get('*/rest/v1/youtube_videos', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(mockYoutubeVideos, query)
+    const filteredData = applySupabaseFilters(mockYoutubeVideos, query)
 
-      if (query.returnCount) {
-        return HttpResponse.json(filteredData, {
-          headers: {
-            'Content-Range': `0-${filteredData.length - 1}/${
-              filteredData.length
-            }`,
-          },
-        })
-      }
-
-      return HttpResponse.json(filteredData)
-    },
-  ),
-
-  http.head(
-    'https://fake.supabase.test/rest/v1/youtube_videos',
-    ({ request }) => {
-      const url = new URL(request.url)
-      const query = parseSupabaseQuery(url)
-
-      const filteredData = applySupabaseFilters(mockYoutubeVideos, query)
-      const count = filteredData.length
-
-      return new HttpResponse(null, {
+    if (query.returnCount) {
+      return HttpResponse.json(filteredData, {
         headers: {
-          'Content-Range': `0-0/${count}`,
+          'Content-Range': `0-${filteredData.length - 1}/${
+            filteredData.length
+          }`,
+        },
+      })
+    }
+
+    return HttpResponse.json(filteredData)
+  }),
+
+  http.head('*/rest/v1/youtube_videos', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const filteredData = applySupabaseFilters(mockYoutubeVideos, query)
+    const count = filteredData.length
+
+    return new HttpResponse(null, {
+      headers: {
+        'Content-Range': `0-0/${count}`,
+        'Content-Type': 'application/json',
+      },
+    })
+  }),
+
+  // YouTube Videos POST (upsert/insert)
+  http.post('*/rest/v1/youtube_videos', async ({ request }) => {
+    const preferHeader = request.headers.get('prefer') || ''
+    const body = (await request.json()) as any
+
+    // Handle both single object and array of objects
+    const items = Array.isArray(body) ? body : [body]
+
+    // Mock upsert behavior: update existing or add new
+    for (const item of items) {
+      const existingIndex = mockYoutubeVideos.findIndex(
+        (v) => v.video_id === item.video_id,
+      )
+      if (existingIndex !== -1) {
+        // Update existing
+        mockYoutubeVideos[existingIndex] = {
+          ...mockYoutubeVideos[existingIndex],
+          ...item,
+        }
+      } else {
+        // Insert new
+        mockYoutubeVideos.push(item)
+      }
+    }
+
+    // Return the inserted/updated items if representation is requested
+    if (preferHeader.includes('return=representation')) {
+      return HttpResponse.json(items, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        status: 201,
+      })
+    }
+
+    return new HttpResponse(null, { status: 201 })
+  }),
+
+  // YouTube Videos PATCH (update)
+  http.patch('*/rest/v1/youtube_videos', async ({ request }) => {
+    const url = new URL(request.url)
+    const preferHeader = request.headers.get('prefer') || ''
+    const query = parseSupabaseQuery(url)
+    const body = (await request.json()) as any
+
+    // Find matching records and update them
+    const updatedItems: any[] = []
+    for (const [field, filterValue] of Object.entries(query.filters)) {
+      if (filterValue.startsWith('eq.')) {
+        const value = filterValue.substring(3)
+        const parsedValue =
+          value === 'true'
+            ? true
+            : value === 'false'
+              ? false
+              : value === 'null'
+                ? null
+                : Number.isNaN(Number(value))
+                  ? value
+                  : Number(value)
+
+        for (let i = 0; i < mockYoutubeVideos.length; i++) {
+          const video = mockYoutubeVideos[i]
+          if (video && (video as any)[field] === parsedValue) {
+            mockYoutubeVideos[i] = {
+              ...video,
+              ...body,
+            }
+            updatedItems.push(mockYoutubeVideos[i])
+          }
+        }
+      }
+    }
+
+    if (preferHeader.includes('return=representation')) {
+      return HttpResponse.json(updatedItems, {
+        headers: {
           'Content-Type': 'application/json',
         },
       })
-    },
-  ),
+    }
 
-  // YouTube Videos POST (upsert/insert)
-  http.post(
-    'https://fake.supabase.test/rest/v1/youtube_videos',
-    async ({ request }) => {
-      const preferHeader = request.headers.get('prefer') || ''
-      const body = (await request.json()) as any
-
-      // Handle both single object and array of objects
-      const items = Array.isArray(body) ? body : [body]
-
-      // Mock upsert behavior: update existing or add new
-      for (const item of items) {
-        const existingIndex = mockYoutubeVideos.findIndex(
-          (v) => v.video_id === item.video_id,
-        )
-        if (existingIndex !== -1) {
-          // Update existing
-          mockYoutubeVideos[existingIndex] = {
-            ...mockYoutubeVideos[existingIndex],
-            ...item,
-          }
-        } else {
-          // Insert new
-          mockYoutubeVideos.push(item)
-        }
-      }
-
-      // Return the inserted/updated items if representation is requested
-      if (preferHeader.includes('return=representation')) {
-        return HttpResponse.json(items, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          status: 201,
-        })
-      }
-
-      return new HttpResponse(null, { status: 201 })
-    },
-  ),
-
-  // YouTube Videos PATCH (update)
-  http.patch(
-    'https://fake.supabase.test/rest/v1/youtube_videos',
-    async ({ request }) => {
-      const url = new URL(request.url)
-      const preferHeader = request.headers.get('prefer') || ''
-      const query = parseSupabaseQuery(url)
-      const body = (await request.json()) as any
-
-      // Find matching records and update them
-      const updatedItems: any[] = []
-      for (const [field, filterValue] of Object.entries(query.filters)) {
-        if (filterValue.startsWith('eq.')) {
-          const value = filterValue.substring(3)
-          const parsedValue =
-            value === 'true'
-              ? true
-              : value === 'false'
-                ? false
-                : value === 'null'
-                  ? null
-                  : Number.isNaN(Number(value))
-                    ? value
-                    : Number(value)
-
-          for (let i = 0; i < mockYoutubeVideos.length; i++) {
-            const video = mockYoutubeVideos[i]
-            if (video && (video as any)[field] === parsedValue) {
-              mockYoutubeVideos[i] = {
-                ...video,
-                ...body,
-              }
-              updatedItems.push(mockYoutubeVideos[i])
-            }
-          }
-        }
-      }
-
-      if (preferHeader.includes('return=representation')) {
-        return HttpResponse.json(updatedItems, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-      }
-
-      return new HttpResponse(null, { status: 204 })
-    },
-  ),
+    return new HttpResponse(null, { status: 204 })
+  }),
 
   // Authentication endpoints
   http.get('https://fake.supabase.test/auth/v1/user', ({ cookies }) => {
@@ -1045,7 +1027,7 @@ export const supabaseHandlers = [
   }),
 
   // Health check endpoint - simple SELECT query
-  http.get('https://fake.supabase.test/rest/v1/*', ({ request }) => {
+  http.get('*/rest/v1/*', ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -1058,22 +1040,19 @@ export const supabaseHandlers = [
   }),
 
   // RPC endpoints
-  http.post(
-    'https://fake.supabase.test/rest/v1/rpc/suggestions_v2',
-    async () => {
-      const suggestions = [
-        {
-          created_at: '2023-01-01T00:00:00.000Z',
-          id: '950e8400-e29b-41d4-a716-446655440001',
-          kind: 'Test',
-          name: 'Test Suggestion',
-          updated_at: '2023-01-01T00:00:00.000Z',
-        },
-      ]
+  http.post('*/rest/v1/rpc/suggestions_v2', async () => {
+    const suggestions = [
+      {
+        created_at: '2023-01-01T00:00:00.000Z',
+        id: '950e8400-e29b-41d4-a716-446655440001',
+        kind: 'Test',
+        name: 'Test Suggestion',
+        updated_at: '2023-01-01T00:00:00.000Z',
+      },
+    ]
 
-      return HttpResponse.json(suggestions)
-    },
-  ),
+    return HttpResponse.json(suggestions)
+  }),
 
   // Storage endpoints
   http.get(
