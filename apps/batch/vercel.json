@@ -7,7 +7,7 @@
     },
     {
       "path": "/stats/snapshot",
-      "schedule": "5 0 * * *"
+      "schedule": "10 15 * * *"
     },
     {
       "path": "/talents/update",

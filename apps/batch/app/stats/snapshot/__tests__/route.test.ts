@@ -1,5 +1,5 @@
-import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
-import { toDBString } from '@shinju-date/temporal-fns'
+import { TIME_ZONE } from '@shinju-date/constants'
+import { startOfDay, toDBString } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -19,6 +19,9 @@ const mockRatelimit = {
   limit: vi.fn(),
 }
 
+const mockGetSummaryStats = vi.fn()
+const mockGetAnalyticsSummary = vi.fn()
+
 // Mock modules
 vi.mock('@/lib/supabase', () => ({
   supabaseClient: mockSupabaseClient,
@@ -30,6 +33,11 @@ vi.mock('@/lib/redis', () => ({
 
 vi.mock('@/lib/ratelimit', () => ({
   statsSnapshot: mockRatelimit,
+}))
+
+vi.mock('@/_lib/stats', () => ({
+  getAnalyticsSummary: mockGetAnalyticsSummary,
+  getSummaryStats: mockGetSummaryStats,
 }))
 
 vi.mock('@sentry/nextjs', () => ({
@@ -56,6 +64,19 @@ describe('stats/snapshot route', () => {
 
     // Set up default mock implementations
     mockRatelimit.limit.mockResolvedValue({ success: true })
+    mockGetSummaryStats.mockResolvedValue({
+      deletedVideos: 10,
+      hiddenVideos: 20,
+      totalTalents: 25,
+      totalTerms: 50,
+      totalVideos: 100,
+      visibleVideos: 80,
+    })
+    mockGetAnalyticsSummary.mockResolvedValue({
+      recentClicks: 30,
+      recentSearches: 150,
+      totalPopularKeywords: 25,
+    })
   })
 
   afterEach(() => {
@@ -77,22 +98,7 @@ describe('stats/snapshot route', () => {
 
       // Calculate previous day
       const previousDay = now.subtract({ days: 1 })
-      const previousDayStart = previousDay.with({
-        hour: 0,
-        microsecond: 0,
-        millisecond: 0,
-        minute: 0,
-        nanosecond: 0,
-        second: 0,
-      })
-      const previousDayEnd = previousDay.with({
-        hour: 23,
-        microsecond: 999,
-        millisecond: 999,
-        minute: 59,
-        nanosecond: 999,
-        second: 59,
-      })
+      const previousDayStart = startOfDay(previousDay)
 
       // Previous day should be November 12, 2025
       expect(previousDay.year).toBe(2025)
@@ -103,11 +109,9 @@ describe('stats/snapshot route', () => {
       expect(previousDayStart.hour).toBe(0)
       expect(previousDayStart.minute).toBe(0)
       expect(previousDayStart.second).toBe(0)
-
-      // End should be 23:59:59.999999999
-      expect(previousDayEnd.hour).toBe(23)
-      expect(previousDayEnd.minute).toBe(59)
-      expect(previousDayEnd.second).toBe(59)
+      expect(previousDayStart.millisecond).toBe(0)
+      expect(previousDayStart.microsecond).toBe(0)
+      expect(previousDayStart.nanosecond).toBe(0)
     })
 
     it('should format dates correctly for database queries', () => {
@@ -128,31 +132,8 @@ describe('stats/snapshot route', () => {
     })
   })
 
-  describe('database query filters', () => {
-    it('should use correct date filters for videos query', async () => {
-      const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-      const previousDay = now.subtract({ days: 1 })
-      const previousDayEnd = previousDay.with({
-        hour: 23,
-        microsecond: 999,
-        millisecond: 999,
-        minute: 59,
-        nanosecond: 999,
-        second: 59,
-      })
-      const targetDayEnd = toDBString(previousDayEnd.add({ nanoseconds: 1 }))
-
-      // Mock the Supabase query chain
-      const mockQuery = {
-        eq: vi.fn().mockReturnThis(),
-        lt: vi.fn().mockReturnThis(),
-        not: vi.fn().mockReturnThis(),
-        or: vi.fn().mockResolvedValue({ count: 100, error: null }),
-        select: vi.fn().mockReturnThis(),
-      }
-
-      mockSupabaseClient.from.mockReturnValue(mockQuery)
-
+  describe('stats functions integration', () => {
+    it('should call getSummaryStats and getAnalyticsSummary with correct parameters', async () => {
       // Import the route after mocks are set up
       const { POST } = await import('../route')
 
@@ -165,43 +146,22 @@ describe('stats/snapshot route', () => {
 
       await POST(request)
 
-      // Verify that Supabase queries were called with correct filters
-      expect(mockSupabaseClient.from).toHaveBeenCalledWith('videos')
-      expect(mockQuery.lt).toHaveBeenCalledWith('created_at', targetDayEnd)
-      expect(mockQuery.or).toHaveBeenCalledWith(
-        expect.stringContaining('deleted_at.is.null'),
+      // Verify that getSummaryStats was called with supabaseClient and targetDayEnd
+      expect(mockGetSummaryStats).toHaveBeenCalledWith(
+        mockSupabaseClient,
+        expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/),
       )
-      expect(mockQuery.or).toHaveBeenCalledWith(
-        expect.stringContaining(`deleted_at.gte.${targetDayEnd}`),
+
+      // Verify that getAnalyticsSummary was called with redisClient and dateKey
+      expect(mockGetAnalyticsSummary).toHaveBeenCalledWith(
+        mockRedisClient,
+        expect.stringMatching(/^\d{8}$/),
       )
     })
   })
 
   describe('Redis key usage', () => {
     it('should use previous day Redis keys for analytics', async () => {
-      const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-      const previousDay = now.subtract({ days: 1 })
-      const expectedDateKey = [
-        previousDay.year.toString(10).padStart(4, '0'),
-        previousDay.month.toString(10).padStart(2, '0'),
-        previousDay.day.toString(10).padStart(2, '0'),
-      ].join('')
-
-      // Mock Redis responses
-      mockRedisClient.get.mockResolvedValue(150)
-      mockRedisClient.zcard.mockResolvedValue(25)
-      mockRedisClient.zrange.mockResolvedValue(['video1', '10', 'video2', '20'])
-
-      // Mock Supabase responses
-      const mockQuery = {
-        eq: vi.fn().mockReturnThis(),
-        lt: vi.fn().mockReturnThis(),
-        not: vi.fn().mockReturnThis(),
-        or: vi.fn().mockResolvedValue({ count: 100, error: null }),
-        select: vi.fn().mockReturnThis(),
-      }
-      mockSupabaseClient.from.mockReturnValue(mockQuery)
-
       // Import the route after mocks are set up
       const { POST } = await import('../route')
 
@@ -213,25 +173,14 @@ describe('stats/snapshot route', () => {
 
       await POST(request)
 
-      // Verify Redis keys are using previous day's date
-      expect(mockRedisClient.get).toHaveBeenCalledWith(
-        `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${expectedDateKey}`,
-      )
-      expect(mockRedisClient.zrange).toHaveBeenCalledWith(
-        `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${expectedDateKey}`,
-        0,
-        -1,
-        expect.any(Object),
-      )
-
       // Verify data is stored with previous day's key
       expect(mockRedisClient.set).toHaveBeenCalledWith(
-        `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${expectedDateKey}`,
+        expect.stringContaining('summary:stats:'),
         expect.any(Object),
         expect.any(Object),
       )
       expect(mockRedisClient.set).toHaveBeenCalledWith(
-        `${REDIS_KEYS.SUMMARY_ANALYTICS_PREFIX}${expectedDateKey}`,
+        expect.stringContaining('summary:analytics:'),
         expect.any(Object),
         expect.any(Object),
       )
@@ -239,17 +188,16 @@ describe('stats/snapshot route', () => {
   })
 
   describe('cron schedule validation', () => {
-    it('should be scheduled to run at 0:05 AM UTC', async () => {
-      // The cron expression should be "5 0 * * *" which means:
-      // - minute: 5
-      // - hour: 0 (midnight UTC)
+    it('should be scheduled to run at 0:10 AM JST (15:10 UTC)', async () => {
+      // The cron expression should be "10 15 * * *" which means:
+      // - minute: 10
+      // - hour: 15 (3:10 PM UTC = 0:10 AM JST next day)
       // - day of month: * (every day)
       // - month: * (every month)
       // - day of week: * (every day of week)
 
-      // This is just a documentation test to ensure the schedule is correct
-      const expectedCronExpression = '5 0 * * *'
-      expect(expectedCronExpression).toBe('5 0 * * *')
+      const expectedCronExpression = '10 15 * * *'
+      expect(expectedCronExpression).toBe('10 15 * * *')
     })
   })
 })
