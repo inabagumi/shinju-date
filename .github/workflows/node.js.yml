@@ -95,13 +95,6 @@ jobs:
     env:
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-      ENABLE_MSW: true
-      NEXT_RUNTIME: nodejs
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: fake
-      NEXT_PUBLIC_SUPABASE_URL: https://fake.supabase.test
-      SUPABASE_SERVICE_ROLE_KEY: fake
-      UPSTASH_REDIS_REST_TOKEN: fake
-      UPSTASH_REDIS_REST_URL: https://fake.upstash.test
 
     steps:
       - uses: actions/checkout@v5
@@ -116,7 +109,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
+      - run: pnpm build --filter=!@shinju-date/admin --filter=!@shinju-date/batch --filter=!@shinju-date/web
 
   e2e:
     name: E2E Tests

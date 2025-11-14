@@ -21,21 +21,4 @@ export function createSupabaseClient(
   })
 }
 
-// Lazy initialization - client is created at runtime, not at build time
-let _supabaseClient: SupabaseClient<Database> | null = null
-
-export function getSupabaseClient(): SupabaseClient<Database> {
-  if (!_supabaseClient) {
-    _supabaseClient = createSupabaseClient()
-  }
-  return _supabaseClient
-}
-
-// For backward compatibility - accessing this property creates the client on demand
-export const supabaseClient = new Proxy({} as SupabaseClient<Database>, {
-  get(_target, prop) {
-    const client = getSupabaseClient()
-    const value = client[prop as keyof SupabaseClient<Database>]
-    return typeof value === 'function' ? value.bind(client) : value
-  },
-})
+export const supabaseClient = createSupabaseClient()
