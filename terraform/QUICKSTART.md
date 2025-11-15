@@ -1,50 +1,43 @@
-# Terraform Quick Start Guide
+# Terraform クイックスタートガイド
 
-This guide helps you quickly understand and use the new Terraform configuration.
+このガイドは、新しいTerraform構成を素早く理解して使用するための手引きです。
 
-## For Users: What You Need to Know
+## ユーザー向け: 知っておくべきこと
 
-### What Changed?
+### 何が変わったか？
 
-1. ✅ **Added `shinju-date-insights` project** - Python FastAPI app is now deployed
-2. ✅ **Organized code with modules** - Reduced duplication, easier to maintain
-3. ✅ **Fixed deprecation warnings** - Using latest Vercel provider features
-4. ✅ **Comprehensive documentation** - README, migration guide, and examples
+1. ✅ **`shinju-date-insights` プロジェクトを追加** - Python FastAPI アプリがデプロイ可能に
+2. ✅ **モジュールでコードを整理** - 重複を削減し、保守が容易に
+3. ✅ **非推奨警告を修正** - 最新のVercelプロバイダー機能を使用
+4. ✅ **包括的なドキュメント** - README、マイグレーションガイド、サンプル
 
-### What You Need to Do
+### 必要な作業
 
-#### 1. Add Supabase Variables to Terraform Cloud
+#### 1. インポートIDの更新（初回のみ）
 
-In your Terraform Cloud workspace, add these new variables:
+`terraform/imports.tf` を編集し、プレースホルダーのIDを実際のプロジェクトIDに置き換えます。
 
-- `supabase_url` - Your Supabase project URL (e.g., `https://xxx.supabase.co`)
-- `supabase_service_role_key` - Your Supabase service role key (mark as **sensitive**)
-
-#### 2. Update Import IDs (One-Time Setup)
-
-Edit `terraform/imports.tf` and replace the placeholder IDs with actual project IDs.
-
-To find your project IDs, run:
+プロジェクトIDを確認するには:
 ```bash
 cd terraform
 terraform init
 terraform state list | grep vercel_project
 ```
 
-Or check the Vercel dashboard: `https://vercel.com/<team>/settings/projects`
+または Vercel ダッシュボードで確認: `https://vercel.com/<team>/settings/projects`
 
-Update these lines in `imports.tf`:
+`imports.tf` の以下の行を更新:
 ```hcl
-# Replace prj_XXX_WEB with actual ID
+# prj_XXX_WEB を実際のIDに置き換え
 import {
   to = module.web.vercel_project.this
-  id = "prj_ACTUAL_ID_HERE"
+  id = "prj_実際のID"
 }
 ```
 
-Do this for web, admin, and batch projects.
+web、admin、batch プロジェクトについて同様に行います。
 
-#### 3. Run Terraform Plan
+#### 2. Terraform Plan の実行
 
 ```bash
 cd terraform
@@ -52,27 +45,27 @@ terraform init
 terraform plan
 ```
 
-**Expected output**: 
-- Existing resources will be imported (no changes)
-- Only the new `shinju-date-insights` project will be created
-- No resources will be destroyed or recreated
+**期待される出力**: 
+- 既存リソースはインポート（変更なし）
+- 新しい `shinju-date-insights` プロジェクトのみ作成
+- リソースの削除や再作成はなし
 
-#### 4. Apply Changes
+#### 3. 変更の適用
 
-If the plan looks good:
+プランが問題なければ:
 ```bash
 terraform apply
 ```
 
-This will create the new insights project.
+これで新しい insights プロジェクトが作成されます。
 
-## For Developers: Adding a New Project
+## 開発者向け: 新規プロジェクトの追加
 
-Adding a new Vercel project is now super simple!
+新しいVercelプロジェクトの追加が非常に簡単になりました！
 
-### Step 1: Add Module Block
+### ステップ1: モジュールブロックを追加
 
-Edit `terraform/projects.tf`:
+`terraform/main.tf` を編集:
 
 ```hcl
 module "my_app" {
@@ -82,11 +75,11 @@ module "my_app" {
   root_directory       = "apps/my-app"
   team_id              = var.vercel_team_id
   
-  # Optional: Override defaults
-  framework                = "nextjs"  # or null
+  # オプション: デフォルト値を上書き
+  framework                = "nextjs"  # または null
   function_default_timeout = 30
   
-  # Optional: Custom environment variables
+  # オプション: カスタム環境変数
   environment_variables = {
     MY_CUSTOM_VAR = {
       value  = "my-value"
@@ -96,9 +89,9 @@ module "my_app" {
 }
 ```
 
-### Step 2: Add Domain (Optional)
+### ステップ2: ドメインを追加（オプション）
 
-If you need a custom domain, edit `terraform/domain.tf`:
+カスタムドメインが必要な場合、`terraform/domain.tf` を編集:
 
 ```hcl
 resource "vercel_project_domain" "my_app" {
@@ -108,7 +101,7 @@ resource "vercel_project_domain" "my_app" {
 }
 ```
 
-### Step 3: Apply
+### ステップ3: 適用
 
 ```bash
 cd terraform
@@ -116,41 +109,41 @@ terraform plan
 terraform apply
 ```
 
-That's it! Your new project is deployed. 🚀
+これで完了！新しいプロジェクトがデプロイされました。🚀
 
-## Common Module Options
+## よくあるモジュールオプション
 
-### All Options
+### すべてのオプション
 
 ```hcl
 module "example" {
   source = "./modules/vercel_project"
 
-  # Required
+  # 必須
   project_name   = "project-name"
   root_directory = "apps/example"
   team_id        = var.vercel_team_id
 
-  # Optional - Framework
-  framework = "nextjs"  # or null for non-Next.js apps
+  # オプション - フレームワーク
+  framework = "nextjs"  # または Next.js 以外のアプリの場合は null
 
-  # Optional - Performance
-  function_default_cpu_type = "standard"        # or "standard_legacy"
-  function_default_timeout  = 30                # seconds
-  function_default_regions  = ["hnd1"]          # Tokyo
+  # オプション - パフォーマンス
+  function_default_cpu_type = "standard"        # または "standard_legacy"
+  function_default_timeout  = 30                # 秒
+  function_default_regions  = ["hnd1"]          # 東京
 
-  # Optional - Common Features
-  enable_corepack           = true   # Enable for Node.js projects
-  enable_bytecode_caching   = true   # Enable for Next.js projects
-  enable_redis              = true   # Enable if using Upstash Redis
+  # オプション - 共通機能
+  enable_corepack           = true   # Node.js プロジェクトで有効化
+  enable_bytecode_caching   = true   # Next.js プロジェクトで有効化
+  enable_redis              = true   # Upstash Redis を使用する場合有効化
 
-  # Optional - Redis Configuration
+  # オプション - Redis 設定
   upstash_redis_rest_token     = var.upstash_redis_rest_token
   upstash_redis_rest_token_dev = var.upstash_redis_rest_token_dev
   upstash_redis_rest_url       = var.upstash_redis_rest_url
   upstash_redis_rest_url_dev   = var.upstash_redis_rest_url_dev
 
-  # Optional - Custom Environment Variables
+  # オプション - カスタム環境変数
   environment_variables = {
     VAR_NAME = {
       value  = "var-value"
@@ -158,7 +151,7 @@ module "example" {
     }
   }
 
-  # Optional - Deployment Retention
+  # オプション - デプロイ保持設定
   deployment_retention = {
     expiration_canceled   = "1m"
     expiration_errored    = "1m"
@@ -168,9 +161,9 @@ module "example" {
 }
 ```
 
-### Common Patterns
+### よくあるパターン
 
-#### Next.js Application (Default)
+#### Next.js アプリケーション（デフォルト）
 ```hcl
 module "nextjs_app" {
   source = "./modules/vercel_project"
@@ -179,12 +172,12 @@ module "nextjs_app" {
   root_directory = "apps/nextjs"
   team_id        = var.vercel_team_id
   
-  # All defaults are optimized for Next.js
-  # Corepack, bytecode caching, and Redis are enabled by default
+  # すべてのデフォルト値が Next.js 向けに最適化されています
+  # Corepack、バイトコードキャッシング、Redis がデフォルトで有効
 }
 ```
 
-#### Python/FastAPI Application
+#### Python/FastAPI アプリケーション
 ```hcl
 module "python_app" {
   source = "./modules/vercel_project"
@@ -192,23 +185,16 @@ module "python_app" {
   project_name   = "my-python-app"
   root_directory = "apps/python"
   team_id        = var.vercel_team_id
-  framework      = null  # Not Next.js
+  framework      = null  # Next.js ではない
   
-  # Disable Node.js features
+  # Node.js 固有の機能を無効化
   enable_corepack         = false
   enable_bytecode_caching = false
-  enable_redis            = false  # Unless your Python app uses Redis
-  
-  environment_variables = {
-    PYTHON_VERSION = {
-      value  = "3.12"
-      target = ["production"]
-    }
-  }
+  enable_redis            = false  # Python アプリが Redis を使用しない場合
 }
 ```
 
-#### Long-Running Functions (Batch Jobs)
+#### 長時間実行される関数（バッチジョブ）
 ```hcl
 module "batch_app" {
   source = "./modules/vercel_project"
@@ -217,53 +203,53 @@ module "batch_app" {
   root_directory = "apps/batch"
   team_id        = var.vercel_team_id
   
-  # Increase timeout for long-running jobs
-  function_default_timeout = 120  # 2 minutes
+  # 長時間実行ジョブのためにタイムアウトを増やす
+  function_default_timeout = 120  # 2分
 }
 ```
 
-## Troubleshooting
+## トラブルシューティング
 
-### Issue: Import Fails
+### 問題: インポートに失敗する
 
-**Error**: `Error: resource already managed by Terraform`
+**エラー**: `Error: resource already managed by Terraform`
 
-**Solution**: The resource is already imported. Remove the import block from `imports.tf`.
+**解決方法**: リソースは既にインポート済みです。`imports.tf` からインポートブロックを削除してください。
 
-### Issue: Environment Variable Already Exists
+### 問題: 環境変数が既に存在する
 
-**Error**: `environment variable already exists`
+**エラー**: `environment variable already exists`
 
-**Solution**: This is expected during migration. The module will update existing variables if values match.
+**解決方法**: これはマイグレーション中に予想される動作です。値が一致していれば、モジュールが既存の変数を更新します。
 
-### Issue: Vercel API Rate Limit
+### 問題: Vercel API レート制限
 
-**Error**: `429 Too Many Requests`
+**エラー**: `429 Too Many Requests`
 
-**Solution**: Wait a few minutes and try again. Consider reducing the number of resources being created at once.
+**解決方法**: 数分待ってから再試行してください。一度に作成するリソース数を減らすことを検討してください。
 
-### Issue: Project ID Not Found
+### 問題: プロジェクトIDが見つからない
 
-**Error**: `resource not found`
+**エラー**: `resource not found`
 
-**Solution**: Check that the project ID in `imports.tf` is correct. List projects with `terraform state list`.
+**解決方法**: `imports.tf` のプロジェクトIDが正しいか確認してください。`terraform state list` でプロジェクトを一覧表示します。
 
-## Need Help?
+## ヘルプが必要ですか？
 
-1. 📖 Read [README.md](README.md) for detailed documentation
-2. 🔄 Check [MIGRATION.md](MIGRATION.md) for migration help
-3. 📊 See [SUMMARY.md](SUMMARY.md) for change overview
-4. 🔍 View [COMPARISON.md](COMPARISON.md) for before/after examples
+1. 📖 詳細なドキュメントは [README.md](README.md) を参照
+2. 🔄 マイグレーションヘルプは [MIGRATION.md](MIGRATION.md) を確認
+3. 📊 変更概要は [SUMMARY.md](SUMMARY.md) を参照
+4. 🔍 前後の例は [COMPARISON.md](COMPARISON.md) を参照
 
-## Additional Resources
+## 追加リソース
 
-- [Terraform Documentation](https://developer.hashicorp.com/terraform/docs)
-- [Vercel Terraform Provider](https://registry.terraform.io/providers/vercel/vercel/latest/docs)
+- [Terraform ドキュメント](https://developer.hashicorp.com/terraform/docs)
+- [Vercel Terraform プロバイダー](https://registry.terraform.io/providers/vercel/vercel/latest/docs)
 - [Terraform Cloud](https://app.terraform.io/)
 
 ---
 
-**Quick Links**:
-- 📦 [Module Variables](modules/vercel_project/variables.tf)
-- 🔧 [Module Resources](modules/vercel_project/main.tf)
-- 📤 [Module Outputs](modules/vercel_project/outputs.tf)
+**クイックリンク**:
+- 📦 [モジュール変数](modules/vercel_project/variables.tf)
+- 🔧 [モジュールリソース](modules/vercel_project/main.tf)
+- 📤 [モジュール出力](modules/vercel_project/outputs.tf)
