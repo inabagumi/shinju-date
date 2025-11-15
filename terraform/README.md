@@ -13,11 +13,9 @@
 
 ```
 terraform/
-├── main.tf              # プロバイダーとバックエンド設定、プロジェクト定義
+├── main.tf              # プロバイダー設定、プロジェクト、DNS、ドメイン定義
 ├── versions.tf          # Terraform とプロバイダーのバージョン制約
 ├── variables.tf         # 入力変数
-├── domain.tf            # ドメインとリダイレクト設定（モジュール使用）
-├── dns.tf               # shinju.date の DNS レコード（モジュール使用）
 ├── imports.tf           # リソースマイグレーション用インポートブロック（要設定）
 ├── modules/
 │   ├── vercel_project/        # Vercel プロジェクト用再利用可能モジュール
