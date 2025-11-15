@@ -6,10 +6,10 @@ import {
   toDBString,
 } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-import { getAnalyticsSummary, getSummaryStats } from '@/_lib/stats'
 import { afterResponse } from '@/lib/after-response'
 import { statsSnapshot as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
+import { getAnalyticsSummary, getSummaryStats } from '@/lib/stats'
 import { supabaseClient } from '@/lib/supabase'
 import { verifyCronAuth } from '@/lib/verify-cron-auth'
 
