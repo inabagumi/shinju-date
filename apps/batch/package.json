@@ -2,7 +2,7 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@googleapis/youtube": "29.0.0",
-    "@sentry/nextjs": "10.25.0",
+    "@sentry/node": "10.25.0",
     "@sentry/profiling-node": "10.25.0",
     "@shinju-date/constants": "workspace:*",
     "@shinju-date/health-checkers": "workspace:*",
@@ -16,13 +16,10 @@
     "@supabase/supabase-js": "2.81.1",
     "@upstash/ratelimit": "2.0.7",
     "@upstash/redis": "1.35.6",
+    "h3": "2.0.1-rc.5",
     "mime": "4.1.0",
     "nanoid": "5.1.6",
-    "next": "16.0.3",
     "p-queue": "9.0.0",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "sharp": "0.34.5",
     "temporal-polyfill": "0.3.0",
     "zod": "4.1.12"
   },
@@ -30,13 +27,10 @@
   "devDependencies": {
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
-    "@tsconfig/next": "2.0.4",
     "@tsconfig/strictest": "2.0.8",
     "@types/node": "22.19.1",
-    "@types/react": "19.2.5",
-    "@types/react-dom": "19.2.3",
-    "babel-plugin-react-compiler": "1.0.0",
     "msw": "2.12.2",
+    "nitropack": "2.12.9",
     "typescript": "5.9.3",
     "vitest": "4.0.9"
   },
@@ -50,11 +44,11 @@
     "url": "https://github.com/inabagumi/shinju-date.git"
   },
   "scripts": {
-    "build": "next build",
-    "dev": "next --port 5000",
-    "start": "next start --port 5000",
+    "build": "nitro build",
+    "dev": "nitro dev --port 5000",
+    "start": "node .output/server/index.mjs",
     "test": "vitest run",
-    "typegen": "next typegen"
+    "typegen": "nitro prepare"
   },
   "type": "module",
   "version": "1.0.0"
