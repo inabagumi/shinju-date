@@ -41,7 +41,7 @@
     },
     "typegen": {
       "dependsOn": ["^build"],
-      "outputs": [".next/types", ".nitro/types"]
+      "outputs": [".nitro/types"]
     }
   },
   "ui": "tui"
