@@ -146,12 +146,30 @@ module "insights" {
 
 **結果**: わずか13行で新しいプロジェクトを追加！
 
-**注意**: `shinju-date-ui` は `packages/ui` にある共有UIコンポーネントライブラリで、デプロイ可能なアプリケーションではないため、Vercel プロジェクトは不要です。
+### 変更後: UI プロジェクト（新規、15行）
+```hcl
+module "ui" {
+  source = "./modules/vercel_project"
+
+  project_name              = "shinju-date-ui"
+  root_directory            = "packages/ui"
+  framework                 = null
+  team_id                   = var.vercel_team_id
+  function_default_cpu_type = "standard"
+  function_default_timeout  = 30
+  enable_redis              = false        # UI パッケージは Redis 不要
+  enable_corepack           = true         # Node.js プロジェクト
+  enable_bytecode_caching   = false        # Storybook デプロイ用
+}
+```
+
+**結果**: Storybook をデプロイするための UI プロジェクトを追加！
 
 ## 機能比較
 
 ### 変更前
 ❌ shinju-date-insights プロジェクトなし  
+❌ shinju-date-ui プロジェクトなし（Storybook 未デプロイ）
 ❌ 大量のコード重複（3プロジェクトで272行）  
 ❌ 非推奨属性を使用（serverless_function_region）  
 ❌ 新しいプロジェクトの追加が困難（約90行をコピーする必要）  
@@ -162,7 +180,8 @@ module "insights" {
 
 ### 変更後
 ✅ shinju-date-insights プロジェクト追加  
-✅ 重複を最小限に（4プロジェクトで84行 + 110行の再利用可能モジュール）  
+✅ shinju-date-ui プロジェクト追加（Storybook デプロイ用）
+✅ 重複を最小限に（5プロジェクトで99行 + 110行の再利用可能モジュール）  
 ✅ 最新属性を使用（function_default_regions）  
 ✅ 新しいプロジェクトの追加が簡単（約13-22行）  
 ✅ 共通設定の更新が簡単（モジュールを一度更新）  
