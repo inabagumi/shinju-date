@@ -3,7 +3,7 @@
   "description": "Common mock server handlers using MSW for SHINJU DATE monorepo",
   "dependencies": {
     "msw": "2.12.2",
-    "temporal-polyfill": "^0.2.5"
+    "temporal-polyfill": "^0.3.0"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.7",
