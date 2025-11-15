@@ -1,26 +1,34 @@
-resource "vercel_project_domain" "date" {
+module "domain_date" {
+  source = "./modules/vercel_project_domain"
+
   domain     = "shinju.date"
   project_id = module.web.project_id
   team_id    = module.web.team_id
 }
 
-resource "vercel_project_domain" "cafe" {
+module "domain_cafe" {
+  source = "./modules/vercel_project_domain"
+
   domain               = "search.animare.cafe"
   project_id           = module.web.project_id
-  redirect             = vercel_project_domain.date.domain
-  redirect_status_code = 308
   team_id              = module.web.team_id
+  redirect             = module.domain_date.domain
+  redirect_status_code = 308
 }
 
-resource "vercel_project_domain" "ink" {
+module "domain_ink" {
+  source = "./modules/vercel_project_domain"
+
   domain               = "schedule.774.ink"
   project_id           = module.web.project_id
-  redirect             = vercel_project_domain.date.domain
-  redirect_status_code = 308
   team_id              = module.web.team_id
+  redirect             = module.domain_date.domain
+  redirect_status_code = 308
 }
 
-resource "vercel_project_domain" "admin" {
+module "domain_admin" {
+  source = "./modules/vercel_project_domain"
+
   domain     = "admin.shinju.date"
   project_id = module.admin.project_id
   team_id    = module.admin.team_id
