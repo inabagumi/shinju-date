@@ -1,48 +1,27 @@
-import * as Sentry from '@sentry/nextjs'
+import * as Sentry from '@sentry/node'
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
-import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import {
   formatDateKey,
   startOfDay,
   toDBString,
 } from '@shinju-date/temporal-fns'
-import { after } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
-import { getAnalyticsSummary, getSummaryStats } from '@/_lib/stats'
-import { statsSnapshot as ratelimit } from '@/lib/ratelimit'
-import { redisClient } from '@/lib/redis'
-import { supabaseClient } from '@/lib/supabase'
 
 const MONITOR_SLUG = '/stats/snapshot'
 
-export const maxDuration = 60
+export default defineEventHandler(async (event) => {
+  // Verify cron authentication
+  verifyCronAuth(event)
 
-export async function POST(request: Request): Promise<Response> {
-  const cronSecure = process.env['CRON_SECRET']
-  if (
-    cronSecure &&
-    !verifyCronRequest(request, {
-      cronSecure,
-    })
-  ) {
-    Sentry.logger.warn('CRON_SECRET did not match.')
-
-    return createErrorResponse('Unauthorized', {
-      status: 401,
-    })
-  }
-
-  const { success } = await ratelimit.limit('stats:snapshot')
+  const { success } = await statsSnapshot.limit('stats:snapshot')
 
   if (!success) {
     Sentry.logger.warn('There has been no interval since the last run.')
 
-    return createErrorResponse(
-      'There has been no interval since the last run.',
-      {
-        status: 429,
-      },
-    )
+    throw createError({
+      message: 'There has been no interval since the last run.',
+      statusCode: 429,
+    })
   }
 
   const checkInId = Sentry.captureCheckIn(
@@ -95,7 +74,7 @@ export async function POST(request: Request): Promise<Response> {
       summaryStats,
     })
 
-    after(async () => {
+    afterResponse(event, async () => {
       Sentry.captureCheckIn({
         checkInId,
         monitorSlug: MONITOR_SLUG,
@@ -105,11 +84,10 @@ export async function POST(request: Request): Promise<Response> {
       await Sentry.flush(10_000)
     })
 
-    return new Response(null, {
-      status: 204,
-    })
+    setResponseStatus(event, 204)
+    return null
   } catch (error) {
-    after(async () => {
+    afterResponse(event, async () => {
       Sentry.captureException(error)
 
       Sentry.captureCheckIn({
@@ -121,13 +99,9 @@ export async function POST(request: Request): Promise<Response> {
       await Sentry.flush(10_000)
     })
 
-    return createErrorResponse(
-      error instanceof Error ? error.message : 'Unknown error',
-      {
-        status: 500,
-      },
-    )
+    throw createError({
+      message: error instanceof Error ? error.message : 'Unknown error',
+      statusCode: 500,
+    })
   }
-}
-
-export const GET = POST
+})

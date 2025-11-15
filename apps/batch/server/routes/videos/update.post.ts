@@ -1,46 +1,24 @@
-import * as Sentry from '@sentry/nextjs'
+import * as Sentry from '@sentry/node'
 import { REDIS_KEYS } from '@shinju-date/constants'
-import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { revalidateTags } from '@shinju-date/web-cache'
-import { after } from 'next/server'
 import PQueue from 'p-queue'
 import { Temporal } from 'temporal-polyfill'
-import { videosUpdate as ratelimit } from '@/lib/ratelimit'
-import { redisClient } from '@/lib/redis'
-import { scrape, type Video } from '@/lib/scraper'
-import { supabaseClient } from '@/lib/supabase'
-import { getChannels, youtubeClient } from '@/lib/youtube'
 
 const MONITOR_SLUG = '/videos/update'
 
-export const maxDuration = 120
+export default defineEventHandler(async (event) => {
+  // Verify cron authentication
+  verifyCronAuth(event)
 
-export async function POST(request: Request): Promise<Response> {
-  const cronSecure = process.env['CRON_SECRET']
-  if (
-    cronSecure &&
-    !verifyCronRequest(request, {
-      cronSecure,
-    })
-  ) {
-    Sentry.logger.warn('CRON_SECRET did not match.')
-
-    return createErrorResponse('Unauthorized', {
-      status: 401,
-    })
-  }
-
-  const { success } = await ratelimit.limit('videos:update')
+  const { success } = await videosUpdate.limit('videos:update')
 
   if (!success) {
     Sentry.logger.warn('There has been no interval since the last run.')
 
-    return createErrorResponse(
-      'There has been no interval since the last run.',
-      {
-        status: 429,
-      },
-    )
+    throw createError({
+      message: 'There has been no interval since the last run.',
+      statusCode: 429,
+    })
   }
 
   const checkInId = Sentry.captureCheckIn(
@@ -67,7 +45,7 @@ export async function POST(request: Request): Promise<Response> {
     .is('deleted_at', null)
 
   if (error) {
-    after(async () => {
+    afterResponse(event, async () => {
       Sentry.captureException(error)
 
       Sentry.captureCheckIn({
@@ -79,8 +57,9 @@ export async function POST(request: Request): Promise<Response> {
       await Sentry.flush(10_000)
     })
 
-    return createErrorResponse(error.message, {
-      status: 500,
+    throw createError({
+      message: error.message,
+      statusCode: 500,
     })
   }
 
@@ -157,9 +136,8 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    await revalidateTags(['videos'], {
-      signal: request.signal,
-    })
+    // Note: In Nitro, we don't have request.signal, so we omit it
+    await revalidateTags(['videos'])
   } else {
     Sentry.logger.info('No updated channels existed.')
   }
@@ -167,7 +145,7 @@ export async function POST(request: Request): Promise<Response> {
   // Update last sync timestamp in Redis
   await redisClient.set(REDIS_KEYS.LAST_VIDEO_SYNC, currentDateTime.toString())
 
-  after(async () => {
+  afterResponse(event, async () => {
     Sentry.captureCheckIn({
       checkInId,
       monitorSlug: MONITOR_SLUG,
@@ -177,9 +155,6 @@ export async function POST(request: Request): Promise<Response> {
     await Sentry.flush(10_000)
   })
 
-  return new Response(null, {
-    status: 204,
-  })
-}
-
-export const GET = POST
+  setResponseStatus(event, 204)
+  return null
+})

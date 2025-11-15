@@ -1,12 +1,7 @@
-import * as Sentry from '@sentry/nextjs'
+import * as Sentry from '@sentry/node'
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
-import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { formatDateKey, getMondayOfWeek } from '@shinju-date/temporal-fns'
-import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
-import { recommendationQueriesUpdate as ratelimit } from '@/lib/ratelimit'
-import { redisClient } from '@/lib/redis'
-import { supabaseClient } from '@/lib/supabase'
 
 const MONITOR_SLUG = '/recommendation/queries/update'
 
@@ -14,8 +9,6 @@ const MONITOR_SLUG = '/recommendation/queries/update'
 const WEIGHT_DAILY = 10.0
 const WEIGHT_WEEKLY = 5.0
 const WEIGHT_ALL_TIME = 1.0
-
-export const maxDuration = 120
 
 async function getAllTerms({
   page = 1,
@@ -50,32 +43,21 @@ async function getAllTerms({
   return terms
 }
 
-export async function POST(request: NextRequest) {
-  const cronSecure = process.env['CRON_SECRET']
-  if (
-    cronSecure &&
-    !verifyCronRequest(request, {
-      cronSecure,
-    })
-  ) {
-    Sentry.logger.warn('CRON_SECRET did not match.')
+export default defineEventHandler(async (event) => {
+  // Verify cron authentication
+  verifyCronAuth(event)
 
-    return createErrorResponse('Unauthorized', {
-      status: 401,
-    })
-  }
-
-  const { success } = await ratelimit.limit('recommendation:queries:update')
+  const { success } = await recommendationQueriesUpdate.limit(
+    'recommendation:queries:update',
+  )
 
   if (!success) {
     Sentry.logger.warn('There has been no interval since the last run.')
 
-    return createErrorResponse(
-      'There has been no interval since the last run.',
-      {
-        status: 429,
-      },
-    )
+    throw createError({
+      message: 'There has been no interval since the last run.',
+      statusCode: 429,
+    })
   }
 
   const checkInId = Sentry.captureCheckIn(
@@ -136,7 +118,7 @@ export async function POST(request: NextRequest) {
       // Invalidate combined cache
       await redisClient.del(REDIS_KEYS.QUERIES_COMBINED_CACHE)
 
-      after(async () => {
+      afterResponse(event, async () => {
         Sentry.captureCheckIn({
           checkInId,
           monitorSlug: MONITOR_SLUG,
@@ -146,9 +128,8 @@ export async function POST(request: NextRequest) {
         await Sentry.flush(10_000)
       })
 
-      return new Response(null, {
-        status: 204,
-      })
+      setResponseStatus(event, 204)
+      return null
     }
 
     // Perform ZUNIONSTORE with weights
@@ -244,7 +225,7 @@ export async function POST(request: NextRequest) {
       error,
     })
 
-    after(async () => {
+    afterResponse(event, async () => {
       Sentry.captureCheckIn({
         checkInId,
         monitorSlug: MONITOR_SLUG,
@@ -257,7 +238,7 @@ export async function POST(request: NextRequest) {
     throw error
   }
 
-  after(async () => {
+  afterResponse(event, async () => {
     Sentry.captureCheckIn({
       checkInId,
       monitorSlug: MONITOR_SLUG,
@@ -267,9 +248,6 @@ export async function POST(request: NextRequest) {
     await Sentry.flush(10_000)
   })
 
-  return new Response(null, {
-    status: 204,
-  })
-}
-
-export const GET = POST
+  setResponseStatus(event, 204)
+  return null
+})

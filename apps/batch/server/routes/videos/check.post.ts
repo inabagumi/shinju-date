@@ -1,25 +1,14 @@
-import * as Sentry from '@sentry/nextjs'
+import * as Sentry from '@sentry/node'
 import { REDIS_KEYS } from '@shinju-date/constants'
 import type { default as Database } from '@shinju-date/database'
-import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
-import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
-import {
-  videosCheckAll as ratelimitAll,
-  videosCheck as ratelimitRecent,
-} from '@/lib/ratelimit'
-import { redisClient } from '@/lib/redis'
-import { supabaseClient, type TypedSupabaseClient } from '@/lib/supabase'
-import { youtubeClient } from '@/lib/youtube'
 
 function getMonitorSlug({ all }: { all?: boolean | undefined }) {
   return all ? '/videos/check?all=1' : '/videos/check'
 }
-
-export const maxDuration = 120
 
 type Thumbnail = {
   id: string
@@ -161,26 +150,15 @@ function deleteVideos({
   ])
 }
 
-export async function POST(request: NextRequest): Promise<Response> {
-  const cronSecure = process.env['CRON_SECRET']
-  if (
-    cronSecure &&
-    !verifyCronRequest(request, {
-      cronSecure,
-    })
-  ) {
-    Sentry.logger.warn('CRON_SECRET did not match.')
+export default defineEventHandler(async (event) => {
+  // Verify cron authentication
+  verifyCronAuth(event)
 
-    return createErrorResponse('Unauthorized', {
-      status: 401,
-    })
-  }
-
-  const { searchParams } = request.nextUrl
+  const query = getQuery(event)
   const all =
-    searchParams.has('all') &&
-    ['1', 'true', 'yes'].includes(searchParams.get('all') ?? 'false')
-  const ratelimit = all ? ratelimitAll : ratelimitRecent
+    query.all !== undefined &&
+    ['1', 'true', 'yes'].includes(String(query.all ?? 'false'))
+  const ratelimit = all ? videosCheckAll : videosCheck
   const { success } = await ratelimit.limit(
     all ? 'videos:check:all' : 'videos:check',
   )
@@ -188,12 +166,10 @@ export async function POST(request: NextRequest): Promise<Response> {
   if (!success) {
     Sentry.logger.warn('There has been no interval since the last run.')
 
-    return createErrorResponse(
-      'There has been no interval since the last run.',
-      {
-        status: 429,
-      },
-    )
+    throw createError({
+      message: 'There has been no interval since the last run.',
+      statusCode: 429,
+    })
   }
 
   const monitorSlug = getMonitorSlug({
@@ -265,9 +241,8 @@ export async function POST(request: NextRequest): Promise<Response> {
         .filter(Boolean),
     })
 
-    await revalidateTags(['videos'], {
-      signal: request.signal,
-    })
+    // Note: In Nitro, we don't have request.signal, so we omit it
+    await revalidateTags(['videos'])
   } else {
     Sentry.logger.info('Deleted videos did not exist.')
   }
@@ -275,7 +250,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   // Update last sync timestamp in Redis
   await redisClient.set(REDIS_KEYS.LAST_VIDEO_SYNC, toDBString(currentDateTime))
 
-  after(async () => {
+  afterResponse(event, async () => {
     Sentry.captureCheckIn({
       checkInId,
       monitorSlug,
@@ -285,9 +260,6 @@ export async function POST(request: NextRequest): Promise<Response> {
     await Sentry.flush(10_000)
   })
 
-  return new Response(null, {
-    status: 204,
-  })
-}
-
-export const GET = POST
+  setResponseStatus(event, 204)
+  return null
+})

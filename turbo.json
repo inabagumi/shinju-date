@@ -23,7 +23,15 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        ".nitro/**",
+        ".output/**",
+        "!.output/cache/**",
+        ".vercel/output/**",
+        "dist/**"
+      ]
     },
     "dev": {
       "cache": false,
@@ -34,8 +42,7 @@
       "dependsOn": ["^build"]
     },
     "typegen": {
-      "dependsOn": ["^build"],
-      "outputs": [".next/types"]
+      "dependsOn": ["^build"]
     }
   },
   "ui": "tui"

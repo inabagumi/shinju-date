@@ -1,15 +1,10 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
-import type { NextProxy, NextRequest } from 'next/server'
-import { NextResponse } from 'next/server'
-import { redisClient } from '@/lib/redis'
 
-export async function proxy(
-  request: NextRequest,
-): Promise<ReturnType<NextProxy>> {
+export default defineEventHandler(async (event) => {
   // Allow health check endpoints during maintenance
-  const pathname = request.nextUrl.pathname
+  const pathname = event.path
   if (pathname === '/api/healthz' || pathname === '/api/readyz') {
-    return NextResponse.next()
+    return
   }
 
   // Check for maintenance mode
@@ -20,28 +15,22 @@ export async function proxy(
 
     if (maintenanceMode === true) {
       // Return 503 Service Unavailable during maintenance
-      return new NextResponse(
-        JSON.stringify({
+      throw createError({
+        data: {
           error: 'Service Unavailable',
           message: 'The service is currently under maintenance.',
-        }),
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Retry-After': '3600', // Suggest retry after 1 hour
-          },
-          status: 503,
         },
-      )
+        statusCode: 503,
+        statusMessage: 'Service Unavailable',
+      })
     }
   } catch (error) {
+    // If the error is already a createError response, re-throw it
+    if (error && typeof error === 'object' && 'statusCode' in error) {
+      throw error
+    }
+
     // If Redis is unavailable, continue normally to avoid breaking cron jobs
     console.error('Failed to check maintenance mode:', error)
   }
-
-  return NextResponse.next()
-}
-
-export const config = {
-  matcher: '/:path*',
-}
+})

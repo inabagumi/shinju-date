@@ -1,17 +1,10 @@
-import * as Sentry from '@sentry/nextjs'
+import * as Sentry from '@sentry/node'
 import type { Tables } from '@shinju-date/database'
-import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { revalidateTags } from '@shinju-date/web-cache'
 import type { YouTubeChannel } from '@shinju-date/youtube-scraper'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
-import { after } from 'next/server'
-import { talentsUpdate as ratelimit } from '@/lib/ratelimit'
-import { supabaseClient } from '@/lib/supabase'
-import { youtubeClient } from '@/lib/youtube'
 
 const MONITOR_SLUG = '/channels/update'
-
-export const maxDuration = 120
 
 type Talent = Pick<Tables<'talents'>, 'id' | 'name'> & {
   youtube_channel: {
@@ -20,32 +13,19 @@ type Talent = Pick<Tables<'talents'>, 'id' | 'name'> & {
   } | null
 }
 
-export async function POST(request: Request): Promise<Response> {
-  const cronSecure = process.env['CRON_SECRET']
-  if (
-    cronSecure &&
-    !verifyCronRequest(request, {
-      cronSecure,
-    })
-  ) {
-    Sentry.logger.warn('CRON_SECRET did not match.')
+export default defineEventHandler(async (event) => {
+  // Verify cron authentication
+  verifyCronAuth(event)
 
-    return createErrorResponse('Unauthorized', {
-      status: 401,
-    })
-  }
-
-  const { success } = await ratelimit.limit('channels:update')
+  const { success } = await talentsUpdate.limit('channels:update')
 
   if (!success) {
     Sentry.logger.warn('There has been no interval since the last run.')
 
-    return createErrorResponse(
-      'There has been no interval since the last run.',
-      {
-        status: 429,
-      },
-    )
+    throw createError({
+      message: 'There has been no interval since the last run.',
+      statusCode: 429,
+    })
   }
 
   const checkInId = Sentry.captureCheckIn(
@@ -70,7 +50,7 @@ export async function POST(request: Request): Promise<Response> {
     .is('deleted_at', null)
 
   if (error) {
-    after(async () => {
+    afterResponse(event, async () => {
       Sentry.captureException(error)
 
       Sentry.captureCheckIn({
@@ -82,8 +62,9 @@ export async function POST(request: Request): Promise<Response> {
       await Sentry.flush(10_000)
     })
 
-    return createErrorResponse(error.message, {
-      status: 500,
+    throw createError({
+      message: error.message,
+      statusCode: 500,
     })
   }
 
@@ -212,14 +193,13 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   if (isUpdated) {
-    await revalidateTags(['talents'], {
-      signal: request.signal,
-    })
+    // Note: In Nitro, we don't have request.signal, so we omit it
+    await revalidateTags(['talents'])
   } else {
     Sentry.logger.info('No updated talents existed.')
   }
 
-  after(async () => {
+  afterResponse(event, async () => {
     Sentry.captureCheckIn({
       checkInId,
       monitorSlug: MONITOR_SLUG,
@@ -229,9 +209,6 @@ export async function POST(request: Request): Promise<Response> {
     await Sentry.flush(10_000)
   })
 
-  return new Response(null, {
-    status: 204,
-  })
-}
-
-export const GET = POST
+  setResponseStatus(event, 204)
+  return null
+})

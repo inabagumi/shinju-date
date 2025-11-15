@@ -4,10 +4,8 @@ import {
   createReadinessResponse,
   runHealthChecks,
 } from '@shinju-date/health-checkers'
-import { redisClient } from '@/lib/redis'
-import { supabaseClient } from '@/lib/supabase'
 
-export async function GET(): Promise<Response> {
+export default defineEventHandler(async () => {
   try {
     const { status, results } = await runHealthChecks([
       () => checkSupabaseHealth(supabaseClient),
@@ -21,4 +19,4 @@ export async function GET(): Promise<Response> {
       message: 'Health check failed',
     })
   }
-}
+})
