@@ -2,6 +2,13 @@
 
 このディレクトリには、SHINJU DATEプロジェクトのインフラストラクチャ管理用のTerraform構成、特にVercelデプロイメントの管理が含まれています。
 
+## ドキュメント
+
+- 📖 **[クイックスタート](../../docs/terraform/QUICKSTART.md)** - 即座に使用可能なガイド
+- 🔄 **[マイグレーション](../../docs/terraform/MIGRATION.md)** - ステップバイステップの移行手順
+- 📊 **[概要](../../docs/terraform/SUMMARY.md)** - 変更の詳細概要
+- 🔍 **[比較](../../docs/terraform/COMPARISON.md)** - Before/After比較
+
 ## 構造
 
 ```
@@ -9,17 +16,17 @@ terraform/
 ├── main.tf              # プロバイダーとバックエンド設定、プロジェクト定義
 ├── versions.tf          # Terraform とプロバイダーのバージョン制約
 ├── variables.tf         # 入力変数
-├── domain.tf            # ドメインとリダイレクト設定
-├── dns.tf               # shinju.date の DNS レコード
+├── domain.tf            # ドメインとリダイレクト設定（モジュール使用）
+├── dns.tf               # shinju.date の DNS レコード（モジュール使用）
 ├── imports.tf           # リソースマイグレーション用インポートブロック（要設定）
-├── MIGRATION.md         # 詳細なマイグレーションガイド
 ├── modules/
-│   └── vercel_project/  # Vercel プロジェクト用再利用可能モジュール
-│       ├── main.tf
-│       ├── variables.tf
-│       └── outputs.tf
+│   ├── vercel_project/        # Vercel プロジェクト用再利用可能モジュール
+│   ├── vercel_dns_record/     # DNS レコード用再利用可能モジュール
+│   └── vercel_project_domain/ # プロジェクトドメイン用再利用可能モジュール
 └── .gitignore
 ```
+
+詳細なドキュメントは [docs/terraform/](../../docs/terraform/) ディレクトリを参照してください。
 
 ## 管理リソース
 
@@ -138,7 +145,7 @@ terraform apply
 
 既存のインフラストラクチャが古い構成で管理されている場合:
 
-1. [MIGRATION.md](MIGRATION.md) を十分に読む
+1. [MIGRATION.md](../../docs/terraform/MIGRATION.md) を十分に読む
 2. 実際のプロジェクトIDで `imports.tf` を更新
 3. マイグレーション手順を慎重に実行
 
@@ -270,6 +277,6 @@ Terraform またはプロバイダーのバージョンを更新するには:
 ## サポート
 
 質問や問題がある場合:
-- マイグレーションヘルプは [MIGRATION.md](MIGRATION.md) を確認
+- マイグレーションヘルプは [MIGRATION.md](../../docs/terraform/MIGRATION.md) を確認
 - Terraform ドキュメントを参照
 - チームメンテナに連絡

@@ -1,26 +1,29 @@
-resource "vercel_dns_record" "digicert_caa" {
+module "dns_digicert_caa" {
+  source = "./modules/vercel_dns_record"
+
   domain  = "shinju.date"
   name    = ""
   team_id = module.web.team_id
-  ttl     = 60
   type    = "CAA"
   value   = "0 issue \"digicert.com\""
 }
 
-resource "vercel_dns_record" "google_site_verification" {
+module "dns_google_site_verification" {
+  source = "./modules/vercel_dns_record"
+
   domain  = "shinju.date"
   name    = ""
   team_id = module.web.team_id
-  ttl     = 60
   type    = "TXT"
   value   = "google-site-verification=B-AnwaokGJSxLYWtDEFi_NDp-GxH-aLGAMT8SsxTFL4"
 }
 
-resource "vercel_dns_record" "api" {
+module "dns_api" {
+  source = "./modules/vercel_dns_record"
+
   domain  = "shinju.date"
   name    = "api"
   team_id = module.web.team_id
-  ttl     = 60
   type    = "CNAME"
   value   = "bxbalbupmqhcdqrmoiwl.supabase.co."
 }
