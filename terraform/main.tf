@@ -1,3 +1,17 @@
+terraform {
+  cloud {
+    organization = "inabagumi"
+
+    workspaces {
+      name = "shinju-date"
+    }
+  }
+}
+
+provider "vercel" {
+  api_token = var.vercel_api_token
+}
+
 # Web project (shinju-date)
 module "web" {
   source = "./modules/vercel_project"
@@ -81,5 +95,20 @@ module "insights" {
   function_default_timeout  = 60
   enable_redis              = false
   enable_corepack           = false
+  enable_bytecode_caching   = false
+}
+
+# UI project (shinju-date-ui) - Storybook deployment
+module "ui" {
+  source = "./modules/vercel_project"
+
+  project_name              = "shinju-date-ui"
+  root_directory            = "packages/ui"
+  framework                 = null
+  team_id                   = var.vercel_team_id
+  function_default_cpu_type = "standard"
+  function_default_timeout  = 30
+  enable_redis              = false
+  enable_corepack           = true
   enable_bytecode_caching   = false
 }

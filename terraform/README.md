@@ -46,6 +46,11 @@ terraform/
    - 用語抽出と分析 API
    - Vercelが自動設定する環境変数を使用
 
+5. **shinju-date-ui** ✨ 新規
+   - `packages/ui` からの Storybook デプロイメント
+   - 共有 UI コンポーネントのドキュメント
+   - UI パーツの参照用
+
 ### その他のリソース
 
 - ドメイン設定とリダイレクト
