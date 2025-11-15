@@ -170,7 +170,7 @@ resource "vercel_project_deployment_retention" "admin" {
 
 resource "vercel_project" "batch" {
   enable_affected_projects_deployments = true
-  framework                            = "nextjs"
+  framework                            = null
   git_repository = {
     production_branch = "main"
     repo              = "inabagumi/shinju-date"
