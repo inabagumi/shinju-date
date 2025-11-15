@@ -11,7 +11,7 @@ export default defineNitroConfig({
       ),
     ),
   },
-  compatibilityDate: '2025-01-01',
+  compatibilityDate: '2025-07-15',
   experimental: {
     openAPI: true,
   },
@@ -19,19 +19,7 @@ export default defineNitroConfig({
     dirs: ['lib/**'],
   },
   minify: false,
-  output: {
-    dir: '.output',
-    publicDir: '.output/public',
-    serverDir: '.output/server',
-  },
   preset: 'vercel',
-  serverAssets: [
-    {
-      baseName: 'server',
-      dir: './server/assets',
-    },
-  ],
-  srcDir: 'server',
   typescript: {
     strict: true,
     tsConfig: {

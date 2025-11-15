@@ -26,8 +26,10 @@
       "outputs": [
         ".next/**",
         "!.next/cache/**",
+        ".nitro/**",
         ".output/**",
         "!.output/cache/**",
+        ".vercel/output/**",
         "dist/**"
       ]
     },
@@ -40,8 +42,7 @@
       "dependsOn": ["^build"]
     },
     "typegen": {
-      "dependsOn": ["^build"],
-      "outputs": [".nitro/types"]
+      "dependsOn": ["^build"]
     }
   },
   "ui": "tui"
