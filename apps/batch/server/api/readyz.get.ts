@@ -4,8 +4,6 @@ import {
   createReadinessResponse,
   runHealthChecks,
 } from '@shinju-date/health-checkers'
-import { redisClient } from '@/lib/redis'
-import { supabaseClient } from '@/lib/supabase'
 
 export default defineEventHandler(async () => {
   try {

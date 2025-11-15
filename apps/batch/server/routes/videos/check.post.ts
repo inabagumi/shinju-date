@@ -5,15 +5,6 @@ import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { Temporal } from 'temporal-polyfill'
-import { afterResponse } from '@/lib/after-response'
-import {
-  videosCheckAll as ratelimitAll,
-  videosCheck as ratelimitRecent,
-} from '@/lib/ratelimit'
-import { redisClient } from '@/lib/redis'
-import { supabaseClient, type TypedSupabaseClient } from '@/lib/supabase'
-import { verifyCronAuth } from '@/lib/verify-cron-auth'
-import { youtubeClient } from '@/lib/youtube'
 
 function getMonitorSlug({ all }: { all?: boolean | undefined }) {
   return all ? '/videos/check?all=1' : '/videos/check'
@@ -167,7 +158,7 @@ export default defineEventHandler(async (event) => {
   const all =
     query.all !== undefined &&
     ['1', 'true', 'yes'].includes(String(query.all ?? 'false'))
-  const ratelimit = all ? ratelimitAll : ratelimitRecent
+  const ratelimit = all ? videosCheckAll : videosCheck
   const { success } = await ratelimit.limit(
     all ? 'videos:check:all' : 'videos:check',
   )

@@ -1,5 +1,4 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
-import { redisClient } from '@/lib/redis'
 
 export default defineEventHandler(async (event) => {
   // Allow health check endpoints during maintenance

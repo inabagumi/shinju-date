@@ -2,11 +2,6 @@ import * as Sentry from '@sentry/node'
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { formatDateKey, getMondayOfWeek } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-import { afterResponse } from '@/lib/after-response'
-import { recommendationQueriesUpdate as ratelimit } from '@/lib/ratelimit'
-import { redisClient } from '@/lib/redis'
-import { supabaseClient } from '@/lib/supabase'
-import { verifyCronAuth } from '@/lib/verify-cron-auth'
 
 const MONITOR_SLUG = '/recommendation/queries/update'
 
@@ -52,7 +47,9 @@ export default defineEventHandler(async (event) => {
   // Verify cron authentication
   verifyCronAuth(event)
 
-  const { success } = await ratelimit.limit('recommendation:queries:update')
+  const { success } = await recommendationQueriesUpdate.limit(
+    'recommendation:queries:update',
+  )
 
   if (!success) {
     Sentry.logger.warn('There has been no interval since the last run.')

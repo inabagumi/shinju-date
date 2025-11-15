@@ -6,12 +6,6 @@ import {
   toDBString,
 } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
-import { afterResponse } from '@/lib/after-response'
-import { statsSnapshot as ratelimit } from '@/lib/ratelimit'
-import { redisClient } from '@/lib/redis'
-import { getAnalyticsSummary, getSummaryStats } from '@/lib/stats'
-import { supabaseClient } from '@/lib/supabase'
-import { verifyCronAuth } from '@/lib/verify-cron-auth'
 
 const MONITOR_SLUG = '/stats/snapshot'
 
@@ -19,7 +13,7 @@ export default defineEventHandler(async (event) => {
   // Verify cron authentication
   verifyCronAuth(event)
 
-  const { success } = await ratelimit.limit('stats:snapshot')
+  const { success } = await statsSnapshot.limit('stats:snapshot')
 
   if (!success) {
     Sentry.logger.warn('There has been no interval since the last run.')

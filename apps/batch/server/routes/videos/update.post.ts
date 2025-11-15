@@ -3,13 +3,6 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import { revalidateTags } from '@shinju-date/web-cache'
 import PQueue from 'p-queue'
 import { Temporal } from 'temporal-polyfill'
-import { afterResponse } from '@/lib/after-response'
-import { videosUpdate as ratelimit } from '@/lib/ratelimit'
-import { redisClient } from '@/lib/redis'
-import { scrape, type Video } from '@/lib/scraper'
-import { supabaseClient } from '@/lib/supabase'
-import { verifyCronAuth } from '@/lib/verify-cron-auth'
-import { getChannels, youtubeClient } from '@/lib/youtube'
 
 const MONITOR_SLUG = '/videos/update'
 
@@ -17,7 +10,7 @@ export default defineEventHandler(async (event) => {
   // Verify cron authentication
   verifyCronAuth(event)
 
-  const { success } = await ratelimit.limit('videos:update')
+  const { success } = await videosUpdate.limit('videos:update')
 
   if (!success) {
     Sentry.logger.warn('There has been no interval since the last run.')

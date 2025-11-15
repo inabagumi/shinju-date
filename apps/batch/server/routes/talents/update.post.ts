@@ -3,11 +3,6 @@ import type { Tables } from '@shinju-date/database'
 import { revalidateTags } from '@shinju-date/web-cache'
 import type { YouTubeChannel } from '@shinju-date/youtube-scraper'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
-import { afterResponse } from '@/lib/after-response'
-import { talentsUpdate as ratelimit } from '@/lib/ratelimit'
-import { supabaseClient } from '@/lib/supabase'
-import { verifyCronAuth } from '@/lib/verify-cron-auth'
-import { youtubeClient } from '@/lib/youtube'
 
 const MONITOR_SLUG = '/channels/update'
 
@@ -22,7 +17,7 @@ export default defineEventHandler(async (event) => {
   // Verify cron authentication
   verifyCronAuth(event)
 
-  const { success } = await ratelimit.limit('channels:update')
+  const { success } = await talentsUpdate.limit('channels:update')
 
   if (!success) {
     Sentry.logger.warn('There has been no interval since the last run.')
