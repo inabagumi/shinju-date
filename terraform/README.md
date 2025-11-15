@@ -1,75 +1,74 @@
-# Terraform Configuration for SHINJU DATE
+# SHINJU DATE の Terraform 構成
 
-This directory contains the Terraform configuration for managing infrastructure for the SHINJU DATE project, specifically Vercel deployments.
+このディレクトリには、SHINJU DATEプロジェクトのインフラストラクチャ管理用のTerraform構成、特にVercelデプロイメントの管理が含まれています。
 
-## Structure
+## 構造
 
 ```
 terraform/
-├── main.tf              # Provider and backend configuration
-├── versions.tf          # Terraform and provider version constraints
-├── variables.tf         # Input variables
-├── projects.tf          # Project definitions using modules
-├── domain.tf            # Domain and redirect configurations
-├── dns.tf               # DNS records for shinju.date
-├── imports.tf           # Import blocks for resource migration (needs configuration)
-├── MIGRATION.md         # Detailed migration guide
+├── main.tf              # プロバイダーとバックエンド設定、プロジェクト定義
+├── versions.tf          # Terraform とプロバイダーのバージョン制約
+├── variables.tf         # 入力変数
+├── domain.tf            # ドメインとリダイレクト設定
+├── dns.tf               # shinju.date の DNS レコード
+├── imports.tf           # リソースマイグレーション用インポートブロック（要設定）
+├── MIGRATION.md         # 詳細なマイグレーションガイド
 ├── modules/
-│   └── vercel_project/  # Reusable module for Vercel projects
+│   └── vercel_project/  # Vercel プロジェクト用再利用可能モジュール
 │       ├── main.tf
 │       ├── variables.tf
 │       └── outputs.tf
 └── .gitignore
 ```
 
-## Managed Resources
+## 管理リソース
 
-### Projects
+### プロジェクト
 
 1. **shinju-date** (web)
-   - Public website at https://shinju.date
-   - Next.js application from `apps/web`
-   - Redis caching enabled
+   - https://shinju.date の公開ウェブサイト
+   - `apps/web` からの Next.js アプリケーション
+   - Redis キャッシング有効
 
 2. **shinju-date-admin**
-   - Admin dashboard at https://admin.shinju.date
-   - Next.js application from `apps/admin`
-   - Redis caching enabled
+   - https://admin.shinju.date の管理ダッシュボード
+   - `apps/admin` からの Next.js アプリケーション
+   - Redis キャッシング有効
 
 3. **shinju-date-batch**
-   - Batch processing (Nitro)
-   - Cron job functions from `apps/batch`
-   - YouTube Data API integration
-   - Redis caching enabled
+   - バッチ処理（Nitro）
+   - `apps/batch` からの Cron ジョブ関数
+   - YouTube Data API 統合
+   - Redis キャッシング有効
 
-4. **shinju-date-insights** ✨ NEW
-   - Python FastAPI application from `apps/insights`
-   - Term extraction and analysis API
-   - Supabase integration
+4. **shinju-date-insights** ✨ 新規
+   - `apps/insights` からの Python FastAPI アプリケーション
+   - 用語抽出と分析 API
+   - Vercelが自動設定する環境変数を使用
 
-### Additional Resources
+### その他のリソース
 
-- Domain configurations and redirects
-- DNS records for shinju.date
-- Deployment retention policies
-- Environment variables for all projects
+- ドメイン設定とリダイレクト
+- shinju.date の DNS レコード
+- デプロイ保持ポリシー
+- 全プロジェクトの環境変数
 
-## Module: vercel_project
+## モジュール: vercel_project
 
-A reusable module that encapsulates common patterns for Vercel projects.
+Vercel プロジェクトの共通パターンをカプセル化した再利用可能モジュール。
 
-### Features
+### 機能
 
-- Standardized project configuration
-- Automatic environment variable management:
-  - Corepack support
-  - Bytecode caching
+- 標準化されたプロジェクト設定
+- 自動環境変数管理:
+  - Corepack サポート
+  - バイトコードキャッシング
   - Upstash Redis
-  - Custom variables
-- Deployment retention settings
-- Flexible configuration
+  - カスタム変数
+- デプロイ保持設定
+- 柔軟な設定
 
-### Usage Example
+### 使用例
 
 ```hcl
 module "my_app" {
@@ -79,7 +78,7 @@ module "my_app" {
   root_directory   = "apps/my-app"
   team_id          = var.vercel_team_id
   
-  # Optional overrides
+  # オプションの上書き
   framework                  = "nextjs"
   function_default_timeout   = 30
   upstash_redis_rest_token   = var.upstash_redis_rest_token
@@ -96,32 +95,32 @@ module "my_app" {
 }
 ```
 
-## Required Variables
+## 必要な変数
 
-These variables must be set in Terraform Cloud workspace:
+これらの変数は Terraform Cloud ワークスペースで設定する必要があります:
 
-- `vercel_api_token` - Vercel API token
-- `vercel_team_id` - Vercel team ID
-- `google_api_key` - Google API key for YouTube Data API
-- `upstash_redis_rest_token` - Redis REST token (production)
-- `upstash_redis_rest_token_dev` - Redis REST token (preview/dev)
-- `upstash_redis_rest_url` - Redis REST URL (production)
-- `upstash_redis_rest_url_dev` - Redis REST URL (preview/dev)
-- `supabase_url` - Supabase project URL
-- `supabase_service_role_key` - Supabase service role key (sensitive)
+- `vercel_api_token` - Vercel API トークン
+- `vercel_team_id` - Vercel チーム ID
+- `google_api_key` - YouTube Data API 用 Google API キー
+- `upstash_redis_rest_token` - Redis REST トークン（本番環境）
+- `upstash_redis_rest_token_dev` - Redis REST トークン（プレビュー/開発環境）
+- `upstash_redis_rest_url` - Redis REST URL（本番環境）
+- `upstash_redis_rest_url_dev` - Redis REST URL（プレビュー/開発環境）
 
-## Getting Started
+**注意**: Supabase 環境変数（`NEXT_PUBLIC_SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`）は Vercel が自動的に設定するため、Terraform での設定は不要です。
 
-### Prerequisites
+## はじめに
+
+### 前提条件
 
 - Terraform >= 1.13
-- Terraform Cloud account with workspace configured
-- Vercel account with team access
-- All required variables set in Terraform Cloud
+- ワークスペースが設定された Terraform Cloud アカウント
+- チームアクセス権を持つ Vercel アカウント
+- Terraform Cloud で設定された全ての必要な変数
 
-### First Time Setup (New Workspace)
+### 初回セットアップ（新規ワークスペース）
 
-If starting fresh:
+新規の場合:
 
 ```bash
 cd terraform
@@ -130,19 +129,19 @@ terraform plan
 terraform apply
 ```
 
-### Migrating from Old Configuration
+### 既存構成からのマイグレーション
 
-If you have existing infrastructure managed by the old configuration:
+既存のインフラストラクチャが古い構成で管理されている場合:
 
-1. Read [MIGRATION.md](MIGRATION.md) thoroughly
-2. Update `imports.tf` with actual project IDs
-3. Follow the migration steps carefully
+1. [MIGRATION.md](MIGRATION.md) を十分に読む
+2. 実際のプロジェクトIDで `imports.tf` を更新
+3. マイグレーション手順を慎重に実行
 
-## Common Operations
+## 一般的な操作
 
-### Add a New Project
+### 新規プロジェクトの追加
 
-1. Add a new module block in `projects.tf`:
+1. `main.tf` に新しいモジュールブロックを追加:
 
 ```hcl
 module "new_app" {
@@ -152,11 +151,11 @@ module "new_app" {
   root_directory = "apps/new-app"
   team_id        = var.vercel_team_id
   
-  # Configure as needed
+  # 必要に応じて設定
 }
 ```
 
-2. If domain is needed, add to `domain.tf`:
+2. ドメインが必要な場合、`domain.tf` に追加:
 
 ```hcl
 resource "vercel_project_domain" "new_app" {
@@ -166,16 +165,16 @@ resource "vercel_project_domain" "new_app" {
 }
 ```
 
-3. Apply changes:
+3. 変更を適用:
 
 ```bash
 terraform plan
 terraform apply
 ```
 
-### Update Environment Variables
+### 環境変数の更新
 
-Edit the `environment_variables` map in the module block:
+モジュールブロック内の `environment_variables` マップを編集:
 
 ```hcl
 module "web" {
@@ -193,79 +192,79 @@ module "web" {
 }
 ```
 
-### Change Timeout or CPU Type
+### タイムアウトまたは CPU タイプの変更
 
-Update the module parameters:
+モジュールパラメータを更新:
 
 ```hcl
 module "batch" {
   # ...
-  function_default_timeout  = 180  # Increase to 3 minutes
+  function_default_timeout  = 180  # 3分に増加
   function_default_cpu_type = "performance"
 }
 ```
 
-## Troubleshooting
+## トラブルシューティング
 
-### Changes to Existing Projects
+### 既存プロジェクトへの変更
 
-If you see unexpected changes when running `terraform plan`:
+`terraform plan` 実行時に予期しない変更が表示される場合:
 
-1. Check that `imports.tf` has correct project IDs
-2. Verify environment variable names and targets match
-3. Review the migration guide
+1. `imports.tf` に正しいプロジェクトIDがあるか確認
+2. 環境変数名とターゲットが一致しているか確認
+3. マイグレーションガイドを見直す
 
-### Import Errors
+### インポートエラー
 
-If import blocks fail:
+インポートブロックが失敗する場合:
 
-1. Check Terraform version supports import blocks (>= 1.5)
-2. Verify project IDs are correct
-3. Use manual import commands as fallback
+1. Terraform バージョンがインポートブロックをサポートしているか確認（>= 1.5）
+2. プロジェクトIDが正しいか確認
+3. フォールバックとして手動インポートコマンドを使用
 
-### Environment Variable Conflicts
+### 環境変数の競合
 
-Environment variables might show as needing recreation. This is usually safe if:
-- The key and value are identical
-- Only the resource address is changing
+環境変数が再作成が必要と表示される場合があります。通常、以下の場合は安全です:
+- キーと値が同一
+- リソースアドレスのみが変更されている
 
-## Maintenance
+## メンテナンス
 
-### Updating Module
+### モジュールの更新
 
-To update the module behavior:
+モジュールの動作を更新するには:
 
-1. Edit files in `modules/vercel_project/`
-2. Test changes: `terraform plan`
-3. Apply changes: `terraform apply`
+1. `modules/vercel_project/` のファイルを編集
+2. 変更をテスト: `terraform plan`
+3. 変更を適用: `terraform apply`
 
-Changes to the module automatically affect all projects using it.
+モジュールへの変更は、それを使用する全てのプロジェクトに自動的に影響します。
 
-### Version Updates
+### バージョンアップデート
 
-To update Terraform or provider versions:
+Terraform またはプロバイダーのバージョンを更新するには:
 
-1. Edit `versions.tf`
-2. Run `terraform init -upgrade`
-3. Test with `terraform plan`
+1. `versions.tf` を編集
+2. `terraform init -upgrade` を実行
+3. `terraform plan` でテスト
 
-## Best Practices
+## ベストプラクティス
 
-1. **Always run plan before apply**: Review changes carefully
-2. **Use modules for consistency**: Don't duplicate project configurations
-3. **Document custom variables**: Add descriptions for clarity
-4. **Keep sensitive data in Terraform Cloud**: Never commit secrets
-5. **Version control everything**: Except sensitive variables and state
+1. **常に apply 前に plan を実行**: 変更を慎重に確認
+2. **一貫性のためにモジュールを使用**: プロジェクト設定を重複させない
+3. **カスタム変数をドキュメント化**: 明確性のために説明を追加
+4. **機密データは Terraform Cloud に保持**: シークレットをコミットしない
+5. **すべてをバージョン管理**: 機密変数と状態を除く
 
-## Links
+## リンク
 
-- [Vercel Terraform Provider](https://registry.terraform.io/providers/vercel/vercel/latest/docs)
+- [Vercel Terraform プロバイダー](https://registry.terraform.io/providers/vercel/vercel/latest/docs)
 - [Terraform Cloud](https://app.terraform.io/)
-- [Project Repository](https://github.com/inabagumi/shinju-date)
+- [プロジェクトリポジトリ](https://github.com/inabagumi/shinju-date)
 
-## Support
+## サポート
 
-For questions or issues:
-- Check [MIGRATION.md](MIGRATION.md) for migration help
-- Review Terraform documentation
-- Contact team maintainers
+質問や問題がある場合:
+- マイグレーションヘルプは [MIGRATION.md](MIGRATION.md) を確認
+- Terraform ドキュメントを参照
+- チームメンテナに連絡

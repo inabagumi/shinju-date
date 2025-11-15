@@ -1,137 +1,137 @@
-# Terraform Migration Guide
+# Terraform マイグレーションガイド
 
-This guide explains the Terraform refactoring that was done to organize the configuration using modules and add the missing `shinju-date-insights` project.
+このガイドでは、モジュールを使用して構成を整理し、不足している `shinju-date-insights` プロジェクトを追加するために行われたTerraformリファクタリングについて説明します。
 
-## What Changed
+## 変更内容
 
-### 1. Module-based Structure
-- Created a reusable `vercel_project` module in `terraform/modules/vercel_project/`
-- This module encapsulates common patterns for Vercel projects:
-  - Project configuration
-  - Common environment variables (Corepack, Bytecode Caching)
-  - Redis environment variables
-  - Custom environment variables
-  - Deployment retention settings
+### 1. モジュールベースの構造
+- `terraform/modules/vercel_project/` に再利用可能な `vercel_project` モジュールを作成
+- このモジュールは Vercel プロジェクトの共通パターンをカプセル化:
+  - プロジェクト設定
+  - 共通環境変数（Corepack、バイトコードキャッシング）
+  - Redis 環境変数
+  - カスタム環境変数
+  - デプロイ保持設定
 
-### 2. New Project Added
-- Added `shinju-date-insights` project for the Python FastAPI application
-- Configured with appropriate environment variables for Supabase
-- Set timeout to 60 seconds for API operations
+### 2. 追加された新規プロジェクト
+- Python FastAPI アプリケーション用に `shinju-date-insights` プロジェクトを追加
+- Vercel が自動設定する環境変数を使用（Supabase など）
+- API 操作のためにタイムアウトを60秒に設定
 
-### 3. File Organization
-- `projects.tf` - All project definitions using modules
-- `imports.tf` - Import blocks for migrating existing resources
-- `domain.tf` - Updated to use module outputs
-- `dns.tf` - Updated to use module outputs
-- `modules/vercel_project/` - Reusable module for Vercel projects
+### 3. ファイル構成
+- `main.tf` - モジュールを使用した全プロジェクト定義（`projects.tf` から名前変更）
+- `imports.tf` - 既存リソースのマイグレーション用インポートブロック
+- `domain.tf` - モジュール出力を使用するように更新
+- `dns.tf` - モジュール出力を使用するように更新
+- `modules/vercel_project/` - Vercel プロジェクト用再利用可能モジュール
 
-### 4. Reduced Duplication
-- Before: ~270 lines with repeated patterns
-- After: ~120 lines + 80 lines in reusable module
-- Easier to maintain and add new projects
+### 4. 重複の削減
+- 以前: 繰り返しパターンで約270行
+- 以後: 約120行 + 再利用可能モジュール80行
+- メンテナンスと新規プロジェクト追加が容易に
 
-## Migration Steps
+## マイグレーション手順
 
-⚠️ **Important**: Before running these commands, ensure you have:
-1. Terraform Cloud access configured
-2. All required variables set in Terraform Cloud workspace
-3. Added the new variables: `supabase_url` and `supabase_service_role_key`
+⚠️ **重要**: これらのコマンドを実行する前に、以下を確認してください:
+1. Terraform Cloud アクセスが設定されている
+2. Terraform Cloud ワークスペースで必要な変数が全て設定されている
 
-### Step 1: Initialize Terraform
+### ステップ1: Terraform の初期化
 
 ```bash
 cd terraform
 terraform init
 ```
 
-### Step 2: Review Import Plan
+### ステップ2: インポートプランの確認
 
-The `imports.tf` file contains import blocks that will adopt existing resources into the new module structure. However, you need to update the project IDs in this file first.
+`imports.tf` ファイルには、既存リソースを新しいモジュール構造に採用するインポートブロックが含まれています。ただし、最初にこのファイルのプロジェクトIDを更新する必要があります。
 
-To get the current project IDs, run:
+現在のプロジェクトIDを取得するには:
 
 ```bash
-# This will show the current state
+# 現在の状態を表示
 terraform show
 ```
 
-Or check Vercel dashboard for the project IDs.
+または、Vercel ダッシュボードでプロジェクトIDを確認します。
 
-### Step 3: Update Import IDs (REQUIRED)
+### ステップ3: インポートIDの更新（必須）
 
-Edit `imports.tf` and replace the placeholder IDs with actual project IDs:
+`imports.tf` を編集し、プレースホルダーのIDを実際のプロジェクトIDに置き換えます:
 
 ```hcl
 import {
   to = module.web.vercel_project.this
-  id = "prj_ACTUAL_WEB_PROJECT_ID"  # ← Update this
+  id = "prj_実際のWEBプロジェクトID"  # ← これを更新
 }
 ```
 
-You need to update IDs for:
-- Web project
-- Admin project  
-- Batch project
+以下について ID を更新する必要があります:
+- Web プロジェクト
+- Admin プロジェクト  
+- Batch プロジェクト
 
-### Step 4: Generate Import Commands
+### ステップ4: インポートコマンドの生成
 
-Since we're migrating existing resources to modules, we need to use `terraform import` commands for resources that don't support `import` blocks yet (like environment variables).
+既存リソースをモジュールにマイグレーションしているため、インポートブロックをまだサポートしていないリソース（環境変数など）に対して `terraform import` コマンドを使用する必要があります。
 
-Run a plan to see what needs to be imported:
+プランを実行して、インポートが必要なものを確認:
 
 ```bash
 terraform plan
 ```
 
-### Step 5: Import Existing Resources
+### ステップ5: 既存リソースのインポート
 
-For each existing environment variable and other resources, you may need to run import commands. The exact commands depend on the current state.
+既存の環境変数やその他のリソースごとに、インポートコマンドを実行する必要がある場合があります。正確なコマンドは現在の状態によって異なります。
 
-Example format:
+形式の例:
 ```bash
 terraform import 'module.web.vercel_project_environment_variable.custom["NEXT_PUBLIC_BASE_URL"]' prj_XXX/env_YYY
 ```
 
-### Step 6: Remove Old Configuration
+### ステップ6: 古い構成の削除
 
-Once all imports are successful and `terraform plan` shows no unexpected changes, you can remove the old `project.tf` file (it has been replaced by `projects.tf`).
+すべてのインポートが成功し、`terraform plan` が予期しない変更を示さない場合、古い `project.tf` ファイルを削除できます（`main.tf` に置き換えられました）。
 
 ```bash
-git rm project.tf
+# 既にファイルは main.tf に名前変更されています
+git status
 ```
 
-### Step 7: Verify Configuration
+### ステップ7: 構成の確認
 
-Run a final plan to ensure no resources will be destroyed or recreated:
+最終プランを実行して、リソースが破壊または再作成されないことを確認:
 
 ```bash
 terraform plan
 ```
 
-Expected output: "No changes. Your infrastructure matches the configuration."
+期待される出力: "変更なし。インフラストラクチャは構成と一致しています。"
 
-### Step 8: Apply (if needed)
+### ステップ8: 適用（必要な場合）
 
-If there are only additions (like the new insights project), apply the changes:
+追加のみがある場合（新しい insights プロジェクトなど）、変更を適用:
 
 ```bash
 terraform apply
 ```
 
-## Alternative: Start Fresh (if import is too complex)
+## 代替案: ゼロから開始（インポートが複雑すぎる場合）
 
-If the import process is too complex, you can:
+インポートプロセスが複雑すぎる場合:
 
-1. Keep both old and new configurations temporarily
-2. Create the insights project manually in Vercel
-3. Then import just the new project into Terraform
-4. Gradually migrate other projects one by one
+1. 一時的に古い構成と新しい構成の両方を保持
+2. Vercel で insights プロジェクトを手動作成
+3. 新しいプロジェクトのみを Terraform にインポート
+4. 他のプロジェクトを一つずつ徐々にマイグレーション
 
-## Module Benefits
+## モジュールの利点
 
-### Easy to Add New Projects
+### 新規プロジェクトの追加が簡単
 
-Adding a new project now requires just a few lines:
+新しいプロジェクトを追加するには、数行だけが必要:
 
 ```hcl
 module "new_app" {
@@ -141,55 +141,48 @@ module "new_app" {
   root_directory   = "apps/new-app"
   team_id          = var.vercel_team_id
   
-  # All common settings are inherited from module defaults
+  # 全ての共通設定はモジュールのデフォルトから継承されます
 }
 ```
 
-### Consistent Configuration
+### 一貫した構成
 
-All projects now share:
-- Same git repository settings
-- Same authentication settings
-- Consistent deployment retention
-- Standard CPU types and timeouts
+全てのプロジェクトが以下を共有:
+- 同じ git リポジトリ設定
+- 同じ認証設定
+- 一貫したデプロイ保持
+- 標準的な CPU タイプとタイムアウト
 
-### Easy Updates
+### 更新が簡単
 
-To change a common setting across all projects, just update the module once instead of updating each project individually.
+全プロジェクトの共通設定を変更するには、各プロジェクトを個別に更新する代わりに、モジュールを一度更新するだけです。
 
-## Troubleshooting
+## トラブルシューティング
 
-### Issue: Import blocks not supported
+### 問題: インポートブロックがサポートされていない
 
-If your Terraform version doesn't support `import` blocks, use manual import commands:
+Terraform バージョンがインポートブロックをサポートしていない場合、手動インポートコマンドを使用:
 
 ```bash
 terraform import 'module.web.vercel_project.this' prj_XXX
 terraform import 'module.web.vercel_project_deployment_retention.this' prj_XXX
 ```
 
-### Issue: State conflicts
+### 問題: 状態の競合
 
-If you encounter state conflicts, you can use:
+状態の競合が発生した場合:
 
 ```bash
 terraform state rm 'old_resource_address'
 terraform import 'new_resource_address' resource_id
 ```
 
-### Issue: Environment variables not importing
+### 問題: 環境変数がインポートされない
 
-Environment variables may need manual recreation or import. Check the resource IDs in Vercel API or dashboard.
+環境変数は手動での再作成またはインポートが必要な場合があります。Vercel API またはダッシュボードでリソースIDを確認してください。
 
-## New Variables Required
+## サポート
 
-Add these to your Terraform Cloud workspace:
-
-- `supabase_url` - Your Supabase project URL
-- `supabase_service_role_key` - Your Supabase service role key (mark as sensitive)
-
-## Support
-
-If you encounter issues during migration, refer to:
-- [Terraform Import Documentation](https://developer.hashicorp.com/terraform/cli/import)
-- [Vercel Terraform Provider Documentation](https://registry.terraform.io/providers/vercel/vercel/latest/docs)
+マイグレーション中に問題が発生した場合:
+- [Terraform Import ドキュメント](https://developer.hashicorp.com/terraform/cli/import)
+- [Vercel Terraform プロバイダー ドキュメント](https://registry.terraform.io/providers/vercel/vercel/latest/docs)
