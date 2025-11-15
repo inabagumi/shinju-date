@@ -1,5 +1,5 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
-import * as Sentry from '@sentry/nextjs'
+import * as Sentry from '@sentry/node'
 import type { TablesInsert } from '@shinju-date/database'
 import { isNonNullable } from '@shinju-date/helpers'
 import retryableFetch from '@shinju-date/retryable-fetch'

@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/nextjs'
+import * as Sentry from '@sentry/node'
 import type { Tables, TablesInsert } from '@shinju-date/database'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 import { DatabaseError } from './errors'

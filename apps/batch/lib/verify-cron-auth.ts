@@ -1,4 +1,3 @@
-import { verifyCronRequest } from '@shinju-date/helpers'
 import type { H3Event } from 'h3'
 
 /**

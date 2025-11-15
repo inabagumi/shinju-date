@@ -1,40 +1,45 @@
-import { defineNitroConfig } from 'nitropack/config'
 import { fileURLToPath } from 'node:url'
+import { defineNitroConfig } from 'nitropack/config'
 
 export default defineNitroConfig({
-  preset: 'vercel',
-  srcDir: 'server',
+  alias: {
+    '@': fileURLToPath(new URL('./', import.meta.url)),
+    '@shinju-date/youtube-api-client': fileURLToPath(
+      new URL(
+        '../../packages/youtube-api-client/src/index.ts',
+        import.meta.url,
+      ),
+    ),
+  },
+  compatibilityDate: '2025-01-01',
+  experimental: {
+    openAPI: true,
+  },
+  imports: {
+    dirs: ['lib/**'],
+  },
+  minify: false,
   output: {
     dir: '.output',
-    serverDir: '.output/server',
     publicDir: '.output/public',
+    serverDir: '.output/server',
   },
+  preset: 'vercel',
   serverAssets: [
     {
       baseName: 'server',
       dir: './server/assets',
     },
   ],
-  compatibilityDate: '2025-01-01',
-  experimental: {
-    openAPI: true,
-  },
+  srcDir: 'server',
   typescript: {
     strict: true,
     tsConfig: {
       compilerOptions: {
-        moduleResolution: 'bundler',
         module: 'ESNext',
+        moduleResolution: 'bundler',
         target: 'ESNext',
       },
     },
   },
-  imports: {
-    dirs: ['lib/**'],
-  },
-  alias: {
-    '@': fileURLToPath(new URL('./', import.meta.url)),
-    '@shinju-date/youtube-api-client': fileURLToPath(new URL('../../packages/youtube-api-client/src/index.ts', import.meta.url)),
-  },
-  minify: false,
 })

@@ -23,7 +23,13 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        ".output/**",
+        "!.output/cache/**",
+        "dist/**"
+      ]
     },
     "dev": {
       "cache": false,
@@ -35,7 +41,7 @@
     },
     "typegen": {
       "dependsOn": ["^build"],
-      "outputs": [".next/types"]
+      "outputs": [".next/types", ".nitro/types"]
     }
   },
   "ui": "tui"
