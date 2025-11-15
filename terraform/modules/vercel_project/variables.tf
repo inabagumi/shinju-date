@@ -19,6 +19,12 @@ variable "team_id" {
   type        = string
 }
 
+variable "function_default_regions" {
+  description = "Default regions for serverless functions"
+  type        = list(string)
+  default     = ["hnd1"]
+}
+
 variable "function_default_cpu_type" {
   description = "Default CPU type for serverless functions"
   type        = string

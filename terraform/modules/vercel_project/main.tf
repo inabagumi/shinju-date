@@ -13,10 +13,10 @@ resource "vercel_project" "this" {
   root_directory               = var.root_directory
   resource_config = {
     function_default_cpu_type = var.function_default_cpu_type
+    function_default_regions  = var.function_default_regions
     function_default_timeout  = var.function_default_timeout
   }
-  serverless_function_region = "hnd1"
-  team_id                    = var.team_id
+  team_id = var.team_id
   vercel_authentication = {
     deployment_type = "standard_protection"
   }

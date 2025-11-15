@@ -13,36 +13,36 @@
 # Replace prj_XXX_WEB with actual project ID from: terraform state show vercel_project.this
 import {
   to = module.web.vercel_project.this
-  id = "prj_XXX_WEB"  # TODO: Replace with actual web project ID
+  id = "prj_XXX_WEB" # TODO: Replace with actual web project ID
 }
 
 import {
   to = module.web.vercel_project_deployment_retention.this
-  id = "prj_XXX_WEB"  # TODO: Same as project ID above
+  id = "prj_XXX_WEB" # TODO: Same as project ID above
 }
 
 # Admin project imports  
 # Replace prj_XXX_ADMIN with actual project ID from: terraform state show vercel_project.admin
 import {
   to = module.admin.vercel_project.this
-  id = "prj_XXX_ADMIN"  # TODO: Replace with actual admin project ID
+  id = "prj_XXX_ADMIN" # TODO: Replace with actual admin project ID
 }
 
 import {
   to = module.admin.vercel_project_deployment_retention.this
-  id = "prj_XXX_ADMIN"  # TODO: Same as project ID above
+  id = "prj_XXX_ADMIN" # TODO: Same as project ID above
 }
 
 # Batch project imports
 # Replace prj_XXX_BATCH with actual project ID from: terraform state show vercel_project.batch
 import {
   to = module.batch.vercel_project.this
-  id = "prj_XXX_BATCH"  # TODO: Replace with actual batch project ID
+  id = "prj_XXX_BATCH" # TODO: Replace with actual batch project ID
 }
 
 import {
   to = module.batch.vercel_project_deployment_retention.this
-  id = "prj_XXX_BATCH"  # TODO: Same as project ID above
+  id = "prj_XXX_BATCH" # TODO: Same as project ID above
 }
 
 # Note: Environment variables cannot be imported using import blocks.
