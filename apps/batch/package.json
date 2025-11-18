@@ -33,7 +33,7 @@
     "msw": "2.12.2",
     "nitropack": "2.12.9",
     "typescript": "5.9.3",
-    "vitest": "4.0.9"
+    "vitest": "4.0.10"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",

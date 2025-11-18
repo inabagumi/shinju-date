@@ -3,12 +3,12 @@
   "description": "SHINJU DATE is a web service for searching videos.",
   "devDependencies": {
     "@biomejs/biome": "2.3.6",
-    "@vitest/coverage-v8": "4.0.9",
-    "@vitest/ui": "4.0.9",
+    "@vitest/coverage-v8": "4.0.10",
+    "@vitest/ui": "4.0.10",
     "next-devtools-mcp": "0.3.3",
     "turbo": "2.6.1",
     "typescript": "5.9.3",
-    "vitest": "4.0.9"
+    "vitest": "4.0.10"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
