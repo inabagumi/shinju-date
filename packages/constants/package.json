@@ -2,7 +2,7 @@
   "author": "Haneru Developers",
   "description": "Shared constants for SHINJU DATE",
   "devDependencies": {
-    "@tsconfig/node20": "20.1.7",
+    "@tsconfig/node20": "20.1.8",
     "@tsconfig/strictest": "2.0.8",
     "tsup": "8.5.1",
     "typescript": "5.9.3"
