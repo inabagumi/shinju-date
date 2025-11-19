@@ -345,7 +345,7 @@ export default defineEventHandler(async (event) => {
     {
       schedule: {
         type: 'crontab',
-        value: mode === 'all' ? '4 23 * * 2' : '27/30 * * * *',
+        value: mode === 'all' ? '4 23 * * 2' : '*/1 * * * *',
       },
       timezone: 'Etc/UTC',
     },
