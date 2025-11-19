@@ -11,10 +11,16 @@ import {
 } from '@shinju-date/youtube-scraper'
 import { Temporal } from 'temporal-polyfill'
 
-type CheckMode = 'recent' | 'all'
+type CheckMode = 'default' | 'recent' | 'all'
 
 function getMonitorSlug({ mode }: { mode: CheckMode }) {
-  return mode === 'all' ? '/videos/check?mode=all' : '/videos/check'
+  if (mode === 'all') {
+    return '/videos/check?mode=all'
+  }
+  if (mode === 'recent') {
+    return '/videos/check?mode=recent'
+  }
+  return '/videos/check'
 }
 
 type Thumbnail = {
@@ -43,7 +49,8 @@ async function* getSavedVideos({
   supabaseClient,
 }: GetSavedVideos): AsyncGenerator<Video, void, undefined> {
   // For 'all' mode, fetch all videos in batches
-  // For 'recent' mode, fetch only the latest 100 videos or UPCOMING/LIVE videos
+  // For 'recent' mode, fetch only the latest 100 videos
+  // For 'default' mode (no parameter), fetch only UPCOMING/LIVE videos
   if (mode === 'all') {
     const { count, error } = await supabaseClient.from('videos').select('*', {
       count: 'exact',
@@ -81,8 +88,8 @@ async function* getSavedVideos({
         yield savedVideo
       }
     }
-  } else {
-    // For 'recent' mode: fetch UPCOMING/LIVE videos or latest 100
+  } else if (mode === 'recent') {
+    // For 'recent' mode: fetch latest 100 videos
     const { data: savedVideos, error } = await supabaseClient
       .from('videos')
       .select(
@@ -93,6 +100,28 @@ async function* getSavedVideos({
         ascending: false,
       })
       .limit(100)
+
+    if (error) {
+      throw new TypeError(error.message, {
+        cause: error,
+      })
+    }
+
+    for (const savedVideo of savedVideos) {
+      yield savedVideo
+    }
+  } else {
+    // For 'default' mode: fetch only UPCOMING/LIVE videos
+    const { data: savedVideos, error } = await supabaseClient
+      .from('videos')
+      .select(
+        'id, duration, published_at, status, title, thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
+      )
+      .is('deleted_at', null)
+      .in('status', ['UPCOMING', 'LIVE'])
+      .order('published_at', {
+        ascending: false,
+      })
 
     if (error) {
       throw new TypeError(error.message, {
@@ -277,9 +306,19 @@ export default defineEventHandler(async (event) => {
 
   const query = getQuery(event)
 
-  // Parse mode parameter, default to 'recent'
-  const modeParam = String(query.mode ?? 'recent').toLowerCase()
-  const mode: CheckMode = modeParam === 'all' ? 'all' : 'recent'
+  // Parse mode parameter
+  // - No parameter (default): UPCOMING/LIVE videos only
+  // - mode=recent: Latest 100 videos
+  // - mode=all: All videos (deletion check only, no updates)
+  const modeParam = query.mode ? String(query.mode).toLowerCase() : undefined
+  let mode: CheckMode
+  if (modeParam === 'all') {
+    mode = 'all'
+  } else if (modeParam === 'recent') {
+    mode = 'recent'
+  } else {
+    mode = 'default'
+  }
 
   const ratelimit = mode === 'all' ? videosCheckAll : videosCheck
   const { success } = await ratelimit.limit(
@@ -331,8 +370,9 @@ export default defineEventHandler(async (event) => {
   let updatedCount = 0
   const availableVideoIds = new Set<string>()
 
-  // For 'recent' mode, fetch full video details and update information
-  if (mode === 'recent') {
+  // For 'default' and 'recent' modes, fetch full video details and update information
+  // For 'all' mode, only check availability (no updates)
+  if (mode === 'default' || mode === 'recent') {
     const originalVideos = await Array.fromAsync(
       scraper.getVideos({
         ids: videoIds,
@@ -352,6 +392,7 @@ export default defineEventHandler(async (event) => {
     if (updatedCount > 0) {
       Sentry.logger.info('Videos have been updated.', {
         count: updatedCount,
+        mode,
       })
       // Revalidate tags for updated videos
       await revalidateTags(['videos'])
