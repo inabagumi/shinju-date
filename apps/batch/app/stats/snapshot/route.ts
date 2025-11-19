@@ -8,10 +8,10 @@ import {
 } from '@shinju-date/temporal-fns'
 import { after } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
-import { getAnalyticsSummary, getSummaryStats } from '@/_lib/stats'
 import { statsSnapshot as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
+import { getAnalyticsSummary, getSummaryStats } from './stats'
 
 const MONITOR_SLUG = '/stats/snapshot'
 

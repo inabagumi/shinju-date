@@ -35,7 +35,7 @@ vi.mock('@/lib/ratelimit', () => ({
   statsSnapshot: mockRatelimit,
 }))
 
-vi.mock('@/_lib/stats', () => ({
+vi.mock('../stats', () => ({
   getAnalyticsSummary: mockGetAnalyticsSummary,
   getSummaryStats: mockGetSummaryStats,
 }))
