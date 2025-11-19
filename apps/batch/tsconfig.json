@@ -1,14 +1,10 @@
 {
   "compilerOptions": {
-    "esModuleInterop": true,
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
     "paths": {
       "@/*": ["./*"]
     },
-    "skipLibCheck": true,
-    "target": "ESNext"
+    "target": "es2022"
   },
-  "extends": ["@tsconfig/strictest/tsconfig"],
-  "include": [".nitro/types/**/*.ts", "**/*.ts", "server/**/*.ts"]
+  "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/next/tsconfig"],
+  "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx"]
 }

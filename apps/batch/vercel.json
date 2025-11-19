@@ -15,14 +15,10 @@
     },
     {
       "path": "/videos/check",
-      "schedule": "*/1 * * * *"
+      "schedule": "27/30 * * * *"
     },
     {
-      "path": "/videos/check?mode=recent",
-      "schedule": "*/30 * * * *"
-    },
-    {
-      "path": "/videos/check?mode=all",
+      "path": "/videos/check?all=1",
       "schedule": "4 23 * * 2"
     },
     {
