@@ -14,9 +14,5 @@ export default defineNitroConfig({
   imports: {
     dirs: ['lib/**'],
   },
-  noExternal: [
-    // Force these packages to be bundled to avoid absolute path imports
-    '@supabase/supabase-js',
-  ],
   srcDir: 'server',
 })
