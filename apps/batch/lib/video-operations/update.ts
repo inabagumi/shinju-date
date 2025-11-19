@@ -1,7 +1,7 @@
 import type { TablesInsert } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
-import type { Temporal } from 'temporal-polyfill'
+import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 
 export type Video = {
@@ -115,13 +115,19 @@ export async function batchUpdateVideos({
     return 0
   }
 
-  const { error } = await supabaseClient.from('videos').upsert(updates, {
-    onConflict: 'id',
+  // Update each video individually since we're only updating specific fields
+  const updatePromises = updates.map((update) => {
+    const { id, ...updateData } = update
+    return supabaseClient.from('videos').update(updateData).eq('id', id)
   })
 
-  if (error) {
-    throw new TypeError(error.message, {
-      cause: error,
+  const results = await Promise.all(updatePromises)
+
+  // Check for errors
+  const firstError = results.find((result) => result.error)
+  if (firstError?.error) {
+    throw new TypeError(firstError.error.message, {
+      cause: firstError.error,
     })
   }
 

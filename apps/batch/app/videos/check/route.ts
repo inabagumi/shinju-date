@@ -1,17 +1,28 @@
-import * as Sentry from '@sentry/node'
+import * as Sentry from '@sentry/nextjs'
 import { REDIS_KEYS } from '@shinju-date/constants'
 import type { default as Database } from '@shinju-date/database'
+import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
+import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
+import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import { z } from 'zod'
-import type { TypedSupabaseClient } from '@/lib/supabase'
+import {
+  videosCheckAll as ratelimitAll,
+  videosCheck as ratelimitDefault,
+  videosCheckRecent as ratelimitRecent,
+} from '@/lib/ratelimit'
+import { redisClient } from '@/lib/redis'
+import { supabaseClient, type TypedSupabaseClient } from '@/lib/supabase'
 import {
   batchUpdateVideos,
   getVideoUpdateIfNeeded,
   type VideoUpdate,
+  type YouTubeVideoData,
 } from '@/lib/video-operations'
+import { youtubeClient } from '@/lib/youtube'
 
 type CheckMode = 'default' | 'recent' | 'all'
 
@@ -28,6 +39,8 @@ function getMonitorSlug({ mode }: { mode: CheckMode }) {
   }
   return '/videos/check'
 }
+
+export const maxDuration = 120
 
 type Thumbnail = {
   id: string
@@ -212,19 +225,30 @@ function deleteVideos({
   ])
 }
 
-export default defineEventHandler(async (event) => {
-  // Verify cron authentication
-  verifyCronAuth(event)
+export async function POST(request: NextRequest): Promise<Response> {
+  const cronSecure = process.env['CRON_SECRET']
+  if (
+    cronSecure &&
+    !verifyCronRequest(request, {
+      cronSecure,
+    })
+  ) {
+    Sentry.logger.warn('CRON_SECRET did not match.')
 
-  const query = getQuery(event)
+    return createErrorResponse('Unauthorized', {
+      status: 401,
+    })
+  }
+
+  const { searchParams } = request.nextUrl
 
   // Validate query parameters using zod
-  const validationResult = querySchema.safeParse(query)
+  const validationResult = querySchema.safeParse(
+    Object.fromEntries(searchParams.entries()),
+  )
   if (!validationResult.success) {
-    throw createError({
-      data: validationResult.error.errors,
-      message: 'Invalid query parameters',
-      statusCode: 400,
+    return createErrorResponse('Invalid query parameters', {
+      status: 400,
     })
   }
 
@@ -246,10 +270,10 @@ export default defineEventHandler(async (event) => {
   // Use appropriate ratelimit based on mode
   const ratelimit =
     mode === 'all'
-      ? videosCheckAll
+      ? ratelimitAll
       : mode === 'recent'
-        ? videosCheckRecent
-        : videosCheck
+        ? ratelimitRecent
+        : ratelimitDefault
   const { success } = await ratelimit.limit(
     mode === 'all'
       ? 'videos:check:all'
@@ -261,10 +285,12 @@ export default defineEventHandler(async (event) => {
   if (!success) {
     logger.warn('There has been no interval since the last run.')
 
-    throw createError({
-      message: 'There has been no interval since the last run.',
-      statusCode: 429,
-    })
+    return createErrorResponse(
+      'There has been no interval since the last run.',
+      {
+        status: 429,
+      },
+    )
   }
 
   const monitorSlug = getMonitorSlug({
@@ -327,10 +353,46 @@ export default defineEventHandler(async (event) => {
           return
         }
 
+        // Convert YouTubeVideo to YouTubeVideoData format
+        const videoData: YouTubeVideoData = {
+          id: originalVideo.id,
+        }
+
+        if (originalVideo.contentDetails.duration) {
+          videoData.contentDetails = {
+            duration: originalVideo.contentDetails.duration,
+          }
+        }
+
+        if (originalVideo.snippet.title || originalVideo.snippet.publishedAt) {
+          videoData.snippet = {
+            ...(originalVideo.snippet.title && {
+              title: originalVideo.snippet.title,
+            }),
+            publishedAt: originalVideo.snippet.publishedAt,
+          }
+        }
+
+        if (originalVideo.liveStreamingDetails) {
+          videoData.liveStreamingDetails = {}
+          if (originalVideo.liveStreamingDetails.scheduledStartTime) {
+            videoData.liveStreamingDetails.scheduledStartTime =
+              originalVideo.liveStreamingDetails.scheduledStartTime
+          }
+          if (originalVideo.liveStreamingDetails.actualStartTime) {
+            videoData.liveStreamingDetails.actualStartTime =
+              originalVideo.liveStreamingDetails.actualStartTime
+          }
+          if (originalVideo.liveStreamingDetails.actualEndTime) {
+            videoData.liveStreamingDetails.actualEndTime =
+              originalVideo.liveStreamingDetails.actualEndTime
+          }
+        }
+
         // Check if video needs updating and collect update data
         const updateData = getVideoUpdateIfNeeded({
           currentDateTime,
-          originalVideo,
+          originalVideo: videoData,
           savedVideo,
         })
 
@@ -401,13 +463,15 @@ export default defineEventHandler(async (event) => {
   // Revalidate tags if any changes were made
   const hasChanges = updatedCount > 0 || deletedCount > 0
   if (hasChanges) {
-    await revalidateTags(['videos'])
+    await revalidateTags(['videos'], {
+      signal: request.signal,
+    })
   }
 
   // Update last sync timestamp in Redis
   await redisClient.set(REDIS_KEYS.LAST_VIDEO_SYNC, toDBString(currentDateTime))
 
-  afterResponse(event, async () => {
+  after(async () => {
     Sentry.captureCheckIn({
       checkInId,
       monitorSlug,
@@ -417,6 +481,9 @@ export default defineEventHandler(async (event) => {
     await Sentry.flush(10_000)
   })
 
-  setResponseStatus(event, 204)
-  return null
-})
+  return new Response(null, {
+    status: 204,
+  })
+}
+
+export const GET = POST

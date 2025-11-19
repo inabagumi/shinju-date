@@ -1,5 +1,5 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
-import * as Sentry from '@sentry/node'
+import * as Sentry from '@sentry/nextjs'
 import type { TablesInsert } from '@shinju-date/database'
 import { isNonNullable } from '@shinju-date/helpers'
 import retryableFetch from '@shinju-date/retryable-fetch'
@@ -362,7 +362,6 @@ export default class Scraper implements AsyncDisposable {
     })
 
     // Create tuples of video data and YouTube video ID to maintain association
-    // Only insert new videos - updates are handled by /videos/check
     const videoDataWithYouTubeIds = originalVideos
       .map<{
         value: TablesInsert<'videos'>
@@ -386,23 +385,81 @@ export default class Scraper implements AsyncDisposable {
 
         const status = getVideoStatus(originalVideo, this.#currentDateTime)
 
-        // Skip if video already exists - updates are handled by /videos/check
-        if (savedVideo) {
+        if (!savedVideo) {
+          return {
+            value: {
+              created_at: toDBString(this.#currentDateTime),
+              duration: originalVideo.contentDetails?.duration ?? 'P0D',
+              platform: 'youtube',
+              published_at: toDBString(publishedAt),
+              status,
+              talent_id: this.#savedYouTubeChannel.talent_id,
+              title: originalVideo.snippet?.title ?? '',
+              updated_at: toDBString(this.#currentDateTime),
+              visible: true,
+              ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
+            },
+            youtubeVideoId: originalVideo.id,
+          }
+        }
+
+        const updateValue: Partial<TablesInsert<'videos'>> = {}
+        let hasUpdate = false
+
+        if (savedVideo.status !== status) {
+          updateValue.status = status
+          hasUpdate = true
+        }
+
+        const newDuration = originalVideo.contentDetails?.duration ?? 'P0D'
+        if (savedVideo.duration !== newDuration) {
+          updateValue.duration = newDuration
+          hasUpdate = true
+        }
+
+        const savedPublishedAt = Temporal.Instant.from(savedVideo.published_at)
+        if (!savedPublishedAt.equals(publishedAt)) {
+          updateValue.published_at = toDBString(publishedAt)
+          hasUpdate = true
+        }
+
+        if (thumbnail && savedVideo.thumbnail_id !== thumbnail.id) {
+          updateValue.thumbnail_id = thumbnail.id
+          hasUpdate = true
+        }
+
+        const newTitle = originalVideo.snippet?.title ?? ''
+        if (savedVideo.title !== newTitle) {
+          updateValue.title = newTitle
+          hasUpdate = true
+        }
+
+        if (savedVideo.deleted_at) {
+          updateValue.deleted_at = null
+          hasUpdate = true
+        }
+
+        if (!hasUpdate) {
           return null
         }
 
         return {
           value: {
-            created_at: toDBString(this.#currentDateTime),
-            duration: originalVideo.contentDetails?.duration ?? 'P0D',
-            platform: 'youtube',
-            published_at: toDBString(publishedAt),
-            status,
+            created_at: savedVideo.created_at,
+            deleted_at:
+              'deleted_at' in updateValue
+                ? updateValue.deleted_at
+                : savedVideo.deleted_at,
+            duration: updateValue.duration ?? savedVideo.duration,
+            id: savedVideo.id,
+            platform: savedVideo.platform,
+            published_at: updateValue.published_at ?? savedVideo.published_at,
+            status: updateValue.status ?? savedVideo.status,
             talent_id: this.#savedYouTubeChannel.talent_id,
-            title: originalVideo.snippet?.title ?? '',
+            thumbnail_id: updateValue.thumbnail_id ?? savedVideo.thumbnail_id,
+            title: updateValue.title ?? savedVideo.title,
             updated_at: toDBString(this.#currentDateTime),
-            visible: true,
-            ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
+            visible: savedVideo.visible,
           },
           youtubeVideoId: originalVideo.id,
         }
