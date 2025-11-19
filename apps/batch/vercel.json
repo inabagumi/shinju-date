@@ -18,6 +18,10 @@
       "schedule": "*/1 * * * *"
     },
     {
+      "path": "/videos/check?mode=recent",
+      "schedule": "*/30 * * * *"
+    },
+    {
       "path": "/videos/check?mode=all",
       "schedule": "4 23 * * 2"
     },
