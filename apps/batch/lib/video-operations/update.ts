@@ -2,6 +2,7 @@ import type { TablesInsert } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
 import type { Temporal } from 'temporal-polyfill'
+import type { TypedSupabaseClient } from '@/lib/supabase'
 
 export type Video = {
   id: string
@@ -25,19 +26,11 @@ export type YouTubeVideoData = {
   }
 }
 
-export type SupabaseClient = {
-  from: (table: string) => {
-    update: (data: unknown) => {
-      eq: (column: string, value: unknown) => Promise<{ error: Error | null }>
-    }
-  }
-}
-
 type UpdateVideoIfNeededOptions = {
   currentDateTime: Temporal.Instant
   originalVideo: YouTubeVideoData
   savedVideo: Video
-  supabaseClient: SupabaseClient
+  supabaseClient: TypedSupabaseClient
 }
 
 /**

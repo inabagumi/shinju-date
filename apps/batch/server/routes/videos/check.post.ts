@@ -306,35 +306,35 @@ export default defineEventHandler(async (event) => {
   // For 'all' mode, only check availability (no updates)
   if (mode === 'default' || mode === 'recent') {
     // Use callback to perform DB updates as videos are scraped
-    await Array.fromAsync(
-      scraper.getVideos({
-        ids: videoIds,
-        onVideoScraped: async (originalVideo) => {
-          availableVideoIds.add(originalVideo.id)
+    for await (const _ of scraper.getVideos({
+      ids: videoIds,
+      onVideoScraped: async (originalVideo) => {
+        availableVideoIds.add(originalVideo.id)
 
-          // Find corresponding saved video
-          const savedVideo = savedVideos.find(
-            (v) => v.youtube_video?.youtube_video_id === originalVideo.id,
-          )
+        // Find corresponding saved video
+        const savedVideo = savedVideos.find(
+          (v) => v.youtube_video?.youtube_video_id === originalVideo.id,
+        )
 
-          if (!savedVideo) {
-            return
-          }
+        if (!savedVideo) {
+          return
+        }
 
-          // Update video if changes are detected
-          const wasUpdated = await updateVideoIfNeeded({
-            currentDateTime,
-            originalVideo,
-            savedVideo,
-            supabaseClient,
-          })
+        // Update video if changes are detected
+        const wasUpdated = await updateVideoIfNeeded({
+          currentDateTime,
+          originalVideo,
+          savedVideo,
+          supabaseClient,
+        })
 
-          if (wasUpdated) {
-            updatedCount++
-          }
-        },
-      }),
-    )
+        if (wasUpdated) {
+          updatedCount++
+        }
+      },
+    })) {
+      // Consume the iterator
+    }
 
     if (updatedCount > 0) {
       logger.info('動画が更新されました。', {
