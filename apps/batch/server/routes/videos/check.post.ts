@@ -6,6 +6,12 @@ import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { Temporal } from 'temporal-polyfill'
 import { z } from 'zod'
+import type { TypedSupabaseClient } from '@/lib/supabase'
+import {
+  batchUpdateVideos,
+  getVideoUpdateIfNeeded,
+  type VideoUpdate,
+} from '@/lib/video-operations'
 
 type CheckMode = 'default' | 'recent' | 'all'
 
@@ -301,11 +307,12 @@ export default defineEventHandler(async (event) => {
 
   let updatedCount = 0
   const availableVideoIds = new Set<string>()
+  const videoUpdates: VideoUpdate[] = []
 
   // For 'default' and 'recent' modes, fetch full video details and update information
   // For 'all' mode, only check availability (no updates)
   if (mode === 'default' || mode === 'recent') {
-    // Use callback to perform DB updates as videos are scraped
+    // Collect video updates in the callback
     for await (const _ of scraper.getVideos({
       ids: videoIds,
       onVideoScraped: async (originalVideo) => {
@@ -320,23 +327,28 @@ export default defineEventHandler(async (event) => {
           return
         }
 
-        // Update video if changes are detected
-        const wasUpdated = await updateVideoIfNeeded({
+        // Check if video needs updating and collect update data
+        const updateData = getVideoUpdateIfNeeded({
           currentDateTime,
           originalVideo,
           savedVideo,
-          supabaseClient,
         })
 
-        if (wasUpdated) {
-          updatedCount++
+        if (updateData) {
+          videoUpdates.push(updateData)
         }
       },
     })) {
       // Consume the iterator
     }
 
-    if (updatedCount > 0) {
+    // Perform batch update if there are changes
+    if (videoUpdates.length > 0) {
+      updatedCount = await batchUpdateVideos({
+        supabaseClient,
+        updates: videoUpdates,
+      })
+
       logger.info('動画が更新されました。', {
         count: updatedCount,
         mode,

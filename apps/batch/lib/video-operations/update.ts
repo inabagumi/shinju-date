@@ -33,16 +33,24 @@ type UpdateVideoIfNeededOptions = {
   supabaseClient: TypedSupabaseClient
 }
 
+export type VideoUpdate = {
+  id: string
+  duration: string
+  published_at: string
+  status: 'UPCOMING' | 'LIVE' | 'ENDED'
+  title: string
+  updated_at: string
+}
+
 /**
- * Compares a video from YouTube with the saved version and updates if changes are detected
- * @returns true if the video was updated, false otherwise
+ * Compares a video from YouTube with the saved version and returns update data if changes are detected
+ * @returns Update data if the video needs updating, null otherwise
  */
-export async function updateVideoIfNeeded({
+export function getVideoUpdateIfNeeded({
   currentDateTime,
   originalVideo,
   savedVideo,
-  supabaseClient,
-}: UpdateVideoIfNeededOptions): Promise<boolean> {
+}: Omit<UpdateVideoIfNeededOptions, 'supabaseClient'>): VideoUpdate | null {
   const updateValue: Partial<TablesInsert<'videos'>> = {}
   let hasUpdate = false
 
@@ -77,27 +85,45 @@ export async function updateVideoIfNeeded({
     hasUpdate = true
   }
 
-  // Perform update if needed
+  // Return update data if needed
   if (hasUpdate) {
-    const { error } = await supabaseClient
-      .from('videos')
-      .update({
-        duration: updateValue.duration ?? savedVideo.duration,
-        published_at: updateValue.published_at ?? savedVideo.published_at,
-        status: updateValue.status ?? savedVideo.status,
-        title: updateValue.title ?? savedVideo.title,
-        updated_at: toDBString(currentDateTime),
-      })
-      .eq('id', savedVideo.id)
-
-    if (error) {
-      throw new TypeError(error.message, {
-        cause: error,
-      })
+    return {
+      duration: updateValue.duration ?? savedVideo.duration,
+      id: savedVideo.id,
+      published_at: updateValue.published_at ?? savedVideo.published_at,
+      status: updateValue.status ?? savedVideo.status,
+      title: updateValue.title ?? savedVideo.title,
+      updated_at: toDBString(currentDateTime),
     }
-
-    return true
   }
 
-  return false
+  return null
+}
+
+/**
+ * Performs batch update of videos in the database
+ * @returns The number of videos updated
+ */
+export async function batchUpdateVideos({
+  updates,
+  supabaseClient,
+}: {
+  updates: VideoUpdate[]
+  supabaseClient: TypedSupabaseClient
+}): Promise<number> {
+  if (updates.length === 0) {
+    return 0
+  }
+
+  const { error } = await supabaseClient.from('videos').upsert(updates, {
+    onConflict: 'id',
+  })
+
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  return updates.length
 }
