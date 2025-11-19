@@ -3,7 +3,6 @@
   "description": "Shared logger package for SHINJU DATE applications",
   "devDependencies": {
     "@sentry/nextjs": "^10.26.0",
-    "@sentry/node": "^10.26.0",
     "@tsconfig/node20": "^20.1.8",
     "@tsconfig/strictest": "^2.0.8",
     "tsup": "^8.5.1",
@@ -20,16 +19,7 @@
   "main": "./dist/index.js",
   "name": "@shinju-date/logger",
   "peerDependencies": {
-    "@sentry/nextjs": "^10.0.0",
-    "@sentry/node": "^10.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@sentry/nextjs": {
-      "optional": true
-    },
-    "@sentry/node": {
-      "optional": true
-    }
+    "@sentry/nextjs": "^10.0.0"
   },
   "private": true,
   "repository": {
