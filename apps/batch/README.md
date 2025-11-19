@@ -4,8 +4,9 @@
 
 ## 構成
 
-- **Next.js (Route Handlers)**: API Routes を使用したバッチ処理
+- **Next.js**: React ベースのフルスタックフレームワーク（Route Handlers使用）
 - **TypeScript**: 型安全な JavaScript
+- **Sentry**: エラートラッキングと監視
 
 ## 開発
 
@@ -27,14 +28,40 @@ pnpm run start
 
 このアプリケーションは、以下のような定期処理を実行します：
 
-- **データ同期処理** (`/videos/update`, `/videos/check`, `/talents/update`)
-  - YouTubeからの動画とチャンネル情報の同期
+- **データ同期処理**
+  - `/videos/update`: 新着動画の追加専用（10分毎）
+    - YouTubeから新しい動画のみを取得し、データベースに追加
+    - 既に存在する動画は更新せず、`/videos/check`に委譲
+  - `/videos/check`: 既存動画の情報更新と削除判定
+    - デフォルト（パラメータなし）: UPCOMING/LIVE動画の情報更新（1分毎）
+      - `videos.status`が`UPCOMING`または`LIVE`の動画が対象
+      - ステータス、タイトル、サムネイル、配信時刻などを最新化
+    - `mode=recent`: 最新100件の動画情報を更新（30分毎）
+      - ステータス、タイトル、サムネイル、配信時刻などを最新化
+    - `mode=all`: 全動画の削除判定のみ実行（週1回、火曜日）
+      - YouTube上で存在しなくなった動画をデータベースから削除
+      - 情報更新は行わない
+  - `/talents/update`: タレント情報の更新（3時間毎）
+    - チャンネル情報の同期
 - **統計情報の更新** (`/stats/snapshot`)
   - ダッシュボード統計のスナップショット保存（日次比較用）
 - **推薦クエリの更新** (`/recommendation/queries/update`)
   - 推薦システムのクエリ更新
 
-各バッチ処理は API Routes として実装され、Vercel Cron から定期的に呼び出されます。
+各バッチ処理は Next.js の Route Handlers として実装され、Vercel Cron から定期的に呼び出されます。
+
+### API エンドポイント
+
+- `GET /api/healthz` - ヘルスチェック（常に正常応答）
+- `GET /api/readyz` - 準備状態チェック（Supabase/Redis接続確認）
+- `POST /stats/snapshot` - 統計スナップショット作成
+- `POST /recommendation/queries/update` - 推薦クエリ更新
+- `POST /talents/update` - タレント情報更新
+- `POST /videos/update` - 新着動画の追加
+- `POST /videos/check` - 既存動画の情報更新と削除判定
+  - パラメータなし: UPCOMING/LIVE動画の情報更新
+  - `mode=recent`: 最新100件の動画の情報更新
+  - `mode=all`: 全動画の削除判定（情報更新なし）
 
 ### 統計スナップショット (`/stats/snapshot`)
 
