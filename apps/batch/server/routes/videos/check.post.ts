@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/node'
 import { REDIS_KEYS } from '@shinju-date/constants'
 import type { default as Database, TablesInsert } from '@shinju-date/database'
+import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import type { YouTubeVideo } from '@shinju-date/youtube-scraper'
@@ -10,8 +11,13 @@ import {
   YouTubeScraper,
 } from '@shinju-date/youtube-scraper'
 import { Temporal } from 'temporal-polyfill'
+import { z } from 'zod'
 
 type CheckMode = 'default' | 'recent' | 'all'
+
+const querySchema = z.object({
+  mode: z.enum(['recent', 'all']).optional(),
+})
 
 function getMonitorSlug({ mode }: { mode: CheckMode }) {
   if (mode === 'all') {
@@ -84,9 +90,7 @@ async function* getSavedVideos({
         })
       }
 
-      for (const savedVideo of savedVideos) {
-        yield savedVideo
-      }
+      yield* savedVideos
     }
   } else if (mode === 'recent') {
     // For 'recent' mode: fetch latest 100 videos
@@ -107,9 +111,7 @@ async function* getSavedVideos({
       })
     }
 
-    for (const savedVideo of savedVideos) {
-      yield savedVideo
-    }
+    yield* savedVideos
   } else {
     // For 'default' mode: fetch only UPCOMING/LIVE videos
     const { data: savedVideos, error } = await supabaseClient
@@ -129,9 +131,7 @@ async function* getSavedVideos({
       })
     }
 
-    for (const savedVideo of savedVideos) {
-      yield savedVideo
-    }
+    yield* savedVideos
   }
 }
 
@@ -306,11 +306,22 @@ export default defineEventHandler(async (event) => {
 
   const query = getQuery(event)
 
+  // Validate query parameters using zod
+  const validationResult = querySchema.safeParse(query)
+  if (!validationResult.success) {
+    throw createError({
+      data: validationResult.error.errors,
+      message: 'Invalid query parameters',
+      statusCode: 400,
+    })
+  }
+
+  const { mode: modeParam } = validationResult.data
+
   // Parse mode parameter
   // - No parameter (default): UPCOMING/LIVE videos only
   // - mode=recent: Latest 100 videos
   // - mode=all: All videos (deletion check only, no updates)
-  const modeParam = query.mode ? String(query.mode).toLowerCase() : undefined
   let mode: CheckMode
   if (modeParam === 'all') {
     mode = 'all'
@@ -320,13 +331,23 @@ export default defineEventHandler(async (event) => {
     mode = 'default'
   }
 
-  const ratelimit = mode === 'all' ? videosCheckAll : videosCheck
+  // Use appropriate ratelimit based on mode
+  const ratelimit =
+    mode === 'all'
+      ? videosCheckAll
+      : mode === 'recent'
+        ? videosCheckRecent
+        : videosCheck
   const { success } = await ratelimit.limit(
-    mode === 'all' ? 'videos:check:all' : 'videos:check',
+    mode === 'all'
+      ? 'videos:check:all'
+      : mode === 'recent'
+        ? 'videos:check:recent'
+        : 'videos:check',
   )
 
   if (!success) {
-    Sentry.logger.warn('There has been no interval since the last run.')
+    logger.warn('There has been no interval since the last run.')
 
     throw createError({
       message: 'There has been no interval since the last run.',
@@ -395,12 +416,10 @@ export default defineEventHandler(async (event) => {
     })
 
     if (updatedCount > 0) {
-      Sentry.logger.info('Videos have been updated.', {
+      logger.info('動画が更新されました。', {
         count: updatedCount,
         mode,
       })
-      // Revalidate tags for updated videos
-      await revalidateTags(['videos'])
     }
   } else {
     // For 'all' mode, only check availability (no updates)
@@ -420,6 +439,7 @@ export default defineEventHandler(async (event) => {
       !availableVideoIds.has(savedVideo.youtube_video.youtube_video_id),
   )
 
+  let deletedCount = 0
   if (deletedVideos.length > 0) {
     const results = await deleteVideos({
       currentDateTime,
@@ -434,16 +454,21 @@ export default defineEventHandler(async (event) => {
       Sentry.captureException(result.reason)
     }
 
-    Sentry.logger.info('The videos has been deleted.', {
+    deletedCount = deletedVideos.length - rejectedResults.length
+    logger.info('動画が削除されました。', {
+      count: deletedCount,
       ids: deletedVideos
         .map((video) => video.youtube_video?.youtube_video_id)
         .filter(Boolean),
     })
-
-    // Note: In Nitro, we don't have request.signal, so we omit it
-    await revalidateTags(['videos'])
   } else {
-    Sentry.logger.info('Deleted videos did not exist.')
+    logger.info('削除対象の動画は存在しませんでした。')
+  }
+
+  // Revalidate tags if any changes were made
+  const hasChanges = updatedCount > 0 || deletedCount > 0
+  if (hasChanges) {
+    await revalidateTags(['videos'])
   }
 
   // Update last sync timestamp in Redis
