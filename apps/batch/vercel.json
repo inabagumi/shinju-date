@@ -18,7 +18,7 @@
       "schedule": "27/30 * * * *"
     },
     {
-      "path": "/videos/check?all=1",
+      "path": "/videos/check?mode=all",
       "schedule": "4 23 * * 2"
     },
     {
