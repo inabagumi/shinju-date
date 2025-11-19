@@ -1,4 +1,20 @@
-import * as Sentry from '@sentry/nextjs'
+// Support both @sentry/nextjs and @sentry/node
+let Sentry: typeof import('@sentry/nextjs') | typeof import('@sentry/node')
+
+try {
+  // Try importing @sentry/nextjs first (for Next.js apps)
+  Sentry = await import('@sentry/nextjs')
+} catch {
+  try {
+    // Fall back to @sentry/node (for Node.js apps like batch)
+    Sentry = await import('@sentry/node')
+  } catch {
+    // If neither is available, create a fallback logger
+    console.warn(
+      'No Sentry SDK found. Logger will fall back to console logging.',
+    )
+  }
+}
 
 /**
  * 属性オブジェクト: Sentry上での検索性を確保するため、キーと値は英単語または数値のまま
@@ -17,7 +33,11 @@ export const logger = {
    * @param attributes - ログの属性オブジェクト（キーと値は英単語または数値）
    */
   debug: (message: string, attributes?: LogAttributes): void => {
-    Sentry.logger.debug(message, attributes)
+    if (Sentry?.logger) {
+      Sentry.logger.debug(message, attributes)
+    } else {
+      console.debug(message, attributes)
+    }
   },
 
   /**
@@ -26,7 +46,11 @@ export const logger = {
    * @param attributes - ログの属性オブジェクト（キーと値は英単語または数値）
    */
   error: (message: string, attributes?: LogAttributes): void => {
-    Sentry.logger.error(message, attributes)
+    if (Sentry?.logger) {
+      Sentry.logger.error(message, attributes)
+    } else {
+      console.error(message, attributes)
+    }
   },
 
   /**
@@ -35,7 +59,11 @@ export const logger = {
    * @param attributes - ログの属性オブジェクト（キーと値は英単語または数値）
    */
   info: (message: string, attributes?: LogAttributes): void => {
-    Sentry.logger.info(message, attributes)
+    if (Sentry?.logger) {
+      Sentry.logger.info(message, attributes)
+    } else {
+      console.info(message, attributes)
+    }
   },
 
   /**
@@ -44,6 +72,10 @@ export const logger = {
    * @param attributes - ログの属性オブジェクト（キーと値は英単語または数値）
    */
   warn: (message: string, attributes?: LogAttributes): void => {
-    Sentry.logger.warn(message, attributes)
+    if (Sentry?.logger) {
+      Sentry.logger.warn(message, attributes)
+    } else {
+      console.warn(message, attributes)
+    }
   },
 }
