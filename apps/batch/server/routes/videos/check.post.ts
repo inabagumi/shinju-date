@@ -4,7 +4,6 @@ import type { default as Database, TablesInsert } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
-import type { YouTubeVideo } from '@shinju-date/youtube-scraper'
 import {
   getPublishedAt,
   getVideoStatus,
@@ -212,94 +211,6 @@ function deleteVideos({
   ])
 }
 
-type UpdateVideosOptions = {
-  currentDateTime: Temporal.Instant
-  originalVideos: YouTubeVideo[]
-  savedVideos: Video[]
-  supabaseClient: TypedSupabaseClient
-}
-
-async function updateVideos({
-  currentDateTime,
-  originalVideos,
-  savedVideos,
-  supabaseClient,
-}: UpdateVideosOptions): Promise<number> {
-  const videosToUpdate: TablesInsert<'videos'>[] = []
-
-  for (const originalVideo of originalVideos) {
-    const savedVideo = savedVideos.find(
-      (v) => v.youtube_video?.youtube_video_id === originalVideo.id,
-    )
-
-    if (!savedVideo) {
-      continue
-    }
-
-    const updateValue: Partial<TablesInsert<'videos'>> = {}
-    let hasUpdate = false
-
-    // Check status
-    const newStatus = getVideoStatus(originalVideo, currentDateTime)
-    if (savedVideo.status !== newStatus) {
-      updateValue.status = newStatus
-      hasUpdate = true
-    }
-
-    // Check duration
-    const newDuration = originalVideo.contentDetails?.duration ?? 'P0D'
-    if (savedVideo.duration !== newDuration) {
-      updateValue.duration = newDuration
-      hasUpdate = true
-    }
-
-    // Check published_at
-    const newPublishedAt = getPublishedAt(originalVideo)
-    if (newPublishedAt) {
-      const savedPublishedAt = Temporal.Instant.from(savedVideo.published_at)
-      if (!savedPublishedAt.equals(newPublishedAt)) {
-        updateValue.published_at = toDBString(newPublishedAt)
-        hasUpdate = true
-      }
-    }
-
-    // Check title
-    const newTitle = originalVideo.snippet?.title ?? ''
-    if (savedVideo.title !== newTitle) {
-      updateValue.title = newTitle
-      hasUpdate = true
-    }
-
-    if (hasUpdate) {
-      videosToUpdate.push({
-        duration: updateValue.duration ?? savedVideo.duration,
-        id: savedVideo.id,
-        published_at: updateValue.published_at ?? savedVideo.published_at,
-        status: updateValue.status ?? savedVideo.status,
-        title: updateValue.title ?? savedVideo.title,
-        updated_at: toDBString(currentDateTime),
-      } as TablesInsert<'videos'>)
-    }
-  }
-
-  if (videosToUpdate.length === 0) {
-    return 0
-  }
-
-  // Batch update videos
-  const { error } = await supabaseClient.from('videos').upsert(videosToUpdate, {
-    onConflict: 'id',
-  })
-
-  if (error) {
-    throw new TypeError(error.message, {
-      cause: error,
-    })
-  }
-
-  return videosToUpdate.length
-}
-
 export default defineEventHandler(async (event) => {
   // Verify cron authentication
   verifyCronAuth(event)
@@ -399,21 +310,84 @@ export default defineEventHandler(async (event) => {
   // For 'default' and 'recent' modes, fetch full video details and update information
   // For 'all' mode, only check availability (no updates)
   if (mode === 'default' || mode === 'recent') {
-    const originalVideos = await Array.fromAsync(
+    // Use callback to perform DB updates as videos are scraped
+    await Array.fromAsync(
       scraper.getVideos({
         ids: videoIds,
-        onVideoScraped: async (video) => {
-          availableVideoIds.add(video.id)
+        onVideoScraped: async (originalVideo) => {
+          availableVideoIds.add(originalVideo.id)
+
+          // Find corresponding saved video
+          const savedVideo = savedVideos.find(
+            (v) => v.youtube_video?.youtube_video_id === originalVideo.id,
+          )
+
+          if (!savedVideo) {
+            return
+          }
+
+          // Check for updates
+          const updateValue: Partial<TablesInsert<'videos'>> = {}
+          let hasUpdate = false
+
+          // Check status
+          const newStatus = getVideoStatus(originalVideo, currentDateTime)
+          if (savedVideo.status !== newStatus) {
+            updateValue.status = newStatus
+            hasUpdate = true
+          }
+
+          // Check duration
+          const newDuration = originalVideo.contentDetails?.duration ?? 'P0D'
+          if (savedVideo.duration !== newDuration) {
+            updateValue.duration = newDuration
+            hasUpdate = true
+          }
+
+          // Check published_at
+          const newPublishedAt = getPublishedAt(originalVideo)
+          if (newPublishedAt) {
+            const savedPublishedAt = Temporal.Instant.from(
+              savedVideo.published_at,
+            )
+            if (!savedPublishedAt.equals(newPublishedAt)) {
+              updateValue.published_at = toDBString(newPublishedAt)
+              hasUpdate = true
+            }
+          }
+
+          // Check title
+          const newTitle = originalVideo.snippet?.title ?? ''
+          if (savedVideo.title !== newTitle) {
+            updateValue.title = newTitle
+            hasUpdate = true
+          }
+
+          // Perform update if needed
+          if (hasUpdate) {
+            const { error } = await supabaseClient
+              .from('videos')
+              .update({
+                duration: updateValue.duration ?? savedVideo.duration,
+                published_at:
+                  updateValue.published_at ?? savedVideo.published_at,
+                status: updateValue.status ?? savedVideo.status,
+                title: updateValue.title ?? savedVideo.title,
+                updated_at: toDBString(currentDateTime),
+              })
+              .eq('id', savedVideo.id)
+
+            if (error) {
+              throw new TypeError(error.message, {
+                cause: error,
+              })
+            }
+
+            updatedCount++
+          }
         },
       }),
     )
-
-    updatedCount = await updateVideos({
-      currentDateTime,
-      originalVideos,
-      savedVideos,
-      supabaseClient,
-    })
 
     if (updatedCount > 0) {
       logger.info('動画が更新されました。', {
