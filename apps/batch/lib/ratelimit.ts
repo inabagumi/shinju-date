@@ -19,7 +19,7 @@ export const recommendationQueriesUpdate = new Ratelimit({
 
 export const videosCheck = new Ratelimit({
   analytics: true,
-  limiter: Ratelimit.fixedWindow(1, '25m'),
+  limiter: Ratelimit.fixedWindow(1, '30s'),
   prefix: RATELIMIT_CACHE_KEY_PREFIX,
   redis: redisClient,
 })
