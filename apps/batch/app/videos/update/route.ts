@@ -2,13 +2,16 @@ import * as Sentry from '@sentry/nextjs'
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { revalidateTags } from '@shinju-date/web-cache'
+import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after } from 'next/server'
 import PQueue from 'p-queue'
 import { Temporal } from 'temporal-polyfill'
+import type { Video } from '@/lib/database'
+import { getSavedVideos, upsertThumbnails, upsertVideos } from '@/lib/database'
 import { videosUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
-import { scrape, type Video } from '@/lib/scraper'
 import { supabaseClient } from '@/lib/supabase'
+import { processVideos, Thumbnail } from '@/lib/video-operations'
 import { getChannels, youtubeClient } from '@/lib/youtube'
 
 const MONITOR_SLUG = '/videos/update'
@@ -116,19 +119,56 @@ export async function POST(request: Request): Promise<Response> {
         return Promise.reject(new TypeError('Channel does not exist.'))
       }
 
-      return queue.add(() =>
-        scrape({
-          channel: originalChannel,
-          currentDateTime,
-          savedYouTubeChannel: {
-            id: ytChannel.id,
-            talent_id: savedTalent.id,
-            youtube_channel_id: ytChannel.youtube_channel_id,
-          },
-          supabaseClient,
+      return queue.add(async () => {
+        await using scraper = new YouTubeScraper({
+          concurrency: 5,
           youtubeClient,
-        }),
-      )
+        })
+        const playlistId =
+          originalChannel.contentDetails.relatedPlaylists.uploads
+        const scrapedVideos: Video[] = []
+
+        await scraper.scrapeNewVideos({ playlistId }, async (videos) => {
+          const videoIDs = videos.map((video) => video.id)
+          const savedVideos = await Array.fromAsync(
+            getSavedVideos(supabaseClient, videoIDs),
+          )
+
+          const thumbnails = await Thumbnail.upsertThumbnails({
+            currentDateTime,
+            originalVideos: videos,
+            savedVideos,
+            supabaseClient,
+            upsertToDatabase: (values) =>
+              upsertThumbnails(supabaseClient, values),
+          })
+
+          const videoDataWithYouTubeIds = processVideos({
+            currentDateTime,
+            originalVideos: videos,
+            savedVideos,
+            talentId: savedTalent.id,
+            thumbnails,
+          })
+
+          if (videoDataWithYouTubeIds.length > 0) {
+            const values = videoDataWithYouTubeIds.map((item) => item.value)
+            const youtubeVideoIds = videoDataWithYouTubeIds.map(
+              (item) => item.youtubeVideoId,
+            )
+
+            const savedResults = await upsertVideos(
+              supabaseClient,
+              values,
+              youtubeVideoIds,
+              ytChannel.id,
+            )
+            scrapedVideos.push(...savedResults)
+          }
+        })
+
+        return scrapedVideos
+      })
     }),
   )
 

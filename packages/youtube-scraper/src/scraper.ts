@@ -4,7 +4,9 @@ import type {
   GetChannelsOptions,
   GetPlaylistItemsOptions,
   GetVideosOptions,
+  ScrapeNewVideosParams,
   ScraperOptions,
+  ScrapeUpdatedVideosParams,
   ScrapeVideosOptions,
   YouTubeChannel,
   YouTubePlaylistItem,
@@ -28,7 +30,7 @@ export class YouTubeScraper implements AsyncDisposable {
 
     this.#client = options.youtubeClient
     this.#queue = new PQueue({
-      concurrency: 5,
+      concurrency: options.concurrency ?? 5,
       interval: 100,
     })
   }
@@ -225,6 +227,54 @@ export class YouTubeScraper implements AsyncDisposable {
           isAvailable: availableVideoIds.has(videoId),
         })
       }
+    }
+  }
+
+  /**
+   * Scrape new videos from a playlist
+   * @param params - Parameters containing playlistId
+   * @param onNewVideos - Callback to handle batches of new videos
+   */
+  async scrapeNewVideos(
+    params: ScrapeNewVideosParams,
+    onNewVideos: (videos: YouTubeVideo[]) => Promise<void>,
+  ): Promise<void> {
+    const videoIDs = await Array.fromAsync(
+      this.getPlaylistItems({
+        all: false,
+        playlistID: params.playlistId,
+      }),
+      (playlistItem) => playlistItem.contentDetails.videoId,
+    )
+
+    const videos = await Array.fromAsync(this.getVideos({ ids: videoIDs }))
+
+    if (videos.length > 0) {
+      await onNewVideos(videos)
+    }
+  }
+
+  /**
+   * Scrape updated videos from a playlist
+   * @param params - Parameters containing playlistId
+   * @param onUpdatedVideos - Callback to handle batches of updated videos
+   */
+  async scrapeUpdatedVideos(
+    params: ScrapeUpdatedVideosParams,
+    onUpdatedVideos: (videos: YouTubeVideo[]) => Promise<void>,
+  ): Promise<void> {
+    const videoIDs = await Array.fromAsync(
+      this.getPlaylistItems({
+        all: true,
+        playlistID: params.playlistId,
+      }),
+      (playlistItem) => playlistItem.contentDetails.videoId,
+    )
+
+    const videos = await Array.fromAsync(this.getVideos({ ids: videoIDs }))
+
+    if (videos.length > 0) {
+      await onUpdatedVideos(videos)
     }
   }
 

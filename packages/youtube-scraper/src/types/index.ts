@@ -45,6 +45,7 @@ export type GetVideosOptions = {
 
 export type ScraperOptions = {
   youtubeClient: youtube.Youtube
+  concurrency?: number
 }
 
 export type ScrapeChannelsOptions = {
@@ -54,4 +55,12 @@ export type ScrapeChannelsOptions = {
 export type ScrapeVideosOptions = {
   playlistID: string
   scrapeAll?: boolean
+}
+
+export type ScrapeNewVideosParams = {
+  playlistId: string
+}
+
+export type ScrapeUpdatedVideosParams = {
+  playlistId: string
 }
