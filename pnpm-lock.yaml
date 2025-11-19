@@ -195,6 +195,9 @@ importers:
       '@shinju-date/helpers':
         specifier: workspace:*
         version: link:../../packages/helpers
+      '@shinju-date/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
       '@shinju-date/retryable-fetch':
         specifier: workspace:*
         version: link:../../packages/retryable-fetch

@@ -24,6 +24,13 @@ export const videosCheck = new Ratelimit({
   redis: redisClient,
 })
 
+export const videosCheckRecent = new Ratelimit({
+  analytics: true,
+  limiter: Ratelimit.fixedWindow(1, '25m'),
+  prefix: RATELIMIT_CACHE_KEY_PREFIX,
+  redis: redisClient,
+})
+
 export const videosCheckAll = new Ratelimit({
   analytics: true,
   limiter: Ratelimit.fixedWindow(1, '4d'),
