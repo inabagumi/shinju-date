@@ -1,7 +1,6 @@
 import * as Sentry from '@sentry/node'
 import { REDIS_KEYS } from '@shinju-date/constants'
 import type { default as Database } from '@shinju-date/database'
-import { logger } from '@shinju-date/logger'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { Temporal } from 'temporal-polyfill'
@@ -259,7 +258,7 @@ export default defineEventHandler(async (event) => {
   )
 
   if (!success) {
-    logger.warn('There has been no interval since the last run.')
+    console.warn('There has been no interval since the last run.')
 
     throw createError({
       message: 'There has been no interval since the last run.',
@@ -349,7 +348,7 @@ export default defineEventHandler(async (event) => {
         updates: videoUpdates,
       })
 
-      logger.info('動画が更新されました。', {
+      console.info('動画が更新されました。', {
         count: updatedCount,
         mode,
       })
@@ -388,14 +387,14 @@ export default defineEventHandler(async (event) => {
     }
 
     deletedCount = deletedVideos.length - rejectedResults.length
-    logger.info('動画が削除されました。', {
+    console.info('動画が削除されました。', {
       count: deletedCount,
       ids: deletedVideos
         .map((video) => video.youtube_video?.youtube_video_id)
         .filter(Boolean),
     })
   } else {
-    logger.info('削除対象の動画は存在しませんでした。')
+    console.info('削除対象の動画は存在しませんでした。')
   }
 
   // Revalidate tags if any changes were made
