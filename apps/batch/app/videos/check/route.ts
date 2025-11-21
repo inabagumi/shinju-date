@@ -339,9 +339,9 @@ export async function POST(request: NextRequest): Promise<Response> {
   // For 'all' mode, only check availability (no updates)
   if (mode === 'default' || mode === 'recent') {
     // Collect video updates in the callback
-    for await (const _ of scraper.getVideos({
-      ids: videoIds,
-      onVideoScraped: async (originalVideo) => {
+    for await (const _ of scraper.getVideos(
+      { ids: videoIds },
+      async (originalVideo) => {
         availableVideoIds.add(originalVideo.id)
 
         // Find corresponding saved video
@@ -400,7 +400,7 @@ export async function POST(request: NextRequest): Promise<Response> {
           videoUpdates.push(updateData)
         }
       },
-    })) {
+    )) {
       // Consume the iterator
     }
 
@@ -418,13 +418,10 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
   } else {
     // For 'all' mode, only check availability (no updates)
-    await scraper.checkVideos({
-      onVideoChecked: async (video) => {
-        if (video.isAvailable) {
-          availableVideoIds.add(video.id)
-        }
-      },
-      videoIds,
+    await scraper.checkVideos({ videoIds }, async (video) => {
+      if (video.isAvailable) {
+        availableVideoIds.add(video.id)
+      }
     })
   }
 

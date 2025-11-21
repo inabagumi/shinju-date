@@ -98,9 +98,9 @@ export async function POST(request: Request): Promise<Response> {
   })
 
   try {
-    await scraper.scrapeChannels({
-      channelIds: youTubeChannelIds,
-      onChannelScraped: async (youtubeChannel: YouTubeChannel) => {
+    await scraper.scrapeChannels(
+      { channelIds: youTubeChannelIds },
+      async (youtubeChannel: YouTubeChannel) => {
         const result = await (async (): Promise<Talent | null> => {
           const talent = talents.find(
             (t) => t.youtube_channel?.youtube_channel_id === youtubeChannel.id,
@@ -161,7 +161,7 @@ export async function POST(request: Request): Promise<Response> {
 
         results.push({ status: 'fulfilled', value: result })
       },
-    })
+    )
   } catch (error) {
     results.push({ reason: error, status: 'rejected' })
   }
