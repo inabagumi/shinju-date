@@ -60,17 +60,13 @@ describe('YouTubeScraper', () => {
       } as unknown as youtube.Youtube
 
       const scraper = new YouTubeScraper({ youtubeClient: mockClient })
-      const onChannelScraped = vi.fn()
       const channels = await Array.fromAsync(
-        scraper.getChannels({ ids: ['UC123', 'UC456'] }, onChannelScraped),
+        scraper.getChannels({ ids: ['UC123', 'UC456'] }),
       )
 
       expect(channels).toHaveLength(2)
       expect(channels[0]?.id).toBe('UC123')
       expect(channels[1]?.id).toBe('UC456')
-      expect(onChannelScraped).toHaveBeenCalledTimes(2)
-      expect(onChannelScraped).toHaveBeenCalledWith(mockChannels[0])
-      expect(onChannelScraped).toHaveBeenCalledWith(mockChannels[1])
     })
 
     it('should handle empty response', async () => {
@@ -146,20 +142,17 @@ describe('YouTubeScraper', () => {
       } as unknown as youtube.Youtube
 
       const scraper = new YouTubeScraper({ youtubeClient: mockClient })
-      const onPlaylistItemScraped = vi.fn()
       const items: YouTubePlaylistItem[] = []
 
-      for await (const item of scraper.getPlaylistItems(
-        { playlistID: 'PL123' },
-        onPlaylistItemScraped,
-      )) {
+      for await (const item of scraper.getPlaylistItems({
+        playlistID: 'PL123',
+      })) {
         items.push(item)
       }
 
       expect(items).toHaveLength(2)
       expect(items[0]?.contentDetails.videoId).toBe('video1')
       expect(items[1]?.contentDetails.videoId).toBe('video2')
-      expect(onPlaylistItemScraped).toHaveBeenCalledTimes(2)
     })
 
     it('should paginate when all=true', async () => {
