@@ -39,7 +39,6 @@ export class YouTubeScraper implements AsyncDisposable {
 
   async *getChannels(
     options: GetChannelsOptions,
-    onChannelScraped?: (channel: YouTubeChannel) => void | Promise<void>,
   ): AsyncGenerator<YouTubeChannel, void, undefined> {
     for (let i = 0; i < options.ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
       const {
@@ -57,9 +56,6 @@ export class YouTubeScraper implements AsyncDisposable {
       const validChannels = items.filter(isValidChannel)
 
       for (const channel of validChannels) {
-        if (onChannelScraped) {
-          await onChannelScraped(channel)
-        }
         yield channel
       }
     }
@@ -67,7 +63,6 @@ export class YouTubeScraper implements AsyncDisposable {
 
   async *getPlaylistItems(
     options: GetPlaylistItemsOptions,
-    onPlaylistItemScraped?: (item: YouTubePlaylistItem) => void | Promise<void>,
   ): AsyncGenerator<YouTubePlaylistItem, void, undefined> {
     let pageToken: string | undefined
     const all = options.all ?? false
@@ -93,9 +88,6 @@ export class YouTubeScraper implements AsyncDisposable {
       const validItems = items.filter(isValidPlaylistItem)
 
       for (const item of validItems) {
-        if (onPlaylistItemScraped) {
-          await onPlaylistItemScraped(item)
-        }
         yield item
       }
 
@@ -141,11 +133,8 @@ export class YouTubeScraper implements AsyncDisposable {
     onChannelScraped: (channel: YouTubeChannel) => Promise<void>,
   ): Promise<void> {
     // Use AsyncIterator pattern instead of Array.fromAsync
-    for await (const _channel of this.getChannels(
-      { ids: params.channelIds },
-      onChannelScraped,
-    )) {
-      // Channel is already processed via onChannelScraped callback
+    for await (const channel of this.getChannels({ ids: params.channelIds })) {
+      await onChannelScraped(channel)
     }
   }
 
@@ -158,10 +147,11 @@ export class YouTubeScraper implements AsyncDisposable {
   ): Promise<void> {
     const videoIDs: string[] = []
 
-    for await (const playlistItem of this.getPlaylistItems(
-      { all: false, playlistID: params.playlistId },
-      callbacks.onThumbnailScraped,
-    )) {
+    for await (const playlistItem of this.getPlaylistItems({
+      all: false,
+      playlistID: params.playlistId,
+    })) {
+      await callbacks.onThumbnailScraped(playlistItem)
       videoIDs.push(playlistItem.contentDetails.videoId)
     }
 

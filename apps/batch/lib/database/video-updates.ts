@@ -221,3 +221,17 @@ export async function processScrapedVideoForCheck<
     videoUpdates.push(updateData)
   }
 }
+
+/**
+ * Process scraped video availability check
+ * Designed to be used as a callback with scraper.scrapeVideosAvailability()
+ */
+export async function processScrapedVideoAvailability({
+  video,
+  availableVideoIds,
+}: {
+  video: YouTubeVideo
+  availableVideoIds: Set<string>
+}): Promise<void> {
+  availableVideoIds.add(video.id)
+}

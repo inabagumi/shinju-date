@@ -100,7 +100,7 @@ export async function POST(request: Request): Promise<Response> {
   try {
     await scraper.scrapeChannels(
       { channelIds: youTubeChannelIds },
-      async (youtubeChannel: YouTubeChannel) => {
+      async (youtubeChannel) => {
         const result = await (async (): Promise<Talent | null> => {
           const talent = talents.find(
             (t) => t.youtube_channel?.youtube_channel_id === youtubeChannel.id,

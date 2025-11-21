@@ -533,17 +533,46 @@ export async function updateTalentChannel({
   channelName,
   youtubeHandle,
 }: UpdateTalentChannelOptions): Promise<void> {
+  // Get the channel ID (primary key) for this talent
+  const { data: existingChannel, error: selectError } = await supabaseClient
+    .from('youtube_channels')
+    .select('id')
+    .eq('talent_id', talentId)
+    .single()
+
+  if (selectError && selectError.code !== 'PGRST116') {
+    throw new DatabaseError(selectError)
+  }
+
   const { error } = await supabaseClient.from('youtube_channels').upsert(
     {
+      ...(existingChannel?.id ? { id: existingChannel.id } : {}),
       name: channelName,
       talent_id: talentId,
       youtube_channel_id: youtubeChannelId,
       youtube_handle: youtubeHandle,
     },
-    { onConflict: 'talent_id' },
+    { onConflict: 'id' },
   )
 
   if (error) {
     throw new DatabaseError(error)
+  }
+}
+
+interface ProcessScrapedVideoAvailabilityOptions {
+  video: { id: string; isAvailable: boolean }
+  availableVideoIds: Set<string>
+}
+
+/**
+ * Process scraped video availability check
+ */
+export async function processScrapedVideoAvailability({
+  video,
+  availableVideoIds,
+}: ProcessScrapedVideoAvailabilityOptions): Promise<void> {
+  if (video.isAvailable) {
+    availableVideoIds.add(video.id)
   }
 }

@@ -11,6 +11,7 @@ import { Temporal } from 'temporal-polyfill'
 import { z } from 'zod'
 import {
   batchUpdateVideos,
+  processScrapedVideoAvailability,
   processScrapedVideoForCheck,
   type VideoUpdate,
 } from '@/lib/database'
@@ -363,9 +364,10 @@ export async function POST(request: NextRequest): Promise<Response> {
   } else {
     // For 'all' mode, only check availability (no updates)
     await scraper.scrapeVideosAvailability({ videoIds }, async (video) => {
-      if (video.isAvailable) {
-        availableVideoIds.add(video.id)
-      }
+      await processScrapedVideoAvailability({
+        availableVideoIds,
+        video,
+      })
     })
   }
 
