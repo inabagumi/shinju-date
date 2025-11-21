@@ -39,7 +39,7 @@
     "babel-plugin-react-compiler": "1.0.0",
     "msw": "2.12.2",
     "typescript": "5.9.3",
-    "vitest": "4.0.12"
+    "vitest": "4.0.13"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
