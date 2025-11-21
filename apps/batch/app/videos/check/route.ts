@@ -21,7 +21,7 @@ import {
   getVideoUpdateIfNeeded,
   type VideoUpdate,
   type YouTubeVideoData,
-} from '@/lib/video-operations'
+} from '@/lib/thumbnails'
 import { youtubeClient } from '@/lib/youtube'
 
 type CheckMode = 'default' | 'recent' | 'all'

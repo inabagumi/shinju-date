@@ -1,10 +1,8 @@
 import * as Sentry from '@sentry/nextjs'
 import type { TablesInsert } from '@shinju-date/database'
-import { isNonNullable } from '@shinju-date/helpers'
 import retryableFetch from '@shinju-date/retryable-fetch'
 import { toDBString } from '@shinju-date/temporal-fns'
 import type { YouTubeVideo } from '@shinju-date/youtube-scraper'
-import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
 import mime from 'mime'
 import { nanoid } from 'nanoid'
 import PQueue from 'p-queue'
@@ -59,9 +57,9 @@ export type ThumbnailOptions = {
 }
 
 /**
- * Handles thumbnail operations including uploading and upserting
+ * Handles video thumbnail operations including downloading, processing, and uploading
  */
-export class Thumbnail {
+export class VideoThumbnailProcessor {
   #currentDateTime: Temporal.Instant
   #dryRun: boolean
   #height: number
@@ -79,7 +77,7 @@ export class Thumbnail {
   static upload(
     options: ThumbnailOptions,
   ): Promise<TablesInsert<'thumbnails'> | null> {
-    const instance = new Thumbnail(options)
+    const instance = new VideoThumbnailProcessor(options)
 
     return instance.upload()
   }
@@ -110,7 +108,7 @@ export class Thumbnail {
         const savedThumbnail = savedVideo?.thumbnail
 
         return queue.add(() =>
-          Thumbnail.upload({
+          VideoThumbnailProcessor.upload({
             currentDateTime: options.currentDateTime ?? Temporal.Now.instant(),
             dryRun: options.dryRun ?? false,
             originalVideo,
@@ -246,125 +244,4 @@ export class Thumbnail {
       width: this.#width,
     }
   }
-}
-
-/**
- * Process videos from YouTube API and prepare them for database insertion/update
- */
-export function processVideos(options: {
-  currentDateTime: Temporal.Instant
-  originalVideos: YouTubeVideo[]
-  savedVideos: SavedVideo[]
-  talentId: string
-  thumbnails: { id: string; path: string }[]
-}): {
-  value: TablesInsert<'videos'>
-  youtubeVideoId: string
-}[] {
-  const { currentDateTime, originalVideos, savedVideos, talentId, thumbnails } =
-    options
-
-  return originalVideos
-    .map<{
-      value: TablesInsert<'videos'>
-      youtubeVideoId: string
-    } | null>((originalVideo) => {
-      const savedVideo = savedVideos.find(
-        (v) => v.youtube_video?.youtube_video_id === originalVideo.id,
-      )
-      const thumbnail = thumbnails.find((t) =>
-        t.path.startsWith(`${originalVideo.id}/`),
-      )
-      const publishedAt = getPublishedAt(originalVideo)
-
-      if (!publishedAt) {
-        Sentry.captureMessage(
-          `PublishedAt could not be determined for video ID: ${originalVideo.id}`,
-          'warning',
-        )
-        return null
-      }
-
-      const status = getVideoStatus(originalVideo, currentDateTime)
-
-      if (!savedVideo) {
-        return {
-          value: {
-            created_at: toDBString(currentDateTime),
-            duration: originalVideo.contentDetails?.duration ?? 'P0D',
-            platform: 'youtube',
-            published_at: toDBString(publishedAt),
-            status,
-            talent_id: talentId,
-            title: originalVideo.snippet?.title ?? '',
-            updated_at: toDBString(currentDateTime),
-            visible: true,
-            ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
-          },
-          youtubeVideoId: originalVideo.id,
-        }
-      }
-
-      const updateValue: Partial<TablesInsert<'videos'>> = {}
-      let hasUpdate = false
-
-      if (savedVideo.status !== status) {
-        updateValue.status = status
-        hasUpdate = true
-      }
-
-      const newDuration = originalVideo.contentDetails?.duration ?? 'P0D'
-      if (savedVideo.duration !== newDuration) {
-        updateValue.duration = newDuration
-        hasUpdate = true
-      }
-
-      const savedPublishedAt = Temporal.Instant.from(savedVideo.published_at)
-      if (!savedPublishedAt.equals(publishedAt)) {
-        updateValue.published_at = toDBString(publishedAt)
-        hasUpdate = true
-      }
-
-      if (thumbnail && savedVideo.thumbnail_id !== thumbnail.id) {
-        updateValue.thumbnail_id = thumbnail.id
-        hasUpdate = true
-      }
-
-      const newTitle = originalVideo.snippet?.title ?? ''
-      if (savedVideo.title !== newTitle) {
-        updateValue.title = newTitle
-        hasUpdate = true
-      }
-
-      if (savedVideo.deleted_at) {
-        updateValue.deleted_at = null
-        hasUpdate = true
-      }
-
-      if (!hasUpdate) {
-        return null
-      }
-
-      return {
-        value: {
-          created_at: savedVideo.created_at,
-          deleted_at:
-            'deleted_at' in updateValue
-              ? updateValue.deleted_at
-              : savedVideo.deleted_at,
-          duration: updateValue.duration ?? savedVideo.duration,
-          id: savedVideo.id,
-          platform: savedVideo.platform,
-          published_at: updateValue.published_at ?? savedVideo.published_at,
-          status: updateValue.status ?? savedVideo.status,
-          talent_id: talentId,
-          thumbnail_id: updateValue.thumbnail_id ?? savedVideo.thumbnail_id,
-          title: updateValue.title ?? savedVideo.title,
-          updated_at: toDBString(currentDateTime),
-          visible: savedVideo.visible,
-        },
-        youtubeVideoId: originalVideo.id,
-      }
-    })
-    .filter(isNonNullable)
 }
