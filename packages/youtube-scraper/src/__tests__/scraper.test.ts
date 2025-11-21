@@ -474,11 +474,11 @@ describe('YouTubeScraper', () => {
       await scraper.scrapePlaylistVideos(
         { playlistId: 'PL123' },
         {
-          onVideoScraped: async (video) => {
-            videos.push(video)
-          },
           onThumbnailScraped: async (thumbnail) => {
             thumbnails.push(thumbnail)
+          },
+          onVideoScraped: async (video) => {
+            videos.push(video)
           },
         },
       )

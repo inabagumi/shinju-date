@@ -11,7 +11,7 @@ import { Temporal } from 'temporal-polyfill'
 import { z } from 'zod'
 import {
   batchUpdateVideos,
-  createProcessScrapedVideosForCheck,
+  processScrapedVideoForCheck,
   type VideoUpdate,
 } from '@/lib/database'
 import {
@@ -337,16 +337,16 @@ export async function POST(request: NextRequest): Promise<Response> {
   // For 'default' and 'recent' modes, fetch full video details and update information
   // For 'all' mode, only check availability (no updates)
   if (mode === 'default' || mode === 'recent') {
-    // Use database function directly as callback - no manual data collection
-    await scraper.scrapeVideos(
-      { ids: videoIds },
-      createProcessScrapedVideosForCheck({
+    // Use database function directly as callback
+    await scraper.scrapeVideos({ ids: videoIds }, async (originalVideo) => {
+      await processScrapedVideoForCheck({
         availableVideoIds,
         currentDateTime,
+        originalVideo,
         savedVideos,
         videoUpdates,
-      }),
-    )
+      })
+    })
 
     // Perform batch update if there are changes
     if (videoUpdates.length > 0) {

@@ -22,7 +22,7 @@ import {
 export class YouTubeScraper implements AsyncDisposable {
   #client: youtube.Youtube
   #queue: PQueue
-  #logger?: Logger
+  #logger: Logger | undefined
 
   constructor(options: ScraperOptions) {
     if (!options.youtubeClient) {
