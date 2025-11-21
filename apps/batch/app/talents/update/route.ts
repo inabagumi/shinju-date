@@ -5,6 +5,7 @@ import { revalidateTags } from '@shinju-date/web-cache'
 import type { YouTubeChannel } from '@shinju-date/youtube-scraper'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after } from 'next/server'
+import { updateTalentChannel } from '@/lib/database'
 import { talentsUpdate as ratelimit } from '@/lib/ratelimit'
 import { supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
@@ -127,24 +128,15 @@ export async function POST(request: Request): Promise<Response> {
           // Get current YouTube channel name from database
           const currentYouTubeChannelName = talent.youtube_channel?.name
 
-          // Update youtube_channels table with YouTube channel name
+          // Update youtube_channels table with YouTube channel name using lib/database
           const youtubeHandle = item.snippet.customUrl || null
-          await supabaseClient
-            .from('youtube_channels')
-            .upsert(
-              {
-                name: item.snippet.title,
-                talent_id: talent.id,
-                youtube_channel_id: youtubeChannel.id,
-                youtube_handle: youtubeHandle,
-              },
-              { onConflict: 'talent_id' },
-            )
-            .then(({ error: youtubeError }) => {
-              if (youtubeError) {
-                Sentry.captureException(youtubeError)
-              }
-            })
+          await updateTalentChannel({
+            channelName: item.snippet.title,
+            supabaseClient,
+            talentId: talent.id,
+            youtubeChannelId: youtubeChannel.id,
+            youtubeHandle,
+          })
 
           // Return null if YouTube channel name hasn't changed
           if (item.snippet.title === currentYouTubeChannelName) {

@@ -513,3 +513,37 @@ export async function saveScrapedVideos(options: {
 
   return []
 }
+
+/**
+ * Update a talent's YouTube channel information
+ * Used by /talents/update route with callback pattern
+ */
+export type UpdateTalentChannelOptions = {
+  supabaseClient: TypedSupabaseClient
+  talentId: string
+  youtubeChannelId: string
+  channelName: string
+  youtubeHandle: string | null
+}
+
+export async function updateTalentChannel({
+  supabaseClient,
+  talentId,
+  youtubeChannelId,
+  channelName,
+  youtubeHandle,
+}: UpdateTalentChannelOptions): Promise<void> {
+  const { error } = await supabaseClient.from('youtube_channels').upsert(
+    {
+      name: channelName,
+      talent_id: talentId,
+      youtube_channel_id: youtubeChannelId,
+      youtube_handle: youtubeHandle,
+    },
+    { onConflict: 'talent_id' },
+  )
+
+  if (error) {
+    throw new DatabaseError(error)
+  }
+}
