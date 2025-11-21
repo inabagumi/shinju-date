@@ -11,9 +11,8 @@ import { Temporal } from 'temporal-polyfill'
 import { z } from 'zod'
 import {
   batchUpdateVideos,
-  getVideoUpdateIfNeeded,
+  createProcessScrapedVideosForCheck,
   type VideoUpdate,
-  type YouTubeVideoData,
 } from '@/lib/database'
 import {
   videosCheckAll as ratelimitAll,
@@ -338,71 +337,16 @@ export async function POST(request: NextRequest): Promise<Response> {
   // For 'default' and 'recent' modes, fetch full video details and update information
   // For 'all' mode, only check availability (no updates)
   if (mode === 'default' || mode === 'recent') {
-    // Collect video updates in the callback
-    for await (const _ of scraper.scrapeVideos(
+    // Use database function directly as callback - no manual data collection
+    await scraper.scrapeVideos(
       { ids: videoIds },
-      async (originalVideo) => {
-        availableVideoIds.add(originalVideo.id)
-
-        // Find corresponding saved video
-        const savedVideo = savedVideos.find(
-          (v) => v.youtube_video?.youtube_video_id === originalVideo.id,
-        )
-
-        if (!savedVideo) {
-          return
-        }
-
-        // Convert YouTubeVideo to YouTubeVideoData format
-        const videoData: YouTubeVideoData = {
-          id: originalVideo.id,
-        }
-
-        if (originalVideo.contentDetails.duration) {
-          videoData.contentDetails = {
-            duration: originalVideo.contentDetails.duration,
-          }
-        }
-
-        if (originalVideo.snippet.title || originalVideo.snippet.publishedAt) {
-          videoData.snippet = {
-            ...(originalVideo.snippet.title && {
-              title: originalVideo.snippet.title,
-            }),
-            publishedAt: originalVideo.snippet.publishedAt,
-          }
-        }
-
-        if (originalVideo.liveStreamingDetails) {
-          videoData.liveStreamingDetails = {}
-          if (originalVideo.liveStreamingDetails.scheduledStartTime) {
-            videoData.liveStreamingDetails.scheduledStartTime =
-              originalVideo.liveStreamingDetails.scheduledStartTime
-          }
-          if (originalVideo.liveStreamingDetails.actualStartTime) {
-            videoData.liveStreamingDetails.actualStartTime =
-              originalVideo.liveStreamingDetails.actualStartTime
-          }
-          if (originalVideo.liveStreamingDetails.actualEndTime) {
-            videoData.liveStreamingDetails.actualEndTime =
-              originalVideo.liveStreamingDetails.actualEndTime
-          }
-        }
-
-        // Check if video needs updating and collect update data
-        const updateData = getVideoUpdateIfNeeded({
-          currentDateTime,
-          originalVideo: videoData,
-          savedVideo,
-        })
-
-        if (updateData) {
-          videoUpdates.push(updateData)
-        }
-      },
-    )) {
-      // Consume the iterator
-    }
+      createProcessScrapedVideosForCheck({
+        availableVideoIds,
+        currentDateTime,
+        savedVideos,
+        videoUpdates,
+      }),
+    )
 
     // Perform batch update if there are changes
     if (videoUpdates.length > 0) {

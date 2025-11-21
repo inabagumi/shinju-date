@@ -250,12 +250,10 @@ describe('YouTubeScraper', () => {
       const onVideoScraped = vi.fn()
       const videos: YouTubeVideo[] = []
 
-      for await (const video of scraper.scrapeVideos(
-        { ids: ['video1', 'video2'] },
-        onVideoScraped,
-      )) {
+      await scraper.scrapeVideos({ ids: ['video1', 'video2'] }, (video) => {
         videos.push(video)
-      }
+        onVideoScraped(video)
+      })
 
       expect(videos).toHaveLength(2)
       expect(videos[0]?.id).toBe('video1')
@@ -285,9 +283,11 @@ describe('YouTubeScraper', () => {
 
       const scraper = new YouTubeScraper({ youtubeClient: mockClient })
       const videoIds = range(100).map((i) => `video${i}`)
-      const videos = await Array.fromAsync(
-        scraper.scrapeVideos({ ids: videoIds }),
-      )
+      const videos: YouTubeVideo[] = []
+
+      await scraper.scrapeVideos({ ids: videoIds }, (video) => {
+        videos.push(video)
+      })
 
       expect(videos).toHaveLength(100)
       expect(mockClient.videos.list).toHaveBeenCalledTimes(2)
@@ -440,7 +440,7 @@ describe('YouTubeScraper', () => {
     })
   })
 
-  describe('scrapeVideos', () => {
+  describe('scrapePlaylistVideos', () => {
     it('should return all videos from playlist', async () => {
       const mockPlaylistItems: YouTubePlaylistItem[] = [
         { contentDetails: { videoId: 'video1' } },
@@ -468,13 +468,24 @@ describe('YouTubeScraper', () => {
       } as unknown as youtube.Youtube
 
       const scraper = new YouTubeScraper({ youtubeClient: mockClient })
-      const videos = await scraper.scrapeVideos({
-        playlistID: 'PL123',
-        scrapeAll: false,
-      })
+      const videos: YouTubeVideo[] = []
+      const thumbnails: YouTubePlaylistItem[] = []
+
+      await scraper.scrapePlaylistVideos(
+        { playlistId: 'PL123' },
+        {
+          onVideoScraped: async (video) => {
+            videos.push(video)
+          },
+          onThumbnailScraped: async (thumbnail) => {
+            thumbnails.push(thumbnail)
+          },
+        },
+      )
 
       expect(videos).toHaveLength(1)
       expect(videos[0]?.id).toBe('video1')
+      expect(thumbnails).toHaveLength(1)
     })
   })
 })

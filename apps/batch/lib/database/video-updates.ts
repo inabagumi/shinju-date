@@ -1,10 +1,11 @@
 import type { TablesInsert } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
+import type { YouTubeVideo } from '@shinju-date/youtube-scraper'
 import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
 import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 
-export type Video = {
+export type SavedVideoForCheck = {
   id: string
   duration: string
   published_at: string
@@ -29,7 +30,7 @@ export type YouTubeVideoData = {
 type UpdateVideoIfNeededOptions = {
   currentDateTime: Temporal.Instant
   originalVideo: YouTubeVideoData
-  savedVideo: Video
+  savedVideo: SavedVideoForCheck
   supabaseClient: TypedSupabaseClient
 }
 
@@ -132,4 +133,89 @@ export async function batchUpdateVideos({
   }
 
   return updates.length
+}
+
+/**
+ * Process scraped videos for checking and updating
+ * This function is designed to be passed directly to scraper.scrapeVideos()
+ */
+export function createProcessScrapedVideosForCheck<T extends {
+  id: string
+  duration: string
+  published_at: string
+  status: 'UPCOMING' | 'LIVE' | 'ENDED'
+  title: string
+  youtube_video: {
+    youtube_video_id: string
+  }
+}>({
+  currentDateTime,
+  savedVideos,
+  availableVideoIds,
+  videoUpdates,
+}: {
+  currentDateTime: Temporal.Instant
+  savedVideos: T[]
+  availableVideoIds: Set<string>
+  videoUpdates: VideoUpdate[]
+}) {
+  return async (originalVideo: YouTubeVideo): Promise<void> => {
+    availableVideoIds.add(originalVideo.id)
+
+    // Find corresponding saved video
+    const savedVideo = savedVideos.find(
+      (v) => v.youtube_video?.youtube_video_id === originalVideo.id,
+    )
+
+    if (!savedVideo) {
+      return
+    }
+
+    // Convert YouTubeVideo to YouTubeVideoData format
+    const videoData: YouTubeVideoData = {
+      id: originalVideo.id,
+    }
+
+    if (originalVideo.contentDetails.duration) {
+      videoData.contentDetails = {
+        duration: originalVideo.contentDetails.duration,
+      }
+    }
+
+    if (originalVideo.snippet.title || originalVideo.snippet.publishedAt) {
+      videoData.snippet = {
+        ...(originalVideo.snippet.title && {
+          title: originalVideo.snippet.title,
+        }),
+        publishedAt: originalVideo.snippet.publishedAt,
+      }
+    }
+
+    if (originalVideo.liveStreamingDetails) {
+      videoData.liveStreamingDetails = {}
+      if (originalVideo.liveStreamingDetails.scheduledStartTime) {
+        videoData.liveStreamingDetails.scheduledStartTime =
+          originalVideo.liveStreamingDetails.scheduledStartTime
+      }
+      if (originalVideo.liveStreamingDetails.actualStartTime) {
+        videoData.liveStreamingDetails.actualStartTime =
+          originalVideo.liveStreamingDetails.actualStartTime
+      }
+      if (originalVideo.liveStreamingDetails.actualEndTime) {
+        videoData.liveStreamingDetails.actualEndTime =
+          originalVideo.liveStreamingDetails.actualEndTime
+      }
+    }
+
+    // Check if video needs updating and collect update data
+    const updateData = getVideoUpdateIfNeeded({
+      currentDateTime,
+      originalVideo: videoData,
+      savedVideo,
+    })
+
+    if (updateData) {
+      videoUpdates.push(updateData)
+    }
+  }
 }
