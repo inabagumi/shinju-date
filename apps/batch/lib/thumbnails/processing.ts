@@ -100,7 +100,6 @@ export class ImageProcessor {
     this.#width = width
   }
 
-  // biome-ignore lint/suspicious/useAdjacentOverloadSignatures: 該当しないのになぜかエラーが出る。
   async upload(): Promise<TablesInsert<'thumbnails'> | null> {
     if (this.#savedThumbnail?.updated_at) {
       const updatedAt = Temporal.Instant.from(this.#savedThumbnail.updated_at)

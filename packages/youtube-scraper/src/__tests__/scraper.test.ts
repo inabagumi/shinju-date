@@ -223,7 +223,7 @@ describe('YouTubeScraper', () => {
     })
   })
 
-  describe('getVideos', () => {
+  describe('scrapeVideos', () => {
     it('should yield videos with callback', async () => {
       const mockVideos: YouTubeVideo[] = [
         {
@@ -250,7 +250,7 @@ describe('YouTubeScraper', () => {
       const onVideoScraped = vi.fn()
       const videos: YouTubeVideo[] = []
 
-      for await (const video of scraper.getVideos(
+      for await (const video of scraper.scrapeVideos(
         { ids: ['video1', 'video2'] },
         onVideoScraped,
       )) {
@@ -285,7 +285,9 @@ describe('YouTubeScraper', () => {
 
       const scraper = new YouTubeScraper({ youtubeClient: mockClient })
       const videoIds = range(100).map((i) => `video${i}`)
-      const videos = await Array.fromAsync(scraper.getVideos({ ids: videoIds }))
+      const videos = await Array.fromAsync(
+        scraper.scrapeVideos({ ids: videoIds }),
+      )
 
       expect(videos).toHaveLength(100)
       expect(mockClient.videos.list).toHaveBeenCalledTimes(2)
@@ -373,7 +375,7 @@ describe('YouTubeScraper', () => {
     })
   })
 
-  describe('checkVideos', () => {
+  describe('scrapeVideosAvailability', () => {
     it('should check video availability', async () => {
       const mockClient = {
         videos: {
@@ -388,7 +390,7 @@ describe('YouTubeScraper', () => {
       const scraper = new YouTubeScraper({ youtubeClient: mockClient })
       const onVideoChecked = vi.fn()
 
-      await scraper.checkVideos(
+      await scraper.scrapeVideosAvailability(
         { videoIds: ['video1', 'video2', 'video3'] },
         onVideoChecked,
       )
@@ -431,7 +433,7 @@ describe('YouTubeScraper', () => {
       const scraper = new YouTubeScraper({ youtubeClient: mockClient })
       const onVideoChecked = vi.fn()
 
-      await scraper.checkVideos({ videoIds }, onVideoChecked)
+      await scraper.scrapeVideosAvailability({ videoIds }, onVideoChecked)
 
       expect(onVideoChecked).toHaveBeenCalledTimes(100)
       expect(mockClient.videos.list).toHaveBeenCalledTimes(2)

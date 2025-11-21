@@ -10,18 +10,18 @@ import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import { z } from 'zod'
 import {
+  batchUpdateVideos,
+  getVideoUpdateIfNeeded,
+  type VideoUpdate,
+  type YouTubeVideoData,
+} from '@/lib/database'
+import {
   videosCheckAll as ratelimitAll,
   videosCheck as ratelimitDefault,
   videosCheckRecent as ratelimitRecent,
 } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient, type TypedSupabaseClient } from '@/lib/supabase'
-import {
-  batchUpdateVideos,
-  getVideoUpdateIfNeeded,
-  type VideoUpdate,
-  type YouTubeVideoData,
-} from '@/lib/thumbnails'
 import { youtubeClient } from '@/lib/youtube'
 
 type CheckMode = 'default' | 'recent' | 'all'
@@ -339,7 +339,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   // For 'all' mode, only check availability (no updates)
   if (mode === 'default' || mode === 'recent') {
     // Collect video updates in the callback
-    for await (const _ of scraper.getVideos(
+    for await (const _ of scraper.scrapeVideos(
       { ids: videoIds },
       async (originalVideo) => {
         availableVideoIds.add(originalVideo.id)
@@ -418,7 +418,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
   } else {
     // For 'all' mode, only check availability (no updates)
-    await scraper.checkVideos({ videoIds }, async (video) => {
+    await scraper.scrapeVideosAvailability({ videoIds }, async (video) => {
       if (video.isAvailable) {
         availableVideoIds.add(video.id)
       }

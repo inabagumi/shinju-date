@@ -7,7 +7,6 @@ import type {
   ScrapeNewVideosParams,
   ScraperOptions,
   ScrapeUpdatedVideosParams,
-  ScrapeVideosOptions,
   YouTubeChannel,
   YouTubePlaylistItem,
   YouTubeVideo,
@@ -105,7 +104,7 @@ export class YouTubeScraper implements AsyncDisposable {
     }
   }
 
-  async *getVideos(
+  async *scrapeVideos(
     options: GetVideosOptions,
     onVideoScraped?: (video: YouTubeVideo) => void | Promise<void>,
   ): AsyncGenerator<YouTubeVideo, void, undefined> {
@@ -146,24 +145,6 @@ export class YouTubeScraper implements AsyncDisposable {
     }
   }
 
-  async scrapeVideos(options: ScrapeVideosOptions): Promise<YouTubeVideo[]> {
-    const videoIDs: string[] = []
-
-    for await (const playlistItem of this.getPlaylistItems({
-      all: options.scrapeAll ?? false,
-      playlistID: options.playlistID,
-    })) {
-      videoIDs.push(playlistItem.contentDetails.videoId)
-    }
-
-    const videos: YouTubeVideo[] = []
-    for await (const video of this.getVideos({ ids: videoIDs })) {
-      videos.push(video)
-    }
-
-    return videos
-  }
-
   async scrapePlaylistVideos(
     params: { playlistId: string },
     callbacks: {
@@ -181,7 +162,7 @@ export class YouTubeScraper implements AsyncDisposable {
     }
 
     // Use AsyncIterator to trigger onVideoScraped callbacks
-    for await (const _video of this.getVideos(
+    for await (const _video of this.scrapeVideos(
       { ids: videoIDs },
       callbacks.onVideoScraped,
     )) {
@@ -189,7 +170,7 @@ export class YouTubeScraper implements AsyncDisposable {
     }
   }
 
-  async checkVideos(
+  async scrapeVideosAvailability(
     params: { videoIds: string[] },
     onVideoChecked: (video: {
       id: string
@@ -248,7 +229,7 @@ export class YouTubeScraper implements AsyncDisposable {
       }
 
       const videos: YouTubeVideo[] = []
-      for await (const video of this.getVideos({ ids: videoIDs })) {
+      for await (const video of this.scrapeVideos({ ids: videoIDs })) {
         videos.push(video)
       }
 
@@ -282,7 +263,7 @@ export class YouTubeScraper implements AsyncDisposable {
       }
 
       const videos: YouTubeVideo[] = []
-      for await (const video of this.getVideos({ ids: videoIDs })) {
+      for await (const video of this.scrapeVideos({ ids: videoIDs })) {
         videos.push(video)
       }
 
