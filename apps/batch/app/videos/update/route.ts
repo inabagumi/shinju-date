@@ -4,15 +4,13 @@ import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after } from 'next/server'
-import PQueue from 'p-queue'
 import { Temporal } from 'temporal-polyfill'
 import type { Video } from '@/lib/database'
-import { getSavedVideos, upsertThumbnails, upsertVideos } from '@/lib/database'
+import { saveScrapedVideos } from '@/lib/database'
 import { videosUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
-import { processVideos, Thumbnail } from '@/lib/video-operations'
-import { getChannels, youtubeClient } from '@/lib/youtube'
+import { youtubeClient } from '@/lib/youtube'
 
 const MONITOR_SLUG = '/videos/update'
 
@@ -87,102 +85,53 @@ export async function POST(request: Request): Promise<Response> {
     })
   }
 
-  const channelIDs = savedTalents.map((savedTalent) => {
-    const ytChannel = savedTalent.youtube_channel
-    return ytChannel.youtube_channel_id
-  })
-  const channels = await Array.fromAsync(
-    getChannels({
-      ids: channelIDs,
-    }),
-  )
-
-  if (channels.length < 1) {
-    throw new TypeError('There are no channels.')
-  }
-
-  const queue = new PQueue({
-    concurrency: 1,
-    interval: 250,
-  })
-
-  const results = await Promise.allSettled(
+  // Map channel IDs to talent information for callback processing
+  const channelToTalentMap = new Map(
     savedTalents.map((savedTalent) => {
       const ytChannel = savedTalent.youtube_channel
-      const youtubeChannelId = ytChannel.youtube_channel_id
-
-      const originalChannel = channels.find(
-        (item) => item.id === youtubeChannelId,
-      )
-
-      if (!originalChannel) {
-        return Promise.reject(new TypeError('Channel does not exist.'))
-      }
-
-      return queue.add(async () => {
-        await using scraper = new YouTubeScraper({
-          concurrency: 5,
-          youtubeClient,
-        })
-        const playlistId =
-          originalChannel.contentDetails.relatedPlaylists.uploads
-        const scrapedVideos: Video[] = []
-
-        await scraper.scrapeNewVideos({ playlistId }, async (videos) => {
-          const videoIDs = videos.map((video) => video.id)
-          const savedVideos = await Array.fromAsync(
-            getSavedVideos(supabaseClient, videoIDs),
-          )
-
-          const thumbnails = await Thumbnail.upsertThumbnails({
-            currentDateTime,
-            originalVideos: videos,
-            savedVideos,
-            supabaseClient,
-            upsertToDatabase: (values) =>
-              upsertThumbnails(supabaseClient, values),
-          })
-
-          const videoDataWithYouTubeIds = processVideos({
-            currentDateTime,
-            originalVideos: videos,
-            savedVideos,
-            talentId: savedTalent.id,
-            thumbnails,
-          })
-
-          if (videoDataWithYouTubeIds.length > 0) {
-            const values = videoDataWithYouTubeIds.map((item) => item.value)
-            const youtubeVideoIds = videoDataWithYouTubeIds.map(
-              (item) => item.youtubeVideoId,
-            )
-
-            const savedResults = await upsertVideos(
-              supabaseClient,
-              values,
-              youtubeVideoIds,
-              ytChannel.id,
-            )
-            scrapedVideos.push(...savedResults)
-          }
-        })
-
-        return scrapedVideos
-      })
+      return [
+        ytChannel.youtube_channel_id,
+        {
+          id: savedTalent.id,
+          youtubeChannelId: ytChannel.id,
+        },
+      ]
     }),
   )
+
+  const channelIDs = Array.from(channelToTalentMap.keys())
 
   const videos: Video[] = []
 
-  for (const result of results) {
-    if (result.status === 'fulfilled' && result.value) {
-      for (const video of result.value) {
-        videos.push(video)
+  // Use scraper with internal p-queue for concurrency control
+  await using scraper = new YouTubeScraper({ concurrency: 1, youtubeClient })
+
+  await scraper.scrapeNewVideosFromChannels(
+    { channelIds: channelIDs },
+    async (channelId, scrapedVideos) => {
+      const talentInfo = channelToTalentMap.get(channelId)
+      if (!talentInfo) {
+        Sentry.captureMessage(
+          `Talent info not found for channel ID: ${channelId}`,
+          'warning',
+        )
+        return
       }
-    } else if (result.status === 'rejected') {
-      Sentry.captureException(result.reason)
-    }
-  }
+
+      try {
+        const savedResults = await saveScrapedVideos({
+          currentDateTime,
+          originalVideos: scrapedVideos,
+          supabaseClient,
+          talentId: talentInfo.id,
+          youtubeChannelId: talentInfo.youtubeChannelId,
+        })
+        videos.push(...savedResults)
+      } catch (err) {
+        Sentry.captureException(err)
+      }
+    },
+  )
 
   if (videos.length > 0) {
     for (const video of videos) {

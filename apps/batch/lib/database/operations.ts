@@ -1,5 +1,7 @@
 import * as Sentry from '@sentry/nextjs'
 import type { TablesInsert } from '@shinju-date/database'
+import type { YouTubeVideo } from '@shinju-date/youtube-scraper'
+import type { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 import type { SavedVideo, Video } from './types'
 
@@ -270,4 +272,70 @@ export async function upsertVideos(
   }
 
   return allVideos
+}
+
+/**
+ * Process and save scraped videos from YouTube
+ * This handles the complete flow: fetch saved videos, process thumbnails, transform data, and save to database
+ */
+export async function saveScrapedVideos(options: {
+  currentDateTime: Temporal.Instant
+  originalVideos: YouTubeVideo[]
+  supabaseClient: TypedSupabaseClient
+  talentId: string
+  youtubeChannelId: string
+}): Promise<Video[]> {
+  const {
+    currentDateTime,
+    originalVideos,
+    supabaseClient,
+    talentId,
+    youtubeChannelId,
+  } = options
+
+  // Import at runtime to avoid circular dependencies
+  const { Thumbnail, processVideos } = await import(
+    '@/lib/video-operations/processing'
+  )
+
+  // 1. Get existing videos from database
+  const videoIDs = originalVideos.map((video) => video.id)
+  const savedVideos = await Array.fromAsync(
+    getSavedVideos(supabaseClient, videoIDs),
+  )
+
+  // 2. Process and upload thumbnails
+  const thumbnails = await Thumbnail.upsertThumbnails({
+    currentDateTime,
+    originalVideos,
+    savedVideos,
+    supabaseClient,
+    upsertToDatabase: (values) => upsertThumbnails(supabaseClient, values),
+  })
+
+  // 3. Process video data (new and updated)
+  const videoDataWithYouTubeIds = processVideos({
+    currentDateTime,
+    originalVideos,
+    savedVideos,
+    talentId,
+    thumbnails,
+  })
+
+  // 4. Save to database
+  if (videoDataWithYouTubeIds.length > 0) {
+    const values = videoDataWithYouTubeIds.map((item) => item.value)
+    const youtubeVideoIds = videoDataWithYouTubeIds.map(
+      (item) => item.youtubeVideoId,
+    )
+
+    return upsertVideos(
+      supabaseClient,
+      values,
+      youtubeVideoIds,
+      youtubeChannelId,
+    )
+  }
+
+  return []
 }

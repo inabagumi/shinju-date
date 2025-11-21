@@ -278,6 +278,71 @@ export class YouTubeScraper implements AsyncDisposable {
     }
   }
 
+  /**
+   * Scrape new videos from channels
+   * @param params - Parameters containing channelIds
+   * @param onNewVideos - Callback to handle batches of new videos with channel context
+   */
+  async scrapeNewVideosFromChannels(
+    params: { channelIds: string[] },
+    onNewVideos: (channelId: string, videos: YouTubeVideo[]) => Promise<void>,
+  ): Promise<void> {
+    const channels = await Array.fromAsync(
+      this.getChannels({ ids: params.channelIds }),
+    )
+
+    for (const channel of channels) {
+      const playlistId = channel.contentDetails.relatedPlaylists.uploads
+      const videoIDs = await Array.fromAsync(
+        this.getPlaylistItems({
+          all: false,
+          playlistID: playlistId,
+        }),
+        (playlistItem) => playlistItem.contentDetails.videoId,
+      )
+
+      const videos = await Array.fromAsync(this.getVideos({ ids: videoIDs }))
+
+      if (videos.length > 0) {
+        await onNewVideos(channel.id, videos)
+      }
+    }
+  }
+
+  /**
+   * Scrape updated videos from channels
+   * @param params - Parameters containing channelIds
+   * @param onUpdatedVideos - Callback to handle batches of updated videos with channel context
+   */
+  async scrapeUpdatedVideosFromChannels(
+    params: { channelIds: string[] },
+    onUpdatedVideos: (
+      channelId: string,
+      videos: YouTubeVideo[],
+    ) => Promise<void>,
+  ): Promise<void> {
+    const channels = await Array.fromAsync(
+      this.getChannels({ ids: params.channelIds }),
+    )
+
+    for (const channel of channels) {
+      const playlistId = channel.contentDetails.relatedPlaylists.uploads
+      const videoIDs = await Array.fromAsync(
+        this.getPlaylistItems({
+          all: true,
+          playlistID: playlistId,
+        }),
+        (playlistItem) => playlistItem.contentDetails.videoId,
+      )
+
+      const videos = await Array.fromAsync(this.getVideos({ ids: videoIDs }))
+
+      if (videos.length > 0) {
+        await onUpdatedVideos(channel.id, videos)
+      }
+    }
+  }
+
   async [Symbol.asyncDispose](): Promise<void> {
     await this.#queue.onIdle()
   }
