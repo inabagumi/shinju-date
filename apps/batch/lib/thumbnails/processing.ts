@@ -57,9 +57,10 @@ export type ThumbnailOptions = {
 }
 
 /**
- * Handles thumbnail operations including downloading, processing, and uploading
+ * Handles image operations including downloading, processing, and uploading
+ * Can be used for thumbnails, icons, avatars, and other image types
  */
-export class ThumbnailProcessor {
+export class ImageProcessor {
   #currentDateTime: Temporal.Instant
   #dryRun: boolean
   #height: number
@@ -70,14 +71,14 @@ export class ThumbnailProcessor {
   #width: number
 
   /**
-   * Uploads a thumbnail for a video
-   * @param options - The thumbnail options
+   * Uploads an image (thumbnail, icon, etc.)
+   * @param options - The image upload options
    * @returns The thumbnail insert data or null if no upload is needed
    */
   static upload(
     options: ThumbnailOptions,
   ): Promise<TablesInsert<'thumbnails'> | null> {
-    const instance = new ThumbnailProcessor(options)
+    const instance = new ImageProcessor(options)
 
     return instance.upload()
   }
@@ -108,7 +109,7 @@ export class ThumbnailProcessor {
         const savedThumbnail = savedVideo?.thumbnail
 
         return queue.add(() =>
-          ThumbnailProcessor.upload({
+          ImageProcessor.upload({
             currentDateTime: options.currentDateTime ?? Temporal.Now.instant(),
             dryRun: options.dryRun ?? false,
             originalVideo,
