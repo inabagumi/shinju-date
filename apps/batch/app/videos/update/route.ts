@@ -106,7 +106,7 @@ export async function POST(request: Request): Promise<Response> {
   // Use scraper with internal p-queue for concurrency control
   await using scraper = new YouTubeScraper({ concurrency: 1, youtubeClient })
 
-  await scraper.scrapeNewVideosFromChannels(
+  await scraper.scrapeNewVideos(
     { channelIds: channelIDs },
     async (channelId, scrapedVideos) => {
       const talentInfo = channelToTalentMap.get(channelId)

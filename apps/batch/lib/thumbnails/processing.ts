@@ -1,14 +1,12 @@
-import * as Sentry from '@sentry/nextjs'
 import type { TablesInsert } from '@shinju-date/database'
 import retryableFetch from '@shinju-date/retryable-fetch'
 import { toDBString } from '@shinju-date/temporal-fns'
 import type { YouTubeVideo } from '@shinju-date/youtube-scraper'
 import mime from 'mime'
 import { nanoid } from 'nanoid'
-import PQueue from 'p-queue'
 import sharp from 'sharp'
 import { Temporal } from 'temporal-polyfill'
-import type { SavedThumbnail, SavedVideo } from '@/lib/database'
+import type { SavedThumbnail } from '@/lib/database'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 
 const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({
@@ -81,60 +79,6 @@ export class ImageProcessor {
     const instance = new ImageProcessor(options)
 
     return instance.upload()
-  }
-
-  /**
-   * Upserts multiple thumbnails for videos
-   */
-  static async upsertThumbnails(options: {
-    currentDateTime?: Temporal.Instant
-    dryRun?: boolean
-    originalVideos: YouTubeVideo[]
-    savedVideos: SavedVideo[]
-    supabaseClient: TypedSupabaseClient
-    upsertToDatabase: (
-      values: TablesInsert<'thumbnails'>[],
-    ) => Promise<{ id: string; path: string }[]>
-  }): Promise<{ id: string; path: string }[]> {
-    const queue = new PQueue({
-      concurrency: 12,
-      interval: 250,
-    })
-    const results = await Promise.allSettled(
-      options.originalVideos.map((originalVideo) => {
-        const savedVideo = options.savedVideos.find(
-          (savedVideo) =>
-            savedVideo.youtube_video?.youtube_video_id === originalVideo.id,
-        )
-        const savedThumbnail = savedVideo?.thumbnail
-
-        return queue.add(() =>
-          ImageProcessor.upload({
-            currentDateTime: options.currentDateTime ?? Temporal.Now.instant(),
-            dryRun: options.dryRun ?? false,
-            originalVideo,
-            ...(savedThumbnail ? { savedThumbnail } : {}),
-            supabaseClient: options.supabaseClient,
-          }),
-        )
-      }),
-    )
-
-    const values: TablesInsert<'thumbnails'>[] = []
-
-    for (const result of results) {
-      if (result.status === 'fulfilled' && result.value) {
-        values.push(result.value)
-      } else if (result.status === 'rejected') {
-        Sentry.captureException(result.reason)
-      }
-    }
-
-    if (options.dryRun) {
-      return []
-    }
-
-    return options.upsertToDatabase(values)
   }
 
   constructor({

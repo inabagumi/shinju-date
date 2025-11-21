@@ -154,6 +154,62 @@ export async function upsertThumbnails(
 }
 
 /**
+ * Process and upload thumbnails for videos
+ * This coordinates thumbnail processing and database insertion
+ */
+export async function processThumbnails(options: {
+  currentDateTime?: Temporal.Instant
+  dryRun?: boolean
+  originalVideos: YouTubeVideo[]
+  savedVideos: SavedVideo[]
+  supabaseClient: TypedSupabaseClient
+}): Promise<{ id: string; path: string }[]> {
+  const { ImageProcessor } = await import('@/lib/thumbnails')
+  const PQueue = (await import('p-queue')).default
+
+  const queue = new PQueue({
+    concurrency: 12,
+    interval: 250,
+  })
+
+  const results = await Promise.allSettled(
+    options.originalVideos.map((originalVideo) => {
+      const savedVideo = options.savedVideos.find(
+        (savedVideo) =>
+          savedVideo.youtube_video?.youtube_video_id === originalVideo.id,
+      )
+      const savedThumbnail = savedVideo?.thumbnail
+
+      return queue.add(() =>
+        ImageProcessor.upload({
+          currentDateTime: options.currentDateTime ?? Temporal.Now.instant(),
+          dryRun: options.dryRun ?? false,
+          originalVideo,
+          ...(savedThumbnail ? { savedThumbnail } : {}),
+          supabaseClient: options.supabaseClient,
+        }),
+      )
+    }),
+  )
+
+  const values: TablesInsert<'thumbnails'>[] = []
+
+  for (const result of results) {
+    if (result.status === 'fulfilled' && result.value) {
+      values.push(result.value)
+    } else if (result.status === 'rejected') {
+      Sentry.captureException(result.reason)
+    }
+  }
+
+  if (options.dryRun) {
+    return []
+  }
+
+  return upsertThumbnails(options.supabaseClient, values)
+}
+
+/**
  * Upsert videos to the database
  */
 export async function upsertVideos(
@@ -417,9 +473,6 @@ export async function saveScrapedVideos(options: {
     youtubeChannelId,
   } = options
 
-  // Import at runtime to avoid circular dependencies
-  const { ImageProcessor } = await import('@/lib/thumbnails')
-
   // 1. Get existing videos from database
   const videoIDs = originalVideos.map((video) => video.id)
   const savedVideos = await Array.fromAsync(
@@ -427,12 +480,11 @@ export async function saveScrapedVideos(options: {
   )
 
   // 2. Process and upload thumbnails
-  const thumbnails = await ImageProcessor.upsertThumbnails({
+  const thumbnails = await processThumbnails({
     currentDateTime,
     originalVideos,
     savedVideos,
     supabaseClient,
-    upsertToDatabase: (values) => upsertThumbnails(supabaseClient, values),
   })
 
   // 3. Process video data (new and updated)
