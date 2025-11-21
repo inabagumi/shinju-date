@@ -418,7 +418,7 @@ export async function saveScrapedVideos(options: {
   } = options
 
   // Import at runtime to avoid circular dependencies
-  const { VideoThumbnailProcessor } = await import('@/lib/thumbnails')
+  const { ThumbnailProcessor } = await import('@/lib/thumbnails')
 
   // 1. Get existing videos from database
   const videoIDs = originalVideos.map((video) => video.id)
@@ -427,7 +427,7 @@ export async function saveScrapedVideos(options: {
   )
 
   // 2. Process and upload thumbnails
-  const thumbnails = await VideoThumbnailProcessor.upsertThumbnails({
+  const thumbnails = await ThumbnailProcessor.upsertThumbnails({
     currentDateTime,
     originalVideos,
     savedVideos,
