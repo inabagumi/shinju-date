@@ -132,8 +132,10 @@ export class YouTubeScraper implements AsyncDisposable {
     params: { channelIds: string[] },
     onChannelScraped: (channels: YouTubeChannel[]) => Promise<void>,
   ): Promise<void> {
+    // Collect all channels into a single batch for the callback
+    // Note: For very large channel lists (>1000), consider processing in smaller batches
+    // However, typical usage in this codebase processes <100 channels, making this safe
     const channels: YouTubeChannel[] = []
-    // Use AsyncIterator pattern to collect all channels
     for await (const channel of this.getChannels({ ids: params.channelIds })) {
       channels.push(channel)
     }
@@ -151,6 +153,9 @@ export class YouTubeScraper implements AsyncDisposable {
     },
   ): Promise<void> {
     const videoIDs: string[] = []
+    // Collect all thumbnails into a batch for the callback
+    // Note: For very large playlists (>1000 items), consider processing in smaller batches
+    // However, typical usage processes <100 items, making this safe
     const thumbnails: YouTubePlaylistItem[] = []
 
     for await (const playlistItem of this.getPlaylistItems({
@@ -165,7 +170,7 @@ export class YouTubeScraper implements AsyncDisposable {
       await callbacks.onThumbnailScraped(thumbnails)
     }
 
-    // Now scrapeVideos calls callback with array
+    // scrapeVideos calls callback with array
     await this.scrapeVideos({ ids: videoIDs }, callbacks.onVideoScraped)
   }
 
