@@ -41,7 +41,7 @@ export async function addYouTubeChannelAction(
   const urlMatch = youtubeChannelId.match(
     /(?:youtube\.com\/channel\/)([a-zA-Z0-9_-]+)/,
   )
-  if (urlMatch) {
+  if (urlMatch?.[1]) {
     youtubeChannelId = urlMatch[1]
   }
 
