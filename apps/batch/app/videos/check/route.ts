@@ -8,10 +8,8 @@ import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import {
-  batchUpdateVideos,
   processScrapedVideoAvailability,
   processScrapedVideoForCheck,
-  type VideoUpdate,
 } from '@/lib/database'
 import {
   videosCheckAll as ratelimitAll,
@@ -134,41 +132,20 @@ export async function POST(request: NextRequest): Promise<Response> {
     youtubeClient,
   })
 
-  let updatedCount = 0
-
   // For 'default' and 'recent' modes, fetch full video details and update information
   // For 'all' mode, only check availability (no updates)
   if (mode === 'default' || mode === 'recent') {
-    const allAvailableVideoIds = new Set<string>()
-    const allVideoUpdates: VideoUpdate[] = []
-
-    // Process scraped videos for checking and collecting updates
+    // Process scraped videos for checking and updating
     await scraper.scrapeVideos({ ids: videoIds }, async (originalVideos) => {
-      const { availableVideoIds, updates } = await processScrapedVideoForCheck({
+      await processScrapedVideoForCheck({
         currentDateTime,
+        logger,
+        mode,
         originalVideos,
         savedVideos,
-      })
-
-      // Merge results
-      for (const id of availableVideoIds) {
-        allAvailableVideoIds.add(id)
-      }
-      allVideoUpdates.push(...updates)
-    })
-
-    // Perform batch update if there are changes
-    if (allVideoUpdates.length > 0) {
-      updatedCount = await batchUpdateVideos({
         supabaseClient,
-        updates: allVideoUpdates,
       })
-
-      logger.info('動画が更新されました', {
-        count: updatedCount,
-        mode,
-      })
-    }
+    })
 
     // Check availability and delete unavailable videos
     await scraper.scrapeVideosAvailability({ videoIds }, async (videos) => {
@@ -201,13 +178,10 @@ export async function POST(request: NextRequest): Promise<Response> {
     })
   }
 
-  // Revalidate tags if any changes were made
-  const hasChanges = updatedCount > 0
-  if (hasChanges) {
-    await revalidateTags(['videos'], {
-      signal: request.signal,
-    })
-  }
+  // Revalidate tags - processScrapedVideoForCheck and processScrapedVideoAvailability handle their own logging
+  await revalidateTags(['videos'], {
+    signal: request.signal,
+  })
 
   // Update last sync timestamp in Redis
   await redisClient.set(REDIS_KEYS.LAST_VIDEO_SYNC, toDBString(currentDateTime))

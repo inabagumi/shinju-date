@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/nextjs'
-import type { Tables } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
@@ -83,86 +82,33 @@ export async function POST(request: Request): Promise<Response> {
   const youTubeChannelIds = talents
     .map((talent) => talent.youtube_channel?.youtube_channel_id)
     .filter((id): id is string => Boolean(id))
-  const results: PromiseSettledResult<{
-    id: string
-    name: string
-    youtube_channel: {
-      name: string | null
-      youtube_channel_id: string
-    } | null
-  } | null>[] = []
 
   await using scraper = new YouTubeScraper({
     youtubeClient,
   })
 
+  let isUpdated = false
+
   try {
     await scraper.scrapeChannels(
       { channelIds: youTubeChannelIds },
       async (youtubeChannels) => {
-        // Move all processing logic to lib/database
-        const channelResults = await processScrapedChannels({
+        isUpdated = await processScrapedChannels({
           supabaseClient,
           talents,
           youtubeChannels,
           youtubeClient,
         })
-
-        results.push(
-          ...channelResults.map((result) => ({
-            status: 'fulfilled' as const,
-            value: result,
-          })),
-        )
       },
     )
   } catch (error) {
-    results.push({ reason: error, status: 'rejected' })
-  }
-
-  let isUpdated = false
-
-  for (const result of results) {
-    if (result.status === 'fulfilled' && result.value) {
-      const newTalent = result.value
-      const ytChannelID = newTalent.youtube_channel?.youtube_channel_id
-      const talent = talents.find(
-        (c) => c.youtube_channel?.youtube_channel_id === ytChannelID,
-      )
-
-      if (!talent) {
-        continue
-      }
-
-      const changedColumns: {
-        talent_name?: string
-        youtube_channel_name?: string
-      } = {}
-
-      // Log if YouTube channel name changed (not talent name)
-      if (talent.youtube_channel?.name !== newTalent.youtube_channel?.name) {
-        changedColumns.youtube_channel_name = `${talent.youtube_channel?.name} -> ${newTalent.youtube_channel?.name}`
-      }
-
-      Sentry.logger.info(
-        'YouTube channel name has been updated.',
-        changedColumns,
-      )
-
-      if (!isUpdated) {
-        isUpdated = true
-      }
-    } else if (result.status === 'rejected') {
-      Sentry.captureException(result.reason)
-    }
+    Sentry.captureException(error)
   }
 
   if (isUpdated) {
     await revalidateTags(['talents'], {
       signal: request.signal,
     })
-  } else {
-    Sentry.logger.info('No updated talents existed.')
   }
 
   after(async () => {

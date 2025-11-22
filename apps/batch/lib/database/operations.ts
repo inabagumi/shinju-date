@@ -551,7 +551,7 @@ export async function updateTalentChannel({
 
 /**
  * Process scraped YouTube channels and update talent information
- * Fetches channel snippets, updates database, and returns changed talents
+ * Fetches channel snippets, updates database, logs changes, and returns whether updates occurred
  */
 export async function processScrapedChannels({
   youtubeChannels,
@@ -570,24 +570,8 @@ export async function processScrapedChannels({
   }>
   youtubeClient: youtube.Youtube
   supabaseClient: TypedSupabaseClient
-}): Promise<
-  Array<{
-    id: string
-    name: string
-    youtube_channel: {
-      name: string | null
-      youtube_channel_id: string
-    } | null
-  } | null>
-> {
-  const results: Array<{
-    id: string
-    name: string
-    youtube_channel: {
-      name: string | null
-      youtube_channel_id: string
-    } | null
-  } | null> = []
+}): Promise<boolean> {
+  let hasUpdates = false
 
   for (const youtubeChannel of youtubeChannels) {
     try {
@@ -629,31 +613,21 @@ export async function processScrapedChannels({
         youtubeHandle,
       })
 
-      // Return null if YouTube channel name hasn't changed
-      if (item.snippet.title === currentYouTubeChannelName) {
-        results.push(null)
-        continue
+      // Log and track if YouTube channel name changed
+      if (item.snippet.title !== currentYouTubeChannelName) {
+        Sentry.logger.info('YouTube channel name has been updated.', {
+          youtube_channel_name: `${currentYouTubeChannelName} -> ${item.snippet.title}`,
+        })
+        hasUpdates = true
       }
-
-      // Fetch updated talent data
-      const { data, error } = await supabaseClient
-        .from('talents')
-        .select(
-          'id, name, youtube_channel:youtube_channels(name, youtube_channel_id)',
-        )
-        .eq('id', talent.id)
-        .single()
-
-      if (error) {
-        throw error
-      }
-
-      results.push(data)
     } catch (error) {
-      results.push(null)
-      throw error
+      Sentry.captureException(error)
     }
   }
 
-  return results
+  if (!hasUpdates) {
+    Sentry.logger.info('No updated talents existed.')
+  }
+
+  return hasUpdates
 }

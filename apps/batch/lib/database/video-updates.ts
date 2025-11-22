@@ -138,7 +138,7 @@ export async function batchUpdateVideos({
 /**
  * Process scraped video for checking and updating
  * Designed to be used as a callback with scraper.scrapeVideos()
- * Returns video updates that need to be applied
+ * Completes all video update operations including database writes and logging
  */
 export async function processScrapedVideoForCheck<
   T extends {
@@ -155,20 +155,22 @@ export async function processScrapedVideoForCheck<
   originalVideos,
   currentDateTime,
   savedVideos,
+  supabaseClient,
+  logger,
+  mode,
 }: {
   originalVideos: YouTubeVideo[]
   currentDateTime: Temporal.Instant
   savedVideos: T[]
-}): Promise<{
-  updates: VideoUpdate[]
-  availableVideoIds: Set<string>
-}> {
-  const availableVideoIds = new Set<string>()
+  supabaseClient: TypedSupabaseClient
+  logger: {
+    info: (message: string, attributes?: Record<string, unknown>) => void
+  }
+  mode: string
+}): Promise<void> {
   const videoUpdates: VideoUpdate[] = []
 
   for (const originalVideo of originalVideos) {
-    availableVideoIds.add(originalVideo.id)
-
     // Find corresponding saved video
     const savedVideo = savedVideos.find(
       (v) => v.youtube_video?.youtube_video_id === originalVideo.id,
@@ -226,7 +228,18 @@ export async function processScrapedVideoForCheck<
     }
   }
 
-  return { availableVideoIds, updates: videoUpdates }
+  // Perform batch update if there are changes
+  if (videoUpdates.length > 0) {
+    await batchUpdateVideos({
+      supabaseClient,
+      updates: videoUpdates,
+    })
+
+    logger.info('動画が更新されました', {
+      count: videoUpdates.length,
+      mode,
+    })
+  }
 }
 
 /**
