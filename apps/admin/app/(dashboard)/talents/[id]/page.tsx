@@ -139,16 +139,25 @@ async function TalentProfile({ id }: { id: string }) {
             </p>
           </div>
           <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
-            {talent.youtube_channel && (
-              <a
-                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
-                href={`https://www.youtube.com/channel/${talent.youtube_channel.youtube_channel_id}`}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                YouTubeで見る
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </a>
+            {talent.youtube_channels.length > 0 ? (
+              <div className="space-y-2">
+                {talent.youtube_channels.map((channel) => (
+                  <a
+                    className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
+                    href={`https://www.youtube.com/channel/${channel.youtube_channel_id}`}
+                    key={channel.id}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    {channel.name || 'YouTubeチャンネル'}
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-sm">
+                登録されているチャンネルがありません
+              </p>
             )}
           </div>
         </div>

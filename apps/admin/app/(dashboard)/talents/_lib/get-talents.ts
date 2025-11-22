@@ -6,7 +6,7 @@ export async function getTalents() {
   const { data: talents, error } = await supabaseClient
     .from('talents')
     .select(
-      'id, name, created_at, updated_at, youtube_channel:youtube_channels(name, youtube_channel_id)',
+      'id, name, created_at, updated_at, youtube_channels(id, name, youtube_channel_id, youtube_handle)',
     )
     .is('deleted_at', null)
     .order('name', {

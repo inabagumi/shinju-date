@@ -56,9 +56,7 @@ export async function POST(request: Request): Promise<Response> {
 
   const { data: talents, error } = await supabaseClient
     .from('talents')
-    .select(
-      'id, name, youtube_channel:youtube_channels(name, youtube_channel_id)',
-    )
+    .select('id, name, youtube_channels(id, name, youtube_channel_id)')
     .is('deleted_at', null)
 
   if (error) {
@@ -80,7 +78,8 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const youTubeChannelIds = talents
-    .map((talent) => talent.youtube_channel?.youtube_channel_id)
+    .flatMap((talent) => talent.youtube_channels || [])
+    .map((channel) => channel.youtube_channel_id)
     .filter((id): id is string => Boolean(id))
 
   await using scraper = new YouTubeScraper({

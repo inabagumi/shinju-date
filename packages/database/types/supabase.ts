@@ -187,7 +187,7 @@ export type Database = {
           {
             foreignKeyName: 'twitch_users_talent_id_fkey'
             columns: ['talent_id']
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: 'talents'
             referencedColumns: ['id']
           },
@@ -318,7 +318,7 @@ export type Database = {
           {
             foreignKeyName: 'youtube_channels_talent_id_fkey'
             columns: ['talent_id']
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: 'talents'
             referencedColumns: ['id']
           },
