@@ -243,15 +243,19 @@ describe('YouTubeScraper', () => {
       const onVideoScraped = vi.fn()
       const videos: YouTubeVideo[] = []
 
-      await scraper.scrapeVideos({ ids: ['video1', 'video2'] }, (video) => {
-        videos.push(video)
-        onVideoScraped(video)
-      })
+      await scraper.scrapeVideos(
+        { ids: ['video1', 'video2'] },
+        (videoBatch) => {
+          videos.push(...videoBatch)
+          onVideoScraped(videoBatch)
+        },
+      )
 
       expect(videos).toHaveLength(2)
       expect(videos[0]?.id).toBe('video1')
       expect(videos[1]?.id).toBe('video2')
-      expect(onVideoScraped).toHaveBeenCalledTimes(2)
+      expect(onVideoScraped).toHaveBeenCalledTimes(1)
+      expect(onVideoScraped).toHaveBeenCalledWith(mockVideos)
     })
 
     it('should batch requests for large video arrays', async () => {
@@ -278,8 +282,8 @@ describe('YouTubeScraper', () => {
       const videoIds = range(100).map((i) => `video${i}`)
       const videos: YouTubeVideo[] = []
 
-      await scraper.scrapeVideos({ ids: videoIds }, (video) => {
-        videos.push(video)
+      await scraper.scrapeVideos({ ids: videoIds }, (videoBatch) => {
+        videos.push(...videoBatch)
       })
 
       expect(videos).toHaveLength(100)
@@ -314,7 +318,7 @@ describe('YouTubeScraper', () => {
       await scraper.scrapeChannels({ channelIds: ['UC123'] }, onChannelScraped)
 
       expect(onChannelScraped).toHaveBeenCalledTimes(1)
-      expect(onChannelScraped).toHaveBeenCalledWith(mockChannels[0])
+      expect(onChannelScraped).toHaveBeenCalledWith(mockChannels)
     })
   })
 
@@ -363,8 +367,10 @@ describe('YouTubeScraper', () => {
         },
       )
 
-      expect(onThumbnailScraped).toHaveBeenCalledTimes(2)
-      expect(onVideoScraped).toHaveBeenCalledTimes(2)
+      expect(onThumbnailScraped).toHaveBeenCalledTimes(1)
+      expect(onThumbnailScraped).toHaveBeenCalledWith(mockPlaylistItems)
+      expect(onVideoScraped).toHaveBeenCalledTimes(1)
+      expect(onVideoScraped).toHaveBeenCalledWith(mockVideos)
     })
   })
 
@@ -388,19 +394,21 @@ describe('YouTubeScraper', () => {
         onVideoChecked,
       )
 
-      expect(onVideoChecked).toHaveBeenCalledTimes(3)
-      expect(onVideoChecked).toHaveBeenCalledWith({
-        id: 'video1',
-        isAvailable: true,
-      })
-      expect(onVideoChecked).toHaveBeenCalledWith({
-        id: 'video2',
-        isAvailable: false,
-      })
-      expect(onVideoChecked).toHaveBeenCalledWith({
-        id: 'video3',
-        isAvailable: true,
-      })
+      expect(onVideoChecked).toHaveBeenCalledTimes(1)
+      expect(onVideoChecked).toHaveBeenCalledWith([
+        {
+          id: 'video1',
+          isAvailable: true,
+        },
+        {
+          id: 'video2',
+          isAvailable: false,
+        },
+        {
+          id: 'video3',
+          isAvailable: true,
+        },
+      ])
     })
 
     it('should batch check large video arrays', async () => {
@@ -428,7 +436,7 @@ describe('YouTubeScraper', () => {
 
       await scraper.scrapeVideosAvailability({ videoIds }, onVideoChecked)
 
-      expect(onVideoChecked).toHaveBeenCalledTimes(100)
+      expect(onVideoChecked).toHaveBeenCalledTimes(2)
       expect(mockClient.videos.list).toHaveBeenCalledTimes(2)
     })
   })
@@ -467,11 +475,11 @@ describe('YouTubeScraper', () => {
       await scraper.scrapePlaylistVideos(
         { playlistId: 'PL123' },
         {
-          onThumbnailScraped: async (thumbnail) => {
-            thumbnails.push(thumbnail)
+          onThumbnailScraped: async (thumbnailBatch) => {
+            thumbnails.push(...thumbnailBatch)
           },
-          onVideoScraped: async (video) => {
-            videos.push(video)
+          onVideoScraped: async (videoBatch) => {
+            videos.push(...videoBatch)
           },
         },
       )

@@ -99,66 +99,69 @@ export async function POST(request: Request): Promise<Response> {
   try {
     await scraper.scrapeChannels(
       { channelIds: youTubeChannelIds },
-      async (youtubeChannel) => {
-        const result = await (async (): Promise<Talent | null> => {
-          const talent = talents.find(
-            (t) => t.youtube_channel?.youtube_channel_id === youtubeChannel.id,
-          )
-
-          if (!talent) {
-            throw new TypeError('A talent does not exist.')
-          }
-
-          // Note: YouTubeChannel from scraper doesn't include snippet with title
-          // We need to fetch snippet data separately for this endpoint
-          const {
-            data: { items = [] },
-          } = await youtubeClient.channels.list({
-            id: [youtubeChannel.id],
-            maxResults: 1,
-            part: ['snippet'],
-          })
-
-          const item = items[0]
-          if (!item?.snippet?.title) {
-            throw new TypeError('A snippet is empty.')
-          }
-
-          // Get current YouTube channel name from database
-          const currentYouTubeChannelName = talent.youtube_channel?.name
-
-          // Update youtube_channels table with YouTube channel name using lib/database
-          const youtubeHandle = item.snippet.customUrl || null
-          await updateTalentChannel({
-            channelName: item.snippet.title,
-            supabaseClient,
-            talentId: talent.id,
-            youtubeChannelId: youtubeChannel.id,
-            youtubeHandle,
-          })
-
-          // Return null if YouTube channel name hasn't changed
-          if (item.snippet.title === currentYouTubeChannelName) {
-            return null
-          }
-
-          // Fetch updated talent data to return
-          const { data, error } = await supabaseClient
-            .from('talents')
-            .select(
-              'id, name, youtube_channel:youtube_channels(name, youtube_channel_id)',
+      async (youtubeChannels) => {
+        for (const youtubeChannel of youtubeChannels) {
+          const result = await (async (): Promise<Talent | null> => {
+            const talent = talents.find(
+              (t) =>
+                t.youtube_channel?.youtube_channel_id === youtubeChannel.id,
             )
-            .eq('id', talent.id)
-            .single()
 
-          if (error) {
-            throw error
-          }
+            if (!talent) {
+              throw new TypeError('A talent does not exist.')
+            }
 
-          return data
-        })()
+            // Note: YouTubeChannel from scraper doesn't include snippet with title
+            // We need to fetch snippet data separately for this endpoint
+            const {
+              data: { items = [] },
+            } = await youtubeClient.channels.list({
+              id: [youtubeChannel.id],
+              maxResults: 1,
+              part: ['snippet'],
+            })
 
-        results.push({ status: 'fulfilled', value: result })
+            const item = items[0]
+            if (!item?.snippet?.title) {
+              throw new TypeError('A snippet is empty.')
+            }
+
+            // Get current YouTube channel name from database
+            const currentYouTubeChannelName = talent.youtube_channel?.name
+
+            // Update youtube_channels table with YouTube channel name using lib/database
+            const youtubeHandle = item.snippet.customUrl || null
+            await updateTalentChannel({
+              channelName: item.snippet.title,
+              supabaseClient,
+              talentId: talent.id,
+              youtubeChannelId: youtubeChannel.id,
+              youtubeHandle,
+            })
+
+            // Return null if YouTube channel name hasn't changed
+            if (item.snippet.title === currentYouTubeChannelName) {
+              return null
+            }
+
+            // Fetch updated talent data to return
+            const { data, error } = await supabaseClient
+              .from('talents')
+              .select(
+                'id, name, youtube_channel:youtube_channels(name, youtube_channel_id)',
+              )
+              .eq('id', talent.id)
+              .single()
+
+            if (error) {
+              throw error
+            }
+
+            return data
+          })()
+
+          results.push({ status: 'fulfilled', value: result })
+        }
       },
     )
   } catch (error) {

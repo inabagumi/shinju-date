@@ -144,11 +144,11 @@ export async function POST(request: NextRequest): Promise<Response> {
     const availableVideoIds = new Set<string>()
 
     // Use database function directly as callback
-    await scraper.scrapeVideos({ ids: videoIds }, async (originalVideo) => {
+    await scraper.scrapeVideos({ ids: videoIds }, async (originalVideos) => {
       await processScrapedVideoForCheck({
         availableVideoIds,
         currentDateTime,
-        originalVideo,
+        originalVideos,
         savedVideos,
         videoUpdates,
       })
@@ -168,36 +168,32 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
 
     // Check availability and delete unavailable videos
-    await scraper.scrapeVideosAvailability({ videoIds }, async (video) => {
+    await scraper.scrapeVideosAvailability({ videoIds }, async (videos) => {
       try {
         const deleted = await processScrapedVideoAvailability({
           currentDateTime,
           logger,
           savedVideos,
           supabaseClient,
-          video,
+          videos,
         })
-        if (deleted) {
-          deletedCount++
-        }
+        deletedCount += deleted
       } catch (error) {
         Sentry.captureException(error)
       }
     })
   } else {
     // For 'all' mode, only check availability and delete unavailable videos
-    await scraper.scrapeVideosAvailability({ videoIds }, async (video) => {
+    await scraper.scrapeVideosAvailability({ videoIds }, async (videos) => {
       try {
         const deleted = await processScrapedVideoAvailability({
           currentDateTime,
           logger,
           savedVideos,
           supabaseClient,
-          video,
+          videos,
         })
-        if (deleted) {
-          deletedCount++
-        }
+        deletedCount += deleted
       } catch (error) {
         Sentry.captureException(error)
       }

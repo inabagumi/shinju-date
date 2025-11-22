@@ -101,7 +101,7 @@ export class YouTubeScraper implements AsyncDisposable {
 
   async scrapeVideos(
     options: GetVideosOptions,
-    onVideoScraped: (video: YouTubeVideo) => void | Promise<void>,
+    onVideoScraped: (videos: YouTubeVideo[]) => void | Promise<void>,
   ): Promise<void> {
     this.#logger?.debug('Scraping videos', { count: options.ids.length })
 
@@ -120,8 +120,8 @@ export class YouTubeScraper implements AsyncDisposable {
 
       const validVideos = items.filter(isValidVideo)
 
-      for (const video of validVideos) {
-        await onVideoScraped(video)
+      if (validVideos.length > 0) {
+        await onVideoScraped(validVideos)
       }
     }
 
@@ -130,41 +130,53 @@ export class YouTubeScraper implements AsyncDisposable {
 
   async scrapeChannels(
     params: { channelIds: string[] },
-    onChannelScraped: (channel: YouTubeChannel) => Promise<void>,
+    onChannelScraped: (channels: YouTubeChannel[]) => Promise<void>,
   ): Promise<void> {
-    // Use AsyncIterator pattern instead of Array.fromAsync
+    const channels: YouTubeChannel[] = []
+    // Use AsyncIterator pattern to collect all channels
     for await (const channel of this.getChannels({ ids: params.channelIds })) {
-      await onChannelScraped(channel)
+      channels.push(channel)
+    }
+
+    if (channels.length > 0) {
+      await onChannelScraped(channels)
     }
   }
 
   async scrapePlaylistVideos(
     params: { playlistId: string },
     callbacks: {
-      onVideoScraped: (video: YouTubeVideo) => Promise<void>
-      onThumbnailScraped: (thumbnail: YouTubePlaylistItem) => Promise<void>
+      onVideoScraped: (videos: YouTubeVideo[]) => Promise<void>
+      onThumbnailScraped: (thumbnails: YouTubePlaylistItem[]) => Promise<void>
     },
   ): Promise<void> {
     const videoIDs: string[] = []
+    const thumbnails: YouTubePlaylistItem[] = []
 
     for await (const playlistItem of this.getPlaylistItems({
       all: false,
       playlistID: params.playlistId,
     })) {
-      await callbacks.onThumbnailScraped(playlistItem)
+      thumbnails.push(playlistItem)
       videoIDs.push(playlistItem.contentDetails.videoId)
     }
 
-    // Now scrapeVideos returns Promise<void>
+    if (thumbnails.length > 0) {
+      await callbacks.onThumbnailScraped(thumbnails)
+    }
+
+    // Now scrapeVideos calls callback with array
     await this.scrapeVideos({ ids: videoIDs }, callbacks.onVideoScraped)
   }
 
   async scrapeVideosAvailability(
     params: { videoIds: string[] },
-    onVideoChecked: (video: {
-      id: string
-      isAvailable: boolean
-    }) => Promise<void>,
+    onVideoChecked: (
+      videos: {
+        id: string
+        isAvailable: boolean
+      }[],
+    ) => Promise<void>,
   ): Promise<void> {
     for (
       let i = 0;
@@ -188,12 +200,12 @@ export class YouTubeScraper implements AsyncDisposable {
         items?.filter((item) => item.id).map((item) => item.id as string) ?? [],
       )
 
-      for (const videoId of batchIds) {
-        await onVideoChecked({
-          id: videoId,
-          isAvailable: availableVideoIds.has(videoId),
-        })
-      }
+      const results = batchIds.map((videoId) => ({
+        id: videoId,
+        isAvailable: availableVideoIds.has(videoId),
+      }))
+
+      await onVideoChecked(results)
     }
   }
 
@@ -218,8 +230,8 @@ export class YouTubeScraper implements AsyncDisposable {
       }
 
       const videos: YouTubeVideo[] = []
-      await this.scrapeVideos({ ids: videoIDs }, async (video) => {
-        videos.push(video)
+      await this.scrapeVideos({ ids: videoIDs }, async (videoBatch) => {
+        videos.push(...videoBatch)
       })
 
       if (videos.length > 0) {
@@ -252,8 +264,8 @@ export class YouTubeScraper implements AsyncDisposable {
       }
 
       const videos: YouTubeVideo[] = []
-      await this.scrapeVideos({ ids: videoIDs }, async (video) => {
-        videos.push(video)
+      await this.scrapeVideos({ ids: videoIDs }, async (videoBatch) => {
+        videos.push(...videoBatch)
       })
 
       if (videos.length > 0) {
