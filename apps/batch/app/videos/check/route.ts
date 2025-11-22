@@ -11,7 +11,6 @@ import { Temporal } from 'temporal-polyfill'
 import { z } from 'zod'
 import {
   batchUpdateVideos,
-  processDeletedVideos,
   processScrapedVideoAvailability,
   processScrapedVideoForCheck,
   type VideoUpdate,
@@ -256,12 +255,14 @@ export async function POST(request: NextRequest): Promise<Response> {
   })
 
   let updatedCount = 0
-  const availableVideoIds = new Set<string>()
+  let deletedCount = 0
   const videoUpdates: VideoUpdate[] = []
 
   // For 'default' and 'recent' modes, fetch full video details and update information
   // For 'all' mode, only check availability (no updates)
   if (mode === 'default' || mode === 'recent') {
+    const availableVideoIds = new Set<string>()
+
     // Use database function directly as callback
     await scraper.scrapeVideos({ ids: videoIds }, async (originalVideo) => {
       await processScrapedVideoForCheck({
@@ -280,42 +281,63 @@ export async function POST(request: NextRequest): Promise<Response> {
         updates: videoUpdates,
       })
 
-      logger.info('動画が更新されました。', {
+      logger.info('動画が更新されました', {
         count: updatedCount,
         mode,
       })
     }
-  } else {
-    // For 'all' mode, only check availability (no updates)
+
+    // Check availability and delete unavailable videos
     await scraper.scrapeVideosAvailability({ videoIds }, async (video) => {
-      await processScrapedVideoAvailability({
-        availableVideoIds,
-        video,
-      })
+      try {
+        const deleted = await processScrapedVideoAvailability({
+          currentDateTime,
+          logger,
+          savedVideos,
+          supabaseClient,
+          video,
+        })
+        if (deleted) {
+          deletedCount++
+        }
+      } catch (error) {
+        logger.error('動画の削除処理中にエラーが発生しました', {
+          error,
+          videoId: video.id,
+        })
+        Sentry.captureException(error)
+      }
     })
-  }
-
-  // Process deleted videos
-  const { deletedCount, deletedVideoIds, errors } = await processDeletedVideos({
-    availableVideoIds,
-    currentDateTime,
-    savedVideos,
-    supabaseClient,
-  })
-
-  if (errors && errors.length > 0) {
-    for (const error of errors) {
-      Sentry.captureException(error)
-    }
+  } else {
+    // For 'all' mode, only check availability and delete unavailable videos
+    await scraper.scrapeVideosAvailability({ videoIds }, async (video) => {
+      try {
+        const deleted = await processScrapedVideoAvailability({
+          currentDateTime,
+          logger,
+          savedVideos,
+          supabaseClient,
+          video,
+        })
+        if (deleted) {
+          deletedCount++
+        }
+      } catch (error) {
+        logger.error('動画の削除処理中にエラーが発生しました', {
+          error,
+          videoId: video.id,
+        })
+        Sentry.captureException(error)
+      }
+    })
   }
 
   if (deletedCount > 0) {
-    logger.info('動画が削除されました。', {
+    logger.info('動画が削除されました', {
       count: deletedCount,
-      ids: deletedVideoIds,
     })
   } else {
-    logger.info('削除対象の動画は存在しませんでした。')
+    logger.info('削除対象の動画は存在しませんでした')
   }
 
   // Revalidate tags if any changes were made

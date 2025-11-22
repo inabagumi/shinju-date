@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/nextjs'
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
+import { logger } from '@shinju-date/logger'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after } from 'next/server'
@@ -111,10 +112,9 @@ export async function POST(request: Request): Promise<Response> {
     async (channelId, scrapedVideos) => {
       const talentInfo = channelToTalentMap.get(channelId)
       if (!talentInfo) {
-        Sentry.captureMessage(
-          `Talent info not found for channel ID: ${channelId}`,
-          'warning',
-        )
+        logger.warn('タレント情報が見つかりませんでした', {
+          channelId,
+        })
         return
       }
 

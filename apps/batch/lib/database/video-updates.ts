@@ -228,16 +228,71 @@ export async function processScrapedVideoForCheck<
  */
 export async function processScrapedVideoAvailability({
   video,
-  availableVideoIds,
+  currentDateTime,
+  savedVideos,
+  supabaseClient,
+  logger,
 }: {
   video: {
     id: string
     isAvailable: boolean
   }
-  availableVideoIds: Set<string>
-}): Promise<void> {
+  currentDateTime: Temporal.Instant
+  savedVideos: Array<{
+    id: string
+    youtube_video?: { youtube_video_id: string } | null
+    thumbnails?: { id: string } | Array<{ id: string }> | null
+  }>
+  supabaseClient: TypedSupabaseClient
+  logger: {
+    info: (message: string, attributes?: Record<string, unknown>) => void
+  }
+}): Promise<boolean> {
+  // If video is available, nothing to do
   if (video.isAvailable) {
-    availableVideoIds.add(video.id)
+    return false
+  }
+
+  // Video is not available - find and soft delete it
+  const savedVideo = savedVideos.find(
+    (v) => v.youtube_video?.youtube_video_id === video.id,
+  )
+
+  if (!savedVideo) {
+    return false
+  }
+
+  // Extract thumbnails
+  const thumbnail = Array.isArray(savedVideo.thumbnails)
+    ? savedVideo.thumbnails[0]
+    : savedVideo.thumbnails
+
+  // Soft delete video and thumbnail
+  try {
+    await Promise.all([
+      softDeleteRows({
+        currentDateTime,
+        ids: [savedVideo.id],
+        supabaseClient,
+        table: 'videos',
+      }),
+      thumbnail
+        ? softDeleteRows({
+            currentDateTime,
+            ids: [thumbnail.id],
+            supabaseClient,
+            table: 'thumbnails',
+          })
+        : Promise.resolve(),
+    ])
+
+    logger.info('動画を削除しました', {
+      videoId: video.id,
+    })
+
+    return true
+  } catch (error) {
+    throw new Error(`Failed to delete video ${video.id}: ${error}`)
   }
 }
 
