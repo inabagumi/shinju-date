@@ -2,11 +2,7 @@ import type { youtube_v3 as youtube } from '@googleapis/youtube'
 import { range } from '@shinju-date/helpers'
 import { describe, expect, it, vi } from 'vitest'
 import { YouTubeScraper } from '../scraper.js'
-import type {
-  YouTubeChannel,
-  YouTubePlaylistItem,
-  YouTubeVideo,
-} from '../types/index.js'
+import type { YouTubeChannel, YouTubeVideo } from '../types/index.js'
 
 describe('YouTubeScraper', () => {
   describe('constructor', () => {
@@ -27,192 +23,6 @@ describe('YouTubeScraper', () => {
       const scraper = new YouTubeScraper({ youtubeClient: mockClient })
 
       expect(scraper).toBeInstanceOf(YouTubeScraper)
-    })
-  })
-
-  describe('getChannels', () => {
-    it('should yield channels and call onChannelScraped callback', async () => {
-      const mockChannels: YouTubeChannel[] = [
-        {
-          contentDetails: {
-            relatedPlaylists: {
-              uploads: 'UU123',
-            },
-          },
-          id: 'UC123',
-        },
-        {
-          contentDetails: {
-            relatedPlaylists: {
-              uploads: 'UU456',
-            },
-          },
-          id: 'UC456',
-        },
-      ]
-
-      const mockClient = {
-        channels: {
-          list: vi.fn().mockResolvedValue({
-            data: { items: mockChannels },
-          }),
-        },
-      } as unknown as youtube.Youtube
-
-      const scraper = new YouTubeScraper({ youtubeClient: mockClient })
-      const channels = await Array.fromAsync(
-        scraper.getChannels({ ids: ['UC123', 'UC456'] }),
-      )
-
-      expect(channels).toHaveLength(2)
-      expect(channels[0]?.id).toBe('UC123')
-      expect(channels[1]?.id).toBe('UC456')
-    })
-
-    it('should handle empty response', async () => {
-      const mockClient = {
-        channels: {
-          list: vi.fn().mockResolvedValue({
-            data: { items: [] },
-          }),
-        },
-      } as unknown as youtube.Youtube
-
-      const scraper = new YouTubeScraper({ youtubeClient: mockClient })
-      const channels = await Array.fromAsync(
-        scraper.getChannels({
-          ids: ['UC123'],
-        }),
-      )
-
-      expect(channels).toHaveLength(0)
-    })
-
-    it('should filter out invalid channels', async () => {
-      const mockClient = {
-        channels: {
-          list: vi.fn().mockResolvedValue({
-            data: {
-              items: [
-                {
-                  contentDetails: {
-                    relatedPlaylists: {
-                      uploads: 'UU123',
-                    },
-                  },
-                  id: 'UC123',
-                },
-                {
-                  // Invalid: missing contentDetails
-                  id: 'UC456',
-                },
-              ],
-            },
-          }),
-        },
-      } as unknown as youtube.Youtube
-
-      const scraper = new YouTubeScraper({ youtubeClient: mockClient })
-      const channels: YouTubeChannel[] = []
-
-      for await (const channel of scraper.getChannels({
-        ids: ['UC123', 'UC456'],
-      })) {
-        channels.push(channel)
-      }
-
-      expect(channels).toHaveLength(1)
-      expect(channels[0]?.id).toBe('UC123')
-    })
-  })
-
-  describe('getPlaylistItems', () => {
-    it('should yield playlist items with callback', async () => {
-      const mockItems: YouTubePlaylistItem[] = [
-        { contentDetails: { videoId: 'video1' } },
-        { contentDetails: { videoId: 'video2' } },
-      ]
-
-      const mockClient = {
-        playlistItems: {
-          list: vi.fn().mockResolvedValue({
-            data: { items: mockItems },
-          }),
-        },
-      } as unknown as youtube.Youtube
-
-      const scraper = new YouTubeScraper({ youtubeClient: mockClient })
-      const items: YouTubePlaylistItem[] = []
-
-      for await (const item of scraper.getPlaylistItems({
-        playlistID: 'PL123',
-      })) {
-        items.push(item)
-      }
-
-      expect(items).toHaveLength(2)
-      expect(items[0]?.contentDetails.videoId).toBe('video1')
-      expect(items[1]?.contentDetails.videoId).toBe('video2')
-    })
-
-    it('should paginate when all=true', async () => {
-      const mockClient = {
-        playlistItems: {
-          list: vi
-            .fn()
-            .mockResolvedValueOnce({
-              data: {
-                items: [{ contentDetails: { videoId: 'video1' } }],
-                nextPageToken: 'token123',
-              },
-            })
-            .mockResolvedValueOnce({
-              data: {
-                items: [{ contentDetails: { videoId: 'video2' } }],
-                nextPageToken: undefined,
-              },
-            }),
-        },
-      } as unknown as youtube.Youtube
-
-      const scraper = new YouTubeScraper({ youtubeClient: mockClient })
-      const items: YouTubePlaylistItem[] = []
-
-      for await (const item of scraper.getPlaylistItems({
-        all: true,
-        playlistID: 'PL123',
-      })) {
-        items.push(item)
-      }
-
-      expect(items).toHaveLength(2)
-      expect(mockClient.playlistItems.list).toHaveBeenCalledTimes(2)
-    })
-
-    it('should not paginate when all=false', async () => {
-      const mockClient = {
-        playlistItems: {
-          list: vi.fn().mockResolvedValue({
-            data: {
-              items: [{ contentDetails: { videoId: 'video1' } }],
-              nextPageToken: 'token123',
-            },
-          }),
-        },
-      } as unknown as youtube.Youtube
-
-      const scraper = new YouTubeScraper({ youtubeClient: mockClient })
-      const items: YouTubePlaylistItem[] = []
-
-      for await (const item of scraper.getPlaylistItems({
-        all: false,
-        playlistID: 'PL123',
-      })) {
-        items.push(item)
-      }
-
-      expect(items).toHaveLength(1)
-      expect(mockClient.playlistItems.list).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -243,15 +53,19 @@ describe('YouTubeScraper', () => {
       const onVideoScraped = vi.fn()
       const videos: YouTubeVideo[] = []
 
-      await scraper.scrapeVideos({ ids: ['video1', 'video2'] }, (video) => {
-        videos.push(video)
-        onVideoScraped(video)
-      })
+      await scraper.scrapeVideos(
+        { ids: ['video1', 'video2'] },
+        (videoBatch) => {
+          videos.push(...videoBatch)
+          onVideoScraped(videoBatch)
+        },
+      )
 
       expect(videos).toHaveLength(2)
       expect(videos[0]?.id).toBe('video1')
       expect(videos[1]?.id).toBe('video2')
-      expect(onVideoScraped).toHaveBeenCalledTimes(2)
+      expect(onVideoScraped).toHaveBeenCalledTimes(1)
+      expect(onVideoScraped).toHaveBeenCalledWith(mockVideos)
     })
 
     it('should batch requests for large video arrays', async () => {
@@ -278,8 +92,8 @@ describe('YouTubeScraper', () => {
       const videoIds = range(100).map((i) => `video${i}`)
       const videos: YouTubeVideo[] = []
 
-      await scraper.scrapeVideos({ ids: videoIds }, (video) => {
-        videos.push(video)
+      await scraper.scrapeVideos({ ids: videoIds }, (videoBatch) => {
+        videos.push(...videoBatch)
       })
 
       expect(videos).toHaveLength(100)
@@ -297,6 +111,9 @@ describe('YouTubeScraper', () => {
             },
           },
           id: 'UC123',
+          snippet: {
+            title: 'Test Channel',
+          },
         },
       ]
 
@@ -314,57 +131,7 @@ describe('YouTubeScraper', () => {
       await scraper.scrapeChannels({ channelIds: ['UC123'] }, onChannelScraped)
 
       expect(onChannelScraped).toHaveBeenCalledTimes(1)
-      expect(onChannelScraped).toHaveBeenCalledWith(mockChannels[0])
-    })
-  })
-
-  describe('scrapePlaylistVideos', () => {
-    it('should scrape playlist items and videos with callbacks', async () => {
-      const mockPlaylistItems: YouTubePlaylistItem[] = [
-        { contentDetails: { videoId: 'video1' } },
-        { contentDetails: { videoId: 'video2' } },
-      ]
-
-      const mockVideos: YouTubeVideo[] = [
-        {
-          contentDetails: {},
-          id: 'video1',
-          snippet: { publishedAt: '2023-01-01T00:00:00Z' },
-        },
-        {
-          contentDetails: {},
-          id: 'video2',
-          snippet: { publishedAt: '2023-01-02T00:00:00Z' },
-        },
-      ]
-
-      const mockClient = {
-        playlistItems: {
-          list: vi.fn().mockResolvedValue({
-            data: { items: mockPlaylistItems },
-          }),
-        },
-        videos: {
-          list: vi.fn().mockResolvedValue({
-            data: { items: mockVideos },
-          }),
-        },
-      } as unknown as youtube.Youtube
-
-      const scraper = new YouTubeScraper({ youtubeClient: mockClient })
-      const onVideoScraped = vi.fn()
-      const onThumbnailScraped = vi.fn()
-
-      await scraper.scrapePlaylistVideos(
-        { playlistId: 'PL123' },
-        {
-          onThumbnailScraped,
-          onVideoScraped,
-        },
-      )
-
-      expect(onThumbnailScraped).toHaveBeenCalledTimes(2)
-      expect(onVideoScraped).toHaveBeenCalledTimes(2)
+      expect(onChannelScraped).toHaveBeenCalledWith(mockChannels)
     })
   })
 
@@ -388,19 +155,21 @@ describe('YouTubeScraper', () => {
         onVideoChecked,
       )
 
-      expect(onVideoChecked).toHaveBeenCalledTimes(3)
-      expect(onVideoChecked).toHaveBeenCalledWith({
-        id: 'video1',
-        isAvailable: true,
-      })
-      expect(onVideoChecked).toHaveBeenCalledWith({
-        id: 'video2',
-        isAvailable: false,
-      })
-      expect(onVideoChecked).toHaveBeenCalledWith({
-        id: 'video3',
-        isAvailable: true,
-      })
+      expect(onVideoChecked).toHaveBeenCalledTimes(1)
+      expect(onVideoChecked).toHaveBeenCalledWith([
+        {
+          id: 'video1',
+          isAvailable: true,
+        },
+        {
+          id: 'video2',
+          isAvailable: false,
+        },
+        {
+          id: 'video3',
+          isAvailable: true,
+        },
+      ])
     })
 
     it('should batch check large video arrays', async () => {
@@ -428,57 +197,8 @@ describe('YouTubeScraper', () => {
 
       await scraper.scrapeVideosAvailability({ videoIds }, onVideoChecked)
 
-      expect(onVideoChecked).toHaveBeenCalledTimes(100)
+      expect(onVideoChecked).toHaveBeenCalledTimes(2)
       expect(mockClient.videos.list).toHaveBeenCalledTimes(2)
-    })
-  })
-
-  describe('scrapePlaylistVideos', () => {
-    it('should return all videos from playlist', async () => {
-      const mockPlaylistItems: YouTubePlaylistItem[] = [
-        { contentDetails: { videoId: 'video1' } },
-      ]
-
-      const mockVideos: YouTubeVideo[] = [
-        {
-          contentDetails: {},
-          id: 'video1',
-          snippet: { publishedAt: '2023-01-01T00:00:00Z' },
-        },
-      ]
-
-      const mockClient = {
-        playlistItems: {
-          list: vi.fn().mockResolvedValue({
-            data: { items: mockPlaylistItems },
-          }),
-        },
-        videos: {
-          list: vi.fn().mockResolvedValue({
-            data: { items: mockVideos },
-          }),
-        },
-      } as unknown as youtube.Youtube
-
-      const scraper = new YouTubeScraper({ youtubeClient: mockClient })
-      const videos: YouTubeVideo[] = []
-      const thumbnails: YouTubePlaylistItem[] = []
-
-      await scraper.scrapePlaylistVideos(
-        { playlistId: 'PL123' },
-        {
-          onThumbnailScraped: async (thumbnail) => {
-            thumbnails.push(thumbnail)
-          },
-          onVideoScraped: async (video) => {
-            videos.push(video)
-          },
-        },
-      )
-
-      expect(videos).toHaveLength(1)
-      expect(videos[0]?.id).toBe('video1')
-      expect(thumbnails).toHaveLength(1)
     })
   })
 })

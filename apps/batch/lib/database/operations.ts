@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/nextjs'
 import type { TablesInsert } from '@shinju-date/database'
 import { isNonNullable } from '@shinju-date/helpers'
 import { toDBString } from '@shinju-date/temporal-fns'
-import type { YouTubeVideo } from '@shinju-date/youtube-scraper'
+import type { YouTubeChannel, YouTubeVideo } from '@shinju-date/youtube-scraper'
 import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
 import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
@@ -546,4 +546,77 @@ export async function updateTalentChannel({
   if (error) {
     throw new DatabaseError(error)
   }
+}
+
+/**
+ * Process scraped YouTube channels and update talent information
+ * Uses snippet data already fetched by the scraper, logs changes, and returns whether updates occurred
+ */
+export async function processScrapedChannels({
+  youtubeChannels,
+  talents,
+  supabaseClient,
+}: {
+  youtubeChannels: YouTubeChannel[]
+  talents: Array<{
+    id: string
+    name: string
+    youtube_channel: {
+      name: string | null
+      youtube_channel_id: string
+    } | null
+  }>
+  supabaseClient: TypedSupabaseClient
+}): Promise<boolean> {
+  let hasUpdates = false
+
+  for (const youtubeChannel of youtubeChannels) {
+    try {
+      const talent = talents.find(
+        (t) => t.youtube_channel?.youtube_channel_id === youtubeChannel.id,
+      )
+
+      if (!talent) {
+        throw new TypeError(
+          `No talent found for YouTube channel ID: ${youtubeChannel.id}`,
+        )
+      }
+
+      // Type guard ensures snippet exists, but add explicit check for TypeScript
+      if (!youtubeChannel.snippet?.title) {
+        throw new TypeError(
+          `YouTube channel snippet is missing for channel: ${youtubeChannel.id}`,
+        )
+      }
+
+      const currentYouTubeChannelName = talent.youtube_channel?.name
+      const channelName = youtubeChannel.snippet.title
+      const youtubeHandle = youtubeChannel.snippet.customUrl || null
+
+      // Update youtube_channels table
+      await updateTalentChannel({
+        channelName,
+        supabaseClient,
+        talentId: talent.id,
+        youtubeChannelId: youtubeChannel.id,
+        youtubeHandle,
+      })
+
+      // Log and track if YouTube channel name changed
+      if (channelName !== currentYouTubeChannelName) {
+        Sentry.logger.info('YouTube channel name has been updated.', {
+          youtube_channel_name: `${currentYouTubeChannelName} -> ${channelName}`,
+        })
+        hasUpdates = true
+      }
+    } catch (error) {
+      Sentry.captureException(error)
+    }
+  }
+
+  if (!hasUpdates) {
+    Sentry.logger.info('No updated talents existed.')
+  }
+
+  return hasUpdates
 }

@@ -8,10 +8,8 @@ import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import {
-  batchUpdateVideos,
   processScrapedVideoAvailability,
   processScrapedVideoForCheck,
-  type VideoUpdate,
 } from '@/lib/database'
 import {
   videosCheckAll as ratelimitAll,
@@ -134,88 +132,41 @@ export async function POST(request: NextRequest): Promise<Response> {
     youtubeClient,
   })
 
-  let updatedCount = 0
-  let deletedCount = 0
-  const videoUpdates: VideoUpdate[] = []
+  let hasChanges = false
 
   // For 'default' and 'recent' modes, fetch full video details and update information
-  // For 'all' mode, only check availability (no updates)
+  // For 'all' mode, only check availability and delete unavailable videos
   if (mode === 'default' || mode === 'recent') {
-    const availableVideoIds = new Set<string>()
-
-    // Use database function directly as callback
-    await scraper.scrapeVideos({ ids: videoIds }, async (originalVideo) => {
-      await processScrapedVideoForCheck({
-        availableVideoIds,
+    // Process scraped videos for checking, updating, and deletion
+    await scraper.scrapeVideos({ ids: videoIds }, async (originalVideos) => {
+      hasChanges = await processScrapedVideoForCheck({
         currentDateTime,
-        originalVideo,
-        savedVideos,
-        videoUpdates,
-      })
-    })
-
-    // Perform batch update if there are changes
-    if (videoUpdates.length > 0) {
-      updatedCount = await batchUpdateVideos({
-        supabaseClient,
-        updates: videoUpdates,
-      })
-
-      logger.info('動画が更新されました', {
-        count: updatedCount,
+        logger,
         mode,
+        originalVideos,
+        savedVideos,
+        supabaseClient,
       })
-    }
-
-    // Check availability and delete unavailable videos
-    await scraper.scrapeVideosAvailability({ videoIds }, async (video) => {
-      try {
-        const deleted = await processScrapedVideoAvailability({
-          currentDateTime,
-          logger,
-          savedVideos,
-          supabaseClient,
-          video,
-        })
-        if (deleted) {
-          deletedCount++
-        }
-      } catch (error) {
-        Sentry.captureException(error)
-      }
     })
   } else {
     // For 'all' mode, only check availability and delete unavailable videos
-    await scraper.scrapeVideosAvailability({ videoIds }, async (video) => {
+    await scraper.scrapeVideosAvailability({ videoIds }, async (videos) => {
       try {
-        const deleted = await processScrapedVideoAvailability({
+        await processScrapedVideoAvailability({
           currentDateTime,
           logger,
           savedVideos,
           supabaseClient,
-          video,
+          videos,
         })
-        if (deleted) {
-          deletedCount++
-        }
+        hasChanges = true // Any deletion is a change
       } catch (error) {
         Sentry.captureException(error)
       }
     })
-
-    if (deletedCount < 1) {
-      logger.info('削除対象の動画は存在しませんでした')
-    }
   }
 
-  if (deletedCount > 0) {
-    logger.info('動画が削除されました', {
-      count: deletedCount,
-    })
-  }
-
-  // Revalidate tags if any changes were made
-  const hasChanges = updatedCount > 0 || deletedCount > 0
+  // Revalidate tags only if changes occurred
   if (hasChanges) {
     await revalidateTags(['videos'], {
       signal: request.signal,
