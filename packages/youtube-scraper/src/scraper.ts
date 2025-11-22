@@ -133,7 +133,7 @@ export class YouTubeScraper implements AsyncDisposable {
     onChannelScraped: (channel: YouTubeChannel) => Promise<void>,
   ): Promise<void> {
     // Use AsyncIterator pattern instead of Array.fromAsync
-    for await (const channel of this.getChannels({ ids: params.channelIds })) {
+    for await (const channel of this.#getChannels({ ids: params.channelIds })) {
       await onChannelScraped(channel)
     }
   }
@@ -147,7 +147,7 @@ export class YouTubeScraper implements AsyncDisposable {
   ): Promise<void> {
     const videoIDs: string[] = []
 
-    for await (const playlistItem of this.getPlaylistItems({
+    for await (const playlistItem of this.#getPlaylistItems({
       all: false,
       playlistID: params.playlistId,
     })) {
@@ -206,11 +206,11 @@ export class YouTubeScraper implements AsyncDisposable {
     params: ScrapeNewVideosParams,
     onNewVideos: (channelId: string, videos: YouTubeVideo[]) => Promise<void>,
   ): Promise<void> {
-    for await (const channel of this.getChannels({ ids: params.channelIds })) {
+    for await (const channel of this.#getChannels({ ids: params.channelIds })) {
       const playlistId = channel.contentDetails.relatedPlaylists.uploads
       const videoIDs: string[] = []
 
-      for await (const playlistItem of this.getPlaylistItems({
+      for await (const playlistItem of this.#getPlaylistItems({
         all: false,
         playlistID: playlistId,
       })) {
@@ -240,11 +240,11 @@ export class YouTubeScraper implements AsyncDisposable {
       videos: YouTubeVideo[],
     ) => Promise<void>,
   ): Promise<void> {
-    for await (const channel of this.getChannels({ ids: params.channelIds })) {
+    for await (const channel of this.#getChannels({ ids: params.channelIds })) {
       const playlistId = channel.contentDetails.relatedPlaylists.uploads
       const videoIDs: string[] = []
 
-      for await (const playlistItem of this.getPlaylistItems({
+      for await (const playlistItem of this.#getPlaylistItems({
         all: true,
         playlistID: playlistId,
       })) {
