@@ -25,7 +25,7 @@ export async function SummaryWidget() {
       {/* Video Summary Section with Chart */}
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 className="mb-4 font-semibold text-xl">動画サマリー</h2>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-4 gap-4">
           <Link
             className="rounded-lg bg-blue-50 p-4 transition-colors hover:bg-blue-100"
             href="/videos?deleted=false"
