@@ -19,7 +19,7 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
     // Get the talent from database
     const { data: talent, error: fetchError } = await supabaseClient
       .from('talents')
-      .select('id, name, youtube_channels!inner(id, youtube_channel_id)')
+      .select('id, name, youtube_channels(id, youtube_channel_id)')
       .eq('id', talentId)
       .single()
 

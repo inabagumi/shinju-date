@@ -558,15 +558,15 @@ export async function processScrapedChannels({
   supabaseClient,
 }: {
   youtubeChannels: YouTubeChannel[]
-  talents: Array<{
+  talents: {
     id: string
     name: string
-    youtube_channels: Array<{
+    youtube_channels: {
       id: string
       name: string | null
       youtube_channel_id: string
-    }>
-  }>
+    }[]
+  }[]
   supabaseClient: TypedSupabaseClient
 }): Promise<boolean> {
   let hasUpdates = false

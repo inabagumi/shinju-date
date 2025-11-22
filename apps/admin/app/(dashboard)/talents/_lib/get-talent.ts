@@ -7,12 +7,12 @@ export type Talent = {
   created_at: string
   updated_at: string
   deleted_at: string | null
-  youtube_channels: Array<{
+  youtube_channels: {
     id: string
     name: string | null
     youtube_channel_id: string
     youtube_handle: string | null
-  }>
+  }[]
 }
 
 export async function getTalent(id: string): Promise<Talent | null> {

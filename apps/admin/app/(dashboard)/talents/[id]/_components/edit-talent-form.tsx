@@ -15,12 +15,12 @@ import { updateTalentAction } from '../../_actions'
 type Talent = {
   id: string
   name: string
-  youtube_channels: Array<{
+  youtube_channels: {
     id: string
     name: string | null
     youtube_channel_id: string
     youtube_handle: string | null
-  }>
+  }[]
 }
 
 type EditTalentFormProps = {

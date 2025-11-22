@@ -11,9 +11,9 @@ export type PopularTalent = {
   clicks: number
   id: string
   name: string
-  youtube_channels: Array<{
+  youtube_channels: {
     youtube_channel_id: string
-  }>
+  }[]
 }
 
 /**

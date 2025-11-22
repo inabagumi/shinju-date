@@ -11,12 +11,12 @@ type Talent = {
   name: string
   created_at: string
   updated_at: string
-  youtube_channels: Array<{
+  youtube_channels: {
     id: string
     name: string | null
     youtube_channel_id: string
     youtube_handle: string | null
-  }>
+  }[]
 }
 
 type TalentsListProps = {
