@@ -46,6 +46,16 @@ const initializeRedisData = () => {
 
     // Search volume data
     mockRedisStore.set(`search:volume:${dateStr}`, 100 + index * 20)
+
+    // Summary stats data - trending upward over time
+    mockRedisStore.set(`summary:stats:${dateStr}`, {
+      totalVideos: 1000 + index * 5,
+      visibleVideos: 800 + index * 4,
+      hiddenVideos: 150 + index * 1,
+      deletedVideos: 50 + index * 0,
+      totalTerms: 200 + index * 2,
+      totalTalents: 50 + index * 0,
+    })
   })
 
   // Add some aggregate cache data for date ranges
