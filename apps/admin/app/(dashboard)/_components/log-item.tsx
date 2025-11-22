@@ -28,6 +28,8 @@ const ACTION_LABELS: Record<
   VIDEO_SYNC: '動画を同期',
   VIDEO_UPDATE: '動画を更新',
   VIDEO_VISIBILITY_TOGGLE: '動画の表示設定を変更',
+  YOUTUBE_CHANNEL_CREATE: 'YouTubeチャンネルを追加',
+  YOUTUBE_CHANNEL_DELETE: 'YouTubeチャンネルを削除',
 }
 
 function LogMessage({ log }: { log: Log }) {
