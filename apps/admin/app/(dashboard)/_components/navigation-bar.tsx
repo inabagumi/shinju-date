@@ -20,7 +20,7 @@ export function NavigationBar() {
   return (
     <nav className="sticky top-0 z-50 bg-slate-800 text-slate-50">
       {/* Desktop Navigation */}
-      <div className="hidden items-center gap-4 p-2 md:flex">
+      <div className="mx-auto hidden max-w-7xl items-center gap-4 p-2 md:flex">
         <Link className="inline-block p-2 font-semibold text-xl" href="/">
           Admin UI
         </Link>
@@ -206,7 +206,7 @@ export function NavigationBar() {
       </div>
 
       {/* Mobile Navigation */}
-      <div className="flex items-center justify-between p-2 md:hidden">
+      <div className="mx-auto flex max-w-7xl items-center justify-between p-2 md:hidden">
         <Link className="inline-block p-2 font-semibold text-xl" href="/">
           Admin UI
         </Link>
