@@ -4,7 +4,7 @@ import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after } from 'next/server'
-import { updateTalentChannel } from '@/lib/database'
+import { processScrapedChannels } from '@/lib/database'
 import { talentsUpdate as ratelimit } from '@/lib/ratelimit'
 import { supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
@@ -12,13 +12,6 @@ import { youtubeClient } from '@/lib/youtube'
 const MONITOR_SLUG = '/channels/update'
 
 export const maxDuration = 120
-
-type Talent = Pick<Tables<'talents'>, 'id' | 'name'> & {
-  youtube_channel: {
-    name: string | null
-    youtube_channel_id: string
-  } | null
-}
 
 export async function POST(request: Request): Promise<Response> {
   const cronSecure = process.env['CRON_SECRET']
@@ -90,7 +83,14 @@ export async function POST(request: Request): Promise<Response> {
   const youTubeChannelIds = talents
     .map((talent) => talent.youtube_channel?.youtube_channel_id)
     .filter((id): id is string => Boolean(id))
-  const results: PromiseSettledResult<Talent | null>[] = []
+  const results: PromiseSettledResult<{
+    id: string
+    name: string
+    youtube_channel: {
+      name: string | null
+      youtube_channel_id: string
+    } | null
+  } | null>[] = []
 
   await using scraper = new YouTubeScraper({
     youtubeClient,
@@ -100,68 +100,20 @@ export async function POST(request: Request): Promise<Response> {
     await scraper.scrapeChannels(
       { channelIds: youTubeChannelIds },
       async (youtubeChannels) => {
-        for (const youtubeChannel of youtubeChannels) {
-          const result = await (async (): Promise<Talent | null> => {
-            const talent = talents.find(
-              (t) =>
-                t.youtube_channel?.youtube_channel_id === youtubeChannel.id,
-            )
+        // Move all processing logic to lib/database
+        const channelResults = await processScrapedChannels({
+          supabaseClient,
+          talents,
+          youtubeChannels,
+          youtubeClient,
+        })
 
-            if (!talent) {
-              throw new TypeError('A talent does not exist.')
-            }
-
-            // Note: YouTubeChannel from scraper doesn't include snippet with title
-            // We need to fetch snippet data separately for this endpoint
-            const {
-              data: { items = [] },
-            } = await youtubeClient.channels.list({
-              id: [youtubeChannel.id],
-              maxResults: 1,
-              part: ['snippet'],
-            })
-
-            const item = items[0]
-            if (!item?.snippet?.title) {
-              throw new TypeError('A snippet is empty.')
-            }
-
-            // Get current YouTube channel name from database
-            const currentYouTubeChannelName = talent.youtube_channel?.name
-
-            // Update youtube_channels table with YouTube channel name using lib/database
-            const youtubeHandle = item.snippet.customUrl || null
-            await updateTalentChannel({
-              channelName: item.snippet.title,
-              supabaseClient,
-              talentId: talent.id,
-              youtubeChannelId: youtubeChannel.id,
-              youtubeHandle,
-            })
-
-            // Return null if YouTube channel name hasn't changed
-            if (item.snippet.title === currentYouTubeChannelName) {
-              return null
-            }
-
-            // Fetch updated talent data to return
-            const { data, error } = await supabaseClient
-              .from('talents')
-              .select(
-                'id, name, youtube_channel:youtube_channels(name, youtube_channel_id)',
-              )
-              .eq('id', talent.id)
-              .single()
-
-            if (error) {
-              throw error
-            }
-
-            return data
-          })()
-
-          results.push({ status: 'fulfilled', value: result })
-        }
+        results.push(
+          ...channelResults.map((result) => ({
+            status: 'fulfilled' as const,
+            value: result,
+          })),
+        )
       },
     )
   } catch (error) {

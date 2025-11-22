@@ -7,7 +7,6 @@ import type {
   Logger,
   ScrapeNewVideosParams,
   ScraperOptions,
-  ScrapeUpdatedVideosParams,
   YouTubeChannel,
   YouTubePlaylistItem,
   YouTubeVideo,
@@ -37,7 +36,7 @@ export class YouTubeScraper implements AsyncDisposable {
     this.#logger = options.logger
   }
 
-  async *getChannels(
+  async *#getChannels(
     options: GetChannelsOptions,
   ): AsyncGenerator<YouTubeChannel, void, undefined> {
     for (let i = 0; i < options.ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
@@ -61,7 +60,7 @@ export class YouTubeScraper implements AsyncDisposable {
     }
   }
 
-  async *getPlaylistItems(
+  async *#getPlaylistItems(
     options: GetPlaylistItemsOptions,
   ): AsyncGenerator<YouTubePlaylistItem, void, undefined> {
     let pageToken: string | undefined
@@ -136,42 +135,13 @@ export class YouTubeScraper implements AsyncDisposable {
     // Note: For very large channel lists (>1000), consider processing in smaller batches
     // However, typical usage in this codebase processes <100 channels, making this safe
     const channels: YouTubeChannel[] = []
-    for await (const channel of this.getChannels({ ids: params.channelIds })) {
+    for await (const channel of this.#getChannels({ ids: params.channelIds })) {
       channels.push(channel)
     }
 
     if (channels.length > 0) {
       await onChannelScraped(channels)
     }
-  }
-
-  async scrapePlaylistVideos(
-    params: { playlistId: string },
-    callbacks: {
-      onVideoScraped: (videos: YouTubeVideo[]) => Promise<void>
-      onThumbnailScraped: (thumbnails: YouTubePlaylistItem[]) => Promise<void>
-    },
-  ): Promise<void> {
-    const videoIDs: string[] = []
-    // Collect all thumbnails into a batch for the callback
-    // Note: For very large playlists (>1000 items), consider processing in smaller batches
-    // However, typical usage processes <100 items, making this safe
-    const thumbnails: YouTubePlaylistItem[] = []
-
-    for await (const playlistItem of this.getPlaylistItems({
-      all: false,
-      playlistID: params.playlistId,
-    })) {
-      thumbnails.push(playlistItem)
-      videoIDs.push(playlistItem.contentDetails.videoId)
-    }
-
-    if (thumbnails.length > 0) {
-      await callbacks.onThumbnailScraped(thumbnails)
-    }
-
-    // scrapeVideos calls callback with array
-    await this.scrapeVideos({ ids: videoIDs }, callbacks.onVideoScraped)
   }
 
   async scrapeVideosAvailability(
@@ -223,11 +193,11 @@ export class YouTubeScraper implements AsyncDisposable {
     params: ScrapeNewVideosParams,
     onNewVideos: (channelId: string, videos: YouTubeVideo[]) => Promise<void>,
   ): Promise<void> {
-    for await (const channel of this.getChannels({ ids: params.channelIds })) {
+    for await (const channel of this.#getChannels({ ids: params.channelIds })) {
       const playlistId = channel.contentDetails.relatedPlaylists.uploads
       const videoIDs: string[] = []
 
-      for await (const playlistItem of this.getPlaylistItems({
+      for await (const playlistItem of this.#getPlaylistItems({
         all: false,
         playlistID: playlistId,
       })) {
@@ -241,40 +211,6 @@ export class YouTubeScraper implements AsyncDisposable {
 
       if (videos.length > 0) {
         await onNewVideos(channel.id, videos)
-      }
-    }
-  }
-
-  /**
-   * Scrape updated videos from channels
-   * @param params - Parameters containing channelIds
-   * @param onUpdatedVideos - Callback to handle batches of updated videos with channel context
-   */
-  async scrapeUpdatedVideos(
-    params: ScrapeUpdatedVideosParams,
-    onUpdatedVideos: (
-      channelId: string,
-      videos: YouTubeVideo[],
-    ) => Promise<void>,
-  ): Promise<void> {
-    for await (const channel of this.getChannels({ ids: params.channelIds })) {
-      const playlistId = channel.contentDetails.relatedPlaylists.uploads
-      const videoIDs: string[] = []
-
-      for await (const playlistItem of this.getPlaylistItems({
-        all: true,
-        playlistID: playlistId,
-      })) {
-        videoIDs.push(playlistItem.contentDetails.videoId)
-      }
-
-      const videos: YouTubeVideo[] = []
-      await this.scrapeVideos({ ids: videoIDs }, async (videoBatch) => {
-        videos.push(...videoBatch)
-      })
-
-      if (videos.length > 0) {
-        await onUpdatedVideos(channel.id, videos)
       }
     }
   }

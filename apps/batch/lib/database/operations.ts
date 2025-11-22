@@ -1,8 +1,9 @@
+import type { youtube_v3 as youtube } from '@googleapis/youtube'
 import * as Sentry from '@sentry/nextjs'
 import type { TablesInsert } from '@shinju-date/database'
 import { isNonNullable } from '@shinju-date/helpers'
 import { toDBString } from '@shinju-date/temporal-fns'
-import type { YouTubeVideo } from '@shinju-date/youtube-scraper'
+import type { YouTubeChannel, YouTubeVideo } from '@shinju-date/youtube-scraper'
 import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
 import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
@@ -546,4 +547,109 @@ export async function updateTalentChannel({
   if (error) {
     throw new DatabaseError(error)
   }
+}
+
+/**
+ * Process scraped YouTube channels and update talent information
+ * Fetches channel snippets, updates database, and returns changed talents
+ */
+export async function processScrapedChannels({
+  youtubeChannels,
+  talents,
+  youtubeClient,
+  supabaseClient,
+}: {
+  youtubeChannels: YouTubeChannel[]
+  talents: Array<{
+    id: string
+    name: string
+    youtube_channel: {
+      name: string | null
+      youtube_channel_id: string
+    } | null
+  }>
+  youtubeClient: youtube.Youtube
+  supabaseClient: TypedSupabaseClient
+}): Promise<
+  Array<{
+    id: string
+    name: string
+    youtube_channel: {
+      name: string | null
+      youtube_channel_id: string
+    } | null
+  } | null>
+> {
+  const results: Array<{
+    id: string
+    name: string
+    youtube_channel: {
+      name: string | null
+      youtube_channel_id: string
+    } | null
+  } | null> = []
+
+  for (const youtubeChannel of youtubeChannels) {
+    try {
+      const talent = talents.find(
+        (t) => t.youtube_channel?.youtube_channel_id === youtubeChannel.id,
+      )
+
+      if (!talent) {
+        throw new TypeError('A talent does not exist.')
+      }
+
+      // Fetch channel snippet data
+      const {
+        data: { items = [] },
+      } = await youtubeClient.channels.list({
+        id: [youtubeChannel.id],
+        maxResults: 1,
+        part: ['snippet'],
+      })
+
+      const item = items[0]
+      if (!item?.snippet?.title) {
+        throw new TypeError('A snippet is empty.')
+      }
+
+      const currentYouTubeChannelName = talent.youtube_channel?.name
+      const youtubeHandle = item.snippet.customUrl || null
+
+      // Update youtube_channels table
+      await updateTalentChannel({
+        channelName: item.snippet.title,
+        supabaseClient,
+        talentId: talent.id,
+        youtubeChannelId: youtubeChannel.id,
+        youtubeHandle,
+      })
+
+      // Return null if YouTube channel name hasn't changed
+      if (item.snippet.title === currentYouTubeChannelName) {
+        results.push(null)
+        continue
+      }
+
+      // Fetch updated talent data
+      const { data, error } = await supabaseClient
+        .from('talents')
+        .select(
+          'id, name, youtube_channel:youtube_channels(name, youtube_channel_id)',
+        )
+        .eq('id', talent.id)
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      results.push(data)
+    } catch (error) {
+      results.push(null)
+      throw error
+    }
+  }
+
+  return results
 }

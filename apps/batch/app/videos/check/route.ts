@@ -135,30 +135,33 @@ export async function POST(request: NextRequest): Promise<Response> {
   })
 
   let updatedCount = 0
-  let deletedCount = 0
-  const videoUpdates: VideoUpdate[] = []
 
   // For 'default' and 'recent' modes, fetch full video details and update information
   // For 'all' mode, only check availability (no updates)
   if (mode === 'default' || mode === 'recent') {
-    const availableVideoIds = new Set<string>()
+    const allAvailableVideoIds = new Set<string>()
+    const allVideoUpdates: VideoUpdate[] = []
 
-    // Use database function directly as callback
+    // Process scraped videos for checking and collecting updates
     await scraper.scrapeVideos({ ids: videoIds }, async (originalVideos) => {
-      await processScrapedVideoForCheck({
-        availableVideoIds,
+      const { availableVideoIds, updates } = await processScrapedVideoForCheck({
         currentDateTime,
         originalVideos,
         savedVideos,
-        videoUpdates,
       })
+
+      // Merge results
+      for (const id of availableVideoIds) {
+        allAvailableVideoIds.add(id)
+      }
+      allVideoUpdates.push(...updates)
     })
 
     // Perform batch update if there are changes
-    if (videoUpdates.length > 0) {
+    if (allVideoUpdates.length > 0) {
       updatedCount = await batchUpdateVideos({
         supabaseClient,
-        updates: videoUpdates,
+        updates: allVideoUpdates,
       })
 
       logger.info('動画が更新されました', {
@@ -170,14 +173,13 @@ export async function POST(request: NextRequest): Promise<Response> {
     // Check availability and delete unavailable videos
     await scraper.scrapeVideosAvailability({ videoIds }, async (videos) => {
       try {
-        const deleted = await processScrapedVideoAvailability({
+        await processScrapedVideoAvailability({
           currentDateTime,
           logger,
           savedVideos,
           supabaseClient,
           videos,
         })
-        deletedCount += deleted
       } catch (error) {
         Sentry.captureException(error)
       }
@@ -186,32 +188,21 @@ export async function POST(request: NextRequest): Promise<Response> {
     // For 'all' mode, only check availability and delete unavailable videos
     await scraper.scrapeVideosAvailability({ videoIds }, async (videos) => {
       try {
-        const deleted = await processScrapedVideoAvailability({
+        await processScrapedVideoAvailability({
           currentDateTime,
           logger,
           savedVideos,
           supabaseClient,
           videos,
         })
-        deletedCount += deleted
       } catch (error) {
         Sentry.captureException(error)
       }
     })
-
-    if (deletedCount < 1) {
-      logger.info('削除対象の動画は存在しませんでした')
-    }
-  }
-
-  if (deletedCount > 0) {
-    logger.info('動画が削除されました', {
-      count: deletedCount,
-    })
   }
 
   // Revalidate tags if any changes were made
-  const hasChanges = updatedCount > 0 || deletedCount > 0
+  const hasChanges = updatedCount > 0
   if (hasChanges) {
     await revalidateTags(['videos'], {
       signal: request.signal,

@@ -138,7 +138,7 @@ export async function batchUpdateVideos({
 /**
  * Process scraped video for checking and updating
  * Designed to be used as a callback with scraper.scrapeVideos()
- * Now processes arrays of videos for better batch performance
+ * Returns video updates that need to be applied
  */
 export async function processScrapedVideoForCheck<
   T extends {
@@ -155,15 +155,17 @@ export async function processScrapedVideoForCheck<
   originalVideos,
   currentDateTime,
   savedVideos,
-  availableVideoIds,
-  videoUpdates,
 }: {
   originalVideos: YouTubeVideo[]
   currentDateTime: Temporal.Instant
   savedVideos: T[]
+}): Promise<{
+  updates: VideoUpdate[]
   availableVideoIds: Set<string>
-  videoUpdates: VideoUpdate[]
-}): Promise<void> {
+}> {
+  const availableVideoIds = new Set<string>()
+  const videoUpdates: VideoUpdate[] = []
+
   for (const originalVideo of originalVideos) {
     availableVideoIds.add(originalVideo.id)
 
@@ -223,12 +225,14 @@ export async function processScrapedVideoForCheck<
       videoUpdates.push(updateData)
     }
   }
+
+  return { availableVideoIds, updates: videoUpdates }
 }
 
 /**
  * Process scraped video availability check
  * Designed to be used as a callback with scraper.scrapeVideosAvailability()
- * Now processes arrays of videos for better batch performance
+ * Processes arrays of videos, performs deletions, and logs results
  */
 export async function processScrapedVideoAvailability({
   videos,
@@ -251,7 +255,7 @@ export async function processScrapedVideoAvailability({
   logger: {
     info: (message: string, attributes?: Record<string, unknown>) => void
   }
-}): Promise<number> {
+}): Promise<void> {
   let deletedCount = 0
 
   for (const video of videos) {
@@ -303,7 +307,12 @@ export async function processScrapedVideoAvailability({
     }
   }
 
-  return deletedCount
+  // Log summary if any videos were deleted
+  if (deletedCount > 0) {
+    logger.info('動画が削除されました', {
+      count: deletedCount,
+    })
+  }
 }
 
 /**
