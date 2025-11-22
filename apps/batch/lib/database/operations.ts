@@ -596,7 +596,9 @@ export async function processScrapedChannels({
       )
 
       if (!talent) {
-        throw new TypeError('A talent does not exist.')
+        throw new TypeError(
+          `No talent found for YouTube channel ID: ${youtubeChannel.id}`,
+        )
       }
 
       // Fetch channel snippet data
@@ -610,7 +612,9 @@ export async function processScrapedChannels({
 
       const item = items[0]
       if (!item?.snippet?.title) {
-        throw new TypeError('A snippet is empty.')
+        throw new TypeError(
+          `YouTube channel snippet is missing or empty for channel: ${youtubeChannel.id}`,
+        )
       }
 
       const currentYouTubeChannelName = talent.youtube_channel?.name
