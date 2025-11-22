@@ -547,20 +547,3 @@ export async function updateTalentChannel({
     throw new DatabaseError(error)
   }
 }
-
-interface ProcessScrapedVideoAvailabilityOptions {
-  video: { id: string; isAvailable: boolean }
-  availableVideoIds: Set<string>
-}
-
-/**
- * Process scraped video availability check
- */
-export async function processScrapedVideoAvailability({
-  video,
-  availableVideoIds,
-}: ProcessScrapedVideoAvailabilityOptions): Promise<void> {
-  if (video.isAvailable) {
-    availableVideoIds.add(video.id)
-  }
-}

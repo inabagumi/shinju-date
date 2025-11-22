@@ -230,8 +230,114 @@ export async function processScrapedVideoAvailability({
   video,
   availableVideoIds,
 }: {
-  video: YouTubeVideo
+  video: {
+    id: string
+    isAvailable: boolean
+  }
   availableVideoIds: Set<string>
 }): Promise<void> {
-  availableVideoIds.add(video.id)
+  if (video.isAvailable) {
+    availableVideoIds.add(video.id)
+  }
+}
+
+/**
+ * Process deleted videos (videos that are no longer available on YouTube)
+ * Handles soft deletion of videos and their thumbnails
+ */
+export async function processDeletedVideos({
+  savedVideos,
+  availableVideoIds,
+  currentDateTime,
+  supabaseClient,
+}: {
+  savedVideos: Array<{
+    id: string
+    youtube_video?: { youtube_video_id: string } | null
+    thumbnails?: { id: string } | Array<{ id: string }> | null
+  }>
+  availableVideoIds: Set<string>
+  currentDateTime: Temporal.Instant
+  supabaseClient: TypedSupabaseClient
+}): Promise<{
+  deletedCount: number
+  deletedVideoIds: string[]
+  errors?: Error[]
+}> {
+  const deletedVideos = savedVideos.filter(
+    (savedVideo) =>
+      savedVideo.youtube_video?.youtube_video_id &&
+      !availableVideoIds.has(savedVideo.youtube_video.youtube_video_id),
+  )
+
+  if (deletedVideos.length === 0) {
+    return { deletedCount: 0, deletedVideoIds: [] }
+  }
+
+  // Extract thumbnails from deleted videos
+  const thumbnails = deletedVideos
+    .map((video) =>
+      Array.isArray(video.thumbnails) ? video.thumbnails[0] : video.thumbnails,
+    )
+    .filter(Boolean) as Array<{ id: string }>
+
+  // Soft delete videos and thumbnails
+  const results = await Promise.allSettled([
+    softDeleteRows({
+      currentDateTime,
+      ids: deletedVideos.map((video) => video.id),
+      supabaseClient,
+      table: 'videos',
+    }),
+    softDeleteRows({
+      currentDateTime,
+      ids: thumbnails.map((thumbnail) => thumbnail.id),
+      supabaseClient,
+      table: 'thumbnails',
+    }),
+  ])
+
+  const rejectedResults = results.filter(
+    (result): result is PromiseRejectedResult => result.status === 'rejected',
+  )
+
+  const deletedCount = deletedVideos.length - rejectedResults.length
+  const deletedVideoIds = deletedVideos
+    .map((video) => video.youtube_video?.youtube_video_id)
+    .filter((id): id is string => Boolean(id))
+
+  return {
+    deletedCount,
+    deletedVideoIds,
+    errors: rejectedResults.map((r) => r.reason),
+  }
+}
+
+async function softDeleteRows({
+  currentDateTime,
+  ids,
+  supabaseClient,
+  table,
+}: {
+  currentDateTime: Temporal.Instant
+  ids: string[]
+  supabaseClient: TypedSupabaseClient
+  table: 'videos' | 'thumbnails'
+}): Promise<{ id: string }[]> {
+  const { data, error } = await supabaseClient
+    .from(table)
+    .update({
+      deleted_at: toDBString(currentDateTime),
+      updated_at: toDBString(currentDateTime),
+    })
+    .in('id', ids)
+    .select('id')
+
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  return data
 }

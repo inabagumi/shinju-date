@@ -11,6 +11,7 @@ import { Temporal } from 'temporal-polyfill'
 import { z } from 'zod'
 import {
   batchUpdateVideos,
+  processDeletedVideos,
   processScrapedVideoAvailability,
   processScrapedVideoForCheck,
   type VideoUpdate,
@@ -146,83 +147,6 @@ async function* getSavedVideos({
 
     yield* savedVideos
   }
-}
-
-type SoftDeleteRowsOptions = {
-  currentDateTime: Temporal.Instant
-  ids: string[]
-  supabaseClient: TypedSupabaseClient
-  table: Exclude<
-    keyof Database['public']['Tables'],
-    'twitch_users' | 'twitch_videos' | 'youtube_channels' | 'youtube_videos'
-  >
-}
-
-async function softDeleteRows({
-  currentDateTime,
-  ids,
-  supabaseClient,
-  table,
-}: SoftDeleteRowsOptions): Promise<
-  {
-    id: string
-  }[]
-> {
-  const { data, error } = await supabaseClient
-    .from(table)
-    .update({
-      deleted_at: toDBString(currentDateTime),
-      updated_at: toDBString(currentDateTime),
-    })
-    .in('id', ids)
-    .select('id')
-
-  if (error) {
-    throw new TypeError(error.message, {
-      cause: error,
-    })
-  }
-
-  return data
-}
-
-type DeleteOptions = {
-  currentDateTime: Temporal.Instant
-  supabaseClient: TypedSupabaseClient
-  videos: Video[]
-}
-
-function deleteVideos({
-  currentDateTime,
-  supabaseClient,
-  videos,
-}: DeleteOptions): Promise<
-  PromiseSettledResult<
-    {
-      id: string
-    }[]
-  >[]
-> {
-  const thumbnails = videos
-    .map((video) =>
-      Array.isArray(video.thumbnails) ? video.thumbnails[0] : video.thumbnails,
-    )
-    .filter(Boolean) as Thumbnail[]
-
-  return Promise.allSettled([
-    softDeleteRows({
-      currentDateTime,
-      ids: videos.map((video) => video.id),
-      supabaseClient,
-      table: 'videos',
-    }),
-    softDeleteRows({
-      currentDateTime,
-      ids: thumbnails.map((thumbnail) => thumbnail.id),
-      supabaseClient,
-      table: 'thumbnails',
-    }),
-  ])
 }
 
 export async function POST(request: NextRequest): Promise<Response> {
@@ -371,33 +295,24 @@ export async function POST(request: NextRequest): Promise<Response> {
     })
   }
 
-  const deletedVideos = savedVideos.filter(
-    (savedVideo) =>
-      savedVideo.youtube_video?.youtube_video_id &&
-      !availableVideoIds.has(savedVideo.youtube_video.youtube_video_id),
-  )
+  // Process deleted videos
+  const { deletedCount, deletedVideoIds, errors } = await processDeletedVideos({
+    availableVideoIds,
+    currentDateTime,
+    savedVideos,
+    supabaseClient,
+  })
 
-  let deletedCount = 0
-  if (deletedVideos.length > 0) {
-    const results = await deleteVideos({
-      currentDateTime,
-      supabaseClient,
-      videos: deletedVideos,
-    })
-    const rejectedResults = results.filter(
-      (result): result is PromiseRejectedResult => result.status === 'rejected',
-    )
-
-    for (const result of rejectedResults) {
-      Sentry.captureException(result.reason)
+  if (errors && errors.length > 0) {
+    for (const error of errors) {
+      Sentry.captureException(error)
     }
+  }
 
-    deletedCount = deletedVideos.length - rejectedResults.length
+  if (deletedCount > 0) {
     logger.info('動画が削除されました。', {
       count: deletedCount,
-      ids: deletedVideos
-        .map((video) => video.youtube_video?.youtube_video_id)
-        .filter(Boolean),
+      ids: deletedVideoIds,
     })
   } else {
     logger.info('削除対象の動画は存在しませんでした。')
