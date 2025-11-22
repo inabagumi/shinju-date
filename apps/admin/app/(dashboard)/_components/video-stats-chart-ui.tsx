@@ -20,6 +20,13 @@ type VideoStatsChartProps = {
   }>
 }
 
+// Label mapping for chart legend and tooltip
+const LABEL_MAP: Record<string, string> = {
+  deletedVideos: '削除済み',
+  hiddenVideos: '非表示',
+  visibleVideos: '公開中',
+} as const
+
 export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
   return (
     <div className="h-80 w-full">
@@ -41,25 +48,14 @@ export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
               border: '1px solid #e5e7eb',
               borderRadius: '0.5rem',
             }}
-            formatter={(value: number, name: string) => {
-              const labels: Record<string, string> = {
-                deletedVideos: '削除済み',
-                hiddenVideos: '非表示',
-                visibleVideos: '公開中',
-              }
-              return [`${value} 本`, labels[name] || name]
-            }}
+            formatter={(value: number, name: string) => [
+              `${value} 本`,
+              LABEL_MAP[name] || name,
+            ]}
             labelStyle={{ color: '#374151', fontWeight: 600 }}
           />
           <Legend
-            formatter={(value: string) => {
-              const labels: Record<string, string> = {
-                deletedVideos: '削除済み',
-                hiddenVideos: '非表示',
-                visibleVideos: '公開中',
-              }
-              return labels[value] || value
-            }}
+            formatter={(value: string) => LABEL_MAP[value] || value}
             iconType="rect"
             wrapperStyle={{ paddingTop: '20px' }}
           />

@@ -66,7 +66,7 @@ export async function getHistoricalStats(
 function formatDateForDisplay(dateKey: string): string {
   // Validate format
   if (dateKey.length !== 8) {
-    throw new TypeError(`Invalid date key format: ${dateKey}`)
+    throw new TypeError(`Expected YYYYMMDD format (8 digits), got: ${dateKey}`)
   }
 
   const month = Number.parseInt(dateKey.slice(4, 6), 10)
