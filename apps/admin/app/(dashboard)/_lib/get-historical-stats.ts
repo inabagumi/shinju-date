@@ -64,6 +64,11 @@ export async function getHistoricalStats(
  * Format date key (YYYYMMDD) to display format (MM/DD)
  */
 function formatDateForDisplay(dateKey: string): string {
+  // Validate format
+  if (dateKey.length !== 8) {
+    throw new TypeError(`Invalid date key format: ${dateKey}`)
+  }
+
   const month = Number.parseInt(dateKey.slice(4, 6), 10)
   const day = Number.parseInt(dateKey.slice(6, 8), 10)
 
