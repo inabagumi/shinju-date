@@ -1,4 +1,3 @@
-import type { youtube_v3 as youtube } from '@googleapis/youtube'
 import * as Sentry from '@sentry/nextjs'
 import type { TablesInsert } from '@shinju-date/database'
 import { isNonNullable } from '@shinju-date/helpers'
@@ -551,12 +550,11 @@ export async function updateTalentChannel({
 
 /**
  * Process scraped YouTube channels and update talent information
- * Fetches channel snippets, updates database, logs changes, and returns whether updates occurred
+ * Uses snippet data already fetched by the scraper, logs changes, and returns whether updates occurred
  */
 export async function processScrapedChannels({
   youtubeChannels,
   talents,
-  youtubeClient,
   supabaseClient,
 }: {
   youtubeChannels: YouTubeChannel[]
@@ -568,7 +566,6 @@ export async function processScrapedChannels({
       youtube_channel_id: string
     } | null
   }>
-  youtubeClient: youtube.Youtube
   supabaseClient: TypedSupabaseClient
 }): Promise<boolean> {
   let hasUpdates = false
@@ -585,28 +582,20 @@ export async function processScrapedChannels({
         )
       }
 
-      // Fetch channel snippet data
-      const {
-        data: { items = [] },
-      } = await youtubeClient.channels.list({
-        id: [youtubeChannel.id],
-        maxResults: 1,
-        part: ['snippet'],
-      })
-
-      const item = items[0]
-      if (!item?.snippet?.title) {
+      // Type guard ensures snippet exists, but add explicit check for TypeScript
+      if (!youtubeChannel.snippet?.title) {
         throw new TypeError(
-          `YouTube channel snippet is missing or empty for channel: ${youtubeChannel.id}`,
+          `YouTube channel snippet is missing for channel: ${youtubeChannel.id}`,
         )
       }
 
       const currentYouTubeChannelName = talent.youtube_channel?.name
-      const youtubeHandle = item.snippet.customUrl || null
+      const channelName = youtubeChannel.snippet.title
+      const youtubeHandle = youtubeChannel.snippet.customUrl || null
 
       // Update youtube_channels table
       await updateTalentChannel({
-        channelName: item.snippet.title,
+        channelName,
         supabaseClient,
         talentId: talent.id,
         youtubeChannelId: youtubeChannel.id,
@@ -614,9 +603,9 @@ export async function processScrapedChannels({
       })
 
       // Log and track if YouTube channel name changed
-      if (item.snippet.title !== currentYouTubeChannelName) {
+      if (channelName !== currentYouTubeChannelName) {
         Sentry.logger.info('YouTube channel name has been updated.', {
-          youtube_channel_name: `${currentYouTubeChannelName} -> ${item.snippet.title}`,
+          youtube_channel_name: `${currentYouTubeChannelName} -> ${channelName}`,
         })
         hasUpdates = true
       }

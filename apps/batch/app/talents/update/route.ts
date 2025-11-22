@@ -97,7 +97,6 @@ export async function POST(request: Request): Promise<Response> {
           supabaseClient,
           talents,
           youtubeChannels,
-          youtubeClient,
         })
       },
     )

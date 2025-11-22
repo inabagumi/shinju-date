@@ -14,6 +14,9 @@ export type YouTubeChannel = youtube.Schema$Channel & {
     }
   }
   id: NonNullable<youtube.Schema$Channel['id']>
+  snippet: NonNullable<youtube.Schema$Channel['snippet']> & {
+    title: NonNullable<youtube.Schema$ChannelSnippet['title']>
+  }
 }
 
 export type YouTubePlaylistItem = youtube.Schema$PlaylistItem & {

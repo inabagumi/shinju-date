@@ -111,6 +111,9 @@ describe('YouTubeScraper', () => {
             },
           },
           id: 'UC123',
+          snippet: {
+            title: 'Test Channel',
+          },
         },
       ]
 

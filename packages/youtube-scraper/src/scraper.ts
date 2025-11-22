@@ -45,7 +45,7 @@ export class YouTubeScraper implements AsyncDisposable {
       } = await this.#client.channels.list({
         id: options.ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS),
         maxResults: YOUTUBE_DATA_API_MAX_RESULTS,
-        part: ['contentDetails', 'id'],
+        part: ['contentDetails', 'id', 'snippet'],
       })
 
       if (!items || items.length < 1) {
