@@ -95,7 +95,7 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
           youtube_channel_id: firstChannel.youtube_channel_id,
           youtube_handle: youtubeHandle,
         },
-        { onConflict: 'youtube_channel_id' },
+        { onConflict: 'id' },
       )
       .then(({ error: youtubeError }) => {
         if (youtubeError) {

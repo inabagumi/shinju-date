@@ -95,12 +95,8 @@ export async function POST(request: Request): Promise<Response> {
   >()
 
   for (const savedTalent of savedTalents) {
-    // youtube_channels is now an array
-    const channels = Array.isArray(savedTalent.youtube_channels)
-      ? savedTalent.youtube_channels
-      : [savedTalent.youtube_channels]
-
-    for (const ytChannel of channels) {
+    // youtube_channels is an array due to the query using youtube_channels!inner
+    for (const ytChannel of savedTalent.youtube_channels) {
       channelToTalentMap.set(ytChannel.youtube_channel_id, {
         id: savedTalent.id,
         youtubeChannelId: ytChannel.id,

@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
       ...talents.map((talent, index) => [
         index + 1,
         talent.name,
-        talent.youtube_channels[0]?.youtube_channel_id || 'N/A',
+        talent.youtube_channels.at(0)?.youtube_channel_id || 'N/A',
         talent.clicks,
       ]),
     ]
