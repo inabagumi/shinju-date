@@ -5,7 +5,10 @@ import {
   PopularVideosWidget,
   PopularVideosWidgetSkeleton,
 } from './_components/popular-videos-widget'
-import { SummaryWidget } from './_components/summary-widget'
+import {
+  ContentSummaryWidget,
+  VideoSummaryWidget,
+} from './_components/summary-widget'
 
 export default function DashboardPage() {
   return (
@@ -15,21 +18,19 @@ export default function DashboardPage() {
 
         {/* Main content area with max-width constraint */}
         <div className="space-y-6">
-          {/* Top row: Summary and Analytics widgets */}
+          {/* Video Summary - Full width */}
+          <Suspense fallback={<CardSkeleton />}>
+            <VideoSummaryWidget />
+          </Suspense>
+
+          {/* Second row: Content Summary and Analytics */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {/* Summary Widgets - Video and Content Summary (2 columns) */}
-            <Suspense
-              fallback={
-                <>
-                  <CardSkeleton />
-                  <CardSkeleton />
-                </>
-              }
-            >
-              <SummaryWidget />
+            {/* Content Summary Widget */}
+            <Suspense fallback={<CardSkeleton />}>
+              <ContentSummaryWidget />
             </Suspense>
 
-            {/* Analytics Summary Widget (1 column) */}
+            {/* Analytics Summary Widget */}
             <Suspense fallback={<CardSkeleton />}>
               <AnalyticsWidget />
             </Suspense>
