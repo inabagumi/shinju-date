@@ -43,8 +43,18 @@ export type GetVideosOptions = {
   ids: string[]
 }
 
+export interface Logger {
+  debug(message: string, attributes?: Record<string, unknown>): void
+  error(message: string, attributes?: Record<string, unknown>): void
+  info(message: string, attributes?: Record<string, unknown>): void
+  warn(message: string, attributes?: Record<string, unknown>): void
+}
+
 export type ScraperOptions = {
   youtubeClient: youtube.Youtube
+  concurrency?: number
+  interval?: number
+  logger?: Logger
 }
 
 export type ScrapeChannelsOptions = {
@@ -54,4 +64,12 @@ export type ScrapeChannelsOptions = {
 export type ScrapeVideosOptions = {
   playlistID: string
   scrapeAll?: boolean
+}
+
+export type ScrapeNewVideosParams = {
+  channelIds: string[]
+}
+
+export type ScrapeUpdatedVideosParams = {
+  channelIds: string[]
 }

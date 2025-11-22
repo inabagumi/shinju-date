@@ -22,9 +22,22 @@ export type SavedVideo = Omit<Tables<'videos'>, 'talent_id' | 'updated_at'> & {
 }
 
 /**
- * Re-export YouTube types from the youtube-scraper package
+ * Video result from database operations
  */
-export type {
-  YouTubeChannel,
-  YouTubeVideo,
-} from '@shinju-date/youtube-scraper'
+export type VideoTalent = Pick<Tables<'talents'>, 'name'>
+
+export type VideoThumbnail = Omit<
+  Tables<'thumbnails'>,
+  'created_at' | 'deleted_at' | 'etag' | 'id' | 'updated_at'
+>
+
+export type Video = Pick<
+  Tables<'videos'>,
+  'duration' | 'id' | 'published_at' | 'status' | 'title'
+> & {
+  talent: VideoTalent | null
+  thumbnail?: VideoThumbnail | null
+  youtube_video?: {
+    youtube_video_id: string
+  }
+}
