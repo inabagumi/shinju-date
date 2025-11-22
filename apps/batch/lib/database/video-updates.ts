@@ -172,7 +172,6 @@ export async function processScrapedVideoForCheck<
 }): Promise<boolean> {
   const videoUpdates: VideoUpdate[] = []
   const availableVideoIds = new Set<string>()
-  let deletedCount = 0
 
   // Process available videos and collect updates
   for (const originalVideo of originalVideos) {
@@ -250,54 +249,61 @@ export async function processScrapedVideoForCheck<
 
   // Delete videos that are no longer available
   // (videos in savedVideos but not in availableVideoIds)
+  const videoIdsToDelete: string[] = []
+  const thumbnailIdsToDelete: string[] = []
+
   for (const savedVideo of savedVideos) {
     const youtubeVideoId = savedVideo.youtube_video?.youtube_video_id
     if (!youtubeVideoId || availableVideoIds.has(youtubeVideoId)) {
       continue
     }
 
-    // Video is not available - soft delete it
+    // Video is not available - collect IDs for batch deletion
+    videoIdsToDelete.push(savedVideo.id)
+
     const thumbnail = Array.isArray(savedVideo.thumbnails)
       ? savedVideo.thumbnails[0]
       : savedVideo.thumbnails
 
+    if (thumbnail) {
+      thumbnailIdsToDelete.push(thumbnail.id)
+    }
+
+    logger.info('動画を削除しました', {
+      videoId: youtubeVideoId,
+    })
+  }
+
+  // Perform batch deletion if there are videos to delete
+  if (videoIdsToDelete.length > 0) {
     try {
       await Promise.all([
         softDeleteRows({
           currentDateTime,
-          ids: [savedVideo.id],
+          ids: videoIdsToDelete,
           supabaseClient,
           table: 'videos',
         }),
-        thumbnail
+        thumbnailIdsToDelete.length > 0
           ? softDeleteRows({
               currentDateTime,
-              ids: [thumbnail.id],
+              ids: thumbnailIdsToDelete,
               supabaseClient,
               table: 'thumbnails',
             })
           : Promise.resolve(),
       ])
 
-      logger.info('動画を削除しました', {
-        videoId: youtubeVideoId,
+      logger.info('動画が削除されました', {
+        count: videoIdsToDelete.length,
       })
-
-      deletedCount++
     } catch (error) {
-      throw new Error(`Failed to delete video ${youtubeVideoId}: ${error}`)
+      throw new Error(`Failed to delete videos: ${error}`)
     }
   }
 
-  // Log summary of deletions
-  if (deletedCount > 0) {
-    logger.info('動画が削除されました', {
-      count: deletedCount,
-    })
-  }
-
   // Return true if any changes occurred (updates or deletions)
-  return videoUpdates.length > 0 || deletedCount > 0
+  return videoUpdates.length > 0 || videoIdsToDelete.length > 0
 }
 
 /**
@@ -327,7 +333,8 @@ export async function processScrapedVideoAvailability({
     info: (message: string, attributes?: Record<string, unknown>) => void
   }
 }): Promise<void> {
-  let deletedCount = 0
+  const videoIdsToDelete: string[] = []
+  const thumbnailIdsToDelete: string[] = []
 
   for (const video of videos) {
     // If video is available, nothing to do
@@ -335,7 +342,7 @@ export async function processScrapedVideoAvailability({
       continue
     }
 
-    // Video is not available - find and soft delete it
+    // Video is not available - find it in saved videos
     const savedVideo = savedVideos.find(
       (v) => v.youtube_video?.youtube_video_id === video.id,
     )
@@ -344,45 +351,48 @@ export async function processScrapedVideoAvailability({
       continue
     }
 
-    // Extract thumbnails
+    // Collect IDs for batch deletion
+    videoIdsToDelete.push(savedVideo.id)
+
     const thumbnail = Array.isArray(savedVideo.thumbnails)
       ? savedVideo.thumbnails[0]
       : savedVideo.thumbnails
 
-    // Soft delete video and thumbnail
+    if (thumbnail) {
+      thumbnailIdsToDelete.push(thumbnail.id)
+    }
+
+    logger.info('動画を削除しました', {
+      videoId: video.id,
+    })
+  }
+
+  // Perform batch deletion if there are videos to delete
+  if (videoIdsToDelete.length > 0) {
     try {
       await Promise.all([
         softDeleteRows({
           currentDateTime,
-          ids: [savedVideo.id],
+          ids: videoIdsToDelete,
           supabaseClient,
           table: 'videos',
         }),
-        thumbnail
+        thumbnailIdsToDelete.length > 0
           ? softDeleteRows({
               currentDateTime,
-              ids: [thumbnail.id],
+              ids: thumbnailIdsToDelete,
               supabaseClient,
               table: 'thumbnails',
             })
           : Promise.resolve(),
       ])
 
-      logger.info('動画を削除しました', {
-        videoId: video.id,
+      logger.info('動画が削除されました', {
+        count: videoIdsToDelete.length,
       })
-
-      deletedCount++
     } catch (error) {
-      throw new Error(`Failed to delete video ${video.id}: ${error}`)
+      throw new Error(`Failed to delete videos: ${error}`)
     }
-  }
-
-  // Log summary if any videos were deleted
-  if (deletedCount > 0) {
-    logger.info('動画が削除されました', {
-      count: deletedCount,
-    })
   }
 }
 
