@@ -132,12 +132,14 @@ export async function POST(request: NextRequest): Promise<Response> {
     youtubeClient,
   })
 
+  let hasChanges = false
+
   // For 'default' and 'recent' modes, fetch full video details and update information
-  // For 'all' mode, only check availability (no updates)
+  // For 'all' mode, only check availability and delete unavailable videos
   if (mode === 'default' || mode === 'recent') {
-    // Process scraped videos for checking and updating
+    // Process scraped videos for checking, updating, and deletion
     await scraper.scrapeVideos({ ids: videoIds }, async (originalVideos) => {
-      await processScrapedVideoForCheck({
+      hasChanges = await processScrapedVideoForCheck({
         currentDateTime,
         logger,
         mode,
@@ -145,21 +147,6 @@ export async function POST(request: NextRequest): Promise<Response> {
         savedVideos,
         supabaseClient,
       })
-    })
-
-    // Check availability and delete unavailable videos
-    await scraper.scrapeVideosAvailability({ videoIds }, async (videos) => {
-      try {
-        await processScrapedVideoAvailability({
-          currentDateTime,
-          logger,
-          savedVideos,
-          supabaseClient,
-          videos,
-        })
-      } catch (error) {
-        Sentry.captureException(error)
-      }
     })
   } else {
     // For 'all' mode, only check availability and delete unavailable videos
@@ -172,16 +159,19 @@ export async function POST(request: NextRequest): Promise<Response> {
           supabaseClient,
           videos,
         })
+        hasChanges = true // Any deletion is a change
       } catch (error) {
         Sentry.captureException(error)
       }
     })
   }
 
-  // Revalidate tags - processScrapedVideoForCheck and processScrapedVideoAvailability handle their own logging
-  await revalidateTags(['videos'], {
-    signal: request.signal,
-  })
+  // Revalidate tags only if changes occurred
+  if (hasChanges) {
+    await revalidateTags(['videos'], {
+      signal: request.signal,
+    })
+  }
 
   // Update last sync timestamp in Redis
   await redisClient.set(REDIS_KEYS.LAST_VIDEO_SYNC, toDBString(currentDateTime))
