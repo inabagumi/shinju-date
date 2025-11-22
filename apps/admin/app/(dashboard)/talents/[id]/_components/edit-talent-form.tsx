@@ -15,10 +15,12 @@ import { updateTalentAction } from '../../_actions'
 type Talent = {
   id: string
   name: string
-  youtube_channel: {
+  youtube_channels: {
+    id: string
     name: string | null
     youtube_channel_id: string
-  } | null
+    youtube_handle: string | null
+  }[]
 }
 
 type EditTalentFormProps = {
@@ -77,26 +79,52 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500 text-sm">
-                YouTubeチャンネル名
+                YouTubeチャンネル
               </dt>
               <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                {talent.youtube_channel?.name || 'N/A'}
-                <p className="mt-1 text-gray-500 text-xs">
-                  YouTube APIから自動更新される名前
-                </p>
-              </dd>
-            </div>
-            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="font-medium text-gray-500 text-sm">
-                YouTubeチャンネルID
-              </dt>
-              <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                {talent.youtube_channel?.youtube_channel_id ? (
-                  <code className="rounded bg-gray-100 px-2 py-1 font-mono text-xs">
-                    {talent.youtube_channel.youtube_channel_id}
-                  </code>
+                {talent.youtube_channels.length > 0 ? (
+                  <div className="space-y-3">
+                    {talent.youtube_channels.map((channel) => (
+                      <div
+                        className="rounded-md border border-gray-200 p-3"
+                        key={channel.id}
+                      >
+                        <div className="space-y-2">
+                          <div>
+                            <span className="font-medium text-gray-700 text-xs">
+                              チャンネル名:
+                            </span>
+                            <p className="mt-1">{channel.name || 'N/A'}</p>
+                            <p className="mt-1 text-gray-500 text-xs">
+                              YouTube APIから自動更新される名前
+                            </p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-700 text-xs">
+                              チャンネルID:
+                            </span>
+                            <code className="mt-1 block rounded bg-gray-100 px-2 py-1 font-mono text-xs">
+                              {channel.youtube_channel_id}
+                            </code>
+                          </div>
+                          {channel.youtube_handle && (
+                            <div>
+                              <span className="font-medium text-gray-700 text-xs">
+                                ハンドル:
+                              </span>
+                              <p className="mt-1 text-xs">
+                                {channel.youtube_handle}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 ) : (
-                  <span className="text-gray-500">未設定</span>
+                  <span className="text-gray-500">
+                    登録されているチャンネルがありません
+                  </span>
                 )}
               </dd>
             </div>
@@ -113,7 +141,7 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
           タレント情報を編集
         </h3>
         <p className="mt-1 max-w-2xl text-gray-500 text-sm">
-          タレント名とYouTubeチャンネルIDを編集できます
+          タレント名を編集できます。チャンネルの追加・削除は今後実装予定です。
         </p>
       </div>
       <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
@@ -129,20 +157,6 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
             />
             <p className="mt-1 text-gray-500 text-xs">
               管理画面から編集可能な表示名（YouTube APIによる自動更新の対象外）
-            </p>
-            <ErrorMessage className="mt-1 text-red-600 text-sm" />
-          </FormField>
-          <FormField name="youtube_channel_id">
-            <Label className="mb-2 block font-medium text-sm">
-              YouTubeチャンネルID（任意）
-            </Label>
-            <Input
-              className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
-              defaultValue={talent.youtube_channel?.youtube_channel_id ?? ''}
-              placeholder="UCから始まるチャンネルID"
-            />
-            <p className="mt-1 text-gray-500 text-xs">
-              YouTubeチャンネルと紐づける場合は入力してください
             </p>
             <ErrorMessage className="mt-1 text-red-600 text-sm" />
           </FormField>

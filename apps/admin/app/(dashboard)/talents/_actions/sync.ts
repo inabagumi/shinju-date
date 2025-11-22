@@ -19,9 +19,7 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
     // Get the talent from database
     const { data: talent, error: fetchError } = await supabaseClient
       .from('talents')
-      .select(
-        'id, name, youtube_channel:youtube_channels!inner(youtube_channel_id)',
-      )
+      .select('id, name, youtube_channels(id, youtube_channel_id)')
       .eq('id', talentId)
       .single()
 
@@ -33,7 +31,22 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
       return { error: 'タレントが見つかりませんでした。', success: false }
     }
 
-    if (!talent.youtube_channel) {
+    // Handle multiple channels - sync the first one for now
+    const channels = Array.isArray(talent.youtube_channels)
+      ? talent.youtube_channels
+      : [talent.youtube_channels]
+
+    if (channels.length === 0) {
+      return {
+        error: 'このタレントに紐づくYouTubeチャンネルはありません。',
+        success: false,
+      }
+    }
+
+    // For now, sync only the first channel
+    const firstChannel = channels[0]
+
+    if (!firstChannel) {
       return {
         error: 'このタレントに紐づくYouTubeチャンネルはありません。',
         success: false,
@@ -42,7 +55,7 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
 
     // Fetch channel data from YouTube API
     const youtubeChannels = await Array.fromAsync(
-      getChannels({ ids: [talent.youtube_channel.youtube_channel_id] }),
+      getChannels({ ids: [firstChannel.youtube_channel_id] }),
     )
 
     if (youtubeChannels.length === 0) {
@@ -77,11 +90,12 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
       .from('youtube_channels')
       .upsert(
         {
+          id: firstChannel.id,
           talent_id: talent.id,
-          youtube_channel_id: talent.youtube_channel.youtube_channel_id,
+          youtube_channel_id: firstChannel.youtube_channel_id,
           youtube_handle: youtubeHandle,
         },
-        { onConflict: 'talent_id' },
+        { onConflict: 'id' },
       )
       .then(({ error: youtubeError }) => {
         if (youtubeError) {

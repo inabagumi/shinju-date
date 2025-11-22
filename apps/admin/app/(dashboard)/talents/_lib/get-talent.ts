@@ -7,10 +7,12 @@ export type Talent = {
   created_at: string
   updated_at: string
   deleted_at: string | null
-  youtube_channel: {
+  youtube_channels: {
+    id: string
     name: string | null
     youtube_channel_id: string
-  } | null
+    youtube_handle: string | null
+  }[]
 }
 
 export async function getTalent(id: string): Promise<Talent | null> {
@@ -23,7 +25,7 @@ export async function getTalent(id: string): Promise<Talent | null> {
   const { data: talent, error } = await supabaseClient
     .from('talents')
     .select(
-      'id, name, created_at, updated_at, deleted_at, youtube_channel:youtube_channels(name, youtube_channel_id)',
+      'id, name, created_at, updated_at, deleted_at, youtube_channels(id, name, youtube_channel_id, youtube_handle)',
     )
     .eq('id', id)
     .single()

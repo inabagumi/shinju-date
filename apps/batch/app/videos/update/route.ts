@@ -63,9 +63,7 @@ export async function POST(request: Request): Promise<Response> {
 
   const { data: savedTalents, error } = await supabaseClient
     .from('talents')
-    .select(
-      'id, youtube_channel:youtube_channels!inner(id, youtube_channel_id)',
-    )
+    .select('id, youtube_channels!inner(id, youtube_channel_id)')
     .is('deleted_at', null)
 
   if (error) {
@@ -87,18 +85,24 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   // Map channel IDs to talent information for callback processing
-  const channelToTalentMap = new Map(
-    savedTalents.map((savedTalent) => {
-      const ytChannel = savedTalent.youtube_channel
-      return [
-        ytChannel.youtube_channel_id,
-        {
-          id: savedTalent.id,
-          youtubeChannelId: ytChannel.id,
-        },
-      ]
-    }),
-  )
+  // Now handles multiple channels per talent
+  const channelToTalentMap = new Map<
+    string,
+    {
+      id: string
+      youtubeChannelId: string
+    }
+  >()
+
+  for (const savedTalent of savedTalents) {
+    // youtube_channels is an array due to the query using youtube_channels!inner
+    for (const ytChannel of savedTalent.youtube_channels) {
+      channelToTalentMap.set(ytChannel.youtube_channel_id, {
+        id: savedTalent.id,
+        youtubeChannelId: ytChannel.id,
+      })
+    }
+  }
 
   const channelIDs = Array.from(channelToTalentMap.keys())
 

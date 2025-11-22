@@ -558,22 +558,26 @@ export async function processScrapedChannels({
   supabaseClient,
 }: {
   youtubeChannels: YouTubeChannel[]
-  talents: Array<{
+  talents: {
     id: string
     name: string
-    youtube_channel: {
+    youtube_channels: {
+      id: string
       name: string | null
       youtube_channel_id: string
-    } | null
-  }>
+    }[]
+  }[]
   supabaseClient: TypedSupabaseClient
 }): Promise<boolean> {
   let hasUpdates = false
 
   for (const youtubeChannel of youtubeChannels) {
     try {
-      const talent = talents.find(
-        (t) => t.youtube_channel?.youtube_channel_id === youtubeChannel.id,
+      // Find the talent that has this YouTube channel
+      const talent = talents.find((t) =>
+        t.youtube_channels.some(
+          (channel) => channel.youtube_channel_id === youtubeChannel.id,
+        ),
       )
 
       if (!talent) {
@@ -589,7 +593,12 @@ export async function processScrapedChannels({
         )
       }
 
-      const currentYouTubeChannelName = talent.youtube_channel?.name
+      // Find the specific channel entry for this talent
+      const currentChannel = talent.youtube_channels.find(
+        (channel) => channel.youtube_channel_id === youtubeChannel.id,
+      )
+
+      const currentYouTubeChannelName = currentChannel?.name
       const channelName = youtubeChannel.snippet.title
       const youtubeHandle = youtubeChannel.snippet.customUrl || null
 
