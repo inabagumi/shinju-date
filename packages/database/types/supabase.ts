@@ -450,6 +450,8 @@ export type Database = {
         | 'ANNOUNCEMENT_CREATE'
         | 'ANNOUNCEMENT_DELETE'
         | 'ANNOUNCEMENT_UPDATE'
+        | 'YOUTUBE_CHANNEL_CREATE'
+        | 'YOUTUBE_CHANNEL_DELETE'
       platform_type: 'youtube' | 'twitch'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
       video_status: 'UPCOMING' | 'LIVE' | 'ENDED'

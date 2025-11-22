@@ -141,7 +141,7 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
           タレント情報を編集
         </h3>
         <p className="mt-1 max-w-2xl text-gray-500 text-sm">
-          タレント名を編集できます。チャンネルの追加・削除は今後実装予定です。
+          タレント名を編集できます。
         </p>
       </div>
       <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
