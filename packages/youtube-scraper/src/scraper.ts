@@ -37,7 +37,7 @@ export class YouTubeScraper implements AsyncDisposable {
     this.#logger = options.logger
   }
 
-  async *getChannels(
+  async *#getChannels(
     options: GetChannelsOptions,
   ): AsyncGenerator<YouTubeChannel, void, undefined> {
     for (let i = 0; i < options.ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
@@ -61,7 +61,7 @@ export class YouTubeScraper implements AsyncDisposable {
     }
   }
 
-  async *getPlaylistItems(
+  async *#getPlaylistItems(
     options: GetPlaylistItemsOptions,
   ): AsyncGenerator<YouTubePlaylistItem, void, undefined> {
     let pageToken: string | undefined
