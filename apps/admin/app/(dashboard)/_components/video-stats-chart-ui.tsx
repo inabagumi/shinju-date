@@ -63,21 +63,21 @@ export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
           />
           <Area
             dataKey="visibleVideos"
-            fill="#10b981"
+            fill="#d1fae5"
             stackId="visible"
             stroke="#10b981"
             type="monotone"
           />
           <Area
             dataKey="scheduledVideos"
-            fill="#a855f7"
+            fill="#f3e8ff"
             stackId="visible"
             stroke="#a855f7"
             type="monotone"
           />
           <Area
             dataKey="hiddenVideos"
-            fill="#f59e0b"
+            fill="#fef3c7"
             stroke="#f59e0b"
             type="monotone"
           />
