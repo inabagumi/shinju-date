@@ -166,7 +166,91 @@ function parseUpstashCommand(body: any) {
 }
 
 export const upstashHandlers = [
-  // Upstash Redis REST API endpoint
+  // Upstash Redis REST API pipeline endpoint (without version in path)
+  http.post('https://fake.upstash.test/pipeline', async ({ request }) => {
+    const commands = (await request.json()) as any[]
+    const results = []
+
+    for (const commandBody of commands) {
+      const { command, args } = parseUpstashCommand(commandBody)
+
+      switch (command) {
+        case 'zrange': {
+          const [key, start, stop, ...options] = args
+          const opts: any = {}
+
+          // Parse options
+          for (let i = 0; i < options.length; i++) {
+            if (options[i] === 'REV') opts.rev = true
+            if (options[i] === 'WITHSCORES') opts.withScores = true
+          }
+
+          const result = simulateZRange(
+            key,
+            parseInt(start, 10),
+            parseInt(stop, 10),
+            opts,
+          )
+          results.push({ result })
+          break
+        }
+
+        case 'zunionstore': {
+          const [destKey, numKeys, ...keysAndArgs] = args
+          const keys = keysAndArgs.slice(0, parseInt(numKeys, 10))
+          const result = simulateZUnionStore(destKey, keys)
+          results.push({ result })
+          break
+        }
+
+        case 'expire': {
+          const [_key, _seconds] = args
+          // For mock purposes, we'll just return success
+          results.push({ result: 1 })
+          break
+        }
+
+        case 'ping': {
+          results.push({ result: 'PONG' })
+          break
+        }
+
+        case 'get': {
+          const [key] = args
+          const value = mockRedisStore.get(key)
+          results.push({ result: value || null })
+          break
+        }
+
+        case 'set': {
+          const [key, value] = args
+          mockRedisStore.set(key, value)
+          results.push({ result: 'OK' })
+          break
+        }
+
+        case 'del': {
+          const keys = args
+          let deletedCount = 0
+          for (const key of keys) {
+            if (mockRedisStore.delete(key)) {
+              deletedCount += 1
+            }
+          }
+          results.push({ result: deletedCount })
+          break
+        }
+
+        default:
+          results.push({ result: null })
+          break
+      }
+    }
+
+    return HttpResponse.json(results)
+  }),
+
+  // Upstash Redis REST API pipeline endpoint (with version in path)
   http.post('https://fake.upstash.test/v2/*/pipeline', async ({ request }) => {
     const commands = (await request.json()) as any[]
     const results = []
