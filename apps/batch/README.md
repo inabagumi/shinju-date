@@ -46,7 +46,8 @@ pnpm exec playwright test --ui
 - **データ同期処理**
   - `/videos/update`: 新着動画の追加専用（10分毎）
     - YouTubeから新しい動画のみを取得し、データベースに追加
-    - 既に存在する動画は更新せず、`/videos/check`に委譲
+    - **既存動画は一切更新しない** - すべての更新は`/videos/check`が担当
+    - サムネイル処理も新規動画のみ対象
   - `/videos/check`: 既存動画の情報更新と削除判定
     - デフォルト（パラメータなし）: UPCOMING/LIVE動画の情報更新（1分毎）
       - `videos.status`が`UPCOMING`または`LIVE`の動画が対象
@@ -92,3 +93,62 @@ pnpm exec playwright test --ui
 **重要**: バッチ処理は前日分のデータを集計するため、実行タイミングが重要です。0:05 AM UTC に実行することで、前日の23:59:59までのデータを正確に集計できます。
 
 スナップショットは Redis に 30 日間保存されます（TTL: 30日）。
+
+## ディレクトリ構成ルール
+
+このアプリケーションでは、共通ロジックとルート固有ロジックを明確に分離するため、以下のディレクトリ構成ルールを定めます：
+
+### `lib/` - 共通ライブラリ
+
+複数のルートやバッチ処理で共有される汎用的な機能を配置します。
+
+**配置基準:**
+- 複数のルート間で再利用されるロジック
+- アプリケーション全体で共通の設定やクライアント（Supabase、Redis、YouTubeなど）
+- データベース操作の基本関数（汎用的なCRUD操作）
+- サムネイル処理など、汎用的なユーティリティ
+
+**例:**
+- `lib/supabase.ts` - Supabaseクライアントの初期化
+- `lib/redis.ts` - Redisクライアントの初期化
+- `lib/youtube.ts` - YouTube APIクライアントの初期化
+- `lib/database/operations.ts` - 汎用的なデータベース操作（`getSavedVideos`, `upsertVideos`など）
+- `lib/database/video-updates.ts` - 動画更新処理（複数ルートで使用）
+- `lib/thumbnails/` - サムネイル処理ロジック
+
+### `app/*/\_lib/` - ルート固有ライブラリ
+
+特定のルートハンドラでのみ使用されるロジックを配置します。
+
+**配置基準:**
+- 特定のエンドポイント専用の処理ロジック
+- そのルートでのみ意味を持つ型定義
+- クエリパラメータのスキーマ定義
+- ルート固有のヘルパー関数
+
+**例:**
+- `app/videos/check/_lib/get-saved-videos.ts` - `/videos/check`専用の動画取得ロジック
+- `app/videos/check/_lib/types.ts` - `/videos/check`で使用する型定義
+- `app/videos/check/_lib/query-schema.ts` - クエリパラメータのバリデーションスキーマ
+- `app/videos/check/_lib/get-monitor-slug.ts` - Sentryモニタースラッグ生成
+- `app/videos/update/_lib/constants.ts` - `/videos/update`専用の定数定義
+- `app/videos/update/_lib/save-videos.ts` - `/videos/update`専用の動画保存処理
+
+### 判断基準
+
+新しい関数やモジュールを追加する際は、以下のフローチャートに従って配置先を決定してください：
+
+1. **複数のルートで使用される可能性があるか？**
+   - Yes → `lib/`に配置
+   - No → 2へ
+
+2. **特定のルート固有のロジックか？**
+   - Yes → `app/*/_lib/`に配置
+   - No → `lib/`に配置（将来の再利用性を考慮）
+
+### 重要な原則
+
+- **単一責任の原則**: 各関数は1つの明確な責任を持つ
+- **再利用性の考慮**: 将来的に複数のルートで使用される可能性がある場合は`lib/`に配置
+- **依存関係の方向**: `app/*/`は`lib/`に依存できるが、`lib/`は`app/*/`に依存してはいけない
+- **テストの配置**: テストファイルは対応するモジュールと同じディレクトリに`__tests__/`または`.test.ts`として配置
