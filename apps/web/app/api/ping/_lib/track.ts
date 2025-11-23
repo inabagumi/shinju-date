@@ -1,7 +1,7 @@
 import { track as vercelTrack } from '@vercel/analytics/server'
 import type { Video } from './types'
 
-type TrackProperties = {
+interface TrackProperties {
   provider: 'YouTube'
   talent_id: string
   talent_name: string

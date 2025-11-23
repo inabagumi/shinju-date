@@ -1,6 +1,6 @@
 import { createSupabaseServerClient } from '@/lib/supabase'
 
-export type SummaryStats = {
+export interface SummaryStats {
   totalVideos: number
   visibleVideos: number
   hiddenVideos: number

@@ -11,13 +11,13 @@ import { getTalent } from '../_lib/get-talent'
 import { EditTalentForm } from './_components/edit-talent-form'
 import { SyncTalentButton } from './_components/sync-talent-button'
 
-type Props = {
+interface Props {
   params: {
     id: string
   }
 }
 
-type MetadataProps = {
+interface MetadataProps {
   params: Promise<{
     id: string
   }>

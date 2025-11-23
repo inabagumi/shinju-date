@@ -6,7 +6,7 @@ import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
 
-export type AnalyticsSummary = {
+export interface AnalyticsSummary {
   recentSearches: number
   totalPopularKeywords: number
   recentClicks: number

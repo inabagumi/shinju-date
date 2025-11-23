@@ -10,7 +10,7 @@ import {
 import { Temporal } from 'temporal-polyfill'
 import { timeZone } from '@/lib/constants'
 
-type TimerContextValue = {
+interface TimerContextValue {
   now?: Temporal.ZonedDateTime | undefined
 }
 

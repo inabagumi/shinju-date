@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react'
 import { useState, useTransition } from 'react'
 import { syncTalentWithYouTube } from '../../_actions/sync'
 
-type Props = {
+interface Props {
   talentId: string
 }
 

@@ -15,6 +15,23 @@ SHINJU DATEプロジェクトへの貢献をご検討いただき、ありがと
 - **フォーマッター**: Biome を使用
 - **リンティング**: Biome の規則に従う
 - **型安全性**: TypeScript の厳格な型チェックを使用
+- **型定義**: オブジェクトの型定義には、拡張性を考慮して `interface` を使用することを原則とします。`type` は、ユニオン型や交差型など、`interface` で表現できない場合に限り使用を許可します。
+  ```typescript
+  // 良い例 (Good)
+  interface User {
+    id: string;
+    name: string;
+  }
+
+  // 許容される例 (Acceptable)
+  type UserRole = 'admin' | 'editor' | 'viewer';
+
+  // 悪い例 (Bad)
+  type User = {
+    id: string;
+    name: string;
+  };
+  ```
 
 ### Python（Insights API）
 

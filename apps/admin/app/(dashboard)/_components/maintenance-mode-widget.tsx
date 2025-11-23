@@ -8,7 +8,7 @@ import {
   enableMaintenanceMode,
 } from '../_lib/maintenance-mode-actions'
 
-type MaintenanceModeWidgetProps = {
+interface MaintenanceModeWidgetProps {
   initialStatus: boolean
 }
 

@@ -1,6 +1,6 @@
 import { Header } from './_components/header'
 
-export type Props = {
+export interface Props {
   children: React.ReactNode
 }
 

@@ -71,16 +71,16 @@ export const youtubeClient: youtube.Youtube = new Proxy({} as youtube.Youtube, {
 })
 
 // Options types
-export type GetChannelsOptions = {
+export interface GetChannelsOptions {
   ids: string[]
 }
 
-export type GetPlaylistItemsOptions = {
+export interface GetPlaylistItemsOptions {
   all?: boolean
   playlistID: string
 }
 
-export type GetVideosOptions = {
+export interface GetVideosOptions {
   ids: string[]
 }
 

@@ -30,28 +30,28 @@ export type YouTubeVideo = youtube.Schema$Video & {
   }
 }
 
-export type GetChannelsOptions = {
+export interface GetChannelsOptions {
   ids: string[]
 }
 
-export type GetPlaylistItemsOptions = {
+export interface GetPlaylistItemsOptions {
   all?: boolean
   playlistID: string
 }
 
-export type GetVideosOptions = {
+export interface GetVideosOptions {
   ids: string[]
 }
 
-export type ScraperOptions = {
+export interface ScraperOptions {
   youtubeClient: youtube.Youtube
 }
 
-export type ScrapeChannelsOptions = {
+export interface ScrapeChannelsOptions {
   channelIDs: string[]
 }
 
-export type ScrapeVideosOptions = {
+export interface ScrapeVideosOptions {
   playlistID: string
   scrapeAll?: boolean
 }

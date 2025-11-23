@@ -12,7 +12,7 @@ import Form, {
 } from '@/components/form'
 import { updateTalentAction } from '../../_actions'
 
-type Talent = {
+interface Talent {
   id: string
   name: string
   youtube_channel: {
@@ -21,7 +21,7 @@ type Talent = {
   } | null
 }
 
-type EditTalentFormProps = {
+interface EditTalentFormProps {
   talent: Talent
 }
 
