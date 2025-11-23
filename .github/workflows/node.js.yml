@@ -139,7 +139,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Install Playwright Browsers
-        run: pnpm exec playwright install --with-deps chromium
+        run: cd apps/${{ matrix.app }} && pnpm exec playwright install --with-deps chromium
       - name: Run E2E tests for ${{ matrix.app }}
         run: cd apps/${{ matrix.app }} && pnpm exec playwright test
         env:
