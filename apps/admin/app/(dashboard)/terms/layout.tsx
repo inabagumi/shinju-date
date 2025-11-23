@@ -11,7 +11,7 @@ export default function TermsLayout({
   children: ReactNode
 }>) {
   return (
-    <div className="mx-auto max-w-6xl space-y-8 px-8 py-4 md:px-4">
+    <div className="mx-auto max-w-7xl space-y-8 px-8 py-4 md:px-4">
       <h1 className="font-semibold text-2xl">用語集</h1>
 
       <main>{children}</main>

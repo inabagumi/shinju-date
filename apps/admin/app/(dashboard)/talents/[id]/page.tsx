@@ -227,7 +227,7 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
 
 export default function TalentDetailPage({ params }: Props) {
   return (
-    <div className="container mx-auto p-4">
+    <div className="mx-auto max-w-7xl p-4">
       {/* Back button - static, renders immediately */}
       <div className="mb-6">
         <Link
