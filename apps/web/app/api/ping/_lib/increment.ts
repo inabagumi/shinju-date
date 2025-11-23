@@ -14,7 +14,7 @@ function format(timestamp: Temporal.ZonedDateTime): string {
   ].join('')
 }
 
-type IncrementOptions = {
+interface IncrementOptions {
   timestamp?: Temporal.ZonedDateTime
 }
 

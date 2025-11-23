@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { use } from 'react'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
-type TabNavigationProps = {
+interface TabNavigationProps {
   searchParams: Promise<AnalyticsSearchParams>
   tabs: Array<{ id: string; label: string }>
   defaultTab: string

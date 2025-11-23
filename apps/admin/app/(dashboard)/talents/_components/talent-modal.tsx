@@ -14,7 +14,7 @@ import Form, {
 import { createTalentAction, updateTalentAction } from '../_actions'
 import { DeleteConfirmDialog } from './delete-confirm-dialog'
 
-type Talent = {
+interface Talent {
   id: string
   name: string
   youtube_channel: {
@@ -23,7 +23,7 @@ type Talent = {
   } | null
 }
 
-type TalentModalProps = {
+interface TalentModalProps {
   talent?: Talent
 }
 

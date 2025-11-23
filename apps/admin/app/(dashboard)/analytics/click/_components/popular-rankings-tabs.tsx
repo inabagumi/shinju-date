@@ -3,7 +3,7 @@ import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 import { PopularTalentsWidget } from './popular-talents-widget'
 import { PopularVideosWidget } from './popular-videos-widget'
 
-type Props = {
+interface Props {
   searchParams: Promise<AnalyticsSearchParams>
 }
 

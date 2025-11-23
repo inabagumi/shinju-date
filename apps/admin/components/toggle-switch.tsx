@@ -2,10 +2,15 @@
 
 import type { ComponentPropsWithoutRef } from 'react'
 
-type ToggleSwitchProps = Omit<
-  ComponentPropsWithoutRef<'button'>,
-  'children' | 'onClick' | 'type'
-> & {
+// Note: We need to omit 'onChange' from button props because:
+// 1. React button elements DO have an onChange handler (FormEventHandler)
+// 2. Our custom onChange has an incompatible signature: (checked: boolean) => void
+// 3. Without omitting, TypeScript would complain about the signature mismatch
+interface ToggleSwitchProps
+  extends Omit<
+    ComponentPropsWithoutRef<'button'>,
+    'children' | 'onClick' | 'onChange' | 'type'
+  > {
   checked: boolean
   disabled?: boolean
   label?: string

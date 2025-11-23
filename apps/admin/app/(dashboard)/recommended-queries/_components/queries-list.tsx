@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import { addQueryAction, deleteQueryAction } from '../_actions'
 
-type QueriesListProps = {
+interface QueriesListProps {
   manualQueries: string[]
   autoQueries: Array<{ query: string; score: number }>
 }

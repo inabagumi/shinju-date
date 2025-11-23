@@ -8,7 +8,7 @@ import {
 import { ExportMenu } from '../../_components/export-menu'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
-type Props = {
+interface Props {
   searchParams: Promise<AnalyticsSearchParams>
 }
 

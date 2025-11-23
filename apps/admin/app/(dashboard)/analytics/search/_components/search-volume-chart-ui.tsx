@@ -10,7 +10,7 @@ import {
   YAxis,
 } from 'recharts'
 
-type SearchVolumeChartProps = {
+interface SearchVolumeChartProps {
   data: Array<{
     count: number
     date: string

@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   },
 }
 
-type Props = {
+interface Props {
   children: ReactNode
 }
 

@@ -25,7 +25,7 @@ import type { Video } from '../_lib/get-videos'
 import { SortIcon } from './sort-icon'
 import { StatusBadge } from './status-badge'
 
-type Props = {
+interface Props {
   videos: Video[]
 }
 

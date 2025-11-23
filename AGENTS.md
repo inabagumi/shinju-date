@@ -131,6 +131,44 @@ uv run poe lint
 
 この作業を怠ると、未使用のインポート、フォーマットの不整合、型エラーなどの問題が蓄積し、開発プロセスを大幅に遅らせる原因となります。
 
+### TypeScript 型定義
+
+**🚨 重要: interface を優先使用**
+
+オブジェクトの型定義（React Props、関数オプションなど）には、**原則として `interface` を使用してください**。
+
+#### ルール
+
+1. **デフォルト**: オブジェクト型の定義には `interface` を使用
+   ```typescript
+   // ✅ 正しい
+   interface ButtonProps {
+     label: string
+     onClick: () => void
+   }
+   
+   // ❌ 避けるべき
+   type ButtonProps = {
+     label: string
+     onClick: () => void
+   }
+   ```
+
+2. **例外**: 以下の場合のみ `type` を使用
+   - ユニオン型: `type Status = 'pending' | 'approved' | 'rejected'`
+   - インターセクション型: `type Combined = TypeA & TypeB`
+   - マップド型: `type Readonly<T> = { readonly [P in keyof T]: T[P] }`
+   - 条件型: `type NonNullable<T> = T extends null ? never : T`
+   - タプル型: `type Point = [number, number]`
+
+3. **理由**
+   - `interface` は拡張性に優れる（`extends` による拡張、宣言のマージ）
+   - クラスの `implements` との親和性が高い
+   - TypeScript コンパイラのパフォーマンスが良い
+   - エラーメッセージがわかりやすい
+
+詳細なガイドラインは [docs/CODING_GUIDELINES.md](docs/CODING_GUIDELINES.md#typescript-型定義) を参照してください。
+
 ### Next.js Cache Directives（キャッシュディレクティブ）
 
 **🚨 厳格なルール**: Next.js 16のCache Componentsを使用する際、以下のルールを**必ず**守ってください：

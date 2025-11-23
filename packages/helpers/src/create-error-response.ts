@@ -1,4 +1,4 @@
-type CreateErrorResponseOptions = {
+interface CreateErrorResponseOptions {
   status?: number
 }
 

@@ -13,22 +13,22 @@ import {
 } from 'react'
 import { useFormStatus } from 'react-dom'
 
-export type FormState = Partial<{
-  errors: Record<string, string[]>
-  error: string
-  success: boolean
-}>
+export interface FormState {
+  errors?: Record<string, string[]>
+  error?: string
+  success?: boolean
+}
 
 const FormContext = createContext<FormState>({})
 
-type FormFieldContextValue = {
+interface FormFieldContextValue {
   id?: string
   name?: string
 }
 
 const FormFieldContext = createContext<FormFieldContextValue>({})
 
-type Props = Omit<ComponentPropsWithoutRef<'form'>, 'action'> & {
+interface Props extends Omit<ComponentPropsWithoutRef<'form'>, 'action'> {
   action: (
     currentState: FormState,
     payload: FormData,
@@ -51,7 +51,7 @@ export default function Form({
   )
 }
 
-type ButtonProps = ComponentPropsWithoutRef<'button'>
+interface ButtonProps extends ComponentPropsWithoutRef<'button'> {}
 
 export function Button({ disabled, type = 'button', ...props }: ButtonProps) {
   const { pending } = useFormStatus()
@@ -59,7 +59,7 @@ export function Button({ disabled, type = 'button', ...props }: ButtonProps) {
   return <button disabled={disabled ?? pending} type={type} {...props} />
 }
 
-type ErrorMessageProps = ComponentPropsWithoutRef<'p'>
+interface ErrorMessageProps extends ComponentPropsWithoutRef<'p'> {}
 
 export function ErrorMessage(props: ErrorMessageProps) {
   const { errors } = useContext(FormContext)
@@ -80,7 +80,7 @@ export function ErrorMessage(props: ErrorMessageProps) {
   )
 }
 
-type FormFieldProps = ComponentPropsWithoutRef<'div'> & {
+interface FormFieldProps extends ComponentPropsWithoutRef<'div'> {
   name?: string
 }
 
@@ -99,7 +99,7 @@ export function FormField({ name, ...props }: FormFieldProps) {
   )
 }
 
-type GenericErrorMessageProps = ComponentPropsWithoutRef<'p'>
+interface GenericErrorMessageProps extends ComponentPropsWithoutRef<'p'> {}
 
 export function GenericErrorMessage({
   role = 'alert',
@@ -122,7 +122,7 @@ export function GenericErrorMessage({
   )
 }
 
-type SuccessMessageProps = ComponentPropsWithoutRef<'p'> & {
+interface SuccessMessageProps extends ComponentPropsWithoutRef<'p'> {
   message?: string
 }
 
@@ -142,7 +142,7 @@ export function SuccessMessage({
   )
 }
 
-type InputProps = Omit<ComponentPropsWithoutRef<'input'>, 'value'>
+interface InputProps extends Omit<ComponentPropsWithoutRef<'input'>, 'value'> {}
 
 export function Input({
   defaultValue = '',
@@ -180,7 +180,7 @@ export function Input({
   )
 }
 
-type LabelProps = ComponentPropsWithoutRef<'label'>
+interface LabelProps extends ComponentPropsWithoutRef<'label'> {}
 
 export function Label({ htmlFor, ...props }: LabelProps) {
   const { pending } = useFormStatus()
@@ -196,7 +196,8 @@ export function Label({ htmlFor, ...props }: LabelProps) {
   )
 }
 
-type SelectProps = Omit<ComponentPropsWithoutRef<'select'>, 'value'>
+interface SelectProps
+  extends Omit<ComponentPropsWithoutRef<'select'>, 'value'> {}
 
 export function Select({
   defaultValue = '',
@@ -232,7 +233,8 @@ export function Select({
   )
 }
 
-type TextareaProps = Omit<ComponentPropsWithoutRef<'textarea'>, 'value'>
+interface TextareaProps
+  extends Omit<ComponentPropsWithoutRef<'textarea'>, 'value'> {}
 
 export function Textarea({
   defaultValue = '',

@@ -4,14 +4,14 @@ import { Input } from '@shinju-date/ui'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-type Talent = {
+interface Talent {
   created_at: string
   id: string
   name: string
   updated_at: string
 }
 
-type Props = {
+interface Props {
   talents: Talent[]
 }
 

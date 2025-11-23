@@ -13,7 +13,7 @@ const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({
   days: 365,
 })
 
-type StaticThumbnail = {
+interface StaticThumbnail {
   height: number
   url: string
   width: number
@@ -46,7 +46,7 @@ async function getBlurDataURL(data: ArrayBuffer): Promise<string> {
 /**
  * Options for uploading a thumbnail
  */
-export type ThumbnailOptions = {
+export interface ThumbnailOptions {
   currentDateTime?: Temporal.Instant
   dryRun?: boolean
   originalVideo: YouTubeVideo

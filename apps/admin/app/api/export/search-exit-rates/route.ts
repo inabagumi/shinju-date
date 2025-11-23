@@ -5,7 +5,7 @@ import { Temporal } from 'temporal-polyfill'
 import { getSearchExitRates } from '@/lib/analytics/get-search-quality-metrics'
 import { exportSearchParamsSchema } from '../_lib/schema'
 
-type SearchExitRate = {
+interface SearchExitRate {
   keyword: string
   exitRate: number
   searchCount: number

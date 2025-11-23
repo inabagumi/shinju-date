@@ -1,4 +1,4 @@
-type SortIconProps = {
+interface SortIconProps {
   field: 'published_at' | 'updated_at'
   currentSortField: string
   currentSortOrder: 'asc' | 'desc'

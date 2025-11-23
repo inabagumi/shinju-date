@@ -9,7 +9,7 @@ import Form, {
 } from '@/components/form'
 import { updateUserEmail } from '../_actions'
 
-type Props = {
+interface Props {
   currentEmail: string
 }
 

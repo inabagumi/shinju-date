@@ -14,14 +14,14 @@ import Form, {
 import { createTermAction, updateTermAction } from '../_actions'
 import { SortableInputList } from './sortable-input-list'
 
-type Term = {
+interface Term {
   id: string
   term: string
   readings: string[]
   synonyms: string[]
 }
 
-type TermModalProps = {
+interface TermModalProps {
   term?: Term
 }
 

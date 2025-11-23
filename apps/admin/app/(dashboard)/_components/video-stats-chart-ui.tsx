@@ -11,7 +11,7 @@ import {
   YAxis,
 } from 'recharts'
 
-type VideoStatsChartProps = {
+interface VideoStatsChartProps {
   data: Array<{
     date: string
     visibleVideos: number

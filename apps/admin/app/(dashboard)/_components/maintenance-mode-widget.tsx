@@ -8,7 +8,7 @@ import {
   enableMaintenanceMode,
 } from '../_lib/maintenance-mode-actions'
 
-type MaintenanceModeWidgetProps = {
+interface MaintenanceModeWidgetProps {
   initialStatus: boolean
 }
 
@@ -90,7 +90,6 @@ export function MaintenanceModeWidget({
               checked={isEnabled}
               disabled={isPending}
               label="メンテナンスモード切り替え"
-              // @ts-expect-error - TypeScript incorrectly infers intersection type
               onChange={handleToggle}
             />
           </div>

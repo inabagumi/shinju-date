@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 type ExportType = 'videos' | 'talents' | 'keywords' | 'search-exit-rates'
 
-type Props = {
+interface Props {
   type: ExportType
   dateRange: { startDate: string; endDate: string }
   selectedDate?: string | null

@@ -7,7 +7,7 @@ import {
   toggleSingleVideoVisibilityAction,
 } from '../../_actions'
 
-type Props = {
+interface Props {
   videoId: string
   visible: boolean
   isDeleted: boolean

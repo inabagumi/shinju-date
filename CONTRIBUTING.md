@@ -15,6 +15,7 @@ SHINJU DATEプロジェクトへの貢献をご検討いただき、ありがと
 - **フォーマッター**: Biome を使用
 - **リンティング**: Biome の規則に従う
 - **型安全性**: TypeScript の厳格な型チェックを使用
+- **型定義**: オブジェクト型には `interface` を優先使用（詳細は [docs/CODING_GUIDELINES.md](docs/CODING_GUIDELINES.md#typescript-型定義) を参照）
 
 ### Python（Insights API）
 
@@ -39,6 +40,31 @@ cd apps/insights
 uv run poe format
 uv run poe lint
 ```
+
+### TypeScript 型定義の規約
+
+**重要**: オブジェクト型の定義には `interface` を使用してください。
+
+```typescript
+// ✅ 推奨
+interface ComponentProps {
+  title: string
+  onClose: () => void
+}
+
+// ❌ 非推奨（例外を除く）
+type ComponentProps = {
+  title: string
+  onClose: () => void
+}
+```
+
+**例外**: 以下の場合は `type` を使用します：
+- ユニオン型: `type Status = 'active' | 'inactive'`
+- インターセクション型: `type Combined = A & B`
+- マップド型・条件型・タプル型
+
+詳細は [docs/CODING_GUIDELINES.md](docs/CODING_GUIDELINES.md#typescript-型定義) を参照してください。
 
 ### Next.js Cache Directives（キャッシュディレクティブ）
 

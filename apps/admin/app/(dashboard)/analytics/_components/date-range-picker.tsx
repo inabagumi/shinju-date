@@ -4,12 +4,12 @@ import { TIME_ZONE } from '@shinju-date/constants'
 import { useState } from 'react'
 import { Temporal } from 'temporal-polyfill'
 
-export type DateRange = {
+export interface DateRange {
   startDate: string // ISO 8601 date string
   endDate: string // ISO 8601 date string
 }
 
-type DateRangePickerProps = {
+interface DateRangePickerProps {
   value: DateRange
   onChange: (range: DateRange) => void
   showComparison?: boolean

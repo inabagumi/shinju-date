@@ -5,14 +5,14 @@ import { useMemo, useState } from 'react'
 import { DeleteConfirmDialog } from './delete-confirm-dialog'
 import { TermModal } from './term-modal'
 
-type Term = {
+interface Term {
   id: string
   term: string
   readings: string[]
   synonyms: string[]
 }
 
-type TermsListProps = {
+interface TermsListProps {
   terms: Term[]
 }
 

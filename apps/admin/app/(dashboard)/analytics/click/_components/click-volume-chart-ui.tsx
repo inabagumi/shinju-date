@@ -10,7 +10,7 @@ import {
   YAxis,
 } from 'recharts'
 
-type ClickVolumeChartProps = {
+interface ClickVolumeChartProps {
   data: Array<{
     clicks: number
     date: string

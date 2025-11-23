@@ -18,7 +18,7 @@ type Video = Pick<
   youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'>
 }
 
-type GetPublishedAtAndEndedAtOptions = {
+interface GetPublishedAtAndEndedAtOptions {
   now: Temporal.ZonedDateTime
 }
 
@@ -77,7 +77,7 @@ export function createCalendarResponse(events: EventAttributes[]): Response {
   })
 }
 
-type CreateEventAttributesListOptions = {
+interface CreateEventAttributesListOptions {
   now: Temporal.ZonedDateTime
 }
 

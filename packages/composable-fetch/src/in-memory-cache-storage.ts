@@ -3,7 +3,7 @@ import type { CachedResponse, CacheStorage } from './cache-storage.js'
 /**
  * Options for in-memory cache storage
  */
-export type InMemoryCacheStorageOptions = {
+export interface InMemoryCacheStorageOptions {
   /**
    * Default TTL (time-to-live) in seconds for cached entries
    * @default 3600 (1 hour)
@@ -14,7 +14,7 @@ export type InMemoryCacheStorageOptions = {
 /**
  * Entry in the in-memory cache with expiration time
  */
-type CacheEntry = {
+interface CacheEntry {
   expiresAt: number
   value: CachedResponse
 }
