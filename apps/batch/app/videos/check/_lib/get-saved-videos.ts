@@ -56,6 +56,7 @@ export async function* getSavedVideos({
         'id, duration, published_at, status, title, thumbnail:thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
       )
       .is('deleted_at', null)
+      .eq('status', 'ENDED')
       .order('published_at', {
         ascending: false,
       })
