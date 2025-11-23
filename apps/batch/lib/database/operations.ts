@@ -1,8 +1,6 @@
 import * as Sentry from '@sentry/nextjs'
 import type { TablesInsert } from '@shinju-date/database'
-import type { YouTubeChannel, YouTubeVideo } from '@shinju-date/youtube-scraper'
-import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
-import { Temporal } from 'temporal-polyfill'
+import type { YouTubeChannel } from '@shinju-date/youtube-scraper'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 import type { SavedVideo, Video } from './types'
 
