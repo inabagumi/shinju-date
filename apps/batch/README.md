@@ -97,7 +97,8 @@ pnpm run start
 - `lib/supabase.ts` - Supabaseクライアントの初期化
 - `lib/redis.ts` - Redisクライアントの初期化
 - `lib/youtube.ts` - YouTube APIクライアントの初期化
-- `lib/database/operations.ts` - 汎用的なデータベース操作（`getSavedVideos`, `insertNewVideos`, `upsertVideos`など）
+- `lib/database/operations.ts` - 汎用的なデータベース操作（`getSavedVideos`, `upsertVideos`など）
+- `lib/database/video-updates.ts` - 動画更新処理（複数ルートで使用）
 - `lib/thumbnails/` - サムネイル処理ロジック
 
 ### `app/*/\_lib/` - ルート固有ライブラリ
@@ -116,6 +117,7 @@ pnpm run start
 - `app/videos/check/_lib/query-schema.ts` - クエリパラメータのバリデーションスキーマ
 - `app/videos/check/_lib/get-monitor-slug.ts` - Sentryモニタースラッグ生成
 - `app/videos/update/_lib/constants.ts` - `/videos/update`専用の定数定義
+- `app/videos/update/_lib/save-videos.ts` - `/videos/update`専用の動画保存処理
 
 ### 判断基準
 

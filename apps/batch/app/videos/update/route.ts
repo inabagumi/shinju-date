@@ -7,12 +7,12 @@ import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import type { Video } from '@/lib/database'
-import { saveScrapedVideos } from '@/lib/database'
 import { videosUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 import { MONITOR_SLUG } from './_lib/constants'
+import { saveScrapedVideos } from './_lib/save-videos'
 
 export const maxDuration = 120
 
