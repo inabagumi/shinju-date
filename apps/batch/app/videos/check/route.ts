@@ -7,10 +7,7 @@ import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper, type YouTubeVideo } from '@shinju-date/youtube-scraper'
 import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
-import {
-  processScrapedVideoAvailability,
-  processScrapedVideoForCheck,
-} from '@/lib/database'
+import { processScrapedVideoAvailability } from '@/lib/database'
 import {
   videosCheckAll as ratelimitAll,
   videosCheck as ratelimitDefault,
@@ -21,6 +18,7 @@ import { supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 import { getMonitorSlug } from './_lib/get-monitor-slug'
 import { getSavedVideos } from './_lib/get-saved-videos'
+import { processScrapedVideoForCheck } from './_lib/process-scraped-video-for-check'
 import { querySchema } from './_lib/query-schema'
 import type { CheckMode } from './_lib/types'
 

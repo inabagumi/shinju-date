@@ -1,19 +1,9 @@
 import type { TablesInsert } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
+import type { YouTubeVideo } from '@shinju-date/youtube-scraper'
 import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
 import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
-
-export type SavedVideoForCheck = {
-  id: string
-  duration: string
-  published_at: string
-  status: 'UPCOMING' | 'LIVE' | 'ENDED'
-  title: string
-  youtube_video: {
-    youtube_video_id: string
-  }
-}
 
 export type YouTubeVideoData = {
   id: string
@@ -26,11 +16,15 @@ export type YouTubeVideoData = {
   }
 }
 
-type UpdateVideoIfNeededOptions = {
-  currentDateTime: Temporal.Instant
-  originalVideo: YouTubeVideoData
-  savedVideo: SavedVideoForCheck
-  supabaseClient: TypedSupabaseClient
+export type SavedVideoForCheck = {
+  id: string
+  duration: string
+  published_at: string
+  status: 'UPCOMING' | 'LIVE' | 'ENDED'
+  title: string
+  youtube_video: {
+    youtube_video_id: string
+  }
 }
 
 export type VideoUpdate = {
@@ -46,11 +40,15 @@ export type VideoUpdate = {
  * Compares a video from YouTube with the saved version and returns update data if changes are detected
  * @returns Update data if the video needs updating, null otherwise
  */
-export function getVideoUpdateIfNeeded({
+function getVideoUpdateIfNeeded({
   currentDateTime,
   originalVideo,
   savedVideo,
-}: Omit<UpdateVideoIfNeededOptions, 'supabaseClient'>): VideoUpdate | null {
+}: {
+  currentDateTime: Temporal.Instant
+  originalVideo: YouTubeVideoData
+  savedVideo: SavedVideoForCheck
+}): VideoUpdate | null {
   const updateValue: Partial<TablesInsert<'videos'>> = {}
   let hasUpdate = false
 
@@ -104,7 +102,7 @@ export function getVideoUpdateIfNeeded({
  * Performs batch update of videos in the database
  * @returns The number of videos updated
  */
-export async function batchUpdateVideos({
+async function batchUpdateVideos({
   updates,
   supabaseClient,
 }: {
@@ -135,51 +133,160 @@ export async function batchUpdateVideos({
 }
 
 /**
- * Process scraped video availability check
- * Designed to be used as a callback with scraper.scrapeVideosAvailability()
- * Processes arrays of videos, performs deletions, and logs results
+ * Soft delete rows from the database
  */
-export async function processScrapedVideoAvailability({
-  videos,
+async function softDeleteRows({
+  currentDateTime,
+  ids,
+  supabaseClient,
+  table,
+}: {
+  currentDateTime: Temporal.Instant
+  ids: string[]
+  supabaseClient: TypedSupabaseClient
+  table: 'videos' | 'thumbnails'
+}): Promise<{ id: string }[]> {
+  const { data, error } = await supabaseClient
+    .from(table)
+    .update({
+      deleted_at: toDBString(currentDateTime),
+      updated_at: toDBString(currentDateTime),
+    })
+    .in('id', ids)
+    .select('id')
+
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  return data
+}
+
+/**
+ * Process scraped video for checking and updating
+ * Handles video updates and deletion of unavailable videos
+ * Returns whether any changes occurred (for cache revalidation)
+ */
+export async function processScrapedVideoForCheck<
+  T extends {
+    id: string
+    duration: string
+    published_at: string
+    status: 'UPCOMING' | 'LIVE' | 'ENDED'
+    title: string
+    youtube_video: {
+      youtube_video_id: string
+    }
+    thumbnails?: { id: string } | Array<{ id: string }> | null
+  },
+>({
+  originalVideos,
   currentDateTime,
   savedVideos,
   supabaseClient,
   logger,
+  mode,
 }: {
-  videos: {
-    id: string
-    isAvailable: boolean
-  }[]
+  originalVideos: YouTubeVideo[]
   currentDateTime: Temporal.Instant
-  savedVideos: Array<{
-    id: string
-    youtube_video?: { youtube_video_id: string } | null
-    thumbnails?: { id: string } | Array<{ id: string }> | null
-  }>
+  savedVideos: T[]
   supabaseClient: TypedSupabaseClient
   logger: {
     info: (message: string, attributes?: Record<string, unknown>) => void
   }
-}): Promise<void> {
-  const videoIdsToDelete: string[] = []
-  const thumbnailIdsToDelete: string[] = []
+  mode: string
+}): Promise<boolean> {
+  const videoUpdates: VideoUpdate[] = []
+  const availableVideoIds = new Set<string>()
 
-  for (const video of videos) {
-    // If video is available, nothing to do
-    if (video.isAvailable) {
-      continue
-    }
+  // Process available videos and collect updates
+  for (const originalVideo of originalVideos) {
+    availableVideoIds.add(originalVideo.id)
 
-    // Video is not available - find it in saved videos
+    // Find corresponding saved video
     const savedVideo = savedVideos.find(
-      (v) => v.youtube_video?.youtube_video_id === video.id,
+      (v) => v.youtube_video?.youtube_video_id === originalVideo.id,
     )
 
     if (!savedVideo) {
       continue
     }
 
-    // Collect IDs for batch deletion
+    // Convert YouTubeVideo to YouTubeVideoData format
+    const videoData: YouTubeVideoData = {
+      id: originalVideo.id,
+    }
+
+    if (originalVideo.contentDetails.duration) {
+      videoData.contentDetails = {
+        duration: originalVideo.contentDetails.duration,
+      }
+    }
+
+    if (originalVideo.snippet.title || originalVideo.snippet.publishedAt) {
+      videoData.snippet = {
+        ...(originalVideo.snippet.title && {
+          title: originalVideo.snippet.title,
+        }),
+        publishedAt: originalVideo.snippet.publishedAt,
+      }
+    }
+
+    if (originalVideo.liveStreamingDetails) {
+      videoData.liveStreamingDetails = {}
+      if (originalVideo.liveStreamingDetails.scheduledStartTime) {
+        videoData.liveStreamingDetails.scheduledStartTime =
+          originalVideo.liveStreamingDetails.scheduledStartTime
+      }
+      if (originalVideo.liveStreamingDetails.actualStartTime) {
+        videoData.liveStreamingDetails.actualStartTime =
+          originalVideo.liveStreamingDetails.actualStartTime
+      }
+      if (originalVideo.liveStreamingDetails.actualEndTime) {
+        videoData.liveStreamingDetails.actualEndTime =
+          originalVideo.liveStreamingDetails.actualEndTime
+      }
+    }
+
+    // Check if video needs updating and collect update data
+    const updateData = getVideoUpdateIfNeeded({
+      currentDateTime,
+      originalVideo: videoData,
+      savedVideo,
+    })
+
+    if (updateData) {
+      videoUpdates.push(updateData)
+    }
+  }
+
+  // Perform batch update if there are changes
+  if (videoUpdates.length > 0) {
+    await batchUpdateVideos({
+      supabaseClient,
+      updates: videoUpdates,
+    })
+
+    logger.info('動画が更新されました', {
+      count: videoUpdates.length,
+      mode,
+    })
+  }
+
+  // Delete videos that are no longer available
+  // (videos in savedVideos but not in availableVideoIds)
+  const videoIdsToDelete: string[] = []
+  const thumbnailIdsToDelete: string[] = []
+
+  for (const savedVideo of savedVideos) {
+    const youtubeVideoId = savedVideo.youtube_video?.youtube_video_id
+    if (!youtubeVideoId || availableVideoIds.has(youtubeVideoId)) {
+      continue
+    }
+
+    // Video is not available - collect IDs for batch deletion
     videoIdsToDelete.push(savedVideo.id)
 
     const thumbnail = Array.isArray(savedVideo.thumbnails)
@@ -191,7 +298,7 @@ export async function processScrapedVideoAvailability({
     }
 
     logger.info('動画を削除しました', {
-      videoId: video.id,
+      videoId: youtubeVideoId,
     })
   }
 
@@ -224,105 +331,7 @@ export async function processScrapedVideoAvailability({
       })
     }
   }
-}
 
-/**
- * Process deleted videos (videos that are no longer available on YouTube)
- * Handles soft deletion of videos and their thumbnails
- */
-export async function processDeletedVideos({
-  savedVideos,
-  availableVideoIds,
-  currentDateTime,
-  supabaseClient,
-}: {
-  savedVideos: Array<{
-    id: string
-    youtube_video?: { youtube_video_id: string } | null
-    thumbnails?: { id: string } | Array<{ id: string }> | null
-  }>
-  availableVideoIds: Set<string>
-  currentDateTime: Temporal.Instant
-  supabaseClient: TypedSupabaseClient
-}): Promise<{
-  deletedCount: number
-  deletedVideoIds: string[]
-  errors?: Error[]
-}> {
-  const deletedVideos = savedVideos.filter(
-    (savedVideo) =>
-      savedVideo.youtube_video?.youtube_video_id &&
-      !availableVideoIds.has(savedVideo.youtube_video.youtube_video_id),
-  )
-
-  if (deletedVideos.length === 0) {
-    return { deletedCount: 0, deletedVideoIds: [] }
-  }
-
-  // Extract thumbnails from deleted videos
-  const thumbnails = deletedVideos
-    .map((video) =>
-      Array.isArray(video.thumbnails) ? video.thumbnails[0] : video.thumbnails,
-    )
-    .filter(Boolean) as Array<{ id: string }>
-
-  // Soft delete videos and thumbnails
-  const results = await Promise.allSettled([
-    softDeleteRows({
-      currentDateTime,
-      ids: deletedVideos.map((video) => video.id),
-      supabaseClient,
-      table: 'videos',
-    }),
-    softDeleteRows({
-      currentDateTime,
-      ids: thumbnails.map((thumbnail) => thumbnail.id),
-      supabaseClient,
-      table: 'thumbnails',
-    }),
-  ])
-
-  const rejectedResults = results.filter(
-    (result): result is PromiseRejectedResult => result.status === 'rejected',
-  )
-
-  const deletedCount = deletedVideos.length - rejectedResults.length
-  const deletedVideoIds = deletedVideos
-    .map((video) => video.youtube_video?.youtube_video_id)
-    .filter((id): id is string => Boolean(id))
-
-  return {
-    deletedCount,
-    deletedVideoIds,
-    errors: rejectedResults.map((r) => r.reason),
-  }
-}
-
-async function softDeleteRows({
-  currentDateTime,
-  ids,
-  supabaseClient,
-  table,
-}: {
-  currentDateTime: Temporal.Instant
-  ids: string[]
-  supabaseClient: TypedSupabaseClient
-  table: 'videos' | 'thumbnails'
-}): Promise<{ id: string }[]> {
-  const { data, error } = await supabaseClient
-    .from(table)
-    .update({
-      deleted_at: toDBString(currentDateTime),
-      updated_at: toDBString(currentDateTime),
-    })
-    .in('id', ids)
-    .select('id')
-
-  if (error) {
-    throw new TypeError(error.message, {
-      cause: error,
-    })
-  }
-
-  return data
+  // Return true if any changes occurred (updates or deletions)
+  return videoUpdates.length > 0 || videoIdsToDelete.length > 0
 }

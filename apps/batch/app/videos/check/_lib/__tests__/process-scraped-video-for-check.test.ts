@@ -4,7 +4,7 @@ import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
 import { Temporal } from 'temporal-polyfill'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { processScrapedVideoForCheck } from '../video-updates'
+import { processScrapedVideoForCheck } from '../process-scraped-video-for-check'
 
 // Setup MSW server with handlers
 const server = setupServer(...supabaseHandlers)
