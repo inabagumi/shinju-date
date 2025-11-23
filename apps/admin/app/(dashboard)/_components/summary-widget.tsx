@@ -38,14 +38,26 @@ export async function VideoSummaryWidget() {
         </Link>
         <Link
           className="rounded-lg bg-green-50 p-4 transition-colors hover:bg-green-100"
-          href="/videos?deleted=false&visible=true"
+          href="/videos?deleted=false&visible=true&status=ENDED"
         >
-          <p className="text-gray-600 text-sm">公開中</p>
+          <p className="text-gray-600 text-sm">アーカイブ</p>
           <p className="font-bold text-2xl text-green-600">
-            {formatNumber(stats.visibleVideos.current)}
+            {formatNumber(stats.archivedVideos.current)}
           </p>
           <div className="mt-2">
-            <TrendIndicator value={stats.visibleVideos.dayChange} />
+            <TrendIndicator value={stats.archivedVideos.dayChange} />
+          </div>
+        </Link>
+        <Link
+          className="rounded-lg bg-purple-50 p-4 transition-colors hover:bg-purple-100"
+          href="/videos?deleted=false&visible=true&status=UPCOMING,LIVE"
+        >
+          <p className="text-gray-600 text-sm">配信予定・中</p>
+          <p className="font-bold text-2xl text-purple-600">
+            {formatNumber(stats.scheduledVideos.current)}
+          </p>
+          <div className="mt-2">
+            <TrendIndicator value={stats.scheduledVideos.dayChange} />
           </div>
         </Link>
         <Link
@@ -58,18 +70,6 @@ export async function VideoSummaryWidget() {
           </p>
           <div className="mt-2">
             <TrendIndicator value={stats.hiddenVideos.dayChange} />
-          </div>
-        </Link>
-        <Link
-          className="rounded-lg bg-red-50 p-4 transition-colors hover:bg-red-100"
-          href="/videos?deleted=true"
-        >
-          <p className="text-gray-600 text-sm">削除済み</p>
-          <p className="font-bold text-2xl text-red-600">
-            {formatNumber(stats.deletedVideos.current)}
-          </p>
-          <div className="mt-2">
-            <TrendIndicator value={stats.deletedVideos.dayChange} />
           </div>
         </Link>
       </div>

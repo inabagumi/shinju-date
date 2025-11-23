@@ -7,6 +7,8 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 export type SummaryStats = {
   totalVideos: number
   visibleVideos: number
+  archivedVideos: number
+  scheduledVideos: number
   hiddenVideos: number
   deletedVideos: number
   totalTerms: number
@@ -22,6 +24,8 @@ export type TrendValue = {
 export type SummaryStatsWithTrends = {
   totalVideos: TrendValue
   visibleVideos: TrendValue
+  archivedVideos: TrendValue
+  scheduledVideos: TrendValue
   hiddenVideos: TrendValue
   deletedVideos: TrendValue
   totalTerms: TrendValue
@@ -79,6 +83,34 @@ export async function getSummaryStats(
     })
   }
 
+  // Get archived video count (visible + ENDED, excluding deleted videos)
+  const { count: archivedVideos, error: archivedError } = await supabaseClient
+    .from('videos')
+    .select('*', { count: 'exact', head: true })
+    .eq('visible', true)
+    .eq('status', 'ENDED')
+    .is('deleted_at', null)
+
+  if (archivedError) {
+    throw new TypeError(archivedError.message, {
+      cause: archivedError,
+    })
+  }
+
+  // Get scheduled video count (visible + UPCOMING or LIVE, excluding deleted videos)
+  const { count: scheduledVideos, error: scheduledError } = await supabaseClient
+    .from('videos')
+    .select('*', { count: 'exact', head: true })
+    .eq('visible', true)
+    .in('status', ['UPCOMING', 'LIVE'])
+    .is('deleted_at', null)
+
+  if (scheduledError) {
+    throw new TypeError(scheduledError.message, {
+      cause: scheduledError,
+    })
+  }
+
   // Get deleted video count
   const { count: deletedVideos, error: deletedError } = await supabaseClient
     .from('videos')
@@ -115,8 +147,10 @@ export async function getSummaryStats(
   }
 
   const currentStats: SummaryStats = {
+    archivedVideos: archivedVideos ?? 0,
     deletedVideos: deletedVideos ?? 0,
     hiddenVideos: hiddenVideos ?? 0,
+    scheduledVideos: scheduledVideos ?? 0,
     totalTalents: totalTalents ?? 0,
     totalTerms: totalTerms ?? 0,
     totalVideos: totalVideos ?? 0,
@@ -159,6 +193,17 @@ export async function getSummaryStats(
   }
 
   return {
+    archivedVideos: {
+      current: currentStats.archivedVideos,
+      dayChange: calculateTrend(
+        currentStats.archivedVideos,
+        yesterdayStats?.archivedVideos,
+      ),
+      weekChange: calculateTrend(
+        currentStats.archivedVideos,
+        lastWeekStats?.archivedVideos,
+      ),
+    },
     deletedVideos: {
       current: currentStats.deletedVideos,
       dayChange: calculateTrend(
@@ -179,6 +224,17 @@ export async function getSummaryStats(
       weekChange: calculateTrend(
         currentStats.hiddenVideos,
         lastWeekStats?.hiddenVideos,
+      ),
+    },
+    scheduledVideos: {
+      current: currentStats.scheduledVideos,
+      dayChange: calculateTrend(
+        currentStats.scheduledVideos,
+        yesterdayStats?.scheduledVideos,
+      ),
+      weekChange: calculateTrend(
+        currentStats.scheduledVideos,
+        lastWeekStats?.scheduledVideos,
       ),
     },
     totalTalents: {

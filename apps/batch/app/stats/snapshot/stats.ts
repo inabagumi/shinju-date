@@ -5,6 +5,8 @@ import type { Redis } from '@upstash/redis'
 export type SummaryStats = {
   totalVideos: number
   visibleVideos: number
+  archivedVideos: number
+  scheduledVideos: number
   hiddenVideos: number
   deletedVideos: number
   totalTerms: number
@@ -65,6 +67,36 @@ export async function getSummaryStats(
     })
   }
 
+  // Get archived video count (visible + ENDED, excluding deleted videos during target day)
+  const { count: archivedVideos, error: archivedError } = await supabaseClient
+    .from('videos')
+    .select('*', { count: 'exact', head: true })
+    .eq('visible', true)
+    .eq('status', 'ENDED')
+    .lt('created_at', targetDayEnd)
+    .or(`deleted_at.is.null,deleted_at.gte.${targetDayEnd}`)
+
+  if (archivedError) {
+    throw new TypeError(archivedError.message, {
+      cause: archivedError,
+    })
+  }
+
+  // Get scheduled video count (visible + UPCOMING or LIVE, excluding deleted videos during target day)
+  const { count: scheduledVideos, error: scheduledError } = await supabaseClient
+    .from('videos')
+    .select('*', { count: 'exact', head: true })
+    .eq('visible', true)
+    .in('status', ['UPCOMING', 'LIVE'])
+    .lt('created_at', targetDayEnd)
+    .or(`deleted_at.is.null,deleted_at.gte.${targetDayEnd}`)
+
+  if (scheduledError) {
+    throw new TypeError(scheduledError.message, {
+      cause: scheduledError,
+    })
+  }
+
   // Get deleted video count (videos deleted before the end of target day)
   const { count: deletedVideos, error: deletedError } = await supabaseClient
     .from('videos')
@@ -103,8 +135,10 @@ export async function getSummaryStats(
   }
 
   return {
+    archivedVideos: archivedVideos ?? 0,
     deletedVideos: deletedVideos ?? 0,
     hiddenVideos: hiddenVideos ?? 0,
+    scheduledVideos: scheduledVideos ?? 0,
     totalTalents: totalTalents ?? 0,
     totalTerms: totalTerms ?? 0,
     totalVideos: totalVideos ?? 0,

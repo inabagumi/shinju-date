@@ -14,7 +14,8 @@ import {
 type VideoStatsChartProps = {
   data: Array<{
     date: string
-    visibleVideos: number
+    archivedVideos: number
+    scheduledVideos: number
     hiddenVideos: number
     deletedVideos: number
   }>
@@ -22,9 +23,9 @@ type VideoStatsChartProps = {
 
 // Label mapping for chart legend and tooltip
 const LABEL_MAP: Record<string, string> = {
-  deletedVideos: '削除済み',
+  archivedVideos: 'アーカイブ',
   hiddenVideos: '非表示',
-  visibleVideos: '公開中',
+  scheduledVideos: '配信予定・中',
 } as const
 
 export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
@@ -39,6 +40,7 @@ export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
             tickLine={{ stroke: '#e5e7eb' }}
           />
           <YAxis
+            domain={['auto', 'auto']}
             tick={{ fill: '#6b7280', fontSize: 12 }}
             tickLine={{ stroke: '#e5e7eb' }}
           />
@@ -59,9 +61,9 @@ export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
             iconType="rect"
             wrapperStyle={{ paddingTop: '20px' }}
           />
-          <Bar dataKey="visibleVideos" fill="#10b981" stackId="active" />
-          <Bar dataKey="hiddenVideos" fill="#f59e0b" stackId="active" />
-          <Bar dataKey="deletedVideos" fill="#ef4444" />
+          <Bar dataKey="archivedVideos" fill="#10b981" stackId="visible" />
+          <Bar dataKey="scheduledVideos" fill="#a855f7" stackId="visible" />
+          <Bar dataKey="hiddenVideos" fill="#f59e0b" />
         </BarChart>
       </ResponsiveContainer>
     </div>
