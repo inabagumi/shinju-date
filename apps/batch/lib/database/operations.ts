@@ -489,7 +489,7 @@ export async function saveScrapedVideos(options: {
   const existingVideoIds = new Set(
     savedVideos
       .map((saved) => saved.youtube_video?.youtube_video_id)
-      .filter((id): id is string => Boolean(id)),
+      .filter((id): id is string => id != null),
   )
   const newVideosOnly = originalVideos.filter(
     (video) => !existingVideoIds.has(video.id),
@@ -503,11 +503,12 @@ export async function saveScrapedVideos(options: {
     supabaseClient,
   })
 
-  // 4. Process ONLY new video data (we already filtered to newVideosOnly)
+  // 4. Process ONLY new video data
+  // Empty savedVideos array since we already filtered to newVideosOnly above
   const videoDataWithYouTubeIds = processNewVideos({
     currentDateTime,
     originalVideos: newVideosOnly, // Pass pre-filtered list
-    savedVideos: [], // No need to check against savedVideos since we already filtered
+    savedVideos: [], // Already filtered, no need to check existence again
     talentId,
     thumbnails,
   })
