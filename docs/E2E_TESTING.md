@@ -35,25 +35,35 @@ pnpm exec playwright install chromium
 
 ## テストの実行
 
-### 個別アプリのテスト実行（推奨）
+### すべてのアプリのE2Eテストを実行
 
-各アプリケーションのディレクトリで個別にテストを実行できます：
+```bash
+pnpm test:e2e
+```
+
+このコマンドは、Turboを使用してすべてのアプリケーション（web、admin、batch）のE2Eテストを実行します。
+
+### 個別アプリのテスト実行
+
+特定のアプリケーションのみをテストする場合：
 
 ```bash
 # Web アプリのテスト
-pnpm test:e2e:web
-# または
-cd apps/web && pnpm exec playwright test
+pnpm test:e2e --filter=@shinju-date/web
 
 # Admin アプリのテスト
-pnpm test:e2e:admin
-# または
-cd apps/admin && pnpm exec playwright test
+pnpm test:e2e --filter=@shinju-date/admin
 
 # Batch アプリのテスト
-pnpm test:e2e:batch
-# または
-cd apps/batch && pnpm exec playwright test
+pnpm test:e2e --filter=@shinju-date/batch
+```
+
+または、各アプリケーションのディレクトリで直接実行：
+
+```bash
+cd apps/web && pnpm test:e2e
+cd apps/admin && pnpm test:e2e
+cd apps/batch && pnpm test:e2e
 ```
 
 ### UIモードで実行（デバッグに便利）

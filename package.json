@@ -3,10 +3,8 @@
   "description": "SHINJU DATE is a web service for searching videos.",
   "devDependencies": {
     "@biomejs/biome": "2.3.7",
-    "@playwright/test": "1.56.1",
     "@vitest/coverage-v8": "4.0.13",
     "@vitest/ui": "4.0.13",
-    "dotenv": "17.2.3",
     "next-devtools-mcp": "0.3.4",
     "turbo": "2.6.1",
     "typescript": "5.9.3",
@@ -29,9 +27,7 @@
     "db:import": "./scripts/import-data.sh",
     "dev": "turbo dev",
     "test": "turbo test",
-    "test:e2e:batch": "cd apps/batch && pnpm exec playwright test",
-    "test:e2e:web": "cd apps/web && pnpm exec playwright test",
-    "test:e2e:admin": "cd apps/admin && pnpm exec playwright test",
+    "test:e2e": "turbo test:e2e",
     "typegen": "turbo typegen"
   },
   "type": "module",

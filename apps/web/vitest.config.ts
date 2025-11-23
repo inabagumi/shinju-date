@@ -12,6 +12,7 @@ export default defineConfig({
     environmentOptions: {
       url: 'https://shinju-date.test',
     },
+    exclude: ['**/node_modules/**', '**/e2e/**'],
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
   },
