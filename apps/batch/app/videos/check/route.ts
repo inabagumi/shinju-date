@@ -4,11 +4,10 @@ import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
-import { YouTubeScraper } from '@shinju-date/youtube-scraper'
+import { YouTubeScraper, type YouTubeVideo } from '@shinju-date/youtube-scraper'
 import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import {
-  processDeletedVideos,
   processScrapedVideoAvailability,
   processScrapedVideoForCheck,
 } from '@/lib/database'
@@ -138,51 +137,22 @@ export async function POST(request: NextRequest): Promise<Response> {
   // For 'default' and 'recent' modes, fetch full video details and update information
   // For 'all' mode, only check availability and delete unavailable videos
   if (mode === 'default' || mode === 'recent') {
-    // Accumulate available video IDs across all batches to avoid deleting videos from other batches
-    const availableVideoIds = new Set<string>()
+    // Collect all videos from YouTube API first, then process them all at once
+    const allVideos: YouTubeVideo[] = []
 
-    // Process scraped videos for checking and updating (but not deletion yet)
     await scraper.scrapeVideos({ ids: videoIds }, async (originalVideos) => {
-      const batchHasChanges = await processScrapedVideoForCheck({
+      allVideos.push(...originalVideos)
+    })
+
+    // Process all videos at once (updates and deletions)
+    if (allVideos.length > 0) {
+      hasChanges = await processScrapedVideoForCheck({
         currentDateTime,
         logger,
         mode,
-        originalVideos,
+        originalVideos: allVideos,
         savedVideos,
         supabaseClient,
-      })
-
-      // Accumulate available video IDs from this batch
-      for (const video of originalVideos) {
-        availableVideoIds.add(video.id)
-      }
-
-      if (batchHasChanges) {
-        hasChanges = true
-      }
-    })
-
-    // After all batches are processed, delete videos that were not found
-    const deletionResult = await processDeletedVideos({
-      availableVideoIds,
-      currentDateTime,
-      savedVideos,
-      supabaseClient,
-    })
-
-    if (deletionResult.deletedCount > 0) {
-      hasChanges = true
-
-      // Log individual deleted videos
-      for (const videoId of deletionResult.deletedVideoIds) {
-        logger.info('動画を削除しました', {
-          videoId,
-        })
-      }
-
-      // Log summary
-      logger.info('動画が削除されました', {
-        count: deletionResult.deletedCount,
       })
     }
   } else {
