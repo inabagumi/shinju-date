@@ -6,13 +6,10 @@ import type { YouTubeVideo } from '@shinju-date/youtube-scraper'
 import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
 import PQueue from 'p-queue'
 import { Temporal } from 'temporal-polyfill'
-import {
-  DatabaseError,
-  getSavedVideos,
-} from '../../../../lib/database/operations'
-import type { SavedVideo, Video } from '../../../../lib/database/types'
-import type { TypedSupabaseClient } from '../../../../lib/supabase'
-import { ImageProcessor } from '../../../../lib/thumbnails'
+import { DatabaseError, getSavedVideos } from '@/lib/database/operations'
+import type { SavedVideo, Video } from '@/lib/database/types'
+import type { TypedSupabaseClient } from '@/lib/supabase'
+import { ImageProcessor } from '@/lib/thumbnails'
 
 const scrapeResultSelect = `
   duration,
