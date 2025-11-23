@@ -4,7 +4,7 @@ import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
-import { YouTubeScraper, type YouTubeVideo } from '@shinju-date/youtube-scraper'
+import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import { processScrapedVideoAvailability } from '@/lib/database'
@@ -135,24 +135,20 @@ export async function POST(request: NextRequest): Promise<Response> {
   // For 'default' and 'recent' modes, fetch full video details and update information
   // For 'all' mode, only check availability and delete unavailable videos
   if (mode === 'default' || mode === 'recent') {
-    // Collect all videos from YouTube API first, then process them all at once
-    const allVideos: YouTubeVideo[] = []
-
-    await scraper.scrapeVideos({ ids: videoIds }, async (originalVideos) => {
-      allVideos.push(...originalVideos)
+    // Fetch all videos from YouTube API and process them at once
+    await scraper.scrapeVideos({ ids: videoIds }, async (allVideos) => {
+      // Process all videos at once (updates and deletions)
+      if (allVideos.length > 0) {
+        hasChanges = await processScrapedVideoForCheck({
+          currentDateTime,
+          logger,
+          mode,
+          originalVideos: allVideos,
+          savedVideos,
+          supabaseClient,
+        })
+      }
     })
-
-    // Process all videos at once (updates and deletions)
-    if (allVideos.length > 0) {
-      hasChanges = await processScrapedVideoForCheck({
-        currentDateTime,
-        logger,
-        mode,
-        originalVideos: allVideos,
-        savedVideos,
-        supabaseClient,
-      })
-    }
   } else {
     // For 'all' mode, only check availability and delete unavailable videos
     await scraper.scrapeVideosAvailability({ videoIds }, async (videos) => {

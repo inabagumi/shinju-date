@@ -104,6 +104,9 @@ export class YouTubeScraper implements AsyncDisposable {
   ): Promise<void> {
     this.#logger?.debug('Scraping videos', { count: options.ids.length })
 
+    // Collect all videos first
+    const allVideos: YouTubeVideo[] = []
+
     for (let i = 0; i < options.ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
       const {
         data: { items },
@@ -118,13 +121,15 @@ export class YouTubeScraper implements AsyncDisposable {
       }
 
       const validVideos = items.filter(isValidVideo)
-
-      if (validVideos.length > 0) {
-        await onVideoScraped(validVideos)
-      }
+      allVideos.push(...validVideos)
     }
 
     this.#logger?.debug('Video scraping completed')
+
+    // Call callback once with all collected videos
+    if (allVideos.length > 0) {
+      await onVideoScraped(allVideos)
+    }
   }
 
   async scrapeChannels(
