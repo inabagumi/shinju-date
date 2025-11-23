@@ -7,6 +7,7 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 export type SummaryStats = {
   totalVideos: number
   visibleVideos: number
+  scheduledVideos: number
   hiddenVideos: number
   deletedVideos: number
   totalTerms: number
@@ -22,6 +23,7 @@ export type TrendValue = {
 export type SummaryStatsWithTrends = {
   totalVideos: TrendValue
   visibleVideos: TrendValue
+  scheduledVideos: TrendValue
   hiddenVideos: TrendValue
   deletedVideos: TrendValue
   totalTerms: TrendValue
@@ -53,11 +55,12 @@ export async function getSummaryStats(
     })
   }
 
-  // Get visible video count (excluding deleted videos)
+  // Get visible video count (public: visible + ENDED or LIVE, excluding deleted videos)
   const { count: visibleVideos, error: visibleError } = await supabaseClient
     .from('videos')
     .select('*', { count: 'exact', head: true })
     .eq('visible', true)
+    .in('status', ['ENDED', 'LIVE'])
     .is('deleted_at', null)
 
   if (visibleError) {
@@ -76,6 +79,20 @@ export async function getSummaryStats(
   if (hiddenError) {
     throw new TypeError(hiddenError.message, {
       cause: hiddenError,
+    })
+  }
+
+  // Get scheduled video count (visible + UPCOMING, excluding deleted videos)
+  const { count: scheduledVideos, error: scheduledError } = await supabaseClient
+    .from('videos')
+    .select('*', { count: 'exact', head: true })
+    .eq('visible', true)
+    .eq('status', 'UPCOMING')
+    .is('deleted_at', null)
+
+  if (scheduledError) {
+    throw new TypeError(scheduledError.message, {
+      cause: scheduledError,
     })
   }
 
@@ -117,6 +134,7 @@ export async function getSummaryStats(
   const currentStats: SummaryStats = {
     deletedVideos: deletedVideos ?? 0,
     hiddenVideos: hiddenVideos ?? 0,
+    scheduledVideos: scheduledVideos ?? 0,
     totalTalents: totalTalents ?? 0,
     totalTerms: totalTerms ?? 0,
     totalVideos: totalVideos ?? 0,
@@ -179,6 +197,17 @@ export async function getSummaryStats(
       weekChange: calculateTrend(
         currentStats.hiddenVideos,
         lastWeekStats?.hiddenVideos,
+      ),
+    },
+    scheduledVideos: {
+      current: currentStats.scheduledVideos,
+      dayChange: calculateTrend(
+        currentStats.scheduledVideos,
+        yesterdayStats?.scheduledVideos,
+      ),
+      weekChange: calculateTrend(
+        currentStats.scheduledVideos,
+        lastWeekStats?.scheduledVideos,
       ),
     },
     totalTalents: {

@@ -8,6 +8,7 @@ export type HistoricalStatsEntry = {
   date: string
   totalVideos: number
   visibleVideos: number
+  scheduledVideos: number
   hiddenVideos: number
   deletedVideos: number
 }
@@ -51,6 +52,8 @@ export async function getHistoricalStats(
         date: formatDateForDisplay(date),
         deletedVideos: stats.deletedVideos,
         hiddenVideos: stats.hiddenVideos,
+        // Fallback: for old data without scheduledVideos, use 0
+        scheduledVideos: stats.scheduledVideos ?? 0,
         totalVideos: stats.totalVideos,
         visibleVideos: stats.visibleVideos,
       })

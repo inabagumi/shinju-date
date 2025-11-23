@@ -49,6 +49,18 @@ export async function VideoSummaryWidget() {
           </div>
         </Link>
         <Link
+          className="rounded-lg bg-purple-50 p-4 transition-colors hover:bg-purple-100"
+          href="/videos?deleted=false&visible=true"
+        >
+          <p className="text-gray-600 text-sm">配信予定</p>
+          <p className="font-bold text-2xl text-purple-600">
+            {formatNumber(stats.scheduledVideos.current)}
+          </p>
+          <div className="mt-2">
+            <TrendIndicator value={stats.scheduledVideos.dayChange} />
+          </div>
+        </Link>
+        <Link
           className="rounded-lg bg-yellow-50 p-4 transition-colors hover:bg-yellow-100"
           href="/videos?deleted=false&visible=false"
         >
@@ -58,18 +70,6 @@ export async function VideoSummaryWidget() {
           </p>
           <div className="mt-2">
             <TrendIndicator value={stats.hiddenVideos.dayChange} />
-          </div>
-        </Link>
-        <Link
-          className="rounded-lg bg-red-50 p-4 transition-colors hover:bg-red-100"
-          href="/videos?deleted=true"
-        >
-          <p className="text-gray-600 text-sm">削除済み</p>
-          <p className="font-bold text-2xl text-red-600">
-            {formatNumber(stats.deletedVideos.current)}
-          </p>
-          <div className="mt-2">
-            <TrendIndicator value={stats.deletedVideos.dayChange} />
           </div>
         </Link>
       </div>
