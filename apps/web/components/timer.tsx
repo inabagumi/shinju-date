@@ -10,7 +10,7 @@ import {
 } from 'react'
 import { Temporal } from 'temporal-polyfill'
 
-type TimerContextValue = {
+interface TimerContextValue {
   now?: Temporal.ZonedDateTime | undefined
 }
 

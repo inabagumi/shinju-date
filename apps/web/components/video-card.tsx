@@ -6,7 +6,7 @@ import type { Video } from '@/lib/fetchers'
 import FormattedTime from './formatted-time'
 import LiveNow from './live-now'
 
-type YouTubeVideo = Omit<Video, 'youtube_video'> & {
+interface YouTubeVideo extends Omit<Video, 'youtube_video'> {
   youtube_video: NonNullable<Video['youtube_video']>
 }
 

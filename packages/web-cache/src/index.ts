@@ -1,6 +1,6 @@
 import { logger } from '@shinju-date/logger'
 
-type RevalidateOptions = {
+interface RevalidateOptions {
   signal?: AbortSignal | undefined
 }
 

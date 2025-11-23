@@ -25,14 +25,14 @@ import {
   removeYouTubeChannelAction,
 } from '../../_actions/channels'
 
-type Channel = {
+interface Channel {
   id: string
   name: string | null
   youtube_channel_id: string
   youtube_handle: string | null
 }
 
-type ChannelManagerProps = {
+interface ChannelManagerProps {
   talentId: string
   channels: Channel[]
   isDeleted: boolean

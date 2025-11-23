@@ -4,7 +4,7 @@ import { getClickVolume } from '../_lib/get-click-volume'
 import ClickVolumeChartUI from './click-volume-chart-ui'
 import { ClickVolumeChartWithNavigation } from './click-volume-chart-with-navigation'
 
-type Props = {
+interface Props {
   searchParams: Promise<AnalyticsSearchParams>
 }
 

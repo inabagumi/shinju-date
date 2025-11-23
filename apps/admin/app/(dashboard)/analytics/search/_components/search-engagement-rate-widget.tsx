@@ -3,7 +3,7 @@ import { Temporal } from 'temporal-polyfill'
 import { getSearchEngagementRate } from '@/lib/analytics/get-search-quality-metrics'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
-type Props = {
+interface Props {
   searchParams: Promise<AnalyticsSearchParams>
 }
 

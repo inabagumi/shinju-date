@@ -12,7 +12,7 @@ import { ChannelManager } from './_components/channel-manager'
 import { EditTalentForm } from './_components/edit-talent-form'
 import { SyncTalentButton } from './_components/sync-talent-button'
 
-type Props = {
+interface Props {
   params: Promise<{
     id: string
   }>

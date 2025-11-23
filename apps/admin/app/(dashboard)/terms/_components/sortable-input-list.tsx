@@ -25,7 +25,7 @@ import {
 } from 'react'
 import { Temporal } from 'temporal-polyfill'
 
-type SortableItemProps = {
+interface SortableItemProps {
   id: string
   value: string
   onChange: (id: string, value: string) => void
@@ -107,12 +107,12 @@ function SortableItem({
   )
 }
 
-type Item = {
+interface Item {
   id: string
   value: string
 }
 
-type SortableInputListProps = {
+interface SortableInputListProps {
   name: string
   defaultValues?: string[]
   placeholder?: string

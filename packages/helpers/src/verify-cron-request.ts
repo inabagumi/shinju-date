@@ -1,4 +1,4 @@
-type VerifyCronRequestOptions = {
+interface VerifyCronRequestOptions {
   cronSecure: string
 }
 

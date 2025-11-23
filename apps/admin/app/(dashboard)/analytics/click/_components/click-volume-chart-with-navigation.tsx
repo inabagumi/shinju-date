@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import type { DailyClickVolume } from '../_lib/get-click-volume'
 
-type Props = {
+interface Props {
   data: DailyClickVolume[]
   ChartComponent: React.ComponentType<{
     data: DailyClickVolume[]

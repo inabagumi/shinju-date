@@ -6,7 +6,7 @@ import type { AnalyticsSearchParams } from '../_lib/search-params-schema'
 import { createAnalyticsUrlParams } from '../_lib/search-params-schema'
 import DateRangePicker from './date-range-picker'
 
-type Props = {
+interface Props {
   searchParams: Promise<AnalyticsSearchParams>
 }
 

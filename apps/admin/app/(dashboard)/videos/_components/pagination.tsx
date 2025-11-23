@@ -4,7 +4,7 @@ import { Button } from '@shinju-date/ui'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 
-type Props = {
+interface Props {
   currentPage: number
   totalPages: number
 }

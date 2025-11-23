@@ -1,6 +1,7 @@
 import { track as vercelTrack } from '@vercel/analytics/server'
 import type { Video } from './types'
 
+// Using type here because it needs to be compatible with Record<string, AllowedPropertyValues>
 type TrackProperties = {
   provider: 'YouTube'
   talent_id: string

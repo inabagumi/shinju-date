@@ -14,7 +14,7 @@ import {
 import { useState, useTransition } from 'react'
 import { deleteAnnouncementAction } from '../_actions'
 
-type DeleteConfirmDialogProps = {
+interface DeleteConfirmDialogProps {
   announcementId: string
   announcementMessage: string
 }

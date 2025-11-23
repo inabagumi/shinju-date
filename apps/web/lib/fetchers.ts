@@ -75,7 +75,7 @@ async function getDefaultBaseTime() {
     .toInstant()
 }
 
-type FetchVideosOptions = {
+interface FetchVideosOptions {
   query?: string
   until?: bigint | undefined
 }

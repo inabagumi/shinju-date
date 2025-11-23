@@ -4,7 +4,7 @@ import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
 import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 
-export type SavedVideoForCheck = {
+export interface SavedVideoForCheck {
   id: string
   duration: string
   published_at: string
@@ -15,7 +15,7 @@ export type SavedVideoForCheck = {
   }
 }
 
-export type YouTubeVideoData = {
+export interface YouTubeVideoData {
   id: string
   contentDetails?: { duration?: string }
   snippet?: { title?: string; publishedAt?: string }
@@ -26,14 +26,14 @@ export type YouTubeVideoData = {
   }
 }
 
-type UpdateVideoIfNeededOptions = {
+interface UpdateVideoIfNeededOptions {
   currentDateTime: Temporal.Instant
   originalVideo: YouTubeVideoData
   savedVideo: SavedVideoForCheck
   supabaseClient: TypedSupabaseClient
 }
 
-export type VideoUpdate = {
+export interface VideoUpdate {
   id: string
   duration: string
   published_at: string

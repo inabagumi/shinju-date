@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import type { DailySearchVolume } from '../_lib/get-search-volume'
 
-type Props = {
+interface Props {
   data: DailySearchVolume[]
   ChartComponent: React.ComponentType<{
     data: DailySearchVolume[]

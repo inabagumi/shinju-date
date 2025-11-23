@@ -7,7 +7,7 @@ type NonNullableChannelRelatedPlaylists = NonNullable<
   NonNullableChannelContentDetails['relatedPlaylists']
 >
 
-export type YouTubeChannel = youtube.Schema$Channel & {
+export interface YouTubeChannel extends youtube.Schema$Channel {
   contentDetails: NonNullableChannelContentDetails & {
     relatedPlaylists: NonNullableChannelRelatedPlaylists & {
       uploads: NonNullable<NonNullableChannelRelatedPlaylists['uploads']>
@@ -19,13 +19,13 @@ export type YouTubeChannel = youtube.Schema$Channel & {
   }
 }
 
-export type YouTubePlaylistItem = youtube.Schema$PlaylistItem & {
+export interface YouTubePlaylistItem extends youtube.Schema$PlaylistItem {
   contentDetails: NonNullable<youtube.Schema$PlaylistItemContentDetails> & {
     videoId: NonNullable<youtube.Schema$PlaylistItemContentDetails['videoId']>
   }
 }
 
-export type YouTubeVideo = youtube.Schema$Video & {
+export interface YouTubeVideo extends youtube.Schema$Video {
   contentDetails: NonNullable<youtube.Schema$Video['contentDetails']>
   id: NonNullable<youtube.Schema$Video['id']>
   snippet: NonNullable<youtube.Schema$Video['snippet']> & {
@@ -33,16 +33,16 @@ export type YouTubeVideo = youtube.Schema$Video & {
   }
 }
 
-export type GetChannelsOptions = {
+export interface GetChannelsOptions {
   ids: string[]
 }
 
-export type GetPlaylistItemsOptions = {
+export interface GetPlaylistItemsOptions {
   all?: boolean
   playlistID: string
 }
 
-export type GetVideosOptions = {
+export interface GetVideosOptions {
   ids: string[]
 }
 
@@ -53,26 +53,26 @@ export interface Logger {
   warn(message: string, attributes?: Record<string, unknown>): void
 }
 
-export type ScraperOptions = {
+export interface ScraperOptions {
   youtubeClient: youtube.Youtube
   concurrency?: number
   interval?: number
   logger?: Logger
 }
 
-export type ScrapeChannelsOptions = {
+export interface ScrapeChannelsOptions {
   channelIDs: string[]
 }
 
-export type ScrapeVideosOptions = {
+export interface ScrapeVideosOptions {
   playlistID: string
   scrapeAll?: boolean
 }
 
-export type ScrapeNewVideosParams = {
+export interface ScrapeNewVideosParams {
   channelIds: string[]
 }
 
-export type ScrapeUpdatedVideosParams = {
+export interface ScrapeUpdatedVideosParams {
   channelIds: string[]
 }

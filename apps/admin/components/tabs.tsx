@@ -2,13 +2,13 @@
 
 import { Activity, useState } from 'react'
 
-type Tab = {
+interface Tab {
   id: string
   label: string
   content: React.ReactNode
 }
 
-type TabsProps = {
+interface TabsProps {
   tabs: Tab[]
   defaultTab?: string
   className?: string

@@ -2,10 +2,11 @@
 
 import type { ComponentPropsWithoutRef } from 'react'
 
-type ToggleSwitchProps = Omit<
-  ComponentPropsWithoutRef<'button'>,
-  'children' | 'onClick' | 'type'
-> & {
+interface ToggleSwitchProps
+  extends Omit<
+    ComponentPropsWithoutRef<'button'>,
+    'children' | 'onClick' | 'onChange' | 'type'
+  > {
   checked: boolean
   disabled?: boolean
   label?: string

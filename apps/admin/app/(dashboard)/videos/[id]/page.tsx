@@ -17,7 +17,7 @@ import getVideo from '../_lib/get-video'
 import { SyncVideoButton } from './_components/sync-video-button'
 import { VideoActionsButtons } from './_components/video-actions-buttons'
 
-type Props = {
+interface Props {
   params: Promise<{
     id: string
   }>

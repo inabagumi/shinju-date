@@ -14,7 +14,7 @@ import {
 import { useState, useTransition } from 'react'
 import { deleteTalentAction } from '../_actions'
 
-type DeleteConfirmDialogProps = {
+interface DeleteConfirmDialogProps {
   talentId: string
   talentName: string
 }

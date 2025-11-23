@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react'
 import { useState, useTransition } from 'react'
 import { syncVideoWithYouTube } from '../../_actions/sync'
 
-type Props = {
+interface Props {
   videoId: string
 }
 

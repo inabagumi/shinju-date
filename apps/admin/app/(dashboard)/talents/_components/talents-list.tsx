@@ -6,7 +6,7 @@ import { useMemo, useState } from 'react'
 import { TalentActions } from './talent-actions'
 import { TalentModal } from './talent-modal'
 
-type Talent = {
+interface Talent {
   id: string
   name: string
   created_at: string
@@ -19,7 +19,7 @@ type Talent = {
   }[]
 }
 
-type TalentsListProps = {
+interface TalentsListProps {
   talents: Talent[]
 }
 

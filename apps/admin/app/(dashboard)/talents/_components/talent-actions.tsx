@@ -5,12 +5,12 @@ import { twMerge } from 'tailwind-merge'
 import { deleteTalentAction } from '../_actions'
 import { syncTalentWithYouTube } from '../_actions/sync'
 
-type Talent = {
+interface Talent {
   id: string
   name: string
 }
 
-type TalentActionsProps = {
+interface TalentActionsProps {
   talent: Talent
 }
 

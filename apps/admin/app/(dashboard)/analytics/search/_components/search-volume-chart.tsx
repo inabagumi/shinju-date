@@ -4,7 +4,7 @@ import { getSearchVolume } from '../_lib/get-search-volume'
 import SearchVolumeChartUI from './search-volume-chart-ui'
 import { SearchVolumeChartWithNavigation } from './search-volume-chart-with-navigation'
 
-type Props = {
+interface Props {
   searchParams: Promise<AnalyticsSearchParams>
 }
 

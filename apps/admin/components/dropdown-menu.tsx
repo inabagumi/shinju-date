@@ -10,14 +10,14 @@ import {
   useState,
 } from 'react'
 
-type DropdownMenuContextValue = {
+interface DropdownMenuContextValue {
   isOpen: boolean
   setIsOpen: (open: boolean) => void
 }
 
 const DropdownMenuContext = createContext<DropdownMenuContextValue | null>(null)
 
-type DropdownMenuProps = {
+interface DropdownMenuProps {
   children: ReactNode
 }
 
@@ -31,7 +31,7 @@ export function DropdownMenu({ children }: DropdownMenuProps) {
   )
 }
 
-type DropdownMenuTriggerProps = ComponentPropsWithoutRef<'button'>
+interface DropdownMenuTriggerProps extends ComponentPropsWithoutRef<'button'> {}
 
 export function DropdownMenuTrigger({
   children,
@@ -60,7 +60,7 @@ export function DropdownMenuTrigger({
   )
 }
 
-type DropdownMenuContentProps = {
+interface DropdownMenuContentProps {
   children: ReactNode
   align?: 'left' | 'right'
 }
@@ -105,7 +105,7 @@ export function DropdownMenuContent({
   )
 }
 
-type DropdownMenuItemProps = ComponentPropsWithoutRef<'button'> & {
+interface DropdownMenuItemProps extends ComponentPropsWithoutRef<'button'> {
   variant?: 'default' | 'danger'
 }
 
