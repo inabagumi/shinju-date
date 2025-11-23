@@ -30,7 +30,7 @@ import { composeFetch, withRetry } from '@shinju-date/composable-fetch'
 
 // Create a fetch function with retry middleware
 const retryFetch = composeFetch(
-  withRetry(fetch, { retries: 3 })
+  (next) => withRetry(next, { retries: 3 })
 )
 
 // Use like native fetch
@@ -54,7 +54,7 @@ const storage = new RedisCacheStorage({
 
 // Create a fetch function with caching
 const cachedFetch = composeFetch(
-  withCache(fetch, { storage })
+  (next) => withCache(next, { storage })
 )
 
 // First request: fetches from API and caches with ETag
@@ -78,8 +78,8 @@ import {
 // Compose multiple middlewares
 // Order matters: retry is outermost, cache is innermost
 const enhancedFetch = composeFetch(
-  withRetry(fetch, { retries: 3, abortOn404: true }),
-  withCache(fetch, { 
+  (next) => withRetry(next, { retries: 3, abortOn404: true }),
+  (next) => withCache(next, { 
     storage: new InMemoryCacheStorage({ ttl: 300 }),
     useETag: true 
   })
@@ -131,17 +131,23 @@ const fetch = composeFetch(
 Composes multiple fetch middlewares into a single fetch function.
 
 **Parameters:**
-- `middlewares`: Array of `FetchMiddleware` functions to compose
+- `...middlewares`: Variadic parameters of `FetchMiddleware` functions to compose
 
 **Returns:**
 - A composed `FetchFunction` with all middlewares applied
 
 **Example:**
 ```typescript
+// Compose middlewares by passing them as separate arguments
 const enhancedFetch = composeFetch(
-  withRetry(fetch, { retries: 3 }),
-  withCache(fetch, { storage })
+  (next) => withRetry(next, { retries: 3 }),
+  (next) => withCache(next, { storage })
 )
+
+// Or create middleware functions first, then compose
+const retryMiddleware: FetchMiddleware = (next) => withRetry(next, { retries: 3 })
+const cacheMiddleware: FetchMiddleware = (next) => withCache(next, { storage })
+const enhancedFetch = composeFetch(retryMiddleware, cacheMiddleware)
 ```
 
 ### Middlewares
@@ -371,10 +377,10 @@ const withLogging: FetchMiddleware<LoggingOptions> = (next, options = {}) => {
 }
 
 // Use with other middlewares
-const fetch = composeFetch(
-  withLogging(fetch, { verbose: true }),
-  withRetry(fetch),
-  withCache(fetch, { storage })
+const enhancedFetch = composeFetch(
+  (next) => withLogging(next, { verbose: true }),
+  (next) => withRetry(next),
+  (next) => withCache(next, { storage })
 )
 ```
 
@@ -384,7 +390,7 @@ Control cache TTL on a per-request basis:
 
 ```typescript
 const cachedFetch = composeFetch(
-  withCache(fetch, { 
+  (next) => withCache(next, { 
     storage,
     ttl: 3600 // Default 1 hour
   })
@@ -458,8 +464,8 @@ describe('My API tests', () => {
   })
   
   it('should cache responses', async () => {
-    const fetch = composeFetch(
-      withCache(fetch, { storage })
+    const enhancedFetch = composeFetch(
+      (next) => withCache(next, { storage })
     )
     
     // ... test implementation
@@ -516,7 +522,7 @@ import { composeFetch, withRetry } from '@shinju-date/composable-fetch'
 
 // Create once, reuse everywhere
 const retryFetch = composeFetch(
-  withRetry(fetch, { retries: 5 })
+  (next) => withRetry(next, { retries: 5 })
 )
 
 const response = await retryFetch('https://api.example.com/data')
