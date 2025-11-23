@@ -12,8 +12,7 @@ import { videosUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
-
-const MONITOR_SLUG = '/videos/update'
+import { MONITOR_SLUG } from './_lib/constants'
 
 export const maxDuration = 120
 

@@ -115,6 +115,7 @@ pnpm run start
 - `app/videos/check/_lib/types.ts` - `/videos/check`で使用する型定義
 - `app/videos/check/_lib/query-schema.ts` - クエリパラメータのバリデーションスキーマ
 - `app/videos/check/_lib/get-monitor-slug.ts` - Sentryモニタースラッグ生成
+- `app/videos/update/_lib/constants.ts` - `/videos/update`専用の定数定義
 
 ### 判断基準
 
