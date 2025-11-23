@@ -298,7 +298,9 @@ export async function processScrapedVideoForCheck<
         count: videoIdsToDelete.length,
       })
     } catch (error) {
-      throw new Error(`Failed to delete videos: ${error}`)
+      throw new Error(
+        `Failed to delete videos: ${error instanceof Error ? error.message : String(error)}`,
+      )
     }
   }
 
@@ -391,7 +393,9 @@ export async function processScrapedVideoAvailability({
         count: videoIdsToDelete.length,
       })
     } catch (error) {
-      throw new Error(`Failed to delete videos: ${error}`)
+      throw new Error(
+        `Failed to delete videos: ${error instanceof Error ? error.message : String(error)}`,
+      )
     }
   }
 }
