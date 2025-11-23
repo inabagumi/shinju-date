@@ -1,8 +1,8 @@
 'use client'
 
 import {
-  Bar,
-  BarChart,
+  Area,
+  AreaChart,
   CartesianGrid,
   Legend,
   ResponsiveContainer,
@@ -14,7 +14,7 @@ import {
 type VideoStatsChartProps = {
   data: Array<{
     date: string
-    archivedVideos: number
+    visibleVideos: number
     scheduledVideos: number
     hiddenVideos: number
     deletedVideos: number
@@ -23,16 +23,16 @@ type VideoStatsChartProps = {
 
 // Label mapping for chart legend and tooltip
 const LABEL_MAP: Record<string, string> = {
-  archivedVideos: 'アーカイブ',
   hiddenVideos: '非表示',
   scheduledVideos: '配信予定・中',
+  visibleVideos: 'アーカイブ',
 } as const
 
 export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
   return (
     <div className="h-80 w-full">
       <ResponsiveContainer height="100%" width="100%">
-        <BarChart data={data}>
+        <AreaChart data={data}>
           <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
@@ -61,10 +61,27 @@ export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
             iconType="rect"
             wrapperStyle={{ paddingTop: '20px' }}
           />
-          <Bar dataKey="archivedVideos" fill="#10b981" stackId="visible" />
-          <Bar dataKey="scheduledVideos" fill="#a855f7" stackId="visible" />
-          <Bar dataKey="hiddenVideos" fill="#f59e0b" />
-        </BarChart>
+          <Area
+            dataKey="visibleVideos"
+            fill="#10b981"
+            stackId="visible"
+            stroke="#10b981"
+            type="monotone"
+          />
+          <Area
+            dataKey="scheduledVideos"
+            fill="#a855f7"
+            stackId="visible"
+            stroke="#a855f7"
+            type="monotone"
+          />
+          <Area
+            dataKey="hiddenVideos"
+            fill="#f59e0b"
+            stroke="#f59e0b"
+            type="monotone"
+          />
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   )

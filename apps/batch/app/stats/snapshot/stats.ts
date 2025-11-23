@@ -5,7 +5,6 @@ import type { Redis } from '@upstash/redis'
 export type SummaryStats = {
   totalVideos: number
   visibleVideos: number
-  archivedVideos: number
   scheduledVideos: number
   hiddenVideos: number
   deletedVideos: number
@@ -39,11 +38,12 @@ export async function getSummaryStats(
     })
   }
 
-  // Get visible video count (visible videos that existed during the target day)
+  // Get visible video count (archived: visible + ENDED videos that existed during the target day)
   const { count: visibleVideos, error: visibleError } = await supabaseClient
     .from('videos')
     .select('*', { count: 'exact', head: true })
     .eq('visible', true)
+    .eq('status', 'ENDED')
     .lt('created_at', targetDayEnd)
     .or(`deleted_at.is.null,deleted_at.gte.${targetDayEnd}`)
 
@@ -64,21 +64,6 @@ export async function getSummaryStats(
   if (hiddenError) {
     throw new TypeError(hiddenError.message, {
       cause: hiddenError,
-    })
-  }
-
-  // Get archived video count (visible + ENDED, excluding deleted videos during target day)
-  const { count: archivedVideos, error: archivedError } = await supabaseClient
-    .from('videos')
-    .select('*', { count: 'exact', head: true })
-    .eq('visible', true)
-    .eq('status', 'ENDED')
-    .lt('created_at', targetDayEnd)
-    .or(`deleted_at.is.null,deleted_at.gte.${targetDayEnd}`)
-
-  if (archivedError) {
-    throw new TypeError(archivedError.message, {
-      cause: archivedError,
     })
   }
 
@@ -135,7 +120,6 @@ export async function getSummaryStats(
   }
 
   return {
-    archivedVideos: archivedVideos ?? 0,
     deletedVideos: deletedVideos ?? 0,
     hiddenVideos: hiddenVideos ?? 0,
     scheduledVideos: scheduledVideos ?? 0,

@@ -64,7 +64,6 @@ describe('getSummaryStats', () => {
 
     expect(result).toHaveProperty('totalVideos')
     expect(result).toHaveProperty('visibleVideos')
-    expect(result).toHaveProperty('archivedVideos')
     expect(result).toHaveProperty('scheduledVideos')
     expect(result).toHaveProperty('hiddenVideos')
     expect(result).toHaveProperty('deletedVideos')
@@ -89,13 +88,14 @@ describe('getSummaryStats', () => {
     )
   })
 
-  it('should query videos table for visible videos', async () => {
+  it('should query videos table for visible videos (archived)', async () => {
     const targetDayEnd = '2025-11-13T00:00:00Z'
 
     await getSummaryStats(mockSupabaseClient, targetDayEnd)
 
     const visibleQuery = mockSupabaseClient.from.mock.results[1].value
     expect(visibleQuery.eq).toHaveBeenCalledWith('visible', true)
+    expect(visibleQuery.eq).toHaveBeenCalledWith('status', 'ENDED')
     expect(visibleQuery.lt).toHaveBeenCalledWith('created_at', targetDayEnd)
     expect(visibleQuery.or).toHaveBeenCalledWith(
       `deleted_at.is.null,deleted_at.gte.${targetDayEnd}`,
@@ -115,26 +115,12 @@ describe('getSummaryStats', () => {
     )
   })
 
-  it('should query videos table for archived videos', async () => {
-    const targetDayEnd = '2025-11-13T00:00:00Z'
-
-    await getSummaryStats(mockSupabaseClient, targetDayEnd)
-
-    const archivedQuery = mockSupabaseClient.from.mock.results[3].value
-    expect(archivedQuery.eq).toHaveBeenCalledWith('visible', true)
-    expect(archivedQuery.eq).toHaveBeenCalledWith('status', 'ENDED')
-    expect(archivedQuery.lt).toHaveBeenCalledWith('created_at', targetDayEnd)
-    expect(archivedQuery.or).toHaveBeenCalledWith(
-      `deleted_at.is.null,deleted_at.gte.${targetDayEnd}`,
-    )
-  })
-
   it('should query videos table for scheduled videos', async () => {
     const targetDayEnd = '2025-11-13T00:00:00Z'
 
     await getSummaryStats(mockSupabaseClient, targetDayEnd)
 
-    const scheduledQuery = mockSupabaseClient.from.mock.results[4].value
+    const scheduledQuery = mockSupabaseClient.from.mock.results[3].value
     expect(scheduledQuery.eq).toHaveBeenCalledWith('visible', true)
     expect(scheduledQuery.in).toHaveBeenCalledWith('status', [
       'UPCOMING',
@@ -151,8 +137,8 @@ describe('getSummaryStats', () => {
 
     await getSummaryStats(mockSupabaseClient, targetDayEnd)
 
-    // Deleted videos query is now the 6th query (after totalVideos, visibleVideos, hiddenVideos, archivedVideos, scheduledVideos)
-    const deletedQuery = mockSupabaseClient.from.mock.results[5].value
+    // Deleted videos query is now the 5th query (after totalVideos, visibleVideos, hiddenVideos, scheduledVideos)
+    const deletedQuery = mockSupabaseClient.from.mock.results[4].value
     expect(deletedQuery.not).toHaveBeenCalledWith('deleted_at', 'is', null)
     expect(deletedQuery.lt).toHaveBeenCalledWith('deleted_at', targetDayEnd)
   })
@@ -170,8 +156,8 @@ describe('getSummaryStats', () => {
 
     await getSummaryStats(mockSupabaseClient, targetDayEnd)
 
-    // Talents query is now the 8th query (after totalVideos, visibleVideos, hiddenVideos, archivedVideos, scheduledVideos, deletedVideos, terms)
-    const talentsQuery = mockSupabaseClient.from.mock.results[7].value
+    // Talents query is now the 7th query (after totalVideos, visibleVideos, hiddenVideos, scheduledVideos, deletedVideos, terms)
+    const talentsQuery = mockSupabaseClient.from.mock.results[6].value
     expect(talentsQuery.lt).toHaveBeenCalledWith('created_at', targetDayEnd)
     expect(talentsQuery.or).toHaveBeenCalledWith(
       `deleted_at.is.null,deleted_at.gte.${targetDayEnd}`,
@@ -196,7 +182,7 @@ describe('getSummaryStats', () => {
 
     expect(result.totalVideos).toBe(0)
     expect(result.visibleVideos).toBe(0)
-    expect(result.archivedVideos).toBe(0)
+    expect(result.scheduledVideos).toBe(0)
     expect(result.scheduledVideos).toBe(0)
     expect(result.hiddenVideos).toBe(0)
     expect(result.deletedVideos).toBe(0)

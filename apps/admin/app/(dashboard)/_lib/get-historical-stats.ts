@@ -8,7 +8,6 @@ export type HistoricalStatsEntry = {
   date: string
   totalVideos: number
   visibleVideos: number
-  archivedVideos: number
   scheduledVideos: number
   hiddenVideos: number
   deletedVideos: number
@@ -50,8 +49,6 @@ export async function getHistoricalStats(
   for (const { date, stats } of results) {
     if (stats) {
       historicalStats.push({
-        // Use new metrics if available, fallback to 0 for old data
-        archivedVideos: stats.archivedVideos ?? 0,
         date: formatDateForDisplay(date),
         deletedVideos: stats.deletedVideos,
         hiddenVideos: stats.hiddenVideos,

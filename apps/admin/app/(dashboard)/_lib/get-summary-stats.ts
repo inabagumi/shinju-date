@@ -7,7 +7,6 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 export type SummaryStats = {
   totalVideos: number
   visibleVideos: number
-  archivedVideos: number
   scheduledVideos: number
   hiddenVideos: number
   deletedVideos: number
@@ -24,7 +23,6 @@ export type TrendValue = {
 export type SummaryStatsWithTrends = {
   totalVideos: TrendValue
   visibleVideos: TrendValue
-  archivedVideos: TrendValue
   scheduledVideos: TrendValue
   hiddenVideos: TrendValue
   deletedVideos: TrendValue
@@ -57,11 +55,12 @@ export async function getSummaryStats(
     })
   }
 
-  // Get visible video count (excluding deleted videos)
+  // Get visible video count (archived: visible + ENDED, excluding deleted videos)
   const { count: visibleVideos, error: visibleError } = await supabaseClient
     .from('videos')
     .select('*', { count: 'exact', head: true })
     .eq('visible', true)
+    .eq('status', 'ENDED')
     .is('deleted_at', null)
 
   if (visibleError) {
@@ -80,20 +79,6 @@ export async function getSummaryStats(
   if (hiddenError) {
     throw new TypeError(hiddenError.message, {
       cause: hiddenError,
-    })
-  }
-
-  // Get archived video count (visible + ENDED, excluding deleted videos)
-  const { count: archivedVideos, error: archivedError } = await supabaseClient
-    .from('videos')
-    .select('*', { count: 'exact', head: true })
-    .eq('visible', true)
-    .eq('status', 'ENDED')
-    .is('deleted_at', null)
-
-  if (archivedError) {
-    throw new TypeError(archivedError.message, {
-      cause: archivedError,
     })
   }
 
@@ -147,7 +132,6 @@ export async function getSummaryStats(
   }
 
   const currentStats: SummaryStats = {
-    archivedVideos: archivedVideos ?? 0,
     deletedVideos: deletedVideos ?? 0,
     hiddenVideos: hiddenVideos ?? 0,
     scheduledVideos: scheduledVideos ?? 0,
@@ -193,17 +177,6 @@ export async function getSummaryStats(
   }
 
   return {
-    archivedVideos: {
-      current: currentStats.archivedVideos,
-      dayChange: calculateTrend(
-        currentStats.archivedVideos,
-        yesterdayStats?.archivedVideos,
-      ),
-      weekChange: calculateTrend(
-        currentStats.archivedVideos,
-        lastWeekStats?.archivedVideos,
-      ),
-    },
     deletedVideos: {
       current: currentStats.deletedVideos,
       dayChange: calculateTrend(

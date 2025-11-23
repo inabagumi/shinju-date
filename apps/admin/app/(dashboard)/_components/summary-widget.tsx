@@ -38,19 +38,19 @@ export async function VideoSummaryWidget() {
         </Link>
         <Link
           className="rounded-lg bg-green-50 p-4 transition-colors hover:bg-green-100"
-          href="/videos?deleted=false&visible=true&status=ENDED"
+          href="/videos?deleted=false&visible=true"
         >
           <p className="text-gray-600 text-sm">アーカイブ</p>
           <p className="font-bold text-2xl text-green-600">
-            {formatNumber(stats.archivedVideos.current)}
+            {formatNumber(stats.visibleVideos.current)}
           </p>
           <div className="mt-2">
-            <TrendIndicator value={stats.archivedVideos.dayChange} />
+            <TrendIndicator value={stats.visibleVideos.dayChange} />
           </div>
         </Link>
         <Link
           className="rounded-lg bg-purple-50 p-4 transition-colors hover:bg-purple-100"
-          href="/videos?deleted=false&visible=true&status=UPCOMING,LIVE"
+          href="/videos?deleted=false&visible=true"
         >
           <p className="text-gray-600 text-sm">配信予定・中</p>
           <p className="font-bold text-2xl text-purple-600">
