@@ -9,6 +9,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './'),
     },
     environment: 'jsdom',
+    exclude: ['**/node_modules/**', '**/e2e/**'],
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
   },

@@ -37,6 +37,7 @@
   "devDependencies": {
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
+    "@playwright/test": "1.56.1",
     "@tailwindcss/postcss": "4.1.17",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.0",
@@ -50,7 +51,8 @@
     "jsdom": "27.2.0",
     "msw": "2.12.3",
     "postcss-load-config": "6.0.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.0.13"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
@@ -72,6 +74,7 @@
     "msw:init": "msw init public/ --save",
     "start": "next start --port 4000",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "typegen": "next typegen"
   },
   "type": "module",

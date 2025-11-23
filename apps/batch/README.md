@@ -22,6 +22,21 @@ pnpm run build
 
 # 本番環境での起動
 pnpm run start
+
+# E2Eテストの実行
+pnpm exec playwright test
+```
+
+## E2Eテスト
+
+PlaywrightによるE2Eテストが実装されています。詳細は[E2E Testing Guide](../../docs/E2E_TESTING.md)を参照してください。
+
+```bash
+# E2Eテストの実行
+pnpm exec playwright test
+
+# UIモードでの実行（デバッグに便利）
+pnpm exec playwright test --ui
 ```
 
 ## バッチ処理

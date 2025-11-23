@@ -165,88 +165,92 @@ function parseUpstashCommand(body: any) {
   return { args: [], command: '' }
 }
 
-export const upstashHandlers = [
-  // Upstash Redis REST API endpoint
-  http.post('https://fake.upstash.test/v2/*/pipeline', async ({ request }) => {
-    const commands = (await request.json()) as any[]
-    const results = []
+/**
+ * Process a single Redis command and return the result
+ */
+function processRedisCommand(command: string, args: any[]): any {
+  switch (command) {
+    case 'zrange': {
+      const [key, start, stop, ...options] = args
+      const opts: any = {}
 
-    for (const commandBody of commands) {
-      const { command, args } = parseUpstashCommand(commandBody)
-
-      switch (command) {
-        case 'zrange': {
-          const [key, start, stop, ...options] = args
-          const opts: any = {}
-
-          // Parse options
-          for (let i = 0; i < options.length; i++) {
-            if (options[i] === 'REV') opts.rev = true
-            if (options[i] === 'WITHSCORES') opts.withScores = true
-          }
-
-          const result = simulateZRange(
-            key,
-            parseInt(start, 10),
-            parseInt(stop, 10),
-            opts,
-          )
-          results.push({ result })
-          break
-        }
-
-        case 'zunionstore': {
-          const [destKey, numKeys, ...keysAndArgs] = args
-          const keys = keysAndArgs.slice(0, parseInt(numKeys, 10))
-          const result = simulateZUnionStore(destKey, keys)
-          results.push({ result })
-          break
-        }
-
-        case 'expire': {
-          const [_key, _seconds] = args
-          // For mock purposes, we'll just return success
-          results.push({ result: 1 })
-          break
-        }
-
-        case 'ping': {
-          results.push({ result: 'PONG' })
-          break
-        }
-
-        case 'get': {
-          const [key] = args
-          const value = mockRedisStore.get(key)
-          results.push({ result: value || null })
-          break
-        }
-
-        case 'set': {
-          const [key, value] = args
-          mockRedisStore.set(key, value)
-          results.push({ result: 'OK' })
-          break
-        }
-
-        case 'del': {
-          const keys = args
-          let deletedCount = 0
-          for (const key of keys) {
-            if (mockRedisStore.delete(key)) {
-              deletedCount += 1
-            }
-          }
-          results.push({ result: deletedCount })
-          break
-        }
-
-        default:
-          results.push({ result: null })
-          break
+      // Parse options
+      for (let i = 0; i < options.length; i++) {
+        if (options[i] === 'REV') opts.rev = true
+        if (options[i] === 'WITHSCORES') opts.withScores = true
       }
+
+      const result = simulateZRange(
+        key,
+        parseInt(start, 10),
+        parseInt(stop, 10),
+        opts,
+      )
+      return { result }
     }
 
+    case 'zunionstore': {
+      const [destKey, numKeys, ...keysAndArgs] = args
+      const keys = keysAndArgs.slice(0, parseInt(numKeys, 10))
+      const result = simulateZUnionStore(destKey, keys)
+      return { result }
+    }
+
+    case 'expire': {
+      // For mock purposes, we'll just return success
+      return { result: 1 }
+    }
+
+    case 'ping': {
+      return { result: 'PONG' }
+    }
+
+    case 'get': {
+      const [key] = args
+      const value = mockRedisStore.get(key)
+      return { result: value || null }
+    }
+
+    case 'set': {
+      const [key, value] = args
+      mockRedisStore.set(key, value)
+      return { result: 'OK' }
+    }
+
+    case 'del': {
+      const keys = args
+      let deletedCount = 0
+      for (const key of keys) {
+        if (mockRedisStore.delete(key)) {
+          deletedCount += 1
+        }
+      }
+      return { result: deletedCount }
+    }
+
+    default:
+      return { result: null }
+  }
+}
+
+export const upstashHandlers = [
+  // Upstash Redis REST API pipeline endpoint (without version in path)
+  http.post('https://fake.upstash.test/pipeline', async ({ request }) => {
+    const commands = (await request.json()) as any[]
+    const results = commands.map((commandBody) => {
+      const { command, args } = parseUpstashCommand(commandBody)
+      return processRedisCommand(command, args)
+    })
+    return HttpResponse.json(results)
+  }),
+
+  // Upstash Redis REST API pipeline endpoint (with version in path)
+  http.post('https://fake.upstash.test/v2/*/pipeline', async ({ request }) => {
+    const commands = (await request.json()) as any[]
+    const results = commands.map((commandBody) => {
+      const { command, args } = parseUpstashCommand(commandBody)
+      return processRedisCommand(command, args)
+    })
     return HttpResponse.json(results)
   }),
 
@@ -257,51 +261,13 @@ export const upstashHandlers = [
     const commandPart = pathParts[pathParts.length - 1]
     const command = commandPart ? commandPart.toLowerCase() : ''
 
-    const body = await request.json()
-    const args = Array.isArray(body) ? body : []
-
     if (!command) {
       return HttpResponse.json({ result: null })
     }
 
-    switch (command) {
-      case 'zrange': {
-        const [key, start, stop, ...options] = args
-        const opts: any = {}
+    const body = await request.json()
+    const args = Array.isArray(body) ? body : []
 
-        // Parse options
-        for (let i = 0; i < options.length; i++) {
-          if (options[i] === 'REV') opts.rev = true
-          if (options[i] === 'WITHSCORES') opts.withScores = true
-        }
-
-        const result = simulateZRange(
-          key,
-          parseInt(start, 10),
-          parseInt(stop, 10),
-          opts,
-        )
-        return HttpResponse.json({ result })
-      }
-
-      case 'ping': {
-        return HttpResponse.json({ result: 'PONG' })
-      }
-
-      case 'get': {
-        const [key] = args
-        const value = mockRedisStore.get(key)
-        return HttpResponse.json({ result: value || null })
-      }
-
-      case 'set': {
-        const [key, value] = args
-        mockRedisStore.set(key, value)
-        return HttpResponse.json({ result: 'OK' })
-      }
-
-      default:
-        return HttpResponse.json({ result: null })
-    }
+    return HttpResponse.json(processRedisCommand(command, args))
   }),
 ]
