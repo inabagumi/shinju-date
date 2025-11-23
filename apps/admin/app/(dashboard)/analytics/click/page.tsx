@@ -18,7 +18,7 @@ export default function ClickAnalyticsPage({
   )
 
   return (
-    <div className="p-6">
+    <div className="mx-auto max-w-7xl p-6">
       <h1 className="mb-6 font-bold text-3xl">クリックアナリティクス</h1>
 
       <div className="mb-6">

@@ -141,7 +141,7 @@ async function VideoCountData({
 
 export default function VideosPage({ searchParams }: PageProps<'/'>) {
   return (
-    <div className="p-4">
+    <div className="mx-auto max-w-7xl p-4">
       {/* Video count with Suspense */}
       <div className="mb-4">
         <Suspense fallback={<p className="text-gray-600">読み込み中...</p>}>
