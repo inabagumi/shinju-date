@@ -485,21 +485,15 @@ export async function saveScrapedVideos(options: {
     getSavedVideos(supabaseClient, videoIDs),
   )
 
-  // 2. Process and upload thumbnails (only for new videos to avoid unnecessary processing)
-  const newVideoIds = new Set(
-    originalVideos
-      .filter(
-        (video) =>
-          !savedVideos.some(
-            (saved) => saved.youtube_video?.youtube_video_id === video.id,
-          ),
-      )
-      .map((video) => video.id),
+  // 2. Identify new videos by filtering out existing ones
+  const existingVideoIds = new Set(
+    savedVideos.map((saved) => saved.youtube_video?.youtube_video_id),
   )
-  const newVideosOnly = originalVideos.filter((video) =>
-    newVideoIds.has(video.id),
+  const newVideosOnly = originalVideos.filter(
+    (video) => !existingVideoIds.has(video.id),
   )
 
+  // 3. Process and upload thumbnails (only for new videos to avoid unnecessary processing)
   const thumbnails = await processThumbnails({
     currentDateTime,
     originalVideos: newVideosOnly,
@@ -507,7 +501,7 @@ export async function saveScrapedVideos(options: {
     supabaseClient,
   })
 
-  // 3. Process ONLY new video data (skip existing videos)
+  // 4. Process ONLY new video data (skip existing videos)
   const videoDataWithYouTubeIds = processNewVideos({
     currentDateTime,
     originalVideos,
@@ -516,7 +510,7 @@ export async function saveScrapedVideos(options: {
     thumbnails,
   })
 
-  // 4. Insert new videos to database (no updates)
+  // 5. Insert new videos to database (no updates)
   if (videoDataWithYouTubeIds.length > 0) {
     const values = videoDataWithYouTubeIds.map((item) => item.value)
     const youtubeVideoIds = videoDataWithYouTubeIds.map(
