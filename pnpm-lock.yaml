@@ -11,18 +11,12 @@ importers:
       '@biomejs/biome':
         specifier: 2.3.7
         version: 2.3.7
-      '@playwright/test':
-        specifier: 1.56.1
-        version: 1.56.1
       '@vitest/coverage-v8':
         specifier: 4.0.13
         version: 4.0.13(vitest@4.0.13)
       '@vitest/ui':
         specifier: 4.0.13
         version: 4.0.13(vitest@4.0.13)
-      dotenv:
-        specifier: 17.2.3
-        version: 17.2.3
       next-devtools-mcp:
         specifier: 0.3.4
         version: 0.3.4
@@ -132,6 +126,9 @@ importers:
         specifier: 4.1.12
         version: 4.1.12
     devDependencies:
+      '@playwright/test':
+        specifier: 1.56.1
+        version: 1.56.1
       '@shinju-date/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -259,6 +256,9 @@ importers:
         specifier: 4.1.12
         version: 4.1.12
     devDependencies:
+      '@playwright/test':
+        specifier: 1.56.1
+        version: 1.56.1
       '@shinju-date/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -467,6 +467,9 @@ importers:
       '@next/mdx':
         specifier: 16.0.3
         version: 16.0.3(@mdx-js/loader@3.1.1(webpack@5.103.0))(@mdx-js/react@3.1.1(@types/react@19.2.6)(react@19.2.0))
+      '@playwright/test':
+        specifier: 1.56.1
+        version: 1.56.1
       '@shinju-date/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -3537,10 +3540,6 @@ packages:
 
   dotenv@16.6.1:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
-    engines: {node: '>=12'}
-
-  dotenv@17.2.3:
-    resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
     engines: {node: '>=12'}
 
   dunder-proto@1.0.1:
@@ -8470,8 +8469,6 @@ snapshots:
   dom-accessibility-api@0.6.3: {}
 
   dotenv@16.6.1: {}
-
-  dotenv@17.2.3: {}
 
   dunder-proto@1.0.1:
     dependencies:
