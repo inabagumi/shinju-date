@@ -8,6 +8,7 @@ import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import {
+  processDeletedVideos,
   processScrapedVideoAvailability,
   processScrapedVideoForCheck,
 } from '@/lib/database'
@@ -137,9 +138,12 @@ export async function POST(request: NextRequest): Promise<Response> {
   // For 'default' and 'recent' modes, fetch full video details and update information
   // For 'all' mode, only check availability and delete unavailable videos
   if (mode === 'default' || mode === 'recent') {
-    // Process scraped videos for checking, updating, and deletion
+    // Accumulate available video IDs across all batches to avoid deleting videos from other batches
+    const availableVideoIds = new Set<string>()
+
+    // Process scraped videos for checking and updating (but not deletion yet)
     await scraper.scrapeVideos({ ids: videoIds }, async (originalVideos) => {
-      hasChanges = await processScrapedVideoForCheck({
+      const batchHasChanges = await processScrapedVideoForCheck({
         currentDateTime,
         logger,
         mode,
@@ -147,7 +151,31 @@ export async function POST(request: NextRequest): Promise<Response> {
         savedVideos,
         supabaseClient,
       })
+
+      // Accumulate available video IDs from this batch
+      for (const video of originalVideos) {
+        availableVideoIds.add(video.id)
+      }
+
+      if (batchHasChanges) {
+        hasChanges = true
+      }
     })
+
+    // After all batches are processed, delete videos that were not found
+    const deletionResult = await processDeletedVideos({
+      availableVideoIds,
+      currentDateTime,
+      savedVideos,
+      supabaseClient,
+    })
+
+    if (deletionResult.deletedCount > 0) {
+      hasChanges = true
+      logger.info('動画が削除されました', {
+        count: deletionResult.deletedCount,
+      })
+    }
   } else {
     // For 'all' mode, only check availability and delete unavailable videos
     await scraper.scrapeVideosAvailability({ videoIds }, async (videos) => {
