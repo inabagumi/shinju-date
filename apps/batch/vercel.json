@@ -27,7 +27,7 @@
     },
     {
       "path": "/videos/update",
-      "schedule": "*/5 * * * *"
+      "schedule": "1/5 * * * *"
     }
   ]
 }
