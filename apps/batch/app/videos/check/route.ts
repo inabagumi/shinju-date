@@ -138,16 +138,14 @@ export async function POST(request: NextRequest): Promise<Response> {
     // Fetch all videos from YouTube API and process them at once
     await scraper.scrapeVideos({ ids: videoIds }, async (allVideos) => {
       // Process all videos at once (updates and deletions)
-      if (allVideos.length > 0) {
-        hasChanges = await processScrapedVideoForCheck({
-          currentDateTime,
-          logger,
-          mode,
-          originalVideos: allVideos,
-          savedVideos,
-          supabaseClient,
-        })
-      }
+      hasChanges = await processScrapedVideoForCheck({
+        currentDateTime,
+        logger,
+        mode,
+        originalVideos: allVideos,
+        savedVideos,
+        supabaseClient,
+      })
     })
   } else {
     // For 'all' mode, only check availability and delete unavailable videos
