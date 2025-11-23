@@ -139,7 +139,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Build dependencies
-        run: pnpm build --filter=@shinju-date/${{ matrix.app }}^...
+        run: |
+          pnpm build --filter=@shinju-date/msw-handlers
+          pnpm build --filter=@shinju-date/${{ matrix.app }}^...
       - name: Install Playwright Browsers
         run: cd apps/${{ matrix.app }} && pnpm exec playwright install --with-deps chromium
       - name: Run E2E tests for ${{ matrix.app }}
