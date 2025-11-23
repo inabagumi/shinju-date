@@ -4,6 +4,7 @@ import { isNonNullable } from '@shinju-date/helpers'
 import { toDBString } from '@shinju-date/temporal-fns'
 import type { YouTubeVideo } from '@shinju-date/youtube-scraper'
 import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
+import PQueue from 'p-queue'
 import { Temporal } from 'temporal-polyfill'
 import {
   DatabaseError,
@@ -11,6 +12,7 @@ import {
 } from '../../../../lib/database/operations'
 import type { SavedVideo, Video } from '../../../../lib/database/types'
 import type { TypedSupabaseClient } from '../../../../lib/supabase'
+import { ImageProcessor } from '../../../../lib/thumbnails'
 
 const scrapeResultSelect = `
   duration,
@@ -101,9 +103,6 @@ async function processThumbnails(options: {
   savedVideos: SavedVideo[]
   supabaseClient: TypedSupabaseClient
 }): Promise<{ id: string; path: string }[]> {
-  const { ImageProcessor } = await import('../../../../lib/thumbnails')
-  const PQueue = (await import('p-queue')).default
-
   const queue = new PQueue({
     concurrency: 12,
     interval: 250,
