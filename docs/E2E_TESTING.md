@@ -51,6 +51,21 @@ pnpm test:e2e:ui
 
 ### 特定のアプリのテストのみ実行
 
+各アプリには独自の`playwright.config.ts`があり、そのディレクトリで直接実行できます：
+
+```bash
+# Web アプリのテストのみ
+cd apps/web && pnpm exec playwright test
+
+# Admin アプリのテストのみ
+cd apps/admin && pnpm exec playwright test
+
+# Batch アプリのテストのみ
+cd apps/batch && pnpm exec playwright test
+```
+
+または、ルートディレクトリから特定のアプリのテストを指定することもできます：
+
 ```bash
 # Web アプリのテストのみ
 pnpm exec playwright test apps/web/e2e

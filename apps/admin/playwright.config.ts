@@ -5,7 +5,7 @@ import { defineConfig, devices } from '@playwright/test'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 /**
- * Playwright configuration for batch app E2E tests
+ * Playwright configuration for admin app E2E tests
  */
 export default defineConfig({
   forbidOnly: !!process.env['CI'],
@@ -22,7 +22,7 @@ export default defineConfig({
   testDir: './e2e',
   testMatch: '**/*.spec.ts',
   use: {
-    baseURL: 'http://localhost:5000',
+    baseURL: 'http://localhost:4000',
     trace: 'on-first-retry',
   },
 
@@ -31,8 +31,8 @@ export default defineConfig({
     cwd: __dirname,
     env: {
       ENABLE_MSW: 'true',
-      GOOGLE_API_KEY: 'fake',
-      NEXT_PUBLIC_BASE_URL: 'http://localhost:5000',
+      MSW_SUPABASE_AUTHENTICATED: 'true',
+      NEXT_PUBLIC_BASE_URL: 'http://localhost:4000',
       NEXT_PUBLIC_SUPABASE_ANON_KEY: 'fake',
       NEXT_PUBLIC_SUPABASE_URL: 'https://fake.supabase.test',
       SUPABASE_SERVICE_ROLE_KEY: 'fake',
@@ -41,7 +41,7 @@ export default defineConfig({
     },
     reuseExistingServer: !process.env['CI'],
     timeout: 120 * 1000,
-    url: 'http://localhost:5000/api/healthz',
+    url: 'http://localhost:4000/login',
   },
   workers: process.env['CI'] ? 1 : undefined,
 })
