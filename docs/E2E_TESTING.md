@@ -35,47 +35,40 @@ pnpm exec playwright install chromium
 
 ## テストの実行
 
-### すべてのE2Eテストを実行
+### 個別アプリのテスト実行（推奨）
+
+各アプリケーションのディレクトリで個別にテストを実行できます：
 
 ```bash
-pnpm test:e2e
+# Web アプリのテスト
+pnpm test:e2e:web
+# または
+cd apps/web && pnpm exec playwright test
+
+# Admin アプリのテスト
+pnpm test:e2e:admin
+# または
+cd apps/admin && pnpm exec playwright test
+
+# Batch アプリのテスト
+pnpm test:e2e:batch
+# または
+cd apps/batch && pnpm exec playwright test
 ```
 
-### UIモードで実行（インタラクティブ）
+### UIモードで実行（デバッグに便利）
 
 ```bash
-pnpm test:e2e:ui
+cd apps/batch && pnpm exec playwright test --ui
+cd apps/web && pnpm exec playwright test --ui
+cd apps/admin && pnpm exec playwright test --ui
 ```
 
 このモードでは、テストの実行をブラウザ上で視覚的に確認でき、デバッグに便利です。
 
-### 特定のアプリのテストのみ実行
+## GitHub Actions での実行
 
-各アプリには独自の`playwright.config.ts`があり、そのディレクトリで直接実行できます：
-
-```bash
-# Web アプリのテストのみ
-cd apps/web && pnpm exec playwright test
-
-# Admin アプリのテストのみ
-cd apps/admin && pnpm exec playwright test
-
-# Batch アプリのテストのみ
-cd apps/batch && pnpm exec playwright test
-```
-
-または、ルートディレクトリから特定のアプリのテストを指定することもできます：
-
-```bash
-# Web アプリのテストのみ
-pnpm exec playwright test apps/web/e2e
-
-# Admin アプリのテストのみ
-pnpm exec playwright test apps/admin/e2e
-
-# Batch アプリのテストのみ
-pnpm exec playwright test apps/batch/e2e
-```
+E2EテストはGitHub Actionsでmatrix戦略を使用して並列実行されます。`.github/workflows/node.js.yml` の `e2e` ジョブで各アプリケーションが独立してテストされます。
 
 ## テストの構成
 
@@ -151,7 +144,7 @@ test.describe('新しい機能', () => {
 
 ### テストがタイムアウトする
 
-- Next.jsサーバーの起動に時間がかかる場合があります。`playwright.config.ts` の `timeout` 設定を調整してください。
+- Next.jsサーバーの起動に時間がかかる場合があります。各アプリの `playwright.config.ts` の `timeout` 設定を調整してください。
 - ローカルで既に開発サーバーが起動している場合、Playwrightはそれを再利用します（`reuseExistingServer` オプション）。
 
 ### MSWが動作しない

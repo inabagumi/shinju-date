@@ -112,11 +112,15 @@ jobs:
       - run: pnpm build --filter=!@shinju-date/admin --filter=!@shinju-date/batch --filter=!@shinju-date/web
 
   e2e:
-    name: E2E Tests
+    name: E2E Tests (${{ matrix.app }})
     runs-on: ubuntu-24.04
     needs: [test, build]
     permissions:
       contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [web, admin, batch]
     env:
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -134,4 +138,16 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: echo "E2E tests will be added in the future"
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run E2E tests for ${{ matrix.app }}
+        run: cd apps/${{ matrix.app }} && pnpm exec playwright test
+        env:
+          CI: true
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: playwright-report-${{ matrix.app }}
+          path: apps/${{ matrix.app }}/playwright-report/
+          retention-days: 30

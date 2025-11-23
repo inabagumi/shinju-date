@@ -29,8 +29,9 @@
     "db:import": "./scripts/import-data.sh",
     "dev": "turbo dev",
     "test": "turbo test",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:batch": "cd apps/batch && pnpm exec playwright test",
+    "test:e2e:web": "cd apps/web && pnpm exec playwright test",
+    "test:e2e:admin": "cd apps/admin && pnpm exec playwright test",
     "typegen": "turbo typegen"
   },
   "type": "module",
