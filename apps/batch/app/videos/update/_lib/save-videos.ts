@@ -29,9 +29,10 @@ const scrapeResultSelect = `
 `
 
 /**
- * Upsert thumbnails to the database
+ * Insert thumbnails to the database
+ * Used only for new videos in /videos/update route
  */
-async function upsertThumbnails(
+async function insertThumbnails(
   supabaseClient: TypedSupabaseClient,
   values: TablesInsert<'thumbnails'>[],
 ): Promise<
@@ -40,53 +41,20 @@ async function upsertThumbnails(
     path: string
   }[]
 > {
-  const upsertValues = values.filter((value) => value.id)
-  const insertValues = values.filter((value) => !value.id)
-  const results = await Promise.allSettled([
-    upsertValues.length > 0
-      ? supabaseClient
-          .from('thumbnails')
-          .upsert(upsertValues)
-          .select('id, path')
-          .then(({ data, error }) => {
-            if (error) {
-              throw new DatabaseError(error)
-            }
-
-            return data
-          })
-      : Promise.resolve([]),
-    insertValues.length > 0
-      ? supabaseClient
-          .from('thumbnails')
-          .insert(insertValues)
-          .select('id, path')
-          .then(({ data, error }) => {
-            if (error) {
-              throw new DatabaseError(error)
-            }
-
-            return data
-          })
-      : Promise.resolve([]),
-  ])
-
-  const thumbnails: {
-    id: string
-    path: string
-  }[] = []
-
-  for (const result of results) {
-    if (result.status === 'fulfilled') {
-      for (const thumbnail of result.value) {
-        thumbnails.push(thumbnail)
-      }
-    } else {
-      Sentry.captureException(result.reason)
-    }
+  if (values.length === 0) {
+    return []
   }
 
-  return thumbnails
+  const { data, error } = await supabaseClient
+    .from('thumbnails')
+    .insert(values)
+    .select('id, path')
+
+  if (error) {
+    throw new DatabaseError(error)
+  }
+
+  return data ?? []
 }
 
 /**
@@ -139,7 +107,7 @@ async function processThumbnails(options: {
     return []
   }
 
-  return upsertThumbnails(options.supabaseClient, values)
+  return insertThumbnails(options.supabaseClient, values)
 }
 
 /**
