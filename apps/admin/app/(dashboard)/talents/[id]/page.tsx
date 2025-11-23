@@ -1,6 +1,6 @@
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import { Badge } from '@shinju-date/ui'
-import { ChevronLeft, ExternalLink } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -8,24 +8,17 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { getRecentVideosForTalent } from '../_lib/get-recent-videos'
 import { getTalent } from '../_lib/get-talent'
+import { ChannelManager } from './_components/channel-manager'
 import { EditTalentForm } from './_components/edit-talent-form'
 import { SyncTalentButton } from './_components/sync-talent-button'
 
 interface Props {
-  params: {
-    id: string
-  }
-}
-
-interface MetadataProps {
   params: Promise<{
     id: string
   }>
 }
 
-export async function generateMetadata({
-  params,
-}: MetadataProps): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
 
   const talent = await getTalent(id)
@@ -82,6 +75,13 @@ async function TalentProfile({ id }: { id: string }) {
       {/* Talent information - Editable form */}
       <EditTalentForm talent={talent} />
 
+      {/* YouTube Channel Management */}
+      <ChannelManager
+        channels={talent.youtube_channels}
+        isDeleted={isDeleted}
+        talentId={talent.id}
+      />
+
       {/* Additional metadata */}
       <div className="mt-6 overflow-hidden bg-white shadow sm:rounded-lg">
         <div className="px-4 py-5 sm:px-6">
@@ -132,33 +132,6 @@ async function TalentProfile({ id }: { id: string }) {
               </div>
             )}
           </dl>
-        </div>
-      </div>
-
-      {/* External links */}
-      <div className="mt-6">
-        <div className="bg-white shadow sm:rounded-lg">
-          <div className="px-4 py-5 sm:px-6">
-            <h3 className="font-medium text-gray-900 text-lg leading-6">
-              外部リンク
-            </h3>
-            <p className="mt-1 max-w-2xl text-gray-500 text-sm">
-              YouTube上のオリジナルチャンネルへのリンク
-            </p>
-          </div>
-          <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
-            {talent.youtube_channel && (
-              <a
-                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
-                href={`https://www.youtube.com/channel/${talent.youtube_channel.youtube_channel_id}`}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                YouTubeで見る
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </a>
-            )}
-          </div>
         </div>
       </div>
     </>
@@ -253,10 +226,8 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
 }
 
 export default function TalentDetailPage({ params }: Props) {
-  const { id } = params
-
   return (
-    <div className="container mx-auto p-4">
+    <div className="mx-auto max-w-7xl p-4">
       {/* Back button - static, renders immediately */}
       <div className="mb-6">
         <Link
@@ -276,7 +247,7 @@ export default function TalentDetailPage({ params }: Props) {
           </div>
         }
       >
-        <TalentProfile id={id} />
+        <TalentProfileWrapper params={params} />
       </Suspense>
 
       {/* Recent videos section */}
@@ -287,8 +258,18 @@ export default function TalentDetailPage({ params }: Props) {
           </div>
         }
       >
-        <RecentVideosSection talentId={id} />
+        <RecentVideosSectionWrapper params={params} />
       </Suspense>
     </div>
   )
+}
+
+async function TalentProfileWrapper({ params }: Props) {
+  const { id } = await params
+  return <TalentProfile id={id} />
+}
+
+async function RecentVideosSectionWrapper({ params }: Props) {
+  const { id } = await params
+  return <RecentVideosSection talentId={id} />
 }

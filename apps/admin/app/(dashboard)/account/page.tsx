@@ -29,7 +29,7 @@ async function UserEmailData() {
 
 export default function AccountPage() {
   return (
-    <div className="mx-auto max-w-4xl space-y-8 p-6">
+    <div className="mx-auto max-w-7xl space-y-8 p-6">
       {/* Static header */}
       <div>
         <h1 className="font-bold text-3xl">アカウント設定</h1>

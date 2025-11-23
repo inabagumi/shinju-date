@@ -2,15 +2,16 @@
   "author": "Haneru Developers",
   "description": "Common mock server handlers using MSW for SHINJU DATE monorepo",
   "dependencies": {
-    "msw": "2.12.1",
-    "temporal-polyfill": "^0.2.5"
+    "msw": "2.12.3",
+    "temporal-polyfill": "^0.3.0"
   },
   "devDependencies": {
-    "@tsconfig/node20": "^20.1.6",
-    "@tsconfig/strictest": "^2.0.7",
-    "@types/node": "22.19.0",
-    "tsup": "^8.5.0",
-    "typescript": "5.9.3"
+    "@tsconfig/node20": "^20.1.8",
+    "@tsconfig/strictest": "^2.0.8",
+    "@types/node": "22.19.1",
+    "tsup": "^8.5.1",
+    "typescript": "5.9.3",
+    "vitest": "4.0.13"
   },
   "exports": {
     ".": {

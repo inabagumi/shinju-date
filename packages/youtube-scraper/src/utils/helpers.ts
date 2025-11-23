@@ -12,7 +12,8 @@ export function isValidChannel(
 ): item is YouTubeChannel {
   return (
     typeof item.id === 'string' &&
-    typeof item.contentDetails?.relatedPlaylists?.uploads === 'string'
+    typeof item.contentDetails?.relatedPlaylists?.uploads === 'string' &&
+    typeof item.snippet?.title === 'string'
   )
 }
 

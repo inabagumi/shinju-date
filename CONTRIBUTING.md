@@ -74,6 +74,41 @@ async function MyComponent() {
 - `'use cache: remote'` は公開データに使用し、`'use cache: private'` は認証が必要なデータに使用する
 - データ取得関数にキャッシュディレクティブがある場合、その関数を呼び出すコンポーネントでは追加のキャッシュディレクティブは不要
 
+### Redisキーの管理
+
+**重要**: すべてのRedisキーは`@shinju-date/constants`の`REDIS_KEYS`オブジェクトで一元管理してください。
+
+#### ルール
+
+1. **キーの定義場所**
+   - すべてのRedisキープレフィックスは`packages/constants/src/index.ts`の`REDIS_KEYS`に定義
+   - ハードコーディングは禁止
+
+2. **日付フォーマット**
+   - 日付を含むキーには`@shinju-date/temporal-fns`の`formatDateKey`を使用（`YYYYMMDD`形式）
+   - 例: `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDateKey(now)}` → `summary:stats:20251111`
+
+3. **TTL設定**
+   - すべてのキーに適切な有効期限（TTL）を設定すること
+   - 例: `{ ex: 30 * 24 * 60 * 60 }` // 30日間
+
+#### 例
+
+```typescript
+import { REDIS_KEYS } from '@shinju-date/constants'
+import { formatDateKey } from '@shinju-date/temporal-fns'
+
+// ✅ 正しい例
+const key = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDateKey(now)}`
+await redis.set(key, data, { ex: 30 * 24 * 60 * 60 })
+
+// ❌ 間違った例（ハードコーディング）
+const key = 'summary:stats:2025-11-11'
+await redis.set(key, data)
+```
+
+詳細は [AGENTS.md](AGENTS.md) の「Redisキーの管理」セクションを参照してください。
+
 ### コミットメッセージ
 
 [Conventional Commits](https://www.conventionalcommits.org/) の形式に従ってください：
@@ -136,8 +171,43 @@ pnpm run build
 ### 4. レビュープロセス
 
 - CI/CDが通ることを確認
+  - **Lint**: コード品質チェック（Biome）が成功すること
+  - **Test**: テストが全て成功すること
+  - **Build**: 全てのパッケージとアプリケーションがビルドできること
 - コードレビューに対応
 - 必要に応じて修正
+
+#### CI/CD の構成
+
+Node.js CI は以下のジョブ構成になっています：
+
+1. **Install Dependencies** - 依存関係の検証
+   - `pnpm install --frozen-lockfile` を実行し、pnpm のキャッシュを有効化
+   - 他の全てのジョブの前提条件として機能
+
+2. **Lint** - コード品質チェック（並列実行）
+   - Install Dependencies 成功後に実行
+   - pnpm のキャッシュを使用して高速にインストール
+   - Biomeによるフォーマットとリンティングを実行
+
+3. **Test** - テスト実行（並列実行）
+   - Install Dependencies 成功後に実行
+   - pnpm のキャッシュを使用して高速にインストール
+   - ユニットテストを実行
+
+4. **Build** - ビルド確認（並列実行）
+   - Install Dependencies 成功後に実行
+   - pnpm のキャッシュを使用して高速にインストール
+   - 全てのパッケージとアプリケーションがビルドできることを確認
+
+5. **E2E Tests** - エンドツーエンドテスト
+   - Test と Build の両方が成功した場合に実行
+   - 現在は準備中（将来的に追加予定）
+
+**並列実行の利点**：
+- Lint、Test、Build が同時に実行されるため、CI時間が短縮されます
+- pnpm の組み込みキャッシュ機能により、各ジョブで依存関係を高速にインストールできます
+- 各ジョブは個別のチェックとして表示されるため、失敗した場合は具体的にどの段階で問題が発生したか容易に特定できます
 
 ## Issue の起票ルール
 

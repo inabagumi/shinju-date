@@ -1,17 +1,18 @@
 import * as Sentry from '@sentry/nextjs'
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
+import { logger } from '@shinju-date/logger'
 import { revalidateTags } from '@shinju-date/web-cache'
+import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after } from 'next/server'
-import PQueue from 'p-queue'
 import { Temporal } from 'temporal-polyfill'
+import type { Video } from '@/lib/database'
 import { videosUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
-import { scrape, type Video } from '@/lib/scraper'
 import { supabaseClient } from '@/lib/supabase'
-import { getChannels, youtubeClient } from '@/lib/youtube'
-
-const MONITOR_SLUG = '/videos/update'
+import { youtubeClient } from '@/lib/youtube'
+import { MONITOR_SLUG } from './_lib/constants'
+import { saveScrapedVideos } from './_lib/save-videos'
 
 export const maxDuration = 120
 
@@ -61,9 +62,7 @@ export async function POST(request: Request): Promise<Response> {
 
   const { data: savedTalents, error } = await supabaseClient
     .from('talents')
-    .select(
-      'id, youtube_channel:youtube_channels!inner(id, youtube_channel_id)',
-    )
+    .select('id, youtube_channels!inner(id, youtube_channel_id)')
     .is('deleted_at', null)
 
   if (error) {
@@ -84,65 +83,58 @@ export async function POST(request: Request): Promise<Response> {
     })
   }
 
-  const channelIDs = savedTalents.map((savedTalent) => {
-    const ytChannel = savedTalent.youtube_channel
-    return ytChannel.youtube_channel_id
-  })
-  const channels = await Array.fromAsync(
-    getChannels({
-      ids: channelIDs,
-    }),
-  )
+  // Map channel IDs to talent information for callback processing
+  // Now handles multiple channels per talent
+  const channelToTalentMap = new Map<
+    string,
+    {
+      id: string
+      youtubeChannelId: string
+    }
+  >()
 
-  if (channels.length < 1) {
-    throw new TypeError('There are no channels.')
+  for (const savedTalent of savedTalents) {
+    // youtube_channels is an array due to the query using youtube_channels!inner
+    for (const ytChannel of savedTalent.youtube_channels) {
+      channelToTalentMap.set(ytChannel.youtube_channel_id, {
+        id: savedTalent.id,
+        youtubeChannelId: ytChannel.id,
+      })
+    }
   }
 
-  const queue = new PQueue({
-    concurrency: 1,
-    interval: 250,
-  })
-
-  const results = await Promise.allSettled(
-    savedTalents.map((savedTalent) => {
-      const ytChannel = savedTalent.youtube_channel
-      const youtubeChannelId = ytChannel.youtube_channel_id
-
-      const originalChannel = channels.find(
-        (item) => item.id === youtubeChannelId,
-      )
-
-      if (!originalChannel) {
-        return Promise.reject(new TypeError('Channel does not exist.'))
-      }
-
-      return queue.add(() =>
-        scrape({
-          channel: originalChannel,
-          currentDateTime,
-          savedYouTubeChannel: {
-            id: ytChannel.id,
-            talent_id: savedTalent.id,
-            youtube_channel_id: ytChannel.youtube_channel_id,
-          },
-          supabaseClient,
-          youtubeClient,
-        }),
-      )
-    }),
-  )
+  const channelIDs = Array.from(channelToTalentMap.keys())
 
   const videos: Video[] = []
 
-  for (const result of results) {
-    if (result.status === 'fulfilled' && result.value) {
-      for (const video of result.value) {
-        videos.push(video)
+  // Use scraper with internal p-queue for concurrency control
+  await using scraper = new YouTubeScraper({ concurrency: 1, youtubeClient })
+
+  await scraper.scrapeNewVideos(
+    { channelIds: channelIDs },
+    async (channelId, scrapedVideos) => {
+      const talentInfo = channelToTalentMap.get(channelId)
+      if (!talentInfo) {
+        logger.warn('タレント情報が見つかりませんでした', {
+          channelId,
+        })
+        return
       }
-    } else if (result.status === 'rejected') {
-      Sentry.captureException(result.reason)
-    }
-  }
+
+      try {
+        const savedResults = await saveScrapedVideos({
+          currentDateTime,
+          originalVideos: scrapedVideos,
+          supabaseClient,
+          talentId: talentInfo.id,
+          youtubeChannelId: talentInfo.youtubeChannelId,
+        })
+        videos.push(...savedResults)
+      } catch (err) {
+        Sentry.captureException(err)
+      }
+    },
+  )
 
   if (videos.length > 0) {
     for (const video of videos) {

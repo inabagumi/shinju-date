@@ -6,15 +6,23 @@
       "schedule": "17 1 * * *"
     },
     {
+      "path": "/stats/snapshot",
+      "schedule": "10 15 * * *"
+    },
+    {
       "path": "/talents/update",
       "schedule": "21 1/3 * * *"
     },
     {
       "path": "/videos/check",
-      "schedule": "27/30 * * * *"
+      "schedule": "*/1 * * * *"
     },
     {
-      "path": "/videos/check?all=1",
+      "path": "/videos/check?mode=recent",
+      "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/videos/check?mode=all",
       "schedule": "4 23 * * 2"
     },
     {

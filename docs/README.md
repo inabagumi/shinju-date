@@ -11,6 +11,7 @@
 ### 🔧 開発・統合
 
 - **[MSW_INTEGRATION.md](MSW_INTEGRATION.md)** - MSW (Mock Service Worker) 統合の詳細とガイド
+- **[TESTING_GUIDE.md](TESTING_GUIDE.md)** - テスト実装ガイドと React JSX Transform の設定
 
 ## 📚 その他のドキュメント
 

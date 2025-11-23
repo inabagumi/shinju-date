@@ -1,3 +1,4 @@
+import { TIME_ZONE } from '@shinju-date/constants'
 import { createErrorResponse } from '@shinju-date/helpers'
 import { startOfHour } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
@@ -5,7 +6,6 @@ import {
   createCalendarResponse,
   createEventAttributesList,
 } from '@/lib/calendar'
-import { timeZone } from '@/lib/constants'
 import { supabaseClient } from '@/lib/supabase'
 
 export async function GET(
@@ -39,7 +39,7 @@ export async function GET(
     })
   }
 
-  const now = startOfHour(Temporal.Now.zonedDateTimeISO(timeZone))
+  const now = startOfHour(Temporal.Now.zonedDateTimeISO(TIME_ZONE))
   const { data: videos, error: secondError } = await supabaseClient
     .from('videos')
     .select(

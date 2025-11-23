@@ -4,8 +4,9 @@ import type {
   GetChannelsOptions,
   GetPlaylistItemsOptions,
   GetVideosOptions,
+  Logger,
+  ScrapeNewVideosParams,
   ScraperOptions,
-  ScrapeVideosOptions,
   YouTubeChannel,
   YouTubePlaylistItem,
   YouTubeVideo,
@@ -20,6 +21,7 @@ import {
 export class YouTubeScraper implements AsyncDisposable {
   #client: youtube.Youtube
   #queue: PQueue
+  #logger: Logger | undefined
 
   constructor(options: ScraperOptions) {
     if (!options.youtubeClient) {
@@ -28,24 +30,22 @@ export class YouTubeScraper implements AsyncDisposable {
 
     this.#client = options.youtubeClient
     this.#queue = new PQueue({
-      concurrency: 5,
-      interval: 100,
+      concurrency: options.concurrency ?? 5,
+      interval: options.interval ?? 100,
     })
+    this.#logger = options.logger
   }
 
-  async *getChannels({
-    ids,
-    onChannelScraped,
-  }: GetChannelsOptions & {
-    onChannelScraped?: (channel: YouTubeChannel) => void | Promise<void>
-  }): AsyncGenerator<YouTubeChannel, void, undefined> {
-    for (let i = 0; i < ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
+  async *#getChannels(
+    options: GetChannelsOptions,
+  ): AsyncGenerator<YouTubeChannel, void, undefined> {
+    for (let i = 0; i < options.ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
       const {
         data: { items },
       } = await this.#client.channels.list({
-        id: ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS),
+        id: options.ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS),
         maxResults: YOUTUBE_DATA_API_MAX_RESULTS,
-        part: ['contentDetails', 'id'],
+        part: ['contentDetails', 'id', 'snippet'],
       })
 
       if (!items || items.length < 1) {
@@ -55,22 +55,16 @@ export class YouTubeScraper implements AsyncDisposable {
       const validChannels = items.filter(isValidChannel)
 
       for (const channel of validChannels) {
-        if (onChannelScraped) {
-          await onChannelScraped(channel)
-        }
         yield channel
       }
     }
   }
 
-  async *getPlaylistItems({
-    all = false,
-    playlistID,
-    onPlaylistItemScraped,
-  }: GetPlaylistItemsOptions & {
-    onPlaylistItemScraped?: (item: YouTubePlaylistItem) => void | Promise<void>
-  }): AsyncGenerator<YouTubePlaylistItem, void, undefined> {
+  async *#getPlaylistItems(
+    options: GetPlaylistItemsOptions,
+  ): AsyncGenerator<YouTubePlaylistItem, void, undefined> {
     let pageToken: string | undefined
+    const all = options.all ?? false
 
     while (true) {
       const {
@@ -78,7 +72,7 @@ export class YouTubeScraper implements AsyncDisposable {
       } = await this.#client.playlistItems.list({
         maxResults: all ? YOUTUBE_DATA_API_MAX_RESULTS : 20,
         part: ['contentDetails'],
-        playlistId: playlistID,
+        playlistId: options.playlistID,
         ...(pageToken
           ? {
               pageToken,
@@ -93,9 +87,6 @@ export class YouTubeScraper implements AsyncDisposable {
       const validItems = items.filter(isValidPlaylistItem)
 
       for (const item of validItems) {
-        if (onPlaylistItemScraped) {
-          await onPlaylistItemScraped(item)
-        }
         yield item
       }
 
@@ -107,17 +98,17 @@ export class YouTubeScraper implements AsyncDisposable {
     }
   }
 
-  async *getVideos({
-    ids,
-    onVideoScraped,
-  }: GetVideosOptions & {
-    onVideoScraped?: (video: YouTubeVideo) => void | Promise<void>
-  }): AsyncGenerator<YouTubeVideo, void, undefined> {
-    for (let i = 0; i < ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
+  async scrapeVideos(
+    options: GetVideosOptions,
+    onVideoScraped: (videos: YouTubeVideo[]) => void | Promise<void>,
+  ): Promise<void> {
+    this.#logger?.debug('Scraping videos', { count: options.ids.length })
+
+    for (let i = 0; i < options.ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
       const {
         data: { items },
       } = await this.#client.videos.list({
-        id: ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS),
+        id: options.ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS),
         maxResults: YOUTUBE_DATA_API_MAX_RESULTS,
         part: ['contentDetails', 'liveStreamingDetails', 'snippet'],
       })
@@ -128,81 +119,46 @@ export class YouTubeScraper implements AsyncDisposable {
 
       const validVideos = items.filter(isValidVideo)
 
-      for (const video of validVideos) {
-        if (onVideoScraped) {
-          await onVideoScraped(video)
-        }
-        yield video
+      if (validVideos.length > 0) {
+        await onVideoScraped(validVideos)
       }
+    }
+
+    this.#logger?.debug('Video scraping completed')
+  }
+
+  async scrapeChannels(
+    params: { channelIds: string[] },
+    onChannelScraped: (channels: YouTubeChannel[]) => Promise<void>,
+  ): Promise<void> {
+    // Collect all channels into a single batch for the callback
+    // Note: For very large channel lists (>1000), consider processing in smaller batches
+    // However, typical usage in this codebase processes <100 channels, making this safe
+    const channels: YouTubeChannel[] = []
+    for await (const channel of this.#getChannels({ ids: params.channelIds })) {
+      channels.push(channel)
+    }
+
+    if (channels.length > 0) {
+      await onChannelScraped(channels)
     }
   }
 
-  async scrapeChannels(options: {
-    channelIds: string[]
-    onChannelScraped: (channel: YouTubeChannel) => Promise<void>
-  }): Promise<void> {
-    // Consume the async iterator to trigger onChannelScraped callbacks
-    await Array.fromAsync(
-      this.getChannels({
-        ids: options.channelIds,
-        onChannelScraped: options.onChannelScraped,
-      }),
-    )
-  }
-
-  async scrapeVideos({
-    playlistID,
-    scrapeAll = false,
-  }: ScrapeVideosOptions): Promise<YouTubeVideo[]> {
-    const videoIDs = await Array.fromAsync(
-      this.getPlaylistItems({
-        all: scrapeAll,
-        playlistID,
-      }),
-      (playlistItem) => playlistItem.contentDetails.videoId,
-    )
-
-    const videos = await Array.fromAsync(this.getVideos({ ids: videoIDs }))
-
-    return videos
-  }
-
-  async scrapePlaylistVideos(options: {
-    playlistId: string
-    onVideoScraped: (video: YouTubeVideo) => Promise<void>
-    onThumbnailScraped: (thumbnail: YouTubePlaylistItem) => Promise<void>
-  }): Promise<void> {
-    const videoIDs = await Array.fromAsync(
-      this.getPlaylistItems({
-        all: false,
-        onPlaylistItemScraped: options.onThumbnailScraped,
-        playlistID: options.playlistId,
-      }),
-      (playlistItem) => playlistItem.contentDetails.videoId,
-    )
-
-    // Consume the async iterator to trigger onVideoScraped callbacks
-    await Array.fromAsync(
-      this.getVideos({
-        ids: videoIDs,
-        onVideoScraped: options.onVideoScraped,
-      }),
-    )
-  }
-
-  async checkVideos(options: {
-    videoIds: string[]
-    onVideoChecked: (video: {
-      id: string
-      isAvailable: boolean
-    }) => Promise<void>
-  }): Promise<void> {
+  async scrapeVideosAvailability(
+    params: { videoIds: string[] },
+    onVideoChecked: (
+      videos: {
+        id: string
+        isAvailable: boolean
+      }[],
+    ) => Promise<void>,
+  ): Promise<void> {
     for (
       let i = 0;
-      i < options.videoIds.length;
+      i < params.videoIds.length;
       i += YOUTUBE_DATA_API_MAX_RESULTS
     ) {
-      const batchIds = options.videoIds.slice(
+      const batchIds = params.videoIds.slice(
         i,
         i + YOUTUBE_DATA_API_MAX_RESULTS,
       )
@@ -219,11 +175,42 @@ export class YouTubeScraper implements AsyncDisposable {
         items?.filter((item) => item.id).map((item) => item.id as string) ?? [],
       )
 
-      for (const videoId of batchIds) {
-        await options.onVideoChecked({
-          id: videoId,
-          isAvailable: availableVideoIds.has(videoId),
-        })
+      const results = batchIds.map((videoId) => ({
+        id: videoId,
+        isAvailable: availableVideoIds.has(videoId),
+      }))
+
+      await onVideoChecked(results)
+    }
+  }
+
+  /**
+   * Scrape new videos from channels
+   * @param params - Parameters containing channelIds
+   * @param onNewVideos - Callback to handle batches of new videos with channel context
+   */
+  async scrapeNewVideos(
+    params: ScrapeNewVideosParams,
+    onNewVideos: (channelId: string, videos: YouTubeVideo[]) => Promise<void>,
+  ): Promise<void> {
+    for await (const channel of this.#getChannels({ ids: params.channelIds })) {
+      const playlistId = channel.contentDetails.relatedPlaylists.uploads
+      const videoIDs: string[] = []
+
+      for await (const playlistItem of this.#getPlaylistItems({
+        all: false,
+        playlistID: playlistId,
+      })) {
+        videoIDs.push(playlistItem.contentDetails.videoId)
+      }
+
+      const videos: YouTubeVideo[] = []
+      await this.scrapeVideos({ ids: videoIDs }, async (videoBatch) => {
+        videos.push(...videoBatch)
+      })
+
+      if (videos.length > 0) {
+        await onNewVideos(channel.id, videos)
       }
     }
   }
