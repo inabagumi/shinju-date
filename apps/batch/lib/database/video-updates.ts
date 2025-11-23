@@ -244,7 +244,7 @@ export async function processScrapedVideoForCheck<
     })
   }
 
-  // Return true if any changes occurred (updates only - deletions handled separately)
+  // Return true if any changes occurred (updates only - deletions handled separately in route handler via processDeletedVideos)
   return videoUpdates.length > 0
 }
 
