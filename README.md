@@ -12,7 +12,7 @@
 
 - **[web](apps/web/)** - 公開ウェブサイト (https://shinju.date) のフロントエンド
 - **[admin](apps/admin/)** - コンテンツ管理用の管理画面
-- **[batch](apps/batch/)** - 定期実行されるバッチ処理 (Nitro)
+- **[batch](apps/batch/)** - 定期実行されるバッチ処理
 - **[insights](apps/insights/)** - データ分析や用語集生成などを行う Python ベースの API
 
 ### 共有パッケージ (`packages/`)
@@ -33,7 +33,7 @@
 ## 技術スタック
 
 - **フロントエンド**: Next.js (App Router), TypeScript, Tailwind CSS
-- **バックエンド**: Nitro (Batch), Next.js API Routes (Web/Admin), FastAPI (Python/Insights)
+- **バックエンド**: Next.js API Routes, FastAPI (Python)
 - **データベース**: Supabase (PostgreSQL)
 - **キャッシュ**: Upstash Redis
 - **パッケージマネージャー**: pnpm

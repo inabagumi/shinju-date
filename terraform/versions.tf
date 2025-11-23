@@ -7,9 +7,9 @@ terraform {
 
     vercel = {
       source  = "vercel/vercel"
-      version = "4.0.1"
+      version = "4.0.0"
     }
   }
 
-  required_version = "~> 1.14"
+  required_version = "~> 1.13"
 }

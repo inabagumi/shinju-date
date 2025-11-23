@@ -1,9 +1,9 @@
 'use client'
 
-import { TIME_ZONE } from '@shinju-date/constants'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { Temporal } from 'temporal-polyfill'
+import { timeZone } from '@/lib/constants'
 import { fetchNotEndedVideos, type Video } from '@/lib/fetchers'
 import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 
@@ -25,7 +25,7 @@ function TimelineSection({
         <time dateTime={dateTime.toJSON()}>
           {dateTime.toLocaleString('ja-JP', {
             dateStyle: 'short',
-            timeZone: TIME_ZONE,
+            timeZone,
           })}
         </time>
       </h2>
@@ -67,7 +67,7 @@ export default function Timeline({
     )
     return Map.groupBy(sortedValues, (value) =>
       Temporal.Instant.from(value.published_at)
-        .toZonedDateTimeISO(TIME_ZONE)
+        .toZonedDateTimeISO(timeZone)
         .toPlainDate()
         .toJSON(),
     )

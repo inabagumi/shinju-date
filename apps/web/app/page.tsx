@@ -1,14 +1,10 @@
-import {
-  SITE_DESCRIPTION,
-  SITE_NAME,
-  SITE_TAGLINE,
-} from '@shinju-date/constants'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import NoResults from '@/components/no-results'
 import Timeline, { TimelineSkeleton } from '@/components/timeline'
+import { description, tagline, title } from '@/lib/constants'
 import { fetchNotEndedVideos } from '@/lib/fetchers'
 import {
   getDisplayRecommendationQueries,
@@ -20,19 +16,19 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
-  description: SITE_DESCRIPTION,
+  description,
   openGraph: {
-    description: SITE_DESCRIPTION,
-    title: SITE_NAME,
+    description,
+    title,
     type: 'website',
     url: '/',
   },
   title: {
-    absolute: `${SITE_NAME} - ${SITE_TAGLINE}`,
+    absolute: `${title} - ${tagline}`,
   },
   twitter: {
     card: 'summary_large_image',
-    title: SITE_NAME,
+    title,
   },
 }
 

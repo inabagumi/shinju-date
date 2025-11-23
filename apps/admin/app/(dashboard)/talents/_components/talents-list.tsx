@@ -11,12 +11,10 @@ type Talent = {
   name: string
   created_at: string
   updated_at: string
-  youtube_channels: {
-    id: string
+  youtube_channel: {
     name: string | null
     youtube_channel_id: string
-    youtube_handle: string | null
-  }[]
+  } | null
 }
 
 type TalentsListProps = {
@@ -110,27 +108,16 @@ export function TalentsList({ talents }: TalentsListProps) {
                       >
                         {talent.name}
                       </Link>
-                      {talent.youtube_channels.length > 0 && (
-                        <div className="mt-1 space-y-1">
-                          {talent.youtube_channels.map((channel) => (
-                            <div key={channel.id}>
-                              {channel.name && channel.name !== talent.name && (
-                                <div className="text-gray-600 text-xs">
-                                  YouTube: {channel.name}
-                                </div>
-                              )}
-                              <div className="font-mono text-gray-500 text-xs">
-                                {channel.youtube_channel_id}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {talent.youtube_channels.length === 0 && (
-                        <div className="font-mono text-gray-500 text-xs">
-                          {talent.id}
-                        </div>
-                      )}
+                      {talent.youtube_channel?.name &&
+                        talent.youtube_channel.name !== talent.name && (
+                          <div className="text-gray-600 text-xs">
+                            YouTube: {talent.youtube_channel.name}
+                          </div>
+                        )}
+                      <div className="font-mono text-gray-500 text-xs">
+                        {talent.youtube_channel?.youtube_channel_id ||
+                          talent.id}
+                      </div>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-600 text-sm">

@@ -1,6 +1,5 @@
 'use client'
 
-import { TIME_ZONE } from '@shinju-date/constants'
 import {
   createContext,
   type ReactNode,
@@ -9,6 +8,7 @@ import {
   useState,
 } from 'react'
 import { Temporal } from 'temporal-polyfill'
+import { timeZone } from '@/lib/constants'
 
 interface TimerContextValue {
   now?: Temporal.ZonedDateTime | undefined
@@ -25,7 +25,7 @@ export function TimerProvider({
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setNow(Temporal.Now.zonedDateTimeISO(TIME_ZONE))
+      setNow(Temporal.Now.zonedDateTimeISO(timeZone))
     }, 60_000)
 
     return () => {
@@ -45,7 +45,7 @@ export function TimerProvider({
 }
 
 export function useNow(): Temporal.ZonedDateTime {
-  const { now = Temporal.Now.zonedDateTimeISO(TIME_ZONE) } =
+  const { now = Temporal.Now.zonedDateTimeISO(timeZone) } =
     useContext(TimerContext)
 
   return now

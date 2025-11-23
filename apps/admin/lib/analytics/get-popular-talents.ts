@@ -11,9 +11,9 @@ export type PopularTalent = {
   clicks: number
   id: string
   name: string
-  youtube_channels: {
+  youtube_channel: {
     youtube_channel_id: string
-  }[]
+  } | null
 }
 
 /**
@@ -43,7 +43,7 @@ export async function getPopularTalents(
   const talentIds = talentScores.map(([id]) => id)
   const { data: talents, error } = await supabaseClient
     .from('talents')
-    .select('id, name, youtube_channels(youtube_channel_id)')
+    .select('id, name, youtube_channel:youtube_channels(youtube_channel_id)')
     .in('id', talentIds)
 
   if (error) {
@@ -66,9 +66,7 @@ export async function getPopularTalents(
         clicks,
         id: talent.id,
         name: talent.name,
-        youtube_channels: Array.isArray(talent.youtube_channels)
-          ? talent.youtube_channels
-          : [],
+        youtube_channel: talent.youtube_channel,
       }
     })
     .filter(isNonNullable)

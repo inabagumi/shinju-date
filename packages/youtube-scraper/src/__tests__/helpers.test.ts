@@ -21,9 +21,6 @@ describe('isValidChannel', () => {
         },
       },
       id: 'UC1234567890',
-      snippet: {
-        title: 'Test Channel',
-      },
     }
 
     expect(isValidChannel(channel)).toBe(true)
@@ -36,9 +33,6 @@ describe('isValidChannel', () => {
           uploads: 'UU1234567890',
         },
       },
-      snippet: {
-        title: 'Test Channel',
-      },
     }
 
     expect(isValidChannel(channel)).toBe(false)
@@ -47,9 +41,6 @@ describe('isValidChannel', () => {
   it('should return false when contentDetails is missing', () => {
     const channel: youtube.Schema$Channel = {
       id: 'UC1234567890',
-      snippet: {
-        title: 'Test Channel',
-      },
     }
 
     expect(isValidChannel(channel)).toBe(false)
@@ -59,9 +50,6 @@ describe('isValidChannel', () => {
     const channel: youtube.Schema$Channel = {
       contentDetails: {},
       id: 'UC1234567890',
-      snippet: {
-        title: 'Test Channel',
-      },
     }
 
     expect(isValidChannel(channel)).toBe(false)
@@ -73,36 +61,6 @@ describe('isValidChannel', () => {
         relatedPlaylists: {},
       },
       id: 'UC1234567890',
-      snippet: {
-        title: 'Test Channel',
-      },
-    }
-
-    expect(isValidChannel(channel)).toBe(false)
-  })
-
-  it('should return false when snippet is missing', () => {
-    const channel: youtube.Schema$Channel = {
-      contentDetails: {
-        relatedPlaylists: {
-          uploads: 'UU1234567890',
-        },
-      },
-      id: 'UC1234567890',
-    }
-
-    expect(isValidChannel(channel)).toBe(false)
-  })
-
-  it('should return false when snippet title is missing', () => {
-    const channel: youtube.Schema$Channel = {
-      contentDetails: {
-        relatedPlaylists: {
-          uploads: 'UU1234567890',
-        },
-      },
-      id: 'UC1234567890',
-      snippet: {},
     }
 
     expect(isValidChannel(channel)).toBe(false)

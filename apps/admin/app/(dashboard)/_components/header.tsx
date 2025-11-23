@@ -13,11 +13,9 @@ export async function Header() {
         <NavigationBar />
       </Suspense>
       <div className="bg-slate-700 px-4 py-1 text-right">
-        <div className="mx-auto max-w-7xl">
-          <Suspense fallback={<SyncSkeleton />}>
-            <LastSyncTimestamp />
-          </Suspense>
-        </div>
+        <Suspense fallback={<SyncSkeleton />}>
+          <LastSyncTimestamp />
+        </Suspense>
       </div>
     </div>
   )

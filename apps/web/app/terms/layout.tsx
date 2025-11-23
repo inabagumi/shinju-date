@@ -1,6 +1,6 @@
-import { SITE_NAME as siteName } from '@shinju-date/constants'
 import type { ReactNode } from 'react'
 import SimpleDocument from '@/components/simple-document'
+import { title as siteName } from '@/lib/constants'
 
 export const metadata = {
   alternates: {

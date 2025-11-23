@@ -1,10 +1,11 @@
 'use server'
 
-import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
-import { formatDateKey } from '@shinju-date/temporal-fns'
+import { formatDate } from '@shinju-date/temporal-fns'
 import { headers } from 'next/headers'
 import { Temporal } from 'temporal-polyfill'
+import { timeZone } from './constants'
 import { getRedisClient } from './redis'
 
 // TTL settings for time-based session keys
@@ -43,8 +44,8 @@ export async function trackPageVisit(): Promise<void> {
   try {
     const redisClient = getRedisClient()
     const sessionId = await generateSessionId()
-    const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-    const today = formatDateKey(now)
+    const now = Temporal.Now.zonedDateTimeISO(timeZone)
+    const today = formatDate(now)
 
     const sessionTotalKey = `${REDIS_KEYS.SESSIONS_TOTAL_PREFIX}${today}`
 
@@ -72,8 +73,8 @@ export async function trackSearchSession(query: string): Promise<void> {
   try {
     const redisClient = getRedisClient()
     const sessionId = await generateSessionId()
-    const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-    const today = formatDateKey(now)
+    const now = Temporal.Now.zonedDateTimeISO(timeZone)
+    const today = formatDate(now)
 
     const sessionWithSearchKey = `${REDIS_KEYS.SESSIONS_WITH_SEARCH_PREFIX}${today}`
     const searchSessionsKey = `${REDIS_KEYS.SEARCH_SESSIONS_PREFIX}${today}`
@@ -108,8 +109,8 @@ export async function trackSearchExitWithoutClick(
 
   try {
     const redisClient = getRedisClient()
-    const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-    const today = formatDateKey(now)
+    const now = Temporal.Now.zonedDateTimeISO(timeZone)
+    const today = formatDate(now)
 
     const exitKey = `${REDIS_KEYS.SEARCH_EXIT_WITHOUT_CLICK_PREFIX}${today}`
 

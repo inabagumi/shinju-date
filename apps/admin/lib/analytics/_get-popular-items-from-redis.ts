@@ -1,7 +1,7 @@
 'use server'
 
 import { logger } from '@shinju-date/logger'
-import { formatDateKey } from '@shinju-date/temporal-fns'
+import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
 
@@ -38,7 +38,7 @@ export async function _getPopularItemsFromRedis<T extends string | number>(
 
     if (isSingleDay) {
       // Single day operation - use direct ZRANGE
-      const dailyKey = `${keyPrefix}${formatDateKey(start)}`
+      const dailyKey = `${keyPrefix}${formatDate(start)}`
 
       const results = await redisClient.zrange<T[]>(dailyKey, 0, limit - 1, {
         rev: true,
@@ -57,7 +57,7 @@ export async function _getPopularItemsFromRedis<T extends string | number>(
     } else {
       // Multi-day operation - use ZUNIONSTORE with caching
       const cleanedPrefix = keyPrefix.replace(/:$/, '') // Remove trailing ':'
-      const rangeKey = `${formatDateKey(start)}/${formatDateKey(end)}`
+      const rangeKey = `${formatDate(start)}/${formatDate(end)}`
       const cacheKey = `cache:popular_items:${cleanedPrefix}:${rangeKey}`
 
       // Try to get cached results first
@@ -86,7 +86,7 @@ export async function _getPopularItemsFromRedis<T extends string | number>(
         const dailyKeys: string[] = []
         let currentDate = start
         while (Temporal.PlainDate.compare(currentDate, end) <= 0) {
-          dailyKeys.push(`${keyPrefix}${formatDateKey(currentDate)}`)
+          dailyKeys.push(`${keyPrefix}${formatDate(currentDate)}`)
           currentDate = currentDate.add({ days: 1 })
         }
 

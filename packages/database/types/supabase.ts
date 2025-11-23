@@ -187,7 +187,7 @@ export interface Database {
           {
             foreignKeyName: 'twitch_users_talent_id_fkey'
             columns: ['talent_id']
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: 'talents'
             referencedColumns: ['id']
           },
@@ -318,7 +318,7 @@ export interface Database {
           {
             foreignKeyName: 'youtube_channels_talent_id_fkey'
             columns: ['talent_id']
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: 'talents'
             referencedColumns: ['id']
           },
@@ -450,8 +450,6 @@ export interface Database {
         | 'ANNOUNCEMENT_CREATE'
         | 'ANNOUNCEMENT_DELETE'
         | 'ANNOUNCEMENT_UPDATE'
-        | 'YOUTUBE_CHANNEL_CREATE'
-        | 'YOUTUBE_CHANNEL_DELETE'
       platform_type: 'youtube' | 'twitch'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
       video_status: 'UPCOMING' | 'LIVE' | 'ENDED'

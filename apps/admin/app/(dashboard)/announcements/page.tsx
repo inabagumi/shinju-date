@@ -15,7 +15,7 @@ async function AnnouncementsListData() {
 
 export default function AnnouncementsPage() {
   return (
-    <div className="mx-auto max-w-7xl p-6">
+    <div className="p-6">
       <div className="space-y-6">
         {/* Header with Add button - static shell */}
         <div className="flex items-center justify-between">

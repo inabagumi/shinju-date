@@ -3,11 +3,11 @@
   "dependencies": {},
   "description": "",
   "devDependencies": {
-    "@tsconfig/node20": "20.1.8",
-    "@tsconfig/strictest": "2.0.8",
-    "next": "16.0.3",
-    "supabase": "2.58.5",
-    "tsup": "8.5.1",
+    "@tsconfig/node20": "20.1.6",
+    "@tsconfig/strictest": "2.0.7",
+    "next": "16.0.1",
+    "supabase": "2.54.11",
+    "tsup": "8.5.0",
     "typescript": "5.9.3"
   },
   "homepage": "https://shinju.date/",

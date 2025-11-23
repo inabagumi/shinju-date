@@ -14,9 +14,6 @@ export type YouTubeChannel = youtube.Schema$Channel & {
     }
   }
   id: NonNullable<youtube.Schema$Channel['id']>
-  snippet: NonNullable<youtube.Schema$Channel['snippet']> & {
-    title: NonNullable<youtube.Schema$ChannelSnippet['title']>
-  }
 }
 
 export type YouTubePlaylistItem = youtube.Schema$PlaylistItem & {
@@ -46,18 +43,8 @@ export interface GetVideosOptions {
   ids: string[]
 }
 
-export interface Logger {
-  debug(message: string, attributes?: Record<string, unknown>): void
-  error(message: string, attributes?: Record<string, unknown>): void
-  info(message: string, attributes?: Record<string, unknown>): void
-  warn(message: string, attributes?: Record<string, unknown>): void
-}
-
 export interface ScraperOptions {
   youtubeClient: youtube.Youtube
-  concurrency?: number
-  interval?: number
-  logger?: Logger
 }
 
 export interface ScrapeChannelsOptions {
@@ -67,12 +54,4 @@ export interface ScrapeChannelsOptions {
 export interface ScrapeVideosOptions {
   playlistID: string
   scrapeAll?: boolean
-}
-
-export type ScrapeNewVideosParams = {
-  channelIds: string[]
-}
-
-export type ScrapeUpdatedVideosParams = {
-  channelIds: string[]
 }

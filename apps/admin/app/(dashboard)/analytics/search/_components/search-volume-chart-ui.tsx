@@ -42,8 +42,8 @@ export default function SearchVolumeChartUI({
         <AreaChart data={data} onClick={handleClick}>
           <defs>
             <linearGradient id="colorVolume" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="5%" stopColor="#dbeafe" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#dbeafe" stopOpacity={0} />
+              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />

@@ -63,10 +63,8 @@ export default function ClickVolumeChartUI({
           <Bar
             cursor={onDateClick ? 'pointer' : 'default'}
             dataKey="clicks"
-            fill="#d1fae5"
+            fill="#10b981"
             radius={[4, 4, 0, 0]}
-            stroke="#10b981"
-            strokeWidth={1}
           />
         </BarChart>
       </ResponsiveContainer>

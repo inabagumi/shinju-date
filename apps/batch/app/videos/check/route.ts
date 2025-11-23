@@ -1,30 +1,165 @@
 import * as Sentry from '@sentry/nextjs'
 import { REDIS_KEYS } from '@shinju-date/constants'
+import type { default as Database } from '@shinju-date/database'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
-import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import {
-  processScrapedVideoAvailability,
-  processScrapedVideoForCheck,
-} from '@/lib/database'
-import {
   videosCheckAll as ratelimitAll,
-  videosCheck as ratelimitDefault,
-  videosCheckRecent as ratelimitRecent,
+  videosCheck as ratelimitRecent,
 } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
-import { supabaseClient } from '@/lib/supabase'
+import { supabaseClient, type TypedSupabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
-import { getMonitorSlug } from './_lib/get-monitor-slug'
-import { getSavedVideos } from './_lib/get-saved-videos'
-import { querySchema } from './_lib/query-schema'
-import type { CheckMode } from './_lib/types'
+
+function getMonitorSlug({ all }: { all?: boolean | undefined }) {
+  return all ? '/videos/check?all=1' : '/videos/check'
+}
 
 export const maxDuration = 120
+
+type Thumbnail = {
+  id: string
+}
+
+type Video = {
+  id: string
+  thumbnails: Thumbnail[] | Thumbnail | null
+  youtube_video: {
+    youtube_video_id: string
+  }
+}
+
+type GetSavedVideos = {
+  all?: boolean
+  supabaseClient: TypedSupabaseClient
+}
+
+async function* getSavedVideos({
+  all = false,
+  supabaseClient,
+}: GetSavedVideos): AsyncGenerator<Video, void, undefined> {
+  const { count, error } = await supabaseClient.from('videos').select('*', {
+    count: 'exact',
+    head: true,
+  })
+
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  if (!count) return
+
+  const limit = all ? 2000 : 100
+  for (let i = 0; i < count; i += limit) {
+    const { data: savedVideos, error } = await supabaseClient
+      .from('videos')
+      .select(
+        'id, thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
+      )
+      .is('deleted_at', null)
+      .order('published_at', {
+        ascending: false,
+      })
+      .range(i, i + (limit - 1))
+
+    if (error) {
+      throw new TypeError(error.message, {
+        cause: error,
+      })
+    }
+
+    for (const savedVideo of savedVideos) {
+      yield savedVideo
+    }
+
+    if (!all) {
+      break
+    }
+  }
+}
+
+type SoftDeleteRowsOptions = {
+  currentDateTime: Temporal.Instant
+  ids: string[]
+  supabaseClient: TypedSupabaseClient
+  table: Exclude<
+    keyof Database['public']['Tables'],
+    'twitch_users' | 'twitch_videos' | 'youtube_channels' | 'youtube_videos'
+  >
+}
+
+async function softDeleteRows({
+  currentDateTime,
+  ids,
+  supabaseClient,
+  table,
+}: SoftDeleteRowsOptions): Promise<
+  {
+    id: string
+  }[]
+> {
+  const { data, error } = await supabaseClient
+    .from(table)
+    .update({
+      deleted_at: toDBString(currentDateTime),
+      updated_at: toDBString(currentDateTime),
+    })
+    .in('id', ids)
+    .select('id')
+
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  return data
+}
+
+type DeleteOptions = {
+  currentDateTime: Temporal.Instant
+  supabaseClient: TypedSupabaseClient
+  videos: Video[]
+}
+
+function deleteVideos({
+  currentDateTime,
+  supabaseClient,
+  videos,
+}: DeleteOptions): Promise<
+  PromiseSettledResult<
+    {
+      id: string
+    }[]
+  >[]
+> {
+  const thumbnails = videos
+    .map((video) =>
+      Array.isArray(video.thumbnails) ? video.thumbnails[0] : video.thumbnails,
+    )
+    .filter(Boolean) as Thumbnail[]
+
+  return Promise.allSettled([
+    softDeleteRows({
+      currentDateTime,
+      ids: videos.map((video) => video.id),
+      supabaseClient,
+      table: 'videos',
+    }),
+    softDeleteRows({
+      currentDateTime,
+      ids: thumbnails.map((thumbnail) => thumbnail.id),
+      supabaseClient,
+      table: 'thumbnails',
+    }),
+  ])
+}
 
 export async function POST(request: NextRequest): Promise<Response> {
   const cronSecure = process.env['CRON_SECRET']
@@ -42,49 +177,16 @@ export async function POST(request: NextRequest): Promise<Response> {
   }
 
   const { searchParams } = request.nextUrl
-
-  // Validate query parameters using zod
-  const validationResult = querySchema.safeParse(
-    Object.fromEntries(searchParams.entries()),
-  )
-  if (!validationResult.success) {
-    return createErrorResponse('Invalid query parameters', {
-      status: 400,
-    })
-  }
-
-  const { mode: modeParam } = validationResult.data
-
-  // Parse mode parameter
-  // - No parameter (default): UPCOMING/LIVE videos only
-  // - mode=recent: Latest 100 videos
-  // - mode=all: All videos (deletion check only, no updates)
-  let mode: CheckMode
-  if (modeParam === 'all') {
-    mode = 'all'
-  } else if (modeParam === 'recent') {
-    mode = 'recent'
-  } else {
-    mode = 'default'
-  }
-
-  // Use appropriate ratelimit based on mode
-  const ratelimit =
-    mode === 'all'
-      ? ratelimitAll
-      : mode === 'recent'
-        ? ratelimitRecent
-        : ratelimitDefault
+  const all =
+    searchParams.has('all') &&
+    ['1', 'true', 'yes'].includes(searchParams.get('all') ?? 'false')
+  const ratelimit = all ? ratelimitAll : ratelimitRecent
   const { success } = await ratelimit.limit(
-    mode === 'all'
-      ? 'videos:check:all'
-      : mode === 'recent'
-        ? 'videos:check:recent'
-        : 'videos:check',
+    all ? 'videos:check:all' : 'videos:check',
   )
 
   if (!success) {
-    logger.warn('There has been no interval since the last run.')
+    Sentry.logger.warn('There has been no interval since the last run.')
 
     return createErrorResponse(
       'There has been no interval since the last run.',
@@ -95,7 +197,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   }
 
   const monitorSlug = getMonitorSlug({
-    mode,
+    all,
   })
   const checkInId = Sentry.captureCheckIn(
     {
@@ -105,12 +207,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     {
       schedule: {
         type: 'crontab',
-        value:
-          mode === 'all'
-            ? '4 23 * * 2'
-            : mode === 'recent'
-              ? '*/30 * * * *'
-              : '*/1 * * * *',
+        value: all ? '4 23 * * 2' : '27/30 * * * *',
       },
       timezone: 'Etc/UTC',
     },
@@ -119,7 +216,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   const currentDateTime = Temporal.Now.instant()
   const savedVideos = await Array.fromAsync(
     getSavedVideos({
-      mode,
+      all,
       supabaseClient,
     }),
   )
@@ -127,50 +224,52 @@ export async function POST(request: NextRequest): Promise<Response> {
   const videoIds = savedVideos
     .map((savedVideo) => savedVideo.youtube_video?.youtube_video_id)
     .filter((id): id is string => Boolean(id))
+  const availableVideoIds = new Set<string>()
 
   await using scraper = new YouTubeScraper({
     youtubeClient,
   })
 
-  let hasChanges = false
-
-  // For 'default' and 'recent' modes, fetch full video details and update information
-  // For 'all' mode, only check availability and delete unavailable videos
-  if (mode === 'default' || mode === 'recent') {
-    // Process scraped videos for checking, updating, and deletion
-    await scraper.scrapeVideos({ ids: videoIds }, async (originalVideos) => {
-      hasChanges = await processScrapedVideoForCheck({
-        currentDateTime,
-        logger,
-        mode,
-        originalVideos,
-        savedVideos,
-        supabaseClient,
-      })
-    })
-  } else {
-    // For 'all' mode, only check availability and delete unavailable videos
-    await scraper.scrapeVideosAvailability({ videoIds }, async (videos) => {
-      try {
-        await processScrapedVideoAvailability({
-          currentDateTime,
-          logger,
-          savedVideos,
-          supabaseClient,
-          videos,
-        })
-        hasChanges = true // Any deletion is a change
-      } catch (error) {
-        Sentry.captureException(error)
+  await scraper.checkVideos({
+    onVideoChecked: async (video) => {
+      if (video.isAvailable) {
+        availableVideoIds.add(video.id)
       }
-    })
-  }
+    },
+    videoIds,
+  })
 
-  // Revalidate tags only if changes occurred
-  if (hasChanges) {
+  const deletedVideos = savedVideos.filter(
+    (savedVideo) =>
+      savedVideo.youtube_video?.youtube_video_id &&
+      !availableVideoIds.has(savedVideo.youtube_video.youtube_video_id),
+  )
+
+  if (deletedVideos.length > 0) {
+    const results = await deleteVideos({
+      currentDateTime,
+      supabaseClient,
+      videos: deletedVideos,
+    })
+    const rejectedResults = results.filter(
+      (result): result is PromiseRejectedResult => result.status === 'rejected',
+    )
+
+    for (const result of rejectedResults) {
+      Sentry.captureException(result.reason)
+    }
+
+    Sentry.logger.info('The videos has been deleted.', {
+      ids: deletedVideos
+        .map((video) => video.youtube_video?.youtube_video_id)
+        .filter(Boolean),
+    })
+
     await revalidateTags(['videos'], {
       signal: request.signal,
     })
+  } else {
+    Sentry.logger.info('Deleted videos did not exist.')
   }
 
   // Update last sync timestamp in Redis

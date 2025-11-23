@@ -2,15 +2,18 @@
   "author": "Haneru Developers",
   "description": "SHINJU DATE is a web service for searching videos.",
   "devDependencies": {
-    "@biomejs/biome": "2.3.7",
-    "next-devtools-mcp": "0.3.4",
-    "turbo": "2.6.1",
-    "typescript": "5.9.3"
+    "@biomejs/biome": "2.3.4",
+    "@vitest/coverage-v8": "4.0.8",
+    "@vitest/ui": "4.0.8",
+    "next-devtools-mcp": "0.3.2",
+    "turbo": "2.6.0",
+    "typescript": "5.9.3",
+    "vitest": "4.0.8"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
   "name": "@shinju-date/monorepo",
-  "packageManager": "pnpm@10.23.0",
+  "packageManager": "pnpm@10.21.0",
   "pnpm": {
     "neverBuiltDependencies": [
       "@biome/biome"
@@ -24,7 +27,6 @@
     "db:import": "./scripts/import-data.sh",
     "dev": "turbo dev",
     "test": "turbo test",
-    "test:e2e": "turbo test:e2e",
     "typegen": "turbo typegen"
   },
   "type": "module",

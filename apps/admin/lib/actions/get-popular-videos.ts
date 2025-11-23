@@ -3,7 +3,7 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { isNonNullable } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
-import { formatDateKey } from '@shinju-date/temporal-fns'
+import { formatDate } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
@@ -61,9 +61,9 @@ export async function getPopularVideos(
       plainTime: Temporal.PlainTime.from('00:00:00'),
       timeZone: TIME_ZONE,
     })
-    const cacheKey = `${REDIS_KEYS.POPULAR_VIDEOS_PREFIX}${formatDateKey(
+    const cacheKey = `${REDIS_KEYS.POPULAR_VIDEOS_PREFIX}${formatDate(
       startZoned,
-    )}/${formatDateKey(endZoned)}`
+    )}/${formatDate(endZoned)}`
 
     const cachedResults = await redisClient.zrange<string[]>(
       cacheKey,
@@ -98,7 +98,7 @@ export async function getPopularVideos(
           timeZone: TIME_ZONE,
         })
         dailyKeys.push(
-          `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${formatDateKey(zonedDate)}`,
+          `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${formatDate(zonedDate)}`,
         )
         currentDate = currentDate.add({ days: 1 })
       }

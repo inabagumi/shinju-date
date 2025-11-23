@@ -105,6 +105,18 @@ export async function updateTalentAction(
   }
 
   try {
+    // First, get the current youtube_channel_id to check if it changed
+    const { data: currentYoutubeChannel, error: fetchError } =
+      await supabaseClient
+        .from('youtube_channels')
+        .select('youtube_channel_id')
+        .eq('talent_id', id)
+        .single()
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      throw fetchError
+    }
+
     // Update talents table (only name now)
     const { data: talent, error } = await supabaseClient
       .from('talents')
@@ -120,8 +132,28 @@ export async function updateTalentAction(
       throw error
     }
 
-    // Note: Channel management is read-only for now when multiple channels exist
-    // Future enhancement: Add UI for managing multiple channels individually
+    // Update or insert youtube_channels if youtube_channel_id is provided
+    if (youtubeChannelId && youtubeChannelId.trim() !== '') {
+      if (
+        !currentYoutubeChannel ||
+        currentYoutubeChannel.youtube_channel_id !== youtubeChannelId.trim()
+      ) {
+        const { error: youtubeError } = await supabaseClient
+          .from('youtube_channels')
+          .upsert({
+            talent_id: id,
+            youtube_channel_id: youtubeChannelId.trim(),
+          })
+
+        if (youtubeError) {
+          logger.error('youtube_channelsテーブルの更新に失敗しました', {
+            error: youtubeError,
+            id,
+            youtube_channel_id: youtubeChannelId.trim(),
+          })
+        }
+      }
+    }
 
     // Log audit entry
     await createAuditLog('CHANNEL_UPDATE', 'channels', id, {

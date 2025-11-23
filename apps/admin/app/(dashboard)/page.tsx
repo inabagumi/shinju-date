@@ -1,46 +1,59 @@
 import { Suspense } from 'react'
 import { CardSkeleton } from '@/components/skeletons'
 import { AnalyticsWidget } from './_components/analytics-widget'
+import { MaintenanceModeWidgetWrapper } from './_components/maintenance-mode-widget-wrapper'
 import {
   PopularVideosWidget,
   PopularVideosWidgetSkeleton,
 } from './_components/popular-videos-widget'
-import {
-  ContentSummaryWidget,
-  VideoSummaryWidget,
-} from './_components/summary-widget'
+import { QuickAccessWidget } from './_components/quick-access-widget'
+import { RecentActivity } from './_components/recent-activity'
+import { SummaryWidget } from './_components/summary-widget'
 
 export default function DashboardPage() {
   return (
     <div className="p-6">
-      <div className="mx-auto max-w-7xl">
-        <h1 className="mb-6 font-bold text-3xl">ダッシュボード</h1>
+      <h1 className="mb-6 font-bold text-3xl">ダッシュボード</h1>
 
-        {/* Main content area with max-width constraint */}
-        <div className="space-y-6">
-          {/* Video Summary - Full width */}
+      {/* New layout: Left sidebar + Main content area */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr]">
+        {/* Left Sidebar - Quick Access and Maintenance Mode */}
+        <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
+          <QuickAccessWidget />
           <Suspense fallback={<CardSkeleton />}>
-            <VideoSummaryWidget />
+            <MaintenanceModeWidgetWrapper />
           </Suspense>
+        </aside>
 
-          {/* Second row: Content Summary and Analytics */}
+        {/* Main Content Area */}
+        <main className="space-y-6">
+          {/* Top row: Summary and Analytics widgets */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {/* Content Summary Widget */}
+            {/* Summary Widgets - Video and Content Summary (2 columns) */}
             <Suspense fallback={<CardSkeleton />}>
-              <ContentSummaryWidget />
+              <SummaryWidget />
             </Suspense>
 
-            {/* Analytics Summary Widget */}
+            {/* Analytics Summary Widget (1 column) */}
             <Suspense fallback={<CardSkeleton />}>
               <AnalyticsWidget />
             </Suspense>
           </div>
+        </main>
+      </div>
 
-          {/* Popular Videos - Full width */}
-          <Suspense fallback={<PopularVideosWidgetSkeleton />}>
-            <PopularVideosWidget />
-          </Suspense>
-        </div>
+      {/* Bottom row: Popular Videos - Full width including Quick Access area */}
+      <div className="mt-6">
+        <Suspense fallback={<PopularVideosWidgetSkeleton />}>
+          <PopularVideosWidget />
+        </Suspense>
+      </div>
+
+      {/* Recent Activity Widget */}
+      <div className="mt-6">
+        <Suspense fallback={<CardSkeleton />}>
+          <RecentActivity />
+        </Suspense>
       </div>
     </div>
   )

@@ -306,17 +306,15 @@ async function VideoDetailContent({ id }: { id: string }) {
 
 export default function VideoDetailPage({ params }: Props) {
   return (
-    <div className="mx-auto max-w-7xl">
-      <Suspense
-        fallback={
-          <div className="p-4">
-            <div className="h-96 animate-pulse rounded-lg bg-gray-200" />
-          </div>
-        }
-      >
-        <VideoDetailContentWrapper params={params} />
-      </Suspense>
-    </div>
+    <Suspense
+      fallback={
+        <div className="p-4">
+          <div className="h-96 animate-pulse rounded-lg bg-gray-200" />
+        </div>
+      }
+    >
+      <VideoDetailContentWrapper params={params} />
+    </Suspense>
   )
 }
 
