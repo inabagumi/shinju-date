@@ -7,10 +7,7 @@ import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
-import {
-  processScrapedVideoAvailability,
-  processScrapedVideoForCheck,
-} from '@/lib/database'
+import { processScrapedVideoAvailability } from '@/lib/database'
 import {
   videosCheckAll as ratelimitAll,
   videosCheck as ratelimitDefault,
@@ -21,6 +18,7 @@ import { supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 import { getMonitorSlug } from './_lib/get-monitor-slug'
 import { getSavedVideos } from './_lib/get-saved-videos'
+import { processScrapedVideoForCheck } from './_lib/process-scraped-video-for-check'
 import { querySchema } from './_lib/query-schema'
 import type { CheckMode } from './_lib/types'
 
@@ -137,13 +135,14 @@ export async function POST(request: NextRequest): Promise<Response> {
   // For 'default' and 'recent' modes, fetch full video details and update information
   // For 'all' mode, only check availability and delete unavailable videos
   if (mode === 'default' || mode === 'recent') {
-    // Process scraped videos for checking, updating, and deletion
-    await scraper.scrapeVideos({ ids: videoIds }, async (originalVideos) => {
+    // Fetch all videos from YouTube API and process them at once
+    await scraper.scrapeVideos({ ids: videoIds }, async (allVideos) => {
+      // Process all videos at once (updates and deletions)
       hasChanges = await processScrapedVideoForCheck({
         currentDateTime,
         logger,
         mode,
-        originalVideos,
+        originalVideos: allVideos,
         savedVideos,
         supabaseClient,
       })
