@@ -18,6 +18,8 @@ describe('getSummaryStats', () => {
       eq: vi.fn().mockReturnThis(),
       error,
       from: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
       lt: vi.fn().mockReturnThis(),
       not: vi.fn().mockReturnThis(),
       or: vi.fn().mockResolvedValue({ count, error }),
@@ -32,6 +34,8 @@ describe('getSummaryStats', () => {
         // Override specific methods to track calls
         query.select = vi.fn().mockReturnValue(query)
         query.eq = vi.fn().mockReturnValue(query)
+        query.in = vi.fn().mockReturnValue(query)
+        query.is = vi.fn().mockReturnValue(query)
         query.lt = vi.fn().mockReturnValue(query)
         query.not = vi.fn().mockReturnValue(query)
 
@@ -60,6 +64,8 @@ describe('getSummaryStats', () => {
 
     expect(result).toHaveProperty('totalVideos')
     expect(result).toHaveProperty('visibleVideos')
+    expect(result).toHaveProperty('archivedVideos')
+    expect(result).toHaveProperty('scheduledVideos')
     expect(result).toHaveProperty('hiddenVideos')
     expect(result).toHaveProperty('deletedVideos')
     expect(result).toHaveProperty('totalTerms')
@@ -109,12 +115,44 @@ describe('getSummaryStats', () => {
     )
   })
 
+  it('should query videos table for archived videos', async () => {
+    const targetDayEnd = '2025-11-13T00:00:00Z'
+
+    await getSummaryStats(mockSupabaseClient, targetDayEnd)
+
+    const archivedQuery = mockSupabaseClient.from.mock.results[3].value
+    expect(archivedQuery.eq).toHaveBeenCalledWith('visible', true)
+    expect(archivedQuery.eq).toHaveBeenCalledWith('status', 'ENDED')
+    expect(archivedQuery.lt).toHaveBeenCalledWith('created_at', targetDayEnd)
+    expect(archivedQuery.or).toHaveBeenCalledWith(
+      `deleted_at.is.null,deleted_at.gte.${targetDayEnd}`,
+    )
+  })
+
+  it('should query videos table for scheduled videos', async () => {
+    const targetDayEnd = '2025-11-13T00:00:00Z'
+
+    await getSummaryStats(mockSupabaseClient, targetDayEnd)
+
+    const scheduledQuery = mockSupabaseClient.from.mock.results[4].value
+    expect(scheduledQuery.eq).toHaveBeenCalledWith('visible', true)
+    expect(scheduledQuery.in).toHaveBeenCalledWith('status', [
+      'UPCOMING',
+      'LIVE',
+    ])
+    expect(scheduledQuery.lt).toHaveBeenCalledWith('created_at', targetDayEnd)
+    expect(scheduledQuery.or).toHaveBeenCalledWith(
+      `deleted_at.is.null,deleted_at.gte.${targetDayEnd}`,
+    )
+  })
+
   it('should query videos table for deleted videos', async () => {
     const targetDayEnd = '2025-11-13T00:00:00Z'
 
     await getSummaryStats(mockSupabaseClient, targetDayEnd)
 
-    const deletedQuery = mockSupabaseClient.from.mock.results[3].value
+    // Deleted videos query is now the 6th query (after totalVideos, visibleVideos, hiddenVideos, archivedVideos, scheduledVideos)
+    const deletedQuery = mockSupabaseClient.from.mock.results[5].value
     expect(deletedQuery.not).toHaveBeenCalledWith('deleted_at', 'is', null)
     expect(deletedQuery.lt).toHaveBeenCalledWith('deleted_at', targetDayEnd)
   })
@@ -132,7 +170,8 @@ describe('getSummaryStats', () => {
 
     await getSummaryStats(mockSupabaseClient, targetDayEnd)
 
-    const talentsQuery = mockSupabaseClient.from.mock.results[5].value
+    // Talents query is now the 8th query (after totalVideos, visibleVideos, hiddenVideos, archivedVideos, scheduledVideos, deletedVideos, terms)
+    const talentsQuery = mockSupabaseClient.from.mock.results[7].value
     expect(talentsQuery.lt).toHaveBeenCalledWith('created_at', targetDayEnd)
     expect(talentsQuery.or).toHaveBeenCalledWith(
       `deleted_at.is.null,deleted_at.gte.${targetDayEnd}`,
@@ -142,6 +181,8 @@ describe('getSummaryStats', () => {
   it('should handle null counts gracefully', async () => {
     mockSupabaseClient.from = vi.fn().mockReturnValue({
       eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
       lt: vi.fn().mockReturnThis(),
       not: vi.fn().mockReturnThis(),
       or: vi.fn().mockResolvedValue({ count: null, error: null }),
@@ -155,6 +196,8 @@ describe('getSummaryStats', () => {
 
     expect(result.totalVideos).toBe(0)
     expect(result.visibleVideos).toBe(0)
+    expect(result.archivedVideos).toBe(0)
+    expect(result.scheduledVideos).toBe(0)
     expect(result.hiddenVideos).toBe(0)
     expect(result.deletedVideos).toBe(0)
     expect(result.totalTerms).toBe(0)
