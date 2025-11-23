@@ -172,6 +172,15 @@ export async function POST(request: NextRequest): Promise<Response> {
 
     if (deletionResult.deletedCount > 0) {
       hasChanges = true
+
+      // Log individual deleted videos
+      for (const videoId of deletionResult.deletedVideoIds) {
+        logger.info('動画を削除しました', {
+          videoId,
+        })
+      }
+
+      // Log summary
       logger.info('動画が削除されました', {
         count: deletionResult.deletedCount,
       })
