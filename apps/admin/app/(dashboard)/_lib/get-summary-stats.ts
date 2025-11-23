@@ -55,12 +55,12 @@ export async function getSummaryStats(
     })
   }
 
-  // Get visible video count (archived: visible + ENDED, excluding deleted videos)
+  // Get visible video count (public: visible + ENDED or LIVE, excluding deleted videos)
   const { count: visibleVideos, error: visibleError } = await supabaseClient
     .from('videos')
     .select('*', { count: 'exact', head: true })
     .eq('visible', true)
-    .eq('status', 'ENDED')
+    .in('status', ['ENDED', 'LIVE'])
     .is('deleted_at', null)
 
   if (visibleError) {
@@ -82,12 +82,12 @@ export async function getSummaryStats(
     })
   }
 
-  // Get scheduled video count (visible + UPCOMING or LIVE, excluding deleted videos)
+  // Get scheduled video count (visible + UPCOMING, excluding deleted videos)
   const { count: scheduledVideos, error: scheduledError } = await supabaseClient
     .from('videos')
     .select('*', { count: 'exact', head: true })
     .eq('visible', true)
-    .in('status', ['UPCOMING', 'LIVE'])
+    .eq('status', 'UPCOMING')
     .is('deleted_at', null)
 
   if (scheduledError) {

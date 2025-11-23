@@ -88,14 +88,14 @@ describe('getSummaryStats', () => {
     )
   })
 
-  it('should query videos table for visible videos (archived)', async () => {
+  it('should query videos table for visible videos (public)', async () => {
     const targetDayEnd = '2025-11-13T00:00:00Z'
 
     await getSummaryStats(mockSupabaseClient, targetDayEnd)
 
     const visibleQuery = mockSupabaseClient.from.mock.results[1].value
     expect(visibleQuery.eq).toHaveBeenCalledWith('visible', true)
-    expect(visibleQuery.eq).toHaveBeenCalledWith('status', 'ENDED')
+    expect(visibleQuery.in).toHaveBeenCalledWith('status', ['ENDED', 'LIVE'])
     expect(visibleQuery.lt).toHaveBeenCalledWith('created_at', targetDayEnd)
     expect(visibleQuery.or).toHaveBeenCalledWith(
       `deleted_at.is.null,deleted_at.gte.${targetDayEnd}`,
@@ -122,10 +122,7 @@ describe('getSummaryStats', () => {
 
     const scheduledQuery = mockSupabaseClient.from.mock.results[3].value
     expect(scheduledQuery.eq).toHaveBeenCalledWith('visible', true)
-    expect(scheduledQuery.in).toHaveBeenCalledWith('status', [
-      'UPCOMING',
-      'LIVE',
-    ])
+    expect(scheduledQuery.eq).toHaveBeenCalledWith('status', 'UPCOMING')
     expect(scheduledQuery.lt).toHaveBeenCalledWith('created_at', targetDayEnd)
     expect(scheduledQuery.or).toHaveBeenCalledWith(
       `deleted_at.is.null,deleted_at.gte.${targetDayEnd}`,
@@ -212,6 +209,7 @@ describe('getSummaryStats', () => {
     let callCount = 0
     mockSupabaseClient.from = vi.fn().mockReturnValue({
       eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
       lt: vi.fn().mockReturnThis(),
       or: vi.fn().mockImplementation(async () => {
         callCount++

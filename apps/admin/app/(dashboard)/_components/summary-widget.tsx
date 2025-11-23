@@ -40,7 +40,7 @@ export async function VideoSummaryWidget() {
           className="rounded-lg bg-green-50 p-4 transition-colors hover:bg-green-100"
           href="/videos?deleted=false&visible=true"
         >
-          <p className="text-gray-600 text-sm">アーカイブ</p>
+          <p className="text-gray-600 text-sm">公開中</p>
           <p className="font-bold text-2xl text-green-600">
             {formatNumber(stats.visibleVideos.current)}
           </p>
@@ -52,7 +52,7 @@ export async function VideoSummaryWidget() {
           className="rounded-lg bg-purple-50 p-4 transition-colors hover:bg-purple-100"
           href="/videos?deleted=false&visible=true"
         >
-          <p className="text-gray-600 text-sm">配信予定・中</p>
+          <p className="text-gray-600 text-sm">配信予定</p>
           <p className="font-bold text-2xl text-purple-600">
             {formatNumber(stats.scheduledVideos.current)}
           </p>

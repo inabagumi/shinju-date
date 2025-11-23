@@ -24,8 +24,8 @@ type VideoStatsChartProps = {
 // Label mapping for chart legend and tooltip
 const LABEL_MAP: Record<string, string> = {
   hiddenVideos: '非表示',
-  scheduledVideos: '配信予定・中',
-  visibleVideos: 'アーカイブ',
+  scheduledVideos: '配信予定',
+  visibleVideos: '公開中',
 } as const
 
 export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
