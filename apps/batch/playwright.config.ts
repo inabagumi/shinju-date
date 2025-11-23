@@ -43,5 +43,5 @@ export default defineConfig({
     timeout: 120 * 1000,
     url: 'http://localhost:5000/api/healthz',
   },
-  workers: process.env['CI'] ? 1 : undefined,
+  ...(process.env['CI'] ? { workers: 1 } : {}),
 })
