@@ -28,7 +28,8 @@
     "storybook": "^10.0.8",
     "tailwindcss": "4.1.17",
     "tsup": "^8.5.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.0.13"
   },
   "exports": {
     ".": {
