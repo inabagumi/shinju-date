@@ -10,8 +10,24 @@
 
 ### 🔧 開発・統合
 
+- **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - 開発環境のセットアップ手順
+- **[CODING_GUIDELINES.md](CODING_GUIDELINES.md)** - コーディング規約とベストプラクティス
 - **[MSW_INTEGRATION.md](MSW_INTEGRATION.md)** - MSW (Mock Service Worker) 統合の詳細とガイド
 - **[TESTING_GUIDE.md](TESTING_GUIDE.md)** - テスト実装ガイドと React JSX Transform の設定
+
+### 🏢 データベース・インフラ
+
+- **[SUPABASE_IMPLEMENTATION.md](SUPABASE_IMPLEMENTATION.md)** - Supabase 実装の詳細
+- **[supabase-local-development.md](supabase-local-development.md)** - Supabase ローカル開発環境
+- **[web-cache-revalidation.md](web-cache-revalidation.md)** - Web キャッシュの再検証戦略
+
+### 📋 機能・実装ノート
+
+- **[FEATURE_SUMMARY.md](FEATURE_SUMMARY.md)** - 機能概要
+- **[IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md)** - 実装メモ
+- **[maintenance-mode.md](maintenance-mode.md)** - メンテナンスモード
+- **[404-handling-implementation.md](404-handling-implementation.md)** - 404 エラーハンドリング
+- **[SCRAPER_API_REDESIGN.md](SCRAPER_API_REDESIGN.md)** - Scraper API の再設計
 
 ## 📚 その他のドキュメント
 
@@ -23,9 +39,11 @@
 
 ### 新しい開発者向け
 
-1. [CONTRIBUTING.md](../CONTRIBUTING.md) - 開発環境のセットアップ
-2. [AGENTS.md](../AGENTS.md) - AI ツールの効果的な活用方法
-3. [MSW_INTEGRATION.md](MSW_INTEGRATION.md) - 開発時のモック環境の理解
+1. [SETUP_GUIDE.md](SETUP_GUIDE.md) - 開発環境のセットアップ
+2. [CONTRIBUTING.md](../CONTRIBUTING.md) - コントリビューションガイド
+3. [CODING_GUIDELINES.md](CODING_GUIDELINES.md) - コーディング規約
+4. [AGENTS.md](../AGENTS.md) - AI ツールの効果的な活用方法
+5. [MSW_INTEGRATION.md](MSW_INTEGRATION.md) - 開発時のモック環境の理解
 
 ### システム理解・拡張
 
