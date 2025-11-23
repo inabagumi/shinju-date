@@ -210,7 +210,67 @@ export async function processThumbnails(options: {
 }
 
 /**
+ * Insert new videos to the database (no updates)
+ * Used by /videos/update route to add new videos only
+ */
+export async function insertNewVideos(
+  supabaseClient: TypedSupabaseClient,
+  values: TablesInsert<'videos'>[],
+  youtubeVideoIds: string[],
+  youtubeChannelId: string,
+): Promise<Video[]> {
+  if (values.length === 0) {
+    return []
+  }
+
+  const { data: insertedVideos, error } = await supabaseClient
+    .from('videos')
+    .insert(values)
+    .select(scrapeResultSelect)
+
+  if (error) {
+    throw new DatabaseError(error)
+  }
+
+  const allVideos: Video[] = insertedVideos ?? []
+  const youtubeVideoValues: TablesInsert<'youtube_videos'>[] = []
+
+  for (const [index, video] of allVideos.entries()) {
+    const youtubeVideoId = youtubeVideoIds[index]
+    if (youtubeVideoId) {
+      youtubeVideoValues.push({
+        video_id: video.id,
+        youtube_channel_id: youtubeChannelId,
+        youtube_video_id: youtubeVideoId,
+      })
+    }
+  }
+
+  if (youtubeVideoValues.length > 0) {
+    const { error: ytError } = await supabaseClient
+      .from('youtube_videos')
+      .insert(youtubeVideoValues)
+
+    if (ytError) {
+      Sentry.captureException(new DatabaseError(ytError))
+    }
+  }
+
+  for (const video of allVideos) {
+    const entry = youtubeVideoValues.find((yv) => yv.video_id === video.id)
+    if (entry) {
+      video.youtube_video = {
+        youtube_video_id: entry.youtube_video_id,
+      }
+    }
+  }
+
+  return allVideos
+}
+
+/**
  * Upsert videos to the database
+ * Used by /videos/check route to update existing videos
  */
 export async function upsertVideos(
   supabaseClient: TypedSupabaseClient,
@@ -334,9 +394,11 @@ export async function upsertVideos(
 }
 
 /**
- * Process videos from YouTube API and prepare them for database insertion/update
+ * Process NEW videos only from YouTube API and prepare them for database insertion
+ * This function only handles videos that don't exist in the database yet
+ * Existing videos are intentionally skipped - updates are handled by /videos/check
  */
-export function processVideos(options: {
+export function processNewVideos(options: {
   currentDateTime: Temporal.Instant
   originalVideos: YouTubeVideo[]
   savedVideos: SavedVideo[]
@@ -357,6 +419,12 @@ export function processVideos(options: {
       const savedVideo = savedVideos.find(
         (v) => v.youtube_video?.youtube_video_id === originalVideo.id,
       )
+
+      // Skip if video already exists - updates are handled by /videos/check
+      if (savedVideo) {
+        return null
+      }
+
       const thumbnail = thumbnails.find((t) =>
         t.path.startsWith(`${originalVideo.id}/`),
       )
@@ -372,81 +440,18 @@ export function processVideos(options: {
 
       const status = getVideoStatus(originalVideo, currentDateTime)
 
-      if (!savedVideo) {
-        return {
-          value: {
-            created_at: toDBString(currentDateTime),
-            duration: originalVideo.contentDetails?.duration ?? 'P0D',
-            platform: 'youtube',
-            published_at: toDBString(publishedAt),
-            status,
-            talent_id: talentId,
-            title: originalVideo.snippet?.title ?? '',
-            updated_at: toDBString(currentDateTime),
-            visible: true,
-            ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
-          },
-          youtubeVideoId: originalVideo.id,
-        }
-      }
-
-      const updateValue: Partial<TablesInsert<'videos'>> = {}
-      let hasUpdate = false
-
-      if (savedVideo.status !== status) {
-        updateValue.status = status
-        hasUpdate = true
-      }
-
-      const newDuration = originalVideo.contentDetails?.duration ?? 'P0D'
-      if (savedVideo.duration !== newDuration) {
-        updateValue.duration = newDuration
-        hasUpdate = true
-      }
-
-      const savedPublishedAt = Temporal.Instant.from(savedVideo.published_at)
-      if (!savedPublishedAt.equals(publishedAt)) {
-        updateValue.published_at = toDBString(publishedAt)
-        hasUpdate = true
-      }
-
-      if (thumbnail && savedVideo.thumbnail_id !== thumbnail.id) {
-        updateValue.thumbnail_id = thumbnail.id
-        hasUpdate = true
-      }
-
-      const newTitle = originalVideo.snippet?.title ?? ''
-      if (savedVideo.title !== newTitle) {
-        updateValue.title = newTitle
-        hasUpdate = true
-      }
-
-      if (savedVideo.deleted_at) {
-        updateValue.deleted_at = null
-        hasUpdate = true
-      }
-
-      if (!hasUpdate) {
-        return null
-      }
-
       return {
         value: {
-          created_at: savedVideo.created_at,
-          deleted_at:
-            'deleted_at' in updateValue
-              ? updateValue.deleted_at
-              : savedVideo.deleted_at,
-          duration: updateValue.duration ?? savedVideo.duration,
-          id: savedVideo.id,
-          platform: savedVideo.platform,
-          published_at: updateValue.published_at ?? savedVideo.published_at,
-          status: updateValue.status ?? savedVideo.status,
+          created_at: toDBString(currentDateTime),
+          duration: originalVideo.contentDetails?.duration ?? 'P0D',
+          platform: 'youtube',
+          published_at: toDBString(publishedAt),
+          status,
           talent_id: talentId,
-          thumbnail_id: updateValue.thumbnail_id ?? savedVideo.thumbnail_id,
-          title: updateValue.title ?? savedVideo.title,
+          title: originalVideo.snippet?.title ?? '',
           updated_at: toDBString(currentDateTime),
-          visible: savedVideo.visible,
+          visible: true,
+          ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
         },
         youtubeVideoId: originalVideo.id,
       }
@@ -455,8 +460,9 @@ export function processVideos(options: {
 }
 
 /**
- * Process and save scraped videos from YouTube
- * This handles the complete flow: fetch saved videos, process thumbnails, transform data, and save to database
+ * Process and save NEW scraped videos from YouTube
+ * This handles ONLY new video insertion - existing videos are NOT updated
+ * Updates to existing videos are handled by /videos/check route
  */
 export async function saveScrapedVideos(options: {
   currentDateTime: Temporal.Instant
@@ -479,16 +485,30 @@ export async function saveScrapedVideos(options: {
     getSavedVideos(supabaseClient, videoIDs),
   )
 
-  // 2. Process and upload thumbnails
+  // 2. Process and upload thumbnails (only for new videos to avoid unnecessary processing)
+  const newVideoIds = new Set(
+    originalVideos
+      .filter(
+        (video) =>
+          !savedVideos.some(
+            (saved) => saved.youtube_video?.youtube_video_id === video.id,
+          ),
+      )
+      .map((video) => video.id),
+  )
+  const newVideosOnly = originalVideos.filter((video) =>
+    newVideoIds.has(video.id),
+  )
+
   const thumbnails = await processThumbnails({
     currentDateTime,
-    originalVideos,
-    savedVideos,
+    originalVideos: newVideosOnly,
+    savedVideos: [],
     supabaseClient,
   })
 
-  // 3. Process video data (new and updated)
-  const videoDataWithYouTubeIds = processVideos({
+  // 3. Process ONLY new video data (skip existing videos)
+  const videoDataWithYouTubeIds = processNewVideos({
     currentDateTime,
     originalVideos,
     savedVideos,
@@ -496,14 +516,14 @@ export async function saveScrapedVideos(options: {
     thumbnails,
   })
 
-  // 4. Save to database
+  // 4. Insert new videos to database (no updates)
   if (videoDataWithYouTubeIds.length > 0) {
     const values = videoDataWithYouTubeIds.map((item) => item.value)
     const youtubeVideoIds = videoDataWithYouTubeIds.map(
       (item) => item.youtubeVideoId,
     )
 
-    return upsertVideos(
+    return insertNewVideos(
       supabaseClient,
       values,
       youtubeVideoIds,
