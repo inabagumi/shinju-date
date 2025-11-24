@@ -2,6 +2,7 @@
   "author": "Haneru Developers",
   "description": "Common mock server handlers using MSW for SHINJU DATE monorepo",
   "dependencies": {
+    "@shinju-date/database": "workspace:*",
     "msw": "2.12.3",
     "temporal-polyfill": "^0.3.0"
   },

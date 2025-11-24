@@ -1,9 +1,10 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: Mocking Supabase with any type for simplicity
 
+import type { Tables } from '@shinju-date/database'
 import { HttpResponse, http } from 'msw'
 
-// Mock data for Supabase tables
-const mockAnnouncements = [
+// Mock data for Supabase tables using Tables types
+const mockAnnouncements: Tables<'announcements'>[] = [
   {
     created_at: '2025-11-20T00:00:00.000Z',
     enabled: true,
@@ -44,38 +45,38 @@ const mockAnnouncements = [
   },
 ]
 
-const mockChannels = [
+const mockChannels: Tables<'youtube_channels'>[] = [
   {
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
     id: '550e8400-e29b-41d4-a716-446655440001',
     name: 'Daily Analytics Channel',
-    updated_at: '2023-01-01T00:00:00.000Z',
+    talent_id: '750e8400-e29b-41d4-a716-446655440001',
+    youtube_channel_id: 'UCtest123',
+    youtube_handle: '@dailyanalytics',
   },
   {
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
     id: '550e8400-e29b-41d4-a716-446655440002',
     name: 'Trending Topics Channel',
-    updated_at: '2023-01-01T00:00:00.000Z',
+    talent_id: '750e8400-e29b-41d4-a716-446655440002',
+    youtube_channel_id: 'UCtest456',
+    youtube_handle: '@trendingtopics',
   },
   {
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
     id: '550e8400-e29b-41d4-a716-446655440003',
     name: 'Popular Content Channel',
-    updated_at: '2023-01-01T00:00:00.000Z',
+    talent_id: '750e8400-e29b-41d4-a716-446655440003',
+    youtube_channel_id: 'UCtest789',
+    youtube_handle: '@popularcontent',
   },
   {
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
     id: '550e8400-e29b-41d4-a716-446655440004',
     name: 'Test Channel Four',
-    updated_at: '2023-01-01T00:00:00.000Z',
+    talent_id: '750e8400-e29b-41d4-a716-446655440004',
+    youtube_channel_id: 'UCtest012',
+    youtube_handle: '@testchannelfour',
   },
 ]
 
-const mockThumbnails = [
+const mockThumbnails: Tables<'thumbnails'>[] = [
   {
     blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
     created_at: '2023-01-01T00:00:00.000Z',
@@ -188,12 +189,13 @@ const mockThumbnails = [
   },
 ]
 
-const mockVideos = [
+const mockVideos: Tables<'videos'>[] = [
   {
     created_at: '2023-01-01T00:00:00.000Z',
     deleted_at: null,
     duration: 'PT10M30S',
     id: '750e8400-e29b-41d4-a716-446655440001',
+    platform: null,
     published_at: '2023-01-01T12:00:00.000Z',
     status: 'PUBLISHED',
     talent_id: '550e8400-e29b-41d4-a716-446655440001',
@@ -207,6 +209,7 @@ const mockVideos = [
     deleted_at: null,
     duration: 'PT15M45S',
     id: '750e8400-e29b-41d4-a716-446655440002',
+    platform: null,
     published_at: '2023-01-02T12:00:00.000Z',
     status: 'LIVE',
     talent_id: '550e8400-e29b-41d4-a716-446655440002',
@@ -220,6 +223,8 @@ const mockVideos = [
     deleted_at: null,
     duration: 'PT8M15S',
     id: '750e8400-e29b-41d4-a716-446655440003',
+
+    platform: null,
     published_at: '2023-01-03T12:00:00.000Z',
     status: 'ENDED',
     talent_id: '550e8400-e29b-41d4-a716-446655440003',
@@ -233,6 +238,8 @@ const mockVideos = [
     deleted_at: null,
     duration: 'PT12M30S',
     id: '750e8400-e29b-41d4-a716-446655440004',
+
+    platform: null,
     published_at: '2023-01-04T12:00:00.000Z',
     status: 'UPCOMING',
     talent_id: '550e8400-e29b-41d4-a716-446655440004',
@@ -246,6 +253,8 @@ const mockVideos = [
     deleted_at: null,
     duration: 'PT20M45S',
     id: '750e8400-e29b-41d4-a716-446655440005',
+
+    platform: null,
     published_at: '2023-01-05T12:00:00.000Z',
     status: 'PUBLISHED',
     talent_id: '550e8400-e29b-41d4-a716-446655440001',
@@ -259,6 +268,8 @@ const mockVideos = [
     deleted_at: '2023-01-11T00:00:00.000Z',
     duration: 'PT18M20S',
     id: '750e8400-e29b-41d4-a716-446655440006',
+
+    platform: null,
     published_at: '2023-01-06T12:00:00.000Z',
     status: 'PUBLISHED',
     talent_id: '550e8400-e29b-41d4-a716-446655440002',
@@ -272,6 +283,8 @@ const mockVideos = [
     deleted_at: null,
     duration: 'PT14M22S',
     id: '750e8400-e29b-41d4-a716-446655440007',
+
+    platform: null,
     published_at: '2023-01-07T12:00:00.000Z',
     status: 'PUBLISHED',
     talent_id: '550e8400-e29b-41d4-a716-446655440003',
@@ -285,6 +298,8 @@ const mockVideos = [
     deleted_at: null,
     duration: 'PT9M45S',
     id: '750e8400-e29b-41d4-a716-446655440008',
+
+    platform: null,
     published_at: '2023-01-08T12:00:00.000Z',
     status: 'LIVE',
     talent_id: '550e8400-e29b-41d4-a716-446655440004',
@@ -298,6 +313,8 @@ const mockVideos = [
     deleted_at: null,
     duration: 'PT22M10S',
     id: '750e8400-e29b-41d4-a716-446655440009',
+
+    platform: null,
     published_at: '2023-01-09T12:00:00.000Z',
     status: 'ENDED',
     talent_id: '550e8400-e29b-41d4-a716-446655440001',
@@ -311,6 +328,8 @@ const mockVideos = [
     deleted_at: null,
     duration: 'PT16M33S',
     id: '750e8400-e29b-41d4-a716-446655440010',
+
+    platform: null,
     published_at: '2023-01-10T12:00:00.000Z',
     status: 'UPCOMING',
     talent_id: '550e8400-e29b-41d4-a716-446655440002',
@@ -321,7 +340,18 @@ const mockVideos = [
   },
 ]
 
-const mockYoutubeChannels = [
+// Mock data types - simplified representations for MSW handlers
+type MockYouTubeChannel = Pick<
+  Tables<'youtube_channels'>,
+  'talent_id' | 'youtube_channel_id' | 'youtube_handle'
+>
+
+type MockYouTubeVideo = Pick<
+  Tables<'youtube_videos'>,
+  'video_id' | 'youtube_video_id' | 'youtube_channel_id'
+>
+
+const mockYoutubeChannels: MockYouTubeChannel[] = [
   {
     talent_id: '550e8400-e29b-41d4-a716-446655440001',
     youtube_channel_id: 'UCtest123',
@@ -344,51 +374,61 @@ const mockYoutubeChannels = [
   },
 ]
 
-const mockYoutubeVideos = [
+const mockYoutubeVideos: MockYouTubeVideo[] = [
   {
     video_id: '750e8400-e29b-41d4-a716-446655440001',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440001',
     youtube_video_id: 'YT_video1abc',
   },
   {
     video_id: '750e8400-e29b-41d4-a716-446655440002',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440002',
     youtube_video_id: 'YT_video2def',
   },
   {
     video_id: '750e8400-e29b-41d4-a716-446655440003',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440003',
     youtube_video_id: 'YT_video3ghi',
   },
   {
     video_id: '750e8400-e29b-41d4-a716-446655440004',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440004',
     youtube_video_id: 'YT_video4jkl',
   },
   {
     video_id: '750e8400-e29b-41d4-a716-446655440005',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440001',
     youtube_video_id: 'YT_video5mno',
   },
   {
     video_id: '750e8400-e29b-41d4-a716-446655440006',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440002',
     youtube_video_id: 'YT_video6pqr',
   },
   // Additional test data for comprehensive testing
   {
     video_id: '750e8400-e29b-41d4-a716-446655440007',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440003',
     youtube_video_id: 'YT_newVideo01',
   },
   {
     video_id: '750e8400-e29b-41d4-a716-446655440008',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440004',
     youtube_video_id: 'YT_newVideo02',
   },
   {
     video_id: '750e8400-e29b-41d4-a716-446655440009',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440001',
     youtube_video_id: 'YT_newVideo03',
   },
   {
     video_id: '750e8400-e29b-41d4-a716-446655440010',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440002',
     youtube_video_id: 'YT_testVideo1',
   },
 ]
 
-const mockTerms = [
+const mockTerms: Tables<'terms'>[] = [
   {
     created_at: '2023-01-01T00:00:00.000Z',
     id: '850e8400-e29b-41d4-a716-446655440001',
@@ -415,14 +455,13 @@ const mockTerms = [
   },
 ]
 
-const mockTalents = [
+const mockTalents: Tables<'talents'>[] = [
   {
     created_at: '2023-01-01T00:00:00.000Z',
     deleted_at: null,
     id: '750e8400-e29b-41d4-a716-446655440001',
     name: 'Talent One',
     updated_at: '2023-01-01T00:00:00.000Z',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440001',
   },
   {
     created_at: '2023-01-02T00:00:00.000Z',
@@ -430,7 +469,6 @@ const mockTalents = [
     id: '750e8400-e29b-41d4-a716-446655440002',
     name: 'Talent Two',
     updated_at: '2023-01-02T00:00:00.000Z',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440002',
   },
   {
     created_at: '2023-01-03T00:00:00.000Z',
@@ -438,7 +476,6 @@ const mockTalents = [
     id: '750e8400-e29b-41d4-a716-446655440003',
     name: 'Talent Three',
     updated_at: '2023-01-03T00:00:00.000Z',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440003',
   },
 ]
 

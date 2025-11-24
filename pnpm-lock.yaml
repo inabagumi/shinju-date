@@ -666,6 +666,9 @@ importers:
 
   packages/msw-handlers:
     dependencies:
+      '@shinju-date/database':
+        specifier: workspace:*
+        version: link:../database
       msw:
         specifier: 2.12.3
         version: 2.12.3(@types/node@22.19.1)(typescript@5.9.3)
