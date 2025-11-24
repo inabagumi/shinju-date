@@ -1053,8 +1053,18 @@ export const supabaseHandlers = [
         body.email === 'admin@example.com' &&
         body.password === 'password123'
       ) {
-        // Return the auth response with tokens
-        // Note: Supabase SSR will handle setting the actual cookies with proper names
+        const headers = new Headers({
+          'Content-Type': 'application/json',
+        })
+        headers.append(
+          'Set-Cookie',
+          'sb-access-token=mock_access_token; Path=/; Max-Age=3600; SameSite=Lax',
+        )
+        headers.append(
+          'Set-Cookie',
+          'sb-refresh-token=mock_refresh_token; Path=/; Max-Age=604800; SameSite=Lax',
+        )
+
         return HttpResponse.json(
           {
             access_token: 'mock_access_token',
@@ -1095,6 +1105,7 @@ export const supabaseHandlers = [
             },
           },
           {
+            headers,
             status: 200,
           },
         )
