@@ -7,12 +7,21 @@ import type { Temporal } from 'temporal-polyfill'
  */
 export default function formatDuration(duration: Temporal.Duration): string {
   const hours = duration.hours
-  const minutes = duration.minutes
-  const seconds = duration.seconds
 
   if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    // biome-ignore lint/suspicious/noExplicitAny: toLocaleString accepts DurationFormatOptions
+    return (duration as any).toLocaleString('ja-JP', {
+      hours: 'numeric',
+      minutes: '2-digit',
+      seconds: '2-digit',
+      style: 'digital',
+    })
   }
 
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  // biome-ignore lint/suspicious/noExplicitAny: toLocaleString accepts DurationFormatOptions
+  return (duration as any).toLocaleString('ja-JP', {
+    minutes: 'numeric',
+    seconds: '2-digit',
+    style: 'digital',
+  })
 }
