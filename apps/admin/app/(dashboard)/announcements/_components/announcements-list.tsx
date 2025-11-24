@@ -1,5 +1,8 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { formatDateTime } from '@shinju-date/temporal-fns'
+import ReactMarkdown from 'react-markdown'
+import rehypeExternalLinks from 'rehype-external-links'
+import remarkGfm from 'remark-gfm'
 import { Temporal } from 'temporal-polyfill'
 import type { Announcement } from '../_lib/types'
 import { AnnouncementModal } from './announcement-modal'
@@ -19,7 +22,22 @@ function AnnouncementItem({ announcement }: { announcement: Announcement }) {
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 space-y-2">
           {/* Message */}
-          <p className="text-slate-800">{announcement.message}</p>
+          <div className="prose prose-sm max-w-none text-slate-800">
+            <ReactMarkdown
+              rehypePlugins={[
+                [
+                  rehypeExternalLinks,
+                  {
+                    rel: ['nofollow', 'noopener', 'noreferrer'],
+                    target: '_blank',
+                  },
+                ],
+              ]}
+              remarkPlugins={[remarkGfm]}
+            >
+              {announcement.message}
+            </ReactMarkdown>
+          </div>
 
           {/* Metadata */}
           <div className="flex flex-wrap items-center gap-2 text-sm">
