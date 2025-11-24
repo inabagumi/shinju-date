@@ -154,6 +154,7 @@ const mockVideos = [
     duration: 'PT10M30S',
     id: '750e8400-e29b-41d4-a716-446655440001',
     published_at: '2023-01-01T12:00:00.000Z',
+    status: 'PUBLISHED',
     talent_id: '550e8400-e29b-41d4-a716-446655440001',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440001',
     title: 'Analytics Test Video #1',
@@ -166,6 +167,7 @@ const mockVideos = [
     duration: 'PT15M45S',
     id: '750e8400-e29b-41d4-a716-446655440002',
     published_at: '2023-01-02T12:00:00.000Z',
+    status: 'LIVE',
     talent_id: '550e8400-e29b-41d4-a716-446655440002',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440002',
     title: 'Trending Test Video #2',
@@ -178,6 +180,7 @@ const mockVideos = [
     duration: 'PT8M15S',
     id: '750e8400-e29b-41d4-a716-446655440003',
     published_at: '2023-01-03T12:00:00.000Z',
+    status: 'ENDED',
     talent_id: '550e8400-e29b-41d4-a716-446655440003',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440003',
     title: 'Popular Test Video #3',
@@ -190,6 +193,7 @@ const mockVideos = [
     duration: 'PT12M30S',
     id: '750e8400-e29b-41d4-a716-446655440004',
     published_at: '2023-01-04T12:00:00.000Z',
+    status: 'UPCOMING',
     talent_id: '550e8400-e29b-41d4-a716-446655440004',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440004',
     title: 'Test Video #4',
@@ -202,6 +206,7 @@ const mockVideos = [
     duration: 'PT20M45S',
     id: '750e8400-e29b-41d4-a716-446655440005',
     published_at: '2023-01-05T12:00:00.000Z',
+    status: 'PUBLISHED',
     talent_id: '550e8400-e29b-41d4-a716-446655440001',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440005',
     title: 'Daily Test Video #5',
@@ -214,6 +219,7 @@ const mockVideos = [
     duration: 'PT18M20S',
     id: '750e8400-e29b-41d4-a716-446655440006',
     published_at: '2023-01-06T12:00:00.000Z',
+    status: 'PUBLISHED',
     talent_id: '550e8400-e29b-41d4-a716-446655440002',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440002',
     title: 'Deleted Video 2',
@@ -226,6 +232,7 @@ const mockVideos = [
     duration: 'PT14M22S',
     id: '750e8400-e29b-41d4-a716-446655440007',
     published_at: '2023-01-07T12:00:00.000Z',
+    status: 'PUBLISHED',
     talent_id: '550e8400-e29b-41d4-a716-446655440003',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440006',
     title: 'New Content Video #7',
@@ -238,6 +245,7 @@ const mockVideos = [
     duration: 'PT9M45S',
     id: '750e8400-e29b-41d4-a716-446655440008',
     published_at: '2023-01-08T12:00:00.000Z',
+    status: 'LIVE',
     talent_id: '550e8400-e29b-41d4-a716-446655440004',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440007',
     title: 'Tutorial Video #8',
@@ -250,6 +258,7 @@ const mockVideos = [
     duration: 'PT22M10S',
     id: '750e8400-e29b-41d4-a716-446655440009',
     published_at: '2023-01-09T12:00:00.000Z',
+    status: 'ENDED',
     talent_id: '550e8400-e29b-41d4-a716-446655440001',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440008',
     title: 'Analytics Deep Dive #9',
@@ -262,6 +271,7 @@ const mockVideos = [
     duration: 'PT16M33S',
     id: '750e8400-e29b-41d4-a716-446655440010',
     published_at: '2023-01-10T12:00:00.000Z',
+    status: 'UPCOMING',
     talent_id: '550e8400-e29b-41d4-a716-446655440002',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440009',
     title: 'Trending Topics #10',
@@ -508,11 +518,11 @@ function applySelect(data: any[], selectStr: string) {
 
     for (const field of fields) {
       // Handle nested selects like "thumbnails(path, blur_data_url)"
-      const nestedMatch = field.match(/^(\w+)\(([^)]+)\)$/)
+      const nestedMatch = field.match(/^(\w+):(\w+)\(([^)]+)\)$/)
       if (nestedMatch) {
-        const [, relationName, nestedFields] = nestedMatch
-        if (relationName && nestedFields) {
-          // For this mock, we'll simulate a simple join
+        const [, aliasName, relationName, nestedFields] = nestedMatch
+        if (aliasName && relationName && nestedFields) {
+          // Handle thumbnails relation
           if (relationName === 'thumbnails' && item.thumbnail_id) {
             const thumbnail = mockThumbnails.find(
               (t) => t.id === item.thumbnail_id,
@@ -527,9 +537,48 @@ function applySelect(data: any[], selectStr: string) {
                   nestedResult[nf] = thumbnail[nf as keyof typeof thumbnail]
                 }
               }
-              result[relationName] = nestedResult
+              result[aliasName] = nestedResult
             } else {
-              result[relationName] = null
+              result[aliasName] = null
+            }
+          }
+          // Handle talents relation
+          else if (relationName === 'talents' && item.talent_id) {
+            const talent = mockTalents.find((t) => t.id === item.talent_id)
+            if (talent) {
+              const nestedFieldArray = nestedFields
+                .split(',')
+                .map((f) => f.trim())
+              const nestedResult: any = {}
+              for (const nf of nestedFieldArray) {
+                if (nf in talent) {
+                  nestedResult[nf] = talent[nf as keyof typeof talent]
+                }
+              }
+              result[aliasName] = nestedResult
+            } else {
+              result[aliasName] = null
+            }
+          }
+          // Handle youtube_videos relation
+          else if (relationName === 'youtube_videos' && item.id) {
+            const youtubeVideo = mockYoutubeVideos.find(
+              (yv) => yv.video_id === item.id,
+            )
+            if (youtubeVideo) {
+              const nestedFieldArray = nestedFields
+                .split(',')
+                .map((f) => f.trim())
+              const nestedResult: any = {}
+              for (const nf of nestedFieldArray) {
+                if (nf in youtubeVideo) {
+                  nestedResult[nf] =
+                    youtubeVideo[nf as keyof typeof youtubeVideo]
+                }
+              }
+              result[aliasName] = nestedResult
+            } else {
+              result[aliasName] = null
             }
           }
         }
@@ -1253,10 +1302,11 @@ export const supabaseHandlers = [
           )
 
           return {
+            deleted_at: video.deleted_at,
             duration: video.duration,
             id: video.id,
             published_at: video.published_at,
-            status: 'published',
+            status: video.status,
             talent: talent
               ? {
                   id: talent.id,
@@ -1273,6 +1323,8 @@ export const supabaseHandlers = [
                 }
               : null,
             title: video.title,
+            updated_at: video.updated_at,
+            visible: video.visible,
             youtube_video: youtubeVideo
               ? {
                   youtube_video_id: youtubeVideo.youtube_video_id,
