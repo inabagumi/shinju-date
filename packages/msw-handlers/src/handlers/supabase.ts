@@ -223,7 +223,6 @@ const mockVideos: Tables<'videos'>[] = [
     deleted_at: null,
     duration: 'PT8M15S',
     id: '750e8400-e29b-41d4-a716-446655440003',
-
     platform: null,
     published_at: '2023-01-03T12:00:00.000Z',
     status: 'ENDED',
@@ -238,7 +237,6 @@ const mockVideos: Tables<'videos'>[] = [
     deleted_at: null,
     duration: 'PT12M30S',
     id: '750e8400-e29b-41d4-a716-446655440004',
-
     platform: null,
     published_at: '2023-01-04T12:00:00.000Z',
     status: 'UPCOMING',
@@ -253,7 +251,6 @@ const mockVideos: Tables<'videos'>[] = [
     deleted_at: null,
     duration: 'PT20M45S',
     id: '750e8400-e29b-41d4-a716-446655440005',
-
     platform: null,
     published_at: '2023-01-05T12:00:00.000Z',
     status: 'PUBLISHED',
@@ -268,7 +265,6 @@ const mockVideos: Tables<'videos'>[] = [
     deleted_at: '2023-01-11T00:00:00.000Z',
     duration: 'PT18M20S',
     id: '750e8400-e29b-41d4-a716-446655440006',
-
     platform: null,
     published_at: '2023-01-06T12:00:00.000Z',
     status: 'PUBLISHED',
@@ -283,7 +279,6 @@ const mockVideos: Tables<'videos'>[] = [
     deleted_at: null,
     duration: 'PT14M22S',
     id: '750e8400-e29b-41d4-a716-446655440007',
-
     platform: null,
     published_at: '2023-01-07T12:00:00.000Z',
     status: 'PUBLISHED',
@@ -298,7 +293,6 @@ const mockVideos: Tables<'videos'>[] = [
     deleted_at: null,
     duration: 'PT9M45S',
     id: '750e8400-e29b-41d4-a716-446655440008',
-
     platform: null,
     published_at: '2023-01-08T12:00:00.000Z',
     status: 'LIVE',
@@ -313,7 +307,6 @@ const mockVideos: Tables<'videos'>[] = [
     deleted_at: null,
     duration: 'PT22M10S',
     id: '750e8400-e29b-41d4-a716-446655440009',
-
     platform: null,
     published_at: '2023-01-09T12:00:00.000Z',
     status: 'ENDED',
@@ -328,7 +321,6 @@ const mockVideos: Tables<'videos'>[] = [
     deleted_at: null,
     duration: 'PT16M33S',
     id: '750e8400-e29b-41d4-a716-446655440010',
-
     platform: null,
     published_at: '2023-01-10T12:00:00.000Z',
     status: 'UPCOMING',
