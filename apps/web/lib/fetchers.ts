@@ -34,8 +34,9 @@ export type Video = Pick<
   youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'>
 }
 
-export const fetchNotEndedVideos = async (): Promise<Video[]> => {
+export const fetchUpcomingAndLiveVideos = async (): Promise<Video[]> => {
   'use cache: remote'
+
   cacheLife('hours')
   cacheTag('videos')
 
@@ -47,7 +48,7 @@ export const fetchNotEndedVideos = async (): Promise<Video[]> => {
   const { data: videos, error } = await supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
-    .neq('status', 'ENDED')
+    .in('status', ['LIVE', 'UPCOMING'])
     .lte('published_at', toDBString(until))
     .order('published_at', {
       ascending: false,

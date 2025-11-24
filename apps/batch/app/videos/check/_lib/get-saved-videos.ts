@@ -49,14 +49,14 @@ export async function* getSavedVideos({
       yield* savedVideos
     }
   } else if (mode === 'recent') {
-    // For 'recent' mode: fetch latest 100 videos
+    // For 'recent' mode: fetch latest 100 videos (ENDED and PUBLISHED)
     const { data: savedVideos, error } = await supabaseClient
       .from('videos')
       .select(
         'id, duration, published_at, status, title, thumbnail:thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
       )
       .is('deleted_at', null)
-      .eq('status', 'ENDED')
+      .in('status', ['ENDED', 'PUBLISHED'])
       .order('published_at', {
         ascending: false,
       })
