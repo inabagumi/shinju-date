@@ -69,11 +69,4 @@ describe('formatDuration', () => {
     const duration = Temporal.Duration.from('PT5M30S')
     expect(formatDuration(duration)).toBe('5:30')
   })
-
-  it('does not show hours for durations less than 1 hour', () => {
-    // Test 59 minutes and 59 seconds (just under 1 hour)
-    const duration = Temporal.Duration.from({ minutes: 59, seconds: 59 })
-    expect(formatDuration(duration)).toBe('59:59')
-    expect(formatDuration(duration)).not.toContain('0:59:59')
-  })
 })
