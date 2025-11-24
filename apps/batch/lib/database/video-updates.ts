@@ -8,7 +8,7 @@ export interface SavedVideoForCheck {
   id: string
   duration: string
   published_at: string
-  status: 'UPCOMING' | 'LIVE' | 'ENDED'
+  status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
   title: string
   youtube_video: {
     youtube_video_id: string
@@ -37,7 +37,7 @@ export interface VideoUpdate {
   id: string
   duration: string
   published_at: string
-  status: 'UPCOMING' | 'LIVE' | 'ENDED'
+  status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
   title: string
   updated_at: string
 }

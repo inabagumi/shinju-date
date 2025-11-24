@@ -4,14 +4,16 @@ import { Badge } from '@shinju-date/ui'
 type VideoStatus = Tables<'videos'>['status']
 
 const STATUS_LABELS: Record<VideoStatus, string> = {
-  ENDED: '公開済み',
+  ENDED: '配信済み',
   LIVE: '配信中',
+  PUBLISHED: '公開済み',
   UPCOMING: '待機中',
 }
 
 const STATUS_VARIANTS: Record<VideoStatus, 'info' | 'error' | 'secondary'> = {
   ENDED: 'secondary',
   LIVE: 'error',
+  PUBLISHED: 'secondary',
   UPCOMING: 'info',
 }
 

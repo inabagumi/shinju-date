@@ -35,12 +35,12 @@ describe('processScrapedVideoForCheck with >50 videos', () => {
       MOCK_SUPABASE_ANON_KEY,
     )
 
-    // Create 100 saved videos
+    // Create 100 saved videos with PUBLISHED status (not live streams)
     const savedVideos = Array.from({ length: 100 }, (_, i) => ({
       duration: 'PT10M30S',
       id: `video-${i + 1}`,
       published_at: '2023-01-01T12:00:00Z',
-      status: 'ENDED' as const,
+      status: 'PUBLISHED' as const,
       thumbnails: { id: `thumb-${i + 1}` },
       title: `Test Video ${i + 1}`,
       youtube_video: {
@@ -114,12 +114,12 @@ describe('processScrapedVideoForCheck with >50 videos', () => {
       MOCK_SUPABASE_ANON_KEY,
     )
 
-    // Create 100 saved videos
+    // Create 100 saved videos with PUBLISHED status (not live streams)
     const savedVideos = Array.from({ length: 100 }, (_, i) => ({
       duration: 'PT10M30S',
       id: `video-${i + 1}`,
       published_at: '2023-01-01T12:00:00Z',
-      status: 'ENDED' as const,
+      status: 'PUBLISHED' as const,
       thumbnails: { id: `thumb-${i + 1}` },
       title: `Test Video ${i + 1}`,
       youtube_video: {

@@ -8,12 +8,15 @@ export function getVideoStatus(
   { liveStreamingDetails: details }: youtube.Schema$Video,
   currentDateTime = Temporal.Now.instant(),
 ): VideoStatus {
-  if (!details) return 'ENDED'
+  // If no liveStreamingDetails, it's a regular published video (not a live stream)
+  if (!details) return 'PUBLISHED'
 
+  // Currently live (has actualStartTime but no actualEndTime)
   if (details.actualStartTime && !details.actualEndTime) {
     return 'LIVE'
   }
 
+  // Scheduled for future (has scheduledStartTime in the future)
   if (
     details.scheduledStartTime &&
     Temporal.Instant.compare(
@@ -24,5 +27,6 @@ export function getVideoStatus(
     return 'UPCOMING'
   }
 
+  // Live stream that has ended
   return 'ENDED'
 }
