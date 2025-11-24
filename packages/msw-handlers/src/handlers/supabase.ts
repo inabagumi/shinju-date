@@ -978,52 +978,66 @@ export const supabaseHandlers = [
   ),
 
   // Authentication endpoints
-  http.get('https://fake.supabase.test/auth/v1/user', ({ cookies }) => {
-    const isAuthenticated =
-      process.env['MSW_SUPABASE_AUTHENTICATED'] === 'true' ||
-      // Check for any Supabase auth token cookie (pattern: sb-*-auth-token)
-      Object.keys(cookies).some(
+  http.get(
+    'https://fake.supabase.test/auth/v1/user',
+    ({ request, cookies }) => {
+      // Check for authentication in multiple ways:
+      // 1. Environment variable for forced authentication
+      // 2. Authorization header with bearer token
+      // 3. Supabase auth cookies (pattern: sb-*-auth-token)
+      const authHeader = request.headers.get('authorization')
+      const hasValidToken =
+        authHeader?.startsWith('Bearer ') &&
+        authHeader.includes('mock_access_token')
+
+      const hasAuthCookie = Object.keys(cookies).some(
         (key) =>
           (key.includes('sb-') && key.includes('-auth-token')) ||
           key === 'sb-access-token',
       )
 
-    if (!isAuthenticated) {
-      return HttpResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+      const isAuthenticated =
+        process.env['MSW_SUPABASE_AUTHENTICATED'] === 'true' ||
+        hasValidToken ||
+        hasAuthCookie
 
-    return HttpResponse.json({
-      app_metadata: {
-        provider: 'email',
-        providers: ['email'],
-      },
-      aud: 'authenticated',
-      confirmed_at: '2023-01-01T00:00:00.000Z',
-      created_at: '2023-01-01T00:00:00.000Z',
-      email: 'admin@example.com',
-      email_confirmed_at: '2023-01-01T00:00:00.000Z',
-      id: 'mock-user-id',
-      identities: [
-        {
-          created_at: '2023-01-01T00:00:00.000Z',
-          id: 'mock-user-id',
-          identity_data: {
-            email: 'admin@example.com',
-            sub: 'mock-user-id',
-          },
-          last_sign_in_at: '2023-01-01T00:00:00.000Z',
+      if (!isAuthenticated) {
+        return HttpResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+
+      return HttpResponse.json({
+        app_metadata: {
           provider: 'email',
-          updated_at: '2023-01-01T00:00:00.000Z',
-          user_id: 'mock-user-id',
+          providers: ['email'],
         },
-      ],
-      last_sign_in_at: '2023-01-01T00:00:00.000Z',
-      phone: '',
-      role: 'authenticated',
-      updated_at: '2023-01-01T00:00:00.000Z',
-      user_metadata: {},
-    })
-  }),
+        aud: 'authenticated',
+        confirmed_at: '2023-01-01T00:00:00.000Z',
+        created_at: '2023-01-01T00:00:00.000Z',
+        email: 'admin@example.com',
+        email_confirmed_at: '2023-01-01T00:00:00.000Z',
+        id: 'mock-user-id',
+        identities: [
+          {
+            created_at: '2023-01-01T00:00:00.000Z',
+            id: 'mock-user-id',
+            identity_data: {
+              email: 'admin@example.com',
+              sub: 'mock-user-id',
+            },
+            last_sign_in_at: '2023-01-01T00:00:00.000Z',
+            provider: 'email',
+            updated_at: '2023-01-01T00:00:00.000Z',
+            user_id: 'mock-user-id',
+          },
+        ],
+        last_sign_in_at: '2023-01-01T00:00:00.000Z',
+        phone: '',
+        role: 'authenticated',
+        updated_at: '2023-01-01T00:00:00.000Z',
+        user_metadata: {},
+      })
+    },
+  ),
 
   http.post('https://fake.supabase.test/auth/v1/token', async ({ request }) => {
     const url = new URL(request.url)
@@ -1101,6 +1115,59 @@ export const supabaseHandlers = [
       },
       { status: 400 },
     )
+  }),
+
+  // Session endpoint - for refreshing tokens
+  http.get('https://fake.supabase.test/auth/v1/session', ({ request }) => {
+    const authHeader = request.headers.get('authorization')
+    const hasValidToken =
+      authHeader?.startsWith('Bearer ') && authHeader.includes('mock')
+
+    if (
+      !hasValidToken &&
+      process.env['MSW_SUPABASE_AUTHENTICATED'] !== 'true'
+    ) {
+      return HttpResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    return HttpResponse.json({
+      access_token: 'mock_access_token',
+      expires_at: 9999999999,
+      expires_in: 3600,
+      refresh_token: 'mock_refresh_token',
+      token_type: 'bearer',
+      user: {
+        app_metadata: {
+          provider: 'email',
+          providers: ['email'],
+        },
+        aud: 'authenticated',
+        confirmed_at: '2023-01-01T00:00:00.000Z',
+        created_at: '2023-01-01T00:00:00.000Z',
+        email: 'admin@example.com',
+        email_confirmed_at: '2023-01-01T00:00:00.000Z',
+        id: 'mock-user-id',
+        identities: [
+          {
+            created_at: '2023-01-01T00:00:00.000Z',
+            id: 'mock-user-id',
+            identity_data: {
+              email: 'admin@example.com',
+              sub: 'mock-user-id',
+            },
+            last_sign_in_at: '2023-01-01T00:00:00.000Z',
+            provider: 'email',
+            updated_at: '2023-01-01T00:00:00.000Z',
+            user_id: 'mock-user-id',
+          },
+        ],
+        last_sign_in_at: '2023-01-01T00:00:00.000Z',
+        phone: '',
+        role: 'authenticated',
+        updated_at: '2023-01-01T00:00:00.000Z',
+        user_metadata: {},
+      },
+    })
   }),
 
   http.post('https://fake.supabase.test/auth/v1/logout', () => {

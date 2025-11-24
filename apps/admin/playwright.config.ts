@@ -31,6 +31,7 @@ export default defineConfig({
     cwd: __dirname,
     env: {
       ENABLE_MSW: 'true',
+      MSW_SUPABASE_AUTHENTICATED: 'true',
       NEXT_PUBLIC_BASE_URL: 'http://localhost:4000',
       NEXT_PUBLIC_SUPABASE_ANON_KEY: 'fake',
       NEXT_PUBLIC_SUPABASE_URL: 'https://fake.supabase.test',
@@ -40,7 +41,7 @@ export default defineConfig({
     },
     reuseExistingServer: !process.env['CI'],
     timeout: 120 * 1000,
-    url: 'http://localhost:4000/login',
+    url: 'http://localhost:4000',
   },
   ...(process.env['CI'] ? { workers: 1 } : {}),
 })
