@@ -1,4 +1,4 @@
-import type { Temporal } from 'temporal-polyfill'
+import { Temporal } from 'temporal-polyfill'
 
 /**
  * Returns the start of the day (00:00:00.000000000) for the given date.
@@ -21,6 +21,12 @@ export default function startOfDay(date: Temporal.PlainDate): Temporal.PlainDate
 export default function startOfDay(
   date: Temporal.ZonedDateTime | Temporal.PlainDate,
 ): Temporal.ZonedDateTime | Temporal.PlainDate {
+  // PlainDate doesn't have time fields, so return it as-is
+  if (date instanceof Temporal.PlainDate) {
+    return date
+  }
+
+  // This is a ZonedDateTime
   return date.with({
     hour: 0,
     microsecond: 0,
