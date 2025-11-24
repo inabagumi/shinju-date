@@ -36,6 +36,7 @@ export type VideoFilters = {
   deleted?: boolean
   visible?: boolean
   search?: string
+  status?: Tables<'videos'>['status']
 }
 
 export type VideoSortField = 'published_at' | 'updated_at'
@@ -70,6 +71,9 @@ export async function getVideos(
   }
   if (filters?.visible !== undefined) {
     query = query.eq('visible', filters.visible)
+  }
+  if (filters?.status !== undefined) {
+    query = query.eq('status', filters.status)
   }
   // Handle text search
   if (filters?.search) {
