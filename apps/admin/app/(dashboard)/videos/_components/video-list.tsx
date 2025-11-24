@@ -22,17 +22,53 @@ import {
 } from '../_actions'
 import type { Video } from '../_lib/get-videos'
 import { SortIcon } from './sort-icon'
-import { StatusBadge } from './status-badge'
 import { VideoActionConfirmDialog } from './video-action-confirm-dialog'
 
 interface Props {
   videos: Video[]
 }
 
-function getStatusText(video: Video): string {
-  if (video.deleted_at) return '削除済み'
-  if (video.visible) return '公開中'
-  return '非表示'
+type StatusInfo = {
+  text: string
+  colorClasses: string
+}
+
+function getStatusInfo(video: Video): StatusInfo {
+  // Priority 1: If deleted, show "削除済み"
+  if (video.deleted_at) {
+    return {
+      colorClasses: 'bg-red-100 text-red-800',
+      text: '削除済み',
+    }
+  }
+
+  // Priority 2: If not visible, show "非表示"
+  if (!video.visible) {
+    return {
+      colorClasses: 'bg-gray-100 text-gray-800',
+      text: '非表示',
+    }
+  }
+
+  // Priority 3: Show the status field content
+  const STATUS_LABELS: Record<Video['status'], string> = {
+    ENDED: '配信済み',
+    LIVE: '配信中',
+    PUBLISHED: '公開済み',
+    UPCOMING: '待機中',
+  }
+
+  const STATUS_COLORS: Record<Video['status'], string> = {
+    ENDED: 'bg-gray-100 text-gray-800',
+    LIVE: 'bg-red-100 text-red-800',
+    PUBLISHED: 'bg-gray-100 text-gray-800',
+    UPCOMING: 'bg-blue-100 text-blue-800',
+  }
+
+  return {
+    colorClasses: STATUS_COLORS[video.status] ?? 'bg-gray-100 text-gray-800',
+    text: STATUS_LABELS[video.status] ?? video.status,
+  }
 }
 
 export default function VideoList({ videos }: Props) {
@@ -299,22 +335,19 @@ export default function VideoList({ videos }: Props) {
                   </td>
                   <td className="p-3">{formatNumber(video.clicks)}</td>
                   <td className="p-3">
-                    <div className="flex flex-col items-center gap-2">
-                      <span
-                        className={twMerge(
-                          'whitespace-nowrap rounded px-2 py-1 text-xs',
-                          video.deleted_at
-                            ? 'bg-red-100 text-red-800'
-                            : video.visible
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800',
-                        )}
-                      >
-                        {getStatusText(video)}
-                      </span>
-
-                      <StatusBadge status={video.status} />
-                    </div>
+                    {(() => {
+                      const statusInfo = getStatusInfo(video)
+                      return (
+                        <span
+                          className={twMerge(
+                            'whitespace-nowrap rounded px-2 py-1 text-xs',
+                            statusInfo.colorClasses,
+                          )}
+                        >
+                          {statusInfo.text}
+                        </span>
+                      )
+                    })()}
                   </td>
                   <td className="p-3">
                     <DropdownMenu>
