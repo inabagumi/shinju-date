@@ -1,4 +1,5 @@
 import { TIME_ZONE } from '@shinju-date/constants'
+import { formatDuration } from '@shinju-date/temporal-fns'
 import { ImageIcon } from 'lucide-react'
 import Image from 'next/image'
 import { Temporal } from 'temporal-polyfill'
@@ -21,12 +22,6 @@ function getThumbnailURL(
     `/images/thumbnails/${video.thumbnail.id}`,
     video.thumbnail.blur_data_url,
   ]
-}
-
-function formatDuration(duration: Temporal.Duration): string {
-  return [duration.hours, duration.minutes, duration.seconds]
-    .map((value) => value.toString().padStart(2, '0'))
-    .join(':')
 }
 
 /**
