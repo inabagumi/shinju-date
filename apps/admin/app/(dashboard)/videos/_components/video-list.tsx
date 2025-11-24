@@ -117,6 +117,13 @@ export default function VideoList({ videos }: Props) {
           throw new Error(result.error || '復元に失敗しました。')
         }
       }
+    } catch (error) {
+      // Display error to user
+      alert(
+        error instanceof Error
+          ? error.message
+          : '予期しないエラーが発生しました。',
+      )
     } finally {
       setIsPending(false)
     }

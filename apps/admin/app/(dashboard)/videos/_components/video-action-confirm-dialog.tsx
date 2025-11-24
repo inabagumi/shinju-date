@@ -31,21 +31,18 @@ const ACTION_CONFIG = {
     color: 'red',
     confirmButton: 'bg-red-600 hover:bg-red-700',
     icon: '⚠️',
-    requiresKeyword: true,
     title: '動画を削除',
   },
   restore: {
     color: 'green',
     confirmButton: 'bg-green-600 hover:bg-green-700',
     icon: '🔄',
-    requiresKeyword: false,
     title: '動画を復元',
   },
   toggle: {
     color: 'blue',
     confirmButton: 'bg-blue-600 hover:bg-blue-700',
     icon: '👁️',
-    requiresKeyword: false,
     title: '表示状態を切り替え',
   },
 } as const

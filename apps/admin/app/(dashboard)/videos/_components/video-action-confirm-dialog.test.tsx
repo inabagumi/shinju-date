@@ -164,7 +164,9 @@ describe('VideoActionConfirmDialog', () => {
       />,
     )
 
-    expect(screen.getByRole('button', { name: /削除する/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /削除する/i }),
+    ).toBeInTheDocument()
 
     rerender(
       <VideoActionConfirmDialog
@@ -176,7 +178,9 @@ describe('VideoActionConfirmDialog', () => {
       />,
     )
 
-    expect(screen.getByRole('button', { name: /復元する/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /復元する/i }),
+    ).toBeInTheDocument()
 
     rerender(
       <VideoActionConfirmDialog
