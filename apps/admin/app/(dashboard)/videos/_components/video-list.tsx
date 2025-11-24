@@ -45,7 +45,6 @@ export default function VideoList({ videos }: Props) {
     open: boolean
     videoIds: string[]
   }>({ action: 'toggle', open: false, videoIds: [] })
-  const [isPending, setIsPending] = useState(false)
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -75,57 +74,45 @@ export default function VideoList({ videos }: Props) {
   }
 
   const handleConfirm = async () => {
-    setIsPending(true)
-    try {
-      const { action, videoIds } = confirmDialog
+    const { action, videoIds } = confirmDialog
 
-      if (videoIds.length === 0) {
-        throw new Error('動画が選択されていません。')
+    if (videoIds.length === 0) {
+      throw new Error('動画が選択されていません。')
+    }
+
+    const isSingle = videoIds.length === 1
+    const singleVideoId = videoIds[0]
+
+    if (action === 'toggle') {
+      const result =
+        isSingle && singleVideoId
+          ? await toggleSingleVideoVisibilityAction(singleVideoId)
+          : await toggleVisibilityAction(videoIds)
+      if (result.success) {
+        setSelectedIds([])
+        alert('表示状態を更新しました。')
+      } else {
+        throw new Error(result.error || '更新に失敗しました。')
       }
-
-      const isSingle = videoIds.length === 1
-      const singleVideoId = videoIds[0]
-
-      if (action === 'toggle') {
-        const result =
-          isSingle && singleVideoId
-            ? await toggleSingleVideoVisibilityAction(singleVideoId)
-            : await toggleVisibilityAction(videoIds)
-        if (result.success) {
-          setSelectedIds([])
-          alert('表示状態を更新しました。')
-        } else {
-          throw new Error(result.error || '更新に失敗しました。')
-        }
-      } else if (action === 'delete') {
-        const result =
-          isSingle && singleVideoId
-            ? await softDeleteSingleVideoAction(singleVideoId)
-            : await softDeleteAction(videoIds)
-        if (result.success) {
-          setSelectedIds([])
-          alert('動画を削除しました。')
-        } else {
-          throw new Error(result.error || '削除に失敗しました。')
-        }
-      } else if (action === 'restore') {
-        const result = await restoreAction(videoIds)
-        if (result.success) {
-          setSelectedIds([])
-          alert('動画を復元しました。')
-        } else {
-          throw new Error(result.error || '復元に失敗しました。')
-        }
+    } else if (action === 'delete') {
+      const result =
+        isSingle && singleVideoId
+          ? await softDeleteSingleVideoAction(singleVideoId)
+          : await softDeleteAction(videoIds)
+      if (result.success) {
+        setSelectedIds([])
+        alert('動画を削除しました。')
+      } else {
+        throw new Error(result.error || '削除に失敗しました。')
       }
-    } catch (error) {
-      // Display error to user
-      alert(
-        error instanceof Error
-          ? error.message
-          : '予期しないエラーが発生しました。',
-      )
-    } finally {
-      setIsPending(false)
+    } else if (action === 'restore') {
+      const result = await restoreAction(videoIds)
+      if (result.success) {
+        setSelectedIds([])
+        alert('動画を復元しました。')
+      } else {
+        throw new Error(result.error || '復元に失敗しました。')
+      }
     }
   }
 
@@ -169,16 +156,14 @@ export default function VideoList({ videos }: Props) {
               {hasNonDeletedVideos && (
                 <>
                   <button
-                    className="rounded-md bg-blue-700 px-4 py-2 hover:bg-blue-800 disabled:bg-gray-400"
-                    disabled={isPending}
+                    className="rounded-md bg-blue-700 px-4 py-2 hover:bg-blue-800"
                     onClick={() => handleBulkAction('toggle')}
                     type="button"
                   >
                     表示/非表示を切り替え
                   </button>
                   <button
-                    className="rounded-md bg-red-600 px-4 py-2 hover:bg-red-700 disabled:bg-gray-400"
-                    disabled={isPending}
+                    className="rounded-md bg-red-600 px-4 py-2 hover:bg-red-700"
                     onClick={() => handleBulkAction('delete')}
                     type="button"
                   >
@@ -188,8 +173,7 @@ export default function VideoList({ videos }: Props) {
               )}
               {hasDeletedVideos && (
                 <button
-                  className="rounded-md bg-green-600 px-4 py-2 hover:bg-green-700 disabled:bg-gray-400"
-                  disabled={isPending}
+                  className="rounded-md bg-green-600 px-4 py-2 hover:bg-green-700"
                   onClick={() => handleBulkAction('restore')}
                   type="button"
                 >
