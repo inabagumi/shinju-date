@@ -11,6 +11,7 @@ import {
   DialogTitle,
   Input,
 } from '@shinju-date/ui'
+import { AlertTriangle, Eye, RotateCcw } from 'lucide-react'
 import { useState, useTransition } from 'react'
 
 interface VideoInfo {
@@ -28,21 +29,18 @@ interface VideoActionConfirmDialogProps {
 
 const ACTION_CONFIG = {
   delete: {
-    color: 'red',
-    confirmButton: 'bg-red-600 hover:bg-red-700',
-    icon: '⚠️',
+    buttonVariant: 'danger' as const,
+    icon: AlertTriangle,
     title: '動画を削除',
   },
   restore: {
-    color: 'green',
-    confirmButton: 'bg-green-600 hover:bg-green-700',
-    icon: '🔄',
+    buttonVariant: 'primary' as const,
+    icon: RotateCcw,
     title: '動画を復元',
   },
   toggle: {
-    color: 'blue',
-    confirmButton: 'bg-blue-600 hover:bg-blue-700',
-    icon: '👁️',
+    buttonVariant: 'primary' as const,
+    icon: Eye,
     title: '表示状態を切り替え',
   },
 } as const
@@ -60,12 +58,12 @@ export function VideoActionConfirmDialog({
 
   const config = ACTION_CONFIG[action]
   const isMultiple = videos.length > 1
-  const isBulkDelete = action === 'delete' && videos.length >= 3
+  const requiresKeyword = action === 'delete'
 
   const handleConfirm = () => {
-    // For bulk delete operations with 3+ videos, require keyword confirmation
-    if (isBulkDelete && confirmKeyword !== '削除') {
-      setError('「削除」と入力してください。')
+    // For delete operations, require keyword confirmation
+    if (requiresKeyword && confirmKeyword !== 'DELETE') {
+      setError('「DELETE」と入力してください。')
       return
     }
 
@@ -112,13 +110,15 @@ export function VideoActionConfirmDialog({
     return '以下の動画の表示状態を切り替えます。'
   }
 
+  const Icon = config.icon
+
   return (
     <Dialog onOpenChange={handleOpenChange} open={open}>
       <DialogPortal>
         <DialogOverlay />
         <DialogContent className="max-h-[85vh] w-[90vw] max-w-[550px] overflow-y-auto">
           <DialogTitle className="flex items-center gap-2">
-            <span className="text-2xl">{config.icon}</span>
+            <Icon className="h-6 w-6" />
             {config.title}
           </DialogTitle>
           <DialogDescription className="text-base">
@@ -126,15 +126,7 @@ export function VideoActionConfirmDialog({
           </DialogDescription>
 
           {/* Video list */}
-          <div
-            className={`my-4 max-h-60 overflow-y-auto rounded-md border p-3 ${
-              action === 'delete'
-                ? 'border-red-200 bg-red-50'
-                : action === 'restore'
-                  ? 'border-green-200 bg-green-50'
-                  : 'border-blue-200 bg-blue-50'
-            }`}
-          >
+          <div className="my-4 max-h-60 overflow-y-auto rounded-md border border-gray-200 bg-gray-50 p-3">
             <div className="mb-2 font-semibold text-gray-700 text-sm">
               対象動画 ({videos.length}件):
             </div>
@@ -150,21 +142,21 @@ export function VideoActionConfirmDialog({
             </ul>
           </div>
 
-          {/* Keyword confirmation for bulk delete */}
-          {isBulkDelete && (
+          {/* Keyword confirmation for delete */}
+          {requiresKeyword && (
             <div className="mb-4">
               <label
                 className="mb-2 block font-semibold text-red-700 text-sm"
                 htmlFor="confirm-keyword"
               >
-                続行するには「削除」と入力してください:
+                続行するには「DELETE」と入力してください:
               </label>
               <Input
                 autoComplete="off"
                 disabled={isPending}
                 id="confirm-keyword"
                 onChange={(e) => setConfirmKeyword(e.target.value)}
-                placeholder="削除"
+                placeholder="DELETE"
                 value={confirmKeyword}
               />
             </div>
@@ -183,12 +175,11 @@ export function VideoActionConfirmDialog({
               </Button>
             </DialogClose>
             <Button
-              className={config.confirmButton}
               disabled={
-                isPending || (isBulkDelete && confirmKeyword !== '削除')
+                isPending || (requiresKeyword && confirmKeyword !== 'DELETE')
               }
               onClick={handleConfirm}
-              variant="primary"
+              variant={config.buttonVariant}
             >
               {isPending
                 ? '処理中...'

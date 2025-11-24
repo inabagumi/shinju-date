@@ -98,6 +98,7 @@ async function VideoDetailContent({ id }: { id: string }) {
             <VideoActionsButtons
               isDeleted={isDeleted}
               videoId={video.id}
+              videoTitle={video.title}
               visible={video.visible}
             />
             {!isDeleted && <SyncVideoButton videoId={video.id} />}
