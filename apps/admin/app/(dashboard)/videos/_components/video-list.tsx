@@ -6,7 +6,7 @@ import { formatDateTime, formatDuration } from '@shinju-date/temporal-fns'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { useMemo, useState, useTransition } from 'react'
+import { useMemo, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { Temporal } from 'temporal-polyfill'
 import {
@@ -25,6 +25,7 @@ import {
 import type { Video } from '../_lib/get-videos'
 import { SortIcon } from './sort-icon'
 import { StatusBadge } from './status-badge'
+import { VideoActionConfirmDialog } from './video-action-confirm-dialog'
 
 interface Props {
   videos: Video[]
@@ -39,12 +40,12 @@ function getStatusText(video: Video): string {
 export default function VideoList({ videos }: Props) {
   const searchParams = useSearchParams()
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [showConfirmModal, setShowConfirmModal] = useState<{
+  const [confirmDialog, setConfirmDialog] = useState<{
     action: 'toggle' | 'delete' | 'restore'
     open: boolean
-    id?: string
-  }>({ action: 'toggle', open: false })
-  const [isPending, startTransition] = useTransition()
+    videoIds: string[]
+  }>({ action: 'toggle', open: false, videoIds: [] })
+  const [isPending, setIsPending] = useState(false)
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -63,81 +64,62 @@ export default function VideoList({ videos }: Props) {
   }
 
   const handleBulkAction = (action: 'toggle' | 'delete' | 'restore') => {
-    setShowConfirmModal({ action, open: true })
+    setConfirmDialog({ action, open: true, videoIds: selectedIds })
   }
 
   const handleSingleAction = (
     action: 'toggle' | 'delete' | 'restore',
     id: string,
   ) => {
-    setShowConfirmModal({ action, id, open: true })
+    setConfirmDialog({ action, open: true, videoIds: [id] })
   }
 
-  const handleConfirm = () => {
-    startTransition(async () => {
-      try {
-        // If id is provided, it's a single action
-        if (showConfirmModal.id) {
-          if (showConfirmModal.action === 'toggle') {
-            const result = await toggleSingleVideoVisibilityAction(
-              showConfirmModal.id,
-            )
-            if (result.success) {
-              alert('表示状態を更新しました。')
-            } else {
-              alert(result.error || '更新に失敗しました。')
-            }
-          } else if (showConfirmModal.action === 'delete') {
-            const result = await softDeleteSingleVideoAction(
-              showConfirmModal.id,
-            )
-            if (result.success) {
-              alert('動画を削除しました。')
-            } else {
-              alert(result.error || '削除に失敗しました。')
-            }
-          } else if (showConfirmModal.action === 'restore') {
-            const result = await restoreAction([showConfirmModal.id])
-            if (result.success) {
-              alert('動画を復元しました。')
-            } else {
-              alert(result.error || '復元に失敗しました。')
-            }
-          }
-        } else {
-          // Bulk action
-          if (showConfirmModal.action === 'toggle') {
-            const result = await toggleVisibilityAction(selectedIds)
-            if (result.success) {
-              setSelectedIds([])
-              alert('表示状態を更新しました。')
-            } else {
-              alert(result.error || '更新に失敗しました。')
-            }
-          } else if (showConfirmModal.action === 'delete') {
-            const result = await softDeleteAction(selectedIds)
-            if (result.success) {
-              setSelectedIds([])
-              alert('動画を削除しました。')
-            } else {
-              alert(result.error || '削除に失敗しました。')
-            }
-          } else if (showConfirmModal.action === 'restore') {
-            const result = await restoreAction(selectedIds)
-            if (result.success) {
-              setSelectedIds([])
-              alert('動画を復元しました。')
-            } else {
-              alert(result.error || '復元に失敗しました。')
-            }
-          }
-        }
-      } catch (_error) {
-        alert('エラーが発生しました。')
-      } finally {
-        setShowConfirmModal({ action: 'toggle', open: false })
+  const handleConfirm = async () => {
+    setIsPending(true)
+    try {
+      const { action, videoIds } = confirmDialog
+
+      if (videoIds.length === 0) {
+        throw new Error('動画が選択されていません。')
       }
-    })
+
+      const isSingle = videoIds.length === 1
+      const singleVideoId = videoIds[0]
+
+      if (action === 'toggle') {
+        const result =
+          isSingle && singleVideoId
+            ? await toggleSingleVideoVisibilityAction(singleVideoId)
+            : await toggleVisibilityAction(videoIds)
+        if (result.success) {
+          setSelectedIds([])
+          alert('表示状態を更新しました。')
+        } else {
+          throw new Error(result.error || '更新に失敗しました。')
+        }
+      } else if (action === 'delete') {
+        const result =
+          isSingle && singleVideoId
+            ? await softDeleteSingleVideoAction(singleVideoId)
+            : await softDeleteAction(videoIds)
+        if (result.success) {
+          setSelectedIds([])
+          alert('動画を削除しました。')
+        } else {
+          throw new Error(result.error || '削除に失敗しました。')
+        }
+      } else if (action === 'restore') {
+        const result = await restoreAction(videoIds)
+        if (result.success) {
+          setSelectedIds([])
+          alert('動画を復元しました。')
+        } else {
+          throw new Error(result.error || '復元に失敗しました。')
+        }
+      }
+    } finally {
+      setIsPending(false)
+    }
   }
 
   const getSortUrl = (field: 'published_at' | 'updated_at') => {
@@ -441,52 +423,15 @@ export default function VideoList({ videos }: Props) {
       </div>
 
       {/* Confirmation modal */}
-      {showConfirmModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-            <h3 className="mb-4 font-semibold text-lg">確認</h3>
-            <p className="mb-6 text-gray-700">
-              {showConfirmModal.action === 'delete'
-                ? showConfirmModal.id
-                  ? 'この動画を削除しますか？'
-                  : `本当に${selectedIds.length}件の動画を削除しますか？`
-                : showConfirmModal.action === 'restore'
-                  ? showConfirmModal.id
-                    ? 'この動画を復元しますか？'
-                    : `本当に${selectedIds.length}件の動画を復元しますか？`
-                  : showConfirmModal.id
-                    ? 'この動画の表示状態を切り替えますか？'
-                    : `本当に${selectedIds.length}件の動画の表示状態を切り替えますか？`}
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                className="rounded-md border border-gray-300 px-4 py-2 hover:bg-gray-100"
-                disabled={isPending}
-                onClick={() =>
-                  setShowConfirmModal({ action: 'toggle', open: false })
-                }
-                type="button"
-              >
-                キャンセル
-              </button>
-              <button
-                className={`rounded-md px-4 py-2 text-white disabled:bg-gray-400 ${
-                  showConfirmModal.action === 'delete'
-                    ? 'bg-red-600 hover:bg-red-700'
-                    : showConfirmModal.action === 'restore'
-                      ? 'bg-green-600 hover:bg-green-700'
-                      : 'bg-blue-600 hover:bg-blue-700'
-                }`}
-                disabled={isPending}
-                onClick={handleConfirm}
-                type="button"
-              >
-                {isPending ? '処理中...' : '実行'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <VideoActionConfirmDialog
+        action={confirmDialog.action}
+        onConfirm={handleConfirm}
+        onOpenChange={(open) => setConfirmDialog((prev) => ({ ...prev, open }))}
+        open={confirmDialog.open}
+        videos={videos
+          .filter((v) => confirmDialog.videoIds.includes(v.id))
+          .map((v) => ({ id: v.id, title: v.title }))}
+      />
     </div>
   )
 }
