@@ -6,11 +6,13 @@ import type { Temporal } from 'temporal-polyfill'
  * @returns Formatted duration string (H:MM:SS or M:SS)
  */
 export default function formatDuration(duration: Temporal.Duration): string {
-  return duration.toLocaleString('ja-JP', {
-    hours: 'numeric',
-    hoursDisplay: 'auto',
-    minutes: '2-digit',
-    seconds: '2-digit',
-    style: 'digital',
-  } as Intl.DateTimeFormatOptions)
+  const hours = duration.hours
+  const minutes = duration.minutes
+  const seconds = duration.seconds
+
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  }
+
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
