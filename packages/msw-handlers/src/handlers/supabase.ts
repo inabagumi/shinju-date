@@ -1315,15 +1315,4 @@ export const supabaseHandlers = [
       })
     },
   ),
-
-  // Silence telemetry and external service warnings
-  http.post('https://telemetry.nextjs.org/api/v1/record', async () => {
-    return new HttpResponse(null, { status: 200 })
-  }),
-
-  http.get('https://registry.npmjs.org/-/package/next/dist-tags', async () => {
-    return HttpResponse.json({
-      latest: '16.0.3',
-    })
-  }),
 ]

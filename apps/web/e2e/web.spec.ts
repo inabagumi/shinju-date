@@ -14,8 +14,8 @@ test.describe('Web App - Homepage', () => {
   test('should display navigation elements', async ({ page }) => {
     await page.goto('http://localhost:3000')
 
-    // Check for common navigation elements
-    const navigation = page.locator('nav')
+    // Check for common navigation elements (using first() since there may be multiple nav elements)
+    const navigation = page.locator('nav').first()
     await expect(navigation).toBeVisible()
   })
 
