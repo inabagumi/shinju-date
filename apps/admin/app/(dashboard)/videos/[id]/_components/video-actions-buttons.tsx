@@ -5,7 +5,7 @@ import { useState, useTransition } from 'react'
 import {
   restoreAction,
   softDeleteAction,
-  toggleSingleVideoVisibilityAction,
+  toggleVisibilityAction,
 } from '../../_actions'
 import { VideoActionConfirmDialog } from '../../_components/video-action-confirm-dialog'
 
@@ -56,7 +56,7 @@ export function VideoActionsButtons({
     setMessage(null)
 
     if (action === 'toggle') {
-      const result = await toggleSingleVideoVisibilityAction(videoId)
+      const result = await toggleVisibilityAction([videoId])
       if (result.success) {
         setMessage({
           text: `動画を${visible ? '非表示' : '表示'}に変更しました。`,

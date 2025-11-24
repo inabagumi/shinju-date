@@ -18,7 +18,6 @@ import {
 import {
   restoreAction,
   softDeleteAction,
-  toggleSingleVideoVisibilityAction,
   toggleVisibilityAction,
 } from '../_actions'
 import type { Video } from '../_lib/get-videos'
@@ -80,10 +79,7 @@ export default function VideoList({ videos }: Props) {
     }
 
     if (action === 'toggle') {
-      const result =
-        videoIds.length === 1 && videoIds[0]
-          ? await toggleSingleVideoVisibilityAction(videoIds[0])
-          : await toggleVisibilityAction(videoIds)
+      const result = await toggleVisibilityAction(videoIds)
       if (result.success) {
         setSelectedIds([])
         alert('表示状態を更新しました。')
