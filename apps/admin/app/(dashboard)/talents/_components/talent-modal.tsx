@@ -1,6 +1,7 @@
 'use client'
 
 import * as Dialog from '@radix-ui/react-dialog'
+import type { Tables } from '@shinju-date/database'
 import { useEffect, useState } from 'react'
 import type { FormState } from '@/components/form'
 import Form, {
@@ -14,13 +15,11 @@ import Form, {
 import { createTalentAction, updateTalentAction } from '../_actions'
 import { DeleteConfirmDialog } from './delete-confirm-dialog'
 
-interface Talent {
-  id: string
-  name: string
-  youtube_channel: {
-    name: string | null
-    youtube_channel_id: string
-  } | null
+type Talent = Pick<Tables<'talents'>, 'id' | 'name'> & {
+  youtube_channel: Pick<
+    Tables<'youtube_channels'>,
+    'name' | 'youtube_channel_id'
+  > | null
 }
 
 interface TalentModalProps {

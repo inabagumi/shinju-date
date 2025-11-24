@@ -1,14 +1,12 @@
 'use client'
 
+import type { Tables } from '@shinju-date/database'
 import { useState, useTransition } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { deleteTalentAction } from '../_actions'
 import { syncTalentWithYouTube } from '../_actions/sync'
 
-interface Talent {
-  id: string
-  name: string
-}
+type Talent = Pick<Tables<'talents'>, 'id' | 'name'>
 
 interface TalentActionsProps {
   talent: Talent

@@ -7,28 +7,21 @@ import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
 import { escapeSearchString } from './escape-search'
 
-export type Video = {
-  id: string
-  title: string
-  visible: boolean
-  deleted_at: string | null
-  published_at: string
-  updated_at: string
-  status: Tables<'videos'>['status']
-  duration: string
-  thumbnail: {
-    id: string
-    path: string
-    blur_data_url: string
-  } | null
+export type Video = Pick<
+  Tables<'videos'>,
+  | 'id'
+  | 'title'
+  | 'visible'
+  | 'deleted_at'
+  | 'published_at'
+  | 'updated_at'
+  | 'status'
+  | 'duration'
+> & {
+  thumbnail: Pick<Tables<'thumbnails'>, 'id' | 'path' | 'blur_data_url'> | null
   clicks: number
-  talent: {
-    id: string
-    name: string
-  }
-  youtube_video: {
-    youtube_video_id: string
-  } | null
+  talent: Pick<Tables<'talents'>, 'id' | 'name'>
+  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
 }
 
 export type VideoFilters = {

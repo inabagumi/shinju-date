@@ -1,5 +1,6 @@
 'use client'
 
+import type { Tables } from '@shinju-date/database'
 import { Button } from '@shinju-date/ui'
 import { useState, useTransition } from 'react'
 import {
@@ -9,10 +10,7 @@ import {
 } from '../../_actions'
 import { VideoActionConfirmDialog } from '../../_components/video-action-confirm-dialog'
 
-interface VideoInfo {
-  id: string
-  title: string
-}
+type VideoInfo = Pick<Tables<'videos'>, 'id' | 'title'>
 
 interface Props {
   videoId: string

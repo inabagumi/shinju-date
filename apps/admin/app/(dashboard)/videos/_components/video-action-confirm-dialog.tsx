@@ -1,5 +1,6 @@
 'use client'
 
+import type { Tables } from '@shinju-date/database'
 import {
   Button,
   Dialog,
@@ -14,10 +15,7 @@ import {
 import { AlertTriangle, Eye, RotateCcw } from 'lucide-react'
 import { useState, useTransition } from 'react'
 
-interface VideoInfo {
-  id: string
-  title: string
-}
+type VideoInfo = Pick<Tables<'videos'>, 'id' | 'title'>
 
 interface VideoActionConfirmDialogProps {
   action: 'toggle' | 'delete' | 'restore'

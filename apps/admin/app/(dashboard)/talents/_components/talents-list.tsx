@@ -1,22 +1,20 @@
 'use client'
 
+import type { Tables } from '@shinju-date/database'
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { TalentActions } from './talent-actions'
 import { TalentModal } from './talent-modal'
 
-interface Talent {
-  id: string
-  name: string
-  created_at: string
-  updated_at: string
-  youtube_channels: {
-    id: string
-    name: string | null
-    youtube_channel_id: string
-    youtube_handle: string | null
-  }[]
+type Talent = Pick<
+  Tables<'talents'>,
+  'id' | 'name' | 'created_at' | 'updated_at'
+> & {
+  youtube_channels: Pick<
+    Tables<'youtube_channels'>,
+    'id' | 'name' | 'youtube_channel_id' | 'youtube_handle'
+  >[]
 }
 
 interface TalentsListProps {
