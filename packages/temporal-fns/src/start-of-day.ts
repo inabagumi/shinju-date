@@ -21,12 +21,18 @@ export default function startOfDay(date: Temporal.PlainDate): Temporal.PlainDate
 export default function startOfDay(
   date: Temporal.ZonedDateTime | Temporal.PlainDate,
 ): Temporal.ZonedDateTime | Temporal.PlainDate {
-  return date.with({
-    hour: 0,
-    microsecond: 0,
-    millisecond: 0,
-    minute: 0,
-    nanosecond: 0,
-    second: 0,
-  })
+  // PlainDate doesn't have time fields, so return it as-is
+  if ('hour' in date) {
+    // This is a ZonedDateTime
+    return date.with({
+      hour: 0,
+      microsecond: 0,
+      millisecond: 0,
+      minute: 0,
+      nanosecond: 0,
+      second: 0,
+    })
+  }
+  // This is a PlainDate, which already represents a date without time
+  return date
 }
