@@ -259,171 +259,169 @@ export default function VideoList({ videos }: Props) {
           </thead>
           <tbody>
             {videos.length > 0 ? (
-              videos.map((video) => (
-                <tr className="border-b hover:bg-gray-50" key={video.id}>
-                  <td className="p-3">
-                    <input
-                      checked={selectedIds.includes(video.id)}
-                      onChange={(e) =>
-                        handleSelectVideo(video.id, e.target.checked)
-                      }
-                      type="checkbox"
-                    />
-                  </td>
-                  <td className="p-3">
-                    {video.thumbnail ? (
-                      <div className="relative aspect-video w-20 md:w-28">
-                        <Image
-                          alt=""
-                          blurDataURL={video.thumbnail.blur_data_url}
-                          className="object-cover"
-                          fill
-                          placeholder="blur"
-                          sizes="(max-width: 768px) 80px, 112px"
-                          src={`/images/thumbnails/${video.thumbnail.id}`}
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex aspect-video w-20 items-center justify-center bg-gray-200 text-xs md:w-28">
-                        No Image
-                      </div>
-                    )}
-                  </td>
-                  <td className="max-w-xs p-3">
-                    <Link
-                      className="text-blue-600 hover:text-blue-800"
-                      href={`/videos/${video.id}`}
-                    >
-                      <div className="line-clamp-2" title={video.title}>
-                        {video.title}
-                      </div>
-                    </Link>
-                  </td>
-                  <td className="p-3">
-                    <span className="text-gray-600 text-sm">
-                      {video.talent.name}
-                    </span>
-                  </td>
-                  <td className="p-3">
-                    <time
-                      className="text-gray-600 text-sm"
-                      dateTime={video.published_at}
-                    >
-                      {formatDateTime(
-                        Temporal.Instant.from(
-                          video.published_at,
-                        ).toZonedDateTimeISO(TIME_ZONE),
+              videos.map((video) => {
+                const statusInfo = getStatusInfo(video)
+                return (
+                  <tr className="border-b hover:bg-gray-50" key={video.id}>
+                    <td className="p-3">
+                      <input
+                        checked={selectedIds.includes(video.id)}
+                        onChange={(e) =>
+                          handleSelectVideo(video.id, e.target.checked)
+                        }
+                        type="checkbox"
+                      />
+                    </td>
+                    <td className="p-3">
+                      {video.thumbnail ? (
+                        <div className="relative aspect-video w-20 md:w-28">
+                          <Image
+                            alt=""
+                            blurDataURL={video.thumbnail.blur_data_url}
+                            className="object-cover"
+                            fill
+                            placeholder="blur"
+                            sizes="(max-width: 768px) 80px, 112px"
+                            src={`/images/thumbnails/${video.thumbnail.id}`}
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex aspect-video w-20 items-center justify-center bg-gray-200 text-xs md:w-28">
+                          No Image
+                        </div>
                       )}
-                    </time>
-                  </td>
-                  <td className="p-3">
-                    <time
-                      className="text-gray-600 text-sm"
-                      dateTime={video.updated_at}
-                    >
-                      {formatDateTime(
-                        Temporal.Instant.from(
-                          video.updated_at,
-                        ).toZonedDateTimeISO(TIME_ZONE),
-                      )}
-                    </time>
-                  </td>
-                  <td className="p-3">
-                    <span className="text-gray-600 text-sm">
-                      {formatDuration(Temporal.Duration.from(video.duration))}
-                    </span>
-                  </td>
-                  <td className="p-3">{formatNumber(video.clicks)}</td>
-                  <td className="p-3">
-                    {(() => {
-                      const statusInfo = getStatusInfo(video)
-                      return (
-                        <span
-                          className={twMerge(
-                            'whitespace-nowrap rounded px-2 py-1 text-xs',
-                            statusInfo.colorClasses,
-                          )}
-                        >
-                          {statusInfo.text}
-                        </span>
-                      )
-                    })()}
-                  </td>
-                  <td className="p-3">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger aria-label="アクションメニュー">
-                        <svg
-                          aria-hidden="true"
-                          className="h-5 w-5"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <title>アクションメニュー</title>
-                          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                        </svg>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem
-                          onClick={() => {
-                            if (video.youtube_video?.youtube_video_id) {
-                              window.open(
-                                `https://www.youtube.com/watch?v=${video.youtube_video.youtube_video_id}`,
-                                '_blank',
-                              )
-                            }
-                          }}
-                        >
-                          <span className="flex items-center gap-1">
-                            YouTubeで見る
-                            <svg
-                              aria-hidden="true"
-                              className="h-4 w-4"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              viewBox="0 0 24 24"
-                            >
-                              <title>外部リンク</title>
-                              <path
-                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </span>
-                        </DropdownMenuItem>
-                        {video.deleted_at ? (
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleSingleAction('restore', video.id)
-                            }
-                          >
-                            復元
-                          </DropdownMenuItem>
-                        ) : (
-                          <>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleSingleAction('toggle', video.id)
-                              }
-                            >
-                              表示/非表示を切り替え
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleSingleAction('delete', video.id)
-                              }
-                              variant="danger"
-                            >
-                              削除
-                            </DropdownMenuItem>
-                          </>
+                    </td>
+                    <td className="max-w-xs p-3">
+                      <Link
+                        className="text-blue-600 hover:text-blue-800"
+                        href={`/videos/${video.id}`}
+                      >
+                        <div className="line-clamp-2" title={video.title}>
+                          {video.title}
+                        </div>
+                      </Link>
+                    </td>
+                    <td className="p-3">
+                      <span className="text-gray-600 text-sm">
+                        {video.talent.name}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <time
+                        className="text-gray-600 text-sm"
+                        dateTime={video.published_at}
+                      >
+                        {formatDateTime(
+                          Temporal.Instant.from(
+                            video.published_at,
+                          ).toZonedDateTimeISO(TIME_ZONE),
                         )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                </tr>
-              ))
+                      </time>
+                    </td>
+                    <td className="p-3">
+                      <time
+                        className="text-gray-600 text-sm"
+                        dateTime={video.updated_at}
+                      >
+                        {formatDateTime(
+                          Temporal.Instant.from(
+                            video.updated_at,
+                          ).toZonedDateTimeISO(TIME_ZONE),
+                        )}
+                      </time>
+                    </td>
+                    <td className="p-3">
+                      <span className="text-gray-600 text-sm">
+                        {formatDuration(Temporal.Duration.from(video.duration))}
+                      </span>
+                    </td>
+                    <td className="p-3">{formatNumber(video.clicks)}</td>
+                    <td className="p-3">
+                      <span
+                        className={twMerge(
+                          'whitespace-nowrap rounded px-2 py-1 text-xs',
+                          statusInfo.colorClasses,
+                        )}
+                      >
+                        {statusInfo.text}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger aria-label="アクションメニュー">
+                          <svg
+                            aria-hidden="true"
+                            className="h-5 w-5"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <title>アクションメニュー</title>
+                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                          </svg>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              if (video.youtube_video?.youtube_video_id) {
+                                window.open(
+                                  `https://www.youtube.com/watch?v=${video.youtube_video.youtube_video_id}`,
+                                  '_blank',
+                                )
+                              }
+                            }}
+                          >
+                            <span className="flex items-center gap-1">
+                              YouTubeで見る
+                              <svg
+                                aria-hidden="true"
+                                className="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                viewBox="0 0 24 24"
+                              >
+                                <title>外部リンク</title>
+                                <path
+                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </span>
+                          </DropdownMenuItem>
+                          {video.deleted_at ? (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleSingleAction('restore', video.id)
+                              }
+                            >
+                              復元
+                            </DropdownMenuItem>
+                          ) : (
+                            <>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleSingleAction('toggle', video.id)
+                                }
+                              >
+                                表示/非表示を切り替え
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleSingleAction('delete', video.id)
+                                }
+                                variant="danger"
+                              >
+                                削除
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                )
+              })
             ) : (
               <tr>
                 <td className="p-8 text-center text-gray-500" colSpan={10}>
