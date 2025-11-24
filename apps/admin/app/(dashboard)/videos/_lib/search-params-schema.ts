@@ -3,8 +3,13 @@ import { z } from 'zod'
 import type { VideoSortField, VideoSortOrder } from './get-videos'
 
 // Valid video status values from the database enum
-const VALID_VIDEO_STATUSES = ['UPCOMING', 'LIVE', 'ENDED', 'PUBLISHED'] as const
 type VideoStatus = Tables<'videos'>['status']
+const VALID_VIDEO_STATUSES: readonly VideoStatus[] = [
+  'UPCOMING',
+  'LIVE',
+  'ENDED',
+  'PUBLISHED',
+] as const
 
 // Define the valid sort field and order values based on the types
 const VALID_SORT_FIELDS: VideoSortField[] = ['published_at', 'updated_at']
@@ -107,11 +112,8 @@ export const videoSearchParamsSchema = z.object({
       if (Array.isArray(val)) {
         val = val[0]
       }
-      return val &&
-        VALID_VIDEO_STATUSES.includes(
-          val as (typeof VALID_VIDEO_STATUSES)[number],
-        )
-        ? (val as VideoStatus)
+      return val && VALID_VIDEO_STATUSES.includes(val as VideoStatus)
+        ? val
         : undefined
     }),
 

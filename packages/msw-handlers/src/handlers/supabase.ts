@@ -517,10 +517,12 @@ function applySelect(data: any[], selectStr: string) {
     const fields = selectStr.split(',').map((f) => f.trim())
 
     for (const field of fields) {
-      // Handle nested selects like "thumbnails(path, blur_data_url)"
-      const nestedMatch = field.match(/^(\w+):(\w+)\(([^)]+)\)$/)
-      if (nestedMatch) {
-        const [, aliasName, relationName, nestedFields] = nestedMatch
+      // Handle nested selects with alias like "talent:talents(id, name)" or without alias like "thumbnails(id, path)"
+      const aliasedNestedMatch = field.match(/^(\w+):(\w+)\(([^)]+)\)$/)
+      const simpleNestedMatch = field.match(/^(\w+)\(([^)]+)\)$/)
+
+      if (aliasedNestedMatch) {
+        const [, aliasName, relationName, nestedFields] = aliasedNestedMatch
         if (aliasName && relationName && nestedFields) {
           // Handle thumbnails relation
           if (relationName === 'thumbnails' && item.thumbnail_id) {
@@ -579,6 +581,30 @@ function applySelect(data: any[], selectStr: string) {
               result[aliasName] = nestedResult
             } else {
               result[aliasName] = null
+            }
+          }
+        }
+      } else if (simpleNestedMatch) {
+        // Handle simple nested selects without alias (backward compatibility)
+        const [, relationName, nestedFields] = simpleNestedMatch
+        if (relationName && nestedFields) {
+          if (relationName === 'thumbnails' && item.thumbnail_id) {
+            const thumbnail = mockThumbnails.find(
+              (t) => t.id === item.thumbnail_id,
+            )
+            if (thumbnail) {
+              const nestedFieldArray = nestedFields
+                .split(',')
+                .map((f) => f.trim())
+              const nestedResult: any = {}
+              for (const nf of nestedFieldArray) {
+                if (nf in thumbnail) {
+                  nestedResult[nf] = thumbnail[nf as keyof typeof thumbnail]
+                }
+              }
+              result[relationName] = nestedResult
+            } else {
+              result[relationName] = null
             }
           }
         }
