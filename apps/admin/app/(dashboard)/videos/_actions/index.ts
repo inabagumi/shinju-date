@@ -319,8 +319,12 @@ export async function restoreAction(ids: string[]): Promise<{
       return { error: '動画が見つかりませんでした。', success: false }
     }
 
-    // Restore videos by setting deleted_at to NULL
-    const { error: videoError } = await supabaseClient
+    // Restore videos and thumbnails in parallel
+    const thumbnailIds = videos
+      .map((video) => video.thumbnail_id)
+      .filter((id): id is string => id !== null)
+
+    const videoRestorePromise = supabaseClient
       .from('videos')
       .update({
         deleted_at: null,
@@ -328,17 +332,8 @@ export async function restoreAction(ids: string[]): Promise<{
       })
       .in('id', ids)
 
-    if (videoError) {
-      throw videoError
-    }
-
-    // Restore associated thumbnails
-    const thumbnailIds = videos
-      .map((video) => video.thumbnail_id)
-      .filter((id): id is string => id !== null)
-
     if (thumbnailIds.length > 0) {
-      const { error: thumbnailError } = await supabaseClient
+      const thumbnailRestorePromise = supabaseClient
         .from('thumbnails')
         .update({
           deleted_at: null,
@@ -346,8 +341,21 @@ export async function restoreAction(ids: string[]): Promise<{
         })
         .in('id', thumbnailIds)
 
-      if (thumbnailError) {
-        throw thumbnailError
+      const [videoResult, thumbnailResult] = await Promise.all([
+        videoRestorePromise,
+        thumbnailRestorePromise,
+      ])
+
+      if (videoResult.error) {
+        throw videoResult.error
+      }
+      if (thumbnailResult.error) {
+        throw thumbnailResult.error
+      }
+    } else {
+      const { error: videoError } = await videoRestorePromise
+      if (videoError) {
+        throw videoError
       }
     }
 
@@ -365,80 +373,6 @@ export async function restoreAction(ids: string[]): Promise<{
     return { success: true }
   } catch (error) {
     logger.error('動画の復元に失敗しました', { error, ids: ids.join(',') })
-    return {
-      error:
-        error instanceof Error
-          ? error.message
-          : '予期しないエラーが発生しました。',
-      success: false,
-    }
-  }
-}
-
-export async function restoreSingleVideoAction(id: string): Promise<{
-  success: boolean
-  error?: string
-}> {
-  const supabaseClient = await createSupabaseServerClient()
-
-  try {
-    const now = Temporal.Now.instant()
-
-    // Get thumbnail ID before restoring video
-    const { data: video, error: fetchError } = await supabaseClient
-      .from('videos')
-      .select('id, title, thumbnail_id')
-      .eq('id', id)
-      .single()
-
-    if (fetchError) {
-      throw fetchError
-    }
-
-    if (!video) {
-      return { error: '動画が見つかりませんでした。', success: false }
-    }
-
-    // Restore video by setting deleted_at to NULL
-    const { error: videoError } = await supabaseClient
-      .from('videos')
-      .update({
-        deleted_at: null,
-        updated_at: toDBString(now),
-      })
-      .eq('id', id)
-
-    if (videoError) {
-      throw videoError
-    }
-
-    // Restore associated thumbnail
-    if (video.thumbnail_id) {
-      const { error: thumbnailError } = await supabaseClient
-        .from('thumbnails')
-        .update({
-          deleted_at: null,
-          updated_at: toDBString(now),
-        })
-        .eq('id', video.thumbnail_id)
-
-      if (thumbnailError) {
-        throw thumbnailError
-      }
-    }
-
-    // Log audit entry (non-blocking - failure won't affect restore success)
-    createAuditLog('VIDEO_RESTORE', 'videos', video.id, {
-      entityName: video.title,
-    }).catch((error) => {
-      logger.error('監査ログの作成に失敗しました', { error, videoId: video.id })
-    })
-
-    revalidatePath('/videos')
-    await revalidateTags(['videos'])
-    return { success: true }
-  } catch (error) {
-    logger.error('動画の復元に失敗しました', { error, id })
     return {
       error:
         error instanceof Error

@@ -3,7 +3,7 @@
 import { Button } from '@shinju-date/ui'
 import { useState, useTransition } from 'react'
 import {
-  restoreSingleVideoAction,
+  restoreAction,
   softDeleteSingleVideoAction,
   toggleSingleVideoVisibilityAction,
 } from '../../_actions'
@@ -77,7 +77,7 @@ export function VideoActionsButtons({ videoId, visible, isDeleted }: Props) {
     setMessage(null)
     startTransition(async () => {
       try {
-        const result = await restoreSingleVideoAction(videoId)
+        const result = await restoreAction([videoId])
         if (result.success) {
           setMessage({
             text: '動画を復元しました。',

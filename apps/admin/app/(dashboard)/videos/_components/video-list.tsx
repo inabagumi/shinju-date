@@ -17,7 +17,6 @@ import {
 } from '@/components/dropdown-menu'
 import {
   restoreAction,
-  restoreSingleVideoAction,
   softDeleteAction,
   softDeleteSingleVideoAction,
   toggleSingleVideoVisibilityAction,
@@ -98,7 +97,7 @@ export default function VideoList({ videos }: Props) {
               alert(result.error || '削除に失敗しました。')
             }
           } else if (showConfirmModal.action === 'restore') {
-            const result = await restoreSingleVideoAction(showConfirmModal.id)
+            const result = await restoreAction([showConfirmModal.id])
             if (result.success) {
               alert('動画を復元しました。')
             } else {
