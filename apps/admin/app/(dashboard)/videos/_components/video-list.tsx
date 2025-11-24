@@ -6,7 +6,7 @@ import { formatDateTime, formatDuration } from '@shinju-date/temporal-fns'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { Temporal } from 'temporal-polyfill'
 import {
@@ -163,7 +163,10 @@ export default function VideoList({ videos }: Props) {
     | 'desc'
 
   // Check if selected videos are deleted
-  const selectedVideos = videos.filter((v) => selectedIds.includes(v.id))
+  const selectedVideos = useMemo(
+    () => videos.filter((v) => selectedIds.includes(v.id)),
+    [videos, selectedIds],
+  )
   const hasDeletedVideos = selectedVideos.some((v) => v.deleted_at !== null)
   const hasNonDeletedVideos = selectedVideos.some((v) => v.deleted_at === null)
 

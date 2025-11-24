@@ -351,8 +351,8 @@ export async function restoreAction(ids: string[]): Promise<{
       }
     }
 
-    // Log audit entries for each video
-    await Promise.all(
+    // Log audit entries for each video (non-blocking - failures won't affect restore success)
+    await Promise.allSettled(
       videos.map((video) =>
         createAuditLog('VIDEO_RESTORE', 'videos', video.id, {
           entityName: video.title,
@@ -427,9 +427,11 @@ export async function restoreSingleVideoAction(id: string): Promise<{
       }
     }
 
-    // Log audit entry
-    await createAuditLog('VIDEO_RESTORE', 'videos', video.id, {
+    // Log audit entry (non-blocking - failure won't affect restore success)
+    createAuditLog('VIDEO_RESTORE', 'videos', video.id, {
       entityName: video.title,
+    }).catch((error) => {
+      logger.error('監査ログの作成に失敗しました', { error, videoId: video.id })
     })
 
     revalidatePath('/videos')
