@@ -228,6 +228,26 @@ function processRedisCommand(command: string, args: any[]): any {
       return { result: deletedCount }
     }
 
+    case 'sadd': {
+      const [key, ...members] = args
+      const set = mockRedisStore.get(key) || new Set()
+      let addedCount = 0
+      for (const member of members) {
+        if (!set.has(member)) {
+          set.add(member)
+          addedCount += 1
+        }
+      }
+      mockRedisStore.set(key, set)
+      return { result: addedCount }
+    }
+
+    case 'smembers': {
+      const [key] = args
+      const set = mockRedisStore.get(key) || new Set()
+      return { result: Array.from(set) }
+    }
+
     default:
       return { result: null }
   }
@@ -252,6 +272,23 @@ export const upstashHandlers = [
       return processRedisCommand(command, args)
     })
     return HttpResponse.json(results)
+  }),
+
+  // Multi-exec endpoint (transactional commands)
+  http.post('https://fake.upstash.test/multi-exec', async ({ request }) => {
+    const commands = (await request.json()) as any[]
+    const results = commands.map((commandBody) => {
+      const { command, args } = parseUpstashCommand(commandBody)
+      return processRedisCommand(command, args)
+    })
+    return HttpResponse.json(results)
+  }),
+
+  // Root endpoint - handles single command sent as array
+  http.post('https://fake.upstash.test/', async ({ request }) => {
+    const body = (await request.json()) as any
+    const { command, args } = parseUpstashCommand(body)
+    return HttpResponse.json(processRedisCommand(command, args))
   }),
 
   // Single command endpoint

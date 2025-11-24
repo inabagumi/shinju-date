@@ -14,8 +14,8 @@ test.describe('Web App - Homepage', () => {
   test('should display navigation elements', async ({ page }) => {
     await page.goto('http://localhost:3000')
 
-    // Check for common navigation elements
-    const navigation = page.locator('nav')
+    // Check for common navigation elements (using first() since there may be multiple nav elements)
+    const navigation = page.locator('nav').first()
     await expect(navigation).toBeVisible()
   })
 
@@ -26,7 +26,8 @@ test.describe('Web App - Homepage', () => {
     const videosLink = page.getByRole('link', { name: /videos|動画/i })
     if (await videosLink.isVisible()) {
       await videosLink.click()
-      await page.waitForLoadState('networkidle')
+      // Use timeout instead of networkidle to avoid hanging
+      await page.waitForTimeout(2000)
 
       // Should navigate to videos page
       expect(page.url()).toContain('videos')

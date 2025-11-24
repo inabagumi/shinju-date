@@ -364,6 +364,33 @@ const mockTerms = [
   },
 ]
 
+const mockTalents = [
+  {
+    created_at: '2023-01-01T00:00:00.000Z',
+    deleted_at: null,
+    id: '750e8400-e29b-41d4-a716-446655440001',
+    name: 'Talent One',
+    updated_at: '2023-01-01T00:00:00.000Z',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440001',
+  },
+  {
+    created_at: '2023-01-02T00:00:00.000Z',
+    deleted_at: null,
+    id: '750e8400-e29b-41d4-a716-446655440002',
+    name: 'Talent Two',
+    updated_at: '2023-01-02T00:00:00.000Z',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440002',
+  },
+  {
+    created_at: '2023-01-03T00:00:00.000Z',
+    deleted_at: null,
+    id: '750e8400-e29b-41d4-a716-446655440003',
+    name: 'Talent Three',
+    updated_at: '2023-01-03T00:00:00.000Z',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440003',
+  },
+]
+
 /**
  * Parse Supabase REST API query parameters
  */
@@ -722,6 +749,61 @@ export const supabaseHandlers = [
     })
   }),
 
+  // Talents table
+  http.get('https://fake.supabase.test/rest/v1/talents', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const preferHeader = request.headers.get('prefer') || ''
+    const returnCount =
+      preferHeader.includes('count=exact') || query.returnCount
+
+    let filteredData = applySupabaseFilters(mockTalents, query)
+    const count = filteredData.length
+
+    if (
+      request.method === 'HEAD' ||
+      (returnCount && preferHeader.includes('head=true'))
+    ) {
+      return new HttpResponse(null, {
+        headers: {
+          'Content-Range': `0-0/${count}`,
+          'Content-Type': 'application/json',
+        },
+      })
+    }
+
+    filteredData = applySelect(filteredData, query.select)
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (returnCount) {
+      headers['Content-Range'] = `0-${Math.max(
+        0,
+        filteredData.length - 1,
+      )}/${count}`
+    }
+
+    return HttpResponse.json(filteredData, { headers })
+  }),
+
+  // Talents table HEAD requests
+  http.head('https://fake.supabase.test/rest/v1/talents', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const filteredData = applySupabaseFilters(mockTalents, query)
+    const count = filteredData.length
+
+    return new HttpResponse(null, {
+      headers: {
+        'Content-Range': `0-0/${count}`,
+        'Content-Type': 'application/json',
+      },
+    })
+  }),
+
   // YouTube Channels Table
   http.get(
     'https://fake.supabase.test/rest/v1/youtube_channels',
@@ -896,47 +978,66 @@ export const supabaseHandlers = [
   ),
 
   // Authentication endpoints
-  http.get('https://fake.supabase.test/auth/v1/user', ({ cookies }) => {
-    const isAuthenticated =
-      process.env['MSW_SUPABASE_AUTHENTICATED'] === 'true' ||
-      cookies['sb-access-token'] === 'mock_access_token'
+  http.get(
+    'https://fake.supabase.test/auth/v1/user',
+    ({ request, cookies }) => {
+      // Check for authentication in multiple ways:
+      // 1. Environment variable for forced authentication
+      // 2. Authorization header with bearer token
+      // 3. Supabase auth cookies (pattern: sb-*-auth-token)
+      const authHeader = request.headers.get('authorization')
+      const hasValidToken =
+        authHeader?.startsWith('Bearer ') &&
+        authHeader.includes('mock_access_token')
 
-    if (!isAuthenticated) {
-      return HttpResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+      const hasAuthCookie = Object.keys(cookies).some(
+        (key) =>
+          (key.includes('sb-') && key.includes('-auth-token')) ||
+          key === 'sb-access-token',
+      )
 
-    return HttpResponse.json({
-      app_metadata: {
-        provider: 'email',
-        providers: ['email'],
-      },
-      aud: 'authenticated',
-      confirmed_at: '2023-01-01T00:00:00.000Z',
-      created_at: '2023-01-01T00:00:00.000Z',
-      email: 'admin@example.com',
-      email_confirmed_at: '2023-01-01T00:00:00.000Z',
-      id: 'mock-user-id',
-      identities: [
-        {
-          created_at: '2023-01-01T00:00:00.000Z',
-          id: 'mock-user-id',
-          identity_data: {
-            email: 'admin@example.com',
-            sub: 'mock-user-id',
-          },
-          last_sign_in_at: '2023-01-01T00:00:00.000Z',
+      const isAuthenticated =
+        process.env['MSW_SUPABASE_AUTHENTICATED'] === 'true' ||
+        hasValidToken ||
+        hasAuthCookie
+
+      if (!isAuthenticated) {
+        return HttpResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+
+      return HttpResponse.json({
+        app_metadata: {
           provider: 'email',
-          updated_at: '2023-01-01T00:00:00.000Z',
-          user_id: 'mock-user-id',
+          providers: ['email'],
         },
-      ],
-      last_sign_in_at: '2023-01-01T00:00:00.000Z',
-      phone: '',
-      role: 'authenticated',
-      updated_at: '2023-01-01T00:00:00.000Z',
-      user_metadata: {},
-    })
-  }),
+        aud: 'authenticated',
+        confirmed_at: '2023-01-01T00:00:00.000Z',
+        created_at: '2023-01-01T00:00:00.000Z',
+        email: 'admin@example.com',
+        email_confirmed_at: '2023-01-01T00:00:00.000Z',
+        id: 'mock-user-id',
+        identities: [
+          {
+            created_at: '2023-01-01T00:00:00.000Z',
+            id: 'mock-user-id',
+            identity_data: {
+              email: 'admin@example.com',
+              sub: 'mock-user-id',
+            },
+            last_sign_in_at: '2023-01-01T00:00:00.000Z',
+            provider: 'email',
+            updated_at: '2023-01-01T00:00:00.000Z',
+            user_id: 'mock-user-id',
+          },
+        ],
+        last_sign_in_at: '2023-01-01T00:00:00.000Z',
+        phone: '',
+        role: 'authenticated',
+        updated_at: '2023-01-01T00:00:00.000Z',
+        user_metadata: {},
+      })
+    },
+  ),
 
   http.post('https://fake.supabase.test/auth/v1/token', async ({ request }) => {
     const url = new URL(request.url)
@@ -1027,6 +1128,59 @@ export const supabaseHandlers = [
     )
   }),
 
+  // Session endpoint - for refreshing tokens
+  http.get('https://fake.supabase.test/auth/v1/session', ({ request }) => {
+    const authHeader = request.headers.get('authorization')
+    const hasValidToken =
+      authHeader?.startsWith('Bearer ') && authHeader.includes('mock')
+
+    if (
+      !hasValidToken &&
+      process.env['MSW_SUPABASE_AUTHENTICATED'] !== 'true'
+    ) {
+      return HttpResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    return HttpResponse.json({
+      access_token: 'mock_access_token',
+      expires_at: 9999999999,
+      expires_in: 3600,
+      refresh_token: 'mock_refresh_token',
+      token_type: 'bearer',
+      user: {
+        app_metadata: {
+          provider: 'email',
+          providers: ['email'],
+        },
+        aud: 'authenticated',
+        confirmed_at: '2023-01-01T00:00:00.000Z',
+        created_at: '2023-01-01T00:00:00.000Z',
+        email: 'admin@example.com',
+        email_confirmed_at: '2023-01-01T00:00:00.000Z',
+        id: 'mock-user-id',
+        identities: [
+          {
+            created_at: '2023-01-01T00:00:00.000Z',
+            id: 'mock-user-id',
+            identity_data: {
+              email: 'admin@example.com',
+              sub: 'mock-user-id',
+            },
+            last_sign_in_at: '2023-01-01T00:00:00.000Z',
+            provider: 'email',
+            updated_at: '2023-01-01T00:00:00.000Z',
+            user_id: 'mock-user-id',
+          },
+        ],
+        last_sign_in_at: '2023-01-01T00:00:00.000Z',
+        phone: '',
+        role: 'authenticated',
+        updated_at: '2023-01-01T00:00:00.000Z',
+        user_metadata: {},
+      },
+    })
+  }),
+
   http.post('https://fake.supabase.test/auth/v1/logout', () => {
     const headers = new Headers()
     headers.append(
@@ -1075,7 +1229,79 @@ export const supabaseHandlers = [
     },
   ),
 
+  http.post(
+    'https://fake.supabase.test/rest/v1/rpc/search_videos_v2',
+    async ({ request }) => {
+      const body = (await request.json()) as {
+        channel_ids?: string[]
+        perpage?: number
+        query?: string
+        until?: string
+      }
+
+      // Build mock response combining videos, talents, thumbnails, and youtube_videos
+      const results = mockVideos
+        .filter((video) => video.deleted_at === null && video.visible)
+        .slice(0, body.perpage || 10)
+        .map((video) => {
+          const talent = mockTalents.find((t) => t.id === video.talent_id)
+          const thumbnail = mockThumbnails.find(
+            (th) => th.id === video.thumbnail_id,
+          )
+          const youtubeVideo = mockYoutubeVideos.find(
+            (yv) => yv.video_id === video.id,
+          )
+
+          return {
+            duration: video.duration,
+            id: video.id,
+            published_at: video.published_at,
+            status: 'published',
+            talent: talent
+              ? {
+                  id: talent.id,
+                  name: talent.name,
+                }
+              : null,
+            thumbnail: thumbnail
+              ? {
+                  blur_data_url: thumbnail.blur_data_url,
+                  height: thumbnail.height,
+                  id: thumbnail.id,
+                  path: thumbnail.path,
+                  width: thumbnail.width,
+                }
+              : null,
+            title: video.title,
+            youtube_video: youtubeVideo
+              ? {
+                  youtube_video_id: youtubeVideo.youtube_video_id,
+                }
+              : null,
+          }
+        })
+
+      return HttpResponse.json(results)
+    },
+  ),
+
   // Storage endpoints
+  http.post(
+    'https://fake.supabase.test/storage/v1/object/sign/thumbnails/*',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const path = url.pathname.replace(
+        '/storage/v1/object/sign/thumbnails/',
+        '',
+      )
+
+      // Return a mock signed URL
+      return HttpResponse.json({
+        signedURL: `https://fake.supabase.test/storage/v1/object/public/thumbnails/${path}`,
+      })
+    },
+  ),
+
   http.get(
     'https://fake.supabase.test/storage/v1/object/public/thumbnails/*',
     async () => {
