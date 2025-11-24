@@ -1286,6 +1286,22 @@ export const supabaseHandlers = [
   ),
 
   // Storage endpoints
+  http.post(
+    'https://fake.supabase.test/storage/v1/object/sign/thumbnails/*',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const path = url.pathname.replace(
+        '/storage/v1/object/sign/thumbnails/',
+        '',
+      )
+
+      // Return a mock signed URL
+      return HttpResponse.json({
+        signedURL: `https://fake.supabase.test/storage/v1/object/public/thumbnails/${path}`,
+      })
+    },
+  ),
+
   http.get(
     'https://fake.supabase.test/storage/v1/object/public/thumbnails/*',
     async () => {
@@ -1299,4 +1315,15 @@ export const supabaseHandlers = [
       })
     },
   ),
+
+  // Silence telemetry and external service warnings
+  http.post('https://telemetry.nextjs.org/api/v1/record', async () => {
+    return new HttpResponse(null, { status: 200 })
+  }),
+
+  http.get('https://registry.npmjs.org/-/package/next/dist-tags', async () => {
+    return HttpResponse.json({
+      latest: '16.0.3',
+    })
+  }),
 ]
