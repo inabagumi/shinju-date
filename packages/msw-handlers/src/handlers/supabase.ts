@@ -1229,6 +1229,62 @@ export const supabaseHandlers = [
     },
   ),
 
+  http.post(
+    'https://fake.supabase.test/rest/v1/rpc/search_videos_v2',
+    async ({ request }) => {
+      const body = (await request.json()) as {
+        channel_ids?: string[]
+        perpage?: number
+        query?: string
+        until?: string
+      }
+
+      // Build mock response combining videos, talents, thumbnails, and youtube_videos
+      const results = mockVideos
+        .filter((video) => video.deleted_at === null && video.visible)
+        .slice(0, body.perpage || 10)
+        .map((video) => {
+          const talent = mockTalents.find((t) => t.id === video.talent_id)
+          const thumbnail = mockThumbnails.find(
+            (th) => th.id === video.thumbnail_id,
+          )
+          const youtubeVideo = mockYoutubeVideos.find(
+            (yv) => yv.video_id === video.id,
+          )
+
+          return {
+            duration: video.duration,
+            id: video.id,
+            published_at: video.published_at,
+            status: 'published',
+            talent: talent
+              ? {
+                  id: talent.id,
+                  name: talent.name,
+                }
+              : null,
+            thumbnail: thumbnail
+              ? {
+                  blur_data_url: thumbnail.blur_data_url,
+                  height: thumbnail.height,
+                  id: thumbnail.id,
+                  path: thumbnail.path,
+                  width: thumbnail.width,
+                }
+              : null,
+            title: video.title,
+            youtube_video: youtubeVideo
+              ? {
+                  youtube_video_id: youtubeVideo.youtube_video_id,
+                }
+              : null,
+          }
+        })
+
+      return HttpResponse.json(results)
+    },
+  ),
+
   // Storage endpoints
   http.get(
     'https://fake.supabase.test/storage/v1/object/public/thumbnails/*',
