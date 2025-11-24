@@ -6,22 +6,11 @@ import type { Temporal } from 'temporal-polyfill'
  * @returns Formatted duration string (H:MM:SS or M:SS)
  */
 export default function formatDuration(duration: Temporal.Duration): string {
-  const hours = duration.hours
-
-  if (hours > 0) {
-    // biome-ignore lint/suspicious/noExplicitAny: toLocaleString accepts DurationFormatOptions
-    return (duration as any).toLocaleString('ja-JP', {
-      hours: 'numeric',
-      minutes: '2-digit',
-      seconds: '2-digit',
-      style: 'digital',
-    })
-  }
-
-  // biome-ignore lint/suspicious/noExplicitAny: toLocaleString accepts DurationFormatOptions
-  return (duration as any).toLocaleString('ja-JP', {
-    minutes: 'numeric',
+  return duration.toLocaleString('ja-JP', {
+    hours: 'numeric',
+    hoursDisplay: 'auto',
+    minutes: '2-digit',
     seconds: '2-digit',
     style: 'digital',
-  })
+  } as Intl.DateTimeFormatOptions)
 }
