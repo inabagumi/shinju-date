@@ -291,3 +291,158 @@ export async function softDeleteSingleVideoAction(id: string): Promise<{
     }
   }
 }
+
+export async function restoreAction(ids: string[]): Promise<{
+  success: boolean
+  error?: string
+}> {
+  if (!ids || ids.length === 0) {
+    return { error: '動画が選択されていません。', success: false }
+  }
+
+  const supabaseClient = await createSupabaseServerClient()
+
+  try {
+    const now = Temporal.Now.instant()
+
+    // Get thumbnail IDs before restoring videos
+    const { data: videos, error: fetchError } = await supabaseClient
+      .from('videos')
+      .select('id, title, thumbnail_id')
+      .in('id', ids)
+
+    if (fetchError) {
+      throw fetchError
+    }
+
+    if (!videos || videos.length === 0) {
+      return { error: '動画が見つかりませんでした。', success: false }
+    }
+
+    // Restore videos by setting deleted_at to NULL
+    const { error: videoError } = await supabaseClient
+      .from('videos')
+      .update({
+        deleted_at: null,
+        updated_at: toDBString(now),
+      })
+      .in('id', ids)
+
+    if (videoError) {
+      throw videoError
+    }
+
+    // Restore associated thumbnails
+    const thumbnailIds = videos
+      .map((video) => video.thumbnail_id)
+      .filter((id): id is string => id !== null)
+
+    if (thumbnailIds.length > 0) {
+      const { error: thumbnailError } = await supabaseClient
+        .from('thumbnails')
+        .update({
+          deleted_at: null,
+          updated_at: toDBString(now),
+        })
+        .in('id', thumbnailIds)
+
+      if (thumbnailError) {
+        throw thumbnailError
+      }
+    }
+
+    // Log audit entries for each video
+    await Promise.all(
+      videos.map((video) =>
+        createAuditLog('VIDEO_RESTORE', 'videos', video.id, {
+          entityName: video.title,
+        }),
+      ),
+    )
+
+    revalidatePath('/videos')
+    await revalidateTags(['videos'])
+    return { success: true }
+  } catch (error) {
+    logger.error('動画の復元に失敗しました', { error, ids: ids.join(',') })
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : '予期しないエラーが発生しました。',
+      success: false,
+    }
+  }
+}
+
+export async function restoreSingleVideoAction(id: string): Promise<{
+  success: boolean
+  error?: string
+}> {
+  const supabaseClient = await createSupabaseServerClient()
+
+  try {
+    const now = Temporal.Now.instant()
+
+    // Get thumbnail ID before restoring video
+    const { data: video, error: fetchError } = await supabaseClient
+      .from('videos')
+      .select('id, title, thumbnail_id')
+      .eq('id', id)
+      .single()
+
+    if (fetchError) {
+      throw fetchError
+    }
+
+    if (!video) {
+      return { error: '動画が見つかりませんでした。', success: false }
+    }
+
+    // Restore video by setting deleted_at to NULL
+    const { error: videoError } = await supabaseClient
+      .from('videos')
+      .update({
+        deleted_at: null,
+        updated_at: toDBString(now),
+      })
+      .eq('id', id)
+
+    if (videoError) {
+      throw videoError
+    }
+
+    // Restore associated thumbnail
+    if (video.thumbnail_id) {
+      const { error: thumbnailError } = await supabaseClient
+        .from('thumbnails')
+        .update({
+          deleted_at: null,
+          updated_at: toDBString(now),
+        })
+        .eq('id', video.thumbnail_id)
+
+      if (thumbnailError) {
+        throw thumbnailError
+      }
+    }
+
+    // Log audit entry
+    await createAuditLog('VIDEO_RESTORE', 'videos', video.id, {
+      entityName: video.title,
+    })
+
+    revalidatePath('/videos')
+    await revalidateTags(['videos'])
+    return { success: true }
+  } catch (error) {
+    logger.error('動画の復元に失敗しました', { error, id })
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : '予期しないエラーが発生しました。',
+      success: false,
+    }
+  }
+}

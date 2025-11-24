@@ -16,6 +16,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/dropdown-menu'
 import {
+  restoreAction,
+  restoreSingleVideoAction,
   softDeleteAction,
   softDeleteSingleVideoAction,
   toggleSingleVideoVisibilityAction,
@@ -39,7 +41,7 @@ export default function VideoList({ videos }: Props) {
   const searchParams = useSearchParams()
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [showConfirmModal, setShowConfirmModal] = useState<{
-    action: 'toggle' | 'delete'
+    action: 'toggle' | 'delete' | 'restore'
     open: boolean
     id?: string
   }>({ action: 'toggle', open: false })
@@ -61,11 +63,14 @@ export default function VideoList({ videos }: Props) {
     }
   }
 
-  const handleBulkAction = (action: 'toggle' | 'delete') => {
+  const handleBulkAction = (action: 'toggle' | 'delete' | 'restore') => {
     setShowConfirmModal({ action, open: true })
   }
 
-  const handleSingleAction = (action: 'toggle' | 'delete', id: string) => {
+  const handleSingleAction = (
+    action: 'toggle' | 'delete' | 'restore',
+    id: string,
+  ) => {
     setShowConfirmModal({ action, id, open: true })
   }
 
@@ -92,6 +97,13 @@ export default function VideoList({ videos }: Props) {
             } else {
               alert(result.error || '削除に失敗しました。')
             }
+          } else if (showConfirmModal.action === 'restore') {
+            const result = await restoreSingleVideoAction(showConfirmModal.id)
+            if (result.success) {
+              alert('動画を復元しました。')
+            } else {
+              alert(result.error || '復元に失敗しました。')
+            }
           }
         } else {
           // Bulk action
@@ -110,6 +122,14 @@ export default function VideoList({ videos }: Props) {
               alert('動画を削除しました。')
             } else {
               alert(result.error || '削除に失敗しました。')
+            }
+          } else if (showConfirmModal.action === 'restore') {
+            const result = await restoreAction(selectedIds)
+            if (result.success) {
+              setSelectedIds([])
+              alert('動画を復元しました。')
+            } else {
+              alert(result.error || '復元に失敗しました。')
             }
           }
         }
@@ -142,6 +162,11 @@ export default function VideoList({ videos }: Props) {
     | 'asc'
     | 'desc'
 
+  // Check if selected videos are deleted
+  const selectedVideos = videos.filter((v) => selectedIds.includes(v.id))
+  const hasDeletedVideos = selectedVideos.some((v) => v.deleted_at !== null)
+  const hasNonDeletedVideos = selectedVideos.some((v) => v.deleted_at === null)
+
   return (
     <div>
       {/* Action bar */}
@@ -150,22 +175,36 @@ export default function VideoList({ videos }: Props) {
           <div className="flex items-center justify-between">
             <span className="font-semibold">{selectedIds.length} 件選択中</span>
             <div className="flex gap-2">
-              <button
-                className="rounded-md bg-blue-700 px-4 py-2 hover:bg-blue-800 disabled:bg-gray-400"
-                disabled={isPending}
-                onClick={() => handleBulkAction('toggle')}
-                type="button"
-              >
-                表示/非表示を切り替え
-              </button>
-              <button
-                className="rounded-md bg-red-600 px-4 py-2 hover:bg-red-700 disabled:bg-gray-400"
-                disabled={isPending}
-                onClick={() => handleBulkAction('delete')}
-                type="button"
-              >
-                削除
-              </button>
+              {hasNonDeletedVideos && (
+                <>
+                  <button
+                    className="rounded-md bg-blue-700 px-4 py-2 hover:bg-blue-800 disabled:bg-gray-400"
+                    disabled={isPending}
+                    onClick={() => handleBulkAction('toggle')}
+                    type="button"
+                  >
+                    表示/非表示を切り替え
+                  </button>
+                  <button
+                    className="rounded-md bg-red-600 px-4 py-2 hover:bg-red-700 disabled:bg-gray-400"
+                    disabled={isPending}
+                    onClick={() => handleBulkAction('delete')}
+                    type="button"
+                  >
+                    削除
+                  </button>
+                </>
+              )}
+              {hasDeletedVideos && (
+                <button
+                  className="rounded-md bg-green-600 px-4 py-2 hover:bg-green-700 disabled:bg-gray-400"
+                  disabled={isPending}
+                  onClick={() => handleBulkAction('restore')}
+                  type="button"
+                >
+                  復元
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -356,17 +395,33 @@ export default function VideoList({ videos }: Props) {
                             </svg>
                           </span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleSingleAction('toggle', video.id)}
-                        >
-                          表示/非表示を切り替え
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleSingleAction('delete', video.id)}
-                          variant="danger"
-                        >
-                          削除
-                        </DropdownMenuItem>
+                        {video.deleted_at ? (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleSingleAction('restore', video.id)
+                            }
+                          >
+                            復元
+                          </DropdownMenuItem>
+                        ) : (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleSingleAction('toggle', video.id)
+                              }
+                            >
+                              表示/非表示を切り替え
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleSingleAction('delete', video.id)
+                              }
+                              variant="danger"
+                            >
+                              削除
+                            </DropdownMenuItem>
+                          </>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </td>
@@ -393,9 +448,13 @@ export default function VideoList({ videos }: Props) {
                 ? showConfirmModal.id
                   ? 'この動画を削除しますか？'
                   : `本当に${selectedIds.length}件の動画を削除しますか？`
-                : showConfirmModal.id
-                  ? 'この動画の表示状態を切り替えますか？'
-                  : `本当に${selectedIds.length}件の動画の表示状態を切り替えますか？`}
+                : showConfirmModal.action === 'restore'
+                  ? showConfirmModal.id
+                    ? 'この動画を復元しますか？'
+                    : `本当に${selectedIds.length}件の動画を復元しますか？`
+                  : showConfirmModal.id
+                    ? 'この動画の表示状態を切り替えますか？'
+                    : `本当に${selectedIds.length}件の動画の表示状態を切り替えますか？`}
             </p>
             <div className="flex justify-end gap-2">
               <button
@@ -412,7 +471,9 @@ export default function VideoList({ videos }: Props) {
                 className={`rounded-md px-4 py-2 text-white disabled:bg-gray-400 ${
                   showConfirmModal.action === 'delete'
                     ? 'bg-red-600 hover:bg-red-700'
-                    : 'bg-blue-600 hover:bg-blue-700'
+                    : showConfirmModal.action === 'restore'
+                      ? 'bg-green-600 hover:bg-green-700'
+                      : 'bg-blue-600 hover:bg-blue-700'
                 }`}
                 disabled={isPending}
                 onClick={handleConfirm}
