@@ -108,12 +108,12 @@ export const videoSearchParamsSchema = z.object({
   status: z
     .union([z.string(), z.array(z.string())])
     .optional()
-    .transform((val) => {
+    .transform((val): VideoStatus | undefined => {
       if (Array.isArray(val)) {
         val = val[0]
       }
       return val && VALID_VIDEO_STATUSES.includes(val as VideoStatus)
-        ? val
+        ? (val as VideoStatus)
         : undefined
     }),
 
