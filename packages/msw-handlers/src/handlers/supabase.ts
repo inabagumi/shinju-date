@@ -3,6 +3,47 @@
 import { HttpResponse, http } from 'msw'
 
 // Mock data for Supabase tables
+const mockAnnouncements = [
+  {
+    created_at: '2025-11-20T00:00:00.000Z',
+    enabled: true,
+    end_at: '2025-12-01T00:00:00.000Z',
+    id: '850e8400-e29b-41d4-a716-446655440001',
+    level: 'info',
+    message: `## メンテナンスのお知らせ
+
+2025年11月25日に以下のメンテナンスを実施します：
+
+- **開始時刻**: 午前2:00
+- **終了予定**: 午前5:00
+- **影響範囲**: 全機能が一時的に利用できなくなります
+
+詳細は[公式サイト](https://example.com)をご確認ください。
+
+ご不便をおかけして申し訳ございません。`,
+    start_at: '2025-11-24T00:00:00.000Z',
+    updated_at: '2025-11-20T00:00:00.000Z',
+  },
+  {
+    created_at: '2025-11-21T00:00:00.000Z',
+    enabled: true,
+    end_at: '2025-12-15T00:00:00.000Z',
+    id: '850e8400-e29b-41d4-a716-446655440002',
+    level: 'warning',
+    message: `### 新機能リリースのお知らせ
+
+以下の新機能を追加しました：
+
+1. 動画検索機能の強化
+2. レコメンデーション精度の向上
+3. ユーザーインターフェースの改善
+
+詳しくは[リリースノート](https://example.com/release-notes)をご覧ください。`,
+    start_at: '2025-11-21T00:00:00.000Z',
+    updated_at: '2025-11-21T00:00:00.000Z',
+  },
+]
+
 const mockChannels = [
   {
     created_at: '2023-01-01T00:00:00.000Z',
@@ -878,6 +919,67 @@ export const supabaseHandlers = [
       },
     })
   }),
+
+  // Announcements table GET requests
+  http.get(
+    'https://fake.supabase.test/rest/v1/announcements',
+    ({ request }) => {
+      const url = new URL(request.url)
+      const query = parseSupabaseQuery(url)
+
+      const preferHeader = request.headers.get('prefer') || ''
+      const returnCount =
+        preferHeader.includes('count=exact') || query.returnCount
+
+      let filteredData = applySupabaseFilters(mockAnnouncements, query)
+      const count = filteredData.length
+
+      if (
+        request.method === 'HEAD' ||
+        (returnCount && preferHeader.includes('head=true'))
+      ) {
+        return new HttpResponse(null, {
+          headers: {
+            'Content-Range': `0-0/${count}`,
+            'Content-Type': 'application/json',
+          },
+        })
+      }
+
+      filteredData = applySelect(filteredData, query.select)
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+      if (returnCount) {
+        headers['Content-Range'] = `0-${Math.max(
+          0,
+          filteredData.length - 1,
+        )}/${count}`
+      }
+
+      return HttpResponse.json(filteredData, { headers })
+    },
+  ),
+
+  // Announcements table HEAD requests
+  http.head(
+    'https://fake.supabase.test/rest/v1/announcements',
+    ({ request }) => {
+      const url = new URL(request.url)
+      const query = parseSupabaseQuery(url)
+
+      const filteredData = applySupabaseFilters(mockAnnouncements, query)
+      const count = filteredData.length
+
+      return new HttpResponse(null, {
+        headers: {
+          'Content-Range': `0-0/${count}`,
+          'Content-Type': 'application/json',
+        },
+      })
+    },
+  ),
 
   // YouTube Channels Table
   http.get(
