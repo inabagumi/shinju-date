@@ -1,5 +1,10 @@
+import type { Tables } from '@shinju-date/database'
 import { z } from 'zod'
 import type { VideoSortField, VideoSortOrder } from './get-videos'
+
+// Valid video status values from the database enum
+const VALID_VIDEO_STATUSES = ['UPCOMING', 'LIVE', 'ENDED', 'PUBLISHED'] as const
+type VideoStatus = Tables<'videos'>['status']
 
 // Define the valid sort field and order values based on the types
 const VALID_SORT_FIELDS: VideoSortField[] = ['published_at', 'updated_at']
@@ -12,6 +17,7 @@ export const DEFAULT_VALUES = {
   search: undefined,
   sortField: 'updated_at' as const,
   sortOrder: 'desc' as const,
+  status: undefined,
   talentId: undefined,
   visible: undefined,
 } satisfies {
@@ -20,6 +26,7 @@ export const DEFAULT_VALUES = {
   search: string | undefined
   sortField: VideoSortField
   sortOrder: VideoSortOrder
+  status: VideoStatus | undefined
   talentId: string | undefined
   visible: boolean | undefined
 }
@@ -90,6 +97,22 @@ export const videoSearchParamsSchema = z.object({
       return VALID_SORT_ORDERS.includes(val as VideoSortOrder)
         ? (val as VideoSortOrder)
         : DEFAULT_VALUES.sortOrder
+    }),
+
+  // Video status filter (optional) - handle arrays
+  status: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((val) => {
+      if (Array.isArray(val)) {
+        val = val[0]
+      }
+      return val &&
+        VALID_VIDEO_STATUSES.includes(
+          val as (typeof VALID_VIDEO_STATUSES)[number],
+        )
+        ? (val as VideoStatus)
+        : undefined
     }),
 
   // Talent ID filter (optional, coerced to number) - handle arrays

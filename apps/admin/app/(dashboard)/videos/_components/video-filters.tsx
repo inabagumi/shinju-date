@@ -25,6 +25,7 @@ export function VideoFilters({ talents }: Props) {
   const currentTalentId = searchParams.get('talentId') || ''
   const currentDeleted = searchParams.get('deleted') || ''
   const currentVisible = searchParams.get('visible') || ''
+  const currentStatus = searchParams.get('status') || ''
 
   // Debounce search input
   useEffect(() => {
@@ -51,7 +52,7 @@ export function VideoFilters({ talents }: Props) {
   }, [searchInput, router, searchParams]) // Re-added searchParams since we need it to check current value
 
   const handleFilterChange = (
-    key: 'deleted' | 'talentId' | 'visible',
+    key: 'deleted' | 'talentId' | 'visible' | 'status',
     value: string,
   ) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -107,19 +108,39 @@ export function VideoFilters({ talents }: Props) {
       <div>
         <label
           className="mb-1 block font-medium text-gray-700 text-sm"
-          htmlFor="status-filter"
+          htmlFor="visibility-filter"
         >
-          ステータスで絞り込み
+          公開状態で絞り込み
         </label>
         <select
           className="appearance-none rounded-md border border-gray-300 bg-[length:1em] bg-[position:right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3e%3cpath%20fill=%27none%27%20stroke=%27%23333%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%272%27%20d=%27m2%205%206%206%206-6%27/%3e%3c/svg%3e')] bg-no-repeat px-3 py-2 pr-8"
-          id="status-filter"
+          id="visibility-filter"
           onChange={(e) => handleFilterChange('visible', e.target.value)}
           value={currentVisible}
         >
           <option value="">すべて</option>
           <option value="true">公開中のみ</option>
           <option value="false">非表示のみ</option>
+        </select>
+      </div>
+      <div>
+        <label
+          className="mb-1 block font-medium text-gray-700 text-sm"
+          htmlFor="status-filter"
+        >
+          動画ステータスで絞り込み
+        </label>
+        <select
+          className="appearance-none rounded-md border border-gray-300 bg-[length:1em] bg-[position:right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3e%3cpath%20fill=%27none%27%20stroke=%27%23333%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%272%27%20d=%27m2%205%206%206%206-6%27/%3e%3c/svg%3e')] bg-no-repeat px-3 py-2 pr-8"
+          id="status-filter"
+          onChange={(e) => handleFilterChange('status', e.target.value)}
+          value={currentStatus}
+        >
+          <option value="">すべて</option>
+          <option value="UPCOMING">待機中</option>
+          <option value="LIVE">配信中</option>
+          <option value="ENDED">配信済み</option>
+          <option value="PUBLISHED">公開済み</option>
         </select>
       </div>
       <div>

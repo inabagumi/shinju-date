@@ -9,6 +9,7 @@ describe('videoSearchParamsSchema', () => {
       search: 'test video',
       sortField: 'published_at',
       sortOrder: 'asc',
+      status: 'LIVE',
       talentId: '201a9ee4-176f-4092-b769-ac0af8befb66',
       visible: 'true',
     }
@@ -21,6 +22,7 @@ describe('videoSearchParamsSchema', () => {
       search: 'test video',
       sortField: 'published_at',
       sortOrder: 'asc',
+      status: 'LIVE',
       talentId: '201a9ee4-176f-4092-b769-ac0af8befb66',
       visible: true,
     })
@@ -136,5 +138,38 @@ describe('videoSearchParamsSchema', () => {
     expect('talentId' in result).toBe(false)
     expect('visible' in result).toBe(false)
     expect('deleted' in result).toBe(false)
+    expect('status' in result).toBe(false)
+  })
+
+  it('should handle valid video status values', () => {
+    expect(videoSearchParamsSchema.parse({ status: 'UPCOMING' }).status).toBe(
+      'UPCOMING',
+    )
+    expect(videoSearchParamsSchema.parse({ status: 'LIVE' }).status).toBe(
+      'LIVE',
+    )
+    expect(videoSearchParamsSchema.parse({ status: 'ENDED' }).status).toBe(
+      'ENDED',
+    )
+    expect(videoSearchParamsSchema.parse({ status: 'PUBLISHED' }).status).toBe(
+      'PUBLISHED',
+    )
+  })
+
+  it('should return undefined for invalid status values', () => {
+    expect(
+      videoSearchParamsSchema.parse({ status: 'INVALID' }).status,
+    ).toBeUndefined()
+    expect(videoSearchParamsSchema.parse({}).status).toBeUndefined()
+  })
+
+  it('should handle array input for status (URLSearchParams may provide arrays)', () => {
+    const input = {
+      status: ['LIVE', 'ENDED'], // Only first value should be used
+    }
+
+    const result = videoSearchParamsSchema.parse(input)
+
+    expect(result.status).toBe('LIVE')
   })
 })

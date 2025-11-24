@@ -67,6 +67,9 @@ async function VideoTableData({
   if (validatedParams.deleted !== undefined) {
     filters.deleted = validatedParams.deleted
   }
+  if (validatedParams.status !== undefined) {
+    filters.status = validatedParams.status
+  }
 
   // Get sort parameters from validated data
   const sortField = validatedParams.sortField
@@ -123,6 +126,9 @@ async function VideoCountData({
   }
   if (validatedParams.deleted !== undefined) {
     filters.deleted = validatedParams.deleted
+  }
+  if (validatedParams.status !== undefined) {
+    filters.status = validatedParams.status
   }
 
   const sortField = validatedParams.sortField
