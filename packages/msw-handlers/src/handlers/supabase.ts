@@ -364,6 +364,33 @@ const mockTerms = [
   },
 ]
 
+const mockTalents = [
+  {
+    created_at: '2023-01-01T00:00:00.000Z',
+    deleted_at: null,
+    id: '750e8400-e29b-41d4-a716-446655440001',
+    name: 'Talent One',
+    updated_at: '2023-01-01T00:00:00.000Z',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440001',
+  },
+  {
+    created_at: '2023-01-02T00:00:00.000Z',
+    deleted_at: null,
+    id: '750e8400-e29b-41d4-a716-446655440002',
+    name: 'Talent Two',
+    updated_at: '2023-01-02T00:00:00.000Z',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440002',
+  },
+  {
+    created_at: '2023-01-03T00:00:00.000Z',
+    deleted_at: null,
+    id: '750e8400-e29b-41d4-a716-446655440003',
+    name: 'Talent Three',
+    updated_at: '2023-01-03T00:00:00.000Z',
+    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440003',
+  },
+]
+
 /**
  * Parse Supabase REST API query parameters
  */
@@ -722,6 +749,61 @@ export const supabaseHandlers = [
     })
   }),
 
+  // Talents table
+  http.get('https://fake.supabase.test/rest/v1/talents', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const preferHeader = request.headers.get('prefer') || ''
+    const returnCount =
+      preferHeader.includes('count=exact') || query.returnCount
+
+    let filteredData = applySupabaseFilters(mockTalents, query)
+    const count = filteredData.length
+
+    if (
+      request.method === 'HEAD' ||
+      (returnCount && preferHeader.includes('head=true'))
+    ) {
+      return new HttpResponse(null, {
+        headers: {
+          'Content-Range': `0-0/${count}`,
+          'Content-Type': 'application/json',
+        },
+      })
+    }
+
+    filteredData = applySelect(filteredData, query.select)
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (returnCount) {
+      headers['Content-Range'] = `0-${Math.max(
+        0,
+        filteredData.length - 1,
+      )}/${count}`
+    }
+
+    return HttpResponse.json(filteredData, { headers })
+  }),
+
+  // Talents table HEAD requests
+  http.head('https://fake.supabase.test/rest/v1/talents', ({ request }) => {
+    const url = new URL(request.url)
+    const query = parseSupabaseQuery(url)
+
+    const filteredData = applySupabaseFilters(mockTalents, query)
+    const count = filteredData.length
+
+    return new HttpResponse(null, {
+      headers: {
+        'Content-Range': `0-0/${count}`,
+        'Content-Type': 'application/json',
+      },
+    })
+  }),
+
   // YouTube Channels Table
   http.get(
     'https://fake.supabase.test/rest/v1/youtube_channels',
@@ -899,7 +981,12 @@ export const supabaseHandlers = [
   http.get('https://fake.supabase.test/auth/v1/user', ({ cookies }) => {
     const isAuthenticated =
       process.env['MSW_SUPABASE_AUTHENTICATED'] === 'true' ||
-      cookies['sb-access-token'] === 'mock_access_token'
+      // Check for any Supabase auth token cookie (pattern: sb-*-auth-token)
+      Object.keys(cookies).some(
+        (key) =>
+          (key.includes('sb-') && key.includes('-auth-token')) ||
+          key === 'sb-access-token',
+      )
 
     if (!isAuthenticated) {
       return HttpResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -952,18 +1039,8 @@ export const supabaseHandlers = [
         body.email === 'admin@example.com' &&
         body.password === 'password123'
       ) {
-        const headers = new Headers({
-          'Content-Type': 'application/json',
-        })
-        headers.append(
-          'Set-Cookie',
-          'sb-access-token=mock_access_token; Path=/; Max-Age=3600; SameSite=Lax',
-        )
-        headers.append(
-          'Set-Cookie',
-          'sb-refresh-token=mock_refresh_token; Path=/; Max-Age=604800; SameSite=Lax',
-        )
-
+        // Return the auth response with tokens
+        // Note: Supabase SSR will handle setting the actual cookies with proper names
         return HttpResponse.json(
           {
             access_token: 'mock_access_token',
@@ -1004,7 +1081,6 @@ export const supabaseHandlers = [
             },
           },
           {
-            headers,
             status: 200,
           },
         )
