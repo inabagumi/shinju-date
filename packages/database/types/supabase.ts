@@ -439,6 +439,7 @@ export interface Database {
         | 'TERM_DELETE'
         | 'TERM_UPDATE'
         | 'VIDEO_DELETE'
+        | 'VIDEO_RESTORE'
         | 'VIDEO_VISIBILITY_TOGGLE'
         | 'VIDEO_UPDATE'
         | 'VIDEO_SYNC'
@@ -592,6 +593,7 @@ export const Constants = {
         'TERM_DELETE',
         'TERM_UPDATE',
         'VIDEO_DELETE',
+        'VIDEO_RESTORE',
         'VIDEO_VISIBILITY_TOGGLE',
         'VIDEO_UPDATE',
         'VIDEO_SYNC',

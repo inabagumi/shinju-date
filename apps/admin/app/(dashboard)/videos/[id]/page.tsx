@@ -94,16 +94,14 @@ async function VideoDetailContent({ id }: { id: string }) {
             </h1>
             <p className="text-gray-600">動画詳細</p>
           </div>
-          {!isDeleted && (
-            <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
-              <VideoActionsButtons
-                isDeleted={isDeleted}
-                videoId={video.id}
-                visible={video.visible}
-              />
-              <SyncVideoButton videoId={video.id} />
-            </div>
-          )}
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
+            <VideoActionsButtons
+              isDeleted={isDeleted}
+              videoId={video.id}
+              visible={video.visible}
+            />
+            {!isDeleted && <SyncVideoButton videoId={video.id} />}
+          </div>
         </div>
       </div>
 

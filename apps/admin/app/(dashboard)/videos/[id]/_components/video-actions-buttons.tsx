@@ -3,6 +3,7 @@
 import { Button } from '@shinju-date/ui'
 import { useState, useTransition } from 'react'
 import {
+  restoreAction,
   softDeleteSingleVideoAction,
   toggleSingleVideoVisibilityAction,
 } from '../../_actions'
@@ -68,28 +69,63 @@ export function VideoActionsButtons({ videoId, visible, isDeleted }: Props) {
     })
   }
 
-  if (isDeleted) {
-    return null
+  const handleRestore = () => {
+    if (!confirm('この動画を復元しますか？')) {
+      return
+    }
+
+    setMessage(null)
+    startTransition(async () => {
+      try {
+        const result = await restoreAction([videoId])
+        if (result.success) {
+          setMessage({
+            text: '動画を復元しました。',
+            type: 'success',
+          })
+        } else {
+          setMessage({
+            text: result.error || '復元に失敗しました。',
+            type: 'error',
+          })
+        }
+      } catch (_error) {
+        setMessage({ text: '予期しないエラーが発生しました。', type: 'error' })
+      }
+    })
   }
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex gap-2">
-        <Button
-          disabled={isPending}
-          onClick={handleToggleVisibility}
-          variant="secondary"
-        >
-          {visible ? '非表示にする' : '表示する'}
-        </Button>
-        <Button
-          className="border-red-300 text-red-700 hover:bg-red-50"
-          disabled={isPending}
-          onClick={handleDelete}
-          variant="secondary"
-        >
-          削除
-        </Button>
+        {isDeleted ? (
+          <Button
+            className="bg-green-600 text-white hover:bg-green-700"
+            disabled={isPending}
+            onClick={handleRestore}
+            variant="secondary"
+          >
+            復元
+          </Button>
+        ) : (
+          <>
+            <Button
+              disabled={isPending}
+              onClick={handleToggleVisibility}
+              variant="secondary"
+            >
+              {visible ? '非表示にする' : '表示する'}
+            </Button>
+            <Button
+              className="border-red-300 text-red-700 hover:bg-red-50"
+              disabled={isPending}
+              onClick={handleDelete}
+              variant="secondary"
+            >
+              削除
+            </Button>
+          </>
+        )}
       </div>
 
       {message && (

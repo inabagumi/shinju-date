@@ -25,6 +25,7 @@ const ACTION_LABELS: Record<
   TERM_DELETE: '用語を削除',
   TERM_UPDATE: '用語を更新',
   VIDEO_DELETE: '動画を削除',
+  VIDEO_RESTORE: '動画を復元',
   VIDEO_SYNC: '動画を同期',
   VIDEO_UPDATE: '動画を更新',
   VIDEO_VISIBILITY_TOGGLE: '動画の表示設定を変更',
