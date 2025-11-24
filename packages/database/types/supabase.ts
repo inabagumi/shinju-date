@@ -454,7 +454,7 @@ export interface Database {
         | 'YOUTUBE_CHANNEL_DELETE'
       platform_type: 'youtube' | 'twitch'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
-      video_status: 'UPCOMING' | 'LIVE' | 'ENDED'
+      video_status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -606,7 +606,7 @@ export const Constants = {
       ],
       platform_type: ['youtube', 'twitch'],
       twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],
-      video_status: ['UPCOMING', 'LIVE', 'ENDED'],
+      video_status: ['UPCOMING', 'LIVE', 'ENDED', 'PUBLISHED'],
     },
   },
 } as const

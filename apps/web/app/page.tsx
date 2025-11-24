@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import NoResults from '@/components/no-results'
 import Timeline, { TimelineSkeleton } from '@/components/timeline'
-import { fetchNotEndedVideos } from '@/lib/fetchers'
+import { fetchUpcomingAndLiveVideos } from '@/lib/fetchers'
 import {
   getDisplayRecommendationQueries,
   TOTAL_DISPLAY_COUNT,
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
 }
 
 async function HomeTimeline() {
-  const videos = await fetchNotEndedVideos()
+  const videos = await fetchUpcomingAndLiveVideos()
 
   return videos.length > 0 ? (
     <Timeline prefetchedData={videos} />

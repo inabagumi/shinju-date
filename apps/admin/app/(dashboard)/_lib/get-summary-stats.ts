@@ -55,12 +55,12 @@ export async function getSummaryStats(
     })
   }
 
-  // Get visible video count (public: visible + ENDED or LIVE, excluding deleted videos)
+  // Get visible video count (public: visible + ENDED or LIVE or PUBLISHED, excluding deleted videos)
   const { count: visibleVideos, error: visibleError } = await supabaseClient
     .from('videos')
     .select('*', { count: 'exact', head: true })
     .eq('visible', true)
-    .in('status', ['ENDED', 'LIVE'])
+    .in('status', ['ENDED', 'LIVE', 'PUBLISHED'])
     .is('deleted_at', null)
 
   if (visibleError) {

@@ -22,8 +22,8 @@ test.describe('Web App - Homepage', () => {
   test('should have working links', async ({ page }) => {
     await page.goto('http://localhost:3000')
 
-    // Find and click on videos link if it exists
-    const videosLink = page.getByRole('link', { name: /videos|動画/i })
+    // Find and click on the navigation videos link (動画一覧)
+    const videosLink = page.getByRole('link', { name: '動画一覧' })
     if (await videosLink.isVisible()) {
       await videosLink.click()
       // Use timeout instead of networkidle to avoid hanging
