@@ -20,7 +20,7 @@
   "main": "./dist/index.js",
   "name": "@shinju-date/logger",
   "peerDependencies": {
-    "@sentry/nextjs": "10.0.0"
+    "@sentry/nextjs": "^10.0.0"
   },
   "private": true,
   "repository": {
