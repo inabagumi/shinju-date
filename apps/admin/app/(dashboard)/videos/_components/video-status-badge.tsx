@@ -1,5 +1,5 @@
 import type { Tables } from '@shinju-date/database'
-import { twMerge } from 'tailwind-merge'
+import { Badge, type BadgeProps } from '@shinju-date/ui'
 
 type VideoStatus = Tables<'videos'>['status']
 
@@ -9,11 +9,6 @@ interface VideoStatusInfo {
   status: VideoStatus
 }
 
-type StatusInfo = {
-  text: string
-  colorClasses: string
-}
-
 const STATUS_LABELS: Record<VideoStatus, string> = {
   ENDED: '配信済み',
   LIVE: '配信中',
@@ -21,35 +16,41 @@ const STATUS_LABELS: Record<VideoStatus, string> = {
   UPCOMING: '待機中',
 }
 
-const STATUS_COLORS: Record<VideoStatus, string> = {
-  ENDED: 'bg-gray-100 text-gray-800',
-  LIVE: 'bg-red-100 text-red-800',
-  PUBLISHED: 'bg-gray-100 text-gray-800',
-  UPCOMING: 'bg-blue-100 text-blue-800',
+function getBadgeVariant(video: VideoStatusInfo): BadgeProps['variant'] {
+  // Priority 1: If deleted, show "削除済み" with error variant (red)
+  if (video.deleted_at) {
+    return 'error'
+  }
+
+  // Priority 2: If not visible, show "非表示" with secondary variant (gray)
+  if (!video.visible) {
+    return 'secondary'
+  }
+
+  // Priority 3: Show the status field content with appropriate variant
+  const statusVariantMap: Record<VideoStatus, BadgeProps['variant']> = {
+    ENDED: 'secondary',
+    LIVE: 'error',
+    PUBLISHED: 'secondary',
+    UPCOMING: 'info',
+  }
+
+  return statusVariantMap[video.status] ?? 'secondary'
 }
 
-function getStatusInfo(video: VideoStatusInfo): StatusInfo {
+function getStatusText(video: VideoStatusInfo): string {
   // Priority 1: If deleted, show "削除済み"
   if (video.deleted_at) {
-    return {
-      colorClasses: 'bg-red-100 text-red-800',
-      text: '削除済み',
-    }
+    return '削除済み'
   }
 
   // Priority 2: If not visible, show "非表示"
   if (!video.visible) {
-    return {
-      colorClasses: 'bg-gray-100 text-gray-800',
-      text: '非表示',
-    }
+    return '非表示'
   }
 
   // Priority 3: Show the status field content
-  return {
-    colorClasses: STATUS_COLORS[video.status] ?? 'bg-gray-100 text-gray-800',
-    text: STATUS_LABELS[video.status] ?? video.status,
-  }
+  return STATUS_LABELS[video.status] ?? video.status
 }
 
 interface VideoStatusBadgeProps {
@@ -58,17 +59,12 @@ interface VideoStatusBadgeProps {
 }
 
 export function VideoStatusBadge({ video, className }: VideoStatusBadgeProps) {
-  const statusInfo = getStatusInfo(video)
+  const variant = getBadgeVariant(video)
+  const text = getStatusText(video)
 
   return (
-    <span
-      className={twMerge(
-        'whitespace-nowrap rounded px-2 py-1 text-xs',
-        statusInfo.colorClasses,
-        className,
-      )}
-    >
-      {statusInfo.text}
-    </span>
+    <Badge className={className} variant={variant}>
+      {text}
+    </Badge>
   )
 }
