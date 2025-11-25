@@ -3,7 +3,6 @@ import {
   formatDateTimeFromISO,
   formatDuration,
 } from '@shinju-date/temporal-fns'
-import { Badge } from '@shinju-date/ui'
 import { ChevronLeft, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
@@ -12,7 +11,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { Temporal } from 'temporal-polyfill'
-import { StatusBadge } from '../_components/status-badge'
+import { VideoStatusBadge } from '../_components/video-status-badge'
 import getVideo from '../_lib/get-video'
 import { SyncVideoButton } from './_components/sync-video-button'
 import { VideoActionsButtons } from './_components/video-actions-buttons'
@@ -21,24 +20,6 @@ interface Props {
   params: Promise<{
     id: string
   }>
-}
-
-function getStatusText(video: {
-  visible: boolean
-  deleted_at: string | null
-}): string {
-  if (video.deleted_at) return '削除済み'
-  if (video.visible) return '公開中'
-  return '非表示'
-}
-
-function getStatusVariant(video: {
-  visible: boolean
-  deleted_at: string | null
-}): 'error' | 'success' | 'secondary' {
-  if (video.deleted_at) return 'error'
-  if (video.visible) return 'success'
-  return 'secondary'
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -160,15 +141,11 @@ async function VideoDetailContent({ id }: { id: string }) {
                 ステータス
               </h3>
             </div>
-            <div className="flex gap-2 border-gray-200 border-t px-4 py-5 sm:px-6">
-              <Badge
+            <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
+              <VideoStatusBadge
                 className="font-semibold leading-5"
-                variant={getStatusVariant(video)}
-              >
-                {getStatusText(video)}
-              </Badge>
-
-              <StatusBadge status={video.status} />
+                video={video}
+              />
             </div>
           </div>
         </div>
