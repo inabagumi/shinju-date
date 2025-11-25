@@ -2,10 +2,10 @@
   "author": "Haneru Developers",
   "description": "Shared logger package for SHINJU DATE applications",
   "devDependencies": {
-    "@sentry/nextjs": "^10.27.0",
-    "@tsconfig/node20": "^20.1.8",
-    "@tsconfig/strictest": "^2.0.8",
-    "tsup": "^8.5.1",
+    "@sentry/nextjs": "10.27.0",
+    "@tsconfig/node20": "20.1.8",
+    "@tsconfig/strictest": "2.0.8",
+    "tsup": "8.5.1",
     "typescript": "5.9.3",
     "vitest": "4.0.14"
   },
@@ -20,7 +20,7 @@
   "main": "./dist/index.js",
   "name": "@shinju-date/logger",
   "peerDependencies": {
-    "@sentry/nextjs": "^10.0.0"
+    "@sentry/nextjs": "10.0.0"
   },
   "private": true,
   "repository": {

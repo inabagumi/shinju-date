@@ -9,14 +9,14 @@
     "tailwind-merge": "3.4.0"
   },
   "devDependencies": {
-    "@storybook/addon-docs": "^10.0.8",
-    "@storybook/addon-onboarding": "^10.0.8",
-    "@storybook/react-vite": "^10.0.8",
+    "@storybook/addon-docs": "10.0.8",
+    "@storybook/addon-onboarding": "10.0.8",
+    "@storybook/react-vite": "10.0.8",
     "@tailwindcss/postcss": "4.1.17",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.0",
-    "@tsconfig/node20": "^20.1.8",
-    "@tsconfig/strictest": "^2.0.8",
+    "@tsconfig/node20": "20.1.8",
+    "@tsconfig/strictest": "2.0.8",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.1",
@@ -25,9 +25,9 @@
     "postcss-load-config": "6.0.1",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "storybook": "^10.0.8",
+    "storybook": "10.0.8",
     "tailwindcss": "4.1.17",
-    "tsup": "^8.5.1",
+    "tsup": "8.5.1",
     "typescript": "5.9.3",
     "vitest": "4.0.14"
   },
@@ -42,8 +42,8 @@
   "main": "./dist/index.js",
   "name": "@shinju-date/ui",
   "peerDependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
   },
   "private": true,
   "repository": {
