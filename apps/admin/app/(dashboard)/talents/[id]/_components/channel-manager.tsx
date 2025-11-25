@@ -1,5 +1,6 @@
 'use client'
 
+import type { Tables } from '@shinju-date/database'
 import {
   Dialog,
   DialogClose,
@@ -25,12 +26,10 @@ import {
   removeYouTubeChannelAction,
 } from '../../_actions/channels'
 
-interface Channel {
-  id: string
-  name: string | null
-  youtube_channel_id: string
-  youtube_handle: string | null
-}
+type Channel = Pick<
+  Tables<'youtube_channels'>,
+  'id' | 'name' | 'youtube_channel_id' | 'youtube_handle'
+>
 
 interface ChannelManagerProps {
   talentId: string

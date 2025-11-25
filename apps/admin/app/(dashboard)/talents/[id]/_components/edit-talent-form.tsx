@@ -1,5 +1,6 @@
 'use client'
 
+import type { Tables } from '@shinju-date/database'
 import { useState } from 'react'
 import type { FormState } from '@/components/form'
 import Form, {
@@ -12,15 +13,11 @@ import Form, {
 } from '@/components/form'
 import { updateTalentAction } from '../../_actions'
 
-interface Talent {
-  id: string
-  name: string
-  youtube_channels: {
-    id: string
-    name: string | null
-    youtube_channel_id: string
-    youtube_handle: string | null
-  }[]
+type Talent = Pick<Tables<'talents'>, 'id' | 'name'> & {
+  youtube_channels: Pick<
+    Tables<'youtube_channels'>,
+    'id' | 'name' | 'youtube_channel_id' | 'youtube_handle'
+  >[]
 }
 
 interface EditTalentFormProps {

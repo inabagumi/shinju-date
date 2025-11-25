@@ -1,15 +1,14 @@
 'use client'
 
+import type { Tables } from '@shinju-date/database'
 import { Input } from '@shinju-date/ui'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-interface Talent {
-  created_at: string
-  id: string
-  name: string
-  updated_at: string
-}
+type Talent = Pick<
+  Tables<'talents'>,
+  'id' | 'name' | 'created_at' | 'updated_at'
+>
 
 interface Props {
   talents: Talent[]
