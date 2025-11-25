@@ -1,4 +1,5 @@
 import type { Tables } from '@shinju-date/database'
+import { twMerge } from 'tailwind-merge'
 
 type VideoStatus = Tables<'videos'>['status']
 
@@ -61,7 +62,11 @@ export function VideoStatusBadge({ video, className }: VideoStatusBadgeProps) {
 
   return (
     <span
-      className={`whitespace-nowrap rounded px-2 py-1 text-xs ${statusInfo.colorClasses} ${className ?? ''}`}
+      className={twMerge(
+        'whitespace-nowrap rounded px-2 py-1 text-xs',
+        statusInfo.colorClasses,
+        className,
+      )}
     >
       {statusInfo.text}
     </span>
