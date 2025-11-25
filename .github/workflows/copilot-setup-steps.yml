@@ -22,7 +22,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
         with:
-          version: '0.9.11'
+          version: '0.9.12'
 
       - name: Enable Corepack for pnpm
         run: |
