@@ -625,16 +625,16 @@ importers:
   packages/helpers:
     devDependencies:
       '@tsconfig/node20':
-        specifier: ^20.1.8
+        specifier: 20.1.8
         version: 20.1.8
       '@tsconfig/strictest':
-        specifier: ^2.0.8
+        specifier: 2.0.8
         version: 2.0.8
       next:
-        specifier: ^16.0.4
+        specifier: 16.0.4
         version: 16.0.4(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       tsup:
-        specifier: ^8.5.1
+        specifier: 8.5.1
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)
       typescript:
         specifier: 5.9.3
@@ -646,16 +646,16 @@ importers:
   packages/logger:
     devDependencies:
       '@sentry/nextjs':
-        specifier: ^10.27.0
+        specifier: 10.27.0
         version: 10.27.0(@opentelemetry/context-async-hooks@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(next@16.0.4(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(webpack@5.103.0)
       '@tsconfig/node20':
-        specifier: ^20.1.8
+        specifier: 20.1.8
         version: 20.1.8
       '@tsconfig/strictest':
-        specifier: ^2.0.8
+        specifier: 2.0.8
         version: 2.0.8
       tsup:
-        specifier: ^8.5.1
+        specifier: 8.5.1
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)
       typescript:
         specifier: 5.9.3
@@ -673,20 +673,20 @@ importers:
         specifier: 2.12.3
         version: 2.12.3(@types/node@24.10.1)(typescript@5.9.3)
       temporal-polyfill:
-        specifier: ^0.3.0
+        specifier: 0.3.0
         version: 0.3.0
     devDependencies:
       '@tsconfig/node20':
-        specifier: ^20.1.8
+        specifier: 20.1.8
         version: 20.1.8
       '@tsconfig/strictest':
-        specifier: ^2.0.8
+        specifier: 2.0.8
         version: 2.0.8
       '@types/node':
         specifier: 24.10.1
         version: 24.10.1
       tsup:
-        specifier: ^8.5.1
+        specifier: 8.5.1
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)
       typescript:
         specifier: 5.9.3
@@ -757,13 +757,13 @@ importers:
         version: 3.4.0
     devDependencies:
       '@storybook/addon-docs':
-        specifier: ^10.0.8
+        specifier: 10.0.8
         version: 10.0.8(@types/react@19.2.7)(esbuild@0.27.0)(rollup@4.53.3)(storybook@10.0.8(@testing-library/dom@10.4.1)(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)))(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1))(webpack@5.103.0(esbuild@0.27.0))
       '@storybook/addon-onboarding':
-        specifier: ^10.0.8
+        specifier: 10.0.8
         version: 10.0.8(storybook@10.0.8(@testing-library/dom@10.4.1)(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)))
       '@storybook/react-vite':
-        specifier: ^10.0.8
+        specifier: 10.0.8
         version: 10.0.8(esbuild@0.27.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(rollup@4.53.3)(storybook@10.0.8(@testing-library/dom@10.4.1)(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)))(typescript@5.9.3)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1))(webpack@5.103.0(esbuild@0.27.0))
       '@tailwindcss/postcss':
         specifier: 4.1.17
@@ -775,10 +775,10 @@ importers:
         specifier: 16.3.0
         version: 16.3.0(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tsconfig/node20':
-        specifier: ^20.1.8
+        specifier: 20.1.8
         version: 20.1.8
       '@tsconfig/strictest':
-        specifier: ^2.0.8
+        specifier: 2.0.8
         version: 2.0.8
       '@types/react':
         specifier: 19.2.7
@@ -805,13 +805,13 @@ importers:
         specifier: 19.2.0
         version: 19.2.0(react@19.2.0)
       storybook:
-        specifier: ^10.0.8
+        specifier: 10.0.8
         version: 10.0.8(@testing-library/dom@10.4.1)(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1))
       tailwindcss:
         specifier: 4.1.17
         version: 4.1.17
       tsup:
-        specifier: ^8.5.1
+        specifier: 8.5.1
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)
       typescript:
         specifier: 5.9.3
