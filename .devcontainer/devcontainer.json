@@ -4,7 +4,7 @@
       "extensions": [
         "EditorConfig.EditorConfig",
         "biomejs.biome",
-        "bradlc.vscode-tailwindcss@prerelease",
+        "bradlc.vscode-tailwindcss",
         "unifiedjs.vscode-mdx",
         "ms-python.python",
         "ms-python.ruff"
@@ -28,7 +28,7 @@
     "memory": "8gb",
     "storage": "32gb"
   },
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:4-22-bookworm",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:4-24-bookworm",
   "name": "SHINJU DATE",
   "portsAttributes": {
     "3000": {
