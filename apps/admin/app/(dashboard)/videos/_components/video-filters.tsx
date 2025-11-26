@@ -74,7 +74,7 @@ export function VideoFilters({ talents }: Props) {
   }))
 
   const visibilityOptions: MultiSelectOption[] = [
-    { label: '公開中', value: 'true' },
+    { label: '表示中', value: 'true' },
     { label: '非表示', value: 'false' },
   ]
 
@@ -82,7 +82,7 @@ export function VideoFilters({ talents }: Props) {
     { label: '待機中', value: 'UPCOMING' },
     { label: '配信中', value: 'LIVE' },
     { label: '配信済み', value: 'ENDED' },
-    { label: '動画公開済', value: 'PUBLISHED' },
+    { label: '公開済み', value: 'PUBLISHED' },
   ]
 
   const deletedOptions: MultiSelectOption[] = [
@@ -121,17 +121,6 @@ export function VideoFilters({ talents }: Props) {
       </div>
       <div className="w-full sm:w-auto sm:min-w-[200px]">
         <div className="mb-1 block font-medium text-gray-700 text-sm">
-          公開状態で絞り込み
-        </div>
-        <MultiSelect
-          onChange={(values) => handleMultiSelectChange('visible', values)}
-          options={visibilityOptions}
-          placeholder="すべて"
-          value={currentVisible}
-        />
-      </div>
-      <div className="w-full sm:w-auto sm:min-w-[200px]">
-        <div className="mb-1 block font-medium text-gray-700 text-sm">
           動画ステータスで絞り込み
         </div>
         <MultiSelect
@@ -141,16 +130,29 @@ export function VideoFilters({ talents }: Props) {
           value={currentStatus}
         />
       </div>
-      <div className="w-full sm:w-auto sm:min-w-[200px]">
-        <div className="mb-1 block font-medium text-gray-700 text-sm">
-          削除状態で絞り込み
+      <div className="flex w-full flex-wrap gap-4 sm:contents">
+        <div className="w-full sm:w-auto sm:min-w-[200px]">
+          <div className="mb-1 block font-medium text-gray-700 text-sm">
+            公開状態で絞り込み
+          </div>
+          <MultiSelect
+            onChange={(values) => handleMultiSelectChange('visible', values)}
+            options={visibilityOptions}
+            placeholder="すべて"
+            value={currentVisible}
+          />
         </div>
-        <MultiSelect
-          onChange={(values) => handleMultiSelectChange('deleted', values)}
-          options={deletedOptions}
-          placeholder="すべて"
-          value={currentDeleted}
-        />
+        <div className="w-full sm:w-auto sm:min-w-[200px]">
+          <div className="mb-1 block font-medium text-gray-700 text-sm">
+            削除状態で絞り込み
+          </div>
+          <MultiSelect
+            onChange={(values) => handleMultiSelectChange('deleted', values)}
+            options={deletedOptions}
+            placeholder="すべて"
+            value={currentDeleted}
+          />
+        </div>
       </div>
     </div>
   )
