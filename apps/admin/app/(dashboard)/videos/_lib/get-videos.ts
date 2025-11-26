@@ -25,11 +25,11 @@ export type Video = Pick<
 }
 
 export type VideoFilters = {
-  talentId?: string
-  deleted?: boolean
-  visible?: boolean
+  talentId?: string[]
+  deleted?: boolean[]
+  visible?: boolean[]
   search?: string
-  status?: Tables<'videos'>['status']
+  status?: Tables<'videos'>['status'][]
 }
 
 export type VideoSortField = 'published_at' | 'updated_at'
@@ -59,29 +59,32 @@ export async function getVideos(
     )
 
   // Apply filters
-  if (filters?.talentId) {
-    query = query.eq('talent_id', filters.talentId)
+  if (filters?.talentId && filters.talentId.length > 0) {
+    query = query.in('talent_id', filters.talentId)
   }
-  if (filters?.visible !== undefined) {
-    query = query.eq('visible', filters.visible)
+  if (filters?.visible && filters.visible.length > 0) {
+    query = query.in('visible', filters.visible)
   }
-  if (filters?.status !== undefined) {
-    query = query.eq('status', filters.status)
+  if (filters?.status && filters.status.length > 0) {
+    query = query.in('status', filters.status)
   }
   // Handle text search
   if (filters?.search) {
     const escapedSearch = escapeSearchString(filters.search)
     query = query.ilike('title', `%${escapedSearch}%`)
   }
-  // Handle deleted filter
-  if (filters?.deleted === true) {
-    // Show only deleted videos
-    query = query.not('deleted_at', 'is', null)
-  } else if (filters?.deleted === false) {
-    // Show only non-deleted videos
-    query = query.is('deleted_at', null)
+  // Handle deleted filter with OR logic
+  if (filters?.deleted && filters.deleted.length > 0) {
+    if (filters.deleted.length === 1) {
+      // Only one value selected
+      if (filters.deleted[0] === true) {
+        query = query.not('deleted_at', 'is', null)
+      } else {
+        query = query.is('deleted_at', null)
+      }
+    }
+    // If both true and false are selected, don't apply any filter (show all)
   }
-  // If deleted is undefined, show all videos (both deleted and non-deleted)
 
   // Fetch videos from Supabase with pagination
   const {

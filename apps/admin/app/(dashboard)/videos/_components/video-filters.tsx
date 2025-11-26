@@ -1,7 +1,7 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import { Input } from '@shinju-date/ui'
+import { Input, MultiSelect, type MultiSelectOption } from '@shinju-date/ui'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
@@ -21,10 +21,11 @@ export function VideoFilters({ talents }: Props) {
     searchParams.get('search') || '',
   )
 
-  const currentTalentId = searchParams.get('talentId') || ''
-  const currentDeleted = searchParams.get('deleted') || ''
-  const currentVisible = searchParams.get('visible') || ''
-  const currentStatus = searchParams.get('status') || ''
+  // Get current filter values from URL (support arrays)
+  const currentTalentIds = searchParams.getAll('talentId')
+  const currentDeleted = searchParams.getAll('deleted')
+  const currentVisible = searchParams.getAll('visible')
+  const currentStatus = searchParams.getAll('status')
 
   // Debounce search input
   useEffect(() => {
@@ -48,22 +49,46 @@ export function VideoFilters({ talents }: Props) {
     }, 500) // 500ms debounce
 
     return () => clearTimeout(timer)
-  }, [searchInput, router, searchParams]) // Re-added searchParams since we need it to check current value
+  }, [searchInput, router, searchParams])
 
-  const handleFilterChange = (
+  const handleMultiSelectChange = (
     key: 'deleted' | 'talentId' | 'visible' | 'status',
-    value: string,
+    values: string[],
   ) => {
     const params = new URLSearchParams(searchParams.toString())
-    if (value === '') {
-      params.delete(key)
-    } else {
-      params.set(key, value)
+    // Remove all existing values for this key
+    params.delete(key)
+    // Add new values
+    for (const value of values) {
+      params.append(key, value)
     }
     // Reset to page 1 when filters change
     params.delete('page')
     router.push(`/videos?${params.toString()}`)
   }
+
+  // Define options for each filter
+  const talentOptions: MultiSelectOption[] = talents.map((talent) => ({
+    label: talent.name,
+    value: talent.id,
+  }))
+
+  const visibilityOptions: MultiSelectOption[] = [
+    { label: '公開中', value: 'true' },
+    { label: '非表示', value: 'false' },
+  ]
+
+  const statusOptions: MultiSelectOption[] = [
+    { label: '待機中', value: 'UPCOMING' },
+    { label: '配信中', value: 'LIVE' },
+    { label: '配信済み', value: 'ENDED' },
+    { label: '公開済み', value: 'PUBLISHED' },
+  ]
+
+  const deletedOptions: MultiSelectOption[] = [
+    { label: '削除されていない', value: 'false' },
+    { label: '削除済み', value: 'true' },
+  ]
 
   return (
     <div className="mb-4 flex flex-wrap gap-4">
@@ -83,82 +108,49 @@ export function VideoFilters({ talents }: Props) {
           variant="default"
         />
       </div>
-      <div>
-        <label
-          className="mb-1 block font-medium text-gray-700 text-sm"
-          htmlFor="talent-filter"
-        >
+      <div className="w-full sm:w-auto sm:min-w-[200px]">
+        <div className="mb-1 block font-medium text-gray-700 text-sm">
           タレントで絞り込み
-        </label>
-        <select
-          className="w-full max-w-full appearance-none rounded-md border border-gray-300 bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3e%3cpath%20fill=%27none%27%20stroke=%27%23333%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%272%27%20d=%27m2%205%206%206%206-6%27/%3e%3c/svg%3e')] bg-position-[right_0.5rem_center] bg-size-[1em] bg-no-repeat px-3 py-2 pr-8 sm:w-auto"
-          id="talent-filter"
-          onChange={(e) => handleFilterChange('talentId', e.target.value)}
-          value={currentTalentId}
-        >
-          <option value="">すべてのタレント</option>
-          {talents.map((talent) => (
-            <option key={talent.id} value={talent.id}>
-              {talent.name}
-            </option>
-          ))}
-        </select>
+        </div>
+        <MultiSelect
+          onChange={(values) => handleMultiSelectChange('talentId', values)}
+          options={talentOptions}
+          placeholder="すべてのタレント"
+          value={currentTalentIds}
+        />
       </div>
-      <div>
-        <label
-          className="mb-1 block font-medium text-gray-700 text-sm"
-          htmlFor="visibility-filter"
-        >
+      <div className="w-full sm:w-auto sm:min-w-[200px]">
+        <div className="mb-1 block font-medium text-gray-700 text-sm">
           公開状態で絞り込み
-        </label>
-        <select
-          className="appearance-none rounded-md border border-gray-300 bg-[length:1em] bg-[position:right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3e%3cpath%20fill=%27none%27%20stroke=%27%23333%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%272%27%20d=%27m2%205%206%206%206-6%27/%3e%3c/svg%3e')] bg-no-repeat px-3 py-2 pr-8"
-          id="visibility-filter"
-          onChange={(e) => handleFilterChange('visible', e.target.value)}
+        </div>
+        <MultiSelect
+          onChange={(values) => handleMultiSelectChange('visible', values)}
+          options={visibilityOptions}
+          placeholder="すべて"
           value={currentVisible}
-        >
-          <option value="">すべて</option>
-          <option value="true">公開中のみ</option>
-          <option value="false">非表示のみ</option>
-        </select>
+        />
       </div>
-      <div>
-        <label
-          className="mb-1 block font-medium text-gray-700 text-sm"
-          htmlFor="status-filter"
-        >
+      <div className="w-full sm:w-auto sm:min-w-[200px]">
+        <div className="mb-1 block font-medium text-gray-700 text-sm">
           動画ステータスで絞り込み
-        </label>
-        <select
-          className="appearance-none rounded-md border border-gray-300 bg-[length:1em] bg-[position:right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3e%3cpath%20fill=%27none%27%20stroke=%27%23333%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%272%27%20d=%27m2%205%206%206%206-6%27/%3e%3c/svg%3e')] bg-no-repeat px-3 py-2 pr-8"
-          id="status-filter"
-          onChange={(e) => handleFilterChange('status', e.target.value)}
+        </div>
+        <MultiSelect
+          onChange={(values) => handleMultiSelectChange('status', values)}
+          options={statusOptions}
+          placeholder="すべて"
           value={currentStatus}
-        >
-          <option value="">すべて</option>
-          <option value="UPCOMING">待機中</option>
-          <option value="LIVE">配信中</option>
-          <option value="ENDED">配信済み</option>
-          <option value="PUBLISHED">公開済み</option>
-        </select>
+        />
       </div>
-      <div>
-        <label
-          className="mb-1 block font-medium text-gray-700 text-sm"
-          htmlFor="deleted-filter"
-        >
+      <div className="w-full sm:w-auto sm:min-w-[200px]">
+        <div className="mb-1 block font-medium text-gray-700 text-sm">
           削除状態で絞り込み
-        </label>
-        <select
-          className="appearance-none rounded-md border border-gray-300 bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3e%3cpath%20fill=%27none%27%20stroke=%27%23333%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%272%27%20d=%27m2%205%206%206%206-6%27/%3e%3c/svg%3e')] bg-position-[right_0.5rem_center] bg-size-[1em] bg-no-repeat px-3 py-2 pr-8"
-          id="deleted-filter"
-          onChange={(e) => handleFilterChange('deleted', e.target.value)}
+        </div>
+        <MultiSelect
+          onChange={(values) => handleMultiSelectChange('deleted', values)}
+          options={deletedOptions}
+          placeholder="すべて"
           value={currentDeleted}
-        >
-          <option value="">すべて</option>
-          <option value="false">削除されていないもののみ</option>
-          <option value="true">削除済みのみ</option>
-        </select>
+        />
       </div>
     </div>
   )
