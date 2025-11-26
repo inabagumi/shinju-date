@@ -98,8 +98,8 @@ describe('Integration: Schema + Pagination Logic', () => {
       search: 'test',
       sortField: 'published_at',
       sortOrder: 'desc',
-      talentId: 'dee90561-a010-48a5-88fa-cde39be9a94a',
-      visible: true,
+      talentId: ['dee90561-a010-48a5-88fa-cde39be9a94a'],
+      visible: [true],
     })
   })
 })

@@ -17,14 +17,14 @@ describe('videoSearchParamsSchema', () => {
     const result = videoSearchParamsSchema.parse(input)
 
     expect(result).toEqual({
-      deleted: false,
+      deleted: [false],
       page: 2,
       search: 'test video',
       sortField: 'published_at',
       sortOrder: 'asc',
-      status: 'LIVE',
-      talentId: '201a9ee4-176f-4092-b769-ac0af8befb66',
-      visible: true,
+      status: ['LIVE'],
+      talentId: ['201a9ee4-176f-4092-b769-ac0af8befb66'],
+      visible: [true],
     })
   })
 
@@ -49,11 +49,11 @@ describe('videoSearchParamsSchema', () => {
   })
 
   it('should handle boolean transformation for visible field', () => {
-    expect(videoSearchParamsSchema.parse({ visible: 'true' }).visible).toBe(
+    expect(videoSearchParamsSchema.parse({ visible: 'true' }).visible).toEqual([
       true,
-    )
-    expect(videoSearchParamsSchema.parse({ visible: 'false' }).visible).toBe(
-      false,
+    ])
+    expect(videoSearchParamsSchema.parse({ visible: 'false' }).visible).toEqual(
+      [false],
     )
     expect(
       videoSearchParamsSchema.parse({ visible: 'other' }).visible,
@@ -62,11 +62,11 @@ describe('videoSearchParamsSchema', () => {
   })
 
   it('should handle boolean transformation for deleted field', () => {
-    expect(videoSearchParamsSchema.parse({ deleted: 'true' }).deleted).toBe(
+    expect(videoSearchParamsSchema.parse({ deleted: 'true' }).deleted).toEqual([
       true,
-    )
-    expect(videoSearchParamsSchema.parse({ deleted: 'false' }).deleted).toBe(
-      false,
+    ])
+    expect(videoSearchParamsSchema.parse({ deleted: 'false' }).deleted).toEqual(
+      [false],
     )
     expect(
       videoSearchParamsSchema.parse({ deleted: 'other' }).deleted,
@@ -100,7 +100,7 @@ describe('videoSearchParamsSchema', () => {
     const result = videoSearchParamsSchema.parse(input)
 
     expect(result.page).toBe(3)
-    expect(result.talentId).toBe('3de58e38-8314-41c1-a75a-c1658dae6d5a')
+    expect(result.talentId).toEqual(['3de58e38-8314-41c1-a75a-c1658dae6d5a'])
     // For string fields, zod should handle array by taking first value
   })
 
@@ -117,7 +117,7 @@ describe('videoSearchParamsSchema', () => {
 
     const result = videoSearchParamsSchema.parse(input)
 
-    expect(result.talentId).toBe('319cb587-3b05-44d0-8ed6-2307a07e1817')
+    expect(result.talentId).toEqual(['319cb587-3b05-44d0-8ed6-2307a07e1817'])
   })
 
   it('should preserve optional fields when they are undefined', () => {
@@ -142,18 +142,18 @@ describe('videoSearchParamsSchema', () => {
   })
 
   it('should handle valid video status values', () => {
-    expect(videoSearchParamsSchema.parse({ status: 'UPCOMING' }).status).toBe(
-      'UPCOMING',
-    )
-    expect(videoSearchParamsSchema.parse({ status: 'LIVE' }).status).toBe(
+    expect(
+      videoSearchParamsSchema.parse({ status: 'UPCOMING' }).status,
+    ).toEqual(['UPCOMING'])
+    expect(videoSearchParamsSchema.parse({ status: 'LIVE' }).status).toEqual([
       'LIVE',
-    )
-    expect(videoSearchParamsSchema.parse({ status: 'ENDED' }).status).toBe(
+    ])
+    expect(videoSearchParamsSchema.parse({ status: 'ENDED' }).status).toEqual([
       'ENDED',
-    )
-    expect(videoSearchParamsSchema.parse({ status: 'PUBLISHED' }).status).toBe(
-      'PUBLISHED',
-    )
+    ])
+    expect(
+      videoSearchParamsSchema.parse({ status: 'PUBLISHED' }).status,
+    ).toEqual(['PUBLISHED'])
   })
 
   it('should return undefined for invalid status values', () => {
@@ -165,11 +165,11 @@ describe('videoSearchParamsSchema', () => {
 
   it('should handle array input for status (URLSearchParams may provide arrays)', () => {
     const input = {
-      status: ['LIVE', 'ENDED'], // Only first value should be used
+      status: ['LIVE', 'ENDED'],
     }
 
     const result = videoSearchParamsSchema.parse(input)
 
-    expect(result.status).toBe('LIVE')
+    expect(result.status).toEqual(['LIVE', 'ENDED'])
   })
 })

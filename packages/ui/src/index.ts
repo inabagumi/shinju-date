@@ -18,3 +18,8 @@ export {
   DialogTrigger,
 } from './dialog'
 export { Input, type InputProps } from './input'
+export {
+  MultiSelect,
+  type MultiSelectOption,
+  type MultiSelectProps,
+} from './multi-select'

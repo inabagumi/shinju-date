@@ -26,14 +26,14 @@ export const DEFAULT_VALUES = {
   talentId: undefined,
   visible: undefined,
 } satisfies {
-  deleted: boolean | undefined
+  deleted: boolean[] | undefined
   page: number
   search: string | undefined
   sortField: VideoSortField
   sortOrder: VideoSortOrder
-  status: VideoStatus | undefined
-  talentId: string | undefined
-  visible: boolean | undefined
+  status: VideoStatus[] | undefined
+  talentId: string[] | undefined
+  visible: boolean[] | undefined
 }
 
 /**
@@ -41,17 +41,21 @@ export const DEFAULT_VALUES = {
  * Validates and normalizes all query parameters with appropriate defaults
  */
 export const videoSearchParamsSchema = z.object({
-  // Deleted filter (true/false or undefined) - handle arrays
+  // Deleted filter - support multiple values for multi-select
   deleted: z
     .union([z.string(), z.array(z.string())])
     .optional()
-    .transform((val) => {
-      if (Array.isArray(val)) {
-        val = val[0]
-      }
-      if (val === 'true') return true
-      if (val === 'false') return false
-      return undefined
+    .transform((val): boolean[] | undefined => {
+      if (!val) return undefined
+      const values = Array.isArray(val) ? val : [val]
+      const boolValues = values
+        .map((v) => {
+          if (v === 'true') return true
+          if (v === 'false') return false
+          return null
+        })
+        .filter((v): v is boolean => v !== null)
+      return boolValues.length > 0 ? boolValues : undefined
     }),
 
   // Page number with default of 1, coerced to number, clamped to minimum 1
@@ -104,41 +108,45 @@ export const videoSearchParamsSchema = z.object({
         : DEFAULT_VALUES.sortOrder
     }),
 
-  // Video status filter (optional) - handle arrays
+  // Video status filter - support multiple values for multi-select
   status: z
     .union([z.string(), z.array(z.string())])
     .optional()
-    .transform((val): VideoStatus | undefined => {
-      if (Array.isArray(val)) {
-        val = val[0]
-      }
-      return val && VALID_VIDEO_STATUSES.includes(val as VideoStatus)
-        ? (val as VideoStatus)
-        : undefined
+    .transform((val): VideoStatus[] | undefined => {
+      if (!val) return undefined
+      const values = Array.isArray(val) ? val : [val]
+      const validStatuses = values.filter((v) =>
+        VALID_VIDEO_STATUSES.includes(v as VideoStatus),
+      ) as VideoStatus[]
+      return validStatuses.length > 0 ? validStatuses : undefined
     }),
 
-  // Talent ID filter (optional, coerced to number) - handle arrays
+  // Talent ID filter - support multiple values for multi-select
   talentId: z
     .union([z.string(), z.array(z.string())])
     .optional()
-    .transform((val) => {
-      if (Array.isArray(val)) {
-        val = val[0]
-      }
-      return val || undefined
+    .transform((val): string[] | undefined => {
+      if (!val) return undefined
+      const values = Array.isArray(val) ? val : [val]
+      const nonEmptyValues = values.filter((v) => v.trim() !== '')
+      return nonEmptyValues.length > 0 ? nonEmptyValues : undefined
     }),
 
-  // Visibility filter (true/false or undefined) - handle arrays
+  // Visibility filter - support multiple values for multi-select
   visible: z
     .union([z.string(), z.array(z.string())])
     .optional()
-    .transform((val) => {
-      if (Array.isArray(val)) {
-        val = val[0]
-      }
-      if (val === 'true') return true
-      if (val === 'false') return false
-      return undefined
+    .transform((val): boolean[] | undefined => {
+      if (!val) return undefined
+      const values = Array.isArray(val) ? val : [val]
+      const boolValues = values
+        .map((v) => {
+          if (v === 'true') return true
+          if (v === 'false') return false
+          return null
+        })
+        .filter((v): v is boolean => v !== null)
+      return boolValues.length > 0 ? boolValues : undefined
     }),
 })
 
