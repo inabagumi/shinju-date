@@ -82,11 +82,11 @@ export function VideoFilters({ talents }: Props) {
     { label: '待機中', value: 'UPCOMING' },
     { label: '配信中', value: 'LIVE' },
     { label: '配信済み', value: 'ENDED' },
-    { label: '公開済み', value: 'PUBLISHED' },
+    { label: '動画公開済', value: 'PUBLISHED' },
   ]
 
   const deletedOptions: MultiSelectOption[] = [
-    { label: '削除されていない', value: 'false' },
+    { label: '未削除', value: 'false' },
     { label: '削除済み', value: 'true' },
   ]
 

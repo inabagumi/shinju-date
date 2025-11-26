@@ -764,6 +764,9 @@ importers:
       class-variance-authority:
         specifier: 0.7.1
         version: 0.7.1
+      lucide-react:
+        specifier: 0.554.0
+        version: 0.554.0(react@19.2.0)
       tailwind-merge:
         specifier: 3.4.0
         version: 3.4.0

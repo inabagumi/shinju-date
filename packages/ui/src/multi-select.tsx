@@ -2,6 +2,7 @@
 
 import * as Checkbox from '@radix-ui/react-checkbox'
 import * as Popover from '@radix-ui/react-popover'
+import { Check, ChevronDown, Minus } from 'lucide-react'
 import type { ComponentPropsWithoutRef } from 'react'
 import { twMerge } from 'tailwind-merge'
 
@@ -73,20 +74,7 @@ export function MultiSelect({
           <span className={value.length === 0 ? 'text-gray-500' : ''}>
             {getDisplayText()}
           </span>
-          <svg
-            aria-hidden="true"
-            className="ml-2 size-4 flex-shrink-0 text-gray-500"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 16 16"
-          >
-            <path
-              d="m2 5 6 6 6-6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <ChevronDown className="ml-2 size-4 flex-shrink-0 text-gray-500" />
         </button>
       </Popover.Trigger>
       <Popover.Portal>
@@ -104,17 +92,10 @@ export function MultiSelect({
             >
               <div className="mr-2 flex size-5 items-center justify-center rounded border border-gray-300">
                 {value.length === options.length && (
-                  <svg
-                    aria-hidden="true"
-                    className="size-4 text-blue-600"
-                    fill="currentColor"
-                    viewBox="0 0 12 12"
-                  >
-                    <path d="M10 3 4.5 8.5 2 6" />
-                  </svg>
+                  <Check className="size-4 text-blue-600" />
                 )}
                 {value.length > 0 && value.length < options.length && (
-                  <div className="size-2 rounded-sm bg-blue-600" />
+                  <Minus className="size-3 text-blue-600" />
                 )}
               </div>
               <span className="font-medium">
@@ -139,20 +120,7 @@ export function MultiSelect({
                       onCheckedChange={() => handleToggle(option.value)}
                     >
                       <Checkbox.Indicator>
-                        <svg
-                          aria-hidden="true"
-                          className="size-4 text-white"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth={3}
-                          viewBox="0 0 12 12"
-                        >
-                          <path
-                            d="M10 3 4.5 8.5 2 6"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
+                        <Check className="size-4 text-white" />
                       </Checkbox.Indicator>
                     </Checkbox.Root>
                     <span>{option.label}</span>
