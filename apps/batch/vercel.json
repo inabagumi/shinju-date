@@ -23,7 +23,7 @@
     },
     {
       "path": "/videos/check?mode=all",
-      "schedule": "4 23 * * 2"
+      "schedule": "4 23 * * 2,4"
     },
     {
       "path": "/videos/update",
