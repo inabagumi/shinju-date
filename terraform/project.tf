@@ -35,7 +35,7 @@ resource "vercel_project_environment_variable" "turbo_platform_env_disabled" {
   project_id = vercel_project.this.id
   target     = ["production", "preview"]
   team_id    = vercel_project.this.team_id
-  value      = "false"
+  value      = "true"
 }
 
 resource "vercel_project_environment_variable" "use_bytecode_caching" {
@@ -132,7 +132,7 @@ resource "vercel_project_environment_variable" "admin_turbo_platform_env_disable
   project_id = vercel_project.admin.id
   target     = ["production", "preview"]
   team_id    = vercel_project.admin.team_id
-  value      = "false"
+  value      = "true"
 }
 
 resource "vercel_project_environment_variable" "admin_use_bytecode_caching" {
@@ -226,7 +226,7 @@ resource "vercel_project_environment_variable" "batch_turbo_platform_env_disable
   project_id = vercel_project.batch.id
   target     = ["production", "preview"]
   team_id    = vercel_project.batch.team_id
-  value      = "false"
+  value      = "true"
 }
 
 resource "vercel_project_environment_variable" "batch_use_bytecode_caching" {
