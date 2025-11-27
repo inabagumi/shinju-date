@@ -1,9 +1,13 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { MultiSelect } from './multi-select'
 
 const meta = {
   component: MultiSelect,
+  parameters: {
+    layout: 'centered',
+  },
+  tags: ['autodocs'],
   title: 'Components/MultiSelect',
 } satisfies Meta<typeof MultiSelect>
 
