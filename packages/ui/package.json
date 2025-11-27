@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@storybook/addon-docs": "10.1.0",
-    "@storybook/addon-onboarding": "10.1.0",
+    "@storybook/addon-mcp": "0.1.4",
     "@storybook/react-vite": "10.1.0",
     "@tailwindcss/postcss": "4.1.17",
     "@testing-library/jest-dom": "6.9.1",
@@ -42,6 +42,13 @@
     }
   },
   "homepage": "https://shinju.date/",
+  "imports": {
+    "#*": [
+      "./*",
+      "./*.ts",
+      "./*.tsx"
+    ]
+  },
   "license": "MIT",
   "main": "./dist/index.js",
   "name": "@shinju-date/ui",
