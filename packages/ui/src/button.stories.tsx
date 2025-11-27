@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react-vite'
+import preview from '#.storybook/preview'
 import { Button } from './button'
 
-const meta = {
+const meta = preview.meta({
   argTypes: {
     disabled: {
       control: 'boolean',
@@ -21,68 +21,65 @@ const meta = {
   },
   tags: ['autodocs'],
   title: 'Components/Button',
-} satisfies Meta<typeof Button>
+})
 
-export default meta
-type Story = StoryObj<typeof meta>
-
-export const Primary: Story = {
+export const Primary = meta.story({
   args: {
     children: 'Primary Button',
     variant: 'primary',
   },
-}
+})
 
-export const Secondary: Story = {
+export const Secondary = meta.story({
   args: {
     children: 'Secondary Button',
     variant: 'secondary',
   },
-}
+})
 
-export const Danger: Story = {
+export const Danger = meta.story({
   args: {
     children: 'Danger Button',
     variant: 'danger',
   },
-}
+})
 
-export const Ghost: Story = {
+export const Ghost = meta.story({
   args: {
     children: 'Ghost Button',
     variant: 'ghost',
   },
-}
+})
 
-export const Small: Story = {
+export const Small = meta.story({
   args: {
     children: 'Small Button',
     size: 'sm',
   },
-}
+})
 
-export const Medium: Story = {
+export const Medium = meta.story({
   args: {
     children: 'Medium Button',
     size: 'md',
   },
-}
+})
 
-export const Large: Story = {
+export const Large = meta.story({
   args: {
     children: 'Large Button',
     size: 'lg',
   },
-}
+})
 
-export const Disabled: Story = {
+export const Disabled = meta.story({
   args: {
     children: 'Disabled Button',
     disabled: true,
   },
-}
+})
 
-export const AsLink: Story = {
+export const AsLink = meta.story({
   args: {
     asChild: true,
     children: 'Link styled as Button',
@@ -92,4 +89,4 @@ export const AsLink: Story = {
       <a href="https://shinju.date">Link styled as Button</a>
     </Button>
   ),
-}
+})

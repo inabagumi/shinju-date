@@ -1,6 +1,6 @@
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { StorybookConfig } from '@storybook/react-vite'
+import { defineMain } from '@storybook/react-vite/node'
 
 /**
  * This function is used to resolve the absolute path of a package.
@@ -9,7 +9,7 @@ import type { StorybookConfig } from '@storybook/react-vite'
 function getAbsolutePath(value: string): string {
   return dirname(fileURLToPath(import.meta.resolve(`${value}/package.json`)))
 }
-const config: StorybookConfig = {
+export default defineMain({
   addons: [
     getAbsolutePath('@storybook/addon-docs'),
     getAbsolutePath('@storybook/addon-mcp'),
@@ -19,5 +19,4 @@ const config: StorybookConfig = {
     options: {},
   },
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
-}
-export default config
+})

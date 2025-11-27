@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react-vite'
+import preview from '#.storybook/preview'
 import { Badge } from './badge'
 
-const meta = {
+const meta = preview.meta({
   argTypes: {
     variant: {
       control: 'select',
@@ -14,63 +14,60 @@ const meta = {
   },
   tags: ['autodocs'],
   title: 'Components/Badge',
-} satisfies Meta<typeof Badge>
+})
 
-export default meta
-type Story = StoryObj<typeof meta>
-
-export const Info: Story = {
+export const Info = meta.story({
   args: {
     children: 'Info Badge',
     variant: 'info',
   },
-}
+})
 
-export const Success: Story = {
+export const Success = meta.story({
   args: {
     children: 'Success Badge',
     variant: 'success',
   },
-}
+})
 
-export const Warning: Story = {
+export const Warning = meta.story({
   args: {
     children: 'Warning Badge',
     variant: 'warning',
   },
-}
+})
 
-export const ErrorVariant: Story = {
+export const ErrorVariant = meta.story({
   args: {
     children: 'Error Badge',
     variant: 'error',
   },
-}
+})
 
-export const Secondary: Story = {
+export const Secondary = meta.story({
   args: {
     children: 'Secondary Badge',
     variant: 'secondary',
   },
-}
+})
 
-export const Default: Story = {
+export const Default = meta.story({
   args: {
     children: 'Default Badge',
   },
-}
+})
 
-export const LongText: Story = {
+export const LongText = meta.story({
   args: {
     children: 'This is a longer badge text',
     variant: 'info',
   },
-}
+})
 
-export const WithCustomClass: Story = {
+export const WithCustomClass = meta.story({
   args: {
     children: 'Custom Badge',
     className: 'text-base px-4 py-2',
     variant: 'success',
   },
-}
+})

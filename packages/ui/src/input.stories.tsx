@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react-vite'
+import preview from '#.storybook/preview'
 import { Input } from './input'
 
-const meta = {
+const meta = preview.meta({
   argTypes: {
     disabled: {
       control: 'boolean',
@@ -21,83 +21,80 @@ const meta = {
   },
   tags: ['autodocs'],
   title: 'Components/Input',
-} satisfies Meta<typeof Input>
+})
 
-export default meta
-type Story = StoryObj<typeof meta>
-
-export const Default: Story = {
+export const Default = meta.story({
   args: {
     placeholder: 'Enter text...',
     variant: 'default',
   },
-}
+})
 
-export const WithValue: Story = {
+export const WithValue = meta.story({
   args: {
     value: 'Hello World',
     variant: 'default',
   },
-}
+})
 
-export const ErrorState: Story = {
+export const ErrorState = meta.story({
   args: {
     placeholder: 'Enter text...',
     value: 'Invalid input',
     variant: 'error',
   },
-}
+})
 
-export const Disabled: Story = {
+export const Disabled = meta.story({
   args: {
     disabled: true,
     placeholder: 'Disabled input',
   },
-}
+})
 
-export const Small: Story = {
+export const Small = meta.story({
   args: {
     inputSize: 'sm',
     placeholder: 'Small input',
   },
-}
+})
 
-export const Medium: Story = {
+export const Medium = meta.story({
   args: {
     inputSize: 'md',
     placeholder: 'Medium input',
   },
-}
+})
 
-export const Large: Story = {
+export const Large = meta.story({
   args: {
     inputSize: 'lg',
     placeholder: 'Large input',
   },
-}
+})
 
-export const Email: Story = {
+export const Email = meta.story({
   args: {
     placeholder: 'email@example.com',
     type: 'email',
   },
-}
+})
 
-export const Password: Story = {
+export const Password = meta.story({
   args: {
     placeholder: 'Enter password',
     type: 'password',
   },
-}
+})
 
-export const Search: Story = {
+export const Search = meta.story({
   args: {
     placeholder: 'Search...',
     type: 'search',
   },
-}
+})
 
-export const WithLabel: Story = {
+export const WithLabel = meta.story({
   args: {
     placeholder: 'Enter your username',
   },
@@ -109,9 +106,9 @@ export const WithLabel: Story = {
       <Input {...args} id="input-with-label" />
     </div>
   ),
-}
+})
 
-export const WithErrorMessage: Story = {
+export const WithErrorMessage = meta.story({
   args: {
     type: 'email',
     value: 'invalid-email',
@@ -128,4 +125,4 @@ export const WithErrorMessage: Story = {
       </p>
     </div>
   ),
-}
+})

@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/react-vite'
+import preview from '#.storybook/preview'
 import { Button } from './button'
 import { Card, CardContent, CardFooter, CardHeader } from './card'
 
-const meta = {
+const meta = preview.meta({
   argTypes: {
     variant: {
       control: 'select',
@@ -15,12 +15,9 @@ const meta = {
   },
   tags: ['autodocs'],
   title: 'Components/Card',
-} satisfies Meta<typeof Card>
+})
 
-export default meta
-type Story = StoryObj<typeof meta>
-
-export const Default: Story = {
+export const Default = meta.story({
   args: {
     children: (
       <>
@@ -34,9 +31,9 @@ export const Default: Story = {
     ),
     variant: 'default',
   },
-}
+})
 
-export const Elevated: Story = {
+export const Elevated = meta.story({
   args: {
     children: (
       <>
@@ -53,9 +50,9 @@ export const Elevated: Story = {
     ),
     variant: 'elevated',
   },
-}
+})
 
-export const Outlined: Story = {
+export const Outlined = meta.story({
   args: {
     children: (
       <>
@@ -69,9 +66,9 @@ export const Outlined: Story = {
     ),
     variant: 'outlined',
   },
-}
+})
 
-export const WithFooter: Story = {
+export const WithFooter = meta.story({
   args: {
     children: (
       <>
@@ -95,9 +92,9 @@ export const WithFooter: Story = {
     ),
     variant: 'elevated',
   },
-}
+})
 
-export const VideoCard: Story = {
+export const VideoCard = meta.story({
   args: {
     children: (
       <>
@@ -120,4 +117,4 @@ export const VideoCard: Story = {
     style: { width: '320px' },
     variant: 'default',
   },
-}
+})
