@@ -4,6 +4,10 @@ import { MultiSelect } from './multi-select'
 
 const meta = {
   component: MultiSelect,
+  parameters: {
+    layout: 'centered',
+  },
+  tags: ['autodocs'],
   title: 'Components/MultiSelect',
 } satisfies Meta<typeof MultiSelect>
 
