@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
+import preview from '#.storybook/preview'
 import { Button } from './button'
 import {
   Dialog,
@@ -12,19 +12,16 @@ import {
   DialogTrigger,
 } from './dialog'
 
-const meta = {
+const meta = preview.meta({
   component: Dialog,
   parameters: {
     layout: 'centered',
   },
   tags: ['autodocs'],
   title: 'Components/Dialog',
-} satisfies Meta<typeof Dialog>
+})
 
-export default meta
-type Story = StoryObj<typeof meta>
-
-export const Basic: Story = {
+export const Basic = meta.story({
   render: () => (
     <Dialog>
       <DialogTrigger asChild>
@@ -44,9 +41,9 @@ export const Basic: Story = {
       </DialogPortal>
     </Dialog>
   ),
-}
+})
 
-export const WithActions: Story = {
+export const WithActions = meta.story({
   render: () => (
     <Dialog>
       <DialogTrigger asChild>
@@ -72,9 +69,9 @@ export const WithActions: Story = {
       </DialogPortal>
     </Dialog>
   ),
-}
+})
 
-export const WithForm: Story = {
+export const WithForm = meta.story({
   render: () => {
     const [name, setName] = useState('')
     return (
@@ -120,9 +117,9 @@ export const WithForm: Story = {
       </Dialog>
     )
   },
-}
+})
 
-export const LongContent: Story = {
+export const LongContent = meta.story({
   render: () => (
     <Dialog>
       <DialogTrigger asChild>
@@ -161,4 +158,4 @@ export const LongContent: Story = {
       </DialogPortal>
     </Dialog>
   ),
-}
+})
