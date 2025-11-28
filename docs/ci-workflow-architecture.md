@@ -8,39 +8,45 @@ This document describes the unified CI workflow architecture that consolidates N
 
 ```mermaid
 graph TB
-    Start([Push/PR Event]) --> Test[Test Matrix Job]
-    Start --> Lint[Lint Node.js]
-    Start --> Build[Build Node.js]
+    Start([Push/PR Event]) --> Install[Install Dependencies]
     
-    Test --> TestNodePackages["Node.js Packages<br/>(9 packages)"]
+    Install --> Test[Test Matrix Job]
+    Install --> Lint[Lint]
+    Install --> Build[Build Node.js]
+    
+    Test --> TestNodePackages["Node.js Packages<br/>(8 packages)"]
     Test --> TestNodeApps["Node.js Apps<br/>(3 apps)"]
     Test --> TestPython["Python<br/>(insights)"]
     
-    TestNodePackages --> UI["@shinju-date/ui<br/>(with Playwright)"]
-    TestNodePackages --> OtherPackages["Other Packages<br/>(without Playwright)"]
+    TestNodePackages --> OtherPackages["Packages<br/>(no Playwright)"]
+    
+    Lint --> LintNode["Node.js<br/>(Biome)"]
+    Lint --> LintPython["Python<br/>(Ruff)"]
+    
+    Test --> E2E[E2E Tests Matrix]
+    Build --> E2E
+    
+    E2E --> E2EWeb["E2E Web<br/>(Playwright)"]
+    E2E --> E2EAdmin["E2E Admin<br/>(Playwright)"]
+    E2E --> E2EBatch["E2E Batch<br/>(Playwright)"]
+    E2E --> E2EUI["E2E UI<br/>(Playwright Browser)"]
     
     Test --> Summary[CI Summary Job]
     Lint --> Summary
     Build --> Summary
-    
-    Build --> E2E[E2E Tests Matrix]
-    Test --> E2E
-    
-    E2E --> E2EWeb["E2E Web<br/>(with Playwright)"]
-    E2E --> E2EAdmin["E2E Admin<br/>(with Playwright)"]
-    E2E --> E2EBatch["E2E Batch<br/>(with Playwright)"]
-    
     E2E --> Summary
     
     Summary --> End([Status Check])
     
+    style Install fill:#f0f0f0
     style Test fill:#e1f5ff
-    style E2E fill:#fff4e1
+    style Lint fill:#fff4e1
+    style E2E fill:#ffe1e1
     style Summary fill:#e8f5e8
-    style UI fill:#ffe1e1
-    style E2EWeb fill:#ffe1e1
-    style E2EAdmin fill:#ffe1e1
-    style E2EBatch fill:#ffe1e1
+    style E2EWeb fill:#ffcccc
+    style E2EAdmin fill:#ffcccc
+    style E2EBatch fill:#ffcccc
+    style E2EUI fill:#ffcccc
 ```
 
 ## Matrix Strategy
@@ -49,31 +55,33 @@ graph TB
 
 The test job uses a matrix strategy to run tests for all packages in parallel:
 
-| Package Name | Language | Playwright Required |
-|--------------|----------|-------------------|
-| @shinju-date/composable-fetch | node | No |
-| @shinju-date/health-checkers | node | No |
-| @shinju-date/helpers | node | No |
-| @shinju-date/logger | node | No |
-| @shinju-date/msw-handlers | node | No |
-| @shinju-date/temporal-fns | node | No |
-| **@shinju-date/ui** | **node** | **Yes** |
-| @shinju-date/youtube-api-client | node | No |
-| @shinju-date/youtube-scraper | node | No |
-| @shinju-date/admin | node | No |
-| @shinju-date/batch | node | No |
-| @shinju-date/web | node | No |
-| @shinju-date/insights | python | No |
+| Package Name | Language | Notes |
+|--------------|----------|-------|
+| @shinju-date/composable-fetch | node | Unit tests |
+| @shinju-date/health-checkers | node | Unit tests |
+| @shinju-date/helpers | node | Unit tests |
+| @shinju-date/logger | node | Unit tests |
+| @shinju-date/msw-handlers | node | Unit tests |
+| @shinju-date/temporal-fns | node | Unit tests |
+| @shinju-date/youtube-api-client | node | Unit tests |
+| @shinju-date/youtube-scraper | node | Unit tests |
+| @shinju-date/admin | node | Unit tests |
+| @shinju-date/batch | node | Unit tests |
+| @shinju-date/web | node | Unit tests |
+| @shinju-date/insights | python | Tests (path: ./apps/insights) |
+
+**Note**: UI package browser tests have been moved to E2E matrix.
 
 ### E2E Test Matrix
 
-E2E tests run separately for apps that require full build dependencies:
+E2E tests run after test and build jobs pass:
 
-| App | Playwright Required |
-|-----|-------------------|
-| web | Yes |
-| admin | Yes |
-| batch | Yes |
+| Target | Type | Playwright Required |
+|--------|------|-------------------|
+| web | app | Yes |
+| admin | app | Yes |
+| batch | app | Yes |
+| **ui** | **package** | **Yes (browser tests)** |
 
 ## Playwright Version Management
 
@@ -82,8 +90,8 @@ E2E tests run separately for apps that require full build dependencies:
 For packages and apps that require Playwright, the version is extracted dynamically:
 
 ```bash
-# For packages
-pnpm --filter {package-name} exec playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+'
+# For packages (E2E UI browser tests)
+pnpm --filter @shinju-date/{package} exec playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+'
 
 # For E2E apps
 cd apps/{app-name} && pnpm exec playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+'
@@ -93,31 +101,42 @@ cd apps/{app-name} && pnpm exec playwright --version | grep -oE '[0-9]+\.[0-9]+\
 
 Playwright browser cache keys are structured as:
 
-- **Unit tests (UI package)**: `playwright-ui-{version}-{os}`
-- **E2E tests**: `playwright-e2e-{app-name}-{version}-{os}`
+- **E2E tests**: `playwright-e2e-{target-name}-{version}-{os}`
 
 This ensures:
-- The UI package (only unit test package using Playwright) has its own cache
-- E2E apps have independent caches
+- Each E2E target (web, admin, batch, ui) has its own cache
 - Cache is invalidated when Playwright version changes
 - Cache is OS-specific
 
 ### Conditional Playwright Setup
 
-Playwright is only installed for jobs where `matrix.package.playwright: true`:
+Playwright is only installed for E2E jobs:
 
-1. **Get Playwright version**: Extracts version from the package
+1. **Get Playwright version**: Extracts version from the package or app
 2. **Cache check**: Checks if browsers are already cached
 3. **Install (conditional)**: Only installs if cache miss occurs
 4. **Run tests**: Tests run with cached browsers
 
 ## Python Integration
 
-The Python app (`@shinju-date/insights`) is integrated into the same test matrix:
+The Python app (`@shinju-date/insights`) is integrated into the workflow:
 
+- **Test Matrix**: Runs tests with configurable `path` field
+- **Lint Job**: Runs `poe lint` and `poe format-check`
 - Uses `uv` for dependency management
-- Runs lint, format-check, and tests
 - Failures are captured in the summary job
+
+### Python Path Configuration
+
+Python packages in the matrix can specify their directory:
+
+```yaml
+- name: "@shinju-date/insights"
+  language: "python"
+  path: "./apps/insights"
+```
+
+This allows multiple Python products in different directories.
 
 ## Status Check
 
@@ -125,7 +144,7 @@ The Python app (`@shinju-date/insights`) is integrated into the same test matrix
 
 Only the **CI Summary** job is required as a status check for branch protection. This job:
 
-1. Depends on all other jobs (test, lint, build, e2e)
+1. Depends on all other jobs (install, test, lint, build, e2e)
 2. Checks if all dependencies succeeded
 3. Fails if any dependency failed
 4. Provides a single point of verification
@@ -138,17 +157,26 @@ Only the **CI Summary** job is required as a status check for branch protection.
 
 ## Workflow Benefits
 
+### Install Job
+
+- **Shared cache**: Install dependencies once, reuse across jobs
+- **Parallel efficiency**: Test, lint, build run in parallel after install
+- **Faster startup**: Jobs start immediately with cached dependencies
+
 ### Parallel Execution
 
-- All test jobs run simultaneously
-- 13 test matrix jobs + lint + build = 15 parallel jobs
-- E2E tests run after test + build complete (3 more parallel jobs)
+- Install job prepares dependencies
+- 12 test matrix jobs + lint + build = 14 parallel jobs (after install)
+- E2E tests run after test + build complete (4 more parallel jobs)
+- Total: 1 install + 14 parallel + 4 E2E = 19 jobs
 
 ### Efficiency
 
-- Playwright setup is conditional and cached
+- Install job caches dependencies for all Node.js jobs
+- Playwright setup is conditional and cached (E2E only)
 - Independent cache keys prevent cache thrashing
 - Turbo cache speeds up builds and tests
+- E2E only runs after lighter tests pass
 
 ### Maintainability
 
@@ -169,13 +197,25 @@ To add a new package to the CI:
 1. Add entry to the test matrix in `.github/workflows/ci.yml`:
 
 ```yaml
+# For Node.js packages
 - name: "@shinju-date/new-package"
-  language: "node"  # or "python"
-  playwright: false  # or true if Playwright needed
+  language: "node"
+
+# For Python packages
+- name: "@shinju-date/new-python-package"
+  language: "python"
+  path: "./apps/new-python-package"
 ```
 
-2. Ensure package has test script in `package.json` (for Node.js)
-3. No changes needed to status checks (summary job handles it)
+2. Ensure package has test script in `package.json` (for Node.js) or `pyproject.toml` (for Python)
+3. For packages with browser tests requiring Playwright, add to E2E matrix instead:
+
+```yaml
+- name: "new-package"
+  type: "package"
+```
+
+4. No changes needed to status checks (summary job handles it)
 
 ## Migration Notes
 

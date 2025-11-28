@@ -12,17 +12,24 @@ Created a single workflow file that replaces:
 - `.github/workflows/node.js.yml` (removed)
 - `.github/workflows/python.yml` (removed)
 
-### 2. Matrix Strategy for Test Jobs
+### 2. Install Job
 
-**Test Matrix** (13 packages/apps in parallel):
-- 9 Node.js packages with tests
+**Install Dependencies Job**:
+- Caches Node.js dependencies for reuse across jobs
+- All Node.js jobs (`test`, `lint`, `build`) depend on `install`
+- Reduces redundant dependency installations
+- Improves parallelization efficiency
+
+### 3. Matrix Strategy for Test Jobs
+
+**Test Matrix** (12 packages/apps in parallel):
+- 8 Node.js packages with tests
   - @shinju-date/composable-fetch
   - @shinju-date/health-checkers
   - @shinju-date/helpers
   - @shinju-date/logger
   - @shinju-date/msw-handlers
   - @shinju-date/temporal-fns
-  - @shinju-date/ui (with Playwright)
   - @shinju-date/youtube-api-client
   - @shinju-date/youtube-scraper
 - 3 Node.js apps with tests
@@ -30,32 +37,36 @@ Created a single workflow file that replaces:
   - @shinju-date/batch
   - @shinju-date/web
 - 1 Python app
-  - @shinju-date/insights (lint + format-check + test)
+  - @shinju-date/insights (tests with configurable path)
 
-**E2E Matrix** (3 apps in parallel):
-- web
-- admin
-- batch
+**E2E Matrix** (4 targets in parallel):
+- web (app)
+- admin (app)
+- batch (app)
+- ui (package - browser tests)
 
-### 3. Conditional Playwright Setup
+### 4. Playwright Setup
 
-Playwright is only installed for packages/apps that need it:
-
-**Unit Tests**:
-- Only `@shinju-date/ui` requires Playwright for vitest browser testing
-- Version extracted: `pnpm --filter @shinju-date/ui exec playwright --version`
-- Cache key: `playwright-ui-{version}-{os}`
+Playwright is only installed for E2E jobs:
 
 **E2E Tests**:
-- Each app (web, admin, batch) has Playwright installed separately
-- Version extracted: `cd apps/{app} && pnpm exec playwright --version`
-- Cache key: `playwright-e2e-{app}-{version}-{os}`
+- Apps: web, admin, batch
+- Package: ui (browser tests)
+- Version extracted dynamically per target
+- Cache key: `playwright-e2e-{target-name}-{version}-{os}`
 
-### 4. Single Status Check
+### 5. Unified Linting
+
+**Lint Job**:
+- Node.js: `pnpm check` (Biome)
+- Python: `poe lint` + `poe format-check` (Ruff)
+- Depends on `install` job
+
+### 6. Single Status Check
 
 **CI Summary Job**:
 - Name: `CI Summary`
-- Depends on: test, lint, build, e2e
+- Depends on: install, test, lint, build, e2e
 - Runs: `if: always()` (even if dependencies fail)
 - Purpose: Single point of status for branch protection
 - Logic: Fails if any dependency fails
@@ -80,43 +91,46 @@ Playwright is only installed for packages/apps that need it:
 ✅ **All acceptance criteria met**:
 
 1. ✅ Node.js unit tests and Python tests run in same workflow with matrix strategy
-   - Implementation: 13-package matrix in test job
+   - Implementation: 12-package matrix in test job (UI moved to E2E)
    
 2. ✅ Playwright setup/version extraction/cache only for necessary jobs
-   - Implementation: Conditional steps with `if: matrix.package.playwright`
+   - Implementation: Only in E2E matrix (4 targets)
    
 3. ✅ Playwright version command visible in CI logs
-   - Implementation: Lines 102-104 (unit) and 257-259 (E2E)
-   - Logs show: `Playwright version: 1.57.0`
+   - Implementation: E2E job dynamically extracts versions
+   - Logs show: `Playwright version for {target}: 1.57.0`
    
-4. ✅ Python lint/test in matrix, fails summary job
-   - Implementation: insights package in matrix with lint + format-check + test
+4. ✅ Python lint/test in workflow, fails summary job
+   - Implementation: insights package in test matrix + lint job
    
 5. ✅ Summary job is only required status check
-   - Implementation: ci-summary job with proper dependency checking
+   - Implementation: ci-summary job depends on all jobs
    
 6. ✅ Mermaid diagram matches implementation
-   - Implementation: Complete architecture diagram in docs
+   - Implementation: Updated architecture diagram in docs
 
 ## Key Features
 
 ### Parallel Execution
 
 ```
-Start → [test (13 parallel)] → Summary
-     → [lint]               ↗
-     → [build]             ↗
-     → [e2e (3 parallel)] ↗
+Start → install ┐
+                ├→ test (12 parallel) ┐
+                ├→ lint                ├→ ci-summary → ✓
+                ├→ build              ↗
+                └────────────────────→ e2e (4 parallel) ↗
 ```
 
-Total parallel jobs: 13 test + 1 lint + 1 build + 3 e2e = 18 jobs
+Total parallel jobs: 1 install + 12 test + 1 lint + 1 build + 4 e2e + 1 summary = 20 jobs
 
 ### Efficiency Improvements
 
-1. **Parallelization**: All tests run simultaneously
-2. **Conditional Setup**: Playwright only where needed
-3. **Smart Caching**: Version-specific browser caches
-4. **Turbo Integration**: Dependency builds handled automatically
+1. **Install Job**: Shared dependency cache across all Node.js jobs
+2. **Parallelization**: Test, lint, build run in parallel after install
+3. **Conditional Setup**: Playwright only in E2E
+4. **Smart Caching**: Version-specific browser caches per E2E target
+5. **Turbo Integration**: Dependency builds handled automatically
+6. **E2E Dependency**: E2E only runs after test + build pass
 
 ### Maintainability
 
@@ -148,8 +162,8 @@ Total parallel jobs: 13 test + 1 lint + 1 build + 3 e2e = 18 jobs
 
 1. Create a test PR
 2. Verify workflow runs successfully
-3. Check that all matrix jobs execute
-4. Verify Playwright version is logged
+3. Check that all matrix jobs execute (12 test + 4 E2E)
+4. Verify Playwright version is logged in E2E jobs
 5. Confirm CI Summary check appears
 6. Verify PR cannot merge without CI Summary passing
 
@@ -163,30 +177,40 @@ on: [pull_request, push]
 env: [COREPACK_VERSION, NODE_VERSION, UV_VERSION]
 
 jobs:
+  install:
+    steps:
+      - Install Node.js dependencies
+      - Cache for reuse
+  
   test:
+    needs: install
     strategy:
       matrix:
-        package: [13 entries]
+        package: [12 entries]
     steps:
       - Node.js setup (conditional)
-      - Playwright setup (conditional)
       - Python setup (conditional)
       - Run tests
   
   lint:
-    steps: [Node.js lint with biome]
+    needs: install
+    steps:
+      - Node.js lint with biome
+      - Python lint with ruff
   
   build:
+    needs: install
     steps: [Node.js build with turbo]
   
   e2e:
+    needs: [test, build]
     strategy:
       matrix:
-        app: [web, admin, batch]
+        target: [web, admin, batch, ui]
     steps:
-      - Build dependencies
+      - Build dependencies (apps only)
       - Playwright setup
-      - Run E2E tests
+      - Run E2E/browser tests
   
   ci-summary:
     needs: [test, lint, build, e2e]
@@ -198,8 +222,8 @@ jobs:
 
 **Command Format**:
 ```bash
-# For packages (unit tests)
-pnpm --filter {package-name} exec playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+'
+# For packages (E2E browser tests)
+pnpm --filter @shinju-date/{package-name} exec playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+'
 
 # For apps (E2E tests)
 cd apps/{app-name} && pnpm exec playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+'
@@ -211,18 +235,19 @@ cd apps/{app-name} && pnpm exec playwright --version | grep -oE '[0-9]+\.[0-9]+\
 
 ### Cache Strategy
 
-**Unit Tests (UI package)**:
-- Path: `~/.cache/ms-playwright`
-- Key: `playwright-ui-1.57.0-Linux`
-- Shared: No (UI-specific)
+**Install Job Cache**:
+- Path: pnpm store
+- Key: Node.js version + lock file hash
+- Shared: All Node.js jobs
 
-**E2E Tests (per app)**:
+**Playwright Browser Cache**:
 - Path: `~/.cache/ms-playwright`
-- Key: `playwright-e2e-web-1.57.0-Linux`
-- Shared: No (app-specific)
+- Key: `playwright-e2e-{target-name}-{version}-{os}`
+- Shared: No (per E2E target)
 
 **Benefits**:
-- Independent caches per use case
+- Install cache reduces dependency installation time
+- Independent caches per E2E target
 - Version-specific (auto-invalidates on upgrades)
 - OS-specific (handles multi-OS builds)
 
@@ -230,23 +255,26 @@ cd apps/{app-name} && pnpm exec playwright --version | grep -oE '[0-9]+\.[0-9]+\
 
 To add a new package to CI:
 
-1. Add entry to test matrix:
+1. **For unit tests**, add entry to test matrix:
 ```yaml
+# Node.js packages
 - name: "@shinju-date/new-package"
-  language: "node"  # or "python"
-  playwright: false  # or true if needed
+  language: "node"
+
+# Python packages
+- name: "@shinju-date/new-python-package"
+  language: "python"
+  path: "./apps/new-python-package"
 ```
 
-2. Ensure package has test script (Node.js):
-```json
-{
-  "scripts": {
-    "test": "vitest run"
-  }
-}
+2. **For E2E/browser tests**, add to E2E matrix:
+```yaml
+- name: "new-package"
+  type: "package"  # or "app"
 ```
 
-3. No changes needed to:
+3. Ensure package has test script (Node.js) or poe task (Python)
+4. No changes needed to:
    - Status checks (handled by summary)
    - Branch protection (already configured)
    - Documentation (matrix is self-documenting)
