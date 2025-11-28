@@ -40,6 +40,11 @@ function ColorGrid({ title, subtitle, colors }: ColorGridProps) {
   )
 }
 
+/**
+ * # Color Palette
+ *
+ * This page showcases all color variables defined in `@shinju-date/tailwind-config`.
+ */
 const meta = preview.meta({
   component: ColorGrid,
   parameters: {
@@ -49,11 +54,6 @@ const meta = preview.meta({
   title: 'Design System/Colors',
 })
 
-/**
- * # Color Palette
- *
- * This page showcases all color variables defined in `@shinju-date/tailwind-config`.
- */
 export const NevyColors = meta.story({
   args: {
     colors: [
@@ -72,7 +72,6 @@ export const NevyColors = meta.story({
     subtitle: 'Brand primary color palette',
     title: '774 Nevy Colors',
   },
-  name: '774 Nevy Colors',
 })
 
 export const PinkColors = meta.story({
@@ -93,7 +92,6 @@ export const PinkColors = meta.story({
     subtitle: 'Secondary brand color palette',
     title: '774 Pink Colors',
   },
-  name: '774 Pink Colors',
 })
 
 export const BlueColors = meta.story({
@@ -114,7 +112,6 @@ export const BlueColors = meta.story({
     subtitle: 'Secondary brand color palette',
     title: '774 Blue Colors',
   },
-  name: '774 Blue Colors',
 })
 
 export const PrimaryColors = meta.story({
@@ -126,7 +123,6 @@ export const PrimaryColors = meta.story({
     subtitle: 'Main theme colors',
     title: 'Primary Colors',
   },
-  name: 'Primary Colors',
 })
 
 export const SecondaryPinkColors = meta.story({
