@@ -1,0 +1,310 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches: [main]
+
+env:
+  # renovate: datasource=npm depName=corepack
+  COREPACK_VERSION: 0.31.0
+  # renovate: datasource=node-version depName=node
+  NODE_VERSION: 22.13.1
+  # renovate: datasource=github-releases depName=astral-sh/uv
+  UV_VERSION: 0.9.5
+
+jobs:
+  # Matrix job for all unit tests (Node.js packages + Python)
+  test:
+    name: Test (${{ matrix.package.name }})
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          # Node.js packages with tests
+          - name: "@shinju-date/composable-fetch"
+            language: "node"
+            playwright: false
+          - name: "@shinju-date/health-checkers"
+            language: "node"
+            playwright: false
+          - name: "@shinju-date/helpers"
+            language: "node"
+            playwright: false
+          - name: "@shinju-date/logger"
+            language: "node"
+            playwright: false
+          - name: "@shinju-date/msw-handlers"
+            language: "node"
+            playwright: false
+          - name: "@shinju-date/temporal-fns"
+            language: "node"
+            playwright: false
+          - name: "@shinju-date/ui"
+            language: "node"
+            playwright: true
+          - name: "@shinju-date/youtube-api-client"
+            language: "node"
+            playwright: false
+          - name: "@shinju-date/youtube-scraper"
+            language: "node"
+            playwright: false
+          # Node.js apps with unit tests
+          - name: "@shinju-date/admin"
+            language: "node"
+            playwright: false
+          - name: "@shinju-date/batch"
+            language: "node"
+            playwright: false
+          - name: "@shinju-date/web"
+            language: "node"
+            playwright: false
+          # Python app
+          - name: "@shinju-date/insights"
+            language: "python"
+            playwright: false
+    env:
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+
+      # Node.js setup
+      - name: Enable Corepack
+        if: matrix.package.language == 'node'
+        run: |
+          npm install -g corepack@${COREPACK_VERSION}
+          corepack enable
+
+      - name: Setup Node.js
+        if: matrix.package.language == 'node'
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install Node.js dependencies
+        if: matrix.package.language == 'node'
+        run: pnpm install --frozen-lockfile
+
+      # Playwright setup (conditional)
+      - name: Get Playwright version
+        if: matrix.package.language == 'node' && matrix.package.playwright
+        id: playwright-version
+        run: |
+          PLAYWRIGHT_VERSION=$(pnpm --filter ${{ matrix.package.name }} exec playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          echo "version=$PLAYWRIGHT_VERSION" >> $GITHUB_OUTPUT
+          echo "Playwright version: $PLAYWRIGHT_VERSION"
+
+      - name: Cache Playwright browsers
+        if: matrix.package.language == 'node' && matrix.package.playwright
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ matrix.package.name }}-${{ steps.playwright-version.outputs.version }}-${{ runner.os }}
+
+      - name: Install Playwright browsers
+        if: matrix.package.language == 'node' && matrix.package.playwright && steps.playwright-cache.outputs.cache-hit != 'true'
+        run: |
+          PACKAGE_PATH=$(pnpm list --filter ${{ matrix.package.name }} --depth=-1 --parseable | head -n1)
+          cd "$PACKAGE_PATH"
+          pnpm exec playwright install --with-deps chromium
+
+      # Node.js test execution
+      - name: Run Node.js tests
+        if: matrix.package.language == 'node'
+        run: pnpm test --filter ${{ matrix.package.name }}
+
+      # Python setup
+      - name: Setup uv
+        if: matrix.package.language == 'python'
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Setup Python
+        if: matrix.package.language == 'python'
+        run: uv python install
+        working-directory: ./apps/insights
+
+      - name: Install Python dependencies
+        if: matrix.package.language == 'python'
+        run: uv sync --extra dev
+        working-directory: ./apps/insights
+
+      # Python lint and test execution
+      - name: Run Python lint
+        if: matrix.package.language == 'python'
+        run: uv run poe lint
+        working-directory: ./apps/insights
+
+      - name: Check Python formatting
+        if: matrix.package.language == 'python'
+        run: uv run poe format-check
+        working-directory: ./apps/insights
+
+      - name: Run Python tests
+        if: matrix.package.language == 'python'
+        run: uv run poe test
+        working-directory: ./apps/insights
+
+  # Lint job for Node.js
+  lint:
+    name: Lint (Node.js)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+
+      - name: Enable Corepack
+        run: |
+          npm install -g corepack@${COREPACK_VERSION}
+          corepack enable
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm check
+
+  # Build job for Node.js
+  build:
+    name: Build (Node.js)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+
+      - name: Enable Corepack
+        run: |
+          npm install -g corepack@${COREPACK_VERSION}
+          corepack enable
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build --filter=!@shinju-date/admin --filter=!@shinju-date/batch --filter=!@shinju-date/web
+
+  # E2E tests (kept separate as they need different setup)
+  e2e:
+    name: E2E Tests (${{ matrix.app }})
+    runs-on: ubuntu-24.04
+    needs: [test, build]
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [web, admin, batch]
+    env:
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+
+      - name: Enable Corepack
+        run: |
+          npm install -g corepack@${COREPACK_VERSION}
+          corepack enable
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build dependencies
+        run: |
+          pnpm build --filter=@shinju-date/msw-handlers
+          pnpm build --filter=@shinju-date/${{ matrix.app }}^...
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: |
+          PLAYWRIGHT_VERSION=$(cd apps/${{ matrix.app }} && pnpm exec playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          echo "version=$PLAYWRIGHT_VERSION" >> $GITHUB_OUTPUT
+          echo "Playwright version for ${{ matrix.app }}: $PLAYWRIGHT_VERSION"
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-e2e-${{ matrix.app }}-${{ steps.playwright-version.outputs.version }}-${{ runner.os }}
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: cd apps/${{ matrix.app }} && pnpm exec playwright install --with-deps chromium
+
+      - name: Run E2E tests for ${{ matrix.app }}
+        run: cd apps/${{ matrix.app }} && pnpm exec playwright test
+        env:
+          CI: true
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: playwright-report-${{ matrix.app }}
+          path: apps/${{ matrix.app }}/playwright-report/
+          retention-days: 30
+
+  # Summary job - this is the only required status check
+  ci-summary:
+    name: CI Summary
+    runs-on: ubuntu-24.04
+    needs: [test, lint, build, e2e]
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "Test job failed"
+            exit 1
+          fi
+          if [ "${{ needs.lint.result }}" != "success" ]; then
+            echo "Lint job failed"
+            exit 1
+          fi
+          if [ "${{ needs.build.result }}" != "success" ]; then
+            echo "Build job failed"
+            exit 1
+          fi
+          if [ "${{ needs.e2e.result }}" != "success" ]; then
+            echo "E2E job failed"
+            exit 1
+          fi
+          echo "All jobs passed successfully!"
