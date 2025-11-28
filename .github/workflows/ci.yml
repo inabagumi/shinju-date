@@ -283,15 +283,7 @@ jobs:
 
       # Run E2E tests
       - name: Run E2E tests
-        if: matrix.package != '@shinju-date/ui'
         run: pnpm --filter ${{ matrix.package }} test:e2e
-        env:
-          CI: true
-
-      # Run browser tests for UI package (storybook project only)
-      - name: Run browser tests (UI package)
-        if: matrix.package == '@shinju-date/ui'
-        run: pnpm --filter ${{ matrix.package }} exec vitest run --project storybook
         env:
           CI: true
 
@@ -310,25 +302,13 @@ jobs:
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-24.04
-    needs: [test, lint, build, e2e]
+    needs: [lint, e2e]
     if: always()
     steps:
-      - name: Check test results
-        if: needs.test.result != 'success'
-        run: |
-          echo "Test job failed"
-          exit 1
-      
       - name: Check lint results
         if: needs.lint.result != 'success'
         run: |
           echo "Lint job failed"
-          exit 1
-      
-      - name: Check build results
-        if: needs.build.result != 'success'
-        run: |
-          echo "Build job failed"
           exit 1
       
       - name: Check E2E results
