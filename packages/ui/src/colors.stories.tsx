@@ -1,11 +1,11 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta = {
   parameters: {
     layout: 'fullscreen',
   },
   tags: ['autodocs'],
-  title: 'Design System/Colors',
+  title: 'Design System/Colors (error)',
 }
 
 export default meta
