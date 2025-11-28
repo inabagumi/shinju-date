@@ -219,7 +219,7 @@ jobs:
 
   # E2E tests (including UI browser tests)
   e2e:
-    name: E2E Tests (${{ matrix.target.name }})
+    name: E2E Tests (${{ matrix.package }})
     runs-on: ubuntu-24.04
     needs: [test, build]
     permissions:
@@ -227,17 +227,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target:
-          # App E2E tests
-          - name: "web"
-            type: "app"
-          - name: "admin"
-            type: "app"
-          - name: "batch"
-            type: "app"
-          # UI package browser tests
-          - name: "ui"
-            type: "package"
+        package:
+          - "@shinju-date/web"
+          - "@shinju-date/admin"
+          - "@shinju-date/batch"
+          - "@shinju-date/ui"
     env:
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -259,30 +253,20 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Build dependencies for apps
-      - name: Build dependencies (apps)
-        if: matrix.target.type == 'app'
+      # Build dependencies for apps only
+      - name: Build dependencies
+        if: matrix.package != '@shinju-date/ui'
         run: |
           pnpm build --filter=@shinju-date/msw-handlers
-          pnpm build --filter=@shinju-date/${{ matrix.target.name }}^...
+          pnpm build --filter=${{ matrix.package }}^...
 
-      # Get Playwright version for apps
-      - name: Get Playwright version (apps)
-        if: matrix.target.type == 'app'
-        id: playwright-version-app
+      # Get Playwright version
+      - name: Get Playwright version
+        id: playwright-version
         run: |
-          PLAYWRIGHT_VERSION=$(cd apps/${{ matrix.target.name }} && pnpm exec playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          PLAYWRIGHT_VERSION=$(pnpm --filter ${{ matrix.package }} exec playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
           echo "version=$PLAYWRIGHT_VERSION" >> $GITHUB_OUTPUT
-          echo "Playwright version for ${{ matrix.target.name }}: $PLAYWRIGHT_VERSION"
-
-      # Get Playwright version for packages
-      - name: Get Playwright version (packages)
-        if: matrix.target.type == 'package'
-        id: playwright-version-pkg
-        run: |
-          PLAYWRIGHT_VERSION=$(pnpm --filter @shinju-date/${{ matrix.target.name }} exec playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-          echo "version=$PLAYWRIGHT_VERSION" >> $GITHUB_OUTPUT
-          echo "Playwright version for @shinju-date/${{ matrix.target.name }}: $PLAYWRIGHT_VERSION"
+          echo "Playwright version for ${{ matrix.package }}: $PLAYWRIGHT_VERSION"
 
       # Cache Playwright browsers
       - name: Cache Playwright browsers
@@ -290,32 +274,24 @@ jobs:
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-e2e-${{ matrix.target.name }}-${{ matrix.target.type == 'app' && steps.playwright-version-app.outputs.version || steps.playwright-version-pkg.outputs.version }}-${{ runner.os }}
+          key: playwright-e2e-${{ matrix.package }}-${{ steps.playwright-version.outputs.version }}-${{ runner.os }}
 
-      # Install Playwright browsers for apps
-      - name: Install Playwright browsers (apps)
-        if: matrix.target.type == 'app' && steps.playwright-cache.outputs.cache-hit != 'true'
-        run: cd apps/${{ matrix.target.name }} && pnpm exec playwright install --with-deps chromium
+      # Install Playwright browsers
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter ${{ matrix.package }} exec playwright install --with-deps chromium
 
-      # Install Playwright browsers for packages
-      - name: Install Playwright browsers (packages)
-        if: matrix.target.type == 'package' && steps.playwright-cache.outputs.cache-hit != 'true'
-        run: |
-          PACKAGE_PATH=$(pnpm list --filter @shinju-date/${{ matrix.target.name }} --depth=-1 --parseable | head -n1)
-          cd "$PACKAGE_PATH"
-          pnpm exec playwright install --with-deps chromium
-
-      # Run E2E tests for apps
-      - name: Run E2E tests (apps)
-        if: matrix.target.type == 'app'
-        run: cd apps/${{ matrix.target.name }} && pnpm exec playwright test
+      # Run E2E tests
+      - name: Run E2E tests
+        if: matrix.package != '@shinju-date/ui'
+        run: pnpm --filter ${{ matrix.package }} test:e2e
         env:
           CI: true
 
-      # Run browser tests for packages
-      - name: Run browser tests (packages)
-        if: matrix.target.type == 'package'
-        run: pnpm test --filter @shinju-date/${{ matrix.target.name }}
+      # Run browser tests for UI package (storybook project only)
+      - name: Run browser tests (UI package)
+        if: matrix.package == '@shinju-date/ui'
+        run: pnpm --filter ${{ matrix.package }} exec vitest run --project storybook
         env:
           CI: true
 
@@ -324,10 +300,10 @@ jobs:
         uses: actions/upload-artifact@v5
         if: always()
         with:
-          name: playwright-report-${{ matrix.target.name }}
+          name: playwright-report-${{ matrix.package }}
           path: |
-            apps/${{ matrix.target.name }}/playwright-report/
-            packages/${{ matrix.target.name }}/playwright-report/
+            apps/*/playwright-report/
+            packages/*/playwright-report/
           retention-days: 30
 
   # Summary job - this is the only required status check
@@ -338,21 +314,28 @@ jobs:
     if: always()
     steps:
       - name: Check test results
+        if: needs.test.result != 'success'
         run: |
-          if [ "${{ needs.test.result }}" != "success" ]; then
-            echo "Test job failed"
-            exit 1
-          fi
-          if [ "${{ needs.lint.result }}" != "success" ]; then
-            echo "Lint job failed"
-            exit 1
-          fi
-          if [ "${{ needs.build.result }}" != "success" ]; then
-            echo "Build job failed"
-            exit 1
-          fi
-          if [ "${{ needs.e2e.result }}" != "success" ]; then
-            echo "E2E job failed"
-            exit 1
-          fi
-          echo "All jobs passed successfully!"
+          echo "Test job failed"
+          exit 1
+      
+      - name: Check lint results
+        if: needs.lint.result != 'success'
+        run: |
+          echo "Lint job failed"
+          exit 1
+      
+      - name: Check build results
+        if: needs.build.result != 'success'
+        run: |
+          echo "Build job failed"
+          exit 1
+      
+      - name: Check E2E results
+        if: needs.e2e.result != 'success'
+        run: |
+          echo "E2E job failed"
+          exit 1
+      
+      - name: All jobs passed
+        run: echo "All jobs passed successfully!"
