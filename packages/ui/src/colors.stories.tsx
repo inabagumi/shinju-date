@@ -134,7 +134,6 @@ export const SecondaryPinkColors = meta.story({
     subtitle: 'Secondary theme color - Pink',
     title: 'Secondary Pink',
   },
-  name: 'Secondary Pink Colors',
 })
 
 export const SecondaryBlueColors = meta.story({
@@ -146,5 +145,4 @@ export const SecondaryBlueColors = meta.story({
     subtitle: 'Secondary theme color - Blue',
     title: 'Secondary Blue',
   },
-  name: 'Secondary Blue Colors',
 })
