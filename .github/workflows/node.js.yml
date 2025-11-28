@@ -84,6 +84,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Install Playwright Browsers for UI package
+        run: cd packages/ui && pnpm exec playwright install --with-deps chromium
       - run: pnpm test --filter=!@shinju-date/insights
 
   build:
