@@ -93,11 +93,12 @@ cd apps/{app-name} && pnpm exec playwright --version | grep -oE '[0-9]+\.[0-9]+\
 
 Playwright browser cache keys are structured as:
 
-- **Unit tests**: `playwright-{package-name}-{version}-{os}`
+- **Unit tests (UI package)**: `playwright-ui-{version}-{os}`
 - **E2E tests**: `playwright-e2e-{app-name}-{version}-{os}`
 
 This ensures:
-- Different packages/apps have independent caches
+- The UI package (only unit test package using Playwright) has its own cache
+- E2E apps have independent caches
 - Cache is invalidated when Playwright version changes
 - Cache is OS-specific
 

@@ -109,7 +109,7 @@ jobs:
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ matrix.package.name }}-${{ steps.playwright-version.outputs.version }}-${{ runner.os }}
+          key: playwright-ui-${{ steps.playwright-version.outputs.version }}-${{ runner.os }}
 
       - name: Install Playwright browsers
         if: matrix.package.language == 'node' && matrix.package.playwright && steps.playwright-cache.outputs.cache-hit != 'true'
