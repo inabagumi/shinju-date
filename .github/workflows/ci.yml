@@ -63,6 +63,8 @@ jobs:
             language: "node"
           - name: "@shinju-date/temporal-fns"
             language: "node"
+          - name: "@shinju-date/ui"
+            language: "node"
           - name: "@shinju-date/youtube-api-client"
             language: "node"
           - name: "@shinju-date/youtube-scraper"
