@@ -35,7 +35,7 @@ vi.mock('@/lib/ratelimit', () => ({
   statsSnapshot: mockRatelimit,
 }))
 
-vi.mock('../stats', () => ({
+vi.mock('../_lib/stats', () => ({
   getAnalyticsSummary: mockGetAnalyticsSummary,
   getSummaryStats: mockGetSummaryStats,
 }))
@@ -135,7 +135,7 @@ describe('stats/snapshot route', () => {
   describe('stats functions integration', () => {
     it('should call getSummaryStats and getAnalyticsSummary with correct parameters', async () => {
       // Import the route after mocks are set up
-      const { POST } = await import('../../route')
+      const { POST } = await import('../route')
 
       const request = new Request('http://localhost:3000/stats/snapshot', {
         method: 'POST',
@@ -163,7 +163,7 @@ describe('stats/snapshot route', () => {
   describe('Redis key usage', () => {
     it('should use previous day Redis keys for analytics', async () => {
       // Import the route after mocks are set up
-      const { POST } = await import('../../route')
+      const { POST } = await import('../route')
 
       const request = new Request('http://localhost:3000/stats/snapshot', {
         method: 'POST',
