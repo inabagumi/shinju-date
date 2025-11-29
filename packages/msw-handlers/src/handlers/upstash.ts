@@ -34,7 +34,9 @@ function simulateZRange(
   stop: number,
   options: { rev?: boolean; withScores?: boolean } = {},
 ) {
-  const data = (mockRedisStore.get(key) as Array<{ member: string; score: number }>) || []
+  const rawData = mockRedisStore.get(key)
+  // Type guard: ensure data is an array of sorted set items
+  const data = Array.isArray(rawData) ? rawData : []
   const sortedData = [...data]
 
   // Sort by score
@@ -65,7 +67,9 @@ function simulateZUnionStore(destKey: string, keys: string[]) {
   const unionData = new Map<string, number>()
 
   for (const key of keys) {
-    const data = (mockRedisStore.get(key) as Array<{ member: string; score: number }>) || []
+    const rawData = mockRedisStore.get(key)
+    // Type guard: ensure data is an array
+    const data = Array.isArray(rawData) ? rawData : []
     for (const item of data) {
       const currentScore = unionData.get(item.member) || 0
       unionData.set(item.member, currentScore + item.score)
@@ -157,7 +161,9 @@ function processRedisCommand(command: string, args: any[]): any {
 
     case 'sadd': {
       const [key, ...members] = args
-      const set = (mockRedisStore.get(key) as Set<any>) || new Set()
+      const rawSet = mockRedisStore.get(key)
+      // Type guard: ensure it's a Set
+      const set = rawSet instanceof Set ? rawSet : new Set()
       let addedCount = 0
       for (const member of members) {
         if (!set.has(member)) {
@@ -171,7 +177,9 @@ function processRedisCommand(command: string, args: any[]): any {
 
     case 'smembers': {
       const [key] = args
-      const set = (mockRedisStore.get(key) as Set<any>) || new Set()
+      const rawSet = mockRedisStore.get(key)
+      // Type guard: ensure it's a Set
+      const set = rawSet instanceof Set ? rawSet : new Set()
       return { result: Array.from(set) }
     }
 
