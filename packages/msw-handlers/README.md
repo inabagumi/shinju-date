@@ -235,33 +235,92 @@ await redisClient.ping()
 'search:popular:daily:2023-10-23' => [{ member: 'ホロライブ', score: 50 }, ...]
 ```
 
-## Mock Data Generation with Factories
+## Mock Data Generation with @mswjs/data and @faker-js/faker
 
-This package uses **factory functions** powered by `@faker-js/faker` to generate realistic mock data. This approach provides:
+This package uses **@mswjs/data** for structured data modeling combined with **@faker-js/faker** for realistic data generation.
 
-- **Reduced Boilerplate**: Generate multiple items with one function call
-- **Type Safety**: Factories ensure data matches database Table types
-- **Realistic Data**: Faker generates diverse, realistic values
-- **Easy Customization**: Override specific fields while keeping defaults
-- **Maintainability**: Update schema in factory, not in multiple places
+### Why @mswjs/data?
 
-### Using Factories
+`@mswjs/data` provides:
+- **Structured Database Modeling**: Define schemas with relationships
+- **Built-in Query Methods**: `findMany`, `findFirst`, `update`, `delete`, etc.
+- **Automatic Relationships**: Handle foreign keys and data integrity
+- **Type Safety**: Full TypeScript support with proper typing
+
+Combined with `@faker-js/faker`, you get:
+- **Realistic Data**: Diverse, random values for names, dates, UUIDs, etc.
+- **Dynamic Generation**: Each test run uses different data
+- **Maintainability**: Schema changes propagate automatically
+
+### Using the Database
+
+The package exports a pre-configured `@mswjs/data` database with all tables:
 
 ```typescript
-import { createVideoFactory, createManyVideos } from './factories'
+import { db } from '@shinju-date/msw-handlers'
 
-// Generate a single video with custom fields
-const video = createVideoFactory({ title: 'My Custom Video' })
+// Query videos using findMany
+const visibleVideos = db.videos.findMany({
+  where: {
+    visible: { equals: true },
+    deleted_at: { equals: null }
+  }
+})
 
-// Generate multiple videos
-const videos = createManyVideos(10)
+// Find a specific talent
+const talent = db.talents.findFirst({
+  where: { id: { equals: 'some-talent-id' } }
+})
 
-// Generate videos with related data
-const talent = createTalentFactory()
-const video = createVideoFactory({ talent_id: talent.id })
+// Create new data
+const newVideo = db.videos.create({
+  title: 'Custom Video',
+  status: 'PUBLISHED',
+  visible: true
+})
+
+// Update existing data
+const updated = db.videos.update({
+  where: { id: { equals: videoId } },
+  data: { title: 'Updated Title' }
+})
+
+// Delete data
+db.videos.delete({
+  where: { id: { equals: videoId } }
+})
+
+// Get all records
+const allTalents = db.videos.getAll()
 ```
 
-### Available Factories
+### Database Schema
+
+The database includes the following tables:
+- `talents`: Creator/talent information
+- `videos`: Video records with status and metadata
+- `thumbnails`: Thumbnail images with blur data
+- `youtube_channels`: YouTube channel information
+- `youtube_videos`: YouTube video relation mapping
+- `terms`: Search terms and synonyms
+- `announcements`: System announcements
+
+Each table is populated with realistic faker-generated data on initialization.
+
+### Resetting the Database
+
+To reset the database to its initial state:
+
+```typescript
+import { seedDatabase } from '@shinju-date/msw-handlers'
+
+// Clear and reseed all data
+seedDatabase()
+```
+
+### Available Factories (Legacy)
+
+For backward compatibility, the package also exports factory functions:
 
 #### Supabase Tables
 - `createVideoFactory()` / `createManyVideos(count)`

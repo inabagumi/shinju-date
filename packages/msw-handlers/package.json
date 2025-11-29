@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "10.1.0",
+    "@mswjs/data": "0.16.2",
     "@tsconfig/node20": "20.1.8",
     "@tsconfig/strictest": "2.0.8",
     "@types/node": "24.10.1",

@@ -25,6 +25,29 @@ export {
 }
 
 /**
+ * Export the @mswjs/data database for advanced usage
+ *
+ * The db provides:
+ * - findMany/findFirst for querying data
+ * - create/update/delete for CRUD operations
+ * - Structured data with relationships
+ *
+ * Example:
+ * ```ts
+ * import { db } from '@shinju-date/msw-handlers'
+ *
+ * // Find videos
+ * const videos = db.videos.findMany({
+ *   where: { visible: { equals: true } }
+ * })
+ *
+ * // Create a new talent
+ * const talent = db.talents.create({ name: 'New Talent' })
+ * ```
+ */
+export { db, seedDatabase } from './db.js'
+
+/**
  * Default export for convenience
  */
 export default allHandlers
