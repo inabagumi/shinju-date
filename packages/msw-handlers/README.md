@@ -32,6 +32,27 @@ pnpm install
 
 ## Usage
 
+### Quick Start with NODE_OPTIONS (Recommended for Next.js Build)
+
+For Next.js apps that need MSW during build time (e.g., for static page generation):
+
+```bash
+# Set environment variables
+export ENABLE_MSW=true
+export NODE_OPTIONS="--import @shinju-date/msw-handlers/register"
+
+# Build your app
+pnpm run build
+```
+
+Or in a single command:
+
+```bash
+NODE_OPTIONS="--import @shinju-date/msw-handlers/register" ENABLE_MSW=true pnpm run build
+```
+
+This approach ensures MSW is loaded before any application code, enabling mock handlers during static page generation.
+
 ### Browser Environment (Next.js Apps)
 
 For `apps/web` and `apps/admin`:
