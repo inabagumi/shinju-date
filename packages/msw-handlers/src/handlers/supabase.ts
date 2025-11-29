@@ -1501,14 +1501,14 @@ export const supabaseHandlers = [
       const url = new URL(request.url)
       // Log the full URL for debugging
       console.log('[MSW Storage] createSignedUrl called with URL:', url.href)
-      
+
       const path = url.pathname.replace(
         '/storage/v1/object/sign/thumbnails/',
         '',
       )
-      
+
       console.log('[MSW Storage] Extracted path:', path)
-      
+
       // Don't add thumbnails/ prefix again - the path parameter from the SDK
       // is relative to the bucket, so it's just "video1.jpg" not "/thumbnails/video1.jpg"
       const signedUrl = `https://fake.supabase.test/storage/v1/object/public/thumbnails/${path}`
