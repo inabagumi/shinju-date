@@ -26,18 +26,14 @@ import {
 // Initialize collections with seed data
 await seedCollections()
 
-// Get all mock data from the collections
-// Using let so we can potentially refresh these if needed
-let mockTalents = await talents.findMany()
-let mockAnnouncements = await announcements.findMany()
-let mockThumbnails = await thumbnails.findMany()
-let mockVideos = await videos.findMany()
-let mockChannels = await youtubeChannels.findMany()
-let mockTerms = await terms.findMany()
-let mockYoutubeVideos = await youtubeVideos.findMany()
-
-console.error('[DEBUG-STDERR] Initial mockYoutubeVideos length:', mockYoutubeVideos.length)
-console.error('[DEBUG-STDERR] First 3 youtube_video_ids:', mockYoutubeVideos.slice(0, 3).map(v => v.youtube_video_id))
+// Get all mock data from the collections (cached at module load)
+const mockTalents = await talents.findMany()
+const mockAnnouncements = await announcements.findMany()
+const mockThumbnails = await thumbnails.findMany()
+const mockVideos = await videos.findMany()
+const mockChannels = await youtubeChannels.findMany()
+const mockTerms = await terms.findMany()
+let mockYoutubeVideos = await youtubeVideos.findMany() // Using let to allow refresh
 
 /**
  * Parse Supabase REST API query parameters
@@ -145,10 +141,16 @@ function applySupabaseFilters(
 /**
  * Handle Supabase select projection
  */
-function applySelect(data: any[], selectStr: string) {
+async function applySelect(data: any[], selectStr: string) {
   if (selectStr === '*') {
     return data
   }
+
+  const mockTalents = await getMockTalents()
+  const mockThumbnails = await getMockThumbnails()
+  const mockVideos = await getMockVideos()
+  const mockChannels = await getMockChannels()
+  const mockYoutubeVideos = await getMockYoutubeVideos()
 
   return data.map((item) => {
     const result: any = {}
@@ -333,7 +335,7 @@ function applySelect(data: any[], selectStr: string) {
 
 export const supabaseHandlers = [
   // Videos table
-  http.get('https://fake.supabase.test/rest/v1/videos', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/videos', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -342,6 +344,7 @@ export const supabaseHandlers = [
     const returnCount =
       preferHeader.includes('count=exact') || query.returnCount
 
+    const mockVideos = await getMockVideos()
     let filteredData = applySupabaseFilters(mockVideos, query)
     const count = filteredData.length
 
@@ -358,7 +361,7 @@ export const supabaseHandlers = [
       })
     }
 
-    filteredData = applySelect(filteredData, query.select)
+    filteredData = await applySelect(filteredData, query.select)
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -748,19 +751,22 @@ export const supabaseHandlers = [
   // YouTube Videos Table
   http.get(
     'https://fake.supabase.test/rest/v1/youtube_videos',
-    ({ request }) => {
+    async ({ request }) => {
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      console.error('[HANDLER DEBUG] youtube_videos GET')
-      console.error('[HANDLER DEBUG] query filters:', JSON.stringify(query.filters))
-      console.error('[HANDLER DEBUG] mockYoutubeVideos length:', mockYoutubeVideos.length)
+      // Refresh youtube videos data from collection to get latest data
+      mockYoutubeVideos = await youtubeVideos.findMany()
+      
+      // Add console.warn which should show up in vitest
+      console.warn(`[MSW youtube_videos] Handler called, have ${mockYoutubeVideos.length} records`)
+      console.warn(`[MSW youtube_videos] Query filters:`, query.filters)
 
       let filteredData = applySupabaseFilters(mockYoutubeVideos, query)
-      console.error('[HANDLER DEBUG] filteredData length after filters:', filteredData.length)
+      console.warn(`[MSW youtube_videos] After filter: ${filteredData.length} records`)
       
       filteredData = applySelect(filteredData, query.select)
-      console.error('[HANDLER DEBUG] filteredData length after select:', filteredData.length)
+      console.warn(`[MSW youtube_videos] After select: ${filteredData.length} records`)
 
       if (query.returnCount) {
         return HttpResponse.json(filteredData, {
