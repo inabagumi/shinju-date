@@ -29,6 +29,10 @@
     },
     "./register": {
       "import": "./dist/register.js"
+    },
+    "./adapter": {
+      "types": "./dist/adapter.d.ts",
+      "import": "./dist/adapter.js"
     }
   },
   "homepage": "https://shinju.date/",

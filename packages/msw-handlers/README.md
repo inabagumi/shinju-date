@@ -32,21 +32,41 @@ pnpm install
 
 ## Usage
 
-### Quick Start with NODE_OPTIONS (Next.js Build)
+### Option 1: Using experimental.adapterPath (Recommended)
 
-For Next.js apps that need MSW during build time (e.g., for static page generation):
+Use Next.js's deployment adapter system to configure MSW:
+
+**In your `next.config.ts`:**
+
+```typescript
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  experimental: {
+    adapterPath: '@shinju-date/msw-handlers/adapter',
+  },
+  // ... other config
+}
+
+export default nextConfig
+```
+
+**Then just set environment variable:**
+
+```bash
+ENABLE_MSW=true pnpm run build
+ENABLE_MSW=true pnpm run dev
+```
+
+The adapter automatically configures `NODE_OPTIONS` when MSW is enabled, ensuring MSW is loaded in all processes and worker threads.
+
+### Option 2: Using NODE_OPTIONS directly
+
+For more explicit control, set `NODE_OPTIONS` manually:
 
 ```bash
 NODE_OPTIONS="--import @shinju-date/msw-handlers/register" ENABLE_MSW=true pnpm run build
 ```
-
-Or for development:
-
-```bash
-NODE_OPTIONS="--import @shinju-date/msw-handlers/register" ENABLE_MSW=true pnpm run dev
-```
-
-This approach ensures MSW is loaded before any application code, enabling mock handlers during static page generation and in worker threads.
 
 **Why NODE_OPTIONS?**
 

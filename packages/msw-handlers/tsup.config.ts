@@ -7,6 +7,7 @@ export default defineConfig({
     './src/browser.ts',
     './src/server.ts',
     './src/register.ts',
+    './src/adapter.ts',
   ],
   format: 'esm',
   sourcemap: true,

@@ -11,16 +11,40 @@ MSW (Mock Service Worker) allows you to mock API requests during development and
 
 ## Quick Start
 
-To build your Next.js application with MSW enabled:
+### Option 1: Using Deployment Adapter (Recommended)
+
+Configure MSW using Next.js's adapter system:
+
+**Step 1: Update `next.config.ts`**
+
+```typescript
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  experimental: {
+    adapterPath: '@shinju-date/msw-handlers/adapter',
+  },
+  // ... your other config
+}
+
+export default nextConfig
+```
+
+**Step 2: Build or dev with MSW enabled**
+
+```bash
+ENABLE_MSW=true pnpm run build
+ENABLE_MSW=true pnpm run dev
+```
+
+The adapter automatically configures `NODE_OPTIONS` to load MSW in all processes and worker threads.
+
+### Option 2: Using NODE_OPTIONS Directly
+
+For more explicit control or if you prefer not to modify `next.config.ts`:
 
 ```bash
 NODE_OPTIONS="--import @shinju-date/msw-handlers/register" ENABLE_MSW=true pnpm run build
-```
-
-For development:
-
-```bash
-NODE_OPTIONS="--import @shinju-date/msw-handlers/register" ENABLE_MSW=true pnpm run dev
 ```
 
 ## Configuration
