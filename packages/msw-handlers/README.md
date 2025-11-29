@@ -32,64 +32,25 @@ pnpm install
 
 ## Usage
 
-### Option 1: Using withMSW helper (Recommended)
+### Quick Start with NODE_OPTIONS (Next.js Build)
 
-The simplest way to enable MSW in your Next.js app:
-
-**In your `next.config.ts`:**
-
-```typescript
-import { withMSW } from '@shinju-date/msw-handlers/next-config'
-import type { NextConfig } from 'next'
-
-const nextConfig: NextConfig = {
-  // your config
-}
-
-export default withMSW(nextConfig)
-```
-
-**With other config wrappers:**
-
-```typescript
-import { withMSW } from '@shinju-date/msw-handlers/next-config'
-import { withSentryConfig } from '@sentry/nextjs'
-import type { NextConfig } from 'next'
-
-const nextConfig: NextConfig = {
-  // your config
-}
-
-// Wrap your config - order matters!
-export default withMSW(withSentryConfig(nextConfig, sentryOptions))
-```
-
-**Then set environment variable:**
+For Next.js apps that need MSW during build time (e.g., for static page generation):
 
 ```bash
-# In .env.local
-ENABLE_MSW=true
-
-# Or when running commands
-ENABLE_MSW=true pnpm run build
-ENABLE_MSW=true pnpm run dev
-```
-
-The `withMSW` helper automatically configures `NODE_OPTIONS` for you, so you don't need to set it manually.
-
-### Option 2: Using NODE_OPTIONS (Advanced)
-
-For more control or when you can't modify `next.config.ts`:
-
-```bash
-# Build
 NODE_OPTIONS="--import @shinju-date/msw-handlers/register" ENABLE_MSW=true pnpm run build
+```
 
-# Dev
+Or for development:
+
+```bash
 NODE_OPTIONS="--import @shinju-date/msw-handlers/register" ENABLE_MSW=true pnpm run dev
 ```
 
-This approach ensures MSW is loaded before Next.js starts, which is necessary for static page generation.
+This approach ensures MSW is loaded before any application code, enabling mock handlers during static page generation and in worker threads.
+
+**Why NODE_OPTIONS?**
+
+Next.js 16+ uses worker threads for parallel page generation during build. The `instrumentation.ts` file doesn't run during static page generation. Using `NODE_OPTIONS` with the `--import` flag ensures MSW is loaded in all processes and worker threads before any application code runs.
 
 ### Browser Environment (React Components)
 

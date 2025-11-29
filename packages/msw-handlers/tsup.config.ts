@@ -7,7 +7,6 @@ export default defineConfig({
     './src/browser.ts',
     './src/server.ts',
     './src/register.ts',
-    './src/next-config.ts',
   ],
   format: 'esm',
   sourcemap: true,
