@@ -84,7 +84,7 @@ const mockThumbnails: Tables<'thumbnails'>[] = [
     etag: 'abc123',
     height: 720,
     id: '650e8400-e29b-41d4-a716-446655440001',
-    path: '/thumbnails/video1.jpg',
+    path: 'video1.jpg',
     updated_at: '2023-01-01T00:00:00.000Z',
     width: 1280,
   },
@@ -95,7 +95,7 @@ const mockThumbnails: Tables<'thumbnails'>[] = [
     etag: 'def456',
     height: 720,
     id: '650e8400-e29b-41d4-a716-446655440002',
-    path: '/thumbnails/video2.jpg',
+    path: 'video2.jpg',
     updated_at: '2023-01-01T00:00:00.000Z',
     width: 1280,
   },
@@ -106,7 +106,7 @@ const mockThumbnails: Tables<'thumbnails'>[] = [
     etag: 'ghi789',
     height: 720,
     id: '650e8400-e29b-41d4-a716-446655440003',
-    path: '/thumbnails/video3.jpg',
+    path: 'video3.jpg',
     updated_at: '2023-01-01T00:00:00.000Z',
     width: 1280,
   },
@@ -117,7 +117,7 @@ const mockThumbnails: Tables<'thumbnails'>[] = [
     etag: 'jkl012',
     height: 720,
     id: '650e8400-e29b-41d4-a716-446655440004',
-    path: '/thumbnails/video4.jpg',
+    path: 'video4.jpg',
     updated_at: '2023-01-01T00:00:00.000Z',
     width: 1280,
   },
@@ -128,7 +128,7 @@ const mockThumbnails: Tables<'thumbnails'>[] = [
     etag: 'mno345',
     height: 720,
     id: '650e8400-e29b-41d4-a716-446655440005',
-    path: '/thumbnails/video5.jpg',
+    path: 'video5.jpg',
     updated_at: '2023-01-01T00:00:00.000Z',
     width: 1280,
   },
@@ -139,7 +139,7 @@ const mockThumbnails: Tables<'thumbnails'>[] = [
     etag: 'pqr678',
     height: 720,
     id: '650e8400-e29b-41d4-a716-446655440006',
-    path: '/thumbnails/video6.jpg',
+    path: 'video6.jpg',
     updated_at: '2023-01-07T00:00:00.000Z',
     width: 1280,
   },
@@ -150,7 +150,7 @@ const mockThumbnails: Tables<'thumbnails'>[] = [
     etag: 'stu901',
     height: 720,
     id: '650e8400-e29b-41d4-a716-446655440007',
-    path: '/thumbnails/video7.jpg',
+    path: 'video7.jpg',
     updated_at: '2023-01-08T00:00:00.000Z',
     width: 1280,
   },
@@ -161,7 +161,7 @@ const mockThumbnails: Tables<'thumbnails'>[] = [
     etag: 'vwx234',
     height: 720,
     id: '650e8400-e29b-41d4-a716-446655440008',
-    path: '/thumbnails/video8.jpg',
+    path: 'video8.jpg',
     updated_at: '2023-01-09T00:00:00.000Z',
     width: 1280,
   },
@@ -172,7 +172,7 @@ const mockThumbnails: Tables<'thumbnails'>[] = [
     etag: 'yza567',
     height: 720,
     id: '650e8400-e29b-41d4-a716-446655440009',
-    path: '/thumbnails/video9.jpg',
+    path: 'video9.jpg',
     updated_at: '2023-01-10T00:00:00.000Z',
     width: 1280,
   },
@@ -183,7 +183,7 @@ const mockThumbnails: Tables<'thumbnails'>[] = [
     etag: 'bcd890',
     height: 720,
     id: '650e8400-e29b-41d4-a716-446655440010',
-    path: '/thumbnails/video10.jpg',
+    path: 'video10.jpg',
     updated_at: '2023-01-11T00:00:00.000Z',
     width: 1280,
   },
@@ -587,8 +587,11 @@ function applySelect(data: any[], selectStr: string) {
     const fields = selectStr.split(',').map((f) => f.trim())
 
     for (const field of fields) {
-      // Handle nested selects with alias like "talent:talents(id, name)" or without alias like "thumbnails(id, path)"
-      const aliasedNestedMatch = field.match(/^(\w+):(\w+)\(([^)]+)\)$/)
+      // Handle nested selects with alias like "talent:talents(id, name)" or "talent:talents!inner(id, name)"
+      // Supabase syntax: alias:table!modifier(fields) where modifier is optional (!inner, !left, etc.)
+      const aliasedNestedMatch = field.match(
+        /^(\w+):(\w+)(?:!\w+)?\s*\(([^)]+)\)$/,
+      )
       const simpleNestedMatch = field.match(/^(\w+)\(([^)]+)\)$/)
 
       if (aliasedNestedMatch) {
@@ -652,6 +655,25 @@ function applySelect(data: any[], selectStr: string) {
             } else {
               result[aliasName] = null
             }
+          }
+          // Handle youtube_channels relation (one-to-many from talents)
+          else if (relationName === 'youtube_channels' && item.id) {
+            const channels = mockChannels.filter(
+              (ch) => ch.talent_id === item.id,
+            )
+            const nestedFieldArray = nestedFields
+              .split(',')
+              .map((f) => f.trim())
+            const channelsResult = channels.map((channel) => {
+              const nestedResult: any = {}
+              for (const nf of nestedFieldArray) {
+                if (nf in channel) {
+                  nestedResult[nf] = channel[nf as keyof typeof channel]
+                }
+              }
+              return nestedResult
+            })
+            result[aliasName] = channelsResult
           }
         }
       } else if (simpleNestedMatch) {
@@ -744,6 +766,56 @@ export const supabaseHandlers = [
       },
     })
   }),
+
+  // Videos PATCH (update)
+  http.patch(
+    'https://fake.supabase.test/rest/v1/videos',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const preferHeader = request.headers.get('prefer') || ''
+      const query = parseSupabaseQuery(url)
+      const body = (await request.json()) as any
+
+      // Find matching records and update them
+      const updatedItems: any[] = []
+      for (const [field, filterValue] of Object.entries(query.filters)) {
+        if (filterValue.startsWith('eq.')) {
+          const value = filterValue.substring(3)
+          const parsedValue =
+            value === 'true'
+              ? true
+              : value === 'false'
+                ? false
+                : value === 'null'
+                  ? null
+                  : Number.isNaN(Number(value))
+                    ? value
+                    : Number(value)
+
+          for (let i = 0; i < mockVideos.length; i++) {
+            const video = mockVideos[i]
+            if (video && (video as any)[field] === parsedValue) {
+              mockVideos[i] = {
+                ...video,
+                ...body,
+              }
+              updatedItems.push(mockVideos[i])
+            }
+          }
+        }
+      }
+
+      if (preferHeader.includes('return=representation')) {
+        return HttpResponse.json(updatedItems, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      }
+
+      return new HttpResponse(null, { status: 204 })
+    },
+  ),
 
   // Channels table
   http.get('https://fake.supabase.test/rest/v1/channels', ({ request }) => {
@@ -1499,26 +1571,39 @@ export const supabaseHandlers = [
     'https://fake.supabase.test/storage/v1/object/sign/thumbnails/*',
     async ({ request }) => {
       const url = new URL(request.url)
+      // Log the full URL for debugging
+      console.log('[MSW Storage] createSignedUrl called with URL:', url.href)
+
       const path = url.pathname.replace(
         '/storage/v1/object/sign/thumbnails/',
         '',
       )
 
+      console.log('[MSW Storage] Extracted path:', path)
+
+      // Don't add thumbnails/ prefix again - the path parameter from the SDK
+      // is relative to the bucket, so it's just "video1.jpg" not "/thumbnails/video1.jpg"
+      const signedUrl = `https://fake.supabase.test/storage/v1/object/public/thumbnails/${path}`
+      console.log('[MSW Storage] Returning signedURL:', signedUrl)
+
       // Return a mock signed URL
+      // The Supabase storage-js expects { signedURL } from the API
       return HttpResponse.json({
-        signedURL: `https://fake.supabase.test/storage/v1/object/public/thumbnails/${path}`,
+        signedURL: signedUrl,
       })
     },
   ),
 
   http.get(
     'https://fake.supabase.test/storage/v1/object/public/thumbnails/*',
-    async () => {
+    async ({ request }) => {
+      console.log('[MSW Storage] GET thumbnail image called:', request.url)
       const dummyImage =
         '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" />'
 
       return new HttpResponse(dummyImage, {
         headers: {
+          'Accept-Ranges': 'none',
           'Content-Type': 'image/svg+xml',
         },
       })

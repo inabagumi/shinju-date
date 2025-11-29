@@ -32,7 +32,47 @@ pnpm install
 
 ## Usage
 
-### Browser Environment (Next.js Apps)
+### Option 1: Using experimental.adapterPath (Recommended)
+
+Use Next.js's deployment adapter system to configure MSW:
+
+**In your `next.config.ts`:**
+
+```typescript
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  experimental: {
+    adapterPath: import.meta.resolve('@shinju-date/msw-handlers/adapter'),
+  },
+  // ... other config
+}
+
+export default nextConfig
+```
+
+**Then just set environment variable:**
+
+```bash
+ENABLE_MSW=true pnpm run build
+ENABLE_MSW=true pnpm run dev
+```
+
+The adapter automatically configures `NODE_OPTIONS` when MSW is enabled, ensuring MSW is loaded in all processes and worker threads.
+
+### Option 2: Using NODE_OPTIONS directly
+
+For more explicit control, set `NODE_OPTIONS` manually:
+
+```bash
+NODE_OPTIONS="--import @shinju-date/msw-handlers/register" ENABLE_MSW=true pnpm run build
+```
+
+**Why NODE_OPTIONS?**
+
+Next.js 16+ uses worker threads for parallel page generation during build. The `instrumentation.ts` file doesn't run during static page generation. Using `NODE_OPTIONS` with the `--import` flag ensures MSW is loaded in all processes and worker threads before any application code runs.
+
+### Browser Environment (React Components)
 
 For `apps/web` and `apps/admin`:
 
