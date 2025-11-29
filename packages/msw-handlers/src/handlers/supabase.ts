@@ -169,13 +169,14 @@ async function applySelect(data: any[], selectStr: string) {
     return data
   }
 
-  const mockTalents = await getMockTalents()
-  const mockThumbnails = await getMockThumbnails()
-  const mockVideos = await getMockVideos()
-  const mockChannels = await getMockChannels()
-  const mockYoutubeVideos = await getMockYoutubeVideos()
+  // Query Collections directly instead of using helper functions
+  const mockTalents = await talents.findMany()
+  const mockThumbnails = await thumbnails.findMany()
+  const mockVideos = await videos.findMany()
+  const mockChannels = await youtubeChannels.findMany()
+  const mockYoutubeVideos = await youtubeVideos.findMany()
 
-  return data.map((item) => {
+  const result = data.map((item) => {
     const result: any = {}
     const fields = selectStr.split(',').map((f) => f.trim())
 
@@ -354,6 +355,8 @@ async function applySelect(data: any[], selectStr: string) {
 
     return result
   })
+  
+  return result
 }
 
 export const supabaseHandlers = [
@@ -423,7 +426,7 @@ export const supabaseHandlers = [
       const query = parseSupabaseQuery(url)
       const body = (await request.json()) as any
 
-      // Find matching records and update them
+      // Find matching records and update them using @msw/data Collections
       const updatedItems: any[] = []
       for (const [field, filterValue] of Object.entries(query.filters)) {
         if (filterValue.startsWith('eq.')) {
@@ -439,15 +442,17 @@ export const supabaseHandlers = [
                     ? value
                     : Number(value)
 
-          for (let i = 0; i < await getMockVideos().length; i++) {
-            const video = mockVideos[i]
-            if (video && (video as any)[field] === parsedValue) {
-              await getMockVideos()[i] = {
-                ...video,
-                ...body,
-              }
-              updatedItems.push(await getMockVideos()[i])
-            }
+          // Find and update records in Collection
+          const matches = await videos.findMany((q) =>
+            q.where({ [field]: parsedValue })
+          )
+          
+          for (const match of matches) {
+            await videos.update(
+              (q) => q.where({ id: match.id }),
+              { data(record) { Object.assign(record, body) } }
+            )
+            updatedItems.push({ ...match, ...body })
           }
         }
       }
@@ -779,16 +784,9 @@ export const supabaseHandlers = [
 
       // Get fresh data from collection
       const mockYoutubeVideos = await getMockYoutubeVideos()
-      
-      // Add console.warn which should show up in vitest
-      console.warn(`[MSW youtube_videos] Handler called, have ${mockYoutubeVideos.length} records`)
-      console.warn(`[MSW youtube_videos] Query filters:`, query.filters)
 
       let filteredData = applySupabaseFilters(mockYoutubeVideos, query)
-      console.warn(`[MSW youtube_videos] After filter: ${filteredData.length} records`)
-      
       filteredData = await applySelect(filteredData, query.select)
-      console.warn(`[MSW youtube_videos] After select: ${filteredData.length} records`)
 
       if (query.returnCount) {
         return HttpResponse.json(filteredData, {
