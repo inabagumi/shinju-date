@@ -32,28 +32,66 @@ pnpm install
 
 ## Usage
 
-### Quick Start with NODE_OPTIONS (Recommended for Next.js Build)
+### Option 1: Using withMSW helper (Recommended)
 
-For Next.js apps that need MSW during build time (e.g., for static page generation):
+The simplest way to enable MSW in your Next.js app:
 
-```bash
-# Set environment variables
-export ENABLE_MSW=true
-export NODE_OPTIONS="--import @shinju-date/msw-handlers/register"
+**In your `next.config.ts`:**
 
-# Build your app
-pnpm run build
+```typescript
+import { withMSW } from '@shinju-date/msw-handlers/next-config'
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  // your config
+}
+
+export default withMSW(nextConfig)
 ```
 
-Or in a single command:
+**With other config wrappers:**
+
+```typescript
+import { withMSW } from '@shinju-date/msw-handlers/next-config'
+import { withSentryConfig } from '@sentry/nextjs'
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  // your config
+}
+
+// Wrap your config - order matters!
+export default withMSW(withSentryConfig(nextConfig, sentryOptions))
+```
+
+**Then set environment variable:**
 
 ```bash
+# In .env.local
+ENABLE_MSW=true
+
+# Or when running commands
+ENABLE_MSW=true pnpm run build
+ENABLE_MSW=true pnpm run dev
+```
+
+The `withMSW` helper automatically configures `NODE_OPTIONS` for you, so you don't need to set it manually.
+
+### Option 2: Using NODE_OPTIONS (Advanced)
+
+For more control or when you can't modify `next.config.ts`:
+
+```bash
+# Build
 NODE_OPTIONS="--import @shinju-date/msw-handlers/register" ENABLE_MSW=true pnpm run build
+
+# Dev
+NODE_OPTIONS="--import @shinju-date/msw-handlers/register" ENABLE_MSW=true pnpm run dev
 ```
 
-This approach ensures MSW is loaded before any application code, enabling mock handlers during static page generation.
+This approach ensures MSW is loaded before Next.js starts, which is necessary for static page generation.
 
-### Browser Environment (Next.js Apps)
+### Browser Environment (React Components)
 
 For `apps/web` and `apps/admin`:
 

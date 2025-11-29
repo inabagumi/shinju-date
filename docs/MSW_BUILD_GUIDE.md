@@ -11,20 +11,33 @@ MSW (Mock Service Worker) allows you to mock API requests during development and
 
 ## Quick Start
 
-### Building with MSW
+### Option 1: Using withMSW Helper (Recommended)
 
-To build your Next.js application with MSW enabled:
+The simplest approach - modify your `next.config.ts`:
+
+```typescript
+import { withMSW } from '@shinju-date/msw-handlers/next-config'
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  // your config
+}
+
+export default withMSW(nextConfig)
+```
+
+Then just set the environment variable:
+
+```bash
+ENABLE_MSW=true pnpm run build
+```
+
+### Option 2: Using NODE_OPTIONS
+
+If you prefer not to modify `next.config.ts` or need more control:
 
 ```bash
 NODE_OPTIONS="--import @shinju-date/msw-handlers/register" ENABLE_MSW=true pnpm run build
-```
-
-### Development with MSW
-
-To run the development server with MSW:
-
-```bash
-NODE_OPTIONS="--import @shinju-date/msw-handlers/register" ENABLE_MSW=true pnpm run dev
 ```
 
 ## Configuration
@@ -49,7 +62,43 @@ UPSTASH_REDIS_REST_TOKEN="fake"
 UPSTASH_REDIS_REST_URL="https://fake.upstash.test"
 ```
 
-### Package Scripts
+### Using withMSW in next.config.ts (Recommended)
+
+The `withMSW` helper automatically sets up MSW for your Next.js app:
+
+**Step 1: Update next.config.ts**
+
+```typescript
+import { withMSW } from '@shinju-date/msw-handlers/next-config'
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  // your existing config
+}
+
+// Wrap your config with withMSW
+export default withMSW(nextConfig)
+
+// Or with other wrappers (order matters):
+// export default withMSW(withSentry(nextConfig))
+```
+
+**Step 2: Set environment variable**
+
+```env
+# In .env.local
+ENABLE_MSW=true
+```
+
+**Step 3: Build or run dev**
+
+```bash
+pnpm run build  # or pnpm run dev
+```
+
+That's it! The `withMSW` helper takes care of setting up `NODE_OPTIONS` automatically.
+
+### Using NODE_OPTIONS (Alternative)
 
 You can update your `package.json` scripts to include MSW support:
 

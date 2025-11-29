@@ -5,8 +5,8 @@
  * Note: This uses top-level await which requires Node.js 14.8+ and ES modules.
  */
 
-if (process.env.ENABLE_MSW === 'true' && typeof process !== 'undefined') {
-  const { startServer } = await import('@shinju-date/msw-handlers/server')
+if (process.env['ENABLE_MSW'] === 'true' && typeof process !== 'undefined') {
+  const { startServer } = await import('./server.js')
   startServer()
   console.log('✅ MSW server registered via --import flag')
 }
