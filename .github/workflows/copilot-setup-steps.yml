@@ -19,6 +19,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: 
+        run: |
+          sudo apt-get update
+          sudo apt-get install fonts-noto-cjk
+
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
         with:
