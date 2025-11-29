@@ -1,8 +1,48 @@
-# Mock Data Factory Implementation - Improvement Summary
+# Mock Data Implementation - Improvement Summary
 
 ## 概要
 
-`@faker-js/faker`を使用したファクトリーベースのモックデータ生成を実装し、MSW ハンドラーの保守性、型安全性、拡張性を大幅に向上させました。
+`@mswjs/data`と`@faker-js/faker`を組み合わせてモックデータ生成を実装し、MSW ハンドラーの保守性、型安全性、拡張性を大幅に向上させました。
+
+## @mswjs/dataの採用
+
+### なぜ@mswjs/dataを使用するか
+
+1. **構造化されたデータモデリング**: データベースのスキーマと関係性を明確に定義
+2. **組み込みクエリメソッド**: `findMany`, `findFirst`, `update`, `delete`等が標準で利用可能
+3. **リレーション管理**: 外部キーの整合性が自動的に保たれる
+4. **型安全性**: TypeScriptの型システムと完全に統合
+
+### @faker-js/fakerとの統合
+
+`@mswjs/data`のファクトリー関数内で`@faker-js/faker`を使用することで:
+- リアルで多様なテストデータを生成
+- 名前、日付、UUID、URLなどを自動生成
+- 各テスト実行で異なるデータを使用
+
+### 実装例
+
+```typescript
+import { factory, primaryKey } from '@mswjs/data'
+import { faker } from '@faker-js/faker'
+
+export const db = factory({
+  videos: {
+    id: primaryKey(faker.string.uuid),
+    title: () => faker.helpers.arrayElement([
+      `${faker.word.adjective()} ${faker.word.noun()} Video`,
+      `How to ${faker.hacker.verb()} ${faker.hacker.noun()}`,
+    ]),
+    status: () => faker.helpers.arrayElement(['PUBLISHED', 'LIVE', 'ENDED']),
+    // ... その他のフィールド
+  },
+  talents: {
+    id: primaryKey(faker.string.uuid),
+    name: () => faker.person.fullName(),
+    // ... その他のフィールド
+  },
+})
+```
 
 ## 削減されたコード量
 
@@ -10,12 +50,11 @@
 
 #### supabase.ts
 - **削減前**: 約1,000行（大量の手動オブジェクト定義）
-- **削減後**: 約530行
+- **削減後**: 約530行（@mswjs/dataを使用）
 - **削減量**: **470行以上**
 
-例：
+Before: 140行の手動定義
 ```typescript
-// Before: 140行の手動定義
 const mockVideos: Tables<'videos'>[] = [
   {
     created_at: '2023-01-01T00:00:00.000Z',
@@ -33,48 +72,30 @@ const mockVideos: Tables<'videos'>[] = [
   },
   // ... 9個のオブジェクトが続く
 ]
+```
 
-// After: 7行
-const mockVideos: Tables<'videos'>[] = createManyVideos(10).map(
-  (video, idx) => ({
-    ...video,
-    id: `750e8400-e29b-41d4-a716-44665544000${idx + 1}`,
-    talent_id: mockTalents[idx % mockTalents.length]?.id ?? mockTalents[0]?.id ?? '',
-    thumbnail_id: mockThumbnails[idx % mockThumbnails.length]?.id ?? mockThumbnails[0]?.id ?? '',
-  }),
-)
+After: @mswjs/dataによる構造化
+```typescript
+// データベース定義（db.ts）
+export const db = factory({
+  videos: {
+    id: primaryKey(faker.string.uuid),
+    title: () => faker.helpers.arrayElement([...]),
+    status: () => faker.helpers.arrayElement(['PUBLISHED', 'LIVE', 'ENDED']),
+    // ... ファクトリー関数で自動生成
+  }
+})
+
+// ハンドラー内での使用
+const videos = db.videos.findMany({
+  where: { visible: { equals: true } }
+})
 ```
 
 #### upstash.ts
 - **削減前**: 約310行
 - **削減後**: 約220行
 - **削減量**: **90行以上**
-
-例：
-```typescript
-// Before: 60行の初期化コード
-const initializeRedisData = () => {
-  const today = Temporal.Now.plainDateISO()
-  const dates = []
-  for (let i = 6; i >= 0; i--) {
-    const date = today.subtract({ days: i })
-    const dateStr = date.toString().replace(/-/g, '')
-    dates.push(dateStr)
-  }
-  
-  dates.forEach((dateStr, index) => {
-    mockRedisStore.set(`videos:clicked:${dateStr}`, [
-      { member: '1', score: 100 + index * 10 },
-      { member: '2', score: 80 + index * 8 },
-      // ... 繰り返し
-    ])
-    // ... 他のキーも同様
-  })
-}
-
-// After: 1行
-const mockRedisStore = createRedisDataFactory(7)
-```
 
 ## 改善された保守性
 
