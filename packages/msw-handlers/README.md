@@ -6,9 +6,11 @@ This package provides a unified mock infrastructure that enables efficient devel
 
 ## Features
 
-- **Factory-Based Mock Data**: Generates realistic, diverse mock data using `@faker-js/faker`
-- **Type-Safe Factories**: All factories match database table types for compile-time safety
-- **Reduced Boilerplate**: 560+ lines of hardcoded data replaced with factory calls
+- **@msw/data Integration**: Structured data modeling with Standard Schema (Zod) validation
+- **Built-in Query Methods**: `findMany`, `findFirst`, `create`, `update`, `delete` for data operations
+- **Faker Integration**: Generates realistic, diverse mock data using `@faker-js/faker`
+- **Type-Safe Collections**: All collections use Zod schemas for runtime and compile-time safety
+- **Reduced Boilerplate**: 560+ lines of hardcoded data replaced with declarative schemas
 - **Supabase API Mocking**: Complete mock handlers for database operations including tables, relations, and query parameters
 - **Upstash Redis Mocking**: Mock handlers for Redis operations including sorted sets, pipeline commands, and basic operations
 - **Browser & Node.js Support**: Works in both browser (Service Worker) and Node.js (server) environments
@@ -318,64 +320,124 @@ import { seedDatabase } from '@shinju-date/msw-handlers'
 seedDatabase()
 ```
 
-### Available Factories (Legacy)
+### Available Collections
 
-For backward compatibility, the package also exports factory functions:
+The package exports the following `@msw/data` collections:
 
 #### Supabase Tables
-- `createVideoFactory()` / `createManyVideos(count)`
-- `createTalentFactory()` / `createManyTalents(count)`
-- `createThumbnailFactory()` / `createManyThumbnails(count)`
-- `createChannelFactory()` / `createManyChannels(count)`
-- `createTermFactory()` / `createManyTerms(count)`
-- `createAnnouncementFactory()` / `createManyAnnouncements(count)`
-- `createYoutubeChannelFactory()` / `createManyYoutubeChannels(count)`
-- `createYoutubeVideoFactory()` / `createManyYoutubeVideos(count)`
+- `talents` - Talent/VTuber information
+- `videos` - Video records with metadata
+- `thumbnails` - Thumbnail images with blur data
+- `youtubeChannels` - YouTube channel information
+- `youtubeVideos` - YouTube video relations
+- `terms` - Search terms and synonyms
+- `announcements` - System announcements
 
-#### Redis Data
-- `createRedisDataFactory(dateCount)` - Generate date-based Redis data
-- `createCustomRedisData(data)` - Create custom Redis key-value pairs
+#### Seeding Function
+- `seedCollections()` - Initialize all collections with faker-generated data
 
-#### YouTube API
-- `createYoutubeAPIChannelFactory()`
-- `createYoutubeAPIVideoFactory()`
-- `createYoutubeAPIPlaylistItemFactory()`
+#### Usage Example
+
+```typescript
+import { videos, talents, seedCollections } from '@shinju-date/msw-handlers'
+
+// Initialize collections
+await seedCollections()
+
+// Query videos
+const publishedVideos = await videos.findMany((q) =>
+  q.where({ visible: true })
+)
+
+// Get first video by ID
+const video = await videos.findFirst((q) =>
+  q.where({ id: 'some-uuid' })
+)
+
+// Create new video
+await videos.create({
+  title: 'New Video',
+  duration: 'PT1H30M',
+  published_at: new Date().toISOString(),
+  status: 'PUBLISHED',
+  visible: true,
+  platform: 'YOUTUBE',
+  talent_id: 'talent-uuid',
+  thumbnail_id: null,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  deleted_at: null,
+})
+
+// Update video
+await videos.update((q) => q.where({ id: 'some-uuid' }), {
+  data(video) {
+    video.title = 'Updated Title'
+  },
+})
+
+// Delete video
+await videos.delete((q) => q.where({ id: 'some-uuid' }))
+```
 
 ### Code Reduction Achieved
 
-By using factories, we've significantly reduced boilerplate:
-- **supabase.ts**: Reduced by 470+ lines (from hardcoded arrays to factory calls)
-- **upstash.ts**: Reduced by 90+ lines (simplified initialization)
+By using `@msw/data` with Zod schemas, we've significantly reduced boilerplate:
+- **supabase.ts**: Reduced by 470+ lines (from hardcoded arrays to collection queries)
+- **upstash.ts**: Reduced by 90+ lines (simplified with faker-based factory)
+- **Total**: 560+ lines of hardcoded mock data eliminated
 
 ## Adding New Mock Data
 
 ### Extending Supabase Mocks
 
-To add more tables or modify existing data:
+To add new tables or modify existing data:
 
-1. **Create a new factory** in `src/factories/supabase/`:
+1. **Add Zod schema to collections** in `src/collections.ts`:
 
 ```typescript
-// src/factories/supabase/my-table.ts
-import type { Tables } from '@shinju-date/database'
+import { Collection } from '@msw/data'
+import { z } from 'zod'
 import { faker } from '@faker-js/faker'
 
-export function createMyTableFactory(
-  overrides: Partial<Tables<'my_table'>> = {},
-): Tables<'my_table'> {
-  return {
+// Define your collection
+export const myTable = new Collection({
+  schema: z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    created_at: z.string(),
+    updated_at: z.string(),
+  }),
+})
+
+// Add seeding logic in seedCollections()
+export async function seedCollections() {
+  // ... existing seeds
+
+  // Seed your table
+  await myTable.createMany(10, (index) => ({
     id: faker.string.uuid(),
     name: faker.person.fullName(),
     created_at: faker.date.past().toISOString(),
-    ...overrides,
-  }
+    updated_at: faker.date.recent().toISOString(),
+  }))
 }
+```
 
-export function createManyMyTable(
-  count: number,
-  overrides: Partial<Tables<'my_table'>> = {},
-): Tables<'my_table'>[] {
-  return Array.from({ length: count }, () => createMyTableFactory(overrides))
+2. **Export the collection** in `src/index.ts`:
+
+```typescript
+export { myTable } from './collections.js'
+```
+
+3. **Use in handlers** in `src/handlers/supabase.ts`:
+
+```typescript
+import { myTable } from '../collections.js'
+
+// Initialize
+await seedCollections()
+const mockMyTable = await myTable.findMany()
 }
 ```
 

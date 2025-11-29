@@ -25,27 +25,43 @@ export {
 }
 
 /**
- * Export the @mswjs/data database for advanced usage
+ * Export the @msw/data collections for advanced usage
  *
- * The db provides:
+ * Collections provide:
  * - findMany/findFirst for querying data
- * - create/update/delete for CRUD operations
- * - Structured data with relationships
+ * - create/createMany for generating data
+ * - update/delete for CRUD operations
+ * - Zod schema validation
  *
  * Example:
  * ```ts
- * import { db } from '@shinju-date/msw-handlers'
+ * import { videos, seedCollections } from '@shinju-date/msw-handlers'
+ *
+ * // Initialize collections
+ * await seedCollections()
  *
  * // Find videos
- * const videos = db.videos.findMany({
- *   where: { visible: { equals: true } }
- * })
+ * const allVideos = await videos.findMany((q) =>
+ *   q.where({ visible: true })
+ * )
  *
- * // Create a new talent
- * const talent = db.talents.create({ name: 'New Talent' })
+ * // Create a new video
+ * await videos.create({
+ *   title: 'New Video',
+ *   // ... other fields
+ * })
  * ```
  */
-export { db, seedDatabase } from './db.js'
+export {
+  announcements,
+  seedCollections,
+  talents,
+  terms,
+  thumbnails,
+  videos,
+  youtubeChannels,
+  youtubeVideos,
+} from './collections.js'
 
 /**
  * Default export for convenience
