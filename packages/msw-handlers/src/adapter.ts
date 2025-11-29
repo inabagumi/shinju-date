@@ -10,7 +10,7 @@
  *
  * const nextConfig: NextConfig = {
  *   experimental: {
- *     adapterPath: '@shinju-date/msw-handlers/adapter',
+ *     adapterPath: require.resolve('@shinju-date/msw-handlers/adapter'),
  *   },
  * }
  *
@@ -24,28 +24,43 @@
  * ```
  */
 
-/**
- * Next.js adapter interface
- * This adapter configures MSW to be loaded before application code
- */
-export default async function mswAdapter() {
-  // Only enable MSW if explicitly requested
-  if (process.env['ENABLE_MSW'] !== 'true') {
-    return
-  }
-
-  // Set up NODE_OPTIONS for worker threads and child processes
-  const existingNodeOptions = process.env['NODE_OPTIONS'] || ''
-  const mswImport = '--import @shinju-date/msw-handlers/register'
-
-  if (!existingNodeOptions.includes(mswImport)) {
-    process.env['NODE_OPTIONS'] = existingNodeOptions
-      ? `${existingNodeOptions} ${mswImport}`
-      : mswImport
-
-    console.log('🎭 MSW adapter: Configured NODE_OPTIONS for build/dev')
-  }
-
-  // Return empty adapter (we only need the setup side effect)
-  return {}
+interface NextAdapter {
+  name: string
+  modifyConfig?: (
+    config: any,
+    ctx: {
+      phase: string
+    },
+  ) => Promise<any> | any
+  onBuildComplete?: (ctx: any) => Promise<void> | void
 }
+
+/**
+ * MSW adapter for Next.js
+ * Configures NODE_OPTIONS to load MSW before application code in all processes
+ */
+const mswAdapter: NextAdapter = {
+  modifyConfig(config) {
+    // Only enable MSW if explicitly requested
+    if (process.env['ENABLE_MSW'] !== 'true') {
+      return config
+    }
+
+    // Set up NODE_OPTIONS for worker threads and child processes
+    const existingNodeOptions = process.env['NODE_OPTIONS'] || ''
+    const mswImport = '--import @shinju-date/msw-handlers/register'
+
+    if (!existingNodeOptions.includes(mswImport)) {
+      process.env['NODE_OPTIONS'] = existingNodeOptions
+        ? `${existingNodeOptions} ${mswImport}`
+        : mswImport
+
+      console.log('🎭 MSW adapter: Configured NODE_OPTIONS for build/dev')
+    }
+
+    return config
+  },
+  name: 'msw-adapter',
+}
+
+export default mswAdapter

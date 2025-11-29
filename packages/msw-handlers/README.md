@@ -43,7 +43,7 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   experimental: {
-    adapterPath: '@shinju-date/msw-handlers/adapter',
+    adapterPath: require.resolve('@shinju-date/msw-handlers/adapter'),
   },
   // ... other config
 }
