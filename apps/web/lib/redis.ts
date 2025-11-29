@@ -8,5 +8,6 @@ export function getRedisClient(): Redis {
       cache: 'default',
     })
   }
+
   return redisClient
 }

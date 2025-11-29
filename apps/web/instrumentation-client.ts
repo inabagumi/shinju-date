@@ -26,7 +26,18 @@ if (dsn) {
       })
     })
     .catch((error) => {
+      console.error('Failed to initialize Sentry:', error)
       throw error
+    })
+}
+
+if (process.env['ENABLE_MSW'] === 'true') {
+  import('@shinju-date/msw-handlers/browser')
+    .then(({ startMocking }) => {
+      startMocking()
+    })
+    .catch((error) => {
+      console.error('Failed to initialize MSW:', error)
     })
 }
 
@@ -37,8 +48,8 @@ export async function onRouterTransitionStart(
   const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
 
   if (dsn) {
-    const { captureRouterTransitionStart } = await import('@sentry/nextjs')
+    const Sentry = await import('@sentry/nextjs')
 
-    captureRouterTransitionStart(href, navigationType)
+    Sentry.captureRouterTransitionStart(href, navigationType)
   }
 }

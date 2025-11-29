@@ -1,5 +1,5 @@
-import { allHandlers } from '@shinju-date/msw-handlers'
 import { setupWorker } from 'msw/browser'
+import { allHandlers } from './index.js'
 
 export const worker = setupWorker(...allHandlers)
 

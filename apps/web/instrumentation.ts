@@ -22,7 +22,7 @@ export async function register() {
       environment,
       sendDefaultPii: true,
       tracesSampleRate: 0.333,
-    } satisfies Parameters<typeof import('@sentry/nextjs').init>[0]
+    } satisfies Parameters<typeof Sentry.init>[0]
 
     if (process.env['NEXT_RUNTIME'] === 'nodejs') {
       const [
@@ -74,8 +74,8 @@ export const onRequestError: Instrumentation.onRequestError =
     const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
 
     if (dsn) {
-      const { captureRequestError } = await import('@sentry/nextjs')
+      const Sentry = await import('@sentry/nextjs')
 
-      return captureRequestError(...args)
+      return Sentry.captureRequestError(...args)
     }
   }

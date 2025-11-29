@@ -30,6 +30,16 @@ if (dsn) {
     })
 }
 
+if (process.env['ENABLE_MSW'] === 'true') {
+  import('@shinju-date/msw-handlers/browser')
+    .then(({ startMocking }) => {
+      startMocking()
+    })
+    .catch((error) => {
+      console.error('Failed to initialize MSW:', error)
+    })
+}
+
 export async function onRouterTransitionStart(
   href: string,
   navigationType: string,

@@ -4,10 +4,9 @@ import { NextResponse } from 'next/server'
 import { joinURL } from 'ufo'
 import { getRedisClient } from '@/lib/redis'
 
-export async function proxy(
+async function handleMaintenanceMode(
   request: NextRequest,
-): Promise<ReturnType<NextProxy>> {
-  // Check for maintenance mode
+): Promise<NextResponse | undefined> {
   try {
     const redisClient = getRedisClient()
     const maintenanceMode = await redisClient.get<boolean>(
@@ -21,6 +20,20 @@ export async function proxy(
   } catch (error) {
     // If Redis is unavailable, continue normally
     console.error('Failed to check maintenance mode:', error)
+  }
+
+  return undefined
+}
+
+export async function proxy(
+  request: NextRequest,
+): Promise<ReturnType<NextProxy>> {
+  if (process.env['ENABLE_MSW'] !== 'true') {
+    const maintenanceResponse = await handleMaintenanceMode(request)
+
+    if (maintenanceResponse) {
+      return maintenanceResponse
+    }
   }
 
   if (

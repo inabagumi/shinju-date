@@ -1,7 +1,6 @@
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
-import { MSWProvider } from '@/components/msw-provider'
 import { lato } from './fonts'
 
 export const viewport: Viewport = {
@@ -31,9 +30,7 @@ interface Props {
 export default function RootLayout({ children }: Props) {
   return (
     <html className={lato.variable} lang="ja">
-      <body className="font-sans text-primary">
-        <MSWProvider>{children}</MSWProvider>
-      </body>
+      <body className="font-sans text-primary">{children}</body>
     </html>
   )
 }
