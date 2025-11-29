@@ -10,7 +10,7 @@
  *
  * const nextConfig: NextConfig = {
  *   experimental: {
- *     adapterPath: require.resolve('@shinju-date/msw-handlers/adapter'),
+ *     adapterPath: import.meta.resolve('@shinju-date/msw-handlers/adapter'),
  *   },
  * }
  *
