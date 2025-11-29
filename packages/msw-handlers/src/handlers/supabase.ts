@@ -1,112 +1,27 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: Mocking Supabase with any type for simplicity
 
-import type { Tables } from '@shinju-date/database'
 import { HttpResponse, http } from 'msw'
-import {
-  createChannelFactory,
-  createManyAnnouncements,
-  createManyTalents,
-  createManyTerms,
-  createManyThumbnails,
-  createManyVideos,
-  createYoutubeChannelFactory,
-  createYoutubeVideoFactory,
-} from '../factories/index.js'
+import { db } from '../db.js'
 
 /**
- * Mock data for Supabase tables using factory functions
+ * Mock data for Supabase tables using @mswjs/data
  *
- * Benefits of using factories:
- * - Reduced boilerplate: Generate multiple items with one function call
- * - Type safety: Factories ensure data matches Table types
- * - Realistic data: Faker generates diverse, realistic values
- * - Easy customization: Override specific fields while keeping defaults
- * - Maintainability: Update schema in factory, not in multiple places
+ * Benefits of using @mswjs/data:
+ * - Structured database with relationships
+ * - Built-in query methods (findMany, findFirst, update, delete)
+ * - Type-safe operations with TypeScript
+ * - Realistic data via faker integration
+ * - Easy data manipulation and seeding
  */
 
-// Generate talents with consistent IDs for relationships
-const mockTalents: Tables<'talents'>[] = createManyTalents(4).map(
-  (talent, idx) => ({
-    ...talent,
-    id: `750e8400-e29b-41d4-a716-44665544000${idx + 1}`,
-  }),
-)
-
-// Generate announcements with consistent IDs
-const mockAnnouncements: Tables<'announcements'>[] = createManyAnnouncements(
-  2,
-).map((announcement, idx) => ({
-  ...announcement,
-  enabled: true,
-  id: `850e8400-e29b-41d4-a716-44665544000${idx + 1}`,
-}))
-
-// Generate channels with relationships to talents
-const mockChannels: Tables<'youtube_channels'>[] = mockTalents.map(
-  (talent, idx) =>
-    createChannelFactory({
-      id: `550e8400-e29b-41d4-a716-44665544000${idx + 1}`,
-      talent_id: talent.id,
-      youtube_channel_id: `UCtest${idx + 1}23`,
-    }),
-)
-
-// Generate thumbnails with consistent IDs
-const mockThumbnails: Tables<'thumbnails'>[] = createManyThumbnails(10).map(
-  (thumbnail, idx) => ({
-    ...thumbnail,
-    id: `650e8400-e29b-41d4-a716-44665544000${idx + 1}`,
-  }),
-)
-
-// Generate videos with relationships to talents and thumbnails
-const mockVideos: Tables<'videos'>[] = createManyVideos(10).map(
-  (video, idx) => ({
-    ...video,
-    id: `750e8400-e29b-41d4-a716-44665544000${idx + 1}`,
-    talent_id:
-      mockTalents[idx % mockTalents.length]?.id ?? mockTalents[0]?.id ?? '',
-    thumbnail_id:
-      mockThumbnails[idx % mockThumbnails.length]?.id ??
-      mockThumbnails[0]?.id ??
-      '',
-  }),
-)
-
-// Mock data types - simplified representations for MSW handlers
-type MockYouTubeChannel = Pick<
-  Tables<'youtube_channels'>,
-  'talent_id' | 'youtube_channel_id' | 'youtube_handle'
->
-
-type MockYouTubeVideo = Pick<
-  Tables<'youtube_videos'>,
-  'video_id' | 'youtube_video_id' | 'youtube_channel_id'
->
-
-// Generate YouTube channel relations using factories
-const mockYoutubeChannels: MockYouTubeChannel[] = mockChannels.map((channel) =>
-  createYoutubeChannelFactory({
-    talent_id: channel.talent_id,
-    youtube_channel_id: channel.youtube_channel_id,
-    ...(channel.youtube_handle && { youtube_handle: channel.youtube_handle }),
-  }),
-)
-
-// Generate YouTube video relations using factories
-const mockYoutubeVideos: MockYouTubeVideo[] = mockVideos.map((video, idx) =>
-  createYoutubeVideoFactory({
-    video_id: video.id,
-    youtube_channel_id:
-      mockChannels[idx % mockChannels.length]?.id ?? mockChannels[0]?.id ?? '',
-  }),
-)
-
-// Generate terms with consistent IDs
-const mockTerms: Tables<'terms'>[] = createManyTerms(3).map((term, idx) => ({
-  ...term,
-  id: `850e8400-e29b-41d4-a716-44665544000${idx + 1}`,
-}))
+// Get all mock data from the database
+const mockTalents = db['talents'].getAll()
+const mockAnnouncements = db['announcements'].getAll()
+const mockThumbnails = db['thumbnails'].getAll()
+const mockVideos = db['videos'].getAll()
+const mockChannels = db['youtube_channels'].getAll()
+const mockTerms = db['terms'].getAll()
+const mockYoutubeVideos = db['youtube_videos'].getAll()
 
 /**
  * Parse Supabase REST API query parameters
@@ -726,7 +641,7 @@ export const supabaseHandlers = [
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(mockYoutubeChannels, query)
+      const filteredData = applySupabaseFilters(mockChannels, query)
 
       if (query.returnCount) {
         return HttpResponse.json(filteredData, {
@@ -748,7 +663,7 @@ export const supabaseHandlers = [
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(mockYoutubeChannels, query)
+      const filteredData = applySupabaseFilters(mockChannels, query)
       const count = filteredData.length
 
       return new HttpResponse(null, {
