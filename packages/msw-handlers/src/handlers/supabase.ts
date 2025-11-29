@@ -169,12 +169,12 @@ async function applySelect(data: any[], selectStr: string) {
     return data
   }
 
-  // Query Collections directly instead of using helper functions
-  const mockTalents = await talents.findMany()
-  const mockThumbnails = await thumbnails.findMany()
-  const mockVideos = await videos.findMany()
-  const mockChannels = await youtubeChannels.findMany()
-  const mockYoutubeVideos = await youtubeVideos.findMany()
+  // Use helper functions for consistency with other handlers
+  const mockTalents = await getMockTalents()
+  const mockThumbnails = await getMockThumbnails()
+  const mockVideos = await getMockVideos()
+  const mockChannels = await getMockChannels()
+  const mockYoutubeVideos = await getMockYoutubeVideos()
 
   const result = data.map((item) => {
     const result: any = {}
@@ -450,7 +450,7 @@ export const supabaseHandlers = [
           for (const match of matches) {
             await videos.update(
               (q) => q.where({ id: match.id }),
-              { data(record) { Object.assign(record, body) } }
+              { data(record) { return Object.assign(record, body) } }
             )
             updatedItems.push({ ...match, ...body })
           }
@@ -841,7 +841,7 @@ export const supabaseHandlers = [
           // Update existing using Collection.update
           await youtubeVideos.update(
             (q) => q.where({ video_id: item.video_id }),
-            { data(record) { Object.assign(record, item) } }
+            { data(record) { return Object.assign(record, item) } }
           )
           createdItems.push({ ...existing, ...item })
         } else {
@@ -898,7 +898,7 @@ export const supabaseHandlers = [
           for (const match of matches) {
             await youtubeVideos.update(
               (q) => q.where({ id: match.id }),
-              { data(record) { Object.assign(record, body) } }
+              { data(record) { return Object.assign(record, body) } }
             )
             updatedItems.push({ ...match, ...body })
           }
