@@ -656,6 +656,25 @@ function applySelect(data: any[], selectStr: string) {
               result[aliasName] = null
             }
           }
+          // Handle youtube_channels relation (one-to-many from talents)
+          else if (relationName === 'youtube_channels' && item.id) {
+            const channels = mockChannels.filter(
+              (ch) => ch.talent_id === item.id,
+            )
+            const nestedFieldArray = nestedFields
+              .split(',')
+              .map((f) => f.trim())
+            const channelsResult = channels.map((channel) => {
+              const nestedResult: any = {}
+              for (const nf of nestedFieldArray) {
+                if (nf in channel) {
+                  nestedResult[nf] = channel[nf as keyof typeof channel]
+                }
+              }
+              return nestedResult
+            })
+            result[aliasName] = channelsResult
+          }
         }
       } else if (simpleNestedMatch) {
         // Handle simple nested selects without alias (backward compatibility)
@@ -747,6 +766,56 @@ export const supabaseHandlers = [
       },
     })
   }),
+
+  // Videos PATCH (update)
+  http.patch(
+    'https://fake.supabase.test/rest/v1/videos',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const preferHeader = request.headers.get('prefer') || ''
+      const query = parseSupabaseQuery(url)
+      const body = (await request.json()) as any
+
+      // Find matching records and update them
+      const updatedItems: any[] = []
+      for (const [field, filterValue] of Object.entries(query.filters)) {
+        if (filterValue.startsWith('eq.')) {
+          const value = filterValue.substring(3)
+          const parsedValue =
+            value === 'true'
+              ? true
+              : value === 'false'
+                ? false
+                : value === 'null'
+                  ? null
+                  : Number.isNaN(Number(value))
+                    ? value
+                    : Number(value)
+
+          for (let i = 0; i < mockVideos.length; i++) {
+            const video = mockVideos[i]
+            if (video && (video as any)[field] === parsedValue) {
+              mockVideos[i] = {
+                ...video,
+                ...body,
+              }
+              updatedItems.push(mockVideos[i])
+            }
+          }
+        }
+      }
+
+      if (preferHeader.includes('return=representation')) {
+        return HttpResponse.json(updatedItems, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      }
+
+      return new HttpResponse(null, { status: 204 })
+    },
+  ),
 
   // Channels table
   http.get('https://fake.supabase.test/rest/v1/channels', ({ request }) => {
