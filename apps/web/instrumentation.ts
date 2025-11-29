@@ -4,9 +4,8 @@ export async function register() {
   // Initialize MSW when explicitly enabled
   if (process.env['ENABLE_MSW'] === 'true') {
     if (process.env['NEXT_RUNTIME'] === 'nodejs') {
-      import('@shinju-date/msw-handlers/server').then(({ startServer }) => {
-        startServer()
-      })
+      const { startServer } = await import('@shinju-date/msw-handlers/server')
+      startServer()
     }
   }
 

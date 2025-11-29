@@ -23,13 +23,20 @@ if (dsn) {
       sendDefaultPii: true,
       tracesSampleRate: 0.333,
     })
+  }).catch((error) => {
+    console.error('Failed to initialize Sentry:', error)
+    throw error
   })
 }
 
 if (process.env['ENABLE_MSW'] === 'true') {
-  import('@shinju-date/msw-handlers/browser').then(({ startMocking }) => {
-    startMocking()
-  })
+  import('@shinju-date/msw-handlers/browser')
+    .then(({ startMocking }) => {
+      startMocking()
+    })
+    .catch((error) => {
+      console.error('Failed to initialize MSW:', error)
+    })
 }
 
 export async function onRouterTransitionStart(
