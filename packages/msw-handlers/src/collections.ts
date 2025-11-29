@@ -102,6 +102,8 @@ export const announcements = new Collection({
  * Seed all collections with initial mock data using faker
  */
 export async function seedCollections() {
+  console.log('[DEBUG] seedCollections called')
+  
   // Create talents
   const talentNames = ['一ノ瀬うるは', '飛良ひかり', '小森めと', '英リサ']
   const createdTalents = await Promise.all(
@@ -115,6 +117,7 @@ export async function seedCollections() {
       }),
     ),
   )
+  console.log('[DEBUG] Created', createdTalents.length, 'talents')
 
   // Create thumbnails
   const createdThumbnails = await Promise.all(
@@ -193,9 +196,30 @@ export async function seedCollections() {
 
   // Create YouTube videos (relations)
   const allVideos = await videos.findMany()
+  
+  console.log('[DEBUG] Creating YouTube videos for', allVideos.length, 'videos')
+  
+  // Create specific test data that tests expect
+  const testYoutubeVideoIds = ['YT_video1abc', 'YT_video2def', 'YT_video3ghi']
   await Promise.all(
-    allVideos.map((video, idx) => {
+    allVideos.slice(0, 3).map((video, idx) => {
       const channel = createdChannels[idx % createdChannels.length]
+      if (!channel) return Promise.resolve()
+
+      console.log('[DEBUG] Creating test youtube_video with ID:', testYoutubeVideoIds[idx])
+      return youtubeVideos.create({
+        id: faker.string.uuid(),
+        video_id: video.id,
+        youtube_channel_id: channel.id,
+        youtube_video_id: testYoutubeVideoIds[idx] ?? faker.string.alphanumeric(11),
+      })
+    }),
+  )
+  
+  // Create remaining YouTube videos with random IDs
+  await Promise.all(
+    allVideos.slice(3).map((video, idx) => {
+      const channel = createdChannels[(idx + 3) % createdChannels.length]
       if (!channel) return Promise.resolve()
 
       return youtubeVideos.create({
@@ -206,6 +230,9 @@ export async function seedCollections() {
       })
     }),
   )
+  
+  const youtubeVideosCount = (await youtubeVideos.findMany()).length
+  console.log('[DEBUG] Total youtube_videos created:', youtubeVideosCount)
 
   // Create terms
   const termsList = [

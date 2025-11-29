@@ -27,13 +27,17 @@ import {
 await seedCollections()
 
 // Get all mock data from the collections
-const mockTalents = await talents.findMany()
-const mockAnnouncements = await announcements.findMany()
-const mockThumbnails = await thumbnails.findMany()
-const mockVideos = await videos.findMany()
-const mockChannels = await youtubeChannels.findMany()
-const mockTerms = await terms.findMany()
-const mockYoutubeVideos = await youtubeVideos.findMany()
+// Using let so we can potentially refresh these if needed
+let mockTalents = await talents.findMany()
+let mockAnnouncements = await announcements.findMany()
+let mockThumbnails = await thumbnails.findMany()
+let mockVideos = await videos.findMany()
+let mockChannels = await youtubeChannels.findMany()
+let mockTerms = await terms.findMany()
+let mockYoutubeVideos = await youtubeVideos.findMany()
+
+console.error('[DEBUG-STDERR] Initial mockYoutubeVideos length:', mockYoutubeVideos.length)
+console.error('[DEBUG-STDERR] First 3 youtube_video_ids:', mockYoutubeVideos.slice(0, 3).map(v => v.youtube_video_id))
 
 /**
  * Parse Supabase REST API query parameters
@@ -238,6 +242,60 @@ function applySelect(data: any[], selectStr: string) {
               return nestedResult
             })
             result[aliasName] = channelsResult
+          }
+          // Handle videos relation (from youtube_videos table)
+          else if (relationName === 'videos' && item.video_id) {
+            const video = mockVideos.find((v) => v.id === item.video_id)
+            if (video) {
+              const nestedFieldArray = nestedFields
+                .split(',')
+                .map((f) => f.trim())
+              const nestedResult: any = {}
+              for (const nf of nestedFieldArray) {
+                // Handle nested relations within videos (like thumbnails)
+                const nestedRelationMatch = nf.match(
+                  /^(\w+):(\w+)(?:!\w+)?\s*\(([^)]+)\)$/,
+                )
+                if (nestedRelationMatch) {
+                  const [, nestedAlias, nestedRelationName, nestedRelationFields] =
+                    nestedRelationMatch
+                  if (
+                    nestedAlias &&
+                    nestedRelationName &&
+                    nestedRelationFields
+                  ) {
+                    if (
+                      nestedRelationName === 'thumbnails' &&
+                      video.thumbnail_id
+                    ) {
+                      const thumbnail = mockThumbnails.find(
+                        (t) => t.id === video.thumbnail_id,
+                      )
+                      if (thumbnail) {
+                        const thumbnailFieldArray = nestedRelationFields
+                          .split(',')
+                          .map((f) => f.trim())
+                        const thumbnailResult: any = {}
+                        for (const tf of thumbnailFieldArray) {
+                          if (tf in thumbnail) {
+                            thumbnailResult[tf] =
+                              thumbnail[tf as keyof typeof thumbnail]
+                          }
+                        }
+                        nestedResult[nestedAlias] = thumbnailResult
+                      } else {
+                        nestedResult[nestedAlias] = null
+                      }
+                    }
+                  }
+                } else if (nf in video) {
+                  nestedResult[nf] = video[nf as keyof typeof video]
+                }
+              }
+              result[aliasName] = nestedResult
+            } else {
+              result[aliasName] = null
+            }
           }
         }
       } else if (simpleNestedMatch) {
@@ -694,7 +752,15 @@ export const supabaseHandlers = [
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(mockYoutubeVideos, query)
+      console.error('[HANDLER DEBUG] youtube_videos GET')
+      console.error('[HANDLER DEBUG] query filters:', JSON.stringify(query.filters))
+      console.error('[HANDLER DEBUG] mockYoutubeVideos length:', mockYoutubeVideos.length)
+
+      let filteredData = applySupabaseFilters(mockYoutubeVideos, query)
+      console.error('[HANDLER DEBUG] filteredData length after filters:', filteredData.length)
+      
+      filteredData = applySelect(filteredData, query.select)
+      console.error('[HANDLER DEBUG] filteredData length after select:', filteredData.length)
 
       if (query.returnCount) {
         return HttpResponse.json(filteredData, {
