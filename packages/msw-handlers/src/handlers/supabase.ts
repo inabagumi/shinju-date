@@ -1,475 +1,62 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: Mocking Supabase with any type for simplicity
 
-import type { Tables } from '@shinju-date/database'
 import { HttpResponse, http } from 'msw'
+import {
+  announcements,
+  seedCollections,
+  talents,
+  terms,
+  thumbnails,
+  videos,
+  youtubeChannels,
+  youtubeVideos,
+} from '../collections.js'
 
-// Mock data for Supabase tables using Tables types
-const mockAnnouncements: Tables<'announcements'>[] = [
-  {
-    created_at: '2025-11-20T00:00:00.000Z',
-    enabled: true,
-    end_at: '2025-12-01T00:00:00.000Z',
-    id: '850e8400-e29b-41d4-a716-446655440001',
-    level: 'info',
-    message: `## メンテナンスのお知らせ
+/**
+ * Mock data for Supabase tables using @msw/data
+ *
+ * Benefits of using @msw/data:
+ * - Standard Schema-based (Zod) validation
+ * - Built-in query methods (findMany, findFirst, create, update, delete)
+ * - Type-safe operations with TypeScript
+ * - Realistic data via faker integration
+ * - Easy data manipulation and seeding
+ */
 
-2025年11月25日に以下のメンテナンスを実施します：
+// Initialize collections with seed data
+await seedCollections()
 
-- **開始時刻**: 午前2:00
-- **終了予定**: 午前5:00
-- **影響範囲**: 全機能が一時的に利用できなくなります
+/**
+ * Helper functions to get fresh data from collections
+ * These ensure we always query the latest state from @msw/data Collections
+ */
+async function getMockTalents() {
+  return await talents.findMany()
+}
 
-詳細は[公式サイト](https://example.com)をご確認ください。
+async function getMockAnnouncements() {
+  return await announcements.findMany()
+}
 
-ご不便をおかけして申し訳ございません。`,
-    start_at: '2025-11-24T00:00:00.000Z',
-    updated_at: '2025-11-20T00:00:00.000Z',
-  },
-  {
-    created_at: '2025-11-21T00:00:00.000Z',
-    enabled: true,
-    end_at: '2025-12-15T00:00:00.000Z',
-    id: '850e8400-e29b-41d4-a716-446655440002',
-    level: 'warning',
-    message: `### 新機能リリースのお知らせ
+async function getMockThumbnails() {
+  return await thumbnails.findMany()
+}
 
-以下の新機能を追加しました：
+async function getMockVideos() {
+  return await videos.findMany()
+}
 
-1. 動画検索機能の強化
-2. レコメンデーション精度の向上
-3. ユーザーインターフェースの改善
+async function getMockChannels() {
+  return await youtubeChannels.findMany()
+}
 
-詳しくは[リリースノート](https://example.com/release-notes)をご覧ください。`,
-    start_at: '2025-11-21T00:00:00.000Z',
-    updated_at: '2025-11-21T00:00:00.000Z',
-  },
-]
+async function getMockTerms() {
+  return await terms.findMany()
+}
 
-const mockChannels: Tables<'youtube_channels'>[] = [
-  {
-    id: '550e8400-e29b-41d4-a716-446655440001',
-    name: 'Daily Analytics Channel',
-    talent_id: '750e8400-e29b-41d4-a716-446655440001',
-    youtube_channel_id: 'UCtest123',
-    youtube_handle: '@dailyanalytics',
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440002',
-    name: 'Trending Topics Channel',
-    talent_id: '750e8400-e29b-41d4-a716-446655440002',
-    youtube_channel_id: 'UCtest456',
-    youtube_handle: '@trendingtopics',
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440003',
-    name: 'Popular Content Channel',
-    talent_id: '750e8400-e29b-41d4-a716-446655440003',
-    youtube_channel_id: 'UCtest789',
-    youtube_handle: '@popularcontent',
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440004',
-    name: 'Test Channel Four',
-    talent_id: '750e8400-e29b-41d4-a716-446655440004',
-    youtube_channel_id: 'UCtest012',
-    youtube_handle: '@testchannelfour',
-  },
-]
-
-const mockThumbnails: Tables<'thumbnails'>[] = [
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'abc123',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440001',
-    path: 'video1.jpg',
-    updated_at: '2023-01-01T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'def456',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440002',
-    path: 'video2.jpg',
-    updated_at: '2023-01-01T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'ghi789',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440003',
-    path: 'video3.jpg',
-    updated_at: '2023-01-01T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'jkl012',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440004',
-    path: 'video4.jpg',
-    updated_at: '2023-01-01T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'mno345',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440005',
-    path: 'video5.jpg',
-    updated_at: '2023-01-01T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-07T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'pqr678',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440006',
-    path: 'video6.jpg',
-    updated_at: '2023-01-07T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-08T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'stu901',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440007',
-    path: 'video7.jpg',
-    updated_at: '2023-01-08T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-09T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'vwx234',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440008',
-    path: 'video8.jpg',
-    updated_at: '2023-01-09T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-10T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'yza567',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440009',
-    path: 'video9.jpg',
-    updated_at: '2023-01-10T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-11T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'bcd890',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440010',
-    path: 'video10.jpg',
-    updated_at: '2023-01-11T00:00:00.000Z',
-    width: 1280,
-  },
-]
-
-const mockVideos: Tables<'videos'>[] = [
-  {
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT10M30S',
-    id: '750e8400-e29b-41d4-a716-446655440001',
-    platform: null,
-    published_at: '2023-01-01T12:00:00.000Z',
-    status: 'PUBLISHED',
-    talent_id: '550e8400-e29b-41d4-a716-446655440001',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440001',
-    title: 'Analytics Test Video #1',
-    updated_at: '2023-01-01T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-02T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT15M45S',
-    id: '750e8400-e29b-41d4-a716-446655440002',
-    platform: null,
-    published_at: '2023-01-02T12:00:00.000Z',
-    status: 'LIVE',
-    talent_id: '550e8400-e29b-41d4-a716-446655440002',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440002',
-    title: 'Trending Test Video #2',
-    updated_at: '2023-01-02T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-03T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT8M15S',
-    id: '750e8400-e29b-41d4-a716-446655440003',
-    platform: null,
-    published_at: '2023-01-03T12:00:00.000Z',
-    status: 'ENDED',
-    talent_id: '550e8400-e29b-41d4-a716-446655440003',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440003',
-    title: 'Popular Test Video #3',
-    updated_at: '2023-01-03T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-04T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT12M30S',
-    id: '750e8400-e29b-41d4-a716-446655440004',
-    platform: null,
-    published_at: '2023-01-04T12:00:00.000Z',
-    status: 'UPCOMING',
-    talent_id: '550e8400-e29b-41d4-a716-446655440004',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440004',
-    title: 'Test Video #4',
-    updated_at: '2023-01-04T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-05T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT20M45S',
-    id: '750e8400-e29b-41d4-a716-446655440005',
-    platform: null,
-    published_at: '2023-01-05T12:00:00.000Z',
-    status: 'PUBLISHED',
-    talent_id: '550e8400-e29b-41d4-a716-446655440001',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440005',
-    title: 'Daily Test Video #5',
-    updated_at: '2023-01-05T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-06T00:00:00.000Z',
-    deleted_at: '2023-01-11T00:00:00.000Z',
-    duration: 'PT18M20S',
-    id: '750e8400-e29b-41d4-a716-446655440006',
-    platform: null,
-    published_at: '2023-01-06T12:00:00.000Z',
-    status: 'PUBLISHED',
-    talent_id: '550e8400-e29b-41d4-a716-446655440002',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440002',
-    title: 'Deleted Video 2',
-    updated_at: '2023-01-06T00:00:00.000Z',
-    visible: false,
-  },
-  {
-    created_at: '2023-01-07T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT14M22S',
-    id: '750e8400-e29b-41d4-a716-446655440007',
-    platform: null,
-    published_at: '2023-01-07T12:00:00.000Z',
-    status: 'PUBLISHED',
-    talent_id: '550e8400-e29b-41d4-a716-446655440003',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440006',
-    title: 'New Content Video #7',
-    updated_at: '2023-01-07T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-08T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT9M45S',
-    id: '750e8400-e29b-41d4-a716-446655440008',
-    platform: null,
-    published_at: '2023-01-08T12:00:00.000Z',
-    status: 'LIVE',
-    talent_id: '550e8400-e29b-41d4-a716-446655440004',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440007',
-    title: 'Tutorial Video #8',
-    updated_at: '2023-01-08T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-09T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT22M10S',
-    id: '750e8400-e29b-41d4-a716-446655440009',
-    platform: null,
-    published_at: '2023-01-09T12:00:00.000Z',
-    status: 'ENDED',
-    talent_id: '550e8400-e29b-41d4-a716-446655440001',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440008',
-    title: 'Analytics Deep Dive #9',
-    updated_at: '2023-01-09T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-10T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT16M33S',
-    id: '750e8400-e29b-41d4-a716-446655440010',
-    platform: null,
-    published_at: '2023-01-10T12:00:00.000Z',
-    status: 'UPCOMING',
-    talent_id: '550e8400-e29b-41d4-a716-446655440002',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440009',
-    title: 'Trending Topics #10',
-    updated_at: '2023-01-10T00:00:00.000Z',
-    visible: true,
-  },
-]
-
-// Mock data types - simplified representations for MSW handlers
-type MockYouTubeChannel = Pick<
-  Tables<'youtube_channels'>,
-  'talent_id' | 'youtube_channel_id' | 'youtube_handle'
->
-
-type MockYouTubeVideo = Pick<
-  Tables<'youtube_videos'>,
-  'video_id' | 'youtube_video_id' | 'youtube_channel_id'
->
-
-const mockYoutubeChannels: MockYouTubeChannel[] = [
-  {
-    talent_id: '550e8400-e29b-41d4-a716-446655440001',
-    youtube_channel_id: 'UCtest123',
-    youtube_handle: '@dailyanalytics',
-  },
-  {
-    talent_id: '550e8400-e29b-41d4-a716-446655440002',
-    youtube_channel_id: 'UCtest456',
-    youtube_handle: '@trendingtopics',
-  },
-  {
-    talent_id: '550e8400-e29b-41d4-a716-446655440003',
-    youtube_channel_id: 'UCtest789',
-    youtube_handle: '@popularcontent',
-  },
-  {
-    talent_id: '550e8400-e29b-41d4-a716-446655440004',
-    youtube_channel_id: 'UCtest012',
-    youtube_handle: '@testchannelfour',
-  },
-]
-
-const mockYoutubeVideos: MockYouTubeVideo[] = [
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440001',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440001',
-    youtube_video_id: 'YT_video1abc',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440002',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440002',
-    youtube_video_id: 'YT_video2def',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440003',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440003',
-    youtube_video_id: 'YT_video3ghi',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440004',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440004',
-    youtube_video_id: 'YT_video4jkl',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440005',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440001',
-    youtube_video_id: 'YT_video5mno',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440006',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440002',
-    youtube_video_id: 'YT_video6pqr',
-  },
-  // Additional test data for comprehensive testing
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440007',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440003',
-    youtube_video_id: 'YT_newVideo01',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440008',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440004',
-    youtube_video_id: 'YT_newVideo02',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440009',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440001',
-    youtube_video_id: 'YT_newVideo03',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440010',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440002',
-    youtube_video_id: 'YT_testVideo1',
-  },
-]
-
-const mockTerms: Tables<'terms'>[] = [
-  {
-    created_at: '2023-01-01T00:00:00.000Z',
-    id: '850e8400-e29b-41d4-a716-446655440001',
-    readings: ['test', 'sample'],
-    synonyms: ['example', 'demo'],
-    term: 'Test Term',
-    updated_at: '2023-01-01T00:00:00.000Z',
-  },
-  {
-    created_at: '2023-01-02T00:00:00.000Z',
-    id: '850e8400-e29b-41d4-a716-446655440002',
-    readings: ['mock', 'fake'],
-    synonyms: ['simulated', 'dummy'],
-    term: 'Mock Term',
-    updated_at: '2023-01-02T00:00:00.000Z',
-  },
-  {
-    created_at: '2023-01-03T00:00:00.000Z',
-    id: '850e8400-e29b-41d4-a716-446655440003',
-    readings: ['example', 'illustration'],
-    synonyms: ['instance', 'case'],
-    term: 'Example Term',
-    updated_at: '2023-01-03T00:00:00.000Z',
-  },
-]
-
-const mockTalents: Tables<'talents'>[] = [
-  {
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
-    id: '750e8400-e29b-41d4-a716-446655440001',
-    name: 'Talent One',
-    updated_at: '2023-01-01T00:00:00.000Z',
-  },
-  {
-    created_at: '2023-01-02T00:00:00.000Z',
-    deleted_at: null,
-    id: '750e8400-e29b-41d4-a716-446655440002',
-    name: 'Talent Two',
-    updated_at: '2023-01-02T00:00:00.000Z',
-  },
-  {
-    created_at: '2023-01-03T00:00:00.000Z',
-    deleted_at: null,
-    id: '750e8400-e29b-41d4-a716-446655440003',
-    name: 'Talent Three',
-    updated_at: '2023-01-03T00:00:00.000Z',
-  },
-]
+async function getMockYoutubeVideos() {
+  return await youtubeVideos.findMany()
+}
 
 /**
  * Parse Supabase REST API query parameters
@@ -577,12 +164,19 @@ function applySupabaseFilters(
 /**
  * Handle Supabase select projection
  */
-function applySelect(data: any[], selectStr: string) {
+async function applySelect(data: any[], selectStr: string) {
   if (selectStr === '*') {
     return data
   }
 
-  return data.map((item) => {
+  // Use helper functions for consistency with other handlers
+  const mockTalents = await getMockTalents()
+  const mockThumbnails = await getMockThumbnails()
+  const mockVideos = await getMockVideos()
+  const mockChannels = await getMockChannels()
+  const mockYoutubeVideos = await getMockYoutubeVideos()
+
+  const result = data.map((item) => {
     const result: any = {}
     const fields = selectStr.split(',').map((f) => f.trim())
 
@@ -675,6 +269,60 @@ function applySelect(data: any[], selectStr: string) {
             })
             result[aliasName] = channelsResult
           }
+          // Handle videos relation (from youtube_videos table)
+          else if (relationName === 'videos' && item.video_id) {
+            const video = mockVideos.find((v) => v.id === item.video_id)
+            if (video) {
+              const nestedFieldArray = nestedFields
+                .split(',')
+                .map((f) => f.trim())
+              const nestedResult: any = {}
+              for (const nf of nestedFieldArray) {
+                // Handle nested relations within videos (like thumbnails)
+                const nestedRelationMatch = nf.match(
+                  /^(\w+):(\w+)(?:!\w+)?\s*\(([^)]+)\)$/,
+                )
+                if (nestedRelationMatch) {
+                  const [, nestedAlias, nestedRelationName, nestedRelationFields] =
+                    nestedRelationMatch
+                  if (
+                    nestedAlias &&
+                    nestedRelationName &&
+                    nestedRelationFields
+                  ) {
+                    if (
+                      nestedRelationName === 'thumbnails' &&
+                      video.thumbnail_id
+                    ) {
+                      const thumbnail = mockThumbnails.find(
+                        (t) => t.id === video.thumbnail_id,
+                      )
+                      if (thumbnail) {
+                        const thumbnailFieldArray = nestedRelationFields
+                          .split(',')
+                          .map((f) => f.trim())
+                        const thumbnailResult: any = {}
+                        for (const tf of thumbnailFieldArray) {
+                          if (tf in thumbnail) {
+                            thumbnailResult[tf] =
+                              thumbnail[tf as keyof typeof thumbnail]
+                          }
+                        }
+                        nestedResult[nestedAlias] = thumbnailResult
+                      } else {
+                        nestedResult[nestedAlias] = null
+                      }
+                    }
+                  }
+                } else if (nf in video) {
+                  nestedResult[nf] = video[nf as keyof typeof video]
+                }
+              }
+              result[aliasName] = nestedResult
+            } else {
+              result[aliasName] = null
+            }
+          }
         }
       } else if (simpleNestedMatch) {
         // Handle simple nested selects without alias (backward compatibility)
@@ -707,11 +355,13 @@ function applySelect(data: any[], selectStr: string) {
 
     return result
   })
+  
+  return result
 }
 
 export const supabaseHandlers = [
   // Videos table
-  http.get('https://fake.supabase.test/rest/v1/videos', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/videos', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -720,7 +370,7 @@ export const supabaseHandlers = [
     const returnCount =
       preferHeader.includes('count=exact') || query.returnCount
 
-    let filteredData = applySupabaseFilters(mockVideos, query)
+    let filteredData = applySupabaseFilters(await getMockVideos(), query)
     const count = filteredData.length
 
     // If this is a HEAD request, return empty body with count header
@@ -736,7 +386,7 @@ export const supabaseHandlers = [
       })
     }
 
-    filteredData = applySelect(filteredData, query.select)
+    filteredData = await applySelect(filteredData, query.select)
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -752,11 +402,11 @@ export const supabaseHandlers = [
   }),
 
   // Videos table HEAD requests
-  http.head('https://fake.supabase.test/rest/v1/videos', ({ request }) => {
+  http.head('https://fake.supabase.test/rest/v1/videos', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
-    const filteredData = applySupabaseFilters(mockVideos, query)
+    const filteredData = applySupabaseFilters(await getMockVideos(), query)
     const count = filteredData.length
 
     return new HttpResponse(null, {
@@ -776,7 +426,7 @@ export const supabaseHandlers = [
       const query = parseSupabaseQuery(url)
       const body = (await request.json()) as any
 
-      // Find matching records and update them
+      // Find matching records and update them using @msw/data Collections
       const updatedItems: any[] = []
       for (const [field, filterValue] of Object.entries(query.filters)) {
         if (filterValue.startsWith('eq.')) {
@@ -792,15 +442,17 @@ export const supabaseHandlers = [
                     ? value
                     : Number(value)
 
-          for (let i = 0; i < mockVideos.length; i++) {
-            const video = mockVideos[i]
-            if (video && (video as any)[field] === parsedValue) {
-              mockVideos[i] = {
-                ...video,
-                ...body,
-              }
-              updatedItems.push(mockVideos[i])
-            }
+          // Find and update records in Collection
+          const matches = await videos.findMany((q) =>
+            q.where({ [field]: parsedValue })
+          )
+          
+          for (const match of matches) {
+            await videos.update(
+              (q) => q.where({ id: match.id }),
+              { data(record) { return Object.assign(record, body) } }
+            )
+            updatedItems.push({ ...match, ...body })
           }
         }
       }
@@ -818,7 +470,7 @@ export const supabaseHandlers = [
   ),
 
   // Channels table
-  http.get('https://fake.supabase.test/rest/v1/channels', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/channels', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -826,7 +478,7 @@ export const supabaseHandlers = [
     const returnCount =
       preferHeader.includes('count=exact') || query.returnCount
 
-    let filteredData = applySupabaseFilters(mockChannels, query)
+    let filteredData = applySupabaseFilters(await getMockChannels(), query)
     const count = filteredData.length
 
     if (
@@ -841,7 +493,7 @@ export const supabaseHandlers = [
       })
     }
 
-    filteredData = applySelect(filteredData, query.select)
+    filteredData = await applySelect(filteredData, query.select)
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -857,11 +509,11 @@ export const supabaseHandlers = [
   }),
 
   // Channels table HEAD requests
-  http.head('https://fake.supabase.test/rest/v1/channels', ({ request }) => {
+  http.head('https://fake.supabase.test/rest/v1/channels', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
-    const filteredData = applySupabaseFilters(mockChannels, query)
+    const filteredData = applySupabaseFilters(await getMockChannels(), query)
     const count = filteredData.length
 
     return new HttpResponse(null, {
@@ -873,7 +525,7 @@ export const supabaseHandlers = [
   }),
 
   // Thumbnails table
-  http.get('https://fake.supabase.test/rest/v1/thumbnails', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/thumbnails', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -881,7 +533,7 @@ export const supabaseHandlers = [
     const returnCount =
       preferHeader.includes('count=exact') || query.returnCount
 
-    let filteredData = applySupabaseFilters(mockThumbnails, query)
+    let filteredData = applySupabaseFilters(await getMockThumbnails(), query)
     const count = filteredData.length
 
     if (
@@ -896,7 +548,7 @@ export const supabaseHandlers = [
       })
     }
 
-    filteredData = applySelect(filteredData, query.select)
+    filteredData = await applySelect(filteredData, query.select)
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -912,7 +564,7 @@ export const supabaseHandlers = [
   }),
 
   // Terms table
-  http.get('https://fake.supabase.test/rest/v1/terms', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/terms', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -920,7 +572,7 @@ export const supabaseHandlers = [
     const returnCount =
       preferHeader.includes('count=exact') || query.returnCount
 
-    let filteredData = applySupabaseFilters(mockTerms, query)
+    let filteredData = applySupabaseFilters(await getMockTerms(), query)
     const count = filteredData.length
 
     if (
@@ -935,7 +587,7 @@ export const supabaseHandlers = [
       })
     }
 
-    filteredData = applySelect(filteredData, query.select)
+    filteredData = await applySelect(filteredData, query.select)
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -951,11 +603,11 @@ export const supabaseHandlers = [
   }),
 
   // Terms table HEAD requests
-  http.head('https://fake.supabase.test/rest/v1/terms', ({ request }) => {
+  http.head('https://fake.supabase.test/rest/v1/terms', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
-    const filteredData = applySupabaseFilters(mockTerms, query)
+    const filteredData = applySupabaseFilters(await getMockTerms(), query)
     const count = filteredData.length
 
     return new HttpResponse(null, {
@@ -967,7 +619,7 @@ export const supabaseHandlers = [
   }),
 
   // Talents table
-  http.get('https://fake.supabase.test/rest/v1/talents', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/talents', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -975,7 +627,7 @@ export const supabaseHandlers = [
     const returnCount =
       preferHeader.includes('count=exact') || query.returnCount
 
-    let filteredData = applySupabaseFilters(mockTalents, query)
+    let filteredData = applySupabaseFilters(await getMockTalents(), query)
     const count = filteredData.length
 
     if (
@@ -990,7 +642,7 @@ export const supabaseHandlers = [
       })
     }
 
-    filteredData = applySelect(filteredData, query.select)
+    filteredData = await applySelect(filteredData, query.select)
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -1006,11 +658,11 @@ export const supabaseHandlers = [
   }),
 
   // Talents table HEAD requests
-  http.head('https://fake.supabase.test/rest/v1/talents', ({ request }) => {
+  http.head('https://fake.supabase.test/rest/v1/talents', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
-    const filteredData = applySupabaseFilters(mockTalents, query)
+    const filteredData = applySupabaseFilters(await getMockTalents(), query)
     const count = filteredData.length
 
     return new HttpResponse(null, {
@@ -1024,7 +676,7 @@ export const supabaseHandlers = [
   // Announcements table GET requests
   http.get(
     'https://fake.supabase.test/rest/v1/announcements',
-    ({ request }) => {
+    async ({ request }) => {
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
@@ -1032,7 +684,7 @@ export const supabaseHandlers = [
       const returnCount =
         preferHeader.includes('count=exact') || query.returnCount
 
-      let filteredData = applySupabaseFilters(mockAnnouncements, query)
+      let filteredData = applySupabaseFilters(await getMockAnnouncements(), query)
       const count = filteredData.length
 
       if (
@@ -1047,7 +699,7 @@ export const supabaseHandlers = [
         })
       }
 
-      filteredData = applySelect(filteredData, query.select)
+      filteredData = await applySelect(filteredData, query.select)
 
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -1066,11 +718,11 @@ export const supabaseHandlers = [
   // Announcements table HEAD requests
   http.head(
     'https://fake.supabase.test/rest/v1/announcements',
-    ({ request }) => {
+    async ({ request }) => {
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(mockAnnouncements, query)
+      const filteredData = applySupabaseFilters(await getMockAnnouncements(), query)
       const count = filteredData.length
 
       return new HttpResponse(null, {
@@ -1085,11 +737,11 @@ export const supabaseHandlers = [
   // YouTube Channels Table
   http.get(
     'https://fake.supabase.test/rest/v1/youtube_channels',
-    ({ request }) => {
+    async ({ request }) => {
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(mockYoutubeChannels, query)
+      const filteredData = applySupabaseFilters(await getMockChannels(), query)
 
       if (query.returnCount) {
         return HttpResponse.json(filteredData, {
@@ -1107,11 +759,11 @@ export const supabaseHandlers = [
 
   http.head(
     'https://fake.supabase.test/rest/v1/youtube_channels',
-    ({ request }) => {
+    async ({ request }) => {
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(mockYoutubeChannels, query)
+      const filteredData = applySupabaseFilters(await getMockChannels(), query)
       const count = filteredData.length
 
       return new HttpResponse(null, {
@@ -1126,11 +778,15 @@ export const supabaseHandlers = [
   // YouTube Videos Table
   http.get(
     'https://fake.supabase.test/rest/v1/youtube_videos',
-    ({ request }) => {
+    async ({ request }) => {
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(mockYoutubeVideos, query)
+      // Get fresh data from collection
+      const mockYoutubeVideos = await getMockYoutubeVideos()
+
+      let filteredData = applySupabaseFilters(mockYoutubeVideos, query)
+      filteredData = await applySelect(filteredData, query.select)
 
       if (query.returnCount) {
         return HttpResponse.json(filteredData, {
@@ -1148,11 +804,11 @@ export const supabaseHandlers = [
 
   http.head(
     'https://fake.supabase.test/rest/v1/youtube_videos',
-    ({ request }) => {
+    async ({ request }) => {
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(mockYoutubeVideos, query)
+      const filteredData = applySupabaseFilters(await getMockYoutubeVideos(), query)
       const count = filteredData.length
 
       return new HttpResponse(null, {
@@ -1174,26 +830,30 @@ export const supabaseHandlers = [
       // Handle both single object and array of objects
       const items = Array.isArray(body) ? body : [body]
 
-      // Mock upsert behavior: update existing or add new
+      // Mock upsert behavior using @msw/data Collections: update existing or add new
+      const createdItems: any[] = []
       for (const item of items) {
-        const existingIndex = mockYoutubeVideos.findIndex(
-          (v) => v.video_id === item.video_id,
+        const existing = await youtubeVideos.findFirst((q) =>
+          q.where({ video_id: item.video_id })
         )
-        if (existingIndex !== -1) {
-          // Update existing
-          mockYoutubeVideos[existingIndex] = {
-            ...mockYoutubeVideos[existingIndex],
-            ...item,
-          }
+        
+        if (existing) {
+          // Update existing using Collection.update
+          await youtubeVideos.update(
+            (q) => q.where({ video_id: item.video_id }),
+            { data(record) { return Object.assign(record, item) } }
+          )
+          createdItems.push({ ...existing, ...item })
         } else {
-          // Insert new
-          mockYoutubeVideos.push(item)
+          // Insert new using Collection.create
+          const created = await youtubeVideos.create(item)
+          createdItems.push(created)
         }
       }
 
       // Return the inserted/updated items if representation is requested
       if (preferHeader.includes('return=representation')) {
-        return HttpResponse.json(items, {
+        return HttpResponse.json(createdItems, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -1214,7 +874,7 @@ export const supabaseHandlers = [
       const query = parseSupabaseQuery(url)
       const body = (await request.json()) as any
 
-      // Find matching records and update them
+      // Find matching records and update them using @msw/data Collections
       const updatedItems: any[] = []
       for (const [field, filterValue] of Object.entries(query.filters)) {
         if (filterValue.startsWith('eq.')) {
@@ -1230,15 +890,17 @@ export const supabaseHandlers = [
                     ? value
                     : Number(value)
 
-          for (let i = 0; i < mockYoutubeVideos.length; i++) {
-            const video = mockYoutubeVideos[i]
-            if (video && (video as any)[field] === parsedValue) {
-              mockYoutubeVideos[i] = {
-                ...video,
-                ...body,
-              }
-              updatedItems.push(mockYoutubeVideos[i])
-            }
+          // Find and update records in Collection
+          const matches = await youtubeVideos.findMany((q) =>
+            q.where({ [field]: parsedValue })
+          )
+          
+          for (const match of matches) {
+            await youtubeVideos.update(
+              (q) => q.where({ id: match.id }),
+              { data(record) { return Object.assign(record, body) } }
+            )
+            updatedItems.push({ ...match, ...body })
           }
         }
       }
@@ -1258,7 +920,7 @@ export const supabaseHandlers = [
   // Authentication endpoints
   http.get(
     'https://fake.supabase.test/auth/v1/user',
-    ({ request, cookies }) => {
+    async ({ request, cookies }) => {
       // Check for authentication in multiple ways:
       // 1. Environment variable for forced authentication
       // 2. Authorization header with bearer token
@@ -1407,7 +1069,7 @@ export const supabaseHandlers = [
   }),
 
   // Session endpoint - for refreshing tokens
-  http.get('https://fake.supabase.test/auth/v1/session', ({ request }) => {
+  http.get('https://fake.supabase.test/auth/v1/session', async ({ request }) => {
     const authHeader = request.headers.get('authorization')
     const hasValidToken =
       authHeader?.startsWith('Bearer ') && authHeader.includes('mock')
@@ -1477,7 +1139,7 @@ export const supabaseHandlers = [
   }),
 
   // Health check endpoint - simple SELECT query
-  http.get('https://fake.supabase.test/rest/v1/*', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/*', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -1518,6 +1180,11 @@ export const supabaseHandlers = [
       }
 
       // Build mock response combining videos, talents, thumbnails, and youtube_videos
+      const mockVideos = await getMockVideos()
+      const mockTalents = await getMockTalents()
+      const mockThumbnails = await getMockThumbnails()
+      const mockYoutubeVideos = await getMockYoutubeVideos()
+      
       const results = mockVideos
         .filter((video) => video.deleted_at === null && video.visible)
         .slice(0, body.perpage || 10)
