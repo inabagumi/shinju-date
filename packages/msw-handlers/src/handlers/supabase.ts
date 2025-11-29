@@ -2,335 +2,76 @@
 
 import type { Tables } from '@shinju-date/database'
 import { HttpResponse, http } from 'msw'
+import {
+  createChannelFactory,
+  createManyAnnouncements,
+  createManyTalents,
+  createManyTerms,
+  createManyThumbnails,
+  createManyVideos,
+  createYoutubeChannelFactory,
+  createYoutubeVideoFactory,
+} from '../factories/index.js'
 
-// Mock data for Supabase tables using Tables types
-const mockAnnouncements: Tables<'announcements'>[] = [
-  {
-    created_at: '2025-11-20T00:00:00.000Z',
-    enabled: true,
-    end_at: '2025-12-01T00:00:00.000Z',
-    id: '850e8400-e29b-41d4-a716-446655440001',
-    level: 'info',
-    message: `## メンテナンスのお知らせ
+/**
+ * Mock data for Supabase tables using factory functions
+ *
+ * Benefits of using factories:
+ * - Reduced boilerplate: Generate multiple items with one function call
+ * - Type safety: Factories ensure data matches Table types
+ * - Realistic data: Faker generates diverse, realistic values
+ * - Easy customization: Override specific fields while keeping defaults
+ * - Maintainability: Update schema in factory, not in multiple places
+ */
 
-2025年11月25日に以下のメンテナンスを実施します：
+// Generate talents with consistent IDs for relationships
+const mockTalents: Tables<'talents'>[] = createManyTalents(4).map(
+  (talent, idx) => ({
+    ...talent,
+    id: `750e8400-e29b-41d4-a716-44665544000${idx + 1}`,
+  }),
+)
 
-- **開始時刻**: 午前2:00
-- **終了予定**: 午前5:00
-- **影響範囲**: 全機能が一時的に利用できなくなります
+// Generate announcements with consistent IDs
+const mockAnnouncements: Tables<'announcements'>[] = createManyAnnouncements(
+  2,
+).map((announcement, idx) => ({
+  ...announcement,
+  enabled: true,
+  id: `850e8400-e29b-41d4-a716-44665544000${idx + 1}`,
+}))
 
-詳細は[公式サイト](https://example.com)をご確認ください。
+// Generate channels with relationships to talents
+const mockChannels: Tables<'youtube_channels'>[] = mockTalents.map(
+  (talent, idx) =>
+    createChannelFactory({
+      id: `550e8400-e29b-41d4-a716-44665544000${idx + 1}`,
+      talent_id: talent.id,
+      youtube_channel_id: `UCtest${idx + 1}23`,
+    }),
+)
 
-ご不便をおかけして申し訳ございません。`,
-    start_at: '2025-11-24T00:00:00.000Z',
-    updated_at: '2025-11-20T00:00:00.000Z',
-  },
-  {
-    created_at: '2025-11-21T00:00:00.000Z',
-    enabled: true,
-    end_at: '2025-12-15T00:00:00.000Z',
-    id: '850e8400-e29b-41d4-a716-446655440002',
-    level: 'warning',
-    message: `### 新機能リリースのお知らせ
+// Generate thumbnails with consistent IDs
+const mockThumbnails: Tables<'thumbnails'>[] = createManyThumbnails(10).map(
+  (thumbnail, idx) => ({
+    ...thumbnail,
+    id: `650e8400-e29b-41d4-a716-44665544000${idx + 1}`,
+  }),
+)
 
-以下の新機能を追加しました：
-
-1. 動画検索機能の強化
-2. レコメンデーション精度の向上
-3. ユーザーインターフェースの改善
-
-詳しくは[リリースノート](https://example.com/release-notes)をご覧ください。`,
-    start_at: '2025-11-21T00:00:00.000Z',
-    updated_at: '2025-11-21T00:00:00.000Z',
-  },
-]
-
-const mockChannels: Tables<'youtube_channels'>[] = [
-  {
-    id: '550e8400-e29b-41d4-a716-446655440001',
-    name: 'Daily Analytics Channel',
-    talent_id: '750e8400-e29b-41d4-a716-446655440001',
-    youtube_channel_id: 'UCtest123',
-    youtube_handle: '@dailyanalytics',
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440002',
-    name: 'Trending Topics Channel',
-    talent_id: '750e8400-e29b-41d4-a716-446655440002',
-    youtube_channel_id: 'UCtest456',
-    youtube_handle: '@trendingtopics',
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440003',
-    name: 'Popular Content Channel',
-    talent_id: '750e8400-e29b-41d4-a716-446655440003',
-    youtube_channel_id: 'UCtest789',
-    youtube_handle: '@popularcontent',
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440004',
-    name: 'Test Channel Four',
-    talent_id: '750e8400-e29b-41d4-a716-446655440004',
-    youtube_channel_id: 'UCtest012',
-    youtube_handle: '@testchannelfour',
-  },
-]
-
-const mockThumbnails: Tables<'thumbnails'>[] = [
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'abc123',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440001',
-    path: 'video1.jpg',
-    updated_at: '2023-01-01T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'def456',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440002',
-    path: 'video2.jpg',
-    updated_at: '2023-01-01T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'ghi789',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440003',
-    path: 'video3.jpg',
-    updated_at: '2023-01-01T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'jkl012',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440004',
-    path: 'video4.jpg',
-    updated_at: '2023-01-01T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'mno345',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440005',
-    path: 'video5.jpg',
-    updated_at: '2023-01-01T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-07T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'pqr678',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440006',
-    path: 'video6.jpg',
-    updated_at: '2023-01-07T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-08T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'stu901',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440007',
-    path: 'video7.jpg',
-    updated_at: '2023-01-08T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-09T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'vwx234',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440008',
-    path: 'video8.jpg',
-    updated_at: '2023-01-09T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-10T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'yza567',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440009',
-    path: 'video9.jpg',
-    updated_at: '2023-01-10T00:00:00.000Z',
-    width: 1280,
-  },
-  {
-    blur_data_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    created_at: '2023-01-11T00:00:00.000Z',
-    deleted_at: null,
-    etag: 'bcd890',
-    height: 720,
-    id: '650e8400-e29b-41d4-a716-446655440010',
-    path: 'video10.jpg',
-    updated_at: '2023-01-11T00:00:00.000Z',
-    width: 1280,
-  },
-]
-
-const mockVideos: Tables<'videos'>[] = [
-  {
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT10M30S',
-    id: '750e8400-e29b-41d4-a716-446655440001',
-    platform: null,
-    published_at: '2023-01-01T12:00:00.000Z',
-    status: 'PUBLISHED',
-    talent_id: '550e8400-e29b-41d4-a716-446655440001',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440001',
-    title: 'Analytics Test Video #1',
-    updated_at: '2023-01-01T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-02T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT15M45S',
-    id: '750e8400-e29b-41d4-a716-446655440002',
-    platform: null,
-    published_at: '2023-01-02T12:00:00.000Z',
-    status: 'LIVE',
-    talent_id: '550e8400-e29b-41d4-a716-446655440002',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440002',
-    title: 'Trending Test Video #2',
-    updated_at: '2023-01-02T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-03T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT8M15S',
-    id: '750e8400-e29b-41d4-a716-446655440003',
-    platform: null,
-    published_at: '2023-01-03T12:00:00.000Z',
-    status: 'ENDED',
-    talent_id: '550e8400-e29b-41d4-a716-446655440003',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440003',
-    title: 'Popular Test Video #3',
-    updated_at: '2023-01-03T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-04T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT12M30S',
-    id: '750e8400-e29b-41d4-a716-446655440004',
-    platform: null,
-    published_at: '2023-01-04T12:00:00.000Z',
-    status: 'UPCOMING',
-    talent_id: '550e8400-e29b-41d4-a716-446655440004',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440004',
-    title: 'Test Video #4',
-    updated_at: '2023-01-04T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-05T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT20M45S',
-    id: '750e8400-e29b-41d4-a716-446655440005',
-    platform: null,
-    published_at: '2023-01-05T12:00:00.000Z',
-    status: 'PUBLISHED',
-    talent_id: '550e8400-e29b-41d4-a716-446655440001',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440005',
-    title: 'Daily Test Video #5',
-    updated_at: '2023-01-05T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-06T00:00:00.000Z',
-    deleted_at: '2023-01-11T00:00:00.000Z',
-    duration: 'PT18M20S',
-    id: '750e8400-e29b-41d4-a716-446655440006',
-    platform: null,
-    published_at: '2023-01-06T12:00:00.000Z',
-    status: 'PUBLISHED',
-    talent_id: '550e8400-e29b-41d4-a716-446655440002',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440002',
-    title: 'Deleted Video 2',
-    updated_at: '2023-01-06T00:00:00.000Z',
-    visible: false,
-  },
-  {
-    created_at: '2023-01-07T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT14M22S',
-    id: '750e8400-e29b-41d4-a716-446655440007',
-    platform: null,
-    published_at: '2023-01-07T12:00:00.000Z',
-    status: 'PUBLISHED',
-    talent_id: '550e8400-e29b-41d4-a716-446655440003',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440006',
-    title: 'New Content Video #7',
-    updated_at: '2023-01-07T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-08T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT9M45S',
-    id: '750e8400-e29b-41d4-a716-446655440008',
-    platform: null,
-    published_at: '2023-01-08T12:00:00.000Z',
-    status: 'LIVE',
-    talent_id: '550e8400-e29b-41d4-a716-446655440004',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440007',
-    title: 'Tutorial Video #8',
-    updated_at: '2023-01-08T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-09T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT22M10S',
-    id: '750e8400-e29b-41d4-a716-446655440009',
-    platform: null,
-    published_at: '2023-01-09T12:00:00.000Z',
-    status: 'ENDED',
-    talent_id: '550e8400-e29b-41d4-a716-446655440001',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440008',
-    title: 'Analytics Deep Dive #9',
-    updated_at: '2023-01-09T00:00:00.000Z',
-    visible: true,
-  },
-  {
-    created_at: '2023-01-10T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT16M33S',
-    id: '750e8400-e29b-41d4-a716-446655440010',
-    platform: null,
-    published_at: '2023-01-10T12:00:00.000Z',
-    status: 'UPCOMING',
-    talent_id: '550e8400-e29b-41d4-a716-446655440002',
-    thumbnail_id: '650e8400-e29b-41d4-a716-446655440009',
-    title: 'Trending Topics #10',
-    updated_at: '2023-01-10T00:00:00.000Z',
-    visible: true,
-  },
-]
+// Generate videos with relationships to talents and thumbnails
+const mockVideos: Tables<'videos'>[] = createManyVideos(10).map(
+  (video, idx) => ({
+    ...video,
+    id: `750e8400-e29b-41d4-a716-44665544000${idx + 1}`,
+    talent_id:
+      mockTalents[idx % mockTalents.length]?.id ?? mockTalents[0]?.id ?? '',
+    thumbnail_id:
+      mockThumbnails[idx % mockThumbnails.length]?.id ??
+      mockThumbnails[0]?.id ??
+      '',
+  }),
+)
 
 // Mock data types - simplified representations for MSW handlers
 type MockYouTubeChannel = Pick<
@@ -343,133 +84,29 @@ type MockYouTubeVideo = Pick<
   'video_id' | 'youtube_video_id' | 'youtube_channel_id'
 >
 
-const mockYoutubeChannels: MockYouTubeChannel[] = [
-  {
-    talent_id: '550e8400-e29b-41d4-a716-446655440001',
-    youtube_channel_id: 'UCtest123',
-    youtube_handle: '@dailyanalytics',
-  },
-  {
-    talent_id: '550e8400-e29b-41d4-a716-446655440002',
-    youtube_channel_id: 'UCtest456',
-    youtube_handle: '@trendingtopics',
-  },
-  {
-    talent_id: '550e8400-e29b-41d4-a716-446655440003',
-    youtube_channel_id: 'UCtest789',
-    youtube_handle: '@popularcontent',
-  },
-  {
-    talent_id: '550e8400-e29b-41d4-a716-446655440004',
-    youtube_channel_id: 'UCtest012',
-    youtube_handle: '@testchannelfour',
-  },
-]
+// Generate YouTube channel relations using factories
+const mockYoutubeChannels: MockYouTubeChannel[] = mockChannels.map((channel) =>
+  createYoutubeChannelFactory({
+    talent_id: channel.talent_id,
+    youtube_channel_id: channel.youtube_channel_id,
+    ...(channel.youtube_handle && { youtube_handle: channel.youtube_handle }),
+  }),
+)
 
-const mockYoutubeVideos: MockYouTubeVideo[] = [
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440001',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440001',
-    youtube_video_id: 'YT_video1abc',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440002',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440002',
-    youtube_video_id: 'YT_video2def',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440003',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440003',
-    youtube_video_id: 'YT_video3ghi',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440004',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440004',
-    youtube_video_id: 'YT_video4jkl',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440005',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440001',
-    youtube_video_id: 'YT_video5mno',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440006',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440002',
-    youtube_video_id: 'YT_video6pqr',
-  },
-  // Additional test data for comprehensive testing
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440007',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440003',
-    youtube_video_id: 'YT_newVideo01',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440008',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440004',
-    youtube_video_id: 'YT_newVideo02',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440009',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440001',
-    youtube_video_id: 'YT_newVideo03',
-  },
-  {
-    video_id: '750e8400-e29b-41d4-a716-446655440010',
-    youtube_channel_id: '550e8400-e29b-41d4-a716-446655440002',
-    youtube_video_id: 'YT_testVideo1',
-  },
-]
+// Generate YouTube video relations using factories
+const mockYoutubeVideos: MockYouTubeVideo[] = mockVideos.map((video, idx) =>
+  createYoutubeVideoFactory({
+    video_id: video.id,
+    youtube_channel_id:
+      mockChannels[idx % mockChannels.length]?.id ?? mockChannels[0]?.id ?? '',
+  }),
+)
 
-const mockTerms: Tables<'terms'>[] = [
-  {
-    created_at: '2023-01-01T00:00:00.000Z',
-    id: '850e8400-e29b-41d4-a716-446655440001',
-    readings: ['test', 'sample'],
-    synonyms: ['example', 'demo'],
-    term: 'Test Term',
-    updated_at: '2023-01-01T00:00:00.000Z',
-  },
-  {
-    created_at: '2023-01-02T00:00:00.000Z',
-    id: '850e8400-e29b-41d4-a716-446655440002',
-    readings: ['mock', 'fake'],
-    synonyms: ['simulated', 'dummy'],
-    term: 'Mock Term',
-    updated_at: '2023-01-02T00:00:00.000Z',
-  },
-  {
-    created_at: '2023-01-03T00:00:00.000Z',
-    id: '850e8400-e29b-41d4-a716-446655440003',
-    readings: ['example', 'illustration'],
-    synonyms: ['instance', 'case'],
-    term: 'Example Term',
-    updated_at: '2023-01-03T00:00:00.000Z',
-  },
-]
-
-const mockTalents: Tables<'talents'>[] = [
-  {
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
-    id: '750e8400-e29b-41d4-a716-446655440001',
-    name: 'Talent One',
-    updated_at: '2023-01-01T00:00:00.000Z',
-  },
-  {
-    created_at: '2023-01-02T00:00:00.000Z',
-    deleted_at: null,
-    id: '750e8400-e29b-41d4-a716-446655440002',
-    name: 'Talent Two',
-    updated_at: '2023-01-02T00:00:00.000Z',
-  },
-  {
-    created_at: '2023-01-03T00:00:00.000Z',
-    deleted_at: null,
-    id: '750e8400-e29b-41d4-a716-446655440003',
-    name: 'Talent Three',
-    updated_at: '2023-01-03T00:00:00.000Z',
-  },
-]
+// Generate terms with consistent IDs
+const mockTerms: Tables<'terms'>[] = createManyTerms(3).map((term, idx) => ({
+  ...term,
+  id: `850e8400-e29b-41d4-a716-44665544000${idx + 1}`,
+}))
 
 /**
  * Parse Supabase REST API query parameters

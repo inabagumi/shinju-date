@@ -1,102 +1,29 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: Mocking Redis with any type for simplicity
 
 import { HttpResponse, http } from 'msw'
-import { Temporal } from 'temporal-polyfill'
+import { createRedisDataFactory } from '../factories/index.js'
 
-// Mock Redis store
-const mockRedisStore = new Map<string, any>()
+/**
+ * Mock Redis store using factory-generated data
+ *
+ * Benefits of using factories:
+ * - Reduced boilerplate: Factory handles data generation logic
+ * - Realistic data: Faker generates diverse, realistic values
+ * - Easy customization: Override factory data as needed
+ * - Maintainability: Update data generation in factory, not here
+ */
 
-// Initialize with some sample data based on the Redis keys used in the app
-const initializeRedisData = () => {
-  // Get current date range for testing (last 7 days)
-  const today = Temporal.Now.plainDateISO()
-  const dates = []
-  for (let i = 6; i >= 0; i--) {
-    const date = today.subtract({ days: i })
-    const dateStr = date.toString().replace(/-/g, '') // YYYYMMDD format
-    dates.push(dateStr)
-  }
+// Generate Redis data using factory (last 7 days)
+const mockRedisStore = createRedisDataFactory(7)
 
-  // Create differentiated data for each date to test single-date filtering
-  dates.forEach((dateStr, index) => {
-    // Video click data - different for each day
-    mockRedisStore.set(`videos:clicked:${dateStr}`, [
-      { member: '1', score: 100 + index * 10 }, // Video 1: 100, 110, 120, etc.
-      { member: '2', score: 80 + index * 8 }, // Video 2: 80, 88, 96, etc.
-      { member: '3', score: 60 + index * 6 }, // Video 3: 60, 66, 72, etc.
-      { member: '4', score: 40 + index * 4 }, // Video 4: 40, 44, 48, etc.
-      { member: '5', score: 20 + index * 2 }, // Video 5: 20, 22, 24, etc.
-    ])
-
-    // Channel click data - different for each day
-    mockRedisStore.set(`channels:clicked:${dateStr}`, [
-      { member: '1', score: 200 + index * 20 }, // Channel 1: 200, 220, 240, etc.
-      { member: '2', score: 150 + index * 15 }, // Channel 2: 150, 165, 180, etc.
-      { member: '3', score: 100 + index * 10 }, // Channel 3: 100, 110, 120, etc.
-      { member: '4', score: 50 + index * 5 }, // Channel 4: 50, 55, 60, etc.
-    ])
-
-    // Search keyword data - different for each day
-    mockRedisStore.set(`search:popular:daily:${dateStr}`, [
-      { member: `Keyword Day ${index + 1}`, score: 50 + index * 10 },
-      { member: `Search Term ${index + 1}`, score: 30 + index * 5 },
-      { member: `Query ${index + 1}`, score: 20 + index * 3 },
-      { member: `Test ${index + 1}`, score: 10 + index * 2 },
-    ])
-
-    // Search volume data
-    mockRedisStore.set(`search:volume:${dateStr}`, 100 + index * 20)
-
-    // Summary stats data - trending upward over time
-    mockRedisStore.set(`summary:stats:${dateStr}`, {
-      deletedVideos: 50 + index * 0,
-      hiddenVideos: 150 + index * 1,
-      totalTalents: 50 + index * 0,
-      totalTerms: 200 + index * 2,
-      totalVideos: 1000 + index * 5,
-      visibleVideos: 800 + index * 4,
-    })
-  })
-
-  // Add some aggregate cache data for date ranges
-  const firstDate = dates[0]
-  const lastDate = dates[dates.length - 1]
-
-  // Multi-day cache for videos (sum of all daily data)
-  mockRedisStore.set(`cache:popular_items:videos:${firstDate}/${lastDate}`, [
-    { member: '1', score: 1050 }, // Sum of all video 1 scores
-    { member: '2', score: 748 }, // Sum of all video 2 scores
-    { member: '3', score: 462 }, // Sum of all video 3 scores
-    { member: '4', score: 292 }, // Sum of all video 4 scores
-    { member: '5', score: 154 }, // Sum of all video 5 scores
-  ])
-
-  // Multi-day cache for channels
-  mockRedisStore.set(`cache:popular_items:channels:${firstDate}/${lastDate}`, [
-    { member: '1', score: 1820 }, // Sum of all channel 1 scores
-    { member: '2', score: 1260 }, // Sum of all channel 2 scores
-    { member: '3', score: 770 }, // Sum of all channel 3 scores
-    { member: '4', score: 385 }, // Sum of all channel 4 scores
-  ])
-
-  // Zero result keywords
-  mockRedisStore.set('search:zero_results', [
-    'nonexistent keyword',
-    'missing content',
-    'not found term',
-  ])
-
-  // Sample status data
-  mockRedisStore.set(
-    'status:last_video_sync',
-    Temporal.Now.instant().toString(),
-  )
-
-  console.log('🎯 MSW Redis mock data initialized with dates:', dates)
-}
-
-// Initialize sample data
-initializeRedisData()
+console.log(
+  '🎯 MSW Redis mock data initialized with dates:',
+  Array.from(mockRedisStore.keys())
+    .filter((key) => key.includes(':clicked:'))
+    .map((key) => key.split(':').pop())
+    .filter((date, idx, arr) => arr.indexOf(date) === idx)
+    .sort(),
+)
 
 /**
  * Simulate Redis ZRANGE operation
@@ -107,7 +34,7 @@ function simulateZRange(
   stop: number,
   options: { rev?: boolean; withScores?: boolean } = {},
 ) {
-  const data = mockRedisStore.get(key) || []
+  const data = (mockRedisStore.get(key) as Array<{ member: string; score: number }>) || []
   const sortedData = [...data]
 
   // Sort by score
@@ -138,7 +65,7 @@ function simulateZUnionStore(destKey: string, keys: string[]) {
   const unionData = new Map<string, number>()
 
   for (const key of keys) {
-    const data = mockRedisStore.get(key) || []
+    const data = (mockRedisStore.get(key) as Array<{ member: string; score: number }>) || []
     for (const item of data) {
       const currentScore = unionData.get(item.member) || 0
       unionData.set(item.member, currentScore + item.score)
@@ -230,7 +157,7 @@ function processRedisCommand(command: string, args: any[]): any {
 
     case 'sadd': {
       const [key, ...members] = args
-      const set = mockRedisStore.get(key) || new Set()
+      const set = (mockRedisStore.get(key) as Set<any>) || new Set()
       let addedCount = 0
       for (const member of members) {
         if (!set.has(member)) {
@@ -244,7 +171,7 @@ function processRedisCommand(command: string, args: any[]): any {
 
     case 'smembers': {
       const [key] = args
-      const set = mockRedisStore.get(key) || new Set()
+      const set = (mockRedisStore.get(key) as Set<any>) || new Set()
       return { result: Array.from(set) }
     }
 
