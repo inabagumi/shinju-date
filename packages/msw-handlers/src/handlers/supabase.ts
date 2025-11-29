@@ -587,8 +587,11 @@ function applySelect(data: any[], selectStr: string) {
     const fields = selectStr.split(',').map((f) => f.trim())
 
     for (const field of fields) {
-      // Handle nested selects with alias like "talent:talents(id, name)" or without alias like "thumbnails(id, path)"
-      const aliasedNestedMatch = field.match(/^(\w+):(\w+)\(([^)]+)\)$/)
+      // Handle nested selects with alias like "talent:talents(id, name)" or "talent:talents!inner(id, name)"
+      // Supabase syntax: alias:table!modifier(fields) where modifier is optional (!inner, !left, etc.)
+      const aliasedNestedMatch = field.match(
+        /^(\w+):(\w+)(?:!\w+)?\s*\(([^)]+)\)$/,
+      )
       const simpleNestedMatch = field.match(/^(\w+)\(([^)]+)\)$/)
 
       if (aliasedNestedMatch) {
