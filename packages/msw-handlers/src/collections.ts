@@ -193,7 +193,7 @@ export async function seedCollections() {
 
   // Create YouTube videos (relations)
   const allVideos = await videos.findMany()
-  
+
   // Create specific test data that tests expect
   const testYoutubeVideoIds = ['YT_video1abc', 'YT_video2def', 'YT_video3ghi']
   await Promise.all(
@@ -205,11 +205,12 @@ export async function seedCollections() {
         id: faker.string.uuid(),
         video_id: video.id,
         youtube_channel_id: channel.id,
-        youtube_video_id: testYoutubeVideoIds[idx] ?? faker.string.alphanumeric(11),
+        youtube_video_id:
+          testYoutubeVideoIds[idx] ?? faker.string.alphanumeric(11),
       })
     }),
   )
-  
+
   // Create remaining YouTube videos with random IDs
   await Promise.all(
     allVideos.slice(3).map((video, idx) => {

@@ -26,14 +26,37 @@ import {
 // Initialize collections with seed data
 await seedCollections()
 
-// Get all mock data from the collections (cached at module load)
-const mockTalents = await talents.findMany()
-const mockAnnouncements = await announcements.findMany()
-const mockThumbnails = await thumbnails.findMany()
-const mockVideos = await videos.findMany()
-const mockChannels = await youtubeChannels.findMany()
-const mockTerms = await terms.findMany()
-let mockYoutubeVideos = await youtubeVideos.findMany() // Using let to allow refresh
+/**
+ * Helper functions to get fresh data from collections
+ * These ensure we always query the latest state from @msw/data Collections
+ */
+async function getMockTalents() {
+  return await talents.findMany()
+}
+
+async function getMockAnnouncements() {
+  return await announcements.findMany()
+}
+
+async function getMockThumbnails() {
+  return await thumbnails.findMany()
+}
+
+async function getMockVideos() {
+  return await videos.findMany()
+}
+
+async function getMockChannels() {
+  return await youtubeChannels.findMany()
+}
+
+async function getMockTerms() {
+  return await terms.findMany()
+}
+
+async function getMockYoutubeVideos() {
+  return await youtubeVideos.findMany()
+}
 
 /**
  * Parse Supabase REST API query parameters
@@ -344,8 +367,7 @@ export const supabaseHandlers = [
     const returnCount =
       preferHeader.includes('count=exact') || query.returnCount
 
-    const mockVideos = await getMockVideos()
-    let filteredData = applySupabaseFilters(mockVideos, query)
+    let filteredData = applySupabaseFilters(await getMockVideos(), query)
     const count = filteredData.length
 
     // If this is a HEAD request, return empty body with count header
@@ -377,11 +399,11 @@ export const supabaseHandlers = [
   }),
 
   // Videos table HEAD requests
-  http.head('https://fake.supabase.test/rest/v1/videos', ({ request }) => {
+  http.head('https://fake.supabase.test/rest/v1/videos', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
-    const filteredData = applySupabaseFilters(mockVideos, query)
+    const filteredData = applySupabaseFilters(await getMockVideos(), query)
     const count = filteredData.length
 
     return new HttpResponse(null, {
@@ -417,14 +439,14 @@ export const supabaseHandlers = [
                     ? value
                     : Number(value)
 
-          for (let i = 0; i < mockVideos.length; i++) {
+          for (let i = 0; i < await getMockVideos().length; i++) {
             const video = mockVideos[i]
             if (video && (video as any)[field] === parsedValue) {
-              mockVideos[i] = {
+              await getMockVideos()[i] = {
                 ...video,
                 ...body,
               }
-              updatedItems.push(mockVideos[i])
+              updatedItems.push(await getMockVideos()[i])
             }
           }
         }
@@ -443,7 +465,7 @@ export const supabaseHandlers = [
   ),
 
   // Channels table
-  http.get('https://fake.supabase.test/rest/v1/channels', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/channels', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -451,7 +473,7 @@ export const supabaseHandlers = [
     const returnCount =
       preferHeader.includes('count=exact') || query.returnCount
 
-    let filteredData = applySupabaseFilters(mockChannels, query)
+    let filteredData = applySupabaseFilters(await getMockChannels(), query)
     const count = filteredData.length
 
     if (
@@ -466,7 +488,7 @@ export const supabaseHandlers = [
       })
     }
 
-    filteredData = applySelect(filteredData, query.select)
+    filteredData = await applySelect(filteredData, query.select)
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -482,11 +504,11 @@ export const supabaseHandlers = [
   }),
 
   // Channels table HEAD requests
-  http.head('https://fake.supabase.test/rest/v1/channels', ({ request }) => {
+  http.head('https://fake.supabase.test/rest/v1/channels', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
-    const filteredData = applySupabaseFilters(mockChannels, query)
+    const filteredData = applySupabaseFilters(await getMockChannels(), query)
     const count = filteredData.length
 
     return new HttpResponse(null, {
@@ -498,7 +520,7 @@ export const supabaseHandlers = [
   }),
 
   // Thumbnails table
-  http.get('https://fake.supabase.test/rest/v1/thumbnails', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/thumbnails', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -506,7 +528,7 @@ export const supabaseHandlers = [
     const returnCount =
       preferHeader.includes('count=exact') || query.returnCount
 
-    let filteredData = applySupabaseFilters(mockThumbnails, query)
+    let filteredData = applySupabaseFilters(await getMockThumbnails(), query)
     const count = filteredData.length
 
     if (
@@ -521,7 +543,7 @@ export const supabaseHandlers = [
       })
     }
 
-    filteredData = applySelect(filteredData, query.select)
+    filteredData = await applySelect(filteredData, query.select)
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -537,7 +559,7 @@ export const supabaseHandlers = [
   }),
 
   // Terms table
-  http.get('https://fake.supabase.test/rest/v1/terms', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/terms', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -545,7 +567,7 @@ export const supabaseHandlers = [
     const returnCount =
       preferHeader.includes('count=exact') || query.returnCount
 
-    let filteredData = applySupabaseFilters(mockTerms, query)
+    let filteredData = applySupabaseFilters(await getMockTerms(), query)
     const count = filteredData.length
 
     if (
@@ -560,7 +582,7 @@ export const supabaseHandlers = [
       })
     }
 
-    filteredData = applySelect(filteredData, query.select)
+    filteredData = await applySelect(filteredData, query.select)
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -576,11 +598,11 @@ export const supabaseHandlers = [
   }),
 
   // Terms table HEAD requests
-  http.head('https://fake.supabase.test/rest/v1/terms', ({ request }) => {
+  http.head('https://fake.supabase.test/rest/v1/terms', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
-    const filteredData = applySupabaseFilters(mockTerms, query)
+    const filteredData = applySupabaseFilters(await getMockTerms(), query)
     const count = filteredData.length
 
     return new HttpResponse(null, {
@@ -592,7 +614,7 @@ export const supabaseHandlers = [
   }),
 
   // Talents table
-  http.get('https://fake.supabase.test/rest/v1/talents', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/talents', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -600,7 +622,7 @@ export const supabaseHandlers = [
     const returnCount =
       preferHeader.includes('count=exact') || query.returnCount
 
-    let filteredData = applySupabaseFilters(mockTalents, query)
+    let filteredData = applySupabaseFilters(await getMockTalents(), query)
     const count = filteredData.length
 
     if (
@@ -615,7 +637,7 @@ export const supabaseHandlers = [
       })
     }
 
-    filteredData = applySelect(filteredData, query.select)
+    filteredData = await applySelect(filteredData, query.select)
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -631,11 +653,11 @@ export const supabaseHandlers = [
   }),
 
   // Talents table HEAD requests
-  http.head('https://fake.supabase.test/rest/v1/talents', ({ request }) => {
+  http.head('https://fake.supabase.test/rest/v1/talents', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
-    const filteredData = applySupabaseFilters(mockTalents, query)
+    const filteredData = applySupabaseFilters(await getMockTalents(), query)
     const count = filteredData.length
 
     return new HttpResponse(null, {
@@ -649,7 +671,7 @@ export const supabaseHandlers = [
   // Announcements table GET requests
   http.get(
     'https://fake.supabase.test/rest/v1/announcements',
-    ({ request }) => {
+    async ({ request }) => {
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
@@ -657,7 +679,7 @@ export const supabaseHandlers = [
       const returnCount =
         preferHeader.includes('count=exact') || query.returnCount
 
-      let filteredData = applySupabaseFilters(mockAnnouncements, query)
+      let filteredData = applySupabaseFilters(await getMockAnnouncements(), query)
       const count = filteredData.length
 
       if (
@@ -672,7 +694,7 @@ export const supabaseHandlers = [
         })
       }
 
-      filteredData = applySelect(filteredData, query.select)
+      filteredData = await applySelect(filteredData, query.select)
 
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -691,11 +713,11 @@ export const supabaseHandlers = [
   // Announcements table HEAD requests
   http.head(
     'https://fake.supabase.test/rest/v1/announcements',
-    ({ request }) => {
+    async ({ request }) => {
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(mockAnnouncements, query)
+      const filteredData = applySupabaseFilters(await getMockAnnouncements(), query)
       const count = filteredData.length
 
       return new HttpResponse(null, {
@@ -710,11 +732,11 @@ export const supabaseHandlers = [
   // YouTube Channels Table
   http.get(
     'https://fake.supabase.test/rest/v1/youtube_channels',
-    ({ request }) => {
+    async ({ request }) => {
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(mockChannels, query)
+      const filteredData = applySupabaseFilters(await getMockChannels(), query)
 
       if (query.returnCount) {
         return HttpResponse.json(filteredData, {
@@ -732,11 +754,11 @@ export const supabaseHandlers = [
 
   http.head(
     'https://fake.supabase.test/rest/v1/youtube_channels',
-    ({ request }) => {
+    async ({ request }) => {
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(mockChannels, query)
+      const filteredData = applySupabaseFilters(await getMockChannels(), query)
       const count = filteredData.length
 
       return new HttpResponse(null, {
@@ -755,8 +777,8 @@ export const supabaseHandlers = [
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      // Refresh youtube videos data from collection to get latest data
-      mockYoutubeVideos = await youtubeVideos.findMany()
+      // Get fresh data from collection
+      const mockYoutubeVideos = await getMockYoutubeVideos()
       
       // Add console.warn which should show up in vitest
       console.warn(`[MSW youtube_videos] Handler called, have ${mockYoutubeVideos.length} records`)
@@ -765,7 +787,7 @@ export const supabaseHandlers = [
       let filteredData = applySupabaseFilters(mockYoutubeVideos, query)
       console.warn(`[MSW youtube_videos] After filter: ${filteredData.length} records`)
       
-      filteredData = applySelect(filteredData, query.select)
+      filteredData = await applySelect(filteredData, query.select)
       console.warn(`[MSW youtube_videos] After select: ${filteredData.length} records`)
 
       if (query.returnCount) {
@@ -784,11 +806,11 @@ export const supabaseHandlers = [
 
   http.head(
     'https://fake.supabase.test/rest/v1/youtube_videos',
-    ({ request }) => {
+    async ({ request }) => {
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(mockYoutubeVideos, query)
+      const filteredData = applySupabaseFilters(await getMockYoutubeVideos(), query)
       const count = filteredData.length
 
       return new HttpResponse(null, {
@@ -810,26 +832,30 @@ export const supabaseHandlers = [
       // Handle both single object and array of objects
       const items = Array.isArray(body) ? body : [body]
 
-      // Mock upsert behavior: update existing or add new
+      // Mock upsert behavior using @msw/data Collections: update existing or add new
+      const createdItems: any[] = []
       for (const item of items) {
-        const existingIndex = mockYoutubeVideos.findIndex(
-          (v) => v.video_id === item.video_id,
+        const existing = await youtubeVideos.findFirst((q) =>
+          q.where({ video_id: item.video_id })
         )
-        if (existingIndex !== -1) {
-          // Update existing
-          mockYoutubeVideos[existingIndex] = {
-            ...mockYoutubeVideos[existingIndex],
-            ...item,
-          }
+        
+        if (existing) {
+          // Update existing using Collection.update
+          await youtubeVideos.update(
+            (q) => q.where({ video_id: item.video_id }),
+            { data(record) { Object.assign(record, item) } }
+          )
+          createdItems.push({ ...existing, ...item })
         } else {
-          // Insert new
-          mockYoutubeVideos.push(item)
+          // Insert new using Collection.create
+          const created = await youtubeVideos.create(item)
+          createdItems.push(created)
         }
       }
 
       // Return the inserted/updated items if representation is requested
       if (preferHeader.includes('return=representation')) {
-        return HttpResponse.json(items, {
+        return HttpResponse.json(createdItems, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -850,7 +876,7 @@ export const supabaseHandlers = [
       const query = parseSupabaseQuery(url)
       const body = (await request.json()) as any
 
-      // Find matching records and update them
+      // Find matching records and update them using @msw/data Collections
       const updatedItems: any[] = []
       for (const [field, filterValue] of Object.entries(query.filters)) {
         if (filterValue.startsWith('eq.')) {
@@ -866,15 +892,17 @@ export const supabaseHandlers = [
                     ? value
                     : Number(value)
 
-          for (let i = 0; i < mockYoutubeVideos.length; i++) {
-            const video = mockYoutubeVideos[i]
-            if (video && (video as any)[field] === parsedValue) {
-              mockYoutubeVideos[i] = {
-                ...video,
-                ...body,
-              }
-              updatedItems.push(mockYoutubeVideos[i])
-            }
+          // Find and update records in Collection
+          const matches = await youtubeVideos.findMany((q) =>
+            q.where({ [field]: parsedValue })
+          )
+          
+          for (const match of matches) {
+            await youtubeVideos.update(
+              (q) => q.where({ id: match.id }),
+              { data(record) { Object.assign(record, body) } }
+            )
+            updatedItems.push({ ...match, ...body })
           }
         }
       }
@@ -894,7 +922,7 @@ export const supabaseHandlers = [
   // Authentication endpoints
   http.get(
     'https://fake.supabase.test/auth/v1/user',
-    ({ request, cookies }) => {
+    async ({ request, cookies }) => {
       // Check for authentication in multiple ways:
       // 1. Environment variable for forced authentication
       // 2. Authorization header with bearer token
@@ -1043,7 +1071,7 @@ export const supabaseHandlers = [
   }),
 
   // Session endpoint - for refreshing tokens
-  http.get('https://fake.supabase.test/auth/v1/session', ({ request }) => {
+  http.get('https://fake.supabase.test/auth/v1/session', async ({ request }) => {
     const authHeader = request.headers.get('authorization')
     const hasValidToken =
       authHeader?.startsWith('Bearer ') && authHeader.includes('mock')
@@ -1113,7 +1141,7 @@ export const supabaseHandlers = [
   }),
 
   // Health check endpoint - simple SELECT query
-  http.get('https://fake.supabase.test/rest/v1/*', ({ request }) => {
+  http.get('https://fake.supabase.test/rest/v1/*', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -1154,6 +1182,11 @@ export const supabaseHandlers = [
       }
 
       // Build mock response combining videos, talents, thumbnails, and youtube_videos
+      const mockVideos = await getMockVideos()
+      const mockTalents = await getMockTalents()
+      const mockThumbnails = await getMockThumbnails()
+      const mockYoutubeVideos = await getMockYoutubeVideos()
+      
       const results = mockVideos
         .filter((video) => video.deleted_at === null && video.visible)
         .slice(0, body.perpage || 10)
