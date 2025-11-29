@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
               "frame-ancestors 'none'",
               "img-src 'self' data:",
               "manifest-src 'self'",
-              "script-src 'self' 'unsafe-inline'",
+              "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
               "style-src 'self' 'unsafe-inline'",
               "worker-src 'self' blob:",
             ].join('; '),

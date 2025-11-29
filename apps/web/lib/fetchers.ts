@@ -65,10 +65,7 @@ export const fetchUpcomingAndLiveVideos = async (): Promise<Video[]> => {
 }
 
 async function getDefaultBaseTime() {
-  const epochNanoseconds = Temporal.Now.instant().epochNanoseconds
-
-  return Temporal.Instant.fromEpochNanoseconds(epochNanoseconds)
-    .toZonedDateTimeISO(TIME_ZONE)
+  return Temporal.Now.zonedDateTimeISO(TIME_ZONE)
     .startOfDay()
     .add({
       months: 1,

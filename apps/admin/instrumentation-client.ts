@@ -30,6 +30,12 @@ if (dsn) {
     })
 }
 
+if (process.env['ENABLE_MSW'] === 'true') {
+  import('@shinju-date/msw-handlers/browser').then(({ startMocking }) => {
+    startMocking()
+  })
+}
+
 export async function onRouterTransitionStart(
   href: string,
   navigationType: string,
