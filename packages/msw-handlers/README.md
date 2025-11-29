@@ -6,6 +6,9 @@ This package provides a unified mock infrastructure that enables efficient devel
 
 ## Features
 
+- **Factory-Based Mock Data**: Generates realistic, diverse mock data using `@faker-js/faker`
+- **Type-Safe Factories**: All factories match database table types for compile-time safety
+- **Reduced Boilerplate**: 560+ lines of hardcoded data replaced with factory calls
 - **Supabase API Mocking**: Complete mock handlers for database operations including tables, relations, and query parameters
 - **Upstash Redis Mocking**: Mock handlers for Redis operations including sorted sets, pipeline commands, and basic operations
 - **Browser & Node.js Support**: Works in both browser (Service Worker) and Node.js (server) environments
@@ -232,30 +235,113 @@ await redisClient.ping()
 'search:popular:daily:2023-10-23' => [{ member: 'ホロライブ', score: 50 }, ...]
 ```
 
+## Mock Data Generation with Factories
+
+This package uses **factory functions** powered by `@faker-js/faker` to generate realistic mock data. This approach provides:
+
+- **Reduced Boilerplate**: Generate multiple items with one function call
+- **Type Safety**: Factories ensure data matches database Table types
+- **Realistic Data**: Faker generates diverse, realistic values
+- **Easy Customization**: Override specific fields while keeping defaults
+- **Maintainability**: Update schema in factory, not in multiple places
+
+### Using Factories
+
+```typescript
+import { createVideoFactory, createManyVideos } from './factories'
+
+// Generate a single video with custom fields
+const video = createVideoFactory({ title: 'My Custom Video' })
+
+// Generate multiple videos
+const videos = createManyVideos(10)
+
+// Generate videos with related data
+const talent = createTalentFactory()
+const video = createVideoFactory({ talent_id: talent.id })
+```
+
+### Available Factories
+
+#### Supabase Tables
+- `createVideoFactory()` / `createManyVideos(count)`
+- `createTalentFactory()` / `createManyTalents(count)`
+- `createThumbnailFactory()` / `createManyThumbnails(count)`
+- `createChannelFactory()` / `createManyChannels(count)`
+- `createTermFactory()` / `createManyTerms(count)`
+- `createAnnouncementFactory()` / `createManyAnnouncements(count)`
+- `createYoutubeChannelFactory()` / `createManyYoutubeChannels(count)`
+- `createYoutubeVideoFactory()` / `createManyYoutubeVideos(count)`
+
+#### Redis Data
+- `createRedisDataFactory(dateCount)` - Generate date-based Redis data
+- `createCustomRedisData(data)` - Create custom Redis key-value pairs
+
+#### YouTube API
+- `createYoutubeAPIChannelFactory()`
+- `createYoutubeAPIVideoFactory()`
+- `createYoutubeAPIPlaylistItemFactory()`
+
+### Code Reduction Achieved
+
+By using factories, we've significantly reduced boilerplate:
+- **supabase.ts**: Reduced by 470+ lines (from hardcoded arrays to factory calls)
+- **upstash.ts**: Reduced by 90+ lines (simplified initialization)
+
 ## Adding New Mock Data
 
 ### Extending Supabase Mocks
 
 To add more tables or modify existing data:
 
-1. **Edit `src/handlers/supabase.ts`**:
+1. **Create a new factory** in `src/factories/supabase/`:
 
 ```typescript
-// Add new mock data
-const mockNewTable = [
-  {
-    id: 1,
-    name: 'Example',
-    // ... more fields
+// src/factories/supabase/my-table.ts
+import type { Tables } from '@shinju-date/database'
+import { faker } from '@faker-js/faker'
+
+export function createMyTableFactory(
+  overrides: Partial<Tables<'my_table'>> = {},
+): Tables<'my_table'> {
+  return {
+    id: faker.string.uuid(),
+    name: faker.person.fullName(),
+    created_at: faker.date.past().toISOString(),
+    ...overrides,
   }
-]
+}
+
+export function createManyMyTable(
+  count: number,
+  overrides: Partial<Tables<'my_table'>> = {},
+): Tables<'my_table'>[] {
+  return Array.from({ length: count }, () => createMyTableFactory(overrides))
+}
+```
+
+2. **Export from `src/factories/index.ts`**:
+
+```typescript
+export {
+  createMyTableFactory,
+  createManyMyTable,
+} from './supabase/my-table.js'
+```
+
+3. **Use in handler** (`src/handlers/supabase.ts`):
+
+```typescript
+import { createManyMyTable } from '../factories/index.js'
+
+const mockMyTable = createManyMyTable(10)
 
 // Add new handler
-http.get('*/rest/v1/new_table', ({ request }) => {
+http.get('*/rest/v1/my_table', ({ request }) => {
   const url = new URL(request.url)
   const query = parseSupabaseQuery(url)
 
-  let filteredData = applySupabaseFilters(mockNewTable, query)
+  let filteredData = applySupabaseFilters(mockMyTable, query)
   filteredData = applySelect(filteredData, query.select)
 
   return HttpResponse.json(filteredData)
@@ -264,21 +350,24 @@ http.get('*/rest/v1/new_table', ({ request }) => {
 
 ### Extending Redis Mocks
 
-To add new Redis commands or data:
+To add new Redis data types:
 
-1. **Edit `src/handlers/upstash.ts`**:
+1. **Edit `src/factories/upstash/redis-data.ts`**:
 
 ```typescript
-// Add data in initializeRedisData()
-mockRedisStore.set('my:new:key', 'value')
+// Add new data type in createRedisDataFactory()
+redisData.set('my:custom:key', faker.lorem.words())
+```
 
-// Add command handler
-case 'mynewcommand': {
-  const [key, value] = args
-  // Implementation
-  results.push({ result: 'OK' })
-  break
-}
+2. **Or create custom data**:
+
+```typescript
+import { createCustomRedisData } from './factories'
+
+const customData = createCustomRedisData({
+  'my:key': 'my value',
+  'another:key': { complex: 'object' },
+})
 ```
 
 ## Development
