@@ -1,12 +1,12 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: Mocking Redis with any type for simplicity
 
 import { HttpResponse, http } from 'msw'
-import { createRedisDataFactory } from '../factories/index.js'
+import { createRedisDataFactory } from '../redis-factory.js'
 
 /**
  * Mock Redis store using factory-generated data
  *
- * Benefits of using factories:
+ * Benefits of using @faker-js/faker:
  * - Reduced boilerplate: Factory handles data generation logic
  * - Realistic data: Faker generates diverse, realistic values
  * - Easy customization: Override factory data as needed
@@ -163,7 +163,8 @@ function processRedisCommand(command: string, args: any[]): any {
       const [key, ...members] = args
       const rawSet = mockRedisStore.get(key)
       // Type guard: ensure it's a Set
-      const set = rawSet instanceof Set ? rawSet : new Set()
+      const set =
+        rawSet instanceof Set ? (rawSet as Set<string>) : new Set<string>()
       let addedCount = 0
       for (const member of members) {
         if (!set.has(member)) {

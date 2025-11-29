@@ -2,20 +2,21 @@
 
 ## 概要
 
-`@mswjs/data`と`@faker-js/faker`を組み合わせてモックデータ生成を実装し、MSW ハンドラーの保守性、型安全性、拡張性を大幅に向上させました。
+`@msw/data`と`@faker-js/faker`を組み合わせてモックデータ生成を実装し、MSW ハンドラーの保守性、型安全性、拡張性を大幅に向上させました。
 
-## @mswjs/dataの採用
+## @msw/dataの採用
 
-### なぜ@mswjs/dataを使用するか
+### なぜ@msw/dataを使用するか
 
-1. **構造化されたデータモデリング**: データベースのスキーマと関係性を明確に定義
-2. **組み込みクエリメソッド**: `findMany`, `findFirst`, `update`, `delete`等が標準で利用可能
-3. **リレーション管理**: 外部キーの整合性が自動的に保たれる
-4. **型安全性**: TypeScriptの型システムと完全に統合
+1. **Standard Schema対応**: Zod、ArkType、Valibot等の標準スキーマライブラリをサポート
+2. **組み込みクエリメソッド**: `findMany`, `findFirst`, `update`, `delete`, `create`等が標準で利用可能
+3. **ランタイム・型安全性**: Zodスキーマによる実行時検証とTypeScriptの型推論
+4. **リレーション管理**: データベースライクな動作とクロスコレクションリレーション
+5. **拡張機能**: クロスタブ同期や永続化などのエクステンションサポート
 
 ### @faker-js/fakerとの統合
 
-`@mswjs/data`のファクトリー関数内で`@faker-js/faker`を使用することで:
+`@msw/data`のCollection定義内で`@faker-js/faker`を使用することで:
 - リアルで多様なテストデータを生成
 - 名前、日付、UUID、URLなどを自動生成
 - 各テスト実行で異なるデータを使用
@@ -23,25 +24,33 @@
 ### 実装例
 
 ```typescript
-import { factory, primaryKey } from '@mswjs/data'
+import { Collection } from '@msw/data'
+import { z } from 'zod'
 import { faker } from '@faker-js/faker'
 
-export const db = factory({
-  videos: {
-    id: primaryKey(faker.string.uuid),
-    title: () => faker.helpers.arrayElement([
-      `${faker.word.adjective()} ${faker.word.noun()} Video`,
-      `How to ${faker.hacker.verb()} ${faker.hacker.noun()}`,
-    ]),
-    status: () => faker.helpers.arrayElement(['PUBLISHED', 'LIVE', 'ENDED']),
+export const videos = new Collection({
+  schema: z.object({
+    id: z.string().uuid(),
+    title: z.string(),
+    status: z.enum(['PUBLISHED', 'LIVE', 'ENDED', 'SCHEDULED']),
+    visible: z.boolean(),
     // ... その他のフィールド
-  },
-  talents: {
-    id: primaryKey(faker.string.uuid),
-    name: () => faker.person.fullName(),
-    // ... その他のフィールド
-  },
+  }),
 })
+
+// Seeding function
+export async function seedCollections() {
+  await videos.createMany(10, () => ({
+    id: faker.string.uuid(),
+    title: faker.helpers.arrayElement([
+      '【歌枠】アニソン縛り歌ってみた！',
+      '【Minecraft】新拠点建設！',
+    ]),
+    status: faker.helpers.arrayElement(['PUBLISHED', 'LIVE', 'ENDED']),
+    visible: true,
+    // ... その他のフィールド
+  }))
+}
 ```
 
 ## 削減されたコード量
@@ -74,22 +83,30 @@ const mockVideos: Tables<'videos'>[] = [
 ]
 ```
 
-After: @mswjs/dataによる構造化
+After: @msw/dataによる構造化
 ```typescript
-// データベース定義（db.ts）
-export const db = factory({
-  videos: {
-    id: primaryKey(faker.string.uuid),
-    title: () => faker.helpers.arrayElement([...]),
-    status: () => faker.helpers.arrayElement(['PUBLISHED', 'LIVE', 'ENDED']),
-    // ... ファクトリー関数で自動生成
-  }
+// Collections定義（collections.ts）
+export const videos = new Collection({
+  schema: z.object({
+    id: z.string().uuid(),
+    title: z.string(),
+    status: z.enum(['PUBLISHED', 'LIVE', 'ENDED', 'SCHEDULED']),
+    // ... Zodスキーマで定義
+  }),
 })
 
+// Seeding
+await videos.createMany(10, () => ({
+  id: faker.string.uuid(),
+  title: faker.helpers.arrayElement([...]),
+  status: faker.helpers.arrayElement(['PUBLISHED', 'LIVE', 'ENDED']),
+  // ... ファクトリー関数で自動生成
+}))
+
 // ハンドラー内での使用
-const videos = db.videos.findMany({
-  where: { visible: { equals: true } }
-})
+const allVideos = await videos.findMany((q) =>
+  q.where({ visible: true })
+)
 ```
 
 #### upstash.ts
@@ -104,10 +121,11 @@ const videos = db.videos.findMany({
 - データの変更: 各オブジェクトを個別に編集
 - 関連データの作成: IDの整合性を手動で管理
 
-### After（ファクトリー）
-- 新しいフィールドの追加: ファクトリー関数を1箇所更新するだけ
-- データの変更: ファクトリーの引数で簡単にカスタマイズ
+### After（@msw/data + Zod）
+- 新しいフィールドの追加: Zodスキーマを1箇所更新するだけ
+- データの変更: `seedCollections()`内のファクトリー関数で簡単にカスタマイズ
 - 関連データの作成: IDを自動的に関連付け
+- スキーマ検証: Zodによる実行時型チェック
 
 ## 型安全性の向上
 

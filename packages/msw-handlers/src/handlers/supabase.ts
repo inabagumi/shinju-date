@@ -1,27 +1,39 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: Mocking Supabase with any type for simplicity
 
 import { HttpResponse, http } from 'msw'
-import { db } from '../db.js'
+import {
+  announcements,
+  seedCollections,
+  talents,
+  terms,
+  thumbnails,
+  videos,
+  youtubeChannels,
+  youtubeVideos,
+} from '../collections.js'
 
 /**
- * Mock data for Supabase tables using @mswjs/data
+ * Mock data for Supabase tables using @msw/data
  *
- * Benefits of using @mswjs/data:
- * - Structured database with relationships
- * - Built-in query methods (findMany, findFirst, update, delete)
+ * Benefits of using @msw/data:
+ * - Standard Schema-based (Zod) validation
+ * - Built-in query methods (findMany, findFirst, create, update, delete)
  * - Type-safe operations with TypeScript
  * - Realistic data via faker integration
  * - Easy data manipulation and seeding
  */
 
-// Get all mock data from the database
-const mockTalents = db['talents'].getAll()
-const mockAnnouncements = db['announcements'].getAll()
-const mockThumbnails = db['thumbnails'].getAll()
-const mockVideos = db['videos'].getAll()
-const mockChannels = db['youtube_channels'].getAll()
-const mockTerms = db['terms'].getAll()
-const mockYoutubeVideos = db['youtube_videos'].getAll()
+// Initialize collections with seed data
+await seedCollections()
+
+// Get all mock data from the collections
+const mockTalents = await talents.findMany()
+const mockAnnouncements = await announcements.findMany()
+const mockThumbnails = await thumbnails.findMany()
+const mockVideos = await videos.findMany()
+const mockChannels = await youtubeChannels.findMany()
+const mockTerms = await terms.findMany()
+const mockYoutubeVideos = await youtubeVideos.findMany()
 
 /**
  * Parse Supabase REST API query parameters
