@@ -76,7 +76,6 @@ export function ToastClose({
         'absolute top-2 right-2 rounded-md p-1 text-gray-500 opacity-0 transition-opacity hover:text-gray-900 focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100',
         className,
       )}
-      toast-close=""
       {...props}
     >
       <X className="h-4 w-4" />

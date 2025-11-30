@@ -54,39 +54,62 @@ export function VideoActionsButtons({
     const { action } = confirmDialog
     setToastMessage(null)
 
-    if (action === 'toggle') {
-      const result = await toggleVisibilityAction([videoId])
-      if (result.success) {
-        setToastMessage({
-          text: `動画を${visible ? '非表示' : '表示'}に変更しました。`,
-          type: 'success',
-        })
-        setToastOpen(true)
-      } else {
-        throw new Error(result.error || '操作に失敗しました。')
+    try {
+      if (action === 'toggle') {
+        const result = await toggleVisibilityAction([videoId])
+        if (result.success) {
+          setToastMessage({
+            text: `動画を${visible ? '非表示' : '表示'}に変更しました。`,
+            type: 'success',
+          })
+          setToastOpen(true)
+        } else {
+          setToastMessage({
+            text: result.error || '操作に失敗しました。',
+            type: 'error',
+          })
+          setToastOpen(true)
+        }
+      } else if (action === 'delete') {
+        const result = await softDeleteAction([videoId])
+        if (result.success) {
+          setToastMessage({
+            text: '動画を削除しました。',
+            type: 'success',
+          })
+          setToastOpen(true)
+        } else {
+          setToastMessage({
+            text: result.error || '削除に失敗しました。',
+            type: 'error',
+          })
+          setToastOpen(true)
+        }
+      } else if (action === 'restore') {
+        const result = await restoreAction([videoId])
+        if (result.success) {
+          setToastMessage({
+            text: '動画を復元しました。',
+            type: 'success',
+          })
+          setToastOpen(true)
+        } else {
+          setToastMessage({
+            text: result.error || '復元に失敗しました。',
+            type: 'error',
+          })
+          setToastOpen(true)
+        }
       }
-    } else if (action === 'delete') {
-      const result = await softDeleteAction([videoId])
-      if (result.success) {
-        setToastMessage({
-          text: '動画を削除しました。',
-          type: 'success',
-        })
-        setToastOpen(true)
-      } else {
-        throw new Error(result.error || '削除に失敗しました。')
-      }
-    } else if (action === 'restore') {
-      const result = await restoreAction([videoId])
-      if (result.success) {
-        setToastMessage({
-          text: '動画を復元しました。',
-          type: 'success',
-        })
-        setToastOpen(true)
-      } else {
-        throw new Error(result.error || '復元に失敗しました。')
-      }
+    } catch (error) {
+      setToastMessage({
+        text:
+          error instanceof Error
+            ? error.message
+            : '予期しないエラーが発生しました。',
+        type: 'error',
+      })
+      setToastOpen(true)
     }
   }
 
@@ -125,7 +148,13 @@ export function VideoActionsButtons({
         duration={5000}
         onOpenChange={setToastOpen}
         open={toastOpen}
-        variant={toastMessage?.type === 'success' ? 'success' : 'destructive'}
+        variant={
+          toastMessage?.type === 'success'
+            ? 'success'
+            : toastMessage?.type === 'error'
+              ? 'destructive'
+              : 'default'
+        }
       >
         <ToastTitle>{toastMessage?.text}</ToastTitle>
         <ToastClose />
