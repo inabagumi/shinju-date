@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@shinju-date/ui'
 import { Loader2 } from 'lucide-react'
 import { useState, useTransition } from 'react'
 import { syncTalentWithYouTube } from '../../_actions/sync'
@@ -39,15 +40,15 @@ export function SyncTalentButton({ talentId }: Props) {
 
   return (
     <div className="flex flex-col items-end gap-2">
-      <button
-        className="inline-flex items-center whitespace-nowrap rounded-md bg-blue-600 px-4 py-2 font-medium text-sm text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+      <Button
+        className="whitespace-nowrap"
         disabled={isPending}
         onClick={handleSync}
-        type="button"
+        variant="primary"
       >
         {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {isPending ? '同期中...' : 'YouTubeと同期'}
-      </button>
+      </Button>
 
       {message && (
         <div

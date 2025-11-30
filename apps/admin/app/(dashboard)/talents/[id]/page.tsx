@@ -198,7 +198,6 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
                     </div>
                     <div className="shrink-0">
                       <Badge
-                        className="font-semibold leading-5"
                         variant={
                           video.deleted_at
                             ? 'error'

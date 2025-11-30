@@ -17,6 +17,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { Button } from '@shinju-date/ui'
 import {
   type ChangeEvent,
   type ClipboardEvent,
@@ -251,13 +252,14 @@ export function SortableInputList({
         </SortableContext>
       </DndContext>
 
-      <button
-        className="rounded-md border border-774-blue-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+      <Button
+        className="border-774-blue-300"
         onClick={handleAdd}
-        type="button"
+        size="sm"
+        variant="secondary"
       >
         {addButtonLabel}
-      </button>
+      </Button>
 
       {/* Hidden inputs to submit the data */}
       {items.map((item, index) => (
