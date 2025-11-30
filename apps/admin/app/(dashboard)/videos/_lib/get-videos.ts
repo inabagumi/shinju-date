@@ -119,36 +119,34 @@ export async function getVideos(
   // Using video.id as the Redis key (matches the write side in increment.ts)
   const videoIds = videos.map((video) => video.id)
 
-  let clickCounts: number[]
-  try {
-    clickCounts = await Promise.all(
-      videoIds.map(async (id) => {
-        try {
-          // Sum up clicks from all 7 days
-          const scores = await Promise.all(
-            days.map((day) =>
-              redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, id),
-            ),
-          )
-          return scores.reduce<number>(
-            (sum, score) => sum + (typeof score === 'number' ? score : 0),
-            0,
-          )
-        } catch (error) {
-          // If fetching clicks for a single video fails, return 0
-          logger.error('動画のクリック数の取得に失敗しました', {
-            error,
-            videoId: id,
-          })
-          return 0
-        }
-      }),
-    )
-  } catch (error) {
-    // If Redis connection fails completely, return all zeros
-    logger.error('Redisからのクリック数の取得に失敗しました', { error })
-    clickCounts = videoIds.map(() => 0)
-  }
+  // Use Promise.allSettled to handle individual video click count failures gracefully
+  const clickCountResults = await Promise.allSettled(
+    videoIds.map(async (id) => {
+      // Sum up clicks from all 7 days
+      const scores = await Promise.all(
+        days.map((day) =>
+          redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, id),
+        ),
+      )
+      return scores.reduce<number>(
+        (sum, score) => sum + (typeof score === 'number' ? score : 0),
+        0,
+      )
+    }),
+  )
+
+  // Extract click counts from results, using 0 for any failures
+  const clickCounts = clickCountResults.map((result, index) => {
+    if (result.status === 'fulfilled') {
+      return result.value
+    }
+    // Log error for rejected promise
+    logger.error('動画のクリック数の取得に失敗しました', {
+      error: result.reason,
+      videoId: videoIds[index],
+    })
+    return 0
+  })
 
   // Combine video data with click counts
   const videosWithClicks: Video[] = videos.map((video, index) => ({
