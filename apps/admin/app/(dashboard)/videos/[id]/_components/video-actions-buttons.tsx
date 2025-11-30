@@ -1,32 +1,92 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import { Button } from '@shinju-date/ui'
+import { Button, Toast, ToastClose, ToastTitle } from '@shinju-date/ui'
+import { Loader2 } from 'lucide-react'
 import { useState, useTransition } from 'react'
 import {
   restoreAction,
   softDeleteAction,
   toggleVisibilityAction,
 } from '../../_actions'
+import { syncVideoWithYouTube } from '../../_actions/sync'
 import { VideoActionConfirmDialog } from '../../_components/video-action-confirm-dialog'
 
 type VideoInfo = Pick<Tables<'videos'>, 'id' | 'title'>
 
-interface Props {
+interface SyncVideoButtonProps {
   videoId: string
-  videoTitle: string
-  visible: boolean
-  isDeleted: boolean
 }
 
-export function VideoActionsButtons({
-  videoId,
-  videoTitle,
-  visible,
-  isDeleted,
-}: Props) {
+function SyncVideoButton({ videoId }: SyncVideoButtonProps) {
+  const [isPending, startTransition] = useTransition()
+  const [toastOpen, setToastOpen] = useState(false)
+  const [toastMessage, setToastMessage] = useState<{
+    type: 'success' | 'error'
+    text: string
+  } | null>(null)
+
+  const handleSync = () => {
+    setToastMessage(null)
+    startTransition(async () => {
+      try {
+        const result = await syncVideoWithYouTube(videoId)
+        if (result.success) {
+          setToastMessage({ text: '動画情報を同期しました。', type: 'success' })
+          setToastOpen(true)
+        } else {
+          setToastMessage({
+            text: result.error || '同期に失敗しました。',
+            type: 'error',
+          })
+          setToastOpen(true)
+        }
+      } catch (_error) {
+        setToastMessage({
+          text: '予期しないエラーが発生しました。',
+          type: 'error',
+        })
+        setToastOpen(true)
+      }
+    })
+  }
+
+  return (
+    <>
+      <Button disabled={isPending} onClick={handleSync} variant="primary">
+        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {isPending ? '同期中...' : 'YouTubeと同期'}
+      </Button>
+
+      {toastMessage && (
+        <Toast
+          duration={5000}
+          onOpenChange={setToastOpen}
+          open={toastOpen}
+          variant={
+            toastMessage.type === 'success'
+              ? 'success'
+              : toastMessage.type === 'error'
+                ? 'destructive'
+                : 'default'
+          }
+        >
+          <ToastTitle>{toastMessage.text}</ToastTitle>
+          <ToastClose />
+        </Toast>
+      )}
+    </>
+  )
+}
+
+interface VideoActionsButtonsProps {
+  video: Pick<Tables<'videos'>, 'id' | 'title' | 'visible' | 'deleted_at'>
+}
+
+export function VideoActionsButtons({ video }: VideoActionsButtonsProps) {
   const [isPending, _startTransition] = useTransition()
-  const [message, setMessage] = useState<{
+  const [toastOpen, setToastOpen] = useState(false)
+  const [toastMessage, setToastMessage] = useState<{
     type: 'success' | 'error'
     text: string
   } | null>(null)
@@ -35,7 +95,8 @@ export function VideoActionsButtons({
     open: boolean
   }>({ action: 'toggle', open: false })
 
-  const videoInfo: VideoInfo = { id: videoId, title: videoTitle }
+  const isDeleted = video.deleted_at !== null
+  const videoInfo: VideoInfo = { id: video.id, title: video.title }
 
   const handleToggleVisibility = () => {
     setConfirmDialog({ action: 'toggle', open: true })
@@ -51,44 +112,70 @@ export function VideoActionsButtons({
 
   const handleConfirm = async () => {
     const { action } = confirmDialog
-    setMessage(null)
+    setToastMessage(null)
 
-    if (action === 'toggle') {
-      const result = await toggleVisibilityAction([videoId])
-      if (result.success) {
-        setMessage({
-          text: `動画を${visible ? '非表示' : '表示'}に変更しました。`,
-          type: 'success',
-        })
-      } else {
-        throw new Error(result.error || '操作に失敗しました。')
+    try {
+      if (action === 'toggle') {
+        const result = await toggleVisibilityAction([video.id])
+        if (result.success) {
+          setToastMessage({
+            text: `動画を${video.visible ? '非表示' : '表示'}に変更しました。`,
+            type: 'success',
+          })
+          setToastOpen(true)
+        } else {
+          setToastMessage({
+            text: result.error || '操作に失敗しました。',
+            type: 'error',
+          })
+          setToastOpen(true)
+        }
+      } else if (action === 'delete') {
+        const result = await softDeleteAction([video.id])
+        if (result.success) {
+          setToastMessage({
+            text: '動画を削除しました。',
+            type: 'success',
+          })
+          setToastOpen(true)
+        } else {
+          setToastMessage({
+            text: result.error || '削除に失敗しました。',
+            type: 'error',
+          })
+          setToastOpen(true)
+        }
+      } else if (action === 'restore') {
+        const result = await restoreAction([video.id])
+        if (result.success) {
+          setToastMessage({
+            text: '動画を復元しました。',
+            type: 'success',
+          })
+          setToastOpen(true)
+        } else {
+          setToastMessage({
+            text: result.error || '復元に失敗しました。',
+            type: 'error',
+          })
+          setToastOpen(true)
+        }
       }
-    } else if (action === 'delete') {
-      const result = await softDeleteAction([videoId])
-      if (result.success) {
-        setMessage({
-          text: '動画を削除しました。',
-          type: 'success',
-        })
-      } else {
-        throw new Error(result.error || '削除に失敗しました。')
-      }
-    } else if (action === 'restore') {
-      const result = await restoreAction([videoId])
-      if (result.success) {
-        setMessage({
-          text: '動画を復元しました。',
-          type: 'success',
-        })
-      } else {
-        throw new Error(result.error || '復元に失敗しました。')
-      }
+    } catch (error) {
+      setToastMessage({
+        text:
+          error instanceof Error
+            ? error.message
+            : '予期しないエラーが発生しました。',
+        type: 'error',
+      })
+      setToastOpen(true)
     }
   }
 
   return (
     <>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
         <div className="flex gap-2">
           {isDeleted ? (
             <Button
@@ -105,7 +192,7 @@ export function VideoActionsButtons({
                 onClick={handleToggleVisibility}
                 variant="secondary"
               >
-                {visible ? '非表示にする' : '表示する'}
+                {video.visible ? '非表示にする' : '表示する'}
               </Button>
               <Button
                 disabled={isPending}
@@ -117,19 +204,26 @@ export function VideoActionsButtons({
             </>
           )}
         </div>
-
-        {message && (
-          <div
-            className={`rounded-md p-3 text-sm ${
-              message.type === 'success'
-                ? 'bg-green-50 text-green-800'
-                : 'bg-red-50 text-red-800'
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
+        {!isDeleted && <SyncVideoButton videoId={video.id} />}
       </div>
+
+      {toastMessage && (
+        <Toast
+          duration={5000}
+          onOpenChange={setToastOpen}
+          open={toastOpen}
+          variant={
+            toastMessage.type === 'success'
+              ? 'success'
+              : toastMessage.type === 'error'
+                ? 'destructive'
+                : 'default'
+          }
+        >
+          <ToastTitle>{toastMessage.text}</ToastTitle>
+          <ToastClose />
+        </Toast>
+      )}
 
       <VideoActionConfirmDialog
         action={confirmDialog.action}

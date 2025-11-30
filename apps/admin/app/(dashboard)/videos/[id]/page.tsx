@@ -14,7 +14,6 @@ import { Suspense } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import { VideoStatusBadge } from '../_components/video-status-badge'
 import getVideo from '../_lib/get-video'
-import { SyncVideoButton } from './_components/sync-video-button'
 import { VideoActionsButtons } from './_components/video-actions-buttons'
 
 interface Props {
@@ -76,15 +75,7 @@ async function VideoDetailContent({ id }: { id: string }) {
             </h1>
             <p className="text-gray-600">動画詳細</p>
           </div>
-          <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
-            <VideoActionsButtons
-              isDeleted={isDeleted}
-              videoId={video.id}
-              videoTitle={video.title}
-              visible={video.visible}
-            />
-            {!isDeleted && <SyncVideoButton videoId={video.id} />}
-          </div>
+          <VideoActionsButtons video={video} />
         </div>
       </div>
 

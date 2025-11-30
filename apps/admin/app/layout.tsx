@@ -1,4 +1,5 @@
 import './globals.css'
+import { ToastProvider, ToastViewport } from '@shinju-date/ui'
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 import { lato } from './fonts'
@@ -30,7 +31,12 @@ interface Props {
 export default function RootLayout({ children }: Props) {
   return (
     <html className={lato.variable} lang="ja">
-      <body className="font-sans text-primary">{children}</body>
+      <body className="font-sans text-primary">
+        <ToastProvider>
+          {children}
+          <ToastViewport />
+        </ToastProvider>
+      </body>
     </html>
   )
 }
