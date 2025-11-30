@@ -1,5 +1,6 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { formatNumber } from '@shinju-date/helpers'
+import { Button } from '@shinju-date/ui'
 import { ExternalLink } from 'lucide-react'
 import { cacheLife } from 'next/cache'
 import Image from 'next/image'
@@ -67,12 +68,9 @@ export async function PopularVideosWidget() {
                 </p>
               </div>
               <div className="flex shrink-0 gap-2">
-                <Link
-                  className="rounded bg-secondary-blue px-3 py-1 text-sm text-white transition-colors hover:bg-774-blue-800"
-                  href={`/videos/${video.id}`}
-                >
-                  詳細
-                </Link>
+                <Button asChild size="sm" variant="secondary-blue">
+                  <Link href={`/videos/${video.id}`}>詳細</Link>
+                </Button>
                 {video.youtube_video?.youtube_video_id && (
                   <a
                     className="flex items-center justify-center rounded border border-gray-300 bg-white p-1 transition-colors hover:bg-gray-50"
