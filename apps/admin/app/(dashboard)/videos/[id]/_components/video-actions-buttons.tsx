@@ -1,7 +1,7 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import { Button } from '@shinju-date/ui'
+import { Button, Toast, ToastClose, ToastTitle } from '@shinju-date/ui'
 import { useState, useTransition } from 'react'
 import {
   restoreAction,
@@ -26,7 +26,8 @@ export function VideoActionsButtons({
   isDeleted,
 }: Props) {
   const [isPending, _startTransition] = useTransition()
-  const [message, setMessage] = useState<{
+  const [toastOpen, setToastOpen] = useState(false)
+  const [toastMessage, setToastMessage] = useState<{
     type: 'success' | 'error'
     text: string
   } | null>(null)
@@ -51,35 +52,38 @@ export function VideoActionsButtons({
 
   const handleConfirm = async () => {
     const { action } = confirmDialog
-    setMessage(null)
+    setToastMessage(null)
 
     if (action === 'toggle') {
       const result = await toggleVisibilityAction([videoId])
       if (result.success) {
-        setMessage({
+        setToastMessage({
           text: `動画を${visible ? '非表示' : '表示'}に変更しました。`,
           type: 'success',
         })
+        setToastOpen(true)
       } else {
         throw new Error(result.error || '操作に失敗しました。')
       }
     } else if (action === 'delete') {
       const result = await softDeleteAction([videoId])
       if (result.success) {
-        setMessage({
+        setToastMessage({
           text: '動画を削除しました。',
           type: 'success',
         })
+        setToastOpen(true)
       } else {
         throw new Error(result.error || '削除に失敗しました。')
       }
     } else if (action === 'restore') {
       const result = await restoreAction([videoId])
       if (result.success) {
-        setMessage({
+        setToastMessage({
           text: '動画を復元しました。',
           type: 'success',
         })
+        setToastOpen(true)
       } else {
         throw new Error(result.error || '復元に失敗しました。')
       }
@@ -88,48 +92,44 @@ export function VideoActionsButtons({
 
   return (
     <>
-      <div className="flex flex-col gap-2">
-        <div className="flex gap-2">
-          {isDeleted ? (
+      <div className="flex gap-2">
+        {isDeleted ? (
+          <Button
+            disabled={isPending}
+            onClick={handleRestore}
+            variant="primary"
+          >
+            復元
+          </Button>
+        ) : (
+          <>
             <Button
               disabled={isPending}
-              onClick={handleRestore}
-              variant="primary"
+              onClick={handleToggleVisibility}
+              variant="secondary"
             >
-              復元
+              {visible ? '非表示にする' : '表示する'}
             </Button>
-          ) : (
-            <>
-              <Button
-                disabled={isPending}
-                onClick={handleToggleVisibility}
-                variant="secondary"
-              >
-                {visible ? '非表示にする' : '表示する'}
-              </Button>
-              <Button
-                disabled={isPending}
-                onClick={handleDelete}
-                variant="danger"
-              >
-                削除
-              </Button>
-            </>
-          )}
-        </div>
-
-        {message && (
-          <div
-            className={`rounded-md p-3 text-sm ${
-              message.type === 'success'
-                ? 'bg-green-50 text-green-800'
-                : 'bg-red-50 text-red-800'
-            }`}
-          >
-            {message.text}
-          </div>
+            <Button
+              disabled={isPending}
+              onClick={handleDelete}
+              variant="danger"
+            >
+              削除
+            </Button>
+          </>
         )}
       </div>
+
+      <Toast
+        duration={5000}
+        onOpenChange={setToastOpen}
+        open={toastOpen}
+        variant={toastMessage?.type === 'success' ? 'success' : 'destructive'}
+      >
+        <ToastTitle>{toastMessage?.text}</ToastTitle>
+        <ToastClose />
+      </Toast>
 
       <VideoActionConfirmDialog
         action={confirmDialog.action}
