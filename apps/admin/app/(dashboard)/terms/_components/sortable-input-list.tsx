@@ -17,7 +17,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Button } from '@shinju-date/ui'
+import { Button, Input } from '@shinju-date/ui'
 import {
   type ChangeEvent,
   type ClipboardEvent,
@@ -77,17 +77,18 @@ function SortableItem({
 
   return (
     <div className="flex items-center gap-2" ref={setNodeRef} style={style}>
-      <button
+      <Button
         aria-label="ドラッグして並び替え"
         className="cursor-grab touch-none rounded px-2 py-1 text-gray-500 hover:bg-gray-100 active:cursor-grabbing"
         type="button"
+        variant="ghost"
         {...attributes}
         {...listeners}
       >
         <span className="text-lg">⋮⋮</span>
-      </button>
-      <input
-        className="flex-1 rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
+      </Button>
+      <Input
+        className="flex-1"
         onChange={handleChange}
         onPaste={handlePaste}
         placeholder={placeholder}
@@ -95,14 +96,16 @@ function SortableItem({
         value={value}
       />
       {showRemove && (
-        <button
+        <Button
           aria-label="削除"
-          className="rounded px-2 py-1 text-red-600 hover:bg-red-50"
+          className="text-red-600 hover:bg-red-50"
           onClick={handleRemove}
+          size="sm"
           type="button"
+          variant="ghost"
         >
           ✕
-        </button>
+        </Button>
       )}
     </div>
   )

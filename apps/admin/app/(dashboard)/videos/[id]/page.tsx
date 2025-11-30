@@ -3,6 +3,7 @@ import {
   formatDateTimeFromISO,
   formatDuration,
 } from '@shinju-date/temporal-fns'
+import { Card, CardContent, CardHeader } from '@shinju-date/ui'
 import { ChevronLeft, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
@@ -107,13 +108,13 @@ async function VideoDetailContent({ id }: { id: string }) {
         {/* Thumbnail and basic info */}
         <div className="space-y-6">
           {/* Thumbnail */}
-          <div className="overflow-hidden bg-white shadow sm:rounded-lg">
-            <div className="px-4 py-5 sm:px-6">
+          <Card variant="elevated">
+            <CardHeader>
               <h3 className="font-medium text-gray-900 text-lg leading-6">
                 サムネイル
               </h3>
-            </div>
-            <div className="border-gray-200 border-t p-4">
+            </CardHeader>
+            <CardContent>
               {video.thumbnail ? (
                 <div className="relative aspect-video w-full">
                   <Image
@@ -131,33 +132,33 @@ async function VideoDetailContent({ id }: { id: string }) {
                   No Image
                 </div>
               )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Status */}
-          <div className="overflow-hidden bg-white shadow sm:rounded-lg">
-            <div className="px-4 py-5 sm:px-6">
+          <Card variant="elevated">
+            <CardHeader>
               <h3 className="font-medium text-gray-900 text-lg leading-6">
                 ステータス
               </h3>
-            </div>
-            <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
+            </CardHeader>
+            <CardContent>
               <VideoStatusBadge video={video} />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Video information */}
-        <div className="overflow-hidden bg-white shadow sm:rounded-lg">
-          <div className="px-4 py-5 sm:px-6">
+        <Card variant="elevated">
+          <CardHeader>
             <h3 className="font-medium text-gray-900 text-lg leading-6">
               動画情報
             </h3>
             <p className="mt-1 max-w-2xl text-gray-500 text-sm">
               現在データベースに保存されている情報
             </p>
-          </div>
-          <div className="border-gray-200 border-t">
+          </CardHeader>
+          <CardContent className="p-0">
             <dl>
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">タイトル</dt>
@@ -243,22 +244,22 @@ async function VideoDetailContent({ id }: { id: string }) {
                 </div>
               )}
             </dl>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* External links */}
       <div className="mt-6">
-        <div className="bg-white shadow sm:rounded-lg">
-          <div className="px-4 py-5 sm:px-6">
+        <Card variant="elevated">
+          <CardHeader>
             <h3 className="font-medium text-gray-900 text-lg leading-6">
               外部リンク
             </h3>
             <p className="mt-1 max-w-2xl text-gray-500 text-sm">
               YouTube上のオリジナル動画へのリンク
             </p>
-          </div>
-          <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
+          </CardHeader>
+          <CardContent>
             {video.youtube_video?.youtube_video_id && (
               <a
                 className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
@@ -270,8 +271,8 @@ async function VideoDetailContent({ id }: { id: string }) {
                 <ExternalLink className="ml-2 h-4 w-4" />
               </a>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

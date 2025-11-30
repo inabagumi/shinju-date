@@ -1,6 +1,12 @@
 'use client'
 
 import {
+  Button as UIButton,
+  type ButtonProps as UIButtonProps,
+  Input as UIInput,
+  type InputProps as UIInputProps,
+} from '@shinju-date/ui'
+import {
   type ChangeEventHandler,
   type ComponentPropsWithoutRef,
   createContext,
@@ -51,12 +57,26 @@ export default function Form({
   )
 }
 
-interface ButtonProps extends ComponentPropsWithoutRef<'button'> {}
+type ButtonProps = Omit<UIButtonProps, 'asChild'>
 
-export function Button({ disabled, type = 'button', ...props }: ButtonProps) {
+export function Button({
+  disabled,
+  type = 'button',
+  variant = 'primary',
+  size = 'md',
+  ...props
+}: ButtonProps) {
   const { pending } = useFormStatus()
 
-  return <button disabled={disabled ?? pending} type={type} {...props} />
+  return (
+    <UIButton
+      disabled={disabled ?? pending}
+      size={size}
+      type={type}
+      variant={variant}
+      {...props}
+    />
+  )
 }
 
 interface ErrorMessageProps extends ComponentPropsWithoutRef<'p'> {}
@@ -142,7 +162,7 @@ export function SuccessMessage({
   )
 }
 
-interface InputProps extends Omit<ComponentPropsWithoutRef<'input'>, 'value'> {}
+type InputPropsCustom = Omit<UIInputProps, 'value' | 'onChange' | 'variant'>
 
 export function Input({
   defaultValue = '',
@@ -150,8 +170,9 @@ export function Input({
   id: newId,
   name: newName,
   type = 'text',
+  inputSize = 'md',
   ...props
-}: InputProps) {
+}: InputPropsCustom) {
   const [value, setValue] = useState(defaultValue)
   const { pending } = useFormStatus()
   const { errors } = useContext(FormContext)
@@ -166,15 +187,17 @@ export function Input({
   )
 
   return (
-    <input
+    <UIInput
       aria-describedby={invalid && id ? `${id}-error-message` : undefined}
       aria-invalid={invalid ? true : undefined}
       disabled={disabled ?? (pending ? true : undefined)}
       id={newId ?? id}
+      inputSize={inputSize}
       name={newName ?? name}
       onChange={handleChange}
       type={type}
       value={value}
+      variant={invalid ? 'error' : 'default'}
       {...props}
     />
   )

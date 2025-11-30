@@ -1,6 +1,7 @@
 'use client'
 
 import * as Accordion from '@radix-ui/react-accordion'
+import { Button, Input } from '@shinju-date/ui'
 import { useMemo, useState } from 'react'
 import { DeleteConfirmDialog } from './delete-confirm-dialog'
 import { TermModal } from './term-modal'
@@ -90,8 +91,8 @@ export function TermsList({ terms }: TermsListProps) {
     <div className="space-y-6">
       {/* Search and Add button */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <input
-          className="w-full rounded-md border border-774-blue-300 px-4 py-2 focus:border-secondary-blue focus:outline-none sm:max-w-md"
+        <Input
+          className="sm:max-w-md"
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="用語、読み方、類義語で検索..."
           type="text"
@@ -104,14 +105,16 @@ export function TermsList({ terms }: TermsListProps) {
       {groupKeys.length > 0 && !searchQuery && (
         <nav className="flex flex-wrap gap-2 rounded-md border border-774-blue-300 bg-774-blue-50 p-3">
           {groupKeys.map((group) => (
-            <button
+            <Button
               className="rounded px-2 py-1 text-sm hover:bg-secondary-blue hover:text-secondary-blue-foreground"
               key={group}
               onClick={() => scrollToGroup(group)}
+              size="sm"
               type="button"
+              variant="ghost"
             >
               {group}
-            </button>
+            </Button>
           ))}
         </nav>
       )}
