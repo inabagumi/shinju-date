@@ -75,7 +75,7 @@ export function TalentActions({ talent }: TalentActionsProps) {
     <div className="flex flex-col gap-2">
       <div className="flex gap-1">
         <button
-          className="whitespace-nowrap rounded bg-blue-50 px-2 py-1 text-blue-600 text-xs hover:bg-blue-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+          className="whitespace-nowrap rounded bg-774-blue-50 px-2 py-1 text-774-blue-600 text-xs hover:bg-774-blue-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
           disabled={isPending}
           onClick={handleSync}
           type="button"

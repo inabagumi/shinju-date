@@ -238,6 +238,177 @@ refactor(admin): convert type definitions to interface
 
 詳細は [AGENTS.md](../AGENTS.md) を参照してください。
 
+## カラーパレットの使用
+
+### テーマカラーの優先使用
+
+**原則として、UI要素には `@shinju-date/tailwind-config/theme.css` で定義されているテーマカラーを使用してください。**
+
+#### 利用可能なテーマカラー
+
+```css
+/* ブランドカラー（プライマリ） */
+774-nevy-*    /* 50-950 の10段階、プライマリは 774-nevy-950 */
+
+/* セカンダリカラー */
+774-pink-*    /* 50-950 の10段階、セカンダリは 774-pink-500 */
+774-blue-*    /* 50-950 の10段階、セカンダリは 774-blue-700 */
+
+/* エイリアス */
+primary                       /* = 774-nevy-950 */
+primary-foreground            /* = 774-nevy-50 */
+secondary-pink               /* = 774-pink-500 */
+secondary-pink-foreground    /* = 774-pink-50 */
+secondary-blue               /* = 774-blue-700 */
+secondary-blue-foreground    /* = 774-blue-50 */
+```
+
+#### 使用例
+
+##### ✅ 推奨: テーマカラーを使用
+
+```tsx
+// ボタン - secondary-blue を使用
+<button className="bg-secondary-blue text-white hover:bg-774-blue-800">
+  クリック
+</button>
+
+// リンク - 774-blue を使用
+<Link className="text-774-blue-600 hover:text-774-blue-800" href="/page">
+  詳細を見る
+</Link>
+
+// ダッシュボードウィジェット - 774-nevy を使用
+<div className="bg-774-nevy-50 p-4">
+  <p className="text-774-nevy-600">統計情報</p>
+</div>
+
+// バッジ - 774-blue を使用
+<span className="border-774-blue-300 bg-774-blue-100 text-774-blue-800">
+  情報
+</span>
+```
+
+##### ❌ 非推奨: 一般的な Tailwind カラーを使用しない
+
+```tsx
+// ❌ 一般的な blue を使用
+<button className="bg-blue-600 text-white">クリック</button>
+
+// ❌ 一般的な purple を使用
+<div className="bg-purple-50">統計</div>
+
+// ❌ 一般的な indigo を使用
+<Link className="text-indigo-600">リンク</Link>
+```
+
+### セマンティックカラー（例外）
+
+以下の場合に限り、一般的な Tailwind カラーの使用を許可します：
+
+#### 1. 成功状態（Success）
+
+```tsx
+// ✅ 緑色は成功を示す
+<div className="bg-green-50 text-green-600">
+  保存に成功しました
+</div>
+
+<span className="text-green-600">公開中</span>
+```
+
+#### 2. エラー・危険状態（Error/Danger）
+
+```tsx
+// ✅ 赤色はエラーや危険を示す
+<div className="border-red-300 bg-red-50 text-red-600">
+  エラーが発生しました
+</div>
+
+<button className="border-red-600 text-red-600 hover:bg-red-50">
+  削除
+</button>
+```
+
+#### 3. 警告状態（Warning）
+
+```tsx
+// ✅ 黄色は警告を示す
+<div className="bg-yellow-50 text-yellow-700">
+  注意が必要です
+</div>
+
+<span className="text-yellow-600">非表示</span>
+```
+
+#### 4. ニュートラル・構造的要素
+
+```tsx
+// ✅ グレー系は構造的要素に使用
+<div className="border-gray-300 bg-gray-50">
+  <p className="text-gray-600">説明文</p>
+</div>
+
+// ✅ ダークモード対応
+<div className="bg-white dark:bg-zinc-800">
+  <p className="text-gray-900 dark:text-zinc-100">テキスト</p>
+</div>
+```
+
+### UIコンポーネントライブラリでの使用
+
+`packages/ui` のコンポーネントでは、以下のようにテーマカラーを使用します：
+
+```tsx
+// Button コンポーネント
+const buttonVariants = cva('...', {
+  variants: {
+    variant: {
+      primary: 'bg-primary text-primary-foreground hover:bg-774-nevy-900',
+      'secondary-blue': 'bg-secondary-blue hover:bg-774-blue-800',
+      'secondary-pink': 'bg-secondary-pink hover:bg-774-pink-600',
+      danger: 'border-red-600 text-red-600', // セマンティック
+    },
+  },
+})
+
+// Badge コンポーネント
+const badgeVariants = cva('...', {
+  variants: {
+    variant: {
+      info: 'bg-774-blue-100 text-774-blue-800',
+      success: 'bg-green-100 text-green-800', // セマンティック
+      error: 'bg-red-100 text-red-800',       // セマンティック
+      warning: 'bg-yellow-100 text-yellow-800', // セマンティック
+    },
+  },
+})
+```
+
+### カラーマッピングガイド
+
+既存のコードを更新する際の参考：
+
+| 旧カラー | 新カラー | 用途 |
+|---------|---------|------|
+| `blue-*` | `774-blue-*` | リンク、ボタン、情報表示 |
+| `purple-*` | `774-nevy-*` | ブランド要素、強調表示 |
+| `indigo-*` | `774-nevy-*` または `774-blue-*` | コンテキストに応じて |
+| `pink-*` | `774-pink-*` | セカンダリアクション、エラー |
+| `green-*` | そのまま | 成功、公開状態 |
+| `red-*` | そのまま | エラー、削除、危険 |
+| `yellow-*` | そのまま | 警告、非表示状態 |
+| `gray-*`, `slate-*` | そのまま | 構造的要素、テキスト |
+
+### レビューガイドライン
+
+コードレビュー時は以下をチェックしてください：
+
+- [ ] UI要素にテーマカラー（774-nevy、774-pink、774-blue）を使用しているか
+- [ ] セマンティックカラー（green, red, yellow）の使用が適切か
+- [ ] 一般的な blue/purple/indigo カラーが使用されていないか
+- [ ] ブランドの一貫性が保たれているか
+
 ## 参考資料
 
 - [TypeScript Handbook - Interfaces](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#interfaces)

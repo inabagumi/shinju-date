@@ -19,7 +19,7 @@ function getBannerClasses(level: string): string {
     case 'alert':
       return 'bg-red-50 text-red-900 border-red-300'
     default:
-      return 'bg-blue-50 text-blue-900 border-blue-300'
+      return 'bg-774-blue-50 text-774-blue-900 border-774-blue-300'
   }
 }
 

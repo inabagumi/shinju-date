@@ -82,7 +82,7 @@ export function TalentsList({ talents }: TalentsListProps) {
                 <th className="px-4 py-3 text-left font-semibold">作成日時</th>
                 <th className="px-4 py-3 text-left font-semibold">
                   <button
-                    className="flex items-center gap-1 hover:text-blue-600"
+                    className="flex items-center gap-1 hover:text-774-blue-600"
                     onClick={toggleSortOrder}
                     type="button"
                   >
@@ -103,7 +103,7 @@ export function TalentsList({ talents }: TalentsListProps) {
                   <td className="px-4 py-3">
                     <div>
                       <Link
-                        className="text-blue-600 hover:text-blue-800"
+                        className="text-774-blue-600 hover:text-774-blue-800"
                         href={`/talents/${talent.id}`}
                       >
                         {talent.name}

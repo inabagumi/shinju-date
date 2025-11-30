@@ -50,7 +50,9 @@ function PopularKeywordsWidgetComponent({
         <h2 className="font-semibold text-xl">
           人気キーワードランキング
           {selectedDate ? (
-            <span className="ml-2 text-blue-600 text-sm">({selectedDate})</span>
+            <span className="ml-2 text-774-blue-600 text-sm">
+              ({selectedDate})
+            </span>
           ) : (
             <span className="ml-2 text-green-600 text-sm">
               ({dateRange.startDate}〜{dateRange.endDate})
@@ -75,7 +77,7 @@ function PopularKeywordsWidgetComponent({
               className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
               key={item.keyword}
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-600 text-sm">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-774-blue-100 font-semibold text-774-blue-600 text-sm">
                 {index + 1}
               </div>
               <div className="min-w-0 flex-1">

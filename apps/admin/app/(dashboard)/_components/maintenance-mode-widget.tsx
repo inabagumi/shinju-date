@@ -110,7 +110,7 @@ export function MaintenanceModeWidget({
             {error && <p className="mb-4 text-red-600 text-sm">{error}</p>}
             <div className="flex gap-2">
               <button
-                className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+                className="rounded-lg bg-secondary-blue px-4 py-2 font-medium text-white transition-colors hover:bg-774-blue-800 disabled:opacity-50"
                 disabled={isPending}
                 onClick={handleConfirm}
                 type="button"
