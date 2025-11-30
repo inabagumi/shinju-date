@@ -237,16 +237,17 @@ await redisClient.ping()
 'search:popular:daily:2023-10-23' => [{ member: 'ホロライブ', score: 50 }, ...]
 ```
 
-## Mock Data Generation with @mswjs/data and @faker-js/faker
+## Mock Data Generation with @msw/data and @faker-js/faker
 
-This package uses **@mswjs/data** for structured data modeling combined with **@faker-js/faker** for realistic data generation.
+This package uses **@msw/data** v1.1.2 for structured data modeling combined with **@faker-js/faker** for realistic data generation.
 
-### Why @mswjs/data?
+### Why @msw/data?
 
-`@mswjs/data` provides:
+`@msw/data` provides:
 - **Structured Database Modeling**: Define schemas with relationships
 - **Built-in Query Methods**: `findMany`, `findFirst`, `update`, `delete`, etc.
-- **Automatic Relationships**: Handle foreign keys and data integrity
+- **Native Relation API**: Automatic relation traversal using `.relate()` method
+- **Automatic Foreign Key Resolution**: No manual `find()` operations needed
 - **Type Safety**: Full TypeScript support with proper typing
 
 Combined with `@faker-js/faker`, you get:
@@ -320,28 +321,111 @@ import { seedDatabase } from '@shinju-date/msw-handlers'
 seedDatabase()
 ```
 
+### Using the Collections with Native Relations
+
+The package exports `@msw/data` collections with native relation support:
+
+```typescript
+import { videos, talents, seedCollections } from '@shinju-date/msw-handlers'
+
+// Initialize collections (automatically defines relations)
+await seedCollections()
+
+// Query videos
+const publishedVideos = await videos.findMany((q) =>
+  q.where({ visible: true })
+)
+
+// Access related data directly via native relation traversal
+const firstVideo = publishedVideos[0]
+console.log(firstVideo.talent.name)       // Talent name - no manual find() needed!
+console.log(firstVideo.thumbnail.path)    // Thumbnail path - automatic resolution!
+
+// Create new video (relations work automatically)
+const newVideo = await videos.create({
+  title: 'New Video',
+  talent_id: 'some-talent-id',
+  thumbnail_id: 'some-thumbnail-id',
+  // ... other fields
+})
+
+// Update video
+await videos.update((q) => q.where({ id: newVideo.id }), {
+  data(record) {
+    record.title = 'Updated Title'
+    return record
+  }
+})
+```
+
+### Relation Configuration
+
+Relations are automatically configured using `@msw/data`'s `.relate()` method:
+
+```typescript
+// Many-to-one relations
+videos.relate('talent', talents, {
+  field: 'talent_id',
+  foreignKey: 'id',
+  type: 'one-of',
+})
+
+videos.relate('thumbnail', thumbnails, {
+  field: 'thumbnail_id',
+  foreignKey: 'id',
+  type: 'one-of',
+})
+
+// One-to-many relations
+talents.relate('videos', videos, {
+  field: 'id',
+  foreignKey: 'talent_id',
+  type: 'many-of',
+})
+```
+
+Benefits:
+- **No Manual Lookups**: No need for `.find()` operations
+- **Type-Safe**: Relations maintain TypeScript types
+- **Automatic Resolution**: Foreign keys resolve automatically
+- **Bi-Directional**: Access relations from either side
+
+### Database Schema
+
+The database includes the following tables:
+- `talents`: Creator/talent information
+- `videos`: Video records with status and metadata
+- `thumbnails`: Thumbnail images with blur data
+- `youtubeChannels`: YouTube channel information
+- `youtubeVideos`: YouTube video relation mapping
+- `terms`: Search terms and synonyms
+- `announcements`: System announcements
+
+Each table is populated with realistic faker-generated data on initialization.
+
 ### Available Collections
 
 The package exports the following `@msw/data` collections:
 
 #### Supabase Tables
 - `talents` - Talent/VTuber information
-- `videos` - Video records with metadata
+- `videos` - Video records with metadata (relates to talent, thumbnail)
 - `thumbnails` - Thumbnail images with blur data
-- `youtubeChannels` - YouTube channel information
-- `youtubeVideos` - YouTube video relations
+- `youtubeChannels` - YouTube channel information (relates to talent)
+- `youtubeVideos` - YouTube video relations (relates to video)
 - `terms` - Search terms and synonyms
 - `announcements` - System announcements
 
-#### Seeding Function
+#### Seeding & Relations
 - `seedCollections()` - Initialize all collections with faker-generated data
+- `defineCollectionRelations()` - Configure relations (called automatically by seedCollections)
 
 #### Usage Example
 
 ```typescript
 import { videos, talents, seedCollections } from '@shinju-date/msw-handlers'
 
-// Initialize collections
+// Initialize collections (relations configured automatically)
 await seedCollections()
 
 // Query videos

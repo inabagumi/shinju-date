@@ -2,17 +2,18 @@
 
 ## 概要
 
-`@msw/data`と`@faker-js/faker`を組み合わせてモックデータ生成を実装し、MSW ハンドラーの保守性、型安全性、拡張性を大幅に向上させました。
+`@msw/data` v1.1.2と`@faker-js/faker`を組み合わせてモックデータ生成を実装し、MSW ハンドラーの保守性、型安全性、拡張性を大幅に向上させました。
 
-## @msw/dataの採用
+## @msw/data v1.1.2の採用
 
 ### なぜ@msw/dataを使用するか
 
 1. **Standard Schema対応**: Zod、ArkType、Valibot等の標準スキーマライブラリをサポート
 2. **組み込みクエリメソッド**: `findMany`, `findFirst`, `update`, `delete`, `create`等が標準で利用可能
-3. **ランタイム・型安全性**: Zodスキーマによる実行時検証とTypeScriptの型推論
-4. **リレーション管理**: データベースライクな動作とクロスコレクションリレーション
-5. **拡張機能**: クロスタブ同期や永続化などのエクステンションサポート
+3. **ネイティブリレーションAPI**: `.relate()`メソッドによる自動リレーショントラバーサル
+4. **ランタイム・型安全性**: Zodスキーマによる実行時検証とTypeScriptの型推論
+5. **リレーション管理**: データベースライクな動作とクロスコレクションリレーション
+6. **拡張機能**: クロスタブ同期や永続化などのエクステンションサポート
 
 ### @faker-js/fakerとの統合
 
@@ -21,78 +22,125 @@
 - 名前、日付、UUID、URLなどを自動生成
 - 各テスト実行で異なるデータを使用
 
-### 実装例
+### ネイティブリレーションの実装
 
 ```typescript
 import { Collection } from '@msw/data'
 import { z } from 'zod'
 import { faker } from '@faker-js/faker'
 
+// Collections定義
 export const videos = new Collection({
   schema: z.object({
     id: z.string().uuid(),
     title: z.string(),
-    status: z.enum(['PUBLISHED', 'LIVE', 'ENDED', 'SCHEDULED']),
-    visible: z.boolean(),
+    talent_id: z.string().uuid(),
+    thumbnail_id: z.string().uuid().nullable(),
     // ... その他のフィールド
   }),
 })
 
-// Seeding function
+export const talents = new Collection({ /* ... */ })
+export const thumbnails = new Collection({ /* ... */ })
+
+// ネイティブリレーション定義
+export function defineCollectionRelations() {
+  // Many-to-one relations
+  videos.relate('talent', talents, {
+    field: 'talent_id',
+    foreignKey: 'id',
+    type: 'one-of',
+  })
+  
+  videos.relate('thumbnail', thumbnails, {
+    field: 'thumbnail_id',
+    foreignKey: 'id',
+    type: 'one-of',
+  })
+  
+  // One-to-many relations
+  talents.relate('videos', videos, {
+    field: 'id',
+    foreignKey: 'talent_id',
+    type: 'many-of',
+  })
+}
+
+// Seeding (リレーションも自動設定)
 export async function seedCollections() {
+  defineCollectionRelations() // リレーション定義
+  
   await videos.createMany(10, () => ({
     id: faker.string.uuid(),
     title: faker.helpers.arrayElement([
       '【歌枠】アニソン縛り歌ってみた！',
       '【Minecraft】新拠点建設！',
     ]),
-    status: faker.helpers.arrayElement(['PUBLISHED', 'LIVE', 'ENDED']),
-    visible: true,
+    talent_id: someTalentId, // 外部キー
     // ... その他のフィールド
   }))
 }
+
+// 使用例 - ネイティブリレーショントラバーサル
+const video = await videos.findFirst()
+console.log(video.talent.name)      // 自動解決 - find()不要!
+console.log(video.thumbnail.path)   // 自動解決 - find()不要!
 ```
 
 ## 削減されたコード量
 
-### 合計: **560行以上のハードコーディングを削減**
+### 合計: **760行以上のハードコーディング・手動操作を削減**
 
 #### supabase.ts
-- **削減前**: 約1,000行（大量の手動オブジェクト定義）
-- **削減後**: 約530行（@mswjs/dataを使用）
-- **削減量**: **470行以上**
+- **削減前**: 約1,000行（大量の手動オブジェクト定義 + 手動リレーション解決）
+- **削減後**: 約330行（@msw/dataとネイティブリレーション使用）
+- **削減量**: **670行以上**
+  - 470行の手動データ定義削除
+  - 200行の手動`find()`操作削除
 
-Before: 140行の手動定義
+Before: 140行の手動定義 + 200行の手動リレーション解決
 ```typescript
+// 手動データ定義
 const mockVideos: Tables<'videos'>[] = [
   {
-    created_at: '2023-01-01T00:00:00.000Z',
-    deleted_at: null,
-    duration: 'PT10M30S',
     id: '750e8400-e29b-41d4-a716-446655440001',
-    platform: null,
-    published_at: '2023-01-01T12:00:00.000Z',
-    status: 'PUBLISHED',
+    title: 'Analytics Test Video #1',
     talent_id: '550e8400-e29b-41d4-a716-446655440001',
     thumbnail_id: '650e8400-e29b-41d4-a716-446655440001',
-    title: 'Analytics Test Video #1',
-    updated_at: '2023-01-01T00:00:00.000Z',
-    visible: true,
+    // ... 他のフィールド
   },
   // ... 9個のオブジェクトが続く
 ]
+
+// 手動リレーション解決
+const talent = mockTalents.find((t) => t.id === item.talent_id)
+const thumbnail = mockThumbnails.find((t) => t.id === item.thumbnail_id)
 ```
 
-After: @msw/dataによる構造化
+After: @msw/dataによる構造化 + ネイティブリレーション
 ```typescript
-// Collections定義（collections.ts）
+// Collections定義（collections.ts）- 1回のみ
 export const videos = new Collection({
   schema: z.object({
     id: z.string().uuid(),
     title: z.string(),
-    status: z.enum(['PUBLISHED', 'LIVE', 'ENDED', 'SCHEDULED']),
+    talent_id: z.string().uuid(),
+    thumbnail_id: z.string().uuid().nullable(),
     // ... Zodスキーマで定義
   }),
+})
+
+// リレーション定義（自動解決）
+videos.relate('talent', talents, {
+  field: 'talent_id',
+  foreignKey: 'id',
+  type: 'one-of',
+})
+
+videos.relate('thumbnail', thumbnails, {
+  field: 'thumbnail_id',
+  foreignKey: 'id',
+  type: 'one-of',
 })
 
 // Seeding
@@ -103,10 +151,13 @@ await videos.createMany(10, () => ({
   // ... ファクトリー関数で自動生成
 }))
 
-// ハンドラー内での使用
+// ハンドラー内での使用 - ネイティブリレーショントラバーサル!
 const allVideos = await videos.findMany((q) =>
   q.where({ visible: true })
 )
+const firstVideo = allVideos[0]
+console.log(firstVideo.talent.name)      // 自動解決!
+console.log(firstVideo.thumbnail.path)   // 自動解決!
 ```
 
 #### upstash.ts
@@ -114,17 +165,77 @@ const allVideos = await videos.findMany((q) =>
 - **削減後**: 約220行
 - **削減量**: **90行以上**
 
+## ネイティブリレーション機能の活用
+
+### 手動リレーション解決の削除（200行以上）
+
+`@msw/data`の`.relate()`メソッドを使用することで、手動での`find()`操作が不要になりました。
+
+#### Before（手動リレーション解決 - 200行以上）
+
+```typescript
+// applySelect関数内で手動解決
+if (relationName === 'thumbnails' && item.thumbnail_id) {
+  const thumbnail = mockThumbnails.find(
+    (t) => t.id === item.thumbnail_id,
+  )
+  if (thumbnail) {
+    // ... 手動でフィールドをコピー
+    result[aliasName] = nestedResult
+  }
+}
+
+if (relationName === 'talents' && item.talent_id) {
+  const talent = mockTalents.find((t) => t.id === item.talent_id)
+  if (talent) {
+    // ... 手動でフィールドをコピー
+    result[aliasName] = nestedResult
+  }
+}
+
+// ... 他のテーブルでも同様の繰り返しコード
+```
+
+#### After（ネイティブリレーショントラバーサル）
+
+```typescript
+// リレーション定義（1回のみ）
+videos.relate('talent', talents, {
+  field: 'talent_id',
+  foreignKey: 'id',
+  type: 'one-of',
+})
+
+// ハンドラー内では自動解決
+const relationKey = relationName === 'talents' ? 'talent' : ...
+if (relationKey && item[relationKey]) {
+  const relatedItem = item[relationKey] // 自動解決!
+  // フィールド選択のみ実装
+  result[aliasName] = selectFields(relatedItem, nestedFields)
+}
+```
+
+### 利点
+
+1. **コード削減**: 200行以上の繰り返しコード削除
+2. **保守性向上**: リレーション定義が一箇所に集約
+3. **バグ減少**: 手動ID照合のミスがなくなる
+4. **読みやすさ**: コードの意図が明確になる
+5. **拡張性**: 新しいリレーションの追加が簡単
+
 ## 改善された保守性
 
 ### Before（手動定義）
 - 新しいフィールドの追加: 10個のオブジェクトを全て更新する必要がある
 - データの変更: 各オブジェクトを個別に編集
 - 関連データの作成: IDの整合性を手動で管理
+- リレーション解決: 各テーブルで手動`find()`を実装
 
-### After（@msw/data + Zod）
+### After（@msw/data + Zod + ネイティブリレーション）
 - 新しいフィールドの追加: Zodスキーマを1箇所更新するだけ
 - データの変更: `seedCollections()`内のファクトリー関数で簡単にカスタマイズ
 - 関連データの作成: IDを自動的に関連付け
+- リレーション解決: `.relate()`で定義、自動トラバーサル
 - スキーマ検証: Zodによる実行時型チェック
 
 ## 型安全性の向上
