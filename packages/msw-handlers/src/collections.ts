@@ -100,58 +100,21 @@ export const announcements = new Collection({
 
 /**
  * Define relations between collections using @msw/data's built-in relation API
- * This provides automatic relation traversal and query capabilities
+ *
+ * Note: @msw/data v1.1.2's relation system requires relations to be defined
+ * in the schema itself using getters. However, we're using a manual approach
+ * here by storing relation data in the primary key field during seeding.
+ *
+ * The automatic relation resolution through schema is not used in this implementation
+ * because it would require restructuring all our Zod schemas to include getter-based
+ * relation properties, which would be a breaking change.
+ *
+ * Instead, we handle relations manually in the applySelect function by looking up
+ * related records when needed (e.g., item.talent_id -> talents.findFirst()).
  */
 export function defineCollectionRelations() {
-  // Videos -> Talent (many-to-one)
-  videos.relate('talent', talents, {
-    field: 'talent_id',
-    foreignKey: 'id',
-    type: 'one-of',
-  })
-
-  // Videos -> Thumbnail (many-to-one)
-  videos.relate('thumbnail', thumbnails, {
-    field: 'thumbnail_id',
-    foreignKey: 'id',
-    type: 'one-of',
-  })
-
-  // YouTubeVideos -> Videos (many-to-one)
-  youtubeVideos.relate('video', videos, {
-    field: 'video_id',
-    foreignKey: 'id',
-    type: 'one-of',
-  })
-
-  // YouTubeChannels -> Talent (many-to-one)
-  youtubeChannels.relate('talent', talents, {
-    field: 'talent_id',
-    foreignKey: 'id',
-    type: 'one-of',
-  })
-
-  // Reverse relations
-  // Talents -> Videos (one-to-many)
-  talents.relate('videos', videos, {
-    field: 'id',
-    foreignKey: 'talent_id',
-    type: 'many-of',
-  })
-
-  // Talents -> YouTube Channels (one-to-many)
-  talents.relate('youtubeChannels', youtubeChannels, {
-    field: 'id',
-    foreignKey: 'talent_id',
-    type: 'many-of',
-  })
-
-  // Videos -> YouTube Videos (one-to-many)
-  videos.relate('youtubeVideos', youtubeVideos, {
-    field: 'id',
-    foreignKey: 'video_id',
-    type: 'many-of',
-  })
+  // Relations are handled manually in applySelect function
+  // See handlers/supabase.ts for implementation details
 }
 
 /**
