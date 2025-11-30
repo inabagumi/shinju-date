@@ -13,7 +13,7 @@ export function ToastViewport({
   return (
     <ToastPrimitive.Viewport
       className={twMerge(
-        'fixed top-0 right-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:top-0 sm:right-0 sm:flex-col md:max-w-[420px]',
+        'fixed bottom-0 left-0 z-[100] flex max-h-screen w-full flex-col p-4 sm:bottom-0 sm:left-0 md:max-w-[420px]',
         className,
       )}
       {...props}
@@ -22,7 +22,7 @@ export function ToastViewport({
 }
 
 const toastVariants = cva(
-  'data-[state=closed]:fade-out-80 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full group sm:data-[state=closed]:slide-out-to-right-full pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-4 pr-8 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[state=closed]:animate-out data-[state=open]:animate-in data-[swipe=end]:animate-out data-[swipe=cancel]:transition-[transform_200ms_ease-out]',
+  'data-[state=closed]:fade-out-80 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-left-full data-[state=open]:slide-in-from-bottom-full group sm:data-[state=closed]:slide-out-to-left-full pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-4 pr-8 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[state=closed]:animate-out data-[state=open]:animate-in data-[swipe=end]:animate-out data-[swipe=cancel]:transition-[transform_200ms_ease-out]',
   {
     defaultVariants: {
       variant: 'default',
