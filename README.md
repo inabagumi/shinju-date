@@ -44,9 +44,10 @@
 
 プロジェクトの開発環境をセットアップするには、以下のガイドに従ってください。
 
-- **[docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md)**
+- **[docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md)** - 標準セットアップガイド
+- **[docs/COPILOT_AGENT_SETUP.md](docs/COPILOT_AGENT_SETUP.md)** - GitHub Copilot Coding Agent向けセットアップ
 
-このガイドには、前提条件、依存関係のインストール、Supabaseのローカル設定、開発サーバーの起動方法などが含まれています。
+これらのガイドには、前提条件、依存関係のインストール、Supabaseのローカル設定、開発サーバーの起動方法などが含まれています。
 
 より詳細な貢献方法については、[CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
 
@@ -55,9 +56,12 @@
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - 開発・貢献ガイド
 - **[AGENTS.md](AGENTS.md)** - AI エージェント活用ガイド
 - **[docs/](docs/)** - プロジェクト固有のドキュメント
+  - [Setup Guide](docs/SETUP_GUIDE.md) - 標準セットアップガイド
+  - [Copilot Agent Setup](docs/COPILOT_AGENT_SETUP.md) - GitHub Copilot Coding Agent向けセットアップ
   - [MSW Integration](docs/MSW_INTEGRATION.md) - MSW モック統合の詳細
   - [Hybrid Recommendation System](docs/hybrid-recommendation-system.md) - ハイブリッドオススメシステム
   - [Supabase Local Development](docs/supabase-local-development.md) - Supabaseローカル開発環境ガイド
+  - [Redis Local Development](docs/redis-local-development.md) - Redisローカル開発環境ガイド
   - [Supabase Implementation](docs/SUPABASE_IMPLEMENTATION.md) - Supabase実装サマリー
 
 ## ローカル開発環境
