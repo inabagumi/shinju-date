@@ -77,7 +77,7 @@ export function TermModal({ term }: TermModalProps) {
       </DialogTrigger>
       <DialogPortal>
         <DialogOverlay />
-        <DialogContent className="max-h-[85vh] w-[90vw] overflow-y-auto">
+        <DialogContent className="overflow-y-auto">
           <DialogTitle>
             {isEditing ? '用語を編集' : '新しい用語を追加'}
           </DialogTitle>
