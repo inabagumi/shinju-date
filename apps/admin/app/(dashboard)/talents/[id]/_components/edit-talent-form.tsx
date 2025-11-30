@@ -34,30 +34,28 @@ function ColorInput({
   defaultValue,
   name,
 }: {
-  defaultValue: string
+  defaultValue: string | null
   name: string
 }) {
-  const [color, setColor] = useState(defaultValue)
+  const [color, setColor] = useState(defaultValue ?? '#000000')
 
   return (
-    <>
-      <div className="flex items-center gap-2">
-        <input
-          className="size-10 cursor-pointer rounded border border-gray-300"
-          onChange={(e) => setColor(e.target.value)}
-          type="color"
-          value={color}
-        />
-        <input
-          className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-774-blue-500 focus:outline-none focus:ring-1 focus:ring-774-blue-500"
-          name={name}
-          onChange={(e) => setColor(e.target.value)}
-          placeholder="#FF5733"
-          type="text"
-          value={color}
-        />
-      </div>
-    </>
+    <div className="flex items-center gap-2">
+      <input
+        className="size-10 cursor-pointer rounded border border-gray-300"
+        onChange={(e) => setColor(e.target.value)}
+        type="color"
+        value={color}
+      />
+      <input
+        className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-774-blue-500 focus:outline-none focus:ring-1 focus:ring-774-blue-500"
+        name={name}
+        onChange={(e) => setColor(e.target.value)}
+        placeholder="#FF5733"
+        type="text"
+        value={color}
+      />
+    </div>
   )
 }
 
@@ -220,10 +218,7 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
             <Label className="mb-2 block font-medium text-sm">
               テーマカラー
             </Label>
-            <ColorInput
-              defaultValue={talent.theme_color ?? '#000000'}
-              name="theme_color"
-            />
+            <ColorInput defaultValue={talent.theme_color} name="theme_color" />
             <p className="mt-1 text-gray-500 text-xs">
               タレントのテーマカラー（#RRGGBB形式で指定してください）
             </p>

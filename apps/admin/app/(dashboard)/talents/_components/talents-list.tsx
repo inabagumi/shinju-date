@@ -108,23 +108,26 @@ export function TalentsList({ talents }: TalentsListProps) {
                       >
                         {talent.name}
                       </Link>
-                      {talent.youtube_channels && talent.youtube_channels.length > 0 && (
-                        <div className="mt-1 space-y-1">
-                          {talent.youtube_channels.map((channel) => (
-                            <div key={channel.id}>
-                              {channel.name && channel.name !== talent.name && (
-                                <div className="text-gray-600 text-xs">
-                                  YouTube: {channel.name}
+                      {talent.youtube_channels &&
+                        talent.youtube_channels.length > 0 && (
+                          <div className="mt-1 space-y-1">
+                            {talent.youtube_channels.map((channel) => (
+                              <div key={channel.id}>
+                                {channel.name &&
+                                  channel.name !== talent.name && (
+                                    <div className="text-gray-600 text-xs">
+                                      YouTube: {channel.name}
+                                    </div>
+                                  )}
+                                <div className="font-mono text-gray-500 text-xs">
+                                  {channel.youtube_channel_id}
                                 </div>
-                              )}
-                              <div className="font-mono text-gray-500 text-xs">
-                                {channel.youtube_channel_id}
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {(!talent.youtube_channels || talent.youtube_channels.length === 0) && (
+                            ))}
+                          </div>
+                        )}
+                      {(!talent.youtube_channels ||
+                        talent.youtube_channels.length === 0) && (
                         <div className="font-mono text-gray-500 text-xs">
                           {talent.id}
                         </div>

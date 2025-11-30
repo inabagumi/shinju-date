@@ -8,6 +8,10 @@ import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
 import { createSupabaseServerClient } from '@/lib/supabase'
+import {
+  COLOR_VALIDATION_ERROR_MESSAGE,
+  isValidHexColor,
+} from '@/lib/validation'
 
 export async function createTalentAction(
   _currentState: FormState,
@@ -107,13 +111,10 @@ export async function updateTalentAction(
 
   // Validate theme_color format if provided
   if (themeColor && themeColor.trim() !== '') {
-    const colorPattern = /^#[0-9A-Fa-f]{6}$/
-    if (!colorPattern.test(themeColor.trim())) {
+    if (!isValidHexColor(themeColor.trim())) {
       return {
         errors: {
-          theme_color: [
-            'カラーコードは#RRGGBB形式で入力してください（例: #FF5733）',
-          ],
+          theme_color: [COLOR_VALIDATION_ERROR_MESSAGE],
         },
       }
     }
