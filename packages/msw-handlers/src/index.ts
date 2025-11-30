@@ -31,19 +31,23 @@ export {
  * - findMany/findFirst for querying data
  * - create/createMany for generating data
  * - update/delete for CRUD operations
+ * - Native relation traversal (e.g., video.talent, video.thumbnail)
  * - Zod schema validation
  *
  * Example:
  * ```ts
  * import { videos, seedCollections } from '@shinju-date/msw-handlers'
  *
- * // Initialize collections
+ * // Initialize collections (automatically defines relations)
  * await seedCollections()
  *
- * // Find videos
+ * // Find videos with relation traversal
  * const allVideos = await videos.findMany((q) =>
  *   q.where({ visible: true })
  * )
+ * // Access related data directly
+ * const firstVideo = allVideos[0]
+ * console.log(firstVideo.talent.name)  // Native relation traversal
  *
  * // Create a new video
  * await videos.create({
@@ -54,6 +58,7 @@ export {
  */
 export {
   announcements,
+  defineCollectionRelations,
   seedCollections,
   talents,
   terms,

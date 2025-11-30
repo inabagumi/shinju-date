@@ -99,9 +99,68 @@ export const announcements = new Collection({
 })
 
 /**
+ * Define relations between collections using @msw/data's built-in relation API
+ * This provides automatic relation traversal and query capabilities
+ */
+export function defineCollectionRelations() {
+  // Videos -> Talent (many-to-one)
+  videos.relate('talent', talents, {
+    field: 'talent_id',
+    foreignKey: 'id',
+    type: 'one-of',
+  })
+
+  // Videos -> Thumbnail (many-to-one)
+  videos.relate('thumbnail', thumbnails, {
+    field: 'thumbnail_id',
+    foreignKey: 'id',
+    type: 'one-of',
+  })
+
+  // YouTubeVideos -> Videos (many-to-one)
+  youtubeVideos.relate('video', videos, {
+    field: 'video_id',
+    foreignKey: 'id',
+    type: 'one-of',
+  })
+
+  // YouTubeChannels -> Talent (many-to-one)
+  youtubeChannels.relate('talent', talents, {
+    field: 'talent_id',
+    foreignKey: 'id',
+    type: 'one-of',
+  })
+
+  // Reverse relations
+  // Talents -> Videos (one-to-many)
+  talents.relate('videos', videos, {
+    field: 'id',
+    foreignKey: 'talent_id',
+    type: 'many-of',
+  })
+
+  // Talents -> YouTube Channels (one-to-many)
+  talents.relate('youtubeChannels', youtubeChannels, {
+    field: 'id',
+    foreignKey: 'talent_id',
+    type: 'many-of',
+  })
+
+  // Videos -> YouTube Videos (one-to-many)
+  videos.relate('youtubeVideos', youtubeVideos, {
+    field: 'id',
+    foreignKey: 'video_id',
+    type: 'many-of',
+  })
+}
+
+/**
  * Seed all collections with initial mock data using faker
+ * Relations are automatically established via defineCollectionRelations()
  */
 export async function seedCollections() {
+  // Define relations first
+  defineCollectionRelations()
   // Create talents
   const talentNames = ['一ノ瀬うるは', '飛良ひかり', '小森めと', '英リサ']
   const createdTalents = await Promise.all(

@@ -161,7 +161,7 @@ function applySupabaseFilters(
 }
 
 /**
- * Handle Supabase select projection
+ * Handle Supabase select projection with native @msw/data relation traversal
  */
 async function applySelect(
   // biome-ignore lint/suspicious/noExplicitAny: Generic mock data handler requires any for flexible type matching across different table types
@@ -171,13 +171,6 @@ async function applySelect(
   if (selectStr === '*') {
     return data
   }
-
-  // Use helper functions for consistency with other handlers
-  const mockTalents = await getMockTalents()
-  const mockThumbnails = await getMockThumbnails()
-  const mockVideos = await getMockVideos()
-  const mockChannels = await getMockChannels()
-  const mockYoutubeVideos = await getMockYoutubeVideos()
 
   const result = data.map((item) => {
     // biome-ignore lint/suspicious/noExplicitAny: Dynamic object construction from select fields
@@ -195,172 +188,100 @@ async function applySelect(
       if (aliasedNestedMatch) {
         const [, aliasName, relationName, nestedFields] = aliasedNestedMatch
         if (aliasName && relationName && nestedFields) {
-          // Handle thumbnails relation
-          if (relationName === 'thumbnails' && item.thumbnail_id) {
-            const thumbnail = mockThumbnails.find(
-              (t) => t.id === item.thumbnail_id,
-            )
-            if (thumbnail) {
-              const nestedFieldArray = nestedFields
-                .split(',')
-                .map((f) => f.trim())
-              // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
-              const nestedResult: any = {}
-              for (const nf of nestedFieldArray) {
-                if (nf in thumbnail) {
-                  nestedResult[nf] = thumbnail[nf as keyof typeof thumbnail]
-                }
-              }
-              result[aliasName] = nestedResult
-            } else {
-              result[aliasName] = null
-            }
-          }
-          // Handle talents relation
-          else if (relationName === 'talents' && item.talent_id) {
-            const talent = mockTalents.find((t) => t.id === item.talent_id)
-            if (talent) {
-              const nestedFieldArray = nestedFields
-                .split(',')
-                .map((f) => f.trim())
-              // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
-              const nestedResult: any = {}
-              for (const nf of nestedFieldArray) {
-                if (nf in talent) {
-                  nestedResult[nf] = talent[nf as keyof typeof talent]
-                }
-              }
-              result[aliasName] = nestedResult
-            } else {
-              result[aliasName] = null
-            }
-          }
-          // Handle youtube_videos relation
-          else if (relationName === 'youtube_videos' && item.id) {
-            const youtubeVideo = mockYoutubeVideos.find(
-              (yv) => yv.video_id === item.id,
-            )
-            if (youtubeVideo) {
-              const nestedFieldArray = nestedFields
-                .split(',')
-                .map((f) => f.trim())
-              // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
-              const nestedResult: any = {}
-              for (const nf of nestedFieldArray) {
-                if (nf in youtubeVideo) {
-                  nestedResult[nf] =
-                    youtubeVideo[nf as keyof typeof youtubeVideo]
-                }
-              }
-              result[aliasName] = nestedResult
-            } else {
-              result[aliasName] = null
-            }
-          }
-          // Handle youtube_channels relation (one-to-many from talents)
-          else if (relationName === 'youtube_channels' && item.id) {
-            const channels = mockChannels.filter(
-              (ch) => ch.talent_id === item.id,
-            )
+          // Use native @msw/data relation traversal
+          // The relation is accessed directly as a property on the item
+          // e.g., item.thumbnail, item.talent, item.video
+          const relationKey =
+            relationName === 'thumbnails'
+              ? 'thumbnail'
+              : relationName === 'talents'
+                ? 'talent'
+                : relationName === 'videos'
+                  ? 'video'
+                  : relationName === 'youtube_videos'
+                    ? 'youtubeVideos'
+                    : relationName === 'youtube_channels'
+                      ? 'youtubeChannels'
+                      : null
+
+          if (relationKey && item[relationKey]) {
+            const relatedItem = item[relationKey]
             const nestedFieldArray = nestedFields
               .split(',')
               .map((f) => f.trim())
-            const channelsResult = channels.map((channel) => {
-              // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
-              const nestedResult: any = {}
-              for (const nf of nestedFieldArray) {
-                if (nf in channel) {
-                  nestedResult[nf] = channel[nf as keyof typeof channel]
-                }
-              }
-              return nestedResult
-            })
-            result[aliasName] = channelsResult
-          }
-          // Handle videos relation (from youtube_videos table)
-          else if (relationName === 'videos' && item.video_id) {
-            const video = mockVideos.find((v) => v.id === item.video_id)
-            if (video) {
-              const nestedFieldArray = nestedFields
-                .split(',')
-                .map((f) => f.trim())
-              // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
-              const nestedResult: any = {}
-              for (const nf of nestedFieldArray) {
-                // Handle nested relations within videos (like thumbnails)
-                const nestedRelationMatch = nf.match(
-                  /^(\w+):(\w+)(?:!\w+)?\s*\(([^)]+)\)$/,
-                )
-                if (nestedRelationMatch) {
-                  const [
-                    ,
-                    nestedAlias,
-                    nestedRelationName,
-                    nestedRelationFields,
-                  ] = nestedRelationMatch
-                  if (
-                    nestedAlias &&
-                    nestedRelationName &&
-                    nestedRelationFields
-                  ) {
-                    if (
-                      nestedRelationName === 'thumbnails' &&
-                      video.thumbnail_id
-                    ) {
-                      const thumbnail = mockThumbnails.find(
-                        (t) => t.id === video.thumbnail_id,
-                      )
-                      if (thumbnail) {
-                        const thumbnailFieldArray = nestedRelationFields
-                          .split(',')
-                          .map((f) => f.trim())
-                        // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from thumbnail fields
-                        const thumbnailResult: any = {}
-                        for (const tf of thumbnailFieldArray) {
-                          if (tf in thumbnail) {
-                            thumbnailResult[tf] =
-                              thumbnail[tf as keyof typeof thumbnail]
-                          }
-                        }
-                        nestedResult[nestedAlias] = thumbnailResult
-                      } else {
-                        nestedResult[nestedAlias] = null
+            // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
+            const nestedResult: any = {}
+
+            for (const nf of nestedFieldArray) {
+              // Handle nested relations within relations (like video -> thumbnail)
+              const nestedRelationMatch = nf.match(
+                /^(\w+):(\w+)(?:!\w+)?\s*\(([^)]+)\)$/,
+              )
+              if (nestedRelationMatch) {
+                const [
+                  ,
+                  nestedAlias,
+                  nestedRelationName,
+                  nestedRelationFields,
+                ] = nestedRelationMatch
+                if (nestedAlias && nestedRelationName && nestedRelationFields) {
+                  const nestedRelationKey =
+                    nestedRelationName === 'thumbnails' ? 'thumbnail' : null
+                  if (nestedRelationKey && relatedItem[nestedRelationKey]) {
+                    const nestedRelatedItem = relatedItem[nestedRelationKey]
+                    const thumbnailFieldArray = nestedRelationFields
+                      .split(',')
+                      .map((f) => f.trim())
+                    // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from nested relation fields
+                    const thumbnailResult: any = {}
+                    for (const tf of thumbnailFieldArray) {
+                      if (tf in nestedRelatedItem) {
+                        thumbnailResult[tf] = nestedRelatedItem[tf]
                       }
                     }
+                    nestedResult[nestedAlias] = thumbnailResult
+                  } else {
+                    nestedResult[nestedAlias] = null
                   }
-                } else if (nf in video) {
-                  nestedResult[nf] = video[nf as keyof typeof video]
                 }
+              } else if (nf in relatedItem) {
+                nestedResult[nf] = relatedItem[nf]
               }
-              result[aliasName] = nestedResult
-            } else {
-              result[aliasName] = null
             }
+            result[aliasName] = nestedResult
+          } else {
+            result[aliasName] = null
           }
         }
       } else if (simpleNestedMatch) {
         // Handle simple nested selects without alias (backward compatibility)
+        // e.g., "thumbnails(id,path)" becomes item.thumbnail with selected fields
         const [, relationName, nestedFields] = simpleNestedMatch
         if (relationName && nestedFields) {
-          if (relationName === 'thumbnails' && item.thumbnail_id) {
-            const thumbnail = mockThumbnails.find(
-              (t) => t.id === item.thumbnail_id,
-            )
-            if (thumbnail) {
-              const nestedFieldArray = nestedFields
-                .split(',')
-                .map((f) => f.trim())
-              // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
-              const nestedResult: any = {}
-              for (const nf of nestedFieldArray) {
-                if (nf in thumbnail) {
-                  nestedResult[nf] = thumbnail[nf as keyof typeof thumbnail]
-                }
+          const relationKey =
+            relationName === 'thumbnails'
+              ? 'thumbnail'
+              : relationName === 'talents'
+                ? 'talent'
+                : relationName === 'videos'
+                  ? 'video'
+                  : null
+
+          if (relationKey && item[relationKey]) {
+            const relatedItem = item[relationKey]
+            const nestedFieldArray = nestedFields
+              .split(',')
+              .map((f) => f.trim())
+            // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
+            const nestedResult: any = {}
+            for (const nf of nestedFieldArray) {
+              if (nf in relatedItem) {
+                nestedResult[nf] = relatedItem[nf]
               }
-              result[relationName] = nestedResult
-            } else {
-              result[relationName] = null
             }
+            result[relationName] = nestedResult
+          } else {
+            result[relationName] = null
           }
         }
       } else if (field in item) {
