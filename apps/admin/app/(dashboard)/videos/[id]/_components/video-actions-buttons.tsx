@@ -144,21 +144,23 @@ export function VideoActionsButtons({
         )}
       </div>
 
-      <Toast
-        duration={5000}
-        onOpenChange={setToastOpen}
-        open={toastOpen}
-        variant={
-          toastMessage?.type === 'success'
-            ? 'success'
-            : toastMessage?.type === 'error'
-              ? 'destructive'
-              : 'default'
-        }
-      >
-        <ToastTitle>{toastMessage?.text}</ToastTitle>
-        <ToastClose />
-      </Toast>
+      {toastMessage && (
+        <Toast
+          duration={5000}
+          onOpenChange={setToastOpen}
+          open={toastOpen}
+          variant={
+            toastMessage.type === 'success'
+              ? 'success'
+              : toastMessage.type === 'error'
+                ? 'destructive'
+                : 'default'
+          }
+        >
+          <ToastTitle>{toastMessage.text}</ToastTitle>
+          <ToastClose />
+        </Toast>
+      )}
 
       <VideoActionConfirmDialog
         action={confirmDialog.action}
