@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
@@ -83,6 +83,7 @@ export interface Database {
           deleted_at: string | null
           id: string
           name: string
+          theme_color: string | null
           updated_at: string
         }
         Insert: {
@@ -90,6 +91,7 @@ export interface Database {
           deleted_at?: string | null
           id?: string
           name: string
+          theme_color?: string | null
           updated_at?: string
         }
         Update: {
@@ -97,6 +99,7 @@ export interface Database {
           deleted_at?: string | null
           id?: string
           name?: string
+          theme_color?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -439,7 +442,6 @@ export interface Database {
         | 'TERM_DELETE'
         | 'TERM_UPDATE'
         | 'VIDEO_DELETE'
-        | 'VIDEO_RESTORE'
         | 'VIDEO_VISIBILITY_TOGGLE'
         | 'VIDEO_UPDATE'
         | 'VIDEO_SYNC'
@@ -453,6 +455,7 @@ export interface Database {
         | 'ANNOUNCEMENT_UPDATE'
         | 'YOUTUBE_CHANNEL_CREATE'
         | 'YOUTUBE_CHANNEL_DELETE'
+        | 'VIDEO_RESTORE'
       platform_type: 'youtube' | 'twitch'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
       video_status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
@@ -463,8 +466,8 @@ export interface Database {
   }
 }
 
-interface DatabaseWithoutInternals
-  extends Omit<Database, '__InternalSupabase'> {}
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
+
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
 
 export type Tables<
@@ -593,7 +596,6 @@ export const Constants = {
         'TERM_DELETE',
         'TERM_UPDATE',
         'VIDEO_DELETE',
-        'VIDEO_RESTORE',
         'VIDEO_VISIBILITY_TOGGLE',
         'VIDEO_UPDATE',
         'VIDEO_SYNC',
@@ -605,6 +607,9 @@ export const Constants = {
         'ANNOUNCEMENT_CREATE',
         'ANNOUNCEMENT_DELETE',
         'ANNOUNCEMENT_UPDATE',
+        'YOUTUBE_CHANNEL_CREATE',
+        'YOUTUBE_CHANNEL_DELETE',
+        'VIDEO_RESTORE',
       ],
       platform_type: ['youtube', 'twitch'],
       twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],
