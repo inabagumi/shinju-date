@@ -58,7 +58,7 @@ async function VideoDetailContent({ id }: { id: string }) {
       {/* Back button */}
       <div className="mb-6">
         <Link
-          className="inline-flex items-center text-blue-600 hover:text-blue-800"
+          className="inline-flex items-center text-774-blue-600 hover:text-774-blue-800"
           href="/videos"
         >
           <ChevronLeft className="mr-1 h-4 w-4" />
@@ -179,7 +179,7 @@ async function VideoDetailContent({ id }: { id: string }) {
                 <dt className="font-medium text-gray-500 text-sm">タレント</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   <Link
-                    className="text-blue-600 hover:text-blue-800"
+                    className="text-774-blue-600 hover:text-774-blue-800"
                     href={`/talents/${video.talent.id}`}
                   >
                     {video.talent.name}

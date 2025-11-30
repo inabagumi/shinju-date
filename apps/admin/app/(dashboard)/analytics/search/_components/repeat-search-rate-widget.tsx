@@ -49,9 +49,9 @@ function RepeatSearchRateWidgetComponent({
   const engagementLevel = getEngagementLevel(repeatRate)
 
   const engagementStyles = {
-    high: 'bg-purple-50 text-purple-700 border-purple-200',
+    high: 'bg-774-nevy-50 text-774-nevy-700 border-774-nevy-200',
     low: 'bg-gray-50 text-gray-700 border-gray-200',
-    moderate: 'bg-blue-50 text-blue-700 border-blue-200',
+    moderate: 'bg-774-blue-50 text-774-blue-700 border-774-blue-200',
     normal: 'bg-green-50 text-green-700 border-green-200',
   }
 
@@ -77,7 +77,9 @@ function RepeatSearchRateWidgetComponent({
         <h2 className="font-semibold text-xl">
           リピート検索率
           {selectedDate ? (
-            <span className="ml-2 text-blue-600 text-sm">({selectedDate})</span>
+            <span className="ml-2 text-774-blue-600 text-sm">
+              ({selectedDate})
+            </span>
           ) : (
             <span className="ml-2 text-green-600 text-sm">
               ({dateRange.startDate}〜{dateRange.endDate})

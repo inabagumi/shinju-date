@@ -183,7 +183,7 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
                     </div>
                     <div className="min-w-0 flex-1">
                       <Link
-                        className="text-blue-600 hover:text-blue-800"
+                        className="text-774-blue-600 hover:text-774-blue-800"
                         href={`/videos/${video.id}`}
                       >
                         <p className="truncate font-medium text-sm">
@@ -230,7 +230,7 @@ export default function TalentDetailPage({ params }: Props) {
       {/* Back button - static, renders immediately */}
       <div className="mb-6">
         <Link
-          className="inline-flex items-center text-blue-600 hover:text-blue-800"
+          className="inline-flex items-center text-774-blue-600 hover:text-774-blue-800"
           href="/talents"
         >
           <ChevronLeft className="mr-1 size-4" />

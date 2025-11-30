@@ -68,7 +68,7 @@ export async function PopularVideosWidget() {
               </div>
               <div className="flex shrink-0 gap-2">
                 <Link
-                  className="rounded bg-blue-600 px-3 py-1 text-sm text-white transition-colors hover:bg-blue-700"
+                  className="rounded bg-secondary-blue px-3 py-1 text-sm text-white transition-colors hover:bg-774-blue-800"
                   href={`/videos/${video.id}`}
                 >
                   詳細

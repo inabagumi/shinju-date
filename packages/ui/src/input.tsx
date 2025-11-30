@@ -17,7 +17,7 @@ const inputVariants = cva(
       },
       variant: {
         default:
-          'border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:text-zinc-100 dark:focus:border-blue-500',
+          'border-gray-300 text-gray-900 focus:border-774-blue-500 focus:ring-2 focus:ring-774-blue-500/20 dark:border-zinc-700 dark:text-zinc-100 dark:focus:border-774-blue-500',
         error:
           'border-red-500 text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 dark:text-zinc-100',
       },

@@ -192,7 +192,7 @@ export function ChannelManager({
                       )}
                       <div>
                         <a
-                          className="inline-flex items-center text-blue-600 text-sm hover:text-blue-800"
+                          className="inline-flex items-center text-774-blue-600 text-sm hover:text-774-blue-800"
                           href={`https://www.youtube.com/channel/${channel.youtube_channel_id}`}
                           rel="noopener noreferrer"
                           target="_blank"

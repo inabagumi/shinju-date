@@ -51,7 +51,7 @@ function SearchEngagementRateWidgetComponent({
   const performanceStyles = {
     average: 'bg-yellow-50 text-yellow-700 border-yellow-200',
     excellent: 'bg-green-50 text-green-700 border-green-200',
-    good: 'bg-blue-50 text-blue-700 border-blue-200',
+    good: 'bg-774-blue-50 text-774-blue-700 border-774-blue-200',
     poor: 'bg-red-50 text-red-700 border-red-200',
   }
 
@@ -68,7 +68,9 @@ function SearchEngagementRateWidgetComponent({
         <h2 className="font-semibold text-xl">
           検索利用率
           {selectedDate ? (
-            <span className="ml-2 text-blue-600 text-sm">({selectedDate})</span>
+            <span className="ml-2 text-774-blue-600 text-sm">
+              ({selectedDate})
+            </span>
           ) : (
             <span className="ml-2 text-green-600 text-sm">
               ({dateRange.startDate}〜{dateRange.endDate})

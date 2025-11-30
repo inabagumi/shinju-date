@@ -64,7 +64,7 @@ function SimplePopularTalentsWidget({
               className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
               key={talent.id}
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-100 font-semibold text-purple-600 text-sm">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-774-nevy-100 font-semibold text-774-nevy-600 text-sm">
                 {index + 1}
               </div>
               <div className="min-w-0 flex-1 truncate">

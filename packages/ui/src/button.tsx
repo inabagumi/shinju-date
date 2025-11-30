@@ -21,9 +21,13 @@ const buttonVariants = cva(
           'border border-red-600 text-red-600 hover:bg-red-50 dark:border-red-500 dark:text-red-500 dark:hover:bg-red-950',
         ghost: 'hover:bg-gray-100 dark:hover:bg-zinc-800',
         primary:
-          'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800',
+          'bg-774-blue-600 text-white hover:bg-774-blue-700 dark:bg-774-blue-700 dark:hover:bg-774-blue-800',
         secondary:
           'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700',
+        'secondary-blue':
+          'bg-secondary-blue text-secondary-blue-foreground hover:bg-774-blue-800 active:bg-774-blue-600',
+        'secondary-pink':
+          'bg-secondary-pink text-secondary-pink-foreground hover:bg-774-pink-600 active:bg-774-pink-700',
       },
     },
   },
