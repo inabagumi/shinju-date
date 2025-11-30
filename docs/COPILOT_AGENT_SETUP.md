@@ -9,9 +9,20 @@ GitHub Copilot Coding AgentがSupabaseとUpstash Redis (Serverless Redis HTTP)�
 1. **ローカルサービスを使用** - 推奨、本番環境に近い動作
 2. **MSW (Mock Service Worker) を使用** - 代替案、セットアップ簡略化
 
+## 自動セットアップ（GitHub Actions）
+
+GitHub Copilot Coding Agentの環境では、`.github/workflows/copilot-setup-steps.yml` ワークフローが以下を自動的に実行します：
+
+1. 依存関係のインストール
+2. Supabaseのローカル起動
+3. Redisサービスの起動
+4. 環境変数の自動設定（Supabaseキーの取得を含む）
+
+**手動でサービスを起動する必要はありません。**
+
 ## アプローチ1: ローカルサービスを使用（推奨）
 
-本番環境に近い動作を実現するため、実際のSupabaseとRedisサービスを起動します。
+本番環境に近い動作を実現するため、実際のSupabaseとRedisサービスを使用します。
 
 ### 特徴
 
@@ -20,62 +31,36 @@ GitHub Copilot Coding AgentがSupabaseとUpstash Redis (Serverless Redis HTTP)�
 - **データ永続化**: 実際のデータ保存と取得
 - **正確なテスト**: 本番環境と同じ動作を検証可能
 
-### 前提条件
+### セットアップ（手動セットアップが必要な場合のみ）
 
-- Docker Desktop がインストールされ、起動していること
-- 十分なメモリ（最低8GB推奨）
+GitHub Actions環境以外で手動セットアップが必要な場合：
 
-### セットアップ手順
+#### 1. 環境変数の設定
 
-#### 1. Supabaseの起動
-
-```bash
-# Supabaseローカル環境を起動
-pnpm exec supabase start
-
-# 状態確認
-pnpm exec supabase status
-```
-
-起動後、以下の情報が表示されます：
-
-- API URL: `http://127.0.0.1:54321`
-- Anon Key: （コンソールに表示）
-- Service Role Key: （コンソールに表示）
-
-#### 2. Redisの起動
-
-Dev Containerを使用している場合は自動的に起動します。使用していない場合：
-
-```bash
-cd .devcontainer
-docker compose up -d
-```
-
-以下のサービスが起動します：
-
-- Redis: `localhost:6379`
-- Redis HTTP API: `http://localhost:8079`
-
-#### 3. 環境変数の設定
-
-`.env.local`ファイルを作成（サンプルから）:
+`.env.local`ファイルを作成：
 
 ```bash
 cp apps/web/.env.local.sample apps/web/.env.local
 cp apps/admin/.env.local.sample apps/admin/.env.local
 ```
 
-サンプルファイルにはローカルSupabaseとRedisの設定がデフォルトで含まれています。
+Supabaseキーを取得して設定：
 
-#### 4. データのインポート（任意）
+```bash
+# Supabaseの状態確認とキー取得
+pnpm exec supabase status -o env
+
+# 表示されたANON_KEYとSERVICE_ROLE_KEYを.env.localファイルに設定
+```
+
+#### 2. データのインポート（任意）
 
 ```bash
 # 本番データをインポート
 pnpm db:import
 ```
 
-#### 5. 開発サーバーの起動
+#### 3. 開発サーバーの起動
 
 ```bash
 # 全アプリを起動
