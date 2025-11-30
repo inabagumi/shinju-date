@@ -1,5 +1,6 @@
 'use client'
 
+import { Button, Input } from '@shinju-date/ui'
 import { useMemo, useState, useTransition } from 'react'
 import { addQueryAction, deleteQueryAction } from '../_actions'
 
@@ -68,8 +69,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
             >
               新しい手動クエリを追加
             </label>
-            <input
-              className="w-full rounded-md border border-774-blue-300 px-4 py-2 focus:border-secondary-blue focus:outline-none"
+            <Input
               disabled={isPending}
               id="new-query"
               onChange={(e) => setNewQuery(e.target.value)}
@@ -83,14 +83,14 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
               value={newQuery}
             />
           </div>
-          <button
-            className="rounded-md bg-secondary-blue px-6 py-2 text-white hover:bg-secondary-blue/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-blue focus-visible:ring-offset-2 active:bg-secondary-blue/80 disabled:pointer-events-none disabled:opacity-50"
+          <Button
             disabled={isPending || !newQuery.trim()}
             onClick={handleAddQuery}
             type="button"
+            variant="secondary-blue"
           >
             {isPending ? '追加中...' : '追加'}
-          </button>
+          </Button>
         </div>
 
         {/* Error Message */}
@@ -101,8 +101,8 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
         )}
 
         {/* Search */}
-        <input
-          className="w-full rounded-md border border-774-blue-300 px-4 py-2 focus:border-secondary-blue focus:outline-none sm:max-w-md"
+        <Input
+          className="sm:max-w-md"
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="クエリを検索..."
           type="text"
@@ -137,14 +137,15 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
                   <tr className="hover:bg-774-blue-50" key={query}>
                     <td className="px-4 py-3">{query}</td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        className="rounded-md bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 active:bg-red-700 disabled:pointer-events-none disabled:opacity-50"
+                      <Button
                         disabled={isPending}
                         onClick={() => handleDeleteQuery(query)}
+                        size="sm"
                         type="button"
+                        variant="danger"
                       >
                         削除
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}

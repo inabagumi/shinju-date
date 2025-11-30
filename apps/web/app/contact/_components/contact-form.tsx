@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@shinju-date/ui'
 import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import {
@@ -14,13 +15,15 @@ function SubmitButton() {
   const { pending } = useFormStatus()
 
   return (
-    <button
-      className="w-full rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-774-nevy-600 dark:hover:bg-774-nevy-700"
+    <Button
+      className="w-full"
       disabled={pending}
+      size="lg"
       type="submit"
+      variant="primary"
     >
       {pending ? '送信中...' : '送信する'}
-    </button>
+    </Button>
   )
 }
 
