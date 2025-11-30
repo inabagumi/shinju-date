@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 export type Talent = {
   id: string
   name: string
+  theme_color: string | null
   created_at: string
   updated_at: string
   deleted_at: string | null
@@ -25,7 +26,7 @@ export async function getTalent(id: string): Promise<Talent | null> {
   const { data: talent, error } = await supabaseClient
     .from('talents')
     .select(
-      'id, name, created_at, updated_at, deleted_at, youtube_channels(id, name, youtube_channel_id, youtube_handle)',
+      'id, name, theme_color, created_at, updated_at, deleted_at, youtube_channels(id, name, youtube_channel_id, youtube_handle)',
     )
     .eq('id', id)
     .single()

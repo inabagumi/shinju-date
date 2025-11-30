@@ -14,6 +14,7 @@ export const talents = new Collection({
     deleted_at: z.string().nullable(),
     id: z.string().uuid(),
     name: z.string(),
+    theme_color: z.string().nullable(),
     updated_at: z.string(),
   }),
 })
@@ -126,13 +127,15 @@ export async function seedCollections() {
   defineCollectionRelations()
   // Create talents
   const talentNames = ['一ノ瀬うるは', '飛良ひかり', '小森めと', '英リサ']
+  const themeColors = ['#FF6B9D', '#87CEEB', '#98D8C8', '#FFB6C1']
   const createdTalents = await Promise.all(
-    talentNames.map((name) =>
+    talentNames.map((name, idx) =>
       talents.create({
         created_at: faker.date.past({ years: 2 }).toISOString(),
         deleted_at: null,
         id: faker.string.uuid(),
         name,
+        theme_color: themeColors[idx] ?? null,
         updated_at: faker.date.recent().toISOString(),
       }),
     ),

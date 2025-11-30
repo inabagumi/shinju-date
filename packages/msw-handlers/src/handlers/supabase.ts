@@ -211,78 +211,142 @@ async function applySelect(
               )
               relatedItem = ytVideos.length > 0 ? ytVideos : null
             } else if (relationName === 'youtube_channels' && item.id) {
-              relatedItem = await youtubeChannels.findFirst((q) =>
+              const channels = await youtubeChannels.findMany((q) =>
                 q.where({ talent_id: item.id }),
               )
+              relatedItem = channels.length > 0 ? channels : null
             }
 
             if (relatedItem) {
               const nestedFieldArray = nestedFields
                 .split(',')
                 .map((f) => f.trim())
-              // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
-              const nestedResult: any = {}
 
-              for (const nf of nestedFieldArray) {
-                // Handle nested relations within relations (like video -> thumbnail)
-                const nestedRelationMatch = nf.match(
-                  /^(\w+):(\w+)(?:!\w+)?\s*\(([^)]+)\)$/,
-                )
-                if (nestedRelationMatch) {
-                  const [
-                    ,
-                    nestedAlias,
-                    nestedRelationName,
-                    nestedRelationFields,
-                  ] = nestedRelationMatch
-                  if (
-                    nestedAlias &&
-                    nestedRelationName &&
-                    nestedRelationFields
-                  ) {
-                    let nestedRelatedItem = null
-                    if (
-                      nestedRelationName === 'thumbnails' &&
-                      // biome-ignore lint/suspicious/noExplicitAny: relatedItem can be any table type with various foreign keys
-                      (relatedItem as any).thumbnail_id
-                    ) {
-                      nestedRelatedItem = await thumbnails.findFirst((q) =>
-                        // biome-ignore lint/suspicious/noExplicitAny: relatedItem can be any table type with various foreign keys
-                        q.where({ id: (relatedItem as any).thumbnail_id }),
-                      )
-                    }
-
-                    if (nestedRelatedItem) {
-                      const thumbnailFieldArray = nestedRelationFields
-                        .split(',')
-                        .map((f) => f.trim())
-                      // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from nested relation fields
-                      const thumbnailResult: any = {}
-                      for (const tf of thumbnailFieldArray) {
-                        // biome-ignore lint/suspicious/noExplicitAny: Dynamic property access on nested relation object
-                        thumbnailResult[tf] = (nestedRelatedItem as any)[tf]
-                      }
-                      nestedResult[nestedAlias] = thumbnailResult
-                    } else {
-                      nestedResult[nestedAlias] = null
-                    }
+              // Check if relatedItem is an array (for has-many relations like youtube_channels)
+              if (Array.isArray(relatedItem)) {
+                // Handle array of related items
+                const nestedResults = relatedItem.map((item: any) => {
+                  const nestedResult: any = {}
+                  for (const nf of nestedFieldArray) {
+                    nestedResult[nf] = item[nf]
                   }
-                } else {
-                  // biome-ignore lint/suspicious/noExplicitAny: Dynamic property access on relation object
-                  nestedResult[nf] = (relatedItem as any)[nf]
+                  return nestedResult
+                })
+                result[aliasName] = nestedResults
+              } else {
+                // Handle single related item (existing logic)
+                // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
+                const nestedResult: any = {}
+
+                for (const nf of nestedFieldArray) {
+                  // Handle nested relations within relations (like video -> thumbnail)
+                  const nestedRelationMatch = nf.match(
+                    /^(\w+):(\w+)(?:!\w+)?\s*\(([^)]+)\)$/,
+                  )
+                  if (nestedRelationMatch) {
+                    const [
+                      ,
+                      nestedAlias,
+                      nestedRelationName,
+                      nestedRelationFields,
+                    ] = nestedRelationMatch
+                    if (
+                      nestedAlias &&
+                      nestedRelationName &&
+                      nestedRelationFields
+                    ) {
+                      let nestedRelatedItem = null
+                      if (
+                        nestedRelationName === 'thumbnails' &&
+                        // biome-ignore lint/suspicious/noExplicitAny: relatedItem can be any table type with various foreign keys
+                        (relatedItem as any).thumbnail_id
+                      ) {
+                        nestedRelatedItem = await thumbnails.findFirst((q) =>
+                          // biome-ignore lint/suspicious/noExplicitAny: relatedItem can be any table type with various foreign keys
+                          q.where({ id: (relatedItem as any).thumbnail_id }),
+                        )
+                      }
+
+                      if (nestedRelatedItem) {
+                        const thumbnailFieldArray = nestedRelationFields
+                          .split(',')
+                          .map((f) => f.trim())
+                        // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from nested relation fields
+                        const thumbnailResult: any = {}
+                        for (const tf of thumbnailFieldArray) {
+                          // biome-ignore lint/suspicious/noExplicitAny: Dynamic property access on nested relation object
+                          thumbnailResult[tf] = (nestedRelatedItem as any)[tf]
+                        }
+                        nestedResult[nestedAlias] = thumbnailResult
+                      } else {
+                        nestedResult[nestedAlias] = null
+                      }
+                    }
+                  } else {
+                    // biome-ignore lint/suspicious/noExplicitAny: Dynamic property access on relation object
+                    nestedResult[nf] = (relatedItem as any)[nf]
+                  }
                 }
+                result[aliasName] = nestedResult
               }
-              result[aliasName] = nestedResult
             } else {
               result[aliasName] = null
             }
           }
         } else if (simpleNestedMatch) {
-          // Handle simple nested selects without alias (backward compatibility)
-          // Not used with @msw/data - all relations must be aliased
-          const [, relationName] = simpleNestedMatch
-          if (relationName) {
-            result[relationName] = null
+          // Handle simple nested selects without alias (like "youtube_channels(id, name)")
+          const [, relationName, nestedFields] = simpleNestedMatch
+          if (relationName && nestedFields) {
+            let relatedItem = null
+            if (relationName === 'talents' && item.talent_id) {
+              relatedItem = await talents.findFirst((q) =>
+                q.where({ id: item.talent_id }),
+              )
+            } else if (relationName === 'thumbnails' && item.thumbnail_id) {
+              relatedItem = await thumbnails.findFirst((q) =>
+                q.where({ id: item.thumbnail_id }),
+              )
+            } else if (relationName === 'videos' && item.video_id) {
+              relatedItem = await videos.findFirst((q) =>
+                q.where({ id: item.video_id }),
+              )
+            } else if (relationName === 'youtube_videos' && item.id) {
+              const ytVideos = await youtubeVideos.findMany((q) =>
+                q.where({ video_id: item.id }),
+              )
+              relatedItem = ytVideos.length > 0 ? ytVideos : null
+            } else if (relationName === 'youtube_channels' && item.id) {
+              const channels = await youtubeChannels.findMany((q) =>
+                q.where({ talent_id: item.id }),
+              )
+              relatedItem = channels.length > 0 ? channels : null
+            }
+
+            if (relatedItem) {
+              const nestedFieldArray = nestedFields
+                .split(',')
+                .map((f) => f.trim())
+
+              // Check if relatedItem is an array (for has-many relations)
+              if (Array.isArray(relatedItem)) {
+                const nestedResults = relatedItem.map((relItem: any) => {
+                  const nestedResult: any = {}
+                  for (const nf of nestedFieldArray) {
+                    nestedResult[nf] = relItem[nf]
+                  }
+                  return nestedResult
+                })
+                result[relationName] = nestedResults
+              } else {
+                const nestedResult: any = {}
+                for (const nf of nestedFieldArray) {
+                  nestedResult[nf] = (relatedItem as any)[nf]
+                }
+                result[relationName] = nestedResult
+              }
+            } else {
+              result[relationName] = null
+            }
           }
         } else if (field in item) {
           result[field] = item[field]

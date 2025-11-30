@@ -19,7 +19,7 @@ import Form, {
 } from '@/components/form'
 import { updateTalentAction } from '../../_actions'
 
-type Talent = Pick<Tables<'talents'>, 'id' | 'name'> & {
+type Talent = Pick<Tables<'talents'>, 'id' | 'name' | 'theme_color'> & {
   youtube_channels: Pick<
     Tables<'youtube_channels'>,
     'id' | 'name' | 'youtube_channel_id' | 'youtube_handle'
@@ -28,6 +28,35 @@ type Talent = Pick<Tables<'talents'>, 'id' | 'name'> & {
 
 interface EditTalentFormProps {
   talent: Talent
+}
+
+function ColorInput({
+  defaultValue,
+  name,
+}: {
+  defaultValue: string | null
+  name: string
+}) {
+  const [color, setColor] = useState(defaultValue ?? '#000000')
+
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        className="size-10 cursor-pointer rounded border border-gray-300"
+        onChange={(e) => setColor(e.target.value)}
+        type="color"
+        value={color}
+      />
+      <input
+        className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-774-blue-500 focus:outline-none focus:ring-1 focus:ring-774-blue-500"
+        name={name}
+        onChange={(e) => setColor(e.target.value)}
+        placeholder="#FF5733"
+        type="text"
+        value={color}
+      />
+    </div>
+  )
 }
 
 export function EditTalentForm({ talent }: EditTalentFormProps) {
@@ -81,6 +110,29 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
               </dd>
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="font-medium text-gray-500 text-sm">
+                テーマカラー
+              </dt>
+              <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                {talent.theme_color ? (
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="size-6 rounded border border-gray-300"
+                      style={{ backgroundColor: talent.theme_color }}
+                    />
+                    <code className="font-mono text-xs">
+                      {talent.theme_color}
+                    </code>
+                  </div>
+                ) : (
+                  <span className="text-gray-500">設定されていません</span>
+                )}
+                <p className="mt-1 text-gray-500 text-xs">
+                  タレントのテーマカラー（#RRGGBB形式）
+                </p>
+              </dd>
+            </div>
+            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500 text-sm">
                 YouTubeチャンネル
               </dt>
@@ -144,7 +196,7 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
           タレント情報を編集
         </h3>
         <p className="mt-1 max-w-2xl text-gray-500 text-sm">
-          タレント名を編集できます。
+          タレント名とテーマカラーを編集できます。
         </p>
       </CardHeader>
       <CardContent>
@@ -159,6 +211,16 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
             />
             <p className="mt-1 text-gray-500 text-xs">
               管理画面から編集可能な表示名（YouTube APIによる自動更新の対象外）
+            </p>
+            <ErrorMessage className="mt-1 text-red-600 text-sm" />
+          </FormField>
+          <FormField name="theme_color">
+            <Label className="mb-2 block font-medium text-sm">
+              テーマカラー
+            </Label>
+            <ColorInput defaultValue={talent.theme_color} name="theme_color" />
+            <p className="mt-1 text-gray-500 text-xs">
+              タレントのテーマカラー（#RRGGBB形式で指定してください）
             </p>
             <ErrorMessage className="mt-1 text-red-600 text-sm" />
           </FormField>

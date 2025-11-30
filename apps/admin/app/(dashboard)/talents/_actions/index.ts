@@ -5,9 +5,31 @@ import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
+import * as z from 'zod'
 import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
 import { createSupabaseServerClient } from '@/lib/supabase'
+import { zodErrorToFormState } from '../_lib/form-helpers'
+
+const updateTalentSchema = z.object({
+  id: z.string().uuid({ message: '有効なIDではありません。' }),
+  name: z
+    .string({ message: 'タレント名を入力してください。' })
+    .trim()
+    .min(1, 'タレント名を入力してください。'),
+  theme_color: z
+    .string()
+    .trim()
+    .regex(/^#[0-9A-Fa-f]{6}$/, {
+      message: 'カラーコードは#RRGGBB形式で入力してください（例: #FF5733）',
+    })
+    .nullable()
+    .optional()
+    .transform((val) => {
+      if (!val || val === '') return null
+      return val
+    }),
+})
 
 export async function createTalentAction(
   _currentState: FormState,
@@ -92,27 +114,36 @@ export async function updateTalentAction(
 ): Promise<FormState> {
   const supabaseClient = await createSupabaseServerClient()
 
-  const id = formData.get('id') as string
-  const name = formData.get('name') as string
-  const youtubeChannelId = formData.get('youtube_channel_id') as string
+  let validatedData: z.infer<typeof updateTalentSchema>
 
-  if (!id || !name || name.trim() === '') {
+  try {
+    validatedData = updateTalentSchema.parse({
+      id: formData.get('id'),
+      name: formData.get('name'),
+      theme_color: formData.get('theme_color'),
+    })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return zodErrorToFormState(error)
+    }
+
     return {
       errors: {
-        name: ['タレント名を入力してください。'],
+        generic: ['入力された値が正しくありません。'],
       },
     }
   }
 
   try {
-    // Update talents table (only name now)
+    // Update talents table (name and theme_color)
     const { data: talent, error } = await supabaseClient
       .from('talents')
       .update({
-        name: name.trim(),
+        name: validatedData.name,
+        theme_color: validatedData.theme_color,
         updated_at: toDBString(Temporal.Now.instant()),
       })
-      .eq('id', id)
+      .eq('id', validatedData.id)
       .select('name')
       .single()
 
@@ -124,7 +155,7 @@ export async function updateTalentAction(
     // Future enhancement: Add UI for managing multiple channels individually
 
     // Log audit entry
-    await createAuditLog('CHANNEL_UPDATE', 'channels', id, {
+    await createAuditLog('CHANNEL_UPDATE', 'channels', validatedData.id, {
       entityName: talent.name,
     })
 
@@ -134,9 +165,9 @@ export async function updateTalentAction(
   } catch (error) {
     logger.error('タレントの更新に失敗しました', {
       error,
-      id,
-      name: name.trim(),
-      youtube_channel_id: youtubeChannelId?.trim(),
+      id: validatedData.id,
+      name: validatedData.name,
+      theme_color: validatedData.theme_color,
     })
     return {
       errors: {
