@@ -1,6 +1,7 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { range } from '@shinju-date/helpers'
+import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { cache } from 'react'
 import { Temporal } from 'temporal-polyfill'
@@ -78,16 +79,26 @@ const getVideo = cache(async function getVideo(
 
   // Fetch click counts for the video for the last 7 days
   // Using video.id as the Redis key (matches the write side in increment.ts)
-  const scores = await Promise.all(
-    days.map((day) =>
-      redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, video.id),
-    ),
-  )
+  let totalClicks = 0
+  try {
+    const scores = await Promise.all(
+      days.map((day) =>
+        redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, video.id),
+      ),
+    )
 
-  const totalClicks = scores.reduce<number>(
-    (sum, score) => sum + (typeof score === 'number' ? score : 0),
-    0,
-  )
+    totalClicks = scores.reduce<number>(
+      (sum, score) => sum + (typeof score === 'number' ? score : 0),
+      0,
+    )
+  } catch (error) {
+    // If Redis connection fails, return 0 clicks but don't fail the whole request
+    logger.error('動画のクリック数の取得に失敗しました', {
+      error,
+      videoId: video.id,
+    })
+    totalClicks = 0
+  }
 
   return {
     clicks: totalClicks,

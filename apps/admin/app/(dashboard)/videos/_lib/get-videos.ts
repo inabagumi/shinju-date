@@ -1,6 +1,7 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { range } from '@shinju-date/helpers'
+import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
@@ -117,20 +118,37 @@ export async function getVideos(
   // Fetch click counts for all videos for the last 7 days
   // Using video.id as the Redis key (matches the write side in increment.ts)
   const videoIds = videos.map((video) => video.id)
-  const clickCounts = await Promise.all(
-    videoIds.map(async (id) => {
-      // Sum up clicks from all 7 days
-      const scores = await Promise.all(
-        days.map((day) =>
-          redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, id),
-        ),
-      )
-      return scores.reduce<number>(
-        (sum, score) => sum + (typeof score === 'number' ? score : 0),
-        0,
-      )
-    }),
-  )
+
+  let clickCounts: number[]
+  try {
+    clickCounts = await Promise.all(
+      videoIds.map(async (id) => {
+        try {
+          // Sum up clicks from all 7 days
+          const scores = await Promise.all(
+            days.map((day) =>
+              redisClient.zscore(`${REDIS_KEYS.CLICK_VIDEO_PREFIX}${day}`, id),
+            ),
+          )
+          return scores.reduce<number>(
+            (sum, score) => sum + (typeof score === 'number' ? score : 0),
+            0,
+          )
+        } catch (error) {
+          // If fetching clicks for a single video fails, return 0
+          logger.error('動画のクリック数の取得に失敗しました', {
+            error,
+            videoId: id,
+          })
+          return 0
+        }
+      }),
+    )
+  } catch (error) {
+    // If Redis connection fails completely, return all zeros
+    logger.error('Redisからのクリック数の取得に失敗しました', { error })
+    clickCounts = videoIds.map(() => 0)
+  }
 
   // Combine video data with click counts
   const videosWithClicks: Video[] = videos.map((video, index) => ({

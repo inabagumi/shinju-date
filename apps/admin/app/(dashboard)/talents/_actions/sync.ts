@@ -86,7 +86,7 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
 
     // Dual-write to youtube_channels table (always upsert regardless of name change)
     const youtubeHandle = youtubeChannel.snippet.customUrl || null
-    await supabaseClient
+    const { error: youtubeError } = await supabaseClient
       .from('youtube_channels')
       .upsert(
         {
@@ -97,14 +97,13 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
         },
         { onConflict: 'id' },
       )
-      .then(({ error: youtubeError }) => {
-        if (youtubeError) {
-          logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
-            error: youtubeError,
-            talentId,
-          })
-        }
+
+    if (youtubeError) {
+      logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
+        error: youtubeError,
+        talentId,
       })
+    }
 
     // Check if update is needed
     if (youtubeChannel.snippet.title === talent.name) {
