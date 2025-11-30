@@ -80,18 +80,15 @@ function SyncVideoButton({ videoId }: SyncVideoButtonProps) {
 }
 
 interface VideoActionsButtonsProps {
-  videoId: string
-  videoTitle: string
-  visible: boolean
-  isDeleted: boolean
+  video: {
+    id: string
+    title: string
+    visible: boolean
+    deleted_at: string | null
+  }
 }
 
-export function VideoActionsButtons({
-  videoId,
-  videoTitle,
-  visible,
-  isDeleted,
-}: VideoActionsButtonsProps) {
+export function VideoActionsButtons({ video }: VideoActionsButtonsProps) {
   const [isPending, _startTransition] = useTransition()
   const [toastOpen, setToastOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState<{
@@ -103,7 +100,8 @@ export function VideoActionsButtons({
     open: boolean
   }>({ action: 'toggle', open: false })
 
-  const videoInfo: VideoInfo = { id: videoId, title: videoTitle }
+  const isDeleted = video.deleted_at !== null
+  const videoInfo: VideoInfo = { id: video.id, title: video.title }
 
   const handleToggleVisibility = () => {
     setConfirmDialog({ action: 'toggle', open: true })
@@ -123,10 +121,10 @@ export function VideoActionsButtons({
 
     try {
       if (action === 'toggle') {
-        const result = await toggleVisibilityAction([videoId])
+        const result = await toggleVisibilityAction([video.id])
         if (result.success) {
           setToastMessage({
-            text: `動画を${visible ? '非表示' : '表示'}に変更しました。`,
+            text: `動画を${video.visible ? '非表示' : '表示'}に変更しました。`,
             type: 'success',
           })
           setToastOpen(true)
@@ -138,7 +136,7 @@ export function VideoActionsButtons({
           setToastOpen(true)
         }
       } else if (action === 'delete') {
-        const result = await softDeleteAction([videoId])
+        const result = await softDeleteAction([video.id])
         if (result.success) {
           setToastMessage({
             text: '動画を削除しました。',
@@ -153,7 +151,7 @@ export function VideoActionsButtons({
           setToastOpen(true)
         }
       } else if (action === 'restore') {
-        const result = await restoreAction([videoId])
+        const result = await restoreAction([video.id])
         if (result.success) {
           setToastMessage({
             text: '動画を復元しました。',
@@ -199,7 +197,7 @@ export function VideoActionsButtons({
                 onClick={handleToggleVisibility}
                 variant="secondary"
               >
-                {visible ? '非表示にする' : '表示する'}
+                {video.visible ? '非表示にする' : '表示する'}
               </Button>
               <Button
                 disabled={isPending}
@@ -211,7 +209,7 @@ export function VideoActionsButtons({
             </>
           )}
         </div>
-        {!isDeleted && <SyncVideoButton videoId={videoId} />}
+        {!isDeleted && <SyncVideoButton videoId={video.id} />}
       </div>
 
       {toastMessage && (

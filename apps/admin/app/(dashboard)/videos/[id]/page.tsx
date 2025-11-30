@@ -75,12 +75,7 @@ async function VideoDetailContent({ id }: { id: string }) {
             </h1>
             <p className="text-gray-600">動画詳細</p>
           </div>
-          <VideoActionsButtons
-            isDeleted={isDeleted}
-            videoId={video.id}
-            videoTitle={video.title}
-            visible={video.visible}
-          />
+          <VideoActionsButtons video={video} />
         </div>
       </div>
 
