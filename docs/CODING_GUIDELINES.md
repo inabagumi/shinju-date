@@ -364,7 +364,7 @@ secondary-blue-foreground    /* = 774-blue-50 */
 const buttonVariants = cva('...', {
   variants: {
     variant: {
-      primary: 'bg-774-blue-600 hover:bg-774-blue-700',
+      primary: 'bg-primary text-primary-foreground hover:bg-774-nevy-900',
       'secondary-blue': 'bg-secondary-blue hover:bg-774-blue-800',
       'secondary-pink': 'bg-secondary-pink hover:bg-774-pink-600',
       danger: 'border-red-600 text-red-600', // セマンティック
