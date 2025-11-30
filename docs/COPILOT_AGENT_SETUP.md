@@ -84,7 +84,7 @@ MSW_SUPABASE_AUTHENTICATED=true
 
 **方法2: ログインフォーム使用**
 
-MSW_SUPABASE_AUTHENTICATEDを設定しない場合、以下の認証情報でログイン：
+`MSW_SUPABASE_AUTHENTICATED`を設定しない場合、以下の認証情報でログイン：
 
 - **Email**: `admin@example.com`
 - **Password**: `password123`
@@ -200,14 +200,8 @@ docker compose down
 
 GitHub Copilot Coding Agentに以下の情報を提供することを推奨します：
 
-### 基本設定
-
-```markdown
-## SHINJU DATE開発環境
-
-このプロジェクトは以下の設定で動作します：
-
 ### MSWを使用する場合（推奨）
+
 ```bash
 # 環境変数
 ENABLE_MSW=true
@@ -222,6 +216,7 @@ pnpm run dev
 ```
 
 ### ローカルサービスを使用する場合
+
 ```bash
 # 環境変数
 ENABLE_MSW=false
@@ -261,7 +256,6 @@ pnpm run build
 - `apps/insights/` - Python API
 - `packages/msw-handlers/` - MSWモックハンドラー
 - `packages/database/` - データベース型定義
-```
 
 ## CI/CD環境
 
