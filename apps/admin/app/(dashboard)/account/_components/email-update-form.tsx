@@ -1,10 +1,10 @@
 import Form, {
-  Button,
   ErrorMessage,
   FormField,
   GenericErrorMessage,
   Input,
   Label,
+  SubmitButton,
   SuccessMessage,
 } from '@/components/form'
 import { updateUserEmail } from '../_actions'
@@ -46,12 +46,12 @@ export function EmailUpdateForm({ currentEmail }: Props) {
             <ErrorMessage className="text-secondary-pink text-sm leading-normal" />
           </FormField>
 
-          <Button
+          <SubmitButton
             className="rounded-md bg-secondary-blue px-4 py-2 font-semibold text-slate-50 hover:bg-774-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-774-blue-400 focus-visible:ring-offset-2 active:bg-774-blue-600 active:shadow-inner disabled:pointer-events-none disabled:bg-774-blue-400"
             type="submit"
           >
             メールアドレスを更新
-          </Button>
+          </SubmitButton>
         </Form>
       </div>
     </div>

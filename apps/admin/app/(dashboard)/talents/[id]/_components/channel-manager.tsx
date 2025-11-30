@@ -2,6 +2,9 @@
 
 import type { Tables } from '@shinju-date/database'
 import {
+  Card,
+  CardContent,
+  CardHeader,
   Dialog,
   DialogClose,
   DialogContent,
@@ -9,17 +12,18 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
+  Button as UIButton,
 } from '@shinju-date/ui'
 import { ExternalLink, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { FormState } from '@/components/form'
 import Form, {
-  Button,
   ErrorMessage,
   FormField,
   GenericErrorMessage,
   Input,
   Label,
+  SubmitButton,
 } from '@/components/form'
 import {
   addYouTubeChannelAction,
@@ -82,8 +86,8 @@ export function ChannelManager({
 
   return (
     <div className="mt-6">
-      <div className="bg-white shadow sm:rounded-lg">
-        <div className="px-4 py-5 sm:px-6">
+      <Card variant="elevated">
+        <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-medium text-gray-900 text-lg leading-6">
@@ -95,14 +99,14 @@ export function ChannelManager({
             </div>
             {!isDeleted && (
               <Dialog onOpenChange={setIsAddDialogOpen} open={isAddDialogOpen}>
-                <button
-                  className="inline-flex items-center rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground text-sm hover:opacity-90"
+                <UIButton
                   onClick={() => setIsAddDialogOpen(true)}
                   type="button"
+                  variant="secondary-blue"
                 >
                   <Plus className="mr-2 size-4" />
                   チャンネルを追加
-                </button>
+                </UIButton>
                 <DialogPortal>
                   <DialogOverlay />
                   <DialogContent>
@@ -117,7 +121,7 @@ export function ChannelManager({
                           チャンネルIDまたはURL
                         </Label>
                         <Input
-                          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
+                          className="mt-1"
                           placeholder="UC... または https://youtube.com/channel/UC..."
                           required
                         />
@@ -130,19 +134,13 @@ export function ChannelManager({
                       <GenericErrorMessage className="text-red-600 text-sm" />
                       <div className="flex justify-end gap-2">
                         <DialogClose asChild>
-                          <button
-                            className="rounded-md border border-gray-300 px-4 py-2 hover:bg-gray-50"
-                            type="button"
-                          >
+                          <UIButton type="button" variant="secondary">
                             キャンセル
-                          </button>
+                          </UIButton>
                         </DialogClose>
-                        <Button
-                          className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90 disabled:opacity-50"
-                          type="submit"
-                        >
+                        <SubmitButton type="submit" variant="secondary-blue">
                           追加
-                        </Button>
+                        </SubmitButton>
                       </div>
                     </Form>
                   </DialogContent>
@@ -150,8 +148,8 @@ export function ChannelManager({
               </Dialog>
             )}
           </div>
-        </div>
-        <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
+        </CardHeader>
+        <CardContent>
           {channels.length > 0 ? (
             <div className="space-y-3">
               {channels.map((channel) => (
@@ -204,15 +202,17 @@ export function ChannelManager({
                     </div>
                   </div>
                   {!isDeleted && (
-                    <button
-                      className="ml-4 text-red-600 hover:text-red-800 disabled:opacity-50"
+                    <UIButton
+                      className="ml-4"
                       disabled={deletingChannelId === channel.id}
                       onClick={() => handleRemoveChannel(channel.id)}
+                      size="sm"
                       title="チャンネルを削除"
                       type="button"
+                      variant="danger"
                     >
                       <Trash2 className="size-5" />
-                    </button>
+                    </UIButton>
                   )}
                 </div>
               ))}
@@ -222,8 +222,8 @@ export function ChannelManager({
               登録されているチャンネルがありません
             </p>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

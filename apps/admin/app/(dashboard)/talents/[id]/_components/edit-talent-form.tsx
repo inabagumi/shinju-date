@@ -1,15 +1,21 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Button as UIButton,
+} from '@shinju-date/ui'
 import { useState } from 'react'
 import type { FormState } from '@/components/form'
 import Form, {
-  Button,
   ErrorMessage,
   FormField,
   GenericErrorMessage,
   Input,
   Label,
+  SubmitButton,
 } from '@/components/form'
 import { updateTalentAction } from '../../_actions'
 
@@ -43,8 +49,8 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
 
   if (!isEditing) {
     return (
-      <div className="overflow-hidden bg-white shadow sm:rounded-lg">
-        <div className="px-4 py-5 sm:px-6">
+      <Card variant="elevated">
+        <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-medium text-gray-900 text-lg leading-6">
@@ -54,16 +60,16 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
                 現在データベースに保存されている情報
               </p>
             </div>
-            <button
-              className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90"
+            <UIButton
               onClick={() => setIsEditing(true)}
               type="button"
+              variant="secondary-blue"
             >
               編集
-            </button>
+            </UIButton>
           </div>
-        </div>
-        <div className="border-gray-200 border-t">
+        </CardHeader>
+        <CardContent className="p-0">
           <dl>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500 text-sm">タレント名</dt>
@@ -126,28 +132,27 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
               </dd>
             </div>
           </dl>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     )
   }
 
   return (
-    <div className="overflow-hidden bg-white shadow sm:rounded-lg">
-      <div className="px-4 py-5 sm:px-6">
+    <Card variant="elevated">
+      <CardHeader>
         <h3 className="font-medium text-gray-900 text-lg leading-6">
           タレント情報を編集
         </h3>
         <p className="mt-1 max-w-2xl text-gray-500 text-sm">
           タレント名を編集できます。
         </p>
-      </div>
-      <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
+      </CardHeader>
+      <CardContent>
         <Form action={handleAction} className="space-y-4">
           <input name="id" type="hidden" value={talent.id} />
           <FormField name="name">
             <Label className="mb-2 block font-medium text-sm">タレント名</Label>
             <Input
-              className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
               defaultValue={talent.name}
               placeholder="表示に使用される名前"
               required
@@ -159,22 +164,19 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
           </FormField>
           <GenericErrorMessage className="text-red-600 text-sm" />
           <div className="flex gap-2 pt-2">
-            <button
-              className="rounded-md border border-774-blue-300 px-4 py-2 hover:bg-gray-50"
+            <UIButton
               onClick={() => setIsEditing(false)}
               type="button"
+              variant="secondary"
             >
               キャンセル
-            </button>
-            <Button
-              className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90 disabled:opacity-50"
-              type="submit"
-            >
+            </UIButton>
+            <SubmitButton type="submit" variant="secondary-blue">
               保存
-            </Button>
+            </SubmitButton>
           </div>
         </Form>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }

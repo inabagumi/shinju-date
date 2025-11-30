@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@shinju-date/ui'
 import { useState, useTransition } from 'react'
 import { twMerge } from 'tailwind-merge'
 import ToggleSwitch from '@/components/toggle-switch'
@@ -109,22 +110,22 @@ export function MaintenanceModeWidget({
             </p>
             {error && <p className="mb-4 text-red-600 text-sm">{error}</p>}
             <div className="flex gap-2">
-              <button
-                className="rounded-lg bg-secondary-blue px-4 py-2 font-medium text-white transition-colors hover:bg-774-blue-800 disabled:opacity-50"
+              <Button
                 disabled={isPending}
                 onClick={handleConfirm}
                 type="button"
+                variant="secondary-blue"
               >
                 {isPending ? '処理中...' : '確認'}
-              </button>
-              <button
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50"
+              </Button>
+              <Button
                 disabled={isPending}
                 onClick={handleCancel}
                 type="button"
+                variant="secondary"
               >
                 キャンセル
-              </button>
+              </Button>
             </div>
           </div>
         )}

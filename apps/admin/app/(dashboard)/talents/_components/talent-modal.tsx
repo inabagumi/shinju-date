@@ -13,12 +13,12 @@ import {
 import { useEffect, useState } from 'react'
 import type { FormState } from '@/components/form'
 import Form, {
-  Button,
   ErrorMessage,
   FormField,
   GenericErrorMessage,
   Input,
   Label,
+  SubmitButton,
 } from '@/components/form'
 import { createTalentAction, updateTalentAction } from '../_actions'
 import { DeleteConfirmDialog } from './delete-confirm-dialog'
@@ -133,12 +133,12 @@ export function TalentModal({ talent }: TalentModalProps) {
                     キャンセル
                   </button>
                 </DialogClose>
-                <Button
+                <SubmitButton
                   className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90 disabled:opacity-50"
                   type="submit"
                 >
                   {isEditing ? '更新' : '追加'}
-                </Button>
+                </SubmitButton>
               </div>
             </div>
           </Form>

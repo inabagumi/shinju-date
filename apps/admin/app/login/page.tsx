@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
 import Form, {
-  Button,
   ErrorMessage,
   FormField,
   GenericErrorMessage,
   Input,
   Label,
+  SubmitButton,
 } from '@/components/form'
 import { signIn } from './_lib/actions'
 
@@ -50,12 +50,12 @@ export default function Login() {
           </FormField>
         </div>
 
-        <Button
+        <SubmitButton
           className="rounded-md bg-secondary-blue p-1 font-semibold text-slate-50 hover:bg-774-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-774-blue-400 focus-visible:ring-offset-2 active:bg-774-blue-600 active:shadow-inner disabled:pointer-events-none disabled:bg-774-blue-400"
           type="submit"
         >
           ログイン
-        </Button>
+        </SubmitButton>
       </Form>
     </div>
   )

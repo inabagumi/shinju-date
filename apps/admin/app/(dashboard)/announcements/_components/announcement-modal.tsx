@@ -15,13 +15,13 @@ import { useMemo, useState } from 'react'
 import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
 import Form, {
-  Button,
   ErrorMessage,
   FormField,
   GenericErrorMessage,
   Input,
   Label,
   Select,
+  SubmitButton,
   Textarea,
 } from '@/components/form'
 import { createAnnouncementAction, updateAnnouncementAction } from '../_actions'
@@ -195,12 +195,12 @@ export function AnnouncementModal({
                   キャンセル
                 </button>
               </DialogClose>
-              <Button
+              <SubmitButton
                 className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90 disabled:opacity-50"
                 type="submit"
               >
                 {isEditing ? '更新' : '追加'}
-              </Button>
+              </SubmitButton>
             </div>
           </Form>
         </DialogContent>
