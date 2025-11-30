@@ -1,6 +1,7 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { range } from '@shinju-date/helpers'
+import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
@@ -117,7 +118,9 @@ export async function getVideos(
   // Fetch click counts for all videos for the last 7 days
   // Using video.id as the Redis key (matches the write side in increment.ts)
   const videoIds = videos.map((video) => video.id)
-  const clickCounts = await Promise.all(
+
+  // Use Promise.allSettled to handle individual video click count failures gracefully
+  const clickCountResults = await Promise.allSettled(
     videoIds.map(async (id) => {
       // Sum up clicks from all 7 days
       const scores = await Promise.all(
@@ -131,6 +134,19 @@ export async function getVideos(
       )
     }),
   )
+
+  // Extract click counts from results, using 0 for any failures
+  const clickCounts = clickCountResults.map((result, index) => {
+    if (result.status === 'fulfilled') {
+      return result.value
+    }
+    // Log error for rejected promise
+    logger.error('動画のクリック数の取得に失敗しました', {
+      error: result.reason,
+      videoId: videoIds[index],
+    })
+    return 0
+  })
 
   // Combine video data with click counts
   const videosWithClicks: Video[] = videos.map((video, index) => ({

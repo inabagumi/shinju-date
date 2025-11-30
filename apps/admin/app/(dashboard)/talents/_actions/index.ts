@@ -65,21 +65,20 @@ export async function createTalentAction(
     // Note: youtube_handle is null for manually created talents initially
     // It will be populated when the talent sync runs
     if (youtubeChannelId && youtubeChannelId.trim() !== '') {
-      await supabaseClient
+      const { error: youtubeError } = await supabaseClient
         .from('youtube_channels')
         .insert({
           talent_id: newTalent.id,
           youtube_channel_id: youtubeChannelId.trim(),
           youtube_handle: null,
         })
-        .then(({ error: youtubeError }) => {
-          if (youtubeError) {
-            logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
-              error: youtubeError,
-              youtube_channel_id: youtubeChannelId.trim(),
-            })
-          }
+
+      if (youtubeError) {
+        logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
+          error: youtubeError,
+          youtube_channel_id: youtubeChannelId.trim(),
         })
+      }
     }
 
     // Log audit entry
