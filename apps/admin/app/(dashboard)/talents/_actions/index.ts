@@ -94,6 +94,7 @@ export async function updateTalentAction(
 
   const id = formData.get('id') as string
   const name = formData.get('name') as string
+  const themeColor = formData.get('theme_color') as string
   const youtubeChannelId = formData.get('youtube_channel_id') as string
 
   if (!id || !name || name.trim() === '') {
@@ -104,12 +105,28 @@ export async function updateTalentAction(
     }
   }
 
+  // Validate theme_color format if provided
+  if (themeColor && themeColor.trim() !== '') {
+    const colorPattern = /^#[0-9A-Fa-f]{6}$/
+    if (!colorPattern.test(themeColor.trim())) {
+      return {
+        errors: {
+          theme_color: [
+            'カラーコードは#RRGGBB形式で入力してください（例: #FF5733）',
+          ],
+        },
+      }
+    }
+  }
+
   try {
-    // Update talents table (only name now)
+    // Update talents table (name and theme_color)
     const { data: talent, error } = await supabaseClient
       .from('talents')
       .update({
         name: name.trim(),
+        theme_color:
+          themeColor && themeColor.trim() !== '' ? themeColor.trim() : null,
         updated_at: toDBString(Temporal.Now.instant()),
       })
       .eq('id', id)
@@ -136,6 +153,7 @@ export async function updateTalentAction(
       error,
       id,
       name: name.trim(),
+      theme_color: themeColor?.trim(),
       youtube_channel_id: youtubeChannelId?.trim(),
     })
     return {
