@@ -6,31 +6,143 @@
 
 GitHub Copilot Coding AgentがSupabaseとUpstash Redis (Serverless Redis HTTP)を使って開発やテストができるよう、以下の2つのアプローチを提供しています：
 
-1. **MSW (Mock Service Worker) を使用** - 推奨、最も簡単
-2. **ローカルサービスを使用** - より本番環境に近い動作
+1. **ローカルサービスを使用** - 推奨、本番環境に近い動作
+2. **MSW (Mock Service Worker) を使用** - 代替案、セットアップ簡略化
 
-## アプローチ1: MSW (Mock Service Worker) を使用（推奨）
+## アプローチ1: ローカルサービスを使用（推奨）
+
+本番環境に近い動作を実現するため、実際のSupabaseとRedisサービスを起動します。
+
+### 特徴
+
+- **本番環境に近い**: 実際のSupabaseとRedisインスタンスを使用
+- **完全な機能**: すべてのデータベースとRedis機能が利用可能
+- **データ永続化**: 実際のデータ保存と取得
+- **正確なテスト**: 本番環境と同じ動作を検証可能
+
+### 前提条件
+
+- Docker Desktop がインストールされ、起動していること
+- 十分なメモリ（最低8GB推奨）
+
+### セットアップ手順
+
+#### 1. Supabaseの起動
+
+```bash
+# Supabaseローカル環境を起動
+pnpm exec supabase start
+
+# 状態確認
+pnpm exec supabase status
+```
+
+起動後、以下の情報が表示されます：
+
+- API URL: `http://127.0.0.1:54321`
+- Anon Key: （コンソールに表示）
+- Service Role Key: （コンソールに表示）
+
+#### 2. Redisの起動
+
+Dev Containerを使用している場合は自動的に起動します。使用していない場合：
+
+```bash
+cd .devcontainer
+docker compose up -d
+```
+
+以下のサービスが起動します：
+
+- Redis: `localhost:6379`
+- Redis HTTP API: `http://localhost:8079`
+
+#### 3. 環境変数の設定
+
+`.env.local`ファイルを作成（サンプルから）:
+
+```bash
+cp apps/web/.env.local.sample apps/web/.env.local
+cp apps/admin/.env.local.sample apps/admin/.env.local
+```
+
+サンプルファイルにはローカルSupabaseとRedisの設定がデフォルトで含まれています。
+
+#### 4. データのインポート（任意）
+
+```bash
+# 本番データをインポート
+pnpm db:import
+```
+
+#### 5. 開発サーバーの起動
+
+```bash
+# 全アプリを起動
+pnpm run dev
+
+# または特定のアプリのみ
+pnpm run dev --filter=web
+```
+
+### 停止方法
+
+```bash
+# Supabaseを停止
+pnpm exec supabase stop
+
+# Redisを停止（Dev Containerを使用していない場合）
+cd .devcontainer
+docker compose down
+```
+
+### トラブルシューティング
+
+#### Supabaseが起動しない
+
+```bash
+# ログを確認
+supabase status
+docker ps
+
+# 完全リセット
+supabase stop --no-backup
+docker system prune -f
+supabase start
+```
+
+#### Redisが起動しない
+
+```bash
+# ポート確認
+lsof -i :8079
+lsof -i :6379
+
+# ログ確認
+docker logs <container_id>
+```
+
+## アプローチ2: MSW (Mock Service Worker) を使用（代替案）
+
+セットアップを簡略化したい場合や、外部サービスなしでテストしたい場合に使用します。
 
 ### 特徴
 
 - **セットアップ不要**: Docker、Supabase、Redisのインストール不要
 - **高速**: 実際のデータベース接続なし
-- **自動化**: AI Agentに最適
+- **軽量**: AI Agentでの簡易テストに適している
 - **完全なモック**: Supabase、Redis、その他のAPIをモック
 
 ### セットアップ手順
 
 #### 1. 環境変数の設定
 
-`.env.local`ファイルを作成（サンプルから）:
+`.env.local`ファイルを編集：
 
 ```bash
-# アプリルートで実行
-cp apps/web/.env.local.sample apps/web/.env.local
-cp apps/admin/.env.local.sample apps/admin/.env.local
+# MSWを有効化
+ENABLE_MSW=true
 ```
-
-デフォルトで`ENABLE_MSW=true`が設定されているため、追加の設定は不要です。
 
 #### 2. MSWサービスワーカーの初期化
 
@@ -47,17 +159,6 @@ pnpm run dev
 
 # または特定のアプリのみ
 pnpm run dev --filter=web
-pnpm run dev --filter=admin
-```
-
-### テストとビルド
-
-```bash
-# MSWを有効にしてテスト実行
-ENABLE_MSW=true pnpm run test
-
-# MSWを有効にしてビルド（開発用）
-ENABLE_MSW=true pnpm run build --filter=web
 ```
 
 ### モックデータについて
@@ -104,131 +205,36 @@ pnpm --filter './apps/*' run msw:init
 2. ブラウザのコンソールでMSWのログを確認
 3. ブラウザを再起動またはキャッシュをクリア
 
-#### ビルドエラー
-
-MSWはビルド時に動作しない場合があります。開発時のみ使用することをお勧めします。
-
-```bash
-# MSWなしでビルド
-ENABLE_MSW=false pnpm run build --filter=web
-```
-
-## アプローチ2: ローカルサービスを使用
-
-より本番環境に近い動作が必要な場合、実際のSupabaseとRedisサービスを起動できます。
-
-### 前提条件
-
-- Docker Desktop がインストールされ、起動していること
-- 十分なメモリ（最低8GB推奨）
-
-### セットアップ手順
-
-#### 1. Supabaseの起動
-
-```bash
-# Supabaseローカル環境を起動
-pnpm exec supabase start
-
-# 状態確認
-pnpm exec supabase status
-```
-
-起動後、以下の情報が表示されます：
-
-- API URL: `http://127.0.0.1:54321`
-- Anon Key: （コンソールに表示）
-- Service Role Key: （コンソールに表示）
-
-#### 2. Redisの起動
-
-Dev Containerを使用していない場合：
-
-```bash
-cd .devcontainer
-docker compose up -d
-```
-
-以下のサービスが起動します：
-
-- Redis: `localhost:6379`
-- Redis HTTP API: `http://localhost:8079`
-
-#### 3. 環境変数の設定
-
-`.env.local`ファイルを編集：
-
-```bash
-# MSWを無効化
-ENABLE_MSW=false
-
-# Supabase（実際の値はsupabase statusから取得）
-NEXT_PUBLIC_SUPABASE_URL="http://localhost:54321"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="YOUR_ANON_KEY_HERE"
-SUPABASE_SERVICE_ROLE_KEY="YOUR_SERVICE_ROLE_KEY_HERE"
-
-# Redis
-UPSTASH_REDIS_REST_URL="http://localhost:8079"
-UPSTASH_REDIS_REST_TOKEN="local_development_token"
-```
-
-#### 4. データのインポート（任意）
-
-```bash
-# 本番データをインポート
-pnpm db:import
-```
-
-#### 5. 開発サーバーの起動
-
-```bash
-pnpm run dev
-```
-
-### 停止方法
-
-```bash
-# Supabaseを停止
-pnpm exec supabase stop
-
-# Redisを停止（Dev Containerを使用していない場合）
-cd .devcontainer
-docker compose down
-```
-
 ## GitHub Copilot Coding Agentへの推奨設定
 
-GitHub Copilot Coding Agentに以下の情報を提供することを推奨します：
+GitHub Copilot Coding Agentには **ローカルサービスを使用する方法（アプローチ1）** を推奨します。
 
-### MSWを使用する場合（推奨）
+### ローカルサービス使用時のセットアップ例
 
 ```bash
-# 環境変数
-ENABLE_MSW=true
+# 1. Supabaseを起動
+pnpm exec supabase start
 
-# セットアップコマンド
-pnpm install
-pnpm typegen
-pnpm --filter './apps/*' run msw:init
+# 2. Redis起動（Dev Container使用時は自動起動）
+cd .devcontainer && docker compose up -d
 
-# 開発サーバー起動
+# 3. 環境変数設定（.env.local.sampleから作成）
+cp apps/web/.env.local.sample apps/web/.env.local
+
+# 4. 開発サーバー起動
 pnpm run dev
 ```
 
-### ローカルサービスを使用する場合
+### MSW使用時のセットアップ例
 
 ```bash
-# 環境変数
-ENABLE_MSW=false
-NEXT_PUBLIC_SUPABASE_URL="http://localhost:54321"
-UPSTASH_REDIS_REST_URL="http://localhost:8079"
+# 1. 環境変数設定
+echo "ENABLE_MSW=true" >> apps/web/.env.local
 
-# セットアップコマンド
-pnpm install
-pnpm typegen
-pnpm exec supabase start
+# 2. MSW初期化
+pnpm --filter './apps/*' run msw:init
 
-# 開発サーバー起動
+# 3. 開発サーバー起動
 pnpm run dev
 ```
 
@@ -288,11 +294,11 @@ GitHub ActionsでCopilot Agentのセットアップ手順をテストするワ�
 
 ## まとめ
 
-GitHub Copilot Coding Agentには **MSWを使用する方法（アプローチ1）** を推奨します。理由：
+GitHub Copilot Coding Agentには **ローカルサービスを使用する方法（アプローチ1）** を推奨します。理由：
 
-✅ セットアップが簡単で高速
-✅ 外部依存関係なし
-✅ CI/CD環境と互換性が高い
-✅ モックデータが充実している
+✅ 本番環境に近い動作を確認可能
+✅ 完全なデータベースとRedis機能を利用可能
+✅ データ永続化により実際のデータフローをテスト可能
+✅ 正確な統合テストが実施可能
 
-より本番環境に近い動作確認が必要な場合のみ、ローカルサービス（アプローチ2）を使用してください。
+簡易的なテストや外部依存なしで開発したい場合のみ、MSW（アプローチ2）を使用してください。
