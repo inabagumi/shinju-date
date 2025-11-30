@@ -11,7 +11,7 @@ type Talent = Pick<
   Tables<'talents'>,
   'id' | 'name' | 'created_at' | 'updated_at'
 > & {
-  youtube_channels: Pick<
+  youtube_channels?: Pick<
     Tables<'youtube_channels'>,
     'id' | 'name' | 'youtube_channel_id' | 'youtube_handle'
   >[]
@@ -108,7 +108,7 @@ export function TalentsList({ talents }: TalentsListProps) {
                       >
                         {talent.name}
                       </Link>
-                      {talent.youtube_channels.length > 0 && (
+                      {talent.youtube_channels && talent.youtube_channels.length > 0 && (
                         <div className="mt-1 space-y-1">
                           {talent.youtube_channels.map((channel) => (
                             <div key={channel.id}>
@@ -124,7 +124,7 @@ export function TalentsList({ talents }: TalentsListProps) {
                           ))}
                         </div>
                       )}
-                      {talent.youtube_channels.length === 0 && (
+                      {(!talent.youtube_channels || talent.youtube_channels.length === 0) && (
                         <div className="font-mono text-gray-500 text-xs">
                           {talent.id}
                         </div>
