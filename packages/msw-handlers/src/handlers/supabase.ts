@@ -1,5 +1,3 @@
-// biome-ignore-all lint/suspicious/noExplicitAny: Mocking Supabase with any type for simplicity
-
 import { HttpResponse, http } from 'msw'
 import {
   announcements,
@@ -95,6 +93,7 @@ function parseSupabaseQuery(url: URL) {
  * Apply filters and selections to mock data
  */
 function applySupabaseFilters(
+  // biome-ignore lint/suspicious/noExplicitAny: Generic mock data handler requires any for flexible type matching across different table types
   data: any[],
   query: ReturnType<typeof parseSupabaseQuery>,
 ) {
@@ -164,7 +163,11 @@ function applySupabaseFilters(
 /**
  * Handle Supabase select projection
  */
-async function applySelect(data: any[], selectStr: string) {
+async function applySelect(
+  // biome-ignore lint/suspicious/noExplicitAny: Generic mock data handler requires any for flexible type matching across different table types
+  data: any[],
+  selectStr: string,
+) {
   if (selectStr === '*') {
     return data
   }
@@ -177,6 +180,7 @@ async function applySelect(data: any[], selectStr: string) {
   const mockYoutubeVideos = await getMockYoutubeVideos()
 
   const result = data.map((item) => {
+    // biome-ignore lint/suspicious/noExplicitAny: Dynamic object construction from select fields
     const result: any = {}
     const fields = selectStr.split(',').map((f) => f.trim())
 
@@ -200,6 +204,7 @@ async function applySelect(data: any[], selectStr: string) {
               const nestedFieldArray = nestedFields
                 .split(',')
                 .map((f) => f.trim())
+              // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
               const nestedResult: any = {}
               for (const nf of nestedFieldArray) {
                 if (nf in thumbnail) {
@@ -218,6 +223,7 @@ async function applySelect(data: any[], selectStr: string) {
               const nestedFieldArray = nestedFields
                 .split(',')
                 .map((f) => f.trim())
+              // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
               const nestedResult: any = {}
               for (const nf of nestedFieldArray) {
                 if (nf in talent) {
@@ -238,6 +244,7 @@ async function applySelect(data: any[], selectStr: string) {
               const nestedFieldArray = nestedFields
                 .split(',')
                 .map((f) => f.trim())
+              // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
               const nestedResult: any = {}
               for (const nf of nestedFieldArray) {
                 if (nf in youtubeVideo) {
@@ -259,6 +266,7 @@ async function applySelect(data: any[], selectStr: string) {
               .split(',')
               .map((f) => f.trim())
             const channelsResult = channels.map((channel) => {
+              // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
               const nestedResult: any = {}
               for (const nf of nestedFieldArray) {
                 if (nf in channel) {
@@ -276,6 +284,7 @@ async function applySelect(data: any[], selectStr: string) {
               const nestedFieldArray = nestedFields
                 .split(',')
                 .map((f) => f.trim())
+              // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
               const nestedResult: any = {}
               for (const nf of nestedFieldArray) {
                 // Handle nested relations within videos (like thumbnails)
@@ -283,8 +292,12 @@ async function applySelect(data: any[], selectStr: string) {
                   /^(\w+):(\w+)(?:!\w+)?\s*\(([^)]+)\)$/,
                 )
                 if (nestedRelationMatch) {
-                  const [, nestedAlias, nestedRelationName, nestedRelationFields] =
-                    nestedRelationMatch
+                  const [
+                    ,
+                    nestedAlias,
+                    nestedRelationName,
+                    nestedRelationFields,
+                  ] = nestedRelationMatch
                   if (
                     nestedAlias &&
                     nestedRelationName &&
@@ -301,6 +314,7 @@ async function applySelect(data: any[], selectStr: string) {
                         const thumbnailFieldArray = nestedRelationFields
                           .split(',')
                           .map((f) => f.trim())
+                        // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from thumbnail fields
                         const thumbnailResult: any = {}
                         for (const tf of thumbnailFieldArray) {
                           if (tf in thumbnail) {
@@ -336,6 +350,7 @@ async function applySelect(data: any[], selectStr: string) {
               const nestedFieldArray = nestedFields
                 .split(',')
                 .map((f) => f.trim())
+              // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
               const nestedResult: any = {}
               for (const nf of nestedFieldArray) {
                 if (nf in thumbnail) {
@@ -355,7 +370,7 @@ async function applySelect(data: any[], selectStr: string) {
 
     return result
   })
-  
+
   return result
 }
 
@@ -402,20 +417,23 @@ export const supabaseHandlers = [
   }),
 
   // Videos table HEAD requests
-  http.head('https://fake.supabase.test/rest/v1/videos', async ({ request }) => {
-    const url = new URL(request.url)
-    const query = parseSupabaseQuery(url)
+  http.head(
+    'https://fake.supabase.test/rest/v1/videos',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const query = parseSupabaseQuery(url)
 
-    const filteredData = applySupabaseFilters(await getMockVideos(), query)
-    const count = filteredData.length
+      const filteredData = applySupabaseFilters(await getMockVideos(), query)
+      const count = filteredData.length
 
-    return new HttpResponse(null, {
-      headers: {
-        'Content-Range': `0-0/${count}`,
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
+      return new HttpResponse(null, {
+        headers: {
+          'Content-Range': `0-0/${count}`,
+          'Content-Type': 'application/json',
+        },
+      })
+    },
+  ),
 
   // Videos PATCH (update)
   http.patch(
@@ -424,9 +442,11 @@ export const supabaseHandlers = [
       const url = new URL(request.url)
       const preferHeader = request.headers.get('prefer') || ''
       const query = parseSupabaseQuery(url)
+      // biome-ignore lint/suspicious/noExplicitAny: Request body can contain various table update payloads
       const body = (await request.json()) as any
 
       // Find matching records and update them using @msw/data Collections
+      // biome-ignore lint/suspicious/noExplicitAny: Updated items can be from any table type
       const updatedItems: any[] = []
       for (const [field, filterValue] of Object.entries(query.filters)) {
         if (filterValue.startsWith('eq.')) {
@@ -444,14 +464,15 @@ export const supabaseHandlers = [
 
           // Find and update records in Collection
           const matches = await videos.findMany((q) =>
-            q.where({ [field]: parsedValue })
+            q.where({ [field]: parsedValue }),
           )
-          
+
           for (const match of matches) {
-            await videos.update(
-              (q) => q.where({ id: match.id }),
-              { data(record) { return Object.assign(record, body) } }
-            )
+            await videos.update((q) => q.where({ id: match.id }), {
+              data(record) {
+                return Object.assign(record, body)
+              },
+            })
             updatedItems.push({ ...match, ...body })
           }
         }
@@ -470,98 +491,107 @@ export const supabaseHandlers = [
   ),
 
   // Channels table
-  http.get('https://fake.supabase.test/rest/v1/channels', async ({ request }) => {
-    const url = new URL(request.url)
-    const query = parseSupabaseQuery(url)
+  http.get(
+    'https://fake.supabase.test/rest/v1/channels',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const query = parseSupabaseQuery(url)
 
-    const preferHeader = request.headers.get('prefer') || ''
-    const returnCount =
-      preferHeader.includes('count=exact') || query.returnCount
+      const preferHeader = request.headers.get('prefer') || ''
+      const returnCount =
+        preferHeader.includes('count=exact') || query.returnCount
 
-    let filteredData = applySupabaseFilters(await getMockChannels(), query)
-    const count = filteredData.length
+      let filteredData = applySupabaseFilters(await getMockChannels(), query)
+      const count = filteredData.length
 
-    if (
-      request.method === 'HEAD' ||
-      (returnCount && preferHeader.includes('head=true'))
-    ) {
-      return new HttpResponse(null, {
-        headers: {
-          'Content-Range': `0-0/${count}`,
-          'Content-Type': 'application/json',
-        },
-      })
-    }
+      if (
+        request.method === 'HEAD' ||
+        (returnCount && preferHeader.includes('head=true'))
+      ) {
+        return new HttpResponse(null, {
+          headers: {
+            'Content-Range': `0-0/${count}`,
+            'Content-Type': 'application/json',
+          },
+        })
+      }
 
-    filteredData = await applySelect(filteredData, query.select)
+      filteredData = await applySelect(filteredData, query.select)
 
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    }
-    if (returnCount) {
-      headers['Content-Range'] = `0-${Math.max(
-        0,
-        filteredData.length - 1,
-      )}/${count}`
-    }
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+      if (returnCount) {
+        headers['Content-Range'] = `0-${Math.max(
+          0,
+          filteredData.length - 1,
+        )}/${count}`
+      }
 
-    return HttpResponse.json(filteredData, { headers })
-  }),
+      return HttpResponse.json(filteredData, { headers })
+    },
+  ),
 
   // Channels table HEAD requests
-  http.head('https://fake.supabase.test/rest/v1/channels', async ({ request }) => {
-    const url = new URL(request.url)
-    const query = parseSupabaseQuery(url)
+  http.head(
+    'https://fake.supabase.test/rest/v1/channels',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const query = parseSupabaseQuery(url)
 
-    const filteredData = applySupabaseFilters(await getMockChannels(), query)
-    const count = filteredData.length
+      const filteredData = applySupabaseFilters(await getMockChannels(), query)
+      const count = filteredData.length
 
-    return new HttpResponse(null, {
-      headers: {
-        'Content-Range': `0-0/${count}`,
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
-
-  // Thumbnails table
-  http.get('https://fake.supabase.test/rest/v1/thumbnails', async ({ request }) => {
-    const url = new URL(request.url)
-    const query = parseSupabaseQuery(url)
-
-    const preferHeader = request.headers.get('prefer') || ''
-    const returnCount =
-      preferHeader.includes('count=exact') || query.returnCount
-
-    let filteredData = applySupabaseFilters(await getMockThumbnails(), query)
-    const count = filteredData.length
-
-    if (
-      request.method === 'HEAD' ||
-      (returnCount && preferHeader.includes('head=true'))
-    ) {
       return new HttpResponse(null, {
         headers: {
           'Content-Range': `0-0/${count}`,
           'Content-Type': 'application/json',
         },
       })
-    }
+    },
+  ),
 
-    filteredData = await applySelect(filteredData, query.select)
+  // Thumbnails table
+  http.get(
+    'https://fake.supabase.test/rest/v1/thumbnails',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const query = parseSupabaseQuery(url)
 
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    }
-    if (returnCount) {
-      headers['Content-Range'] = `0-${Math.max(
-        0,
-        filteredData.length - 1,
-      )}/${count}`
-    }
+      const preferHeader = request.headers.get('prefer') || ''
+      const returnCount =
+        preferHeader.includes('count=exact') || query.returnCount
 
-    return HttpResponse.json(filteredData, { headers })
-  }),
+      let filteredData = applySupabaseFilters(await getMockThumbnails(), query)
+      const count = filteredData.length
+
+      if (
+        request.method === 'HEAD' ||
+        (returnCount && preferHeader.includes('head=true'))
+      ) {
+        return new HttpResponse(null, {
+          headers: {
+            'Content-Range': `0-0/${count}`,
+            'Content-Type': 'application/json',
+          },
+        })
+      }
+
+      filteredData = await applySelect(filteredData, query.select)
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+      if (returnCount) {
+        headers['Content-Range'] = `0-${Math.max(
+          0,
+          filteredData.length - 1,
+        )}/${count}`
+      }
+
+      return HttpResponse.json(filteredData, { headers })
+    },
+  ),
 
   // Terms table
   http.get('https://fake.supabase.test/rest/v1/terms', async ({ request }) => {
@@ -619,59 +649,65 @@ export const supabaseHandlers = [
   }),
 
   // Talents table
-  http.get('https://fake.supabase.test/rest/v1/talents', async ({ request }) => {
-    const url = new URL(request.url)
-    const query = parseSupabaseQuery(url)
+  http.get(
+    'https://fake.supabase.test/rest/v1/talents',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const query = parseSupabaseQuery(url)
 
-    const preferHeader = request.headers.get('prefer') || ''
-    const returnCount =
-      preferHeader.includes('count=exact') || query.returnCount
+      const preferHeader = request.headers.get('prefer') || ''
+      const returnCount =
+        preferHeader.includes('count=exact') || query.returnCount
 
-    let filteredData = applySupabaseFilters(await getMockTalents(), query)
-    const count = filteredData.length
+      let filteredData = applySupabaseFilters(await getMockTalents(), query)
+      const count = filteredData.length
 
-    if (
-      request.method === 'HEAD' ||
-      (returnCount && preferHeader.includes('head=true'))
-    ) {
+      if (
+        request.method === 'HEAD' ||
+        (returnCount && preferHeader.includes('head=true'))
+      ) {
+        return new HttpResponse(null, {
+          headers: {
+            'Content-Range': `0-0/${count}`,
+            'Content-Type': 'application/json',
+          },
+        })
+      }
+
+      filteredData = await applySelect(filteredData, query.select)
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+      if (returnCount) {
+        headers['Content-Range'] = `0-${Math.max(
+          0,
+          filteredData.length - 1,
+        )}/${count}`
+      }
+
+      return HttpResponse.json(filteredData, { headers })
+    },
+  ),
+
+  // Talents table HEAD requests
+  http.head(
+    'https://fake.supabase.test/rest/v1/talents',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const query = parseSupabaseQuery(url)
+
+      const filteredData = applySupabaseFilters(await getMockTalents(), query)
+      const count = filteredData.length
+
       return new HttpResponse(null, {
         headers: {
           'Content-Range': `0-0/${count}`,
           'Content-Type': 'application/json',
         },
       })
-    }
-
-    filteredData = await applySelect(filteredData, query.select)
-
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    }
-    if (returnCount) {
-      headers['Content-Range'] = `0-${Math.max(
-        0,
-        filteredData.length - 1,
-      )}/${count}`
-    }
-
-    return HttpResponse.json(filteredData, { headers })
-  }),
-
-  // Talents table HEAD requests
-  http.head('https://fake.supabase.test/rest/v1/talents', async ({ request }) => {
-    const url = new URL(request.url)
-    const query = parseSupabaseQuery(url)
-
-    const filteredData = applySupabaseFilters(await getMockTalents(), query)
-    const count = filteredData.length
-
-    return new HttpResponse(null, {
-      headers: {
-        'Content-Range': `0-0/${count}`,
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
+    },
+  ),
 
   // Announcements table GET requests
   http.get(
@@ -684,7 +720,10 @@ export const supabaseHandlers = [
       const returnCount =
         preferHeader.includes('count=exact') || query.returnCount
 
-      let filteredData = applySupabaseFilters(await getMockAnnouncements(), query)
+      let filteredData = applySupabaseFilters(
+        await getMockAnnouncements(),
+        query,
+      )
       const count = filteredData.length
 
       if (
@@ -722,7 +761,10 @@ export const supabaseHandlers = [
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(await getMockAnnouncements(), query)
+      const filteredData = applySupabaseFilters(
+        await getMockAnnouncements(),
+        query,
+      )
       const count = filteredData.length
 
       return new HttpResponse(null, {
@@ -808,7 +850,10 @@ export const supabaseHandlers = [
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(await getMockYoutubeVideos(), query)
+      const filteredData = applySupabaseFilters(
+        await getMockYoutubeVideos(),
+        query,
+      )
       const count = filteredData.length
 
       return new HttpResponse(null, {
@@ -825,23 +870,29 @@ export const supabaseHandlers = [
     'https://fake.supabase.test/rest/v1/youtube_videos',
     async ({ request }) => {
       const preferHeader = request.headers.get('prefer') || ''
+      // biome-ignore lint/suspicious/noExplicitAny: Request body can contain various table insert payloads
       const body = (await request.json()) as any
 
       // Handle both single object and array of objects
       const items = Array.isArray(body) ? body : [body]
 
       // Mock upsert behavior using @msw/data Collections: update existing or add new
+      // biome-ignore lint/suspicious/noExplicitAny: Created items can be from any table type
       const createdItems: any[] = []
       for (const item of items) {
         const existing = await youtubeVideos.findFirst((q) =>
-          q.where({ video_id: item.video_id })
+          q.where({ video_id: item.video_id }),
         )
-        
+
         if (existing) {
           // Update existing using Collection.update
           await youtubeVideos.update(
             (q) => q.where({ video_id: item.video_id }),
-            { data(record) { return Object.assign(record, item) } }
+            {
+              data(record) {
+                return Object.assign(record, item)
+              },
+            },
           )
           createdItems.push({ ...existing, ...item })
         } else {
@@ -872,9 +923,11 @@ export const supabaseHandlers = [
       const url = new URL(request.url)
       const preferHeader = request.headers.get('prefer') || ''
       const query = parseSupabaseQuery(url)
+      // biome-ignore lint/suspicious/noExplicitAny: Request body can contain various table update payloads
       const body = (await request.json()) as any
 
       // Find matching records and update them using @msw/data Collections
+      // biome-ignore lint/suspicious/noExplicitAny: Updated items can be from any table type
       const updatedItems: any[] = []
       for (const [field, filterValue] of Object.entries(query.filters)) {
         if (filterValue.startsWith('eq.')) {
@@ -892,14 +945,15 @@ export const supabaseHandlers = [
 
           // Find and update records in Collection
           const matches = await youtubeVideos.findMany((q) =>
-            q.where({ [field]: parsedValue })
+            q.where({ [field]: parsedValue }),
           )
-          
+
           for (const match of matches) {
-            await youtubeVideos.update(
-              (q) => q.where({ id: match.id }),
-              { data(record) { return Object.assign(record, body) } }
-            )
+            await youtubeVideos.update((q) => q.where({ id: match.id }), {
+              data(record) {
+                return Object.assign(record, body)
+              },
+            })
             updatedItems.push({ ...match, ...body })
           }
         }
@@ -1069,57 +1123,60 @@ export const supabaseHandlers = [
   }),
 
   // Session endpoint - for refreshing tokens
-  http.get('https://fake.supabase.test/auth/v1/session', async ({ request }) => {
-    const authHeader = request.headers.get('authorization')
-    const hasValidToken =
-      authHeader?.startsWith('Bearer ') && authHeader.includes('mock')
+  http.get(
+    'https://fake.supabase.test/auth/v1/session',
+    async ({ request }) => {
+      const authHeader = request.headers.get('authorization')
+      const hasValidToken =
+        authHeader?.startsWith('Bearer ') && authHeader.includes('mock')
 
-    if (
-      !hasValidToken &&
-      process.env['MSW_SUPABASE_AUTHENTICATED'] !== 'true'
-    ) {
-      return HttpResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+      if (
+        !hasValidToken &&
+        process.env['MSW_SUPABASE_AUTHENTICATED'] !== 'true'
+      ) {
+        return HttpResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
 
-    return HttpResponse.json({
-      access_token: 'mock_access_token',
-      expires_at: 9999999999,
-      expires_in: 3600,
-      refresh_token: 'mock_refresh_token',
-      token_type: 'bearer',
-      user: {
-        app_metadata: {
-          provider: 'email',
-          providers: ['email'],
-        },
-        aud: 'authenticated',
-        confirmed_at: '2023-01-01T00:00:00.000Z',
-        created_at: '2023-01-01T00:00:00.000Z',
-        email: 'admin@example.com',
-        email_confirmed_at: '2023-01-01T00:00:00.000Z',
-        id: 'mock-user-id',
-        identities: [
-          {
-            created_at: '2023-01-01T00:00:00.000Z',
-            id: 'mock-user-id',
-            identity_data: {
-              email: 'admin@example.com',
-              sub: 'mock-user-id',
-            },
-            last_sign_in_at: '2023-01-01T00:00:00.000Z',
+      return HttpResponse.json({
+        access_token: 'mock_access_token',
+        expires_at: 9999999999,
+        expires_in: 3600,
+        refresh_token: 'mock_refresh_token',
+        token_type: 'bearer',
+        user: {
+          app_metadata: {
             provider: 'email',
-            updated_at: '2023-01-01T00:00:00.000Z',
-            user_id: 'mock-user-id',
+            providers: ['email'],
           },
-        ],
-        last_sign_in_at: '2023-01-01T00:00:00.000Z',
-        phone: '',
-        role: 'authenticated',
-        updated_at: '2023-01-01T00:00:00.000Z',
-        user_metadata: {},
-      },
-    })
-  }),
+          aud: 'authenticated',
+          confirmed_at: '2023-01-01T00:00:00.000Z',
+          created_at: '2023-01-01T00:00:00.000Z',
+          email: 'admin@example.com',
+          email_confirmed_at: '2023-01-01T00:00:00.000Z',
+          id: 'mock-user-id',
+          identities: [
+            {
+              created_at: '2023-01-01T00:00:00.000Z',
+              id: 'mock-user-id',
+              identity_data: {
+                email: 'admin@example.com',
+                sub: 'mock-user-id',
+              },
+              last_sign_in_at: '2023-01-01T00:00:00.000Z',
+              provider: 'email',
+              updated_at: '2023-01-01T00:00:00.000Z',
+              user_id: 'mock-user-id',
+            },
+          ],
+          last_sign_in_at: '2023-01-01T00:00:00.000Z',
+          phone: '',
+          role: 'authenticated',
+          updated_at: '2023-01-01T00:00:00.000Z',
+          user_metadata: {},
+        },
+      })
+    },
+  ),
 
   http.post('https://fake.supabase.test/auth/v1/logout', () => {
     const headers = new Headers()
@@ -1184,7 +1241,7 @@ export const supabaseHandlers = [
       const mockTalents = await getMockTalents()
       const mockThumbnails = await getMockThumbnails()
       const mockYoutubeVideos = await getMockYoutubeVideos()
-      
+
       const results = mockVideos
         .filter((video) => video.deleted_at === null && video.visible)
         .slice(0, body.perpage || 10)
