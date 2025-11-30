@@ -143,11 +143,12 @@ export async function updateTalentAction(
         updated_at: toDBString(Temporal.Now.instant()),
       })
       .eq('id', validatedData.id)
+      .is('deleted_at', null)
       .select('name')
       .single()
 
     if (error) {
-      // Handle PGRST116 error: No rows found (talent doesn't exist)
+      // Handle PGRST116 error: No rows found (talent doesn't exist or is deleted)
       if (error.code === 'PGRST116') {
         logger.warn('更新対象のタレントが見つかりませんでした', {
           id: validatedData.id,
@@ -213,11 +214,12 @@ export async function deleteTalentAction(id: string): Promise<{
         updated_at: toDBString(now),
       })
       .eq('id', id)
+      .is('deleted_at', null)
       .select('name')
       .single()
 
     if (error) {
-      // Handle PGRST116 error: No rows found (talent doesn't exist)
+      // Handle PGRST116 error: No rows found (talent doesn't exist or already deleted)
       if (error.code === 'PGRST116') {
         logger.warn('削除対象のタレントが見つかりませんでした', { id })
         return {

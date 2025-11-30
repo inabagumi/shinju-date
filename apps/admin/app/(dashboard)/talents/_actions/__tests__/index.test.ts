@@ -53,6 +53,7 @@ describe('updateTalentAction', () => {
     const mockSupabaseClient = {
       eq: vi.fn().mockReturnThis(),
       from: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({
         data: { name: 'Updated Talent' },
@@ -95,6 +96,7 @@ describe('updateTalentAction', () => {
     const mockSupabaseClient = {
       eq: vi.fn().mockReturnThis(),
       from: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({
         data: null,
@@ -166,6 +168,7 @@ describe('updateTalentAction', () => {
     const mockSupabaseClient = {
       eq: vi.fn().mockReturnThis(),
       from: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({
         data: { name: 'Updated Talent' },
@@ -236,6 +239,7 @@ describe('deleteTalentAction', () => {
     const mockSupabaseClient = {
       eq: vi.fn().mockReturnThis(),
       from: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({
         data: { name: 'Deleted Talent' },
@@ -274,6 +278,7 @@ describe('deleteTalentAction', () => {
     const mockSupabaseClient = {
       eq: vi.fn().mockReturnThis(),
       from: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({
         data: null,
