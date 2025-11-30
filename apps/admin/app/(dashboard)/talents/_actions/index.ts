@@ -147,6 +147,19 @@ export async function updateTalentAction(
       .single()
 
     if (error) {
+      // Handle PGRST116 error: No rows found (talent doesn't exist)
+      if (error.code === 'PGRST116') {
+        logger.warn('更新対象のタレントが見つかりませんでした', {
+          id: validatedData.id,
+        })
+        return {
+          errors: {
+            generic: [
+              '指定されたタレントが見つかりません。既に削除されているか、存在しないIDが指定されています。',
+            ],
+          },
+        }
+      }
       throw error
     }
 
@@ -204,6 +217,15 @@ export async function deleteTalentAction(id: string): Promise<{
       .single()
 
     if (error) {
+      // Handle PGRST116 error: No rows found (talent doesn't exist)
+      if (error.code === 'PGRST116') {
+        logger.warn('削除対象のタレントが見つかりませんでした', { id })
+        return {
+          error:
+            '指定されたタレントが見つかりません。既に削除されているか、存在しないIDが指定されています。',
+          success: false,
+        }
+      }
       throw error
     }
 
