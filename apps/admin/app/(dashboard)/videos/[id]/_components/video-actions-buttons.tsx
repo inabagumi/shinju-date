@@ -80,12 +80,7 @@ function SyncVideoButton({ videoId }: SyncVideoButtonProps) {
 }
 
 interface VideoActionsButtonsProps {
-  video: {
-    id: string
-    title: string
-    visible: boolean
-    deleted_at: string | null
-  }
+  video: Pick<Tables<'videos'>, 'id' | 'title' | 'visible' | 'deleted_at'>
 }
 
 export function VideoActionsButtons({ video }: VideoActionsButtonsProps) {
