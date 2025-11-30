@@ -57,15 +57,15 @@ export default function Form({
   )
 }
 
-type ButtonProps = Omit<UIButtonProps, 'asChild'>
+type SubmitButtonProps = Omit<UIButtonProps, 'asChild'>
 
-export function Button({
+export function SubmitButton({
   disabled,
   type = 'button',
   variant = 'primary',
   size = 'md',
   ...props
-}: ButtonProps) {
+}: SubmitButtonProps) {
   const { pending } = useFormStatus()
 
   return (

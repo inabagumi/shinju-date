@@ -12,12 +12,12 @@ import {
 import { useEffect, useState } from 'react'
 import type { FormState } from '@/components/form'
 import Form, {
-  Button,
   ErrorMessage,
   FormField,
   GenericErrorMessage,
   Input,
   Label,
+  SubmitButton,
 } from '@/components/form'
 import { createTermAction, updateTermAction } from '../_actions'
 import { SortableInputList } from './sortable-input-list'
@@ -124,12 +124,12 @@ export function TermModal({ term }: TermModalProps) {
                   キャンセル
                 </button>
               </DialogClose>
-              <Button
+              <SubmitButton
                 className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90 disabled:opacity-50"
                 type="submit"
               >
                 {isEditing ? '更新' : '追加'}
-              </Button>
+              </SubmitButton>
             </div>
           </Form>
         </DialogContent>

@@ -18,12 +18,12 @@ import { ExternalLink, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { FormState } from '@/components/form'
 import Form, {
-  Button,
   ErrorMessage,
   FormField,
   GenericErrorMessage,
   Input,
   Label,
+  SubmitButton,
 } from '@/components/form'
 import {
   addYouTubeChannelAction,
@@ -138,9 +138,9 @@ export function ChannelManager({
                             キャンセル
                           </UIButton>
                         </DialogClose>
-                        <Button type="submit" variant="secondary-blue">
+                        <SubmitButton type="submit" variant="secondary-blue">
                           追加
-                        </Button>
+                        </SubmitButton>
                       </div>
                     </Form>
                   </DialogContent>
