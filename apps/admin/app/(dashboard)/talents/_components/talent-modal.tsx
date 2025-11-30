@@ -78,7 +78,7 @@ export function TalentModal({ talent }: TalentModalProps) {
       </DialogTrigger>
       <DialogPortal>
         <DialogOverlay />
-        <DialogContent className="max-h-[85vh] w-[90vw] max-w-[500px] overflow-y-auto">
+        <DialogContent className="max-h-[85vh] w-[90vw] overflow-y-auto">
           <DialogTitle>
             {isEditing ? 'タレントを編集' : '新しいタレントを追加'}
           </DialogTitle>
