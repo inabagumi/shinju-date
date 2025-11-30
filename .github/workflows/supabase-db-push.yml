@@ -33,13 +33,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Supabase CLI
-        run: npm install -g supabase
-
       - name: Run supabase db push
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
-          supabase link --project-ref "$SUPABASE_PROJECT_REF"
-          supabase db push
+          pnpm --filter @shinju-date/database exec supabase link --project-ref "$SUPABASE_PROJECT_REF"
+          pnpm --filter @shinju-date/database exec supabase db push
