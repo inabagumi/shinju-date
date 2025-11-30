@@ -6,7 +6,6 @@
     "@tsconfig/node20": "20.1.8",
     "@tsconfig/strictest": "2.0.8",
     "next": "16.0.6",
-    "supabase": "2.63.1",
     "tsup": "8.5.1",
     "typescript": "5.9.3"
   },
@@ -25,8 +24,7 @@
   },
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch",
-    "generate": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > types/supabase.ts"
+    "dev": "tsup --watch"
   },
   "type": "module",
   "types": "./dist/index.d.ts",

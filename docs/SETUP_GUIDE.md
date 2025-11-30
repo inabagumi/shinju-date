@@ -85,11 +85,59 @@ pnpm db:import
 
 詳細は [Supabaseローカル開発ガイド](docs/supabase-local-development.md) を参照してください。
 
-## 4. 環境変数
+## 4. ローカルRedis環境（自動起動）
+
+Upstash Redisの機能を完全にテストするため、ローカルRedis環境が自動的にセットアップされます。Dev Container（GitHub CodespacesやVS Code Dev Containers）を使用している場合、Redis 8とserverless-redis-httpプロキシが自動的に起動します。
+
+### 4.1. Dev Containerでの自動起動
+
+Dev Containerを使用する場合、以下のサービスが自動的に起動します：
+
+- **Redis 8** (port 6379): ネイティブRedisプロトコル
+- **Redis HTTP API** (port 8079): Upstash互換REST API
+
+これらは`.devcontainer/compose.yml`で定義されており、手動での起動は不要です。
+
+### 4.2. ローカルマシンでの手動起動（Dev Containerを使用しない場合）
+
+Dev Containerを使用していない場合は、Docker Composeを使用して手動で起動できます：
+
+```bash
+cd .devcontainer
+docker compose up -d
+```
+
+接続テスト：
+
+```bash
+curl -X POST http://localhost:8079 \
+  -H "Authorization: Bearer local_development_token" \
+  -H "Content-Type: application/json" \
+  -d '["PING"]'
+
+# 成功した場合、{"result":"PONG"} が返されます
+```
+
+### 4.3. 環境変数
+
+Dev Containerを使用する場合、環境変数は自動的に設定されます。手動で起動する場合は、`.env.local`ファイルで以下を設定してください：
+
+```bash
+UPSTASH_REDIS_REST_URL=http://localhost:8079
+UPSTASH_REDIS_REST_TOKEN=local_development_token
+```
+
+### 4.4. 動作しない場合
+
+Docker Composeが動作しない場合は、MSW（Mock Service Worker）を使用してください。MSWは全ての環境で動作する完全なRedisモックを提供し、`.env.local`ファイルのサンプルにはMSW設定も含まれています。
+
+詳細は [Redisローカル開発ガイド](docs/redis-local-development.md) を参照してください。
+
+## 5. 環境変数
 
 このプロジェクトでは、様々なサービスのための環境変数が必要です。ローカル開発、特にMSW (Mock Service Worker) を使用する際は、ダミーの値を使用します。
 
-### 4.1. `.env.local` ファイルの作成
+### 5.1. `.env.local` ファイルの作成
 
 `web` および `admin` アプリのサンプル環境変数ファイルをコピーして、`.env.local` ファイルを作成します。
 
@@ -98,7 +146,9 @@ cp apps/web/.env.local.sample apps/web/.env.local
 cp apps/admin/.env.local.sample apps/admin/.env.local
 ```
 
-### 4.2. AIエージェントおよびCI環境で推奨される環境変数
+サンプルファイルには、ローカルRedis（`http://localhost:8079`）を使用する設定がデフォルトで含まれています。MSWモックを使用したい場合は、コメントを参照して設定を変更してください。
+
+### 5.2. AIエージェントおよびCI環境で推奨される環境変数
 
 一貫した開発体験のため、特にAIエージェントやCI環境では、以下の環境変数を設定することが推奨されます。前のステップで作成した `.env.local` ファイルには、これらの値がすでに含まれています。
 
@@ -119,7 +169,7 @@ export UPSTASH_REDIS_REST_URL=https://fake.upstash.test
 export NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1
 ```
 
-## 5. MSWの初期化
+## 6. MSWの初期化
 
 Mock Service Worker (MSW) は、開発中にAPIレスポンスをモックするために使用されます。使用するには、サービスワーカースクリプトの初期化が必要です。
 
@@ -129,7 +179,7 @@ pnpm --filter './apps/*' run msw:init
 
 このコマンドにより、`web` および `admin` アプリの `public` ディレクトリに `mockServiceWorker.js` ファイルが作成されます。
 
-## 6. 開発サーバーの起動
+## 7. 開発サーバーの起動
 
 これで開発サーバーを起動する準備が整いました。
 
