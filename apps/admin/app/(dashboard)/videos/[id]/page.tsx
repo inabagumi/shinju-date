@@ -142,10 +142,7 @@ async function VideoDetailContent({ id }: { id: string }) {
               </h3>
             </div>
             <div className="border-gray-200 border-t px-4 py-5 sm:px-6">
-              <VideoStatusBadge
-                className="font-semibold leading-5"
-                video={video}
-              />
+              <VideoStatusBadge video={video} />
             </div>
           </div>
         </div>
