@@ -248,7 +248,9 @@ describe('deleteTalentAction', () => {
       mockSupabaseClient as never,
     )
 
-    const result = await deleteTalentAction('123e4567-e89b-12d3-a456-426614174000')
+    const result = await deleteTalentAction(
+      '123e4567-e89b-12d3-a456-426614174000',
+    )
 
     expect(result).toEqual({ success: true })
     expect(mockSupabaseClient.update).toHaveBeenCalledWith({
@@ -287,7 +289,9 @@ describe('deleteTalentAction', () => {
       mockSupabaseClient as never,
     )
 
-    const result = await deleteTalentAction('123e4567-e89b-12d3-a456-426614174000')
+    const result = await deleteTalentAction(
+      '123e4567-e89b-12d3-a456-426614174000',
+    )
 
     expect(result).toEqual({
       error:
@@ -331,7 +335,9 @@ describe('deleteTalentAction', () => {
       mockSupabaseClient as never,
     )
 
-    const result = await deleteTalentAction('123e4567-e89b-12d3-a456-426614174000')
+    const result = await deleteTalentAction(
+      '123e4567-e89b-12d3-a456-426614174000',
+    )
 
     expect(result.success).toBe(false)
     expect(result.error).toBeTruthy()
@@ -351,7 +357,10 @@ describe('createTalentAction', () => {
       insert: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({
-        data: { id: '123e4567-e89b-12d3-a456-426614174000', name: 'New Talent' },
+        data: {
+          id: '123e4567-e89b-12d3-a456-426614174000',
+          name: 'New Talent',
+        },
         error: null,
       }),
     }
