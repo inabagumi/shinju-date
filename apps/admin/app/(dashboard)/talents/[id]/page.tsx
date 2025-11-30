@@ -1,5 +1,5 @@
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
-import { Badge } from '@shinju-date/ui'
+import { Badge, Card, CardContent, CardHeader } from '@shinju-date/ui'
 import { ChevronLeft } from 'lucide-react'
 import type { Metadata } from 'next'
 import Image from 'next/image'
@@ -83,13 +83,13 @@ async function TalentProfile({ id }: { id: string }) {
       />
 
       {/* Additional metadata */}
-      <div className="mt-6 overflow-hidden bg-white shadow sm:rounded-lg">
-        <div className="px-4 py-5 sm:px-6">
+      <Card className="mt-6" variant="elevated">
+        <CardHeader>
           <h3 className="font-medium text-gray-900 text-lg leading-6">
             メタデータ
           </h3>
-        </div>
-        <div className="border-gray-200 border-t">
+        </CardHeader>
+        <CardContent className="p-0">
           <dl>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500 text-sm">
@@ -132,8 +132,8 @@ async function TalentProfile({ id }: { id: string }) {
               </div>
             )}
           </dl>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </>
   )
 }
@@ -143,16 +143,16 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
 
   return (
     <div className="mt-8">
-      <div className="bg-white shadow sm:rounded-lg">
-        <div className="px-4 py-5 sm:px-6">
+      <Card variant="elevated">
+        <CardHeader>
           <h2 className="font-medium text-gray-900 text-lg leading-6">
             最新動画
           </h2>
           <p className="mt-1 max-w-2xl text-gray-500 text-sm">
             直近に公開された動画一覧
           </p>
-        </div>
-        <div className="border-gray-200 border-t">
+        </CardHeader>
+        <CardContent className="p-0">
           {recentVideos.length === 0 ? (
             <div className="px-4 py-8 text-center text-gray-500">
               動画がありません。
@@ -218,8 +218,8 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
               ))}
             </ul>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
