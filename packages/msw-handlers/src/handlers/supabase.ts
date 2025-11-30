@@ -957,6 +957,98 @@ export const supabaseHandlers = [
     },
   ),
 
+  // Talents PATCH (update)
+  http.patch(
+    'https://fake.supabase.test/rest/v1/talents',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const preferHeader = request.headers.get('prefer') || ''
+      const query = parseSupabaseQuery(url)
+      // biome-ignore lint/suspicious/noExplicitAny: Request body can contain various table update payloads
+      const body = (await request.json()) as any
+
+      // Find matching records and update them using @msw/data Collections
+      // biome-ignore lint/suspicious/noExplicitAny: Updated items can be from any table type
+      const updatedItems: any[] = []
+      for (const [field, filterValue] of Object.entries(query.filters)) {
+        if (filterValue.startsWith('eq.')) {
+          const value = filterValue.substring(3)
+          const parsedValue =
+            value === 'true'
+              ? true
+              : value === 'false'
+                ? false
+                : value === 'null'
+                  ? null
+                  : Number.isNaN(Number(value))
+                    ? value
+                    : Number(value)
+
+          // Find and update records in Collection
+          const matches = await talents.findMany((q) =>
+            q.where({ [field]: parsedValue }),
+          )
+
+          for (const match of matches) {
+            await talents.update((q) => q.where({ id: match.id }), {
+              data(record) {
+                return Object.assign(record, body)
+              },
+            })
+            updatedItems.push({ ...match, ...body })
+          }
+        }
+      }
+
+      if (preferHeader.includes('return=representation')) {
+        return HttpResponse.json(updatedItems, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      }
+
+      return new HttpResponse(null, { status: 204 })
+    },
+  ),
+
+  // YouTube Channels DELETE
+  http.delete(
+    'https://fake.supabase.test/rest/v1/youtube_channels',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const query = parseSupabaseQuery(url)
+
+      // Find matching records and delete them using @msw/data Collections
+      for (const [field, filterValue] of Object.entries(query.filters)) {
+        if (filterValue.startsWith('eq.')) {
+          const value = filterValue.substring(3)
+          const parsedValue =
+            value === 'true'
+              ? true
+              : value === 'false'
+                ? false
+                : value === 'null'
+                  ? null
+                  : Number.isNaN(Number(value))
+                    ? value
+                    : Number(value)
+
+          // Find and delete records in Collection
+          const matches = await youtubeChannels.findMany((q) =>
+            q.where({ [field]: parsedValue }),
+          )
+
+          for (const match of matches) {
+            await youtubeChannels.delete((q) => q.where({ id: match.id }))
+          }
+        }
+      }
+
+      return new HttpResponse(null, { status: 204 })
+    },
+  ),
+
   // Authentication endpoints
   http.get(
     'https://fake.supabase.test/auth/v1/user',

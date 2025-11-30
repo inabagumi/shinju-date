@@ -148,15 +148,27 @@ export async function removeYouTubeChannelAction(
 
   try {
     // Get channel info before deletion for audit log
-    const { data: channel } = await supabaseClient
+    const { data: channel, error: fetchError } = await supabaseClient
       .from('youtube_channels')
       .select('youtube_channel_id')
       .eq('id', channelId)
       .eq('talent_id', talentId)
       .single()
 
-    if (!channel) {
-      return { error: 'チャンネルが見つかりません。', success: false }
+    if (fetchError) {
+      // Handle PGRST116 error: No rows found (channel doesn't exist)
+      if (fetchError.code === 'PGRST116') {
+        logger.warn('削除対象のチャンネルが見つかりませんでした', {
+          channel_id: channelId,
+          talent_id: talentId,
+        })
+        return {
+          error:
+            '指定されたチャンネルが見つかりません。既に削除されているか、存在しないIDが指定されています。',
+          success: false,
+        }
+      }
+      throw fetchError
     }
 
     // Delete the YouTube channel
