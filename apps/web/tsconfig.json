@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "target": "es2024"
+  },
+  "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/next/tsconfig"],
+  "include": [
+    "next-env.d.ts",
+    "additional.d.ts",
+    ".next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ]
+}

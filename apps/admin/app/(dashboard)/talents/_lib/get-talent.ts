@@ -1,0 +1,53 @@
+import { cacheLife } from 'next/cache'
+import { createSupabaseServerClient } from '@/lib/supabase'
+
+export type Talent = {
+  id: string
+  name: string
+  theme_color: string | null
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+  youtube_channels: {
+    id: string
+    name: string | null
+    youtube_channel_id: string
+    youtube_handle: string | null
+  }[]
+}
+
+export async function getTalent(id: string): Promise<Talent | null> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
+  const supabaseClient = await createSupabaseServerClient()
+
+  const { data: talent, error } = await supabaseClient
+    .from('talents')
+    .select(
+      'id, name, theme_color, created_at, updated_at, deleted_at, youtube_channels(id, name, youtube_channel_id, youtube_handle)',
+    )
+    .eq('id', id)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      // Row not found
+      return null
+    }
+    // Check for invalid UUID format error
+    if (
+      error.message?.includes('invalid input syntax for type uuid') ||
+      error.code === '22P02'
+    ) {
+      // Invalid UUID format - treat as not found
+      return null
+    }
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  return talent
+}

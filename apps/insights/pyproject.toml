@@ -1,0 +1,44 @@
+[project]
+name = "insights"
+version = "1.0.0"
+description = "SHINJU DATE Insights API for video analytics"
+authors = [
+    {name = "Haneru Developers"}
+]
+readme = "README.md"
+requires-python = ">=3.14.0"
+dependencies = [
+    "fastapi==0.123.0",
+    "uvicorn==0.38.0",
+    "janome==0.5.0",
+    "supabase==2.24.0",
+    "python-dotenv==1.2.1",
+    "redis==7.1.0",
+    "sentry-sdk[fastapi]==2.46.0",
+    "python-decouple==3.8",
+    "python-json-logger==4.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff==0.14.7",
+    "poethepoet==0.38.0",
+    "pytest==9.0.1",
+    "httpx==0.28.1",
+]
+
+[tool.poe.tasks]
+dev = "uvicorn app:app --reload --host 0.0.0.0"
+format = "ruff format ."
+format-check = "ruff format --check ."
+lint = "ruff check ."
+test = "pytest -v"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.ruff.format]
+quote-style = "double"

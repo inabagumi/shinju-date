@@ -1,0 +1,33 @@
+{
+  "author": "Haneru Developers",
+  "description": "Shared constants for SHINJU DATE",
+  "devDependencies": {
+    "@tsconfig/node20": "20.1.8",
+    "@tsconfig/strictest": "2.0.8",
+    "tsup": "8.5.1",
+    "typescript": "5.9.3"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "name": "@shinju-date/constants",
+  "private": true,
+  "repository": {
+    "directory": "packages/constants",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "1.0.0"
+}

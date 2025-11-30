@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>メンテナンス中 - SHINJU DATE</title>
+  <meta name="description" content="ただいまメンテナンス中です。しばらくお待ちください。">
+  <style>
+    * {
+      box-sizing: border-box;
+      padding: 0;
+      margin: 0;
+    }
+    
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      color: #111827;
+      background-color: #f9fafb;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 28rem;
+      text-align: center;
+    }
+    
+    .icon {
+      width: 6rem;
+      height: 6rem;
+      margin: 0 auto 2rem;
+      color: #9ca3af;
+    }
+    
+    h1 {
+      margin-bottom: 1rem;
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: #111827;
+    }
+    
+    .message {
+      margin-bottom: 1.5rem;
+      font-size: 1.125rem;
+      color: #4b5563;
+    }
+    
+    .info-box {
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: left;
+      background-color: #eff6ff;
+      border-radius: 0.5rem;
+    }
+    
+    .info-title {
+      margin-bottom: 1rem;
+      font-weight: 600;
+      color: #111827;
+    }
+    
+    .info-list {
+      font-size: 0.875rem;
+      color: #374151;
+      list-style: none;
+    }
+    
+    .info-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+    
+    .info-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .info-icon {
+      flex-shrink: 0;
+      width: 1.25rem;
+      height: 1.25rem;
+      margin-top: 0.125rem;
+      margin-right: 0.5rem;
+      color: #3b82f6;
+    }
+    
+    .footer {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <svg class="icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
+    </svg>
+
+    <h1>メンテナンス中</h1>
+
+    <p class="message">
+      ただいまメンテナンス作業を実施しております。
+    </p>
+
+    <div class="info-box">
+      <p class="info-title">メンテナンス情報</p>
+      <ul class="info-list">
+        <li class="info-item">
+          <svg class="info-icon" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+          </svg>
+          <span>データベースの更新作業を行っております</span>
+        </li>
+        <li class="info-item">
+          <svg class="info-icon" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+          </svg>
+          <span>作業完了まで今しばらくお待ちください</span>
+        </li>
+      </ul>
+    </div>
+
+    <p class="footer">
+      ご不便をおかけして申し訳ございません。
+    </p>
+  </div>
+</body>
+</html>

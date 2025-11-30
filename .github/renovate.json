@@ -1,0 +1,13 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>inabagumi/renovate-config"],
+  "packageRules": [
+    {
+      "groupName": "tailwindcss monorepo",
+      "ignoreUnstable": false,
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@tailwindcss/**", "tailwindcss"]
+    }
+  ],
+  "reviewers": ["ykzts"]
+}

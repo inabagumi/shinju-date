@@ -1,0 +1,42 @@
+{
+  "author": "Haneru Developers",
+  "dependencies": {
+    "@googleapis/youtube": "29.0.0",
+    "p-queue": "9.0.1",
+    "temporal-polyfill": "0.3.0"
+  },
+  "description": "YouTube scraper package for SHINJU DATE",
+  "devDependencies": {
+    "@shinju-date/database": "workspace:*",
+    "@shinju-date/helpers": "workspace:*",
+    "@tsconfig/node20": "20.1.8",
+    "@tsconfig/strictest": "2.0.8",
+    "tsup": "8.5.1",
+    "typescript": "5.9.3",
+    "vitest": "4.0.14"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "name": "@shinju-date/youtube-scraper",
+  "private": true,
+  "repository": {
+    "directory": "packages/youtube-scraper",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "1.0.0"
+}

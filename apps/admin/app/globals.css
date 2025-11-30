@@ -1,0 +1,33 @@
+@import 'tailwindcss';
+@import '@shinju-date/tailwind-config/theme.css';
+@source '../node_modules/@shinju-date/ui';
+@plugin '@tailwindcss/typography';
+
+@theme {
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  --widget-min-width: calc(var(--spacing) * 96);
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+.recharts-surface:focus:not(:focus-visible) {
+  outline: none;
+}

@@ -1,0 +1,94 @@
+// 'use cache'
+
+import { SITE_NAME as siteName } from '@shinju-date/constants'
+import type { Metadata } from 'next'
+import NoResults from '@/components/no-results'
+import SearchExitTracker from '@/components/search-exit-tracker'
+import SearchQueryTracker from '@/components/search-query-tracker'
+import SearchResults from '@/components/search-results'
+import { fetchVideos } from '@/lib/fetchers'
+import { parseQueries } from '@/lib/url'
+
+export async function generateMetadata({
+  params,
+}: Readonly<{
+  params: Promise<{
+    queries?: string[]
+  }>
+}>): Promise<Metadata> {
+  // cacheLife('minutes')
+
+  const { queries } = await params
+  const query = parseQueries(queries)
+  const title = query ? `『${query}』の検索結果` : '動画一覧'
+
+  return {
+    alternates: {
+      canonical: query ? `/videos/${encodeURIComponent(query)}` : '/videos',
+      types: {
+        'text/calendar': !query ? '/videos.ics' : null,
+      },
+    },
+    openGraph: {
+      siteName,
+      title,
+      type: 'article',
+    },
+    robots: {
+      index: !query,
+    },
+    title,
+    twitter: {
+      title: `${title} - ${siteName}`,
+    },
+  }
+}
+
+export default async function VideosPage({
+  params,
+}: Readonly<{
+  params: Promise<{
+    queries?: string[]
+  }>
+}>) {
+  const { queries } = await params
+  const query = parseQueries(queries)
+
+  const title = query ? `『${query}』の検索結果` : '動画一覧'
+  const videos = await fetchVideos({
+    query,
+  })
+
+  if (videos.length < 1) {
+    const message = query
+      ? `『${query}』で検索しましたが一致する動画は見つかりませんでした。`
+      : '動画は見つかりませんでした。'
+
+    return (
+      <>
+        {query && (
+          <>
+            <SearchQueryTracker query={query} resultsCount={0} />
+            <SearchExitTracker hasResults={false} query={query} />
+          </>
+        )}
+        <NoResults message={message} title="検索結果はありません" />
+      </>
+    )
+  }
+
+  return (
+    <>
+      <h1 className="font-semibold text-xl">{title}</h1>
+
+      {query && (
+        <>
+          <SearchQueryTracker query={query} resultsCount={videos.length} />
+          <SearchExitTracker hasResults={true} query={query} />
+        </>
+      )}
+
+      <SearchResults prefetchedData={[videos]} query={query} />
+    </>
+  )
+}

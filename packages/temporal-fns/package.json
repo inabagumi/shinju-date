@@ -1,0 +1,84 @@
+{
+  "author": "Haneru Developers",
+  "dependencies": {
+    "temporal-polyfill": "0.3.0"
+  },
+  "description": "",
+  "devDependencies": {
+    "@tsconfig/node20": "20.1.8",
+    "@tsconfig/strictest": "2.0.8",
+    "tsup": "8.5.1",
+    "typescript": "5.9.3",
+    "vitest": "4.0.14"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./format-date": {
+      "types": "./dist/format-date.d.ts",
+      "default": "./dist/format-date.js"
+    },
+    "./get-monday-of-week": {
+      "types": "./dist/get-monday-of-week.d.ts",
+      "default": "./dist/get-monday-of-week.js"
+    },
+    "./max": {
+      "types": "./dist/max.d.ts",
+      "default": "./dist/max.js"
+    },
+    "./min": {
+      "types": "./dist/min.d.ts",
+      "default": "./dist/min.js"
+    },
+    "./start-of-hour": {
+      "types": "./dist/start-of-hour.d.ts",
+      "default": "./dist/start-of-hour.js"
+    },
+    "./to-db-string": {
+      "types": "./dist/to-db-string.d.ts",
+      "default": "./dist/to-db-string.js"
+    }
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "name": "@shinju-date/temporal-fns",
+  "private": true,
+  "repository": {
+    "directory": "packages/temporal-fns",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      ".": [
+        "./dist/index.d.ts"
+      ],
+      "./format-date": [
+        "./dist/format-date.d.ts"
+      ],
+      "./get-monday-of-week": [
+        "./dist/get-monday-of-week.d.ts"
+      ],
+      "./max": [
+        "./dist/max.d.ts"
+      ],
+      "./min": [
+        "./dist/min.d.ts"
+      ],
+      "./start-of-hour": [
+        "./dist/start-of-hour"
+      ]
+    }
+  },
+  "version": "1.0.0"
+}

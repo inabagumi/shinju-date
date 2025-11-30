@@ -1,0 +1,16 @@
+# Supabase local development volumes
+.branches
+.temp
+.env
+
+# Local Supabase data
+volumes/
+
+# Supabase
+.branches
+.temp
+
+# dotenvx
+.env.keys
+.env.local
+.env.*.local

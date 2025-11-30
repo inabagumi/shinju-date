@@ -1,0 +1,177 @@
+import * as Sentry from '@sentry/nextjs'
+import { REDIS_KEYS } from '@shinju-date/constants'
+import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
+import { logger } from '@shinju-date/logger'
+import { revalidateTags } from '@shinju-date/web-cache'
+import { YouTubeScraper } from '@shinju-date/youtube-scraper'
+import { after } from 'next/server'
+import { Temporal } from 'temporal-polyfill'
+import type { Video } from '@/lib/database'
+import { videosUpdate as ratelimit } from '@/lib/ratelimit'
+import { redisClient } from '@/lib/redis'
+import { supabaseClient } from '@/lib/supabase'
+import { youtubeClient } from '@/lib/youtube'
+import { MONITOR_SLUG } from './_lib/constants'
+import { saveScrapedVideos } from './_lib/save-videos'
+
+export const maxDuration = 120
+
+export async function POST(request: Request): Promise<Response> {
+  const cronSecure = process.env['CRON_SECRET']
+  if (
+    cronSecure &&
+    !verifyCronRequest(request, {
+      cronSecure,
+    })
+  ) {
+    Sentry.logger.warn('CRON_SECRET did not match.')
+
+    return createErrorResponse('Unauthorized', {
+      status: 401,
+    })
+  }
+
+  const { success } = await ratelimit.limit('videos:update')
+
+  if (!success) {
+    Sentry.logger.warn('There has been no interval since the last run.')
+
+    return createErrorResponse(
+      'There has been no interval since the last run.',
+      {
+        status: 429,
+      },
+    )
+  }
+
+  const checkInId = Sentry.captureCheckIn(
+    {
+      monitorSlug: MONITOR_SLUG,
+      status: 'in_progress',
+    },
+    {
+      schedule: {
+        type: 'crontab',
+        value: '1/10 * * * *',
+      },
+      timezone: 'Etc/UTC',
+    },
+  )
+
+  const currentDateTime = Temporal.Now.instant()
+
+  const { data: savedTalents, error } = await supabaseClient
+    .from('talents')
+    .select('id, youtube_channels!inner(id, youtube_channel_id)')
+    .is('deleted_at', null)
+
+  if (error) {
+    after(async () => {
+      Sentry.captureException(error)
+
+      Sentry.captureCheckIn({
+        checkInId,
+        monitorSlug: MONITOR_SLUG,
+        status: 'error',
+      })
+
+      await Sentry.flush(10_000)
+    })
+
+    return createErrorResponse(error.message, {
+      status: 500,
+    })
+  }
+
+  // Map channel IDs to talent information for callback processing
+  // Now handles multiple channels per talent
+  const channelToTalentMap = new Map<
+    string,
+    {
+      id: string
+      youtubeChannelId: string
+    }
+  >()
+
+  for (const savedTalent of savedTalents) {
+    // youtube_channels is an array due to the query using youtube_channels!inner
+    for (const ytChannel of savedTalent.youtube_channels) {
+      channelToTalentMap.set(ytChannel.youtube_channel_id, {
+        id: savedTalent.id,
+        youtubeChannelId: ytChannel.id,
+      })
+    }
+  }
+
+  const channelIDs = Array.from(channelToTalentMap.keys())
+
+  const videos: Video[] = []
+
+  // Use scraper with internal p-queue for concurrency control
+  await using scraper = new YouTubeScraper({ concurrency: 1, youtubeClient })
+
+  await scraper.scrapeNewVideos(
+    { channelIds: channelIDs },
+    async (channelId, scrapedVideos) => {
+      const talentInfo = channelToTalentMap.get(channelId)
+      if (!talentInfo) {
+        logger.warn('タレント情報が見つかりませんでした', {
+          channelId,
+        })
+        return
+      }
+
+      try {
+        const savedResults = await saveScrapedVideos({
+          currentDateTime,
+          originalVideos: scrapedVideos,
+          supabaseClient,
+          talentId: talentInfo.id,
+          youtubeChannelId: talentInfo.youtubeChannelId,
+        })
+        videos.push(...savedResults)
+      } catch (err) {
+        Sentry.captureException(err)
+      }
+    },
+  )
+
+  if (videos.length > 0) {
+    for (const video of videos) {
+      const publishedAt = Temporal.Instant.from(video.published_at)
+      const youtubeVideoId = video.youtube_video?.youtube_video_id
+
+      Sentry.logger.info('The video has been saved.', {
+        duration: video.duration,
+        id: youtubeVideoId,
+        publishedAt: publishedAt.toString(),
+        title: video.title,
+      })
+    }
+
+    await revalidateTags(['videos'], {
+      signal: request.signal,
+    })
+  } else {
+    Sentry.logger.info('No updated channels existed.')
+  }
+
+  // Update last sync timestamp in Redis
+  await redisClient.set(REDIS_KEYS.LAST_VIDEO_SYNC, currentDateTime.toString())
+
+  after(async () => {
+    Sentry.captureCheckIn({
+      checkInId,
+      monitorSlug: MONITOR_SLUG,
+      status: 'ok',
+    })
+
+    await Sentry.flush(10_000)
+  })
+
+  return new Response(null, {
+    status: 204,
+  })
+}
+
+export const GET = POST

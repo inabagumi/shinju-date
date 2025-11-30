@@ -1,0 +1,42 @@
+name: Supabase DB Push on main
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  # renovate: datasource=npm depName=corepack
+  COREPACK_VERSION: 0.31.0
+
+jobs:
+  supabase-db-push:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Enable Corepack
+        run: |
+          npm install -g corepack@${COREPACK_VERSION}
+          corepack enable
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run supabase db push
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          pnpm --filter @shinju-date/database exec supabase link --project-ref "$SUPABASE_PROJECT_REF"
+          pnpm --filter @shinju-date/database exec supabase db push
