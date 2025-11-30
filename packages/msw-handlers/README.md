@@ -6,6 +6,11 @@ This package provides a unified mock infrastructure that enables efficient devel
 
 ## Features
 
+- **@msw/data Integration**: Structured data modeling with Standard Schema (Zod) validation
+- **Built-in Query Methods**: `findMany`, `findFirst`, `create`, `update`, `delete` for data operations
+- **Faker Integration**: Generates realistic, diverse mock data using `@faker-js/faker`
+- **Type-Safe Collections**: All collections use Zod schemas for runtime and compile-time safety
+- **Reduced Boilerplate**: 560+ lines of hardcoded data replaced with declarative schemas
 - **Supabase API Mocking**: Complete mock handlers for database operations including tables, relations, and query parameters
 - **Upstash Redis Mocking**: Mock handlers for Redis operations including sorted sets, pipeline commands, and basic operations
 - **Browser & Node.js Support**: Works in both browser (Service Worker) and Node.js (server) environments
@@ -232,30 +237,316 @@ await redisClient.ping()
 'search:popular:daily:2023-10-23' => [{ member: 'ホロライブ', score: 50 }, ...]
 ```
 
+## Mock Data Generation with @msw/data and @faker-js/faker
+
+This package uses **@msw/data** v1.1.2 for structured data modeling combined with **@faker-js/faker** for realistic data generation.
+
+### Why @msw/data?
+
+`@msw/data` provides:
+- **Structured Database Modeling**: Define schemas with relationships
+- **Built-in Query Methods**: `findMany`, `findFirst`, `update`, `delete`, etc.
+- **Native Relation API**: Automatic relation traversal using `.relate()` method
+- **Automatic Foreign Key Resolution**: No manual `find()` operations needed
+- **Type Safety**: Full TypeScript support with proper typing
+
+Combined with `@faker-js/faker`, you get:
+- **Realistic Data**: Diverse, random values for names, dates, UUIDs, etc.
+- **Dynamic Generation**: Each test run uses different data
+- **Maintainability**: Schema changes propagate automatically
+
+### Using the Database
+
+The package exports a pre-configured `@mswjs/data` database with all tables:
+
+```typescript
+import { db } from '@shinju-date/msw-handlers'
+
+// Query videos using findMany
+const visibleVideos = db.videos.findMany({
+  where: {
+    visible: { equals: true },
+    deleted_at: { equals: null }
+  }
+})
+
+// Find a specific talent
+const talent = db.talents.findFirst({
+  where: { id: { equals: 'some-talent-id' } }
+})
+
+// Create new data
+const newVideo = db.videos.create({
+  title: 'Custom Video',
+  status: 'PUBLISHED',
+  visible: true
+})
+
+// Update existing data
+const updated = db.videos.update({
+  where: { id: { equals: videoId } },
+  data: { title: 'Updated Title' }
+})
+
+// Delete data
+db.videos.delete({
+  where: { id: { equals: videoId } }
+})
+
+// Get all records
+const allTalents = db.videos.getAll()
+```
+
+### Database Schema
+
+The database includes the following tables:
+- `talents`: Creator/talent information
+- `videos`: Video records with status and metadata
+- `thumbnails`: Thumbnail images with blur data
+- `youtube_channels`: YouTube channel information
+- `youtube_videos`: YouTube video relation mapping
+- `terms`: Search terms and synonyms
+- `announcements`: System announcements
+
+Each table is populated with realistic faker-generated data on initialization.
+
+### Resetting the Database
+
+To reset the database to its initial state:
+
+```typescript
+import { seedDatabase } from '@shinju-date/msw-handlers'
+
+// Clear and reseed all data
+seedDatabase()
+```
+
+### Using the Collections with Native Relations
+
+The package exports `@msw/data` collections with native relation support:
+
+```typescript
+import { videos, talents, seedCollections } from '@shinju-date/msw-handlers'
+
+// Initialize collections (automatically defines relations)
+await seedCollections()
+
+// Query videos
+const publishedVideos = await videos.findMany((q) =>
+  q.where({ visible: true })
+)
+
+// Access related data directly via native relation traversal
+const firstVideo = publishedVideos[0]
+console.log(firstVideo.talent.name)       // Talent name - no manual find() needed!
+console.log(firstVideo.thumbnail.path)    // Thumbnail path - automatic resolution!
+
+// Create new video (relations work automatically)
+const newVideo = await videos.create({
+  title: 'New Video',
+  talent_id: 'some-talent-id',
+  thumbnail_id: 'some-thumbnail-id',
+  // ... other fields
+})
+
+// Update video
+await videos.update((q) => q.where({ id: newVideo.id }), {
+  data(record) {
+    record.title = 'Updated Title'
+    return record
+  }
+})
+```
+
+### Relation Configuration
+
+Relations are automatically configured using `@msw/data`'s `.relate()` method:
+
+```typescript
+// Many-to-one relations
+videos.relate('talent', talents, {
+  field: 'talent_id',
+  foreignKey: 'id',
+  type: 'one-of',
+})
+
+videos.relate('thumbnail', thumbnails, {
+  field: 'thumbnail_id',
+  foreignKey: 'id',
+  type: 'one-of',
+})
+
+// One-to-many relations
+talents.relate('videos', videos, {
+  field: 'id',
+  foreignKey: 'talent_id',
+  type: 'many-of',
+})
+```
+
+Benefits:
+- **No Manual Lookups**: No need for `.find()` operations
+- **Type-Safe**: Relations maintain TypeScript types
+- **Automatic Resolution**: Foreign keys resolve automatically
+- **Bi-Directional**: Access relations from either side
+
+### Database Schema
+
+The database includes the following tables:
+- `talents`: Creator/talent information
+- `videos`: Video records with status and metadata
+- `thumbnails`: Thumbnail images with blur data
+- `youtubeChannels`: YouTube channel information
+- `youtubeVideos`: YouTube video relation mapping
+- `terms`: Search terms and synonyms
+- `announcements`: System announcements
+
+Each table is populated with realistic faker-generated data on initialization.
+
+### Available Collections
+
+The package exports the following `@msw/data` collections:
+
+#### Supabase Tables
+- `talents` - Talent/VTuber information
+- `videos` - Video records with metadata (relates to talent, thumbnail)
+- `thumbnails` - Thumbnail images with blur data
+- `youtubeChannels` - YouTube channel information (relates to talent)
+- `youtubeVideos` - YouTube video relations (relates to video)
+- `terms` - Search terms and synonyms
+- `announcements` - System announcements
+
+#### Seeding & Relations
+- `seedCollections()` - Initialize all collections with faker-generated data
+- `defineCollectionRelations()` - Configure relations (called automatically by seedCollections)
+
+#### Usage Example
+
+```typescript
+import { videos, talents, seedCollections } from '@shinju-date/msw-handlers'
+
+// Initialize collections (relations configured automatically)
+await seedCollections()
+
+// Query videos
+const publishedVideos = await videos.findMany((q) =>
+  q.where({ visible: true })
+)
+
+// Get first video by ID
+const video = await videos.findFirst((q) =>
+  q.where({ id: 'some-uuid' })
+)
+
+// Create new video
+await videos.create({
+  title: 'New Video',
+  duration: 'PT1H30M',
+  published_at: new Date().toISOString(),
+  status: 'PUBLISHED',
+  visible: true,
+  platform: 'YOUTUBE',
+  talent_id: 'talent-uuid',
+  thumbnail_id: null,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  deleted_at: null,
+})
+
+// Update video
+await videos.update((q) => q.where({ id: 'some-uuid' }), {
+  data(video) {
+    video.title = 'Updated Title'
+  },
+})
+
+// Delete video
+await videos.delete((q) => q.where({ id: 'some-uuid' }))
+```
+
+### Code Reduction Achieved
+
+By using `@msw/data` with Zod schemas, we've significantly reduced boilerplate:
+- **supabase.ts**: Reduced by 470+ lines (from hardcoded arrays to collection queries)
+- **upstash.ts**: Reduced by 90+ lines (simplified with faker-based factory)
+- **Total**: 560+ lines of hardcoded mock data eliminated
+
 ## Adding New Mock Data
 
 ### Extending Supabase Mocks
 
-To add more tables or modify existing data:
+To add new tables or modify existing data:
 
-1. **Edit `src/handlers/supabase.ts`**:
+1. **Add Zod schema to collections** in `src/collections.ts`:
 
 ```typescript
-// Add new mock data
-const mockNewTable = [
-  {
-    id: 1,
-    name: 'Example',
-    // ... more fields
-  }
-]
+import { Collection } from '@msw/data'
+import { z } from 'zod'
+import { faker } from '@faker-js/faker'
+
+// Define your collection
+export const myTable = new Collection({
+  schema: z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    created_at: z.string(),
+    updated_at: z.string(),
+  }),
+})
+
+// Add seeding logic in seedCollections()
+export async function seedCollections() {
+  // ... existing seeds
+
+  // Seed your table
+  await myTable.createMany(10, (index) => ({
+    id: faker.string.uuid(),
+    name: faker.person.fullName(),
+    created_at: faker.date.past().toISOString(),
+    updated_at: faker.date.recent().toISOString(),
+  }))
+}
+```
+
+2. **Export the collection** in `src/index.ts`:
+
+```typescript
+export { myTable } from './collections.js'
+```
+
+3. **Use in handlers** in `src/handlers/supabase.ts`:
+
+```typescript
+import { myTable } from '../collections.js'
+
+// Initialize
+await seedCollections()
+const mockMyTable = await myTable.findMany()
+}
+```
+
+2. **Export from `src/factories/index.ts`**:
+
+```typescript
+export {
+  createMyTableFactory,
+  createManyMyTable,
+} from './supabase/my-table.js'
+```
+
+3. **Use in handler** (`src/handlers/supabase.ts`):
+
+```typescript
+import { createManyMyTable } from '../factories/index.js'
+
+const mockMyTable = createManyMyTable(10)
 
 // Add new handler
-http.get('*/rest/v1/new_table', ({ request }) => {
+http.get('*/rest/v1/my_table', ({ request }) => {
   const url = new URL(request.url)
   const query = parseSupabaseQuery(url)
 
-  let filteredData = applySupabaseFilters(mockNewTable, query)
+  let filteredData = applySupabaseFilters(mockMyTable, query)
   filteredData = applySelect(filteredData, query.select)
 
   return HttpResponse.json(filteredData)
@@ -264,21 +555,24 @@ http.get('*/rest/v1/new_table', ({ request }) => {
 
 ### Extending Redis Mocks
 
-To add new Redis commands or data:
+To add new Redis data types:
 
-1. **Edit `src/handlers/upstash.ts`**:
+1. **Edit `src/factories/upstash/redis-data.ts`**:
 
 ```typescript
-// Add data in initializeRedisData()
-mockRedisStore.set('my:new:key', 'value')
+// Add new data type in createRedisDataFactory()
+redisData.set('my:custom:key', faker.lorem.words())
+```
 
-// Add command handler
-case 'mynewcommand': {
-  const [key, value] = args
-  // Implementation
-  results.push({ result: 'OK' })
-  break
-}
+2. **Or create custom data**:
+
+```typescript
+import { createCustomRedisData } from './factories'
+
+const customData = createCustomRedisData({
+  'my:key': 'my value',
+  'another:key': { complex: 'object' },
+})
 ```
 
 ## Development
