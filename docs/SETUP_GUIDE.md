@@ -83,7 +83,7 @@ supabase start
 pnpm db:import
 ```
 
-詳細は [Supabaseローカル開発ガイド](docs/supabase-local-development.md) を参照してください。
+**注意**: 本番データベースからのデータエクスポートは、プロジェクト管理者のみが実行できます。個人情報を含むテーブルのエクスポートは禁止されています。
 
 ## 4. ローカルRedis環境（自動起動）
 
@@ -131,7 +131,7 @@ UPSTASH_REDIS_REST_TOKEN=local_development_token
 
 Docker Composeが動作しない場合は、MSW（Mock Service Worker）を使用してください。MSWは全ての環境で動作する完全なRedisモックを提供し、`.env.local`ファイルのサンプルにはMSW設定も含まれています。
 
-詳細は [Redisローカル開発ガイド](docs/redis-local-development.md) を参照してください。
+詳細は [MSWガイド](MSW_GUIDE.md) を参照してください。
 
 ## 5. 環境変数
 
