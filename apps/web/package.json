@@ -19,7 +19,7 @@
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.0",
     "@upstash/redis": "1.35.7",
-    "@vercel/analytics": "1.5.0",
+    "@vercel/analytics": "1.6.0",
     "dedent": "1.7.0",
     "ics": "3.8.1",
     "lucide-react": "0.555.0",
