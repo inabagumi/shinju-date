@@ -60,7 +60,6 @@
     }
   },
   "postCreateCommand": "./.devcontainer/post-create.sh",
-  "postStartCommand": "pnpm exec supabase start || true",
   "service": "app",
   "waitFor": "postCreateCommand",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
