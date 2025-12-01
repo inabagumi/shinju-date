@@ -51,3 +51,10 @@ export const statsSnapshot = new Ratelimit({
   prefix: RATELIMIT_CACHE_KEY_PREFIX,
   redis: redisClient,
 })
+
+export const termsPopularityUpdate = new Ratelimit({
+  analytics: true,
+  limiter: Ratelimit.fixedWindow(1, '1d'), // Daily job - once per day
+  prefix: RATELIMIT_CACHE_KEY_PREFIX,
+  redis: redisClient,
+})

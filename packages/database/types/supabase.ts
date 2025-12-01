@@ -108,6 +108,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          popularity: number
           readings: string[]
           synonyms: string[]
           term: string
@@ -116,6 +117,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          popularity?: number
           readings: string[]
           synonyms: string[]
           term: string
@@ -124,6 +126,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          popularity?: number
           readings?: string[]
           synonyms?: string[]
           term?: string

@@ -63,6 +63,8 @@ pnpm exec playwright test --ui
   - ダッシュボード統計のスナップショット保存（日次比較用）
 - **推薦クエリの更新** (`/recommendation/queries/update`)
   - 推薦システムのクエリ更新
+- **用語の人気度更新** (`/terms/popularity/update`)
+  - 検索ログから用語の人気度を集計・更新（日次）
 
 各バッチ処理は Next.js の Route Handlers として実装され、Vercel Cron から定期的に呼び出されます。
 
@@ -73,6 +75,7 @@ pnpm exec playwright test --ui
 - `POST /stats/snapshot` - 統計スナップショット作成
 - `POST /recommendation/queries/update` - 推薦クエリ更新
 - `POST /talents/update` - タレント情報更新
+- `POST /terms/popularity/update` - 用語の人気度更新
 - `POST /videos/update` - 新着動画の追加
 - `POST /videos/check` - 既存動画の情報更新と削除判定
   - パラメータなし: UPCOMING/LIVE動画の情報更新
@@ -93,6 +96,23 @@ pnpm exec playwright test --ui
 **重要**: バッチ処理は前日分のデータを集計するため、実行タイミングが重要です。0:05 AM UTC に実行することで、前日の23:59:59までのデータを正確に集計できます。
 
 スナップショットは Redis に 30 日間保存されます（TTL: 30日）。
+
+### 用語の人気度更新 (`/terms/popularity/update`)
+
+検索サジェスト機能の精度向上のため、毎日 0:00 AM UTC（日本時間 9:00 AM）に用語の人気度を更新します：
+
+- **データソース**: Upstash Redis の `SEARCH_POPULAR_ALL_TIME` ソートセット
+  - ユーザーの検索クエリが累積的にカウントされている
+  - 全期間での検索回数を集計
+- **更新処理**:
+  - Redis から検索回数データを取得
+  - `terms` テーブルの各用語の `popularity` カラムを更新
+  - データベースに存在しない検索用語は無視（新規用語の自動追加は行わない）
+- **影響範囲**:
+  - `suggestions_v2` RPC関数が人気度を考慮してサジェストを返すようになる
+  - 検索回数の多い用語が優先的に表示される
+
+**注意**: 人気度の更新は、既存の `terms` テーブルに登録されている用語のみが対象です。新しい用語の追加は別途手動または専用のバッチ処理で行う必要があります。
 
 ## ディレクトリ構成ルール
 
