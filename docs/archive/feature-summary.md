@@ -126,6 +126,6 @@ migrations/
 
 ## 参考資料
 
-- 詳細な実装ノート: `IMPLEMENTATION_NOTES.md`
+- 詳細な実装ノート: `implementation-notes.md`
 - マイグレーション手順: `migrations/README.md`
 - Issue: https://github.com/inabagumi/shinju-date/issues/[issue-number]

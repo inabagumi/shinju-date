@@ -243,4 +243,4 @@
 
 - [Tailwind CSS - Customizing Colors](https://tailwindcss.com/docs/customizing-colors)
 - [WCAG 2.1 - Contrast Ratio](https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html)
-- [プロジェクトのコーディングガイドライン](../../docs/CODING_GUIDELINES.md#カラーパレットの使用)
+- [プロジェクトのコーディングガイドライン](../../docs/coding-guidelines.md#カラーパレットの使用)

@@ -42,12 +42,9 @@
 
 ## 開発を始める
 
-プロジェクトの開発環境をセットアップするには、以下のガイドに従ってください。
+プロジェクトの開発環境をセットアップするには、[docs/setup-guide.md](docs/setup-guide.md) に従ってください。
 
-- **[docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md)** - 標準セットアップガイド
-- **[docs/COPILOT_AGENT_SETUP.md](docs/COPILOT_AGENT_SETUP.md)** - GitHub Copilot Coding Agent向けセットアップ
-
-これらのガイドには、前提条件、依存関係のインストール、Supabaseのローカル設定、開発サーバーの起動方法などが含まれています。
+このガイドには、前提条件、依存関係のインストール、Supabase・Redisのローカル設定、開発サーバーの起動方法などが含まれています。
 
 より詳細な貢献方法については、[CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
 
@@ -56,13 +53,12 @@
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - 開発・貢献ガイド
 - **[AGENTS.md](AGENTS.md)** - AI エージェント活用ガイド
 - **[docs/](docs/)** - プロジェクト固有のドキュメント
-  - [Setup Guide](docs/SETUP_GUIDE.md) - 標準セットアップガイド
-  - [Copilot Agent Setup](docs/COPILOT_AGENT_SETUP.md) - GitHub Copilot Coding Agent向けセットアップ
-  - [MSW Integration](docs/MSW_INTEGRATION.md) - MSW モック統合の詳細
+  - [Setup Guide](docs/setup-guide.md) - セットアップガイド（**最初に読むべきドキュメント**）
+  - [Coding Guidelines](docs/coding-guidelines.md) - コーディング規約
+  - [Testing Guide](docs/testing-guide.md) - テストガイド
+  - [MSW Guide](docs/msw-guide.md) - MSW モック統合ガイド
   - [Hybrid Recommendation System](docs/hybrid-recommendation-system.md) - ハイブリッドオススメシステム
-  - [Supabase Local Development](docs/supabase-local-development.md) - Supabaseローカル開発環境ガイド
-  - [Redis Local Development](docs/redis-local-development.md) - Redisローカル開発環境ガイド
-  - [Supabase Implementation](docs/SUPABASE_IMPLEMENTATION.md) - Supabase実装サマリー
+  - [Supabase Implementation](docs/supabase-implementation.md) - Supabase実装詳細
 
 ## ローカル開発環境
 

@@ -4,7 +4,7 @@ SHINJU DATEプロジェクトへの貢献をご検討いただき、ありがと
 
 ## 開発環境のセットアップ
 
-**重要**: 開発環境のセットアップ手順は、[docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md) に集約されています。作業を開始する前に、必ずこのガイドを参照してください。
+**重要**: 開発環境のセットアップ手順は、[docs/setup-guide.md](docs/setup-guide.md) に集約されています。作業を開始する前に、必ずこのガイドを参照してください。
 
 このガイドには、前提条件、依存関係のインストール、Supabaseのローカル設定、開発サーバーの起動方法などが含まれています。
 
@@ -15,7 +15,7 @@ SHINJU DATEプロジェクトへの貢献をご検討いただき、ありがと
 - **フォーマッター**: Biome を使用
 - **リンティング**: Biome の規則に従う
 - **型安全性**: TypeScript の厳格な型チェックを使用
-- **型定義**: オブジェクト型には `interface` を優先使用（詳細は [docs/CODING_GUIDELINES.md](docs/CODING_GUIDELINES.md#typescript-型定義) を参照）
+- **型定義**: オブジェクト型には `interface` を優先使用（詳細は [docs/coding-guidelines.md](docs/coding-guidelines.md#typescript-型定義) を参照）
 
 ### Python（Insights API）
 
@@ -64,7 +64,7 @@ type ComponentProps = {
 - インターセクション型: `type Combined = A & B`
 - マップド型・条件型・タプル型
 
-詳細は [docs/CODING_GUIDELINES.md](docs/CODING_GUIDELINES.md#typescript-型定義) を参照してください。
+詳細は [docs/coding-guidelines.md](docs/coding-guidelines.md#typescript-型定義) を参照してください。
 
 ### Next.js Cache Directives（キャッシュディレクティブ）
 

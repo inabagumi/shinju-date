@@ -8,7 +8,7 @@
 
 ## プロジェクト環境のセットアップ
 
-**重要**: 開発環境のセットアップ手順は、[docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md) に集約されています。作業を開始する前に、必ずこのガイドを参照してください。
+**重要**: 開発環境のセットアップ手順は、[docs/setup-guide.md](docs/setup-guide.md) に集約されています。作業を開始する前に、必ずこのガイドを参照してください。
 
 ## AIエージェントの種類と役割
 
@@ -167,7 +167,7 @@ uv run poe lint
    - TypeScript コンパイラのパフォーマンスが良い
    - エラーメッセージがわかりやすい
 
-詳細なガイドラインは [docs/CODING_GUIDELINES.md](docs/CODING_GUIDELINES.md#typescript-型定義) を参照してください。
+詳細なガイドラインは [docs/coding-guidelines.md](docs/coding-guidelines.md#typescript-型定義) を参照してください。
 
 ### Next.js Cache Directives（キャッシュディレクティブ）
 
