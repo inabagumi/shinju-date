@@ -54,7 +54,7 @@ export const statsSnapshot = new Ratelimit({
 
 export const termsPopularityUpdate = new Ratelimit({
   analytics: true,
-  limiter: Ratelimit.fixedWindow(1, '20h'),
+  limiter: Ratelimit.fixedWindow(1, '1d'), // Daily job - once per day
   prefix: RATELIMIT_CACHE_KEY_PREFIX,
   redis: redisClient,
 })

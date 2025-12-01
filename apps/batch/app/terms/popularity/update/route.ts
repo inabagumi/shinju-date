@@ -46,7 +46,7 @@ export async function POST(request: Request): Promise<Response> {
     {
       schedule: {
         type: 'crontab',
-        value: '0 0 * * *', // Daily at midnight UTC
+        value: '0 0 * * *', // Daily at midnight UTC - after all search data is collected
       },
       timezone: 'Etc/UTC',
     },
