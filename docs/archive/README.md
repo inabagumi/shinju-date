@@ -6,11 +6,11 @@
 
 ### 機能実装メモ
 
-- **[IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md)** - 監査ログと最近のアクティビティダッシュボードの実装
-- **[FEATURE_SUMMARY.md](FEATURE_SUMMARY.md)** - 最近のアクティビティ機能実装完了サマリー
-- **[VIDEO_DIALOG_IMPLEMENTATION.md](VIDEO_DIALOG_IMPLEMENTATION.md)** - 動画削除/復元確認ダイアログの実装
-- **[VIDEO_RESTORE_IMPLEMENTATION.md](VIDEO_RESTORE_IMPLEMENTATION.md)** - 動画復元機能の実装
-- **[MULTI_SELECT_IMPLEMENTATION.md](MULTI_SELECT_IMPLEMENTATION.md)** - マルチセレクトフィルター実装
+- **[implementation-notes.md](implementation-notes.md)** - 監査ログと最近のアクティビティダッシュボードの実装
+- **[feature-summary.md](feature-summary.md)** - 最近のアクティビティ機能実装完了サマリー
+- **[video-dialog-implementation.md](video-dialog-implementation.md)** - 動画削除/復元確認ダイアログの実装
+- **[video-restore-implementation.md](video-restore-implementation.md)** - 動画復元機能の実装
+- **[multi-select-implementation.md](multi-select-implementation.md)** - マルチセレクトフィルター実装
 - **[404-handling-implementation.md](404-handling-implementation.md)** - 404エラーハンドリング実装
 
 ## 注意事項
@@ -18,7 +18,7 @@
 - これらのドキュメントは参考資料として保管されています
 - 最新の実装状況については、メインのドキュメント（`docs/`直下）を参照してください
 - コード自体が主要なドキュメントであり、これらのメモは補足的な情報です
-- 新しい機能実装時は、主要なドキュメント（CODING_GUIDELINES.md、CONTRIBUTING.mdなど）を更新してください
+- 新しい機能実装時は、主要なドキュメント（coding-guidelines.md、CONTRIBUTING.mdなど）を更新してください
 
 ## アーカイブの目的
 

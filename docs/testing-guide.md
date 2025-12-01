@@ -312,4 +312,4 @@ screen.getByClassName('email-input')
 
 - [CONTRIBUTING.md](../CONTRIBUTING.md) - 開発・貢献ガイド
 - [AGENTS.md](../AGENTS.md) - AI エージェント活用ガイド
-- [MSW_GUIDE.md](./MSW_GUIDE.md) - モック環境の設定
+- [msw-guide.md](./msw-guide.md) - モック環境の設定

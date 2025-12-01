@@ -119,7 +119,7 @@ IMPORT_FILENAME=production_data_20250120_020000.sql.gz pnpm db:import
 
 #### 詳細ドキュメント
 
-**ファイル**: `docs/SETUP_GUIDE.md`（Supabaseローカル環境のセクション）
+**ファイル**: `docs/setup-guide.md`（Supabaseローカル環境のセクション）
 
 以下の内容を含む包括的なガイド：
 - アーキテクチャ説明
@@ -305,7 +305,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<supabase statusで取得したanon key>
 
 ## トラブルシューティング
 
-問題が発生した場合は、`docs/SETUP_GUIDE.md`のSupabaseローカル環境のセクションまたは`CONTRIBUTING.md`のトラブルシューティングセクションを参照してください。
+問題が発生した場合は、`docs/setup-guide.md`のSupabaseローカル環境のセクションまたは`CONTRIBUTING.md`のトラブルシューティングセクションを参照してください。
 
 ## セキュリティに関する注意事項
 

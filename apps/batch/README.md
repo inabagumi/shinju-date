@@ -29,7 +29,7 @@ pnpm exec playwright test
 
 ## E2Eテスト
 
-PlaywrightによるE2Eテストが実装されています。詳細は[E2E Testing Guide](../../docs/E2E_TESTING.md)を参照してください。
+PlaywrightによるE2Eテストが実装されています。詳細は[E2E Testing Guide](../../docs/e2e-testing.md)を参照してください。
 
 ```bash
 # E2Eテストの実行

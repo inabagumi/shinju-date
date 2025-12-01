@@ -42,7 +42,7 @@
 
 ## 開発を始める
 
-プロジェクトの開発環境をセットアップするには、[docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md) に従ってください。
+プロジェクトの開発環境をセットアップするには、[docs/setup-guide.md](docs/setup-guide.md) に従ってください。
 
 このガイドには、前提条件、依存関係のインストール、Supabase・Redisのローカル設定、開発サーバーの起動方法などが含まれています。
 
@@ -53,12 +53,12 @@
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - 開発・貢献ガイド
 - **[AGENTS.md](AGENTS.md)** - AI エージェント活用ガイド
 - **[docs/](docs/)** - プロジェクト固有のドキュメント
-  - [Setup Guide](docs/SETUP_GUIDE.md) - セットアップガイド（**最初に読むべきドキュメント**）
-  - [Coding Guidelines](docs/CODING_GUIDELINES.md) - コーディング規約
-  - [Testing Guide](docs/TESTING_GUIDE.md) - テストガイド
-  - [MSW Guide](docs/MSW_GUIDE.md) - MSW モック統合ガイド
+  - [Setup Guide](docs/setup-guide.md) - セットアップガイド（**最初に読むべきドキュメント**）
+  - [Coding Guidelines](docs/coding-guidelines.md) - コーディング規約
+  - [Testing Guide](docs/testing-guide.md) - テストガイド
+  - [MSW Guide](docs/msw-guide.md) - MSW モック統合ガイド
   - [Hybrid Recommendation System](docs/hybrid-recommendation-system.md) - ハイブリッドオススメシステム
-  - [Supabase Implementation](docs/SUPABASE_IMPLEMENTATION.md) - Supabase実装詳細
+  - [Supabase Implementation](docs/supabase-implementation.md) - Supabase実装詳細
 
 ## ローカル開発環境
 
