@@ -113,7 +113,7 @@ async function updateTermsPopularityInDatabase(
     .from('terms')
     .upsert(termsToUpsert, {
       count: 'exact',
-      onConflict: 'term',
+      onConflict: 'id',
     })
 
   if (upsertError) {

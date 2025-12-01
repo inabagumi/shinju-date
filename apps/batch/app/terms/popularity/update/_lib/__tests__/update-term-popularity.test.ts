@@ -116,7 +116,7 @@ describe('updateTermPopularity', () => {
       ]),
       {
         count: 'exact',
-        onConflict: 'term',
+        onConflict: 'id',
       },
     )
   })
@@ -253,7 +253,7 @@ describe('updateTermPopularity', () => {
       ]),
       {
         count: 'exact',
-        onConflict: 'term',
+        onConflict: 'id',
       },
     )
   })
