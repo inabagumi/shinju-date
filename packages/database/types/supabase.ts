@@ -366,6 +366,48 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          id: string
+          type: string
+          name: string | null
+          email: string | null
+          message: string
+          wants_reply: boolean
+          status: Database['public']['Enums']['feedback_status']
+          admin_memo: string | null
+          is_read: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          type: string
+          name?: string | null
+          email?: string | null
+          message: string
+          wants_reply?: boolean
+          status?: Database['public']['Enums']['feedback_status']
+          admin_memo?: string | null
+          is_read?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          type?: string
+          name?: string | null
+          email?: string | null
+          message?: string
+          wants_reply?: boolean
+          status?: Database['public']['Enums']['feedback_status']
+          admin_memo?: string | null
+          is_read?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -459,6 +501,7 @@ export type Database = {
         | 'YOUTUBE_CHANNEL_CREATE'
         | 'YOUTUBE_CHANNEL_DELETE'
         | 'VIDEO_RESTORE'
+      feedback_status: 'pending' | 'in_progress' | 'resolved' | 'rejected'
       platform_type: 'youtube' | 'twitch'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
       video_status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
@@ -614,6 +657,7 @@ export const Constants = {
         'YOUTUBE_CHANNEL_DELETE',
         'VIDEO_RESTORE',
       ],
+      feedback_status: ['pending', 'in_progress', 'resolved', 'rejected'],
       platform_type: ['youtube', 'twitch'],
       twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],
       video_status: ['UPCOMING', 'LIVE', 'ENDED', 'PUBLISHED'],
