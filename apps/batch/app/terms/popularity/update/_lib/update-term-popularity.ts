@@ -58,7 +58,7 @@ async function fetchSearchPopularityFromRedis(
 }
 
 /**
- * Update term popularity in database using batch updates with Promise.all
+ * Update term popularity in database using batch updates with Promise.allSettled
  * Matches Redis search terms with database terms and updates popularity
  */
 async function updateTermsPopularityInDatabase(
@@ -93,7 +93,7 @@ async function updateTermsPopularityInDatabase(
   }
 
   // Process in batches to avoid overwhelming the database
-  // Use Promise.all to execute updates in parallel within each batch
+  // Use Promise.allSettled to execute updates in parallel within each batch
   const BATCH_SIZE = 100
   let updated = 0
 
