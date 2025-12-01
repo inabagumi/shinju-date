@@ -20,16 +20,33 @@ describe('updateTermPopularity', () => {
     }
 
     // Setup mock Supabase client
-    const mockSupabase = {
-      from: vi.fn().mockReturnValue({
-        update: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            select: vi.fn().mockResolvedValue({
-              data: [{ id: 'mock-id' }],
-              error: null,
-            }),
-          }),
+    const selectMock = vi.fn().mockResolvedValue({
+      data: [
+        { term: 'タレント名1' },
+        { term: 'タレント名2' },
+        { term: '配信' },
+      ],
+      error: null,
+    })
+
+    const updateMock = vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        select: vi.fn().mockResolvedValue({
+          data: [{ id: 'mock-id' }],
+          error: null,
         }),
+      }),
+    })
+
+    const mockSupabase = {
+      from: vi.fn().mockImplementation((table) => {
+        if (table === 'terms') {
+          return {
+            select: selectMock,
+            update: updateMock,
+          }
+        }
+        return {}
       }),
     }
 
@@ -56,6 +73,8 @@ describe('updateTermPopularity', () => {
 
     // Verify database calls
     expect(mockSupabase.from).toHaveBeenCalledWith('terms')
+    expect(selectMock).toHaveBeenCalled()
+    expect(updateMock).toHaveBeenCalledTimes(3)
   })
 
   it('should handle empty Redis data', async () => {
@@ -84,20 +103,20 @@ describe('updateTermPopularity', () => {
   it('should handle terms not found in database', async () => {
     // Setup mock Redis client
     const mockRedis = {
-      zrange: vi.fn().mockResolvedValue(['unknown-term', 10]),
+      zrange: vi
+        .fn()
+        .mockResolvedValue(['unknown-term', 10, 'another-term', 5]),
     }
 
-    // Setup mock Supabase client returning empty data (term not found)
+    // Setup mock Supabase client returning no matching terms
+    const selectMock = vi.fn().mockResolvedValue({
+      data: [], // No existing terms
+      error: null,
+    })
+
     const mockSupabase = {
       from: vi.fn().mockReturnValue({
-        update: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            select: vi.fn().mockResolvedValue({
-              data: [],
-              error: null,
-            }),
-          }),
-        }),
+        select: selectMock,
       }),
     }
 
@@ -108,9 +127,9 @@ describe('updateTermPopularity', () => {
     )
 
     // Verify
-    expect(result.total).toBe(1)
+    expect(result.total).toBe(2)
     expect(result.updated).toBe(0)
-    expect(result.notFound).toBe(1)
+    expect(result.notFound).toBe(2)
   })
 
   it('should handle database errors gracefully', async () => {
@@ -119,29 +138,22 @@ describe('updateTermPopularity', () => {
       zrange: vi.fn().mockResolvedValue(['term1', 10]),
     }
 
-    // Setup mock Supabase client with error
+    // Setup mock Supabase client with error on select
+    const selectMock = vi.fn().mockResolvedValue({
+      data: null,
+      error: { message: 'Database error' },
+    })
+
     const mockSupabase = {
       from: vi.fn().mockReturnValue({
-        update: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            select: vi.fn().mockResolvedValue({
-              data: null,
-              error: { message: 'Database error' },
-            }),
-          }),
-        }),
+        select: selectMock,
       }),
     }
 
-    // Execute
-    const result = await updateTermPopularity(
-      mockRedis as any,
-      mockSupabase as any,
-    )
-
-    // Verify - should continue despite error
-    expect(result.total).toBe(1)
-    expect(result.updated).toBe(0)
+    // Execute - should throw error
+    await expect(
+      updateTermPopularity(mockRedis as any, mockSupabase as any),
+    ).rejects.toThrow()
   })
 
   it('should convert scores to integers', async () => {
@@ -149,6 +161,11 @@ describe('updateTermPopularity', () => {
     const mockRedis = {
       zrange: vi.fn().mockResolvedValue(['term1', 10.7, 'term2', 5.3]),
     }
+
+    const selectMock = vi.fn().mockResolvedValue({
+      data: [{ term: 'term1' }, { term: 'term2' }],
+      error: null,
+    })
 
     const updateMock = vi.fn().mockReturnValue({
       eq: vi.fn().mockReturnValue({
@@ -161,6 +178,7 @@ describe('updateTermPopularity', () => {
 
     const mockSupabase = {
       from: vi.fn().mockReturnValue({
+        select: selectMock,
         update: updateMock,
       }),
     }

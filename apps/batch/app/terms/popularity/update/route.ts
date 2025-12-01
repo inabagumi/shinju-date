@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/nextjs'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
+import { logger } from '@shinju-date/logger'
 import { after } from 'next/server'
 import { termsPopularityUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
@@ -18,7 +19,7 @@ export async function POST(request: Request): Promise<Response> {
       cronSecure,
     })
   ) {
-    Sentry.logger.warn('CRON_SECRET did not match.')
+    logger.warn('CRON_SECRETが一致しませんでした')
 
     return createErrorResponse('Unauthorized', {
       status: 401,
@@ -28,7 +29,7 @@ export async function POST(request: Request): Promise<Response> {
   const { success } = await ratelimit.limit('terms:popularity:update')
 
   if (!success) {
-    Sentry.logger.warn('There has been no interval since the last run.')
+    logger.warn('前回の実行から間隔が空いていません')
 
     return createErrorResponse(
       'There has been no interval since the last run.',
@@ -55,7 +56,7 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const result = await updateTermPopularity(redisClient, supabaseClient)
 
-    Sentry.logger.info('Term popularity update completed successfully', result)
+    logger.info('用語の人気度更新が正常に完了しました', result)
 
     after(async () => {
       Sentry.captureCheckIn({
