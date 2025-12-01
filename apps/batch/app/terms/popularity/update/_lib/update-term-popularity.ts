@@ -58,17 +58,17 @@ async function fetchSearchPopularityFromRedis(
 }
 
 /**
- * Update term popularity in database using batch updates with Promise.allSettled
- * Matches Redis search terms with database terms and updates popularity
+ * Update term popularity in database using upsert
+ * Fetches existing terms, merges popularity data, and upserts in a single query
  */
 async function updateTermsPopularityInDatabase(
   supabase: TypedSupabaseClient,
   popularityData: TermPopularity[],
 ): Promise<{ updated: number; notFound: number }> {
-  // Get all existing terms from the database to determine which ones exist
+  // Fetch all existing terms with all their fields
   const { data: existingTerms, error: fetchError } = await supabase
     .from('terms')
-    .select('term')
+    .select('*')
 
   if (fetchError) {
     logger.error('データベースから既存の用語の取得に失敗しました', {
@@ -77,66 +77,53 @@ async function updateTermsPopularityInDatabase(
     throw fetchError
   }
 
-  const existingTermSet = new Set(
-    existingTerms?.map((t) => t.term.toLowerCase()) ?? [],
-  )
+  if (!existingTerms || existingTerms.length === 0) {
+    logger.info('データベースに用語が存在しません')
+    return { notFound: popularityData.length, updated: 0 }
+  }
 
-  // Filter to only update terms that exist in the database
-  const termsToUpdate = popularityData.filter((item) =>
-    existingTermSet.has(item.term.toLowerCase()),
-  )
-  const notFound = popularityData.length - termsToUpdate.length
+  // Create a map of term (lowercase) to full term data for quick lookup
+  const termMap = new Map(existingTerms.map((t) => [t.term.toLowerCase(), t]))
 
-  if (termsToUpdate.length === 0) {
+  // Merge popularity data with existing term data
+  const termsToUpsert = popularityData
+    .map((item) => {
+      const existingTerm = termMap.get(item.term.toLowerCase())
+      if (!existingTerm) {
+        return null
+      }
+
+      // Merge existing term data with new popularity
+      return {
+        ...existingTerm,
+        popularity: item.score,
+      }
+    })
+    .filter((t): t is NonNullable<typeof t> => t !== null)
+
+  const notFound = popularityData.length - termsToUpsert.length
+
+  if (termsToUpsert.length === 0) {
     logger.info('更新対象の用語が見つかりませんでした')
     return { notFound, updated: 0 }
   }
 
-  // Process in batches to avoid overwhelming the database
-  // Use Promise.allSettled to execute updates in parallel within each batch
-  const BATCH_SIZE = 100
-  let updated = 0
+  // Upsert all terms in a single query
+  const { error: upsertError, count } = await supabase
+    .from('terms')
+    .upsert(termsToUpsert, {
+      count: 'exact',
+      onConflict: 'term',
+    })
 
-  for (let i = 0; i < termsToUpdate.length; i += BATCH_SIZE) {
-    const batch = termsToUpdate.slice(i, i + BATCH_SIZE)
-
-    try {
-      // Execute all updates in the batch in parallel using Promise.allSettled
-      const results = await Promise.allSettled(
-        batch.map(async ({ term, score }) => {
-          const { data, error } = await supabase
-            .from('terms')
-            .update({ popularity: score })
-            .eq('term', term)
-            .select('id')
-
-          if (error) {
-            logger.error('用語の人気度更新に失敗しました', {
-              error,
-              term,
-            })
-            throw error
-          }
-
-          return data && data.length > 0
-        }),
-      )
-
-      // Count successful updates
-      const successfulUpdates = results.filter(
-        (result) => result.status === 'fulfilled' && result.value === true,
-      ).length
-
-      updated += successfulUpdates
-    } catch (error) {
-      logger.error('用語の人気度更新中にエラーが発生しました（バッチ処理）', {
-        batchSize: batch.length,
-        error,
-        startIndex: i,
-      })
-      // Continue with next batch even if this one fails
-    }
+  if (upsertError) {
+    logger.error('用語の人気度更新に失敗しました', {
+      error: upsertError,
+    })
+    throw upsertError
   }
+
+  const updated = count ?? termsToUpsert.length
 
   return { notFound, updated }
 }

@@ -19,23 +19,43 @@ describe('updateTermPopularity', () => {
         .mockResolvedValue(['タレント名1', 10, 'タレント名2', 5, '配信', 3]),
     }
 
-    // Setup mock Supabase client
+    // Setup mock Supabase client with full term data
     const selectMock = vi.fn().mockResolvedValue({
       data: [
-        { term: 'タレント名1' },
-        { term: 'タレント名2' },
-        { term: '配信' },
+        {
+          created_at: '2024-01-01',
+          id: 'id1',
+          popularity: 0,
+          readings: ['たれんとめい1'],
+          synonyms: [],
+          term: 'タレント名1',
+          updated_at: '2024-01-01',
+        },
+        {
+          created_at: '2024-01-01',
+          id: 'id2',
+          popularity: 0,
+          readings: ['たれんとめい2'],
+          synonyms: [],
+          term: 'タレント名2',
+          updated_at: '2024-01-01',
+        },
+        {
+          created_at: '2024-01-01',
+          id: 'id3',
+          popularity: 0,
+          readings: ['はいしん'],
+          synonyms: [],
+          term: '配信',
+          updated_at: '2024-01-01',
+        },
       ],
       error: null,
     })
 
-    const updateMock = vi.fn().mockReturnValue({
-      eq: vi.fn().mockReturnValue({
-        select: vi.fn().mockResolvedValue({
-          data: [{ id: 'mock-id' }],
-          error: null,
-        }),
-      }),
+    const upsertMock = vi.fn().mockResolvedValue({
+      count: 3,
+      error: null,
     })
 
     const mockSupabase = {
@@ -43,7 +63,7 @@ describe('updateTermPopularity', () => {
         if (table === 'terms') {
           return {
             select: selectMock,
-            update: updateMock,
+            upsert: upsertMock,
           }
         }
         return {}
@@ -73,8 +93,32 @@ describe('updateTermPopularity', () => {
 
     // Verify database calls
     expect(mockSupabase.from).toHaveBeenCalledWith('terms')
-    expect(selectMock).toHaveBeenCalled()
-    expect(updateMock).toHaveBeenCalledTimes(3)
+    expect(selectMock).toHaveBeenCalledWith('*')
+
+    // Verify upsert was called with merged data
+    expect(upsertMock).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          popularity: 10,
+          readings: ['たれんとめい1'],
+          term: 'タレント名1',
+        }),
+        expect.objectContaining({
+          popularity: 5,
+          readings: ['たれんとめい2'],
+          term: 'タレント名2',
+        }),
+        expect.objectContaining({
+          popularity: 3,
+          readings: ['はいしん'],
+          term: '配信',
+        }),
+      ]),
+      {
+        count: 'exact',
+        onConflict: 'term',
+      },
+    )
   })
 
   it('should handle empty Redis data', async () => {
@@ -163,23 +207,38 @@ describe('updateTermPopularity', () => {
     }
 
     const selectMock = vi.fn().mockResolvedValue({
-      data: [{ term: 'term1' }, { term: 'term2' }],
+      data: [
+        {
+          created_at: '2024-01-01',
+          id: 'id1',
+          popularity: 0,
+          readings: ['reading1'],
+          synonyms: [],
+          term: 'term1',
+          updated_at: '2024-01-01',
+        },
+        {
+          created_at: '2024-01-01',
+          id: 'id2',
+          popularity: 0,
+          readings: ['reading2'],
+          synonyms: [],
+          term: 'term2',
+          updated_at: '2024-01-01',
+        },
+      ],
       error: null,
     })
 
-    const updateMock = vi.fn().mockReturnValue({
-      eq: vi.fn().mockReturnValue({
-        select: vi.fn().mockResolvedValue({
-          data: [{ id: 'mock-id' }],
-          error: null,
-        }),
-      }),
+    const upsertMock = vi.fn().mockResolvedValue({
+      count: 2,
+      error: null,
     })
 
     const mockSupabase = {
       from: vi.fn().mockReturnValue({
         select: selectMock,
-        update: updateMock,
+        upsert: upsertMock,
       }),
     }
 
@@ -187,7 +246,15 @@ describe('updateTermPopularity', () => {
     await updateTermPopularity(mockRedis as any, mockSupabase as any)
 
     // Verify that scores are floored to integers
-    expect(updateMock).toHaveBeenCalledWith({ popularity: 10 })
-    expect(updateMock).toHaveBeenCalledWith({ popularity: 5 })
+    expect(upsertMock).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ popularity: 10, term: 'term1' }),
+        expect.objectContaining({ popularity: 5, term: 'term2' }),
+      ]),
+      {
+        count: 'exact',
+        onConflict: 'term',
+      },
+    )
   })
 })
