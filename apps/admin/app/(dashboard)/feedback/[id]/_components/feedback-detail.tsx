@@ -1,6 +1,6 @@
 'use client'
 
-import type { Tables } from '@shinju-date/database/default'
+import type { Tables } from '@shinju-date/database'
 import { Button } from '@shinju-date/ui'
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
@@ -9,17 +9,10 @@ import {
   markFeedbackAsRead,
   updateFeedbackMemo,
   updateFeedbackStatus,
-} from '../_actions/update-feedback'
+} from '../../_actions/update-feedback'
 
 interface FeedbackDetailProps {
   feedback: Tables<'feedback'>
-}
-
-const statusLabels: Record<Tables<'feedback'>['status'], string> = {
-  in_progress: '対応中',
-  pending: '未対応',
-  rejected: '却下',
-  resolved: '対応済み',
 }
 
 const typeLabels: Record<string, string> = {
@@ -32,7 +25,7 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
   const { pending } = useFormStatus()
 
   return (
-    <Button disabled={pending} size="sm" type="submit" variant="default">
+    <Button disabled={pending} size="sm" type="submit" variant="primary">
       {pending ? '更新中...' : children}
     </Button>
   )

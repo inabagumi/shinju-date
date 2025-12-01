@@ -1,6 +1,6 @@
 'use client'
 
-import type { Tables } from '@shinju-date/database/default'
+import type { Tables } from '@shinju-date/database'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { Badge } from '@shinju-date/ui'
 import Link from 'next/link'
@@ -26,11 +26,11 @@ const typeLabels: Record<string, string> = {
 
 const statusColors: Record<
   Tables<'feedback'>['status'],
-  'default' | 'secondary' | 'success' | 'destructive'
+  'info' | 'secondary' | 'success' | 'error'
 > = {
   in_progress: 'secondary',
-  pending: 'default',
-  rejected: 'destructive',
+  pending: 'info',
+  rejected: 'error',
   resolved: 'success',
 }
 
@@ -120,12 +120,12 @@ export function FeedbackList({ feedback }: FeedbackListProps) {
                       <Badge variant={statusColors[item.status]}>
                         {statusLabels[item.status]}
                       </Badge>
-                      <Badge variant="outline">
+                      <Badge variant="secondary">
                         {typeLabels[item.type] || item.type}
                       </Badge>
-                      {!item.is_read && <Badge variant="secondary">未読</Badge>}
+                      {!item.is_read && <Badge variant="warning">未読</Badge>}
                       {item.wants_reply && (
-                        <Badge variant="outline">返信希望</Badge>
+                        <Badge variant="info">返信希望</Badge>
                       )}
                     </div>
                     <p className="line-clamp-2 text-gray-700">{item.message}</p>

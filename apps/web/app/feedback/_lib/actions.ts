@@ -1,6 +1,6 @@
 'use server'
 
-import type { TablesInsert } from '@shinju-date/database/default'
+import type { TablesInsert } from '@shinju-date/database'
 import { z } from 'zod'
 import { createSupabaseClient } from '@/lib/supabase'
 

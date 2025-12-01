@@ -1,6 +1,6 @@
 'use server'
 
-import type { TablesUpdate } from '@shinju-date/database/default'
+import type { TablesUpdate } from '@shinju-date/database'
 import { revalidatePath } from 'next/cache'
 import { supabaseClient } from '@/lib/supabase/admin'
 
@@ -9,6 +9,13 @@ export async function updateFeedbackStatus(
   status: TablesUpdate<'feedback'>['status'],
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    if (!status) {
+      return {
+        error: 'ステータスが指定されていません',
+        success: false,
+      }
+    }
+
     const { error } = await supabaseClient
       .from('feedback')
       .update({ status })

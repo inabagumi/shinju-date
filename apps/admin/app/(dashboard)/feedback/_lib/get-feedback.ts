@@ -1,4 +1,4 @@
-import type { Tables } from '@shinju-date/database/default'
+import type { Tables } from '@shinju-date/database'
 import { supabaseClient } from '@/lib/supabase/admin'
 
 export interface FeedbackFilters {
