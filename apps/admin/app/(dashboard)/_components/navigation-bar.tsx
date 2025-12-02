@@ -101,7 +101,7 @@ export function NavigationBar() {
                   href="/feedback"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
-                  フィードバック管理
+                  機能要望管理
                 </Link>
               </div>
             )}
@@ -291,7 +291,7 @@ export function NavigationBar() {
                 href="/feedback"
                 onClick={() => setIsMenuOpen(false)}
               >
-                フィードバック管理
+                機能要望管理
               </Link>
             </div>
             <div className="space-y-1">

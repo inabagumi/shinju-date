@@ -1,31 +1,27 @@
 'use client'
 
+import { TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { Badge } from '@shinju-date/ui'
 import Link from 'next/link'
 import { useState } from 'react'
+import { twMerge } from 'tailwind-merge'
 import { Temporal } from 'temporal-polyfill'
 
-interface FeedbackListProps {
-  feedback: Tables<'feedback'>[]
+interface FeatureRequestListProps {
+  featureRequests: Tables<'feature_requests'>[]
 }
 
-const statusLabels: Record<Tables<'feedback'>['status'], string> = {
+const statusLabels: Record<Tables<'feature_requests'>['status'], string> = {
   in_progress: '対応中',
   pending: '未対応',
   rejected: '却下',
   resolved: '対応済み',
 }
 
-const typeLabels: Record<string, string> = {
-  bug: '不具合報告',
-  feature: '機能要望',
-  other: 'その他',
-}
-
 const statusColors: Record<
-  Tables<'feedback'>['status'],
+  Tables<'feature_requests'>['status'],
   'info' | 'secondary' | 'success' | 'error'
 > = {
   in_progress: 'secondary',
@@ -34,13 +30,15 @@ const statusColors: Record<
   resolved: 'success',
 }
 
-export function FeedbackList({ feedback }: FeedbackListProps) {
+export function FeatureRequestList({
+  featureRequests,
+}: FeatureRequestListProps) {
   const [statusFilter, setStatusFilter] = useState<
-    Tables<'feedback'>['status'] | 'all'
+    Tables<'feature_requests'>['status'] | 'all'
   >('all')
   const [readFilter, setReadFilter] = useState<'all' | 'read' | 'unread'>('all')
 
-  const filteredFeedback = feedback.filter((item) => {
+  const filteredRequests = featureRequests.filter((item) => {
     if (statusFilter !== 'all' && item.status !== statusFilter) return false
     if (readFilter === 'read' && !item.is_read) return false
     if (readFilter === 'unread' && item.is_read) return false
@@ -60,7 +58,7 @@ export function FeedbackList({ feedback }: FeedbackListProps) {
             id="status-filter"
             onChange={(e) =>
               setStatusFilter(
-                e.target.value as Tables<'feedback'>['status'] | 'all',
+                e.target.value as Tables<'feature_requests'>['status'] | 'all',
               )
             }
             value={statusFilter}
@@ -91,26 +89,27 @@ export function FeedbackList({ feedback }: FeedbackListProps) {
         </div>
       </div>
 
-      {/* Feedback List */}
-      {filteredFeedback.length === 0 ? (
+      {/* Feature Request List */}
+      {filteredRequests.length === 0 ? (
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center text-gray-500">
-          フィードバックがありません
+          機能要望がありません
         </div>
       ) : (
         <div className="space-y-2">
-          {filteredFeedback.map((item) => {
+          {filteredRequests.map((item) => {
             const createdAt = Temporal.Instant.from(item.created_at)
             const formattedDate = formatDateKey(
-              createdAt.toZonedDateTimeISO('Asia/Tokyo'),
+              createdAt.toZonedDateTimeISO(TIME_ZONE),
             )
 
             return (
               <Link
-                className={`block rounded-lg border p-4 transition hover:shadow-md ${
+                className={twMerge(
+                  'block rounded-lg border p-4 transition hover:shadow-md',
                   item.is_read
                     ? 'border-gray-200 bg-white'
-                    : 'border-blue-200 bg-blue-50'
-                }`}
+                    : 'border-blue-200 bg-blue-50',
+                )}
                 href={`/feedback/${item.id}`}
                 key={item.id}
               >
@@ -120,20 +119,9 @@ export function FeedbackList({ feedback }: FeedbackListProps) {
                       <Badge variant={statusColors[item.status]}>
                         {statusLabels[item.status]}
                       </Badge>
-                      <Badge variant="secondary">
-                        {typeLabels[item.type] || item.type}
-                      </Badge>
                       {!item.is_read && <Badge variant="warning">未読</Badge>}
-                      {item.wants_reply && (
-                        <Badge variant="info">返信希望</Badge>
-                      )}
                     </div>
                     <p className="line-clamp-2 text-gray-700">{item.message}</p>
-                    {item.name && (
-                      <p className="text-gray-600 text-sm">
-                        送信者: {item.name}
-                      </p>
-                    )}
                   </div>
                   <div className="text-right text-gray-500 text-sm">
                     {formattedDate.slice(0, 4)}-{formattedDate.slice(4, 6)}-

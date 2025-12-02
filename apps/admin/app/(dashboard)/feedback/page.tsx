@@ -1,16 +1,16 @@
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
-import { FeedbackList } from './_components/feedback-list'
-import { getFeedback } from './_lib/get-feedback'
+import { FeatureRequestList } from './_components/feedback-list'
+import { getFeatureRequests } from './_lib/get-feedback'
 
-async function FeedbackListData() {
+async function FeatureRequestListData() {
   'use cache: private'
 
   cacheLife('minutes')
 
-  const feedback = await getFeedback()
+  const featureRequests = await getFeatureRequests()
 
-  return <FeedbackList feedback={feedback} />
+  return <FeatureRequestList featureRequests={featureRequests} />
 }
 
 export default function FeedbackPage() {
@@ -19,16 +19,16 @@ export default function FeedbackPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="font-bold text-3xl">フィードバック管理</h1>
+          <h1 className="font-bold text-3xl">機能要望管理</h1>
         </div>
 
-        {/* Feedback List */}
+        {/* Feature Request List */}
         <Suspense
           fallback={
             <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
           }
         >
-          <FeedbackListData />
+          <FeatureRequestListData />
         </Suspense>
       </div>
     </div>

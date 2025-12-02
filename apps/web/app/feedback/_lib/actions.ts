@@ -5,11 +5,7 @@ import { z } from 'zod'
 import { createSupabaseClient } from '@/lib/supabase'
 
 const feedbackFormSchema = z.object({
-  email: z.string().email().optional().or(z.literal('')),
   message: z.string().min(1, 'メッセージは必須です'),
-  name: z.string().optional(),
-  type: z.enum(['bug', 'feature', 'other']),
-  wantsReply: z.boolean().default(false),
 })
 
 export async function submitFeedback(
@@ -19,25 +15,10 @@ export async function submitFeedback(
   try {
     // Parse form data
     const rawData = {
-      email: (formData.get('email') as string) || '',
       message: formData.get('message'),
-      name: (formData.get('name') as string) || undefined,
-      type: formData.get('type'),
-      wantsReply: formData.get('wantsReply') === 'on',
     }
 
-    // Validate with email requirement if reply is requested
-    const validationSchema = rawData.wantsReply
-      ? feedbackFormSchema.refine(
-          (data) => data.email && data.email.length > 0,
-          {
-            message: '返信を希望する場合はメールアドレスが必須です',
-            path: ['email'],
-          },
-        )
-      : feedbackFormSchema
-
-    const result = validationSchema.safeParse(rawData)
+    const result = feedbackFormSchema.safeParse(rawData)
 
     if (!result.success) {
       return {
@@ -46,26 +27,22 @@ export async function submitFeedback(
       }
     }
 
-    const { type, name, wantsReply, email, message } = result.data
+    const { message } = result.data
 
     // Create Supabase client (anon key for public access)
     const supabase = createSupabaseClient()
 
-    // Insert feedback into database
-    const feedbackData: TablesInsert<'feedback'> = {
-      email: email || null,
+    // Insert feature request into database
+    const featureRequestData: TablesInsert<'feature_requests'> = {
       message,
-      name: name || null,
-      type,
-      wants_reply: wantsReply,
     }
 
     const { error: insertError } = await supabase
-      .from('feedback')
-      .insert(feedbackData)
+      .from('feature_requests')
+      .insert(featureRequestData)
 
     if (insertError) {
-      console.error('Feedback submission error:', insertError)
+      console.error('Feature request submission error:', insertError)
       return {
         error:
           '送信中にエラーが発生しました。しばらく時間をおいて再度お試しください。',
@@ -74,11 +51,11 @@ export async function submitFeedback(
     }
 
     return {
-      message: 'フィードバックを受け付けました。ありがとうございます。',
+      message: '機能要望を受け付けました。ありがとうございます。',
       success: true,
     }
   } catch (error) {
-    console.error('Feedback form submission error:', error)
+    console.error('Feature request form submission error:', error)
     return {
       error:
         '送信中にエラーが発生しました。しばらく時間をおいて再度お試しください。',

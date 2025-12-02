@@ -6,19 +6,13 @@ import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import ReactMarkdown from 'react-markdown'
 import {
-  markFeedbackAsRead,
-  updateFeedbackMemo,
-  updateFeedbackStatus,
+  markFeatureRequestAsRead,
+  updateFeatureRequestMemo,
+  updateFeatureRequestStatus,
 } from '../../_actions/update-feedback'
 
-interface FeedbackDetailProps {
-  feedback: Tables<'feedback'>
-}
-
-const typeLabels: Record<string, string> = {
-  bug: '不具合報告',
-  feature: '機能要望',
-  other: 'その他',
+interface FeatureRequestDetailProps {
+  featureRequest: Tables<'feature_requests'>
 }
 
 function SubmitButton({ children }: { children: React.ReactNode }) {
@@ -31,11 +25,15 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
+export function FeatureRequestDetail({
+  featureRequest,
+}: FeatureRequestDetailProps) {
   const [statusState, updateStatusAction] = useActionState(
     async (_prevState: unknown, formData: FormData) => {
-      const status = formData.get('status') as Tables<'feedback'>['status']
-      return await updateFeedbackStatus(feedback.id, status)
+      const status = formData.get(
+        'status',
+      ) as Tables<'feature_requests'>['status']
+      return await updateFeatureRequestStatus(featureRequest.id, status)
     },
     null,
   )
@@ -43,7 +41,7 @@ export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
   const [memoState, updateMemoAction] = useActionState(
     async (_prevState: unknown, formData: FormData) => {
       const memo = formData.get('admin_memo') as string
-      return await updateFeedbackMemo(feedback.id, memo)
+      return await updateFeatureRequestMemo(featureRequest.id, memo)
     },
     null,
   )
@@ -51,7 +49,7 @@ export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
   const [readState, markAsReadAction] = useActionState(
     async (_prevState: unknown, formData: FormData) => {
       const isRead = formData.get('is_read') === 'true'
-      return await markFeedbackAsRead(feedback.id, isRead)
+      return await markFeatureRequestAsRead(featureRequest.id, isRead)
     },
     null,
   )
@@ -63,39 +61,15 @@ export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
         <h2 className="mb-4 font-semibold text-xl">基本情報</h2>
         <dl className="space-y-3">
           <div>
-            <dt className="font-medium text-gray-600 text-sm">種別</dt>
-            <dd className="mt-1">
-              {typeLabels[feedback.type] || feedback.type}
-            </dd>
-          </div>
-          {feedback.name && (
-            <div>
-              <dt className="font-medium text-gray-600 text-sm">送信者</dt>
-              <dd className="mt-1">{feedback.name}</dd>
-            </div>
-          )}
-          {feedback.email && (
-            <div>
-              <dt className="font-medium text-gray-600 text-sm">
-                メールアドレス
-              </dt>
-              <dd className="mt-1">{feedback.email}</dd>
-            </div>
-          )}
-          <div>
-            <dt className="font-medium text-gray-600 text-sm">返信希望</dt>
-            <dd className="mt-1">{feedback.wants_reply ? 'あり' : 'なし'}</dd>
-          </div>
-          <div>
             <dt className="font-medium text-gray-600 text-sm">送信日時</dt>
             <dd className="mt-1">
-              {new Date(feedback.created_at).toLocaleString('ja-JP')}
+              {new Date(featureRequest.created_at).toLocaleString('ja-JP')}
             </dd>
           </div>
           <div>
             <dt className="font-medium text-gray-600 text-sm">更新日時</dt>
             <dd className="mt-1">
-              {new Date(feedback.updated_at).toLocaleString('ja-JP')}
+              {new Date(featureRequest.updated_at).toLocaleString('ja-JP')}
             </dd>
           </div>
         </dl>
@@ -103,9 +77,9 @@ export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
 
       {/* Message */}
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 font-semibold text-xl">フィードバック内容</h2>
+        <h2 className="mb-4 font-semibold text-xl">機能要望内容</h2>
         <div className="whitespace-pre-wrap rounded bg-gray-50 p-4">
-          {feedback.message}
+          {featureRequest.message}
         </div>
       </div>
 
@@ -119,7 +93,7 @@ export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
             </label>
             <select
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-              defaultValue={feedback.status}
+              defaultValue={featureRequest.status}
               id="status"
               name="status"
             >
@@ -130,10 +104,10 @@ export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
             </select>
           </div>
           <SubmitButton>ステータスを更新</SubmitButton>
-          {statusState && !statusState.success && (
+          {statusState?.success === false && (
             <p className="text-red-600 text-sm">{statusState.error}</p>
           )}
-          {statusState && statusState.success && (
+          {statusState?.success === true && (
             <p className="text-green-600 text-sm">更新しました</p>
           )}
         </form>
@@ -145,21 +119,21 @@ export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
         <form action={markAsReadAction} className="space-y-4">
           <div className="flex items-center gap-4">
             <span className="text-sm">
-              現在: {feedback.is_read ? '既読' : '未読'}
+              現在: {featureRequest.is_read ? '既読' : '未読'}
             </span>
             <input
               name="is_read"
               type="hidden"
-              value={String(!feedback.is_read)}
+              value={String(!featureRequest.is_read)}
             />
             <SubmitButton>
-              {feedback.is_read ? '未読にする' : '既読にする'}
+              {featureRequest.is_read ? '未読にする' : '既読にする'}
             </SubmitButton>
           </div>
-          {readState && !readState.success && (
+          {readState?.success === false && (
             <p className="text-red-600 text-sm">{readState.error}</p>
           )}
-          {readState && readState.success && (
+          {readState?.success === true && (
             <p className="text-green-600 text-sm">更新しました</p>
           )}
         </form>
@@ -175,27 +149,27 @@ export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
             </label>
             <textarea
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-              defaultValue={feedback.admin_memo || ''}
+              defaultValue={featureRequest.admin_memo || ''}
               id="admin_memo"
               name="admin_memo"
               rows={8}
             />
           </div>
           <SubmitButton>メモを保存</SubmitButton>
-          {memoState && !memoState.success && (
+          {memoState?.success === false && (
             <p className="text-red-600 text-sm">{memoState.error}</p>
           )}
-          {memoState && memoState.success && (
+          {memoState?.success === true && (
             <p className="text-green-600 text-sm">保存しました</p>
           )}
         </form>
 
         {/* Preview */}
-        {feedback.admin_memo && (
+        {featureRequest.admin_memo && (
           <div className="mt-6">
             <h3 className="mb-2 font-medium text-sm">プレビュー</h3>
             <div className="prose max-w-none rounded bg-gray-50 p-4 text-sm">
-              <ReactMarkdown>{feedback.admin_memo}</ReactMarkdown>
+              <ReactMarkdown>{featureRequest.admin_memo}</ReactMarkdown>
             </div>
           </div>
         )}

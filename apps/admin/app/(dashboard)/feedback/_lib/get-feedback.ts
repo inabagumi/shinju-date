@@ -1,16 +1,16 @@
 import type { Tables } from '@shinju-date/database'
 import { supabaseClient } from '@/lib/supabase/admin'
 
-export interface FeedbackFilters {
-  status?: Tables<'feedback'>['status']
+export interface FeatureRequestFilters {
+  status?: Tables<'feature_requests'>['status']
   isRead?: boolean
 }
 
-export async function getFeedback(
-  filters: FeedbackFilters = {},
-): Promise<Tables<'feedback'>[]> {
+export async function getFeatureRequests(
+  filters: FeatureRequestFilters = {},
+): Promise<Tables<'feature_requests'>[]> {
   let query = supabaseClient
-    .from('feedback')
+    .from('feature_requests')
     .select('*')
     .order('created_at', { ascending: false })
 
@@ -31,11 +31,11 @@ export async function getFeedback(
   return data || []
 }
 
-export async function getFeedbackById(
+export async function getFeatureRequestById(
   id: string,
-): Promise<Tables<'feedback'> | null> {
+): Promise<Tables<'feature_requests'> | null> {
   const { data, error } = await supabaseClient
-    .from('feedback')
+    .from('feature_requests')
     .select('*')
     .eq('id', id)
     .single()

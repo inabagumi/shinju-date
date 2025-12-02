@@ -119,7 +119,7 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
                     className="hover:text-secondary-pink hover:underline"
                     href="/feedback"
                   >
-                    フィードバック
+                    機能要望
                   </Link>
                 </li>
                 <li>

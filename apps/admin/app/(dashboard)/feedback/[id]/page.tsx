@@ -2,8 +2,8 @@ import { cacheLife } from 'next/cache'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
-import { getFeedbackById } from '../_lib/get-feedback'
-import { FeedbackDetail } from './_components/feedback-detail'
+import { getFeatureRequestById } from '../_lib/get-feedback'
+import { FeatureRequestDetail } from './_components/feedback-detail'
 
 interface Props {
   params: Promise<{
@@ -11,18 +11,18 @@ interface Props {
   }>
 }
 
-async function FeedbackDetailData({ id }: { id: string }) {
+async function FeatureRequestDetailData({ id }: { id: string }) {
   'use cache: private'
 
   cacheLife('minutes')
 
-  const feedback = await getFeedbackById(id)
+  const featureRequest = await getFeatureRequestById(id)
 
-  if (!feedback) {
+  if (!featureRequest) {
     notFound()
   }
 
-  return <FeedbackDetail feedback={feedback} />
+  return <FeatureRequestDetail featureRequest={featureRequest} />
 }
 
 export default async function FeedbackDetailPage({ params }: Props) {
@@ -32,16 +32,16 @@ export default async function FeedbackDetailPage({ params }: Props) {
     <div className="mx-auto max-w-4xl p-6">
       <div className="mb-6">
         <Link className="text-blue-600 hover:underline" href="/feedback">
-          ← フィードバック一覧に戻る
+          ← 機能要望一覧に戻る
         </Link>
       </div>
 
-      <h1 className="mb-6 font-bold text-3xl">フィードバック詳細</h1>
+      <h1 className="mb-6 font-bold text-3xl">機能要望詳細</h1>
 
       <Suspense
         fallback={<div className="h-96 animate-pulse rounded-lg bg-gray-200" />}
       >
-        <FeedbackDetailData id={id} />
+        <FeatureRequestDetailData id={id} />
       </Suspense>
     </div>
   )

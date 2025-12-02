@@ -4,9 +4,9 @@ import type { TablesUpdate } from '@shinju-date/database'
 import { revalidatePath } from 'next/cache'
 import { supabaseClient } from '@/lib/supabase/admin'
 
-export async function updateFeedbackStatus(
+export async function updateFeatureRequestStatus(
   id: string,
-  status: TablesUpdate<'feedback'>['status'],
+  status: TablesUpdate<'feature_requests'>['status'],
 ): Promise<{ success: boolean; error?: string }> {
   try {
     if (!status) {
@@ -17,7 +17,7 @@ export async function updateFeedbackStatus(
     }
 
     const { error } = await supabaseClient
-      .from('feedback')
+      .from('feature_requests')
       .update({ status })
       .eq('id', id)
 
@@ -28,7 +28,7 @@ export async function updateFeedbackStatus(
     revalidatePath('/feedback')
     return { success: true }
   } catch (error) {
-    console.error('Update feedback status error:', error)
+    console.error('Update feature request status error:', error)
     return {
       error: 'ステータスの更新に失敗しました',
       success: false,
@@ -36,13 +36,13 @@ export async function updateFeedbackStatus(
   }
 }
 
-export async function updateFeedbackMemo(
+export async function updateFeatureRequestMemo(
   id: string,
   adminMemo: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { error } = await supabaseClient
-      .from('feedback')
+      .from('feature_requests')
       .update({ admin_memo: adminMemo })
       .eq('id', id)
 
@@ -53,7 +53,7 @@ export async function updateFeedbackMemo(
     revalidatePath('/feedback')
     return { success: true }
   } catch (error) {
-    console.error('Update feedback memo error:', error)
+    console.error('Update feature request memo error:', error)
     return {
       error: 'メモの更新に失敗しました',
       success: false,
@@ -61,13 +61,13 @@ export async function updateFeedbackMemo(
   }
 }
 
-export async function markFeedbackAsRead(
+export async function markFeatureRequestAsRead(
   id: string,
   isRead: boolean,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { error } = await supabaseClient
-      .from('feedback')
+      .from('feature_requests')
       .update({ is_read: isRead })
       .eq('id', id)
 
@@ -78,7 +78,7 @@ export async function markFeedbackAsRead(
     revalidatePath('/feedback')
     return { success: true }
   } catch (error) {
-    console.error('Mark feedback as read error:', error)
+    console.error('Mark feature request as read error:', error)
     return {
       error: '既読状態の更新に失敗しました',
       success: false,
