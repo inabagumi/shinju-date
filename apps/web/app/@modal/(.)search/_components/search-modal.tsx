@@ -35,8 +35,6 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(true)
   const isNavigating = useRef(false)
-  const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const flagResetTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleClose = useCallback(
     (open: boolean) => {
@@ -44,34 +42,12 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
 
       setIsOpen(false)
 
-      // Clear any existing timeouts
-      if (navigationTimeoutRef.current) {
-        clearTimeout(navigationTimeoutRef.current)
-      }
-      if (flagResetTimeoutRef.current) {
-        clearTimeout(flagResetTimeoutRef.current)
-      }
-
       if (!isNavigating.current) {
-        // Delay navigation slightly to allow modal close animation
-        navigationTimeoutRef.current = setTimeout(() => {
-          // Check if we have history to go back to by checking window.history.length
-          // If we have more than 1 entry, we can safely use router.back()
-          // Otherwise, navigate to home page
-          if (typeof window !== 'undefined' && window.history.length > 1) {
-            router.back()
-          } else {
-            router.push('/')
-          }
-          navigationTimeoutRef.current = null
-        }, 100)
+        router.back()
       }
 
-      // Reset the flag after a longer delay to ensure navigation completes
-      flagResetTimeoutRef.current = setTimeout(() => {
-        isNavigating.current = false
-        flagResetTimeoutRef.current = null
-      }, 300)
+      // Reset the flag after the modal closes
+      isNavigating.current = false
     },
     [router],
   )
@@ -85,18 +61,6 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setIsOpen(true)
   }, [pathname])
-
-  // Cleanup timeouts on unmount
-  useEffect(() => {
-    return () => {
-      if (navigationTimeoutRef.current) {
-        clearTimeout(navigationTimeoutRef.current)
-      }
-      if (flagResetTimeoutRef.current) {
-        clearTimeout(flagResetTimeoutRef.current)
-      }
-    }
-  }, [])
 
   return (
     <Dialog onOpenChange={handleClose} open={isOpen}>
