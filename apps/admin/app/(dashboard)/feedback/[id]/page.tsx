@@ -12,6 +12,24 @@ interface Props {
   }>
 }
 
+function createTitleFromMessage(message: string): string {
+  // Remove empty lines and extra whitespace
+  const cleaned = message
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  // Take first 50 characters
+  const maxLength = 50
+  if (cleaned.length <= maxLength) {
+    return cleaned
+  }
+  return `${cleaned.substring(0, maxLength)}...`
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
 
@@ -23,8 +41,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
   }
 
+  const title = createTitleFromMessage(featureRequest.message)
+
   return {
-    title: `${featureRequest.title} - 機能要望詳細`,
+    title: `${title} - 機能要望詳細`,
   }
 }
 
