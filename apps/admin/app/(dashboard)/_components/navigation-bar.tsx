@@ -94,6 +94,14 @@ export function NavigationBar() {
                 >
                   お知らせ管理
                 </Link>
+                <Link
+                  aria-current={isActive('/feedback') ? 'page' : undefined}
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
+                  href="/feedback"
+                  onClick={() => setIsDataMenuOpen(false)}
+                >
+                  機能要望管理
+                </Link>
               </div>
             )}
           </div>
@@ -274,6 +282,14 @@ export function NavigationBar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 お知らせ管理
+              </Link>
+              <Link
+                aria-current={isActive('/feedback') ? 'page' : undefined}
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
+                href="/feedback"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                機能要望管理
               </Link>
             </div>
             <div className="space-y-1">

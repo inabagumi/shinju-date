@@ -366,6 +366,36 @@ export type Database = {
           },
         ]
       }
+      feature_requests: {
+        Row: {
+          id: string
+          message: string
+          status: Database['public']['Enums']['feature_request_status']
+          admin_memo: string | null
+          is_read: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          message: string
+          status?: Database['public']['Enums']['feature_request_status']
+          admin_memo?: string | null
+          is_read?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          message?: string
+          status?: Database['public']['Enums']['feature_request_status']
+          admin_memo?: string | null
+          is_read?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -459,6 +489,11 @@ export type Database = {
         | 'YOUTUBE_CHANNEL_CREATE'
         | 'YOUTUBE_CHANNEL_DELETE'
         | 'VIDEO_RESTORE'
+      feature_request_status:
+        | 'pending'
+        | 'in_progress'
+        | 'resolved'
+        | 'rejected'
       platform_type: 'youtube' | 'twitch'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
       video_status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
@@ -613,6 +648,12 @@ export const Constants = {
         'YOUTUBE_CHANNEL_CREATE',
         'YOUTUBE_CHANNEL_DELETE',
         'VIDEO_RESTORE',
+      ],
+      feature_request_status: [
+        'pending',
+        'in_progress',
+        'resolved',
+        'rejected',
       ],
       platform_type: ['youtube', 'twitch'],
       twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],

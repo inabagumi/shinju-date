@@ -76,3 +76,14 @@ VALUES
 INSERT INTO public.announcements (id, enabled, level, message, start_at, end_at, created_at, updated_at)
 VALUES
 	('40000000-0000-0000-0000-000000000001', TRUE, 'info', '新機能リリース', NOW() - INTERVAL '1 day', NOW() + INTERVAL '6 day', NOW(), NOW());
+
+-- feature_requests
+INSERT INTO public.feature_requests (id, message, status, admin_memo, is_read, created_at, updated_at)
+VALUES
+	('50000000-0000-0000-0000-000000000001', 'タレントごとの動画投稿頻度をグラフで見れるようにしてほしいです。', 'resolved', '分析機能として次期バージョンで実装予定です。', TRUE, date_trunc('second', NOW() - INTERVAL '10 days'), date_trunc('second', NOW() - INTERVAL '5 days')),
+	('50000000-0000-0000-0000-000000000002', '配信のリマインダー機能があると嬉しいです。', 'in_progress', '通知機能の実装を検討中です。技術的な課題を調査しています。', TRUE, date_trunc('second', NOW() - INTERVAL '7 days'), date_trunc('second', NOW() - INTERVAL '2 days')),
+	('50000000-0000-0000-0000-000000000003', 'ダークモードに対応してほしい', 'pending', NULL, TRUE, date_trunc('second', NOW() - INTERVAL '5 days'), date_trunc('second', NOW() - INTERVAL '5 days')),
+	('50000000-0000-0000-0000-000000000004', '過去の配信アーカイブを検索する機能が欲しいです。キーワードで検索できると便利だと思います。', 'pending', NULL, FALSE, date_trunc('second', NOW() - INTERVAL '3 days'), date_trunc('second', NOW() - INTERVAL '3 days')),
+	('50000000-0000-0000-0000-000000000005', 'タレントのSNSアカウント一覧を表示してほしい', 'rejected', '外部サービスとの連携は現時点では対応予定がありません。', TRUE, date_trunc('second', NOW() - INTERVAL '2 days'), date_trunc('second', NOW() - INTERVAL '1 day')),
+	('50000000-0000-0000-0000-000000000006', 'スマホアプリ版を作ってほしいです', 'pending', NULL, FALSE, date_trunc('second', NOW() - INTERVAL '1 day'), date_trunc('second', NOW() - INTERVAL '1 day')),
+	('50000000-0000-0000-0000-000000000007', 'お気に入りのタレントをフォローできる機能', 'in_progress', 'ユーザー認証機能と合わせて実装を検討しています。', TRUE, date_trunc('second', NOW() - INTERVAL '6 hours'), date_trunc('second', NOW() - INTERVAL '6 hours'));

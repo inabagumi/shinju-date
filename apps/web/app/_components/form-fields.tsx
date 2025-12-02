@@ -1,4 +1,4 @@
-import { Input } from '@shinju-date/ui'
+import { Input, Textarea } from '@shinju-date/ui'
 import { twMerge } from 'tailwind-merge'
 
 interface InputFieldProps
@@ -73,13 +73,14 @@ export function TextareaField({
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
-      <textarea
+      <Textarea
         className={twMerge(
-          'w-full rounded-lg border border-774-nevy-300 bg-white px-4 py-3 text-primary placeholder:text-774-nevy-400 focus:border-secondary-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/20 dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-50 dark:placeholder:text-774-nevy-400',
+          'rounded-lg border-774-nevy-300 px-4 py-3 placeholder:text-774-nevy-400 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600 dark:placeholder:text-774-nevy-400',
           className,
         )}
         id={inputId}
         ref={ref}
+        variant={error ? 'error' : 'default'}
         {...props}
       />
       {error && <p className="mt-1 text-red-500 text-sm">{error}</p>}

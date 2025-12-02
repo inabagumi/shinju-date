@@ -23,6 +23,7 @@ export {
   type MultiSelectOption,
   type MultiSelectProps,
 } from './multi-select'
+export { Textarea, type TextareaProps } from './textarea'
 export {
   Toast,
   ToastAction,
