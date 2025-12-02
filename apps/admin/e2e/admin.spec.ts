@@ -80,11 +80,30 @@ test.describe('Admin App - Videos Management', () => {
       await page.waitForLoadState('networkidle')
     }
   })
+})
 
-  test('should return 404 for invalid video ID', async ({ page }) => {
-    // Try to access a video with an invalid ID
+test.describe('Admin App - Feedback Management', () => {
+  test.beforeEach(async ({ page }) => {
+    // Login before each test
+    await page.goto('http://localhost:4000/login')
+    await page.waitForLoadState('networkidle')
+
+    const emailInput = page.locator('input[type="email"], input[name="email"]')
+    const passwordInput = page.locator(
+      'input[type="password"], input[name="password"]',
+    )
+    const submitButton = page.locator('button[type="submit"]')
+
+    await emailInput.fill('admin@example.com')
+    await passwordInput.fill('password123')
+    await submitButton.click()
+    await page.waitForLoadState('networkidle')
+  })
+
+  test('should return 404 for invalid feedback ID', async ({ page }) => {
+    // Try to access feedback with an invalid ID
     const response = await page.goto(
-      'http://localhost:4000/videos/invalid-id-format',
+      'http://localhost:4000/feedback/invalid-id-format',
     )
 
     // Should return 404 status
@@ -99,10 +118,10 @@ test.describe('Admin App - Videos Management', () => {
     expect(content).toContain('ページが見つかりません')
   })
 
-  test('should return 404 for non-existent video UUID', async ({ page }) => {
-    // Try to access a video with a valid UUID format but non-existent ID
+  test('should return 404 for non-existent feedback UUID', async ({ page }) => {
+    // Try to access feedback with a valid UUID format but non-existent ID
     const response = await page.goto(
-      'http://localhost:4000/videos/00000000-0000-0000-0000-000000000000',
+      'http://localhost:4000/feedback/00000000-0000-0000-0000-000000000000',
     )
 
     // Should return 404 status

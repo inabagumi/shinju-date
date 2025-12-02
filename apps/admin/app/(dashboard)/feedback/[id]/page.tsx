@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -9,6 +10,22 @@ interface Props {
   params: Promise<{
     id: string
   }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params
+
+  const featureRequest = await getFeatureRequestById(id)
+
+  if (!featureRequest) {
+    return {
+      title: '機能要望が見つかりません',
+    }
+  }
+
+  return {
+    title: `${featureRequest.title} - 機能要望詳細`,
+  }
 }
 
 async function FeatureRequestDetailData({ id }: { id: string }) {
