@@ -2,7 +2,7 @@
 
 import { TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
-import { formatDateKey } from '@shinju-date/temporal-fns'
+import { formatDateTime } from '@shinju-date/temporal-fns'
 import { Badge } from '@shinju-date/ui'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -98,7 +98,7 @@ export function FeatureRequestList({
         <div className="space-y-2">
           {filteredRequests.map((item) => {
             const createdAt = Temporal.Instant.from(item.created_at)
-            const formattedDate = formatDateKey(
+            const formattedDate = formatDateTime(
               createdAt.toZonedDateTimeISO(TIME_ZONE),
             )
 
@@ -124,8 +124,7 @@ export function FeatureRequestList({
                     <p className="line-clamp-2 text-gray-700">{item.message}</p>
                   </div>
                   <div className="text-right text-gray-500 text-sm">
-                    {formattedDate.slice(0, 4)}-{formattedDate.slice(4, 6)}-
-                    {formattedDate.slice(6, 8)}
+                    {formattedDate}
                   </div>
                 </div>
               </Link>

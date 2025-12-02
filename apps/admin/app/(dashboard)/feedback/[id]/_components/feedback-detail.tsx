@@ -3,6 +3,7 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { formatDateTimeWithSeconds } from '@shinju-date/temporal-fns'
+import { Textarea } from '@shinju-date/ui'
 import { useActionState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Temporal } from 'temporal-polyfill'
@@ -36,7 +37,7 @@ export function FeatureRequestDetail({
         }
       }
 
-      return await updateFeatureRequestStatus(featureRequest.id, result.data)
+      return updateFeatureRequestStatus(featureRequest.id, result.data)
     },
     null,
   )
@@ -53,7 +54,7 @@ export function FeatureRequestDetail({
         }
       }
 
-      return await updateFeatureRequestMemo(featureRequest.id, result.data)
+      return updateFeatureRequestMemo(featureRequest.id, result.data)
     },
     null,
   )
@@ -61,7 +62,7 @@ export function FeatureRequestDetail({
   const [readState, markAsReadAction] = useActionState(
     async (_prevState: unknown, formData: FormData) => {
       const isRead = formData.get('is_read') === 'true'
-      return await markFeatureRequestAsRead(featureRequest.id, isRead)
+      return markFeatureRequestAsRead(featureRequest.id, isRead)
     },
     null,
   )
@@ -167,8 +168,8 @@ export function FeatureRequestDetail({
             <label className="block text-sm font-medium" htmlFor="admin_memo">
               メモ（Markdown対応）
             </label>
-            <textarea
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+            <Textarea
+              className="mt-1"
               defaultValue={featureRequest.admin_memo || ''}
               id="admin_memo"
               name="admin_memo"

@@ -25,6 +25,9 @@ export default function FeedbackPage() {
           SHINJU DATEに追加してほしい機能や改善案がございましたら、
           こちらのフォームからお気軽にお寄せください。
         </p>
+        <p className="mx-auto mt-4 max-w-2xl text-774-nevy-500 text-sm dark:text-774-nevy-400">
+          ※いただいたご要望は参考とさせていただきますが、必ずしも対応をお約束するものではございません。
+        </p>
       </div>
 
       <FeedbackForm />
