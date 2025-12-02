@@ -36,6 +36,7 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(true)
   const isNavigating = useRef(false)
   const hasNavigated = useRef(false)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleClose = useCallback(
     (open: boolean) => {
@@ -50,11 +51,17 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
         router.push('/')
       }
 
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+
       // Reset the navigation flag after a delay to allow the navigation to complete
       // Using 200ms to ensure navigation completes even on slower devices
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         isNavigating.current = false
         hasNavigated.current = false
+        timeoutRef.current = null
       }, 200)
     },
     [router],
@@ -76,6 +83,10 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      // Clear timeout to prevent state updates after unmount
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
       isNavigating.current = false
       hasNavigated.current = false
     }

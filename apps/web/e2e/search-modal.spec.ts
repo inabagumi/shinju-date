@@ -3,6 +3,9 @@ import { expect, test } from '@playwright/test'
 // Base URL for tests - can be configured via environment variable
 const BASE_URL = process.env['BASE_URL'] || 'http://localhost:3000'
 
+// Keyboard modifier for Cmd/Ctrl+K shortcut
+const KEYBOARD_MODIFIER = process.platform === 'darwin' ? 'Meta' : 'Control'
+
 test.describe('Search Modal - Opening and Closing', () => {
   test('should open search modal when clicking search button', async ({
     page,
@@ -73,8 +76,7 @@ test.describe('Search Modal - Opening and Closing', () => {
     await page.waitForLoadState('networkidle')
 
     // Press Cmd/Ctrl+K
-    const modifier = process.platform === 'darwin' ? 'Meta' : 'Control'
-    await page.keyboard.press(`${modifier}+KeyK`)
+    await page.keyboard.press(`${KEYBOARD_MODIFIER}+KeyK`)
 
     // Wait for modal to be visible
     const searchInput = page.locator('input[name="q"]')
