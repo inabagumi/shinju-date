@@ -35,6 +35,7 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(true)
   const isNavigating = useRef(false)
+  const hasNavigated = useRef(false)
 
   const handleClose = useCallback(
     (open: boolean) => {
@@ -42,25 +43,42 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
 
       setIsOpen(false)
 
-      if (!isNavigating.current) {
-        router.back()
+      // Only navigate if we haven't already navigated (e.g., via clicking a link)
+      if (!isNavigating.current && !hasNavigated.current) {
+        // Use router.push('/') instead of router.back() to ensure consistent behavior
+        // This prevents issues when there's no history to go back to
+        router.push('/')
       }
 
-      // Reset the flag after the modal closes
-      isNavigating.current = false
+      // Reset the navigation flag after a short delay to allow the navigation to complete
+      setTimeout(() => {
+        isNavigating.current = false
+        hasNavigated.current = false
+      }, 100)
     },
     [router],
   )
 
   const handleNavigate = useCallback(() => {
     isNavigating.current = true
+    hasNavigated.current = true
     setIsOpen(false)
   }, [])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: モーダルを再表示するためにpathnameに依存する必要があります
   useEffect(() => {
+    // Reset flags when pathname changes
+    hasNavigated.current = false
     setIsOpen(true)
   }, [pathname])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isNavigating.current = false
+      hasNavigated.current = false
+    }
+  }, [])
 
   return (
     <Dialog onOpenChange={handleClose} open={isOpen}>
