@@ -35,19 +35,24 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(true)
   const isNavigating = useRef(false)
+  const isMountedRef = useRef(true)
 
   const handleClose = useCallback(
     (open: boolean) => {
       if (open) return
 
+      // Prevent closing if already navigating
+      if (isNavigating.current) return
+
       setIsOpen(false)
+      isNavigating.current = true
 
-      if (!isNavigating.current) {
-        router.back()
-      }
-
-      // Reset the flag after the modal closes
-      isNavigating.current = false
+      // Use requestAnimationFrame to ensure the modal close animation starts
+      requestAnimationFrame(() => {
+        if (isMountedRef.current) {
+          router.back()
+        }
+      })
     },
     [router],
   )
@@ -57,9 +62,21 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
     setIsOpen(false)
   }, [])
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: モーダルを再表示するためにpathnameに依存する必要があります
+  // Track mount state and cleanup
   useEffect(() => {
-    setIsOpen(true)
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
+  // Reopen modal when navigating back to search path
+  useEffect(() => {
+    // Only reopen if we're on the search path
+    if (pathname.includes('/search')) {
+      setIsOpen(true)
+      isNavigating.current = false
+    }
   }, [pathname])
 
   return (
