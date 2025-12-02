@@ -13,6 +13,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   type ComponentPropsWithRef,
   createContext,
+  startTransition,
   useCallback,
   useContext,
   useEffect,
@@ -35,24 +36,26 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(true)
   const isNavigating = useRef(false)
-  const isMountedRef = useRef(true)
+  const hasClosedRef = useRef(false)
 
   const handleClose = useCallback(
     (open: boolean) => {
       if (open) return
 
-      // Prevent closing if already navigating
-      if (isNavigating.current) return
+      // Prevent multiple close attempts
+      if (hasClosedRef.current) return
+      hasClosedRef.current = true
 
       setIsOpen(false)
-      isNavigating.current = true
 
-      // Use requestAnimationFrame to ensure the modal close animation starts
-      requestAnimationFrame(() => {
-        if (isMountedRef.current) {
-          router.back()
-        }
-      })
+      // Only navigate if not already navigating via link click
+      if (!isNavigating.current) {
+        // Use startTransition to defer navigation until after current render
+        // This prevents interfering with Suspense boundaries
+        startTransition(() => {
+          router.push('/')
+        })
+      }
     },
     [router],
   )
@@ -62,20 +65,12 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
     setIsOpen(false)
   }, [])
 
-  // Track mount state and cleanup
+  // Reset state when pathname changes
   useEffect(() => {
-    isMountedRef.current = true
-    return () => {
-      isMountedRef.current = false
-    }
-  }, [])
-
-  // Reopen modal when navigating back to search path
-  useEffect(() => {
-    // Only reopen if we're on the search path
     if (pathname.includes('/search')) {
       setIsOpen(true)
       isNavigating.current = false
+      hasClosedRef.current = false
     }
   }, [pathname])
 
