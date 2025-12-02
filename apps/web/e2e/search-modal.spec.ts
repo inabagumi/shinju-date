@@ -187,11 +187,15 @@ test.describe('Search Modal - Suggestion Links', () => {
     const searchInput = page.locator('input[name="q"]')
     await expect(searchInput).toBeVisible({ timeout: 5000 })
 
-    // Wait for suggestions to potentially load
-    await page.waitForTimeout(1000)
-
-    // Look for suggestion links
+    // Look for suggestion links - wait for them to load or timeout
     const suggestionLinks = page.locator('[data-suggestion-link]')
+    try {
+      await suggestionLinks.first().waitFor({ state: 'visible', timeout: 2000 })
+    } catch {
+      // Suggestions may not load with MSW - skip test
+      return
+    }
+
     const count = await suggestionLinks.count()
 
     if (count > 0) {
@@ -220,18 +224,22 @@ test.describe('Search Modal - Suggestion Links', () => {
     await expect(searchInput).toBeVisible({ timeout: 5000 })
     await searchInput.focus()
 
-    // Wait for suggestions to potentially load
-    await page.waitForTimeout(1000)
-
-    // Look for suggestion links
+    // Look for suggestion links - wait for them to load or timeout
     const suggestionLinks = page.locator('[data-suggestion-link]')
+    try {
+      await suggestionLinks.first().waitFor({ state: 'visible', timeout: 2000 })
+    } catch {
+      // Suggestions may not load with MSW - skip test
+      return
+    }
+
     const count = await suggestionLinks.count()
 
     if (count > 0) {
       // Press ArrowDown to focus first suggestion
       await page.keyboard.press('ArrowDown')
 
-      // Wait for focus change
+      // Wait for focus to change - using short timeout for keyboard event
       await page.waitForTimeout(200)
 
       // First suggestion should be focused
@@ -241,7 +249,7 @@ test.describe('Search Modal - Suggestion Links', () => {
       // Press ArrowUp to go back to input
       await page.keyboard.press('ArrowUp')
 
-      // Wait for focus change
+      // Wait for focus to change - using short timeout for keyboard event
       await page.waitForTimeout(200)
 
       // Input should be focused again
