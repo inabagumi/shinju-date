@@ -95,6 +95,7 @@ export function NavigationBar() {
                   お知らせ管理
                 </Link>
                 <Link
+                  aria-current={isActive('/feedback') ? 'page' : undefined}
                   className={`block px-4 py-2 hover:bg-slate-600 ${
                     isActive('/feedback') ? 'bg-slate-600' : ''
                   }`}
@@ -285,6 +286,7 @@ export function NavigationBar() {
                 お知らせ管理
               </Link>
               <Link
+                aria-current={isActive('/feedback') ? 'page' : undefined}
                 className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
                   isActive('/feedback') ? 'bg-slate-700' : ''
                 }`}

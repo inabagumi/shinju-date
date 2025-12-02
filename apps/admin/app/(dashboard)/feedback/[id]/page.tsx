@@ -25,11 +25,11 @@ async function FeatureRequestDetailData({ id }: { id: string }) {
   return <FeatureRequestDetail featureRequest={featureRequest} />
 }
 
-export default async function FeedbackDetailPage({ params }: Props) {
+async function FeatureRequestDetailContent({ params }: Props) {
   const { id } = await params
 
   return (
-    <div className="mx-auto max-w-4xl p-6">
+    <>
       <div className="mb-6">
         <Link className="text-blue-600 hover:underline" href="/feedback">
           ← 機能要望一覧に戻る
@@ -42,6 +42,18 @@ export default async function FeedbackDetailPage({ params }: Props) {
         fallback={<div className="h-96 animate-pulse rounded-lg bg-gray-200" />}
       >
         <FeatureRequestDetailData id={id} />
+      </Suspense>
+    </>
+  )
+}
+
+export default function FeedbackDetailPage({ params }: Props) {
+  return (
+    <div className="mx-auto max-w-4xl p-6">
+      <Suspense
+        fallback={<div className="h-96 animate-pulse rounded-lg bg-gray-200" />}
+      >
+        <FeatureRequestDetailContent params={params} />
       </Suspense>
     </div>
   )

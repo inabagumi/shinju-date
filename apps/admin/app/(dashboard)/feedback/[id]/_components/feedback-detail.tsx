@@ -1,10 +1,13 @@
 'use client'
 
+import { TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
-import { Button } from '@shinju-date/ui'
+import { formatDateTimeWithSeconds } from '@shinju-date/temporal-fns'
 import { useActionState } from 'react'
-import { useFormStatus } from 'react-dom'
 import ReactMarkdown from 'react-markdown'
+import { Temporal } from 'temporal-polyfill'
+import { z } from 'zod'
+import { SubmitButton } from '@/components/form'
 import {
   markFeatureRequestAsRead,
   updateFeatureRequestMemo,
@@ -15,33 +18,42 @@ interface FeatureRequestDetailProps {
   featureRequest: Tables<'feature_requests'>
 }
 
-function SubmitButton({ children }: { children: React.ReactNode }) {
-  const { pending } = useFormStatus()
-
-  return (
-    <Button disabled={pending} size="sm" type="submit" variant="primary">
-      {pending ? '更新中...' : children}
-    </Button>
-  )
-}
+const statusSchema = z.enum(['pending', 'in_progress', 'resolved', 'rejected'])
+const memoSchema = z.string()
 
 export function FeatureRequestDetail({
   featureRequest,
 }: FeatureRequestDetailProps) {
   const [statusState, updateStatusAction] = useActionState(
     async (_prevState: unknown, formData: FormData) => {
-      const status = formData.get(
-        'status',
-      ) as Tables<'feature_requests'>['status']
-      return await updateFeatureRequestStatus(featureRequest.id, status)
+      const statusValue = formData.get('status')
+      const result = statusSchema.safeParse(statusValue)
+
+      if (!result.success) {
+        return {
+          error: 'Invalid status value',
+          success: false,
+        }
+      }
+
+      return await updateFeatureRequestStatus(featureRequest.id, result.data)
     },
     null,
   )
 
   const [memoState, updateMemoAction] = useActionState(
     async (_prevState: unknown, formData: FormData) => {
-      const memo = formData.get('admin_memo') as string
-      return await updateFeatureRequestMemo(featureRequest.id, memo)
+      const memoValue = formData.get('admin_memo')
+      const result = memoSchema.safeParse(memoValue)
+
+      if (!result.success) {
+        return {
+          error: 'Invalid memo value',
+          success: false,
+        }
+      }
+
+      return await updateFeatureRequestMemo(featureRequest.id, result.data)
     },
     null,
   )
@@ -54,6 +66,16 @@ export function FeatureRequestDetail({
     null,
   )
 
+  // Format dates using Temporal
+  const createdAt = Temporal.Instant.from(featureRequest.created_at)
+  const updatedAt = Temporal.Instant.from(featureRequest.updated_at)
+  const createdAtFormatted = formatDateTimeWithSeconds(
+    createdAt.toZonedDateTimeISO(TIME_ZONE),
+  )
+  const updatedAtFormatted = formatDateTimeWithSeconds(
+    updatedAt.toZonedDateTimeISO(TIME_ZONE),
+  )
+
   return (
     <div className="space-y-6">
       {/* Basic Information */}
@@ -62,15 +84,11 @@ export function FeatureRequestDetail({
         <dl className="space-y-3">
           <div>
             <dt className="font-medium text-gray-600 text-sm">送信日時</dt>
-            <dd className="mt-1">
-              {new Date(featureRequest.created_at).toLocaleString('ja-JP')}
-            </dd>
+            <dd className="mt-1">{createdAtFormatted}</dd>
           </div>
           <div>
             <dt className="font-medium text-gray-600 text-sm">更新日時</dt>
-            <dd className="mt-1">
-              {new Date(featureRequest.updated_at).toLocaleString('ja-JP')}
-            </dd>
+            <dd className="mt-1">{updatedAtFormatted}</dd>
           </div>
         </dl>
       </div>
@@ -78,8 +96,8 @@ export function FeatureRequestDetail({
       {/* Message */}
       <div className="rounded-lg border border-gray-200 bg-white p-6">
         <h2 className="mb-4 font-semibold text-xl">機能要望内容</h2>
-        <div className="whitespace-pre-wrap rounded bg-gray-50 p-4">
-          {featureRequest.message}
+        <div className="prose max-w-none rounded bg-gray-50 p-4">
+          <ReactMarkdown>{featureRequest.message}</ReactMarkdown>
         </div>
       </div>
 
@@ -103,7 +121,9 @@ export function FeatureRequestDetail({
               <option value="rejected">却下</option>
             </select>
           </div>
-          <SubmitButton>ステータスを更新</SubmitButton>
+          <SubmitButton size="sm" type="submit">
+            ステータスを更新
+          </SubmitButton>
           {statusState?.success === false && (
             <p className="text-red-600 text-sm">{statusState.error}</p>
           )}
@@ -126,7 +146,7 @@ export function FeatureRequestDetail({
               type="hidden"
               value={String(!featureRequest.is_read)}
             />
-            <SubmitButton>
+            <SubmitButton size="sm" type="submit">
               {featureRequest.is_read ? '未読にする' : '既読にする'}
             </SubmitButton>
           </div>
@@ -155,7 +175,9 @@ export function FeatureRequestDetail({
               rows={8}
             />
           </div>
-          <SubmitButton>メモを保存</SubmitButton>
+          <SubmitButton size="sm" type="submit">
+            メモを保存
+          </SubmitButton>
           {memoState?.success === false && (
             <p className="text-red-600 text-sm">{memoState.error}</p>
           )}
