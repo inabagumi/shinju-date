@@ -58,7 +58,7 @@
     "rehype-external-links": "3.0.0",
     "remark-gfm": "4.0.1",
     "typescript": "5.9.3",
-    "vitest": "4.0.14"
+    "vitest": "4.0.15"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
