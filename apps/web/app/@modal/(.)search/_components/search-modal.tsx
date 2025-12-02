@@ -50,11 +50,12 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
         router.push('/')
       }
 
-      // Reset the navigation flag after a short delay to allow the navigation to complete
+      // Reset the navigation flag after a delay to allow the navigation to complete
+      // Using 200ms to ensure navigation completes even on slower devices
       setTimeout(() => {
         isNavigating.current = false
         hasNavigated.current = false
-      }, 100)
+      }, 200)
     },
     [router],
   )
