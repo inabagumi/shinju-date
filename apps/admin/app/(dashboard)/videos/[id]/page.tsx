@@ -24,6 +24,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   'use cache: private'
+
   cacheLife('minutes')
 
   const { id } = await params
@@ -31,9 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const video = await getVideo(id)
 
   if (!video) {
-    return {
-      title: '動画が見つかりません',
-    }
+    notFound()
   }
 
   return {
