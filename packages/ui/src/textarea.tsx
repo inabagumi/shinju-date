@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority'
-import type { ComponentPropsWithoutRef } from 'react'
+import { type ComponentPropsWithoutRef, forwardRef } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 const textareaVariants = cva(
@@ -22,15 +22,16 @@ const textareaVariants = cva(
 export type TextareaProps = ComponentPropsWithoutRef<'textarea'> &
   VariantProps<typeof textareaVariants>
 
-export function Textarea({
-  className,
-  variant = 'default',
-  ...props
-}: TextareaProps) {
-  return (
-    <textarea
-      className={twMerge(textareaVariants({ variant }), className)}
-      {...props}
-    />
-  )
-}
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ className, variant = 'default', ...props }, ref) => {
+    return (
+      <textarea
+        className={twMerge(textareaVariants({ variant }), className)}
+        ref={ref}
+        {...props}
+      />
+    )
+  },
+)
+
+Textarea.displayName = 'Textarea'
