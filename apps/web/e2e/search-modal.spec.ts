@@ -22,6 +22,35 @@ test.describe('Search Modal - Opening and Closing', () => {
     await expect(searchInput).toBeVisible({ timeout: 5000 })
   })
 
+  test('should open modal with functional (non-disabled) text input', async ({
+    page,
+  }) => {
+    await page.goto(BASE_URL)
+    await page.waitForLoadState('networkidle')
+
+    // Open search modal
+    const searchButton = page.getByRole('link', { name: '検索' })
+    await searchButton.click()
+
+    // Wait for modal to be visible
+    const searchInput = page.locator('input[name="q"]')
+    await expect(searchInput).toBeVisible({ timeout: 5000 })
+
+    // CRITICAL: Verify the input is NOT disabled
+    await expect(searchInput).not.toBeDisabled({ timeout: 5000 })
+    
+    // Verify the input is editable
+    await expect(searchInput).toBeEditable({ timeout: 5000 })
+
+    // Verify we can actually type in it
+    await searchInput.fill('test')
+    await expect(searchInput).toHaveValue('test')
+
+    // Verify "Loading..." text is not visible (Suspense resolved)
+    const loadingText = page.locator('text=Loading...')
+    await expect(loadingText).not.toBeVisible()
+  })
+
   test('should close search modal when pressing ESC key', async ({ page }) => {
     await page.goto(BASE_URL)
     await page.waitForLoadState('networkidle')
