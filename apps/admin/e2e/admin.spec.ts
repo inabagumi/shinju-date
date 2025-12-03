@@ -82,6 +82,25 @@ test.describe('Admin App - Videos Management', () => {
   })
 })
 
+test.describe('Admin App - Feedback Management', () => {
+  test.beforeEach(async ({ page }) => {
+    // Login before each test
+    await page.goto('http://localhost:4000/login')
+    await page.waitForLoadState('networkidle')
+
+    const emailInput = page.locator('input[type="email"], input[name="email"]')
+    const passwordInput = page.locator(
+      'input[type="password"], input[name="password"]',
+    )
+    const submitButton = page.locator('button[type="submit"]')
+
+    await emailInput.fill('admin@example.com')
+    await passwordInput.fill('password123')
+    await submitButton.click()
+    await page.waitForLoadState('networkidle')
+  })
+})
+
 test.describe('Admin App - Terms Management', () => {
   test.beforeEach(async ({ page }) => {
     // Login before each test

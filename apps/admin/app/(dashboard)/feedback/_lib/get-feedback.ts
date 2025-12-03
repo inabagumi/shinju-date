@@ -1,4 +1,5 @@
 import type { Tables } from '@shinju-date/database'
+import { cache } from 'react'
 import { supabaseClient } from '@/lib/supabase/admin'
 
 export interface FeatureRequestFilters {
@@ -31,7 +32,7 @@ export async function getFeatureRequests(
   return data || []
 }
 
-export async function getFeatureRequestById(
+export const getFeatureRequestById = cache(async function getFeatureRequestById(
   id: string,
 ): Promise<Tables<'feature_requests'> | null> {
   const { data, error } = await supabaseClient
@@ -41,8 +42,22 @@ export async function getFeatureRequestById(
     .single()
 
   if (error) {
-    throw error
+    if (error.code === 'PGRST116') {
+      // Row not found
+      return null
+    }
+    // Check for invalid UUID format error
+    if (
+      error.message?.includes('invalid input syntax for type uuid') ||
+      error.code === '22P02'
+    ) {
+      // Invalid UUID format - treat as not found
+      return null
+    }
+    throw new TypeError(error.message, {
+      cause: error,
+    })
   }
 
   return data
-}
+})
