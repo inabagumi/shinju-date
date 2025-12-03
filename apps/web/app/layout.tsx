@@ -3,6 +3,7 @@ import { SITE_THEME_COLOR, SITE_NAME as siteName } from '@shinju-date/constants'
 import { Analytics } from '@vercel/analytics/react'
 import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import PageVisitTracker from '@/components/page-visit-tracker'
 import { TimerProvider } from '@/components/timer'
 import { AnnouncementBannerWrapper } from './_components/announcement-banner-wrapper'
@@ -81,7 +82,9 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             </search>
           </nav>
 
-          <SearchModalDialog />
+          <Suspense fallback={null}>
+            <SearchModalDialog />
+          </Suspense>
 
           <div className="safe-area-px pb-20 md:pb-40">
             <TimerProvider>{children}</TimerProvider>
