@@ -35,59 +35,45 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(true)
   const isNavigating = useRef(false)
-  const hasClosedRef = useRef(false)
-  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const shouldNavigateRef = useRef(false)
 
-  const handleClose = useCallback(
-    (open: boolean) => {
-      if (open) return
+  const handleClose = useCallback((open: boolean) => {
+    if (open) return
 
-      // Prevent multiple close attempts
-      if (hasClosedRef.current) return
-      hasClosedRef.current = true
+    // Just close the dialog visually
+    setIsOpen(false)
 
-      setIsOpen(false)
-
-      // Only navigate if not already navigating via link click
-      if (!isNavigating.current) {
-        // Clear any existing timeout
-        if (closeTimeoutRef.current) {
-          clearTimeout(closeTimeoutRef.current)
-        }
-
-        // Delay navigation to allow Suspense boundaries to resolve
-        // This prevents "Loading..." from getting stuck
-        closeTimeoutRef.current = setTimeout(() => {
-          router.push('/')
-          closeTimeoutRef.current = null
-        }, 500) // 500ms delay to ensure async operations complete
-      }
-    },
-    [router],
-  )
+    // Mark that we should navigate after the dialog closes
+    if (!isNavigating.current) {
+      shouldNavigateRef.current = true
+    }
+  }, [])
 
   const handleNavigate = useCallback(() => {
     isNavigating.current = true
     setIsOpen(false)
   }, [])
 
-  // Reset state when pathname changes
+  // Navigate after the dialog state has been set to closed
+  useEffect(() => {
+    if (!isOpen && shouldNavigateRef.current) {
+      shouldNavigateRef.current = false
+
+      // Use a microtask to ensure the current render cycle completes
+      queueMicrotask(() => {
+        router.push('/')
+      })
+    }
+  }, [isOpen, router])
+
+  // Reset state when pathname changes to search
   useEffect(() => {
     if (pathname.includes('/search')) {
       setIsOpen(true)
       isNavigating.current = false
-      hasClosedRef.current = false
+      shouldNavigateRef.current = false
     }
   }, [pathname])
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (closeTimeoutRef.current) {
-        clearTimeout(closeTimeoutRef.current)
-      }
-    }
-  }, [])
 
   return (
     <Dialog onOpenChange={handleClose} open={isOpen}>
