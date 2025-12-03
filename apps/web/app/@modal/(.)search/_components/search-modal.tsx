@@ -13,7 +13,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   type ComponentPropsWithRef,
   createContext,
-  startTransition,
   useCallback,
   useContext,
   useEffect,
@@ -37,6 +36,7 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(true)
   const isNavigating = useRef(false)
   const hasClosedRef = useRef(false)
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleClose = useCallback(
     (open: boolean) => {
@@ -50,11 +50,17 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
 
       // Only navigate if not already navigating via link click
       if (!isNavigating.current) {
-        // Use startTransition to defer navigation until after current render
-        // This prevents interfering with Suspense boundaries
-        startTransition(() => {
+        // Clear any existing timeout
+        if (closeTimeoutRef.current) {
+          clearTimeout(closeTimeoutRef.current)
+        }
+
+        // Delay navigation to allow Suspense boundaries to resolve
+        // This prevents "Loading..." from getting stuck
+        closeTimeoutRef.current = setTimeout(() => {
           router.push('/')
-        })
+          closeTimeoutRef.current = null
+        }, 500) // 500ms delay to ensure async operations complete
       }
     },
     [router],
@@ -73,6 +79,15 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
       hasClosedRef.current = false
     }
   }, [pathname])
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current)
+      }
+    }
+  }, [])
 
   return (
     <Dialog onOpenChange={handleClose} open={isOpen}>
