@@ -60,16 +60,19 @@ async function FeatureRequestDetailContent({ id }: { id: string }) {
   )
 }
 
-export default async function FeedbackDetailPage({ params }: Props) {
-  const { id } = await params
-
+export default function FeedbackDetailPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-4xl p-6">
       <Suspense
         fallback={<div className="h-96 animate-pulse rounded-lg bg-gray-200" />}
       >
-        <FeatureRequestDetailContent id={id} />
+        <FeedbackDetailPageWrapper params={params} />
       </Suspense>
     </div>
   )
+}
+
+async function FeedbackDetailPageWrapper({ params }: Props) {
+  const { id } = await params
+  return <FeatureRequestDetailContent id={id} />
 }
