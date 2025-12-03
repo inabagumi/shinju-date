@@ -11,7 +11,7 @@ import { Search } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useState } from 'react'
-import { supabaseClient } from '@/lib/supabase'
+import { fetchSuggestions, type Suggestion } from '@/app/_lib/actions'
 
 export function SearchModalDialog() {
   const router = useRouter()
@@ -65,9 +65,7 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [query, setQuery] = useState(searchParams.get('q') || '')
-  const [suggestions, setSuggestions] = useState<Array<{
-    term: string
-  }> | null>(null)
+  const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null)
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
 
   // Fetch suggestions when query changes
@@ -80,18 +78,10 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
 
     setIsLoadingSuggestions(true)
 
-    const fetchSuggestions = async () => {
+    const getSuggestions = async () => {
       try {
-        const { data, error } = await supabaseClient.rpc('suggestions_v2', {
-          p_query: query,
-        })
-
-        if (error) {
-          console.error('Failed to fetch suggestions', error)
-          setSuggestions([])
-        } else {
-          setSuggestions(data || [])
-        }
+        const data = await fetchSuggestions(query)
+        setSuggestions(data)
       } catch (err) {
         console.error('Failed to fetch suggestions', err)
         setSuggestions([])
@@ -101,7 +91,7 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
     }
 
     // Debounce the search
-    const timeoutId = setTimeout(fetchSuggestions, 300)
+    const timeoutId = setTimeout(getSuggestions, 300)
 
     return () => clearTimeout(timeoutId)
   }, [query])
