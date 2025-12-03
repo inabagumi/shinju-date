@@ -35,43 +35,27 @@ export function SearchModal({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(true)
   const isNavigating = useRef(false)
-  const shouldNavigateRef = useRef(false)
 
   const handleClose = useCallback((open: boolean) => {
     if (open) return
 
-    // Just close the dialog visually
+    // Just close the dialog visually - don't navigate
+    // This allows async components to complete without interruption
     setIsOpen(false)
-
-    // Mark that we should navigate after the dialog closes
-    if (!isNavigating.current) {
-      shouldNavigateRef.current = true
-    }
   }, [])
 
   const handleNavigate = useCallback(() => {
     isNavigating.current = true
     setIsOpen(false)
-  }, [])
-
-  // Navigate after the dialog state has been set to closed
-  useEffect(() => {
-    if (!isOpen && shouldNavigateRef.current) {
-      shouldNavigateRef.current = false
-
-      // Use a microtask to ensure the current render cycle completes
-      queueMicrotask(() => {
-        router.push('/')
-      })
-    }
-  }, [isOpen, router])
+    // When user clicks a suggestion link, navigate away
+    router.back()
+  }, [router])
 
   // Reset state when pathname changes to search
   useEffect(() => {
     if (pathname.includes('/search')) {
       setIsOpen(true)
       isNavigating.current = false
-      shouldNavigateRef.current = false
     }
   }, [pathname])
 
