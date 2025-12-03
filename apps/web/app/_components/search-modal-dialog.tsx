@@ -65,9 +65,9 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [query, setQuery] = useState(searchParams.get('q') || '')
-  const [suggestions, setSuggestions] = useState<
-    Array<{ term: string }> | null
-  >(null)
+  const [suggestions, setSuggestions] = useState<Array<{
+    term: string
+  }> | null>(null)
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
 
   // Fetch suggestions when query changes
@@ -82,7 +82,7 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
 
     const fetchSuggestions = async () => {
       try {
-        const { data, error} = await supabaseClient.rpc('suggestions_v2', {
+        const { data, error } = await supabaseClient.rpc('suggestions_v2', {
           p_query: query,
         })
 
