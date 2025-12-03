@@ -13,14 +13,8 @@ interface Props {
 }
 
 function createTitleFromMessage(message: string): string {
-  // Remove empty lines and extra whitespace
-  const cleaned = message
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0)
-    .join(' ')
-    .replace(/\s+/g, ' ')
-    .trim()
+  // Remove empty lines and normalize whitespace
+  const cleaned = message.replaceAll(/\s+/g, ' ').trim()
 
   // Take first 50 characters
   const maxLength = 50
