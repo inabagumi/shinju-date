@@ -78,7 +78,9 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             </div>
 
             <search className="flex items-center">
-              <SearchButton />
+              <Suspense fallback={null}>
+                <SearchButton />
+              </Suspense>
             </search>
           </nav>
 
