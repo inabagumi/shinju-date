@@ -1,12 +1,11 @@
 'use client'
 
 import { Search } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 
 export function SearchButton() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [isMac, setIsMac] = useState<boolean | undefined>(undefined)
 
   useEffect(() => {
@@ -17,12 +16,10 @@ export function SearchButton() {
   }, [])
 
   const openSearchModal = useCallback(() => {
-    const params = new URLSearchParams(searchParams)
-    params.set('modal', 'search')
-    router.push(`${window.location.pathname}?${params.toString()}`, {
+    router.push(`${window.location.pathname}?modal=search`, {
       scroll: false,
     })
-  }, [router, searchParams])
+  }, [router])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
