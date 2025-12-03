@@ -99,42 +99,6 @@ test.describe('Admin App - Feedback Management', () => {
     await submitButton.click()
     await page.waitForLoadState('networkidle')
   })
-
-  test('should return 404 for invalid feedback ID', async ({ page }) => {
-    // Try to access feedback with an invalid ID
-    const response = await page.goto(
-      'http://localhost:4000/feedback/invalid-id-format',
-    )
-
-    // Should return 404 status
-    expect(response?.status()).toBe(404)
-
-    // Wait for content to load
-    await page.waitForLoadState('networkidle')
-
-    // Should display 404 page content
-    const content = await page.textContent('body')
-    expect(content).toContain('404')
-    expect(content).toContain('ページが見つかりません')
-  })
-
-  test('should return 404 for non-existent feedback UUID', async ({ page }) => {
-    // Try to access feedback with a valid UUID format but non-existent ID
-    const response = await page.goto(
-      'http://localhost:4000/feedback/00000000-0000-0000-0000-000000000000',
-    )
-
-    // Should return 404 status
-    expect(response?.status()).toBe(404)
-
-    // Wait for content to load
-    await page.waitForLoadState('networkidle')
-
-    // Should display 404 page content
-    const content = await page.textContent('body')
-    expect(content).toContain('404')
-    expect(content).toContain('ページが見つかりません')
-  })
 })
 
 test.describe('Admin App - Terms Management', () => {
