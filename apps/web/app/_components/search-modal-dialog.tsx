@@ -8,8 +8,10 @@ import {
   DialogTitle,
 } from '@shinju-date/ui'
 import { Search } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useState } from 'react'
+import { supabaseClient } from '@/lib/supabase'
 
 export function SearchModalDialog() {
   const router = useRouter()
@@ -63,6 +65,45 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [query, setQuery] = useState(searchParams.get('q') || '')
+  const [suggestions, setSuggestions] = useState<
+    Array<{ term: string }> | null
+  >(null)
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
+
+  // Fetch suggestions when query changes
+  useEffect(() => {
+    if (!query) {
+      setSuggestions(null)
+      return
+    }
+
+    setIsLoadingSuggestions(true)
+
+    const fetchSuggestions = async () => {
+      try {
+        const { data, error } = await supabaseClient.rpc('suggestions_v2', {
+          p_query: query,
+        })
+
+        if (error) {
+          console.error('Failed to fetch suggestions', error)
+          setSuggestions([])
+        } else {
+          setSuggestions(data || [])
+        }
+      } catch (err) {
+        console.error('Failed to fetch suggestions', err)
+        setSuggestions([])
+      } finally {
+        setIsLoadingSuggestions(false)
+      }
+    }
+
+    // Debounce the search
+    const timeoutId = setTimeout(fetchSuggestions, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [query])
 
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
@@ -74,6 +115,10 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
     },
     [query, onClose, router],
   )
+
+  const handleSuggestionClick = useCallback(() => {
+    onClose()
+  }, [onClose])
 
   return (
     <div className="flex flex-col">
@@ -101,9 +146,38 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
         </div>
       </form>
 
-      {/* Search suggestions could be added here in the future */}
-      <div className="p-4 text-center text-774-nevy-500 text-sm">
-        検索キーワードを入力してEnterキーを押してください
+      {/* Search suggestions */}
+      <div>
+        {isLoadingSuggestions ? (
+          <div className="p-8 text-center text-774-nevy-400 text-sm dark:text-774-nevy-400">
+            読み込み中...
+          </div>
+        ) : suggestions && suggestions.length > 0 ? (
+          <div className="max-h-96 overflow-y-auto">
+            <div className="p-2">
+              {suggestions.map((suggestion) => (
+                <Link
+                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left hover:bg-774-nevy-100 dark:hover:bg-zinc-800"
+                  data-suggestion-link
+                  href={`/videos/${encodeURIComponent(suggestion.term)}`}
+                  key={suggestion.term}
+                  onClick={handleSuggestionClick}
+                >
+                  <Search className="size-4 text-774-nevy-400 dark:text-774-nevy-300" />
+                  <span className="text-primary dark:text-774-nevy-50">
+                    {suggestion.term}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="p-8 text-center text-774-nevy-400 text-sm dark:text-774-nevy-400">
+            {query
+              ? `Enterキーを押して「${query}」を検索`
+              : '動画のタイトルやタレント名で検索できます'}
+          </div>
+        )}
       </div>
     </div>
   )
