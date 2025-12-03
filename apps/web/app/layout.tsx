@@ -9,6 +9,7 @@ import { AnnouncementBannerWrapper } from './_components/announcement-banner-wra
 import { ContactLink } from './_components/contact-link'
 import { Providers } from './_components/providers'
 import { SearchButton } from './_components/search-button'
+import { SearchModalDialog } from './_components/search-modal-dialog'
 import SVGSymbols from './_components/svg-symbols'
 import { lato } from './_lib/fonts'
 
@@ -27,7 +28,7 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 }
 
-export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
+export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html className={lato.variable} lang="ja">
       <head prefix="og: http://ogp.me/ns#">
@@ -80,7 +81,7 @@ export default function RootLayout({ children, modal }: LayoutProps<'/'>) {
             </search>
           </nav>
 
-          {modal}
+          <SearchModalDialog />
 
           <div className="safe-area-px pb-20 md:pb-40">
             <TimerProvider>{children}</TimerProvider>

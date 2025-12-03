@@ -38,7 +38,7 @@ test.describe('Search Modal - Opening and Closing', () => {
 
     // CRITICAL: Verify the input is NOT disabled
     await expect(searchInput).not.toBeDisabled({ timeout: 5000 })
-    
+
     // Verify the input is editable
     await expect(searchInput).toBeEditable({ timeout: 5000 })
 

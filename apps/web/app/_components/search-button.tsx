@@ -1,12 +1,12 @@
 'use client'
 
 import { Search } from 'lucide-react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
 
 export function SearchButton() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isMac, setIsMac] = useState<boolean | undefined>(undefined)
 
   useEffect(() => {
@@ -16,23 +16,32 @@ export function SearchButton() {
     )
   }, [])
 
+  const openSearchModal = useCallback(() => {
+    const params = new URLSearchParams(searchParams)
+    params.set('modal', 'search')
+    router.push(`${window.location.pathname}?${params.toString()}`, {
+      scroll: false,
+    })
+  }, [router, searchParams])
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
         event.preventDefault()
-        router.push('/search')
+        openSearchModal()
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [router])
+  }, [openSearchModal])
 
   return (
-    <Link
+    <button
       aria-label="検索"
       className="flex w-full min-w-48 items-center gap-2 rounded-full border-0 bg-774-nevy-100 px-4 py-1.5 text-left text-774-nevy-300 hover:bg-774-nevy-200 hover:text-primary dark:bg-zinc-700 dark:text-774-nevy-100 dark:hover:bg-zinc-600 dark:hover:text-774-nevy-100"
-      href="/search"
+      onClick={openSearchModal}
+      type="button"
     >
       <Search className="size-5" />
       <span className="flex-1">検索</span>
@@ -41,6 +50,6 @@ export function SearchButton() {
           {isMac ? '⌘' : 'Ctrl'}K
         </kbd>
       )}
-    </Link>
+    </button>
   )
 }
