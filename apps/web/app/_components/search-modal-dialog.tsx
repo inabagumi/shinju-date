@@ -74,6 +74,7 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     if (!query) {
       setSuggestions(null)
+      setIsLoadingSuggestions(false)
       return
     }
 
@@ -81,7 +82,7 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
 
     const fetchSuggestions = async () => {
       try {
-        const { data, error } = await supabaseClient.rpc('suggestions_v2', {
+        const { data, error} = await supabaseClient.rpc('suggestions_v2', {
           p_query: query,
         })
 
