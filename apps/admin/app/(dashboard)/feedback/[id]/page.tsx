@@ -3,6 +3,7 @@ import { cacheLife } from 'next/cache'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { createTitleFromMessage } from '../_lib/create-title-from-message'
 import { getFeatureRequestById } from '../_lib/get-feedback'
 import { FeatureRequestDetail } from './_components/feedback-detail'
 
@@ -10,18 +11,6 @@ interface Props {
   params: Promise<{
     id: string
   }>
-}
-
-function createTitleFromMessage(message: string): string {
-  // Remove empty lines and normalize whitespace
-  const cleaned = message.replaceAll(/\s+/g, ' ').trim()
-
-  // Take first 50 characters
-  const maxLength = 50
-  if (cleaned.length <= maxLength) {
-    return cleaned
-  }
-  return `${cleaned.substring(0, maxLength)}...`
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
