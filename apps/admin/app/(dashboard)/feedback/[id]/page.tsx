@@ -14,6 +14,10 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  'use cache: private'
+
+  cacheLife('minutes')
+
   const { id } = await params
 
   const featureRequest = await getFeatureRequestById(id)
