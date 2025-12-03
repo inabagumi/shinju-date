@@ -3,7 +3,7 @@
   "description": "SHINJU DATE is a web service for searching videos.",
   "devDependencies": {
     "@biomejs/biome": "2.3.8",
-    "supabase": "2.65.0",
+    "supabase": "2.65.2",
     "turbo": "2.6.1",
     "typescript": "5.9.3"
   },
