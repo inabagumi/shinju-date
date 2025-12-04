@@ -17,7 +17,6 @@ import { fetchSuggestions, type Suggestion } from '@/app/_lib/actions'
 const SEARCH_MODAL_EVENT = 'openSearchModal'
 
 export function SearchModalDialog() {
-  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
 
   // Listen for custom event to open modal
