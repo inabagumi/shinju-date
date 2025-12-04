@@ -6,7 +6,7 @@ authors = [
     {name = "Haneru Developers"}
 ]
 readme = "README.md"
-requires-python = ">=3.14.0"
+requires-python = ">=3.14.1"
 dependencies = [
     "fastapi==0.123.5",
     "uvicorn==0.38.0",
