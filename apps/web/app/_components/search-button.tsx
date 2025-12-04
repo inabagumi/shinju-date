@@ -1,11 +1,12 @@
 'use client'
 
 import { Search } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 
+// Custom event to trigger modal open
+const SEARCH_MODAL_EVENT = 'openSearchModal'
+
 export function SearchButton() {
-  const router = useRouter()
   const [isMac, setIsMac] = useState<boolean | undefined>(undefined)
 
   useEffect(() => {
@@ -16,10 +17,8 @@ export function SearchButton() {
   }, [])
 
   const openSearchModal = useCallback(() => {
-    router.push(`${window.location.pathname}?modal=search`, {
-      scroll: false,
-    })
-  }, [router])
+    window.dispatchEvent(new CustomEvent(SEARCH_MODAL_EVENT))
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

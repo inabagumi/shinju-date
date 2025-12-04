@@ -9,36 +9,29 @@ import {
 } from '@shinju-date/ui'
 import { Search } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { fetchSuggestions, type Suggestion } from '@/app/_lib/actions'
 
+// Custom event to trigger modal open
+const SEARCH_MODAL_EVENT = 'openSearchModal'
+
 export function SearchModalDialog() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [isOpen, setIsOpen] = useState(false)
 
-  // Open modal when modal=search param is present
+  // Listen for custom event to open modal
   useEffect(() => {
-    const shouldOpen = searchParams.get('modal') === 'search'
-    setIsOpen(shouldOpen)
-  }, [searchParams])
+    const handleOpenModal = () => setIsOpen(true)
+    window.addEventListener(SEARCH_MODAL_EVENT, handleOpenModal)
+    return () => window.removeEventListener(SEARCH_MODAL_EVENT, handleOpenModal)
+  }, [])
 
-  const handleClose = useCallback(
-    (open: boolean) => {
-      if (!open) {
-        setIsOpen(false)
-        // Remove modal param from URL
-        const params = new URLSearchParams(searchParams)
-        params.delete('modal')
-        const newUrl = params.toString()
-          ? `${window.location.pathname}?${params.toString()}`
-          : window.location.pathname
-        router.push(newUrl, { scroll: false })
-      }
-    },
-    [router, searchParams],
-  )
+  const handleClose = useCallback((open: boolean) => {
+    if (!open) {
+      setIsOpen(false)
+    }
+  }, [])
 
   return (
     <Dialog onOpenChange={handleClose} open={isOpen}>
@@ -62,9 +55,8 @@ export function SearchModalDialog() {
 }
 
 function SearchModalContent({ onClose }: { onClose: () => void }) {
-  const searchParams = useSearchParams()
   const router = useRouter()
-  const [query, setQuery] = useState(searchParams.get('q') || '')
+  const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null)
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
 

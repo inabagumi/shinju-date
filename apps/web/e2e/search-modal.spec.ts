@@ -14,7 +14,7 @@ test.describe('Search Modal - Opening and Closing', () => {
     await page.waitForLoadState('networkidle')
 
     // Click search button
-    const searchButton = page.getByRole('link', { name: '検索' })
+    const searchButton = page.getByRole('button', { name: '検索' })
     await searchButton.click()
 
     // Wait for modal to appear by checking for the input field
@@ -29,7 +29,7 @@ test.describe('Search Modal - Opening and Closing', () => {
     await page.waitForLoadState('networkidle')
 
     // Open search modal
-    const searchButton = page.getByRole('link', { name: '検索' })
+    const searchButton = page.getByRole('button', { name: '検索' })
     await searchButton.click()
 
     // Wait for modal to be visible
@@ -56,7 +56,7 @@ test.describe('Search Modal - Opening and Closing', () => {
     await page.waitForLoadState('networkidle')
 
     // Open search modal
-    const searchButton = page.getByRole('link', { name: '検索' })
+    const searchButton = page.getByRole('button', { name: '検索' })
     await searchButton.click()
 
     // Wait for modal to be visible
@@ -68,9 +68,6 @@ test.describe('Search Modal - Opening and Closing', () => {
 
     // Wait for modal to close
     await expect(searchInput).not.toBeVisible({ timeout: 5000 })
-
-    // Verify we're back at homepage
-    await page.waitForURL(`${BASE_URL}/`, { timeout: 5000 })
   })
 
   test('should close search modal when clicking outside (overlay)', async ({
@@ -80,7 +77,7 @@ test.describe('Search Modal - Opening and Closing', () => {
     await page.waitForLoadState('networkidle')
 
     // Open search modal
-    const searchButton = page.getByRole('link', { name: '検索' })
+    const searchButton = page.getByRole('button', { name: '検索' })
     await searchButton.click()
 
     // Wait for modal to be visible
@@ -93,9 +90,6 @@ test.describe('Search Modal - Opening and Closing', () => {
 
     // Wait for modal to close
     await expect(searchInput).not.toBeVisible({ timeout: 5000 })
-
-    // Verify we're back at homepage
-    await page.waitForURL(`${BASE_URL}/`, { timeout: 5000 })
   })
 
   test('should open search modal with Cmd/Ctrl+K shortcut', async ({
@@ -118,14 +112,7 @@ test.describe('Search Modal - Direct Navigation', () => {
     await page.goto(`${BASE_URL}/search`)
     await page.waitForLoadState('networkidle')
 
-    // Wait for modal to be visible
-    const searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
-
-    // Close modal with ESC
-    await page.keyboard.press('Escape')
-
-    // Wait for navigation to homepage
+    // Should redirect to homepage (via route handler)
     await page.waitForURL(`${BASE_URL}/`, { timeout: 5000 })
   })
 
@@ -135,10 +122,8 @@ test.describe('Search Modal - Direct Navigation', () => {
     await page.goto(`${BASE_URL}/search?q=test`)
     await page.waitForLoadState('networkidle')
 
-    // Wait for modal to be visible with query populated
-    const searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
-    await expect(searchInput).toHaveValue('test', { timeout: 5000 })
+    // Should redirect to videos page
+    await page.waitForURL(`${BASE_URL}/videos/test`, { timeout: 5000 })
   })
 })
 
@@ -148,7 +133,7 @@ test.describe('Search Modal - Search Functionality', () => {
     await page.waitForLoadState('networkidle')
 
     // Open search modal
-    const searchButton = page.getByRole('link', { name: '検索' })
+    const searchButton = page.getByRole('button', { name: '検索' })
     await searchButton.click()
 
     // Wait for modal to be visible
@@ -171,7 +156,7 @@ test.describe('Search Modal - Search Functionality', () => {
     await page.waitForLoadState('networkidle')
 
     // Open search modal
-    const searchButton = page.getByRole('link', { name: '検索' })
+    const searchButton = page.getByRole('button', { name: '検索' })
     await searchButton.click()
 
     // Wait for modal to be visible
@@ -192,7 +177,7 @@ test.describe('Search Modal - Search Functionality', () => {
     await page.waitForLoadState('networkidle')
 
     // Open search modal
-    const searchButton = page.getByRole('link', { name: '検索' })
+    const searchButton = page.getByRole('button', { name: '検索' })
     await searchButton.click()
 
     // Wait for modal to be visible
@@ -202,8 +187,8 @@ test.describe('Search Modal - Search Functionality', () => {
     // Press Enter without typing anything
     await searchInput.press('Enter')
 
-    // Wait for navigation to videos page without query
-    await page.waitForURL(`${BASE_URL}/videos`, { timeout: 5000 })
+    // Modal should remain open (no navigation)
+    await expect(searchInput).toBeVisible({ timeout: 1000 })
   })
 })
 
@@ -211,12 +196,19 @@ test.describe('Search Modal - Suggestion Links', () => {
   test('should close modal when clicking a suggestion link', async ({
     page,
   }) => {
-    await page.goto(`${BASE_URL}/search?q=test`)
+    await page.goto(BASE_URL)
     await page.waitForLoadState('networkidle')
+
+    // Open search modal
+    const searchButton = page.getByRole('button', { name: '検索' })
+    await searchButton.click()
 
     // Wait for modal to be visible
     const searchInput = page.locator('input[name="q"]')
     await expect(searchInput).toBeVisible({ timeout: 5000 })
+
+    // Type query to trigger suggestions
+    await searchInput.fill('test')
 
     // Look for suggestion links - wait for them to load or timeout
     const suggestionLinks = page.locator('[data-suggestion-link]')
@@ -247,12 +239,19 @@ test.describe('Search Modal - Suggestion Links', () => {
   test('should support keyboard navigation in suggestions', async ({
     page,
   }) => {
-    await page.goto(`${BASE_URL}/search?q=test`)
+    await page.goto(BASE_URL)
     await page.waitForLoadState('networkidle')
+
+    // Open search modal
+    const searchButton = page.getByRole('button', { name: '検索' })
+    await searchButton.click()
 
     // Focus on search input
     const searchInput = page.locator('input[name="q"]')
     await expect(searchInput).toBeVisible({ timeout: 5000 })
+
+    // Type query to trigger suggestions
+    await searchInput.fill('test')
     await searchInput.focus()
 
     // Look for suggestion links - wait for them to load or timeout
@@ -294,7 +293,7 @@ test.describe('Search Modal - Stability Tests', () => {
     await page.goto(BASE_URL)
     await page.waitForLoadState('networkidle')
 
-    const searchButton = page.getByRole('link', { name: '検索' })
+    const searchButton = page.getByRole('button', { name: '検索' })
     const searchInput = page.locator('input[name="q"]')
 
     // Rapidly open and close modal 3 times
@@ -308,9 +307,6 @@ test.describe('Search Modal - Stability Tests', () => {
       await expect(searchInput).not.toBeVisible({ timeout: 5000 })
     }
 
-    // Should end up at homepage
-    await page.waitForURL(`${BASE_URL}/`, { timeout: 5000 })
-
     // Modal should be closed
     await expect(searchInput).not.toBeVisible()
   })
@@ -320,7 +316,7 @@ test.describe('Search Modal - Stability Tests', () => {
     await page.waitForLoadState('networkidle')
 
     // First search
-    await page.getByRole('link', { name: '検索' }).click()
+    await page.getByRole('button', { name: '検索' }).click()
 
     let searchInput = page.locator('input[name="q"]')
     await expect(searchInput).toBeVisible({ timeout: 5000 })
@@ -334,7 +330,7 @@ test.describe('Search Modal - Stability Tests', () => {
     })
 
     // Second search
-    await page.getByRole('link', { name: '検索' }).click()
+    await page.getByRole('button', { name: '検索' }).click()
 
     searchInput = page.locator('input[name="q"]')
     await expect(searchInput).toBeVisible({ timeout: 5000 })
@@ -355,7 +351,7 @@ test.describe('Search Modal - Stability Tests', () => {
     await page.waitForLoadState('networkidle')
 
     // Open modal
-    await page.getByRole('link', { name: '検索' }).click()
+    await page.getByRole('button', { name: '検索' }).click()
 
     const searchInput = page.locator('input[name="q"]')
     await expect(searchInput).toBeVisible({ timeout: 5000 })
@@ -363,9 +359,6 @@ test.describe('Search Modal - Stability Tests', () => {
     // Close modal with ESC
     await page.keyboard.press('Escape')
     await expect(searchInput).not.toBeVisible({ timeout: 5000 })
-
-    // Wait for navigation to homepage
-    await page.waitForURL(`${BASE_URL}/`, { timeout: 5000 })
 
     // Browser back button should work normally (though there might not be history)
     // This test ensures no errors occur
