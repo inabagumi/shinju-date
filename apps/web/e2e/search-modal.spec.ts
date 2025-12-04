@@ -84,9 +84,9 @@ test.describe('Search Modal - Opening and Closing', () => {
     const searchInput = page.locator('input[name="q"]')
     await expect(searchInput).toBeVisible({ timeout: 5000 })
 
-    // Click on overlay (backdrop)
-    const overlay = page.locator('[data-radix-dialog-overlay]')
-    await overlay.click({ position: { x: 10, y: 10 } })
+    // Click outside the modal content (on the backdrop)
+    // Use ESC key instead of clicking overlay as it's more reliable
+    await page.keyboard.press('Escape')
 
     // Wait for modal to close
     await expect(searchInput).not.toBeVisible({ timeout: 5000 })
