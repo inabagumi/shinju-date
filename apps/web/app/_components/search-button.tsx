@@ -1,13 +1,12 @@
 'use client'
 
 import { Search } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
-
-// Custom event to trigger modal open
-const SEARCH_MODAL_EVENT = 'openSearchModal'
+import { useEffect, useState } from 'react'
+import { useSearchModal } from './search-modal-context'
 
 export function SearchButton() {
   const [isMac, setIsMac] = useState<boolean | undefined>(undefined)
+  const { openModal } = useSearchModal()
 
   useEffect(() => {
     setIsMac(
@@ -16,27 +15,23 @@ export function SearchButton() {
     )
   }, [])
 
-  const openSearchModal = useCallback(() => {
-    window.dispatchEvent(new CustomEvent(SEARCH_MODAL_EVENT))
-  }, [])
-
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
         event.preventDefault()
-        openSearchModal()
+        openModal()
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [openSearchModal])
+  }, [openModal])
 
   return (
     <button
       aria-label="検索"
       className="flex w-full min-w-48 items-center gap-2 rounded-full border-0 bg-774-nevy-100 px-4 py-1.5 text-left text-774-nevy-300 hover:bg-774-nevy-200 hover:text-primary dark:bg-zinc-700 dark:text-774-nevy-100 dark:hover:bg-zinc-600 dark:hover:text-774-nevy-100"
-      onClick={openSearchModal}
+      onClick={openModal}
       type="button"
     >
       <Search className="size-5" />

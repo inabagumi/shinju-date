@@ -12,25 +12,19 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { fetchSuggestions, type Suggestion } from '@/app/_lib/actions'
-
-// Custom event to trigger modal open
-const SEARCH_MODAL_EVENT = 'openSearchModal'
+import { useSearchModal } from './search-modal-context'
 
 export function SearchModalDialog() {
-  const [isOpen, setIsOpen] = useState(false)
+  const { isOpen, closeModal } = useSearchModal()
 
-  // Listen for custom event to open modal
-  useEffect(() => {
-    const handleOpenModal = () => setIsOpen(true)
-    window.addEventListener(SEARCH_MODAL_EVENT, handleOpenModal)
-    return () => window.removeEventListener(SEARCH_MODAL_EVENT, handleOpenModal)
-  }, [])
-
-  const handleClose = useCallback((open: boolean) => {
-    if (!open) {
-      setIsOpen(false)
-    }
-  }, [])
+  const handleClose = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        closeModal()
+      }
+    },
+    [closeModal],
+  )
 
   return (
     <Dialog onOpenChange={handleClose} open={isOpen}>
