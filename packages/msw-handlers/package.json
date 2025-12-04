@@ -4,7 +4,7 @@
   "dependencies": {
     "@msw/data": "1.1.2",
     "@shinju-date/database": "workspace:*",
-    "msw": "2.12.3",
+    "msw": "2.12.4",
     "temporal-polyfill": "0.3.0",
     "zod": "4.1.13"
   },
