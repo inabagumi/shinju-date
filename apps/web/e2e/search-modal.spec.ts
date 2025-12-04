@@ -121,8 +121,8 @@ test.describe('Search Modal - Direct Navigation', () => {
     await page.goto(`${BASE_URL}/search`)
     await page.waitForLoadState('networkidle')
 
-    // Should redirect to homepage (via route handler)
-    await page.waitForURL(`${BASE_URL}/`, { timeout: 5000 })
+    // Should redirect to videos page (via route handler)
+    await page.waitForURL(`${BASE_URL}/videos`, { timeout: 5000 })
   })
 
   test('should handle direct navigation to /search with query parameter', async ({
@@ -131,7 +131,7 @@ test.describe('Search Modal - Direct Navigation', () => {
     await page.goto(`${BASE_URL}/search?q=test`)
     await page.waitForLoadState('networkidle')
 
-    // Should redirect to videos page
+    // Should redirect to videos page with query
     await page.waitForURL(`${BASE_URL}/videos/test`, { timeout: 5000 })
   })
 })
