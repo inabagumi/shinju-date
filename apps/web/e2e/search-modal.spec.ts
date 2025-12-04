@@ -84,9 +84,9 @@ test.describe('Search Modal - Opening and Closing', () => {
     const searchInput = page.locator('input[name="q"]')
     await expect(searchInput).toBeVisible({ timeout: 5000 })
 
-    // Click outside the modal content (on the backdrop)
-    // Use ESC key instead of clicking overlay as it's more reliable
-    await page.keyboard.press('Escape')
+    // Click outside the modal content (on the page body, away from dialog)
+    // Click at coordinates that are outside the modal
+    await page.mouse.click(10, 10)
 
     // Wait for modal to close
     await expect(searchInput).not.toBeVisible({ timeout: 5000 })
