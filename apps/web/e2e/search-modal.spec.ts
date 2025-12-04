@@ -118,21 +118,22 @@ test.describe('Search Modal - Opening and Closing', () => {
 
 test.describe('Search Modal - Direct Navigation', () => {
   test('should handle direct navigation to /search', async ({ page }) => {
-    await page.goto(`${BASE_URL}/search`)
-    await page.waitForLoadState('networkidle')
+    // The route handler redirects /search to /videos
+    // page.goto will follow the redirect automatically
+    await page.goto(`${BASE_URL}/search`, { waitUntil: 'networkidle' })
 
-    // Should redirect to videos page (via route handler)
-    await page.waitForURL(`${BASE_URL}/videos`, { timeout: 5000 })
+    // Verify we ended up at /videos after redirect
+    expect(page.url()).toBe(`${BASE_URL}/videos`)
   })
 
   test('should handle direct navigation to /search with query parameter', async ({
     page,
   }) => {
-    await page.goto(`${BASE_URL}/search?q=test`)
-    await page.waitForLoadState('networkidle')
+    // The route handler redirects /search?q=test to /videos/test
+    await page.goto(`${BASE_URL}/search?q=test`, { waitUntil: 'networkidle' })
 
-    // Should redirect to videos page with query
-    await page.waitForURL(`${BASE_URL}/videos/test`, { timeout: 5000 })
+    // Verify we ended up at /videos/test after redirect
+    expect(page.url()).toBe(`${BASE_URL}/videos/test`)
   })
 })
 
