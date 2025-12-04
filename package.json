@@ -4,7 +4,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.3.8",
     "supabase": "2.65.6",
-    "turbo": "2.6.2",
+    "turbo": "2.6.3",
     "typescript": "5.9.3"
   },
   "homepage": "https://shinju.date/",
