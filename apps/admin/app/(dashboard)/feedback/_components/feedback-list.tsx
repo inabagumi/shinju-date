@@ -50,7 +50,7 @@ export function FeatureRequestList({
       {/* Filters */}
       <div className="flex flex-wrap gap-4">
         <div>
-          <label className="mr-2 text-sm font-medium" htmlFor="status-filter">
+          <label className="mr-2 font-medium text-sm" htmlFor="status-filter">
             ステータス:
           </label>
           <select
@@ -71,7 +71,7 @@ export function FeatureRequestList({
           </select>
         </div>
         <div>
-          <label className="mr-2 text-sm font-medium" htmlFor="read-filter">
+          <label className="mr-2 font-medium text-sm" htmlFor="read-filter">
             既読状態:
           </label>
           <select

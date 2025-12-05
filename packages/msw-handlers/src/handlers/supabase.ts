@@ -225,7 +225,9 @@ async function applySelect(
               // Check if relatedItem is an array (for has-many relations like youtube_channels)
               if (Array.isArray(relatedItem)) {
                 // Handle array of related items
+                // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
                 const nestedResults = relatedItem.map((item: any) => {
+                  // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
                   const nestedResult: any = {}
                   for (const nf of nestedFieldArray) {
                     nestedResult[nf] = item[nf]
@@ -329,7 +331,9 @@ async function applySelect(
 
               // Check if relatedItem is an array (for has-many relations)
               if (Array.isArray(relatedItem)) {
+                // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
                 const nestedResults = relatedItem.map((relItem: any) => {
+                  // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
                   const nestedResult: any = {}
                   for (const nf of nestedFieldArray) {
                     nestedResult[nf] = relItem[nf]
@@ -338,8 +342,10 @@ async function applySelect(
                 })
                 result[relationName] = nestedResults
               } else {
+                // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
                 const nestedResult: any = {}
                 for (const nf of nestedFieldArray) {
+                  // biome-ignore lint/suspicious/noExplicitAny: Dynamic property access on relation object
                   nestedResult[nf] = (relatedItem as any)[nf]
                 }
                 result[relationName] = nestedResult

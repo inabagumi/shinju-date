@@ -72,7 +72,9 @@ describe('updateTermPopularity', () => {
 
     // Execute
     const result = await updateTermPopularity(
+      // biome-ignore lint/suspicious/noExplicitAny: Mocked Redis client
       mockRedis as any,
+      // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
       mockSupabase as any,
     )
 
@@ -133,7 +135,9 @@ describe('updateTermPopularity', () => {
 
     // Execute
     const result = await updateTermPopularity(
+      // biome-ignore lint/suspicious/noExplicitAny: Mocked Redis client
       mockRedis as any,
+      // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
       mockSupabase as any,
     )
 
@@ -166,7 +170,9 @@ describe('updateTermPopularity', () => {
 
     // Execute
     const result = await updateTermPopularity(
+      // biome-ignore lint/suspicious/noExplicitAny: Mocked Redis client
       mockRedis as any,
+      // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
       mockSupabase as any,
     )
 
@@ -196,6 +202,7 @@ describe('updateTermPopularity', () => {
 
     // Execute - should throw error
     await expect(
+      // biome-ignore lint/suspicious/noExplicitAny: Mocked Redis client
       updateTermPopularity(mockRedis as any, mockSupabase as any),
     ).rejects.toThrow()
   })
@@ -243,6 +250,7 @@ describe('updateTermPopularity', () => {
     }
 
     // Execute
+    // biome-ignore lint/suspicious/noExplicitAny: Mocked Redis client
     await updateTermPopularity(mockRedis as any, mockSupabase as any)
 
     // Verify that scores are floored to integers

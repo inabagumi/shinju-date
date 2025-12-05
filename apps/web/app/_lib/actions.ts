@@ -71,3 +71,33 @@ export async function search(formData: FormData) {
     redirect('/videos')
   }
 }
+
+export type Suggestion = {
+  term: string
+}
+
+/**
+ * Fetch search suggestions based on a query
+ * Returns an array of suggested search terms
+ */
+export async function fetchSuggestions(query: string): Promise<Suggestion[]> {
+  if (!query || query.trim().length === 0) {
+    return []
+  }
+
+  try {
+    const { data, error } = await supabaseClient.rpc('suggestions_v2', {
+      p_query: query.trim(),
+    })
+
+    if (error) {
+      logger.error('Failed to fetch suggestions', { error, query })
+      return []
+    }
+
+    return data || []
+  } catch (err) {
+    logger.error('Failed to fetch suggestions', { error: err, query })
+    return []
+  }
+}

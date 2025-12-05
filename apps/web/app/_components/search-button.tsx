@@ -1,13 +1,12 @@
 'use client'
 
 import { Search } from 'lucide-react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useSearchModal } from './search-modal-context'
 
 export function SearchButton() {
-  const router = useRouter()
   const [isMac, setIsMac] = useState<boolean | undefined>(undefined)
+  const { openModal } = useSearchModal()
 
   useEffect(() => {
     setIsMac(
@@ -20,19 +19,20 @@ export function SearchButton() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
         event.preventDefault()
-        router.push('/search')
+        openModal()
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [router])
+  }, [openModal])
 
   return (
-    <Link
+    <button
       aria-label="検索"
       className="flex w-full min-w-48 items-center gap-2 rounded-full border-0 bg-774-nevy-100 px-4 py-1.5 text-left text-774-nevy-300 hover:bg-774-nevy-200 hover:text-primary dark:bg-zinc-700 dark:text-774-nevy-100 dark:hover:bg-zinc-600 dark:hover:text-774-nevy-100"
-      href="/search"
+      onClick={openModal}
+      type="button"
     >
       <Search className="size-5" />
       <span className="flex-1">検索</span>
@@ -41,6 +41,6 @@ export function SearchButton() {
           {isMac ? '⌘' : 'Ctrl'}K
         </kbd>
       )}
-    </Link>
+    </button>
   )
 }

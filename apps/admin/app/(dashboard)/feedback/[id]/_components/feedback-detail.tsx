@@ -107,7 +107,7 @@ export function FeatureRequestDetail({
         <h2 className="mb-4 font-semibold text-xl">ステータス管理</h2>
         <form action={updateStatusAction} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium" htmlFor="status">
+            <label className="block font-medium text-sm" htmlFor="status">
               対応ステータス
             </label>
             <select
@@ -165,7 +165,7 @@ export function FeatureRequestDetail({
         <h2 className="mb-4 font-semibold text-xl">管理メモ</h2>
         <form action={updateMemoAction} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium" htmlFor="admin_memo">
+            <label className="block font-medium text-sm" htmlFor="admin_memo">
               メモ（Markdown対応）
             </label>
             <Textarea
