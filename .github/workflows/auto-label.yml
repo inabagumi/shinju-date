@@ -56,11 +56,11 @@ jobs:
             const labelsToAdd = [...Array.from(areaLabels)];
 
             if (hasPython) {
-              labelsToAdd.push('tech: Python');
+              labelsToAdd.push('tech: python');
             }
 
             if (hasSupabase) {
-              labelsToAdd.push('tech: Supabase');
+              labelsToAdd.push('tech: supabase');
             }
 
             if (isDocumentation) {
