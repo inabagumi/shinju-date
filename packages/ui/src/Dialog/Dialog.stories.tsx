@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import preview from '#.storybook/preview'
-import { Button } from './button'
+import { Button } from '../Button/Button'
 import {
   Dialog,
   DialogClose,
@@ -10,7 +10,7 @@ import {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
-} from './dialog'
+} from './Dialog'
 
 const meta = preview.meta({
   component: Dialog,

@@ -8,7 +8,7 @@ import {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
-} from '../dialog'
+} from './Dialog'
 
 describe('Dialog components', () => {
   it('should export Dialog component', () => {

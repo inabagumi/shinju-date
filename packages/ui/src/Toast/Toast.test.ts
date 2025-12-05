@@ -7,7 +7,7 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from '../toast'
+} from './Toast'
 
 describe('Toast', () => {
   it('should export Toast component', () => {

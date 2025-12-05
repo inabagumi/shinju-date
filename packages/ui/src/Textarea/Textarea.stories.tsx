@@ -1,5 +1,5 @@
 import preview from '#.storybook/preview'
-import { Textarea } from './textarea'
+import { Textarea } from './Textarea'
 
 const meta = preview.meta({
   argTypes: {

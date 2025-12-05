@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import preview from '#.storybook/preview'
-import { Button } from './button'
+import { Button } from '../Button/Button'
 import {
   Toast,
   ToastAction,
@@ -9,7 +9,7 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from './toast'
+} from './Toast'
 
 const meta = preview.meta({
   component: Toast,
