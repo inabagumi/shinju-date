@@ -59,7 +59,7 @@ jobs:
           if grep -q '^terraform/' changed_files.txt; then
             area_labels="${area_labels}area: infrastructure,"
           fi
-          if grep -q '^\(supabase\|\.github/workflows\)/' changed_files.txt; then
+          if grep -qE '^(supabase|\.github/workflows)/' changed_files.txt; then
             area_labels="${area_labels}area: infrastructure,"
           fi
           
