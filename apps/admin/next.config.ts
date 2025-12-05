@@ -18,7 +18,11 @@ const nextConfig: NextConfig = {
   },
   reactCompiler: true,
   reactStrictMode: true,
-  serverExternalPackages: ['@sentry/profiling-node'],
+  serverExternalPackages: [
+    '@sentry/profiling-node',
+    'msw',
+    '@mswjs/interceptors',
+  ],
 }
 
 function withPlugins(nextConfig: NextConfig): NextConfig {

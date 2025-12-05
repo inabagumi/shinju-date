@@ -49,7 +49,11 @@ const nextConfig: NextConfig = {
   pageExtensions: ['tsx', 'ts', 'mdx'],
   reactCompiler: true,
   reactStrictMode: true,
-  serverExternalPackages: ['@sentry/profiling-node'],
+  serverExternalPackages: [
+    '@sentry/profiling-node',
+    'msw',
+    '@mswjs/interceptors',
+  ],
 }
 
 const withMDX = createMDX({
