@@ -1,0 +1,98 @@
+name: Auto Label
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  auto-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-label PR
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+
+            // Calculate statistics
+            const fileCount = files.length;
+            const totalChanges = files.reduce((sum, file) => sum + file.changes, 0);
+
+            // Detect area labels based on directories
+            const areaLabels = new Set();
+            files.forEach(file => {
+              if (file.filename.startsWith('apps/web/')) areaLabels.add('area: web');
+              if (file.filename.startsWith('apps/admin/')) areaLabels.add('area: admin');
+              if (file.filename.startsWith('apps/batch/')) areaLabels.add('area: batch');
+              if (file.filename.startsWith('apps/insights/')) areaLabels.add('area: insights');
+            });
+
+            // Detect tech labels based on file extensions and directories
+            const hasPython = files.some(file => file.filename.endsWith('.py'));
+            const hasSupabase = files.some(file => file.filename.startsWith('supabase/'));
+
+            // Detect documentation changes
+            const isDocumentation = files.some(file => 
+              file.filename.endsWith('.md') || 
+              file.filename.endsWith('.mdx') || 
+              file.filename.startsWith('docs/')
+            );
+
+            // Collect labels to add
+            const labelsToAdd = [...Array.from(areaLabels)];
+
+            if (hasPython) {
+              labelsToAdd.push('tech: python');
+            }
+
+            if (hasSupabase) {
+              labelsToAdd.push('tech: supabase');
+            }
+
+            if (isDocumentation) {
+              labelsToAdd.push('type: Documentation');
+            }
+
+            // Determine size label (only if not already set)
+            const existingLabels = pr.labels.map(label => label.name);
+            const hasSizeLabel = existingLabels.some(label => label.startsWith('size: '));
+
+            if (!hasSizeLabel) {
+              let sizeLabel;
+              if (fileCount <= 2 && totalChanges <= 20) {
+                sizeLabel = 'size: S';
+              } else if (fileCount <= 5 && totalChanges <= 100) {
+                sizeLabel = 'size: M';
+              } else {
+                sizeLabel = 'size: L';
+              }
+              labelsToAdd.push(sizeLabel);
+            }
+
+            // Add labels if any
+            if (labelsToAdd.length > 0) {
+              console.log('Adding labels:', labelsToAdd);
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: labelsToAdd,
+              });
+            } else {
+              console.log('No labels to add');
+            }
+
