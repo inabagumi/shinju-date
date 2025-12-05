@@ -27,11 +27,14 @@
 interface NextAdapter {
   name: string
   modifyConfig?: (
+    // biome-ignore lint/suspicious/noExplicitAny: Adapter config type is unknown
     config: any,
     ctx: {
       phase: string
     },
+    // biome-ignore lint/suspicious/noExplicitAny: Adapter config type is unknown
   ) => Promise<any> | any
+  // biome-ignore lint/suspicious/noExplicitAny: Adapter context type is unknown
   onBuildComplete?: (ctx: any) => Promise<void> | void
 }
 

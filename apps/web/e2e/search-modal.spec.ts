@@ -233,8 +233,8 @@ test.describe('Search Modal - Suggestion Links', () => {
 
     if (count > 0) {
       // Get the href before clicking to verify expected navigation
-      const href = await suggestionLinks.first().getAttribute('href')
-      
+      const _href = await suggestionLinks.first().getAttribute('href')
+
       // Click first suggestion and wait for navigation
       await Promise.all([
         page.waitForURL('**/videos/**', { timeout: 5000 }),
