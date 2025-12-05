@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Auto-label PR
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const { data: pr } = await github.rest.pulls.get({
@@ -47,25 +47,15 @@ jobs:
               }
             });
 
-            // Detect tech labels based on file extensions
-            const techLabels = new Set();
-            files.forEach(file => {
-              if (/\.(ts|tsx|js|jsx)$/.test(file.filename)) techLabels.add('tech: TypeScript');
-              if (/\.py$/.test(file.filename)) techLabels.add('tech: Python');
-              if (/\.(yml|yaml)$/.test(file.filename)) techLabels.add('tech: YAML');
-              if (/\.sql$/.test(file.filename)) techLabels.add('tech: SQL');
-            });
-
             // Detect documentation changes
             const isDocumentation = files.some(file => 
-              /\.(md|mdx)$/.test(file.filename) || file.filename.startsWith('docs/')
+              file.filename.endsWith('.md') || 
+              file.filename.endsWith('.mdx') || 
+              file.filename.startsWith('docs/')
             );
 
             // Collect labels to add
-            const labelsToAdd = [
-              ...Array.from(areaLabels),
-              ...Array.from(techLabels),
-            ];
+            const labelsToAdd = [...Array.from(areaLabels)];
 
             if (isDocumentation) {
               labelsToAdd.push('type: Documentation');
