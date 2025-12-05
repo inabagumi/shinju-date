@@ -41,3 +41,14 @@ export const SITE_TAGLINE =
 export const SITE_THEME_COLOR = '#1e0064' // var(--color-primary)
 
 export const SEARCH_RESULT_COUNT = 6
+
+/**
+ * 1x1 transparent PNG image (89 bytes)
+ * Used as fallback when thumbnail fetch fails
+ */
+export const DUMMY_THUMBNAIL_PNG = new Uint8Array([
+  137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0,
+  0, 0, 1, 8, 6, 0, 0, 0, 31, 21, 196, 137, 0, 0, 0, 13, 73, 68, 65, 84, 120,
+  218, 99, 100, 96, 248, 95, 15, 0, 2, 135, 1, 128, 235, 71, 186, 146, 0, 0, 0,
+  0, 73, 69, 78, 68, 174, 66, 96, 130,
+])

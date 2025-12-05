@@ -24,6 +24,7 @@ export function startServer() {
     onUnhandledRequest: 'warn',
   })
   console.log('🚀 MSW server started')
+  console.log('[MSW] Handlers registered:', server.listHandlers().length)
 }
 
 /**

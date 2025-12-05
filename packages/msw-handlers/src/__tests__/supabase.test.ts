@@ -169,4 +169,76 @@ describe('Supabase Handlers', () => {
       expect(data).toHaveLength(1)
     })
   })
+
+  describe('Storage endpoints', () => {
+    describe('createSignedUrl', () => {
+      it('should return a signed URL for thumbnail', async () => {
+        const response = await fetch(
+          'https://fake.supabase.test/storage/v1/object/sign/thumbnails/test.jpg',
+          {
+            method: 'POST',
+          },
+        )
+        const data = await response.json()
+
+        expect(response.ok).toBe(true)
+        expect(data).toHaveProperty('signedURL')
+        expect(data.signedURL).toContain(
+          'https://fake.supabase.test/storage/v1/object/public/thumbnails/test.jpg',
+        )
+      })
+
+      it('should handle nested paths in createSignedUrl', async () => {
+        const response = await fetch(
+          'https://fake.supabase.test/storage/v1/object/sign/thumbnails/subfolder/test.jpg',
+          {
+            method: 'POST',
+          },
+        )
+        const data = await response.json()
+
+        expect(response.ok).toBe(true)
+        expect(data).toHaveProperty('signedURL')
+        expect(data.signedURL).toContain(
+          'https://fake.supabase.test/storage/v1/object/public/thumbnails/subfolder/test.jpg',
+        )
+      })
+    })
+
+    describe('GET thumbnail image', () => {
+      it('should return a dummy image for simple path', async () => {
+        const response = await fetch(
+          'https://fake.supabase.test/storage/v1/object/public/thumbnails/test.jpg',
+        )
+
+        expect(response.ok).toBe(true)
+        expect(response.headers.get('content-type')).toBe('image/svg+xml')
+        const text = await response.text()
+        expect(text).toContain('<svg')
+      })
+
+      it('should return a dummy image for nested path', async () => {
+        const response = await fetch(
+          'https://fake.supabase.test/storage/v1/object/public/thumbnails/subfolder/test.jpg',
+        )
+
+        expect(response.ok).toBe(true)
+        expect(response.headers.get('content-type')).toBe('image/svg+xml')
+        const text = await response.text()
+        expect(text).toContain('<svg')
+      })
+
+      it('should handle thumbnails/thumbnails/ double prefix path', async () => {
+        // This simulates the case where the path in the database already includes "thumbnails/"
+        const response = await fetch(
+          'https://fake.supabase.test/storage/v1/object/public/thumbnails/thumbnails/uuid-123.jpg',
+        )
+
+        expect(response.ok).toBe(true)
+        expect(response.headers.get('content-type')).toBe('image/svg+xml')
+        const text = await response.text()
+        expect(text).toContain('<svg')
+      })
+    })
+  })
 })

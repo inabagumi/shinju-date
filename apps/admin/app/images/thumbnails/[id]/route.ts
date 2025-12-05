@@ -1,3 +1,4 @@
+import { DUMMY_THUMBNAIL_PNG } from '@shinju-date/constants'
 import { createErrorResponse } from '@shinju-date/helpers'
 import { type NextRequest, NextResponse } from 'next/server'
 import { supabaseClient } from '@/lib/supabase/admin'
@@ -32,22 +33,45 @@ export async function GET(
   fetchHeaders.delete('Host')
   fetchHeaders.delete('Cookie')
 
-  const res = await fetch(data.signedUrl, {
-    headers: fetchHeaders,
-  })
-  const headers = new Headers({
-    'Accept-Ranges': res.headers.get('Accept-Ranges') || 'none',
-    'Cache-Control': `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
-    'Content-Type': res.headers.get('Content-Type') || 'image/jpeg',
-  })
-  const contentLength = res.headers.get('Content-Length')
+  try {
+    const res = await fetch(data.signedUrl, {
+      headers: fetchHeaders,
+    })
 
-  if (contentLength) {
-    headers.set('Content-Length', contentLength)
+    // If fetch fails or returns an error status, return a dummy image
+    if (!res.ok) {
+      return new NextResponse(DUMMY_THUMBNAIL_PNG, {
+        headers: {
+          'Accept-Ranges': 'none',
+          'Cache-Control': `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
+          'Content-Type': 'image/png',
+        },
+      })
+    }
+
+    const headers = new Headers({
+      'Accept-Ranges': res.headers.get('Accept-Ranges') || 'none',
+      'Cache-Control': `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
+      'Content-Type': res.headers.get('Content-Type') || 'image/jpeg',
+    })
+    const contentLength = res.headers.get('Content-Length')
+
+    if (contentLength) {
+      headers.set('Content-Length', contentLength)
+    }
+
+    return new NextResponse(res.body, {
+      headers,
+      status: res.status,
+    })
+  } catch (_error) {
+    // If fetch throws an error (e.g., network error), return a dummy image
+    return new NextResponse(DUMMY_THUMBNAIL_PNG, {
+      headers: {
+        'Accept-Ranges': 'none',
+        'Cache-Control': `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
+        'Content-Type': 'image/png',
+      },
+    })
   }
-
-  return new NextResponse(res.body, {
-    headers,
-    status: res.status,
-  })
 }
