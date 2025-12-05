@@ -1,3 +1,4 @@
+import { DUMMY_THUMBNAIL_PNG } from '@shinju-date/constants'
 import { createErrorResponse } from '@shinju-date/helpers'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createSupabaseClient } from '@/lib/supabase'
@@ -45,12 +46,7 @@ export async function GET(
 
     // If fetch fails or returns an error status, return a dummy image
     if (!res.ok) {
-      // Return a 1x1 transparent PNG as fallback
-      const dummyImage = Buffer.from(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-        'base64',
-      )
-      return new NextResponse(dummyImage, {
+      return new NextResponse(DUMMY_THUMBNAIL_PNG, {
         headers: {
           'Accept-Ranges': 'none',
           'Cache-Control': `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
@@ -76,11 +72,7 @@ export async function GET(
     })
   } catch (_error) {
     // If fetch throws an error (e.g., network error), return a dummy image
-    const dummyImage = Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-      'base64',
-    )
-    return new NextResponse(dummyImage, {
+    return new NextResponse(DUMMY_THUMBNAIL_PNG, {
       headers: {
         'Accept-Ranges': 'none',
         'Cache-Control': `public, max-age=${SIGNED_URL_EXPIRES_IN}`,
