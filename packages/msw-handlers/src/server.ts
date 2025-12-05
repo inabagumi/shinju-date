@@ -25,9 +25,8 @@ export function startServer() {
       // Log all unhandled requests for debugging
       const url = new URL(request.url)
 
-      // Only warn about actual application requests, not internal Next.js/npm registry requests
+      // Only warn about actual application requests, not localhost
       if (
-        !url.hostname.includes('npmjs.org') &&
         !url.hostname.includes('localhost') &&
         url.hostname !== 'fake.supabase.test'
       ) {
