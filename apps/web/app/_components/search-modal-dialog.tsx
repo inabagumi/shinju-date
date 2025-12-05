@@ -52,12 +52,14 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null)
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
+  const [selectedIndex, setSelectedIndex] = useState(-1)
 
   // Fetch suggestions when query changes
   useEffect(() => {
     if (!query) {
       setSuggestions(null)
       setIsLoadingSuggestions(false)
+      setSelectedIndex(-1)
       return
     }
 
@@ -67,9 +69,11 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
       try {
         const data = await fetchSuggestions(query)
         setSuggestions(data)
+        setSelectedIndex(-1)
       } catch (err) {
         console.error('Failed to fetch suggestions', err)
         setSuggestions([])
+        setSelectedIndex(-1)
       } finally {
         setIsLoadingSuggestions(false)
       }
@@ -80,6 +84,48 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
 
     return () => clearTimeout(timeoutId)
   }, [query])
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!suggestions || suggestions.length === 0) return
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setSelectedIndex((prev) => {
+          const next = prev + 1
+          if (next < suggestions.length) {
+            // Focus the next suggestion link
+            setTimeout(() => {
+              const link = document.querySelectorAll('[data-suggestion-link]')[next] as HTMLElement
+              link?.focus()
+            }, 0)
+            return next
+          }
+          return prev
+        })
+      } else if (e.key === 'ArrowUp' && selectedIndex > -1) {
+        e.preventDefault()
+        setSelectedIndex((prev) => {
+          const next = prev - 1
+          if (next === -1) {
+            // Focus back on input
+            setTimeout(() => {
+              const input = document.querySelector('input[name="q"]') as HTMLInputElement
+              input?.focus()
+            }, 0)
+          } else if (next >= 0) {
+            // Focus the previous suggestion link
+            setTimeout(() => {
+              const link = document.querySelectorAll('[data-suggestion-link]')[next] as HTMLElement
+              link?.focus()
+            }, 0)
+          }
+          return next
+        })
+      }
+    },
+    [suggestions, selectedIndex],
+  )
 
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
@@ -110,6 +156,7 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
           className="w-full bg-transparent px-4 py-4 text-primary outline-none placeholder:text-774-nevy-400 dark:text-774-nevy-50 dark:placeholder:text-774-nevy-500"
           name="q"
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="検索..."
           type="search"
           value={query}
