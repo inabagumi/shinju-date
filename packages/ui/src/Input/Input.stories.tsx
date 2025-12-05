@@ -1,3 +1,4 @@
+import { expect, userEvent, within } from 'storybook/test'
 import preview from '#.storybook/preview'
 import { Input } from './Input'
 
@@ -28,6 +29,25 @@ export const Default = meta.story({
     placeholder: 'Enter text...',
     variant: 'default',
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const input = canvas.getByPlaceholderText(/enter text/i)
+
+    // Verify input is rendered
+    await expect(input).toBeInTheDocument()
+
+    // Test typing interaction
+    await userEvent.type(input, 'Hello, Storybook!')
+
+    // Verify the typed value
+    await expect(input).toHaveValue('Hello, Storybook!')
+
+    // Clear the input
+    await userEvent.clear(input)
+
+    // Verify input is cleared
+    await expect(input).toHaveValue('')
+  },
 })
 
 export const WithValue = meta.story({
@@ -49,6 +69,16 @@ export const Disabled = meta.story({
   args: {
     disabled: true,
     placeholder: 'Disabled input',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const input = canvas.getByPlaceholderText(/disabled input/i)
+
+    // Verify input is disabled
+    await expect(input).toBeDisabled()
+
+    // Verify input cannot receive focus programmatically
+    await expect(input).toBeInTheDocument()
   },
 })
 

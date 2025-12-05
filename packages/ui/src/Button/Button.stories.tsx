@@ -1,3 +1,4 @@
+import { expect, userEvent, within } from 'storybook/test'
 import preview from '#.storybook/preview'
 import { Button } from './Button'
 
@@ -27,6 +28,19 @@ export const Primary = meta.story({
   args: {
     children: 'Primary Button',
     variant: 'primary',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = canvas.getByRole('button', { name: /primary button/i })
+
+    // Verify button is rendered
+    await expect(button).toBeInTheDocument()
+
+    // Test click interaction
+    await userEvent.click(button)
+
+    // Verify button is still visible after click
+    await expect(button).toBeInTheDocument()
   },
 })
 
@@ -76,6 +90,18 @@ export const Disabled = meta.story({
   args: {
     children: 'Disabled Button',
     disabled: true,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = canvas.getByRole('button', { name: /disabled button/i })
+
+    // Verify button is rendered and disabled
+    await expect(button).toBeInTheDocument()
+    await expect(button).toBeDisabled()
+
+    // Verify button has disabled styles
+    await expect(button).toHaveClass('disabled:cursor-not-allowed')
+    await expect(button).toHaveClass('disabled:opacity-50')
   },
 })
 
