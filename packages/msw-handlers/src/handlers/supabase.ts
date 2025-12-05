@@ -1375,17 +1375,16 @@ export const supabaseHandlers = [
   ),
 
   // Storage endpoints
+  // Use :path* to match any nested path structure
   http.post(
-    'https://fake.supabase.test/storage/v1/object/sign/thumbnails/*',
-    async ({ request }) => {
+    'https://fake.supabase.test/storage/v1/object/sign/thumbnails/:path*',
+    async ({ request, params }) => {
       const url = new URL(request.url)
       // Log the full URL for debugging
       console.log('[MSW Storage] createSignedUrl called with URL:', url.href)
 
-      const path = url.pathname.replace(
-        '/storage/v1/object/sign/thumbnails/',
-        '',
-      )
+      // Extract path from params (handles nested paths correctly)
+      const path = params['path'] as string
 
       console.log('[MSW Storage] Extracted path:', path)
 
@@ -1402,8 +1401,10 @@ export const supabaseHandlers = [
     },
   ),
 
+  // Handle all thumbnail image fetches with a flexible pattern
+  // Use :path* to match any path including nested directories
   http.get(
-    'https://fake.supabase.test/storage/v1/object/public/thumbnails/*',
+    'https://fake.supabase.test/storage/v1/object/public/thumbnails/:path*',
     async ({ request }) => {
       console.log('[MSW Storage] GET thumbnail image called:', request.url)
       const dummyImage =
