@@ -40,19 +40,20 @@ export const Default = meta.story({
 
     // Wait for popover to appear
     await waitFor(() => {
-      const option1 = within(document.body).getByLabelText(/option 1/i)
-      expect(option1).toBeInTheDocument()
+      const option = within(document.body).getByLabelText(/option 1/i)
+      expect(option).toBeInTheDocument()
     })
 
-    // Select Option 1
-    const option1 = within(document.body).getByLabelText(/option 1/i)
-    await userEvent.click(option1)
+    // Get option elements after popover is visible
+    const bodyContext = within(document.body)
+    const option1 = bodyContext.getByLabelText(/option 1/i)
+    const option2 = bodyContext.getByLabelText(/option 2/i)
 
-    // Verify checkbox is checked
+    // Select Option 1
+    await userEvent.click(option1)
     await expect(option1).toBeChecked()
 
     // Select Option 2
-    const option2 = within(document.body).getByLabelText(/option 2/i)
     await userEvent.click(option2)
     await expect(option2).toBeChecked()
 
