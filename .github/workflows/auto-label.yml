@@ -47,6 +47,9 @@ jobs:
               }
             });
 
+            // Detect tech labels based on file extensions
+            const hasPython = files.some(file => file.filename.endsWith('.py'));
+
             // Detect documentation changes
             const isDocumentation = files.some(file => 
               file.filename.endsWith('.md') || 
@@ -56,6 +59,10 @@ jobs:
 
             // Collect labels to add
             const labelsToAdd = [...Array.from(areaLabels)];
+
+            if (hasPython) {
+              labelsToAdd.push('tech: Python');
+            }
 
             if (isDocumentation) {
               labelsToAdd.push('type: Documentation');
