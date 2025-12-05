@@ -1,5 +1,5 @@
 import preview from '#.storybook/preview'
-import { Badge } from './badge'
+import { Badge } from './Badge'
 
 const meta = preview.meta({
   argTypes: {

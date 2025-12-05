@@ -1,6 +1,6 @@
 import preview from '#.storybook/preview'
-import { Button } from './button'
-import { Card, CardContent, CardFooter, CardHeader } from './card'
+import { Button } from '../Button/Button'
+import { Card, CardContent, CardFooter, CardHeader } from './Card'
 
 const meta = preview.meta({
   argTypes: {

@@ -1,12 +1,12 @@
-export { Badge, type BadgeProps } from './badge'
-export { Button, type ButtonProps } from './button'
+export { Badge, type BadgeProps } from './Badge/Badge'
+export { Button, type ButtonProps } from './Button/Button'
 export {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   type CardProps,
-} from './card'
+} from './Card/Card'
 export {
   Dialog,
   DialogClose,
@@ -16,14 +16,14 @@ export {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
-} from './dialog'
-export { Input, type InputProps } from './input'
+} from './Dialog/Dialog'
+export { Input, type InputProps } from './Input/Input'
 export {
   MultiSelect,
   type MultiSelectOption,
   type MultiSelectProps,
-} from './multi-select'
-export { Textarea, type TextareaProps } from './textarea'
+} from './MultiSelect/MultiSelect'
+export { Textarea, type TextareaProps } from './Textarea/Textarea'
 export {
   Toast,
   ToastAction,
@@ -33,4 +33,4 @@ export {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from './toast'
+} from './Toast/Toast'

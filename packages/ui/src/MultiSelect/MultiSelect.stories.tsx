@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import preview from '#.storybook/preview'
-import { MultiSelect } from './multi-select'
+import { MultiSelect } from './MultiSelect'
 
 const meta = preview.meta({
   component: MultiSelect,
