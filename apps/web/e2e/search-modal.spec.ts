@@ -232,11 +232,14 @@ test.describe('Search Modal - Suggestion Links', () => {
     const count = await suggestionLinks.count()
 
     if (count > 0) {
-      // Click first suggestion
-      await suggestionLinks.first().click()
-
-      // Wait for navigation
-      await page.waitForLoadState('networkidle', { timeout: 5000 })
+      // Get the href before clicking to verify expected navigation
+      const href = await suggestionLinks.first().getAttribute('href')
+      
+      // Click first suggestion and wait for navigation
+      await Promise.all([
+        page.waitForURL('**/videos/**', { timeout: 5000 }),
+        suggestionLinks.first().click(),
+      ])
 
       // Modal should be closed
       await expect(searchInput).not.toBeVisible({ timeout: 5000 })
