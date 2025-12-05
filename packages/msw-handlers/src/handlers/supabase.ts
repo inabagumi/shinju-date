@@ -1384,7 +1384,9 @@ export const supabaseHandlers = [
       console.log('[MSW Storage] createSignedUrl called with URL:', url.href)
 
       // Extract path from params (handles nested paths correctly)
-      const path = params['path'] as string
+      // :path* returns an array when there are multiple segments
+      const pathParam = params['path']
+      const path = Array.isArray(pathParam) ? pathParam.join('/') : pathParam
 
       console.log('[MSW Storage] Extracted path:', path)
 
