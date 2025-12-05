@@ -21,27 +21,7 @@ export const server = setupServer(...allHandlers)
  */
 export function startServer() {
   server.listen({
-    onUnhandledRequest(request, print) {
-      // Log all unhandled requests for debugging
-      const url = new URL(request.url)
-
-      // Only warn about actual application requests, not localhost
-      if (
-        !url.hostname.includes('localhost') &&
-        url.hostname !== 'fake.supabase.test'
-      ) {
-        print.warning()
-      }
-
-      // Log fake.supabase.test requests that aren't handled (debugging)
-      if (url.hostname === 'fake.supabase.test') {
-        console.log(
-          '[MSW] Unhandled request to fake.supabase.test:',
-          request.method,
-          request.url,
-        )
-      }
-    },
+    onUnhandledRequest: 'warn',
   })
   console.log('🚀 MSW server started')
   console.log('[MSW] Handlers registered:', server.listHandlers().length)
