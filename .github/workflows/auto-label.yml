@@ -39,16 +39,11 @@ jobs:
               if (file.filename.startsWith('apps/admin/')) areaLabels.add('area: admin');
               if (file.filename.startsWith('apps/batch/')) areaLabels.add('area: batch');
               if (file.filename.startsWith('apps/insights/')) areaLabels.add('area: insights');
-              if (file.filename.startsWith('packages/')) areaLabels.add('area: packages');
-              if (file.filename.startsWith('terraform/') || 
-                  file.filename.startsWith('supabase/') || 
-                  file.filename.startsWith('.github/workflows/')) {
-                areaLabels.add('area: infrastructure');
-              }
             });
 
-            // Detect tech labels based on file extensions
+            // Detect tech labels based on file extensions and directories
             const hasPython = files.some(file => file.filename.endsWith('.py'));
+            const hasSupabase = files.some(file => file.filename.startsWith('supabase/'));
 
             // Detect documentation changes
             const isDocumentation = files.some(file => 
@@ -62,6 +57,10 @@ jobs:
 
             if (hasPython) {
               labelsToAdd.push('tech: Python');
+            }
+
+            if (hasSupabase) {
+              labelsToAdd.push('tech: Supabase');
             }
 
             if (isDocumentation) {

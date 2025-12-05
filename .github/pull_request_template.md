@@ -9,7 +9,9 @@
 
 ### 自動で付与されるラベル（GitHub Actions）
 - **area:** ラベル - 変更されたディレクトリに基づいて自動付与
+  - area: web, area: admin, area: batch, area: insights
 - **tech: Python** - Pythonファイルの変更時に自動付与
+- **tech: Supabase** - Supabaseディレクトリの変更時に自動付与
 - **type: Documentation** - ドキュメントファイルの変更時に自動付与
 - **size:** ラベル - 変更ファイル数・行数に基づいて自動付与
   - size: S（2ファイル以下 かつ 20行以下）
