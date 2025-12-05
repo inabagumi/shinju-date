@@ -1,0 +1,162 @@
+name: Auto Label
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  auto-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Get PR files and analyze changes
+        id: analyze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Get changed files from PR
+          gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path' > changed_files.txt
+          
+          # Get PR diff stats
+          gh pr diff ${{ github.event.pull_request.number }} > pr_diff.txt
+          
+          # Count changed files
+          file_count=$(wc -l < changed_files.txt)
+          
+          # Count changed lines (additions + deletions)
+          additions=$(grep -E '^\+' pr_diff.txt | grep -v '^\+\+\+' | wc -l || echo 0)
+          deletions=$(grep -E '^-' pr_diff.txt | grep -v '^---' | wc -l || echo 0)
+          total_changes=$((additions + deletions))
+          
+          echo "file_count=$file_count" >> $GITHUB_OUTPUT
+          echo "total_changes=$total_changes" >> $GITHUB_OUTPUT
+          
+          # Detect area labels based on directories
+          area_labels=""
+          if grep -q '^apps/web/' changed_files.txt; then
+            area_labels="${area_labels}area: web,"
+          fi
+          if grep -q '^apps/admin/' changed_files.txt; then
+            area_labels="${area_labels}area: admin,"
+          fi
+          if grep -q '^apps/batch/' changed_files.txt; then
+            area_labels="${area_labels}area: batch,"
+          fi
+          if grep -q '^apps/insights/' changed_files.txt; then
+            area_labels="${area_labels}area: insights,"
+          fi
+          if grep -q '^packages/' changed_files.txt; then
+            area_labels="${area_labels}area: packages,"
+          fi
+          if grep -q '^terraform/' changed_files.txt; then
+            area_labels="${area_labels}area: infrastructure,"
+          fi
+          if grep -q '^\(supabase\|\.github/workflows\)/' changed_files.txt; then
+            area_labels="${area_labels}area: infrastructure,"
+          fi
+          
+          # Remove trailing comma
+          area_labels=$(echo "$area_labels" | sed 's/,$//')
+          echo "area_labels=$area_labels" >> $GITHUB_OUTPUT
+          
+          # Detect tech labels based on file extensions
+          tech_labels=""
+          if grep -qE '\.(ts|tsx|js|jsx)$' changed_files.txt; then
+            tech_labels="${tech_labels}tech: TypeScript,"
+          fi
+          if grep -qE '\.py$' changed_files.txt; then
+            tech_labels="${tech_labels}tech: Python,"
+          fi
+          if grep -qE '\.(yml|yaml)$' changed_files.txt; then
+            tech_labels="${tech_labels}tech: YAML,"
+          fi
+          if grep -qE '\.sql$' changed_files.txt; then
+            tech_labels="${tech_labels}tech: SQL,"
+          fi
+          
+          # Remove trailing comma
+          tech_labels=$(echo "$tech_labels" | sed 's/,$//')
+          echo "tech_labels=$tech_labels" >> $GITHUB_OUTPUT
+          
+          # Detect documentation changes
+          is_docs="false"
+          if grep -qE '\.(md|mdx)$' changed_files.txt || grep -q '^docs/' changed_files.txt; then
+            is_docs="true"
+          fi
+          echo "is_docs=$is_docs" >> $GITHUB_OUTPUT
+
+      - name: Determine size label
+        id: size
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Check if PR already has a size label
+          existing_labels=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name' || echo "")
+          has_size_label=$(echo "$existing_labels" | grep -E '^size: ' || echo "")
+          
+          size_label=""
+          if [ -z "$has_size_label" ]; then
+            # Determine size based on file count and line changes
+            file_count=${{ steps.analyze.outputs.file_count }}
+            total_changes=${{ steps.analyze.outputs.total_changes }}
+            
+            if [ "$file_count" -le 2 ] && [ "$total_changes" -le 20 ]; then
+              size_label="size: S"
+            elif [ "$file_count" -le 5 ] && [ "$total_changes" -le 100 ]; then
+              size_label="size: M"
+            else
+              size_label="size: L"
+            fi
+          fi
+          
+          echo "size_label=$size_label" >> $GITHUB_OUTPUT
+
+      - name: Add labels
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          labels_to_add=""
+          
+          # Add area labels
+          if [ -n "${{ steps.analyze.outputs.area_labels }}" ]; then
+            IFS=',' read -ra LABELS <<< "${{ steps.analyze.outputs.area_labels }}"
+            for label in "${LABELS[@]}"; do
+              labels_to_add="${labels_to_add}\"${label}\","
+            done
+          fi
+          
+          # Add tech labels
+          if [ -n "${{ steps.analyze.outputs.tech_labels }}" ]; then
+            IFS=',' read -ra LABELS <<< "${{ steps.analyze.outputs.tech_labels }}"
+            for label in "${LABELS[@]}"; do
+              labels_to_add="${labels_to_add}\"${label}\","
+            done
+          fi
+          
+          # Add documentation label
+          if [ "${{ steps.analyze.outputs.is_docs }}" = "true" ]; then
+            labels_to_add="${labels_to_add}\"type: Documentation\","
+          fi
+          
+          # Add size label
+          if [ -n "${{ steps.size.outputs.size_label }}" ]; then
+            labels_to_add="${labels_to_add}\"${{ steps.size.outputs.size_label }}\","
+          fi
+          
+          # Remove trailing comma and apply labels
+          labels_to_add=$(echo "$labels_to_add" | sed 's/,$//')
+          
+          if [ -n "$labels_to_add" ]; then
+            echo "Adding labels: $labels_to_add"
+            gh pr edit ${{ github.event.pull_request.number }} --add-label "$labels_to_add"
+          else
+            echo "No labels to add"
+          fi
