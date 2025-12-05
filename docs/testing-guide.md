@@ -301,6 +301,56 @@ screen.getByClassName('email-input')
 - 不要なグローバルセットアップを削除
 - テストの並列実行を検討（Vitest はデフォルトで並列実行）
 
+## CI/CD環境でのテスト実行
+
+### GitHub Actions Reporter
+
+GitHub Actions上でのテスト実行時、自動的に最適化されたレポーターが使用されます。
+
+#### Vitest（ユニットテスト）
+
+Vitestは**GitHub Actionsレポーター**を使用し、以下の機能を提供します：
+
+- **GitHub Annotations**: テストの失敗やエラーがPull Requestの該当行に直接表示されます
+- **グループ化されたログ**: テストの出力が見やすくグループ化されます
+- **テスト結果のサマリー**: 各テストの実行結果が明確に表示されます
+
+CI環境では以下のように実行されます：
+
+```bash
+# GitHub Actionsワークフローで自動的に実行
+pnpm test --filter <package-name> -- --reporter=github-actions
+```
+
+#### Biome（リント・フォーマット）
+
+Biomeは**GitHubレポーター**を使用し、以下の機能を提供します：
+
+- **GitHub Annotations**: リントエラーやフォーマットの問題がPull Requestの該当行に直接表示されます
+- **チェックラン**: Biomeの結果がGitHub Checksに統合され、PRのUIから確認できます
+- **問題の分類**: エラー、警告、情報がカテゴリごとに整理されます
+
+CI環境では以下のように実行されます：
+
+```bash
+# GitHub Actionsワークフローで自動的に実行
+pnpm biome ci --reporter=github .
+```
+
+#### Playwright（E2Eテスト）
+
+PlaywrightのGitHub Actionsレポーターについては、[E2E Testing Guide](./e2e-testing.md#github-actions-reporter)を参照してください。
+
+### ローカル環境での動作
+
+ローカル環境では、CI環境変数が設定されていないため、通常のレポーター（デフォルト）が使用されます：
+
+- **Vitest**: デフォルトレポーター（カラフルなコンソール出力）
+- **Biome**: デフォルトレポーター（カラフルなコンソール出力）
+- **Playwright**: HTMLレポーター（ブラウザで結果を表示）
+
+これにより、ローカルとCIで異なる視覚的体験を提供しながら、両方の環境で最適な結果表示が実現されています。
+
 ## 参考リンク
 
 - [Vitest 公式ドキュメント](https://vitest.dev/)

@@ -185,6 +185,26 @@ CI環境では以下の動作になります：
 - ワーカー数が1に制限（並列実行を抑制）
 - 既存サーバーの再利用が無効化
 
+### GitHub Actions Reporter
+
+GitHub Actions上でのテスト実行時、Playwrightは自動的に**GitHubレポーター**を使用します。このレポーターは以下の機能を提供します：
+
+- **Annotations（注釈）**: テストの失敗やエラーがPull Requestの該当行に直接表示されます
+- **チェックラン**: テスト結果がGitHub Checksに統合され、PRのUIから確認できます
+- **HTMLレポート**: 詳細なテストレポートがartifactとしてアップロードされ、後から確認できます
+
+レポーターの設定は各アプリケーションの `playwright.config.ts` で以下のように構成されています：
+
+```typescript
+reporter: process.env['CI']
+  ? [['github'], ['html', { open: 'never' }]]
+  : 'html',
+```
+
+この設定により：
+- CI環境では `github` レポーター（Annotations用）と `html` レポーター（詳細レポート用）の両方が有効化されます
+- ローカル環境では `html` レポーターのみが使用され、テスト完了後にブラウザで結果が開きます
+
 ## 参考資料
 
 - [Playwright公式ドキュメント](https://playwright.dev/)
