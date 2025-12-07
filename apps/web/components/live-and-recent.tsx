@@ -1,46 +1,44 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { fetchLiveAndRecentVideos, type Video } from '@/lib/fetchers'
 import VideoCard, { VideoCardSkeleton } from './video-card'
 
 export function LiveAndRecentSkeleton() {
   return (
     <div className="space-y-6">
-      {/* Desktop: Bento Grid */}
-      <div className="hidden md:grid md:grid-cols-2 md:gap-6">
-        {/* Live section skeleton - Bento Grid */}
-        <div className="space-y-4">
-          <h3 className="font-bold text-lg">
-            <span className="inline-block h-5 w-24 animate-pulse rounded-md bg-774-nevy-100 dark:bg-zinc-800" />
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <VideoCardSkeleton />
-            </div>
-            <VideoCardSkeleton />
-          </div>
-        </div>
+      {/* Tab buttons skeleton */}
+      <div className="flex gap-2">
+        <div className="h-10 w-24 animate-pulse rounded-lg bg-774-nevy-100 dark:bg-zinc-800" />
+        <div className="h-10 w-24 animate-pulse rounded-lg bg-774-nevy-100 dark:bg-zinc-800" />
+      </div>
 
-        {/* Recent section skeleton - Bento Grid */}
-        <div className="space-y-4">
-          <h3 className="font-bold text-lg">
-            <span className="inline-block h-5 w-32 animate-pulse rounded-md bg-774-nevy-100 dark:bg-zinc-800" />
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <VideoCardSkeleton />
-            <div className="col-span-2">
-              <VideoCardSkeleton />
-            </div>
-          </div>
+      {/* Desktop: Featured + Grid */}
+      <div className="hidden md:grid md:grid-cols-[2fr_1fr] md:gap-6">
+        {/* Left: 2x2 Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <VideoCardSkeleton />
+          <VideoCardSkeleton />
+          <VideoCardSkeleton />
+          <VideoCardSkeleton />
+        </div>
+        {/* Right: Featured large */}
+        <div>
+          <VideoCardSkeleton />
         </div>
       </div>
 
-      {/* Mobile: Grid layout */}
+      {/* Mobile: Featured + Grid */}
       <div className="md:hidden">
-        <div className="grid grid-cols-2 gap-4 px-4">
+        <div className="space-y-4 px-4">
+          {/* Featured large */}
           <VideoCardSkeleton />
-          <VideoCardSkeleton />
+          {/* 2x2 Grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <VideoCardSkeleton />
+            <VideoCardSkeleton />
+          </div>
         </div>
       </div>
     </div>
@@ -66,6 +64,8 @@ export default function LiveAndRecent({
     refetchInterval: 60_000,
   })
 
+  const [activeTab, setActiveTab] = useState<'live' | 'recent'>('live')
+
   // If no live and no recent videos, don't render the section
   if (
     !isLoading &&
@@ -83,132 +83,138 @@ export default function LiveAndRecent({
   const hasLive = data.live.length > 0
   const hasRecent = data.recent.length > 0
 
-  // Limit videos to keep layout compact - max 4-5 videos per section
-  const displayLive = data.live.slice(0, 5)
-  const displayRecent = data.recent.slice(0, 5)
+  // Auto-switch to recent tab if no live videos
+  const currentTab = activeTab === 'live' && !hasLive ? 'recent' : activeTab
+  const displayVideos = currentTab === 'live' ? data.live : data.recent
+
+  // Get the featured video (newest/latest) and grid videos
+  const featuredVideo = displayVideos[0]
+  const gridVideos = displayVideos.slice(1)
 
   return (
     <div className="space-y-6">
-      {/* Desktop: Bento Grid layout */}
-      <div className="hidden md:block">
-        <div className={hasLive && hasRecent ? 'grid grid-cols-2 gap-6' : ''}>
-          {/* Live videos section - Bento Grid */}
-          {hasLive && (
-            <div className="space-y-4">
-              <h3 className="flex items-center gap-2 font-bold text-lg">
-                <span className="inline-flex items-center gap-1 rounded-md bg-774-pink-600 px-2 py-1 text-sm text-white">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
-                  </span>
-                  LIVE
-                </span>
-                配信中
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                {displayLive.map((video, index) => {
-                  // Create Bento Grid pattern: first item spans 2 columns, then alternating
-                  const isWide =
-                    index === 0 || (index > 0 && (index - 1) % 3 === 2)
-                  return (
-                    <div
-                      className={isWide ? 'col-span-2' : 'col-span-1'}
-                      key={video.id}
-                    >
-                      <VideoCard
-                        dateTimeFormatOptions={{
-                          dateStyle: 'short',
-                          timeStyle: 'short',
-                        }}
-                        value={video}
-                      />
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Recent videos section - Bento Grid */}
-          {hasRecent && (
-            <div className="space-y-4">
-              <h3 className="font-bold text-lg">新着動画（48時間以内）</h3>
-              <div className="grid grid-cols-2 gap-4">
-                {displayRecent.map((video, index) => {
-                  // Create Bento Grid pattern: alternating layout starting with 2 small, then 1 wide
-                  const isWide = index > 1 && (index - 2) % 3 === 0
-                  return (
-                    <div
-                      className={isWide ? 'col-span-2' : 'col-span-1'}
-                      key={video.id}
-                    >
-                      <VideoCard
-                        dateTimeFormatOptions={{
-                          dateStyle: 'short',
-                          timeStyle: 'short',
-                        }}
-                        value={video}
-                      />
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </div>
+      {/* Tab Navigation */}
+      <div className="flex gap-2">
+        <button
+          className={`rounded-lg px-4 py-2 font-semibold transition-colors ${
+            currentTab === 'live'
+              ? 'bg-774-pink-600 text-white'
+              : 'bg-774-nevy-100 text-774-nevy-800 hover:bg-774-nevy-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700'
+          } ${!hasLive ? 'cursor-not-allowed opacity-50' : ''}`}
+          disabled={!hasLive}
+          onClick={() => setActiveTab('live')}
+          type="button"
+        >
+          <span className="flex items-center gap-2">
+            {currentTab === 'live' && (
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
+              </span>
+            )}
+            配信中
+          </span>
+        </button>
+        <button
+          className={`rounded-lg px-4 py-2 font-semibold transition-colors ${
+            currentTab === 'recent'
+              ? 'bg-774-pink-600 text-white'
+              : 'bg-774-nevy-100 text-774-nevy-800 hover:bg-774-nevy-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700'
+          } ${!hasRecent ? 'cursor-not-allowed opacity-50' : ''}`}
+          disabled={!hasRecent}
+          onClick={() => setActiveTab('recent')}
+          type="button"
+        >
+          新着動画
+        </button>
       </div>
 
-      {/* Mobile: Responsive Grid layout */}
-      <div className="md:hidden">
-        <div className="space-y-6 px-4">
-          {/* Live videos section */}
-          {hasLive && (
-            <div className="space-y-3">
-              <h3 className="flex items-center gap-2 font-bold text-base">
-                <span className="inline-flex items-center gap-1 rounded-md bg-774-pink-600 px-2 py-1 text-white text-xs">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
-                  </span>
-                  LIVE
-                </span>
-                配信中
-              </h3>
-              <div className="grid grid-cols-2 gap-3">
-                {displayLive.slice(0, 4).map((video) => (
-                  <VideoCard
-                    dateTimeFormatOptions={{
-                      dateStyle: 'short',
-                      timeStyle: 'short',
-                    }}
-                    key={video.id}
-                    value={video}
+      {/* Content Area */}
+      {featuredVideo && (
+        <>
+          {/* Desktop Layout: 2x2 Grid on left, Featured on right */}
+          <div className="hidden md:grid md:grid-cols-[2fr_1fr] md:gap-6">
+            {/* Left: 2x2 Grid (always show 4 slots) */}
+            <div className="grid grid-cols-2 gap-4">
+              {gridVideos.slice(0, 4).map((video) => (
+                <VideoCard
+                  dateTimeFormatOptions={{
+                    dateStyle: 'short',
+                    timeStyle: 'short',
+                  }}
+                  key={video.id}
+                  value={video}
+                />
+              ))}
+              {/* Fill remaining slots with empty divs */}
+              {gridVideos.length < 4 &&
+                Array.from({ length: 4 - gridVideos.length }).map((_, i) => (
+                  <div
+                    className="rounded-xl border border-774-nevy-200 border-dashed dark:border-zinc-700"
+                    key={`empty-${currentTab}-${gridVideos.length + i}`}
                   />
                 ))}
-              </div>
+            </div>
+
+            {/* Right: Featured large */}
+            <div>
+              <VideoCard
+                dateTimeFormatOptions={{
+                  dateStyle: 'short',
+                  timeStyle: 'short',
+                }}
+                value={featuredVideo}
+              />
+            </div>
+          </div>
+
+          {/* Additional videos below if more than 5 */}
+          {gridVideos.length > 4 && (
+            <div className="hidden md:grid md:grid-cols-3 md:gap-4">
+              {gridVideos.slice(4).map((video) => (
+                <VideoCard
+                  dateTimeFormatOptions={{
+                    dateStyle: 'short',
+                    timeStyle: 'short',
+                  }}
+                  key={video.id}
+                  value={video}
+                />
+              ))}
             </div>
           )}
 
-          {/* Recent videos section */}
-          {hasRecent && (
-            <div className="space-y-3">
-              <h3 className="font-bold text-base">新着動画（48時間以内）</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {displayRecent.slice(0, 4).map((video) => (
-                  <VideoCard
-                    dateTimeFormatOptions={{
-                      dateStyle: 'short',
-                      timeStyle: 'short',
-                    }}
-                    key={video.id}
-                    value={video}
-                  />
-                ))}
-              </div>
+          {/* Mobile Layout: Featured on top, 2x2 Grid below */}
+          <div className="md:hidden">
+            <div className="space-y-4 px-4">
+              {/* Featured large */}
+              <VideoCard
+                dateTimeFormatOptions={{
+                  dateStyle: 'short',
+                  timeStyle: 'short',
+                }}
+                value={featuredVideo}
+              />
+
+              {/* 2x2 Grid */}
+              {gridVideos.length > 0 && (
+                <div className="grid grid-cols-2 gap-3">
+                  {gridVideos.slice(0, 4).map((video) => (
+                    <VideoCard
+                      dateTimeFormatOptions={{
+                        dateStyle: 'short',
+                        timeStyle: 'short',
+                      }}
+                      key={video.id}
+                      value={video}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
