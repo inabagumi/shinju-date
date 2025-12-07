@@ -139,6 +139,7 @@ export default function LiveAndRecent({
             <div className="grid grid-cols-2 gap-3 md:gap-4">
               {gridVideos.slice(0, 4).map((video) => (
                 <VideoCard
+                  compact
                   dateTimeFormatOptions={{
                     dateStyle: 'short',
                     timeStyle: 'short',
@@ -158,11 +159,12 @@ export default function LiveAndRecent({
             </div>
           </div>
 
-          {/* Additional videos below if more than 5 (2-column grid) */}
+          {/* Additional videos below if more than 5 (4-column grid) */}
           {gridVideos.length > 4 && (
-            <div className="grid grid-cols-2 gap-3 px-4 md:gap-4 md:px-0">
+            <div className="grid grid-cols-2 gap-3 px-4 md:grid-cols-4 md:gap-4 md:px-0">
               {gridVideos.slice(4).map((video) => (
                 <VideoCard
+                  compact
                   dateTimeFormatOptions={{
                     dateStyle: 'short',
                     timeStyle: 'short',

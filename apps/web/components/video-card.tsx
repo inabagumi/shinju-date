@@ -80,12 +80,14 @@ export function VideoCardSkeleton() {
 }
 
 export default function VideoCard({
+  compact = false,
   dateTimeFormatOptions = {
     dateStyle: undefined,
     timeStyle: 'short',
   },
   value,
 }: {
+  compact?: boolean
   dateTimeFormatOptions?: Pick<
     Intl.DateTimeFormatOptions,
     'dateStyle' | 'timeStyle'
@@ -131,13 +133,17 @@ export default function VideoCard({
 
       <div className="grid grow grid-rows-[1fr_auto] gap-6 p-2.5">
         <h3
-          className="line-clamp-3 break-all font-semibold"
+          className={
+            compact
+              ? 'line-clamp-2 break-all font-semibold text-sm'
+              : 'line-clamp-3 break-all font-semibold'
+          }
           title={value.title}
         >
           {value.title}
         </h3>
 
-        <div className="text-right text-sm">
+        <div className={compact ? 'text-right text-xs' : 'text-right text-sm'}>
           <FormattedTime
             dateTime={publishedAt}
             options={dateTimeFormatOptions}
