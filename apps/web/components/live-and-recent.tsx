@@ -132,7 +132,7 @@ export default function LiveAndRecent({
       {/* Content Area */}
       {featuredVideo && (
         <>
-          {/* Desktop Layout: Featured on right, 2x2 Grid on left */}
+          {/* Desktop Layout: Featured on left, 2x2 Grid on right */}
           <div className="hidden md:grid md:grid-cols-[1fr_2fr] md:gap-6">
             {/* Left: Featured large */}
             <div>
@@ -157,32 +157,16 @@ export default function LiveAndRecent({
                   value={video}
                 />
               ))}
-              {/* Fill remaining slots with empty divs */}
+              {/* Fill remaining slots with invisible placeholders */}
               {gridVideos.length < 4 &&
                 Array.from({ length: 4 - gridVideos.length }).map((_, i) => (
                   <div
-                    className="rounded-xl border border-774-nevy-200 border-dashed dark:border-zinc-700"
+                    className="invisible"
                     key={`empty-${currentTab}-${gridVideos.length + i}`}
                   />
                 ))}
             </div>
           </div>
-
-          {/* Additional videos below if more than 5 */}
-          {gridVideos.length > 4 && (
-            <div className="hidden md:grid md:grid-cols-3 md:gap-4">
-              {gridVideos.slice(4).map((video) => (
-                <VideoCard
-                  dateTimeFormatOptions={{
-                    dateStyle: 'short',
-                    timeStyle: 'short',
-                  }}
-                  key={video.id}
-                  value={video}
-                />
-              ))}
-            </div>
-          )}
 
           {/* Mobile Layout: Featured on top, 2x2 Grid below */}
           <div className="md:hidden">

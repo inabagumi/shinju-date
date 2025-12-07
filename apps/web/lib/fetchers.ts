@@ -48,7 +48,7 @@ export const fetchUpcomingAndLiveVideos = async (): Promise<Video[]> => {
   const { data: videos, error } = await supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
-    .in('status', ['LIVE', 'UPCOMING'])
+    .eq('status', 'UPCOMING') // Only fetch UPCOMING videos, not LIVE
     .lte('published_at', toDBString(until))
     .order('published_at', {
       ascending: false,
