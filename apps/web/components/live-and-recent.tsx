@@ -4,32 +4,6 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchLiveAndRecentVideos, type Video } from '@/lib/fetchers'
 import VideoCard, { VideoCardSkeleton } from './video-card'
 
-function LiveVideoCard({ video }: { video: Video }) {
-  return (
-    <div className="relative">
-      <VideoCard
-        dateTimeFormatOptions={{
-          dateStyle: 'short',
-          timeStyle: 'short',
-        }}
-        value={video}
-      />
-    </div>
-  )
-}
-
-function RecentVideoCard({ video }: { video: Video }) {
-  return (
-    <VideoCard
-      dateTimeFormatOptions={{
-        dateStyle: 'short',
-        timeStyle: 'short',
-      }}
-      value={video}
-    />
-  )
-}
-
 export function LiveAndRecentSkeleton() {
   return (
     <div className="space-y-6">
@@ -103,13 +77,25 @@ export default function LiveAndRecent({
             {/* Live videos first */}
             {data.live.map((video) => (
               <div className="w-80 flex-shrink-0" key={video.id}>
-                <LiveVideoCard video={video} />
+                <VideoCard
+                  dateTimeFormatOptions={{
+                    dateStyle: 'short',
+                    timeStyle: 'short',
+                  }}
+                  value={video}
+                />
               </div>
             ))}
             {/* Then recent videos */}
             {data.recent.map((video) => (
               <div className="w-80 flex-shrink-0" key={video.id}>
-                <RecentVideoCard video={video} />
+                <VideoCard
+                  dateTimeFormatOptions={{
+                    dateStyle: 'short',
+                    timeStyle: 'short',
+                  }}
+                  value={video}
+                />
               </div>
             ))}
           </div>
@@ -133,7 +119,14 @@ export default function LiveAndRecent({
             </h2>
             <div className="grid grid-cols-1 gap-6">
               {data.live.map((video) => (
-                <LiveVideoCard key={video.id} video={video} />
+                <VideoCard
+                  dateTimeFormatOptions={{
+                    dateStyle: 'short',
+                    timeStyle: 'short',
+                  }}
+                  key={video.id}
+                  value={video}
+                />
               ))}
             </div>
           </div>
@@ -145,7 +138,14 @@ export default function LiveAndRecent({
             <h2 className="font-bold text-xl">新着動画（48時間以内）</h2>
             <div className="grid grid-cols-1 gap-6">
               {data.recent.map((video) => (
-                <RecentVideoCard key={video.id} video={video} />
+                <VideoCard
+                  dateTimeFormatOptions={{
+                    dateStyle: 'short',
+                    timeStyle: 'short',
+                  }}
+                  key={video.id}
+                  value={video}
+                />
               ))}
             </div>
           </div>
