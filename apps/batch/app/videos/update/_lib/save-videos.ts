@@ -3,7 +3,11 @@ import type { TablesInsert } from '@shinju-date/database'
 import { isNonNullable } from '@shinju-date/helpers'
 import { toDBString } from '@shinju-date/temporal-fns'
 import type { YouTubeVideo } from '@shinju-date/youtube-scraper'
-import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
+import {
+  getPublishedAt,
+  getVideoKind,
+  getVideoStatus,
+} from '@shinju-date/youtube-scraper'
 import PQueue from 'p-queue'
 import { Temporal } from 'temporal-polyfill'
 import { DatabaseError, getSavedVideos } from '@/lib/database/operations'
@@ -215,6 +219,7 @@ function processNewVideos(options: {
       }
 
       const status = getVideoStatus(originalVideo, currentDateTime)
+      const videoKind = getVideoKind(originalVideo, currentDateTime)
 
       return {
         value: {
@@ -226,6 +231,7 @@ function processNewVideos(options: {
           talent_id: talentId,
           title: originalVideo.snippet?.title ?? '',
           updated_at: toDBString(currentDateTime),
+          video_kind: videoKind,
           visible: true,
           ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
         },
