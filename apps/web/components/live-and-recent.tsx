@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { Activity } from 'lucide-react'
+import type React from 'react'
 import { useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { fetchLiveAndRecentVideos, type Video } from '@/lib/fetchers'
@@ -124,30 +125,38 @@ export default function LiveAndRecent({
             const isFeatured = index === 0
             const isGrid = index >= 1 && index <= 4
 
-            return (
-              <VideoCard
-                className={
-                  isFeatured
-                    ? 'col-span-2 row-span-2 md:col-span-1 md:row-span-2'
-                    : undefined
-                }
-                compact={!isFeatured}
-                dateTimeFormatOptions={{
-                  dateStyle: 'short',
-                  timeStyle: 'short',
-                }}
-                key={video.id}
-                style={
-                  isGrid
-                    ? ({
-                        gridColumn: index === 1 || index === 2 ? '2' : '3',
-                        gridRow: index === 1 || index === 3 ? '1' : '2',
-                      } as React.CSSProperties)
-                    : undefined
-                }
-                value={video}
-              />
-            )
+            // Build props conditionally to satisfy exactOptionalPropertyTypes
+            const props: {
+              className?: string
+              compact?: boolean
+              dateTimeFormatOptions?: Pick<
+                Intl.DateTimeFormatOptions,
+                'dateStyle' | 'timeStyle'
+              >
+              style?: React.CSSProperties
+              value: Video
+            } = {
+              compact: !isFeatured,
+              dateTimeFormatOptions: {
+                dateStyle: 'short',
+                timeStyle: 'short',
+              },
+              value: video,
+            }
+
+            if (isFeatured) {
+              props.className =
+                'col-span-2 row-span-2 md:col-span-1 md:row-span-2'
+            }
+
+            if (isGrid) {
+              props.style = {
+                gridColumn: index === 1 || index === 2 ? '2' : '3',
+                gridRow: index === 1 || index === 3 ? '1' : '2',
+              }
+            }
+
+            return <VideoCard key={video.id} {...props} />
           })}
           {/* Fill remaining slots with invisible placeholders if less than 5 videos */}
           {displayVideos.length < 5 &&
