@@ -4,7 +4,7 @@ import { TIME_ZONE } from '@shinju-date/constants'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { Temporal } from 'temporal-polyfill'
-import { fetchUpcomingAndLiveVideos, type Video } from '@/lib/fetchers'
+import { fetchUpcomingVideos, type Video } from '@/lib/fetchers'
 import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 
 function TimelineSection({
@@ -54,8 +54,8 @@ export default function Timeline({
 }) {
   const { data: videos = prefetchedData } = useQuery({
     initialData: prefetchedData,
-    queryFn: () => fetchUpcomingAndLiveVideos(),
-    queryKey: ['upcoming-and-live-videos'],
+    queryFn: () => fetchUpcomingVideos(),
+    queryKey: ['upcoming-videos'],
     refetchInterval: 60_000,
   })
   const schedule = useMemo<Map<string, Video[]>>(() => {
