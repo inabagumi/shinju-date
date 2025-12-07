@@ -30,9 +30,16 @@ VALUES
 	-- Live videos (current time)
 	('30000000-0000-0000-0000-000000000021', '【LIVE】現在配信中！', 'PT0H0M0S', date_trunc('second', NOW() - INTERVAL '2 hours'), date_trunc('second', NOW() - INTERVAL '1 hour'), date_trunc('second', NOW() - INTERVAL '30 minutes'), TRUE, NULL, '00000000-0000-0000-0000-000000000006', 'youtube', 'LIVE'),
 	('30000000-0000-0000-0000-000000000022', '【LIVE】ゲーム配信中', 'PT0H0M0S', date_trunc('second', NOW() - INTERVAL '3 hours'), date_trunc('second', NOW() - INTERVAL '2 hours'), date_trunc('second', NOW() - INTERVAL '1 hour'), TRUE, NULL, '00000000-0000-0000-0000-000000000007', 'youtube', 'LIVE'),
-	-- Published videos (past)
+	('30000000-0000-0000-0000-000000000023', '【LIVE】お絵描き配信', 'PT0H0M0S', date_trunc('second', NOW() - INTERVAL '4 hours'), date_trunc('second', NOW() - INTERVAL '3 hours'), date_trunc('second', NOW() - INTERVAL '2 hours'), TRUE, NULL, '00000000-0000-0000-0000-000000000008', 'youtube', 'LIVE'),
+	-- Published videos (past) - Recent (within 48 hours)
 	('30000000-0000-0000-0000-000000000001', 'テスト動画100', 'PT1H2M10S', date_trunc('second', NOW() - INTERVAL '0 days' - INTERVAL '1 hour'), date_trunc('second', NOW() - INTERVAL '0 days' - INTERVAL '30 minutes'), date_trunc('second', NOW()), TRUE, NULL, '00000000-0000-0000-0000-000000000001', 'youtube', 'PUBLISHED'),
 	('30000000-0000-0000-0000-000000000002', 'テスト動画99', 'PT2H3M5S', date_trunc('second', NOW() - INTERVAL '1 days' - INTERVAL '2 hour'), date_trunc('second', NOW() - INTERVAL '1 days' - INTERVAL '1 hour'), date_trunc('second', NOW() - INTERVAL '1 days'), TRUE, NULL, '00000000-0000-0000-0000-000000000002', 'youtube', 'PUBLISHED'),
+	('30000000-0000-0000-0000-000000000006', '【Shorts】面白い瞬間集 #1', 'PT45S', date_trunc('second', NOW() - INTERVAL '6 hours'), date_trunc('second', NOW() - INTERVAL '5 hours'), date_trunc('second', NOW() - INTERVAL '4 hours'), TRUE, NULL, '00000000-0000-0000-0000-000000000003', 'youtube', 'PUBLISHED'),
+	('30000000-0000-0000-0000-000000000007', '新曲カバー「春の歌」', 'PT3M45S', date_trunc('second', NOW() - INTERVAL '10 hours'), date_trunc('second', NOW() - INTERVAL '9 hours'), date_trunc('second', NOW() - INTERVAL '8 hours'), TRUE, NULL, '00000000-0000-0000-0000-000000000004', 'youtube', 'PUBLISHED'),
+	('30000000-0000-0000-0000-000000000008', 'ゲーム実況ハイライト', 'PT12M30S', date_trunc('second', NOW() - INTERVAL '20 hours'), date_trunc('second', NOW() - INTERVAL '19 hours'), date_trunc('second', NOW() - INTERVAL '18 hours'), TRUE, NULL, '00000000-0000-0000-0000-000000000005', 'youtube', 'PUBLISHED'),
+	('30000000-0000-0000-0000-000000000009', '【Shorts】面白い瞬間集 #2', 'PT55S', date_trunc('second', NOW() - INTERVAL '30 hours'), date_trunc('second', NOW() - INTERVAL '29 hours'), date_trunc('second', NOW() - INTERVAL '28 hours'), TRUE, NULL, '00000000-0000-0000-0000-000000000006', 'youtube', 'PUBLISHED'),
+	('30000000-0000-0000-0000-000000000010', 'Q&Aコーナー', 'PT15M20S', date_trunc('second', NOW() - INTERVAL '40 hours'), date_trunc('second', NOW() - INTERVAL '39 hours'), date_trunc('second', NOW() - INTERVAL '38 hours'), TRUE, NULL, '00000000-0000-0000-0000-000000000007', 'youtube', 'PUBLISHED'),
+	-- Published videos (older than 48 hours)
 	('30000000-0000-0000-0000-000000000003', 'テスト動画98', 'PT45M12S', date_trunc('second', NOW() - INTERVAL '2 days' - INTERVAL '3 hour'), date_trunc('second', NOW() - INTERVAL '2 days' - INTERVAL '2 hour'), date_trunc('second', NOW() - INTERVAL '2 days'), TRUE, NULL, '00000000-0000-0000-0000-000000000003', 'youtube', 'PUBLISHED'),
 	('30000000-0000-0000-0000-000000000004', 'テスト動画97', 'PT1H5M30S', date_trunc('second', NOW() - INTERVAL '3 days' - INTERVAL '4 hour'), date_trunc('second', NOW() - INTERVAL '3 days' - INTERVAL '3 hour'), date_trunc('second', NOW() - INTERVAL '3 days'), TRUE, NULL, '00000000-0000-0000-0000-000000000004', 'youtube', 'PUBLISHED'),
 	('30000000-0000-0000-0000-000000000005', 'テスト動画96', 'PT2H15M0S', date_trunc('second', NOW() - INTERVAL '4 days' - INTERVAL '5 hour'), date_trunc('second', NOW() - INTERVAL '4 days' - INTERVAL '4 hour'), date_trunc('second', NOW() - INTERVAL '4 days'), TRUE, NULL, '00000000-0000-0000-0000-000000000005', 'youtube', 'PUBLISHED'),
@@ -64,9 +71,16 @@ VALUES
 	-- Live videos
 	('12000000-0000-0000-0000-000000000021', '30000000-0000-0000-0000-000000000021', 'ytvid-live1', '11000000-0000-0000-0000-000000000006'),
 	('12000000-0000-0000-0000-000000000022', '30000000-0000-0000-0000-000000000022', 'ytvid-live2', '11000000-0000-0000-0000-000000000007'),
-	-- Published videos
+	('12000000-0000-0000-0000-000000000023', '30000000-0000-0000-0000-000000000023', 'ytvid-live3', '11000000-0000-0000-0000-000000000008'),
+	-- Published videos (recent)
 	('12000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', 'ytvid100', '11000000-0000-0000-0000-000000000001'),
 	('12000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000002', 'ytvid99', '11000000-0000-0000-0000-000000000002'),
+	('12000000-0000-0000-0000-000000000006', '30000000-0000-0000-0000-000000000006', 'ytvid-short1', '11000000-0000-0000-0000-000000000003'),
+	('12000000-0000-0000-0000-000000000007', '30000000-0000-0000-0000-000000000007', 'ytvid-song', '11000000-0000-0000-0000-000000000004'),
+	('12000000-0000-0000-0000-000000000008', '30000000-0000-0000-0000-000000000008', 'ytvid-highlight', '11000000-0000-0000-0000-000000000005'),
+	('12000000-0000-0000-0000-000000000009', '30000000-0000-0000-0000-000000000009', 'ytvid-short2', '11000000-0000-0000-0000-000000000006'),
+	('12000000-0000-0000-0000-000000000010', '30000000-0000-0000-0000-000000000010', 'ytvid-qa', '11000000-0000-0000-0000-000000000007'),
+	-- Published videos (older)
 	('12000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000003', 'ytvid98', '11000000-0000-0000-0000-000000000003'),
 	('12000000-0000-0000-0000-000000000004', '30000000-0000-0000-0000-000000000004', 'ytvid97', '11000000-0000-0000-0000-000000000004'),
 	('12000000-0000-0000-0000-000000000005', '30000000-0000-0000-0000-000000000005', 'ytvid96', '11000000-0000-0000-0000-000000000005'),
