@@ -19,7 +19,6 @@ export function LiveAndRecentSkeleton() {
               <VideoCardSkeleton />
             </div>
             <VideoCardSkeleton />
-            <VideoCardSkeleton />
           </div>
         </div>
 
@@ -30,7 +29,6 @@ export function LiveAndRecentSkeleton() {
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <VideoCardSkeleton />
-            <VideoCardSkeleton />
             <div className="col-span-2">
               <VideoCardSkeleton />
             </div>
@@ -38,15 +36,11 @@ export function LiveAndRecentSkeleton() {
         </div>
       </div>
 
-      {/* Mobile: Horizontal scroll */}
+      {/* Mobile: Grid layout */}
       <div className="md:hidden">
-        <div className="flex gap-4 overflow-x-auto px-4">
-          <div className="w-80 flex-shrink-0">
-            <VideoCardSkeleton />
-          </div>
-          <div className="w-80 flex-shrink-0">
-            <VideoCardSkeleton />
-          </div>
+        <div className="grid grid-cols-2 gap-4 px-4">
+          <VideoCardSkeleton />
+          <VideoCardSkeleton />
         </div>
       </div>
     </div>
@@ -89,6 +83,10 @@ export default function LiveAndRecent({
   const hasLive = data.live.length > 0
   const hasRecent = data.recent.length > 0
 
+  // Limit videos to keep layout compact - max 4-5 videos per section
+  const displayLive = data.live.slice(0, 5)
+  const displayRecent = data.recent.slice(0, 5)
+
   return (
     <div className="space-y-6">
       {/* Desktop: Bento Grid layout */}
@@ -107,8 +105,8 @@ export default function LiveAndRecent({
                 </span>
                 配信中
               </h3>
-              <div className="grid auto-rows-auto grid-cols-2 gap-4">
-                {data.live.map((video, index) => {
+              <div className="grid grid-cols-2 gap-4">
+                {displayLive.map((video, index) => {
                   // Create Bento Grid pattern: first item spans 2 columns, then alternating
                   const isWide =
                     index === 0 || (index > 0 && (index - 1) % 3 === 2)
@@ -135,8 +133,8 @@ export default function LiveAndRecent({
           {hasRecent && (
             <div className="space-y-4">
               <h3 className="font-bold text-lg">新着動画（48時間以内）</h3>
-              <div className="grid auto-rows-auto grid-cols-2 gap-4">
-                {data.recent.map((video, index) => {
+              <div className="grid grid-cols-2 gap-4">
+                {displayRecent.map((video, index) => {
                   // Create Bento Grid pattern: alternating layout starting with 2 small, then 1 wide
                   const isWide = index > 1 && (index - 2) % 3 === 0
                   return (
@@ -160,35 +158,55 @@ export default function LiveAndRecent({
         </div>
       </div>
 
-      {/* Mobile: Horizontal scroll carousel */}
+      {/* Mobile: Responsive Grid layout */}
       <div className="md:hidden">
-        <div className="overflow-x-auto">
-          <div className="flex gap-4 px-4">
-            {/* Live videos first */}
-            {data.live.map((video) => (
-              <div className="w-80 flex-shrink-0" key={video.id}>
-                <VideoCard
-                  dateTimeFormatOptions={{
-                    dateStyle: 'short',
-                    timeStyle: 'short',
-                  }}
-                  value={video}
-                />
+        <div className="space-y-6 px-4">
+          {/* Live videos section */}
+          {hasLive && (
+            <div className="space-y-3">
+              <h3 className="flex items-center gap-2 font-bold text-base">
+                <span className="inline-flex items-center gap-1 rounded-md bg-774-pink-600 px-2 py-1 text-white text-xs">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
+                  </span>
+                  LIVE
+                </span>
+                配信中
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                {displayLive.slice(0, 4).map((video) => (
+                  <VideoCard
+                    dateTimeFormatOptions={{
+                      dateStyle: 'short',
+                      timeStyle: 'short',
+                    }}
+                    key={video.id}
+                    value={video}
+                  />
+                ))}
               </div>
-            ))}
-            {/* Then recent videos */}
-            {data.recent.map((video) => (
-              <div className="w-80 flex-shrink-0" key={video.id}>
-                <VideoCard
-                  dateTimeFormatOptions={{
-                    dateStyle: 'short',
-                    timeStyle: 'short',
-                  }}
-                  value={video}
-                />
+            </div>
+          )}
+
+          {/* Recent videos section */}
+          {hasRecent && (
+            <div className="space-y-3">
+              <h3 className="font-bold text-base">新着動画（48時間以内）</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {displayRecent.slice(0, 4).map((video) => (
+                  <VideoCard
+                    dateTimeFormatOptions={{
+                      dateStyle: 'short',
+                      timeStyle: 'short',
+                    }}
+                    key={video.id}
+                    value={video}
+                  />
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
