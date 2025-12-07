@@ -15,7 +15,7 @@ export function LiveAndRecentSkeleton() {
       </div>
 
       {/* Desktop: Featured + Grid */}
-      <div className="hidden md:grid md:grid-cols-[1fr_2fr] md:gap-6">
+      <div className="hidden md:grid md:grid-cols-2 md:gap-6">
         {/* Left: Featured large */}
         <div>
           <VideoCardSkeleton />
@@ -133,7 +133,7 @@ export default function LiveAndRecent({
       {featuredVideo && (
         <>
           {/* Desktop Layout: Featured on left, 2x2 Grid on right */}
-          <div className="hidden md:grid md:grid-cols-[1fr_2fr] md:gap-6">
+          <div className="hidden md:grid md:grid-cols-2 md:gap-6">
             {/* Left: Featured large */}
             <div>
               <VideoCard
