@@ -495,7 +495,7 @@ export type Database = {
         | 'rejected'
       platform_type: 'youtube' | 'twitch'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
-      video_kind: 'standard' | 'short' | 'live_stream' | 'premiere'
+      video_kind: 'standard' | 'short'
       video_status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
     }
     CompositeTypes: {
@@ -657,7 +657,7 @@ export const Constants = {
       ],
       platform_type: ['youtube', 'twitch'],
       twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],
-      video_kind: ['standard', 'short', 'live_stream', 'premiere'],
+      video_kind: ['standard', 'short'],
       video_status: ['UPCOMING', 'LIVE', 'ENDED', 'PUBLISHED'],
     },
   },

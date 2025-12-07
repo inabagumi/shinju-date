@@ -1,4 +1,5 @@
-import type { Database, Tables } from '@shinju-date/database'
+import type Database from '@shinju-date/database'
+import type { Tables } from '@shinju-date/database'
 import { z } from 'zod'
 import type { VideoSortField, VideoSortOrder } from './get-videos'
 

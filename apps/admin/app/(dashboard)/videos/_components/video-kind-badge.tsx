@@ -1,4 +1,4 @@
-import type { Database } from '@shinju-date/database'
+import type Database from '@shinju-date/database'
 import { Badge, type BadgeProps } from '@shinju-date/ui'
 
 type VideoKind = Database['public']['Enums']['video_kind']

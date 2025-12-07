@@ -1,3 +1,4 @@
+import type Database from '@shinju-date/database'
 import type { TablesInsert } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
 import {
@@ -14,7 +15,7 @@ export interface SavedVideoForCheck {
   published_at: string
   status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
   title: string
-  video_kind: 'standard' | 'short' | 'live_stream' | 'premiere'
+  video_kind: Database['public']['Enums']['video_kind']
   youtube_video: {
     youtube_video_id: string
   }
@@ -45,7 +46,7 @@ export interface VideoUpdate {
   status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
   title: string
   updated_at: string
-  video_kind: 'standard' | 'short' | 'live_stream' | 'premiere'
+  video_kind: Database['public']['Enums']['video_kind']
 }
 
 /**

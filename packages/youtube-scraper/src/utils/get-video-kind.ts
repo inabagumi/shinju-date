@@ -1,5 +1,5 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
-import type { Database } from '@shinju-date/database'
+import type Database from '@shinju-date/database'
 import { Temporal } from 'temporal-polyfill'
 
 type VideoKind = Database['public']['Enums']['video_kind']
