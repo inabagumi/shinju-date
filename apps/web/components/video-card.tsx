@@ -151,7 +151,7 @@ export default function VideoCard({
           {value.title}
         </h3>
 
-        <div className={compact ? 'text-right text-xs' : 'text-right text-sm'}>
+        <div className={twMerge('text-right text-sm', compact && 'text-xs')}>
           <FormattedTime
             dateTime={publishedAt}
             options={dateTimeFormatOptions}

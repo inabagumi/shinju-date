@@ -2,7 +2,6 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { Activity as ActivityIcon } from 'lucide-react'
-import type React from 'react'
 import { Activity, Suspense, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { fetchLiveAndRecentVideos, type Video } from '@/lib/fetchers'
@@ -79,70 +78,69 @@ export default function LiveAndRecent({
   const renderVideoGrid = (videos: Video[], tabName: 'live' | 'recent') => {
     if (videos.length === 0) return null
 
+    const first5 = videos.slice(0, 5)
+    const additional = videos.slice(5)
+    const featured = first5[0]
+    const gridVideos = first5.slice(1, 5)
+
     return (
-      <div className="grid grid-cols-2 gap-3 px-4 md:grid-cols-4 md:gap-4 md:px-0">
-        {videos.map((video, index) => {
-          // Featured video: spans 2 columns on mobile, 1 column + 2 rows on desktop
-          // Grid videos 2-5: positioned in a 2x2 grid on desktop (columns 2-3, rows 1-2)
-          // Additional videos 6+: flow naturally in 4-column grid
-          const isFeatured = index === 0
-          const isGrid = index >= 1 && index <= 4
-
-          // Build props conditionally to satisfy exactOptionalPropertyTypes
-          const props: {
-            className?: string
-            compact?: boolean
-            dateTimeFormatOptions?: Pick<
-              Intl.DateTimeFormatOptions,
-              'dateStyle' | 'timeStyle'
-            >
-            style?: React.CSSProperties
-            value: Video
-          } = {
-            compact: !isFeatured,
-            dateTimeFormatOptions: {
-              dateStyle: 'short',
-              timeStyle: 'short',
-            },
-            value: video,
-          }
-
-          if (isFeatured) {
-            props.className =
-              'col-span-2 row-span-2 md:col-span-1 md:row-span-2'
-          }
-
-          if (isGrid) {
-            props.style = {
-              gridColumn: index === 1 || index === 2 ? '2' : '3',
-              gridRow: index === 1 || index === 3 ? '1' : '2',
-            }
-          }
-
-          return <VideoCard key={video.id} {...props} />
-        })}
-        {/* Fill remaining slots with invisible placeholders if less than 5 videos */}
-        {videos.length < 5 &&
-          Array.from({ length: 5 - videos.length }).map((_, i) => {
-            const totalIndex = videos.length + i
-            return (
-              <div
-                className="invisible"
-                key={`empty-${tabName}-${totalIndex}`}
-                style={
-                  totalIndex >= 1 && totalIndex <= 4
-                    ? ({
-                        gridColumn:
-                          totalIndex === 1 || totalIndex === 2 ? '2' : '3',
-                        gridRow:
-                          totalIndex === 1 || totalIndex === 3 ? '1' : '2',
-                      } as React.CSSProperties)
-                    : undefined
-                }
+      <>
+        {/* Main grid: Featured (left) + 2x2 Grid (right) */}
+        <div className="space-y-4 md:grid md:grid-cols-2 md:gap-6 md:space-y-0">
+          {/* Featured video - left side, 2 rows span */}
+          {featured && (
+            <div className="md:row-span-2">
+              <VideoCard
+                dateTimeFormatOptions={{
+                  dateStyle: 'short',
+                  timeStyle: 'short',
+                }}
+                value={featured}
               />
-            )
-          })}
-      </div>
+            </div>
+          )}
+
+          {/* 2x2 Grid - right side */}
+          <div className="grid grid-cols-2 gap-3 md:gap-4">
+            {gridVideos.map((video) => (
+              <VideoCard
+                compact
+                dateTimeFormatOptions={{
+                  dateStyle: 'short',
+                  timeStyle: 'short',
+                }}
+                key={video.id}
+                value={video}
+              />
+            ))}
+            {/* Fill remaining slots if less than 4 grid videos */}
+            {gridVideos.length < 4 &&
+              Array.from({ length: 4 - gridVideos.length }).map((_, i) => (
+                <div
+                  className="invisible"
+                  key={`empty-${tabName}-grid-${gridVideos.length + i}`}
+                />
+              ))}
+          </div>
+        </div>
+
+        {/* Additional videos: 4-column grid */}
+        {additional.length > 0 && (
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+            {additional.map((video) => (
+              <VideoCard
+                compact
+                dateTimeFormatOptions={{
+                  dateStyle: 'short',
+                  timeStyle: 'short',
+                }}
+                key={video.id}
+                value={video}
+              />
+            ))}
+          </div>
+        )}
+      </>
     )
   }
 
@@ -186,10 +184,12 @@ export default function LiveAndRecent({
       {/* Content Area with Activity boundaries for pre-rendering */}
       <Suspense fallback={<LiveAndRecentSkeleton />}>
         <Activity mode={activeTab === 'live' ? 'visible' : 'hidden'}>
-          {renderVideoGrid(data.live, 'live')}
+          <div className="space-y-6">{renderVideoGrid(data.live, 'live')}</div>
         </Activity>
         <Activity mode={activeTab === 'recent' ? 'visible' : 'hidden'}>
-          {renderVideoGrid(data.recent, 'recent')}
+          <div className="space-y-6">
+            {renderVideoGrid(data.recent, 'recent')}
+          </div>
         </Activity>
       </Suspense>
     </div>
