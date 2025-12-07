@@ -168,6 +168,22 @@ export default function LiveAndRecent({
             </div>
           </div>
 
+          {/* Additional videos below if more than 5 (2-column grid) */}
+          {gridVideos.length > 4 && (
+            <div className="hidden md:grid md:grid-cols-2 md:gap-4">
+              {gridVideos.slice(4).map((video) => (
+                <VideoCard
+                  dateTimeFormatOptions={{
+                    dateStyle: 'short',
+                    timeStyle: 'short',
+                  }}
+                  key={video.id}
+                  value={video}
+                />
+              ))}
+            </div>
+          )}
+
           {/* Mobile Layout: Featured on top, 2x2 Grid below */}
           <div className="md:hidden">
             <div className="space-y-4 px-4">
@@ -184,6 +200,22 @@ export default function LiveAndRecent({
               {gridVideos.length > 0 && (
                 <div className="grid grid-cols-2 gap-3">
                   {gridVideos.slice(0, 4).map((video) => (
+                    <VideoCard
+                      dateTimeFormatOptions={{
+                        dateStyle: 'short',
+                        timeStyle: 'short',
+                      }}
+                      key={video.id}
+                      value={video}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Additional videos below if more than 5 (2-column grid) */}
+              {gridVideos.length > 4 && (
+                <div className="grid grid-cols-2 gap-3">
+                  {gridVideos.slice(4).map((video) => (
                     <VideoCard
                       dateTimeFormatOptions={{
                         dateStyle: 'short',
