@@ -18,6 +18,7 @@ export type VideoDetail = {
   created_at: string
   status: Tables<'videos'>['status']
   duration: string
+  video_kind: Tables<'videos'>['video_kind']
   thumbnail: {
     id: string
     path: string
@@ -41,7 +42,7 @@ const getVideo = cache(async function getVideo(
   const { data: video, error } = await supabaseClient
     .from('videos')
     .select(
-      'id, title, visible, deleted_at, published_at, updated_at, created_at, status, duration, thumbnail:thumbnails(id, path, blur_data_url), talent:talents(id, name), youtube_video:youtube_videos(youtube_video_id)',
+      'id, title, visible, deleted_at, published_at, updated_at, created_at, status, duration, video_kind, thumbnail:thumbnails(id, path, blur_data_url), talent:talents(id, name), youtube_video:youtube_videos(youtube_video_id)',
     )
     .eq('id', id)
     .single()
@@ -112,6 +113,7 @@ const getVideo = cache(async function getVideo(
     thumbnail: video.thumbnail,
     title: video.title,
     updated_at: video.updated_at,
+    video_kind: video.video_kind,
     visible: video.visible,
     youtube_video: video.youtube_video,
   }

@@ -32,7 +32,7 @@ export async function* getSavedVideos({
       const { data: savedVideos, error } = await supabaseClient
         .from('videos')
         .select(
-          'id, duration, published_at, status, title, thumbnail:thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
+          'id, duration, published_at, status, title, video_kind, thumbnail:thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
         )
         .is('deleted_at', null)
         .order('published_at', {
@@ -53,7 +53,7 @@ export async function* getSavedVideos({
     const { data: savedVideos, error } = await supabaseClient
       .from('videos')
       .select(
-        'id, duration, published_at, status, title, thumbnail:thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
+        'id, duration, published_at, status, title, video_kind, thumbnail:thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
       )
       .is('deleted_at', null)
       .in('status', ['ENDED', 'PUBLISHED'])
@@ -74,7 +74,7 @@ export async function* getSavedVideos({
     const { data: savedVideos, error } = await supabaseClient
       .from('videos')
       .select(
-        'id, duration, published_at, status, title, thumbnail:thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
+        'id, duration, published_at, status, title, video_kind, thumbnail:thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
       )
       .is('deleted_at', null)
       .in('status', ['UPCOMING', 'LIVE'])

@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: '13.0.5'
-  }
   public: {
     Tables: {
       announcements: {
@@ -74,6 +69,36 @@ export type Database = {
           target_record_id?: string | null
           target_table?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      feature_requests: {
+        Row: {
+          admin_memo: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          status: Database['public']['Enums']['feature_request_status']
+          updated_at: string
+        }
+        Insert: {
+          admin_memo?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          status?: Database['public']['Enums']['feature_request_status']
+          updated_at?: string
+        }
+        Update: {
+          admin_memo?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          status?: Database['public']['Enums']['feature_request_status']
+          updated_at?: string
         }
         Relationships: []
       }
@@ -251,6 +276,7 @@ export type Database = {
           thumbnail_id: string | null
           title: string
           updated_at: string
+          video_kind: Database['public']['Enums']['video_kind']
           visible: boolean
         }
         Insert: {
@@ -265,6 +291,7 @@ export type Database = {
           thumbnail_id?: string | null
           title: string
           updated_at?: string
+          video_kind?: Database['public']['Enums']['video_kind']
           visible?: boolean
         }
         Update: {
@@ -279,6 +306,7 @@ export type Database = {
           thumbnail_id?: string | null
           title?: string
           updated_at?: string
+          video_kind?: Database['public']['Enums']['video_kind']
           visible?: boolean
         }
         Relationships: [
@@ -366,36 +394,6 @@ export type Database = {
           },
         ]
       }
-      feature_requests: {
-        Row: {
-          id: string
-          message: string
-          status: Database['public']['Enums']['feature_request_status']
-          admin_memo: string | null
-          is_read: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          message: string
-          status?: Database['public']['Enums']['feature_request_status']
-          admin_memo?: string | null
-          is_read?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          message?: string
-          status?: Database['public']['Enums']['feature_request_status']
-          admin_memo?: string | null
-          is_read?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
@@ -447,6 +445,7 @@ export type Database = {
           thumbnail_id: string | null
           title: string
           updated_at: string
+          video_kind: Database['public']['Enums']['video_kind']
           visible: boolean
         }[]
         SetofOptions: {
@@ -496,6 +495,7 @@ export type Database = {
         | 'rejected'
       platform_type: 'youtube' | 'twitch'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
+      video_kind: 'standard' | 'short'
       video_status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
     }
     CompositeTypes: {
@@ -657,6 +657,7 @@ export const Constants = {
       ],
       platform_type: ['youtube', 'twitch'],
       twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],
+      video_kind: ['standard', 'short'],
       video_status: ['UPCOMING', 'LIVE', 'ENDED', 'PUBLISHED'],
     },
   },

@@ -1,6 +1,11 @@
+import type Database from '@shinju-date/database'
 import type { TablesInsert } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
-import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
+import {
+  getPublishedAt,
+  getVideoKind,
+  getVideoStatus,
+} from '@shinju-date/youtube-scraper'
 import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 
@@ -10,6 +15,7 @@ export interface SavedVideoForCheck {
   published_at: string
   status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
   title: string
+  video_kind: Database['public']['Enums']['video_kind']
   youtube_video: {
     youtube_video_id: string
   }
@@ -40,6 +46,7 @@ export interface VideoUpdate {
   status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
   title: string
   updated_at: string
+  video_kind: Database['public']['Enums']['video_kind']
 }
 
 /**
@@ -58,6 +65,13 @@ export function getVideoUpdateIfNeeded({
   const newStatus = getVideoStatus(originalVideo, currentDateTime)
   if (savedVideo.status !== newStatus) {
     updateValue.status = newStatus
+    hasUpdate = true
+  }
+
+  // Check video_kind
+  const newVideoKind = getVideoKind(originalVideo)
+  if (savedVideo.video_kind !== newVideoKind) {
+    updateValue.video_kind = newVideoKind
     hasUpdate = true
   }
 
@@ -94,6 +108,7 @@ export function getVideoUpdateIfNeeded({
       status: updateValue.status ?? savedVideo.status,
       title: updateValue.title ?? savedVideo.title,
       updated_at: toDBString(currentDateTime),
+      video_kind: updateValue.video_kind ?? savedVideo.video_kind,
     }
   }
 

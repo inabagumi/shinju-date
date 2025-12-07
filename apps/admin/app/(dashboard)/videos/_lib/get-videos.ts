@@ -18,6 +18,7 @@ export type Video = Pick<
   | 'updated_at'
   | 'status'
   | 'duration'
+  | 'video_kind'
 > & {
   thumbnail: Pick<Tables<'thumbnails'>, 'id' | 'path' | 'blur_data_url'> | null
   clicks: number
@@ -31,6 +32,7 @@ export type VideoFilters = {
   visible?: boolean[]
   search?: string
   status?: Tables<'videos'>['status'][]
+  videoKind?: Tables<'videos'>['video_kind'][]
 }
 
 export type VideoSortField = 'published_at' | 'updated_at'
@@ -55,7 +57,7 @@ export async function getVideos(
   let query = supabaseClient
     .from('videos')
     .select(
-      'id, title, visible, deleted_at, published_at, updated_at, status, duration, thumbnail:thumbnails(id, path, blur_data_url), talent:talents(id, name), youtube_video:youtube_videos(youtube_video_id)',
+      'id, title, visible, deleted_at, published_at, updated_at, status, duration, video_kind, thumbnail:thumbnails(id, path, blur_data_url), talent:talents(id, name), youtube_video:youtube_videos(youtube_video_id)',
       { count: 'exact' },
     )
 
@@ -68,6 +70,9 @@ export async function getVideos(
   }
   if (filters?.status && filters.status.length > 0) {
     query = query.in('status', filters.status)
+  }
+  if (filters?.videoKind && filters.videoKind.length > 0) {
+    query = query.in('video_kind', filters.videoKind)
   }
   // Handle text search
   if (filters?.search) {
@@ -160,6 +165,7 @@ export async function getVideos(
     thumbnail: video.thumbnail,
     title: video.title,
     updated_at: video.updated_at,
+    video_kind: video.video_kind,
     visible: video.visible,
     youtube_video: video.youtube_video,
   }))

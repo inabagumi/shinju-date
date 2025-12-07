@@ -70,6 +70,9 @@ async function VideoTableData({
   if (validatedParams.status !== undefined) {
     filters.status = validatedParams.status
   }
+  if (validatedParams.videoKind !== undefined) {
+    filters.videoKind = validatedParams.videoKind
+  }
 
   // Get sort parameters from validated data
   const sortField = validatedParams.sortField
@@ -129,6 +132,9 @@ async function VideoCountData({
   }
   if (validatedParams.status !== undefined) {
     filters.status = validatedParams.status
+  }
+  if (validatedParams.videoKind !== undefined) {
+    filters.videoKind = validatedParams.videoKind
   }
 
   const sortField = validatedParams.sortField
