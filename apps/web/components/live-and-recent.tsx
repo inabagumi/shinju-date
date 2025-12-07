@@ -1,7 +1,9 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { Activity } from 'lucide-react'
 import { useState } from 'react'
+import { twMerge } from 'tailwind-merge'
 import { fetchLiveAndRecentVideos, type Video } from '@/lib/fetchers'
 import VideoCard, { VideoCardSkeleton } from './video-card'
 
@@ -14,31 +16,18 @@ export function LiveAndRecentSkeleton() {
         <div className="h-10 w-24 animate-pulse rounded-lg bg-774-nevy-100 dark:bg-zinc-800" />
       </div>
 
-      {/* Desktop: Featured + Grid */}
-      <div className="hidden md:grid md:grid-cols-2 md:gap-6">
-        {/* Left: Featured large */}
+      {/* Responsive layout */}
+      <div className="space-y-4 px-4 md:grid md:grid-cols-2 md:gap-6 md:space-y-0 md:px-0">
+        {/* Featured large */}
         <div>
           <VideoCardSkeleton />
         </div>
-        {/* Right: 2x2 Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* 2x2 Grid */}
+        <div className="grid grid-cols-2 gap-3 md:gap-4">
           <VideoCardSkeleton />
           <VideoCardSkeleton />
           <VideoCardSkeleton />
           <VideoCardSkeleton />
-        </div>
-      </div>
-
-      {/* Mobile: Featured + Grid */}
-      <div className="md:hidden">
-        <div className="space-y-4 px-4">
-          {/* Featured large */}
-          <VideoCardSkeleton />
-          {/* 2x2 Grid */}
-          <div className="grid grid-cols-2 gap-3">
-            <VideoCardSkeleton />
-            <VideoCardSkeleton />
-          </div>
         </div>
       </div>
     </div>
@@ -96,31 +85,32 @@ export default function LiveAndRecent({
       {/* Tab Navigation */}
       <div className="flex gap-2">
         <button
-          className={`rounded-lg px-4 py-2 font-semibold transition-colors ${
+          className={twMerge(
+            'rounded-lg px-4 py-2 font-semibold transition-colors',
             currentTab === 'live'
               ? 'bg-774-pink-600 text-white'
-              : 'bg-774-nevy-100 text-774-nevy-800 hover:bg-774-nevy-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700'
-          } ${!hasLive ? 'cursor-not-allowed opacity-50' : ''}`}
+              : 'bg-774-nevy-100 text-774-nevy-800 hover:bg-774-nevy-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700',
+            !hasLive && 'cursor-not-allowed opacity-50',
+          )}
           disabled={!hasLive}
           onClick={() => setActiveTab('live')}
           type="button"
         >
           <span className="flex items-center gap-2">
             {currentTab === 'live' && (
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
-              </span>
+              <Activity className="size-4 animate-pulse" />
             )}
             配信中
           </span>
         </button>
         <button
-          className={`rounded-lg px-4 py-2 font-semibold transition-colors ${
+          className={twMerge(
+            'rounded-lg px-4 py-2 font-semibold transition-colors',
             currentTab === 'recent'
               ? 'bg-774-pink-600 text-white'
-              : 'bg-774-nevy-100 text-774-nevy-800 hover:bg-774-nevy-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700'
-          } ${!hasRecent ? 'cursor-not-allowed opacity-50' : ''}`}
+              : 'bg-774-nevy-100 text-774-nevy-800 hover:bg-774-nevy-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700',
+            !hasRecent && 'cursor-not-allowed opacity-50',
+          )}
           disabled={!hasRecent}
           onClick={() => setActiveTab('recent')}
           type="button"
@@ -129,12 +119,12 @@ export default function LiveAndRecent({
         </button>
       </div>
 
-      {/* Content Area */}
+      {/* Content Area - Single responsive layout */}
       {featuredVideo && (
         <>
-          {/* Desktop Layout: Featured on left, 2x2 Grid on right */}
-          <div className="hidden md:grid md:grid-cols-2 md:gap-6">
-            {/* Left: Featured large */}
+          {/* Responsive layout: mobile (vertical) and desktop (grid) */}
+          <div className="space-y-4 px-4 md:grid md:grid-cols-2 md:gap-6 md:space-y-0 md:px-0">
+            {/* Featured large */}
             <div>
               <VideoCard
                 dateTimeFormatOptions={{
@@ -145,8 +135,8 @@ export default function LiveAndRecent({
               />
             </div>
 
-            {/* Right: 2x2 Grid (always show 4 slots) */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* 2x2 Grid (always show 4 slots) */}
+            <div className="grid grid-cols-2 gap-3 md:gap-4">
               {gridVideos.slice(0, 4).map((video) => (
                 <VideoCard
                   dateTimeFormatOptions={{
@@ -170,7 +160,7 @@ export default function LiveAndRecent({
 
           {/* Additional videos below if more than 5 (2-column grid) */}
           {gridVideos.length > 4 && (
-            <div className="hidden md:grid md:grid-cols-2 md:gap-4">
+            <div className="grid grid-cols-2 gap-3 px-4 md:gap-4 md:px-0">
               {gridVideos.slice(4).map((video) => (
                 <VideoCard
                   dateTimeFormatOptions={{
@@ -183,52 +173,6 @@ export default function LiveAndRecent({
               ))}
             </div>
           )}
-
-          {/* Mobile Layout: Featured on top, 2x2 Grid below */}
-          <div className="md:hidden">
-            <div className="space-y-4 px-4">
-              {/* Featured large */}
-              <VideoCard
-                dateTimeFormatOptions={{
-                  dateStyle: 'short',
-                  timeStyle: 'short',
-                }}
-                value={featuredVideo}
-              />
-
-              {/* 2x2 Grid */}
-              {gridVideos.length > 0 && (
-                <div className="grid grid-cols-2 gap-3">
-                  {gridVideos.slice(0, 4).map((video) => (
-                    <VideoCard
-                      dateTimeFormatOptions={{
-                        dateStyle: 'short',
-                        timeStyle: 'short',
-                      }}
-                      key={video.id}
-                      value={video}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* Additional videos below if more than 5 (2-column grid) */}
-              {gridVideos.length > 4 && (
-                <div className="grid grid-cols-2 gap-3">
-                  {gridVideos.slice(4).map((video) => (
-                    <VideoCard
-                      dateTimeFormatOptions={{
-                        dateStyle: 'short',
-                        timeStyle: 'short',
-                      }}
-                      key={video.id}
-                      value={video}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
         </>
       )}
     </div>
