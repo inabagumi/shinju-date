@@ -15,16 +15,16 @@ export function LiveAndRecentSkeleton() {
       </div>
 
       {/* Desktop: Featured + Grid */}
-      <div className="hidden md:grid md:grid-cols-[2fr_1fr] md:gap-6">
-        {/* Left: 2x2 Grid */}
+      <div className="hidden md:grid md:grid-cols-[1fr_2fr] md:gap-6">
+        {/* Left: Featured large */}
+        <div>
+          <VideoCardSkeleton />
+        </div>
+        {/* Right: 2x2 Grid */}
         <div className="grid grid-cols-2 gap-4">
           <VideoCardSkeleton />
           <VideoCardSkeleton />
           <VideoCardSkeleton />
-          <VideoCardSkeleton />
-        </div>
-        {/* Right: Featured large */}
-        <div>
           <VideoCardSkeleton />
         </div>
       </div>
@@ -132,9 +132,20 @@ export default function LiveAndRecent({
       {/* Content Area */}
       {featuredVideo && (
         <>
-          {/* Desktop Layout: 2x2 Grid on left, Featured on right */}
-          <div className="hidden md:grid md:grid-cols-[2fr_1fr] md:gap-6">
-            {/* Left: 2x2 Grid (always show 4 slots) */}
+          {/* Desktop Layout: Featured on right, 2x2 Grid on left */}
+          <div className="hidden md:grid md:grid-cols-[1fr_2fr] md:gap-6">
+            {/* Left: Featured large */}
+            <div>
+              <VideoCard
+                dateTimeFormatOptions={{
+                  dateStyle: 'short',
+                  timeStyle: 'short',
+                }}
+                value={featuredVideo}
+              />
+            </div>
+
+            {/* Right: 2x2 Grid (always show 4 slots) */}
             <div className="grid grid-cols-2 gap-4">
               {gridVideos.slice(0, 4).map((video) => (
                 <VideoCard
@@ -154,17 +165,6 @@ export default function LiveAndRecent({
                     key={`empty-${currentTab}-${gridVideos.length + i}`}
                   />
                 ))}
-            </div>
-
-            {/* Right: Featured large */}
-            <div>
-              <VideoCard
-                dateTimeFormatOptions={{
-                  dateStyle: 'short',
-                  timeStyle: 'short',
-                }}
-                value={featuredVideo}
-              />
             </div>
           </div>
 
