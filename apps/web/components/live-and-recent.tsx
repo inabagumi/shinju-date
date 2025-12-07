@@ -123,7 +123,7 @@ export default function LiveAndRecent({
       {featuredVideo && (
         <>
           {/* Responsive layout: mobile (vertical) and desktop (grid) */}
-          <div className="space-y-4 px-4 md:grid md:grid-cols-2 md:gap-6 md:space-y-0 md:px-0">
+          <div className="space-y-4 md:grid md:grid-cols-2 md:gap-6 md:space-y-0">
             {/* Featured large */}
             <div>
               <VideoCard
