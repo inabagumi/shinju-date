@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Activity as ActivityIcon } from 'lucide-react'
 import { Activity, Suspense, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { fetchLiveAndRecentVideos, type Video } from '@/lib/fetchers'
+import { fetchDashboardVideos, type Video } from '@/lib/fetchers'
 import VideoCard, { VideoCardSkeleton } from './video-card'
 
 export function LiveAndRecentSkeleton() {
@@ -48,8 +48,8 @@ export default function LiveAndRecent({
     error,
   } = useQuery({
     initialData: prefetchedData,
-    queryFn: () => fetchLiveAndRecentVideos(),
-    queryKey: ['live-and-recent-videos'],
+    queryFn: () => fetchDashboardVideos(),
+    queryKey: ['dashboard-videos'],
     refetchInterval: 60_000,
   })
 

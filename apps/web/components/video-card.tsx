@@ -96,7 +96,6 @@ export default function VideoCard({
     Intl.DateTimeFormatOptions,
     'dateStyle' | 'timeStyle'
   >
-  style?: React.CSSProperties
   value: Video
 }) {
   const publishedAt = Temporal.Instant.from(

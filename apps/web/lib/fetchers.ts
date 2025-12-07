@@ -109,10 +109,10 @@ export const fetchVideos = async ({
 }
 
 /**
- * Fetch videos for the live and recent uploads section
+ * Fetch videos for the dashboard section
  * Returns currently streaming videos and recently published videos
  */
-export const fetchLiveAndRecentVideos = async (): Promise<{
+export const fetchDashboardVideos = async (): Promise<{
   live: Video[]
   recent: Video[]
 }> => {
