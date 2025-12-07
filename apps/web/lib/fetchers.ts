@@ -83,6 +83,7 @@ export const fetchVideos = async ({
   until,
 }: FetchVideosOptions): Promise<Video[]> => {
   'use cache: remote'
+
   cacheLife('hours')
   cacheTag('videos')
 
@@ -105,4 +106,56 @@ export const fetchVideos = async ({
   }
 
   return videos.filter((video) => video.youtube_video != null)
+}
+
+/**
+ * Fetch currently live videos and recently published videos (within 48 hours)
+ * Returns an object with separate arrays for live and recent videos
+ */
+export const fetchLiveAndRecentVideos = async (): Promise<{
+  live: Video[]
+  recent: Video[]
+}> => {
+  'use cache: remote'
+
+  cacheLife('minutes')
+  cacheTag('videos')
+
+  const now = Temporal.Now.instant()
+  const fortyEightHoursAgo = now.subtract({ hours: 48 })
+
+  // Fetch live videos
+  const { data: liveVideos, error: liveError } = await supabaseClient
+    .from('videos')
+    .select(DEFAULT_SEARCH_SELECT)
+    .eq('status', 'LIVE')
+    .order('published_at', { ascending: false })
+    .limit(10)
+
+  if (liveError) {
+    throw new TypeError(liveError.message, {
+      cause: liveError,
+    })
+  }
+
+  // Fetch recent published videos (within 48 hours)
+  const { data: recentVideos, error: recentError } = await supabaseClient
+    .from('videos')
+    .select(DEFAULT_SEARCH_SELECT)
+    .eq('status', 'PUBLISHED')
+    .gte('published_at', toDBString(fortyEightHoursAgo))
+    .lte('published_at', toDBString(now))
+    .order('published_at', { ascending: false })
+    .limit(10)
+
+  if (recentError) {
+    throw new TypeError(recentError.message, {
+      cause: recentError,
+    })
+  }
+
+  return {
+    live: liveVideos,
+    recent: recentVideos,
+  }
 }
