@@ -9,18 +9,32 @@ export function LiveAndRecentSkeleton() {
     <div className="space-y-6">
       {/* Desktop: Bento Grid */}
       <div className="hidden md:grid md:grid-cols-2 md:gap-6">
+        {/* Live section skeleton - Bento Grid */}
         <div className="space-y-4">
           <h3 className="font-bold text-lg">
             <span className="inline-block h-5 w-24 animate-pulse rounded-md bg-774-nevy-100 dark:bg-zinc-800" />
           </h3>
-          <VideoCardSkeleton />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <VideoCardSkeleton />
+            </div>
+            <VideoCardSkeleton />
+            <VideoCardSkeleton />
+          </div>
         </div>
+
+        {/* Recent section skeleton - Bento Grid */}
         <div className="space-y-4">
           <h3 className="font-bold text-lg">
             <span className="inline-block h-5 w-32 animate-pulse rounded-md bg-774-nevy-100 dark:bg-zinc-800" />
           </h3>
-          <VideoCardSkeleton />
-          <VideoCardSkeleton />
+          <div className="grid grid-cols-2 gap-4">
+            <VideoCardSkeleton />
+            <VideoCardSkeleton />
+            <div className="col-span-2">
+              <VideoCardSkeleton />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -80,7 +94,7 @@ export default function LiveAndRecent({
       {/* Desktop: Bento Grid layout */}
       <div className="hidden md:block">
         <div className={hasLive && hasRecent ? 'grid grid-cols-2 gap-6' : ''}>
-          {/* Live videos section */}
+          {/* Live videos section - Bento Grid */}
           {hasLive && (
             <div className="space-y-4">
               <h3 className="flex items-center gap-2 font-bold text-lg">
@@ -93,36 +107,53 @@ export default function LiveAndRecent({
                 </span>
                 配信中
               </h3>
-              <div className="space-y-4">
-                {data.live.map((video) => (
-                  <VideoCard
-                    dateTimeFormatOptions={{
-                      dateStyle: 'short',
-                      timeStyle: 'short',
-                    }}
-                    key={video.id}
-                    value={video}
-                  />
-                ))}
+              <div className="grid auto-rows-auto grid-cols-2 gap-4">
+                {data.live.map((video, index) => {
+                  // Create Bento Grid pattern: first item spans 2 columns, then alternating
+                  const isWide =
+                    index === 0 || (index > 0 && (index - 1) % 3 === 2)
+                  return (
+                    <div
+                      className={isWide ? 'col-span-2' : 'col-span-1'}
+                      key={video.id}
+                    >
+                      <VideoCard
+                        dateTimeFormatOptions={{
+                          dateStyle: 'short',
+                          timeStyle: 'short',
+                        }}
+                        value={video}
+                      />
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}
 
-          {/* Recent videos section */}
+          {/* Recent videos section - Bento Grid */}
           {hasRecent && (
             <div className="space-y-4">
               <h3 className="font-bold text-lg">新着動画（48時間以内）</h3>
-              <div className="space-y-4">
-                {data.recent.map((video) => (
-                  <VideoCard
-                    dateTimeFormatOptions={{
-                      dateStyle: 'short',
-                      timeStyle: 'short',
-                    }}
-                    key={video.id}
-                    value={video}
-                  />
-                ))}
+              <div className="grid auto-rows-auto grid-cols-2 gap-4">
+                {data.recent.map((video, index) => {
+                  // Create Bento Grid pattern: alternating layout starting with 2 small, then 1 wide
+                  const isWide = index > 1 && (index - 2) % 3 === 0
+                  return (
+                    <div
+                      className={isWide ? 'col-span-2' : 'col-span-1'}
+                      key={video.id}
+                    >
+                      <VideoCard
+                        dateTimeFormatOptions={{
+                          dateStyle: 'short',
+                          timeStyle: 'short',
+                        }}
+                        value={video}
+                      />
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}
