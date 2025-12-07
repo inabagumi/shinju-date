@@ -1,18 +1,14 @@
-import type { Tables } from '@shinju-date/database'
+import type { Database } from '@shinju-date/database'
 import { Badge, type BadgeProps } from '@shinju-date/ui'
 
-type VideoKind = Tables<'videos'>['video_kind']
+type VideoKind = Database['public']['Enums']['video_kind']
 
 const VIDEO_KIND_LABELS: Record<VideoKind, string> = {
-  live_stream: 'ライブ',
-  premiere: 'プレミア',
   short: 'ショート',
   standard: '通常',
 }
 
 const VIDEO_KIND_VARIANTS: Record<VideoKind, BadgeProps['variant']> = {
-  live_stream: 'error',
-  premiere: 'warning',
   short: 'info',
   standard: 'secondary',
 }

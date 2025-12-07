@@ -1,64 +1,37 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
+import type { Database } from '@shinju-date/database'
 import { Temporal } from 'temporal-polyfill'
 
-type VideoKind = 'standard' | 'short' | 'live_stream' | 'premiere'
+type VideoKind = Database['public']['Enums']['video_kind']
 
 /**
- * Determines the kind/type of a YouTube video based on its duration and live streaming details.
+ * Determines the kind/type of a YouTube video based on its duration.
  *
  * Video kind classification:
- * - short: Short-form videos (≤60 seconds), including YouTube Shorts
- * - live_stream: Live streaming content (currently live or scheduled)
- * - premiere: Premiere videos (scheduled for future release)
- * - standard: Regular videos (including VODs and ended live streams)
+ * - short: Short-form videos (≤180 seconds / 3 minutes), including YouTube Shorts
+ * - standard: Regular videos
  *
  * YouTube Shorts definition:
- * YouTube Shorts are vertical videos with a maximum duration of 60 seconds.
- * We classify any video ≤60 seconds as 'short' for broader compatibility with
- * future short-form platforms (TikTok, Instagram Reels, etc.).
+ * YouTube Shorts are videos with a maximum duration of 3 minutes (180 seconds).
+ * We classify any video ≤180 seconds as 'short' for compatibility with
+ * YouTube Shorts and future short-form platforms (TikTok, Instagram Reels, etc.).
  *
- * @param video - YouTube video object with contentDetails and liveStreamingDetails
- * @param currentDateTime - Current timestamp for comparison (defaults to now)
+ * @param video - YouTube video object with contentDetails
  * @returns The video kind classification
  */
-export function getVideoKind(
-  video: youtube.Schema$Video,
-  currentDateTime = Temporal.Now.instant(),
-): VideoKind {
-  const { contentDetails, liveStreamingDetails: details } = video
-
-  // Check if it's a live stream or premiere first (takes priority over duration)
-  if (details) {
-    // Currently live
-    if (details.actualStartTime && !details.actualEndTime) {
-      return 'live_stream'
-    }
-
-    // Scheduled for future (upcoming premiere or live stream)
-    if (
-      details.scheduledStartTime &&
-      Temporal.Instant.compare(
-        Temporal.Instant.from(details.scheduledStartTime),
-        currentDateTime,
-      ) > 0
-    ) {
-      return 'premiere'
-    }
-
-    // Live stream that has ended - treat as standard
-    // (ended live streams are considered standard videos/VODs)
-  }
+export function getVideoKind(video: youtube.Schema$Video): VideoKind {
+  const { contentDetails } = video
 
   // Check duration for short-form content
-  // YouTube Shorts and similar short-form content are ≤60 seconds
+  // YouTube Shorts are videos up to 3 minutes (180 seconds)
   if (contentDetails?.duration) {
     try {
       const duration = Temporal.Duration.from(contentDetails.duration)
       const totalSeconds = duration.total({ unit: 'second' })
 
-      // Classify as short if 60 seconds or less (but greater than 0)
+      // Classify as short if 180 seconds or less (but greater than 0)
       // Exclude 0-second videos (e.g., 'P0D') as they're likely placeholders
-      if (totalSeconds > 0 && totalSeconds <= 60) {
+      if (totalSeconds > 0 && totalSeconds <= 180) {
         return 'short'
       }
     } catch {

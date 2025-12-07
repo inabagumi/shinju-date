@@ -1,4 +1,4 @@
-import type { Tables } from '@shinju-date/database'
+import type { Database, Tables } from '@shinju-date/database'
 import { z } from 'zod'
 import type { VideoSortField, VideoSortOrder } from './get-videos'
 
@@ -12,13 +12,8 @@ const VALID_VIDEO_STATUSES: readonly VideoStatus[] = [
 ] as const
 
 // Valid video kind values from the database enum
-type VideoKind = Tables<'videos'>['video_kind']
-const VALID_VIDEO_KINDS: readonly VideoKind[] = [
-  'standard',
-  'short',
-  'live_stream',
-  'premiere',
-] as const
+type VideoKind = Database['public']['Enums']['video_kind']
+const VALID_VIDEO_KINDS: readonly VideoKind[] = ['standard', 'short'] as const
 
 // Define the valid sort field and order values based on the types
 const VALID_SORT_FIELDS: VideoSortField[] = ['published_at', 'updated_at']

@@ -219,7 +219,7 @@ function processNewVideos(options: {
       }
 
       const status = getVideoStatus(originalVideo, currentDateTime)
-      const videoKind = getVideoKind(originalVideo, currentDateTime)
+      const videoKind = getVideoKind(originalVideo)
 
       return {
         value: {

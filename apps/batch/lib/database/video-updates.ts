@@ -68,7 +68,7 @@ export function getVideoUpdateIfNeeded({
   }
 
   // Check video_kind
-  const newVideoKind = getVideoKind(originalVideo, currentDateTime)
+  const newVideoKind = getVideoKind(originalVideo)
   if (savedVideo.video_kind !== newVideoKind) {
     updateValue.video_kind = newVideoKind
     hasUpdate = true

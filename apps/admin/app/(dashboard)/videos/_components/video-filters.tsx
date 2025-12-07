@@ -94,8 +94,6 @@ export function VideoFilters({ talents }: Props) {
   const videoKindOptions: MultiSelectOption[] = [
     { label: '通常動画', value: 'standard' },
     { label: 'ショート動画', value: 'short' },
-    { label: 'ライブ配信', value: 'live_stream' },
-    { label: 'プレミア公開', value: 'premiere' },
   ]
 
   return (
