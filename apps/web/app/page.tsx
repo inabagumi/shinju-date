@@ -7,9 +7,12 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense } from 'react'
+import LiveAndRecent, {
+  LiveAndRecentSkeleton,
+} from '@/components/live-and-recent'
 import NoResults from '@/components/no-results'
 import Timeline, { TimelineSkeleton } from '@/components/timeline'
-import { fetchUpcomingAndLiveVideos } from '@/lib/fetchers'
+import { fetchDashboardVideos, fetchUpcomingVideos } from '@/lib/fetchers'
 import {
   getDisplayRecommendationQueries,
   TOTAL_DISPLAY_COUNT,
@@ -37,13 +40,19 @@ export const metadata: Metadata = {
 }
 
 async function HomeTimeline() {
-  const videos = await fetchUpcomingAndLiveVideos()
+  const videos = await fetchUpcomingVideos()
 
   return videos.length > 0 ? (
     <Timeline prefetchedData={videos} />
   ) : (
     <NoResults message="YouTubeに登録されている配信予定の動画がありません。" />
   )
+}
+
+async function HomeLiveAndRecent() {
+  const data = await fetchDashboardVideos()
+
+  return <LiveAndRecent prefetchedData={data} />
 }
 
 function RecommendationQueriesSkeleton() {
@@ -126,6 +135,10 @@ export default function SchedulePage() {
       <main className="mx-auto max-w-6xl space-y-12 px-4">
         <Suspense fallback={<RecommendationQueriesSkeleton />}>
           <RecommendationQueries />
+        </Suspense>
+
+        <Suspense fallback={<LiveAndRecentSkeleton />}>
+          <HomeLiveAndRecent />
         </Suspense>
 
         <Suspense fallback={<TimelineSkeleton />}>

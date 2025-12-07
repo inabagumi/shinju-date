@@ -34,7 +34,7 @@ export type Video = Pick<
   youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'>
 }
 
-export const fetchUpcomingAndLiveVideos = async (): Promise<Video[]> => {
+export const fetchUpcomingVideos = async (): Promise<Video[]> => {
   'use cache: remote'
 
   cacheLife('hours')
@@ -48,7 +48,7 @@ export const fetchUpcomingAndLiveVideos = async (): Promise<Video[]> => {
   const { data: videos, error } = await supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
-    .in('status', ['LIVE', 'UPCOMING'])
+    .eq('status', 'UPCOMING')
     .lte('published_at', toDBString(until))
     .order('published_at', {
       ascending: false,
@@ -83,6 +83,7 @@ export const fetchVideos = async ({
   until,
 }: FetchVideosOptions): Promise<Video[]> => {
   'use cache: remote'
+
   cacheLife('hours')
   cacheTag('videos')
 
@@ -105,4 +106,56 @@ export const fetchVideos = async ({
   }
 
   return videos.filter((video) => video.youtube_video != null)
+}
+
+/**
+ * Fetch videos for the dashboard section
+ * Returns currently streaming videos and recently published videos
+ */
+export const fetchDashboardVideos = async (): Promise<{
+  live: Video[]
+  recent: Video[]
+}> => {
+  'use cache: remote'
+
+  cacheLife('minutes')
+  cacheTag('videos')
+
+  const now = Temporal.Now.instant()
+  const fortyEightHoursAgo = now.subtract({ hours: 48 })
+
+  // Fetch live videos
+  const { data: liveVideos, error: liveError } = await supabaseClient
+    .from('videos')
+    .select(DEFAULT_SEARCH_SELECT)
+    .eq('status', 'LIVE')
+    .order('published_at', { ascending: false })
+    .limit(10)
+
+  if (liveError) {
+    throw new TypeError(liveError.message, {
+      cause: liveError,
+    })
+  }
+
+  // Fetch recent published videos (within 48 hours)
+  const { data: recentVideos, error: recentError } = await supabaseClient
+    .from('videos')
+    .select(DEFAULT_SEARCH_SELECT)
+    .eq('status', 'PUBLISHED')
+    .gte('published_at', toDBString(fortyEightHoursAgo))
+    .lte('published_at', toDBString(now))
+    .order('published_at', { ascending: false })
+    .limit(10)
+
+  if (recentError) {
+    throw new TypeError(recentError.message, {
+      cause: recentError,
+    })
+  }
+
+  return {
+    live: liveVideos,
+    recent: recentVideos,
+  }
 }

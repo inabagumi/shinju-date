@@ -2,6 +2,7 @@ import { TIME_ZONE } from '@shinju-date/constants'
 import { formatDuration } from '@shinju-date/temporal-fns'
 import { ImageIcon } from 'lucide-react'
 import Image from 'next/image'
+import { twMerge } from 'tailwind-merge'
 import { Temporal } from 'temporal-polyfill'
 import type { Video } from '@/lib/fetchers'
 import FormattedTime from './formatted-time'
@@ -80,12 +81,16 @@ export function VideoCardSkeleton() {
 }
 
 export default function VideoCard({
+  className,
+  compact = false,
   dateTimeFormatOptions = {
     dateStyle: undefined,
     timeStyle: 'short',
   },
   value,
 }: {
+  className?: string
+  compact?: boolean
   dateTimeFormatOptions?: Pick<
     Intl.DateTimeFormatOptions,
     'dateStyle' | 'timeStyle'
@@ -103,7 +108,10 @@ export default function VideoCard({
 
   return (
     <a
-      className="flex flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none"
+      className={twMerge(
+        'flex flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
+        className,
+      )}
       href={`https://www.youtube.com/watch?v=${encodeURIComponent(
         value.youtube_video.youtube_video_id,
       )}`}
@@ -131,13 +139,16 @@ export default function VideoCard({
 
       <div className="grid grow grid-rows-[1fr_auto] gap-6 p-2.5">
         <h3
-          className="line-clamp-3 break-all font-semibold"
+          className={twMerge(
+            'line-clamp-3 break-all font-semibold',
+            compact && 'line-clamp-2 text-sm',
+          )}
           title={value.title}
         >
           {value.title}
         </h3>
 
-        <div className="text-right text-sm">
+        <div className={twMerge('text-right text-sm', compact && 'text-xs')}>
           <FormattedTime
             dateTime={publishedAt}
             options={dateTimeFormatOptions}
