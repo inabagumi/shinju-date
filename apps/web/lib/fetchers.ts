@@ -109,8 +109,8 @@ export const fetchVideos = async ({
 }
 
 /**
- * Fetch currently live videos and recently published videos (within 48 hours)
- * Returns an object with separate arrays for live and recent videos
+ * Fetch videos for the live and recent uploads section
+ * Returns currently streaming videos and recently published videos
  */
 export const fetchLiveAndRecentVideos = async (): Promise<{
   live: Video[]
