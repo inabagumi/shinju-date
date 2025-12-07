@@ -14,6 +14,10 @@
       "schedule": "21 1/3 * * *"
     },
     {
+      "path": "/terms/popularity/update",
+      "schedule": "0 0 * * *"
+    },
+    {
       "path": "/videos/check",
       "schedule": "*/1 * * * *"
     },
