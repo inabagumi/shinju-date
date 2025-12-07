@@ -87,7 +87,6 @@ export default function VideoCard({
     dateStyle: undefined,
     timeStyle: 'short',
   },
-  style,
   value,
 }: {
   className?: string
@@ -118,7 +117,6 @@ export default function VideoCard({
       )}`}
       ping="/api/ping"
       rel="noopener noreferrer"
-      style={style}
       target="_blank"
     >
       <div className="relative aspect-video">

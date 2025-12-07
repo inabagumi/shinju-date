@@ -12,7 +12,7 @@ import LiveAndRecent, {
 } from '@/components/live-and-recent'
 import NoResults from '@/components/no-results'
 import Timeline, { TimelineSkeleton } from '@/components/timeline'
-import { fetchLiveAndRecentVideos, fetchUpcomingVideos } from '@/lib/fetchers'
+import { fetchDashboardVideos, fetchUpcomingVideos } from '@/lib/fetchers'
 import {
   getDisplayRecommendationQueries,
   TOTAL_DISPLAY_COUNT,
@@ -50,7 +50,7 @@ async function HomeTimeline() {
 }
 
 async function HomeLiveAndRecent() {
-  const data = await fetchLiveAndRecentVideos()
+  const data = await fetchDashboardVideos()
 
   return <LiveAndRecent prefetchedData={data} />
 }
