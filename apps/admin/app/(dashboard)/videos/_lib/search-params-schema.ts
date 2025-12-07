@@ -11,6 +11,15 @@ const VALID_VIDEO_STATUSES: readonly VideoStatus[] = [
   'PUBLISHED',
 ] as const
 
+// Valid video kind values from the database enum
+type VideoKind = Tables<'videos'>['video_kind']
+const VALID_VIDEO_KINDS: readonly VideoKind[] = [
+  'standard',
+  'short',
+  'live_stream',
+  'premiere',
+] as const
+
 // Define the valid sort field and order values based on the types
 const VALID_SORT_FIELDS: VideoSortField[] = ['published_at', 'updated_at']
 const VALID_SORT_ORDERS: VideoSortOrder[] = ['asc', 'desc']
@@ -24,6 +33,7 @@ export const DEFAULT_VALUES = {
   sortOrder: 'desc' as const,
   status: undefined,
   talentId: undefined,
+  videoKind: undefined,
   visible: undefined,
 } satisfies {
   deleted: boolean[] | undefined
@@ -33,6 +43,7 @@ export const DEFAULT_VALUES = {
   sortOrder: VideoSortOrder
   status: VideoStatus[] | undefined
   talentId: string[] | undefined
+  videoKind: VideoKind[] | undefined
   visible: boolean[] | undefined
 }
 
@@ -130,6 +141,19 @@ export const videoSearchParamsSchema = z.object({
       const values = Array.isArray(val) ? val : [val]
       const nonEmptyValues = values.filter((v) => v.trim() !== '')
       return nonEmptyValues.length > 0 ? nonEmptyValues : undefined
+    }),
+
+  // Video kind filter - support multiple values for multi-select
+  videoKind: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((val): VideoKind[] | undefined => {
+      if (!val) return undefined
+      const values = Array.isArray(val) ? val : [val]
+      const validKinds = values.filter((v) =>
+        VALID_VIDEO_KINDS.includes(v as VideoKind),
+      ) as VideoKind[]
+      return validKinds.length > 0 ? validKinds : undefined
     }),
 
   // Visibility filter - support multiple values for multi-select

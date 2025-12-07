@@ -22,6 +22,7 @@ import {
 import type { Video } from '../_lib/get-videos'
 import { SortIcon } from './sort-icon'
 import { VideoActionConfirmDialog } from './video-action-confirm-dialog'
+import { VideoKindBadge } from './video-kind-badge'
 import { VideoStatusBadge } from './video-status-badge'
 
 interface Props {
@@ -210,6 +211,7 @@ export default function VideoList({ videos }: Props) {
               </th>
               <th className="whitespace-nowrap p-3 text-left">再生時間</th>
               <th className="whitespace-nowrap p-3 text-left">クリック数</th>
+              <th className="whitespace-nowrap p-3 text-left">動画種別</th>
               <th className="whitespace-nowrap p-3 text-left">ステータス</th>
               <th className="whitespace-nowrap p-3 text-left">アクション</th>
             </tr>
@@ -293,6 +295,9 @@ export default function VideoList({ videos }: Props) {
                     </td>
                     <td className="p-3">{formatNumber(video.clicks)}</td>
                     <td className="p-3">
+                      <VideoKindBadge videoKind={video.video_kind} />
+                    </td>
+                    <td className="p-3">
                       <VideoStatusBadge video={video} />
                     </td>
                     <td className="p-3">
@@ -373,7 +378,7 @@ export default function VideoList({ videos }: Props) {
               })
             ) : (
               <tr>
-                <td className="p-8 text-center text-gray-500" colSpan={10}>
+                <td className="p-8 text-center text-gray-500" colSpan={11}>
                   動画がありません。
                 </td>
               </tr>

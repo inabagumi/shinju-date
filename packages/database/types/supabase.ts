@@ -44,7 +44,7 @@ export type Database = {
       }
       audit_logs: {
         Row: {
-          action: Database["public"]["Enums"]["audit_action"]
+          action: Database['public']['Enums']['audit_action']
           created_at: string
           details: Json | null
           id: string
@@ -53,7 +53,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          action: Database["public"]["Enums"]["audit_action"]
+          action: Database['public']['Enums']['audit_action']
           created_at?: string
           details?: Json | null
           id?: string
@@ -62,7 +62,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          action?: Database["public"]["Enums"]["audit_action"]
+          action?: Database['public']['Enums']['audit_action']
           created_at?: string
           details?: Json | null
           id?: string
@@ -79,7 +79,7 @@ export type Database = {
           id: string
           is_read: boolean
           message: string
-          status: Database["public"]["Enums"]["feature_request_status"]
+          status: Database['public']['Enums']['feature_request_status']
           updated_at: string
         }
         Insert: {
@@ -88,7 +88,7 @@ export type Database = {
           id?: string
           is_read?: boolean
           message: string
-          status?: Database["public"]["Enums"]["feature_request_status"]
+          status?: Database['public']['Enums']['feature_request_status']
           updated_at?: string
         }
         Update: {
@@ -97,7 +97,7 @@ export type Database = {
           id?: string
           is_read?: boolean
           message?: string
-          status?: Database["public"]["Enums"]["feature_request_status"]
+          status?: Database['public']['Enums']['feature_request_status']
           updated_at?: string
         }
         Relationships: []
@@ -216,11 +216,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "twitch_users_talent_id_fkey"
-            columns: ["talent_id"]
+            foreignKeyName: 'twitch_users_talent_id_fkey'
+            columns: ['talent_id']
             isOneToOne: false
-            referencedRelation: "talents"
-            referencedColumns: ["id"]
+            referencedRelation: 'talents'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -229,37 +229,37 @@ export type Database = {
           id: string
           twitch_user_id: string
           twitch_video_id: string
-          type: Database["public"]["Enums"]["twitch_video_type"] | null
+          type: Database['public']['Enums']['twitch_video_type'] | null
           video_id: string
         }
         Insert: {
           id?: string
           twitch_user_id: string
           twitch_video_id: string
-          type?: Database["public"]["Enums"]["twitch_video_type"] | null
+          type?: Database['public']['Enums']['twitch_video_type'] | null
           video_id: string
         }
         Update: {
           id?: string
           twitch_user_id?: string
           twitch_video_id?: string
-          type?: Database["public"]["Enums"]["twitch_video_type"] | null
+          type?: Database['public']['Enums']['twitch_video_type'] | null
           video_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "twitch_videos_twitch_user_id_fkey"
-            columns: ["twitch_user_id"]
+            foreignKeyName: 'twitch_videos_twitch_user_id_fkey'
+            columns: ['twitch_user_id']
             isOneToOne: false
-            referencedRelation: "twitch_users"
-            referencedColumns: ["id"]
+            referencedRelation: 'twitch_users'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "twitch_videos_video_id_fkey"
-            columns: ["video_id"]
+            foreignKeyName: 'twitch_videos_video_id_fkey'
+            columns: ['video_id']
             isOneToOne: true
-            referencedRelation: "videos"
-            referencedColumns: ["id"]
+            referencedRelation: 'videos'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -269,14 +269,14 @@ export type Database = {
           deleted_at: string | null
           duration: string
           id: string
-          platform: Database["public"]["Enums"]["platform_type"] | null
+          platform: Database['public']['Enums']['platform_type'] | null
           published_at: string
-          status: Database["public"]["Enums"]["video_status"]
+          status: Database['public']['Enums']['video_status']
           talent_id: string
           thumbnail_id: string | null
           title: string
           updated_at: string
-          video_kind: Database["public"]["Enums"]["video_kind"]
+          video_kind: Database['public']['Enums']['video_kind']
           visible: boolean
         }
         Insert: {
@@ -284,14 +284,14 @@ export type Database = {
           deleted_at?: string | null
           duration: string
           id?: string
-          platform?: Database["public"]["Enums"]["platform_type"] | null
+          platform?: Database['public']['Enums']['platform_type'] | null
           published_at: string
-          status?: Database["public"]["Enums"]["video_status"]
+          status?: Database['public']['Enums']['video_status']
           talent_id: string
           thumbnail_id?: string | null
           title: string
           updated_at?: string
-          video_kind?: Database["public"]["Enums"]["video_kind"]
+          video_kind?: Database['public']['Enums']['video_kind']
           visible?: boolean
         }
         Update: {
@@ -299,30 +299,30 @@ export type Database = {
           deleted_at?: string | null
           duration?: string
           id?: string
-          platform?: Database["public"]["Enums"]["platform_type"] | null
+          platform?: Database['public']['Enums']['platform_type'] | null
           published_at?: string
-          status?: Database["public"]["Enums"]["video_status"]
+          status?: Database['public']['Enums']['video_status']
           talent_id?: string
           thumbnail_id?: string | null
           title?: string
           updated_at?: string
-          video_kind?: Database["public"]["Enums"]["video_kind"]
+          video_kind?: Database['public']['Enums']['video_kind']
           visible?: boolean
         }
         Relationships: [
           {
-            foreignKeyName: "videos_talent_id_fkey"
-            columns: ["talent_id"]
+            foreignKeyName: 'videos_talent_id_fkey'
+            columns: ['talent_id']
             isOneToOne: false
-            referencedRelation: "talents"
-            referencedColumns: ["id"]
+            referencedRelation: 'talents'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "videos_thumbnail_id_fkey"
-            columns: ["thumbnail_id"]
+            foreignKeyName: 'videos_thumbnail_id_fkey'
+            columns: ['thumbnail_id']
             isOneToOne: false
-            referencedRelation: "thumbnails"
-            referencedColumns: ["id"]
+            referencedRelation: 'thumbnails'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -350,11 +350,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "youtube_channels_talent_id_fkey"
-            columns: ["talent_id"]
+            foreignKeyName: 'youtube_channels_talent_id_fkey'
+            columns: ['talent_id']
             isOneToOne: false
-            referencedRelation: "talents"
-            referencedColumns: ["id"]
+            referencedRelation: 'talents'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -379,18 +379,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "youtube_videos_video_id_fkey"
-            columns: ["video_id"]
+            foreignKeyName: 'youtube_videos_video_id_fkey'
+            columns: ['video_id']
             isOneToOne: true
-            referencedRelation: "videos"
-            referencedColumns: ["id"]
+            referencedRelation: 'videos'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "youtube_videos_youtube_channel_id_fkey"
-            columns: ["youtube_channel_id"]
+            foreignKeyName: 'youtube_videos_youtube_channel_id_fkey'
+            columns: ['youtube_channel_id']
             isOneToOne: false
-            referencedRelation: "youtube_channels"
-            referencedColumns: ["id"]
+            referencedRelation: 'youtube_channels'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -407,7 +407,7 @@ export type Database = {
           p_sort_direction?: string
         }
         Returns: {
-          action: Database["public"]["Enums"]["audit_action"]
+          action: Database['public']['Enums']['audit_action']
           created_at: string
           details: Json
           id: string
@@ -419,7 +419,7 @@ export type Database = {
       }
       insert_audit_log: {
         Args: {
-          p_action: Database["public"]["Enums"]["audit_action"]
+          p_action: Database['public']['Enums']['audit_action']
           p_details?: Json
           p_target_record_id?: string
           p_target_table: string
@@ -438,19 +438,19 @@ export type Database = {
           deleted_at: string | null
           duration: string
           id: string
-          platform: Database["public"]["Enums"]["platform_type"] | null
+          platform: Database['public']['Enums']['platform_type'] | null
           published_at: string
-          status: Database["public"]["Enums"]["video_status"]
+          status: Database['public']['Enums']['video_status']
           talent_id: string
           thumbnail_id: string | null
           title: string
           updated_at: string
-          video_kind: Database["public"]["Enums"]["video_kind"]
+          video_kind: Database['public']['Enums']['video_kind']
           visible: boolean
         }[]
         SetofOptions: {
-          from: "*"
-          to: "videos"
+          from: '*'
+          to: 'videos'
           isOneToOne: false
           isSetofReturn: true
         }
@@ -465,38 +465,38 @@ export type Database = {
     }
     Enums: {
       audit_action:
-        | "CHANNEL_CREATE"
-        | "CHANNEL_DELETE"
-        | "CHANNEL_UPDATE"
-        | "RECOMMENDED_QUERY_CREATE"
-        | "RECOMMENDED_QUERY_DELETE"
-        | "TERM_CREATE"
-        | "TERM_DELETE"
-        | "TERM_UPDATE"
-        | "VIDEO_DELETE"
-        | "VIDEO_VISIBILITY_TOGGLE"
-        | "VIDEO_UPDATE"
-        | "VIDEO_SYNC"
-        | "CHANNEL_SYNC"
-        | "MAINTENANCE_MODE_ENABLE"
-        | "MAINTENANCE_MODE_DISABLE"
-        | "ACCOUNT_EMAIL_UPDATE"
-        | "ACCOUNT_PASSWORD_UPDATE"
-        | "ANNOUNCEMENT_CREATE"
-        | "ANNOUNCEMENT_DELETE"
-        | "ANNOUNCEMENT_UPDATE"
-        | "YOUTUBE_CHANNEL_CREATE"
-        | "YOUTUBE_CHANNEL_DELETE"
-        | "VIDEO_RESTORE"
+        | 'CHANNEL_CREATE'
+        | 'CHANNEL_DELETE'
+        | 'CHANNEL_UPDATE'
+        | 'RECOMMENDED_QUERY_CREATE'
+        | 'RECOMMENDED_QUERY_DELETE'
+        | 'TERM_CREATE'
+        | 'TERM_DELETE'
+        | 'TERM_UPDATE'
+        | 'VIDEO_DELETE'
+        | 'VIDEO_VISIBILITY_TOGGLE'
+        | 'VIDEO_UPDATE'
+        | 'VIDEO_SYNC'
+        | 'CHANNEL_SYNC'
+        | 'MAINTENANCE_MODE_ENABLE'
+        | 'MAINTENANCE_MODE_DISABLE'
+        | 'ACCOUNT_EMAIL_UPDATE'
+        | 'ACCOUNT_PASSWORD_UPDATE'
+        | 'ANNOUNCEMENT_CREATE'
+        | 'ANNOUNCEMENT_DELETE'
+        | 'ANNOUNCEMENT_UPDATE'
+        | 'YOUTUBE_CHANNEL_CREATE'
+        | 'YOUTUBE_CHANNEL_DELETE'
+        | 'VIDEO_RESTORE'
       feature_request_status:
-        | "pending"
-        | "in_progress"
-        | "resolved"
-        | "rejected"
-      platform_type: "youtube" | "twitch"
-      twitch_video_type: "vod" | "clip" | "highlight" | "premiere" | "upload"
-      video_kind: "standard" | "short" | "live_stream" | "premiere"
-      video_status: "UPCOMING" | "LIVE" | "ENDED" | "PUBLISHED"
+        | 'pending'
+        | 'in_progress'
+        | 'resolved'
+        | 'rejected'
+      platform_type: 'youtube' | 'twitch'
+      twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
+      video_kind: 'standard' | 'short' | 'live_stream' | 'premiere'
+      video_status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -504,33 +504,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
+        DefaultSchema['Views'])
+    ? (DefaultSchema['Tables'] &
+        DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -539,23 +539,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -564,23 +564,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -589,77 +589,76 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
+    | keyof DefaultSchema['Enums']
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
+    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
+    | keyof DefaultSchema['CompositeTypes']
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
+    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
   public: {
     Enums: {
       audit_action: [
-        "CHANNEL_CREATE",
-        "CHANNEL_DELETE",
-        "CHANNEL_UPDATE",
-        "RECOMMENDED_QUERY_CREATE",
-        "RECOMMENDED_QUERY_DELETE",
-        "TERM_CREATE",
-        "TERM_DELETE",
-        "TERM_UPDATE",
-        "VIDEO_DELETE",
-        "VIDEO_VISIBILITY_TOGGLE",
-        "VIDEO_UPDATE",
-        "VIDEO_SYNC",
-        "CHANNEL_SYNC",
-        "MAINTENANCE_MODE_ENABLE",
-        "MAINTENANCE_MODE_DISABLE",
-        "ACCOUNT_EMAIL_UPDATE",
-        "ACCOUNT_PASSWORD_UPDATE",
-        "ANNOUNCEMENT_CREATE",
-        "ANNOUNCEMENT_DELETE",
-        "ANNOUNCEMENT_UPDATE",
-        "YOUTUBE_CHANNEL_CREATE",
-        "YOUTUBE_CHANNEL_DELETE",
-        "VIDEO_RESTORE",
+        'CHANNEL_CREATE',
+        'CHANNEL_DELETE',
+        'CHANNEL_UPDATE',
+        'RECOMMENDED_QUERY_CREATE',
+        'RECOMMENDED_QUERY_DELETE',
+        'TERM_CREATE',
+        'TERM_DELETE',
+        'TERM_UPDATE',
+        'VIDEO_DELETE',
+        'VIDEO_VISIBILITY_TOGGLE',
+        'VIDEO_UPDATE',
+        'VIDEO_SYNC',
+        'CHANNEL_SYNC',
+        'MAINTENANCE_MODE_ENABLE',
+        'MAINTENANCE_MODE_DISABLE',
+        'ACCOUNT_EMAIL_UPDATE',
+        'ACCOUNT_PASSWORD_UPDATE',
+        'ANNOUNCEMENT_CREATE',
+        'ANNOUNCEMENT_DELETE',
+        'ANNOUNCEMENT_UPDATE',
+        'YOUTUBE_CHANNEL_CREATE',
+        'YOUTUBE_CHANNEL_DELETE',
+        'VIDEO_RESTORE',
       ],
       feature_request_status: [
-        "pending",
-        "in_progress",
-        "resolved",
-        "rejected",
+        'pending',
+        'in_progress',
+        'resolved',
+        'rejected',
       ],
-      platform_type: ["youtube", "twitch"],
-      twitch_video_type: ["vod", "clip", "highlight", "premiere", "upload"],
-      video_kind: ["standard", "short", "live_stream", "premiere"],
-      video_status: ["UPCOMING", "LIVE", "ENDED", "PUBLISHED"],
+      platform_type: ['youtube', 'twitch'],
+      twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],
+      video_kind: ['standard', 'short', 'live_stream', 'premiere'],
+      video_status: ['UPCOMING', 'LIVE', 'ENDED', 'PUBLISHED'],
     },
   },
 } as const
-

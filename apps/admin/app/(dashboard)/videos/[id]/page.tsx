@@ -12,6 +12,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { Temporal } from 'temporal-polyfill'
+import { VideoKindBadge } from '../_components/video-kind-badge'
 import { VideoStatusBadge } from '../_components/video-status-badge'
 import getVideo from '../_lib/get-video'
 import { VideoActionsButtons } from './_components/video-actions-buttons'
@@ -185,6 +186,12 @@ async function VideoDetailContent({ id }: { id: string }) {
                 </dd>
               </div>
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt className="font-medium text-gray-500 text-sm">動画種別</dt>
+                <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                  <VideoKindBadge videoKind={video.video_kind} />
+                </dd>
+              </div>
+              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">
                   クリック数（7日間）
                 </dt>
@@ -192,7 +199,7 @@ async function VideoDetailContent({ id }: { id: string }) {
                   {formatNumber(video.clicks)}
                 </dd>
               </div>
-              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">公開日時</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   <time dateTime={video.published_at}>

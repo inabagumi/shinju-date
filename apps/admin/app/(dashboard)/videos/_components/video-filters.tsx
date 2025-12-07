@@ -26,6 +26,7 @@ export function VideoFilters({ talents }: Props) {
   const currentDeleted = searchParams.getAll('deleted')
   const currentVisible = searchParams.getAll('visible')
   const currentStatus = searchParams.getAll('status')
+  const currentVideoKind = searchParams.getAll('videoKind')
 
   // Debounce search input
   useEffect(() => {
@@ -52,7 +53,7 @@ export function VideoFilters({ talents }: Props) {
   }, [searchInput, router, searchParams])
 
   const handleMultiSelectChange = (
-    key: 'deleted' | 'talentId' | 'visible' | 'status',
+    key: 'deleted' | 'talentId' | 'visible' | 'status' | 'videoKind',
     values: string[],
   ) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -88,6 +89,13 @@ export function VideoFilters({ talents }: Props) {
   const deletedOptions: MultiSelectOption[] = [
     { label: '未削除', value: 'false' },
     { label: '削除済み', value: 'true' },
+  ]
+
+  const videoKindOptions: MultiSelectOption[] = [
+    { label: '通常動画', value: 'standard' },
+    { label: 'ショート動画', value: 'short' },
+    { label: 'ライブ配信', value: 'live_stream' },
+    { label: 'プレミア公開', value: 'premiere' },
   ]
 
   return (
@@ -128,6 +136,17 @@ export function VideoFilters({ talents }: Props) {
           options={statusOptions}
           placeholder="すべて"
           value={currentStatus}
+        />
+      </div>
+      <div className="w-full sm:w-auto sm:min-w-[200px]">
+        <div className="mb-1 block font-medium text-gray-700 text-sm">
+          動画種別で絞り込み
+        </div>
+        <MultiSelect
+          onChange={(values) => handleMultiSelectChange('videoKind', values)}
+          options={videoKindOptions}
+          placeholder="すべて"
+          value={currentVideoKind}
         />
       </div>
       <div className="flex w-full flex-wrap gap-4 sm:contents">
