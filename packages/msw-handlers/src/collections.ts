@@ -48,6 +48,7 @@ export const videos = new Collection({
     thumbnail_id: z.string().uuid().nullable(),
     title: z.string(),
     updated_at: z.string(),
+    video_kind: z.enum(['standard', 'short']),
     visible: z.boolean(),
   }),
 })
@@ -185,10 +186,18 @@ export async function seedCollections() {
         'SCHEDULED',
       ] as const)
 
+      // Make some videos shorts (30% chance)
+      const videoKind = faker.datatype.boolean({ probability: 0.3 })
+        ? 'short'
+        : 'standard'
+
       return videos.create({
         created_at: faker.date.past({ years: 1 }).toISOString(),
         deleted_at: null,
-        duration: `PT${faker.number.int({ max: 3, min: 1 })}H${faker.number.int({ max: 59, min: 0 })}M${faker.number.int({ max: 59, min: 0 })}S`,
+        duration:
+          videoKind === 'short'
+            ? `PT${faker.number.int({ max: 60, min: 15 })}S` // Shorts are 15-60 seconds
+            : `PT${faker.number.int({ max: 3, min: 1 })}H${faker.number.int({ max: 59, min: 0 })}M${faker.number.int({ max: 59, min: 0 })}S`,
         id: faker.string.uuid(),
         platform: 'YOUTUBE',
         published_at: faker.date.past({ years: 1 }).toISOString(),
@@ -197,8 +206,47 @@ export async function seedCollections() {
         thumbnail_id: thumbnail?.id ?? null,
         title: videoTitles[idx] ?? faker.lorem.sentence(),
         updated_at: faker.date.recent().toISOString(),
+        video_kind: videoKind,
         visible:
           status === 'PUBLISHED' || status === 'LIVE' || status === 'ENDED',
+      })
+    }),
+  )
+
+  // Create additional shorts videos to ensure we have enough for testing
+  const shortsTitles = [
+    '【切り抜き】面白い瞬間まとめ #shorts',
+    '【ダンス】新曲踊ってみた #shorts',
+    '【料理】30秒で作れる簡単レシピ #shorts',
+    '【メイク】時短メイク術 #shorts',
+    '【ゲーム】神プレイ集 #shorts',
+    '【歌】歌ってみた #shorts',
+    '【日常】今日の出来事 #shorts',
+    '【猫】かわいい猫の動画 #shorts',
+  ]
+
+  await Promise.all(
+    Array.from({ length: 15 }, async (_, idx) => {
+      const talent = createdTalents[idx % createdTalents.length]
+      if (!talent) return
+
+      const thumbnail = createdThumbnails[idx % createdThumbnails.length]
+
+      return videos.create({
+        created_at: faker.date.recent({ days: 2 }).toISOString(),
+        deleted_at: null,
+        duration: `PT${faker.number.int({ max: 60, min: 15 })}S`,
+        id: faker.string.uuid(),
+        platform: 'YOUTUBE',
+        published_at: faker.date.recent({ days: 2 }).toISOString(),
+        status: 'PUBLISHED',
+        talent_id: talent.id,
+        thumbnail_id: thumbnail?.id ?? null,
+        title:
+          shortsTitles[idx % shortsTitles.length] ?? faker.lorem.sentence(),
+        updated_at: faker.date.recent().toISOString(),
+        video_kind: 'short',
+        visible: true,
       })
     }),
   )
