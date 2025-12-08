@@ -1,10 +1,15 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Activity as ActivityIcon } from 'lucide-react'
+import {
+  Activity as ActivityIcon,
+  Film,
+  Video as VideoIcon,
+} from 'lucide-react'
 import { Activity, Suspense, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { fetchDashboardVideos, type Video } from '@/lib/fetchers'
+import ShortsCarousel from './shorts-carousel'
 import VideoCard, { VideoCardSkeleton } from './video-card'
 
 export function LiveAndRecentSkeleton() {
@@ -12,6 +17,7 @@ export function LiveAndRecentSkeleton() {
     <div className="space-y-6">
       {/* Tab buttons skeleton */}
       <div className="flex gap-2">
+        <div className="h-10 w-24 animate-pulse rounded-lg bg-774-nevy-100 dark:bg-zinc-800" />
         <div className="h-10 w-24 animate-pulse rounded-lg bg-774-nevy-100 dark:bg-zinc-800" />
         <div className="h-10 w-24 animate-pulse rounded-lg bg-774-nevy-100 dark:bg-zinc-800" />
       </div>
@@ -40,6 +46,7 @@ export default function LiveAndRecent({
   prefetchedData: {
     live: Video[]
     recent: Video[]
+    shorts: Video[]
   }
 }) {
   const {
@@ -55,18 +62,27 @@ export default function LiveAndRecent({
 
   const hasLive = data.live.length > 0
   const hasRecent = data.recent.length > 0
+  const hasShorts = data.shorts.length > 0
 
-  // Default to live if available, otherwise recent
-  const [activeTab, setActiveTab] = useState<'live' | 'recent'>(
-    hasLive ? 'live' : 'recent',
+  // Default to live if available, otherwise recent, otherwise shorts
+  const getDefaultTab = (): 'live' | 'recent' | 'shorts' => {
+    if (hasLive) return 'live'
+    if (hasRecent) return 'recent'
+    if (hasShorts) return 'shorts'
+    return 'live' // Fallback to live even if empty
+  }
+
+  const [activeTab, setActiveTab] = useState<'live' | 'recent' | 'shorts'>(
+    getDefaultTab(),
   )
 
-  // If no live and no recent videos, don't render the section
+  // If no live, no recent, and no shorts videos, don't render the section
   if (
     !isLoading &&
     !error &&
     data.live.length === 0 &&
-    data.recent.length === 0
+    data.recent.length === 0 &&
+    data.shorts.length === 0
   ) {
     return null
   }
@@ -112,14 +128,17 @@ export default function LiveAndRecent({
           onClick={() => setActiveTab('live')}
           type="button"
         >
-          {activeTab === 'live' && (
-            <ActivityIcon className="size-4 animate-pulse" />
-          )}
+          <ActivityIcon
+            className={twMerge(
+              'size-4',
+              activeTab === 'live' && 'animate-pulse',
+            )}
+          />
           配信中
         </button>
         <button
           className={twMerge(
-            'rounded-lg px-4 py-2 font-semibold transition-colors',
+            'flex items-center gap-2 rounded-lg px-4 py-2 font-semibold transition-colors',
             activeTab === 'recent'
               ? 'bg-774-pink-600 text-white'
               : 'bg-774-nevy-100 text-774-nevy-800 hover:bg-774-nevy-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700',
@@ -129,7 +148,23 @@ export default function LiveAndRecent({
           onClick={() => setActiveTab('recent')}
           type="button"
         >
+          <VideoIcon className="size-4" />
           新着動画
+        </button>
+        <button
+          className={twMerge(
+            'flex items-center gap-2 rounded-lg px-4 py-2 font-semibold transition-colors',
+            activeTab === 'shorts'
+              ? 'bg-774-pink-600 text-white'
+              : 'bg-774-nevy-100 text-774-nevy-800 hover:bg-774-nevy-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700',
+            !hasShorts && 'cursor-not-allowed opacity-50',
+          )}
+          disabled={!hasShorts}
+          onClick={() => setActiveTab('shorts')}
+          type="button"
+        >
+          <Film className="size-4" />
+          ショート
         </button>
       </div>
 
@@ -140,6 +175,11 @@ export default function LiveAndRecent({
         </Activity>
         <Activity mode={activeTab === 'recent' ? 'visible' : 'hidden'}>
           <div className="space-y-6">{renderVideoGrid(data.recent)}</div>
+        </Activity>
+        <Activity mode={activeTab === 'shorts' ? 'visible' : 'hidden'}>
+          <div className="space-y-6">
+            <ShortsCarousel videos={data.shorts} />
+          </div>
         </Activity>
       </Suspense>
     </div>

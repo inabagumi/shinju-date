@@ -15,6 +15,7 @@ const DEFAULT_SEARCH_SELECT = `
   talent:talents!inner (id, name),
   thumbnail:thumbnails (blur_data_url, height, id, path, width),
   title,
+  video_kind,
   youtube_video:youtube_videos!inner (youtube_video_id)
 `
 
@@ -27,7 +28,7 @@ export type Thumbnail = Pick<
 
 export type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'id' | 'published_at' | 'status' | 'title'
+  'duration' | 'id' | 'published_at' | 'status' | 'title' | 'video_kind'
 > & {
   talent: Talent
   thumbnail: Thumbnail | null
@@ -109,22 +110,14 @@ export const fetchVideos = async ({
 }
 
 /**
- * Fetch videos for the dashboard section
- * Returns currently streaming videos and recently published videos
+ * Fetch currently streaming (LIVE) videos
  */
-export const fetchDashboardVideos = async (): Promise<{
-  live: Video[]
-  recent: Video[]
-}> => {
+async function fetchLiveVideos(): Promise<Video[]> {
   'use cache: remote'
 
   cacheLife('minutes')
   cacheTag('videos')
 
-  const now = Temporal.Now.instant()
-  const fortyEightHoursAgo = now.subtract({ hours: 48 })
-
-  // Fetch live videos
   const { data: liveVideos, error: liveError } = await supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
@@ -138,11 +131,26 @@ export const fetchDashboardVideos = async (): Promise<{
     })
   }
 
-  // Fetch recent published videos (within 48 hours)
+  return liveVideos
+}
+
+/**
+ * Fetch recent published videos (within 48 hours, excluding shorts)
+ */
+async function fetchRecentVideos(): Promise<Video[]> {
+  'use cache: remote'
+
+  cacheLife('minutes')
+  cacheTag('videos')
+
+  const now = Temporal.Now.instant()
+  const fortyEightHoursAgo = now.subtract({ hours: 48 })
+
   const { data: recentVideos, error: recentError } = await supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
     .eq('status', 'PUBLISHED')
+    .neq('video_kind', 'short')
     .gte('published_at', toDBString(fortyEightHoursAgo))
     .lte('published_at', toDBString(now))
     .order('published_at', { ascending: false })
@@ -154,8 +162,59 @@ export const fetchDashboardVideos = async (): Promise<{
     })
   }
 
+  return recentVideos
+}
+
+/**
+ * Fetch recent shorts (within 48 hours)
+ */
+async function fetchShortsVideos(): Promise<Video[]> {
+  'use cache: remote'
+
+  cacheLife('minutes')
+  cacheTag('videos')
+
+  const now = Temporal.Now.instant()
+  const fortyEightHoursAgo = now.subtract({ hours: 48 })
+
+  const { data: shortsVideos, error: shortsError } = await supabaseClient
+    .from('videos')
+    .select(DEFAULT_SEARCH_SELECT)
+    .eq('video_kind', 'short')
+    .eq('status', 'PUBLISHED')
+    .gte('published_at', toDBString(fortyEightHoursAgo))
+    .lte('published_at', toDBString(now))
+    .order('published_at', { ascending: false })
+    .limit(20)
+
+  if (shortsError) {
+    throw new TypeError(shortsError.message, {
+      cause: shortsError,
+    })
+  }
+
+  return shortsVideos
+}
+
+/**
+ * Fetch videos for the dashboard section
+ * Returns currently streaming videos, recently published videos, and shorts
+ * Uses parallel fetching for better performance
+ */
+export const fetchDashboardVideos = async (): Promise<{
+  live: Video[]
+  recent: Video[]
+  shorts: Video[]
+}> => {
+  const [live, recent, shorts] = await Promise.all([
+    fetchLiveVideos(),
+    fetchRecentVideos(),
+    fetchShortsVideos(),
+  ])
+
   return {
-    live: liveVideos,
-    recent: recentVideos,
+    live,
+    recent,
+    shorts,
   }
 }
