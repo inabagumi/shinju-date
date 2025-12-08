@@ -15,6 +15,7 @@ const DEFAULT_SEARCH_SELECT = `
   talent:talents!inner (id, name),
   thumbnail:thumbnails (blur_data_url, height, id, path, width),
   title,
+  video_kind,
   youtube_video:youtube_videos!inner (youtube_video_id)
 `
 
@@ -27,7 +28,7 @@ export type Thumbnail = Pick<
 
 export type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'id' | 'published_at' | 'status' | 'title'
+  'duration' | 'id' | 'published_at' | 'status' | 'title' | 'video_kind'
 > & {
   talent: Talent
   thumbnail: Thumbnail | null
@@ -110,11 +111,12 @@ export const fetchVideos = async ({
 
 /**
  * Fetch videos for the dashboard section
- * Returns currently streaming videos and recently published videos
+ * Returns currently streaming videos, recently published videos, and shorts
  */
 export const fetchDashboardVideos = async (): Promise<{
   live: Video[]
   recent: Video[]
+  shorts: Video[]
 }> => {
   'use cache: remote'
 
@@ -154,8 +156,26 @@ export const fetchDashboardVideos = async (): Promise<{
     })
   }
 
+  // Fetch recent shorts (within 48 hours)
+  const { data: shortsVideos, error: shortsError } = await supabaseClient
+    .from('videos')
+    .select(DEFAULT_SEARCH_SELECT)
+    .eq('video_kind', 'short')
+    .eq('status', 'PUBLISHED')
+    .gte('published_at', toDBString(fortyEightHoursAgo))
+    .lte('published_at', toDBString(now))
+    .order('published_at', { ascending: false })
+    .limit(20)
+
+  if (shortsError) {
+    throw new TypeError(shortsError.message, {
+      cause: shortsError,
+    })
+  }
+
   return {
     live: liveVideos,
     recent: recentVideos,
+    shorts: shortsVideos,
   }
 }
