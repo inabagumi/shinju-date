@@ -34,7 +34,7 @@ export default function RecommendedQueries({
                 className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left hover:bg-774-nevy-100 dark:hover:bg-zinc-800"
                 href={`/videos/${encodeURIComponent(query)}`}
                 key={query}
-                onClick={onClickLink}
+                {...(onClickLink ? { onClick: onClickLink } : {})}
               >
                 <Hash className="size-4 text-774-nevy-400 dark:text-774-nevy-300" />
                 <span className="text-primary dark:text-774-nevy-50">
@@ -58,8 +58,8 @@ export default function RecommendedQueries({
               aria-label={`『${query}』の検索結果`}
               className="block rounded-xl px-1 py-2 text-center hover:bg-774-nevy-100 dark:hover:bg-zinc-600"
               href={`/videos/${encodeURIComponent(query)}`}
-              onClick={onClickLink}
               title={`『${query}』の検索結果`}
+              {...(onClickLink ? { onClick: onClickLink } : {})}
             >
               {query}
             </Link>
