@@ -99,7 +99,7 @@ export default function ShortVideoCard({
   return (
     <a
       className={twMerge(
-        'flex w-full flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
+        'flex max-w-full flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
         className,
       )}
       href={`https://www.youtube.com/watch?v=${encodeURIComponent(
