@@ -1,7 +1,11 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Activity as ActivityIcon } from 'lucide-react'
+import {
+  Activity as ActivityIcon,
+  Film,
+  Video as VideoIcon,
+} from 'lucide-react'
 import { Activity, Suspense, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { fetchDashboardVideos, type Video } from '@/lib/fetchers'
@@ -124,14 +128,17 @@ export default function LiveAndRecent({
           onClick={() => setActiveTab('live')}
           type="button"
         >
-          {activeTab === 'live' && (
-            <ActivityIcon className="size-4 animate-pulse" />
-          )}
+          <ActivityIcon
+            className={twMerge(
+              'size-4',
+              activeTab === 'live' && 'animate-pulse',
+            )}
+          />
           配信中
         </button>
         <button
           className={twMerge(
-            'rounded-lg px-4 py-2 font-semibold transition-colors',
+            'flex items-center gap-2 rounded-lg px-4 py-2 font-semibold transition-colors',
             activeTab === 'recent'
               ? 'bg-774-pink-600 text-white'
               : 'bg-774-nevy-100 text-774-nevy-800 hover:bg-774-nevy-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700',
@@ -141,11 +148,12 @@ export default function LiveAndRecent({
           onClick={() => setActiveTab('recent')}
           type="button"
         >
+          <VideoIcon className="size-4" />
           新着動画
         </button>
         <button
           className={twMerge(
-            'rounded-lg px-4 py-2 font-semibold transition-colors',
+            'flex items-center gap-2 rounded-lg px-4 py-2 font-semibold transition-colors',
             activeTab === 'shorts'
               ? 'bg-774-pink-600 text-white'
               : 'bg-774-nevy-100 text-774-nevy-800 hover:bg-774-nevy-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700',
@@ -155,6 +163,7 @@ export default function LiveAndRecent({
           onClick={() => setActiveTab('shorts')}
           type="button"
         >
+          <Film className="size-4" />
           ショート
         </button>
       </div>

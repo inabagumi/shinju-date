@@ -99,7 +99,7 @@ export default function ShortVideoCard({
   return (
     <a
       className={twMerge(
-        'flex flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
+        'flex w-full flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
         className,
       )}
       href={`https://www.youtube.com/watch?v=${encodeURIComponent(
@@ -110,7 +110,7 @@ export default function ShortVideoCard({
       target="_blank"
     >
       {/* 9:16 aspect ratio for shorts */}
-      <div className="relative aspect-[9/16]">
+      <div className="relative aspect-[9/16] w-full">
         <Thumbnail video={value as YouTubeVideo} />
 
         {duration.total({

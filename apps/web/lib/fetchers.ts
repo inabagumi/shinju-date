@@ -110,23 +110,14 @@ export const fetchVideos = async ({
 }
 
 /**
- * Fetch videos for the dashboard section
- * Returns currently streaming videos, recently published videos, and shorts
+ * Fetch currently streaming (LIVE) videos
  */
-export const fetchDashboardVideos = async (): Promise<{
-  live: Video[]
-  recent: Video[]
-  shorts: Video[]
-}> => {
+async function fetchLiveVideos(): Promise<Video[]> {
   'use cache: remote'
 
   cacheLife('minutes')
   cacheTag('videos')
 
-  const now = Temporal.Now.instant()
-  const fortyEightHoursAgo = now.subtract({ hours: 48 })
-
-  // Fetch live videos
   const { data: liveVideos, error: liveError } = await supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
@@ -140,11 +131,26 @@ export const fetchDashboardVideos = async (): Promise<{
     })
   }
 
-  // Fetch recent published videos (within 48 hours)
+  return liveVideos
+}
+
+/**
+ * Fetch recent published videos (within 48 hours, excluding shorts)
+ */
+async function fetchRecentVideos(): Promise<Video[]> {
+  'use cache: remote'
+
+  cacheLife('minutes')
+  cacheTag('videos')
+
+  const now = Temporal.Now.instant()
+  const fortyEightHoursAgo = now.subtract({ hours: 48 })
+
   const { data: recentVideos, error: recentError } = await supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
     .eq('status', 'PUBLISHED')
+    .eq('video_kind', 'standard')
     .gte('published_at', toDBString(fortyEightHoursAgo))
     .lte('published_at', toDBString(now))
     .order('published_at', { ascending: false })
@@ -156,7 +162,21 @@ export const fetchDashboardVideos = async (): Promise<{
     })
   }
 
-  // Fetch recent shorts (within 48 hours)
+  return recentVideos
+}
+
+/**
+ * Fetch recent shorts (within 48 hours)
+ */
+async function fetchShortsVideos(): Promise<Video[]> {
+  'use cache: remote'
+
+  cacheLife('minutes')
+  cacheTag('videos')
+
+  const now = Temporal.Now.instant()
+  const fortyEightHoursAgo = now.subtract({ hours: 48 })
+
   const { data: shortsVideos, error: shortsError } = await supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
@@ -173,9 +193,28 @@ export const fetchDashboardVideos = async (): Promise<{
     })
   }
 
+  return shortsVideos
+}
+
+/**
+ * Fetch videos for the dashboard section
+ * Returns currently streaming videos, recently published videos, and shorts
+ * Uses parallel fetching for better performance
+ */
+export const fetchDashboardVideos = async (): Promise<{
+  live: Video[]
+  recent: Video[]
+  shorts: Video[]
+}> => {
+  const [live, recent, shorts] = await Promise.all([
+    fetchLiveVideos(),
+    fetchRecentVideos(),
+    fetchShortsVideos(),
+  ])
+
   return {
-    live: liveVideos,
-    recent: recentVideos,
-    shorts: shortsVideos,
+    live,
+    recent,
+    shorts,
   }
 }
