@@ -78,7 +78,7 @@ export default function SchedulePage() {
         />
       </div>
 
-      <main className="mx-auto max-w-6xl space-y-12 px-4">
+      <main className="mx-auto max-w-6xl space-y-12 px-4 pt-12">
         <Suspense fallback={<LiveAndRecentSkeleton />}>
           <HomeLiveAndRecent />
         </Suspense>
