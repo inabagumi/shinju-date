@@ -19,14 +19,12 @@ export default function RecommendedQueries({
     return null
   }
 
-  const containerClasses =
-    variant === 'compact'
-      ? 'grid grid-cols-2 gap-2'
-      : 'grid grid-cols-2 gap-2 md:grid-cols-4'
+  const gridClasses =
+    variant === 'compact' ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4'
 
   return (
     <nav aria-label="おすすめの検索キーワード">
-      <ul className={containerClasses}>
+      <ul className={`grid gap-2 ${gridClasses}`}>
         {queries.map((query) => (
           <li key={query}>
             <Link
