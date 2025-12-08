@@ -150,7 +150,7 @@ async function fetchRecentVideos(): Promise<Video[]> {
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
     .eq('status', 'PUBLISHED')
-    .eq('video_kind', 'standard')
+    .neq('video_kind', 'short')
     .gte('published_at', toDBString(fortyEightHoursAgo))
     .lte('published_at', toDBString(now))
     .order('published_at', { ascending: false })
