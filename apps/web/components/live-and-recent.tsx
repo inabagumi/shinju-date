@@ -61,8 +61,15 @@ export default function LiveAndRecent({
   const hasShorts = data.shorts.length > 0
 
   // Default to live if available, otherwise recent, otherwise shorts
+  const getDefaultTab = (): 'live' | 'recent' | 'shorts' => {
+    if (hasLive) return 'live'
+    if (hasRecent) return 'recent'
+    if (hasShorts) return 'shorts'
+    return 'live' // Fallback to live even if empty
+  }
+
   const [activeTab, setActiveTab] = useState<'live' | 'recent' | 'shorts'>(
-    hasLive ? 'live' : hasRecent ? 'recent' : 'shorts',
+    getDefaultTab(),
   )
 
   // If no live, no recent, and no shorts videos, don't render the section

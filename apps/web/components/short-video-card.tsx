@@ -90,7 +90,7 @@ export default function ShortVideoCard({
   const publishedAt = Temporal.Instant.from(
     value.published_at,
   ).toZonedDateTimeISO(TIME_ZONE)
-  const duration = Temporal.Duration.from(value?.duration ?? 'P0D')
+  const duration = Temporal.Duration.from(value?.duration ?? 'PT0S')
 
   if (!value.youtube_video) {
     return null

@@ -186,10 +186,11 @@ export async function seedCollections() {
         'SCHEDULED',
       ] as const)
 
-      // Make some videos shorts (30% chance)
-      const videoKind = faker.datatype.boolean({ probability: 0.3 })
-        ? 'short'
-        : 'standard'
+      // Make some videos shorts (30% chance) using weightedArrayElement for clarity
+      const videoKind = faker.helpers.weightedArrayElement([
+        { value: 'short', weight: 0.3 },
+        { value: 'standard', weight: 0.7 },
+      ])
 
       return videos.create({
         created_at: faker.date.past({ years: 1 }).toISOString(),
