@@ -218,13 +218,16 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
             Enterキーを押して「{query}」を検索
           </div>
         ) : (
-          <div className="px-4 py-8">
-            <div className="mb-4 text-center text-774-nevy-400 text-sm dark:text-774-nevy-400">
-              おすすめの検索キーワード
+          <div>
+            <div className="border-774-nevy-200 border-b px-4 py-3 dark:border-zinc-700">
+              <h2 className="text-774-nevy-500 text-sm dark:text-774-nevy-400">
+                おすすめの検索キーワード
+              </h2>
             </div>
             <RecommendedQueries
+              onClickLink={handleSuggestionClick}
               queries={recommendedQueries}
-              variant="compact"
+              variant="list"
             />
           </div>
         )}
