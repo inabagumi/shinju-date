@@ -62,7 +62,7 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
   }
 
   return (
-    <div className="relative w-full max-w-full space-y-4">
+    <div className="relative w-full space-y-4">
       {/* Desktop navigation buttons - only show on medium screens and up */}
       <div className="-left-4 -translate-y-1/2 absolute top-1/2 z-10 hidden md:block">
         <button
@@ -113,11 +113,11 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
           </button>
         </div>
 
-        <div className="w-full overflow-hidden" ref={emblaRef}>
+        <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex gap-3 md:gap-6">
             {videos.map((video) => (
               <div
-                className="min-w-0 max-w-full shrink-0 basis-full md:basis-[calc(25%-1.125rem)]"
+                className="min-w-0 shrink-0 basis-full md:basis-[calc(25%-1.125rem)]"
                 key={video.id}
               >
                 <ShortVideoCard value={video} />
