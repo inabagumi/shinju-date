@@ -60,9 +60,9 @@ function Thumbnail({ video }: { video: YouTubeVideo }) {
 
 export function ShortVideoCardSkeleton() {
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none">
+    <div className="flex w-full max-w-full flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none">
       {/* 9:16 aspect ratio for shorts */}
-      <div className="relative aspect-[9/16]">
+      <div className="relative aspect-[9/16] w-full">
         <div className="h-full animate-pulse bg-774-nevy-200 dark:bg-zinc-700" />
       </div>
 
@@ -99,7 +99,7 @@ export default function ShortVideoCard({
   return (
     <a
       className={twMerge(
-        'flex max-w-full flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
+        'flex w-full max-w-full flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
         className,
       )}
       href={`https://www.youtube.com/watch?v=${encodeURIComponent(
@@ -110,7 +110,7 @@ export default function ShortVideoCard({
       target="_blank"
     >
       {/* 9:16 aspect ratio for shorts */}
-      <div className="relative aspect-[9/16] w-full">
+      <div className="relative aspect-[9/16] w-full overflow-hidden">
         <Thumbnail video={value as YouTubeVideo} />
 
         {duration.total({
