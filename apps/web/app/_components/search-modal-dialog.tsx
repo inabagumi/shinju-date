@@ -64,7 +64,7 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
     fetchRecommendedQueries()
       .then(setRecommendedQueries)
       .catch((err) => {
-        console.error('Failed to fetch recommended queries', err)
+        console.debug('Failed to fetch recommended queries', err)
         setRecommendedQueries([])
       })
   }, [])
@@ -84,7 +84,7 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
         const data = await fetchSuggestions(query)
         setSuggestions(data)
       } catch (err) {
-        console.error('Failed to fetch suggestions', err)
+        console.debug('Failed to fetch suggestions', err)
         setSuggestions([])
       } finally {
         setIsLoadingSuggestions(false)
