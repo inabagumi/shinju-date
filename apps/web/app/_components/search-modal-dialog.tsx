@@ -11,7 +11,12 @@ import { Search } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useState } from 'react'
-import { fetchSuggestions, type Suggestion } from '@/app/_lib/actions'
+import {
+  fetchRecommendedQueries,
+  fetchSuggestions,
+  type Suggestion,
+} from '@/app/_lib/actions'
+import RecommendedQueries from '@/components/recommended-queries'
 import { useSearchModal } from './search-modal-context'
 
 export function SearchModalDialog() {
@@ -52,6 +57,17 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null)
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
+  const [recommendedQueries, setRecommendedQueries] = useState<string[]>([])
+
+  // Fetch recommended queries on mount
+  useEffect(() => {
+    fetchRecommendedQueries()
+      .then(setRecommendedQueries)
+      .catch((err) => {
+        console.debug('Failed to fetch recommended queries', err)
+        setRecommendedQueries([])
+      })
+  }, [])
 
   // Fetch suggestions when query changes
   useEffect(() => {
@@ -68,7 +84,7 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
         const data = await fetchSuggestions(query)
         setSuggestions(data)
       } catch (err) {
-        console.error('Failed to fetch suggestions', err)
+        console.debug('Failed to fetch suggestions', err)
         setSuggestions([])
       } finally {
         setIsLoadingSuggestions(false)
@@ -197,11 +213,22 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
               ))}
             </div>
           </div>
-        ) : (
+        ) : query ? (
           <div className="p-8 text-center text-774-nevy-400 text-sm dark:text-774-nevy-400">
-            {query
-              ? `Enterキーを押して「${query}」を検索`
-              : '動画のタイトルやタレント名で検索できます'}
+            Enterキーを押して「{query}」を検索
+          </div>
+        ) : (
+          <div>
+            <div className="border-774-nevy-200 border-b px-4 py-3 dark:border-zinc-700">
+              <h2 className="text-774-nevy-500 text-sm dark:text-774-nevy-400">
+                おすすめの検索キーワード
+              </h2>
+            </div>
+            <RecommendedQueries
+              onClickLink={handleSuggestionClick}
+              queries={recommendedQueries}
+              variant="list"
+            />
           </div>
         )}
       </div>

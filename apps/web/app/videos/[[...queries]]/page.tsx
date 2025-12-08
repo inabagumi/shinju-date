@@ -7,6 +7,7 @@ import SearchExitTracker from '@/components/search-exit-tracker'
 import SearchQueryTracker from '@/components/search-query-tracker'
 import SearchResults from '@/components/search-results'
 import { fetchVideos } from '@/lib/fetchers'
+import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
 import { parseQueries } from '@/lib/url'
 
 export async function generateMetadata({
@@ -64,6 +65,11 @@ export default async function VideosPage({
       ? `『${query}』で検索しましたが一致する動画は見つかりませんでした。`
       : '動画は見つかりませんでした。'
 
+    // Get recommended queries for no-results page
+    const recommendedQueries = query
+      ? await getDisplayRecommendationQueries()
+      : []
+
     return (
       <>
         {query && (
@@ -72,7 +78,11 @@ export default async function VideosPage({
             <SearchExitTracker hasResults={false} query={query} />
           </>
         )}
-        <NoResults message={message} title="検索結果はありません" />
+        <NoResults
+          message={message}
+          recommendedQueries={recommendedQueries}
+          title="検索結果はありません"
+        />
       </>
     )
   }

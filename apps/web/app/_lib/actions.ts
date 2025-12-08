@@ -8,6 +8,7 @@ import { track } from '@vercel/analytics/server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Temporal } from 'temporal-polyfill'
+import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
 import { supabaseClient } from '@/lib/supabase'
 
 const ONE_DAY_IN_SECONDS = 60 * 60 * 24
@@ -98,6 +99,19 @@ export async function fetchSuggestions(query: string): Promise<Suggestion[]> {
     return data || []
   } catch (err) {
     logger.error('Failed to fetch suggestions', { error: err, query })
+    return []
+  }
+}
+
+/**
+ * Fetch recommended queries for display
+ * Returns an array of recommended search query strings
+ */
+export async function fetchRecommendedQueries(): Promise<string[]> {
+  try {
+    return await getDisplayRecommendationQueries()
+  } catch (err) {
+    logger.error('Failed to fetch recommended queries', { error: err })
     return []
   }
 }

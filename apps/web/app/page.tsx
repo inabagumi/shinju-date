@@ -5,7 +5,6 @@ import {
 } from '@shinju-date/constants'
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
 import { Suspense } from 'react'
 import LiveAndRecent, {
   LiveAndRecentSkeleton,
@@ -13,10 +12,6 @@ import LiveAndRecent, {
 import NoResults from '@/components/no-results'
 import Timeline, { TimelineSkeleton } from '@/components/timeline'
 import { fetchDashboardVideos, fetchUpcomingVideos } from '@/lib/fetchers'
-import {
-  getDisplayRecommendationQueries,
-  TOTAL_DISPLAY_COUNT,
-} from '@/lib/recommendations/get-display-queries'
 import hero from './_assets/hero.jpg'
 
 export const metadata: Metadata = {
@@ -55,55 +50,6 @@ async function HomeLiveAndRecent() {
   return <LiveAndRecent prefetchedData={data} />
 }
 
-function RecommendationQueriesSkeleton() {
-  return (
-    <div className="py-4">
-      <ul className="mx-auto grid max-w-6xl grid-cols-2 gap-2 px-2 md:grid-cols-4">
-        {Array(TOTAL_DISPLAY_COUNT)
-          .fill(0)
-          .map((_, i) => (
-            <li
-              className=""
-              // biome-ignore lint/suspicious/noArrayIndexKey: Skeleton用なので連番でも問題なし。
-              key={`pill-${i}`}
-            >
-              <span className="block rounded-xl px-1 py-2 text-center hover:bg-774-nevy-100 dark:hover:bg-zinc-600">
-                <span className="inline-block h-4 w-20 animate-pulse bg-774-nevy-100 dark:bg-zinc-800" />
-              </span>
-            </li>
-          ))}
-      </ul>
-    </div>
-  )
-}
-
-async function RecommendationQueries() {
-  const queries = await getDisplayRecommendationQueries()
-
-  if (queries.length < 1) {
-    return <RecommendationQueriesSkeleton />
-  }
-
-  return (
-    <nav className="py-4">
-      <ul className="mx-auto grid max-w-6xl grid-cols-2 gap-2 px-2 md:grid-cols-4">
-        {queries.map((query) => (
-          <li key={query}>
-            <Link
-              aria-label={`『${query}』の検索結果`}
-              className="block rounded-xl px-1 py-2 text-center hover:bg-774-nevy-100 dark:hover:bg-zinc-600"
-              href={`/videos/${encodeURIComponent(query)}`}
-              title={`『${query}』の検索結果`}
-            >
-              {query}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  )
-}
-
 export default function SchedulePage() {
   return (
     <>
@@ -132,11 +78,7 @@ export default function SchedulePage() {
         />
       </div>
 
-      <main className="mx-auto max-w-6xl space-y-12 px-4">
-        <Suspense fallback={<RecommendationQueriesSkeleton />}>
-          <RecommendationQueries />
-        </Suspense>
-
+      <main className="mx-auto max-w-6xl space-y-12 px-4 pt-12">
         <Suspense fallback={<LiveAndRecentSkeleton />}>
           <HomeLiveAndRecent />
         </Suspense>
