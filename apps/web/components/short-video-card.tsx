@@ -60,13 +60,13 @@ function Thumbnail({ video }: { video: YouTubeVideo }) {
 
 export function ShortVideoCardSkeleton() {
   return (
-    <div className="flex w-full max-w-full flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none">
+    <div className="block w-full overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none">
       {/* 9:16 aspect ratio for shorts */}
-      <div className="relative aspect-[9/16] w-full">
+      <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
         <div className="h-full animate-pulse bg-774-nevy-200 dark:bg-zinc-700" />
       </div>
 
-      <div className="grid grow grid-rows-[1fr_auto] gap-4 p-2.5">
+      <div className="space-y-4 p-2.5">
         <h3 className="break-all font-semibold text-sm">
           <span className="inline-block h-3 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
           <span className="inline-block h-3 w-3/4 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
@@ -99,7 +99,7 @@ export default function ShortVideoCard({
   return (
     <a
       className={twMerge(
-        'flex w-full max-w-full flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
+        'block w-full overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
         className,
       )}
       href={`https://www.youtube.com/watch?v=${encodeURIComponent(
@@ -110,7 +110,10 @@ export default function ShortVideoCard({
       target="_blank"
     >
       {/* 9:16 aspect ratio for shorts */}
-      <div className="relative aspect-[9/16] w-full overflow-hidden">
+      <div
+        className="relative w-full overflow-hidden"
+        style={{ aspectRatio: '9/16' }}
+      >
         <Thumbnail video={value as YouTubeVideo} />
 
         {duration.total({
@@ -128,7 +131,7 @@ export default function ShortVideoCard({
         />
       </div>
 
-      <div className="grid grow grid-rows-[1fr_auto] gap-4 p-2.5">
+      <div className="space-y-4 p-2.5">
         <h3
           className="line-clamp-2 break-all font-semibold text-sm"
           title={value.title}
