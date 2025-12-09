@@ -87,10 +87,10 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
         </button>
       </div>
 
-      {/* Carousel viewport with side padding on mobile for navigation buttons */}
-      <div className="relative px-12 md:px-0">
-        {/* Mobile navigation buttons */}
-        <div className="-translate-y-1/2 absolute top-1/2 left-0 z-10 md:hidden">
+      {/* Carousel viewport */}
+      <div className="relative">
+        {/* Mobile navigation buttons - positioned at edges of carousel */}
+        <div className="-translate-y-1/2 absolute top-1/2 left-2 z-10 md:hidden">
           <button
             aria-label="前へ"
             className="rounded-full bg-774-nevy-100 p-2 shadow-lg transition-colors hover:bg-774-nevy-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:hover:bg-zinc-700"
@@ -101,7 +101,7 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
             <ChevronLeft className="size-5" />
           </button>
         </div>
-        <div className="-translate-y-1/2 absolute top-1/2 right-0 z-10 md:hidden">
+        <div className="-translate-y-1/2 absolute top-1/2 right-2 z-10 md:hidden">
           <button
             aria-label="次へ"
             className="rounded-full bg-774-nevy-100 p-2 shadow-lg transition-colors hover:bg-774-nevy-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:hover:bg-zinc-700"
@@ -117,7 +117,7 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
           <div className="flex gap-3 md:gap-6">
             {videos.map((video) => (
               <div
-                className="min-w-0 shrink-0 basis-[90%] md:basis-[calc(25%-1.125rem)]"
+                className="min-w-0 shrink-0 basis-[calc(100%-2.5rem)] md:basis-[calc(25%-1.125rem)]"
                 key={video.id}
               >
                 <ShortVideoCard value={video} />
