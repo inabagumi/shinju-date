@@ -32,7 +32,7 @@
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
     "@playwright/test": "1.57.0",
-    "@tsconfig/next": "2.0.4",
+    "@tsconfig/next": "2.0.5",
     "@tsconfig/strictest": "2.0.8",
     "@types/node": "24.10.2",
     "@types/react": "19.2.7",

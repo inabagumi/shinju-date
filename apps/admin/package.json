@@ -45,7 +45,7 @@
     "@tailwindcss/typography": "0.5.19",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.0",
-    "@tsconfig/next": "2.0.4",
+    "@tsconfig/next": "2.0.5",
     "@tsconfig/strictest": "2.0.8",
     "@types/node": "24.10.2",
     "@types/react": "19.2.7",
