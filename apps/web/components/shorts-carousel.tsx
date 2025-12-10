@@ -117,7 +117,7 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
           <div className="flex gap-3 md:gap-6">
             {videos.map((video) => (
               <div
-                className="min-w-0 shrink-0 basis-full md:basis-[calc(25%-1.125rem)]"
+                className="min-w-0 shrink-0 basis-[85%] md:basis-[calc(25%-1.125rem)]"
                 key={video.id}
               >
                 <ShortVideoCard value={video} />
