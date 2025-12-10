@@ -117,9 +117,9 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
           <div className="flex gap-3 md:gap-6">
             {videos.map((video) => (
               <div
-                // Mobile: basis-[45%] shows ~2.2 shorts with peek
+                // Mobile: basis-[60%] shows one short dominantly with ~40% peek of next
                 // Desktop: calc(25% - 1.125rem) for 4-column grid with gap-6
-                className="min-w-0 shrink-0 basis-[45%] md:basis-[calc(25%-1.125rem)]"
+                className="min-w-0 shrink-0 basis-[60%] md:basis-[calc(25%-1.125rem)]"
                 key={video.id}
               >
                 <ShortVideoCard value={video} />
