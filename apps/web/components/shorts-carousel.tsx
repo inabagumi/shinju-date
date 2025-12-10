@@ -89,8 +89,8 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
 
       {/* Carousel viewport with side padding on mobile for navigation buttons */}
       <div className="relative px-12 md:px-0">
-        {/* Mobile navigation buttons */}
-        <div className="-translate-y-1/2 absolute top-1/2 left-0 z-10 md:hidden">
+        {/* Mobile navigation buttons - positioned at top instead of middle to avoid vertical expansion */}
+        <div className="absolute top-4 left-0 z-10 md:hidden">
           <button
             aria-label="前へ"
             className="rounded-full bg-774-nevy-100 p-2 shadow-lg transition-colors hover:bg-774-nevy-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:hover:bg-zinc-700"
@@ -101,7 +101,7 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
             <ChevronLeft className="size-5" />
           </button>
         </div>
-        <div className="-translate-y-1/2 absolute top-1/2 right-0 z-10 md:hidden">
+        <div className="absolute top-4 right-0 z-10 md:hidden">
           <button
             aria-label="次へ"
             className="rounded-full bg-774-nevy-100 p-2 shadow-lg transition-colors hover:bg-774-nevy-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:hover:bg-zinc-700"
