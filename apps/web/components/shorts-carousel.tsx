@@ -88,7 +88,7 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
       </div>
 
       {/* Carousel viewport with side padding on mobile for navigation buttons */}
-      <div className="relative px-12 md:px-0">
+      <div className="relative overflow-hidden px-12 md:px-0">
         {/* Mobile navigation buttons - positioned at top instead of middle to avoid vertical expansion */}
         <div className="absolute top-4 left-0 z-10 md:hidden">
           <button
