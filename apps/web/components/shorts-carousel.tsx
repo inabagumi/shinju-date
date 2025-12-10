@@ -87,8 +87,8 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
         </button>
       </div>
 
-      {/* Carousel viewport with negative margin to expand into parent padding */}
-      <div className="-mx-4 relative px-4 md:mx-0 md:px-0">
+      {/* Carousel viewport with negative margin and full viewport width */}
+      <div className="-mx-4 w-screen px-4 md:mx-0 md:w-auto md:px-0">
         {/* Mobile navigation buttons */}
         <div className="-translate-y-1/2 absolute top-1/2 left-4 z-10 md:hidden">
           <button
