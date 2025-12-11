@@ -31,7 +31,7 @@
     "react-markdown": "10.1.0",
     "resend": "6.6.0",
     "tailwind-merge": "3.4.0",
-    "tailwindcss": "4.1.17",
+    "tailwindcss": "4.1.18",
     "temporal-polyfill": "0.3.0",
     "ufo": "1.6.1",
     "zod": "4.1.13"
@@ -43,7 +43,7 @@
     "@playwright/test": "1.57.0",
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
-    "@tailwindcss/postcss": "4.1.17",
+    "@tailwindcss/postcss": "4.1.18",
     "@tailwindcss/typography": "0.5.19",
     "@tsconfig/next": "2.0.5",
     "@tsconfig/strictest": "2.0.8",
