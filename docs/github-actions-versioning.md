@@ -16,27 +16,35 @@
 
 ### バージョンコメントによるRenovate対応
 
-コミットハッシュの末尾に `# v1.0.0` のような形式でバージョンコメントを付けることで、Renovateによる自動更新が可能になります。
+コミットハッシュの末尾に `# v1.0.0` のような形式で**完全なパッチバージョン**を付けることで、Renovateによる自動更新が可能になります。
+
+**重要**: バージョンコメントは必ず `v1.0.0` のようにパッチバージョンまで含めた完全な形式で記述してください。`# v1` や `# v1.0` のような省略形は使用しないでください。
 
 ## 記述形式
 
 ```yaml
-# ✅ 推奨: コミットハッシュ + バージョンコメント
-- uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
-- uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6
-- uses: astral-sh/setup-uv@ed21f2f24f8dd64503750218de024bcf64c7250a # v7
+# ✅ 推奨: コミットハッシュ + 完全なバージョンコメント
+- uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+- uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+- uses: astral-sh/setup-uv@ed21f2f24f8dd64503750218de024bcf64c7250a # v7.1.5
 
 # ❌ 非推奨: タグのみ
 - uses: actions/checkout@v6
 - uses: actions/setup-node@v6
 - uses: astral-sh/setup-uv@v7
+
+# ❌ 非推奨: 省略されたバージョンコメント
+- uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+- uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1
 ```
 
 ## 新しいActionを追加する場合
 
-新しいGitHub Actionを追加する際は、以下の手順でコミットハッシュを取得してください：
+新しいGitHub Actionを追加する際は、以下の手順でコミットハッシュと完全なバージョン番号を取得してください：
 
-### 1. git ls-remoteを使用する方法（推奨）
+### 1. git ls-remoteを使用してコミットハッシュを取得（推奨）
+
+まず、メジャーバージョンタグからコミットハッシュを取得します：
 
 ```bash
 # 基本形式
@@ -49,7 +57,25 @@ git ls-remote https://github.com/actions/checkout.git refs/tags/v6
 # 8e8c483db84b4bee98b60c0593521ed34d9990e8	refs/tags/v6
 ```
 
-### 2. アノテーテッドタグの場合
+### 2. 完全なバージョン番号を取得
+
+次に、取得したコミットハッシュに対応する完全なパッチバージョン（v1.2.3形式）を取得します：
+
+```bash
+# コミットハッシュから完全なバージョンタグを見つける
+git ls-remote --tags https://github.com/[owner]/[repo].git | grep [commit-hash]
+
+# 例:
+git ls-remote --tags https://github.com/actions/checkout.git | grep 8e8c483db84b4bee98b60c0593521ed34d9990e8
+
+# 出力例:
+# 8e8c483db84b4bee98b60c0593521ed34d9990e8	refs/tags/v6.0.1
+# 8e8c483db84b4bee98b60c0593521ed34d9990e8	refs/tags/v6
+```
+
+この出力から `v6.0.1` のような完全なバージョン番号を使用してください。
+
+### 3. アノテーテッドタグの場合
 
 一部のActionはアノテーテッドタグを使用しています。その場合は `^{}` を使用してコミットを取得します：
 
@@ -59,16 +85,6 @@ git ls-remote https://github.com/[owner]/[repo].git refs/tags/[version]^{}
 
 # 例:
 git ls-remote https://github.com/actions/checkout.git refs/tags/v6^{}
-```
-
-### 3. GitHub CLIを使用する方法
-
-```bash
-# GitHub CLIでタグ情報を取得
-gh api repos/[owner]/[repo]/git/ref/tags/[version]
-
-# 例:
-gh api repos/actions/checkout/git/ref/tags/v6
 ```
 
 ## 自動更新の仕組み
@@ -125,7 +141,11 @@ A: タグは移動可能であり、セキュリティリスクがあります�
 
 ### Q: バージョンコメントは必須ですか？
 
-A: はい。バージョンコメントがないと、Renovateが自動更新できません。また、どのバージョンが使用されているかを人間が確認しやすくなります。
+A: はい。バージョンコメントがないと、Renovateが自動更新できません。また、どのバージョンが使用されているかを人間が確認しやすくなります。**必ずパッチバージョンまで含めた完全な形式（例: `# v6.0.1`）で記述してください。**
+
+### Q: バージョンコメントはメジャーバージョンだけでもいいですか？
+
+A: いいえ。`# v6` のようなメジャーバージョンのみの記述は避けてください。**必ず `# v6.0.1` のようにパッチバージョンまで含めた完全な形式で記述してください。**これにより、どの具体的なバージョンが使用されているかが明確になり、Renovateによる自動更新もより正確に動作します。
 
 ### Q: すべてのActionsをコミットハッシュで参照する必要がありますか？
 
@@ -143,10 +163,11 @@ A: 新しいActionsを追加する際や既存のActionsを更新する際に、
 
 ## まとめ
 
-- ✅ コミットハッシュ + バージョンコメントを使用する
-- ✅ `git ls-remote` でコミットハッシュを取得する
+- ✅ コミットハッシュ + **完全なパッチバージョン**を含むコメントを使用する（例: `# v6.0.1`）
+- ✅ `git ls-remote` でコミットハッシュと完全なバージョンを取得する
 - ✅ Renovateが自動更新できるようにする
 - ❌ タグのみの参照は使用しない
 - ❌ バージョンコメントを省略しない
+- ❌ メジャーバージョンのみのコメント（`# v6`）は使用しない
 
 この方針に従うことで、セキュアで管理しやすいCIパイプラインを維持できます。

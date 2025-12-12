@@ -30,7 +30,7 @@ jobs:
           SRH_CONNECTION_STRING: redis://redis:6379
 
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: Install CJK fonts
         run: |
@@ -38,7 +38,7 @@ jobs:
           sudo apt-get install -y fonts-noto-cjk
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@ed21f2f24f8dd64503750218de024bcf64c7250a # v7
+        uses: astral-sh/setup-uv@ed21f2f24f8dd64503750218de024bcf64c7250a # v7.1.5
         with:
           version: '0.9.17'
 
@@ -47,7 +47,7 @@ jobs:
           npm install -g corepack@0.31.0
           corepack enable
 
-      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           cache: pnpm
           node-version-file: .node-version
