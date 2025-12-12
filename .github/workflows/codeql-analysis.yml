@@ -17,15 +17,15 @@ jobs:
       security-events: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           fetch-depth: 2
 
       - run: git checkout HEAD^2
         if: ${{ github.event_name == 'pull_request' }}
 
-      - uses: github/codeql-action/init@v4
+      - uses: github/codeql-action/init@1b168cd39490f61582a9beae412bb7057a6b2c4e # v4
         with:
           languages: javascript
 
-      - uses: github/codeql-action/analyze@v4
+      - uses: github/codeql-action/analyze@1b168cd39490f61582a9beae412bb7057a6b2c4e # v4
