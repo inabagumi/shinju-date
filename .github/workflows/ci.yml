@@ -12,7 +12,7 @@ env:
   # renovate: datasource=node-version depName=node
   NODE_VERSION: 22.13.1
   # renovate: datasource=github-releases depName=astral-sh/uv
-  UV_VERSION: 0.9.5
+  UV_VERSION: 0.9.17
 
 jobs:
   # Install dependencies job (shared cache for all Node.js jobs)
