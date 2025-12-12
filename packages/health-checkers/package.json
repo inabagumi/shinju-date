@@ -4,7 +4,7 @@
   "devDependencies": {
     "@supabase/supabase-js": "2.87.1",
     "@tsconfig/strictest": "2.0.8",
-    "@upstash/redis": "1.35.7",
+    "@upstash/redis": "1.35.8",
     "tsup": "8.5.1",
     "typescript": "5.9.3",
     "vitest": "4.0.15"
@@ -21,7 +21,7 @@
   "name": "@shinju-date/health-checkers",
   "peerDependencies": {
     "@supabase/supabase-js": "2.87.1",
-    "@upstash/redis": "1.35.7"
+    "@upstash/redis": "1.35.8"
   },
   "private": true,
   "repository": {
