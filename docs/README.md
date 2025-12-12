@@ -15,6 +15,7 @@
 - **[coding-guidelines.md](coding-guidelines.md)** - コーディング規約とベストプラクティス
 - **[testing-guide.md](testing-guide.md)** - テスト実装ガイド
 - **[e2e-testing.md](e2e-testing.md)** - E2Eテストガイド
+- **[github-actions-versioning.md](github-actions-versioning.md)** - GitHub Actions バージョン管理ガイドライン
 
 ### 🔧 技術ガイド
 
