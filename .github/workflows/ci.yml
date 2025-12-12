@@ -26,14 +26,14 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 2
       - name: Enable Corepack
         run: |
           npm install -g corepack@${COREPACK_VERSION}
           corepack enable
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -85,7 +85,7 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 2
 
@@ -98,7 +98,7 @@ jobs:
 
       - name: Setup Node.js
         if: matrix.package.language == 'node'
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -115,7 +115,7 @@ jobs:
       # Python setup
       - name: Setup uv
         if: matrix.package.language == 'python'
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@ed21f2f24f8dd64503750218de024bcf64c7250a # v7.1.5
         with:
           version: ${{ env.UV_VERSION }}
 
@@ -147,7 +147,7 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 2
 
@@ -157,7 +157,7 @@ jobs:
           npm install -g corepack@${COREPACK_VERSION}
           corepack enable
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -169,7 +169,7 @@ jobs:
 
       # Python linting
       - name: Setup uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@ed21f2f24f8dd64503750218de024bcf64c7250a # v7.1.5
         with:
           version: ${{ env.UV_VERSION }}
 
@@ -201,7 +201,7 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 2
 
@@ -210,7 +210,7 @@ jobs:
           npm install -g corepack@${COREPACK_VERSION}
           corepack enable
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -239,7 +239,7 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 2
 
@@ -248,7 +248,7 @@ jobs:
           npm install -g corepack@${COREPACK_VERSION}
           corepack enable
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -272,7 +272,7 @@ jobs:
 
       # Cache Playwright browsers
       - name: Cache Playwright browsers
-        uses: actions/cache@v5
+        uses: actions/cache@a7833574556fa59680c1b7cb190c1735db73ebf0 # v5.0.0
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
@@ -299,7 +299,7 @@ jobs:
 
       # Upload Playwright Report
       - name: Upload Playwright Report
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: always()
         with:
           name: playwright-report-${{ steps.sanitize.outputs.name }}
