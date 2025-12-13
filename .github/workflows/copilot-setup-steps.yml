@@ -70,7 +70,7 @@ jobs:
         run: ln -sf .env.development .env
 
       - name: Start Supabase services via Docker Compose
-        run: docker compose up -d db kong mailpit
+        run: docker compose up -d db rest auth storage realtime kong mailpit
           
       - name: Wait for services to be healthy
         run: |
