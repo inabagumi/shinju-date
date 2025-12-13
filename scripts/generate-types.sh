@@ -26,7 +26,9 @@ if docker compose -f "${DEVCONTAINER_DIR}/compose.yml" ps db 2>/dev/null | grep 
     # The CLI connects to the database through the standard port mapping
     if command -v supabase &> /dev/null; then
         cd "$PROJECT_ROOT"
-        supabase gen types typescript --db-url "postgresql://supabase_admin:postgres@localhost:54322/postgres" --schema public > "$OUTPUT_FILE"
+        # Use connection string with password from environment or default
+        DB_PASSWORD="${POSTGRES_PASSWORD:-postgres}"
+        supabase gen types typescript --db-url "postgresql://supabase_admin:${DB_PASSWORD}@localhost:54322/postgres" --schema public > "$OUTPUT_FILE"
         echo -e "${GREEN}Types generated successfully at: ${OUTPUT_FILE}${NC}"
     else
         echo -e "${RED}Error: Supabase CLI not found. Installing...${NC}"

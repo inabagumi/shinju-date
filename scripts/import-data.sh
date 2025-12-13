@@ -128,8 +128,9 @@ fi
 
 echo -e "${YELLOW}Importing data into local database...${NC}"
 
-# Import the data
-PGPASSWORD=postgres psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" < "$DATA_FILE"
+# Import the data using password from environment or default
+DB_PASSWORD="${POSTGRES_PASSWORD:-postgres}"
+PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" < "$DATA_FILE"
 
 echo -e "${GREEN}Data import completed successfully!${NC}"
 

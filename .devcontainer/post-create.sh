@@ -16,8 +16,10 @@ pnpm install
 # Note: Database should be ready via docker-compose services
 # Wait for database to be ready before generating types
 echo "Waiting for database to be ready..."
+DB_HOST="${DB_HOST:-localhost}"
+DB_PORT="${DB_PORT:-54322}"
 for i in {1..30}; do
-  if pg_isready -h db -p 5432 -U supabase_admin > /dev/null 2>&1; then
+  if pg_isready -h "$DB_HOST" -p "$DB_PORT" -U supabase_admin > /dev/null 2>&1; then
     echo "Database is ready!"
     break
   fi

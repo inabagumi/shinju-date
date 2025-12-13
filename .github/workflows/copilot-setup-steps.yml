@@ -60,13 +60,13 @@ jobs:
           
       - name: Wait for services to be healthy
         run: |
-          echo "Waiting for database..."
+          echo "Waiting for database (60s timeout - initial startup may take time)..."
           timeout 60 bash -c 'until docker compose -f .devcontainer/compose.yml exec -T db pg_isready -U supabase_admin; do sleep 2; done'
           
-          echo "Waiting for Kong API Gateway..."
+          echo "Waiting for Kong API Gateway (60s timeout - depends on multiple services)..."
           timeout 60 bash -c 'until curl -f http://localhost:54321/health > /dev/null 2>&1; do sleep 2; done'
           
-          echo "Waiting for Redis..."
+          echo "Waiting for Redis (30s timeout - quick startup)..."
           timeout 30 bash -c 'until docker compose -f .devcontainer/compose.yml exec -T redis redis-cli ping > /dev/null 2>&1; do sleep 2; done'
           
           echo "All services are healthy!"
