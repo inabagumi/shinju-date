@@ -360,16 +360,20 @@ shinju-date/
 
 ### よくある問題と解決方法
 
-#### Supabase が起動しない
+#### Supabase サービスが起動しない
 
 ```bash
-# Docker を確認
-docker ps
+# Docker Compose の状態を確認
+cd .devcontainer
+docker compose ps
 
-# Supabase を完全にリセット
-supabase stop --no-backup
-docker system prune -f
-supabase start
+# サービスのログを確認
+docker compose logs db
+docker compose logs kong
+
+# サービスを完全にリセット
+docker compose down -v
+docker compose up -d
 ```
 
 #### ポート競合エラー
@@ -379,19 +383,20 @@ Supabase のポートが他のサービスと競合する場合：
 ```bash
 # 使用中のポートを確認
 lsof -i :54321
+lsof -i :54322
 lsof -i :54323
 
-# 他のサービスを停止するか、supabase/config.toml でポートを変更
+# 競合するサービスを停止するか、.devcontainer/compose.yml でポートを変更
 ```
 
 #### データベース接続エラー
 
 ```bash
-# Supabase の状態を確認
-supabase status
+# データベースサービスの状態を確認
+docker compose -f .devcontainer/compose.yml ps db
 
-# 接続URLを確認
-supabase status | grep "DB URL"
+# データベースに直接接続してテスト
+docker compose -f .devcontainer/compose.yml exec db psql -U supabase_admin -d postgres
 ```
 
 #### MSW が動作しない

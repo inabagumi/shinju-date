@@ -22,7 +22,7 @@
       "version": "1.6.4"
     }
   },
-  "forwardPorts": [3000, 4000, 8000, 8079, 10000, 54321, 54323],
+  "forwardPorts": [1025, 3000, 4000, 6379, 8000, 8079, 10000, 54321, 54322, 54323, 54324, 54327],
   "hostRequirements": {
     "cpus": 4,
     "memory": "8gb",
@@ -30,12 +30,20 @@
   },
   "name": "SHINJU DATE",
   "portsAttributes": {
+    "1025": {
+      "label": "Mailpit SMTP",
+      "onAutoForward": "silent"
+    },
     "3000": {
       "label": "Web",
       "onAutoForward": "silent"
     },
     "4000": {
       "label": "Admin",
+      "onAutoForward": "silent"
+    },
+    "6379": {
+      "label": "Redis",
       "onAutoForward": "silent"
     },
     "8000": {
@@ -54,9 +62,21 @@
       "label": "Supabase API",
       "onAutoForward": "silent"
     },
+    "54322": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
+    },
     "54323": {
       "label": "Supabase Studio",
       "onAutoForward": "notify"
+    },
+    "54324": {
+      "label": "Mailpit Web UI",
+      "onAutoForward": "notify"
+    },
+    "54327": {
+      "label": "Supabase Analytics",
+      "onAutoForward": "silent"
     }
   },
   "postCreateCommand": "./.devcontainer/post-create.sh",

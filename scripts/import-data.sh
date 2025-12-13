@@ -108,25 +108,28 @@ if [[ "$DATA_FILE" == *.gz ]]; then
     DATA_FILE="$DECOMPRESSED_FILE"
 fi
 
-# Check if Supabase is running
-echo -e "${YELLOW}Checking Supabase status...${NC}"
-if ! supabase status &> /dev/null; then
-    echo -e "${YELLOW}Supabase is not running. Starting Supabase...${NC}"
-    supabase start
-fi
+# Check if database is accessible via Docker Compose
+echo -e "${YELLOW}Checking database status...${NC}"
+DEVCONTAINER_DIR="${PROJECT_ROOT}/.devcontainer"
 
-# Get database connection details
-DB_URL=$(supabase status | grep "DB URL" | awk '{print $3}')
-
-if [ -z "$DB_URL" ]; then
-    echo -e "${RED}Error: Could not get database URL from Supabase${NC}"
+# Try to check if database is running via Docker Compose
+if docker compose -f "${DEVCONTAINER_DIR}/compose.yml" ps db 2>/dev/null | grep -q "Up\|running"; then
+    echo -e "${GREEN}Database is running via Docker Compose${NC}"
+    DB_HOST="localhost"
+    DB_PORT="54322"
+    DB_USER="supabase_admin"
+    DB_NAME="postgres"
+    DB_URL="postgresql://${DB_USER}:postgres@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+else
+    echo -e "${YELLOW}Database not found via Docker Compose. Please start services:${NC}"
+    echo -e "${YELLOW}  cd .devcontainer && docker compose up -d${NC}"
     exit 1
 fi
 
-echo -e "${YELLOW}Importing data into local Supabase instance...${NC}"
+echo -e "${YELLOW}Importing data into local database...${NC}"
 
 # Import the data
-psql "$DB_URL" < "$DATA_FILE"
+PGPASSWORD=postgres psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" < "$DATA_FILE"
 
 echo -e "${GREEN}Data import completed successfully!${NC}"
 

@@ -10,8 +10,10 @@
 - **pnpm**: Corepack を通じて有効化されます。
 - **Python**: 3.12 以上 (`apps/insights` 開発時のみ)
 - **uv**: Pythonパッケージマネージャー (`apps/insights` 開発時のみ)
-- **Docker**: ローカルのSupabase環境を実行するために必要です。
-- **Supabase CLI**: ローカルのSupabase環境を管理するために必要です (`npm install -g supabase`)。
+- **Docker**: ローカルのSupabase環境とRedisを実行するために必要です。
+- **Docker Compose**: サービスオーケストレーションに使用します。
+
+**注意**: Supabase CLIのインストールは不要になりました。すべてのSupabaseサービスはDocker Composeで管理されます。
 
 ## 1. 初期セットアップ
 
@@ -63,51 +65,86 @@ cd ../.. # ルートディレクトリに戻る
 
 ## 3. ローカルSupabase環境
 
-本番データベースへの影響を避けるため、開発にはローカルのSupabaseスタックを使用します。
+本番データベースへの影響を避けるため、開発にはローカルのSupabaseスタックを使用します。すべてのSupabaseサービスはDocker Composeで管理され、`supabase start`コマンドは不要です。
 
-### 3.1. Supabaseの起動
+### 3.1. Supabaseサービスの起動
 
-このコマンドはDockerを使用してローカルのSupabaseサービスを起動します。
-
-```bash
-supabase start
-```
-
-`supabase status` コマンドでサービスの稼働状況を確認できます。
-
-### 3.2. 本番データのインポート（任意ですが推奨）
-
-より現実的なデータで開発を進めるため、本番データベースからサニタイズされたスナップショットをインポートできます。
-
-```bash
-pnpm db:import
-```
-
-**注意**: 本番データベースからのデータエクスポートは、プロジェクト管理者のみが実行できます。個人情報を含むテーブルのエクスポートは禁止されています。
-
-## 4. ローカルRedis環境（自動起動）
-
-Upstash Redisの機能を完全にテストするため、ローカルRedis環境が自動的にセットアップされます。Dev Container（GitHub CodespacesやVS Code Dev Containers）を使用している場合、Redis 8とserverless-redis-httpプロキシが自動的に起動します。
-
-### 4.1. Dev Containerでの自動起動
-
-Dev Containerを使用する場合、以下のサービスが自動的に起動します：
-
-- **Redis 8** (port 6379): ネイティブRedisプロトコル
-- **Redis HTTP API** (port 8079): Upstash互換REST API
-
-これらは`.devcontainer/compose.yml`で定義されており、手動での起動は不要です。
-
-### 4.2. ローカルマシンでの手動起動（Dev Containerを使用しない場合）
-
-Dev Containerを使用していない場合は、Docker Composeを使用して手動で起動できます：
+Docker Composeを使用してローカルのSupabaseサービスを起動します。
 
 ```bash
 cd .devcontainer
 docker compose up -d
 ```
 
-接続テスト：
+このコマンドは以下のサービスを起動します：
+
+- **PostgreSQL** (port 54322): データベース
+- **Kong** (port 54321): APIゲートウェイ
+- **GoTrue** (internal): 認証サービス
+- **PostgREST** (internal): REST APIサービス
+- **Storage** (internal): ファイルストレージ
+- **Realtime** (internal): リアルタイム機能
+- **Mailpit** (port 54324/1025): メールテスト用SMTP/Webインターフェース
+- **Studio** (port 54323): Supabase管理UI
+- **Analytics** (port 54327): ログとアナリティクス
+
+### 3.2. サービスの状態確認
+
+サービスが正常に起動しているか確認します：
+
+```bash
+docker compose ps
+```
+
+すべてのサービスが「healthy」または「running」状態であることを確認してください。
+
+### 3.3. Supabase Studioへのアクセス
+
+ブラウザで [http://localhost:54323](http://localhost:54323) を開くと、Supabase Studioにアクセスできます。ここからデータベースのテーブル、認証ユーザー、ストレージバケットなどを管理できます。
+
+### 3.4. 本番データのインポート（任意ですが推奨）
+
+より現実的なデータで開発を進めるため、本番データベースからサニタイズされたスナップショットをインポートできます。
+
+```bash
+# リポジトリのルートディレクトリに戻る
+cd ..
+pnpm db:import
+```
+
+**注意**: 本番データベースからのデータエクスポートは、プロジェクト管理者のみが実行できます。個人情報を含むテーブルのエクスポートは禁止されています。
+
+### 3.5. サービスの停止
+
+開発作業を終了する際は、サービスを停止できます：
+
+```bash
+cd .devcontainer
+docker compose down
+```
+
+データを保持したまま停止する場合は上記コマンドを使用します。データベースやストレージのボリュームを完全に削除する場合は：
+
+```bash
+docker compose down -v
+```
+
+## 4. ローカルRedis環境
+
+Upstash Redisの機能を完全にテストするため、ローカルRedis環境がDocker Composeで自動的にセットアップされます。
+
+### 4.1. Docker Composeでの自動起動
+
+Docker Composeを使用する場合（Dev Containerを含む）、以下のサービスが自動的に起動します：
+
+- **Redis 8** (port 6379): ネイティブRedisプロトコル
+- **Redis HTTP API** (port 8079): Upstash互換REST API
+
+これらは`.devcontainer/compose.yml`で定義されており、`docker compose up -d`を実行すると自動的に起動します。
+
+### 4.2. 接続テスト
+
+Redis HTTP APIが正常に動作しているか確認：
 
 ```bash
 curl -X POST http://localhost:8079 \
@@ -120,7 +157,7 @@ curl -X POST http://localhost:8079 \
 
 ### 4.3. 環境変数
 
-Dev Containerを使用する場合、環境変数は自動的に設定されます。手動で起動する場合は、`.env.local`ファイルで以下を設定してください：
+`.env.local`ファイルで以下を設定してください：
 
 ```bash
 UPSTASH_REDIS_REST_URL=http://localhost:8079
@@ -146,27 +183,42 @@ cp apps/web/.env.local.sample apps/web/.env.local
 cp apps/admin/.env.local.sample apps/admin/.env.local
 ```
 
-サンプルファイルには、ローカルRedis（`http://localhost:8079`）を使用する設定がデフォルトで含まれています。MSWモックを使用したい場合は、コメントを参照して設定を変更してください。
+サンプルファイルには、ローカルRedis（`http://localhost:8079`）とローカルSupabase（`http://localhost:54321`）を使用する設定がデフォルトで含まれています。MSWモックを使用したい場合は、コメントを参照して設定を変更してください。
 
-### 5.2. AIエージェントおよびCI環境で推奨される環境変数
+### 5.2. ローカル開発で推奨される環境変数
 
-一貫した開発体験のため、特にAIエージェントやCI環境では、以下の環境変数を設定することが推奨されます。前のステップで作成した `.env.local` ファイルには、これらの値がすでに含まれています。
+ローカルでDocker Composeを使用する場合、以下の環境変数を設定することが推奨されます：
+
+```bash
+# Supabase (Docker Compose経由)
+export NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+export NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+export SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+
+# Upstash Redis (Docker Compose経由)
+export UPSTASH_REDIS_REST_TOKEN=local_development_token
+export UPSTASH_REDIS_REST_URL=http://localhost:8079
+
+# Next.js Turbopack (特定の環境向け)
+export NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1
+```
+
+### 5.3. AIエージェントおよびCI環境（MSW使用時）
+
+AIエージェントやCI環境でMSWを使用する場合は、以下の環境変数を設定します：
 
 ```bash
 # MSW
 export ENABLE_MSW=true
 
-# Supabase
+# Supabase (MSWモック)
 export NEXT_PUBLIC_SUPABASE_URL=https://fake.supabase.test
 export NEXT_PUBLIC_SUPABASE_ANON_KEY=fake-anon-key
 export SUPABASE_SERVICE_ROLE_KEY=fake-service-role-key
 
-# Upstash Redis
+# Upstash Redis (MSWモック)
 export UPSTASH_REDIS_REST_TOKEN=fake-upstash-token
 export UPSTASH_REDIS_REST_URL=https://fake.upstash.test
-
-# Next.js Turbopack (特定の環境向け)
-export NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1
 ```
 
 ## 6. MSWの初期化
@@ -192,3 +244,45 @@ pnpm run dev --filter=web
 ```
 
 お疲れ様でした！これで開発環境のセットアップは完了です。
+
+## トラブルシューティング
+
+### サービスが起動しない
+
+Docker Composeサービスのログを確認：
+
+```bash
+cd .devcontainer
+docker compose logs <service-name>
+```
+
+例: `docker compose logs db` でデータベースのログを確認
+
+### ポートの競合
+
+既に同じポートを使用しているサービスがある場合、`.devcontainer/compose.yml`のポートマッピングを変更できます。例えば、PostgreSQLのポートを変更：
+
+```yaml
+ports:
+  - "5433:5432"  # ホストポートを5433に変更
+```
+
+### データベース接続エラー
+
+1. データベースサービスが正常に起動しているか確認：
+   ```bash
+   docker compose ps db
+   ```
+
+2. データベースに直接接続してテスト：
+   ```bash
+   docker compose exec db psql -U supabase_admin -d postgres
+   ```
+
+### 型定義の生成に失敗
+
+データベーススキーマが正しく適用されているか確認し、型定義を再生成：
+
+```bash
+pnpm db:schema
+```
