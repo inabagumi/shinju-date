@@ -306,7 +306,7 @@ services:
 
   # Vector for log aggregation
   vector:
-    image: supabase/vector:0.28.1-alpine
+    image: timberio/vector:0.51.1-alpine
     volumes:
       - ./config/vector.yml:/etc/vector/vector.yml:ro
     command: ["--config", "/etc/vector/vector.yml"]
