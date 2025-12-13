@@ -155,7 +155,7 @@ services:
 
   # PostgREST API service
   rest:
-    image: postgrest/postgrest:v12.2.3
+    image: postgrest/postgrest:v12.2.12
     environment:
       PGRST_DB_URI: postgresql://authenticator:postgres@db:5432/postgres
       PGRST_DB_SCHEMAS: public,graphql_public
