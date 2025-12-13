@@ -1,6 +1,5 @@
-#!/bin/bash
-
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
 sudo npm uninstall -g pnpm
 sudo corepack enable
@@ -10,27 +9,21 @@ COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm --version
 # Install uv for Python development
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Create .env symlink for Docker Compose
-echo "Creating .env symlink..."
-ln -sf .env.development .env
+# Install workspace dependencies
+pnpm install --frozen-lockfile
 
-pnpm install
+# Apply migrations and seed via Supabase CLI
+echo "Resetting database using Supabase CLI (migrations + seed) ..."
+# Use explicit DB URL since `supabase start` is not used in Dev Container.
+# Customize via env: SUPABASE_DB_HOST, SUPABASE_DB_PORT, SUPABASE_DB_NAME, SUPABASE_DB_USER, SUPABASE_DB_PASS
+SUPABASE_DB_HOST="${SUPABASE_DB_HOST:-db}"
+SUPABASE_DB_PORT="${SUPABASE_DB_PORT:-5432}"
+SUPABASE_DB_NAME="${SUPABASE_DB_NAME:-postgres}"
+SUPABASE_DB_USER="${SUPABASE_DB_USER:-postgres}"
+SUPABASE_DB_PASS="${SUPABASE_DB_PASS:-postgres}"
+DB_URL="postgresql://${SUPABASE_DB_USER}:${SUPABASE_DB_PASS}@${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}"
+
+yes | pnpm exec supabase db reset --db-url "$DB_URL"
 
 # Generate type definitions from Supabase schema
-# Note: Database should be ready via docker-compose services
-# Wait for database to be ready before generating types
-echo "Waiting for database to be ready..."
-DB_HOST="${DB_HOST:-localhost}"
-DB_PORT="${DB_PORT:-54322}"
-for i in {1..30}; do
-  if pg_isready -h "$DB_HOST" -p "$DB_PORT" -U supabase_admin > /dev/null 2>&1; then
-    echo "Database is ready!"
-    break
-  fi
-  if [ $i -eq 30 ]; then
-    echo "Warning: Database did not become ready in time. Type generation may fail."
-  fi
-  sleep 2
-done
-
-pnpm typegen
+pnpm typegen || true

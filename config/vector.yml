@@ -19,12 +19,11 @@ transforms:
       .timestamp = del(.timestamp)
 
 sinks:
-  logflare_logs:
-    type: http
+  # Temporarily output to console for development.
+  # TODO: Resolve Vector HTTP sink 401 issues and re-enable Logflare sink
+  console_logs:
+    type: console
     inputs:
       - project_logs
-    uri: http://analytics:4000/api/logs?source_name=vector&api_key=dev_api_key
     encoding:
       codec: json
-    healthcheck:
-      enabled: true

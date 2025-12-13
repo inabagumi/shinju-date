@@ -67,15 +67,17 @@ cd ../.. # ルートディレクトリに戻る
 
 本番データベースへの影響を避けるため、開発にはローカルのSupabaseスタックを使用します。すべてのSupabaseサービスはDocker Composeで管理され、`supabase start`コマンドは不要です。
 
-### 3.1. 環境変数ファイルの準備
+### 3.1. 環境変数の準備
 
-Docker Composeは環境変数を`.env`ファイルから読み込みます。`.env.development`をリンクして作成します：
+開発用の既定値は `compose.yml` に含まれています。任意の値に差し替えたい場合は、Compose起動時に環境変数を指定してください（例）。
 
 ```bash
-ln -sf .env.development .env
+SUPABASE_ANON_KEY=... \
+SUPABASE_SERVICE_ROLE_KEY=... \
+SUPABASE_JWT_SECRET=... \
+SUPABASE_POSTGRES_PASSWORD=... \
+docker compose up -d
 ```
-
-**注意**: `.env`ファイルはGitで管理されません（`.gitignore`に含まれる）が、`.env.development`は開発用の安全な値として管理されています。
 
 ### 3.2. Supabaseサービスの起動
 

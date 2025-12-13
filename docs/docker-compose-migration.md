@@ -20,9 +20,6 @@ supabase status
 
 ### After (Docker Compose)
 ```bash
-# Create .env symlink (one-time setup)
-ln -sf .env.development .env
-
 # Start all services (from project root)
 docker compose up -d
 
@@ -43,21 +40,20 @@ If you have Supabase services running from the old setup:
 supabase stop
 ```
 
-### 2. Create Environment File Symlink
-
-Docker Compose requires a `.env` file to load environment variables:
-
-```bash
-# From project root
-ln -sf .env.development .env
-```
-
-This creates a symlink from `.env.development` (which is committed to Git with safe development values) to `.env` (which is gitignored).
-
-### 3. Start New Docker Compose Services
+### 2. Start New Docker Compose Services
 
 ```bash
 # From project root (not .devcontainer)
+docker compose up -d
+```
+
+Optional: override any Supabase secrets or DB credentials at runtime:
+
+```bash
+SUPABASE_ANON_KEY=... \
+SUPABASE_SERVICE_ROLE_KEY=... \
+SUPABASE_JWT_SECRET=... \
+SUPABASE_POSTGRES_PASSWORD=... \
 docker compose up -d
 ```
 

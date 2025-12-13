@@ -7,6 +7,16 @@ services:
     volumes:
       - ../..:/workspaces:cached
     command: sleep infinity
+    environment:
+      SUPABASE_ANON_KEY: "${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MjQzMjA5NDAsImV4cCI6NDc3OTk5NjU5OX0.cJmYw8b2sP8oGmT4QbYJqVZP5z9JcYQ9m1eYtKc0k8U}"
+      SUPABASE_SERVICE_ROLE_KEY: "${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTYyNDMyMDk0MCwiZXhwIjo0Nzc5OTk2NTk5fQ.lxYw2sWMRwWZ2DkZC1vO1cWq3Lw3eJvO3w2YxqZp1u3Q}"
+      SUPABASE_URL: http://kong:8000
+      UPSTASH_REDIS_REST_TOKEN: "${UPSTASH_REDIS_REST_TOKEN:-local-dev-token}"
+      UPSTASH_REDIS_REST_URL: http://serverless-redis-http:8079
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MjQzMjA5NDAsImV4cCI6NDc3OTk5NjU5OX0.cJmYw8b2sP8oGmT4QbYJqVZP5z9JcYQ9m1eYtKc0k8U}"
+      NEXT_PUBLIC_SUPABASE_URL: http://kong:8000
+      NEXT_PUBLIC_UPSTASH_REDIS_REST_TOKEN: "${UPSTASH_REDIS_REST_TOKEN:-local-dev-token}"
+      NEXT_PUBLIC_UPSTASH_REDIS_REST_URL: http://serverless-redis-http:8079
     depends_on:
       kong:
         condition: service_healthy

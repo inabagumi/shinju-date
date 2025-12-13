@@ -76,17 +76,21 @@
 
 #### Supabase ローカル環境
 
-ローカル開発では Docker Compose で管理される Supabase サービスを使用します：
+ローカル開発では Docker Compose で管理される Supabase サービスを使用します。必要に応じて起動時に環境変数を上書きできます。
 
 ```bash
-# 環境変数ファイルの準備（初回のみ）
-ln -sf .env.development .env
-
-# Supabaseサービスの起動（プロジェクトルートから）
+# そのまま起動（既定の開発用値が compose.yml に含まれています）
 docker compose up -d
 
 # サービスの状態確認
 docker compose ps
+
+# 任意の値に差し替えて起動する例
+SUPABASE_ANON_KEY=... \
+SUPABASE_SERVICE_ROLE_KEY=... \
+SUPABASE_JWT_SECRET=... \
+SUPABASE_POSTGRES_PASSWORD=... \
+docker compose up -d
 
 # データのインポート
 pnpm db:import
