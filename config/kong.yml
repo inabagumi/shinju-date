@@ -118,7 +118,7 @@ services:
               - "Authorization: $((headers.authorization ~= nil and headers.authorization:sub(1, 10) ~= 'Bearer sb_' and headers.authorization) or (headers.apikey == 'sb_secret_N7UND0UgjKTVK-Uodkm0Hg_xSvEMPvz' and 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU') or (headers.apikey == 'sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH' and 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0') or headers.apikey)"
   - name: realtime-v1-ws
     _comment: "Realtime: /realtime/v1/* -> ws://realtime:4000/socket/websocket"
-    url: http://realtime-dev:4000/socket
+    url: http://realtime:4000/socket
     protocol: ws
     routes:
       - name: realtime-v1-ws
@@ -134,7 +134,7 @@ services:
               - "apikey:$((query_params.apikey == 'sb_secret_N7UND0UgjKTVK-Uodkm0Hg_xSvEMPvz' and 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU') or (query_params.apikey == 'sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH' and 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0') or query_params.apikey)"
   - name: realtime-v1-rest
     _comment: "Realtime: /realtime/v1/* -> http://realtime:4000/api/*"
-    url: http://realtime-dev:4000/api
+    url: http://realtime:4000/api
     protocol: http
     routes:
       - name: realtime-v1-rest
@@ -228,7 +228,7 @@ services:
       - name: cors
   - name: analytics-v1
     _comment: "Analytics: /analytics/v1/* -> http://logflare:4000/*"
-    url: http://analytics:4000/
+    url: http://logflare:4000/
     routes:
       - name: analytics-v1-all
         strip_path: true
@@ -236,25 +236,26 @@ services:
           - /analytics/v1/
     plugins:
       - name: cors
-  - name: pooler-v2-ws
-    _comment: "Pooler: /pooler/v2/* -> ws://pooler:4000/v2/*"
-    url: http://supabase_pooler_shinju-date:4000/v2
-    protocol: ws
-    routes:
-      - name: pooler-v2-ws
-        strip_path: true
-        paths:
-          - /pooler/v2/
-    plugins:
-      - name: cors
-  - name: mcp
-    _comment: "MCP: /mcp -> http://studio:3000/api/mcp"
-    url: http://supabase_studio_shinju-date:3000/api/mcp
-    routes:
-      - name: mcp
-        strip_path: true
-        paths:
-          - /mcp
-    plugins:
-      - name: cors
+  # Note: pooler and studio routes commented out as these services are not included in this setup
+  # - name: pooler-v2-ws
+  #   _comment: "Pooler: /pooler/v2/* -> ws://pooler:4000/v2/*"
+  #   url: http://pooler:4000/v2
+  #   protocol: ws
+  #   routes:
+  #     - name: pooler-v2-ws
+  #       strip_path: true
+  #       paths:
+  #         - /pooler/v2/
+  #   plugins:
+  #     - name: cors
+  # - name: mcp
+  #   _comment: "MCP: /mcp -> http://studio:3000/api/mcp"
+  #   url: http://studio:3000/api/mcp
+  #   routes:
+  #     - name: mcp
+  #       strip_path: true
+  #       paths:
+  #         - /mcp
+  #   plugins:
+  #     - name: cors
 
