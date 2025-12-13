@@ -225,7 +225,7 @@ services:
 
   # Mailpit for email testing
   mailpit:
-    image: axllent/mailpit:v1.22.3
+    image: axllent/mailpit:v1.28.0
     ports:
       - "54324:8025"
     healthcheck:
