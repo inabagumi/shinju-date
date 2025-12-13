@@ -78,6 +78,7 @@ services:
       - db-data:/var/lib/postgresql/data
       - ../supabase/migrations:/docker-entrypoint-initdb.d/migrations:ro
       - ../supabase/seed.sql:/docker-entrypoint-initdb.d/seed.sql:ro
+      - ./init-db.sh:/docker-entrypoint-initdb.d/00-init.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U supabase_admin -d postgres"]
       interval: 5s
@@ -88,13 +89,12 @@ services:
   # Kong API Gateway
   kong:
     image: public.ecr.aws/supabase/kong:2.8.1
-    entrypoint: bash -c 'eval "echo \"$$(cat ~/kong.yml)\"" > /tmp/kong.yml && kong start --vv --run-migrations --v'
     ports:
       - "54321:8000"
       - "8443:8443"
     environment:
       KONG_DATABASE: "off"
-      KONG_DECLARATIVE_CONFIG: /tmp/kong.yml
+      KONG_DECLARATIVE_CONFIG: /home/kong/kong.yml
       KONG_DNS_ORDER: LAST,A,CNAME
       KONG_PLUGINS: request-transformer,cors
       KONG_PORT_MAPS: "54321:8000"
@@ -106,6 +106,8 @@ services:
       DASHBOARD_USERNAME: supabase
       DASHBOARD_PASSWORD: postgres
       POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./kong.yml:/home/kong/kong.yml:ro
     depends_on:
       db:
         condition: service_healthy
