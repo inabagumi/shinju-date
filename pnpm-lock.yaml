@@ -12,8 +12,8 @@ importers:
         specifier: 2.3.8
         version: 2.3.8
       supabase:
-        specifier: 2.67.0
-        version: 2.67.0
+        specifier: 2.67.1
+        version: 2.67.1
       turbo:
         specifier: 2.6.3
         version: 2.6.3
@@ -5168,8 +5168,8 @@ packages:
     engines: {node: '>=16 || 14 >=14.17'}
     hasBin: true
 
-  supabase@2.67.0:
-    resolution: {integrity: sha512-BVjkm+fCvEtMlLuhBcT+NqXT6yKHG7k6aEjvlupkTBeRQ3A1p78dOkFuFwAVDaOSTWm0sJy+L24or2iuD13Xuw==}
+  supabase@2.67.1:
+    resolution: {integrity: sha512-d/trGytTjB/Hi625zHh2RFFttjLOkSdRTsY/N1pjxoAfG0blDiHKqPwu12VJYitg4nzgjfhjnD3pLyfU0ko5vg==}
     engines: {npm: '>=8'}
     hasBin: true
 
@@ -10258,7 +10258,7 @@ snapshots:
       tinyglobby: 0.2.15
       ts-interface-checker: 0.1.13
 
-  supabase@2.67.0:
+  supabase@2.67.1:
     dependencies:
       bin-links: 6.0.0
       https-proxy-agent: 7.0.6
