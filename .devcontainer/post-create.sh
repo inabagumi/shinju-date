@@ -19,11 +19,13 @@ echo "Resetting database using Supabase CLI (migrations + seed) ..."
 SUPABASE_DB_HOST="${SUPABASE_DB_HOST:-db}"
 SUPABASE_DB_PORT="${SUPABASE_DB_PORT:-5432}"
 SUPABASE_DB_NAME="${SUPABASE_DB_NAME:-postgres}"
-SUPABASE_DB_USER="${SUPABASE_DB_USER:-postgres}"
+# Match Compose's DB superuser (supabase_admin) and default password
+# See compose.yml: POSTGRES_USER=supabase_admin, POSTGRES_PASSWORD=postgres
+SUPABASE_DB_USER="${SUPABASE_DB_USER:-supabase_admin}"
 SUPABASE_DB_PASS="${SUPABASE_DB_PASS:-postgres}"
-DB_URL="postgresql://${SUPABASE_DB_USER}:${SUPABASE_DB_PASS}@${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}"
+DB_URL="postgresql://${SUPABASE_DB_USER}:${SUPABASE_DB_PASS}@${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}?sslmode=disable"
 
-yes | pnpm exec supabase db reset --db-url "$DB_URL"
+pnpm exec supabase db reset --db-url "$DB_URL" --yes || true
 
 # Generate type definitions from Supabase schema
 pnpm typegen || true
