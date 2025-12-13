@@ -69,14 +69,14 @@ jobs:
           timeout 30 bash -c 'until docker compose ps rest | grep -q healthy; do sleep 2; done'
 
           echo "Waiting for Kong API Gateway (90s timeout - depends on multiple services)..."
-          timeout 90 bash -c 'until curl -f http://localhost:54321 > /dev/null 2>&1; do sleep 3; done'
+          timeout 90 bash -c 'until curl -f http://kong:8000 > /dev/null 2>&1; do sleep 3; done'
 
           echo "All services are healthy!"
 
       - name: Set environment variables for Supabase and Upstash
         run: |
-          echo "NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321" >> $GITHUB_ENV
-          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0" >> $GITHUB_ENV
-          echo "SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SUPABASE_URL=http://kong:8000" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MjQzMjA5NDAsImV4cCI6NDc3OTk5NjU5OX0.cJmYw8b2sP8oGmT4QbYJqVZP5z9JcYQ9m1eYtKc0k8U" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTYyNDMyMDk0MCwiZXhwIjo0Nzc5OTk2NTk5fQ.lxYw2sWMRwWZ2DkZC1vO1cWq3Lw3eJvO3w2YxqZp1u3Q" >> $GITHUB_ENV
           echo "UPSTASH_REDIS_REST_TOKEN=local_development_token" >> $GITHUB_ENV
-          echo "UPSTASH_REDIS_REST_URL=http://localhost:8079" >> $GITHUB_ENV
+          echo "UPSTASH_REDIS_REST_URL=http://serverless-redis-http:8079" >> $GITHUB_ENV
