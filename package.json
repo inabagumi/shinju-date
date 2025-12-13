@@ -21,7 +21,7 @@
     "build": "turbo build",
     "check": "biome check",
     "db:export": "./scripts/export-production-data.sh",
-    "db:schema": "supabase gen types typescript --local --schema public > packages/database/types/supabase.ts",
+    "db:schema": "./scripts/generate-types.sh",
     "db:import": "./scripts/import-data.sh",
     "dev": "turbo dev",
     "test": "turbo test",

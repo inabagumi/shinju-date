@@ -71,25 +71,35 @@
 1. GitHubリポジトリページで「Code」→「Codespaces」→「Create codespace on main」をクリック
 2. 自動的に以下が実行されます：
    - 依存関係のインストール（`pnpm install`）
-   - Supabaseローカル環境の起動（`supabase start`）
+   - Docker Compose経由でSupabase・Redisサービスが起動
    - パッケージのビルド
 
 #### Supabase ローカル環境
 
-ローカル開発では OSS版 Supabase を使用します：
+ローカル開発では Docker Compose で管理される Supabase サービスを使用します。必要に応じて起動時に環境変数を上書きできます。
 
 ```bash
-# Supabaseの状態確認
-supabase status
+# そのまま起動（既定の開発用値が compose.yml に含まれています）
+docker compose up -d
+
+# サービスの状態確認
+docker compose ps
+
+# 任意の値に差し替えて起動する例
+SUPABASE_ANON_KEY=... \
+SUPABASE_SERVICE_ROLE_KEY=... \
+SUPABASE_JWT_SECRET=... \
+SUPABASE_POSTGRES_PASSWORD=... \
+docker compose up -d
 
 # データのインポート
 pnpm db:import
 
-# データのエクスポート（本番環境から）
-pnpm db:export
+# サービスの停止
+docker compose down
 ```
 
-詳細は [Supabaseローカル開発ガイド](docs/supabase-local-development.md) を参照してください。
+詳細は [セットアップガイド](docs/setup-guide.md) を参照してください。
 
 ## コマンド
 

@@ -12,7 +12,7 @@
       "settings": {}
     }
   },
-  "dockerComposeFile": "compose.yml",
+  "dockerComposeFile": ["../compose.yml", "compose.yml"],
   "features": {
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
     "ghcr.io/devcontainers/features/python:1": {},
@@ -22,7 +22,7 @@
       "version": "1.6.4"
     }
   },
-  "forwardPorts": [3000, 4000, 8000, 8079, 10000, 54321, 54323],
+  "forwardPorts": [3000, 4000, 8000, 8079, 10000, 54321, 54323, 54324, 54327],
   "hostRequirements": {
     "cpus": 4,
     "memory": "8gb",
@@ -57,9 +57,22 @@
     "54323": {
       "label": "Supabase Studio",
       "onAutoForward": "notify"
+    },
+    "54324": {
+      "label": "Mailpit Web UI",
+      "onAutoForward": "notify"
+    },
+    "54327": {
+      "label": "Supabase Analytics",
+      "onAutoForward": "silent"
     }
   },
   "postCreateCommand": "./.devcontainer/post-create.sh",
+  "remoteEnv": {
+    "SUPABASE_ANON_KEY": "${localEnv:SUPABASE_ANON_KEY:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}",
+    "SUPABASE_SERVICE_ROLE_KEY": "${localEnv:SUPABASE_SERVICE_ROLE_KEY:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}",
+    "UPSTASH_REDIS_REST_TOKEN": "${localEnv:UPSTASH_REDIS_REST_TOKEN:local_development_token}"
+  },
   "service": "app",
   "waitFor": "postCreateCommand",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
