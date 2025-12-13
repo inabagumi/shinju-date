@@ -289,7 +289,7 @@ services:
 
   # Analytics service
   analytics:
-    image: supabase/logflare:1.26.25
+    image: supabase/logflare:1.27.0
     ports:
       - "54327:4000"
     environment:
