@@ -41,7 +41,7 @@ services:
 
   # PostgreSQL database
   db:
-    image: public.ecr.aws/supabase/postgres:17.6.1.064
+    image: supabase/postgres:17.6.1.064
     command:
       - postgres
       - -c
@@ -69,7 +69,7 @@ services:
 
   # Kong API Gateway
   kong:
-    image: public.ecr.aws/supabase/kong:2.8.1
+    image: supabase/kong:2.8.1
     ports:
       - "54321:8000"
     env_file:
@@ -109,7 +109,7 @@ services:
 
   # GoTrue authentication service
   auth:
-    image: public.ecr.aws/supabase/gotrue:v2.184.0
+    image: supabase/gotrue:v2.184.0
     environment:
       API_EXTERNAL_URL: http://localhost:54321
       GOTRUE_API_HOST: 0.0.0.0
@@ -150,7 +150,7 @@ services:
 
   # PostgREST API service
   rest:
-    image: public.ecr.aws/supabase/postgrest:v14.1
+    image: supabase/postgrest:v14.1
     environment:
       PGRST_DB_URI: postgresql://authenticator:postgres@db:5432/postgres
       PGRST_DB_SCHEMAS: public,graphql_public
@@ -166,7 +166,7 @@ services:
 
   # Realtime service
   realtime:
-    image: public.ecr.aws/supabase/realtime:v2.68.4
+    image: supabase/realtime:v2.68.4
     environment:
       DB_HOST: db
       DB_PORT: 5432
@@ -191,7 +191,7 @@ services:
 
   # Storage API service
   storage:
-    image: public.ecr.aws/supabase/storage-api:v1.33.0
+    image: supabase/storage-api:v1.33.0
     environment:
       ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
       SERVICE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
@@ -218,7 +218,7 @@ services:
 
   # Mailpit for email testing
   mailpit:
-    image: public.ecr.aws/supabase/mailpit:v1.22.3
+    image: supabase/mailpit:v1.22.3
     ports:
       - "54324:8025"
     healthcheck:
@@ -230,7 +230,7 @@ services:
 
   # Supabase Studio
   studio:
-    image: public.ecr.aws/supabase/studio:2025.12.09-sha-434634f
+    image: supabase/studio:2025.12.09-sha-434634f
     ports:
       - "54323:3000"
     environment:
@@ -251,7 +251,7 @@ services:
 
   # pg_meta for Studio database introspection
   pg-meta:
-    image: public.ecr.aws/supabase/postgres-meta:v0.95.1
+    image: supabase/postgres-meta:v0.95.1
     environment:
       PG_META_PORT: 8080
       PG_META_DB_HOST: db
@@ -266,7 +266,7 @@ services:
 
   # Edge Runtime for Supabase Functions
   edge-runtime:
-    image: public.ecr.aws/supabase/edge-runtime:v1.69.28
+    image: supabase/edge-runtime:v1.69.28
     environment:
       JWT_SECRET: super-secret-jwt-token-with-at-least-32-characters-long
       SUPABASE_URL: http://kong:8000
@@ -281,7 +281,7 @@ services:
 
   # Analytics service
   analytics:
-    image: public.ecr.aws/supabase/logflare:1.26.25
+    image: supabase/logflare:1.26.25
     ports:
       - "54327:4000"
     environment:
@@ -306,7 +306,7 @@ services:
 
   # Vector for log aggregation
   vector:
-    image: public.ecr.aws/supabase/vector:0.28.1-alpine
+    image: supabase/vector:0.28.1-alpine
     volumes:
       - ./config/vector.yml:/etc/vector/vector.yml:ro
     command: ["--config", "/etc/vector/vector.yml"]
