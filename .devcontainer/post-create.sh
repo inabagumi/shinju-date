@@ -10,6 +10,10 @@ COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm --version
 # Install uv for Python development
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
+# Create .env symlink for Docker Compose
+echo "Creating .env symlink..."
+ln -sf .env.development .env
+
 pnpm install
 
 # Generate type definitions from Supabase schema

@@ -79,19 +79,19 @@
 ローカル開発では Docker Compose で管理される Supabase サービスを使用します：
 
 ```bash
-# Supabaseサービスの起動（.devcontainerディレクトリから）
-cd .devcontainer
+# 環境変数ファイルの準備（初回のみ）
+ln -sf .env.development .env
+
+# Supabaseサービスの起動（プロジェクトルートから）
 docker compose up -d
 
 # サービスの状態確認
 docker compose ps
 
-# データのインポート（リポジトリルートから）
-cd ..
+# データのインポート
 pnpm db:import
 
 # サービスの停止
-cd .devcontainer
 docker compose down
 ```
 

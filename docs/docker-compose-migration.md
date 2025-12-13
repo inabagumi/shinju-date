@@ -20,8 +20,10 @@ supabase status
 
 ### After (Docker Compose)
 ```bash
-# Start all services
-cd .devcontainer
+# Create .env symlink (one-time setup)
+ln -sf .env.development .env
+
+# Start all services (from project root)
 docker compose up -d
 
 # Check status
@@ -41,14 +43,25 @@ If you have Supabase services running from the old setup:
 supabase stop
 ```
 
-### 2. Start New Docker Compose Services
+### 2. Create Environment File Symlink
+
+Docker Compose requires a `.env` file to load environment variables:
 
 ```bash
-cd .devcontainer
+# From project root
+ln -sf .env.development .env
+```
+
+This creates a symlink from `.env.development` (which is committed to Git with safe development values) to `.env` (which is gitignored).
+
+### 3. Start New Docker Compose Services
+
+```bash
+# From project root (not .devcontainer)
 docker compose up -d
 ```
 
-### 3. Verify Services Are Running
+### 4. Verify Services Are Running
 
 ```bash
 docker compose ps
@@ -56,7 +69,7 @@ docker compose ps
 
 You should see all services in "running" or "healthy" state.
 
-### 4. Access Supabase Studio
+### 5. Access Supabase Studio
 
 Open http://localhost:54323 in your browser to access Supabase Studio.
 
