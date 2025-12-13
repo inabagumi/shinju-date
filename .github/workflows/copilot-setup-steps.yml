@@ -81,8 +81,14 @@ jobs:
 
       - name: Set environment variables for Supabase and Upstash
         run: |
-          echo 'NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321' >> $GITHUB_ENV
-          echo 'NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' >> $GITHUB_ENV
-          echo 'SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU' >> $GITHUB_ENV
-          echo 'UPSTASH_REDIS_REST_TOKEN=local_development_token' >> $GITHUB_ENV
-          echo 'UPSTASH_REDIS_REST_URL=http://localhost:8079' >> $GITHUB_ENV
+          # Load common variables from .env.development
+          set -a
+          source .env.development
+          set +a
+          
+          # Export for GitHub Actions
+          echo "NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${ANON_KEY}" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}" >> $GITHUB_ENV
+          echo "UPSTASH_REDIS_REST_TOKEN=local_development_token" >> $GITHUB_ENV
+          echo "UPSTASH_REDIS_REST_URL=http://localhost:8079" >> $GITHUB_ENV
