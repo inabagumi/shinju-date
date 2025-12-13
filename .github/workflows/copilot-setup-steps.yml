@@ -66,6 +66,9 @@ jobs:
       - name: Set Next.js Turbopack TLS environment variable
         run: echo 'NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1' >> $GITHUB_ENV
 
+      - name: Create .env symlink for Docker Compose
+        run: ln -sf .env.development .env
+
       - name: Start Supabase services via Docker Compose
         run: docker compose up -d db kong mailpit
           
