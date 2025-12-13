@@ -60,19 +60,6 @@ jobs:
       - name: Start Supabase services via Docker Compose
         run: docker compose up -d
 
-      - name: Wait for services to be healthy
-        run: |
-          echo "Waiting for database (60s timeout - initial startup may take time)..."
-          timeout 60 bash -c 'until docker compose exec -T db pg_isready -U supabase_admin; do sleep 2; done'
-
-          echo "Waiting for PostgREST API (30s timeout)..."
-          timeout 30 bash -c 'until docker compose ps rest | grep -q healthy; do sleep 2; done'
-
-          echo "Waiting for Kong API Gateway (90s timeout - depends on multiple services)..."
-          timeout 90 bash -c 'until curl -f http://kong:8000 > /dev/null 2>&1; do sleep 3; done'
-
-          echo "All services are healthy!"
-
       - name: Set environment variables for Supabase and Upstash
         run: |
           echo "NEXT_PUBLIC_SUPABASE_URL=http://kong:8000" >> $GITHUB_ENV
