@@ -72,7 +72,6 @@ cd ../.. # ルートディレクトリに戻る
 Docker Composeを使用してローカルのSupabaseサービスを起動します。
 
 ```bash
-cd .devcontainer
 docker compose up -d
 ```
 
@@ -119,7 +118,6 @@ pnpm db:import
 開発作業を終了する際は、サービスを停止できます：
 
 ```bash
-cd .devcontainer
 docker compose down
 ```
 
@@ -140,7 +138,7 @@ Docker Composeを使用する場合（Dev Containerを含む）、以下のサ�
 - **Redis 8** (port 6379): ネイティブRedisプロトコル
 - **Redis HTTP API** (port 8079): Upstash互換REST API
 
-これらは`.devcontainer/compose.yml`で定義されており、`docker compose up -d`を実行すると自動的に起動します。
+これらは`compose.yml`で定義されており、`docker compose up -d`を実行すると自動的に起動します。
 
 ### 4.2. 接続テスト
 
@@ -252,7 +250,6 @@ pnpm run dev --filter=web
 Docker Composeサービスのログを確認：
 
 ```bash
-cd .devcontainer
 docker compose logs <service-name>
 ```
 
@@ -260,7 +257,7 @@ docker compose logs <service-name>
 
 ### ポートの競合
 
-既に同じポートを使用しているサービスがある場合、`.devcontainer/compose.yml`のポートマッピングを変更できます。例えば、PostgreSQLのポートを変更：
+既に同じポートを使用しているサービスがある場合、`compose.yml`のポートマッピングを変更できます。例えば、PostgreSQLのポートを変更：
 
 ```yaml
 ports:

@@ -10,6 +10,23 @@
 
 **重要**: 開発環境のセットアップ手順は、[docs/setup-guide.md](docs/setup-guide.md) に集約されています。作業を開始する前に、必ずこのガイドを参照してください。
 
+### Dev Container設定の変更時の注意
+
+Dev Container設定（`.devcontainer/`）を変更する場合は、**必ず**`@devcontainers/cli`を使用してローカルでテストしてください。
+
+```bash
+# CLIのインストール
+npm install -g @devcontainers/cli
+
+# Dev Containerのビルドとテスト
+devcontainer up --workspace-folder .
+
+# テスト後のクリーンアップ
+devcontainer down --workspace-folder .
+```
+
+詳細は[CONTRIBUTING.md](CONTRIBUTING.md)の「Dev Container設定の開発とデバッグ」セクションを参照してください。
+
 ## AIエージェントの種類と役割
 
 ### 対話・計画型エージェント（例: Google Gemini）

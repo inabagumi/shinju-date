@@ -16,10 +16,8 @@ NC='\033[0m' # No Color
 
 echo -e "${GREEN}Generating TypeScript types from database schema...${NC}"
 
-DEVCONTAINER_DIR="${PROJECT_ROOT}/.devcontainer"
-
 # Check if database is running via Docker Compose
-if docker compose -f "${DEVCONTAINER_DIR}/compose.yml" ps db 2>/dev/null | grep -q "Up\|running"; then
+if docker compose ps db 2>/dev/null | grep -q "Up\|running"; then
     echo -e "${GREEN}Using Docker Compose database${NC}"
     
     # Use supabase CLI to generate types from the local Docker database
@@ -37,6 +35,6 @@ if docker compose -f "${DEVCONTAINER_DIR}/compose.yml" ps db 2>/dev/null | grep 
     fi
 else
     echo -e "${RED}Error: Database is not running via Docker Compose${NC}"
-    echo -e "${YELLOW}Please start services: cd .devcontainer && docker compose up -d${NC}"
+    echo -e "${YELLOW}Please start services: docker compose up -d${NC}"
     exit 1
 fi

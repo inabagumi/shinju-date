@@ -110,10 +110,9 @@ fi
 
 # Check if database is accessible via Docker Compose
 echo -e "${YELLOW}Checking database status...${NC}"
-DEVCONTAINER_DIR="${PROJECT_ROOT}/.devcontainer"
 
 # Try to check if database is running via Docker Compose
-if docker compose -f "${DEVCONTAINER_DIR}/compose.yml" ps db 2>/dev/null | grep -q "Up\|running"; then
+if docker compose ps db 2>/dev/null | grep -q "Up\|running"; then
     echo -e "${GREEN}Database is running via Docker Compose${NC}"
     DB_HOST="localhost"
     DB_PORT="54322"
@@ -123,7 +122,7 @@ if docker compose -f "${DEVCONTAINER_DIR}/compose.yml" ps db 2>/dev/null | grep 
     DB_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
 else
     echo -e "${YELLOW}Database not found via Docker Compose. Please start services:${NC}"
-    echo -e "${YELLOW}  cd .devcontainer && docker compose up -d${NC}"
+    echo -e "${YELLOW}  docker compose up -d${NC}"
     exit 1
 fi
 

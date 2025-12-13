@@ -1,22 +1,26 @@
 # Dev Container Configuration
 
-このディレクトリには、SHINJU DATEプロジェクトのDocker Compose ベースの開発環境設定が含まれています。
+このディレクトリには、SHINJU DATEプロジェクトのDev Container設定が含まれています。
 
 ## 概要
 
-このプロジェクトでは、`supabase start`コマンドの代わりにDocker Composeを使用してSupabaseサービスを直接管理します。これにより、サービス起動の安定性と再現性が向上します。
+このプロジェクトでは、Docker Composeを使用してSupabaseサービスとRedisを管理します。サービス定義は2つのファイルに分かれています：
+
+- **`../compose.yml`（ルート）**: Supabase、Redis等の共有開発サービス
+- **`.devcontainer/compose.yml`**: Dev Container専用のappサービス
 
 ## ファイル構成
 
-- **compose.yml** - すべての開発サービスの定義（Supabase、Redis、アプリケーション）
 - **devcontainer.json** - VSCode Dev Container / GitHub Codespaces の設定
+- **compose.yml** - Dev Container専用サービス（appのみ）
 - **post-create.sh** - コンテナ作成後に実行される初期化スクリプト
-- **kong.yml** - Kong API Gateway の設定ファイル
-- **vector.yml** - Vector ログ集約サービスの設定
-- **init-db.sh** - データベース初期化スクリプト（マイグレーション適用）
-- **.env.example** - 環境変数のサンプルファイル
+- **config/kong.yml** - Kong API Gateway の設定ファイル
+- **config/vector.yml** - Vector ログ集約サービスの設定
+- **config/init-db.sh** - データベース初期化スクリプト（マイグレーション適用）
 
 ## サービス一覧
+
+サービスは`../compose.yml`（ルート）で定義されています。
 
 ### アプリケーション開発
 
@@ -47,7 +51,6 @@
 ### サービスの起動
 
 ```bash
-cd .devcontainer
 docker compose up -d
 ```
 
@@ -106,7 +109,6 @@ docker compose down -v
 
 3. データベースを再作成してマイグレーションを適用
    ```bash
-   cd .devcontainer
    docker compose down -v  # データをすべて削除
    docker compose up -d    # 再起動してマイグレーションを適用
    ```

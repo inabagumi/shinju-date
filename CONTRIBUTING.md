@@ -8,6 +8,38 @@ SHINJU DATEプロジェクトへの貢献をご検討いただき、ありがと
 
 このガイドには、前提条件、依存関係のインストール、Supabaseのローカル設定、開発サーバーの起動方法などが含まれています。
 
+## Dev Container設定の開発とデバッグ
+
+Dev Container設定（`.devcontainer/`）を変更する場合は、`@devcontainers/cli`を使用してローカルでテストしてください。
+
+### Dev Containers CLIのインストール
+
+```bash
+npm install -g @devcontainers/cli
+```
+
+### Dev Container設定のテスト
+
+```bash
+# Dev Containerをビルドしてテスト
+devcontainer up --workspace-folder .
+
+# Dev Container内でコマンドを実行
+devcontainer exec --workspace-folder . pnpm install
+
+# Dev Containerを停止
+devcontainer down --workspace-folder .
+```
+
+### 変更すべき設定ファイル
+
+- `.devcontainer/devcontainer.json` - Dev Container本体の設定
+- `.devcontainer/compose.yml` - Dev Container専用サービス（appのみ）
+- `compose.yml`（ルート） - Supabase、Redis等の共有サービス
+- `.devcontainer/config/` - Kong、Vector等の設定ファイル
+
+詳細は[.devcontainer/README.md](.devcontainer/README.md)を参照してください。
+
 ## コーディング規約
 
 ### JavaScript/TypeScript

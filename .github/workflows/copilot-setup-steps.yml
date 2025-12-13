@@ -16,6 +16,19 @@ jobs:
     permissions:
       contents: read
 
+    services:
+      redis:
+        image: redis:8.4.0-bookworm
+
+      serverless-redis-http:
+        image: hiett/serverless-redis-http:0.0.10
+        ports:
+          - 8079:80
+        env:
+          SRH_MODE: env
+          SRH_TOKEN: local_development_token
+          SRH_CONNECTION_STRING: redis://redis:6379
+
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
@@ -53,21 +66,16 @@ jobs:
       - name: Set Next.js Turbopack TLS environment variable
         run: echo 'NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1' >> $GITHUB_ENV
 
-      - name: Start Supabase and Redis services via Docker Compose
-        run: |
-          cd .devcontainer
-          docker compose up -d db kong redis serverless-redis-http mailpit
+      - name: Start Supabase services via Docker Compose
+        run: docker compose up -d db kong mailpit
           
       - name: Wait for services to be healthy
         run: |
           echo "Waiting for database (60s timeout - initial startup may take time)..."
-          timeout 60 bash -c 'until docker compose -f .devcontainer/compose.yml exec -T db pg_isready -U supabase_admin; do sleep 2; done'
+          timeout 60 bash -c 'until docker compose exec -T db pg_isready -U supabase_admin; do sleep 2; done'
           
           echo "Waiting for Kong API Gateway (60s timeout - depends on multiple services)..."
           timeout 60 bash -c 'until curl -f http://localhost:54321/health > /dev/null 2>&1; do sleep 2; done'
-          
-          echo "Waiting for Redis (30s timeout - quick startup)..."
-          timeout 30 bash -c 'until docker compose -f .devcontainer/compose.yml exec -T redis redis-cli ping > /dev/null 2>&1; do sleep 2; done'
           
           echo "All services are healthy!"
 
