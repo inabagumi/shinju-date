@@ -14,6 +14,11 @@
 - **devcontainer.json** - VSCode Dev Container / GitHub Codespaces の設定
 - **compose.yml** - Dev Container専用サービス（appのみ）
 - **post-create.sh** - コンテナ作成後に実行される初期化スクリプト
+
+### ルートレベルの設定ファイル
+
+以下のファイルはプロジェクトルートの`config/`ディレクトリに配置されています：
+
 - **config/kong.yml** - Kong API Gateway の設定ファイル
 - **config/vector.yml** - Vector ログ集約サービスの設定
 - **config/init-db.sh** - データベース初期化スクリプト（マイグレーション適用）

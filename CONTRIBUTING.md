@@ -36,7 +36,7 @@ devcontainer down --workspace-folder .
 - `.devcontainer/devcontainer.json` - Dev Container本体の設定
 - `.devcontainer/compose.yml` - Dev Container専用サービス（appのみ）
 - `compose.yml`（ルート） - Supabase、Redis等の共有サービス
-- `.devcontainer/config/` - Kong、Vector等の設定ファイル
+- `config/` - Kong、Vector等の設定ファイル
 
 詳細は[.devcontainer/README.md](.devcontainer/README.md)を参照してください。
 

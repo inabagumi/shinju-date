@@ -50,19 +50,16 @@ services:
       - log_min_messages=fatal
     ports:
       - "54322:5432"
+    env_file:
+      - .env.development
     environment:
-      POSTGRES_PASSWORD: postgres
       POSTGRES_HOST: /var/run/postgresql
-      POSTGRES_USER: supabase_admin
-      POSTGRES_DB: postgres
       POSTGRES_INITDB_ARGS: --allow-group-access --locale-provider=icu --encoding=UTF-8 --icu-locale=en_US.UTF-8
-      JWT_SECRET: super-secret-jwt-token-with-at-least-32-characters-long
-      JWT_EXP: 3600
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./supabase/migrations:/docker-entrypoint-initdb.d/migrations:ro
       - ./supabase/seed.sql:/docker-entrypoint-initdb.d/seed.sql:ro
-      - ./.devcontainer/config/init-db.sh:/docker-entrypoint-initdb.d/00-init.sh:ro
+      - ./config/init-db.sh:/docker-entrypoint-initdb.d/00-init.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U supabase_admin -d postgres"]
       interval: 5s
@@ -75,6 +72,8 @@ services:
     image: public.ecr.aws/supabase/kong:2.8.1
     ports:
       - "54321:8000"
+    env_file:
+      - .env.development
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /home/kong/kong.yml
@@ -84,13 +83,12 @@ services:
       KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: 160k
       KONG_NGINX_PROXY_PROXY_BUFFERS: 64 160k
       KONG_NGINX_WORKER_PROCESSES: 1
-      SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
-      SUPABASE_SERVICE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}
       DASHBOARD_USERNAME: supabase
-      DASHBOARD_PASSWORD: postgres
-      POSTGRES_PASSWORD: postgres
+      DASHBOARD_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ./.devcontainer/config/kong.yml:/home/kong/kong.yml:ro
+      - ./config/kong.yml:/home/kong/kong.yml:ro
     depends_on:
       db:
         condition: service_healthy
@@ -310,7 +308,7 @@ services:
   vector:
     image: public.ecr.aws/supabase/vector:0.28.1-alpine
     volumes:
-      - ./.devcontainer/config/vector.yml:/etc/vector/vector.yml:ro
+      - ./config/vector.yml:/etc/vector/vector.yml:ro
     command: ["--config", "/etc/vector/vector.yml"]
     depends_on:
       analytics:
