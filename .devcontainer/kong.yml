@@ -6,6 +6,13 @@
 # across services intentionally to handle different API key formats
 # (sb_publishable_ and sb_secret_ prefixes) for each route independently.
 #
+# JWT Tokens: The embedded JWT tokens (eyJhbGciOiJIUzI1NiI...) are the
+# standard Supabase demo tokens used for local development. These are:
+# - Anon Key: eyJhbGci...CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+# - Service Role: eyJhbGci...EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+# These tokens are safe for local development and match the standard
+# Supabase local development JWT secret. DO NOT use these in production.
+#
 # DO NOT EDIT manually unless you understand the implications.
 # To regenerate from Supabase CLI template, run:
 #   docker exec supabase_kong_<project> cat /home/kong/kong.yml

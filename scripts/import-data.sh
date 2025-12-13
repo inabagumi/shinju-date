@@ -119,7 +119,8 @@ if docker compose -f "${DEVCONTAINER_DIR}/compose.yml" ps db 2>/dev/null | grep 
     DB_PORT="54322"
     DB_USER="supabase_admin"
     DB_NAME="postgres"
-    DB_URL="postgresql://${DB_USER}:postgres@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+    DB_PASSWORD="${POSTGRES_PASSWORD:-postgres}"
+    DB_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
 else
     echo -e "${YELLOW}Database not found via Docker Compose. Please start services:${NC}"
     echo -e "${YELLOW}  cd .devcontainer && docker compose up -d${NC}"
@@ -129,7 +130,6 @@ fi
 echo -e "${YELLOW}Importing data into local database...${NC}"
 
 # Import the data using password from environment or default
-DB_PASSWORD="${POSTGRES_PASSWORD:-postgres}"
 PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" < "$DATA_FILE"
 
 echo -e "${GREEN}Data import completed successfully!${NC}"
