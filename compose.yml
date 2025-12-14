@@ -58,11 +58,13 @@ services:
       POSTGRES_PASSWORD: ${SUPABASE_POSTGRES_PASSWORD:-postgres}
       POSTGRES_USER: ${SUPABASE_POSTGRES_USER:-supabase_admin}
       POSTGRES_DB: ${SUPABASE_POSTGRES_DB:-postgres}
+      JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      JWT_EXP: 3600
     volumes:
       - db-data:/var/lib/postgresql/data
       # Initialization is handled via Supabase CLI in Dev Container postCreate.
       # Avoid mounting multiple init scripts to prevent unintended production-only changes.
-      - ./supabase/dev-init.sql:/docker-entrypoint-initdb.d/00-dev-init.sql:ro
+      - ./supabase/dev-init.sql:/docker-entrypoint-initdb.d/migrations/99-dev-init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U supabase_admin -d postgres"]
       interval: 5s
@@ -72,7 +74,7 @@ services:
 
   # Kong API Gateway
   kong:
-    image: kong:3.9.1
+    image: kong:2.8.5
     ports:
       - "54321:8000"
     environment:
@@ -84,14 +86,10 @@ services:
       KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: 160k
       KONG_NGINX_PROXY_PROXY_BUFFERS: 64 160k
       KONG_NGINX_WORKER_PROCESSES: 1
-      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MjQzMjA5NDAsImV4cCI6NDc3OTk5NjU5OX0.cJmYw8b2sP8oGmT4QbYJqVZP5z9JcYQ9m1eYtKc0k8U}
-      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTYyNDMyMDk0MCwiZXhwIjo0Nzc5OTk2NTk5fQ.lxYw2sWMRwWZ2DkZC1vO1cWq3Lw3eJvO3w2YxqZp1u3Q}
-      SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY:-sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH}
-      SUPABASE_SERVICE_API_KEY: ${SUPABASE_SERVICE_API_KEY:-sb_secret_N7UND0UgjKTVK-Uodkm0Hg_xSvEMPvz}
-      SUPABASE_ANON_JWT: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MjQzMjA5NDAsImV4cCI6NDc3OTk5NjU5OX0.cJmYw8b2sP8oGmT4QbYJqVZP5z9JcYQ9m1eYtKc0k8U}
-      SUPABASE_SERVICE_ROLE_JWT: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTYyNDMyMDk0MCwiZXhwIjo0Nzc5OTk2NTk5fQ.lxYw2sWMRwWZ2DkZC1vO1cWq3Lw3eJvO3w2YxqZp1u3Q}
-      DASHBOARD_USERNAME: supabase
-      DASHBOARD_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg}
+      SUPABASE_ANON_JWT: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}
+      SUPABASE_SERVICE_ROLE_JWT: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg}
     volumes:
       - ./config/kong.yml:/home/kong/kong.yml:ro
     depends_on:
@@ -200,10 +198,10 @@ services:
   storage:
     image: supabase/storage-api:v1.33.0
     environment:
-      ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MjQzMjA5NDAsImV4cCI6NDc3OTk5NjU5OX0.cJmYw8b2sP8oGmT4QbYJqVZP5z9JcYQ9m1eYtKc0k8U}
-      SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTYyNDMyMDk0MCwiZXhwIjo0Nzc5OTk2NTk5fQ.lxYw2sWMRwWZ2DkZC1vO1cWq3Lw3eJvO3w2YxqZp1u3Q}
+      ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}
+      SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg}
+      PGRST_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
       AUTH_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
-      JWT_JWKS: '{"keys":[{"kty":"oct","k":"c3VwZXItc2VjcmV0LWp3dC10b2tlbi13aXRoLWF0LWxlYXN0LTMyLWNoYXJhY3RlcnMtbG9uZw"}]}'
       DATABASE_URL: postgresql://supabase_storage_admin:postgres@db:5432/postgres
       FILE_SIZE_LIMIT: 52428800
       STORAGE_BACKEND: file
@@ -247,8 +245,8 @@ services:
       DEFAULT_PROJECT_NAME: shinju-date
       SUPABASE_URL: http://kong:8000
       SUPABASE_PUBLIC_URL: http://localhost:54321
-      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MjQzMjA5NDAsImV4cCI6NDc3OTk5NjU5OX0.cJmYw8b2sP8oGmT4QbYJqVZP5z9JcYQ9m1eYtKc0k8U}
-      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTYyNDMyMDk0MCwiZXhwIjo0Nzc5OTk2NTk5fQ.lxYw2sWMRwWZ2DkZC1vO1cWq3Lw3eJvO3w2YxqZp1u3Q}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg}
     depends_on:
       kong:
         condition: service_healthy
@@ -277,8 +275,8 @@ services:
     environment:
       JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
       SUPABASE_URL: http://kong:8000
-      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTYyNDMyMDk0MCwiZXhwIjo0Nzc5OTk2NTk5fQ.lxYw2sWMRwWZ2DkZC1vO1cWq3Lw3eJvO3w2YxqZp1u3Q}
-      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTYyNDMyMDk0MCwiZXhwIjo0Nzc5OTk2NTk5fQ.lxYw2sWMRwWZ2DkZC1vO1cWq3Lw3eJvO3w2YxqZp1u3Q}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MjQzMjA5NDAsImV4cCI6NDc3OTk5NjU5OX0.5qDZP71NL10yJyE_pdkoAQAxtPQf43-sXlZMTzhPO6s}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTYyNDMyMDk0MCwiZXhwIjo0Nzc5OTk2NTk5fQ.B0N14xVx0c4PBcSUkkdYiTl6f8VvfR5tsxwURb1ooJU}
       SUPABASE_DB_URL: postgresql://postgres:postgres@db:5432/postgres
       VERIFY_JWT: false
     depends_on:
