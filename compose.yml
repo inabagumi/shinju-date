@@ -74,7 +74,7 @@ services:
 
   # Kong API Gateway
   kong:
-    image: kong:2.8.5
+    image: kong:3.9.1
     ports:
       - "54321:8000"
     environment:
