@@ -25,7 +25,12 @@ SUPABASE_DB_USER="${SUPABASE_DB_USER:-supabase_admin}"
 SUPABASE_DB_PASS="${SUPABASE_DB_PASS:-postgres}"
 DB_URL="postgresql://${SUPABASE_DB_USER}:${SUPABASE_DB_PASS}@${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}?sslmode=disable"
 
-pnpm exec supabase db reset --db-url "$DB_URL" --yes || true
+# Try Supabase CLI first, fall back to psql-based migration import if it fails
+if ! pnpm exec supabase db reset --db-url "$DB_URL" --yes; then
+    echo "Supabase CLI reset failed, falling back to psql-based migration import..."
+    export SUPABASE_DB_HOST SUPABASE_DB_PORT SUPABASE_DB_NAME SUPABASE_DB_USER SUPABASE_DB_PASS
+    ./scripts/apply-migrations.sh || echo "Warning: Migration import failed"
+fi
 
 # Generate type definitions
 pnpm typegen || true
