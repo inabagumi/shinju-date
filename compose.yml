@@ -62,7 +62,7 @@ services:
       - db-data:/var/lib/postgresql/data
       # Initialization is handled via Supabase CLI in Dev Container postCreate.
       # Avoid mounting multiple init scripts to prevent unintended production-only changes.
-      - ./supabase/dev-init.sql:/docker-entrypoint-initdb.d/00-dev-init.sql:ro
+      - ./supabase/dev-init.sql:/docker-entrypoint-initdb.d/migrations/99-dev-init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U supabase_admin -d postgres"]
       interval: 5s

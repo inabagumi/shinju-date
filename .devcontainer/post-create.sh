@@ -27,5 +27,5 @@ DB_URL="postgresql://${SUPABASE_DB_USER}:${SUPABASE_DB_PASS}@${SUPABASE_DB_HOST}
 
 pnpm exec supabase db reset --db-url "$DB_URL" --yes || true
 
-# Generate type definitions from Supabase schema
+# Generate type definitions
 pnpm typegen || true
