@@ -16,10 +16,6 @@ jobs:
     permissions:
       contents: read
 
-    services:
-      redis:
-        image: redis:8.4.0-bookworm@sha256:3906b477e4b60250660573105110c28bfce93b01243eab37610a484daebceb04
-
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
@@ -62,11 +58,11 @@ jobs:
 
       - name: Set environment variables for Supabase and Upstash
         run: |
-          echo "NEXT_PUBLIC_SUPABASE_URL=http://kong:8000" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321" >> $GITHUB_ENV
           echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8" >> $GITHUB_ENV
           echo "SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg" >> $GITHUB_ENV
           echo "UPSTASH_REDIS_REST_TOKEN=local-dev-token" >> $GITHUB_ENV
-          echo "UPSTASH_REDIS_REST_URL=http://serverless-redis-http:80" >> $GITHUB_ENV
+          echo "UPSTASH_REDIS_REST_URL=http://localhost:8079" >> $GITHUB_ENV
 
       - name: Reset Supabase database
         run: |
