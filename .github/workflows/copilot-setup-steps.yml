@@ -18,7 +18,7 @@ jobs:
 
     services:
       redis:
-        image: redis:8.4.0-bookworm
+        image: redis:8.4.0-bookworm@sha256:3906b477e4b60250660573105110c28bfce93b01243eab37610a484daebceb04
 
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
