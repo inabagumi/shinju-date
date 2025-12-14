@@ -6,6 +6,7 @@ ALTER ROLE postgres WITH SUPERUSER;
 
 ALTER DATABASE postgres SET "app.settings.jwt_secret" TO :'jwt_secret';
 ALTER DATABASE postgres SET "app.settings.jwt_exp" TO :'jwt_exp';
+ALTER DATABASE postgres SET search_path TO public, extensions;
 
 ALTER USER postgres WITH PASSWORD :'pgpass';
 ALTER USER authenticator WITH PASSWORD :'pgpass';
