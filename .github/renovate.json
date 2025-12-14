@@ -9,11 +9,11 @@
       "matchPackageNames": ["@tailwindcss/**", "tailwindcss"]
     },
     {
+      "dependencyDashboardApproval": true,
       "description": "Require manual approval for Kong major version upgrades via Dependency Dashboard",
       "matchDatasources": ["docker"],
       "matchPackageNames": ["kong"],
-      "matchUpdateTypes": ["major"],
-      "dependencyDashboardApproval": true
+      "matchUpdateTypes": ["major"]
     }
   ],
   "reviewers": ["ykzts"]
