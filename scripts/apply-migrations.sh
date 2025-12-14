@@ -47,23 +47,26 @@ for migration_file in "${MIGRATION_FILES[@]}"; do
     filename=$(basename "$migration_file")
     echo -e "${YELLOW}Applying migration: ${filename}${NC}"
     
-    if PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$migration_file" -v ON_ERROR_STOP=1 > /dev/null 2>&1; then
+    # Run migration and capture both stdout and stderr to suppress verbose output
+    # but preserve it for error display if needed
+    if output=$(PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$migration_file" -v ON_ERROR_STOP=1 2>&1); then
         echo -e "${GREEN}✓ Successfully applied: ${filename}${NC}"
         APPLIED=$((APPLIED + 1))
     else
+        exit_code=$?
         echo -e "${RED}✗ Failed to apply: ${filename}${NC}"
         FAILED=$((FAILED + 1))
         
-        # Show detailed error for debugging
-        echo -e "${RED}Attempting to show error details:${NC}"
-        PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$migration_file" -v ON_ERROR_STOP=1 || true
+        # Show the captured error output
+        echo -e "${RED}Error details:${NC}"
+        echo "$output" >&2
         
         # Decide whether to continue or stop
         if [ "${CONTINUE_ON_ERROR:-false}" = "true" ]; then
             echo -e "${YELLOW}Continuing despite error (CONTINUE_ON_ERROR=true)${NC}"
         else
             echo -e "${RED}Stopping due to error. Set CONTINUE_ON_ERROR=true to continue despite errors.${NC}"
-            exit 1
+            exit "$exit_code"
         fi
     fi
 done
