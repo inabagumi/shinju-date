@@ -2,7 +2,7 @@ name: Auto Label
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read
@@ -22,19 +22,62 @@ jobs:
               pull_number: context.issue.number,
             });
 
+            // Skip labeling for draft PRs
+            if (pr.draft) {
+              console.log('PR is in draft state. Skipping auto-labeling.');
+              return;
+            }
+
             const { data: files } = await github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.issue.number,
             });
 
-            // Calculate statistics
-            const fileCount = files.length;
-            const totalChanges = files.reduce((sum, file) => sum + file.changes, 0);
+            // Skip if there are no files changed
+            if (files.length === 0) {
+              console.log('No files changed. Skipping auto-labeling.');
+              return;
+            }
+
+            // Define patterns for generated/lockfiles to exclude from size calculation
+            const generatedFilePatterns = [
+              /pnpm-lock\.yaml$/,
+              /package-lock\.json$/,
+              /yarn\.lock$/,
+              /\.tsbuildinfo$/,
+              /\.turbo\//,
+              /node_modules\//,
+              /dist\//,
+              /\.next\//,
+              /\.cache\//,
+              /playwright-report\//,
+              /test-results\//,
+              /coverage\//,
+              /\.pnp\./,
+              /\.yarn\//,
+              /mockServiceWorker\.js$/,
+              /storybook-static\//,
+            ];
+
+            // Helper function to check if a file is generated
+            const isGeneratedFile = (filename) => {
+              return generatedFilePatterns.some(pattern => pattern.test(filename));
+            };
+
+            // Filter out generated files for meaningful change calculation
+            const meaningfulFiles = files.filter(file => !isGeneratedFile(file.filename));
+
+            // Calculate statistics (excluding generated files)
+            const meaningfulFileCount = meaningfulFiles.length;
+            const meaningfulChanges = meaningfulFiles.reduce((sum, file) => sum + file.changes, 0);
+
+            // If all files are generated, skip size labeling but still add area/tech labels
+            const hasOnlyGeneratedFiles = meaningfulFiles.length === 0;
 
             // Detect area labels based on directories
             const areaLabels = new Set();
-            files.forEach(file => {
+            meaningfulFiles.forEach(file => {
               if (file.filename.startsWith('apps/web/')) areaLabels.add('area: web');
               if (file.filename.startsWith('apps/admin/')) areaLabels.add('area: admin');
               if (file.filename.startsWith('apps/batch/')) areaLabels.add('area: batch');
@@ -42,11 +85,11 @@ jobs:
             });
 
             // Detect tech labels based on file extensions and directories
-            const hasPython = files.some(file => file.filename.endsWith('.py'));
-            const hasSupabase = files.some(file => file.filename.startsWith('supabase/'));
+            const hasPython = meaningfulFiles.some(file => file.filename.endsWith('.py'));
+            const hasSupabase = meaningfulFiles.some(file => file.filename.startsWith('supabase/'));
 
             // Detect documentation changes
-            const isDocumentation = files.some(file => 
+            const isDocumentation = meaningfulFiles.some(file => 
               file.filename.endsWith('.md') || 
               file.filename.endsWith('.mdx') || 
               file.filename.startsWith('docs/')
@@ -67,20 +110,23 @@ jobs:
               labelsToAdd.push('type: Documentation');
             }
 
-            // Determine size label (only if not already set)
+            // Determine size label (only if not already set and has meaningful changes)
             const existingLabels = pr.labels.map(label => label.name);
             const hasSizeLabel = existingLabels.some(label => label.startsWith('size: '));
 
-            if (!hasSizeLabel) {
+            if (!hasSizeLabel && !hasOnlyGeneratedFiles) {
               let sizeLabel;
-              if (fileCount <= 2 && totalChanges <= 20) {
+              if (meaningfulFileCount <= 2 && meaningfulChanges <= 20) {
                 sizeLabel = 'size: S';
-              } else if (fileCount <= 5 && totalChanges <= 100) {
+              } else if (meaningfulFileCount <= 5 && meaningfulChanges <= 100) {
                 sizeLabel = 'size: M';
               } else {
                 sizeLabel = 'size: L';
               }
               labelsToAdd.push(sizeLabel);
+              console.log(`Size calculation: ${meaningfulFileCount} files, ${meaningfulChanges} changes -> ${sizeLabel}`);
+            } else if (hasOnlyGeneratedFiles) {
+              console.log('All changed files are generated/lockfiles. Skipping size label.');
             }
 
             // Add labels if any
