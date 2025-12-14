@@ -6,7 +6,7 @@
 services:
   # Redis for caching and session management
   redis:
-    image: redis:8.4.0-bookworm
+    image: redis:8.4.0-bookworm@sha256:3906b477e4b60250660573105110c28bfce93b01243eab37610a484daebceb04
     ports:
       - "6379:6379"
     volumes:
@@ -20,7 +20,7 @@ services:
 
   # Redis HTTP API (Upstash compatible)
   serverless-redis-http:
-    image: hiett/serverless-redis-http:0.0.10
+    image: hiett/serverless-redis-http:0.0.10@sha256:65128347949bca511e448fd7238780d624573d74c22b79155a7563db19e9b678
     ports:
       - "8079:80"
     environment:
@@ -43,7 +43,7 @@ services:
 
   # PostgreSQL database
   db:
-    image: supabase/postgres:17.6.1.064
+    image: supabase/postgres:17.6.1.064@sha256:4c6d67181e482549bab276e8ae933f807be59ea1c371c225d85c189b0c14b9de
     command:
       - postgres
       - -c
@@ -74,7 +74,7 @@ services:
 
   # Kong API Gateway
   kong:
-    image: kong:2.8.5
+    image: kong:2.8.5@sha256:34bbeaf6ee4c2db5f5c33ecf4793f29155753e2191b121eb25ffb6d8f151b37b
     ports:
       - "54321:8000"
     environment:
@@ -112,7 +112,7 @@ services:
 
   # GoTrue authentication service
   auth:
-    image: supabase/gotrue:v2.184.0
+    image: supabase/gotrue:v2.184.0@sha256:c485010238ab429edf4ac8eb70b37b41aae0a0905277a935d4a0b64bb848e393
     environment:
       API_EXTERNAL_URL: http://localhost:54321
       GOTRUE_API_HOST: 0.0.0.0
@@ -153,7 +153,7 @@ services:
 
   # PostgREST API service
   rest:
-    image: postgrest/postgrest:v13.0.8
+    image: postgrest/postgrest:v13.0.8@sha256:d09618df2b7b9547c80a076c2f4045b326be8d7ac06060d263caefec1334e3c9
     environment:
       PGRST_DB_URI: postgresql://authenticator:postgres@db:5432/postgres
       PGRST_DB_SCHEMAS: public,graphql_public
@@ -169,7 +169,7 @@ services:
 
   # Realtime service
   realtime:
-    image: supabase/realtime:v2.68.4
+    image: supabase/realtime:v2.68.4@sha256:073fe75851c49c711d2ce0d144603c0c946a093173f7411af4c7461809034883
     environment:
       DB_HOST: db
       DB_PORT: 5432
@@ -196,7 +196,7 @@ services:
 
   # Storage API service
   storage:
-    image: supabase/storage-api:v1.33.0
+    image: supabase/storage-api:v1.33.0@sha256:3e3742049427313d167578ba7af753069947972b64fcc5374cfb750f66a26177
     environment:
       ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}
       SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg}
@@ -223,7 +223,7 @@ services:
 
   # Mailpit for email testing
   mailpit:
-    image: axllent/mailpit:v1.28.0
+    image: axllent/mailpit:v1.28.0@sha256:c076638db1e15662150be4fb62b8a6e96ef6ba5bde90c838a0239225854830f7
     ports:
       - "54324:8025"
     healthcheck:
@@ -235,7 +235,7 @@ services:
 
   # Supabase Studio
   studio:
-    image: supabase/studio:2025.12.09-sha-434634f
+    image: supabase/studio:2025.12.09-sha-434634f@sha256:8b50b5e3ac59fb42931a7d9e6276461a03bdfd3499a7c487aec41b0359fc948a
     ports:
       - "54323:3000"
     environment:
@@ -262,7 +262,7 @@ services:
 
   # pg_meta for Studio database introspection
   pg-meta:
-    image: supabase/postgres-meta:v0.95.1
+    image: supabase/postgres-meta:v0.95.1@sha256:91e967af7172a8209c5dcea05a874973f714aa3e8e8480ad0fa6a1ce0400d0cc
     environment:
       PG_META_PORT: 8080
       PG_META_DB_HOST: db
@@ -277,7 +277,7 @@ services:
 
   # Edge Runtime for Supabase Functions
   edge-runtime:
-    image: supabase/edge-runtime:v1.69.28
+    image: supabase/edge-runtime:v1.69.28@sha256:29d8fbebb409bd71a68e2efdca20fadcd52af343965a718f4f157b2dff7018ab
     environment:
       JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
       SUPABASE_URL: http://kong:8000
@@ -293,7 +293,7 @@ services:
 
   # Analytics service
   analytics:
-    image: supabase/logflare:1.27.0
+    image: supabase/logflare:1.27.0@sha256:00cecc8cd24630694583c78e52e277ff7dfcb7bff03fb82d4717b21dedf8db88
     ports:
       - "54327:4000"
     environment:
@@ -318,7 +318,7 @@ services:
 
   # Vector for log aggregation
   vector:
-    image: timberio/vector:0.51.1-alpine
+    image: timberio/vector:0.51.1-alpine@sha256:2d16ae87ec395508366f3c064899d374fbe04de6e64c3a613ed64aedbee034b4
     volumes:
       - ./config/vector.yml:/etc/vector/vector.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
