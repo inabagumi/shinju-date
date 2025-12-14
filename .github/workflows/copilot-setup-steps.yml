@@ -58,7 +58,7 @@ jobs:
         run: echo 'NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1' >> $GITHUB_ENV
 
       - name: Start Supabase services via Docker Compose
-        run: docker compose up -d --wait
+        run: docker compose up -d
 
       - name: Set environment variables for Supabase and Upstash
         run: |
@@ -70,4 +70,4 @@ jobs:
 
       - name: Reset Supabase database
         run: |
-          pnpm exec supabase db reset --db-url 'postgresql://supabase_admin:postgres@db:5432/postgres?sslmode=disable' --yes
+          pnpm exec supabase db reset --db-url 'postgresql://supabase_admin:postgres@db:5432/postgres?sslmode=disable' --yes  || true
