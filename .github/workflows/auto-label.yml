@@ -16,6 +16,12 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
+            // Size label thresholds
+            const SIZE_THRESHOLDS = {
+              SMALL: { maxFiles: 2, maxChanges: 20 },
+              MEDIUM: { maxFiles: 5, maxChanges: 100 }
+            };
+
             const { data: pr } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -127,9 +133,11 @@ jobs:
 
             if (!hasSizeLabel && !hasOnlyGeneratedFiles) {
               let sizeLabel;
-              if (meaningfulFileCount <= 2 && meaningfulChanges <= 20) {
+              if (meaningfulFileCount <= SIZE_THRESHOLDS.SMALL.maxFiles && 
+                  meaningfulChanges <= SIZE_THRESHOLDS.SMALL.maxChanges) {
                 sizeLabel = 'size: S';
-              } else if (meaningfulFileCount <= 5 && meaningfulChanges <= 100) {
+              } else if (meaningfulFileCount <= SIZE_THRESHOLDS.MEDIUM.maxFiles && 
+                         meaningfulChanges <= SIZE_THRESHOLDS.MEDIUM.maxChanges) {
                 sizeLabel = 'size: M';
               } else {
                 sizeLabel = 'size: L';
