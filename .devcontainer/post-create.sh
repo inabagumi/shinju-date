@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Install PostgreSQL client for psql command
+sudo apt-get update && sudo apt-get install -y postgresql-client
+
 sudo npm uninstall -g pnpm
 sudo corepack enable
 

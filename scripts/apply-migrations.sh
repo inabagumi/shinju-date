@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# Apply Supabase migrations via psql
+# Apply Supabase migrations and seed data via psql
 # This script imports all SQL files from supabase/migrations/ directory in sorted order
+# and then applies the seed.sql file if it exists
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 MIGRATIONS_DIR="${PROJECT_ROOT}/supabase/migrations"
+SEED_FILE="${PROJECT_ROOT}/supabase/seed.sql"
 
 # Colors for output
 RED='\033[0;31m'
@@ -80,8 +82,33 @@ fi
 
 if [ $FAILED -eq 0 ]; then
     echo -e "${GREEN}All migrations applied successfully!${NC}"
-    exit 0
 else
     echo -e "${YELLOW}Some migrations failed. Please review the errors above.${NC}"
     exit 1
 fi
+
+# Apply seed data if file exists
+if [ -f "$SEED_FILE" ]; then
+    echo ""
+    echo -e "${GREEN}Applying seed data from seed.sql...${NC}"
+    
+    if output=$(PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$SEED_FILE" -v ON_ERROR_STOP=1 2>&1); then
+        echo -e "${GREEN}✓ Seed data applied successfully${NC}"
+    else
+        exit_code=$?
+        echo -e "${RED}✗ Failed to apply seed data${NC}"
+        echo -e "${RED}Error details:${NC}"
+        echo "$output" >&2
+        
+        if [ "${CONTINUE_ON_ERROR:-false}" = "true" ]; then
+            echo -e "${YELLOW}Continuing despite error (CONTINUE_ON_ERROR=true)${NC}"
+        else
+            echo -e "${RED}Stopping due to error. Set CONTINUE_ON_ERROR=true to continue despite errors.${NC}"
+            exit "$exit_code"
+        fi
+    fi
+else
+    echo -e "${YELLOW}No seed.sql file found, skipping seed data${NC}"
+fi
+
+exit 0

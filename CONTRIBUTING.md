@@ -324,12 +324,14 @@ pnpm run test --watch
    supabase db reset  # 全マイグレーションを適用
    ```
 
-   **注意**: Dev Container や GitHub Actions 環境では、`supabase db reset` が失敗した場合、自動的に `psql` ベースのマイグレーションインポートにフォールバックします。手動でマイグレーションを適用する場合は以下のコマンドを使用できます：
+   **注意**: Dev Container や GitHub Actions 環境では、`supabase db reset` が失敗した場合、自動的に `psql` ベースのマイグレーションインポートにフォールバックします。手動でマイグレーションとシードデータを適用する場合は以下のコマンドを使用できます：
 
    ```bash
-   # psqlを使用してマイグレーションを手動適用
+   # psqlを使用してマイグレーションとシードデータを手動適用
    ./scripts/apply-migrations.sh
    ```
+
+   このスクリプトは `supabase/migrations/` 配下の全SQLファイルを適用した後、`supabase/seed.sql` が存在する場合はそれも適用します。
 
 4. **本番適用（レビュー後）**
    ```bash
