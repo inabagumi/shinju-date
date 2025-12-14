@@ -59,14 +59,6 @@ services:
           - /rest/v1/
     plugins:
       - name: cors
-      - name: request-transformer
-        config:
-          add:
-            headers:
-              - "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_JWT}"
-          replace:
-            headers:
-              - "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_JWT}"
   - name: rest-admin-v1
     _comment: "PostgREST: /rest-admin/v1/* -> http://rest:3001/*"
     url: http://rest:3001/
