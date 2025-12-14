@@ -61,7 +61,7 @@ jobs:
               
               // Dependencies
               /node_modules\//,
-              /\.pnp\..*$/,
+              /\.pnp\.(c?js|loader\.mjs)$/,
               /\.yarn\//,
               
               // Cache directories
