@@ -31,7 +31,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost/"]
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:80/"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -252,6 +252,12 @@ services:
         condition: service_healthy
       pg-meta:
         condition: service_started
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
     restart: unless-stopped
 
   # pg_meta for Studio database introspection

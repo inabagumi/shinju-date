@@ -58,7 +58,7 @@ jobs:
         run: echo 'NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1' >> $GITHUB_ENV
 
       - name: Start Supabase services via Docker Compose
-        run: docker compose up -d
+        run: docker compose up -d --wait
 
       - name: Set environment variables for Supabase and Upstash
         run: |
