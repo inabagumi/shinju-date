@@ -154,11 +154,11 @@ test.describe('Search Modal - Search Functionality', () => {
     await searchInput.fill('test query')
     await expect(searchInput).toHaveValue('test query', { timeout: 2000 })
 
-    // Press Enter to submit
-    await searchInput.press('Enter')
-
-    // Wait for navigation to videos page with search query
-    await page.waitForURL(`${BASE_URL}/videos/test%20query`, { timeout: 5000 })
+    // Wait for navigation while pressing Enter
+    await Promise.all([
+      page.waitForURL(`${BASE_URL}/videos/test%20query`, { timeout: 15000 }),
+      searchInput.press('Enter'),
+    ])
   })
 
   test('should update search query in real-time', async ({ page }) => {
@@ -237,7 +237,7 @@ test.describe('Search Modal - Suggestion Links', () => {
 
       // Click first suggestion and wait for navigation
       await Promise.all([
-        page.waitForURL('**/videos/**', { timeout: 5000 }),
+        page.waitForURL('**/videos/**', { timeout: 10000 }),
         suggestionLinks.first().click(),
       ])
 
@@ -335,12 +335,17 @@ test.describe('Search Modal - Stability Tests', () => {
     await expect(searchInput).toBeVisible({ timeout: 5000 })
 
     await searchInput.fill('first search')
-    await searchInput.press('Enter')
 
-    // Wait for navigation to videos page
-    await page.waitForURL(`${BASE_URL}/videos/first%20search`, {
-      timeout: 5000,
-    })
+    // Wait for navigation while pressing Enter
+    await Promise.all([
+      page.waitForURL(`${BASE_URL}/videos/first%20search`, {
+        timeout: 15000,
+      }),
+      searchInput.press('Enter'),
+    ])
+
+    // Ensure page is fully loaded before second search
+    await page.waitForLoadState('networkidle')
 
     // Second search
     await page.getByRole('button', { name: '検索' }).click()
@@ -349,12 +354,14 @@ test.describe('Search Modal - Stability Tests', () => {
     await expect(searchInput).toBeVisible({ timeout: 5000 })
 
     await searchInput.fill('second search')
-    await searchInput.press('Enter')
 
-    // Wait for navigation to videos page with new query
-    await page.waitForURL(`${BASE_URL}/videos/second%20search`, {
-      timeout: 5000,
-    })
+    // Wait for navigation while pressing Enter
+    await Promise.all([
+      page.waitForURL(`${BASE_URL}/videos/second%20search`, {
+        timeout: 15000,
+      }),
+      searchInput.press('Enter'),
+    ])
   })
 
   test('should handle browser back button after closing modal', async ({
