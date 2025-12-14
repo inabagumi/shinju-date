@@ -78,16 +78,13 @@ echo -e "${GREEN}Migration Summary:${NC}"
 echo -e "  Applied: ${GREEN}${APPLIED}${NC}"
 if [ $FAILED -gt 0 ]; then
     echo -e "  Failed:  ${RED}${FAILED}${NC}"
-fi
-
-if [ $FAILED -eq 0 ]; then
-    echo -e "${GREEN}All migrations applied successfully!${NC}"
-else
     echo -e "${YELLOW}Some migrations failed. Please review the errors above.${NC}"
-    exit 1
+else
+    echo -e "${GREEN}All migrations applied successfully!${NC}"
 fi
 
 # Apply seed data if file exists
+SEED_FAILED=0
 if [ -f "$SEED_FILE" ]; then
     echo ""
     echo -e "${GREEN}Applying seed data from seed.sql...${NC}"
@@ -96,19 +93,24 @@ if [ -f "$SEED_FILE" ]; then
         echo -e "${GREEN}✓ Seed data applied successfully${NC}"
     else
         exit_code=$?
+        SEED_FAILED=1
         echo -e "${RED}✗ Failed to apply seed data${NC}"
         echo -e "${RED}Error details:${NC}"
         echo "$output" >&2
         
-        if [ "${CONTINUE_ON_ERROR:-false}" = "true" ]; then
-            echo -e "${YELLOW}Continuing despite error (CONTINUE_ON_ERROR=true)${NC}"
-        else
+        if [ "${CONTINUE_ON_ERROR:-false}" != "true" ]; then
             echo -e "${RED}Stopping due to error. Set CONTINUE_ON_ERROR=true to continue despite errors.${NC}"
             exit "$exit_code"
         fi
+        echo -e "${YELLOW}Continuing despite error (CONTINUE_ON_ERROR=true)${NC}"
     fi
 else
     echo -e "${YELLOW}No seed.sql file found, skipping seed data${NC}"
+fi
+
+# Exit with failure if any step failed
+if [ $FAILED -gt 0 ] || [ $SEED_FAILED -gt 0 ]; then
+    exit 1
 fi
 
 exit 0
