@@ -73,8 +73,9 @@ jobs:
           # Try Supabase CLI first, fall back to psql-based migration import if it fails
           if ! pnpm exec supabase db reset --db-url 'postgresql://supabase_admin:postgres@db:5432/postgres?sslmode=disable' --yes; then
             echo "Supabase CLI reset failed, falling back to psql-based migration import..."
-            export SUPABASE_DB_HOST=db
-            export SUPABASE_DB_PORT=5432
+            # In GitHub Actions, connect via localhost (not Docker network hostname)
+            export SUPABASE_DB_HOST=localhost
+            export SUPABASE_DB_PORT=54322
             export SUPABASE_DB_NAME=postgres
             export SUPABASE_DB_USER=supabase_admin
             export SUPABASE_DB_PASS=postgres
