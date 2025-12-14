@@ -98,11 +98,12 @@ if [ -f "$SEED_FILE" ]; then
         echo -e "${RED}Error details:${NC}"
         echo "$output" >&2
         
-        if [ "${CONTINUE_ON_ERROR:-false}" != "true" ]; then
+        if [ "${CONTINUE_ON_ERROR:-false}" = "true" ]; then
+            echo -e "${YELLOW}Continuing despite error (CONTINUE_ON_ERROR=true)${NC}"
+        else
             echo -e "${RED}Stopping due to error. Set CONTINUE_ON_ERROR=true to continue despite errors.${NC}"
             exit "$exit_code"
         fi
-        echo -e "${YELLOW}Continuing despite error (CONTINUE_ON_ERROR=true)${NC}"
     fi
 else
     echo -e "${YELLOW}No seed.sql file found, skipping seed data${NC}"

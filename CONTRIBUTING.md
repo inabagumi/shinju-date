@@ -331,7 +331,7 @@ pnpm run test --watch
    ./scripts/apply-migrations.sh
    ```
 
-   このスクリプトは `supabase/migrations/` 配下の全SQLファイルを適用した後、`supabase/seed.sql` が存在する場合はそれも適用します。
+   このスクリプトは `supabase/migrations/` 配下の全 SQL ファイルを適用した後、`supabase/seed.sql` が存在する場合はそれも適用します。
 
 4. **本番適用（レビュー後）**
    ```bash
