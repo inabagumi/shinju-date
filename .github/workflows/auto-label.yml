@@ -75,21 +75,21 @@ jobs:
             // If all files are generated, skip size labeling but still add area/tech labels
             const hasOnlyGeneratedFiles = meaningfulFiles.length === 0;
 
-            // Detect area labels based on directories
+            // Detect area labels based on directories (use all files to track all affected areas)
             const areaLabels = new Set();
-            meaningfulFiles.forEach(file => {
+            files.forEach(file => {
               if (file.filename.startsWith('apps/web/')) areaLabels.add('area: web');
               if (file.filename.startsWith('apps/admin/')) areaLabels.add('area: admin');
               if (file.filename.startsWith('apps/batch/')) areaLabels.add('area: batch');
               if (file.filename.startsWith('apps/insights/')) areaLabels.add('area: insights');
             });
 
-            // Detect tech labels based on file extensions and directories
-            const hasPython = meaningfulFiles.some(file => file.filename.endsWith('.py'));
-            const hasSupabase = meaningfulFiles.some(file => file.filename.startsWith('supabase/'));
+            // Detect tech labels based on file extensions and directories (use all files)
+            const hasPython = files.some(file => file.filename.endsWith('.py'));
+            const hasSupabase = files.some(file => file.filename.startsWith('supabase/'));
 
-            // Detect documentation changes
-            const isDocumentation = meaningfulFiles.some(file => 
+            // Detect documentation changes (use all files)
+            const isDocumentation = files.some(file => 
               file.filename.endsWith('.md') || 
               file.filename.endsWith('.mdx') || 
               file.filename.startsWith('docs/')
