@@ -42,20 +42,31 @@ jobs:
 
             // Define patterns for generated/lockfiles to exclude from size calculation
             const generatedFilePatterns = [
+              // Lock files
               /pnpm-lock\.yaml$/,
               /package-lock\.json$/,
               /yarn\.lock$/,
+              
+              // Build artifacts
               /\.tsbuildinfo$/,
               /\.turbo\//,
-              /node_modules\//,
               /dist\//,
               /\.next\//,
+              
+              // Dependencies
+              /node_modules\//,
+              /\.pnp\..*$/,
+              /\.yarn\//,
+              
+              // Cache directories
               /\.cache\//,
+              
+              // Test artifacts
               /playwright-report\//,
               /test-results\//,
               /coverage\//,
-              /\.pnp\./,
-              /\.yarn\//,
+              
+              // Generated service workers and static files
               /mockServiceWorker\.js$/,
               /storybook-static\//,
             ];
