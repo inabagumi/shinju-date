@@ -66,7 +66,7 @@ export function ShortVideoCardSkeleton() {
         <div className="h-full animate-pulse bg-774-nevy-200 dark:bg-zinc-700" />
       </div>
 
-      <div className="space-y-4 p-2.5">
+      <div className="space-y-4 p-3 md:p-2.5">
         <h3 className="break-all font-semibold text-sm">
           <span className="inline-block h-3 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
           <span className="inline-block h-3 w-3/4 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
@@ -131,7 +131,7 @@ export default function ShortVideoCard({
         />
       </div>
 
-      <div className="space-y-4 p-2.5">
+      <div className="space-y-4 p-3 md:p-2.5">
         <h3
           className="line-clamp-2 break-all font-semibold text-sm"
           title={value.title}

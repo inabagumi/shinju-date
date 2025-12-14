@@ -114,7 +114,7 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
         </div>
 
         <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex gap-3 md:gap-6">
+          <div className="flex gap-4 md:gap-6">
             {videos.map((video) => (
               <div
                 className="min-w-0 shrink-0 basis-[85%] md:basis-[calc(25%-1.125rem)]"
