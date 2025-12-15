@@ -101,3 +101,34 @@ VALUES
 	('50000000-0000-0000-0000-000000000005', 'タレントのSNSアカウント一覧を表示してほしい', 'rejected', '外部サービスとの連携は現時点では対応予定がありません。', TRUE, date_trunc('second', NOW() - INTERVAL '2 days'), date_trunc('second', NOW() - INTERVAL '1 day')),
 	('50000000-0000-0000-0000-000000000006', 'スマホアプリ版を作ってほしいです', 'pending', NULL, FALSE, date_trunc('second', NOW() - INTERVAL '1 day'), date_trunc('second', NOW() - INTERVAL '1 day')),
 	('50000000-0000-0000-0000-000000000007', 'お気に入りのタレントをフォローできる機能', 'in_progress', 'ユーザー認証機能と合わせて実装を検討しています。', TRUE, date_trunc('second', NOW() - INTERVAL '6 hours'), date_trunc('second', NOW() - INTERVAL '6 hours'));
+
+-- Update existing shorts videos to have video_kind = 'short'
+UPDATE public.videos SET video_kind = 'short' WHERE id IN (
+'30000000-0000-0000-0000-000000000006',
+'30000000-0000-0000-0000-000000000009'
+);
+
+-- Add more shorts videos for testing
+INSERT INTO public.videos (id, title, duration, created_at, updated_at, published_at, visible, thumbnail_id, talent_id, platform, status, video_kind)
+VALUES
+-- More shorts (within 48 hours for dashboard)
+('30000000-0000-0000-0000-000000000031', '【Shorts】かわいい瞬間 #3', 'PT40S', date_trunc('second', NOW() - INTERVAL '5 hours'), date_trunc('second', NOW() - INTERVAL '4 hours'), date_trunc('second', NOW() - INTERVAL '3 hours'), TRUE, NULL, '00000000-0000-0000-0000-000000000001', 'youtube', 'PUBLISHED', 'short'),
+('30000000-0000-0000-0000-000000000032', '【Shorts】歌ってみた #1', 'PT50S', date_trunc('second', NOW() - INTERVAL '8 hours'), date_trunc('second', NOW() - INTERVAL '7 hours'), date_trunc('second', NOW() - INTERVAL '6 hours'), TRUE, NULL, '00000000-0000-0000-0000-000000000002', 'youtube', 'PUBLISHED', 'short'),
+('30000000-0000-0000-0000-000000000033', '【Shorts】ゲームハイライト', 'PT59S', date_trunc('second', NOW() - INTERVAL '12 hours'), date_trunc('second', NOW() - INTERVAL '11 hours'), date_trunc('second', NOW() - INTERVAL '10 hours'), TRUE, NULL, '00000000-0000-0000-0000-000000000004', 'youtube', 'PUBLISHED', 'short'),
+('30000000-0000-0000-0000-000000000034', '【Shorts】踊ってみた', 'PT45S', date_trunc('second', NOW() - INTERVAL '15 hours'), date_trunc('second', NOW() - INTERVAL '14 hours'), date_trunc('second', NOW() - INTERVAL '13 hours'), TRUE, NULL, '00000000-0000-0000-0000-000000000005', 'youtube', 'PUBLISHED', 'short'),
+('30000000-0000-0000-0000-000000000035', '【Shorts】面白い話 #1', 'PT35S', date_trunc('second', NOW() - INTERVAL '22 hours'), date_trunc('second', NOW() - INTERVAL '21 hours'), date_trunc('second', NOW() - INTERVAL '20 hours'), TRUE, NULL, '00000000-0000-0000-0000-000000000007', 'youtube', 'PUBLISHED', 'short'),
+('30000000-0000-0000-0000-000000000036', '【Shorts】お絵描き過程', 'PT55S', date_trunc('second', NOW() - INTERVAL '25 hours'), date_trunc('second', NOW() - INTERVAL '24 hours'), date_trunc('second', NOW() - INTERVAL '23 hours'), TRUE, NULL, '00000000-0000-0000-0000-000000000008', 'youtube', 'PUBLISHED', 'short'),
+('30000000-0000-0000-0000-000000000037', '【Shorts】料理してみた', 'PT60S', date_trunc('second', NOW() - INTERVAL '35 hours'), date_trunc('second', NOW() - INTERVAL '34 hours'), date_trunc('second', NOW() - INTERVAL '33 hours'), TRUE, NULL, '00000000-0000-0000-0000-000000000009', 'youtube', 'PUBLISHED', 'short'),
+('30000000-0000-0000-0000-000000000038', '【Shorts】今日のひとこと', 'PT30S', date_trunc('second', NOW() - INTERVAL '45 hours'), date_trunc('second', NOW() - INTERVAL '44 hours'), date_trunc('second', NOW() - INTERVAL '43 hours'), TRUE, NULL, '00000000-0000-0000-0000-000000000010', 'youtube', 'PUBLISHED', 'short');
+
+-- Add youtube_videos entries for the new shorts
+INSERT INTO public.youtube_videos (id, video_id, youtube_video_id, youtube_channel_id)
+VALUES
+('12000000-0000-0000-0000-000000000031', '30000000-0000-0000-0000-000000000031', 'ytvid-short3', '11000000-0000-0000-0000-000000000001'),
+('12000000-0000-0000-0000-000000000032', '30000000-0000-0000-0000-000000000032', 'ytvid-short4', '11000000-0000-0000-0000-000000000002'),
+('12000000-0000-0000-0000-000000000033', '30000000-0000-0000-0000-000000000033', 'ytvid-short5', '11000000-0000-0000-0000-000000000004'),
+('12000000-0000-0000-0000-000000000034', '30000000-0000-0000-0000-000000000034', 'ytvid-short6', '11000000-0000-0000-0000-000000000005'),
+('12000000-0000-0000-0000-000000000035', '30000000-0000-0000-0000-000000000035', 'ytvid-short7', '11000000-0000-0000-0000-000000000007'),
+('12000000-0000-0000-0000-000000000036', '30000000-0000-0000-0000-000000000036', 'ytvid-short8', '11000000-0000-0000-0000-000000000008'),
+('12000000-0000-0000-0000-000000000037', '30000000-0000-0000-0000-000000000037', 'ytvid-short9', '11000000-0000-0000-0000-000000000009'),
+('12000000-0000-0000-0000-000000000038', '30000000-0000-0000-0000-000000000038', 'ytvid-short10', '11000000-0000-0000-0000-000000000010');
