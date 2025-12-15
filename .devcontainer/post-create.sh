@@ -8,6 +8,7 @@ set -euo pipefail
 echo "Starting project-specific initialization..."
 
 # Verify corepack-managed pnpm is available
+# COREPACK_ENABLE_DOWNLOAD_PROMPT=0 disables interactive prompts during pnpm download/installation
 COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm --version
 
 # Install workspace dependencies

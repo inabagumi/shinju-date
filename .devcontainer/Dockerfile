@@ -18,10 +18,12 @@ RUN npm uninstall -g pnpm || true \
     && corepack enable
 
 # Install uv for Python development (apps/insights)
-# Using the official installation script via curl
+# Using the official installation script from astral.sh (uv's official source)
+# This is the recommended installation method per https://docs.astral.sh/uv/getting-started/installation/
 # Note: This requires network access during build time
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
-    mv /root/.local/bin/uv* /usr/local/bin/ 2>/dev/null || true
+    (mv /root/.local/bin/uv /usr/local/bin/uv 2>/dev/null || true) && \
+    (mv /root/.local/bin/uvx /usr/local/bin/uvx 2>/dev/null || true)
 
 # Verify installations
 # Note: uv verification is best-effort; it may not be installed if network is unavailable during build
