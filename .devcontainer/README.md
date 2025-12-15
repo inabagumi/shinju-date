@@ -96,6 +96,17 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 
 ## 運用上の注意点
 
+### Dockerfile のテスト
+
+Dockerfile の変更をローカルでテストするには、提供されているテストスクリプトを使用できます：
+
+```bash
+cd .devcontainer
+./test-build.sh
+```
+
+このスクリプトは、Dockerfile をビルドし、必要なツール（psql、corepack、uv）が正しくインストールされているか検証します。
+
 ### Dockerfile を変更した場合
 
 Dockerfile を変更した場合は、**必ず Dev Container をリビルド**してください：
