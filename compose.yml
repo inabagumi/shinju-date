@@ -86,10 +86,10 @@ services:
       KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: 160k
       KONG_NGINX_PROXY_PROXY_BUFFERS: 64 160k
       KONG_NGINX_WORKER_PROCESSES: 1
-      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}
-      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg}
-      SUPABASE_ANON_JWT: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}
-      SUPABASE_SERVICE_ROLE_JWT: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      SUPABASE_ANON_JWT: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_JWT: ${SUPABASE_SERVICE_ROLE_KEY}
     volumes:
       - ./config/kong.yml:/home/kong/kong.yml:ro
     depends_on:
@@ -126,7 +126,7 @@ services:
       GOTRUE_JWT_AUD: authenticated
       GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
       GOTRUE_JWT_EXP: 3600
-      GOTRUE_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      GOTRUE_JWT_SECRET: ${SUPABASE_JWT_SECRET}
       GOTRUE_JWT_ISSUER: http://localhost:54321/auth/v1
       GOTRUE_EXTERNAL_EMAIL_ENABLED: true
       GOTRUE_MAILER_SECURE_EMAIL_CHANGE_ENABLED: true
@@ -158,9 +158,9 @@ services:
       PGRST_DB_URI: postgresql://authenticator:postgres@db:5432/postgres
       PGRST_DB_SCHEMAS: public,graphql_public
       PGRST_DB_ANON_ROLE: anon
-      PGRST_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      PGRST_JWT_SECRET: ${SUPABASE_JWT_SECRET}
       PGRST_DB_USE_LEGACY_GUCS: false
-      PGRST_APP_SETTINGS_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      PGRST_APP_SETTINGS_JWT_SECRET: ${SUPABASE_JWT_SECRET}
       PGRST_APP_SETTINGS_JWT_EXP: 3600
     depends_on:
       db:
@@ -178,7 +178,7 @@ services:
       DB_NAME: postgres
       DB_AFTER_CONNECT_QUERY: SET search_path TO _realtime
       DB_ENC_KEY: supabaserealtime
-      API_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      API_JWT_SECRET: ${SUPABASE_JWT_SECRET}
       FLY_ALLOC_ID: fly123
       FLY_APP_NAME: realtime
       APP_NAME: realtime
@@ -198,10 +198,10 @@ services:
   storage:
     image: supabase/storage-api:v1.33.0@sha256:3e3742049427313d167578ba7af753069947972b64fcc5374cfb750f66a26177
     environment:
-      ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}
-      SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg}
-      PGRST_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
-      AUTH_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      ANON_KEY: ${SUPABASE_ANON_KEY}
+      SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      PGRST_JWT_SECRET: ${SUPABASE_JWT_SECRET}
+      AUTH_JWT_SECRET: ${SUPABASE_JWT_SECRET}
       DATABASE_URL: postgresql://supabase_storage_admin:postgres@db:5432/postgres
       FILE_SIZE_LIMIT: 52428800
       STORAGE_BACKEND: file
@@ -245,8 +245,8 @@ services:
       DEFAULT_PROJECT_NAME: shinju-date
       SUPABASE_URL: http://kong:8000
       SUPABASE_PUBLIC_URL: http://localhost:54321
-      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}
-      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
     depends_on:
       kong:
         condition: service_healthy
@@ -279,10 +279,10 @@ services:
   edge-runtime:
     image: supabase/edge-runtime:v1.69.28@sha256:29d8fbebb409bd71a68e2efdca20fadcd52af343965a718f4f157b2dff7018ab
     environment:
-      JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      JWT_SECRET: ${SUPABASE_JWT_SECRET}
       SUPABASE_URL: http://kong:8000
-      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MjQzMjA5NDAsImV4cCI6NDc3OTk5NjU5OX0.5qDZP71NL10yJyE_pdkoAQAxtPQf43-sXlZMTzhPO6s}
-      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTYyNDMyMDk0MCwiZXhwIjo0Nzc5OTk2NTk5fQ.B0N14xVx0c4PBcSUkkdYiTl6f8VvfR5tsxwURb1ooJU}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
       SUPABASE_DB_URL: postgresql://postgres:postgres@db:5432/postgres
       VERIFY_JWT: false
     depends_on:

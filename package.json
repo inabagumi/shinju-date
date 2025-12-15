@@ -24,6 +24,7 @@
     "db:schema": "./scripts/generate-types.sh",
     "db:import": "./scripts/import-data.sh",
     "dev": "turbo dev",
+    "dev:generate-supabase-keys": "node scripts/generate-dev-supabase-keys.js",
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
     "typegen": "turbo typegen"
