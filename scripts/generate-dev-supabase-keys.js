@@ -19,9 +19,9 @@
  * @returns {string} Base64url encoded string
  */
 function toBase64url(bytes) {
-	const binString = String.fromCharCode(...bytes)
-	const base64 = btoa(binString)
-	return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+  const binString = String.fromCharCode(...bytes)
+  const base64 = btoa(binString)
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 }
 
 /**
@@ -29,9 +29,9 @@ function toBase64url(bytes) {
  * @returns {string} 32-byte random secret encoded as base64url
  */
 export function generateJwtSecret() {
-	const bytes = new Uint8Array(32)
-	crypto.getRandomValues(bytes)
-	return toBase64url(bytes)
+  const bytes = new Uint8Array(32)
+  crypto.getRandomValues(bytes)
+  return toBase64url(bytes)
 }
 
 /**
@@ -40,15 +40,15 @@ export function generateJwtSecret() {
  * @returns {object} JWT payload object
  */
 export function makeSupabasePayload(role) {
-	const iat = Math.floor(Date.now() / 1000)
-	const exp = iat + 5 * 365 * 24 * 60 * 60
+  const iat = Math.floor(Date.now() / 1000)
+  const exp = iat + 5 * 365 * 24 * 60 * 60
 
-	return {
-		role,
-		iss: 'supabase',
-		iat,
-		exp,
-	}
+  return {
+    exp,
+    iat,
+    iss: 'supabase',
+    role,
+  }
 }
 
 /**
@@ -57,14 +57,17 @@ export function makeSupabasePayload(role) {
  * @returns {Uint8Array} Decoded bytes
  */
 function fromBase64url(str) {
-	// Convert base64url to standard base64
-	const base64 = str.replace(/-/g, '+').replace(/_/g, '/')
-	// Pad if needed
-	const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=')
-	// Decode using atob
-	const binString = atob(padded)
-	// Convert to Uint8Array
-	return Uint8Array.from(binString, (c) => c.charCodeAt(0))
+  // Convert base64url to standard base64
+  const base64 = str.replace(/-/g, '+').replace(/_/g, '/')
+  // Pad if needed
+  const padded = base64.padEnd(
+    base64.length + ((4 - (base64.length % 4)) % 4),
+    '=',
+  )
+  // Decode using atob
+  const binString = atob(padded)
+  // Convert to Uint8Array
+  return Uint8Array.from(binString, (c) => c.charCodeAt(0))
 }
 
 /**
@@ -73,8 +76,8 @@ function fromBase64url(str) {
  * @returns {string} Base64url encoded string
  */
 function base64urlEncodeString(str) {
-	const encoder = new TextEncoder()
-	return toBase64url(encoder.encode(str))
+  const encoder = new TextEncoder()
+  return toBase64url(encoder.encode(str))
 }
 
 /**
@@ -84,61 +87,65 @@ function base64urlEncodeString(str) {
  * @returns {Promise<string>} Signed JWT token
  */
 export async function signHs256(payload, secret) {
-	// Decode the base64url secret to bytes
-	const secretBytes = fromBase64url(secret)
+  // Decode the base64url secret to bytes
+  const secretBytes = fromBase64url(secret)
 
-	// Import the secret as a CryptoKey for HMAC
-	const key = await crypto.subtle.importKey(
-		'raw',
-		secretBytes,
-		{ name: 'HMAC', hash: 'SHA-256' },
-		false,
-		['sign'],
-	)
+  // Import the secret as a CryptoKey for HMAC
+  const key = await crypto.subtle.importKey(
+    'raw',
+    secretBytes,
+    { hash: 'SHA-256', name: 'HMAC' },
+    false,
+    ['sign'],
+  )
 
-	// Create JWT header
-	const header = { alg: 'HS256', typ: 'JWT' }
+  // Create JWT header
+  const header = { alg: 'HS256', typ: 'JWT' }
 
-	// Encode header and payload as base64url
-	const encodedHeader = base64urlEncodeString(JSON.stringify(header))
-	const encodedPayload = base64urlEncodeString(JSON.stringify(payload))
+  // Encode header and payload as base64url
+  const encodedHeader = base64urlEncodeString(JSON.stringify(header))
+  const encodedPayload = base64urlEncodeString(JSON.stringify(payload))
 
-	// Create the signing input
-	const signingInput = `${encodedHeader}.${encodedPayload}`
-	const signingInputBytes = new TextEncoder().encode(signingInput)
+  // Create the signing input
+  const signingInput = `${encodedHeader}.${encodedPayload}`
+  const signingInputBytes = new TextEncoder().encode(signingInput)
 
-	// Sign using HMAC-SHA256
-	const signatureBytes = await crypto.subtle.sign('HMAC', key, signingInputBytes)
+  // Sign using HMAC-SHA256
+  const signatureBytes = await crypto.subtle.sign(
+    'HMAC',
+    key,
+    signingInputBytes,
+  )
 
-	// Encode signature as base64url
-	const encodedSignature = toBase64url(new Uint8Array(signatureBytes))
+  // Encode signature as base64url
+  const encodedSignature = toBase64url(new Uint8Array(signatureBytes))
 
-	// Return complete JWT
-	return `${signingInput}.${encodedSignature}`
+  // Return complete JWT
+  return `${signingInput}.${encodedSignature}`
 }
 
 /**
  * Main function to generate and print Supabase keys
  */
 async function main() {
-	const jwtSecret = generateJwtSecret()
+  const jwtSecret = generateJwtSecret()
 
-	const anonPayload = makeSupabasePayload('anon')
-	const serviceRolePayload = makeSupabasePayload('service_role')
+  const anonPayload = makeSupabasePayload('anon')
+  const serviceRolePayload = makeSupabasePayload('service_role')
 
-	const anonKey = await signHs256(anonPayload, jwtSecret)
-	const serviceRoleKey = await signHs256(serviceRolePayload, jwtSecret)
+  const anonKey = await signHs256(anonPayload, jwtSecret)
+  const serviceRoleKey = await signHs256(serviceRolePayload, jwtSecret)
 
-	console.log('# Supabase dev keys')
-	console.log(`SUPABASE_JWT_SECRET=${jwtSecret}`)
-	console.log(`SUPABASE_ANON_KEY=${anonKey}`)
-	console.log(`SUPABASE_SERVICE_ROLE_KEY=${serviceRoleKey}`)
+  console.log('# Supabase dev keys')
+  console.log(`SUPABASE_JWT_SECRET=${jwtSecret}`)
+  console.log(`SUPABASE_ANON_KEY=${anonKey}`)
+  console.log(`SUPABASE_SERVICE_ROLE_KEY=${serviceRoleKey}`)
 }
 
 // Only run main if this file is being executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-	main().catch((error) => {
-		console.error('Error generating keys:', error)
-		process.exit(1)
-	})
+  main().catch((error) => {
+    console.error('Error generating keys:', error)
+    process.exit(1)
+  })
 }
