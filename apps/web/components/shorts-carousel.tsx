@@ -90,7 +90,7 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
       {/* Carousel viewport with negative margin and full viewport width */}
       <div className="-mx-4 w-screen px-4 md:mx-0 md:w-auto md:px-0">
         {/* Mobile navigation buttons */}
-        <div className="-translate-y-1/2 absolute top-1/2 left-2 z-10 md:hidden">
+        <div className="-translate-y-1/2 absolute top-1/2 left-1 z-10 md:hidden">
           <button
             aria-label="前へ"
             className="rounded-full bg-774-nevy-100 p-2 shadow-lg transition-colors hover:bg-774-nevy-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:hover:bg-zinc-700"
@@ -101,7 +101,7 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
             <ChevronLeft className="size-5" />
           </button>
         </div>
-        <div className="-translate-y-1/2 absolute top-1/2 right-2 z-10 md:hidden">
+        <div className="-translate-y-1/2 absolute top-1/2 right-1 z-10 md:hidden">
           <button
             aria-label="次へ"
             className="rounded-full bg-774-nevy-100 p-2 shadow-lg transition-colors hover:bg-774-nevy-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:hover:bg-zinc-700"
