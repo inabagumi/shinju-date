@@ -4,16 +4,18 @@
 services:
   app:
     image: mcr.microsoft.com/devcontainers/typescript-node:4-24-bookworm@sha256:2baba848f88e02278bcf59e072752f7371534ccfc67afcd8e0ee6b293865c6f9
+    env_file:
+      - ../config/dev-supabase-keys.env
     volumes:
       - ../..:/workspaces:cached
     command: sleep infinity
     environment:
-      SUPABASE_ANON_KEY: "${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}"
-      SUPABASE_SERVICE_ROLE_KEY: "${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg}"
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
       SUPABASE_URL: http://kong:8000
       UPSTASH_REDIS_REST_TOKEN: "${UPSTASH_REDIS_REST_TOKEN:-local-dev-token}"
       UPSTASH_REDIS_REST_URL: http://serverless-redis-http:80
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: "${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}"
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
       NEXT_PUBLIC_SUPABASE_URL: http://kong:8000
       NEXT_PUBLIC_UPSTASH_REDIS_REST_TOKEN: "${UPSTASH_REDIS_REST_TOKEN:-local-dev-token}"
       NEXT_PUBLIC_UPSTASH_REDIS_REST_URL: http://serverless-redis-http:80

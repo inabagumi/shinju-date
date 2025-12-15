@@ -1,8 +1,6 @@
 # Docker Compose configuration for SHINJU DATE development services
 # This file contains all the backing services needed for local development
 
- # Supabase keys provided via Dev Container env; remove defaults/anchors
-
 services:
   # Redis for caching and session management
   redis:
@@ -44,6 +42,8 @@ services:
   # PostgreSQL database
   db:
     image: supabase/postgres:17.6.1.064@sha256:4c6d67181e482549bab276e8ae933f807be59ea1c371c225d85c189b0c14b9de
+    env_file:
+      - config/dev-supabase-keys.env
     command:
       - postgres
       - -c
@@ -75,6 +75,8 @@ services:
   # Kong API Gateway
   kong:
     image: kong:2.8.5@sha256:34bbeaf6ee4c2db5f5c33ecf4793f29155753e2191b121eb25ffb6d8f151b37b
+    env_file:
+      - config/dev-supabase-keys.env
     ports:
       - "54321:8000"
     environment:
@@ -113,6 +115,8 @@ services:
   # GoTrue authentication service
   auth:
     image: supabase/gotrue:v2.184.0@sha256:c485010238ab429edf4ac8eb70b37b41aae0a0905277a935d4a0b64bb848e393
+    env_file:
+      - config/dev-supabase-keys.env
     environment:
       API_EXTERNAL_URL: http://localhost:54321
       GOTRUE_API_HOST: 0.0.0.0
@@ -154,6 +158,8 @@ services:
   # PostgREST API service
   rest:
     image: postgrest/postgrest:v13.0.8@sha256:d09618df2b7b9547c80a076c2f4045b326be8d7ac06060d263caefec1334e3c9
+    env_file:
+      - config/dev-supabase-keys.env
     environment:
       PGRST_DB_URI: postgresql://authenticator:postgres@db:5432/postgres
       PGRST_DB_SCHEMAS: public,graphql_public
@@ -170,6 +176,8 @@ services:
   # Realtime service
   realtime:
     image: supabase/realtime:v2.68.4@sha256:073fe75851c49c711d2ce0d144603c0c946a093173f7411af4c7461809034883
+    env_file:
+      - config/dev-supabase-keys.env
     environment:
       DB_HOST: db
       DB_PORT: 5432
@@ -197,6 +205,8 @@ services:
   # Storage API service
   storage:
     image: supabase/storage-api:v1.33.0@sha256:3e3742049427313d167578ba7af753069947972b64fcc5374cfb750f66a26177
+    env_file:
+      - config/dev-supabase-keys.env
     environment:
       ANON_KEY: ${SUPABASE_ANON_KEY}
       SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
@@ -236,6 +246,8 @@ services:
   # Supabase Studio
   studio:
     image: supabase/studio:2025.12.09-sha-434634f@sha256:8b50b5e3ac59fb42931a7d9e6276461a03bdfd3499a7c487aec41b0359fc948a
+    env_file:
+      - config/dev-supabase-keys.env
     ports:
       - "54323:3000"
     environment:
@@ -278,6 +290,8 @@ services:
   # Edge Runtime for Supabase Functions
   edge-runtime:
     image: supabase/edge-runtime:v1.69.28@sha256:29d8fbebb409bd71a68e2efdca20fadcd52af343965a718f4f157b2dff7018ab
+    env_file:
+      - config/dev-supabase-keys.env
     environment:
       JWT_SECRET: ${SUPABASE_JWT_SECRET}
       SUPABASE_URL: http://kong:8000

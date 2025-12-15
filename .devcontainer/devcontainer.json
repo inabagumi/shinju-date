@@ -69,9 +69,9 @@
   },
   "postCreateCommand": "./.devcontainer/post-create.sh",
   "remoteEnv": {
-    "SUPABASE_ANON_KEY": "${localEnv:SUPABASE_ANON_KEY:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}",
-    "SUPABASE_SERVICE_ROLE_KEY": "${localEnv:SUPABASE_SERVICE_ROLE_KEY:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg}",
-    "UPSTASH_REDIS_REST_TOKEN": "${localEnv:UPSTASH_REDIS_REST_TOKEN:local-dev-token}"
+    "SUPABASE_ANON_KEY": "${localEnv:SUPABASE_ANON_KEY}",
+    "SUPABASE_SERVICE_ROLE_KEY": "${localEnv:SUPABASE_SERVICE_ROLE_KEY}",
+    "UPSTASH_REDIS_REST_TOKEN": "${localEnv:UPSTASH_REDIS_REST_TOKEN}"
   },
   "service": "app",
   "waitFor": "postCreateCommand",
