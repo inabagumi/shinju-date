@@ -1,22 +1,21 @@
 #!/usr/bin/env bash
+# Project-specific initialization script for Dev Container
+# OS-level setup (apt packages, corepack, uv) is handled in Dockerfile
+# This script focuses on project dependencies and database initialization
+
 set -euo pipefail
 
-# Install PostgreSQL client for psql command
-sudo apt-get update && sudo apt-get install -y postgresql-client
+echo "Starting project-specific initialization..."
 
-sudo npm uninstall -g pnpm
-sudo corepack enable
-
+# Verify corepack-managed pnpm is available
 COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm --version
 
-# Install uv for Python development
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
 # Install workspace dependencies
+echo "Installing workspace dependencies..."
 pnpm install --frozen-lockfile
 
-# Apply migrations and seed via Supabase CLI
-echo "Resetting database using Supabase CLI (migrations + seed) ..."
+# Initialize database with migrations and seed data
+echo "Resetting database using Supabase CLI (migrations + seed)..."
 # Use explicit DB URL since `supabase start` is not used in Dev Container.
 # Customize via env: SUPABASE_DB_HOST, SUPABASE_DB_PORT, SUPABASE_DB_NAME, SUPABASE_DB_USER, SUPABASE_DB_PASS
 SUPABASE_DB_HOST="${SUPABASE_DB_HOST:-db}"
@@ -36,4 +35,8 @@ if ! pnpm exec supabase db reset --db-url "$DB_URL" --yes; then
 fi
 
 # Generate type definitions
+echo "Generating TypeScript type definitions..."
 pnpm typegen || true
+
+echo "Project initialization completed successfully!"
+

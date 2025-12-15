@@ -3,9 +3,11 @@
 
 services:
   app:
-    image: mcr.microsoft.com/devcontainers/typescript-node:4-24-bookworm@sha256:2baba848f88e02278bcf59e072752f7371534ccfc67afcd8e0ee6b293865c6f9
+    build:
+      context: .
+      dockerfile: Dockerfile
     env_file:
-      - ./config/dev-secrets.env
+      - ../config/dev-secrets.env
     volumes:
       - ../..:/workspaces:cached
     command: sleep infinity
