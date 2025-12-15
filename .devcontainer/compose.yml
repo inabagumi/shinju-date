@@ -5,20 +5,16 @@ services:
   app:
     image: mcr.microsoft.com/devcontainers/typescript-node:4-24-bookworm@sha256:2baba848f88e02278bcf59e072752f7371534ccfc67afcd8e0ee6b293865c6f9
     env_file:
-      - ../config/dev-supabase-keys.env
+      - ./config/dev-secrets.env
     volumes:
       - ../..:/workspaces:cached
     command: sleep infinity
     environment:
-      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
-      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      # Environment variables loaded from env_file (./config/dev-secrets.env):
+      # SUPABASE_ANON_KEY, SUPABASE_SERVICE_KEY, NEXT_PUBLIC_SUPABASE_ANON_KEY, UPSTASH_REDIS_REST_TOKEN
       SUPABASE_URL: http://kong:8000
-      UPSTASH_REDIS_REST_TOKEN: "${UPSTASH_REDIS_REST_TOKEN:-local-dev-token}"
       UPSTASH_REDIS_REST_URL: http://serverless-redis-http:80
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
       NEXT_PUBLIC_SUPABASE_URL: http://kong:8000
-      NEXT_PUBLIC_UPSTASH_REDIS_REST_TOKEN: "${UPSTASH_REDIS_REST_TOKEN:-local-dev-token}"
-      NEXT_PUBLIC_UPSTASH_REDIS_REST_URL: http://serverless-redis-http:80
     depends_on:
       serverless-redis-http:
         condition: service_healthy

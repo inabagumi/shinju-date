@@ -68,11 +68,6 @@
     }
   },
   "postCreateCommand": "./.devcontainer/post-create.sh",
-  "remoteEnv": {
-    "SUPABASE_ANON_KEY": "${localEnv:SUPABASE_ANON_KEY}",
-    "SUPABASE_SERVICE_ROLE_KEY": "${localEnv:SUPABASE_SERVICE_ROLE_KEY}",
-    "UPSTASH_REDIS_REST_TOKEN": "${localEnv:UPSTASH_REDIS_REST_TOKEN}"
-  },
   "service": "app",
   "waitFor": "postCreateCommand",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"

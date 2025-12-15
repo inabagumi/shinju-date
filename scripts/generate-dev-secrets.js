@@ -1,16 +1,20 @@
 #!/usr/bin/env node
 
 /**
- * Generate Supabase development keys using Web Crypto API (Node.js v24+)
+ * Generate Supabase development keys and Upstash token
+ * Uses Web Crypto API (Node.js v24+)
  *
  * This script generates:
  * - SUPABASE_JWT_SECRET: Random 32-byte base64url-encoded secret
  * - SUPABASE_ANON_KEY: HS256 JWT with 'anon' role
  * - SUPABASE_SERVICE_ROLE_KEY: HS256 JWT with 'service_role' role
+ * - UPSTASH_REDIS_REST_TOKEN: Random token for local development
+ *
+ * Outputs all keys to stdout which can be used directly in env_file
  *
  * Usage:
- *   node scripts/generate-dev-supabase-keys.js
- *   pnpm dev:generate-supabase-keys > config/dev-supabase-keys.env
+ *   node scripts/generate-dev-secrets.js > config/dev-secrets.env
+ *   pnpm dev:generate-secrets > config/dev-secrets.env
  */
 
 /**
@@ -28,7 +32,7 @@ function toBase64url(bytes) {
  * Generate a random JWT secret as base64url string
  * @returns {string} 32-byte random secret encoded as base64url
  */
-export function generateJwtSecret() {
+function generateJwtSecret() {
   const bytes = new Uint8Array(32)
   crypto.getRandomValues(bytes)
   return toBase64url(bytes)
@@ -39,7 +43,7 @@ export function generateJwtSecret() {
  * @param {string} role - The role for this JWT ('anon' or 'service_role')
  * @returns {object} JWT payload object
  */
-export function makeSupabasePayload(role) {
+function makeSupabasePayload(role) {
   const iat = Math.floor(Date.now() / 1000)
   const exp = iat + 5 * 365 * 24 * 60 * 60
 
@@ -49,25 +53,6 @@ export function makeSupabasePayload(role) {
     iss: 'supabase',
     role,
   }
-}
-
-/**
- * Base64url decode a string to Uint8Array
- * @param {string} str - Base64url encoded string
- * @returns {Uint8Array} Decoded bytes
- */
-function fromBase64url(str) {
-  // Convert base64url to standard base64
-  const base64 = str.replace(/-/g, '+').replace(/_/g, '/')
-  // Pad if needed
-  const padded = base64.padEnd(
-    base64.length + ((4 - (base64.length % 4)) % 4),
-    '=',
-  )
-  // Decode using atob
-  const binString = atob(padded)
-  // Convert to Uint8Array
-  return Uint8Array.from(binString, (c) => c.charCodeAt(0))
 }
 
 /**
@@ -81,14 +66,24 @@ function base64urlEncodeString(str) {
 }
 
 /**
+ * Generate a random token for Upstash Redis REST API
+ * @returns {string} Random token as base64url string
+ */
+function generateUpstashToken() {
+  const bytes = new Uint8Array(32)
+  crypto.getRandomValues(bytes)
+  return toBase64url(bytes)
+}
+
+/**
  * Sign a JWT using HS256 (HMAC-SHA256)
  * @param {object} payload - JWT payload object
- * @param {string} secret - Base64url-encoded secret key
+ * @param {string} secret - Raw secret string
  * @returns {Promise<string>} Signed JWT token
  */
-export async function signHs256(payload, secret) {
-  // Decode the base64url secret to bytes
-  const secretBytes = fromBase64url(secret)
+async function signHs256(payload, secret) {
+  // Encode the raw secret string as bytes (no base64 decoding)
+  const secretBytes = new TextEncoder().encode(secret)
 
   // Import the secret as a CryptoKey for HMAC
   const key = await crypto.subtle.importKey(
@@ -125,7 +120,7 @@ export async function signHs256(payload, secret) {
 }
 
 /**
- * Main function to generate and print Supabase keys
+ * Main function to generate and output all keys
  */
 async function main() {
   const jwtSecret = generateJwtSecret()
@@ -135,11 +130,32 @@ async function main() {
 
   const anonKey = await signHs256(anonPayload, jwtSecret)
   const serviceRoleKey = await signHs256(serviceRolePayload, jwtSecret)
+  const upstashToken = generateUpstashToken()
 
   console.log('# Supabase dev keys')
   console.log(`SUPABASE_JWT_SECRET=${jwtSecret}`)
   console.log(`SUPABASE_ANON_KEY=${anonKey}`)
   console.log(`SUPABASE_SERVICE_ROLE_KEY=${serviceRoleKey}`)
+  console.log()
+  console.log(
+    '# Supabase dev keys - alternative names (used by docker-compose services)',
+  )
+  console.log(`NEXT_PUBLIC_SUPABASE_ANON_KEY=${anonKey}`)
+  console.log(`SUPABASE_SERVICE_KEY=${serviceRoleKey}`)
+  console.log(`SUPABASE_ANON_JWT=${anonKey}`)
+  console.log(`SUPABASE_SERVICE_ROLE_JWT=${serviceRoleKey}`)
+  console.log(`JWT_SECRET=${jwtSecret}`)
+  console.log(`GOTRUE_JWT_SECRET=${jwtSecret}`)
+  console.log(`PGRST_JWT_SECRET=${jwtSecret}`)
+  console.log(`PGRST_APP_SETTINGS_JWT_SECRET=${jwtSecret}`)
+  console.log(`API_JWT_SECRET=${jwtSecret}`)
+  console.log(`AUTH_JWT_SECRET=${jwtSecret}`)
+  console.log(`ANON_KEY=${anonKey}`)
+  console.log(`SERVICE_KEY=${serviceRoleKey}`)
+  console.log()
+  console.log('# Upstash Redis REST API token')
+  console.log(`UPSTASH_REDIS_REST_TOKEN=${upstashToken}`)
+  console.log(`SRH_TOKEN=${upstashToken}`)
 }
 
 // Only run main if this file is being executed directly
