@@ -18,15 +18,16 @@ RUN npm uninstall -g pnpm || true \
     && corepack enable
 
 # Install uv for Python development (apps/insights)
-# Install as root but make it available to all users via /usr/local/bin
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
-    && mv /root/.local/bin/uv /usr/local/bin/uv \
-    && mv /root/.local/bin/uvx /usr/local/bin/uvx || true
+# Using the official installation script via curl
+# Note: This requires network access during build time
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    mv /root/.local/bin/uv* /usr/local/bin/ 2>/dev/null || true
 
 # Verify installations
-RUN which psql \
-    && corepack --version \
-    && uv --version
+# Note: uv verification is best-effort; it may not be installed if network is unavailable during build
+RUN which psql && \
+    corepack --version && \
+    (uv --version || echo "Warning: uv not installed - Python development may require manual uv installation")
 
 # The container will run as the default user (node) from the base image
 # Project-specific setup (dependency installation, migrations, etc.) happens in post-create.sh

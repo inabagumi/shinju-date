@@ -194,6 +194,18 @@ docker compose logs db
 docker compose logs kong
 ```
 
+### uv が利用できない（Python 開発時）
+
+Dockerfile のビルド時にネットワーク接続が利用できない環境では、uv のインストールがスキップされることがあります。この場合、コンテナ内で手動でインストールしてください：
+
+```bash
+# コンテナ内で実行
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source ~/.bashrc  # または新しいシェルを起動
+```
+
+VS Code Dev Container や GitHub Codespaces では、通常この問題は発生しません（ビルド時にネットワークアクセスが可能なため）。
+
 ## 参考資料
 
 - [Dev Containers 仕様](https://containers.dev/)
