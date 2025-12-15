@@ -14,7 +14,6 @@
   },
   "dockerComposeFile": ["../compose.yml", "compose.yml"],
   "features": {
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
     "ghcr.io/devcontainers/features/python:1": {},
     "ghcr.io/devcontainers/features/terraform:1": {
       "terragrunt": "none",

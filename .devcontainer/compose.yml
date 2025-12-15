@@ -5,7 +5,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: .devcontainer/Dockerfile
     env_file:
       # Path is relative to .devcontainer directory (where this compose.yml is located)
       # Dev Container is invoked from workspace root, so ./config/ resolves correctly
