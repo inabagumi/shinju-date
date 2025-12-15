@@ -24,6 +24,8 @@ RUN npm uninstall -g pnpm || true \
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
     (mv /root/.local/bin/uv /usr/local/bin/uv 2>/dev/null || true) && \
     (mv /root/.local/bin/uvx /usr/local/bin/uvx 2>/dev/null || true)
+# Note: `|| true` allows build to succeed if uv installation fails (e.g., network issues)
+# The verification step below will warn if uv is not available
 
 # Verify installations
 # Note: uv verification is best-effort; it may not be installed if network is unavailable during build

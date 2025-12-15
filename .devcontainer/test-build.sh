@@ -8,6 +8,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 echo "Building Dev Container Dockerfile..."
+# Note: Using --no-cache ensures a clean build for testing purposes
+# For faster iterations during development, you can remove this flag
 docker build --no-cache -t shinju-date-devcontainer:test -f Dockerfile .
 
 echo ""
