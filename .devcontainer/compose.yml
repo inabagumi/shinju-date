@@ -7,9 +7,9 @@ services:
       context: .
       dockerfile: Dockerfile
     env_file:
-      # Relative path is intentional - dev-secrets.env is shared between
-      # Dev Container and ../compose.yml (root) for consistency
-      - ../config/dev-secrets.env
+      # Path is relative to .devcontainer directory (where this compose.yml is located)
+      # Dev Container is invoked from workspace root, so ./config/ resolves correctly
+      - ./config/dev-secrets.env
     volumes:
       - ../..:/workspaces:cached
     command: sleep infinity
