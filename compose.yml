@@ -1,8 +1,6 @@
 # Docker Compose configuration for SHINJU DATE development services
 # This file contains all the backing services needed for local development
 
- # Supabase keys provided via Dev Container env; remove defaults/anchors
-
 services:
   # Redis for caching and session management
   redis:
@@ -21,11 +19,13 @@ services:
   # Redis HTTP API (Upstash compatible)
   serverless-redis-http:
     image: hiett/serverless-redis-http:0.0.10@sha256:65128347949bca511e448fd7238780d624573d74c22b79155a7563db19e9b678
+    env_file:
+      - ./config/dev-secrets.env
     ports:
       - "8079:80"
     environment:
+      # Secrets loaded from env_file (./config/dev-secrets.env): SRH_TOKEN
       SRH_MODE: env
-      SRH_TOKEN: "${UPSTASH_REDIS_REST_TOKEN:-local-dev-token}"
       SRH_CONNECTION_STRING: "redis://redis:6379"
     depends_on:
       redis:
@@ -44,6 +44,8 @@ services:
   # PostgreSQL database
   db:
     image: supabase/postgres:17.6.1.064@sha256:4c6d67181e482549bab276e8ae933f807be59ea1c371c225d85c189b0c14b9de
+    env_file:
+      - ./config/dev-secrets.env
     command:
       - postgres
       - -c
@@ -53,12 +55,12 @@ services:
     ports:
       - "54322:5432"
     environment:
+      # Secrets loaded from env_file (./config/dev-secrets.env): JWT_SECRET
       POSTGRES_HOST: /var/run/postgresql
       POSTGRES_INITDB_ARGS: --allow-group-access --locale-provider=icu --encoding=UTF-8 --icu-locale=en_US.UTF-8
       POSTGRES_PASSWORD: ${SUPABASE_POSTGRES_PASSWORD:-postgres}
       POSTGRES_USER: ${SUPABASE_POSTGRES_USER:-supabase_admin}
       POSTGRES_DB: ${SUPABASE_POSTGRES_DB:-postgres}
-      JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
       JWT_EXP: 3600
     volumes:
       - db-data:/var/lib/postgresql/data
@@ -75,9 +77,13 @@ services:
   # Kong API Gateway
   kong:
     image: kong:2.8.5@sha256:34bbeaf6ee4c2db5f5c33ecf4793f29155753e2191b121eb25ffb6d8f151b37b
+    env_file:
+      - ./config/dev-secrets.env
     ports:
       - "54321:8000"
     environment:
+      # Environment variables loaded from env_file (./config/dev-secrets.env):
+      # SUPABASE_ANON_KEY, SUPABASE_SERVICE_KEY, SUPABASE_ANON_JWT, SUPABASE_SERVICE_ROLE_JWT
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /home/kong/kong.yml
       KONG_DNS_ORDER: LAST,A,CNAME
@@ -86,10 +92,6 @@ services:
       KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: 160k
       KONG_NGINX_PROXY_PROXY_BUFFERS: 64 160k
       KONG_NGINX_WORKER_PROCESSES: 1
-      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}
-      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg}
-      SUPABASE_ANON_JWT: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}
-      SUPABASE_SERVICE_ROLE_JWT: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg}
     volumes:
       - ./config/kong.yml:/home/kong/kong.yml:ro
     depends_on:
@@ -113,7 +115,10 @@ services:
   # GoTrue authentication service
   auth:
     image: supabase/gotrue:v2.184.0@sha256:c485010238ab429edf4ac8eb70b37b41aae0a0905277a935d4a0b64bb848e393
+    env_file:
+      - ./config/dev-secrets.env
     environment:
+      # Secrets loaded from env_file (./config/dev-secrets.env): GOTRUE_JWT_SECRET
       API_EXTERNAL_URL: http://localhost:54321
       GOTRUE_API_HOST: 0.0.0.0
       GOTRUE_API_PORT: 9999
@@ -126,7 +131,6 @@ services:
       GOTRUE_JWT_AUD: authenticated
       GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
       GOTRUE_JWT_EXP: 3600
-      GOTRUE_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
       GOTRUE_JWT_ISSUER: http://localhost:54321/auth/v1
       GOTRUE_EXTERNAL_EMAIL_ENABLED: true
       GOTRUE_MAILER_SECURE_EMAIL_CHANGE_ENABLED: true
@@ -154,13 +158,14 @@ services:
   # PostgREST API service
   rest:
     image: postgrest/postgrest:v13.0.8@sha256:d09618df2b7b9547c80a076c2f4045b326be8d7ac06060d263caefec1334e3c9
+    env_file:
+      - ./config/dev-secrets.env
     environment:
+      # Secrets loaded from env_file (./config/dev-secrets.env): PGRST_JWT_SECRET, PGRST_APP_SETTINGS_JWT_SECRET
       PGRST_DB_URI: postgresql://authenticator:postgres@db:5432/postgres
       PGRST_DB_SCHEMAS: public,graphql_public
       PGRST_DB_ANON_ROLE: anon
-      PGRST_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
       PGRST_DB_USE_LEGACY_GUCS: false
-      PGRST_APP_SETTINGS_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
       PGRST_APP_SETTINGS_JWT_EXP: 3600
     depends_on:
       db:
@@ -170,7 +175,10 @@ services:
   # Realtime service
   realtime:
     image: supabase/realtime:v2.68.4@sha256:073fe75851c49c711d2ce0d144603c0c946a093173f7411af4c7461809034883
+    env_file:
+      - ./config/dev-secrets.env
     environment:
+      # Secrets loaded from env_file (./config/dev-secrets.env): API_JWT_SECRET
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: supabase_admin
@@ -178,7 +186,6 @@ services:
       DB_NAME: postgres
       DB_AFTER_CONNECT_QUERY: SET search_path TO _realtime
       DB_ENC_KEY: supabaserealtime
-      API_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
       FLY_ALLOC_ID: fly123
       FLY_APP_NAME: realtime
       APP_NAME: realtime
@@ -197,11 +204,10 @@ services:
   # Storage API service
   storage:
     image: supabase/storage-api:v1.33.0@sha256:3e3742049427313d167578ba7af753069947972b64fcc5374cfb750f66a26177
+    env_file:
+      - ./config/dev-secrets.env
     environment:
-      ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}
-      SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg}
-      PGRST_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
-      AUTH_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      # Secrets loaded from env_file (./config/dev-secrets.env): ANON_KEY, SERVICE_KEY, PGRST_JWT_SECRET, AUTH_JWT_SECRET
       DATABASE_URL: postgresql://supabase_storage_admin:postgres@db:5432/postgres
       FILE_SIZE_LIMIT: 52428800
       STORAGE_BACKEND: file
@@ -236,17 +242,18 @@ services:
   # Supabase Studio
   studio:
     image: supabase/studio:2025.12.09-sha-434634f@sha256:8b50b5e3ac59fb42931a7d9e6276461a03bdfd3499a7c487aec41b0359fc948a
+    env_file:
+      - ./config/dev-secrets.env
     ports:
       - "54323:3000"
     environment:
+      # Secrets loaded from env_file (./config/dev-secrets.env): SUPABASE_ANON_KEY, SUPABASE_SERVICE_KEY
       STUDIO_PG_META_URL: http://pg-meta:8080
       POSTGRES_PASSWORD: postgres
       DEFAULT_ORGANIZATION_NAME: SHINJU DATE
       DEFAULT_PROJECT_NAME: shinju-date
       SUPABASE_URL: http://kong:8000
       SUPABASE_PUBLIC_URL: http://localhost:54321
-      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJhbm9uIn0.9pCwv3ciCGdZMu3tyjfxbKhJ7tCGWyANYLIhoy17PT8}
-      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwiaWF0IjoxNzY1Njk2MjI5LCJleHAiOjIwODEwNTYyMjksInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.7bS7ThEETND5T7oQNS8V3ELH7425AFd3wCN8OheWVTg}
     depends_on:
       kong:
         condition: service_healthy
@@ -278,11 +285,11 @@ services:
   # Edge Runtime for Supabase Functions
   edge-runtime:
     image: supabase/edge-runtime:v1.69.28@sha256:29d8fbebb409bd71a68e2efdca20fadcd52af343965a718f4f157b2dff7018ab
+    env_file:
+      - ./config/dev-secrets.env
     environment:
-      JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      # Secrets loaded from env_file (./config/dev-secrets.env): JWT_SECRET, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
       SUPABASE_URL: http://kong:8000
-      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MjQzMjA5NDAsImV4cCI6NDc3OTk5NjU5OX0.5qDZP71NL10yJyE_pdkoAQAxtPQf43-sXlZMTzhPO6s}
-      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaW5qdS1kYXRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTYyNDMyMDk0MCwiZXhwIjo0Nzc5OTk2NTk5fQ.B0N14xVx0c4PBcSUkkdYiTl6f8VvfR5tsxwURb1ooJU}
       SUPABASE_DB_URL: postgresql://postgres:postgres@db:5432/postgres
       VERIFY_JWT: false
     depends_on:
