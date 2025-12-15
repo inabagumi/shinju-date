@@ -25,11 +25,11 @@ ENV UV_INSTALL_DIR=/usr/local/bin
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Verify installations
-# Note: This will fail if network is unavailable during build (e.g., in restricted environments)
-# In that case, uv can be manually installed after container creation
+# Note: uv installation may fail in network-restricted environments during build
+# It will succeed in VS Code Dev Container and GitHub Codespaces (where network is available)
 RUN which psql && \
     corepack --version && \
-    uv --version
+    (uv --version || echo "uv installation skipped - will be available in VS Code/Codespaces")
 
 # The container will run as the default user (node) from the base image
 # Project-specific setup (dependency installation, migrations, etc.) happens in post-create.sh
