@@ -62,7 +62,10 @@ export default function SearchVolumeChartUI({
               border: '1px solid #e5e7eb',
               borderRadius: '0.5rem',
             }}
-            formatter={(value: number) => [`${value} 回`, '検索数']}
+            formatter={(value: number | undefined) => [
+              `${value ?? 0} 回`,
+              '検索数',
+            ]}
             labelStyle={{ color: '#374151', fontWeight: 600 }}
           />
           <Area
