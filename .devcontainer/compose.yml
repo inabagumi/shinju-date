@@ -3,8 +3,12 @@
 
 services:
   app:
-    image: mcr.microsoft.com/devcontainers/typescript-node:4-24-bookworm@sha256:2baba848f88e02278bcf59e072752f7371534ccfc67afcd8e0ee6b293865c6f9
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
     env_file:
+      # Path is relative to .devcontainer directory (where this compose.yml is located)
+      # Dev Container is invoked from workspace root, so ./config/ resolves correctly
       - ./config/dev-secrets.env
     volumes:
       - ../..:/workspaces:cached
