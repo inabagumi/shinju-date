@@ -7,11 +7,10 @@ services:
       context: .
       dockerfile: .devcontainer/Dockerfile
     env_file:
-      # Path is relative to .devcontainer directory (where this compose.yml is located)
-      # Dev Container is invoked from workspace root, so ./config/ resolves correctly
+      # Paths are relative to the project root (first compose file location)
       - ./config/dev-secrets.env
     volumes:
-      - ../..:/workspaces:cached
+      - .:/workspaces/shinju-date:cached
     command: sleep infinity
     environment:
       # Environment variables loaded from env_file (./config/dev-secrets.env):
