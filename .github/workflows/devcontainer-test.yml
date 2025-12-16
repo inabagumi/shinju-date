@@ -52,9 +52,3 @@ jobs:
         run: |
           echo "📦 Testing project dependency installation..."
           devcontainer exec --workspace-folder . pnpm install --frozen-lockfile
-
-      - name: Stop Dev Container
-        if: always()
-        run: |
-          echo "🛑 Stopping Dev Container..."
-          devcontainer down --workspace-folder .
