@@ -34,7 +34,7 @@
     "tailwindcss": "4.1.18",
     "temporal-polyfill": "0.3.0",
     "ufo": "1.6.1",
-    "zod": "4.2.0"
+    "zod": "4.2.1"
   },
   "description": "Public website frontend for SHINJU DATE (https://shinju.date)",
   "devDependencies": {
