@@ -3,8 +3,8 @@
   "dependencies": {
     "@mdx-js/react": "3.1.1",
     "@radix-ui/react-dialog": "1.1.15",
-    "@sentry/nextjs": "10.30.0",
-    "@sentry/profiling-node": "10.30.0",
+    "@sentry/nextjs": "10.31.0",
+    "@sentry/profiling-node": "10.31.0",
     "@shinju-date/constants": "workspace:*",
     "@shinju-date/health-checkers": "workspace:*",
     "@shinju-date/helpers": "workspace:*",
