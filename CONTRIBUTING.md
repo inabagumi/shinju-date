@@ -10,32 +10,17 @@ SHINJU DATEプロジェクトへの貢献をご検討いただき、ありがと
 
 ## Dev Container設定の開発とデバッグ
 
-Dev Container設定（`.devcontainer/`）を変更する場合は、変更前に必ずテストしてください。
+Dev Container設定（`.devcontainer/`）を変更する場合は、`@devcontainers/cli`を使用してローカルでテストしてください。
 
-### 推奨: 自動テストスクリプト
-
-最も簡単な方法は、自動テストスクリプトを使用することです：
+### Dev Containers CLIのインストール
 
 ```bash
-# Dockerfileのビルドと基本ツールの検証
-pnpm devcontainer:test
+npm install -g @devcontainers/cli
 ```
 
-このスクリプトは以下を検証します：
-- Dockerfileが正常にビルドできること
-- PostgreSQLクライアント、corepack、uvが利用可能であること
-- Node.jsのバージョン
-
-### 完全な統合テスト
-
-Dev Containers CLIを使用して、完全な環境でテストすることもできます：
+### Dev Container設定のテスト
 
 ```bash
-# CLIのインストール（初回のみ）
-npm install -g @devcontainers/cli
-# または、プロジェクトの依存関係として
-pnpm install  # @devcontainers/cli が devDependencies に含まれています
-
 # Dev Containerをビルドしてテスト
 devcontainer up --workspace-folder .
 
@@ -45,14 +30,6 @@ devcontainer exec --workspace-folder . pnpm install
 # Dev Containerを停止
 devcontainer down --workspace-folder .
 ```
-
-### CI/CD自動テスト
-
-プルリクエストを作成すると、GitHub Actionsで自動的に以下がテストされます：
-- Dockerfileのビルド
-- Dev Container環境の統合テスト
-
-ワークフローファイル: `.github/workflows/devcontainer-test.yml`
 
 ### 変更すべき設定ファイル
 

@@ -96,87 +96,42 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 
 ## 運用上の注意点
 
-### Dev Container のテスト環境
+### Dockerfile のテスト
 
-このプロジェクトでは、Dev Container の品質を保証するため、複数のテスト方法を提供しています。
-
-#### 方法1: 自動テストスクリプト（推奨）
-
-Dockerfile のビルドと基本的なツールのインストールを素早く検証できます：
-
-```bash
-# プロジェクトの依存関係をインストール（初回のみ）
-pnpm install
-
-# テストスクリプトを実行
-pnpm devcontainer:test
-
-# または直接実行
-./.devcontainer/test-build.sh
-```
-
-このスクリプトは以下を検証します：
-- Dockerfile が正常にビルドできること
-- PostgreSQL クライアント（psql）がインストールされていること
-- corepack が利用可能であること
-- uv（Python パッケージマネージャー）がインストールされていること
-
-#### 方法2: Dev Containers CLI による統合テスト
-
-完全な Dev Container 環境を起動してテストするには、`@devcontainers/cli` を使用してください：
+Dockerfile の変更をローカルでテストするには、`@devcontainers/cli` を使用してください：
 
 ```bash
 # CLIのインストール（初回のみ）
 npm install -g @devcontainers/cli
-# または、プロジェクトの依存関係として
-pnpm install  # @devcontainers/cli が devDependencies に含まれています
 
-# Dev Container のビルドと起動
+# Dev Container のビルドとテスト
 devcontainer up --workspace-folder .
-
-# Dev Container 内でコマンドを実行
-devcontainer exec --workspace-folder . pnpm --version
-devcontainer exec --workspace-folder . node --version
 
 # テスト後のクリーンアップ
 devcontainer down --workspace-folder .
 ```
 
-#### 方法3: CI/CD パイプライン
-
-Dev Container の設定変更時、GitHub Actions で自動的にテストが実行されます：
-- Dockerfile のビルドテスト
-- Dev Container の統合テスト（環境のセットアップと基本コマンドの実行）
-- テスト結果の自動レポート
-
-ワークフローファイル: `.github/workflows/devcontainer-test.yml`
-
 詳細は CONTRIBUTING.md の「Dev Container設定の開発とデバッグ」セクションを参照してください。
 
 ### Dockerfile を変更した場合
 
-Dockerfile を変更した場合は、**必ずテストを実行してからコミット**してください：
-
-**ステップ1: ローカルテスト**
-
-```bash
-# 簡易テスト（推奨）
-pnpm devcontainer:test
-
-# または完全な統合テスト
-devcontainer up --workspace-folder .
-devcontainer exec --workspace-folder . pnpm install
-devcontainer down --workspace-folder .
-```
-
-**ステップ2: VS Code でのリビルド**
+Dockerfile を変更した場合は、**必ず Dev Container をリビルド**してください：
 
 1. VS Code のコマンドパレット（`Cmd+Shift+P` / `Ctrl+Shift+P`）を開く
 2. `Dev Containers: Rebuild Container` を実行
 
-**ステップ3: CI/CD での検証**
+または、ローカルで `@devcontainers/cli` を使用してテスト：
 
-プルリクエストを作成すると、GitHub Actions で自動的にテストが実行されます。
+```bash
+# CLIのインストール（初回のみ）
+npm install -g @devcontainers/cli
+
+# Dev Container のビルドとテスト
+devcontainer up --workspace-folder .
+
+# テスト後のクリーンアップ
+devcontainer down --workspace-folder .
+```
 
 ### post-create.sh を変更した場合
 

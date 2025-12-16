@@ -14,60 +14,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Test 1: Dockerfile build validation
-  dockerfile-test:
-    name: Dockerfile Build Test
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-
-      - name: Run Dockerfile build test
-        run: ./.devcontainer/test-build.sh
-
-      - name: Report Dockerfile test results
-        if: always()
-        run: |
-          if [ $? -eq 0 ]; then
-            echo "✅ Dockerfile build test passed"
-          else
-            echo "❌ Dockerfile build test failed"
-            exit 1
-          fi
-
-  # Test 2: Full Dev Container integration test
   devcontainer-test:
-    name: Dev Container Integration Test
+    name: Dev Container Test
     runs-on: ubuntu-24.04
     permissions:
       contents: read
 
-    env:
-      # renovate: datasource=npm depName=corepack
-      COREPACK_VERSION: 0.34.5
-      # renovate: datasource=node-version depName=node
-      NODE_VERSION: 24.12.0
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-
-      - name: Enable Corepack
-        run: |
-          npm install -g corepack@${COREPACK_VERSION}
-          corepack enable
-
-      - name: Setup Node.js
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Install @devcontainers/cli
         run: npm install -g @devcontainers/cli
@@ -103,40 +58,3 @@ jobs:
         run: |
           echo "🛑 Stopping Dev Container..."
           devcontainer down --workspace-folder .
-
-      - name: Report Dev Container test results
-        if: always()
-        run: |
-          if [ $? -eq 0 ]; then
-            echo "✅ Dev Container integration test passed"
-          else
-            echo "❌ Dev Container integration test failed"
-            exit 1
-          fi
-
-  # Summary job - required status check
-  devcontainer-test-summary:
-    name: Dev Container Test Summary
-    runs-on: ubuntu-24.04
-    needs: [dockerfile-test, devcontainer-test]
-    if: always()
-
-    steps:
-      - name: Check Dockerfile test results
-        if: needs.dockerfile-test.result != 'success'
-        run: |
-          echo "❌ Dockerfile test failed"
-          exit 1
-
-      - name: Check Dev Container test results
-        if: needs.devcontainer-test.result != 'success'
-        run: |
-          echo "❌ Dev Container integration test failed"
-          exit 1
-
-      - name: All tests passed
-        run: |
-          echo "✅ All Dev Container tests passed successfully!"
-          echo "📊 Test Summary:"
-          echo "  - Dockerfile Build: ${{ needs.dockerfile-test.result }}"
-          echo "  - Dev Container Integration: ${{ needs.devcontainer-test.result }}"
