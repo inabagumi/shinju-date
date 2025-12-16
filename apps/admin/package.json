@@ -34,7 +34,7 @@
     "tailwind-merge": "3.4.0",
     "tailwindcss": "4.1.18",
     "temporal-polyfill": "0.3.0",
-    "zod": "4.2.0"
+    "zod": "4.2.1"
   },
   "description": "Content management admin dashboard for SHINJU DATE",
   "devDependencies": {
