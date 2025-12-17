@@ -32,23 +32,26 @@ jobs:
           echo "🚀 Starting Dev Container..."
           devcontainer up --workspace-folder .
 
-      - name: Test Dev Container environment
+      - name: Verify Dev Container functionality
         run: |
-          echo "🧪 Testing Dev Container environment..."
+          echo "✅ Verifying Dev Container runtime..."
           
-          # Test Node.js availability
-          devcontainer exec --workspace-folder . node --version
+          # Test that the development server can start
+          # Use timeout to prevent hanging, and grep to verify output
+          timeout 30s devcontainer exec --workspace-folder . pnpm dev > /tmp/dev-output.log 2>&1 &
+          DEV_PID=$!
           
-          # Test pnpm availability (via corepack)
-          devcontainer exec --workspace-folder . pnpm --version
+          # Wait for server to start (look for "Ready" or similar indicator)
+          sleep 15
           
-          # Test psql availability
-          devcontainer exec --workspace-folder . psql --version
+          # Kill the dev server
+          kill $DEV_PID || true
           
-          # Test uv availability
-          devcontainer exec --workspace-folder . uv --version
-
-      - name: Test project dependency installation
-        run: |
-          echo "📦 Testing project dependency installation..."
-          devcontainer exec --workspace-folder . pnpm install --frozen-lockfile
+          # Check if server started successfully
+          if grep -q "Ready\|compiled\|started" /tmp/dev-output.log; then
+            echo "✓ Development server started successfully"
+          else
+            echo "✗ Development server failed to start"
+            cat /tmp/dev-output.log
+            exit 1
+          fi

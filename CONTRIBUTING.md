@@ -34,7 +34,7 @@ devcontainer down --workspace-folder .
 ### 変更すべき設定ファイル
 
 - `.devcontainer/devcontainer.json` - Dev Container本体の設定
-- `.devcontainer/compose.yml` - Dev Container専用サービス（appのみ）
+- `.devcontainer/compose.override.yml` - Dev Container専用サービス（appのみ）
 - `compose.yml`（ルート） - Supabase、Redis等の共有サービス
 - `config/` - Kong、Vector等の設定ファイル
 
@@ -427,17 +427,17 @@ lsof -i :54321
 lsof -i :54322
 lsof -i :54323
 
-# 競合するサービスを停止するか、.devcontainer/compose.yml でポートを変更
+# 競合するサービスを停止するか、.devcontainer/compose.override.yml でポートを変更
 ```
 
 #### データベース接続エラー
 
 ```bash
 # データベースサービスの状態を確認
-docker compose -f .devcontainer/compose.yml ps db
+docker compose -f .devcontainer/compose.override.yml ps db
 
 # データベースに直接接続してテスト
-docker compose -f .devcontainer/compose.yml exec db psql -U supabase_admin -d postgres
+docker compose -f .devcontainer/compose.override.yml exec db psql -U supabase_admin -d postgres
 ```
 
 #### MSW が動作しない

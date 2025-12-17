@@ -60,7 +60,7 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 - コンテナイメージの具体的なビルド手順（Dockerfile に記載）
 - バックエンドサービスの定義（compose.yml に記載）
 
-### 4. compose.yml - Dev Container 専用サービス定義
+### 4. compose.override.yml - Dev Container 専用サービス定義
 
 **職責**: Dev Container で使用する `app` サービスのみを定義します。
 
@@ -84,7 +84,7 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 ├── Dockerfile          # OS レベルセットアップ（イメージビルド時）
 ├── post-create.sh      # プロジェクト固有初期化（コンテナ起動後）
 ├── devcontainer.json   # VS Code / Codespaces 設定
-├── compose.yml         # Dev Container 専用サービス（app のみ）
+├── compose.override.yml  # Dev Container 専用サービス（app のみ）
 └── README.md           # このファイル
 
 ../compose.yml           # ルートの compose.yml（共有サービス）
@@ -236,12 +236,12 @@ VS Code Dev Container や GitHub Codespaces では、通常この問題は発生
 このプロジェクトでは、Docker Composeを使用してSupabaseサービスとRedisを管理します。サービス定義は2つのファイルに分かれています：
 
 - **`../compose.yml`（ルート）**: Supabase、Redis等の共有開発サービス
-- **`.devcontainer/compose.yml`**: Dev Container専用のappサービス
+- **`.devcontainer/compose.override.yml`**: Dev Container専用のappサービス
 
 ## ファイル構成
 
 - **devcontainer.json** - VSCode Dev Container / GitHub Codespaces の設定
-- **compose.yml** - Dev Container専用サービス（appのみ）
+- **compose.override.yml** - Dev Container専用サービス（appのみ）
 - **post-create.sh** - コンテナ作成後に実行される初期化スクリプト
 
 ### ルートレベルの設定ファイル
@@ -365,7 +365,7 @@ docker compose up -d
 
 ### ポート競合
 
-`.devcontainer/compose.yml`のポートマッピングを変更してください：
+`.devcontainer/compose.override.yml`のポートマッピングを変更してください：
 
 ```yaml
 ports:

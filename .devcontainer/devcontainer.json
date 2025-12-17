@@ -12,7 +12,7 @@
       "settings": {}
     }
   },
-  "dockerComposeFile": ["../compose.yml", "compose.yml"],
+  "dockerComposeFile": ["../compose.yml", "compose.override.yml"],
   "features": {
     "ghcr.io/devcontainers/features/python:1": {},
     "ghcr.io/devcontainers/features/terraform:1": {
