@@ -10,7 +10,9 @@ services:
       # Paths are relative to the project root (first compose file location)
       - ./config/dev-secrets.env
     volumes:
-      - ../..:/workspaces:cached
+      -  type: bind
+        source: ..
+        target: /workspaces/shinju-date
     command: sleep infinity
     environment:
       # Environment variables loaded from env_file (./config/dev-secrets.env):
