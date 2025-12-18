@@ -300,7 +300,7 @@ services:
 
   # Analytics service
   analytics:
-    image: supabase/logflare:1.27.2@sha256:6360eb33fd262f96d304ccd18d091e06f31db67666076a3885c3f099bc7eda45
+    image: supabase/logflare:1.27.3@sha256:f1a5db1f59bada95bf36d7167935db74e85cced0202ebe84d94a0ac15684ce54
     ports:
       - "54327:4000"
     environment:
