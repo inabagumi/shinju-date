@@ -69,5 +69,5 @@
   "postCreateCommand": "./.devcontainer/post-create.sh",
   "service": "app",
   "waitFor": "postCreateCommand",
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
+  "workspaceFolder": "/workspaces/shinju-date"
 }
