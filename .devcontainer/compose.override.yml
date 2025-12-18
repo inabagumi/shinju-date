@@ -12,9 +12,10 @@ services:
       - ./config/dev-secrets.env
     volumes:
       # Mount the project workspace
-      # Path is relative to the location of the FIRST docker compose file (../compose.yml)
-      # Since this compose.override.yml is in .devcontainer/, we use .. to go up one level
-      - ..:/workspaces/shinju-date:cached
+      # Path is relative to the location of the FIRST docker compose file (../compose.yml in project root)
+      # All relative paths in ALL compose files are resolved from the project root directory
+      # Therefore, "." refers to the project root directory
+      - .:/workspaces/shinju-date:cached
     command: sleep infinity
     environment:
       # Environment variables loaded from env_file (./config/dev-secrets.env):
