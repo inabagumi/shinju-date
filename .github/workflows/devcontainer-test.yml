@@ -1,0 +1,59 @@
+name: Dev Container Test
+
+on:
+  pull_request:
+    paths:
+      - .devcontainer/**
+      - .github/workflows/devcontainer-test.yml
+  push:
+    branches:
+      - main
+    paths:
+      - .devcontainer/**
+      - .github/workflows/devcontainer-test.yml
+  workflow_dispatch:
+
+jobs:
+  devcontainer-test:
+    name: Dev Container Test
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Install @devcontainers/cli
+        run: npm install -g @devcontainers/cli
+
+      - name: Start Dev Container
+        run: |
+          echo "🚀 Starting Dev Container..."
+          devcontainer up --workspace-folder .
+
+      - name: Verify Dev Container functionality
+        run: |
+          echo "✅ Verifying Dev Container runtime..."
+          
+          # Test that the development server can start
+          # Set concurrency to 20 to handle all 17 persistent tasks plus buffer
+          # Use timeout to prevent hanging, and grep to verify output
+          timeout 90s devcontainer exec --workspace-folder . pnpm dev --concurrency=20 > /tmp/dev-output.log 2>&1 &
+          DEV_PID=$!
+          
+          # Wait for server to start - 17 tasks need time to compile and start
+          # Sleep for 60 seconds to allow all tasks to initialize
+          sleep 60
+          
+          # Kill the dev server
+          kill $DEV_PID || true
+          
+          # Check if server started successfully
+          if grep -q "Ready\|compiled\|started" /tmp/dev-output.log; then
+            echo "✓ Development server started successfully"
+          else
+            echo "✗ Development server failed to start"
+            cat /tmp/dev-output.log
+            exit 1
+          fi

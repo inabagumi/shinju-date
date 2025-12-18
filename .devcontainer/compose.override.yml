@@ -1,5 +1,6 @@
-# Docker Compose configuration for Dev Container
-# This defines the dev container app service that depends on services in ../compose.yml
+# Docker Compose override file for Dev Container
+# This file extends and customizes the base compose.yml for Dev Container usage.
+# It defines the app service that depends on services in ../compose.yml
 
 services:
   app:
@@ -7,11 +8,14 @@ services:
       context: .
       dockerfile: .devcontainer/Dockerfile
     env_file:
-      # Path is relative to .devcontainer directory (where this compose.yml is located)
-      # Dev Container is invoked from workspace root, so ./config/ resolves correctly
+      # Paths are relative to the project root (first compose file location)
       - ./config/dev-secrets.env
     volumes:
-      - ../..:/workspaces:cached
+      # Mount the project workspace
+      # Path is relative to the location of the FIRST docker compose file (../compose.yml in project root)
+      # All relative paths in ALL compose files are resolved from the project root directory
+      # Therefore, "." refers to the project root directory
+      - .:/workspaces/shinju-date:cached
     command: sleep infinity
     environment:
       # Environment variables loaded from env_file (./config/dev-secrets.env):

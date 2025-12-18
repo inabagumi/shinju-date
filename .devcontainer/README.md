@@ -60,22 +60,23 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 - コンテナイメージの具体的なビルド手順（Dockerfile に記載）
 - バックエンドサービスの定義（compose.yml に記載）
 
-### 4. compose.yml - Dev Container 専用サービス定義
+### 4. compose.override.yml - Dev Container 専用サービス定義
 
 **職責**: Dev Container で使用する `app` サービスのみを定義します。
 
 **含まれる内容**:
 - `app` サービスの Dockerfile ビルド設定
 - 環境変数のロード（`env_file` による `../config/dev-secrets.env` の参照）
-- ボリュームマウント
+- ワークスペースのボリュームマウント（`..:/workspaces/shinju-date:cached`）
 - 依存サービスの指定（`depends_on` で `kong`, `db`, `redis` など）
 
 **含まれない内容**:
 - Supabase や Redis などの共有サービス（`../compose.yml` で定義）
 
 **補足**:
-- ルートの `compose.yml` と組み合わせて使用されます（`dockerComposeFile: ["../compose.yml", "compose.yml"]`）
+- ルートの `compose.yml` と組み合わせて使用されます（`dockerComposeFile: ["../compose.yml", "compose.override.yml"]`）
 - `../compose.yml` が Supabase、Redis などの共有開発サービスを定義しています
+- ボリュームマウントの `..` は `.devcontainer/compose.override.yml` からの相対パスでプロジェクトルートを指定します
 
 ## ファイル構成まとめ
 
@@ -84,7 +85,7 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 ├── Dockerfile          # OS レベルセットアップ（イメージビルド時）
 ├── post-create.sh      # プロジェクト固有初期化（コンテナ起動後）
 ├── devcontainer.json   # VS Code / Codespaces 設定
-├── compose.yml         # Dev Container 専用サービス（app のみ）
+├── compose.override.yml  # Dev Container 専用サービス（app のみ）
 └── README.md           # このファイル
 
 ../compose.yml           # ルートの compose.yml（共有サービス）
@@ -236,12 +237,12 @@ VS Code Dev Container や GitHub Codespaces では、通常この問題は発生
 このプロジェクトでは、Docker Composeを使用してSupabaseサービスとRedisを管理します。サービス定義は2つのファイルに分かれています：
 
 - **`../compose.yml`（ルート）**: Supabase、Redis等の共有開発サービス
-- **`.devcontainer/compose.yml`**: Dev Container専用のappサービス
+- **`.devcontainer/compose.override.yml`**: Dev Container専用のappサービス
 
 ## ファイル構成
 
 - **devcontainer.json** - VSCode Dev Container / GitHub Codespaces の設定
-- **compose.yml** - Dev Container専用サービス（appのみ）
+- **compose.override.yml** - Dev Container専用サービス（appのみ）
 - **post-create.sh** - コンテナ作成後に実行される初期化スクリプト
 
 ### ルートレベルの設定ファイル
@@ -365,7 +366,7 @@ docker compose up -d
 
 ### ポート競合
 
-`.devcontainer/compose.yml`のポートマッピングを変更してください：
+`.devcontainer/compose.override.yml`のポートマッピングを変更してください：
 
 ```yaml
 ports:
