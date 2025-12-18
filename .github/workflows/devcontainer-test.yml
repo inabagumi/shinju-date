@@ -5,6 +5,7 @@ on:
     paths:
       - .devcontainer/**
       - .github/workflows/devcontainer-test.yml
+      - compose.yml
   push:
     branches:
       - main
