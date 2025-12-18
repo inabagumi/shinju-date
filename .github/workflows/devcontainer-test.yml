@@ -11,6 +11,7 @@ on:
     paths:
       - .devcontainer/**
       - .github/workflows/devcontainer-test.yml
+      - compose.yml
   workflow_dispatch:
 
 jobs:
