@@ -2,7 +2,7 @@
 # This Dockerfile consolidates OS-level setup (apt packages, corepack, uv)
 # Project-specific initialization is handled by post-create.sh
 
-FROM mcr.microsoft.com/devcontainers/typescript-node:4-24-bookworm@sha256:2baba848f88e02278bcf59e072752f7371534ccfc67afcd8e0ee6b293865c6f9
+FROM mcr.microsoft.com/devcontainers/typescript-node:4-24-bookworm@sha256:634d3ffc8c37508259a23462b838fd85a9e5bb80dcdd0b31d673aa33dc4c8592
 
 # Install OS-level dependencies
 # - postgresql-client: Required for psql command in database operations
