@@ -1,6 +1,10 @@
 # Docker Compose override file for Dev Container
 # This file extends and customizes the base compose.yml for Dev Container usage.
 # It defines the app service that depends on services in ../compose.yml
+#
+# Note: The workspace volume mount is automatically handled by devcontainer CLI
+# based on the workspaceFolder setting in devcontainer.json. Do not manually
+# specify the workspace volume here.
 
 services:
   app:
@@ -10,8 +14,6 @@ services:
     env_file:
       # Paths are relative to the project root (first compose file location)
       - ./config/dev-secrets.env
-    volumes:
-      - ..:/workspaces/shinju-date:cached
     command: sleep infinity
     environment:
       # Environment variables loaded from env_file (./config/dev-secrets.env):

@@ -67,15 +67,16 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 **含まれる内容**:
 - `app` サービスの Dockerfile ビルド設定
 - 環境変数のロード（`env_file` による `../config/dev-secrets.env` の参照）
-- ボリュームマウント
 - 依存サービスの指定（`depends_on` で `kong`, `db`, `redis` など）
 
 **含まれない内容**:
 - Supabase や Redis などの共有サービス（`../compose.yml` で定義）
+- ワークスペースのボリュームマウント（devcontainer CLI が自動的に処理）
 
 **補足**:
-- ルートの `compose.yml` と組み合わせて使用されます（`dockerComposeFile: ["../compose.yml", "compose.yml"]`）
+- ルートの `compose.yml` と組み合わせて使用されます（`dockerComposeFile: ["../compose.yml", "compose.override.yml"]`）
 - `../compose.yml` が Supabase、Redis などの共有開発サービスを定義しています
+- ワークスペースフォルダのマウントは devcontainer.json の `workspaceFolder` 設定に基づいて devcontainer CLI が自動的に処理するため、compose.override.yml で手動指定する必要はありません
 
 ## ファイル構成まとめ
 
