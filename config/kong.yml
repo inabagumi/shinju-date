@@ -199,27 +199,6 @@ services:
           - /pg/
     plugins:
       - name: cors
-  - name: analytics-v1
-    _comment: "Analytics: /analytics/v1/* -> http://logflare:4000/*"
-    url: http://logflare:4000/
-    routes:
-      - name: analytics-v1-all
-        strip_path: true
-        paths:
-          - /analytics/v1/
-    plugins:
-      - name: cors
-  - name: pooler-v2-ws
-    _comment: "Pooler: /pooler/v2/* -> ws://pooler:4000/v2/*"
-    url: http://pooler:4000/v2
-    protocol: ws
-    routes:
-      - name: pooler-v2-ws
-        strip_path: true
-        paths:
-          - /pooler/v2/
-    plugins:
-      - name: cors
   - name: mcp
     _comment: "MCP: /mcp -> http://studio:3000/api/mcp"
     url: http://studio:3000/api/mcp
@@ -230,4 +209,3 @@ services:
           - /mcp
     plugins:
       - name: cors
-

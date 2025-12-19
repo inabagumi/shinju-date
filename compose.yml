@@ -298,43 +298,6 @@ services:
     command: ["start", "--port", "8001"]
     restart: unless-stopped
 
-  # Analytics service
-  analytics:
-    image: supabase/logflare:1.27.3@sha256:f1a5db1f59bada95bf36d7167935db74e85cced0202ebe84d94a0ac15684ce54
-    ports:
-      - "54327:4000"
-    environment:
-      LOGFLARE_NODE_HOST: 127.0.0.1
-      DB_USERNAME: supabase_admin
-      DB_DATABASE: postgres
-      DB_HOSTNAME: db
-      DB_PORT: 5432
-      DB_PASSWORD: postgres
-      DB_SCHEMA: _analytics
-      LOGFLARE_PUBLIC_ACCESS_TOKEN: dev_api_key
-      LOGFLARE_SINGLE_TENANT: true
-      LOGFLARE_SUPABASE_MODE: true
-      LOGFLARE_MIN_CLUSTER_SIZE: 1
-      POSTGRES_BACKEND_URL: postgresql://supabase_admin:postgres@db:5432/postgres
-      POSTGRES_BACKEND_SCHEMA: _analytics
-      LOGFLARE_FEATURE_FLAG_OVERRIDE: multibackend=true
-    depends_on:
-      db:
-        condition: service_healthy
-    restart: unless-stopped
-
-  # Vector for log aggregation
-  vector:
-    image: timberio/vector:0.52.0-alpine@sha256:4be91e938bc85ad1915c2d66f77342078904ca3391934d590c8f523e66613ad7
-    volumes:
-      - ./config/vector.yml:/etc/vector/vector.yml:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    command: ["--config", "/etc/vector/vector.yml"]
-    depends_on:
-      analytics:
-        condition: service_started
-    restart: unless-stopped
-
 volumes:
   redis-data:
   db-data:

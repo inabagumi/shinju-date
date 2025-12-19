@@ -21,7 +21,7 @@
       "version": "1.6.4"
     }
   },
-  "forwardPorts": [3000, 4000, 8000, 8079, 10000, 54321, 54323, 54324, 54327],
+  "forwardPorts": [3000, 4000, 8000, 8079, 10000, 54321, 54323, 54324],
   "hostRequirements": {
     "cpus": 4,
     "memory": "8gb",
@@ -60,10 +60,6 @@
     "54324": {
       "label": "Mailpit Web UI",
       "onAutoForward": "notify"
-    },
-    "54327": {
-      "label": "Supabase Analytics",
-      "onAutoForward": "silent"
     }
   },
   "postCreateCommand": "./.devcontainer/post-create.sh",

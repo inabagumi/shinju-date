@@ -101,7 +101,7 @@ E2EテストはGitHub Actionsでmatrix戦略を使用して並列実行されま
 - 動画管理ページ
 - タレント管理ページ
 - 用語管理ページ
-- アナリティクスページ
+- アナリティクスページ（Redis集計のダッシュボード）
 
 ### apps/batch/e2e/batch.spec.ts
 

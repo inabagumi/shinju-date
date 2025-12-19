@@ -7,10 +7,6 @@ on:
     branches: [main]
 
 env:
-  # renovate: datasource=npm depName=corepack
-  COREPACK_VERSION: 0.34.5
-  # renovate: datasource=node-version depName=node
-  NODE_VERSION: 24.12.0
   # renovate: datasource=github-releases depName=astral-sh/uv
   UV_VERSION: 0.9.18
 
@@ -29,15 +25,12 @@ jobs:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 2
-      - name: Enable Corepack
-        run: |
-          npm install -g corepack@${COREPACK_VERSION}
-          corepack enable
-      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+      - name: Setup pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+          cache: true
+          run_install: true
+          standalone: true
 
   # Matrix job for all unit tests (Node.js packages + Python)
   test:
@@ -89,23 +82,13 @@ jobs:
         with:
           fetch-depth: 2
 
-      # Node.js setup
-      - name: Enable Corepack
+      - name: Setup pnpm
         if: matrix.package.language == 'node'
-        run: |
-          npm install -g corepack@${COREPACK_VERSION}
-          corepack enable
-
-      - name: Setup Node.js
-        if: matrix.package.language == 'node'
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install Node.js dependencies
-        if: matrix.package.language == 'node'
-        run: pnpm install --frozen-lockfile
+          cache: true
+          run_install: true
+          standalone: true
 
       # Node.js test execution
       - name: Run Node.js tests
@@ -152,17 +135,12 @@ jobs:
           fetch-depth: 2
 
       # Node.js linting
-      - name: Enable Corepack
-        run: |
-          npm install -g corepack@${COREPACK_VERSION}
-          corepack enable
-
-      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+      - name: Setup pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
+          cache: true
+          run_install: true
+          standalone: true
 
       - name: Run Node.js lint
         run: pnpm biome ci --reporter=github .
@@ -205,17 +183,12 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Enable Corepack
-        run: |
-          npm install -g corepack@${COREPACK_VERSION}
-          corepack enable
-
-      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+      - name: Setup pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
+          cache: true
+          run_install: true
+          standalone: true
 
       - run: pnpm build --filter=!@shinju-date/admin --filter=!@shinju-date/batch --filter=!@shinju-date/web
 
@@ -243,17 +216,12 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Enable Corepack
-        run: |
-          npm install -g corepack@${COREPACK_VERSION}
-          corepack enable
-
-      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+      - name: Setup pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
+          cache: true
+          run_install: true
+          standalone: true
 
       # Build dependencies for apps only
       - name: Build dependencies
@@ -320,12 +288,12 @@ jobs:
         run: |
           echo "Lint job failed"
           exit 1
-      
+
       - name: Check E2E results
         if: needs.e2e.result != 'success'
         run: |
           echo "E2E job failed"
           exit 1
-      
+
       - name: All jobs passed
         run: echo "All jobs passed successfully!"
