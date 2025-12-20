@@ -1,35 +1,17 @@
-# Dev Container base image with OS-level dependencies
-# This Dockerfile consolidates OS-level setup (apt packages, corepack, uv)
-# Project-specific initialization is handled by post-create.sh
-
 FROM mcr.microsoft.com/devcontainers/typescript-node:4-24-bookworm@sha256:634d3ffc8c37508259a23462b838fd85a9e5bb80dcdd0b31d673aa33dc4c8592
 
-# Install OS-level dependencies
-# - postgresql-client: Required for psql command in database operations
-RUN apt-get update && apt-get install -y \
-    postgresql-client \
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y --no-install-recommends postgresql-client \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Configure pnpm via corepack
-# Note: The base image already has Node.js and npm installed
-# We uninstall any globally installed pnpm and use corepack instead
-RUN npm uninstall -g pnpm; corepack enable
+# renovate: datasource=github-releases depName=pnpm packageName=pnpm/pnpm
+ENV PNPM_VERSION=10.26.1
 
-# Install uv for Python development (apps/insights)
-# Using the official installation script from astral.sh (uv's official source)
-# This is the recommended installation method per https://docs.astral.sh/uv/getting-started/installation/
-# Note: This requires network access during build time
-# UV_INSTALL_DIR controls where uv binaries are installed
+RUN su node -c "wget -qO- https://get.pnpm.io/install.sh | env PNPM_VERSION=$PNPM_VERSION sh -"
+
 ENV UV_INSTALL_DIR=/usr/local/bin
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+# renovate: datasource=github-releases depName=uv packageName=astral-sh/uv
+ENV UV_VERSION=0.9.18
 
-# Verify installations
-# Note: This will fail if network is unavailable during build (e.g., in restricted environments)
-# In that case, uv can be manually installed after container creation
-RUN which psql && \
-    corepack --version && \
-    uv --version
-
-# The container will run as the default user (node) from the base image
-# Project-specific setup (dependency installation, migrations, etc.) happens in post-create.sh
+RUN wget -qO-  https://astral.sh/uv/${UV_VERSION}/install.sh | sh

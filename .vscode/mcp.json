@@ -2,11 +2,11 @@
   "servers": {
     "context7": {
       "args": ["-y", "@upstash/context7-mcp@latest"],
-      "command": "npx"
+      "command": "pnpx"
     },
     "next-devtools": {
       "args": ["-y", "next-devtools-mcp@latest"],
-      "command": "npx"
+      "command": "pnpx"
     },
     "storybook-mcp": {
       "type": "http",

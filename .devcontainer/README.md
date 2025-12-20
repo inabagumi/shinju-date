@@ -91,8 +91,7 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 ../compose.yml           # ルートの compose.yml（共有サービス）
 ../config/               # 設定ファイル
   ├── dev-secrets.env    # 開発用シークレット
-  ├── kong.yml           # Kong API Gateway 設定
-  └── vector.yml         # Vector ログ集約設定
+  └── kong.yml           # Kong API Gateway 設定
 ```
 
 ## 運用上の注意点
@@ -250,7 +249,6 @@ VS Code Dev Container や GitHub Codespaces では、通常この問題は発生
 以下のファイルはプロジェクトルートの`config/`ディレクトリに配置されています：
 
 - **config/kong.yml** - Kong API Gateway の設定ファイル
-- **config/vector.yml** - Vector ログ集約サービスの設定
 - **config/init-db.sh** - データベース初期化スクリプト（マイグレーション適用）
 
 ## サービス一覧
@@ -278,8 +276,6 @@ VS Code Dev Container や GitHub Codespaces では、通常この問題は発生
 - **studio** - Supabase Studio（ポート54323）
 - **pg-meta** - データベースメタデータサービス
 - **edge-runtime** - Edge Functions ランタイム
-- **analytics** - ログとアナリティクス（ポート54327）
-- **vector** - ログ集約
 
 ## 使い方
 
@@ -325,7 +321,6 @@ docker compose down -v
 | Supabase Studio | 54323 | Web管理UI |
 | Mailpit Web UI | 54324 | メール確認UI |
 | SMTP | 1025 | メール送信テスト |
-| Analytics | 54327 | アナリティクスサービス |
 | Redis | 6379 | Redis直接接続 |
 | Redis HTTP API | 8079 | Upstash互換REST API |
 

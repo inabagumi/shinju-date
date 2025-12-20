@@ -1,3 +1,14 @@
 packages:
   - apps/*
   - packages/*
+
+allowBuilds:
+  supabase: true
+
+publicHoistPattern:
+  - '*import-in-the-middle*'
+  - '*require-in-the-middle*'
+
+savePrefix: ''
+
+strictPeerDependencies: false

@@ -89,15 +89,18 @@ docker compose up -d
 
 このコマンドは以下のサービスを起動します：
 
+- **Redis** (port 6379): キャッシュ/セッション管理
+- **Redis HTTP API** (port 8079): Upstash互換REST API
 - **PostgreSQL** (port 54322): データベース
 - **Kong** (port 54321): APIゲートウェイ
 - **GoTrue** (internal): 認証サービス
 - **PostgREST** (internal): REST APIサービス
-- **Storage** (internal): ファイルストレージ
+- **Storage API** (internal): ファイルストレージ
 - **Realtime** (internal): リアルタイム機能
 - **Mailpit** (port 54324/1025): メールテスト用SMTP/Webインターフェース
 - **Studio** (port 54323): Supabase管理UI
-- **Analytics** (port 54327): ログとアナリティクス
+- **pg-meta** (internal): Studio向けデータベースメタデータ
+- **Edge Runtime** (internal): Supabase Functionsランタイム
 
 ### 3.3. サービスの状態確認
 
