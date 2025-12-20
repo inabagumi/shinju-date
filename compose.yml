@@ -174,7 +174,7 @@ services:
 
   # Realtime service
   realtime:
-    image: supabase/realtime:v2.68.7@sha256:73e90782bc6b3bff0d9cdcaeaf8954b9c095849a7f95bee87513acf7f43f293f
+    image: supabase/realtime:v2.69.0@sha256:267d551b3ec6df746c3e45b48b4f40001268142dd29ff85494cdd407c70f9632
     env_file:
       - ./config/dev-secrets.env
     environment:
