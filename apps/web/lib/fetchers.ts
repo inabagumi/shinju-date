@@ -135,7 +135,7 @@ async function fetchLiveVideos(): Promise<Video[]> {
 }
 
 /**
- * Fetch recent published videos (within 48 hours, excluding shorts)
+ * Fetch recent published videos (within 3 days, excluding shorts)
  */
 async function fetchRecentVideos(): Promise<Video[]> {
   'use cache: remote'
@@ -144,14 +144,14 @@ async function fetchRecentVideos(): Promise<Video[]> {
   cacheTag('videos')
 
   const now = Temporal.Now.instant()
-  const fortyEightHoursAgo = now.subtract({ hours: 48 })
+  const threeDaysAgo = now.subtract({ hours: 24 * 3 })
 
   const { data: recentVideos, error: recentError } = await supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
     .eq('status', 'PUBLISHED')
     .neq('video_kind', 'short')
-    .gte('published_at', toDBString(fortyEightHoursAgo))
+    .gte('published_at', toDBString(threeDaysAgo))
     .lte('published_at', toDBString(now))
     .order('published_at', { ascending: false })
     .limit(10)
@@ -166,7 +166,7 @@ async function fetchRecentVideos(): Promise<Video[]> {
 }
 
 /**
- * Fetch recent shorts (within 48 hours)
+ * Fetch recent shorts (within 1 day)
  */
 async function fetchShortsVideos(): Promise<Video[]> {
   'use cache: remote'
@@ -175,14 +175,14 @@ async function fetchShortsVideos(): Promise<Video[]> {
   cacheTag('videos')
 
   const now = Temporal.Now.instant()
-  const fortyEightHoursAgo = now.subtract({ hours: 48 })
+  const oneDayAgo = now.subtract({ hours: 24 })
 
   const { data: shortsVideos, error: shortsError } = await supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
     .eq('video_kind', 'short')
     .eq('status', 'PUBLISHED')
-    .gte('published_at', toDBString(fortyEightHoursAgo))
+    .gte('published_at', toDBString(oneDayAgo))
     .lte('published_at', toDBString(now))
     .order('published_at', { ascending: false })
     .limit(20)
