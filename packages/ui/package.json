@@ -13,10 +13,10 @@
     "tailwind-merge": "3.4.0"
   },
   "devDependencies": {
-    "@storybook/addon-docs": "10.1.10",
+    "@storybook/addon-docs": "10.1.11",
     "@storybook/addon-mcp": "0.1.8",
-    "@storybook/addon-vitest": "10.1.10",
-    "@storybook/react-vite": "10.1.10",
+    "@storybook/addon-vitest": "10.1.11",
+    "@storybook/react-vite": "10.1.11",
     "@tailwindcss/postcss": "4.1.18",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.1",
@@ -34,7 +34,7 @@
     "postcss-load-config": "6.0.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "storybook": "10.1.10",
+    "storybook": "10.1.11",
     "tailwindcss": "4.1.18",
     "tsup": "8.5.1",
     "typescript": "5.9.3",
