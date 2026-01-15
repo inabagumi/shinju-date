@@ -419,8 +419,8 @@ importers:
         specifier: 2.89.0
         version: 2.89.0
       '@tanstack/react-query':
-        specifier: 5.90.12
-        version: 5.90.12(react@19.2.3)
+        specifier: 5.90.17
+        version: 5.90.17(react@19.2.3)
       '@testing-library/jest-dom':
         specifier: 6.9.1
         version: 6.9.1
@@ -2709,11 +2709,11 @@ packages:
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders || >=4.0.0-alpha.20 || >=4.0.0-beta.1'
 
-  '@tanstack/query-core@5.90.12':
-    resolution: {integrity: sha512-T1/8t5DhV/SisWjDnaiU2drl6ySvsHj1bHBCWNXd+/T+Hh1cf6JodyEYMd5sgwm+b/mETT4EV3H+zCVczCU5hg==}
+  '@tanstack/query-core@5.90.17':
+    resolution: {integrity: sha512-hDww+RyyYhjhUfoYQ4es6pbgxY7LNiPWxt4l1nJqhByjndxJ7HIjDxTBtfvMr5HwjYavMrd+ids5g4Rfev3lVQ==}
 
-  '@tanstack/react-query@5.90.12':
-    resolution: {integrity: sha512-graRZspg7EoEaw0a8faiUASCyJrqjKPdqJ9EwuDRUF9mEYJ1YPczI9H+/agJ0mOJkPCJDk0lsz5QTrLZ/jQ2rg==}
+  '@tanstack/react-query@5.90.17':
+    resolution: {integrity: sha512-PGc2u9KLwohDUSchjW9MZqeDQJfJDON7y4W7REdNBgiFKxQy+Pf7eGjiFWEj5xPqKzAeHYdAb62IWI1a9UJyGQ==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -5557,6 +5557,7 @@ packages:
   whatwg-encoding@3.1.1:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
     engines: {node: '>=18'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-mimetype@4.0.0:
     resolution: {integrity: sha512-QaKxh0eNIi2mE9p2vEdzfagOKHCcj1pJ56EEHGQOVxp8r9/iszLUUV7v89x9O1p/T+NlTM5W7jW6+cz4Fq1YVg==}
@@ -7413,11 +7414,11 @@ snapshots:
       postcss-selector-parser: 6.0.10
       tailwindcss: 4.1.18
 
-  '@tanstack/query-core@5.90.12': {}
+  '@tanstack/query-core@5.90.17': {}
 
-  '@tanstack/react-query@5.90.12(react@19.2.3)':
+  '@tanstack/react-query@5.90.17(react@19.2.3)':
     dependencies:
-      '@tanstack/query-core': 5.90.12
+      '@tanstack/query-core': 5.90.17
       react: 19.2.3
 
   '@testing-library/dom@10.4.1':
