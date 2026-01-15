@@ -27,7 +27,7 @@
     "next": "16.1.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-intersection-observer": "10.0.0",
+    "react-intersection-observer": "10.0.2",
     "react-markdown": "10.1.0",
     "resend": "6.7.0",
     "tailwind-merge": "3.4.0",
