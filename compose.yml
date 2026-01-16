@@ -114,7 +114,7 @@ services:
 
   # GoTrue authentication service
   auth:
-    image: supabase/gotrue:v2.184.0@sha256:c485010238ab429edf4ac8eb70b37b41aae0a0905277a935d4a0b64bb848e393
+    image: supabase/gotrue:v2.185.0@sha256:de22ff0811f3e4f7e6d3ba226f75ed8d82310df577bbd61e16fbfd7a50a8c9ce
     env_file:
       - ./config/dev-secrets.env
     environment:
