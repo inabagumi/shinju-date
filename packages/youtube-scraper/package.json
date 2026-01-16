@@ -1,7 +1,7 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@googleapis/youtube": "30.2.0",
+    "@googleapis/youtube": "30.3.0",
     "p-queue": "9.1.0",
     "temporal-polyfill": "0.3.0"
   },
