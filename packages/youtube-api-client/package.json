@@ -1,7 +1,7 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@googleapis/youtube": "30.2.0",
+    "@googleapis/youtube": "30.3.0",
     "zod": "4.3.5"
   },
   "description": "YouTube API client package for SHINJU DATE with Zod validation",
