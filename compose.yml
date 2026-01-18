@@ -229,7 +229,7 @@ services:
 
   # Mailpit for email testing
   mailpit:
-    image: axllent/mailpit:v1.28.0@sha256:c076638db1e15662150be4fb62b8a6e96ef6ba5bde90c838a0239225854830f7
+    image: axllent/mailpit:v1.28.3@sha256:27cfb8893806ed676042a00f4db70325a0d57cc5217349d210b6dd903e1a7e67
     ports:
       - "54324:8025"
     healthcheck:
