@@ -790,8 +790,8 @@ importers:
         specifier: 10.1.11
         version: 10.1.11(@types/react@19.2.9)(esbuild@0.27.2)(rollup@4.54.0)(storybook@10.1.11(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(vite@7.3.0(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1))(webpack@5.104.1(esbuild@0.27.2))
       '@storybook/addon-mcp':
-        specifier: 0.1.8
-        version: 0.1.8(storybook@10.1.11(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(typescript@5.9.3)
+        specifier: 0.2.0
+        version: 0.2.0(storybook@10.1.11(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(typescript@5.9.3)
       '@storybook/addon-vitest':
         specifier: 10.1.11
         version: 10.1.11(@vitest/browser-playwright@4.0.17)(@vitest/browser@4.0.17(msw@2.12.7(@types/node@24.10.4)(typescript@5.9.3))(vite@7.3.0(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1))(vitest@4.0.17))(@vitest/runner@4.0.17)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(storybook@10.1.11(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(vitest@4.0.17)
@@ -2503,8 +2503,8 @@ packages:
     peerDependencies:
       storybook: ^10.1.11
 
-  '@storybook/addon-mcp@0.1.8':
-    resolution: {integrity: sha512-2xy4s7frcjWzCAI8eDA0ZYoNIkuBuzQvWLls78hrb5o2Am2DjEsoGF03dpbMtSBFchpCFOK1qqGPqlUmlSOdlg==}
+  '@storybook/addon-mcp@0.2.0':
+    resolution: {integrity: sha512-tEL0q1h7nyDl/Huu5mAdxPEx8ZVReJWllA8cxS9y95cCqvQr93m8xJKgF+IcTvmZEC5mEKBE1YCTdlETeoHQnA==}
     peerDependencies:
       storybook: ^9.1.16 || ^10.0.0 || ^10.1.0-0 || ^10.2.0-0 || ^10.3.0-0 || ^10.4.0-0
 
@@ -7154,7 +7154,7 @@ snapshots:
       - vite
       - webpack
 
-  '@storybook/addon-mcp@0.1.8(storybook@10.1.11(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(typescript@5.9.3)':
+  '@storybook/addon-mcp@0.2.0(storybook@10.1.11(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(typescript@5.9.3)':
     dependencies:
       '@storybook/mcp': 0.2.1(typescript@5.9.3)
       '@tmcp/adapter-valibot': 0.1.5(tmcp@1.19.0(typescript@5.9.3))(valibot@1.2.0(typescript@5.9.3))
