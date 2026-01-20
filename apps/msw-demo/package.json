@@ -3,7 +3,7 @@
   "dependencies": {
     "@supabase/supabase-js": "2.90.1",
     "@upstash/redis": "1.36.1",
-    "next": "16.1.3",
+    "next": "16.1.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "tailwind-merge": "3.4.0",
