@@ -2,7 +2,7 @@
   "author": "Haneru Developers",
   "description": "Shared logger package for SHINJU DATE applications",
   "devDependencies": {
-    "@sentry/nextjs": "10.35.0",
+    "@sentry/nextjs": "10.36.0",
     "@tsconfig/node20": "20.1.8",
     "@tsconfig/strictest": "2.0.8",
     "tsup": "8.5.1",
