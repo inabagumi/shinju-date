@@ -24,7 +24,7 @@
     "embla-carousel-react": "8.6.0",
     "ics": "3.8.1",
     "lucide-react": "0.563.0",
-    "next": "16.1.4",
+    "next": "16.1.5",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-intersection-observer": "10.0.2",
@@ -39,7 +39,7 @@
   "description": "Public website frontend for SHINJU DATE (https://shinju.date)",
   "devDependencies": {
     "@mdx-js/loader": "3.1.1",
-    "@next/mdx": "16.1.4",
+    "@next/mdx": "16.1.5",
     "@playwright/test": "1.58.0",
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
