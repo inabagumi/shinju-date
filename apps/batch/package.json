@@ -21,8 +21,8 @@
     "nanoid": "5.1.6",
     "next": "16.1.5",
     "p-queue": "9.1.0",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "sharp": "0.34.5",
     "temporal-polyfill": "0.3.0",
     "zod": "4.3.6"
