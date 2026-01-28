@@ -26,7 +26,7 @@
     "@upstash/redis": "1.36.1",
     "csv-stringify": "6.6.0",
     "lucide-react": "0.563.0",
-    "next": "16.1.5",
+    "next": "16.1.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-markdown": "10.1.0",
