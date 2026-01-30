@@ -31,7 +31,7 @@
   "devDependencies": {
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
-    "@playwright/test": "1.58.0",
+    "@playwright/test": "1.58.1",
     "@tsconfig/next": "2.0.5",
     "@tsconfig/strictest": "2.0.8",
     "@types/node": "24.10.4",
