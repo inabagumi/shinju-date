@@ -284,7 +284,7 @@ services:
 
   # Edge Runtime for Supabase Functions
   edge-runtime:
-    image: supabase/edge-runtime:v1.69.28@sha256:29d8fbebb409bd71a68e2efdca20fadcd52af343965a718f4f157b2dff7018ab
+    image: supabase/edge-runtime:v1.70.1@sha256:5bded76591ce471eef1616f587aca209307065cccadb3a40a640959ab629c8f2
     env_file:
       - ./config/dev-secrets.env
     environment:
