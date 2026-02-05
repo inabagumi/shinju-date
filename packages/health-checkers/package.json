@@ -2,7 +2,7 @@
   "author": "Haneru Developers",
   "description": "Health check utilities for web services",
   "devDependencies": {
-    "@supabase/supabase-js": "2.94.1",
+    "@supabase/supabase-js": "2.95.0",
     "@tsconfig/strictest": "2.0.8",
     "@upstash/redis": "1.36.2",
     "tsup": "8.5.1",
@@ -20,7 +20,7 @@
   "main": "./dist/index.js",
   "name": "@shinju-date/health-checkers",
   "peerDependencies": {
-    "@supabase/supabase-js": "2.94.1",
+    "@supabase/supabase-js": "2.95.0",
     "@upstash/redis": "1.36.2"
   },
   "private": true,
