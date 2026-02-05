@@ -43,7 +43,7 @@ services:
 
   # PostgreSQL database
   db:
-    image: supabase/postgres:17.6.1.066@sha256:0d16f6b3441ecf21318b0b45fce78ffb6a469dd141119ebfd4810088f417a857
+    image: supabase/postgres:17.6.1.081@sha256:87f0de12d6401742b480a9a04d54ca875585c16aac6c376dccf9725e86985da5
     env_file:
       - ./config/dev-secrets.env
     command:
