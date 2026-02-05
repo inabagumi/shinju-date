@@ -85,13 +85,13 @@ importers:
         version: link:../../packages/youtube-scraper
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
-        version: 0.3.0(@supabase/supabase-js@2.95.0)
+        version: 0.3.0(@supabase/supabase-js@2.95.2)
       '@supabase/ssr':
         specifier: 0.8.0
-        version: 0.8.0(@supabase/supabase-js@2.95.0)
+        version: 0.8.0(@supabase/supabase-js@2.95.2)
       '@supabase/supabase-js':
-        specifier: 2.95.0
-        version: 2.95.0
+        specifier: 2.95.2
+        version: 2.95.2
       '@upstash/redis':
         specifier: 1.36.2
         version: 1.36.2
@@ -233,10 +233,10 @@ importers:
         version: link:../../packages/youtube-scraper
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
-        version: 0.3.0(@supabase/supabase-js@2.95.0)
+        version: 0.3.0(@supabase/supabase-js@2.95.2)
       '@supabase/supabase-js':
-        specifier: 2.95.0
-        version: 2.95.0
+        specifier: 2.95.2
+        version: 2.95.2
       '@upstash/ratelimit':
         specifier: 2.0.8
         version: 2.0.8(@upstash/redis@1.36.2)
@@ -313,8 +313,8 @@ importers:
   apps/msw-demo:
     dependencies:
       '@supabase/supabase-js':
-        specifier: 2.95.0
-        version: 2.95.0
+        specifier: 2.95.2
+        version: 2.95.2
       '@upstash/redis':
         specifier: 1.36.2
         version: 1.36.2
@@ -414,10 +414,10 @@ importers:
         version: link:../../packages/ui
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
-        version: 0.3.0(@supabase/supabase-js@2.95.0)
+        version: 0.3.0(@supabase/supabase-js@2.95.2)
       '@supabase/supabase-js':
-        specifier: 2.95.0
-        version: 2.95.0
+        specifier: 2.95.2
+        version: 2.95.2
       '@tanstack/react-query':
         specifier: 5.90.20
         version: 5.90.20(react@19.2.4)
@@ -613,8 +613,8 @@ importers:
   packages/health-checkers:
     devDependencies:
       '@supabase/supabase-js':
-        specifier: 2.95.0
-        version: 2.95.0
+        specifier: 2.95.2
+        version: 2.95.2
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -2601,20 +2601,20 @@ packages:
       typescript:
         optional: true
 
-  '@supabase/auth-js@2.95.0':
-    resolution: {integrity: sha512-n8EyMn8JL6aaUA8krQcFUGEd+/Qwlu/49dvSi68nHsAMMENGKixE67Pf43mo9iR42FH30Hcm9jACGflQi43e3w==}
+  '@supabase/auth-js@2.95.2':
+    resolution: {integrity: sha512-0dW1Y0vFcjkQpjJb/vR92lVqVaWSjM8v6VBPoaJfiIQ94+F/qnc+yV1ZTSZ96LqM61TaLAhqt7S2fLS//lc8ew==}
     engines: {node: '>=20.0.0'}
 
-  '@supabase/functions-js@2.95.0':
-    resolution: {integrity: sha512-kxT4iw1phb9V8cH5M+rfH0++l/QdHVrTYvvpMUqKtni/gTL9SDpV1rWa+xjoksV+M0pwDVjJ3zv1PoKhh83ZuA==}
+  '@supabase/functions-js@2.95.2':
+    resolution: {integrity: sha512-SInf19qm2aWEp49O5OJ+gftzifSPeaA5w0L1qF96Ul13tilRbQOlQAk1e7py9xH4tPkOkCDMf6n+H5Js5uzIUQ==}
     engines: {node: '>=20.0.0'}
 
-  '@supabase/postgrest-js@2.95.0':
-    resolution: {integrity: sha512-D3HorePM6CDks+YjM/NwRxRnAH17LtxjSG9GbjuTz9vV9G3eiz5UdBU5psZYRg6t2mSrA5xvMPrPOnNvQohOKw==}
+  '@supabase/postgrest-js@2.95.2':
+    resolution: {integrity: sha512-v0DHzy3vFALRLaFNZPbBWK7PESPvI+cC7/A2HtqwmLuX7XdOwdHwaz2yooNOfcYkoNOLS5p8WbgCA9DDXs+QlQ==}
     engines: {node: '>=20.0.0'}
 
-  '@supabase/realtime-js@2.95.0':
-    resolution: {integrity: sha512-4S68GsuwugDGPBWJ2lRVcPatIF+x1Q3mskNwfl4m/69K2IwfVcDESHVd/bvy6YRB/cNnqeSPJIwjaPX7fV9y7g==}
+  '@supabase/realtime-js@2.95.2':
+    resolution: {integrity: sha512-8LhHR28Xv1/jjtfiospyqMdE+sL0SVdk24ziio4vmgsUHApzh4ucr+sVY3LXInzSVycrgNnYwStMiWuTZUVxoA==}
     engines: {node: '>=20.0.0'}
 
   '@supabase/sentry-js-integration@0.3.0':
@@ -2627,12 +2627,12 @@ packages:
     peerDependencies:
       '@supabase/supabase-js': ^2.76.1
 
-  '@supabase/storage-js@2.95.0':
-    resolution: {integrity: sha512-TPf4DCX8tVkKLbbI78fDdxy0eKCBbXvG2oz4itaPK4M6RZS4FzaP3XZf6apodJWa95Ghkqok4qeWWaEsVpOqdw==}
+  '@supabase/storage-js@2.95.2':
+    resolution: {integrity: sha512-vUNMnHgbyHIHGFmwkQkp1VUdWVGWoFqaEgAAmlXx3Ca0+GzlyScwhkYm8dvtM+mgUo/nJQXwPRPOcWTZMo/tpg==}
     engines: {node: '>=20.0.0'}
 
-  '@supabase/supabase-js@2.95.0':
-    resolution: {integrity: sha512-fO5O650mkPIgUOZ/s86RZ19ZZhvxTBbatQmECGUtB5/sUb6DtIyoR7rFBBMV9oLbtyDCi1UU4wv3Jd6EY3d03Q==}
+  '@supabase/supabase-js@2.95.2':
+    resolution: {integrity: sha512-CkNIPJCdOkokX5E92RJt6yHNyHprJ2V8wRuGK8wCPwbaEmWvW0CvMj+qr4uGozwnOd1ixeAsQUSg6+roA0+muA==}
     engines: {node: '>=20.0.0'}
 
   '@swc/helpers@0.5.15':
@@ -7386,19 +7386,19 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@supabase/auth-js@2.95.0':
+  '@supabase/auth-js@2.95.2':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/functions-js@2.95.0':
+  '@supabase/functions-js@2.95.2':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/postgrest-js@2.95.0':
+  '@supabase/postgrest-js@2.95.2':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/realtime-js@2.95.0':
+  '@supabase/realtime-js@2.95.2':
     dependencies:
       '@types/phoenix': 1.6.7
       '@types/ws': 8.18.1
@@ -7408,27 +7408,27 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@supabase/sentry-js-integration@0.3.0(@supabase/supabase-js@2.95.0)':
+  '@supabase/sentry-js-integration@0.3.0(@supabase/supabase-js@2.95.2)':
     dependencies:
-      '@supabase/supabase-js': 2.95.0
+      '@supabase/supabase-js': 2.95.2
 
-  '@supabase/ssr@0.8.0(@supabase/supabase-js@2.95.0)':
+  '@supabase/ssr@0.8.0(@supabase/supabase-js@2.95.2)':
     dependencies:
-      '@supabase/supabase-js': 2.95.0
+      '@supabase/supabase-js': 2.95.2
       cookie: 1.1.1
 
-  '@supabase/storage-js@2.95.0':
+  '@supabase/storage-js@2.95.2':
     dependencies:
       iceberg-js: 0.8.1
       tslib: 2.8.1
 
-  '@supabase/supabase-js@2.95.0':
+  '@supabase/supabase-js@2.95.2':
     dependencies:
-      '@supabase/auth-js': 2.95.0
-      '@supabase/functions-js': 2.95.0
-      '@supabase/postgrest-js': 2.95.0
-      '@supabase/realtime-js': 2.95.0
-      '@supabase/storage-js': 2.95.0
+      '@supabase/auth-js': 2.95.2
+      '@supabase/functions-js': 2.95.2
+      '@supabase/postgrest-js': 2.95.2
+      '@supabase/realtime-js': 2.95.2
+      '@supabase/storage-js': 2.95.2
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
