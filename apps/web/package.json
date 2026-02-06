@@ -40,7 +40,7 @@
   "devDependencies": {
     "@mdx-js/loader": "3.1.1",
     "@next/mdx": "16.1.6",
-    "@playwright/test": "1.58.1",
+    "@playwright/test": "1.58.2",
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
     "@tailwindcss/postcss": "4.1.18",
