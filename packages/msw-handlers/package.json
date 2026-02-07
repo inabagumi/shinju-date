@@ -9,7 +9,7 @@
     "zod": "4.3.6"
   },
   "devDependencies": {
-    "@faker-js/faker": "10.2.0",
+    "@faker-js/faker": "10.3.0",
     "@tsconfig/node20": "20.1.9",
     "@tsconfig/strictest": "2.0.8",
     "@types/node": "24.10.4",
