@@ -269,7 +269,7 @@ services:
 
   # pg_meta for Studio database introspection
   pg-meta:
-    image: supabase/postgres-meta:v0.95.1@sha256:91e967af7172a8209c5dcea05a874973f714aa3e8e8480ad0fa6a1ce0400d0cc
+    image: supabase/postgres-meta:v0.95.2@sha256:fd819ee65489a69e71f8811f447aeb9a796234f435c86173cbcce5e4c32b036e
     environment:
       PG_META_PORT: 8080
       PG_META_DB_HOST: db
