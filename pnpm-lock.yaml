@@ -196,8 +196,8 @@ importers:
   apps/batch:
     dependencies:
       '@googleapis/youtube':
-        specifier: 30.3.0
-        version: 30.3.0
+        specifier: 31.0.0
+        version: 31.0.0
       '@sentry/nextjs':
         specifier: 10.39.0
         version: 10.39.0(@opentelemetry/context-async-hooks@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.0(@opentelemetry/api@1.9.0))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(webpack@5.104.1)
@@ -890,8 +890,8 @@ importers:
   packages/youtube-api-client:
     dependencies:
       '@googleapis/youtube':
-        specifier: 30.3.0
-        version: 30.3.0
+        specifier: 31.0.0
+        version: 31.0.0
       zod:
         specifier: 4.3.6
         version: 4.3.6
@@ -915,8 +915,8 @@ importers:
   packages/youtube-scraper:
     dependencies:
       '@googleapis/youtube':
-        specifier: 30.3.0
-        version: 30.3.0
+        specifier: 31.0.0
+        version: 31.0.0
       p-queue:
         specifier: 9.1.0
         version: 9.1.0
@@ -1354,8 +1354,8 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
-  '@googleapis/youtube@30.3.0':
-    resolution: {integrity: sha512-POrCCTkDVQWpBOq5UOfG4Bk03axgSnG0CnYEnssHKJX3idcWF/P6fK3LrOTdzE+/0pWzWqIWcmxUdgVETfuxIg==}
+  '@googleapis/youtube@31.0.0':
+    resolution: {integrity: sha512-xXgg1yl+C426d/4qrHs+fOu76ftfR1AH5CofpFPEdA9tPOx0C4ky0TJ9XBO5MUrrVMR7W5KmopUZX5tTP6ug5Q==}
     engines: {node: '>=12.0.0'}
 
   '@img/colour@1.0.0':
@@ -6003,7 +6003,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@googleapis/youtube@30.3.0':
+  '@googleapis/youtube@31.0.0':
     dependencies:
       googleapis-common: 8.0.1
     transitivePeerDependencies:
