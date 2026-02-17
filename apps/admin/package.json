@@ -22,7 +22,7 @@
     "@shinju-date/youtube-scraper": "workspace:*",
     "@supabase/sentry-js-integration": "0.3.0",
     "@supabase/ssr": "0.8.0",
-    "@supabase/supabase-js": "2.95.3",
+    "@supabase/supabase-js": "2.96.0",
     "@upstash/redis": "1.36.2",
     "csv-stringify": "6.6.0",
     "lucide-react": "0.574.0",
