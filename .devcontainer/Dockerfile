@@ -12,6 +12,6 @@ RUN su node -c "wget -qO- https://get.pnpm.io/install.sh | env PNPM_VERSION=$PNP
 
 ENV UV_INSTALL_DIR=/usr/local/bin
 # renovate: datasource=github-releases depName=uv packageName=astral-sh/uv
-ENV UV_VERSION=0.9.18
+ENV UV_VERSION=0.10.4
 
 RUN wget -qO-  https://astral.sh/uv/${UV_VERSION}/install.sh | sh
