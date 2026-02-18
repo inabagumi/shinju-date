@@ -17,7 +17,7 @@
     "@storybook/addon-mcp": "0.2.3",
     "@storybook/addon-vitest": "10.2.10",
     "@storybook/react-vite": "10.2.10",
-    "@tailwindcss/postcss": "4.1.18",
+    "@tailwindcss/postcss": "4.2.0",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.2",
     "@testing-library/user-event": "14.6.1",
@@ -35,7 +35,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "storybook": "10.2.10",
-    "tailwindcss": "4.1.18",
+    "tailwindcss": "4.2.0",
     "tsup": "8.5.1",
     "typescript": "5.9.3",
     "vitest": "4.0.18"
