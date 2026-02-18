@@ -32,7 +32,7 @@
     "react-markdown": "10.1.0",
     "recharts": "3.7.0",
     "tailwind-merge": "3.4.1",
-    "tailwindcss": "4.1.18",
+    "tailwindcss": "4.2.0",
     "temporal-polyfill": "0.3.0",
     "zod": "4.3.6"
   },
@@ -41,7 +41,7 @@
     "@playwright/test": "1.58.2",
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
-    "@tailwindcss/postcss": "4.1.18",
+    "@tailwindcss/postcss": "4.2.0",
     "@tailwindcss/typography": "0.5.19",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.2",
