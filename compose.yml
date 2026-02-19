@@ -203,7 +203,7 @@ services:
 
   # Storage API service
   storage:
-    image: supabase/storage-api:v1.33.2@sha256:a42f28814fa5ca59dc2f1b2ae403f55086274f4f89a5f02be19082b3648d306d
+    image: supabase/storage-api:v1.37.11@sha256:16fe4f5bf272950e43b3b5931d77b6a80931065ee711406495e7ce46f43c7c70
     env_file:
       - ./config/dev-secrets.env
     environment:
