@@ -10,7 +10,7 @@
     "@shinju-date/tailwind-config": "workspace:*",
     "class-variance-authority": "0.7.1",
     "lucide-react": "0.574.0",
-    "tailwind-merge": "3.4.1"
+    "tailwind-merge": "3.5.0"
   },
   "devDependencies": {
     "@storybook/addon-docs": "10.2.10",
