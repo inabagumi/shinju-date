@@ -112,18 +112,34 @@ fi
 cd "$PROJECT_ROOT"
 echo -e "${YELLOW}Checking Supabase status...${NC}"
 
-if pnpm exec supabase status 2>/dev/null | grep -q "DB URL:"; then
-    echo -e "${GREEN}Supabase is running via CLI${NC}"
-    # Extract DB connection info from supabase status
-    DB_URL=$(pnpm exec supabase status 2>/dev/null | grep "DB URL:" | awk '{print $NF}')
-    if [ -z "$DB_URL" ]; then
-        # Fallback to default local Supabase DB URL
-        DB_URL="postgresql://postgres:postgres@localhost:54322/postgres"
-    fi
+# Allow callers to override DB URL (e.g. from Dev Container where localhost != host)
+if [ -n "${SUPABASE_DB_URL:-}" ]; then
+    DB_URL="$SUPABASE_DB_URL"
+    echo -e "${GREEN}Using SUPABASE_DB_URL override${NC}"
 else
-    echo -e "${RED}Error: Supabase local stack is not running${NC}"
-    echo -e "${YELLOW}Please start Supabase first: pnpm exec supabase start${NC}"
-    exit 1
+    # Capture supabase status output once to avoid duplicate invocations and
+    # to prevent set -euo pipefail from exiting early if the command fails.
+    SUPABASE_STATUS_OUTPUT=$(pnpm exec supabase status 2>/dev/null || true)
+
+    if echo "$SUPABASE_STATUS_OUTPUT" | grep -q "DB URL:"; then
+        echo -e "${GREEN}Supabase is running via CLI${NC}"
+        DB_URL=$(echo "$SUPABASE_STATUS_OUTPUT" | grep "DB URL:" | awk '{print $NF}')
+    fi
+
+    if [ -z "${DB_URL:-}" ]; then
+        echo -e "${RED}Error: Supabase local stack is not running${NC}"
+        echo -e "${YELLOW}Please start Supabase first: pnpm exec supabase start${NC}"
+        echo -e "${YELLOW}Or set SUPABASE_DB_URL to connect directly.${NC}"
+        exit 1
+    fi
+
+    # Inside a Dev Container the Supabase ports are published on the Docker host,
+    # not on localhost inside the container. Replace the host portion so psql can
+    # reach the database.
+    if [ "${RUNNING_IN_DEVCONTAINER:-}" = "true" ] || [ -n "${REMOTE_CONTAINERS:-}" ] || [ -n "${CODESPACES:-}" ]; then
+        DB_URL="${DB_URL/localhost/host.docker.internal}"
+        DB_URL="${DB_URL/127.0.0.1/host.docker.internal}"
+    fi
 fi
 
 echo -e "${YELLOW}Importing data into local database...${NC}"

@@ -131,7 +131,7 @@ pnpm exec supabase stop
 データを保持したまま停止する場合は上記コマンドを使用します。データベースやストレージのボリュームを完全に削除する場合は：
 
 ```bash
-pnpm exec supabase stop --backup
+pnpm exec supabase stop --no-backup
 ```
 
 ## 4. ローカルRedis環境
@@ -285,7 +285,11 @@ Supabaseが使用するポート（54321、54322、54323、54324）が既に使�
 
 2. データベースに直接接続してテスト：
    ```bash
+   # ホスト環境から接続する場合
    psql "$(pnpm exec supabase status 2>/dev/null | grep 'DB URL:' | awk '{print $NF}')"
+
+   # Dev Container 内から接続する場合（localhost を host.docker.internal に書き換え）
+   psql "$(pnpm exec supabase status 2>/dev/null | grep 'DB URL:' | awk '{gsub(/localhost|127\.0\.0\.1/, "host.docker.internal", $NF); print $NF}')"
    ```
 
 3. データベースをリセットして再初期化：
