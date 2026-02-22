@@ -11,9 +11,9 @@
 - **Python**: 3.12 以上 (`apps/insights` 開発時のみ)
 - **uv**: Pythonパッケージマネージャー (`apps/insights` 開発時のみ)
 - **Docker**: ローカルのSupabase環境とRedisを実行するために必要です。
-- **Docker Compose**: サービスオーケストレーションに使用します。
+- **Docker Compose**: Redisサービスのオーケストレーションに使用します。
 
-**注意**: Supabase CLIのインストールは不要になりました。すべてのSupabaseサービスはDocker Composeで管理されます。
+**注意**: SupabaseサービスはDocker Composeではなく、`supabase` npm パッケージを通じた Supabase CLI で管理されます（`pnpm exec supabase start`）。個別にSupabase CLIをインストールする必要はありません。
 
 ## 1. 初期セットアップ
 
@@ -65,52 +65,44 @@ cd ../.. # ルートディレクトリに戻る
 
 ## 3. ローカルSupabase環境
 
-本番データベースへの影響を避けるため、開発にはローカルのSupabaseスタックを使用します。すべてのSupabaseサービスはDocker Composeで管理され、`supabase start`コマンドは不要です。
+本番データベースへの影響を避けるため、開発にはローカルのSupabaseスタックを使用します。SupabaseサービスはSupabase CLI（`pnpm exec supabase`）で管理されます。
 
-### 3.1. 環境変数の準備
+### 3.1. Supabaseサービスの起動
 
-開発用の既定値は `compose.yml` に含まれています。任意の値に差し替えたい場合は、Compose起動時に環境変数を指定してください（例）。
-
-```bash
-SUPABASE_ANON_KEY=... \
-SUPABASE_SERVICE_ROLE_KEY=... \
-SUPABASE_JWT_SECRET=... \
-SUPABASE_POSTGRES_PASSWORD=... \
-docker compose up -d
-```
-
-### 3.2. Supabaseサービスの起動
-
-Docker Composeを使用してローカルのSupabaseサービスを起動します。
+Supabase CLIを使用してローカルのSupabaseサービスを起動します。
 
 ```bash
-docker compose up -d
+pnpm exec supabase start
 ```
+
+初回起動時は必要なDockerイメージをプルするため、数分かかる場合があります。
 
 このコマンドは以下のサービスを起動します：
 
-- **Redis** (port 6379): キャッシュ/セッション管理
-- **Redis HTTP API** (port 8079): Upstash互換REST API
 - **PostgreSQL** (port 54322): データベース
-- **Kong** (port 54321): APIゲートウェイ
+- **API / Kong** (port 54321): APIゲートウェイ
 - **GoTrue** (internal): 認証サービス
 - **PostgREST** (internal): REST APIサービス
 - **Storage API** (internal): ファイルストレージ
 - **Realtime** (internal): リアルタイム機能
-- **Mailpit** (port 54324/1025): メールテスト用SMTP/Webインターフェース
+- **Inbucket** (port 54324): メールテスト用Webインターフェース
 - **Studio** (port 54323): Supabase管理UI
-- **pg-meta** (internal): Studio向けデータベースメタデータ
-- **Edge Runtime** (internal): Supabase Functionsランタイム
+
+### 3.2. データベースの初期化
+
+マイグレーションとシードデータを適用します：
+
+```bash
+pnpm exec supabase db reset
+```
 
 ### 3.3. サービスの状態確認
 
 サービスが正常に起動しているか確認します：
 
 ```bash
-docker compose ps
+pnpm exec supabase status
 ```
-
-すべてのサービスが「healthy」または「running」状態であることを確認してください。
 
 ### 3.4. Supabase Studioへのアクセス
 
@@ -133,27 +125,31 @@ pnpm db:import
 開発作業を終了する際は、サービスを停止できます：
 
 ```bash
-docker compose down
+pnpm exec supabase stop
 ```
 
 データを保持したまま停止する場合は上記コマンドを使用します。データベースやストレージのボリュームを完全に削除する場合は：
 
 ```bash
-docker compose down -v
+pnpm exec supabase stop --no-backup
 ```
 
 ## 4. ローカルRedis環境
 
 Upstash Redisの機能を完全にテストするため、ローカルRedis環境がDocker Composeで自動的にセットアップされます。
 
-### 4.1. Docker Composeでの自動起動
+### 4.1. Redisサービスの起動
 
-Docker Composeを使用する場合（Dev Containerを含む）、以下のサービスが自動的に起動します：
+Docker Composeを使用してRedisサービスを起動します（Supabaseとは独立して起動します）：
+
+```bash
+docker compose up -d
+```
+
+このコマンドは以下のサービスを起動します：
 
 - **Redis 8** (port 6379): ネイティブRedisプロトコル
 - **Redis HTTP API** (port 8079): Upstash互換REST API
-
-これらは`compose.yml`で定義されており、`docker compose up -d`を実行すると自動的に起動します。
 
 ### 4.2. 接続テスト
 
@@ -200,10 +196,11 @@ cp apps/admin/.env.local.sample apps/admin/.env.local
 
 ### 5.2. ローカル開発で推奨される環境変数
 
-ローカルでDocker Composeを使用する場合、以下の環境変数を設定することが推奨されます：
+Supabase CLI と Docker Compose を使用する場合、以下の環境変数を設定することが推奨されます：
 
 ```bash
-# Supabase (Docker Compose経由)
+# Supabase (Supabase CLI経由)
+# pnpm exec supabase status -o env で実際の値を確認できます
 export NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
 export NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
 export SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
@@ -260,41 +257,51 @@ pnpm run dev --filter=web
 
 ## トラブルシューティング
 
-### サービスが起動しない
+### Supabaseサービスが起動しない
 
-Docker Composeサービスのログを確認：
+Supabase CLIのログを確認：
 
 ```bash
-docker compose logs <service-name>
+pnpm exec supabase logs
 ```
 
-例: `docker compose logs db` でデータベースのログを確認
+Supabaseを再起動する場合：
+
+```bash
+pnpm exec supabase stop
+pnpm exec supabase start
+```
 
 ### ポートの競合
 
-既に同じポートを使用しているサービスがある場合、`compose.yml`のポートマッピングを変更できます。例えば、PostgreSQLのポートを変更：
-
-```yaml
-ports:
-  - "5433:5432"  # ホストポートを5433に変更
-```
+Supabaseが使用するポート（54321、54322、54323、54324）が既に使用中の場合、`supabase/config.toml`でポートを変更できます。
 
 ### データベース接続エラー
 
-1. データベースサービスが正常に起動しているか確認：
+1. Supabaseが正常に起動しているか確認：
    ```bash
-   docker compose ps db
+   pnpm exec supabase status
    ```
 
 2. データベースに直接接続してテスト：
    ```bash
-   docker compose exec db psql -U supabase_admin -d postgres
+   # ホスト環境から接続する場合
+   psql "$(pnpm exec supabase status 2>/dev/null | grep 'DB URL:' | awk '{print $NF}')"
+
+   # Dev Container 内から接続する場合（localhost を host.docker.internal に書き換え）
+   psql "$(pnpm exec supabase status 2>/dev/null | grep 'DB URL:' | awk '{gsub(/localhost|127\.0\.0\.1/, "host.docker.internal", $NF); print $NF}')"
+   ```
+
+3. データベースをリセットして再初期化：
+   ```bash
+   pnpm exec supabase db reset
    ```
 
 ### 型定義の生成に失敗
 
-データベーススキーマが正しく適用されているか確認し、型定義を再生成：
+Supabaseが起動していることを確認してから再生成：
 
 ```bash
+pnpm exec supabase start
 pnpm db:schema
 ```

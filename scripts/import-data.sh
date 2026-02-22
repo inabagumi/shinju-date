@@ -108,28 +108,44 @@ if [[ "$DATA_FILE" == *.gz ]]; then
     DATA_FILE="$DECOMPRESSED_FILE"
 fi
 
-# Check if database is accessible via Docker Compose
-echo -e "${YELLOW}Checking database status...${NC}"
+# Check if Supabase local stack is running via Supabase CLI
+cd "$PROJECT_ROOT"
+echo -e "${YELLOW}Checking Supabase status...${NC}"
 
-# Try to check if database is running via Docker Compose
-if docker compose ps db 2>/dev/null | grep -q "Up\|running"; then
-    echo -e "${GREEN}Database is running via Docker Compose${NC}"
-    DB_HOST="localhost"
-    DB_PORT="54322"
-    DB_USER="supabase_admin"
-    DB_NAME="postgres"
-    DB_PASSWORD="${POSTGRES_PASSWORD:-postgres}"
-    DB_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+# Allow callers to override DB URL (e.g. from Dev Container where localhost != host)
+if [ -n "${SUPABASE_DB_URL:-}" ]; then
+    DB_URL="$SUPABASE_DB_URL"
+    echo -e "${GREEN}Using SUPABASE_DB_URL override${NC}"
 else
-    echo -e "${YELLOW}Database not found via Docker Compose. Please start services:${NC}"
-    echo -e "${YELLOW}  docker compose up -d${NC}"
-    exit 1
+    # Capture supabase status output once to avoid duplicate invocations and
+    # to prevent set -euo pipefail from exiting early if the command fails.
+    SUPABASE_STATUS_OUTPUT=$(pnpm exec supabase status 2>/dev/null || true)
+
+    if echo "$SUPABASE_STATUS_OUTPUT" | grep -q "DB URL:"; then
+        echo -e "${GREEN}Supabase is running via CLI${NC}"
+        DB_URL=$(echo "$SUPABASE_STATUS_OUTPUT" | grep "DB URL:" | awk '{print $NF}')
+    fi
+
+    if [ -z "${DB_URL:-}" ]; then
+        echo -e "${RED}Error: Supabase local stack is not running${NC}"
+        echo -e "${YELLOW}Please start Supabase first: pnpm exec supabase start${NC}"
+        echo -e "${YELLOW}Or set SUPABASE_DB_URL to connect directly.${NC}"
+        exit 1
+    fi
+
+    # Inside a Dev Container the Supabase ports are published on the Docker host,
+    # not on localhost inside the container. Replace the host portion so psql can
+    # reach the database.
+    if [ "${RUNNING_IN_DEVCONTAINER:-}" = "true" ] || [ -n "${REMOTE_CONTAINERS:-}" ] || [ -n "${CODESPACES:-}" ]; then
+        DB_URL="${DB_URL//localhost/host.docker.internal}"
+        DB_URL="${DB_URL//127.0.0.1/host.docker.internal}"
+    fi
 fi
 
 echo -e "${YELLOW}Importing data into local database...${NC}"
 
-# Import the data using password from environment or default
-PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" < "$DATA_FILE"
+# Import the data using psql with the resolved URL
+psql "$DB_URL" < "$DATA_FILE"
 
 echo -e "${GREEN}Data import completed successfully!${NC}"
 

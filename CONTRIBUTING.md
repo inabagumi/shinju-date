@@ -312,7 +312,7 @@ pnpm run test --watch
 
 1. **ローカル環境でマイグレーション作成**
    ```bash
-   supabase migration new add_new_feature
+   pnpm exec supabase migration new add_new_feature
    ```
 
 2. **マイグレーションファイルを編集**
@@ -321,21 +321,12 @@ pnpm run test --watch
 
 3. **ローカルで適用・テスト**
    ```bash
-   supabase db reset  # 全マイグレーションを適用
+   pnpm exec supabase db reset  # 全マイグレーションを適用
    ```
-
-   **注意**: Dev Container や GitHub Actions 環境では、`supabase db reset` が失敗した場合、自動的に `psql` ベースのマイグレーションインポートにフォールバックします。手動でマイグレーションとシードデータを適用する場合は以下のコマンドを使用できます：
-
-   ```bash
-   # psqlを使用してマイグレーションとシードデータを手動適用
-   ./scripts/apply-migrations.sh
-   ```
-
-   このスクリプトは `supabase/migrations/` 配下の全 SQL ファイルを適用した後、`supabase/seed.sql` が存在する場合はそれも適用します。
 
 4. **本番適用（レビュー後）**
    ```bash
-   supabase db push --project-ref YOUR_PROJECT_ID
+   pnpm exec supabase db push --project-ref YOUR_PROJECT_ID
    ```
 
 ### データ操作のベストプラクティス
@@ -404,17 +395,15 @@ shinju-date/
 #### Supabase サービスが起動しない
 
 ```bash
-# Docker Compose の状態を確認
-cd .devcontainer
-docker compose ps
+# Supabase CLIのステータスを確認
+pnpm exec supabase status
 
-# サービスのログを確認
-docker compose logs db
-docker compose logs kong
+# ログを確認
+pnpm exec supabase logs
 
 # サービスを完全にリセット
-docker compose down -v
-docker compose up -d
+pnpm exec supabase stop
+pnpm exec supabase start
 ```
 
 #### ポート競合エラー
@@ -427,17 +416,17 @@ lsof -i :54321
 lsof -i :54322
 lsof -i :54323
 
-# 競合するサービスを停止するか、.devcontainer/compose.override.yml でポートを変更
+# supabase/config.toml でポートを変更する
 ```
 
 #### データベース接続エラー
 
 ```bash
-# データベースサービスの状態を確認
-docker compose -f .devcontainer/compose.override.yml ps db
+# Supabaseサービスの状態を確認
+pnpm exec supabase status
 
-# データベースに直接接続してテスト
-docker compose -f .devcontainer/compose.override.yml exec db psql -U supabase_admin -d postgres
+# データベースをリセット
+pnpm exec supabase db reset
 ```
 
 #### MSW が動作しない

@@ -1,6 +1,7 @@
 # Docker Compose override file for Dev Container
 # This file extends and customizes the base compose.yml for Dev Container usage.
-# It defines the app service that depends on services in ../compose.yml
+# It defines the app service that depends on services in ../compose.yml.
+# Supabase services are started via `supabase start` in post-create.sh.
 
 services:
   app:
@@ -16,17 +17,20 @@ services:
       # All relative paths in ALL compose files are resolved from the project root directory
       # Therefore, "." refers to the project root directory
       - .:/workspaces/shinju-date:cached
+      # Mount Docker socket so that `supabase start` can manage Supabase containers
+      - /var/run/docker.sock:/var/run/docker.sock
     command: sleep infinity
+    extra_hosts:
+      # Allow the container to reach the host's Docker-managed ports (e.g., Supabase on 54321)
+      # host-gateway resolves to the Docker host IP, enabling host.docker.internal on Linux
+      - "host.docker.internal:host-gateway"
     environment:
       # Environment variables loaded from env_file (./config/dev-secrets.env):
       # SUPABASE_ANON_KEY, SUPABASE_SERVICE_KEY, NEXT_PUBLIC_SUPABASE_ANON_KEY, UPSTASH_REDIS_REST_TOKEN
-      SUPABASE_URL: http://kong:8000
+      # Supabase is started via `supabase start` and exposes port 54321 on the host
+      SUPABASE_URL: http://host.docker.internal:54321
       UPSTASH_REDIS_REST_URL: http://serverless-redis-http:80
-      NEXT_PUBLIC_SUPABASE_URL: http://kong:8000
+      NEXT_PUBLIC_SUPABASE_URL: http://host.docker.internal:54321
     depends_on:
       serverless-redis-http:
-        condition: service_healthy
-      kong:
-        condition: service_healthy
-      db:
         condition: service_healthy
