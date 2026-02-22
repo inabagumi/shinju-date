@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@storybook/addon-docs": "10.2.10",
-    "@storybook/addon-mcp": "0.2.3",
+    "@storybook/addon-mcp": "0.3.1",
     "@storybook/addon-vitest": "10.2.10",
     "@storybook/react-vite": "10.2.10",
     "@tailwindcss/postcss": "4.2.0",
