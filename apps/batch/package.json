@@ -1,7 +1,7 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@googleapis/youtube": "30.3.0",
+    "@googleapis/youtube": "31.0.0",
     "@sentry/nextjs": "10.39.0",
     "@sentry/profiling-node": "10.39.0",
     "@shinju-date/constants": "workspace:*",
