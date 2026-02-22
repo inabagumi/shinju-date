@@ -137,8 +137,8 @@ else
     # not on localhost inside the container. Replace the host portion so psql can
     # reach the database.
     if [ "${RUNNING_IN_DEVCONTAINER:-}" = "true" ] || [ -n "${REMOTE_CONTAINERS:-}" ] || [ -n "${CODESPACES:-}" ]; then
-        DB_URL="${DB_URL/localhost/host.docker.internal}"
-        DB_URL="${DB_URL/127.0.0.1/host.docker.internal}"
+        DB_URL="${DB_URL//localhost/host.docker.internal}"
+        DB_URL="${DB_URL//127.0.0.1/host.docker.internal}"
     fi
 fi
 
