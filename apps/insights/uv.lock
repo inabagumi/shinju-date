@@ -339,7 +339,7 @@ requires-dist = [
     { name = "fastapi", specifier = "==0.129.0" },
     { name = "httpx", marker = "extra == 'dev'", specifier = "==0.28.1" },
     { name = "janome", specifier = "==0.5.0" },
-    { name = "poethepoet", marker = "extra == 'dev'", specifier = "==0.39.0" },
+    { name = "poethepoet", marker = "extra == 'dev'", specifier = "==0.42.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = "==9.0.2" },
     { name = "python-decouple", specifier = "==3.8" },
     { name = "python-dotenv", specifier = "==1.2.1" },
@@ -499,15 +499,15 @@ wheels = [
 
 [[package]]
 name = "poethepoet"
-version = "0.39.0"
+version = "0.42.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pastel" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ec/f5/7561bc002bcd40c96633173fb2eb5daf2589dd4dfc4a2cb1b1a2cc6bb60f/poethepoet-0.39.0.tar.gz", hash = "sha256:85f279ffaf2a58ba31db2048ab897740d4db839233c3f28740cf0517b3367710", size = 79816, upload-time = "2025-12-25T15:10:57.799Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4a/9a/4e81fafef2ba94e5c974b4701343d1f053a27575ab5133cbd264348925dd/poethepoet-0.42.0.tar.gz", hash = "sha256:c9a2828259e585e9ed152857602130ff339f7b1638879b80d4a23f25588be4f8", size = 91278, upload-time = "2026-02-22T14:24:50.967Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b2/18/9f356cdf243ca90a985f2e8e9eab938b1ddac461acfa6348db434ba70525/poethepoet-0.39.0-py3-none-any.whl", hash = "sha256:2865b04230df0fb43b6fb4f739c975b19be03d6db18f0ab760b3fb5c56b50b5c", size = 104763, upload-time = "2025-12-25T15:10:56.099Z" },
+    { url = "https://files.pythonhosted.org/packages/f1/3e/58041b7e4d49b69e859dc81c35e221cf02d91ed4dbb5a2f6cc4698a29f44/poethepoet-0.42.0-py3-none-any.whl", hash = "sha256:e43cc20d458ee5bfccaa4572bc5783bcb93991a7d2fcf8dadc9c43f1ebc9b277", size = 118091, upload-time = "2026-02-22T14:24:49.53Z" },
 ]
 
 [[package]]
