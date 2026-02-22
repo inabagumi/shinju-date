@@ -16,25 +16,15 @@ NC='\033[0m' # No Color
 
 echo -e "${GREEN}Generating TypeScript types from database schema...${NC}"
 
-# Check if database is running via Docker Compose
-if docker compose ps db 2>/dev/null | grep -q "Up\|running"; then
-    echo -e "${GREEN}Using Docker Compose database${NC}"
-    
-    # Use supabase CLI to generate types from the local Docker database
-    # The CLI connects to the database through the standard port mapping
-    if command -v supabase &> /dev/null; then
-        cd "$PROJECT_ROOT"
-        # Use connection string with password from environment or default
-        DB_PASSWORD="${POSTGRES_PASSWORD:-postgres}"
-        supabase gen types typescript --db-url "postgresql://supabase_admin:${DB_PASSWORD}@localhost:54322/postgres" --schema public > "$OUTPUT_FILE"
-        echo -e "${GREEN}Types generated successfully at: ${OUTPUT_FILE}${NC}"
-    else
-        echo -e "${RED}Error: Supabase CLI not found. Installing...${NC}"
-        echo -e "${YELLOW}Please install Supabase CLI: npm install -g supabase${NC}"
-        exit 1
-    fi
+cd "$PROJECT_ROOT"
+
+# Check if Supabase local stack is running via Supabase CLI
+if pnpm exec supabase status 2>/dev/null | grep -q "API URL:"; then
+    echo -e "${GREEN}Using Supabase CLI local instance${NC}"
+    pnpm exec supabase gen types typescript --local --schema public > "$OUTPUT_FILE"
+    echo -e "${GREEN}Types generated successfully at: ${OUTPUT_FILE}${NC}"
 else
-    echo -e "${RED}Error: Database is not running via Docker Compose${NC}"
-    echo -e "${YELLOW}Please start services: docker compose up -d${NC}"
+    echo -e "${RED}Error: Supabase local stack is not running${NC}"
+    echo -e "${YELLOW}Please start Supabase first: pnpm exec supabase start${NC}"
     exit 1
 fi

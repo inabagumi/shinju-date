@@ -68,14 +68,17 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 - `app` サービスの Dockerfile ビルド設定
 - 環境変数のロード（`env_file` による `../config/dev-secrets.env` の参照）
 - ワークスペースのボリュームマウント（`..:/workspaces/shinju-date:cached`）
-- 依存サービスの指定（`depends_on` で `kong`, `db`, `redis` など）
+- Docker ソケットのマウント（`supabase start` のために必要）
+- `extra_hosts` によるホスト Docker へのアクセス設定
+- 依存サービスの指定（`depends_on` で `serverless-redis-http` など）
 
 **含まれない内容**:
-- Supabase や Redis などの共有サービス（`../compose.yml` で定義）
+- Supabase サービス（Supabase CLI で管理）
+- Redis などの共有サービス（`../compose.yml` で定義）
 
 **補足**:
 - ルートの `compose.yml` と組み合わせて使用されます（`dockerComposeFile: ["../compose.yml", "compose.override.yml"]`）
-- `../compose.yml` が Supabase、Redis などの共有開発サービスを定義しています
+- `../compose.yml` が Redis などの共有開発サービスを定義しています
 - ボリュームマウントの `..` は `.devcontainer/compose.override.yml` からの相対パスでプロジェクトルートを指定します
 
 ## ファイル構成まとめ
@@ -83,15 +86,17 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 ```
 .devcontainer/
 ├── Dockerfile          # OS レベルセットアップ（イメージビルド時）
-├── post-create.sh      # プロジェクト固有初期化（コンテナ起動後）
+├── post-create.sh      # プロジェクト固有初期化（コンテナ起動後、supabase start を含む）
 ├── devcontainer.json   # VS Code / Codespaces 設定
 ├── compose.override.yml  # Dev Container 専用サービス（app のみ）
 └── README.md           # このファイル
 
-../compose.yml           # ルートの compose.yml（共有サービス）
+../compose.yml           # ルートの compose.yml（Redis のみ）
 ../config/               # 設定ファイル
-  ├── dev-secrets.env    # 開発用シークレット
-  └── kong.yml           # Kong API Gateway 設定
+  └── dev-secrets.env    # 開発用シークレット（Supabase APIキー、Redisトークン）
+../supabase/             # Supabase CLI 設定・マイグレーション
+  ├── config.toml        # Supabase CLI ローカル設定
+  └── migrations/        # データベースマイグレーション
 ```
 
 ## 運用上の注意点
@@ -178,7 +183,8 @@ docker compose -f compose.yml -f .devcontainer/compose.yml up -d
 
 - コンテナは一度ビルドすれば、そのまま使い続けられます
 - プロジェクトの依存関係を更新した場合は、コンテナ内で `pnpm install` を実行
-- データベースをリセットしたい場合は、`pnpm exec supabase db reset --db-url <DB_URL> --yes` を実行
+- Supabase が停止している場合は `pnpm exec supabase start` で再起動
+- データベースをリセットしたい場合は `pnpm exec supabase db reset` を実行
 
 ## トラブルシューティング
 
@@ -194,8 +200,11 @@ post-create.sh のログを確認し、該当する処理を手動で実行し�
 # 依存関係のインストール
 pnpm install --frozen-lockfile
 
+# Supabase の起動
+pnpm exec supabase start
+
 # データベースのリセット
-pnpm exec supabase db reset --db-url "postgresql://..." --yes
+pnpm exec supabase db reset
 
 # 型定義の生成
 pnpm typegen
@@ -207,8 +216,12 @@ Docker Compose のログを確認してください：
 
 ```bash
 docker compose logs app
-docker compose logs db
-docker compose logs kong
+```
+
+Supabase のログを確認してください：
+
+```bash
+pnpm exec supabase logs
 ```
 
 ### uv が利用できない（Python 開発時）
@@ -233,114 +246,114 @@ VS Code Dev Container や GitHub Codespaces では、通常この問題は発生
 
 ## 概要
 
-このプロジェクトでは、Docker Composeを使用してSupabaseサービスとRedisを管理します。サービス定義は2つのファイルに分かれています：
+このプロジェクトでは、Docker ComposeをRedisサービスの管理に使用し、SupabaseサービスはSupabase CLI（`supabase start`）で管理します。サービス定義は以下のファイルに分かれています：
 
-- **`../compose.yml`（ルート）**: Supabase、Redis等の共有開発サービス
+- **`../compose.yml`（ルート）**: Redis等の共有開発サービス（Supabaseを除く）
 - **`.devcontainer/compose.override.yml`**: Dev Container専用のappサービス
 
 ## ファイル構成
 
 - **devcontainer.json** - VSCode Dev Container / GitHub Codespaces の設定
 - **compose.override.yml** - Dev Container専用サービス（appのみ）
-- **post-create.sh** - コンテナ作成後に実行される初期化スクリプト
+- **post-create.sh** - コンテナ作成後に実行される初期化スクリプト（`supabase start`を含む）
 
 ### ルートレベルの設定ファイル
 
 以下のファイルはプロジェクトルートの`config/`ディレクトリに配置されています：
 
-- **config/kong.yml** - Kong API Gateway の設定ファイル
-- **config/init-db.sh** - データベース初期化スクリプト（マイグレーション適用）
+- **config/dev-secrets.env** - 開発用シークレット（Supabase APIキー、Redisトークン）
 
 ## サービス一覧
-
-サービスは`../compose.yml`（ルート）で定義されています。
 
 ### アプリケーション開発
 
 - **app** - TypeScript/Node.js 開発コンテナ（メインの作業環境）
 
-### Redis
+### Redis（compose.yml）
 
 - **redis** - Redis 8.4.0（ポート6379）
 - **serverless-redis-http** - Upstash互換REST API（ポート8079）
 
-### Supabase サービス
+### Supabase（Supabase CLI管理）
 
-- **db** - PostgreSQL 17（ポート54322）
-- **kong** - API Gateway（ポート54321）
-- **auth** - GoTrue 認証サービス
-- **rest** - PostgREST APIサービス
-- **storage** - ストレージAPIサービス
-- **realtime** - リアルタイム機能
-- **mailpit** - メールテスト用SMTP/UI（ポート54324、1025）
-- **studio** - Supabase Studio（ポート54323）
-- **pg-meta** - データベースメタデータサービス
-- **edge-runtime** - Edge Functions ランタイム
+Supabaseサービスは `supabase start` コマンドで起動され、Dev Container の `post-create.sh` で自動的に実行されます：
+
+- **API / Kong** (port 54321): APIゲートウェイ
+- **PostgreSQL** (port 54322): データベース
+- **Supabase Studio** (port 54323): Web管理UI
+- **Inbucket** (port 54324): メールテスト用
 
 ## 使い方
 
-### サービスの起動
+### サービスの起動（Redisのみ）
 
 ```bash
 docker compose up -d
 ```
 
+### Supabaseの起動
+
+```bash
+pnpm exec supabase start
+```
+
 ### サービスの状態確認
 
 ```bash
+# Redis
 docker compose ps
+
+# Supabase
+pnpm exec supabase status
 ```
 
 ### サービスのログ確認
 
 ```bash
-# すべてのサービス
+# Redis
 docker compose logs -f
 
-# 特定のサービス
-docker compose logs -f db
-docker compose logs -f kong
+# Supabase
+pnpm exec supabase logs
 ```
 
 ### サービスの停止
 
 ```bash
-# サービスを停止（データは保持）
+# Redis
 docker compose down
 
-# サービスとデータをすべて削除
-docker compose down -v
+# Supabase
+pnpm exec supabase stop
 ```
 
 ## ポートマッピング
 
 | サービス | ポート | 説明 |
 |---------|--------|------|
-| Kong API Gateway | 54321 | Supabase API エントリーポイント |
+| Supabase API | 54321 | Supabase API エントリーポイント |
 | PostgreSQL | 54322 | データベース直接接続 |
 | Supabase Studio | 54323 | Web管理UI |
-| Mailpit Web UI | 54324 | メール確認UI |
-| SMTP | 1025 | メール送信テスト |
+| Inbucket Web UI | 54324 | メール確認UI |
 | Redis | 6379 | Redis直接接続 |
 | Redis HTTP API | 8079 | Upstash互換REST API |
 
 ## データベースマイグレーション
 
-マイグレーションは`../supabase/migrations/`ディレクトリに配置されており、データベースコンテナの初期化時に自動的に適用されます。
+マイグレーションは`../supabase/migrations/`ディレクトリに配置されており、`supabase db reset`で適用されます。
 
 ### 新しいマイグレーションの追加
 
 1. `supabase/migrations/`に新しいSQLファイルを作成
    ```bash
-   touch supabase/migrations/$(date +%Y%m%d%H%M%S)_description.sql
+   pnpm exec supabase migration new description
    ```
 
 2. マイグレーションSQLを記述
 
-3. データベースを再作成してマイグレーションを適用
+3. ローカルで適用
    ```bash
-   docker compose down -v  # データをすべて削除
-   docker compose up -d    # 再起動してマイグレーションを適用
+   pnpm exec supabase db reset
    ```
 
 ## トラブルシューティング
@@ -348,49 +361,49 @@ docker compose down -v
 ### サービスが起動しない
 
 ```bash
-# ログを確認
-docker compose logs <service-name>
+# Supabaseのログを確認
+pnpm exec supabase logs
 
-# サービスを再起動
-docker compose restart <service-name>
-
-# すべてをリセット
-docker compose down -v
-docker compose up -d
+# Supabaseを再起動
+pnpm exec supabase stop
+pnpm exec supabase start
 ```
 
 ### ポート競合
 
-`.devcontainer/compose.override.yml`のポートマッピングを変更してください：
+`supabase/config.toml`でSupabaseのポートを変更してください：
 
-```yaml
-ports:
-  - "5433:5432"  # ホストポートを変更
+```toml
+[api]
+port = 54321  # 変更する
+
+[db]
+port = 54322  # 変更する
 ```
 
 ### データベース接続エラー
 
 ```bash
-# データベースの準備完了を確認
-docker compose exec db pg_isready -U supabase_admin
+# Supabaseの状態を確認
+pnpm exec supabase status
 
-# データベースに直接接続
-docker compose exec db psql -U supabase_admin -d postgres
+# データベースをリセット
+pnpm exec supabase db reset
 ```
 
 ## 環境変数
 
-`.env.example`ファイルを参考に、必要に応じて`.env`ファイルを作成してください。ただし、`.env`ファイルは機密情報を含む可能性があるため、Gitにコミットしないでください。
+`config/dev-secrets.env`に開発用シークレットが定義されています。Supabase CLI のデフォルトの JWT シークレットに対応したAPIキーが含まれています。
 
 ## 注意事項
 
-- **機密情報**: `.env`ファイルには機密情報を含めないでください。開発用の固定値のみを使用してください。
+- **機密情報**: `config/dev-secrets.env`には開発用の固定値のみを使用してください。
 - **本番環境**: この設定は開発環境専用です。本番環境では使用しないでください。
-- **データ永続化**: データベースとストレージのデータは名前付きボリューム（`db-data`、`storage-data`）に保存されます。
-- **自動起動**: Dev Container使用時は、コンテナ作成時にサービスが自動的に起動します。
+- **Docker Socket**: Dev Container の app サービスはホストの Docker ソケットをマウントして `supabase start` を実行します。
 
 ## 参考資料
 
 - [Supabase公式ドキュメント](https://supabase.com/docs)
+- [Supabase CLIリファレンス](https://supabase.com/docs/reference/cli/introduction)
 - [Docker Compose ドキュメント](https://docs.docker.com/compose/)
 - [Dev Containers 仕様](https://containers.dev/)
