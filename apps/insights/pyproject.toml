@@ -22,7 +22,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "ruff==0.15.1",
-    "poethepoet==0.39.0",
+    "poethepoet==0.42.0",
     "pytest==9.0.2",
     "httpx==0.28.1",
 ]
