@@ -20,7 +20,7 @@
     "@testing-library/react": "16.3.2",
     "@upstash/redis": "1.36.2",
     "@vercel/analytics": "1.6.1",
-    "dedent": "1.7.1",
+    "dedent": "1.7.2",
     "embla-carousel-react": "8.6.0",
     "ics": "3.8.1",
     "lucide-react": "0.575.0",
