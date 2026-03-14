@@ -16,7 +16,7 @@
     "@supabase/sentry-js-integration": "0.3.0",
     "@supabase/supabase-js": "2.97.0",
     "@upstash/ratelimit": "2.0.8",
-    "@upstash/redis": "1.36.2",
+    "@upstash/redis": "1.37.0",
     "mime": "4.1.0",
     "nanoid": "5.1.6",
     "next": "16.1.6",
