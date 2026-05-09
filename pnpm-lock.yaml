@@ -87,8 +87,8 @@ importers:
         specifier: 0.3.0
         version: 0.3.0(@supabase/supabase-js@2.97.0)
       '@supabase/ssr':
-        specifier: 0.8.0
-        version: 0.8.0(@supabase/supabase-js@2.97.0)
+        specifier: 0.10.3
+        version: 0.10.3(@supabase/supabase-js@2.97.0)
       '@supabase/supabase-js':
         specifier: 2.97.0
         version: 2.97.0
@@ -2680,10 +2680,10 @@ packages:
     peerDependencies:
       '@supabase/supabase-js': 2.x
 
-  '@supabase/ssr@0.8.0':
-    resolution: {integrity: sha512-/PKk8kNFSs8QvvJ2vOww1mF5/c5W8y42duYtXvkOSe+yZKRgTTZywYG2l41pjhNomqESZCpZtXuWmYjFRMV+dw==}
+  '@supabase/ssr@0.10.3':
+    resolution: {integrity: sha512-ux2CJgX89h0Fz2lY7ZNafNG2SkXpyRc5dz77K9eKeBLPdtywQixKwIuetDeIViAJBp/buOUVmgj8PVesOklNpw==}
     peerDependencies:
-      '@supabase/supabase-js': ^2.76.1
+      '@supabase/supabase-js': ^2.105.3
 
   '@supabase/storage-js@2.97.0':
     resolution: {integrity: sha512-9f6NniSBfuMxOWKwEFb+RjJzkfMdJUwv9oHuFJKfe/5VJR8cd90qw68m6Hn0ImGtwG37TUO+QHtoOechxRJ1Yg==}
@@ -7425,7 +7425,7 @@ snapshots:
     dependencies:
       '@supabase/supabase-js': 2.97.0
 
-  '@supabase/ssr@0.8.0(@supabase/supabase-js@2.97.0)':
+  '@supabase/ssr@0.10.3(@supabase/supabase-js@2.97.0)':
     dependencies:
       '@supabase/supabase-js': 2.97.0
       cookie: 1.1.1
