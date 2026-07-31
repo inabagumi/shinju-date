@@ -155,7 +155,7 @@ interface EventHandler {
      title: string
      children: React.ReactNode
    }
-   
+
    // After
    interface MyComponentProps {
      title: string
@@ -169,7 +169,7 @@ interface EventHandler {
    type ButtonProps = ComponentPropsWithoutRef<'button'> & {
      variant?: 'primary' | 'secondary'
    }
-   
+
    // After
    interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
      variant?: 'primary' | 'secondary'
@@ -182,7 +182,7 @@ interface EventHandler {
    type InputProps = Omit<ComponentPropsWithoutRef<'input'>, 'size'> & {
      inputSize?: 'sm' | 'md' | 'lg'
    }
-   
+
    // interface で表現可能な場合
    interface InputProps extends Omit<ComponentPropsWithoutRef<'input'>, 'size'> {
      inputSize?: 'sm' | 'md' | 'lg'
@@ -203,18 +203,12 @@ interface EventHandler {
 ### コードフォーマット
 
 - **JavaScript/TypeScript**: Biome を使用
-- **Python**: Ruff を使用
 
 すべてのコード変更後は必ず以下を実行：
 
 ```bash
 # JavaScript/TypeScript
 pnpm run check --fix
-
-# Python (Insights API)
-cd apps/insights
-uv run poe format
-uv run poe lint
 ```
 
 ### コミットメッセージ

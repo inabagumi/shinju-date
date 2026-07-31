@@ -49,12 +49,6 @@ devcontainer down --workspace-folder .
 - **型安全性**: TypeScript の厳格な型チェックを使用
 - **型定義**: オブジェクト型には `interface` を優先使用（詳細は [docs/coding-guidelines.md](docs/coding-guidelines.md#typescript-型定義) を参照）
 
-### Python（Insights API）
-
-- **フォーマッター**: Ruff を使用
-- **リンティング**: Ruff の規則に従う
-- **型ヒント**: すべての関数にtype hintsを記載
-
 ### コード品質チェック
 
 **重要**: すべてのコード変更後は、必ず以下のコマンドを実行してください。
@@ -63,14 +57,6 @@ devcontainer down --workspace-folder .
 
 ```bash
 pnpm run check --fix
-```
-
-#### Python（Insights API）
-
-```bash
-cd apps/insights
-uv run poe format
-uv run poe lint
 ```
 
 ### TypeScript 型定義の規約
@@ -100,7 +86,7 @@ type ComponentProps = {
 
 ### Next.js Cache Directives（キャッシュディレクティブ）
 
-**🚨 厳格なルール - 必ず守ること**: 
+**🚨 厳格なルール - 必ず守ること**:
 
 1. **`'use cache'` ディレクティブの直後には必ず空行を1行入れる**
 2. **`cacheLife()` や `cacheTag()` などの後にも必ず空行を1行入れる**
@@ -110,10 +96,10 @@ type ComponentProps = {
 // ✅ 正しい例
 async function MyComponent() {
   'use cache: remote'
-  
+
   cacheLife('hours')
   cacheTag('my-tag')
-  
+
   const data = await fetchData()
   return <div>{data}</div>
 }
@@ -190,7 +176,7 @@ refactor(database): improve query performance
 - `chore`: その他（依存関係更新など）
 
 **Scope**:
-- `web`, `admin`, `batch`, `insights`: 各アプリケーション
+- `web`, `admin`, `batch`: 各アプリケーション
 - `database`, `msw-handlers`, `logger` など: 各パッケージ
 
 ## Pull Request のフロー
@@ -372,8 +358,7 @@ shinju-date/
 ├── apps/                    # アプリケーション
 │   ├── web/                # 公開ウェブサイト
 │   ├── admin/              # 管理画面
-│   ├── batch/              # バッチ処理
-│   └── insights/           # データ分析API
+│   └── batch/              # バッチ処理
 ├── packages/               # 共有パッケージ
 │   ├── database/           # データベース関連
 │   ├── msw-handlers/       # MSW モックハンドラ
@@ -438,17 +423,6 @@ cd apps/admin && pnpm run msw:init
 
 # 環境変数を設定
 export ENABLE_MSW=true
-```
-
-#### Python 依存関係の問題
-
-```bash
-# uv の更新
-pip install --upgrade uv
-
-# 依存関係の再インストール
-cd apps/insights
-uv sync --extra dev --reinstall
 ```
 
 ### ドキュメント

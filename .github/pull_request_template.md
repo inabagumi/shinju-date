@@ -9,8 +9,7 @@
 
 ### 自動で付与されるラベル（GitHub Actions）
 - **area:** ラベル - 変更されたディレクトリに基づいて自動付与
-  - area: web, area: admin, area: batch, area: insights
-- **tech: python** - Pythonファイルの変更時に自動付与
+  - area: web, area: admin, area: batch
 - **tech: supabase** - Supabaseディレクトリの変更時に自動付与
 - **type: Documentation** - ドキュメントファイルの変更時に自動付与
 - **size:** ラベル - 変更ファイル数・行数に基づいて自動付与
@@ -43,9 +42,6 @@
   - [ ] JavaScript/TypeScript
     - [ ] `pnpm run check --fix` を実行し、問題がないことを確認した
     - [ ] ビルドが成功することを確認した (`pnpm run build`)
-  - [ ] Python (Insights API)
-    - [ ] `uv run poe format` を実行した
-    - [ ] `uv run poe lint` を実行し、問題がないことを確認した
 - [ ] ドキュメント
   - [ ] 必要に応じてドキュメントを更新した
   - [ ] コードにコメントを追加した（必要な場合）

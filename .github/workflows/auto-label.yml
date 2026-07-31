@@ -52,26 +52,26 @@ jobs:
               /pnpm-lock\.yaml$/,
               /package-lock\.json$/,
               /yarn\.lock$/,
-              
+
               // Build artifacts
               /\.tsbuildinfo$/,
               /\.turbo\//,
               /dist\//,
               /\.next\//,
-              
+
               // Dependencies
               /node_modules\//,
               /\.pnp\.(cjs|js|loader\.mjs)$/,
               /\.yarn\//,
-              
+
               // Cache directories
               /\.cache\//,
-              
+
               // Test artifacts
               /playwright-report\//,
               /test-results\//,
               /coverage\//,
-              
+
               // Generated service workers and static files
               /mockServiceWorker\.js$/,
               /storybook-static\//,
@@ -98,26 +98,20 @@ jobs:
               if (file.filename.startsWith('apps/web/')) areaLabels.add('area: web');
               if (file.filename.startsWith('apps/admin/')) areaLabels.add('area: admin');
               if (file.filename.startsWith('apps/batch/')) areaLabels.add('area: batch');
-              if (file.filename.startsWith('apps/insights/')) areaLabels.add('area: insights');
             });
 
             // Detect tech labels based on file extensions and directories (use all files)
-            const hasPython = files.some(file => file.filename.endsWith('.py'));
             const hasSupabase = files.some(file => file.filename.startsWith('supabase/'));
 
             // Detect documentation changes (use all files)
-            const isDocumentation = files.some(file => 
-              file.filename.endsWith('.md') || 
-              file.filename.endsWith('.mdx') || 
+            const isDocumentation = files.some(file =>
+              file.filename.endsWith('.md') ||
+              file.filename.endsWith('.mdx') ||
               file.filename.startsWith('docs/')
             );
 
             // Collect labels to add
             const labelsToAdd = [...Array.from(areaLabels)];
-
-            if (hasPython) {
-              labelsToAdd.push('tech: python');
-            }
 
             if (hasSupabase) {
               labelsToAdd.push('tech: supabase');
@@ -133,10 +127,10 @@ jobs:
 
             if (!hasSizeLabel && !hasOnlyGeneratedFiles) {
               let sizeLabel;
-              if (meaningfulFileCount <= SIZE_THRESHOLDS.SMALL.maxFiles && 
+              if (meaningfulFileCount <= SIZE_THRESHOLDS.SMALL.maxFiles &&
                   meaningfulChanges <= SIZE_THRESHOLDS.SMALL.maxChanges) {
                 sizeLabel = 'size: S';
-              } else if (meaningfulFileCount <= SIZE_THRESHOLDS.MEDIUM.maxFiles && 
+              } else if (meaningfulFileCount <= SIZE_THRESHOLDS.MEDIUM.maxFiles &&
                          meaningfulChanges <= SIZE_THRESHOLDS.MEDIUM.maxChanges) {
                 sizeLabel = 'size: M';
               } else {

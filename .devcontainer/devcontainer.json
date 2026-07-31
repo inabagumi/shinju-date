@@ -5,9 +5,7 @@
         "EditorConfig.EditorConfig",
         "biomejs.biome",
         "bradlc.vscode-tailwindcss",
-        "unifiedjs.vscode-mdx",
-        "ms-python.python",
-        "ms-python.ruff"
+        "unifiedjs.vscode-mdx"
       ],
       "settings": {}
     }
@@ -15,7 +13,6 @@
   "dockerComposeFile": ["../compose.yml", "compose.override.yml"],
   "features": {
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
-    "ghcr.io/devcontainers/features/python:1": {},
     "ghcr.io/devcontainers/features/terraform:1": {
       "terragrunt": "none",
       "tflint": "none",
@@ -36,10 +33,6 @@
     },
     "4000": {
       "label": "Admin",
-      "onAutoForward": "silent"
-    },
-    "8000": {
-      "label": "Insights API",
       "onAutoForward": "silent"
     },
     "8079": {

@@ -14,8 +14,6 @@ E2EテストはPlaywrightを使用して実装されており、MSW（Mock Servi
 - **apps/admin**: 管理ダッシュボード
 - **apps/batch**: バッチAPIエンドポイント
 
-Note: apps/insights（Python製）はMSWのモックが使えないため対象外です。
-
 ## セットアップ
 
 ### 1. Playwrightブラウザのインストール
