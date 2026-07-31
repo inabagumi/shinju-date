@@ -440,8 +440,8 @@ importers:
         specifier: 8.6.0
         version: 8.6.0(react@19.2.4)
       ics:
-        specifier: 3.8.1
-        version: 3.8.1
+        specifier: 3.12.0
+        version: 3.12.0
       lucide-react:
         specifier: 0.575.0
         version: 0.575.0(react@19.2.4)
@@ -3939,8 +3939,8 @@ packages:
     resolution: {integrity: sha512-1dhVQZXhcHje7798IVM+xoo/1ZdVfzOMIc8/rgVSijRK38EDqOJoGula9N/8ZI5RD8QTxNQtK/Gozpr+qUqRRA==}
     engines: {node: '>=20.0.0'}
 
-  ics@3.8.1:
-    resolution: {integrity: sha512-UqQlfkajfhrS4pUGQfGIJMYz/Jsl/ob3LqcfEhUmLbwumg+ZNkU0/6S734Vsjq3/FYNpEcZVKodLBoe+zBM69g==}
+  ics@3.12.0:
+    resolution: {integrity: sha512-BBPiZ/TbUyZrxui7SHKGOa/n2HUxaW9ucn7cw47NW9OSKe5tItYxIdN7Uczti5nKURmfwVvYi2aLigCJGH1+cA==}
 
   immer@10.2.0:
     resolution: {integrity: sha512-d/+XTN3zfODyjr89gM3mPq1WNX2B8pYsu7eORitdwyA2sBubnTl3laYlBk4sXY5FUa5qTZGBDPJICVbvqzjlbw==}
@@ -8716,7 +8716,7 @@ snapshots:
 
   iceberg-js@0.8.1: {}
 
-  ics@3.8.1:
+  ics@3.12.0:
     dependencies:
       nanoid: 3.3.11
       runes2: 1.1.4
