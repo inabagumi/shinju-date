@@ -13,7 +13,6 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 **含まれる内容**:
 - apt パッケージのインストール（postgresql-client など）
 - corepack と pnpm のセットアップ
-- uv（Python パッケージマネージャー）のインストール
 - システム全体で必要な環境変数の設定
 
 **含まれない内容**:
@@ -37,7 +36,7 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 
 **含まれない内容**:
 - OS レベルのパッケージインストール（apt-get など）
-- システムツールのインストール（corepack、uv など）
+- システムツールのインストール（corepack など）
 
 **メリット**:
 - プロジェクトの変更に応じて柔軟に更新できる
@@ -223,18 +222,6 @@ Supabase のログを確認してください：
 ```bash
 pnpm exec supabase logs
 ```
-
-### uv が利用できない（Python 開発時）
-
-Dockerfile のビルド時にネットワーク接続が利用できない環境では、uv のインストールがスキップされることがあります。この場合、コンテナ内で手動でインストールしてください：
-
-```bash
-# コンテナ内で実行
-curl -LsSf https://astral.sh/uv/install.sh | sh
-source ~/.bashrc  # または新しいシェルを起動
-```
-
-VS Code Dev Container や GitHub Codespaces では、通常この問題は発生しません（ビルド時にネットワークアクセスが可能なため）。
 
 ## 参考資料
 

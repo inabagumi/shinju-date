@@ -9,9 +9,3 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 ENV PNPM_VERSION=10.33.4
 
 RUN su node -c "wget -qO- https://get.pnpm.io/install.sh | env PNPM_VERSION=$PNPM_VERSION sh -"
-
-ENV UV_INSTALL_DIR=/usr/local/bin
-# renovate: datasource=github-releases depName=uv packageName=astral-sh/uv
-ENV UV_VERSION=0.9.18
-
-RUN wget -qO-  https://astral.sh/uv/${UV_VERSION}/install.sh | sh

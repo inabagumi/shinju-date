@@ -23,11 +23,6 @@ SHINJU DATE プロジェクトでは、以下のテストフレームワーク�
 - **jsdom**: ブラウザ環境のシミュレーション
 - **@vitejs/plugin-react**: JSX トランスフォームの処理
 
-### Python テスト (Insights API)
-
-- **pytest**: Python のテストフレームワーク
-- 詳細は `apps/insights/README.md` を参照
-
 ## React コンポーネントのテスト
 
 ### 基本的なテストの書き方
@@ -197,10 +192,10 @@ components/
 test('should submit form when button is clicked', async () => {
   const handleSubmit = vi.fn()
   render(<MyForm onSubmit={handleSubmit} />)
-  
+
   await userEvent.type(screen.getByLabelText('Email'), 'test@example.com')
   await userEvent.click(screen.getByRole('button', { name: 'Submit' }))
-  
+
   expect(handleSubmit).toHaveBeenCalledWith({ email: 'test@example.com' })
 })
 
@@ -243,9 +238,9 @@ import { waitFor } from '@testing-library/react'
 
 test('should load data asynchronously', async () => {
   render(<AsyncComponent />)
-  
+
   expect(screen.getByText('Loading...')).toBeInTheDocument()
-  
+
   await waitFor(() => {
     expect(screen.getByText('Data loaded')).toBeInTheDocument()
   })
@@ -283,7 +278,7 @@ screen.getByClassName('email-input')
 2. `vitest.config.ts` で plugin が設定されているか確認
    ```typescript
    import react from '@vitejs/plugin-react'
-   
+
    export default defineConfig({
      plugins: [react()], // この行が必要
      // ...

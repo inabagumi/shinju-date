@@ -6,10 +6,6 @@ on:
   push:
     branches: [main]
 
-env:
-  # renovate: datasource=github-releases depName=astral-sh/uv
-  UV_VERSION: 0.10.4
-
 jobs:
   # Install dependencies job (shared cache for all Node.js jobs)
   install:
@@ -32,7 +28,7 @@ jobs:
           run_install: true
           standalone: true
 
-  # Matrix job for all unit tests (Node.js packages + Python)
+  # Matrix job for all unit tests (Node.js packages)
   test:
     name: Test (${{ matrix.package.name }})
     runs-on: ubuntu-24.04
@@ -69,10 +65,6 @@ jobs:
             language: "node"
           - name: "@shinju-date/web"
             language: "node"
-          # Python app
-          - name: "@shinju-date/insights"
-            language: "python"
-            path: "./apps/insights"
     env:
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -95,30 +87,7 @@ jobs:
         if: matrix.package.language == 'node'
         run: pnpm test --filter ${{ matrix.package.name }} -- --reporter=github-actions
 
-      # Python setup
-      - name: Setup uv
-        if: matrix.package.language == 'python'
-        uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
-        with:
-          version: ${{ env.UV_VERSION }}
-
-      - name: Setup Python
-        if: matrix.package.language == 'python'
-        run: uv python install
-        working-directory: ${{ matrix.package.path }}
-
-      - name: Install Python dependencies
-        if: matrix.package.language == 'python'
-        run: uv sync --extra dev
-        working-directory: ${{ matrix.package.path }}
-
-      # Python test execution
-      - name: Run Python tests
-        if: matrix.package.language == 'python'
-        run: uv run poe test
-        working-directory: ${{ matrix.package.path }}
-
-  # Lint job for Node.js and Python
+  # Lint job for Node.js
   lint:
     name: Lint
     runs-on: ubuntu-24.04
@@ -144,28 +113,6 @@ jobs:
 
       - name: Run Node.js lint
         run: pnpm biome ci --reporter=github .
-
-      # Python linting
-      - name: Setup uv
-        uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
-        with:
-          version: ${{ env.UV_VERSION }}
-
-      - name: Setup Python
-        run: uv python install
-        working-directory: ./apps/insights
-
-      - name: Install Python dependencies
-        run: uv sync --extra dev
-        working-directory: ./apps/insights
-
-      - name: Run Python lint
-        run: uv run poe lint
-        working-directory: ./apps/insights
-
-      - name: Check Python formatting
-        run: uv run poe format-check
-        working-directory: ./apps/insights
 
   # Build job for Node.js
   build:

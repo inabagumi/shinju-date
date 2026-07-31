@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Project-specific initialization script for Dev Container
-# OS-level setup (apt packages, corepack, uv) is handled in Dockerfile
+# OS-level setup (apt packages, corepack) is handled in Dockerfile
 # This script focuses on project dependencies and database initialization
 
 set -euo pipefail
