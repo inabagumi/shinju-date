@@ -3,7 +3,19 @@ packages:
   - packages/*
 
 allowBuilds:
+  '@sentry-internal/node-cpu-profiler': true
+  '@sentry/cli': true
+  esbuild: true
+  msw: true
+  sharp: true
   supabase: true
+
+# Avoid interactive prompt when recreating node_modules in CI/non-TTY
+confirmModulesPurge: false
+
+# pnpm 11 defaults to a 1-day minimum release age for supply-chain protection.
+# Disable for this monorepo so Renovate PRs and same-day lockfile updates can install.
+minimumReleaseAge: 0
 
 publicHoistPattern:
   - '*import-in-the-middle*'
