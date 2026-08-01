@@ -21,7 +21,7 @@
     "@types/react-dom": "19.2.3",
     "babel-plugin-react-compiler": "1.0.0",
     "msw": "2.15.0",
-    "postcss": "8.5.18",
+    "postcss": "8.5.19",
     "postcss-load-config": "6.0.1",
     "typescript": "5.9.3"
   },
