@@ -6,6 +6,6 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && rm -rf /var/lib/apt/lists/*
 
 # renovate: datasource=github-releases depName=pnpm packageName=pnpm/pnpm
-ENV PNPM_VERSION=10.33.4
+ENV PNPM_VERSION=10.34.5
 
 RUN su node -c "wget -qO- https://get.pnpm.io/install.sh | env PNPM_VERSION=$PNPM_VERSION sh -"
