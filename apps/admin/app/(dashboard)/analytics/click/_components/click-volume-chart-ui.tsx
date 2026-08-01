@@ -57,10 +57,7 @@ export default function ClickVolumeChartUI({
               borderRadius: '0.5rem',
             }}
             cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
-            formatter={(value: number | undefined) => [
-              `${value ?? 0} 回`,
-              'クリック数',
-            ]}
+            formatter={(value) => [`${value ?? 0} 回`, 'クリック数']}
             labelStyle={{ color: '#374151', fontWeight: 600 }}
           />
           <Bar
