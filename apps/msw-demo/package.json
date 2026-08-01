@@ -7,13 +7,13 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "tailwind-merge": "3.6.0",
-    "tailwindcss": "4.2.0"
+    "tailwindcss": "4.3.3"
   },
   "description": "MSW (Mock Service Worker) integration demonstration and reference implementation for SHINJU DATE",
   "devDependencies": {
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
-    "@tailwindcss/postcss": "4.2.0",
+    "@tailwindcss/postcss": "4.3.3",
     "@tsconfig/next": "2.0.6",
     "@tsconfig/strictest": "2.0.8",
     "@types/node": "24.13.3",
@@ -23,7 +23,7 @@
     "msw": "2.15.0",
     "postcss": "8.5.25",
     "postcss-load-config": "6.0.1",
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
