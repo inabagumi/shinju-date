@@ -674,8 +674,8 @@ importers:
   packages/msw-handlers:
     dependencies:
       '@msw/data':
-        specifier: 1.1.5
-        version: 1.1.5
+        specifier: 1.1.7
+        version: 1.1.7
       '@shinju-date/database':
         specifier: workspace:*
         version: link:../database
@@ -1611,8 +1611,8 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  '@msw/data@1.1.5':
-    resolution: {integrity: sha512-aqezecY8vvueOSMz8v19ZWpoM0Ei2VuuWt/MZuZ8NBvO2oJvZi5y8PGP6PVutuONu7ms0Or/Am4Rs6Ks9sfg7w==}
+  '@msw/data@1.1.7':
+    resolution: {integrity: sha512-S97H9BC9ErlykiTZwPWj/T3Sww5rmwCO2BBFvkv2wlgTM/E5cSbEiawHLJnqFZVMaHz7AD8cnQx2y311aK3WuA==}
 
   '@mswjs/interceptors@0.41.2':
     resolution: {integrity: sha512-7G0Uf0yK3f2bjElBLGHIQzgRgMESczOMyYVasq1XK8P5HaXtlW4eQhz9MBL+TQILZLaruq+ClGId+hH0w4jvWw==}
@@ -6310,7 +6310,7 @@ snapshots:
       '@types/react': 19.2.14
       react: 19.2.4
 
-  '@msw/data@1.1.5':
+  '@msw/data@1.1.7':
     dependencies:
       '@standard-schema/spec': 1.1.0
       es-toolkit: 1.46.1
