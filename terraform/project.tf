@@ -9,14 +9,13 @@ resource "vercel_project" "this" {
   ignore_command               = "npx turbo-ignore"
   name                         = "shinju-date"
   prioritise_production_builds = true
-  public_source                = false
   root_directory               = "apps/web"
   resource_config = {
+    function_default_regions  = ["hnd1"]
     function_default_cpu_type = "standard"
     function_default_timeout  = 30
   }
-  serverless_function_region = "hnd1"
-  team_id                    = var.vercel_team_id
+  team_id = var.vercel_team_id
   vercel_authentication = {
     deployment_type = "standard_protection"
   }
@@ -24,6 +23,7 @@ resource "vercel_project" "this" {
 
 resource "vercel_project_environment_variable" "enable_experimental_corepack" {
   key        = "ENABLE_EXPERIMENTAL_COREPACK"
+  sensitive  = false
   project_id = vercel_project.this.id
   target     = ["production", "preview"]
   team_id    = vercel_project.this.team_id
@@ -32,6 +32,7 @@ resource "vercel_project_environment_variable" "enable_experimental_corepack" {
 
 resource "vercel_project_environment_variable" "turbo_platform_env_disabled" {
   key        = "TURBO_PLATFORM_ENV_DISABLED"
+  sensitive  = false
   project_id = vercel_project.this.id
   target     = ["production", "preview"]
   team_id    = vercel_project.this.team_id
@@ -40,6 +41,7 @@ resource "vercel_project_environment_variable" "turbo_platform_env_disabled" {
 
 resource "vercel_project_environment_variable" "use_bytecode_caching" {
   key        = "USE_BYTECODE_CACHING"
+  sensitive  = false
   project_id = vercel_project.this.id
   target     = ["production"]
   team_id    = vercel_project.this.team_id
@@ -48,6 +50,7 @@ resource "vercel_project_environment_variable" "use_bytecode_caching" {
 
 resource "vercel_project_environment_variable" "base_url" {
   key        = "NEXT_PUBLIC_BASE_URL"
+  sensitive  = false
   project_id = vercel_project.this.id
   target     = ["production"]
   team_id    = vercel_project.this.team_id
@@ -56,6 +59,7 @@ resource "vercel_project_environment_variable" "base_url" {
 
 resource "vercel_project_environment_variable" "upstash_redis_rest_token" {
   key        = "UPSTASH_REDIS_REST_TOKEN"
+  sensitive  = true
   project_id = vercel_project.this.id
   target     = ["production"]
   team_id    = vercel_project.this.team_id
@@ -64,6 +68,7 @@ resource "vercel_project_environment_variable" "upstash_redis_rest_token" {
 
 resource "vercel_project_environment_variable" "upstash_redis_rest_token_dev" {
   key        = "UPSTASH_REDIS_REST_TOKEN"
+  sensitive  = false
   project_id = vercel_project.this.id
   target     = ["preview", "development"]
   team_id    = vercel_project.this.team_id
@@ -72,6 +77,7 @@ resource "vercel_project_environment_variable" "upstash_redis_rest_token_dev" {
 
 resource "vercel_project_environment_variable" "upstash_redis_rest_url" {
   key        = "UPSTASH_REDIS_REST_URL"
+  sensitive  = true
   project_id = vercel_project.this.id
   target     = ["production"]
   team_id    = vercel_project.this.team_id
@@ -80,6 +86,7 @@ resource "vercel_project_environment_variable" "upstash_redis_rest_url" {
 
 resource "vercel_project_environment_variable" "upstash_redis_rest_url_dev" {
   key        = "UPSTASH_REDIS_REST_URL"
+  sensitive  = false
   project_id = vercel_project.this.id
   target     = ["preview", "development"]
   team_id    = vercel_project.this.team_id
@@ -106,14 +113,13 @@ resource "vercel_project" "admin" {
   ignore_command               = "npx turbo-ignore"
   name                         = "shinju-date-admin"
   prioritise_production_builds = true
-  public_source                = false
   root_directory               = "apps/admin"
   resource_config = {
+    function_default_regions  = ["hnd1"]
     function_default_cpu_type = "standard_legacy"
     function_default_timeout  = 30
   }
-  serverless_function_region = "hnd1"
-  team_id                    = var.vercel_team_id
+  team_id = var.vercel_team_id
   vercel_authentication = {
     deployment_type = "standard_protection"
   }
@@ -121,6 +127,7 @@ resource "vercel_project" "admin" {
 
 resource "vercel_project_environment_variable" "admin_enable_experimental_corepack" {
   key        = "ENABLE_EXPERIMENTAL_COREPACK"
+  sensitive  = false
   project_id = vercel_project.admin.id
   target     = ["production", "preview"]
   team_id    = vercel_project.admin.team_id
@@ -129,6 +136,7 @@ resource "vercel_project_environment_variable" "admin_enable_experimental_corepa
 
 resource "vercel_project_environment_variable" "admin_turbo_platform_env_disabled" {
   key        = "TURBO_PLATFORM_ENV_DISABLED"
+  sensitive  = false
   project_id = vercel_project.admin.id
   target     = ["production", "preview"]
   team_id    = vercel_project.admin.team_id
@@ -137,6 +145,7 @@ resource "vercel_project_environment_variable" "admin_turbo_platform_env_disable
 
 resource "vercel_project_environment_variable" "admin_use_bytecode_caching" {
   key        = "USE_BYTECODE_CACHING"
+  sensitive  = false
   project_id = vercel_project.admin.id
   target     = ["production"]
   team_id    = vercel_project.admin.team_id
@@ -145,6 +154,7 @@ resource "vercel_project_environment_variable" "admin_use_bytecode_caching" {
 
 resource "vercel_project_environment_variable" "admin_upstash_redis_rest_token" {
   key        = "UPSTASH_REDIS_REST_TOKEN"
+  sensitive  = true
   project_id = vercel_project.admin.id
   target     = ["production"]
   team_id    = vercel_project.admin.team_id
@@ -153,6 +163,7 @@ resource "vercel_project_environment_variable" "admin_upstash_redis_rest_token" 
 
 resource "vercel_project_environment_variable" "admin_upstash_redis_rest_token_dev" {
   key        = "UPSTASH_REDIS_REST_TOKEN"
+  sensitive  = false
   project_id = vercel_project.admin.id
   target     = ["preview", "development"]
   team_id    = vercel_project.admin.team_id
@@ -161,6 +172,7 @@ resource "vercel_project_environment_variable" "admin_upstash_redis_rest_token_d
 
 resource "vercel_project_environment_variable" "admin_upstash_redis_rest_url" {
   key        = "UPSTASH_REDIS_REST_URL"
+  sensitive  = true
   project_id = vercel_project.admin.id
   target     = ["production"]
   team_id    = vercel_project.admin.team_id
@@ -169,6 +181,7 @@ resource "vercel_project_environment_variable" "admin_upstash_redis_rest_url" {
 
 resource "vercel_project_environment_variable" "admin_upstash_redis_rest_url_dev" {
   key        = "UPSTASH_REDIS_REST_URL"
+  sensitive  = false
   project_id = vercel_project.admin.id
   target     = ["preview", "development"]
   team_id    = vercel_project.admin.team_id
@@ -195,14 +208,13 @@ resource "vercel_project" "batch" {
   ignore_command               = "npx turbo-ignore"
   name                         = "shinju-date-batch"
   prioritise_production_builds = true
-  public_source                = false
   root_directory               = "apps/batch"
   resource_config = {
+    function_default_regions  = ["hnd1"]
     function_default_cpu_type = "standard"
     function_default_timeout  = 120
   }
-  serverless_function_region = "hnd1"
-  team_id                    = var.vercel_team_id
+  team_id = var.vercel_team_id
   vercel_authentication = {
     deployment_type = "standard_protection"
   }
@@ -215,6 +227,7 @@ resource "random_password" "cron_secret" {
 
 resource "vercel_project_environment_variable" "batch_enable_experimental_corepack" {
   key        = "ENABLE_EXPERIMENTAL_COREPACK"
+  sensitive  = false
   project_id = vercel_project.batch.id
   target     = ["production", "preview"]
   team_id    = vercel_project.batch.team_id
@@ -223,6 +236,7 @@ resource "vercel_project_environment_variable" "batch_enable_experimental_corepa
 
 resource "vercel_project_environment_variable" "batch_turbo_platform_env_disabled" {
   key        = "TURBO_PLATFORM_ENV_DISABLED"
+  sensitive  = false
   project_id = vercel_project.batch.id
   target     = ["production", "preview"]
   team_id    = vercel_project.batch.team_id
@@ -231,6 +245,7 @@ resource "vercel_project_environment_variable" "batch_turbo_platform_env_disable
 
 resource "vercel_project_environment_variable" "batch_use_bytecode_caching" {
   key        = "USE_BYTECODE_CACHING"
+  sensitive  = false
   project_id = vercel_project.batch.id
   target     = ["production"]
   team_id    = vercel_project.batch.team_id
@@ -239,14 +254,26 @@ resource "vercel_project_environment_variable" "batch_use_bytecode_caching" {
 
 resource "vercel_project_environment_variable" "batch_google_api_key" {
   key        = "GOOGLE_API_KEY"
+  sensitive  = true
   project_id = vercel_project.batch.id
-  target     = ["production", "preview", "development"]
+  target     = ["production", "preview"]
+  team_id    = vercel_project.batch.team_id
+  value      = var.google_api_key
+}
+
+# development must use sensitive = false (Vercel provider requirement)
+resource "vercel_project_environment_variable" "batch_google_api_key_development" {
+  key        = "GOOGLE_API_KEY"
+  sensitive  = false
+  project_id = vercel_project.batch.id
+  target     = ["development"]
   team_id    = vercel_project.batch.team_id
   value      = var.google_api_key
 }
 
 resource "vercel_project_environment_variable" "batch_upstash_redis_rest_token" {
   key        = "UPSTASH_REDIS_REST_TOKEN"
+  sensitive  = true
   project_id = vercel_project.batch.id
   target     = ["production"]
   team_id    = vercel_project.batch.team_id
@@ -255,6 +282,7 @@ resource "vercel_project_environment_variable" "batch_upstash_redis_rest_token" 
 
 resource "vercel_project_environment_variable" "batch_upstash_redis_rest_token_dev" {
   key        = "UPSTASH_REDIS_REST_TOKEN"
+  sensitive  = false
   project_id = vercel_project.batch.id
   target     = ["preview", "development"]
   team_id    = vercel_project.batch.team_id
@@ -263,6 +291,7 @@ resource "vercel_project_environment_variable" "batch_upstash_redis_rest_token_d
 
 resource "vercel_project_environment_variable" "batch_upstash_redis_rest_url" {
   key        = "UPSTASH_REDIS_REST_URL"
+  sensitive  = true
   project_id = vercel_project.batch.id
   target     = ["production"]
   team_id    = vercel_project.batch.team_id
@@ -271,6 +300,7 @@ resource "vercel_project_environment_variable" "batch_upstash_redis_rest_url" {
 
 resource "vercel_project_environment_variable" "batch_upstash_redis_rest_url_dev" {
   key        = "UPSTASH_REDIS_REST_URL"
+  sensitive  = false
   project_id = vercel_project.batch.id
   target     = ["preview", "development"]
   team_id    = vercel_project.batch.team_id
@@ -279,6 +309,7 @@ resource "vercel_project_environment_variable" "batch_upstash_redis_rest_url_dev
 
 resource "vercel_project_environment_variable" "batch_cron_secret" {
   key        = "CRON_SECRET"
+  sensitive  = true
   project_id = vercel_project.batch.id
   target     = ["production"]
   team_id    = vercel_project.batch.team_id
