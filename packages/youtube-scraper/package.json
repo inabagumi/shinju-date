@@ -2,7 +2,7 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@googleapis/youtube": "31.0.0",
-    "p-queue": "9.1.0",
+    "p-queue": "9.3.3",
     "temporal-polyfill": "0.3.2"
   },
   "description": "YouTube scraper package for SHINJU DATE",
