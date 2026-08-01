@@ -9,7 +9,7 @@
     "@radix-ui/react-toast": "1.2.23",
     "@shinju-date/tailwind-config": "workspace:*",
     "class-variance-authority": "0.7.1",
-    "lucide-react": "0.577.0",
+    "lucide-react": "1.28.0",
     "tailwind-merge": "3.6.0"
   },
   "devDependencies": {
