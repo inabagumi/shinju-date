@@ -2,14 +2,14 @@ terraform {
   required_providers {
     random = {
       source  = "hashicorp/random"
-      version = "3.7.2"
+      version = "3.8.1"
     }
 
     vercel = {
       source  = "vercel/vercel"
-      version = "4.6.0"
+      version = "4.8.2"
     }
   }
 
-  required_version = "~> 1.14"
+  required_version = "~> 1.15"
 }

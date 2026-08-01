@@ -8,8 +8,6 @@
 
 - **Node.js**: `.node-version` ファイルで指定されたバージョン。`nvm` などのバージョン管理ツールの使用を推奨します。
 - **pnpm**: Corepack を通じて有効化されます。
-- **Python**: 3.12 以上 (`apps/insights` 開発時のみ)
-- **uv**: Pythonパッケージマネージャー (`apps/insights` 開発時のみ)
 - **Docker**: ローカルのSupabase環境とRedisを実行するために必要です。
 - **Docker Compose**: Redisサービスのオーケストレーションに使用します。
 
@@ -47,20 +45,6 @@ pnpm install
 
 ```bash
 pnpm typegen
-```
-
-## 2. Python環境 (`apps/insights` 向け)
-
-`apps/insights` アプリケーションの開発を行う場合は、Python環境のセットアップが必要です。
-
-### 2.1. Python依存関係のインストール
-
-`uv` を使用して `apps/insights/pyproject.toml` で指定された依存関係をインストールします。
-
-```bash
-cd apps/insights
-uv sync --extra dev
-cd ../.. # ルートディレクトリに戻る
 ```
 
 ## 3. ローカルSupabase環境

@@ -6,10 +6,6 @@ on:
   push:
     branches: [main]
 
-env:
-  # renovate: datasource=github-releases depName=astral-sh/uv
-  UV_VERSION: 0.10.4
-
 jobs:
   # Install dependencies job (shared cache for all Node.js jobs)
   install:
@@ -22,17 +18,17 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           cache: true
           run_install: true
           standalone: true
 
-  # Matrix job for all unit tests (Node.js packages + Python)
+  # Matrix job for all unit tests (Node.js packages)
   test:
     name: Test (${{ matrix.package.name }})
     runs-on: ubuntu-24.04
@@ -69,22 +65,18 @@ jobs:
             language: "node"
           - name: "@shinju-date/web"
             language: "node"
-          # Python app
-          - name: "@shinju-date/insights"
-            language: "python"
-            path: "./apps/insights"
     env:
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
 
       - name: Setup pnpm
         if: matrix.package.language == 'node'
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           cache: true
           run_install: true
@@ -95,30 +87,7 @@ jobs:
         if: matrix.package.language == 'node'
         run: pnpm test --filter ${{ matrix.package.name }} -- --reporter=github-actions
 
-      # Python setup
-      - name: Setup uv
-        if: matrix.package.language == 'python'
-        uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
-        with:
-          version: ${{ env.UV_VERSION }}
-
-      - name: Setup Python
-        if: matrix.package.language == 'python'
-        run: uv python install
-        working-directory: ${{ matrix.package.path }}
-
-      - name: Install Python dependencies
-        if: matrix.package.language == 'python'
-        run: uv sync --extra dev
-        working-directory: ${{ matrix.package.path }}
-
-      # Python test execution
-      - name: Run Python tests
-        if: matrix.package.language == 'python'
-        run: uv run poe test
-        working-directory: ${{ matrix.package.path }}
-
-  # Lint job for Node.js and Python
+  # Lint job for Node.js
   lint:
     name: Lint
     runs-on: ubuntu-24.04
@@ -130,13 +99,13 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
 
       # Node.js linting
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           cache: true
           run_install: true
@@ -144,28 +113,6 @@ jobs:
 
       - name: Run Node.js lint
         run: pnpm biome ci --reporter=github .
-
-      # Python linting
-      - name: Setup uv
-        uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
-        with:
-          version: ${{ env.UV_VERSION }}
-
-      - name: Setup Python
-        run: uv python install
-        working-directory: ./apps/insights
-
-      - name: Install Python dependencies
-        run: uv sync --extra dev
-        working-directory: ./apps/insights
-
-      - name: Run Python lint
-        run: uv run poe lint
-        working-directory: ./apps/insights
-
-      - name: Check Python formatting
-        run: uv run poe format-check
-        working-directory: ./apps/insights
 
   # Build job for Node.js
   build:
@@ -179,12 +126,12 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           cache: true
           run_install: true
@@ -212,12 +159,12 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           cache: true
           run_install: true
@@ -240,7 +187,7 @@ jobs:
 
       # Cache Playwright browsers
       - name: Cache Playwright browsers
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
@@ -267,7 +214,7 @@ jobs:
 
       # Upload Playwright Report
       - name: Upload Playwright Report
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: playwright-report-${{ steps.sanitize.outputs.name }}

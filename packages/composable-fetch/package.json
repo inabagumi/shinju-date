@@ -1,7 +1,7 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "p-retry": "7.1.1"
+    "p-retry": "8.0.0"
   },
   "description": "Composable fetch middleware for HTTP caching, retries, and extensibility",
   "devDependencies": {
@@ -10,7 +10,7 @@
     "@types/node": "24.10.13",
     "tsup": "8.5.1",
     "typescript": "5.9.3",
-    "vitest": "4.0.18"
+    "vitest": "4.1.0"
   },
   "exports": {
     ".": {

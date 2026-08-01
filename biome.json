@@ -24,6 +24,9 @@
       "tailwindDirectives": true
     }
   },
+  "files": {
+    "includes": ["**", "!**/.devcontainer/devcontainer-lock.json"]
+  },
   "formatter": {
     "useEditorconfig": true
   },

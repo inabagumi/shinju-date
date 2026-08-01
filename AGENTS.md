@@ -116,7 +116,6 @@ AIツールは常に進化しています。
 ### コードスタイルと品質チェック
 
 * JavaScript/TypeScript: Biomeによるフォーマットとリンティングを必ず実行する
-* Python (Insights API): Ruffによるフォーマットとリンティングを必ず実行する
 * AI生成コードも該当する品質チェックツールでチェックする
 * プロジェクトの既存のパターンやコンベンションに従う
 
@@ -131,13 +130,6 @@ AIツールは常に進化しています。
 - リンティングチェックと自動修正
 - 未使用インポートの削除
 - コードスタイルの統一
-
-#### Python (Insights API) の場合:
-```bash
-cd apps/insights
-uv run poe format
-uv run poe lint
-```
 
 特に以下の場合は必ず実行してください：
 
@@ -163,7 +155,7 @@ uv run poe lint
      label: string
      onClick: () => void
    }
-   
+
    // ❌ 避けるべき
    type ButtonProps = {
      label: string
@@ -199,10 +191,10 @@ uv run poe lint
 ```typescript
 async function MyComponent() {
   'use cache: remote'
-  
+
   cacheLife('hours')
   cacheTag('my-tag')
-  
+
   const data = await fetchData()
   return <div>{data}</div>
 }
@@ -236,9 +228,9 @@ async function MyComponent() {
 // ✅ 正しい：データ取得関数でキャッシュ
 async function getTalent(id: string) {
   'use cache: private'
-  
+
   cacheLife('minutes')
-  
+
   const talent = await db.query(...)
   return talent
 }
@@ -550,7 +542,7 @@ await supabase
 ### コミットメッセージ
 
 * AI支援で作成したコードも、通常通り明確で意味のあるコミットメッセージを記述する
-* Conventional Commitsの形式に従う（例: `feat(web): add new feature`、`fix(insights): resolve API issue`、`refactor(admin): improve component`）
+* Conventional Commitsの形式に従う（例: `feat(web): add new feature`、`fix(admin): resolve API issue`、`refactor(admin): improve component`）
   * スコープは`apps/*`や`packages/*`にある各アプリやパッケージを単位とする
   * 1行目はGitHubのUIに収まる平易な英文で記述する
 * 大きな変更は小さなコミットに分割する
