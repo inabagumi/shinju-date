@@ -33,7 +33,7 @@
     "recharts": "3.7.0",
     "tailwind-merge": "3.6.0",
     "tailwindcss": "4.3.3",
-    "temporal-polyfill": "0.3.2",
+    "temporal-polyfill": "1.0.2",
     "zod": "4.4.3"
   },
   "description": "Content management admin dashboard for SHINJU DATE",
@@ -57,7 +57,7 @@
     "postcss-load-config": "6.0.1",
     "rehype-external-links": "3.0.0",
     "remark-gfm": "4.0.1",
-    "typescript": "5.9.3",
+    "typescript": "6.0.3",
     "vite": "8.2.0",
     "vitest": "4.1.10"
   },

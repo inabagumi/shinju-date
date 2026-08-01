@@ -1,7 +1,11 @@
 import { defineConfig } from 'tsup'
 
 export default defineConfig({
-  dts: true,
+  dts: {
+    compilerOptions: {
+      ignoreDeprecations: '6.0',
+    },
+  },
   entry: [
     './src/index.ts',
     './src/format-date.ts',
