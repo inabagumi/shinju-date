@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "lib": ["ESNext"],
-    "target": "ES2022"
+    "target": "ES2022",
+    "types": ["node"]
   },
   "exclude": ["node_modules", "dist"],
   "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/node20/tsconfig"],
