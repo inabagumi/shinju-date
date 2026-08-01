@@ -12,14 +12,14 @@
   },
   "dockerComposeFile": ["../compose.yml", "compose.override.yml"],
   "features": {
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
-    "ghcr.io/devcontainers/features/terraform:1": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1.10.0": {},
+    "ghcr.io/devcontainers/features/terraform:1.4.5": {
       "terragrunt": "none",
       "tflint": "none",
-      "version": "1.6.4"
+      "version": "1.15.8"
     }
   },
-  "forwardPorts": [3000, 4000, 8000, 8079, 10000, 54321, 54323, 54324],
+  "forwardPorts": [3000, 4000, 8079, 10000, 54321, 54323, 54324],
   "hostRequirements": {
     "cpus": 4,
     "memory": "8gb",
