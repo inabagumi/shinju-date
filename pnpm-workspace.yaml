@@ -3,7 +3,16 @@ packages:
   - packages/*
 
 allowBuilds:
+  '@sentry-internal/node-cpu-profiler': true
+  '@sentry/cli': true
+  '@sentry/node-cpu-profiler': true
+  esbuild: true
+  msw: true
+  sharp: true
   supabase: true
+
+# Avoid interactive prompt when recreating node_modules in CI/non-TTY
+confirmModulesPurge: false
 
 publicHoistPattern:
   - '*import-in-the-middle*'
