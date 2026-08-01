@@ -4,11 +4,13 @@ import react from '@vitejs/plugin-react'
 import { playwright } from '@vitest/browser-playwright'
 import { defineConfig } from 'vitest/config'
 
+const dirname = import.meta.dirname
+
 export default defineConfig({
   plugins: [react()],
   test: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(dirname, './src'),
     },
     environment: 'jsdom',
     globals: true,
@@ -25,7 +27,7 @@ export default defineConfig({
       {
         extends: true,
         plugins: [
-          storybookTest({ configDir: path.join(__dirname, '.storybook') }),
+          storybookTest({ configDir: path.join(dirname, '.storybook') }),
         ],
         test: {
           browser: {

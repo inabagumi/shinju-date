@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     alias: {
-      '@': path.resolve(__dirname, './'),
+      '@': path.resolve(import.meta.dirname, './'),
     },
     exclude: ['**/node_modules/**', '**/e2e/**'],
     globals: true,
