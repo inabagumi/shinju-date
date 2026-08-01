@@ -55,7 +55,7 @@ function ChangeDetails({ log }: { log: Log }) {
 
   const changes = detailsObject?.changes
 
-  if (!changes || !changes.before || !changes.after) {
+  if (!changes?.before || !changes.after) {
     return null
   }
 

@@ -12,8 +12,6 @@ import {
   youtubeClient,
 } from '@shinju-date/youtube-api-client'
 
-export { YOUTUBE_DATA_API_MAX_RESULTS, youtubeClient }
-
 export type {
   FilteredYouTubeChannel,
   FilteredYouTubePlaylistItem,
@@ -22,6 +20,7 @@ export type {
   GetPlaylistItemsOptions,
   GetVideosOptions,
 }
+export { YOUTUBE_DATA_API_MAX_RESULTS, youtubeClient }
 
 /**
  * Gets YouTube channels by their IDs
