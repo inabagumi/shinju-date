@@ -2,12 +2,12 @@
   "author": "Haneru Developers",
   "description": "Health check utilities for web services",
   "devDependencies": {
-    "@supabase/supabase-js": "2.97.0",
+    "@supabase/supabase-js": "2.111.0",
     "@tsconfig/strictest": "2.0.8",
     "@upstash/redis": "1.38.1",
     "tsup": "8.5.1",
     "typescript": "5.9.3",
-    "vitest": "4.0.18"
+    "vitest": "4.1.0"
   },
   "exports": {
     ".": {
@@ -20,7 +20,7 @@
   "main": "./dist/index.js",
   "name": "@shinju-date/health-checkers",
   "peerDependencies": {
-    "@supabase/supabase-js": "2.97.0",
+    "@supabase/supabase-js": "2.111.0",
     "@upstash/redis": "1.38.1"
   },
   "private": true,

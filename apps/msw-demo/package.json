@@ -1,9 +1,9 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@supabase/supabase-js": "2.97.0",
+    "@supabase/supabase-js": "2.111.0",
     "@upstash/redis": "1.38.1",
-    "next": "16.2.11",
+    "next": "16.2.12",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "tailwind-merge": "3.6.0",
@@ -21,7 +21,7 @@
     "@types/react-dom": "19.2.3",
     "babel-plugin-react-compiler": "1.0.0",
     "msw": "2.15.0",
-    "postcss": "8.5.18",
+    "postcss": "8.5.25",
     "postcss-load-config": "6.0.1",
     "typescript": "5.9.3"
   },

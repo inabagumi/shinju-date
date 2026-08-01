@@ -22,11 +22,11 @@
     "@shinju-date/youtube-scraper": "workspace:*",
     "@supabase/sentry-js-integration": "0.3.0",
     "@supabase/ssr": "0.12.4",
-    "@supabase/supabase-js": "2.97.0",
+    "@supabase/supabase-js": "2.111.0",
     "@upstash/redis": "1.38.1",
     "csv-stringify": "6.6.0",
-    "lucide-react": "0.577.0",
-    "next": "16.2.11",
+    "lucide-react": "1.28.0",
+    "next": "16.2.12",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-markdown": "10.1.0",
@@ -34,16 +34,16 @@
     "tailwind-merge": "3.6.0",
     "tailwindcss": "4.2.0",
     "temporal-polyfill": "0.3.2",
-    "zod": "4.3.6"
+    "zod": "4.4.3"
   },
   "description": "Content management admin dashboard for SHINJU DATE",
   "devDependencies": {
-    "@playwright/test": "1.58.2",
+    "@playwright/test": "1.62.1",
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
     "@tailwindcss/postcss": "4.2.0",
     "@tailwindcss/typography": "0.5.19",
-    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/jest-dom": "7.0.0",
     "@testing-library/react": "16.3.2",
     "@tsconfig/next": "2.0.6",
     "@tsconfig/strictest": "2.0.8",
@@ -58,7 +58,7 @@
     "rehype-external-links": "3.0.0",
     "remark-gfm": "4.0.1",
     "typescript": "5.9.3",
-    "vitest": "4.0.18"
+    "vitest": "4.1.0"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",

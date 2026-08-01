@@ -14,24 +14,24 @@
     "@shinju-date/youtube-api-client": "workspace:*",
     "@shinju-date/youtube-scraper": "workspace:*",
     "@supabase/sentry-js-integration": "0.3.0",
-    "@supabase/supabase-js": "2.97.0",
+    "@supabase/supabase-js": "2.111.0",
     "@upstash/ratelimit": "2.0.8",
     "@upstash/redis": "1.38.1",
     "mime": "4.1.0",
-    "nanoid": "5.1.16",
-    "next": "16.2.11",
+    "nanoid": "6.0.0",
+    "next": "16.2.12",
     "p-queue": "9.3.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "sharp": "0.34.5",
     "temporal-polyfill": "0.3.2",
-    "zod": "4.3.6"
+    "zod": "4.4.3"
   },
   "description": "Scheduled batch processing jobs for SHINJU DATE",
   "devDependencies": {
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
-    "@playwright/test": "1.58.2",
+    "@playwright/test": "1.62.1",
     "@tsconfig/next": "2.0.6",
     "@tsconfig/strictest": "2.0.8",
     "@types/node": "24.10.13",
@@ -40,7 +40,7 @@
     "babel-plugin-react-compiler": "1.0.0",
     "msw": "2.15.0",
     "typescript": "5.9.3",
-    "vitest": "4.0.18"
+    "vitest": "4.1.0"
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
