@@ -39,7 +39,7 @@
     "@types/react-dom": "19.2.4",
     "babel-plugin-react-compiler": "1.0.0",
     "msw": "2.15.0",
-    "typescript": "5.9.3",
+    "typescript": "6.0.3",
     "vitest": "4.1.0"
   },
   "homepage": "https://shinju.date/",
