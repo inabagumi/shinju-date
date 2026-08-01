@@ -24,7 +24,7 @@
     "@supabase/ssr": "0.12.4",
     "@supabase/supabase-js": "2.111.0",
     "@upstash/redis": "1.38.1",
-    "csv-stringify": "6.6.0",
+    "csv-stringify": "6.8.1",
     "lucide-react": "1.28.0",
     "next": "16.2.12",
     "react": "19.2.8",
