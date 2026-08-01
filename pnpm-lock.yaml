@@ -96,8 +96,8 @@ importers:
         specifier: 1.38.1
         version: 1.38.1
       csv-stringify:
-        specifier: 6.6.0
-        version: 6.6.0
+        specifier: 6.8.1
+        version: 6.8.1
       lucide-react:
         specifier: 1.28.0
         version: 1.28.0(react@19.2.4)
@@ -3860,8 +3860,8 @@ packages:
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
-  csv-stringify@6.6.0:
-    resolution: {integrity: sha512-YW32lKOmIBgbxtu3g5SaiqWNwa/9ISQt2EcgOq0+RAIFufFp9is6tqNnKahqE5kuKvrnYAzs28r+s6pXJR8Vcw==}
+  csv-stringify@6.8.1:
+    resolution: {integrity: sha512-tZ6X6TKQyQgCo5OptXcyAbfN1pwmoxEqELPQ7KFazNErx7kiVsDK8o+VYRXhfMl4N9vvOOLXuioquR2MeP847A==}
 
   d3-array@3.2.4:
     resolution: {integrity: sha512-tdQAmyA18i4J7wprpYq8ClcxZy3SC31QMeByyCFyRt7BVHdREQZ5lpzoe5mFEYZUWe+oq8HBvk9JjpibyEV4Jg==}
@@ -8829,7 +8829,7 @@ snapshots:
 
   csstype@3.2.3: {}
 
-  csv-stringify@6.6.0: {}
+  csv-stringify@6.8.1: {}
 
   d3-array@3.2.4:
     dependencies:
