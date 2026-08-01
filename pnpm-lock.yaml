@@ -123,8 +123,8 @@ importers:
         specifier: 4.3.3
         version: 4.3.3
       temporal-polyfill:
-        specifier: 0.3.2
-        version: 0.3.2
+        specifier: 1.0.2
+        version: 1.0.2
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -265,8 +265,8 @@ importers:
         specifier: 0.34.5
         version: 0.34.5
       temporal-polyfill:
-        specifier: 0.3.2
-        version: 0.3.2
+        specifier: 1.0.2
+        version: 1.0.2
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -468,8 +468,8 @@ importers:
         specifier: 4.3.3
         version: 4.3.3
       temporal-polyfill:
-        specifier: 0.3.2
-        version: 0.3.2
+        specifier: 1.0.2
+        version: 1.0.2
       ufo:
         specifier: 1.6.4
         version: 1.6.4
@@ -683,8 +683,8 @@ importers:
         specifier: 2.15.0
         version: 2.15.0(@types/node@24.13.3)(typescript@5.9.3)
       temporal-polyfill:
-        specifier: 0.3.2
-        version: 0.3.2
+        specifier: 1.0.2
+        version: 1.0.2
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -735,8 +735,8 @@ importers:
   packages/temporal-fns:
     dependencies:
       temporal-polyfill:
-        specifier: 0.3.2
-        version: 0.3.2
+        specifier: 1.0.2
+        version: 1.0.2
     devDependencies:
       '@tsconfig/node20':
         specifier: 20.1.9
@@ -919,8 +919,8 @@ importers:
         specifier: 9.3.3
         version: 9.3.3
       temporal-polyfill:
-        specifier: 0.3.2
-        version: 0.3.2
+        specifier: 1.0.2
+        version: 1.0.2
     devDependencies:
       '@shinju-date/database':
         specifier: workspace:*
@@ -5327,11 +5327,14 @@ packages:
     resolution: {integrity: sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A==}
     engines: {node: '>=6'}
 
-  temporal-polyfill@0.3.2:
-    resolution: {integrity: sha512-TzHthD/heRK947GNiSu3Y5gSPpeUDH34+LESnfsq8bqpFhsB79HFBX8+Z834IVX68P3EUyRPZK5bL/1fh437Eg==}
+  temporal-polyfill@1.0.2:
+    resolution: {integrity: sha512-pTyp/7kfStJQbJ8YOHmcJItkxvOGCZHu3PaVgLvLnxFS7O12EPiWLElnRre/rw77z4TGZX/gvdqMXWn6ispQvA==}
 
-  temporal-spec@0.3.1:
-    resolution: {integrity: sha512-B4TUhezh9knfSIMwt7RVggApDRJZo73uZdj8AacL2mZ8RP5KtLianh2MXxL06GN9ESYiIsiuoLQhgVfwe55Yhw==}
+  temporal-spec@1.0.1:
+    resolution: {integrity: sha512-wxVoanmDeavXie1vu2JaQ3WIc3JZnWAOYFBsJyATaVsXsycKYUflGsyBmrRSnoCpZJpwPyr38VpgSUlQ8CbFxg==}
+
+  temporal-utils@1.0.1:
+    resolution: {integrity: sha512-HAixuesxFQIUaQk3ptX2jhfO/FsOkgVkDDMawvp6n/fkB1q6BKfs3lURw9I+pK/2e2e/q/vrLrxmeqauBoyGMQ==}
 
   terser-webpack-plugin@5.3.16:
     resolution: {integrity: sha512-h9oBFCWrq78NyWWVcSwZarJkZ01c2AyGrzs1crmHZO3QUg9D61Wu4NPjBy69n7JqylFF5y+CsUZYmYEIZ3mR+Q==}
@@ -10219,11 +10222,14 @@ snapshots:
 
   tapable@2.3.3: {}
 
-  temporal-polyfill@0.3.2:
+  temporal-polyfill@1.0.2:
     dependencies:
-      temporal-spec: 0.3.1
+      temporal-spec: 1.0.1
+      temporal-utils: 1.0.1
 
-  temporal-spec@0.3.1: {}
+  temporal-spec@1.0.1: {}
+
+  temporal-utils@1.0.1: {}
 
   terser-webpack-plugin@5.3.16(esbuild@0.27.2)(webpack@5.104.1(esbuild@0.27.2)):
     dependencies:
