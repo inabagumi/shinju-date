@@ -50,14 +50,14 @@ export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
               border: '1px solid #e5e7eb',
               borderRadius: '0.5rem',
             }}
-            formatter={(
-              value: number | undefined,
-              name: string | undefined,
-            ) => [`${value ?? 0} 本`, LABEL_MAP[name ?? ''] || name || '']}
+            formatter={(value, name) => [
+              `${value ?? 0} 本`,
+              LABEL_MAP[String(name ?? '')] || String(name ?? ''),
+            ]}
             labelStyle={{ color: '#374151', fontWeight: 600 }}
           />
           <Legend
-            formatter={(value: string) => LABEL_MAP[value] || value}
+            formatter={(value) => LABEL_MAP[String(value)] || String(value)}
             iconType="rect"
             wrapperStyle={{ paddingTop: '20px' }}
           />
