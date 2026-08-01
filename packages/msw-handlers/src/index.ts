@@ -16,14 +16,6 @@ export const allHandlers = [
   ...youtubeHandlers,
 ]
 
-export {
-  googleFontsHandlers,
-  resendHandlers,
-  supabaseHandlers,
-  upstashHandlers,
-  youtubeHandlers,
-}
-
 /**
  * Export the @msw/data collections for advanced usage
  *
@@ -67,6 +59,13 @@ export {
   youtubeChannels,
   youtubeVideos,
 } from './collections.js'
+export {
+  googleFontsHandlers,
+  resendHandlers,
+  supabaseHandlers,
+  upstashHandlers,
+  youtubeHandlers,
+}
 
 /**
  * Default export for convenience

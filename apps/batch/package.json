@@ -1,7 +1,7 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@googleapis/youtube": "31.0.0",
+    "@googleapis/youtube": "33.0.0",
     "@sentry/nextjs": "10.39.0",
     "@sentry/profiling-node": "10.39.0",
     "@shinju-date/constants": "workspace:*",
@@ -21,8 +21,8 @@
     "nanoid": "6.0.0",
     "next": "16.2.12",
     "p-queue": "9.3.3",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "sharp": "0.34.5",
     "temporal-polyfill": "0.3.2",
     "zod": "4.4.3"
@@ -34,9 +34,9 @@
     "@playwright/test": "1.62.1",
     "@tsconfig/next": "2.0.6",
     "@tsconfig/strictest": "2.0.8",
-    "@types/node": "24.10.13",
-    "@types/react": "19.2.14",
-    "@types/react-dom": "19.2.3",
+    "@types/node": "24.13.3",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
     "babel-plugin-react-compiler": "1.0.0",
     "msw": "2.15.0",
     "typescript": "5.9.3",
