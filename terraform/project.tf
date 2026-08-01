@@ -68,7 +68,7 @@ resource "vercel_project_environment_variable" "upstash_redis_rest_token" {
 
 resource "vercel_project_environment_variable" "upstash_redis_rest_token_dev" {
   key        = "UPSTASH_REDIS_REST_TOKEN"
-  sensitive  = true
+  sensitive  = false
   project_id = vercel_project.this.id
   target     = ["preview", "development"]
   team_id    = vercel_project.this.team_id
@@ -86,7 +86,7 @@ resource "vercel_project_environment_variable" "upstash_redis_rest_url" {
 
 resource "vercel_project_environment_variable" "upstash_redis_rest_url_dev" {
   key        = "UPSTASH_REDIS_REST_URL"
-  sensitive  = true
+  sensitive  = false
   project_id = vercel_project.this.id
   target     = ["preview", "development"]
   team_id    = vercel_project.this.team_id
@@ -163,7 +163,7 @@ resource "vercel_project_environment_variable" "admin_upstash_redis_rest_token" 
 
 resource "vercel_project_environment_variable" "admin_upstash_redis_rest_token_dev" {
   key        = "UPSTASH_REDIS_REST_TOKEN"
-  sensitive  = true
+  sensitive  = false
   project_id = vercel_project.admin.id
   target     = ["preview", "development"]
   team_id    = vercel_project.admin.team_id
@@ -181,7 +181,7 @@ resource "vercel_project_environment_variable" "admin_upstash_redis_rest_url" {
 
 resource "vercel_project_environment_variable" "admin_upstash_redis_rest_url_dev" {
   key        = "UPSTASH_REDIS_REST_URL"
-  sensitive  = true
+  sensitive  = false
   project_id = vercel_project.admin.id
   target     = ["preview", "development"]
   team_id    = vercel_project.admin.team_id
@@ -256,7 +256,17 @@ resource "vercel_project_environment_variable" "batch_google_api_key" {
   key        = "GOOGLE_API_KEY"
   sensitive  = true
   project_id = vercel_project.batch.id
-  target     = ["production", "preview", "development"]
+  target     = ["production", "preview"]
+  team_id    = vercel_project.batch.team_id
+  value      = var.google_api_key
+}
+
+# development must use sensitive = false (Vercel provider requirement)
+resource "vercel_project_environment_variable" "batch_google_api_key_development" {
+  key        = "GOOGLE_API_KEY"
+  sensitive  = false
+  project_id = vercel_project.batch.id
+  target     = ["development"]
   team_id    = vercel_project.batch.team_id
   value      = var.google_api_key
 }
@@ -272,7 +282,7 @@ resource "vercel_project_environment_variable" "batch_upstash_redis_rest_token" 
 
 resource "vercel_project_environment_variable" "batch_upstash_redis_rest_token_dev" {
   key        = "UPSTASH_REDIS_REST_TOKEN"
-  sensitive  = true
+  sensitive  = false
   project_id = vercel_project.batch.id
   target     = ["preview", "development"]
   team_id    = vercel_project.batch.team_id
@@ -290,7 +300,7 @@ resource "vercel_project_environment_variable" "batch_upstash_redis_rest_url" {
 
 resource "vercel_project_environment_variable" "batch_upstash_redis_rest_url_dev" {
   key        = "UPSTASH_REDIS_REST_URL"
-  sensitive  = true
+  sensitive  = false
   project_id = vercel_project.batch.id
   target     = ["preview", "development"]
   team_id    = vercel_project.batch.team_id
