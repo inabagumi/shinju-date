@@ -3,7 +3,7 @@
   "dependencies": {
     "@googleapis/youtube": "33.0.0",
     "p-queue": "9.3.3",
-    "temporal-polyfill": "0.3.2"
+    "temporal-polyfill": "1.0.2"
   },
   "description": "YouTube scraper package for SHINJU DATE",
   "devDependencies": {
