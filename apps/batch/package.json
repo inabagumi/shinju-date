@@ -23,7 +23,7 @@
     "p-queue": "9.3.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "sharp": "0.34.5",
+    "sharp": "0.35.0",
     "temporal-polyfill": "0.3.2",
     "zod": "4.4.3"
   },
