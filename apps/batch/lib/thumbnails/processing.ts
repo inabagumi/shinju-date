@@ -26,7 +26,7 @@ function getThumbnail(video: YouTubeVideo): StaticThumbnail {
       video.snippet.thumbnails.standard ??
       video.snippet.thumbnails.high)
 
-  if (!thumbnail || !thumbnail.url || !thumbnail.width || !thumbnail.height) {
+  if (!thumbnail?.url || !thumbnail.width || !thumbnail.height) {
     throw new TypeError('Thumbnail URL does not exist.')
   }
 

@@ -90,7 +90,7 @@ export function ErrorMessage(props: ErrorMessageProps) {
     errorMessages.length > 0 && (
       <p id={id ? `${id}-error-message` : undefined} {...props}>
         {errorMessages.map((message, i) => (
-          <Fragment key={`${i}:${message}`}>
+          <Fragment key={message}>
             {i > 0 && <br />}
             {message}
           </Fragment>
@@ -132,7 +132,7 @@ export function GenericErrorMessage({
     errorMessages.length > 0 && (
       <p role={role} {...props}>
         {errorMessages.map((message, i) => (
-          <Fragment key={`${i}:${message}`}>
+          <Fragment key={message}>
             {i > 0 && <br />}
             {message}
           </Fragment>
