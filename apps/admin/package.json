@@ -23,7 +23,7 @@
     "@supabase/sentry-js-integration": "0.3.0",
     "@supabase/ssr": "0.10.3",
     "@supabase/supabase-js": "2.97.0",
-    "@upstash/redis": "1.38.0",
+    "@upstash/redis": "1.38.1",
     "csv-stringify": "6.6.0",
     "lucide-react": "0.575.0",
     "next": "16.2.11",
