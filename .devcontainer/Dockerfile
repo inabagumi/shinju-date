@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/typescript-node:4-24-bookworm@sha256:634d3ffc8c37508259a23462b838fd85a9e5bb80dcdd0b31d673aa33dc4c8592
+FROM mcr.microsoft.com/devcontainers/typescript-node:4-24-bookworm@sha256:cfb41999420f9f05aae60a3a02d016867936d6fdd49dfff7de3940a2dac2242a
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get install -y --no-install-recommends postgresql-client \
