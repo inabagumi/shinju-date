@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   getAppAccessToken,
+  getUsers,
   parseTwitchUserIdentifier,
   resetTwitchClientState,
   secondsToISO8601,
@@ -124,6 +125,71 @@ describe('getAppAccessToken', () => {
 
     await expect(getAppAccessToken()).rejects.toThrow(
       /Client ID and Client Secret/,
+    )
+  })
+})
+
+describe('getUsers Helix URL', () => {
+  beforeEach(() => {
+    resetTwitchClientState()
+    vi.stubEnv('TWITCH_CLIENT_ID', 'test-client-id')
+    vi.stubEnv('TWITCH_CLIENT_SECRET', 'test-client-secret')
+  })
+
+  afterEach(() => {
+    resetTwitchClientState()
+    vi.unstubAllEnvs()
+    vi.restoreAllMocks()
+  })
+
+  it('requests https://api.twitch.tv/helix/users (not /users)', async () => {
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input)
+
+      if (url.includes('id.twitch.tv/oauth2/token')) {
+        return new Response(
+          JSON.stringify({
+            access_token: 'token-1',
+            expires_in: 3600,
+            token_type: 'bearer',
+          }),
+          { status: 200 },
+        )
+      }
+
+      return new Response(
+        JSON.stringify({
+          data: [
+            {
+              broadcaster_type: '',
+              created_at: '2011-08-08T20:45:44Z',
+              description: '',
+              display_name: 'Twitch',
+              id: '12826',
+              login: 'twitch',
+              offline_image_url: '',
+              profile_image_url: '',
+              type: '',
+            },
+          ],
+        }),
+        { status: 200 },
+      )
+    })
+
+    vi.stubGlobal('fetch', fetchImpl)
+
+    const users = await Array.fromAsync(getUsers({ logins: ['twitch'] }))
+
+    expect(users).toHaveLength(1)
+    expect(users[0]?.login).toBe('twitch')
+
+    const helixCall = fetchImpl.mock.calls.find(([input]) =>
+      String(input).includes('api.twitch.tv'),
+    )
+    expect(helixCall).toBeDefined()
+    expect(String(helixCall?.[0])).toBe(
+      'https://api.twitch.tv/helix/users?login=twitch',
     )
   })
 })

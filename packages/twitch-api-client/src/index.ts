@@ -174,7 +174,10 @@ async function helixGet<T>(
   const fetchImpl = options?.fetchImpl ?? fetch
   const accessToken = await getAppAccessToken(credentials, fetchImpl)
 
-  const url = new URL(path, TWITCH_HELIX_API_BASE)
+  // Do not use `new URL('/users', 'https://api.twitch.tv/helix')`:
+  // an absolute path replaces the base path, yielding api.twitch.tv/users (404).
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  const url = new URL(`${TWITCH_HELIX_API_BASE}${normalizedPath}`)
   for (const [key, value] of searchParams.entries()) {
     url.searchParams.append(key, value)
   }
