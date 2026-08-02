@@ -25,7 +25,11 @@
     }
   },
   "files": {
-    "includes": ["**", "!**/.devcontainer/devcontainer-lock.json"]
+    "includes": [
+      "**",
+      "!**/.devcontainer/devcontainer-lock.json",
+      "!**/packages/database/types/supabase.ts"
+    ]
   },
   "formatter": {
     "useEditorconfig": true
