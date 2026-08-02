@@ -367,6 +367,10 @@ describe('addTwitchUserAction', () => {
 })
 
 describe('removeTwitchUserAction', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should successfully remove Twitch user', async () => {
     const { createSupabaseServerClient } = await import('@/lib/supabase')
     const { createAuditLog } = await import('@/lib/audit-log')

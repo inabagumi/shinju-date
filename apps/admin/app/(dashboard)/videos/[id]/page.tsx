@@ -151,14 +151,14 @@ async function VideoDetailContent({ id }: { id: string }) {
             </p>
           </CardHeader>
           <CardContent className="p-0">
-            <dl>
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dl className="[&>div:nth-of-type(even)]:bg-white [&>div:nth-of-type(odd)]:bg-gray-50">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">タイトル</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   {video.title}
                 </dd>
               </div>
-              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">
                   プラットフォーム
                 </dt>
@@ -166,7 +166,7 @@ async function VideoDetailContent({ id }: { id: string }) {
                   {video.platform === 'twitch' ? 'Twitch' : 'YouTube'}
                 </dd>
               </div>
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">
                   {video.platform === 'twitch'
                     ? 'Twitch動画ID'
@@ -181,7 +181,7 @@ async function VideoDetailContent({ id }: { id: string }) {
                 </dd>
               </div>
               {video.platform === 'twitch' && video.twitch_video?.type && (
-                <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="font-medium text-gray-500 text-sm">
                     Twitch種別
                   </dt>
@@ -190,7 +190,7 @@ async function VideoDetailContent({ id }: { id: string }) {
                   </dd>
                 </div>
               )}
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">タレント</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   <Link
@@ -201,19 +201,19 @@ async function VideoDetailContent({ id }: { id: string }) {
                   </Link>
                 </dd>
               </div>
-              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">再生時間</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   {formatDuration(Temporal.Duration.from(video.duration))}
                 </dd>
               </div>
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">動画種別</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   <VideoKindBadge videoKind={video.video_kind} />
                 </dd>
               </div>
-              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">
                   クリック数（7日間）
                 </dt>
@@ -221,7 +221,7 @@ async function VideoDetailContent({ id }: { id: string }) {
                   {formatNumber(video.clicks)}
                 </dd>
               </div>
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">公開日時</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   <time dateTime={video.published_at}>
@@ -229,7 +229,7 @@ async function VideoDetailContent({ id }: { id: string }) {
                   </time>
                 </dd>
               </div>
-              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">作成日時</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   <time dateTime={video.created_at}>
@@ -237,7 +237,7 @@ async function VideoDetailContent({ id }: { id: string }) {
                   </time>
                 </dd>
               </div>
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">
                   最終更新日時
                 </dt>
@@ -248,7 +248,7 @@ async function VideoDetailContent({ id }: { id: string }) {
                 </dd>
               </div>
               {isDeleted && (
-                <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="font-medium text-gray-500 text-sm">
                     削除日時
                   </dt>

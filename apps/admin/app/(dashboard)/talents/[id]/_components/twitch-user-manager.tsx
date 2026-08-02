@@ -72,13 +72,17 @@ export function TwitchUserManager({
     }
 
     setDeletingUserId(userId)
-    const result = await removeTwitchUserAction(userId, talentId)
+    try {
+      const result = await removeTwitchUserAction(userId, talentId)
 
-    if (!result.success) {
-      alert(result.error || 'Twitchユーザーの削除に失敗しました。')
+      if (!result.success) {
+        alert(result.error || 'Twitchユーザーの削除に失敗しました。')
+      }
+    } catch {
+      alert('Twitchユーザーの削除に失敗しました。')
+    } finally {
+      setDeletingUserId(null)
     }
-
-    setDeletingUserId(null)
   }
 
   return (
@@ -184,21 +188,19 @@ export function TwitchUserManager({
                           </p>
                         </div>
                       )}
-                      <div>
-                        <a
-                          className="inline-flex items-center text-774-blue-600 text-sm hover:text-774-blue-800"
-                          href={
-                            user.twitch_login_name
-                              ? `https://www.twitch.tv/${user.twitch_login_name}`
-                              : `https://www.twitch.tv`
-                          }
-                          rel="noopener noreferrer"
-                          target="_blank"
-                        >
-                          Twitchで開く
-                          <ExternalLink className="ml-1 size-3" />
-                        </a>
-                      </div>
+                      {user.twitch_login_name && (
+                        <div>
+                          <a
+                            className="inline-flex items-center text-774-blue-600 text-sm hover:text-774-blue-800"
+                            href={`https://www.twitch.tv/${encodeURIComponent(user.twitch_login_name)}`}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            Twitchで開く
+                            <ExternalLink className="ml-1 size-3" />
+                          </a>
+                        </div>
+                      )}
                     </div>
                   </div>
                   {!isDeleted && (

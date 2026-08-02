@@ -164,9 +164,7 @@ export async function addTwitchUserAction(
     return {
       errors: {
         generic: [
-          error instanceof Error
-            ? error.message
-            : 'Twitchユーザーの追加に失敗しました。',
+          'Twitchユーザーの追加に失敗しました。しばらくしてから再度お試しください。',
         ],
       },
     }
@@ -253,9 +251,7 @@ export async function removeTwitchUserAction(
     })
     return {
       error:
-        error instanceof Error
-          ? error.message
-          : 'Twitchユーザーの削除に失敗しました。',
+        'Twitchユーザーの削除に失敗しました。しばらくしてから再度お試しください。',
       success: false,
     }
   }

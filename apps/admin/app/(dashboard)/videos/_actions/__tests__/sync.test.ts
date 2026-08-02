@@ -310,7 +310,7 @@ describe('syncVideoWithTwitch', () => {
     expect(createAuditLog).not.toHaveBeenCalled()
   })
 
-  it('should return error when not a Twitch video', async () => {
+  it('should return error when the video row is not found', async () => {
     const { createSupabaseServerClient } = await import('@/lib/supabase')
 
     const mockSupabaseClient = {
