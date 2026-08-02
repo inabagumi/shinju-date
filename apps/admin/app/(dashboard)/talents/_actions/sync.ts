@@ -22,6 +22,8 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 export async function syncTalentWithYouTube(talentId: string): Promise<{
   success: boolean
   error?: string
+  message?: string
+  unchanged?: boolean
 }> {
   const supabaseClient = await createSupabaseServerClient()
 
@@ -171,8 +173,9 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
 
     if (!hasUpdates) {
       return {
-        error: 'チャンネル情報は既に最新です。',
-        success: false,
+        message: 'チャンネル情報は既に最新です。',
+        success: true,
+        unchanged: true,
       }
     }
 

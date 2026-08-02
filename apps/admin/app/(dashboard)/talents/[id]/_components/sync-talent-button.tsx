@@ -25,10 +25,16 @@ export function SyncTalentButton({ talentId }: Props) {
         const result = await syncTalentWithYouTube(talentId)
         if (result.success) {
           setMessage({
-            text: 'チャンネル情報を同期しました。',
+            text:
+              result.message ??
+              (result.unchanged
+                ? 'チャンネル情報は既に最新です。'
+                : 'チャンネル情報を同期しました。'),
             type: 'success',
           })
-          router.refresh()
+          if (!result.unchanged) {
+            router.refresh()
+          }
         } else {
           setMessage({
             text: result.error || '同期に失敗しました。',
