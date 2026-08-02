@@ -404,8 +404,9 @@ describe('syncTalentWithYouTube', () => {
     const result = await syncTalentWithYouTube(talentId)
 
     expect(result).toEqual({
-      error: 'チャンネル情報は既に最新です。',
-      success: false,
+      message: 'チャンネル情報は既に最新です。',
+      success: true,
+      unchanged: true,
     })
     // Still upserts (idempotent write) but does not touch talent or audit
     expect(mockUpsert).toHaveBeenCalled()

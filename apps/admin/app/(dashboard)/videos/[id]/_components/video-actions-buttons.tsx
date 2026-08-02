@@ -32,7 +32,14 @@ function SyncVideoButton({ videoId }: SyncVideoButtonProps) {
       try {
         const result = await syncVideoWithYouTube(videoId)
         if (result.success) {
-          setToastMessage({ text: '動画情報を同期しました。', type: 'success' })
+          setToastMessage({
+            text:
+              result.message ??
+              (result.unchanged
+                ? '動画情報は既に最新です。'
+                : '動画情報を同期しました。'),
+            type: 'success',
+          })
           setToastOpen(true)
         } else {
           setToastMessage({

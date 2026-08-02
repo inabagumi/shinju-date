@@ -14,6 +14,8 @@ import { createSupabaseServerClient } from '@/lib/supabase'
 export async function syncVideoWithYouTube(videoId: string): Promise<{
   success: boolean
   error?: string
+  message?: string
+  unchanged?: boolean
 }> {
   const supabaseClient = await createSupabaseServerClient()
 
@@ -118,8 +120,9 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
 
     if (!hasChanges) {
       return {
-        error: '動画情報は既に最新です。',
-        success: false,
+        message: '動画情報は既に最新です。',
+        success: true,
+        unchanged: true,
       }
     }
 
