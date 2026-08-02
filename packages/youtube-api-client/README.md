@@ -45,6 +45,7 @@ const channelIds = ['UCxxxxxx', 'UCyyyyyy']
 
 for await (const channel of getChannels({ ids: channelIds })) {
   console.log(channel.id)
+  console.log(channel.snippet.title)
   console.log(channel.contentDetails.relatedPlaylists.uploads)
 }
 ```

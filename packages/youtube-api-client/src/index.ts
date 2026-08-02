@@ -4,6 +4,11 @@ import { z } from 'zod'
 export const YOUTUBE_DATA_API_MAX_RESULTS = 50
 
 // Zod schemas for YouTube API responses
+export const YouTubeChannelSnippetSchema = z.object({
+  customUrl: z.string().optional(),
+  title: z.string(),
+})
+
 export const YouTubeChannelSchema = z.object({
   contentDetails: z.object({
     relatedPlaylists: z.object({
@@ -11,6 +16,7 @@ export const YouTubeChannelSchema = z.object({
     }),
   }),
   id: z.string(),
+  snippet: YouTubeChannelSnippetSchema,
 })
 
 export const YouTubePlaylistItemSchema = z.object({
@@ -96,6 +102,9 @@ export type FilteredYouTubeChannel = youtube.Schema$Channel & {
     }
   }
   id: string
+  snippet: NonNullable<youtube.Schema$Channel['snippet']> & {
+    title: string
+  }
 }
 
 /**
@@ -132,6 +141,12 @@ function validateChannel(
         },
       },
       id: channel.id,
+      snippet: {
+        ...(channel.snippet?.customUrl
+          ? { customUrl: channel.snippet.customUrl }
+          : {}),
+        title: channel.snippet?.title,
+      },
     })
     return true
   } catch {
@@ -196,7 +211,7 @@ export async function* getChannels({
     } = await client.channels.list({
       id: ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS),
       maxResults: YOUTUBE_DATA_API_MAX_RESULTS,
-      part: ['contentDetails', 'id'],
+      part: ['contentDetails', 'id', 'snippet'],
     })
 
     if (!items || items.length < 1) {

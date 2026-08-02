@@ -11,6 +11,10 @@ const mockYouTubeChannels: any[] = [
       },
     },
     id: 'UCtest123',
+    snippet: {
+      customUrl: '@testchannel123',
+      title: 'Test Channel 123',
+    },
   },
   {
     contentDetails: {
@@ -19,6 +23,10 @@ const mockYouTubeChannels: any[] = [
       },
     },
     id: 'UCtest456',
+    snippet: {
+      customUrl: '@testchannel456',
+      title: 'Test Channel 456',
+    },
   },
   {
     contentDetails: {
@@ -27,6 +35,10 @@ const mockYouTubeChannels: any[] = [
       },
     },
     id: 'UCtest789',
+    snippet: {
+      customUrl: '@testchannel789',
+      title: 'Test Channel 789',
+    },
   },
   {
     contentDetails: {
@@ -35,6 +47,10 @@ const mockYouTubeChannels: any[] = [
       },
     },
     id: 'UCtest012',
+    snippet: {
+      customUrl: '@testchannel012',
+      title: 'Test Channel 012',
+    },
   },
 ]
 
