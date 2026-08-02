@@ -1,14 +1,25 @@
+import type { Tables } from '@shinju-date/database'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
-export async function getTalents() {
+export type TalentListItem = Pick<
+  Tables<'talents'>,
+  'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at' | 'status'
+> & {
+  youtube_channels: Pick<
+    Tables<'youtube_channels'>,
+    'id' | 'name' | 'youtube_channel_id' | 'youtube_handle'
+  >[]
+}
+
+export async function getTalents(): Promise<TalentListItem[]> {
   const supabaseClient = await createSupabaseServerClient()
 
+  // Admin can read deleted talents via RLS; include all for filter UI
   const { data: talents, error } = await supabaseClient
     .from('talents')
     .select(
-      'id, name, created_at, updated_at, youtube_channels(id, name, youtube_channel_id, youtube_handle)',
+      'id, name, created_at, updated_at, deleted_at, status, youtube_channels(id, name, youtube_channel_id, youtube_handle)',
     )
-    .is('deleted_at', null)
     .order('name', {
       ascending: true,
     })

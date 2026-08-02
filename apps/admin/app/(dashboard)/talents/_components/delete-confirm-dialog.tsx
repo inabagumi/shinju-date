@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@shinju-date/ui'
+import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { deleteTalentAction } from '../_actions'
 
@@ -23,6 +24,7 @@ export function DeleteConfirmDialog({
   talentId,
   talentName,
 }: DeleteConfirmDialogProps) {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -32,6 +34,7 @@ export function DeleteConfirmDialog({
       const result = await deleteTalentAction(talentId)
       if (result.success) {
         setOpen(false)
+        router.refresh()
       } else {
         setError(result.error ?? '削除に失敗しました。')
       }
@@ -50,7 +53,7 @@ export function DeleteConfirmDialog({
         <DialogContent>
           <DialogTitle>タレントを削除</DialogTitle>
           <DialogDescription>
-            本当に「{talentName}」を削除しますか？この操作は取り消せません。
+            「{talentName}」を削除しますか？
           </DialogDescription>
           {error && <p className="mb-4 text-red-600 text-sm">{error}</p>}
           <div className="flex justify-end gap-2">

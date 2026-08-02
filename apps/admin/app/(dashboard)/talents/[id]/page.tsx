@@ -6,11 +6,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { TalentStatusBadge } from '../_components/talent-status-badge'
 import { getRecentVideosForTalent } from '../_lib/get-recent-videos'
 import { getTalent } from '../_lib/get-talent'
 import { ChannelManager } from './_components/channel-manager'
 import { EditTalentForm } from './_components/edit-talent-form'
 import { SyncTalentButton } from './_components/sync-talent-button'
+import { TalentLifecycleActions } from './_components/talent-lifecycle-actions'
 
 interface Props {
   params: Promise<{
@@ -42,38 +44,81 @@ async function TalentProfile({ id }: { id: string }) {
   }
 
   const isDeleted = talent.deleted_at !== null
+  const isRetired = !isDeleted && talent.status === 'retired'
 
   return (
     <>
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="font-bold text-2xl">{talent.name}</h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="font-bold text-2xl">{talent.name}</h1>
+              <TalentStatusBadge talent={talent} />
+            </div>
             <p className="text-gray-600">タレント詳細</p>
           </div>
-          {!isDeleted && <SyncTalentButton talentId={talent.id} />}
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {!isDeleted && <SyncTalentButton talentId={talent.id} />}
+            <TalentLifecycleActions talent={talent} />
+          </div>
         </div>
       </div>
 
       {/* Status indicator */}
       {isDeleted && (
         <div className="mb-6 rounded-md bg-red-50 p-4">
-          <div className="flex">
-            <div className="ml-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
               <h3 className="font-medium text-red-800 text-sm">
                 削除されたタレント
               </h3>
               <div className="mt-2 text-red-700 text-sm">
-                <p>このタレントは削除されており、同期できません。</p>
+                <p>このタレントは削除されています。</p>
               </div>
             </div>
           </div>
         </div>
       )}
 
+      {isRetired && (
+        <div className="mb-6 rounded-md bg-amber-50 p-4">
+          <h3 className="font-medium text-amber-900 text-sm">
+            引退したタレント
+          </h3>
+          <div className="mt-2 text-amber-800 text-sm">
+            <p>このタレントは引退状態です。</p>
+          </div>
+        </div>
+      )}
+
       {/* Talent information - Editable form */}
-      <EditTalentForm talent={talent} />
+      {!isDeleted ? (
+        <EditTalentForm talent={talent} />
+      ) : (
+        <Card className="mt-6" variant="elevated">
+          <CardHeader>
+            <h3 className="font-medium text-gray-900 text-lg leading-6">
+              タレント情報
+            </h3>
+            <p className="mt-1 max-w-2xl text-gray-500 text-sm">
+              削除済みのため編集できません。
+            </p>
+          </CardHeader>
+          <CardContent className="p-0">
+            <dl>
+              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt className="font-medium text-gray-500 text-sm">
+                  タレント名
+                </dt>
+                <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                  {talent.name}
+                </dd>
+              </div>
+            </dl>
+          </CardContent>
+        </Card>
+      )}
 
       {/* YouTube Channel Management */}
       <ChannelManager
@@ -100,6 +145,12 @@ async function TalentProfile({ id }: { id: string }) {
               </dd>
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="font-medium text-gray-500 text-sm">状態</dt>
+              <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                <TalentStatusBadge talent={talent} />
+              </dd>
+            </div>
+            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500 text-sm">作成日時</dt>
               <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                 <time dateTime={talent.created_at}>
@@ -107,7 +158,7 @@ async function TalentProfile({ id }: { id: string }) {
                 </time>
               </dd>
             </div>
-            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="font-medium text-gray-500 text-sm">
                 最終更新日時
               </dt>
@@ -118,7 +169,7 @@ async function TalentProfile({ id }: { id: string }) {
               </dd>
             </div>
             {isDeleted && (
-              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">削除日時</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   {talent.deleted_at ? (

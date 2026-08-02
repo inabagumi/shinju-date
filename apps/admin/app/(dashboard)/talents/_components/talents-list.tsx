@@ -4,12 +4,14 @@ import type { Tables } from '@shinju-date/database'
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
+import { Temporal } from 'temporal-polyfill'
 import { TalentActions } from './talent-actions'
 import { TalentModal } from './talent-modal'
+import { TalentStatusBadge } from './talent-status-badge'
 
 type Talent = Pick<
   Tables<'talents'>,
-  'id' | 'name' | 'created_at' | 'updated_at'
+  'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at' | 'status'
 > & {
   youtube_channels?: Pick<
     Tables<'youtube_channels'>,
@@ -17,32 +19,64 @@ type Talent = Pick<
   >[]
 }
 
+type StatusFilter = 'not_deleted' | 'active' | 'retired' | 'deleted' | 'all'
+
 interface TalentsListProps {
   talents: Talent[]
 }
 
+const FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
+  { label: '削除済み以外', value: 'not_deleted' },
+  { label: 'アクティブ', value: 'active' },
+  { label: '引退', value: 'retired' },
+  { label: '削除済み', value: 'deleted' },
+  { label: 'すべて', value: 'all' },
+]
+
+function matchesFilter(talent: Talent, filter: StatusFilter): boolean {
+  const isDeleted = talent.deleted_at !== null
+
+  switch (filter) {
+    case 'all':
+      return true
+    case 'deleted':
+      return isDeleted
+    case 'active':
+      return !isDeleted && talent.status === 'active'
+    case 'retired':
+      return !isDeleted && talent.status === 'retired'
+    case 'not_deleted':
+      return !isDeleted
+  }
+}
+
 export function TalentsList({ talents }: TalentsListProps) {
   const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('not_deleted')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
-  // Filter and sort talents
   const filteredAndSortedTalents = useMemo(() => {
-    let filtered = talents
+    let filtered = talents.filter((talent) =>
+      matchesFilter(talent, statusFilter),
+    )
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
-      filtered = talents.filter((talent) =>
-        talent.name.toLowerCase().includes(query),
+      filtered = filtered.filter(
+        (talent) =>
+          talent.name.toLowerCase().includes(query) ||
+          talent.id.toLowerCase().includes(query),
       )
     }
 
-    // Sort by updated_at
     return filtered.sort((a, b) => {
-      const dateA = new Date(a.updated_at).getTime()
-      const dateB = new Date(b.updated_at).getTime()
-      return sortOrder === 'desc' ? dateB - dateA : dateA - dateB
+      const order = Temporal.Instant.compare(
+        Temporal.Instant.from(a.updated_at),
+        Temporal.Instant.from(b.updated_at),
+      )
+      return sortOrder === 'desc' ? -order : order
     })
-  }, [talents, searchQuery, sortOrder])
+  }, [talents, searchQuery, sortOrder, statusFilter])
 
   const toggleSortOrder = () => {
     setSortOrder((current) => (current === 'desc' ? 'asc' : 'desc'))
@@ -50,26 +84,40 @@ export function TalentsList({ talents }: TalentsListProps) {
 
   return (
     <div className="space-y-6 p-4">
-      {/* Search and Add button */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="font-bold text-2xl">タレント管理</h1>
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <input
-          className="w-full rounded-md border border-774-blue-300 px-4 py-2 focus:border-secondary-blue focus:outline-none sm:max-w-md"
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="タレント名またはIDで検索..."
-          type="text"
-          value={searchQuery}
-        />
+        <div className="flex w-full flex-col gap-3 sm:max-w-2xl sm:flex-row">
+          <input
+            className="w-full rounded-md border border-774-blue-300 px-4 py-2 focus:border-secondary-blue focus:outline-none"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="タレント名またはIDで検索..."
+            type="text"
+            value={searchQuery}
+          />
+          <select
+            aria-label="状態で絞り込み"
+            className="rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none sm:w-48"
+            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+            value={statusFilter}
+          >
+            {FILTER_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
         <TalentModal />
       </div>
 
-      {/* Talents table */}
       {filteredAndSortedTalents.length === 0 ? (
         <p className="py-8 text-center text-gray-500">
-          {searchQuery ? '検索結果がありません。' : 'タレントがいません。'}
+          {searchQuery || statusFilter !== 'not_deleted'
+            ? '検索結果がありません。'
+            : 'タレントがいません。'}
         </p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-774-blue-300">
@@ -79,6 +127,7 @@ export function TalentsList({ talents }: TalentsListProps) {
                 <th className="px-4 py-3 text-left font-semibold">
                   タレント名
                 </th>
+                <th className="px-4 py-3 text-left font-semibold">状態</th>
                 <th className="px-4 py-3 text-left font-semibold">作成日時</th>
                 <th className="px-4 py-3 text-left font-semibold">
                   <button
@@ -92,7 +141,7 @@ export function TalentsList({ talents }: TalentsListProps) {
                     </span>
                   </button>
                 </th>
-                <th className="w-24 px-4 py-3 text-right font-semibold">
+                <th className="w-40 px-4 py-3 text-right font-semibold">
                   操作
                 </th>
               </tr>
@@ -133,6 +182,9 @@ export function TalentsList({ talents }: TalentsListProps) {
                         </div>
                       )}
                     </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <TalentStatusBadge talent={talent} />
                   </td>
                   <td className="px-4 py-3 text-gray-600 text-sm">
                     <time dateTime={talent.created_at}>

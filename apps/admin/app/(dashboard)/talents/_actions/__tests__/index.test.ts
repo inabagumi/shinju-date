@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
+  activateTalentAction,
   createTalentAction,
   deleteTalentAction,
+  restoreTalentAction,
+  retireTalentAction,
   updateTalentAction,
 } from '../index'
 
@@ -347,6 +350,201 @@ describe('deleteTalentAction', () => {
     expect(result.success).toBe(false)
     expect(result.error).toBeTruthy()
     expect(logger.error).toHaveBeenCalled()
+  })
+})
+
+describe('restoreTalentAction', () => {
+  it('should successfully restore talent', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { createAuditLog } = await import('@/lib/audit-log')
+    const { revalidatePath } = await import('next/cache')
+    const { revalidateTags } = await import('@shinju-date/web-cache')
+
+    const mockSupabaseClient = {
+      eq: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      not: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: { name: 'Restored Talent' },
+        error: null,
+      }),
+      update: vi.fn().mockReturnThis(),
+    }
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    const result = await restoreTalentAction(
+      '123e4567-e89b-12d3-a456-426614174000',
+    )
+
+    expect(result).toEqual({ success: true })
+    expect(mockSupabaseClient.update).toHaveBeenCalledWith({
+      deleted_at: null,
+      updated_at: '2024-11-24T17:00:00Z',
+    })
+    expect(createAuditLog).toHaveBeenCalledWith(
+      'CHANNEL_RESTORE',
+      'channels',
+      '123e4567-e89b-12d3-a456-426614174000',
+      { entityName: 'Restored Talent' },
+    )
+    expect(revalidatePath).toHaveBeenCalledWith('/talents')
+    expect(revalidateTags).toHaveBeenCalledWith(['talents', 'videos'])
+  })
+
+  it('should return error when talent is not found (PGRST116)', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { logger } = await import('@shinju-date/logger')
+
+    const mockSupabaseClient = {
+      eq: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      not: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: null,
+        error: {
+          code: 'PGRST116',
+          message: 'The result contains 0 rows',
+        },
+      }),
+      update: vi.fn().mockReturnThis(),
+    }
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    const result = await restoreTalentAction(
+      '123e4567-e89b-12d3-a456-426614174000',
+    )
+
+    expect(result).toEqual({
+      error:
+        '指定されたタレントが見つかりません。既に復活しているか、存在しないIDが指定されています。',
+      success: false,
+    })
+    expect(logger.warn).toHaveBeenCalled()
+  })
+
+  it('should return error when ID is not provided', async () => {
+    const result = await restoreTalentAction('')
+
+    expect(result).toEqual({
+      error: 'IDが指定されていません。',
+      success: false,
+    })
+  })
+})
+
+describe('retireTalentAction', () => {
+  it('should successfully retire talent', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { createAuditLog } = await import('@/lib/audit-log')
+
+    const mockSupabaseClient = {
+      eq: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: { name: 'Retired Talent' },
+        error: null,
+      }),
+      update: vi.fn().mockReturnThis(),
+    }
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    const result = await retireTalentAction(
+      '123e4567-e89b-12d3-a456-426614174000',
+    )
+
+    expect(result).toEqual({ success: true })
+    expect(mockSupabaseClient.update).toHaveBeenCalledWith({
+      status: 'retired',
+      updated_at: '2024-11-24T17:00:00Z',
+    })
+    expect(createAuditLog).toHaveBeenCalledWith(
+      'CHANNEL_RETIRE',
+      'channels',
+      '123e4567-e89b-12d3-a456-426614174000',
+      { entityName: 'Retired Talent' },
+    )
+  })
+
+  it('should return error when talent is not found (PGRST116)', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+
+    const mockSupabaseClient = {
+      eq: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: null,
+        error: {
+          code: 'PGRST116',
+          message: 'The result contains 0 rows',
+        },
+      }),
+      update: vi.fn().mockReturnThis(),
+    }
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    const result = await retireTalentAction(
+      '123e4567-e89b-12d3-a456-426614174000',
+    )
+
+    expect(result.success).toBe(false)
+    expect(result.error).toContain('見つかりません')
+  })
+})
+
+describe('activateTalentAction', () => {
+  it('should successfully activate talent', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { createAuditLog } = await import('@/lib/audit-log')
+
+    const mockSupabaseClient = {
+      eq: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: { name: 'Active Talent' },
+        error: null,
+      }),
+      update: vi.fn().mockReturnThis(),
+    }
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    const result = await activateTalentAction(
+      '123e4567-e89b-12d3-a456-426614174000',
+    )
+
+    expect(result).toEqual({ success: true })
+    expect(mockSupabaseClient.update).toHaveBeenCalledWith({
+      status: 'active',
+      updated_at: '2024-11-24T17:00:00Z',
+    })
+    expect(createAuditLog).toHaveBeenCalledWith(
+      'CHANNEL_ACTIVATE',
+      'channels',
+      '123e4567-e89b-12d3-a456-426614174000',
+      { entityName: 'Active Talent' },
+    )
   })
 })
 
