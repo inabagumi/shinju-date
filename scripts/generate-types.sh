@@ -18,8 +18,9 @@ echo -e "${GREEN}Generating TypeScript types from database schema...${NC}"
 
 cd "$PROJECT_ROOT"
 
-# Check if Supabase local stack is running via Supabase CLI
-if pnpm exec supabase status 2>/dev/null | grep -q "API URL:"; then
+SUPABASE_STATUS_ENV=$(pnpm exec supabase status -o env 2>/dev/null || true)
+
+if echo "$SUPABASE_STATUS_ENV" | grep -qE '^API_URL='; then
     echo -e "${GREEN}Using Supabase CLI local instance${NC}"
     pnpm exec supabase gen types typescript --local --schema public > "$OUTPUT_FILE"
     echo -e "${GREEN}Types generated successfully at: ${OUTPUT_FILE}${NC}"
