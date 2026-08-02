@@ -59,7 +59,7 @@ export function TalentLifecycleActions({
             disabled={isPending}
             onClick={() =>
               runAction(
-                `タレント「${talent.name}」を復活しますか？\n動画の復旧はバッチで順次行われます。`,
+                `タレント「${talent.name}」を復活しますか？\n動画の復旧も行われます。`,
                 () => restoreTalentAction(talent.id),
               )
             }

@@ -75,9 +75,7 @@ async function TalentProfile({ id }: { id: string }) {
               </h3>
               <div className="mt-2 text-red-700 text-sm">
                 <p>このタレントは削除されています。</p>
-                <p className="mt-1">
-                  動画の非公開・復旧はバッチで順次行われます。
-                </p>
+                <p className="mt-1">動画の非公開・復旧も行われます。</p>
               </div>
             </div>
           </div>
