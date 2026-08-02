@@ -39,6 +39,9 @@ export const videos = new Collection({
   schema: z.object({
     created_at: z.string(),
     deleted_at: z.string().nullable(),
+    deleted_reason: z
+      .enum(['unavailable', 'withdrawn', 'talent_deleted'])
+      .nullable(),
     duration: z.string(),
     id: z.string().uuid(),
     platform: z.enum(['YOUTUBE', 'TWITCH']).nullable(),
@@ -195,6 +198,7 @@ export async function seedCollections() {
       return videos.create({
         created_at: faker.date.past({ years: 1 }).toISOString(),
         deleted_at: null,
+        deleted_reason: null,
         duration:
           videoKind === 'short'
             ? `PT${faker.number.int({ max: 60, min: 15 })}S` // Shorts are 15-60 seconds
@@ -236,6 +240,7 @@ export async function seedCollections() {
       return videos.create({
         created_at: faker.date.recent({ days: 2 }).toISOString(),
         deleted_at: null,
+        deleted_reason: null,
         duration: `PT${faker.number.int({ max: 60, min: 15 })}S`,
         id: faker.string.uuid(),
         platform: 'YOUTUBE',

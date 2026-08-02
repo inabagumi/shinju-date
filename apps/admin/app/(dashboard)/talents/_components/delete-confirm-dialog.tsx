@@ -53,7 +53,7 @@ export function DeleteConfirmDialog({
         <DialogContent>
           <DialogTitle>タレントを削除</DialogTitle>
           <DialogDescription>
-            「{talentName}」を削除しますか？
+            「{talentName}」を削除しますか？紐づく動画も非公開になります。
           </DialogDescription>
           {error && <p className="mb-4 text-red-600 text-sm">{error}</p>}
           <div className="flex justify-end gap-2">

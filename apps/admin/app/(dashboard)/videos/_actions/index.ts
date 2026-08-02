@@ -109,11 +109,12 @@ export async function softDeleteAction(ids: string[]): Promise<{
       return { error: '動画が見つかりませんでした。', success: false }
     }
 
-    // Soft delete videos
+    // Soft delete videos (intentionally withdrawn — not restored with talent)
     const { error: videoError } = await supabaseClient
       .from('videos')
       .update({
         deleted_at: toDBString(now),
+        deleted_reason: 'withdrawn',
         updated_at: toDBString(now),
       })
       .in('id', ids)
@@ -201,6 +202,7 @@ export async function restoreAction(ids: string[]): Promise<{
       .from('videos')
       .update({
         deleted_at: null,
+        deleted_reason: null,
         updated_at: toDBString(now),
       })
       .in('id', ids)

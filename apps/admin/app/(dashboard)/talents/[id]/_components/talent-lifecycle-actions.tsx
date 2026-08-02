@@ -58,8 +58,9 @@ export function TalentLifecycleActions({
           <Button
             disabled={isPending}
             onClick={() =>
-              runAction(`タレント「${talent.name}」を復活しますか？`, () =>
-                restoreTalentAction(talent.id),
+              runAction(
+                `タレント「${talent.name}」を復活しますか？\n動画の復旧も行われます。`,
+                () => restoreTalentAction(talent.id),
               )
             }
             size="sm"

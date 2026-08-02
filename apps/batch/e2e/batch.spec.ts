@@ -69,6 +69,20 @@ test.describe('Batch App - API Endpoints', () => {
     expect([200, 204, 400, 401, 403, 500]).toContain(response.status())
   })
 
+  test('should have videos cascade-from-talents endpoint', async ({
+    request,
+  }) => {
+    const response = await request.post(
+      'http://localhost:5000/videos/cascade-from-talents',
+      {
+        failOnStatusCode: false,
+      },
+    )
+
+    expect(response.status()).not.toBe(404)
+    expect([200, 204, 400, 401, 403, 429, 500]).toContain(response.status())
+  })
+
   test('should have recommendation queries update endpoint', async ({
     request,
   }) => {

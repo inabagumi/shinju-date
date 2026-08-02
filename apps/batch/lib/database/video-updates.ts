@@ -324,12 +324,22 @@ async function softDeleteRows({
   supabaseClient: TypedSupabaseClient
   table: 'videos' | 'thumbnails'
 }): Promise<{ id: string }[]> {
+  const timestamp = toDBString(currentDateTime)
   const { data, error } = await supabaseClient
     .from(table)
-    .update({
-      deleted_at: toDBString(currentDateTime),
-      updated_at: toDBString(currentDateTime),
-    })
+    .update(
+      table === 'videos'
+        ? {
+            deleted_at: timestamp,
+            // Source platform no longer has this video.
+            deleted_reason: 'unavailable' as const,
+            updated_at: timestamp,
+          }
+        : {
+            deleted_at: timestamp,
+            updated_at: timestamp,
+          },
+    )
     .in('id', ids)
     .select('id')
 
