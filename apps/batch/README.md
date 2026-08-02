@@ -57,6 +57,10 @@ pnpm exec playwright test --ui
     - `mode=all`: 全動画の削除判定のみ実行（週1回、火曜日）
       - YouTube上で存在しなくなった動画をデータベースから削除
       - 情報更新は行わない
+  - `/videos/cascade-from-talents`: タレント削除／復活に伴う動画の連鎖処理（5分毎）
+    - 削除済みタレントに紐づく未削除動画をソフトデリート（`deleted_reason = talent_cascade`）
+    - 復活済みタレントに紐づく連鎖削除動画のみ復旧（個別削除 `manual` は対象外）
+    - 1実行あたり最大100件
   - `/talents/update`: タレント情報の更新（3時間毎）
     - チャンネル情報の同期
 - **統計情報の更新** (`/stats/snapshot`)
@@ -81,6 +85,7 @@ pnpm exec playwright test --ui
   - パラメータなし: UPCOMING/LIVE動画の情報更新
   - `mode=recent`: 最新100件の動画の情報更新
   - `mode=all`: 全動画の削除判定（情報更新なし）
+- `POST /videos/cascade-from-talents` - タレント削除／復活に伴う動画の連鎖ソフトデリート／復旧
 
 ### 統計スナップショット (`/stats/snapshot`)
 

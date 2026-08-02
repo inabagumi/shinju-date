@@ -270,6 +270,9 @@ export type Database = {
         Row: {
           created_at: string
           deleted_at: string | null
+          deleted_reason:
+            | Database['public']['Enums']['video_deleted_reason']
+            | null
           duration: string
           id: string
           platform: Database['public']['Enums']['platform_type'] | null
@@ -285,6 +288,9 @@ export type Database = {
         Insert: {
           created_at?: string
           deleted_at?: string | null
+          deleted_reason?:
+            | Database['public']['Enums']['video_deleted_reason']
+            | null
           duration: string
           id?: string
           platform?: Database['public']['Enums']['platform_type'] | null
@@ -300,6 +306,9 @@ export type Database = {
         Update: {
           created_at?: string
           deleted_at?: string | null
+          deleted_reason?:
+            | Database['public']['Enums']['video_deleted_reason']
+            | null
           duration?: string
           id?: string
           platform?: Database['public']['Enums']['platform_type'] | null
@@ -439,6 +448,9 @@ export type Database = {
         Returns: {
           created_at: string
           deleted_at: string | null
+          deleted_reason:
+            | Database['public']['Enums']['video_deleted_reason']
+            | null
           duration: string
           id: string
           platform: Database['public']['Enums']['platform_type'] | null
@@ -502,6 +514,7 @@ export type Database = {
       platform_type: 'youtube' | 'twitch'
       talent_status: 'active' | 'retired'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
+      video_deleted_reason: 'manual' | 'talent_cascade'
       video_kind: 'standard' | 'short'
       video_status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
     }
@@ -668,6 +681,7 @@ export const Constants = {
       platform_type: ['youtube', 'twitch'],
       talent_status: ['active', 'retired'],
       twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],
+      video_deleted_reason: ['manual', 'talent_cascade'],
       video_kind: ['standard', 'short'],
       video_status: ['UPCOMING', 'LIVE', 'ENDED', 'PUBLISHED'],
     },

@@ -54,6 +54,7 @@ export function DeleteConfirmDialog({
           <DialogTitle>タレントを削除</DialogTitle>
           <DialogDescription>
             「{talentName}」を削除しますか？
+            紐づく動画の非公開処理はバッチで順次行われます。
           </DialogDescription>
           {error && <p className="mb-4 text-red-600 text-sm">{error}</p>}
           <div className="flex justify-end gap-2">

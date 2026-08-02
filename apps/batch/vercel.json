@@ -32,6 +32,10 @@
     {
       "path": "/videos/update",
       "schedule": "1/5 * * * *"
+    },
+    {
+      "path": "/videos/cascade-from-talents",
+      "schedule": "*/5 * * * *"
     }
   ]
 }
