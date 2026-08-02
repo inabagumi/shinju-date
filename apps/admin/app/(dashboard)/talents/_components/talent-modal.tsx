@@ -102,15 +102,16 @@ export function TalentModal({ talent }: TalentModalProps) {
             </FormField>
             <FormField name="youtube_channel_id">
               <Label className="mb-2 block font-medium">
-                YouTubeチャンネルID（任意）
+                YouTubeチャンネル（任意）
               </Label>
               <Input
                 className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
                 defaultValue={talent?.youtube_channel?.youtube_channel_id ?? ''}
-                placeholder="UCから始まるチャンネルID"
+                placeholder="@handle または https://youtube.com/@handle"
               />
               <p className="mt-1 text-gray-500 text-xs">
-                後から個別ページで設定することもできます
+                ハンドル・チャンネルID・URLに対応。追加時にYouTube
+                APIから名前とハンドルを取得します。後から個別ページで設定することもできます。
               </p>
               <ErrorMessage className="mt-1 text-red-600 text-sm" />
             </FormField>

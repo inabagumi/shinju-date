@@ -112,22 +112,24 @@ export function ChannelManager({
                   <DialogContent>
                     <DialogTitle>YouTubeチャンネルを追加</DialogTitle>
                     <DialogDescription>
-                      YouTubeチャンネルIDまたはURLを入力してください。
+                      ハンドル、チャンネルID、またはYouTube
+                      URLを入力してください。追加時にYouTube
+                      APIから名前とハンドルを取得します。
                     </DialogDescription>
                     <Form action={handleAddChannel} className="space-y-4">
                       <input name="talent_id" type="hidden" value={talentId} />
                       <FormField name="youtube_channel_id">
                         <Label className="block font-medium text-sm">
-                          チャンネルIDまたはURL
+                          ハンドル / チャンネルID / URL
                         </Label>
                         <Input
                           className="mt-1"
-                          placeholder="UC... または https://youtube.com/channel/UC..."
+                          placeholder="@handle または https://youtube.com/@handle"
                           required
                         />
                         <p className="mt-1 text-gray-500 text-xs">
-                          例: UCxxxxxxxxxxxxxxxx または
-                          https://youtube.com/channel/UCxxxxxxxxxxxxxxxx
+                          例:
+                          @example、https://www.youtube.com/@example、UCxxx...
                         </p>
                         <ErrorMessage className="mt-1 text-red-600 text-sm" />
                       </FormField>
