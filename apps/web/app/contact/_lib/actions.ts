@@ -1,5 +1,6 @@
 'use server'
 
+import { checkBotId } from 'botid/server'
 import { Resend } from 'resend'
 import { z } from 'zod'
 import { isContactFormEnabled } from './utils'
@@ -22,6 +23,23 @@ export async function submitContactForm(
   formData: FormData,
 ): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
+    // Block bots before any validation or email send.
+    // In local development, checkBotId() always returns isBot: false
+    // unless developmentOptions.bypass is set.
+    const verification = await checkBotId({
+      advancedOptions: {
+        checkLevel: 'basic',
+      },
+    })
+
+    if (verification.isBot) {
+      return {
+        error:
+          '送信を完了できませんでした。しばらく時間をおいて再度お試しください。',
+        success: false,
+      }
+    }
+
     // Check if contact form is enabled
     if (!isContactFormEnabled()) {
       return {

@@ -1,3 +1,27 @@
+import { initBotId } from 'botid/client/core'
+
+// Protect Server Actions invoked from public form pages.
+// Path is the page route (not the action module path).
+// Use basic check level (free) — Deep Analysis can be enabled later if needed.
+initBotId({
+  protect: [
+    {
+      advancedOptions: {
+        checkLevel: 'basic',
+      },
+      method: 'POST',
+      path: '/contact',
+    },
+    {
+      advancedOptions: {
+        checkLevel: 'basic',
+      },
+      method: 'POST',
+      path: '/feedback',
+    },
+  ],
+})
+
 const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
 
 if (dsn) {

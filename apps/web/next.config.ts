@@ -1,5 +1,6 @@
 import createMDX from '@next/mdx'
 import { withSentryConfig } from '@sentry/nextjs'
+import { withBotId } from 'botid/next/config'
 // import rehypeExternalLinks from 'rehype-external-links'
 // import remarkGfm from 'remark-gfm'
 import type { NextConfig } from 'next'
@@ -12,6 +13,8 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
+            // BotID serves challenge/proxy scripts via same-origin rewrites
+            // (withBotId), so connect-src/script-src 'self' is sufficient.
             value: [
               "base-uri 'none'",
               "connect-src 'self'",
@@ -71,9 +74,13 @@ const withMDX = createMDX({
   },
 })
 
-function withPlugins(nextConfig: NextConfig): NextConfig {
+function withPlugins(config: NextConfig): NextConfig {
+  // Apply BotID rewrites before other plugins so challenge/proxy routes are
+  // always registered.
+  const configWithBotId = withBotId(config)
+
   if (process.env['NEXT_PUBLIC_SENTRY_DSN']) {
-    return withSentryConfig(withMDX(nextConfig), {
+    return withSentryConfig(withMDX(configWithBotId), {
       automaticVercelMonitors: false,
       disableLogger: true,
       reactComponentAnnotation: {
@@ -85,7 +92,7 @@ function withPlugins(nextConfig: NextConfig): NextConfig {
     })
   }
 
-  return withMDX(nextConfig)
+  return withMDX(configWithBotId)
 }
 
 export default withPlugins(nextConfig)

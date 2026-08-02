@@ -20,6 +20,7 @@
     "@testing-library/react": "16.3.2",
     "@upstash/redis": "1.38.1",
     "@vercel/analytics": "2.0.1",
+    "botid": "1.5.11",
     "dedent": "1.7.2",
     "embla-carousel-react": "8.6.0",
     "ics": "3.12.0",
