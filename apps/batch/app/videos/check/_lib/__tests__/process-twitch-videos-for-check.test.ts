@@ -232,4 +232,101 @@ describe('processTwitchVideosForCheck', () => {
 
     expect(hasChanges).toBe(false)
   })
+
+  it('updates clip metadata from Helix clip payload', async () => {
+    const supabaseClient = createClient(
+      MOCK_SUPABASE_URL,
+      MOCK_SUPABASE_ANON_KEY,
+    )
+
+    const updates: Array<{ id: string; body: unknown }> = []
+
+    server.use(
+      http.patch('*/rest/v1/videos', async ({ request }) => {
+        const url = new URL(request.url)
+        const idFilter = url.searchParams.get('id')
+        const body = await request.json()
+        updates.push({ body, id: idFilter ?? '' })
+        return HttpResponse.json([{ id: 'clip-video-1' }])
+      }),
+    )
+
+    const savedVideos = [
+      makeSavedVideo({
+        id: 'clip-video-1',
+        status: 'ENDED',
+        title: 'Old clip title',
+        twitch_video_id: 'clip-slug-1',
+        type: 'clip',
+      }),
+    ]
+
+    const hasChanges = await processTwitchVideosForCheck({
+      clips: [
+        {
+          broadcaster_id: '100001',
+          broadcaster_name: 'Alice',
+          created_at: '2023-01-10T12:00:00Z',
+          creator_id: '100002',
+          creator_name: 'Bob',
+          duration: 'PT0M45S',
+          embed_url: '',
+          game_id: '1',
+          id: 'clip-slug-1',
+          language: 'ja',
+          thumbnail_url: 'https://example.com/c.jpg',
+          title: 'New clip title',
+          url: 'https://clips.twitch.tv/clip-slug-1',
+          video_id: 'v1',
+          view_count: 10,
+          vod_offset: 0,
+        },
+      ],
+      currentDateTime: Temporal.Instant.from('2023-01-15T10:00:00Z'),
+      logger,
+      mode: 'recent',
+      savedVideos,
+      supabaseClient,
+      videos: [],
+    })
+
+    expect(hasChanges).toBe(true)
+    expect(updates.length).toBeGreaterThan(0)
+  })
+
+  it('soft-deletes clips missing from Helix response', async () => {
+    const supabaseClient = createClient(
+      MOCK_SUPABASE_URL,
+      MOCK_SUPABASE_ANON_KEY,
+    )
+
+    const deletedBodies: unknown[] = []
+
+    server.use(
+      http.patch('*/rest/v1/videos', async ({ request }) => {
+        const body = await request.json()
+        deletedBodies.push(body)
+        return HttpResponse.json([{ id: 'clip-missing' }])
+      }),
+    )
+
+    const hasChanges = await processTwitchVideosForCheck({
+      clips: [],
+      currentDateTime: Temporal.Instant.from('2023-01-15T10:00:00Z'),
+      logger,
+      mode: 'recent',
+      savedVideos: [
+        makeSavedVideo({
+          id: 'clip-missing',
+          twitch_video_id: 'clip-gone',
+          type: 'clip',
+        }),
+      ],
+      supabaseClient,
+      videos: [],
+    })
+
+    expect(hasChanges).toBe(true)
+    expect(deletedBodies.length).toBeGreaterThan(0)
+  })
 })

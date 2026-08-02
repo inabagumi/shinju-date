@@ -452,6 +452,13 @@ export async function processTwitchUsers({
         )
       }
 
+      const nameChanged = twitchUser.display_name !== savedUser.name
+      const loginChanged = twitchUser.login !== savedUser.twitch_login_name
+
+      if (!nameChanged && !loginChanged) {
+        continue
+      }
+
       await updateTwitchUser({
         displayName: twitchUser.display_name,
         loginName: twitchUser.login,
@@ -460,17 +467,12 @@ export async function processTwitchUsers({
         twitchUserId: twitchUser.id,
       })
 
-      if (
-        twitchUser.display_name !== savedUser.name ||
-        twitchUser.login !== savedUser.twitch_login_name
-      ) {
-        Sentry.logger.info('Twitch user has been updated.', {
-          login: `${savedUser.twitch_login_name} -> ${twitchUser.login}`,
-          name: `${savedUser.name} -> ${twitchUser.display_name}`,
-          twitch_user_id: twitchUser.id,
-        })
-        hasUpdates = true
-      }
+      Sentry.logger.info('Twitch user has been updated.', {
+        login: `${savedUser.twitch_login_name} -> ${twitchUser.login}`,
+        name: `${savedUser.name} -> ${twitchUser.display_name}`,
+        twitch_user_id: twitchUser.id,
+      })
+      hasUpdates = true
     } catch (error) {
       Sentry.captureException(error)
     }

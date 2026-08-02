@@ -148,7 +148,7 @@ export class TwitchScraper implements AsyncDisposable {
       type: params.type ?? 'archive',
     })
 
-    await Promise.all(
+    const results = await Promise.allSettled(
       params.userIds.map((userId) =>
         this.#queue.add(async () => {
           const videos = await Array.fromAsync(
@@ -165,6 +165,15 @@ export class TwitchScraper implements AsyncDisposable {
         }),
       ),
     )
+
+    for (const [index, result] of results.entries()) {
+      if (result.status === 'rejected') {
+        this.#logger?.error('Failed to scrape new Twitch videos for user', {
+          error: result.reason,
+          userId: params.userIds[index],
+        })
+      }
+    }
 
     this.#logger?.debug('New Twitch video scraping completed')
   }

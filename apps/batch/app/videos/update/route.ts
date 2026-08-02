@@ -247,7 +247,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     Sentry.logger.info('No updated channels existed.', { provider })
   }
 
-  // Update last sync timestamp in Redis
+  // Shared across providers: admin "last video sync" is platform-agnostic.
   await redisClient.set(REDIS_KEYS.LAST_VIDEO_SYNC, currentDateTime.toString())
 
   after(async () => {

@@ -1,7 +1,7 @@
 import type { TypedSupabaseClient } from '@/lib/supabase'
 import type { CheckMode } from './types'
 
-export type SavedTwitchVideo = {
+export interface SavedTwitchVideo {
   id: string
   duration: string
   published_at: string
@@ -15,7 +15,7 @@ export type SavedTwitchVideo = {
   }
 }
 
-export type GetSavedTwitchVideos = {
+export interface GetSavedTwitchVideos {
   mode: CheckMode
   supabaseClient: TypedSupabaseClient
 }

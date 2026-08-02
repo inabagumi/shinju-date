@@ -114,6 +114,49 @@ describe('TwitchScraper', () => {
     ])
   })
 
+  it('scrapeNewVideos continues when one user fails', async () => {
+    const logger = {
+      debug: vi.fn(),
+      error: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+    }
+    const client: TwitchScraperClient = {
+      getClips: vi.fn(),
+      getUsers: vi.fn(),
+      getVideos: vi.fn(),
+      getVideosByUser: vi.fn().mockImplementation(({ userId }) => {
+        if (userId === 'u-fail') {
+          return {
+            [Symbol.asyncIterator]() {
+              return {
+                next() {
+                  return Promise.reject(new Error('helix down'))
+                },
+              }
+            },
+          } as AsyncGenerator<TwitchVideo, void, undefined>
+        }
+        return fromArray([video('v-ok', userId)])
+      }),
+    }
+
+    await using scraper = new TwitchScraper({
+      client,
+      concurrency: 1,
+      logger,
+    })
+    const onNew = vi.fn()
+
+    await scraper.scrapeNewVideos({ userIds: ['u-fail', 'u-ok'] }, onNew)
+
+    expect(onNew).toHaveBeenCalledTimes(1)
+    expect(onNew).toHaveBeenCalledWith('u-ok', [
+      expect.objectContaining({ id: 'v-ok' }),
+    ])
+    expect(logger.error).toHaveBeenCalled()
+  })
+
   it('scrapeVideosAvailability marks missing IDs unavailable', async () => {
     const client: TwitchScraperClient = {
       getClips: vi.fn().mockReturnValue(fromArray([clip('c1')])),

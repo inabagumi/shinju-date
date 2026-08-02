@@ -67,14 +67,22 @@ describe('saveTwitchVideos', () => {
         const body = await request.json()
         const items = Array.isArray(body) ? body : [body]
 
-        const insertedVideos = items.map((item, index) => ({
-          ...item,
-          id: `new-uuid-${index + 1}`,
-          talent: { name: 'Test Talent' },
-          thumbnail: null,
-        }))
+        const insertedVideos = items.map(
+          (item: Record<string, unknown>, index: number) => ({
+            ...item,
+            id: `new-uuid-${index + 1}`,
+            talent: { name: 'Test Talent' },
+            thumbnail: null,
+          }),
+        )
 
-        return HttpResponse.json(insertedVideos, { status: 201 })
+        // .single() expects an object; bulk insert expects an array
+        const payload =
+          Array.isArray(body) && body.length !== 1
+            ? insertedVideos
+            : (insertedVideos[0] ?? null)
+
+        return HttpResponse.json(payload, { status: 201 })
       }),
       http.post('*/rest/v1/twitch_videos', async ({ request }) => {
         const body = await request.json()

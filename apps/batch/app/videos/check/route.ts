@@ -249,6 +249,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     })
   }
 
+  // Shared across providers: admin "last video sync" is platform-agnostic.
   await redisClient.set(REDIS_KEYS.LAST_VIDEO_SYNC, toDBString(currentDateTime))
 
   after(async () => {

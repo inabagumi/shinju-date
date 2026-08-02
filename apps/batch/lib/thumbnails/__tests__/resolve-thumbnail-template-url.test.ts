@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { resolveThumbnailTemplateUrl } from '../processing'
+import {
+  DEFAULT_THUMBNAIL_HEIGHT,
+  DEFAULT_THUMBNAIL_WIDTH,
+  resolveThumbnailTemplateUrl,
+} from '../processing'
 
 describe('resolveThumbnailTemplateUrl', () => {
   it('replaces %{width} and %{height} placeholders', () => {
@@ -20,6 +24,16 @@ describe('resolveThumbnailTemplateUrl', () => {
         360,
       ),
     ).toBe('https://static-cdn.jtvnw.net/cf_vods/example-640x360.jpg')
+  })
+
+  it('uses default dimensions when none are provided', () => {
+    expect(
+      resolveThumbnailTemplateUrl(
+        'https://static-cdn.jtvnw.net/cf_vods/example-%{width}x%{height}.jpg',
+      ),
+    ).toBe(
+      `https://static-cdn.jtvnw.net/cf_vods/example-${DEFAULT_THUMBNAIL_WIDTH}x${DEFAULT_THUMBNAIL_HEIGHT}.jpg`,
+    )
   })
 
   it('returns unchanged URL when no placeholders exist', () => {

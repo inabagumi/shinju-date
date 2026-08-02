@@ -3,8 +3,9 @@ import type { TwitchClip, TwitchVideo } from '@shinju-date/twitch-api-client'
 import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 import type { SavedTwitchVideo } from './get-saved-twitch-videos'
+import type { CheckMode } from './types'
 
-export type TwitchVideoUpdate = {
+export interface TwitchVideoUpdate {
   id: string
   duration: string
   published_at: string
@@ -13,7 +14,7 @@ export type TwitchVideoUpdate = {
   updated_at: string
 }
 
-export type TwitchTypeUpdate = {
+export interface TwitchTypeUpdate {
   id: string
   type: 'archive' | 'highlight' | 'upload' | 'clip'
 }
@@ -189,7 +190,10 @@ async function softDeleteRows({
 
 /**
  * Updates saved Twitch videos from Helix video/clip payloads and soft-deletes
- * rows that are no longer available on Twitch.
+ * rows that Helix did not return (unavailable).
+ *
+ * Deletion uses the same `isAvailable === false` model as
+ * {@link processTwitchAvailability} / `scrapeVideosAvailability`.
  */
 export async function processTwitchVideosForCheck({
   clips,
@@ -205,7 +209,7 @@ export async function processTwitchVideosForCheck({
   logger: {
     info: (message: string, attributes?: Record<string, unknown>) => void
   }
-  mode: string
+  mode: CheckMode
   savedVideos: SavedTwitchVideo[]
   supabaseClient: TypedSupabaseClient
   videos: TwitchVideo[]
@@ -303,65 +307,28 @@ export async function processTwitchVideosForCheck({
     })
   }
 
-  const videoIdsToDelete: string[] = []
-  const thumbnailIdsToDelete: string[] = []
+  // Only consider IDs that were requested in this scrape (savedVideos).
+  // Helix omits missing IDs → isAvailable false, same as scrapeVideosAvailability.
+  const availabilityResults = savedVideos.map((savedVideo) => ({
+    id: savedVideo.twitch_video.twitch_video_id,
+    isAvailable: availableIds.has(savedVideo.twitch_video.twitch_video_id),
+  }))
 
-  for (const savedVideo of savedVideos) {
-    const twitchVideoId = savedVideo.twitch_video.twitch_video_id
-    if (availableIds.has(twitchVideoId)) {
-      continue
-    }
+  const deleted = await processTwitchAvailability({
+    currentDateTime,
+    logger,
+    results: availabilityResults,
+    savedVideos,
+    supabaseClient,
+  })
 
-    videoIdsToDelete.push(savedVideo.id)
-
-    if (savedVideo.thumbnail) {
-      thumbnailIdsToDelete.push(savedVideo.thumbnail.id)
-    }
-
-    logger.info('Twitch動画を削除しました', {
-      videoId: twitchVideoId,
-    })
-  }
-
-  if (videoIdsToDelete.length > 0) {
-    try {
-      await Promise.all([
-        softDeleteRows({
-          currentDateTime,
-          ids: videoIdsToDelete,
-          supabaseClient,
-          table: 'videos',
-        }),
-        thumbnailIdsToDelete.length > 0
-          ? softDeleteRows({
-              currentDateTime,
-              ids: thumbnailIdsToDelete,
-              supabaseClient,
-              table: 'thumbnails',
-            })
-          : Promise.resolve(),
-      ])
-
-      logger.info('Twitch動画が削除されました', {
-        count: videoIdsToDelete.length,
-      })
-    } catch (error) {
-      throw new Error('Failed to delete Twitch videos.', {
-        cause: error,
-      })
-    }
-  }
-
-  return (
-    videoUpdates.length > 0 ||
-    typeUpdates.length > 0 ||
-    videoIdsToDelete.length > 0
-  )
+  return videoUpdates.length > 0 || typeUpdates.length > 0 || deleted
 }
 
 /**
  * Soft-delete Twitch videos/clips that Helix reports as unavailable.
- * Used by mode=all (parity with YouTube scrapeVideosAvailability path).
+ * Used by mode=all (parity with YouTube scrapeVideosAvailability path)
+ * and by mode=recent after metadata refresh.
  */
 export async function processTwitchAvailability({
   currentDateTime,

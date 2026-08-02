@@ -1,12 +1,11 @@
 import * as Sentry from '@sentry/nextjs'
 import type { TablesInsert } from '@shinju-date/database'
-import { isNonNullable } from '@shinju-date/helpers'
 import { toDBString } from '@shinju-date/temporal-fns'
 import type { TwitchVideo } from '@shinju-date/twitch-api-client'
 import PQueue from 'p-queue'
 import { Temporal } from 'temporal-polyfill'
 import { DatabaseError, getSavedTwitchVideos } from '@/lib/database/operations'
-import type { SavedVideo, Video } from '@/lib/database/types'
+import type { Video } from '@/lib/database/types'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 import { ImageProcessor } from '@/lib/thumbnails'
 
@@ -98,121 +97,106 @@ async function processThumbnails(options: {
   return insertThumbnails(options.supabaseClient, values)
 }
 
-async function insertNewTwitchVideos(
+/**
+ * Insert one video + its twitch_videos row as a pair so we never rely on
+ * multi-row insert order to correlate platform IDs.
+ */
+async function insertTwitchVideoPair(
   supabaseClient: TypedSupabaseClient,
-  values: TablesInsert<'videos'>[],
-  twitchEntries: {
+  value: TablesInsert<'videos'>,
+  twitchEntry: {
     twitchUserId: string
     twitchVideoId: string
     type: TwitchVideo['type']
-  }[],
-): Promise<Video[]> {
-  if (values.length === 0) {
-    return []
-  }
-
-  const { data: insertedVideos, error } = await supabaseClient
+  },
+): Promise<Video | null> {
+  const { data: insertedVideo, error } = await supabaseClient
     .from('videos')
-    .insert(values)
+    .insert(value)
     .select(scrapeResultSelect)
+    .single()
 
   if (error) {
     throw new DatabaseError(error)
   }
 
-  const allVideos: Video[] = insertedVideos ?? []
-  const twitchVideoValues: TablesInsert<'twitch_videos'>[] = []
-
-  for (const [index, video] of allVideos.entries()) {
-    const entry = twitchEntries[index]
-    if (entry) {
-      twitchVideoValues.push({
-        twitch_user_id: entry.twitchUserId,
-        twitch_video_id: entry.twitchVideoId,
-        type: entry.type,
-        video_id: video.id,
-      })
-    }
+  if (!insertedVideo) {
+    return null
   }
 
-  if (twitchVideoValues.length > 0) {
-    const { error: twitchError } = await supabaseClient
-      .from('twitch_videos')
-      .insert(twitchVideoValues)
+  const { error: twitchError } = await supabaseClient
+    .from('twitch_videos')
+    .insert({
+      twitch_user_id: twitchEntry.twitchUserId,
+      twitch_video_id: twitchEntry.twitchVideoId,
+      type: twitchEntry.type,
+      video_id: insertedVideo.id,
+    })
 
-    if (twitchError) {
-      Sentry.captureException(new DatabaseError(twitchError))
-    }
+  if (twitchError) {
+    // Avoid leaving platform-less video rows when linkage fails.
+    Sentry.captureException(new DatabaseError(twitchError))
+    await supabaseClient.from('videos').delete().eq('id', insertedVideo.id)
+    return null
   }
 
-  for (const video of allVideos) {
-    const entry = twitchVideoValues.find((tv) => tv.video_id === video.id)
-    if (entry) {
-      video.twitch_video = {
-        twitch_video_id: entry.twitch_video_id,
-        type: entry.type ?? null,
-      }
-    }
+  return {
+    ...insertedVideo,
+    twitch_video: {
+      twitch_video_id: twitchEntry.twitchVideoId,
+      type: twitchEntry.type,
+    },
   }
-
-  return allVideos
 }
 
-function processNewTwitchVideos(options: {
+function buildNewTwitchVideoRows(options: {
   currentDateTime: Temporal.Instant
   originalVideos: TwitchVideo[]
-  savedVideos: SavedVideo[]
   talentId: string
   thumbnails: { id: string; path: string }[]
+  twitchUserId: string
 }): {
   value: TablesInsert<'videos'>
+  twitchUserId: string
   twitchVideoId: string
   type: TwitchVideo['type']
 }[] {
-  const { currentDateTime, originalVideos, savedVideos, talentId, thumbnails } =
-    options
+  const {
+    currentDateTime,
+    originalVideos,
+    talentId,
+    thumbnails,
+    twitchUserId,
+  } = options
 
-  return originalVideos
-    .map<{
-      value: TablesInsert<'videos'>
-      twitchVideoId: string
-      type: TwitchVideo['type']
-    } | null>((originalVideo) => {
-      const savedVideo = savedVideos.find(
-        (v) => v.twitch_video?.twitch_video_id === originalVideo.id,
-      )
+  return originalVideos.map((originalVideo) => {
+    const thumbnail = thumbnails.find((t) =>
+      t.path.startsWith(`${originalVideo.id}/`),
+    )
 
-      if (savedVideo) {
-        return null
-      }
+    const publishedAt = Temporal.Instant.from(
+      originalVideo.published_at || originalVideo.created_at,
+    )
 
-      const thumbnail = thumbnails.find((t) =>
-        t.path.startsWith(`${originalVideo.id}/`),
-      )
-
-      const publishedAt = Temporal.Instant.from(
-        originalVideo.published_at || originalVideo.created_at,
-      )
-
-      return {
-        twitchVideoId: originalVideo.id,
-        type: originalVideo.type,
-        value: {
-          created_at: toDBString(currentDateTime),
-          duration: originalVideo.duration,
-          platform: 'twitch',
-          published_at: toDBString(publishedAt),
-          status: getTwitchVideoStatus(originalVideo.type),
-          talent_id: talentId,
-          title: originalVideo.title,
-          updated_at: toDBString(currentDateTime),
-          video_kind: 'standard',
-          visible: true,
-          ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
-        },
-      }
-    })
-    .filter(isNonNullable)
+    return {
+      twitchUserId,
+      twitchVideoId: originalVideo.id,
+      type: originalVideo.type,
+      value: {
+        created_at: toDBString(currentDateTime),
+        duration: originalVideo.duration,
+        platform: 'twitch',
+        published_at: toDBString(publishedAt),
+        status: getTwitchVideoStatus(originalVideo.type),
+        talent_id: talentId,
+        title: originalVideo.title,
+        updated_at: toDBString(currentDateTime),
+        video_kind: 'standard',
+        visible: true,
+        ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
+      },
+    }
+  })
 }
 
 /**
@@ -263,24 +247,36 @@ export async function saveTwitchVideos(options: {
     supabaseClient,
   })
 
-  const videoData = processNewTwitchVideos({
+  const videoData = buildNewTwitchVideoRows({
     currentDateTime,
     originalVideos: newVideosOnly,
-    savedVideos: [],
     talentId,
     thumbnails,
+    twitchUserId,
   })
 
   if (videoData.length === 0) {
     return []
   }
 
-  const values = videoData.map((item) => item.value)
-  const twitchEntries = videoData.map((item) => ({
-    twitchUserId,
-    twitchVideoId: item.twitchVideoId,
-    type: item.type,
-  }))
+  const settled = await Promise.allSettled(
+    videoData.map((item) =>
+      insertTwitchVideoPair(supabaseClient, item.value, {
+        twitchUserId: item.twitchUserId,
+        twitchVideoId: item.twitchVideoId,
+        type: item.type,
+      }),
+    ),
+  )
 
-  return insertNewTwitchVideos(supabaseClient, values, twitchEntries)
+  const saved: Video[] = []
+  for (const result of settled) {
+    if (result.status === 'fulfilled' && result.value) {
+      saved.push(result.value)
+    } else if (result.status === 'rejected') {
+      Sentry.captureException(result.reason)
+    }
+  }
+
+  return saved
 }
