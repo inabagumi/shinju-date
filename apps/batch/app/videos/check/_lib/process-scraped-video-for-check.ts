@@ -133,7 +133,9 @@ async function batchUpdateVideos({
 }
 
 /**
- * Soft delete rows from the database
+ * Soft delete rows from the database.
+ * Videos and thumbnails are updated on separate branches so TypeScript can
+ * narrow table-specific columns (e.g. videos.deleted_reason).
  */
 async function softDeleteRows({
   currentDateTime,
@@ -147,21 +149,34 @@ async function softDeleteRows({
   table: 'videos' | 'thumbnails'
 }): Promise<{ id: string }[]> {
   const timestamp = toDBString(currentDateTime)
+
+  if (table === 'videos') {
+    const { data, error } = await supabaseClient
+      .from('videos')
+      .update({
+        deleted_at: timestamp,
+        // Source platform no longer has this video.
+        deleted_reason: 'unavailable',
+        updated_at: timestamp,
+      })
+      .in('id', ids)
+      .select('id')
+
+    if (error) {
+      throw new TypeError(error.message, {
+        cause: error,
+      })
+    }
+
+    return data
+  }
+
   const { data, error } = await supabaseClient
-    .from(table)
-    .update(
-      table === 'videos'
-        ? {
-            deleted_at: timestamp,
-            // Source platform no longer has this video.
-            deleted_reason: 'unavailable' as const,
-            updated_at: timestamp,
-          }
-        : {
-            deleted_at: timestamp,
-            updated_at: timestamp,
-          },
-    )
+    .from('thumbnails')
+    .update({
+      deleted_at: timestamp,
+      updated_at: timestamp,
+    })
     .in('id', ids)
     .select('id')
 
