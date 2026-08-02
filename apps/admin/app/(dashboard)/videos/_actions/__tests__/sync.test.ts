@@ -59,12 +59,6 @@ vi.mock('@shinju-date/youtube-scraper', () => ({
 vi.mock('@shinju-date/twitch-api-client', () => ({
   getClips: vi.fn(),
   getVideos: vi.fn(),
-  secondsToISO8601: vi.fn((seconds: number) => `PT${seconds}S`),
-  twitchDurationToISO8601: vi.fn((duration: string) => {
-    if (duration === '1h0m0s') return 'PT1H'
-    if (duration === '3h0m0s') return 'PT3H'
-    return `PT_${duration}`
-  }),
 }))
 
 const videoId = '30000000-0000-0000-0000-000000000101'
@@ -126,10 +120,11 @@ describe('syncVideoWithTwitch', () => {
       yield {
         created_at: '2024-06-01T12:00:00Z',
         description: '',
-        duration: '1h0m0s',
+        duration: 'PT1H',
         id: twitchVideoId,
         language: 'ja',
         published_at: '2024-06-01T12:00:00Z',
+        stream_id: null,
         thumbnail_url: '',
         title: 'New Archive Title',
         type: 'archive' as const,
@@ -219,7 +214,7 @@ describe('syncVideoWithTwitch', () => {
         created_at: '2024-07-01T08:00:00Z',
         creator_id: '100002',
         creator_name: 'Bob',
-        duration: 25,
+        duration: 'PT25S',
         embed_url: '',
         game_id: '1',
         id: clipId,
@@ -286,10 +281,11 @@ describe('syncVideoWithTwitch', () => {
       yield {
         created_at: '2024-06-01T12:00:00Z',
         description: '',
-        duration: '1h0m0s',
+        duration: 'PT1H',
         id: twitchVideoId,
         language: 'ja',
         published_at: '2024-06-01T12:00:00Z',
+        stream_id: null,
         thumbnail_url: '',
         title: 'Same Title',
         type: 'archive' as const,

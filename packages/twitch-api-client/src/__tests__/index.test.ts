@@ -1,10 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  parseTwitchUserIdentifier,
-  resetTwitchClientState,
-  secondsToISO8601,
-  twitchDurationToISO8601,
-} from '../index'
+import { parseTwitchUserIdentifier, resetTwitchClientState } from '../index'
 
 describe('parseTwitchUserIdentifier', () => {
   it('parses login names', () => {
@@ -55,30 +50,6 @@ describe('parseTwitchUserIdentifier', () => {
       parseTwitchUserIdentifier('https://www.twitch.tv/directory'),
     ).toBeNull()
     expect(parseTwitchUserIdentifier('not a valid!!')).toBeNull()
-  })
-})
-
-describe('twitchDurationToISO8601', () => {
-  it('converts Twitch duration strings', () => {
-    expect(twitchDurationToISO8601('1h2m3s')).toBe('PT1H2M3S')
-    expect(twitchDurationToISO8601('3h0m0s')).toBe('PT3H')
-    expect(twitchDurationToISO8601('45m30s')).toBe('PT45M30S')
-    expect(twitchDurationToISO8601('30s')).toBe('PT30S')
-    expect(twitchDurationToISO8601('0s')).toBe('PT0S')
-  })
-
-  it('returns null for invalid durations', () => {
-    expect(twitchDurationToISO8601('')).toBeNull()
-    expect(twitchDurationToISO8601('invalid')).toBeNull()
-  })
-})
-
-describe('secondsToISO8601', () => {
-  it('converts seconds', () => {
-    expect(secondsToISO8601(30)).toBe('PT30S')
-    expect(secondsToISO8601(90)).toBe('PT1M30S')
-    expect(secondsToISO8601(3661)).toBe('PT1H1M1S')
-    expect(secondsToISO8601(0)).toBe('PT0S')
   })
 })
 

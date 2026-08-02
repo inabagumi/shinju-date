@@ -6,8 +6,6 @@ import { toDBString } from '@shinju-date/temporal-fns'
 import {
   getClips,
   getVideos as getTwitchVideos,
-  secondsToISO8601,
-  twitchDurationToISO8601,
 } from '@shinju-date/twitch-api-client'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { getVideos } from '@shinju-date/youtube-api-client'
@@ -241,7 +239,7 @@ export async function syncVideoWithTwitch(videoId: string): Promise<{
       }
 
       nextTitle = clip.title
-      nextDuration = secondsToISO8601(clip.duration)
+      nextDuration = clip.duration
       nextPublishedAt = Temporal.Instant.from(clip.created_at)
       nextStatus = 'PUBLISHED'
       nextType = 'clip'
@@ -259,26 +257,13 @@ export async function syncVideoWithTwitch(videoId: string): Promise<{
         }
       }
 
-      const duration = twitchDurationToISO8601(twitchVideo.duration)
-      if (!duration) {
-        return {
-          error: 'Twitchから再生時間を取得できませんでした。',
-          success: false,
-        }
-      }
-
       nextTitle = twitchVideo.title
-      nextDuration = duration
+      nextDuration = twitchVideo.duration
       nextPublishedAt = Temporal.Instant.from(
         twitchVideo.published_at || twitchVideo.created_at,
       )
       // archive/highlight are past broadcasts; uploads are regular videos
-      nextStatus =
-        twitchVideo.type === 'upload'
-          ? 'PUBLISHED'
-          : twitchVideo.type === 'archive' || twitchVideo.type === 'highlight'
-            ? 'ENDED'
-            : 'PUBLISHED'
+      nextStatus = twitchVideo.type === 'upload' ? 'PUBLISHED' : 'ENDED'
       nextType = twitchVideo.type
     }
 
@@ -305,7 +290,7 @@ export async function syncVideoWithTwitch(videoId: string): Promise<{
       hasChanges = true
     }
 
-    if (nextStatus && video.status !== nextStatus) {
+    if (video.status !== nextStatus) {
       updateData.status = nextStatus
       hasChanges = true
     }

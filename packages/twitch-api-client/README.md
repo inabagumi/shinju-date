@@ -8,7 +8,7 @@ Twitch Helix API client for the SHINJU DATE monorepo, powered by [twurple](https
 - **Users / Videos / Clips** lookup for admin registration and manual sync
 - **User video listing** with pagination helpers for future batch ingestion
 - **Identifier parsing** for login names, user IDs, and Twitch URLs
-- **Duration helpers** to convert Twitch duration strings to ISO 8601
+- Durations are mapped to ISO 8601 using twurple's `durationInSeconds` and `Temporal`
 
 ## Environment variables
 
@@ -39,7 +39,6 @@ import {
   getVideos,
   getVideosByUser,
   getClips,
-  twitchDurationToISO8601,
   getTwitchApiClient,
 } from '@shinju-date/twitch-api-client'
 

@@ -1,5 +1,6 @@
 import { ApiClient } from '@twurple/api'
 import { AppTokenAuthProvider } from '@twurple/auth'
+import { Temporal } from 'temporal-polyfill'
 
 export const TWITCH_API_MAX_RESULTS = 100
 
@@ -23,6 +24,7 @@ export interface TwitchVideo {
   id: string
   title: string
   description: string
+  /** ISO 8601 duration (e.g. PT1H2M3S), ready for videos.duration */
   duration: string
   language: string
   published_at: string
@@ -53,7 +55,8 @@ export interface TwitchClip {
   thumbnail_url: string
   view_count: number
   created_at: string
-  duration: number
+  /** ISO 8601 duration (e.g. PT30S), ready for videos.duration */
+  duration: string
   vod_offset: number | null
 }
 
@@ -227,7 +230,19 @@ export function parseTwitchUserIdentifier(
 // ---------------------------------------------------------------------------
 
 function toIsoString(date: Date): string {
-  return date.toISOString().replace(/\.\d{3}Z$/, 'Z')
+  return Temporal.Instant.fromEpochMilliseconds(date.getTime()).toString()
+}
+
+/**
+ * Converts a duration in seconds to ISO 8601 (e.g. PT1H2M3S) via Temporal.
+ * Uses twurple's durationInSeconds rather than re-parsing Twitch's "1h2m3s" strings.
+ */
+function durationFromSeconds(seconds: number): string {
+  return Temporal.Duration.from({
+    seconds: Math.max(0, Math.floor(seconds)),
+  })
+    .round({ largestUnit: 'hour' })
+    .toString()
 }
 
 function mapUser(user: {
@@ -258,7 +273,7 @@ function mapVideo(video: {
   id: string
   title: string
   description: string
-  duration: string
+  durationInSeconds: number
   language: string
   publishDate: Date
   creationDate: Date
@@ -283,7 +298,7 @@ function mapVideo(video: {
   return {
     created_at: toIsoString(video.creationDate),
     description: video.description,
-    duration: video.duration,
+    duration: durationFromSeconds(video.durationInSeconds),
     id: video.id,
     language: video.language,
     published_at: toIsoString(video.publishDate),
@@ -324,7 +339,7 @@ function mapClip(clip: {
     created_at: toIsoString(clip.creationDate),
     creator_id: clip.creatorId,
     creator_name: clip.creatorDisplayName,
-    duration: clip.duration,
+    duration: durationFromSeconds(clip.duration),
     embed_url: clip.embedUrl,
     game_id: clip.gameId,
     id: clip.id,
@@ -488,68 +503,4 @@ export async function* getClips({
       yield mapClip(clip)
     }
   }
-}
-
-// ---------------------------------------------------------------------------
-// Duration helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Converts a Twitch video duration string (e.g. `1h2m3s`, `45m0s`, `30s`)
- * to an ISO 8601 duration string (e.g. `PT1H2M3S`).
- *
- * @returns ISO 8601 duration, or `null` if the input is invalid
- */
-export function twitchDurationToISO8601(duration: string): string | null {
-  const match = duration.trim().match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i)
-
-  if (!match || (!match[1] && !match[2] && !match[3])) {
-    return null
-  }
-
-  const hours = match[1] ? Number.parseInt(match[1], 10) : 0
-  const minutes = match[2] ? Number.parseInt(match[2], 10) : 0
-  const seconds = match[3] ? Number.parseInt(match[3], 10) : 0
-
-  if (
-    !Number.isFinite(hours) ||
-    !Number.isFinite(minutes) ||
-    !Number.isFinite(seconds)
-  ) {
-    return null
-  }
-
-  let iso = 'PT'
-  if (hours > 0) {
-    iso += `${hours}H`
-  }
-  if (minutes > 0) {
-    iso += `${minutes}M`
-  }
-  if (seconds > 0 || iso === 'PT') {
-    iso += `${seconds}S`
-  }
-  return iso
-}
-
-/**
- * Converts a clip duration in seconds to ISO 8601 duration.
- */
-export function secondsToISO8601(seconds: number): string {
-  const whole = Math.max(0, Math.floor(seconds))
-  const h = Math.floor(whole / 3600)
-  const m = Math.floor((whole % 3600) / 60)
-  const s = whole % 60
-
-  let iso = 'PT'
-  if (h > 0) {
-    iso += `${h}H`
-  }
-  if (m > 0) {
-    iso += `${m}M`
-  }
-  if (s > 0 || iso === 'PT') {
-    iso += `${s}S`
-  }
-  return iso
 }
