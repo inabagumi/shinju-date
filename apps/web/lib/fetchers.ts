@@ -10,13 +10,19 @@ import { supabaseClient } from '@/lib/supabase'
 const DEFAULT_SEARCH_SELECT = `
   duration,
   id,
+  platform,
   published_at,
   status,
   talent:talents!inner (id, name),
   thumbnail:thumbnails (blur_data_url, height, id, path, width),
   title,
   video_kind,
-  youtube_video:youtube_videos!inner (youtube_video_id)
+  youtube_video:youtube_videos (youtube_video_id),
+  twitch_video:twitch_videos (
+    twitch_video_id,
+    type,
+    twitch_user:twitch_users (twitch_login_name)
+  )
 `
 
 export type Talent = Pick<Tables<'talents'>, 'id' | 'name'>
@@ -28,11 +34,26 @@ export type Thumbnail = Pick<
 
 export type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'id' | 'published_at' | 'status' | 'title' | 'video_kind'
+  | 'duration'
+  | 'id'
+  | 'platform'
+  | 'published_at'
+  | 'status'
+  | 'title'
+  | 'video_kind'
 > & {
   talent: Talent
   thumbnail: Thumbnail | null
-  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'>
+  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
+  twitch_video: {
+    twitch_video_id: string
+    type: Tables<'twitch_videos'>['type']
+    twitch_user: Pick<Tables<'twitch_users'>, 'twitch_login_name'> | null
+  } | null
+}
+
+function hasPlatformSource(video: Video): boolean {
+  return video.youtube_video != null || video.twitch_video != null
 }
 
 export const fetchUpcomingVideos = async (): Promise<Video[]> => {
@@ -62,7 +83,7 @@ export const fetchUpcomingVideos = async (): Promise<Video[]> => {
     })
   }
 
-  return videos
+  return videos.filter(hasPlatformSource)
 }
 
 async function getDefaultBaseTime() {
@@ -106,7 +127,7 @@ export const fetchVideos = async ({
     })
   }
 
-  return videos.filter((video) => video.youtube_video != null)
+  return videos.filter(hasPlatformSource)
 }
 
 /**
@@ -131,7 +152,7 @@ async function fetchLiveVideos(): Promise<Video[]> {
     })
   }
 
-  return liveVideos
+  return liveVideos.filter(hasPlatformSource)
 }
 
 /**
@@ -146,10 +167,11 @@ async function fetchRecentVideos(): Promise<Video[]> {
   const now = Temporal.Now.instant()
   const threeDaysAgo = now.subtract({ hours: 24 * 3 })
 
+  // Include ENDED so Twitch archives / ended live streams appear as recent content
   const { data: recentVideos, error: recentError } = await supabaseClient
     .from('videos')
     .select(DEFAULT_SEARCH_SELECT)
-    .eq('status', 'PUBLISHED')
+    .in('status', ['PUBLISHED', 'ENDED'])
     .neq('video_kind', 'short')
     .gte('published_at', toDBString(threeDaysAgo))
     .lte('published_at', toDBString(now))
@@ -162,7 +184,7 @@ async function fetchRecentVideos(): Promise<Video[]> {
     })
   }
 
-  return recentVideos
+  return recentVideos.filter(hasPlatformSource)
 }
 
 /**
@@ -193,7 +215,7 @@ async function fetchShortsVideos(): Promise<Video[]> {
     })
   }
 
-  return shortsVideos
+  return shortsVideos.filter(hasPlatformSource)
 }
 
 /**

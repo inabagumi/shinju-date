@@ -18,12 +18,18 @@ export type Video = Pick<
   | 'updated_at'
   | 'status'
   | 'duration'
+  | 'platform'
   | 'video_kind'
 > & {
   thumbnail: Pick<Tables<'thumbnails'>, 'id' | 'path' | 'blur_data_url'> | null
   clicks: number
   talent: Pick<Tables<'talents'>, 'id' | 'name'>
   youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
+  twitch_video: {
+    twitch_video_id: string
+    type: Tables<'twitch_videos'>['type']
+    twitch_user: Pick<Tables<'twitch_users'>, 'twitch_login_name'> | null
+  } | null
 }
 
 export type VideoFilters = {
@@ -32,6 +38,7 @@ export type VideoFilters = {
   visible?: boolean[]
   search?: string
   status?: Tables<'videos'>['status'][]
+  platform?: Tables<'videos'>['platform'][]
   videoKind?: Tables<'videos'>['video_kind'][]
 }
 
@@ -57,7 +64,7 @@ export async function getVideos(
   let query = supabaseClient
     .from('videos')
     .select(
-      'id, title, visible, deleted_at, published_at, updated_at, status, duration, video_kind, thumbnail:thumbnails(id, path, blur_data_url), talent:talents(id, name), youtube_video:youtube_videos(youtube_video_id)',
+      'id, title, visible, deleted_at, published_at, updated_at, status, duration, platform, video_kind, thumbnail:thumbnails(id, path, blur_data_url), talent:talents(id, name), youtube_video:youtube_videos(youtube_video_id), twitch_video:twitch_videos(twitch_video_id, type, twitch_user:twitch_users(twitch_login_name))',
       { count: 'exact' },
     )
 
@@ -70,6 +77,9 @@ export async function getVideos(
   }
   if (filters?.status && filters.status.length > 0) {
     query = query.in('status', filters.status)
+  }
+  if (filters?.platform && filters.platform.length > 0) {
+    query = query.in('platform', filters.platform)
   }
   if (filters?.videoKind && filters.videoKind.length > 0) {
     query = query.in('video_kind', filters.videoKind)
@@ -159,11 +169,13 @@ export async function getVideos(
     deleted_at: video.deleted_at,
     duration: video.duration,
     id: video.id,
+    platform: video.platform,
     published_at: video.published_at,
     status: video.status,
     talent: video.talent,
     thumbnail: video.thumbnail,
     title: video.title,
+    twitch_video: video.twitch_video,
     updated_at: video.updated_at,
     video_kind: video.video_kind,
     visible: video.visible,

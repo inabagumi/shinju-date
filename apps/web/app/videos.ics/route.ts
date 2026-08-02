@@ -19,9 +19,16 @@ export async function GET(): Promise<Response> {
         ),
         duration,
         id,
+        platform,
         published_at,
+        status,
         title,
-        youtube_video:youtube_videos!inner (youtube_video_id)
+        youtube_video:youtube_videos (youtube_video_id),
+        twitch_video:twitch_videos (
+          twitch_video_id,
+          type,
+          twitch_user:twitch_users (twitch_login_name)
+        )
       `,
     )
     .lt(

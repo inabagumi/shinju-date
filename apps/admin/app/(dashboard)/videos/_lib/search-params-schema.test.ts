@@ -6,6 +6,7 @@ describe('videoSearchParamsSchema', () => {
     const input = {
       deleted: 'false',
       page: '2',
+      platform: 'twitch',
       search: 'test video',
       sortField: 'published_at',
       sortOrder: 'asc',
@@ -19,6 +20,7 @@ describe('videoSearchParamsSchema', () => {
     expect(result).toEqual({
       deleted: [false],
       page: 2,
+      platform: ['twitch'],
       search: 'test video',
       sortField: 'published_at',
       sortOrder: 'asc',
@@ -26,6 +28,22 @@ describe('videoSearchParamsSchema', () => {
       talentId: ['201a9ee4-176f-4092-b769-ac0af8befb66'],
       visible: [true],
     })
+  })
+
+  it('should parse platform multi-select values', () => {
+    const result = videoSearchParamsSchema.parse({
+      platform: ['youtube', 'twitch'],
+    })
+
+    expect(result.platform).toEqual(['youtube', 'twitch'])
+  })
+
+  it('should ignore invalid platform values', () => {
+    const result = videoSearchParamsSchema.parse({
+      platform: ['invalid', 'youtube'],
+    })
+
+    expect(result.platform).toEqual(['youtube'])
   })
 
   it('should use default values when fields are missing', () => {

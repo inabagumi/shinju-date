@@ -1,9 +1,10 @@
+import { getVideoExternalUrl } from '@shinju-date/helpers'
 import { track as vercelTrack } from '@vercel/analytics/server'
 import type { Video } from './types'
 
 // Using type here because it needs to be compatible with Record<string, AllowedPropertyValues>
 type TrackProperties = {
-  provider: 'YouTube'
+  provider: 'YouTube' | 'Twitch'
   talent_id: string
   talent_name: string
   title: string
@@ -12,16 +13,25 @@ type TrackProperties = {
 }
 
 function generateTrackProperties(video: Video): TrackProperties {
-  if (!video.youtube_video?.youtube_video_id) {
-    throw new Error('Video must have youtube_video_id')
+  const url = getVideoExternalUrl({
+    platform: video.platform,
+    status: video.status,
+    twitchLoginName: video.twitch_video?.twitch_user?.twitch_login_name,
+    twitchVideoId: video.twitch_video?.twitch_video_id,
+    twitchVideoType: video.twitch_video?.type,
+    youtubeVideoId: video.youtube_video?.youtube_video_id,
+  })
+
+  if (!url) {
+    throw new Error('Video must have a platform-specific identifier')
   }
-  const youtubeVideoId = video.youtube_video.youtube_video_id
+
   return {
-    provider: 'YouTube',
+    provider: video.platform === 'twitch' ? 'Twitch' : 'YouTube',
     talent_id: video.talent.id,
     talent_name: video.talent.name,
     title: video.title,
-    url: `https://www.youtube.com/watch?v=${youtubeVideoId}`,
+    url,
     video_id: video.id,
   }
 }
