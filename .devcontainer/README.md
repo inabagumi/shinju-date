@@ -65,20 +65,22 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 
 **含まれる内容**:
 - `app` サービスの Dockerfile ビルド設定
-- 環境変数のロード（`env_file` による `../config/dev-secrets.env` の参照）
-- ワークスペースのボリュームマウント（`..:/workspaces/shinju-date:cached`）
-- Docker ソケットのマウント（`supabase start` のために必要）
-- `extra_hosts` によるホスト Docker へのアクセス設定
+- `privileged: true`（Docker-in-Docker でコンテナ内の dockerd を動かすために必要）
+- 環境変数のロード（`env_file` による `./config/dev-secrets.env` の参照）
+- ワークスペースのボリュームマウント（`.:/workspaces/shinju-date:cached`）
+- Supabase 接続 URL（DinD 上で公開される `127.0.0.1:54321`）
 - 依存サービスの指定（`depends_on` で `serverless-redis-http` など）
 
 **含まれない内容**:
-- Supabase サービス（Supabase CLI で管理）
+- Supabase サービス（Supabase CLI + Docker-in-Docker で管理）
 - Redis などの共有サービス（`../compose.yml` で定義）
+- ホストの Docker ソケットマウント（docker-outside-of-docker は使わない）
 
 **補足**:
 - ルートの `compose.yml` と組み合わせて使用されます（`dockerComposeFile: ["../compose.yml", "compose.override.yml"]`）
 - `../compose.yml` が Redis などの共有開発サービスを定義しています
-- ボリュームマウントの `..` は `.devcontainer/compose.override.yml` からの相対パスでプロジェクトルートを指定します
+- ボリュームマウントの `.` は、最初の compose ファイル（プロジェクトルートの `compose.yml`）からの相対パスです
+- Supabase は app コンテナ内の Docker-in-Docker で起動するため、bind mount パスがコンテナ FS 上で完結し、ホストとの path mismatch が起きません
 
 ## ファイル構成まとめ
 
@@ -155,14 +157,14 @@ devcontainer.json の変更は、**必ず Dev Container をリビルド**して�
 - VS Code: `Dev Containers: Rebuild Container`
 - またはコンテナを完全に削除して再作成
 
-### compose.yml を変更した場合
+### compose.yml / compose.override.yml を変更した場合
 
-compose.yml の変更は、**コンテナを再作成**してください：
+compose 設定の変更は、**Dev Container を再作成**してください：
 
 ```bash
-# ローカルの場合
-docker compose -f compose.yml -f .devcontainer/compose.yml down
-docker compose -f compose.yml -f .devcontainer/compose.yml up -d
+# @devcontainers/cli を使う場合
+devcontainer down --workspace-folder .
+devcontainer up --workspace-folder .
 
 # VS Code の場合
 # Dev Containers: Rebuild Container を実行
@@ -382,11 +384,17 @@ pnpm exec supabase db reset
 
 `config/dev-secrets.env`に開発用シークレットが定義されています。Supabase CLI のデフォルトの JWT シークレットに対応したAPIキーが含まれています。
 
+## Docker-in-Docker と Redis の関係
+
+- **Supabase**: app コンテナ内の Docker-in-Docker（`docker-in-docker` feature）上で `supabase start` により起動します。ポートは app コンテナの `localhost`（`127.0.0.1`）に公開されます。
+- **Redis**: 外側の Docker Compose（`compose.yml`）が app と並べて起動します。app からはサービス名 `serverless-redis-http` で到達します。
+- Dev Container 内で `docker ps` を実行すると **DinD 上のコンテナ（主に Supabase）だけ**が見えます。外側の Redis コンテナはホスト側の Docker に属するため、ここでは表示されません。Redis の生死確認は Dev Container 起動時の `depends_on` と、`curl http://serverless-redis-http/` などで行ってください。
+
 ## 注意事項
 
 - **機密情報**: `config/dev-secrets.env`には開発用の固定値のみを使用してください。
 - **本番環境**: この設定は開発環境専用です。本番環境では使用しないでください。
-- **Docker Socket**: Dev Container の app サービスはホストの Docker ソケットをマウントして `supabase start` を実行します。
+- **Docker-in-Docker**: app サービスは `privileged: true` でコンテナ内に独立した Docker daemon を起動します。ホストの `/var/run/docker.sock` はマウントしません。
 
 ## 参考資料
 

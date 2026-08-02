@@ -112,18 +112,20 @@ fi
 cd "$PROJECT_ROOT"
 echo -e "${YELLOW}Checking Supabase status...${NC}"
 
-# Allow callers to override DB URL (e.g. from Dev Container where localhost != host)
+# Allow callers to override DB URL (e.g. CI or custom local setups)
 if [ -n "${SUPABASE_DB_URL:-}" ]; then
     DB_URL="$SUPABASE_DB_URL"
     echo -e "${GREEN}Using SUPABASE_DB_URL override${NC}"
 else
-    # Capture supabase status output once to avoid duplicate invocations and
-    # to prevent set -euo pipefail from exiting early if the command fails.
-    SUPABASE_STATUS_OUTPUT=$(pnpm exec supabase status 2>/dev/null || true)
+    # Prefer machine-readable status (-o env). Pretty table output no longer
+    # includes a stable "DB URL:" line across Supabase CLI versions.
+    # Dev Container uses Docker-in-Docker, so 127.0.0.1 from status is correct.
+    SUPABASE_STATUS_ENV=$(pnpm exec supabase status -o env 2>/dev/null || true)
 
-    if echo "$SUPABASE_STATUS_OUTPUT" | grep -q "DB URL:"; then
+    if echo "$SUPABASE_STATUS_ENV" | grep -qE '^DB_URL='; then
         echo -e "${GREEN}Supabase is running via CLI${NC}"
-        DB_URL=$(echo "$SUPABASE_STATUS_OUTPUT" | grep "DB URL:" | awk '{print $NF}')
+        # Values are quoted: DB_URL="postgresql://..."
+        DB_URL=$(echo "$SUPABASE_STATUS_ENV" | sed -n 's/^DB_URL="\(.*\)"/\1/p')
     fi
 
     if [ -z "${DB_URL:-}" ]; then
@@ -131,14 +133,6 @@ else
         echo -e "${YELLOW}Please start Supabase first: pnpm exec supabase start${NC}"
         echo -e "${YELLOW}Or set SUPABASE_DB_URL to connect directly.${NC}"
         exit 1
-    fi
-
-    # Inside a Dev Container the Supabase ports are published on the Docker host,
-    # not on localhost inside the container. Replace the host portion so psql can
-    # reach the database.
-    if [ "${RUNNING_IN_DEVCONTAINER:-}" = "true" ] || [ -n "${REMOTE_CONTAINERS:-}" ] || [ -n "${CODESPACES:-}" ]; then
-        DB_URL="${DB_URL//localhost/host.docker.internal}"
-        DB_URL="${DB_URL//127.0.0.1/host.docker.internal}"
     fi
 fi
 
