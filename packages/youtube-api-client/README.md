@@ -50,6 +50,29 @@ for await (const channel of getChannels({ ids: channelIds })) {
 }
 ```
 
+### Resolve channel from user input (ID, handle, or URL)
+
+```typescript
+import {
+  parseYouTubeChannelIdentifier,
+  resolveYouTubeChannel,
+  getChannelByHandle,
+} from '@shinju-date/youtube-api-client'
+
+const identifier = parseYouTubeChannelIdentifier(
+  'https://www.youtube.com/@example',
+)
+// => { kind: 'handle', handle: 'example' }
+
+if (identifier) {
+  const channel = await resolveYouTubeChannel(identifier)
+  console.log(channel?.id, channel?.snippet.title, channel?.snippet.customUrl)
+}
+
+// Or look up by handle directly
+const byHandle = await getChannelByHandle({ handle: '@example' })
+```
+
 ### Get YouTube videos
 
 ```typescript

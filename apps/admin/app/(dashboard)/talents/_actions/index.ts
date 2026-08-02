@@ -3,6 +3,10 @@
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
+import {
+  parseYouTubeChannelIdentifier,
+  resolveYouTubeChannel,
+} from '@shinju-date/youtube-api-client'
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import * as z from 'zod'
@@ -38,13 +42,69 @@ export async function createTalentAction(
   const supabaseClient = await createSupabaseServerClient()
 
   const name = formData.get('name') as string
-  const youtubeChannelId = formData.get('youtube_channel_id') as string
+  const rawChannelInput = (formData.get('youtube_channel_id') as string) ?? ''
 
   if (!name || name.trim() === '') {
     return {
       errors: {
         name: ['タレント名を入力してください。'],
       },
+    }
+  }
+
+  // Resolve optional YouTube channel before insert so we fail fast on bad input
+  let resolvedChannel: {
+    id: string
+    name: string
+    youtubeHandle: string | null
+  } | null = null
+
+  if (rawChannelInput.trim() !== '') {
+    const identifier = parseYouTubeChannelIdentifier(rawChannelInput)
+    if (!identifier) {
+      return {
+        errors: {
+          youtube_channel_id: [
+            '有効なチャンネルID（UC...）、ハンドル（@name）、またはYouTube URLを入力してください。',
+          ],
+        },
+      }
+    }
+
+    try {
+      const youtubeChannel = await resolveYouTubeChannel(identifier)
+      if (!youtubeChannel) {
+        return {
+          errors: {
+            youtube_channel_id: [
+              'YouTubeでチャンネルが見つかりませんでした。入力内容を確認してください。',
+            ],
+          },
+        }
+      }
+      resolvedChannel = {
+        id: youtubeChannel.id,
+        name: youtubeChannel.snippet.title,
+        youtubeHandle: youtubeChannel.snippet.customUrl || null,
+      }
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('API Key')) {
+        return {
+          errors: {
+            generic: [
+              'YouTube APIキーが設定されていません。管理者に連絡してください。',
+            ],
+          },
+        }
+      }
+      logger.error('YouTube APIの呼び出しに失敗しました', { error })
+      return {
+        errors: {
+          generic: [
+            'YouTube APIへの接続に失敗しました。しばらくしてから再度お試しください。',
+          ],
+        },
+      }
     }
   }
 
@@ -61,22 +121,20 @@ export async function createTalentAction(
       throw error
     }
 
-    // Write to youtube_channels table if talent_id is provided
-    // Note: youtube_handle is null for manually created talents initially
-    // It will be populated when the talent sync runs
-    if (youtubeChannelId && youtubeChannelId.trim() !== '') {
+    if (resolvedChannel) {
       const { error: youtubeError } = await supabaseClient
         .from('youtube_channels')
         .insert({
+          name: resolvedChannel.name,
           talent_id: newTalent.id,
-          youtube_channel_id: youtubeChannelId.trim(),
-          youtube_handle: null,
+          youtube_channel_id: resolvedChannel.id,
+          youtube_handle: resolvedChannel.youtubeHandle,
         })
 
       if (youtubeError) {
         logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
           error: youtubeError,
-          youtube_channel_id: youtubeChannelId.trim(),
+          youtube_channel_id: resolvedChannel.id,
         })
       }
     }
@@ -93,7 +151,7 @@ export async function createTalentAction(
     logger.error('タレントの追加に失敗しました', {
       error,
       name: name.trim(),
-      youtube_channel_id: youtubeChannelId?.trim(),
+      youtube_channel_id: resolvedChannel?.id,
     })
     return {
       errors: {

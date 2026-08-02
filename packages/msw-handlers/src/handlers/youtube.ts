@@ -355,6 +355,8 @@ const mockYouTubeVideos: Record<string, any> = {
  */
 function parseYouTubeQuery(url: URL) {
   const id = url.searchParams.get('id')
+  const forHandle = url.searchParams.get('forHandle')
+  const forUsername = url.searchParams.get('forUsername')
   const playlistId = url.searchParams.get('playlistId')
   const part = url.searchParams.get('part')?.split(',') || []
   const maxResults = Number.parseInt(
@@ -363,28 +365,60 @@ function parseYouTubeQuery(url: URL) {
   )
   const pageToken = url.searchParams.get('pageToken')
 
-  return { id, maxResults, pageToken, part, playlistId }
+  return {
+    forHandle,
+    forUsername,
+    id,
+    maxResults,
+    pageToken,
+    part,
+    playlistId,
+  }
+}
+
+function normalizeHandle(handle: string): string {
+  return handle.startsWith('@')
+    ? handle.slice(1).toLowerCase()
+    : handle.toLowerCase()
 }
 
 export const youtubeHandlers = [
   // YouTube Data API - channels.list
   http.get('*/youtube/v3/channels', ({ request }) => {
     const url = new URL(request.url)
-    const { id } = parseYouTubeQuery(url)
+    const { id, forHandle, forUsername } = parseYouTubeQuery(url)
 
-    if (!id) {
+    let items: typeof mockYouTubeChannels = []
+
+    if (id) {
+      const channelIds = id.split(',')
+      items = channelIds
+        .map((channelId) =>
+          mockYouTubeChannels.find(
+            (channel) => channel.id === channelId.trim(),
+          ),
+        )
+        .filter(Boolean)
+    } else if (forHandle || forUsername) {
+      const handleKey = normalizeHandle(forHandle || forUsername || '')
+      items = mockYouTubeChannels.filter((channel) => {
+        const customUrl = channel.snippet?.customUrl as string | undefined
+        if (!customUrl) {
+          return false
+        }
+        return normalizeHandle(customUrl) === handleKey
+      })
+    } else {
       return HttpResponse.json(
-        { error: { code: 400, message: 'Required parameter: id' } },
+        {
+          error: {
+            code: 400,
+            message: 'Required parameter: id, forHandle, or forUsername',
+          },
+        },
         { status: 400 },
       )
     }
-
-    const channelIds = id.split(',')
-    const items = channelIds
-      .map((channelId) =>
-        mockYouTubeChannels.find((channel) => channel.id === channelId.trim()),
-      )
-      .filter(Boolean)
 
     return HttpResponse.json({
       items,
