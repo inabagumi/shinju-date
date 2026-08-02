@@ -44,9 +44,9 @@ export const videos = new Collection({
       .nullable(),
     duration: z.string(),
     id: z.string().uuid(),
-    platform: z.enum(['YOUTUBE', 'TWITCH']).nullable(),
+    platform: z.enum(['youtube', 'twitch']),
     published_at: z.string(),
-    status: z.enum(['PUBLISHED', 'LIVE', 'ENDED', 'SCHEDULED']),
+    status: z.enum(['PUBLISHED', 'LIVE', 'ENDED', 'UPCOMING']),
     talent_id: z.string().uuid(),
     thumbnail_id: z.string().uuid().nullable(),
     title: z.string(),
@@ -186,7 +186,7 @@ export async function seedCollections() {
         'PUBLISHED',
         'LIVE',
         'ENDED',
-        'SCHEDULED',
+        'UPCOMING',
       ] as const)
 
       // Make some videos shorts (30% chance) using weightedArrayElement for clarity
@@ -204,7 +204,7 @@ export async function seedCollections() {
             ? `PT${faker.number.int({ max: 60, min: 15 })}S` // Shorts are 15-60 seconds
             : `PT${faker.number.int({ max: 3, min: 1 })}H${faker.number.int({ max: 59, min: 0 })}M${faker.number.int({ max: 59, min: 0 })}S`,
         id: faker.string.uuid(),
-        platform: 'YOUTUBE',
+        platform: 'youtube',
         published_at: faker.date.past({ years: 1 }).toISOString(),
         status,
         talent_id: talent.id,
@@ -243,7 +243,7 @@ export async function seedCollections() {
         deleted_reason: null,
         duration: `PT${faker.number.int({ max: 60, min: 15 })}S`,
         id: faker.string.uuid(),
-        platform: 'YOUTUBE',
+        platform: 'youtube',
         published_at: faker.date.recent({ days: 2 }).toISOString(),
         status: 'PUBLISHED',
         talent_id: talent.id,

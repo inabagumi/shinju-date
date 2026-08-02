@@ -30,37 +30,39 @@ export interface GetVideoExternalUrlParams {
 export function getVideoExternalUrl(
   params: GetVideoExternalUrlParams,
 ): string | null {
-  if (params.platform === 'youtube') {
-    if (!params.youtubeVideoId) {
-      return null
+  // Only `twitch` uses the Twitch branch; anything else (including missing /
+  // unexpected values) falls back to YouTube when a YouTube id is present.
+  if (params.platform === 'twitch') {
+    const isLiveOrUpcoming =
+      params.status === 'LIVE' || params.status === 'UPCOMING'
+
+    if (isLiveOrUpcoming && params.twitchLoginName) {
+      return `https://www.twitch.tv/${encodeURIComponent(params.twitchLoginName)}`
     }
 
-    return `https://www.youtube.com/watch?v=${encodeURIComponent(
-      params.youtubeVideoId,
-    )}`
+    if (params.twitchVideoType === 'clip' && params.twitchVideoId) {
+      return `https://clips.twitch.tv/${encodeURIComponent(params.twitchVideoId)}`
+    }
+
+    if (params.twitchVideoId) {
+      return `https://www.twitch.tv/videos/${encodeURIComponent(
+        params.twitchVideoId,
+      )}`
+    }
+
+    // Last resort: channel page when we only have a login name
+    if (params.twitchLoginName) {
+      return `https://www.twitch.tv/${encodeURIComponent(params.twitchLoginName)}`
+    }
+
+    return null
   }
 
-  const isLiveOrUpcoming =
-    params.status === 'LIVE' || params.status === 'UPCOMING'
-
-  if (isLiveOrUpcoming && params.twitchLoginName) {
-    return `https://www.twitch.tv/${encodeURIComponent(params.twitchLoginName)}`
+  if (!params.youtubeVideoId) {
+    return null
   }
 
-  if (params.twitchVideoType === 'clip' && params.twitchVideoId) {
-    return `https://clips.twitch.tv/${encodeURIComponent(params.twitchVideoId)}`
-  }
-
-  if (params.twitchVideoId) {
-    return `https://www.twitch.tv/videos/${encodeURIComponent(
-      params.twitchVideoId,
-    )}`
-  }
-
-  // Last resort: channel page when we only have a login name
-  if (params.twitchLoginName) {
-    return `https://www.twitch.tv/${encodeURIComponent(params.twitchLoginName)}`
-  }
-
-  return null
+  return `https://www.youtube.com/watch?v=${encodeURIComponent(
+    params.youtubeVideoId,
+  )}`
 }
