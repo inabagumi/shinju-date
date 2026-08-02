@@ -11,6 +11,7 @@
     "@shinju-date/retryable-fetch": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
     "@shinju-date/twitch-api-client": "workspace:*",
+    "@shinju-date/twitch-scraper": "workspace:*",
     "@shinju-date/web-cache": "workspace:*",
     "@shinju-date/youtube-api-client": "workspace:*",
     "@shinju-date/youtube-scraper": "workspace:*",

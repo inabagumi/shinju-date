@@ -2,23 +2,24 @@ import * as Sentry from '@sentry/nextjs'
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
-import { getVideosByUser } from '@shinju-date/twitch-api-client'
+import { TwitchScraper } from '@shinju-date/twitch-scraper'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
-import { after } from 'next/server'
+import { after, type NextRequest } from 'next/server'
 import { Temporal } from 'temporal-polyfill'
 import type { Video } from '@/lib/database'
+import { parseProvider } from '@/lib/provider'
 import { videosUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
-import { MONITOR_SLUG } from './_lib/constants'
+import { getMonitorSlug } from './_lib/constants'
 import { saveTwitchVideos } from './_lib/save-twitch-videos'
 import { saveScrapedVideos } from './_lib/save-videos'
 
 export const maxDuration = 120
 
-export async function POST(request: Request): Promise<Response> {
+export async function POST(request: NextRequest): Promise<Response> {
   const cronSecure = process.env['CRON_SECRET']
   if (
     cronSecure &&
@@ -33,7 +34,17 @@ export async function POST(request: Request): Promise<Response> {
     })
   }
 
-  const { success } = await ratelimit.limit('videos:update')
+  const providerResult = parseProvider(
+    request.nextUrl.searchParams.get('provider'),
+  )
+  if (!providerResult.success) {
+    return createErrorResponse(providerResult.error, {
+      status: 400,
+    })
+  }
+  const { provider } = providerResult
+
+  const { success } = await ratelimit.limit(`videos:update:${provider}`)
 
   if (!success) {
     Sentry.logger.warn('There has been no interval since the last run.')
@@ -46,131 +57,170 @@ export async function POST(request: Request): Promise<Response> {
     )
   }
 
+  const monitorSlug = getMonitorSlug(provider)
   const checkInId = Sentry.captureCheckIn(
     {
-      monitorSlug: MONITOR_SLUG,
+      monitorSlug,
       status: 'in_progress',
     },
     {
       schedule: {
         type: 'crontab',
-        value: '1/10 * * * *',
+        value: provider === 'twitch' ? '3/5 * * * *' : '1/5 * * * *',
       },
       timezone: 'Etc/UTC',
     },
   )
 
   const currentDateTime = Temporal.Now.instant()
-
-  // High-frequency new-video scrape: active talents only.
-  // Retired talents are covered by low-frequency videos/check?mode=all.
-  const { data: savedTalents, error } = await supabaseClient
-    .from('talents')
-    .select(
-      'id, youtube_channels(id, youtube_channel_id), twitch_users(id, twitch_user_id)',
-    )
-    .eq('status', 'active')
-    .is('deleted_at', null)
-
-  if (error) {
-    after(async () => {
-      Sentry.captureException(error)
-
-      Sentry.captureCheckIn({
-        checkInId,
-        monitorSlug: MONITOR_SLUG,
-        status: 'error',
-      })
-
-      await Sentry.flush(10_000)
-    })
-
-    return createErrorResponse(error.message, {
-      status: 500,
-    })
-  }
-
-  // Map channel IDs to talent information for callback processing
-  // Now handles multiple channels per talent
-  const channelToTalentMap = new Map<
-    string,
-    {
-      id: string
-      youtubeChannelId: string
-    }
-  >()
-
-  for (const savedTalent of savedTalents) {
-    for (const ytChannel of savedTalent.youtube_channels ?? []) {
-      channelToTalentMap.set(ytChannel.youtube_channel_id, {
-        id: savedTalent.id,
-        youtubeChannelId: ytChannel.id,
-      })
-    }
-  }
-
-  const channelIDs = Array.from(channelToTalentMap.keys())
-
   const videos: Video[] = []
 
-  // --- YouTube: new video discovery ---
-  if (channelIDs.length > 0) {
-    await using scraper = new YouTubeScraper({ concurrency: 1, youtubeClient })
+  if (provider === 'youtube') {
+    // High-frequency new-video scrape: active talents only.
+    const { data: savedTalents, error } = await supabaseClient
+      .from('talents')
+      .select('id, youtube_channels!inner(id, youtube_channel_id)')
+      .eq('status', 'active')
+      .is('deleted_at', null)
 
-    await scraper.scrapeNewVideos(
-      { channelIds: channelIDs },
-      async (channelId, scrapedVideos) => {
-        const talentInfo = channelToTalentMap.get(channelId)
-        if (!talentInfo) {
-          logger.warn('タレント情報が見つかりませんでした', {
-            channelId,
-          })
-          return
-        }
-
-        try {
-          const savedResults = await saveScrapedVideos({
-            currentDateTime,
-            originalVideos: scrapedVideos,
-            supabaseClient,
-            talentId: talentInfo.id,
-            youtubeChannelId: talentInfo.youtubeChannelId,
-          })
-          videos.push(...savedResults)
-        } catch (err) {
-          Sentry.captureException(err)
-        }
-      },
-    )
-  }
-
-  // --- Twitch: new VOD (archive) discovery ---
-  // First page of archives per user (newest first) — enough for frequent discovery.
-  for (const savedTalent of savedTalents) {
-    for (const twitchUser of savedTalent.twitch_users ?? []) {
-      try {
-        const twitchVideos = await Array.fromAsync(
-          getVideosByUser({
-            type: 'archive',
-            userId: twitchUser.twitch_user_id,
-          }),
-        )
-
-        if (twitchVideos.length === 0) {
-          continue
-        }
-
-        const savedResults = await saveTwitchVideos({
-          currentDateTime,
-          originalVideos: twitchVideos,
-          supabaseClient,
-          talentId: savedTalent.id,
-          twitchUserId: twitchUser.id,
+    if (error) {
+      after(async () => {
+        Sentry.captureException(error)
+        Sentry.captureCheckIn({
+          checkInId,
+          monitorSlug,
+          status: 'error',
         })
-        videos.push(...savedResults)
-      } catch (err) {
-        Sentry.captureException(err)
+        await Sentry.flush(10_000)
+      })
+
+      return createErrorResponse(error.message, {
+        status: 500,
+      })
+    }
+
+    const channelToTalentMap = new Map<
+      string,
+      {
+        id: string
+        youtubeChannelId: string
       }
+    >()
+
+    for (const savedTalent of savedTalents) {
+      for (const ytChannel of savedTalent.youtube_channels) {
+        channelToTalentMap.set(ytChannel.youtube_channel_id, {
+          id: savedTalent.id,
+          youtubeChannelId: ytChannel.id,
+        })
+      }
+    }
+
+    const channelIDs = Array.from(channelToTalentMap.keys())
+
+    if (channelIDs.length > 0) {
+      await using scraper = new YouTubeScraper({
+        concurrency: 1,
+        youtubeClient,
+      })
+
+      await scraper.scrapeNewVideos(
+        { channelIds: channelIDs },
+        async (channelId, scrapedVideos) => {
+          const talentInfo = channelToTalentMap.get(channelId)
+          if (!talentInfo) {
+            logger.warn('タレント情報が見つかりませんでした', {
+              channelId,
+            })
+            return
+          }
+
+          try {
+            const savedResults = await saveScrapedVideos({
+              currentDateTime,
+              originalVideos: scrapedVideos,
+              supabaseClient,
+              talentId: talentInfo.id,
+              youtubeChannelId: talentInfo.youtubeChannelId,
+            })
+            videos.push(...savedResults)
+          } catch (err) {
+            Sentry.captureException(err)
+          }
+        },
+      )
+    }
+  } else {
+    const { data: savedTalents, error } = await supabaseClient
+      .from('talents')
+      .select('id, twitch_users!inner(id, twitch_user_id)')
+      .eq('status', 'active')
+      .is('deleted_at', null)
+
+    if (error) {
+      after(async () => {
+        Sentry.captureException(error)
+        Sentry.captureCheckIn({
+          checkInId,
+          monitorSlug,
+          status: 'error',
+        })
+        await Sentry.flush(10_000)
+      })
+
+      return createErrorResponse(error.message, {
+        status: 500,
+      })
+    }
+
+    const userToTalentMap = new Map<
+      string,
+      {
+        talentId: string
+        twitchUserRowId: string
+      }
+    >()
+
+    for (const savedTalent of savedTalents) {
+      for (const twitchUser of savedTalent.twitch_users) {
+        userToTalentMap.set(twitchUser.twitch_user_id, {
+          talentId: savedTalent.id,
+          twitchUserRowId: twitchUser.id,
+        })
+      }
+    }
+
+    const helixUserIds = Array.from(userToTalentMap.keys())
+
+    if (helixUserIds.length > 0) {
+      await using scraper = new TwitchScraper({ concurrency: 2 })
+
+      // First page of archives per user — enough for frequent discovery.
+      await scraper.scrapeNewVideos(
+        { type: 'archive', userIds: helixUserIds },
+        async (helixUserId, scrapedVideos) => {
+          const talentInfo = userToTalentMap.get(helixUserId)
+          if (!talentInfo) {
+            logger.warn('タレント情報が見つかりませんでした', {
+              twitchUserId: helixUserId,
+            })
+            return
+          }
+
+          try {
+            const savedResults = await saveTwitchVideos({
+              currentDateTime,
+              originalVideos: scrapedVideos,
+              supabaseClient,
+              talentId: talentInfo.talentId,
+              twitchUserId: talentInfo.twitchUserRowId,
+            })
+            videos.push(...savedResults)
+          } catch (err) {
+            Sentry.captureException(err)
+          }
+        },
+      )
     }
   }
 
@@ -184,6 +234,7 @@ export async function POST(request: Request): Promise<Response> {
       Sentry.logger.info('The video has been saved.', {
         duration: video.duration,
         id: platformVideoId,
+        provider,
         publishedAt: publishedAt.toString(),
         title: video.title,
       })
@@ -193,7 +244,7 @@ export async function POST(request: Request): Promise<Response> {
       signal: request.signal,
     })
   } else {
-    Sentry.logger.info('No updated channels existed.')
+    Sentry.logger.info('No updated channels existed.', { provider })
   }
 
   // Update last sync timestamp in Redis
@@ -202,7 +253,7 @@ export async function POST(request: Request): Promise<Response> {
   after(async () => {
     Sentry.captureCheckIn({
       checkInId,
-      monitorSlug: MONITOR_SLUG,
+      monitorSlug,
       status: 'ok',
     })
 

@@ -358,3 +358,76 @@ export async function processTwitchVideosForCheck({
     videoIdsToDelete.length > 0
   )
 }
+
+/**
+ * Soft-delete Twitch videos/clips that Helix reports as unavailable.
+ * Used by mode=all (parity with YouTube scrapeVideosAvailability path).
+ */
+export async function processTwitchAvailability({
+  currentDateTime,
+  logger,
+  results,
+  savedVideos,
+  supabaseClient,
+}: {
+  currentDateTime: Temporal.Instant
+  logger: {
+    info: (message: string, attributes?: Record<string, unknown>) => void
+  }
+  results: Array<{ id: string; isAvailable: boolean }>
+  savedVideos: SavedTwitchVideo[]
+  supabaseClient: TypedSupabaseClient
+}): Promise<boolean> {
+  const videoIdsToDelete: string[] = []
+  const thumbnailIdsToDelete: string[] = []
+
+  for (const result of results) {
+    if (result.isAvailable) {
+      continue
+    }
+
+    const savedVideo = savedVideos.find(
+      (v) => v.twitch_video.twitch_video_id === result.id,
+    )
+    if (!savedVideo) {
+      continue
+    }
+
+    videoIdsToDelete.push(savedVideo.id)
+
+    if (savedVideo.thumbnail) {
+      thumbnailIdsToDelete.push(savedVideo.thumbnail.id)
+    }
+
+    logger.info('Twitch動画を削除しました', {
+      videoId: result.id,
+    })
+  }
+
+  if (videoIdsToDelete.length === 0) {
+    return false
+  }
+
+  await Promise.all([
+    softDeleteRows({
+      currentDateTime,
+      ids: videoIdsToDelete,
+      supabaseClient,
+      table: 'videos',
+    }),
+    thumbnailIdsToDelete.length > 0
+      ? softDeleteRows({
+          currentDateTime,
+          ids: thumbnailIdsToDelete,
+          supabaseClient,
+          table: 'thumbnails',
+        })
+      : Promise.resolve(),
+  ])
+
+  logger.info('Twitch動画が削除されました', {
+    count: videoIdsToDelete.length,
+  })
+
+  return true
+}
