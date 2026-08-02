@@ -108,6 +108,7 @@ export type Database = {
           deleted_at: string | null
           id: string
           name: string
+          status: Database['public']['Enums']['talent_status']
           theme_color: string | null
           updated_at: string
         }
@@ -116,6 +117,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           name: string
+          status?: Database['public']['Enums']['talent_status']
           theme_color?: string | null
           updated_at?: string
         }
@@ -124,6 +126,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           name?: string
+          status?: Database['public']['Enums']['talent_status']
           theme_color?: string | null
           updated_at?: string
         }
@@ -488,12 +491,16 @@ export type Database = {
         | 'YOUTUBE_CHANNEL_CREATE'
         | 'YOUTUBE_CHANNEL_DELETE'
         | 'VIDEO_RESTORE'
+        | 'CHANNEL_RESTORE'
+        | 'CHANNEL_RETIRE'
+        | 'CHANNEL_ACTIVATE'
       feature_request_status:
         | 'pending'
         | 'in_progress'
         | 'resolved'
         | 'rejected'
       platform_type: 'youtube' | 'twitch'
+      talent_status: 'active' | 'retired'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
       video_kind: 'standard' | 'short'
       video_status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
@@ -648,6 +655,9 @@ export const Constants = {
         'YOUTUBE_CHANNEL_CREATE',
         'YOUTUBE_CHANNEL_DELETE',
         'VIDEO_RESTORE',
+        'CHANNEL_RESTORE',
+        'CHANNEL_RETIRE',
+        'CHANNEL_ACTIVATE',
       ],
       feature_request_status: [
         'pending',
@@ -656,6 +666,7 @@ export const Constants = {
         'rejected',
       ],
       platform_type: ['youtube', 'twitch'],
+      talent_status: ['active', 'retired'],
       twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],
       video_kind: ['standard', 'short'],
       video_status: ['UPCOMING', 'LIVE', 'ENDED', 'PUBLISHED'],

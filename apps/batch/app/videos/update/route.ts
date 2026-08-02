@@ -60,9 +60,12 @@ export async function POST(request: Request): Promise<Response> {
 
   const currentDateTime = Temporal.Now.instant()
 
+  // High-frequency new-video scrape: active talents only.
+  // Retired talents are covered by low-frequency videos/check?mode=all.
   const { data: savedTalents, error } = await supabaseClient
     .from('talents')
     .select('id, youtube_channels!inner(id, youtube_channel_id)')
+    .eq('status', 'active')
     .is('deleted_at', null)
 
   if (error) {

@@ -54,6 +54,8 @@ export async function POST(request: Request): Promise<Response> {
     },
   )
 
+  // Include active and retired talents (deleted are excluded).
+  // Retired talents still get channel metadata updates at this moderate cadence.
   const { data: talents, error } = await supabaseClient
     .from('talents')
     .select('id, name, youtube_channels(id, name, youtube_channel_id)')

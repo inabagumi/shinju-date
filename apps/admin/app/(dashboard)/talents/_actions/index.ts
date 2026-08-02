@@ -237,6 +237,7 @@ export async function deleteTalentAction(id: string): Promise<{
     })
 
     revalidatePath('/talents')
+    revalidatePath(`/talents/${id}`)
     await revalidateTags(['talents', 'videos'])
     return { success: true }
   } catch (error) {
@@ -246,6 +247,176 @@ export async function deleteTalentAction(id: string): Promise<{
         error instanceof Error
           ? error.message
           : 'タレントの削除に失敗しました。',
+      success: false,
+    }
+  }
+}
+
+export async function restoreTalentAction(id: string): Promise<{
+  success: boolean
+  error?: string
+}> {
+  const supabaseClient = await createSupabaseServerClient()
+
+  if (!id) {
+    return { error: 'IDが指定されていません。', success: false }
+  }
+
+  try {
+    const now = Temporal.Now.instant()
+
+    const { data: talent, error } = await supabaseClient
+      .from('talents')
+      .update({
+        deleted_at: null,
+        updated_at: toDBString(now),
+      })
+      .eq('id', id)
+      .not('deleted_at', 'is', null)
+      .select('name')
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        logger.warn('復活対象のタレントが見つかりませんでした', { id })
+        return {
+          error:
+            '指定されたタレントが見つかりません。既に復活しているか、存在しないIDが指定されています。',
+          success: false,
+        }
+      }
+      throw error
+    }
+
+    await createAuditLog('CHANNEL_RESTORE', 'channels', id, {
+      entityName: talent.name,
+    })
+
+    revalidatePath('/talents')
+    revalidatePath(`/talents/${id}`)
+    await revalidateTags(['talents', 'videos'])
+    return { success: true }
+  } catch (error) {
+    logger.error('タレントの復活に失敗しました', { error, id })
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : 'タレントの復活に失敗しました。',
+      success: false,
+    }
+  }
+}
+
+export async function retireTalentAction(id: string): Promise<{
+  success: boolean
+  error?: string
+}> {
+  const supabaseClient = await createSupabaseServerClient()
+
+  if (!id) {
+    return { error: 'IDが指定されていません。', success: false }
+  }
+
+  try {
+    const now = Temporal.Now.instant()
+
+    const { data: talent, error } = await supabaseClient
+      .from('talents')
+      .update({
+        status: 'retired',
+        updated_at: toDBString(now),
+      })
+      .eq('id', id)
+      .eq('status', 'active')
+      .is('deleted_at', null)
+      .select('name')
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        logger.warn('引退対象のタレントが見つかりませんでした', { id })
+        return {
+          error:
+            '指定されたタレントが見つかりません。既に引退・削除されているか、存在しないIDが指定されています。',
+          success: false,
+        }
+      }
+      throw error
+    }
+
+    await createAuditLog('CHANNEL_RETIRE', 'channels', id, {
+      entityName: talent.name,
+    })
+
+    revalidatePath('/talents')
+    revalidatePath(`/talents/${id}`)
+    await revalidateTags(['talents', 'videos'])
+    return { success: true }
+  } catch (error) {
+    logger.error('タレントの引退に失敗しました', { error, id })
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : 'タレントの引退に失敗しました。',
+      success: false,
+    }
+  }
+}
+
+export async function activateTalentAction(id: string): Promise<{
+  success: boolean
+  error?: string
+}> {
+  const supabaseClient = await createSupabaseServerClient()
+
+  if (!id) {
+    return { error: 'IDが指定されていません。', success: false }
+  }
+
+  try {
+    const now = Temporal.Now.instant()
+
+    const { data: talent, error } = await supabaseClient
+      .from('talents')
+      .update({
+        status: 'active',
+        updated_at: toDBString(now),
+      })
+      .eq('id', id)
+      .eq('status', 'retired')
+      .is('deleted_at', null)
+      .select('name')
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        logger.warn('アクティブ化対象のタレントが見つかりませんでした', { id })
+        return {
+          error:
+            '指定されたタレントが見つかりません。既にアクティブ・削除されているか、存在しないIDが指定されています。',
+          success: false,
+        }
+      }
+      throw error
+    }
+
+    await createAuditLog('CHANNEL_ACTIVATE', 'channels', id, {
+      entityName: talent.name,
+    })
+
+    revalidatePath('/talents')
+    revalidatePath(`/talents/${id}`)
+    await revalidateTags(['talents', 'videos'])
+    return { success: true }
+  } catch (error) {
+    logger.error('タレントのアクティブ化に失敗しました', { error, id })
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : 'タレントのアクティブ化に失敗しました。',
       success: false,
     }
   }

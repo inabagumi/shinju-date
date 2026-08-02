@@ -6,18 +6,44 @@ export type GetSavedVideos = {
   supabaseClient: TypedSupabaseClient
 }
 
+const VIDEO_SELECT =
+  'id, duration, published_at, status, title, video_kind, thumbnail:thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id), talent:talents!inner (id, status, deleted_at)'
+
+function toSavedVideo(row: {
+  id: string
+  duration: SavedVideo['duration']
+  published_at: string
+  status: SavedVideo['status']
+  title: string
+  thumbnail: { id: string } | null
+  youtube_video: { youtube_video_id: string }
+}): SavedVideo {
+  return {
+    duration: row.duration,
+    id: row.id,
+    published_at: row.published_at,
+    status: row.status,
+    thumbnail: row.thumbnail,
+    title: row.title,
+    youtube_video: row.youtube_video,
+  }
+}
+
 export async function* getSavedVideos({
   mode,
   supabaseClient,
 }: GetSavedVideos): AsyncGenerator<SavedVideo, void, undefined> {
-  // For 'all' mode, fetch all videos in batches
-  // For 'recent' mode, fetch only the latest 100 videos
-  // For 'default' mode (no parameter), fetch only UPCOMING/LIVE videos
+  // High-frequency modes (default/recent): active talents only.
+  // mode=all: active + retired (deleted talents excluded) for low-frequency deletion checks.
   if (mode === 'all') {
-    const { count, error } = await supabaseClient.from('videos').select('*', {
-      count: 'exact',
-      head: true,
-    })
+    const { count, error } = await supabaseClient
+      .from('videos')
+      .select('id, talent:talents!inner (id)', {
+        count: 'exact',
+        head: true,
+      })
+      .is('deleted_at', null)
+      .is('talent.deleted_at', null)
 
     if (error) {
       throw new TypeError(error.message, {
@@ -29,33 +55,33 @@ export async function* getSavedVideos({
 
     const limit = 2000
     for (let i = 0; i < count; i += limit) {
-      const { data: savedVideos, error } = await supabaseClient
+      const { data: savedVideos, error: pageError } = await supabaseClient
         .from('videos')
-        .select(
-          'id, duration, published_at, status, title, video_kind, thumbnail:thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
-        )
+        .select(VIDEO_SELECT)
         .is('deleted_at', null)
+        .is('talent.deleted_at', null)
         .order('published_at', {
           ascending: false,
         })
         .range(i, i + (limit - 1))
 
-      if (error) {
-        throw new TypeError(error.message, {
-          cause: error,
+      if (pageError) {
+        throw new TypeError(pageError.message, {
+          cause: pageError,
         })
       }
 
-      yield* savedVideos
+      for (const video of savedVideos) {
+        yield toSavedVideo(video)
+      }
     }
   } else if (mode === 'recent') {
-    // For 'recent' mode: fetch latest 100 videos (ENDED and PUBLISHED)
     const { data: savedVideos, error } = await supabaseClient
       .from('videos')
-      .select(
-        'id, duration, published_at, status, title, video_kind, thumbnail:thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
-      )
+      .select(VIDEO_SELECT)
       .is('deleted_at', null)
+      .is('talent.deleted_at', null)
+      .eq('talent.status', 'active')
       .in('status', ['ENDED', 'PUBLISHED'])
       .order('published_at', {
         ascending: false,
@@ -68,15 +94,16 @@ export async function* getSavedVideos({
       })
     }
 
-    yield* savedVideos
+    for (const video of savedVideos) {
+      yield toSavedVideo(video)
+    }
   } else {
-    // For 'default' mode: fetch only UPCOMING/LIVE videos
     const { data: savedVideos, error } = await supabaseClient
       .from('videos')
-      .select(
-        'id, duration, published_at, status, title, video_kind, thumbnail:thumbnails (id), youtube_video:youtube_videos!inner (youtube_video_id)',
-      )
+      .select(VIDEO_SELECT)
       .is('deleted_at', null)
+      .is('talent.deleted_at', null)
+      .eq('talent.status', 'active')
       .in('status', ['UPCOMING', 'LIVE'])
       .order('published_at', {
         ascending: false,
@@ -88,6 +115,8 @@ export async function* getSavedVideos({
       })
     }
 
-    yield* savedVideos
+    for (const video of savedVideos) {
+      yield toSavedVideo(video)
+    }
   }
 }
