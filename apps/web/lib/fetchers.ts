@@ -69,7 +69,7 @@ export const fetchUpcomingVideos = async (): Promise<Video[]> => {
 
   const { data: videos, error } = await supabaseClient
     .from('videos')
-    .select(DEFAULT_SEARCH_SELECT)
+    .select<string, Video>(DEFAULT_SEARCH_SELECT)
     .eq('status', 'UPCOMING')
     .lte('published_at', toDBString(until))
     .order('published_at', {
@@ -141,7 +141,7 @@ async function fetchLiveVideos(): Promise<Video[]> {
 
   const { data: liveVideos, error: liveError } = await supabaseClient
     .from('videos')
-    .select(DEFAULT_SEARCH_SELECT)
+    .select<string, Video>(DEFAULT_SEARCH_SELECT)
     .eq('status', 'LIVE')
     .order('published_at', { ascending: false })
     .limit(10)
@@ -170,7 +170,7 @@ async function fetchRecentVideos(): Promise<Video[]> {
   // Include ENDED so Twitch archives / ended live streams appear as recent content
   const { data: recentVideos, error: recentError } = await supabaseClient
     .from('videos')
-    .select(DEFAULT_SEARCH_SELECT)
+    .select<string, Video>(DEFAULT_SEARCH_SELECT)
     .in('status', ['PUBLISHED', 'ENDED'])
     .neq('video_kind', 'short')
     .gte('published_at', toDBString(threeDaysAgo))
@@ -201,7 +201,7 @@ async function fetchShortsVideos(): Promise<Video[]> {
 
   const { data: shortsVideos, error: shortsError } = await supabaseClient
     .from('videos')
-    .select(DEFAULT_SEARCH_SELECT)
+    .select<string, Video>(DEFAULT_SEARCH_SELECT)
     .eq('video_kind', 'short')
     .eq('status', 'PUBLISHED')
     .gte('published_at', toDBString(oneDayAgo))
