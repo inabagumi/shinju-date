@@ -2,6 +2,7 @@
 
 import { Button } from '@shinju-date/ui'
 import { Loader2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { syncTalentWithYouTube } from '../../_actions/sync'
 
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function SyncTalentButton({ talentId }: Props) {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [message, setMessage] = useState<{
     type: 'success' | 'error'
@@ -23,9 +25,10 @@ export function SyncTalentButton({ talentId }: Props) {
         const result = await syncTalentWithYouTube(talentId)
         if (result.success) {
           setMessage({
-            text: 'タレント情報を同期しました。',
+            text: 'チャンネル情報を同期しました。',
             type: 'success',
           })
+          router.refresh()
         } else {
           setMessage({
             text: result.error || '同期に失敗しました。',

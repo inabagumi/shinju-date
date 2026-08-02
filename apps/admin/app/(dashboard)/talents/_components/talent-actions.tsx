@@ -65,7 +65,7 @@ export function TalentActions({ talent }: TalentActionsProps) {
         const result = await syncTalentWithYouTube(talent.id)
         if (result.success) {
           setMessage({
-            text: 'タレント情報を同期しました。',
+            text: 'チャンネル情報を同期しました。',
             type: 'success',
           })
           router.refresh()
