@@ -1,0 +1,3 @@
+# Machine-generated files (excluded from language stats / collapse in diffs)
+.devcontainer/devcontainer-lock.json linguist-generated=true
+packages/database/types/supabase.ts linguist-generated=true
