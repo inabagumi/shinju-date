@@ -1,6 +1,10 @@
 import { supabaseClient } from '@/lib/supabase'
 import type { Video } from './types'
 
+/**
+ * Dynamic select strings are not parsed by supabase-js generics, so results
+ * are asserted to {@link Video} after a successful (non-error) response.
+ */
 function buildVideoSelect({
   innerRelation,
 }: {
@@ -88,7 +92,7 @@ async function getYouTubeVideoByURL(url: URL): Promise<Video> {
     })
   }
 
-  return video
+  return video as unknown as Video
 }
 
 async function getTwitchVideoByPlatformId(
@@ -106,7 +110,7 @@ async function getTwitchVideoByPlatformId(
     })
   }
 
-  return video
+  return video as unknown as Video
 }
 
 async function getTwitchVideoByURL(url: URL): Promise<Video> {
@@ -186,7 +190,7 @@ async function getTwitchVideoByURL(url: URL): Promise<Video> {
   }
 
   if (liveVideo) {
-    return liveVideo
+    return liveVideo as unknown as Video
   }
 
   // Fallback: most recent video for this Twitch user (e.g. ended stream link).
@@ -209,7 +213,7 @@ async function getTwitchVideoByURL(url: URL): Promise<Video> {
     throw new TypeError('Video does not exist.')
   }
 
-  return recentVideo
+  return recentVideo as unknown as Video
 }
 
 export default async function getVideoByURL(url: URL): Promise<Video> {
