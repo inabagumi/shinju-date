@@ -9,6 +9,14 @@ export type SavedYouTubeChannel = Pick<
 >
 
 /**
+ * Saved Twitch user data from the database
+ */
+export type SavedTwitchUser = Pick<
+  Tables<'twitch_users'>,
+  'id' | 'name' | 'talent_id' | 'twitch_login_name' | 'twitch_user_id'
+>
+
+/**
  * Saved thumbnail data from the database
  */
 export type SavedThumbnail = Omit<Tables<'thumbnails'>, 'created_at'>
@@ -18,6 +26,10 @@ export type SavedThumbnail = Omit<Tables<'thumbnails'>, 'created_at'>
  */
 export type SavedVideo = Omit<Tables<'videos'>, 'talent_id' | 'updated_at'> & {
   thumbnail: SavedThumbnail | null
+  twitch_video?: Pick<
+    Tables<'twitch_videos'>,
+    'twitch_video_id' | 'type'
+  > | null
   youtube_video?: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
 }
 
@@ -37,6 +49,10 @@ export type Video = Pick<
 > & {
   talent: VideoTalent | null
   thumbnail?: VideoThumbnail | null
+  twitch_video?: {
+    twitch_video_id: string
+    type: Tables<'twitch_videos'>['type']
+  }
   youtube_video?: {
     youtube_video_id: string
   }

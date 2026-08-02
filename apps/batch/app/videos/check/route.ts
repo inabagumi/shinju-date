@@ -3,6 +3,8 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
+import type { TwitchClip, TwitchVideo } from '@shinju-date/twitch-scraper'
+import { TwitchScraper } from '@shinju-date/twitch-scraper'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after, type NextRequest } from 'next/server'
@@ -17,8 +19,13 @@ import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 import { getMonitorSlug } from './_lib/get-monitor-slug'
+import { getSavedTwitchVideos } from './_lib/get-saved-twitch-videos'
 import { getSavedVideos } from './_lib/get-saved-videos'
 import { processScrapedVideoForCheck } from './_lib/process-scraped-video-for-check'
+import {
+  processTwitchAvailability,
+  processTwitchVideosForCheck,
+} from './_lib/process-twitch-videos-for-check'
 import { querySchema } from './_lib/query-schema'
 import type { CheckMode } from './_lib/types'
 
@@ -41,7 +48,6 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   const { searchParams } = request.nextUrl
 
-  // Validate query parameters using zod
   const validationResult = querySchema.safeParse(
     Object.fromEntries(searchParams.entries()),
   )
@@ -51,12 +57,8 @@ export async function POST(request: NextRequest): Promise<Response> {
     })
   }
 
-  const { mode: modeParam } = validationResult.data
+  const { mode: modeParam, provider } = validationResult.data
 
-  // Parse mode parameter
-  // - No parameter (default): UPCOMING/LIVE videos only
-  // - mode=recent: Latest 100 videos
-  // - mode=all: All videos (deletion check only, no updates)
   let mode: CheckMode
   if (modeParam === 'all') {
     mode = 'all'
@@ -66,7 +68,16 @@ export async function POST(request: NextRequest): Promise<Response> {
     mode = 'default'
   }
 
-  // Use appropriate ratelimit based on mode
+  // Twitch has no UPCOMING/LIVE pipeline; default mode is YouTube-only.
+  if (provider === 'twitch' && mode === 'default') {
+    return createErrorResponse(
+      'Twitch provider requires mode=recent or mode=all.',
+      {
+        status: 400,
+      },
+    )
+  }
+
   const ratelimit =
     mode === 'all'
       ? ratelimitAll
@@ -75,10 +86,10 @@ export async function POST(request: NextRequest): Promise<Response> {
         : ratelimitDefault
   const { success } = await ratelimit.limit(
     mode === 'all'
-      ? 'videos:check:all'
+      ? `videos:check:all:${provider}`
       : mode === 'recent'
-        ? 'videos:check:recent'
-        : 'videos:check',
+        ? `videos:check:recent:${provider}`
+        : `videos:check:${provider}`,
   )
 
   if (!success) {
@@ -94,6 +105,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   const monitorSlug = getMonitorSlug({
     mode,
+    provider,
   })
   const checkInId = Sentry.captureCheckIn(
     {
@@ -105,9 +117,13 @@ export async function POST(request: NextRequest): Promise<Response> {
         type: 'crontab',
         value:
           mode === 'all'
-            ? '4 23 * * 2'
+            ? provider === 'twitch'
+              ? '34 23 * * 2,4'
+              : '4 23 * * 2'
             : mode === 'recent'
-              ? '*/30 * * * *'
+              ? provider === 'twitch'
+                ? '15,45 * * * *'
+                : '*/30 * * * *'
               : '*/1 * * * *',
       },
       timezone: 'Etc/UTC',
@@ -115,64 +131,125 @@ export async function POST(request: NextRequest): Promise<Response> {
   )
 
   const currentDateTime = Temporal.Now.instant()
-  const savedVideos = await Array.fromAsync(
-    getSavedVideos({
-      mode,
-      supabaseClient,
-    }),
-  )
-
-  const videoIds = savedVideos
-    .map((savedVideo) => savedVideo.youtube_video?.youtube_video_id)
-    .filter((id): id is string => Boolean(id))
-
-  await using scraper = new YouTubeScraper({
-    youtubeClient,
-  })
-
   let hasChanges = false
 
-  // For 'default' and 'recent' modes, fetch full video details and update information
-  // For 'all' mode, only check availability and delete unavailable videos
-  if (mode === 'default' || mode === 'recent') {
-    // Fetch all videos from YouTube API and process them at once
-    await scraper.scrapeVideos({ ids: videoIds }, async (allVideos) => {
-      // Process all videos at once (updates and deletions)
-      hasChanges = await processScrapedVideoForCheck({
-        currentDateTime,
-        logger,
+  if (provider === 'youtube') {
+    const savedVideos = await Array.fromAsync(
+      getSavedVideos({
         mode,
-        originalVideos: allVideos,
-        savedVideos,
         supabaseClient,
-      })
+      }),
+    )
+
+    const videoIds = savedVideos
+      .map((savedVideo) => savedVideo.youtube_video?.youtube_video_id)
+      .filter((id): id is string => Boolean(id))
+
+    await using scraper = new YouTubeScraper({
+      youtubeClient,
     })
+
+    if (mode === 'default' || mode === 'recent') {
+      if (videoIds.length > 0) {
+        await scraper.scrapeVideos({ ids: videoIds }, async (allVideos) => {
+          hasChanges = await processScrapedVideoForCheck({
+            currentDateTime,
+            logger,
+            mode,
+            originalVideos: allVideos,
+            savedVideos,
+            supabaseClient,
+          })
+        })
+      }
+    } else if (videoIds.length > 0) {
+      await scraper.scrapeVideosAvailability({ videoIds }, async (videos) => {
+        try {
+          await processScrapedVideoAvailability({
+            currentDateTime,
+            logger,
+            savedVideos,
+            supabaseClient,
+            videos,
+          })
+          hasChanges = true
+        } catch (error) {
+          Sentry.captureException(error)
+        }
+      })
+    }
   } else {
-    // For 'all' mode, only check availability and delete unavailable videos
-    await scraper.scrapeVideosAvailability({ videoIds }, async (videos) => {
-      try {
-        await processScrapedVideoAvailability({
+    const savedTwitchVideos = await Array.fromAsync(
+      getSavedTwitchVideos({
+        mode,
+        supabaseClient,
+      }),
+    )
+
+    if (savedTwitchVideos.length > 0) {
+      const nonClipIds: string[] = []
+      const clipIds: string[] = []
+
+      for (const video of savedTwitchVideos) {
+        if (video.twitch_video.type === 'clip') {
+          clipIds.push(video.twitch_video.twitch_video_id)
+        } else {
+          nonClipIds.push(video.twitch_video.twitch_video_id)
+        }
+      }
+
+      await using scraper = new TwitchScraper({ concurrency: 2 })
+
+      if (mode === 'recent') {
+        const scrapedVideos: TwitchVideo[] = []
+        const scrapedClips: TwitchClip[] = []
+
+        await scraper.scrapeVideos({ ids: nonClipIds }, async (videos) => {
+          scrapedVideos.push(...videos)
+        })
+        await scraper.scrapeClips({ ids: clipIds }, async (clips) => {
+          scrapedClips.push(...clips)
+        })
+
+        hasChanges = await processTwitchVideosForCheck({
+          clips: scrapedClips,
           currentDateTime,
           logger,
-          savedVideos,
+          mode,
+          savedVideos: savedTwitchVideos,
           supabaseClient,
-          videos,
+          videos: scrapedVideos,
         })
-        hasChanges = true // Any deletion is a change
-      } catch (error) {
-        Sentry.captureException(error)
+      } else {
+        // mode=all: availability / soft-delete only (parity with YouTube)
+        await scraper.scrapeVideosAvailability(
+          { clipIds, videoIds: nonClipIds },
+          async (results) => {
+            try {
+              const deleted = await processTwitchAvailability({
+                currentDateTime,
+                logger,
+                results,
+                savedVideos: savedTwitchVideos,
+                supabaseClient,
+              })
+              hasChanges = hasChanges || deleted
+            } catch (error) {
+              Sentry.captureException(error)
+            }
+          },
+        )
       }
-    })
+    }
   }
 
-  // Revalidate tags only if changes occurred
   if (hasChanges) {
     await revalidateTags(['videos'], {
       signal: request.signal,
     })
   }
 
-  // Update last sync timestamp in Redis
+  // Shared across providers: admin "last video sync" is platform-agnostic.
   await redisClient.set(REDIS_KEYS.LAST_VIDEO_SYNC, toDBString(currentDateTime))
 
   after(async () => {

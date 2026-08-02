@@ -43,26 +43,25 @@ pnpm exec playwright test --ui
 
 このアプリケーションは、以下のような定期処理を実行します：
 
-- **データ同期処理**
-  - `/videos/update`: 新着動画の追加専用（10分毎）
-    - YouTubeから新しい動画のみを取得し、データベースに追加
+- **データ同期処理**（`provider` でプラットフォームを分離。省略時は `youtube`）
+  - `/videos/update`: 新着動画の追加専用
+    - デフォルト / `?provider=youtube`: YouTube新着（約5分毎）
+    - `?provider=twitch`: Twitchアーカイブ（VOD）新着（約5分毎、YouTubeとオフセット）
     - **既存動画は一切更新しない** - すべての更新は`/videos/check`が担当
     - サムネイル処理も新規動画のみ対象
+    - 1リクエストでは単一プロバイダのみ処理（タイムアウト回避）
   - `/videos/check`: 既存動画の情報更新と削除判定
-    - デフォルト（パラメータなし）: UPCOMING/LIVE動画の情報更新（1分毎）
-      - `videos.status`が`UPCOMING`または`LIVE`の動画が対象
-      - ステータス、タイトル、サムネイル、配信時刻などを最新化
-    - `mode=recent`: 最新100件の動画情報を更新（30分毎）
-      - ステータス、タイトル、サムネイル、配信時刻などを最新化
-    - `mode=all`: 全動画の削除判定のみ実行（週1回、火曜日）
-      - YouTube上で存在しなくなった動画をデータベースから削除
-      - 情報更新は行わない
+    - デフォルト（`provider=youtube`、パラメータなし）: UPCOMING/LIVE（1分毎）
+    - `?mode=recent` / `?provider=twitch&mode=recent`: 最新100件のメタデータ更新
+    - `?mode=all` / `?provider=twitch&mode=all`: 削除判定のみ（週2回）
+    - Twitch は `mode=recent|all` 必須（default モードは 400）
   - `/videos/cascade-from-talents`: タレント削除／復活に伴う動画の連鎖処理（5分毎）
     - 削除済みタレントに紐づく未削除動画をソフトデリート（`deleted_reason = talent_deleted`）
     - 復活済みタレントに紐づく `talent_deleted` のみ復旧（`unavailable` / `withdrawn` は対象外）
     - 1実行あたり最大100件
-  - `/talents/update`: タレント情報の更新（3時間毎）
-    - チャンネル情報の同期
+  - `/talents/update`: タレント／チャンネル情報の更新
+    - デフォルト / `?provider=youtube`: YouTubeチャンネル同期（3時間毎）
+    - `?provider=twitch`: Twitchユーザー（display_name / login）同期
 - **統計情報の更新** (`/stats/snapshot`)
   - ダッシュボード統計のスナップショット保存（日次比較用）
 - **推薦クエリの更新** (`/recommendation/queries/update`)
@@ -79,10 +78,13 @@ pnpm exec playwright test --ui
 - `POST /stats/snapshot` - 統計スナップショット作成
 - `POST /recommendation/queries/update` - 推薦クエリ更新
 - `POST /talents/update` - タレント情報更新
+  - `provider=youtube`（デフォルト）/ `provider=twitch`
 - `POST /terms/popularity/update` - 用語の人気度更新
 - `POST /videos/update` - 新着動画の追加
+  - `provider=youtube`（デフォルト）/ `provider=twitch`
 - `POST /videos/check` - 既存動画の情報更新と削除判定
-  - パラメータなし: UPCOMING/LIVE動画の情報更新
+  - `provider=youtube`（デフォルト）/ `provider=twitch`
+  - パラメータなし: UPCOMING/LIVE動画の情報更新（YouTubeのみ）
   - `mode=recent`: 最新100件の動画の情報更新
   - `mode=all`: 全動画の削除判定（情報更新なし）
 - `POST /videos/cascade-from-talents` - タレント削除／復活に伴う動画の連鎖ソフトデリート／復旧
@@ -137,9 +139,15 @@ pnpm exec playwright test --ui
 - `lib/supabase.ts` - Supabaseクライアントの初期化
 - `lib/redis.ts` - Redisクライアントの初期化
 - `lib/youtube.ts` - YouTube APIクライアントの初期化
-- `lib/database/operations.ts` - 汎用的なデータベース操作（`getSavedVideos`, `upsertVideos`など）
+- `lib/provider.ts` - バッチ `provider` クエリ（youtube / twitch）のパース
+- `lib/database/operations.ts` - 汎用的なデータベース操作（`getSavedVideos`, `getSavedTwitchVideos`, `upsertVideos`, `processTwitchUsers`など）
 - `lib/database/video-updates.ts` - 動画更新処理（複数ルートで使用）
-- `lib/thumbnails/` - サムネイル処理ロジック
+- `lib/thumbnails/` - サムネイル処理ロジック（YouTube / Twitch URL両対応）
+
+プラットフォーム固有の取得オーケストレーションは workspace パッケージ:
+
+- `@shinju-date/youtube-scraper` - YouTube 用 Scraper
+- `@shinju-date/twitch-scraper` - Twitch 用 Scraper（Helix コールバック API）
 
 ### `app/*/\_lib/` - ルート固有ライブラリ
 
@@ -157,7 +165,10 @@ pnpm exec playwright test --ui
 - `app/videos/check/_lib/query-schema.ts` - クエリパラメータのバリデーションスキーマ
 - `app/videos/check/_lib/get-monitor-slug.ts` - Sentryモニタースラッグ生成
 - `app/videos/update/_lib/constants.ts` - `/videos/update`専用の定数定義
-- `app/videos/update/_lib/save-videos.ts` - `/videos/update`専用の動画保存処理
+- `app/videos/update/_lib/save-videos.ts` - `/videos/update`専用のYouTube動画保存処理
+- `app/videos/update/_lib/save-twitch-videos.ts` - `/videos/update`専用のTwitch動画保存処理
+- `app/videos/check/_lib/get-saved-twitch-videos.ts` - Twitch動画の取得
+- `app/videos/check/_lib/process-twitch-videos-for-check.ts` - Twitch動画の更新・削除
 
 ### 判断基準
 

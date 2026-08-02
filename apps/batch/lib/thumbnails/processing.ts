@@ -13,6 +13,10 @@ const DEFAULT_CACHE_CONTROL_MAX_AGE = Temporal.Duration.from({
   days: 365,
 })
 
+/** Default dimensions when the source only provides a template URL (e.g. Twitch). */
+export const DEFAULT_THUMBNAIL_WIDTH = 1280
+export const DEFAULT_THUMBNAIL_HEIGHT = 720
+
 interface StaticThumbnail {
   height: number
   url: string
@@ -37,6 +41,22 @@ function getThumbnail(video: YouTubeVideo): StaticThumbnail {
   }
 }
 
+/**
+ * Resolves Twitch (and similar) thumbnail template URLs that use
+ * `%{width}x%{height}` or `{width}x{height}` placeholders.
+ */
+export function resolveThumbnailTemplateUrl(
+  url: string,
+  width = DEFAULT_THUMBNAIL_WIDTH,
+  height = DEFAULT_THUMBNAIL_HEIGHT,
+): string {
+  return url
+    .replaceAll('%{width}', String(width))
+    .replaceAll('%{height}', String(height))
+    .replaceAll('{width}', String(width))
+    .replaceAll('{height}', String(height))
+}
+
 async function getBlurDataURL(data: ArrayBuffer): Promise<string> {
   const buffer = await sharp(data).resize(10).toBuffer()
 
@@ -44,7 +64,7 @@ async function getBlurDataURL(data: ArrayBuffer): Promise<string> {
 }
 
 /**
- * Options for uploading a thumbnail
+ * Options for uploading a thumbnail from a YouTube video
  */
 export interface ThumbnailOptions {
   currentDateTime?: Temporal.Instant
@@ -52,6 +72,20 @@ export interface ThumbnailOptions {
   originalVideo: YouTubeVideo
   savedThumbnail?: SavedThumbnail
   supabaseClient: TypedSupabaseClient
+}
+
+/**
+ * Options for uploading a thumbnail from a raw image URL (e.g. Twitch)
+ */
+export interface ThumbnailFromUrlOptions {
+  currentDateTime?: Temporal.Instant
+  dryRun?: boolean
+  height?: number
+  mediaId: string
+  savedThumbnail?: SavedThumbnail
+  supabaseClient: TypedSupabaseClient
+  thumbnailUrl: string
+  width?: number
 }
 
 /**
@@ -69,34 +103,62 @@ export class ImageProcessor {
   #width: number
 
   /**
-   * Uploads an image (thumbnail, icon, etc.)
+   * Uploads a thumbnail from a YouTube video
    * @param options - The image upload options
    * @returns The thumbnail insert data or null if no upload is needed
    */
   static upload(
     options: ThumbnailOptions,
   ): Promise<TablesInsert<'thumbnails'> | null> {
-    const instance = new ImageProcessor(options)
+    const { height, url, width } = getThumbnail(options.originalVideo)
 
-    return instance.upload()
+    const fromUrlOptions: ThumbnailFromUrlOptions = {
+      height,
+      mediaId: options.originalVideo.id,
+      supabaseClient: options.supabaseClient,
+      thumbnailUrl: url,
+      width,
+    }
+
+    if (options.currentDateTime !== undefined) {
+      fromUrlOptions.currentDateTime = options.currentDateTime
+    }
+    if (options.dryRun !== undefined) {
+      fromUrlOptions.dryRun = options.dryRun
+    }
+    if (options.savedThumbnail !== undefined) {
+      fromUrlOptions.savedThumbnail = options.savedThumbnail
+    }
+
+    return new ImageProcessor(fromUrlOptions).upload()
+  }
+
+  /**
+   * Uploads a thumbnail from a direct or templated image URL
+   */
+  static uploadFromUrl(
+    options: ThumbnailFromUrlOptions,
+  ): Promise<TablesInsert<'thumbnails'> | null> {
+    return new ImageProcessor(options).upload()
   }
 
   constructor({
     currentDateTime = Temporal.Now.instant(),
     dryRun = false,
-    originalVideo,
+    height = DEFAULT_THUMBNAIL_HEIGHT,
+    mediaId,
     savedThumbnail,
     supabaseClient,
-  }: ThumbnailOptions) {
-    const { height, url, width } = getThumbnail(originalVideo)
-
+    thumbnailUrl,
+    width = DEFAULT_THUMBNAIL_WIDTH,
+  }: ThumbnailFromUrlOptions) {
     this.#currentDateTime = currentDateTime
     this.#dryRun = dryRun
     this.#height = height
     this.#savedThumbnail = savedThumbnail
     this.#supabaseClient = supabaseClient
-    this.#url = url
-    this.#videoID = originalVideo.id
+    this.#url = resolveThumbnailTemplateUrl(thumbnailUrl, width, height)
+    this.#videoID = mediaId
     this.#width = width
   }
 

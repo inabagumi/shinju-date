@@ -1,8 +1,9 @@
 import * as Sentry from '@sentry/nextjs'
 import type { TablesInsert } from '@shinju-date/database'
+import type { TwitchUser } from '@shinju-date/twitch-api-client'
 import type { YouTubeChannel } from '@shinju-date/youtube-scraper'
 import type { TypedSupabaseClient } from '@/lib/supabase'
-import type { SavedVideo, Video } from './types'
+import type { SavedTwitchUser, SavedVideo, Video } from './types'
 
 const scrapeResultSelect = `
   duration,
@@ -80,6 +81,67 @@ export async function* getSavedVideos(
         ...video,
         youtube_video: {
           youtube_video_id: row.youtube_video_id,
+        },
+      }
+    })
+
+    yield* transformedVideos
+  }
+}
+
+/**
+ * Get saved videos from the database by Twitch video / clip IDs
+ */
+export async function* getSavedTwitchVideos(
+  supabaseClient: TypedSupabaseClient,
+  ids: string[],
+): AsyncGenerator<SavedVideo, void, undefined> {
+  for (let i = 0; i < ids.length; i += 100) {
+    const { data: videos, error } = await supabaseClient
+      .from('twitch_videos')
+      .select(
+        `
+          type,
+          twitch_video_id,
+          video:videos!inner (
+            id,
+            created_at,
+            deleted_at,
+            duration,
+            platform,
+            published_at,
+            status,
+            thumbnail_id,
+            thumbnail:thumbnails (
+              blur_data_url,
+              deleted_at,
+              etag,
+              height,
+              id,
+              path,
+              updated_at,
+              width
+            ),
+            title,
+            visible
+          )
+        `,
+      )
+      .in('twitch_video_id', ids.slice(i, i + 100))
+
+    if (error) {
+      throw new TypeError(error.message, {
+        cause: error,
+      })
+    }
+
+    const transformedVideos = videos.map((row) => {
+      const video = Array.isArray(row.video) ? row.video[0] : row.video
+      return {
+        ...video,
+        twitch_video: {
+          twitch_video_id: row.twitch_video_id,
+          type: row.type,
         },
       }
     })
@@ -248,6 +310,40 @@ export async function updateTalentChannel({
 }
 
 /**
+ * Update a talent's Twitch user information
+ * Used by /talents/update route
+ */
+export type UpdateTwitchUserOptions = {
+  supabaseClient: TypedSupabaseClient
+  talentId: string
+  twitchUserId: string
+  displayName: string
+  loginName: string
+}
+
+export async function updateTwitchUser({
+  supabaseClient,
+  talentId,
+  twitchUserId,
+  displayName,
+  loginName,
+}: UpdateTwitchUserOptions): Promise<void> {
+  const { error } = await supabaseClient.from('twitch_users').upsert(
+    {
+      name: displayName,
+      talent_id: talentId,
+      twitch_login_name: loginName,
+      twitch_user_id: twitchUserId,
+    },
+    { onConflict: 'twitch_user_id' },
+  )
+
+  if (error) {
+    throw new DatabaseError(error)
+  }
+}
+
+/**
  * Process scraped YouTube channels and update talent information
  * Uses snippet data already fetched by the scraper, logs changes, and returns whether updates occurred
  */
@@ -324,6 +420,66 @@ export async function processScrapedChannels({
 
   if (!hasUpdates) {
     Sentry.logger.info('No updated talents existed.')
+  }
+
+  return hasUpdates
+}
+
+/**
+ * Process Twitch users from Helix and update twitch_users rows.
+ * Mirrors processScrapedChannels for the Twitch platform.
+ */
+export async function processTwitchUsers({
+  twitchUsers,
+  savedUsers,
+  supabaseClient,
+}: {
+  twitchUsers: TwitchUser[]
+  savedUsers: SavedTwitchUser[]
+  supabaseClient: TypedSupabaseClient
+}): Promise<boolean> {
+  let hasUpdates = false
+
+  for (const twitchUser of twitchUsers) {
+    try {
+      const savedUser = savedUsers.find(
+        (user) => user.twitch_user_id === twitchUser.id,
+      )
+
+      if (!savedUser) {
+        throw new TypeError(
+          `No saved Twitch user found for ID: ${twitchUser.id}`,
+        )
+      }
+
+      const nameChanged = twitchUser.display_name !== savedUser.name
+      const loginChanged = twitchUser.login !== savedUser.twitch_login_name
+
+      if (!nameChanged && !loginChanged) {
+        continue
+      }
+
+      await updateTwitchUser({
+        displayName: twitchUser.display_name,
+        loginName: twitchUser.login,
+        supabaseClient,
+        talentId: savedUser.talent_id,
+        twitchUserId: twitchUser.id,
+      })
+
+      Sentry.logger.info('Twitch user has been updated.', {
+        login: `${savedUser.twitch_login_name} -> ${twitchUser.login}`,
+        name: `${savedUser.name} -> ${twitchUser.display_name}`,
+        twitch_user_id: twitchUser.id,
+      })
+      hasUpdates = true
+    } catch (error) {
+      Sentry.captureException(error)
+    }
+  }
+
+  if (!hasUpdates) {
+    Sentry.logger.info('No updated Twitch users existed.')
   }
 
   return hasUpdates
