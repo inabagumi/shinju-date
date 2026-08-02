@@ -336,7 +336,7 @@ export default function VideoList({ videos }: Props) {
                                   video.youtube_video?.youtube_video_id,
                               })
                               if (externalUrl) {
-                                window.open(externalUrl, '_blank')
+                                window.open(externalUrl, '_blank', 'noopener')
                               }
                             }}
                           >

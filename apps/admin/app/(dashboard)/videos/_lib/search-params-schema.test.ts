@@ -44,6 +44,9 @@ describe('videoSearchParamsSchema', () => {
     })
 
     expect(result.platform).toEqual(['youtube'])
+    expect(
+      videoSearchParamsSchema.parse({ platform: ['invalid'] }).platform,
+    ).toBeUndefined()
   })
 
   it('should use default values when fields are missing', () => {

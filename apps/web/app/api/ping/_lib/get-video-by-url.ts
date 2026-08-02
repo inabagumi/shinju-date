@@ -1,19 +1,28 @@
 import { supabaseClient } from '@/lib/supabase'
 import type { Video } from './types'
 
-const VIDEO_SELECT = `
-  talent:talents!inner (id, name),
-  id,
-  platform,
-  status,
-  title,
-  youtube_video:youtube_videos (youtube_video_id),
-  twitch_video:twitch_videos (
-    twitch_video_id,
-    type,
-    twitch_user:twitch_users (twitch_login_name)
-  )
-`
+function buildVideoSelect({
+  innerRelation,
+}: {
+  innerRelation?: 'youtube_video' | 'twitch_video'
+} = {}): string {
+  const youtubeInner = innerRelation === 'youtube_video' ? '!inner' : ''
+  const twitchInner = innerRelation === 'twitch_video' ? '!inner' : ''
+
+  return `
+    talent:talents!inner (id, name),
+    id,
+    platform,
+    status,
+    title,
+    youtube_video:youtube_videos${youtubeInner} (youtube_video_id),
+    twitch_video:twitch_videos${twitchInner} (
+      twitch_video_id,
+      type,
+      twitch_user:twitch_users (twitch_login_name)
+    )
+  `
+}
 
 function getYouTubeVideoID(url: URL): string {
   let videoID: string | undefined
@@ -69,21 +78,7 @@ async function getYouTubeVideoByURL(url: URL): Promise<Video> {
 
   const { data: video, error } = await supabaseClient
     .from('videos')
-    .select(
-      `
-        talent:talents!inner (id, name),
-        id,
-        platform,
-        status,
-        title,
-        youtube_video:youtube_videos!inner (youtube_video_id),
-        twitch_video:twitch_videos (
-          twitch_video_id,
-          type,
-          twitch_user:twitch_users (twitch_login_name)
-        )
-      `,
-    )
+    .select(buildVideoSelect({ innerRelation: 'youtube_video' }))
     .eq('youtube_video.youtube_video_id', videoID)
     .single()
 
@@ -101,21 +96,7 @@ async function getTwitchVideoByPlatformId(
 ): Promise<Video> {
   const { data: video, error } = await supabaseClient
     .from('videos')
-    .select(
-      `
-        talent:talents!inner (id, name),
-        id,
-        platform,
-        status,
-        title,
-        youtube_video:youtube_videos (youtube_video_id),
-        twitch_video:twitch_videos!inner (
-          twitch_video_id,
-          type,
-          twitch_user:twitch_users (twitch_login_name)
-        )
-      `,
-    )
+    .select(buildVideoSelect({ innerRelation: 'twitch_video' }))
     .eq('twitch_video.twitch_video_id', twitchVideoId)
     .single()
 
@@ -144,6 +125,11 @@ async function getTwitchVideoByURL(url: URL): Promise<Video> {
   // www.twitch.tv/videos/<id>
   if (pathSegments[0] === 'videos' && pathSegments[1]) {
     return getTwitchVideoByPlatformId(pathSegments[1])
+  }
+
+  // www.twitch.tv/<channel>/clip/<slug>
+  if (pathSegments[1] === 'clip' && pathSegments[2]) {
+    return getTwitchVideoByPlatformId(pathSegments[2])
   }
 
   // www.twitch.tv/<login> — live / channel top page
@@ -180,10 +166,12 @@ async function getTwitchVideoByURL(url: URL): Promise<Video> {
     throw new TypeError('Video does not exist.')
   }
 
+  const videoSelect = buildVideoSelect()
+
   // Prefer an active LIVE video for this user when available.
   const { data: liveVideo, error: liveError } = await supabaseClient
     .from('videos')
-    .select(VIDEO_SELECT)
+    .select(videoSelect)
     .eq('platform', 'twitch')
     .eq('status', 'LIVE')
     .in('id', videoIds)
@@ -204,7 +192,7 @@ async function getTwitchVideoByURL(url: URL): Promise<Video> {
   // Fallback: most recent video for this Twitch user (e.g. ended stream link).
   const { data: recentVideo, error: recentError } = await supabaseClient
     .from('videos')
-    .select(VIDEO_SELECT)
+    .select(videoSelect)
     .eq('platform', 'twitch')
     .in('id', videoIds)
     .order('published_at', { ascending: false })

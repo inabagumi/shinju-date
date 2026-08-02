@@ -34,7 +34,11 @@ function ThumbnailPlaceholder() {
   )
 }
 
-function Thumbnail({ video }: { video: Video }) {
+interface ThumbnailProps {
+  video: Video
+}
+
+function Thumbnail({ video }: ThumbnailProps) {
   const thumbnailData = getThumbnailURL(video)
 
   if (!thumbnailData) {

@@ -6,6 +6,11 @@ const PLATFORM_LABELS: Record<Tables<'videos'>['platform'], string> = {
   youtube: 'YouTube',
 }
 
+interface PlatformBadgeProps {
+  className?: string
+  platform: Tables<'videos'>['platform']
+}
+
 /**
  * Small platform indicator for video cards.
  * Twitch is emphasized so multi-platform results are easy to scan.
@@ -13,10 +18,7 @@ const PLATFORM_LABELS: Record<Tables<'videos'>['platform'], string> = {
 export default function PlatformBadge({
   className,
   platform,
-}: {
-  className?: string
-  platform: Tables<'videos'>['platform']
-}) {
+}: PlatformBadgeProps) {
   if (platform === 'youtube') {
     return null
   }

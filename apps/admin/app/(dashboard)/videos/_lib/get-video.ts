@@ -8,7 +8,32 @@ import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
-export type VideoDetail = {
+interface Thumbnail {
+  id: string
+  path: string
+  blur_data_url: string
+}
+
+interface Talent {
+  id: string
+  name: string
+}
+
+interface YoutubeVideo {
+  youtube_video_id: string
+}
+
+interface TwitchUser {
+  twitch_login_name: string | null
+}
+
+interface TwitchVideo {
+  twitch_video_id: string
+  type: Tables<'twitch_videos'>['type']
+  twitch_user: TwitchUser | null
+}
+
+export interface VideoDetail {
   id: string
   title: string
   visible: boolean
@@ -20,26 +45,11 @@ export type VideoDetail = {
   duration: string
   platform: Tables<'videos'>['platform']
   video_kind: Tables<'videos'>['video_kind']
-  thumbnail: {
-    id: string
-    path: string
-    blur_data_url: string
-  } | null
+  thumbnail: Thumbnail | null
   clicks: number
-  talent: {
-    id: string
-    name: string
-  }
-  youtube_video: {
-    youtube_video_id: string
-  } | null
-  twitch_video: {
-    twitch_video_id: string
-    type: Tables<'twitch_videos'>['type']
-    twitch_user: {
-      twitch_login_name: string | null
-    } | null
-  } | null
+  talent: Talent
+  youtube_video: YoutubeVideo | null
+  twitch_video: TwitchVideo | null
 }
 
 const getVideo = cache(async function getVideo(

@@ -32,7 +32,7 @@ export type Video = Pick<
   } | null
 }
 
-export type VideoFilters = {
+export interface VideoFilters {
   talentId?: string[]
   deleted?: boolean[]
   visible?: boolean[]
