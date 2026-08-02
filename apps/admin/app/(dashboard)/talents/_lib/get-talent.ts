@@ -1,3 +1,4 @@
+import type { Tables } from '@shinju-date/database'
 import { cacheLife } from 'next/cache'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
@@ -5,7 +6,7 @@ export interface Talent {
   id: string
   name: string
   theme_color: string | null
-  status: 'active' | 'retired'
+  status: Tables<'talents'>['status']
   created_at: string
   updated_at: string
   deleted_at: string | null

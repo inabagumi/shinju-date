@@ -4,6 +4,7 @@ import type { Tables } from '@shinju-date/database'
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
+import { Temporal } from 'temporal-polyfill'
 import { TalentActions } from './talent-actions'
 import { TalentModal } from './talent-modal'
 import { TalentStatusBadge } from './talent-status-badge'
@@ -61,15 +62,19 @@ export function TalentsList({ talents }: TalentsListProps) {
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
-      filtered = filtered.filter((talent) =>
-        talent.name.toLowerCase().includes(query),
+      filtered = filtered.filter(
+        (talent) =>
+          talent.name.toLowerCase().includes(query) ||
+          talent.id.toLowerCase().includes(query),
       )
     }
 
     return filtered.sort((a, b) => {
-      const dateA = new Date(a.updated_at).getTime()
-      const dateB = new Date(b.updated_at).getTime()
-      return sortOrder === 'desc' ? dateB - dateA : dateA - dateB
+      const order = Temporal.Instant.compare(
+        Temporal.Instant.from(a.updated_at),
+        Temporal.Instant.from(b.updated_at),
+      )
+      return sortOrder === 'desc' ? -order : order
     })
   }, [talents, searchQuery, sortOrder, statusFilter])
 
@@ -93,6 +98,7 @@ export function TalentsList({ talents }: TalentsListProps) {
             value={searchQuery}
           />
           <select
+            aria-label="状態で絞り込み"
             className="rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none sm:w-48"
             onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
             value={statusFilter}

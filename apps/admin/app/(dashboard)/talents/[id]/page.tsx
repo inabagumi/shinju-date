@@ -74,9 +74,7 @@ async function TalentProfile({ id }: { id: string }) {
                 削除されたタレント
               </h3>
               <div className="mt-2 text-red-700 text-sm">
-                <p>
-                  このタレントは削除されており、公開サイトでは非表示です。同期・編集はできません。復活すると公開と同期の対象に戻ります。
-                </p>
+                <p>このタレントは削除されています。</p>
               </div>
             </div>
           </div>
@@ -89,9 +87,7 @@ async function TalentProfile({ id }: { id: string }) {
             引退したタレント
           </h3>
           <div className="mt-2 text-amber-800 text-sm">
-            <p>
-              公開サイトでは表示されたままです。動画の高頻度同期からは外れ、低頻度の全件チェック対象になります。
-            </p>
+            <p>このタレントは引退状態です。</p>
           </div>
         </div>
       )}
@@ -106,7 +102,7 @@ async function TalentProfile({ id }: { id: string }) {
               タレント情報
             </h3>
             <p className="mt-1 max-w-2xl text-gray-500 text-sm">
-              削除済みのため編集できません。復活後に編集できます。
+              削除済みのため編集できません。
             </p>
           </CardHeader>
           <CardContent className="p-0">

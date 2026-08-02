@@ -11,7 +11,9 @@ ALTER TYPE "public"."talent_status" OWNER TO "postgres";
 ALTER TABLE "public"."talents"
     ADD COLUMN "status" "public"."talent_status" DEFAULT 'active'::"public"."talent_status" NOT NULL;
 
-CREATE INDEX "ix_talents_status" ON "public"."talents" USING "btree" ("status");
+-- Partial index for common admin/batch filters (non-deleted rows by status)
+CREATE INDEX "ix_talents_status" ON "public"."talents" USING "btree" ("status")
+    WHERE "deleted_at" IS NULL;
 
 COMMENT ON COLUMN "public"."talents"."status" IS 'Public-facing lifecycle status (active/retired). Soft-delete uses deleted_at separately.';
 

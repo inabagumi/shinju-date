@@ -74,14 +74,14 @@ export function TalentLifecycleActions({
                 disabled={isPending}
                 onClick={() =>
                   runAction(
-                    `タレント「${talent.name}」を引退にしますか？公開サイトからは消えず、同期頻度が下がります。`,
+                    `タレント「${talent.name}」を引退にしますか？`,
                     () => retireTalentAction(talent.id),
                   )
                 }
                 size="sm"
                 variant="secondary"
               >
-                引退にする
+                {isPending ? '処理中...' : '引退にする'}
               </Button>
             )}
             {isRetired && (
@@ -96,7 +96,7 @@ export function TalentLifecycleActions({
                 size="sm"
                 variant="secondary-blue"
               >
-                アクティブに戻す
+                {isPending ? '処理中...' : 'アクティブに戻す'}
               </Button>
             )}
             <DeleteConfirmDialog

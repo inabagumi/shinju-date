@@ -53,9 +53,7 @@ export function DeleteConfirmDialog({
         <DialogContent>
           <DialogTitle>タレントを削除</DialogTitle>
           <DialogDescription>
-            「{talentName}
-            」を削除しますか？ソフトデリートのため、後から復活できます。
-            公開サイトからは非表示になり、同期対象からも外れます。
+            「{talentName}」を削除しますか？
           </DialogDescription>
           {error && <p className="mb-4 text-red-600 text-sm">{error}</p>}
           <div className="flex justify-end gap-2">

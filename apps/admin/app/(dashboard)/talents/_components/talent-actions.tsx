@@ -115,7 +115,7 @@ export function TalentActions({ talent }: TalentActionsProps) {
                 disabled={isPending}
                 onClick={() =>
                   runAction(
-                    `タレント「${talent.name}」を引退にしますか？公開サイトからは消えず、同期頻度が下がります。`,
+                    `タレント「${talent.name}」を引退にしますか？`,
                     () => retireTalentAction(talent.id),
                     'タレントを引退にしました。',
                   )
@@ -146,7 +146,7 @@ export function TalentActions({ talent }: TalentActionsProps) {
               disabled={isPending}
               onClick={() =>
                 runAction(
-                  `タレント「${talent.name}」を削除しますか？ソフトデリートのため後から復活できます。`,
+                  `タレント「${talent.name}」を削除しますか？`,
                   () => deleteTalentAction(talent.id),
                   'タレントを削除しました。',
                 )
