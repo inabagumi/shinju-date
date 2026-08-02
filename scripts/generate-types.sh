@@ -18,8 +18,6 @@ echo -e "${GREEN}Generating TypeScript types from database schema...${NC}"
 
 cd "$PROJECT_ROOT"
 
-# Prefer machine-readable status (-o env). Pretty table output no longer
-# includes a stable "API URL:" line across Supabase CLI versions.
 SUPABASE_STATUS_ENV=$(pnpm exec supabase status -o env 2>/dev/null || true)
 
 if echo "$SUPABASE_STATUS_ENV" | grep -qE '^API_URL='; then

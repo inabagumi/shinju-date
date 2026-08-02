@@ -74,13 +74,12 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 **含まれない内容**:
 - Supabase サービス（Supabase CLI + Docker-in-Docker で管理）
 - Redis などの共有サービス（`../compose.yml` で定義）
-- ホストの Docker ソケットマウント（docker-outside-of-docker は使わない）
 
 **補足**:
 - ルートの `compose.yml` と組み合わせて使用されます（`dockerComposeFile: ["../compose.yml", "compose.override.yml"]`）
 - `../compose.yml` が Redis などの共有開発サービスを定義しています
 - ボリュームマウントの `.` は、最初の compose ファイル（プロジェクトルートの `compose.yml`）からの相対パスです
-- Supabase は app コンテナ内の Docker-in-Docker で起動するため、bind mount パスがコンテナ FS 上で完結し、ホストとの path mismatch が起きません
+- Supabase は app コンテナ内の Docker-in-Docker で起動するため、bind mount パスがコンテナ FS 上で完結します
 
 ## ファイル構成まとめ
 
@@ -394,7 +393,7 @@ pnpm exec supabase db reset
 
 - **機密情報**: `config/dev-secrets.env`には開発用の固定値のみを使用してください。
 - **本番環境**: この設定は開発環境専用です。本番環境では使用しないでください。
-- **Docker-in-Docker**: app サービスは `privileged: true` でコンテナ内に独立した Docker daemon を起動します。ホストの `/var/run/docker.sock` はマウントしません。
+- **Docker-in-Docker**: app サービスは `privileged: true` でコンテナ内に独立した Docker daemon を起動します。
 
 ## 参考資料
 

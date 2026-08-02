@@ -17,9 +17,9 @@
 
 VS Code Dev Containers または GitHub Codespaces では、`.devcontainer/` の設定により環境が自動構築されます。
 
-- **Docker-in-Docker**: app コンテナ内に独立した Docker daemon が動き、`pnpm exec supabase start` はその上で Supabase を起動します。ホストの Docker ソケットは使いません。
+- **Docker-in-Docker**: app コンテナ内に独立した Docker daemon が動き、`pnpm exec supabase start` はその上で Supabase を起動します。
 - **Redis**: 外側の Docker Compose（`compose.yml`）が app と一緒に起動します。接続先は `http://serverless-redis-http:80`（コンテナ内）です。
-- **Supabase URL**: コンテナ内では `http://127.0.0.1:54321`（`localhost`）を使います。`host.docker.internal` は不要です。
+- **Supabase URL**: コンテナ内では `http://127.0.0.1:54321` を使います。
 - 初回は `post-create.sh` が `supabase start` / `db reset` / `typegen` まで実行します。
 
 詳細は [`.devcontainer/README.md`](../.devcontainer/README.md) を参照してください。
@@ -280,8 +280,6 @@ Supabaseが使用するポート（54321、54322、54323、54324）が既に使�
 
 2. データベースに直接接続してテスト：
    ```bash
-   # ホスト環境・Dev Container（Docker-in-Docker）いずれでも 127.0.0.1 で接続できる
-   # status -o env は CLI バージョン間で安定したキー=値形式を返す
    eval "$(pnpm exec supabase status -o env 2>/dev/null | grep '^DB_URL=')"
    psql "$DB_URL"
    ```

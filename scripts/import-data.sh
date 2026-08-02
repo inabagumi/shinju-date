@@ -117,14 +117,10 @@ if [ -n "${SUPABASE_DB_URL:-}" ]; then
     DB_URL="$SUPABASE_DB_URL"
     echo -e "${GREEN}Using SUPABASE_DB_URL override${NC}"
 else
-    # Prefer machine-readable status (-o env). Pretty table output no longer
-    # includes a stable "DB URL:" line across Supabase CLI versions.
-    # Dev Container uses Docker-in-Docker, so 127.0.0.1 from status is correct.
     SUPABASE_STATUS_ENV=$(pnpm exec supabase status -o env 2>/dev/null || true)
 
     if echo "$SUPABASE_STATUS_ENV" | grep -qE '^DB_URL='; then
         echo -e "${GREEN}Supabase is running via CLI${NC}"
-        # Values are quoted: DB_URL="postgresql://..."
         DB_URL=$(echo "$SUPABASE_STATUS_ENV" | sed -n 's/^DB_URL="\(.*\)"/\1/p')
     fi
 
