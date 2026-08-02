@@ -28,7 +28,7 @@ export type SavedVideo = Omit<Tables<'videos'>, 'talent_id' | 'updated_at'> & {
   thumbnail: SavedThumbnail | null
   twitch_video?: Pick<
     Tables<'twitch_videos'>,
-    'twitch_video_id' | 'type'
+    'stream_id' | 'twitch_video_id' | 'type'
   > | null
   youtube_video?: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
 }
@@ -50,6 +50,7 @@ export type Video = Pick<
   talent: VideoTalent | null
   thumbnail?: VideoThumbnail | null
   twitch_video?: {
+    stream_id?: string | null
     twitch_video_id: string
     type: Tables<'twitch_videos'>['type']
   }

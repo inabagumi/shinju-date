@@ -65,6 +65,17 @@ describe('getVideoExternalUrl', () => {
       ).toBe('https://www.twitch.tv/videos/123456789')
     })
 
+    it('returns the channel top URL for synthetic live placeholders', () => {
+      expect(
+        getVideoExternalUrl({
+          platform: 'twitch',
+          status: 'ENDED',
+          twitchLoginName: 'example_user',
+          twitchVideoId: 'live:stream-99',
+        }),
+      ).toBe('https://www.twitch.tv/example_user')
+    })
+
     it('returns a clips URL for clip type', () => {
       expect(
         getVideoExternalUrl({

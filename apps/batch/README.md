@@ -44,17 +44,21 @@ pnpm exec playwright test --ui
 このアプリケーションは、以下のような定期処理を実行します：
 
 - **データ同期処理**（`provider` でプラットフォームを分離。省略時は `youtube`）
-  - `/videos/update`: 新着動画の追加専用
+  - `/videos/update`: 新着動画の追加専用（Twitch は LIVE 作成と VOD 突合も含む）
     - デフォルト / `?provider=youtube`: YouTube新着（約5分毎）
-    - `?provider=twitch`: Twitchアーカイブ（VOD）新着（約5分毎、YouTubeとオフセット）
-    - **既存動画は一切更新しない** - すべての更新は`/videos/check`が担当
-    - サムネイル処理も新規動画のみ対象
+    - `?provider=twitch`: Helix Streams（LIVE）+ アーカイブ（VOD）新着（約5分毎）
+      - 配信中は `status: LIVE`、合成 id `live:{stream_id}` で upsert
+      - VOD 取り込み時は `stream_id` で LIVE 行と突合し同一レコードを `ENDED` に更新
+    - YouTube は既存動画を更新しない（更新は`/videos/check`）
+    - サムネイル処理も新規動画のみ対象（Twitch LIVE→VOD 突合時は差し替え可）
     - 1リクエストでは単一プロバイダのみ処理（タイムアウト回避）
   - `/videos/check`: 既存動画の情報更新と削除判定
     - デフォルト（`provider=youtube`、パラメータなし）: UPCOMING/LIVE（1分毎）
+    - `?provider=twitch`（default）: LIVE の再確認・終了処理（1分毎）
+      - Streams API で配信中を確認し、オフラインなら `ENDED`（VOD 未到着時も LIVE バッジを落とす）
+      - 直近アーカイブと `stream_id` が一致すれば VOD id に差し替え
     - `?mode=recent` / `?provider=twitch&mode=recent`: 最新100件のメタデータ更新
     - `?mode=all` / `?provider=twitch&mode=all`: 削除判定のみ（週2回）
-    - Twitch は `mode=recent|all` 必須（default モードは 400）
   - `/videos/cascade-from-talents`: タレント削除／復活に伴う動画の連鎖処理（5分毎）
     - 削除済みタレントに紐づく未削除動画をソフトデリート（`deleted_reason = talent_deleted`）
     - 復活済みタレントに紐づく `talent_deleted` のみ復旧（`unavailable` / `withdrawn` は対象外）
@@ -166,9 +170,11 @@ pnpm exec playwright test --ui
 - `app/videos/check/_lib/get-monitor-slug.ts` - Sentryモニタースラッグ生成
 - `app/videos/update/_lib/constants.ts` - `/videos/update`専用の定数定義
 - `app/videos/update/_lib/save-videos.ts` - `/videos/update`専用のYouTube動画保存処理
-- `app/videos/update/_lib/save-twitch-videos.ts` - `/videos/update`専用のTwitch動画保存処理
+- `app/videos/update/_lib/save-twitch-videos.ts` - `/videos/update`専用のTwitch VOD保存・LIVE突合
+- `app/videos/update/_lib/save-twitch-streams.ts` - `/videos/update`専用のTwitch LIVE保存
 - `app/videos/check/_lib/get-saved-twitch-videos.ts` - Twitch動画の取得
 - `app/videos/check/_lib/process-twitch-videos-for-check.ts` - Twitch動画の更新・削除
+- `app/videos/check/_lib/process-twitch-live-for-check.ts` - Twitch LIVE の再確認・アーカイブ突合
 
 ### 判断基準
 

@@ -233,6 +233,7 @@ export type Database = {
       twitch_videos: {
         Row: {
           id: string
+          stream_id: string | null
           twitch_user_id: string
           twitch_video_id: string
           type: Database["public"]["Enums"]["twitch_video_type"] | null
@@ -240,6 +241,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          stream_id?: string | null
           twitch_user_id: string
           twitch_video_id: string
           type?: Database["public"]["Enums"]["twitch_video_type"] | null
@@ -247,6 +249,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          stream_id?: string | null
           twitch_user_id?: string
           twitch_video_id?: string
           type?: Database["public"]["Enums"]["twitch_video_type"] | null

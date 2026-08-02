@@ -60,6 +60,57 @@ export interface TwitchClip {
   vod_offset: number | null
 }
 
+export interface TwitchStream {
+  id: string
+  user_id: string
+  user_login: string
+  user_name: string
+  game_id: string
+  game_name: string
+  type: 'live'
+  title: string
+  viewer_count: number
+  started_at: string
+  language: string
+  /** Template URL with `{width}` / `{height}` placeholders */
+  thumbnail_url: string
+  tags: string[]
+  is_mature: boolean
+}
+
+/**
+ * Prefix for synthetic `twitch_videos.twitch_video_id` values while a stream is
+ * live (or recently ended) and the archive VOD id is not yet known.
+ * Helix video IDs are numeric; this prefix avoids collisions.
+ */
+export const LIVE_TWITCH_VIDEO_ID_PREFIX = 'live:' as const
+
+/**
+ * Builds a stable synthetic platform id for a live (or pending-archive) stream.
+ */
+export function toLiveTwitchVideoId(streamId: string): string {
+  return `${LIVE_TWITCH_VIDEO_ID_PREFIX}${streamId}`
+}
+
+/**
+ * Returns true when `twitch_video_id` is a synthetic live placeholder.
+ */
+export function isLiveTwitchVideoId(twitchVideoId: string): boolean {
+  return twitchVideoId.startsWith(LIVE_TWITCH_VIDEO_ID_PREFIX)
+}
+
+/**
+ * Extracts the Helix stream id from a synthetic live video id, or null.
+ */
+export function streamIdFromLiveTwitchVideoId(
+  twitchVideoId: string,
+): string | null {
+  if (!isLiveTwitchVideoId(twitchVideoId)) {
+    return null
+  }
+  return twitchVideoId.slice(LIVE_TWITCH_VIDEO_ID_PREFIX.length)
+}
+
 // ---------------------------------------------------------------------------
 // Client lifecycle
 // ---------------------------------------------------------------------------
@@ -353,6 +404,45 @@ function mapClip(clip: {
   }
 }
 
+function mapStream(stream: {
+  id: string
+  userId: string
+  userName: string
+  userDisplayName: string
+  gameId: string
+  gameName: string
+  type: string
+  title: string
+  viewers: number
+  startDate: Date
+  language: string
+  thumbnailUrl: string
+  tags: string[]
+  isMature: boolean
+}): TwitchStream | null {
+  // Helix currently only returns type "live" for Get Streams.
+  if (stream.type !== 'live') {
+    return null
+  }
+
+  return {
+    game_id: stream.gameId,
+    game_name: stream.gameName,
+    id: stream.id,
+    is_mature: stream.isMature,
+    language: stream.language,
+    started_at: toIsoString(stream.startDate),
+    tags: stream.tags,
+    thumbnail_url: stream.thumbnailUrl,
+    title: stream.title,
+    type: 'live',
+    user_id: stream.userId,
+    user_login: stream.userName,
+    user_name: stream.userDisplayName,
+    viewer_count: stream.viewers,
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Users
 // ---------------------------------------------------------------------------
@@ -501,6 +591,39 @@ export async function* getClips({
     const clips = await client.clips.getClipsByIds(chunk)
     for (const clip of clips) {
       yield mapClip(clip)
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Streams (live broadcasts)
+// ---------------------------------------------------------------------------
+
+export interface GetStreamsByUserIdsOptions {
+  userIds: string[]
+}
+
+/**
+ * Gets currently live streams for the given Helix user IDs.
+ * Offline users are omitted from the response (same as Helix).
+ */
+export async function* getStreamsByUserIds({
+  userIds,
+}: GetStreamsByUserIdsOptions): AsyncGenerator<TwitchStream, void, undefined> {
+  if (userIds.length === 0) {
+    return
+  }
+
+  const client = getTwitchApiClient()
+
+  for (let i = 0; i < userIds.length; i += TWITCH_API_MAX_RESULTS) {
+    const chunk = userIds.slice(i, i + TWITCH_API_MAX_RESULTS)
+    const streams = await client.streams.getStreamsByUserIds(chunk)
+    for (const stream of streams) {
+      const mapped = mapStream(stream)
+      if (mapped) {
+        yield mapped
+      }
     }
   }
 }

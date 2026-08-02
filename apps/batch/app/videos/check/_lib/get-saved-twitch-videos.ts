@@ -10,8 +10,11 @@ export interface SavedTwitchVideo {
   thumbnail: { id: string } | null
   twitch_video: {
     id: string
+    stream_id: string | null
     twitch_video_id: string
     type: 'archive' | 'highlight' | 'upload' | 'clip' | null
+    /** Helix user id (only populated when select joins twitch_users) */
+    helix_user_id?: string | null
   }
 }
 
@@ -21,7 +24,11 @@ export interface GetSavedTwitchVideos {
 }
 
 const VIDEO_SELECT =
-  'id, duration, published_at, status, title, thumbnail:thumbnails (id), twitch_video:twitch_videos!inner (id, twitch_video_id, type), talent:talents!inner (id, status, deleted_at)'
+  'id, duration, published_at, status, title, thumbnail:thumbnails (id), twitch_video:twitch_videos!inner (id, stream_id, twitch_video_id, type), talent:talents!inner (id, status, deleted_at)'
+
+/** Includes Helix user id for LIVE stream rechecks. */
+const LIVE_VIDEO_SELECT =
+  'id, duration, published_at, status, title, thumbnail:thumbnails (id), twitch_video:twitch_videos!inner (id, stream_id, twitch_video_id, type, twitch_user:twitch_users!inner (twitch_user_id)), talent:talents!inner (id, status, deleted_at)'
 
 function toSavedTwitchVideo(row: {
   id: string
@@ -33,13 +40,23 @@ function toSavedTwitchVideo(row: {
   twitch_video:
     | {
         id: string
+        stream_id: string | null
         twitch_video_id: string
         type: SavedTwitchVideo['twitch_video']['type']
+        twitch_user?:
+          | { twitch_user_id: string }
+          | Array<{ twitch_user_id: string }>
+          | null
       }
     | Array<{
         id: string
+        stream_id: string | null
         twitch_video_id: string
         type: SavedTwitchVideo['twitch_video']['type']
+        twitch_user?:
+          | { twitch_user_id: string }
+          | Array<{ twitch_user_id: string }>
+          | null
       }>
 }): SavedTwitchVideo {
   const twitchVideo = Array.isArray(row.twitch_video)
@@ -50,6 +67,10 @@ function toSavedTwitchVideo(row: {
     throw new TypeError(`Missing twitch_video for video ${row.id}`)
   }
 
+  const twitchUser = Array.isArray(twitchVideo.twitch_user)
+    ? twitchVideo.twitch_user[0]
+    : twitchVideo.twitch_user
+
   return {
     duration: row.duration,
     id: row.id,
@@ -57,13 +78,19 @@ function toSavedTwitchVideo(row: {
     status: row.status,
     thumbnail: row.thumbnail,
     title: row.title,
-    twitch_video: twitchVideo,
+    twitch_video: {
+      helix_user_id: twitchUser?.twitch_user_id ?? null,
+      id: twitchVideo.id,
+      stream_id: twitchVideo.stream_id,
+      twitch_video_id: twitchVideo.twitch_video_id,
+      type: twitchVideo.type,
+    },
   }
 }
 
 /**
  * Yields saved Twitch videos for check modes.
- * - default: none (Twitch VODs are not UPCOMING/LIVE)
+ * - default: LIVE Twitch videos for active talents (stream status recheck)
  * - recent: latest 100 ENDED/PUBLISHED Twitch videos for active talents
  * - all: all non-deleted Twitch videos for non-deleted talents (paginated)
  */
@@ -72,6 +99,27 @@ export async function* getSavedTwitchVideos({
   supabaseClient,
 }: GetSavedTwitchVideos): AsyncGenerator<SavedTwitchVideo, void, undefined> {
   if (mode === 'default') {
+    const { data: savedVideos, error } = await supabaseClient
+      .from('videos')
+      .select(LIVE_VIDEO_SELECT)
+      .eq('platform', 'twitch')
+      .is('deleted_at', null)
+      .is('talent.deleted_at', null)
+      .eq('talent.status', 'active')
+      .eq('status', 'LIVE')
+      .order('published_at', {
+        ascending: false,
+      })
+
+    if (error) {
+      throw new TypeError(error.message, {
+        cause: error,
+      })
+    }
+
+    for (const video of savedVideos) {
+      yield toSavedTwitchVideo(video)
+    }
     return
   }
 

@@ -99,11 +99,11 @@ VALUES
 	('30000000-0000-0000-0000-000000000102', '【Twitch】ハイライト集', 'PT15M0S', date_trunc('second', NOW() - INTERVAL '2 days'), date_trunc('second', NOW() - INTERVAL '2 days'), date_trunc('second', NOW() - INTERVAL '2 days'), TRUE, NULL, '00000000-0000-0000-0000-000000000002', 'twitch', 'ENDED'),
 	('30000000-0000-0000-0000-000000000103', '【Twitch】クリップ', 'PT0M30S', date_trunc('second', NOW() - INTERVAL '1 days'), date_trunc('second', NOW() - INTERVAL '1 days'), date_trunc('second', NOW() - INTERVAL '1 days'), TRUE, NULL, '00000000-0000-0000-0000-000000000001', 'twitch', 'ENDED');
 
-INSERT INTO public.twitch_videos (id, video_id, twitch_video_id, type, twitch_user_id)
+INSERT INTO public.twitch_videos (id, video_id, twitch_video_id, type, twitch_user_id, stream_id)
 VALUES
-	('14000000-0000-0000-0000-000000000101', '30000000-0000-0000-0000-000000000101', 'twvid-archive1', 'archive', '13000000-0000-0000-0000-000000000001'),
-	('14000000-0000-0000-0000-000000000102', '30000000-0000-0000-0000-000000000102', 'twvid-highlight1', 'highlight', '13000000-0000-0000-0000-000000000002'),
-	('14000000-0000-0000-0000-000000000103', '30000000-0000-0000-0000-000000000103', 'twclip1', 'clip', '13000000-0000-0000-0000-000000000001');
+	('14000000-0000-0000-0000-000000000101', '30000000-0000-0000-0000-000000000101', 'twvid-archive1', 'archive', '13000000-0000-0000-0000-000000000001', 'stream-archive1'),
+	('14000000-0000-0000-0000-000000000102', '30000000-0000-0000-0000-000000000102', 'twvid-highlight1', 'highlight', '13000000-0000-0000-0000-000000000002', NULL),
+	('14000000-0000-0000-0000-000000000103', '30000000-0000-0000-0000-000000000103', 'twclip1', 'clip', '13000000-0000-0000-0000-000000000001', NULL);
 
 -- announcements
 INSERT INTO public.announcements (id, enabled, level, message, start_at, end_at, created_at, updated_at)

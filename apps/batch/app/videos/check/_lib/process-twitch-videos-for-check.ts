@@ -1,5 +1,6 @@
 import { toDBString } from '@shinju-date/temporal-fns'
 import type { TwitchClip, TwitchVideo } from '@shinju-date/twitch-api-client'
+import { isLiveTwitchVideoId } from '@shinju-date/twitch-api-client'
 import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 import type { SavedTwitchVideo } from './get-saved-twitch-videos'
@@ -309,10 +310,16 @@ export async function processTwitchVideosForCheck({
 
   // Only consider IDs that were requested in this scrape (savedVideos).
   // Helix omits missing IDs → isAvailable false, same as scrapeVideosAvailability.
-  const availabilityResults = savedVideos.map((savedVideo) => ({
-    id: savedVideo.twitch_video.twitch_video_id,
-    isAvailable: availableIds.has(savedVideo.twitch_video.twitch_video_id),
-  }))
+  // Skip synthetic live: placeholders — they are not Helix video IDs.
+  const availabilityResults = savedVideos
+    .filter(
+      (savedVideo) =>
+        !isLiveTwitchVideoId(savedVideo.twitch_video.twitch_video_id),
+    )
+    .map((savedVideo) => ({
+      id: savedVideo.twitch_video.twitch_video_id,
+      isAvailable: availableIds.has(savedVideo.twitch_video.twitch_video_id),
+    }))
 
   const deleted = await processTwitchAvailability({
     currentDateTime,
@@ -350,6 +357,11 @@ export async function processTwitchAvailability({
 
   for (const result of results) {
     if (result.isAvailable) {
+      continue
+    }
+
+    // Never soft-delete synthetic LIVE placeholders via Helix Videos API.
+    if (isLiveTwitchVideoId(result.id)) {
       continue
     }
 

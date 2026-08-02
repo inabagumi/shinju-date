@@ -4,6 +4,9 @@ export type VideoStatus = 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
 
 export type TwitchVideoType = 'archive' | 'highlight' | 'upload' | 'clip'
 
+/** Matches `@shinju-date/twitch-api-client` LIVE_TWITCH_VIDEO_ID_PREFIX. */
+const LIVE_TWITCH_VIDEO_ID_PREFIX = 'live:'
+
 export interface GetVideoExternalUrlParams {
   platform: VideoPlatform
   /**
@@ -17,11 +20,16 @@ export interface GetVideoExternalUrlParams {
   twitchLoginName?: string | null | undefined
 }
 
+function isSyntheticLiveTwitchVideoId(twitchVideoId: string): boolean {
+  return twitchVideoId.startsWith(LIVE_TWITCH_VIDEO_ID_PREFIX)
+}
+
 /**
  * Builds the external watch URL for a video on its source platform.
  *
  * Twitch rules:
  * - LIVE / UPCOMING → `https://www.twitch.tv/<login>` (channel top)
+ * - synthetic `live:{stream_id}` placeholder (VOD not yet ready) → channel top
  * - clip → `https://clips.twitch.tv/<id>`
  * - otherwise → `https://www.twitch.tv/videos/<id>`
  *
@@ -35,8 +43,11 @@ export function getVideoExternalUrl(
   if (params.platform === 'twitch') {
     const isLiveOrUpcoming =
       params.status === 'LIVE' || params.status === 'UPCOMING'
+    const isPendingArchive =
+      params.twitchVideoId != null &&
+      isSyntheticLiveTwitchVideoId(params.twitchVideoId)
 
-    if (isLiveOrUpcoming && params.twitchLoginName) {
+    if ((isLiveOrUpcoming || isPendingArchive) && params.twitchLoginName) {
       return `https://www.twitch.tv/${encodeURIComponent(params.twitchLoginName)}`
     }
 
@@ -44,7 +55,7 @@ export function getVideoExternalUrl(
       return `https://clips.twitch.tv/${encodeURIComponent(params.twitchVideoId)}`
     }
 
-    if (params.twitchVideoId) {
+    if (params.twitchVideoId && !isPendingArchive) {
       return `https://www.twitch.tv/videos/${encodeURIComponent(
         params.twitchVideoId,
       )}`

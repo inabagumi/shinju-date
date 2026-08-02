@@ -1,11 +1,44 @@
 import type {
   TwitchClip,
+  TwitchStream,
   TwitchUser,
   TwitchVideo,
 } from '@shinju-date/twitch-api-client'
 import { describe, expect, it, vi } from 'vitest'
 import { TwitchScraper } from '../scraper.js'
 import type { TwitchScraperClient } from '../types.js'
+
+function stream(id: string, userId = 'user-1'): TwitchStream {
+  return {
+    game_id: '1',
+    game_name: 'Game',
+    id,
+    is_mature: false,
+    language: 'ja',
+    started_at: '2023-01-01T00:00:00Z',
+    tags: [],
+    thumbnail_url: 'https://example.com/{width}x{height}.jpg',
+    title: `Stream ${id}`,
+    type: 'live',
+    user_id: userId,
+    user_login: 'alice',
+    user_name: 'Alice',
+    viewer_count: 42,
+  }
+}
+
+function emptyClient(
+  overrides: Partial<TwitchScraperClient> = {},
+): TwitchScraperClient {
+  return {
+    getClips: vi.fn(),
+    getStreamsByUserIds: vi.fn(),
+    getUsers: vi.fn(),
+    getVideos: vi.fn(),
+    getVideosByUser: vi.fn(),
+    ...overrides,
+  }
+}
 
 function video(id: string, userId = 'user-1'): TwitchVideo {
   return {
@@ -71,12 +104,9 @@ async function* fromArray<T>(items: T[]): AsyncGenerator<T, void, undefined> {
 
 describe('TwitchScraper', () => {
   it('scrapeUsers invokes callback with fetched users', async () => {
-    const client: TwitchScraperClient = {
-      getClips: vi.fn(),
+    const client = emptyClient({
       getUsers: vi.fn().mockReturnValue(fromArray([user('1'), user('2')])),
-      getVideos: vi.fn(),
-      getVideosByUser: vi.fn(),
-    }
+    })
 
     await using scraper = new TwitchScraper({ client })
     const onUsers = vi.fn()
@@ -90,18 +120,35 @@ describe('TwitchScraper', () => {
     ])
   })
 
+  it('scrapeStreams invokes callback with live streams', async () => {
+    const client = emptyClient({
+      getStreamsByUserIds: vi
+        .fn()
+        .mockReturnValue(fromArray([stream('s1', 'u1')])),
+    })
+
+    await using scraper = new TwitchScraper({ client })
+    const onStreams = vi.fn()
+
+    await scraper.scrapeStreams({ userIds: ['u1', 'u2'] }, onStreams)
+
+    expect(client.getStreamsByUserIds).toHaveBeenCalledWith({
+      userIds: ['u1', 'u2'],
+    })
+    expect(onStreams).toHaveBeenCalledWith([
+      expect.objectContaining({ id: 's1', user_id: 'u1' }),
+    ])
+  })
+
   it('scrapeNewVideos calls back per user with videos', async () => {
-    const client: TwitchScraperClient = {
-      getClips: vi.fn(),
-      getUsers: vi.fn(),
-      getVideos: vi.fn(),
+    const client = emptyClient({
       getVideosByUser: vi.fn().mockImplementation(({ userId }) => {
         if (userId === 'u1') {
           return fromArray([video('v1', 'u1')])
         }
         return fromArray([])
       }),
-    }
+    })
 
     await using scraper = new TwitchScraper({ client, concurrency: 1 })
     const onNew = vi.fn()
@@ -121,10 +168,7 @@ describe('TwitchScraper', () => {
       info: vi.fn(),
       warn: vi.fn(),
     }
-    const client: TwitchScraperClient = {
-      getClips: vi.fn(),
-      getUsers: vi.fn(),
-      getVideos: vi.fn(),
+    const client = emptyClient({
       getVideosByUser: vi.fn().mockImplementation(({ userId }) => {
         if (userId === 'u-fail') {
           return {
@@ -139,7 +183,7 @@ describe('TwitchScraper', () => {
         }
         return fromArray([video('v-ok', userId)])
       }),
-    }
+    })
 
     await using scraper = new TwitchScraper({
       client,
@@ -158,12 +202,10 @@ describe('TwitchScraper', () => {
   })
 
   it('scrapeVideosAvailability marks missing IDs unavailable', async () => {
-    const client: TwitchScraperClient = {
+    const client = emptyClient({
       getClips: vi.fn().mockReturnValue(fromArray([clip('c1')])),
-      getUsers: vi.fn(),
       getVideos: vi.fn().mockReturnValue(fromArray([video('v1')])),
-      getVideosByUser: vi.fn(),
-    }
+    })
 
     await using scraper = new TwitchScraper({ client })
     const results: { id: string; isAvailable: boolean }[] = []
@@ -186,12 +228,7 @@ describe('TwitchScraper', () => {
   })
 
   it('skips empty id lists without calling the client', async () => {
-    const client: TwitchScraperClient = {
-      getClips: vi.fn(),
-      getUsers: vi.fn(),
-      getVideos: vi.fn(),
-      getVideosByUser: vi.fn(),
-    }
+    const client = emptyClient()
 
     await using scraper = new TwitchScraper({ client })
     const onVideos = vi.fn()
