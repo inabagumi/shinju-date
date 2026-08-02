@@ -26,9 +26,14 @@ export interface GetSavedTwitchVideos {
 const VIDEO_SELECT =
   'id, duration, published_at, status, title, thumbnail:thumbnails (id), twitch_video:twitch_videos!inner (id, stream_id, twitch_video_id, type), talent:talents!inner (id, status, deleted_at)'
 
-/** Includes Helix user id for LIVE stream rechecks. */
+/**
+ * Includes Helix user id for LIVE stream rechecks.
+ * The `twitch_users` join is intentionally optional (not `!inner`) so a row
+ * whose linked user was removed is still returned instead of being silently
+ * excluded and left stuck as LIVE forever.
+ */
 const LIVE_VIDEO_SELECT =
-  'id, duration, published_at, status, title, thumbnail:thumbnails (id), twitch_video:twitch_videos!inner (id, stream_id, twitch_video_id, type, twitch_user:twitch_users!inner (twitch_user_id)), talent:talents!inner (id, status, deleted_at)'
+  'id, duration, published_at, status, title, thumbnail:thumbnails (id), twitch_video:twitch_videos!inner (id, stream_id, twitch_video_id, type, twitch_user:twitch_users (twitch_user_id)), talent:talents!inner (id, status, deleted_at)'
 
 function toSavedTwitchVideo(row: {
   id: string

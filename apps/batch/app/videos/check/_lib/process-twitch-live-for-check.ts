@@ -1,7 +1,11 @@
+import * as Sentry from '@sentry/nextjs'
+import type { TablesInsert } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
 import type { TwitchStream, TwitchVideo } from '@shinju-date/twitch-api-client'
+import PQueue from 'p-queue'
 import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
+import { ImageProcessor } from '@/lib/thumbnails'
 import type { SavedTwitchVideo } from './get-saved-twitch-videos'
 
 export interface TwitchLiveVideoUpdate {
@@ -9,6 +13,7 @@ export interface TwitchLiveVideoUpdate {
   duration?: string
   published_at?: string
   status: 'LIVE' | 'ENDED'
+  thumbnail_id?: string
   title?: string
   updated_at: string
 }
@@ -18,6 +23,64 @@ export interface TwitchLivePlatformUpdate {
   stream_id: string | null
   twitch_video_id: string
   type: 'archive' | 'highlight' | 'upload' | 'clip'
+}
+
+async function insertThumbnails(
+  supabaseClient: TypedSupabaseClient,
+  values: TablesInsert<'thumbnails'>[],
+): Promise<{ id: string; path: string }[]> {
+  if (values.length === 0) {
+    return []
+  }
+
+  const { data, error } = await supabaseClient
+    .from('thumbnails')
+    .insert(values)
+    .select('id, path')
+
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  return data ?? []
+}
+
+/** Fetches archive thumbnails so LIVE → archive promotion drops the stale preview image. */
+async function processArchiveThumbnails(options: {
+  archives: TwitchVideo[]
+  currentDateTime: Temporal.Instant
+  supabaseClient: TypedSupabaseClient
+}): Promise<{ id: string; path: string }[]> {
+  const queue = new PQueue({
+    concurrency: 12,
+  })
+
+  const results = await Promise.allSettled(
+    options.archives.map((archive) =>
+      queue.add(() =>
+        ImageProcessor.uploadFromUrl({
+          currentDateTime: options.currentDateTime,
+          mediaId: archive.id,
+          supabaseClient: options.supabaseClient,
+          thumbnailUrl: archive.thumbnail_url,
+        }),
+      ),
+    ),
+  )
+
+  const values: TablesInsert<'thumbnails'>[] = []
+
+  for (const result of results) {
+    if (result.status === 'fulfilled' && result.value) {
+      values.push(result.value)
+    } else if (result.status === 'rejected') {
+      Sentry.captureException(result.reason)
+    }
+  }
+
+  return insertThumbnails(options.supabaseClient, values)
 }
 
 /**
@@ -63,9 +126,20 @@ export async function processTwitchLiveForCheck({
 
   const videoUpdates: TwitchLiveVideoUpdate[] = []
   const platformUpdates: TwitchLivePlatformUpdate[] = []
+  const archiveMatches: { archive: TwitchVideo; saved: SavedTwitchVideo }[] = []
 
   for (const saved of savedVideos) {
     if (saved.status !== 'LIVE') {
+      continue
+    }
+
+    if (saved.twitch_video.helix_user_id == null) {
+      // No linked Twitch user means we can never look up this stream again; end it.
+      videoUpdates.push({
+        id: saved.id,
+        status: 'ENDED',
+        updated_at: toDBString(currentDateTime),
+      })
       continue
     }
 
@@ -84,23 +158,7 @@ export async function processTwitchLiveForCheck({
     const archive = archiveByStreamId.get(streamId)
 
     if (archive) {
-      const publishedAt = Temporal.Instant.from(
-        archive.published_at || archive.created_at,
-      )
-      videoUpdates.push({
-        duration: archive.duration,
-        id: saved.id,
-        published_at: toDBString(publishedAt),
-        status: 'ENDED',
-        title: archive.title,
-        updated_at: toDBString(currentDateTime),
-      })
-      platformUpdates.push({
-        id: saved.twitch_video.id,
-        stream_id: archive.stream_id,
-        twitch_video_id: archive.id,
-        type: archive.type,
-      })
+      archiveMatches.push({ archive, saved })
       continue
     }
 
@@ -124,30 +182,47 @@ export async function processTwitchLiveForCheck({
     })
   }
 
+  if (archiveMatches.length > 0) {
+    const thumbnails = await processArchiveThumbnails({
+      archives: archiveMatches.map((match) => match.archive),
+      currentDateTime,
+      supabaseClient,
+    })
+
+    for (const { archive, saved } of archiveMatches) {
+      const thumbnail = thumbnails.find((t) =>
+        t.path.startsWith(`${archive.id}/`),
+      )
+      const publishedAt = Temporal.Instant.from(
+        archive.published_at || archive.created_at,
+      )
+
+      videoUpdates.push({
+        duration: archive.duration,
+        id: saved.id,
+        published_at: toDBString(publishedAt),
+        status: 'ENDED',
+        title: archive.title,
+        updated_at: toDBString(currentDateTime),
+        ...(thumbnail ? { thumbnail_id: thumbnail.id } : {}),
+      })
+      platformUpdates.push({
+        id: saved.twitch_video.id,
+        stream_id: archive.stream_id,
+        twitch_video_id: archive.id,
+        type: archive.type,
+      })
+    }
+  }
+
   if (videoUpdates.length === 0 && platformUpdates.length === 0) {
     return false
   }
 
-  if (videoUpdates.length > 0) {
-    const results = await Promise.all(
-      videoUpdates.map((update) => {
-        const { id, ...updateData } = update
-        return supabaseClient.from('videos').update(updateData).eq('id', id)
-      }),
-    )
-
-    const firstError = results.find((result) => result.error)
-    if (firstError?.error) {
-      throw new TypeError(firstError.error.message, {
-        cause: firstError.error,
-      })
-    }
-
-    logger.info('Twitch LIVE動画が更新されました', {
-      count: videoUpdates.length,
-    })
-  }
-
+  // Update twitch_videos before videos: if this succeeds but the videos
+  // update below fails, the row stays LIVE with the real archive id/type
+  // already linked, so the next check run retries it via mode: 'default'
+  // instead of leaving a synthetic id stuck forever with status !== 'LIVE'.
   if (platformUpdates.length > 0) {
     const results = await Promise.all(
       platformUpdates.map((update) =>
@@ -171,6 +246,26 @@ export async function processTwitchLiveForCheck({
 
     logger.info('Twitch LIVE行がアーカイブに紐づけられました', {
       count: platformUpdates.length,
+    })
+  }
+
+  if (videoUpdates.length > 0) {
+    const results = await Promise.all(
+      videoUpdates.map((update) => {
+        const { id, ...updateData } = update
+        return supabaseClient.from('videos').update(updateData).eq('id', id)
+      }),
+    )
+
+    const firstError = results.find((result) => result.error)
+    if (firstError?.error) {
+      throw new TypeError(firstError.error.message, {
+        cause: firstError.error,
+      })
+    }
+
+    logger.info('Twitch LIVE動画が更新されました', {
+      count: videoUpdates.length,
     })
   }
 

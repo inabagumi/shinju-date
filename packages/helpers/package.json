@@ -1,5 +1,8 @@
 {
   "author": "Haneru Developers",
+  "dependencies": {
+    "@shinju-date/twitch-api-client": "workspace:*"
+  },
   "description": "",
   "devDependencies": {
     "@tsconfig/node20": "20.1.9",

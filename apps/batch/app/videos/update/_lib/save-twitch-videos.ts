@@ -208,6 +208,19 @@ async function reconcileLivePlaceholderToArchive(options: {
     .eq('video_id', savedVideo.id)
 
   if (twitchError) {
+    // twitch_videos update failed — restore videos so it isn't left ENDED
+    // with a stale synthetic twitch_video_id, mirroring insertTwitchVideoPair.
+    await supabaseClient
+      .from('videos')
+      .update({
+        duration: savedVideo.duration,
+        published_at: savedVideo.published_at,
+        status: savedVideo.status,
+        thumbnail_id: savedVideo.thumbnail_id,
+        title: savedVideo.title,
+      })
+      .eq('id', savedVideo.id)
+
     throw new DatabaseError(twitchError)
   }
 
@@ -347,16 +360,23 @@ export async function saveTwitchVideos(options: {
       const byStream = existingByStreamId.get(video.stream_id)
       if (byStream?.twitch_video) {
         const platformId = byStream.twitch_video.twitch_video_id
-        // Only promote synthetic live placeholders (or already-linked same stream).
-        if (isLiveTwitchVideoId(platformId) || platformId === video.id) {
+        const isLivePlaceholder = isLiveTwitchVideoId(platformId)
+        // Only promote synthetic live placeholders when the new video is an
+        // archive (matches process-twitch-live-for-check.ts's archiveByStreamId),
+        // or update an already-linked same stream/video.
+        if (
+          (isLivePlaceholder && video.type === 'archive') ||
+          platformId === video.id
+        ) {
           toReconcile.push({
             originalVideo: video,
             savedVideo: byStream,
           })
           continue
         }
-        // Real different VOD already owns this stream_id — skip insert to
-        // avoid unique constraint violation; leave updates to /videos/check.
+        // Real different VOD (or a non-archive matching a placeholder) already
+        // owns this stream_id — skip insert to avoid unique constraint
+        // violation; leave reconciliation to the matching archive / /videos/check.
         continue
       }
     }

@@ -67,7 +67,6 @@ async function processStreamThumbnails(options: {
 }): Promise<{ id: string; path: string }[]> {
   const queue = new PQueue({
     concurrency: 12,
-    interval: 250,
   })
 
   const results = await Promise.allSettled(
@@ -206,6 +205,11 @@ export async function saveTwitchStreams(options: {
       if (existing.deleted_at) {
         // Soft-deleted placeholder — treat as new insert path is not used;
         // skip to avoid resurrecting without explicit restore logic.
+        continue
+      }
+
+      if (existing.twitch_video?.type != null) {
+        // Already reconciled to an archive VOD; do not resurrect as LIVE.
         continue
       }
 

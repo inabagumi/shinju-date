@@ -1,11 +1,10 @@
+import { isLiveTwitchVideoId } from '@shinju-date/twitch-api-client'
+
 export type VideoPlatform = 'youtube' | 'twitch'
 
 export type VideoStatus = 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
 
 export type TwitchVideoType = 'archive' | 'highlight' | 'upload' | 'clip'
-
-/** Matches `@shinju-date/twitch-api-client` LIVE_TWITCH_VIDEO_ID_PREFIX. */
-const LIVE_TWITCH_VIDEO_ID_PREFIX = 'live:'
 
 export interface GetVideoExternalUrlParams {
   platform: VideoPlatform
@@ -18,10 +17,6 @@ export interface GetVideoExternalUrlParams {
   twitchVideoId?: string | null | undefined
   twitchVideoType?: TwitchVideoType | null | undefined
   twitchLoginName?: string | null | undefined
-}
-
-function isSyntheticLiveTwitchVideoId(twitchVideoId: string): boolean {
-  return twitchVideoId.startsWith(LIVE_TWITCH_VIDEO_ID_PREFIX)
 }
 
 /**
@@ -44,8 +39,7 @@ export function getVideoExternalUrl(
     const isLiveOrUpcoming =
       params.status === 'LIVE' || params.status === 'UPCOMING'
     const isPendingArchive =
-      params.twitchVideoId != null &&
-      isSyntheticLiveTwitchVideoId(params.twitchVideoId)
+      params.twitchVideoId != null && isLiveTwitchVideoId(params.twitchVideoId)
 
     if ((isLiveOrUpcoming || isPendingArchive) && params.twitchLoginName) {
       return `https://www.twitch.tv/${encodeURIComponent(params.twitchLoginName)}`
