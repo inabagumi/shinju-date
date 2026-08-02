@@ -5,7 +5,10 @@ import { revalidateTags } from '@shinju-date/web-cache'
 import { after } from 'next/server'
 import { videosCascadeFromTalents as ratelimit } from '@/lib/ratelimit'
 import { supabaseClient } from '@/lib/supabase'
-import { cascadeVideosFromTalents } from './_lib/cascade-from-talents'
+import {
+  CascadePhaseError,
+  cascadeVideosFromTalents,
+} from './_lib/cascade-from-talents'
 
 const MONITOR_SLUG = '/videos/cascade-from-talents'
 const CRON_SCHEDULE = '*/5 * * * *'
@@ -82,6 +85,27 @@ export async function POST(request: Request): Promise<Response> {
       status: 200,
     })
   } catch (error) {
+    if (error instanceof CascadePhaseError) {
+      // One phase may have committed; keep visibility and revalidate if needed.
+      logger.error('タレント連鎖の動画処理でフェーズ失敗がありました', {
+        error,
+        restored: error.restored,
+        softDeleted: error.softDeleted,
+      })
+
+      if (error.softDeleted > 0 || error.restored > 0) {
+        try {
+          await revalidateTags(['videos', 'talents'], {
+            signal: request.signal,
+          })
+        } catch (revalidateError) {
+          logger.error('部分成功後のキャッシュ再検証に失敗しました', {
+            error: revalidateError,
+          })
+        }
+      }
+    }
+
     after(async () => {
       Sentry.captureException(error)
 

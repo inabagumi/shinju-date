@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { cascadeVideosFromTalents } from '../cascade-from-talents'
+import {
+  CascadePhaseError,
+  cascadeVideosFromTalents,
+} from '../cascade-from-talents'
 
 vi.mock('@shinju-date/temporal-fns', () => ({
   toDBString: vi.fn((instant: { toString: () => string }) =>
@@ -28,6 +31,11 @@ interface MockCall {
   args: unknown[]
 }
 
+interface SelectedVideo {
+  id: string
+  thumbnail_id: string | null
+}
+
 /**
  * Builds a thenable Supabase query mock that records chain calls
  * and resolves with the provided result when awaited.
@@ -39,6 +47,7 @@ function createClientMock(options: {
 }) {
   const calls: MockCall[] = []
   let selectCount = 0
+  let lastSelectedVideos: SelectedVideo[] = []
 
   const from = vi.fn((table: string) => {
     let pendingUpdatePayload: Record<string, unknown> | null = null
@@ -47,15 +56,28 @@ function createClientMock(options: {
     const resolveResult = (): QueryResult => {
       if (table === 'videos' && !isUpdate) {
         selectCount++
-        return options.onSelectVideos()
+        const result = options.onSelectVideos()
+        lastSelectedVideos = Array.isArray(result.data)
+          ? (result.data as SelectedVideo[])
+          : []
+        return result
       }
       if (table === 'videos' && isUpdate) {
-        return (
-          options.onUpdateVideos?.(pendingUpdatePayload ?? {}) ?? {
-            data: null,
-            error: null,
+        const custom = options.onUpdateVideos?.(pendingUpdatePayload ?? {})
+        if (custom) {
+          // Default updated rows to the last selected ids when not specified.
+          if (custom.data == null && custom.error == null) {
+            return {
+              data: lastSelectedVideos.map((video) => ({ id: video.id })),
+              error: null,
+            }
           }
-        )
+          return custom
+        }
+        return {
+          data: lastSelectedVideos.map((video) => ({ id: video.id })),
+          error: null,
+        }
       }
       if (table === 'thumbnails' && isUpdate) {
         return (
@@ -172,6 +194,17 @@ describe('cascadeVideosFromTalents', () => {
           call.args[0] === 'talents.deleted_at',
       ),
     ).toBe(true)
+
+    // Update re-checks that the row is still not deleted
+    expect(
+      calls.some(
+        (call) =>
+          call.table === 'videos' &&
+          call.method === 'is' &&
+          call.args[0] === 'deleted_at' &&
+          call.args[1] === null,
+      ),
+    ).toBe(true)
   })
 
   it('restores only videos marked talent_deleted under active talents', async () => {
@@ -206,16 +239,15 @@ describe('cascadeVideosFromTalents', () => {
       },
     ])
 
-    // Restore path must filter by deleted_reason = talent_deleted
-    expect(
-      calls.some(
-        (call) =>
-          call.table === 'videos' &&
-          call.method === 'eq' &&
-          call.args[0] === 'deleted_reason' &&
-          call.args[1] === 'talent_deleted',
-      ),
-    ).toBe(true)
+    // Restore path must filter by deleted_reason = talent_deleted (select + update)
+    const deletedReasonEqCalls = calls.filter(
+      (call) =>
+        call.table === 'videos' &&
+        call.method === 'eq' &&
+        call.args[0] === 'deleted_reason' &&
+        call.args[1] === 'talent_deleted',
+    )
+    expect(deletedReasonEqCalls.length).toBeGreaterThanOrEqual(2)
 
     // Active talent: talents.deleted_at IS NULL
     expect(
@@ -239,7 +271,35 @@ describe('cascadeVideosFromTalents', () => {
     expect(result).toEqual({ restored: 0, softDeleted: 0 })
   })
 
-  it('throws when select for soft-delete fails', async () => {
+  it('preserves soft-delete count when restore phase fails', async () => {
+    let selectPhase = 0
+
+    const { client } = createClientMock({
+      onSelectVideos: () => {
+        selectPhase++
+        if (selectPhase === 1) {
+          return {
+            data: [{ id: 'to-delete', thumbnail_id: null }],
+            error: null,
+          }
+        }
+        return {
+          data: null,
+          error: { message: 'restore select failed' },
+        }
+      },
+    })
+
+    await expect(cascadeVideosFromTalents(client as never)).rejects.toSatisfy(
+      (error: unknown) =>
+        error instanceof CascadePhaseError &&
+        error.softDeleted === 1 &&
+        error.restored === 0 &&
+        error.message.includes('softDeleted=1'),
+    )
+  })
+
+  it('throws CascadePhaseError when select for soft-delete fails', async () => {
     const { client } = createClientMock({
       onSelectVideos: () => ({
         data: null,
@@ -247,6 +307,9 @@ describe('cascadeVideosFromTalents', () => {
       }),
     })
 
+    await expect(cascadeVideosFromTalents(client as never)).rejects.toThrow(
+      CascadePhaseError,
+    )
     await expect(cascadeVideosFromTalents(client as never)).rejects.toThrow(
       'db error',
     )

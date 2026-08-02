@@ -15,9 +15,14 @@ vi.mock('@/lib/ratelimit', () => ({
   videosCascadeFromTalents: mockRatelimit,
 }))
 
-vi.mock('../_lib/cascade-from-talents', () => ({
-  cascadeVideosFromTalents: mockCascadeVideosFromTalents,
-}))
+vi.mock('../_lib/cascade-from-talents', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('../_lib/cascade-from-talents')>()
+  return {
+    ...actual,
+    cascadeVideosFromTalents: mockCascadeVideosFromTalents,
+  }
+})
 
 vi.mock('@shinju-date/web-cache', () => ({
   revalidateTags: mockRevalidateTags,
@@ -25,6 +30,7 @@ vi.mock('@shinju-date/web-cache', () => ({
 
 vi.mock('@shinju-date/logger', () => ({
   logger: {
+    error: vi.fn(),
     info: vi.fn(),
     warn: vi.fn(),
   },
@@ -123,5 +129,37 @@ describe('POST /videos/cascade-from-talents', () => {
     )
 
     expect(response.status).toBe(500)
+  })
+
+  it('revalidates and logs partial counts when CascadePhaseError is thrown', async () => {
+    const { CascadePhaseError } = await import('../_lib/cascade-from-talents')
+    const { logger } = await import('@shinju-date/logger')
+
+    mockRatelimit.limit.mockResolvedValue({ success: true })
+    mockCascadeVideosFromTalents.mockRejectedValue(
+      new CascadePhaseError('partial failure', {
+        restored: 0,
+        softDeleted: 3,
+      }),
+    )
+    mockRevalidateTags.mockResolvedValue(undefined)
+
+    const response = await POST(
+      new Request('http://localhost:5000/videos/cascade-from-talents', {
+        method: 'POST',
+      }),
+    )
+
+    expect(response.status).toBe(500)
+    expect(mockRevalidateTags).toHaveBeenCalledWith(['videos', 'talents'], {
+      signal: expect.any(AbortSignal),
+    })
+    expect(logger.error).toHaveBeenCalledWith(
+      'タレント連鎖の動画処理でフェーズ失敗がありました',
+      expect.objectContaining({
+        restored: 0,
+        softDeleted: 3,
+      }),
+    )
   })
 })
