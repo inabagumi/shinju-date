@@ -1,5 +1,6 @@
 import { SITE_NAME as siteName } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
+import { getVideoExternalUrl } from '@shinju-date/helpers'
 import { max, min } from '@shinju-date/temporal-fns'
 import {
   convertTimestampToArray,
@@ -12,10 +13,15 @@ type Talent = Pick<Tables<'talents'>, 'name'>
 
 type Video = Pick<
   Tables<'videos'>,
-  'duration' | 'id' | 'published_at' | 'title'
+  'duration' | 'id' | 'platform' | 'published_at' | 'status' | 'title'
 > & {
   talent: Talent
-  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'>
+  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
+  twitch_video: {
+    twitch_video_id: string
+    type: Tables<'twitch_videos'>['type']
+    twitch_user: Pick<Tables<'twitch_users'>, 'twitch_login_name'> | null
+  } | null
 }
 
 interface GetPublishedAtAndEndedAtOptions {
@@ -88,15 +94,23 @@ export function createEventAttributesList(
   const events: EventAttributes[] = []
 
   for (const video of videos) {
-    if (!video.youtube_video) continue
+    const url = getVideoExternalUrl({
+      platform: video.platform,
+      status: video.status,
+      twitchLoginName: video.twitch_video?.twitch_user?.twitch_login_name,
+      twitchVideoId: video.twitch_video?.twitch_video_id,
+      twitchVideoType: video.twitch_video?.type,
+      youtubeVideoId: video.youtube_video?.youtube_video_id,
+    })
+
+    if (!url) {
+      continue
+    }
 
     const [publishedAt, endedAt] = getPublishedAtAndEndedAt(video, {
       now,
     })
-    const youtubeVideoId = video.youtube_video.youtube_video_id
-    const url = `https://www.youtube.com/watch?v=${encodeURIComponent(
-      youtubeVideoId,
-    )}`
+    const location = video.platform === 'twitch' ? 'Twitch' : 'YouTube'
 
     events.push({
       calName: video.talent.name,
@@ -104,7 +118,7 @@ export function createEventAttributesList(
       end: convertTimestampToArray(endedAt.epochMilliseconds, 'utc'),
       endInputType: 'utc',
       endOutputType: 'utc',
-      location: 'YouTube',
+      location,
       productId: siteName,
       start: convertTimestampToArray(publishedAt.epochMilliseconds, 'utc'),
       startInputType: 'utc',

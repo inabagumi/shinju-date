@@ -1,7 +1,7 @@
 'use client'
 
 import { TIME_ZONE } from '@shinju-date/constants'
-import { formatNumber } from '@shinju-date/helpers'
+import { formatNumber, getVideoExternalUrl } from '@shinju-date/helpers'
 import { formatDateTime, formatDuration } from '@shinju-date/temporal-fns'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -20,6 +20,7 @@ import {
   toggleVisibilityAction,
 } from '../_actions'
 import type { Video } from '../_lib/get-videos'
+import { PlatformBadge } from './platform-badge'
 import { SortIcon } from './sort-icon'
 import { VideoActionConfirmDialog } from './video-action-confirm-dialog'
 import { VideoKindBadge } from './video-kind-badge'
@@ -182,6 +183,9 @@ export default function VideoList({ videos }: Props) {
               </th>
               <th className="whitespace-nowrap p-3 text-left">サムネイル</th>
               <th className="whitespace-nowrap p-3 text-left">タイトル</th>
+              <th className="whitespace-nowrap p-3 text-left">
+                プラットフォーム
+              </th>
               <th className="whitespace-nowrap p-3 text-left">タレント</th>
               <th className="whitespace-nowrap p-3 text-left">
                 <Link
@@ -260,6 +264,9 @@ export default function VideoList({ videos }: Props) {
                       </Link>
                     </td>
                     <td className="p-3">
+                      <PlatformBadge platform={video.platform} />
+                    </td>
+                    <td className="p-3">
                       <span className="text-gray-600 text-sm">
                         {video.talent.name}
                       </span>
@@ -316,16 +323,27 @@ export default function VideoList({ videos }: Props) {
                         <DropdownMenuContent>
                           <DropdownMenuItem
                             onClick={() => {
-                              if (video.youtube_video?.youtube_video_id) {
-                                window.open(
-                                  `https://www.youtube.com/watch?v=${video.youtube_video.youtube_video_id}`,
-                                  '_blank',
-                                )
+                              const externalUrl = getVideoExternalUrl({
+                                platform: video.platform,
+                                status: video.status,
+                                twitchLoginName:
+                                  video.twitch_video?.twitch_user
+                                    ?.twitch_login_name,
+                                twitchVideoId:
+                                  video.twitch_video?.twitch_video_id,
+                                twitchVideoType: video.twitch_video?.type,
+                                youtubeVideoId:
+                                  video.youtube_video?.youtube_video_id,
+                              })
+                              if (externalUrl) {
+                                window.open(externalUrl, '_blank', 'noopener')
                               }
                             }}
                           >
                             <span className="flex items-center gap-1">
-                              YouTubeで見る
+                              {video.platform === 'twitch'
+                                ? 'Twitchで見る'
+                                : 'YouTubeで見る'}
                               <svg
                                 aria-hidden="true"
                                 className="h-4 w-4"
@@ -378,7 +396,7 @@ export default function VideoList({ videos }: Props) {
               })
             ) : (
               <tr>
-                <td className="p-8 text-center text-gray-500" colSpan={11}>
+                <td className="p-8 text-center text-gray-500" colSpan={12}>
                   動画がありません。
                 </td>
               </tr>

@@ -1,4 +1,4 @@
-import { formatNumber } from '@shinju-date/helpers'
+import { formatNumber, getVideoExternalUrl } from '@shinju-date/helpers'
 import {
   formatDateTimeFromISO,
   formatDuration,
@@ -12,6 +12,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { Temporal } from 'temporal-polyfill'
+import { PlatformBadge } from '../_components/platform-badge'
 import { VideoKindBadge } from '../_components/video-kind-badge'
 import { VideoStatusBadge } from '../_components/video-status-badge'
 import getVideo from '../_lib/get-video'
@@ -53,6 +54,14 @@ async function VideoDetailContent({ id }: { id: string }) {
   }
 
   const isDeleted = video.deleted_at !== null
+  const externalUrl = getVideoExternalUrl({
+    platform: video.platform,
+    status: video.status,
+    twitchLoginName: video.twitch_video?.twitch_user?.twitch_login_name,
+    twitchVideoId: video.twitch_video?.twitch_video_id,
+    twitchVideoType: video.twitch_video?.type,
+    youtubeVideoId: video.youtube_video?.youtube_video_id,
+  })
 
   return (
     <div className="p-4">
@@ -163,7 +172,7 @@ async function VideoDetailContent({ id }: { id: string }) {
                   プラットフォーム
                 </dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
-                  {video.platform === 'twitch' ? 'Twitch' : 'YouTube'}
+                  <PlatformBadge platform={video.platform} />
                 </dd>
               </div>
               <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -282,34 +291,17 @@ async function VideoDetailContent({ id }: { id: string }) {
             </p>
           </CardHeader>
           <CardContent>
-            {video.platform === 'twitch' &&
-              video.twitch_video?.twitch_video_id && (
-                <a
-                  className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
-                  href={
-                    video.twitch_video.type === 'clip'
-                      ? `https://clips.twitch.tv/${video.twitch_video.twitch_video_id}`
-                      : `https://www.twitch.tv/videos/${video.twitch_video.twitch_video_id}`
-                  }
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  Twitchで見る
-                  <ExternalLink className="ml-2 h-4 w-4" />
-                </a>
-              )}
-            {video.platform !== 'twitch' &&
-              video.youtube_video?.youtube_video_id && (
-                <a
-                  className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
-                  href={`https://www.youtube.com/watch?v=${video.youtube_video.youtube_video_id}`}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  YouTubeで見る
-                  <ExternalLink className="ml-2 h-4 w-4" />
-                </a>
-              )}
+            {externalUrl && (
+              <a
+                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
+                href={externalUrl}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {video.platform === 'twitch' ? 'Twitchで見る' : 'YouTubeで見る'}
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </a>
+            )}
           </CardContent>
         </Card>
       </div>

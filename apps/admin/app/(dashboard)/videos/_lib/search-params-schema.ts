@@ -16,6 +16,10 @@ const VALID_VIDEO_STATUSES: readonly VideoStatus[] = [
 type VideoKind = Database['public']['Enums']['video_kind']
 const VALID_VIDEO_KINDS: readonly VideoKind[] = ['standard', 'short'] as const
 
+// Valid platform values from the database enum
+type Platform = Tables<'videos'>['platform']
+const VALID_PLATFORMS: readonly Platform[] = ['youtube', 'twitch'] as const
+
 // Define the valid sort field and order values based on the types
 const VALID_SORT_FIELDS: VideoSortField[] = ['published_at', 'updated_at']
 const VALID_SORT_ORDERS: VideoSortOrder[] = ['asc', 'desc']
@@ -24,6 +28,7 @@ const VALID_SORT_ORDERS: VideoSortOrder[] = ['asc', 'desc']
 export const DEFAULT_VALUES = {
   deleted: undefined,
   page: 1,
+  platform: undefined,
   search: undefined,
   sortField: 'updated_at' as const,
   sortOrder: 'desc' as const,
@@ -34,6 +39,7 @@ export const DEFAULT_VALUES = {
 } satisfies {
   deleted: boolean[] | undefined
   page: number
+  platform: Platform[] | undefined
   search: string | undefined
   sortField: VideoSortField
   sortOrder: VideoSortOrder
@@ -76,6 +82,19 @@ export const videoSearchParamsSchema = z.object({
       if (!val) return DEFAULT_VALUES.page
       const num = Number(val)
       return Number.isNaN(num) || num < 1 ? DEFAULT_VALUES.page : num
+    }),
+
+  // Platform filter - support multiple values for multi-select
+  platform: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((val): Platform[] | undefined => {
+      if (!val) return undefined
+      const values = Array.isArray(val) ? val : [val]
+      const validPlatforms = values.filter((v) =>
+        VALID_PLATFORMS.includes(v as Platform),
+      ) as Platform[]
+      return validPlatforms.length > 0 ? validPlatforms : undefined
     }),
 
   // Search query string (optional) - handle arrays by taking first element

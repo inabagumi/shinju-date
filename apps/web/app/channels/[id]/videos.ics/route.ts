@@ -21,7 +21,7 @@ export async function GET(
   const { id } = await params
   const { count, error } = await supabaseClient
     .from('talents')
-    .select('*, youtube_channel:youtube_channels(youtube_channel_id)', {
+    .select('*', {
       count: 'exact',
       head: true,
     })
@@ -50,9 +50,16 @@ export async function GET(
         ),
         duration,
         id,
+        platform,
         published_at,
+        status,
         title,
-        youtube_video:youtube_videos!inner (youtube_video_id)
+        youtube_video:youtube_videos (youtube_video_id),
+        twitch_video:twitch_videos (
+          twitch_video_id,
+          type,
+          twitch_user:twitch_users (twitch_login_name)
+        )
       `,
     )
     .eq('talent_id', id)

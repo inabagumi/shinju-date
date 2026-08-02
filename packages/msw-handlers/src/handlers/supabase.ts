@@ -206,10 +206,13 @@ async function applySelect(
                 q.where({ id: item.video_id }),
               )
             } else if (relationName === 'youtube_videos' && item.id) {
-              const ytVideos = await youtubeVideos.findMany((q) =>
+              // One-to-one with videos
+              relatedItem = await youtubeVideos.findFirst((q) =>
                 q.where({ video_id: item.id }),
               )
-              relatedItem = ytVideos.length > 0 ? ytVideos : null
+            } else if (relationName === 'twitch_videos' && item.id) {
+              // No Twitch mock data yet; leave null so YouTube-only seeds still work
+              relatedItem = null
             } else if (relationName === 'youtube_channels' && item.id) {
               const channels = await youtubeChannels.findMany((q) =>
                 q.where({ talent_id: item.id }),
@@ -313,10 +316,11 @@ async function applySelect(
                 q.where({ id: item.video_id }),
               )
             } else if (relationName === 'youtube_videos' && item.id) {
-              const ytVideos = await youtubeVideos.findMany((q) =>
+              relatedItem = await youtubeVideos.findFirst((q) =>
                 q.where({ video_id: item.id }),
               )
-              relatedItem = ytVideos.length > 0 ? ytVideos : null
+            } else if (relationName === 'twitch_videos' && item.id) {
+              relatedItem = null
             } else if (relationName === 'youtube_channels' && item.id) {
               const channels = await youtubeChannels.findMany((q) =>
                 q.where({ talent_id: item.id }),
@@ -1342,6 +1346,7 @@ export const supabaseHandlers = [
             deleted_at: video.deleted_at,
             duration: video.duration,
             id: video.id,
+            platform: video.platform,
             published_at: video.published_at,
             status: video.status,
             talent: talent
@@ -1360,7 +1365,9 @@ export const supabaseHandlers = [
                 }
               : null,
             title: video.title,
+            twitch_video: null,
             updated_at: video.updated_at,
+            video_kind: video.video_kind,
             visible: video.visible,
             youtube_video: youtubeVideo
               ? {

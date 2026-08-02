@@ -70,6 +70,9 @@ async function VideoTableData({
   if (validatedParams.status !== undefined) {
     filters.status = validatedParams.status
   }
+  if (validatedParams.platform !== undefined) {
+    filters.platform = validatedParams.platform
+  }
   if (validatedParams.videoKind !== undefined) {
     filters.videoKind = validatedParams.videoKind
   }
@@ -132,6 +135,9 @@ async function VideoCountData({
   }
   if (validatedParams.status !== undefined) {
     filters.status = validatedParams.status
+  }
+  if (validatedParams.platform !== undefined) {
+    filters.platform = validatedParams.platform
   }
   if (validatedParams.videoKind !== undefined) {
     filters.videoKind = validatedParams.videoKind

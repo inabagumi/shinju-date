@@ -40,7 +40,7 @@ async function HomeTimeline() {
   return videos.length > 0 ? (
     <Timeline prefetchedData={videos} />
   ) : (
-    <NoResults message="YouTubeに登録されている配信予定の動画がありません。" />
+    <NoResults message="登録されている配信予定の動画がありません。" />
   )
 }
 

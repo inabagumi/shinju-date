@@ -1,4 +1,5 @@
 import { TIME_ZONE } from '@shinju-date/constants'
+import { getVideoExternalUrl } from '@shinju-date/helpers'
 import { formatDuration } from '@shinju-date/temporal-fns'
 import { ImageIcon } from 'lucide-react'
 import Image from 'next/image'
@@ -7,13 +8,10 @@ import { Temporal } from 'temporal-polyfill'
 import type { Video } from '@/lib/fetchers'
 import FormattedTime from './formatted-time'
 import LiveNow from './live-now'
-
-interface YouTubeVideo extends Omit<Video, 'youtube_video'> {
-  youtube_video: NonNullable<Video['youtube_video']>
-}
+import PlatformBadge from './platform-badge'
 
 function getThumbnailURL(
-  video: YouTubeVideo,
+  video: Video,
 ): [src: string, blurDataURL: string] | null {
   if (!video.thumbnail) {
     return null
@@ -36,7 +34,11 @@ function ThumbnailPlaceholder() {
   )
 }
 
-function Thumbnail({ video }: { video: YouTubeVideo }) {
+interface ThumbnailProps {
+  video: Video
+}
+
+function Thumbnail({ video }: ThumbnailProps) {
   const thumbnailData = getThumbnailURL(video)
 
   if (!thumbnailData) {
@@ -102,7 +104,16 @@ export default function VideoCard({
   ).toZonedDateTimeISO(TIME_ZONE)
   const duration = Temporal.Duration.from(value?.duration ?? 'P0D')
 
-  if (!value.youtube_video) {
+  const href = getVideoExternalUrl({
+    platform: value.platform,
+    status: value.status,
+    twitchLoginName: value.twitch_video?.twitch_user?.twitch_login_name,
+    twitchVideoId: value.twitch_video?.twitch_video_id,
+    twitchVideoType: value.twitch_video?.type,
+    youtubeVideoId: value.youtube_video?.youtube_video_id,
+  })
+
+  if (!href) {
     return null
   }
 
@@ -112,15 +123,13 @@ export default function VideoCard({
         'flex flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
         className,
       )}
-      href={`https://www.youtube.com/watch?v=${encodeURIComponent(
-        value.youtube_video.youtube_video_id,
-      )}`}
+      href={href}
       ping="/api/ping"
       rel="noopener noreferrer"
       target="_blank"
     >
       <div className="relative aspect-video">
-        <Thumbnail video={value as YouTubeVideo} />
+        <Thumbnail video={value} />
 
         {duration.total({
           unit: 'second',
@@ -131,10 +140,13 @@ export default function VideoCard({
             </time>
           </span>
         )}
-        <LiveNow
-          className="absolute top-0 right-0 m-2 inline-block rounded-md bg-774-pink-600 px-1.5 py-0.5 font-semibold text-774-pink-50 text-xs"
-          status={value.status}
-        />
+        <div className="absolute top-0 right-0 m-2 flex flex-col items-end gap-1">
+          <LiveNow
+            className="inline-block rounded-md bg-774-pink-600 px-1.5 py-0.5 font-semibold text-774-pink-50 text-xs"
+            status={value.status}
+          />
+          <PlatformBadge platform={value.platform} />
+        </div>
       </div>
 
       <div className="grid grow grid-rows-[1fr_auto] gap-6 p-2.5">
