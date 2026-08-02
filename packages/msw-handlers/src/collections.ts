@@ -39,7 +39,9 @@ export const videos = new Collection({
   schema: z.object({
     created_at: z.string(),
     deleted_at: z.string().nullable(),
-    deleted_reason: z.enum(['manual', 'talent_cascade']).nullable(),
+    deleted_reason: z
+      .enum(['unavailable', 'withdrawn', 'talent_deleted'])
+      .nullable(),
     duration: z.string(),
     id: z.string().uuid(),
     platform: z.enum(['YOUTUBE', 'TWITCH']).nullable(),

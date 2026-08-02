@@ -14,10 +14,10 @@ export interface CascadeFromTalentsResult {
 }
 
 /**
- * Soft-delete videos under deleted talents, and restore cascade-deleted
- * videos when the parent talent is active again.
+ * Soft-delete videos under deleted talents, and restore those marked
+ * `talent_deleted` when the parent talent is active again.
  *
- * Manual admin deletes (`deleted_reason = 'manual'`) are never restored here.
+ * `unavailable` (source gone) and `withdrawn` (intentional) are never restored here.
  */
 export async function cascadeVideosFromTalents(
   supabaseClient: TypedSupabaseClient,
@@ -71,11 +71,11 @@ async function restoreCascadeDeletedVideos(
   now: Temporal.Instant,
   limit: number,
 ): Promise<number> {
-  // Only talent_cascade deletes under restored (non-deleted) talents.
+  // Only talent_deleted under restored (non-deleted) talents.
   const { data, error } = await supabaseClient
     .from('videos')
     .select('id, thumbnail_id, talents!inner(deleted_at)')
-    .eq('deleted_reason', 'talent_cascade')
+    .eq('deleted_reason', 'talent_deleted')
     .not('deleted_at', 'is', null)
     .is('talents.deleted_at', null)
     .order('id', { ascending: true })
@@ -113,7 +113,7 @@ async function softDeleteVideos(
     .from('videos')
     .update({
       deleted_at: timestamp,
-      deleted_reason: 'talent_cascade',
+      deleted_reason: 'talent_deleted',
       updated_at: timestamp,
     })
     .in('id', videoIds)

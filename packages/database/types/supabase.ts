@@ -514,7 +514,7 @@ export type Database = {
       platform_type: 'youtube' | 'twitch'
       talent_status: 'active' | 'retired'
       twitch_video_type: 'vod' | 'clip' | 'highlight' | 'premiere' | 'upload'
-      video_deleted_reason: 'manual' | 'talent_cascade'
+      video_deleted_reason: 'unavailable' | 'withdrawn' | 'talent_deleted'
       video_kind: 'standard' | 'short'
       video_status: 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
     }
@@ -681,7 +681,7 @@ export const Constants = {
       platform_type: ['youtube', 'twitch'],
       talent_status: ['active', 'retired'],
       twitch_video_type: ['vod', 'clip', 'highlight', 'premiere', 'upload'],
-      video_deleted_reason: ['manual', 'talent_cascade'],
+      video_deleted_reason: ['unavailable', 'withdrawn', 'talent_deleted'],
       video_kind: ['standard', 'short'],
       video_status: ['UPCOMING', 'LIVE', 'ENDED', 'PUBLISHED'],
     },

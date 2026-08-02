@@ -119,7 +119,7 @@ describe('cascadeVideosFromTalents', () => {
     vi.clearAllMocks()
   })
 
-  it('soft-deletes undeleted videos under deleted talents as talent_cascade', async () => {
+  it('soft-deletes undeleted videos under deleted talents as talent_deleted', async () => {
     const videoUpdates: Record<string, unknown>[] = []
     const thumbnailUpdates: Record<string, unknown>[] = []
     let selectPhase = 0
@@ -155,7 +155,7 @@ describe('cascadeVideosFromTalents', () => {
     expect(videoUpdates).toHaveLength(1)
     expect(videoUpdates[0]).toMatchObject({
       deleted_at: '2026-08-02T12:00:00Z',
-      deleted_reason: 'talent_cascade',
+      deleted_reason: 'talent_deleted',
       updated_at: '2026-08-02T12:00:00Z',
     })
     expect(thumbnailUpdates).toHaveLength(1)
@@ -174,7 +174,7 @@ describe('cascadeVideosFromTalents', () => {
     ).toBe(true)
   })
 
-  it('restores only videos marked talent_cascade under active talents', async () => {
+  it('restores only videos marked talent_deleted under active talents', async () => {
     const videoUpdates: Record<string, unknown>[] = []
     let selectPhase = 0
 
@@ -206,14 +206,14 @@ describe('cascadeVideosFromTalents', () => {
       },
     ])
 
-    // Restore path must filter by deleted_reason = talent_cascade
+    // Restore path must filter by deleted_reason = talent_deleted
     expect(
       calls.some(
         (call) =>
           call.table === 'videos' &&
           call.method === 'eq' &&
           call.args[0] === 'deleted_reason' &&
-          call.args[1] === 'talent_cascade',
+          call.args[1] === 'talent_deleted',
       ),
     ).toBe(true)
 
@@ -280,7 +280,7 @@ describe('cascadeVideosFromTalents', () => {
 
     expect(result).toEqual({ restored: 1, softDeleted: 1 })
     expect(videoUpdates).toHaveLength(2)
-    expect(videoUpdates[0]).toMatchObject({ deleted_reason: 'talent_cascade' })
+    expect(videoUpdates[0]).toMatchObject({ deleted_reason: 'talent_deleted' })
     expect(videoUpdates[1]).toMatchObject({
       deleted_at: null,
       deleted_reason: null,

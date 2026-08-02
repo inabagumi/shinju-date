@@ -58,8 +58,8 @@ pnpm exec playwright test --ui
       - YouTube上で存在しなくなった動画をデータベースから削除
       - 情報更新は行わない
   - `/videos/cascade-from-talents`: タレント削除／復活に伴う動画の連鎖処理（5分毎）
-    - 削除済みタレントに紐づく未削除動画をソフトデリート（`deleted_reason = talent_cascade`）
-    - 復活済みタレントに紐づく連鎖削除動画のみ復旧（個別削除 `manual` は対象外）
+    - 削除済みタレントに紐づく未削除動画をソフトデリート（`deleted_reason = talent_deleted`）
+    - 復活済みタレントに紐づく `talent_deleted` のみ復旧（`unavailable` / `withdrawn` は対象外）
     - 1実行あたり最大100件
   - `/talents/update`: タレント情報の更新（3時間毎）
     - チャンネル情報の同期

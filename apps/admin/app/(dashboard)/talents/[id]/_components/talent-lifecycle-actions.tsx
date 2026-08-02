@@ -59,7 +59,7 @@ export function TalentLifecycleActions({
             disabled={isPending}
             onClick={() =>
               runAction(
-                `タレント「${talent.name}」を復活しますか？\n連鎖削除された動画の復旧はバッチで順次行われます。個別に削除した動画は復旧されません。`,
+                `タレント「${talent.name}」を復活しますか？\n動画の復旧はバッチで順次行われます。`,
                 () => restoreTalentAction(talent.id),
               )
             }
