@@ -1,79 +1,64 @@
-import { z } from 'zod'
+import { ApiClient } from '@twurple/api'
+import { AppTokenAuthProvider } from '@twurple/auth'
 
-const TWITCH_ID_API_BASE = 'https://id.twitch.tv'
-const TWITCH_HELIX_API_BASE = 'https://api.twitch.tv/helix'
 export const TWITCH_API_MAX_RESULTS = 100
 
 // ---------------------------------------------------------------------------
-// Zod schemas
+// Domain DTOs (stable for admin / batch consumers)
 // ---------------------------------------------------------------------------
 
-export const TwitchUserSchema = z.object({
-  broadcaster_type: z.string(),
-  created_at: z.string(),
-  description: z.string(),
-  display_name: z.string(),
-  id: z.string(),
-  login: z.string(),
-  offline_image_url: z.string(),
-  profile_image_url: z.string(),
-  type: z.string(),
-  view_count: z.number().optional(),
-})
+export interface TwitchUser {
+  id: string
+  login: string
+  display_name: string
+  description: string
+  profile_image_url: string
+  offline_image_url: string
+  broadcaster_type: string
+  type: string
+  created_at: string
+}
 
-export const TwitchVideoSchema = z.object({
-  created_at: z.string(),
-  description: z.string(),
-  duration: z.string(),
-  id: z.string(),
-  language: z.string(),
-  muted_segments: z
-    .array(
-      z.object({
-        duration: z.number(),
-        offset: z.number(),
-      }),
-    )
-    .nullable()
-    .optional(),
-  published_at: z.string(),
-  stream_id: z.string().nullable().optional(),
-  thumbnail_url: z.string(),
-  title: z.string(),
-  type: z.enum(['archive', 'highlight', 'upload']),
-  url: z.string(),
-  user_id: z.string(),
-  user_login: z.string(),
-  user_name: z.string(),
-  view_count: z.number(),
-  viewable: z.string(),
-})
+export interface TwitchVideo {
+  id: string
+  title: string
+  description: string
+  duration: string
+  language: string
+  published_at: string
+  created_at: string
+  thumbnail_url: string
+  type: 'archive' | 'highlight' | 'upload'
+  url: string
+  user_id: string
+  user_login: string
+  user_name: string
+  view_count: number
+  viewable: string
+  stream_id: string | null
+}
 
-export const TwitchClipSchema = z.object({
-  broadcaster_id: z.string(),
-  broadcaster_name: z.string(),
-  created_at: z.string(),
-  creator_id: z.string(),
-  creator_name: z.string(),
-  duration: z.number(),
-  embed_url: z.string(),
-  game_id: z.string(),
-  id: z.string(),
-  language: z.string(),
-  thumbnail_url: z.string(),
-  title: z.string(),
-  url: z.string(),
-  video_id: z.string(),
-  view_count: z.number(),
-  vod_offset: z.number().nullable().optional(),
-})
-
-export type TwitchUser = z.infer<typeof TwitchUserSchema>
-export type TwitchVideo = z.infer<typeof TwitchVideoSchema>
-export type TwitchClip = z.infer<typeof TwitchClipSchema>
+export interface TwitchClip {
+  id: string
+  title: string
+  url: string
+  embed_url: string
+  broadcaster_id: string
+  broadcaster_name: string
+  creator_id: string
+  creator_name: string
+  video_id: string
+  game_id: string
+  language: string
+  thumbnail_url: string
+  view_count: number
+  created_at: string
+  duration: number
+  vod_offset: number | null
+}
 
 // ---------------------------------------------------------------------------
-// Credentials / App Access Token
+// Client lifecycle
 // ---------------------------------------------------------------------------
 
 export interface TwitchCredentials {
@@ -81,13 +66,8 @@ export interface TwitchCredentials {
   clientSecret: string
 }
 
-interface CachedToken {
-  accessToken: string
-  expiresAtMs: number
-}
-
 let _credentials: TwitchCredentials | null = null
-let _tokenCache: CachedToken | null = null
+let _apiClient: ApiClient | null = null
 
 /**
  * Reads Twitch app credentials from environment variables.
@@ -111,102 +91,50 @@ export function getTwitchCredentials(): TwitchCredentials {
 }
 
 /**
- * Resets cached credentials and token (for tests).
+ * Returns a singleton twurple ApiClient using App Access Token auth.
+ */
+export function getTwitchApiClient(
+  credentials: TwitchCredentials = getTwitchCredentials(),
+): ApiClient {
+  if (
+    _apiClient &&
+    _credentials &&
+    _credentials.clientId === credentials.clientId &&
+    _credentials.clientSecret === credentials.clientSecret
+  ) {
+    return _apiClient
+  }
+
+  const authProvider = new AppTokenAuthProvider(
+    credentials.clientId,
+    credentials.clientSecret,
+  )
+  _apiClient = new ApiClient({ authProvider })
+  _credentials = credentials
+  return _apiClient
+}
+
+/**
+ * Resets cached credentials and client (for tests).
  */
 export function resetTwitchClientState(): void {
   _credentials = null
-  _tokenCache = null
+  _apiClient = null
 }
 
-const TokenResponseSchema = z.object({
-  access_token: z.string(),
-  expires_in: z.number(),
-  token_type: z.string(),
-})
-
 /**
- * Returns a valid App Access Token, refreshing when needed.
+ * Fetches an App Access Token via twurple's auth provider.
+ * Prefer getTwitchApiClient() for API calls; this is exposed for diagnostics.
  */
 export async function getAppAccessToken(
   credentials: TwitchCredentials = getTwitchCredentials(),
-  fetchImpl: typeof fetch = fetch,
 ): Promise<string> {
-  const now = Date.now()
-  // Refresh 60s before expiry to avoid edge races
-  if (_tokenCache && _tokenCache.expiresAtMs > now + 60_000) {
-    return _tokenCache.accessToken
-  }
-
-  const url = new URL('/oauth2/token', TWITCH_ID_API_BASE)
-  url.searchParams.set('client_id', credentials.clientId)
-  url.searchParams.set('client_secret', credentials.clientSecret)
-  url.searchParams.set('grant_type', 'client_credentials')
-
-  const response = await fetchImpl(url, { method: 'POST' })
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to obtain Twitch App Access Token: ${response.status} ${response.statusText}`,
-    )
-  }
-
-  const json: unknown = await response.json()
-  const token = TokenResponseSchema.parse(json)
-
-  _tokenCache = {
-    accessToken: token.access_token,
-    expiresAtMs: now + token.expires_in * 1000,
-  }
-
-  return token.access_token
-}
-
-async function helixGet<T>(
-  path: string,
-  searchParams: URLSearchParams,
-  schema: z.ZodType<T>,
-  options?: {
-    credentials?: TwitchCredentials
-    fetchImpl?: typeof fetch
-  },
-): Promise<T[]> {
-  const credentials = options?.credentials ?? getTwitchCredentials()
-  const fetchImpl = options?.fetchImpl ?? fetch
-  const accessToken = await getAppAccessToken(credentials, fetchImpl)
-
-  // Do not use `new URL('/users', 'https://api.twitch.tv/helix')`:
-  // an absolute path replaces the base path, yielding api.twitch.tv/users (404).
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`
-  const url = new URL(`${TWITCH_HELIX_API_BASE}${normalizedPath}`)
-  for (const [key, value] of searchParams.entries()) {
-    url.searchParams.append(key, value)
-  }
-
-  const response = await fetchImpl(url, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Client-Id': credentials.clientId,
-    },
-    method: 'GET',
-  })
-
-  if (!response.ok) {
-    throw new Error(
-      `Twitch Helix request failed (${path}): ${response.status} ${response.statusText}`,
-    )
-  }
-
-  const json: unknown = await response.json()
-  const parsed = z.object({ data: z.array(z.unknown()) }).parse(json)
-
-  const items: T[] = []
-  for (const item of parsed.data) {
-    const result = schema.safeParse(item)
-    if (result.success) {
-      items.push(result.data)
-    }
-  }
-  return items
+  const authProvider = new AppTokenAuthProvider(
+    credentials.clientId,
+    credentials.clientSecret,
+  )
+  const token = await authProvider.getAppAccessToken()
+  return token.accessToken
 }
 
 // ---------------------------------------------------------------------------
@@ -234,7 +162,6 @@ const TWITCH_LOGIN_PATTERN = /^[a-zA-Z0-9_]{4,25}$/
  * - User ID: numeric string
  * - Channel URL: `https://www.twitch.tv/name`
  * - About URL: `https://www.twitch.tv/name/about`
- * - Video URL with login is not used for user resolution
  *
  * @returns Parsed identifier, or `null` if the input cannot be interpreted
  */
@@ -259,11 +186,9 @@ export function parseTwitchUserIdentifier(
       const host = url.hostname.replace(/^www\./, '').toLowerCase()
 
       if (host === 'twitch.tv' || host === 'm.twitch.tv') {
-        // /username or /username/...
         const pathMatch = url.pathname.match(/^\/([a-zA-Z0-9_]{4,25})(?:\/|$)/i)
         if (pathMatch?.[1]) {
           const segment = pathMatch[1].toLowerCase()
-          // Skip reserved path segments that are not logins
           if (
             ![
               'directory',
@@ -298,6 +223,122 @@ export function parseTwitchUserIdentifier(
 }
 
 // ---------------------------------------------------------------------------
+// Mappers
+// ---------------------------------------------------------------------------
+
+function toIsoString(date: Date): string {
+  return date.toISOString().replace(/\.\d{3}Z$/, 'Z')
+}
+
+function mapUser(user: {
+  id: string
+  name: string
+  displayName: string
+  description: string
+  profilePictureUrl: string
+  offlinePlaceholderUrl: string
+  broadcasterType: string
+  type: string
+  creationDate: Date
+}): TwitchUser {
+  return {
+    broadcaster_type: user.broadcasterType,
+    created_at: toIsoString(user.creationDate),
+    description: user.description,
+    display_name: user.displayName,
+    id: user.id,
+    login: user.name,
+    offline_image_url: user.offlinePlaceholderUrl,
+    profile_image_url: user.profilePictureUrl,
+    type: user.type,
+  }
+}
+
+function mapVideo(video: {
+  id: string
+  title: string
+  description: string
+  duration: string
+  language: string
+  publishDate: Date
+  creationDate: Date
+  thumbnailUrl: string
+  type: string
+  url: string
+  userId: string
+  userName: string
+  userDisplayName: string
+  views: number
+  isPublic: boolean
+  streamId: string | null
+}): TwitchVideo | null {
+  if (
+    video.type !== 'archive' &&
+    video.type !== 'highlight' &&
+    video.type !== 'upload'
+  ) {
+    return null
+  }
+
+  return {
+    created_at: toIsoString(video.creationDate),
+    description: video.description,
+    duration: video.duration,
+    id: video.id,
+    language: video.language,
+    published_at: toIsoString(video.publishDate),
+    stream_id: video.streamId,
+    thumbnail_url: video.thumbnailUrl,
+    title: video.title,
+    type: video.type,
+    url: video.url,
+    user_id: video.userId,
+    user_login: video.userName,
+    user_name: video.userDisplayName,
+    view_count: video.views,
+    viewable: video.isPublic ? 'public' : 'private',
+  }
+}
+
+function mapClip(clip: {
+  id: string
+  title: string
+  url: string
+  embedUrl: string
+  broadcasterId: string
+  broadcasterDisplayName: string
+  creatorId: string
+  creatorDisplayName: string
+  videoId: string
+  gameId: string
+  language: string
+  thumbnailUrl: string
+  views: number
+  creationDate: Date
+  duration: number
+  vodOffset: number | null
+}): TwitchClip {
+  return {
+    broadcaster_id: clip.broadcasterId,
+    broadcaster_name: clip.broadcasterDisplayName,
+    created_at: toIsoString(clip.creationDate),
+    creator_id: clip.creatorId,
+    creator_name: clip.creatorDisplayName,
+    duration: clip.duration,
+    embed_url: clip.embedUrl,
+    game_id: clip.gameId,
+    id: clip.id,
+    language: clip.language,
+    thumbnail_url: clip.thumbnailUrl,
+    title: clip.title,
+    url: clip.url,
+    video_id: clip.videoId,
+    view_count: clip.views,
+    vod_offset: clip.vodOffset,
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Users
 // ---------------------------------------------------------------------------
 
@@ -307,7 +348,7 @@ export interface GetUsersOptions {
 }
 
 /**
- * Gets Twitch users by ID and/or login (batched).
+ * Gets Twitch users by ID and/or login.
  */
 export async function* getUsers({
   ids = [],
@@ -317,53 +358,41 @@ export async function* getUsers({
     return
   }
 
-  // Helix allows mixing id and login params; max 100 total per request
-  const idChunks: string[][] = []
+  const client = getTwitchApiClient()
+
   for (let i = 0; i < ids.length; i += TWITCH_API_MAX_RESULTS) {
-    idChunks.push(ids.slice(i, i + TWITCH_API_MAX_RESULTS))
+    const chunk = ids.slice(i, i + TWITCH_API_MAX_RESULTS)
+    const users = await client.users.getUsersByIds(chunk)
+    for (const user of users) {
+      yield mapUser(user)
+    }
   }
-  const loginChunks: string[][] = []
+
   for (let i = 0; i < logins.length; i += TWITCH_API_MAX_RESULTS) {
-    loginChunks.push(logins.slice(i, i + TWITCH_API_MAX_RESULTS))
-  }
-
-  const maxChunks = Math.max(idChunks.length, loginChunks.length, 1)
-
-  for (let i = 0; i < maxChunks; i++) {
-    const params = new URLSearchParams()
-    for (const id of idChunks[i] ?? []) {
-      params.append('id', id)
+    const chunk = logins.slice(i, i + TWITCH_API_MAX_RESULTS)
+    const users = await client.users.getUsersByNames(chunk)
+    for (const user of users) {
+      yield mapUser(user)
     }
-    for (const login of loginChunks[i] ?? []) {
-      params.append('login', login)
-    }
-    if ([...params.keys()].length === 0) {
-      continue
-    }
-
-    const users = await helixGet('/users', params, TwitchUserSchema)
-    yield* users
   }
 }
 
 export async function getUserById(id: string): Promise<TwitchUser | null> {
-  for await (const user of getUsers({ ids: [id] })) {
-    return user
-  }
-  return null
+  const user = await getTwitchApiClient().users.getUserById(id)
+  return user ? mapUser(user) : null
 }
 
 export async function getUserByLogin(
   login: string,
 ): Promise<TwitchUser | null> {
-  for await (const user of getUsers({ logins: [login.toLowerCase()] })) {
-    return user
-  }
-  return null
+  const user = await getTwitchApiClient().users.getUserByName(
+    login.toLowerCase(),
+  )
+  return user ? mapUser(user) : null
 }
 
 /**
- * Resolves a parsed identifier to a Twitch user via the Helix API.
+ * Resolves a parsed identifier to a Twitch user via Helix.
  */
 export async function resolveTwitchUser(
   identifier: TwitchUserIdentifier,
@@ -388,13 +417,51 @@ export interface GetVideosOptions {
 export async function* getVideos({
   ids,
 }: GetVideosOptions): AsyncGenerator<TwitchVideo, void, undefined> {
+  const client = getTwitchApiClient()
+
   for (let i = 0; i < ids.length; i += TWITCH_API_MAX_RESULTS) {
-    const params = new URLSearchParams()
-    for (const id of ids.slice(i, i + TWITCH_API_MAX_RESULTS)) {
-      params.append('id', id)
+    const chunk = ids.slice(i, i + TWITCH_API_MAX_RESULTS)
+    const videos = await client.videos.getVideosByIds(chunk)
+    for (const video of videos) {
+      const mapped = mapVideo(video)
+      if (mapped) {
+        yield mapped
+      }
     }
-    const videos = await helixGet('/videos', params, TwitchVideoSchema)
-    yield* videos
+  }
+}
+
+/**
+ * Gets videos for a broadcaster (for batch discovery).
+ * Uses twurple's paginator under the hood for the first page by default;
+ * pass `all: true` to drain all pages.
+ */
+export async function* getVideosByUser(options: {
+  userId: string
+  type?: 'archive' | 'highlight' | 'upload' | 'all'
+  all?: boolean
+}): AsyncGenerator<TwitchVideo, void, undefined> {
+  const client = getTwitchApiClient()
+  const paginator = client.videos.getVideosByUserPaginated(options.userId, {
+    type: options.type ?? 'archive',
+  })
+
+  if (options.all) {
+    for await (const video of paginator) {
+      const mapped = mapVideo(video)
+      if (mapped) {
+        yield mapped
+      }
+    }
+    return
+  }
+
+  const page = await paginator.getNext()
+  for (const video of page ?? []) {
+    const mapped = mapVideo(video)
+    if (mapped) {
+      yield mapped
+    }
   }
 }
 
@@ -412,13 +479,14 @@ export interface GetClipsOptions {
 export async function* getClips({
   ids,
 }: GetClipsOptions): AsyncGenerator<TwitchClip, void, undefined> {
+  const client = getTwitchApiClient()
+
   for (let i = 0; i < ids.length; i += TWITCH_API_MAX_RESULTS) {
-    const params = new URLSearchParams()
-    for (const id of ids.slice(i, i + TWITCH_API_MAX_RESULTS)) {
-      params.append('id', id)
+    const chunk = ids.slice(i, i + TWITCH_API_MAX_RESULTS)
+    const clips = await client.clips.getClipsByIds(chunk)
+    for (const clip of clips) {
+      yield mapClip(clip)
     }
-    const clips = await helixGet('/clips', params, TwitchClipSchema)
-    yield* clips
   }
 }
 

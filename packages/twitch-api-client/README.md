@@ -1,11 +1,12 @@
 # @shinju-date/twitch-api-client
 
-A shared Twitch Helix API client package with Zod runtime validation for the SHINJU DATE monorepo.
+Twitch Helix API client for the SHINJU DATE monorepo, powered by [twurple](https://twurple.js.org/).
 
 ## Features
 
-- **App Access Token** management via Client Credentials
+- **App Access Token** auth via `@twurple/auth` (`AppTokenAuthProvider`)
 - **Users / Videos / Clips** lookup for admin registration and manual sync
+- **User video listing** with pagination helpers for future batch ingestion
 - **Identifier parsing** for login names, user IDs, and Twitch URLs
 - **Duration helpers** to convert Twitch duration strings to ISO 8601
 
@@ -36,14 +37,15 @@ import {
   resolveTwitchUser,
   getUsers,
   getVideos,
+  getVideosByUser,
   getClips,
   twitchDurationToISO8601,
+  getTwitchApiClient,
 } from '@shinju-date/twitch-api-client'
 
 const identifier = parseTwitchUserIdentifier('https://www.twitch.tv/example')
 const user = identifier ? await resolveTwitchUser(identifier) : null
 
-for await (const video of getVideos({ ids: ['123456'] })) {
-  console.log(video.title, twitchDurationToISO8601(video.duration))
-}
+// Low-level access when needed
+const api = getTwitchApiClient()
 ```

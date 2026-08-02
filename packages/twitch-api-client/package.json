@@ -1,9 +1,10 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "zod": "4.4.3"
+    "@twurple/api": "8.1.4",
+    "@twurple/auth": "8.1.4"
   },
-  "description": "Twitch Helix API client package for SHINJU DATE with Zod validation",
+  "description": "Twitch Helix API client for SHINJU DATE, powered by twurple",
   "devDependencies": {
     "@tsconfig/node20": "20.1.9",
     "@tsconfig/strictest": "2.0.8",

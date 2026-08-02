@@ -1,7 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  getAppAccessToken,
-  getUsers,
   parseTwitchUserIdentifier,
   resetTwitchClientState,
   secondsToISO8601,
@@ -84,112 +82,34 @@ describe('secondsToISO8601', () => {
   })
 })
 
-describe('getAppAccessToken', () => {
+describe('getTwitchCredentials', () => {
   beforeEach(() => {
     resetTwitchClientState()
-    vi.stubEnv('TWITCH_CLIENT_ID', 'test-client-id')
-    vi.stubEnv('TWITCH_CLIENT_SECRET', 'test-client-secret')
   })
 
   afterEach(() => {
     resetTwitchClientState()
     vi.unstubAllEnvs()
-    vi.restoreAllMocks()
-  })
-
-  it('fetches and caches the app access token', async () => {
-    const fetchImpl = vi.fn().mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          access_token: 'token-1',
-          expires_in: 3600,
-          token_type: 'bearer',
-        }),
-        { status: 200 },
-      ),
-    )
-
-    const token1 = await getAppAccessToken(undefined, fetchImpl)
-    const token2 = await getAppAccessToken(undefined, fetchImpl)
-
-    expect(token1).toBe('token-1')
-    expect(token2).toBe('token-1')
-    expect(fetchImpl).toHaveBeenCalledTimes(1)
   })
 
   it('throws when credentials are missing', async () => {
-    vi.unstubAllEnvs()
-    resetTwitchClientState()
+    vi.stubEnv('TWITCH_CLIENT_ID', '')
+    vi.stubEnv('TWITCH_CLIENT_SECRET', '')
     delete process.env['TWITCH_CLIENT_ID']
     delete process.env['TWITCH_CLIENT_SECRET']
 
-    await expect(getAppAccessToken()).rejects.toThrow(
-      /Client ID and Client Secret/,
-    )
+    const { getTwitchCredentials } = await import('../index')
+    expect(() => getTwitchCredentials()).toThrow(/Client ID and Client Secret/)
   })
-})
 
-describe('getUsers Helix URL', () => {
-  beforeEach(() => {
-    resetTwitchClientState()
+  it('reads credentials from the environment', async () => {
     vi.stubEnv('TWITCH_CLIENT_ID', 'test-client-id')
     vi.stubEnv('TWITCH_CLIENT_SECRET', 'test-client-secret')
-  })
 
-  afterEach(() => {
-    resetTwitchClientState()
-    vi.unstubAllEnvs()
-    vi.restoreAllMocks()
-  })
-
-  it('requests https://api.twitch.tv/helix/users (not /users)', async () => {
-    const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
-      const url = String(input)
-
-      if (url.includes('id.twitch.tv/oauth2/token')) {
-        return new Response(
-          JSON.stringify({
-            access_token: 'token-1',
-            expires_in: 3600,
-            token_type: 'bearer',
-          }),
-          { status: 200 },
-        )
-      }
-
-      return new Response(
-        JSON.stringify({
-          data: [
-            {
-              broadcaster_type: '',
-              created_at: '2011-08-08T20:45:44Z',
-              description: '',
-              display_name: 'Twitch',
-              id: '12826',
-              login: 'twitch',
-              offline_image_url: '',
-              profile_image_url: '',
-              type: '',
-            },
-          ],
-        }),
-        { status: 200 },
-      )
+    const { getTwitchCredentials } = await import('../index')
+    expect(getTwitchCredentials()).toEqual({
+      clientId: 'test-client-id',
+      clientSecret: 'test-client-secret',
     })
-
-    vi.stubGlobal('fetch', fetchImpl)
-
-    const users = await Array.fromAsync(getUsers({ logins: ['twitch'] }))
-
-    expect(users).toHaveLength(1)
-    expect(users[0]?.login).toBe('twitch')
-
-    const helixCall = fetchImpl.mock.calls.find(([input]) =>
-      String(input).includes('api.twitch.tv'),
-    )
-    expect(helixCall).toBeDefined()
-    expect(String(helixCall?.[0])).toBe(
-      'https://api.twitch.tv/helix/users?login=twitch',
-    )
   })
 })
