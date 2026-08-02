@@ -228,6 +228,9 @@ importers:
       '@shinju-date/temporal-fns':
         specifier: workspace:*
         version: link:../../packages/temporal-fns
+      '@shinju-date/twitch-api-client':
+        specifier: workspace:*
+        version: link:../../packages/twitch-api-client
       '@shinju-date/web-cache':
         specifier: workspace:*
         version: link:../../packages/web-cache

@@ -1,9 +1,10 @@
 import * as Sentry from '@sentry/nextjs'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
+import { getUsers as getTwitchUsers } from '@shinju-date/twitch-api-client'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after } from 'next/server'
-import { processScrapedChannels } from '@/lib/database'
+import { processScrapedChannels, processTwitchUsers } from '@/lib/database'
 import { talentsUpdate as ratelimit } from '@/lib/ratelimit'
 import { supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
@@ -55,10 +56,12 @@ export async function POST(request: Request): Promise<Response> {
   )
 
   // Include active and retired talents (deleted are excluded).
-  // Retired talents still get channel metadata updates at this moderate cadence.
+  // Retired talents still get channel/user metadata updates at this moderate cadence.
   const { data: talents, error } = await supabaseClient
     .from('talents')
-    .select('id, name, youtube_channels(id, name, youtube_channel_id)')
+    .select(
+      'id, name, youtube_channels(id, name, youtube_channel_id), twitch_users(id, name, talent_id, twitch_login_name, twitch_user_id)',
+    )
     .is('deleted_at', null)
 
   if (error) {
@@ -84,6 +87,13 @@ export async function POST(request: Request): Promise<Response> {
     .map((channel) => channel.youtube_channel_id)
     .filter((id): id is string => Boolean(id))
 
+  const savedTwitchUsers = talents.flatMap(
+    (talent) => talent.twitch_users || [],
+  )
+  const twitchUserIds = savedTwitchUsers
+    .map((user) => user.twitch_user_id)
+    .filter((id): id is string => Boolean(id))
+
   await using scraper = new YouTubeScraper({
     youtubeClient,
   })
@@ -91,16 +101,36 @@ export async function POST(request: Request): Promise<Response> {
   let isUpdated = false
 
   try {
-    await scraper.scrapeChannels(
-      { channelIds: youTubeChannelIds },
-      async (youtubeChannels) => {
-        isUpdated = await processScrapedChannels({
-          supabaseClient,
-          talents,
-          youtubeChannels,
-        })
-      },
-    )
+    if (youTubeChannelIds.length > 0) {
+      await scraper.scrapeChannels(
+        { channelIds: youTubeChannelIds },
+        async (youtubeChannels) => {
+          const youtubeUpdated = await processScrapedChannels({
+            supabaseClient,
+            talents,
+            youtubeChannels,
+          })
+          isUpdated = isUpdated || youtubeUpdated
+        },
+      )
+    }
+  } catch (error) {
+    Sentry.captureException(error)
+  }
+
+  try {
+    if (twitchUserIds.length > 0) {
+      const twitchUsers = await Array.fromAsync(
+        getTwitchUsers({ ids: twitchUserIds }),
+      )
+
+      const twitchUpdated = await processTwitchUsers({
+        savedUsers: savedTwitchUsers,
+        supabaseClient,
+        twitchUsers,
+      })
+      isUpdated = isUpdated || twitchUpdated
+    }
   } catch (error) {
     Sentry.captureException(error)
   }

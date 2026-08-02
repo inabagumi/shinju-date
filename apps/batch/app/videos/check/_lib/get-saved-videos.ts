@@ -38,10 +38,14 @@ export async function* getSavedVideos({
   if (mode === 'all') {
     const { count, error } = await supabaseClient
       .from('videos')
-      .select('id, talent:talents!inner (id)', {
-        count: 'exact',
-        head: true,
-      })
+      .select(
+        'id, talent:talents!inner (id), youtube_video:youtube_videos!inner (youtube_video_id)',
+        {
+          count: 'exact',
+          head: true,
+        },
+      )
+      .eq('platform', 'youtube')
       .is('deleted_at', null)
       .is('talent.deleted_at', null)
 
@@ -58,6 +62,7 @@ export async function* getSavedVideos({
       const { data: savedVideos, error: pageError } = await supabaseClient
         .from('videos')
         .select(VIDEO_SELECT)
+        .eq('platform', 'youtube')
         .is('deleted_at', null)
         .is('talent.deleted_at', null)
         .order('published_at', {
@@ -79,6 +84,7 @@ export async function* getSavedVideos({
     const { data: savedVideos, error } = await supabaseClient
       .from('videos')
       .select(VIDEO_SELECT)
+      .eq('platform', 'youtube')
       .is('deleted_at', null)
       .is('talent.deleted_at', null)
       .eq('talent.status', 'active')
@@ -101,6 +107,7 @@ export async function* getSavedVideos({
     const { data: savedVideos, error } = await supabaseClient
       .from('videos')
       .select(VIDEO_SELECT)
+      .eq('platform', 'youtube')
       .is('deleted_at', null)
       .is('talent.deleted_at', null)
       .eq('talent.status', 'active')

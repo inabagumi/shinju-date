@@ -3,6 +3,10 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
+import {
+  getClips,
+  getVideos as getTwitchVideos,
+} from '@shinju-date/twitch-api-client'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after, type NextRequest } from 'next/server'
@@ -17,8 +21,10 @@ import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 import { getMonitorSlug } from './_lib/get-monitor-slug'
+import { getSavedTwitchVideos } from './_lib/get-saved-twitch-videos'
 import { getSavedVideos } from './_lib/get-saved-videos'
 import { processScrapedVideoForCheck } from './_lib/process-scraped-video-for-check'
+import { processTwitchVideosForCheck } from './_lib/process-twitch-videos-for-check'
 import { querySchema } from './_lib/query-schema'
 import type { CheckMode } from './_lib/types'
 
@@ -135,20 +141,19 @@ export async function POST(request: NextRequest): Promise<Response> {
   // For 'default' and 'recent' modes, fetch full video details and update information
   // For 'all' mode, only check availability and delete unavailable videos
   if (mode === 'default' || mode === 'recent') {
-    // Fetch all videos from YouTube API and process them at once
-    await scraper.scrapeVideos({ ids: videoIds }, async (allVideos) => {
-      // Process all videos at once (updates and deletions)
-      hasChanges = await processScrapedVideoForCheck({
-        currentDateTime,
-        logger,
-        mode,
-        originalVideos: allVideos,
-        savedVideos,
-        supabaseClient,
+    if (videoIds.length > 0) {
+      await scraper.scrapeVideos({ ids: videoIds }, async (allVideos) => {
+        hasChanges = await processScrapedVideoForCheck({
+          currentDateTime,
+          logger,
+          mode,
+          originalVideos: allVideos,
+          savedVideos,
+          supabaseClient,
+        })
       })
-    })
-  } else {
-    // For 'all' mode, only check availability and delete unavailable videos
+    }
+  } else if (videoIds.length > 0) {
     await scraper.scrapeVideosAvailability({ videoIds }, async (videos) => {
       try {
         await processScrapedVideoAvailability({
@@ -158,11 +163,64 @@ export async function POST(request: NextRequest): Promise<Response> {
           supabaseClient,
           videos,
         })
-        hasChanges = true // Any deletion is a change
+        hasChanges = true
       } catch (error) {
         Sentry.captureException(error)
       }
     })
+  }
+
+  // Twitch: recent (metadata update + delete) and all (delete only).
+  // default targets YouTube UPCOMING/LIVE only — Twitch VODs skip.
+  if (mode === 'recent' || mode === 'all') {
+    try {
+      const savedTwitchVideos = await Array.fromAsync(
+        getSavedTwitchVideos({
+          mode,
+          supabaseClient,
+        }),
+      )
+
+      if (savedTwitchVideos.length > 0) {
+        const nonClipIds: string[] = []
+        const clipIds: string[] = []
+
+        for (const video of savedTwitchVideos) {
+          if (video.twitch_video.type === 'clip') {
+            clipIds.push(video.twitch_video.twitch_video_id)
+          } else {
+            nonClipIds.push(video.twitch_video.twitch_video_id)
+          }
+        }
+
+        const [twitchVideos, twitchClips] = await Promise.all([
+          nonClipIds.length > 0
+            ? Array.fromAsync(getTwitchVideos({ ids: nonClipIds }))
+            : Promise.resolve([]),
+          clipIds.length > 0
+            ? Array.fromAsync(getClips({ ids: clipIds }))
+            : Promise.resolve([]),
+        ])
+
+        // Helix getVideos/getClips omit deleted IDs. processTwitchVideosForCheck
+        // soft-deletes those missing from the response. mode=recent also refreshes
+        // metadata; mode=all still applies metadata when Helix returns objects
+        // (weekly volume is acceptable).
+        const twitchChanged = await processTwitchVideosForCheck({
+          clips: twitchClips,
+          currentDateTime,
+          logger,
+          mode,
+          savedVideos: savedTwitchVideos,
+          supabaseClient,
+          videos: twitchVideos,
+        })
+
+        hasChanges = hasChanges || twitchChanged
+      }
+    } catch (error) {
+      Sentry.captureException(error)
+    }
   }
 
   // Revalidate tags only if changes occurred

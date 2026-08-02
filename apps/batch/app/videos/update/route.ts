@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/nextjs'
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
+import { getVideosByUser } from '@shinju-date/twitch-api-client'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
 import { after } from 'next/server'
@@ -12,6 +13,7 @@ import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 import { MONITOR_SLUG } from './_lib/constants'
+import { saveTwitchVideos } from './_lib/save-twitch-videos'
 import { saveScrapedVideos } from './_lib/save-videos'
 
 export const maxDuration = 120
@@ -64,7 +66,9 @@ export async function POST(request: Request): Promise<Response> {
   // Retired talents are covered by low-frequency videos/check?mode=all.
   const { data: savedTalents, error } = await supabaseClient
     .from('talents')
-    .select('id, youtube_channels!inner(id, youtube_channel_id)')
+    .select(
+      'id, youtube_channels(id, youtube_channel_id), twitch_users(id, twitch_user_id)',
+    )
     .eq('status', 'active')
     .is('deleted_at', null)
 
@@ -97,8 +101,7 @@ export async function POST(request: Request): Promise<Response> {
   >()
 
   for (const savedTalent of savedTalents) {
-    // youtube_channels is an array due to the query using youtube_channels!inner
-    for (const ytChannel of savedTalent.youtube_channels) {
+    for (const ytChannel of savedTalent.youtube_channels ?? []) {
       channelToTalentMap.set(ytChannel.youtube_channel_id, {
         id: savedTalent.id,
         youtubeChannelId: ytChannel.id,
@@ -110,43 +113,77 @@ export async function POST(request: Request): Promise<Response> {
 
   const videos: Video[] = []
 
-  // Use scraper with internal p-queue for concurrency control
-  await using scraper = new YouTubeScraper({ concurrency: 1, youtubeClient })
+  // --- YouTube: new video discovery ---
+  if (channelIDs.length > 0) {
+    await using scraper = new YouTubeScraper({ concurrency: 1, youtubeClient })
 
-  await scraper.scrapeNewVideos(
-    { channelIds: channelIDs },
-    async (channelId, scrapedVideos) => {
-      const talentInfo = channelToTalentMap.get(channelId)
-      if (!talentInfo) {
-        logger.warn('タレント情報が見つかりませんでした', {
-          channelId,
-        })
-        return
-      }
+    await scraper.scrapeNewVideos(
+      { channelIds: channelIDs },
+      async (channelId, scrapedVideos) => {
+        const talentInfo = channelToTalentMap.get(channelId)
+        if (!talentInfo) {
+          logger.warn('タレント情報が見つかりませんでした', {
+            channelId,
+          })
+          return
+        }
 
+        try {
+          const savedResults = await saveScrapedVideos({
+            currentDateTime,
+            originalVideos: scrapedVideos,
+            supabaseClient,
+            talentId: talentInfo.id,
+            youtubeChannelId: talentInfo.youtubeChannelId,
+          })
+          videos.push(...savedResults)
+        } catch (err) {
+          Sentry.captureException(err)
+        }
+      },
+    )
+  }
+
+  // --- Twitch: new VOD (archive) discovery ---
+  // First page of archives per user (newest first) — enough for frequent discovery.
+  for (const savedTalent of savedTalents) {
+    for (const twitchUser of savedTalent.twitch_users ?? []) {
       try {
-        const savedResults = await saveScrapedVideos({
+        const twitchVideos = await Array.fromAsync(
+          getVideosByUser({
+            type: 'archive',
+            userId: twitchUser.twitch_user_id,
+          }),
+        )
+
+        if (twitchVideos.length === 0) {
+          continue
+        }
+
+        const savedResults = await saveTwitchVideos({
           currentDateTime,
-          originalVideos: scrapedVideos,
+          originalVideos: twitchVideos,
           supabaseClient,
-          talentId: talentInfo.id,
-          youtubeChannelId: talentInfo.youtubeChannelId,
+          talentId: savedTalent.id,
+          twitchUserId: twitchUser.id,
         })
         videos.push(...savedResults)
       } catch (err) {
         Sentry.captureException(err)
       }
-    },
-  )
+    }
+  }
 
   if (videos.length > 0) {
     for (const video of videos) {
       const publishedAt = Temporal.Instant.from(video.published_at)
-      const youtubeVideoId = video.youtube_video?.youtube_video_id
+      const platformVideoId =
+        video.youtube_video?.youtube_video_id ??
+        video.twitch_video?.twitch_video_id
 
       Sentry.logger.info('The video has been saved.', {
         duration: video.duration,
-        id: youtubeVideoId,
+        id: platformVideoId,
         publishedAt: publishedAt.toString(),
         title: video.title,
       })

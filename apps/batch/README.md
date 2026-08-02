@@ -46,23 +46,26 @@ pnpm exec playwright test --ui
 - **データ同期処理**
   - `/videos/update`: 新着動画の追加専用（10分毎）
     - YouTubeから新しい動画のみを取得し、データベースに追加
+    - Twitch: 登録済みユーザーのアーカイブ（VOD）最新ページを取得し、未登録分を追加
     - **既存動画は一切更新しない** - すべての更新は`/videos/check`が担当
     - サムネイル処理も新規動画のみ対象
   - `/videos/check`: 既存動画の情報更新と削除判定
     - デフォルト（パラメータなし）: UPCOMING/LIVE動画の情報更新（1分毎）
-      - `videos.status`が`UPCOMING`または`LIVE`の動画が対象
+      - `videos.status`が`UPCOMING`または`LIVE`の動画が対象（YouTube）
       - ステータス、タイトル、サムネイル、配信時刻などを最新化
     - `mode=recent`: 最新100件の動画情報を更新（30分毎）
-      - ステータス、タイトル、サムネイル、配信時刻などを最新化
-    - `mode=all`: 全動画の削除判定のみ実行（週1回、火曜日）
+      - YouTube / Twitch それぞれ最新100件（ENDED/PUBLISHED）を対象
+      - ステータス、タイトル、配信時刻などを最新化。Twitchは削除済みもソフトデリート
+    - `mode=all`: 全動画の削除判定（週1回、火曜日）
       - YouTube上で存在しなくなった動画をデータベースから削除
-      - 情報更新は行わない
+      - Twitch動画・クリップも Helix で存在確認し、欠落分をソフトデリート
   - `/videos/cascade-from-talents`: タレント削除／復活に伴う動画の連鎖処理（5分毎）
     - 削除済みタレントに紐づく未削除動画をソフトデリート（`deleted_reason = talent_deleted`）
     - 復活済みタレントに紐づく `talent_deleted` のみ復旧（`unavailable` / `withdrawn` は対象外）
     - 1実行あたり最大100件
   - `/talents/update`: タレント情報の更新（3時間毎）
-    - チャンネル情報の同期
+    - YouTubeチャンネル情報の同期
+    - Twitchユーザー情報（display_name / login）の同期
 - **統計情報の更新** (`/stats/snapshot`)
   - ダッシュボード統計のスナップショット保存（日次比較用）
 - **推薦クエリの更新** (`/recommendation/queries/update`)
@@ -137,9 +140,9 @@ pnpm exec playwright test --ui
 - `lib/supabase.ts` - Supabaseクライアントの初期化
 - `lib/redis.ts` - Redisクライアントの初期化
 - `lib/youtube.ts` - YouTube APIクライアントの初期化
-- `lib/database/operations.ts` - 汎用的なデータベース操作（`getSavedVideos`, `upsertVideos`など）
+- `lib/database/operations.ts` - 汎用的なデータベース操作（`getSavedVideos`, `getSavedTwitchVideos`, `upsertVideos`, `processTwitchUsers`など）
 - `lib/database/video-updates.ts` - 動画更新処理（複数ルートで使用）
-- `lib/thumbnails/` - サムネイル処理ロジック
+- `lib/thumbnails/` - サムネイル処理ロジック（YouTube / Twitch URL両対応）
 
 ### `app/*/\_lib/` - ルート固有ライブラリ
 
@@ -157,7 +160,10 @@ pnpm exec playwright test --ui
 - `app/videos/check/_lib/query-schema.ts` - クエリパラメータのバリデーションスキーマ
 - `app/videos/check/_lib/get-monitor-slug.ts` - Sentryモニタースラッグ生成
 - `app/videos/update/_lib/constants.ts` - `/videos/update`専用の定数定義
-- `app/videos/update/_lib/save-videos.ts` - `/videos/update`専用の動画保存処理
+- `app/videos/update/_lib/save-videos.ts` - `/videos/update`専用のYouTube動画保存処理
+- `app/videos/update/_lib/save-twitch-videos.ts` - `/videos/update`専用のTwitch動画保存処理
+- `app/videos/check/_lib/get-saved-twitch-videos.ts` - Twitch動画の取得
+- `app/videos/check/_lib/process-twitch-videos-for-check.ts` - Twitch動画の更新・削除
 
 ### 判断基準
 
