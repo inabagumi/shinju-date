@@ -201,18 +201,21 @@ export type Database = {
       twitch_users: {
         Row: {
           id: string
+          name: string | null
           talent_id: string
           twitch_login_name: string | null
           twitch_user_id: string
         }
         Insert: {
           id?: string
+          name?: string | null
           talent_id: string
           twitch_login_name?: string | null
           twitch_user_id: string
         }
         Update: {
           id?: string
+          name?: string | null
           talent_id?: string
           twitch_login_name?: string | null
           twitch_user_id?: string
@@ -275,7 +278,7 @@ export type Database = {
             | null
           duration: string
           id: string
-          platform: Database["public"]["Enums"]["platform_type"] | null
+          platform: Database["public"]["Enums"]["platform_type"]
           published_at: string
           status: Database["public"]["Enums"]["video_status"]
           talent_id: string
@@ -293,7 +296,7 @@ export type Database = {
             | null
           duration: string
           id?: string
-          platform?: Database["public"]["Enums"]["platform_type"] | null
+          platform: Database["public"]["Enums"]["platform_type"]
           published_at: string
           status?: Database["public"]["Enums"]["video_status"]
           talent_id: string
@@ -311,7 +314,7 @@ export type Database = {
             | null
           duration?: string
           id?: string
-          platform?: Database["public"]["Enums"]["platform_type"] | null
+          platform?: Database["public"]["Enums"]["platform_type"]
           published_at?: string
           status?: Database["public"]["Enums"]["video_status"]
           talent_id?: string
@@ -453,7 +456,7 @@ export type Database = {
             | null
           duration: string
           id: string
-          platform: Database["public"]["Enums"]["platform_type"] | null
+          platform: Database["public"]["Enums"]["platform_type"]
           published_at: string
           status: Database["public"]["Enums"]["video_status"]
           talent_id: string
@@ -506,6 +509,8 @@ export type Database = {
         | "CHANNEL_RESTORE"
         | "CHANNEL_RETIRE"
         | "CHANNEL_ACTIVATE"
+        | "TWITCH_USER_CREATE"
+        | "TWITCH_USER_DELETE"
       feature_request_status:
         | "pending"
         | "in_progress"
@@ -513,7 +518,7 @@ export type Database = {
         | "rejected"
       platform_type: "youtube" | "twitch"
       talent_status: "active" | "retired"
-      twitch_video_type: "vod" | "clip" | "highlight" | "premiere" | "upload"
+      twitch_video_type: "archive" | "highlight" | "upload" | "clip"
       video_deleted_reason: "unavailable" | "withdrawn" | "talent_deleted"
       video_kind: "standard" | "short"
       video_status: "UPCOMING" | "LIVE" | "ENDED" | "PUBLISHED"
@@ -671,6 +676,8 @@ export const Constants = {
         "CHANNEL_RESTORE",
         "CHANNEL_RETIRE",
         "CHANNEL_ACTIVATE",
+        "TWITCH_USER_CREATE",
+        "TWITCH_USER_DELETE",
       ],
       feature_request_status: [
         "pending",
@@ -680,7 +687,7 @@ export const Constants = {
       ],
       platform_type: ["youtube", "twitch"],
       talent_status: ["active", "retired"],
-      twitch_video_type: ["vod", "clip", "highlight", "premiere", "upload"],
+      twitch_video_type: ["archive", "highlight", "upload", "clip"],
       video_deleted_reason: ["unavailable", "withdrawn", "talent_deleted"],
       video_kind: ["standard", "short"],
       video_status: ["UPCOMING", "LIVE", "ENDED", "PUBLISHED"],

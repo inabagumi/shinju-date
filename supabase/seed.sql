@@ -86,6 +86,25 @@ VALUES
 	('12000000-0000-0000-0000-000000000005', '30000000-0000-0000-0000-000000000005', 'ytvid96', '11000000-0000-0000-0000-000000000005'),
 	('12000000-0000-0000-0000-000000001000', '30000000-0000-0000-0000-000000001000', 'ytvid1', '11000000-0000-0000-0000-000000000010');
 
+-- twitch_users (sample: Alice and Bob also stream on Twitch)
+INSERT INTO public.twitch_users (id, talent_id, twitch_user_id, twitch_login_name, name)
+VALUES
+	('13000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', '100001', 'alice_twitch', 'Alice'),
+	('13000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', '100002', 'bob_twitch', 'Bob');
+
+-- Twitch sample videos (separate from youtube_videos; platform = twitch)
+INSERT INTO public.videos (id, title, duration, created_at, updated_at, published_at, visible, thumbnail_id, talent_id, platform, status)
+VALUES
+	('30000000-0000-0000-0000-000000000101', '【Twitch】ゲーム配信アーカイブ', 'PT3H0M0S', date_trunc('second', NOW() - INTERVAL '12 hours'), date_trunc('second', NOW() - INTERVAL '11 hours'), date_trunc('second', NOW() - INTERVAL '10 hours'), TRUE, NULL, '00000000-0000-0000-0000-000000000001', 'twitch', 'ENDED'),
+	('30000000-0000-0000-0000-000000000102', '【Twitch】ハイライト集', 'PT15M0S', date_trunc('second', NOW() - INTERVAL '2 days'), date_trunc('second', NOW() - INTERVAL '2 days'), date_trunc('second', NOW() - INTERVAL '2 days'), TRUE, NULL, '00000000-0000-0000-0000-000000000002', 'twitch', 'ENDED'),
+	('30000000-0000-0000-0000-000000000103', '【Twitch】クリップ', 'PT0M30S', date_trunc('second', NOW() - INTERVAL '1 days'), date_trunc('second', NOW() - INTERVAL '1 days'), date_trunc('second', NOW() - INTERVAL '1 days'), TRUE, NULL, '00000000-0000-0000-0000-000000000001', 'twitch', 'ENDED');
+
+INSERT INTO public.twitch_videos (id, video_id, twitch_video_id, type, twitch_user_id)
+VALUES
+	('14000000-0000-0000-0000-000000000101', '30000000-0000-0000-0000-000000000101', 'twvid-archive1', 'archive', '13000000-0000-0000-0000-000000000001'),
+	('14000000-0000-0000-0000-000000000102', '30000000-0000-0000-0000-000000000102', 'twvid-highlight1', 'highlight', '13000000-0000-0000-0000-000000000002'),
+	('14000000-0000-0000-0000-000000000103', '30000000-0000-0000-0000-000000000103', 'twclip1', 'clip', '13000000-0000-0000-0000-000000000001');
+
 -- announcements
 INSERT INTO public.announcements (id, enabled, level, message, start_at, end_at, created_at, updated_at)
 VALUES
