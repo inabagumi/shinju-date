@@ -151,24 +151,46 @@ async function VideoDetailContent({ id }: { id: string }) {
             </p>
           </CardHeader>
           <CardContent className="p-0">
-            <dl>
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dl className="[&>div:nth-of-type(even)]:bg-white [&>div:nth-of-type(odd)]:bg-gray-50">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">タイトル</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   {video.title}
                 </dd>
               </div>
-              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">
-                  YouTube動画ID
+                  プラットフォーム
+                </dt>
+                <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                  {video.platform === 'twitch' ? 'Twitch' : 'YouTube'}
+                </dd>
+              </div>
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt className="font-medium text-gray-500 text-sm">
+                  {video.platform === 'twitch'
+                    ? 'Twitch動画ID'
+                    : 'YouTube動画ID'}
                 </dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   <code className="rounded bg-gray-100 px-2 py-1 font-mono text-xs">
-                    {video.youtube_video?.youtube_video_id || 'N/A'}
+                    {video.platform === 'twitch'
+                      ? (video.twitch_video?.twitch_video_id ?? 'N/A')
+                      : (video.youtube_video?.youtube_video_id ?? 'N/A')}
                   </code>
                 </dd>
               </div>
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              {video.platform === 'twitch' && video.twitch_video?.type && (
+                <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="font-medium text-gray-500 text-sm">
+                    Twitch種別
+                  </dt>
+                  <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                    {video.twitch_video.type}
+                  </dd>
+                </div>
+              )}
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">タレント</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   <Link
@@ -179,19 +201,19 @@ async function VideoDetailContent({ id }: { id: string }) {
                   </Link>
                 </dd>
               </div>
-              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">再生時間</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   {formatDuration(Temporal.Duration.from(video.duration))}
                 </dd>
               </div>
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">動画種別</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   <VideoKindBadge videoKind={video.video_kind} />
                 </dd>
               </div>
-              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">
                   クリック数（7日間）
                 </dt>
@@ -199,7 +221,7 @@ async function VideoDetailContent({ id }: { id: string }) {
                   {formatNumber(video.clicks)}
                 </dd>
               </div>
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">公開日時</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   <time dateTime={video.published_at}>
@@ -207,7 +229,7 @@ async function VideoDetailContent({ id }: { id: string }) {
                   </time>
                 </dd>
               </div>
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">作成日時</dt>
                 <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
                   <time dateTime={video.created_at}>
@@ -215,7 +237,7 @@ async function VideoDetailContent({ id }: { id: string }) {
                   </time>
                 </dd>
               </div>
-              <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="font-medium text-gray-500 text-sm">
                   最終更新日時
                 </dt>
@@ -226,7 +248,7 @@ async function VideoDetailContent({ id }: { id: string }) {
                 </dd>
               </div>
               {isDeleted && (
-                <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="font-medium text-gray-500 text-sm">
                     削除日時
                   </dt>
@@ -254,21 +276,40 @@ async function VideoDetailContent({ id }: { id: string }) {
               外部リンク
             </h3>
             <p className="mt-1 max-w-2xl text-gray-500 text-sm">
-              YouTube上のオリジナル動画へのリンク
+              {video.platform === 'twitch'
+                ? 'Twitch上のオリジナル動画へのリンク'
+                : 'YouTube上のオリジナル動画へのリンク'}
             </p>
           </CardHeader>
           <CardContent>
-            {video.youtube_video?.youtube_video_id && (
-              <a
-                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
-                href={`https://www.youtube.com/watch?v=${video.youtube_video.youtube_video_id}`}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                YouTubeで見る
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </a>
-            )}
+            {video.platform === 'twitch' &&
+              video.twitch_video?.twitch_video_id && (
+                <a
+                  className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
+                  href={
+                    video.twitch_video.type === 'clip'
+                      ? `https://clips.twitch.tv/${video.twitch_video.twitch_video_id}`
+                      : `https://www.twitch.tv/videos/${video.twitch_video.twitch_video_id}`
+                  }
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  Twitchで見る
+                  <ExternalLink className="ml-2 h-4 w-4" />
+                </a>
+              )}
+            {video.platform !== 'twitch' &&
+              video.youtube_video?.youtube_video_id && (
+                <a
+                  className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
+                  href={`https://www.youtube.com/watch?v=${video.youtube_video.youtube_video_id}`}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  YouTubeで見る
+                  <ExternalLink className="ml-2 h-4 w-4" />
+                </a>
+              )}
           </CardContent>
         </Card>
       </div>

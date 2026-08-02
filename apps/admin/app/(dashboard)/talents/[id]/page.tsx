@@ -13,6 +13,7 @@ import { ChannelManager } from './_components/channel-manager'
 import { EditTalentForm } from './_components/edit-talent-form'
 import { SyncTalentButton } from './_components/sync-talent-button'
 import { TalentLifecycleActions } from './_components/talent-lifecycle-actions'
+import { TwitchUserManager } from './_components/twitch-user-manager'
 
 interface Props {
   params: Promise<{
@@ -59,7 +60,13 @@ async function TalentProfile({ id }: { id: string }) {
             <p className="text-gray-600">タレント詳細</p>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
-            {!isDeleted && <SyncTalentButton talentId={talent.id} />}
+            {!isDeleted && (
+              <SyncTalentButton
+                hasTwitchUsers={talent.twitch_users.length > 0}
+                hasYouTubeChannels={talent.youtube_channels.length > 0}
+                talentId={talent.id}
+              />
+            )}
             <TalentLifecycleActions talent={talent} />
           </div>
         </div>
@@ -126,6 +133,13 @@ async function TalentProfile({ id }: { id: string }) {
         channels={talent.youtube_channels}
         isDeleted={isDeleted}
         talentId={talent.id}
+      />
+
+      {/* Twitch User Management */}
+      <TwitchUserManager
+        isDeleted={isDeleted}
+        talentId={talent.id}
+        users={talent.twitch_users}
       />
 
       {/* Additional metadata */}

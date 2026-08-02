@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { syncTalentWithYouTube } from '../sync'
+import { syncTalentWithTwitch, syncTalentWithYouTube } from '../sync'
 
 vi.mock('@/lib/supabase', () => ({
   createSupabaseServerClient: vi.fn(),
@@ -30,6 +30,13 @@ vi.mock('@shinju-date/temporal-fns', () => ({
 
 vi.mock('temporal-polyfill', () => ({
   Temporal: {
+    Instant: {
+      from: vi.fn((value: string) => ({
+        equals: (other: { toString: () => string }) =>
+          value === other.toString(),
+        toString: () => value,
+      })),
+    },
     Now: {
       instant: vi.fn(() => ({
         toString: () => '2024-11-24T17:00:00Z',
@@ -40,6 +47,10 @@ vi.mock('temporal-polyfill', () => ({
 
 vi.mock('@shinju-date/youtube-api-client', () => ({
   getChannels: vi.fn(),
+}))
+
+vi.mock('@shinju-date/twitch-api-client', () => ({
+  getUsers: vi.fn(),
 }))
 
 const talentId = '123e4567-e89b-12d3-a456-426614174000'
@@ -509,5 +520,215 @@ describe('syncTalentWithYouTube', () => {
       success: false,
     })
     expect(getChannels).not.toHaveBeenCalled()
+  })
+})
+
+const twitchUserRowId = 'twitch-user-row-uuid'
+const twitchUserId = '141981764'
+
+function createMockTwitchSupabaseClient({
+  users,
+  upsertError = null,
+  updateError = null,
+}: {
+  users: {
+    id: string
+    name: string | null
+    twitch_user_id: string
+    twitch_login_name: string | null
+  }[]
+  upsertError?: { message: string } | null
+  updateError?: { message: string } | null
+}) {
+  const mockUpsert = vi.fn().mockResolvedValue({ error: upsertError })
+  const mockUpdate = vi.fn().mockReturnThis()
+  const mockEq = vi.fn().mockResolvedValue({ error: updateError })
+
+  mockUpdate.mockReturnValue({ eq: mockEq })
+
+  const mockSupabaseClient = {
+    from: vi.fn((table: string) => {
+      if (table === 'talents') {
+        return {
+          eq: vi.fn().mockReturnThis(),
+          select: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: {
+              id: talentId,
+              twitch_users: users,
+            },
+            error: null,
+          }),
+          update: mockUpdate,
+        }
+      }
+
+      if (table === 'twitch_users') {
+        return {
+          upsert: mockUpsert,
+        }
+      }
+
+      return {
+        eq: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+      }
+    }),
+  }
+
+  return { mockEq, mockSupabaseClient, mockUpdate, mockUpsert }
+}
+
+describe('syncTalentWithTwitch', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('should update twitch user name and login from Helix API', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { createAuditLog } = await import('@/lib/audit-log')
+    const { getUsers } = await import('@shinju-date/twitch-api-client')
+
+    const { mockSupabaseClient, mockUpdate, mockUpsert } =
+      createMockTwitchSupabaseClient({
+        users: [
+          {
+            id: twitchUserRowId,
+            name: 'Old Name',
+            twitch_login_name: 'oldlogin',
+            twitch_user_id: twitchUserId,
+          },
+        ],
+      })
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    async function* mockGetUsers() {
+      yield {
+        broadcaster_type: '',
+        created_at: '2011-08-08T20:45:44Z',
+        description: '',
+        display_name: 'New Name',
+        id: twitchUserId,
+        login: 'newlogin',
+        offline_image_url: '',
+        profile_image_url: '',
+        type: '',
+      }
+    }
+
+    vi.mocked(getUsers).mockReturnValue(mockGetUsers() as never)
+
+    const result = await syncTalentWithTwitch(talentId)
+
+    expect(result).toEqual({ success: true })
+    expect(getUsers).toHaveBeenCalledWith({ ids: [twitchUserId] })
+    expect(mockUpsert).toHaveBeenCalledWith(
+      {
+        id: twitchUserRowId,
+        name: 'New Name',
+        talent_id: talentId,
+        twitch_login_name: 'newlogin',
+        twitch_user_id: twitchUserId,
+      },
+      { onConflict: 'id' },
+    )
+    expect(mockUpdate).toHaveBeenCalledWith({
+      updated_at: '2024-11-24T17:00:00Z',
+    })
+    expect(createAuditLog).toHaveBeenCalledWith(
+      'CHANNEL_SYNC',
+      'twitch_users',
+      talentId,
+      {
+        platform: 'twitch',
+        users: [
+          {
+            after: {
+              name: 'New Name',
+              twitch_login_name: 'newlogin',
+            },
+            before: {
+              name: 'Old Name',
+              twitch_login_name: 'oldlogin',
+            },
+            twitch_user_id: twitchUserId,
+          },
+        ],
+      },
+    )
+  })
+
+  it('should return already up to date when user data is unchanged', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { getUsers } = await import('@shinju-date/twitch-api-client')
+    const { createAuditLog } = await import('@/lib/audit-log')
+
+    const { mockSupabaseClient, mockUpsert, mockUpdate } =
+      createMockTwitchSupabaseClient({
+        users: [
+          {
+            id: twitchUserRowId,
+            name: 'Same Name',
+            twitch_login_name: 'samelogin',
+            twitch_user_id: twitchUserId,
+          },
+        ],
+      })
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    async function* mockGetUsers() {
+      yield {
+        broadcaster_type: '',
+        created_at: '2011-08-08T20:45:44Z',
+        description: '',
+        display_name: 'Same Name',
+        id: twitchUserId,
+        login: 'samelogin',
+        offline_image_url: '',
+        profile_image_url: '',
+        type: '',
+      }
+    }
+
+    vi.mocked(getUsers).mockReturnValue(mockGetUsers() as never)
+
+    const result = await syncTalentWithTwitch(talentId)
+
+    expect(result).toEqual({
+      message: 'Twitchユーザー情報は既に最新です。',
+      success: true,
+      unchanged: true,
+    })
+    expect(mockUpsert).toHaveBeenCalled()
+    expect(mockUpdate).not.toHaveBeenCalled()
+    expect(createAuditLog).not.toHaveBeenCalled()
+  })
+
+  it('should return error when talent has no linked Twitch users', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { getUsers } = await import('@shinju-date/twitch-api-client')
+
+    const { mockSupabaseClient } = createMockTwitchSupabaseClient({
+      users: [],
+    })
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    const result = await syncTalentWithTwitch(talentId)
+
+    expect(result).toEqual({
+      error: 'このタレントに紐づくTwitchユーザーはありません。',
+      success: false,
+    })
+    expect(getUsers).not.toHaveBeenCalled()
   })
 })

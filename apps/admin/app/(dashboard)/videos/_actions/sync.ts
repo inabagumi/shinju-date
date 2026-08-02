@@ -3,6 +3,10 @@
 import type { TablesUpdate } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
+import {
+  getClips,
+  getVideos as getTwitchVideos,
+} from '@shinju-date/twitch-api-client'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { getVideos } from '@shinju-date/youtube-api-client'
 import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
@@ -168,6 +172,209 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
     return { success: true }
   } catch (error) {
     logger.error('動画の同期に失敗しました', { error, videoId })
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : '予期しないエラーが発生しました。',
+      success: false,
+    }
+  }
+}
+
+/**
+ * Twitch 動画（VOD / highlight / upload / clip）を Helix API から同期する。
+ */
+export async function syncVideoWithTwitch(videoId: string): Promise<{
+  success: boolean
+  error?: string
+  message?: string
+  unchanged?: boolean
+}> {
+  const supabaseClient = await createSupabaseServerClient()
+
+  try {
+    const { data: video, error: fetchError } = await supabaseClient
+      .from('videos')
+      .select(
+        'id, title, visible, duration, published_at, status, platform, twitch_video:twitch_videos!inner(id, twitch_video_id, type)',
+      )
+      .eq('id', videoId)
+      .single()
+
+    if (fetchError) {
+      throw fetchError
+    }
+
+    if (!video) {
+      return { error: '動画が見つかりませんでした。', success: false }
+    }
+
+    if (!video.twitch_video?.twitch_video_id) {
+      return {
+        error: 'この動画はTwitch動画ではありません。',
+        success: false,
+      }
+    }
+
+    const twitchVideoId = video.twitch_video.twitch_video_id
+    const isClip = video.twitch_video.type === 'clip'
+
+    let nextTitle: string
+    let nextDuration: string
+    let nextPublishedAt: Temporal.Instant
+    let nextStatus: TablesUpdate<'videos'>['status']
+    let nextType: 'archive' | 'highlight' | 'upload' | 'clip'
+
+    if (isClip) {
+      const clips = await Array.fromAsync(getClips({ ids: [twitchVideoId] }))
+      const clip = clips[0]
+
+      if (!clip) {
+        return {
+          error:
+            'Twitchでクリップが見つかりませんでした。削除されている可能性があります。',
+          success: false,
+        }
+      }
+
+      nextTitle = clip.title
+      nextDuration = clip.duration
+      nextPublishedAt = Temporal.Instant.from(clip.created_at)
+      nextStatus = 'PUBLISHED'
+      nextType = 'clip'
+    } else {
+      const twitchVideos = await Array.fromAsync(
+        getTwitchVideos({ ids: [twitchVideoId] }),
+      )
+      const twitchVideo = twitchVideos[0]
+
+      if (!twitchVideo) {
+        return {
+          error:
+            'Twitchで動画が見つかりませんでした。削除されている可能性があります。',
+          success: false,
+        }
+      }
+
+      nextTitle = twitchVideo.title
+      nextDuration = twitchVideo.duration
+      nextPublishedAt = Temporal.Instant.from(
+        twitchVideo.published_at || twitchVideo.created_at,
+      )
+      // archive/highlight are past broadcasts; uploads are regular videos
+      nextStatus = twitchVideo.type === 'upload' ? 'PUBLISHED' : 'ENDED'
+      nextType = twitchVideo.type
+    }
+
+    const currentDateTime = Temporal.Now.instant()
+    const updateData: TablesUpdate<'videos'> = {
+      updated_at: toDBString(currentDateTime),
+    }
+
+    let hasChanges = false
+
+    if (nextTitle !== video.title) {
+      updateData.title = nextTitle
+      hasChanges = true
+    }
+
+    if (nextDuration !== video.duration) {
+      updateData.duration = nextDuration
+      hasChanges = true
+    }
+
+    const currentPublishedAt = Temporal.Instant.from(video.published_at)
+    if (!nextPublishedAt.equals(currentPublishedAt)) {
+      updateData.published_at = toDBString(nextPublishedAt)
+      hasChanges = true
+    }
+
+    if (video.status !== nextStatus) {
+      updateData.status = nextStatus
+      hasChanges = true
+    }
+
+    const typeChanged = nextType !== video.twitch_video.type
+    if (typeChanged) {
+      hasChanges = true
+    }
+
+    if (!hasChanges) {
+      return {
+        message: '動画情報は既に最新です。',
+        success: true,
+        unchanged: true,
+      }
+    }
+
+    if (
+      updateData.title !== undefined ||
+      updateData.duration !== undefined ||
+      updateData.published_at !== undefined ||
+      updateData.status !== undefined
+    ) {
+      const { error: updateError } = await supabaseClient
+        .from('videos')
+        .update(updateData)
+        .eq('id', videoId)
+
+      if (updateError) {
+        throw updateError
+      }
+    }
+
+    if (typeChanged) {
+      const { error: typeError } = await supabaseClient
+        .from('twitch_videos')
+        .update({ type: nextType })
+        .eq('id', video.twitch_video.id)
+
+      if (typeError) {
+        throw typeError
+      }
+    }
+
+    const beforeData: TablesUpdate<'videos'> = {}
+    const afterData: TablesUpdate<'videos'> = {}
+
+    if ('title' in updateData) {
+      beforeData.title = video.title
+      afterData.title = updateData.title
+    }
+    if ('duration' in updateData) {
+      beforeData.duration = video.duration
+      afterData.duration = updateData.duration
+    }
+    if ('published_at' in updateData) {
+      beforeData.published_at = video.published_at
+      afterData.published_at = updateData.published_at
+    }
+    if ('status' in updateData) {
+      beforeData.status = video.status
+      afterData.status = updateData.status
+    }
+
+    await createAuditLog('VIDEO_SYNC', 'videos', videoId, {
+      after: afterData,
+      before: beforeData,
+      platform: 'twitch',
+      ...(typeChanged
+        ? {
+            twitch_type: {
+              after: nextType,
+              before: video.twitch_video.type,
+            },
+          }
+        : {}),
+    })
+
+    revalidatePath(`/videos/${videoId}`)
+    revalidatePath('/videos')
+    await revalidateTags(['videos'])
+    return { success: true }
+  } catch (error) {
+    logger.error('Twitch動画の同期に失敗しました', { error, videoId })
     return {
       error:
         error instanceof Error

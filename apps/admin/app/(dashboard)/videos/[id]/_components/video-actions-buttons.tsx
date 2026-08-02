@@ -9,16 +9,17 @@ import {
   softDeleteAction,
   toggleVisibilityAction,
 } from '../../_actions'
-import { syncVideoWithYouTube } from '../../_actions/sync'
+import { syncVideoWithTwitch, syncVideoWithYouTube } from '../../_actions/sync'
 import { VideoActionConfirmDialog } from '../../_components/video-action-confirm-dialog'
 
 type VideoInfo = Pick<Tables<'videos'>, 'id' | 'title'>
 
 interface SyncVideoButtonProps {
   videoId: string
+  platform: Tables<'videos'>['platform']
 }
 
-function SyncVideoButton({ videoId }: SyncVideoButtonProps) {
+function SyncVideoButton({ videoId, platform }: SyncVideoButtonProps) {
   const [isPending, startTransition] = useTransition()
   const [toastOpen, setToastOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState<{
@@ -26,11 +27,16 @@ function SyncVideoButton({ videoId }: SyncVideoButtonProps) {
     text: string
   } | null>(null)
 
+  const label = platform === 'twitch' ? 'Twitchと同期' : 'YouTubeと同期'
+
   const handleSync = () => {
     setToastMessage(null)
     startTransition(async () => {
       try {
-        const result = await syncVideoWithYouTube(videoId)
+        const result =
+          platform === 'twitch'
+            ? await syncVideoWithTwitch(videoId)
+            : await syncVideoWithYouTube(videoId)
         if (result.success) {
           setToastMessage({
             text:
@@ -62,7 +68,7 @@ function SyncVideoButton({ videoId }: SyncVideoButtonProps) {
     <>
       <Button disabled={isPending} onClick={handleSync} variant="primary">
         {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {isPending ? '同期中...' : 'YouTubeと同期'}
+        {isPending ? '同期中...' : label}
       </Button>
 
       {toastMessage && (
@@ -87,7 +93,10 @@ function SyncVideoButton({ videoId }: SyncVideoButtonProps) {
 }
 
 interface VideoActionsButtonsProps {
-  video: Pick<Tables<'videos'>, 'id' | 'title' | 'visible' | 'deleted_at'>
+  video: Pick<
+    Tables<'videos'>,
+    'id' | 'title' | 'visible' | 'deleted_at' | 'platform'
+  >
 }
 
 export function VideoActionsButtons({ video }: VideoActionsButtonsProps) {
@@ -211,7 +220,9 @@ export function VideoActionsButtons({ video }: VideoActionsButtonsProps) {
             </>
           )}
         </div>
-        {!isDeleted && <SyncVideoButton videoId={video.id} />}
+        {!isDeleted && (
+          <SyncVideoButton platform={video.platform} videoId={video.id} />
+        )}
       </div>
 
       {toastMessage && (

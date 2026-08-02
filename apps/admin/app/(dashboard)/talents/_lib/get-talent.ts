@@ -16,6 +16,12 @@ export interface Talent {
     youtube_channel_id: string
     youtube_handle: string | null
   }[]
+  twitch_users: {
+    id: string
+    name: string | null
+    twitch_user_id: string
+    twitch_login_name: string | null
+  }[]
 }
 
 export async function getTalent(id: string): Promise<Talent | null> {
@@ -28,7 +34,7 @@ export async function getTalent(id: string): Promise<Talent | null> {
   const { data: talent, error } = await supabaseClient
     .from('talents')
     .select(
-      'id, name, theme_color, status, created_at, updated_at, deleted_at, youtube_channels(id, name, youtube_channel_id, youtube_handle)',
+      'id, name, theme_color, status, created_at, updated_at, deleted_at, youtube_channels(id, name, youtube_channel_id, youtube_handle), twitch_users(id, name, twitch_user_id, twitch_login_name)',
     )
     .eq('id', id)
     .single()
