@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   YOUTUBE_DATA_API_MAX_RESULTS,
   YouTubeChannelSchema,
+  YouTubeChannelSnippetSchema,
   YouTubePlaylistItemSchema,
   YouTubeVideoSchema,
 } from '../index.js'
@@ -10,6 +11,27 @@ describe('YouTube API Client', () => {
   describe('constants', () => {
     it('should export YOUTUBE_DATA_API_MAX_RESULTS', () => {
       expect(YOUTUBE_DATA_API_MAX_RESULTS).toBe(50)
+    })
+  })
+
+  describe('YouTubeChannelSnippetSchema', () => {
+    it('should validate a snippet with title only', () => {
+      expect(() =>
+        YouTubeChannelSnippetSchema.parse({ title: 'Test Channel' }),
+      ).not.toThrow()
+    })
+
+    it('should validate a snippet with title and customUrl', () => {
+      expect(() =>
+        YouTubeChannelSnippetSchema.parse({
+          customUrl: '@testchannel',
+          title: 'Test Channel',
+        }),
+      ).not.toThrow()
+    })
+
+    it('should reject a snippet without title', () => {
+      expect(() => YouTubeChannelSnippetSchema.parse({})).toThrow()
     })
   })
 
@@ -22,6 +44,25 @@ describe('YouTube API Client', () => {
           },
         },
         id: 'UC12345',
+        snippet: {
+          customUrl: '@testchannel',
+          title: 'Test Channel',
+        },
+      }
+      expect(() => YouTubeChannelSchema.parse(validChannel)).not.toThrow()
+    })
+
+    it('should validate a channel without customUrl', () => {
+      const validChannel = {
+        contentDetails: {
+          relatedPlaylists: {
+            uploads: 'UU12345',
+          },
+        },
+        id: 'UC12345',
+        snippet: {
+          title: 'Test Channel',
+        },
       }
       expect(() => YouTubeChannelSchema.parse(validChannel)).not.toThrow()
     })
@@ -33,6 +74,9 @@ describe('YouTube API Client', () => {
             uploads: 'UU12345',
           },
         },
+        snippet: {
+          title: 'Test Channel',
+        },
       }
       expect(() => YouTubeChannelSchema.parse(invalidChannel)).toThrow()
     })
@@ -41,6 +85,34 @@ describe('YouTube API Client', () => {
       const invalidChannel = {
         contentDetails: {
           relatedPlaylists: {},
+        },
+        id: 'UC12345',
+        snippet: {
+          title: 'Test Channel',
+        },
+      }
+      expect(() => YouTubeChannelSchema.parse(invalidChannel)).toThrow()
+    })
+
+    it('should reject a channel without snippet title', () => {
+      const invalidChannel = {
+        contentDetails: {
+          relatedPlaylists: {
+            uploads: 'UU12345',
+          },
+        },
+        id: 'UC12345',
+        snippet: {},
+      }
+      expect(() => YouTubeChannelSchema.parse(invalidChannel)).toThrow()
+    })
+
+    it('should reject a channel without snippet', () => {
+      const invalidChannel = {
+        contentDetails: {
+          relatedPlaylists: {
+            uploads: 'UU12345',
+          },
         },
         id: 'UC12345',
       }
