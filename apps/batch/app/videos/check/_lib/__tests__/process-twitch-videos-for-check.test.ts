@@ -40,6 +40,7 @@ function makeSavedVideo(options: {
   id: string
   published_at?: string
   status?: SavedTwitchVideo['status']
+  stream_id?: string | null
   thumbnail?: SavedTwitchVideo['thumbnail']
   title?: string
   twitch_video_id: string
@@ -54,6 +55,7 @@ function makeSavedVideo(options: {
     title: options.title ?? 'Old title',
     twitch_video: {
       id: `tv-${options.id}`,
+      stream_id: options.stream_id ?? null,
       twitch_video_id: options.twitch_video_id,
       type: options.type ?? 'archive',
     },

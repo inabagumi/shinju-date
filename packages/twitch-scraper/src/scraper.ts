@@ -1,5 +1,6 @@
 import {
   getClips as defaultGetClips,
+  getStreamsByUserIds as defaultGetStreamsByUserIds,
   getUsers as defaultGetUsers,
   getVideos as defaultGetVideos,
   getVideosByUser as defaultGetVideosByUser,
@@ -12,17 +13,20 @@ import type {
   ScrapeClipsParams,
   ScrapeNewVideosParams,
   ScraperOptions,
+  ScrapeStreamsParams,
   ScrapeUsersParams,
   ScrapeVideosAvailabilityParams,
   ScrapeVideosParams,
   TwitchClip,
   TwitchScraperClient,
+  TwitchStream,
   TwitchUser,
   TwitchVideo,
 } from './types.js'
 
 const defaultClient: TwitchScraperClient = {
   getClips: defaultGetClips,
+  getStreamsByUserIds: defaultGetStreamsByUserIds,
   getUsers: defaultGetUsers,
   getVideos: defaultGetVideos,
   getVideosByUser: defaultGetVideosByUser,
@@ -129,6 +133,35 @@ export class TwitchScraper implements AsyncDisposable {
 
     if (clips.length > 0) {
       await onClipsScraped(clips)
+    }
+  }
+
+  /**
+   * Fetch currently live streams for the given broadcaster Helix user IDs.
+   * Offline users are omitted (Helix does not return them).
+   */
+  async scrapeStreams(
+    params: ScrapeStreamsParams,
+    onStreamsScraped: (streams: TwitchStream[]) => void | Promise<void>,
+  ): Promise<void> {
+    this.#logger?.debug('Scraping Twitch streams', {
+      count: params.userIds.length,
+    })
+
+    if (params.userIds.length === 0) {
+      return
+    }
+
+    const streams = await Array.fromAsync(
+      this.#client.getStreamsByUserIds({ userIds: params.userIds }),
+    )
+
+    this.#logger?.debug('Twitch stream scraping completed', {
+      count: streams.length,
+    })
+
+    if (streams.length > 0) {
+      await onStreamsScraped(streams)
     }
   }
 

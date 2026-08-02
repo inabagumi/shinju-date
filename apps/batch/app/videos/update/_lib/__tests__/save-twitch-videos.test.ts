@@ -206,4 +206,106 @@ describe('saveTwitchVideos', () => {
 
     expect(result).toHaveLength(0)
   })
+
+  it('reconciles LIVE placeholder to archive by stream_id', async () => {
+    const supabaseClient = createClient(
+      MOCK_SUPABASE_URL,
+      MOCK_SUPABASE_ANON_KEY,
+    )
+
+    const videoPatches: unknown[] = []
+    const twitchPatches: unknown[] = []
+    let videoPosts = 0
+
+    server.use(
+      http.get('*/rest/v1/twitch_videos', ({ request }) => {
+        const url = new URL(request.url)
+        // Match by stream_id → LIVE placeholder
+        if (url.searchParams.get('stream_id')) {
+          return HttpResponse.json([
+            {
+              stream_id: 'stream-99',
+              twitch_video_id: 'live:stream-99',
+              type: null,
+              video: {
+                created_at: '2023-01-15T09:00:00Z',
+                deleted_at: null,
+                duration: 'P0D',
+                id: 'live-video-uuid',
+                platform: 'twitch',
+                published_at: '2023-01-15T09:00:00Z',
+                status: 'LIVE',
+                talent_id: 'talent-123',
+                thumbnail_id: null,
+                title: 'Was live',
+                updated_at: '2023-01-15T09:00:00Z',
+                visible: true,
+              },
+            },
+          ])
+        }
+        // Match by real VOD id → not found yet
+        return HttpResponse.json([])
+      }),
+      http.patch('*/rest/v1/videos', async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>
+        videoPatches.push(body)
+        return HttpResponse.json({
+          ...body,
+          id: 'live-video-uuid',
+          talent: { name: 'Alice' },
+          thumbnail: null,
+        })
+      }),
+      http.patch('*/rest/v1/twitch_videos', async ({ request }) => {
+        const body = await request.json()
+        twitchPatches.push(body)
+        return HttpResponse.json(body)
+      }),
+      http.post('*/rest/v1/videos', () => {
+        videoPosts += 1
+        return HttpResponse.json({}, { status: 201 })
+      }),
+    )
+
+    const result = await saveTwitchVideos({
+      currentDateTime: Temporal.Instant.from('2023-01-15T11:00:00Z'),
+      originalVideos: [
+        {
+          created_at: '2023-01-15T09:00:00Z',
+          description: '',
+          duration: 'PT1H30M0S',
+          id: 'vod-99',
+          language: 'ja',
+          published_at: '2023-01-15T09:00:00Z',
+          stream_id: 'stream-99',
+          thumbnail_url: 'https://example.com/thumb.jpg',
+          title: 'Archive after live',
+          type: 'archive',
+          url: 'https://www.twitch.tv/videos/vod-99',
+          user_id: '100001',
+          user_login: 'alice_twitch',
+          user_name: 'Alice',
+          view_count: 3,
+          viewable: 'public',
+        },
+      ],
+      supabaseClient,
+      talentId: 'talent-123',
+      twitchUserId: 'twitch-user-uuid-1',
+    })
+
+    expect(videoPosts).toBe(0)
+    expect(result).toHaveLength(1)
+    expect(videoPatches[0]).toMatchObject({
+      duration: 'PT1H30M0S',
+      status: 'ENDED',
+      title: 'Archive after live',
+    })
+    expect(twitchPatches[0]).toMatchObject({
+      stream_id: 'stream-99',
+      twitch_video_id: 'vod-99',
+      type: 'archive',
+    })
+  })
 })

@@ -34,6 +34,10 @@
       "schedule": "4 23 * * 2,4"
     },
     {
+      "path": "/videos/check?provider=twitch",
+      "schedule": "*/1 * * * *"
+    },
+    {
       "path": "/videos/check?provider=twitch&mode=recent",
       "schedule": "15,45 * * * *"
     },

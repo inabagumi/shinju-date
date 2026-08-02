@@ -1,3 +1,5 @@
+import { isLiveTwitchVideoId } from '@shinju-date/twitch-api-client'
+
 export type VideoPlatform = 'youtube' | 'twitch'
 
 export type VideoStatus = 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
@@ -22,6 +24,7 @@ export interface GetVideoExternalUrlParams {
  *
  * Twitch rules:
  * - LIVE / UPCOMING → `https://www.twitch.tv/<login>` (channel top)
+ * - synthetic `live:{stream_id}` placeholder (VOD not yet ready) → channel top
  * - clip → `https://clips.twitch.tv/<id>`
  * - otherwise → `https://www.twitch.tv/videos/<id>`
  *
@@ -35,8 +38,10 @@ export function getVideoExternalUrl(
   if (params.platform === 'twitch') {
     const isLiveOrUpcoming =
       params.status === 'LIVE' || params.status === 'UPCOMING'
+    const isPendingArchive =
+      params.twitchVideoId != null && isLiveTwitchVideoId(params.twitchVideoId)
 
-    if (isLiveOrUpcoming && params.twitchLoginName) {
+    if ((isLiveOrUpcoming || isPendingArchive) && params.twitchLoginName) {
       return `https://www.twitch.tv/${encodeURIComponent(params.twitchLoginName)}`
     }
 
@@ -44,7 +49,7 @@ export function getVideoExternalUrl(
       return `https://clips.twitch.tv/${encodeURIComponent(params.twitchVideoId)}`
     }
 
-    if (params.twitchVideoId) {
+    if (params.twitchVideoId && !isPendingArchive) {
       return `https://www.twitch.tv/videos/${encodeURIComponent(
         params.twitchVideoId,
       )}`

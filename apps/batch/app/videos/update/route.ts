@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/nextjs'
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
+import type { TwitchStream } from '@shinju-date/twitch-scraper'
 import { TwitchScraper } from '@shinju-date/twitch-scraper'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
@@ -14,6 +15,7 @@ import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
 import { getMonitorSlug } from './_lib/constants'
+import { saveTwitchStreams } from './_lib/save-twitch-streams'
 import { saveTwitchVideos } from './_lib/save-twitch-videos'
 import { saveScrapedVideos } from './_lib/save-videos'
 
@@ -195,7 +197,30 @@ export async function POST(request: NextRequest): Promise<Response> {
     if (helixUserIds.length > 0) {
       await using scraper = new TwitchScraper({ concurrency: 2 })
 
-      // First page of archives per user — enough for frequent discovery.
+      // 1) Currently live streams → status LIVE (synthetic live:{stream_id}).
+      const liveStreams: TwitchStream[] = []
+      await scraper.scrapeStreams(
+        { userIds: helixUserIds },
+        async (streams) => {
+          liveStreams.push(...streams)
+        },
+      )
+
+      if (liveStreams.length > 0) {
+        try {
+          const savedLive = await saveTwitchStreams({
+            currentDateTime,
+            streams: liveStreams,
+            supabaseClient,
+            userToTalentMap,
+          })
+          videos.push(...savedLive)
+        } catch (err) {
+          Sentry.captureException(err)
+        }
+      }
+
+      // 2) First page of archives per user — discovery + LIVE→archive reconcile.
       await scraper.scrapeNewVideos(
         { type: 'archive', userIds: helixUserIds },
         async (helixUserId, scrapedVideos) => {

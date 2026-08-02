@@ -1,10 +1,11 @@
 import type {
   TwitchClip,
+  TwitchStream,
   TwitchUser,
   TwitchVideo,
 } from '@shinju-date/twitch-api-client'
 
-export type { TwitchClip, TwitchUser, TwitchVideo }
+export type { TwitchClip, TwitchStream, TwitchUser, TwitchVideo }
 
 export interface Logger {
   debug(message: string, attributes?: Record<string, unknown>): void
@@ -21,6 +22,9 @@ export interface TwitchScraperClient {
   getClips: (options: {
     ids: string[]
   }) => AsyncGenerator<TwitchClip, void, undefined>
+  getStreamsByUserIds: (options: {
+    userIds: string[]
+  }) => AsyncGenerator<TwitchStream, void, undefined>
   getUsers: (options: {
     ids?: string[]
     logins?: string[]
@@ -60,6 +64,11 @@ export interface ScrapeVideosParams {
 
 export interface ScrapeClipsParams {
   ids: string[]
+}
+
+export interface ScrapeStreamsParams {
+  /** Helix user IDs (broadcaster IDs) */
+  userIds: string[]
 }
 
 export interface ScrapeVideosAvailabilityParams {

@@ -5,11 +5,13 @@ export type {
   ScrapeClipsParams,
   ScrapeNewVideosParams,
   ScraperOptions,
+  ScrapeStreamsParams,
   ScrapeUsersParams,
   ScrapeVideosAvailabilityParams,
   ScrapeVideosParams,
   TwitchClip,
   TwitchScraperClient,
+  TwitchStream,
   TwitchUser,
   TwitchVideo,
 } from './types.js'

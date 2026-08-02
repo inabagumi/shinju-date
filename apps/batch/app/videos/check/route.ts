@@ -3,7 +3,12 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
-import type { TwitchClip, TwitchVideo } from '@shinju-date/twitch-scraper'
+import { isLiveTwitchVideoId } from '@shinju-date/twitch-api-client'
+import type {
+  TwitchClip,
+  TwitchStream,
+  TwitchVideo,
+} from '@shinju-date/twitch-scraper'
 import { TwitchScraper } from '@shinju-date/twitch-scraper'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
@@ -22,6 +27,7 @@ import { getMonitorSlug } from './_lib/get-monitor-slug'
 import { getSavedTwitchVideos } from './_lib/get-saved-twitch-videos'
 import { getSavedVideos } from './_lib/get-saved-videos'
 import { processScrapedVideoForCheck } from './_lib/process-scraped-video-for-check'
+import { processTwitchLiveForCheck } from './_lib/process-twitch-live-for-check'
 import {
   processTwitchAvailability,
   processTwitchVideosForCheck,
@@ -66,16 +72,6 @@ export async function POST(request: NextRequest): Promise<Response> {
     mode = 'recent'
   } else {
     mode = 'default'
-  }
-
-  // Twitch has no UPCOMING/LIVE pipeline; default mode is YouTube-only.
-  if (provider === 'twitch' && mode === 'default') {
-    return createErrorResponse(
-      'Twitch provider requires mode=recent or mode=all.',
-      {
-        status: 400,
-      },
-    )
   }
 
   const ratelimit =
@@ -178,6 +174,68 @@ export async function POST(request: NextRequest): Promise<Response> {
         }
       })
     }
+  } else if (mode === 'default') {
+    // Twitch LIVE recheck: Streams API + optional archive match by stream_id.
+    const savedLiveVideos = await Array.fromAsync(
+      getSavedTwitchVideos({
+        mode: 'default',
+        supabaseClient,
+      }),
+    )
+
+    if (savedLiveVideos.length > 0) {
+      const userIds = [
+        ...new Set(
+          savedLiveVideos
+            .map((video) => video.twitch_video.helix_user_id)
+            .filter((id): id is string => Boolean(id)),
+        ),
+      ]
+
+      await using scraper = new TwitchScraper({ concurrency: 2 })
+
+      const liveStreams: TwitchStream[] = []
+      if (userIds.length > 0) {
+        await scraper.scrapeStreams({ userIds }, async (streams) => {
+          liveStreams.push(...streams)
+        })
+      }
+
+      // Fetch recent archives for users with offline LIVE rows (reconcile).
+      const liveStreamIdSet = new Set(liveStreams.map((s) => s.id))
+      const offlineStreamIds = new Set(
+        savedLiveVideos
+          .map((v) => v.twitch_video.stream_id)
+          .filter((id): id is string => id != null && !liveStreamIdSet.has(id)),
+      )
+
+      const archives: TwitchVideo[] = []
+      if (offlineStreamIds.size > 0 && userIds.length > 0) {
+        await scraper.scrapeNewVideos(
+          { type: 'archive', userIds },
+          async (_userId, videos) => {
+            for (const video of videos) {
+              if (video.stream_id && offlineStreamIds.has(video.stream_id)) {
+                archives.push(video)
+              }
+            }
+          },
+        )
+      }
+
+      try {
+        hasChanges = await processTwitchLiveForCheck({
+          archives,
+          currentDateTime,
+          liveStreams,
+          logger,
+          savedVideos: savedLiveVideos,
+          supabaseClient,
+        })
+      } catch (error) {
+        Sentry.captureException(error)
+      }
+    }
   } else {
     const savedTwitchVideos = await Array.fromAsync(
       getSavedTwitchVideos({
@@ -191,10 +249,15 @@ export async function POST(request: NextRequest): Promise<Response> {
       const clipIds: string[] = []
 
       for (const video of savedTwitchVideos) {
+        const platformId = video.twitch_video.twitch_video_id
+        // Synthetic live placeholders are not Helix video IDs.
+        if (isLiveTwitchVideoId(platformId)) {
+          continue
+        }
         if (video.twitch_video.type === 'clip') {
-          clipIds.push(video.twitch_video.twitch_video_id)
+          clipIds.push(platformId)
         } else {
-          nonClipIds.push(video.twitch_video.twitch_video_id)
+          nonClipIds.push(platformId)
         }
       }
 

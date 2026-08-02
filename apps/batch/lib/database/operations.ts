@@ -101,6 +101,7 @@ export async function* getSavedTwitchVideos(
       .from('twitch_videos')
       .select(
         `
+          stream_id,
           type,
           twitch_video_id,
           video:videos!inner (
@@ -140,6 +141,72 @@ export async function* getSavedTwitchVideos(
       return {
         ...video,
         twitch_video: {
+          stream_id: row.stream_id,
+          twitch_video_id: row.twitch_video_id,
+          type: row.type,
+        },
+      }
+    })
+
+    yield* transformedVideos
+  }
+}
+
+/**
+ * Get saved videos from the database by Helix stream IDs
+ * (LIVE placeholders and archives linked via stream_id).
+ */
+export async function* getSavedTwitchVideosByStreamIds(
+  supabaseClient: TypedSupabaseClient,
+  streamIds: string[],
+): AsyncGenerator<SavedVideo, void, undefined> {
+  for (let i = 0; i < streamIds.length; i += 100) {
+    const { data: videos, error } = await supabaseClient
+      .from('twitch_videos')
+      .select(
+        `
+          stream_id,
+          type,
+          twitch_video_id,
+          video:videos!inner (
+            id,
+            created_at,
+            deleted_at,
+            duration,
+            platform,
+            published_at,
+            status,
+            thumbnail_id,
+            thumbnail:thumbnails (
+              blur_data_url,
+              deleted_at,
+              etag,
+              height,
+              id,
+              path,
+              updated_at,
+              width
+            ),
+            title,
+            visible
+          )
+        `,
+      )
+      .in('stream_id', streamIds.slice(i, i + 100))
+      .is('video.deleted_at', null)
+
+    if (error) {
+      throw new TypeError(error.message, {
+        cause: error,
+      })
+    }
+
+    const transformedVideos = videos.map((row) => {
+      const video = Array.isArray(row.video) ? row.video[0] : row.video
+      return {
+        ...video,
+        twitch_video: {
+          stream_id: row.stream_id,
           twitch_video_id: row.twitch_video_id,
           type: row.type,
         },
