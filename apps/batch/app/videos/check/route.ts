@@ -185,8 +185,18 @@ export async function POST(request: NextRequest): Promise<Response> {
       .is('deleted_at', null)
 
     if (error) {
-      throw new TypeError(error.message, {
-        cause: error,
+      after(async () => {
+        Sentry.captureException(error)
+        Sentry.captureCheckIn({
+          checkInId,
+          monitorSlug,
+          status: 'error',
+        })
+        await Sentry.flush(10_000)
+      })
+
+      return createErrorResponse(error.message, {
+        status: 500,
       })
     }
 

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-const query = {
+const query = vi.hoisted(() => ({
   eq: vi.fn(),
   gte: vi.fn(),
   in: vi.fn(),
@@ -9,7 +9,7 @@ const query = {
   neq: vi.fn(),
   order: vi.fn(),
   select: vi.fn(),
-}
+}))
 
 vi.mock('next/cache', () => ({
   cacheLife: vi.fn(),
