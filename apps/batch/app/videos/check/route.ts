@@ -23,6 +23,7 @@ import {
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
 import { youtubeClient } from '@/lib/youtube'
+import { saveTwitchStreams } from '../update/_lib/save-twitch-streams'
 import { getMonitorSlug } from './_lib/get-monitor-slug'
 import { getSavedTwitchVideos } from './_lib/get-saved-twitch-videos'
 import { getSavedVideos } from './_lib/get-saved-videos'
@@ -175,7 +176,47 @@ export async function POST(request: NextRequest): Promise<Response> {
       })
     }
   } else if (mode === 'default') {
-    // Twitch LIVE recheck: Streams API + optional archive match by stream_id.
+    // Twitch has no scheduled/live VOD resource to pre-register. Poll Streams
+    // here as well as /videos/update so new broadcasts are detected every minute.
+    const { data: activeTalents, error } = await supabaseClient
+      .from('talents')
+      .select('id, twitch_users!inner(id, twitch_user_id)')
+      .eq('status', 'active')
+      .is('deleted_at', null)
+
+    if (error) {
+      after(async () => {
+        Sentry.captureException(error)
+        Sentry.captureCheckIn({
+          checkInId,
+          monitorSlug,
+          status: 'error',
+        })
+        await Sentry.flush(10_000)
+      })
+
+      return createErrorResponse(error.message, {
+        status: 500,
+      })
+    }
+
+    const userToTalentMap = new Map<
+      string,
+      {
+        talentId: string
+        twitchUserRowId: string
+      }
+    >()
+
+    for (const talent of activeTalents) {
+      for (const twitchUser of talent.twitch_users) {
+        userToTalentMap.set(twitchUser.twitch_user_id, {
+          talentId: talent.id,
+          twitchUserRowId: twitchUser.id,
+        })
+      }
+    }
+
     const savedLiveVideos = await Array.fromAsync(
       getSavedTwitchVideos({
         mode: 'default',
@@ -183,24 +224,42 @@ export async function POST(request: NextRequest): Promise<Response> {
       }),
     )
 
-    if (savedLiveVideos.length > 0) {
-      const userIds = [
-        ...new Set(
-          savedLiveVideos
-            .map((video) => video.twitch_video.helix_user_id)
-            .filter((id): id is string => Boolean(id)),
-        ),
-      ]
+    const activeUserIds = Array.from(userToTalentMap.keys())
+    const savedLiveUserIds = [
+      ...new Set(
+        savedLiveVideos
+          .map((video) => video.twitch_video.helix_user_id)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ]
 
-      await using scraper = new TwitchScraper({ concurrency: 2 })
+    await using scraper = new TwitchScraper({ concurrency: 2 })
 
-      const liveStreams: TwitchStream[] = []
-      if (userIds.length > 0) {
-        await scraper.scrapeStreams({ userIds }, async (streams) => {
+    const liveStreams: TwitchStream[] = []
+    if (activeUserIds.length > 0) {
+      await scraper.scrapeStreams(
+        { userIds: activeUserIds },
+        async (streams) => {
           liveStreams.push(...streams)
-        })
-      }
+        },
+      )
+    }
 
+    if (liveStreams.length > 0) {
+      try {
+        const savedStreams = await saveTwitchStreams({
+          currentDateTime,
+          streams: liveStreams,
+          supabaseClient,
+          userToTalentMap,
+        })
+        hasChanges = savedStreams.length > 0
+      } catch (error) {
+        Sentry.captureException(error)
+      }
+    }
+
+    if (savedLiveVideos.length > 0) {
       // Fetch recent archives for users with offline LIVE rows (reconcile).
       const liveStreamIdSet = new Set(liveStreams.map((s) => s.id))
       const offlineStreamIds = new Set(
@@ -210,9 +269,9 @@ export async function POST(request: NextRequest): Promise<Response> {
       )
 
       const archives: TwitchVideo[] = []
-      if (offlineStreamIds.size > 0 && userIds.length > 0) {
+      if (offlineStreamIds.size > 0 && savedLiveUserIds.length > 0) {
         await scraper.scrapeNewVideos(
-          { type: 'archive', userIds },
+          { type: 'archive', userIds: savedLiveUserIds },
           async (_userId, videos) => {
             for (const video of videos) {
               if (video.stream_id && offlineStreamIds.has(video.stream_id)) {
@@ -224,7 +283,7 @@ export async function POST(request: NextRequest): Promise<Response> {
       }
 
       try {
-        hasChanges = await processTwitchLiveForCheck({
+        const liveRowsChanged = await processTwitchLiveForCheck({
           archives,
           currentDateTime,
           liveStreams,
@@ -232,6 +291,7 @@ export async function POST(request: NextRequest): Promise<Response> {
           savedVideos: savedLiveVideos,
           supabaseClient,
         })
+        hasChanges = hasChanges || liveRowsChanged
       } catch (error) {
         Sentry.captureException(error)
       }

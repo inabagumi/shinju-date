@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/nextjs'
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
-import type { TwitchStream } from '@shinju-date/twitch-scraper'
+import type { TwitchStream, TwitchVideo } from '@shinju-date/twitch-scraper'
 import { TwitchScraper } from '@shinju-date/twitch-scraper'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { YouTubeScraper } from '@shinju-date/youtube-scraper'
@@ -220,31 +220,42 @@ export async function POST(request: NextRequest): Promise<Response> {
         }
       }
 
+      const saveNewTwitchVideos = async (
+        helixUserId: string,
+        scrapedVideos: TwitchVideo[],
+      ) => {
+        const talentInfo = userToTalentMap.get(helixUserId)
+        if (!talentInfo) {
+          logger.warn('タレント情報が見つかりませんでした', {
+            twitchUserId: helixUserId,
+          })
+          return
+        }
+
+        try {
+          const savedResults = await saveTwitchVideos({
+            currentDateTime,
+            originalVideos: scrapedVideos,
+            supabaseClient,
+            talentId: talentInfo.talentId,
+            twitchUserId: talentInfo.twitchUserRowId,
+          })
+          videos.push(...savedResults)
+        } catch (err) {
+          Sentry.captureException(err)
+        }
+      }
+
       // 2) First page of archives per user — discovery + LIVE→archive reconcile.
       await scraper.scrapeNewVideos(
         { type: 'archive', userIds: helixUserIds },
-        async (helixUserId, scrapedVideos) => {
-          const talentInfo = userToTalentMap.get(helixUserId)
-          if (!talentInfo) {
-            logger.warn('タレント情報が見つかりませんでした', {
-              twitchUserId: helixUserId,
-            })
-            return
-          }
+        saveNewTwitchVideos,
+      )
 
-          try {
-            const savedResults = await saveTwitchVideos({
-              currentDateTime,
-              originalVideos: scrapedVideos,
-              supabaseClient,
-              talentId: talentInfo.talentId,
-              twitchUserId: talentInfo.twitchUserRowId,
-            })
-            videos.push(...savedResults)
-          } catch (err) {
-            Sentry.captureException(err)
-          }
-        },
+      // 3) First page of broadcaster uploads — regular videos for the new tab.
+      await scraper.scrapeNewVideos(
+        { type: 'upload', userIds: helixUserIds },
+        saveNewTwitchVideos,
       )
     }
   }

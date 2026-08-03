@@ -156,7 +156,9 @@ async function fetchLiveVideos(): Promise<Video[]> {
 }
 
 /**
- * Fetch recent published videos (within 3 days, excluding shorts)
+ * Fetch recent regular uploads (within 3 days, excluding shorts).
+ * Completed livestreams remain in the live-stream lifecycle and are not
+ * presented as newly uploaded videos.
  */
 async function fetchRecentVideos(): Promise<Video[]> {
   'use cache: remote'
@@ -167,11 +169,10 @@ async function fetchRecentVideos(): Promise<Video[]> {
   const now = Temporal.Now.instant()
   const threeDaysAgo = now.subtract({ hours: 24 * 3 })
 
-  // Include ENDED so Twitch archives / ended live streams appear as recent content
   const { data: recentVideos, error: recentError } = await supabaseClient
     .from('videos')
     .select<string, Video>(DEFAULT_SEARCH_SELECT)
-    .in('status', ['PUBLISHED', 'ENDED'])
+    .eq('status', 'PUBLISHED')
     .neq('video_kind', 'short')
     .gte('published_at', toDBString(threeDaysAgo))
     .lte('published_at', toDBString(now))
