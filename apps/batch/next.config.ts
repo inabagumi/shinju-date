@@ -2,6 +2,9 @@ import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  experimental: {
+    turbopackRustReactCompiler: true,
+  },
   headers() {
     return Promise.resolve([
       {
