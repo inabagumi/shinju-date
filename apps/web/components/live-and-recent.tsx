@@ -72,9 +72,15 @@ export default function LiveAndRecent({
     return 'live' // Fallback to live even if empty
   }
 
-  const [activeTab, setActiveTab] = useState<'live' | 'recent' | 'shorts'>(
+  const [selectedTab, setSelectedTab] = useState<'live' | 'recent' | 'shorts'>(
     getDefaultTab(),
   )
+  const activeTab =
+    (selectedTab === 'live' && hasLive) ||
+    (selectedTab === 'recent' && hasRecent) ||
+    (selectedTab === 'shorts' && hasShorts)
+      ? selectedTab
+      : getDefaultTab()
 
   // If no live, no recent, and no shorts videos, don't render the section
   if (
@@ -125,7 +131,7 @@ export default function LiveAndRecent({
             !hasLive && 'cursor-not-allowed opacity-50',
           )}
           disabled={!hasLive}
-          onClick={() => setActiveTab('live')}
+          onClick={() => setSelectedTab('live')}
           type="button"
         >
           <ActivityIcon
@@ -145,7 +151,7 @@ export default function LiveAndRecent({
             !hasRecent && 'cursor-not-allowed opacity-50',
           )}
           disabled={!hasRecent}
-          onClick={() => setActiveTab('recent')}
+          onClick={() => setSelectedTab('recent')}
           type="button"
         >
           <VideoIcon className="size-4" />
@@ -160,7 +166,7 @@ export default function LiveAndRecent({
             !hasShorts && 'cursor-not-allowed opacity-50',
           )}
           disabled={!hasShorts}
-          onClick={() => setActiveTab('shorts')}
+          onClick={() => setSelectedTab('shorts')}
           type="button"
         >
           <Film className="size-4" />
