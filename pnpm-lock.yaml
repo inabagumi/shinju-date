@@ -202,8 +202,8 @@ importers:
   apps/batch:
     dependencies:
       '@googleapis/youtube':
-        specifier: 33.0.0
-        version: 33.0.0(supports-color@8.1.1)
+        specifier: 34.0.0
+        version: 34.0.0(supports-color@8.1.1)
       '@sentry/nextjs':
         specifier: 10.69.0
         version: 10.69.0(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.10.0(@opentelemetry/api@1.9.1))(next@16.3.0(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@24.13.3)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(supports-color@8.1.1)(webpack@5.109.2(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.25))
@@ -972,8 +972,8 @@ importers:
   packages/youtube-api-client:
     dependencies:
       '@googleapis/youtube':
-        specifier: 33.0.0
-        version: 33.0.0(supports-color@8.1.1)
+        specifier: 34.0.0
+        version: 34.0.0(supports-color@8.1.1)
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -997,8 +997,8 @@ importers:
   packages/youtube-scraper:
     dependencies:
       '@googleapis/youtube':
-        specifier: 33.0.0
-        version: 33.0.0(supports-color@8.1.1)
+        specifier: 34.0.0
+        version: 34.0.0(supports-color@8.1.1)
       p-queue:
         specifier: 9.3.3
         version: 9.3.3
@@ -1643,8 +1643,8 @@ packages:
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
-  '@googleapis/youtube@33.0.0':
-    resolution: {integrity: sha512-PW3SdoZ8ULzW0We0lgplyZHjuXJtOdRvU5RL6ErNUlcTeSqjoHtk1pWdHKTwk3brPuIiqUB26K7fX84VroDqRg==}
+  '@googleapis/youtube@34.0.0':
+    resolution: {integrity: sha512-yBiAWYXl4qKNzET4bK5Oejo5a/rXNA0tNp+54kGsCEM/ZW4MHhmwS0U2QWYkcM/8gVOROhnv+fhW2Wi8StXHBg==}
     engines: {node: '>=12.0.0'}
 
   '@img/colour@1.1.0':
@@ -6945,7 +6945,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@googleapis/youtube@33.0.0(supports-color@8.1.1)':
+  '@googleapis/youtube@34.0.0(supports-color@8.1.1)':
     dependencies:
       googleapis-common: 8.0.3(supports-color@8.1.1)
     transitivePeerDependencies:
