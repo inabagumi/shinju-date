@@ -84,10 +84,13 @@ test.describe('Web App - Search Functionality', () => {
 
 test.describe('Web App - Contact Page', () => {
   test('should load the contact page', async ({ page }) => {
-    await page.goto('http://localhost:3000/contact')
-    await page.waitForLoadState('networkidle')
+    await page.goto('http://localhost:3000/contact', {
+      waitUntil: 'domcontentloaded',
+    })
 
-    // Page should load without errors
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'お問い合わせ' }),
+    ).toBeVisible()
     expect(page.url()).toContain('/contact')
   })
 })
