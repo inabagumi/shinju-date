@@ -141,7 +141,7 @@ describe('updateTalentAction', () => {
 
     const result = await updateTalentAction({}, formData)
 
-    expect(result.errors?.id).toBeDefined()
+    expect(result.errors?.['id']).toBeDefined()
   })
 
   it('should return validation error for empty name', async () => {
@@ -151,7 +151,7 @@ describe('updateTalentAction', () => {
 
     const result = await updateTalentAction({}, formData)
 
-    expect(result.errors?.name).toBeDefined()
+    expect(result.errors?.['name']).toBeDefined()
   })
 
   it('should return validation error for invalid color format', async () => {
@@ -162,7 +162,7 @@ describe('updateTalentAction', () => {
 
     const result = await updateTalentAction({}, formData)
 
-    expect(result.errors?.theme_color).toBeDefined()
+    expect(result.errors?.['theme_color']).toBeDefined()
   })
 
   it('should handle null theme_color', async () => {
@@ -227,7 +227,7 @@ describe('updateTalentAction', () => {
 
     const result = await updateTalentAction({}, formData)
 
-    expect(result.errors?.generic).toBeDefined()
+    expect(result.errors?.['generic']).toBeDefined()
     expect(logger.error).toHaveBeenCalled()
   })
 })
@@ -630,7 +630,7 @@ describe('createTalentAction', () => {
 
     const result = await createTalentAction({}, formData)
 
-    expect(result.errors?.generic).toBeDefined()
+    expect(result.errors?.['generic']).toBeDefined()
     expect(logger.error).toHaveBeenCalled()
   })
 })

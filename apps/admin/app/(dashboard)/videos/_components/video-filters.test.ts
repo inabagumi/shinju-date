@@ -30,7 +30,7 @@ describe('VideoFilters pagination fix', () => {
     // The key insight: if searchInput === searchParams.get('search'),
     // the useEffect should return early and not call router.push
 
-    const currentSearch = mockSearchParams.get('search') || ''
+    const currentSearch: string = mockSearchParams.get('search') || ''
     const searchInput = 'test video' // Same as in URL
 
     expect(searchInput).toBe(currentSearch)
@@ -52,8 +52,8 @@ describe('VideoFilters pagination fix', () => {
 
     mockUseSearchParams.mockReturnValue(mockSearchParams)
 
-    const currentSearch = mockSearchParams.get('search') || ''
-    const searchInput = 'new search' // Different from URL
+    const currentSearch: string = mockSearchParams.get('search') || ''
+    const searchInput: string = 'new search' // Different from URL
 
     expect(searchInput).not.toBe(currentSearch)
 
@@ -83,7 +83,7 @@ describe('VideoFilters pagination fix', () => {
   it('should remove page parameter only when search actually changes', () => {
     const initialParams = new URLSearchParams('search=old&talentId=123&page=3')
     const currentSearch = initialParams.get('search') || ''
-    const searchInput = 'new search' // Different from URL
+    const searchInput: string = 'new search' // Different from URL
 
     // Simulate the navigation logic when search actually changes
     if (searchInput !== currentSearch) {
