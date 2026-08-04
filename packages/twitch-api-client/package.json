@@ -3,7 +3,7 @@
   "dependencies": {
     "@twurple/api": "8.1.4",
     "@twurple/auth": "8.1.4",
-    "temporal-polyfill": "1.0.2"
+    "temporal-polyfill": "1.0.3"
   },
   "description": "Twitch Helix API client for SHINJU DATE, powered by twurple",
   "devDependencies": {

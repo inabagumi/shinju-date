@@ -126,8 +126,8 @@ importers:
         specifier: 4.3.3
         version: 4.3.3
       temporal-polyfill:
-        specifier: 1.0.2
-        version: 1.0.2
+        specifier: 1.0.3
+        version: 1.0.3
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -277,8 +277,8 @@ importers:
         specifier: 0.34.5
         version: 0.34.5
       temporal-polyfill:
-        specifier: 1.0.2
-        version: 1.0.2
+        specifier: 1.0.3
+        version: 1.0.3
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -483,8 +483,8 @@ importers:
         specifier: 4.3.3
         version: 4.3.3
       temporal-polyfill:
-        specifier: 1.0.2
-        version: 1.0.2
+        specifier: 1.0.3
+        version: 1.0.3
       ufo:
         specifier: 1.6.4
         version: 1.6.4
@@ -705,8 +705,8 @@ importers:
         specifier: 2.15.0
         version: 2.15.0(@types/node@24.13.3)(typescript@6.0.3)
       temporal-polyfill:
-        specifier: 1.0.2
-        version: 1.0.2
+        specifier: 1.0.3
+        version: 1.0.3
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -757,8 +757,8 @@ importers:
   packages/temporal-fns:
     dependencies:
       temporal-polyfill:
-        specifier: 1.0.2
-        version: 1.0.2
+        specifier: 1.0.3
+        version: 1.0.3
     devDependencies:
       '@tsconfig/node20':
         specifier: 20.1.9
@@ -785,8 +785,8 @@ importers:
         specifier: 8.1.4
         version: 8.1.4
       temporal-polyfill:
-        specifier: 1.0.2
-        version: 1.0.2
+        specifier: 1.0.3
+        version: 1.0.3
     devDependencies:
       '@tsconfig/node20':
         specifier: 20.1.9
@@ -1003,8 +1003,8 @@ importers:
         specifier: 9.3.3
         version: 9.3.3
       temporal-polyfill:
-        specifier: 1.0.2
-        version: 1.0.2
+        specifier: 1.0.3
+        version: 1.0.3
     devDependencies:
       '@shinju-date/database':
         specifier: workspace:*
@@ -3979,11 +3979,6 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  baseline-browser-mapping@2.11.9:
-    resolution: {integrity: sha512-cp447VUsGS07+n1Dqf7YSQ8maeJrjEhaDxTm1ZefbqDtypHBC5GzGMQbklR6IPR13Y8OAJRHZWEMtZipJLCttg==}
-    engines: {node: '>=6.0.0'}
-    hasBin: true
-
   bidi-js@1.0.3:
     resolution: {integrity: sha512-RKshQI1R3YQ+n9YJz2QQ147P66ELpa1FQEg20Dk8oW9t2KgLbpDLLp9aGZ7y8WHSshDknG0bknqGw5/tyCs5tw==}
 
@@ -5998,8 +5993,8 @@ packages:
     resolution: {integrity: sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A==}
     engines: {node: '>=6'}
 
-  temporal-polyfill@1.0.2:
-    resolution: {integrity: sha512-pTyp/7kfStJQbJ8YOHmcJItkxvOGCZHu3PaVgLvLnxFS7O12EPiWLElnRre/rw77z4TGZX/gvdqMXWn6ispQvA==}
+  temporal-polyfill@1.0.3:
+    resolution: {integrity: sha512-U8vuzZBc+dfMIfl8wXWcedfI7AJCxJjjVBIRpJUvIz5+UAp555UJDHguKsfZqHWaHRSdVUThm7mqqIWhN/xPBQ==}
 
   temporal-spec@1.0.1:
     resolution: {integrity: sha512-wxVoanmDeavXie1vu2JaQ3WIc3JZnWAOYFBsJyATaVsXsycKYUflGsyBmrRSnoCpZJpwPyr38VpgSUlQ8CbFxg==}
@@ -9056,8 +9051,6 @@ snapshots:
 
   baseline-browser-mapping@2.11.11: {}
 
-  baseline-browser-mapping@2.11.9: {}
-
   bidi-js@1.0.3:
     dependencies:
       require-from-string: 2.0.2
@@ -9079,7 +9072,7 @@ snapshots:
 
   browserslist@4.28.7:
     dependencies:
-      baseline-browser-mapping: 2.11.9
+      baseline-browser-mapping: 2.11.11
       caniuse-lite: 1.0.30001806
       electron-to-chromium: 1.5.399
       node-releases: 2.0.51
@@ -11342,7 +11335,7 @@ snapshots:
 
   tapable@2.3.3: {}
 
-  temporal-polyfill@1.0.2:
+  temporal-polyfill@1.0.3:
     dependencies:
       temporal-spec: 1.0.1
       temporal-utils: 1.0.1

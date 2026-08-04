@@ -33,7 +33,7 @@
     "resend": "6.18.1",
     "tailwind-merge": "3.6.0",
     "tailwindcss": "4.3.3",
-    "temporal-polyfill": "1.0.2",
+    "temporal-polyfill": "1.0.3",
     "ufo": "1.6.4",
     "zod": "4.4.3"
   },

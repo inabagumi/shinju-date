@@ -5,7 +5,7 @@
     "@msw/data": "1.1.7",
     "@shinju-date/database": "workspace:*",
     "msw": "2.15.0",
-    "temporal-polyfill": "1.0.2",
+    "temporal-polyfill": "1.0.3",
     "zod": "4.4.3"
   },
   "devDependencies": {
