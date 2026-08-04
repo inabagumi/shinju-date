@@ -34,7 +34,7 @@
     "recharts": "3.10.1",
     "tailwind-merge": "3.6.0",
     "tailwindcss": "4.3.3",
-    "temporal-polyfill": "1.0.2",
+    "temporal-polyfill": "1.0.3",
     "zod": "4.4.3"
   },
   "description": "Content management admin dashboard for SHINJU DATE",
