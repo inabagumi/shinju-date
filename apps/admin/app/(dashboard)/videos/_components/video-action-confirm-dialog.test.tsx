@@ -3,10 +3,8 @@ import { describe, expect, it, vi } from 'vitest'
 import { VideoActionConfirmDialog } from './video-action-confirm-dialog'
 
 describe('VideoActionConfirmDialog', () => {
-  const mockVideos = [
-    { id: '1', title: 'Test Video 1' },
-    { id: '2', title: 'Test Video 2' },
-  ]
+  const firstMockVideo = { id: '1', title: 'Test Video 1' }
+  const mockVideos = [firstMockVideo, { id: '2', title: 'Test Video 2' }]
 
   it('renders delete dialog with warning for single video', () => {
     const onConfirm = vi.fn()
@@ -18,7 +16,7 @@ describe('VideoActionConfirmDialog', () => {
         onConfirm={onConfirm}
         onOpenChange={onOpenChange}
         open={true}
-        videos={[mockVideos[0]]}
+        videos={[firstMockVideo]}
       />,
     )
 
@@ -39,7 +37,7 @@ describe('VideoActionConfirmDialog', () => {
         onConfirm={onConfirm}
         onOpenChange={onOpenChange}
         open={true}
-        videos={[mockVideos[0]]}
+        videos={[firstMockVideo]}
       />,
     )
 
@@ -62,7 +60,7 @@ describe('VideoActionConfirmDialog', () => {
         onConfirm={onConfirm}
         onOpenChange={onOpenChange}
         open={true}
-        videos={[mockVideos[0]]}
+        videos={[firstMockVideo]}
       />,
     )
 
@@ -154,7 +152,7 @@ describe('VideoActionConfirmDialog', () => {
         onConfirm={onConfirm}
         onOpenChange={onOpenChange}
         open={true}
-        videos={[mockVideos[0]]}
+        videos={[firstMockVideo]}
       />,
     )
 
@@ -168,7 +166,7 @@ describe('VideoActionConfirmDialog', () => {
         onConfirm={onConfirm}
         onOpenChange={onOpenChange}
         open={true}
-        videos={[mockVideos[0]]}
+        videos={[firstMockVideo]}
       />,
     )
 
@@ -182,7 +180,7 @@ describe('VideoActionConfirmDialog', () => {
         onConfirm={onConfirm}
         onOpenChange={onOpenChange}
         open={true}
-        videos={[mockVideos[0]]}
+        videos={[firstMockVideo]}
       />,
     )
 
@@ -202,7 +200,7 @@ describe('VideoActionConfirmDialog', () => {
         onConfirm={onConfirm}
         onOpenChange={onOpenChange}
         open={true}
-        videos={[mockVideos[0]]}
+        videos={[firstMockVideo]}
       />,
     )
 

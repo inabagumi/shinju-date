@@ -1,6 +1,33 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Redis } from '@upstash/redis'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getAnalyticsSummary, getSummaryStats } from '../stats'
+
+function asSupabaseClient(mockClient: {
+  from: ReturnType<typeof vi.fn>
+}): SupabaseClient {
+  return mockClient as unknown as SupabaseClient
+}
+
+function asRedisClient(mockClient: {
+  get: ReturnType<typeof vi.fn>
+  zcard: ReturnType<typeof vi.fn>
+  zrange: ReturnType<typeof vi.fn>
+}): Redis {
+  return mockClient as unknown as Redis
+}
+
+function getFromMockResult(
+  mockClient: { from: ReturnType<typeof vi.fn> },
+  index: number,
+) {
+  const result = mockClient.from.mock.results.at(index)
+  if (!result) {
+    throw new Error(`Expected mock from() call at index ${index}`)
+  }
+  return result.value
+}
 
 describe('getSummaryStats', () => {
   let mockSupabaseClient: {
@@ -60,7 +87,10 @@ describe('getSummaryStats', () => {
   it('should return summary stats with correct structure', async () => {
     const targetDayEnd = '2025-11-13T00:00:00Z'
 
-    const result = await getSummaryStats(mockSupabaseClient, targetDayEnd)
+    const result = await getSummaryStats(
+      asSupabaseClient(mockSupabaseClient),
+      targetDayEnd,
+    )
 
     expect(result).toHaveProperty('totalVideos')
     expect(result).toHaveProperty('visibleVideos')
@@ -74,10 +104,10 @@ describe('getSummaryStats', () => {
   it('should query videos table with correct filters for total count', async () => {
     const targetDayEnd = '2025-11-13T00:00:00Z'
 
-    await getSummaryStats(mockSupabaseClient, targetDayEnd)
+    await getSummaryStats(asSupabaseClient(mockSupabaseClient), targetDayEnd)
 
     expect(mockSupabaseClient.from).toHaveBeenCalledWith('videos')
-    const videosQuery = mockSupabaseClient.from.mock.results[0].value
+    const videosQuery = getFromMockResult(mockSupabaseClient, 0)
     expect(videosQuery.select).toHaveBeenCalledWith('*', {
       count: 'exact',
       head: true,
@@ -91,9 +121,9 @@ describe('getSummaryStats', () => {
   it('should query videos table for visible videos (public)', async () => {
     const targetDayEnd = '2025-11-13T00:00:00Z'
 
-    await getSummaryStats(mockSupabaseClient, targetDayEnd)
+    await getSummaryStats(asSupabaseClient(mockSupabaseClient), targetDayEnd)
 
-    const visibleQuery = mockSupabaseClient.from.mock.results[1].value
+    const visibleQuery = getFromMockResult(mockSupabaseClient, 1)
     expect(visibleQuery.eq).toHaveBeenCalledWith('visible', true)
     expect(visibleQuery.in).toHaveBeenCalledWith('status', ['ENDED', 'LIVE'])
     expect(visibleQuery.lt).toHaveBeenCalledWith('created_at', targetDayEnd)
@@ -105,9 +135,9 @@ describe('getSummaryStats', () => {
   it('should query videos table for hidden videos', async () => {
     const targetDayEnd = '2025-11-13T00:00:00Z'
 
-    await getSummaryStats(mockSupabaseClient, targetDayEnd)
+    await getSummaryStats(asSupabaseClient(mockSupabaseClient), targetDayEnd)
 
-    const hiddenQuery = mockSupabaseClient.from.mock.results[2].value
+    const hiddenQuery = getFromMockResult(mockSupabaseClient, 2)
     expect(hiddenQuery.eq).toHaveBeenCalledWith('visible', false)
     expect(hiddenQuery.lt).toHaveBeenCalledWith('created_at', targetDayEnd)
     expect(hiddenQuery.or).toHaveBeenCalledWith(
@@ -118,9 +148,9 @@ describe('getSummaryStats', () => {
   it('should query videos table for scheduled videos', async () => {
     const targetDayEnd = '2025-11-13T00:00:00Z'
 
-    await getSummaryStats(mockSupabaseClient, targetDayEnd)
+    await getSummaryStats(asSupabaseClient(mockSupabaseClient), targetDayEnd)
 
-    const scheduledQuery = mockSupabaseClient.from.mock.results[3].value
+    const scheduledQuery = getFromMockResult(mockSupabaseClient, 3)
     expect(scheduledQuery.eq).toHaveBeenCalledWith('visible', true)
     expect(scheduledQuery.eq).toHaveBeenCalledWith('status', 'UPCOMING')
     expect(scheduledQuery.lt).toHaveBeenCalledWith('created_at', targetDayEnd)
@@ -132,10 +162,10 @@ describe('getSummaryStats', () => {
   it('should query videos table for deleted videos', async () => {
     const targetDayEnd = '2025-11-13T00:00:00Z'
 
-    await getSummaryStats(mockSupabaseClient, targetDayEnd)
+    await getSummaryStats(asSupabaseClient(mockSupabaseClient), targetDayEnd)
 
     // Deleted videos query is now the 5th query (after totalVideos, visibleVideos, hiddenVideos, scheduledVideos)
-    const deletedQuery = mockSupabaseClient.from.mock.results[4].value
+    const deletedQuery = getFromMockResult(mockSupabaseClient, 4)
     expect(deletedQuery.not).toHaveBeenCalledWith('deleted_at', 'is', null)
     expect(deletedQuery.lt).toHaveBeenCalledWith('deleted_at', targetDayEnd)
   })
@@ -143,7 +173,7 @@ describe('getSummaryStats', () => {
   it('should query terms table', async () => {
     const targetDayEnd = '2025-11-13T00:00:00Z'
 
-    await getSummaryStats(mockSupabaseClient, targetDayEnd)
+    await getSummaryStats(asSupabaseClient(mockSupabaseClient), targetDayEnd)
 
     expect(mockSupabaseClient.from).toHaveBeenCalledWith('terms')
   })
@@ -151,10 +181,10 @@ describe('getSummaryStats', () => {
   it('should query talents table with date filters', async () => {
     const targetDayEnd = '2025-11-13T00:00:00Z'
 
-    await getSummaryStats(mockSupabaseClient, targetDayEnd)
+    await getSummaryStats(asSupabaseClient(mockSupabaseClient), targetDayEnd)
 
     // Talents query is now the 7th query (after totalVideos, visibleVideos, hiddenVideos, scheduledVideos, deletedVideos, terms)
-    const talentsQuery = mockSupabaseClient.from.mock.results[6].value
+    const talentsQuery = getFromMockResult(mockSupabaseClient, 6)
     expect(talentsQuery.lt).toHaveBeenCalledWith('created_at', targetDayEnd)
     expect(talentsQuery.or).toHaveBeenCalledWith(
       `deleted_at.is.null,deleted_at.gte.${targetDayEnd}`,
@@ -173,7 +203,7 @@ describe('getSummaryStats', () => {
     })
 
     const result = await getSummaryStats(
-      mockSupabaseClient,
+      asSupabaseClient(mockSupabaseClient),
       '2025-11-13T00:00:00Z',
     )
 
@@ -198,10 +228,16 @@ describe('getSummaryStats', () => {
     })
 
     await expect(
-      getSummaryStats(mockSupabaseClient, '2025-11-13T00:00:00Z'),
+      getSummaryStats(
+        asSupabaseClient(mockSupabaseClient),
+        '2025-11-13T00:00:00Z',
+      ),
     ).rejects.toThrow(TypeError)
     await expect(
-      getSummaryStats(mockSupabaseClient, '2025-11-13T00:00:00Z'),
+      getSummaryStats(
+        asSupabaseClient(mockSupabaseClient),
+        '2025-11-13T00:00:00Z',
+      ),
     ).rejects.toThrow('Database error')
   })
 
@@ -222,7 +258,10 @@ describe('getSummaryStats', () => {
     })
 
     await expect(
-      getSummaryStats(mockSupabaseClient, '2025-11-13T00:00:00Z'),
+      getSummaryStats(
+        asSupabaseClient(mockSupabaseClient),
+        '2025-11-13T00:00:00Z',
+      ),
     ).rejects.toThrow('Visible query error')
   })
 })
@@ -251,7 +290,10 @@ describe('getAnalyticsSummary', () => {
     mockRedisClient.zcard.mockResolvedValue(25)
     mockRedisClient.zrange.mockResolvedValue(['video1', '10', 'video2', '20'])
 
-    const result = await getAnalyticsSummary(mockRedisClient, '20251113')
+    const result = await getAnalyticsSummary(
+      asRedisClient(mockRedisClient),
+      '20251113',
+    )
 
     expect(result).toHaveProperty('recentSearches')
     expect(result).toHaveProperty('totalPopularKeywords')
@@ -264,7 +306,7 @@ describe('getAnalyticsSummary', () => {
     mockRedisClient.zrange.mockResolvedValue([])
 
     const dateKey = '20251113'
-    await getAnalyticsSummary(mockRedisClient, dateKey)
+    await getAnalyticsSummary(asRedisClient(mockRedisClient), dateKey)
 
     expect(mockRedisClient.get).toHaveBeenCalledWith(
       `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${dateKey}`,
@@ -292,7 +334,10 @@ describe('getAnalyticsSummary', () => {
       '15',
     ])
 
-    const result = await getAnalyticsSummary(mockRedisClient, '20251113')
+    const result = await getAnalyticsSummary(
+      asRedisClient(mockRedisClient),
+      '20251113',
+    )
 
     expect(result.recentClicks).toBe(45) // 10 + 20 + 15
   })
@@ -302,7 +347,10 @@ describe('getAnalyticsSummary', () => {
     mockRedisClient.zcard.mockResolvedValue(25)
     mockRedisClient.zrange.mockResolvedValue([])
 
-    const result = await getAnalyticsSummary(mockRedisClient, '20251113')
+    const result = await getAnalyticsSummary(
+      asRedisClient(mockRedisClient),
+      '20251113',
+    )
 
     expect(result.recentClicks).toBe(0)
   })
@@ -312,7 +360,10 @@ describe('getAnalyticsSummary', () => {
     mockRedisClient.zcard.mockResolvedValue(25)
     mockRedisClient.zrange.mockResolvedValue([])
 
-    const result = await getAnalyticsSummary(mockRedisClient, '20251113')
+    const result = await getAnalyticsSummary(
+      asRedisClient(mockRedisClient),
+      '20251113',
+    )
 
     expect(result.recentSearches).toBe(0)
   })
@@ -322,7 +373,10 @@ describe('getAnalyticsSummary', () => {
     mockRedisClient.zcard.mockResolvedValue(null)
     mockRedisClient.zrange.mockResolvedValue([])
 
-    const result = await getAnalyticsSummary(mockRedisClient, '20251113')
+    const result = await getAnalyticsSummary(
+      asRedisClient(mockRedisClient),
+      '20251113',
+    )
 
     expect(result.totalPopularKeywords).toBe(0)
   })
@@ -339,7 +393,10 @@ describe('getAnalyticsSummary', () => {
       '7',
     ])
 
-    const result = await getAnalyticsSummary(mockRedisClient, '20251113')
+    const result = await getAnalyticsSummary(
+      asRedisClient(mockRedisClient),
+      '20251113',
+    )
 
     expect(result.recentClicks).toBe(22)
     expect(Number.isInteger(result.recentClicks)).toBe(true)
@@ -357,7 +414,10 @@ describe('getAnalyticsSummary', () => {
       '5',
     ])
 
-    const result = await getAnalyticsSummary(mockRedisClient, '20251113')
+    const result = await getAnalyticsSummary(
+      asRedisClient(mockRedisClient),
+      '20251113',
+    )
 
     expect(result.recentClicks).toBe(15) // 10 + 5, skip undefined
   })

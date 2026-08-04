@@ -1,4 +1,5 @@
 import type { ParsedUrlQuery } from 'node:querystring'
+import { describe, expect, it } from 'vitest'
 import { getQueryValue, parseQueries } from '../url'
 
 const DUMMY_QUERY: ParsedUrlQuery = {

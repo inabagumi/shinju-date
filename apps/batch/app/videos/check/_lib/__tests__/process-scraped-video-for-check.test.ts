@@ -54,7 +54,6 @@ describe('processScrapedVideoForCheck with >50 videos', () => {
         duration: 'PT10M30S',
       },
       id: `YT_video${i + 1}`,
-      liveStreamingDetails: undefined,
       snippet: {
         publishedAt: '2023-01-01T12:00:00Z',
         title: `Test Video ${i + 1}`,
@@ -139,7 +138,6 @@ describe('processScrapedVideoForCheck with >50 videos', () => {
           duration: 'PT10M30S',
         },
         id: `YT_video${videoNum}`,
-        liveStreamingDetails: undefined,
         snippet: {
           publishedAt: '2023-01-01T12:00:00Z',
           title: `Test Video ${videoNum}`,
@@ -149,7 +147,6 @@ describe('processScrapedVideoForCheck with >50 videos', () => {
       id: string
       contentDetails: { duration: string }
       snippet: { title: string; publishedAt: string }
-      liveStreamingDetails: undefined
     }>
 
     // Track DB operations
@@ -162,8 +159,9 @@ describe('processScrapedVideoForCheck with >50 videos', () => {
         const idParam = url.searchParams.get('id') || ''
         // Parse format: "in.(video-10,video-30,video-50)"
         const match = idParam.match(/in\.\((.*)\)/)
-        if (match) {
-          const ids = match[1].split(',')
+        const matchedIds = match?.[1]
+        if (matchedIds) {
+          const ids = matchedIds.split(',')
           deletedVideoIds.push(...ids)
           return HttpResponse.json(
             ids.map((id) => ({ id })),
@@ -177,8 +175,9 @@ describe('processScrapedVideoForCheck with >50 videos', () => {
         const url = new URL(request.url)
         const idParam = url.searchParams.get('id') || ''
         const match = idParam.match(/in\.\((.*)\)/)
-        if (match) {
-          const ids = match[1].split(',')
+        const matchedIds = match?.[1]
+        if (matchedIds) {
+          const ids = matchedIds.split(',')
           return HttpResponse.json(
             ids.map((id) => ({ id })),
             { status: 200 },
