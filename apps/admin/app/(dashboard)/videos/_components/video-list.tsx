@@ -257,7 +257,6 @@ export default function VideoList({ videos }: Props) {
                       <Link
                         className="text-774-blue-600 hover:text-774-blue-800"
                         href={`/videos/${video.id}`}
-                        prefetch={true}
                       >
                         <div className="line-clamp-2" title={video.title}>
                           {video.title}

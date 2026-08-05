@@ -252,7 +252,6 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
                       <Link
                         className="text-774-blue-600 hover:text-774-blue-800"
                         href={`/videos/${video.id}`}
-                        prefetch={true}
                       >
                         <p className="truncate font-medium text-sm">
                           {video.title}

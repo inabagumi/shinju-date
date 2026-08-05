@@ -195,7 +195,6 @@ async function CachedVideoDetails({ id }: { id: string }) {
                   <Link
                     className="text-774-blue-600 hover:text-774-blue-800"
                     href={`/talents/${video.talent.id}`}
-                    prefetch={true}
                   >
                     {video.talent.name}
                   </Link>

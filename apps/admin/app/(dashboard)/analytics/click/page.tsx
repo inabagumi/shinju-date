@@ -4,6 +4,7 @@ import {
   ChartSkeleton,
   DateRangePickerSkeleton,
   ListCardsSkeleton,
+  TabNavigationSkeleton,
 } from '@/components/skeletons'
 import { DateRangePickerClient } from '../_components/date-range-picker-client'
 import { analyticsSearchParamsSchema } from '../_lib/search-params-schema'
@@ -41,7 +42,7 @@ export default function ClickAnalyticsPage({
         </div>
 
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
-          <Suspense fallback={<DateRangePickerSkeleton />}>
+          <Suspense fallback={<TabNavigationSkeleton />}>
             <TabNavigation
               defaultTab="videos"
               searchParams={parsedSearchParams}

@@ -71,7 +71,6 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
                 <Link
                   className="hover:text-secondary-pink hover:underline"
                   href="/videos"
-                  prefetch={true}
                 >
                   動画一覧
                 </Link>

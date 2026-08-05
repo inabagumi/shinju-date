@@ -83,7 +83,6 @@ export function NavigationBar() {
                   className="block px-4 py-2 hover:bg-slate-600"
                   href="/videos"
                   onClick={() => setIsDataMenuOpen(false)}
-                  prefetch={true}
                 >
                   動画管理
                 </Link>
@@ -154,7 +153,6 @@ export function NavigationBar() {
                   className="block px-4 py-2 hover:bg-slate-600"
                   href="/analytics/search"
                   onClick={() => setIsAnalyticsMenuOpen(false)}
-                  prefetch={true}
                 >
                   検索アナリティクス
                 </Link>
@@ -162,7 +160,6 @@ export function NavigationBar() {
                   className="block px-4 py-2 hover:bg-slate-600"
                   href="/analytics/click"
                   onClick={() => setIsAnalyticsMenuOpen(false)}
-                  prefetch={true}
                 >
                   クリックアナリティクス
                 </Link>
@@ -255,7 +252,6 @@ export function NavigationBar() {
                 className="block rounded-md px-6 py-2 hover:bg-slate-700"
                 href="/videos"
                 onClick={() => setIsMenuOpen(false)}
-                prefetch={true}
               >
                 動画管理
               </Link>
@@ -309,7 +305,6 @@ export function NavigationBar() {
                 className="block rounded-md px-6 py-2 hover:bg-slate-700"
                 href="/analytics/search"
                 onClick={() => setIsMenuOpen(false)}
-                prefetch={true}
               >
                 検索アナリティクス
               </Link>
@@ -318,7 +313,6 @@ export function NavigationBar() {
                 className="block rounded-md px-6 py-2 hover:bg-slate-700"
                 href="/analytics/click"
                 onClick={() => setIsMenuOpen(false)}
-                prefetch={true}
               >
                 クリックアナリティクス
               </Link>

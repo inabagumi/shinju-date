@@ -48,17 +48,29 @@ export async function generateMetadata({
 
 export default function VideosPage({ params }: VideosPageProps) {
   return (
-    <Suspense fallback={<VideosPageSkeleton />}>
-      <VideosPageContent params={params} />
-    </Suspense>
+    <>
+      <Suspense fallback={<VideosPageHeadingSkeleton />}>
+        <VideosPageHeading params={params} />
+      </Suspense>
+      <Suspense fallback={<SearchResultsSkeleton />}>
+        <VideosPageResults params={params} />
+      </Suspense>
+    </>
   )
 }
 
-async function VideosPageContent({ params }: VideosPageProps) {
+async function VideosPageHeading({ params }: VideosPageProps) {
+  const { queries } = await params
+  const query = parseQueries(queries)
+  const title = query ? `『${query}』の検索結果` : '動画一覧'
+
+  return <h1 className="font-semibold text-xl">{title}</h1>
+}
+
+async function VideosPageResults({ params }: VideosPageProps) {
   const { queries } = await params
   const query = parseQueries(queries)
 
-  const title = query ? `『${query}』の検索結果` : '動画一覧'
   const videos = await fetchVideos({
     query,
   })
@@ -81,19 +93,13 @@ async function VideosPageContent({ params }: VideosPageProps) {
             <SearchExitTracker hasResults={false} query={query} />
           </>
         )}
-        <NoResults
-          message={message}
-          recommendedQueries={recommendedQueries}
-          title="検索結果はありません"
-        />
+        <NoResults message={message} recommendedQueries={recommendedQueries} />
       </>
     )
   }
 
   return (
     <>
-      <h1 className="font-semibold text-xl">{title}</h1>
-
       {query && (
         <>
           <SearchQueryTracker query={query} resultsCount={videos.length} />
@@ -106,14 +112,11 @@ async function VideosPageContent({ params }: VideosPageProps) {
   )
 }
 
-function VideosPageSkeleton() {
+function VideosPageHeadingSkeleton() {
   return (
-    <>
-      <h1 className="font-semibold text-xl">
-        <span className="inline-block h-8 w-64 animate-pulse rounded-md bg-774-nevy-100 dark:bg-zinc-800" />
-      </h1>
-
-      <SearchResultsSkeleton />
-    </>
+    <div
+      aria-hidden="true"
+      className="h-8 w-64 animate-pulse rounded-md bg-774-nevy-100 dark:bg-zinc-800"
+    />
   )
 }

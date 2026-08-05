@@ -5,7 +5,11 @@
 
 import { range } from '@shinju-date/helpers'
 
-export function ListCardsSkeleton({ rows = 4 }: { rows?: number }) {
+interface ListCardsSkeletonProps {
+  rows?: number
+}
+
+export function ListCardsSkeleton({ rows = 4 }: ListCardsSkeletonProps) {
   return (
     <div aria-hidden="true" className="animate-pulse space-y-4">
       <div className="flex flex-wrap gap-4">
@@ -25,7 +29,13 @@ export function ListCardsSkeleton({ rows = 4 }: { rows?: number }) {
   )
 }
 
-export function ManagementTableSkeleton({ rows = 5 }: { rows?: number }) {
+interface ManagementTableSkeletonProps {
+  rows?: number
+}
+
+export function ManagementTableSkeleton({
+  rows = 5,
+}: ManagementTableSkeletonProps) {
   return (
     <div aria-hidden="true" className="animate-pulse space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
@@ -114,7 +124,13 @@ export function DetailCardsSkeleton() {
   )
 }
 
-export function StackedDetailSkeleton({ cards = 5 }: { cards?: number }) {
+interface StackedDetailSkeletonProps {
+  cards?: number
+}
+
+export function StackedDetailSkeleton({
+  cards = 5,
+}: StackedDetailSkeletonProps) {
   return (
     <div aria-hidden="true" className="animate-pulse space-y-6">
       {range(cards).map((card) => (
@@ -156,6 +172,15 @@ export function DateRangePickerSkeleton() {
       <div className="h-10 w-40 rounded-md bg-gray-200" />
       <div className="h-10 w-40 rounded-md bg-gray-200" />
       <div className="h-10 w-24 rounded-md bg-gray-200" />
+    </div>
+  )
+}
+
+export function TabNavigationSkeleton() {
+  return (
+    <div aria-hidden="true" className="flex h-12 animate-pulse gap-2">
+      <div className="h-10 w-28 rounded-md bg-gray-200" />
+      <div className="h-10 w-28 rounded-md bg-gray-200" />
     </div>
   )
 }
@@ -282,9 +307,13 @@ export function AnalyticsPageSkeleton() {
   )
 }
 
-export function TableSkeleton({ rows = 5 }: { rows?: number }) {
+interface TableSkeletonProps {
+  rows?: number
+}
+
+export function TableSkeleton({ rows = 5 }: TableSkeletonProps) {
   return (
-    <div className="animate-pulse overflow-x-auto">
+    <div aria-hidden="true" className="animate-pulse overflow-x-auto">
       <table className="w-full">
         <thead className="border-b bg-gray-50">
           <tr>
@@ -361,7 +390,13 @@ export function TableSkeleton({ rows = 5 }: { rows?: number }) {
   )
 }
 
-export function PopularVideosListSkeleton({ count = 10 }: { count?: number }) {
+interface PopularVideosListSkeletonProps {
+  count?: number
+}
+
+export function PopularVideosListSkeleton({
+  count = 10,
+}: PopularVideosListSkeletonProps) {
   return (
     <div className="animate-pulse space-y-3">
       {range(count).map((i) => (

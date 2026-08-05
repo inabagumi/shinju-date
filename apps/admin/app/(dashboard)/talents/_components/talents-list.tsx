@@ -150,7 +150,6 @@ export function TalentsList({ talents }: TalentsListProps) {
                       <Link
                         className="text-774-blue-600 hover:text-774-blue-800"
                         href={`/talents/${talent.id}`}
-                        prefetch={true}
                       >
                         {talent.name}
                       </Link>
