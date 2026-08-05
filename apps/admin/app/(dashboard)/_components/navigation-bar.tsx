@@ -51,9 +51,9 @@ export function NavigationBar() {
     <nav className="sticky top-0 z-50 bg-slate-800 text-slate-50">
       {/* Desktop Navigation */}
       <div className="mx-auto hidden max-w-7xl items-center gap-4 p-2 md:flex">
-        <Link className="inline-block p-2 font-semibold text-xl" href="/">
+        <NextLink className="inline-block p-2 font-semibold text-xl" href="/">
           Admin UI
-        </Link>
+        </NextLink>
         <div className="flex grow items-center gap-4">
           {/* データ管理 Dropdown */}
           <div className="relative">
@@ -227,9 +227,9 @@ export function NavigationBar() {
 
       {/* Mobile Navigation */}
       <div className="mx-auto flex max-w-7xl items-center justify-between p-2 md:hidden">
-        <Link className="inline-block p-2 font-semibold text-xl" href="/">
+        <NextLink className="inline-block p-2 font-semibold text-xl" href="/">
           Admin UI
-        </Link>
+        </NextLink>
         <button
           aria-label="メニューを開く"
           className="rounded-md p-2 hover:bg-slate-700"
@@ -251,6 +251,7 @@ export function NavigationBar() {
             <div className="space-y-1">
               <div className="px-3 py-2 font-semibold text-sm">データ管理</div>
               <Link
+                activeClassName="bg-slate-700"
                 className="block rounded-md px-6 py-2 hover:bg-slate-700"
                 href="/videos"
                 onClick={() => setIsMenuOpen(false)}
@@ -259,6 +260,7 @@ export function NavigationBar() {
                 動画管理
               </Link>
               <Link
+                activeClassName="bg-slate-700"
                 className="block rounded-md px-6 py-2 hover:bg-slate-700"
                 href="/talents"
                 onClick={() => setIsMenuOpen(false)}
@@ -266,6 +268,7 @@ export function NavigationBar() {
                 タレント管理
               </Link>
               <Link
+                activeClassName="bg-slate-700"
                 className="block rounded-md px-6 py-2 hover:bg-slate-700"
                 href="/terms"
                 onClick={() => setIsMenuOpen(false)}
@@ -273,6 +276,7 @@ export function NavigationBar() {
                 用語管理
               </Link>
               <Link
+                activeClassName="bg-slate-700"
                 className="block rounded-md px-6 py-2 hover:bg-slate-700"
                 href="/recommended-queries"
                 onClick={() => setIsMenuOpen(false)}
@@ -280,6 +284,7 @@ export function NavigationBar() {
                 オススメクエリ管理
               </Link>
               <Link
+                activeClassName="bg-slate-700"
                 className="block rounded-md px-6 py-2 hover:bg-slate-700"
                 href="/announcements"
                 onClick={() => setIsMenuOpen(false)}
@@ -287,6 +292,7 @@ export function NavigationBar() {
                 お知らせ管理
               </Link>
               <Link
+                activeClassName="bg-slate-700"
                 className="block rounded-md px-6 py-2 hover:bg-slate-700"
                 href="/feedback"
                 onClick={() => setIsMenuOpen(false)}
@@ -299,6 +305,7 @@ export function NavigationBar() {
                 アナリティクス
               </div>
               <Link
+                activeClassName="bg-slate-700"
                 className="block rounded-md px-6 py-2 hover:bg-slate-700"
                 href="/analytics/search"
                 onClick={() => setIsMenuOpen(false)}
@@ -307,6 +314,7 @@ export function NavigationBar() {
                 検索アナリティクス
               </Link>
               <Link
+                activeClassName="bg-slate-700"
                 className="block rounded-md px-6 py-2 hover:bg-slate-700"
                 href="/analytics/click"
                 onClick={() => setIsMenuOpen(false)}
@@ -317,6 +325,7 @@ export function NavigationBar() {
             </div>
             <div className="border-slate-700 border-t pt-2">
               <Link
+                activeClassName="bg-slate-700"
                 className="block rounded-md px-4 py-2 hover:bg-slate-700"
                 href="/account"
                 onClick={() => setIsMenuOpen(false)}
@@ -324,6 +333,7 @@ export function NavigationBar() {
                 アカウント設定
               </Link>
               <Link
+                activeClassName="bg-slate-700"
                 className="block rounded-md px-4 py-2 hover:bg-slate-700"
                 href="/system"
                 onClick={() => setIsMenuOpen(false)}
