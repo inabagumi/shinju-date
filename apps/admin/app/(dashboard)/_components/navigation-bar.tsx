@@ -1,29 +1,49 @@
 'use client'
 
 import { Menu, User, X } from 'lucide-react'
-import Link from 'next/link'
+import NextLink from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
-import { twMerge } from 'tailwind-merge'
+import { type ComponentProps, Suspense, useState } from 'react'
 import Form, { SubmitButton } from '@/components/form'
 import { signOut } from '../_lib/actions'
 
-export function NavigationBar() {
+function ActiveNavigationLink({
+  href,
+  ...props
+}: ComponentProps<typeof NextLink>) {
   const pathname = usePathname()
+  const path = typeof href === 'string' ? href : href.pathname
+
+  return (
+    <NextLink
+      {...props}
+      aria-current={pathname === path ? 'page' : undefined}
+      href={href}
+    />
+  )
+}
+
+function Link(props: ComponentProps<typeof NextLink>) {
+  return (
+    <Suspense fallback={<NextLink {...props} />}>
+      <ActiveNavigationLink {...props} />
+    </Suspense>
+  )
+}
+
+export function NavigationBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDataMenuOpen, setIsDataMenuOpen] = useState(false)
   const [isAnalyticsMenuOpen, setIsAnalyticsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
 
-  const isActive = (path: string) => pathname === path
-
   return (
     <nav className="sticky top-0 z-50 bg-slate-800 text-slate-50">
       {/* Desktop Navigation */}
       <div className="mx-auto hidden max-w-7xl items-center gap-4 p-2 md:flex">
-        <Link className="inline-block p-2 font-semibold text-xl" href="/">
+        <NextLink className="inline-block p-2 font-semibold text-xl" href="/">
           Admin UI
-        </Link>
+        </NextLink>
         <div className="flex grow items-center gap-4">
           {/* データ管理 Dropdown */}
           <div className="relative">
@@ -50,52 +70,41 @@ export function NavigationBar() {
                 role="menu"
               >
                 <Link
-                  className={`block px-4 py-2 hover:bg-slate-600 ${
-                    isActive('/videos') ? 'bg-slate-600' : ''
-                  }`}
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/videos"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
                   動画管理
                 </Link>
                 <Link
-                  className={`block px-4 py-2 hover:bg-slate-600 ${
-                    isActive('/talents') ? 'bg-slate-600' : ''
-                  }`}
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/talents"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
                   タレント管理
                 </Link>
                 <Link
-                  className={`block px-4 py-2 hover:bg-slate-600 ${
-                    isActive('/terms') ? 'bg-slate-600' : ''
-                  }`}
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/terms"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
                   用語管理
                 </Link>
                 <Link
-                  className={`block px-4 py-2 hover:bg-slate-600 ${
-                    isActive('/recommended-queries') ? 'bg-slate-600' : ''
-                  }`}
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/recommended-queries"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
                   オススメクエリ管理
                 </Link>
                 <Link
-                  className={`block px-4 py-2 hover:bg-slate-600 ${
-                    isActive('/announcements') ? 'bg-slate-600' : ''
-                  }`}
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/announcements"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
                   お知らせ管理
                 </Link>
                 <Link
-                  aria-current={isActive('/feedback') ? 'page' : undefined}
                   className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/feedback"
                   onClick={() => setIsDataMenuOpen(false)}
@@ -131,18 +140,14 @@ export function NavigationBar() {
                 role="menu"
               >
                 <Link
-                  className={`block px-4 py-2 hover:bg-slate-600 ${
-                    isActive('/analytics/search') ? 'bg-slate-600' : ''
-                  }`}
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/analytics/search"
                   onClick={() => setIsAnalyticsMenuOpen(false)}
                 >
                   検索アナリティクス
                 </Link>
                 <Link
-                  className={`block px-4 py-2 hover:bg-slate-600 ${
-                    isActive('/analytics/click') ? 'bg-slate-600' : ''
-                  }`}
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/analytics/click"
                   onClick={() => setIsAnalyticsMenuOpen(false)}
                 >
@@ -179,20 +184,14 @@ export function NavigationBar() {
                 role="menu"
               >
                 <Link
-                  className={twMerge(
-                    'block px-4 py-2 hover:bg-slate-600',
-                    isActive('/account') && 'bg-slate-600',
-                  )}
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/account"
                   onClick={() => setIsUserMenuOpen(false)}
                 >
                   アカウント設定
                 </Link>
                 <Link
-                  className={twMerge(
-                    'block px-4 py-2 hover:bg-slate-600',
-                    isActive('/system') && 'bg-slate-600',
-                  )}
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/system"
                   onClick={() => setIsUserMenuOpen(false)}
                 >
@@ -215,9 +214,9 @@ export function NavigationBar() {
 
       {/* Mobile Navigation */}
       <div className="mx-auto flex max-w-7xl items-center justify-between p-2 md:hidden">
-        <Link className="inline-block p-2 font-semibold text-xl" href="/">
+        <NextLink className="inline-block p-2 font-semibold text-xl" href="/">
           Admin UI
-        </Link>
+        </NextLink>
         <button
           aria-label="メニューを開く"
           className="rounded-md p-2 hover:bg-slate-700"
@@ -239,52 +238,41 @@ export function NavigationBar() {
             <div className="space-y-1">
               <div className="px-3 py-2 font-semibold text-sm">データ管理</div>
               <Link
-                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
-                  isActive('/videos') ? 'bg-slate-700' : ''
-                }`}
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/videos"
                 onClick={() => setIsMenuOpen(false)}
               >
                 動画管理
               </Link>
               <Link
-                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
-                  isActive('/talents') ? 'bg-slate-700' : ''
-                }`}
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/talents"
                 onClick={() => setIsMenuOpen(false)}
               >
                 タレント管理
               </Link>
               <Link
-                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
-                  isActive('/terms') ? 'bg-slate-700' : ''
-                }`}
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/terms"
                 onClick={() => setIsMenuOpen(false)}
               >
                 用語管理
               </Link>
               <Link
-                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
-                  isActive('/recommended-queries') ? 'bg-slate-700' : ''
-                }`}
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/recommended-queries"
                 onClick={() => setIsMenuOpen(false)}
               >
                 オススメクエリ管理
               </Link>
               <Link
-                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
-                  isActive('/announcements') ? 'bg-slate-700' : ''
-                }`}
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/announcements"
                 onClick={() => setIsMenuOpen(false)}
               >
                 お知らせ管理
               </Link>
               <Link
-                aria-current={isActive('/feedback') ? 'page' : undefined}
                 className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/feedback"
                 onClick={() => setIsMenuOpen(false)}
@@ -297,18 +285,14 @@ export function NavigationBar() {
                 アナリティクス
               </div>
               <Link
-                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
-                  isActive('/analytics/search') ? 'bg-slate-700' : ''
-                }`}
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/analytics/search"
                 onClick={() => setIsMenuOpen(false)}
               >
                 検索アナリティクス
               </Link>
               <Link
-                className={`block rounded-md px-6 py-2 hover:bg-slate-700 ${
-                  isActive('/analytics/click') ? 'bg-slate-700' : ''
-                }`}
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/analytics/click"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -317,20 +301,14 @@ export function NavigationBar() {
             </div>
             <div className="border-slate-700 border-t pt-2">
               <Link
-                className={twMerge(
-                  'block rounded-md px-4 py-2 hover:bg-slate-700',
-                  isActive('/account') && 'bg-slate-700',
-                )}
+                className="block rounded-md px-4 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/account"
                 onClick={() => setIsMenuOpen(false)}
               >
                 アカウント設定
               </Link>
               <Link
-                className={twMerge(
-                  'block rounded-md px-4 py-2 hover:bg-slate-700',
-                  isActive('/system') && 'bg-slate-700',
-                )}
+                className="block rounded-md px-4 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/system"
                 onClick={() => setIsMenuOpen(false)}
               >

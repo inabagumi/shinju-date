@@ -3,6 +3,7 @@ import { cacheLife } from 'next/cache'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { StackedDetailSkeleton } from '@/components/skeletons'
 import { createTitleFromMessage } from '../_lib/create-title-from-message'
 import { getFeatureRequestById } from '../_lib/get-feedback'
 import { FeatureRequestDetail } from './_components/feedback-detail'
@@ -34,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-async function FeatureRequestDetailContent({ id }: { id: string }) {
+async function CachedFeatureRequestDetail({ id }: { id: string }) {
   'use cache: private'
 
   cacheLife('minutes')
@@ -45,8 +46,12 @@ async function FeatureRequestDetailContent({ id }: { id: string }) {
     notFound()
   }
 
+  return <FeatureRequestDetail featureRequest={featureRequest} />
+}
+
+export default function FeedbackDetailPage({ params }: Props) {
   return (
-    <>
+    <div className="mx-auto max-w-4xl p-6">
       <div className="mb-6">
         <Link className="text-blue-600 hover:underline" href="/feedback">
           ← 機能要望一覧に戻る
@@ -55,24 +60,11 @@ async function FeatureRequestDetailContent({ id }: { id: string }) {
 
       <h1 className="mb-6 font-bold text-3xl">機能要望詳細</h1>
 
-      <FeatureRequestDetail featureRequest={featureRequest} />
-    </>
-  )
-}
-
-export default function FeedbackDetailPage({ params }: Props) {
-  return (
-    <div className="mx-auto max-w-4xl p-6">
-      <Suspense
-        fallback={<div className="h-96 animate-pulse rounded-lg bg-gray-200" />}
-      >
-        <FeedbackDetailPageWrapper params={params} />
+      <Suspense fallback={<StackedDetailSkeleton />}>
+        {params.then(({ id }) => (
+          <CachedFeatureRequestDetail id={id} />
+        ))}
       </Suspense>
     </div>
   )
-}
-
-async function FeedbackDetailPageWrapper({ params }: Props) {
-  const { id } = await params
-  return <FeatureRequestDetailContent id={id} />
 }

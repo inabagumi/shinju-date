@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
+import { FormCardSkeleton } from '@/components/skeletons'
 import { createSupabaseServerClient } from '@/lib/supabase'
 import { EmailUpdateForm } from './_components/email-update-form'
 import { PasswordUpdateForm } from './_components/password-update-form'
@@ -39,9 +40,7 @@ export default function AccountPage() {
       </div>
 
       {/* Email form - requires user data */}
-      <Suspense
-        fallback={<div className="h-48 animate-pulse rounded-lg bg-gray-200" />}
-      >
+      <Suspense fallback={<FormCardSkeleton />}>
         <UserEmailData />
       </Suspense>
 

@@ -85,10 +85,6 @@ export function TalentsList({ talents }: TalentsListProps) {
   return (
     <div className="space-y-6 p-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="font-bold text-2xl">タレント管理</h1>
-      </div>
-
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex w-full flex-col gap-3 sm:max-w-2xl sm:flex-row">
           <input
             className="w-full rounded-md border border-774-blue-300 px-4 py-2 focus:border-secondary-blue focus:outline-none"

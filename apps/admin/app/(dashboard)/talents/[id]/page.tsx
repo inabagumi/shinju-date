@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { DetailCardsSkeleton, ListCardsSkeleton } from '@/components/skeletons'
 import { TalentStatusBadge } from '../_components/talent-status-badge'
 import { getRecentVideosForTalent } from '../_lib/get-recent-videos'
 import { getTalent } from '../_lib/get-talent'
@@ -305,36 +306,18 @@ export default function TalentDetailPage({ params }: Props) {
       </div>
 
       {/* Talent profile section */}
-      <Suspense
-        fallback={
-          <div className="space-y-6">
-            <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-          </div>
-        }
-      >
-        <TalentProfileWrapper params={params} />
+      <Suspense fallback={<DetailCardsSkeleton />}>
+        {params.then(({ id }) => (
+          <TalentProfile id={id} />
+        ))}
       </Suspense>
 
       {/* Recent videos section */}
-      <Suspense
-        fallback={
-          <div className="mt-8">
-            <div className="h-48 animate-pulse rounded-lg bg-gray-200" />
-          </div>
-        }
-      >
-        <RecentVideosSectionWrapper params={params} />
+      <Suspense fallback={<ListCardsSkeleton rows={3} />}>
+        {params.then(({ id }) => (
+          <RecentVideosSection talentId={id} />
+        ))}
       </Suspense>
     </div>
   )
-}
-
-async function TalentProfileWrapper({ params }: Props) {
-  const { id } = await params
-  return <TalentProfile id={id} />
-}
-
-async function RecentVideosSectionWrapper({ params }: Props) {
-  const { id } = await params
-  return <RecentVideosSection talentId={id} />
 }

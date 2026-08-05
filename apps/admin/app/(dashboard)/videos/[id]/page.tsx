@@ -12,6 +12,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { Temporal } from 'temporal-polyfill'
+import { DetailCardsSkeleton } from '@/components/skeletons'
 import { PlatformBadge } from '../_components/platform-badge'
 import { VideoKindBadge } from '../_components/video-kind-badge'
 import { VideoStatusBadge } from '../_components/video-status-badge'
@@ -43,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-async function VideoDetailContent({ id }: { id: string }) {
+async function CachedVideoDetails({ id }: { id: string }) {
   'use cache: private'
   cacheLife('minutes')
 
@@ -64,18 +65,7 @@ async function VideoDetailContent({ id }: { id: string }) {
   })
 
   return (
-    <div className="p-4">
-      {/* Back button */}
-      <div className="mb-6">
-        <Link
-          className="inline-flex items-center text-774-blue-600 hover:text-774-blue-800"
-          href="/videos"
-        >
-          <ChevronLeft className="mr-1 h-4 w-4" />
-          動画一覧に戻る
-        </Link>
-      </div>
-
+    <div>
       {/* Header */}
       <div className="mb-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -311,21 +301,22 @@ async function VideoDetailContent({ id }: { id: string }) {
 
 export default function VideoDetailPage({ params }: Props) {
   return (
-    <div className="mx-auto max-w-7xl">
-      <Suspense
-        fallback={
-          <div className="p-4">
-            <div className="h-96 animate-pulse rounded-lg bg-gray-200" />
-          </div>
-        }
-      >
-        <VideoDetailContentWrapper params={params} />
+    <div className="mx-auto max-w-7xl p-4">
+      <div className="mb-6">
+        <Link
+          className="inline-flex items-center text-774-blue-600 hover:text-774-blue-800"
+          href="/videos"
+        >
+          <ChevronLeft className="mr-1 h-4 w-4" />
+          動画一覧に戻る
+        </Link>
+      </div>
+
+      <Suspense fallback={<DetailCardsSkeleton />}>
+        {params.then(({ id }) => (
+          <CachedVideoDetails id={id} />
+        ))}
       </Suspense>
     </div>
   )
-}
-
-async function VideoDetailContentWrapper({ params }: Props) {
-  const { id } = await params
-  return <VideoDetailContent id={id} />
 }

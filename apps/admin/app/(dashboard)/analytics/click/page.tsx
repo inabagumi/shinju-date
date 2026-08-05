@@ -1,5 +1,11 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import {
+  ChartSkeleton,
+  DateRangePickerSkeleton,
+  ListCardsSkeleton,
+  TabNavigationSkeleton,
+} from '@/components/skeletons'
 import { DateRangePickerClient } from '../_components/date-range-picker-client'
 import { analyticsSearchParamsSchema } from '../_lib/search-params-schema'
 import { ClickVolumeChart } from './_components/click-volume-chart'
@@ -22,11 +28,7 @@ export default function ClickAnalyticsPage({
       <h1 className="mb-6 font-bold text-3xl">クリックアナリティクス</h1>
 
       <div className="mb-6">
-        <Suspense
-          fallback={
-            <div className="h-12 animate-pulse rounded-lg bg-gray-200" />
-          }
-        >
+        <Suspense fallback={<DateRangePickerSkeleton />}>
           <DateRangePickerClient searchParams={parsedSearchParams} />
         </Suspense>
       </div>
@@ -34,21 +36,13 @@ export default function ClickAnalyticsPage({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
           <h2 className="mb-4 font-semibold text-xl">クリックボリューム</h2>
-          <Suspense
-            fallback={
-              <div className="h-96 animate-pulse rounded-lg bg-gray-200" />
-            }
-          >
+          <Suspense fallback={<ChartSkeleton />}>
             <ClickVolumeChart searchParams={parsedSearchParams} />
           </Suspense>
         </div>
 
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
-          <Suspense
-            fallback={
-              <div className="h-12 animate-pulse rounded-lg bg-gray-200" />
-            }
-          >
+          <Suspense fallback={<TabNavigationSkeleton />}>
             <TabNavigation
               defaultTab="videos"
               searchParams={parsedSearchParams}
@@ -59,11 +53,7 @@ export default function ClickAnalyticsPage({
             />
           </Suspense>
           <div className="mt-6">
-            <Suspense
-              fallback={
-                <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-              }
-            >
+            <Suspense fallback={<ListCardsSkeleton rows={5} />}>
               <PopularRankingsTabs searchParams={parsedSearchParams} />
             </Suspense>
           </div>
