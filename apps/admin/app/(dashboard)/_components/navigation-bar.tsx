@@ -4,20 +4,13 @@ import { Menu, User, X } from 'lucide-react'
 import NextLink from 'next/link'
 import { usePathname } from 'next/navigation'
 import { type ComponentProps, Suspense, useState } from 'react'
-import { twMerge } from 'tailwind-merge'
 import Form, { SubmitButton } from '@/components/form'
 import { signOut } from '../_lib/actions'
 
-interface NavigationLinkProps extends ComponentProps<typeof NextLink> {
-  activeClassName?: string
-}
-
 function ActiveNavigationLink({
-  activeClassName = 'bg-slate-600',
-  className,
   href,
   ...props
-}: NavigationLinkProps) {
+}: ComponentProps<typeof NextLink>) {
   const pathname = usePathname()
   const path = typeof href === 'string' ? href : href.pathname
 
@@ -25,17 +18,14 @@ function ActiveNavigationLink({
     <NextLink
       {...props}
       aria-current={pathname === path ? 'page' : undefined}
-      className={twMerge(className, pathname === path && activeClassName)}
       href={href}
     />
   )
 }
 
-function Link(props: NavigationLinkProps) {
-  const { activeClassName: _, ...linkProps } = props
-
+function Link(props: ComponentProps<typeof NextLink>) {
   return (
-    <Suspense fallback={<NextLink {...linkProps} />}>
+    <Suspense fallback={<NextLink {...props} />}>
       <ActiveNavigationLink {...props} />
     </Suspense>
   )
@@ -80,42 +70,42 @@ export function NavigationBar() {
                 role="menu"
               >
                 <Link
-                  className="block px-4 py-2 hover:bg-slate-600"
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/videos"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
                   動画管理
                 </Link>
                 <Link
-                  className="block px-4 py-2 hover:bg-slate-600"
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/talents"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
                   タレント管理
                 </Link>
                 <Link
-                  className="block px-4 py-2 hover:bg-slate-600"
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/terms"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
                   用語管理
                 </Link>
                 <Link
-                  className="block px-4 py-2 hover:bg-slate-600"
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/recommended-queries"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
                   オススメクエリ管理
                 </Link>
                 <Link
-                  className="block px-4 py-2 hover:bg-slate-600"
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/announcements"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
                   お知らせ管理
                 </Link>
                 <Link
-                  className="block px-4 py-2 hover:bg-slate-600"
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/feedback"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
@@ -150,14 +140,14 @@ export function NavigationBar() {
                 role="menu"
               >
                 <Link
-                  className="block px-4 py-2 hover:bg-slate-600"
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/analytics/search"
                   onClick={() => setIsAnalyticsMenuOpen(false)}
                 >
                   検索アナリティクス
                 </Link>
                 <Link
-                  className="block px-4 py-2 hover:bg-slate-600"
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/analytics/click"
                   onClick={() => setIsAnalyticsMenuOpen(false)}
                 >
@@ -194,14 +184,14 @@ export function NavigationBar() {
                 role="menu"
               >
                 <Link
-                  className="block px-4 py-2 hover:bg-slate-600"
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/account"
                   onClick={() => setIsUserMenuOpen(false)}
                 >
                   アカウント設定
                 </Link>
                 <Link
-                  className="block px-4 py-2 hover:bg-slate-600"
+                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
                   href="/system"
                   onClick={() => setIsUserMenuOpen(false)}
                 >
@@ -248,48 +238,42 @@ export function NavigationBar() {
             <div className="space-y-1">
               <div className="px-3 py-2 font-semibold text-sm">データ管理</div>
               <Link
-                activeClassName="bg-slate-700"
-                className="block rounded-md px-6 py-2 hover:bg-slate-700"
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/videos"
                 onClick={() => setIsMenuOpen(false)}
               >
                 動画管理
               </Link>
               <Link
-                activeClassName="bg-slate-700"
-                className="block rounded-md px-6 py-2 hover:bg-slate-700"
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/talents"
                 onClick={() => setIsMenuOpen(false)}
               >
                 タレント管理
               </Link>
               <Link
-                activeClassName="bg-slate-700"
-                className="block rounded-md px-6 py-2 hover:bg-slate-700"
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/terms"
                 onClick={() => setIsMenuOpen(false)}
               >
                 用語管理
               </Link>
               <Link
-                activeClassName="bg-slate-700"
-                className="block rounded-md px-6 py-2 hover:bg-slate-700"
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/recommended-queries"
                 onClick={() => setIsMenuOpen(false)}
               >
                 オススメクエリ管理
               </Link>
               <Link
-                activeClassName="bg-slate-700"
-                className="block rounded-md px-6 py-2 hover:bg-slate-700"
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/announcements"
                 onClick={() => setIsMenuOpen(false)}
               >
                 お知らせ管理
               </Link>
               <Link
-                activeClassName="bg-slate-700"
-                className="block rounded-md px-6 py-2 hover:bg-slate-700"
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/feedback"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -301,16 +285,14 @@ export function NavigationBar() {
                 アナリティクス
               </div>
               <Link
-                activeClassName="bg-slate-700"
-                className="block rounded-md px-6 py-2 hover:bg-slate-700"
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/analytics/search"
                 onClick={() => setIsMenuOpen(false)}
               >
                 検索アナリティクス
               </Link>
               <Link
-                activeClassName="bg-slate-700"
-                className="block rounded-md px-6 py-2 hover:bg-slate-700"
+                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/analytics/click"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -319,16 +301,14 @@ export function NavigationBar() {
             </div>
             <div className="border-slate-700 border-t pt-2">
               <Link
-                activeClassName="bg-slate-700"
-                className="block rounded-md px-4 py-2 hover:bg-slate-700"
+                className="block rounded-md px-4 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/account"
                 onClick={() => setIsMenuOpen(false)}
               >
                 アカウント設定
               </Link>
               <Link
-                activeClassName="bg-slate-700"
-                className="block rounded-md px-4 py-2 hover:bg-slate-700"
+                className="block rounded-md px-4 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/system"
                 onClick={() => setIsMenuOpen(false)}
               >
