@@ -69,6 +69,7 @@ function SimplePopularVideosWidget({
                 <Link
                   className="font-medium hover:underline"
                   href={`/videos/${video.id}`}
+                  prefetch={true}
                 >
                   {video.title}
                 </Link>

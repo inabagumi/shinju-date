@@ -37,14 +37,18 @@ export default function Pagination({ currentPage, totalPages }: Props) {
     <div className="flex items-center justify-center gap-2 p-4">
       {currentPage > 1 && (
         <Button asChild size="md" variant="secondary">
-          <Link href={createPageUrl(currentPage - 1)}>前へ</Link>
+          <Link href={createPageUrl(currentPage - 1)} prefetch={true}>
+            前へ
+          </Link>
         </Button>
       )}
 
       {startPage > 1 && (
         <>
           <Button asChild size="md" variant="secondary">
-            <Link href={createPageUrl(1)}>1</Link>
+            <Link href={createPageUrl(1)} prefetch={true}>
+              1
+            </Link>
           </Button>
           {startPage > 2 && <span className="px-2">...</span>}
         </>
@@ -57,7 +61,9 @@ export default function Pagination({ currentPage, totalPages }: Props) {
           size="md"
           variant={page === currentPage ? 'primary' : 'secondary'}
         >
-          <Link href={createPageUrl(page)}>{page}</Link>
+          <Link href={createPageUrl(page)} prefetch={true}>
+            {page}
+          </Link>
         </Button>
       ))}
 
@@ -65,14 +71,18 @@ export default function Pagination({ currentPage, totalPages }: Props) {
         <>
           {endPage < totalPages - 1 && <span className="px-2">...</span>}
           <Button asChild size="md" variant="secondary">
-            <Link href={createPageUrl(totalPages)}>{totalPages}</Link>
+            <Link href={createPageUrl(totalPages)} prefetch={true}>
+              {totalPages}
+            </Link>
           </Button>
         </>
       )}
 
       {currentPage < totalPages && (
         <Button asChild size="md" variant="secondary">
-          <Link href={createPageUrl(currentPage + 1)}>次へ</Link>
+          <Link href={createPageUrl(currentPage + 1)} prefetch={true}>
+            次へ
+          </Link>
         </Button>
       )}
     </div>

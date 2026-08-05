@@ -1,5 +1,6 @@
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
+import { ListCardsSkeleton } from '@/components/skeletons'
 import { FeatureRequestList } from './_components/feedback-list'
 import { getFeatureRequests } from './_lib/get-feedback'
 
@@ -23,11 +24,7 @@ export default function FeedbackPage() {
         </div>
 
         {/* Feature Request List */}
-        <Suspense
-          fallback={
-            <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-          }
-        >
+        <Suspense fallback={<ListCardsSkeleton />}>
           <FeatureRequestListData />
         </Suspense>
       </div>

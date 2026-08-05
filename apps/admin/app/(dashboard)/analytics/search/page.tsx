@@ -1,5 +1,10 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import {
+  ChartSkeleton,
+  DateRangePickerSkeleton,
+  MetricCardSkeleton,
+} from '@/components/skeletons'
 import { DateRangePickerClient } from '../_components/date-range-picker-client'
 import { analyticsSearchParamsSchema } from '../_lib/search-params-schema'
 import { PopularKeywordsWidget } from './_components/popular-keywords-widget'
@@ -25,11 +30,7 @@ export default function SearchAnalyticsPage({
       <h1 className="mb-6 font-bold text-3xl">検索アナリティクス</h1>
 
       <div className="mb-6">
-        <Suspense
-          fallback={
-            <div className="h-12 animate-pulse rounded-lg bg-gray-200" />
-          }
-        >
+        <Suspense fallback={<DateRangePickerSkeleton />}>
           <DateRangePickerClient searchParams={parsedSearchParams} />
         </Suspense>
       </div>
@@ -37,11 +38,7 @@ export default function SearchAnalyticsPage({
       {/* Search Volume Chart */}
       <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 className="mb-4 font-semibold text-xl">検索ボリューム</h2>
-        <Suspense
-          fallback={
-            <div className="h-96 animate-pulse rounded-lg bg-gray-200" />
-          }
-        >
+        <Suspense fallback={<ChartSkeleton />}>
           <SearchVolumeChart searchParams={parsedSearchParams} />
         </Suspense>
       </div>
@@ -53,31 +50,19 @@ export default function SearchAnalyticsPage({
         </h2>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <Suspense
-              fallback={
-                <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-              }
-            >
+            <Suspense fallback={<MetricCardSkeleton />}>
               <SearchEngagementRateWidget searchParams={parsedSearchParams} />
             </Suspense>
           </div>
 
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <Suspense
-              fallback={
-                <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-              }
-            >
+            <Suspense fallback={<MetricCardSkeleton />}>
               <RepeatSearchRateWidget searchParams={parsedSearchParams} />
             </Suspense>
           </div>
 
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-1">
-            <Suspense
-              fallback={
-                <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-              }
-            >
+            <Suspense fallback={<MetricCardSkeleton />}>
               <SearchExitRateWidget searchParams={parsedSearchParams} />
             </Suspense>
           </div>
@@ -91,21 +76,13 @@ export default function SearchAnalyticsPage({
         </h2>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <Suspense
-              fallback={
-                <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-              }
-            >
+            <Suspense fallback={<MetricCardSkeleton />}>
               <ZeroResultKeywordsWidget />
             </Suspense>
           </div>
 
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <Suspense
-              fallback={
-                <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-              }
-            >
+            <Suspense fallback={<MetricCardSkeleton />}>
               <PopularKeywordsWidget searchParams={parsedSearchParams} />
             </Suspense>
           </div>

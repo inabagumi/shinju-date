@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
       },
     ])
   },
+  partialPrefetching: true,
   reactCompiler: true,
   reactStrictMode: true,
   serverExternalPackages: [

@@ -1,5 +1,6 @@
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
+import { ListCardsSkeleton } from '@/components/skeletons'
 import { AnnouncementModal } from './_components/announcement-modal'
 import { AnnouncementsList } from './_components/announcements-list'
 import getAnnouncements from './_lib/get-announcements'
@@ -30,11 +31,7 @@ export default function AnnouncementsPage() {
         </div>
 
         {/* Announcements List - dynamic data with own Suspense */}
-        <Suspense
-          fallback={
-            <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
-          }
-        >
+        <Suspense fallback={<ListCardsSkeleton />}>
           <AnnouncementsListData />
         </Suspense>
       </div>

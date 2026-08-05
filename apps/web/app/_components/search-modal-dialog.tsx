@@ -204,6 +204,7 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
                   key={suggestion.term}
                   onClick={handleSuggestionClick}
                   onKeyDown={(e) => handleSuggestionKeyDown(e, index)}
+                  prefetch={true}
                 >
                   <Search className="size-4 text-774-nevy-400 dark:text-774-nevy-300" />
                   <span className="text-primary dark:text-774-nevy-50">

@@ -58,8 +58,6 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
     <div className="space-y-6 p-4">
       {/* Header and Add Form */}
       <div className="space-y-4">
-        <h1 className="font-bold text-2xl">オススメクエリ管理</h1>
-
         {/* Add Query Form */}
         <div className="flex flex-col gap-4 rounded-lg border border-774-blue-300 bg-774-blue-50 p-4 sm:flex-row sm:items-end">
           <div className="flex-1">

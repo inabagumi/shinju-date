@@ -112,6 +112,7 @@ export function FeatureRequestList({
                 )}
                 href={`/feedback/${item.id}`}
                 key={item.id}
+                prefetch={true}
               >
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="flex-1 space-y-2">

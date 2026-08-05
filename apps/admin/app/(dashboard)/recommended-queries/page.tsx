@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
+import { ManagementTableSkeleton } from '@/components/skeletons'
 import { QueriesList } from './_components/queries-list'
 import getRecommendedQueries from './_lib/get-recommended-queries'
 
@@ -24,9 +25,7 @@ export default function RecommendedQueriesPage() {
       <h1 className="mb-6 font-bold text-3xl">おすすめクエリ</h1>
 
       {/* Dynamic content with Suspense */}
-      <Suspense
-        fallback={<div className="h-64 animate-pulse rounded-lg bg-gray-200" />}
-      >
+      <Suspense fallback={<ManagementTableSkeleton rows={8} />}>
         <QueriesListData />
       </Suspense>
     </div>

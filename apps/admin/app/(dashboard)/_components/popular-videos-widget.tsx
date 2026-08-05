@@ -69,7 +69,9 @@ export async function PopularVideosWidget() {
               </div>
               <div className="flex shrink-0 gap-2">
                 <Button asChild size="sm" variant="secondary-blue">
-                  <Link href={`/videos/${video.id}`}>詳細</Link>
+                  <Link href={`/videos/${video.id}`} prefetch={true}>
+                    詳細
+                  </Link>
                 </Button>
                 {video.youtube_video?.youtube_video_id && (
                   <a

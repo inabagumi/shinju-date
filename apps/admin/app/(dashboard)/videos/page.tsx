@@ -2,6 +2,7 @@ import { formatNumber } from '@shinju-date/helpers'
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
+import { TableSkeleton } from '@/components/skeletons'
 import { getTalents } from '../talents/_lib/get-talents'
 import Pagination from './_components/pagination'
 import { VideoFilters } from './_components/video-filters'
@@ -160,9 +161,18 @@ async function VideoCountData({
 export default function VideosPage({ searchParams }: PageProps<'/'>) {
   return (
     <div className="mx-auto max-w-7xl p-4">
+      <h1 className="mb-6 font-bold text-3xl">動画管理</h1>
+
       {/* Video count with Suspense */}
       <div className="mb-4">
-        <Suspense fallback={<p className="text-gray-600">読み込み中...</p>}>
+        <Suspense
+          fallback={
+            <div
+              aria-hidden="true"
+              className="h-5 w-32 animate-pulse rounded bg-gray-200"
+            />
+          }
+        >
           <VideoCountData searchParams={searchParams} />
         </Suspense>
       </div>
@@ -170,16 +180,21 @@ export default function VideosPage({ searchParams }: PageProps<'/'>) {
       {/* Filters with independent Suspense */}
       <Suspense
         fallback={
-          <div className="mb-4 h-20 animate-pulse rounded-lg bg-gray-200" />
+          <div
+            aria-hidden="true"
+            className="mb-4 grid min-h-24 animate-pulse gap-4 rounded-lg border border-gray-200 bg-white p-4 sm:grid-cols-3"
+          >
+            <div className="h-10 rounded bg-gray-200" />
+            <div className="h-10 rounded bg-gray-200" />
+            <div className="h-10 rounded bg-gray-200" />
+          </div>
         }
       >
         <VideoFiltersData />
       </Suspense>
 
       {/* Video table with independent Suspense */}
-      <Suspense
-        fallback={<div className="h-64 animate-pulse rounded-lg bg-gray-200" />}
-      >
+      <Suspense fallback={<TableSkeleton rows={8} />}>
         <VideoTableData searchParams={searchParams} />
       </Suspense>
     </div>

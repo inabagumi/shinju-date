@@ -71,6 +71,7 @@ function SimplePopularTalentsWidget({
                 <Link
                   className="font-medium hover:underline"
                   href={`/talents/${talent.id}`}
+                  prefetch={true}
                 >
                   {talent.name}
                 </Link>

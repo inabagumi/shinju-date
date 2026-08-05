@@ -31,6 +31,7 @@ export default function NoResults({
       <Link
         className="inline-block rounded-md border border-current px-6 py-3 font-semibold text-secondary-blue hover:bg-secondary-blue hover:text-secondary-blue-foreground dark:border-774-nevy-50 dark:text-774-nevy-50 dark:hover:bg-774-nevy-50 dark:hover:text-primary"
         href={joinURL(basePath, '/videos')}
+        prefetch={true}
       >
         新着動画を見る
       </Link>

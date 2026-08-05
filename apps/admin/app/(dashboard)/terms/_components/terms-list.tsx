@@ -1,8 +1,9 @@
 'use client'
 
 import * as Accordion from '@radix-ui/react-accordion'
+import { range } from '@shinju-date/helpers'
 import { Button, Input } from '@shinju-date/ui'
-import { useMemo, useState } from 'react'
+import { Suspense, use, useMemo, useState } from 'react'
 import { DeleteConfirmDialog } from './delete-confirm-dialog'
 import { TermModal } from './term-modal'
 
@@ -14,7 +15,7 @@ interface Term {
 }
 
 interface TermsListProps {
-  terms: Term[]
+  terms: Promise<Term[]>
 }
 
 // Helper function to get the first character for grouping
@@ -47,12 +48,38 @@ function getFirstCharacter(term: string): string {
 export function TermsList({ terms }: TermsListProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Input
+          className="sm:max-w-md"
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="用語、読み方、類義語で検索..."
+          type="text"
+          value={searchQuery}
+        />
+        <TermModal />
+      </div>
+
+      <Suspense fallback={<TermsResultsSkeleton />}>
+        <TermsResults searchQuery={searchQuery} terms={terms} />
+      </Suspense>
+    </div>
+  )
+}
+
+function TermsResults({
+  searchQuery,
+  terms,
+}: TermsListProps & { searchQuery: string }) {
+  const resolvedTerms = use(terms)
+
   // Filter terms based on search query
   const filteredTerms = useMemo(() => {
-    if (!searchQuery.trim()) return terms
+    if (!searchQuery.trim()) return resolvedTerms
 
     const query = searchQuery.toLowerCase()
-    return terms.filter(
+    return resolvedTerms.filter(
       (term) =>
         term.term.toLowerCase().includes(query) ||
         term.readings.some((reading) =>
@@ -60,7 +87,7 @@ export function TermsList({ terms }: TermsListProps) {
         ) ||
         term.synonyms.some((synonym) => synonym.toLowerCase().includes(query)),
     )
-  }, [terms, searchQuery])
+  }, [resolvedTerms, searchQuery])
 
   // Group terms by first character
   const groupedTerms = useMemo(() => {
@@ -89,18 +116,6 @@ export function TermsList({ terms }: TermsListProps) {
 
   return (
     <div className="space-y-6">
-      {/* Search and Add button */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Input
-          className="sm:max-w-md"
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="用語、読み方、類義語で検索..."
-          type="text"
-          value={searchQuery}
-        />
-        <TermModal />
-      </div>
-
       {/* Alphabet navigation */}
       {groupKeys.length > 0 && !searchQuery && (
         <nav className="flex flex-wrap gap-2 rounded-md border border-774-blue-300 bg-774-blue-50 p-3">
@@ -185,6 +200,27 @@ export function TermsList({ terms }: TermsListProps) {
           ))}
         </Accordion.Root>
       )}
+    </div>
+  )
+}
+
+function TermsResultsSkeleton() {
+  return (
+    <div aria-hidden="true" className="animate-pulse space-y-6">
+      <div className="flex min-h-16 flex-wrap gap-2 rounded-md border border-gray-200 bg-gray-50 p-3">
+        {range(8).map((item) => (
+          <div
+            className="h-8 w-10 rounded bg-gray-200"
+            key={`term-index-skeleton-${item}`}
+          />
+        ))}
+      </div>
+      {range(5).map((item) => (
+        <div
+          className="h-12 rounded-lg border border-gray-200 bg-gray-100"
+          key={`term-group-skeleton-${item}`}
+        />
+      ))}
     </div>
   )
 }
