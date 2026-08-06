@@ -88,13 +88,13 @@ importers:
         version: link:../../packages/youtube-scraper
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
-        version: 0.3.0(@supabase/supabase-js@2.112.0(@opentelemetry/api@1.9.1))
+        version: 0.3.0(@supabase/supabase-js@2.112.1(@opentelemetry/api@1.9.1))
       '@supabase/ssr':
         specifier: 0.12.4
-        version: 0.12.4(@supabase/supabase-js@2.112.0(@opentelemetry/api@1.9.1))
+        version: 0.12.4(@supabase/supabase-js@2.112.1(@opentelemetry/api@1.9.1))
       '@supabase/supabase-js':
-        specifier: 2.112.0
-        version: 2.112.0(@opentelemetry/api@1.9.1)
+        specifier: 2.112.1
+        version: 2.112.1(@opentelemetry/api@1.9.1)
       '@upstash/redis':
         specifier: 1.38.1
         version: 1.38.1
@@ -245,10 +245,10 @@ importers:
         version: link:../../packages/youtube-scraper
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
-        version: 0.3.0(@supabase/supabase-js@2.112.0(@opentelemetry/api@1.9.1))
+        version: 0.3.0(@supabase/supabase-js@2.112.1(@opentelemetry/api@1.9.1))
       '@supabase/supabase-js':
-        specifier: 2.112.0
-        version: 2.112.0(@opentelemetry/api@1.9.1)
+        specifier: 2.112.1
+        version: 2.112.1(@opentelemetry/api@1.9.1)
       '@upstash/ratelimit':
         specifier: 2.0.8
         version: 2.0.8(@upstash/redis@1.38.1)
@@ -323,8 +323,8 @@ importers:
   apps/msw-demo:
     dependencies:
       '@supabase/supabase-js':
-        specifier: 2.112.0
-        version: 2.112.0(@opentelemetry/api@1.9.1)
+        specifier: 2.112.1
+        version: 2.112.1(@opentelemetry/api@1.9.1)
       '@upstash/redis':
         specifier: 1.38.1
         version: 1.38.1
@@ -424,10 +424,10 @@ importers:
         version: link:../../packages/ui
       '@supabase/sentry-js-integration':
         specifier: 0.3.0
-        version: 0.3.0(@supabase/supabase-js@2.112.0(@opentelemetry/api@1.9.1))
+        version: 0.3.0(@supabase/supabase-js@2.112.1(@opentelemetry/api@1.9.1))
       '@supabase/supabase-js':
-        specifier: 2.112.0
-        version: 2.112.0(@opentelemetry/api@1.9.1)
+        specifier: 2.112.1
+        version: 2.112.1(@opentelemetry/api@1.9.1)
       '@tanstack/react-query':
         specifier: 5.101.4
         version: 5.101.4(react@19.2.8)
@@ -629,8 +629,8 @@ importers:
   packages/health-checkers:
     devDependencies:
       '@supabase/supabase-js':
-        specifier: 2.112.0
-        version: 2.112.0(@opentelemetry/api@1.9.1)
+        specifier: 2.112.1
+        version: 2.112.1(@opentelemetry/api@1.9.1)
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -3300,8 +3300,8 @@ packages:
       typescript:
         optional: true
 
-  '@supabase/auth-js@2.112.0':
-    resolution: {integrity: sha512-8qAdObNQHKbSeVBLmf2WLNT7+bCE8zBofpCFiNUqGBAl5qw9VagSvcmPXlh78McAU7iHrGik1oeJxiB2A6B29w==}
+  '@supabase/auth-js@2.112.1':
+    resolution: {integrity: sha512-TBacB69YXSYYFFet9ISgNC2jsPExFPIWngmzeLHAWrp/xvKWfYIyhh0nyvDLryi8WP6KoexkXO9kRF6Y9oBUTA==}
     engines: {node: '>=22.0.0'}
 
   '@supabase/cli-darwin-arm64@2.111.0':
@@ -3348,19 +3348,19 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@supabase/functions-js@2.112.0':
-    resolution: {integrity: sha512-2DdaEZs0vq86orMIZBO+eM5w5/UxZb1EZyg2JraBKS4W9BzfFO+fOFD6YStmZ7iAOWvxNTGPjPNItsofpGgTCA==}
+  '@supabase/functions-js@2.112.1':
+    resolution: {integrity: sha512-t5L8qBpRC2ZswHD4A7DNL/sNpFLEeflaYaZVe5dCWvAD82pm2WOysU8EKgiJub3doxo/QU8RuDvYFlRyRk8ghw==}
     engines: {node: '>=22.0.0'}
 
   '@supabase/phoenix@0.4.5':
     resolution: {integrity: sha512-aAn9H9ovVyeApKy11OWOrrOGq8DV68yWeH4ud2lN9fzn4aO8Zb5GLL9m1pUg9nLqIcT+ZDfAcsZe0E/nqdv2lw==}
 
-  '@supabase/postgrest-js@2.112.0':
-    resolution: {integrity: sha512-4HKCVq32Jlk/wS8Ud8QgaAuQ4u6w1hZfw/gS5IcIN7wYddElMj4kfiCZpHMPfncomMnYzAKBUhwBZPpRcTH2Yw==}
+  '@supabase/postgrest-js@2.112.1':
+    resolution: {integrity: sha512-oX42JgoVT8bP73/XYE1+kQdj6/Ql1j6lD6zpCoL8aq1B0uhZsz4FSoT+cBJB3pi4aPZEA0Ntkid6w7uzuAH5jQ==}
     engines: {node: '>=22.0.0'}
 
-  '@supabase/realtime-js@2.112.0':
-    resolution: {integrity: sha512-McFFP+ivFDMTaCEh8JDpG+sPEmv5IjKvrP0uTH3Lbsriai4KbxB8ycY8TqPQnbjhOVjEifQm1q0y2tL1CUw9Zg==}
+  '@supabase/realtime-js@2.112.1':
+    resolution: {integrity: sha512-jp5TgXXTb1m2rqF6kiirOhVnvAoFHrjj7ZHOzWRa+SL+Am0BbcMcQr6FyHkJJS1ngw0TAL2DeymfGgKkSanN0A==}
     engines: {node: '>=22.0.0'}
 
   '@supabase/sentry-js-integration@0.3.0':
@@ -3373,12 +3373,12 @@ packages:
     peerDependencies:
       '@supabase/supabase-js': ^2.111.0
 
-  '@supabase/storage-js@2.112.0':
-    resolution: {integrity: sha512-X44Bl045X/e5e2tJqWsY+JmQvgtm04BJuijiWprIWYLn0mDvGnu8hLdzPOPcTVji7wlqbt2ZUHttsv+rGKQYXw==}
+  '@supabase/storage-js@2.112.1':
+    resolution: {integrity: sha512-FHKAQTw4KUV9nF3bnOLvZvjB3bkmtl6ltavlJfdJKdabvqMtQQ2iyBliFyp2dSHMCn9qA8c6WoZoRkgV5nxAmg==}
     engines: {node: '>=22.0.0'}
 
-  '@supabase/supabase-js@2.112.0':
-    resolution: {integrity: sha512-dHVOgog58GOagtrZuPxJYg/R45ZV2U0qqgXffH+lMlt1OS+267Pw4g7bw3iXCGxN85OufiE0nI1baxDXlgEyfQ==}
+  '@supabase/supabase-js@2.112.1':
+    resolution: {integrity: sha512-KooEPqALZNkQCr1PBhbEImnPm6Ko6TKWiOrj3UxQki74g2KWlXGleQgEudUwRAKZs5U1ilSssO0TpxgVOspihQ==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0'
@@ -8345,7 +8345,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@supabase/auth-js@2.112.0':
+  '@supabase/auth-js@2.112.1':
     dependencies:
       tslib: 2.8.1
 
@@ -8373,42 +8373,42 @@ snapshots:
   '@supabase/cli-windows-x64@2.111.0':
     optional: true
 
-  '@supabase/functions-js@2.112.0':
+  '@supabase/functions-js@2.112.1':
     dependencies:
       tslib: 2.8.1
 
   '@supabase/phoenix@0.4.5': {}
 
-  '@supabase/postgrest-js@2.112.0':
+  '@supabase/postgrest-js@2.112.1':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/realtime-js@2.112.0':
+  '@supabase/realtime-js@2.112.1':
     dependencies:
       '@supabase/phoenix': 0.4.5
       tslib: 2.8.1
 
-  '@supabase/sentry-js-integration@0.3.0(@supabase/supabase-js@2.112.0(@opentelemetry/api@1.9.1))':
+  '@supabase/sentry-js-integration@0.3.0(@supabase/supabase-js@2.112.1(@opentelemetry/api@1.9.1))':
     dependencies:
-      '@supabase/supabase-js': 2.112.0(@opentelemetry/api@1.9.1)
+      '@supabase/supabase-js': 2.112.1(@opentelemetry/api@1.9.1)
 
-  '@supabase/ssr@0.12.4(@supabase/supabase-js@2.112.0(@opentelemetry/api@1.9.1))':
+  '@supabase/ssr@0.12.4(@supabase/supabase-js@2.112.1(@opentelemetry/api@1.9.1))':
     dependencies:
-      '@supabase/supabase-js': 2.112.0(@opentelemetry/api@1.9.1)
+      '@supabase/supabase-js': 2.112.1(@opentelemetry/api@1.9.1)
       cookie: 1.1.1
 
-  '@supabase/storage-js@2.112.0':
+  '@supabase/storage-js@2.112.1':
     dependencies:
       iceberg-js: 0.8.1
       tslib: 2.8.1
 
-  '@supabase/supabase-js@2.112.0(@opentelemetry/api@1.9.1)':
+  '@supabase/supabase-js@2.112.1(@opentelemetry/api@1.9.1)':
     dependencies:
-      '@supabase/auth-js': 2.112.0
-      '@supabase/functions-js': 2.112.0
-      '@supabase/postgrest-js': 2.112.0
-      '@supabase/realtime-js': 2.112.0
-      '@supabase/storage-js': 2.112.0
+      '@supabase/auth-js': 2.112.1
+      '@supabase/functions-js': 2.112.1
+      '@supabase/postgrest-js': 2.112.1
+      '@supabase/realtime-js': 2.112.1
+      '@supabase/storage-js': 2.112.1
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
 
