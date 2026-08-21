@@ -30,7 +30,7 @@
     "react-dom": "19.2.8",
     "react-intersection-observer": "11.0.0",
     "react-markdown": "10.1.0",
-    "resend": "6.18.1",
+    "resend": "6.21.0",
     "tailwind-merge": "3.6.0",
     "tailwindcss": "4.3.3",
     "temporal-polyfill": "1.0.3",

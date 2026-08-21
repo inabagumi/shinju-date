@@ -474,8 +474,8 @@ importers:
         specifier: 10.1.0
         version: 10.1.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1)
       resend:
-        specifier: 6.18.1
-        version: 6.18.1
+        specifier: 6.21.0
+        version: 6.21.0
       tailwind-merge:
         specifier: 3.6.0
         version: 3.6.0
@@ -5732,8 +5732,8 @@ packages:
   reselect@5.2.0:
     resolution: {integrity: sha512-AgZ3UOZm3YndfrJ4OYjgrT7bmCm/1iqkjvEfH/oYjzh6PD2qw4QuT3jjnXIrpdt4MTpMXclMT3lXbmRY+XRakw==}
 
-  resend@6.18.1:
-    resolution: {integrity: sha512-XN8XIaDdKF+ziSQ3K23ndUcyhP7U3ze2gky6SPgYkuAOq54mH4Wdhwm7QylEQ3zlz0NzdX7/l1AgmJUZbdPI/Q==}
+  resend@6.21.0:
+    resolution: {integrity: sha512-XT1eP2iA8rZ51NSO2CJlL1ZE2baBoPpOGMgz2p0o2uluz/YU3XfItpGymXDlL0Sp2Mc+y9+Xxsfdccfi4f2FzQ==}
     engines: {node: '>=20'}
     peerDependencies:
       '@react-email/render': '*'
@@ -10982,7 +10982,7 @@ snapshots:
 
   reselect@5.2.0: {}
 
-  resend@6.18.1:
+  resend@6.21.0:
     dependencies:
       postal-mime: 2.7.5
       standardwebhooks: 1.0.0
