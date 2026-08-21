@@ -44,7 +44,7 @@
     "@shinju-date/msw-handlers": "workspace:*",
     "@tailwindcss/postcss": "4.3.3",
     "@tailwindcss/typography": "0.5.20",
-    "@testing-library/jest-dom": "7.0.0",
+    "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.2",
     "@tsconfig/next": "2.0.6",
     "@tsconfig/strictest": "2.0.8",
