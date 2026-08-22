@@ -6,7 +6,7 @@
   },
   "description": "Twitch scraper package for SHINJU DATE",
   "devDependencies": {
-    "@tsconfig/node20": "20.1.9",
+    "@tsconfig/node20": "20.1.10",
     "@tsconfig/strictest": "2.0.8",
     "@types/node": "24.13.3",
     "tsup": "8.5.1",
