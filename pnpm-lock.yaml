@@ -575,8 +575,8 @@ importers:
         version: 8.0.0
     devDependencies:
       '@tsconfig/node20':
-        specifier: 20.1.9
-        version: 20.1.9
+        specifier: 20.1.10
+        version: 20.1.10
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -596,8 +596,8 @@ importers:
   packages/constants:
     devDependencies:
       '@tsconfig/node20':
-        specifier: 20.1.9
-        version: 20.1.9
+        specifier: 20.1.10
+        version: 20.1.10
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -611,8 +611,8 @@ importers:
   packages/database:
     devDependencies:
       '@tsconfig/node20':
-        specifier: 20.1.9
-        version: 20.1.9
+        specifier: 20.1.10
+        version: 20.1.10
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -654,8 +654,8 @@ importers:
         version: link:../twitch-api-client
     devDependencies:
       '@tsconfig/node20':
-        specifier: 20.1.9
-        version: 20.1.9
+        specifier: 20.1.10
+        version: 20.1.10
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -678,8 +678,8 @@ importers:
         specifier: 10.70.0
         version: 10.70.0(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.10.0(@opentelemetry/api@1.9.1))(next@16.3.0(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@24.13.3)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(supports-color@8.1.1)(webpack@5.109.2(esbuild@0.28.1)(lightningcss@1.33.0)(postcss@8.5.26))
       '@tsconfig/node20':
-        specifier: 20.1.9
-        version: 20.1.9
+        specifier: 20.1.10
+        version: 20.1.10
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -715,8 +715,8 @@ importers:
         specifier: 10.6.0
         version: 10.6.0
       '@tsconfig/node20':
-        specifier: 20.1.9
-        version: 20.1.9
+        specifier: 20.1.10
+        version: 20.1.10
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -740,8 +740,8 @@ importers:
         version: 8.0.0
     devDependencies:
       '@tsconfig/node20':
-        specifier: 20.1.9
-        version: 20.1.9
+        specifier: 20.1.10
+        version: 20.1.10
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -761,8 +761,8 @@ importers:
         version: 1.0.4
     devDependencies:
       '@tsconfig/node20':
-        specifier: 20.1.9
-        version: 20.1.9
+        specifier: 20.1.10
+        version: 20.1.10
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -789,8 +789,8 @@ importers:
         version: 1.0.4
     devDependencies:
       '@tsconfig/node20':
-        specifier: 20.1.9
-        version: 20.1.9
+        specifier: 20.1.10
+        version: 20.1.10
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -817,8 +817,8 @@ importers:
         version: 9.3.3
     devDependencies:
       '@tsconfig/node20':
-        specifier: 20.1.9
-        version: 20.1.9
+        specifier: 20.1.10
+        version: 20.1.10
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -890,8 +890,8 @@ importers:
         specifier: 14.6.5
         version: 14.6.5(@testing-library/dom@10.4.1)
       '@tsconfig/node20':
-        specifier: 20.1.9
-        version: 20.1.9
+        specifier: 20.1.10
+        version: 20.1.10
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -954,8 +954,8 @@ importers:
         version: link:../logger
     devDependencies:
       '@tsconfig/node20':
-        specifier: 20.1.9
-        version: 20.1.9
+        specifier: 20.1.10
+        version: 20.1.10
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -979,8 +979,8 @@ importers:
         version: 4.4.3
     devDependencies:
       '@tsconfig/node20':
-        specifier: 20.1.9
-        version: 20.1.9
+        specifier: 20.1.10
+        version: 20.1.10
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -1013,8 +1013,8 @@ importers:
         specifier: workspace:*
         version: link:../helpers
       '@tsconfig/node20':
-        specifier: 20.1.9
-        version: 20.1.9
+        specifier: 20.1.10
+        version: 20.1.10
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -3553,8 +3553,8 @@ packages:
   '@tsconfig/next@2.0.6':
     resolution: {integrity: sha512-C6eZoNyAMKv2UvzDZqcp8zXPviu6W4Ev1KUbqfmaMSZuq+tmbtTWaqxTif/yaui8WCEcRlQrHC8q9tNzBclHOw==}
 
-  '@tsconfig/node20@20.1.9':
-    resolution: {integrity: sha512-IjlTv1RsvnPtUcjTqtVsZExKVq+KQx4g5pCP5tI7rAs6Xesl2qFwSz/tPDBC4JajkL/MlezBu3gPUwqRHl+RIg==}
+  '@tsconfig/node20@20.1.10':
+    resolution: {integrity: sha512-5OZgdnxbFuvwm05iVwPXMU5/7iPuVDDZzAnxPDLj+kjN7fwQZSSVgHQhKTNkBPOO6Qef2D5MxPAoPLCGqE2VuQ==}
 
   '@tsconfig/strictest@2.0.8':
     resolution: {integrity: sha512-XnQ7vNz5HRN0r88GYf1J9JJjqtZPiHt2woGJOo2dYqyHGGcd6OLGqSlBB6p1j9mpzja6Oe5BoPqWmeDx6X9rLw==}
@@ -8543,7 +8543,7 @@ snapshots:
 
   '@tsconfig/next@2.0.6': {}
 
-  '@tsconfig/node20@20.1.9': {}
+  '@tsconfig/node20@20.1.10': {}
 
   '@tsconfig/strictest@2.0.8': {}
 
