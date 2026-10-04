@@ -90,8 +90,8 @@ importers:
         specifier: 0.3.0
         version: 0.3.0(@supabase/supabase-js@2.112.3(@opentelemetry/api@1.9.1))
       '@supabase/ssr':
-        specifier: 0.12.4
-        version: 0.12.4(@supabase/supabase-js@2.112.3(@opentelemetry/api@1.9.1))
+        specifier: 0.12.7
+        version: 0.12.7(@supabase/supabase-js@2.112.3(@opentelemetry/api@1.9.1))
       '@supabase/supabase-js':
         specifier: 2.112.3
         version: 2.112.3(@opentelemetry/api@1.9.1)
@@ -3365,10 +3365,10 @@ packages:
     peerDependencies:
       '@supabase/supabase-js': 2.x
 
-  '@supabase/ssr@0.12.4':
-    resolution: {integrity: sha512-xHzcgI8cC1TpBKSwJcR5Yd8CCwfIq0SBc5yb4yz/YFw5tbCrEQ0QT3a+2jymCxHgQWLfzwN93HZ6eRbcoMkOlA==}
+  '@supabase/ssr@0.12.7':
+    resolution: {integrity: sha512-wiBtEie1KkRJi9RrZWY3R2imRhX1JY7qMyUCH2z9AUk15gQebNEplM+urbCKamdxaTJLXUU6LlpkJsaxhojCEg==}
     peerDependencies:
-      '@supabase/supabase-js': ^2.111.0
+      '@supabase/supabase-js': ^2.114.0
 
   '@supabase/storage-js@2.112.3':
     resolution: {integrity: sha512-oSK61tzlUvg+BWPqpKQCu9qqonsO26btaoAR9D6Gest2aj7xUqToj9rKyaoYOJczkhg9BjqA1REbYy9tPI4bDA==}
@@ -8373,7 +8373,7 @@ snapshots:
     dependencies:
       '@supabase/supabase-js': 2.112.3(@opentelemetry/api@1.9.1)
 
-  '@supabase/ssr@0.12.4(@supabase/supabase-js@2.112.3(@opentelemetry/api@1.9.1))':
+  '@supabase/ssr@0.12.7(@supabase/supabase-js@2.112.3(@opentelemetry/api@1.9.1))':
     dependencies:
       '@supabase/supabase-js': 2.112.3(@opentelemetry/api@1.9.1)
       cookie: 1.1.1
