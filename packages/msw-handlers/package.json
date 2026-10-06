@@ -6,7 +6,7 @@
     "@shinju-date/database": "workspace:*",
     "msw": "2.15.0",
     "temporal-polyfill": "1.0.5",
-    "zod": "4.4.3"
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@faker-js/faker": "10.6.0",
