@@ -2,7 +2,7 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@mdx-js/react": "3.1.1",
-    "@radix-ui/react-dialog": "1.1.23",
+    "@radix-ui/react-dialog": "1.2.0",
     "@sentry/nextjs": "10.76.0",
     "@sentry/profiling-node": "10.76.0",
     "@shinju-date/constants": "workspace:*",
