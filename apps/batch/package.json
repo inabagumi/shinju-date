@@ -21,7 +21,7 @@
     "@upstash/redis": "1.39.0",
     "mime": "4.1.0",
     "nanoid": "6.0.2",
-    "next": "16.3.8",
+    "next": "16.4.0",
     "p-queue": "9.3.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
