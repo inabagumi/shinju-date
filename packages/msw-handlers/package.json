@@ -12,7 +12,7 @@
     "@faker-js/faker": "10.6.0",
     "@tsconfig/node20": "20.1.9",
     "@tsconfig/strictest": "2.0.8",
-    "@types/node": "24.13.3",
+    "@types/node": "24.19.1",
     "tsup": "8.5.1",
     "typescript": "6.0.3",
     "vitest": "4.1.11"
