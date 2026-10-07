@@ -50,7 +50,7 @@
     "@tsconfig/strictest": "2.0.8",
     "@types/dedent": "0.7.2",
     "@types/mdx": "2.0.14",
-    "@types/node": "24.13.3",
+    "@types/node": "24.19.1",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
     "@vitejs/plugin-react": "6.1.2",
