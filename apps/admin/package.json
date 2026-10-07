@@ -39,7 +39,7 @@
   },
   "description": "Content management admin dashboard for SHINJU DATE",
   "devDependencies": {
-    "@playwright/test": "1.62.1",
+    "@playwright/test": "1.63.0",
     "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
     "@tailwindcss/postcss": "4.3.3",
