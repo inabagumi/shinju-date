@@ -20,7 +20,7 @@
     "@upstash/ratelimit": "2.2.0",
     "@upstash/redis": "1.39.0",
     "mime": "4.1.0",
-    "nanoid": "6.0.1",
+    "nanoid": "6.0.2",
     "next": "16.3.8",
     "p-queue": "9.3.3",
     "react": "19.2.8",
