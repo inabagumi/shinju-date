@@ -56,7 +56,7 @@
     "@vitejs/plugin-react": "6.1.2",
     "babel-plugin-react-compiler": "1.0.0",
     "jsdom": "30.1.2",
-    "msw": "2.15.0",
+    "msw": "3.0.2",
     "postcss": "8.5.29",
     "postcss-load-config": "6.0.1",
     "rehype-external-links": "3.0.0",
