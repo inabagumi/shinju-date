@@ -26,7 +26,7 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "sharp": "0.35.5",
-    "temporal-polyfill": "1.0.5",
+    "temporal-polyfill": "1.0.6",
     "zod": "4.6.5"
   },
   "description": "Scheduled batch processing jobs for SHINJU DATE",

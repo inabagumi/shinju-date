@@ -126,8 +126,8 @@ importers:
         specifier: 4.3.3
         version: 4.3.3
       temporal-polyfill:
-        specifier: 1.0.5
-        version: 1.0.5
+        specifier: 1.0.6
+        version: 1.0.6
       zod:
         specifier: 4.6.5
         version: 4.6.5
@@ -277,8 +277,8 @@ importers:
         specifier: 0.35.5
         version: 0.35.5(@types/node@24.19.1)
       temporal-polyfill:
-        specifier: 1.0.5
-        version: 1.0.5
+        specifier: 1.0.6
+        version: 1.0.6
       zod:
         specifier: 4.6.5
         version: 4.6.5
@@ -483,8 +483,8 @@ importers:
         specifier: 4.3.3
         version: 4.3.3
       temporal-polyfill:
-        specifier: 1.0.5
-        version: 1.0.5
+        specifier: 1.0.6
+        version: 1.0.6
       ufo:
         specifier: 1.6.4
         version: 1.6.4
@@ -705,8 +705,8 @@ importers:
         specifier: 2.15.0
         version: 2.15.0(@types/node@24.19.1)(typescript@6.0.3)
       temporal-polyfill:
-        specifier: 1.0.5
-        version: 1.0.5
+        specifier: 1.0.6
+        version: 1.0.6
       zod:
         specifier: 4.6.5
         version: 4.6.5
@@ -757,8 +757,8 @@ importers:
   packages/temporal-fns:
     dependencies:
       temporal-polyfill:
-        specifier: 1.0.5
-        version: 1.0.5
+        specifier: 1.0.6
+        version: 1.0.6
     devDependencies:
       '@tsconfig/node20':
         specifier: 20.1.9
@@ -785,8 +785,8 @@ importers:
         specifier: 8.2.0
         version: 8.2.0
       temporal-polyfill:
-        specifier: 1.0.5
-        version: 1.0.5
+        specifier: 1.0.6
+        version: 1.0.6
     devDependencies:
       '@tsconfig/node20':
         specifier: 20.1.9
@@ -1003,8 +1003,8 @@ importers:
         specifier: 9.3.3
         version: 9.3.3
       temporal-polyfill:
-        specifier: 1.0.5
-        version: 1.0.5
+        specifier: 1.0.6
+        version: 1.0.6
     devDependencies:
       '@shinju-date/database':
         specifier: workspace:*
@@ -5734,8 +5734,8 @@ packages:
     resolution: {integrity: sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A==}
     engines: {node: '>=6'}
 
-  temporal-polyfill@1.0.5:
-    resolution: {integrity: sha512-+H/mmY74i6wXCMcjIhGuSnODcyZnc4eois2myhOyX0UqRAKNXQY5m9iB1en5jQ/n4SXtjLXo1ElBI5bmn8tZwQ==}
+  temporal-polyfill@1.0.6:
+    resolution: {integrity: sha512-tYyEry1HLGUDbm2356W3iYD0OZdo7rlP7h98Zr/EnjqLZQwTAfcBDUvJnJbfA15v/vQad57hJZScG5O0W2oKEA==}
 
   temporal-spec@1.0.1:
     resolution: {integrity: sha512-wxVoanmDeavXie1vu2JaQ3WIc3JZnWAOYFBsJyATaVsXsycKYUflGsyBmrRSnoCpZJpwPyr38VpgSUlQ8CbFxg==}
@@ -10767,7 +10767,7 @@ snapshots:
 
   tapable@2.3.3: {}
 
-  temporal-polyfill@1.0.5:
+  temporal-polyfill@1.0.6:
     dependencies:
       temporal-spec: 1.0.1
       temporal-utils: 1.0.3
