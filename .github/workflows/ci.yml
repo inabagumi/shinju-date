@@ -10,7 +10,7 @@ jobs:
   # Install dependencies job (shared cache for all Node.js jobs)
   install:
     name: Install Dependencies
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     env:
@@ -31,7 +31,7 @@ jobs:
   # Matrix job for all unit tests (Node.js packages)
   test:
     name: Test (${{ matrix.package.name }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: install
     permissions:
       contents: read
@@ -90,7 +90,7 @@ jobs:
   # Lint job for Node.js
   lint:
     name: Lint
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: install
     permissions:
       contents: read
@@ -117,7 +117,7 @@ jobs:
   # Build job for Node.js
   build:
     name: Build (Node.js)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: install
     permissions:
       contents: read
@@ -142,7 +142,7 @@ jobs:
   # E2E tests (including UI browser tests)
   e2e:
     name: E2E Tests (${{ matrix.package }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [test, build]
     permissions:
       contents: read
@@ -226,7 +226,7 @@ jobs:
   # Summary job - this is the only required status check
   ci-summary:
     name: CI Summary
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [lint, e2e]
     if: always()
     steps:
