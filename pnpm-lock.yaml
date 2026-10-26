@@ -265,8 +265,8 @@ importers:
         specifier: 16.4.3
         version: 16.4.3(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@24.19.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       p-queue:
-        specifier: 9.3.3
-        version: 9.3.3
+        specifier: 9.3.5
+        version: 9.3.5
       react:
         specifier: 19.3.0
         version: 19.3.0
@@ -813,8 +813,8 @@ importers:
         specifier: workspace:*
         version: link:../twitch-api-client
       p-queue:
-        specifier: 9.3.3
-        version: 9.3.3
+        specifier: 9.3.5
+        version: 9.3.5
     devDependencies:
       '@tsconfig/node20':
         specifier: 20.1.9
@@ -1000,8 +1000,8 @@ importers:
         specifier: 40.0.2
         version: 40.0.2(supports-color@8.1.1)
       p-queue:
-        specifier: 9.3.3
-        version: 9.3.3
+        specifier: 9.3.5
+        version: 9.3.5
       temporal-polyfill:
         specifier: 1.0.6
         version: 1.0.6
@@ -5256,8 +5256,8 @@ packages:
     resolution: {integrity: sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw==}
     engines: {node: '>=10'}
 
-  p-queue@9.3.3:
-    resolution: {integrity: sha512-NXAOdnEe5FsZJfT4oK84lE1Y5cFFdWlRuOo5tww8DyNMxyRXwn39fIkUtNLKppcPC+UYU/bXujNCUGDv01y7CA==}
+  p-queue@9.3.5:
+    resolution: {integrity: sha512-Lki/zhXFVmDhesBUn/yHRLW9Bte7mE7xoFHzTR8sIomV7a2z+LxYAPkGvdfidNiu4fKSfjtawixxSHcZci5QcQ==}
     engines: {node: '>=20'}
 
   p-retry@8.0.1:
@@ -10217,7 +10217,7 @@ snapshots:
     dependencies:
       p-limit: 3.1.0
 
-  p-queue@9.3.3:
+  p-queue@9.3.5:
     dependencies:
       eventemitter3: 5.0.4
       p-timeout: 7.0.1

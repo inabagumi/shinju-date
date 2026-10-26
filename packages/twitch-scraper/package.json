@@ -2,7 +2,7 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@shinju-date/twitch-api-client": "workspace:*",
-    "p-queue": "9.3.3"
+    "p-queue": "9.3.5"
   },
   "description": "Twitch scraper package for SHINJU DATE",
   "devDependencies": {
