@@ -129,8 +129,8 @@ importers:
         specifier: 1.0.6
         version: 1.0.6
       zod:
-        specifier: 4.6.6
-        version: 4.6.6
+        specifier: 4.6.7
+        version: 4.6.7
     devDependencies:
       '@playwright/test':
         specifier: 1.63.0
@@ -280,8 +280,8 @@ importers:
         specifier: 1.0.6
         version: 1.0.6
       zod:
-        specifier: 4.6.6
-        version: 4.6.6
+        specifier: 4.6.7
+        version: 4.6.7
     devDependencies:
       '@playwright/test':
         specifier: 1.63.0
@@ -489,8 +489,8 @@ importers:
         specifier: 1.6.4
         version: 1.6.4
       zod:
-        specifier: 4.6.6
-        version: 4.6.6
+        specifier: 4.6.7
+        version: 4.6.7
     devDependencies:
       '@mdx-js/loader':
         specifier: 3.1.1
@@ -708,8 +708,8 @@ importers:
         specifier: 1.0.6
         version: 1.0.6
       zod:
-        specifier: 4.6.6
-        version: 4.6.6
+        specifier: 4.6.7
+        version: 4.6.7
     devDependencies:
       '@faker-js/faker':
         specifier: 10.6.0
@@ -975,8 +975,8 @@ importers:
         specifier: 40.0.2
         version: 40.0.2(supports-color@8.1.1)
       zod:
-        specifier: 4.6.6
-        version: 4.6.6
+        specifier: 4.6.7
+        version: 4.6.7
     devDependencies:
       '@tsconfig/node20':
         specifier: 20.1.9
@@ -6168,8 +6168,8 @@ packages:
   yup@1.7.1:
     resolution: {integrity: sha512-GKHFX2nXul2/4Dtfxhozv701jLQHdf6J34YDh2cEkpqoo8le5Mg6/LrdseVLrFarmFygZTlfIhHx/QKfb/QWXw==}
 
-  zod@4.6.6:
-    resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
+  zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -11219,6 +11219,6 @@ snapshots:
       toposort: 2.0.2
       type-fest: 2.19.0
 
-  zod@4.6.6: {}
+  zod@4.6.7: {}
 
   zwitch@2.0.4: {}
