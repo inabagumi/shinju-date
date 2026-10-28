@@ -6,7 +6,7 @@
     "@tsconfig/node20": "20.1.9",
     "@tsconfig/strictest": "2.0.8",
     "next": "16.4.3",
-    "tsup": "8.5.1",
+    "tsup": "9.0.0",
     "typescript": "6.0.3"
   },
   "homepage": "https://shinju.date/",
