@@ -9,7 +9,7 @@
     }
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.15",
+    "@biomejs/biome": "2.6.4",
     "supabase": "2.122.0",
     "turbo": "2.11.10",
     "typescript": "6.0.3"
