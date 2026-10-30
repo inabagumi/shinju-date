@@ -520,8 +520,8 @@ importers:
         specifier: 2.0.8
         version: 2.0.8
       '@types/dedent':
-        specifier: 0.7.2
-        version: 0.7.2
+        specifier: 1.7.2
+        version: 1.7.2
       '@types/mdx':
         specifier: 2.0.14
         version: 2.0.14
@@ -3321,8 +3321,9 @@ packages:
   '@types/debug@4.1.13':
     resolution: {integrity: sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw==}
 
-  '@types/dedent@0.7.2':
-    resolution: {integrity: sha512-kRiitIeUg1mPV9yH4VUJ/1uk2XjyANfeL8/7rH1tsjvHeO9PJLBHJIYsFWmAvmGj5u8rj+1TZx7PZzW2qLw3Lw==}
+  '@types/dedent@1.7.2':
+    resolution: {integrity: sha512-iSPTrLlAygLy7ivCyumME9eHkXb/yFZh4BN8nnOQrhixed8aUGgwNESEwe+zTg9wwBS1AMoOrk17YSy5kIN0hw==}
+    deprecated: This is a stub types definition. dedent provides its own type definitions, so you do not need this installed.
 
   '@types/deep-eql@4.0.2':
     resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
@@ -7990,7 +7991,11 @@ snapshots:
     dependencies:
       '@types/ms': 2.1.0
 
-  '@types/dedent@0.7.2': {}
+  '@types/dedent@1.7.2':
+    dependencies:
+      dedent: 1.7.2
+    transitivePeerDependencies:
+      - babel-plugin-macros
 
   '@types/deep-eql@4.0.2': {}
 
