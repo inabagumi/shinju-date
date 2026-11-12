@@ -62,7 +62,7 @@
     "rehype-external-links": "3.0.0",
     "remark-gfm": "4.0.1",
     "typescript": "6.0.3",
-    "vite": "8.3.7",
+    "vite": "8.3.8",
     "vitest": "5.1.0"
   },
   "homepage": "https://shinju.date/",
