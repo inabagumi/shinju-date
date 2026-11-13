@@ -17,7 +17,7 @@
     "@shinju-date/youtube-scraper": "workspace:*",
     "@supabase/sentry-js-integration": "0.3.0",
     "@supabase/supabase-js": "2.119.0",
-    "@upstash/ratelimit": "2.2.0",
+    "@upstash/ratelimit": "2.2.1",
     "@upstash/redis": "1.41.0",
     "mime": "4.1.2",
     "nanoid": "6.0.2",
