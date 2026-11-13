@@ -3,7 +3,7 @@
   "description": "Shared logger package for SHINJU DATE applications",
   "devDependencies": {
     "@sentry/nextjs": "10.78.0",
-    "@tsconfig/node20": "20.1.10",
+    "@tsconfig/node20": "20.1.11",
     "@tsconfig/strictest": "2.0.8",
     "tsup": "9.0.0",
     "typescript": "6.0.3",
