@@ -4,7 +4,7 @@
   "description": "",
   "devDependencies": {
     "@tsconfig/node20": "20.1.11",
-    "@tsconfig/strictest": "2.0.8",
+    "@tsconfig/strictest": "2.0.9",
     "next": "16.4.6",
     "tsup": "9.0.0",
     "typescript": "6.0.3"

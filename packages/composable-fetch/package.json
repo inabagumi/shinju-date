@@ -6,7 +6,7 @@
   "description": "Composable fetch middleware for HTTP caching, retries, and extensibility",
   "devDependencies": {
     "@tsconfig/node20": "20.1.11",
-    "@tsconfig/strictest": "2.0.8",
+    "@tsconfig/strictest": "2.0.9",
     "@types/node": "26.6.6",
     "tsup": "9.0.0",
     "typescript": "6.0.3",
