@@ -154,8 +154,8 @@ importers:
         specifier: 16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@tsconfig/next':
-        specifier: 2.0.6
-        version: 2.0.6
+        specifier: 2.0.7
+        version: 2.0.7
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -293,8 +293,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/msw-handlers
       '@tsconfig/next':
-        specifier: 2.0.6
-        version: 2.0.6
+        specifier: 2.0.7
+        version: 2.0.7
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -354,8 +354,8 @@ importers:
         specifier: 4.3.5
         version: 4.3.5
       '@tsconfig/next':
-        specifier: 2.0.6
-        version: 2.0.6
+        specifier: 2.0.7
+        version: 2.0.7
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -514,8 +514,8 @@ importers:
         specifier: 0.5.20
         version: 0.5.20(tailwindcss@4.3.5)
       '@tsconfig/next':
-        specifier: 2.0.6
-        version: 2.0.6
+        specifier: 2.0.7
+        version: 2.0.7
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
@@ -3154,8 +3154,8 @@ packages:
       '@tmcp/auth':
         optional: true
 
-  '@tsconfig/next@2.0.6':
-    resolution: {integrity: sha512-C6eZoNyAMKv2UvzDZqcp8zXPviu6W4Ev1KUbqfmaMSZuq+tmbtTWaqxTif/yaui8WCEcRlQrHC8q9tNzBclHOw==}
+  '@tsconfig/next@2.0.7':
+    resolution: {integrity: sha512-psWzmDIrqPirnNhZnOAG21yEdzaVF6v30xTVeDUR7VKg88taKsG9QXAyFFUUE3Xd79ySQ3Q37ps7ggz6hxc+3Q==}
 
   '@tsconfig/node20@20.1.10':
     resolution: {integrity: sha512-5OZgdnxbFuvwm05iVwPXMU5/7iPuVDDZzAnxPDLj+kjN7fwQZSSVgHQhKTNkBPOO6Qef2D5MxPAoPLCGqE2VuQ==}
@@ -7673,7 +7673,7 @@ snapshots:
       esm-env: 1.2.2
       tmcp: 1.20.1(typescript@6.0.3)
 
-  '@tsconfig/next@2.0.6': {}
+  '@tsconfig/next@2.0.7': {}
 
   '@tsconfig/node20@20.1.10': {}
 
