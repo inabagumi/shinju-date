@@ -3,7 +3,7 @@ import type { ComponentPropsWithRef } from 'react'
 import { twMerge } from '../tw-merge'
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-control border px-2 py-0.5 text-caption font-semibold',
+  'inline-flex items-center rounded-control border px-2 py-0.5 text-caption font-semibold whitespace-nowrap',
   {
     defaultVariants: {
       variant: 'info',

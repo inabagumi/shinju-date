@@ -4,6 +4,7 @@ import getTerms from './_lib/get-terms'
 
 async function getTermsData() {
   'use cache: private'
+
   cacheLife('minutes')
 
   return getTerms()

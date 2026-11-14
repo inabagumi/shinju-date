@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 
 async function VideoFiltersData() {
   'use cache: private'
+
   cacheLife('minutes')
 
   const talents = await getTalents()
@@ -36,6 +37,7 @@ async function VideoTableData({
   searchParams: PageProps<'/'>['searchParams']
 }) {
   'use cache: private'
+
   cacheLife('minutes')
 
   const rawParams = await searchParams
@@ -107,6 +109,7 @@ async function VideoCountData({
   searchParams: PageProps<'/'>['searchParams']
 }) {
   'use cache: private'
+
   cacheLife('minutes')
 
   const rawParams = await searchParams
