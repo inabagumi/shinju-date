@@ -1,6 +1,6 @@
 import { formatDateTime } from '@shinju-date/temporal-fns'
 import { cacheLife } from 'next/cache'
-import { getLastVideoSync } from '../_lib/get-last-sync'
+import { getLastVideoSync } from '@/lib/get-last-sync'
 
 export function SyncLabel({ children }: { children: React.ReactNode }) {
   return <span className="text-sm text-slate-300">最終同期: {children}</span>
