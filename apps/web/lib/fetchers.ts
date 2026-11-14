@@ -17,11 +17,22 @@ const DEFAULT_SEARCH_SELECT = `
   thumbnail:thumbnails (blur_data_url, height, id, path, width),
   title,
   video_kind,
-  youtube_video:youtube_videos (youtube_video_id),
+  youtube_video:youtube_videos (
+    youtube_video_id,
+    youtube_channel:youtube_channels (
+      name,
+      youtube_handle,
+      profile_image:profile_images (blur_data_url, id)
+    )
+  ),
   twitch_video:twitch_videos (
     twitch_video_id,
     type,
-    twitch_user:twitch_users (twitch_login_name)
+    twitch_user:twitch_users (
+      name,
+      twitch_login_name,
+      profile_image:profile_images (blur_data_url, id)
+    )
   )
 `
 
@@ -31,6 +42,25 @@ export type Thumbnail = Pick<
   Tables<'thumbnails'>,
   'blur_data_url' | 'height' | 'id' | 'path' | 'width'
 >
+
+/**
+ * Icon of a YouTube channel or Twitch user, served from
+ * `/images/profile-images/[id]`.
+ */
+export type ProfileImage = Pick<
+  Tables<'profile_images'>,
+  'blur_data_url' | 'id'
+>
+
+export interface YouTubeChannel
+  extends Pick<Tables<'youtube_channels'>, 'name' | 'youtube_handle'> {
+  profile_image: ProfileImage | null
+}
+
+export interface TwitchUser
+  extends Pick<Tables<'twitch_users'>, 'name' | 'twitch_login_name'> {
+  profile_image: ProfileImage | null
+}
 
 export type Video = Pick<
   Tables<'videos'>,
@@ -44,11 +74,14 @@ export type Video = Pick<
 > & {
   talent: Talent
   thumbnail: Thumbnail | null
-  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
+  youtube_video: {
+    youtube_video_id: string
+    youtube_channel: YouTubeChannel | null
+  } | null
   twitch_video: {
     twitch_video_id: string
     type: Tables<'twitch_videos'>['type']
-    twitch_user: Pick<Tables<'twitch_users'>, 'twitch_login_name'> | null
+    twitch_user: TwitchUser | null
   } | null
 }
 
