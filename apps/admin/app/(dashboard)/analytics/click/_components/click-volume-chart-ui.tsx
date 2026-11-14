@@ -9,6 +9,10 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import {
+  CHART_COLORS,
+  CHART_TOOLTIP_CONTENT_STYLE,
+} from '../../_lib/chart-colors'
 import { formatDateLabel } from '../../_lib/format-date'
 
 interface ClickVolumeChartProps {
@@ -41,39 +45,36 @@ export default function ClickVolumeChartUI({
     <div className="h-64 w-full">
       <ResponsiveContainer height="100%" width="100%">
         <BarChart data={data} onClick={handleBarClick}>
-          <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
+          <CartesianGrid stroke={CHART_COLORS.grid} strokeDasharray="3 3" />
           <XAxis
+            axisLine={{ stroke: CHART_COLORS.grid }}
             dataKey="date"
-            tick={{ fill: '#6b7280', fontSize: 12 }}
+            tick={{ fill: CHART_COLORS.tick, fontSize: 12 }}
             tickFormatter={(value: string) =>
               formatDateLabel(value, { includeYear: false })
             }
-            tickLine={{ stroke: '#e5e7eb' }}
+            tickLine={{ stroke: CHART_COLORS.grid }}
           />
           <YAxis
-            tick={{ fill: '#6b7280', fontSize: 12 }}
-            tickLine={{ stroke: '#e5e7eb' }}
+            axisLine={{ stroke: CHART_COLORS.grid }}
+            tick={{ fill: CHART_COLORS.tick, fontSize: 12 }}
+            tickLine={{ stroke: CHART_COLORS.grid }}
           />
           <Tooltip
-            contentStyle={{
-              backgroundColor: '#fff',
-              border: '1px solid #e5e7eb',
-              borderRadius: '0.5rem',
-            }}
-            cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
+            contentStyle={CHART_TOOLTIP_CONTENT_STYLE}
+            cursor={{ fill: CHART_COLORS.cursor }}
             formatter={(value) => [`${value ?? 0} 回`, 'クリック数']}
+            itemStyle={{ color: CHART_COLORS.foreground }}
             labelFormatter={(label) =>
               typeof label === 'string' ? formatDateLabel(label) : label
             }
-            labelStyle={{ color: '#374151', fontWeight: 600 }}
+            labelStyle={{ color: CHART_COLORS.foreground, fontWeight: 600 }}
           />
           <Bar
             cursor={onDateClick ? 'pointer' : 'default'}
             dataKey="clicks"
-            fill="#d1fae5"
+            fill={CHART_COLORS.series}
             radius={[4, 4, 0, 0]}
-            stroke="#10b981"
-            strokeWidth={1}
           />
         </BarChart>
       </ResponsiveContainer>

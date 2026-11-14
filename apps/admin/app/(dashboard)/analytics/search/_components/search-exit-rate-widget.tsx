@@ -1,7 +1,18 @@
+import {
+  Badge,
+  type BadgeProps,
+  EmptyState,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@shinju-date/ui'
 import { cache } from 'react'
 import { getSearchExitRates } from '@/lib/analytics/get-search-quality-metrics'
 import { ExportMenu } from '../../_components/export-menu'
-import { formatDateLabel, formatDateRange } from '../../_lib/format-date'
+import { WidgetHeader } from '../../_components/widget-header'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 interface Props {
@@ -38,6 +49,19 @@ const fetchSearchExitRatesData = cache(
 )
 
 /**
+ * 離脱率の評価。良し悪しの意味で Badge の色を選ぶ
+ */
+function getExitRateRating(exitRate: number): {
+  label: string
+  variant: NonNullable<BadgeProps['variant']>
+} {
+  if (exitRate >= 70) return { label: '要改善', variant: 'danger' }
+  if (exitRate >= 50) return { label: '注意', variant: 'warning' }
+  if (exitRate >= 30) return { label: '普通', variant: 'neutral' }
+  return { label: '良好', variant: 'success' }
+}
+
+/**
  * Search Exit Rate Widget Component
  */
 function SearchExitRateWidgetComponent({
@@ -49,94 +73,70 @@ function SearchExitRateWidgetComponent({
   dateRange: { startDate: string; endDate: string }
   selectedDate: string | null
 }) {
-  // Helper to get exit rate styling
-  const getExitRateStyle = (exitRate: number) => {
-    if (exitRate >= 70) return 'bg-red-100 text-red-800'
-    if (exitRate >= 50) return 'bg-yellow-100 text-yellow-800'
-    if (exitRate >= 30) return 'bg-orange-100 text-orange-800'
-    return 'bg-green-100 text-green-800'
-  }
-
-  const getExitRateLabel = (exitRate: number) => {
-    if (exitRate >= 70) return '要改善'
-    if (exitRate >= 50) return '注意'
-    if (exitRate >= 30) return '普通'
-    return '良好'
-  }
-
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">
-          検索からの離脱率
-          {selectedDate ? (
-            <span className="ml-2 text-meta text-accent">
-              ({formatDateLabel(selectedDate)})
-            </span>
-          ) : (
-            <span className="ml-2 text-meta text-muted">
-              ({formatDateRange(dateRange)})
-            </span>
-          )}
-        </h2>
-        <ExportMenu
-          dateRange={dateRange}
-          selectedDate={selectedDate}
-          type="search-exit-rates"
-        />
-      </div>
-
-      <p className="mb-4 text-sm text-gray-600">
-        検索結果を一度もクリックせずに離脱した割合をキーワードごとに表示します。
-        離脱率が高いキーワードは、検索結果がユーザーの期待と乖離している可能性があります。
-      </p>
+      <WidgetHeader
+        actions={
+          <ExportMenu
+            dateRange={dateRange}
+            selectedDate={selectedDate}
+            type="search-exit-rates"
+          />
+        }
+        dateRange={dateRange}
+        description="検索結果を一度もクリックせずに離脱した割合をキーワードごとに表示します。離脱率が高いキーワードは、検索結果がユーザーの期待と乖離している可能性があります。"
+        selectedDate={selectedDate}
+        title="検索からの離脱率"
+      />
 
       {exitRates.length > 0 ? (
-        <div className="max-h-96 space-y-2 overflow-y-auto">
-          {exitRates.map((item, index) => (
-            <div
-              className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
-              key={item.keyword}
-            >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-774-blue-100 text-sm font-semibold text-774-blue-600">
-                {index + 1}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{item.keyword}</p>
-                <p className="text-xs text-gray-500">
-                  検索回数: {item.searchCount}
-                </p>
-              </div>
-              <div className="shrink-0 text-right">
-                <div
-                  className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${getExitRateStyle(item.exitRate)}`}
-                >
-                  {item.exitRate.toFixed(1)}%
-                </div>
-                <p className="mt-1 text-xs text-gray-500">
-                  {getExitRateLabel(item.exitRate)}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-16 text-right">順位</TableHead>
+              <TableHead>キーワード</TableHead>
+              <TableHead className="text-right">検索回数</TableHead>
+              <TableHead className="text-right">離脱率</TableHead>
+              <TableHead>評価</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {exitRates.map((item, index) => {
+              const rating = getExitRateRating(item.exitRate)
+
+              return (
+                <TableRow key={item.keyword}>
+                  <TableCell className="text-right text-muted tabular-nums">
+                    {index + 1}
+                  </TableCell>
+                  <TableCell className="min-w-48 wrap-break-word whitespace-normal">
+                    {item.keyword}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {item.searchCount.toLocaleString('ja-JP')}
+                  </TableCell>
+                  <TableCell className="text-right font-semibold tabular-nums">
+                    {item.exitRate.toFixed(1)}%
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={rating.variant}>{rating.label}</Badge>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
       ) : (
-        <p className="py-8 text-center text-gray-500">データがありません</p>
+        <EmptyState title="データがありません" />
       )}
 
-      <div className="mt-4 text-xs text-gray-600">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <strong>評価基準:</strong>
-            <div className="text-green-700">30%未満: 良好</div>
-            <div className="text-orange-700">30-49%: 普通</div>
-          </div>
-          <div>
-            <div className="text-yellow-700">50-69%: 注意</div>
-            <div className="text-red-700">70%以上: 要改善</div>
-          </div>
-        </div>
-      </div>
+      <dl className="mt-4 grid grid-cols-2 gap-x-4 text-caption text-muted sm:grid-cols-4">
+        <dt className="col-span-2 font-semibold sm:col-span-4">評価基準</dt>
+        <dd>30%未満: 良好</dd>
+        <dd>30-49%: 普通</dd>
+        <dd>50-69%: 注意</dd>
+        <dd>70%以上: 要改善</dd>
+      </dl>
     </div>
   )
 }

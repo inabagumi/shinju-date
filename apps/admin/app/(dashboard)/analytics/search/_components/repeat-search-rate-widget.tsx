@@ -1,6 +1,7 @@
+import { StatTile } from '@shinju-date/ui'
 import { cache } from 'react'
 import { getRepeatSearchRate } from '@/lib/analytics/get-search-quality-metrics'
-import { formatDateLabel, formatDateRange } from '../../_lib/format-date'
+import { WidgetHeader } from '../../_components/widget-header'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 import { MetricNoData } from './metric-no-data'
 
@@ -47,13 +48,6 @@ function RepeatSearchRateWidgetComponent({
     return 'low'
   }
 
-  const engagementStyles = {
-    high: 'bg-774-nevy-50 text-774-nevy-700 border-774-nevy-200',
-    low: 'bg-gray-50 text-gray-700 border-gray-200',
-    moderate: 'bg-774-blue-50 text-774-blue-700 border-774-blue-200',
-    normal: 'bg-green-50 text-green-700 border-green-200',
-  }
-
   const engagementLabels = {
     high: '高いエンゲージメント',
     low: '低い活動',
@@ -75,62 +69,38 @@ function RepeatSearchRateWidgetComponent({
 
   return (
     <div>
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold">
-          リピート検索率
-          {selectedDate ? (
-            <span className="ml-2 text-meta text-accent">
-              ({formatDateLabel(selectedDate)})
-            </span>
-          ) : (
-            <span className="ml-2 text-meta text-muted">
-              ({formatDateRange(dateRange)})
-            </span>
-          )}
-        </h2>
-      </div>
-
-      <p className="mb-4 text-sm text-gray-600">
-        1セッションあたりの平均検索回数を表示します。
-        ユーザーエンゲージメントを測る指標として活用できます。
-      </p>
+      <WidgetHeader
+        dateRange={dateRange}
+        description="1セッションあたりの平均検索回数を表示します。ユーザーエンゲージメントを測る指標として活用できます。"
+        selectedDate={selectedDate}
+        title="リピート検索率"
+      />
 
       {repeatRate === null || engagementLevel === null ? (
-        <MetricNoData description="この期間に検索したセッションがないため、評価できません。" />
+        <MetricNoData
+          description="この期間に検索したセッションがないため、評価できません。"
+          label="回/セッション"
+        />
       ) : (
         <>
-          <div
-            className={`rounded-lg border-2 p-6 ${engagementStyles[engagementLevel]}`}
-          >
-            <div className="text-center">
-              <div className="text-4xl font-bold">{repeatRate.toFixed(1)}</div>
-              <div className="mt-2 text-sm font-medium">
-                回/セッション ({engagementLabels[engagementLevel]})
-              </div>
-            </div>
-          </div>
+          <StatTile
+            label={`回/セッション (${engagementLabels[engagementLevel]})`}
+            value={repeatRate.toFixed(1)}
+          />
 
-          <div className="mt-4 rounded-lg bg-gray-50 p-4">
-            <p className="text-sm text-gray-700">
-              <strong>解釈:</strong> {engagementDescriptions[engagementLevel]}
-            </p>
-          </div>
+          <p className="mt-4 text-meta">
+            <strong>解釈:</strong> {engagementDescriptions[engagementLevel]}
+          </p>
         </>
       )}
 
-      <div className="mt-4 text-xs text-gray-600">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <strong>参考基準:</strong>
-            <div>3.0回以上: 高いエンゲージメント</div>
-            <div>2.0-2.9回: 適度なエンゲージメント</div>
-          </div>
-          <div>
-            <div>1.5-1.9回: 標準的</div>
-            <div>1.5回未満: 低い活動</div>
-          </div>
-        </div>
-      </div>
+      <dl className="mt-4 grid grid-cols-2 gap-x-4 text-caption text-muted">
+        <dt className="col-span-2 font-semibold">参考基準</dt>
+        <dd>3.0回以上: 高いエンゲージメント</dd>
+        <dd>2.0-2.9回: 適度なエンゲージメント</dd>
+        <dd>1.5-1.9回: 標準的</dd>
+        <dd>1.5回未満: 低い活動</dd>
+      </dl>
     </div>
   )
 }

@@ -1,5 +1,9 @@
+import { StatTile } from '@shinju-date/ui'
+
 interface Props {
   description: string
+  /** 指標の名前。値があるときの `StatTile` と同じ位置に表示する */
+  label: string
 }
 
 /**
@@ -7,16 +11,17 @@ interface Props {
  * (e.g. no session was recorded in the period). It deliberately carries no
  * rating so that "no data" is not mistaken for a low score.
  */
-export function MetricNoData({ description }: Props) {
+export function MetricNoData({ description, label }: Props) {
   return (
-    <div className="rounded-container border-2 border-border bg-muted p-6 text-center">
-      <div aria-hidden="true" className="text-display font-bold text-muted">
-        —
-      </div>
-      <div className="mt-2 text-meta font-semibold text-foreground">
-        データなし
-      </div>
-      <p className="mt-1 text-meta text-muted">{description}</p>
-    </div>
+    <StatTile
+      change={
+        <>
+          <span className="font-semibold text-foreground">データなし</span>
+          <span className="block">{description}</span>
+        </>
+      }
+      label={label}
+      value={<span aria-hidden="true">—</span>}
+    />
   )
 }

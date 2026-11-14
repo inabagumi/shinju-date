@@ -1,7 +1,9 @@
 import { cache } from 'react'
 import { getPopularKeywords } from '@/lib/analytics/get-popular-keywords'
 import { ExportMenu } from '../../_components/export-menu'
-import { formatDateLabel, formatDateRange } from '../../_lib/format-date'
+import { RankingTable } from '../../_components/ranking-table'
+import { WidgetHeader } from '../../_components/widget-header'
+import { formatDateLabel } from '../../_lib/format-date'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 interface Props {
@@ -46,53 +48,32 @@ function PopularKeywordsWidgetComponent({
 }) {
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">
-          人気キーワードランキング
-          {selectedDate ? (
-            <span className="ml-2 text-meta text-accent">
-              ({formatDateLabel(selectedDate)})
-            </span>
-          ) : (
-            <span className="ml-2 text-meta text-muted">
-              ({formatDateRange(dateRange)})
-            </span>
-          )}
-        </h2>
-        <ExportMenu
-          dateRange={dateRange}
-          selectedDate={selectedDate}
-          type="keywords"
-        />
-      </div>
-      <p className="mb-4 text-sm text-gray-600">
-        {selectedDate
-          ? `${formatDateLabel(selectedDate)}に検索されたキーワードのランキング。同じ日付をもう一度クリックすると期間全体の表示に戻ります。`
-          : `${formatDateLabel(dateRange.startDate)}から${formatDateLabel(dateRange.endDate)}の期間で最も検索されたキーワードのランキング。グラフの日付をクリックすると、その日のランキングが表示されます。`}
-      </p>
-      {keywords.length > 0 ? (
-        <div className="max-h-96 space-y-2 overflow-y-auto">
-          {keywords.map((item, index) => (
-            <div
-              className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
-              key={item.keyword}
-            >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-774-blue-100 text-sm font-semibold text-774-blue-600">
-                {index + 1}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{item.keyword}</p>
-              </div>
-              <div className="shrink-0 text-right">
-                <p className="font-semibold text-gray-900">{item.count}</p>
-                <p className="text-xs text-gray-500">回</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="py-8 text-center text-gray-500">データがありません</p>
-      )}
+      <WidgetHeader
+        actions={
+          <ExportMenu
+            dateRange={dateRange}
+            selectedDate={selectedDate}
+            type="keywords"
+          />
+        }
+        dateRange={dateRange}
+        description={
+          selectedDate
+            ? `${formatDateLabel(selectedDate)}に検索されたキーワードのランキング。同じ日付をもう一度クリックすると期間全体の表示に戻ります。`
+            : `${formatDateLabel(dateRange.startDate)}から${formatDateLabel(dateRange.endDate)}の期間で最も検索されたキーワードのランキング。グラフの日付をクリックすると、その日のランキングが表示されます。`
+        }
+        selectedDate={selectedDate}
+        title="人気キーワードランキング"
+      />
+      <RankingTable
+        items={keywords.map((item) => ({
+          key: item.keyword,
+          label: item.keyword,
+          value: item.count,
+        }))}
+        labelHeading="キーワード"
+        valueHeading="検索回数"
+      />
     </div>
   )
 }

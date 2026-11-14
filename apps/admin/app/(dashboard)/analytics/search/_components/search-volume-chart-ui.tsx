@@ -9,6 +9,10 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import {
+  CHART_COLORS,
+  CHART_TOOLTIP_CONTENT_STYLE,
+} from '../../_lib/chart-colors'
 import { formatDateLabel } from '../../_lib/format-date'
 
 interface SearchVolumeChartProps {
@@ -43,41 +47,48 @@ export default function SearchVolumeChartUI({
         <AreaChart data={data} onClick={handleClick}>
           <defs>
             <linearGradient id="colorVolume" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="5%" stopColor="#dbeafe" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#dbeafe" stopOpacity={0} />
+              <stop
+                offset="5%"
+                stopColor={CHART_COLORS.series}
+                stopOpacity={0.3}
+              />
+              <stop
+                offset="95%"
+                stopColor={CHART_COLORS.series}
+                stopOpacity={0}
+              />
             </linearGradient>
           </defs>
-          <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
+          <CartesianGrid stroke={CHART_COLORS.grid} strokeDasharray="3 3" />
           <XAxis
+            axisLine={{ stroke: CHART_COLORS.grid }}
             dataKey="date"
-            tick={{ fill: '#6b7280', fontSize: 12 }}
+            tick={{ fill: CHART_COLORS.tick, fontSize: 12 }}
             tickFormatter={(value: string) =>
               formatDateLabel(value, { includeYear: false })
             }
-            tickLine={{ stroke: '#e5e7eb' }}
+            tickLine={{ stroke: CHART_COLORS.grid }}
           />
           <YAxis
-            tick={{ fill: '#6b7280', fontSize: 12 }}
-            tickLine={{ stroke: '#e5e7eb' }}
+            axisLine={{ stroke: CHART_COLORS.grid }}
+            tick={{ fill: CHART_COLORS.tick, fontSize: 12 }}
+            tickLine={{ stroke: CHART_COLORS.grid }}
           />
           <Tooltip
-            contentStyle={{
-              backgroundColor: '#fff',
-              border: '1px solid #e5e7eb',
-              borderRadius: '0.5rem',
-            }}
+            contentStyle={CHART_TOOLTIP_CONTENT_STYLE}
             formatter={(value) => [`${value ?? 0} 回`, '検索数']}
+            itemStyle={{ color: CHART_COLORS.foreground }}
             labelFormatter={(label) =>
               typeof label === 'string' ? formatDateLabel(label) : label
             }
-            labelStyle={{ color: '#374151', fontWeight: 600 }}
+            labelStyle={{ color: CHART_COLORS.foreground, fontWeight: 600 }}
           />
           <Area
             cursor={onDateClick ? 'pointer' : 'default'}
             dataKey="count"
             fill="url(#colorVolume)"
             fillOpacity={1}
-            stroke="#3b82f6"
+            stroke={CHART_COLORS.series}
             strokeWidth={2}
             type="monotone"
           />

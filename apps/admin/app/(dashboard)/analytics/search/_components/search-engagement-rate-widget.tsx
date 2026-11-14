@@ -1,6 +1,7 @@
+import { StatTile } from '@shinju-date/ui'
 import { cache } from 'react'
 import { getSearchEngagementRate } from '@/lib/analytics/get-search-quality-metrics'
-import { formatDateLabel, formatDateRange } from '../../_lib/format-date'
+import { WidgetHeader } from '../../_components/widget-header'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 import { MetricNoData } from './metric-no-data'
 
@@ -47,13 +48,6 @@ function SearchEngagementRateWidgetComponent({
     return 'poor'
   }
 
-  const performanceStyles = {
-    average: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-    excellent: 'bg-green-50 text-green-700 border-green-200',
-    good: 'bg-774-blue-50 text-774-blue-700 border-774-blue-200',
-    poor: 'bg-red-50 text-red-700 border-red-200',
-  }
-
   const performanceLabels = {
     average: '平均的',
     excellent: '優秀',
@@ -66,56 +60,32 @@ function SearchEngagementRateWidgetComponent({
 
   return (
     <div>
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold">
-          検索利用率
-          {selectedDate ? (
-            <span className="ml-2 text-meta text-accent">
-              ({formatDateLabel(selectedDate)})
-            </span>
-          ) : (
-            <span className="ml-2 text-meta text-muted">
-              ({formatDateRange(dateRange)})
-            </span>
-          )}
-        </h2>
-      </div>
-
-      <p className="mb-4 text-sm text-gray-600">
-        サイトを訪れたユーザーのうち、検索機能を利用した割合を示します。
-        この数値が低い場合、検索窓のUIや配置の見直しを検討することをお勧めします。
-      </p>
+      <WidgetHeader
+        dateRange={dateRange}
+        description="サイトを訪れたユーザーのうち、検索機能を利用した割合を示します。この数値が低い場合、検索窓のUIや配置の見直しを検討することをお勧めします。"
+        selectedDate={selectedDate}
+        title="検索利用率"
+      />
 
       {engagementRate === null || performanceLevel === null ? (
-        <MetricNoData description="この期間に計測されたセッションがないため、評価できません。" />
+        <MetricNoData
+          description="この期間に計測されたセッションがないため、評価できません。"
+          label="検索利用率"
+        />
       ) : (
-        <div
-          className={`rounded-lg border-2 p-6 ${performanceStyles[performanceLevel]}`}
-        >
-          <div className="text-center">
-            <div className="text-4xl font-bold">
-              {engagementRate.toFixed(1)}%
-            </div>
-            <div className="mt-2 text-sm font-medium">
-              検索利用率 ({performanceLabels[performanceLevel]})
-            </div>
-          </div>
-        </div>
+        <StatTile
+          label={`検索利用率 (${performanceLabels[performanceLevel]})`}
+          value={`${engagementRate.toFixed(1)}%`}
+        />
       )}
 
-      <div className="mt-4 text-xs text-gray-600">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <strong>判定基準:</strong>
-            <div>30%以上: 優秀</div>
-            <div>20-29%: 良好</div>
-          </div>
-          <div>
-            <div>10-19%: 平均的</div>
-            <div>10%未満: 改善が必要</div>
-          </div>
-        </div>
-      </div>
+      <dl className="mt-4 grid grid-cols-2 gap-x-4 text-caption text-muted">
+        <dt className="col-span-2 font-semibold">判定基準</dt>
+        <dd>30%以上: 優秀</dd>
+        <dd>20-29%: 良好</dd>
+        <dd>10-19%: 平均的</dd>
+        <dd>10%未満: 改善が必要</dd>
+      </dl>
     </div>
   )
 }

@@ -7,6 +7,7 @@ import {
   MetricCardSkeleton,
 } from '@/components/skeletons'
 import { DateRangePickerClient } from '../_components/date-range-picker-client'
+import { PANEL_CLASS_NAME } from '../_lib/panel'
 import { analyticsSearchParamsSchema } from '../_lib/search-params-schema'
 import { PopularKeywordsWidget } from './_components/popular-keywords-widget'
 import { RepeatSearchRateWidget } from './_components/repeat-search-rate-widget'
@@ -30,37 +31,37 @@ export default function SearchAnalyticsPage({
     <div>
       <PageHeader title="検索アナリティクス" />
 
-      <div className="mb-6">
+      <div className="mb-8">
         <Suspense fallback={<DateRangePickerSkeleton />}>
           <DateRangePickerClient searchParams={parsedSearchParams} />
         </Suspense>
       </div>
 
-      {/* Search Volume Chart */}
-      <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-xl font-semibold">検索ボリューム</h2>
-        <Suspense fallback={<ChartSkeleton />}>
-          <SearchVolumeChart searchParams={parsedSearchParams} />
-        </Suspense>
-      </div>
+      <section className="mb-8">
+        <h2 className="mb-4 text-heading font-bold">検索ボリューム</h2>
+        <div className={PANEL_CLASS_NAME}>
+          <Suspense fallback={<ChartSkeleton />}>
+            <SearchVolumeChart searchParams={parsedSearchParams} />
+          </Suspense>
+        </div>
+      </section>
 
-      {/* New Search Quality Metrics Section */}
       <section className="mb-8">
         <h2 className="mb-4 text-heading font-bold">検索品質指標</h2>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className={PANEL_CLASS_NAME}>
             <Suspense fallback={<MetricCardSkeleton />}>
               <SearchEngagementRateWidget searchParams={parsedSearchParams} />
             </Suspense>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <div className={PANEL_CLASS_NAME}>
             <Suspense fallback={<MetricCardSkeleton />}>
               <RepeatSearchRateWidget searchParams={parsedSearchParams} />
             </Suspense>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-1">
+          <div className={`${PANEL_CLASS_NAME} lg:col-span-2`}>
             <Suspense fallback={<MetricCardSkeleton />}>
               <SearchExitRateWidget searchParams={parsedSearchParams} />
             </Suspense>
@@ -68,17 +69,16 @@ export default function SearchAnalyticsPage({
         </div>
       </section>
 
-      {/* Existing Analytics Section */}
       <section>
         <h2 className="mb-4 text-heading font-bold">従来の検索指標</h2>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <div className={PANEL_CLASS_NAME}>
             <Suspense fallback={<MetricCardSkeleton />}>
               <ZeroResultKeywordsWidget />
             </Suspense>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <div className={PANEL_CLASS_NAME}>
             <Suspense fallback={<MetricCardSkeleton />}>
               <PopularKeywordsWidget searchParams={parsedSearchParams} />
             </Suspense>
