@@ -56,7 +56,7 @@ function TabButton({ count, icon, isActive, label, onClick }: TabButtonProps) {
       className={twMerge(
         'flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors sm:gap-2 sm:px-4 sm:text-base',
         isActive
-          ? 'bg-live text-live-foreground'
+          ? 'bg-accent text-accent-foreground'
           : 'bg-774-nevy-100 text-774-nevy-800 hover:bg-774-nevy-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700',
         isDisabled && 'cursor-not-allowed opacity-50',
       )}
@@ -71,7 +71,7 @@ function TabButton({ count, icon, isActive, label, onClick }: TabButtonProps) {
         className={twMerge(
           'min-w-5 rounded-full px-1.5 text-center text-xs leading-5 tabular-nums',
           isActive
-            ? 'bg-white/20 text-white'
+            ? 'bg-accent-foreground/20 text-accent-foreground'
             : 'bg-774-nevy-800/10 text-774-nevy-800 dark:bg-white/10 dark:text-zinc-200',
         )}
       >
