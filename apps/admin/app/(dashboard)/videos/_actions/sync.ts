@@ -1,11 +1,17 @@
 'use server'
 
-import type { TablesUpdate } from '@shinju-date/database'
+import type { Tables, TablesUpdate } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import {
+  getArchiveOfStream,
   getClips,
+  getLiveStream,
+  getTwitchVideoStatus,
   getVideos as getTwitchVideos,
+  isLiveTwitchVideoId,
+  streamIdFromLiveTwitchVideoId,
+  type TwitchVideo,
 } from '@shinju-date/twitch-api-client'
 import { revalidateTags } from '@shinju-date/web-cache'
 import {
@@ -191,8 +197,50 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
   }
 }
 
+type TwitchVideoType = Tables<'twitch_videos'>['type']
+
+/** What Twitch currently reports for a saved Twitch video. */
+interface TwitchSyncTarget {
+  /** `undefined` keeps the saved value (e.g. while a broadcast is on air). */
+  duration?: string
+  /** `undefined` keeps the saved value. */
+  publishedAt?: Temporal.Instant
+  status: Tables<'videos'>['status']
+  /** `undefined` keeps the saved value. */
+  title?: string
+  twitchVideoId: string
+  type: TwitchVideoType
+}
+
+function fromTwitchVideo(twitchVideo: TwitchVideo): TwitchSyncTarget {
+  return {
+    duration: twitchVideo.duration,
+    publishedAt: Temporal.Instant.from(
+      twitchVideo.published_at || twitchVideo.created_at,
+    ),
+    status: getTwitchVideoStatus(twitchVideo.type),
+    title: twitchVideo.title,
+    twitchVideoId: twitchVideo.id,
+    type: twitchVideo.type,
+  }
+}
+
 /**
- * Twitch 動画（VOD / highlight / upload / clip）を Helix API から同期する。
+ * Twitch 動画（配信 / アーカイブ / ハイライト / アップロード / クリップ）を
+ * Helix API から同期する。
+ *
+ * ## 配信の扱い
+ * バッチ（`@shinju-date/scraper` の Twitch 向け処理）と同じ判定を
+ * `@shinju-date/twitch-api-client` の関数で行う。
+ *
+ * - **配信中**: タイトルだけを更新し、`LIVE` のままにする。配信中に
+ *   アーカイブが紐づいた行（Twitch は配信開始時にアーカイブを作る）も同様
+ * - **配信終了・アーカイブあり**: 仮の ID（`live:{stream_id}`）の行は
+ *   アーカイブ（VOD の ID・長さ・タイトル）に差し替えて `ENDED` にする
+ * - **配信終了・アーカイブなし**（VOD 無効など）: `ENDED` にするだけで、
+ *   エラーにはしない
+ *
+ * サムネイルは更新しない（バッチの `mode=recent` が補完する）。
  */
 export async function syncVideoWithTwitch(videoId: string): Promise<{
   success: boolean
@@ -212,7 +260,7 @@ export async function syncVideoWithTwitch(videoId: string): Promise<{
     const { data: video, error: fetchError } = await supabaseClient
       .from('videos')
       .select(
-        'id, title, visible, duration, published_at, status, platform, twitch_video:twitch_videos!inner(id, twitch_video_id, type)',
+        'id, title, visible, duration, published_at, status, platform, twitch_video:twitch_videos!inner(id, stream_id, twitch_video_id, type, twitch_user:twitch_users(twitch_user_id))',
       )
       .eq('id', videoId)
       .single()
@@ -225,24 +273,63 @@ export async function syncVideoWithTwitch(videoId: string): Promise<{
       return { error: '動画が見つかりませんでした。', success: false }
     }
 
-    if (!video.twitch_video?.twitch_video_id) {
+    const savedTwitchVideo = video.twitch_video
+
+    if (!savedTwitchVideo?.twitch_video_id) {
       return {
         error: 'この動画はTwitch動画ではありません。',
         success: false,
       }
     }
 
-    const twitchVideoId = video.twitch_video.twitch_video_id
-    const isClip = video.twitch_video.type === 'clip'
+    const isPlaceholder = isLiveTwitchVideoId(savedTwitchVideo.twitch_video_id)
+    const streamId =
+      savedTwitchVideo.stream_id ??
+      streamIdFromLiveTwitchVideoId(savedTwitchVideo.twitch_video_id)
+    const twitchUserId = savedTwitchVideo.twitch_user?.twitch_user_id ?? null
 
-    let nextTitle: string
-    let nextDuration: string
-    let nextPublishedAt: Temporal.Instant
-    let nextStatus: TablesUpdate<'videos'>['status']
-    let nextType: 'archive' | 'highlight' | 'upload' | 'clip'
+    // Only broadcasts and their archives can be on air.
+    const canBeOnAir =
+      streamId !== null &&
+      (isPlaceholder || savedTwitchVideo.type === 'archive')
 
-    if (isClip) {
-      const clips = await Array.fromAsync(getClips({ ids: [twitchVideoId] }))
+    if (canBeOnAir && !twitchUserId) {
+      return {
+        error: 'この配信のTwitchユーザーが見つかりませんでした。',
+        success: false,
+      }
+    }
+
+    const broadcast =
+      canBeOnAir && streamId && twitchUserId
+        ? { streamId, userId: twitchUserId }
+        : null
+
+    const liveStream = broadcast ? await getLiveStream(broadcast) : null
+
+    let target: TwitchSyncTarget
+
+    if (liveStream) {
+      target = {
+        status: 'LIVE',
+        title: liveStream.title,
+        twitchVideoId: savedTwitchVideo.twitch_video_id,
+        type: savedTwitchVideo.type,
+      }
+    } else if (isPlaceholder) {
+      const archive = broadcast ? await getArchiveOfStream(broadcast) : null
+
+      target = archive
+        ? fromTwitchVideo(archive)
+        : {
+            status: 'ENDED',
+            twitchVideoId: savedTwitchVideo.twitch_video_id,
+            type: savedTwitchVideo.type,
+          }
+    } else if (savedTwitchVideo.type === 'clip') {
+      const clips = await Array.fromAsync(
+        getClips({ ids: [savedTwitchVideo.twitch_video_id] }),
+      )
       const clip = clips[0]
 
       if (!clip) {
@@ -253,14 +340,17 @@ export async function syncVideoWithTwitch(videoId: string): Promise<{
         }
       }
 
-      nextTitle = clip.title
-      nextDuration = clip.duration
-      nextPublishedAt = Temporal.Instant.from(clip.created_at)
-      nextStatus = 'PUBLISHED'
-      nextType = 'clip'
+      target = {
+        duration: clip.duration,
+        publishedAt: Temporal.Instant.from(clip.created_at),
+        status: getTwitchVideoStatus('clip'),
+        title: clip.title,
+        twitchVideoId: clip.id,
+        type: 'clip',
+      }
     } else {
       const twitchVideos = await Array.fromAsync(
-        getTwitchVideos({ ids: [twitchVideoId] }),
+        getTwitchVideos({ ids: [savedTwitchVideo.twitch_video_id] }),
       )
       const twitchVideo = twitchVideos[0]
 
@@ -272,50 +362,39 @@ export async function syncVideoWithTwitch(videoId: string): Promise<{
         }
       }
 
-      nextTitle = twitchVideo.title
-      nextDuration = twitchVideo.duration
-      nextPublishedAt = Temporal.Instant.from(
-        twitchVideo.published_at || twitchVideo.created_at,
-      )
-      // archive/highlight are past broadcasts; uploads are regular videos
-      nextStatus = twitchVideo.type === 'upload' ? 'PUBLISHED' : 'ENDED'
-      nextType = twitchVideo.type
+      target = fromTwitchVideo(twitchVideo)
     }
 
-    const currentDateTime = Temporal.Now.instant()
-    const updateData: TablesUpdate<'videos'> = {
-      updated_at: toDBString(currentDateTime),
+    const updateData: TablesUpdate<'videos'> = {}
+
+    if (target.title !== undefined && target.title !== video.title) {
+      updateData.title = target.title
     }
 
-    let hasChanges = false
-
-    if (nextTitle !== video.title) {
-      updateData.title = nextTitle
-      hasChanges = true
+    if (target.duration !== undefined && target.duration !== video.duration) {
+      updateData.duration = target.duration
     }
 
-    if (nextDuration !== video.duration) {
-      updateData.duration = nextDuration
-      hasChanges = true
+    if (
+      target.publishedAt &&
+      !target.publishedAt.equals(Temporal.Instant.from(video.published_at))
+    ) {
+      updateData.published_at = toDBString(target.publishedAt)
     }
 
-    const currentPublishedAt = Temporal.Instant.from(video.published_at)
-    if (!nextPublishedAt.equals(currentPublishedAt)) {
-      updateData.published_at = toDBString(nextPublishedAt)
-      hasChanges = true
+    if (target.status !== video.status) {
+      updateData.status = target.status
     }
 
-    if (video.status !== nextStatus) {
-      updateData.status = nextStatus
-      hasChanges = true
-    }
+    const twitchVideoIdChanged =
+      target.twitchVideoId !== savedTwitchVideo.twitch_video_id
+    const typeChanged = target.type !== savedTwitchVideo.type
 
-    const typeChanged = nextType !== video.twitch_video.type
-    if (typeChanged) {
-      hasChanges = true
-    }
-
-    if (!hasChanges) {
+    if (
+      Object.keys(updateData).length === 0 &&
+      !twitchVideoIdChanged &&
+      !typeChanged
+    ) {
       return {
         message: '動画情報は既に最新です。',
         success: true,
@@ -323,30 +402,35 @@ export async function syncVideoWithTwitch(videoId: string): Promise<{
       }
     }
 
-    if (
-      updateData.title !== undefined ||
-      updateData.duration !== undefined ||
-      updateData.published_at !== undefined ||
-      updateData.status !== undefined
-    ) {
+    // Link first, like the batch: should the next step fail, the row keeps
+    // its status and a later sync finishes the job.
+    if (twitchVideoIdChanged || typeChanged) {
+      const { error: twitchVideoError } = await supabaseClient
+        .from('twitch_videos')
+        .update({
+          ...(twitchVideoIdChanged
+            ? { twitch_video_id: target.twitchVideoId }
+            : {}),
+          type: target.type,
+        })
+        .eq('id', savedTwitchVideo.id)
+
+      if (twitchVideoError) {
+        throw twitchVideoError
+      }
+    }
+
+    if (Object.keys(updateData).length > 0) {
       const { error: updateError } = await supabaseClient
         .from('videos')
-        .update(updateData)
+        .update({
+          ...updateData,
+          updated_at: toDBString(Temporal.Now.instant()),
+        })
         .eq('id', videoId)
 
       if (updateError) {
         throw updateError
-      }
-    }
-
-    if (typeChanged) {
-      const { error: typeError } = await supabaseClient
-        .from('twitch_videos')
-        .update({ type: nextType })
-        .eq('id', video.twitch_video.id)
-
-      if (typeError) {
-        throw typeError
       }
     }
 
@@ -377,8 +461,16 @@ export async function syncVideoWithTwitch(videoId: string): Promise<{
       ...(typeChanged
         ? {
             twitch_type: {
-              after: nextType,
-              before: video.twitch_video.type,
+              after: target.type,
+              before: savedTwitchVideo.type,
+            },
+          }
+        : {}),
+      ...(twitchVideoIdChanged
+        ? {
+            twitch_video_id: {
+              after: target.twitchVideoId,
+              before: savedTwitchVideo.twitch_video_id,
             },
           }
         : {}),
@@ -387,6 +479,19 @@ export async function syncVideoWithTwitch(videoId: string): Promise<{
     revalidatePath(`/videos/${videoId}`)
     revalidatePath('/videos')
     await revalidateTags(['videos'])
+
+    if (liveStream) {
+      return { message: '配信中の状態を同期しました。', success: true }
+    }
+
+    if (isPlaceholder && !twitchVideoIdChanged) {
+      return {
+        message:
+          '配信は終了しています。アーカイブが見つからないため、配信の終了のみ反映しました。',
+        success: true,
+      }
+    }
+
     return { success: true }
   } catch (error) {
     logger.error('Twitch動画の同期に失敗しました', { error, videoId })

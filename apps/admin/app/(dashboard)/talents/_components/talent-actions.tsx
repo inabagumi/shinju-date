@@ -10,7 +10,7 @@ import {
   restoreTalentAction,
   retireTalentAction,
 } from '../_actions'
-import { syncTalentWithYouTube } from '../_actions/sync'
+import { syncTalentAccounts } from '../_actions/sync'
 import { useTalentLifecycleAction } from '../_lib/use-talent-lifecycle-action'
 
 type Talent = Pick<Tables<'talents'>, 'id' | 'name' | 'status' | 'deleted_at'>
@@ -38,24 +38,25 @@ export function TalentActions({ talent }: TalentActionsProps) {
     setMessage(null)
     startSyncTransition(async () => {
       try {
-        const result = await syncTalentWithYouTube(talent.id)
+        const result = await syncTalentAccounts(talent.id)
         if (result.success) {
           setMessage({
             text:
               result.message ??
               (result.unchanged
-                ? 'チャンネル情報は既に最新です。'
-                : 'チャンネル情報を同期しました。'),
+                ? 'アカウント情報は既に最新です。'
+                : 'アカウント情報を同期しました。'),
             type: 'success',
           })
-          if (!result.unchanged) {
-            router.refresh()
-          }
         } else {
           setMessage({
             text: result.error || '同期に失敗しました。',
             type: 'error',
           })
+        }
+        // A platform may have been updated even when another one failed.
+        if (result.unchanged === false) {
+          router.refresh()
         }
       } catch {
         setMessage({ text: '予期しないエラーが発生しました。', type: 'error' })
@@ -140,7 +141,7 @@ export function TalentActions({ talent }: TalentActionsProps) {
       {message && (
         <div
           className={twMerge(
-            'rounded p-2 text-xs',
+            'rounded p-2 text-xs whitespace-pre-line',
             message.type === 'success'
               ? 'bg-green-50 text-green-800'
               : 'bg-red-50 text-red-800',
