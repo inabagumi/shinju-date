@@ -5,7 +5,5 @@ interface Props {
 }
 
 export default function VideosLayout({ children }: Props) {
-  return (
-    <main className="mx-auto grid max-w-6xl gap-8 px-4 py-8">{children}</main>
-  )
+  return <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
 }

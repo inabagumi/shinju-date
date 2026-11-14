@@ -1,4 +1,5 @@
 import NoResults from '@/components/no-results'
+import PageHeader from '@/components/page-header'
 import SearchExitTracker from '@/components/search-exit-tracker'
 import SearchQueryTracker from '@/components/search-query-tracker'
 import SearchResults from '@/components/search-results'
@@ -15,18 +16,19 @@ export interface VideosPageSectionProps {
 export async function VideosPageHeading({ params }: VideosPageSectionProps) {
   const { queries } = await params
   const query = parseQueries(queries)
-  const title = query ? `『${query}』の検索結果` : '動画一覧'
 
-  return <h1 className="text-xl font-semibold">{title}</h1>
-}
+  if (query) {
+    const title = `『${query}』の検索結果`
 
-export function VideosPageHeadingSkeleton() {
-  return (
-    <div
-      aria-hidden="true"
-      className="h-8 w-64 animate-pulse rounded-md bg-774-nevy-100 dark:bg-zinc-800"
-    />
-  )
+    return (
+      <PageHeader
+        breadcrumbs={[{ href: '/videos', name: '動画一覧' }, { name: title }]}
+        title={title}
+      />
+    )
+  }
+
+  return <PageHeader breadcrumbs={[{ name: '動画一覧' }]} title="動画一覧" />
 }
 
 export async function VideosPageResults({ params }: VideosPageSectionProps) {

@@ -1,11 +1,11 @@
 import { SITE_NAME as siteName } from '@shinju-date/constants'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { PageHeaderSkeleton } from '@/components/page-header'
 import { SearchResultsSkeleton } from '@/components/search-results'
 import { parseQueries } from '@/lib/url'
 import {
   VideosPageHeading,
-  VideosPageHeadingSkeleton,
   VideosPageResults,
   type VideosPageSectionProps,
 } from './_components/videos-page-sections'
@@ -42,7 +42,7 @@ export async function generateMetadata({
 export default function VideosPage({ params }: VideosPageSectionProps) {
   return (
     <>
-      <Suspense fallback={<VideosPageHeadingSkeleton />}>
+      <Suspense fallback={<PageHeaderSkeleton />}>
         <VideosPageHeading params={params} />
       </Suspense>
       <Suspense fallback={<SearchResultsSkeleton />}>

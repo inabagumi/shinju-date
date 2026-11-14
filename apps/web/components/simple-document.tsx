@@ -1,34 +1,24 @@
 import type { ReactNode } from 'react'
-import Breadcrumbs from './breadcrumbs'
+import PageHeader from './page-header'
 
+interface SimpleDocumentProps {
+  children: ReactNode
+  title: string
+}
+
+/**
+ * 文章を読むためのページ（とは・利用規約・プライバシーポリシー・404）。
+ * 本文は 1行40〜45文字程度に収まるよう `max-w-text` に置く。
+ */
 export default function SimpleDocument({
-  button,
   children,
   title,
-  withBreadcrumbs = false,
-}: {
-  button?: ReactNode
-  children: ReactNode
-  title?: ReactNode
-  withBreadcrumbs?: boolean
-}) {
+}: SimpleDocumentProps) {
   return (
-    <>
-      {title && (
-        <div className="bg-primary text-primary-foreground dark:bg-zinc-800">
-          <div className="mx-auto max-w-6xl space-y-8 px-4 py-16">
-            <h1 className="text-3xl font-bold">{title}</h1>
+    <main className="mx-auto max-w-6xl px-4 py-8">
+      <PageHeader breadcrumbs={[{ name: title }]} title={title} />
 
-            {button}
-          </div>
-        </div>
-      )}
-
-      <main className="spacer-y-4 mx-auto max-w-6xl">
-        {withBreadcrumbs && <Breadcrumbs title={title} />}
-
-        <div className="p-8">{children}</div>
-      </main>
-    </>
+      <div className="max-w-text text-body text-foreground">{children}</div>
+    </main>
   )
 }

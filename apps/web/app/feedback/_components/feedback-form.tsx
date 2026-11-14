@@ -27,33 +27,31 @@ export function FeedbackForm() {
   const fieldErrors = isPending ? undefined : state?.fieldErrors
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <form action={formAction} className="space-y-6">
-        {/* Message */}
-        <TextareaField
-          error={fieldErrors?.message}
-          label="機能要望"
-          name="message"
-          placeholder="追加してほしい機能や改善案をご記入ください"
-          required
-          rows={8}
-        />
+    <form action={formAction} className="space-y-6">
+      {/* Message */}
+      <TextareaField
+        error={fieldErrors?.message}
+        label="機能要望"
+        name="message"
+        placeholder="追加してほしい機能や改善案をご記入ください"
+        required
+        rows={8}
+      />
 
-        <SubmitButton />
+      <SubmitButton />
 
-        {/* Status Messages */}
-        {!isPending && state && (state.success || state.error) && (
-          <div
-            className={`rounded-lg p-4 ${
-              state.success
-                ? 'border border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400'
-                : 'border border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400'
-            }`}
-          >
-            {state.success ? state.message : state.error}
-          </div>
-        )}
-      </form>
-    </div>
+      {/* Status Messages */}
+      {!isPending && state && (state.success || state.error) && (
+        <div
+          className={`rounded-lg p-4 ${
+            state.success
+              ? 'border border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400'
+              : 'border border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400'
+          }`}
+        >
+          {state.success ? state.message : state.error}
+        </div>
+      )}
+    </form>
   )
 }

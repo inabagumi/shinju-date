@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 @import '@shinju-date/tailwind-config/theme.css';
 @source '../node_modules/@shinju-date/ui';
-@plugin '@tailwindcss/typography';
 
 @layer base {
   /* iOS overscroll handling: html should have dark footer color */
