@@ -17,20 +17,34 @@
 | `done`    | 履歴を最後まで読んだ             |
 | `failed`  | 中止した（再依頼で続きから）     |
 
+## 全アカウントのチェック（`BackfillRuns`）
+
+管理画面の「システム」から、active な全タレントの全アカウントの取得漏れチェックを 1 回の操作で依頼できます。
+
+- 1 回の依頼（チェック）が親、アカウントごとのジョブが子です。子は通常のジョブと同じキューに積まれ、チェックの ID（`runId`）を持ちます。バッチ側の処理は変わりません
+- 進捗（待機中 / 取り込み中 / 完了 / 失敗 / 中断の件数と追加本数）は子ジョブの状態から集計します。追加本数は、チェックの依頼時点からの増分です
+- 前回のチェックが実行中のあいだは新しいチェックを始められません。同時に来た依頼はロック（`BACKFILL_RUN_LOCK_SECONDS`）で 1 つに絞ります
+- タレント詳細から依頼されて待機中・処理中のアカウントは除外して数えます
+- 失敗・中断した子ジョブをタレント詳細から再依頼すると、そのままチェックの進捗に反映されます。完了した子ジョブは終了時の結果を残すので、あとで個別に読み直してもチェックの結果は変わりません
+- 保持するのは最新のチェックだけです
+
 ## Redis キー
 
-キーはすべて `@shinju-date/constants` の `REDIS_KEYS` で管理し、7 日間の TTL を設定します。
+キーはすべて `@shinju-date/constants` の `REDIS_KEYS` で管理し、7 日間の TTL を設定します（チェックの依頼中のロックだけは `BACKFILL_RUN_LOCK_SECONDS`）。
 
-| キー                                     | 内容                     |
-| ---------------------------------------- | ------------------------ |
-| `VIDEO_BACKFILL_JOB_PREFIX` + ジョブ ID  | ジョブ（JSON）           |
-| `VIDEO_BACKFILL_LOCK_PREFIX` + ジョブ ID | 処理中のロック           |
-| `VIDEO_BACKFILL_QUEUE`                   | 待機中のジョブ ID の一覧 |
+| キー                                                               | 内容                     |
+| ------------------------------------------------------------------ | ------------------------ |
+| `VIDEO_BACKFILL_JOB_PREFIX` + ジョブ ID                            | ジョブ（JSON）           |
+| `VIDEO_BACKFILL_LOCK_PREFIX` + ジョブ ID                           | 処理中のロック           |
+| `VIDEO_BACKFILL_QUEUE`                                             | 待機中のジョブ ID の一覧 |
+| `VIDEO_BACKFILL_RUN`                                               | 最新のチェック（JSON）   |
+| `VIDEO_BACKFILL_RUN_LOCK`                                          | チェックの依頼中のロック |
+| `VIDEO_BACKFILL_RUN_RESULT_PREFIX` + チェック ID + `:` + ジョブ ID | 終了した子ジョブの結果   |
 
 ## 使い方
 
 ```ts
-import { BackfillQueue } from '@shinju-date/video-backfill'
+import { BackfillQueue, BackfillRuns } from '@shinju-date/video-backfill'
 
 const queue = new BackfillQueue(redisClient)
 
@@ -39,4 +53,10 @@ await queue.enqueue({ accountId, provider: 'youtube', requestedBy, talentId })
 
 // バッチ: 処理する
 const job = await queue.claim()
+
+// 管理画面: 全アカウントのチェックを依頼し、進捗を読む
+const runs = new BackfillRuns(redisClient)
+
+await runs.start(accounts, { requestedBy })
+const progress = await runs.getLatest()
 ```

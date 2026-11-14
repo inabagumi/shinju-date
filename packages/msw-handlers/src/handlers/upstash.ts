@@ -132,6 +132,23 @@ function simulateBackfillRequeue(keys: any[], argv: any[]): number {
 }
 
 /**
+ * Simulate `RUN_UNLOCK_SCRIPT` of `@shinju-date/video-backfill`: deletes the
+ * lock of a request for a check only if it still holds the request's token.
+ */
+function simulateBackfillRunUnlock(keys: any[], argv: any[]): number {
+  const [lockKey] = keys
+  const [token] = argv
+
+  if (mockRedisStore.get(lockKey) !== token) {
+    return 0
+  }
+
+  mockRedisStore.delete(lockKey)
+
+  return 1
+}
+
+/**
  * Parse Upstash Redis REST API command
  */
 function parseUpstashCommand(body: any) {
@@ -218,6 +235,10 @@ function processRedisCommand(command: string, args: any[]): any {
 
       if (String(script).includes('-- video-backfill:requeue')) {
         return { result: simulateBackfillRequeue(keys, argv) }
+      }
+
+      if (String(script).includes('-- video-backfill:run-unlock')) {
+        return { result: simulateBackfillRunUnlock(keys, argv) }
       }
 
       return { result: null }

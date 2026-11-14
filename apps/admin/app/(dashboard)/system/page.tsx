@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { CardSkeleton } from '@/components/skeletons'
 import { MaintenanceModePanel } from '../_components/maintenance-mode-panel'
 import { RecentActivity } from '../_components/recent-activity'
+import { VideoBackfillRunPanel } from './_components/video-backfill-run-panel'
 
 export default function SystemPage() {
   return (
@@ -15,6 +16,7 @@ export default function SystemPage() {
         <Suspense fallback={<CardSkeleton />}>
           <RecentActivity />
         </Suspense>
+        <VideoBackfillRunPanel />
       </div>
     </div>
   )

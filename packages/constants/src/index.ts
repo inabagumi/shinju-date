@@ -36,6 +36,12 @@ export const REDIS_KEYS = {
   VIDEO_BACKFILL_JOB_PREFIX: 'jobs:video-backfill:job:',
   VIDEO_BACKFILL_LOCK_PREFIX: 'jobs:video-backfill:lock:',
   VIDEO_BACKFILL_QUEUE: 'jobs:video-backfill:queue',
+  // Check of the accounts of all active talents: the latest check, the lock
+  // held while one is being requested, and the outcomes of its jobs
+  // (format: prefix + `<check ID>:<job ID>`)
+  VIDEO_BACKFILL_RUN: 'jobs:video-backfill:run',
+  VIDEO_BACKFILL_RUN_LOCK: 'jobs:video-backfill:run-lock',
+  VIDEO_BACKFILL_RUN_RESULT_PREFIX: 'jobs:video-backfill:run-result:',
 } as const
 
 export const SITE_NAME = 'SHINJU DATE'
