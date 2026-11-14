@@ -145,23 +145,181 @@ function applySupabaseFilters(
     }
   }
 
+  // Apply offset before limit to match PostgREST pagination semantics
+  if (query.offset) {
+    const offsetNum = parseInt(query.offset, 10)
+    filteredData = filteredData.slice(offsetNum)
+  }
+
   // Apply limit
   if (query.limit) {
     const limitNum = parseInt(query.limit, 10)
     filteredData = filteredData.slice(0, limitNum)
   }
 
-  // Apply offset
-  if (query.offset) {
-    const offsetNum = parseInt(query.offset, 10)
-    filteredData = filteredData.slice(offsetNum)
-  }
-
   return filteredData
 }
 
 /**
- * Handle Supabase select projection with native @msw/data relation traversal
+ * A single entry of a PostgREST `select` parameter.
+ *
+ * - `column`: a plain column such as `id` or an aliased one such as `name:title`
+ * - `relation`: an embedded resource such as `talent:talents!inner(id,name)`
+ * - `wildcard`: `*`
+ */
+type SelectNode =
+  | { kind: 'column'; alias: string; column: string }
+  | { kind: 'relation'; alias: string; fields: SelectNode[]; relation: string }
+  | { kind: 'wildcard' }
+
+/**
+ * Split a select string on commas that are not nested inside parentheses.
+ *
+ * `thumbnail:thumbnails(id,path),talent:talents(id,name)` becomes
+ * `['thumbnail:thumbnails(id,path)', 'talent:talents(id,name)']`.
+ */
+function splitSelectFields(selectStr: string): string[] {
+  const fields: string[] = []
+  let depth = 0
+  let current = ''
+
+  for (const char of selectStr) {
+    if (char === '(') {
+      depth += 1
+    } else if (char === ')') {
+      depth = Math.max(0, depth - 1)
+    }
+
+    if (char === ',' && depth === 0) {
+      fields.push(current)
+      current = ''
+    } else {
+      current += char
+    }
+  }
+  fields.push(current)
+
+  return fields.map((field) => field.trim()).filter((field) => field !== '')
+}
+
+/**
+ * Parse a PostgREST `select` parameter into a tree of select nodes.
+ */
+function parseSelect(selectStr: string): SelectNode[] {
+  return splitSelectFields(selectStr).map((field): SelectNode => {
+    if (field === '*') {
+      return { kind: 'wildcard' }
+    }
+
+    // alias:relation!hint(fields) where alias and hint are optional
+    const relationMatch = field.match(
+      /^(?:(\w+):)?(\w+)(?:!\w+)*\s*\(([\s\S]*)\)$/,
+    )
+    if (relationMatch) {
+      const [, alias, relation = '', nestedFields = ''] = relationMatch
+      return {
+        alias: alias ?? relation,
+        fields: parseSelect(nestedFields),
+        kind: 'relation',
+        relation,
+      }
+    }
+
+    // alias:column::cast where alias and cast are optional
+    const columnMatch = field.match(/^(?:(\w+):)?(\w+)(?:::\w+)?$/)
+    const [, alias, column = field] = columnMatch ?? []
+    return { alias: alias ?? column, column, kind: 'column' }
+  })
+}
+
+/**
+ * Resolve an embedded resource for a row.
+ *
+ * Relations are resolved manually via Collection queries because
+ * @msw/data's automatic relation system would require relations to be
+ * declared in every schema.
+ */
+async function resolveRelation(
+  relation: string,
+  // biome-ignore lint/suspicious/noExplicitAny: Rows can come from any table
+  item: any,
+  // biome-ignore lint/suspicious/noExplicitAny: Rows can come from any table
+): Promise<any> {
+  switch (relation) {
+    case 'talents':
+      return item.talent_id
+        ? await talents.findFirst((q) => q.where({ id: item.talent_id }))
+        : null
+    case 'thumbnails':
+      return item.thumbnail_id
+        ? await thumbnails.findFirst((q) => q.where({ id: item.thumbnail_id }))
+        : null
+    case 'videos':
+      return item.video_id
+        ? await videos.findFirst((q) => q.where({ id: item.video_id }))
+        : null
+    case 'youtube_videos':
+      // One-to-one with videos
+      return item.id
+        ? await youtubeVideos.findFirst((q) => q.where({ video_id: item.id }))
+        : null
+    case 'youtube_channels':
+      // One-to-many with talents
+      return item.id
+        ? await youtubeChannels.findMany((q) => q.where({ talent_id: item.id }))
+        : []
+    case 'twitch_users':
+      // No Twitch mock data yet. Embedding from talents is one-to-many
+      // (empty array), while embedding from twitch_videos is many-to-one.
+      return 'talent_id' in item ? null : []
+    default:
+      // Relations without mock data (e.g. twitch_videos, twitch_users)
+      return null
+  }
+}
+
+/**
+ * Project a single row according to parsed select nodes, resolving
+ * embedded resources recursively.
+ */
+async function projectRow(
+  // biome-ignore lint/suspicious/noExplicitAny: Rows can come from any table
+  item: any,
+  nodes: SelectNode[],
+  // biome-ignore lint/suspicious/noExplicitAny: Dynamic object construction from select fields
+): Promise<any> {
+  // biome-ignore lint/suspicious/noExplicitAny: Dynamic object construction from select fields
+  const result: any = {}
+
+  for (const node of nodes) {
+    if (node.kind === 'wildcard') {
+      Object.assign(result, item)
+    } else if (node.kind === 'column') {
+      if (node.column in item) {
+        result[node.alias] = item[node.column]
+      }
+    } else {
+      const related = await resolveRelation(node.relation, item)
+
+      if (Array.isArray(related)) {
+        result[node.alias] = await Promise.all(
+          related.map((relatedItem) => projectRow(relatedItem, node.fields)),
+        )
+      } else if (related) {
+        result[node.alias] = await projectRow(related, node.fields)
+      } else {
+        result[node.alias] = null
+      }
+    }
+  }
+
+  return result
+}
+
+/**
+ * Handle Supabase select projection, including nested embedded resources
+ * such as `talent:talents(id,name)` or
+ * `twitch_video:twitch_videos(type,twitch_user:twitch_users(twitch_login_name))`.
  */
 async function applySelect(
   // biome-ignore lint/suspicious/noExplicitAny: Generic mock data handler requires any for flexible type matching across different table types
@@ -172,202 +330,9 @@ async function applySelect(
     return data
   }
 
-  const result = await Promise.all(
-    data.map(async (item) => {
-      // biome-ignore lint/suspicious/noExplicitAny: Dynamic object construction from select fields
-      const result: any = {}
-      const fields = selectStr.split(',').map((f) => f.trim())
+  const nodes = parseSelect(selectStr)
 
-      for (const field of fields) {
-        // Handle nested selects with alias like "talent:talents(id, name)" or "talent:talents!inner(id, name)"
-        // Supabase syntax: alias:table!modifier(fields) where modifier is optional (!inner, !left, etc.)
-        const aliasedNestedMatch = field.match(
-          /^(\w+):(\w+)(?:!\w+)?\s*\(([^)]+)\)$/,
-        )
-        const simpleNestedMatch = field.match(/^(\w+)\(([^)]+)\)$/)
-
-        if (aliasedNestedMatch) {
-          const [, aliasName, relationName, nestedFields] = aliasedNestedMatch
-          if (aliasName && relationName && nestedFields) {
-            // Manual relation resolution via Collection queries
-            // @msw/data's automatic relation system requires relations in schemas
-            // which would require major refactoring. Using manual lookups instead.
-            let relatedItem = null
-            if (relationName === 'talents' && item.talent_id) {
-              relatedItem = await talents.findFirst((q) =>
-                q.where({ id: item.talent_id }),
-              )
-            } else if (relationName === 'thumbnails' && item.thumbnail_id) {
-              relatedItem = await thumbnails.findFirst((q) =>
-                q.where({ id: item.thumbnail_id }),
-              )
-            } else if (relationName === 'videos' && item.video_id) {
-              relatedItem = await videos.findFirst((q) =>
-                q.where({ id: item.video_id }),
-              )
-            } else if (relationName === 'youtube_videos' && item.id) {
-              // One-to-one with videos
-              relatedItem = await youtubeVideos.findFirst((q) =>
-                q.where({ video_id: item.id }),
-              )
-            } else if (relationName === 'twitch_videos' && item.id) {
-              // No Twitch mock data yet; leave null so YouTube-only seeds still work
-              relatedItem = null
-            } else if (relationName === 'youtube_channels' && item.id) {
-              const channels = await youtubeChannels.findMany((q) =>
-                q.where({ talent_id: item.id }),
-              )
-              relatedItem = channels.length > 0 ? channels : null
-            }
-
-            if (relatedItem) {
-              const nestedFieldArray = nestedFields
-                .split(',')
-                .map((f) => f.trim())
-
-              // Check if relatedItem is an array (for has-many relations like youtube_channels)
-              if (Array.isArray(relatedItem)) {
-                // Handle array of related items
-                // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
-                const nestedResults = relatedItem.map((item: any) => {
-                  // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
-                  const nestedResult: any = {}
-                  for (const nf of nestedFieldArray) {
-                    nestedResult[nf] = item[nf]
-                  }
-                  return nestedResult
-                })
-                result[aliasName] = nestedResults
-              } else {
-                // Handle single related item (existing logic)
-                // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
-                const nestedResult: any = {}
-
-                for (const nf of nestedFieldArray) {
-                  // Handle nested relations within relations (like video -> thumbnail)
-                  const nestedRelationMatch = nf.match(
-                    /^(\w+):(\w+)(?:!\w+)?\s*\(([^)]+)\)$/,
-                  )
-                  if (nestedRelationMatch) {
-                    const [
-                      ,
-                      nestedAlias,
-                      nestedRelationName,
-                      nestedRelationFields,
-                    ] = nestedRelationMatch
-                    if (
-                      nestedAlias &&
-                      nestedRelationName &&
-                      nestedRelationFields
-                    ) {
-                      let nestedRelatedItem = null
-                      if (
-                        nestedRelationName === 'thumbnails' &&
-                        // biome-ignore lint/suspicious/noExplicitAny: relatedItem can be any table type with various foreign keys
-                        (relatedItem as any).thumbnail_id
-                      ) {
-                        nestedRelatedItem = await thumbnails.findFirst((q) =>
-                          // biome-ignore lint/suspicious/noExplicitAny: relatedItem can be any table type with various foreign keys
-                          q.where({ id: (relatedItem as any).thumbnail_id }),
-                        )
-                      }
-
-                      if (nestedRelatedItem) {
-                        const thumbnailFieldArray = nestedRelationFields
-                          .split(',')
-                          .map((f) => f.trim())
-                        // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from nested relation fields
-                        const thumbnailResult: any = {}
-                        for (const tf of thumbnailFieldArray) {
-                          // biome-ignore lint/suspicious/noExplicitAny: Dynamic property access on nested relation object
-                          thumbnailResult[tf] = (nestedRelatedItem as any)[tf]
-                        }
-                        nestedResult[nestedAlias] = thumbnailResult
-                      } else {
-                        nestedResult[nestedAlias] = null
-                      }
-                    }
-                  } else {
-                    // biome-ignore lint/suspicious/noExplicitAny: Dynamic property access on relation object
-                    nestedResult[nf] = (relatedItem as any)[nf]
-                  }
-                }
-                result[aliasName] = nestedResult
-              }
-            } else {
-              result[aliasName] = null
-            }
-          }
-        } else if (simpleNestedMatch) {
-          // Handle simple nested selects without alias (like "youtube_channels(id, name)")
-          const [, relationName, nestedFields] = simpleNestedMatch
-          if (relationName && nestedFields) {
-            let relatedItem = null
-            if (relationName === 'talents' && item.talent_id) {
-              relatedItem = await talents.findFirst((q) =>
-                q.where({ id: item.talent_id }),
-              )
-            } else if (relationName === 'thumbnails' && item.thumbnail_id) {
-              relatedItem = await thumbnails.findFirst((q) =>
-                q.where({ id: item.thumbnail_id }),
-              )
-            } else if (relationName === 'videos' && item.video_id) {
-              relatedItem = await videos.findFirst((q) =>
-                q.where({ id: item.video_id }),
-              )
-            } else if (relationName === 'youtube_videos' && item.id) {
-              relatedItem = await youtubeVideos.findFirst((q) =>
-                q.where({ video_id: item.id }),
-              )
-            } else if (relationName === 'twitch_videos' && item.id) {
-              relatedItem = null
-            } else if (relationName === 'youtube_channels' && item.id) {
-              const channels = await youtubeChannels.findMany((q) =>
-                q.where({ talent_id: item.id }),
-              )
-              relatedItem = channels.length > 0 ? channels : null
-            }
-
-            if (relatedItem) {
-              const nestedFieldArray = nestedFields
-                .split(',')
-                .map((f) => f.trim())
-
-              // Check if relatedItem is an array (for has-many relations)
-              if (Array.isArray(relatedItem)) {
-                // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
-                const nestedResults = relatedItem.map((relItem: any) => {
-                  // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
-                  const nestedResult: any = {}
-                  for (const nf of nestedFieldArray) {
-                    nestedResult[nf] = relItem[nf]
-                  }
-                  return nestedResult
-                })
-                result[relationName] = nestedResults
-              } else {
-                // biome-ignore lint/suspicious/noExplicitAny: Dynamic nested object construction from relation fields
-                const nestedResult: any = {}
-                for (const nf of nestedFieldArray) {
-                  // biome-ignore lint/suspicious/noExplicitAny: Dynamic property access on relation object
-                  nestedResult[nf] = (relatedItem as any)[nf]
-                }
-                result[relationName] = nestedResult
-              }
-            } else {
-              result[relationName] = null
-            }
-          }
-        } else if (field in item) {
-          result[field] = item[field]
-        }
-      }
-
-      return result
-    }),
-  )
-
-  return result
+  return await Promise.all(data.map((item) => projectRow(item, nodes)))
 }
 
 export const supabaseHandlers = [

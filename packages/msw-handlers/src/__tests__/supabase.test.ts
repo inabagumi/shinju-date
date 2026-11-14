@@ -132,6 +132,83 @@ describe('Supabase Handlers', () => {
       }
     })
 
+    it('should resolve aliased relations used by the admin video list', async () => {
+      const select = [
+        'id',
+        'title',
+        'thumbnail:thumbnails(id,path,blur_data_url)',
+        'talent:talents(id,name)',
+        'youtube_video:youtube_videos(youtube_video_id)',
+        'twitch_video:twitch_videos(twitch_video_id,type,twitch_user:twitch_users(twitch_login_name))',
+      ].join(',')
+      const response = await fetch(
+        `https://fake.supabase.test/rest/v1/videos?select=${encodeURIComponent(select)}&limit=5`,
+      )
+      const data = await response.json()
+
+      expect(response.ok).toBe(true)
+      expect(data.length).toBeGreaterThan(0)
+      for (const video of data) {
+        expect(Object.keys(video).sort()).toEqual(
+          [
+            'id',
+            'talent',
+            'thumbnail',
+            'title',
+            'twitch_video',
+            'youtube_video',
+          ].sort(),
+        )
+        expect(video.talent).toEqual({
+          id: expect.any(String),
+          name: expect.any(String),
+        })
+        if (video.thumbnail) {
+          expect(Object.keys(video.thumbnail).sort()).toEqual(
+            ['blur_data_url', 'id', 'path'].sort(),
+          )
+        }
+        if (video.youtube_video) {
+          expect(video.youtube_video).toEqual({
+            youtube_video_id: expect.any(String),
+          })
+        }
+        expect(video.twitch_video).toBeNull()
+      }
+    })
+
+    it('should resolve nested relations recursively', async () => {
+      const select = 'id,video:videos(id,title,thumbnail:thumbnails(id,path))'
+      const response = await fetch(
+        `https://fake.supabase.test/rest/v1/youtube_videos?select=${encodeURIComponent(select)}&limit=1`,
+      )
+      const data = await response.json()
+
+      expect(response.ok).toBe(true)
+      expect(data[0].video).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          title: expect.any(String),
+        }),
+      )
+      expect(data[0].video).toHaveProperty('thumbnail')
+    })
+
+    it('should apply offset before limit', async () => {
+      const allResponse = await fetch(
+        'https://fake.supabase.test/rest/v1/videos?select=id',
+      )
+      const all = await allResponse.json()
+      expect(all.length).toBeGreaterThan(2)
+
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/videos?select=id&offset=1&limit=2',
+      )
+      const data = await response.json()
+
+      expect(data).toEqual(all.slice(1, 3))
+    })
+
     it('should handle filtering with id.in', async () => {
       const response = await fetch(
         'https://fake.supabase.test/rest/v1/videos?select=*&id.in.(1,2)',
