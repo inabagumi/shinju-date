@@ -145,6 +145,10 @@ AIツールは常に進化しています。
 
 Vitest はテストファイルの型を検査しないため、TypeScript のコードを変更した後は `pnpm run typecheck`（特定のパッケージのみの場合は `pnpm run typecheck --filter=<パッケージ名>`）も実行してください。CI でも実行され、型エラーがあると失敗します。詳細は [CONTRIBUTING.md](CONTRIBUTING.md#型チェック) を参照してください。
 
+### 各アプリの AGENTS.md
+
+`apps/*/AGENTS.md` の `<!-- BEGIN:nextjs-agent-rules -->` から `<!-- END:nextjs-agent-rules -->` までのブロックは `next dev` が書き込みます。手で編集せず、`next dev` が書き換えた差分はそのままコミットしてください。
+
 ### TypeScript 型定義
 
 **🚨 重要: interface を優先使用**
