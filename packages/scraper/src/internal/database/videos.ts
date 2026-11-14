@@ -1,6 +1,5 @@
 import type { TablesInsert, TablesUpdate } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
-import type { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '../../types.js'
 import { chunk } from '../batch.js'
 import { DatabaseError, isUniqueViolation } from './errors.js'

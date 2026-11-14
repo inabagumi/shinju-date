@@ -1,6 +1,5 @@
 'use client'
 
-import type { Temporal } from 'temporal-polyfill'
 import { useNow } from './timer'
 
 export default function FormattedTime({

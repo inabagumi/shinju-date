@@ -1,5 +1,3 @@
-import { Temporal } from 'temporal-polyfill'
-
 /**
  * Format a date as a relative time string using Intl.RelativeTimeFormat
  * @param date - The date to format (as Temporal.Instant or Temporal.ZonedDateTime)

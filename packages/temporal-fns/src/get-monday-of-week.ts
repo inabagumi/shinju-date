@@ -1,4 +1,3 @@
-import type { Temporal } from 'temporal-polyfill'
 import formatDateKey from './format-date.js'
 
 /**
@@ -10,7 +9,6 @@ import formatDateKey from './format-date.js'
  *
  * @example
  * ```typescript
- * import { Temporal } from 'temporal-polyfill'
  * import getMondayOfWeek from '@shinju-date/temporal-fns/get-monday-of-week'
  *
  * const tuesday = Temporal.ZonedDateTime.from({

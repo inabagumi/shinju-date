@@ -5,7 +5,6 @@ import {
   getVideoKind,
   getVideoStatus,
 } from '@shinju-date/youtube-api-client'
-import { Temporal } from 'temporal-polyfill'
 import type { ThumbnailSource } from '../internal/thumbnails/index.js'
 import type { YouTubeVideo } from './types.js'
 

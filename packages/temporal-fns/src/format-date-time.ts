@@ -1,4 +1,3 @@
-import type { Temporal } from 'temporal-polyfill'
 import parseISO8601 from './parse-iso8601.js'
 
 interface FormatDateTimeOptions {

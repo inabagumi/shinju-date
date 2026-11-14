@@ -1,5 +1,4 @@
 import { TIME_ZONE } from '@shinju-date/constants'
-import { Temporal } from 'temporal-polyfill'
 import { describe, expect, it } from 'vitest'
 import {
   analyticsSearchParamsSchema,

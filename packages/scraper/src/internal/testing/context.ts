@@ -1,4 +1,3 @@
-import { Temporal } from 'temporal-polyfill'
 import type {
   CrawlContext,
   ErrorReporter,

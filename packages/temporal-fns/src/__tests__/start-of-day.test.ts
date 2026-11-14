@@ -1,4 +1,3 @@
-import { Temporal } from 'temporal-polyfill'
 import { describe, expect, it } from 'vitest'
 import startOfDay from '../start-of-day'
 

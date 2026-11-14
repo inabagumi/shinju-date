@@ -11,7 +11,6 @@ import { getUsers } from '@shinju-date/twitch-api-client'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { getChannels } from '@shinju-date/youtube-api-client'
 import { revalidatePath } from 'next/cache'
-import { Temporal } from 'temporal-polyfill'
 import { createAuditLog } from '@/lib/audit-log'
 import {
   type AuthenticatedContext,

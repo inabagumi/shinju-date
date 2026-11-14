@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { cache } from 'react'
-import { Temporal } from 'temporal-polyfill'
 import type { PopularVideo } from '@/lib/analytics/get-popular-videos'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
 import { ExportMenu } from '../../_components/export-menu'

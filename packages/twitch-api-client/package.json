@@ -2,8 +2,7 @@
   "author": "Haneru Developers",
   "dependencies": {
     "@twurple/api": "8.2.0",
-    "@twurple/auth": "8.2.0",
-    "temporal-polyfill": "1.0.8"
+    "@twurple/auth": "8.2.0"
   },
   "description": "Twitch Helix API client for SHINJU DATE, powered by twurple",
   "devDependencies": {

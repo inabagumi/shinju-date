@@ -1,6 +1,5 @@
 import { ApiClient } from '@twurple/api'
 import { AppTokenAuthProvider } from '@twurple/auth'
-import { Temporal } from 'temporal-polyfill'
 
 export const TWITCH_API_MAX_RESULTS = 100
 

@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "lib": ["ES2023", "ESNext.Temporal"],
     "types": ["vitest/globals"]
   },
   "extends": [

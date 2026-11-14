@@ -1,4 +1,3 @@
-import { Temporal } from 'temporal-polyfill'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const set = vi.fn()

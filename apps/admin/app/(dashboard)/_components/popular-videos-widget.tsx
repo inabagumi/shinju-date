@@ -5,7 +5,6 @@ import { ExternalLink } from 'lucide-react'
 import { cacheLife } from 'next/cache'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Temporal } from 'temporal-polyfill'
 import { PopularVideosListSkeleton } from '@/components/skeletons'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
 

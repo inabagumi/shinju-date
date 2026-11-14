@@ -416,9 +416,6 @@ importers:
       react-dom:
         specifier: 19.3.1
         version: 19.3.1(react@19.3.1)
-      temporal-polyfill:
-        specifier: 1.0.8
-        version: 1.0.8
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -844,9 +841,6 @@ importers:
       msw:
         specifier: 3.0.5
         version: 3.0.5(@types/node@26.6.6)(graphql@16.15.0)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2))
-      temporal-polyfill:
-        specifier: 1.0.8
-        version: 1.0.8
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -927,9 +921,6 @@ importers:
       sharp:
         specifier: 0.35.5
         version: 0.35.5(@types/node@26.6.6)
-      temporal-polyfill:
-        specifier: 1.0.8
-        version: 1.0.8
     devDependencies:
       '@shinju-date/helpers':
         specifier: workspace:*
@@ -959,10 +950,6 @@ importers:
   packages/tailwind-config: {}
 
   packages/temporal-fns:
-    dependencies:
-      temporal-polyfill:
-        specifier: 1.0.8
-        version: 1.0.8
     devDependencies:
       '@tsconfig/node20':
         specifier: 20.1.11
@@ -988,9 +975,6 @@ importers:
       '@twurple/auth':
         specifier: 8.2.0
         version: 8.2.0
-      temporal-polyfill:
-        specifier: 1.0.8
-        version: 1.0.8
     devDependencies:
       '@tsconfig/node20':
         specifier: 20.1.11
@@ -1128,9 +1112,6 @@ importers:
       '@shinju-date/constants':
         specifier: workspace:*
         version: link:../constants
-      temporal-polyfill:
-        specifier: 1.0.8
-        version: 1.0.8
     devDependencies:
       '@tsconfig/node20':
         specifier: 20.1.11
@@ -1181,9 +1162,6 @@ importers:
       '@googleapis/youtube':
         specifier: 40.1.0
         version: 40.1.0(supports-color@8.1.1)
-      temporal-polyfill:
-        specifier: 1.0.8
-        version: 1.0.8
       zod:
         specifier: 4.6.7
         version: 4.6.7

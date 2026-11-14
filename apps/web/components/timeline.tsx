@@ -3,7 +3,6 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { useQuery } from '@tanstack/react-query'
 import { type ReactNode, useId, useMemo } from 'react'
-import { Temporal } from 'temporal-polyfill'
 import { fetchUpcomingVideos, type Video } from '@/lib/fetchers'
 import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 

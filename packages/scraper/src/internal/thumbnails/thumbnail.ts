@@ -3,7 +3,6 @@ import { toDBString } from '@shinju-date/temporal-fns'
 import mime from 'mime'
 import { nanoid } from 'nanoid'
 import sharp from 'sharp'
-import type { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '../../types.js'
 import { DatabaseError } from '../database/errors.js'
 

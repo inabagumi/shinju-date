@@ -1,7 +1,6 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
-import type { Temporal } from 'temporal-polyfill'
 import { redisClient } from './redis'
 
 export interface FinishVideoSyncOptions {

@@ -1,7 +1,6 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { createErrorResponse } from '@shinju-date/helpers'
 import { startOfHour } from '@shinju-date/temporal-fns'
-import { Temporal } from 'temporal-polyfill'
 import {
   createCalendarResponse,
   createEventAttributesList,

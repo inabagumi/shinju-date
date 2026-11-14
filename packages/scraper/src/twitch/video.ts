@@ -1,7 +1,6 @@
 import type { Tables, TablesUpdate } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { getTwitchVideoStatus } from '@shinju-date/twitch-api-client'
-import { Temporal } from 'temporal-polyfill'
 import {
   DEFAULT_THUMBNAIL_HEIGHT,
   DEFAULT_THUMBNAIL_WIDTH,

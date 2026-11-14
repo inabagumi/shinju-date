@@ -1,5 +1,3 @@
-import { Temporal } from 'temporal-polyfill'
-
 export default function max(
   ...values: Temporal.ZonedDateTime[]
 ): Temporal.ZonedDateTime {

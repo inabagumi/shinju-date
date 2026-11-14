@@ -1,7 +1,6 @@
 import type { TablesInsert } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
 import type { BackfillJob } from '@shinju-date/video-backfill'
-import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from './supabase'
 
 function toTimestamp(value: string): string {

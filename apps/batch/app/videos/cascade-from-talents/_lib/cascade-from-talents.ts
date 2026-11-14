@@ -1,5 +1,4 @@
 import { toDBString } from '@shinju-date/temporal-fns'
-import { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 import { BATCH_LIMIT } from './constants'
 

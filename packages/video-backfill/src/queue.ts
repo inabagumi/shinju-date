@@ -1,6 +1,5 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import type { Redis } from '@upstash/redis'
-import { Temporal } from 'temporal-polyfill'
 
 /** Platform whose account a job reads, as in `videos.platform`. */
 export type BackfillProvider = 'youtube' | 'twitch'

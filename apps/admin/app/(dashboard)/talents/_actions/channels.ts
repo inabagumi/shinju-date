@@ -8,7 +8,6 @@ import {
   resolveYouTubeChannel,
 } from '@shinju-date/youtube-api-client'
 import { revalidatePath } from 'next/cache'
-import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
 import {

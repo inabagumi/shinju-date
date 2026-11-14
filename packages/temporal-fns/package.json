@@ -1,8 +1,5 @@
 {
   "author": "Haneru Developers",
-  "dependencies": {
-    "temporal-polyfill": "1.0.8"
-  },
   "description": "",
   "devDependencies": {
     "@tsconfig/node20": "20.1.11",

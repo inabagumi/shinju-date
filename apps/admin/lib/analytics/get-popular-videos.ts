@@ -3,7 +3,6 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { isNonNullable } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
-import type { Temporal } from 'temporal-polyfill'
 import { createSupabaseServerClient } from '@/lib/supabase'
 import { _getPopularItemsFromRedis } from './_get-popular-items-from-redis'
 

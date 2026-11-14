@@ -1,3 +1,6 @@
+// Node.js provides Temporal natively on the server, so the polyfill is only
+// needed in the browser. It installs itself only when Temporal is missing.
+import 'temporal-polyfill/global'
 import { initBotId } from 'botid/client/core'
 
 // Protect Server Actions invoked from public form pages.

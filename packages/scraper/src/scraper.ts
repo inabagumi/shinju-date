@@ -1,4 +1,3 @@
-import { Temporal } from 'temporal-polyfill'
 import type { Logger } from './internal/logger.js'
 import type {
   AddPastVideosOptions,

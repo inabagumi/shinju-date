@@ -1,4 +1,3 @@
-import { Temporal } from 'temporal-polyfill'
 import { describe, expect, it } from 'vitest'
 import type { YouTubeVideo } from '../types.js'
 import { getThumbnailSource, getVideoChanges, toVideoFields } from '../video.js'

@@ -8,7 +8,6 @@ import {
   useEffect,
   useState,
 } from 'react'
-import { Temporal } from 'temporal-polyfill'
 
 interface TimerContextValue {
   now?: Temporal.ZonedDateTime | undefined

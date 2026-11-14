@@ -8,7 +8,6 @@ import {
 } from '@shinju-date/twitch-api-client'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
-import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
 import {

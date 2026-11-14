@@ -1,6 +1,5 @@
 import type Database from '@shinju-date/database'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Temporal } from 'temporal-polyfill'
 import type { Logger } from './internal/logger.js'
 
 export type { Logger }

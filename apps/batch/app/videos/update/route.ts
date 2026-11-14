@@ -1,6 +1,5 @@
 import { createErrorResponse } from '@shinju-date/helpers'
 import type { NextRequest } from 'next/server'
-import { Temporal } from 'temporal-polyfill'
 import { getVideosUpdateJob } from '@/lib/crawler-jobs'
 import { runCronJob } from '@/lib/cron'
 import { parseProvider } from '@/lib/provider'

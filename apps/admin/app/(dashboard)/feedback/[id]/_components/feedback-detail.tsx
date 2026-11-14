@@ -6,7 +6,6 @@ import { formatDateTimeWithSeconds } from '@shinju-date/temporal-fns'
 import { Textarea } from '@shinju-date/ui'
 import { useActionState } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { Temporal } from 'temporal-polyfill'
 import { z } from 'zod'
 import { SubmitButton } from '@/components/form'
 import {

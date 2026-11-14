@@ -2,7 +2,6 @@
 
 import { TIME_ZONE } from '@shinju-date/constants'
 import { useState } from 'react'
-import { Temporal } from 'temporal-polyfill'
 
 export interface DateRange {
   startDate: string // ISO 8601 date string

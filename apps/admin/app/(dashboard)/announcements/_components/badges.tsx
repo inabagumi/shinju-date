@@ -1,5 +1,4 @@
 import { Badge } from '@shinju-date/ui'
-import { Temporal } from 'temporal-polyfill'
 import type { Announcement } from '../_lib/types'
 
 // Get level badge variant

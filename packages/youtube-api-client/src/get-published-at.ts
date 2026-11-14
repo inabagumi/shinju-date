@@ -1,5 +1,4 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
-import { Temporal } from 'temporal-polyfill'
 
 /**
  * Extracts the published date from a YouTube video.

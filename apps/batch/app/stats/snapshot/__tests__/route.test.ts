@@ -1,6 +1,5 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { startOfDay, toDBString } from '@shinju-date/temporal-fns'
-import { Temporal } from 'temporal-polyfill'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock dependencies

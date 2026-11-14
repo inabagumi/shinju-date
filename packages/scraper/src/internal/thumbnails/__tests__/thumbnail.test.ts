@@ -1,6 +1,5 @@
 import { HttpResponse, http } from 'msw'
 import sharp from 'sharp'
-import { Temporal } from 'temporal-polyfill'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { postgresError, setupSupabase } from '../../testing/supabase.js'
 import { createThumbnail, removeThumbnail } from '../thumbnail.js'

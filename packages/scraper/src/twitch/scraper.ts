@@ -1,4 +1,3 @@
-import type { Temporal } from 'temporal-polyfill'
 import { Scraper } from '../scraper.js'
 import type { AddPastVideosOptions, AddPastVideosResult } from '../types.js'
 import { addNewTwitchVideos } from './add-new-videos.js'

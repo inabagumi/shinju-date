@@ -7,7 +7,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useMemo, useState } from 'react'
-import { Temporal } from 'temporal-polyfill'
 import {
   DropdownMenu,
   DropdownMenuContent,

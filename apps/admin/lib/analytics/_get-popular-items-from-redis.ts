@@ -2,7 +2,6 @@
 
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
-import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
 
 /**

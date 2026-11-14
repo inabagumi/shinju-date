@@ -1,5 +1,4 @@
 import { cache } from 'react'
-import { Temporal } from 'temporal-polyfill'
 import { getPopularKeywords } from '@/lib/analytics/get-popular-keywords'
 import { ExportMenu } from '../../_components/export-menu'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'

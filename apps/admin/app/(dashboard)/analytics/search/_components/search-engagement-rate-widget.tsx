@@ -1,5 +1,4 @@
 import { cache } from 'react'
-import { Temporal } from 'temporal-polyfill'
 import { getSearchEngagementRate } from '@/lib/analytics/get-search-quality-metrics'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 

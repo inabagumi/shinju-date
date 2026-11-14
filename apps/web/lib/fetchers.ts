@@ -4,7 +4,6 @@ import { SEARCH_RESULT_COUNT, TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { startOfHour, toDBString } from '@shinju-date/temporal-fns'
 import { cacheLife, cacheTag } from 'next/cache'
-import { Temporal } from 'temporal-polyfill'
 import { supabaseClient } from '@/lib/supabase'
 
 const DEFAULT_SEARCH_SELECT = `

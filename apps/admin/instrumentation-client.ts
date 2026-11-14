@@ -1,3 +1,7 @@
+// Node.js provides Temporal natively on the server, so the polyfill is only
+// needed in the browser. It installs itself only when Temporal is missing.
+import 'temporal-polyfill/global'
+
 const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
 
 if (dsn) {
