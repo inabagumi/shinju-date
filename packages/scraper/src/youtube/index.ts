@@ -1,5 +1,7 @@
 export type { ProfileImageSyncResult } from '../internal/profile-images/index.js'
 export type {
+  AddPastVideosOptions,
+  AddPastVideosResult,
   ErrorReporter,
   Logger,
   ScraperOptions,

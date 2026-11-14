@@ -120,6 +120,13 @@ export abstract class Fetcher<
   }
 
   /**
+   * Makes a single request, counted against `concurrency` like every other.
+   */
+  protected request<T>(task: () => Promise<T>): Promise<T> {
+    return this.#queue.run(task)
+  }
+
+  /**
    * Fetches resources for a list of IDs in batches of `batchSize`.
    * Rejects when a batch fails.
    */

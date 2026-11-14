@@ -178,15 +178,14 @@ async function applyAction(
 export async function addNewTwitchVideos(
   context: CrawlContext<TwitchFetcher>,
 ): Promise<number> {
-  const { fetcher, logger, reportError, supabaseClient } = context
+  const { fetcher, reportError, supabaseClient } = context
   const users = await getActiveTwitchUsers(supabaseClient)
 
   if (users.length === 0) {
     return 0
   }
 
-  const userByTwitchId = new Map(users.map((user) => [user.twitchUserId, user]))
-  const twitchUserIds = [...userByTwitchId.keys()]
+  const twitchUserIds = [...new Set(users.map((user) => user.twitchUserId))]
 
   const [liveStreams, archives, uploads] = await Promise.all([
     fetcher.getLiveStreams(twitchUserIds),
@@ -201,12 +200,47 @@ export async function addNewTwitchVideos(
     reportError(error, { twitchUserId: accountId })
   }
 
-  const videos = [...archives.videos, ...uploads.videos]
+  return saveNewTwitchVideos(context, {
+    liveStreams,
+    users,
+    videos: [...archives.videos, ...uploads.videos],
+  })
+}
+
+export interface SaveNewTwitchVideosOptions {
+  /** Videos saved at once (default: 8). */
+  concurrency?: number
+  /** Streams of `users` that are on air right now. */
+  liveStreams: readonly TwitchStream[]
+  /** Accounts the videos may belong to; videos of other accounts are skipped. */
+  users: readonly ActiveTwitchUser[]
+  /** Videos Twitch listed; the ones that are saved already are skipped. */
+  videos: readonly TwitchVideo[]
+}
+
+/**
+ * Saves the listed videos that are not saved yet, and attaches archives to the
+ * broadcasts the live sync already tracks. Shared by the discovery of new
+ * videos and by backfills of past ones, so both store videos the same way.
+ *
+ * @returns The number of videos added or attached.
+ */
+export async function saveNewTwitchVideos(
+  context: WriteContext,
+  {
+    concurrency = SAVE_CONCURRENCY,
+    liveStreams,
+    users,
+    videos,
+  }: SaveNewTwitchVideosOptions,
+): Promise<number> {
+  const { logger, reportError, supabaseClient } = context
 
   if (videos.length === 0) {
     return 0
   }
 
+  const userByTwitchId = new Map(users.map((user) => [user.twitchUserId, user]))
   const [savedByVideoId, savedByStreamId] = await Promise.all([
     findSavedTwitchVideos(
       supabaseClient,
@@ -229,7 +263,7 @@ export async function addNewTwitchVideos(
 
   return countChanges(
     actions,
-    SAVE_CONCURRENCY,
+    concurrency,
     async (action) => {
       if (!(await applyAction(context, action, userByTwitchId))) {
         return false

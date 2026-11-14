@@ -16,6 +16,7 @@ const finishVideoSync = vi.fn()
 
 vi.mock('@/lib/ratelimit', () => ({
   talentsUpdate: { limit: vi.fn() },
+  videosBackfill: { limit: vi.fn() },
   videosCheck: { limit: limits.videosCheck },
   videosCheckAll: { limit: limits.videosCheckAll },
   videosCheckRecent: { limit: limits.videosCheckRecent },

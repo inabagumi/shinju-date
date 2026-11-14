@@ -20,18 +20,41 @@ const scraper = new YouTubeScraper({
 const changed = await scraper.addNewVideos()
 ```
 
-すべてのスクレイパーは基底クラス `Scraper`（`@shinju-date/scraper`）を継承し、同じ 5 つの操作を持ちます。呼び出し側はプロバイダーを意識せずに使えます。
+すべてのスクレイパーは基底クラス `Scraper`（`@shinju-date/scraper`）を継承し、同じ操作を持ちます。呼び出し側はプロバイダーを意識せずに使えます。
 
-| 操作                        | 内容                                                                                   |
-| --------------------------- | -------------------------------------------------------------------------------------- |
-| `addNewVideos()`            | 追跡中のアカウントに現れた動画を保存する。保存済みの動画には触れない                   |
-| `refreshLiveVideos()`       | 配信予定・配信中の動画を追う（開始、タイトル変更、終了）                               |
-| `refreshRecentVideos()`     | 終了済みの最新動画を再取得し、変更を反映する。取得できなくなった動画は削除扱いにする   |
-| `removeUnavailableVideos()` | 保存済みの全動画を確認し、取得できなくなった動画を削除扱いにする                       |
+| 操作                        | 内容                                                                                 |
+| --------------------------- | ------------------------------------------------------------------------------------ |
+| `addNewVideos()`            | 追跡中のアカウントに現れた動画を保存する。保存済みの動画には触れない                 |
+| `refreshLiveVideos()`       | 配信予定・配信中の動画を追う（開始、タイトル変更、終了）                             |
+| `refreshRecentVideos()`     | 終了済みの最新動画を再取得し、変更を反映する。取得できなくなった動画は削除扱いにする |
+| `removeUnavailableVideos()` | 保存済みの全動画を確認し、取得できなくなった動画を削除扱いにする                     |
 | `syncAccounts()`            | 保存済みアカウントの名前・ハンドル（YouTube はアイコンも）をプラットフォームに合わせる |
+| `addPastVideos(options)`    | 1 アカウントの全履歴を 1 ページ読み、未保存の動画を保存する（バックフィル）          |
 
-- どの操作も「公開サイトに見える変更があったか」を `boolean` で返します（キャッシュ再検証の判断に使えます）。
+- `addPastVideos` 以外の操作は「公開サイトに見える変更があったか」を `boolean` で返します（キャッシュ再検証の判断に使えます）。
 - 引数に実行時刻（`Temporal.Instant`）を渡すと、その実行で書き込む行のタイムスタンプが揃います。省略時は現在時刻です。
+
+### 過去動画の取り込み（`addPastVideos`）
+
+`addNewVideos` は各アカウントの最新の動画しか見ないため、追跡を始める前の動画や、最新ページから外れた古い動画は保存されません。`addPastVideos` はそれを補う操作で、1 アカウントの履歴を新しい順に 1 ページずつ読み、未保存の動画だけを `addNewVideos` と同じ経路で保存します。
+
+```ts
+let cursor: string | null = null
+
+do {
+  const result = await scraper.addPastVideos({
+    accountId, // youtube_channels.id / twitch_users.id
+    cursor,
+  })
+
+  cursor = result.cursor // null なら履歴の最後まで読んだ
+} while (cursor)
+```
+
+- 1 回の呼び出しは 1 ページ（YouTube は 50 件、Twitch は 100 件）だけなので、長い履歴も複数回の実行に分けて読めます。
+- 対象は削除されていないタレントのアカウントです（引退したタレントも含む）。アカウントが見つからなければ `AccountNotFoundError` で reject します。
+- Twitch はアーカイブとアップロードが対象です（ハイライトは対象外。`addNewVideos` と同じ）。
+- サムネイルの同時処理数は `addNewVideos` より抑えています。
 
 ### 失敗の扱い
 

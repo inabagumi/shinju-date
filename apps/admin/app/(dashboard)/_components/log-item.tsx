@@ -29,6 +29,7 @@ const ACTION_LABELS: Record<
   TERM_UPDATE: '用語を更新',
   TWITCH_USER_CREATE: 'Twitchアカウントを追加',
   TWITCH_USER_DELETE: 'Twitchアカウントを削除',
+  VIDEO_BACKFILL: '過去動画の取り込みを依頼',
   VIDEO_DELETE: '動画を削除',
   VIDEO_RESTORE: '動画を復元',
   VIDEO_SYNC: '動画を同期',

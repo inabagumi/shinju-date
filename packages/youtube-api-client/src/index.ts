@@ -459,6 +459,47 @@ export async function* getPlaylistItems({
   }
 }
 
+export interface GetPlaylistItemsPageOptions extends ClientOptions {
+  /** Page size (default: the API maximum). */
+  maxResults?: number
+  /** Token returned by the previous page; omit for the first page. */
+  pageToken?: string | undefined
+  playlistID: string
+}
+
+export interface YouTubePlaylistItemsPage {
+  items: FilteredYouTubePlaylistItem[]
+  /** Token of the next page, or `null` when this was the last one. */
+  nextPageToken: string | null
+}
+
+/**
+ * Gets one page of a playlist.
+ *
+ * Unlike {@link getPlaylistItems} with `all`, the caller keeps the page token,
+ * so a long playlist can be walked across several runs.
+ */
+export async function getPlaylistItemsPage({
+  client = getYouTubeClient(),
+  maxResults = YOUTUBE_DATA_API_MAX_RESULTS,
+  pageToken,
+  playlistID,
+}: GetPlaylistItemsPageOptions): Promise<YouTubePlaylistItemsPage> {
+  const {
+    data: { items, nextPageToken },
+  } = await client.playlistItems.list({
+    maxResults,
+    part: ['contentDetails'],
+    playlistId: playlistID,
+    ...(pageToken ? { pageToken } : {}),
+  })
+
+  return {
+    items: (items ?? []).filter(validatePlaylistItem),
+    nextPageToken: nextPageToken || null,
+  }
+}
+
 /**
  * Gets YouTube videos by their IDs
  * @param options - The options for getting videos

@@ -2,6 +2,7 @@ import type { youtube_v3 as youtube } from '@googleapis/youtube'
 import {
   getChannels,
   getPlaylistItems,
+  getPlaylistItemsPage,
   getVideoIds,
   getVideos,
   isYouTubeApiError,
@@ -15,6 +16,7 @@ import type {
   VideoLookupResult,
 } from '../internal/fetcher-types.js'
 import type {
+  UploadPage,
   YouTubeChannel,
   YouTubeFetcherOptions,
   YouTubeVideo,
@@ -102,6 +104,46 @@ export class YouTubeFetcher extends Fetcher<YouTubeChannel, YouTubeVideo> {
       // The uploads playlist of a channel without any upload does not exist.
       if (isYouTubeApiError(error, 404)) {
         return []
+      }
+
+      throw error
+    }
+  }
+
+  /**
+   * Gets one page of a channel's uploads playlist, newest first, to walk its
+   * whole history. Pass the returned cursor to read the next page.
+   *
+   * @returns `null` when YouTube does not know the channel.
+   */
+  async getUploadPage(
+    channelId: string,
+    { cursor }: { cursor?: string | null | undefined } = {},
+  ): Promise<UploadPage | null> {
+    const [channel] = await this.getAccounts([channelId])
+
+    if (!channel) {
+      return null
+    }
+
+    try {
+      const { items, nextPageToken } = await this.request(() =>
+        getPlaylistItemsPage({
+          client: this.#client,
+          maxResults: YOUTUBE_DATA_API_MAX_RESULTS,
+          pageToken: cursor ?? undefined,
+          playlistID: channel.contentDetails.relatedPlaylists.uploads,
+        }),
+      )
+
+      return {
+        cursor: nextPageToken,
+        videoIds: unique(items.map((item) => item.contentDetails.videoId)),
+      }
+    } catch (error) {
+      // The uploads playlist of a channel without any upload does not exist.
+      if (isYouTubeApiError(error, 404)) {
+        return { cursor: null, videoIds: [] }
       }
 
       throw error

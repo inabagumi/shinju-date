@@ -65,6 +65,12 @@ pnpm exec playwright test --ui
     - 削除済みタレントに紐づく未削除動画をソフトデリート（`deleted_reason = talent_deleted`）
     - 復活済みタレントに紐づく `talent_deleted` のみ復旧（`unavailable` / `withdrawn` は対象外）
     - 1実行あたり最大100件
+  - `/videos/backfill`: 管理画面から依頼された過去動画の取り込み（1分毎）
+    - 依頼は Redis のキュー（`@shinju-date/video-backfill`）に 1 アカウント 1 ジョブで積まれる
+    - 1 回の実行では約 50 秒の間、ジョブを順番に 1 ページずつ読み、未保存の動画だけを `/videos/update` と同じ経路で保存する
+    - 時間内に読み終わらなかったジョブはカーソルを保存してキューの末尾に戻し、次の実行で続きから読む
+    - 失敗したジョブは次の実行で再試行し、3 回続けて失敗するか、アカウントが見つからなければ失敗として終える
+    - キューが空のときは何もしない。レート制限は `/videos/update` と別なので、新着の取得を妨げない
   - `/talents/update`: タレント／チャンネル情報の更新
     - デフォルト / `?provider=youtube`: YouTubeチャンネル同期（3時間毎）
     - `?provider=twitch`: Twitchユーザー（display_name / login）同期
@@ -94,6 +100,7 @@ pnpm exec playwright test --ui
   - `mode=recent`: 最新100件の動画の情報更新と削除判定
   - `mode=all`: 全動画の削除判定（情報更新なし）
 - `POST /videos/cascade-from-talents` - タレント削除／復活に伴う動画の連鎖ソフトデリート／復旧
+- `POST /videos/backfill` - 過去動画の取り込みキューの処理
 
 ### 統計スナップショット (`/stats/snapshot`)
 
@@ -129,7 +136,7 @@ pnpm exec playwright test --ui
 
 ## クローラーの構成
 
-YouTube / Twitch のクローラー（`/videos/update`・`/videos/check`・`/talents/update`）の本体は `@shinju-date/scraper` にあります。取得・差分判定・データベースへの書き込み・サムネイル保存はすべてそちらの担当で、仕様もそちらの README にあります。
+YouTube / Twitch のクローラー（`/videos/update`・`/videos/check`・`/videos/backfill`・`/talents/update`）の本体は `@shinju-date/scraper` にあります。取得・差分判定・データベースへの書き込み・サムネイル保存はすべてそちらの担当で、仕様もそちらの README にあります。
 
 このアプリが受け持つのは次の 3 つです。
 
@@ -144,6 +151,7 @@ YouTube / Twitch のクローラー（`/videos/update`・`/videos/check`・`/tal
 | `/videos/check?mode=recent` | `refreshRecentVideos`     |
 | `/videos/check?mode=all`    | `removeUnavailableVideos` |
 | `/talents/update`           | `syncAccounts`            |
+| `/videos/backfill`          | `addPastVideos`           |
 
 スクレイパーは 1 アカウント・1 動画単位の失敗では止まらず、その失敗を Sentry に報告して続行します。実行全体が失敗した場合だけ例外になり、実行基盤が 500 と Sentry チェックインの `error` にします。
 

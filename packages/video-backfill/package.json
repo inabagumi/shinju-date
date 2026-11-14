@@ -1,0 +1,44 @@
+{
+  "author": "Haneru Developers",
+  "dependencies": {
+    "@shinju-date/constants": "workspace:*",
+    "temporal-polyfill": "1.0.8"
+  },
+  "description": "Queue of video backfill jobs shared by the admin and batch apps",
+  "devDependencies": {
+    "@tsconfig/node20": "20.1.11",
+    "@tsconfig/strictest": "2.0.9",
+    "@types/node": "26.6.6",
+    "@upstash/redis": "1.41.0",
+    "tsup": "9.0.0",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "name": "@shinju-date/video-backfill",
+  "peerDependencies": {
+    "@upstash/redis": "^1.41.0"
+  },
+  "private": true,
+  "repository": {
+    "directory": "packages/video-backfill",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "1.0.0"
+}
