@@ -7,6 +7,7 @@ import {
   BACKFILL_LEASE_SECONDS,
   BackfillQueue,
   type BackfillRequest,
+  ENQUEUE_SCRIPT,
   getBackfillJobId,
 } from '../index.js'
 
@@ -15,6 +16,11 @@ import {
  * they are given, like `@upstash/redis` does with automatic serialization.
  */
 class FakeRedis {
+  /**
+   * Runs right before the next script, e.g. to let another request or a
+   * worker get in between a request's read and its write.
+   */
+  beforeNextScript: (() => Promise<void>) | undefined
   /** Makes the next transaction fail without applying any of its commands. */
   failNextTransaction = false
   readonly lists = new Map<string, unknown[]>()
@@ -31,6 +37,45 @@ class FakeRedis {
     }
 
     return count
+  }
+
+  /**
+   * Runs `ENQUEUE_SCRIPT` the way Redis would (the only script the queue
+   * uses). Values are kept deserialized, so they are compared as JSON.
+   */
+  async eval(
+    script: string,
+    [jobKey = '', queueKey = '', workerLockKey = '']: string[],
+    [expected, job, ttl, id]: [string, string, number, string],
+  ): Promise<number> {
+    if (script !== ENQUEUE_SCRIPT) {
+      throw new Error('Unexpected script')
+    }
+
+    const hook = this.beforeNextScript
+
+    this.beforeNextScript = undefined
+    await hook?.()
+
+    const current = this.values.get(jobKey)
+
+    if (
+      expected === ''
+        ? current !== undefined
+        : JSON.stringify(current) !== expected
+    ) {
+      return 0
+    }
+
+    if (this.values.has(workerLockKey)) {
+      return 0
+    }
+
+    await this.set(jobKey, JSON.parse(job), { ex: ttl })
+    await this.lpush(queueKey, id)
+    await this.expire(queueKey, ttl)
+
+    return 1
   }
 
   async expire(key: string, seconds: number): Promise<number> {
@@ -195,22 +240,6 @@ describe('BackfillQueue', () => {
     expect(redis.lists.get(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)).toHaveLength(1)
   })
 
-  it('refuses a request while another one for the account is handled', async () => {
-    const { queue, redis } = createQueue()
-
-    // Another request holds the account right now.
-    await redis.set(
-      `${REDIS_KEYS.VIDEO_BACKFILL_ENQUEUE_LOCK_PREFIX}${jobId}`,
-      'other',
-    )
-
-    await expect(queue.enqueue(request, now)).resolves.toEqual({
-      enqueued: false,
-      job: null,
-    })
-    expect(redis.lists.get(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)).toBeUndefined()
-  })
-
   it('handles requests for the same account at the same moment once', async () => {
     const { queue, redis } = createQueue()
 
@@ -221,26 +250,64 @@ describe('BackfillQueue', () => {
 
     expect(results.filter((result) => result.enqueued)).toHaveLength(1)
     expect(redis.lists.get(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)).toEqual([jobId])
-    expect(
-      redis.values.has(
-        `${REDIS_KEYS.VIDEO_BACKFILL_ENQUEUE_LOCK_PREFIX}${jobId}`,
-      ),
-    ).toBe(false)
   })
 
-  it('leaves no pending job behind when queueing it fails', async () => {
+  it('does not save over progress made after the request read the job', async () => {
     const { queue, redis } = createQueue()
+
+    // The request stalls after reading; meanwhile another request queues the
+    // job and a worker reads a page of it.
+    redis.beforeNextScript = async () => {
+      await queue.enqueue({ ...request, requestedBy: 'user-2' }, now)
+      const job = await claimJob(queue, later(1))
+      await queue.requeue({ ...job, added: 4, cursor: 'page-2' }, later(2))
+    }
+
+    await expect(queue.enqueue(request, later(3))).resolves.toMatchObject({
+      enqueued: false,
+      job: { added: 4, cursor: 'page-2', requestedBy: 'user-2' },
+    })
+    expect(redis.lists.get(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)).toEqual([jobId])
+  })
+
+  it('does not queue a job that a worker claimed after it was read', async () => {
+    const { queue, redis } = createQueue()
+
+    await queue.enqueue(request, now)
+    const job = await claimJob(queue, later(1))
+    await queue.fail(job, 'quota exceeded', later(2))
+
+    // A stale queue entry is claimed between the request's read and write.
+    redis.beforeNextScript = async () => {
+      await redis.set(lockKey, 'worker')
+    }
+
+    await expect(queue.enqueue(request, later(3))).resolves.toMatchObject({
+      enqueued: false,
+      job: { status: 'failed' },
+    })
+    expect(redis.lists.get(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)).toEqual([])
+  })
+
+  it('keeps a job claimed when putting it back fails', async () => {
+    const { queue, redis } = createQueue()
+
+    await queue.enqueue(request, now)
+    const job = await claimJob(queue, later(1))
 
     redis.failNextTransaction = true
 
-    await expect(queue.enqueue(request, now)).rejects.toThrow(
+    await expect(queue.requeue({ ...job, cursor: 'page-2' })).rejects.toThrow(
       'transaction failed',
     )
-    await expect(queue.getJobs([jobId], now)).resolves.toEqual([null])
-    // The request can be made again right away.
-    await expect(queue.enqueue(request, now)).resolves.toMatchObject({
-      enqueued: true,
-    })
+    // Nothing was half-applied: still running and locked, not queued twice.
+    await expect(queue.getJobs([jobId], later(2))).resolves.toEqual([
+      {
+        active: true,
+        job: expect.objectContaining({ cursor: null, status: 'running' }),
+      },
+    ])
+    expect(redis.lists.get(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)).toEqual([])
   })
 
   it('refuses a second request while the job is being read', async () => {

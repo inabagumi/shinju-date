@@ -63,7 +63,7 @@ export type EnqueueResult =
   | { enqueued: true; job: BackfillJob }
   /**
    * A job for the account is queued or being read already, or another request
-   * for it is being handled at this moment (`job` is `null` until it is saved).
+   * for it changed it at the same moment.
    */
   | { enqueued: false; job: BackfillJob | null }
 
@@ -76,12 +76,6 @@ export const BACKFILL_JOB_TTL_SECONDS = 7 * 24 * 60 * 60
  * died is free again once it runs out.
  */
 export const BACKFILL_LEASE_SECONDS = 6 * 60
-
-/**
- * How long one request holds an account while it checks and saves its job.
- * Only guards against requests for the same account at the same moment.
- */
-export const BACKFILL_ENQUEUE_LOCK_SECONDS = 30
 
 /**
  * A job that waited this long in the queue is considered lost (e.g. dropped
@@ -100,13 +94,33 @@ function jobKey(id: string): string {
   return `${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${id}`
 }
 
-function enqueueLockKey(id: string): string {
-  return `${REDIS_KEYS.VIDEO_BACKFILL_ENQUEUE_LOCK_PREFIX}${id}`
-}
-
 function lockKey(id: string): string {
   return `${REDIS_KEYS.VIDEO_BACKFILL_LOCK_PREFIX}${id}`
 }
+
+/**
+ * Saves a job and queues it, but only if the job is still what the caller
+ * read (compare-and-set) and no worker holds it, so that two requests made at
+ * the same moment, or a request that stalled, never save over each other or
+ * over a worker's progress. Runs atomically on the Redis server.
+ *
+ * KEYS: job, queue, worker lock
+ * ARGV: job as read (empty when there was none), new job, TTL, job ID
+ *
+ * @returns 1 when the job was queued, 0 when it changed in between.
+ */
+export const ENQUEUE_SCRIPT = `-- video-backfill:enqueue
+local current = redis.call('GET', KEYS[1])
+if ARGV[1] == '' then
+  if current then return 0 end
+elseif current ~= ARGV[1] then
+  return 0
+end
+if redis.call('EXISTS', KEYS[3]) == 1 then return 0 end
+redis.call('SET', KEYS[1], ARGV[2], 'EX', ARGV[3])
+redis.call('LPUSH', KEYS[2], ARGV[4])
+redis.call('EXPIRE', KEYS[2], ARGV[3])
+return 1`
 
 function isActive(
   job: BackfillJob,
@@ -186,53 +200,53 @@ export class BackfillQueue {
     now: Temporal.Instant = Temporal.Now.instant(),
   ): Promise<EnqueueResult> {
     const id = getBackfillJobId(provider, accountId)
-    // Requests for the same account are handled one at a time, so that two of
-    // them cannot both find no active job and save over each other.
-    const locked = await this.#redis.set(enqueueLockKey(id), now.toString(), {
-      ex: BACKFILL_ENQUEUE_LOCK_SECONDS,
-      nx: true,
-    })
+    const [current] = await this.getJobs([id], now)
 
-    if (locked !== 'OK') {
-      const [current] = await this.getJobs([id], now)
-
-      return { enqueued: false, job: current?.job ?? null }
+    if (current?.active) {
+      return { enqueued: false, job: current.job }
     }
 
-    try {
-      const [current] = await this.getJobs([id], now)
+    const resumed =
+      current && current.job.status !== 'done' ? current.job : null
+    const timestamp = now.toString()
+    const job: BackfillJob = {
+      accountId,
+      added: resumed?.added ?? 0,
+      attempts: 0,
+      cursor: resumed?.cursor ?? null,
+      error: null,
+      finishedAt: null,
+      id,
+      pages: resumed?.pages ?? 0,
+      provider,
+      requestedAt: timestamp,
+      requestedBy,
+      startedAt: null,
+      status: 'pending',
+      talentId,
+      updatedAt: timestamp,
+    }
 
-      if (current?.active) {
-        return { enqueued: false, job: current.job }
-      }
-
-      const resumed =
-        current && current.job.status !== 'done' ? current.job : null
-      const timestamp = now.toString()
-      const job: BackfillJob = {
-        accountId,
-        added: resumed?.added ?? 0,
-        attempts: 0,
-        cursor: resumed?.cursor ?? null,
-        error: null,
-        finishedAt: null,
+    // Jobs are stored as their JSON, so the job as read serializes back to
+    // the exact value in Redis.
+    const queued = await this.#redis.eval<[string, string, number, string]>(
+      ENQUEUE_SCRIPT,
+      [jobKey(id), REDIS_KEYS.VIDEO_BACKFILL_QUEUE, lockKey(id)],
+      [
+        current ? JSON.stringify(current.job) : '',
+        JSON.stringify(job),
+        BACKFILL_JOB_TTL_SECONDS,
         id,
-        pages: resumed?.pages ?? 0,
-        provider,
-        requestedAt: timestamp,
-        requestedBy,
-        startedAt: null,
-        status: 'pending',
-        talentId,
-        updatedAt: timestamp,
-      }
+      ],
+    )
 
-      await this.#queue(job, { unlock: false })
+    if (queued !== 1) {
+      const [latest] = await this.getJobs([id], now)
 
-      return { enqueued: true, job }
-    } finally {
-      await this.#redis.del(enqueueLockKey(id))
+      return { enqueued: false, job: latest?.job ?? null }
     }
+
+    return { enqueued: true, job }
   }
 
   /**

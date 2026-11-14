@@ -33,7 +33,6 @@ export const REDIS_KEYS = {
   SUMMARY_STATS_PREFIX: 'summary:stats:',
   // Backfill of past videos: admin enqueues jobs, batch `/videos/backfill`
   // works them off (format: prefix + `<provider>:<account row ID>`)
-  VIDEO_BACKFILL_ENQUEUE_LOCK_PREFIX: 'jobs:video-backfill:enqueue-lock:',
   VIDEO_BACKFILL_JOB_PREFIX: 'jobs:video-backfill:job:',
   VIDEO_BACKFILL_LOCK_PREFIX: 'jobs:video-backfill:lock:',
   VIDEO_BACKFILL_QUEUE: 'jobs:video-backfill:queue',
