@@ -3,7 +3,7 @@ import type { ComponentPropsWithRef } from 'react'
 import { twMerge } from '../tw-merge'
 
 const cardVariants = cva(
-  'flex flex-col overflow-hidden rounded-xl border border-border text-foreground',
+  'flex flex-col overflow-hidden rounded-container border border-border text-foreground',
   {
     defaultVariants: {
       variant: 'default',

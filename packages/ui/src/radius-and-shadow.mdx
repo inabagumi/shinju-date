@@ -1,0 +1,36 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Design System/Radius and Shadow" />
+
+# Radius and Shadow
+
+角丸と影は、用途の名前を付けたクラスで指定します。値は `theme.css` で定義しています。
+使い分けは `docs/design-guidelines.md` を参照してください。
+
+## 角丸
+
+<div className="sb-unstyled flex flex-wrap gap-6 font-sans text-foreground">
+  <div className="flex flex-col gap-2">
+    <div className="flex h-20 w-32 items-center justify-center rounded-control border border-border bg-muted" />
+    <p className="text-caption text-muted">rounded-control（6px）操作部品</p>
+  </div>
+  <div className="flex flex-col gap-2">
+    <div className="flex h-20 w-32 items-center justify-center rounded-container border border-border bg-muted" />
+    <p className="text-caption text-muted">rounded-container（12px）入れ物</p>
+  </div>
+  <div className="flex flex-col gap-2">
+    <div className="flex size-20 items-center justify-center rounded-full border border-border bg-muted" />
+    <p className="text-caption text-muted">rounded-full 丸</p>
+  </div>
+</div>
+
+## 影
+
+影は重なるものだけに使います。通常の部品には影を付けず、余白と `border` で区切ります。
+
+<div className="sb-unstyled flex flex-wrap gap-6 bg-background p-6 font-sans text-foreground">
+  <div className="flex flex-col gap-2">
+    <div className="h-20 w-32 rounded-container bg-surface shadow-overlay" />
+    <p className="text-caption text-muted">shadow-overlay 重なるもの</p>
+  </div>
+</div>

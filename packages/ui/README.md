@@ -201,7 +201,7 @@ pnpm run dev
 ```typescript
 // 例: Buttonコンポーネントのバリアント定義
 const buttonVariants = cva(
-  'inline-flex items-center justify-center rounded-md font-medium transition-colors',
+  'inline-flex items-center justify-center rounded-control font-medium transition-colors',
   {
     variants: {
       variant: {

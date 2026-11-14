@@ -94,7 +94,7 @@ const example = (
 
 ### `twMerge` について
 
-`theme.css` で追加した文字サイズを `tailwind-merge` に登録した `twMerge` を、`@shinju-date/ui` から使ってください。`tailwind-merge` の `twMerge` は `text-body` などを文字色として扱うため、`twMerge('text-body text-foreground')` の `text-body` が消えてしまいます。`tailwind-merge` から直接インポートすると Biome のエラーになります。
+`theme.css` で追加した文字サイズ・角丸・影を `tailwind-merge` に登録した `twMerge` を、`@shinju-date/ui` から使ってください。`tailwind-merge` の `twMerge` は `text-body` などを文字色として扱うため、`twMerge('text-body text-foreground')` の `text-body` が消えてしまいます。`tailwind-merge` から直接インポートすると Biome のエラーになります。
 
 ```tsx
 import { twMerge } from '@shinju-date/ui'
@@ -102,25 +102,28 @@ import { twMerge } from '@shinju-date/ui'
 
 ## 角丸
 
-角丸は3種類です。
+角丸は3種類です。値は `packages/tailwind-config/theme.css` で定義しています。
 
-| 対象                                                 | クラス         | 値   |
-| ---------------------------------------------------- | -------------- | ---- |
-| 操作部品（ボタン・入力欄・バッジ・メニュー項目）     | `rounded-md`   | 6px  |
-| 入れ物（サムネイル・モーダル・表・パネル・メニュー） | `rounded-xl`   | 12px |
-| 丸（アバター・ピル）                                 | `rounded-full` | -    |
+| 対象                                                 | クラス              | 値   |
+| ---------------------------------------------------- | ------------------- | ---- |
+| 操作部品（ボタン・入力欄・バッジ・メニュー項目）     | `rounded-control`   | 6px  |
+| 入れ物（サムネイル・モーダル・表・パネル・メニュー） | `rounded-container` | 12px |
+| 丸（アバター・ピル）                                 | `rounded-full`      | -    |
 
-`rounded` / `rounded-sm` / `rounded-lg` / `rounded-2xl` などは使いません。メニューやお知らせのように、操作部品を並べた入れ物は `rounded-xl`、その中の項目は `rounded-md` にします。
+`rounded` / `rounded-sm` / `rounded-md` / `rounded-lg` / `rounded-xl` / `rounded-2xl` などの Tailwind の既定のクラスは使いません。メニューやお知らせのように、操作部品を並べた入れ物は `rounded-container`、その中の項目は `rounded-control` にします。角の一部だけを丸める場合も `rounded-t-container` のように同じ名前を使います。
 
 ## 影
 
 - **通常の部品には影を使いません。** カードや表は、余白と `border` で区切ります。ホバーで影を付けることもしません
-- **影は重なるものだけに使います。**
+- **影は重なるものだけに使います。** 値は `packages/tailwind-config/theme.css` で定義しています
 
-| 対象                                     | クラス      |
-| ---------------------------------------- | ----------- |
-| モーダル・ドロップダウン・お知らせバナー | `shadow-lg` |
-| 固定ヘッダー下の線                       | `shadow-sm` |
+| 対象                                     | クラス           |
+| ---------------------------------------- | ---------------- |
+| モーダル・ドロップダウン・お知らせバナー | `shadow-overlay` |
+
+固定ヘッダーには影を付けず、下端を `border` の線1本で区切ります。`shadow-sm` / `shadow-lg` などの Tailwind の既定のクラスは使いません。
+
+アプリにはまだ Tailwind の既定の角丸・影のクラスが残っています。画面を作り直すときに、上の名前に置き換えてください。
 
 ## 新しい画面を作るとき
 
@@ -128,6 +131,6 @@ import { twMerge } from '@shinju-date/ui'
 - [ ] 紫は要所（リンク・選択中・主ボタン・フォーカス・フッター）だけ、ピンクは配信中だけに使っている
 - [ ] 見出し・本文・補助情報に、上の[役割ごとの組み合わせ](#役割ごとの組み合わせ)を使っている
 - [ ] 時刻・再生時間・件数に `tabular-nums` を付けている
-- [ ] 角丸は `rounded-md` / `rounded-xl` / `rounded-full` のいずれか
-- [ ] 影は重なるものだけに使っている
+- [ ] 角丸は `rounded-control` / `rounded-container` / `rounded-full` のいずれか
+- [ ] 影は重なるものだけに `shadow-overlay` を使っている
 - [ ] `packages/ui` にある部品（Button・Badge・Card・Dialog・Input など）を使っている

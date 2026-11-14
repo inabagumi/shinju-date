@@ -22,7 +22,7 @@ export function ToastViewport({
 }
 
 const toastVariants = cva(
-  'data-[state=closed]:fade-out-80 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-left-full data-[state=open]:slide-in-from-bottom-full group sm:data-[state=closed]:slide-out-to-left-full data-[state=closed]:animate-out data-[state=open]:animate-in data-[swipe=end]:animate-out pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-xl border p-4 pr-8 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-[transform_200ms_ease-out] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)]',
+  'data-[state=closed]:fade-out-80 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-left-full data-[state=open]:slide-in-from-bottom-full group sm:data-[state=closed]:slide-out-to-left-full data-[state=closed]:animate-out data-[state=open]:animate-in data-[swipe=end]:animate-out pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-container border p-4 pr-8 shadow-overlay transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-[transform_200ms_ease-out] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)]',
   {
     defaultVariants: {
       variant: 'default',
@@ -56,7 +56,7 @@ export function ToastAction({
   return (
     <ToastPrimitive.Action
       className={twMerge(
-        'inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-border bg-transparent px-3 text-sm font-medium transition-colors hover:bg-muted focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface focus:outline-none disabled:pointer-events-none disabled:opacity-50',
+        'inline-flex h-8 shrink-0 items-center justify-center rounded-control border border-border bg-transparent px-3 text-sm font-medium transition-colors hover:bg-muted focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface focus:outline-none disabled:pointer-events-none disabled:opacity-50',
         className,
       )}
       {...props}
@@ -71,7 +71,7 @@ export function ToastClose({
   return (
     <ToastPrimitive.Close
       className={twMerge(
-        'absolute top-2 right-2 rounded-md p-1 text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground focus:opacity-100 focus:ring-2 focus:ring-accent focus:outline-none',
+        'absolute top-2 right-2 rounded-control p-1 text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground focus:opacity-100 focus:ring-2 focus:ring-accent focus:outline-none',
         className,
       )}
       {...props}

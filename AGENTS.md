@@ -190,8 +190,8 @@ Vitest はテストファイルの型を検査しないため、TypeScript の�
 
 - 色はセマンティックカラー（`bg-surface`、`text-muted`、`bg-accent` など）で指定し、`dark:` で手書きしない
 - 文字サイズは `text-display` / `text-title` / `text-heading` / `text-body` / `text-meta` / `text-caption` を使う（`text-xs` / `text-sm` などは使わない）
-- 角丸は `rounded-md`（操作部品）/ `rounded-xl`（入れ物）/ `rounded-full`（丸）の3種類
-- 影は重なるもの（モーダル・ドロップダウン・お知らせバナー・固定ヘッダー下の線）だけに使う
+- 角丸は `rounded-control`（操作部品）/ `rounded-container`（入れ物）/ `rounded-full`（丸）の3種類（`rounded-md` / `rounded-xl` などの既定のクラスは使わない）
+- 影は重なるもの（モーダル・ドロップダウン・お知らせバナー）だけに `shadow-overlay` を使う。固定ヘッダーは影を付けず、下端を `border` の線1本で区切る
 - `twMerge` は `tailwind-merge` ではなく `@shinju-date/ui` からインポートする
 - 日本語のウェブフォントは追加しない
 
