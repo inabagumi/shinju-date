@@ -30,7 +30,7 @@ export function SearchButton() {
   return (
     <button
       aria-label="検索"
-      className="flex w-full min-w-48 items-center gap-2 rounded-full border-0 bg-774-nevy-100 px-4 py-1.5 text-left text-774-nevy-300 hover:bg-774-nevy-200 hover:text-primary dark:bg-zinc-700 dark:text-774-nevy-100 dark:hover:bg-zinc-600 dark:hover:text-774-nevy-100"
+      className="flex w-full min-w-0 items-center gap-2 rounded-full border-0 bg-774-nevy-100 px-4 py-1.5 text-left text-774-nevy-300 hover:bg-774-nevy-200 hover:text-primary sm:min-w-48 dark:bg-zinc-700 dark:text-774-nevy-100 dark:hover:bg-zinc-600 dark:hover:text-774-nevy-100"
       onClick={openModal}
       type="button"
     >

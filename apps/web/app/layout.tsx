@@ -8,6 +8,8 @@ import PageVisitTracker from '@/components/page-visit-tracker'
 import { TimerProvider } from '@/components/timer'
 import { AnnouncementBannerWrapper } from './_components/announcement-banner-wrapper'
 import { ContactLink } from './_components/contact-link'
+import { MainNavigationItems } from './_components/main-navigation-items'
+import { MobileMenu } from './_components/mobile-menu'
 import { Providers } from './_components/providers'
 import { SearchButton } from './_components/search-button'
 import { SearchModalProvider } from './_components/search-modal-context'
@@ -46,9 +48,9 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           <SearchModalProvider>
             <SVGSymbols />
 
-            <nav className="sticky top-0 z-50 flex justify-between gap-6 bg-primary-foreground/60 px-2 py-3 shadow-md backdrop-blur dark:bg-zinc-900/60">
+            <nav className="sticky top-0 z-50 flex justify-between gap-3 bg-primary-foreground/60 px-2 py-3 shadow-md backdrop-blur md:gap-6 dark:bg-zinc-900/60">
               <Link
-                className="flex items-center gap-2 p-1 font-semibold"
+                className="flex shrink-0 items-center gap-2 p-1 font-semibold whitespace-nowrap"
                 href="/"
               >
                 <svg
@@ -61,27 +63,21 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
                 {siteName}
               </Link>
 
-              <div className="hidden grow items-center gap-4 md:flex">
-                <Link
-                  className="hover:text-secondary-pink hover:underline"
-                  href="/about"
-                >
-                  {siteName}とは
-                </Link>
-                <Link
-                  className="hover:text-secondary-pink hover:underline"
-                  href="/videos"
-                >
-                  動画一覧
-                </Link>
-                <ContactLink className="hover:text-secondary-pink hover:underline">
-                  お問い合わせ
-                </ContactLink>
-              </div>
+              <ul className="hidden grow items-center gap-4 md:flex">
+                <MainNavigationItems linkClassName="hover:text-secondary-pink hover:underline aria-[current=page]:text-secondary-pink" />
+              </ul>
 
-              <search className="flex items-center">
-                <SearchButton />
-              </search>
+              <div className="flex min-w-0 grow items-center justify-end gap-2 md:grow-0">
+                <search className="flex min-w-0 grow items-center sm:grow-0">
+                  <SearchButton />
+                </search>
+
+                <MobileMenu>
+                  <ul className="flex flex-col py-2">
+                    <MainNavigationItems linkClassName="block px-4 py-3 hover:bg-774-nevy-100 hover:text-secondary-pink aria-[current=page]:font-semibold aria-[current=page]:text-secondary-pink dark:hover:bg-zinc-800" />
+                  </ul>
+                </MobileMenu>
+              </div>
             </nav>
 
             <Suspense fallback={null}>

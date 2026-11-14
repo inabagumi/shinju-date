@@ -1,5 +1,5 @@
-import Link from 'next/link'
 import { isContactFormEnabled } from '@/app/contact/_lib/utils'
+import { NavLink } from './nav-link'
 
 interface ContactLinkProps {
   className?: string
@@ -14,8 +14,8 @@ export async function ContactLink({ className, children }: ContactLinkProps) {
   }
 
   return (
-    <Link className={className} href="/contact">
+    <NavLink className={className} href="/contact">
       {children}
-    </Link>
+    </NavLink>
   )
 }
