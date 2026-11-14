@@ -18,7 +18,7 @@ function FieldLabel({ htmlFor, label, required }: FieldLabelProps) {
     >
       {label}{' '}
       {required && (
-        <span aria-hidden="true" className="text-red-500">
+        <span aria-hidden="true" className="text-danger">
           *
         </span>
       )}
@@ -37,7 +37,7 @@ function FieldError({ error, id }: FieldErrorProps) {
   }
 
   return (
-    <p className="mt-1 text-sm text-red-500" id={id}>
+    <p className="mt-1 text-sm text-danger" id={id}>
       {error}
     </p>
   )
