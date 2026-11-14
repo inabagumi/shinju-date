@@ -116,15 +116,19 @@ export function TalentsList({ talents }: TalentsListProps) {
         </p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-774-blue-300">
-          <table className="w-full">
+          <table className="w-full min-w-3xl">
             <thead className="bg-774-blue-50">
               <tr>
-                <th className="px-4 py-3 text-left font-semibold">
+                <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
                   タレント名
                 </th>
-                <th className="px-4 py-3 text-left font-semibold">状態</th>
-                <th className="px-4 py-3 text-left font-semibold">作成日時</th>
-                <th className="px-4 py-3 text-left font-semibold">
+                <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
+                  状態
+                </th>
+                <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
+                  作成日時
+                </th>
+                <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
                   <button
                     className="flex items-center gap-1 hover:text-774-blue-600"
                     onClick={toggleSortOrder}
@@ -136,7 +140,7 @@ export function TalentsList({ talents }: TalentsListProps) {
                     </span>
                   </button>
                 </th>
-                <th className="w-40 px-4 py-3 text-right font-semibold">
+                <th className="w-40 px-4 py-3 text-right font-semibold whitespace-nowrap">
                   操作
                 </th>
               </tr>
@@ -181,12 +185,12 @@ export function TalentsList({ talents }: TalentsListProps) {
                   <td className="px-4 py-3">
                     <TalentStatusBadge talent={talent} />
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                  <td className="px-4 py-3 text-sm whitespace-nowrap text-gray-600">
                     <time dateTime={talent.created_at}>
                       {formatDateTimeFromISO(talent.created_at)}
                     </time>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                  <td className="px-4 py-3 text-sm whitespace-nowrap text-gray-600">
                     <time dateTime={talent.updated_at}>
                       {formatDateTimeFromISO(talent.updated_at)}
                     </time>
