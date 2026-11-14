@@ -27,7 +27,7 @@
 - **[health-checkers](packages/health-checkers/)** - ヘルスチェック機能
 - **[retryable-fetch](packages/retryable-fetch/)** - リトライ機能付き fetch
 - **[temporal-fns](packages/temporal-fns/)** - 日時操作ユーティリティ
-- **[youtube-scraper](packages/youtube-scraper/)** - YouTube データスクレイピング
+- **[scraper](packages/scraper/)** - YouTube / Twitch データスクレイピング
 
 ## 技術スタック
 

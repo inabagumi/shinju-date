@@ -17,7 +17,7 @@ import { createSupabaseServerClient } from '@/lib/supabase'
  * - **全チャンネルを同期する**: 先頭 1 件に限らず、紐づく `youtube_channels` をすべて対象にする
  * - **更新対象**: 各チャンネルの `name`（YouTube の title）と `youtube_handle`（customUrl）
  * - **タレント名は更新しない**: `talents.name` とチャンネル名は分離されている（#5622）。
- *   バッチの `/talents/update`（`processScrapedChannels`）と同じ方針
+ *   バッチの `/talents/update`（`syncYouTubeChannels`）と同じ方針
  * - 単一チャンネルの場合も、チャンネルの name / handle が更新される（既存のチャンネル同期としては同等）
  */
 export async function syncTalentWithYouTube(talentId: string): Promise<{

@@ -52,9 +52,11 @@ jobs:
             language: "node"
           - name: "@shinju-date/ui"
             language: "node"
-          - name: "@shinju-date/youtube-api-client"
+          - name: "@shinju-date/scraper"
             language: "node"
-          - name: "@shinju-date/youtube-scraper"
+          - name: "@shinju-date/twitch-api-client"
+            language: "node"
+          - name: "@shinju-date/youtube-api-client"
             language: "node"
           # Node.js apps with unit tests
           - name: "@shinju-date/admin"
