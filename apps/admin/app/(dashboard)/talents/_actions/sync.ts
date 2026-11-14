@@ -1,6 +1,7 @@
 'use server'
 
 import { logger } from '@shinju-date/logger'
+import type { SavedTwitchUserIcon } from '@shinju-date/scraper/twitch'
 import type {
   ProfileImageSyncResult,
   SavedYouTubeChannelIcon,
@@ -17,6 +18,7 @@ import {
   requireAuthenticatedUser,
   unauthenticatedResult,
 } from '@/lib/auth'
+import { syncTwitchUserIconSafely } from '@/lib/twitch-user-icon'
 import {
   hasProfileImageChanged,
   syncYouTubeChannelIconSafely,
@@ -36,10 +38,8 @@ interface SavedYouTubeChannel extends SavedYouTubeChannelIcon {
   youtube_handle: string | null
 }
 
-interface SavedTwitchUser {
-  id: string
+interface SavedTwitchUser extends SavedTwitchUserIcon {
   name: string | null
-  twitch_user_id: string
   twitch_login_name: string | null
 }
 
@@ -269,8 +269,10 @@ async function syncTwitchUsers(
 
     const userChanges: {
       twitch_user_id: string
-      before: { name: string | null; twitch_login_name: string | null }
-      after: { name: string; twitch_login_name: string }
+      /** Omitted when the name and login could not be written. */
+      before?: { name: string | null; twitch_login_name: string | null }
+      after?: { name: string; twitch_login_name: string }
+      profile_image?: Exclude<ProfileImageSyncResult, 'unchanged'>
     }[] = []
 
     let syncedCount = 0
@@ -308,21 +310,44 @@ async function syncTwitchUsers(
           talentId,
           twitchUserId: user.twitch_user_id,
         })
+      }
+
+      // The icon is synced even when the name and login could not be written,
+      // so that neither failure keeps the other from being synced.
+      const profileImageResult = await syncTwitchUserIconSafely(
+        twitchUser,
+        user,
+      )
+      const profileImageChanged = hasProfileImageChanged(profileImageResult)
+
+      // A failed write of the name and login only counts as synced when the
+      // icon was actually written: an unchanged icon would otherwise report
+      // the account as up to date although its changes were never saved.
+      if (upsertError && !profileImageChanged) {
         continue
       }
 
       syncedCount++
 
-      if (displayName !== user.name || loginName !== user.twitch_login_name) {
+      const detailsChanged =
+        !upsertError &&
+        (displayName !== user.name || loginName !== user.twitch_login_name)
+
+      if (detailsChanged || profileImageChanged) {
         userChanges.push({
-          after: {
-            name: displayName,
-            twitch_login_name: loginName,
-          },
-          before: {
-            name: user.name,
-            twitch_login_name: user.twitch_login_name,
-          },
+          ...(upsertError
+            ? {}
+            : {
+                after: {
+                  name: displayName,
+                  twitch_login_name: loginName,
+                },
+                before: {
+                  name: user.name,
+                  twitch_login_name: user.twitch_login_name,
+                },
+              }),
+          ...(profileImageChanged ? { profile_image: profileImageResult } : {}),
           twitch_user_id: user.twitch_user_id,
         })
       }
@@ -436,7 +461,10 @@ export async function syncTalentWithYouTube(
  *
  * ## 仕様
  * - 紐づく `twitch_users` をすべて対象にする
- * - 更新対象: `name`（display_name）と `twitch_login_name`（login）
+ * - 更新対象: `name`（display_name）と `twitch_login_name`（login）、
+ *   およびアイコン（`profile_image_url`）。アイコンは元画像が変わった場合のみ差し替える
+ * - name / login とアイコンは独立して同期する: どちらかの書き込みに失敗しても、
+ *   もう一方は同期する
  * - タレント名は更新しない（YouTube 同期と同様）
  */
 export async function syncTalentWithTwitch(
@@ -453,7 +481,9 @@ export async function syncTalentWithTwitch(
   try {
     const { data: talent, error: fetchError } = await supabaseClient
       .from('talents')
-      .select('id, twitch_users(id, name, twitch_user_id, twitch_login_name)')
+      .select(
+        'id, twitch_users(id, name, twitch_user_id, twitch_login_name, profile_images(id, path, etag, source_url))',
+      )
       .eq('id', talentId)
       .single()
 
@@ -520,7 +550,7 @@ export async function syncTalentAccounts(
     const { data: talent, error: fetchError } = await supabaseClient
       .from('talents')
       .select(
-        'id, youtube_channels(id, name, youtube_channel_id, youtube_handle, profile_images(id, path, etag, source_url)), twitch_users(id, name, twitch_user_id, twitch_login_name)',
+        'id, youtube_channels(id, name, youtube_channel_id, youtube_handle, profile_images(id, path, etag, source_url)), twitch_users(id, name, twitch_user_id, twitch_login_name, profile_images(id, path, etag, source_url))',
       )
       .eq('id', talentId)
       .single()

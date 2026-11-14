@@ -60,6 +60,11 @@ vi.mock('@shinju-date/twitch-api-client', async (importOriginal) => {
   }
 })
 
+// アイコンの同期は service role を使うため、ここではモックして呼び出し内容だけを確認する
+vi.mock('@/lib/twitch-user-icon', () => ({
+  syncTwitchUserIconSafely: vi.fn().mockResolvedValue('unchanged'),
+}))
+
 const talentId = '123e4567-e89b-12d3-a456-426614174000'
 const twitchUserId = '141981764'
 
@@ -159,6 +164,110 @@ describe('addTwitchUserAction', () => {
     expect(revalidatePath).toHaveBeenCalledWith(`/talents/${talentId}`)
     expect(revalidatePath).toHaveBeenCalledWith('/talents')
     expect(revalidateTags).toHaveBeenCalledWith(['talents', 'videos'])
+  })
+
+  it('should fetch the icon of the added user', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { resolveTwitchUser } = await import('@shinju-date/twitch-api-client')
+    const { syncTwitchUserIconSafely } = await import('@/lib/twitch-user-icon')
+
+    vi.mocked(resolveTwitchUser).mockResolvedValue(mockTwitchUser)
+    // アイコンの同期に失敗しても（null）、ユーザーの追加は成功する
+    vi.mocked(syncTwitchUserIconSafely).mockResolvedValueOnce(null)
+
+    let callCount = 0
+    const mockSupabaseClient = {
+      from: vi.fn().mockImplementation((table: string) => {
+        if (table === 'twitch_users' && callCount++ === 0) {
+          return {
+            eq: vi.fn().mockReturnThis(),
+            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+            select: vi.fn().mockReturnThis(),
+          }
+        }
+        if (table === 'twitch_users') {
+          return {
+            insert: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnThis(),
+              single: vi.fn().mockResolvedValue({
+                data: { id: 'twitch-user-row-123' },
+                error: null,
+              }),
+            }),
+          }
+        }
+        return {
+          eq: vi.fn().mockResolvedValue({ error: null }),
+          update: vi.fn().mockReturnThis(),
+        }
+      }),
+    }
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    const formData = new FormData()
+    formData.append('talent_id', talentId)
+    formData.append('twitch_user', 'exampleuser')
+
+    const result = await addTwitchUserAction({}, formData)
+
+    expect(result).toEqual({ success: true })
+    expect(syncTwitchUserIconSafely).toHaveBeenCalledWith(mockTwitchUser, {
+      id: 'twitch-user-row-123',
+      profile_images: null,
+      twitch_user_id: twitchUserId,
+    })
+  })
+
+  it('should not fetch an icon when the user cannot be added', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { resolveTwitchUser } = await import('@shinju-date/twitch-api-client')
+    const { syncTwitchUserIconSafely } = await import('@/lib/twitch-user-icon')
+
+    vi.mocked(resolveTwitchUser).mockResolvedValue(mockTwitchUser)
+
+    let callCount = 0
+    const mockSupabaseClient = {
+      from: vi.fn().mockImplementation((table: string) => {
+        if (table === 'twitch_users' && callCount++ === 0) {
+          return {
+            eq: vi.fn().mockReturnThis(),
+            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+            select: vi.fn().mockReturnThis(),
+          }
+        }
+        return {
+          insert: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({
+              data: null,
+              error: { code: '23505', message: 'duplicate key value' },
+            }),
+          }),
+        }
+      }),
+    }
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    const formData = new FormData()
+    formData.append('talent_id', talentId)
+    formData.append('twitch_user', 'exampleuser')
+
+    const result = await addTwitchUserAction({}, formData)
+
+    expect(result).toEqual({
+      errors: {
+        generic: [
+          'Twitchユーザーの追加に失敗しました。しばらくしてから再度お試しください。',
+        ],
+      },
+    })
+    expect(syncTwitchUserIconSafely).not.toHaveBeenCalled()
   })
 
   it('should resolve user from Twitch URL', async () => {

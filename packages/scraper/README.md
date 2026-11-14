@@ -22,14 +22,14 @@ const changed = await scraper.addNewVideos()
 
 すべてのスクレイパーは基底クラス `Scraper`（`@shinju-date/scraper`）を継承し、同じ操作を持ちます。呼び出し側はプロバイダーを意識せずに使えます。
 
-| 操作                        | 内容                                                                                   |
-| --------------------------- | -------------------------------------------------------------------------------------- |
-| `addNewVideos()`            | 追跡中のアカウントに現れた動画を保存する。保存済みの動画には触れない                   |
-| `refreshLiveVideos()`       | 配信予定・配信中の動画を追う（開始、タイトル変更、終了）                               |
-| `refreshRecentVideos()`     | 終了済みの最新動画を再取得し、変更を反映する。取得できなくなった動画は削除扱いにする   |
-| `removeUnavailableVideos()` | 保存済みの全動画を確認し、取得できなくなった動画を削除扱いにする                       |
-| `syncAccounts()`            | 保存済みアカウントの名前・ハンドル（YouTube はアイコンも）をプラットフォームに合わせる |
-| `addPastVideos(options)`    | 1 アカウントの全履歴を 1 ページ読み、未保存の動画を保存する（バックフィル）            |
+| 操作                        | 内容                                                                                 |
+| --------------------------- | ------------------------------------------------------------------------------------ |
+| `addNewVideos()`            | 追跡中のアカウントに現れた動画を保存する。保存済みの動画には触れない                 |
+| `refreshLiveVideos()`       | 配信予定・配信中の動画を追う（開始、タイトル変更、終了）                             |
+| `refreshRecentVideos()`     | 終了済みの最新動画を再取得し、変更を反映する。取得できなくなった動画は削除扱いにする |
+| `removeUnavailableVideos()` | 保存済みの全動画を確認し、取得できなくなった動画を削除扱いにする                     |
+| `syncAccounts()`            | 保存済みアカウントの名前・ハンドル・アイコンをプラットフォームに合わせる             |
+| `addPastVideos(options)`    | 1 アカウントの全履歴を 1 ページ読み、未保存の動画を保存する（バックフィル）          |
 
 - `addPastVideos` 以外の操作は「公開サイトに見える変更があったか」を `boolean` で返します（キャッシュ再検証の判断に使えます）。
 - 引数に実行時刻（`Temporal.Instant`）を渡すと、その実行で書き込む行のタイムスタンプが揃います。省略時は現在時刻です。
@@ -88,7 +88,16 @@ do {
 - アイコンの取得・保存に失敗しても、名前・ハンドルの同期は止めません。失敗は `onError` に `operation: 'syncProfileImage'` 付きで渡されます
 - 最後に、どのチャンネル・ユーザーにも使われなくなったアイコン（削除したチャンネルのものなど）を削除します
 
-アイコンの書き込みには service role の Supabase クライアントが必要です。管理画面からの手動同期・チャンネル追加では、`@shinju-date/scraper/youtube` の `syncYouTubeChannelIcon` を直接使います。
+### アイコンの同期（Twitch）
+
+`TwitchScraper#syncAccounts()` は、表示名・login と同じ流れでユーザーのアイコンも同期します。
+
+- Helix API の `profile_image_url`（300x300）をそのまま使います（`selectTwitchUserIconUrl`）。空の URL、HTTPS 以外の URL、Twitch の既定アイコン（`/user-default-pictures*/`）はアイコンなしとして扱い、保存済みのアイコンがあれば外します
+- 元画像の URL・ETag が変わっていなければダウンロードも保存もしません。変わったときだけ新しいアイコンを保存して差し替えます
+- 表示名・login の更新とアイコンの同期は独立しています。どちらかが失敗しても、もう一方は同期されます。アイコンの失敗は `onError` に `operation: 'syncProfileImage'` 付きで渡されます
+- 使われなくなったアイコンの削除は YouTube の同期がプラットフォームを問わずに行うため、Twitch 側では行いません
+
+アイコンの書き込みには service role の Supabase クライアントが必要です。管理画面からの手動同期・チャンネル（ユーザー）追加では、`@shinju-date/scraper/youtube` の `syncYouTubeChannelIcon`、`@shinju-date/scraper/twitch` の `syncTwitchUserIcon` を直接使います。
 
 ## プロバイダーを追加する
 
