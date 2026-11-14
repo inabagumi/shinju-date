@@ -1,4 +1,3 @@
-import { Temporal } from 'temporal-polyfill'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { server } from '../server.js'
 

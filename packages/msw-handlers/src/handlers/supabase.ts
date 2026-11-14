@@ -1,5 +1,4 @@
 import { HttpResponse, http } from 'msw'
-import { Temporal } from 'temporal-polyfill'
 import {
   announcements,
   profileImages,
