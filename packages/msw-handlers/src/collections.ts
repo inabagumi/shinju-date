@@ -127,6 +127,18 @@ export const youtubeVideos = new Collection({
   }),
 })
 
+// Twitch videos collection
+export const twitchVideos = new Collection({
+  schema: z.object({
+    id: z.string().uuid(),
+    stream_id: z.string().nullable(),
+    twitch_user_id: z.string().uuid(),
+    twitch_video_id: z.string(),
+    type: z.enum(['archive', 'highlight', 'upload', 'clip']).nullable(),
+    video_id: z.string().uuid(),
+  }),
+})
+
 // Terms collection
 export const terms = new Collection({
   schema: z.object({
@@ -464,6 +476,113 @@ export async function seedCollections() {
       })
     }),
   )
+
+  // Create Twitch videos after the YouTube ones above, so that none of them
+  // gets a youtube_videos row. They are recent, so they come first in the
+  // timeline of the public site, and cover each `type` and `status` that the
+  // public site links differently. Both Twitch users have some, so the icon
+  // and its fallback can be checked.
+  const [twitchUserWithIcon, twitchUserWithoutIcon] = createdTwitchUsers
+
+  if (twitchUserWithIcon && twitchUserWithoutIcon) {
+    const now = Temporal.Now.instant()
+    const liveStreamId = faker.string.numeric(11)
+    const twitchVideoSeeds = [
+      {
+        // Linked to the channel top, like a video on air
+        duration: 'P0D',
+        publishedAt: now.add({ hours: 20 }),
+        status: 'UPCOMING' as const,
+        streamId: null,
+        title: '【Twitch】明日の夜は耐久配信！',
+        twitchVideoId: faker.string.numeric(10),
+        type: null,
+        user: twitchUserWithIcon,
+      },
+      {
+        // On air: the batch app keeps a placeholder until the archive appears
+        duration: 'P0D',
+        publishedAt: now.subtract({ minutes: 45 }),
+        status: 'LIVE' as const,
+        streamId: liveStreamId,
+        title: '【Twitch】まったり雑談配信中',
+        twitchVideoId: `live:${liveStreamId}`,
+        type: null,
+        user: twitchUserWithoutIcon,
+      },
+      {
+        duration: 'PT2H34M12S',
+        publishedAt: now.subtract({ hours: 6 }),
+        status: 'ENDED' as const,
+        streamId: faker.string.numeric(11),
+        title: '【Twitch】深夜のゲーム配信アーカイブ',
+        twitchVideoId: faker.string.numeric(10),
+        type: 'archive' as const,
+        user: twitchUserWithIcon,
+      },
+      {
+        duration: 'PT28S',
+        publishedAt: now.subtract({ hours: 9 }),
+        status: 'PUBLISHED' as const,
+        streamId: null,
+        title: '【クリップ】奇跡のワンプレイ',
+        twitchVideoId: `${faker.string.alpha(24)}-${faker.string.alphanumeric(16)}`,
+        type: 'clip' as const,
+        user: twitchUserWithIcon,
+      },
+      {
+        duration: 'PT12M5S',
+        publishedAt: now.subtract({ hours: 20 }),
+        status: 'PUBLISHED' as const,
+        streamId: null,
+        title: '【Twitch】ハイライト：先週の配信まとめ',
+        twitchVideoId: faker.string.numeric(10),
+        type: 'highlight' as const,
+        user: twitchUserWithoutIcon,
+      },
+      {
+        duration: 'PT8M40S',
+        publishedAt: now.subtract({ hours: 30 }),
+        status: 'PUBLISHED' as const,
+        streamId: null,
+        title: '【Twitch】アップロード動画：自己紹介',
+        twitchVideoId: faker.string.numeric(10),
+        type: 'upload' as const,
+        user: twitchUserWithIcon,
+      },
+    ]
+
+    await Promise.all(
+      twitchVideoSeeds.map(async (seed, idx) => {
+        const thumbnail = createdThumbnails[idx % createdThumbnails.length]
+        const video = await videos.create({
+          created_at: seed.publishedAt.toString(),
+          deleted_at: null,
+          deleted_reason: null,
+          duration: seed.duration,
+          id: faker.string.uuid(),
+          platform: 'twitch',
+          published_at: seed.publishedAt.toString(),
+          status: seed.status,
+          talent_id: seed.user.talent_id,
+          thumbnail_id: thumbnail?.id ?? null,
+          title: seed.title,
+          updated_at: now.toString(),
+          video_kind: 'standard',
+          visible: true,
+        })
+
+        return twitchVideos.create({
+          id: faker.string.uuid(),
+          stream_id: seed.streamId,
+          twitch_user_id: seed.user.id,
+          twitch_video_id: seed.twitchVideoId,
+          type: seed.type,
+          video_id: video.id,
+        })
+      }),
+    )
+  }
 
   // Create terms
   const termsList = [
