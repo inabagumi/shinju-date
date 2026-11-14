@@ -23,10 +23,14 @@ vi.mock('@/lib/supabase', () => ({
 
 import { signIn } from '../actions'
 
-function createFormData(): FormData {
+function createFormData(next?: string): FormData {
   const formData = new FormData()
   formData.set('email', 'user@example.com')
   formData.set('password', 'password123')
+
+  if (next !== undefined) {
+    formData.set('next', next)
+  }
 
   return formData
 }
@@ -48,6 +52,33 @@ describe('signIn', () => {
     expect(redirectMock).toHaveBeenCalledWith('/')
     expect(signOutMock).not.toHaveBeenCalled()
   })
+
+  it('redirects to the requested page after signing in', async () => {
+    signInWithPasswordMock.mockResolvedValue({
+      data: { user: { app_metadata: { role: 'admin' }, id: 'admin-id' } },
+      error: null,
+    })
+
+    await signIn({}, createFormData('/analytics/click?from=2025-11-01'))
+
+    expect(redirectMock).toHaveBeenCalledWith(
+      '/analytics/click?from=2025-11-01',
+    )
+  })
+
+  it.each(['https://example.com/', '//example.com', '/.//example.com', '/.//'])(
+    'redirects to the dashboard instead of the external URL %s',
+    async (next) => {
+      signInWithPasswordMock.mockResolvedValue({
+        data: { user: { app_metadata: { role: 'admin' }, id: 'admin-id' } },
+        error: null,
+      })
+
+      await signIn({}, createFormData(next))
+
+      expect(redirectMock).toHaveBeenCalledWith('/')
+    },
+  )
 
   it('signs out and returns an error when the user is not an admin', async () => {
     signInWithPasswordMock.mockResolvedValue({
