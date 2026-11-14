@@ -57,6 +57,22 @@ describe('ShortVideoCard', () => {
     )
   })
 
+  test('should wrap the title at word boundaries when possible', () => {
+    render(<ShortVideoCard value={createShortVideo(null)} />)
+
+    // `break-all` splits words such as "#shorts" in the middle.
+    const title = screen.getByRole('heading')
+
+    expect(title).toHaveClass('wrap-anywhere')
+    expect(title).not.toHaveClass('break-all')
+  })
+
+  test('should fill the height of the slide to align the dates', () => {
+    render(<ShortVideoCard value={createShortVideo(null)} />)
+
+    expect(screen.getByRole('link')).toHaveClass('h-full', 'flex-col')
+  })
+
   test('should use the compact size for the icon', () => {
     render(
       <ShortVideoCard

@@ -68,7 +68,7 @@ export function VideoCardSkeleton() {
       </div>
 
       <div className="flex grow flex-col gap-2 p-2.5">
-        <h3 className="font-semibold break-all">
+        <h3 className="font-semibold wrap-anywhere">
           <span className="inline-block h-4 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
           <span className="inline-block h-4 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
           <span className="inline-block h-4 w-28 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
@@ -91,6 +91,7 @@ export default function VideoCard({
     dateStyle: undefined,
     timeStyle: 'short',
   },
+  fillThumbnail = false,
   value,
 }: {
   className?: string
@@ -99,6 +100,11 @@ export default function VideoCard({
     Intl.DateTimeFormatOptions,
     'dateStyle' | 'timeStyle'
   >
+  /**
+   * グリッドでカードが引き伸ばされたとき、余った高さをサムネイルで埋める。
+   * 複数の行にまたがるカードで、タイトルと日時の間に余白ができるのを防ぐ。
+   */
+  fillThumbnail?: boolean
   value: Video
 }) {
   const publishedAt = Temporal.Instant.from(
@@ -130,7 +136,9 @@ export default function VideoCard({
       rel="noopener noreferrer"
       target="_blank"
     >
-      <div className="relative aspect-video">
+      <div
+        className={twMerge('relative aspect-video', fillThumbnail && 'grow')}
+      >
         <Thumbnail video={value} />
 
         {duration.total({
@@ -151,10 +159,15 @@ export default function VideoCard({
         </div>
       </div>
 
-      <div className="flex grow flex-col gap-2 p-2.5">
+      <div
+        className={twMerge(
+          'flex grow flex-col gap-2 p-2.5',
+          fillThumbnail && 'grow-0',
+        )}
+      >
         <h3
           className={twMerge(
-            'line-clamp-3 font-semibold break-all',
+            'line-clamp-3 font-semibold wrap-anywhere',
             compact && 'line-clamp-2 text-sm',
           )}
           title={value.title}

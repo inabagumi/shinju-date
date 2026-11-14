@@ -69,7 +69,7 @@ export function ShortVideoCardSkeleton() {
       </div>
 
       <div className="flex flex-col gap-2 p-3 md:p-2.5">
-        <h3 className="text-sm font-semibold break-all">
+        <h3 className="text-sm font-semibold wrap-anywhere">
           <span className="inline-block h-3 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
           <span className="inline-block h-3 w-3/4 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
         </h3>
@@ -112,7 +112,7 @@ export default function ShortVideoCard({
   return (
     <a
       className={twMerge(
-        'block w-full overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
+        'flex h-full w-full flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
         className,
       )}
       href={href}
@@ -145,9 +145,9 @@ export default function ShortVideoCard({
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 p-3 md:p-2.5">
+      <div className="flex grow flex-col gap-2 p-3 md:p-2.5">
         <h3
-          className="line-clamp-2 text-sm font-semibold break-all"
+          className="line-clamp-2 text-sm font-semibold wrap-anywhere"
           title={value.title}
         >
           {value.title}
@@ -156,7 +156,7 @@ export default function ShortVideoCard({
         {/* The card is narrow in the carousel, so always use the compact size. */}
         <VideoCreator compact value={value} />
 
-        <div className="pt-2 text-right text-xs">
+        <div className="mt-auto pt-2 text-right text-xs">
           <FormattedTime
             dateTime={publishedAt}
             options={{
