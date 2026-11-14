@@ -34,6 +34,21 @@ export const thumbnails = new Collection({
   }),
 })
 
+// Profile images (icons of YouTube channels and Twitch users)
+export const profileImages = new Collection({
+  schema: z.object({
+    blur_data_url: z.string(),
+    created_at: z.string(),
+    etag: z.string().nullable(),
+    height: z.number(),
+    id: z.string().uuid(),
+    path: z.string(),
+    source_url: z.string(),
+    updated_at: z.string(),
+    width: z.number(),
+  }),
+})
+
 // Videos collection
 export const videos = new Collection({
   schema: z.object({
@@ -61,9 +76,22 @@ export const youtubeChannels = new Collection({
   schema: z.object({
     id: z.string().uuid(),
     name: z.string().nullable(),
+    profile_image_id: z.string().uuid().nullable(),
     talent_id: z.string().uuid(),
     youtube_channel_id: z.string(),
     youtube_handle: z.string().nullable(),
+  }),
+})
+
+// Twitch users collection
+export const twitchUsers = new Collection({
+  schema: z.object({
+    id: z.string().uuid(),
+    name: z.string().nullable(),
+    profile_image_id: z.string().uuid().nullable(),
+    talent_id: z.string().uuid(),
+    twitch_login_name: z.string().nullable(),
+    twitch_user_id: z.string(),
   }),
 })
 
@@ -257,17 +285,67 @@ export async function seedCollections() {
     }),
   )
 
-  // Create YouTube channels
+  // Create YouTube channels. The last one has no icon, so the default icon
+  // fallback can be checked as well.
   const createdChannels = await Promise.all(
-    createdTalents.map((talent) =>
-      youtubeChannels.create({
+    createdTalents.map(async (talent, idx) => {
+      const youtubeChannelId = `UC${faker.string.alphanumeric(22)}`
+      const profileImage =
+        idx < createdTalents.length - 1
+          ? await profileImages.create({
+              blur_data_url: `data:image/jpeg;base64,${faker.string.alphanumeric(50)}`,
+              created_at: faker.date.past({ years: 1 }).toISOString(),
+              etag: `"${faker.string.alphanumeric(32)}"`,
+              height: 256,
+              id: faker.string.uuid(),
+              path: `youtube/${youtubeChannelId}/${faker.string.alphanumeric(21)}.webp`,
+              source_url: `https://yt3.ggpht.com/${faker.string.alphanumeric(40)}=s800-c-k-c0x00ffffff-no-rj`,
+              updated_at: faker.date.recent().toISOString(),
+              width: 256,
+            })
+          : null
+
+      return youtubeChannels.create({
         id: faker.string.uuid(),
         name: talent.name,
+        profile_image_id: profileImage?.id ?? null,
         talent_id: talent.id,
-        youtube_channel_id: `UC${faker.string.alphanumeric(22)}`,
+        youtube_channel_id: youtubeChannelId,
         youtube_handle: `@${faker.internet.username()}`,
-      }),
-    ),
+      })
+    }),
+  )
+
+  // Create Twitch users for the first two talents. Only the first one has
+  // an icon, so the default icon fallback can be checked as well.
+  await Promise.all(
+    createdTalents.slice(0, 2).map(async (talent, idx) => {
+      const twitchUserId = faker.string.numeric(9)
+      const login = faker.internet.username().toLowerCase()
+      const profileImage =
+        idx === 0
+          ? await profileImages.create({
+              blur_data_url: `data:image/jpeg;base64,${faker.string.alphanumeric(50)}`,
+              created_at: faker.date.past({ years: 1 }).toISOString(),
+              etag: `"${faker.string.alphanumeric(32)}"`,
+              height: 256,
+              id: faker.string.uuid(),
+              path: `twitch/${twitchUserId}/${faker.string.alphanumeric(21)}.webp`,
+              source_url: `https://static-cdn.jtvnw.net/jtv_user_pictures/${faker.string.uuid()}-profile_image-300x300.png`,
+              updated_at: faker.date.recent().toISOString(),
+              width: 256,
+            })
+          : null
+
+      return twitchUsers.create({
+        id: faker.string.uuid(),
+        name: talent.name,
+        profile_image_id: profileImage?.id ?? null,
+        talent_id: talent.id,
+        twitch_login_name: login,
+        twitch_user_id: twitchUserId,
+      })
+    }),
   )
 
   // Create YouTube videos (relations)

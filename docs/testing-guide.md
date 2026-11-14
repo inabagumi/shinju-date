@@ -150,6 +150,14 @@ cd apps/admin
 pnpm test
 ```
 
+### データベース（pgTAP）のテストを実行
+
+`supabase/tests/database/` にはスキーマ・RLS・制約を検証するpgTAPのテストがあります。ローカルのSupabaseを起動した状態で実行します。
+
+```bash
+pnpm exec supabase test db
+```
+
 ### ウォッチモードで実行
 
 ```bash

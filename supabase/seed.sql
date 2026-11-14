@@ -92,6 +92,20 @@ VALUES
 	('13000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', '100001', 'alice_twitch', 'Alice'),
 	('13000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', '100002', 'bob_twitch', 'Bob');
 
+-- profile_images (icons of Alice's and Bob's YouTube channels and Alice's Twitch user;
+-- the other accounts have none, so the default icon is shown for them).
+-- No objects are uploaded to the profile-images bucket, so these resolve to the
+-- fallback image locally.
+INSERT INTO public.profile_images (id, path, width, height, blur_data_url, etag, source_url, created_at, updated_at)
+VALUES
+	('15000000-0000-0000-0000-000000000001', 'youtube/UC00000001/seed-alice.webp', 256, 256, 'data:image/jpeg;base64,/9j/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAKAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAf/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCnAFQf/9k=', '"seed-alice-youtube"', 'https://yt3.ggpht.example/alice', NOW(), NOW()),
+	('15000000-0000-0000-0000-000000000002', 'youtube/UC00000002/seed-bob.webp', 256, 256, 'data:image/jpeg;base64,/9j/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAKAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAf/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCnAFQf/9k=', '"seed-bob-youtube"', 'https://yt3.ggpht.example/bob', NOW(), NOW()),
+	('15000000-0000-0000-0000-000000000101', 'twitch/100001/seed-alice.webp', 256, 256, 'data:image/jpeg;base64,/9j/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAKAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAf/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCnAFQf/9k=', '"seed-alice-twitch"', 'https://static-cdn.jtvnw.example/alice-profile_image-300x300.png', NOW(), NOW());
+
+UPDATE public.youtube_channels SET profile_image_id = '15000000-0000-0000-0000-000000000001' WHERE id = '11000000-0000-0000-0000-000000000001';
+UPDATE public.youtube_channels SET profile_image_id = '15000000-0000-0000-0000-000000000002' WHERE id = '11000000-0000-0000-0000-000000000002';
+UPDATE public.twitch_users SET profile_image_id = '15000000-0000-0000-0000-000000000101' WHERE id = '13000000-0000-0000-0000-000000000001';
+
 -- Twitch sample videos (separate from youtube_videos; platform = twitch)
 INSERT INTO public.videos (id, title, duration, created_at, updated_at, published_at, visible, thumbnail_id, talent_id, platform, status)
 VALUES

@@ -1,10 +1,12 @@
 import { HttpResponse, http } from 'msw'
 import {
   announcements,
+  profileImages,
   seedCollections,
   talents,
   terms,
   thumbnails,
+  twitchUsers,
   videos,
   youtubeChannels,
   youtubeVideos,
@@ -36,6 +38,10 @@ async function getMockAnnouncements() {
   return await announcements.findMany()
 }
 
+async function getMockProfileImages() {
+  return await profileImages.findMany()
+}
+
 async function getMockThumbnails() {
   return await thumbnails.findMany()
 }
@@ -46,6 +52,10 @@ async function getMockVideos() {
 
 async function getMockChannels() {
   return await youtubeChannels.findMany()
+}
+
+async function getMockTwitchUsers() {
+  return await twitchUsers.findMany()
 }
 
 async function getMockTerms() {
@@ -114,7 +124,22 @@ function applySupabaseFilters(
               : Number.isNaN(Number(value))
                 ? value
                 : Number(value)
-      filteredData = filteredData.filter((item) => item[field] === parsedValue)
+      // Text columns may hold digits only (e.g. twitch_user_id), so the raw
+      // string is accepted as well.
+      filteredData = filteredData.filter(
+        (item) => item[field] === parsedValue || item[field] === value,
+      )
+    } else if (filterValue.startsWith('ilike.')) {
+      // Handle case-insensitive pattern filter (e.g., login=ilike.alice*)
+      const source = filterValue
+        .substring(6)
+        .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+        .replace(/[*%]/g, '.*')
+        .replace(/_/g, '.')
+      const regex = new RegExp(`^${source}$`, 'i')
+      filteredData = filteredData.filter(
+        (item) => typeof item[field] === 'string' && regex.test(item[field]),
+      )
     } else if (filterValue.startsWith('is.')) {
       // Handle is filter (e.g., deleted_at=is.null)
       const value = filterValue.substring(3)
@@ -138,8 +163,13 @@ function applySupabaseFilters(
             const trimmed = v.trim()
             return Number.isNaN(Number(trimmed)) ? trimmed : Number(trimmed)
           })
-        filteredData = filteredData.filter((item) =>
-          valueArray.includes(item[field]),
+        const rawValues = values
+          .slice(1, -1)
+          .split(',')
+          .map((v) => v.trim())
+        filteredData = filteredData.filter(
+          (item) =>
+            valueArray.includes(item[field]) || rawValues.includes(item[field]),
         )
       }
     }
@@ -250,6 +280,13 @@ async function resolveRelation(
       return item.talent_id
         ? await talents.findFirst((q) => q.where({ id: item.talent_id }))
         : null
+    case 'profile_images':
+      // Many-to-one from youtube_channels / twitch_users
+      return item.profile_image_id
+        ? await profileImages.findFirst((q) =>
+            q.where({ id: item.profile_image_id }),
+          )
+        : null
     case 'thumbnails':
       return item.thumbnail_id
         ? await thumbnails.findFirst((q) => q.where({ id: item.thumbnail_id }))
@@ -269,11 +306,20 @@ async function resolveRelation(
         ? await youtubeChannels.findMany((q) => q.where({ talent_id: item.id }))
         : []
     case 'twitch_users':
-      // No Twitch mock data yet. Embedding from talents is one-to-many
-      // (empty array), while embedding from twitch_videos is many-to-one.
-      return 'talent_id' in item ? null : []
+      // Many-to-one from twitch_videos, one-to-many from talents
+      if ('twitch_user_id' in item) {
+        return item.twitch_user_id
+          ? await twitchUsers.findFirst((q) =>
+              q.where({ id: item.twitch_user_id }),
+            )
+          : null
+      }
+
+      return 'talent_id' in item
+        ? null
+        : await twitchUsers.findMany((q) => q.where({ talent_id: item.id }))
     default:
-      // Relations without mock data (e.g. twitch_videos, twitch_users)
+      // Relations without mock data (e.g. twitch_videos)
       return null
   }
 }
@@ -554,6 +600,23 @@ export const supabaseHandlers = [
     },
   ),
 
+  // Profile images table
+  http.get(
+    'https://fake.supabase.test/rest/v1/profile_images',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const query = parseSupabaseQuery(url)
+
+      let filteredData = applySupabaseFilters(
+        await getMockProfileImages(),
+        query,
+      )
+      filteredData = await applySelect(filteredData, query.select)
+
+      return HttpResponse.json(filteredData)
+    },
+  ),
+
   // Terms table
   http.get('https://fake.supabase.test/rest/v1/terms', async ({ request }) => {
     const url = new URL(request.url)
@@ -744,7 +807,8 @@ export const supabaseHandlers = [
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(await getMockChannels(), query)
+      let filteredData = applySupabaseFilters(await getMockChannels(), query)
+      filteredData = await applySelect(filteredData, query.select)
 
       if (query.returnCount) {
         return HttpResponse.json(filteredData, {
@@ -767,6 +831,51 @@ export const supabaseHandlers = [
       const query = parseSupabaseQuery(url)
 
       const filteredData = applySupabaseFilters(await getMockChannels(), query)
+      const count = filteredData.length
+
+      return new HttpResponse(null, {
+        headers: {
+          'Content-Range': `0-0/${count}`,
+          'Content-Type': 'application/json',
+        },
+      })
+    },
+  ),
+
+  // Twitch Users Table
+  http.get(
+    'https://fake.supabase.test/rest/v1/twitch_users',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const query = parseSupabaseQuery(url)
+
+      let filteredData = applySupabaseFilters(await getMockTwitchUsers(), query)
+      filteredData = await applySelect(filteredData, query.select)
+
+      if (query.returnCount) {
+        return HttpResponse.json(filteredData, {
+          headers: {
+            'Content-Range': `0-${filteredData.length - 1}/${
+              filteredData.length
+            }`,
+          },
+        })
+      }
+
+      return HttpResponse.json(filteredData)
+    },
+  ),
+
+  http.head(
+    'https://fake.supabase.test/rest/v1/twitch_users',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const query = parseSupabaseQuery(url)
+
+      const filteredData = applySupabaseFilters(
+        await getMockTwitchUsers(),
+        query,
+      )
       const count = filteredData.length
 
       return new HttpResponse(null, {
@@ -1016,6 +1125,97 @@ export const supabaseHandlers = [
 
           for (const match of matches) {
             await youtubeChannels.delete((q) => q.where({ id: match.id }))
+          }
+        }
+      }
+
+      return new HttpResponse(null, { status: 204 })
+    },
+  ),
+
+  // Twitch Users POST (insert/upsert)
+  http.post(
+    'https://fake.supabase.test/rest/v1/twitch_users',
+    async ({ request }) => {
+      const preferHeader = request.headers.get('prefer') || ''
+      const isUpsert = preferHeader.includes('resolution=merge-duplicates')
+      // biome-ignore lint/suspicious/noExplicitAny: Request body can contain various table insert payloads
+      const body = (await request.json()) as any
+      const items = Array.isArray(body) ? body : [body]
+
+      // biome-ignore lint/suspicious/noExplicitAny: Created items can be from any table type
+      const savedItems: any[] = []
+      for (const item of items) {
+        const existing = item.id
+          ? await twitchUsers.findFirst((q) => q.where({ id: item.id }))
+          : undefined
+        const duplicate = await twitchUsers.findFirst((q) =>
+          q.where({ twitch_user_id: item.twitch_user_id }),
+        )
+
+        if (existing && isUpsert) {
+          await twitchUsers.update((q) => q.where({ id: existing.id }), {
+            data(record) {
+              return Object.assign(record, item)
+            },
+          })
+          savedItems.push({ ...existing, ...item })
+          continue
+        }
+
+        if (existing || (duplicate && duplicate.id !== item.id)) {
+          return HttpResponse.json(
+            {
+              code: '23505',
+              details: null,
+              hint: null,
+              message:
+                'duplicate key value violates unique constraint "twitch_users_twitch_user_id_key"',
+            },
+            { status: 409 },
+          )
+        }
+
+        savedItems.push(
+          await twitchUsers.create({
+            id: crypto.randomUUID(),
+            name: null,
+            profile_image_id: null,
+            twitch_login_name: null,
+            ...item,
+          }),
+        )
+      }
+
+      if (preferHeader.includes('return=representation')) {
+        const url = new URL(request.url)
+        const select = url.searchParams.get('select') || '*'
+
+        return HttpResponse.json(await applySelect(savedItems, select), {
+          status: 201,
+        })
+      }
+
+      return new HttpResponse(null, { status: 201 })
+    },
+  ),
+
+  // Twitch Users DELETE
+  http.delete(
+    'https://fake.supabase.test/rest/v1/twitch_users',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const query = parseSupabaseQuery(url)
+
+      for (const [field, filterValue] of Object.entries(query.filters)) {
+        if (filterValue.startsWith('eq.')) {
+          const value = filterValue.substring(3)
+          const matches = await twitchUsers.findMany((q) =>
+            q.where({ [field]: value }),
+          )
+
+          for (const match of matches) {
+            await twitchUsers.delete((q) => q.where({ id: match.id }))
           }
         }
       }
@@ -1373,6 +1573,33 @@ export const supabaseHandlers = [
         signedURL: signedUrl,
       })
     },
+  ),
+
+  http.post(
+    'https://fake.supabase.test/storage/v1/object/sign/profile-images/:path*',
+    ({ params }) => {
+      const pathParam = params['path']
+      const path = Array.isArray(pathParam) ? pathParam.join('/') : pathParam
+
+      return HttpResponse.json({
+        signedURL: `https://fake.supabase.test/storage/v1/object/public/profile-images/${path}`,
+      })
+    },
+  ),
+
+  // Profile images are always square
+  http.get(
+    'https://fake.supabase.test/storage/v1/object/public/profile-images/:path*',
+    () =>
+      new HttpResponse(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" />',
+        {
+          headers: {
+            'Accept-Ranges': 'none',
+            'Content-Type': 'image/svg+xml',
+          },
+        },
+      ),
   ),
 
   // Handle all thumbnail image fetches with a flexible pattern

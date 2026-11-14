@@ -235,6 +235,179 @@ describe('Supabase Handlers', () => {
     })
   })
 
+  describe('Profile images', () => {
+    it('should embed channel icons and leave channels without one as null', async () => {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/youtube_channels?select=id,profile_image:profile_images(id,path,width,height,blur_data_url)',
+      )
+      const data = (await response.json()) as {
+        id: string
+        profile_image: unknown
+      }[]
+
+      expect(response.ok).toBe(true)
+      expect(data.length).toBeGreaterThan(1)
+
+      const withIcon = data.filter((channel) => channel.profile_image)
+
+      expect(withIcon.length).toBeGreaterThan(0)
+      expect(withIcon.length).toBeLessThan(data.length)
+      expect(withIcon[0]).toEqual({
+        id: expect.any(String),
+        profile_image: {
+          blur_data_url: expect.stringMatching(/^data:image\/jpeg;base64,/),
+          height: 256,
+          id: expect.any(String),
+          path: expect.stringMatching(/^youtube\/UC\w+\/\w+\.webp$/),
+          width: 256,
+        },
+      })
+    })
+
+    it('should look up a profile image by id', async () => {
+      const channels = (await (
+        await fetch(
+          'https://fake.supabase.test/rest/v1/youtube_channels?select=profile_image_id',
+        )
+      ).json()) as { profile_image_id: string | null }[]
+      const id = channels.find(
+        (channel) => channel.profile_image_id,
+      )?.profile_image_id
+
+      const response = await fetch(
+        `https://fake.supabase.test/rest/v1/profile_images?select=path&id=eq.${id}`,
+      )
+      const data = await response.json()
+
+      expect(response.ok).toBe(true)
+      expect(data).toEqual([{ path: expect.stringMatching(/\.webp$/) }])
+    })
+
+    it('should sign and serve objects in the profile-images bucket', async () => {
+      const signResponse = await fetch(
+        'https://fake.supabase.test/storage/v1/object/sign/profile-images/youtube/UC1/a.webp',
+        { method: 'POST' },
+      )
+      const { signedURL } = (await signResponse.json()) as {
+        signedURL: string
+      }
+
+      expect(signedURL).toBe(
+        'https://fake.supabase.test/storage/v1/object/public/profile-images/youtube/UC1/a.webp',
+      )
+
+      const imageResponse = await fetch(signedURL)
+
+      expect(imageResponse.ok).toBe(true)
+      expect(imageResponse.headers.get('content-type')).toBe('image/svg+xml')
+      expect(await imageResponse.text()).toContain('width="256" height="256"')
+    })
+  })
+
+  describe('Twitch users', () => {
+    interface TwitchUserRow {
+      id: string
+      profile_image: { path: string; width: number } | null
+      twitch_login_name: string
+      twitch_user_id: string
+    }
+
+    async function getTwitchUsers(): Promise<TwitchUserRow[]> {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/twitch_users?select=id,twitch_user_id,twitch_login_name,profile_image:profile_images(path,width)',
+      )
+
+      return (await response.json()) as TwitchUserRow[]
+    }
+
+    it('should return Twitch users with and without an icon', async () => {
+      const users = await getTwitchUsers()
+
+      expect(users).toHaveLength(2)
+      expect(users.map((user) => user.profile_image)).toEqual(
+        expect.arrayContaining([
+          {
+            path: expect.stringMatching(/^twitch\/\d+\/\w+\.webp$/),
+            width: 256,
+          },
+          null,
+        ]),
+      )
+    })
+
+    it('should embed Twitch users from talents', async () => {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/talents?select=id,twitch_users(id,twitch_user_id)',
+      )
+      const talents = (await response.json()) as {
+        twitch_users: { id: string }[]
+      }[]
+
+      expect(talents.flatMap((talent) => talent.twitch_users)).toHaveLength(2)
+    })
+
+    it('should match digit-only IDs and case-insensitive logins', async () => {
+      const [user] = await getTwitchUsers()
+
+      const byId = (await (
+        await fetch(
+          `https://fake.supabase.test/rest/v1/twitch_users?select=id&twitch_user_id=eq.${user?.twitch_user_id}`,
+        )
+      ).json()) as { id: string }[]
+      const byLogin = (await (
+        await fetch(
+          `https://fake.supabase.test/rest/v1/twitch_users?select=id&twitch_login_name=ilike.${user?.twitch_login_name.toUpperCase()}`,
+        )
+      ).json()) as { id: string }[]
+
+      expect(byId).toEqual([{ id: user?.id }])
+      expect(byLogin).toEqual([{ id: user?.id }])
+    })
+
+    it('should insert, reject duplicates and delete Twitch users', async () => {
+      const [talent] = (await (
+        await fetch('https://fake.supabase.test/rest/v1/talents?select=id')
+      ).json()) as { id: string }[]
+      const newUser = {
+        name: 'New User',
+        talent_id: talent?.id,
+        twitch_login_name: 'new_user',
+        twitch_user_id: '999999999',
+      }
+
+      const created = await fetch(
+        'https://fake.supabase.test/rest/v1/twitch_users?select=id,twitch_user_id',
+        {
+          body: JSON.stringify(newUser),
+          headers: { Prefer: 'return=representation' },
+          method: 'POST',
+        },
+      )
+      const [createdUser] = (await created.json()) as {
+        id: string
+        twitch_user_id: string
+      }[]
+
+      expect(created.status).toBe(201)
+      expect(createdUser?.twitch_user_id).toBe('999999999')
+
+      const duplicate = await fetch(
+        'https://fake.supabase.test/rest/v1/twitch_users',
+        { body: JSON.stringify(newUser), method: 'POST' },
+      )
+
+      expect(duplicate.status).toBe(409)
+
+      const deleted = await fetch(
+        `https://fake.supabase.test/rest/v1/twitch_users?id=eq.${createdUser?.id}`,
+        { method: 'DELETE' },
+      )
+
+      expect(deleted.status).toBe(204)
+      expect(await getTwitchUsers()).toHaveLength(2)
+    })
+  })
+
   describe('Query parameter parsing', () => {
     it('should handle limit parameter', async () => {
       const response = await fetch(
