@@ -3,6 +3,7 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
+import { listDatesInRange } from '@/lib/analytics/list-dates-in-range'
 import { getRedisClient } from '@/lib/redis'
 
 export type DailySearchVolume = {
@@ -24,7 +25,6 @@ export async function getSearchVolume(
   try {
     const redisClient = getRedisClient()
     const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-    const volumes: DailySearchVolume[] = []
 
     // Determine date range
     let start: Temporal.PlainDate
@@ -38,27 +38,27 @@ export async function getSearchVolume(
       start = end.subtract({ days: days - 1 })
     }
 
-    // Get volume for each day in the range
-    let currentDate = start
-    while (Temporal.PlainDate.compare(currentDate, end) <= 0) {
-      const zonedDate = currentDate.toZonedDateTime({
-        plainTime: Temporal.PlainTime.from('00:00:00'),
-        timeZone: TIME_ZONE,
-      })
-      const dateKey = formatDateKey(zonedDate)
-      const dateStr = currentDate.toString()
+    const dates = listDatesInRange(start, end)
 
-      const count = await redisClient.get<number>(
-        `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${dateKey}`,
-      )
-
-      volumes.push({
-        count: count ?? 0,
-        date: dateStr,
-      })
-
-      currentDate = currentDate.add({ days: 1 })
+    if (dates.length === 0) {
+      return []
     }
+
+    // Fetch every day in a single request instead of one round trip per day
+    const pipeline = redisClient.pipeline()
+    for (const date of dates) {
+      pipeline.get<number>(
+        `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${formatDateKey(date)}`,
+      )
+    }
+    const counts = await pipeline.exec<(number | null)[]>()
+
+    const volumes = dates.map(
+      (date, index): DailySearchVolume => ({
+        count: counts[index] ?? 0,
+        date: date.toString(),
+      }),
+    )
 
     return volumes
   } catch (error) {
