@@ -7,6 +7,7 @@ import {
   terms,
   thumbnails,
   twitchUsers,
+  videoBackfillJobs,
   videos,
   youtubeChannels,
   youtubeVideos,
@@ -64,6 +65,93 @@ async function getMockTerms() {
 
 async function getMockYoutubeVideos() {
   return await youtubeVideos.findMany()
+}
+
+/** The history of backfill jobs, newest first. */
+async function getMockVideoBackfillJobs() {
+  const jobs = await videoBackfillJobs.findMany()
+
+  return jobs.sort((a, b) => b.finished_at.localeCompare(a.finished_at))
+}
+
+/**
+ * Mirrors the `video_backfill_latest_jobs` view: the latest finished job of
+ * each account that still exists, of talents that are not deleted.
+ */
+async function getMockLatestVideoBackfillJobs() {
+  const [jobs, allTalents, channels, users] = await Promise.all([
+    getMockVideoBackfillJobs(),
+    getMockTalents(),
+    getMockChannels(),
+    getMockTwitchUsers(),
+  ])
+  const talentIds = new Set(
+    allTalents
+      .filter((talent) => talent.deleted_at === null)
+      .map((talent) => talent.id),
+  )
+  const accountIds = {
+    twitch: new Set(users.map((user) => user.id)),
+    youtube: new Set(channels.map((channel) => channel.id)),
+  }
+  const seen = new Set<string>()
+
+  return jobs.filter((job) => {
+    const key = `${job.platform}:${job.account_id}`
+
+    if (
+      seen.has(key) ||
+      !talentIds.has(job.talent_id) ||
+      !accountIds[job.platform].has(job.account_id)
+    ) {
+      return false
+    }
+
+    seen.add(key)
+
+    return true
+  })
+}
+
+/**
+ * GET and HEAD handlers of a table (or view) that is only read, with
+ * filters, embedded resources and exact counts.
+ */
+function createReadOnlyHandlers(
+  name: string,
+  // biome-ignore lint/suspicious/noExplicitAny: Rows can come from any table
+  getRows: () => Promise<any[]>,
+) {
+  const url = `https://fake.supabase.test/rest/v1/${name}`
+
+  return [
+    http.get(url, async ({ request }) => {
+      const query = parseSupabaseQuery(new URL(request.url))
+      const filtered = applySupabaseFilters(await getRows(), query)
+      const data = await applySelect(filtered, query.select)
+      const prefer = request.headers.get('prefer') ?? ''
+
+      return HttpResponse.json(data, {
+        headers:
+          prefer.includes('count=exact') || query.returnCount
+            ? {
+                'Content-Range': `0-${Math.max(0, data.length - 1)}/${filtered.length}`,
+              }
+            : {},
+      })
+    }),
+    http.head(url, async ({ request }) => {
+      const query = parseSupabaseQuery(new URL(request.url))
+      const count = applySupabaseFilters(await getRows(), query).length
+
+      return new HttpResponse(null, {
+        headers: {
+          'Content-Range': `0-0/${count}`,
+          'Content-Type': 'application/json',
+        },
+      })
+    }),
+  ]
 }
 
 /**
@@ -885,6 +973,13 @@ export const supabaseHandlers = [
         },
       })
     },
+  ),
+
+  // Backfill history (read only; recorded by the batch app)
+  ...createReadOnlyHandlers('video_backfill_jobs', getMockVideoBackfillJobs),
+  ...createReadOnlyHandlers(
+    'video_backfill_latest_jobs',
+    getMockLatestVideoBackfillJobs,
   ),
 
   // YouTube Videos Table

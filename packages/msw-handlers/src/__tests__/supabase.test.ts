@@ -408,6 +408,60 @@ describe('Supabase Handlers', () => {
     })
   })
 
+  describe('Video backfill history', () => {
+    interface BackfillRow {
+      account_id: string
+      finished_at: string
+      platform: 'youtube' | 'twitch'
+      status: 'done' | 'failed'
+      talents: { name: string } | null
+    }
+
+    it('should return the history newest first with talent names', async () => {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/video_backfill_jobs?select=account_id,platform,status,finished_at,talents(name)&order=finished_at.desc&limit=50',
+      )
+      const rows = (await response.json()) as BackfillRow[]
+
+      expect(rows).toHaveLength(3)
+      expect(rows.map((row) => row.finished_at)).toEqual(
+        rows
+          .map((row) => row.finished_at)
+          .sort()
+          .reverse(),
+      )
+      expect(rows.every((row) => typeof row.talents?.name === 'string')).toBe(
+        true,
+      )
+    })
+
+    it('should return only the latest job of each account', async () => {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/video_backfill_latest_jobs?select=account_id,platform,status',
+      )
+      const rows = (await response.json()) as BackfillRow[]
+
+      expect(
+        rows.map(({ platform, status }) => ({ platform, status })),
+      ).toEqual(
+        expect.arrayContaining([
+          { platform: 'twitch', status: 'failed' },
+          { platform: 'youtube', status: 'done' },
+        ]),
+      )
+      expect(rows).toHaveLength(2)
+    })
+
+    it('should count the accounts whose latest job failed', async () => {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/video_backfill_latest_jobs?select=id&status=eq.failed',
+        { headers: { prefer: 'count=exact' }, method: 'HEAD' },
+      )
+
+      expect(response.headers.get('content-range')).toBe('0-0/1')
+    })
+  })
+
   describe('Query parameter parsing', () => {
     it('should handle limit parameter', async () => {
       const response = await fetch(
