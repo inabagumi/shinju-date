@@ -16,6 +16,7 @@ import {
 } from '@shinju-date/ui'
 import { ExternalLink, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import type { FormState } from '@/components/form'
 import Form, {
   ErrorMessage,
@@ -48,6 +49,9 @@ export function TwitchUserManager({
 }: TwitchUserManagerProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
+  // Kept after the dialog closes so that its content stays while it fades out.
+  const [removalTarget, setRemovalTarget] = useState<TwitchUser | null>(null)
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
 
   const handleAddUser = async (
     currentState: FormState,
@@ -63,14 +67,6 @@ export function TwitchUserManager({
   }
 
   const handleRemoveUser = async (userId: string) => {
-    if (
-      !confirm(
-        'このTwitchユーザーを削除してもよろしいですか？\n関連する動画データは削除されません。',
-      )
-    ) {
-      return
-    }
-
     setDeletingUserId(userId)
     try {
       const result = await removeTwitchUserAction(userId, talentId)
@@ -207,7 +203,10 @@ export function TwitchUserManager({
                     <UIButton
                       className="ml-4"
                       disabled={deletingUserId === user.id}
-                      onClick={() => handleRemoveUser(user.id)}
+                      onClick={() => {
+                        setRemovalTarget(user)
+                        setIsRemoveDialogOpen(true)
+                      }}
                       size="sm"
                       title="ユーザーを削除"
                       type="button"
@@ -226,6 +225,34 @@ export function TwitchUserManager({
           )}
         </CardContent>
       </Card>
+      <ConfirmDialog
+        confirmLabel="削除"
+        confirmVariant="danger"
+        description={
+          'このTwitchユーザーを削除してもよろしいですか？\n関連する動画データは削除されません。'
+        }
+        onConfirm={() => {
+          if (removalTarget) {
+            void handleRemoveUser(removalTarget.id)
+          }
+        }}
+        onOpenChange={setIsRemoveDialogOpen}
+        open={isRemoveDialogOpen}
+        title="Twitchユーザーを削除"
+      >
+        {removalTarget && (
+          <>
+            <p className="font-medium">
+              {removalTarget.name ||
+                removalTarget.twitch_login_name ||
+                '未取得'}
+            </p>
+            <code className="mt-1 block font-mono text-xs break-all">
+              {removalTarget.twitch_user_id}
+            </code>
+          </>
+        )}
+      </ConfirmDialog>
     </div>
   )
 }

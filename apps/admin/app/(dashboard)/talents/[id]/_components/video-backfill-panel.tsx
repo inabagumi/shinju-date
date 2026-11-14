@@ -5,6 +5,7 @@ import { Badge, Button, Card, CardContent, CardHeader } from '@shinju-date/ui'
 import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import {
   getVideoBackfillStatusAction,
   requestVideoBackfillAction,
@@ -107,6 +108,9 @@ export function VideoBackfillPanel({
   // Why the progress could not be loaded; shown with a retry button.
   const [loadError, setLoadError] = useState<string | null>(null)
   const previousAdded = useRef<number | null>(null)
+  // Kept after the dialog closes so that its content stays while it fades out.
+  const [confirmProvider, setConfirmProvider] = useState<Provider | null>(null)
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
   const refresh = useCallback(async () => {
     let result: Awaited<ReturnType<typeof getVideoBackfillStatusAction>>
@@ -156,19 +160,15 @@ export function VideoBackfillPanel({
     return () => clearInterval(timer)
   }, [hasActiveJobs, refresh])
 
-  const request = (provider: Provider) => {
+  const getConfirmMessage = (provider: Provider) => {
     const label = PROVIDER_LABELS[provider]
     const count =
       accounts?.filter((account) => account.provider === provider).length ?? 0
 
-    if (
-      !window.confirm(
-        `「${talentName}」の${label}アカウント${count > 0 ? `（${count}件）` : ''}の過去動画をすべて確認し、未登録の動画を取り込みますか？\n処理はバックグラウンドで順番に行われます。`,
-      )
-    ) {
-      return
-    }
+    return `「${talentName}」の${label}アカウント${count > 0 ? `（${count}件）` : ''}の過去動画をすべて確認し、未登録の動画を取り込みますか？\n処理はバックグラウンドで順番に行われます。`
+  }
 
+  const request = (provider: Provider) => {
     setMessage(null)
     setPendingProvider(provider)
     startTransition(async () => {
@@ -210,6 +210,9 @@ export function VideoBackfillPanel({
     )
   }
 
+  const confirmTargets =
+    accounts?.filter((account) => account.provider === confirmProvider) ?? []
+
   if (!hasYouTubeChannels && !hasTwitchUsers) {
     return null
   }
@@ -239,7 +242,10 @@ export function VideoBackfillPanel({
                     isPending || accounts === null || isProviderActive(provider)
                   }
                   key={provider}
-                  onClick={() => request(provider)}
+                  onClick={() => {
+                    setConfirmProvider(provider)
+                    setIsConfirmOpen(true)
+                  }}
                   size="sm"
                   variant="secondary"
                 >
@@ -302,6 +308,26 @@ export function VideoBackfillPanel({
           </ul>
         )}
       </CardContent>
+      <ConfirmDialog
+        confirmLabel="取り込む"
+        description={confirmProvider ? getConfirmMessage(confirmProvider) : ''}
+        onConfirm={() => {
+          if (confirmProvider) {
+            request(confirmProvider)
+          }
+        }}
+        onOpenChange={setIsConfirmOpen}
+        open={isConfirmOpen}
+        title="過去動画の取り込み"
+      >
+        {confirmTargets.length > 0 && (
+          <ul className="space-y-1">
+            {confirmTargets.map((account) => (
+              <li key={account.accountId}>{account.name}</li>
+            ))}
+          </ul>
+        )}
+      </ConfirmDialog>
     </Card>
   )
 }
