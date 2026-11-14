@@ -102,16 +102,24 @@ describe('workOffBackfillQueue', () => {
   it('puts a job back with its cursor when the time is up', async () => {
     const { queue, typed } = createQueue([createJob({ added: 5, pages: 2 })])
     const { addPastVideos, getScraper } = createScraper()
-    const deadline = Temporal.Now.instant().add({ milliseconds: 20 })
+    const start = Temporal.Instant.from('2026-11-14T00:00:00Z')
+    const deadline = start.add({ seconds: 50 })
+    let now = start
 
     addPastVideos.mockImplementation(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 30))
+      // Reading the page takes the rest of the time.
+      now = deadline
 
       return { added: 2, cursor: 'page-4', listed: 50 }
     })
 
     await expect(
-      workOffBackfillQueue({ deadline, getScraper, queue: typed }),
+      workOffBackfillQueue({
+        clock: () => now,
+        deadline,
+        getScraper,
+        queue: typed,
+      }),
     ).resolves.toEqual({ added: 2, jobs: 1 })
 
     expect(addPastVideos).toHaveBeenCalledTimes(1)
@@ -119,6 +127,35 @@ describe('workOffBackfillQueue', () => {
       expect.objectContaining({ added: 7, cursor: 'page-4', pages: 3 }),
     )
     expect(queue.complete).not.toHaveBeenCalled()
+  })
+
+  it('puts a job back with its progress when recording it fails', async () => {
+    const { queue, typed } = createQueue([createJob()])
+    const { addPastVideos, getScraper } = createScraper()
+
+    addPastVideos.mockResolvedValue({ added: 3, cursor: 'page-2', listed: 50 })
+    queue.update.mockRejectedValue(new Error('redis unavailable'))
+
+    await expect(
+      workOffBackfillQueue({ deadline: farFuture, getScraper, queue: typed }),
+    ).rejects.toThrow('redis unavailable')
+
+    expect(queue.requeue).toHaveBeenCalledWith(
+      expect.objectContaining({ added: 3, cursor: 'page-2', pages: 1 }),
+    )
+  })
+
+  it('keeps the original error when putting the job back fails too', async () => {
+    const { queue, typed } = createQueue([createJob()])
+    const { addPastVideos, getScraper } = createScraper()
+
+    addPastVideos.mockResolvedValue({ added: 0, cursor: 'page-2', listed: 50 })
+    queue.update.mockRejectedValue(new Error('redis unavailable'))
+    queue.requeue.mockRejectedValue(new Error('still unavailable'))
+
+    await expect(
+      workOffBackfillQueue({ deadline: farFuture, getScraper, queue: typed }),
+    ).rejects.toThrow('redis unavailable')
   })
 
   it('takes turns between jobs and works on each at most once per run', async () => {

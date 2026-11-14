@@ -12,6 +12,8 @@ import { Temporal } from 'temporal-polyfill'
 export const BACKFILL_MAX_ATTEMPTS = 3
 
 export interface WorkOffBackfillQueueOptions {
+  /** Current time (default: the system clock); replaced in tests. */
+  clock?: () => Temporal.Instant
   /** Pages are read until this time; the page in progress is finished. */
   deadline: Temporal.Instant
   getScraper: (provider: BackfillProvider) => Scraper
@@ -25,8 +27,12 @@ export interface BackfillRunResult {
   jobs: number
 }
 
-function isBeforeDeadline(deadline: Temporal.Instant): boolean {
-  return Temporal.Instant.compare(Temporal.Now.instant(), deadline) < 0
+type Clock = () => Temporal.Instant
+
+const systemClock: Clock = () => Temporal.Now.instant()
+
+function isBefore(clock: Clock, deadline: Temporal.Instant): boolean {
+  return Temporal.Instant.compare(clock(), deadline) < 0
 }
 
 /**
@@ -40,6 +46,7 @@ async function workOnJob(
   scraper: Scraper,
   claimed: BackfillJob,
   deadline: Temporal.Instant,
+  clock: Clock,
 ): Promise<number> {
   let job = claimed
   let added = 0
@@ -51,7 +58,7 @@ async function workOnJob(
       result = await scraper.addPastVideos({
         accountId: job.accountId,
         cursor: job.cursor,
-        now: Temporal.Now.instant(),
+        now: clock(),
       })
     } catch (error) {
       const attempts = job.attempts + 1
@@ -103,13 +110,28 @@ async function workOnJob(
       return added
     }
 
-    if (!isBeforeDeadline(deadline)) {
+    if (!isBefore(clock, deadline)) {
       await queue.requeue(job)
 
       return added
     }
 
-    job = await queue.update(job)
+    try {
+      job = await queue.update(job)
+    } catch (error) {
+      // The job is off the queue and marked running: put it back with the
+      // progress made so far, or it would wait until it is requested again.
+      try {
+        await queue.requeue(job)
+      } catch (requeueError) {
+        logger.error('過去動画の取り込みを再キューできませんでした', {
+          error: requeueError,
+          jobId: job.id,
+        })
+      }
+
+      throw error
+    }
   }
 }
 
@@ -122,6 +144,7 @@ async function workOnJob(
  * burst.
  */
 export async function workOffBackfillQueue({
+  clock = systemClock,
   deadline,
   getScraper,
   queue,
@@ -129,7 +152,7 @@ export async function workOffBackfillQueue({
   const seen = new Set<string>()
   let added = 0
 
-  while (isBeforeDeadline(deadline)) {
+  while (isBefore(clock, deadline)) {
     const job = await queue.claim()
 
     if (!job) {
@@ -142,7 +165,13 @@ export async function workOffBackfillQueue({
     }
 
     seen.add(job.id)
-    added += await workOnJob(queue, getScraper(job.provider), job, deadline)
+    added += await workOnJob(
+      queue,
+      getScraper(job.provider),
+      job,
+      deadline,
+      clock,
+    )
   }
 
   return { added, jobs: seen.size }
