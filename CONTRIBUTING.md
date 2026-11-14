@@ -78,6 +78,7 @@ type ComponentProps = {
 ```
 
 **例外**: 以下の場合は `type` を使用します：
+
 - ユニオン型: `type Status = 'active' | 'inactive'`
 - インターセクション型: `type Combined = A & B`
 - マップド型・条件型・タプル型
@@ -113,6 +114,7 @@ async function MyComponent() {
 ```
 
 **キャッシュのベストプラクティス**:
+
 - キャッシュはデータ取得関数のレベルで行い、コンポーネントとメタデータ生成関数の両方で再利用する
 - 重複してキャッシュディレクティブを使用しない
 - `'use cache: remote'` は公開データに使用し、`'use cache: private'` は認証が必要なデータに使用する
@@ -168,6 +170,7 @@ refactor(database): improve query performance
 ```
 
 **Type**:
+
 - `feat`: 新機能
 - `fix`: バグ修正
 - `docs`: ドキュメント
@@ -176,6 +179,7 @@ refactor(database): improve query performance
 - `chore`: その他（依存関係更新など）
 
 **Scope**:
+
 - `web`, `admin`, `batch`: 各アプリケーション
 - `database`, `msw-handlers`, `logger` など: 各パッケージ
 
@@ -249,6 +253,7 @@ Node.js CI は以下のジョブ構成になっています：
    - 現在は準備中（将来的に追加予定）
 
 **並列実行の利点**：
+
 - Lint、Test、Build が同時に実行されるため、CI時間が短縮されます
 - pnpm の組み込みキャッシュ機能により、各ジョブで依存関係を高速にインストールできます
 - 各ジョブは個別のチェックとして表示されるため、失敗した場合は具体的にどの段階で問題が発生したか容易に特定できます
@@ -297,6 +302,7 @@ pnpm run test --watch
 ### スキーマ変更の手順
 
 1. **ローカル環境でマイグレーション作成**
+
    ```bash
    pnpm exec supabase migration new add_new_feature
    ```
@@ -306,11 +312,13 @@ pnpm run test --watch
    - DDL、RLSポリシー、関数などを記述
 
 3. **ローカルで適用・テスト**
+
    ```bash
    pnpm exec supabase db reset  # 全マイグレーションを適用
    ```
 
 4. **本番適用（レビュー後）**
+
    ```bash
    pnpm exec supabase db push --project-ref YOUR_PROJECT_ID
    ```

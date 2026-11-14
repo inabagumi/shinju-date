@@ -14,10 +14,7 @@
 import { supabase } from '@shinju-date/database'
 
 // データベース操作の例
-const { data, error } = await supabase
-  .from('videos')
-  .select('*')
-  .limit(10)
+const { data, error } = await supabase.from('videos').select('*').limit(10)
 ```
 
 ## 型生成

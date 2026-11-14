@@ -16,7 +16,7 @@ import { retryableFetch } from '@shinju-date/retryable-fetch'
 const response = await retryableFetch('https://api.example.com/data', {
   method: 'GET',
   retries: 3,
-  retryDelay: 1000
+  retryDelay: 1000,
 })
 ```
 

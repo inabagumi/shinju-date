@@ -37,20 +37,20 @@ jobs:
       - name: Verify Dev Container functionality
         run: |
           echo "✅ Verifying Dev Container runtime..."
-          
+
           # Test that the development server can start
           # Set concurrency to 20 to handle all 17 persistent tasks plus buffer
           # Use timeout to prevent hanging, and grep to verify output
           timeout 90s devcontainer exec --workspace-folder . pnpm dev --concurrency=20 > /tmp/dev-output.log 2>&1 &
           DEV_PID=$!
-          
+
           # Wait for server to start - 17 tasks need time to compile and start
           # Sleep for 60 seconds to allow all tasks to initialize
           sleep 60
-          
+
           # Kill the dev server
           kill $DEV_PID || true
-          
+
           # Check if server started successfully
           if grep -q "Ready\|compiled\|started" /tmp/dev-output.log; then
             echo "✓ Development server started successfully"

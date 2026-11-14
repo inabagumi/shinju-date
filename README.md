@@ -119,4 +119,3 @@ pnpm run check --fix
 ## ライセンス
 
 [MIT](LICENSE)
-

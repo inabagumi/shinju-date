@@ -149,6 +149,7 @@ interface EventHandler {
 既存のコードで `type` を使用している箇所を `interface` に変更する際の手順：
 
 1. **Props の変換**
+
    ```typescript
    // Before
    type MyComponentProps = {
@@ -164,6 +165,7 @@ interface EventHandler {
    ```
 
 2. **ComponentPropsWithoutRef との組み合わせ**
+
    ```typescript
    // Before
    type ButtonProps = ComponentPropsWithoutRef<'button'> & {
@@ -177,6 +179,7 @@ interface EventHandler {
    ```
 
 3. **Omit/Pick との組み合わせ**
+
    ```typescript
    // type が必要な場合
    type InputProps = Omit<ComponentPropsWithoutRef<'input'>, 'size'> & {
@@ -372,7 +375,7 @@ const badgeVariants = cva('...', {
     variant: {
       info: 'bg-774-blue-100 text-774-blue-800',
       success: 'bg-green-100 text-green-800', // セマンティック
-      error: 'bg-red-100 text-red-800',       // セマンティック
+      error: 'bg-red-100 text-red-800', // セマンティック
       warning: 'bg-yellow-100 text-yellow-800', // セマンティック
     },
   },
@@ -383,16 +386,16 @@ const badgeVariants = cva('...', {
 
 既存のコードを更新する際の参考：
 
-| 旧カラー | 新カラー | 用途 |
-|---------|---------|------|
-| `blue-*` | `774-blue-*` | リンク、ボタン、情報表示 |
-| `purple-*` | `774-nevy-*` | ブランド要素、強調表示 |
-| `indigo-*` | `774-nevy-*` または `774-blue-*` | コンテキストに応じて |
-| `pink-*` | `774-pink-*` | セカンダリアクション、エラー |
-| `green-*` | そのまま | 成功、公開状態 |
-| `red-*` | そのまま | エラー、削除、危険 |
-| `yellow-*` | そのまま | 警告、非表示状態 |
-| `gray-*`, `slate-*` | そのまま | 構造的要素、テキスト |
+| 旧カラー            | 新カラー                         | 用途                         |
+| ------------------- | -------------------------------- | ---------------------------- |
+| `blue-*`            | `774-blue-*`                     | リンク、ボタン、情報表示     |
+| `purple-*`          | `774-nevy-*`                     | ブランド要素、強調表示       |
+| `indigo-*`          | `774-nevy-*` または `774-blue-*` | コンテキストに応じて         |
+| `pink-*`            | `774-pink-*`                     | セカンダリアクション、エラー |
+| `green-*`           | そのまま                         | 成功、公開状態               |
+| `red-*`             | そのまま                         | エラー、削除、危険           |
+| `yellow-*`          | そのまま                         | 警告、非表示状態             |
+| `gray-*`, `slate-*` | そのまま                         | 構造的要素、テキスト         |
 
 ### レビューガイドライン
 

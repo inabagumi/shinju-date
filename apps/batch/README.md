@@ -134,12 +134,14 @@ pnpm exec playwright test --ui
 複数のルートやバッチ処理で共有される汎用的な機能を配置します。
 
 **配置基準:**
+
 - 複数のルート間で再利用されるロジック
 - アプリケーション全体で共通の設定やクライアント（Supabase、Redis、YouTubeなど）
 - データベース操作の基本関数（汎用的なCRUD操作）
 - サムネイル処理など、汎用的なユーティリティ
 
 **例:**
+
 - `lib/supabase.ts` - Supabaseクライアントの初期化
 - `lib/redis.ts` - Redisクライアントの初期化
 - `lib/youtube.ts` - YouTube APIクライアントの初期化
@@ -158,12 +160,14 @@ pnpm exec playwright test --ui
 特定のルートハンドラでのみ使用されるロジックを配置します。
 
 **配置基準:**
+
 - 特定のエンドポイント専用の処理ロジック
 - そのルートでのみ意味を持つ型定義
 - クエリパラメータのスキーマ定義
 - ルート固有のヘルパー関数
 
 **例:**
+
 - `app/videos/check/_lib/get-saved-videos.ts` - `/videos/check`専用の動画取得ロジック
 - `app/videos/check/_lib/types.ts` - `/videos/check`で使用する型定義
 - `app/videos/check/_lib/query-schema.ts` - クエリパラメータのバリデーションスキーマ

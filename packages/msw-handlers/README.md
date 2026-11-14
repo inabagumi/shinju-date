@@ -158,12 +158,14 @@ const worker = setupWorker(...supabaseHandlers, ...myCustomHandlers)
 The package mocks the following Supabase tables and operations:
 
 #### Tables
+
 - `videos` - Video content with title, duration, etc.
 - `channels` - Channel information with name
 - `thumbnails` - Thumbnail images with blur data URLs
 - `terms` - Search terms with readings and synonyms
 
 #### Query Parameters
+
 - `select` - Column selection (supports nested relations)
 - `eq` - Equality filters
 - `in` - Array inclusion filters
@@ -188,6 +190,7 @@ GET /rest/v1/videos?select=*&id.in.(1,2,3)&limit=10
 The package mocks the following Redis operations:
 
 #### Commands
+
 - `ZRANGE` - Get sorted set ranges (with scores, reverse order)
 - `ZUNIONSTORE` - Union multiple sorted sets
 - `PING` - Connection health check
@@ -195,6 +198,7 @@ The package mocks the following Redis operations:
 - `EXPIRE` - Set key expiration
 
 #### Pipeline Support
+
 - Multiple commands in a single request
 - Transaction-like behavior
 
@@ -204,7 +208,7 @@ The package mocks the following Redis operations:
 // The handlers automatically mock calls like:
 await redisClient.zrange('videos:clicked:2023-10-23', 0, 10, {
   rev: true,
-  withScores: true
+  withScores: true,
 })
 
 await redisClient.ping()
@@ -213,21 +217,23 @@ await redisClient.ping()
 ## Mock Data
 
 ### Sample Videos
+
 ```typescript
-[
+;[
   {
     id: 'video-uuid-1',
     title: 'Sample Video 1',
     duration: 'PT10M30S',
     talent_id: 'talent-uuid-1',
     thumbnail_id: 'thumb-uuid-1',
-    visible: true
+    visible: true,
   },
   // ...more videos
 ]
 ```
 
 ### Sample Redis Data
+
 ```typescript
 // Click tracking data
 'videos:clicked:2023-10-23' => [{ member: '1', score: 150 }, ...]
@@ -244,6 +250,7 @@ This package uses **@msw/data** v1.1.2 for structured data modeling combined wit
 ### Why @msw/data?
 
 `@msw/data` provides:
+
 - **Structured Database Modeling**: Define schemas with relationships
 - **Built-in Query Methods**: `findMany`, `findFirst`, `update`, `delete`, etc.
 - **Native Relation API**: Automatic relation traversal using `.relate()` method
@@ -251,6 +258,7 @@ This package uses **@msw/data** v1.1.2 for structured data modeling combined wit
 - **Type Safety**: Full TypeScript support with proper typing
 
 Combined with `@faker-js/faker`, you get:
+
 - **Realistic Data**: Diverse, random values for names, dates, UUIDs, etc.
 - **Dynamic Generation**: Each test run uses different data
 - **Maintainability**: Schema changes propagate automatically
@@ -266,31 +274,31 @@ import { db } from '@shinju-date/msw-handlers'
 const visibleVideos = db.videos.findMany({
   where: {
     visible: { equals: true },
-    deleted_at: { equals: null }
-  }
+    deleted_at: { equals: null },
+  },
 })
 
 // Find a specific talent
 const talent = db.talents.findFirst({
-  where: { id: { equals: 'some-talent-id' } }
+  where: { id: { equals: 'some-talent-id' } },
 })
 
 // Create new data
 const newVideo = db.videos.create({
   title: 'Custom Video',
   status: 'PUBLISHED',
-  visible: true
+  visible: true,
 })
 
 // Update existing data
 const updated = db.videos.update({
   where: { id: { equals: videoId } },
-  data: { title: 'Updated Title' }
+  data: { title: 'Updated Title' },
 })
 
 // Delete data
 db.videos.delete({
-  where: { id: { equals: videoId } }
+  where: { id: { equals: videoId } },
 })
 
 // Get all records
@@ -300,6 +308,7 @@ const allTalents = db.videos.getAll()
 ### Database Schema
 
 The database includes the following tables:
+
 - `talents`: Creator/talent information
 - `videos`: Video records with status and metadata
 - `thumbnails`: Thumbnail images with blur data
@@ -332,14 +341,12 @@ import { videos, talents, seedCollections } from '@shinju-date/msw-handlers'
 await seedCollections()
 
 // Query videos
-const publishedVideos = await videos.findMany((q) =>
-  q.where({ visible: true })
-)
+const publishedVideos = await videos.findMany((q) => q.where({ visible: true }))
 
 // Access related data directly via native relation traversal
 const firstVideo = publishedVideos[0]
-console.log(firstVideo.talent.name)       // Talent name - no manual find() needed!
-console.log(firstVideo.thumbnail.path)    // Thumbnail path - automatic resolution!
+console.log(firstVideo.talent.name) // Talent name - no manual find() needed!
+console.log(firstVideo.thumbnail.path) // Thumbnail path - automatic resolution!
 
 // Create new video (relations work automatically)
 const newVideo = await videos.create({
@@ -354,7 +361,7 @@ await videos.update((q) => q.where({ id: newVideo.id }), {
   data(record) {
     record.title = 'Updated Title'
     return record
-  }
+  },
 })
 ```
 
@@ -385,6 +392,7 @@ talents.relate('videos', videos, {
 ```
 
 Benefits:
+
 - **No Manual Lookups**: No need for `.find()` operations
 - **Type-Safe**: Relations maintain TypeScript types
 - **Automatic Resolution**: Foreign keys resolve automatically
@@ -393,6 +401,7 @@ Benefits:
 ### Database Schema
 
 The database includes the following tables:
+
 - `talents`: Creator/talent information
 - `videos`: Video records with status and metadata
 - `thumbnails`: Thumbnail images with blur data
@@ -408,6 +417,7 @@ Each table is populated with realistic faker-generated data on initialization.
 The package exports the following `@msw/data` collections:
 
 #### Supabase Tables
+
 - `talents` - Talent/VTuber information
 - `videos` - Video records with metadata (relates to talent, thumbnail)
 - `thumbnails` - Thumbnail images with blur data
@@ -417,6 +427,7 @@ The package exports the following `@msw/data` collections:
 - `announcements` - System announcements
 
 #### Seeding & Relations
+
 - `seedCollections()` - Initialize all collections with faker-generated data
 - `defineCollectionRelations()` - Configure relations (called automatically by seedCollections)
 
@@ -429,14 +440,10 @@ import { videos, talents, seedCollections } from '@shinju-date/msw-handlers'
 await seedCollections()
 
 // Query videos
-const publishedVideos = await videos.findMany((q) =>
-  q.where({ visible: true })
-)
+const publishedVideos = await videos.findMany((q) => q.where({ visible: true }))
 
 // Get first video by ID
-const video = await videos.findFirst((q) =>
-  q.where({ id: 'some-uuid' })
-)
+const video = await videos.findFirst((q) => q.where({ id: 'some-uuid' }))
 
 // Create new video
 await videos.create({
@@ -467,6 +474,7 @@ await videos.delete((q) => q.where({ id: 'some-uuid' }))
 ### Code Reduction Achieved
 
 By using `@msw/data` with Zod schemas, we've significantly reduced boilerplate:
+
 - **supabase.ts**: Reduced by 470+ lines (from hardcoded arrays to collection queries)
 - **upstash.ts**: Reduced by 90+ lines (simplified with faker-based factory)
 - **Total**: 560+ lines of hardcoded mock data eliminated
@@ -643,7 +651,7 @@ const { data: videos } = await supabase
   .limit(10)
 
 // Now Copilot knows 'videos' has the expected structure
-videos?.forEach(video => {
+videos?.forEach((video) => {
   console.log(video.title) // ✅ Copilot suggests 'title'
   console.log(video.thumbnails?.path) // ✅ Copilot suggests nested structure
 })

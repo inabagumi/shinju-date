@@ -277,17 +277,20 @@ Supabaseが使用するポート（54321、54322、54323、54324）が既に使�
 ### データベース接続エラー
 
 1. Supabaseが正常に起動しているか確認：
+
    ```bash
    pnpm exec supabase status
    ```
 
 2. データベースに直接接続してテスト：
+
    ```bash
    eval "$(pnpm exec supabase status -o env 2>/dev/null | grep '^DB_URL=')"
    psql "$DB_URL"
    ```
 
 3. データベースをリセットして再初期化：
+
    ```bash
    pnpm exec supabase db reset
    ```

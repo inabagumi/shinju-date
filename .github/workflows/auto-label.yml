@@ -154,4 +154,3 @@ jobs:
             } else {
               console.log('No labels to add');
             }
-

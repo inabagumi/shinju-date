@@ -11,7 +11,10 @@
 ## 使用方法
 
 ```typescript
-import { checkDatabaseHealth, checkRedisHealth } from '@shinju-date/health-checkers'
+import {
+  checkDatabaseHealth,
+  checkRedisHealth,
+} from '@shinju-date/health-checkers'
 
 // データベースヘルスチェック
 const dbHealth = await checkDatabaseHealth(supabaseClient)

@@ -60,13 +60,13 @@ const handleClose = useCallback(
   (open: boolean) => {
     if (open) return
     setIsOpen(false)
-    
+
     // Only navigate if we haven't already navigated (e.g., via clicking a link)
     if (!isNavigating.current && !hasNavigated.current) {
       // ✅ Use router.push('/') for consistent behavior
       router.push('/')
     }
-    
+
     // Reset after a short delay to allow navigation to complete
     setTimeout(() => {
       isNavigating.current = false
@@ -78,6 +78,7 @@ const handleClose = useCallback(
 ```
 
 **Benefits**:
+
 - Always returns to the homepage, regardless of how the user reached `/search`
 - No dependency on browser history
 - Consistent behavior across all scenarios
@@ -85,17 +86,18 @@ const handleClose = useCallback(
 ### 2. Separate Navigation State Tracking
 
 ```typescript
-const isNavigating = useRef(false)  // Currently navigating
-const hasNavigated = useRef(false)  // Has navigated at least once
+const isNavigating = useRef(false) // Currently navigating
+const hasNavigated = useRef(false) // Has navigated at least once
 
 const handleNavigate = useCallback(() => {
   isNavigating.current = true
-  hasNavigated.current = true  // ✅ Track that navigation happened
+  hasNavigated.current = true // ✅ Track that navigation happened
   setIsOpen(false)
 }, [])
 ```
 
 **Benefits**:
+
 - `hasNavigated` tracks whether navigation has occurred (e.g., user clicked a suggestion link)
 - `isNavigating` tracks the current navigation state
 - Better separation of concerns prevents conflicts
@@ -111,6 +113,7 @@ setTimeout(() => {
 ```
 
 **Benefits**:
+
 - Gives navigation time to complete before resetting flags
 - Prevents race conditions where flags are reset too early
 
@@ -126,6 +129,7 @@ useEffect(() => {
 ```
 
 **Benefits**:
+
 - Cleans up refs on component unmount
 - Prevents memory leaks
 - Ensures clean state on remount
@@ -141,6 +145,7 @@ useEffect(() => {
 ```
 
 **Benefits**:
+
 - Resets navigation state when URL changes
 - Ensures modal reopens properly when navigating back to search
 
@@ -159,6 +164,7 @@ Comprehensive E2E tests were added in `apps/web/e2e/search-modal.spec.ts`:
 To verify the fix:
 
 1. **Setup environment**:
+
    ```bash
    cd apps/web
    cp .env.test .env.local  # Use MSW for testing
@@ -166,15 +172,17 @@ To verify the fix:
    ```
 
 2. **Run E2E tests**:
+
    ```bash
    pnpm test:e2e
    ```
 
 3. **Manual testing**:
+
    ```bash
    ENABLE_MSW=true pnpm dev
    ```
-   
+
    Then test:
    - Open modal with search button → should open
    - Close with ESC → should return to homepage
