@@ -8,7 +8,39 @@ import type { Video } from '@/lib/fetchers'
 import FormattedTime from './formatted-time'
 import LiveNow from './live-now'
 import PlatformBadge from './platform-badge'
-import VideoCreator, { VideoCreatorSkeleton } from './video-creator'
+import VideoCreator, {
+  getVideoCreator,
+  VideoCreatorSkeleton,
+} from './video-creator'
+
+/**
+ * - `grid`: サムネイルの下に文字を置く縦型
+ * - `row`: 640px 未満ではサムネイルを左（幅 40%）、文字を右に置く横型。
+ *   640px 以上では `grid` と同じ縦型
+ * - `short`: 9:16 のサムネイルの縦型（ショートのカルーセル用）
+ */
+export type VideoCardVariant = 'grid' | 'row' | 'short'
+
+const LAYOUT_CLASS_NAMES: Record<VideoCardVariant, string> = {
+  grid: 'flex-col',
+  row: 'flex-row sm:flex-col',
+  short: 'flex-col',
+}
+
+const THUMBNAIL_CLASS_NAMES: Record<VideoCardVariant, string> = {
+  grid: 'aspect-video w-full',
+  row: 'aspect-video w-2/5 shrink-0 sm:w-full',
+  short: 'aspect-9/16 w-full',
+}
+
+const THUMBNAIL_SIZES: Record<VideoCardVariant, string> = {
+  grid: '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw',
+  row: '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 40vw',
+  short: '(min-width: 768px) 25vw, 85vw',
+}
+
+const BADGE_CLASS_NAME =
+  'inline-block rounded-control px-1.5 py-0.5 text-caption font-semibold'
 
 function getThumbnailURL(
   video: Video,
@@ -23,26 +55,21 @@ function getThumbnailURL(
   ]
 }
 
-/**
- * サムネイルが存在しない場合のプレースホルダー
- */
-function ThumbnailPlaceholder() {
-  return (
-    <div className="relative flex h-full w-full items-center justify-center bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600">
-      <ImageIcon className="h-12 w-12" strokeWidth={1} />
-    </div>
-  )
-}
-
 interface ThumbnailProps {
+  sizes: string
   video: Video
 }
 
-function Thumbnail({ video }: ThumbnailProps) {
+function Thumbnail({ sizes, video }: ThumbnailProps) {
   const thumbnailData = getThumbnailURL(video)
 
   if (!thumbnailData) {
-    return <ThumbnailPlaceholder />
+    // サムネイルが存在しない場合のプレースホルダー
+    return (
+      <div className="flex size-full items-center justify-center bg-muted text-muted">
+        <ImageIcon className="size-12" strokeWidth={1} />
+      </div>
+    )
   }
 
   const [publicURL, blurDataURL] = thumbnailData
@@ -51,66 +78,77 @@ function Thumbnail({ video }: ThumbnailProps) {
     <Image
       alt=""
       blurDataURL={blurDataURL ?? ''}
-      className="object-cover object-center"
+      className="object-cover object-center motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-105"
       fill
       placeholder={blurDataURL ? 'blur' : 'empty'}
-      sizes="(max-width: 996px) 100vw, 30vw"
+      sizes={sizes}
       src={publicURL}
     />
   )
 }
 
-export function VideoCardSkeleton() {
+interface VideoCardSkeletonProps {
+  className?: string
+  variant?: VideoCardVariant
+}
+
+export function VideoCardSkeleton({
+  className,
+  variant = 'grid',
+}: VideoCardSkeletonProps) {
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none">
-      <div className="relative aspect-video">
-        <div className="h-full animate-pulse bg-774-nevy-200 dark:bg-zinc-700" />
-      </div>
+    <div
+      aria-hidden="true"
+      className={twMerge('flex gap-3', LAYOUT_CLASS_NAMES[variant], className)}
+      data-testid="video-card-skeleton"
+    >
+      <div
+        className={twMerge(
+          'animate-pulse rounded-container bg-muted',
+          THUMBNAIL_CLASS_NAMES[variant],
+        )}
+      />
 
-      <div className="flex grow flex-col gap-2 p-2.5">
-        <h3 className="font-semibold wrap-anywhere">
-          <span className="inline-block h-4 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
-          <span className="inline-block h-4 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
-          <span className="inline-block h-4 w-28 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
-        </h3>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        {/* タイトルの2行ぶんの高さ */}
+        <div className="flex min-h-[2lh] flex-col justify-around text-body leading-normal">
+          <span className="h-4 w-full animate-pulse rounded-control bg-muted" />
+          <span className="h-4 w-2/3 animate-pulse rounded-control bg-muted" />
+        </div>
 
-        <VideoCreatorSkeleton />
-
-        <div className="mt-auto pt-4 text-right text-sm">
-          <span className="inline-block h-3 w-24 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
+        <div className="flex min-h-[1lh] items-center gap-1.5 text-meta">
+          <VideoCreatorSkeleton />
+          <span className="h-3 w-12 animate-pulse rounded-control bg-muted" />
         </div>
       </div>
     </div>
   )
 }
 
-export default function VideoCard({
-  className,
-  compact = false,
-  dateTimeFormatOptions = {
-    dateStyle: undefined,
-    timeStyle: 'short',
-  },
-  fillThumbnail = false,
-  value,
-}: {
+interface VideoCardProps {
   className?: string
-  compact?: boolean
   dateTimeFormatOptions?: Pick<
     Intl.DateTimeFormatOptions,
     'dateStyle' | 'timeStyle'
   >
-  /**
-   * グリッドでカードが引き伸ばされたとき、余った高さをサムネイルで埋める。
-   * 複数の行にまたがるカードで、タイトルと日時の間に余白ができるのを防ぐ。
-   */
-  fillThumbnail?: boolean
   value: Video
-}) {
+  variant?: VideoCardVariant
+}
+
+export default function VideoCard({
+  className,
+  dateTimeFormatOptions = {
+    dateStyle: undefined,
+    timeStyle: 'short',
+  },
+  value,
+  variant = 'grid',
+}: VideoCardProps) {
   const publishedAt = Temporal.Instant.from(
     value.published_at,
   ).toZonedDateTimeISO(TIME_ZONE)
-  const duration = Temporal.Duration.from(value?.duration ?? 'P0D')
+  const duration = Temporal.Duration.from(value.duration ?? 'PT0S')
+  const hasCreator = getVideoCreator(value) !== null
 
   const href = getVideoExternalUrl({
     platform: value.platform,
@@ -128,66 +166,75 @@ export default function VideoCard({
   return (
     <a
       className={twMerge(
-        'flex flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
+        'group flex gap-3 rounded-container focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent',
+        LAYOUT_CLASS_NAMES[variant],
         className,
       )}
+      data-variant={variant}
       href={href}
       ping="/api/ping"
       rel="noopener noreferrer"
       target="_blank"
     >
+      {/* `isolate` keeps the rounded corners while the image is scaled in Safari. */}
       <div
-        className={twMerge('relative aspect-video', fillThumbnail && 'grow')}
+        className={twMerge(
+          'relative isolate overflow-hidden rounded-container bg-muted',
+          THUMBNAIL_CLASS_NAMES[variant],
+        )}
+        data-testid="video-card-thumbnail"
       >
-        <Thumbnail video={value} />
+        <Thumbnail sizes={THUMBNAIL_SIZES[variant]} video={value} />
 
-        {duration.total({
-          unit: 'second',
-        }) > 0 && (
-          <span className="absolute bottom-0 left-0 m-2 inline-block rounded-md bg-slate-800/80 px-1.5 py-0.5 text-xs font-semibold text-white">
+        <LiveNow
+          className={twMerge(
+            BADGE_CLASS_NAME,
+            'absolute top-0 left-0 m-2 bg-live text-live-foreground',
+          )}
+          status={value.status}
+        />
+
+        <PlatformBadge
+          className="absolute top-0 right-0 m-2"
+          platform={value.platform}
+        />
+
+        {duration.total({ unit: 'second' }) > 0 && (
+          <span
+            className={twMerge(
+              BADGE_CLASS_NAME,
+              'absolute right-0 bottom-0 m-2 bg-black/70 text-white tabular-nums',
+            )}
+          >
             <time dateTime={duration.toString()}>
               {formatDuration(duration)}
             </time>
           </span>
         )}
-        <div className="absolute top-0 right-0 m-2 flex flex-col items-end gap-1">
-          <LiveNow
-            className="inline-block rounded-md bg-live px-1.5 py-0.5 text-xs font-semibold text-live-foreground"
-            status={value.status}
-          />
-          <PlatformBadge platform={value.platform} />
-        </div>
       </div>
 
-      <div
-        className={twMerge(
-          'flex grow flex-col gap-2 p-2.5',
-          fillThumbnail && 'grow-0',
-        )}
-      >
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        {/* 1行のタイトルでも2行ぶんの高さを確保して、カードの高さを揃える */}
         <h3
-          className={twMerge(
-            'line-clamp-3 font-semibold wrap-anywhere',
-            compact && 'line-clamp-2 text-sm',
-          )}
+          className="line-clamp-2 min-h-[2lh] text-body leading-normal font-semibold wrap-anywhere group-hover:underline"
           title={value.title}
         >
           {value.title}
         </h3>
 
-        <VideoCreator compact={compact} value={value} />
-
-        <div
-          className={twMerge(
-            'mt-auto pt-4 text-right text-sm',
-            compact && 'text-xs',
+        <p className="flex min-w-0 items-center gap-1 text-meta text-muted">
+          <VideoCreator value={value} />
+          {hasCreator && (
+            <span aria-hidden="true" className="shrink-0">
+              ・
+            </span>
           )}
-        >
           <FormattedTime
+            className="shrink-0 whitespace-nowrap tabular-nums"
             dateTime={publishedAt}
             options={dateTimeFormatOptions}
           />
-        </div>
+        </p>
       </div>
     </a>
   )

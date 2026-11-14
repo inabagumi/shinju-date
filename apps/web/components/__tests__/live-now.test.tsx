@@ -5,7 +5,7 @@ import LiveNow from '../live-now'
 describe('LiveNow', () => {
   test('should render when status is LIVE', () => {
     render(<LiveNow status="LIVE" />)
-    expect(screen.getByText('ライブ配信中')).toBeInTheDocument()
+    expect(screen.getByText('配信中')).toBeInTheDocument()
   })
 
   test('should not render when status is not LIVE', () => {
