@@ -173,6 +173,7 @@ The package mocks the following Supabase tables and operations:
 - `channels` - Channel information with name
 - `thumbnails` - Thumbnail images with blur data URLs
 - `profile_images` - Square icons of YouTube channels and Twitch users
+- `twitch_videos` - Twitch videos of the Twitch users (read only)
 - `terms` - Search terms with readings and synonyms
 
 #### Query Parameters
@@ -327,6 +328,7 @@ The database includes the following tables:
 - `twitch_users`: Twitch user information (two users, one of them with a `profile_image_id`)
 - `profile_images`: Square icons referenced by `youtube_channels.profile_image_id` and `twitch_users.profile_image_id`
 - `youtube_videos`: YouTube video relation mapping
+- `twitch_videos`: Twitch video relation mapping (upcoming, live, archive, clip, highlight and upload videos of both Twitch users)
 - `terms`: Search terms and synonyms
 - `announcements`: System announcements
 
@@ -420,6 +422,7 @@ The database includes the following tables:
 - `thumbnails`: Thumbnail images with blur data
 - `youtubeChannels`: YouTube channel information
 - `youtubeVideos`: YouTube video relation mapping
+- `twitchVideos`: Twitch video relation mapping
 - `terms`: Search terms and synonyms
 - `announcements`: System announcements
 
@@ -436,6 +439,8 @@ The package exports the following `@msw/data` collections:
 - `thumbnails` - Thumbnail images with blur data
 - `youtubeChannels` - YouTube channel information (relates to talent)
 - `youtubeVideos` - YouTube video relations (relates to video)
+- `twitchUsers` - Twitch user information (relates to talent)
+- `twitchVideos` - Twitch video relations (relates to video and Twitch user)
 - `terms` - Search terms and synonyms
 - `announcements` - System announcements
 

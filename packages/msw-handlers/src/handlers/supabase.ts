@@ -1,4 +1,5 @@
 import { HttpResponse, http } from 'msw'
+import { Temporal } from 'temporal-polyfill'
 import {
   announcements,
   profileImages,
@@ -7,6 +8,7 @@ import {
   terms,
   thumbnails,
   twitchUsers,
+  twitchVideos,
   videoBackfillJobs,
   videos,
   youtubeChannels,
@@ -57,6 +59,10 @@ async function getMockChannels() {
 
 async function getMockTwitchUsers() {
   return await twitchUsers.findMany()
+}
+
+async function getMockTwitchVideos() {
+  return await twitchVideos.findMany()
 }
 
 async function getMockTerms() {
@@ -430,6 +436,17 @@ async function resolveRelation(
       return item.id
         ? await youtubeChannels.findMany((q) => q.where({ talent_id: item.id }))
         : []
+    case 'twitch_videos':
+      // One-to-many from twitch_users, one-to-one with videos
+      if ('twitch_login_name' in item) {
+        return await twitchVideos.findMany((q) =>
+          q.where({ twitch_user_id: item.id }),
+        )
+      }
+
+      return item.id
+        ? await twitchVideos.findFirst((q) => q.where({ video_id: item.id }))
+        : null
     case 'twitch_users':
       // Many-to-one from twitch_videos, one-to-many from talents
       if ('twitch_user_id' in item) {
@@ -444,7 +461,7 @@ async function resolveRelation(
         ? null
         : await twitchUsers.findMany((q) => q.where({ talent_id: item.id }))
     default:
-      // Relations without mock data (e.g. twitch_videos)
+      // Relations without mock data
       return null
   }
 }
@@ -504,6 +521,55 @@ async function applySelect(
   const nodes = parseSelect(selectStr)
 
   return await Promise.all(data.map((item) => projectRow(item, nodes)))
+}
+
+interface SearchVideosParams {
+  channel_ids?: string[]
+  perpage?: number
+  query?: string
+  until?: string
+}
+
+/**
+ * The shape this mock returns from `search_videos_v2` when no select is
+ * given, with the resources of both platforms embedded.
+ */
+const DEFAULT_SEARCH_VIDEOS_SELECT = [
+  'deleted_at',
+  'duration',
+  'id',
+  'platform',
+  'published_at',
+  'status',
+  'talent:talents(id,name)',
+  'thumbnail:thumbnails(blur_data_url,height,id,path,width)',
+  'title',
+  'twitch_video:twitch_videos(twitch_video_id,type,twitch_user:twitch_users(name,twitch_login_name))',
+  'updated_at',
+  'video_kind',
+  'visible',
+  'youtube_video:youtube_videos(youtube_video_id)',
+].join(',')
+
+/**
+ * Mirrors `search_videos_v2`: the visible videos of the given talents that
+ * were published before `until`, newest first. The query is not matched.
+ */
+async function searchMockVideos({
+  channel_ids: channelIds = [],
+  perpage = 10,
+  until,
+}: SearchVideosParams) {
+  return (await getMockVideos())
+    .filter(
+      (video) =>
+        video.deleted_at === null &&
+        video.visible &&
+        (channelIds.length === 0 || channelIds.includes(video.talent_id)) &&
+        (!until || Temporal.Instant.compare(video.published_at, until) < 0),
+    )
+    .sort((a, b) => Temporal.Instant.compare(b.published_at, a.published_at))
+    .slice(0, perpage)
 }
 
 export const supabaseHandlers = [
@@ -1011,6 +1077,9 @@ export const supabaseHandlers = [
       })
     },
   ),
+
+  // Twitch videos (read only; saved by the batch app)
+  ...createReadOnlyHandlers('twitch_videos', getMockTwitchVideos),
 
   // Backfill history (read only; recorded by the batch app)
   ...createReadOnlyHandlers('video_backfill_jobs', getMockVideoBackfillJobs),
@@ -1614,78 +1683,16 @@ export const supabaseHandlers = [
   http.post(
     'https://fake.supabase.test/rest/v1/rpc/search_videos_v2',
     async ({ request }) => {
-      const body = (await request.json()) as {
-        channel_ids?: string[]
-        perpage?: number
-        query?: string
-        until?: string
-      }
-      const select = new URL(request.url).searchParams.get('select')
-
+      const body = (await request.json()) as SearchVideosParams
       // `.rpc(...).select(...)` embeds resources like a table query, so
       // project the video rows with the requested select when it is given.
-      if (select) {
-        const visibleVideos = (await getMockVideos())
-          .filter((video) => video.deleted_at === null && video.visible)
-          .slice(0, body.perpage || 10)
+      const select =
+        new URL(request.url).searchParams.get('select') ??
+        DEFAULT_SEARCH_VIDEOS_SELECT
 
-        return HttpResponse.json(await applySelect(visibleVideos, select))
-      }
-
-      // Build mock response combining videos, talents, thumbnails, and youtube_videos
-      const mockVideos = await getMockVideos()
-      const mockTalents = await getMockTalents()
-      const mockThumbnails = await getMockThumbnails()
-      const mockYoutubeVideos = await getMockYoutubeVideos()
-
-      const results = mockVideos
-        .filter((video) => video.deleted_at === null && video.visible)
-        .slice(0, body.perpage || 10)
-        .map((video) => {
-          const talent = mockTalents.find((t) => t.id === video.talent_id)
-          const thumbnail = mockThumbnails.find(
-            (th) => th.id === video.thumbnail_id,
-          )
-          const youtubeVideo = mockYoutubeVideos.find(
-            (yv) => yv.video_id === video.id,
-          )
-
-          return {
-            deleted_at: video.deleted_at,
-            duration: video.duration,
-            id: video.id,
-            platform: video.platform,
-            published_at: video.published_at,
-            status: video.status,
-            talent: talent
-              ? {
-                  id: talent.id,
-                  name: talent.name,
-                }
-              : null,
-            thumbnail: thumbnail
-              ? {
-                  blur_data_url: thumbnail.blur_data_url,
-                  height: thumbnail.height,
-                  id: thumbnail.id,
-                  path: thumbnail.path,
-                  width: thumbnail.width,
-                }
-              : null,
-            title: video.title,
-            twitch_video: null,
-            updated_at: video.updated_at,
-            video_kind: video.video_kind,
-            visible: video.visible,
-            youtube_video: youtubeVideo
-              ? {
-                  youtube_video_id: youtubeVideo.youtube_video_id,
-                }
-              : null,
-          }
-        })
-
-      return HttpResponse.json(results)
+      return HttpResponse.json(
+        await applySelect(await searchMockVideos(body), select),
+      )
     },
   ),
 
