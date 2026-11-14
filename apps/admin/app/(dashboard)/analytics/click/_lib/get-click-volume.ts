@@ -3,6 +3,7 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
+import { listDatesInRange } from '@/lib/analytics/list-dates-in-range'
 import { getRedisClient } from '@/lib/redis'
 
 export type DailyClickVolume = {
@@ -24,7 +25,6 @@ export async function getClickVolume(
   try {
     const redisClient = getRedisClient()
     const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-    const volumes: DailyClickVolume[] = []
 
     // Determine date range
     let start: Temporal.PlainDate
@@ -38,38 +38,44 @@ export async function getClickVolume(
       start = end.subtract({ days: days - 1 })
     }
 
-    // Get volume for each day in the range
-    let currentDate = start
-    while (Temporal.PlainDate.compare(currentDate, end) <= 0) {
-      const zonedDate = currentDate.toZonedDateTime({
-        plainTime: Temporal.PlainTime.from('00:00:00'),
-        timeZone: TIME_ZONE,
-      })
-      const dateKey = formatDateKey(zonedDate)
-      const dateStr = currentDate.toString()
-      const key = `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${dateKey}`
+    const dates = listDatesInRange(start, end)
+
+    if (dates.length === 0) {
+      return []
+    }
+
+    // Fetch every day in a single request instead of one round trip per day
+    const pipeline = redisClient.pipeline()
+    for (const date of dates) {
+      pipeline.zrange(
+        `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${formatDateKey(date)}`,
+        0,
+        -1,
+        {
+          rev: false,
+          withScores: true,
+        },
+      )
+    }
+    const results = await pipeline.exec<string[][]>()
+
+    const volumes = dates.map((date, index): DailyClickVolume => {
+      const members = results[index] ?? []
 
       // Get the sum of all video clicks for this day
-      const results = await redisClient.zrange<string[]>(key, 0, -1, {
-        rev: false,
-        withScores: true,
-      })
-
       let totalClicks = 0
-      for (let j = 1; j < results.length; j += 2) {
-        const scoreStr = results[j]
+      for (let j = 1; j < members.length; j += 2) {
+        const scoreStr = members[j]
         if (scoreStr) {
           totalClicks += Number.parseInt(scoreStr, 10)
         }
       }
 
-      volumes.push({
+      return {
         clicks: totalClicks,
-        date: dateStr,
-      })
-
-      currentDate = currentDate.add({ days: 1 })
-    }
+        date: date.toString(),
+      }
+    })
 
     return volumes
   } catch (error) {
