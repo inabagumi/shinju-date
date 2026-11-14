@@ -72,7 +72,7 @@ function TabButton({ count, icon, isActive, label, onClick }: TabButtonProps) {
           'min-w-5 rounded-full px-1.5 text-center text-xs leading-5 tabular-nums',
           isActive
             ? 'bg-white/20 text-white'
-            : 'bg-white text-774-nevy-800 dark:bg-zinc-700 dark:text-zinc-200',
+            : 'bg-774-nevy-800/10 text-774-nevy-800 dark:bg-white/10 dark:text-zinc-200',
         )}
       >
         {count}
