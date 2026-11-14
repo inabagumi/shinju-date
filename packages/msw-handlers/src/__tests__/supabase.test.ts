@@ -1,3 +1,4 @@
+import { Temporal } from 'temporal-polyfill'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { server } from '../server.js'
 
@@ -142,12 +143,18 @@ describe('Supabase Handlers', () => {
         'twitch_video:twitch_videos(twitch_video_id,type,twitch_user:twitch_users(twitch_login_name))',
       ].join(',')
       const response = await fetch(
-        `https://fake.supabase.test/rest/v1/videos?select=${encodeURIComponent(select)}&limit=5`,
+        `https://fake.supabase.test/rest/v1/videos?select=${encodeURIComponent(select)}`,
       )
-      const data = await response.json()
+      const data = (await response.json()) as {
+        talent: unknown
+        thumbnail: Record<string, unknown> | null
+        twitch_video: unknown
+        youtube_video: unknown
+      }[]
 
       expect(response.ok).toBe(true)
-      expect(data.length).toBeGreaterThan(0)
+      expect(data.some((video) => video.youtube_video)).toBe(true)
+      expect(data.some((video) => video.twitch_video)).toBe(true)
       for (const video of data) {
         expect(Object.keys(video).sort()).toEqual(
           [
@@ -172,8 +179,20 @@ describe('Supabase Handlers', () => {
           expect(video.youtube_video).toEqual({
             youtube_video_id: expect.any(String),
           })
+          expect(video.twitch_video).toBeNull()
+        } else {
+          expect(video.twitch_video).toEqual({
+            twitch_user: { twitch_login_name: expect.any(String) },
+            twitch_video_id: expect.any(String),
+            type: expect.toBeOneOf([
+              'archive',
+              'highlight',
+              'upload',
+              'clip',
+              null,
+            ]),
+          })
         }
-        expect(video.twitch_video).toBeNull()
       }
     })
 
@@ -268,7 +287,7 @@ describe('Supabase Handlers', () => {
       const select =
         'id,youtube_video:youtube_videos(youtube_video_id,youtube_channel:youtube_channels(name,youtube_handle,profile_image:profile_images(blur_data_url,id)))'
       const response = await fetch(
-        `https://fake.supabase.test/rest/v1/videos?select=${encodeURIComponent(select)}`,
+        `https://fake.supabase.test/rest/v1/videos?select=${encodeURIComponent(select)}&platform=eq.youtube`,
       )
       const data = (await response.json()) as {
         id: string
@@ -295,24 +314,32 @@ describe('Supabase Handlers', () => {
     it('should apply the select of search_videos_v2', async () => {
       const select =
         'id,talent:talents(id,name),youtube_video:youtube_videos(youtube_video_id,youtube_channel:youtube_channels(name,profile_image:profile_images(id)))'
-      const response = await fetch(
-        `https://fake.supabase.test/rest/v1/rpc/search_videos_v2?select=${encodeURIComponent(select)}`,
-        {
-          body: JSON.stringify({ perpage: 3, query: '' }),
-          headers: { 'Content-Type': 'application/json' },
-          method: 'POST',
-        },
-      )
-      const data = (await response.json()) as Record<string, unknown>[]
+      const search = async (perpage: number) => {
+        const response = await fetch(
+          `https://fake.supabase.test/rest/v1/rpc/search_videos_v2?select=${encodeURIComponent(select)}`,
+          {
+            body: JSON.stringify({ perpage, query: '' }),
+            headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
+          },
+        )
 
-      expect(response.ok).toBe(true)
+        expect(response.ok).toBe(true)
+
+        return (await response.json()) as Record<string, unknown>[]
+      }
+
+      const data = await search(3)
+
       expect(data).toHaveLength(3)
       expect(Object.keys(data[0] ?? {}).sort()).toEqual([
         'id',
         'talent',
         'youtube_video',
       ])
-      expect(data[0]).toMatchObject({
+      expect(
+        (await search(100)).find((video) => video['youtube_video']),
+      ).toMatchObject({
         youtube_video: {
           youtube_channel: { name: expect.any(String) },
           youtube_video_id: expect.any(String),
@@ -461,6 +488,209 @@ describe('Supabase Handlers', () => {
 
       expect(deleted.status).toBe(204)
       expect(await getTwitchUsers()).toHaveLength(2)
+    })
+  })
+
+  describe('Twitch videos', () => {
+    // The select of the public site (apps/web/lib/fetchers.ts)
+    const select = [
+      'id',
+      'platform',
+      'published_at',
+      'status',
+      'talent:talents!inner(id,name)',
+      'youtube_video:youtube_videos(youtube_video_id)',
+      'twitch_video:twitch_videos(twitch_video_id,type,twitch_user:twitch_users(name,twitch_login_name,profile_image:profile_images(blur_data_url,id)))',
+    ].join(',')
+
+    interface VideoRow {
+      id: string
+      platform: 'youtube' | 'twitch'
+      published_at: string
+      status: string
+      talent: { id: string; name: string }
+      twitch_video: {
+        twitch_user: {
+          name: string | null
+          profile_image: { blur_data_url: string; id: string } | null
+          twitch_login_name: string | null
+        } | null
+        twitch_video_id: string
+        type: string | null
+      } | null
+      youtube_video: { youtube_video_id: string } | null
+    }
+
+    async function searchVideos(
+      body: Record<string, unknown>,
+    ): Promise<VideoRow[]> {
+      const response = await fetch(
+        `https://fake.supabase.test/rest/v1/rpc/search_videos_v2?select=${encodeURIComponent(select)}`,
+        {
+          body: JSON.stringify({ query: '', ...body }),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        },
+      )
+
+      expect(response.ok).toBe(true)
+
+      return (await response.json()) as VideoRow[]
+    }
+
+    it('should seed Twitch videos of each type and status', async () => {
+      const response = await fetch(
+        `https://fake.supabase.test/rest/v1/twitch_videos?select=${encodeURIComponent('stream_id,twitch_video_id,type,video:videos(platform,status)')}`,
+      )
+      const data = (await response.json()) as {
+        stream_id: string | null
+        twitch_video_id: string
+        type: string | null
+        video: { platform: string; status: string }
+      }[]
+
+      expect(response.ok).toBe(true)
+      expect(data.every((row) => row.video.platform === 'twitch')).toBe(true)
+      expect(new Set(data.map((row) => row.type))).toEqual(
+        new Set(['archive', 'clip', 'highlight', 'upload', null]),
+      )
+      expect(new Set(data.map((row) => row.video.status))).toEqual(
+        new Set(['ENDED', 'LIVE', 'PUBLISHED', 'UPCOMING']),
+      )
+
+      // A broadcast on air keeps a placeholder of its stream
+      const live = data.find((row) => row.video.status === 'LIVE')
+
+      expect(live?.twitch_video_id).toBe(`live:${live?.stream_id}`)
+    })
+
+    it('should embed Twitch videos and their users from videos', async () => {
+      const response = await fetch(
+        `https://fake.supabase.test/rest/v1/videos?select=${encodeURIComponent(select)}`,
+      )
+      const data = (await response.json()) as VideoRow[]
+
+      expect(response.ok).toBe(true)
+
+      const twitchVideos = data.filter((video) => video.platform === 'twitch')
+
+      expect(twitchVideos.length).toBeGreaterThan(0)
+      for (const video of data) {
+        if (video.platform === 'twitch') {
+          expect(video.youtube_video).toBeNull()
+          expect(video.twitch_video).toEqual({
+            twitch_user: {
+              name: video.talent.name,
+              profile_image: expect.toBeOneOf([
+                { blur_data_url: expect.any(String), id: expect.any(String) },
+                null,
+              ]),
+              twitch_login_name: expect.any(String),
+            },
+            twitch_video_id: expect.any(String),
+            type: expect.toBeOneOf([
+              'archive',
+              'highlight',
+              'upload',
+              'clip',
+              null,
+            ]),
+          })
+        } else {
+          expect(video.twitch_video).toBeNull()
+          expect(video.youtube_video).not.toBeNull()
+        }
+      }
+
+      const profileImages = twitchVideos.map(
+        (video) => video.twitch_video?.twitch_user?.profile_image,
+      )
+
+      expect(profileImages.some((image) => image)).toBe(true)
+      expect(profileImages.some((image) => image === null)).toBe(true)
+    })
+
+    it('should embed Twitch videos from Twitch users and filter by user', async () => {
+      const users = (await (
+        await fetch(
+          'https://fake.supabase.test/rest/v1/twitch_users?select=id,twitch_videos(id)',
+        )
+      ).json()) as { id: string; twitch_videos: { id: string }[] }[]
+
+      expect(users).toHaveLength(2)
+      expect(users.every((user) => user.twitch_videos.length > 0)).toBe(true)
+
+      const [user] = users
+      const response = await fetch(
+        `https://fake.supabase.test/rest/v1/twitch_videos?select=video_id&twitch_user_id=eq.${user?.id}`,
+      )
+      const rows = (await response.json()) as { video_id: string }[]
+
+      expect(rows).toHaveLength(user?.twitch_videos.length ?? -1)
+    })
+
+    it('should search videos newest first, including Twitch videos', async () => {
+      const data = await searchVideos({ perpage: 100 })
+      const publishedAt = data.map((video) => video.published_at)
+
+      expect(publishedAt).toEqual(
+        [...publishedAt].sort((a, b) => Temporal.Instant.compare(b, a)),
+      )
+      expect(
+        data.some(
+          (video) => video.twitch_video?.twitch_user?.twitch_login_name,
+        ),
+      ).toBe(true)
+
+      // The Twitch videos are the latest, so the first page shows them.
+      const firstPage = await searchVideos({ perpage: 6 })
+
+      expect(firstPage.some((video) => video.platform === 'twitch')).toBe(true)
+    })
+
+    it('should search only videos published before until', async () => {
+      const until = Temporal.Now.instant().toString()
+      const data = await searchVideos({ perpage: 100, until })
+
+      expect(data.length).toBeGreaterThan(0)
+      expect(
+        data.every(
+          (video) => Temporal.Instant.compare(video.published_at, until) < 0,
+        ),
+      ).toBe(true)
+      expect(data.some((video) => video.status === 'UPCOMING')).toBe(false)
+    })
+
+    it('should search only videos of the given talents', async () => {
+      const [video] = await searchVideos({ perpage: 1 })
+      const data = await searchVideos({
+        channel_ids: [video?.talent.id],
+        perpage: 100,
+      })
+
+      expect(data.length).toBeGreaterThan(0)
+      expect(data.every((row) => row.talent.id === video?.talent.id)).toBe(true)
+    })
+
+    it('should embed Twitch videos in search_videos_v2 without a select', async () => {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/rpc/search_videos_v2',
+        {
+          body: JSON.stringify({ perpage: 100, query: '' }),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        },
+      )
+      const data = (await response.json()) as VideoRow[]
+
+      expect(response.ok).toBe(true)
+      expect(data.find((video) => video.platform === 'twitch')).toMatchObject({
+        twitch_video: {
+          twitch_user: { twitch_login_name: expect.any(String) },
+          twitch_video_id: expect.any(String),
+        },
+        youtube_video: null,
+      })
     })
   })
 
