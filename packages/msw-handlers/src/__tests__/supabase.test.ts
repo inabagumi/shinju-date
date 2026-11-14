@@ -264,6 +264,62 @@ describe('Supabase Handlers', () => {
       })
     })
 
+    it('should embed channels and their icons from YouTube videos', async () => {
+      const select =
+        'id,youtube_video:youtube_videos(youtube_video_id,youtube_channel:youtube_channels(name,youtube_handle,profile_image:profile_images(blur_data_url,id)))'
+      const response = await fetch(
+        `https://fake.supabase.test/rest/v1/videos?select=${encodeURIComponent(select)}`,
+      )
+      const data = (await response.json()) as {
+        id: string
+        youtube_video: {
+          youtube_channel: {
+            name: string | null
+            profile_image: { blur_data_url: string; id: string } | null
+          } | null
+          youtube_video_id: string
+        } | null
+      }[]
+
+      expect(response.ok).toBe(true)
+
+      const channels = data.map((video) => video.youtube_video?.youtube_channel)
+
+      expect(channels.every((channel) => channel?.name)).toBe(true)
+      expect(channels.some((channel) => channel?.profile_image)).toBe(true)
+      expect(channels.some((channel) => channel?.profile_image === null)).toBe(
+        true,
+      )
+    })
+
+    it('should apply the select of search_videos_v2', async () => {
+      const select =
+        'id,talent:talents(id,name),youtube_video:youtube_videos(youtube_video_id,youtube_channel:youtube_channels(name,profile_image:profile_images(id)))'
+      const response = await fetch(
+        `https://fake.supabase.test/rest/v1/rpc/search_videos_v2?select=${encodeURIComponent(select)}`,
+        {
+          body: JSON.stringify({ perpage: 3, query: '' }),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        },
+      )
+      const data = (await response.json()) as Record<string, unknown>[]
+
+      expect(response.ok).toBe(true)
+      expect(data).toHaveLength(3)
+      expect(Object.keys(data[0] ?? {}).sort()).toEqual([
+        'id',
+        'talent',
+        'youtube_video',
+      ])
+      expect(data[0]).toMatchObject({
+        youtube_video: {
+          youtube_channel: { name: expect.any(String) },
+          youtube_video_id: expect.any(String),
+        },
+      })
+    })
+
     it('should look up a profile image by id', async () => {
       const channels = (await (
         await fetch(

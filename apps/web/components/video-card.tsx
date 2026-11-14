@@ -9,6 +9,7 @@ import type { Video } from '@/lib/fetchers'
 import FormattedTime from './formatted-time'
 import LiveNow from './live-now'
 import PlatformBadge from './platform-badge'
+import VideoCreator, { VideoCreatorSkeleton } from './video-creator'
 
 function getThumbnailURL(
   video: Video,
@@ -67,14 +68,16 @@ export function VideoCardSkeleton() {
         <div className="h-full animate-pulse bg-774-nevy-200 dark:bg-zinc-700" />
       </div>
 
-      <div className="grid grow grid-rows-[1fr_auto] gap-6 p-2.5">
+      <div className="flex grow flex-col gap-2 p-2.5">
         <h3 className="font-semibold break-all">
           <span className="inline-block h-4 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
           <span className="inline-block h-4 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
           <span className="inline-block h-4 w-28 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
         </h3>
 
-        <div className="text-right text-sm">
+        <VideoCreatorSkeleton />
+
+        <div className="mt-auto pt-4 text-right text-sm">
           <span className="inline-block h-3 w-24 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
         </div>
       </div>
@@ -149,7 +152,7 @@ export default function VideoCard({
         </div>
       </div>
 
-      <div className="grid grow grid-rows-[1fr_auto] gap-6 p-2.5">
+      <div className="flex grow flex-col gap-2 p-2.5">
         <h3
           className={twMerge(
             'line-clamp-3 font-semibold break-all',
@@ -160,7 +163,14 @@ export default function VideoCard({
           {value.title}
         </h3>
 
-        <div className={twMerge('text-right text-sm', compact && 'text-xs')}>
+        <VideoCreator compact={compact} value={value} />
+
+        <div
+          className={twMerge(
+            'mt-auto pt-4 text-right text-sm',
+            compact && 'text-xs',
+          )}
+        >
           <FormattedTime
             dateTime={publishedAt}
             options={dateTimeFormatOptions}

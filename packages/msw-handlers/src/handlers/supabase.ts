@@ -301,7 +301,15 @@ async function resolveRelation(
         ? await youtubeVideos.findFirst((q) => q.where({ video_id: item.id }))
         : null
     case 'youtube_channels':
-      // One-to-many with talents
+      // Many-to-one from youtube_videos, one-to-many from talents
+      if ('youtube_video_id' in item) {
+        return item.youtube_channel_id
+          ? await youtubeChannels.findFirst((q) =>
+              q.where({ id: item.youtube_channel_id }),
+            )
+          : null
+      }
+
       return item.id
         ? await youtubeChannels.findMany((q) => q.where({ talent_id: item.id }))
         : []
@@ -1487,6 +1495,17 @@ export const supabaseHandlers = [
         perpage?: number
         query?: string
         until?: string
+      }
+      const select = new URL(request.url).searchParams.get('select')
+
+      // `.rpc(...).select(...)` embeds resources like a table query, so
+      // project the video rows with the requested select when it is given.
+      if (select) {
+        const visibleVideos = (await getMockVideos())
+          .filter((video) => video.deleted_at === null && video.visible)
+          .slice(0, body.perpage || 10)
+
+        return HttpResponse.json(await applySelect(visibleVideos, select))
       }
 
       // Build mock response combining videos, talents, thumbnails, and youtube_videos
