@@ -83,6 +83,18 @@ const VIDEOS_CHECK_JOBS: Record<Provider, Record<VideosCheckMode, CronJob>> = {
   },
 }
 
+/**
+ * Works off the backfill queue that the admin app fills. Runs every minute
+ * but only does work while jobs are queued; the rate limit is separate from
+ * `/videos/update` so a backfill never delays the discovery of new videos.
+ */
+export const VIDEOS_BACKFILL_JOB: CronJob = {
+  path: '/videos/backfill',
+  ratelimit: ratelimit.videosBackfill,
+  ratelimitKey: 'videos:backfill',
+  schedule: '*/1 * * * *',
+}
+
 export function getTalentsUpdateJob(provider: Provider): CronJob {
   return TALENTS_UPDATE_JOBS[provider]
 }
@@ -103,4 +115,5 @@ export const CRAWLER_JOBS: readonly CronJob[] = [
   ...Object.values(TALENTS_UPDATE_JOBS),
   ...Object.values(VIDEOS_UPDATE_JOBS),
   ...Object.values(VIDEOS_CHECK_JOBS).flatMap((jobs) => Object.values(jobs)),
+  VIDEOS_BACKFILL_JOB,
 ]

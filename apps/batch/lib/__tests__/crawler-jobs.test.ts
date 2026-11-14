@@ -3,6 +3,7 @@ import vercelConfig from '../../vercel.json' with { type: 'json' }
 
 vi.mock('../ratelimit', () => ({
   talentsUpdate: { limit: vi.fn() },
+  videosBackfill: { limit: vi.fn() },
   videosCheck: { limit: vi.fn() },
   videosCheckAll: { limit: vi.fn() },
   videosCheckRecent: { limit: vi.fn() },
@@ -16,7 +17,12 @@ const {
   getVideosUpdateJob,
 } = await import('../crawler-jobs')
 
-const CRAWLER_ROUTES = ['/talents/update', '/videos/check', '/videos/update']
+const CRAWLER_ROUTES = [
+  '/talents/update',
+  '/videos/backfill',
+  '/videos/check',
+  '/videos/update',
+]
 
 function isCrawlerPath(path: string): boolean {
   return CRAWLER_ROUTES.some(

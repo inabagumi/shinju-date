@@ -65,3 +65,10 @@ export const videosCascadeFromTalents = new Ratelimit({
   prefix: RATELIMIT_CACHE_KEY_PREFIX,
   redis: redisClient,
 })
+
+export const videosBackfill = new Ratelimit({
+  analytics: false,
+  limiter: Ratelimit.fixedWindow(1, '30s'),
+  prefix: RATELIMIT_CACHE_KEY_PREFIX,
+  redis: redisClient,
+})

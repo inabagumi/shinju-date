@@ -10,6 +10,7 @@
     "@shinju-date/retryable-fetch": "workspace:*",
     "@shinju-date/scraper": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
+    "@shinju-date/video-backfill": "workspace:*",
     "@shinju-date/web-cache": "workspace:*",
     "@supabase/sentry-js-integration": "0.3.0",
     "@supabase/supabase-js": "2.119.0",
