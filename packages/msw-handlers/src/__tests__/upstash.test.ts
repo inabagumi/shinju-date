@@ -1,3 +1,5 @@
+import { REDIS_KEYS } from '@shinju-date/constants'
+import { formatDateKey } from '@shinju-date/temporal-fns'
 import { Redis } from '@upstash/redis'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { server } from '../server.js'
@@ -49,10 +51,9 @@ describe('Upstash Redis Handlers', () => {
     })
     // The mock store holds the click data of the last 7 days (in UTC).
     // Yesterday is used so that the key exists even across midnight.
-    const key = `videos:clicked:${Temporal.Now.plainDateISO('UTC')
-      .subtract({ days: 1 })
-      .toString()
-      .replaceAll('-', '')}`
+    const key = `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${formatDateKey(
+      Temporal.Now.plainDateISO('UTC').subtract({ days: 1 }),
+    )}`
 
     function toPairs(result: unknown[]): [unknown, unknown][] {
       const pairs: [unknown, unknown][] = []

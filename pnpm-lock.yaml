@@ -848,6 +848,12 @@ importers:
       '@faker-js/faker':
         specifier: 10.6.0
         version: 10.6.0
+      '@shinju-date/constants':
+        specifier: workspace:*
+        version: link:../constants
+      '@shinju-date/temporal-fns':
+        specifier: workspace:*
+        version: link:../temporal-fns
       '@tsconfig/node20':
         specifier: 20.1.11
         version: 20.1.11
