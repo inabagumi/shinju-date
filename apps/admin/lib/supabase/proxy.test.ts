@@ -72,7 +72,7 @@ describe('updateSession with MSW', () => {
     )
   })
 
-  it.each(['%2F%2Fexample.com', '%2F.%2F%2Fexample.com'])(
+  it.each(['%2F%2Fexample.com', '%2F.%2F%2Fexample.com', '%2F.%2F%2F'])(
     'does not redirect /login?next=%s to an external URL',
     async (next) => {
       stubEnv(true)

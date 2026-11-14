@@ -66,7 +66,7 @@ describe('signIn', () => {
     )
   })
 
-  it.each(['https://example.com/', '//example.com', '/.//example.com'])(
+  it.each(['https://example.com/', '//example.com', '/.//example.com', '/.//'])(
     'redirects to the dashboard instead of the external URL %s',
     async (next) => {
       signInWithPasswordMock.mockResolvedValue({

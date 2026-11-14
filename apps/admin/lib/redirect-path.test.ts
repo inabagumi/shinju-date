@@ -28,6 +28,9 @@ describe('getSafeRedirectPath', () => {
     '/./\\example.com',
     '/%2e//example.com',
     '/videos/..//example.com',
+    '/.//',
+    '/.//[',
+    '/.//example.com:bad',
     'analytics/click',
     '',
   ])('rejects %j', (value) => {
