@@ -1,6 +1,13 @@
 import { youtube_v3 as youtube } from '@googleapis/youtube'
 import { z } from 'zod'
 
+export { getPublishedAt } from './get-published-at.js'
+export { getVideoKind, type YouTubeVideoKind } from './get-video-kind.js'
+export {
+  getVideoStatus,
+  type YouTubeVideoStatus,
+} from './get-video-status.js'
+
 export const YOUTUBE_DATA_API_MAX_RESULTS = 50
 
 // Zod schemas for YouTube API responses
@@ -77,21 +84,54 @@ export const youtubeClient: youtube.Youtube = new Proxy({} as youtube.Youtube, {
 })
 
 // Options types
-export type GetChannelsOptions = {
+interface ClientOptions {
+  /** YouTube client to use. Defaults to the shared singleton. */
+  client?: youtube.Youtube | undefined
+}
+
+export interface GetChannelsOptions extends ClientOptions {
   ids: string[]
 }
 
-export type GetChannelByHandleOptions = {
+export interface GetChannelByHandleOptions extends ClientOptions {
   handle: string
 }
 
-export type GetPlaylistItemsOptions = {
+export interface GetPlaylistItemsOptions extends ClientOptions {
+  /** Drain every page when true (default: first page only). */
   all?: boolean
+  /** Page size. Defaults to the API maximum when `all` is set, 20 otherwise. */
+  maxResults?: number
   playlistID: string
 }
 
-export type GetVideosOptions = {
+export interface GetVideosOptions extends ClientOptions {
   ids: string[]
+}
+
+export interface GetVideoIdsOptions extends ClientOptions {
+  ids: string[]
+}
+
+/**
+ * Returns true when a YouTube Data API call failed with the given HTTP status.
+ */
+export function isYouTubeApiError(error: unknown, status: number): boolean {
+  if (typeof error !== 'object' || error === null) {
+    return false
+  }
+
+  const candidate = error as {
+    code?: unknown
+    response?: { status?: unknown }
+    status?: unknown
+  }
+
+  return (
+    candidate.status === status ||
+    candidate.response?.status === status ||
+    Number(candidate.code) === status
+  )
 }
 
 /**
@@ -298,13 +338,13 @@ function validateVideo(
  * @yields YouTube channel objects
  */
 export async function* getChannels({
+  client = getYouTubeClient(),
   ids,
 }: GetChannelsOptions): AsyncGenerator<
   FilteredYouTubeChannel,
   void,
   undefined
 > {
-  const client = getYouTubeClient()
   for (let i = 0; i < ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
     const {
       data: { items },
@@ -341,9 +381,9 @@ export async function getChannelById(
  * @returns The channel, or `null` if not found / invalid
  */
 export async function getChannelByHandle({
+  client = getYouTubeClient(),
   handle,
 }: GetChannelByHandleOptions): Promise<FilteredYouTubeChannel | null> {
-  const client = getYouTubeClient()
   const normalized = handle.startsWith('@') ? handle : `@${handle}`
 
   const {
@@ -381,20 +421,21 @@ export async function resolveYouTubeChannel(
  */
 export async function* getPlaylistItems({
   all = false,
+  client = getYouTubeClient(),
+  maxResults = all ? YOUTUBE_DATA_API_MAX_RESULTS : 20,
   playlistID,
 }: GetPlaylistItemsOptions): AsyncGenerator<
   FilteredYouTubePlaylistItem,
   void,
   undefined
 > {
-  const client = getYouTubeClient()
   let pageToken: string | undefined
 
   while (true) {
     const {
       data: { items, nextPageToken },
     } = await client.playlistItems.list({
-      maxResults: all ? YOUTUBE_DATA_API_MAX_RESULTS : 20,
+      maxResults,
       part: ['contentDetails'],
       playlistId: playlistID,
       ...(pageToken
@@ -424,9 +465,9 @@ export async function* getPlaylistItems({
  * @yields YouTube video objects
  */
 export async function* getVideos({
+  client = getYouTubeClient(),
   ids,
 }: GetVideosOptions): AsyncGenerator<FilteredYouTubeVideo, void, undefined> {
-  const client = getYouTubeClient()
   for (let i = 0; i < ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
     const {
       data: { items },
@@ -441,5 +482,33 @@ export async function* getVideos({
     }
 
     yield* items.filter(validateVideo)
+  }
+}
+
+/**
+ * Gets the IDs of the videos that still exist on YouTube.
+ * Requests only the `id` part, so it is the cheapest way to detect videos
+ * that were deleted or made private (those are omitted from the response).
+ * @param options - The options for getting video IDs
+ * @yields IDs of the videos YouTube returned
+ */
+export async function* getVideoIds({
+  client = getYouTubeClient(),
+  ids,
+}: GetVideoIdsOptions): AsyncGenerator<string, void, undefined> {
+  for (let i = 0; i < ids.length; i += YOUTUBE_DATA_API_MAX_RESULTS) {
+    const {
+      data: { items },
+    } = await client.videos.list({
+      id: ids.slice(i, i + YOUTUBE_DATA_API_MAX_RESULTS),
+      maxResults: YOUTUBE_DATA_API_MAX_RESULTS,
+      part: ['id'],
+    })
+
+    for (const item of items ?? []) {
+      if (typeof item.id === 'string') {
+        yield item.id
+      }
+    }
   }
 }

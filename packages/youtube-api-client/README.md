@@ -31,6 +31,7 @@ import {
   youtubeClient,
   getChannels,
   getVideos,
+  getVideoIds,
   getPlaylistItems,
   type FilteredYouTubeChannel,
   type FilteredYouTubeVideo,
@@ -98,14 +99,46 @@ for await (const item of getPlaylistItems({
 }
 ```
 
-### Using the client directly
+### Check which videos still exist
 
 ```typescript
-import { youtubeClient } from '@shinju-date/youtube-api-client'
-
-// Pass to other libraries that need a YouTube client
-const scraper = new YouTubeScraper({ youtubeClient })
+// Requests only the `id` part: the cheapest way to detect deleted/private videos
+for await (const id of getVideoIds({ ids: videoIds })) {
+  console.log(`${id} is still available`)
+}
 ```
+
+### Interpret a video resource
+
+Pure helpers that turn a YouTube video resource into the values SHINJU DATE stores:
+
+```typescript
+import {
+  getPublishedAt,
+  getVideoKind,
+  getVideoStatus,
+} from '@shinju-date/youtube-api-client'
+
+getVideoStatus(video, now) // 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
+getVideoKind(video) // 'standard' | 'short'
+getPublishedAt(video) // start of the broadcast, or the publication time
+```
+
+### Using a specific client
+
+Every function uses the shared client by default. Pass `client` to use another one (for example a fake in tests):
+
+```typescript
+import { createYouTubeClient, getVideos } from '@shinju-date/youtube-api-client'
+
+const client = createYouTubeClient()
+
+for await (const video of getVideos({ client, ids: videoIds })) {
+  // ...
+}
+```
+
+`getPlaylistItems` also accepts `maxResults` to control the page size.
 
 ## Environment Variables
 
