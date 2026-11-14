@@ -764,6 +764,19 @@ describe('Supabase Handlers', () => {
       expect(await suggest('こら')).toEqual([{ priority: 1, term: 'コラボ' }])
     })
 
+    it('should suggest terms whose synonyms start with the query', async () => {
+      expect(await suggest('歌配')).toEqual([{ priority: 3, term: '歌枠' }])
+      expect(await suggest('カラオケ')).toEqual([{ priority: 3, term: '歌枠' }])
+      expect(await suggest('共')).toEqual([{ priority: 3, term: 'コラボ' }])
+    })
+
+    it('should suggest a term once with its best priority', async () => {
+      expect(await suggest('コラボ')).toEqual([{ priority: 1, term: 'コラボ' }])
+      expect(await suggest('ゲーム')).toEqual([
+        { priority: 1, term: 'ゲーム配信' },
+      ])
+    })
+
     it('should suggest nothing when no term matches', async () => {
       expect(await suggest('zzzzzzzzqqq')).toEqual([])
     })
