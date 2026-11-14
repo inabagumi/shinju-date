@@ -269,8 +269,9 @@ async function syncTwitchUsers(
 
     const userChanges: {
       twitch_user_id: string
-      before: { name: string | null; twitch_login_name: string | null }
-      after: { name: string; twitch_login_name: string }
+      /** Omitted when the name and login could not be written. */
+      before?: { name: string | null; twitch_login_name: string | null }
+      after?: { name: string; twitch_login_name: string }
       profile_image?: Exclude<ProfileImageSyncResult, 'unchanged'>
     }[] = []
 
@@ -309,31 +310,40 @@ async function syncTwitchUsers(
           talentId,
           twitchUserId: user.twitch_user_id,
         })
-        continue
       }
 
-      syncedCount++
-
+      // The icon is synced even when the name and login could not be written,
+      // so that neither failure keeps the other from being synced.
       const profileImageResult = await syncTwitchUserIconSafely(
         twitchUser,
         user,
       )
       const profileImageChanged = hasProfileImageChanged(profileImageResult)
 
-      if (
-        displayName !== user.name ||
-        loginName !== user.twitch_login_name ||
-        profileImageChanged
-      ) {
+      if (upsertError && profileImageResult === null) {
+        continue
+      }
+
+      syncedCount++
+
+      const detailsChanged =
+        !upsertError &&
+        (displayName !== user.name || loginName !== user.twitch_login_name)
+
+      if (detailsChanged || profileImageChanged) {
         userChanges.push({
-          after: {
-            name: displayName,
-            twitch_login_name: loginName,
-          },
-          before: {
-            name: user.name,
-            twitch_login_name: user.twitch_login_name,
-          },
+          ...(upsertError
+            ? {}
+            : {
+                after: {
+                  name: displayName,
+                  twitch_login_name: loginName,
+                },
+                before: {
+                  name: user.name,
+                  twitch_login_name: user.twitch_login_name,
+                },
+              }),
           ...(profileImageChanged ? { profile_image: profileImageResult } : {}),
           twitch_user_id: user.twitch_user_id,
         })
@@ -450,7 +460,8 @@ export async function syncTalentWithYouTube(
  * - 紐づく `twitch_users` をすべて対象にする
  * - 更新対象: `name`（display_name）と `twitch_login_name`（login）、
  *   およびアイコン（`profile_image_url`）。アイコンは元画像が変わった場合のみ差し替える
- * - アイコンの失敗では止めない: アイコンの取得・保存に失敗しても、name / login の同期は続ける
+ * - name / login とアイコンは独立して同期する: どちらかの書き込みに失敗しても、
+ *   もう一方は同期する
  * - タレント名は更新しない（YouTube 同期と同様）
  */
 export async function syncTalentWithTwitch(
