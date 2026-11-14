@@ -16,6 +16,7 @@ import {
   unauthenticatedFormState,
   unauthenticatedResult,
 } from '@/lib/auth'
+import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
 
 function youtubeApiErrorFormState(error: unknown): FormState {
   if (error instanceof TypeError && error.message.includes('API Key')) {
@@ -142,6 +143,13 @@ export async function addYouTubeChannelAction(
     if (error) {
       throw error
     }
+
+    // アイコンの取得に失敗してもチャンネルの追加は成功扱いにする（次回の同期で再取得される）
+    await syncYouTubeChannelIconSafely(youtubeChannel, {
+      id: newChannel.id,
+      profile_images: null,
+      youtube_channel_id: youtubeChannelId,
+    })
 
     await supabaseClient
       .from('talents')

@@ -1,4 +1,5 @@
 import { toDBString } from '@shinju-date/temporal-fns'
+import { getArchivedStreamId } from '@shinju-date/twitch-api-client'
 import { countChanges } from '../internal/concurrency.js'
 import {
   type ActiveTwitchUser,
@@ -79,10 +80,10 @@ export function planNewVideos({
 
     plannedVideoIds.add(video.id)
 
-    const liveStream =
-      video.type === 'archive' && video.stream_id
-        ? liveStreamById.get(video.stream_id)
-        : undefined
+    const archivedStreamId = getArchivedStreamId(video)
+    const liveStream = archivedStreamId
+      ? liveStreamById.get(archivedStreamId)
+      : undefined
     const saved = video.stream_id
       ? savedByStream.get(video.stream_id)
       : undefined

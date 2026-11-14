@@ -14,6 +14,7 @@
     "@shinju-date/health-checkers": "workspace:*",
     "@shinju-date/helpers": "workspace:*",
     "@shinju-date/logger": "workspace:*",
+    "@shinju-date/scraper": "workspace:*",
     "@shinju-date/tailwind-config": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
     "@shinju-date/twitch-api-client": "workspace:*",
