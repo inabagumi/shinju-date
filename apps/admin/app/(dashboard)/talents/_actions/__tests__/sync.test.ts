@@ -70,6 +70,13 @@ vi.mock('@shinju-date/twitch-api-client', () => ({
   getUsers: vi.fn(),
 }))
 
+// アイコンの同期は service role を使うため、ここではモックして呼び出し内容だけを確認する
+vi.mock('@/lib/youtube-channel-icon', () => ({
+  hasProfileImageChanged: (result: string | null) =>
+    result !== null && result !== 'unchanged',
+  syncYouTubeChannelIconSafely: vi.fn().mockResolvedValue('unchanged'),
+}))
+
 const talentId = '123e4567-e89b-12d3-a456-426614174000'
 const channelRowId = 'channel-row-uuid'
 const channelRowId2 = 'channel-row-uuid-2'
@@ -84,6 +91,7 @@ function createMockSupabaseClient({
   channels: {
     id: string
     name: string | null
+    profile_images?: null
     youtube_channel_id: string
     youtube_handle: string | null
   }[]
@@ -216,6 +224,152 @@ describe('syncTalentWithYouTube', () => {
     expect(revalidatePath).toHaveBeenCalledWith(`/talents/${talentId}`)
     expect(revalidatePath).toHaveBeenCalledWith('/talents')
     expect(revalidateTags).toHaveBeenCalledWith(['talents', 'videos'])
+  })
+
+  it('should select the saved icon of each channel', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { getChannels } = await import('@shinju-date/youtube-api-client')
+
+    const { mockSupabaseClient } = createMockSupabaseClient({ channels: [] })
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+    vi.mocked(getChannels).mockReturnValue((async function* () {})() as never)
+
+    await syncTalentWithYouTube(talentId)
+
+    const talentsQuery = mockSupabaseClient.from.mock.results[0]?.value as {
+      select: ReturnType<typeof vi.fn>
+    }
+
+    expect(talentsQuery.select).toHaveBeenCalledWith(
+      expect.stringContaining('profile_images(id, path, etag, source_url)'),
+    )
+  })
+
+  it('should record a changed icon even when name and handle are unchanged', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { getChannels } = await import('@shinju-date/youtube-api-client')
+    const { createAuditLog } = await import('@/lib/audit-log')
+    const { syncYouTubeChannelIconSafely } = await import(
+      '@/lib/youtube-channel-icon'
+    )
+
+    const savedChannel = {
+      id: channelRowId,
+      name: 'Same Name',
+      profile_images: null,
+      youtube_channel_id: youtubeChannelId,
+      youtube_handle: '@same',
+    }
+    const youtubeChannel = {
+      contentDetails: {
+        relatedPlaylists: { uploads: 'UUabcdefghijklmnopqrstuv' },
+      },
+      id: youtubeChannelId,
+      snippet: {
+        customUrl: '@same',
+        thumbnails: {
+          high: { height: 800, url: 'https://yt3.ggpht.com/a', width: 800 },
+        },
+        title: 'Same Name',
+      },
+    }
+    const { mockSupabaseClient, mockUpdate } = createMockSupabaseClient({
+      channels: [savedChannel],
+    })
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+    vi.mocked(getChannels).mockReturnValue(
+      (async function* () {
+        yield youtubeChannel
+      })() as never,
+    )
+    vi.mocked(syncYouTubeChannelIconSafely).mockResolvedValueOnce('created')
+
+    const result = await syncTalentWithYouTube(talentId)
+
+    expect(result).toEqual({ success: true })
+    expect(syncYouTubeChannelIconSafely).toHaveBeenCalledWith(
+      youtubeChannel,
+      savedChannel,
+    )
+    expect(mockUpdate).toHaveBeenCalled()
+    expect(createAuditLog).toHaveBeenCalledWith(
+      'CHANNEL_SYNC',
+      'channels',
+      talentId,
+      {
+        channels: [
+          {
+            after: { name: 'Same Name', youtube_handle: '@same' },
+            before: { name: 'Same Name', youtube_handle: '@same' },
+            profile_image: 'created',
+            youtube_channel_id: youtubeChannelId,
+          },
+        ],
+      },
+    )
+  })
+
+  it('should still sync name and handle when the icon cannot be synced', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { getChannels } = await import('@shinju-date/youtube-api-client')
+    const { createAuditLog } = await import('@/lib/audit-log')
+    const { syncYouTubeChannelIconSafely } = await import(
+      '@/lib/youtube-channel-icon'
+    )
+
+    const { mockSupabaseClient, mockUpsert } = createMockSupabaseClient({
+      channels: [
+        {
+          id: channelRowId,
+          name: 'Old Name',
+          profile_images: null,
+          youtube_channel_id: youtubeChannelId,
+          youtube_handle: '@old',
+        },
+      ],
+    })
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+    vi.mocked(getChannels).mockReturnValue(
+      (async function* () {
+        yield {
+          contentDetails: {
+            relatedPlaylists: { uploads: 'UUabcdefghijklmnopqrstuv' },
+          },
+          id: youtubeChannelId,
+          snippet: { customUrl: '@new', title: 'New Name' },
+        }
+      })() as never,
+    )
+    // 失敗時はヘルパーがログに記録して null を返す
+    vi.mocked(syncYouTubeChannelIconSafely).mockResolvedValueOnce(null)
+
+    const result = await syncTalentWithYouTube(talentId)
+
+    expect(result).toEqual({ success: true })
+    expect(mockUpsert).toHaveBeenCalled()
+    expect(createAuditLog).toHaveBeenCalledWith(
+      'CHANNEL_SYNC',
+      'channels',
+      talentId,
+      {
+        channels: [
+          {
+            after: { name: 'New Name', youtube_handle: '@new' },
+            before: { name: 'Old Name', youtube_handle: '@old' },
+            youtube_channel_id: youtubeChannelId,
+          },
+        ],
+      },
+    )
   })
 
   it('should sync all linked YouTube channels', async () => {
@@ -757,6 +911,12 @@ function createMockAccountsSupabaseClient({
   channels: {
     id: string
     name: string | null
+    profile_images?: {
+      etag: string | null
+      id: string
+      path: string
+      source_url: string
+    } | null
     youtube_channel_id: string
     youtube_handle: string | null
   }[]
@@ -834,6 +994,72 @@ function youtubeChannel(title: string, customUrl: string) {
 describe('syncTalentAccounts', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  it('should include the saved YouTube icon when syncing both platforms', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { syncYouTubeChannelIconSafely } = await import(
+      '@/lib/youtube-channel-icon'
+    )
+    const { getChannels } = await import('@shinju-date/youtube-api-client')
+    const { getUsers } = await import('@shinju-date/twitch-api-client')
+    const channel = {
+      id: channelRowId,
+      name: 'Same Name',
+      profile_images: {
+        etag: 'etag',
+        id: 'image-id',
+        path: 'image-path',
+        source_url: 'https://example.com/image',
+      },
+      youtube_channel_id: youtubeChannelId,
+      youtube_handle: '@same',
+    }
+    const { mockSupabaseClient, mockTwitchUpsert } =
+      createMockAccountsSupabaseClient({
+        channels: [channel],
+        users: [
+          {
+            id: twitchUserRowId,
+            name: 'Old Name',
+            twitch_login_name: 'oldlogin',
+            twitch_user_id: twitchUserId,
+          },
+        ],
+      })
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    async function* mockGetChannels() {
+      yield youtubeChannel('Same Name', '@same')
+    }
+    async function* mockGetUsers() {
+      yield helixUser('New Name', 'newlogin')
+    }
+    vi.mocked(getChannels).mockReturnValue(mockGetChannels() as never)
+    vi.mocked(getUsers).mockReturnValue(mockGetUsers() as never)
+    vi.mocked(syncYouTubeChannelIconSafely).mockResolvedValueOnce('replaced')
+
+    const result = await syncTalentAccounts(talentId)
+
+    const talentsQuery = mockSupabaseClient.from.mock.results[0]?.value as {
+      select: ReturnType<typeof vi.fn>
+    }
+    expect(talentsQuery.select).toHaveBeenCalledWith(
+      expect.stringContaining('profile_images(id, path, etag, source_url)'),
+    )
+    expect(syncYouTubeChannelIconSafely).toHaveBeenCalledWith(
+      expect.objectContaining({ id: youtubeChannelId }),
+      channel,
+    )
+    expect(mockTwitchUpsert).toHaveBeenCalled()
+    expect(result).toEqual({
+      message:
+        'YouTube: チャンネル情報を同期しました。\nTwitch: ユーザー情報を同期しました。',
+      success: true,
+      unchanged: false,
+    })
   })
 
   it('should sync a talent that only has a Twitch user', async () => {

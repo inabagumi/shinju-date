@@ -2,6 +2,36 @@
 
 import { HttpResponse, http } from 'msw'
 
+/** Host the YouTube Data API serves channel icons from. */
+const YOUTUBE_ICON_HOST = 'https://yt3.ggpht.com'
+
+/**
+ * `snippet.thumbnails` of a channel, in the sizes the YouTube Data API
+ * returns for channels.
+ */
+function createChannelThumbnails(channelId: string) {
+  const url = (size: number) =>
+    `${YOUTUBE_ICON_HOST}/mock-${channelId}=s${size}-c-k-c0x00ffffff-no-rj`
+
+  return {
+    default: { height: 88, url: url(88), width: 88 },
+    high: { height: 800, url: url(800), width: 800 },
+    medium: { height: 240, url: url(240), width: 240 },
+  }
+}
+
+/**
+ * A solid 256x256 PNG served as every channel icon. Decoded with `atob`
+ * rather than `Buffer`, because this module is also loaded by the browser
+ * worker.
+ */
+const CHANNEL_ICON_PNG = Uint8Array.from(
+  atob(
+    'iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAMAAABrrFhUAAAAA1BMVEVPRuWq/wlTAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAVElEQVR42u3BAQEAAACAkP6v7ggKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGAEPAAEccgnDAAAAAElFTkSuQmCC',
+  ),
+  (character) => character.charCodeAt(0),
+)
+
 // Mock YouTube channels data
 const mockYouTubeChannels: any[] = [
   {
@@ -13,6 +43,7 @@ const mockYouTubeChannels: any[] = [
     id: 'UCtest123',
     snippet: {
       customUrl: '@testchannel123',
+      thumbnails: createChannelThumbnails('UCtest123'),
       title: 'Test Channel 123',
     },
   },
@@ -25,6 +56,7 @@ const mockYouTubeChannels: any[] = [
     id: 'UCtest456',
     snippet: {
       customUrl: '@testchannel456',
+      thumbnails: createChannelThumbnails('UCtest456'),
       title: 'Test Channel 456',
     },
   },
@@ -37,6 +69,7 @@ const mockYouTubeChannels: any[] = [
     id: 'UCtest789',
     snippet: {
       customUrl: '@testchannel789',
+      thumbnails: createChannelThumbnails('UCtest789'),
       title: 'Test Channel 789',
     },
   },
@@ -49,6 +82,7 @@ const mockYouTubeChannels: any[] = [
     id: 'UCtest012',
     snippet: {
       customUrl: '@testchannel012',
+      thumbnails: createChannelThumbnails('UCtest012'),
       title: 'Test Channel 012',
     },
   },
@@ -502,5 +536,18 @@ export const youtubeHandlers = [
         ETag: `"${params['videoId']}-${params['size']}"`,
       },
     })
+  }),
+
+  // Mock channel icon downloads. Every icon is the same image, so the ETag
+  // only depends on the URL; conditional requests get 304 like on YouTube.
+  http.get(`${YOUTUBE_ICON_HOST}/:icon`, ({ params, request }) => {
+    const etag = `"${params['icon']}"`
+    const headers = { 'Content-Type': 'image/png', ETag: etag }
+
+    if (request.headers.get('If-None-Match') === etag) {
+      return new HttpResponse(null, { headers, status: 304 })
+    }
+
+    return new HttpResponse(CHANNEL_ICON_PNG, { headers })
   }),
 ]

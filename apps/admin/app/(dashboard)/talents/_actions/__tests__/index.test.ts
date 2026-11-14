@@ -49,6 +49,11 @@ vi.mock('@shinju-date/temporal-fns', () => ({
   toDBString: vi.fn((instant) => instant.toString()),
 }))
 
+vi.mock('@shinju-date/youtube-api-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@shinju-date/youtube-api-client')>()),
+  resolveYouTubeChannel: vi.fn(),
+}))
+
 vi.mock('temporal-polyfill', () => ({
   Temporal: {
     Now: {
@@ -57,6 +62,13 @@ vi.mock('temporal-polyfill', () => ({
       })),
     },
   },
+}))
+
+// アイコンの同期は service role を使うため、ここではモックして呼び出し内容だけを確認する
+vi.mock('@/lib/youtube-channel-icon', () => ({
+  hasProfileImageChanged: (result: string | null) =>
+    result !== null && result !== 'unchanged',
+  syncYouTubeChannelIconSafely: vi.fn().mockResolvedValue('unchanged'),
 }))
 
 beforeEach(() => {
@@ -523,6 +535,74 @@ describe('createTalentAction', () => {
     )
     expect(revalidatePath).toHaveBeenCalledWith('/talents')
     expect(revalidateTags).toHaveBeenCalledWith(['talents', 'videos'])
+  })
+
+  it('should add the YouTube channel with its icon', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { resolveYouTubeChannel } = await import(
+      '@shinju-date/youtube-api-client'
+    )
+    const { syncYouTubeChannelIconSafely } = await import(
+      '@/lib/youtube-channel-icon'
+    )
+
+    const youtubeChannel = {
+      contentDetails: {
+        relatedPlaylists: { uploads: 'UUabcdefghijklmnopqrstuv' },
+      },
+      id: 'UCabcdefghijklmnopqrstuv',
+      snippet: { customUrl: '@example', title: 'Example Channel' },
+    }
+
+    vi.mocked(resolveYouTubeChannel).mockResolvedValue(youtubeChannel as never)
+
+    const channelInsert = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: { id: 'channel-row-1' },
+        error: null,
+      }),
+    })
+    const mockSupabaseClient = {
+      from: vi.fn((table: string) =>
+        table === 'youtube_channels'
+          ? { insert: channelInsert }
+          : {
+              insert: vi.fn().mockReturnThis(),
+              select: vi.fn().mockReturnThis(),
+              single: vi.fn().mockResolvedValue({
+                data: {
+                  id: '123e4567-e89b-12d3-a456-426614174000',
+                  name: 'New Talent',
+                },
+                error: null,
+              }),
+            },
+      ),
+    }
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    const formData = new FormData()
+    formData.append('name', 'New Talent')
+    formData.append('youtube_channel_id', youtubeChannel.id)
+
+    const result = await createTalentAction({}, formData)
+
+    expect(result).toEqual({})
+    expect(channelInsert).toHaveBeenCalledWith({
+      name: 'Example Channel',
+      talent_id: '123e4567-e89b-12d3-a456-426614174000',
+      youtube_channel_id: youtubeChannel.id,
+      youtube_handle: '@example',
+    })
+    expect(syncYouTubeChannelIconSafely).toHaveBeenCalledWith(youtubeChannel, {
+      id: 'channel-row-1',
+      profile_images: null,
+      youtube_channel_id: youtubeChannel.id,
+    })
   })
 
   it('should return error when name is empty', async () => {
