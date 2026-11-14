@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Button,
   Dialog,
   DialogClose,
   DialogContent,
@@ -68,12 +69,13 @@ export function TermModal({ term }: TermModalProps) {
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
-        <button
-          className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90"
-          type="button"
-        >
-          {isEditing ? '編集' : '新しい用語を追加'}
-        </button>
+        {isEditing ? (
+          <Button size="sm" variant="secondary">
+            編集
+          </Button>
+        ) : (
+          <Button>新しい用語を追加</Button>
+        )}
       </DialogTrigger>
       <DialogPortal>
         <DialogOverlay />
@@ -86,48 +88,40 @@ export function TermModal({ term }: TermModalProps) {
               <input name="id" type="hidden" value={term.id.toString()} />
             )}
             <FormField name="term">
-              <Label className="mb-2 block font-medium">用語</Label>
-              <Input
-                className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
-                defaultValue={term?.term ?? ''}
-                required
-              />
-              <ErrorMessage className="mt-1 text-sm text-red-600" />
+              <Label className="mb-2 block text-meta font-semibold">用語</Label>
+              <Input defaultValue={term?.term ?? ''} required />
+              <ErrorMessage className="mt-1 text-meta text-danger" />
             </FormField>
             <FormField name="readings">
-              <Label className="mb-2 block font-medium">読み方</Label>
+              <Label className="mb-2 block text-meta font-semibold">
+                読み方
+              </Label>
               <SortableInputList
                 addButtonLabel="読み方を追加"
                 defaultValues={term?.readings ?? []}
                 name="readings"
                 placeholder="読み方を入力"
               />
-              <ErrorMessage className="mt-1 text-sm text-red-600" />
+              <ErrorMessage className="mt-1 text-meta text-danger" />
             </FormField>
             <FormField name="synonyms">
-              <Label className="mb-2 block font-medium">類義語</Label>
+              <Label className="mb-2 block text-meta font-semibold">
+                類義語
+              </Label>
               <SortableInputList
                 addButtonLabel="類義語を追加"
                 defaultValues={term?.synonyms ?? []}
                 name="synonyms"
                 placeholder="類義語を入力"
               />
-              <ErrorMessage className="mt-1 text-sm text-red-600" />
+              <ErrorMessage className="mt-1 text-meta text-danger" />
             </FormField>
-            <GenericErrorMessage className="text-sm text-red-600" />
+            <GenericErrorMessage className="rounded-control bg-danger/10 p-3 text-meta text-danger" />
             <div className="flex justify-end gap-2 pt-2">
               <DialogClose asChild>
-                <button
-                  className="rounded-md border border-774-blue-300 px-4 py-2 hover:bg-gray-50"
-                  type="button"
-                >
-                  キャンセル
-                </button>
+                <Button variant="secondary">キャンセル</Button>
               </DialogClose>
-              <SubmitButton
-                className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90 disabled:opacity-50"
-                type="submit"
-              >
+              <SubmitButton type="submit">
                 {isEditing ? '更新' : '追加'}
               </SubmitButton>
             </div>

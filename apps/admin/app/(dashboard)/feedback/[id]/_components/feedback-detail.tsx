@@ -3,7 +3,7 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { formatDateTimeWithSeconds } from '@shinju-date/temporal-fns'
-import { Textarea } from '@shinju-date/ui'
+import { Select, Textarea } from '@shinju-date/ui'
 import { useActionState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { z } from 'zod'
@@ -17,6 +17,14 @@ import {
 interface FeatureRequestDetailProps {
   featureRequest: Tables<'feature_requests'>
 }
+
+const panelClassName = 'rounded-container border border-border bg-surface p-6'
+const panelHeadingClassName = 'mb-4 text-heading font-bold'
+const labelClassName = 'block text-meta font-semibold'
+
+/** Markdown の本文。`prose` の色を両モードのセマンティックカラーに合わせる */
+const proseClassName =
+  'prose max-w-text text-foreground [--tw-prose-body:var(--color-foreground)] [--tw-prose-bold:var(--color-foreground)] [--tw-prose-bullets:var(--text-color-muted)] [--tw-prose-code:var(--color-foreground)] [--tw-prose-counters:var(--text-color-muted)] [--tw-prose-headings:var(--color-foreground)] [--tw-prose-hr:var(--color-border)] [--tw-prose-links:var(--color-accent)] [--tw-prose-quote-borders:var(--color-border)] [--tw-prose-quotes:var(--color-foreground)]'
 
 const statusSchema = z.enum(['pending', 'in_progress', 'resolved', 'rejected'])
 const memoSchema = z.string()
@@ -77,125 +85,140 @@ export function FeatureRequestDetail({
   )
 
   return (
-    <div className="space-y-6">
-      {/* Basic Information */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-xl font-semibold">基本情報</h2>
-        <dl className="space-y-3">
-          <div>
-            <dt className="text-sm font-medium text-gray-600">送信日時</dt>
-            <dd className="mt-1">{createdAtFormatted}</dd>
+    <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
+      <div className="space-y-6 lg:col-span-2">
+        {/* Message */}
+        <section className={panelClassName}>
+          <h2 className={panelHeadingClassName}>機能要望内容</h2>
+          <div className={proseClassName}>
+            <ReactMarkdown>{featureRequest.message}</ReactMarkdown>
           </div>
-          <div>
-            <dt className="text-sm font-medium text-gray-600">更新日時</dt>
-            <dd className="mt-1">{updatedAtFormatted}</dd>
-          </div>
-        </dl>
-      </div>
+        </section>
 
-      {/* Message */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-xl font-semibold">機能要望内容</h2>
-        <div className="prose max-w-none rounded bg-gray-50 p-4">
-          <ReactMarkdown>{featureRequest.message}</ReactMarkdown>
-        </div>
-      </div>
+        {/* Admin Memo */}
+        <section className={panelClassName}>
+          <h2 className={panelHeadingClassName}>管理メモ</h2>
+          <form action={updateMemoAction} className="space-y-4">
+            <div className="space-y-2">
+              <label className={labelClassName} htmlFor="admin_memo">
+                メモ（Markdown対応）
+              </label>
+              <Textarea
+                defaultValue={featureRequest.admin_memo || ''}
+                id="admin_memo"
+                name="admin_memo"
+                rows={8}
+              />
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <SubmitButton type="submit">メモを保存</SubmitButton>
+              <ActionResult message="保存しました" state={memoState} />
+            </div>
+          </form>
 
-      {/* Status */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-xl font-semibold">ステータス管理</h2>
-        <form action={updateStatusAction} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium" htmlFor="status">
-              対応ステータス
-            </label>
-            <select
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-              defaultValue={featureRequest.status}
-              id="status"
-              name="status"
-            >
-              <option value="pending">未対応</option>
-              <option value="in_progress">対応中</option>
-              <option value="resolved">対応済み</option>
-              <option value="rejected">却下</option>
-            </select>
-          </div>
-          <SubmitButton size="sm" type="submit">
-            ステータスを更新
-          </SubmitButton>
-          {statusState?.success === false && (
-            <p className="text-sm text-red-600">{statusState.error}</p>
+          {/* Preview */}
+          {featureRequest.admin_memo && (
+            <div className="mt-6 border-t border-border pt-6">
+              <h3 className="mb-2 text-body leading-normal font-semibold">
+                プレビュー
+              </h3>
+              <div className={proseClassName}>
+                <ReactMarkdown>{featureRequest.admin_memo}</ReactMarkdown>
+              </div>
+            </div>
           )}
-          {statusState?.success === true && (
-            <p className="text-sm text-green-600">更新しました</p>
-          )}
-        </form>
+        </section>
       </div>
 
-      {/* Read Status */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-xl font-semibold">既読管理</h2>
-        <form action={markAsReadAction} className="space-y-4">
-          <div className="flex items-center gap-4">
-            <span className="text-sm">
+      <div className="space-y-6">
+        {/* Basic Information */}
+        <section className={panelClassName}>
+          <h2 className={panelHeadingClassName}>基本情報</h2>
+          <dl className="space-y-3">
+            <div>
+              <dt className="text-meta text-muted">送信日時</dt>
+              <dd className="mt-1 tabular-nums">{createdAtFormatted}</dd>
+            </div>
+            <div>
+              <dt className="text-meta text-muted">更新日時</dt>
+              <dd className="mt-1 tabular-nums">{updatedAtFormatted}</dd>
+            </div>
+          </dl>
+        </section>
+
+        {/* Status */}
+        <section className={panelClassName}>
+          <h2 className={panelHeadingClassName}>ステータス管理</h2>
+          <form action={updateStatusAction} className="space-y-4">
+            <div className="space-y-2">
+              <label className={labelClassName} htmlFor="status">
+                対応ステータス
+              </label>
+              <Select
+                defaultValue={featureRequest.status}
+                id="status"
+                name="status"
+              >
+                <option value="pending">未対応</option>
+                <option value="in_progress">対応中</option>
+                <option value="resolved">対応済み</option>
+                <option value="rejected">却下</option>
+              </Select>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <SubmitButton type="submit">ステータスを更新</SubmitButton>
+              <ActionResult message="更新しました" state={statusState} />
+            </div>
+          </form>
+        </section>
+
+        {/* Read Status */}
+        <section className={panelClassName}>
+          <h2 className={panelHeadingClassName}>既読管理</h2>
+          <form action={markAsReadAction} className="space-y-4">
+            <p className="text-meta">
               現在: {featureRequest.is_read ? '既読' : '未読'}
-            </span>
+            </p>
             <input
               name="is_read"
               type="hidden"
               value={String(!featureRequest.is_read)}
             />
-            <SubmitButton size="sm" type="submit">
-              {featureRequest.is_read ? '未読にする' : '既読にする'}
-            </SubmitButton>
-          </div>
-          {readState?.success === false && (
-            <p className="text-sm text-red-600">{readState.error}</p>
-          )}
-          {readState?.success === true && (
-            <p className="text-sm text-green-600">更新しました</p>
-          )}
-        </form>
-      </div>
-
-      {/* Admin Memo */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-xl font-semibold">管理メモ</h2>
-        <form action={updateMemoAction} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium" htmlFor="admin_memo">
-              メモ（Markdown対応）
-            </label>
-            <Textarea
-              className="mt-1"
-              defaultValue={featureRequest.admin_memo || ''}
-              id="admin_memo"
-              name="admin_memo"
-              rows={8}
-            />
-          </div>
-          <SubmitButton size="sm" type="submit">
-            メモを保存
-          </SubmitButton>
-          {memoState?.success === false && (
-            <p className="text-sm text-red-600">{memoState.error}</p>
-          )}
-          {memoState?.success === true && (
-            <p className="text-sm text-green-600">保存しました</p>
-          )}
-        </form>
-
-        {/* Preview */}
-        {featureRequest.admin_memo && (
-          <div className="mt-6">
-            <h3 className="mb-2 text-sm font-medium">プレビュー</h3>
-            <div className="prose max-w-none rounded bg-gray-50 p-4 text-sm">
-              <ReactMarkdown>{featureRequest.admin_memo}</ReactMarkdown>
+            <div className="flex flex-wrap items-center gap-3">
+              <SubmitButton type="submit" variant="secondary">
+                {featureRequest.is_read ? '未読にする' : '既読にする'}
+              </SubmitButton>
+              <ActionResult message="更新しました" state={readState} />
             </div>
-          </div>
-        )}
+          </form>
+        </section>
       </div>
     </div>
   )
+}
+
+interface ActionResultProps {
+  message: string
+  state: { error?: string; success: boolean } | null
+}
+
+/** フォームを送信した結果。失敗は `text-danger`、成功は `text-success` で示す */
+function ActionResult({ message, state }: ActionResultProps) {
+  if (state?.success === false) {
+    return (
+      <p className="text-meta text-danger" role="alert">
+        {state.error}
+      </p>
+    )
+  }
+
+  if (state?.success === true) {
+    return (
+      <p className="text-meta text-success" role="status">
+        {message}
+      </p>
+    )
+  }
+
+  return null
 }

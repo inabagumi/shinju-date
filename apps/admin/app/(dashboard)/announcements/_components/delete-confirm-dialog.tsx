@@ -58,7 +58,11 @@ export function DeleteConfirmDialog({
           <DialogDescription>
             本当に「{displayMessage}」を削除しますか？この操作は取り消せません。
           </DialogDescription>
-          {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+          {error && (
+            <p className="mb-4 text-meta text-danger" role="alert">
+              {error}
+            </p>
+          )}
           <div className="flex justify-end gap-2">
             <DialogClose asChild>
               <Button disabled={isPending} variant="secondary">
@@ -68,7 +72,7 @@ export function DeleteConfirmDialog({
             <Button
               disabled={isPending}
               onClick={handleDelete}
-              variant="primary"
+              variant="danger"
             >
               {isPending ? '削除中...' : '削除'}
             </Button>

@@ -18,6 +18,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Button, Input } from '@shinju-date/ui'
+import { GripVertical, X } from 'lucide-react'
 import {
   type ChangeEvent,
   type ClipboardEvent,
@@ -78,13 +79,13 @@ function SortableItem({
     <div className="flex items-center gap-2" ref={setNodeRef} style={style}>
       <Button
         aria-label="ドラッグして並び替え"
-        className="cursor-grab touch-none rounded px-2 py-1 text-gray-500 hover:bg-gray-100 active:cursor-grabbing"
+        className="cursor-grab touch-none px-2 py-1 text-muted active:cursor-grabbing"
         type="button"
         variant="ghost"
         {...attributes}
         {...listeners}
       >
-        <span className="text-lg">⋮⋮</span>
+        <GripVertical aria-hidden="true" className="size-4" />
       </Button>
       <Input
         className="flex-1"
@@ -97,13 +98,13 @@ function SortableItem({
       {showRemove && (
         <Button
           aria-label="削除"
-          className="text-red-600 hover:bg-red-50"
+          className="text-danger hover:bg-danger/10"
           onClick={handleRemove}
           size="sm"
           type="button"
           variant="ghost"
         >
-          ✕
+          <X aria-hidden="true" className="size-4" />
         </Button>
       )}
     </div>
@@ -254,12 +255,7 @@ export function SortableInputList({
         </SortableContext>
       </DndContext>
 
-      <Button
-        className="border-774-blue-300"
-        onClick={handleAdd}
-        size="sm"
-        variant="secondary"
-      >
+      <Button onClick={handleAdd} size="sm" variant="secondary">
         {addButtonLabel}
       </Button>
 
