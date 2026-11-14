@@ -107,18 +107,24 @@ SELECT throws_ok(
 );
 
 RESET ROLE;
+
+-- Admins are signed-in users with the admin role (#6473).
+INSERT INTO "auth"."users" ("id", "email", "raw_app_meta_data")
+VALUES ('e9000000-0000-0000-0000-000000000001', 'admin@example.test', '{"provider": "email", "role": "admin"}');
+
 SET LOCAL ROLE "authenticated";
+SELECT set_config('request.jwt.claims', '{"sub": "e9000000-0000-0000-0000-000000000001", "role": "authenticated"}', true);
 
 SELECT is(
     (SELECT count(*)::integer FROM "public"."video_backfill_jobs" WHERE "talent_id" IN ('e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002')),
     6,
-    'authenticated users read the whole history'
+    'admins read the whole history'
 );
 
 SELECT is(
     (SELECT count(*)::integer FROM "public"."video_backfill_latest_jobs" WHERE "talent_id" = 'e0000000-0000-0000-0000-000000000001'),
     2,
-    'authenticated users read the latest jobs'
+    'admins read the latest jobs'
 );
 
 SELECT throws_ok(
@@ -127,14 +133,14 @@ SELECT throws_ok(
       VALUES ('youtube', 'e2000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000001', 'done', '2026-11-04T00:00:00Z', '2026-11-04T00:10:00Z')$$,
     '42501',
     NULL,
-    'authenticated users cannot record jobs'
+    'admins cannot record jobs'
 );
 
 SELECT throws_ok(
     $$DELETE FROM "public"."video_backfill_jobs"$$,
     '42501',
     NULL,
-    'authenticated users cannot delete the history'
+    'admins cannot delete the history'
 );
 
 RESET ROLE;

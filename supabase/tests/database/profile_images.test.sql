@@ -109,19 +109,25 @@ SELECT throws_ok(
 );
 
 RESET ROLE;
+
+-- Admins are signed-in users with the admin role (#6473).
+INSERT INTO "auth"."users" ("id", "email", "raw_app_meta_data")
+VALUES ('f9000000-0000-0000-0000-000000000001', 'admin@example.test', '{"provider": "email", "role": "admin"}');
+
 SET LOCAL ROLE "authenticated";
+SELECT set_config('request.jwt.claims', '{"sub": "f9000000-0000-0000-0000-000000000001", "role": "authenticated"}', true);
 
 SELECT is(
     (SELECT count(*)::integer FROM "public"."profile_images" WHERE "path" LIKE 'youtube/UCtest%' OR "path" LIKE 'twitch/9000%'),
     4,
-    'authenticated users see every icon, including unused ones'
+    'admins see every icon, including unused ones'
 );
 
 SELECT throws_ok(
     $$DELETE FROM "public"."profile_images" WHERE "id" = 'f1000000-0000-0000-0000-000000000004'$$,
     '42501',
     NULL,
-    'authenticated users cannot delete icons'
+    'admins cannot delete icons'
 );
 
 RESET ROLE;

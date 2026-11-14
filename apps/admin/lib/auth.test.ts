@@ -25,7 +25,11 @@ describe('requireAuthenticatedUser', () => {
   })
 
   it('returns the user and Supabase client when authenticated', async () => {
-    const user = { email: 'admin@example.com', id: 'user-id' }
+    const user = {
+      app_metadata: { provider: 'email', role: 'admin' },
+      email: 'admin@example.com',
+      id: 'user-id',
+    }
     getUserMock.mockResolvedValue({ data: { user }, error: null })
 
     const result = await requireAuthenticatedUser()
@@ -33,6 +37,17 @@ describe('requireAuthenticatedUser', () => {
     expect(result).not.toBeNull()
     expect(result?.user).toBe(user)
     expect(result?.supabaseClient.auth.getUser).toBe(getUserMock)
+  })
+
+  it('returns null when the user does not have the admin role', async () => {
+    const user = {
+      app_metadata: { provider: 'email' },
+      email: 'someone@example.com',
+      id: 'user-id',
+    }
+    getUserMock.mockResolvedValue({ data: { user }, error: null })
+
+    await expect(requireAuthenticatedUser()).resolves.toBeNull()
   })
 
   it('returns null when getUser returns an error', async () => {

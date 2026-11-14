@@ -106,7 +106,23 @@ pnpm exec supabase status
 
 ブラウザで [http://localhost:54323](http://localhost:54323) を開くと、Supabase Studioにアクセスできます。ここからデータベースのテーブル、認証ユーザー、ストレージバケットなどを管理できます。
 
-### 3.5. 本番データのインポート（任意ですが推奨）
+### 3.5. 管理画面にログインするユーザーの作成
+
+管理画面（`apps/admin`）とデータベースの RLS は、Supabase Auth にログインできるだけのユーザーを管理者として扱いません。`app_metadata.role` が `admin` のユーザーのみが削除済みデータの閲覧や更新を行えます（データベース側では `public.is_admin()` で判定します）。
+
+ローカル環境では、Supabase Studio の「Authentication」からユーザーを作成したあと、SQL Editor などで管理者ロールを付与してください：
+
+```sql
+UPDATE auth.users
+SET raw_app_meta_data = raw_app_meta_data || '{"role": "admin"}'
+WHERE email = 'you@example.com';
+```
+
+`app_metadata` はユーザー自身では変更できず、サービスロールキー（`supabase.auth.admin.updateUserById`）か SQL でのみ変更できます。管理者ロールの付与・削除は即座に反映されます。
+
+MSW を使用する場合、モックのユーザー（`admin@example.com`）には管理者ロールが付与済みです。
+
+### 3.6. 本番データのインポート（任意ですが推奨）
 
 より現実的なデータで開発を進めるため、本番データベースからサニタイズされたスナップショットをインポートできます。
 
@@ -118,7 +134,7 @@ pnpm db:import
 
 **注意**: 本番データベースからのデータエクスポートは、プロジェクト管理者のみが実行できます。個人情報を含むテーブルのエクスポートは禁止されています。
 
-### 3.6. サービスの停止
+### 3.7. サービスの停止
 
 開発作業を終了する際は、サービスを停止できます：
 

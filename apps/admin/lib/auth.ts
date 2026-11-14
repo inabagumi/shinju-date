@@ -1,5 +1,6 @@
 import type { User } from '@supabase/supabase-js'
 import type { FormState } from '@/components/form'
+import { isAdminUser } from '@/lib/admin-user'
 import {
   createSupabaseServerClient,
   type TypedSupabaseClient,
@@ -17,12 +18,13 @@ export interface AuthenticatedContext {
 }
 
 /**
- * Server Action の先頭で呼び出し、リクエストが認証済みユーザーによるものかを検証する。
+ * Server Action の先頭で呼び出し、リクエストが認証済みの管理者によるものかを検証する。
  *
  * `proxy.ts` によるセッション保護とは別に、`matcher` の設定などに左右されないよう
- * Action 単位でも認証を確認する（多層防御）。未認証の場合は `null` を返すので、
- * 呼び出し側は更新処理を行わずに `unauthenticatedResult()` または
- * `unauthenticatedFormState()` を返すこと。
+ * Action 単位でも認証を確認する（多層防御）。Supabase Auth にログインしていても
+ * 管理者ロール（`app_metadata.role`）を持たないユーザーは未認証として扱う。
+ * 未認証の場合は `null` を返すので、呼び出し側は更新処理を行わずに
+ * `unauthenticatedResult()` または `unauthenticatedFormState()` を返すこと。
  *
  * 認証済みの場合は、検証に使用した Supabase クライアントをそのまま返すため、
  * 呼び出し側で改めて `createSupabaseServerClient()` を呼ぶ必要はない。
@@ -49,7 +51,7 @@ export async function requireAuthenticatedUser(): Promise<AuthenticatedContext |
       error,
     } = await supabaseClient.auth.getUser()
 
-    if (error || !user) {
+    if (error || !user || !isAdminUser(user)) {
       return null
     }
 

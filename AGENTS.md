@@ -559,6 +559,23 @@ export async function deleteSomethingAction(id: string): Promise<{
 
 新しい Action を追加した場合は、`apps/admin/app/(dashboard)/_lib/server-actions-auth.test.ts` にも追加し、未認証時に副作用がないことを確認してください。
 
+### 管理者ロールと RLS
+
+**重要**: 「Supabase Auth にログインできる = 管理者」とは限りません。管理者は `app_metadata.role` が `admin` のユーザーです（`apps/admin/lib/admin-user.ts` の `isAdminUser()`、データベースでは `public.is_admin()`）。
+
+- `requireAuthenticatedUser()` と `proxy.ts` は、管理者ロールを持たないユーザーを未認証として扱います
+- 管理画面向けの RLS ポリシーは `TO "authenticated"` に加えて、**必ず** `(SELECT "public"."is_admin"())` を条件にしてください（`USING (true)` は使わない）。`supabase/tests/database/admin_role.test.sql` がこれを検査します
+- `SECURITY DEFINER` の関数は RLS を迂回するため、関数内で `public.is_admin()` を確認してください
+
+```sql
+CREATE POLICY "Enable update for admins"
+    ON "public"."some_table"
+    FOR UPDATE
+    TO "authenticated"
+    USING ((SELECT "public"."is_admin"()))
+    WITH CHECK ((SELECT "public"."is_admin"()));
+```
+
 ### MSW (Mock Service Worker) による認証の模擬
 
 ローカル開発やテストで認証が必要な管理画面 (`apps/admin`) の動作を確認するため、MSWにSupabase Authの認証フローを模擬するハンドラーが実装されています。

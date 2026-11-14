@@ -281,6 +281,9 @@ isOneToOne: false
 "insert_audit_log":
 { Args: { "p_action": Database["public"]['Enums']["audit_action"],"p_details"?: Json,"p_target_record_id"?: string,"p_target_table": string }; Returns: undefined
                            },
+"is_admin":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "search_videos_v2":
 { Args: { "channel_ids": (string)[],"perpage"?: number,"query": string,"until": string }; Returns: {
               "created_at": string,

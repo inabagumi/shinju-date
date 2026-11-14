@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import * as z from 'zod/v3'
 import type { FormState } from '@/components/form'
+import { isAdminUser } from '@/lib/admin-user'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 const formSchema = z.object({
@@ -57,12 +58,24 @@ export async function signIn(
   }
 
   const supabaseClient = await createSupabaseServerClient()
-  const { error } = await supabaseClient.auth.signInWithPassword(credentials)
+  const { data, error } =
+    await supabaseClient.auth.signInWithPassword(credentials)
 
   if (error) {
     return {
       errors: {
         generic: ['メールアドレスかパスワードが正しくありません。'],
+      },
+    }
+  }
+
+  // Supabase Auth にログインできても、管理者ロールがなければセッションを残さない
+  if (!isAdminUser(data.user)) {
+    await supabaseClient.auth.signOut()
+
+    return {
+      errors: {
+        generic: ['このアカウントには管理画面を利用する権限がありません。'],
       },
     }
   }

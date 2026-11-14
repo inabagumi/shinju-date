@@ -1,13 +1,15 @@
 import type { default as DefaultDatabase } from '@shinju-date/database'
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
+import { isAdminUser } from '@/lib/admin-user'
 
 const isProd = process.env['NODE_ENV'] === 'production'
 
 /**
  * Updates the session by refreshing the Supabase auth token if needed.
  * This function should be called in middleware to ensure authentication state
- * is properly maintained across requests.
+ * is properly maintained across requests. Users without the admin role are
+ * treated as signed out.
  *
  * @param request - The incoming Next.js request
  * @returns A NextResponse with updated session cookies
@@ -45,15 +47,20 @@ export async function updateSession(
     },
   })
 
-  const { error } = await supabaseClient.auth.getUser()
+  const {
+    data: { user },
+    error,
+  } = await supabaseClient.auth.getUser()
+  // 管理者ロールを持たないユーザーはログインしていないものとして扱う
+  const isAdmin = !error && !!user && isAdminUser(user)
 
-  if (request.nextUrl.pathname === '/login' && !error) {
+  if (request.nextUrl.pathname === '/login' && isAdmin) {
     return NextResponse.redirect(new URL('/', request.nextUrl), {
       headers: response.headers,
     })
   }
 
-  if (request.nextUrl.pathname !== '/login' && error) {
+  if (request.nextUrl.pathname !== '/login' && !isAdmin) {
     const loginURL = new URL('/login', request.nextUrl)
 
     if (request.nextUrl.pathname !== '/') {

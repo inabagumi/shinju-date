@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { isAdminUser } from '@/lib/admin-user'
 import { createAuditLog } from '@/lib/audit-log'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest): Promise<Response> {
     const { data, error } =
       await supabaseClient.auth.exchangeCodeForSession(code)
 
-    if (!error && data.user) {
+    if (!error && data.user && isAdminUser(data.user)) {
       // Check if this is an email change event
       // Supabase sends the user with the new email after confirmation
       const user = data.user
