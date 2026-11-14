@@ -1,5 +1,6 @@
 import { cacheLife } from 'next/cache'
 import { getHistoricalStats } from '../_lib/get-historical-stats'
+import { VideoStatsChartEmpty } from './video-stats-chart-empty'
 import { VideoStatsChartUI } from './video-stats-chart-ui'
 
 /**
@@ -17,9 +18,7 @@ export async function VideoStatsChart() {
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       <h2 className="mb-4 text-xl font-semibold">動画数推移（7日間）</h2>
       {historicalStats.length === 0 ? (
-        <div className="flex h-80 items-center justify-center text-gray-500">
-          <p>データがありません</p>
-        </div>
+        <VideoStatsChartEmpty />
       ) : (
         <VideoStatsChartUI data={historicalStats} />
       )}
