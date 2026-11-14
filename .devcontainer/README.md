@@ -280,7 +280,7 @@ Supabaseサービスは `supabase start` コマンドで起動され、Dev Conta
 - **API / Kong** (port 54321): APIゲートウェイ
 - **PostgreSQL** (port 54322): データベース
 - **Supabase Studio** (port 54323): Web管理UI
-- **Inbucket** (port 54324): メールテスト用
+- **Mailpit** (port 54324): メールテスト用
 
 ## 使い方
 
@@ -333,7 +333,7 @@ pnpm exec supabase stop
 | Supabase API    | 54321  | Supabase API エントリーポイント |
 | PostgreSQL      | 54322  | データベース直接接続            |
 | Supabase Studio | 54323  | Web管理UI                       |
-| Inbucket Web UI | 54324  | メール確認UI                    |
+| Mailpit Web UI  | 54324  | メール確認UI                    |
 | Redis           | 6379   | Redis直接接続                   |
 | Redis HTTP API  | 8079   | Upstash互換REST API             |
 
