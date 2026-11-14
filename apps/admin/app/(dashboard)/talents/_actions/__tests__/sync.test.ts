@@ -73,6 +73,10 @@ vi.mock('@/lib/youtube-channel-icon', () => ({
   syncYouTubeChannelIconSafely: vi.fn().mockResolvedValue('unchanged'),
 }))
 
+vi.mock('@/lib/twitch-user-icon', () => ({
+  syncTwitchUserIconSafely: vi.fn().mockResolvedValue('unchanged'),
+}))
+
 const talentId = '123e4567-e89b-12d3-a456-426614174000'
 const channelRowId = 'channel-row-uuid'
 const channelRowId2 = 'channel-row-uuid-2'
@@ -701,6 +705,7 @@ function createMockTwitchSupabaseClient({
   users: {
     id: string
     name: string | null
+    profile_images?: null
     twitch_user_id: string
     twitch_login_name: string | null
   }[]
@@ -876,6 +881,151 @@ describe('syncTalentWithTwitch', () => {
     expect(mockUpsert).toHaveBeenCalled()
     expect(mockUpdate).not.toHaveBeenCalled()
     expect(createAuditLog).not.toHaveBeenCalled()
+  })
+
+  it('should select the saved icon of each Twitch user', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+
+    const { mockSupabaseClient } = createMockTwitchSupabaseClient({
+      users: [],
+    })
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    await syncTalentWithTwitch(talentId)
+
+    const talentsQuery = mockSupabaseClient.from.mock.results[0]?.value as {
+      select: ReturnType<typeof vi.fn>
+    }
+
+    expect(talentsQuery.select).toHaveBeenCalledWith(
+      expect.stringContaining('profile_images(id, path, etag, source_url)'),
+    )
+  })
+
+  it('should record a changed icon even when name and login are unchanged', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { getUsers } = await import('@shinju-date/twitch-api-client')
+    const { createAuditLog } = await import('@/lib/audit-log')
+    const { syncTwitchUserIconSafely } = await import('@/lib/twitch-user-icon')
+
+    const savedUser = {
+      id: twitchUserRowId,
+      name: 'Same Name',
+      profile_images: null,
+      twitch_login_name: 'samelogin',
+      twitch_user_id: twitchUserId,
+    }
+    const twitchUser = {
+      broadcaster_type: '',
+      created_at: '2011-08-08T20:45:44Z',
+      description: '',
+      display_name: 'Same Name',
+      id: twitchUserId,
+      login: 'samelogin',
+      offline_image_url: '',
+      profile_image_url:
+        'https://static-cdn.jtvnw.net/jtv_user_pictures/same-profile_image-300x300.png',
+      type: '',
+    }
+    const { mockSupabaseClient, mockUpdate } = createMockTwitchSupabaseClient({
+      users: [savedUser],
+    })
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+    vi.mocked(getUsers).mockReturnValue(
+      (async function* () {
+        yield twitchUser
+      })() as never,
+    )
+    vi.mocked(syncTwitchUserIconSafely).mockResolvedValueOnce('replaced')
+
+    const result = await syncTalentWithTwitch(talentId)
+
+    expect(result).toEqual({ success: true })
+    expect(syncTwitchUserIconSafely).toHaveBeenCalledWith(twitchUser, savedUser)
+    expect(mockUpdate).toHaveBeenCalled()
+    expect(createAuditLog).toHaveBeenCalledWith(
+      'CHANNEL_SYNC',
+      'twitch_users',
+      talentId,
+      {
+        platform: 'twitch',
+        users: [
+          {
+            after: { name: 'Same Name', twitch_login_name: 'samelogin' },
+            before: { name: 'Same Name', twitch_login_name: 'samelogin' },
+            profile_image: 'replaced',
+            twitch_user_id: twitchUserId,
+          },
+        ],
+      },
+    )
+  })
+
+  it('should still sync name and login when the icon cannot be synced', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { getUsers } = await import('@shinju-date/twitch-api-client')
+    const { createAuditLog } = await import('@/lib/audit-log')
+    const { syncTwitchUserIconSafely } = await import('@/lib/twitch-user-icon')
+
+    const { mockSupabaseClient, mockUpsert } = createMockTwitchSupabaseClient({
+      users: [
+        {
+          id: twitchUserRowId,
+          name: 'Old Name',
+          profile_images: null,
+          twitch_login_name: 'oldlogin',
+          twitch_user_id: twitchUserId,
+        },
+      ],
+    })
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+    vi.mocked(getUsers).mockReturnValue(
+      (async function* () {
+        yield {
+          broadcaster_type: '',
+          created_at: '2011-08-08T20:45:44Z',
+          description: '',
+          display_name: 'New Name',
+          id: twitchUserId,
+          login: 'newlogin',
+          offline_image_url: '',
+          profile_image_url:
+            'https://static-cdn.jtvnw.net/jtv_user_pictures/new-profile_image-300x300.png',
+          type: '',
+        }
+      })() as never,
+    )
+    // 失敗時はヘルパーがログに記録して null を返す
+    vi.mocked(syncTwitchUserIconSafely).mockResolvedValueOnce(null)
+
+    const result = await syncTalentWithTwitch(talentId)
+
+    expect(result).toEqual({ success: true })
+    expect(mockUpsert).toHaveBeenCalled()
+    expect(createAuditLog).toHaveBeenCalledWith(
+      'CHANNEL_SYNC',
+      'twitch_users',
+      talentId,
+      {
+        platform: 'twitch',
+        users: [
+          {
+            after: { name: 'New Name', twitch_login_name: 'newlogin' },
+            before: { name: 'Old Name', twitch_login_name: 'oldlogin' },
+            twitch_user_id: twitchUserId,
+          },
+        ],
+      },
+    )
   })
 
   it('should return error when talent has no linked Twitch users', async () => {

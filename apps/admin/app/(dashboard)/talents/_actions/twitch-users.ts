@@ -16,6 +16,7 @@ import {
   unauthenticatedFormState,
   unauthenticatedResult,
 } from '@/lib/auth'
+import { syncTwitchUserIconSafely } from '@/lib/twitch-user-icon'
 
 function twitchApiErrorFormState(error: unknown): FormState {
   if (
@@ -145,6 +146,13 @@ export async function addTwitchUserAction(
     if (error) {
       throw error
     }
+
+    // アイコンの取得に失敗してもユーザーの追加は成功扱いにする（次回の同期で再取得される）
+    await syncTwitchUserIconSafely(twitchUser, {
+      id: newUser.id,
+      profile_images: null,
+      twitch_user_id: twitchUserId,
+    })
 
     await supabaseClient
       .from('talents')

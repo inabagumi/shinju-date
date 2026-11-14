@@ -10,6 +10,7 @@ import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import { createAuditLog } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
+import { syncTwitchUserIconSafely } from '@/lib/twitch-user-icon'
 import {
   hasProfileImageChanged,
   syncYouTubeChannelIconSafely,
@@ -247,7 +248,9 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
  *
  * ## 仕様
  * - 紐づく `twitch_users` をすべて対象にする
- * - 更新対象: `name`（display_name）と `twitch_login_name`（login）
+ * - 更新対象: `name`（display_name）と `twitch_login_name`（login）、
+ *   およびアイコン（`profile_image_url`）。アイコンは元画像が変わった場合のみ差し替える
+ * - アイコンの失敗では止めない: アイコンの取得・保存に失敗しても、name / login の同期は続ける
  * - タレント名は更新しない（YouTube 同期と同様）
  */
 export async function syncTalentWithTwitch(talentId: string): Promise<{
@@ -267,7 +270,9 @@ export async function syncTalentWithTwitch(talentId: string): Promise<{
   try {
     const { data: talent, error: fetchError } = await supabaseClient
       .from('talents')
-      .select('id, twitch_users(id, name, twitch_user_id, twitch_login_name)')
+      .select(
+        'id, twitch_users(id, name, twitch_user_id, twitch_login_name, profile_images(id, path, etag, source_url))',
+      )
       .eq('id', talentId)
       .single()
 
@@ -291,6 +296,12 @@ export async function syncTalentWithTwitch(talentId: string): Promise<{
       ): user is {
         id: string
         name: string | null
+        profile_images: {
+          etag: string | null
+          id: string
+          path: string
+          source_url: string
+        } | null
         twitch_user_id: string
         twitch_login_name: string | null
       } => user != null,
@@ -325,6 +336,7 @@ export async function syncTalentWithTwitch(talentId: string): Promise<{
       twitch_user_id: string
       before: { name: string | null; twitch_login_name: string | null }
       after: { name: string; twitch_login_name: string }
+      profile_image?: Exclude<ProfileImageSyncResult, 'unchanged'>
     }[] = []
 
     let hasUpdates = false
@@ -368,7 +380,17 @@ export async function syncTalentWithTwitch(talentId: string): Promise<{
 
       syncedCount++
 
-      if (displayName !== user.name || loginName !== user.twitch_login_name) {
+      const profileImageResult = await syncTwitchUserIconSafely(
+        twitchUser,
+        user,
+      )
+      const profileImageChanged = hasProfileImageChanged(profileImageResult)
+
+      if (
+        displayName !== user.name ||
+        loginName !== user.twitch_login_name ||
+        profileImageChanged
+      ) {
         hasUpdates = true
         userChanges.push({
           after: {
@@ -379,6 +401,7 @@ export async function syncTalentWithTwitch(talentId: string): Promise<{
             name: user.name,
             twitch_login_name: user.twitch_login_name,
           },
+          ...(profileImageChanged ? { profile_image: profileImageResult } : {}),
           twitch_user_id: user.twitch_user_id,
         })
       }
