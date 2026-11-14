@@ -34,7 +34,10 @@ export default function Pagination({ currentPage, totalPages }: Props) {
   }
 
   return (
-    <div className="flex items-center justify-center gap-2 p-4">
+    <nav
+      aria-label="ページ送り"
+      className="flex flex-wrap items-center justify-center gap-2 p-4 tabular-nums"
+    >
       {currentPage > 1 && (
         <Button asChild size="md" variant="secondary">
           <Link href={createPageUrl(currentPage - 1)}>前へ</Link>
@@ -46,7 +49,7 @@ export default function Pagination({ currentPage, totalPages }: Props) {
           <Button asChild size="md" variant="secondary">
             <Link href={createPageUrl(1)}>1</Link>
           </Button>
-          {startPage > 2 && <span className="px-2">...</span>}
+          {startPage > 2 && <span className="px-2 text-muted">…</span>}
         </>
       )}
 
@@ -57,13 +60,20 @@ export default function Pagination({ currentPage, totalPages }: Props) {
           size="md"
           variant={page === currentPage ? 'primary' : 'secondary'}
         >
-          <Link href={createPageUrl(page)}>{page}</Link>
+          <Link
+            aria-current={page === currentPage ? 'page' : undefined}
+            href={createPageUrl(page)}
+          >
+            {page}
+          </Link>
         </Button>
       ))}
 
       {endPage < totalPages && (
         <>
-          {endPage < totalPages - 1 && <span className="px-2">...</span>}
+          {endPage < totalPages - 1 && (
+            <span className="px-2 text-muted">…</span>
+          )}
           <Button asChild size="md" variant="secondary">
             <Link href={createPageUrl(totalPages)}>{totalPages}</Link>
           </Button>
@@ -75,6 +85,6 @@ export default function Pagination({ currentPage, totalPages }: Props) {
           <Link href={createPageUrl(currentPage + 1)}>次へ</Link>
         </Button>
       )}
-    </div>
+    </nav>
   )
 }

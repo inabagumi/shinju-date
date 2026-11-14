@@ -116,22 +116,20 @@ export function VideoActionConfirmDialog({
         <DialogOverlay />
         <DialogContent className="max-h-[85vh] w-[90vw] max-w-[550px] overflow-y-auto">
           <DialogTitle className="flex items-center gap-2">
-            <Icon className="h-6 w-6" />
+            <Icon aria-hidden="true" className="size-5" />
             {config.title}
           </DialogTitle>
-          <DialogDescription className="text-base">
-            {getDescription()}
-          </DialogDescription>
+          <DialogDescription>{getDescription()}</DialogDescription>
 
           {/* Video list */}
-          <div className="my-4 max-h-60 overflow-y-auto rounded-md border border-gray-200 bg-gray-50 p-3">
-            <div className="mb-2 text-sm font-semibold text-gray-700">
+          <div className="my-4 max-h-60 overflow-y-auto rounded-container border border-border bg-muted p-3">
+            <div className="mb-2 text-meta font-semibold tabular-nums">
               対象動画 ({videos.length}件):
             </div>
             <ul className="space-y-2">
               {videos.map((video) => (
                 <li
-                  className="border-l-2 border-gray-400 pl-2 text-sm text-gray-600"
+                  className="border-l-2 border-border pl-2 text-meta text-muted"
                   key={video.id}
                 >
                   {video.title}
@@ -144,7 +142,7 @@ export function VideoActionConfirmDialog({
           {requiresKeyword && (
             <div className="mb-4">
               <label
-                className="mb-2 block text-sm font-semibold text-red-700"
+                className="mb-2 block text-meta font-semibold text-danger"
                 htmlFor="confirm-keyword"
               >
                 続行するには「DELETE」と入力してください:
@@ -161,8 +159,11 @@ export function VideoActionConfirmDialog({
           )}
 
           {error && (
-            <div className="mb-4 rounded-md border border-red-300 bg-red-50 p-3">
-              <p className="text-sm text-red-700">{error}</p>
+            <div
+              className="mb-4 rounded-control border border-danger/30 bg-danger/10 p-3"
+              role="alert"
+            >
+              <p className="text-meta text-danger">{error}</p>
             </div>
           )}
 
