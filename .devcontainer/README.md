@@ -11,16 +11,19 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 **職責**: コンテナイメージのビルド時に実行される、OSレベルの環境構築を担当します。
 
 **含まれる内容**:
+
 - apt パッケージのインストール（postgresql-client など）
 - pnpm のセットアップ（公式のインストールスクリプトを使用）
 - システム全体で必要な環境変数の設定
 
 **含まれない内容**:
+
 - プロジェクト固有の依存関係のインストール（pnpm install など）
 - データベースマイグレーションの適用
 - 型定義ファイルの生成
 
 **メリット**:
+
 - イメージのキャッシュが効くため、再ビルド時間が短縮される
 - CI/CD でも同じイメージを再利用できる
 - OS レベルの変更が必要な場合のみリビルドされる
@@ -30,15 +33,18 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 **職責**: コンテナ起動後に一度だけ実行される、プロジェクト固有の初期化処理を担当します。
 
 **含まれる内容**:
+
 - プロジェクトの依存関係のインストール（`pnpm install --frozen-lockfile`）
 - Supabase データベースのリセットとマイグレーション適用
 - TypeScript 型定義の生成（`pnpm typegen`）
 
 **含まれない内容**:
+
 - OS レベルのパッケージインストール（apt-get など）
 - システムツールのインストール（pnpm など）
 
 **メリット**:
+
 - プロジェクトの変更に応じて柔軟に更新できる
 - イメージの再ビルドなしで変更を適用できる
 - 開発者ごとに異なる初期化処理を追加しやすい
@@ -48,6 +54,7 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 **職責**: VS Code Dev Container および GitHub Codespaces の動作を定義します。
 
 **含まれる内容**:
+
 - VS Code 拡張機能の指定
 - エディタ設定
 - ポートフォワーディング設定
@@ -56,6 +63,7 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 - `postCreateCommand` の指定（post-create.sh へのパス）
 
 **含まれない内容**:
+
 - コンテナイメージの具体的なビルド手順（Dockerfile に記載）
 - バックエンドサービスの定義（compose.yml に記載）
 
@@ -64,6 +72,7 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 **職責**: Dev Container で使用する `app` サービスのみを定義します。
 
 **含まれる内容**:
+
 - `app` サービスの Dockerfile ビルド設定
 - `privileged: true`（Docker-in-Docker でコンテナ内の dockerd を動かすために必要）
 - 環境変数のロード（`env_file` による `./config/dev-secrets.env` の参照）
@@ -72,10 +81,12 @@ Dev Container環境は、以下の4つのファイルで構成され、それぞ
 - 依存サービスの指定（`depends_on` で `serverless-redis-http` など）
 
 **含まれない内容**:
+
 - Supabase サービス（Supabase CLI + Docker-in-Docker で管理）
 - Redis などの共有サービス（`../compose.yml` で定義）
 
 **補足**:
+
 - ルートの `compose.yml` と組み合わせて使用されます（`dockerComposeFile: ["../compose.yml", "compose.override.yml"]`）
 - `../compose.yml` が Redis などの共有開発サービスを定義しています
 - ボリュームマウントの `.` は、最初の compose ファイル（プロジェクトルートの `compose.yml`）からの相対パスです
@@ -317,14 +328,14 @@ pnpm exec supabase stop
 
 ## ポートマッピング
 
-| サービス | ポート | 説明 |
-|---------|--------|------|
-| Supabase API | 54321 | Supabase API エントリーポイント |
-| PostgreSQL | 54322 | データベース直接接続 |
-| Supabase Studio | 54323 | Web管理UI |
-| Inbucket Web UI | 54324 | メール確認UI |
-| Redis | 6379 | Redis直接接続 |
-| Redis HTTP API | 8079 | Upstash互換REST API |
+| サービス        | ポート | 説明                            |
+| --------------- | ------ | ------------------------------- |
+| Supabase API    | 54321  | Supabase API エントリーポイント |
+| PostgreSQL      | 54322  | データベース直接接続            |
+| Supabase Studio | 54323  | Web管理UI                       |
+| Inbucket Web UI | 54324  | メール確認UI                    |
+| Redis           | 6379   | Redis直接接続                   |
+| Redis HTTP API  | 8079   | Upstash互換REST API             |
 
 ## データベースマイグレーション
 
@@ -333,6 +344,7 @@ pnpm exec supabase stop
 ### 新しいマイグレーションの追加
 
 1. `supabase/migrations/`に新しいSQLファイルを作成
+
    ```bash
    pnpm exec supabase migration new description
    ```
@@ -340,6 +352,7 @@ pnpm exec supabase stop
 2. マイグレーションSQLを記述
 
 3. ローカルで適用
+
    ```bash
    pnpm exec supabase db reset
    ```

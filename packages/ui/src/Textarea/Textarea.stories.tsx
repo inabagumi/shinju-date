@@ -74,7 +74,7 @@ export const WithLabel = meta.story({
   },
   render: (args) => (
     <div className="flex w-96 flex-col gap-2">
-      <label className="font-medium text-sm" htmlFor="textarea-with-label">
+      <label className="text-sm font-medium" htmlFor="textarea-with-label">
         Feedback
       </label>
       <Textarea {...args} id="textarea-with-label" />
@@ -90,11 +90,11 @@ export const WithErrorMessage = meta.story({
   },
   render: (args) => (
     <div className="flex w-96 flex-col gap-2">
-      <label className="font-medium text-sm" htmlFor="textarea-error">
+      <label className="text-sm font-medium" htmlFor="textarea-error">
         Description
       </label>
       <Textarea {...args} id="textarea-error" />
-      <p className="text-red-600 text-sm dark:text-red-500">
+      <p className="text-sm text-red-600 dark:text-red-500">
         Description must be at least 20 characters long
       </p>
     </div>
@@ -114,11 +114,11 @@ export const WithCounter = meta.story({
 
     return (
       <div className="flex w-96 flex-col gap-2">
-        <label className="font-medium text-sm" htmlFor="textarea-counter">
+        <label className="text-sm font-medium" htmlFor="textarea-counter">
           Comment
         </label>
         <Textarea {...args} id="textarea-counter" />
-        <p className="text-right text-gray-600 text-sm dark:text-gray-400">
+        <p className="text-right text-sm text-gray-600 dark:text-gray-400">
           {count}/{maxLength}
         </p>
       </div>

@@ -37,7 +37,7 @@ export function SearchButton() {
       <Search className="size-5" />
       <span className="flex-1">検索</span>
       {isMac !== undefined && (
-        <kbd className="hidden rounded border border-774-nevy-200 bg-primary-foreground px-2 py-0.5 font-mono text-774-nevy-500 text-xs sm:inline-block dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-300">
+        <kbd className="hidden rounded border border-774-nevy-200 bg-primary-foreground px-2 py-0.5 font-mono text-xs text-774-nevy-500 sm:inline-block dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-300">
           {isMac ? '⌘' : 'Ctrl'}K
         </kbd>
       )}

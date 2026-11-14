@@ -39,17 +39,20 @@ pnpm build-storybook
 複数のバリエーションを持つ汎用ボタンコンポーネント。
 
 **バリアント:**
+
 - `primary` (デフォルト): 青色のプライマリーボタン
 - `secondary`: グレーのセカンダリーボタン
 - `danger`: 赤色の危険なアクションを示すボタン
 - `ghost`: 背景色なしのゴーストボタン
 
 **サイズ:**
+
 - `sm`: 小サイズ (px-3 py-1)
 - `md` (デフォルト): 中サイズ (px-4 py-2)
 - `lg`: 大サイズ (px-6 py-3)
 
 **Props:**
+
 - `asChild`: `true`の場合、子要素にスタイルを適用 (Radix UI Slot パターン)
 
 ```tsx
@@ -69,10 +72,12 @@ import { Button } from '@shinju-date/ui'
 一貫したスタイルを持つフォーム入力コンポーネント。
 
 **バリアント:**
+
 - `default` (デフォルト): 通常の入力フィールド
 - `error`: エラー状態の入力フィールド
 
 **サイズ:**
+
 - `sm`: 小サイズ
 - `md` (デフォルト): 中サイズ
 - `lg`: 大サイズ
@@ -99,6 +104,7 @@ import { Input } from '@shinju-date/ui'
 Radix UIを基盤としたモーダルダイアログコンポーネント。
 
 **コンポーネント:**
+
 - `Dialog`: ルートコンポーネント
 - `DialogTrigger`: トリガーボタン
 - `DialogPortal`: ポータル
@@ -121,7 +127,7 @@ import {
   Button,
 } from '@shinju-date/ui'
 
-<Dialog>
+;<Dialog>
   <DialogTrigger asChild>
     <Button>ダイアログを開く</Button>
   </DialogTrigger>
@@ -129,9 +135,7 @@ import {
     <DialogOverlay />
     <DialogContent>
       <DialogTitle>タイトル</DialogTitle>
-      <DialogDescription>
-        これはダイアログの説明文です。
-      </DialogDescription>
+      <DialogDescription>これはダイアログの説明文です。</DialogDescription>
       <DialogClose asChild>
         <Button variant="secondary">閉じる</Button>
       </DialogClose>
@@ -145,11 +149,13 @@ import {
 コンテンツ用のコンテナコンポーネント。
 
 **バリアント:**
+
 - `default` (デフォルト): グレー背景のカード
 - `elevated`: 白背景で影付きのカード
 - `outlined`: 背景色なしでボーダーのみのカード
 
 **サブコンポーネント:**
+
 - `CardHeader`: カードのヘッダー部分
 - `CardContent`: カードのメインコンテンツ
 - `CardFooter`: カードのフッター部分
@@ -157,7 +163,7 @@ import {
 ```tsx
 import { Card, CardHeader, CardContent, CardFooter } from '@shinju-date/ui'
 
-<Card variant="elevated">
+;<Card variant="elevated">
   <CardHeader>
     <h2>カードタイトル</h2>
   </CardHeader>

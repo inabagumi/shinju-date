@@ -163,7 +163,7 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex flex-col">
       <form
-        className="flex items-center border-774-nevy-200 border-b dark:border-zinc-700"
+        className="flex items-center border-b border-774-nevy-200 dark:border-zinc-700"
         onSubmit={handleSubmit}
       >
         <Search className="ml-4 size-5 text-774-nevy-400 dark:text-774-nevy-300" />
@@ -181,7 +181,7 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
         />
 
         <div className="mr-4 flex items-center gap-2">
-          <kbd className="hidden rounded border border-774-nevy-200 bg-774-nevy-100 px-2 py-1 font-mono text-774-nevy-500 text-xs sm:inline-block dark:border-zinc-700 dark:bg-zinc-800 dark:text-774-nevy-300">
+          <kbd className="hidden rounded border border-774-nevy-200 bg-774-nevy-100 px-2 py-1 font-mono text-xs text-774-nevy-500 sm:inline-block dark:border-zinc-700 dark:bg-zinc-800 dark:text-774-nevy-300">
             ESC
           </kbd>
         </div>
@@ -190,7 +190,7 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
       {/* Search suggestions */}
       <div>
         {isLoadingSuggestions ? (
-          <div className="p-8 text-center text-774-nevy-400 text-sm dark:text-774-nevy-400">
+          <div className="p-8 text-center text-sm text-774-nevy-400 dark:text-774-nevy-400">
             読み込み中...
           </div>
         ) : suggestions && suggestions.length > 0 ? (
@@ -214,13 +214,13 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
             </div>
           </div>
         ) : query ? (
-          <div className="p-8 text-center text-774-nevy-400 text-sm dark:text-774-nevy-400">
+          <div className="p-8 text-center text-sm text-774-nevy-400 dark:text-774-nevy-400">
             Enterキーを押して「{query}」を検索
           </div>
         ) : (
           <div>
-            <div className="border-774-nevy-200 border-b px-4 py-3 dark:border-zinc-700">
-              <h2 className="text-774-nevy-500 text-sm dark:text-774-nevy-400">
+            <div className="border-b border-774-nevy-200 px-4 py-3 dark:border-zinc-700">
+              <h2 className="text-sm text-774-nevy-500 dark:text-774-nevy-400">
                 おすすめの検索キーワード
               </h2>
             </div>

@@ -68,7 +68,7 @@ export function VideoCardSkeleton() {
       </div>
 
       <div className="grid grow grid-rows-[1fr_auto] gap-6 p-2.5">
-        <h3 className="break-all font-semibold">
+        <h3 className="font-semibold break-all">
           <span className="inline-block h-4 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
           <span className="inline-block h-4 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
           <span className="inline-block h-4 w-28 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
@@ -134,7 +134,7 @@ export default function VideoCard({
         {duration.total({
           unit: 'second',
         }) > 0 && (
-          <span className="absolute bottom-0 left-0 m-2 inline-block rounded-md bg-slate-800/80 px-1.5 py-0.5 font-semibold text-white text-xs">
+          <span className="absolute bottom-0 left-0 m-2 inline-block rounded-md bg-slate-800/80 px-1.5 py-0.5 text-xs font-semibold text-white">
             <time dateTime={duration.toString()}>
               {formatDuration(duration)}
             </time>
@@ -142,7 +142,7 @@ export default function VideoCard({
         )}
         <div className="absolute top-0 right-0 m-2 flex flex-col items-end gap-1">
           <LiveNow
-            className="inline-block rounded-md bg-774-pink-600 px-1.5 py-0.5 font-semibold text-774-pink-50 text-xs"
+            className="inline-block rounded-md bg-774-pink-600 px-1.5 py-0.5 text-xs font-semibold text-774-pink-50"
             status={value.status}
           />
           <PlatformBadge platform={value.platform} />
@@ -152,7 +152,7 @@ export default function VideoCard({
       <div className="grid grow grid-rows-[1fr_auto] gap-6 p-2.5">
         <h3
           className={twMerge(
-            'line-clamp-3 break-all font-semibold',
+            'line-clamp-3 font-semibold break-all',
             compact && 'line-clamp-2 text-sm',
           )}
           title={value.title}

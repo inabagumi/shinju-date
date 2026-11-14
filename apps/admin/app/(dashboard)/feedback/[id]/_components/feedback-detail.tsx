@@ -81,14 +81,14 @@ export function FeatureRequestDetail({
     <div className="space-y-6">
       {/* Basic Information */}
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 font-semibold text-xl">基本情報</h2>
+        <h2 className="mb-4 text-xl font-semibold">基本情報</h2>
         <dl className="space-y-3">
           <div>
-            <dt className="font-medium text-gray-600 text-sm">送信日時</dt>
+            <dt className="text-sm font-medium text-gray-600">送信日時</dt>
             <dd className="mt-1">{createdAtFormatted}</dd>
           </div>
           <div>
-            <dt className="font-medium text-gray-600 text-sm">更新日時</dt>
+            <dt className="text-sm font-medium text-gray-600">更新日時</dt>
             <dd className="mt-1">{updatedAtFormatted}</dd>
           </div>
         </dl>
@@ -96,7 +96,7 @@ export function FeatureRequestDetail({
 
       {/* Message */}
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 font-semibold text-xl">機能要望内容</h2>
+        <h2 className="mb-4 text-xl font-semibold">機能要望内容</h2>
         <div className="prose max-w-none rounded bg-gray-50 p-4">
           <ReactMarkdown>{featureRequest.message}</ReactMarkdown>
         </div>
@@ -104,10 +104,10 @@ export function FeatureRequestDetail({
 
       {/* Status */}
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 font-semibold text-xl">ステータス管理</h2>
+        <h2 className="mb-4 text-xl font-semibold">ステータス管理</h2>
         <form action={updateStatusAction} className="space-y-4">
           <div>
-            <label className="block font-medium text-sm" htmlFor="status">
+            <label className="block text-sm font-medium" htmlFor="status">
               対応ステータス
             </label>
             <select
@@ -126,17 +126,17 @@ export function FeatureRequestDetail({
             ステータスを更新
           </SubmitButton>
           {statusState?.success === false && (
-            <p className="text-red-600 text-sm">{statusState.error}</p>
+            <p className="text-sm text-red-600">{statusState.error}</p>
           )}
           {statusState?.success === true && (
-            <p className="text-green-600 text-sm">更新しました</p>
+            <p className="text-sm text-green-600">更新しました</p>
           )}
         </form>
       </div>
 
       {/* Read Status */}
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 font-semibold text-xl">既読管理</h2>
+        <h2 className="mb-4 text-xl font-semibold">既読管理</h2>
         <form action={markAsReadAction} className="space-y-4">
           <div className="flex items-center gap-4">
             <span className="text-sm">
@@ -152,20 +152,20 @@ export function FeatureRequestDetail({
             </SubmitButton>
           </div>
           {readState?.success === false && (
-            <p className="text-red-600 text-sm">{readState.error}</p>
+            <p className="text-sm text-red-600">{readState.error}</p>
           )}
           {readState?.success === true && (
-            <p className="text-green-600 text-sm">更新しました</p>
+            <p className="text-sm text-green-600">更新しました</p>
           )}
         </form>
       </div>
 
       {/* Admin Memo */}
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 font-semibold text-xl">管理メモ</h2>
+        <h2 className="mb-4 text-xl font-semibold">管理メモ</h2>
         <form action={updateMemoAction} className="space-y-4">
           <div>
-            <label className="block font-medium text-sm" htmlFor="admin_memo">
+            <label className="block text-sm font-medium" htmlFor="admin_memo">
               メモ（Markdown対応）
             </label>
             <Textarea
@@ -180,17 +180,17 @@ export function FeatureRequestDetail({
             メモを保存
           </SubmitButton>
           {memoState?.success === false && (
-            <p className="text-red-600 text-sm">{memoState.error}</p>
+            <p className="text-sm text-red-600">{memoState.error}</p>
           )}
           {memoState?.success === true && (
-            <p className="text-green-600 text-sm">保存しました</p>
+            <p className="text-sm text-green-600">保存しました</p>
           )}
         </form>
 
         {/* Preview */}
         {featureRequest.admin_memo && (
           <div className="mt-6">
-            <h3 className="mb-2 font-medium text-sm">プレビュー</h3>
+            <h3 className="mb-2 text-sm font-medium">プレビュー</h3>
             <div className="prose max-w-none rounded bg-gray-50 p-4 text-sm">
               <ReactMarkdown>{featureRequest.admin_memo}</ReactMarkdown>
             </div>

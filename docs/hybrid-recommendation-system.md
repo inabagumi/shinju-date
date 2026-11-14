@@ -46,6 +46,7 @@
 ```
 
 週の月曜日の計算：
+
 ```typescript
 function getMondayOfWeek(dateTime: Temporal.ZonedDateTime): string {
   const dayOfWeek = dateTime.dayOfWeek // 1 = Monday, 7 = Sunday
@@ -103,8 +104,8 @@ function getMondayOfWeek(dateTime: Temporal.ZonedDateTime): string {
 ### 時間減衰の重み
 
 ```typescript
-const WEIGHT_DAILY = 10.0   // 日次データの重み
-const WEIGHT_WEEKLY = 5.0   // 週次データの重み
+const WEIGHT_DAILY = 10.0 // 日次データの重み
+const WEIGHT_WEEKLY = 5.0 // 週次データの重み
 const WEIGHT_ALL_TIME = 1.0 // 全期間データの重み
 ```
 
@@ -150,6 +151,7 @@ ZRANGE queries:auto_recommended 0 -1 WITHSCORES REV
 ### 3. 手動オススメを管理
 
 管理画面（`/recommended-queries`）にアクセスして：
+
 - 新しいクエリを追加
 - 既存のクエリを削除
 - 手動/自動のクエリリストを確認

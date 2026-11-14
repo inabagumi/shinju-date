@@ -271,11 +271,13 @@ screen.getByClassName('email-input')
 **解決方法**:
 
 1. `@vitejs/plugin-react` がインストールされているか確認
+
    ```bash
    pnpm list @vitejs/plugin-react
    ```
 
 2. `vitest.config.ts` で plugin が設定されているか確認
+
    ```typescript
    import react from '@vitejs/plugin-react'
 
@@ -286,6 +288,7 @@ screen.getByClassName('email-input')
    ```
 
 3. 依存関係を再インストール
+
    ```bash
    pnpm install
    ```

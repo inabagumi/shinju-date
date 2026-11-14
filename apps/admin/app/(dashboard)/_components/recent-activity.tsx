@@ -11,7 +11,7 @@ export async function RecentActivity() {
 
   return (
     <div className="rounded-lg bg-white p-6 shadow-md">
-      <h2 className="mb-4 font-semibold text-xl">最近のアクティビティ</h2>
+      <h2 className="mb-4 text-xl font-semibold">最近のアクティビティ</h2>
       {logs.length === 0 ? (
         <p className="text-gray-500">最近のアクティビティはありません。</p>
       ) : (

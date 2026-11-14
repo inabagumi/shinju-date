@@ -62,7 +62,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
         <div className="flex flex-col gap-4 rounded-lg border border-774-blue-300 bg-774-blue-50 p-4 sm:flex-row sm:items-end">
           <div className="flex-1">
             <label
-              className="mb-2 block font-medium text-sm"
+              className="mb-2 block text-sm font-medium"
               htmlFor="new-query"
             >
               新しい手動クエリを追加
@@ -110,7 +110,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
 
       {/* Manual Queries List */}
       <div className="space-y-3">
-        <h2 className="font-semibold text-lg">
+        <h2 className="text-lg font-semibold">
           手動追加クエリ ({manualQueries.length}件)
         </h2>
         {filteredManualQueries.length === 0 ? (
@@ -155,10 +155,10 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
 
       {/* Auto Queries List */}
       <div className="space-y-3">
-        <h2 className="font-semibold text-lg">
+        <h2 className="text-lg font-semibold">
           自動選出クエリ ({autoQueries.length}件)
         </h2>
-        <p className="text-gray-600 text-sm">
+        <p className="text-sm text-gray-600">
           検索トレンドに基づいて自動的に選出されたクエリです。スコアは時間減衰を考慮した重み付けスコアです。
         </p>
         {filteredAutoQueries.length === 0 ? (
@@ -182,7 +182,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
                 {filteredAutoQueries.map(({ query, score }) => (
                   <tr className="hover:bg-774-blue-50" key={query}>
                     <td className="px-4 py-3">{query}</td>
-                    <td className="px-4 py-3 text-right font-mono text-gray-600 text-sm">
+                    <td className="px-4 py-3 text-right font-mono text-sm text-gray-600">
                       {score.toFixed(2)}
                     </td>
                   </tr>

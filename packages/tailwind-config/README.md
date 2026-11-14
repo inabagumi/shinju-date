@@ -143,12 +143,14 @@
 一般的な Tailwind カラー（`blue-*`, `purple-*`, `indigo-*`, `pink-*`）の代わりに、必ずテーマカラーを使用してください。
 
 ❌ 避けるべき:
+
 ```tsx
 <div className="bg-blue-600">ボタン</div>
 <p className="text-purple-600">テキスト</p>
 ```
 
 ✅ 推奨:
+
 ```tsx
 <div className="bg-secondary-blue">ボタン</div>
 <p className="text-774-nevy-600">テキスト</p>
@@ -234,7 +236,9 @@
 
 ```tsx
 // ✅ 理由を明記
-<div className="bg-orange-500"> {/* YouTube のブランドカラー */}
+;<div className="bg-orange-500">
+  {' '}
+  {/* YouTube のブランドカラー */}
   YouTube
 </div>
 ```

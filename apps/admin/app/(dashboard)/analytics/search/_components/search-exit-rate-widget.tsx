@@ -67,14 +67,14 @@ function SearchExitRateWidgetComponent({
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-semibold text-xl">
+        <h2 className="text-xl font-semibold">
           検索からの離脱率
           {selectedDate ? (
-            <span className="ml-2 text-774-blue-600 text-sm">
+            <span className="ml-2 text-sm text-774-blue-600">
               ({selectedDate})
             </span>
           ) : (
-            <span className="ml-2 text-green-600 text-sm">
+            <span className="ml-2 text-sm text-green-600">
               ({dateRange.startDate}〜{dateRange.endDate})
             </span>
           )}
@@ -86,7 +86,7 @@ function SearchExitRateWidgetComponent({
         />
       </div>
 
-      <p className="mb-4 text-gray-600 text-sm">
+      <p className="mb-4 text-sm text-gray-600">
         検索結果を一度もクリックせずに離脱した割合をキーワードごとに表示します。
         離脱率が高いキーワードは、検索結果がユーザーの期待と乖離している可能性があります。
       </p>
@@ -98,22 +98,22 @@ function SearchExitRateWidgetComponent({
               className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
               key={item.keyword}
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-774-blue-100 font-semibold text-774-blue-600 text-sm">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-774-blue-100 text-sm font-semibold text-774-blue-600">
                 {index + 1}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{item.keyword}</p>
-                <p className="text-gray-500 text-xs">
+                <p className="text-xs text-gray-500">
                   検索回数: {item.searchCount}
                 </p>
               </div>
               <div className="shrink-0 text-right">
                 <div
-                  className={`inline-block rounded-full px-2 py-1 font-semibold text-xs ${getExitRateStyle(item.exitRate)}`}
+                  className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${getExitRateStyle(item.exitRate)}`}
                 >
                   {item.exitRate.toFixed(1)}%
                 </div>
-                <p className="mt-1 text-gray-500 text-xs">
+                <p className="mt-1 text-xs text-gray-500">
                   {getExitRateLabel(item.exitRate)}
                 </p>
               </div>
@@ -124,7 +124,7 @@ function SearchExitRateWidgetComponent({
         <p className="py-8 text-center text-gray-500">データがありません</p>
       )}
 
-      <div className="mt-4 text-gray-600 text-xs">
+      <div className="mt-4 text-xs text-gray-600">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <strong>評価基準:</strong>

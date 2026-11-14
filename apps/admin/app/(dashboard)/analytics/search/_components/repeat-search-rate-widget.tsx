@@ -74,21 +74,21 @@ function RepeatSearchRateWidgetComponent({
   return (
     <div>
       <div className="mb-4">
-        <h2 className="font-semibold text-xl">
+        <h2 className="text-xl font-semibold">
           リピート検索率
           {selectedDate ? (
-            <span className="ml-2 text-774-blue-600 text-sm">
+            <span className="ml-2 text-sm text-774-blue-600">
               ({selectedDate})
             </span>
           ) : (
-            <span className="ml-2 text-green-600 text-sm">
+            <span className="ml-2 text-sm text-green-600">
               ({dateRange.startDate}〜{dateRange.endDate})
             </span>
           )}
         </h2>
       </div>
 
-      <p className="mb-4 text-gray-600 text-sm">
+      <p className="mb-4 text-sm text-gray-600">
         1セッションあたりの平均検索回数を表示します。
         ユーザーエンゲージメントを測る指標として活用できます。
       </p>
@@ -97,20 +97,20 @@ function RepeatSearchRateWidgetComponent({
         className={`rounded-lg border-2 p-6 ${engagementStyles[engagementLevel]}`}
       >
         <div className="text-center">
-          <div className="font-bold text-4xl">{repeatRate.toFixed(1)}</div>
-          <div className="mt-2 font-medium text-sm">
+          <div className="text-4xl font-bold">{repeatRate.toFixed(1)}</div>
+          <div className="mt-2 text-sm font-medium">
             回/セッション ({engagementLabels[engagementLevel]})
           </div>
         </div>
       </div>
 
       <div className="mt-4 rounded-lg bg-gray-50 p-4">
-        <p className="text-gray-700 text-sm">
+        <p className="text-sm text-gray-700">
           <strong>解釈:</strong> {engagementDescriptions[engagementLevel]}
         </p>
       </div>
 
-      <div className="mt-4 text-gray-600 text-xs">
+      <div className="mt-4 text-xs text-gray-600">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <strong>参考基準:</strong>

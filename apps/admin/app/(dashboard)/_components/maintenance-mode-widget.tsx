@@ -63,7 +63,7 @@ export function MaintenanceModeWidget({
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-semibold text-xl">メンテナンスモード</h2>
+        <h2 className="text-xl font-semibold">メンテナンスモード</h2>
       </div>
 
       <div className="space-y-4">
@@ -80,7 +80,7 @@ export function MaintenanceModeWidget({
                 {isEnabled ? 'ON' : 'OFF'}
               </span>
             </p>
-            <p className="mt-1 text-gray-600 text-sm">
+            <p className="mt-1 text-sm text-gray-600">
               {isEnabled
                 ? '一般ユーザーのアクセスとバッチ処理が停止されています'
                 : '通常運転中です'}
@@ -103,12 +103,12 @@ export function MaintenanceModeWidget({
                 ? 'メンテナンスモードを有効にしますか?'
                 : 'メンテナンスモードを無効にしますか?'}
             </p>
-            <p className="mb-4 text-gray-700 text-sm">
+            <p className="mb-4 text-sm text-gray-700">
               {pendingAction === 'enable'
                 ? '一般ユーザーのアクセスがメンテナンスページに切り替わり、バッチ処理が停止されます。'
                 : '一般ユーザーのアクセスとバッチ処理が再開されます。'}
             </p>
-            {error && <p className="mb-4 text-red-600 text-sm">{error}</p>}
+            {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
             <div className="flex gap-2">
               <Button
                 disabled={isPending}
@@ -131,8 +131,8 @@ export function MaintenanceModeWidget({
         )}
 
         <div className="rounded-lg bg-gray-50 p-4">
-          <p className="mb-2 font-medium text-gray-900 text-sm">注意事項</p>
-          <ul className="list-inside list-disc space-y-1 text-gray-700 text-sm">
+          <p className="mb-2 text-sm font-medium text-gray-900">注意事項</p>
+          <ul className="list-inside list-disc space-y-1 text-sm text-gray-700">
             <li>管理画面は通常通りアクセス可能です</li>
             <li>データベース移行などの重要な作業時に使用してください</li>
             <li>作業完了後は必ず無効化してください</li>

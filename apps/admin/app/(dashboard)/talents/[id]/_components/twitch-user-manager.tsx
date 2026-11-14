@@ -91,10 +91,10 @@ export function TwitchUserManager({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-medium text-gray-900 text-lg leading-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
                 Twitchユーザー管理
               </h3>
-              <p className="mt-1 max-w-2xl text-gray-500 text-sm">
+              <p className="mt-1 max-w-2xl text-sm text-gray-500">
                 タレントに紐づけられたTwitchユーザーの追加・削除
               </p>
             </div>
@@ -120,7 +120,7 @@ export function TwitchUserManager({
                     <Form action={handleAddUser} className="space-y-4">
                       <input name="talent_id" type="hidden" value={talentId} />
                       <FormField name="twitch_user">
-                        <Label className="block font-medium text-sm">
+                        <Label className="block text-sm font-medium">
                           ログイン名 / ユーザーID / URL
                         </Label>
                         <Input
@@ -128,12 +128,12 @@ export function TwitchUserManager({
                           placeholder="login または https://twitch.tv/login"
                           required
                         />
-                        <p className="mt-1 text-gray-500 text-xs">
+                        <p className="mt-1 text-xs text-gray-500">
                           例: example、https://www.twitch.tv/example、123456789
                         </p>
-                        <ErrorMessage className="mt-1 text-red-600 text-sm" />
+                        <ErrorMessage className="mt-1 text-sm text-red-600" />
                       </FormField>
-                      <GenericErrorMessage className="text-red-600 text-sm" />
+                      <GenericErrorMessage className="text-sm text-red-600" />
                       <div className="flex justify-end gap-2">
                         <DialogClose asChild>
                           <UIButton type="button" variant="secondary">
@@ -162,25 +162,25 @@ export function TwitchUserManager({
                   <div className="min-w-0 flex-1">
                     <div className="space-y-2">
                       <div>
-                        <span className="font-medium text-gray-700 text-xs">
+                        <span className="text-xs font-medium text-gray-700">
                           表示名:
                         </span>
                         <p className="mt-1 text-sm">{user.name || '未取得'}</p>
-                        <p className="mt-1 text-gray-500 text-xs">
+                        <p className="mt-1 text-xs text-gray-500">
                           Twitch APIから自動更新される表示名
                         </p>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-700 text-xs">
+                        <span className="text-xs font-medium text-gray-700">
                           ユーザーID:
                         </span>
-                        <code className="mt-1 block break-all rounded bg-gray-100 px-2 py-1 font-mono text-xs">
+                        <code className="mt-1 block rounded bg-gray-100 px-2 py-1 font-mono text-xs break-all">
                           {user.twitch_user_id}
                         </code>
                       </div>
                       {user.twitch_login_name && (
                         <div>
-                          <span className="font-medium text-gray-700 text-xs">
+                          <span className="text-xs font-medium text-gray-700">
                             ログイン名:
                           </span>
                           <p className="mt-1 text-xs">
@@ -191,7 +191,7 @@ export function TwitchUserManager({
                       {user.twitch_login_name && (
                         <div>
                           <a
-                            className="inline-flex items-center text-774-blue-600 text-sm hover:text-774-blue-800"
+                            className="inline-flex items-center text-sm text-774-blue-600 hover:text-774-blue-800"
                             href={`https://www.twitch.tv/${encodeURIComponent(user.twitch_login_name)}`}
                             rel="noopener noreferrer"
                             target="_blank"
@@ -220,7 +220,7 @@ export function TwitchUserManager({
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-sm">
+            <p className="text-sm text-gray-500">
               登録されているTwitchユーザーがありません
             </p>
           )}

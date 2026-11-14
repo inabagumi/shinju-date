@@ -27,7 +27,7 @@ export default function SearchAnalyticsPage({
 
   return (
     <div className="mx-auto max-w-7xl p-6">
-      <h1 className="mb-6 font-bold text-3xl">検索アナリティクス</h1>
+      <h1 className="mb-6 text-3xl font-bold">検索アナリティクス</h1>
 
       <div className="mb-6">
         <Suspense fallback={<DateRangePickerSkeleton />}>
@@ -37,7 +37,7 @@ export default function SearchAnalyticsPage({
 
       {/* Search Volume Chart */}
       <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 font-semibold text-xl">検索ボリューム</h2>
+        <h2 className="mb-4 text-xl font-semibold">検索ボリューム</h2>
         <Suspense fallback={<ChartSkeleton />}>
           <SearchVolumeChart searchParams={parsedSearchParams} />
         </Suspense>
@@ -45,7 +45,7 @@ export default function SearchAnalyticsPage({
 
       {/* New Search Quality Metrics Section */}
       <div className="mb-6">
-        <h2 className="mb-4 font-semibold text-2xl text-774-blue-700">
+        <h2 className="mb-4 text-2xl font-semibold text-774-blue-700">
           検索品質指標
         </h2>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -71,7 +71,7 @@ export default function SearchAnalyticsPage({
 
       {/* Existing Analytics Section */}
       <div className="mb-6">
-        <h2 className="mb-4 font-semibold text-2xl text-gray-700">
+        <h2 className="mb-4 text-2xl font-semibold text-gray-700">
           従来の検索指標
         </h2>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

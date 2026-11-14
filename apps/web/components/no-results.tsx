@@ -15,13 +15,13 @@ export default function NoResults({
 }) {
   return (
     <div className="space-y-8 px-8 py-16 text-center">
-      {title && <h1 className="font-bold text-2xl">{title}</h1>}
+      {title && <h1 className="text-2xl font-bold">{title}</h1>}
 
       <p className="text-balance">{message}</p>
 
       {recommendedQueries.length > 0 && (
         <div className="mx-auto max-w-2xl">
-          <h2 className="mb-4 text-774-nevy-500 text-sm dark:text-774-nevy-400">
+          <h2 className="mb-4 text-sm text-774-nevy-500 dark:text-774-nevy-400">
             おすすめの検索キーワード
           </h2>
           <RecommendedQueries queries={recommendedQueries} />

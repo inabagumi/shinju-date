@@ -18,6 +18,7 @@
 ### @faker-js/fakerとの統合
 
 `@msw/data`のCollection定義内で`@faker-js/faker`を使用することで:
+
 - リアルで多様なテストデータを生成
 - 名前、日付、UUID、URLなどを自動生成
 - 各テスト実行で異なるデータを使用
@@ -40,8 +41,12 @@ export const videos = new Collection({
   }),
 })
 
-export const talents = new Collection({ /* ... */ })
-export const thumbnails = new Collection({ /* ... */ })
+export const talents = new Collection({
+  /* ... */
+})
+export const thumbnails = new Collection({
+  /* ... */
+})
 
 // ネイティブリレーション定義
 export function defineCollectionRelations() {
@@ -51,13 +56,13 @@ export function defineCollectionRelations() {
     foreignKey: 'id',
     type: 'one-of',
   })
-  
+
   videos.relate('thumbnail', thumbnails, {
     field: 'thumbnail_id',
     foreignKey: 'id',
     type: 'one-of',
   })
-  
+
   // One-to-many relations
   talents.relate('videos', videos, {
     field: 'id',
@@ -69,7 +74,7 @@ export function defineCollectionRelations() {
 // Seeding (リレーションも自動設定)
 export async function seedCollections() {
   defineCollectionRelations() // リレーション定義
-  
+
   await videos.createMany(10, () => ({
     id: faker.string.uuid(),
     title: faker.helpers.arrayElement([
@@ -83,8 +88,8 @@ export async function seedCollections() {
 
 // 使用例 - ネイティブリレーショントラバーサル
 const video = await videos.findFirst()
-console.log(video.talent.name)      // 自動解決 - find()不要!
-console.log(video.thumbnail.path)   // 自動解決 - find()不要!
+console.log(video.talent.name) // 自動解決 - find()不要!
+console.log(video.thumbnail.path) // 自動解決 - find()不要!
 ```
 
 ## 削減されたコード量
@@ -92,6 +97,7 @@ console.log(video.thumbnail.path)   // 自動解決 - find()不要!
 ### 合計: **760行以上のハードコーディング・手動操作を削減**
 
 #### supabase.ts
+
 - **削減前**: 約1,000行（大量の手動オブジェクト定義 + 手動リレーション解決）
 - **削減後**: 約330行（@msw/dataとネイティブリレーション使用）
 - **削減量**: **670行以上**
@@ -99,6 +105,7 @@ console.log(video.thumbnail.path)   // 自動解決 - find()不要!
   - 200行の手動`find()`操作削除
 
 Before: 140行の手動定義 + 200行の手動リレーション解決
+
 ```typescript
 // 手動データ定義
 const mockVideos: Tables<'videos'>[] = [
@@ -118,6 +125,7 @@ const thumbnail = mockThumbnails.find((t) => t.id === item.thumbnail_id)
 ```
 
 After: @msw/dataによる構造化 + ネイティブリレーション
+
 ```typescript
 // Collections定義（collections.ts）- 1回のみ
 export const videos = new Collection({
@@ -161,6 +169,7 @@ console.log(firstVideo.thumbnail.path)   // 自動解決!
 ```
 
 #### upstash.ts
+
 - **削減前**: 約310行
 - **削減後**: 約220行
 - **削減量**: **90行以上**
@@ -176,9 +185,7 @@ console.log(firstVideo.thumbnail.path)   // 自動解決!
 ```typescript
 // applySelect関数内で手動解決
 if (relationName === 'thumbnails' && item.thumbnail_id) {
-  const thumbnail = mockThumbnails.find(
-    (t) => t.id === item.thumbnail_id,
-  )
+  const thumbnail = mockThumbnails.find((t) => t.id === item.thumbnail_id)
   if (thumbnail) {
     // ... 手動でフィールドをコピー
     result[aliasName] = nestedResult
@@ -226,12 +233,14 @@ if (relationKey && item[relationKey]) {
 ## 改善された保守性
 
 ### Before（手動定義）
+
 - 新しいフィールドの追加: 10個のオブジェクトを全て更新する必要がある
 - データの変更: 各オブジェクトを個別に編集
 - 関連データの作成: IDの整合性を手動で管理
 - リレーション解決: 各テーブルで手動`find()`を実装
 
 ### After（@msw/data + Zod + ネイティブリレーション）
+
 - 新しいフィールドの追加: Zodスキーマを1箇所更新するだけ
 - データの変更: `seedCollections()`内のファクトリー関数で簡単にカスタマイズ
 - 関連データの作成: IDを自動的に関連付け
@@ -250,7 +259,13 @@ export function createVideoFactory(
   // TypeScriptが全フィールドの存在をチェック
   return {
     created_at: faker.date.past().toISOString(),
-    deleted_at: faker.helpers.arrayElement([null, null, null, null, faker.date.recent().toISOString()]),
+    deleted_at: faker.helpers.arrayElement([
+      null,
+      null,
+      null,
+      null,
+      faker.date.recent().toISOString(),
+    ]),
     // ... 全フィールドが定義される
     ...overrides,
   }
@@ -263,7 +278,8 @@ export function createVideoFactory(
 
 ```typescript
 // Before: 型アサーション（実行時チェックなし）
-const data = (mockRedisStore.get(key) as Array<{ member: string; score: number }>) || []
+const data =
+  (mockRedisStore.get(key) as Array<{ member: string; score: number }>) || []
 
 // After: 型ガード（実行時チェックあり）
 const rawData = mockRedisStore.get(key)
@@ -273,6 +289,7 @@ const data = Array.isArray(rawData) ? rawData : []
 ## データの多様性
 
 ### Before
+
 ```typescript
 // 固定値のみ
 const mockVideos = [
@@ -283,6 +300,7 @@ const mockVideos = [
 ```
 
 ### After
+
 ```typescript
 // Fakerによるリアルで多様なデータ
 const videos = createManyVideos(100)
@@ -321,6 +339,7 @@ const mockNewTable = createManyNewTable(10)
 ## 利用可能なファクトリー
 
 ### Supabase Tables
+
 - `createVideoFactory()` / `createManyVideos(count)`
 - `createTalentFactory()` / `createManyTalents(count)`
 - `createThumbnailFactory()` / `createManyThumbnails(count)`
@@ -331,10 +350,12 @@ const mockNewTable = createManyNewTable(10)
 - `createYoutubeVideoFactory()` / `createManyYoutubeVideos(count)`
 
 ### Redis Data
+
 - `createRedisDataFactory(dateCount)` - 日付ベースのデータ生成
 - `createCustomRedisData(data)` - カスタムキー/値ペア
 
 ### YouTube API
+
 - `createYoutubeAPIChannelFactory()`
 - `createYoutubeAPIVideoFactory()`
 - `createYoutubeAPIPlaylistItemFactory()`

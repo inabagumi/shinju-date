@@ -50,7 +50,7 @@ export function FeatureRequestList({
       {/* Filters */}
       <div className="flex flex-wrap gap-4">
         <div>
-          <label className="mr-2 font-medium text-sm" htmlFor="status-filter">
+          <label className="mr-2 text-sm font-medium" htmlFor="status-filter">
             ステータス:
           </label>
           <select
@@ -71,7 +71,7 @@ export function FeatureRequestList({
           </select>
         </div>
         <div>
-          <label className="mr-2 font-medium text-sm" htmlFor="read-filter">
+          <label className="mr-2 text-sm font-medium" htmlFor="read-filter">
             既読状態:
           </label>
           <select
@@ -123,7 +123,7 @@ export function FeatureRequestList({
                     </div>
                     <p className="line-clamp-2 text-gray-700">{item.message}</p>
                   </div>
-                  <div className="text-right text-gray-500 text-sm">
+                  <div className="text-right text-sm text-gray-500">
                     {formattedDate}
                   </div>
                 </div>

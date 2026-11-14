@@ -29,9 +29,7 @@ pnpm add @shinju-date/composable-fetch
 import { composeFetch, withRetry } from '@shinju-date/composable-fetch'
 
 // Create a fetch function with retry middleware
-const retryFetch = composeFetch(
-  (next) => withRetry(next, { retries: 3 })
-)
+const retryFetch = composeFetch((next) => withRetry(next, { retries: 3 }))
 
 // Use like native fetch
 const response = await retryFetch('https://api.example.com/data')
@@ -41,7 +39,11 @@ const data = await response.json()
 ### ETag Caching with Redis
 
 ```typescript
-import { composeFetch, withCache, RedisCacheStorage } from '@shinju-date/composable-fetch'
+import {
+  composeFetch,
+  withCache,
+  RedisCacheStorage,
+} from '@shinju-date/composable-fetch'
 import { Redis } from '@upstash/redis'
 
 // Set up Redis-backed cache storage
@@ -53,9 +55,7 @@ const storage = new RedisCacheStorage({
 })
 
 // Create a fetch function with caching
-const cachedFetch = composeFetch(
-  (next) => withCache(next, { storage })
-)
+const cachedFetch = composeFetch((next) => withCache(next, { storage }))
 
 // First request: fetches from API and caches with ETag
 const response1 = await cachedFetch('https://api.example.com/data')
@@ -68,21 +68,22 @@ const response2 = await cachedFetch('https://api.example.com/data')
 ### Combining Multiple Middlewares
 
 ```typescript
-import { 
-  composeFetch, 
-  withRetry, 
-  withCache, 
-  InMemoryCacheStorage 
+import {
+  composeFetch,
+  withRetry,
+  withCache,
+  InMemoryCacheStorage,
 } from '@shinju-date/composable-fetch'
 
 // Compose multiple middlewares
 // Order matters: retry is outermost, cache is innermost
 const enhancedFetch = composeFetch(
   (next) => withRetry(next, { retries: 3, abortOn404: true }),
-  (next) => withCache(next, { 
-    storage: new InMemoryCacheStorage({ ttl: 300 }),
-    useETag: true 
-  })
+  (next) =>
+    withCache(next, {
+      storage: new InMemoryCacheStorage({ ttl: 300 }),
+      useETag: true,
+    }),
 )
 
 const response = await enhancedFetch('https://api.example.com/data')
@@ -116,10 +117,7 @@ Middlewares are composed from left to right, with the leftmost middleware being 
 // 3. Actual fetch happens
 // 4. withCache processes the response first
 // 5. withRetry processes the response last
-const fetch = composeFetch(
-  withRetry,
-  withCache
-)
+const fetch = composeFetch(withRetry, withCache)
 ```
 
 ## API Reference
@@ -131,21 +129,25 @@ const fetch = composeFetch(
 Composes multiple fetch middlewares into a single fetch function.
 
 **Parameters:**
+
 - `...middlewares`: Variadic parameters of `FetchMiddleware` functions to compose
 
 **Returns:**
+
 - A composed `FetchFunction` with all middlewares applied
 
 **Example:**
+
 ```typescript
 // Compose middlewares by passing them as separate arguments
 const enhancedFetch = composeFetch(
   (next) => withRetry(next, { retries: 3 }),
-  (next) => withCache(next, { storage })
+  (next) => withCache(next, { storage }),
 )
 
 // Or create middleware functions first, then compose
-const retryMiddleware: FetchMiddleware = (next) => withRetry(next, { retries: 3 })
+const retryMiddleware: FetchMiddleware = (next) =>
+  withRetry(next, { retries: 3 })
 const cacheMiddleware: FetchMiddleware = (next) => withCache(next, { storage })
 const enhancedFetch = composeFetch(retryMiddleware, cacheMiddleware)
 ```
@@ -157,11 +159,13 @@ const enhancedFetch = composeFetch(retryMiddleware, cacheMiddleware)
 Middleware that implements ETag-based HTTP caching.
 
 **Options:**
+
 - `storage: CacheStorage` (required): Cache storage backend (Redis, in-memory, etc.)
 - `ttl?: number`: Default TTL in seconds for cached entries
 - `useETag?: boolean`: Whether to use If-None-Match headers (default: `true`)
 
 **Features:**
+
 - Stores responses with `ETag` headers in cache storage
 - Sends `If-None-Match` headers on subsequent requests
 - Returns cached response on `304 Not Modified`
@@ -169,6 +173,7 @@ Middleware that implements ETag-based HTTP caching.
 - Only caches `GET` requests by default
 
 **Example:**
+
 ```typescript
 const cachedFetch = withCache(fetch, {
   storage: new RedisCacheStorage({ redis }),
@@ -178,7 +183,7 @@ const cachedFetch = withCache(fetch, {
 
 // Custom TTL for specific request
 const response = await cachedFetch('https://api.example.com/data', {
-  headers: { 'X-Cache-TTL': '7200' } // 2 hours
+  headers: { 'X-Cache-TTL': '7200' }, // 2 hours
 })
 ```
 
@@ -187,10 +192,12 @@ const response = await cachedFetch('https://api.example.com/data', {
 Middleware that adds automatic retry logic to fetch requests.
 
 **Options:**
+
 - `retries?: number`: Maximum number of retry attempts (default: `5`)
 - `abortOn404?: boolean`: Whether to abort retry on 404 responses (default: `true`)
 
 **Features:**
+
 - Retries failed requests up to a configurable number of times
 - Uses exponential backoff via `p-retry`
 - Aborts retry on 404 responses by default
@@ -198,6 +205,7 @@ Middleware that adds automatic retry logic to fetch requests.
 - Consumes response body on error to reuse socket (Node.js optimization)
 
 **Example:**
+
 ```typescript
 const retryFetch = withRetry(fetch, {
   retries: 3,
@@ -226,11 +234,13 @@ interface CacheStorage {
 Redis-based implementation of `CacheStorage`.
 
 **Options:**
+
 - `redis: RedisLike` (required): Redis client instance
 - `keyPrefix?: string`: Key prefix for all cache entries (default: `"etag:cache:"`)
 - `ttl?: number`: Default TTL in seconds (default: `3600`)
 
 **Example:**
+
 ```typescript
 import { Redis } from '@upstash/redis'
 
@@ -243,6 +253,7 @@ const storage = new RedisCacheStorage({
 ```
 
 **Compatible Redis Clients:**
+
 - `@upstash/redis`
 - `ioredis`
 - Any client implementing the `RedisLike` interface
@@ -252,9 +263,11 @@ const storage = new RedisCacheStorage({
 In-memory implementation of `CacheStorage` for development and testing.
 
 **Options:**
+
 - `ttl?: number`: Default TTL in seconds (default: `3600`)
 
 **Example:**
+
 ```typescript
 const storage = new InMemoryCacheStorage({ ttl: 300 })
 
@@ -272,12 +285,15 @@ storage.clear() // Clear all entries
 Generates a cache key from a Request object or URL string.
 
 **Parameters:**
+
 - `request: Request | string`: The fetch request or URL
 
 **Returns:**
+
 - `string`: A unique cache key in the format `METHOD:URL`
 
 **Example:**
+
 ```typescript
 import { generateCacheKey } from '@shinju-date/composable-fetch'
 
@@ -298,24 +314,27 @@ An **ETag** (Entity Tag) is an HTTP response header that represents a specific v
 ### How It Works
 
 1. **First Request**: Client requests a resource
+
    ```
    GET /api/data HTTP/1.1
    ```
+
    Server responds with:
+
    ```
    HTTP/1.1 200 OK
    ETag: "abc123"
    Content-Length: 1234
-   
-   { "data": "..." }
+      { "data": "..." }
    ```
 
 2. **Subsequent Request**: Client includes the ETag in `If-None-Match`
+
    ```
    GET /api/data HTTP/1.1
    If-None-Match: "abc123"
    ```
-   
+
    - If unchanged: Server responds with `304 Not Modified` (no body)
    - If changed: Server responds with `200 OK` and new data
 
@@ -325,7 +344,7 @@ An **ETag** (Entity Tag) is an HTTP response header that represents a specific v
 ✅ **Lower API Quota Usage**: Many APIs count 304 responses at reduced rates  
 ✅ **Faster Response Times**: Cached data is returned immediately on 304  
 ✅ **Guaranteed Freshness**: Always validates with the server  
-✅ **Automatic Invalidation**: Server decides when data is stale  
+✅ **Automatic Invalidation**: Server decides when data is stale
 
 ### Best Use Cases
 
@@ -335,13 +354,13 @@ An **ETag** (Entity Tag) is an HTTP response header that represents a specific v
 
 ### Comparison with Time-Based Caching
 
-| Feature | ETag-Based | Time-Based (TTL) |
-|---------|-----------|------------------|
-| Validation | Always current | May serve stale data |
-| Bandwidth | Minimal (304s) | Full response every time |
-| API Quota | Reduced | Full quota usage |
-| Implementation | Automatic | Requires TTL tuning |
-| Freshness | Guaranteed | Best-effort |
+| Feature        | ETag-Based     | Time-Based (TTL)         |
+| -------------- | -------------- | ------------------------ |
+| Validation     | Always current | May serve stale data     |
+| Bandwidth      | Minimal (304s) | Full response every time |
+| API Quota      | Reduced        | Full quota usage         |
+| Implementation | Automatic      | Requires TTL tuning      |
+| Freshness      | Guaranteed     | Best-effort              |
 
 ## Advanced Usage
 
@@ -360,18 +379,18 @@ const withLogging: FetchMiddleware<LoggingOptions> = (next, options = {}) => {
   return async (input, init) => {
     const start = Date.now()
     const url = typeof input === 'string' ? input : input.url
-    
+
     console.log(`[Fetch] ${init?.method || 'GET'} ${url}`)
-    
+
     const response = await next(input, init)
-    
+
     const duration = Date.now() - start
     console.log(`[Fetch] ${response.status} in ${duration}ms`)
-    
+
     if (options.verbose) {
       console.log(`[Fetch] Headers:`, response.headers)
     }
-    
+
     return response
   }
 }
@@ -380,7 +399,7 @@ const withLogging: FetchMiddleware<LoggingOptions> = (next, options = {}) => {
 const enhancedFetch = composeFetch(
   (next) => withLogging(next, { verbose: true }),
   (next) => withRetry(next),
-  (next) => withCache(next, { storage })
+  (next) => withCache(next, { storage }),
 )
 ```
 
@@ -389,18 +408,18 @@ const enhancedFetch = composeFetch(
 Control cache TTL on a per-request basis:
 
 ```typescript
-const cachedFetch = composeFetch(
-  (next) => withCache(next, { 
+const cachedFetch = composeFetch((next) =>
+  withCache(next, {
     storage,
-    ttl: 3600 // Default 1 hour
-  })
+    ttl: 3600, // Default 1 hour
+  }),
 )
 
 // Override TTL for this specific request
 const response = await cachedFetch('https://api.example.com/data', {
   headers: {
-    'X-Cache-TTL': '7200' // Cache for 2 hours instead
-  }
+    'X-Cache-TTL': '7200', // Cache for 2 hours instead
+  },
 })
 ```
 
@@ -429,7 +448,7 @@ await storage.set(
     status: 200,
     statusText: 'OK',
   },
-  3600
+  3600,
 )
 ```
 
@@ -454,22 +473,20 @@ import { InMemoryCacheStorage } from '@shinju-date/composable-fetch'
 
 describe('My API tests', () => {
   let storage: InMemoryCacheStorage
-  
+
   beforeEach(() => {
     storage = new InMemoryCacheStorage()
   })
-  
+
   afterEach(() => {
     storage.clear() // Clean up between tests
   })
-  
+
   it('should cache responses', async () => {
-    const enhancedFetch = composeFetch(
-      (next) => withCache(next, { storage })
-    )
-    
+    const enhancedFetch = composeFetch((next) => withCache(next, { storage }))
+
     // ... test implementation
-    
+
     expect(storage.size()).toBe(1) // Verify cache entry
   })
 })
@@ -521,14 +538,13 @@ const response = await retryableFetch('https://api.example.com/data')
 import { composeFetch, withRetry } from '@shinju-date/composable-fetch'
 
 // Create once, reuse everywhere
-const retryFetch = composeFetch(
-  (next) => withRetry(next, { retries: 5 })
-)
+const retryFetch = composeFetch((next) => withRetry(next, { retries: 5 }))
 
 const response = await retryFetch('https://api.example.com/data')
 ```
 
 The new version offers the same retry functionality plus:
+
 - Configurable retry behavior
 - Composability with other middlewares
 - Better type safety
@@ -572,6 +588,7 @@ For `InMemoryCacheStorage`:
 ### ETag Not Being Used
 
 Check that:
+
 1. The API returns `ETag` headers in responses
 2. `useETag: true` in cache middleware options (default)
 3. Requests are `GET` (other methods not cached by default)
@@ -579,11 +596,13 @@ Check that:
 ### Cache Not Persisting
 
 For Redis:
+
 1. Verify Redis connection is working
 2. Check Redis TTL is set appropriately
 3. Ensure Redis has enough memory
 
 For In-Memory:
+
 1. Remember cache is process-local
 2. Cache is lost on application restart
 

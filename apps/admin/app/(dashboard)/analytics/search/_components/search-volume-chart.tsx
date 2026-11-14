@@ -33,9 +33,9 @@ export async function SearchVolumeChart({ searchParams }: Props) {
   return (
     <>
       <div className="mb-4 rounded-lg bg-green-50 p-4">
-        <p className="text-gray-600 text-sm">総検索数</p>
+        <p className="text-sm text-gray-600">総検索数</p>
         <div className="flex items-baseline gap-2">
-          <p className="font-bold text-2xl text-green-600">{totalSearches}</p>
+          <p className="text-2xl font-bold text-green-600">{totalSearches}</p>
         </div>
       </div>
       <SearchVolumeChartWithNavigation
@@ -43,7 +43,7 @@ export async function SearchVolumeChart({ searchParams }: Props) {
         data={searchVolume}
       />
       {selectedDate && (
-        <p className="mt-2 text-center text-gray-600 text-sm">
+        <p className="mt-2 text-center text-sm text-gray-600">
           選択された日付: {selectedDate}
         </p>
       )}

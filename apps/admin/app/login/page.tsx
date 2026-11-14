@@ -20,7 +20,7 @@ export default function Login() {
         action={signIn}
         className="grid w-full max-w-md gap-8 rounded-lg border border-slate-400 bg-white/60 p-6 shadow-sm backdrop-blur"
       >
-        <GenericErrorMessage className="rounded-md bg-secondary-pink p-2 text-slate-50 leading-normal" />
+        <GenericErrorMessage className="rounded-md bg-secondary-pink p-2 leading-normal text-slate-50" />
 
         <div className="space-y-4">
           <FormField className="flex flex-col space-y-2" name="email">
@@ -33,7 +33,7 @@ export default function Login() {
               required
               type="email"
             />
-            <ErrorMessage className="text-secondary-pink text-sm leading-normal" />
+            <ErrorMessage className="text-sm leading-normal text-secondary-pink" />
           </FormField>
           <FormField className="flex flex-col space-y-2" name="password">
             <Label className="aria-disabled:cursor-not-allowed aria-disabled:text-slate-400">
@@ -46,12 +46,12 @@ export default function Login() {
               required
               type="password"
             />
-            <ErrorMessage className="text-secondary-pink text-sm leading-normal" />
+            <ErrorMessage className="text-sm leading-normal text-secondary-pink" />
           </FormField>
         </div>
 
         <SubmitButton
-          className="rounded-md bg-secondary-blue p-1 font-semibold text-slate-50 hover:bg-774-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-774-blue-400 focus-visible:ring-offset-2 active:bg-774-blue-600 active:shadow-inner disabled:pointer-events-none disabled:bg-774-blue-400"
+          className="rounded-md bg-secondary-blue p-1 font-semibold text-slate-50 hover:bg-774-blue-800 focus-visible:ring-2 focus-visible:ring-774-blue-400 focus-visible:ring-offset-2 focus-visible:outline-none active:bg-774-blue-600 active:shadow-inner disabled:pointer-events-none disabled:bg-774-blue-400"
           type="submit"
         >
           ログイン

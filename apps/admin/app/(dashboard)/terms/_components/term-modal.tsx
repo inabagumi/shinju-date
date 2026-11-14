@@ -92,7 +92,7 @@ export function TermModal({ term }: TermModalProps) {
                 defaultValue={term?.term ?? ''}
                 required
               />
-              <ErrorMessage className="mt-1 text-red-600 text-sm" />
+              <ErrorMessage className="mt-1 text-sm text-red-600" />
             </FormField>
             <FormField name="readings">
               <Label className="mb-2 block font-medium">読み方</Label>
@@ -102,7 +102,7 @@ export function TermModal({ term }: TermModalProps) {
                 name="readings"
                 placeholder="読み方を入力"
               />
-              <ErrorMessage className="mt-1 text-red-600 text-sm" />
+              <ErrorMessage className="mt-1 text-sm text-red-600" />
             </FormField>
             <FormField name="synonyms">
               <Label className="mb-2 block font-medium">類義語</Label>
@@ -112,9 +112,9 @@ export function TermModal({ term }: TermModalProps) {
                 name="synonyms"
                 placeholder="類義語を入力"
               />
-              <ErrorMessage className="mt-1 text-red-600 text-sm" />
+              <ErrorMessage className="mt-1 text-sm text-red-600" />
             </FormField>
-            <GenericErrorMessage className="text-red-600 text-sm" />
+            <GenericErrorMessage className="text-sm text-red-600" />
             <div className="flex justify-end gap-2 pt-2">
               <DialogClose asChild>
                 <button

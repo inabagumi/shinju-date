@@ -58,7 +58,7 @@ export default function FeedbackDetailPage({ params }: Props) {
         </Link>
       </div>
 
-      <h1 className="mb-6 font-bold text-3xl">機能要望詳細</h1>
+      <h1 className="mb-6 text-3xl font-bold">機能要望詳細</h1>
 
       <Suspense fallback={<StackedDetailSkeleton />}>
         {params.then(({ id }) => (

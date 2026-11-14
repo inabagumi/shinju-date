@@ -160,11 +160,11 @@ export function TalentsList({ talents }: TalentsListProps) {
                               <div key={channel.id}>
                                 {channel.name &&
                                   channel.name !== talent.name && (
-                                    <div className="text-gray-600 text-xs">
+                                    <div className="text-xs text-gray-600">
                                       YouTube: {channel.name}
                                     </div>
                                   )}
-                                <div className="font-mono text-gray-500 text-xs">
+                                <div className="font-mono text-xs text-gray-500">
                                   {channel.youtube_channel_id}
                                 </div>
                               </div>
@@ -173,7 +173,7 @@ export function TalentsList({ talents }: TalentsListProps) {
                         )}
                       {(!talent.youtube_channels ||
                         talent.youtube_channels.length === 0) && (
-                        <div className="font-mono text-gray-500 text-xs">
+                        <div className="font-mono text-xs text-gray-500">
                           {talent.id}
                         </div>
                       )}
@@ -182,12 +182,12 @@ export function TalentsList({ talents }: TalentsListProps) {
                   <td className="px-4 py-3">
                     <TalentStatusBadge talent={talent} />
                   </td>
-                  <td className="px-4 py-3 text-gray-600 text-sm">
+                  <td className="px-4 py-3 text-sm text-gray-600">
                     <time dateTime={talent.created_at}>
                       {formatDateTimeFromISO(talent.created_at)}
                     </time>
                   </td>
-                  <td className="px-4 py-3 text-gray-600 text-sm">
+                  <td className="px-4 py-3 text-sm text-gray-600">
                     <time dateTime={talent.updated_at}>
                       {formatDateTimeFromISO(talent.updated_at)}
                     </time>

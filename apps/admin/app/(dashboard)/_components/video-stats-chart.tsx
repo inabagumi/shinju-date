@@ -15,7 +15,7 @@ export async function VideoStatsChart() {
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 font-semibold text-xl">動画数推移（7日間）</h2>
+      <h2 className="mb-4 text-xl font-semibold">動画数推移（7日間）</h2>
       {historicalStats.length === 0 ? (
         <div className="flex h-80 items-center justify-center text-gray-500">
           <p>データがありません</p>

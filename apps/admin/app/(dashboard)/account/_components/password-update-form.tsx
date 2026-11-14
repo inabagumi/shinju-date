@@ -12,15 +12,15 @@ import { updateUserPassword } from '../_actions'
 export function PasswordUpdateForm() {
   return (
     <div className="space-y-4">
-      <h2 className="font-semibold text-xl">パスワードの変更</h2>
+      <h2 className="text-xl font-semibold">パスワードの変更</h2>
       <div className="rounded-lg border border-slate-300 bg-white p-6 shadow-sm">
         <Form action={updateUserPassword} className="space-y-4">
           <SuccessMessage
-            className="rounded-md bg-green-100 p-2 text-green-800 text-sm leading-normal"
+            className="rounded-md bg-green-100 p-2 text-sm leading-normal text-green-800"
             message="パスワードを更新しました。"
           />
 
-          <GenericErrorMessage className="rounded-md bg-secondary-pink p-2 text-slate-50 text-sm leading-normal" />
+          <GenericErrorMessage className="rounded-md bg-secondary-pink p-2 text-sm leading-normal text-slate-50" />
 
           <FormField className="flex flex-col space-y-2" name="currentPassword">
             <Label className="font-medium text-slate-700 aria-disabled:cursor-not-allowed aria-disabled:text-slate-400">
@@ -33,7 +33,7 @@ export function PasswordUpdateForm() {
               required
               type="password"
             />
-            <ErrorMessage className="text-secondary-pink text-sm leading-normal" />
+            <ErrorMessage className="text-sm leading-normal text-secondary-pink" />
           </FormField>
 
           <FormField className="flex flex-col space-y-2" name="newPassword">
@@ -47,7 +47,7 @@ export function PasswordUpdateForm() {
               required
               type="password"
             />
-            <ErrorMessage className="text-secondary-pink text-sm leading-normal" />
+            <ErrorMessage className="text-sm leading-normal text-secondary-pink" />
           </FormField>
 
           <FormField className="flex flex-col space-y-2" name="confirmPassword">
@@ -61,11 +61,11 @@ export function PasswordUpdateForm() {
               required
               type="password"
             />
-            <ErrorMessage className="text-secondary-pink text-sm leading-normal" />
+            <ErrorMessage className="text-sm leading-normal text-secondary-pink" />
           </FormField>
 
           <SubmitButton
-            className="rounded-md bg-secondary-blue px-4 py-2 font-semibold text-slate-50 hover:bg-774-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-774-blue-400 focus-visible:ring-offset-2 active:bg-774-blue-600 active:shadow-inner disabled:pointer-events-none disabled:bg-774-blue-400"
+            className="rounded-md bg-secondary-blue px-4 py-2 font-semibold text-slate-50 hover:bg-774-blue-800 focus-visible:ring-2 focus-visible:ring-774-blue-400 focus-visible:ring-offset-2 focus-visible:outline-none active:bg-774-blue-600 active:shadow-inner disabled:pointer-events-none disabled:bg-774-blue-400"
             type="submit"
           >
             パスワードを更新

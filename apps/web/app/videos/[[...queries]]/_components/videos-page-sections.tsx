@@ -17,7 +17,7 @@ export async function VideosPageHeading({ params }: VideosPageSectionProps) {
   const query = parseQueries(queries)
   const title = query ? `『${query}』の検索結果` : '動画一覧'
 
-  return <h1 className="font-semibold text-xl">{title}</h1>
+  return <h1 className="text-xl font-semibold">{title}</h1>
 }
 
 export function VideosPageHeadingSkeleton() {

@@ -23,6 +23,7 @@ MSW（Mock Service Worker）は、開発・テスト環境でAPIリクエスト�
 ### 統合されているパッケージとアプリケーション
 
 #### コアパッケージ (`packages/msw-handlers/`)
+
 - `src/index.ts` - メインエクスポート
 - `src/server.ts` - Node.js サーバーセットアップ
 - `src/handlers/supabase.ts` - Supabase API モックハンドラー
@@ -30,6 +31,7 @@ MSW（Mock Service Worker）は、開発・テスト環境でAPIリクエスト�
 - `README.md` - パッケージドキュメント
 
 #### アプリケーション統合
+
 - **Web App** (`apps/web/`)
   - `lib/msw.ts` - ブラウザ用MSWワーカー
   - `components/msw-provider.tsx` - React MSW初期化コンポーネント
@@ -45,6 +47,7 @@ MSW（Mock Service Worker）は、開発・テスト環境でAPIリクエスト�
 ### 1. Supabase APIモック
 
 サポートされているテーブル：
+
 - `videos` - 動画情報
 - `channels` - チャンネル情報
 - `thumbnails` - サムネイル画像
@@ -53,6 +56,7 @@ MSW（Mock Service Worker）は、開発・テスト環境でAPIリクエスト�
 - `youtube_channels` - YouTubeチャンネルマッピング
 
 サポートされているクエリパラメータ：
+
 - `select` - カラム選択
 - `eq` - 等価条件
 - `in` - IN条件
@@ -60,6 +64,7 @@ MSW（Mock Service Worker）は、開発・テスト環境でAPIリクエスト�
 - `offset` - オフセット
 
 ネストされたクエリもサポート：
+
 ```typescript
 const { data } = await supabase
   .from('videos')
@@ -70,6 +75,7 @@ const { data } = await supabase
 ### 2. Upstash Redisモック
 
 サポートされているコマンド：
+
 - `ZRANGE` - ソート済みセットの範囲取得
 - `ZUNIONSTORE` - ソート済みセットの和集合
 - `PING` - 接続確認
@@ -78,9 +84,11 @@ const { data } = await supabase
 - `EXPIRE` - 有効期限の設定
 
 パイプラインサポート：
+
 - 単一リクエストで複数のコマンドを実行
 
 事前に準備されたデータ：
+
 - クリック追跡データ (`videos:clicked:*`, `channels:clicked:*`)
 - 検索分析データ (`search:popular:*`, `search:volume:*`)
 - サマリー統計 (`summary:stats:*`)
@@ -113,6 +121,7 @@ const { data: videos } = await supabase
 ```
 
 ブラウザコンソールに以下のメッセージが表示されます：
+
 ```
 🚀 MSW enabled for development
 ```
@@ -130,6 +139,7 @@ const result = await redisClient.zrange('videos:clicked:2023-10-23', 0, 10)
 ```
 
 Node.jsコンソールに以下のメッセージが表示されます：
+
 ```
 🚀 MSW server started
 ```
@@ -241,6 +251,7 @@ Next.jsはビルド時にワーカースレッドを使用して並列にペー�
 ### Supabaseテーブルのモックデータ例
 
 **Videosテーブル**
+
 ```json
 {
   "id": "video-uuid-1",
@@ -255,6 +266,7 @@ Next.jsはビルド時にワーカースレッドを使用して並列にペー�
 ### Redisモックデータ例
 
 **クリック追跡**
+
 ```
 videos:clicked:2023-10-23 => [
   { member: "1", score: 150 },
@@ -291,6 +303,7 @@ MSW起動メッセージが表示されない場合：
 - Node.jsバージョンが18以上であることを確認（`--import`とトップレベルawaitに必要）
 - registerモジュールのパスが正しいか確認
 - MSWハンドラーパッケージが正しくビルドされているか確認：
+
   ```bash
   cd packages/msw-handlers && pnpm run build
   ```
@@ -334,7 +347,7 @@ pnpm run dev:msw
 // Copilotはモックレスポンスから構造を理解
 const { data: videos } = await supabase.from('videos').select('*')
 
-videos?.forEach(video => {
+videos?.forEach((video) => {
   // ✅ Copilotが提案: title, duration, talent_id など
   console.log(video.title)
 

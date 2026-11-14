@@ -162,7 +162,7 @@ function TermsResults({
                     {groupTerms.map((term) => (
                       <div className="p-4" key={term.id}>
                         <div className="mb-2 flex items-start justify-between">
-                          <h3 className="font-semibold text-lg">{term.term}</h3>
+                          <h3 className="text-lg font-semibold">{term.term}</h3>
                           <div className="flex gap-2">
                             <TermModal term={term} />
                             <DeleteConfirmDialog
@@ -173,20 +173,20 @@ function TermsResults({
                         </div>
                         {term.readings.length > 0 && (
                           <div className="mb-2">
-                            <span className="font-medium text-gray-700 text-sm">
+                            <span className="text-sm font-medium text-gray-700">
                               読み方:
                             </span>
-                            <span className="ml-2 text-gray-600 text-sm">
+                            <span className="ml-2 text-sm text-gray-600">
                               {term.readings.join(', ')}
                             </span>
                           </div>
                         )}
                         {term.synonyms.length > 0 && (
                           <div>
-                            <span className="font-medium text-gray-700 text-sm">
+                            <span className="text-sm font-medium text-gray-700">
                               類義語:
                             </span>
-                            <span className="ml-2 text-gray-600 text-sm">
+                            <span className="ml-2 text-sm text-gray-600">
                               {term.synonyms.join(', ')}
                             </span>
                           </div>

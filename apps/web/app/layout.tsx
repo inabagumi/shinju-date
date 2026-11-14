@@ -94,7 +94,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
 
             <AnnouncementBannerWrapper />
 
-            <footer className="safe-area-pb-footer safe-area-px bg-primary py-5 text-primary-foreground text-sm dark:bg-zinc-800">
+            <footer className="bg-primary py-5 safe-area-px safe-area-pb-footer text-sm text-primary-foreground dark:bg-zinc-800">
               <nav className="mx-auto max-w-6xl px-4 py-2">
                 <ul className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-end">
                   <li>

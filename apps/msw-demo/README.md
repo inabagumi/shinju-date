@@ -7,6 +7,7 @@ MSW（Mock Service Worker）統合を実際に動作させる実演用のデモ�
 このアプリケーションは、SHINJU DATEプロジェクトにおけるMSW統合の動作確認と、開発者がMSWの使い方を学ぶためのリファレンス実装として機能します。
 
 **主な目的:**
+
 - MSWの動作確認とデバッグ
 - `@shinju-date/msw-handlers` パッケージの統合デモ
 - Supabase および Upstash Redis のモックAPI動作の検証
@@ -181,7 +182,7 @@ const clickedVideos = await redisClient.zrange(
   'videos:clicked:2023-10-23',
   0,
   10,
-  { rev: true, withScores: true }
+  { rev: true, withScores: true },
 )
 
 // MSW がモックレスポンスを返す
@@ -199,6 +200,7 @@ MSWが正常に起動すると、ブラウザのコンソールに以下のメ�
 ```
 
 エラーが発生した場合:
+
 ```
 ❌ MSW failed to start. If you see a 404 error for mockServiceWorker.js, run:
    pnpm run msw:init
@@ -224,6 +226,7 @@ MSWの設定で `onUnhandledFrame: 'warn'` が有効なため、モックされ�
 ### 統合手順
 
 1. **MSW依存関係の追加**:
+
    ```json
    {
      "devDependencies": {
@@ -251,6 +254,7 @@ MSWの設定で `onUnhandledFrame: 'warn'` が有効なため、モックされ�
 **エラー**: ブラウザで 404 エラーが発生する
 
 **解決策**:
+
 ```bash
 cd apps/msw-demo
 pnpm run msw:init
@@ -261,6 +265,7 @@ pnpm run msw:init
 **原因**: 依存パッケージがビルドされていない
 
 **解決策**:
+
 ```bash
 # ルートディレクトリから
 pnpm run build --filter=@shinju-date/database
@@ -270,6 +275,7 @@ pnpm run build --filter=@shinju-date/msw-handlers
 ### モックデータが返ってこない
 
 **確認事項**:
+
 1. ブラウザコンソールで MSW の起動メッセージを確認
 2. リクエストURLがモックハンドラーのパターンと一致しているか確認
 3. `@shinju-date/msw-handlers` の最新版がビルドされているか確認
@@ -288,6 +294,7 @@ pnpm run build --filter=@shinju-date/msw-handlers
 1. **最小限の変更**: デモの目的に必要な機能のみを含める
 2. **ドキュメントの更新**: 新しい機能や変更点をこのREADMEに反映
 3. **コード品質チェック**: 変更後は必ず以下を実行
+
    ```bash
    pnpm run check --fix
    ```

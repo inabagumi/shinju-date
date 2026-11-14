@@ -20,7 +20,7 @@ export default function AnnouncementsPage() {
       <div className="space-y-6">
         {/* Header with Add button - static shell */}
         <div className="flex items-center justify-between">
-          <h1 className="font-bold text-3xl">お知らせ管理</h1>
+          <h1 className="text-3xl font-bold">お知らせ管理</h1>
           <Suspense
             fallback={
               <div className="h-10 w-32 animate-pulse rounded bg-gray-200" />

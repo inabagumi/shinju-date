@@ -23,7 +23,7 @@ export function InputField({
     <div>
       {label && (
         <label
-          className="mb-2 block font-medium text-primary text-sm dark:text-774-nevy-50"
+          className="mb-2 block text-sm font-medium text-primary dark:text-774-nevy-50"
           htmlFor={inputId}
         >
           {label} {required && <span className="text-red-500">*</span>}
@@ -40,7 +40,7 @@ export function InputField({
         ref={ref}
         variant={error ? 'error' : 'default'}
       />
-      {error && <p className="mt-1 text-red-500 text-sm">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
     </div>
   )
 }
@@ -67,7 +67,7 @@ export function TextareaField({
     <div>
       {label && (
         <label
-          className="mb-2 block font-medium text-primary text-sm dark:text-774-nevy-50"
+          className="mb-2 block text-sm font-medium text-primary dark:text-774-nevy-50"
           htmlFor={inputId}
         >
           {label} {required && <span className="text-red-500">*</span>}
@@ -83,7 +83,7 @@ export function TextareaField({
         variant={error ? 'error' : 'default'}
         {...props}
       />
-      {error && <p className="mt-1 text-red-500 text-sm">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
     </div>
   )
 }
@@ -112,7 +112,7 @@ export function SelectField({
     <div>
       {label && (
         <label
-          className="mb-2 block font-medium text-primary text-sm dark:text-774-nevy-50"
+          className="mb-2 block text-sm font-medium text-primary dark:text-774-nevy-50"
           htmlFor={inputId}
         >
           {label} {required && <span className="text-red-500">*</span>}
@@ -120,7 +120,7 @@ export function SelectField({
       )}
       <select
         className={twMerge(
-          'w-full rounded-lg border border-774-nevy-300 bg-white px-4 py-3 text-primary focus:border-secondary-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/20 dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-50',
+          'w-full rounded-lg border border-774-nevy-300 bg-white px-4 py-3 text-primary focus:border-secondary-blue focus:ring-2 focus:ring-secondary-blue/20 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-50',
           className,
         )}
         id={inputId}
@@ -129,7 +129,7 @@ export function SelectField({
       >
         {children}
       </select>
-      {error && <p className="mt-1 text-red-500 text-sm">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
     </div>
   )
 }
@@ -161,11 +161,11 @@ export function CheckboxField({
           type="checkbox"
           {...props}
         />
-        <span className="text-primary text-sm dark:text-774-nevy-50">
+        <span className="text-sm text-primary dark:text-774-nevy-50">
           {label}
         </span>
       </label>
-      {error && <p className="mt-1 text-red-500 text-sm">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
     </div>
   )
 }

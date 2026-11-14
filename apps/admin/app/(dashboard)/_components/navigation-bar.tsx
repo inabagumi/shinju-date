@@ -41,7 +41,7 @@ export function NavigationBar() {
     <nav className="sticky top-0 z-50 bg-slate-800 text-slate-50">
       {/* Desktop Navigation */}
       <div className="mx-auto hidden max-w-7xl items-center gap-4 p-2 md:flex">
-        <NextLink className="inline-block p-2 font-semibold text-xl" href="/">
+        <NextLink className="inline-block p-2 text-xl font-semibold" href="/">
           Admin UI
         </NextLink>
         <div className="flex grow items-center gap-4">
@@ -197,7 +197,7 @@ export function NavigationBar() {
                 >
                   システム
                 </Link>
-                <div className="my-2 border-slate-600 border-t" />
+                <div className="my-2 border-t border-slate-600" />
                 <Form action={signOut}>
                   <SubmitButton
                     className="w-full px-4 py-2 text-left hover:bg-slate-600 focus-visible:bg-slate-600 focus-visible:outline-none"
@@ -214,7 +214,7 @@ export function NavigationBar() {
 
       {/* Mobile Navigation */}
       <div className="mx-auto flex max-w-7xl items-center justify-between p-2 md:hidden">
-        <NextLink className="inline-block p-2 font-semibold text-xl" href="/">
+        <NextLink className="inline-block p-2 text-xl font-semibold" href="/">
           Admin UI
         </NextLink>
         <button
@@ -233,10 +233,10 @@ export function NavigationBar() {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="border-slate-700 border-t md:hidden">
+        <div className="border-t border-slate-700 md:hidden">
           <div className="space-y-1 p-2">
             <div className="space-y-1">
-              <div className="px-3 py-2 font-semibold text-sm">データ管理</div>
+              <div className="px-3 py-2 text-sm font-semibold">データ管理</div>
               <Link
                 className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/videos"
@@ -281,7 +281,7 @@ export function NavigationBar() {
               </Link>
             </div>
             <div className="space-y-1">
-              <div className="px-3 py-2 font-semibold text-sm">
+              <div className="px-3 py-2 text-sm font-semibold">
                 アナリティクス
               </div>
               <Link
@@ -299,7 +299,7 @@ export function NavigationBar() {
                 クリックアナリティクス
               </Link>
             </div>
-            <div className="border-slate-700 border-t pt-2">
+            <div className="border-t border-slate-700 pt-2">
               <Link
                 className="block rounded-md px-4 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
                 href="/account"
@@ -314,10 +314,10 @@ export function NavigationBar() {
               >
                 システム
               </Link>
-              <div className="my-2 border-slate-700 border-t" />
+              <div className="my-2 border-t border-slate-700" />
               <Form action={signOut}>
                 <SubmitButton
-                  className="w-full rounded-md bg-slate-500 px-4 py-2 text-slate-50 hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 active:bg-slate-600 active:shadow-inner disabled:pointer-events-none disabled:bg-slate-400"
+                  className="w-full rounded-md bg-slate-500 px-4 py-2 text-slate-50 hover:bg-slate-700 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 focus-visible:outline-none active:bg-slate-600 active:shadow-inner disabled:pointer-events-none disabled:bg-slate-400"
                   type="submit"
                 >
                   ログアウト

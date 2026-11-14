@@ -65,21 +65,21 @@ function SearchEngagementRateWidgetComponent({
   return (
     <div>
       <div className="mb-4">
-        <h2 className="font-semibold text-xl">
+        <h2 className="text-xl font-semibold">
           検索利用率
           {selectedDate ? (
-            <span className="ml-2 text-774-blue-600 text-sm">
+            <span className="ml-2 text-sm text-774-blue-600">
               ({selectedDate})
             </span>
           ) : (
-            <span className="ml-2 text-green-600 text-sm">
+            <span className="ml-2 text-sm text-green-600">
               ({dateRange.startDate}〜{dateRange.endDate})
             </span>
           )}
         </h2>
       </div>
 
-      <p className="mb-4 text-gray-600 text-sm">
+      <p className="mb-4 text-sm text-gray-600">
         サイトを訪れたユーザーのうち、検索機能を利用した割合を示します。
         この数値が低い場合、検索窓のUIや配置の見直しを検討することをお勧めします。
       </p>
@@ -88,14 +88,14 @@ function SearchEngagementRateWidgetComponent({
         className={`rounded-lg border-2 p-6 ${performanceStyles[performanceLevel]}`}
       >
         <div className="text-center">
-          <div className="font-bold text-4xl">{engagementRate.toFixed(1)}%</div>
-          <div className="mt-2 font-medium text-sm">
+          <div className="text-4xl font-bold">{engagementRate.toFixed(1)}%</div>
+          <div className="mt-2 text-sm font-medium">
             検索利用率 ({performanceLabels[performanceLevel]})
           </div>
         </div>
       </div>
 
-      <div className="mt-4 text-gray-600 text-xs">
+      <div className="mt-4 text-xs text-gray-600">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <strong>判定基準:</strong>

@@ -3,7 +3,7 @@ import type { ComponentPropsWithRef } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 const inputVariants = cva(
-  'w-full rounded-md border bg-white px-4 py-2 outline-none transition-colors placeholder:text-gray-400 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500',
+  'w-full rounded-md border bg-white px-4 py-2 transition-colors outline-none placeholder:text-gray-400 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500',
   {
     defaultVariants: {
       inputSize: 'md',

@@ -90,9 +90,9 @@ for await (const video of getVideos({ ids: videoIds })) {
 ```typescript
 const playlistId = 'PLxxxxxx'
 
-for await (const item of getPlaylistItems({ 
+for await (const item of getPlaylistItems({
   playlistID: playlistId,
-  all: false // Set to true to fetch all items across pages
+  all: false, // Set to true to fetch all items across pages
 })) {
   console.log(item.contentDetails.videoId)
 }
@@ -120,7 +120,7 @@ GOOGLE_API_KEY=your_api_key_here
 All responses are validated using Zod schemas:
 
 - `YouTubeChannelSchema`: Validates channel responses
-- `YouTubeVideoSchema`: Validates video responses  
+- `YouTubeVideoSchema`: Validates video responses
 - `YouTubePlaylistItemSchema`: Validates playlist item responses
 
 Invalid responses are automatically filtered out and will not be yielded by the generator functions.

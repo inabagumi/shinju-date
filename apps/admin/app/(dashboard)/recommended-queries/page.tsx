@@ -22,7 +22,7 @@ export default function RecommendedQueriesPage() {
   return (
     <div className="mx-auto max-w-7xl p-6">
       {/* Static header */}
-      <h1 className="mb-6 font-bold text-3xl">おすすめクエリ</h1>
+      <h1 className="mb-6 text-3xl font-bold">おすすめクエリ</h1>
 
       {/* Dynamic content with Suspense */}
       <Suspense fallback={<ManagementTableSkeleton rows={8} />}>

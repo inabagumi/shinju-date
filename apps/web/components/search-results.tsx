@@ -96,7 +96,7 @@ export default function SearchResults({
 
       {/* End of data message */}
       {!hasNextPage && !isFetchingNextPage && items.length > 0 && (
-        <div className="mt-8 py-4 text-center text-gray-500 text-sm">
+        <div className="mt-8 py-4 text-center text-sm text-gray-500">
           これ以上データはありません
         </div>
       )}

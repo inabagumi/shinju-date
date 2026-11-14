@@ -53,7 +53,7 @@ export function ManagementTableSkeleton({
         </div>
         {range(rows).map((row) => (
           <div
-            className="grid min-h-14 grid-cols-4 items-center gap-4 border-gray-200 border-t px-4 py-3"
+            className="grid min-h-14 grid-cols-4 items-center gap-4 border-t border-gray-200 px-4 py-3"
             key={`table-row-skeleton-${row}`}
           >
             {range(4).map((column) => (
@@ -189,7 +189,7 @@ export function ChartSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="flex h-96 animate-pulse items-end gap-3 border-gray-200 border-b border-l px-4 pt-8"
+      className="flex h-96 animate-pulse items-end gap-3 border-b border-l border-gray-200 px-4 pt-8"
     >
       {[45, 70, 55, 85, 40, 65, 75, 50, 90, 60].map((height) => (
         <div

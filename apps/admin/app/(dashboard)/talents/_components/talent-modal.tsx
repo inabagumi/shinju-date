@@ -94,11 +94,11 @@ export function TalentModal({ talent }: TalentModalProps) {
                 placeholder="表示に使用される名前"
                 required
               />
-              <p className="mt-1 text-gray-500 text-xs">
+              <p className="mt-1 text-xs text-gray-500">
                 管理画面から編集可能な表示名（YouTube
                 APIによる自動更新の対象外）
               </p>
-              <ErrorMessage className="mt-1 text-red-600 text-sm" />
+              <ErrorMessage className="mt-1 text-sm text-red-600" />
             </FormField>
             <FormField name="youtube_channel_id">
               <Label className="mb-2 block font-medium">
@@ -109,13 +109,13 @@ export function TalentModal({ talent }: TalentModalProps) {
                 defaultValue={talent?.youtube_channel?.youtube_channel_id ?? ''}
                 placeholder="@handle または https://youtube.com/@handle"
               />
-              <p className="mt-1 text-gray-500 text-xs">
+              <p className="mt-1 text-xs text-gray-500">
                 ハンドル・チャンネルID・URLに対応。追加時にYouTube
                 APIから名前とハンドルを取得します。後から個別ページで設定することもできます。
               </p>
-              <ErrorMessage className="mt-1 text-red-600 text-sm" />
+              <ErrorMessage className="mt-1 text-sm text-red-600" />
             </FormField>
-            <GenericErrorMessage className="text-red-600 text-sm" />
+            <GenericErrorMessage className="text-sm text-red-600" />
             <div className="flex items-center justify-between gap-2 pt-2">
               {isEditing && talent ? (
                 <DeleteConfirmDialog

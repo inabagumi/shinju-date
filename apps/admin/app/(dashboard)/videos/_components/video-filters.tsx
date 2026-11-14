@@ -112,7 +112,7 @@ export function VideoFilters({ talents }: Props) {
     <div className="mb-4 flex flex-wrap gap-4">
       <div>
         <label
-          className="mb-1 block font-medium text-gray-700 text-sm"
+          className="mb-1 block text-sm font-medium text-gray-700"
           htmlFor="search-filter"
         >
           タイトルまたはIDで検索
@@ -127,7 +127,7 @@ export function VideoFilters({ talents }: Props) {
         />
       </div>
       <div className="w-full sm:w-auto sm:min-w-[200px]">
-        <div className="mb-1 block font-medium text-gray-700 text-sm">
+        <div className="mb-1 block text-sm font-medium text-gray-700">
           タレントで絞り込み
         </div>
         <MultiSelect
@@ -138,7 +138,7 @@ export function VideoFilters({ talents }: Props) {
         />
       </div>
       <div className="w-full sm:w-auto sm:min-w-[200px]">
-        <div className="mb-1 block font-medium text-gray-700 text-sm">
+        <div className="mb-1 block text-sm font-medium text-gray-700">
           動画ステータスで絞り込み
         </div>
         <MultiSelect
@@ -149,7 +149,7 @@ export function VideoFilters({ talents }: Props) {
         />
       </div>
       <div className="w-full sm:w-auto sm:min-w-[200px]">
-        <div className="mb-1 block font-medium text-gray-700 text-sm">
+        <div className="mb-1 block text-sm font-medium text-gray-700">
           プラットフォームで絞り込み
         </div>
         <MultiSelect
@@ -160,7 +160,7 @@ export function VideoFilters({ talents }: Props) {
         />
       </div>
       <div className="w-full sm:w-auto sm:min-w-[200px]">
-        <div className="mb-1 block font-medium text-gray-700 text-sm">
+        <div className="mb-1 block text-sm font-medium text-gray-700">
           動画種別で絞り込み
         </div>
         <MultiSelect
@@ -172,7 +172,7 @@ export function VideoFilters({ talents }: Props) {
       </div>
       <div className="flex w-full flex-wrap gap-4 sm:contents">
         <div className="w-full sm:w-auto sm:min-w-[200px]">
-          <div className="mb-1 block font-medium text-gray-700 text-sm">
+          <div className="mb-1 block text-sm font-medium text-gray-700">
             公開状態で絞り込み
           </div>
           <MultiSelect
@@ -183,7 +183,7 @@ export function VideoFilters({ talents }: Props) {
           />
         </div>
         <div className="w-full sm:w-auto sm:min-w-[200px]">
-          <div className="mb-1 block font-medium text-gray-700 text-sm">
+          <div className="mb-1 block text-sm font-medium text-gray-700">
             削除状態で絞り込み
           </div>
           <MultiSelect

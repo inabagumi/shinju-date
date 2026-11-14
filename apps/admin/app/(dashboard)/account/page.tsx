@@ -33,7 +33,7 @@ export default function AccountPage() {
     <div className="mx-auto max-w-7xl space-y-8 p-6">
       {/* Static header */}
       <div>
-        <h1 className="font-bold text-3xl">アカウント設定</h1>
+        <h1 className="text-3xl font-bold">アカウント設定</h1>
         <p className="mt-2 text-slate-600">
           ログイン情報を管理し、アカウントのセキュリティを維持します。
         </p>
