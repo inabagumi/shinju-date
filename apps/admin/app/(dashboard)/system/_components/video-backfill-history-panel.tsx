@@ -15,6 +15,7 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
+  EmptyState,
 } from '@shinju-date/ui'
 import { Loader2 } from 'lucide-react'
 import Link from 'next/link'
@@ -59,7 +60,7 @@ function TalentLink({
   talentName: string | null
 }) {
   return talentName ? (
-    <Link className="hover:underline" href={`/talents/${talentId}`}>
+    <Link className="text-accent hover:underline" href={`/talents/${talentId}`}>
       {talentName}
     </Link>
   ) : (
@@ -71,25 +72,30 @@ function FailureRow({ failure }: { failure: VideoBackfillFailure }) {
   return (
     <li className="py-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="min-w-0 truncate text-sm font-medium text-gray-900">
-          <span className="mr-2 text-xs text-gray-500">
+        <p className="min-w-0 truncate text-meta font-semibold">
+          <span className="mr-2 text-caption font-normal text-muted">
             {PROVIDER_LABELS[failure.provider]}
           </span>
           <TalentLink
             talentId={failure.talentId}
             talentName={failure.talentName}
           />
-          <span className="ml-2 text-gray-500">{failure.name}</span>
+          <span className="ml-2 font-normal text-muted">{failure.name}</span>
         </p>
         {failure.active ? (
           <Badge variant="info">再試行中</Badge>
         ) : (
-          <time className="text-xs text-gray-500" dateTime={failure.finishedAt}>
+          <time
+            className="text-caption text-muted tabular-nums"
+            dateTime={failure.finishedAt}
+          >
             {formatDateTimeFromISO(failure.finishedAt)}
           </time>
         )}
       </div>
-      {failure.error && <p className="text-sm text-red-700">{failure.error}</p>}
+      {failure.error && (
+        <p className="text-meta text-danger">{failure.error}</p>
+      )}
     </li>
   )
 }
@@ -101,24 +107,24 @@ function HistoryRow({ entry }: { entry: VideoBackfillHistoryEntry }) {
     <li className="px-6 py-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-gray-900">
-            <span className="mr-2 text-xs text-gray-500">
+          <p className="truncate text-meta font-semibold">
+            <span className="mr-2 text-caption font-normal text-muted">
               {PROVIDER_LABELS[entry.provider]}
             </span>
             <TalentLink
               talentId={entry.talentId}
               talentName={entry.talentName}
             />
-            <span className="ml-2 text-gray-500">
+            <span className="ml-2 font-normal text-muted">
               {entry.name ?? '削除されたアカウント'}
             </span>
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-meta text-muted tabular-nums">
             {formatNumber(entry.added)}件追加 · {formatNumber(entry.pages)}
             ページ · {entry.requester ?? '不明なユーザー'}が
             {SCOPE_LABELS[entry.scope]}
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="text-caption text-muted tabular-nums">
             <time dateTime={entry.requestedAt}>
               {formatDateTimeFromISO(entry.requestedAt)}
             </time>
@@ -127,7 +133,9 @@ function HistoryRow({ entry }: { entry: VideoBackfillHistoryEntry }) {
               {formatDateTimeFromISO(entry.finishedAt)}
             </time>
           </p>
-          {entry.error && <p className="text-sm text-red-700">{entry.error}</p>}
+          {entry.error && (
+            <p className="text-meta text-danger">{entry.error}</p>
+          )}
         </div>
         <Badge variant={variant}>{label}</Badge>
       </div>
@@ -229,10 +237,8 @@ export function VideoBackfillHistoryPanel() {
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg leading-6 font-medium text-gray-900">
-              過去動画の取り込みの履歴
-            </h2>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+            <h2 className="text-heading font-bold">過去動画の取り込みの履歴</h2>
+            <p className="mt-1 max-w-text text-meta text-muted">
               終了した過去動画の取り込みの結果です。最後の取り込みが失敗したアカウントは、まとめて再試行できます。
             </p>
           </div>
@@ -244,7 +250,12 @@ export function VideoBackfillHistoryPanel() {
               size="sm"
               variant="secondary"
             >
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isPending && (
+                <Loader2
+                  aria-hidden="true"
+                  className="mr-2 size-4 animate-spin"
+                />
+              )}
               失敗したジョブを再試行
             </Button>
             <DialogPortal>
@@ -275,17 +286,21 @@ export function VideoBackfillHistoryPanel() {
           </Dialog>
         </div>
         {state !== null && loadError && (
-          <div className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-800">
+          <div
+            className="mt-3 rounded-control bg-danger/10 p-3 text-meta text-danger"
+            role="alert"
+          >
             {loadError}
           </div>
         )}
         {message && (
           <div
-            className={`mt-3 rounded-md p-3 text-sm ${
+            className={`mt-3 rounded-control p-3 text-meta ${
               message.type === 'success'
-                ? 'bg-green-50 text-green-800'
-                : 'bg-red-50 text-red-800'
+                ? 'bg-success/10 text-success'
+                : 'bg-danger/10 text-danger'
             }`}
+            role={message.type === 'success' ? 'status' : 'alert'}
           >
             {message.text}
           </div>
@@ -293,15 +308,15 @@ export function VideoBackfillHistoryPanel() {
         {failures.length > 0 && (
           <section
             aria-label="最後の取り込みが失敗したアカウント"
-            className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-3"
+            className="mt-3 rounded-container border border-danger/30 bg-danger/10 px-4 py-3"
           >
-            <h3 className="text-sm font-medium text-red-800">
+            <h3 className="text-meta font-semibold text-danger">
               最後の取り込みが失敗したアカウント:{' '}
               {formatNumber(failures.length)}件
               {failures.length > retryable &&
                 `（再試行中: ${formatNumber(failures.length - retryable)}件）`}
             </h3>
-            <ul className="mt-1 max-h-60 divide-y divide-red-100 overflow-y-auto">
+            <ul className="mt-1 max-h-60 divide-y divide-danger/20 overflow-y-auto">
               {failures.map((failure) => (
                 <FailureRow
                   failure={failure}
@@ -315,7 +330,7 @@ export function VideoBackfillHistoryPanel() {
       <CardContent className="p-0">
         {state === null ? (
           loadError ? (
-            <div className="flex flex-col items-center gap-3 px-4 py-6 text-sm text-red-700">
+            <div className="flex flex-col items-center gap-3 px-4 py-6 text-meta text-danger">
               <p>{loadError}</p>
               <Button
                 onClick={() => {
@@ -329,20 +344,18 @@ export function VideoBackfillHistoryPanel() {
               </Button>
             </div>
           ) : (
-            <div className="px-4 py-6 text-center text-sm text-gray-500">
+            <div className="px-4 py-6 text-center text-meta text-muted">
               読み込み中...
             </div>
           )
         ) : state.entries.length > 0 ? (
-          <ul className="mt-4 max-h-[32rem] divide-y divide-gray-200 overflow-y-auto border-t border-gray-200">
+          <ul className="mt-4 max-h-[32rem] divide-y divide-border overflow-y-auto border-t border-border">
             {state.entries.map((entry) => (
               <HistoryRow entry={entry} key={entry.id} />
             ))}
           </ul>
         ) : (
-          <div className="px-4 py-6 text-center text-sm text-gray-500">
-            終了した過去動画の取り込みはまだありません。
-          </div>
+          <EmptyState title="終了した過去動画の取り込みはまだありません。" />
         )}
       </CardContent>
     </Card>

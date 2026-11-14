@@ -15,6 +15,7 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
+  EmptyState,
 } from '@shinju-date/ui'
 import { Loader2 } from 'lucide-react'
 import Link from 'next/link'
@@ -77,13 +78,13 @@ function AccountRow({ account }: { account: VideoBackfillRunAccount }) {
     <li className="px-6 py-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-gray-900">
-            <span className="mr-2 text-xs text-gray-500">
+          <p className="truncate text-meta font-semibold">
+            <span className="mr-2 text-caption font-normal text-muted">
               {PROVIDER_LABELS[account.provider]}
             </span>
             {account.talentName ? (
               <Link
-                className="hover:underline"
+                className="text-accent hover:underline"
                 href={`/talents/${account.talentId}`}
               >
                 {account.talentName}
@@ -92,10 +93,12 @@ function AccountRow({ account }: { account: VideoBackfillRunAccount }) {
               '削除されたタレント'
             )}
             {account.name && (
-              <span className="ml-2 text-gray-500">{account.name}</span>
+              <span className="ml-2 font-normal text-muted">
+                {account.name}
+              </span>
             )}
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-meta text-muted tabular-nums">
             {formatNumber(account.added)}件追加
             {account.updatedAt && (
               <>
@@ -107,7 +110,7 @@ function AccountRow({ account }: { account: VideoBackfillRunAccount }) {
             )}
           </p>
           {account.error && (
-            <p className="text-sm text-red-700">{account.error}</p>
+            <p className="text-meta text-danger">{account.error}</p>
           )}
         </div>
         <StatusBadge status={account.status} />
@@ -126,7 +129,7 @@ function RunSummary({ run }: { run: VideoBackfillRun }) {
   return (
     <>
       <div className="space-y-3 px-6 py-4">
-        <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-gray-600">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-meta text-muted tabular-nums">
           <p>
             <time dateTime={run.requestedAt}>
               {formatDateTimeFromISO(run.requestedAt)}
@@ -146,34 +149,34 @@ function RunSummary({ run }: { run: VideoBackfillRun }) {
           aria-valuemax={total}
           aria-valuemin={0}
           aria-valuenow={finished}
-          className="h-2 overflow-hidden rounded-full bg-gray-200"
+          className="h-2 overflow-hidden rounded-full bg-muted"
           role="progressbar"
         >
           <div
-            className="h-full bg-774-blue-500 transition-all"
+            className="h-full bg-accent transition-all"
             style={{ width: `${total > 0 ? (finished / total) * 100 : 0}%` }}
           />
         </div>
         <dl className="grid grid-cols-3 gap-2 text-center sm:grid-cols-6">
           {STATUSES.map((status) => (
-            <div className="rounded-md bg-gray-50 p-2" key={status}>
-              <dt className="text-xs text-gray-500">
+            <div className="rounded-control bg-muted p-2" key={status}>
+              <dt className="text-caption text-muted">
                 {STATUS_LABELS[status].label}
               </dt>
-              <dd className="text-lg font-semibold text-gray-900">
+              <dd className="text-body font-semibold tabular-nums">
                 {formatNumber(run.counts[status])}
               </dd>
             </div>
           ))}
-          <div className="rounded-md bg-gray-50 p-2">
-            <dt className="text-xs text-gray-500">追加本数</dt>
-            <dd className="text-lg font-semibold text-gray-900">
+          <div className="rounded-control bg-muted p-2">
+            <dt className="text-caption text-muted">追加本数</dt>
+            <dd className="text-body font-semibold tabular-nums">
               {formatNumber(run.added)}
             </dd>
           </div>
         </dl>
       </div>
-      <ul className="max-h-96 divide-y divide-gray-200 overflow-y-auto border-t border-gray-200">
+      <ul className="max-h-96 divide-y divide-border overflow-y-auto border-t border-border">
         {accounts.map((account) => (
           <AccountRow
             account={account}
@@ -276,10 +279,10 @@ export function VideoBackfillRunPanel() {
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg leading-6 font-medium text-gray-900">
+            <h2 className="text-heading font-bold">
               取得漏れチェック（全タレント）
             </h2>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+            <p className="mt-1 max-w-text text-meta text-muted">
               active
               なタレントのすべてのアカウントについて、プラットフォーム上にあってデータベースにない過去の動画を取り込みます。登録済みの動画はそのまま残ります。
             </p>
@@ -294,7 +297,12 @@ export function VideoBackfillRunPanel() {
               size="sm"
               variant="secondary"
             >
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isPending && (
+                <Loader2
+                  aria-hidden="true"
+                  className="mr-2 size-4 animate-spin"
+                />
+              )}
               {isActive ? '実行中' : '取得漏れをチェックする'}
             </Button>
             <DialogPortal>
@@ -328,17 +336,21 @@ export function VideoBackfillRunPanel() {
           </Dialog>
         </div>
         {state !== null && loadError && (
-          <div className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-800">
+          <div
+            className="mt-3 rounded-control bg-danger/10 p-3 text-meta text-danger"
+            role="alert"
+          >
             {loadError}
           </div>
         )}
         {message && (
           <div
-            className={`mt-3 rounded-md p-3 text-sm ${
+            className={`mt-3 rounded-control p-3 text-meta ${
               message.type === 'success'
-                ? 'bg-green-50 text-green-800'
-                : 'bg-red-50 text-red-800'
+                ? 'bg-success/10 text-success'
+                : 'bg-danger/10 text-danger'
             }`}
+            role={message.type === 'success' ? 'status' : 'alert'}
           >
             {message.text}
           </div>
@@ -347,7 +359,7 @@ export function VideoBackfillRunPanel() {
       <CardContent className="p-0">
         {state === null ? (
           loadError ? (
-            <div className="flex flex-col items-center gap-3 px-4 py-6 text-sm text-red-700">
+            <div className="flex flex-col items-center gap-3 px-4 py-6 text-meta text-danger">
               <p>{loadError}</p>
               <Button
                 onClick={() => {
@@ -361,16 +373,14 @@ export function VideoBackfillRunPanel() {
               </Button>
             </div>
           ) : (
-            <div className="px-4 py-6 text-center text-sm text-gray-500">
+            <div className="px-4 py-6 text-center text-meta text-muted">
               読み込み中...
             </div>
           )
         ) : state.run ? (
           <RunSummary run={state.run} />
         ) : (
-          <div className="px-4 py-6 text-center text-sm text-gray-500">
-            最近の取得漏れチェックはありません。
-          </div>
+          <EmptyState title="最近の取得漏れチェックはありません。" />
         )}
       </CardContent>
     </Card>

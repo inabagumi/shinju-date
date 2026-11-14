@@ -1,9 +1,7 @@
-import { formatNumber } from '@shinju-date/helpers'
 import { cacheLife } from 'next/cache'
-import Link from 'next/link'
 import { getHistoricalStats } from '../_lib/get-historical-stats'
 import { getSummaryStats } from '../_lib/get-summary-stats'
-import { TrendIndicator } from './trend-indicator'
+import { StatTileLink } from './trend-indicator'
 import { VideoStatsChartEmpty } from './video-stats-chart-empty'
 import { VideoStatsChartUI } from './video-stats-chart-ui'
 
@@ -22,62 +20,38 @@ export async function VideoSummaryWidget() {
   ])
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-xl font-semibold">動画サマリー</h2>
+    <section className="rounded-container border border-border bg-surface p-6">
+      <h2 className="mb-4 text-heading font-bold">動画サマリー</h2>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Link
-          className="rounded-lg bg-774-blue-50 p-4 transition-colors hover:bg-774-blue-100"
+        <StatTileLink
+          dayChange={stats.totalVideos.dayChange}
           href="/videos?deleted=false"
-        >
-          <p className="text-sm text-gray-600">総動画数</p>
-          <p className="text-2xl font-bold text-774-blue-600">
-            {formatNumber(stats.totalVideos.current)}
-          </p>
-          <div className="mt-2">
-            <TrendIndicator value={stats.totalVideos.dayChange} />
-          </div>
-        </Link>
-        <Link
-          className="rounded-lg bg-green-50 p-4 transition-colors hover:bg-green-100"
+          label="総動画数"
+          value={stats.totalVideos.current}
+        />
+        <StatTileLink
+          dayChange={stats.visibleVideos.dayChange}
           href="/videos?deleted=false&visible=true"
-        >
-          <p className="text-sm text-gray-600">公開中</p>
-          <p className="text-2xl font-bold text-green-600">
-            {formatNumber(stats.visibleVideos.current)}
-          </p>
-          <div className="mt-2">
-            <TrendIndicator value={stats.visibleVideos.dayChange} />
-          </div>
-        </Link>
-        <Link
-          className="rounded-lg bg-774-nevy-50 p-4 transition-colors hover:bg-774-nevy-100"
+          label="公開中"
+          value={stats.visibleVideos.current}
+        />
+        <StatTileLink
+          dayChange={stats.scheduledVideos.dayChange}
           href="/videos?deleted=false&visible=true"
-        >
-          <p className="text-sm text-gray-600">配信予定</p>
-          <p className="text-2xl font-bold text-774-nevy-600">
-            {formatNumber(stats.scheduledVideos.current)}
-          </p>
-          <div className="mt-2">
-            <TrendIndicator value={stats.scheduledVideos.dayChange} />
-          </div>
-        </Link>
-        <Link
-          className="rounded-lg bg-warning/10 p-4 transition-colors hover:bg-warning/20"
+          label="配信予定"
+          value={stats.scheduledVideos.current}
+        />
+        <StatTileLink
+          dayChange={stats.hiddenVideos.dayChange}
           href="/videos?deleted=false&visible=false"
-        >
-          <p className="text-meta text-muted">非表示</p>
-          <p className="text-2xl font-bold text-warning">
-            {formatNumber(stats.hiddenVideos.current)}
-          </p>
-          <div className="mt-2">
-            <TrendIndicator value={stats.hiddenVideos.dayChange} />
-          </div>
-        </Link>
+          label="非表示"
+          value={stats.hiddenVideos.current}
+        />
       </div>
 
       {/* 7-Day Video Stats Chart */}
       <div className="mt-6">
-        <h3 className="mb-3 text-lg font-medium text-gray-700">
+        <h3 className="mb-3 text-body leading-normal font-semibold">
           動画数推移（7日間）
         </h3>
         {historicalStats.length === 0 ? (
@@ -86,7 +60,7 @@ export async function VideoSummaryWidget() {
           <VideoStatsChartUI data={historicalStats} />
         )}
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -102,34 +76,22 @@ export async function ContentSummaryWidget() {
   const stats = await getSummaryStats(true)
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-xl font-semibold">コンテンツサマリー</h2>
+    <section className="rounded-container border border-border bg-surface p-6">
+      <h2 className="mb-4 text-heading font-bold">コンテンツサマリー</h2>
       <div className="grid grid-cols-2 gap-4">
-        <Link
-          className="rounded-lg bg-774-nevy-50 p-4 transition-colors hover:bg-774-nevy-100"
+        <StatTileLink
+          dayChange={stats.totalTerms.dayChange}
           href="/terms"
-        >
-          <p className="text-sm text-gray-600">総用語数</p>
-          <p className="text-2xl font-bold text-774-nevy-600">
-            {formatNumber(stats.totalTerms.current)}
-          </p>
-          <div className="mt-2">
-            <TrendIndicator value={stats.totalTerms.dayChange} />
-          </div>
-        </Link>
-        <Link
-          className="rounded-lg bg-774-blue-50 p-4 transition-colors hover:bg-774-blue-100"
+          label="総用語数"
+          value={stats.totalTerms.current}
+        />
+        <StatTileLink
+          dayChange={stats.totalTalents.dayChange}
           href="/talents"
-        >
-          <p className="text-sm text-gray-600">総タレント数</p>
-          <p className="text-2xl font-bold text-774-blue-600">
-            {formatNumber(stats.totalTalents.current)}
-          </p>
-          <div className="mt-2">
-            <TrendIndicator value={stats.totalTalents.dayChange} />
-          </div>
-        </Link>
+          label="総タレント数"
+          value={stats.totalTalents.current}
+        />
       </div>
-    </div>
+    </section>
   )
 }

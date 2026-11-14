@@ -15,13 +15,13 @@ export async function VideoStatsChart() {
   const historicalStats = await getHistoricalStats(7)
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-xl font-semibold">動画数推移（7日間）</h2>
+    <section className="rounded-container border border-border bg-surface p-6">
+      <h2 className="mb-4 text-heading font-bold">動画数推移（7日間）</h2>
       {historicalStats.length === 0 ? (
         <VideoStatsChartEmpty />
       ) : (
         <VideoStatsChartUI data={historicalStats} />
       )}
-    </div>
+    </section>
   )
 }

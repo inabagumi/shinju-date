@@ -1,8 +1,6 @@
-import { formatNumber } from '@shinju-date/helpers'
 import { cacheLife } from 'next/cache'
-import Link from 'next/link'
 import { getAnalyticsSummary } from '../_lib/get-analytics-summary'
-import { TrendIndicator } from './trend-indicator'
+import { StatTileLink } from './trend-indicator'
 
 /**
  * AnalyticsWidget - Displays analytics summary with links to detailed pages and trend indicators
@@ -16,46 +14,29 @@ export async function AnalyticsWidget() {
   const analytics = await getAnalyticsSummary(true)
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-xl font-semibold">アナリティクス</h2>
+    <section className="rounded-container border border-border bg-surface p-6">
+      <h2 className="mb-4 text-heading font-bold">アナリティクス</h2>
       <div className="grid grid-cols-2 gap-4">
-        <Link
-          className="rounded-lg bg-774-blue-50 p-4 transition-colors hover:bg-774-blue-100"
+        <StatTileLink
+          dayChange={analytics.recentSearches.dayChange}
           href="/analytics/search"
-        >
-          <p className="text-sm text-gray-600">本日の検索数</p>
-          <p className="text-2xl font-bold text-774-blue-600">
-            {formatNumber(analytics.recentSearches.current)}
-          </p>
-          <div className="mt-2">
-            <TrendIndicator value={analytics.recentSearches.dayChange} />
-          </div>
-        </Link>
-        <Link
-          className="rounded-lg bg-green-50 p-4 transition-colors hover:bg-green-100"
+          label="本日の検索数"
+          value={analytics.recentSearches.current}
+        />
+        <StatTileLink
+          dayChange={analytics.recentClicks.dayChange}
           href="/analytics/click"
-        >
-          <p className="text-sm text-gray-600">本日のクリック数</p>
-          <p className="text-2xl font-bold text-green-600">
-            {formatNumber(analytics.recentClicks.current)}
-          </p>
-          <div className="mt-2">
-            <TrendIndicator value={analytics.recentClicks.dayChange} />
-          </div>
-        </Link>
-        <Link
-          className="col-span-2 rounded-lg bg-774-nevy-50 p-4 transition-colors hover:bg-774-nevy-100"
+          label="本日のクリック数"
+          value={analytics.recentClicks.current}
+        />
+        <StatTileLink
+          className="col-span-2"
+          dayChange={analytics.totalPopularKeywords.dayChange}
           href="/analytics/search"
-        >
-          <p className="text-sm text-gray-600">人気キーワード数</p>
-          <p className="text-2xl font-bold text-774-nevy-600">
-            {formatNumber(analytics.totalPopularKeywords.current)}
-          </p>
-          <div className="mt-2">
-            <TrendIndicator value={analytics.totalPopularKeywords.dayChange} />
-          </div>
-        </Link>
+          label="人気キーワード数"
+          value={analytics.totalPopularKeywords.current}
+        />
       </div>
-    </div>
+    </section>
   )
 }

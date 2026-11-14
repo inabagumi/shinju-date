@@ -60,32 +60,30 @@ export function MaintenanceModeWidget({
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">メンテナンスモード</h2>
-      </div>
+    <section className="rounded-container border border-border bg-surface p-6">
+      <h2 className="mb-4 text-heading font-bold">メンテナンスモード</h2>
 
       <div className="space-y-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1">
-            <p className="font-medium text-gray-900">
+            <p className="font-semibold">
               現在の状態:{' '}
               <span
                 className={twMerge(
                   'font-bold',
-                  isEnabled ? 'text-red-600' : 'text-green-600',
+                  isEnabled ? 'text-danger' : 'text-success',
                 )}
               >
                 {isEnabled ? 'ON' : 'OFF'}
               </span>
             </p>
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 text-meta text-muted">
               {isEnabled
                 ? '一般ユーザーのアクセスとバッチ処理が停止されています'
                 : '通常運転中です'}
             </p>
           </div>
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <ToggleSwitch
               checked={isEnabled}
               disabled={isPending}
@@ -96,24 +94,28 @@ export function MaintenanceModeWidget({
         </div>
 
         {showConfirmation && (
-          <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-4">
-            <p className="mb-3 font-medium text-gray-900">
+          <div className="rounded-container border border-warning/30 bg-warning/10 p-4">
+            <p className="mb-3 font-semibold">
               {pendingAction === 'enable'
                 ? 'メンテナンスモードを有効にしますか?'
                 : 'メンテナンスモードを無効にしますか?'}
             </p>
-            <p className="mb-4 text-sm text-gray-700">
+            <p className="mb-4 text-meta">
               {pendingAction === 'enable'
                 ? '一般ユーザーのアクセスがメンテナンスページに切り替わり、バッチ処理が停止されます。'
                 : '一般ユーザーのアクセスとバッチ処理が再開されます。'}
             </p>
-            {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+            {error && (
+              <p className="mb-4 text-meta text-danger" role="alert">
+                {error}
+              </p>
+            )}
             <div className="flex gap-2">
               <Button
                 disabled={isPending}
                 onClick={handleConfirm}
                 type="button"
-                variant="secondary-blue"
+                variant="primary"
               >
                 {isPending ? '処理中...' : '確認'}
               </Button>
@@ -129,15 +131,15 @@ export function MaintenanceModeWidget({
           </div>
         )}
 
-        <div className="rounded-lg bg-gray-50 p-4">
-          <p className="mb-2 text-sm font-medium text-gray-900">注意事項</p>
-          <ul className="list-inside list-disc space-y-1 text-sm text-gray-700">
+        <div className="rounded-container bg-muted p-4">
+          <p className="mb-2 text-meta font-semibold">注意事項</p>
+          <ul className="list-inside list-disc space-y-1 text-meta text-muted">
             <li>管理画面は通常通りアクセス可能です</li>
             <li>データベース移行などの重要な作業時に使用してください</li>
             <li>作業完了後は必ず無効化してください</li>
           </ul>
         </div>
       </div>
-    </div>
+    </section>
   )
 }

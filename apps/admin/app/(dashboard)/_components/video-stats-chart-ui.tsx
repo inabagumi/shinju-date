@@ -33,28 +33,29 @@ export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
     <div className="h-80 w-full">
       <ResponsiveContainer height="100%" width="100%">
         <AreaChart data={data}>
-          <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
+          <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
-            tick={{ fill: '#6b7280', fontSize: 12 }}
-            tickLine={{ stroke: '#e5e7eb' }}
+            tick={{ fill: 'var(--text-color-muted)', fontSize: 12 }}
+            tickLine={{ stroke: 'var(--color-border)' }}
           />
           <YAxis
             domain={['auto', 'auto']}
-            tick={{ fill: '#6b7280', fontSize: 12 }}
-            tickLine={{ stroke: '#e5e7eb' }}
+            tick={{ fill: 'var(--text-color-muted)', fontSize: 12 }}
+            tickLine={{ stroke: 'var(--color-border)' }}
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: '#fff',
-              border: '1px solid #e5e7eb',
-              borderRadius: '0.5rem',
+              backgroundColor: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-container)',
+              color: 'var(--color-foreground)',
             }}
             formatter={(value, name) => [
               `${value ?? 0} 本`,
               LABEL_MAP[String(name ?? '')] || String(name ?? ''),
             ]}
-            labelStyle={{ color: '#374151', fontWeight: 600 }}
+            labelStyle={{ color: 'var(--color-foreground)', fontWeight: 600 }}
           />
           <Legend
             formatter={(value) => LABEL_MAP[String(value)] || String(value)}
@@ -63,22 +64,25 @@ export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
           />
           <Area
             dataKey="visibleVideos"
-            fill="#d1fae5"
+            fill="var(--color-success)"
+            fillOpacity={0.15}
             stackId="visible"
-            stroke="#10b981"
+            stroke="var(--color-success)"
             type="monotone"
           />
           <Area
             dataKey="scheduledVideos"
-            fill="#f3e8ff"
+            fill="var(--color-accent)"
+            fillOpacity={0.15}
             stackId="visible"
-            stroke="#a855f7"
+            stroke="var(--color-accent)"
             type="monotone"
           />
           <Area
             dataKey="hiddenVideos"
-            fill="#fef3c7"
-            stroke="#f59e0b"
+            fill="var(--color-warning)"
+            fillOpacity={0.15}
+            stroke="var(--color-warning)"
             type="monotone"
           />
         </AreaChart>
