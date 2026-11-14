@@ -2,6 +2,7 @@
 
 import { TIME_ZONE } from '@shinju-date/constants'
 import { formatDate } from '@shinju-date/temporal-fns'
+import { Button } from '@shinju-date/ui'
 import { useState } from 'react'
 import { formatDateRange } from '../_lib/format-date'
 
@@ -19,6 +20,10 @@ interface DateRangePickerProps {
 
 // Maximum allowed period in days (90 days data retention policy)
 const MAX_PERIOD_DAYS = 90
+
+function isSameRange(a: DateRange, b: DateRange): boolean {
+  return a.startDate === b.startDate && a.endDate === b.endDate
+}
 
 export default function DateRangePicker({
   value,
@@ -81,27 +86,42 @@ export default function DateRangePicker({
     },
   ]
 
-  const handlePresetClick = (preset: (typeof presets)[number]) => {
+  // Resolve the range a preset applies, clamped to the 90-day limit
+  const resolvePresetRange = (preset: (typeof presets)[number]): DateRange => {
     const range = preset.getValue()
 
-    // Validate the preset range doesn't exceed 90 days
-    const startDate = Temporal.PlainDate.from(range.startDate)
     const endDate = Temporal.PlainDate.from(range.endDate)
-    const daysDifference = endDate.since(startDate).days + 1
+    let startDate = Temporal.PlainDate.from(range.startDate)
 
     // If preset exceeds 90 days, adjust the start date
-    if (daysDifference > MAX_PERIOD_DAYS) {
-      const adjustedStartDate = endDate.subtract({ days: MAX_PERIOD_DAYS - 1 })
-      range.startDate = adjustedStartDate.toString()
+    const earliestStartDate = endDate.subtract({ days: MAX_PERIOD_DAYS - 1 })
+    if (Temporal.PlainDate.compare(startDate, earliestStartDate) < 0) {
+      startDate = earliestStartDate
     }
 
     // Ensure start date is not beyond the 90-day limit
     if (Temporal.PlainDate.compare(startDate, maxStartDate) < 0) {
-      range.startDate = maxStartDate.toString()
+      startDate = maxStartDate
     }
 
-    onChange(range)
+    return { endDate: range.endDate, startDate: startDate.toString() }
+  }
+
+  // A range that matches none of the presets was chosen as a custom period
+  const isCustomRange = !presets.some((preset) =>
+    isSameRange(resolvePresetRange(preset), value),
+  )
+
+  const handlePresetClick = (preset: (typeof presets)[number]) => {
+    onChange(resolvePresetRange(preset))
     setIsCustomMode(false)
+  }
+
+  const handleCustomOpen = () => {
+    // Start editing from the period currently shown
+    setCustomStart(value.startDate)
+    setCustomEnd(value.endDate)
+    setIsCustomMode(true)
   }
 
   const handleCustomApply = () => {
@@ -179,24 +199,31 @@ export default function DateRangePicker({
       {!isCustomMode ? (
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">
-            {presets.map((preset) => (
-              <button
-                className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm transition-colors hover:bg-gray-50"
-                key={preset.label}
-                onClick={() => handlePresetClick(preset)}
-                type="button"
-              >
-                {preset.label}
-              </button>
-            ))}
+            {presets.map((preset) => {
+              const isSelected = isSameRange(resolvePresetRange(preset), value)
+
+              return (
+                <Button
+                  aria-pressed={isSelected}
+                  key={preset.label}
+                  onClick={() => handlePresetClick(preset)}
+                  size="sm"
+                  variant={isSelected ? 'primary' : 'secondary'}
+                >
+                  {preset.label}
+                </Button>
+              )
+            })}
           </div>
-          <button
-            className="w-full rounded border border-gray-300 bg-white px-3 py-1.5 text-sm transition-colors hover:bg-gray-50"
-            onClick={() => setIsCustomMode(true)}
-            type="button"
+          <Button
+            aria-pressed={isCustomRange}
+            className="w-full"
+            onClick={handleCustomOpen}
+            size="sm"
+            variant={isCustomRange ? 'primary' : 'secondary'}
           >
             カスタム期間を選択
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="space-y-3">
