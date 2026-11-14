@@ -1,6 +1,7 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: Mocking Redis with any type for simplicity
 
 import { HttpResponse, http } from 'msw'
+import { ensureCollectionsSeeded, videos } from '../collections.js'
 import { createRedisDataFactory } from '../redis-factory.js'
 
 /**
@@ -13,8 +14,16 @@ import { createRedisDataFactory } from '../redis-factory.js'
  * - Maintainability: Update data generation in factory, not here
  */
 
-// Generate Redis data using factory (last 7 days)
-const mockRedisStore = createRedisDataFactory(7)
+// The click data uses the videos of the Supabase mock, so that the apps can
+// look up the clicked videos and talents.
+await ensureCollectionsSeeded()
+
+const clickableVideos = (await videos.findMany()).filter(
+  (video) => video.visible && video.deleted_at === null,
+)
+
+// Generate Redis data using factory (last 7 days in TIME_ZONE)
+const mockRedisStore = createRedisDataFactory(7, { videos: clickableVideos })
 
 console.error(
   '🎯 MSW Redis mock data initialized with dates:',

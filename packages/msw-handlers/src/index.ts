@@ -53,6 +53,7 @@ export const allHandlers = [
 export {
   announcements,
   defineCollectionRelations,
+  ensureCollectionsSeeded,
   profileImages,
   seedCollections,
   talents,

@@ -351,7 +351,7 @@ const mockNewTable = createManyNewTable(10)
 
 ### Redis Data
 
-- `createRedisDataFactory(dateCount)` - 日付ベースのデータ生成
+- `createRedisDataFactory(dateCount, { videos })` - 日付ベースのデータ生成（`videos` の ID でクリックデータを作る）
 - `createCustomRedisData(data)` - カスタムキー/値ペア
 
 ### YouTube API

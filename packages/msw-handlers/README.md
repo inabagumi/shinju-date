@@ -218,7 +218,7 @@ The package mocks the following Redis operations:
 
 ```typescript
 // The handlers automatically mock calls like:
-await redisClient.zrange('videos:clicked:2023-10-23', 0, 10, {
+await redisClient.zrange('videos:clicked:20231023', 0, 10, {
   rev: true,
   withScores: true,
 })
@@ -246,14 +246,15 @@ await redisClient.ping()
 
 ### Sample Redis Data
 
-```typescript
-// Click tracking data
-'videos:clicked:2023-10-23' => [{ member: '1', score: 150 }, ...]
-'channels:clicked:2023-10-23' => [{ member: '1', score: 200 }, ...]
+`createRedisDataFactory()` (`src/redis-factory.ts`) generates the click data of the last 7 days, up to today in `TIME_ZONE`. The date keys are made with `formatDateKey()` like the apps do. The members are the IDs of the visible videos and their talents in the Supabase mock, so the apps can look them up:
 
-// Search popularity
-'search:popular:daily:2023-10-23' => [{ member: 'ホロライブ', score: 50 }, ...]
+```typescript
+// Click tracking data (video ID / talent ID => clicks)
+'videos:clicked:20231023' => [{ member: '<video ID>', score: 150 }, ...]
+'channels:clicked:20231023' => [{ member: '<talent ID>', score: 200 }, ...]
 ```
+
+The clicks of a talent are the sum of the clicks of their videos.
 
 ## Mock Data Generation with @msw/data and @faker-js/faker
 
@@ -583,7 +584,7 @@ http.get('*/rest/v1/my_table', ({ request }) => {
 
 To add new Redis data types:
 
-1. **Edit `src/factories/upstash/redis-data.ts`**:
+1. **Edit `src/redis-factory.ts`**:
 
 ```typescript
 // Add new data type in createRedisDataFactory()

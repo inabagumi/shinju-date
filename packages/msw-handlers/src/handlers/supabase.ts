@@ -1,8 +1,8 @@
 import { HttpResponse, type HttpResponseResolver, http } from 'msw'
 import {
   announcements,
+  ensureCollectionsSeeded,
   profileImages,
-  seedCollections,
   talents,
   terms,
   thumbnails,
@@ -27,7 +27,7 @@ import { MOCK_SUPABASE_SESSION, MOCK_SUPABASE_USER } from '../session.js'
  */
 
 // Initialize collections with seed data
-await seedCollections()
+await ensureCollectionsSeeded()
 
 /**
  * The media type that supabase-js requests with `.single()`. PostgREST then

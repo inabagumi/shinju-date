@@ -1,7 +1,8 @@
-import { REDIS_KEYS } from '@shinju-date/constants'
+import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { Redis } from '@upstash/redis'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { talents, videos } from '../collections.js'
 import { server } from '../server.js'
 
 describe('Upstash Redis Handlers', () => {
@@ -49,10 +50,11 @@ describe('Upstash Redis Handlers', () => {
       token: 'fake-token',
       url: 'https://fake.upstash.test',
     })
-    // The mock store holds the click data of the last 7 days (in UTC).
-    // Yesterday is used so that the key exists even across midnight.
+    // The mock store holds the click data of the last 7 days (in
+    // TIME_ZONE). Yesterday is used so that the key exists even across
+    // midnight.
     const key = `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${formatDateKey(
-      Temporal.Now.plainDateISO('UTC').subtract({ days: 1 }),
+      Temporal.Now.plainDateISO(TIME_ZONE).subtract({ days: 1 }),
     )}`
 
     function toPairs(result: unknown[]): [unknown, unknown][] {
@@ -114,6 +116,75 @@ describe('Upstash Redis Handlers', () => {
       })
 
       expect(result).toEqual(all.slice(0, 2))
+    })
+  })
+
+  describe('click data', () => {
+    const redis = new Redis({
+      token: 'fake-token',
+      url: 'https://fake.upstash.test',
+    })
+    // Yesterday is used so that the keys exist even across midnight.
+    const dateKey = formatDateKey(
+      Temporal.Now.plainDateISO(TIME_ZONE).subtract({ days: 1 }),
+    )
+
+    async function getScores(key: string): Promise<Map<string, number>> {
+      const result = await redis.zrange<(string | number)[]>(key, 0, -1, {
+        withScores: true,
+      })
+      const scores = new Map<string, number>()
+
+      for (let i = 0; i < result.length; i += 2) {
+        scores.set(String(result[i]), Number(result[i + 1]))
+      }
+
+      return scores
+    }
+
+    it('uses the IDs of the visible videos of the Supabase mock', async () => {
+      const videoScores = await getScores(
+        `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${dateKey}`,
+      )
+      const visibleVideoIds = new Set(
+        (await videos.findMany())
+          .filter((video) => video.visible && video.deleted_at === null)
+          .map((video) => video.id),
+      )
+
+      expect(videoScores.size).toBeGreaterThan(0)
+
+      for (const id of videoScores.keys()) {
+        expect(visibleVideoIds.has(id)).toBe(true)
+      }
+    })
+
+    it('counts the clicks of each talent from the clicks of their videos', async () => {
+      const videoScores = await getScores(
+        `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${dateKey}`,
+      )
+      const talentScores = await getScores(
+        `${REDIS_KEYS.CLICK_CHANNEL_PREFIX}${dateKey}`,
+      )
+      const talentIdByVideoId = new Map(
+        (await videos.findMany()).map((video) => [video.id, video.talent_id]),
+      )
+      const talentIds = new Set(
+        (await talents.findMany()).map((talent) => talent.id),
+      )
+      const expected = new Map<string, number>()
+
+      for (const [videoId, score] of videoScores) {
+        const talentId = talentIdByVideoId.get(videoId) ?? ''
+
+        expected.set(talentId, (expected.get(talentId) ?? 0) + score)
+      }
+
+      expect(talentScores).toEqual(expected)
+
+      for (const id of talentScores.keys()) {
+        expect(talentIds.has(id)).toBe(true)
+      }
     })
   })
 
