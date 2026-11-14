@@ -142,10 +142,40 @@ function processRedisCommand(command: string, args: any[]): any {
       return { result: value || null }
     }
 
+    case 'mget': {
+      return { result: args.map((key) => mockRedisStore.get(key) ?? null) }
+    }
+
     case 'set': {
-      const [key, value] = args
+      const [key, value, ...options] = args
+      const onlyIfMissing = options.some(
+        (option) => String(option).toLowerCase() === 'nx',
+      )
+
+      if (onlyIfMissing && mockRedisStore.has(key)) {
+        return { result: null }
+      }
+
       mockRedisStore.set(key, value)
       return { result: 'OK' }
+    }
+
+    case 'lpush': {
+      const [key, ...elements] = args
+      const rawList = mockRedisStore.get(key)
+      const list = Array.isArray(rawList) ? rawList : []
+
+      // Each element is pushed to the head in turn, like Redis does.
+      list.unshift(...elements.reverse())
+      mockRedisStore.set(key, list)
+      return { result: list.length }
+    }
+
+    case 'rpop': {
+      const [key] = args
+      const rawList = mockRedisStore.get(key)
+      const list = Array.isArray(rawList) ? rawList : []
+      return { result: list.pop() ?? null }
     }
 
     case 'del': {

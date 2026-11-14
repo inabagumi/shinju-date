@@ -97,4 +97,40 @@ describe('Upstash Redis Handlers', () => {
       expect(getData.result).toBe('test:value')
     })
   })
+
+  describe('commands of the backfill queue', () => {
+    async function send(command: unknown[]) {
+      const response = await fetch('https://fake.upstash.test/', {
+        body: JSON.stringify(command),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      })
+
+      const body = (await response.json()) as { result: unknown }
+
+      return body.result
+    }
+
+    it('sets a key only when it is missing with NX', async () => {
+      await expect(
+        send(['set', 'test:lock', '1', 'ex', 60, 'nx']),
+      ).resolves.toBe('OK')
+      await expect(
+        send(['set', 'test:lock', '2', 'ex', 60, 'nx']),
+      ).resolves.toBeNull()
+      await expect(send(['mget', 'test:lock', 'test:none'])).resolves.toEqual([
+        '1',
+        null,
+      ])
+    })
+
+    it('works as a FIFO queue with LPUSH and RPOP', async () => {
+      await expect(send(['lpush', 'test:queue', 'a'])).resolves.toBe(1)
+      await expect(send(['lpush', 'test:queue', 'b', 'c'])).resolves.toBe(3)
+      await expect(send(['rpop', 'test:queue'])).resolves.toBe('a')
+      await expect(send(['rpop', 'test:queue'])).resolves.toBe('b')
+      await expect(send(['rpop', 'test:queue'])).resolves.toBe('c')
+      await expect(send(['rpop', 'test:queue'])).resolves.toBeNull()
+    })
+  })
 })
