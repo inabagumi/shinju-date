@@ -135,6 +135,47 @@ jobs:
 
       - run: pnpm build --filter=!@shinju-date/admin --filter=!@shinju-date/batch --filter=!@shinju-date/web
 
+  # Production build of Next.js apps with MSW (no live Supabase/Upstash needed)
+  build-msw:
+    name: Build with MSW (${{ matrix.package }})
+    runs-on: ubuntu-26.04
+    needs: install
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - "@shinju-date/web"
+          - "@shinju-date/admin"
+    env:
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+
+      - name: Setup pnpm
+        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          cache: true
+
+      - name: Build dependencies
+        run: pnpm build --filter=${{ matrix.package }}^...
+
+      - name: Build app with MSW
+        run: pnpm --filter ${{ matrix.package }} build:msw
+        env:
+          NEXT_PUBLIC_BASE_URL: http://localhost:3000
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: fake
+          NEXT_PUBLIC_SUPABASE_URL: https://fake.supabase.test
+          NEXT_TELEMETRY_DISABLED: "1"
+          SUPABASE_SERVICE_ROLE_KEY: fake
+          UPSTASH_REDIS_REST_TOKEN: fake
+          UPSTASH_REDIS_REST_URL: https://fake.upstash.test
+
   # E2E tests (including UI browser tests)
   e2e:
     name: E2E Tests (${{ matrix.package }})
@@ -221,13 +262,19 @@ jobs:
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-26.04
-    needs: [lint, e2e]
+    needs: [lint, build-msw, e2e]
     if: always()
     steps:
       - name: Check lint results
         if: needs.lint.result != 'success'
         run: |
           echo "Lint job failed"
+          exit 1
+
+      - name: Check MSW build results
+        if: needs.build-msw.result != 'success'
+        run: |
+          echo "MSW build job failed"
           exit 1
 
       - name: Check E2E results

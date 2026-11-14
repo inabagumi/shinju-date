@@ -1696,19 +1696,19 @@ export const supabaseHandlers = [
     async ({ request, params }) => {
       const url = new URL(request.url)
       // Log the full URL for debugging
-      console.log('[MSW Storage] createSignedUrl called with URL:', url.href)
+      console.error('[MSW Storage] createSignedUrl called with URL:', url.href)
 
       // Extract path from params (handles nested paths correctly)
       // :path* returns an array when there are multiple segments
       const pathParam = params['path']
       const path = Array.isArray(pathParam) ? pathParam.join('/') : pathParam
 
-      console.log('[MSW Storage] Extracted path:', path)
+      console.error('[MSW Storage] Extracted path:', path)
 
       // Don't add thumbnails/ prefix again - the path parameter from the SDK
       // is relative to the bucket, so it's just "video1.jpg" not "/thumbnails/video1.jpg"
       const signedUrl = `https://fake.supabase.test/storage/v1/object/public/thumbnails/${path}`
-      console.log('[MSW Storage] Returning signedURL:', signedUrl)
+      console.error('[MSW Storage] Returning signedURL:', signedUrl)
 
       // Return a mock signed URL
       // The Supabase storage-js expects { signedURL } from the API
@@ -1750,7 +1750,7 @@ export const supabaseHandlers = [
   http.get(
     'https://fake.supabase.test/storage/v1/object/public/thumbnails/:path*',
     async ({ request }) => {
-      console.log('[MSW Storage] GET thumbnail image called:', request.url)
+      console.error('[MSW Storage] GET thumbnail image called:', request.url)
       const dummyImage =
         '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" />'
 

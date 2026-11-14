@@ -161,9 +161,23 @@ afterAll(() => server.close())
 
 ### クイックスタート
 
-#### 方法1: Deployment Adapter使用（推奨）
+`apps/web` と `apps/admin` には、MSWを有効にして本番ビルドを行う `build:msw` スクリプトが用意されています。依存パッケージをビルドしてから実行してください。
 
-Next.jsのアダプターシステムを使用してMSWを設定：
+```bash
+pnpm build --filter=@shinju-date/web^...
+pnpm --filter @shinju-date/web build:msw
+```
+
+`build:msw` は `NODE_OPTIONS="--import @shinju-date/msw-handlers/register"` と `ENABLE_MSW=true` を付けて `next build` を実行します。後述の[環境変数](#環境変数設定)（MSW用のフェイク値）を `.env.local` などで設定しておく必要があります。
+
+CIでも同じスクリプトで `apps/web` と `apps/admin` のビルドを確認しています（`.github/workflows/ci.yml` の `build-msw` ジョブ）。
+
+> [!NOTE]
+> `ENABLE_MSW=true` だけでは、ビルド時にMSWが起動しません。`instrumentation.ts` の `register()` はリクエスト処理時にのみ呼ばれ、静的生成のワーカーでは実行されないためです（[仕組み](#仕組み)を参照）。
+
+#### その他の方法: Deployment Adapter
+
+Next.jsのアダプターシステムを使用してMSWを設定することもできます。
 
 **ステップ1: `next.config.ts` を更新**
 
@@ -189,14 +203,6 @@ ENABLE_MSW=true pnpm run dev
 
 アダプターは自動的に`NODE_OPTIONS`を設定し、すべてのプロセスとワーカースレッドでMSWをロードします。
 
-#### 方法2: NODE_OPTIONSを直接使用
-
-より明示的な制御が必要な場合、または`next.config.ts`を変更したくない場合：
-
-```bash
-NODE_OPTIONS="--import @shinju-date/msw-handlers/register" ENABLE_MSW=true pnpm run build
-```
-
 ### 環境変数設定
 
 `.env.local` ファイルに以下の変数を設定：
@@ -219,15 +225,13 @@ UPSTASH_REDIS_REST_URL="https://fake.upstash.test"
 
 ### package.jsonスクリプト
 
-MSWサポートを含むスクリプトの例：
+`apps/web` と `apps/admin` の `package.json` には、次のスクリプトが定義されています：
 
 ```json
 {
   "scripts": {
     "build": "next build",
-    "build:msw": "NODE_OPTIONS='--import @shinju-date/msw-handlers/register' ENABLE_MSW=true next build",
-    "dev": "next dev",
-    "dev:msw": "NODE_OPTIONS='--import @shinju-date/msw-handlers/register' ENABLE_MSW=true next dev"
+    "build:msw": "NODE_OPTIONS=\"--import @shinju-date/msw-handlers/register\" ENABLE_MSW=true next build"
   }
 }
 ```
@@ -248,6 +252,12 @@ Next.jsはビルド時にワーカースレッドを使用して並列にペー�
 4. Next.jsビルドがモックされたAPIで進行
 
 これにより、コードがAPIコールを試みる前にMSWが準備されます。
+
+**ログは標準エラー出力に書く**
+
+`NODE_OPTIONS` は、Next.jsがビルド中に起動する子プロセス（`tsc --showConfig` など）にも引き継がれます。これらの子プロセスの標準出力は機械的に解析されるため、`@shinju-date/msw-handlers` が標準出力にログを書くと解析に失敗し、ビルドが `Could not parse output from TypeScript's --showConfig.` で失敗します。
+
+そのため、`@shinju-date/msw-handlers` のNode.js向けの診断ログは、すべて `console.error`（標準エラー出力）で出力しています。ハンドラーなどにログを追加する場合も `console.log` は使わないでください。
 
 ## モックデータ
 
@@ -279,7 +289,7 @@ videos:clicked:2023-10-23 => [
 
 ### ビルド出力
 
-MSWが有効な場合、以下のメッセージが表示されます：
+MSWが有効な場合、以下のメッセージが標準エラー出力に表示されます：
 
 ```
 🎯 MSW Redis mock data initialized with dates: [...]
@@ -298,6 +308,14 @@ MSWが有効な場合、以下のメッセージが表示されます：
 - `NODE_OPTIONS`環境変数が正しく設定されているか確認
 - `ENABLE_MSW=true`が設定されているか確認
 - `@shinju-date/msw-handlers`パッケージがビルドされているか確認
+
+### `"use cache"` のタイムアウトでビルドが失敗する
+
+``Route "/": A `"use cache"` function took too long during prerendering.`` のようなエラーが表示される場合、プリレンダリング中のリクエストがMSWにインターセプトされず、`@shinju-date/retryable-fetch` のリトライで待ち続けています。`ENABLE_MSW=true` だけでなく `NODE_OPTIONS` も設定されているか確認してください（`build:msw` スクリプトを使うと両方設定されます）。
+
+### `Could not parse output from TypeScript's --showConfig.` で失敗する
+
+`NODE_OPTIONS` で読み込んだモジュールが標準出力にログを書いていると、Next.jsが `tsc --showConfig` の出力を解析できずに失敗します。`@shinju-date/msw-handlers` に `console.log` が追加されていないか確認し、`console.error` に置き換えてください（[仕組み](#仕組み)を参照）。
 
 ### MSWが起動しない
 

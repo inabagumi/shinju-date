@@ -16,7 +16,7 @@ import { createRedisDataFactory } from '../redis-factory.js'
 // Generate Redis data using factory (last 7 days)
 const mockRedisStore = createRedisDataFactory(7)
 
-console.log(
+console.error(
   '🎯 MSW Redis mock data initialized with dates:',
   Array.from(mockRedisStore.keys())
     .filter((key) => key.includes(':clicked:'))

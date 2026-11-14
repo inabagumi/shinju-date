@@ -58,7 +58,7 @@ const mswAdapter: NextAdapter = {
         ? `${existingNodeOptions} ${mswImport}`
         : mswImport
 
-      console.log('🎭 MSW adapter: Configured NODE_OPTIONS for build/dev')
+      console.error('🎭 MSW adapter: Configured NODE_OPTIONS for build/dev')
     }
 
     return config

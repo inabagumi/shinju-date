@@ -81,6 +81,7 @@
   },
   "scripts": {
     "build": "next build",
+    "build:msw": "NODE_OPTIONS=\"--import @shinju-date/msw-handlers/register\" ENABLE_MSW=true next build",
     "dev": "next --port 3000",
     "msw:init": "msw init public/ --save",
     "start": "next start --port 3000",
