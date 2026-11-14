@@ -76,6 +76,7 @@
   "tailwind": {
     "attributes": ["class", "className"],
     "mergeFunctions": ["twMerge"],
+    "stylesheet": "./packages/tailwind-config/theme.css",
     "variantFunctions": ["cva"]
   },
   "vcs": {
