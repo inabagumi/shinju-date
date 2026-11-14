@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { MAIN_CONTENT_ID } from '@/components/skip-link'
 import { FeedbackForm } from './_components/feedback-form'
 
 export const metadata: Metadata = {
@@ -16,7 +17,10 @@ export const metadata: Metadata = {
 
 export default function FeedbackPage() {
   return (
-    <main className="mx-auto max-w-6xl px-4 py-12">
+    <main
+      className="mx-auto max-w-6xl scroll-mt-20 px-4 py-12"
+      id={MAIN_CONTENT_ID}
+    >
       <div className="mb-12 text-center">
         <h1 className="mb-4 text-4xl font-bold text-primary dark:text-774-nevy-50">
           機能要望
