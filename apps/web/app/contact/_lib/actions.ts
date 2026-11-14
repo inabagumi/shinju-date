@@ -3,15 +3,29 @@
 import { checkBotId } from 'botid/server'
 import { Resend } from 'resend'
 import { z } from 'zod'
+import { type FormState, toValidationErrorState } from '@/lib/form-state'
 import { isContactFormEnabled } from './utils'
 
+const MESSAGE_REQUIRED_ERROR = 'お問い合わせ内容を入力してください'
+
 const contactFormSchema = z.object({
-  email: z.string().email().optional(),
-  message: z.string().min(1, 'メッセージは必須です'),
+  email: z
+    .email({ error: 'メールアドレスの形式が正しくありません' })
+    .optional(),
+  message: z
+    .string({ error: MESSAGE_REQUIRED_ERROR })
+    .trim()
+    .min(1, MESSAGE_REQUIRED_ERROR),
   name: z.string().optional(),
-  type: z.enum(['bug', 'feature', 'other']),
+  type: z.enum(['bug', 'feature', 'other'], {
+    error: 'お問い合わせ種別を選択してください',
+  }),
   wantsReply: z.boolean().default(false),
 })
+
+export type ContactFormState = FormState<
+  keyof z.input<typeof contactFormSchema>
+>
 
 // Only initialize Resend if API key is available
 const resend = process.env['RESEND_API_KEY']
@@ -21,7 +35,7 @@ const resend = process.env['RESEND_API_KEY']
 export async function submitContactForm(
   _prevState: unknown,
   formData: FormData,
-): Promise<{ success: boolean; message?: string; error?: string }> {
+): Promise<ContactFormState> {
   try {
     // Block bots before any validation or email send.
     // In local development, checkBotId() always returns isBot: false
@@ -70,10 +84,7 @@ export async function submitContactForm(
     const result = validationSchema.safeParse(rawData)
 
     if (!result.success) {
-      return {
-        error: result.error.issues.map((e) => e.message).join(', '),
-        success: false,
-      }
+      return toValidationErrorState(result.error)
     }
 
     const { type, name, wantsReply, email, message } = result.data

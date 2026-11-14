@@ -3,16 +3,26 @@
 import type { TablesInsert } from '@shinju-date/database'
 import { checkBotId } from 'botid/server'
 import { z } from 'zod'
+import { type FormState, toValidationErrorState } from '@/lib/form-state'
 import { createSupabaseClient } from '@/lib/supabase'
 
+const MESSAGE_REQUIRED_ERROR = '機能要望を入力してください'
+
 const feedbackFormSchema = z.object({
-  message: z.string().min(1, 'メッセージは必須です'),
+  message: z
+    .string({ error: MESSAGE_REQUIRED_ERROR })
+    .trim()
+    .min(1, MESSAGE_REQUIRED_ERROR),
 })
+
+export type FeedbackFormState = FormState<
+  keyof z.input<typeof feedbackFormSchema>
+>
 
 export async function submitFeedback(
   _prevState: unknown,
   formData: FormData,
-): Promise<{ success: boolean; message?: string; error?: string }> {
+): Promise<FeedbackFormState> {
   try {
     // Block bots before any validation or DB write.
     // In local development, checkBotId() always returns isBot: false
@@ -39,10 +49,7 @@ export async function submitFeedback(
     const result = feedbackFormSchema.safeParse(rawData)
 
     if (!result.success) {
-      return {
-        error: result.error.issues.map((e) => e.message).join(', '),
-        success: false,
-      }
+      return toValidationErrorState(result.error)
     }
 
     const { message } = result.data
