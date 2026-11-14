@@ -20,10 +20,16 @@ function createChannelThumbnails(channelId: string) {
   }
 }
 
-/** A solid 256x256 PNG served as every channel icon. */
-const CHANNEL_ICON_PNG = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAMAAABrrFhUAAAAA1BMVEVPRuWq/wlTAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAVElEQVR42u3BAQEAAACAkP6v7ggKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGAEPAAEccgnDAAAAAElFTkSuQmCC',
-  'base64',
+/**
+ * A solid 256x256 PNG served as every channel icon. Decoded with `atob`
+ * rather than `Buffer`, because this module is also loaded by the browser
+ * worker.
+ */
+const CHANNEL_ICON_PNG = Uint8Array.from(
+  atob(
+    'iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAMAAABrrFhUAAAAA1BMVEVPRuWq/wlTAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAVElEQVR42u3BAQEAAACAkP6v7ggKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGAEPAAEccgnDAAAAAElFTkSuQmCC',
+  ),
+  (character) => character.charCodeAt(0),
 )
 
 // Mock YouTube channels data
