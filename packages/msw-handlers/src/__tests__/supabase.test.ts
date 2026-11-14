@@ -29,7 +29,7 @@ describe('Supabase Handlers', () => {
             },
           },
         )
-        const json = await response.json()
+        const json = (await response.json()) as { email: string; id: string }
         expect(response.status).toBe(200)
         expect(json.id).toBe('mock-user-id')
         expect(json.email).toBe('admin@example.com')
@@ -38,7 +38,7 @@ describe('Supabase Handlers', () => {
       it('should return user data if MSW_SUPABASE_AUTHENTICATED is true', async () => {
         process.env['MSW_SUPABASE_AUTHENTICATED'] = 'true'
         const response = await fetch('https://fake.supabase.test/auth/v1/user')
-        const json = await response.json()
+        const json = (await response.json()) as { id: string }
         expect(response.status).toBe(200)
         expect(json.id).toBe('mock-user-id')
       })
@@ -57,7 +57,7 @@ describe('Supabase Handlers', () => {
             method: 'POST',
           },
         )
-        const json = await response.json()
+        const json = (await response.json()) as { access_token: string }
         expect(response.status).toBe(200)
         expect(json.access_token).toBe('mock_access_token')
         expect(response.headers.get('set-cookie')).toContain(
@@ -105,7 +105,7 @@ describe('Supabase Handlers', () => {
       const response = await fetch(
         'https://fake.supabase.test/rest/v1/videos?select=id,title&limit=2',
       )
-      const data = await response.json()
+      const data = (await response.json()) as unknown[]
 
       expect(response.ok).toBe(true)
       expect(Array.isArray(data)).toBe(true)
@@ -118,7 +118,9 @@ describe('Supabase Handlers', () => {
       const response = await fetch(
         'https://fake.supabase.test/rest/v1/videos?select=id,title,thumbnails(path,blur_data_url)',
       )
-      const data = await response.json()
+      const data = (await response.json()) as {
+        thumbnail_id?: string | null
+      }[]
 
       expect(response.ok).toBe(true)
       expect(Array.isArray(data)).toBe(true)
@@ -200,23 +202,23 @@ describe('Supabase Handlers', () => {
       const response = await fetch(
         `https://fake.supabase.test/rest/v1/youtube_videos?select=${encodeURIComponent(select)}&limit=1`,
       )
-      const data = await response.json()
+      const data = (await response.json()) as { video: unknown }[]
 
       expect(response.ok).toBe(true)
-      expect(data[0].video).toEqual(
+      expect(data[0]?.video).toEqual(
         expect.objectContaining({
           id: expect.any(String),
           title: expect.any(String),
         }),
       )
-      expect(data[0].video).toHaveProperty('thumbnail')
+      expect(data[0]?.video).toHaveProperty('thumbnail')
     })
 
     it('should apply offset before limit', async () => {
       const allResponse = await fetch(
         'https://fake.supabase.test/rest/v1/videos?select=id',
       )
-      const all = await allResponse.json()
+      const all = (await allResponse.json()) as { id: string }[]
       expect(all.length).toBeGreaterThan(2)
 
       const response = await fetch(
@@ -228,14 +230,22 @@ describe('Supabase Handlers', () => {
     })
 
     it('should handle filtering with id.in', async () => {
-      const response = await fetch(
-        'https://fake.supabase.test/rest/v1/videos?select=*&id.in.(1,2)',
+      const ids = (
+        (await (
+          await fetch('https://fake.supabase.test/rest/v1/videos?select=id')
+        ).json()) as { id: string }[]
       )
-      const data = await response.json()
+        .slice(0, 2)
+        .map((video) => video.id)
+      expect(ids).toHaveLength(2)
+
+      const response = await fetch(
+        `https://fake.supabase.test/rest/v1/videos?select=*&id.in.(${ids.join(',')})`,
+      )
+      const data = (await response.json()) as { id: string }[]
 
       expect(response.ok).toBe(true)
-      expect(Array.isArray(data)).toBe(true)
-      expect(data.every((video) => [1, 2].includes(video.id))).toBe(true)
+      expect(data.map((video) => video.id).sort()).toEqual([...ids].sort())
     })
   })
 
@@ -244,7 +254,7 @@ describe('Supabase Handlers', () => {
       const response = await fetch(
         'https://fake.supabase.test/rest/v1/channels',
       )
-      const data = await response.json()
+      const data = (await response.json()) as unknown[]
 
       expect(response.ok).toBe(true)
       expect(Array.isArray(data)).toBe(true)
@@ -782,14 +792,14 @@ describe('Supabase Handlers', () => {
     const headers = { accept: 'application/vnd.pgrst.object+json' }
 
     it('should return the only row as an object', async () => {
-      const [video] = await (
+      const [video] = (await (
         await fetch('https://fake.supabase.test/rest/v1/videos?limit=1')
-      ).json()
+      ).json()) as [{ id: string; title: string }]
       const response = await fetch(
         `https://fake.supabase.test/rest/v1/videos?select=id,title,talent:talents(name)&id=eq.${video.id}`,
         { headers },
       )
-      const data = await response.json()
+      const data = (await response.json()) as { talent?: unknown }
 
       expect(response.status).toBe(200)
       expect(response.headers.get('content-type')).toContain(
@@ -801,9 +811,9 @@ describe('Supabase Handlers', () => {
     })
 
     it('should accept the media type with nulls stripped', async () => {
-      const [talent] = await (
+      const [talent] = (await (
         await fetch('https://fake.supabase.test/rest/v1/talents?limit=1')
-      ).json()
+      ).json()) as [{ id: string; name: string }]
       const response = await fetch(
         `https://fake.supabase.test/rest/v1/talents?select=id,name&id=eq.${talent.id}`,
         {
@@ -838,7 +848,10 @@ describe('Supabase Handlers', () => {
         'https://fake.supabase.test/rest/v1/talents?select=*',
         { headers },
       )
-      const data = await response.json()
+      const data = (await response.json()) as {
+        code: string
+        details: string
+      }
 
       expect(response.status).toBe(406)
       expect(data.code).toBe('PGRST116')
@@ -852,13 +865,15 @@ describe('Supabase Handlers', () => {
       )
 
       expect(response.status).toBe(406)
-      expect((await response.json()).code).toBe('PGRST116')
+      expect(((await response.json()) as { code: string }).code).toBe(
+        'PGRST116',
+      )
     })
 
     it('should return the updated row as an object', async () => {
-      const [talent] = await (
+      const [talent] = (await (
         await fetch('https://fake.supabase.test/rest/v1/talents?limit=1')
-      ).json()
+      ).json()) as [{ id: string; name: string }]
       const response = await fetch(
         `https://fake.supabase.test/rest/v1/talents?id=eq.${talent.id}`,
         {
@@ -891,7 +906,7 @@ describe('Supabase Handlers', () => {
             method: 'POST',
           },
         )
-        const data = await response.json()
+        const data = (await response.json()) as { signedURL: string }
 
         expect(response.ok).toBe(true)
         expect(data).toHaveProperty('signedURL')
@@ -907,7 +922,7 @@ describe('Supabase Handlers', () => {
             method: 'POST',
           },
         )
-        const data = await response.json()
+        const data = (await response.json()) as { signedURL: string }
 
         expect(response.ok).toBe(true)
         expect(data).toHaveProperty('signedURL')

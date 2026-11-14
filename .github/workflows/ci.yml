@@ -112,6 +112,30 @@ jobs:
       - name: Run Node.js lint
         run: pnpm biome ci --reporter=github .
 
+  # Type check job for Node.js (including test files, which Vitest does not type check)
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-26.04
+    needs: install
+    permissions:
+      contents: read
+    env:
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+
+      - name: Setup pnpm
+        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          cache: true
+
+      - name: Run type check
+        run: pnpm typecheck
+
   # Build job for Node.js
   build:
     name: Build (Node.js)
@@ -262,13 +286,19 @@ jobs:
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-26.04
-    needs: [lint, build-msw, e2e]
+    needs: [lint, typecheck, build-msw, e2e]
     if: always()
     steps:
       - name: Check lint results
         if: needs.lint.result != 'success'
         run: |
           echo "Lint job failed"
+          exit 1
+
+      - name: Check typecheck results
+        if: needs.typecheck.result != 'success'
+        run: |
+          echo "Typecheck job failed"
           exit 1
 
       - name: Check MSW build results

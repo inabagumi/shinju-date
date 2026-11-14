@@ -8,7 +8,7 @@ import {
   streamIdFromLiveTwitchVideoId,
   type TwitchVideo,
   toLiveTwitchVideoId,
-} from '../index'
+} from '../index.js'
 
 describe('live twitch video id helpers', () => {
   it('builds and detects synthetic live ids', () => {
@@ -126,7 +126,7 @@ describe('getTwitchCredentials', () => {
     delete process.env['TWITCH_CLIENT_ID']
     delete process.env['TWITCH_CLIENT_SECRET']
 
-    const { getTwitchCredentials } = await import('../index')
+    const { getTwitchCredentials } = await import('../index.js')
     expect(() => getTwitchCredentials()).toThrow(/Client ID and Client Secret/)
   })
 
@@ -134,7 +134,7 @@ describe('getTwitchCredentials', () => {
     vi.stubEnv('TWITCH_CLIENT_ID', 'test-client-id')
     vi.stubEnv('TWITCH_CLIENT_SECRET', 'test-client-secret')
 
-    const { getTwitchCredentials } = await import('../index')
+    const { getTwitchCredentials } = await import('../index.js')
     expect(getTwitchCredentials()).toEqual({
       clientId: 'test-client-id',
       clientSecret: 'test-client-secret',
@@ -203,7 +203,7 @@ describe('lookups by ID', () => {
   it('maps videos Helix returns', async () => {
     getVideosByIds.mockResolvedValue([helixVideo('1')])
 
-    const { getVideos } = await import('../index')
+    const { getVideos } = await import('../index.js')
     const videos = await Array.fromAsync(getVideos({ ids: ['1'] }))
 
     expect(videos).toHaveLength(1)
@@ -218,7 +218,7 @@ describe('lookups by ID', () => {
   it('treats a 404 for a single video as not found', async () => {
     getVideosByIds.mockRejectedValue(notFound())
 
-    const { getVideos } = await import('../index')
+    const { getVideos } = await import('../index.js')
 
     await expect(
       Array.fromAsync(getVideos({ ids: ['gone'] })),
@@ -234,7 +234,7 @@ describe('lookups by ID', () => {
       return ids.map(helixVideo)
     })
 
-    const { getVideos } = await import('../index')
+    const { getVideos } = await import('../index.js')
     const videos = await Array.fromAsync(
       getVideos({ ids: ['1', '2', 'gone', '3', '4'] }),
     )
@@ -249,7 +249,7 @@ describe('lookups by ID', () => {
       }),
     )
 
-    const { getVideos } = await import('../index')
+    const { getVideos } = await import('../index.js')
 
     await expect(Array.fromAsync(getVideos({ ids: ['1'] }))).rejects.toThrow(
       /500/,
@@ -259,7 +259,7 @@ describe('lookups by ID', () => {
   it('treats a 404 for clips as not found', async () => {
     getClipsByIds.mockRejectedValue(notFound())
 
-    const { getClips } = await import('../index')
+    const { getClips } = await import('../index.js')
 
     await expect(Array.fromAsync(getClips({ ids: ['gone'] }))).resolves.toEqual(
       [],
@@ -376,7 +376,7 @@ describe('broadcast lookups', () => {
   it('returns the stream while the broadcast is on air', async () => {
     getStreamsByUserIds.mockResolvedValue([helixStream('42')])
 
-    const { getLiveStream } = await import('../index')
+    const { getLiveStream } = await import('../index.js')
 
     await expect(
       getLiveStream({ streamId: '42', userId: 'user-1' }),
@@ -388,7 +388,7 @@ describe('broadcast lookups', () => {
     getStreamsByUserIds.mockResolvedValueOnce([])
     getStreamsByUserIds.mockResolvedValueOnce([helixStream('43')])
 
-    const { getLiveStream } = await import('../index')
+    const { getLiveStream } = await import('../index.js')
 
     await expect(
       getLiveStream({ streamId: '42', userId: 'user-1' }),
@@ -403,7 +403,7 @@ describe('broadcast lookups', () => {
       data: [helixArchive('900', '41'), helixArchive('901', '42')],
     })
 
-    const { getArchiveOfStream } = await import('../index')
+    const { getArchiveOfStream } = await import('../index.js')
 
     await expect(
       getArchiveOfStream({ streamId: '42', userId: 'user-1' }),
@@ -419,7 +419,7 @@ describe('broadcast lookups', () => {
       data: [helixArchive('900', '41'), helixArchive('902', null)],
     })
 
-    const { getArchiveOfStream } = await import('../index')
+    const { getArchiveOfStream } = await import('../index.js')
 
     await expect(
       getArchiveOfStream({ streamId: '42', userId: 'user-1' }),

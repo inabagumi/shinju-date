@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatRelativeTime } from '../format-relative-time'
+import { formatRelativeTime } from '../format-relative-time.js'
 
 describe('formatRelativeTime', () => {
   // Use a fixed reference time for consistent testing

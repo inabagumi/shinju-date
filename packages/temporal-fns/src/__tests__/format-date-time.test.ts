@@ -5,7 +5,7 @@ import formatDateTime, {
   formatDateTimeFromISO,
   formatDateTimeWithSeconds,
   formatTime,
-} from '../format-date-time'
+} from '../format-date-time.js'
 
 // The server uses the native Temporal while some browsers use
 // temporal-polyfill. Both must produce the same strings to avoid hydration

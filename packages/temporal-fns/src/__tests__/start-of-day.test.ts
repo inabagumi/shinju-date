@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import startOfDay from '../start-of-day'
+import startOfDay from '../start-of-day.js'
 
 describe('startOfDay', () => {
   it('should return start of day for ZonedDateTime', () => {
