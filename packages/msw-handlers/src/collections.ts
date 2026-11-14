@@ -5,6 +5,7 @@
 
 import { faker } from '@faker-js/faker'
 import { Collection } from '@msw/data'
+import { Temporal } from 'temporal-polyfill'
 import { z } from 'zod'
 
 // Talents collection
@@ -93,6 +94,26 @@ export const twitchUsers = new Collection({
     talent_id: z.string().uuid(),
     twitch_login_name: z.string().nullable(),
     twitch_user_id: z.string(),
+  }),
+})
+
+// Backfill jobs that finished (history recorded by the batch app)
+export const videoBackfillJobs = new Collection({
+  schema: z.object({
+    account_id: z.string().uuid(),
+    added: z.number(),
+    created_at: z.string(),
+    error: z.string().nullable(),
+    finished_at: z.string(),
+    id: z.string().uuid(),
+    pages: z.number(),
+    platform: z.enum(['youtube', 'twitch']),
+    requested_at: z.string(),
+    requested_by: z.string().nullable(),
+    run_id: z.string().uuid().nullable(),
+    started_at: z.string().nullable(),
+    status: z.enum(['done', 'failed']),
+    talent_id: z.string().uuid(),
   }),
 })
 
@@ -320,7 +341,7 @@ export async function seedCollections() {
 
   // Create Twitch users for the first two talents. Only the first one has
   // an icon, so the default icon fallback can be checked as well.
-  await Promise.all(
+  const createdTwitchUsers = await Promise.all(
     createdTalents.slice(0, 2).map(async (talent, idx) => {
       const twitchUserId = faker.string.numeric(9)
       const login = faker.internet.username().toLowerCase()
@@ -349,6 +370,65 @@ export async function seedCollections() {
       })
     }),
   )
+
+  // Create the history of backfill jobs: a channel that was backfilled, and
+  // a Twitch user whose latest backfill failed after an earlier one succeeded,
+  // so that the failure alert and the bulk retry can be checked.
+  const backfilledChannel = createdChannels[0]
+  const failedTwitchUser = createdTwitchUsers[1]
+
+  if (backfilledChannel && failedTwitchUser) {
+    const backfills = [
+      {
+        account_id: backfilledChannel.id,
+        added: 128,
+        error: null,
+        hoursAgo: 30,
+        pages: 3,
+        platform: 'youtube' as const,
+        status: 'done' as const,
+        talent_id: backfilledChannel.talent_id,
+      },
+      {
+        account_id: failedTwitchUser.id,
+        added: 40,
+        error: null,
+        hoursAgo: 48,
+        pages: 1,
+        platform: 'twitch' as const,
+        status: 'done' as const,
+        talent_id: failedTwitchUser.talent_id,
+      },
+      {
+        account_id: failedTwitchUser.id,
+        added: 2,
+        error: 'Twitch API request failed with status 503',
+        hoursAgo: 6,
+        pages: 1,
+        platform: 'twitch' as const,
+        status: 'failed' as const,
+        talent_id: failedTwitchUser.talent_id,
+      },
+    ]
+
+    await Promise.all(
+      backfills.map(({ hoursAgo, ...backfill }) => {
+        const finishedAt = Temporal.Now.instant().subtract({ hours: hoursAgo })
+        const requestedAt = finishedAt.subtract({ minutes: 10 })
+
+        return videoBackfillJobs.create({
+          ...backfill,
+          created_at: finishedAt.toString(),
+          finished_at: finishedAt.toString(),
+          id: faker.string.uuid(),
+          requested_at: requestedAt.toString(),
+          requested_by: null,
+          run_id: null,
+          started_at: requestedAt.toString(),
+        })
+      }),
+    )
+  }
 
   // Create YouTube videos (relations)
   const allVideos = await videos.findMany()

@@ -59,6 +59,7 @@ export {
   terms,
   thumbnails,
   twitchUsers,
+  videoBackfillJobs,
   videos,
   youtubeChannels,
   youtubeVideos,

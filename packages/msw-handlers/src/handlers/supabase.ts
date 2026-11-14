@@ -7,6 +7,7 @@ import {
   terms,
   thumbnails,
   twitchUsers,
+  videoBackfillJobs,
   videos,
   youtubeChannels,
   youtubeVideos,
@@ -66,6 +67,98 @@ async function getMockYoutubeVideos() {
   return await youtubeVideos.findMany()
 }
 
+/** The history of backfill jobs, newest first. */
+async function getMockVideoBackfillJobs() {
+  const jobs = await videoBackfillJobs.findMany()
+
+  return jobs.sort((a, b) => b.finished_at.localeCompare(a.finished_at))
+}
+
+/**
+ * Mirrors the `video_backfill_latest_jobs` view: the latest finished job of
+ * each account that still exists, of talents that are not deleted.
+ */
+async function getMockLatestVideoBackfillJobs() {
+  const [jobs, allTalents, channels, users] = await Promise.all([
+    getMockVideoBackfillJobs(),
+    getMockTalents(),
+    getMockChannels(),
+    getMockTwitchUsers(),
+  ])
+  const talentIds = new Set(
+    allTalents
+      .filter((talent) => talent.deleted_at === null)
+      .map((talent) => talent.id),
+  )
+  const accountIds = {
+    twitch: new Set(users.map((user) => user.id)),
+    youtube: new Set(channels.map((channel) => channel.id)),
+  }
+  const seen = new Set<string>()
+
+  return jobs.filter((job) => {
+    const key = `${job.platform}:${job.account_id}`
+
+    if (
+      seen.has(key) ||
+      !talentIds.has(job.talent_id) ||
+      !accountIds[job.platform].has(job.account_id)
+    ) {
+      return false
+    }
+
+    seen.add(key)
+
+    return true
+  })
+}
+
+/**
+ * GET and HEAD handlers of a table (or view) that is only read, with
+ * filters, embedded resources and exact counts.
+ */
+function createReadOnlyHandlers(
+  name: string,
+  // biome-ignore lint/suspicious/noExplicitAny: Rows can come from any table
+  getRows: () => Promise<any[]>,
+) {
+  const url = `https://fake.supabase.test/rest/v1/${name}`
+
+  return [
+    http.get(url, async ({ request }) => {
+      const query = parseSupabaseQuery(new URL(request.url))
+      // An exact count counts every matching row, not only the page.
+      const matched = applySupabaseConditions(await getRows(), query)
+      const data = await applySelect(
+        applyPagination(matched, query),
+        query.select,
+      )
+      const prefer = request.headers.get('prefer') ?? ''
+      const start = query.offset ? parseInt(query.offset, 10) : 0
+
+      return HttpResponse.json(data, {
+        headers:
+          prefer.includes('count=exact') || query.returnCount
+            ? {
+                'Content-Range': `${start}-${Math.max(start, start + data.length - 1)}/${matched.length}`,
+              }
+            : {},
+      })
+    }),
+    http.head(url, async ({ request }) => {
+      const query = parseSupabaseQuery(new URL(request.url))
+      const count = applySupabaseConditions(await getRows(), query).length
+
+      return new HttpResponse(null, {
+        headers: {
+          'Content-Range': `0-0/${count}`,
+          'Content-Type': 'application/json',
+        },
+      })
+    }),
+  ]
+}
+
 /**
  * Parse Supabase REST API query parameters
  */
@@ -100,9 +193,21 @@ function parseSupabaseQuery(url: URL) {
 }
 
 /**
- * Apply filters and selections to mock data
+ * Apply filters and pagination to mock data
  */
 function applySupabaseFilters(
+  // biome-ignore lint/suspicious/noExplicitAny: Generic mock data handler requires any for flexible type matching across different table types
+  data: any[],
+  query: ReturnType<typeof parseSupabaseQuery>,
+) {
+  return applyPagination(applySupabaseConditions(data, query), query)
+}
+
+/**
+ * Apply the filters of a query, without pagination. The rows that match are
+ * what an exact count counts.
+ */
+function applySupabaseConditions(
   // biome-ignore lint/suspicious/noExplicitAny: Generic mock data handler requires any for flexible type matching across different table types
   data: any[],
   query: ReturnType<typeof parseSupabaseQuery>,
@@ -174,6 +279,18 @@ function applySupabaseFilters(
       }
     }
   }
+
+  return filteredData
+}
+
+/**
+ * Apply the offset and limit of a query.
+ */
+function applyPagination<T>(
+  data: T[],
+  query: ReturnType<typeof parseSupabaseQuery>,
+): T[] {
+  let filteredData = data
 
   // Apply offset before limit to match PostgREST pagination semantics
   if (query.offset) {
@@ -893,6 +1010,13 @@ export const supabaseHandlers = [
         },
       })
     },
+  ),
+
+  // Backfill history (read only; recorded by the batch app)
+  ...createReadOnlyHandlers('video_backfill_jobs', getMockVideoBackfillJobs),
+  ...createReadOnlyHandlers(
+    'video_backfill_latest_jobs',
+    getMockLatestVideoBackfillJobs,
   ),
 
   // YouTube Videos Table

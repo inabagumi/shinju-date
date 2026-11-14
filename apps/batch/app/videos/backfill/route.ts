@@ -10,7 +10,9 @@ import { VIDEOS_BACKFILL_JOB } from '@/lib/crawler-jobs'
 import { runCronJob } from '@/lib/cron'
 import { redisClient } from '@/lib/redis'
 import { createScraper } from '@/lib/scraper'
+import { supabaseClient } from '@/lib/supabase'
 import { workOffBackfillQueue } from '@/lib/video-backfill'
+import { recordBackfillJob } from '@/lib/video-backfill-history'
 
 export const maxDuration = 120
 
@@ -37,6 +39,8 @@ export async function POST(request: NextRequest): Promise<Response> {
 
         return scraper
       },
+      // Jobs expire in Redis; the history keeps what they did.
+      onFinish: (job) => recordBackfillJob(supabaseClient, job),
       queue: new BackfillQueue(redisClient),
     })
 

@@ -3,14 +3,15 @@ import type { BackfillJob, BackfillQueue } from '@shinju-date/video-backfill'
 import { Temporal } from 'temporal-polyfill'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@sentry/nextjs', () => ({ captureException: vi.fn() }))
+const captureException = vi.fn()
+
+vi.mock('@sentry/nextjs', () => ({ captureException }))
 vi.mock('@shinju-date/logger', () => ({
   logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
 }))
 
-const { BACKFILL_MAX_ATTEMPTS, workOffBackfillQueue } = await import(
-  '../video-backfill'
-)
+const { BACKFILL_MAX_ATTEMPTS, BACKFILL_SENTRY_TAG, workOffBackfillQueue } =
+  await import('../video-backfill')
 
 function createJob(overrides: Partial<BackfillJob> = {}): BackfillJob {
   return {
@@ -41,8 +42,17 @@ function createQueue(jobs: BackfillJob[]) {
   const queued = [...jobs]
   const queue = {
     claim: vi.fn(async () => queued.shift() ?? null),
-    complete: vi.fn(async (job: BackfillJob) => job),
-    fail: vi.fn(async (job: BackfillJob) => job),
+    complete: vi.fn(async (job: BackfillJob) => ({
+      ...job,
+      finishedAt: '2026-11-14T00:05:00Z',
+      status: 'done' as const,
+    })),
+    fail: vi.fn(async (job: BackfillJob, error: string) => ({
+      ...job,
+      error,
+      finishedAt: '2026-11-14T00:05:00Z',
+      status: 'failed' as const,
+    })),
     requeue: vi.fn(async (job: BackfillJob) => {
       queued.push(job)
       return job
@@ -236,5 +246,132 @@ describe('workOffBackfillQueue', () => {
 
     expect(queue.claim).toHaveBeenCalledTimes(1)
     expect(getScraper).not.toHaveBeenCalled()
+  })
+
+  it('reports the jobs that finish with how they finished', async () => {
+    const other = createJob({
+      accountId: 'twitch-row-1',
+      id: 'twitch:twitch-row-1',
+      provider: 'twitch',
+    })
+    const { typed } = createQueue([createJob(), other])
+    const { addPastVideos, getScraper } = createScraper()
+    const onFinish = vi.fn()
+
+    addPastVideos
+      .mockResolvedValueOnce({ added: 2, cursor: null, listed: 2 })
+      .mockRejectedValueOnce(new AccountNotFoundError('twitch-row-1'))
+
+    await workOffBackfillQueue({
+      deadline: farFuture,
+      getScraper,
+      onFinish,
+      queue: typed,
+    })
+
+    expect(onFinish.mock.calls).toEqual([
+      [
+        expect.objectContaining({
+          added: 2,
+          finishedAt: '2026-11-14T00:05:00Z',
+          id: 'youtube:channel-row-1',
+          status: 'done',
+        }),
+      ],
+      [
+        expect.objectContaining({
+          error: 'Account not found: twitch-row-1',
+          id: 'twitch:twitch-row-1',
+          status: 'failed',
+        }),
+      ],
+    ])
+  })
+
+  it('does not report jobs that are put back to continue later', async () => {
+    const { queue, typed } = createQueue([createJob()])
+    const { addPastVideos, getScraper } = createScraper()
+    const onFinish = vi.fn()
+
+    addPastVideos.mockRejectedValue(new Error('quota exceeded'))
+
+    await workOffBackfillQueue({
+      deadline: farFuture,
+      getScraper,
+      onFinish,
+      queue: typed,
+    })
+
+    expect(queue.requeue).toHaveBeenCalled()
+    expect(onFinish).not.toHaveBeenCalled()
+  })
+
+  it('keeps working when a finished job cannot be reported', async () => {
+    const other = createJob({
+      accountId: 'twitch-row-1',
+      id: 'twitch:twitch-row-1',
+      provider: 'twitch',
+    })
+    const { queue, typed } = createQueue([createJob(), other])
+    const { addPastVideos, getScraper } = createScraper()
+    const onFinish = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('database unavailable'))
+
+    addPastVideos.mockResolvedValue({ added: 1, cursor: null, listed: 1 })
+
+    await expect(
+      workOffBackfillQueue({
+        deadline: farFuture,
+        getScraper,
+        onFinish,
+        queue: typed,
+      }),
+    ).resolves.toEqual({ added: 2, jobs: 2 })
+
+    expect(queue.complete).toHaveBeenCalledTimes(2)
+    expect(onFinish).toHaveBeenCalledTimes(2)
+    expect(captureException).toHaveBeenCalledWith(
+      new Error('database unavailable'),
+      expect.anything(),
+    )
+  })
+
+  it('tags the error that made a job give up apart from retried ones', async () => {
+    const { typed } = createQueue([
+      createJob(),
+      createJob({
+        accountId: 'twitch-row-1',
+        attempts: BACKFILL_MAX_ATTEMPTS - 1,
+        id: 'twitch:twitch-row-1',
+        provider: 'twitch',
+      }),
+    ])
+    const { addPastVideos, getScraper } = createScraper()
+
+    addPastVideos.mockRejectedValue(new Error('quota exceeded'))
+
+    await workOffBackfillQueue({
+      deadline: farFuture,
+      getScraper,
+      queue: typed,
+    })
+
+    expect(captureException.mock.calls).toEqual([
+      [
+        new Error('quota exceeded'),
+        expect.objectContaining({
+          level: 'warning',
+          tags: { [BACKFILL_SENTRY_TAG]: 'retrying', provider: 'youtube' },
+        }),
+      ],
+      [
+        new Error('quota exceeded'),
+        expect.objectContaining({
+          level: 'error',
+          tags: { [BACKFILL_SENTRY_TAG]: 'failed', provider: 'twitch' },
+        }),
+      ],
+    ])
   })
 })

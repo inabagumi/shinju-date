@@ -155,6 +155,26 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"video_backfill_jobs": {
+                  Row: {
+                    "account_id": string,"added": number,"created_at": string,"error": string | null,"finished_at": string,"id": string,"pages": number,"platform": Database["public"]['Enums']["platform_type"],"requested_at": string,"requested_by": string | null,"run_id": string | null,"started_at": string | null,"status": Database["public"]['Enums']["video_backfill_job_status"],"talent_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "account_id": string,"added"?: number,"created_at"?: string,"error"?: string | null,"finished_at": string,"id"?: string,"pages"?: number,"platform": Database["public"]['Enums']["platform_type"],"requested_at": string,"requested_by"?: string | null,"run_id"?: string | null,"started_at"?: string | null,"status": Database["public"]['Enums']["video_backfill_job_status"],"talent_id": string
+                  }
+                  Update: {
+                    "account_id"?: string,"added"?: number,"created_at"?: string,"error"?: string | null,"finished_at"?: string,"id"?: string,"pages"?: number,"platform"?: Database["public"]['Enums']["platform_type"],"requested_at"?: string,"requested_by"?: string | null,"run_id"?: string | null,"started_at"?: string | null,"status"?: Database["public"]['Enums']["video_backfill_job_status"],"talent_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "video_backfill_jobs_talent_id_fkey"
+      columns: ["talent_id"]
+isOneToOne: false
+      referencedRelation: "talents"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"videos": {
                   Row: {
                     "created_at": string,"deleted_at": string | null,"deleted_reason": Database["public"]['Enums']["video_deleted_reason"] | null,"duration": string,"id": string,"platform": Database["public"]['Enums']["platform_type"],"published_at": string,"status": Database["public"]['Enums']["video_status"],"talent_id": string,"thumbnail_id": string | null,"title": string,"updated_at": string,"video_kind": Database["public"]['Enums']["video_kind"],"visible": boolean
@@ -236,7 +256,21 @@ isOneToOne: false
                 }
           }
           Views: {
-            [_ in never]: never
+            "video_backfill_latest_jobs": {
+                  Row: {
+                    "account_id": string,"added": number,"created_at": string,"error": string | null,"finished_at": string,"id": string,"pages": number,"platform": Database["public"]['Enums']["platform_type"],"requested_at": string,"requested_by": string | null,"run_id": string | null,"started_at": string | null,"status": Database["public"]['Enums']["video_backfill_job_status"],"talent_id": string
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "video_backfill_jobs_talent_id_fkey"
+      columns: ["talent_id"]
+isOneToOne: false
+      referencedRelation: "talents"
+      referencedColumns: ["id"]
+    }
+                  ]
+                }
           }
           Functions: {
             "get_audit_logs":
@@ -277,7 +311,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "audit_action": "CHANNEL_CREATE"|"CHANNEL_DELETE"|"CHANNEL_UPDATE"|"RECOMMENDED_QUERY_CREATE"|"RECOMMENDED_QUERY_DELETE"|"TERM_CREATE"|"TERM_DELETE"|"TERM_UPDATE"|"VIDEO_DELETE"|"VIDEO_VISIBILITY_TOGGLE"|"VIDEO_UPDATE"|"VIDEO_SYNC"|"CHANNEL_SYNC"|"MAINTENANCE_MODE_ENABLE"|"MAINTENANCE_MODE_DISABLE"|"ACCOUNT_EMAIL_UPDATE"|"ACCOUNT_PASSWORD_UPDATE"|"ANNOUNCEMENT_CREATE"|"ANNOUNCEMENT_DELETE"|"ANNOUNCEMENT_UPDATE"|"YOUTUBE_CHANNEL_CREATE"|"YOUTUBE_CHANNEL_DELETE"|"VIDEO_RESTORE"|"CHANNEL_RESTORE"|"CHANNEL_RETIRE"|"CHANNEL_ACTIVATE"|"TWITCH_USER_CREATE"|"TWITCH_USER_DELETE"|"VIDEO_BACKFILL","feature_request_status": "pending"|"in_progress"|"resolved"|"rejected","platform_type": "youtube"|"twitch","talent_status": "active"|"retired","twitch_video_type": "archive"|"highlight"|"upload"|"clip","video_deleted_reason": "unavailable"|"withdrawn"|"talent_deleted","video_kind": "standard"|"short","video_status": "UPCOMING"|"LIVE"|"ENDED"|"PUBLISHED"
+            "audit_action": "CHANNEL_CREATE"|"CHANNEL_DELETE"|"CHANNEL_UPDATE"|"RECOMMENDED_QUERY_CREATE"|"RECOMMENDED_QUERY_DELETE"|"TERM_CREATE"|"TERM_DELETE"|"TERM_UPDATE"|"VIDEO_DELETE"|"VIDEO_VISIBILITY_TOGGLE"|"VIDEO_UPDATE"|"VIDEO_SYNC"|"CHANNEL_SYNC"|"MAINTENANCE_MODE_ENABLE"|"MAINTENANCE_MODE_DISABLE"|"ACCOUNT_EMAIL_UPDATE"|"ACCOUNT_PASSWORD_UPDATE"|"ANNOUNCEMENT_CREATE"|"ANNOUNCEMENT_DELETE"|"ANNOUNCEMENT_UPDATE"|"YOUTUBE_CHANNEL_CREATE"|"YOUTUBE_CHANNEL_DELETE"|"VIDEO_RESTORE"|"CHANNEL_RESTORE"|"CHANNEL_RETIRE"|"CHANNEL_ACTIVATE"|"TWITCH_USER_CREATE"|"TWITCH_USER_DELETE"|"VIDEO_BACKFILL","feature_request_status": "pending"|"in_progress"|"resolved"|"rejected","platform_type": "youtube"|"twitch","talent_status": "active"|"retired","twitch_video_type": "archive"|"highlight"|"upload"|"clip","video_backfill_job_status": "done"|"failed","video_deleted_reason": "unavailable"|"withdrawn"|"talent_deleted","video_kind": "standard"|"short","video_status": "UPCOMING"|"LIVE"|"ENDED"|"PUBLISHED"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -393,7 +427,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "audit_action": ["CHANNEL_CREATE", "CHANNEL_DELETE", "CHANNEL_UPDATE", "RECOMMENDED_QUERY_CREATE", "RECOMMENDED_QUERY_DELETE", "TERM_CREATE", "TERM_DELETE", "TERM_UPDATE", "VIDEO_DELETE", "VIDEO_VISIBILITY_TOGGLE", "VIDEO_UPDATE", "VIDEO_SYNC", "CHANNEL_SYNC", "MAINTENANCE_MODE_ENABLE", "MAINTENANCE_MODE_DISABLE", "ACCOUNT_EMAIL_UPDATE", "ACCOUNT_PASSWORD_UPDATE", "ANNOUNCEMENT_CREATE", "ANNOUNCEMENT_DELETE", "ANNOUNCEMENT_UPDATE", "YOUTUBE_CHANNEL_CREATE", "YOUTUBE_CHANNEL_DELETE", "VIDEO_RESTORE", "CHANNEL_RESTORE", "CHANNEL_RETIRE", "CHANNEL_ACTIVATE", "TWITCH_USER_CREATE", "TWITCH_USER_DELETE", "VIDEO_BACKFILL"],"feature_request_status": ["pending", "in_progress", "resolved", "rejected"],"platform_type": ["youtube", "twitch"],"talent_status": ["active", "retired"],"twitch_video_type": ["archive", "highlight", "upload", "clip"],"video_deleted_reason": ["unavailable", "withdrawn", "talent_deleted"],"video_kind": ["standard", "short"],"video_status": ["UPCOMING", "LIVE", "ENDED", "PUBLISHED"]
+            "audit_action": ["CHANNEL_CREATE", "CHANNEL_DELETE", "CHANNEL_UPDATE", "RECOMMENDED_QUERY_CREATE", "RECOMMENDED_QUERY_DELETE", "TERM_CREATE", "TERM_DELETE", "TERM_UPDATE", "VIDEO_DELETE", "VIDEO_VISIBILITY_TOGGLE", "VIDEO_UPDATE", "VIDEO_SYNC", "CHANNEL_SYNC", "MAINTENANCE_MODE_ENABLE", "MAINTENANCE_MODE_DISABLE", "ACCOUNT_EMAIL_UPDATE", "ACCOUNT_PASSWORD_UPDATE", "ANNOUNCEMENT_CREATE", "ANNOUNCEMENT_DELETE", "ANNOUNCEMENT_UPDATE", "YOUTUBE_CHANNEL_CREATE", "YOUTUBE_CHANNEL_DELETE", "VIDEO_RESTORE", "CHANNEL_RESTORE", "CHANNEL_RETIRE", "CHANNEL_ACTIVATE", "TWITCH_USER_CREATE", "TWITCH_USER_DELETE", "VIDEO_BACKFILL"],"feature_request_status": ["pending", "in_progress", "resolved", "rejected"],"platform_type": ["youtube", "twitch"],"talent_status": ["active", "retired"],"twitch_video_type": ["archive", "highlight", "upload", "clip"],"video_backfill_job_status": ["done", "failed"],"video_deleted_reason": ["unavailable", "withdrawn", "talent_deleted"],"video_kind": ["standard", "short"],"video_status": ["UPCOMING", "LIVE", "ENDED", "PUBLISHED"]
           }
         }
 } as const
