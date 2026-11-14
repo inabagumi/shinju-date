@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { formatDateLabel } from '../../_lib/format-date'
 
 interface SearchVolumeChartProps {
   data: Array<{
@@ -50,6 +51,9 @@ export default function SearchVolumeChartUI({
           <XAxis
             dataKey="date"
             tick={{ fill: '#6b7280', fontSize: 12 }}
+            tickFormatter={(value: string) =>
+              formatDateLabel(value, { includeYear: false })
+            }
             tickLine={{ stroke: '#e5e7eb' }}
           />
           <YAxis
@@ -63,6 +67,9 @@ export default function SearchVolumeChartUI({
               borderRadius: '0.5rem',
             }}
             formatter={(value) => [`${value ?? 0} 回`, '検索数']}
+            labelFormatter={(label) =>
+              typeof label === 'string' ? formatDateLabel(label) : label
+            }
             labelStyle={{ color: '#374151', fontWeight: 600 }}
           />
           <Area

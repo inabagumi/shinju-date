@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { getSearchExitRates } from '@/lib/analytics/get-search-quality-metrics'
 import { ExportMenu } from '../../_components/export-menu'
+import { formatDateLabel, formatDateRange } from '../../_lib/format-date'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 interface Props {
@@ -70,11 +71,11 @@ function SearchExitRateWidgetComponent({
           検索からの離脱率
           {selectedDate ? (
             <span className="ml-2 text-sm text-774-blue-600">
-              ({selectedDate})
+              ({formatDateLabel(selectedDate)})
             </span>
           ) : (
             <span className="ml-2 text-sm text-green-600">
-              ({dateRange.startDate}〜{dateRange.endDate})
+              ({formatDateRange(dateRange)})
             </span>
           )}
         </h2>

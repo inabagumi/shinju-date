@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
+import { PageHeader } from '@/components/page-header'
 import { ListCardsSkeleton } from '@/components/skeletons'
 import { AnnouncementModal } from './_components/announcement-modal'
 import { AnnouncementsList } from './_components/announcements-list'
@@ -23,10 +24,9 @@ async function AnnouncementsListData() {
 export default function AnnouncementsPage() {
   return (
     <div className="mx-auto max-w-7xl p-6">
-      <div className="space-y-6">
-        {/* Header with Add button - static shell */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">お知らせ管理</h1>
+      {/* Header with Add button - static shell */}
+      <PageHeader
+        actions={
           <Suspense
             fallback={
               <div className="h-10 w-32 animate-pulse rounded bg-gray-200" />
@@ -34,13 +34,14 @@ export default function AnnouncementsPage() {
           >
             <AnnouncementModal />
           </Suspense>
-        </div>
+        }
+        title="お知らせ管理"
+      />
 
-        {/* Announcements List - dynamic data with own Suspense */}
-        <Suspense fallback={<ListCardsSkeleton />}>
-          <AnnouncementsListData />
-        </Suspense>
-      </div>
+      {/* Announcements List - dynamic data with own Suspense */}
+      <Suspense fallback={<ListCardsSkeleton />}>
+        <AnnouncementsListData />
+      </Suspense>
     </div>
   )
 }

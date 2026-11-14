@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
+import { PageHeader } from '@/components/page-header'
 import { ManagementTableSkeleton } from '@/components/skeletons'
 import { QueriesList } from './_components/queries-list'
 import getRecommendedQueries from './_lib/get-recommended-queries'
 
 export const metadata: Metadata = {
-  title: 'おすすめクエリ',
+  title: 'おすすめクエリ管理',
 }
 
 async function QueriesListData() {
@@ -23,7 +24,7 @@ export default function RecommendedQueriesPage() {
   return (
     <div className="mx-auto max-w-7xl p-6">
       {/* Static header */}
-      <h1 className="mb-6 text-3xl font-bold">おすすめクエリ</h1>
+      <PageHeader title="おすすめクエリ管理" />
 
       {/* Dynamic content with Suspense */}
       <Suspense fallback={<ManagementTableSkeleton rows={8} />}>

@@ -1,7 +1,9 @@
 'use client'
 
 import { TIME_ZONE } from '@shinju-date/constants'
+import { formatDate } from '@shinju-date/temporal-fns'
 import { useState } from 'react'
+import { formatDateRange } from '../_lib/format-date'
 
 export interface DateRange {
   startDate: string // ISO 8601 date string
@@ -122,7 +124,7 @@ export default function DateRangePicker({
     // Validate that start date is not too far in the past
     if (Temporal.PlainDate.compare(startDate, maxStartDate) < 0) {
       setValidationError(
-        `開始日は${maxStartDate.toString()}以降である必要があります`,
+        `開始日は${formatDate(maxStartDate)}以降である必要があります`,
       )
       return
     }
@@ -261,7 +263,7 @@ export default function DateRangePicker({
       )}
 
       <div className="mt-3 rounded bg-gray-50 px-3 py-2 text-xs text-gray-600">
-        現在の期間: {value.startDate} 〜 {value.endDate}
+        現在の期間: {formatDateRange(value)}
         <br />
         最大90日間まで選択可能です
       </div>

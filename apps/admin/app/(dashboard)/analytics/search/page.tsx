@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { PageHeader } from '@/components/page-header'
 import {
   ChartSkeleton,
   DateRangePickerSkeleton,
@@ -27,7 +28,7 @@ export default function SearchAnalyticsPage({
 
   return (
     <div className="mx-auto max-w-7xl p-6">
-      <h1 className="mb-6 text-3xl font-bold">検索アナリティクス</h1>
+      <PageHeader title="検索アナリティクス" />
 
       <div className="mb-6">
         <Suspense fallback={<DateRangePickerSkeleton />}>
@@ -36,7 +37,7 @@ export default function SearchAnalyticsPage({
       </div>
 
       {/* Search Volume Chart */}
-      <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-xl font-semibold">検索ボリューム</h2>
         <Suspense fallback={<ChartSkeleton />}>
           <SearchVolumeChart searchParams={parsedSearchParams} />
@@ -44,10 +45,8 @@ export default function SearchAnalyticsPage({
       </div>
 
       {/* New Search Quality Metrics Section */}
-      <div className="mb-6">
-        <h2 className="mb-4 text-2xl font-semibold text-774-blue-700">
-          検索品質指標
-        </h2>
+      <section className="mb-8">
+        <h2 className="mb-4 text-heading font-bold">検索品質指標</h2>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             <Suspense fallback={<MetricCardSkeleton />}>
@@ -67,13 +66,11 @@ export default function SearchAnalyticsPage({
             </Suspense>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Existing Analytics Section */}
-      <div className="mb-6">
-        <h2 className="mb-4 text-2xl font-semibold text-gray-700">
-          従来の検索指標
-        </h2>
+      <section>
+        <h2 className="mb-4 text-heading font-bold">従来の検索指標</h2>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             <Suspense fallback={<MetricCardSkeleton />}>
@@ -87,7 +84,7 @@ export default function SearchAnalyticsPage({
             </Suspense>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

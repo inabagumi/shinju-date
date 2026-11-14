@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
+import { PageHeader } from '@/components/page-header'
 import { TermsList } from './_components/terms-list'
 import getTerms from './_lib/get-terms'
+
+export const metadata: Metadata = {
+  title: '用語管理',
+}
 
 async function getTermsData() {
   'use cache: private'
@@ -12,10 +18,11 @@ async function getTermsData() {
 
 export default function TermsPage() {
   return (
-    <div className="space-y-6">
-      <p className="text-sm text-gray-600">
-        検索に利用する用語、読み方、類義語を管理します。
-      </p>
+    <div className="mx-auto max-w-7xl p-6">
+      <PageHeader
+        description="検索に利用する用語、読み方、類義語を管理します。"
+        title="用語管理"
+      />
       <TermsList terms={getTermsData()} />
     </div>
   )

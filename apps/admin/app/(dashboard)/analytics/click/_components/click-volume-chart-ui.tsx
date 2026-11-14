@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { formatDateLabel } from '../../_lib/format-date'
 
 interface ClickVolumeChartProps {
   data: Array<{
@@ -44,6 +45,9 @@ export default function ClickVolumeChartUI({
           <XAxis
             dataKey="date"
             tick={{ fill: '#6b7280', fontSize: 12 }}
+            tickFormatter={(value: string) =>
+              formatDateLabel(value, { includeYear: false })
+            }
             tickLine={{ stroke: '#e5e7eb' }}
           />
           <YAxis
@@ -58,6 +62,9 @@ export default function ClickVolumeChartUI({
             }}
             cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
             formatter={(value) => [`${value ?? 0} 回`, 'クリック数']}
+            labelFormatter={(label) =>
+              typeof label === 'string' ? formatDateLabel(label) : label
+            }
             labelStyle={{ color: '#374151', fontWeight: 600 }}
           />
           <Bar
