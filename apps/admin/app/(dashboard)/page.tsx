@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { PageHeader } from '@/components/page-header'
 import { CardSkeleton } from '@/components/skeletons'
+import { WidgetErrorBoundary } from '@/components/widget-error-boundary'
 import { AnalyticsWidget } from './_components/analytics-widget'
 import {
   PopularVideosWidget,
@@ -25,27 +26,35 @@ export default function DashboardPage() {
         </Suspense>
 
         {/* Video Summary - Full width */}
-        <Suspense fallback={<CardSkeleton />}>
-          <VideoSummaryWidget />
-        </Suspense>
+        <WidgetErrorBoundary title="動画サマリー">
+          <Suspense fallback={<CardSkeleton />}>
+            <VideoSummaryWidget />
+          </Suspense>
+        </WidgetErrorBoundary>
 
         {/* Second row: Content Summary and Analytics */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Content Summary Widget */}
-          <Suspense fallback={<CardSkeleton />}>
-            <ContentSummaryWidget />
-          </Suspense>
+          <WidgetErrorBoundary title="コンテンツサマリー">
+            <Suspense fallback={<CardSkeleton />}>
+              <ContentSummaryWidget />
+            </Suspense>
+          </WidgetErrorBoundary>
 
           {/* Analytics Summary Widget */}
-          <Suspense fallback={<CardSkeleton />}>
-            <AnalyticsWidget />
-          </Suspense>
+          <WidgetErrorBoundary title="アナリティクス">
+            <Suspense fallback={<CardSkeleton />}>
+              <AnalyticsWidget />
+            </Suspense>
+          </WidgetErrorBoundary>
         </div>
 
         {/* Popular Videos - Full width */}
-        <Suspense fallback={<PopularVideosWidgetSkeleton />}>
-          <PopularVideosWidget />
-        </Suspense>
+        <WidgetErrorBoundary title="人気動画ランキング (過去30日間)">
+          <Suspense fallback={<PopularVideosWidgetSkeleton />}>
+            <PopularVideosWidget />
+          </Suspense>
+        </WidgetErrorBoundary>
       </div>
     </div>
   )
