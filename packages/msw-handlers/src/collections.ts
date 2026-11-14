@@ -5,7 +5,6 @@
 
 import { faker } from '@faker-js/faker'
 import { Collection } from '@msw/data'
-import { Temporal } from 'temporal-polyfill'
 import { z } from 'zod'
 
 // Talents collection

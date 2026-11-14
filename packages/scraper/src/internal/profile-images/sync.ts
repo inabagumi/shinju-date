@@ -1,4 +1,3 @@
-import type { Temporal } from 'temporal-polyfill'
 import type { TypedSupabaseClient } from '../../types.js'
 import { DatabaseError } from '../database/errors.js'
 import {

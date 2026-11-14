@@ -1,5 +1,3 @@
-import { Temporal } from 'temporal-polyfill'
-
 /**
  * Temporal object to a string format suitable for database insertion (TIMESTAMPTZ).
  * Normalizes the timestamp by rounding it down to the nearest second,

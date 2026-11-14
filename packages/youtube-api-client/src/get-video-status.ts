@@ -1,5 +1,4 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
-import { Temporal } from 'temporal-polyfill'
 
 /** Mirrors the `video_status` enum of the database. */
 export type YouTubeVideoStatus = 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'

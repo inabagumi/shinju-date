@@ -1,5 +1,4 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
-import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
 import type { Video } from './types'
 

@@ -10,15 +10,9 @@ vi.mock('@shinju-date/temporal-fns', () => ({
   ),
 }))
 
-vi.mock('temporal-polyfill', () => ({
-  Temporal: {
-    Now: {
-      instant: vi.fn(() => ({
-        toString: () => '2026-08-02T12:00:00Z',
-      })),
-    },
-  },
-}))
+vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
+  Temporal.Instant.from('2026-08-02T12:00:00Z'),
+)
 
 interface QueryResult {
   data: unknown

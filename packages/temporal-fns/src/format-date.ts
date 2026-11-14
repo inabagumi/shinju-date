@@ -1,5 +1,3 @@
-import type { Temporal } from 'temporal-polyfill'
-
 /**
  * Formats a date into a compact YYYYMMDD string specifically designed for use in Redis keys and other key-based storage systems.
  *
@@ -16,7 +14,6 @@ import type { Temporal } from 'temporal-polyfill'
  * ```typescript
  * import { formatDateKey } from '@shinju-date/temporal-fns'
  * import { REDIS_KEYS } from '@shinju-date/constants'
- * import { Temporal } from 'temporal-polyfill'
  *
  * const now = Temporal.Now.zonedDateTimeISO('Asia/Tokyo')
  * const dateKey = formatDateKey(now) // "20251111"

@@ -5,7 +5,6 @@ import {
 } from '@shinju-date/video-backfill'
 import { revalidateTags } from '@shinju-date/web-cache'
 import type { NextRequest } from 'next/server'
-import { Temporal } from 'temporal-polyfill'
 import { VIDEOS_BACKFILL_JOB } from '@/lib/crawler-jobs'
 import { runCronJob } from '@/lib/cron'
 import { redisClient } from '@/lib/redis'

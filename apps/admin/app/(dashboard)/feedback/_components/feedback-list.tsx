@@ -7,7 +7,6 @@ import { Badge } from '@shinju-date/ui'
 import Link from 'next/link'
 import { useState } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { Temporal } from 'temporal-polyfill'
 
 interface FeatureRequestListProps {
   featureRequests: Tables<'feature_requests'>[]

@@ -1,5 +1,3 @@
-import { Temporal } from 'temporal-polyfill'
-
 export default function min(
   ...values: Temporal.ZonedDateTime[]
 ): Temporal.ZonedDateTime {

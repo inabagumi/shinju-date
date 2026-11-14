@@ -1,5 +1,3 @@
-import type { Temporal } from 'temporal-polyfill'
-
 export default function startOfHour(
   zdt: Temporal.ZonedDateTime,
 ): Temporal.ZonedDateTime {

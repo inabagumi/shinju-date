@@ -7,7 +7,6 @@ import { toDBString } from '@shinju-date/temporal-fns'
 import { track } from '@vercel/analytics/server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { Temporal } from 'temporal-polyfill'
 import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
 import { supabaseClient } from '@/lib/supabase'
 

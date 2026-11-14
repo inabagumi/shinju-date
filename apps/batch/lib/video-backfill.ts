@@ -6,7 +6,6 @@ import type {
   BackfillProvider,
   BackfillQueue,
 } from '@shinju-date/video-backfill'
-import { Temporal } from 'temporal-polyfill'
 
 /** Runs in a row that may fail before a job is given up. */
 export const BACKFILL_MAX_ATTEMPTS = 3

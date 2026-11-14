@@ -9,7 +9,6 @@ import {
   resolveYouTubeChannel,
 } from '@shinju-date/youtube-api-client'
 import { revalidatePath } from 'next/cache'
-import { Temporal } from 'temporal-polyfill'
 import * as z from 'zod'
 import type { FormState } from '@/components/form'
 import { type AuditAction, createAuditLog } from '@/lib/audit-log'

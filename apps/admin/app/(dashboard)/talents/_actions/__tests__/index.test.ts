@@ -54,15 +54,9 @@ vi.mock('@shinju-date/youtube-api-client', async (importOriginal) => ({
   resolveYouTubeChannel: vi.fn(),
 }))
 
-vi.mock('temporal-polyfill', () => ({
-  Temporal: {
-    Now: {
-      instant: vi.fn(() => ({
-        toString: () => '2024-11-24T17:00:00Z',
-      })),
-    },
-  },
-}))
+vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
+  Temporal.Instant.from('2024-11-24T17:00:00Z'),
+)
 
 // アイコンの同期は service role を使うため、ここではモックして呼び出し内容だけを確認する
 vi.mock('@/lib/youtube-channel-icon', () => ({

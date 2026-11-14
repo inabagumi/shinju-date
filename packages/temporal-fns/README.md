@@ -4,7 +4,7 @@ Temporal API を使用した日時操作ユーティリティを提供するパ�
 
 ## 構成
 
-- **temporal-polyfill**: Temporal API ポリフィル
+- **Temporal**: グローバルの Temporal API（サーバーは Node.js のネイティブ実装、Webブラウザは各アプリの `instrumentation-client.ts` で読み込む `temporal-polyfill`）
 - **TypeScript**: 型安全な日時操作
 
 ## 使用方法

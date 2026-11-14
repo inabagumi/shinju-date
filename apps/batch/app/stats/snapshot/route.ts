@@ -7,7 +7,6 @@ import {
   toDBString,
 } from '@shinju-date/temporal-fns'
 import { after } from 'next/server'
-import { Temporal } from 'temporal-polyfill'
 import { statsSnapshot as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'

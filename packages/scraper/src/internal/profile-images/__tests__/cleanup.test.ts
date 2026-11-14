@@ -1,4 +1,3 @@
-import { Temporal } from 'temporal-polyfill'
 import { describe, expect, it } from 'vitest'
 import { mockStorage } from '../../testing/profile-images.js'
 import { postgresError, setupSupabase } from '../../testing/supabase.js'

@@ -1,5 +1,4 @@
 import { TIME_ZONE } from '@shinju-date/constants'
-import { Temporal } from 'temporal-polyfill'
 import type { DateRange } from '../_components/date-range-picker'
 
 /**

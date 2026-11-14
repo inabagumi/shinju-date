@@ -1,4 +1,3 @@
-import { Temporal } from 'temporal-polyfill'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../../internal/testing/context.js'
 import { setupSupabase } from '../../internal/testing/supabase.js'

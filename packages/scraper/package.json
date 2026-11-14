@@ -11,8 +11,7 @@
     "mime": "4.1.2",
     "nanoid": "6.0.2",
     "p-queue": "10.0.0",
-    "sharp": "0.35.5",
-    "temporal-polyfill": "1.0.8"
+    "sharp": "0.35.5"
   },
   "description": "Crawlers that keep YouTube and Twitch videos in the SHINJU DATE database in sync",
   "devDependencies": {

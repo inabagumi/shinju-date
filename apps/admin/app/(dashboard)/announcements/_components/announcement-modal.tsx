@@ -12,7 +12,6 @@ import {
   DialogTrigger,
 } from '@shinju-date/ui'
 import { useMemo, useState } from 'react'
-import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
 import Form, {
   ErrorMessage,

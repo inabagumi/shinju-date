@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { cache } from 'react'
-import { Temporal } from 'temporal-polyfill'
 import {
   getPopularTalents,
   type PopularTalent,

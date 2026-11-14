@@ -1,5 +1,3 @@
-import { Temporal } from 'temporal-polyfill'
-
 /**
  * Returns the start of the day (00:00:00.000000000) for the given date.
  *
@@ -9,7 +7,6 @@ import { Temporal } from 'temporal-polyfill'
  * @example
  * ```typescript
  * import { startOfDay } from '@shinju-date/temporal-fns'
- * import { Temporal } from 'temporal-polyfill'
  *
  * const now = Temporal.Now.zonedDateTimeISO('Asia/Tokyo')
  * const dayStart = startOfDay(now)

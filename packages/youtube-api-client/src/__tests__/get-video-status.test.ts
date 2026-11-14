@@ -1,5 +1,4 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
-import { Temporal } from 'temporal-polyfill'
 import { describe, expect, it } from 'vitest'
 import { getVideoStatus } from '../get-video-status.js'
 

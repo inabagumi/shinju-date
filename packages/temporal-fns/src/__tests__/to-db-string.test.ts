@@ -1,4 +1,3 @@
-import { Temporal } from 'temporal-polyfill'
 import { describe, expect, it } from 'vitest'
 import toDBString from '../to-db-string.js'
 

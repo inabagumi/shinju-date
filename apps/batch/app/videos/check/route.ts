@@ -1,7 +1,6 @@
 import { createErrorResponse } from '@shinju-date/helpers'
 import type { Scraper } from '@shinju-date/scraper'
 import type { NextRequest } from 'next/server'
-import { Temporal } from 'temporal-polyfill'
 import { getVideosCheckJob, type VideosCheckMode } from '@/lib/crawler-jobs'
 import { runCronJob } from '@/lib/cron'
 import { createScraper } from '@/lib/scraper'

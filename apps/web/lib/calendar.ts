@@ -7,7 +7,6 @@ import {
   createEvents,
   type EventAttributes,
 } from 'ics'
-import { Temporal } from 'temporal-polyfill'
 
 type Talent = Pick<Tables<'talents'>, 'name'>
 

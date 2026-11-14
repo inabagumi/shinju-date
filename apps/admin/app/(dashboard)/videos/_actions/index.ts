@@ -4,7 +4,6 @@ import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
-import { Temporal } from 'temporal-polyfill'
 import { createAuditLog } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 

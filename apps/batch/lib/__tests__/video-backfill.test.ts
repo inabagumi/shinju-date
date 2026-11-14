@@ -1,6 +1,5 @@
 import { AccountNotFoundError, type Scraper } from '@shinju-date/scraper'
 import type { BackfillJob, BackfillQueue } from '@shinju-date/video-backfill'
-import { Temporal } from 'temporal-polyfill'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const captureException = vi.fn()

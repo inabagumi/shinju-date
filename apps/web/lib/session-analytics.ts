@@ -4,7 +4,6 @@ import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { headers } from 'next/headers'
-import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from './redis'
 
 // TTL settings for time-based session keys

@@ -24,7 +24,6 @@ import {
   useCallback,
   useState,
 } from 'react'
-import { Temporal } from 'temporal-polyfill'
 
 interface SortableItemProps {
   id: string

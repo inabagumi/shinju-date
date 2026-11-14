@@ -1,6 +1,5 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { formatDateKey } from '@shinju-date/temporal-fns'
-import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
 

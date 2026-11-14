@@ -1,7 +1,6 @@
 import { createErrorResponse } from '@shinju-date/helpers'
 import { stringify } from 'csv-stringify/sync'
 import { connection, type NextRequest, NextResponse } from 'next/server'
-import { Temporal } from 'temporal-polyfill'
 import {
   getPopularKeywords,
   type PopularKeyword,

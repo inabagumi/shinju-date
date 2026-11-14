@@ -45,22 +45,9 @@ vi.mock('@shinju-date/temporal-fns', () => ({
   toDBString: vi.fn((instant) => instant.toString()),
 }))
 
-vi.mock('temporal-polyfill', () => ({
-  Temporal: {
-    Instant: {
-      from: vi.fn((value: string) => ({
-        equals: (other: { toString: () => string }) =>
-          value === other.toString(),
-        toString: () => value,
-      })),
-    },
-    Now: {
-      instant: vi.fn(() => ({
-        toString: () => '2024-11-24T17:00:00Z',
-      })),
-    },
-  },
-}))
+vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
+  Temporal.Instant.from('2024-11-24T17:00:00Z'),
+)
 
 vi.mock('@shinju-date/youtube-api-client', () => ({
   getChannels: vi.fn(),

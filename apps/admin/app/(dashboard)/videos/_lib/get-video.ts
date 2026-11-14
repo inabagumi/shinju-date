@@ -4,7 +4,6 @@ import { range } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { cache } from 'react'
-import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
 

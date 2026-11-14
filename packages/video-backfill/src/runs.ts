@@ -1,6 +1,5 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import type { Redis } from '@upstash/redis'
-import { Temporal } from 'temporal-polyfill'
 import {
   BACKFILL_JOB_TTL_SECONDS,
   type BackfillJob,

@@ -1,5 +1,4 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
-import { Temporal } from 'temporal-polyfill'
 
 /** Mirrors the `video_kind` enum of the database. */
 export type YouTubeVideoKind = 'standard' | 'short'

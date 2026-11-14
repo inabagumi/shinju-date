@@ -1,5 +1,3 @@
-import type { Temporal } from 'temporal-polyfill'
-
 /**
  * Formats a Temporal.Duration to a readable format (e.g., 1:30:15 or 5:30)
  * @param duration - Temporal.Duration object

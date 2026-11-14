@@ -1,6 +1,5 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
-import { Temporal } from 'temporal-polyfill'
 import { getRedisClient } from '@/lib/redis'
 
 export async function getLastVideoSync(): Promise<Temporal.ZonedDateTime | null> {
