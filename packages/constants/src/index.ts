@@ -52,3 +52,15 @@ export const DUMMY_THUMBNAIL_PNG = new Uint8Array([
   218, 99, 100, 96, 248, 95, 15, 0, 2, 135, 1, 128, 235, 71, 186, 146, 0, 0, 0,
   0, 73, 69, 78, 68, 174, 66, 96, 130,
 ])
+
+/**
+ * Supabase Storage bucket that holds YouTube channel and Twitch user icons.
+ * Private: objects are served through the web app with signed URLs.
+ */
+export const PROFILE_IMAGES_BUCKET = 'profile-images'
+
+/**
+ * Edge length (px) of stored profile images. Icons are cropped to a square and
+ * scaled down to this size (smaller sources are not enlarged).
+ */
+export const PROFILE_IMAGE_SIZE = 256

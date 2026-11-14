@@ -888,6 +888,9 @@ importers:
       '@googleapis/youtube':
         specifier: 40.1.0
         version: 40.1.0(supports-color@8.1.1)
+      '@shinju-date/constants':
+        specifier: workspace:*
+        version: link:../constants
       '@shinju-date/database':
         specifier: workspace:*
         version: link:../database
