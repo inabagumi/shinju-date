@@ -764,6 +764,33 @@ async function searchMockVideos({
     .slice(0, perpage)
 }
 
+/**
+ * Mirrors `count_videos_v1`: the videos of `filterMockVideos` whose talent is
+ * not deleted and that have a YouTube or Twitch video, as the site drops the
+ * others from the results.
+ */
+async function countMockVideos(params: SearchVideosParams) {
+  const [videos, talents, youtubeVideos, twitchVideos] = await Promise.all([
+    filterMockVideos(params),
+    getMockTalents(),
+    getMockYoutubeVideos(),
+    getMockTwitchVideos(),
+  ])
+  const visibleTalentIds = new Set(
+    talents
+      .filter((talent) => talent.deleted_at === null)
+      .map((talent) => talent.id),
+  )
+  const videoIdsWithSource = new Set(
+    [...youtubeVideos, ...twitchVideos].map((video) => video.video_id),
+  )
+
+  return videos.filter(
+    (video) =>
+      visibleTalentIds.has(video.talent_id) && videoIdsWithSource.has(video.id),
+  ).length
+}
+
 interface SuggestionsParams {
   p_query?: string
 }
@@ -1904,7 +1931,7 @@ export const supabaseHandlers = [
     async ({ request }) => {
       const body = (await request.json()) as SearchVideosParams
 
-      return HttpResponse.json((await filterMockVideos(body)).length)
+      return HttpResponse.json(await countMockVideos(body))
     },
   ),
 
