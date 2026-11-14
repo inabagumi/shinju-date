@@ -28,14 +28,20 @@ function SubmitButton() {
 }
 
 export function ContactForm() {
-  const [state, formAction] = useActionState(submitContactForm, null)
+  const [state, formAction, isPending] = useActionState(submitContactForm, null)
+  const fieldErrors = isPending ? undefined : state?.fieldErrors
   const [wantsReply, setWantsReply] = useState(false)
 
   return (
     <div className="mx-auto max-w-2xl">
       <form action={formAction} className="space-y-6">
         {/* Contact Type */}
-        <SelectField label="お問い合わせ種別" name="type" required>
+        <SelectField
+          error={fieldErrors?.type}
+          label="お問い合わせ種別"
+          name="type"
+          required
+        >
           <option value="">選択してください</option>
           <option value="bug">不具合の報告</option>
           <option value="feature">機能の要望</option>
@@ -61,6 +67,7 @@ export function ContactForm() {
         {/* Email (conditional) */}
         {wantsReply && (
           <InputField
+            error={fieldErrors?.email}
             label="メールアドレス"
             name="email"
             placeholder="example@example.com"
@@ -71,6 +78,7 @@ export function ContactForm() {
 
         {/* Message */}
         <TextareaField
+          error={fieldErrors?.message}
           label="お問い合わせ内容"
           name="message"
           placeholder="お問い合わせ内容をご記入ください"
@@ -81,7 +89,7 @@ export function ContactForm() {
         <SubmitButton />
 
         {/* Status Messages */}
-        {state && (
+        {!isPending && state && (state.success || state.error) && (
           <div
             className={`rounded-lg p-4 ${
               state.success

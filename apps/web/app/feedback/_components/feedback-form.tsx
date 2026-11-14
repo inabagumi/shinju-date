@@ -23,13 +23,15 @@ function SubmitButton() {
 }
 
 export function FeedbackForm() {
-  const [state, formAction] = useActionState(submitFeedback, null)
+  const [state, formAction, isPending] = useActionState(submitFeedback, null)
+  const fieldErrors = isPending ? undefined : state?.fieldErrors
 
   return (
     <div className="mx-auto max-w-2xl">
       <form action={formAction} className="space-y-6">
         {/* Message */}
         <TextareaField
+          error={fieldErrors?.message}
           label="機能要望"
           name="message"
           placeholder="追加してほしい機能や改善案をご記入ください"
@@ -40,7 +42,7 @@ export function FeedbackForm() {
         <SubmitButton />
 
         {/* Status Messages */}
-        {state && (
+        {!isPending && state && (state.success || state.error) && (
           <div
             className={`rounded-lg p-4 ${
               state.success
