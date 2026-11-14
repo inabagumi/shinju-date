@@ -11,7 +11,11 @@ import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import {
+  requireAuthenticatedUser,
+  unauthenticatedFormState,
+  unauthenticatedResult,
+} from '@/lib/auth'
 
 function twitchApiErrorFormState(error: unknown): FormState {
   if (
@@ -41,7 +45,13 @@ export async function addTwitchUserAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const supabaseClient = await createSupabaseServerClient()
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedFormState()
+  }
+
+  const { supabaseClient } = auth
 
   const talentId = formData.get('talent_id') as string
   const rawInput = (formData.get('twitch_user') as string) ?? ''
@@ -178,7 +188,13 @@ export async function removeTwitchUserAction(
   success: boolean
   error?: string
 }> {
-  const supabaseClient = await createSupabaseServerClient()
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
 
   if (!twitchUserRowId || !talentId) {
     return {

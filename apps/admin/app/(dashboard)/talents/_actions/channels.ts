@@ -11,7 +11,11 @@ import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import {
+  requireAuthenticatedUser,
+  unauthenticatedFormState,
+  unauthenticatedResult,
+} from '@/lib/auth'
 
 function youtubeApiErrorFormState(error: unknown): FormState {
   if (error instanceof TypeError && error.message.includes('API Key')) {
@@ -38,7 +42,13 @@ export async function addYouTubeChannelAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const supabaseClient = await createSupabaseServerClient()
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedFormState()
+  }
+
+  const { supabaseClient } = auth
 
   const talentId = formData.get('talent_id') as string
   const rawInput = (formData.get('youtube_channel_id') as string) ?? ''
@@ -182,7 +192,13 @@ export async function removeYouTubeChannelAction(
   success: boolean
   error?: string
 }> {
-  const supabaseClient = await createSupabaseServerClient()
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
 
   if (!channelId || !talentId) {
     return {

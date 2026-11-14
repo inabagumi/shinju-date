@@ -12,7 +12,11 @@ import { Temporal } from 'temporal-polyfill'
 import * as z from 'zod'
 import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import {
+  requireAuthenticatedUser,
+  unauthenticatedFormState,
+  unauthenticatedResult,
+} from '@/lib/auth'
 import { zodErrorToFormState } from '../_lib/form-helpers'
 
 const updateTalentSchema = z.object({
@@ -39,7 +43,13 @@ export async function createTalentAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const supabaseClient = await createSupabaseServerClient()
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedFormState()
+  }
+
+  const { supabaseClient } = auth
 
   const name = formData.get('name') as string
   const rawChannelInput = (formData.get('youtube_channel_id') as string) ?? ''
@@ -169,7 +179,13 @@ export async function updateTalentAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const supabaseClient = await createSupabaseServerClient()
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedFormState()
+  }
+
+  const { supabaseClient } = auth
 
   let validatedData: z.infer<typeof updateTalentSchema>
 
@@ -256,7 +272,13 @@ export async function deleteTalentAction(id: string): Promise<{
   success: boolean
   error?: string
 }> {
-  const supabaseClient = await createSupabaseServerClient()
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
 
   if (!id) {
     return { error: 'IDが指定されていません。', success: false }
@@ -314,7 +336,13 @@ export async function restoreTalentAction(id: string): Promise<{
   success: boolean
   error?: string
 }> {
-  const supabaseClient = await createSupabaseServerClient()
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
 
   if (!id) {
     return { error: 'IDが指定されていません。', success: false }
@@ -370,7 +398,13 @@ export async function retireTalentAction(id: string): Promise<{
   success: boolean
   error?: string
 }> {
-  const supabaseClient = await createSupabaseServerClient()
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
 
   if (!id) {
     return { error: 'IDが指定されていません。', success: false }
@@ -427,7 +461,13 @@ export async function activateTalentAction(id: string): Promise<{
   success: boolean
   error?: string
 }> {
-  const supabaseClient = await createSupabaseServerClient()
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
 
   if (!id) {
     return { error: 'IDが指定されていません。', success: false }

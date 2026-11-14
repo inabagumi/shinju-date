@@ -6,17 +6,23 @@ import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import { createAuditLog } from '@/lib/audit-log'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 
 export async function toggleVisibilityAction(ids: string[]): Promise<{
   success: boolean
   error?: string
 }> {
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
+
   if (!ids || ids.length === 0) {
     return { error: '動画が選択されていません。', success: false }
   }
-
-  const supabaseClient = await createSupabaseServerClient()
 
   try {
     // Get current visibility status of all videos
@@ -86,11 +92,17 @@ export async function softDeleteAction(ids: string[]): Promise<{
   success: boolean
   error?: string
 }> {
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
+
   if (!ids || ids.length === 0) {
     return { error: '動画が選択されていません。', success: false }
   }
-
-  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const now = Temporal.Now.instant()
@@ -170,11 +182,17 @@ export async function restoreAction(ids: string[]): Promise<{
   success: boolean
   error?: string
 }> {
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
+
   if (!ids || ids.length === 0) {
     return { error: '動画が選択されていません。', success: false }
   }
-
-  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const now = Temporal.Now.instant()

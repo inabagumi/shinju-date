@@ -7,12 +7,24 @@ import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import {
+  requireAuthenticatedUser,
+  unauthenticatedFormState,
+  unauthenticatedResult,
+} from '@/lib/auth'
 
 export async function createAnnouncementAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedFormState()
+  }
+
+  const { supabaseClient } = auth
+
   const message = formData.get('message') as string | null
   const level = formData.get('level') as string | null
   const startAt = formData.get('start_at') as string | null
@@ -56,8 +68,6 @@ export async function createAnnouncementAction(
       },
     }
   }
-
-  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const { data: newAnnouncement, error } = await supabaseClient
@@ -111,6 +121,14 @@ export async function updateAnnouncementAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedFormState()
+  }
+
+  const { supabaseClient } = auth
+
   const id = formData.get('id') as string | null
   const message = formData.get('message') as string | null
   const level = formData.get('level') as string | null
@@ -155,8 +173,6 @@ export async function updateAnnouncementAction(
       },
     }
   }
-
-  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const { data: updatedAnnouncement, error } = await supabaseClient
@@ -208,11 +224,17 @@ export async function deleteAnnouncementAction(id: string): Promise<{
   success: boolean
   error?: string
 }> {
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
+
   if (!id) {
     return { error: 'IDが指定されていません。', success: false }
   }
-
-  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const { data: deletedAnnouncement, error } = await supabaseClient

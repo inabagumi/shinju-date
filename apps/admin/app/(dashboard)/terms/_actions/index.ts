@@ -7,12 +7,24 @@ import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import {
+  requireAuthenticatedUser,
+  unauthenticatedFormState,
+  unauthenticatedResult,
+} from '@/lib/auth'
 
 export async function createTermAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedFormState()
+  }
+
+  const { supabaseClient } = auth
+
   const term = formData.get('term') as string
 
   if (!term || term.trim() === '') {
@@ -38,8 +50,6 @@ export async function createTermAction(
   // Filter out empty values
   const filteredReadings = readingsArray.map((r) => r.trim()).filter(Boolean)
   const filteredSynonyms = synonymsArray.map((s) => s.trim()).filter(Boolean)
-
-  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const { data: newTerm, error } = await supabaseClient
@@ -80,6 +90,14 @@ export async function updateTermAction(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedFormState()
+  }
+
+  const { supabaseClient } = auth
+
   const id = formData.get('id') as string
   const term = formData.get('term') as string
 
@@ -106,8 +124,6 @@ export async function updateTermAction(
   // Filter out empty values
   const filteredReadings = readingsArray.map((r) => r.trim()).filter(Boolean)
   const filteredSynonyms = synonymsArray.map((s) => s.trim()).filter(Boolean)
-
-  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const { data: newTerm, error } = await supabaseClient
@@ -150,11 +166,17 @@ export async function deleteTermAction(id: string): Promise<{
   success: boolean
   error?: string
 }> {
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
+
   if (!id) {
     return { error: 'IDが指定されていません。', success: false }
   }
-
-  const supabaseClient = await createSupabaseServerClient()
 
   try {
     const { data: deletedTerm, error } = await supabaseClient

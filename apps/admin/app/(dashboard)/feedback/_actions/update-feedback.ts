@@ -2,12 +2,17 @@
 
 import type { TablesUpdate } from '@shinju-date/database'
 import { revalidatePath } from 'next/cache'
+import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 import { supabaseClient } from '@/lib/supabase/admin'
 
 export async function updateFeatureRequestStatus(
   id: string,
   status: TablesUpdate<'feature_requests'>['status'],
 ): Promise<{ success: boolean; error?: string }> {
+  if (!(await requireAuthenticatedUser())) {
+    return unauthenticatedResult()
+  }
+
   try {
     if (!status) {
       return {
@@ -40,6 +45,10 @@ export async function updateFeatureRequestMemo(
   id: string,
   adminMemo: string,
 ): Promise<{ success: boolean; error?: string }> {
+  if (!(await requireAuthenticatedUser())) {
+    return unauthenticatedResult()
+  }
+
   try {
     const { error } = await supabaseClient
       .from('feature_requests')
@@ -65,6 +74,10 @@ export async function markFeatureRequestAsRead(
   id: string,
   isRead: boolean,
 ): Promise<{ success: boolean; error?: string }> {
+  if (!(await requireAuthenticatedUser())) {
+    return unauthenticatedResult()
+  }
+
   try {
     const { error } = await supabaseClient
       .from('feature_requests')

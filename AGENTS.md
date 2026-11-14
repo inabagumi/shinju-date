@@ -523,6 +523,42 @@ await supabase
   .eq('id', videoId)
 ```
 
+### admin の Server Action の認証
+
+**重要**: `apps/admin` は `proxy.ts` でセッションを保護していますが、`matcher` の変更やリダイレクト処理の不備に左右されないよう、Server Action 単位でも認証を明示します（多層防御）。データを変更する Server Action では、**必ず** `@/lib/auth` の `requireAuthenticatedUser()` を関数の先頭で呼び出してください。
+
+#### ルール
+
+1. **入力値の検証や外部 API 呼び出しより前に認証を確認する**
+2. **未認証の場合は更新処理を行わず、共通のレスポンスを返す**
+   - `{ success, error }` 形式の Action: `unauthenticatedResult()`
+   - `FormState` を返す Action（`useActionState` 用）: `unauthenticatedFormState()`
+3. **Supabase クライアントは `requireAuthenticatedUser()` の戻り値を使う**（`createSupabaseServerClient()` を別途呼ばない）
+4. サービスロールキーのクライアント（`@/lib/supabase/admin`）や Redis を使う Action は RLS で守られないため、特に確認を忘れないこと
+
+```typescript
+'use server'
+
+import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
+
+export async function deleteSomethingAction(id: string): Promise<{
+  success: boolean
+  error?: string
+}> {
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
+
+  // ... 更新処理
+}
+```
+
+新しい Action を追加した場合は、`apps/admin/app/(dashboard)/_lib/server-actions-auth.test.ts` にも追加し、未認証時に副作用がないことを確認してください。
+
 ### MSW (Mock Service Worker) による認証の模擬
 
 ローカル開発やテストで認証が必要な管理画面 (`apps/admin`) の動作を確認するため、MSWにSupabase Authの認証フローを模擬するハンドラーが実装されています。

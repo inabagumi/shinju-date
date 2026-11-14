@@ -16,7 +16,7 @@ import {
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import { createAuditLog } from '@/lib/audit-log'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 
 export async function syncVideoWithYouTube(videoId: string): Promise<{
   success: boolean
@@ -24,7 +24,13 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
   message?: string
   unchanged?: boolean
 }> {
-  const supabaseClient = await createSupabaseServerClient()
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
 
   try {
     // Get the video from database
@@ -194,7 +200,13 @@ export async function syncVideoWithTwitch(videoId: string): Promise<{
   message?: string
   unchanged?: boolean
 }> {
-  const supabaseClient = await createSupabaseServerClient()
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
 
   try {
     const { data: video, error: fetchError } = await supabaseClient

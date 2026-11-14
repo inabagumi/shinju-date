@@ -5,12 +5,17 @@ import { logger } from '@shinju-date/logger'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog } from '@/lib/audit-log'
+import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 import { getRedisClient } from '@/lib/redis'
 
 export async function addQueryAction(query: string): Promise<{
   success: boolean
   error?: string
 }> {
+  if (!(await requireAuthenticatedUser())) {
+    return unauthenticatedResult()
+  }
+
   if (!query || query.trim() === '') {
     return { error: 'クエリを入力してください。', success: false }
   }
@@ -50,6 +55,10 @@ export async function deleteQueryAction(query: string): Promise<{
   success: boolean
   error?: string
 }> {
+  if (!(await requireAuthenticatedUser())) {
+    return unauthenticatedResult()
+  }
+
   if (!query) {
     return { error: 'クエリが指定されていません。', success: false }
   }
