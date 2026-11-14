@@ -776,6 +776,218 @@ describe('Supabase Handlers', () => {
     })
   })
 
+  describe('Feature requests', () => {
+    interface FeatureRequestRow {
+      admin_memo: string | null
+      created_at: string
+      id: string
+      is_read: boolean
+      message: string
+      status: string
+      updated_at: string
+    }
+
+    const url = 'https://fake.supabase.test/rest/v1/feature_requests'
+
+    async function listFeatureRequests(search = '') {
+      const response = await fetch(
+        `${url}?select=*&order=created_at.desc${search}`,
+      )
+
+      return (await response.json()) as FeatureRequestRow[]
+    }
+
+    it('should return the seeded feature requests newest first', async () => {
+      const rows = await listFeatureRequests()
+
+      expect(rows.length).toBeGreaterThanOrEqual(2)
+      expect(rows.map((row) => row.created_at)).toEqual(
+        rows
+          .map((row) => row.created_at)
+          .sort()
+          .reverse(),
+      )
+    })
+
+    it('should insert a feature request that the admin list and detail show', async () => {
+      const message = `テスト用の機能要望 ${crypto.randomUUID()}`
+      const response = await fetch(url, {
+        body: JSON.stringify({ message }),
+        headers: {
+          'Content-Type': 'application/json',
+          prefer: 'return=minimal',
+        },
+        method: 'POST',
+      })
+
+      expect(response.status).toBe(201)
+
+      const [latest] = await listFeatureRequests()
+
+      expect(latest).toMatchObject({
+        admin_memo: null,
+        is_read: false,
+        message,
+        status: 'pending',
+      })
+      expect(latest?.created_at).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/,
+      )
+
+      const unread = await listFeatureRequests('&is_read=eq.false')
+
+      expect(unread.some((row) => row.id === latest?.id)).toBe(true)
+
+      const detail = await fetch(`${url}?select=*&id=eq.${latest?.id}`, {
+        headers: { accept: 'application/vnd.pgrst.object+json' },
+      })
+
+      expect(detail.status).toBe(200)
+      expect(await detail.json()).toMatchObject({ id: latest?.id, message })
+    })
+
+    it('should return the inserted row when representation is requested', async () => {
+      const response = await fetch(`${url}?select=id,message`, {
+        body: JSON.stringify({ message: '一覧の並び順を変えたい' }),
+        headers: {
+          'Content-Type': 'application/json',
+          prefer: 'return=representation',
+        },
+        method: 'POST',
+      })
+      const rows = (await response.json()) as Pick<
+        FeatureRequestRow,
+        'id' | 'message'
+      >[]
+
+      expect(response.status).toBe(201)
+      expect(rows).toEqual([
+        { id: expect.any(String), message: '一覧の並び順を変えたい' },
+      ])
+    })
+
+    it('should reject a feature request without a message', async () => {
+      const response = await fetch(url, {
+        body: JSON.stringify({}),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      })
+
+      expect(response.status).toBe(400)
+      expect(((await response.json()) as { code: string }).code).toBe('23502')
+    })
+
+    it('should update the status, memo and read state', async () => {
+      const [target] = await listFeatureRequests('&is_read=eq.false')
+
+      expect(target).toBeDefined()
+
+      for (const body of [
+        { status: 'in_progress' },
+        { admin_memo: '検討中' },
+        { is_read: true },
+      ]) {
+        const response = await fetch(`${url}?id=eq.${target?.id}`, {
+          body: JSON.stringify(body),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'PATCH',
+        })
+
+        expect(response.status).toBe(204)
+      }
+
+      const [updated] = await listFeatureRequests(`&id=eq.${target?.id}`)
+
+      expect(updated).toMatchObject({
+        admin_memo: '検討中',
+        is_read: true,
+        status: 'in_progress',
+      })
+    })
+  })
+
+  describe('Audit logs', () => {
+    interface AuditLogRow {
+      action: string
+      created_at: string
+      details: { entityName?: string } | null
+      id: string
+      target_record_id: string | null
+      target_table: string | null
+      user_email: string | null
+      user_id: string | null
+    }
+
+    async function getAuditLogs(params: Record<string, unknown>) {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/rpc/get_audit_logs',
+        {
+          body: JSON.stringify(params),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        },
+      )
+
+      expect(response.status).toBe(200)
+
+      return (await response.json()) as AuditLogRow[]
+    }
+
+    it('should return the seeded audit logs newest first with emails', async () => {
+      const logs = await getAuditLogs({ p_limit: 10 })
+
+      expect(logs.length).toBeGreaterThan(0)
+      expect(logs.map((log) => log.created_at)).toEqual(
+        logs
+          .map((log) => log.created_at)
+          .sort()
+          .reverse(),
+      )
+      expect(logs.every((log) => log.user_email === 'admin@example.com')).toBe(
+        true,
+      )
+    })
+
+    it('should apply the limit, offset and sort direction', async () => {
+      const all = await getAuditLogs({})
+
+      expect(all.length).toBeGreaterThanOrEqual(2)
+      expect(await getAuditLogs({ p_limit: 1, p_offset: 1 })).toEqual([all[1]])
+      expect(await getAuditLogs({ p_sort_direction: 'asc' })).toEqual(
+        [...all].reverse(),
+      )
+    })
+
+    it('should record an audit log that get_audit_logs returns', async () => {
+      const targetRecordId = crypto.randomUUID()
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/rpc/insert_audit_log',
+        {
+          body: JSON.stringify({
+            p_action: 'TERM_UPDATE',
+            p_details: { entityName: '歌枠' },
+            p_target_record_id: targetRecordId,
+            p_target_table: 'terms',
+          }),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        },
+      )
+
+      expect(response.status).toBe(204)
+
+      const [latest] = await getAuditLogs({ p_limit: 1 })
+
+      expect(latest).toMatchObject({
+        action: 'TERM_UPDATE',
+        details: { entityName: '歌枠' },
+        target_record_id: targetRecordId,
+        target_table: 'terms',
+        user_email: 'admin@example.com',
+      })
+    })
+  })
+
   describe('Query parameter parsing', () => {
     it('should handle limit parameter', async () => {
       const response = await fetch(
@@ -860,7 +1072,7 @@ describe('Supabase Handlers', () => {
 
     it('should return PGRST116 from tables without mock data', async () => {
       const response = await fetch(
-        'https://fake.supabase.test/rest/v1/feature_requests?select=*&id=eq.not-a-uuid',
+        'https://fake.supabase.test/rest/v1/audit_logs?select=*&id=eq.not-a-uuid',
         { headers },
       )
 

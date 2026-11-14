@@ -1,7 +1,11 @@
+import type { TablesInsert, TablesUpdate } from '@shinju-date/database'
+import { toDBString } from '@shinju-date/temporal-fns'
 import { HttpResponse, type HttpResponseResolver, http } from 'msw'
 import {
   announcements,
+  auditLogs,
   ensureCollectionsSeeded,
+  featureRequests,
   profileImages,
   talents,
   terms,
@@ -200,6 +204,51 @@ async function getMockLatestVideoBackfillJobs() {
 
     return true
   })
+}
+
+/** Feature requests, newest first like the admin list orders them. */
+async function getMockFeatureRequests() {
+  const requests = await featureRequests.findMany()
+
+  return requests.sort((a, b) => b.created_at.localeCompare(a.created_at))
+}
+
+interface GetAuditLogsParams {
+  p_limit?: number
+  p_offset?: number
+  p_sort_by?: string
+  p_sort_direction?: string
+}
+
+/**
+ * Mirrors `get_audit_logs`: the audit logs with the email of the user who
+ * recorded them, sorted by `created_at` or `user_email` and then newest first.
+ */
+async function getMockAuditLogs({
+  p_limit: limit = 50,
+  p_offset: offset = 0,
+  p_sort_by: sortBy = 'created_at',
+  p_sort_direction: sortDirection = 'desc',
+}: GetAuditLogsParams) {
+  const logs = (await auditLogs.findMany()).map((log) => ({
+    ...log,
+    user_email:
+      log.user_id === MOCK_SUPABASE_USER.id ? MOCK_SUPABASE_USER.email : null,
+  }))
+  const direction = sortDirection === 'asc' ? 1 : -1
+
+  return logs
+    .sort((a, b) => {
+      const order =
+        sortBy === 'created_at'
+          ? a.created_at.localeCompare(b.created_at) * direction
+          : sortBy === 'user_email'
+            ? (a.user_email ?? '').localeCompare(b.user_email ?? '') * direction
+            : 0
+
+      return order || b.created_at.localeCompare(a.created_at)
+    })
+    .slice(offset, offset + limit)
 }
 
 /**
@@ -1171,6 +1220,95 @@ export const supabaseHandlers = [
     getMockLatestVideoBackfillJobs,
   ),
 
+  // Feature requests (sent from the public site, managed in the admin app)
+  ...createReadOnlyHandlers('feature_requests', getMockFeatureRequests),
+
+  rest.post(
+    'https://fake.supabase.test/rest/v1/feature_requests',
+    async ({ request }) => {
+      const preferHeader = request.headers.get('prefer') || ''
+      const body = (await request.json()) as
+        | TablesInsert<'feature_requests'>
+        | TablesInsert<'feature_requests'>[]
+      const items = Array.isArray(body) ? body : [body]
+
+      if (items.some((item) => typeof item.message !== 'string')) {
+        return HttpResponse.json(
+          {
+            code: '23502',
+            details: null,
+            hint: null,
+            message:
+              'null value in column "message" of relation "feature_requests" violates not-null constraint',
+          },
+          { status: 400 },
+        )
+      }
+
+      const now = toDBString(Temporal.Now.instant())
+      const createdItems = await Promise.all(
+        items.map((item) =>
+          featureRequests.create({
+            admin_memo: null,
+            created_at: now,
+            id: crypto.randomUUID(),
+            is_read: false,
+            status: 'pending',
+            updated_at: now,
+            ...item,
+          }),
+        ),
+      )
+
+      if (preferHeader.includes('return=representation')) {
+        const select = new URL(request.url).searchParams.get('select') || '*'
+
+        return HttpResponse.json(await applySelect(createdItems, select), {
+          status: 201,
+        })
+      }
+
+      return new HttpResponse(null, { status: 201 })
+    },
+  ),
+
+  rest.patch(
+    'https://fake.supabase.test/rest/v1/feature_requests',
+    async ({ request }) => {
+      const preferHeader = request.headers.get('prefer') || ''
+      const query = parseSupabaseQuery(new URL(request.url))
+      const body = (await request.json()) as TablesUpdate<'feature_requests'>
+      const matches = applySupabaseConditions(
+        await featureRequests.findMany(),
+        query,
+      )
+      // Like the `on_feature_requests_update` trigger
+      const changes = {
+        ...body,
+        updated_at: toDBString(Temporal.Now.instant()),
+      }
+
+      for (const match of matches) {
+        await featureRequests.update((q) => q.where({ id: match.id }), {
+          data(record) {
+            Object.assign(record, changes)
+          },
+        })
+      }
+
+      if (preferHeader.includes('return=representation')) {
+        return HttpResponse.json(
+          await applySelect(
+            matches.map((match) => ({ ...match, ...changes })),
+            query.select,
+          ),
+        )
+      }
+
+      return new HttpResponse(null, { status: 204 })
+    },
+  ),
+
   // YouTube Videos Table
   rest.get(
     'https://fake.supabase.test/rest/v1/youtube_videos',
@@ -1669,6 +1807,40 @@ export const supabaseHandlers = [
       return HttpResponse.json(
         await applySelect(await searchMockVideos(body), select),
       )
+    },
+  ),
+
+  rest.post(
+    'https://fake.supabase.test/rest/v1/rpc/get_audit_logs',
+    async ({ request }) => {
+      const text = await request.text()
+      const params = (text ? JSON.parse(text) : {}) as GetAuditLogsParams
+
+      return HttpResponse.json(await getMockAuditLogs(params))
+    },
+  ),
+
+  rest.post(
+    'https://fake.supabase.test/rest/v1/rpc/insert_audit_log',
+    async ({ request }) => {
+      const params = (await request.json()) as {
+        p_action: string
+        p_details?: unknown
+        p_target_record_id?: string
+        p_target_table: string
+      }
+
+      await auditLogs.create({
+        action: params.p_action,
+        created_at: toDBString(Temporal.Now.instant()),
+        details: params.p_details ?? null,
+        id: crypto.randomUUID(),
+        target_record_id: params.p_target_record_id ?? null,
+        target_table: params.p_target_table,
+        user_id: MOCK_SUPABASE_USER.id,
+      })
+
+      return new HttpResponse(null, { status: 204 })
     },
   ),
 
