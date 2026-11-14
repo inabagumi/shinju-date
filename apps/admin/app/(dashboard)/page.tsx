@@ -9,6 +9,7 @@ import {
   ContentSummaryWidget,
   VideoSummaryWidget,
 } from './_components/summary-widget'
+import { VideoBackfillFailureAlert } from './_components/video-backfill-failure-alert'
 
 export default function DashboardPage() {
   return (
@@ -18,6 +19,11 @@ export default function DashboardPage() {
 
         {/* Main content area with max-width constraint */}
         <div className="space-y-6">
+          {/* Failed backfills that need attention; nothing while there are none */}
+          <Suspense fallback={null}>
+            <VideoBackfillFailureAlert />
+          </Suspense>
+
           {/* Video Summary - Full width */}
           <Suspense fallback={<CardSkeleton />}>
             <VideoSummaryWidget />

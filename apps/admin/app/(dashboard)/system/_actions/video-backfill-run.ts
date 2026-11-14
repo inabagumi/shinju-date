@@ -4,14 +4,15 @@ import { logger } from '@shinju-date/logger'
 import {
   type BackfillProvider,
   type BackfillRunJobStatus,
-  type BackfillRunRequest,
   BackfillRuns,
-  getBackfillJobId,
 } from '@shinju-date/video-backfill'
 import { createAuditLog } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 import { getRedisClient } from '@/lib/redis'
-import type { TypedSupabaseClient } from '@/lib/supabase'
+import {
+  type BackfillAccount,
+  getBackfillAccounts,
+} from '../_lib/backfill-accounts'
 
 /** Progress of the backfill of one account in a check of all talents. */
 export interface VideoBackfillRunAccount {
@@ -53,72 +54,9 @@ export interface VideoBackfillTargets {
   youtube: number
 }
 
-interface Account extends BackfillRunRequest {
-  name: string
-  talentName: string
-}
-
-interface Accounts {
-  /** Accounts of talents that are not deleted, by job ID. */
-  all: Map<string, Account>
-  /** Accounts of active talents. */
-  targets: Account[]
-}
-
-/**
- * Loads the YouTube channels and Twitch accounts of the talents that are not
- * deleted. Retired talents are included only to name the accounts of
- * earlier checks; the targets are the accounts of active talents.
- */
-async function getAccounts(
-  supabaseClient: TypedSupabaseClient,
-): Promise<Accounts> {
-  const { data, error } = await supabaseClient
-    .from('talents')
-    .select(
-      'id, name, status, youtube_channels(id, name, youtube_channel_id), twitch_users(id, name, twitch_login_name, twitch_user_id)',
-    )
-    .is('deleted_at', null)
-    .order('name', { ascending: true })
-
-  if (error) {
-    throw error
-  }
-
-  const all = new Map<string, Account>()
-  const targets: Account[] = []
-
-  for (const talent of data) {
-    const accounts: Account[] = [
-      ...talent.youtube_channels.map((channel) => ({
-        accountId: channel.id,
-        name: channel.name ?? channel.youtube_channel_id,
-        provider: 'youtube' as const,
-        talentId: talent.id,
-        talentName: talent.name,
-      })),
-      ...talent.twitch_users.map((user) => ({
-        accountId: user.id,
-        name: user.name ?? user.twitch_login_name ?? user.twitch_user_id,
-        provider: 'twitch' as const,
-        talentId: talent.id,
-        talentName: talent.name,
-      })),
-    ]
-
-    for (const account of accounts) {
-      all.set(getBackfillJobId(account.provider, account.accountId), account)
-    }
-
-    if (talent.status === 'active') {
-      targets.push(...accounts)
-    }
-  }
-
-  return { all, targets }
-}
-
-function countTargets(targets: readonly Account[]): VideoBackfillTargets {
+function countTargets(
+  targets: readonly BackfillAccount[],
+): VideoBackfillTargets {
   return {
     twitch: targets.filter((account) => account.provider === 'twitch').length,
     youtube: targets.filter((account) => account.provider === 'youtube').length,
@@ -151,7 +89,7 @@ export async function requestVideoBackfillRunAction(): Promise<{
   const { supabaseClient, user } = auth
 
   try {
-    const { targets } = await getAccounts(supabaseClient)
+    const { targets } = await getBackfillAccounts(supabaseClient)
 
     if (targets.length === 0) {
       return {
@@ -253,7 +191,7 @@ export async function getVideoBackfillRunAction(): Promise<{
 
   try {
     const [{ all, targets }, progress] = await Promise.all([
-      getAccounts(auth.supabaseClient),
+      getBackfillAccounts(auth.supabaseClient),
       new BackfillRuns(getRedisClient()).getLatest(),
     ])
 

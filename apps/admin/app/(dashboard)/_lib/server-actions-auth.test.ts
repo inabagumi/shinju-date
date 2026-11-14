@@ -55,6 +55,10 @@ import {
   deleteQueryAction,
 } from '../recommended-queries/_actions'
 import {
+  getVideoBackfillHistoryAction,
+  retryFailedVideoBackfillJobsAction,
+} from '../system/_actions/video-backfill-history'
+import {
   getVideoBackfillRunAction,
   requestVideoBackfillRunAction,
 } from '../system/_actions/video-backfill-run'
@@ -210,6 +214,11 @@ const resultActions: [string, () => Promise<unknown>][] = [
   ['getVideoBackfillStatusAction', () => getVideoBackfillStatusAction(ID)],
   ['requestVideoBackfillRunAction', () => requestVideoBackfillRunAction()],
   ['getVideoBackfillRunAction', () => getVideoBackfillRunAction()],
+  [
+    'retryFailedVideoBackfillJobsAction',
+    () => retryFailedVideoBackfillJobsAction(),
+  ],
+  ['getVideoBackfillHistoryAction', () => getVideoBackfillHistoryAction()],
   ['syncTalentAccounts', () => syncTalentAccounts(ID)],
   ['deleteTermAction', () => deleteTermAction(ID)],
   ['toggleVisibilityAction', () => toggleVisibilityAction([ID])],
