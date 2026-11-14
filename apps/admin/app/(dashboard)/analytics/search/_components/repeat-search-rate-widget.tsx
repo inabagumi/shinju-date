@@ -2,6 +2,7 @@ import { cache } from 'react'
 import { getRepeatSearchRate } from '@/lib/analytics/get-search-quality-metrics'
 import { formatDateLabel, formatDateRange } from '../../_lib/format-date'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
+import { MetricNoData } from './metric-no-data'
 
 interface Props {
   searchParams: Promise<AnalyticsSearchParams>
@@ -15,7 +16,7 @@ const fetchRepeatSearchRateData = cache(
     startDate: string,
     endDate: string,
     selectedDate: string | null,
-  ): Promise<number> => {
+  ): Promise<number | null> => {
     if (selectedDate) {
       return getRepeatSearchRate(Temporal.PlainDate.from(selectedDate))
     }
@@ -34,7 +35,7 @@ function RepeatSearchRateWidgetComponent({
   dateRange,
   selectedDate,
 }: {
-  repeatRate: number
+  repeatRate: number | null
   dateRange: { startDate: string; endDate: string }
   selectedDate: string | null
 }) {
@@ -45,8 +46,6 @@ function RepeatSearchRateWidgetComponent({
     if (rate >= 1.5) return 'normal'
     return 'low'
   }
-
-  const engagementLevel = getEngagementLevel(repeatRate)
 
   const engagementStyles = {
     high: 'bg-774-nevy-50 text-774-nevy-700 border-774-nevy-200',
@@ -71,6 +70,9 @@ function RepeatSearchRateWidgetComponent({
       'ユーザーは基本的に一度の検索で満足しています。標準的な検索パターンです。',
   }
 
+  const engagementLevel =
+    repeatRate === null ? null : getEngagementLevel(repeatRate)
+
   return (
     <div>
       <div className="mb-4">
@@ -93,22 +95,28 @@ function RepeatSearchRateWidgetComponent({
         ユーザーエンゲージメントを測る指標として活用できます。
       </p>
 
-      <div
-        className={`rounded-lg border-2 p-6 ${engagementStyles[engagementLevel]}`}
-      >
-        <div className="text-center">
-          <div className="text-4xl font-bold">{repeatRate.toFixed(1)}</div>
-          <div className="mt-2 text-sm font-medium">
-            回/セッション ({engagementLabels[engagementLevel]})
+      {repeatRate === null || engagementLevel === null ? (
+        <MetricNoData description="この期間に検索したセッションがないため、評価できません。" />
+      ) : (
+        <>
+          <div
+            className={`rounded-lg border-2 p-6 ${engagementStyles[engagementLevel]}`}
+          >
+            <div className="text-center">
+              <div className="text-4xl font-bold">{repeatRate.toFixed(1)}</div>
+              <div className="mt-2 text-sm font-medium">
+                回/セッション ({engagementLabels[engagementLevel]})
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div className="mt-4 rounded-lg bg-gray-50 p-4">
-        <p className="text-sm text-gray-700">
-          <strong>解釈:</strong> {engagementDescriptions[engagementLevel]}
-        </p>
-      </div>
+          <div className="mt-4 rounded-lg bg-gray-50 p-4">
+            <p className="text-sm text-gray-700">
+              <strong>解釈:</strong> {engagementDescriptions[engagementLevel]}
+            </p>
+          </div>
+        </>
+      )}
 
       <div className="mt-4 text-xs text-gray-600">
         <div className="grid grid-cols-2 gap-4">

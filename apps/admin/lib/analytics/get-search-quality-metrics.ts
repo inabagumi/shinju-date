@@ -7,24 +7,26 @@ import { getRedisClient } from '@/lib/redis'
 import { listDatesInRange } from './list-dates-in-range'
 
 export type SearchQualityMetrics = {
-  searchEngagementRate: number
+  searchEngagementRate: number | null
   searchExitRates: Array<{
     keyword: string
     exitRate: number
     searchCount: number
   }>
-  repeatSearchRate: number
+  repeatSearchRate: number | null
 }
 
 /**
  * Calculate search engagement rate for a single date or date range
  * @param startDate - Start date as Temporal.PlainDate
  * @param endDate - End date as Temporal.PlainDate. If undefined, gets data for single date
+ * @returns The rate in percent, or `null` when there is no session to
+ * measure it against (or it could not be calculated)
  */
 export async function getSearchEngagementRate(
   startDate: Temporal.PlainDate,
   endDate?: Temporal.PlainDate,
-): Promise<number> {
+): Promise<number | null> {
   try {
     const redisClient = getRedisClient()
     const start = startDate
@@ -33,7 +35,7 @@ export async function getSearchEngagementRate(
     const dates = listDatesInRange(start, end)
 
     if (dates.length === 0) {
-      return 0
+      return null
     }
 
     // Fetch every day in a single request instead of one round trip per day.
@@ -56,13 +58,13 @@ export async function getSearchEngagementRate(
     }
 
     if (totalSessions === 0) {
-      return 0
+      return null
     }
 
     return (totalSearchSessions / totalSessions) * 100
   } catch (error) {
     logger.error('検索利用率の計算に失敗しました', { error })
-    return 0
+    return null
   }
 }
 
@@ -172,11 +174,13 @@ export async function getSearchExitRates(
  * Calculate repeat search rate (average searches per session) for a single date or date range
  * @param startDate - Start date as Temporal.PlainDate
  * @param endDate - End date as Temporal.PlainDate. If undefined, gets data for single date
+ * @returns The average number of searches per session, or `null` when there
+ * is no search session to measure it against (or it could not be calculated)
  */
 export async function getRepeatSearchRate(
   startDate: Temporal.PlainDate,
   endDate?: Temporal.PlainDate,
-): Promise<number> {
+): Promise<number | null> {
   try {
     const redisClient = getRedisClient()
     const start = startDate
@@ -185,7 +189,7 @@ export async function getRepeatSearchRate(
     const dates = listDatesInRange(start, end)
 
     if (dates.length === 0) {
-      return 0
+      return null
     }
 
     // Fetch every day in a single request instead of one round trip per day
@@ -213,13 +217,13 @@ export async function getRepeatSearchRate(
     }
 
     if (totalSessions === 0) {
-      return 0
+      return null
     }
 
     return totalSearches / totalSessions
   } catch (error) {
     logger.error('リピート検索率の計算に失敗しました', { error })
-    return 0
+    return null
   }
 }
 
