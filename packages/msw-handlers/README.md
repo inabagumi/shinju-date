@@ -162,6 +162,7 @@ The package mocks the following Supabase tables and operations:
 - `videos` - Video content with title, duration, etc.
 - `channels` - Channel information with name
 - `thumbnails` - Thumbnail images with blur data URLs
+- `profile_images` - Square icons of YouTube channels and Twitch users
 - `terms` - Search terms with readings and synonyms
 
 #### Query Parameters
@@ -312,7 +313,8 @@ The database includes the following tables:
 - `talents`: Creator/talent information
 - `videos`: Video records with status and metadata
 - `thumbnails`: Thumbnail images with blur data
-- `youtube_channels`: YouTube channel information
+- `youtube_channels`: YouTube channel information (all but one channel have a `profile_image_id`)
+- `profile_images`: Square icons referenced by `youtube_channels.profile_image_id`
 - `youtube_videos`: YouTube video relation mapping
 - `terms`: Search terms and synonyms
 - `announcements`: System announcements

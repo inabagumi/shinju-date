@@ -51,6 +51,7 @@ export const allHandlers = [
 export {
   announcements,
   defineCollectionRelations,
+  profileImages,
   seedCollections,
   talents,
   terms,

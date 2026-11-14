@@ -1,6 +1,7 @@
 import { HttpResponse, http } from 'msw'
 import {
   announcements,
+  profileImages,
   seedCollections,
   talents,
   terms,
@@ -34,6 +35,10 @@ async function getMockTalents() {
 
 async function getMockAnnouncements() {
   return await announcements.findMany()
+}
+
+async function getMockProfileImages() {
+  return await profileImages.findMany()
 }
 
 async function getMockThumbnails() {
@@ -249,6 +254,13 @@ async function resolveRelation(
     case 'talents':
       return item.talent_id
         ? await talents.findFirst((q) => q.where({ id: item.talent_id }))
+        : null
+    case 'profile_images':
+      // Many-to-one from youtube_channels / twitch_users
+      return item.profile_image_id
+        ? await profileImages.findFirst((q) =>
+            q.where({ id: item.profile_image_id }),
+          )
         : null
     case 'thumbnails':
       return item.thumbnail_id
@@ -554,6 +566,23 @@ export const supabaseHandlers = [
     },
   ),
 
+  // Profile images table
+  http.get(
+    'https://fake.supabase.test/rest/v1/profile_images',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const query = parseSupabaseQuery(url)
+
+      let filteredData = applySupabaseFilters(
+        await getMockProfileImages(),
+        query,
+      )
+      filteredData = await applySelect(filteredData, query.select)
+
+      return HttpResponse.json(filteredData)
+    },
+  ),
+
   // Terms table
   http.get('https://fake.supabase.test/rest/v1/terms', async ({ request }) => {
     const url = new URL(request.url)
@@ -744,7 +773,8 @@ export const supabaseHandlers = [
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(await getMockChannels(), query)
+      let filteredData = applySupabaseFilters(await getMockChannels(), query)
+      filteredData = await applySelect(filteredData, query.select)
 
       if (query.returnCount) {
         return HttpResponse.json(filteredData, {
@@ -1373,6 +1403,33 @@ export const supabaseHandlers = [
         signedURL: signedUrl,
       })
     },
+  ),
+
+  http.post(
+    'https://fake.supabase.test/storage/v1/object/sign/profile-images/:path*',
+    ({ params }) => {
+      const pathParam = params['path']
+      const path = Array.isArray(pathParam) ? pathParam.join('/') : pathParam
+
+      return HttpResponse.json({
+        signedURL: `https://fake.supabase.test/storage/v1/object/public/profile-images/${path}`,
+      })
+    },
+  ),
+
+  // Profile images are always square
+  http.get(
+    'https://fake.supabase.test/storage/v1/object/public/profile-images/:path*',
+    () =>
+      new HttpResponse(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" />',
+        {
+          headers: {
+            'Accept-Ranges': 'none',
+            'Content-Type': 'image/svg+xml',
+          },
+        },
+      ),
   ),
 
   // Handle all thumbnail image fetches with a flexible pattern
