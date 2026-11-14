@@ -24,6 +24,17 @@ VS Code Dev Containers または GitHub Codespaces では、`.devcontainer/` の
 
 詳細は [`.devcontainer/README.md`](../.devcontainer/README.md) を参照してください。
 
+### Claude Code のクラウドセッションを使う場合
+
+[Claude Code のクラウドセッション](https://code.claude.com/docs/en/claude-code-on-the-web)では、`.claude/settings.json` に登録した SessionStart フック（`.claude/hooks/session-start.sh`）が、セッションの開始時に次の処理をします。ローカルの Claude Code では何もしません。
+
+- `package.json` の `devEngines.packageManager` と同じバージョンの pnpm を、公式のインストールスクリプトで `~/.local/share/pnpm` にインストールする
+- `pnpm install --frozen-lockfile` を実行する（`devEngines.runtime` の Node.js もここで取得される）。依存パッケージを決めるファイルが前回から変わっていなければ省略する
+
+公式のインストールスクリプトは `get.pnpm.io` から取得するため、クラウド環境のネットワークの設定で、許可するホストに `get.pnpm.io` を追加してください。追加していない場合は、npm レジストリから pnpm をインストールします。
+
+Docker が使えないため、Supabase は起動しません。データベースが必要な作業では、[5.3](#53-aiエージェントおよびci環境msw使用時) の MSW を使ってください。
+
 ## 1. 初期セットアップ
 
 ### 1.1. リポジトリのクローン
