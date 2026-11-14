@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <SimpleDocument title={title} withBreadcrumbs>
-      <div className="max-w-text space-y-8">
+    <SimpleDocument title={title}>
+      <div className="space-y-8">
         <p className="text-body">お探しのページを見つけられませんでした。</p>
 
         <ul className="flex flex-wrap gap-4">

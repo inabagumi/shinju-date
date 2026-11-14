@@ -20,8 +20,6 @@ export const metadata: Metadata = {
 
 export default function PrivacyLayout({ children }: { children: ReactNode }) {
   return (
-    <SimpleDocument title="プライバシーポリシー" withBreadcrumbs>
-      <div className="prose dark:prose-invert max-w-none">{children}</div>
-    </SimpleDocument>
+    <SimpleDocument title="プライバシーポリシー">{children}</SimpleDocument>
   )
 }

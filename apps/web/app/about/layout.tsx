@@ -19,9 +19,5 @@ export const metadata: Metadata = {
 }
 
 export default function AboutLayout({ children }: { children: ReactNode }) {
-  return (
-    <SimpleDocument title={`${siteName}とは?`} withBreadcrumbs>
-      <div className="prose dark:prose-invert max-w-none">{children}</div>
-    </SimpleDocument>
-  )
+  return <SimpleDocument title={`${siteName}とは?`}>{children}</SimpleDocument>
 }

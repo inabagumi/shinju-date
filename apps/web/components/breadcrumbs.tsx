@@ -1,57 +1,58 @@
-'use client'
-
 import { SITE_NAME as siteName } from '@shinju-date/constants'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 
-export default function Breadcrumbs({
-  title,
-}: {
-  title?: ReactNode | undefined
-}) {
-  const pathname = usePathname()
+export interface BreadcrumbItem {
+  /** 省略すると現在のページとして、リンクにせずに表示する */
+  href?: string | undefined
+  name: ReactNode
+}
+
+interface BreadcrumbsProps {
+  /** トップページより下の階層。トップページは自動で先頭に付く */
+  items: BreadcrumbItem[]
+}
+
+export default function Breadcrumbs({ items }: BreadcrumbsProps) {
+  const allItems: BreadcrumbItem[] = [{ href: '/', name: siteName }, ...items]
 
   return (
-    <nav aria-label="パンくずリスト" className="p-4">
-      <ul
-        className="flex items-center text-sm"
+    <nav aria-label="パンくずリスト">
+      <ol
+        className="flex flex-wrap items-center gap-x-2 text-meta text-muted"
         itemScope
         itemType="https://schema.org/BreadcrumbList"
       >
-        <li
-          className=""
-          itemProp="itemListElement"
-          itemScope
-          itemType="https://schema.org/ListItem"
-        >
-          <Link
-            className="rounded-full px-4 py-1 hover:bg-774-nevy-200 dark:hover:bg-zinc-600"
-            href="/"
-            itemProp="item"
-          >
-            <span itemProp="name">{siteName}</span>
-          </Link>
-          <meta content="1" itemProp="position" />
-        </li>
-        {pathname && (
-          <li
-            className="flex items-center before:block before:px-3 before:content-['/']"
-            itemProp="itemListElement"
-            itemScope
-            itemType="https://schema.org/ListItem"
-          >
-            <Link
-              className="rounded-full bg-774-nevy-100 px-4 py-1 hover:bg-774-nevy-200 dark:bg-zinc-700 dark:hover:bg-zinc-600"
-              href={pathname}
-              itemProp="item"
+        {allItems.map((item, index) => {
+          const position = index + 1
+          const isCurrent = position === allItems.length
+
+          return (
+            <li
+              className="flex items-center gap-x-2 before:content-['/'] first:before:content-none"
+              itemProp="itemListElement"
+              itemScope
+              itemType="https://schema.org/ListItem"
+              key={position}
             >
-              <span itemProp="name">{title || pathname}</span>
-            </Link>
-            <meta content="2" itemProp="position" />
-          </li>
-        )}
-      </ul>
+              {item.href && !isCurrent ? (
+                <Link
+                  className="hover:text-accent hover:underline"
+                  href={item.href}
+                  itemProp="item"
+                >
+                  <span itemProp="name">{item.name}</span>
+                </Link>
+              ) : (
+                <span aria-current={isCurrent ? 'page' : undefined}>
+                  <span itemProp="name">{item.name}</span>
+                </span>
+              )}
+              <meta content={String(position)} itemProp="position" />
+            </li>
+          )
+        })}
+      </ol>
     </nav>
   )
 }

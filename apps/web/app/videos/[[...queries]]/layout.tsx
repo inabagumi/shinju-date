@@ -8,7 +8,7 @@ interface Props {
 export default function VideosLayout({ children }: Props) {
   return (
     <main
-      className="mx-auto grid max-w-6xl scroll-mt-20 gap-8 px-4 py-8"
+      className="mx-auto max-w-6xl scroll-mt-20 px-4 py-8"
       id={MAIN_CONTENT_ID}
     >
       {children}
