@@ -16,6 +16,8 @@ export {
   PROFILE_IMAGES_BUCKET,
   removeProfileImage,
 } from './profile-image.js'
+export type { SavedProfileImageRow } from './saved.js'
+export { toStoredProfileImage } from './saved.js'
 export type {
   ProfileImageSyncResult,
   SyncProfileImageOptions,

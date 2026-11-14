@@ -3,7 +3,9 @@ import { Temporal } from 'temporal-polyfill'
 import {
   MAX_PROFILE_IMAGE_SIZE,
   type ProfileImageSyncResult,
+  type SavedProfileImageRow,
   syncProfileImage,
+  toStoredProfileImage,
 } from '../internal/profile-images/index.js'
 import type { TypedSupabaseClient } from '../types.js'
 import type { YouTubeChannel } from './types.js'
@@ -76,13 +78,7 @@ export function selectYouTubeChannelIconUrl(
   return largest?.url ?? null
 }
 
-/** A row of `profile_images`, as embedded in a `youtube_channels` row. */
-export interface SavedProfileImageRow {
-  etag: string | null
-  id: string
-  path: string
-  source_url: string
-}
+export type { SavedProfileImageRow }
 
 /**
  * A row of `youtube_channels` with its icon, selected with
@@ -122,8 +118,6 @@ export function syncYouTubeChannelIcon({
   saved,
   supabaseClient,
 }: SyncYouTubeChannelIconOptions): Promise<ProfileImageSyncResult> {
-  const image = saved.profile_images
-
   return syncProfileImage({
     now,
     owner: {
@@ -131,14 +125,7 @@ export function syncYouTubeChannelIcon({
       platform: 'youtube',
       platformId: saved.youtube_channel_id,
     },
-    saved: image
-      ? {
-          etag: image.etag,
-          id: image.id,
-          path: image.path,
-          sourceUrl: image.source_url,
-        }
-      : null,
+    saved: toStoredProfileImage(saved.profile_images),
     sourceUrl: selectYouTubeChannelIconUrl(channel.snippet.thumbnails),
     supabaseClient,
   })
