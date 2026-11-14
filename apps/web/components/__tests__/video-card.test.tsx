@@ -307,6 +307,54 @@ describe('VideoCard', () => {
   })
 
   test.each([
+    ['grid', true],
+    ['row', true],
+    ['short', false],
+  ] as const)(
+    'should show the short badge on the %s variant: %s',
+    (variant, expected) => {
+      const video = createYouTubeVideo(null)
+      const { rerender } = render(<VideoCard value={video} variant={variant} />)
+
+      expect(screen.queryByText('ショート')).not.toBeInTheDocument()
+
+      rerender(
+        <VideoCard
+          value={{ ...video, video_kind: 'short' }}
+          variant={variant}
+        />,
+      )
+
+      const badge = within(
+        screen.getByTestId('video-card-thumbnail'),
+      ).queryByText('ショート')
+
+      if (expected) {
+        expect(badge).toHaveClass('bottom-0', 'left-0')
+      } else {
+        expect(badge).not.toBeInTheDocument()
+      }
+    },
+  )
+
+  test('should label the start time of upcoming videos only when asked', () => {
+    const video = { ...createYouTubeVideo(null), status: 'UPCOMING' as const }
+    const { rerender } = render(<VideoCard value={video} />)
+
+    expect(screen.queryByText('予定')).not.toBeInTheDocument()
+
+    rerender(<VideoCard showUpcomingLabel value={video} />)
+
+    expect(screen.getByText('予定').nextElementSibling?.tagName).toBe('TIME')
+
+    rerender(
+      <VideoCard showUpcomingLabel value={{ ...video, status: 'PUBLISHED' }} />,
+    )
+
+    expect(screen.queryByText('予定')).not.toBeInTheDocument()
+  })
+
+  test.each([
     ['Twitch', createTwitchVideo(null), true],
     ['YouTube', createYouTubeVideo(null), false],
   ])('should show the platform badge for %s: %s', (name, video, expected) => {

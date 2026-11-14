@@ -20,18 +20,25 @@ export const VIDEO_CARD_LIST_CLASS_NAMES: Record<VideoCardListVariant, string> =
 interface VideoCardListSkeletonProps {
   className?: string | undefined
   count?: number
+  /** 画面幅によってスケルトンを隠すときなどに、項目ごとのクラスを返す */
+  itemClassName?: (index: number) => string | undefined
   variant?: VideoCardListVariant
 }
 
 export function VideoCardListSkeleton({
   className,
   count = 2,
+  itemClassName,
   variant = 'row',
 }: VideoCardListSkeletonProps) {
   return (
     <div className={twMerge(VIDEO_CARD_LIST_CLASS_NAMES[variant], className)}>
       {Array.from({ length: count }, (_, index) => (
-        <VideoCardSkeleton key={index} variant={variant} />
+        <VideoCardSkeleton
+          className={itemClassName?.(index)}
+          key={index}
+          variant={variant}
+        />
       ))}
     </div>
   )
