@@ -738,6 +738,9 @@ importers:
       '@tsconfig/strictest':
         specifier: 2.0.9
         version: 2.0.9
+      '@types/node':
+        specifier: 26.6.6
+        version: 26.6.6
       tsup:
         specifier: 9.0.0
         version: 9.0.0(jiti@2.7.0)(postcss@8.5.32)(typescript@6.0.3)
@@ -753,6 +756,9 @@ importers:
       '@tsconfig/strictest':
         specifier: 2.0.9
         version: 2.0.9
+      '@types/node':
+        specifier: 26.6.6
+        version: 26.6.6
       next:
         specifier: 16.4.6
         version: 16.4.6(@babel/core@7.29.13(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.65.0)(@types/node@26.6.6)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -796,6 +802,9 @@ importers:
       '@tsconfig/strictest':
         specifier: 2.0.9
         version: 2.0.9
+      '@types/node':
+        specifier: 26.6.6
+        version: 26.6.6
       next:
         specifier: 16.4.6
         version: 16.4.6(@babel/core@7.29.13(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.65.0)(@types/node@26.6.6)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -820,6 +829,9 @@ importers:
       '@tsconfig/strictest':
         specifier: 2.0.9
         version: 2.0.9
+      '@types/node':
+        specifier: 26.6.6
+        version: 26.6.6
       tsup:
         specifier: 9.0.0
         version: 9.0.0(jiti@2.7.0)(postcss@8.5.32)(typescript@6.0.3)
@@ -888,6 +900,9 @@ importers:
       '@tsconfig/strictest':
         specifier: 2.0.9
         version: 2.0.9
+      '@types/node':
+        specifier: 26.6.6
+        version: 26.6.6
       tsup:
         specifier: 9.0.0
         version: 9.0.0(jiti@2.7.0)(postcss@8.5.32)(typescript@6.0.3)
@@ -966,6 +981,9 @@ importers:
       '@tsconfig/strictest':
         specifier: 2.0.9
         version: 2.0.9
+      '@types/node':
+        specifier: 26.6.6
+        version: 26.6.6
       temporal-polyfill:
         specifier: 1.0.8
         version: 1.0.8
@@ -1067,6 +1085,9 @@ importers:
       '@tsconfig/strictest':
         specifier: 2.0.9
         version: 2.0.9
+      '@types/node':
+        specifier: 26.6.6
+        version: 26.6.6
       '@types/react':
         specifier: 19.3.0
         version: 19.3.0
