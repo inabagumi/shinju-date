@@ -1,4 +1,17 @@
-import { afterEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+
+const { sendEmail } = vi.hoisted(() => {
+  // The Resend client is created when the module is imported.
+  vi.stubEnv('RESEND_API_KEY', 're_test')
+
+  return { sendEmail: vi.fn() }
+})
+
+vi.mock('resend', () => ({
+  Resend: class {
+    emails = { send: sendEmail }
+  },
+}))
 
 vi.mock('botid/server', () => ({
   checkBotId: vi.fn().mockResolvedValue({ isBot: false }),
@@ -20,9 +33,22 @@ function createFormData(values: Record<string, string>): FormData {
   return formData
 }
 
+const SUBMITTED_VALUES = {
+  email: 'haneru@example.com',
+  message: '不具合があります',
+  name: '因幡はねる',
+  type: 'bug',
+  wantsReply: 'on',
+}
+
 describe('submitContactForm', () => {
+  beforeEach(() => {
+    sendEmail.mockReset()
+  })
+
   afterEach(() => {
     vi.unstubAllEnvs()
+    vi.restoreAllMocks()
   })
 
   test('returns field errors matching the labels for empty required fields', async () => {
@@ -77,19 +103,68 @@ describe('submitContactForm', () => {
   test('returns the submitted values when the email cannot be sent', async () => {
     vi.stubEnv('ADMIN_EMAIL', '')
 
-    const values = {
-      email: 'haneru@example.com',
-      message: '不具合があります',
-      name: '因幡はねる',
-      type: 'bug',
-      wantsReply: 'on',
-    }
-    const result = await submitContactForm(null, createFormData(values))
+    const result = await submitContactForm(
+      null,
+      createFormData(SUBMITTED_VALUES),
+    )
 
     expect(result).toEqual({
       error: 'メール送信設定が完了していません。',
       success: false,
-      values,
+      values: SUBMITTED_VALUES,
     })
+    expect(sendEmail).not.toHaveBeenCalled()
+  })
+
+  test('reports success when the email is sent', async () => {
+    vi.stubEnv('ADMIN_EMAIL', 'contact@shinju.date')
+    sendEmail.mockResolvedValue({
+      data: { id: 'email-id' },
+      error: null,
+      headers: null,
+    })
+
+    const result = await submitContactForm(
+      null,
+      createFormData(SUBMITTED_VALUES),
+    )
+
+    expect(result).toEqual({
+      message: 'お問い合わせを受け付けました。ありがとうございます。',
+      success: true,
+    })
+    expect(sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        replyTo: '因幡はねる <haneru@example.com>',
+        to: 'contact@shinju.date',
+      }),
+    )
+  })
+
+  test('reports a failure when Resend returns an error', async () => {
+    vi.stubEnv('ADMIN_EMAIL', 'contact@shinju.date')
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const sendError = {
+      message: 'Internal server error',
+      name: 'internal_server_error',
+      statusCode: 500,
+    }
+    sendEmail.mockResolvedValue({ data: null, error: sendError, headers: null })
+
+    const result = await submitContactForm(
+      null,
+      createFormData(SUBMITTED_VALUES),
+    )
+
+    expect(result).toEqual({
+      error:
+        '送信中にエラーが発生しました。しばらく時間をおいて再度お試しください。',
+      success: false,
+      values: SUBMITTED_VALUES,
+    })
+    expect(consoleError).toHaveBeenCalledWith(
+      'Failed to send contact form email:',
+      sendError,
+    )
   })
 })
