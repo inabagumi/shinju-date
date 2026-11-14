@@ -27,7 +27,18 @@ const nextConfig: NextConfig = {
               "frame-ancestors 'none'",
               "img-src 'self' data:",
               "manifest-src 'self'",
-              "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
+              // React requires eval() in development mode for debugging
+              // features such as reconstructing callstacks, so 'unsafe-eval'
+              // is allowed only outside of production.
+              [
+                'script-src',
+                "'self'",
+                "'unsafe-inline'",
+                ...(process.env.NODE_ENV === 'production'
+                  ? []
+                  : ["'unsafe-eval'"]),
+                'https://va.vercel-scripts.com',
+              ].join(' '),
               "style-src 'self' 'unsafe-inline'",
               "worker-src 'self' blob:",
             ].join('; '),
