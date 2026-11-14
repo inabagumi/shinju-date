@@ -3,12 +3,12 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { twMerge } from '@shinju-date/ui'
-import { type ReactNode, useId, useMemo } from 'react'
+import { type ReactNode, useId, useMemo, useSyncExternalStore } from 'react'
+import FormattedTime from '@/components/formatted-time'
+import { useNow } from '@/components/timer'
+import VideoCard, { VideoCardSkeleton } from '@/components/video-card'
+import { VIDEO_CARD_LIST_CLASS_NAMES } from '@/components/video-card-list'
 import type { Video } from '@/lib/fetchers'
-import FormattedTime from './formatted-time'
-import { useNow } from './timer'
-import VideoCard, { VideoCardSkeleton } from './video-card'
-import { VIDEO_CARD_LIST_CLASS_NAMES } from './video-card-list'
 
 const WEEKDAYS = ['月', '火', '水', '木', '金', '土', '日'] as const
 
@@ -36,6 +36,31 @@ export function formatTimelineDate(
   })
 
   return `${monthAndDay}（${WEEKDAYS[date.dayOfWeek - 1]}）`
+}
+
+function subscribeNothing() {
+  return () => {}
+}
+
+/**
+ * 「今日」「明日」を判定する基準の日付。
+ * サーバーでの描画とハイドレーションでは、データと一緒に取得した `referenceDate` を使い、
+ * 両者の文言を揃える。ハイドレーションの後はブラウザの現在時刻に切り替えるため、
+ * キャッシュを作った後に日付が変わっていても正しい文言になる。
+ */
+function useToday(referenceDate: string): Temporal.PlainDate {
+  const now = useNow()
+  const isHydrated = useSyncExternalStore(
+    subscribeNothing,
+    () => true,
+    () => false,
+  )
+
+  return useMemo(
+    () =>
+      isHydrated ? now.toPlainDate() : Temporal.PlainDate.from(referenceDate),
+    [isHydrated, now, referenceDate],
+  )
 }
 
 interface TimelineGroupProps {
@@ -101,15 +126,18 @@ function TimelineItem({ value }: { value: Video }) {
   )
 }
 
+interface TimelineSectionProps {
+  dateTime: string
+  items: Video[]
+  today: Temporal.PlainDate
+}
+
 function TimelineSection({
   dateTime: rawDateTime,
   items,
-}: {
-  dateTime: string
-  items: Video[]
-}) {
+  today,
+}: TimelineSectionProps) {
   const headingId = useId()
-  const now = useNow()
   const dateTime = useMemo(
     () => Temporal.PlainDate.from(rawDateTime),
     [rawDateTime],
@@ -121,7 +149,7 @@ function TimelineSection({
         <>
           <h3 className="text-body leading-normal font-semibold" id={headingId}>
             <time dateTime={dateTime.toJSON()}>
-              {formatTimelineDate(dateTime, now.toPlainDate())}
+              {formatTimelineDate(dateTime, today)}
             </time>
           </h3>
           <p className="text-meta text-muted tabular-nums">{items.length}件</p>
@@ -167,7 +195,14 @@ export function TimelineSkeleton() {
 /**
  * 配信予定を日付ごとにまとめ、各日の中は開始時刻の順に並べる。
  */
-export default function Timeline({ videos }: { videos: Video[] }) {
+interface TimelineProps {
+  /** サーバーで描画したときの日付（`YYYY-MM-DD`）。ハイドレーションまでの「今日」の基準 */
+  referenceDate: string
+  videos: Video[]
+}
+
+export default function Timeline({ referenceDate, videos }: TimelineProps) {
+  const today = useToday(referenceDate)
   const schedule = useMemo<Map<string, Video[]>>(() => {
     const sortedValues = videos.toSorted((videoA, videoB) =>
       Temporal.Instant.compare(
@@ -186,7 +221,12 @@ export default function Timeline({ videos }: { videos: Video[] }) {
   return (
     <div className="space-y-10">
       {[...schedule.entries()].map(([dateTime, items]) => (
-        <TimelineSection dateTime={dateTime} items={items} key={dateTime} />
+        <TimelineSection
+          dateTime={dateTime}
+          items={items}
+          key={dateTime}
+          today={today}
+        />
       ))}
     </div>
   )

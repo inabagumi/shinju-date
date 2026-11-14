@@ -3,9 +3,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import VideoCardList, {
+  VideoCardListSkeleton,
+} from '@/components/video-card-list'
 import {
   fetchDashboardVideos,
   fetchUpcomingVideos,
+  type UpcomingVideos,
   type Video,
 } from '@/lib/fetchers'
 import HomeSection, {
@@ -14,7 +18,6 @@ import HomeSection, {
 } from './home-section'
 import ShortsCarousel, { ShortsCarouselSkeleton } from './shorts-carousel'
 import Timeline, { TimelineSkeleton } from './timeline'
-import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 
 /** 新着動画は1段ぶん（PC 4列・タブレット 2列×2段・モバイル 4件）だけ表示する */
 export const RECENT_VIDEOS_LIMIT = 4
@@ -86,14 +89,14 @@ export function LiveSection({ prefetchedData }: DashboardSectionProps) {
 }
 
 interface ScheduleSectionProps {
-  prefetchedData: Video[]
+  prefetchedData: UpcomingVideos
 }
 
 /**
  * このあとの配信予定。日付ごとのタイムラインで表示する。
  */
 export function ScheduleSection({ prefetchedData }: ScheduleSectionProps) {
-  const { data: videos = prefetchedData } = useQuery({
+  const { data: { today, videos } = prefetchedData } = useQuery({
     initialData: prefetchedData,
     queryFn: () => fetchUpcomingVideos(),
     queryKey: ['upcoming-videos'],
@@ -106,7 +109,7 @@ export function ScheduleSection({ prefetchedData }: ScheduleSectionProps) {
       title="配信予定"
     >
       {videos.length > 0 ? (
-        <Timeline videos={videos} />
+        <Timeline referenceDate={today} videos={videos} />
       ) : (
         <p className="text-body text-muted">
           現在、予定されている配信はありません

@@ -38,7 +38,7 @@ vi.mock('../timeline', () => ({
   TimelineSkeleton: () => null,
 }))
 
-vi.mock('../video-card', () => ({
+vi.mock('@/components/video-card', () => ({
   default: ({ value }: { value: Video }) => <article>{value.id}</article>,
   VideoCardSkeleton: () => null,
 }))
@@ -122,7 +122,12 @@ describe('LiveSection', () => {
 describe('ScheduleSection', () => {
   test('should show the timeline with the number of upcoming videos', () => {
     renderWithQueryClient(
-      <ScheduleSection prefetchedData={createVideos(5, 'upcoming')} />,
+      <ScheduleSection
+        prefetchedData={{
+          today: '2026-11-14',
+          videos: createVideos(5, 'upcoming'),
+        }}
+      />,
     )
 
     const section = screen.getByRole('region', { name: '配信予定' })
@@ -142,7 +147,9 @@ describe('ScheduleSection', () => {
   })
 
   test('should show a message when nothing is scheduled', () => {
-    renderWithQueryClient(<ScheduleSection prefetchedData={[]} />)
+    renderWithQueryClient(
+      <ScheduleSection prefetchedData={{ today: '2026-11-14', videos: [] }} />,
+    )
 
     const section = screen.getByRole('region', { name: '配信予定' })
 

@@ -88,7 +88,17 @@ function hasPlatformSource(video: Video): boolean {
   return video.youtube_video != null || video.twitch_video != null
 }
 
-export const fetchUpcomingVideos = async (): Promise<Video[]> => {
+export interface UpcomingVideos {
+  /**
+   * 取得した時点の `TIME_ZONE` での日付（`YYYY-MM-DD`）。
+   * キャッシュされた結果を描画するサーバーと、それをハイドレートするブラウザで
+   * 「今日」「明日」の基準を揃えるために使う
+   */
+  today: string
+  videos: Video[]
+}
+
+export const fetchUpcomingVideos = async (): Promise<UpcomingVideos> => {
   'use cache: remote'
 
   cacheLife('hours')
@@ -115,7 +125,10 @@ export const fetchUpcomingVideos = async (): Promise<Video[]> => {
     })
   }
 
-  return videos.filter(hasPlatformSource)
+  return {
+    today: baseTime.toPlainDate().toJSON(),
+    videos: videos.filter(hasPlatformSource),
+  }
 }
 
 async function getDefaultBaseTime() {

@@ -3,8 +3,8 @@
 import useEmblaCarousel from 'embla-carousel-react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import VideoCard, { VideoCardSkeleton } from '@/components/video-card'
 import type { Video } from '@/lib/fetchers'
-import VideoCard, { VideoCardSkeleton } from './video-card'
 
 const SLIDE_CLASS_NAME =
   'min-w-0 shrink-0 basis-[85%] md:basis-[calc(25%-1.125rem)]'

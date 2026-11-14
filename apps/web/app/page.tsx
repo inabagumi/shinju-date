@@ -6,6 +6,9 @@ import {
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Suspense } from 'react'
+import { MAIN_CONTENT_ID } from '@/components/skip-link'
+import { fetchDashboardVideos, fetchUpcomingVideos } from '@/lib/fetchers'
+import hero from './_assets/hero.jpg'
 import {
   type DashboardVideos,
   LiveSection,
@@ -15,10 +18,7 @@ import {
   ScheduleSectionSkeleton,
   ShortsSection,
   ShortsSectionSkeleton,
-} from '@/components/home-sections'
-import { MAIN_CONTENT_ID } from '@/components/skip-link'
-import { fetchDashboardVideos, fetchUpcomingVideos } from '@/lib/fetchers'
-import hero from './_assets/hero.jpg'
+} from './_components/home-sections'
 
 export const metadata: Metadata = {
   alternates: {
@@ -49,9 +49,9 @@ async function HomeLive({ dashboardVideos }: DashboardSectionProps) {
 }
 
 async function HomeSchedule() {
-  const videos = await fetchUpcomingVideos()
+  const upcomingVideos = await fetchUpcomingVideos()
 
-  return <ScheduleSection prefetchedData={videos} />
+  return <ScheduleSection prefetchedData={upcomingVideos} />
 }
 
 async function HomeRecent({ dashboardVideos }: DashboardSectionProps) {
