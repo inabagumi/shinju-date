@@ -3,7 +3,8 @@ import { twMerge } from '../tw-merge'
 
 /**
  * 表。外枠を `border` と角丸で囲み、列がはみ出す場合は表の中で横にスクロールする。
- * `className` は `<table>` に付く。
+ * スクロールする入れ物は、キーボードでも横にスクロールできるよう Tab で
+ * フォーカスできる。`className` は `<table>` に付く。
  *
  * ```tsx
  * <Table>
@@ -22,7 +23,11 @@ import { twMerge } from '../tw-merge'
  */
 export function Table({ className, ...props }: ComponentPropsWithRef<'table'>) {
   return (
-    <div className="w-full overflow-x-auto rounded-container border border-border bg-surface">
+    <div
+      className="w-full overflow-x-auto rounded-container border border-border bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      // biome-ignore lint/a11y/noNoninteractiveTabindex: 横にはみ出した列をキーボードでもスクロールできるようにする
+      tabIndex={0}
+    >
       <table
         className={twMerge(
           'w-full border-collapse text-left text-meta text-foreground',

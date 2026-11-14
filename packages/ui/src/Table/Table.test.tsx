@@ -40,6 +40,15 @@ describe('Table', () => {
     )
   })
 
+  it('lets keyboard users focus the scroll container', () => {
+    renderTable()
+
+    const container = screen.getByRole('table').parentElement
+
+    expect(container).toHaveAttribute('tabindex', '0')
+    expect(container).toHaveClass('focus-visible:outline-accent')
+  })
+
   it('renders column headers with the column scope', () => {
     renderTable()
 

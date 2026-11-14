@@ -55,11 +55,20 @@ export const Narrow = meta.story({
     const canvas = within(canvasElement)
     const trigger = canvas.getByRole('button', { name: /絞り込み/ })
 
+    const keyword = canvas.getByRole('textbox', {
+      hidden: true,
+      name: 'キーワード',
+    })
+
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    await expect(keyword).not.toBeVisible()
+
     await userEvent.click(trigger)
     await expect(trigger).toHaveAttribute('aria-expanded', 'true')
-    await expect(
-      canvas.getByRole('textbox', { name: 'キーワード' }),
-    ).toBeVisible()
+    await expect(keyword).toBeVisible()
+
+    await userEvent.click(trigger)
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    await expect(keyword).not.toBeVisible()
   },
 })
