@@ -7,6 +7,14 @@ fi
 
 cd "${CLAUDE_PROJECT_DIR:-.}"
 
+if command -v dockerd >/dev/null && ! docker info >/dev/null 2>&1; then
+  setsid dockerd >/tmp/dockerd.log 2>&1 </dev/null &
+  for _ in $(seq 1 30); do
+    docker info >/dev/null 2>&1 && break
+    sleep 1
+  done
+fi
+
 # コンテナにある pnpm v10 は devEngines に対応していないため入れ直す
 export PNPM_HOME="${PNPM_HOME:-$HOME/.local/share/pnpm}"
 export PATH="$PNPM_HOME/bin:$PATH"
