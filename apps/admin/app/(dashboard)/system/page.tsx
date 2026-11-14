@@ -1,9 +1,14 @@
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { CardSkeleton } from '@/components/skeletons'
 import { MaintenanceModePanel } from '../_components/maintenance-mode-panel'
 import { RecentActivity } from '../_components/recent-activity'
 import { VideoBackfillHistoryPanel } from './_components/video-backfill-history-panel'
 import { VideoBackfillRunPanel } from './_components/video-backfill-run-panel'
+
+export const metadata: Metadata = {
+  title: 'システム',
+}
 
 export default function SystemPage() {
   return (

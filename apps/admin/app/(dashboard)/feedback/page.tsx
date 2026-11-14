@@ -1,8 +1,13 @@
+import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
 import { ListCardsSkeleton } from '@/components/skeletons'
 import { FeatureRequestList } from './_components/feedback-list'
 import { getFeatureRequests } from './_lib/get-feedback'
+
+export const metadata: Metadata = {
+  title: '機能要望管理',
+}
 
 async function FeatureRequestListData() {
   'use cache: private'
