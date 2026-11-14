@@ -1,4 +1,4 @@
-import { HttpResponse, http } from 'msw'
+import { HttpResponse, type HttpResponseResolver, http } from 'msw'
 import {
   announcements,
   profileImages,
@@ -27,6 +27,89 @@ import {
 
 // Initialize collections with seed data
 await seedCollections()
+
+/**
+ * The media type that supabase-js requests with `.single()`. PostgREST then
+ * returns the only row as an object instead of an array.
+ */
+const SINGLE_OBJECT_MEDIA_TYPE = 'application/vnd.pgrst.object+json'
+
+type RestResolverInfo = Parameters<HttpResponseResolver>[0]
+
+type RestResolver = (info: RestResolverInfo) => Response | Promise<Response>
+
+/**
+ * Reply to a request for a single object (`.single()`) like PostgREST does:
+ * the only row as an object, or a `PGRST116` error when the result does not
+ * contain exactly one row. Other responses are returned as they are.
+ */
+async function toSingleObjectResponse(
+  request: Request,
+  response: Response,
+): Promise<Response> {
+  const accept = request.headers.get('accept') ?? ''
+
+  if (
+    !accept.startsWith(SINGLE_OBJECT_MEDIA_TYPE) ||
+    !response.ok ||
+    response.body === null
+  ) {
+    return response
+  }
+
+  const body = await response.clone().text()
+
+  if (body === '') {
+    return response
+  }
+
+  const rows: unknown = JSON.parse(body)
+
+  if (!Array.isArray(rows)) {
+    return response
+  }
+
+  if (rows.length !== 1) {
+    return HttpResponse.json(
+      {
+        code: 'PGRST116',
+        details: `The result contains ${rows.length} rows`,
+        hint: null,
+        message: 'JSON object requested, multiple (or no) rows returned',
+      },
+      { status: 406 },
+    )
+  }
+
+  const headers = new Headers(response.headers)
+  // The length of the array does not apply to the object.
+  headers.delete('Content-Length')
+  headers.set('Content-Type', `${SINGLE_OBJECT_MEDIA_TYPE}; charset=utf-8`)
+
+  return HttpResponse.json(rows[0], { headers, status: response.status })
+}
+
+function createRestHandler(
+  method: 'delete' | 'get' | 'head' | 'patch' | 'post',
+) {
+  return (url: string, resolver: RestResolver) =>
+    http[method](url, async (info) =>
+      toSingleObjectResponse(info.request, await resolver(info)),
+    )
+}
+
+/**
+ * Use these instead of `http` for the PostgREST API (`/rest/v1/*`). Every
+ * handler then supports `.single()`, so a resolver only has to return the
+ * rows as an array.
+ */
+const rest = {
+  delete: createRestHandler('delete'),
+  get: createRestHandler('get'),
+  head: createRestHandler('head'),
+  patch: createRestHandler('patch'),
+  post: createRestHandler('post'),
+}
 
 /**
  * Helper functions to get fresh data from collections
@@ -130,7 +213,7 @@ function createReadOnlyHandlers(
   const url = `https://fake.supabase.test/rest/v1/${name}`
 
   return [
-    http.get(url, async ({ request }) => {
+    rest.get(url, async ({ request }) => {
       const query = parseSupabaseQuery(new URL(request.url))
       // An exact count counts every matching row, not only the page.
       const matched = applySupabaseConditions(await getRows(), query)
@@ -150,7 +233,7 @@ function createReadOnlyHandlers(
             : {},
       })
     }),
-    http.head(url, async ({ request }) => {
+    rest.head(url, async ({ request }) => {
       const query = parseSupabaseQuery(new URL(request.url))
       const count = applySupabaseConditions(await getRows(), query).length
 
@@ -573,7 +656,7 @@ async function searchMockVideos({
 
 export const supabaseHandlers = [
   // Videos table
-  http.get('https://fake.supabase.test/rest/v1/videos', async ({ request }) => {
+  rest.get('https://fake.supabase.test/rest/v1/videos', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -614,7 +697,7 @@ export const supabaseHandlers = [
   }),
 
   // Videos table HEAD requests
-  http.head(
+  rest.head(
     'https://fake.supabase.test/rest/v1/videos',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -633,7 +716,7 @@ export const supabaseHandlers = [
   ),
 
   // Videos PATCH (update)
-  http.patch(
+  rest.patch(
     'https://fake.supabase.test/rest/v1/videos',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -688,7 +771,7 @@ export const supabaseHandlers = [
   ),
 
   // Channels table
-  http.get(
+  rest.get(
     'https://fake.supabase.test/rest/v1/channels',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -730,7 +813,7 @@ export const supabaseHandlers = [
   ),
 
   // Channels table HEAD requests
-  http.head(
+  rest.head(
     'https://fake.supabase.test/rest/v1/channels',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -749,7 +832,7 @@ export const supabaseHandlers = [
   ),
 
   // Thumbnails table
-  http.get(
+  rest.get(
     'https://fake.supabase.test/rest/v1/thumbnails',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -791,7 +874,7 @@ export const supabaseHandlers = [
   ),
 
   // Profile images table
-  http.get(
+  rest.get(
     'https://fake.supabase.test/rest/v1/profile_images',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -808,7 +891,7 @@ export const supabaseHandlers = [
   ),
 
   // Terms table
-  http.get('https://fake.supabase.test/rest/v1/terms', async ({ request }) => {
+  rest.get('https://fake.supabase.test/rest/v1/terms', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -847,7 +930,7 @@ export const supabaseHandlers = [
   }),
 
   // Terms table HEAD requests
-  http.head('https://fake.supabase.test/rest/v1/terms', async ({ request }) => {
+  rest.head('https://fake.supabase.test/rest/v1/terms', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -863,7 +946,7 @@ export const supabaseHandlers = [
   }),
 
   // Talents table
-  http.get(
+  rest.get(
     'https://fake.supabase.test/rest/v1/talents',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -905,7 +988,7 @@ export const supabaseHandlers = [
   ),
 
   // Talents table HEAD requests
-  http.head(
+  rest.head(
     'https://fake.supabase.test/rest/v1/talents',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -924,7 +1007,7 @@ export const supabaseHandlers = [
   ),
 
   // Announcements table GET requests
-  http.get(
+  rest.get(
     'https://fake.supabase.test/rest/v1/announcements',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -969,7 +1052,7 @@ export const supabaseHandlers = [
   ),
 
   // Announcements table HEAD requests
-  http.head(
+  rest.head(
     'https://fake.supabase.test/rest/v1/announcements',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -991,7 +1074,7 @@ export const supabaseHandlers = [
   ),
 
   // YouTube Channels Table
-  http.get(
+  rest.get(
     'https://fake.supabase.test/rest/v1/youtube_channels',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -1014,7 +1097,7 @@ export const supabaseHandlers = [
     },
   ),
 
-  http.head(
+  rest.head(
     'https://fake.supabase.test/rest/v1/youtube_channels',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -1033,7 +1116,7 @@ export const supabaseHandlers = [
   ),
 
   // Twitch Users Table
-  http.get(
+  rest.get(
     'https://fake.supabase.test/rest/v1/twitch_users',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -1056,7 +1139,7 @@ export const supabaseHandlers = [
     },
   ),
 
-  http.head(
+  rest.head(
     'https://fake.supabase.test/rest/v1/twitch_users',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -1088,7 +1171,7 @@ export const supabaseHandlers = [
   ),
 
   // YouTube Videos Table
-  http.get(
+  rest.get(
     'https://fake.supabase.test/rest/v1/youtube_videos',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -1114,7 +1197,7 @@ export const supabaseHandlers = [
     },
   ),
 
-  http.head(
+  rest.head(
     'https://fake.supabase.test/rest/v1/youtube_videos',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -1136,7 +1219,7 @@ export const supabaseHandlers = [
   ),
 
   // YouTube Videos POST (upsert/insert)
-  http.post(
+  rest.post(
     'https://fake.supabase.test/rest/v1/youtube_videos',
     async ({ request }) => {
       const preferHeader = request.headers.get('prefer') || ''
@@ -1187,7 +1270,7 @@ export const supabaseHandlers = [
   ),
 
   // YouTube Videos PATCH (update)
-  http.patch(
+  rest.patch(
     'https://fake.supabase.test/rest/v1/youtube_videos',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -1242,7 +1325,7 @@ export const supabaseHandlers = [
   ),
 
   // Talents PATCH (update)
-  http.patch(
+  rest.patch(
     'https://fake.supabase.test/rest/v1/talents',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -1297,7 +1380,7 @@ export const supabaseHandlers = [
   ),
 
   // YouTube Channels DELETE
-  http.delete(
+  rest.delete(
     'https://fake.supabase.test/rest/v1/youtube_channels',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -1334,7 +1417,7 @@ export const supabaseHandlers = [
   ),
 
   // Twitch Users POST (insert/upsert)
-  http.post(
+  rest.post(
     'https://fake.supabase.test/rest/v1/twitch_users',
     async ({ request }) => {
       const preferHeader = request.headers.get('prefer') || ''
@@ -1401,7 +1484,7 @@ export const supabaseHandlers = [
   ),
 
   // Twitch Users DELETE
-  http.delete(
+  rest.delete(
     'https://fake.supabase.test/rest/v1/twitch_users',
     async ({ request }) => {
       const url = new URL(request.url)
@@ -1655,7 +1738,7 @@ export const supabaseHandlers = [
   }),
 
   // Health check endpoint - simple SELECT query
-  http.get('https://fake.supabase.test/rest/v1/*', async ({ request }) => {
+  rest.get('https://fake.supabase.test/rest/v1/*', async ({ request }) => {
     const url = new URL(request.url)
     const query = parseSupabaseQuery(url)
 
@@ -1668,7 +1751,7 @@ export const supabaseHandlers = [
   }),
 
   // RPC endpoints
-  http.post(
+  rest.post(
     'https://fake.supabase.test/rest/v1/rpc/suggestions_v2',
     async () => {
       const suggestions = [
@@ -1685,7 +1768,7 @@ export const supabaseHandlers = [
     },
   ),
 
-  http.post(
+  rest.post(
     'https://fake.supabase.test/rest/v1/rpc/search_videos_v2',
     async ({ request }) => {
       const body = (await request.json()) as SearchVideosParams

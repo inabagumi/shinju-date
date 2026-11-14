@@ -778,6 +778,110 @@ describe('Supabase Handlers', () => {
     })
   })
 
+  describe('Single object responses', () => {
+    const headers = { accept: 'application/vnd.pgrst.object+json' }
+
+    it('should return the only row as an object', async () => {
+      const [video] = await (
+        await fetch('https://fake.supabase.test/rest/v1/videos?limit=1')
+      ).json()
+      const response = await fetch(
+        `https://fake.supabase.test/rest/v1/videos?select=id,title,talent:talents(name)&id=eq.${video.id}`,
+        { headers },
+      )
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(response.headers.get('content-type')).toContain(
+        'application/vnd.pgrst.object+json',
+      )
+      expect(Array.isArray(data)).toBe(false)
+      expect(data).toMatchObject({ id: video.id, title: video.title })
+      expect(data.talent).toHaveProperty('name')
+    })
+
+    it('should accept the media type with nulls stripped', async () => {
+      const [talent] = await (
+        await fetch('https://fake.supabase.test/rest/v1/talents?limit=1')
+      ).json()
+      const response = await fetch(
+        `https://fake.supabase.test/rest/v1/talents?select=id,name&id=eq.${talent.id}`,
+        {
+          headers: {
+            accept: 'application/vnd.pgrst.object+json;nulls=stripped',
+          },
+        },
+      )
+
+      expect(response.status).toBe(200)
+      expect(await response.json()).toEqual({
+        id: talent.id,
+        name: talent.name,
+      })
+    })
+
+    it('should return PGRST116 when no row matches', async () => {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/videos?select=*&id=eq.00000000-0000-0000-0000-000000000000',
+        { headers },
+      )
+
+      expect(response.status).toBe(406)
+      expect(await response.json()).toMatchObject({
+        code: 'PGRST116',
+        details: 'The result contains 0 rows',
+      })
+    })
+
+    it('should return PGRST116 when several rows match', async () => {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/talents?select=*',
+        { headers },
+      )
+      const data = await response.json()
+
+      expect(response.status).toBe(406)
+      expect(data.code).toBe('PGRST116')
+      expect(data.details).toMatch(/^The result contains \d+ rows$/)
+    })
+
+    it('should return PGRST116 from tables without mock data', async () => {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/feature_requests?select=*&id=eq.not-a-uuid',
+        { headers },
+      )
+
+      expect(response.status).toBe(406)
+      expect((await response.json()).code).toBe('PGRST116')
+    })
+
+    it('should return the updated row as an object', async () => {
+      const [talent] = await (
+        await fetch('https://fake.supabase.test/rest/v1/talents?limit=1')
+      ).json()
+      const response = await fetch(
+        `https://fake.supabase.test/rest/v1/talents?id=eq.${talent.id}`,
+        {
+          body: JSON.stringify({ name: talent.name }),
+          headers: { ...headers, prefer: 'return=representation' },
+          method: 'PATCH',
+        },
+      )
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data).toMatchObject({ id: talent.id, name: talent.name })
+    })
+
+    it('should keep returning arrays without the media type', async () => {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/videos?limit=1',
+      )
+
+      expect(Array.isArray(await response.json())).toBe(true)
+    })
+  })
+
   describe('Storage endpoints', () => {
     describe('createSignedUrl', () => {
       it('should return a signed URL for thumbnail', async () => {
