@@ -2,6 +2,7 @@ import type { default as DefaultDatabase } from '@shinju-date/database'
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 import { isAdminUser } from '@/lib/admin-user'
+import { getSafeRedirectPath, REDIRECT_PARAM } from '@/lib/redirect-path'
 import { withMockSessionCookie } from '@/lib/supabase/mock-session'
 
 const isProd = process.env['NODE_ENV'] === 'production'
@@ -56,7 +57,11 @@ export async function updateSession(
   const isAdmin = !error && !!user && isAdminUser(user)
 
   if (request.nextUrl.pathname === '/login' && isAdmin) {
-    return NextResponse.redirect(new URL('/', request.nextUrl), {
+    const redirectPath = getSafeRedirectPath(
+      request.nextUrl.searchParams.get(REDIRECT_PARAM),
+    )
+
+    return NextResponse.redirect(new URL(redirectPath, request.nextUrl), {
       headers: response.headers,
     })
   }
@@ -64,8 +69,13 @@ export async function updateSession(
   if (request.nextUrl.pathname !== '/login' && !isAdmin) {
     const loginURL = new URL('/login', request.nextUrl)
 
-    if (request.nextUrl.pathname !== '/') {
-      loginURL.searchParams.set('', request.nextUrl.pathname)
+    const redirectPath = getSafeRedirectPath(
+      `${request.nextUrl.pathname}${request.nextUrl.search}`,
+    )
+
+    // ログイン後に元のページへ戻れるよう、クエリ文字列を含めて渡す
+    if (redirectPath !== '/') {
+      loginURL.searchParams.set(REDIRECT_PARAM, redirectPath)
     }
 
     return NextResponse.redirect(loginURL, {
