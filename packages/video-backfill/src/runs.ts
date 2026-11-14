@@ -18,6 +18,23 @@ import {
  */
 export const BACKFILL_RUN_LOCK_SECONDS = 5 * 60
 
+/**
+ * Deletes the lock of a request for a check only if it still holds the
+ * request's token. Comparing and deleting run atomically on the Redis server,
+ * so a request whose lock ran out never deletes the lock that another request
+ * took in the meantime.
+ *
+ * KEYS: lock
+ * ARGV: token
+ *
+ * @returns 1 when the lock was deleted, 0 when it was not ours.
+ */
+export const RUN_UNLOCK_SCRIPT = `-- video-backfill:run-unlock
+if redis.call('GET', KEYS[1]) == ARGV[1] then
+  return redis.call('DEL', KEYS[1])
+end
+return 0`
+
 /** Accounts queued at the same time when a check is requested. */
 const ENQUEUE_CONCURRENCY = 10
 
@@ -332,13 +349,11 @@ export class BackfillRuns {
    */
   async #unlock(token: string): Promise<void> {
     try {
-      const holder = await this.#redis.get<string>(
-        REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK,
+      await this.#redis.eval<[string], number>(
+        RUN_UNLOCK_SCRIPT,
+        [REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK],
+        [token],
       )
-
-      if (holder === token) {
-        await this.#redis.del(REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK)
-      }
     } catch {
       // Runs out after BACKFILL_RUN_LOCK_SECONDS.
     }

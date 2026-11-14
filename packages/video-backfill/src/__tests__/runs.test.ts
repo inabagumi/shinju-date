@@ -247,6 +247,24 @@ describe('BackfillRuns', () => {
     expect(onError).toHaveBeenCalledExactlyOnceWith(requests[1], error)
   })
 
+  it('does not release a lock that another request took after its own ran out', async () => {
+    const { queue, redis, runs } = createRuns()
+    const enqueue = queue.enqueue.bind(queue)
+
+    vi.spyOn(queue, 'enqueue').mockImplementation(async (request, at) => {
+      // The lock ran out while accounts were queued, and another request
+      // for a check took it.
+      redis.values.set(REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK, 'other')
+
+      return enqueue(request, at)
+    })
+
+    await expect(
+      runs.start(requests, { requestedBy: 'user-1' }, now),
+    ).resolves.toMatchObject({ status: 'started' })
+    expect(redis.values.get(REDIS_KEYS.VIDEO_BACKFILL_RUN_LOCK)).toBe('other')
+  })
+
   it('releases the lock when the check cannot be saved', async () => {
     const { redis, runs } = createRuns()
     const set = redis.set.bind(redis)

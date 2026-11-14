@@ -167,6 +167,23 @@ describe('Upstash Redis Handlers', () => {
       )
     })
 
+    it('emulates the unlock script of a check of all accounts', async () => {
+      const script = '-- video-backfill:run-unlock\n...'
+
+      await send(['set', 'test:run-lock', 'token-2'])
+
+      // The lock of a request that ran out was taken by another one.
+      await expect(
+        send(['eval', script, 1, 'test:run-lock', 'token-1']),
+      ).resolves.toBe(0)
+      await expect(send(['get', 'test:run-lock'])).resolves.toBe('token-2')
+
+      await expect(
+        send(['eval', script, 1, 'test:run-lock', 'token-2']),
+      ).resolves.toBe(1)
+      await expect(send(['get', 'test:run-lock'])).resolves.toBeNull()
+    })
+
     it('works as a FIFO queue with LPUSH and RPOP', async () => {
       await expect(send(['lpush', 'test:queue', 'a'])).resolves.toBe(1)
       await expect(send(['lpush', 'test:queue', 'b', 'c'])).resolves.toBe(3)

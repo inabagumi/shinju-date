@@ -1,4 +1,4 @@
-import { ENQUEUE_SCRIPT, REQUEUE_SCRIPT } from '../index.js'
+import { ENQUEUE_SCRIPT, REQUEUE_SCRIPT, RUN_UNLOCK_SCRIPT } from '../index.js'
 
 /**
  * The subset of Redis the queue uses, kept in memory. Values are stored as
@@ -52,6 +52,8 @@ export class FakeRedis {
           )
         case REQUEUE_SCRIPT:
           return this.#requeueScript(keys, args as [string, string, number])
+        case RUN_UNLOCK_SCRIPT:
+          return this.#runUnlockScript(keys, args as [string])
         default:
           throw new Error('Unexpected script')
       }
@@ -102,6 +104,17 @@ export class FakeRedis {
     await this.del(workerLockKey)
 
     return 1
+  }
+
+  async #runUnlockScript(
+    [lockKey = '']: string[],
+    [token]: [string],
+  ): Promise<number> {
+    if (this.values.get(lockKey) !== token) {
+      return 0
+    }
+
+    return this.del(lockKey)
   }
 
   async expire(key: string, seconds: number): Promise<number> {
