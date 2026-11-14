@@ -23,7 +23,7 @@ describe('composeFetch', () => {
       }
     }
 
-    const _enhancedFetch = composeFetch(mockMiddleware)
+    expect(composeFetch(mockMiddleware)).not.toBe(fetch)
 
     // Use a mock response since we're in Node.js environment
     const mockFetch = async () => new Response('test', { status: 200 })
@@ -59,10 +59,10 @@ describe('composeFetch', () => {
       return new Response('test', { status: 200 })
     }
 
-    // Compose middlewares (middleware1 should be outermost)
-    const _enhancedFetch = composeFetch(middleware1, middleware2)
+    expect(composeFetch(middleware1, middleware2)).not.toBe(fetch)
 
-    // Manually apply to mockFetch to test
+    // composeFetch wraps the global fetch, so apply the middlewares to
+    // mockFetch manually (middleware1 should be outermost)
     const wrapped = middleware1(middleware2(mockFetch))
     await wrapped('https://example.com')
 

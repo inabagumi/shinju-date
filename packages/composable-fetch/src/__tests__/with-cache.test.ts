@@ -1,15 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
 import type { CacheStorage } from '../cache-storage.js'
 import { InMemoryCacheStorage } from '../in-memory-cache-storage.js'
 import { withCache } from '../with-cache.js'
 
 describe('withCache middleware', () => {
   let storage: CacheStorage
-  let mockFetch: ReturnType<typeof vi.fn>
+  let mockFetch: Mock<typeof fetch>
 
   beforeEach(() => {
     storage = new InMemoryCacheStorage({ ttl: 3600 })
-    mockFetch = vi.fn()
+    mockFetch = vi.fn<typeof fetch>()
   })
 
   it('should throw error if storage is not provided', () => {
@@ -69,7 +69,7 @@ describe('withCache middleware', () => {
 
     // Should have sent If-None-Match header
     expect(mockFetch).toHaveBeenCalledTimes(2)
-    const secondCallRequest = mockFetch.mock.calls[1][0] as Request
+    const secondCallRequest = mockFetch.mock.calls[1]?.[0] as Request
     expect(secondCallRequest.headers.get('If-None-Match')).toBe(etag)
 
     // Should return cached response

@@ -109,12 +109,13 @@ describe('withRetry middleware', () => {
   })
 
   it('should consume response body on error', async () => {
-    const mockArrayBuffer = vi.fn().mockResolvedValue(new ArrayBuffer(0))
     const mockResponse = new Response('error', {
       status: 500,
       statusText: 'Internal Server Error',
     })
-    mockResponse.arrayBuffer = mockArrayBuffer
+    const mockArrayBuffer = vi
+      .spyOn(mockResponse, 'arrayBuffer')
+      .mockResolvedValue(new ArrayBuffer(0))
 
     const mockFetch = vi
       .fn()
