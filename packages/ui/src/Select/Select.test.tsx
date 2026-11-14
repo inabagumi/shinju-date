@@ -42,12 +42,22 @@ describe('Select', () => {
     expect(select).toHaveClass('appearance-none', 'pr-10')
   })
 
-  it('keeps the arrow image when a style is given', () => {
-    render(<Select aria-label="並び順" style={{ width: '10rem' }} />)
+  it('draws the arrow with the muted text color', () => {
+    const { container } = render(<Select aria-label="並び順" />)
+
+    const arrow = container.querySelector('svg')
+
+    expect(arrow).toHaveAttribute('aria-hidden', 'true')
+    expect(arrow).toHaveClass('text-muted')
+  })
+
+  it('applies className to the container for layout', () => {
+    render(<Select aria-label="並び順" className="md:w-48" required />)
 
     const select = screen.getByRole('combobox')
 
-    expect(select.style.width).toBe('10rem')
-    expect(select.style.backgroundImage).toContain('data:image/svg+xml')
+    expect(select.parentElement).toHaveClass('md:w-48')
+    expect(select).not.toHaveClass('md:w-48')
+    expect(select).toBeRequired()
   })
 })

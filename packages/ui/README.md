@@ -235,7 +235,7 @@ import {
 
 ### Select
 
-セレクトボックス。`Input` と同じ高さ・枠・角丸・フォーカス表示で、`variant` と `inputSize` も同じものを使えます。
+セレクトボックス。`Input` と同じ高さ・枠・角丸・フォーカス表示で、`variant` と `inputSize` も同じものを使えます。右端の矢印は `text-muted` で描くため、`<select>` を入れ物で囲んでいます。`className` は入れ物に付くので、幅や余白などの配置を指定してください。
 
 ```tsx
 import { Select } from '@shinju-date/ui'
