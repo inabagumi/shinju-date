@@ -3,19 +3,16 @@ import type { ComponentPropsWithRef } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 const cardVariants = cva(
-  'flex flex-col overflow-hidden rounded-xl border shadow',
+  'flex flex-col overflow-hidden rounded-xl border border-border text-text shadow',
   {
     defaultVariants: {
       variant: 'default',
     },
     variants: {
       variant: {
-        default:
-          'border-gray-200 bg-gray-100 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
-        elevated:
-          'border-gray-200 bg-white shadow-md hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900',
-        outlined:
-          'border-gray-300 bg-transparent shadow-none hover:shadow-md dark:border-zinc-700',
+        default: 'bg-surface-sunken hover:shadow-xl',
+        elevated: 'bg-surface-raised shadow-md hover:shadow-xl',
+        outlined: 'bg-transparent shadow-none hover:shadow-md',
       },
     },
   },

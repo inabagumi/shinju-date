@@ -2,6 +2,198 @@ import { Meta, ColorPalette, ColorItem } from '@storybook/addon-docs/blocks';
 
 <Meta title="Design System/Colors" />
 
+# Colors
+
+## 意味で名付けた色
+
+部品の色は、用途で名付けた変数を使います。値は `prefers-color-scheme` で
+ライトとダークが切り替わるため、`bg-surface text-text border-border` のように
+1つのクラスを書くだけで両モードに対応できます（`dark:` は書きません）。
+
+この見本は閲覧している環境のモードの値で表示されます。
+
+<table>
+  <thead>
+    <tr>
+      <th>変数</th>
+      <th>クラスの例</th>
+      <th>用途</th>
+      <th>ライト</th>
+      <th>ダーク</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>--color-surface</code></td>
+      <td><code>bg-surface</code></td>
+      <td>ページの地</td>
+      <td><code>#faf9fd</code></td>
+      <td><code>#131118</code></td>
+    </tr>
+    <tr>
+      <td><code>--color-surface-raised</code></td>
+      <td><code>bg-surface-raised</code></td>
+      <td>ヘッダー・モーダル・メニュー・入力欄</td>
+      <td><code>#ffffff</code></td>
+      <td><code>#1c1a24</code></td>
+    </tr>
+    <tr>
+      <td><code>--color-surface-sunken</code></td>
+      <td><code>bg-surface-sunken</code></td>
+      <td>スケルトン・ホバー・表の見出し行</td>
+      <td><code>#f2f1ff</code></td>
+      <td><code>#262331</code></td>
+    </tr>
+    <tr>
+      <td><code>--color-border</code></td>
+      <td><code>border-border</code></td>
+      <td>区切り線・入力欄の枠</td>
+      <td><code>#e3e0ee</code></td>
+      <td><code>#37333f</code></td>
+    </tr>
+    <tr>
+      <td><code>--color-text</code></td>
+      <td><code>text-text</code></td>
+      <td>本文・見出し</td>
+      <td><code>#1b1530</code></td>
+      <td><code>#f1eff7</code></td>
+    </tr>
+    <tr>
+      <td><code>--color-text-muted</code></td>
+      <td><code>text-text-muted</code></td>
+      <td>補助情報（日時・タレント名・説明）</td>
+      <td><code>#5f5a70</code></td>
+      <td><code>#aaa5ba</code></td>
+    </tr>
+    <tr>
+      <td><code>--color-accent</code></td>
+      <td><code>text-accent</code> / <code>bg-accent</code></td>
+      <td>リンク・選択中・主ボタン・フォーカス</td>
+      <td><code>#5907fa</code></td>
+      <td><code>#b7a7ff</code></td>
+    </tr>
+    <tr>
+      <td><code>--color-on-accent</code></td>
+      <td><code>text-on-accent</code></td>
+      <td><code>accent</code> の地の上の文字</td>
+      <td><code>#ffffff</code></td>
+      <td><code>#131118</code></td>
+    </tr>
+    <tr>
+      <td><code>--color-brand</code></td>
+      <td><code>bg-brand</code></td>
+      <td>フッター</td>
+      <td><code>#1e0064</code></td>
+      <td><code>#1c1a24</code></td>
+    </tr>
+    <tr>
+      <td><code>--color-on-brand</code></td>
+      <td><code>text-on-brand</code></td>
+      <td><code>brand</code> の地の上の文字</td>
+      <td><code>#f2f1ff</code></td>
+      <td><code>#f1eff7</code></td>
+    </tr>
+    <tr>
+      <td><code>--color-live</code></td>
+      <td><code>bg-live</code></td>
+      <td>配信中（バッジの地。文字は白）。配信中の表示以外には使わない</td>
+      <td><code>#c80858</code></td>
+      <td><code>#c80858</code></td>
+    </tr>
+    <tr>
+      <td><code>--color-danger</code></td>
+      <td><code>text-danger</code></td>
+      <td>エラー・削除などの危険な操作</td>
+      <td><code>#b91c1c</code></td>
+      <td><code>#fca5a5</code></td>
+    </tr>
+    <tr>
+      <td><code>--color-success</code></td>
+      <td><code>text-success</code></td>
+      <td>成功</td>
+      <td><code>#166534</code></td>
+      <td><code>#86efac</code></td>
+    </tr>
+    <tr>
+      <td><code>--color-warning</code></td>
+      <td><code>text-warning</code></td>
+      <td>注意</td>
+      <td><code>#854d0e</code></td>
+      <td><code>#fde047</code></td>
+    </tr>
+  </tbody>
+</table>
+
+文字と地の組み合わせ（`text` / `text-muted` / `accent` / 状態色 × `surface` 3種、
+`on-accent` × `accent`、`on-brand` × `brand`、白 × `live`）は、両モードで
+コントラスト比 4.5:1 以上になることを `colors.test.ts` で確認しています。
+
+<ColorPalette>
+  <ColorItem
+    colors={{
+      Surface: 'var(--color-surface)',
+      'Surface Raised': 'var(--color-surface-raised)',
+      'Surface Sunken': 'var(--color-surface-sunken)',
+    }}
+    subtitle="ページの地、浮いた面（ヘッダー・モーダル・入力欄）、沈んだ面（スケルトン・ホバー）"
+    title="Surface"
+  />
+
+  <ColorItem
+    colors={{ Border: 'var(--color-border)' }}
+    subtitle="区切り線・入力欄の枠"
+    title="Border"
+  />
+
+  <ColorItem
+    colors={{
+      Text: 'var(--color-text)',
+      'Text Muted': 'var(--color-text-muted)',
+    }}
+    subtitle="本文・見出しと、補助情報"
+    title="Text"
+  />
+
+  <ColorItem
+    colors={{
+      Accent: 'var(--color-accent)',
+      'On Accent': 'var(--color-on-accent)',
+    }}
+    subtitle="リンク・選択中・主ボタン・フォーカスと、その上の文字"
+    title="Accent"
+  />
+
+  <ColorItem
+    colors={{
+      Brand: 'var(--color-brand)',
+      'On Brand': 'var(--color-on-brand)',
+    }}
+    subtitle="フッターと、その上の文字"
+    title="Brand"
+  />
+
+  <ColorItem
+    colors={{ Live: 'var(--color-live)' }}
+    subtitle="配信中専用（文字は白）"
+    title="Live"
+  />
+
+  <ColorItem
+    colors={{
+      Danger: 'var(--color-danger)',
+      Success: 'var(--color-success)',
+      Warning: 'var(--color-warning)',
+    }}
+    subtitle="状態"
+    title="Status"
+  />
+</ColorPalette>
+
+## 色見本
+
+ブランドの色見本です。部品では直接使わず、上の意味で名付けた色を使います。
+`Primary` / `Secondary` は移行が終わるまで残し、移行後に削除します。
+
 <ColorPalette>
   <ColorItem
     colors={{
