@@ -735,6 +735,81 @@ describe('Supabase Handlers', () => {
         youtube_video: null,
       })
     })
+
+    it('should search only videos of the given kinds in search_videos_v3', async () => {
+      const searchKinds = async (videoKinds?: string[]) => {
+        const response = await fetch(
+          'https://fake.supabase.test/rest/v1/rpc/search_videos_v3?select=video_kind',
+          {
+            body: JSON.stringify({
+              perpage: 1000,
+              query: '',
+              ...(videoKinds ? { video_kinds: videoKinds } : {}),
+            }),
+            headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
+          },
+        )
+
+        expect(response.ok).toBe(true)
+
+        return new Set(
+          ((await response.json()) as { video_kind: string }[]).map(
+            (video) => video.video_kind,
+          ),
+        )
+      }
+
+      expect(await searchKinds()).toEqual(new Set(['short', 'standard']))
+      expect(await searchKinds(['short'])).toEqual(new Set(['short']))
+      expect(await searchKinds(['standard'])).toEqual(new Set(['standard']))
+    })
+
+    it('should count the videos the site shows in count_videos_v1', async () => {
+      const post = async (url: string, body: object) => {
+        const response = await fetch(url, {
+          body: JSON.stringify(body),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        })
+
+        expect(response.ok).toBe(true)
+
+        return (await response.json()) as unknown
+      }
+      const select =
+        'id,talent:talents(deleted_at),youtube_video:youtube_videos(youtube_video_id),twitch_video:twitch_videos(twitch_video_id)'
+
+      for (const body of [
+        { query: '' },
+        { query: 'Twitch' },
+        { query: '', video_kinds: ['short'] },
+      ]) {
+        const videos = (await post(
+          `https://fake.supabase.test/rest/v1/rpc/search_videos_v3?select=${encodeURIComponent(select)}`,
+          { ...body, perpage: 1000 },
+        )) as {
+          talent: { deleted_at: string | null } | null
+          twitch_video: unknown
+          youtube_video: unknown
+        }[]
+        // The site drops the videos of deleted talents and the videos with
+        // neither a YouTube nor a Twitch video.
+        const shownVideos = videos.filter(
+          (video) =>
+            video.talent?.deleted_at === null &&
+            (video.youtube_video !== null || video.twitch_video !== null),
+        )
+
+        expect(shownVideos.length).toBeGreaterThan(0)
+        expect(
+          await post(
+            'https://fake.supabase.test/rest/v1/rpc/count_videos_v1',
+            body,
+          ),
+        ).toBe(shownVideos.length)
+      }
+    })
   })
 
   describe('Search suggestions', () => {

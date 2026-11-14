@@ -5,6 +5,7 @@ import type { Tables } from '@shinju-date/database'
 import { startOfHour, toDBString } from '@shinju-date/temporal-fns'
 import { cacheLife, cacheTag } from 'next/cache'
 import { supabaseClient } from '@/lib/supabase'
+import { getVideoKinds, type VideoKindFilter } from '@/lib/video-kind-filter'
 
 const DEFAULT_SEARCH_SELECT = `
   duration,
@@ -141,11 +142,13 @@ async function getDefaultBaseTime() {
 }
 
 interface FetchVideosOptions {
+  kind?: VideoKindFilter
   query?: string
   until?: bigint | undefined
 }
 
 export const fetchVideos = async ({
+  kind = 'all',
   query = '',
   until,
 }: FetchVideosOptions): Promise<Video[]> => {
@@ -157,12 +160,14 @@ export const fetchVideos = async ({
   const baseTime = until
     ? Temporal.Instant.fromEpochNanoseconds(until)
     : await getDefaultBaseTime()
+  const videoKinds = getVideoKinds(kind)
   const { data: videos, error } = await supabaseClient
-    .rpc('search_videos_v2', {
+    .rpc('search_videos_v3', {
       channel_ids: [],
       perpage: SEARCH_RESULT_COUNT,
       query,
       until: baseTime.toJSON(),
+      ...(videoKinds ? { video_kinds: videoKinds } : {}),
     })
     .select<string, Video>(DEFAULT_SEARCH_SELECT)
 
@@ -173,6 +178,41 @@ export const fetchVideos = async ({
   }
 
   return videos.filter(hasPlatformSource)
+}
+
+interface CountVideosOptions {
+  kind?: VideoKindFilter
+  query?: string
+}
+
+/**
+ * Count the videos `fetchVideos` pages through for the given query and kind.
+ */
+export const countVideos = async ({
+  kind = 'all',
+  query = '',
+}: CountVideosOptions): Promise<number> => {
+  'use cache: remote'
+
+  cacheLife('hours')
+  cacheTag('videos')
+
+  const baseTime = await getDefaultBaseTime()
+  const videoKinds = getVideoKinds(kind)
+  const { data: count, error } = await supabaseClient.rpc('count_videos_v1', {
+    channel_ids: [],
+    query,
+    until: baseTime.toJSON(),
+    ...(videoKinds ? { video_kinds: videoKinds } : {}),
+  })
+
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  return count
 }
 
 /**

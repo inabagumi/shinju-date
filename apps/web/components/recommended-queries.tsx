@@ -11,7 +11,7 @@ interface RecommendedQueriesProps {
  * Display recommended search keywords as clickable links
  *
  * @param queries - Array of recommended search query strings
- * @param variant - Display variant: 'default' for grid layout, 'list' for vertical list with icons
+ * @param variant - Display variant: 'default' for wrapping pills, 'list' for vertical list with icons
  * @param onClickLink - Optional callback when a link is clicked
  */
 export default function RecommendedQueries({
@@ -48,15 +48,15 @@ export default function RecommendedQueries({
     )
   }
 
-  // Default variant: grid layout
+  // Default variant: pills that wrap onto the next line
   return (
     <nav aria-label="おすすめの検索キーワード">
-      <ul className="grid grid-cols-2 gap-2 md:grid-cols-4">
+      <ul className="flex flex-wrap justify-center gap-2">
         {queries.map((query) => (
           <li key={query}>
             <Link
               aria-label={`『${query}』の検索結果`}
-              className="block rounded-xl px-1 py-2 text-center hover:bg-774-nevy-100 dark:hover:bg-zinc-600"
+              className="inline-flex h-9 items-center rounded-full border border-border px-4 text-meta text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               href={`/videos/${encodeURIComponent(query)}`}
               title={`『${query}』の検索結果`}
               {...(onClickLink ? { onClick: onClickLink } : {})}

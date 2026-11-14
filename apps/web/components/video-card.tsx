@@ -88,7 +88,7 @@ function Thumbnail({ sizes, video }: ThumbnailProps) {
 }
 
 interface VideoCardSkeletonProps {
-  className?: string
+  className?: string | undefined
   variant?: VideoCardVariant
 }
 
@@ -133,6 +133,8 @@ interface VideoCardProps {
   >
   /** 640px 未満で補助情報の日時を隠す。日時をカードの外に表示する場合に使う */
   hideTimeOnMobile?: boolean
+  /** 配信予定の動画の開始時刻の前に「予定」と表示する */
+  showUpcomingLabel?: boolean
   /** タイトルの見出しの要素。カードを置く場所の見出しの階層に合わせる */
   titleAs?: 'h3' | 'h4'
   value: Video
@@ -146,6 +148,7 @@ export default function VideoCard({
     timeStyle: 'short',
   },
   hideTimeOnMobile = false,
+  showUpcomingLabel = false,
   titleAs: Title = 'h3',
   value,
   variant = 'grid',
@@ -155,6 +158,10 @@ export default function VideoCard({
   ).toZonedDateTimeISO(TIME_ZONE)
   const duration = Temporal.Duration.from(value.duration ?? 'PT0S')
   const hasCreator = getVideoCreator(value) !== null
+  // 9:16 のサムネイルを使わない表示では、ショートをバッジで見分けられるようにする
+  const isShortInWideThumbnail =
+    value.video_kind === 'short' && variant !== 'short'
+  const isUpcoming = showUpcomingLabel && value.status === 'UPCOMING'
 
   const href = getVideoExternalUrl({
     platform: value.platform,
@@ -205,6 +212,17 @@ export default function VideoCard({
           platform={value.platform}
         />
 
+        {isShortInWideThumbnail && (
+          <span
+            className={twMerge(
+              BADGE_CLASS_NAME,
+              'absolute bottom-0 left-0 m-2 bg-black/70 text-white',
+            )}
+          >
+            ショート
+          </span>
+        )}
+
         {duration.total({ unit: 'second' }) > 0 && (
           <span
             className={twMerge(
@@ -239,6 +257,16 @@ export default function VideoCard({
               )}
             >
               ・
+            </span>
+          )}
+          {isUpcoming && (
+            <span
+              className={twMerge(
+                'shrink-0',
+                hideTimeOnMobile && 'max-sm:hidden',
+              )}
+            >
+              予定
             </span>
           )}
           <FormattedTime
