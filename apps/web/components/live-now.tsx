@@ -11,5 +11,5 @@ export default function LiveNow({
     return null
   }
 
-  return <span className={className}>ライブ配信中</span>
+  return <span className={className}>配信中</span>
 }

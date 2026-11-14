@@ -10,7 +10,7 @@ import {
 import { Activity, type ReactNode, Suspense, useState } from 'react'
 import { fetchDashboardVideos, type Video } from '@/lib/fetchers'
 import ShortsCarousel from './shorts-carousel'
-import VideoCard, { VideoCardSkeleton } from './video-card'
+import VideoCardList, { VideoCardListSkeleton } from './video-card-list'
 
 export function LiveAndRecentSkeleton() {
   return (
@@ -22,20 +22,11 @@ export function LiveAndRecentSkeleton() {
         <div className="h-10 w-24 animate-pulse rounded-lg bg-774-nevy-100 dark:bg-zinc-800" />
       </div>
 
-      {/* Responsive layout */}
-      <div className="space-y-4 px-4 md:grid md:grid-cols-2 md:gap-6 md:space-y-0 md:px-0">
-        {/* Featured large */}
-        <div>
-          <VideoCardSkeleton />
-        </div>
-        {/* 2x2 Grid */}
-        <div className="grid grid-cols-2 gap-3 md:gap-4">
-          <VideoCardSkeleton />
-          <VideoCardSkeleton />
-          <VideoCardSkeleton />
-          <VideoCardSkeleton />
-        </div>
-      </div>
+      <VideoCardListSkeleton
+        className="lg:grid-cols-4"
+        count={4}
+        variant="grid"
+      />
     </div>
   )
 }
@@ -139,25 +130,20 @@ export default function LiveAndRecent({
     return <LiveAndRecentSkeleton />
   }
 
-  const renderVideoGrid = (videos: Video[]) => {
+  // 配信中はどの画面幅でも縦型、新着動画は 640px 未満で横型のカードにする。
+  const renderVideoGrid = (videos: Video[], variant: 'grid' | 'row') => {
     if (videos.length === 0) return null
 
     return (
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-6">
-        {videos.map((video, index) => (
-          <VideoCard
-            className="first:col-span-2 md:first:row-span-2"
-            compact={index > 0}
-            dateTimeFormatOptions={{
-              dateStyle: 'short',
-              timeStyle: 'short',
-            }}
-            fillThumbnail={index === 0}
-            key={video.id}
-            value={video}
-          />
-        ))}
-      </div>
+      <VideoCardList
+        className="lg:grid-cols-4"
+        dateTimeFormatOptions={{
+          dateStyle: 'short',
+          timeStyle: 'short',
+        }}
+        values={videos}
+        variant={variant}
+      />
     )
   }
 
@@ -198,10 +184,10 @@ export default function LiveAndRecent({
       {/* Content Area with Activity boundaries for pre-rendering */}
       <Suspense fallback={<LiveAndRecentSkeleton />}>
         <Activity mode={activeTab === 'live' ? 'visible' : 'hidden'}>
-          <div className="space-y-6">{renderVideoGrid(data.live)}</div>
+          <div className="space-y-6">{renderVideoGrid(data.live, 'grid')}</div>
         </Activity>
         <Activity mode={activeTab === 'recent' ? 'visible' : 'hidden'}>
-          <div className="space-y-6">{renderVideoGrid(data.recent)}</div>
+          <div className="space-y-6">{renderVideoGrid(data.recent, 'row')}</div>
         </Activity>
         <Activity mode={activeTab === 'shorts' ? 'visible' : 'hidden'}>
           <div className="space-y-6">

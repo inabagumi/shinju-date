@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, test } from 'vitest'
 import type { Video } from '@/lib/fetchers'
-import VideoCard from '../video-card'
+import VideoCard, { VideoCardSkeleton } from '../video-card'
 
 const profileImage = {
   blur_data_url: 'data:image/webp;base64,AAAA',
@@ -169,7 +169,6 @@ describe('VideoCard', () => {
   test('should not announce the creator icon or nest links in the card', () => {
     render(
       <VideoCard
-        compact
         value={createYouTubeVideo({
           name: 'チャンネル名',
           profile_image: profileImage,
@@ -196,21 +195,143 @@ describe('VideoCard', () => {
     expect(title).not.toHaveClass('break-all')
   })
 
-  test('should give the extra height to the thumbnail when fillThumbnail is set', () => {
-    render(<VideoCard fillThumbnail value={createYouTubeVideo(null)} />)
+  test('should truncate a long creator name and keep the full name in the title', () => {
+    const longName = 'とても長いチャンネル名'.repeat(10)
 
-    const [thumbnail, body] = screen.getByRole('link').children
+    render(
+      <VideoCard
+        value={createYouTubeVideo({
+          name: longName,
+          profile_image: profileImage,
+          youtube_handle: '@channel',
+        })}
+      />,
+    )
 
-    expect(thumbnail).toHaveClass('grow')
-    expect(body).toHaveClass('grow-0')
+    const name = within(getCreator()).getByTitle(longName)
+
+    expect(name).toHaveClass('truncate')
+    expect(getCreator()).toHaveClass('min-w-0')
   })
 
-  test('should give the extra height to the text by default', () => {
+  test('should keep the height of two lines for the title', () => {
     render(<VideoCard value={createYouTubeVideo(null)} />)
 
-    const [thumbnail, body] = screen.getByRole('link').children
+    const title = screen.getByRole('heading')
 
-    expect(thumbnail).not.toHaveClass('grow')
-    expect(body).toHaveClass('grow')
+    expect(title).toHaveClass('line-clamp-2', 'min-h-[2lh]')
   })
+
+  test('should show the creator and the date in one line', () => {
+    render(
+      <VideoCard
+        value={createYouTubeVideo({
+          name: 'チャンネル名',
+          profile_image: null,
+          youtube_handle: '@channel',
+        })}
+      />,
+    )
+
+    const meta = getCreator().parentElement
+
+    if (!meta) {
+      throw new Error('The creator is not in the meta line')
+    }
+
+    expect(meta).toHaveClass('text-meta', 'text-muted')
+    expect(meta.textContent).toBe('チャンネル名・20:00')
+    expect(within(meta).getByText('・')).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  test('should not show the separator without a creator', () => {
+    const video = createYouTubeVideo(null)
+
+    render(
+      <VideoCard
+        value={{ ...video, talent: null as unknown as Video['talent'] }}
+      />,
+    )
+
+    expect(screen.queryByText('・')).not.toBeInTheDocument()
+  })
+
+  test('should show the duration on the thumbnail', () => {
+    render(<VideoCard value={createYouTubeVideo(null)} />)
+
+    const duration = within(
+      screen.getByTestId('video-card-thumbnail'),
+    ).getByText('10:00')
+
+    expect(duration).toHaveAttribute('dateTime', 'PT10M')
+    expect(duration.parentElement).toHaveClass('right-0', 'bottom-0')
+  })
+
+  test('should show the live badge only for live videos', () => {
+    const video = createYouTubeVideo(null)
+    const { rerender } = render(<VideoCard value={video} />)
+
+    expect(screen.queryByText('配信中')).not.toBeInTheDocument()
+
+    rerender(<VideoCard value={{ ...video, status: 'LIVE' }} />)
+
+    const badge = within(screen.getByTestId('video-card-thumbnail')).getByText(
+      '配信中',
+    )
+
+    expect(badge).toHaveClass('top-0', 'left-0', 'bg-live')
+  })
+
+  test.each([
+    ['Twitch', createTwitchVideo(null), true],
+    ['YouTube', createYouTubeVideo(null), false],
+  ])('should show the platform badge for %s: %s', (name, video, expected) => {
+    render(<VideoCard value={video} />)
+
+    const thumbnail = screen.getByTestId('video-card-thumbnail')
+
+    if (expected) {
+      expect(within(thumbnail).getByText(name)).toHaveClass('top-0', 'right-0')
+    } else {
+      expect(within(thumbnail).queryByText(name)).not.toBeInTheDocument()
+    }
+  })
+
+  test('should show a focus ring around the whole card', () => {
+    render(<VideoCard value={createYouTubeVideo(null)} />)
+
+    expect(screen.getByRole('link')).toHaveClass(
+      'focus-visible:outline-2',
+      'focus-visible:outline-accent',
+    )
+  })
+
+  test.each([
+    ['grid', ['flex-col'], 'aspect-video'],
+    ['row', ['flex-row', 'sm:flex-col'], 'w-2/5'],
+    ['short', ['flex-col'], 'aspect-9/16'],
+  ] as const)('should lay out the %s variant', (variant, layout, thumbnail) => {
+    render(<VideoCard value={createYouTubeVideo(null)} variant={variant} />)
+
+    expect(screen.getByRole('link')).toHaveClass(...layout)
+    expect(screen.getByTestId('video-card-thumbnail')).toHaveClass(thumbnail)
+  })
+})
+
+describe('VideoCardSkeleton', () => {
+  test.each([
+    ['grid', ['flex-col'], 'aspect-video'],
+    ['row', ['flex-row', 'sm:flex-col'], 'w-2/5'],
+    ['short', ['flex-col'], 'aspect-9/16'],
+  ] as const)(
+    'should have the same layout as the %s variant',
+    (variant, layout, thumbnail) => {
+      render(<VideoCardSkeleton variant={variant} />)
+
+      const skeleton = screen.getByTestId('video-card-skeleton')
+
+      expect(skeleton).toHaveClass(...layout)
+      expect(skeleton.firstElementChild).toHaveClass(thumbnail, 'bg-muted')
+    },
+  )
 })

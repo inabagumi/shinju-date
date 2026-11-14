@@ -59,7 +59,6 @@ export function getVideoCreator(video: Video): VideoCreatorInfo | null {
 }
 
 interface CreatorIconProps {
-  className?: string
   profileImage: ProfileImage | null
 }
 
@@ -67,9 +66,9 @@ interface CreatorIconProps {
  * The icon is decorative: the name is always shown next to it, so screen
  * readers do not need to announce it twice.
  */
-function CreatorIcon({ className, profileImage }: CreatorIconProps) {
+function CreatorIcon({ profileImage }: CreatorIconProps) {
   const baseClassName =
-    'relative size-5 shrink-0 overflow-hidden rounded-full bg-774-nevy-200 dark:bg-zinc-700'
+    'relative size-5 shrink-0 overflow-hidden rounded-full bg-muted'
 
   if (!profileImage) {
     return (
@@ -77,8 +76,7 @@ function CreatorIcon({ className, profileImage }: CreatorIconProps) {
         aria-hidden="true"
         className={twMerge(
           baseClassName,
-          'flex items-center justify-center text-774-nevy-500 dark:text-zinc-400',
-          className,
+          'flex items-center justify-center text-muted',
         )}
         data-testid="video-creator-default-icon"
       >
@@ -88,7 +86,7 @@ function CreatorIcon({ className, profileImage }: CreatorIconProps) {
   }
 
   return (
-    <span className={twMerge(baseClassName, className)}>
+    <span className={baseClassName}>
       <Image
         alt=""
         blurDataURL={profileImage.blur_data_url}
@@ -104,20 +102,15 @@ function CreatorIcon({ className, profileImage }: CreatorIconProps) {
 
 interface VideoCreatorProps {
   className?: string
-  compact?: boolean
   value: Video
 }
 
 /**
  * Icon and name of the YouTube channel or Twitch user that published the
  * video. It is rendered inside the video card link, so it must not contain
- * links of its own.
+ * links of its own. The text style comes from the surrounding element.
  */
-export default function VideoCreator({
-  className,
-  compact = false,
-  value,
-}: VideoCreatorProps) {
+export default function VideoCreator({ className, value }: VideoCreatorProps) {
   const creator = getVideoCreator(value)
 
   if (!creator) {
@@ -125,49 +118,27 @@ export default function VideoCreator({
   }
 
   return (
-    <p
-      className={twMerge(
-        'flex min-w-0 items-center gap-1.5 text-xs text-774-nevy-600 dark:text-zinc-400',
-        compact && 'gap-1',
-        className,
-      )}
+    <span
+      className={twMerge('flex min-w-0 items-center gap-1.5', className)}
       data-testid="video-creator"
     >
-      <CreatorIcon
-        className={twMerge(compact && 'size-4')}
-        profileImage={creator.profileImage}
-      />
+      <CreatorIcon profileImage={creator.profileImage} />
       <span className="min-w-0 truncate" title={creator.name}>
         {creator.name}
       </span>
-    </p>
+    </span>
   )
 }
 
 interface VideoCreatorSkeletonProps {
   className?: string
-  compact?: boolean
 }
 
-export function VideoCreatorSkeleton({
-  className,
-  compact = false,
-}: VideoCreatorSkeletonProps) {
+export function VideoCreatorSkeleton({ className }: VideoCreatorSkeletonProps) {
   return (
-    <div
-      className={twMerge(
-        'flex items-center gap-1.5',
-        compact && 'gap-1',
-        className,
-      )}
-    >
-      <span
-        className={twMerge(
-          'inline-block size-5 shrink-0 animate-pulse rounded-full bg-774-nevy-200 dark:bg-zinc-700',
-          compact && 'size-4',
-        )}
-      />
-      <span className="inline-block h-2.5 w-20 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
-    </div>
+    <span className={twMerge('flex items-center gap-1.5', className)}>
+      <span className="inline-block size-5 shrink-0 animate-pulse rounded-full bg-muted" />
+      <span className="inline-block h-3 w-20 animate-pulse rounded-control bg-muted" />
+    </span>
   )
 }

@@ -26,7 +26,7 @@ export default function PlatformBadge({
   return (
     <span
       className={twMerge(
-        'inline-flex items-center rounded-md bg-twitch px-1.5 py-0.5 text-xs font-semibold text-twitch-foreground',
+        'inline-flex items-center rounded-control bg-twitch px-1.5 py-0.5 text-caption font-semibold text-twitch-foreground',
         className,
       )}
     >

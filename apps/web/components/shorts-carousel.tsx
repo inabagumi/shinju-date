@@ -4,16 +4,16 @@ import useEmblaCarousel from 'embla-carousel-react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import type { Video } from '@/lib/fetchers'
-import ShortVideoCard, { ShortVideoCardSkeleton } from './short-video-card'
+import VideoCard, { VideoCardSkeleton } from './video-card'
 
 export function ShortsCarouselSkeleton() {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-4 md:gap-6">
-        <ShortVideoCardSkeleton />
-        <ShortVideoCardSkeleton />
-        <ShortVideoCardSkeleton />
-        <ShortVideoCardSkeleton />
+        <VideoCardSkeleton variant="short" />
+        <VideoCardSkeleton variant="short" />
+        <VideoCardSkeleton variant="short" />
+        <VideoCardSkeleton variant="short" />
       </div>
     </div>
   )
@@ -96,7 +96,14 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
                 className="min-w-0 shrink-0 basis-[85%] md:basis-[calc(25%-1.125rem)]"
                 key={video.id}
               >
-                <ShortVideoCard value={video} />
+                <VideoCard
+                  dateTimeFormatOptions={{
+                    dateStyle: 'short',
+                    timeStyle: 'short',
+                  }}
+                  value={video}
+                  variant="short"
+                />
               </div>
             ))}
           </div>
