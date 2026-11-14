@@ -203,6 +203,31 @@ test.describe('Search Modal - Search Functionality', () => {
 })
 
 test.describe('Search Modal - Suggestion Links', () => {
+  test('should suggest a term when the query matches one of its synonyms', async ({
+    page,
+  }) => {
+    await page.goto(BASE_URL)
+    await page.waitForLoadState('networkidle')
+
+    // Open search modal
+    await page.getByRole('button', { name: '検索' }).click()
+
+    const searchInput = page.locator('input[name="q"]')
+    await expect(searchInput).toBeVisible({ timeout: 5000 })
+
+    // `歌配信` is a synonym of `歌枠` in the mock terms
+    await searchInput.fill('歌配')
+
+    const suggestionLink = page.locator('[data-suggestion-link]', {
+      hasText: '歌枠',
+    })
+    await expect(suggestionLink).toBeVisible({ timeout: 10000 })
+    await expect(suggestionLink).toHaveAttribute(
+      'href',
+      `/videos/${encodeURIComponent('歌枠')}`,
+    )
+  })
+
   test('should close modal when clicking a suggestion link', async ({
     page,
   }) => {
