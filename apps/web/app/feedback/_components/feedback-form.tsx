@@ -47,10 +47,10 @@ export function FeedbackForm() {
       {/* Status Messages */}
       {!isPending && state && (state.success || state.error) && (
         <div
-          className={`rounded-lg p-4 ${
+          className={`rounded-container border p-4 ${
             state.success
-              ? 'border border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400'
-              : 'border border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400'
+              ? 'border-success/30 bg-success/10 text-success'
+              : 'border-danger/30 bg-danger/10 text-danger'
           }`}
         >
           {state.success ? state.message : state.error}

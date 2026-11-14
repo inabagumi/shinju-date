@@ -1,4 +1,4 @@
-import { Input, Textarea, twMerge } from '@shinju-date/ui'
+import { Input, Select, Textarea, twMerge } from '@shinju-date/ui'
 
 function getErrorId(inputId: string | undefined): string | undefined {
   return inputId ? `${inputId}-error` : undefined
@@ -13,7 +13,7 @@ interface FieldLabelProps {
 function FieldLabel({ htmlFor, label, required }: FieldLabelProps) {
   return (
     <label
-      className="mb-2 block text-sm font-medium text-primary dark:text-774-nevy-50"
+      className="mb-2 block text-meta font-semibold text-foreground"
       htmlFor={htmlFor}
     >
       {label}{' '}
@@ -37,7 +37,7 @@ function FieldError({ error, id }: FieldErrorProps) {
   }
 
   return (
-    <p className="mt-1 text-sm text-danger" id={id}>
+    <p className="mt-1 text-meta text-danger" id={id}>
       {error}
     </p>
   )
@@ -71,12 +71,7 @@ export function InputField({
         {...props}
         aria-describedby={errorId}
         aria-invalid={error ? true : undefined}
-        className={twMerge(
-          'rounded-lg py-3 placeholder:text-774-nevy-400 dark:placeholder:text-774-nevy-400',
-          !error &&
-            'border-774-nevy-300 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600',
-          className,
-        )}
+        className={className}
         id={inputId}
         inputSize="lg"
         ref={ref}
@@ -116,12 +111,7 @@ export function TextareaField({
         {...props}
         aria-describedby={errorId}
         aria-invalid={error ? true : undefined}
-        className={twMerge(
-          'rounded-lg px-4 py-3 placeholder:text-774-nevy-400 dark:placeholder:text-774-nevy-400',
-          !error &&
-            'border-774-nevy-300 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600',
-          className,
-        )}
+        className={twMerge('px-4 py-3', className)}
         id={inputId}
         ref={ref}
         required={required}
@@ -158,23 +148,19 @@ export function SelectField({
       {label && (
         <FieldLabel htmlFor={inputId} label={label} required={required} />
       )}
-      <select
+      <Select
         {...props}
         aria-describedby={errorId}
         aria-invalid={error ? true : undefined}
-        className={twMerge(
-          'w-full rounded-lg border bg-white px-4 py-3 text-primary focus:ring-2 focus:outline-none dark:bg-zinc-800 dark:text-774-nevy-50',
-          error
-            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-            : 'border-774-nevy-300 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600',
-          className,
-        )}
+        className={className}
         id={inputId}
+        inputSize="lg"
         ref={ref}
         required={required}
+        variant={error ? 'error' : 'default'}
       >
         {children}
-      </select>
+      </Select>
       <FieldError error={error} id={errorId} />
     </div>
   )
@@ -204,15 +190,13 @@ export function CheckboxField({
           aria-describedby={errorId}
           aria-invalid={error ? true : undefined}
           className={twMerge(
-            'h-4 w-4 rounded border-774-nevy-300 text-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600',
+            'size-4 accent-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
             className,
           )}
           id={inputId}
           type="checkbox"
         />
-        <span className="text-sm text-primary dark:text-774-nevy-50">
-          {label}
-        </span>
+        <span className="text-meta text-foreground">{label}</span>
       </label>
       <FieldError error={error} id={errorId} />
     </div>
