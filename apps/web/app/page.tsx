@@ -53,7 +53,7 @@ async function HomeLiveAndRecent() {
 export default function SchedulePage() {
   return (
     <>
-      <div className="relative aspect-4/3 bg-slate-700 sm:aspect-video">
+      <div className="relative aspect-4/3 w-full bg-slate-700 sm:aspect-video sm:max-h-[50vh]">
         <div className="absolute right-0 bottom-0 left-0 z-20 bg-linear-to-t from-slate-900/80 text-white">
           <h1 className="px-8 py-6 text-center md:text-left">
             <svg
