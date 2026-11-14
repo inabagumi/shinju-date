@@ -957,6 +957,9 @@ importers:
       '@tsconfig/strictest':
         specifier: 2.0.9
         version: 2.0.9
+      temporal-polyfill:
+        specifier: 1.0.8
+        version: 1.0.8
       tsup:
         specifier: 9.0.0
         version: 9.0.0(jiti@2.7.0)(postcss@8.5.32)(typescript@6.0.3)
