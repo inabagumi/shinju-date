@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { getHistoricalStats } from '../_lib/get-historical-stats'
 import { getSummaryStats } from '../_lib/get-summary-stats'
 import { TrendIndicator } from './trend-indicator'
+import { VideoStatsChartEmpty } from './video-stats-chart-empty'
 import { VideoStatsChartUI } from './video-stats-chart-ui'
 
 /**
@@ -80,9 +81,7 @@ export async function VideoSummaryWidget() {
           動画数推移（7日間）
         </h3>
         {historicalStats.length === 0 ? (
-          <div className="flex h-80 items-center justify-center text-gray-500">
-            <p>データがありません</p>
-          </div>
+          <VideoStatsChartEmpty />
         ) : (
           <VideoStatsChartUI data={historicalStats} />
         )}

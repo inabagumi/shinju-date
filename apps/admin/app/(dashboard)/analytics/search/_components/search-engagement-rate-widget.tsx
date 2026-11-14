@@ -2,6 +2,7 @@ import { cache } from 'react'
 import { getSearchEngagementRate } from '@/lib/analytics/get-search-quality-metrics'
 import { formatDateLabel, formatDateRange } from '../../_lib/format-date'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
+import { MetricNoData } from './metric-no-data'
 
 interface Props {
   searchParams: Promise<AnalyticsSearchParams>
@@ -15,7 +16,7 @@ const fetchSearchEngagementData = cache(
     startDate: string,
     endDate: string,
     selectedDate: string | null,
-  ): Promise<number> => {
+  ): Promise<number | null> => {
     if (selectedDate) {
       return getSearchEngagementRate(Temporal.PlainDate.from(selectedDate))
     }
@@ -34,7 +35,7 @@ function SearchEngagementRateWidgetComponent({
   dateRange,
   selectedDate,
 }: {
-  engagementRate: number
+  engagementRate: number | null
   dateRange: { startDate: string; endDate: string }
   selectedDate: string | null
 }) {
@@ -45,8 +46,6 @@ function SearchEngagementRateWidgetComponent({
     if (rate >= 10) return 'average'
     return 'poor'
   }
-
-  const performanceLevel = getPerformanceLevel(engagementRate)
 
   const performanceStyles = {
     average: 'bg-yellow-50 text-yellow-700 border-yellow-200',
@@ -61,6 +60,9 @@ function SearchEngagementRateWidgetComponent({
     good: '良好',
     poor: '改善が必要',
   }
+
+  const performanceLevel =
+    engagementRate === null ? null : getPerformanceLevel(engagementRate)
 
   return (
     <div>
@@ -84,16 +86,22 @@ function SearchEngagementRateWidgetComponent({
         この数値が低い場合、検索窓のUIや配置の見直しを検討することをお勧めします。
       </p>
 
-      <div
-        className={`rounded-lg border-2 p-6 ${performanceStyles[performanceLevel]}`}
-      >
-        <div className="text-center">
-          <div className="text-4xl font-bold">{engagementRate.toFixed(1)}%</div>
-          <div className="mt-2 text-sm font-medium">
-            検索利用率 ({performanceLabels[performanceLevel]})
+      {engagementRate === null || performanceLevel === null ? (
+        <MetricNoData description="この期間に計測されたセッションがないため、評価できません。" />
+      ) : (
+        <div
+          className={`rounded-lg border-2 p-6 ${performanceStyles[performanceLevel]}`}
+        >
+          <div className="text-center">
+            <div className="text-4xl font-bold">
+              {engagementRate.toFixed(1)}%
+            </div>
+            <div className="mt-2 text-sm font-medium">
+              検索利用率 ({performanceLabels[performanceLevel]})
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="mt-4 text-xs text-gray-600">
         <div className="grid grid-cols-2 gap-4">

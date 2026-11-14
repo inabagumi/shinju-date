@@ -51,9 +51,21 @@ describe('getSearchEngagementRate', async () => {
     expect(result).toBe(30) // 30/100 * 100 = 30%
   })
 
-  it('should return 0 when no sessions exist', async () => {
+  it('should return null when no sessions exist', async () => {
     vi.mocked(redisClient.scard)
       .mockResolvedValueOnce(0) // total sessions
+      .mockResolvedValueOnce(0) // search sessions
+
+    const result = await getSearchEngagementRate(
+      Temporal.PlainDate.from('2024-01-01'),
+    )
+
+    expect(result).toBeNull()
+  })
+
+  it('should return 0 when sessions exist but none of them searched', async () => {
+    vi.mocked(redisClient.scard)
+      .mockResolvedValueOnce(100) // total sessions
       .mockResolvedValueOnce(0) // search sessions
 
     const result = await getSearchEngagementRate(
@@ -85,13 +97,13 @@ describe('getSearchEngagementRate', async () => {
     ])
   })
 
-  it('should return 0 without calling Redis for an empty range', async () => {
+  it('should return null without calling Redis for an empty range', async () => {
     const result = await getSearchEngagementRate(
       Temporal.PlainDate.from('2024-01-02'),
       Temporal.PlainDate.from('2024-01-01'),
     )
 
-    expect(result).toBe(0)
+    expect(result).toBeNull()
     expect(redisClient.pipeline).not.toHaveBeenCalled()
   })
 
@@ -102,7 +114,7 @@ describe('getSearchEngagementRate', async () => {
       Temporal.PlainDate.from('2024-01-01'),
     )
 
-    expect(result).toBe(0)
+    expect(result).toBeNull()
   })
 })
 
@@ -225,13 +237,13 @@ describe('getRepeatSearchRate', async () => {
     expect(redisClient.hgetall).toHaveBeenCalledTimes(3)
   })
 
-  it('should return 0 when no search sessions exist', async () => {
+  it('should return null when no search sessions exist', async () => {
     vi.mocked(redisClient.hgetall).mockResolvedValue({})
 
     const result = await getRepeatSearchRate(
       Temporal.PlainDate.from('2024-01-01'),
     )
 
-    expect(result).toBe(0)
+    expect(result).toBeNull()
   })
 })
