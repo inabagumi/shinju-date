@@ -8,7 +8,8 @@
   - 774-nevy カラー（ブランドカラー / プライマリ）
   - 774-pink カラー（セカンダリカラー）
   - 774-blue カラー（セカンダリカラー）
-  - プライマリー/セカンダリーカラー定義
+  - プライマリー/セカンダリーカラー定義（移行が終わるまで残す）
+  - 意味で名付けた色（`surface` / `text` / `accent` など。ライトとダークで値が切り替わる）
 
 ## 使用方法
 
@@ -20,6 +21,33 @@
 ```
 
 これにより、すべてのアプリケーションとパッケージで一貫したカラーパレットを使用できます。
+
+## 意味で名付けた色
+
+部品の色には、用途で名付けた色を使います。値は `prefers-color-scheme` で
+ライトとダークが切り替わるため、`dark:` を書く必要はありません。
+
+```tsx
+;<div className="border border-border bg-surface-raised text-text">
+  <p className="text-text-muted">補助情報</p>
+  <button className="bg-accent text-on-accent" type="button">
+    保存
+  </button>
+</div>
+```
+
+| 色                                              | 用途                                                                                 |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `surface` / `surface-raised` / `surface-sunken` | ページの地 / ヘッダー・モーダル・メニュー・入力欄 / スケルトン・ホバー・表の見出し行 |
+| `border`                                        | 区切り線・入力欄の枠                                                                 |
+| `text` / `text-muted`                           | 本文・見出し / 補助情報                                                              |
+| `accent` / `on-accent`                          | リンク・選択中・主ボタン・フォーカス / その上の文字                                  |
+| `brand` / `on-brand`                            | フッター / その上の文字                                                              |
+| `live`                                          | 配信中専用（文字は白）                                                               |
+| `danger` / `success` / `warning`                | 状態                                                                                 |
+
+値の一覧は Storybook の「Design System/Colors」を参照してください。文字と地の
+コントラスト比は `packages/ui/src/colors.test.ts` で確認しています。
 
 ## カラーパレット
 

@@ -39,10 +39,77 @@
   --color-774-blue-900: #0d399b;
   --color-774-blue-950: #0e245d;
 
+  /* 移行が終わるまで残す。新しく書く部品では下の意味で名付けた色を使う */
   --color-primary: var(--color-774-nevy-950);
   --color-primary-foreground: var(--color-774-nevy-50);
   --color-secondary-pink: var(--color-774-pink-500);
   --color-secondary-pink-foreground: var(--color-774-pink-50);
   --color-secondary-blue: var(--color-774-blue-700);
   --color-secondary-blue-foreground: var(--color-774-blue-50);
+}
+
+/*
+ * 意味で名付けた色。値はライトモードのもので、ダークモードの値は下の
+ * `prefers-color-scheme: dark` で上書きする。部品側は `bg-surface text-text`
+ * のように1つのクラスを書くだけで両モードに対応できる。
+ *
+ * `static` を付けて、使われていない変数も常に出力する（ダークモードの上書きと
+ * Storybook の色見本が変数を参照するため）。
+ */
+@theme static {
+  /* 地 */
+  --color-surface: #faf9fd;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #f2f1ff;
+
+  /* 区切り線・入力欄の枠 */
+  --color-border: #e3e0ee;
+
+  /* 文字 */
+  --color-text: #1b1530;
+  --color-text-muted: #5f5a70;
+
+  /* リンク・選択中・主ボタン・フォーカス */
+  --color-accent: #5907fa;
+  --color-on-accent: #ffffff;
+
+  /* フッター */
+  --color-brand: #1e0064;
+  --color-on-brand: #f2f1ff;
+
+  /* 配信中（バッジの地。文字は白） */
+  --color-live: #c80858;
+
+  /* 状態 */
+  --color-danger: #b91c1c;
+  --color-success: #166534;
+  --color-warning: #854d0e;
+}
+
+@layer base {
+  @media (prefers-color-scheme: dark) {
+    :root,
+    :host {
+      --color-surface: #131118;
+      --color-surface-raised: #1c1a24;
+      --color-surface-sunken: #262331;
+
+      --color-border: #37333f;
+
+      --color-text: #f1eff7;
+      --color-text-muted: #aaa5ba;
+
+      --color-accent: #b7a7ff;
+      --color-on-accent: #131118;
+
+      --color-brand: #1c1a24;
+      --color-on-brand: #f1eff7;
+
+      --color-live: #c80858;
+
+      --color-danger: #fca5a5;
+      --color-success: #86efac;
+      --color-warning: #fde047;
+    }
+  }
 }
