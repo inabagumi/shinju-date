@@ -1,11 +1,54 @@
 import { Input, Textarea } from '@shinju-date/ui'
 import { twMerge } from 'tailwind-merge'
 
+const labelClassName =
+  'mb-2 block text-sm font-medium text-primary dark:text-774-nevy-50'
+
+function getErrorId(inputId: string | undefined): string | undefined {
+  return inputId ? `${inputId}-error` : undefined
+}
+
+interface FieldLabelProps {
+  htmlFor: string | undefined
+  label: string
+  required: boolean | undefined
+}
+
+function FieldLabel({ htmlFor, label, required }: FieldLabelProps) {
+  return (
+    <label className={labelClassName} htmlFor={htmlFor}>
+      {label}{' '}
+      {required && (
+        <span aria-hidden="true" className="text-red-500">
+          *
+        </span>
+      )}
+    </label>
+  )
+}
+
+interface FieldErrorProps {
+  error: string | undefined
+  id: string | undefined
+}
+
+function FieldError({ error, id }: FieldErrorProps) {
+  if (!error) {
+    return null
+  }
+
+  return (
+    <p className="mt-1 text-sm text-red-500" id={id}>
+      {error}
+    </p>
+  )
+}
+
 interface InputFieldProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string
   required?: boolean
-  error?: string
+  error?: string | undefined
 }
 
 export function InputField({
@@ -18,29 +61,30 @@ export function InputField({
   ...props
 }: InputFieldProps & { ref?: React.Ref<HTMLInputElement> }) {
   const inputId = id || props.name
+  const errorId = error ? getErrorId(inputId) : undefined
 
   return (
     <div>
       {label && (
-        <label
-          className="mb-2 block text-sm font-medium text-primary dark:text-774-nevy-50"
-          htmlFor={inputId}
-        >
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
+        <FieldLabel htmlFor={inputId} label={label} required={required} />
       )}
       <Input
         {...props}
+        aria-describedby={errorId}
+        aria-invalid={error ? true : undefined}
         className={twMerge(
-          'rounded-lg border-774-nevy-300 py-3 placeholder:text-774-nevy-400 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600 dark:placeholder:text-774-nevy-400',
+          'rounded-lg py-3 placeholder:text-774-nevy-400 dark:placeholder:text-774-nevy-400',
+          !error &&
+            'border-774-nevy-300 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600',
           className,
         )}
         id={inputId}
         inputSize="lg"
         ref={ref}
+        required={required}
         variant={error ? 'error' : 'default'}
       />
-      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+      <FieldError error={error} id={errorId} />
     </div>
   )
 }
@@ -49,7 +93,7 @@ interface TextareaFieldProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string
   required?: boolean
-  error?: string
+  error?: string | undefined
 }
 
 export function TextareaField({
@@ -62,28 +106,29 @@ export function TextareaField({
   ...props
 }: TextareaFieldProps & { ref?: React.Ref<HTMLTextAreaElement> }) {
   const inputId = id || props.name
+  const errorId = error ? getErrorId(inputId) : undefined
 
   return (
     <div>
       {label && (
-        <label
-          className="mb-2 block text-sm font-medium text-primary dark:text-774-nevy-50"
-          htmlFor={inputId}
-        >
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
+        <FieldLabel htmlFor={inputId} label={label} required={required} />
       )}
       <Textarea
+        {...props}
+        aria-describedby={errorId}
+        aria-invalid={error ? true : undefined}
         className={twMerge(
-          'rounded-lg border-774-nevy-300 px-4 py-3 placeholder:text-774-nevy-400 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600 dark:placeholder:text-774-nevy-400',
+          'rounded-lg px-4 py-3 placeholder:text-774-nevy-400 dark:placeholder:text-774-nevy-400',
+          !error &&
+            'border-774-nevy-300 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600',
           className,
         )}
         id={inputId}
         ref={ref}
+        required={required}
         variant={error ? 'error' : 'default'}
-        {...props}
       />
-      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+      <FieldError error={error} id={errorId} />
     </div>
   )
 }
@@ -92,7 +137,7 @@ interface SelectFieldProps
   extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string
   required?: boolean
-  error?: string
+  error?: string | undefined
   children: React.ReactNode
 }
 
@@ -107,29 +152,31 @@ export function SelectField({
   ...props
 }: SelectFieldProps & { ref?: React.Ref<HTMLSelectElement> }) {
   const inputId = id || props.name
+  const errorId = error ? getErrorId(inputId) : undefined
 
   return (
     <div>
       {label && (
-        <label
-          className="mb-2 block text-sm font-medium text-primary dark:text-774-nevy-50"
-          htmlFor={inputId}
-        >
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
+        <FieldLabel htmlFor={inputId} label={label} required={required} />
       )}
       <select
+        {...props}
+        aria-describedby={errorId}
+        aria-invalid={error ? true : undefined}
         className={twMerge(
-          'w-full rounded-lg border border-774-nevy-300 bg-white px-4 py-3 text-primary focus:border-secondary-blue focus:ring-2 focus:ring-secondary-blue/20 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-50',
+          'w-full rounded-lg border bg-white px-4 py-3 text-primary focus:ring-2 focus:outline-none dark:bg-zinc-800 dark:text-774-nevy-50',
+          error
+            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+            : 'border-774-nevy-300 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600',
           className,
         )}
         id={inputId}
         ref={ref}
-        {...props}
+        required={required}
       >
         {children}
       </select>
-      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+      <FieldError error={error} id={errorId} />
     </div>
   )
 }
@@ -137,7 +184,7 @@ export function SelectField({
 interface CheckboxFieldProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   label: React.ReactNode
-  error?: string
+  error?: string | undefined
 }
 
 export function CheckboxField({
@@ -148,24 +195,27 @@ export function CheckboxField({
   ...props
 }: CheckboxFieldProps) {
   const inputId = id || props.name
+  const errorId = error ? getErrorId(inputId) : undefined
 
   return (
     <div>
       <label className="flex items-center gap-3">
         <input
+          {...props}
+          aria-describedby={errorId}
+          aria-invalid={error ? true : undefined}
           className={twMerge(
             'h-4 w-4 rounded border-774-nevy-300 text-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600',
             className,
           )}
           id={inputId}
           type="checkbox"
-          {...props}
         />
         <span className="text-sm text-primary dark:text-774-nevy-50">
           {label}
         </span>
       </label>
-      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+      <FieldError error={error} id={errorId} />
     </div>
   )
 }
