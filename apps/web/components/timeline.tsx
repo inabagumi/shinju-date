@@ -82,7 +82,7 @@ function TimelineSection({
 
 export function TimelineSkeleton() {
   return (
-    <div className="space-y-12">
+    <div className="space-y-16">
       <TimelineGroup
         heading={
           <span className="inline-block h-8 w-44 animate-pulse rounded-md bg-774-nevy-100 dark:bg-zinc-800" />
@@ -121,7 +121,7 @@ export default function Timeline({
   }, [videos])
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-16">
       {[...schedule.entries()].map(([dateTime, items]) => (
         <TimelineSection dateTime={dateTime} items={items} key={dateTime} />
       ))}
