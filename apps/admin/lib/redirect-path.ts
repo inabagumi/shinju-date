@@ -41,5 +41,14 @@ export function getSafeRedirectPath(value: unknown, fallback = '/'): string {
     return fallback
   }
 
-  return `${url.pathname}${url.search}${url.hash}`
+  const redirectPath = `${url.pathname}${url.search}${url.hash}`
+
+  // `/.//example.com` のような値は、ドットセグメントが取り除かれると
+  // `//example.com` になり、プロトコル相対 URL として外部のホストを指してしまう。
+  // 正規化した後の値も、もう一度解析して外部のホストを指していないかを確認する
+  if (new URL(redirectPath, BASE_ORIGIN).origin !== BASE_ORIGIN) {
+    return fallback
+  }
+
+  return redirectPath
 }

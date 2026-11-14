@@ -72,15 +72,18 @@ describe('updateSession with MSW', () => {
     )
   })
 
-  it('does not redirect /login to an external URL', async () => {
-    stubEnv(true)
+  it.each(['%2F%2Fexample.com', '%2F.%2F%2Fexample.com'])(
+    'does not redirect /login?next=%s to an external URL',
+    async (next) => {
+      stubEnv(true)
 
-    const response = await updateSession(
-      new NextRequest('http://localhost:4000/login?next=%2F%2Fexample.com'),
-    )
+      const response = await updateSession(
+        new NextRequest(`http://localhost:4000/login?next=${next}`),
+      )
 
-    expect(response.headers.get('location')).toBe('http://localhost:4000/')
-  })
+      expect(response.headers.get('location')).toBe('http://localhost:4000/')
+    },
+  )
 
   it('redirects requests without cookies to the login page otherwise', async () => {
     stubEnv(false)
