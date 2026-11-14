@@ -87,7 +87,7 @@ const example = (
     <h3 className="text-body leading-normal font-semibold">動画のタイトル</h3>
     <p className="text-meta text-muted tabular-nums">2026/11/14 21:00</p>
   </article>
-);
+)
 ```
 
 - **時刻・再生時間・件数は `tabular-nums` にする。** 桁がそろい、数字が変わっても幅が揺れません
@@ -98,7 +98,7 @@ const example = (
 `theme.css` で追加した文字サイズを `tailwind-merge` に登録した `twMerge` を、`@shinju-date/ui` から使ってください。`tailwind-merge` の `twMerge` は `text-body` などを文字色として扱うため、`twMerge('text-body text-foreground')` の `text-body` が消えてしまいます。`tailwind-merge` から直接インポートすると Biome のエラーになります。
 
 ```tsx
-import { twMerge } from "@shinju-date/ui";
+import { twMerge } from '@shinju-date/ui'
 ```
 
 ## 角丸
