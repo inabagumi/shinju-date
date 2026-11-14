@@ -641,6 +641,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: 4.3.5
         version: 4.3.5
+      '@tailwindcss/typography':
+        specifier: 0.5.20
+        version: 0.5.20(tailwindcss@4.3.5)
       '@tsconfig/next':
         specifier: 2.0.7
         version: 2.0.7
