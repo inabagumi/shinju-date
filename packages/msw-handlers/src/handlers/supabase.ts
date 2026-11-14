@@ -1388,6 +1388,8 @@ export const supabaseHandlers = [
         app_metadata: {
           provider: 'email',
           providers: ['email'],
+          // 管理画面は管理者ロールを持つユーザーのみ利用できる
+          role: 'admin',
         },
         aud: 'authenticated',
         confirmed_at: '2023-01-01T00:00:00.000Z',
@@ -1455,6 +1457,8 @@ export const supabaseHandlers = [
               app_metadata: {
                 provider: 'email',
                 providers: ['email'],
+                // 管理画面は管理者ロールを持つユーザーのみ利用できる
+                role: 'admin',
               },
               aud: 'authenticated',
               confirmed_at: '2023-01-01T00:00:00.000Z',
@@ -1532,6 +1536,8 @@ export const supabaseHandlers = [
           app_metadata: {
             provider: 'email',
             providers: ['email'],
+            // 管理画面は管理者ロールを持つユーザーのみ利用できる
+            role: 'admin',
           },
           aud: 'authenticated',
           confirmed_at: '2023-01-01T00:00:00.000Z',
