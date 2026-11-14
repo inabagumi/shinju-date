@@ -2,6 +2,7 @@ import { BACKFILL_SAVE_CONCURRENCY } from '../internal/concurrency.js'
 import {
   AccountNotFoundError,
   findYouTubeChannel,
+  StalledPaginationError,
 } from '../internal/database/index.js'
 import type {
   AddPastVideosOptions,
@@ -41,6 +42,10 @@ export async function addPastYouTubeVideos(
 
   if (!page) {
     throw new AccountNotFoundError(accountId)
+  }
+
+  if (cursor && page.cursor === cursor) {
+    throw new StalledPaginationError(accountId, cursor)
   }
 
   const added = await saveNewYouTubeVideos(

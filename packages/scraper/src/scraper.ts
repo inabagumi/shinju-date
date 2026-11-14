@@ -77,6 +77,8 @@ export abstract class Scraper {
    *
    * @throws {AccountNotFoundError} When the account does not exist or its
    *   talent was deleted.
+   * @throws {StalledPaginationError} When the platform returns the requested
+   *   cursor as the next one.
    */
   abstract addPastVideos(
     options: AddPastVideosOptions,

@@ -1,6 +1,9 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { AccountNotFoundError } from '../../internal/database/index.js'
+import {
+  AccountNotFoundError,
+  StalledPaginationError,
+} from '../../internal/database/index.js'
 import { TEST_NOW } from '../../internal/testing/context.js'
 import { setupSupabase } from '../../internal/testing/supabase.js'
 import { YouTubeScraper } from '../scraper.js'
@@ -476,6 +479,24 @@ describe('YouTubeScraper', () => {
       expect(playlistItemsList).toHaveBeenCalledWith(
         expect.objectContaining({ pageToken: 'page-2' }),
       )
+      expect(videosList).not.toHaveBeenCalled()
+    })
+
+    it('rejects a page that does not move the cursor forward', async () => {
+      supabase.respond(({ method, table }) =>
+        method === 'GET' && table === 'youtube_channels' ? [channelRow] : [],
+      )
+      const { scraper, videosList } = createScraper({
+        channels: { UCaaa: 'Channel A' },
+        uploadPages: {
+          'UCaaa:page-2': { nextPageToken: 'page-2', videoIds: ['old'] },
+        },
+        videos: { old: {} },
+      })
+
+      await expect(
+        scraper.addPastVideos({ accountId: 'channel-row-1', cursor: 'page-2' }),
+      ).rejects.toBeInstanceOf(StalledPaginationError)
       expect(videosList).not.toHaveBeenCalled()
     })
 

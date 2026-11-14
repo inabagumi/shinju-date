@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { AccountNotFoundError } from '../../internal/database/index.js'
+import {
+  AccountNotFoundError,
+  StalledPaginationError,
+} from '../../internal/database/index.js'
 import { TEST_NOW } from '../../internal/testing/context.js'
 import { setupSupabase } from '../../internal/testing/supabase.js'
 import {
@@ -409,6 +412,22 @@ describe('TwitchScraper', () => {
         expect.objectContaining({ after: 'page-2' }),
       )
       expect(client.getStreamsByUserIds).not.toHaveBeenCalled()
+    })
+
+    it('rejects a page that does not move the cursor forward', async () => {
+      supabase.respond(({ method, table }) =>
+        method === 'GET' && table === 'twitch_users' ? [twitchUserRow] : [],
+      )
+      const { scraper } = createScraper({
+        historyPages: {
+          'page-2': { cursor: 'page-2', videos: [createVideo()] },
+        },
+      })
+
+      await expect(
+        scraper.addPastVideos({ accountId: 'user-row-1', cursor: 'page-2' }),
+      ).rejects.toBeInstanceOf(StalledPaginationError)
+      expect(supabase.written('POST', 'videos')).toEqual([])
     })
 
     it('rejects an account that is unknown or whose talent was deleted', async () => {
