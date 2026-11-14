@@ -3,15 +3,15 @@ import type { ComponentPropsWithRef } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 const cardVariants = cva(
-  'flex flex-col overflow-hidden rounded-xl border border-border text-text shadow',
+  'flex flex-col overflow-hidden rounded-xl border border-border text-foreground shadow',
   {
     defaultVariants: {
       variant: 'default',
     },
     variants: {
       variant: {
-        default: 'bg-surface-sunken hover:shadow-xl',
-        elevated: 'bg-surface-raised shadow-md hover:shadow-xl',
+        default: 'bg-muted hover:shadow-xl',
+        elevated: 'bg-surface shadow-md hover:shadow-xl',
         outlined: 'bg-transparent shadow-none hover:shadow-md',
       },
     },

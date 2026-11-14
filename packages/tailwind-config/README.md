@@ -8,8 +8,7 @@
   - 774-nevy カラー（ブランドカラー / プライマリ）
   - 774-pink カラー（セカンダリカラー）
   - 774-blue カラー（セカンダリカラー）
-  - プライマリー/セカンダリーカラー定義（移行が終わるまで残す）
-  - セマンティックカラー（`surface` / `text` / `accent` など。ライトとダークで値が切り替わる）
+  - セマンティックカラー（`primary` / `background` / `foreground` / `accent` など）
 
 ## 使用方法
 
@@ -24,30 +23,52 @@
 
 ## セマンティックカラー
 
-部品の色には、用途で名付けたセマンティックカラーを使います。値は `prefers-color-scheme` で
-ライトとダークが切り替わるため、`dark:` を書く必要はありません。
+部品の色には、用途で名付けたセマンティックカラーを使います。セマンティックカラーは
+上の色見本や Tailwind の標準色を `var()` で参照していて、`background` などは
+`prefers-color-scheme` でライトとダークの参照先が切り替わります。そのため
+`bg-background text-foreground border-border` のように1つのクラスを書くだけで
+両モードに対応できます（`dark:` は書きません）。
 
 ```tsx
-;<div className="border border-border bg-surface-raised text-text">
-  <p className="text-text-muted">補助情報</p>
-  <button className="bg-accent text-on-accent" type="button">
+;<div className="border border-border bg-surface text-foreground">
+  <p className="text-muted-foreground">補助情報</p>
+  <button className="bg-accent text-accent-foreground" type="button">
     保存
   </button>
 </div>
 ```
 
-| 色                                              | 用途                                                                                 |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `surface` / `surface-raised` / `surface-sunken` | ページの地 / ヘッダー・モーダル・メニュー・入力欄 / スケルトン・ホバー・表の見出し行 |
-| `border`                                        | 区切り線・入力欄の枠                                                                 |
-| `text` / `text-muted`                           | 本文・見出し / 補助情報                                                              |
-| `accent` / `on-accent`                          | リンク・選択中・主ボタン・フォーカス / その上の文字                                  |
-| `brand` / `on-brand`                            | フッター / その上の文字                                                              |
-| `live`                                          | 配信中専用（文字は白）                                                               |
-| `danger` / `success` / `warning`                | 状態                                                                                 |
+| 色                          | クラスの例                       | 用途                                   | ライト         | ダーク         |
+| --------------------------- | -------------------------------- | -------------------------------------- | -------------- | -------------- |
+| `background`                | `bg-background`                  | ページの地                             | `white`        | `zinc-950`     |
+| `foreground`                | `text-foreground`                | 本文・見出し                           | `zinc-900`     | `zinc-100`     |
+| `surface`                   | `bg-surface`                     | ヘッダー・モーダル・メニュー・入力欄   | `white`        | `zinc-900`     |
+| `muted`                     | `bg-muted`                       | スケルトン・ホバー・表の見出し行       | `774-nevy-50`  | `zinc-800`     |
+| `muted-foreground`          | `text-muted-foreground`          | 補助情報（日時・タレント名・説明）     | `zinc-600`     | `zinc-400`     |
+| `border`                    | `border-border`                  | 区切り線・入力欄の枠                   | `zinc-200`     | `zinc-700`     |
+| `accent`                    | `text-accent` / `bg-accent`      | リンク・選択中・主ボタン・フォーカス   | `774-nevy-700` | `774-nevy-300` |
+| `accent-foreground`         | `text-accent-foreground`         | `accent` の地の上の文字                | `white`        | `zinc-950`     |
+| `live`                      | `bg-live`                        | 配信中（配信中の表示以外には使わない） | `774-pink-700` | `774-pink-700` |
+| `live-foreground`           | `text-live-foreground`           | `live` の地の上の文字                  | `white`        | `white`        |
+| `danger`                    | `text-danger`                    | エラー・削除などの危険な操作           | `red-700`      | `red-300`      |
+| `success`                   | `text-success`                   | 成功                                   | `green-800`    | `green-300`    |
+| `warning`                   | `text-warning`                   | 注意                                   | `yellow-800`   | `yellow-300`   |
+| `primary`                   | `bg-primary`                     | ブランドの地（フッターなど）           | `774-nevy-950` | `774-nevy-950` |
+| `primary-foreground`        | `text-primary-foreground`        | `primary` の地の上の文字               | `774-nevy-50`  | `774-nevy-50`  |
+| `secondary-pink`            | `bg-secondary-pink`              | ピンクの地                             | `774-pink-500` | `774-pink-500` |
+| `secondary-pink-foreground` | `text-secondary-pink-foreground` | `secondary-pink` の地の上の文字        | `774-pink-50`  | `774-pink-50`  |
+| `secondary-blue`            | `bg-secondary-blue`              | 青の地                                 | `774-blue-700` | `774-blue-700` |
+| `secondary-blue-foreground` | `text-secondary-blue-foreground` | `secondary-blue` の地の上の文字        | `774-blue-50`  | `774-blue-50`  |
 
-値の一覧は Storybook の「Design System/Colors」を参照してください。文字と地の
-コントラスト比は `packages/ui/src/colors.test.ts` で確認しています。
+値はライトとダークで参照先が変わります。`primary` / `secondary-*` はダークモードでも同じ色です。
+
+ダークモードに対応していないアプリは `<html data-color-scheme="light">` を指定すると、
+OS の設定にかかわらずライトの値に固定できます（現在は `apps/admin` が該当）。
+
+文字と地の組み合わせ（`foreground` / `muted-foreground` / `accent` / 状態色 ×
+`background` / `surface` / `muted`、`accent-foreground` × `accent`、
+`live-foreground` × `live`、`primary-foreground` × `primary`）は、両モードで
+コントラスト比 4.5:1 以上になることを `packages/ui/src/colors.test.ts` で確認しています。
 
 ## カラーパレット
 

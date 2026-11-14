@@ -105,8 +105,10 @@ export const VideoCard = meta.story({
           </h3>
         </CardHeader>
         <CardContent>
-          <p className="text-xs text-text-muted">Talent Name</p>
-          <p className="text-xs text-text-muted">1.2M views • 2 days ago</p>
+          <p className="text-xs text-muted-foreground">Talent Name</p>
+          <p className="text-xs text-muted-foreground">
+            1.2M views • 2 days ago
+          </p>
         </CardContent>
       </>
     ),

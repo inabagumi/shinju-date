@@ -157,7 +157,7 @@ export const WithForm = meta.story({
                   Name
                 </label>
                 <input
-                  className="rounded-md border border-border bg-surface-raised px-4 py-2"
+                  className="rounded-md border border-border bg-surface px-4 py-2"
                   id="name"
                   onChange={(e) => setName(e.target.value)}
                   value={name}
@@ -198,7 +198,7 @@ export const LongContent = meta.story({
               text: `${i + 1}. Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
                 Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.`,
             })).map((term) => (
-              <p className="mb-2 text-sm text-text" key={term.id}>
+              <p className="mb-2 text-sm text-foreground" key={term.id}>
                 {term.text}
               </p>
             ))}

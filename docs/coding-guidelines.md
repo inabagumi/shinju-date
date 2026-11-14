@@ -303,17 +303,20 @@ secondary-blue-foreground    /* = 774-blue-50 */
 
 **地・文字・枠・状態の表示には、`theme.css` で定義されているセマンティックカラー（用途で名付けた色）を使用してください。**
 
-セマンティックカラーは `prefers-color-scheme` でライトとダークの値が切り替わるため、`dark:` で色を手書きする必要はありません。一覧と用途は [`packages/tailwind-config/README.md`](../packages/tailwind-config/README.md#セマンティックカラー) と Storybook の「Design System/Colors」を参照してください。
+`background` などのセマンティックカラーは `prefers-color-scheme` でライトとダークの値が切り替わるため、`dark:` で色を手書きする必要はありません。一覧と用途は [`packages/tailwind-config/README.md`](../packages/tailwind-config/README.md#セマンティックカラー) と Storybook の「Design System/Colors」を参照してください。
 
-| 色                                              | 用途                                                                                 |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `surface` / `surface-raised` / `surface-sunken` | ページの地 / ヘッダー・モーダル・メニュー・入力欄 / スケルトン・ホバー・表の見出し行 |
-| `border`                                        | 区切り線・入力欄の枠                                                                 |
-| `text` / `text-muted`                           | 本文・見出し / 補助情報                                                              |
-| `accent` / `on-accent`                          | リンク・選択中・主ボタン・フォーカス / その上の文字                                  |
-| `brand` / `on-brand`                            | フッター / その上の文字                                                              |
-| `live`                                          | 配信中専用（文字は白）                                                               |
-| `danger` / `success` / `warning`                | 状態                                                                                 |
+| 色                               | 用途                                                |
+| -------------------------------- | --------------------------------------------------- |
+| `background` / `foreground`      | ページの地 / 本文・見出し                           |
+| `surface`                        | ヘッダー・モーダル・メニュー・入力欄                |
+| `muted` / `muted-foreground`     | スケルトン・ホバー・表の見出し行 / 補助情報         |
+| `border`                         | 区切り線・入力欄の枠                                |
+| `accent` / `accent-foreground`   | リンク・選択中・主ボタン・フォーカス / その上の文字 |
+| `live` / `live-foreground`       | 配信中専用 / その上の文字                           |
+| `danger` / `success` / `warning` | 状態                                                |
+| `primary` / `primary-foreground` | ブランドの地（フッターなど） / その上の文字         |
+
+新しいセマンティックカラーを追加するときは、カラーコードを直接書かず、既存の色見本や Tailwind の標準色を `var()` で参照してください。
 
 #### 1. 状態（Success / Danger / Warning）
 
@@ -339,9 +342,9 @@ secondary-blue-foreground    /* = 774-blue-50 */
 
 ```tsx
 // ✅ 1つのクラスでライトとダークの両方に対応
-<div className="border border-border bg-surface-raised">
-  <p className="text-text">本文</p>
-  <p className="text-text-muted">説明文</p>
+<div className="border border-border bg-surface">
+  <p className="text-foreground">本文</p>
+  <p className="text-muted-foreground">説明文</p>
 </div>
 
 // ❌ dark: で色を手書きしない
@@ -359,9 +362,9 @@ secondary-blue-foreground    /* = 774-blue-50 */
 const buttonVariants = cva('...', {
   variants: {
     variant: {
-      primary: 'bg-accent text-on-accent hover:bg-accent/90',
+      primary: 'bg-accent text-accent-foreground hover:bg-accent/90',
       secondary:
-        'border border-border bg-surface-raised text-text hover:bg-surface-sunken',
+        'border border-border bg-surface text-foreground hover:bg-muted',
       danger: 'border border-danger text-danger hover:bg-danger/10',
     },
   },
@@ -384,16 +387,16 @@ const badgeVariants = cva('...', {
 
 既存のコードを更新する際の参考：
 
-| 旧カラー                      | 新カラー                                       | 用途                         |
-| ----------------------------- | ---------------------------------------------- | ---------------------------- |
-| `blue-*`                      | `774-blue-*`                                   | リンク、ボタン、情報表示     |
-| `purple-*`                    | `774-nevy-*`                                   | ブランド要素、強調表示       |
-| `indigo-*`                    | `774-nevy-*` または `774-blue-*`               | コンテキストに応じて         |
-| `pink-*`                      | `774-pink-*`                                   | セカンダリアクション、エラー |
-| `green-*`                     | `success`                                      | 成功、公開状態               |
-| `red-*`                       | `danger`                                       | エラー、削除、危険           |
-| `yellow-*`                    | `warning`                                      | 警告、非表示状態             |
-| `gray-*`, `slate-*`, `zinc-*` | `surface-*` / `border` / `text` / `text-muted` | 地、枠、テキスト             |
+| 旧カラー                      | 新カラー                                                                          | 用途                         |
+| ----------------------------- | --------------------------------------------------------------------------------- | ---------------------------- |
+| `blue-*`                      | `774-blue-*`                                                                      | リンク、ボタン、情報表示     |
+| `purple-*`                    | `774-nevy-*`                                                                      | ブランド要素、強調表示       |
+| `indigo-*`                    | `774-nevy-*` または `774-blue-*`                                                  | コンテキストに応じて         |
+| `pink-*`                      | `774-pink-*`                                                                      | セカンダリアクション、エラー |
+| `green-*`                     | `success`                                                                         | 成功、公開状態               |
+| `red-*`                       | `danger`                                                                          | エラー、削除、危険           |
+| `yellow-*`                    | `warning`                                                                         | 警告、非表示状態             |
+| `gray-*`, `slate-*`, `zinc-*` | `background` / `surface` / `muted` / `border` / `foreground` / `muted-foreground` | 地、枠、テキスト             |
 
 ### レビューガイドライン
 

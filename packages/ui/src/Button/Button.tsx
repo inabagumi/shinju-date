@@ -18,12 +18,10 @@ const buttonVariants = cva(
       },
       variant: {
         danger: 'border border-danger text-danger hover:bg-danger/10',
-        ghost: 'hover:bg-surface-sunken',
-        primary: 'bg-accent text-on-accent hover:bg-accent/90',
+        ghost: 'hover:bg-muted',
+        primary: 'bg-accent text-accent-foreground hover:bg-accent/90',
         secondary:
-          'border border-border bg-surface-raised text-text hover:bg-surface-sunken',
-        // secondary-blue / secondary-pink は primary / secondary-* の色と一緒に、
-        // 移行が終わったら削除する
+          'border border-border bg-surface text-foreground hover:bg-muted',
         'secondary-blue':
           'bg-secondary-blue text-secondary-blue-foreground hover:bg-774-blue-800 active:bg-774-blue-600',
         'secondary-pink':

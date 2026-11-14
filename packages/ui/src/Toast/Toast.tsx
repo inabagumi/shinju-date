@@ -29,9 +29,9 @@ const toastVariants = cva(
     },
     variants: {
       variant: {
-        default: 'border-border bg-surface-raised text-text',
-        destructive: 'border-danger bg-surface-raised text-danger',
-        success: 'border-success bg-surface-raised text-success',
+        default: 'border-border bg-surface text-foreground',
+        destructive: 'border-danger bg-surface text-danger',
+        success: 'border-success bg-surface text-success',
       },
     },
   },
@@ -56,7 +56,7 @@ export function ToastAction({
   return (
     <ToastPrimitive.Action
       className={twMerge(
-        'inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-border bg-transparent px-3 text-sm font-medium transition-colors hover:bg-surface-sunken focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface-raised focus:outline-none disabled:pointer-events-none disabled:opacity-50',
+        'inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-border bg-transparent px-3 text-sm font-medium transition-colors hover:bg-muted focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface focus:outline-none disabled:pointer-events-none disabled:opacity-50',
         className,
       )}
       {...props}
@@ -71,7 +71,7 @@ export function ToastClose({
   return (
     <ToastPrimitive.Close
       className={twMerge(
-        'absolute top-2 right-2 rounded-md p-1 text-text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-text focus:opacity-100 focus:ring-2 focus:ring-accent focus:outline-none',
+        'absolute top-2 right-2 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground focus:opacity-100 focus:ring-2 focus:ring-accent focus:outline-none',
         className,
       )}
       {...props}

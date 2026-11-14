@@ -118,7 +118,7 @@ export const WithCounter = meta.story({
           Comment
         </label>
         <Textarea {...args} id="textarea-counter" />
-        <p className="text-right text-sm text-text-muted">
+        <p className="text-right text-sm text-muted-foreground">
           {count}/{maxLength}
         </p>
       </div>
