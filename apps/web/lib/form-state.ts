@@ -5,6 +5,34 @@ export interface FormState<FieldName extends string = string> {
   fieldErrors?: Partial<Record<FieldName, string>>
   message?: string
   success: boolean
+  /**
+   * Submitted values to restore when the submission fails. React resets
+   * uncontrolled fields after a form action completes, so forms pass these to
+   * `defaultValue` to keep what the user entered.
+   */
+  values?: Partial<Record<FieldName, string>>
+}
+
+/**
+ * Pick the string values of the given fields from `formData`.
+ *
+ * Fields that are missing or hold a file are left out.
+ */
+export function getFormValues<FieldName extends string>(
+  formData: FormData,
+  fieldNames: readonly FieldName[],
+): Partial<Record<FieldName, string>> {
+  const values: Partial<Record<FieldName, string>> = {}
+
+  for (const fieldName of fieldNames) {
+    const value = formData.get(fieldName)
+
+    if (typeof value === 'string') {
+      values[fieldName] = value
+    }
+  }
+
+  return values
 }
 
 /**

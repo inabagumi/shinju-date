@@ -6,6 +6,7 @@
 import { faker } from '@faker-js/faker'
 import { Collection } from '@msw/data'
 import { z } from 'zod'
+import { MOCK_SUPABASE_USER } from './session.js'
 
 // Talents collection
 export const talents = new Collection({
@@ -161,6 +162,33 @@ export const announcements = new Collection({
     message: z.string(),
     start_at: z.string(),
     updated_at: z.string().nullable(),
+  }),
+})
+
+// Feature requests sent from the feedback form of the public site
+export const featureRequests = new Collection({
+  schema: z.object({
+    admin_memo: z.string().nullable(),
+    created_at: z.string(),
+    id: z.string().uuid(),
+    is_read: z.boolean(),
+    message: z.string(),
+    status: z.enum(['pending', 'in_progress', 'resolved', 'rejected']),
+    updated_at: z.string(),
+  }),
+})
+
+// Audit logs of the admin app
+export const auditLogs = new Collection({
+  schema: z.object({
+    action: z.string(),
+    created_at: z.string(),
+    details: z.unknown(),
+    id: z.string().uuid(),
+    target_record_id: z.string().nullable(),
+    target_table: z.string().nullable(),
+    // The ID of the mock user is not a UUID
+    user_id: z.string().nullable(),
   }),
 })
 
@@ -612,7 +640,7 @@ export async function seedCollections() {
     { readings: ['えーえすえむあーる'], synonyms: ['音フェチ'], term: 'ASMR' },
   ]
 
-  await Promise.all(
+  const createdTerms = await Promise.all(
     termsList.map((termData) =>
       terms.create({
         created_at: faker.date.past({ years: 1 }).toISOString(),
@@ -636,4 +664,85 @@ export async function seedCollections() {
     start_at: faker.date.recent().toISOString(),
     updated_at: faker.date.recent().toISOString(),
   })
+
+  // Create feature requests: one that has not been read yet, and one that
+  // has been handled with a memo, so both states of the list can be checked.
+  const now = Temporal.Now.instant()
+  const featureRequestSeeds = [
+    {
+      admin_memo: null,
+      hoursAgo: 3,
+      is_read: false,
+      message: '配信予定をカレンダーアプリに登録できるようにしてほしいです。',
+      status: 'pending' as const,
+    },
+    {
+      admin_memo: '検索画面のタレント絞り込みで対応済み。',
+      hoursAgo: 72,
+      is_read: true,
+      message:
+        '特定のタレントの動画だけを表示できるようにしてください。\n\n- 複数選択できると嬉しいです',
+      status: 'resolved' as const,
+    },
+  ]
+
+  await Promise.all(
+    featureRequestSeeds.map(({ hoursAgo, ...seed }) => {
+      const createdAt = now.subtract({ hours: hoursAgo }).toString()
+
+      return featureRequests.create({
+        ...seed,
+        created_at: createdAt,
+        id: faker.string.uuid(),
+        updated_at: createdAt,
+      })
+    }),
+  )
+
+  // Create audit logs of the mock user, shaped like the ones the admin app
+  // records, so that the recent activity of the system page can be checked.
+  const [updatedTalent] = createdTalents
+  const [createdTerm] = createdTerms
+  const [hiddenVideo] = await videos.findMany()
+  const auditLogSeeds = [
+    {
+      action: 'CHANNEL_UPDATE',
+      details: updatedTalent ? { entityName: updatedTalent.name } : null,
+      minutesAgo: 15,
+      target_record_id: updatedTalent?.id ?? null,
+      target_table: 'channels',
+    },
+    {
+      action: 'VIDEO_VISIBILITY_TOGGLE',
+      details: hiddenVideo ? { entityName: hiddenVideo.title } : null,
+      minutesAgo: 90,
+      target_record_id: hiddenVideo?.id ?? null,
+      target_table: 'videos',
+    },
+    {
+      action: 'TERM_CREATE',
+      details: createdTerm ? { entityName: createdTerm.term } : null,
+      minutesAgo: 60 * 26,
+      target_record_id: createdTerm?.id ?? null,
+      target_table: 'terms',
+    },
+    {
+      action: 'MAINTENANCE_MODE_ENABLE',
+      details: null,
+      minutesAgo: 60 * 24 * 5,
+      target_record_id: null,
+      target_table: 'redis:system',
+    },
+  ]
+
+  await Promise.all(
+    auditLogSeeds.map(({ minutesAgo, ...seed }) =>
+      auditLogs.create({
+        ...seed,
+        created_at: now.subtract({ minutes: minutesAgo }).toString(),
+        id: faker.string.uuid(),
+        user_id: MOCK_SUPABASE_USER.id,
+      }),
+    ),
+  )
 }

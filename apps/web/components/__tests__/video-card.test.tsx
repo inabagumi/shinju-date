@@ -185,4 +185,32 @@ describe('VideoCard', () => {
     expect(link.textContent?.match(/チャンネル名/g)).toHaveLength(1)
     expect(within(link).queryAllByRole('link')).toHaveLength(0)
   })
+
+  test('should wrap the title at word boundaries when possible', () => {
+    render(<VideoCard value={createYouTubeVideo(null)} />)
+
+    // `break-all` splits words such as "#shorts" in the middle.
+    const title = screen.getByRole('heading')
+
+    expect(title).toHaveClass('wrap-anywhere')
+    expect(title).not.toHaveClass('break-all')
+  })
+
+  test('should give the extra height to the thumbnail when fillThumbnail is set', () => {
+    render(<VideoCard fillThumbnail value={createYouTubeVideo(null)} />)
+
+    const [thumbnail, body] = screen.getByRole('link').children
+
+    expect(thumbnail).toHaveClass('grow')
+    expect(body).toHaveClass('grow-0')
+  })
+
+  test('should give the extra height to the text by default', () => {
+    render(<VideoCard value={createYouTubeVideo(null)} />)
+
+    const [thumbnail, body] = screen.getByRole('link').children
+
+    expect(thumbnail).not.toHaveClass('grow')
+    expect(body).toHaveClass('grow')
+  })
 })

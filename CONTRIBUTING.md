@@ -375,6 +375,10 @@ pnpm db:export
 
 このプロジェクトでは GitHub Copilot などの AI ツールを積極的に活用しています。詳細は [AGENTS.md](AGENTS.md) を参照してください。
 
+### 各アプリの AGENTS.md（Next.js が管理するブロック）
+
+`apps/*/AGENTS.md` の `<!-- BEGIN:nextjs-agent-rules -->` から `<!-- END:nextjs-agent-rules -->` までのブロックは、コーディングエージェントが `next dev` を起動したときに Next.js が書き込みます。ブロックは手で編集せず、Next.js の更新などで `next dev` が書き換えた場合は、その差分をそのままコミットしてください。
+
 ### MSW（Mock Service Worker）の活用
 
 開発・テスト環境では MSW を使用してAPIをモックします：

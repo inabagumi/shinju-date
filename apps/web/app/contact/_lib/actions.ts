@@ -3,7 +3,11 @@
 import { checkBotId } from 'botid/server'
 import { Resend } from 'resend'
 import { z } from 'zod'
-import { type FormState, toValidationErrorState } from '@/lib/form-state'
+import {
+  type FormState,
+  getFormValues,
+  toValidationErrorState,
+} from '@/lib/form-state'
 import { isContactFormEnabled } from './utils'
 
 const MESSAGE_REQUIRED_ERROR = 'お問い合わせ内容を入力してください'
@@ -23,9 +27,17 @@ const contactFormSchema = z.object({
   wantsReply: z.boolean().default(false),
 })
 
-export type ContactFormState = FormState<
-  keyof z.input<typeof contactFormSchema>
->
+type ContactFormField = keyof z.input<typeof contactFormSchema>
+
+export type ContactFormState = FormState<ContactFormField>
+
+const CONTACT_FORM_FIELDS = [
+  'email',
+  'message',
+  'name',
+  'type',
+  'wantsReply',
+] as const satisfies readonly ContactFormField[]
 
 // Only initialize Resend if API key is available
 const resend = process.env['RESEND_API_KEY']
@@ -36,6 +48,9 @@ export async function submitContactForm(
   _prevState: unknown,
   formData: FormData,
 ): Promise<ContactFormState> {
+  // Returned on failure so the form can restore what the user entered.
+  const values = getFormValues(formData, CONTACT_FORM_FIELDS)
+
   try {
     // Block bots before any validation or email send.
     // In local development, checkBotId() always returns isBot: false
@@ -51,6 +66,7 @@ export async function submitContactForm(
         error:
           '送信を完了できませんでした。しばらく時間をおいて再度お試しください。',
         success: false,
+        values,
       }
     }
 
@@ -59,6 +75,7 @@ export async function submitContactForm(
       return {
         error: 'お問い合わせ機能は現在ご利用いただけません。',
         success: false,
+        values,
       }
     }
     // Parse form data
@@ -84,7 +101,7 @@ export async function submitContactForm(
     const result = validationSchema.safeParse(rawData)
 
     if (!result.success) {
-      return toValidationErrorState(result.error)
+      return { ...toValidationErrorState(result.error), values }
     }
 
     const { type, name, wantsReply, email, message } = result.data
@@ -109,6 +126,7 @@ ${message}
       return {
         error: 'メール送信設定が完了していません。',
         success: false,
+        values,
       }
     }
 
@@ -124,6 +142,7 @@ ${message}
       return {
         error: 'メール送信設定が完了していません。',
         success: false,
+        values,
       }
     }
 
@@ -145,6 +164,7 @@ ${message}
       error:
         '送信中にエラーが発生しました。しばらく時間をおいて再度お試しください。',
       success: false,
+      values,
     }
   }
 }

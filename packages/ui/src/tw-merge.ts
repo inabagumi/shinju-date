@@ -18,6 +18,16 @@ export const FONT_SIZES = [
 export const CONTAINERS = ['text'] as const
 
 /**
+ * `theme.css` で追加した角丸（`--radius-*`）。登録しないと
+ * `rounded-md rounded-control` のような既定の角丸との衝突を解決できず、
+ * 両方が残ってしまう。
+ */
+export const RADII = ['control', 'container'] as const
+
+/** `theme.css` で追加した影（`--shadow-*`）。登録する理由は `RADII` と同じ */
+export const SHADOWS = ['overlay'] as const
+
+/**
  * `theme.css` の追加分を登録した `twMerge`。`tailwind-merge` から直接
  * インポートせず、`@shinju-date/ui` からインポートして使う。
  */
@@ -25,6 +35,8 @@ export const twMerge = extendTailwindMerge({
   extend: {
     theme: {
       container: [...CONTAINERS],
+      radius: [...RADII],
+      shadow: [...SHADOWS],
       text: [...FONT_SIZES],
     },
   },

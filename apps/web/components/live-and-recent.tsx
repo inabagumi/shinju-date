@@ -152,6 +152,7 @@ export default function LiveAndRecent({
               dateStyle: 'short',
               timeStyle: 'short',
             }}
+            fillThumbnail={index === 0}
             key={video.id}
             value={video}
           />

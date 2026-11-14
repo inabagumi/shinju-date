@@ -43,6 +43,7 @@ describe('submitFeedback', () => {
       expect(result).toEqual({
         fieldErrors: { message: '機能要望を入力してください' },
         success: false,
+        values: { message },
       })
       expect(insert).not.toHaveBeenCalled()
     },
@@ -62,6 +63,34 @@ describe('submitFeedback', () => {
     )
 
     expect(result.success).toBe(true)
+    expect(result.values).toBeUndefined()
     expect(insert).toHaveBeenCalledWith({ message: '検索機能がほしい' })
+  })
+
+  test('returns the submitted message when the insert fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    insert.mockResolvedValue({ error: { message: 'insert failed' } })
+
+    const result = await submitFeedback(
+      null,
+      createFormData({ message: '  検索機能がほしい  ' }),
+    )
+
+    expect(result.success).toBe(false)
+    expect(result.error).toBeDefined()
+    expect(result.values).toEqual({ message: '  検索機能がほしい  ' })
+  })
+
+  test('returns the submitted message when an unexpected error occurs', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    insert.mockRejectedValue(new Error('network error'))
+
+    const result = await submitFeedback(
+      null,
+      createFormData({ message: '検索機能がほしい' }),
+    )
+
+    expect(result.success).toBe(false)
+    expect(result.values).toEqual({ message: '検索機能がほしい' })
   })
 })

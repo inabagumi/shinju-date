@@ -3,7 +3,11 @@
 import type { TablesInsert } from '@shinju-date/database'
 import { checkBotId } from 'botid/server'
 import { z } from 'zod'
-import { type FormState, toValidationErrorState } from '@/lib/form-state'
+import {
+  type FormState,
+  getFormValues,
+  toValidationErrorState,
+} from '@/lib/form-state'
 import { createSupabaseClient } from '@/lib/supabase'
 
 const MESSAGE_REQUIRED_ERROR = '機能要望を入力してください'
@@ -15,14 +19,21 @@ const feedbackFormSchema = z.object({
     .min(1, MESSAGE_REQUIRED_ERROR),
 })
 
-export type FeedbackFormState = FormState<
-  keyof z.input<typeof feedbackFormSchema>
->
+type FeedbackFormField = keyof z.input<typeof feedbackFormSchema>
+
+export type FeedbackFormState = FormState<FeedbackFormField>
+
+const FEEDBACK_FORM_FIELDS = [
+  'message',
+] as const satisfies readonly FeedbackFormField[]
 
 export async function submitFeedback(
   _prevState: unknown,
   formData: FormData,
 ): Promise<FeedbackFormState> {
+  // Returned on failure so the form can restore what the user entered.
+  const values = getFormValues(formData, FEEDBACK_FORM_FIELDS)
+
   try {
     // Block bots before any validation or DB write.
     // In local development, checkBotId() always returns isBot: false
@@ -38,6 +49,7 @@ export async function submitFeedback(
         error:
           '送信を完了できませんでした。しばらく時間をおいて再度お試しください。',
         success: false,
+        values,
       }
     }
 
@@ -49,7 +61,7 @@ export async function submitFeedback(
     const result = feedbackFormSchema.safeParse(rawData)
 
     if (!result.success) {
-      return toValidationErrorState(result.error)
+      return { ...toValidationErrorState(result.error), values }
     }
 
     const { message } = result.data
@@ -72,6 +84,7 @@ export async function submitFeedback(
         error:
           '送信中にエラーが発生しました。しばらく時間をおいて再度お試しください。',
         success: false,
+        values,
       }
     }
 
@@ -85,6 +98,7 @@ export async function submitFeedback(
       error:
         '送信中にエラーが発生しました。しばらく時間をおいて再度お試しください。',
       success: false,
+      values,
     }
   }
 }
