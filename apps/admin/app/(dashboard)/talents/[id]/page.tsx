@@ -1,6 +1,13 @@
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
-import { Badge, Card, CardContent, CardHeader } from '@shinju-date/ui'
-import { ChevronLeft } from 'lucide-react'
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardHeader,
+  EmptyState,
+  PageHeader,
+} from '@shinju-date/ui'
+import { ChevronLeft, Video } from 'lucide-react'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -11,6 +18,7 @@ import { TalentStatusBadge } from '../_components/talent-status-badge'
 import { getRecentVideosForTalent } from '../_lib/get-recent-videos'
 import { getTalent } from '../_lib/get-talent'
 import { ChannelManager } from './_components/channel-manager'
+import { DetailList, DetailRow, PanelHeading } from './_components/detail-list'
 import { EditTalentForm } from './_components/edit-talent-form'
 import { SyncTalentButton } from './_components/sync-talent-button'
 import { TalentLifecycleActions } from './_components/talent-lifecycle-actions'
@@ -51,167 +59,146 @@ async function TalentProfile({ id }: { id: string }) {
 
   return (
     <>
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold">{talent.name}</h1>
-              <TalentStatusBadge talent={talent} />
-            </div>
-            <p className="text-gray-600">タレント詳細</p>
+      <PageHeader
+        actions={
+          !isDeleted && (
+            <SyncTalentButton
+              hasTwitchUsers={talent.twitch_users.length > 0}
+              hasYouTubeChannels={talent.youtube_channels.length > 0}
+              talentId={talent.id}
+            />
+          )
+        }
+        description={
+          <div className="flex flex-wrap items-center gap-2">
+            <TalentStatusBadge talent={talent} />
+            <span>タレント詳細</span>
           </div>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            {!isDeleted && (
-              <SyncTalentButton
-                hasTwitchUsers={talent.twitch_users.length > 0}
-                hasYouTubeChannels={talent.youtube_channels.length > 0}
-                talentId={talent.id}
-              />
-            )}
+        }
+        title={talent.name}
+      />
+
+      <div className="space-y-6">
+        {/* Status indicator */}
+        {isDeleted && (
+          <div
+            className="flex flex-col gap-3 rounded-container border border-danger/30 bg-danger/10 p-4 text-danger sm:flex-row sm:items-center sm:justify-between"
+            role="status"
+          >
+            <div className="text-meta">
+              <p className="font-semibold">削除されたタレント</p>
+              <p className="mt-1">
+                このタレントは削除されています。復活すると動画の復旧も行われます。
+              </p>
+            </div>
             <TalentLifecycleActions talent={talent} />
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* Status indicator */}
-      {isDeleted && (
-        <div className="mb-6 rounded-md bg-red-50 p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h3 className="text-sm font-medium text-red-800">
-                削除されたタレント
-              </h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>このタレントは削除されています。</p>
-                <p className="mt-1">動画の非公開・復旧も行われます。</p>
-              </div>
-            </div>
+        {isRetired && (
+          <div
+            className="rounded-container border border-warning/30 bg-warning/10 p-4 text-meta text-warning"
+            role="status"
+          >
+            <p className="font-semibold">引退したタレント</p>
+            <p className="mt-1">このタレントは引退状態です。</p>
           </div>
-        </div>
-      )}
+        )}
 
-      {isRetired && (
-        <div className="mb-6 rounded-md bg-amber-50 p-4">
-          <h3 className="text-sm font-medium text-amber-900">
-            引退したタレント
-          </h3>
-          <div className="mt-2 text-sm text-amber-800">
-            <p>このタレントは引退状態です。</p>
-          </div>
-        </div>
-      )}
+        {/* Talent information - Editable form */}
+        {!isDeleted ? (
+          <EditTalentForm talent={talent} />
+        ) : (
+          <Card variant="elevated">
+            <CardHeader className="pb-6">
+              <PanelHeading
+                description="削除済みのため編集できません。"
+                title="タレント情報"
+              />
+            </CardHeader>
+            <DetailList>
+              <DetailRow label="タレント名">{talent.name}</DetailRow>
+            </DetailList>
+          </Card>
+        )}
 
-      {/* Talent information - Editable form */}
-      {!isDeleted ? (
-        <EditTalentForm talent={talent} />
-      ) : (
-        <Card className="mt-6" variant="elevated">
-          <CardHeader>
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              タレント情報
-            </h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
-              削除済みのため編集できません。
-            </p>
-          </CardHeader>
-          <CardContent className="p-0">
-            <dl>
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">
-                  タレント名
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  {talent.name}
-                </dd>
-              </div>
-            </dl>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* YouTube Channel Management */}
-      <ChannelManager
-        channels={talent.youtube_channels}
-        isDeleted={isDeleted}
-        talentId={talent.id}
-      />
-
-      {/* Twitch User Management */}
-      <TwitchUserManager
-        isDeleted={isDeleted}
-        talentId={talent.id}
-        users={talent.twitch_users}
-      />
-
-      {/* Backfill of past videos */}
-      {!isDeleted && (
-        <VideoBackfillPanel
-          hasTwitchUsers={talent.twitch_users.length > 0}
-          hasYouTubeChannels={talent.youtube_channels.length > 0}
+        {/* YouTube Channel Management */}
+        <ChannelManager
+          channels={talent.youtube_channels}
+          isDeleted={isDeleted}
           talentId={talent.id}
-          talentName={talent.name}
         />
-      )}
 
-      {/* Additional metadata */}
-      <Card className="mt-6" variant="elevated">
-        <CardHeader>
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
-            メタデータ
-          </h3>
-        </CardHeader>
-        <CardContent className="p-0">
-          <dl>
-            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">
-                データベースID
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {talent.id}
-              </dd>
-            </div>
-            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">状態</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                <TalentStatusBadge talent={talent} />
-              </dd>
-            </div>
-            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">作成日時</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                <time dateTime={talent.created_at}>
-                  {formatDateTimeFromISO(talent.created_at)}
-                </time>
-              </dd>
-            </div>
-            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">
-                最終更新日時
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                <time dateTime={talent.updated_at}>
-                  {formatDateTimeFromISO(talent.updated_at)}
-                </time>
-              </dd>
-            </div>
+        {/* Twitch User Management */}
+        <TwitchUserManager
+          isDeleted={isDeleted}
+          talentId={talent.id}
+          users={talent.twitch_users}
+        />
+
+        {/* Backfill of past videos */}
+        {!isDeleted && (
+          <VideoBackfillPanel
+            hasTwitchUsers={talent.twitch_users.length > 0}
+            hasYouTubeChannels={talent.youtube_channels.length > 0}
+            talentId={talent.id}
+            talentName={talent.name}
+          />
+        )}
+
+        {/* Additional metadata */}
+        <Card variant="elevated">
+          <CardHeader className="pb-6">
+            <PanelHeading title="メタデータ" />
+          </CardHeader>
+          <DetailList>
+            <DetailRow label="データベースID">
+              <code className="font-mono break-all">{talent.id}</code>
+            </DetailRow>
+            <DetailRow label="状態">
+              <TalentStatusBadge talent={talent} />
+            </DetailRow>
+            <DetailRow label="作成日時">
+              <time className="tabular-nums" dateTime={talent.created_at}>
+                {formatDateTimeFromISO(talent.created_at)}
+              </time>
+            </DetailRow>
+            <DetailRow label="最終更新日時">
+              <time className="tabular-nums" dateTime={talent.updated_at}>
+                {formatDateTimeFromISO(talent.updated_at)}
+              </time>
+            </DetailRow>
             {isDeleted && (
-              <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">削除日時</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  {talent.deleted_at ? (
-                    <time dateTime={talent.deleted_at}>
-                      {formatDateTimeFromISO(talent.deleted_at)}
-                    </time>
-                  ) : (
-                    '-'
-                  )}
-                </dd>
-              </div>
+              <DetailRow label="削除日時">
+                {talent.deleted_at ? (
+                  <time className="tabular-nums" dateTime={talent.deleted_at}>
+                    {formatDateTimeFromISO(talent.deleted_at)}
+                  </time>
+                ) : (
+                  '-'
+                )}
+              </DetailRow>
             )}
-          </dl>
-        </CardContent>
-      </Card>
+          </DetailList>
+        </Card>
+
+        {/* Lifecycle changes, kept apart from routine operations such as sync */}
+        {!isDeleted && (
+          <Card variant="elevated">
+            <CardContent className="flex flex-wrap items-center justify-between gap-4">
+              <PanelHeading
+                description={
+                  isRetired
+                    ? 'アクティブに戻すか、タレントを削除します。削除すると紐づく動画も非公開になります。'
+                    : '引退にするか、タレントを削除します。削除すると紐づく動画も非公開になります。'
+                }
+                title="状態の変更"
+              />
+              <TalentLifecycleActions talent={talent} />
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </>
   )
 }
@@ -220,85 +207,76 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
   const recentVideos = await getRecentVideosForTalent(talentId, 5)
 
   return (
-    <div className="mt-8">
-      <Card variant="elevated">
-        <CardHeader>
-          <h2 className="text-lg leading-6 font-medium text-gray-900">
-            最新動画
-          </h2>
-          <p className="mt-1 max-w-2xl text-sm text-gray-500">
-            直近に公開された動画一覧
-          </p>
-        </CardHeader>
-        <CardContent className="p-0">
-          {recentVideos.length === 0 ? (
-            <div className="px-4 py-8 text-center text-gray-500">
-              動画がありません。
-            </div>
-          ) : (
-            <ul className="divide-y divide-gray-200">
-              {recentVideos.map((video) => (
-                <li className="px-4 py-4" key={video.id}>
-                  <div className="flex items-center space-x-4">
-                    <div className="shrink-0">
-                      {video.thumbnail ? (
-                        <div className="relative h-12 w-20">
-                          <Image
-                            alt={video.title}
-                            blurDataURL={video.thumbnail.blur_data_url}
-                            className="rounded object-cover"
-                            fill
-                            placeholder="blur"
-                            sizes="80px"
-                            src={`/images/thumbnails/${video.thumbnail.id}`}
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex h-12 w-20 items-center justify-center rounded bg-gray-200 text-xs text-gray-500">
-                          No Image
-                        </div>
-                      )}
+    <Card className="mt-6" variant="elevated">
+      <CardHeader className="pb-6">
+        <PanelHeading description="直近に公開された動画一覧" title="最新動画" />
+      </CardHeader>
+      {recentVideos.length === 0 ? (
+        <EmptyState
+          className="border-t border-border"
+          icon={<Video />}
+          title="動画がありません。"
+        />
+      ) : (
+        <ul className="divide-y divide-border border-t border-border">
+          {recentVideos.map((video) => (
+            <li className="px-6 py-4" key={video.id}>
+              <div className="flex items-center gap-4">
+                <div className="shrink-0">
+                  {video.thumbnail ? (
+                    <div className="relative h-12 w-20">
+                      <Image
+                        alt=""
+                        blurDataURL={video.thumbnail.blur_data_url}
+                        className="rounded-control object-cover"
+                        fill
+                        placeholder="blur"
+                        sizes="80px"
+                        src={`/images/thumbnails/${video.thumbnail.id}`}
+                      />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <Link
-                        className="text-774-blue-600 hover:text-774-blue-800"
-                        href={`/videos/${video.id}`}
-                      >
-                        <p className="truncate text-sm font-medium">
-                          {video.title}
-                        </p>
-                      </Link>
-                      <p className="text-sm text-gray-500">
-                        <time dateTime={video.published_at}>
-                          {formatDateTimeFromISO(video.published_at)}
-                        </time>
-                      </p>
+                  ) : (
+                    <div className="flex h-12 w-20 items-center justify-center rounded-control bg-muted text-caption text-muted">
+                      No Image
                     </div>
-                    <div className="shrink-0">
-                      <Badge
-                        variant={
-                          video.deleted_at
-                            ? 'danger'
-                            : video.visible
-                              ? 'success'
-                              : 'neutral'
-                        }
-                      >
-                        {video.deleted_at
-                          ? '削除済み'
-                          : video.visible
-                            ? '公開中'
-                            : '非表示'}
-                      </Badge>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    className="block truncate text-meta font-semibold text-accent hover:underline"
+                    href={`/videos/${video.id}`}
+                  >
+                    {video.title}
+                  </Link>
+                  <p className="text-meta text-muted tabular-nums">
+                    <time dateTime={video.published_at}>
+                      {formatDateTimeFromISO(video.published_at)}
+                    </time>
+                  </p>
+                </div>
+                <div className="shrink-0">
+                  <Badge
+                    variant={
+                      video.deleted_at
+                        ? 'danger'
+                        : video.visible
+                          ? 'success'
+                          : 'neutral'
+                    }
+                  >
+                    {video.deleted_at
+                      ? '削除済み'
+                      : video.visible
+                        ? '公開中'
+                        : '非表示'}
+                  </Badge>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
   )
 }
 
@@ -306,12 +284,12 @@ export default function TalentDetailPage({ params }: Props) {
   return (
     <div>
       {/* Back button - static, renders immediately */}
-      <div className="mb-6">
+      <div className="mb-4">
         <Link
-          className="inline-flex items-center text-774-blue-600 hover:text-774-blue-800"
+          className="inline-flex items-center gap-1 text-meta text-accent hover:underline"
           href="/talents"
         >
-          <ChevronLeft className="mr-1 size-4" />
+          <ChevronLeft aria-hidden="true" className="size-4" />
           タレント一覧に戻る
         </Link>
       </div>

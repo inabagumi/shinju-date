@@ -1,9 +1,16 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import { twMerge } from '@shinju-date/ui'
+import { EllipsisVertical } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useTransition } from 'react'
+import { useEffect, useTransition } from 'react'
+import { ActionToast, useActionToast } from '@/components/action-toast'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/dropdown-menu'
 import {
   activateTalentAction,
   deleteTalentAction,
@@ -29,6 +36,14 @@ export function TalentActions({ talent }: TalentActionsProps) {
   } = useTalentLifecycleAction()
   const [isSyncPending, startSyncTransition] = useTransition()
   const isPending = isLifecyclePending || isSyncPending
+  const { showToast, toastProps } = useActionToast()
+
+  // 一覧の行の中には結果を表示する場所がないため、トーストで知らせる
+  useEffect(() => {
+    if (message) {
+      showToast(message.type, message.text)
+    }
+  }, [message])
 
   const isDeleted = talent.deleted_at !== null
   const isRetired = !isDeleted && talent.status === 'retired'
@@ -65,91 +80,70 @@ export function TalentActions({ talent }: TalentActionsProps) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap justify-end gap-1">
-        {isDeleted ? (
-          <button
-            className="rounded bg-green-50 px-2 py-1 text-xs whitespace-nowrap text-green-700 hover:bg-green-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
-            disabled={isPending}
-            onClick={() =>
-              run(() => restoreTalentAction(talent.id), {
-                confirmMessage: `タレント「${talent.name}」を復活しますか？`,
-                successText: 'タレントを復活しました。',
-              })
-            }
-            type="button"
-          >
-            復活
-          </button>
-        ) : (
-          <>
-            <button
-              className="rounded bg-774-blue-50 px-2 py-1 text-xs whitespace-nowrap text-774-blue-600 hover:bg-774-blue-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
-              disabled={isPending}
-              onClick={handleSync}
-              type="button"
-            >
-              同期
-            </button>
-            {isActive && (
-              <button
-                className="rounded bg-amber-50 px-2 py-1 text-xs whitespace-nowrap text-amber-800 hover:bg-amber-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
-                disabled={isPending}
-                onClick={() =>
-                  run(() => retireTalentAction(talent.id), {
-                    confirmMessage: `タレント「${talent.name}」を引退にしますか？`,
-                    successText: 'タレントを引退にしました。',
-                  })
-                }
-                type="button"
-              >
-                引退
-              </button>
-            )}
-            {isRetired && (
-              <button
-                className="rounded bg-green-50 px-2 py-1 text-xs whitespace-nowrap text-green-700 hover:bg-green-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
-                disabled={isPending}
-                onClick={() =>
-                  run(() => activateTalentAction(talent.id), {
-                    confirmMessage: `タレント「${talent.name}」をアクティブに戻しますか？`,
-                    successText: 'タレントをアクティブに戻しました。',
-                  })
-                }
-                type="button"
-              >
-                アクティブ
-              </button>
-            )}
-            <button
-              className="rounded bg-red-50 px-2 py-1 text-xs whitespace-nowrap text-red-600 hover:bg-red-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
-              disabled={isPending}
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          aria-label={`「${talent.name}」の操作`}
+          disabled={isPending}
+        >
+          <EllipsisVertical aria-hidden="true" className="size-5" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          {isDeleted ? (
+            <DropdownMenuItem
               onClick={() =>
-                run(() => deleteTalentAction(talent.id), {
-                  confirmMessage: `タレント「${talent.name}」を削除しますか？`,
-                  successText: 'タレントを削除しました。',
+                run(() => restoreTalentAction(talent.id), {
+                  confirmMessage: `タレント「${talent.name}」を復活しますか？`,
+                  successText: 'タレントを復活しました。',
                 })
               }
-              type="button"
             >
-              削除
-            </button>
-          </>
-        )}
-      </div>
-
-      {message && (
-        <div
-          className={twMerge(
-            'rounded p-2 text-xs whitespace-pre-line',
-            message.type === 'success'
-              ? 'bg-green-50 text-green-800'
-              : 'bg-red-50 text-red-800',
+              復活
+            </DropdownMenuItem>
+          ) : (
+            <>
+              <DropdownMenuItem onClick={handleSync}>同期</DropdownMenuItem>
+              {isActive && (
+                <DropdownMenuItem
+                  onClick={() =>
+                    run(() => retireTalentAction(talent.id), {
+                      confirmMessage: `タレント「${talent.name}」を引退にしますか？`,
+                      successText: 'タレントを引退にしました。',
+                    })
+                  }
+                >
+                  引退にする
+                </DropdownMenuItem>
+              )}
+              {isRetired && (
+                <DropdownMenuItem
+                  onClick={() =>
+                    run(() => activateTalentAction(talent.id), {
+                      confirmMessage: `タレント「${talent.name}」をアクティブに戻しますか？`,
+                      successText: 'タレントをアクティブに戻しました。',
+                    })
+                  }
+                >
+                  アクティブに戻す
+                </DropdownMenuItem>
+              )}
+              <hr className="my-1 border-border" />
+              <DropdownMenuItem
+                onClick={() =>
+                  run(() => deleteTalentAction(talent.id), {
+                    confirmMessage: `タレント「${talent.name}」を削除しますか？`,
+                    successText: 'タレントを削除しました。',
+                  })
+                }
+                variant="danger"
+              >
+                削除
+              </DropdownMenuItem>
+            </>
           )}
-        >
-          {message.text}
-        </div>
-      )}
-    </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <ActionToast {...toastProps} />
+    </>
   )
 }

@@ -44,9 +44,7 @@ export function DeleteConfirmDialog({
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="danger">
-          削除
-        </Button>
+        <Button variant="danger">削除</Button>
       </DialogTrigger>
       <DialogPortal>
         <DialogOverlay />
@@ -55,7 +53,7 @@ export function DeleteConfirmDialog({
           <DialogDescription>
             「{talentName}」を削除しますか？紐づく動画も非公開になります。
           </DialogDescription>
-          {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+          {error && <p className="mb-4 text-meta text-danger">{error}</p>}
           <div className="flex justify-end gap-2">
             <DialogClose asChild>
               <Button disabled={isPending} variant="secondary">
@@ -65,7 +63,7 @@ export function DeleteConfirmDialog({
             <Button
               disabled={isPending}
               onClick={handleDelete}
-              variant="primary"
+              variant="danger"
             >
               {isPending ? '削除中...' : '削除'}
             </Button>

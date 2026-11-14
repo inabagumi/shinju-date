@@ -6,8 +6,9 @@ import {
   CardContent,
   CardHeader,
   Button as UIButton,
+  Input as UIInput,
 } from '@shinju-date/ui'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import type { FormState } from '@/components/form'
 import Form, {
   ErrorMessage,
@@ -18,6 +19,7 @@ import Form, {
   SubmitButton,
 } from '@/components/form'
 import { updateTalentAction } from '../../_actions'
+import { DetailList, DetailRow, PanelHeading } from './detail-list'
 
 type Talent = Pick<Tables<'talents'>, 'id' | 'name' | 'theme_color'> & {
   youtube_channels: Pick<
@@ -30,25 +32,27 @@ interface EditTalentFormProps {
   talent: Talent
 }
 
-function ColorInput({
-  defaultValue,
-  name,
-}: {
+interface ColorInputProps {
   defaultValue: string | null
+  id?: string
   name: string
-}) {
+}
+
+function ColorInput({ defaultValue, id, name }: ColorInputProps) {
   const [color, setColor] = useState(defaultValue ?? '#000000')
 
   return (
     <div className="flex items-center gap-2">
       <input
-        className="size-10 cursor-pointer rounded border border-gray-300"
+        aria-label="色を選ぶ"
+        className="h-10 w-12 shrink-0 cursor-pointer rounded-control border border-border bg-surface p-1"
         onChange={(e) => setColor(e.target.value)}
         type="color"
         value={color}
       />
-      <input
-        className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-774-blue-500 focus:ring-1 focus:ring-774-blue-500 focus:outline-none"
+      <UIInput
+        className="flex-1 font-mono"
+        id={id}
         name={name}
         onChange={(e) => setColor(e.target.value)}
         placeholder="#FF5733"
@@ -61,6 +65,7 @@ function ColorInput({
 
 export function EditTalentForm({ talent }: EditTalentFormProps) {
   const [isEditing, setIsEditing] = useState(false)
+  const themeColorId = useId()
 
   const handleAction = async (
     currentState: FormState,
@@ -79,112 +84,93 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
   if (!isEditing) {
     return (
       <Card variant="elevated">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                タレント情報
-              </h3>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                現在データベースに保存されている情報
-              </p>
-            </div>
-            <UIButton
-              onClick={() => setIsEditing(true)}
-              type="button"
-              variant="secondary-blue"
-            >
-              編集
-            </UIButton>
-          </div>
+        <CardHeader className="pb-6">
+          <PanelHeading
+            actions={
+              <UIButton
+                onClick={() => setIsEditing(true)}
+                type="button"
+                variant="secondary"
+              >
+                編集
+              </UIButton>
+            }
+            description="現在データベースに保存されている情報"
+            title="タレント情報"
+          />
         </CardHeader>
-        <CardContent className="p-0">
-          <dl>
-            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">タレント名</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {talent.name}
-                <p className="mt-1 text-xs text-gray-500">
-                  管理画面から編集可能な表示名
-                </p>
-              </dd>
-            </div>
-            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">
-                テーマカラー
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {talent.theme_color ? (
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="size-6 rounded border border-gray-300"
-                      style={{ backgroundColor: talent.theme_color }}
-                    />
-                    <code className="font-mono text-xs">
-                      {talent.theme_color}
-                    </code>
-                  </div>
-                ) : (
-                  <span className="text-gray-500">設定されていません</span>
-                )}
-                <p className="mt-1 text-xs text-gray-500">
-                  タレントのテーマカラー（#RRGGBB形式）
-                </p>
-              </dd>
-            </div>
-            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">
-                YouTubeチャンネル
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                {talent.youtube_channels.length > 0 ? (
-                  <div className="space-y-3">
-                    {talent.youtube_channels.map((channel) => (
-                      <div
-                        className="rounded-md border border-gray-200 p-3"
-                        key={channel.id}
-                      >
-                        <div className="space-y-2">
-                          <div>
-                            <span className="text-xs font-medium text-gray-700">
-                              チャンネル名:
-                            </span>
-                            <p className="mt-1">{channel.name || 'N/A'}</p>
-                            <p className="mt-1 text-xs text-gray-500">
-                              YouTube APIから自動更新される名前
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-xs font-medium text-gray-700">
-                              チャンネルID:
-                            </span>
-                            <code className="mt-1 block rounded bg-gray-100 px-2 py-1 font-mono text-xs">
-                              {channel.youtube_channel_id}
-                            </code>
-                          </div>
-                          {channel.youtube_handle && (
-                            <div>
-                              <span className="text-xs font-medium text-gray-700">
-                                ハンドル:
-                              </span>
-                              <p className="mt-1 text-xs">
-                                {channel.youtube_handle}
-                              </p>
-                            </div>
-                          )}
-                        </div>
+        <DetailList>
+          <DetailRow label="タレント名">
+            {talent.name}
+            <p className="mt-1 text-caption text-muted">
+              管理画面から編集可能な表示名
+            </p>
+          </DetailRow>
+          <DetailRow label="テーマカラー">
+            {talent.theme_color ? (
+              <div className="flex items-center gap-2">
+                <div
+                  className="size-6 rounded-control border border-border"
+                  style={{ backgroundColor: talent.theme_color }}
+                />
+                <code className="font-mono text-caption">
+                  {talent.theme_color}
+                </code>
+              </div>
+            ) : (
+              <span className="text-muted">設定されていません</span>
+            )}
+            <p className="mt-1 text-caption text-muted">
+              タレントのテーマカラー（#RRGGBB形式）
+            </p>
+          </DetailRow>
+          <DetailRow label="YouTubeチャンネル">
+            {talent.youtube_channels.length > 0 ? (
+              <div className="space-y-3">
+                {talent.youtube_channels.map((channel) => (
+                  <dl
+                    className="space-y-2 rounded-container border border-border p-3"
+                    key={channel.id}
+                  >
+                    <div>
+                      <dt className="text-caption font-semibold text-muted">
+                        チャンネル名
+                      </dt>
+                      <dd className="mt-1">{channel.name || 'N/A'}</dd>
+                      <dd className="mt-1 text-caption text-muted">
+                        YouTube APIから自動更新される名前
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-caption font-semibold text-muted">
+                        チャンネルID
+                      </dt>
+                      <dd className="mt-1">
+                        <code className="block rounded-control bg-muted px-2 py-1 font-mono text-caption break-all">
+                          {channel.youtube_channel_id}
+                        </code>
+                      </dd>
+                    </div>
+                    {channel.youtube_handle && (
+                      <div>
+                        <dt className="text-caption font-semibold text-muted">
+                          ハンドル
+                        </dt>
+                        <dd className="mt-1 text-caption">
+                          {channel.youtube_handle}
+                        </dd>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-gray-500">
-                    登録されているチャンネルがありません
-                  </span>
-                )}
-              </dd>
-            </div>
-          </dl>
-        </CardContent>
+                    )}
+                  </dl>
+                ))}
+              </div>
+            ) : (
+              <span className="text-muted">
+                登録されているチャンネルがありません
+              </span>
+            )}
+          </DetailRow>
+        </DetailList>
       </Card>
     )
   }
@@ -192,39 +178,46 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
   return (
     <Card variant="elevated">
       <CardHeader>
-        <h3 className="text-lg leading-6 font-medium text-gray-900">
-          タレント情報を編集
-        </h3>
-        <p className="mt-1 max-w-2xl text-sm text-gray-500">
-          タレント名とテーマカラーを編集できます。
-        </p>
+        <PanelHeading
+          description="タレント名とテーマカラーを編集できます。"
+          title="タレント情報を編集"
+        />
       </CardHeader>
       <CardContent>
-        <Form action={handleAction} className="space-y-4">
+        <Form action={handleAction} className="max-w-xl space-y-4">
           <input name="id" type="hidden" value={talent.id} />
           <FormField name="name">
-            <Label className="mb-2 block text-sm font-medium">タレント名</Label>
+            <Label className="mb-2 block text-meta font-semibold">
+              タレント名
+            </Label>
             <Input
               defaultValue={talent.name}
               placeholder="表示に使用される名前"
               required
             />
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-caption text-muted">
               管理画面から編集可能な表示名（YouTube APIによる自動更新の対象外）
             </p>
-            <ErrorMessage className="mt-1 text-sm text-red-600" />
+            <ErrorMessage className="mt-1 text-meta text-danger" />
           </FormField>
           <FormField name="theme_color">
-            <Label className="mb-2 block text-sm font-medium">
+            <Label
+              className="mb-2 block text-meta font-semibold"
+              htmlFor={themeColorId}
+            >
               テーマカラー
             </Label>
-            <ColorInput defaultValue={talent.theme_color} name="theme_color" />
-            <p className="mt-1 text-xs text-gray-500">
+            <ColorInput
+              defaultValue={talent.theme_color}
+              id={themeColorId}
+              name="theme_color"
+            />
+            <p className="mt-1 text-caption text-muted">
               タレントのテーマカラー（#RRGGBB形式で指定してください）
             </p>
-            <ErrorMessage className="mt-1 text-sm text-red-600" />
+            <ErrorMessage className="mt-1 text-meta text-danger" />
           </FormField>
-          <GenericErrorMessage className="text-sm text-red-600" />
+          <GenericErrorMessage className="text-meta text-danger" />
           <div className="flex gap-2 pt-2">
             <UIButton
               onClick={() => setIsEditing(false)}
@@ -233,9 +226,7 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
             >
               キャンセル
             </UIButton>
-            <SubmitButton type="submit" variant="secondary-blue">
-              保存
-            </SubmitButton>
+            <SubmitButton type="submit">保存</SubmitButton>
           </div>
         </Form>
       </CardContent>
