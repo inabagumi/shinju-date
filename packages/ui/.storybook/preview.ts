@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 import addonDocs from '@storybook/addon-docs'
 import { definePreview } from '@storybook/react-vite'
 import '../src/styles.css'

@@ -1,9 +1,12 @@
 import { useState } from 'react'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import preview from '#.storybook/preview'
 import { MultiSelect } from './MultiSelect'
 
 const meta = preview.meta({
+  args: {
+    onChange: fn(),
+  },
   component: MultiSelect,
   parameters: {
     layout: 'centered',
