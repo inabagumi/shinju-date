@@ -10,6 +10,7 @@ import LiveAndRecent, {
   LiveAndRecentSkeleton,
 } from '@/components/live-and-recent'
 import NoResults from '@/components/no-results'
+import { MAIN_CONTENT_ID } from '@/components/skip-link'
 import Timeline, { TimelineSkeleton } from '@/components/timeline'
 import { fetchDashboardVideos, fetchUpcomingVideos } from '@/lib/fetchers'
 import hero from './_assets/hero.jpg'
@@ -78,7 +79,10 @@ export default function SchedulePage() {
         />
       </div>
 
-      <main className="mx-auto max-w-6xl space-y-12 px-4 pt-12">
+      <main
+        className="mx-auto max-w-6xl scroll-mt-20 space-y-12 px-4 pt-12"
+        id={MAIN_CONTENT_ID}
+      >
         <Suspense fallback={<LiveAndRecentSkeleton />}>
           <HomeLiveAndRecent />
         </Suspense>

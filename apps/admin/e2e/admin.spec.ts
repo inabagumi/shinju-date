@@ -93,7 +93,7 @@ test.describe('Admin App - Videos Management', () => {
       await expect(
         firstRow.locator('a[href^="/videos/"]').first(),
       ).toHaveAttribute('href', /^\/videos\/[0-9a-f-]{36}$/)
-      const talentCell = firstRow.locator('td').nth(4)
+      const talentCell = firstRow.locator('td').nth(3)
       await expect(talentCell).not.toBeEmpty()
       await expect(talentCell).not.toHaveText('タレント不明')
 

@@ -58,6 +58,33 @@ describe('updateSession with MSW', () => {
     expect(response.headers.get('location')).toBe('http://localhost:4000/')
   })
 
+  it('redirects /login to the requested page when MSW_SUPABASE_AUTHENTICATED is true', async () => {
+    stubEnv(true)
+
+    const response = await updateSession(
+      new NextRequest(
+        'http://localhost:4000/login?next=%2Fanalytics%2Fclick%3Ffrom%3D2025-11-01',
+      ),
+    )
+
+    expect(response.headers.get('location')).toBe(
+      'http://localhost:4000/analytics/click?from=2025-11-01',
+    )
+  })
+
+  it.each(['%2F%2Fexample.com', '%2F.%2F%2Fexample.com', '%2F.%2F%2F'])(
+    'does not redirect /login?next=%s to an external URL',
+    async (next) => {
+      stubEnv(true)
+
+      const response = await updateSession(
+        new NextRequest(`http://localhost:4000/login?next=${next}`),
+      )
+
+      expect(response.headers.get('location')).toBe('http://localhost:4000/')
+    },
+  )
+
   it('redirects requests without cookies to the login page otherwise', async () => {
     stubEnv(false)
 
@@ -66,7 +93,29 @@ describe('updateSession with MSW', () => {
     )
 
     expect(response.headers.get('location')).toBe(
-      'http://localhost:4000/login?=%2Fanalytics%2Fclick',
+      'http://localhost:4000/login?next=%2Fanalytics%2Fclick',
     )
+  })
+
+  it('keeps the query string of the requested page', async () => {
+    stubEnv(false)
+
+    const response = await updateSession(
+      new NextRequest('http://localhost:4000/analytics/click?from=2025-11-01'),
+    )
+
+    expect(response.headers.get('location')).toBe(
+      'http://localhost:4000/login?next=%2Fanalytics%2Fclick%3Ffrom%3D2025-11-01',
+    )
+  })
+
+  it('does not add the redirect parameter for the dashboard', async () => {
+    stubEnv(false)
+
+    const response = await updateSession(
+      new NextRequest('http://localhost:4000/'),
+    )
+
+    expect(response.headers.get('location')).toBe('http://localhost:4000/login')
   })
 })

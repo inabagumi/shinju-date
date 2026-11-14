@@ -22,19 +22,20 @@
 
 色は用途で名付けたセマンティックカラーで指定します。ライトとダークの値は `theme.css` で切り替わるので、1つのクラスを書くだけで両モードに対応できます。値の一覧は `theme.css` と Storybook の「Design System/Colors」を参照してください。
 
-| クラス                                   | 用途                                                   |
-| ---------------------------------------- | ------------------------------------------------------ |
-| `bg-background`                          | ページの地                                             |
-| `text-foreground`                        | 本文・見出し                                           |
-| `bg-surface`                             | ヘッダー・モーダル・メニュー・入力欄                   |
-| `bg-muted`                               | スケルトン・ホバー・表の見出し行                       |
-| `text-muted`                             | 補助情報（日時・タレント名・説明）                     |
-| `border-border`                          | 区切り線・入力欄の枠                                   |
-| `bg-accent` / `text-accent`              | リンク・選択中・主ボタン・フォーカス                   |
-| `text-accent-foreground`                 | `bg-accent` の上の文字                                 |
-| `bg-primary` / `text-primary-foreground` | ブランドの地（フッター）と、その上の文字               |
-| `bg-live` / `text-live-foreground`       | 配信中（バッジの地と、その上の文字）。ほかには使わない |
-| `danger` / `success` / `warning`         | 状態（エラー・成功・警告）                             |
+| クラス                                   | 用途                                                                |
+| ---------------------------------------- | ------------------------------------------------------------------- |
+| `bg-background`                          | ページの地                                                          |
+| `text-foreground`                        | 本文・見出し                                                        |
+| `bg-surface`                             | ヘッダー・モーダル・メニュー・入力欄                                |
+| `bg-muted`                               | スケルトン・ホバー・表の見出し行                                    |
+| `text-muted`                             | 補助情報（日時・タレント名・説明）                                  |
+| `border-border`                          | 区切り線・入力欄の枠                                                |
+| `bg-accent` / `text-accent`              | リンク・選択中・主ボタン・フォーカス                                |
+| `text-accent-foreground`                 | `bg-accent` の上の文字                                              |
+| `bg-primary` / `text-primary-foreground` | ブランドの地（フッター）と、その上の文字                            |
+| `bg-live` / `text-live-foreground`       | 配信中（バッジの地と、その上の文字）。ほかには使わない              |
+| `bg-twitch` / `text-twitch-foreground`   | Twitch の動画を示すバッジ。ブランドカラーなので値や透明度を変えない |
+| `danger` / `success` / `warning`         | 状態（エラー・成功・警告）                                          |
 
 - 状態の表示は、状態色の文字と同じ色の 10% の地（`bg-danger/10 text-danger` など）にする
 - `gray-*` / `zinc-*` / `slate-*` などの Tailwind の標準色や、`774-*` の色見本は部品で直接使わない

@@ -163,6 +163,8 @@ const SEMANTIC_COLOR_NAMES = [
   '--color-accent-foreground',
   '--color-live',
   '--color-live-foreground',
+  '--color-twitch',
+  '--color-twitch-foreground',
   '--color-danger',
   '--color-success',
   '--color-warning',
@@ -188,6 +190,7 @@ const TINT_ALPHA = 0.1
 const FOREGROUND_PAIRS = [
   ['--color-accent-foreground', '--color-accent'],
   ['--color-live-foreground', '--color-live'],
+  ['--color-twitch-foreground', '--color-twitch'],
   ['--color-primary-foreground', '--color-primary'],
 ] as const
 

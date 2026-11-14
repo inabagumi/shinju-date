@@ -1,12 +1,13 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { isAdminUser } from '@/lib/admin-user'
 import { createAuditLog } from '@/lib/audit-log'
+import { getSafeRedirectPath, REDIRECT_PARAM } from '@/lib/redirect-path'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 export async function GET(request: NextRequest): Promise<Response> {
   const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/account'
+  const next = getSafeRedirectPath(searchParams.get(REDIRECT_PARAM), '/account')
 
   if (code) {
     const supabaseClient = await createSupabaseServerClient()

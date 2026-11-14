@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import PageHeader from './page-header'
+import { MAIN_CONTENT_ID } from './skip-link'
 
 interface SimpleDocumentProps {
   children: ReactNode
@@ -15,7 +16,10 @@ export default function SimpleDocument({
   title,
 }: SimpleDocumentProps) {
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
+    <main
+      className="mx-auto max-w-6xl scroll-mt-20 px-4 py-8"
+      id={MAIN_CONTENT_ID}
+    >
       <PageHeader breadcrumbs={[{ name: title }]} title={title} />
 
       <div className="max-w-text text-body text-foreground">{children}</div>

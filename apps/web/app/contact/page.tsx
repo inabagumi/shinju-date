@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import PageHeader from '@/components/page-header'
+import { MAIN_CONTENT_ID } from '@/components/skip-link'
 import { ContactForm } from './_components/contact-form'
 import { isContactFormEnabled } from './_lib/utils'
 
@@ -20,7 +21,10 @@ export default async function ContactPage() {
   const enabled = isContactFormEnabled()
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
+    <main
+      className="mx-auto max-w-6xl scroll-mt-20 px-4 py-8"
+      id={MAIN_CONTENT_ID}
+    >
       <PageHeader
         breadcrumbs={[{ name: 'お問い合わせ' }]}
         description={

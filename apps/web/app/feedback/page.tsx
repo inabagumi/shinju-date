@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import PageHeader from '@/components/page-header'
+import { MAIN_CONTENT_ID } from '@/components/skip-link'
 import { FeedbackForm } from './_components/feedback-form'
 
 export const metadata: Metadata = {
@@ -17,7 +18,10 @@ export const metadata: Metadata = {
 
 export default function FeedbackPage() {
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
+    <main
+      className="mx-auto max-w-6xl scroll-mt-20 px-4 py-8"
+      id={MAIN_CONTENT_ID}
+    >
       <PageHeader
         breadcrumbs={[{ name: '機能要望' }]}
         description={

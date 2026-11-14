@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import Form, {
   ErrorMessage,
   FormField,
@@ -7,19 +8,44 @@ import Form, {
   Label,
   SubmitButton,
 } from '@/components/form'
+import { getSafeRedirectPath, REDIRECT_PARAM } from '@/lib/redirect-path'
 import { signIn } from './_lib/actions'
 
 export const metadata: Metadata = {
   title: 'ログイン',
 }
 
-export default function Login() {
+interface Props {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}
+
+/**
+ * ログイン後の戻り先をフォームと一緒に送るための hidden input。
+ * `searchParams` はリクエスト時にしか分からないため、フォームの外枠とは
+ * 分けて `Suspense` の中で描画する。
+ */
+async function RedirectPathInput({ searchParams }: Props) {
+  const { [REDIRECT_PARAM]: value } = await searchParams
+  const redirectPath = getSafeRedirectPath(value)
+
+  if (redirectPath === '/') {
+    return null
+  }
+
+  return <input name={REDIRECT_PARAM} type="hidden" value={redirectPath} />
+}
+
+export default function Login({ searchParams }: Props) {
   return (
     <div className="grid min-h-svh place-items-center bg-gradient-to-bl from-slate-400 to-slate-100 p-4">
       <Form
         action={signIn}
         className="grid w-full max-w-md gap-8 rounded-lg border border-slate-400 bg-white/60 p-6 shadow-sm backdrop-blur"
       >
+        <Suspense fallback={null}>
+          <RedirectPathInput searchParams={searchParams} />
+        </Suspense>
+
         <GenericErrorMessage className="rounded-md bg-secondary-pink p-2 leading-normal text-slate-50" />
 
         <div className="space-y-4">

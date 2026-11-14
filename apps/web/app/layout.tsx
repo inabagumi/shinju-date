@@ -5,6 +5,7 @@ import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import PageVisitTracker from '@/components/page-visit-tracker'
+import SkipLink from '@/components/skip-link'
 import { TimerProvider } from '@/components/timer'
 import { AnnouncementBannerWrapper } from './_components/announcement-banner-wrapper'
 import { MainNavigationItems } from './_components/main-navigation-items'
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         />
       </head>
       <body className="grid min-h-svh grid-rows-[auto_1fr_auto] bg-primary-foreground text-primary antialiased dark:bg-zinc-900 dark:text-774-nevy-50">
+        <SkipLink />
         <PageVisitTracker />
         <Providers>
           <SearchModalProvider>

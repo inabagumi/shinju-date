@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import * as z from 'zod/v3'
 import type { FormState } from '@/components/form'
 import { isAdminUser } from '@/lib/admin-user'
+import { getSafeRedirectPath, REDIRECT_PARAM } from '@/lib/redirect-path'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
 const formSchema = z.object({
@@ -80,5 +81,6 @@ export async function signIn(
     }
   }
 
-  redirect('/')
+  // 戻り先はフォームから送られた値のため、管理画面内のパスに限定する
+  redirect(getSafeRedirectPath(formData.get(REDIRECT_PARAM)))
 }

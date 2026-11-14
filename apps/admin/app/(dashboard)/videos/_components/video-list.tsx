@@ -3,6 +3,8 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { formatNumber, getVideoExternalUrl } from '@shinju-date/helpers'
 import { formatDateTime, formatDuration } from '@shinju-date/temporal-fns'
+import { Button } from '@shinju-date/ui'
+import { Eye, RotateCcw, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -132,100 +134,107 @@ export default function VideoList({ videos }: Props) {
     <div>
       {/* Action bar */}
       {selectedIds.length > 0 && (
-        <div className="sticky top-0 z-10 mb-4 bg-secondary-blue p-4 text-white shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold">{selectedIds.length} 件選択中</span>
-            <div className="flex gap-2">
-              {hasNonDeletedVideos && (
-                <>
-                  <button
-                    className="rounded-md bg-774-blue-800 px-4 py-2 hover:bg-774-blue-900"
-                    onClick={() => handleBulkAction('toggle')}
-                    type="button"
-                  >
-                    表示/非表示を切り替え
-                  </button>
-                  <button
-                    className="rounded-md bg-red-600 px-4 py-2 hover:bg-red-700"
-                    onClick={() => handleBulkAction('delete')}
-                    type="button"
-                  >
-                    削除
-                  </button>
-                </>
-              )}
-              {hasDeletedVideos && (
-                <button
-                  className="rounded-md bg-green-600 px-4 py-2 hover:bg-green-700"
-                  onClick={() => handleBulkAction('restore')}
-                  type="button"
+        <div className="sticky top-0 z-10 mb-4 flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 shadow-lg sm:flex-row sm:items-center sm:justify-between">
+          <span className="font-semibold whitespace-nowrap tabular-nums">
+            {selectedIds.length} 件選択中
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {hasNonDeletedVideos && (
+              <>
+                <Button
+                  className="gap-1.5 whitespace-nowrap"
+                  onClick={() => handleBulkAction('toggle')}
+                  variant="secondary"
                 >
-                  復元
-                </button>
-              )}
-            </div>
+                  <Eye aria-hidden="true" className="size-4" />
+                  表示/非表示を切り替え
+                </Button>
+                <Button
+                  className="gap-1.5 whitespace-nowrap"
+                  onClick={() => handleBulkAction('delete')}
+                  variant="danger"
+                >
+                  <Trash2 aria-hidden="true" className="size-4" />
+                  削除
+                </Button>
+              </>
+            )}
+            {hasDeletedVideos && (
+              <Button
+                className="gap-1.5 whitespace-nowrap"
+                onClick={() => handleBulkAction('restore')}
+                variant="secondary"
+              >
+                <RotateCcw aria-hidden="true" className="size-4" />
+                復元
+              </Button>
+            )}
           </div>
         </div>
       )}
 
       {/* Video table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="border-b bg-gray-50">
+      <div className="relative overflow-x-auto">
+        <table className="w-full min-w-5xl">
+          <thead className="border-b border-border bg-muted text-left text-meta whitespace-nowrap">
             <tr>
-              <th className="p-3 text-left">
+              <th className="p-3">
                 <input
+                  aria-label="すべて選択"
                   checked={allSelected}
                   onChange={(e) => handleSelectAll(e.target.checked)}
                   type="checkbox"
                 />
               </th>
-              <th className="p-3 text-left whitespace-nowrap">サムネイル</th>
-              <th className="p-3 text-left whitespace-nowrap">タイトル</th>
-              <th className="p-3 text-left whitespace-nowrap">
-                プラットフォーム
+              <th className="p-3">サムネイル</th>
+              <th className="p-3">タイトル</th>
+              <th className="p-3">タレント</th>
+              <th className="p-3">
+                <div className="flex flex-col gap-1">
+                  <Link
+                    className="flex items-center hover:text-accent"
+                    href={getSortUrl('published_at')}
+                  >
+                    公開日時
+                    <SortIcon
+                      currentSortField={currentSortField}
+                      currentSortOrder={currentSortOrder}
+                      field="published_at"
+                    />
+                  </Link>
+                  <Link
+                    className="flex items-center hover:text-accent"
+                    href={getSortUrl('updated_at')}
+                  >
+                    更新日時
+                    <SortIcon
+                      currentSortField={currentSortField}
+                      currentSortOrder={currentSortOrder}
+                      field="updated_at"
+                    />
+                  </Link>
+                </div>
               </th>
-              <th className="p-3 text-left whitespace-nowrap">タレント</th>
-              <th className="p-3 text-left whitespace-nowrap">
-                <Link
-                  className="flex items-center hover:text-774-blue-600"
-                  href={getSortUrl('published_at')}
-                >
-                  公開日時
-                  <SortIcon
-                    currentSortField={currentSortField}
-                    currentSortOrder={currentSortOrder}
-                    field="published_at"
-                  />
-                </Link>
+              <th className="p-3 text-right">再生時間</th>
+              <th className="p-3 text-right">クリック数</th>
+              <th className="p-3">種別</th>
+              <th className="p-3">ステータス</th>
+              <th className="p-3">
+                <span className="sr-only">アクション</span>
               </th>
-              <th className="p-3 text-left whitespace-nowrap">
-                <Link
-                  className="flex items-center hover:text-774-blue-600"
-                  href={getSortUrl('updated_at')}
-                >
-                  更新日時
-                  <SortIcon
-                    currentSortField={currentSortField}
-                    currentSortOrder={currentSortOrder}
-                    field="updated_at"
-                  />
-                </Link>
-              </th>
-              <th className="p-3 text-left whitespace-nowrap">再生時間</th>
-              <th className="p-3 text-left whitespace-nowrap">クリック数</th>
-              <th className="p-3 text-left whitespace-nowrap">動画種別</th>
-              <th className="p-3 text-left whitespace-nowrap">ステータス</th>
-              <th className="p-3 text-left whitespace-nowrap">アクション</th>
             </tr>
           </thead>
           <tbody>
             {videos.length > 0 ? (
               videos.map((video) => {
                 return (
-                  <tr className="border-b hover:bg-gray-50" key={video.id}>
+                  <tr
+                    className="border-b border-border hover:bg-muted"
+                    key={video.id}
+                  >
                     <td className="p-3">
                       <input
+                        aria-label={`「${video.title}」を選択`}
                         checked={selectedIds.includes(video.id)}
                         onChange={(e) =>
                           handleSelectVideo(video.id, e.target.checked)
@@ -235,26 +244,26 @@ export default function VideoList({ videos }: Props) {
                     </td>
                     <td className="p-3">
                       {video.thumbnail ? (
-                        <div className="relative aspect-video w-20 md:w-28">
+                        <div className="relative aspect-video w-28">
                           <Image
                             alt=""
                             blurDataURL={video.thumbnail.blur_data_url}
-                            className="object-cover"
+                            className="rounded-md object-cover"
                             fill
                             placeholder="blur"
-                            sizes="(max-width: 768px) 80px, 112px"
+                            sizes="112px"
                             src={`/images/thumbnails/${video.thumbnail.id}`}
                           />
                         </div>
                       ) : (
-                        <div className="flex aspect-video w-20 items-center justify-center bg-gray-200 text-xs md:w-28">
+                        <div className="flex aspect-video w-28 items-center justify-center rounded-md bg-muted text-caption text-muted">
                           No Image
                         </div>
                       )}
                     </td>
-                    <td className="max-w-xs p-3">
+                    <td className="w-full min-w-64 p-3">
                       <Link
-                        className="text-774-blue-600 hover:text-774-blue-800"
+                        className="text-accent hover:underline"
                         href={`/videos/${video.id}`}
                       >
                         <div className="line-clamp-2" title={video.title}>
@@ -262,52 +271,44 @@ export default function VideoList({ videos }: Props) {
                         </div>
                       </Link>
                     </td>
-                    <td className="p-3">
-                      <PlatformBadge platform={video.platform} />
+                    <td className="p-3 text-meta whitespace-nowrap text-muted">
+                      {video.talent ? video.talent.name : 'タレント不明'}
+                    </td>
+                    <td className="p-3 text-meta whitespace-nowrap text-muted tabular-nums">
+                      <dl className="grid grid-cols-[auto_auto] gap-x-2">
+                        <dt>公開</dt>
+                        <dd>
+                          <time dateTime={video.published_at}>
+                            {formatDateTime(
+                              Temporal.Instant.from(
+                                video.published_at,
+                              ).toZonedDateTimeISO(TIME_ZONE),
+                            )}
+                          </time>
+                        </dd>
+                        <dt>更新</dt>
+                        <dd>
+                          <time dateTime={video.updated_at}>
+                            {formatDateTime(
+                              Temporal.Instant.from(
+                                video.updated_at,
+                              ).toZonedDateTimeISO(TIME_ZONE),
+                            )}
+                          </time>
+                        </dd>
+                      </dl>
+                    </td>
+                    <td className="p-3 text-right text-meta whitespace-nowrap text-muted tabular-nums">
+                      {formatDuration(Temporal.Duration.from(video.duration))}
+                    </td>
+                    <td className="p-3 text-right whitespace-nowrap tabular-nums">
+                      {formatNumber(video.clicks)}
                     </td>
                     <td className="p-3">
-                      {video.talent ? (
-                        <span className="text-sm text-gray-600">
-                          {video.talent.name}
-                        </span>
-                      ) : (
-                        <span className="text-sm text-gray-400">
-                          タレント不明
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-3">
-                      <time
-                        className="text-sm text-gray-600"
-                        dateTime={video.published_at}
-                      >
-                        {formatDateTime(
-                          Temporal.Instant.from(
-                            video.published_at,
-                          ).toZonedDateTimeISO(TIME_ZONE),
-                        )}
-                      </time>
-                    </td>
-                    <td className="p-3">
-                      <time
-                        className="text-sm text-gray-600"
-                        dateTime={video.updated_at}
-                      >
-                        {formatDateTime(
-                          Temporal.Instant.from(
-                            video.updated_at,
-                          ).toZonedDateTimeISO(TIME_ZONE),
-                        )}
-                      </time>
-                    </td>
-                    <td className="p-3">
-                      <span className="text-sm text-gray-600">
-                        {formatDuration(Temporal.Duration.from(video.duration))}
-                      </span>
-                    </td>
-                    <td className="p-3">{formatNumber(video.clicks)}</td>
-                    <td className="p-3">
-                      <VideoKindBadge videoKind={video.video_kind} />
+                      <div className="flex flex-col items-start gap-1">
+                        <PlatformBadge platform={video.platform} />
+                        <VideoKindBadge videoKind={video.video_kind} />
+                      </div>
                     </td>
                     <td className="p-3">
                       <VideoStatusBadge video={video} />
@@ -401,7 +402,7 @@ export default function VideoList({ videos }: Props) {
               })
             ) : (
               <tr>
-                <td className="p-8 text-center text-gray-500" colSpan={12}>
+                <td className="p-8 text-center text-muted" colSpan={10}>
                   動画がありません。
                 </td>
               </tr>
