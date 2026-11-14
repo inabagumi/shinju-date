@@ -74,7 +74,7 @@ function SearchEngagementRateWidgetComponent({
               ({formatDateLabel(selectedDate)})
             </span>
           ) : (
-            <span className="ml-2 text-sm text-green-600">
+            <span className="ml-2 text-sm text-green-700">
               ({formatDateRange(dateRange)})
             </span>
           )}

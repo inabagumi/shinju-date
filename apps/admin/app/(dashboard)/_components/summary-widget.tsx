@@ -66,7 +66,7 @@ export async function VideoSummaryWidget() {
           href="/videos?deleted=false&visible=false"
         >
           <p className="text-sm text-gray-600">非表示</p>
-          <p className="text-2xl font-bold text-yellow-600">
+          <p className="text-2xl font-bold text-yellow-700">
             {formatNumber(stats.hiddenVideos.current)}
           </p>
           <div className="mt-2">

@@ -11,6 +11,9 @@ test.describe('Admin App - Basic Tests', () => {
 
     // Login page should be accessible
     expect(page.url()).toContain('/login')
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Admin UI' }),
+    ).toBeVisible()
   })
 
   test('should display login form elements', async ({ page }) => {

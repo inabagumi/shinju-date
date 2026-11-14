@@ -46,6 +46,11 @@ export default function Login({ searchParams }: Props) {
           <RedirectPathInput searchParams={searchParams} />
         </Suspense>
 
+        <hgroup className="text-center">
+          <h1 className="text-title font-bold">Admin UI</h1>
+          <p className="text-meta text-muted">SHINJU DATE</p>
+        </hgroup>
+
         <GenericErrorMessage className="rounded-md bg-secondary-pink p-2 leading-normal text-slate-50" />
 
         <div className="space-y-4">

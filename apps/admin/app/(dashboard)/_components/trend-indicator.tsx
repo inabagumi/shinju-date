@@ -14,7 +14,7 @@ export function TrendIndicator({
   label = '前日比',
 }: TrendIndicatorProps) {
   if (value === null) {
-    return <span className="text-xs text-gray-400">{label}: データなし</span>
+    return <span className="text-xs text-muted">{label}: データなし</span>
   }
 
   const isPositive = value > 0
