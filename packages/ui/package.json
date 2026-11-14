@@ -28,7 +28,7 @@
     "@vitejs/plugin-react": "6.3.0",
     "@vitest/browser": "5.1.0",
     "@vitest/browser-playwright": "5.1.0",
-    "jsdom": "31.0.0",
+    "jsdom": "31.0.1",
     "playwright": "1.65.0",
     "postcss": "8.5.32",
     "postcss-load-config": "6.0.1",
