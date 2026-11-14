@@ -7,7 +7,7 @@
 作業を開始する前に、以下のツールがインストールされていることを確認してください。
 
 - **Node.js**: `.node-version` ファイルで指定されたバージョン。`nvm` などのバージョン管理ツールの使用を推奨します。
-- **pnpm**: 公式のインストールスクリプトなどでインストールします。使用するバージョンは `package.json` の `packageManager` で固定されており、pnpm が自動的に切り替えます。
+- **pnpm**: 公式のインストールスクリプトなどでインストールします。使用するバージョンは `package.json` の `devEngines.packageManager` で固定されており、pnpm v11 以降であれば自動的に切り替わります。
 - **Docker**: ローカルのSupabase環境とRedisを実行するために必要です。
 - **Docker Compose**: Redisサービスのオーケストレーションに使用します。
 
@@ -41,7 +41,7 @@ cd shinju-date
 curl -fsSL https://get.pnpm.io/install.sh | sh -
 ```
 
-pnpm は `package.json` の `packageManager` に指定されたバージョンを自動的にダウンロードして使用します。また、`devEngines.runtime` に指定された Node.js も `pnpm install` の際に自動的にダウンロードされます。
+pnpm（v11 以降）は `package.json` の `devEngines.packageManager` に指定されたバージョンを自動的にダウンロードして使用します。また、`devEngines.runtime` に指定された Node.js も `pnpm install` の際に自動的にダウンロードされます。
 
 ### 1.3. JavaScript依存関係のインストール
 

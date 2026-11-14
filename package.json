@@ -2,6 +2,11 @@
   "author": "Haneru Developers",
   "description": "SHINJU DATE is a web service for searching videos.",
   "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "onFail": "download",
+      "version": "12.18.0"
+    },
     "runtime": {
       "name": "node",
       "onFail": "download",
@@ -17,7 +22,6 @@
   "homepage": "https://shinju.date/",
   "license": "MIT",
   "name": "@shinju-date/monorepo",
-  "packageManager": "pnpm@12.18.0",
   "private": true,
   "scripts": {
     "build": "turbo build",
