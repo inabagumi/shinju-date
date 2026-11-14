@@ -1,6 +1,7 @@
 import { googleFontsHandlers } from './handlers/google-fonts.js'
 import { resendHandlers } from './handlers/resend.js'
 import { supabaseHandlers } from './handlers/supabase.js'
+import { twitchHandlers } from './handlers/twitch.js'
 import { upstashHandlers } from './handlers/upstash.js'
 import { youtubeHandlers } from './handlers/youtube.js'
 
@@ -12,6 +13,7 @@ export const allHandlers = [
   ...googleFontsHandlers,
   ...resendHandlers,
   ...supabaseHandlers,
+  ...twitchHandlers,
   ...upstashHandlers,
   ...youtubeHandlers,
 ]
@@ -65,6 +67,7 @@ export {
   googleFontsHandlers,
   resendHandlers,
   supabaseHandlers,
+  twitchHandlers,
   upstashHandlers,
   youtubeHandlers,
 }

@@ -1,6 +1,7 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: Mocking YouTube API with any type for simplicity
 
 import { HttpResponse, http } from 'msw'
+import { createIconResponse } from './icon.js'
 
 /** Host the YouTube Data API serves channel icons from. */
 const YOUTUBE_ICON_HOST = 'https://yt3.ggpht.com'
@@ -19,18 +20,6 @@ function createChannelThumbnails(channelId: string) {
     medium: { height: 240, url: url(240), width: 240 },
   }
 }
-
-/**
- * A solid 256x256 PNG served as every channel icon. Decoded with `atob`
- * rather than `Buffer`, because this module is also loaded by the browser
- * worker.
- */
-const CHANNEL_ICON_PNG = Uint8Array.from(
-  atob(
-    'iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAMAAABrrFhUAAAAA1BMVEVPRuWq/wlTAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAVElEQVR42u3BAQEAAACAkP6v7ggKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGAEPAAEccgnDAAAAAElFTkSuQmCC',
-  ),
-  (character) => character.charCodeAt(0),
-)
 
 // Mock YouTube channels data
 const mockYouTubeChannels: any[] = [
@@ -538,16 +527,9 @@ export const youtubeHandlers = [
     })
   }),
 
-  // Mock channel icon downloads. Every icon is the same image, so the ETag
-  // only depends on the URL; conditional requests get 304 like on YouTube.
-  http.get(`${YOUTUBE_ICON_HOST}/:icon`, ({ params, request }) => {
-    const etag = `"${params['icon']}"`
-    const headers = { 'Content-Type': 'image/png', ETag: etag }
-
-    if (request.headers.get('If-None-Match') === etag) {
-      return new HttpResponse(null, { headers, status: 304 })
-    }
-
-    return new HttpResponse(CHANNEL_ICON_PNG, { headers })
-  }),
+  // Mock channel icon downloads. Conditional requests get 304 like on
+  // YouTube.
+  http.get(`${YOUTUBE_ICON_HOST}/:icon`, ({ params, request }) =>
+    createIconResponse(request, String(params['icon'])),
+  ),
 ]
