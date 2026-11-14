@@ -1,3 +1,6 @@
+import { REDIS_KEYS } from '@shinju-date/constants'
+import { formatDateKey } from '@shinju-date/temporal-fns'
+import { Redis } from '@upstash/redis'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { server } from '../server.js'
 
@@ -13,7 +16,7 @@ describe('Upstash Redis Handlers', () => {
         headers: { 'Content-Type': 'application/json' },
         method: 'POST',
       })
-      const data = await response.json()
+      const data = (await response.json()) as { result: unknown }
 
       expect(response.ok).toBe(true)
       expect(data.result).toBe('PONG')
@@ -33,11 +36,84 @@ describe('Upstash Redis Handlers', () => {
         headers: { 'Content-Type': 'application/json' },
         method: 'POST',
       })
-      const data = await response.json()
+      const data = (await response.json()) as { result: unknown }
 
       expect(response.ok).toBe(true)
       expect(data.result).toBeDefined()
       expect(Array.isArray(data.result)).toBe(true)
+    })
+  })
+
+  describe('ZRANGE command through @upstash/redis', () => {
+    const redis = new Redis({
+      token: 'fake-token',
+      url: 'https://fake.upstash.test',
+    })
+    // The mock store holds the click data of the last 7 days (in UTC).
+    // Yesterday is used so that the key exists even across midnight.
+    const key = `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${formatDateKey(
+      Temporal.Now.plainDateISO('UTC').subtract({ days: 1 }),
+    )}`
+
+    function toPairs(result: unknown[]): [unknown, unknown][] {
+      const pairs: [unknown, unknown][] = []
+
+      for (let i = 0; i < result.length; i += 2) {
+        pairs.push([result[i], result[i + 1]])
+      }
+
+      return pairs
+    }
+
+    it('returns members with scores in ascending order with withScores', async () => {
+      const result = await redis.zrange<unknown[]>(key, 0, -1, {
+        withScores: true,
+      })
+      const pairs = toPairs(result)
+      const scores = pairs.map(([, score]) => score)
+
+      expect(pairs.length).toBeGreaterThan(0)
+
+      for (const [member, score] of pairs) {
+        expect(member).toEqual(expect.any(String))
+        expect(score).toEqual(expect.any(Number))
+      }
+
+      expect(scores).toEqual([...scores].sort((a, b) => Number(a) - Number(b)))
+    })
+
+    it('returns members with scores in descending order with rev', async () => {
+      const result = await redis.zrange<unknown[]>(key, 0, -1, {
+        rev: true,
+        withScores: true,
+      })
+      const scores = toPairs(result).map(([, score]) => score)
+
+      expect(scores.length).toBeGreaterThan(0)
+      expect(scores).toEqual(scores.map(() => expect.any(Number)))
+      expect(scores).toEqual([...scores].sort((a, b) => Number(b) - Number(a)))
+    })
+
+    it('returns only members without withScores', async () => {
+      const withScores = await redis.zrange<unknown[]>(key, 0, -1, {
+        withScores: true,
+      })
+      const members = await redis.zrange<string[]>(key, 0, -1)
+
+      expect(members).toEqual(toPairs(withScores).map(([member]) => member))
+    })
+
+    it('applies the options in a pipeline', async () => {
+      const [result] = await redis
+        .pipeline()
+        .zrange(key, 0, 0, { rev: true, withScores: true })
+        .exec<[unknown[]]>()
+      const all = await redis.zrange<unknown[]>(key, 0, -1, {
+        rev: true,
+        withScores: true,
+      })
+
+      expect(result).toEqual(all.slice(0, 2))
     })
   })
 
@@ -80,7 +156,7 @@ describe('Upstash Redis Handlers', () => {
         headers: { 'Content-Type': 'application/json' },
         method: 'POST',
       })
-      const setData = await setResponse.json()
+      const setData = (await setResponse.json()) as { result: unknown }
 
       expect(setResponse.ok).toBe(true)
       expect(setData.result).toBe('OK')
@@ -91,7 +167,7 @@ describe('Upstash Redis Handlers', () => {
         headers: { 'Content-Type': 'application/json' },
         method: 'POST',
       })
-      const getData = await getResponse.json()
+      const getData = (await getResponse.json()) as { result: unknown }
 
       expect(getResponse.ok).toBe(true)
       expect(getData.result).toBe('test:value')
