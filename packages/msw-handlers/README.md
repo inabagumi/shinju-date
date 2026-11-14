@@ -100,7 +100,7 @@ export const worker = setupWorker(...allHandlers)
 // Start the worker in development
 if (process.env.NODE_ENV === 'development') {
   worker.start({
-    onUnhandledRequest: 'warn',
+    onUnhandledFrame: 'warn',
   })
 }
 ```

@@ -7,7 +7,7 @@ export const worker = setupWorker(...allHandlers)
 export const startMocking = async () => {
   try {
     await worker.start({
-      onUnhandledRequest: 'warn',
+      onUnhandledFrame: 'warn',
     })
     console.log('🚀 MSW enabled')
   } catch (error) {

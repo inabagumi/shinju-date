@@ -20,7 +20,7 @@ const MOCK_SUPABASE_URL = 'https://fake.supabase.test'
 const MOCK_SUPABASE_ANON_KEY = 'mock-anon-key'
 
 beforeAll(() => {
-  server.listen({ onUnhandledRequest: 'warn' })
+  server.listen({ onUnhandledFrame: 'warn' })
 })
 
 afterEach(() => {
