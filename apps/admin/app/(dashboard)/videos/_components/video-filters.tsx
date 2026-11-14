@@ -1,7 +1,14 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import { Input, MultiSelect, type MultiSelectOption } from '@shinju-date/ui'
+import {
+  Button,
+  Input,
+  MultiSelect,
+  type MultiSelectOption,
+  twMerge,
+} from '@shinju-date/ui'
+import { ChevronDown, SlidersHorizontal } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
@@ -10,6 +17,22 @@ type Talent = Pick<
   'id' | 'name' | 'created_at' | 'updated_at'
 >
 
+type FilterKey =
+  | 'deleted'
+  | 'talentId'
+  | 'visible'
+  | 'status'
+  | 'platform'
+  | 'videoKind'
+
+interface FilterField {
+  key: FilterKey
+  label: string
+  options: MultiSelectOption[]
+  placeholder: string
+  value: string[]
+}
+
 interface Props {
   talents: Talent[]
 }
@@ -17,6 +40,7 @@ interface Props {
 export function VideoFilters({ talents }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [isExpanded, setIsExpanded] = useState(false)
   const [searchInput, setSearchInput] = useState(
     searchParams.get('search') || '',
   )
@@ -53,16 +77,7 @@ export function VideoFilters({ talents }: Props) {
     return () => clearTimeout(timer)
   }, [searchInput, router, searchParams])
 
-  const handleMultiSelectChange = (
-    key:
-      | 'deleted'
-      | 'talentId'
-      | 'visible'
-      | 'status'
-      | 'platform'
-      | 'videoKind',
-    values: string[],
-  ) => {
+  const handleMultiSelectChange = (key: FilterKey, values: string[]) => {
     const params = new URLSearchParams(searchParams.toString())
     // Remove all existing values for this key
     params.delete(key)
@@ -108,11 +123,57 @@ export function VideoFilters({ talents }: Props) {
     { label: 'ショート動画', value: 'short' },
   ]
 
+  const filters: FilterField[] = [
+    {
+      key: 'talentId',
+      label: 'タレント',
+      options: talentOptions,
+      placeholder: 'すべてのタレント',
+      value: currentTalentIds,
+    },
+    {
+      key: 'status',
+      label: '動画ステータス',
+      options: statusOptions,
+      placeholder: 'すべて',
+      value: currentStatus,
+    },
+    {
+      key: 'platform',
+      label: 'プラットフォーム',
+      options: platformOptions,
+      placeholder: 'すべて',
+      value: currentPlatform,
+    },
+    {
+      key: 'videoKind',
+      label: '動画種別',
+      options: videoKindOptions,
+      placeholder: 'すべて',
+      value: currentVideoKind,
+    },
+    {
+      key: 'visible',
+      label: '公開状態',
+      options: visibilityOptions,
+      placeholder: 'すべて',
+      value: currentVisible,
+    },
+    {
+      key: 'deleted',
+      label: '削除状態',
+      options: deletedOptions,
+      placeholder: 'すべて',
+      value: currentDeleted,
+    },
+  ]
+  const appliedCount = filters.filter(({ value }) => value.length > 0).length
+
   return (
-    <div className="mb-4 flex flex-wrap gap-4">
+    <div className="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       <div>
         <label
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-meta font-medium"
           htmlFor="search-filter"
         >
           タイトルまたはIDで検索
@@ -126,73 +187,51 @@ export function VideoFilters({ talents }: Props) {
           variant="default"
         />
       </div>
-      <div className="w-full sm:w-auto sm:min-w-[200px]">
-        <div className="mb-1 block text-sm font-medium text-gray-700">
-          タレントで絞り込み
-        </div>
-        <MultiSelect
-          onChange={(values) => handleMultiSelectChange('talentId', values)}
-          options={talentOptions}
-          placeholder="すべてのタレント"
-          value={currentTalentIds}
+      <Button
+        aria-controls="video-filter-options"
+        aria-expanded={isExpanded}
+        className="gap-1.5 justify-self-start sm:hidden"
+        onClick={() => setIsExpanded((prev) => !prev)}
+        variant="secondary"
+      >
+        <SlidersHorizontal aria-hidden="true" className="size-4" />
+        絞り込み
+        {appliedCount > 0 && (
+          <span className="rounded-full bg-accent px-2 text-caption text-accent-foreground tabular-nums">
+            {appliedCount}
+            <span className="sr-only">件の条件を適用中</span>
+          </span>
+        )}
+        <ChevronDown
+          aria-hidden="true"
+          className={twMerge(
+            'size-4 transition-transform',
+            isExpanded && 'rotate-180',
+          )}
         />
-      </div>
-      <div className="w-full sm:w-auto sm:min-w-[200px]">
-        <div className="mb-1 block text-sm font-medium text-gray-700">
-          動画ステータスで絞り込み
-        </div>
-        <MultiSelect
-          onChange={(values) => handleMultiSelectChange('status', values)}
-          options={statusOptions}
-          placeholder="すべて"
-          value={currentStatus}
-        />
-      </div>
-      <div className="w-full sm:w-auto sm:min-w-[200px]">
-        <div className="mb-1 block text-sm font-medium text-gray-700">
-          プラットフォームで絞り込み
-        </div>
-        <MultiSelect
-          onChange={(values) => handleMultiSelectChange('platform', values)}
-          options={platformOptions}
-          placeholder="すべて"
-          value={currentPlatform}
-        />
-      </div>
-      <div className="w-full sm:w-auto sm:min-w-[200px]">
-        <div className="mb-1 block text-sm font-medium text-gray-700">
-          動画種別で絞り込み
-        </div>
-        <MultiSelect
-          onChange={(values) => handleMultiSelectChange('videoKind', values)}
-          options={videoKindOptions}
-          placeholder="すべて"
-          value={currentVideoKind}
-        />
-      </div>
-      <div className="flex w-full flex-wrap gap-4 sm:contents">
-        <div className="w-full sm:w-auto sm:min-w-[200px]">
-          <div className="mb-1 block text-sm font-medium text-gray-700">
-            公開状態で絞り込み
+      </Button>
+      <div
+        className={twMerge('grid gap-4 sm:contents', !isExpanded && 'hidden')}
+        id="video-filter-options"
+      >
+        {filters.map((filter) => (
+          <div key={filter.key}>
+            <div
+              className="mb-1 block text-meta font-medium"
+              id={`video-filter-${filter.key}`}
+            >
+              {filter.label}で絞り込み
+            </div>
+            <MultiSelect
+              aria-labelledby={`video-filter-${filter.key} video-filter-${filter.key}-value`}
+              id={`video-filter-${filter.key}-value`}
+              onChange={(values) => handleMultiSelectChange(filter.key, values)}
+              options={filter.options}
+              placeholder={filter.placeholder}
+              value={filter.value}
+            />
           </div>
-          <MultiSelect
-            onChange={(values) => handleMultiSelectChange('visible', values)}
-            options={visibilityOptions}
-            placeholder="すべて"
-            value={currentVisible}
-          />
-        </div>
-        <div className="w-full sm:w-auto sm:min-w-[200px]">
-          <div className="mb-1 block text-sm font-medium text-gray-700">
-            削除状態で絞り込み
-          </div>
-          <MultiSelect
-            onChange={(values) => handleMultiSelectChange('deleted', values)}
-            options={deletedOptions}
-            placeholder="すべて"
-            value={currentDeleted}
-          />
-        </div>
+        ))}
       </div>
     </div>
   )
