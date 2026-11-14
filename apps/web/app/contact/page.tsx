@@ -36,7 +36,7 @@ export default async function ContactPage() {
         {enabled ? (
           <ContactForm />
         ) : (
-          <div className="rounded-xl bg-warning/10 p-4 text-body text-warning">
+          <div className="rounded-container bg-warning/10 p-4 text-body text-warning">
             お問い合わせ機能は現在ご利用いただけません。設定が完了していないため、一時的に無効になっています。
           </div>
         )}

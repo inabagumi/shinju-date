@@ -38,8 +38,8 @@ export default function PageHeader({
 export function PageHeaderSkeleton() {
   return (
     <div aria-hidden="true" className="mb-8 space-y-2">
-      <div className="h-[1.4rem] w-48 animate-pulse rounded-md bg-muted" />
-      <div className="h-[2.1rem] w-64 animate-pulse rounded-md bg-muted md:h-[2.8rem]" />
+      <div className="h-[1.4rem] w-48 animate-pulse rounded-control bg-muted" />
+      <div className="h-[2.1rem] w-64 animate-pulse rounded-control bg-muted md:h-[2.8rem]" />
     </div>
   )
 }
