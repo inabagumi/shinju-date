@@ -55,6 +55,10 @@ import {
   deleteQueryAction,
 } from '../recommended-queries/_actions'
 import {
+  getVideoBackfillRunAction,
+  requestVideoBackfillRunAction,
+} from '../system/_actions/video-backfill-run'
+import {
   activateTalentAction,
   createTalentAction,
   deleteTalentAction,
@@ -203,6 +207,8 @@ const resultActions: [string, () => Promise<unknown>][] = [
     () => requestVideoBackfillAction(ID, 'youtube'),
   ],
   ['getVideoBackfillStatusAction', () => getVideoBackfillStatusAction(ID)],
+  ['requestVideoBackfillRunAction', () => requestVideoBackfillRunAction()],
+  ['getVideoBackfillRunAction', () => getVideoBackfillRunAction()],
   ['deleteTermAction', () => deleteTermAction(ID)],
   ['toggleVisibilityAction', () => toggleVisibilityAction([ID])],
   ['softDeleteAction', () => softDeleteAction([ID])],
