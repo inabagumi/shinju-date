@@ -1,9 +1,6 @@
 import { Input, Textarea } from '@shinju-date/ui'
 import { twMerge } from 'tailwind-merge'
 
-const labelClassName =
-  'mb-2 block text-sm font-medium text-primary dark:text-774-nevy-50'
-
 function getErrorId(inputId: string | undefined): string | undefined {
   return inputId ? `${inputId}-error` : undefined
 }
@@ -16,7 +13,10 @@ interface FieldLabelProps {
 
 function FieldLabel({ htmlFor, label, required }: FieldLabelProps) {
   return (
-    <label className={labelClassName} htmlFor={htmlFor}>
+    <label
+      className="mb-2 block text-sm font-medium text-primary dark:text-774-nevy-50"
+      htmlFor={htmlFor}
+    >
       {label}{' '}
       {required && (
         <span aria-hidden="true" className="text-red-500">
