@@ -46,34 +46,33 @@ function intersects(a: Box, b: Box): boolean {
 
 /**
  * Assert that the content next to (left of) the given sticky element is
- * clickable: pick a video card that shares a horizontal band with the
- * element and check that a click in that card is not intercepted by the
- * banner wrapper.
+ * clickable: pick the video card that shares the largest vertical range
+ * with the element and check that a click in that card is not intercepted
+ * by the banner wrapper.
  */
 async function expectContentBesideToBeClickable(page: Page, box: Box) {
   const cardBoxes = await getVideoCardBoxes(page)
-  const candidateYs = [
-    box.y + box.height / 2,
-    box.y + 8,
-    box.y + box.height - 8,
-  ]
 
-  let point: [x: number, y: number] | null = null
-  for (const y of candidateYs) {
-    const card = cardBoxes.find(
-      (cardBox) =>
-        cardBox.y < y &&
-        y < cardBox.y + cardBox.height &&
-        cardBox.x < box.x - 40,
-    )
+  let best: { overlap: number; x: number; y: number } | null = null
+  for (const cardBox of cardBoxes) {
+    if (cardBox.x >= box.x - 40) {
+      continue
+    }
 
-    if (card) {
-      point = [Math.min(card.x + card.width / 2, box.x - 20), y]
-      break
+    const top = Math.max(cardBox.y, box.y)
+    const bottom = Math.min(cardBox.y + cardBox.height, box.y + box.height)
+    const overlap = bottom - top
+
+    if (overlap >= 8 && (!best || overlap > best.overlap)) {
+      best = {
+        overlap,
+        x: Math.min(cardBox.x + cardBox.width / 2, box.x - 20),
+        y: (top + bottom) / 2,
+      }
     }
   }
 
-  expect(point).not.toBeNull()
+  expect(best).not.toBeNull()
 
   const hitsVideoCard = await page.evaluate(
     ([pointX, pointY]) => {
@@ -84,10 +83,37 @@ async function expectContentBesideToBeClickable(page: Page, box: Box) {
         element.closest('main a[target="_blank"]:has(h3)') !== null
       )
     },
-    point as [number, number],
+    [best?.x ?? 0, best?.y ?? 0] as const,
   )
 
   expect(hitsVideoCard).toBe(true)
+}
+
+/**
+ * Scroll down step by step until a video card spans the whole vertical
+ * range of the given sticky element, so that the element is clearly
+ * covering that card.
+ */
+async function scrollUntilCardSpans(page: Page, locator: Locator) {
+  await expect
+    .poll(
+      async () => {
+        await page.mouse.wheel(0, 40)
+        await page.waitForTimeout(50)
+
+        const box = await getBoundingBox(locator)
+        const cardBoxes = await getVideoCardBoxes(page)
+
+        return cardBoxes.some(
+          (cardBox) =>
+            intersects(box, cardBox) &&
+            cardBox.y <= box.y &&
+            box.y + box.height <= cardBox.y + cardBox.height,
+        )
+      },
+      { timeout: 15_000 },
+    )
+    .toBe(true)
 }
 
 async function getVideoCardBoxes(page: Page): Promise<Box[]> {
@@ -174,16 +200,9 @@ function describeViewport(
         name: 'お知らせを縮小',
       })
 
-      // Scroll into the list so that the sticky banner overlaps video cards
+      // Scroll into the list so that the sticky banner covers a video card
       await page.mouse.wheel(0, Math.floor(viewport.height / 2))
-      await expect
-        .poll(async () => {
-          const bannerBox = await getBoundingBox(banner)
-          const cardBoxes = await getVideoCardBoxes(page)
-
-          return cardBoxes.some((cardBox) => intersects(bannerBox, cardBox))
-        })
-        .toBe(true)
+      await scrollUntilCardSpans(page, banner)
 
       const bannerBox = await getBoundingBox(banner)
 
