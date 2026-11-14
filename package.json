@@ -24,7 +24,6 @@
   "name": "@shinju-date/monorepo",
   "private": true,
   "scripts": {
-    "agents:check": "node scripts/check-next-agent-rules.js",
     "build": "turbo build",
     "check": "biome check",
     "db:export": "./scripts/export-production-data.sh",

@@ -147,7 +147,7 @@ Vitest はテストファイルの型を検査しないため、TypeScript の�
 
 ### 各アプリの AGENTS.md
 
-`apps/*/AGENTS.md` の `<!-- BEGIN:nextjs-agent-rules -->` から `<!-- END:nextjs-agent-rules -->` までのブロックは `next dev` が書き込むため、手で編集しないでください。Next.js の更新でブロックの内容が変わった場合は、`pnpm agents:check --fix` を実行し、依存関係を更新する Pull Request で一緒にコミットしてください（CI の `pnpm agents:check` で確認されます）。詳細は [CONTRIBUTING.md](CONTRIBUTING.md#各アプリの-agentsmdnextjs-が管理するブロック) を参照してください。
+`apps/*/AGENTS.md` の `<!-- BEGIN:nextjs-agent-rules -->` から `<!-- END:nextjs-agent-rules -->` までのブロックは `next dev` が書き込みます。手で編集せず、`next dev` が書き換えた差分はそのままコミットしてください。
 
 ### TypeScript 型定義
 

@@ -257,7 +257,6 @@ Node.js CI は以下のジョブ構成になっています：
    - Install Dependencies 成功後に実行
    - pnpm のキャッシュを使用して高速にインストール
    - Biomeによるフォーマットとリンティングを実行
-   - `pnpm agents:check` で各アプリの `AGENTS.md` にある Next.js のブロックが、インストールされている Next.js の内容と一致しているかを確認
 
 3. **Typecheck** - 型チェック（並列実行）
    - Install Dependencies 成功後に実行
@@ -378,14 +377,7 @@ pnpm db:export
 
 ### 各アプリの AGENTS.md（Next.js が管理するブロック）
 
-`apps/admin`・`apps/batch`・`apps/msw-demo`・`apps/web` の `AGENTS.md` にある `<!-- BEGIN:nextjs-agent-rules -->` から `<!-- END:nextjs-agent-rules -->` までのブロックは、コーディングエージェントが `next dev` を起動したときに Next.js が書き込みます（`node_modules/next/dist/server/lib/generate-agent-files.js`）。インストールされている Next.js の内容と違うと、`next dev` を起動するたびに `AGENTS.md` に差分が出るため、次のように扱います。
-
-- ブロックは手で編集しない
-- Next.js を更新してブロックの内容が変わった場合は、その依存関係を更新する Pull Request で一緒に `AGENTS.md` を更新する。CI の Lint ジョブにある `pnpm agents:check` が失敗するので、次のコマンドで更新してコミットする
-
-```bash
-pnpm agents:check --fix
-```
+`apps/*/AGENTS.md` の `<!-- BEGIN:nextjs-agent-rules -->` から `<!-- END:nextjs-agent-rules -->` までのブロックは、コーディングエージェントが `next dev` を起動したときに Next.js が書き込みます。ブロックは手で編集せず、Next.js の更新などで `next dev` が書き換えた場合は、その差分をそのままコミットしてください。
 
 ### MSW（Mock Service Worker）の活用
 

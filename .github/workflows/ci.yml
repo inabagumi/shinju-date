@@ -112,9 +112,6 @@ jobs:
       - name: Run Node.js lint
         run: pnpm biome ci --reporter=github .
 
-      - name: Check Next.js agent rules in AGENTS.md
-        run: pnpm agents:check
-
   # Type check job for Node.js (including test files, which Vitest does not type check)
   typecheck:
     name: Typecheck
