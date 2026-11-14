@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { PageHeader } from '@/components/page-header'
 import {
   ChartSkeleton,
   DateRangePickerSkeleton,
@@ -25,7 +26,7 @@ export default function ClickAnalyticsPage({
 
   return (
     <div className="mx-auto max-w-7xl p-6">
-      <h1 className="mb-6 text-3xl font-bold">クリックアナリティクス</h1>
+      <PageHeader title="クリックアナリティクス" />
 
       <div className="mb-6">
         <Suspense fallback={<DateRangePickerSkeleton />}>

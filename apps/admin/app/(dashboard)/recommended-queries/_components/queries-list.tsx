@@ -117,7 +117,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
           <p className="py-8 text-center text-gray-500">
             {searchQuery
               ? '検索結果がありません。'
-              : '手動追加されたオススメクエリがありません。'}
+              : '手動追加されたおすすめクエリがありません。'}
           </p>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-774-blue-300">
@@ -165,7 +165,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
           <p className="py-8 text-center text-gray-500">
             {searchQuery
               ? '検索結果がありません。'
-              : '自動選出されたオススメクエリがありません。'}
+              : '自動選出されたおすすめクエリがありません。'}
           </p>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-774-blue-300">

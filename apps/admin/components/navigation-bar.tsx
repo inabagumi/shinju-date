@@ -95,7 +95,7 @@ export function NavigationBar() {
                   href="/recommended-queries"
                   onClick={() => setIsDataMenuOpen(false)}
                 >
-                  オススメクエリ管理
+                  おすすめクエリ管理
                 </Link>
                 <Link
                   className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
@@ -263,7 +263,7 @@ export function NavigationBar() {
                 href="/recommended-queries"
                 onClick={() => setIsMenuOpen(false)}
               >
-                オススメクエリ管理
+                おすすめクエリ管理
               </Link>
               <Link
                 className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"

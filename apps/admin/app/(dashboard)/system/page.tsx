@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { PageHeader } from '@/components/page-header'
 import { CardSkeleton } from '@/components/skeletons'
 import { MaintenanceModePanel } from '../_components/maintenance-mode-panel'
 import { RecentActivity } from '../_components/recent-activity'
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 export default function SystemPage() {
   return (
     <div className="mx-auto max-w-7xl p-6">
-      <h1 className="mb-6 text-3xl font-bold">システム</h1>
+      <PageHeader title="システム" />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Suspense fallback={<CardSkeleton />}>

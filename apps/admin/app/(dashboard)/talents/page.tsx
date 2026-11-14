@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
+import { PageHeader } from '@/components/page-header'
 import { ManagementTableSkeleton } from '@/components/skeletons'
 import { TalentsList } from './_components/talents-list'
 import { getTalents } from './_lib/get-talents'
@@ -22,12 +23,10 @@ async function TalentsListData() {
 export default function TalentsPage() {
   return (
     <div className="mx-auto max-w-7xl p-6">
-      <h1 className="mb-2 text-3xl font-bold">タレント管理</h1>
-      <div className="mb-6">
-        <p className="text-sm text-gray-600">
-          登録されているタレントの一覧を表示します。
-        </p>
-      </div>
+      <PageHeader
+        description="登録されているタレントの一覧を表示します。"
+        title="タレント管理"
+      />
 
       <Suspense fallback={<ManagementTableSkeleton />}>
         <TalentsListData />

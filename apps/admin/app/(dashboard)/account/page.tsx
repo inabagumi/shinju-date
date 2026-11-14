@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
+import { PageHeader } from '@/components/page-header'
 import { FormCardSkeleton } from '@/components/skeletons'
 import { createSupabaseServerClient } from '@/lib/supabase'
 import { EmailUpdateForm } from './_components/email-update-form'
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 
 async function UserEmailData() {
   'use cache: private'
+
   cacheLife('seconds')
 
   const supabaseClient = await createSupabaseServerClient()
@@ -30,22 +32,22 @@ async function UserEmailData() {
 
 export default function AccountPage() {
   return (
-    <div className="mx-auto max-w-7xl space-y-8 p-6">
+    <div className="mx-auto max-w-7xl p-6">
       {/* Static header */}
-      <div>
-        <h1 className="text-3xl font-bold">アカウント設定</h1>
-        <p className="mt-2 text-slate-600">
-          ログイン情報を管理し、アカウントのセキュリティを維持します。
-        </p>
+      <PageHeader
+        description="ログイン情報を管理し、アカウントのセキュリティを維持します。"
+        title="アカウント設定"
+      />
+
+      <div className="space-y-8">
+        {/* Email form - requires user data */}
+        <Suspense fallback={<FormCardSkeleton />}>
+          <UserEmailData />
+        </Suspense>
+
+        {/* Password form - static component */}
+        <PasswordUpdateForm />
       </div>
-
-      {/* Email form - requires user data */}
-      <Suspense fallback={<FormCardSkeleton />}>
-        <UserEmailData />
-      </Suspense>
-
-      {/* Password form - static component */}
-      <PasswordUpdateForm />
     </div>
   )
 }
