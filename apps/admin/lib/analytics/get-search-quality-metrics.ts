@@ -4,6 +4,7 @@ import { REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { getRedisClient } from '@/lib/redis'
+import { listDatesInRange } from './list-dates-in-range'
 
 export type SearchQualityMetrics = {
   searchEngagementRate: number
@@ -29,26 +30,29 @@ export async function getSearchEngagementRate(
     const start = startDate
     const end = endDate ?? startDate
 
+    const dates = listDatesInRange(start, end)
+
+    if (dates.length === 0) {
+      return 0
+    }
+
+    // Fetch every day in a single request instead of one round trip per day.
+    // Each day queues two commands: total sessions, then sessions with search.
+    const pipeline = redisClient.pipeline()
+    for (const date of dates) {
+      const dateKey = formatDateKey(date)
+
+      pipeline.scard(`${REDIS_KEYS.SESSIONS_TOTAL_PREFIX}${dateKey}`)
+      pipeline.scard(`${REDIS_KEYS.SESSIONS_WITH_SEARCH_PREFIX}${dateKey}`)
+    }
+    const counts = await pipeline.exec<(number | null)[]>()
+
     let totalSessions = 0
     let totalSearchSessions = 0
 
-    let currentDate = start
-    while (Temporal.PlainDate.compare(currentDate, end) <= 0) {
-      const dateKey = formatDateKey(currentDate)
-
-      // Get total sessions for this date
-      const totalKey = `${REDIS_KEYS.SESSIONS_TOTAL_PREFIX}${dateKey}`
-      const searchKey = `${REDIS_KEYS.SESSIONS_WITH_SEARCH_PREFIX}${dateKey}`
-
-      const [totalSessionsCount, searchSessionsCount] = await Promise.all([
-        redisClient.scard(totalKey),
-        redisClient.scard(searchKey),
-      ])
-
-      totalSessions += totalSessionsCount ?? 0
-      totalSearchSessions += searchSessionsCount ?? 0
-
-      currentDate = currentDate.add({ days: 1 })
+    for (let i = 0; i < counts.length; i += 2) {
+      totalSessions += counts[i] ?? 0
+      totalSearchSessions += counts[i + 1] ?? 0
     }
 
     if (totalSessions === 0) {
@@ -82,18 +86,37 @@ export async function getSearchExitRates(
     const searchCounts = new Map<string, number>()
     const exitCounts = new Map<string, number>()
 
-    let currentDate = start
-    while (Temporal.PlainDate.compare(currentDate, end) <= 0) {
-      const dateKey = formatDateKey(currentDate)
+    const dates = listDatesInRange(start, end)
+
+    if (dates.length === 0) {
+      return []
+    }
+
+    // Fetch every day with one pipeline per data type (two requests in
+    // parallel) instead of one round trip per day
+    const searchPipeline = redisClient.pipeline()
+    const exitPipeline = redisClient.pipeline()
+    for (const date of dates) {
+      const dateKey = formatDateKey(date)
 
       // Get search counts from popular searches
-      const searchKey = `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${dateKey}`
-      const exitKey = `${REDIS_KEYS.SEARCH_EXIT_WITHOUT_CLICK_PREFIX}${dateKey}`
+      searchPipeline.zrange(
+        `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${dateKey}`,
+        0,
+        -1,
+        { withScores: true },
+      )
+      exitPipeline.hgetall(
+        `${REDIS_KEYS.SEARCH_EXIT_WITHOUT_CLICK_PREFIX}${dateKey}`,
+      )
+    }
+    const [dailySearchResults, dailyExitResults] = await Promise.all([
+      searchPipeline.exec<string[][]>(),
+      exitPipeline.exec<(Record<string, string> | null)[]>(),
+    ])
 
-      const [searchResults, exitResults] = await Promise.all([
-        redisClient.zrange<string[]>(searchKey, 0, -1, { withScores: true }),
-        redisClient.hgetall<Record<string, string>>(exitKey),
-      ])
+    for (const [index, searchResults] of dailySearchResults.entries()) {
+      const exitResults = dailyExitResults[index]
 
       // Process search counts
       for (let i = 0; i < searchResults.length; i += 2) {
@@ -115,8 +138,6 @@ export async function getSearchExitRates(
           }
         }
       }
-
-      currentDate = currentDate.add({ days: 1 })
     }
 
     // Calculate exit rates for each keyword
@@ -161,18 +182,27 @@ export async function getRepeatSearchRate(
     const start = startDate
     const end = endDate ?? startDate
 
+    const dates = listDatesInRange(start, end)
+
+    if (dates.length === 0) {
+      return 0
+    }
+
+    // Fetch every day in a single request instead of one round trip per day
+    const pipeline = redisClient.pipeline()
+    for (const date of dates) {
+      // Get search sessions data
+      pipeline.hgetall(
+        `${REDIS_KEYS.SEARCH_SESSIONS_PREFIX}${formatDateKey(date)}`,
+      )
+    }
+    const dailySessionData =
+      await pipeline.exec<(Record<string, string> | null)[]>()
+
     let totalSearches = 0
     let totalSessions = 0
 
-    let currentDate = start
-    while (Temporal.PlainDate.compare(currentDate, end) <= 0) {
-      const dateKey = formatDateKey(currentDate)
-
-      // Get search sessions data
-      const sessionKey = `${REDIS_KEYS.SEARCH_SESSIONS_PREFIX}${dateKey}`
-      const sessionData =
-        await redisClient.hgetall<Record<string, string>>(sessionKey)
-
+    for (const sessionData of dailySessionData) {
       if (sessionData) {
         for (const searchCount of Object.values(sessionData)) {
           const count = Number(searchCount)
@@ -180,8 +210,6 @@ export async function getRepeatSearchRate(
           totalSessions += 1
         }
       }
-
-      currentDate = currentDate.add({ days: 1 })
     }
 
     if (totalSessions === 0) {

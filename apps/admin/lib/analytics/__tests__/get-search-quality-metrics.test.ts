@@ -1,4 +1,5 @@
-import { describe, expect, it, vi } from 'vitest'
+import { REDIS_KEYS } from '@shinju-date/constants'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   getRepeatSearchRate,
   getSearchEngagementRate,
@@ -6,12 +7,17 @@ import {
 } from '../get-search-quality-metrics'
 
 // Mock Redis client
-vi.mock('@/lib/redis', () => {
+vi.mock('@/lib/redis', async () => {
+  const { createMockPipeline } = await import('./mock-redis-pipeline')
   const mockedRedisClient = {
     hgetall: vi.fn(),
+    pipeline: vi.fn(),
     scard: vi.fn(),
     zrange: vi.fn(),
   }
+  mockedRedisClient.pipeline.mockImplementation(() =>
+    createMockPipeline(mockedRedisClient),
+  )
   return {
     getRedisClient: vi.fn().mockReturnValue(mockedRedisClient),
   }
@@ -23,6 +29,10 @@ vi.mock('@shinju-date/logger', () => ({
     error: vi.fn(),
   },
 }))
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
 
 describe('getSearchEngagementRate', async () => {
   const { getRedisClient } = await import('@/lib/redis')
@@ -51,6 +61,38 @@ describe('getSearchEngagementRate', async () => {
     )
 
     expect(result).toBe(0)
+  })
+
+  it('should aggregate a date range in a single pipeline', async () => {
+    vi.mocked(redisClient.scard)
+      .mockResolvedValueOnce(100) // 2024-01-01 total sessions
+      .mockResolvedValueOnce(30) // 2024-01-01 search sessions
+      .mockResolvedValueOnce(300) // 2024-01-02 total sessions
+      .mockResolvedValueOnce(50) // 2024-01-02 search sessions
+
+    const result = await getSearchEngagementRate(
+      Temporal.PlainDate.from('2024-01-01'),
+      Temporal.PlainDate.from('2024-01-02'),
+    )
+
+    expect(result).toBe(20) // (30+50) / (100+300) * 100 = 20%
+    expect(redisClient.pipeline).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(redisClient.scard).mock.calls).toEqual([
+      [`${REDIS_KEYS.SESSIONS_TOTAL_PREFIX}20240101`],
+      [`${REDIS_KEYS.SESSIONS_WITH_SEARCH_PREFIX}20240101`],
+      [`${REDIS_KEYS.SESSIONS_TOTAL_PREFIX}20240102`],
+      [`${REDIS_KEYS.SESSIONS_WITH_SEARCH_PREFIX}20240102`],
+    ])
+  })
+
+  it('should return 0 without calling Redis for an empty range', async () => {
+    const result = await getSearchEngagementRate(
+      Temporal.PlainDate.from('2024-01-02'),
+      Temporal.PlainDate.from('2024-01-01'),
+    )
+
+    expect(result).toBe(0)
+    expect(redisClient.pipeline).not.toHaveBeenCalled()
   })
 
   it('should handle errors gracefully', async () => {
@@ -100,6 +142,36 @@ describe('getSearchExitRates', async () => {
     })
   })
 
+  it('should aggregate a date range with one pipeline per data type', async () => {
+    vi.mocked(redisClient.zrange)
+      .mockResolvedValueOnce(['keyword1', '100', 'keyword2', '50'])
+      .mockResolvedValueOnce(['keyword1', '100'])
+    vi.mocked(redisClient.hgetall)
+      .mockResolvedValueOnce({ keyword1: '30' })
+      .mockResolvedValueOnce(null)
+
+    const result = await getSearchExitRates(
+      Temporal.PlainDate.from('2024-01-01'),
+      Temporal.PlainDate.from('2024-01-02'),
+    )
+
+    expect(result).toEqual([
+      {
+        exitRate: 15, // 30/200 * 100
+        keyword: 'keyword1',
+        searchCount: 200,
+      },
+      {
+        exitRate: 0,
+        keyword: 'keyword2',
+        searchCount: 50,
+      },
+    ])
+    expect(redisClient.pipeline).toHaveBeenCalledTimes(2)
+    expect(redisClient.zrange).toHaveBeenCalledTimes(2)
+    expect(redisClient.hgetall).toHaveBeenCalledTimes(2)
+  })
+
   it('should handle missing exit data', async () => {
     vi.mocked(redisClient.zrange).mockResolvedValue(['keyword1', '100'])
 
@@ -135,6 +207,22 @@ describe('getRepeatSearchRate', async () => {
     )
 
     expect(result).toBe(2) // (3+1+2) / 3 = 2
+  })
+
+  it('should aggregate a date range in a single pipeline', async () => {
+    vi.mocked(redisClient.hgetall)
+      .mockResolvedValueOnce({ session1: '3', session2: '1' })
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ session3: '5' })
+
+    const result = await getRepeatSearchRate(
+      Temporal.PlainDate.from('2024-01-01'),
+      Temporal.PlainDate.from('2024-01-03'),
+    )
+
+    expect(result).toBe(3) // (3+1+5) / 3 = 3
+    expect(redisClient.pipeline).toHaveBeenCalledTimes(1)
+    expect(redisClient.hgetall).toHaveBeenCalledTimes(3)
   })
 
   it('should return 0 when no search sessions exist', async () => {
