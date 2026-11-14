@@ -597,7 +597,9 @@ CREATE POLICY "Enable update for admins"
 2つの方法で認証状態を制御できます。
 
 1.  **環境変数による強制認証**
-    -   `.env.local` ファイルなどで `MSW_SUPABASE_AUTHENTICATED=true` を設定すると、APIリクエストは常に認証済みユーザーからのものとして扱われます。
+    -   `ENABLE_MSW=true` に加えて、`.env.local` ファイルなどで `MSW_SUPABASE_AUTHENTICATED=true` を設定すると、ログインしなくても管理者ロールを持つモックのユーザー（`admin@example.com`）として扱われます。
+    -   セッションの Cookie がない場合は、`apps/admin/lib/supabase/mock-session.ts` がモックのセッションを補います。モックのアクセストークンは MSW のハンドラーしか受け付けないため、本番環境の認証には影響しません。
+    -   ログアウトしても認証済みのままです。ログイン画面を確認する場合は、この環境変数を設定しないでください。
     -   これは、UIコンポーネントの表示を素早く確認したい場合に便利です。
 
 2.  **ログインフォームによる手動認証**

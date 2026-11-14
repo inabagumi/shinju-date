@@ -10,6 +10,7 @@ export default defineConfig({
     './src/index.ts',
     './src/browser.ts',
     './src/server.ts',
+    './src/session.ts',
     './src/register.ts',
     './src/adapter.ts',
   ],

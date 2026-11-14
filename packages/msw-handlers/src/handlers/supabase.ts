@@ -13,6 +13,7 @@ import {
   youtubeChannels,
   youtubeVideos,
 } from '../collections.js'
+import { MOCK_SUPABASE_SESSION, MOCK_SUPABASE_USER } from '../session.js'
 
 /**
  * Mock data for Supabase tables using @msw/data
@@ -1535,39 +1536,7 @@ export const supabaseHandlers = [
         return HttpResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
 
-      return HttpResponse.json({
-        app_metadata: {
-          provider: 'email',
-          providers: ['email'],
-          // 管理画面は管理者ロールを持つユーザーのみ利用できる
-          role: 'admin',
-        },
-        aud: 'authenticated',
-        confirmed_at: '2023-01-01T00:00:00.000Z',
-        created_at: '2023-01-01T00:00:00.000Z',
-        email: 'admin@example.com',
-        email_confirmed_at: '2023-01-01T00:00:00.000Z',
-        id: 'mock-user-id',
-        identities: [
-          {
-            created_at: '2023-01-01T00:00:00.000Z',
-            id: 'mock-user-id',
-            identity_data: {
-              email: 'admin@example.com',
-              sub: 'mock-user-id',
-            },
-            last_sign_in_at: '2023-01-01T00:00:00.000Z',
-            provider: 'email',
-            updated_at: '2023-01-01T00:00:00.000Z',
-            user_id: 'mock-user-id',
-          },
-        ],
-        last_sign_in_at: '2023-01-01T00:00:00.000Z',
-        phone: '',
-        role: 'authenticated',
-        updated_at: '2023-01-01T00:00:00.000Z',
-        user_metadata: {},
-      })
+      return HttpResponse.json(MOCK_SUPABASE_USER)
     },
   ),
 
@@ -1597,52 +1566,10 @@ export const supabaseHandlers = [
           'sb-refresh-token=mock_refresh_token; Path=/; Max-Age=604800; SameSite=Lax',
         )
 
-        return HttpResponse.json(
-          {
-            access_token: 'mock_access_token',
-            expires_at: 9999999999,
-            expires_in: 3600,
-            refresh_token: 'mock_refresh_token',
-            token_type: 'bearer',
-            user: {
-              app_metadata: {
-                provider: 'email',
-                providers: ['email'],
-                // 管理画面は管理者ロールを持つユーザーのみ利用できる
-                role: 'admin',
-              },
-              aud: 'authenticated',
-              confirmed_at: '2023-01-01T00:00:00.000Z',
-              created_at: '2023-01-01T00:00:00.000Z',
-              email: 'admin@example.com',
-              email_confirmed_at: '2023-01-01T00:00:00.000Z',
-              id: 'mock-user-id',
-              identities: [
-                {
-                  created_at: '2023-01-01T00:00:00.000Z',
-                  id: 'mock-user-id',
-                  identity_data: {
-                    email: 'admin@example.com',
-                    sub: 'mock-user-id',
-                  },
-                  last_sign_in_at: '2023-01-01T00:00:00.000Z',
-                  provider: 'email',
-                  updated_at: '2023-01-01T00:00:00.000Z',
-                  user_id: 'mock-user-id',
-                },
-              ],
-              last_sign_in_at: '2023-01-01T00:00:00.000Z',
-              phone: '',
-              role: 'authenticated',
-              updated_at: '2023-01-01T00:00:00.000Z',
-              user_metadata: {},
-            },
-          },
-          {
-            headers,
-            status: 200,
-          },
-        )
+        return HttpResponse.json(MOCK_SUPABASE_SESSION, {
+          headers,
+          status: 200,
+        })
       }
       return HttpResponse.json(
         {
@@ -1677,46 +1604,7 @@ export const supabaseHandlers = [
         return HttpResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
 
-      return HttpResponse.json({
-        access_token: 'mock_access_token',
-        expires_at: 9999999999,
-        expires_in: 3600,
-        refresh_token: 'mock_refresh_token',
-        token_type: 'bearer',
-        user: {
-          app_metadata: {
-            provider: 'email',
-            providers: ['email'],
-            // 管理画面は管理者ロールを持つユーザーのみ利用できる
-            role: 'admin',
-          },
-          aud: 'authenticated',
-          confirmed_at: '2023-01-01T00:00:00.000Z',
-          created_at: '2023-01-01T00:00:00.000Z',
-          email: 'admin@example.com',
-          email_confirmed_at: '2023-01-01T00:00:00.000Z',
-          id: 'mock-user-id',
-          identities: [
-            {
-              created_at: '2023-01-01T00:00:00.000Z',
-              id: 'mock-user-id',
-              identity_data: {
-                email: 'admin@example.com',
-                sub: 'mock-user-id',
-              },
-              last_sign_in_at: '2023-01-01T00:00:00.000Z',
-              provider: 'email',
-              updated_at: '2023-01-01T00:00:00.000Z',
-              user_id: 'mock-user-id',
-            },
-          ],
-          last_sign_in_at: '2023-01-01T00:00:00.000Z',
-          phone: '',
-          role: 'authenticated',
-          updated_at: '2023-01-01T00:00:00.000Z',
-          user_metadata: {},
-        },
-      })
+      return HttpResponse.json(MOCK_SUPABASE_SESSION)
     },
   ),
 

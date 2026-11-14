@@ -32,6 +32,10 @@
       "types": "./dist/server.d.ts",
       "import": "./dist/server.js"
     },
+    "./session": {
+      "types": "./dist/session.d.ts",
+      "import": "./dist/session.js"
+    },
     "./register": {
       "import": "./dist/register.js"
     },
