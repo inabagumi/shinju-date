@@ -5,6 +5,8 @@ const limit = vi.fn()
 const createScraper = vi.fn(() => ({ provider: 'youtube' }))
 const revalidateTags = vi.fn()
 const workOffBackfillQueue = vi.fn()
+const recordBackfillJob = vi.fn()
+const supabaseClient = { from: vi.fn() }
 
 vi.mock('@/lib/ratelimit', () => ({
   talentsUpdate: { limit: vi.fn() },
@@ -16,7 +18,9 @@ vi.mock('@/lib/ratelimit', () => ({
 }))
 vi.mock('@/lib/redis', () => ({ redisClient: {} }))
 vi.mock('@/lib/scraper', () => ({ createScraper }))
+vi.mock('@/lib/supabase', () => ({ supabaseClient }))
 vi.mock('@/lib/video-backfill', () => ({ workOffBackfillQueue }))
+vi.mock('@/lib/video-backfill-history', () => ({ recordBackfillJob }))
 vi.mock('@shinju-date/web-cache', () => ({ revalidateTags }))
 
 vi.mock('@shinju-date/logger', () => ({
@@ -66,6 +70,17 @@ describe('POST /videos/backfill', () => {
     expect(getScraper('youtube')).toBe(getScraper('youtube'))
     getScraper('twitch')
     expect(createScraper.mock.calls).toEqual([['youtube'], ['twitch']])
+  })
+
+  it('records the jobs that finish in the history', async () => {
+    await POST(createRequest())
+
+    const [{ onFinish }] = workOffBackfillQueue.mock.calls[0] ?? []
+    const job = { id: 'youtube:channel-row-1', status: 'done' }
+
+    await onFinish(job)
+
+    expect(recordBackfillJob).toHaveBeenCalledWith(supabaseClient, job)
   })
 
   it('refreshes the public site after videos were added', async () => {

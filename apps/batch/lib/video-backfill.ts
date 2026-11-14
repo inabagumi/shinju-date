@@ -17,6 +17,11 @@ export interface WorkOffBackfillQueueOptions {
   /** Pages are read until this time; the page in progress is finished. */
   deadline: Temporal.Instant
   getScraper: (provider: BackfillProvider) => Scraper
+  /**
+   * Called with each job that is completed or given up, e.g. to record it in
+   * the history. A failure is reported and does not stop the run.
+   */
+  onFinish?: (job: BackfillJob) => Promise<void> | void
   queue: BackfillQueue
 }
 
@@ -28,6 +33,15 @@ export interface BackfillRunResult {
 }
 
 type Clock = () => Temporal.Instant
+
+type OnFinish = NonNullable<WorkOffBackfillQueueOptions['onFinish']>
+
+/**
+ * Sentry tag set on the error that made a job give up, so that an alert can
+ * notify of jobs that need to be requested again. Errors that are retried
+ * carry `retrying` instead.
+ */
+export const BACKFILL_SENTRY_TAG = 'video_backfill'
 
 const systemClock: Clock = () => Temporal.Now.instant()
 
@@ -41,12 +55,35 @@ function isBefore(clock: Clock, deadline: Temporal.Instant): boolean {
  *
  * @returns The number of videos saved.
  */
+async function reportFinished(
+  onFinish: OnFinish | undefined,
+  job: BackfillJob,
+): Promise<void> {
+  if (!onFinish) {
+    return
+  }
+
+  try {
+    await onFinish(job)
+  } catch (error) {
+    Sentry.captureException(error, {
+      extra: { jobId: job.id, status: job.status, talentId: job.talentId },
+    })
+    logger.error('過去動画の取り込みの結果を記録できませんでした', {
+      error,
+      jobId: job.id,
+      status: job.status,
+    })
+  }
+}
+
 async function workOnJob(
   queue: BackfillQueue,
   scraper: Scraper,
   claimed: BackfillJob,
   deadline: Temporal.Instant,
   clock: Clock,
+  onFinish: OnFinish | undefined,
 ): Promise<number> {
   let job = claimed
   let added = 0
@@ -64,19 +101,29 @@ async function workOnJob(
       const attempts = job.attempts + 1
       const message = error instanceof Error ? error.message : String(error)
       const context = { attempts, jobId: job.id, talentId: job.talentId }
-
-      Sentry.captureException(error, { extra: context })
-
       // A missing account will not come back by retrying.
-      if (
+      const givingUp =
         error instanceof AccountNotFoundError ||
         attempts >= BACKFILL_MAX_ATTEMPTS
-      ) {
+
+      Sentry.captureException(error, {
+        extra: context,
+        level: givingUp ? 'error' : 'warning',
+        tags: {
+          [BACKFILL_SENTRY_TAG]: givingUp ? 'failed' : 'retrying',
+          provider: job.provider,
+        },
+      })
+
+      if (givingUp) {
         logger.error('過去動画の取り込みを中止しました', {
           ...context,
           error: message,
         })
-        await queue.fail({ ...job, attempts }, message)
+        await reportFinished(
+          onFinish,
+          await queue.fail({ ...job, attempts }, message),
+        )
       } else {
         logger.warn('過去動画の取り込みに失敗したため後で再試行します', {
           ...context,
@@ -105,7 +152,7 @@ async function workOnJob(
         pages: job.pages,
         talentId: job.talentId,
       })
-      await queue.complete(job)
+      await reportFinished(onFinish, await queue.complete(job))
 
       return added
     }
@@ -147,6 +194,7 @@ export async function workOffBackfillQueue({
   clock = systemClock,
   deadline,
   getScraper,
+  onFinish,
   queue,
 }: WorkOffBackfillQueueOptions): Promise<BackfillRunResult> {
   const seen = new Set<string>()
@@ -171,6 +219,7 @@ export async function workOffBackfillQueue({
       job,
       deadline,
       clock,
+      onFinish,
     )
   }
 

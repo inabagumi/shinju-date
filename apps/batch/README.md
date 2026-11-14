@@ -70,6 +70,8 @@ pnpm exec playwright test --ui
     - 1 回の実行では約 50 秒の間、ジョブを順番に 1 ページずつ読み、未保存の動画だけを `/videos/update` と同じ経路で保存する
     - 時間内に読み終わらなかったジョブはカーソルを保存してキューの末尾に戻し、次の実行で続きから読む
     - 失敗したジョブは次の実行で再試行し、3 回続けて失敗するか、アカウントが見つからなければ失敗として終える
+    - 完了・失敗として終えたジョブは Supabase の `video_backfill_jobs` に履歴として記録する（Redis のジョブは 7 日で消えるため）。記録に失敗しても取り込みは止めず、Sentry に報告する
+    - 失敗として終えたときのエラーは Sentry に `level: error`・タグ `video_backfill: failed` で報告する（再試行するときは `level: warning`・`video_backfill: retrying`）。このタグで Sentry のアラートを設定すると、失敗をメールなどで通知できる
     - キューが空のときは何もしない。レート制限は `/videos/update` と別なので、新着の取得を妨げない
   - `/talents/update`: タレント／チャンネル情報の更新
     - デフォルト / `?provider=youtube`: YouTubeチャンネル同期（3時間毎）
