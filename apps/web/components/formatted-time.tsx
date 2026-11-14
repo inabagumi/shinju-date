@@ -1,5 +1,10 @@
 'use client'
 
+import {
+  formatDate,
+  formatDateTimeWithSeconds,
+  formatTime,
+} from '@shinju-date/temporal-fns'
 import { useNow } from './timer'
 
 export default function FormattedTime({
@@ -12,6 +17,18 @@ export default function FormattedTime({
   options?: Pick<Intl.DateTimeFormatOptions, 'dateStyle' | 'timeStyle'>
 }) {
   const now = useNow()
+  // Build the text without `toLocaleString`, whose output differs between the
+  // native Temporal and temporal-polyfill and causes hydration errors.
+  const formatted = [
+    dateStyle
+      ? formatDate(dateTime, { includeYear: now.year !== dateTime.year })
+      : undefined,
+    timeStyle
+      ? formatTime(dateTime, { includeSeconds: timeStyle !== 'short' })
+      : undefined,
+  ]
+    .filter((value) => value !== undefined)
+    .join(' ')
 
   return (
     <time
@@ -19,19 +36,9 @@ export default function FormattedTime({
       dateTime={dateTime.toString({
         timeZoneName: 'never',
       })}
-      title={dateTime.toLocaleString('ja-JP', {
-        dateStyle: 'short',
-        timeStyle: 'medium',
-      })}
+      title={formatDateTimeWithSeconds(dateTime)}
     >
-      {dateTime.toLocaleString('ja-JP', {
-        day: dateStyle ? '2-digit' : undefined,
-        hour: timeStyle ? '2-digit' : undefined,
-        minute: timeStyle ? '2-digit' : undefined,
-        month: dateStyle ? '2-digit' : undefined,
-        second: timeStyle && timeStyle !== 'short' ? '2-digit' : undefined,
-        year: dateStyle && now.year !== dateTime.year ? 'numeric' : undefined,
-      })}
+      {formatted}
     </time>
   )
 }
