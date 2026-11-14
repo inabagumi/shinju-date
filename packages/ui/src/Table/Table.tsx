@@ -3,6 +3,8 @@ import { twMerge } from '../tw-merge'
 
 /**
  * 表。外枠を `border` と角丸で囲み、列がはみ出す場合は表の中で横にスクロールする。
+ * 外枠を `relative` にして、セルの中の `sr-only` などの絶対配置の要素も外枠の中に
+ * 収め、ページ全体が横にはみ出さないようにする。
  * スクロールする入れ物は、キーボードでも横にスクロールできるよう Tab で
  * フォーカスできる。`className` は `<table>` に付く。
  *
@@ -24,7 +26,7 @@ import { twMerge } from '../tw-merge'
 export function Table({ className, ...props }: ComponentPropsWithRef<'table'>) {
   return (
     <div
-      className="w-full overflow-x-auto rounded-container border border-border bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="relative w-full overflow-x-auto rounded-container border border-border bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       // biome-ignore lint/a11y/noNoninteractiveTabindex: 横にはみ出した列をキーボードでもスクロールできるようにする
       tabIndex={0}
     >
