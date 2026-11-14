@@ -1,17 +1,20 @@
 import type { Metadata } from 'next'
-import { NotFoundContent } from './(dashboard)/_components/not-found-content'
-import DashboardLayout from './(dashboard)/layout'
+import { Header } from '@/components/header'
+import { NotFoundContent } from '@/components/not-found-content'
 
 export const metadata: Metadata = {
   title: 'ページが見つかりません',
 }
 
-// Unmatched URLs render this file inside the root layout only, so wrap it in
-// the dashboard layout to keep the navigation bar.
+// `(dashboard)/not-found.tsx` handles `notFound()` inside the dashboard layout,
+// while this file handles unmatched URLs, which render outside of it.
 export default function NotFound() {
   return (
-    <DashboardLayout>
-      <NotFoundContent />
-    </DashboardLayout>
+    <div>
+      <Header />
+      <main>
+        <NotFoundContent />
+      </main>
+    </div>
   )
 }

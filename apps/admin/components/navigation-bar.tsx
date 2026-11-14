@@ -5,7 +5,7 @@ import NextLink from 'next/link'
 import { usePathname } from 'next/navigation'
 import { type ComponentProps, Suspense, useState } from 'react'
 import Form, { SubmitButton } from '@/components/form'
-import { signOut } from '../_lib/actions'
+import { signOut } from '@/lib/actions/sign-out'
 
 function ActiveNavigationLink({
   href,

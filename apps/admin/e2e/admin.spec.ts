@@ -190,7 +190,8 @@ test.describe('Admin App - Not Found', () => {
     await expect(
       page.getByRole('heading', { level: 2, name: 'ページが見つかりません' }),
     ).toBeVisible()
-    await expect(page.getByRole('navigation').first()).toBeVisible()
+    await expect(page.getByRole('navigation')).toHaveCount(1)
+    await expect(page.getByRole('navigation')).toBeVisible()
     await expect(
       page.getByRole('link', { name: 'ダッシュボードに戻る' }),
     ).toBeVisible()
