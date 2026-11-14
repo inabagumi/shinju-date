@@ -102,7 +102,7 @@ export function FeatureRequestList({
 
       {filteredRequests.length === 0 ? (
         <EmptyState
-          className="rounded-container border border-border"
+          className="rounded-container border border-border bg-surface"
           icon={<Inbox />}
           title="機能要望がありません"
         />

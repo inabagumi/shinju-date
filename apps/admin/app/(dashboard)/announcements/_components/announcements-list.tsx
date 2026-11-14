@@ -83,7 +83,7 @@ export function AnnouncementsList({
   if (announcements.length === 0) {
     return (
       <EmptyState
-        className="rounded-container border border-border"
+        className="rounded-container border border-border bg-surface"
         description="新しいお知らせを追加してください。"
         icon={<Megaphone />}
         title="お知らせがありません。"

@@ -130,7 +130,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
         </h2>
         {filteredManualQueries.length === 0 ? (
           <EmptyState
-            className="rounded-container border border-border"
+            className="rounded-container border border-border bg-surface"
             title={
               searchQuery
                 ? '検索結果がありません。'
@@ -183,7 +183,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
         </div>
         {filteredAutoQueries.length === 0 ? (
           <EmptyState
-            className="rounded-container border border-border"
+            className="rounded-container border border-border bg-surface"
             title={
               searchQuery
                 ? '検索結果がありません。'

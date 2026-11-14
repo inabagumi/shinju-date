@@ -52,7 +52,7 @@ function SyncVideoButton({ videoId, platform }: SyncVideoButtonProps) {
 
   return (
     <>
-      <Button disabled={isPending} onClick={handleSync} variant="primary">
+      <Button disabled={isPending} onClick={handleSync} variant="secondary">
         {isPending && (
           <Loader2 aria-hidden="true" className="mr-2 size-4 animate-spin" />
         )}

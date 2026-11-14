@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@shinju-date/ui'
+import { Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { FormState } from '@/components/form'
 import Form, {
@@ -74,7 +75,10 @@ export function TermModal({ term }: TermModalProps) {
             編集
           </Button>
         ) : (
-          <Button>新しい用語を追加</Button>
+          <Button className="shrink-0 gap-2">
+            <Plus aria-hidden="true" className="size-4" />
+            新しい用語を追加
+          </Button>
         )}
       </DialogTrigger>
       <DialogPortal>
