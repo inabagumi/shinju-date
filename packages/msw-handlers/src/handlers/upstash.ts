@@ -114,6 +114,24 @@ function simulateBackfillEnqueue(keys: any[], argv: any[]): number {
 }
 
 /**
+ * Simulate `REQUEUE_SCRIPT` of `@shinju-date/video-backfill`: puts a claimed
+ * job back in the queue as pending and releases it.
+ */
+function simulateBackfillRequeue(keys: any[], argv: any[]): number {
+  const [queueKey, jobKey, lockKey] = keys
+  const [id, job] = argv
+  const rawList = mockRedisStore.get(queueKey)
+  const list = Array.isArray(rawList) ? rawList : []
+
+  list.unshift(id)
+  mockRedisStore.set(queueKey, list)
+  mockRedisStore.set(jobKey, job)
+  mockRedisStore.delete(lockKey)
+
+  return 1
+}
+
+/**
  * Parse Upstash Redis REST API command
  */
 function parseUpstashCommand(body: any) {
@@ -196,6 +214,10 @@ function processRedisCommand(command: string, args: any[]): any {
 
       if (String(script).includes('-- video-backfill:enqueue')) {
         return { result: simulateBackfillEnqueue(keys, argv) }
+      }
+
+      if (String(script).includes('-- video-backfill:requeue')) {
+        return { result: simulateBackfillRequeue(keys, argv) }
       }
 
       return { result: null }

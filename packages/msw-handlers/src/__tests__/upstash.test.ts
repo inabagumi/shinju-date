@@ -141,6 +141,32 @@ describe('Upstash Redis Handlers', () => {
       )
     })
 
+    it('emulates the requeue script of the backfill queue', async () => {
+      const script = '-- video-backfill:requeue\n...'
+      const job = JSON.stringify({ status: 'pending' })
+
+      await send(['set', 'test:requeue-lock', 'worker'])
+
+      await expect(
+        send([
+          'eval',
+          script,
+          3,
+          'test:requeue-queue',
+          'test:requeue-job',
+          'test:requeue-lock',
+          'youtube:y',
+          job,
+          60,
+        ]),
+      ).resolves.toBe(1)
+      await expect(send(['get', 'test:requeue-job'])).resolves.toBe(job)
+      await expect(send(['mget', 'test:requeue-lock'])).resolves.toEqual([null])
+      await expect(send(['rpop', 'test:requeue-queue'])).resolves.toBe(
+        'youtube:y',
+      )
+    })
+
     it('works as a FIFO queue with LPUSH and RPOP', async () => {
       await expect(send(['lpush', 'test:queue', 'a'])).resolves.toBe(1)
       await expect(send(['lpush', 'test:queue', 'b', 'c'])).resolves.toBe(3)
