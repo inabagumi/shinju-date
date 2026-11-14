@@ -59,6 +59,22 @@ devcontainer down --workspace-folder .
 pnpm run check --fix
 ```
 
+#### 型チェック
+
+Vitest はテストを実行する際に型を検査せず、パッケージのビルド（tsup）もエントリーポイントから辿れるファイルしか検査しません。テストファイルを含めた型エラーを検出するため、TypeScript のコードを変更した後は型チェックも実行してください。
+
+```bash
+# すべてのパッケージとアプリケーション
+pnpm run typecheck
+
+# 特定のパッケージ
+pnpm run typecheck --filter=@shinju-date/msw-handlers
+```
+
+- 各パッケージ・アプリケーションの `typecheck` スクリプト（`tsc --noEmit`）を Turborepo 経由で実行します
+- 依存パッケージのビルド（`^build`）と、Next.js のアプリケーションでは `next typegen` による型の生成（`PageProps`、`LayoutProps`、`RouteContext` など）を先に実行します
+- 新しいパッケージやアプリケーションを追加した場合は、`package.json` に `"typecheck": "tsc --noEmit"` を追加してください
+
 ### TypeScript 型定義の規約
 
 **重要**: オブジェクト型の定義には `interface` を使用してください。
@@ -203,6 +219,9 @@ git checkout -b fix/issue-description
 # 品質チェック
 pnpm run check --fix
 
+# 型チェック
+pnpm run typecheck
+
 # テスト実行
 pnpm run test
 
@@ -220,6 +239,7 @@ pnpm run build
 
 - CI/CDが通ることを確認
   - **Lint**: コード品質チェック（Biome）が成功すること
+  - **Typecheck**: テストファイルを含めた型チェック（`tsc`）が成功すること
   - **Test**: テストが全て成功すること
   - **Build**: 全てのパッケージとアプリケーションがビルドできること
 - コードレビューに対応
@@ -238,23 +258,28 @@ Node.js CI は以下のジョブ構成になっています：
    - pnpm のキャッシュを使用して高速にインストール
    - Biomeによるフォーマットとリンティングを実行
 
-3. **Test** - テスト実行（並列実行）
+3. **Typecheck** - 型チェック（並列実行）
+   - Install Dependencies 成功後に実行
+   - pnpm のキャッシュを使用して高速にインストール
+   - `pnpm typecheck` でテストファイルを含めた全てのパッケージとアプリケーションの型を検査
+
+4. **Test** - テスト実行（並列実行）
    - Install Dependencies 成功後に実行
    - pnpm のキャッシュを使用して高速にインストール
    - ユニットテストを実行
 
-4. **Build** - ビルド確認（並列実行）
+5. **Build** - ビルド確認（並列実行）
    - Install Dependencies 成功後に実行
    - pnpm のキャッシュを使用して高速にインストール
    - 全てのパッケージとアプリケーションがビルドできることを確認
 
-5. **E2E Tests** - エンドツーエンドテスト
+6. **E2E Tests** - エンドツーエンドテスト
    - Test と Build の両方が成功した場合に実行
    - 現在は準備中（将来的に追加予定）
 
 **並列実行の利点**：
 
-- Lint、Test、Build が同時に実行されるため、CI時間が短縮されます
+- Lint、Typecheck、Test、Build が同時に実行されるため、CI時間が短縮されます
 - pnpm の組み込みキャッシュ機能により、各ジョブで依存関係を高速にインストールできます
 - 各ジョブは個別のチェックとして表示されるため、失敗した場合は具体的にどの段階で問題が発生したか容易に特定できます
 
