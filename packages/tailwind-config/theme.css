@@ -35,12 +35,10 @@
    * 角丸と影。使い分けは docs/design-guidelines.md を参照。ここに追加したら
    * packages/ui/src/tw-merge.ts の一覧にも追加する。
    */
-  --radius-control: var(
-    --radius-md
-  ); /* 6px: 操作部品（ボタン・入力欄・バッジ・メニュー項目） */
-  --radius-container: var(
-    --radius-xl
-  ); /* 12px: 入れ物（サムネイル・モーダル・表・パネル・メニュー） */
+  /* 6px: 操作部品（ボタン・入力欄・バッジ・メニュー項目） */
+  --radius-control: var(--radius-md);
+  /* 12px: 入れ物（サムネイル・モーダル・表・パネル・メニュー） */
+  --radius-container: var(--radius-xl);
   /*
    * 重なるもの（モーダル・ドロップダウン・お知らせバナー）。値は既定の
    * `shadow-lg` と同じ。`var(--shadow-lg)` にすると、Tailwind が値の中の色を
