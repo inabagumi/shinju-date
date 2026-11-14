@@ -267,9 +267,15 @@ export default function VideoList({ videos }: Props) {
                       <PlatformBadge platform={video.platform} />
                     </td>
                     <td className="p-3">
-                      <span className="text-sm text-gray-600">
-                        {video.talent.name}
-                      </span>
+                      {video.talent ? (
+                        <span className="text-sm text-gray-600">
+                          {video.talent.name}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-400">
+                          タレント不明
+                        </span>
+                      )}
                     </td>
                     <td className="p-3">
                       <time

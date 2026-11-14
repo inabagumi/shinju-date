@@ -192,12 +192,16 @@ async function CachedVideoDetails({ id }: { id: string }) {
               <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-gray-500">タレント</dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  <Link
-                    className="text-774-blue-600 hover:text-774-blue-800"
-                    href={`/talents/${video.talent.id}`}
-                  >
-                    {video.talent.name}
-                  </Link>
+                  {video.talent ? (
+                    <Link
+                      className="text-774-blue-600 hover:text-774-blue-800"
+                      href={`/talents/${video.talent.id}`}
+                    >
+                      {video.talent.name}
+                    </Link>
+                  ) : (
+                    <span className="text-gray-400">タレント不明</span>
+                  )}
                 </dd>
               </div>
               <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">

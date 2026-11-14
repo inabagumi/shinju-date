@@ -47,7 +47,7 @@ export interface VideoDetail {
   video_kind: Tables<'videos'>['video_kind']
   thumbnail: Thumbnail | null
   clicks: number
-  talent: Talent
+  talent: Talent | null
   youtube_video: YoutubeVideo | null
   twitch_video: TwitchVideo | null
 }
