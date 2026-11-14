@@ -2,6 +2,7 @@ import type { default as DefaultDatabase } from '@shinju-date/database'
 import { createServerClient } from '@supabase/ssr'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import { withMockSessionCookie } from '@/lib/supabase/mock-session'
 
 const isProd = process.env['NODE_ENV'] === 'production'
 
@@ -27,7 +28,7 @@ export async function createSupabaseServerClient<
   return createServerClient<Database>(url, key, {
     cookies: {
       getAll() {
-        return cookieStore.getAll()
+        return withMockSessionCookie(url, cookieStore.getAll())
       },
       setAll(cookiesToSet) {
         try {
