@@ -100,3 +100,126 @@ describe('getTwitchCredentials', () => {
     })
   })
 })
+
+describe('lookups by ID', () => {
+  const getVideosByIds = vi.fn()
+  const getClipsByIds = vi.fn()
+
+  function notFound(): Error {
+    return Object.assign(new Error('Encountered HTTP status code 404'), {
+      statusCode: 404,
+    })
+  }
+
+  function helixVideo(id: string) {
+    return {
+      creationDate: new Date('2024-01-01T00:00:00Z'),
+      description: '',
+      durationInSeconds: 3723,
+      id,
+      isPublic: true,
+      language: 'ja',
+      publishDate: new Date('2024-01-01T00:00:00Z'),
+      streamId: null,
+      thumbnailUrl: 'https://example.com/%{width}x%{height}.jpg',
+      title: `Video ${id}`,
+      type: 'archive',
+      url: `https://www.twitch.tv/videos/${id}`,
+      userDisplayName: 'Alice',
+      userId: 'user-1',
+      userName: 'alice',
+      views: 1,
+    }
+  }
+
+  beforeEach(() => {
+    vi.resetModules()
+    vi.stubEnv('TWITCH_CLIENT_ID', 'test-client-id')
+    vi.stubEnv('TWITCH_CLIENT_SECRET', 'test-client-secret')
+    getVideosByIds.mockReset()
+    getClipsByIds.mockReset()
+
+    vi.doMock('@twurple/auth', () => ({
+      AppTokenAuthProvider: class {},
+    }))
+    vi.doMock('@twurple/api', () => ({
+      ApiClient: class {
+        clips = { getClipsByIds }
+        videos = { getVideosByIds }
+      },
+    }))
+  })
+
+  afterEach(() => {
+    vi.doUnmock('@twurple/api')
+    vi.doUnmock('@twurple/auth')
+    vi.unstubAllEnvs()
+    vi.resetModules()
+  })
+
+  it('maps videos Helix returns', async () => {
+    getVideosByIds.mockResolvedValue([helixVideo('1')])
+
+    const { getVideos } = await import('../index')
+    const videos = await Array.fromAsync(getVideos({ ids: ['1'] }))
+
+    expect(videos).toHaveLength(1)
+    expect(videos[0]).toMatchObject({
+      duration: 'PT1H2M3S',
+      id: '1',
+      published_at: '2024-01-01T00:00:00Z',
+      type: 'archive',
+    })
+  })
+
+  it('treats a 404 for a single video as not found', async () => {
+    getVideosByIds.mockRejectedValue(notFound())
+
+    const { getVideos } = await import('../index')
+
+    await expect(
+      Array.fromAsync(getVideos({ ids: ['gone'] })),
+    ).resolves.toEqual([])
+  })
+
+  it('still returns existing videos when a batch answers 404', async () => {
+    getVideosByIds.mockImplementation(async (ids: string[]) => {
+      if (ids.includes('gone')) {
+        throw notFound()
+      }
+
+      return ids.map(helixVideo)
+    })
+
+    const { getVideos } = await import('../index')
+    const videos = await Array.fromAsync(
+      getVideos({ ids: ['1', '2', 'gone', '3', '4'] }),
+    )
+
+    expect(videos.map((video) => video.id)).toEqual(['1', '2', '3', '4'])
+  })
+
+  it('rethrows errors other than 404', async () => {
+    getVideosByIds.mockRejectedValue(
+      Object.assign(new Error('Encountered HTTP status code 500'), {
+        statusCode: 500,
+      }),
+    )
+
+    const { getVideos } = await import('../index')
+
+    await expect(Array.fromAsync(getVideos({ ids: ['1'] }))).rejects.toThrow(
+      /500/,
+    )
+  })
+
+  it('treats a 404 for clips as not found', async () => {
+    getClipsByIds.mockRejectedValue(notFound())
+
+    const { getClips } = await import('../index')
+
+    await expect(Array.fromAsync(getClips({ ids: ['gone'] }))).resolves.toEqual(
+      [],
+    )
+  })
+})

@@ -44,21 +44,23 @@ pnpm exec playwright test --ui
 このアプリケーションは、以下のような定期処理を実行します：
 
 - **データ同期処理**（`provider` でプラットフォームを分離。省略時は `youtube`）
-  - `/videos/update`: 新着動画の追加専用（Twitch は LIVE 作成と VOD 突合も含む）
-    - デフォルト / `?provider=youtube`: YouTube新着（約5分毎）
-    - `?provider=twitch`: Helix Streams（LIVE）+ アーカイブ（VOD）新着（約5分毎）
-      - 配信中は `status: LIVE`、合成 id `live:{stream_id}` で upsert
-      - VOD 取り込み時は `stream_id` で LIVE 行と突合し同一レコードを `ENDED` に更新
-    - YouTube は既存動画を更新しない（更新は`/videos/check`）
-    - サムネイル処理も新規動画のみ対象（Twitch LIVE→VOD 突合時は差し替え可）
+  - `/videos/update`: 新着動画の追加専用（約5分毎）。既存動画は更新しない（更新は `/videos/check`）
+    - デフォルト / `?provider=youtube`: 各チャンネルの最新アップロードのうち未保存のものを追加
+    - `?provider=twitch`: アーカイブ（VOD）とアップロード動画のうち未保存のものを追加
+      - アーカイブは `stream_id` で配信中の行と突合し、同じレコードに紐づける
+      - Twitch は配信開始と同時にアーカイブを作るため、配信中のアーカイブは `LIVE` のまま扱う
+    - サムネイルは追加時に取得する
     - 1リクエストでは単一プロバイダのみ処理（タイムアウト回避）
   - `/videos/check`: 既存動画の情報更新と削除判定
-    - デフォルト（`provider=youtube`、パラメータなし）: UPCOMING/LIVE（1分毎）
-    - `?provider=twitch`（default）: LIVE の再確認・終了処理（1分毎）
-      - Streams API で配信中を確認し、オフラインなら `ENDED`（VOD 未到着時も LIVE バッジを落とす）
-      - 直近アーカイブと `stream_id` が一致すれば VOD id に差し替え
-    - `?mode=recent` / `?provider=twitch&mode=recent`: 最新100件のメタデータ更新
-    - `?mode=all` / `?provider=twitch&mode=all`: 削除判定のみ（週2回）
+    - デフォルト（`provider=youtube`、パラメータなし）: UPCOMING/LIVE の動画を更新（1分毎）
+    - `?provider=twitch`: 配信の LIVE 状態を同期（1分毎）
+      - 配信が始まったら `status: LIVE`、合成 id `live:{stream_id}` の行を追加（Twitch には配信予定の事前登録がないため、ここで検出する）
+      - 配信中はタイトル変更に追従する
+      - 配信が終わったら `ENDED` にし、アーカイブが見つかればその情報（VOD id・長さ・タイトル）に差し替える
+      - アーカイブが残らない配信（VOD 無効など）は合成 id のまま `ENDED` で残る
+    - `?mode=recent` / `?provider=twitch&mode=recent`: 最新100件（ENDED/PUBLISHED）のメタデータ更新と削除判定
+      - Twitch は配信直後だとサムネイルが未生成のため、サムネイルがない動画はここで補完する
+    - `?mode=all` / `?provider=twitch&mode=all`: 全動画の削除判定のみ（週2回）
   - `/videos/cascade-from-talents`: タレント削除／復活に伴う動画の連鎖処理（5分毎）
     - 削除済みタレントに紐づく未削除動画をソフトデリート（`deleted_reason = talent_deleted`）
     - 復活済みタレントに紐づく `talent_deleted` のみ復旧（`unavailable` / `withdrawn` は対象外）
@@ -88,8 +90,8 @@ pnpm exec playwright test --ui
   - `provider=youtube`（デフォルト）/ `provider=twitch`
 - `POST /videos/check` - 既存動画の情報更新と削除判定
   - `provider=youtube`（デフォルト）/ `provider=twitch`
-  - パラメータなし: UPCOMING/LIVE動画の情報更新（YouTubeのみ）
-  - `mode=recent`: 最新100件の動画の情報更新
+  - パラメータなし: UPCOMING/LIVE動画の情報更新（Twitch は配信の LIVE 状態の同期）
+  - `mode=recent`: 最新100件の動画の情報更新と削除判定
   - `mode=all`: 全動画の削除判定（情報更新なし）
 - `POST /videos/cascade-from-talents` - タレント削除／復活に伴う動画の連鎖ソフトデリート／復旧
 
@@ -125,6 +127,30 @@ pnpm exec playwright test --ui
 
 **注意**: 人気度の更新は、既存の `terms` テーブルに登録されている用語のみが対象です。新しい用語の追加は別途手動または専用のバッチ処理で行う必要があります。
 
+## クローラーの構成
+
+YouTube / Twitch のクローラー（`/videos/update`・`/videos/check`・`/talents/update`）の本体は `@shinju-date/scraper` にあります。取得・差分判定・データベースへの書き込み・サムネイル保存はすべてそちらの担当で、仕様もそちらの README にあります。
+
+このアプリが受け持つのは次の 3 つです。
+
+1. クエリを検証し、cron 共通の実行基盤（認証・レート制限・Sentry チェックイン・エラー処理）に載せる
+2. プロバイダーに対応するスクレイパーを作り、ルートに応じた操作を呼ぶ
+3. 変更があれば公開サイトのキャッシュを再検証し、最終同期時刻を記録する
+
+| ルート                      | 呼び出す操作              |
+| --------------------------- | ------------------------- |
+| `/videos/update`            | `addNewVideos`            |
+| `/videos/check`             | `refreshLiveVideos`       |
+| `/videos/check?mode=recent` | `refreshRecentVideos`     |
+| `/videos/check?mode=all`    | `removeUnavailableVideos` |
+| `/talents/update`           | `syncAccounts`            |
+
+スクレイパーは 1 アカウント・1 動画単位の失敗では止まらず、その失敗を Sentry に報告して続行します。実行全体が失敗した場合だけ例外になり、実行基盤が 500 と Sentry チェックインの `error` にします。
+
+### スケジュールの定義
+
+Sentry Cron Monitoring に渡すスケジュールは、`vercel.json` の `crons` とは別にコード側のジョブ定義にも書いてあります。スケジュールを変えるときは両方を更新してください（ずれているとテストが落ちます）。
+
 ## ディレクトリ構成ルール
 
 このアプリケーションでは、共通ロジックとルート固有ロジックを明確に分離するため、以下のディレクトリ構成ルールを定めます：
@@ -136,24 +162,9 @@ pnpm exec playwright test --ui
 **配置基準:**
 
 - 複数のルート間で再利用されるロジック
-- アプリケーション全体で共通の設定やクライアント（Supabase、Redis、YouTubeなど）
+- アプリケーション全体で共通の設定やクライアント（Supabase、Redis など）
 - データベース操作の基本関数（汎用的なCRUD操作）
-- サムネイル処理など、汎用的なユーティリティ
-
-**例:**
-
-- `lib/supabase.ts` - Supabaseクライアントの初期化
-- `lib/redis.ts` - Redisクライアントの初期化
-- `lib/youtube.ts` - YouTube APIクライアントの初期化
-- `lib/provider.ts` - バッチ `provider` クエリ（youtube / twitch）のパース
-- `lib/database/operations.ts` - 汎用的なデータベース操作（`getSavedVideos`, `getSavedTwitchVideos`, `upsertVideos`, `processTwitchUsers`など）
-- `lib/database/video-updates.ts` - 動画更新処理（複数ルートで使用）
-- `lib/thumbnails/` - サムネイル処理ロジック（YouTube / Twitch URL両対応）
-
-プラットフォーム固有の取得オーケストレーションは workspace パッケージ:
-
-- `@shinju-date/youtube-scraper` - YouTube 用 Scraper
-- `@shinju-date/twitch-scraper` - Twitch 用 Scraper（Helix コールバック API）
+- 汎用的なユーティリティ
 
 ### `app/*/\_lib/` - ルート固有ライブラリ
 
@@ -165,20 +176,6 @@ pnpm exec playwright test --ui
 - そのルートでのみ意味を持つ型定義
 - クエリパラメータのスキーマ定義
 - ルート固有のヘルパー関数
-
-**例:**
-
-- `app/videos/check/_lib/get-saved-videos.ts` - `/videos/check`専用の動画取得ロジック
-- `app/videos/check/_lib/types.ts` - `/videos/check`で使用する型定義
-- `app/videos/check/_lib/query-schema.ts` - クエリパラメータのバリデーションスキーマ
-- `app/videos/check/_lib/get-monitor-slug.ts` - Sentryモニタースラッグ生成
-- `app/videos/update/_lib/constants.ts` - `/videos/update`専用の定数定義
-- `app/videos/update/_lib/save-videos.ts` - `/videos/update`専用のYouTube動画保存処理
-- `app/videos/update/_lib/save-twitch-videos.ts` - `/videos/update`専用のTwitch VOD保存・LIVE突合
-- `app/videos/update/_lib/save-twitch-streams.ts` - `/videos/update`専用のTwitch LIVE保存
-- `app/videos/check/_lib/get-saved-twitch-videos.ts` - Twitch動画の取得
-- `app/videos/check/_lib/process-twitch-videos-for-check.ts` - Twitch動画の更新・削除
-- `app/videos/check/_lib/process-twitch-live-for-check.ts` - Twitch LIVE の再確認・アーカイブ突合
 
 ### 判断基準
 

@@ -48,12 +48,9 @@ vi.mock('temporal-polyfill', () => ({
 }))
 
 vi.mock('@shinju-date/youtube-api-client', () => ({
-  getVideos: vi.fn(),
-}))
-
-vi.mock('@shinju-date/youtube-scraper', () => ({
   getPublishedAt: vi.fn(),
   getVideoStatus: vi.fn(),
+  getVideos: vi.fn(),
 }))
 
 vi.mock('@shinju-date/twitch-api-client', () => ({

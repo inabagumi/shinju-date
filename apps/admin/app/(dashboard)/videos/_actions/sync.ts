@@ -8,8 +8,11 @@ import {
   getVideos as getTwitchVideos,
 } from '@shinju-date/twitch-api-client'
 import { revalidateTags } from '@shinju-date/web-cache'
-import { getVideos } from '@shinju-date/youtube-api-client'
-import { getPublishedAt, getVideoStatus } from '@shinju-date/youtube-scraper'
+import {
+  getPublishedAt,
+  getVideoStatus,
+  getVideos,
+} from '@shinju-date/youtube-api-client'
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import { createAuditLog } from '@/lib/audit-log'

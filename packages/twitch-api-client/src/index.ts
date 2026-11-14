@@ -512,12 +512,61 @@ export async function resolveTwitchUser(
 // Videos
 // ---------------------------------------------------------------------------
 
+/**
+ * Returns true when a Helix call failed with HTTP 404.
+ */
+function isNotFoundError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'statusCode' in error &&
+    error.statusCode === 404
+  )
+}
+
+/**
+ * Looks up resources by ID, treating a Helix 404 as "these IDs are gone".
+ *
+ * Helix answers 404 instead of an empty list when a lookup by ID matches
+ * nothing, and twurple surfaces that as an error. A failing batch is split in
+ * half and retried so the IDs that still exist are returned and only the
+ * missing ones are dropped.
+ */
+async function lookupByIds<T>(
+  ids: string[],
+  lookup: (ids: string[]) => Promise<T[]>,
+): Promise<T[]> {
+  if (ids.length === 0) {
+    return []
+  }
+
+  try {
+    return await lookup(ids)
+  } catch (error) {
+    if (!isNotFoundError(error)) {
+      throw error
+    }
+
+    if (ids.length === 1) {
+      return []
+    }
+
+    const middle = Math.ceil(ids.length / 2)
+
+    return [
+      ...(await lookupByIds(ids.slice(0, middle), lookup)),
+      ...(await lookupByIds(ids.slice(middle), lookup)),
+    ]
+  }
+}
+
 export interface GetVideosOptions {
   ids: string[]
 }
 
 /**
  * Gets Twitch videos (VOD / highlight / upload) by ID.
+ * IDs that no longer exist are omitted.
  */
 export async function* getVideos({
   ids,
@@ -526,7 +575,9 @@ export async function* getVideos({
 
   for (let i = 0; i < ids.length; i += TWITCH_API_MAX_RESULTS) {
     const chunk = ids.slice(i, i + TWITCH_API_MAX_RESULTS)
-    const videos = await client.videos.getVideosByIds(chunk)
+    const videos = await lookupByIds(chunk, (chunkIds) =>
+      client.videos.getVideosByIds(chunkIds),
+    )
     for (const video of videos) {
       const mapped = mapVideo(video)
       if (mapped) {
@@ -536,22 +587,30 @@ export async function* getVideos({
   }
 }
 
-/**
- * Gets videos for a broadcaster (for batch discovery).
- * Uses twurple's paginator under the hood for the first page by default;
- * pass `all: true` to drain all pages.
- */
-export async function* getVideosByUser(options: {
-  userId: string
-  type?: 'archive' | 'highlight' | 'upload' | 'all'
+export interface GetVideosByUserOptions {
+  /** Drain every page when true (default: first page only). */
   all?: boolean
-}): AsyncGenerator<TwitchVideo, void, undefined> {
-  const client = getTwitchApiClient()
-  const paginator = client.videos.getVideosByUserPaginated(options.userId, {
-    type: options.type ?? 'archive',
-  })
+  /** Page size, up to 100 (default: 20). */
+  limit?: number
+  type?: 'archive' | 'highlight' | 'upload' | 'all'
+  userId: string
+}
 
-  if (options.all) {
+/**
+ * Gets videos for a broadcaster, newest first (for batch discovery).
+ * Returns the first page by default; pass `all: true` to drain all pages.
+ */
+export async function* getVideosByUser({
+  all = false,
+  limit = 20,
+  type = 'archive',
+  userId,
+}: GetVideosByUserOptions): AsyncGenerator<TwitchVideo, void, undefined> {
+  const client = getTwitchApiClient()
+
+  if (all) {
+    const paginator = client.videos.getVideosByUserPaginated(userId, { type })
+
     for await (const video of paginator) {
       const mapped = mapVideo(video)
       if (mapped) {
@@ -561,8 +620,12 @@ export async function* getVideosByUser(options: {
     return
   }
 
-  const page = await paginator.getNext()
-  for (const video of page ?? []) {
+  const { data: videos } = await client.videos.getVideosByUser(userId, {
+    limit,
+    type,
+  })
+
+  for (const video of videos) {
     const mapped = mapVideo(video)
     if (mapped) {
       yield mapped
@@ -580,6 +643,7 @@ export interface GetClipsOptions {
 
 /**
  * Gets Twitch clips by ID (slug).
+ * IDs that no longer exist are omitted.
  */
 export async function* getClips({
   ids,
@@ -588,7 +652,9 @@ export async function* getClips({
 
   for (let i = 0; i < ids.length; i += TWITCH_API_MAX_RESULTS) {
     const chunk = ids.slice(i, i + TWITCH_API_MAX_RESULTS)
-    const clips = await client.clips.getClipsByIds(chunk)
+    const clips = await lookupByIds(chunk, (chunkIds) =>
+      client.clips.getClipsByIds(chunkIds),
+    )
     for (const clip of clips) {
       yield mapClip(clip)
     }

@@ -33,7 +33,7 @@ export const videosCheckRecent = new Ratelimit({
 
 export const videosCheckAll = new Ratelimit({
   analytics: false,
-  limiter: Ratelimit.fixedWindow(1, '4d'),
+  limiter: Ratelimit.fixedWindow(1, '1d'),
   prefix: RATELIMIT_CACHE_KEY_PREFIX,
   redis: redisClient,
 })
