@@ -41,6 +41,8 @@ cd shinju-date
 curl -fsSL https://get.pnpm.io/install.sh | sh -
 ```
 
+インストールスクリプトはシェルの設定ファイル（`~/.bashrc` や `~/.zshrc` など）に `PATH` の設定を追加しますが、現在のシェルには反映されません。インストール後は、スクリプトが案内する設定ファイルを読み込むか、ターミナルを開き直してから次の手順に進んでください。
+
 pnpm（v11 以降）は `package.json` の `devEngines.packageManager` に指定されたバージョンを自動的にダウンロードして使用します。また、`devEngines.runtime` に指定された Node.js も `pnpm install` の際に自動的にダウンロードされます。
 
 ### 1.3. JavaScript依存関係のインストール
