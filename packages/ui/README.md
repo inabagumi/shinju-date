@@ -176,6 +176,118 @@ import { Card, CardHeader, CardContent, CardFooter } from '@shinju-date/ui'
 </Card>
 ```
 
+### Badge
+
+状態を示す小さなラベル。色は状態の意味で選びます。
+
+- `success`: 成功（公開中・完了など）
+- `warning`: 注意（未読・中断など）
+- `danger`: 危険（失敗・削除済みなど）
+- `neutral`: 中立（終了・非表示など）
+
+```tsx
+import { Badge } from '@shinju-date/ui'
+
+;<Badge variant="success">公開中</Badge>
+```
+
+### PageHeader
+
+ページの見出し。見出し（24px・太字）、説明（任意）、右端の操作ボタン（任意）を並べ、下に 24px の余白を取ります。
+
+```tsx
+import { Button, PageHeader } from '@shinju-date/ui'
+
+;<PageHeader
+  actions={<Button>タレントを追加</Button>}
+  description="登録されているタレントの一覧です。"
+  title="タレント管理"
+/>
+```
+
+### Table
+
+表。外枠は `border` と角丸で、見出し行は `bg-muted` の地に 12px・太字・`text-muted` の文字です。セルは既定で折り返さず、はみ出す場合は表の中で横にスクロールします。
+
+```tsx
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@shinju-date/ui'
+
+;<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>タイトル</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell>動画のタイトル</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+```
+
+### Select
+
+セレクトボックス。`Input` と同じ高さ・枠・角丸・フォーカス表示で、`variant` と `inputSize` も同じものを使えます。右端の矢印は `text-muted` で描くため、`<select>` を入れ物で囲んでいます。`className` は入れ物に付くので、幅や余白などの配置を指定してください。
+
+```tsx
+import { Select } from '@shinju-date/ui'
+
+;<Select aria-label="並び順" defaultValue="new">
+  <option value="new">新しい順</option>
+  <option value="old">古い順</option>
+</Select>
+```
+
+### EmptyState
+
+データがないことを伝える表示。アイコン（任意）、1行の見出し、補足（任意）、操作ボタン（任意）を中央に並べます。高さは内容なりです。
+
+```tsx
+import { EmptyState } from '@shinju-date/ui'
+import { Inbox } from 'lucide-react'
+
+;<EmptyState icon={<Inbox />} title="お知らせはまだありません" />
+```
+
+### StatTile
+
+統計のタイル。ラベル、値、前日比（任意）を並べます。色は前日比に意味があるときだけ `changeTone` で付けます（良い変化は `positive`、悪い変化は `negative`）。
+
+```tsx
+import { StatTile } from '@shinju-date/ui'
+
+;<StatTile
+  change="+3（前日比）"
+  changeTone="negative"
+  label="取り込みの失敗"
+  value="5"
+/>
+```
+
+### FilterBar
+
+絞り込みを横に並べる入れ物。狭い画面ではボタンの中に折りたたみ、`activeCount` に渡した適用中の件数を表示します。サーバーコンポーネントからも使えます。
+
+```tsx
+import { FilterBar, Input, Select } from '@shinju-date/ui'
+
+;<FilterBar activeCount={1}>
+  <Input aria-label="キーワード" placeholder="キーワード" />
+  <Select aria-label="公開状態">
+    <option value="">すべて</option>
+    <option value="visible">公開中</option>
+  </Select>
+</FilterBar>
+```
+
 ## 技術スタック
 
 - **React 19**: UIライブラリ

@@ -10,7 +10,7 @@ const VIDEO_KIND_LABELS: Record<VideoKind, string> = {
 
 const VIDEO_KIND_VARIANTS: Record<VideoKind, BadgeProps['variant']> = {
   short: 'info',
-  standard: 'secondary',
+  standard: 'neutral',
 }
 
 interface VideoKindBadgeProps {
@@ -19,7 +19,7 @@ interface VideoKindBadgeProps {
 }
 
 export function VideoKindBadge({ videoKind, className }: VideoKindBadgeProps) {
-  const variant = VIDEO_KIND_VARIANTS[videoKind] ?? 'secondary'
+  const variant = VIDEO_KIND_VARIANTS[videoKind] ?? 'neutral'
   const text = VIDEO_KIND_LABELS[videoKind] ?? videoKind
 
   return (

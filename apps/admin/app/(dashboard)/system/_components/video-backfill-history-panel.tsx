@@ -40,10 +40,10 @@ const PROVIDER_LABELS: Record<VideoBackfillHistoryEntry['provider'], string> = {
 
 const STATUS_LABELS: Record<
   VideoBackfillHistoryEntry['status'],
-  { label: string; variant: 'success' | 'error' }
+  { label: string; variant: 'success' | 'danger' }
 > = {
   done: { label: '完了', variant: 'success' },
-  failed: { label: '失敗', variant: 'error' },
+  failed: { label: '失敗', variant: 'danger' },
 }
 
 const SCOPE_LABELS: Record<VideoBackfillHistoryEntry['scope'], string> = {

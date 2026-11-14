@@ -134,4 +134,5 @@ import { twMerge } from '@shinju-date/ui'
 - [ ] 時刻・再生時間・件数に `tabular-nums` を付けている
 - [ ] 角丸は `rounded-control` / `rounded-container` / `rounded-full` のいずれか
 - [ ] 影は重なるものだけに `shadow-overlay` を使っている
-- [ ] `packages/ui` にある部品（Button・Badge・Card・Dialog・Input など）を使っている
+- [ ] `packages/ui` にある部品（Button・Badge・Card・Dialog・Input・Select・Table・PageHeader・EmptyState・StatTile・FilterBar など）を使っている
+- [ ] Badge の色は状態の意味で選んでいる（成功は `success`、注意は `warning`、危険は `danger`、中立は `neutral`）

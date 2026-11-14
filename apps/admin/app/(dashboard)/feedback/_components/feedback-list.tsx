@@ -20,11 +20,11 @@ const statusLabels: Record<Tables<'feature_requests'>['status'], string> = {
 
 const statusColors: Record<
   Tables<'feature_requests'>['status'],
-  'info' | 'secondary' | 'success' | 'error'
+  'info' | 'neutral' | 'success' | 'danger'
 > = {
-  in_progress: 'secondary',
+  in_progress: 'neutral',
   pending: 'info',
-  rejected: 'error',
+  rejected: 'danger',
   resolved: 'success',
 }
 

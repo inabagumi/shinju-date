@@ -5,7 +5,7 @@ const meta = preview.meta({
   argTypes: {
     variant: {
       control: 'select',
-      options: ['info', 'success', 'warning', 'error', 'secondary'],
+      options: ['success', 'warning', 'danger', 'neutral', 'info'],
     },
   },
   component: Badge,
@@ -37,17 +37,17 @@ export const Warning = meta.story({
   },
 })
 
-export const ErrorVariant = meta.story({
+export const Danger = meta.story({
   args: {
-    children: 'Error Badge',
-    variant: 'error',
+    children: 'Danger Badge',
+    variant: 'danger',
   },
 })
 
-export const Secondary = meta.story({
+export const Neutral = meta.story({
   args: {
-    children: 'Secondary Badge',
-    variant: 'secondary',
+    children: 'Neutral Badge',
+    variant: 'neutral',
   },
 })
 

@@ -10,10 +10,10 @@ const STATUS_LABELS: Record<VideoStatus, string> = {
   UPCOMING: '待機中',
 }
 
-const STATUS_VARIANTS: Record<VideoStatus, 'info' | 'error' | 'secondary'> = {
-  ENDED: 'secondary',
-  LIVE: 'error',
-  PUBLISHED: 'secondary',
+const STATUS_VARIANTS: Record<VideoStatus, 'info' | 'danger' | 'neutral'> = {
+  ENDED: 'neutral',
+  LIVE: 'danger',
+  PUBLISHED: 'neutral',
   UPCOMING: 'info',
 }
 
@@ -21,7 +21,7 @@ export function StatusBadge({ status }: { status: VideoStatus }) {
   return (
     <Badge
       className="rounded-md ring-1 ring-current/20 ring-inset"
-      variant={STATUS_VARIANTS[status] ?? 'secondary'}
+      variant={STATUS_VARIANTS[status] ?? 'neutral'}
     >
       {STATUS_LABELS[status] ?? status}
     </Badge>

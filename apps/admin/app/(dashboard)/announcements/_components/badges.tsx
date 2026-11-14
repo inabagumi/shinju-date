@@ -2,12 +2,12 @@ import { Badge } from '@shinju-date/ui'
 import type { Announcement } from '../_lib/types'
 
 // Get level badge variant
-function getLevelBadgeVariant(level: string): 'info' | 'warning' | 'error' {
+function getLevelBadgeVariant(level: string): 'info' | 'warning' | 'danger' {
   switch (level) {
     case 'warning':
       return 'warning'
     case 'alert':
-      return 'error'
+      return 'danger'
     default:
       return 'info'
   }
@@ -49,8 +49,8 @@ export function StatusBadge({ announcement }: { announcement: Announcement }) {
   return isActive(announcement) ? (
     <Badge variant="success">公開中</Badge>
   ) : announcement.enabled ? (
-    <Badge variant="secondary">公開予定</Badge>
+    <Badge variant="neutral">公開予定</Badge>
   ) : (
-    <Badge variant="secondary">無効</Badge>
+    <Badge variant="neutral">無効</Badge>
   )
 }
