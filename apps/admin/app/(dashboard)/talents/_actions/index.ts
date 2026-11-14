@@ -18,6 +18,7 @@ import {
   unauthenticatedFormState,
   unauthenticatedResult,
 } from '@/lib/auth'
+import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
 import { zodErrorToFormState } from '../_lib/form-helpers'
 
 const updateTalentSchema = z.object({
@@ -65,6 +66,7 @@ export async function createTalentAction(
 
   // Resolve optional YouTube channel before insert so we fail fast on bad input
   let resolvedChannel: {
+    channel: NonNullable<Awaited<ReturnType<typeof resolveYouTubeChannel>>>
     id: string
     name: string
     youtubeHandle: string | null
@@ -94,6 +96,7 @@ export async function createTalentAction(
         }
       }
       resolvedChannel = {
+        channel: youtubeChannel,
         id: youtubeChannel.id,
         name: youtubeChannel.snippet.title,
         youtubeHandle: youtubeChannel.snippet.customUrl || null,
@@ -133,7 +136,7 @@ export async function createTalentAction(
     }
 
     if (resolvedChannel) {
-      const { error: youtubeError } = await supabaseClient
+      const { data: newChannel, error: youtubeError } = await supabaseClient
         .from('youtube_channels')
         .insert({
           name: resolvedChannel.name,
@@ -141,10 +144,19 @@ export async function createTalentAction(
           youtube_channel_id: resolvedChannel.id,
           youtube_handle: resolvedChannel.youtubeHandle,
         })
+        .select('id')
+        .single()
 
       if (youtubeError) {
         logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
           error: youtubeError,
+          youtube_channel_id: resolvedChannel.id,
+        })
+      } else {
+        // アイコンの取得に失敗してもタレントの追加は成功扱いにする（次回の同期で再取得される）
+        await syncYouTubeChannelIconSafely(resolvedChannel.channel, {
+          id: newChannel.id,
+          profile_images: null,
           youtube_channel_id: resolvedChannel.id,
         })
       }

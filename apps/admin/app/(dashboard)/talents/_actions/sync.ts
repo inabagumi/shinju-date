@@ -1,6 +1,7 @@
 'use server'
 
 import { logger } from '@shinju-date/logger'
+import type { ProfileImageSyncResult } from '@shinju-date/scraper/youtube'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { getUsers } from '@shinju-date/twitch-api-client'
 import { revalidateTags } from '@shinju-date/web-cache'
@@ -9,13 +10,19 @@ import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import { createAuditLog } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
+import {
+  hasProfileImageChanged,
+  syncYouTubeChannelIconSafely,
+} from '@/lib/youtube-channel-icon'
 
 /**
  * タレントに紐づく YouTube チャンネル情報を YouTube API から同期する。
  *
  * ## 仕様
  * - **全チャンネルを同期する**: 先頭 1 件に限らず、紐づく `youtube_channels` をすべて対象にする
- * - **更新対象**: 各チャンネルの `name`（YouTube の title）と `youtube_handle`（customUrl）
+ * - **更新対象**: 各チャンネルの `name`（YouTube の title）と `youtube_handle`（customUrl）、
+ *   およびアイコン（`snippet.thumbnails`）。アイコンは元画像が変わった場合のみ差し替える
+ * - **アイコンの失敗では止めない**: アイコンの取得・保存に失敗しても、name / handle の同期は続ける
  * - **タレント名は更新しない**: `talents.name` とチャンネル名は分離されている（#5622）。
  *   バッチの `/talents/update`（`syncYouTubeChannels`）と同じ方針
  * - 単一チャンネルの場合も、チャンネルの name / handle が更新される（既存のチャンネル同期としては同等）
@@ -38,7 +45,7 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
     const { data: talent, error: fetchError } = await supabaseClient
       .from('talents')
       .select(
-        'id, youtube_channels(id, name, youtube_channel_id, youtube_handle)',
+        'id, youtube_channels(id, name, youtube_channel_id, youtube_handle, profile_images(id, path, etag, source_url))',
       )
       .eq('id', talentId)
       .single()
@@ -63,6 +70,12 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
       ): channel is {
         id: string
         name: string | null
+        profile_images: {
+          etag: string | null
+          id: string
+          path: string
+          source_url: string
+        } | null
         youtube_channel_id: string
         youtube_handle: string | null
       } => channel != null,
@@ -100,6 +113,7 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
       youtube_channel_id: string
       before: { name: string | null; youtube_handle: string | null }
       after: { name: string; youtube_handle: string | null }
+      profile_image?: Exclude<ProfileImageSyncResult, 'unchanged'>
     }[] = []
 
     let hasUpdates = false
@@ -151,9 +165,16 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
 
       syncedCount++
 
+      const profileImageResult = await syncYouTubeChannelIconSafely(
+        youtubeChannel,
+        channel,
+      )
+      const profileImageChanged = hasProfileImageChanged(profileImageResult)
+
       if (
         channelName !== channel.name ||
-        youtubeHandle !== channel.youtube_handle
+        youtubeHandle !== channel.youtube_handle ||
+        profileImageChanged
       ) {
         hasUpdates = true
         channelChanges.push({
@@ -165,6 +186,7 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
             name: channel.name,
             youtube_handle: channel.youtube_handle,
           },
+          ...(profileImageChanged ? { profile_image: profileImageResult } : {}),
           youtube_channel_id: channel.youtube_channel_id,
         })
       }
