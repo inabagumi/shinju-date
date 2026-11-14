@@ -165,3 +165,35 @@ test.describe('Admin App - Terms Management', () => {
     expect(content).toBeTruthy()
   })
 })
+
+test.describe('Admin App - Not Found', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('http://localhost:4000/login')
+    await page.waitForLoadState('networkidle')
+
+    await page
+      .locator('input[type="email"], input[name="email"]')
+      .fill('admin@example.com')
+    await page
+      .locator('input[type="password"], input[name="password"]')
+      .fill('password123')
+    await page.locator('button[type="submit"]').click()
+    await page.waitForURL((url) => !url.pathname.startsWith('/login'))
+  })
+
+  test('should display the custom 404 page with the navigation bar for unmatched URLs', async ({
+    page,
+  }) => {
+    const response = await page.goto('http://localhost:4000/nope-nope')
+
+    expect(response?.status()).toBe(404)
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'ページが見つかりません' }),
+    ).toBeVisible()
+    await expect(page.getByRole('navigation').first()).toBeVisible()
+    await expect(
+      page.getByRole('link', { name: 'ダッシュボードに戻る' }),
+    ).toBeVisible()
+    await expect(page.getByText('This page could not be found.')).toHaveCount(0)
+  })
+})
