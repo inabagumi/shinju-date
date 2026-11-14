@@ -69,7 +69,7 @@ interface CreatorIconProps {
  */
 function CreatorIcon({ className, profileImage }: CreatorIconProps) {
   const baseClassName =
-    'relative size-6 shrink-0 overflow-hidden rounded-full bg-774-nevy-200 dark:bg-zinc-700'
+    'relative size-5 shrink-0 overflow-hidden rounded-full bg-774-nevy-200 dark:bg-zinc-700'
 
   if (!profileImage) {
     return (
@@ -95,7 +95,7 @@ function CreatorIcon({ className, profileImage }: CreatorIconProps) {
         className="object-cover"
         fill
         placeholder={profileImage.blur_data_url ? 'blur' : 'empty'}
-        sizes="24px"
+        sizes="20px"
         src={`/images/profile-images/${profileImage.id}`}
       />
     </span>
@@ -127,14 +127,14 @@ export default function VideoCreator({
   return (
     <p
       className={twMerge(
-        'flex min-w-0 items-center gap-2 text-sm text-774-nevy-700 dark:text-zinc-300',
-        compact && 'gap-1.5 text-xs',
+        'flex min-w-0 items-center gap-1.5 text-xs text-774-nevy-600 dark:text-zinc-400',
+        compact && 'gap-1',
         className,
       )}
       data-testid="video-creator"
     >
       <CreatorIcon
-        className={twMerge(compact && 'size-5')}
+        className={twMerge(compact && 'size-4')}
         profileImage={creator.profileImage}
       />
       <span className="min-w-0 truncate" title={creator.name}>
@@ -156,18 +156,18 @@ export function VideoCreatorSkeleton({
   return (
     <div
       className={twMerge(
-        'flex items-center gap-2',
-        compact && 'gap-1.5',
+        'flex items-center gap-1.5',
+        compact && 'gap-1',
         className,
       )}
     >
       <span
         className={twMerge(
-          'inline-block size-6 shrink-0 animate-pulse rounded-full bg-774-nevy-200 dark:bg-zinc-700',
-          compact && 'size-5',
+          'inline-block size-5 shrink-0 animate-pulse rounded-full bg-774-nevy-200 dark:bg-zinc-700',
+          compact && 'size-4',
         )}
       />
-      <span className="inline-block h-3 w-24 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
+      <span className="inline-block h-2.5 w-20 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
     </div>
   )
 }
