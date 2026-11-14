@@ -7,7 +7,6 @@ import { Suspense } from 'react'
 import PageVisitTracker from '@/components/page-visit-tracker'
 import { TimerProvider } from '@/components/timer'
 import { AnnouncementBannerWrapper } from './_components/announcement-banner-wrapper'
-import { ContactLink } from './_components/contact-link'
 import { MainNavigationItems } from './_components/main-navigation-items'
 import { MobileMenu } from './_components/mobile-menu'
 import { Providers } from './_components/providers'
@@ -102,19 +101,6 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
                     >
                       運営者情報
                     </a>
-                  </li>
-                  <li className="md:hidden">
-                    <Link
-                      className="hover:text-secondary-pink hover:underline"
-                      href="/about"
-                    >
-                      {siteName}とは
-                    </Link>
-                  </li>
-                  <li className="empty:hidden md:hidden">
-                    <ContactLink className="hover:text-secondary-pink hover:underline">
-                      お問い合わせ
-                    </ContactLink>
                   </li>
                   <li>
                     <Link
