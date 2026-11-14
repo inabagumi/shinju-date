@@ -857,6 +857,9 @@ importers:
       '@types/node':
         specifier: 26.6.6
         version: 26.6.6
+      '@upstash/redis':
+        specifier: 1.41.0
+        version: 1.41.0
       tsup:
         specifier: 9.0.0
         version: 9.0.0(jiti@2.7.0)(postcss@8.5.32)(typescript@6.0.3)

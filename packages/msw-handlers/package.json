@@ -12,6 +12,7 @@
     "@tsconfig/node20": "20.1.11",
     "@tsconfig/strictest": "2.0.9",
     "@types/node": "26.6.6",
+    "@upstash/redis": "1.41.0",
     "tsup": "9.0.0",
     "typescript": "6.0.3",
     "vitest": "5.1.0"

@@ -168,10 +168,13 @@ function processRedisCommand(command: string, args: any[]): any {
       const [key, start, stop, ...options] = args
       const opts: any = {}
 
-      // Parse options
-      for (let i = 0; i < options.length; i++) {
-        if (options[i] === 'REV') opts.rev = true
-        if (options[i] === 'WITHSCORES') opts.withScores = true
+      // Parse options. Redis options are case-insensitive, and
+      // `@upstash/redis` sends them in lowercase.
+      for (const option of options) {
+        const normalizedOption = String(option).toLowerCase()
+
+        if (normalizedOption === 'rev') opts.rev = true
+        if (normalizedOption === 'withscores') opts.withScores = true
       }
 
       const result = simulateZRange(
