@@ -31,7 +31,7 @@ interface Props {
 
 function StatusBadge({ account }: { account: VideoBackfillAccount }) {
   if (account.status === null) {
-    return <Badge variant="secondary">未実行</Badge>
+    return <Badge variant="neutral">未実行</Badge>
   }
 
   if (
@@ -49,7 +49,7 @@ function StatusBadge({ account }: { account: VideoBackfillAccount }) {
     case 'done':
       return <Badge variant="success">完了</Badge>
     case 'failed':
-      return <Badge variant="error">失敗</Badge>
+      return <Badge variant="danger">失敗</Badge>
   }
 }
 

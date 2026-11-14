@@ -39,10 +39,10 @@ const PROVIDER_LABELS: Record<VideoBackfillRunAccount['provider'], string> = {
 
 const STATUS_LABELS: Record<
   Status,
-  { label: string; variant: 'info' | 'success' | 'warning' | 'error' }
+  { label: string; variant: 'info' | 'success' | 'warning' | 'danger' }
 > = {
   done: { label: '完了', variant: 'success' },
-  failed: { label: '失敗', variant: 'error' },
+  failed: { label: '失敗', variant: 'danger' },
   interrupted: { label: '中断', variant: 'warning' },
   pending: { label: '待機中', variant: 'info' },
   running: { label: '取り込み中', variant: 'info' },
@@ -138,7 +138,7 @@ function RunSummary({ run }: { run: VideoBackfillRun }) {
           {run.active ? (
             <Badge variant="info">実行中</Badge>
           ) : (
-            <Badge variant="secondary">終了</Badge>
+            <Badge variant="neutral">終了</Badge>
           )}
         </div>
         <div

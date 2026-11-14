@@ -15,11 +15,11 @@ const STATUS_LABELS: Record<TalentStatus, string> = {
 
 function getBadgeVariant(talent: TalentStatusInfo): BadgeProps['variant'] {
   if (talent.deleted_at) {
-    return 'error'
+    return 'danger'
   }
 
   if (talent.status === 'retired') {
-    return 'secondary'
+    return 'neutral'
   }
 
   return 'success'

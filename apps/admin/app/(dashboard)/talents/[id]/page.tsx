@@ -278,10 +278,10 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
                       <Badge
                         variant={
                           video.deleted_at
-                            ? 'error'
+                            ? 'danger'
                             : video.visible
                               ? 'success'
-                              : 'secondary'
+                              : 'neutral'
                         }
                       >
                         {video.deleted_at

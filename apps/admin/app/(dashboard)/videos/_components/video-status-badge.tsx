@@ -17,25 +17,25 @@ const STATUS_LABELS: Record<VideoStatus, string> = {
 }
 
 function getBadgeVariant(video: VideoStatusInfo): BadgeProps['variant'] {
-  // Priority 1: If deleted, show "削除済み" with error variant (red)
+  // Priority 1: If deleted, show "削除済み" with danger variant (red)
   if (video.deleted_at) {
-    return 'error'
+    return 'danger'
   }
 
-  // Priority 2: If not visible, show "非表示" with secondary variant (gray)
+  // Priority 2: If not visible, show "非表示" with neutral variant (gray)
   if (!video.visible) {
-    return 'secondary'
+    return 'neutral'
   }
 
   // Priority 3: Show the status field content with appropriate variant
   const statusVariantMap: Record<VideoStatus, BadgeProps['variant']> = {
-    ENDED: 'secondary',
-    LIVE: 'error',
-    PUBLISHED: 'secondary',
+    ENDED: 'neutral',
+    LIVE: 'danger',
+    PUBLISHED: 'neutral',
     UPCOMING: 'info',
   }
 
-  return statusVariantMap[video.status] ?? 'secondary'
+  return statusVariantMap[video.status] ?? 'neutral'
 }
 
 function getStatusText(video: VideoStatusInfo): string {

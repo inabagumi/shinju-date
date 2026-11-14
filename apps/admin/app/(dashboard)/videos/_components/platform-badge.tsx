@@ -10,7 +10,7 @@ const PLATFORM_LABELS: Record<Platform, string> = {
 
 const PLATFORM_VARIANTS: Record<Platform, BadgeProps['variant']> = {
   twitch: 'info',
-  youtube: 'secondary',
+  youtube: 'neutral',
 }
 
 interface PlatformBadgeProps {
@@ -19,7 +19,7 @@ interface PlatformBadgeProps {
 }
 
 export function PlatformBadge({ platform, className }: PlatformBadgeProps) {
-  const variant = PLATFORM_VARIANTS[platform] ?? 'secondary'
+  const variant = PLATFORM_VARIANTS[platform] ?? 'neutral'
   const text = PLATFORM_LABELS[platform] ?? platform
 
   return (
