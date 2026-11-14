@@ -183,6 +183,19 @@ export function defineCollectionRelations() {
   // See handlers/supabase.ts for implementation details
 }
 
+let seeding: Promise<void> | undefined
+
+/**
+ * Seed the collections only once, even when several handlers need them.
+ * The Redis mock waits for this as well so that its click data uses the IDs
+ * of the seeded videos and talents.
+ */
+export function ensureCollectionsSeeded(): Promise<void> {
+  seeding ??= seedCollections()
+
+  return seeding
+}
+
 /**
  * Seed all collections with initial mock data using faker
  * Relations are automatically established via defineCollectionRelations()
