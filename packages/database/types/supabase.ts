@@ -102,6 +102,42 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_images: {
+        Row: {
+          blur_data_url: string
+          created_at: string
+          etag: string | null
+          height: number
+          id: string
+          path: string
+          source_url: string
+          updated_at: string
+          width: number
+        }
+        Insert: {
+          blur_data_url: string
+          created_at?: string
+          etag?: string | null
+          height: number
+          id?: string
+          path: string
+          source_url: string
+          updated_at?: string
+          width: number
+        }
+        Update: {
+          blur_data_url?: string
+          created_at?: string
+          etag?: string | null
+          height?: number
+          id?: string
+          path?: string
+          source_url?: string
+          updated_at?: string
+          width?: number
+        }
+        Relationships: []
+      }
       talents: {
         Row: {
           created_at: string
@@ -202,6 +238,7 @@ export type Database = {
         Row: {
           id: string
           name: string | null
+          profile_image_id: string | null
           talent_id: string
           twitch_login_name: string | null
           twitch_user_id: string
@@ -209,6 +246,7 @@ export type Database = {
         Insert: {
           id?: string
           name?: string | null
+          profile_image_id?: string | null
           talent_id: string
           twitch_login_name?: string | null
           twitch_user_id: string
@@ -216,11 +254,19 @@ export type Database = {
         Update: {
           id?: string
           name?: string | null
+          profile_image_id?: string | null
           talent_id?: string
           twitch_login_name?: string | null
           twitch_user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "twitch_users_profile_image_id_fkey"
+            columns: ["profile_image_id"]
+            isOneToOne: true
+            referencedRelation: "profile_images"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "twitch_users_talent_id_fkey"
             columns: ["talent_id"]
@@ -348,6 +394,7 @@ export type Database = {
         Row: {
           id: string
           name: string | null
+          profile_image_id: string | null
           talent_id: string
           youtube_channel_id: string
           youtube_handle: string | null
@@ -355,6 +402,7 @@ export type Database = {
         Insert: {
           id?: string
           name?: string | null
+          profile_image_id?: string | null
           talent_id: string
           youtube_channel_id: string
           youtube_handle?: string | null
@@ -362,11 +410,19 @@ export type Database = {
         Update: {
           id?: string
           name?: string | null
+          profile_image_id?: string | null
           talent_id?: string
           youtube_channel_id?: string
           youtube_handle?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "youtube_channels_profile_image_id_fkey"
+            columns: ["profile_image_id"]
+            isOneToOne: true
+            referencedRelation: "profile_images"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "youtube_channels_talent_id_fkey"
             columns: ["talent_id"]
