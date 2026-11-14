@@ -660,11 +660,12 @@ interface SearchVideosParams {
   perpage?: number
   query?: string
   until?: string
+  video_kinds?: ('short' | 'standard')[] | null
 }
 
 /**
- * The shape this mock returns from `search_videos_v2` when no select is
- * given, with the resources of both platforms embedded.
+ * The shape this mock returns from `search_videos_v2` and `search_videos_v3`
+ * when no select is given, with the resources of both platforms embedded.
  */
 const DEFAULT_SEARCH_VIDEOS_SELECT = [
   'deleted_at',
@@ -724,30 +725,41 @@ async function expandMockQuery(query: string): Promise<string[]> {
 }
 
 /**
- * Mirrors `search_videos_v2`: the visible videos of the given talents whose
- * titles contain the query or one of its synonyms and that were published
- * before `until`, newest first.
+ * The visible videos of the given talents and kinds whose titles contain the
+ * query or one of its synonyms and that were published before `until`.
  */
-async function searchMockVideos({
+async function filterMockVideos({
   channel_ids: channelIds = [],
-  perpage = 10,
   query = '',
   until,
+  video_kinds: videoKinds,
 }: SearchVideosParams) {
   const keywords = query === '' ? [] : await expandMockQuery(query)
 
-  return (await getMockVideos())
-    .filter(
-      (video) =>
-        video.deleted_at === null &&
-        video.visible &&
-        (keywords.length === 0 ||
-          keywords.some((keyword) =>
-            normalizeSearchText(video.title).includes(keyword),
-          )) &&
-        (channelIds.length === 0 || channelIds.includes(video.talent_id)) &&
-        (!until || Temporal.Instant.compare(video.published_at, until) < 0),
-    )
+  return (await getMockVideos()).filter(
+    (video) =>
+      video.deleted_at === null &&
+      video.visible &&
+      (keywords.length === 0 ||
+        keywords.some((keyword) =>
+          normalizeSearchText(video.title).includes(keyword),
+        )) &&
+      (channelIds.length === 0 || channelIds.includes(video.talent_id)) &&
+      (!videoKinds || videoKinds.includes(video.video_kind)) &&
+      (!until || Temporal.Instant.compare(video.published_at, until) < 0),
+  )
+}
+
+/**
+ * Mirrors `search_videos_v2` and `search_videos_v3`: the videos of
+ * `filterMockVideos`, newest first. `search_videos_v2` takes no
+ * `video_kinds`, so its requests always search every kind.
+ */
+async function searchMockVideos({
+  perpage = 10,
+  ...params
+}: SearchVideosParams) {
+  return (await filterMockVideos(params))
     .sort((a, b) => Temporal.Instant.compare(b.published_at, a.published_at))
     .slice(0, perpage)
 }
@@ -1869,19 +1881,30 @@ export const supabaseHandlers = [
     },
   ),
 
+  ...['search_videos_v2', 'search_videos_v3'].map((functionName) =>
+    rest.post(
+      `https://fake.supabase.test/rest/v1/rpc/${functionName}`,
+      async ({ request }) => {
+        const body = (await request.json()) as SearchVideosParams
+        // `.rpc(...).select(...)` embeds resources like a table query, so
+        // project the video rows with the requested select when it is given.
+        const select =
+          new URL(request.url).searchParams.get('select') ??
+          DEFAULT_SEARCH_VIDEOS_SELECT
+
+        return HttpResponse.json(
+          await applySelect(await searchMockVideos(body), select),
+        )
+      },
+    ),
+  ),
+
   rest.post(
-    'https://fake.supabase.test/rest/v1/rpc/search_videos_v2',
+    'https://fake.supabase.test/rest/v1/rpc/count_videos_v1',
     async ({ request }) => {
       const body = (await request.json()) as SearchVideosParams
-      // `.rpc(...).select(...)` embeds resources like a table query, so
-      // project the video rows with the requested select when it is given.
-      const select =
-        new URL(request.url).searchParams.get('select') ??
-        DEFAULT_SEARCH_VIDEOS_SELECT
 
-      return HttpResponse.json(
-        await applySelect(await searchMockVideos(body), select),
-      )
+      return HttpResponse.json((await filterMockVideos(body)).length)
     },
   ),
 

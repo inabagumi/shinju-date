@@ -735,6 +735,66 @@ describe('Supabase Handlers', () => {
         youtube_video: null,
       })
     })
+
+    it('should search only videos of the given kinds in search_videos_v3', async () => {
+      const searchKinds = async (videoKinds?: string[]) => {
+        const response = await fetch(
+          'https://fake.supabase.test/rest/v1/rpc/search_videos_v3?select=video_kind',
+          {
+            body: JSON.stringify({
+              perpage: 1000,
+              query: '',
+              ...(videoKinds ? { video_kinds: videoKinds } : {}),
+            }),
+            headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
+          },
+        )
+
+        expect(response.ok).toBe(true)
+
+        return new Set(
+          ((await response.json()) as { video_kind: string }[]).map(
+            (video) => video.video_kind,
+          ),
+        )
+      }
+
+      expect(await searchKinds()).toEqual(new Set(['short', 'standard']))
+      expect(await searchKinds(['short'])).toEqual(new Set(['short']))
+      expect(await searchKinds(['standard'])).toEqual(new Set(['standard']))
+    })
+
+    it('should count the videos search_videos_v3 returns in count_videos_v1', async () => {
+      const post = async (functionName: string, body: object) => {
+        const response = await fetch(
+          `https://fake.supabase.test/rest/v1/rpc/${functionName}?select=id`,
+          {
+            body: JSON.stringify(body),
+            headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
+          },
+        )
+
+        expect(response.ok).toBe(true)
+
+        return (await response.json()) as unknown
+      }
+
+      for (const body of [
+        { query: '' },
+        { query: 'Twitch' },
+        { query: '', video_kinds: ['short'] },
+      ]) {
+        const videos = (await post('search_videos_v3', {
+          ...body,
+          perpage: 1000,
+        })) as unknown[]
+
+        expect(videos.length).toBeGreaterThan(0)
+        expect(await post('count_videos_v1', body)).toBe(videos.length)
+      }
+    })
   })
 
   describe('Search suggestions', () => {
