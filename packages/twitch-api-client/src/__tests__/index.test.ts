@@ -103,6 +103,7 @@ describe('getTwitchCredentials', () => {
 
 describe('lookups by ID', () => {
   const getVideosByIds = vi.fn()
+  const getVideosByUser = vi.fn()
   const getClipsByIds = vi.fn()
 
   function notFound(): Error {
@@ -137,6 +138,7 @@ describe('lookups by ID', () => {
     vi.stubEnv('TWITCH_CLIENT_ID', 'test-client-id')
     vi.stubEnv('TWITCH_CLIENT_SECRET', 'test-client-secret')
     getVideosByIds.mockReset()
+    getVideosByUser.mockReset()
     getClipsByIds.mockReset()
 
     vi.doMock('@twurple/auth', () => ({
@@ -145,7 +147,7 @@ describe('lookups by ID', () => {
     vi.doMock('@twurple/api', () => ({
       ApiClient: class {
         clips = { getClipsByIds }
-        videos = { getVideosByIds }
+        videos = { getVideosByIds, getVideosByUser }
       },
     }))
   })
@@ -221,5 +223,42 @@ describe('lookups by ID', () => {
     await expect(Array.fromAsync(getClips({ ids: ['gone'] }))).resolves.toEqual(
       [],
     )
+  })
+
+  it('returns one page of a broadcaster with the cursor of the next', async () => {
+    getVideosByUser.mockResolvedValue({
+      cursor: 'next',
+      data: [helixVideo('1'), helixVideo('2')],
+    })
+
+    const { getVideosByUserPage } = await import('../index.js')
+    const page = await getVideosByUserPage({
+      after: 'current',
+      type: 'all',
+      userId: 'user-1',
+    })
+
+    expect(getVideosByUser).toHaveBeenCalledWith('user-1', {
+      after: 'current',
+      limit: 100,
+      type: 'all',
+    })
+    expect(page.cursor).toBe('next')
+    expect(page.videos.map((video) => video.id)).toEqual(['1', '2'])
+  })
+
+  it('ends the walk at an empty page even when Helix returns a cursor', async () => {
+    getVideosByUser.mockResolvedValue({ cursor: 'stale', data: [] })
+
+    const { getVideosByUserPage } = await import('../index.js')
+
+    await expect(getVideosByUserPage({ userId: 'user-1' })).resolves.toEqual({
+      cursor: null,
+      videos: [],
+    })
+    expect(getVideosByUser).toHaveBeenCalledWith('user-1', {
+      limit: 100,
+      type: 'archive',
+    })
   })
 })
