@@ -7,6 +7,7 @@
 
 CREATE OR REPLACE FUNCTION "public"."search_videos_v3"("query" "text", "until" timestamp with time zone, "channel_ids" "uuid"[], "perpage" bigint DEFAULT 20, "video_kinds" "public"."video_kind"[] DEFAULT NULL) RETURNS SETOF "public"."videos"
     LANGUAGE "sql"
+    SET "search_path" TO 'public', 'extensions'
     AS $$
   SELECT *
   FROM videos
@@ -28,6 +29,7 @@ ALTER FUNCTION "public"."search_videos_v3"("query" "text", "until" timestamp wit
 -- rights, so the row-level security of each table applies to the subqueries.
 CREATE OR REPLACE FUNCTION "public"."count_videos_v1"("query" "text", "until" timestamp with time zone, "channel_ids" "uuid"[], "video_kinds" "public"."video_kind"[] DEFAULT NULL) RETURNS bigint
     LANGUAGE "sql"
+    SET "search_path" TO 'public', 'extensions'
     AS $$
   SELECT count(*)
   FROM videos
