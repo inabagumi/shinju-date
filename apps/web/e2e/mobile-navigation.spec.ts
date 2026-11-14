@@ -3,11 +3,13 @@ import { expect, type Page, test } from '@playwright/test'
 const BASE_URL = process.env['BASE_URL'] || 'http://localhost:3000'
 
 function getHeader(page: Page) {
-  return page.locator('body > nav').first()
+  return page.getByRole('banner')
 }
 
+// The inline navigation comes before the one inside the mobile menu, and both
+// are labelled the same, so pick the first `<nav>` including hidden ones.
 function getInlineNavigation(page: Page) {
-  return getHeader(page).locator(':scope > ul')
+  return getHeader(page).locator('nav').first()
 }
 
 async function getMobileMenu(page: Page) {

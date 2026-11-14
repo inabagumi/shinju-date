@@ -22,8 +22,11 @@ test.describe('Web App - Homepage', () => {
   test('should have working links', async ({ page }) => {
     await page.goto('http://localhost:3000')
 
-    // Find and click on the navigation videos link (動画一覧)
-    const videosLink = page.getByRole('link', { name: '動画一覧' })
+    // Find and click on the navigation videos link (動画一覧) in the header.
+    // The footer links to the same page, so the search is scoped to the header.
+    const videosLink = page
+      .getByRole('banner')
+      .getByRole('link', { name: '動画一覧' })
     if (await videosLink.isVisible()) {
       await videosLink.click()
       // Use timeout instead of networkidle to avoid hanging
