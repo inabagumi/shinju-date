@@ -76,20 +76,27 @@ export function TermsListSkeleton() {
         <div className="h-10 w-full rounded-control bg-muted sm:max-w-md" />
         <div className="h-10 w-28 rounded-control bg-muted" />
       </div>
-      <div className="flex min-h-16 flex-wrap gap-2 rounded-control border border-border bg-muted p-3">
+      <div className="flex min-h-8 flex-wrap gap-1">
         {range(8).map((item) => (
           <div
-            className="h-8 w-10 rounded-control bg-muted"
+            className="h-8 w-9 rounded-control bg-muted"
             key={`term-index-skeleton-${item}`}
           />
         ))}
       </div>
-      {range(5).map((item) => (
-        <div
-          className="h-12 rounded-container border border-border bg-muted"
-          key={`term-group-skeleton-${item}`}
-        />
-      ))}
+      <div className="overflow-hidden rounded-container border border-border">
+        <div className="h-10 bg-muted" />
+        {range(6).map((item) => (
+          <div
+            className="flex h-14 items-center gap-4 border-t border-border px-4"
+            key={`term-row-skeleton-${item}`}
+          >
+            <div className="h-4 w-1/4 rounded-control bg-muted" />
+            <div className="h-4 w-1/4 rounded-control bg-muted" />
+            <div className="h-4 flex-1 rounded-control bg-muted" />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -132,17 +139,31 @@ export function StackedDetailSkeleton({
   cards = 5,
 }: StackedDetailSkeletonProps) {
   return (
-    <div aria-hidden="true" className="animate-pulse space-y-6">
-      {range(cards).map((card) => (
+    // 広い画面では、本文（左の2列）と操作（右の1列）に分ける。カードの半分（切り捨て）を左に置く
+    <div
+      aria-hidden="true"
+      className="grid animate-pulse gap-6 lg:grid-cols-3 lg:items-start"
+    >
+      {[
+        { cards: range(Math.floor(cards / 2)), className: 'lg:col-span-2' },
+        { cards: range(Math.ceil(cards / 2)), className: '' },
+      ].map((column, columnIndex) => (
         <div
-          className="min-h-36 rounded-container border border-border bg-surface p-6"
-          key={`stacked-detail-skeleton-${card}`}
+          className={`space-y-6 ${column.className}`}
+          key={`stacked-detail-column-${columnIndex === 0 ? 'main' : 'side'}`}
         >
-          <div className="mb-5 h-6 w-40 rounded-control bg-muted" />
-          <div className="space-y-3">
-            <div className="h-4 w-full rounded-control bg-muted" />
-            <div className="h-4 w-2/3 rounded-control bg-muted" />
-          </div>
+          {column.cards.map((card) => (
+            <div
+              className="min-h-36 rounded-container border border-border bg-surface p-6"
+              key={`stacked-detail-skeleton-${columnIndex}-${card}`}
+            >
+              <div className="mb-5 h-6 w-40 rounded-control bg-muted" />
+              <div className="space-y-3">
+                <div className="h-4 w-full rounded-control bg-muted" />
+                <div className="h-4 w-2/3 rounded-control bg-muted" />
+              </div>
+            </div>
+          ))}
         </div>
       ))}
     </div>
@@ -151,14 +172,15 @@ export function StackedDetailSkeleton({
 
 export function FormCardSkeleton() {
   return (
-    <div aria-hidden="true" className="animate-pulse space-y-4">
+    <div
+      aria-hidden="true"
+      className="min-h-56 max-w-text animate-pulse space-y-4 rounded-container border border-border bg-surface p-6"
+    >
       <div className="h-7 w-56 rounded-control bg-muted" />
-      <div className="min-h-56 space-y-4 rounded-container border border-border bg-surface p-6">
-        <div className="h-12 rounded-control bg-muted" />
-        <div className="h-5 w-48 rounded-control bg-muted" />
-        <div className="h-10 rounded-control bg-muted" />
-        <div className="h-10 w-48 rounded-control bg-muted" />
-      </div>
+      <div className="h-12 rounded-control bg-muted" />
+      <div className="h-5 w-48 rounded-control bg-muted" />
+      <div className="h-10 rounded-control bg-muted" />
+      <div className="h-10 w-48 rounded-control bg-muted" />
     </div>
   )
 }
@@ -167,37 +189,48 @@ export function DateRangePickerSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="flex h-12 animate-pulse items-center gap-3"
+      className="animate-pulse space-y-3 rounded-container border border-border bg-surface p-4"
     >
-      <div className="h-10 w-40 rounded-control bg-muted" />
-      <div className="h-10 w-40 rounded-control bg-muted" />
-      <div className="h-10 w-24 rounded-control bg-muted" />
+      <div className="h-5 w-16 rounded-control bg-muted" />
+      <div className="flex flex-wrap gap-2">
+        {range(5).map((item) => (
+          <div
+            className="h-8 w-24 rounded-control bg-muted"
+            key={`date-range-preset-skeleton-${item}`}
+          />
+        ))}
+      </div>
+      <div className="h-8 w-full rounded-control bg-muted" />
+      <div className="h-9 w-48 rounded-control bg-muted" />
     </div>
   )
 }
 
 export function TabNavigationSkeleton() {
   return (
-    <div aria-hidden="true" className="flex h-12 animate-pulse gap-2">
-      <div className="h-10 w-28 rounded-control bg-muted" />
-      <div className="h-10 w-28 rounded-control bg-muted" />
+    <div
+      aria-hidden="true"
+      className="flex h-10 animate-pulse items-center gap-6 border-b border-border"
+    >
+      <div className="h-4 w-16 rounded-control bg-muted" />
+      <div className="h-4 w-20 rounded-control bg-muted" />
     </div>
   )
 }
 
 export function ChartSkeleton() {
   return (
-    <div
-      aria-hidden="true"
-      className="flex h-96 animate-pulse items-end gap-3 border-b border-l border-border px-4 pt-8"
-    >
-      {[45, 70, 55, 85, 40, 65, 75, 50, 90, 60].map((height) => (
-        <div
-          className="flex-1 rounded-t bg-muted"
-          key={`chart-bar-skeleton-${height}`}
-          style={{ height: `${height}%` }}
-        />
-      ))}
+    <div aria-hidden="true" className="animate-pulse">
+      <div className="mb-4 h-24 rounded-container border border-border sm:max-w-xs" />
+      <div className="flex h-64 items-end gap-3 border-b border-l border-border px-4 pt-8">
+        {[45, 70, 55, 85, 40, 65, 75, 50, 90, 60].map((height) => (
+          <div
+            className="flex-1 rounded-t-control bg-muted"
+            key={`chart-bar-skeleton-${height}`}
+            style={{ height: `${height}%` }}
+          />
+        ))}
+      </div>
     </div>
   )
 }
@@ -221,8 +254,11 @@ export function MetricCardSkeleton() {
 
 export function CardSkeleton() {
   return (
-    <div className="animate-pulse rounded-container border border-border bg-surface p-6">
-      <div className="mb-4 h-6 w-32 rounded-control bg-muted" />
+    <div
+      aria-hidden="true"
+      className="animate-pulse rounded-container border border-border bg-surface p-6"
+    >
+      <div className="mb-4 h-7 w-32 rounded-control bg-muted" />
       <div className="grid grid-cols-2 gap-4">
         <div className="rounded-container border border-border p-4">
           <div className="mb-2 h-4 w-20 rounded-control bg-muted" />
@@ -247,7 +283,10 @@ export function CardSkeleton() {
 
 export function WidgetSkeleton() {
   return (
-    <div className="animate-pulse rounded-container border border-border bg-surface p-6">
+    <div
+      aria-hidden="true"
+      className="animate-pulse rounded-container border border-border bg-surface p-6"
+    >
       <div className="mb-4 h-6 w-32 rounded-control bg-muted" />
       <div className="flex flex-col gap-3">
         <div className="h-12 rounded-container bg-muted" />
@@ -261,7 +300,7 @@ export function WidgetSkeleton() {
 
 export function AnalyticsPageSkeleton() {
   return (
-    <div className="animate-pulse p-6">
+    <div aria-hidden="true" className="animate-pulse">
       <div className="mb-6 h-8 w-64 rounded-control bg-muted" />
       <div className="mb-6 flex gap-4">
         <div className="h-10 w-64 rounded-control bg-muted" />
@@ -312,80 +351,50 @@ interface TableSkeletonProps {
 }
 
 export function TableSkeleton({ rows = 5 }: TableSkeletonProps) {
+  // 動画一覧の列（選択、サムネイル、タイトル、タレント、日時、再生時間、
+  // クリック数、種別、ステータス、操作）の幅
+  const columns = [
+    { cell: 'h-4', id: 'select', width: 'w-4' },
+    { cell: 'aspect-video', id: 'thumbnail', width: 'w-28' },
+    { cell: 'h-4', id: 'title', width: 'w-64' },
+    { cell: 'h-4', id: 'talent', width: 'w-20' },
+    { cell: 'h-4', id: 'date', width: 'w-32' },
+    { cell: 'h-4', id: 'duration', width: 'w-16' },
+    { cell: 'h-4', id: 'clicks', width: 'w-12' },
+    { cell: 'h-5', id: 'kind', width: 'w-16' },
+    { cell: 'h-5', id: 'status', width: 'w-16' },
+    { cell: 'h-5', id: 'actions', width: 'w-5' },
+  ]
+
   return (
-    <div aria-hidden="true" className="animate-pulse overflow-x-auto">
-      <table className="w-full">
-        <thead className="border-b border-border bg-muted">
-          <tr>
-            <th className="p-3 text-left">
-              <div className="h-4 w-4 rounded-control bg-border" />
-            </th>
-            <th className="p-3 text-left">
-              <div className="h-4 w-20 rounded-control bg-border" />
-            </th>
-            <th className="p-3 text-left">
-              <div className="h-4 w-32 rounded-control bg-border" />
-            </th>
-            <th className="p-3 text-left">
-              <div className="h-4 w-24 rounded-control bg-border" />
-            </th>
-            <th className="p-3 text-left">
-              <div className="h-4 w-24 rounded-control bg-border" />
-            </th>
-            <th className="p-3 text-left">
-              <div className="h-4 w-24 rounded-control bg-border" />
-            </th>
-            <th className="p-3 text-left">
-              <div className="h-4 w-20 rounded-control bg-border" />
-            </th>
-            <th className="p-3 text-left">
-              <div className="h-4 w-20 rounded-control bg-border" />
-            </th>
-            <th className="p-3 text-left">
-              <div className="h-4 w-20 rounded-control bg-border" />
-            </th>
-            <th className="p-3 text-left">
-              <div className="h-4 w-20 rounded-control bg-border" />
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {range(rows).map((i) => (
-            <tr className="border-b" key={`skeleton-row-${i}`}>
-              <td className="p-3">
-                <div className="h-4 w-4 rounded-control bg-muted" />
-              </td>
-              <td className="p-3">
-                <div className="h-16 w-28 rounded-control bg-muted" />
-              </td>
-              <td className="p-3">
-                <div className="h-4 w-full max-w-xs rounded-control bg-muted" />
-              </td>
-              <td className="p-3">
-                <div className="h-4 w-20 rounded-control bg-muted" />
-              </td>
-              <td className="p-3">
-                <div className="h-4 w-24 rounded-control bg-muted" />
-              </td>
-              <td className="p-3">
-                <div className="h-4 w-24 rounded-control bg-muted" />
-              </td>
-              <td className="p-3">
-                <div className="h-4 w-16 rounded-control bg-muted" />
-              </td>
-              <td className="p-3">
-                <div className="h-4 w-12 rounded-control bg-muted" />
-              </td>
-              <td className="p-3">
-                <div className="h-6 w-16 rounded-control bg-muted" />
-              </td>
-              <td className="p-3">
-                <div className="h-5 w-5 rounded-control bg-muted" />
-              </td>
-            </tr>
+    <div aria-hidden="true" className="animate-pulse">
+      {/* 一括操作のバーと同じ高さを確保する */}
+      <div className="mb-4 h-14 rounded-container bg-muted" />
+      <div className="overflow-hidden rounded-container border border-border bg-surface">
+        <div className="flex h-11 items-center gap-8 border-b border-border bg-muted px-4">
+          {columns.map((column) => (
+            <div
+              className={`shrink-0 ${column.width}`}
+              key={`table-header-skeleton-${column.id}`}
+            >
+              <div className="h-3 w-full max-w-12 rounded-control bg-border" />
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+        {range(rows).map((row) => (
+          <div
+            className="flex items-center gap-8 border-b border-border px-4 py-3 last:border-b-0"
+            key={`table-row-skeleton-${row}`}
+          >
+            {columns.map((column) => (
+              <div
+                className={`shrink-0 rounded-control bg-muted ${column.width} ${column.cell}`}
+                key={`table-cell-skeleton-${row}-${column.id}`}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -398,14 +407,14 @@ export function PopularVideosListSkeleton({
   count = 10,
 }: PopularVideosListSkeletonProps) {
   return (
-    <div className="animate-pulse space-y-3">
+    <div aria-hidden="true" className="animate-pulse divide-y divide-border">
       {range(count).map((i) => (
         <div
-          className="flex items-center gap-4 rounded-container border border-border p-3"
+          className="flex items-center gap-4 py-3"
           key={`skeleton-video-${i}`}
         >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted" />
-          <div className="h-16 w-28 rounded-control bg-muted" />
+          <div className="size-8 shrink-0 rounded-full bg-muted" />
+          <div className="h-16 w-28 shrink-0 rounded-container bg-muted" />
           <div className="min-w-0 flex-1 space-y-2">
             <div className="h-5 w-3/4 rounded-control bg-muted" />
             <div className="h-4 w-1/4 rounded-control bg-muted" />
