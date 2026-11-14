@@ -27,7 +27,7 @@ export async function VideoBackfillFailureAlert() {
   return (
     <div
       className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800"
-      role="alert"
+      role="status"
     >
       <p className="flex items-center gap-2">
         <AlertTriangle aria-hidden="true" className="size-4 shrink-0" />

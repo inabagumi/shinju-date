@@ -41,8 +41,12 @@ export interface VideoBackfillHistoryEntry {
    * known (e.g. the user was deleted).
    */
   requester: string | null
-  /** Whether the job belonged to a check of all talents. */
-  scope: 'all' | 'talent'
+  /**
+   * `all` when the job belonged to a check of all talents; `single` when it
+   * was requested on its own (from the talent page, or by retrying failed
+   * jobs).
+   */
+  scope: 'all' | 'single'
   status: VideoBackfillHistoryStatus
   talentId: string
   /** Talent name, or `null` when it could not be loaded. */
@@ -220,7 +224,7 @@ export async function getVideoBackfillHistoryAction(): Promise<{
         requester: row.requested_by
           ? (emails.get(row.requested_by) ?? null)
           : null,
-        scope: row.run_id ? 'all' : 'talent',
+        scope: row.run_id ? 'all' : 'single',
         status: row.status,
         talentId: row.talent_id,
         talentName: row.talents?.name ?? null,

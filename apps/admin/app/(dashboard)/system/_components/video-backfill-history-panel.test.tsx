@@ -73,7 +73,7 @@ describe('VideoBackfillHistoryPanel', () => {
           name: null,
           pages: 0,
           requester: null,
-          scope: 'talent',
+          scope: 'single',
           status: 'failed',
         }),
       ],
@@ -85,13 +85,11 @@ describe('VideoBackfillHistoryPanel', () => {
 
     expect(
       await screen.findByText(
-        '12件追加 · 3ページ · admin@example.comが全タレントのチェックから依頼',
+        '12件追加 · 3ページ · admin@example.comが全タレントのチェックで依頼',
       ),
     ).toBeTruthy()
     expect(
-      screen.getByText(
-        '0件追加 · 0ページ · 不明なユーザーがタレント詳細から依頼',
-      ),
+      screen.getByText('0件追加 · 0ページ · 不明なユーザーが個別に依頼'),
     ).toBeTruthy()
     expect(screen.getByText('削除されたアカウント')).toBeTruthy()
     expect(screen.getByText('Account not found: channel-row-gone')).toBeTruthy()
@@ -149,6 +147,40 @@ describe('VideoBackfillHistoryPanel', () => {
     ).toBeTruthy()
     expect(mocks.retryFailedVideoBackfillJobsAction).toHaveBeenCalledOnce()
     expect(mocks.getVideoBackfillHistoryAction).toHaveBeenCalledTimes(2)
+  })
+
+  it('keeps refreshing while failed accounts are retried', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+
+    try {
+      mocks.getVideoBackfillHistoryAction
+        .mockResolvedValueOnce({
+          entries: [],
+          failures: [createFailure({ active: true })],
+          success: true,
+        })
+        .mockResolvedValue({
+          entries: [createEntry({ provider: 'twitch' })],
+          failures: [],
+          success: true,
+        })
+
+      render(<VideoBackfillHistoryPanel />)
+
+      expect(await screen.findByText('再試行中')).toBeTruthy()
+
+      await vi.advanceTimersByTimeAsync(15_000)
+
+      await waitFor(() => expect(screen.queryByText('再試行中')).toBeNull())
+      expect(mocks.getVideoBackfillHistoryAction).toHaveBeenCalledTimes(2)
+
+      await vi.advanceTimersByTimeAsync(15_000)
+
+      // Nothing is retried any more, so the history is no longer refreshed.
+      expect(mocks.getVideoBackfillHistoryAction).toHaveBeenCalledTimes(2)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('offers a reload when the history cannot be loaded', async () => {

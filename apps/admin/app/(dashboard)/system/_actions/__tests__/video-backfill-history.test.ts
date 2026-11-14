@@ -183,7 +183,7 @@ describe('getVideoBackfillHistoryAction', () => {
         error: 'Account not found: channel-row-gone',
         name: null,
         requester: null,
-        scope: 'talent',
+        scope: 'single',
         status: 'failed',
       }),
     ])

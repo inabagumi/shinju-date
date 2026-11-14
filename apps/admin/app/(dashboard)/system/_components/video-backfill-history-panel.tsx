@@ -26,6 +26,13 @@ import {
   type VideoBackfillHistoryEntry,
 } from '../_actions/video-backfill-history'
 
+/**
+ * How often the history is refreshed while failed accounts are retried, so
+ * that their outcome shows up without reloading the page. The batch app
+ * works the queue off once a minute.
+ */
+const POLL_INTERVAL_MS = 15_000
+
 const PROVIDER_LABELS: Record<VideoBackfillHistoryEntry['provider'], string> = {
   twitch: 'Twitch',
   youtube: 'YouTube',
@@ -40,8 +47,8 @@ const STATUS_LABELS: Record<
 }
 
 const SCOPE_LABELS: Record<VideoBackfillHistoryEntry['scope'], string> = {
-  all: '全タレントのチェック',
-  talent: 'タレント詳細',
+  all: '全タレントのチェックで依頼',
+  single: '個別に依頼',
 }
 
 function TalentLink({
@@ -109,7 +116,7 @@ function HistoryRow({ entry }: { entry: VideoBackfillHistoryEntry }) {
           <p className="text-sm text-gray-500">
             {formatNumber(entry.added)}件追加 · {formatNumber(entry.pages)}
             ページ · {entry.requester ?? '不明なユーザー'}が
-            {SCOPE_LABELS[entry.scope]}から依頼
+            {SCOPE_LABELS[entry.scope]}
           </p>
           <p className="text-xs text-gray-500">
             <time dateTime={entry.requestedAt}>
@@ -166,9 +173,23 @@ export function VideoBackfillHistoryPanel() {
     setState({ entries: result.entries, failures: result.failures })
   }, [])
 
+  const isRetrying = state?.failures.some((failure) => failure.active) ?? false
+
   useEffect(() => {
     void refresh()
   }, [refresh])
+
+  useEffect(() => {
+    if (!isRetrying) {
+      return
+    }
+
+    const timer = setInterval(() => {
+      void refresh()
+    }, POLL_INTERVAL_MS)
+
+    return () => clearInterval(timer)
+  }, [isRetrying, refresh])
 
   const retry = () => {
     setMessage(null)

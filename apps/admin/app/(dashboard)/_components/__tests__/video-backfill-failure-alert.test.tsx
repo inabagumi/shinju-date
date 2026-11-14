@@ -26,7 +26,7 @@ describe('VideoBackfillFailureAlert', () => {
 
     render(await VideoBackfillFailureAlert())
 
-    expect(screen.getByRole('alert').textContent).toContain(
+    expect(screen.getByRole('status').textContent).toContain(
       '過去動画の取り込みが失敗したアカウントが3件あります。',
     )
     expect(
