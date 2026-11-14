@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   activateTalentAction,
   createTalentAction,
@@ -58,6 +58,10 @@ vi.mock('temporal-polyfill', () => ({
     },
   },
 }))
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
 
 describe('updateTalentAction', () => {
   it('should successfully update talent', async () => {
@@ -245,319 +249,236 @@ describe('updateTalentAction', () => {
   })
 })
 
-describe('deleteTalentAction', () => {
-  it('should successfully delete (soft delete) talent', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
+const TALENT_ID = '123e4567-e89b-12d3-a456-426614174000'
+const NOW = '2024-11-24T17:00:00Z'
+
+const NOT_FOUND_RESULT = {
+  data: null,
+  error: {
+    code: 'PGRST116',
+    message: 'The result contains 0 rows',
+  },
+}
+
+const DATABASE_ERROR_RESULT = {
+  data: null,
+  error: {
+    code: 'PGRST500',
+    message: 'Database connection error',
+  },
+}
+
+async function mockLifecycleSupabaseClient(singleResult: unknown) {
+  const { createSupabaseServerClient } = await import('@/lib/supabase')
+
+  const mockSupabaseClient = {
+    eq: vi.fn().mockReturnThis(),
+    from: vi.fn().mockReturnThis(),
+    is: vi.fn().mockReturnThis(),
+    not: vi.fn().mockReturnThis(),
+    select: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue(singleResult),
+    update: vi.fn().mockReturnThis(),
+  }
+
+  vi.mocked(createSupabaseServerClient).mockResolvedValue(
+    mockSupabaseClient as never,
+  )
+
+  return mockSupabaseClient
+}
+
+interface LifecycleActionCase {
+  name: string
+  action: (id: string) => Promise<{ success: boolean; error?: string }>
+  auditAction: string
+  expectedUpdate: Record<string, unknown>
+  /** 遷移前の status 条件（null は status で絞り込まない） */
+  expectedStatusFilter: 'active' | 'retired' | null
+  /** 遷移前の deleted_at 条件 */
+  expectedDeletedAtFilter: 'is null' | 'is not null'
+  notFoundWarning: string
+  notFoundError: string
+  failureLog: string
+  failureError: string
+}
+
+const lifecycleActionCases: LifecycleActionCase[] = [
+  {
+    action: deleteTalentAction,
+    auditAction: 'CHANNEL_DELETE',
+    expectedDeletedAtFilter: 'is null',
+    expectedStatusFilter: null,
+    expectedUpdate: { deleted_at: NOW, updated_at: NOW },
+    failureError: 'タレントの削除に失敗しました。',
+    failureLog: 'タレントの削除に失敗しました',
+    name: 'deleteTalentAction',
+    notFoundError:
+      '指定されたタレントが見つかりません。既に削除されているか、存在しないIDが指定されています。',
+    notFoundWarning: '削除対象のタレントが見つかりませんでした',
+  },
+  {
+    action: restoreTalentAction,
+    auditAction: 'CHANNEL_RESTORE',
+    expectedDeletedAtFilter: 'is not null',
+    expectedStatusFilter: null,
+    expectedUpdate: { deleted_at: null, updated_at: NOW },
+    failureError: 'タレントの復活に失敗しました。',
+    failureLog: 'タレントの復活に失敗しました',
+    name: 'restoreTalentAction',
+    notFoundError:
+      '指定されたタレントが見つかりません。既に復活しているか、存在しないIDが指定されています。',
+    notFoundWarning: '復活対象のタレントが見つかりませんでした',
+  },
+  {
+    action: retireTalentAction,
+    auditAction: 'CHANNEL_RETIRE',
+    expectedDeletedAtFilter: 'is null',
+    expectedStatusFilter: 'active',
+    expectedUpdate: { status: 'retired', updated_at: NOW },
+    failureError: 'タレントの引退に失敗しました。',
+    failureLog: 'タレントの引退に失敗しました',
+    name: 'retireTalentAction',
+    notFoundError:
+      '指定されたタレントが見つかりません。既に引退・削除されているか、存在しないIDが指定されています。',
+    notFoundWarning: '引退対象のタレントが見つかりませんでした',
+  },
+  {
+    action: activateTalentAction,
+    auditAction: 'CHANNEL_ACTIVATE',
+    expectedDeletedAtFilter: 'is null',
+    expectedStatusFilter: 'retired',
+    expectedUpdate: { status: 'active', updated_at: NOW },
+    failureError: 'タレントのアクティブ化に失敗しました。',
+    failureLog: 'タレントのアクティブ化に失敗しました',
+    name: 'activateTalentAction',
+    notFoundError:
+      '指定されたタレントが見つかりません。既にアクティブ・削除されているか、存在しないIDが指定されています。',
+    notFoundWarning: 'アクティブ化対象のタレントが見つかりませんでした',
+  },
+]
+
+describe.each(lifecycleActionCases)('$name', (testCase) => {
+  it('should update the talent and record an audit log', async () => {
     const { createAuditLog } = await import('@/lib/audit-log')
     const { revalidatePath } = await import('next/cache')
     const { revalidateTags } = await import('@shinju-date/web-cache')
 
-    const mockSupabaseClient = {
-      eq: vi.fn().mockReturnThis(),
-      from: vi.fn().mockReturnThis(),
-      is: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: { name: 'Deleted Talent' },
-        error: null,
-      }),
-      update: vi.fn().mockReturnThis(),
-    }
+    const mockSupabaseClient = await mockLifecycleSupabaseClient({
+      data: { name: 'Test Talent' },
+      error: null,
+    })
 
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
-
-    const result = await deleteTalentAction(
-      '123e4567-e89b-12d3-a456-426614174000',
-    )
+    const result = await testCase.action(TALENT_ID)
 
     expect(result).toEqual({ success: true })
-    expect(mockSupabaseClient.update).toHaveBeenCalledWith({
-      deleted_at: '2024-11-24T17:00:00Z',
-      updated_at: '2024-11-24T17:00:00Z',
-    })
+    expect(mockSupabaseClient.from).toHaveBeenCalledWith('talents')
+    expect(mockSupabaseClient.update).toHaveBeenCalledWith(
+      testCase.expectedUpdate,
+    )
+    expect(mockSupabaseClient.select).toHaveBeenCalledWith('name')
     expect(createAuditLog).toHaveBeenCalledWith(
-      'CHANNEL_DELETE',
+      testCase.auditAction,
       'channels',
-      '123e4567-e89b-12d3-a456-426614174000',
-      { entityName: 'Deleted Talent' },
+      TALENT_ID,
+      { entityName: 'Test Talent' },
     )
     expect(revalidatePath).toHaveBeenCalledWith('/talents')
+    expect(revalidatePath).toHaveBeenCalledWith(`/talents/${TALENT_ID}`)
     expect(revalidateTags).toHaveBeenCalledWith(['talents', 'videos'])
   })
 
-  it('should return error when talent is not found (PGRST116)', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-    const { logger } = await import('@shinju-date/logger')
+  it('should only target talents in the expected source state', async () => {
+    const mockSupabaseClient = await mockLifecycleSupabaseClient({
+      data: { name: 'Test Talent' },
+      error: null,
+    })
 
-    const mockSupabaseClient = {
-      eq: vi.fn().mockReturnThis(),
-      from: vi.fn().mockReturnThis(),
-      is: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: null,
-        error: {
-          code: 'PGRST116',
-          message: 'The result contains 0 rows',
-        },
-      }),
-      update: vi.fn().mockReturnThis(),
+    await testCase.action(TALENT_ID)
+
+    expect(mockSupabaseClient.eq).toHaveBeenCalledWith('id', TALENT_ID)
+
+    if (testCase.expectedStatusFilter) {
+      expect(mockSupabaseClient.eq).toHaveBeenCalledWith(
+        'status',
+        testCase.expectedStatusFilter,
+      )
+      expect(mockSupabaseClient.eq).toHaveBeenCalledTimes(2)
+    } else {
+      expect(mockSupabaseClient.eq).toHaveBeenCalledTimes(1)
     }
 
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
+    if (testCase.expectedDeletedAtFilter === 'is null') {
+      expect(mockSupabaseClient.is).toHaveBeenCalledWith('deleted_at', null)
+      expect(mockSupabaseClient.not).not.toHaveBeenCalled()
+    } else {
+      expect(mockSupabaseClient.not).toHaveBeenCalledWith(
+        'deleted_at',
+        'is',
+        null,
+      )
+      expect(mockSupabaseClient.is).not.toHaveBeenCalled()
+    }
+  })
 
-    const result = await deleteTalentAction(
-      '123e4567-e89b-12d3-a456-426614174000',
-    )
+  it('should return error when talent is not found (PGRST116)', async () => {
+    const { createAuditLog } = await import('@/lib/audit-log')
+    const { revalidateTags } = await import('@shinju-date/web-cache')
+    const { logger } = await import('@shinju-date/logger')
+
+    await mockLifecycleSupabaseClient(NOT_FOUND_RESULT)
+
+    const result = await testCase.action(TALENT_ID)
 
     expect(result).toEqual({
-      error:
-        '指定されたタレントが見つかりません。既に削除されているか、存在しないIDが指定されています。',
+      error: testCase.notFoundError,
       success: false,
     })
-    expect(logger.warn).toHaveBeenCalledWith(
-      '削除対象のタレントが見つかりませんでした',
-      { id: '123e4567-e89b-12d3-a456-426614174000' },
-    )
+    expect(logger.warn).toHaveBeenCalledWith(testCase.notFoundWarning, {
+      id: TALENT_ID,
+    })
+    expect(logger.error).not.toHaveBeenCalled()
+    expect(createAuditLog).not.toHaveBeenCalled()
+    expect(revalidateTags).not.toHaveBeenCalled()
   })
 
   it('should return error when ID is not provided', async () => {
-    const result = await deleteTalentAction('')
+    const { createAuditLog } = await import('@/lib/audit-log')
+
+    const mockSupabaseClient = await mockLifecycleSupabaseClient({
+      data: { name: 'Test Talent' },
+      error: null,
+    })
+
+    const result = await testCase.action('')
 
     expect(result).toEqual({
       error: 'IDが指定されていません。',
       success: false,
     })
+    expect(mockSupabaseClient.from).not.toHaveBeenCalled()
+    expect(createAuditLog).not.toHaveBeenCalled()
   })
 
   it('should handle database errors other than PGRST116', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-    const { logger } = await import('@shinju-date/logger')
-
-    const mockSupabaseClient = {
-      eq: vi.fn().mockReturnThis(),
-      from: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: null,
-        error: {
-          code: 'PGRST500',
-          message: 'Database connection error',
-        },
-      }),
-      update: vi.fn().mockReturnThis(),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
-
-    const result = await deleteTalentAction(
-      '123e4567-e89b-12d3-a456-426614174000',
-    )
-
-    expect(result.success).toBe(false)
-    expect(result.error).toBeTruthy()
-    expect(logger.error).toHaveBeenCalled()
-  })
-})
-
-describe('restoreTalentAction', () => {
-  it('should successfully restore talent', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
     const { createAuditLog } = await import('@/lib/audit-log')
-    const { revalidatePath } = await import('next/cache')
     const { revalidateTags } = await import('@shinju-date/web-cache')
-
-    const mockSupabaseClient = {
-      eq: vi.fn().mockReturnThis(),
-      from: vi.fn().mockReturnThis(),
-      not: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: { name: 'Restored Talent' },
-        error: null,
-      }),
-      update: vi.fn().mockReturnThis(),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
-
-    const result = await restoreTalentAction(
-      '123e4567-e89b-12d3-a456-426614174000',
-    )
-
-    expect(result).toEqual({ success: true })
-    expect(mockSupabaseClient.update).toHaveBeenCalledWith({
-      deleted_at: null,
-      updated_at: '2024-11-24T17:00:00Z',
-    })
-    expect(createAuditLog).toHaveBeenCalledWith(
-      'CHANNEL_RESTORE',
-      'channels',
-      '123e4567-e89b-12d3-a456-426614174000',
-      { entityName: 'Restored Talent' },
-    )
-    expect(revalidatePath).toHaveBeenCalledWith('/talents')
-    expect(revalidateTags).toHaveBeenCalledWith(['talents', 'videos'])
-  })
-
-  it('should return error when talent is not found (PGRST116)', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
     const { logger } = await import('@shinju-date/logger')
 
-    const mockSupabaseClient = {
-      eq: vi.fn().mockReturnThis(),
-      from: vi.fn().mockReturnThis(),
-      not: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: null,
-        error: {
-          code: 'PGRST116',
-          message: 'The result contains 0 rows',
-        },
-      }),
-      update: vi.fn().mockReturnThis(),
-    }
+    await mockLifecycleSupabaseClient(DATABASE_ERROR_RESULT)
 
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
-
-    const result = await restoreTalentAction(
-      '123e4567-e89b-12d3-a456-426614174000',
-    )
+    const result = await testCase.action(TALENT_ID)
 
     expect(result).toEqual({
-      error:
-        '指定されたタレントが見つかりません。既に復活しているか、存在しないIDが指定されています。',
+      error: testCase.failureError,
       success: false,
     })
-    expect(logger.warn).toHaveBeenCalled()
-  })
-
-  it('should return error when ID is not provided', async () => {
-    const result = await restoreTalentAction('')
-
-    expect(result).toEqual({
-      error: 'IDが指定されていません。',
-      success: false,
+    expect(logger.error).toHaveBeenCalledWith(testCase.failureLog, {
+      error: DATABASE_ERROR_RESULT.error,
+      id: TALENT_ID,
     })
-  })
-})
-
-describe('retireTalentAction', () => {
-  it('should successfully retire talent', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-    const { createAuditLog } = await import('@/lib/audit-log')
-
-    const mockSupabaseClient = {
-      eq: vi.fn().mockReturnThis(),
-      from: vi.fn().mockReturnThis(),
-      is: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: { name: 'Retired Talent' },
-        error: null,
-      }),
-      update: vi.fn().mockReturnThis(),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
-
-    const result = await retireTalentAction(
-      '123e4567-e89b-12d3-a456-426614174000',
-    )
-
-    expect(result).toEqual({ success: true })
-    expect(mockSupabaseClient.update).toHaveBeenCalledWith({
-      status: 'retired',
-      updated_at: '2024-11-24T17:00:00Z',
-    })
-    expect(createAuditLog).toHaveBeenCalledWith(
-      'CHANNEL_RETIRE',
-      'channels',
-      '123e4567-e89b-12d3-a456-426614174000',
-      { entityName: 'Retired Talent' },
-    )
-  })
-
-  it('should return error when talent is not found (PGRST116)', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-
-    const mockSupabaseClient = {
-      eq: vi.fn().mockReturnThis(),
-      from: vi.fn().mockReturnThis(),
-      is: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: null,
-        error: {
-          code: 'PGRST116',
-          message: 'The result contains 0 rows',
-        },
-      }),
-      update: vi.fn().mockReturnThis(),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
-
-    const result = await retireTalentAction(
-      '123e4567-e89b-12d3-a456-426614174000',
-    )
-
-    expect(result.success).toBe(false)
-    expect(result.error).toContain('見つかりません')
-  })
-})
-
-describe('activateTalentAction', () => {
-  it('should successfully activate talent', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-    const { createAuditLog } = await import('@/lib/audit-log')
-
-    const mockSupabaseClient = {
-      eq: vi.fn().mockReturnThis(),
-      from: vi.fn().mockReturnThis(),
-      is: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: { name: 'Active Talent' },
-        error: null,
-      }),
-      update: vi.fn().mockReturnThis(),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
-
-    const result = await activateTalentAction(
-      '123e4567-e89b-12d3-a456-426614174000',
-    )
-
-    expect(result).toEqual({ success: true })
-    expect(mockSupabaseClient.update).toHaveBeenCalledWith({
-      status: 'active',
-      updated_at: '2024-11-24T17:00:00Z',
-    })
-    expect(createAuditLog).toHaveBeenCalledWith(
-      'CHANNEL_ACTIVATE',
-      'channels',
-      '123e4567-e89b-12d3-a456-426614174000',
-      { entityName: 'Active Talent' },
-    )
+    expect(createAuditLog).not.toHaveBeenCalled()
+    expect(revalidateTags).not.toHaveBeenCalled()
   })
 })
 

@@ -1,5 +1,6 @@
 'use server'
 
+import type { Tables, TablesUpdate } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
@@ -11,7 +12,7 @@ import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import * as z from 'zod'
 import type { FormState } from '@/components/form'
-import { createAuditLog } from '@/lib/audit-log'
+import { type AuditAction, createAuditLog } from '@/lib/audit-log'
 import {
   requireAuthenticatedUser,
   unauthenticatedFormState,
@@ -268,10 +269,68 @@ export async function updateTalentAction(
   }
 }
 
-export async function deleteTalentAction(id: string): Promise<{
+interface LifecycleActionResult {
   success: boolean
   error?: string
-}> {
+}
+
+interface TalentLifecycleTransition {
+  /** 監査ログに記録するアクション */
+  auditAction: AuditAction
+  /** ログやエラーメッセージに使う操作名（例: 削除） */
+  label: string
+  /** 対象が見つからなかった（PGRST116）ときに想定される理由 */
+  notFoundReason: string
+  /** 遷移前にタレントが満たしているべき状態 */
+  from: {
+    deleted: boolean
+    status?: Tables<'talents'>['status']
+  }
+  /** 遷移後の値（`updated_at` は共通で付与する） */
+  values: (
+    now: string,
+  ) => Pick<TablesUpdate<'talents'>, 'deleted_at' | 'status'>
+}
+
+const TALENT_LIFECYCLE_TRANSITIONS = {
+  activate: {
+    auditAction: 'CHANNEL_ACTIVATE',
+    from: { deleted: false, status: 'retired' },
+    label: 'アクティブ化',
+    notFoundReason: '既にアクティブ・削除されている',
+    values: () => ({ status: 'active' }),
+  },
+  delete: {
+    auditAction: 'CHANNEL_DELETE',
+    from: { deleted: false },
+    label: '削除',
+    notFoundReason: '既に削除されている',
+    values: (now) => ({ deleted_at: now }),
+  },
+  restore: {
+    auditAction: 'CHANNEL_RESTORE',
+    from: { deleted: true },
+    label: '復活',
+    notFoundReason: '既に復活している',
+    values: () => ({ deleted_at: null }),
+  },
+  retire: {
+    auditAction: 'CHANNEL_RETIRE',
+    from: { deleted: false, status: 'active' },
+    label: '引退',
+    notFoundReason: '既に引退・削除されている',
+    values: () => ({ status: 'retired' }),
+  },
+} as const satisfies Record<string, TalentLifecycleTransition>
+
+/**
+ * タレントの削除・復活・引退・アクティブ化に共通する処理。
+ * 遷移前の状態を条件に含めて更新し、監査ログの記録とキャッシュの再検証を行う。
+ */
+async function transitionTalentLifecycle(
+  id: string,
+  transition: TalentLifecycleTransition,
+): Promise<LifecycleActionResult> {
   const auth = await requireAuthenticatedUser()
 
   if (!auth) {
@@ -285,34 +344,41 @@ export async function deleteTalentAction(id: string): Promise<{
   }
 
   try {
-    const now = Temporal.Now.instant()
+    const now = toDBString(Temporal.Now.instant())
 
-    const { data: talent, error } = await supabaseClient
+    let query = supabaseClient
       .from('talents')
       .update({
-        deleted_at: toDBString(now),
-        updated_at: toDBString(now),
+        ...transition.values(now),
+        updated_at: now,
       })
       .eq('id', id)
-      .is('deleted_at', null)
-      .select('name')
-      .single()
+
+    if (transition.from.status) {
+      query = query.eq('status', transition.from.status)
+    }
+
+    query = transition.from.deleted
+      ? query.not('deleted_at', 'is', null)
+      : query.is('deleted_at', null)
+
+    const { data: talent, error } = await query.select('name').single()
 
     if (error) {
-      // Handle PGRST116 error: No rows found (talent doesn't exist or already deleted)
+      // PGRST116: 条件に一致する行がない（存在しない、または既に遷移済み）
       if (error.code === 'PGRST116') {
-        logger.warn('削除対象のタレントが見つかりませんでした', { id })
+        logger.warn(`${transition.label}対象のタレントが見つかりませんでした`, {
+          id,
+        })
         return {
-          error:
-            '指定されたタレントが見つかりません。既に削除されているか、存在しないIDが指定されています。',
+          error: `指定されたタレントが見つかりません。${transition.notFoundReason}か、存在しないIDが指定されています。`,
           success: false,
         }
       }
       throw error
     }
 
-    // Log audit entry
-    await createAuditLog('CHANNEL_DELETE', 'channels', id, {
+    await createAuditLog(transition.auditAction, 'channels', id, {
       entityName: talent.name,
     })
 
@@ -321,201 +387,37 @@ export async function deleteTalentAction(id: string): Promise<{
     await revalidateTags(['talents', 'videos'])
     return { success: true }
   } catch (error) {
-    logger.error('タレントの削除に失敗しました', { error, id })
+    logger.error(`タレントの${transition.label}に失敗しました`, { error, id })
     return {
       error:
         error instanceof Error
           ? error.message
-          : 'タレントの削除に失敗しました。',
+          : `タレントの${transition.label}に失敗しました。`,
       success: false,
     }
   }
 }
 
-export async function restoreTalentAction(id: string): Promise<{
-  success: boolean
-  error?: string
-}> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedResult()
-  }
-
-  const { supabaseClient } = auth
-
-  if (!id) {
-    return { error: 'IDが指定されていません。', success: false }
-  }
-
-  try {
-    const now = Temporal.Now.instant()
-
-    const { data: talent, error } = await supabaseClient
-      .from('talents')
-      .update({
-        deleted_at: null,
-        updated_at: toDBString(now),
-      })
-      .eq('id', id)
-      .not('deleted_at', 'is', null)
-      .select('name')
-      .single()
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        logger.warn('復活対象のタレントが見つかりませんでした', { id })
-        return {
-          error:
-            '指定されたタレントが見つかりません。既に復活しているか、存在しないIDが指定されています。',
-          success: false,
-        }
-      }
-      throw error
-    }
-
-    await createAuditLog('CHANNEL_RESTORE', 'channels', id, {
-      entityName: talent.name,
-    })
-
-    revalidatePath('/talents')
-    revalidatePath(`/talents/${id}`)
-    await revalidateTags(['talents', 'videos'])
-    return { success: true }
-  } catch (error) {
-    logger.error('タレントの復活に失敗しました', { error, id })
-    return {
-      error:
-        error instanceof Error
-          ? error.message
-          : 'タレントの復活に失敗しました。',
-      success: false,
-    }
-  }
+export async function deleteTalentAction(
+  id: string,
+): Promise<LifecycleActionResult> {
+  return transitionTalentLifecycle(id, TALENT_LIFECYCLE_TRANSITIONS.delete)
 }
 
-export async function retireTalentAction(id: string): Promise<{
-  success: boolean
-  error?: string
-}> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedResult()
-  }
-
-  const { supabaseClient } = auth
-
-  if (!id) {
-    return { error: 'IDが指定されていません。', success: false }
-  }
-
-  try {
-    const now = Temporal.Now.instant()
-
-    const { data: talent, error } = await supabaseClient
-      .from('talents')
-      .update({
-        status: 'retired',
-        updated_at: toDBString(now),
-      })
-      .eq('id', id)
-      .eq('status', 'active')
-      .is('deleted_at', null)
-      .select('name')
-      .single()
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        logger.warn('引退対象のタレントが見つかりませんでした', { id })
-        return {
-          error:
-            '指定されたタレントが見つかりません。既に引退・削除されているか、存在しないIDが指定されています。',
-          success: false,
-        }
-      }
-      throw error
-    }
-
-    await createAuditLog('CHANNEL_RETIRE', 'channels', id, {
-      entityName: talent.name,
-    })
-
-    revalidatePath('/talents')
-    revalidatePath(`/talents/${id}`)
-    await revalidateTags(['talents', 'videos'])
-    return { success: true }
-  } catch (error) {
-    logger.error('タレントの引退に失敗しました', { error, id })
-    return {
-      error:
-        error instanceof Error
-          ? error.message
-          : 'タレントの引退に失敗しました。',
-      success: false,
-    }
-  }
+export async function restoreTalentAction(
+  id: string,
+): Promise<LifecycleActionResult> {
+  return transitionTalentLifecycle(id, TALENT_LIFECYCLE_TRANSITIONS.restore)
 }
 
-export async function activateTalentAction(id: string): Promise<{
-  success: boolean
-  error?: string
-}> {
-  const auth = await requireAuthenticatedUser()
+export async function retireTalentAction(
+  id: string,
+): Promise<LifecycleActionResult> {
+  return transitionTalentLifecycle(id, TALENT_LIFECYCLE_TRANSITIONS.retire)
+}
 
-  if (!auth) {
-    return unauthenticatedResult()
-  }
-
-  const { supabaseClient } = auth
-
-  if (!id) {
-    return { error: 'IDが指定されていません。', success: false }
-  }
-
-  try {
-    const now = Temporal.Now.instant()
-
-    const { data: talent, error } = await supabaseClient
-      .from('talents')
-      .update({
-        status: 'active',
-        updated_at: toDBString(now),
-      })
-      .eq('id', id)
-      .eq('status', 'retired')
-      .is('deleted_at', null)
-      .select('name')
-      .single()
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        logger.warn('アクティブ化対象のタレントが見つかりませんでした', { id })
-        return {
-          error:
-            '指定されたタレントが見つかりません。既にアクティブ・削除されているか、存在しないIDが指定されています。',
-          success: false,
-        }
-      }
-      throw error
-    }
-
-    await createAuditLog('CHANNEL_ACTIVATE', 'channels', id, {
-      entityName: talent.name,
-    })
-
-    revalidatePath('/talents')
-    revalidatePath(`/talents/${id}`)
-    await revalidateTags(['talents', 'videos'])
-    return { success: true }
-  } catch (error) {
-    logger.error('タレントのアクティブ化に失敗しました', { error, id })
-    return {
-      error:
-        error instanceof Error
-          ? error.message
-          : 'タレントのアクティブ化に失敗しました。',
-      success: false,
-    }
-  }
+export async function activateTalentAction(
+  id: string,
+): Promise<LifecycleActionResult> {
+  return transitionTalentLifecycle(id, TALENT_LIFECYCLE_TRANSITIONS.activate)
 }
