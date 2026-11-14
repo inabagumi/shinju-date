@@ -34,3 +34,4 @@ export {
   ToastTitle,
   ToastViewport,
 } from './Toast/Toast'
+export { twMerge } from './tw-merge'

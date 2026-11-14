@@ -1,5 +1,5 @@
 import type { Tables } from '@shinju-date/database'
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from '@shinju-date/ui'
 
 const PLATFORM_LABELS: Record<Tables<'videos'>['platform'], string> = {
   twitch: 'Twitch',

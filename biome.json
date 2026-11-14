@@ -49,6 +49,16 @@
         "useTailwindSortedClasses": {
           "level": "warn"
         }
+      },
+      "style": {
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "tailwind-merge": "theme.css の文字サイズなどを登録した twMerge を @shinju-date/ui からインポートしてください。"
+            }
+          }
+        }
       }
     }
   },
@@ -62,6 +72,16 @@
         }
       },
       "includes": ["**/package.json"]
+    },
+    {
+      "includes": ["packages/ui/src/tw-merge.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
+          }
+        }
+      }
     },
     {
       "includes": ["apps/*/**"],

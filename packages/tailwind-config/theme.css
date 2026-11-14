@@ -1,9 +1,35 @@
 @theme {
-  --font-family-emoji:
+  /*
+   * 欧文は Lato（`next/font` が `--font-lato` に読み込む）、日本語は端末のフォント。
+   * 日本語のウェブフォントは、表示の遅れやレイアウトシフトを避けるために使わない
+   * （docs/design-guidelines.md）。
+   */
+  --font-emoji:
     Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-  --font-family-sans:
+  --font-sans:
     var(--font-lato, Lato), Helvetica Neue, Arial, Hiragino Kaku Gothic ProN,
-    Hiragino Sans, BIZ UDPGothic, Meiryo, sans-serif, var(--font-family-emoji);
+    Hiragino Sans, BIZ UDPGothic, Meiryo, sans-serif, var(--font-emoji);
+
+  /*
+   * 文字サイズと行間の組。役割ごとの太さとの組み合わせは
+   * docs/design-guidelines.md を参照。ここに追加したら
+   * packages/ui/src/tw-merge.ts の一覧にも追加する。
+   */
+  --text-display: 2rem; /* 32px: PC のページ見出し */
+  --text-display--line-height: 1.4;
+  --text-title: 1.5rem; /* 24px: ページ見出し */
+  --text-title--line-height: 1.4;
+  --text-heading: 1.25rem; /* 20px: セクション見出し */
+  --text-heading--line-height: 1.4;
+  --text-body: 1rem; /* 16px: 本文 */
+  --text-body--line-height: 1.7;
+  --text-meta: 0.875rem; /* 14px: 補助情報（日時・タレント名・説明） */
+  --text-meta--line-height: 1.6;
+  --text-caption: 0.75rem; /* 12px: バッジ・注記 */
+  --text-caption--line-height: 1.4;
+
+  /* 文章の最大幅（1行40〜45文字程度）。`max-w-text` で使う */
+  --container-text: 44rem;
 
   --color-774-nevy-50: #f2f1ff;
   --color-774-nevy-100: #eae5ff;

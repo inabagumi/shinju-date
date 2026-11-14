@@ -3,10 +3,9 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { formatDateTime } from '@shinju-date/temporal-fns'
-import { Badge } from '@shinju-date/ui'
+import { Badge, twMerge } from '@shinju-date/ui'
 import Link from 'next/link'
 import { useState } from 'react'
-import { twMerge } from 'tailwind-merge'
 
 interface FeatureRequestListProps {
   featureRequests: Tables<'feature_requests'>[]

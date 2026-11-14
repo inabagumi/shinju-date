@@ -1,18 +1,18 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentPropsWithRef } from 'react'
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from '../tw-merge'
 
 const cardVariants = cva(
-  'flex flex-col overflow-hidden rounded-xl border border-border text-foreground shadow',
+  'flex flex-col overflow-hidden rounded-xl border border-border text-foreground',
   {
     defaultVariants: {
       variant: 'default',
     },
     variants: {
       variant: {
-        default: 'bg-muted hover:shadow-xl',
-        elevated: 'bg-surface shadow-md hover:shadow-xl',
-        outlined: 'bg-transparent shadow-none hover:shadow-md',
+        default: 'bg-muted',
+        elevated: 'bg-surface',
+        outlined: 'bg-transparent',
       },
     },
   },

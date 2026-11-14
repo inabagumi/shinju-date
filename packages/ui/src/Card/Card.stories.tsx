@@ -22,7 +22,7 @@ export const Default = meta.story({
     children: (
       <>
         <CardHeader>
-          <h3 className="text-lg font-semibold">Card Title</h3>
+          <h3 className="text-body leading-normal font-semibold">Card Title</h3>
         </CardHeader>
         <CardContent>
           <p>This is the card content area. You can place any content here.</p>
@@ -38,11 +38,13 @@ export const Elevated = meta.story({
     children: (
       <>
         <CardHeader>
-          <h3 className="text-lg font-semibold">Elevated Card</h3>
+          <h3 className="text-body leading-normal font-semibold">
+            Elevated Card
+          </h3>
         </CardHeader>
         <CardContent>
           <p>
-            This card has an elevated appearance with a white background and
+            This card uses the raised surface. Like other cards, it has no
             shadow.
           </p>
         </CardContent>
@@ -57,7 +59,9 @@ export const Outlined = meta.story({
     children: (
       <>
         <CardHeader>
-          <h3 className="text-lg font-semibold">Outlined Card</h3>
+          <h3 className="text-body leading-normal font-semibold">
+            Outlined Card
+          </h3>
         </CardHeader>
         <CardContent>
           <p>This card has a transparent background with a visible border.</p>
@@ -73,7 +77,9 @@ export const WithFooter = meta.story({
     children: (
       <>
         <CardHeader>
-          <h3 className="text-lg font-semibold">Card with Footer</h3>
+          <h3 className="text-body leading-normal font-semibold">
+            Card with Footer
+          </h3>
         </CardHeader>
         <CardContent>
           <p>This card includes a footer section with action buttons.</p>
@@ -100,13 +106,15 @@ export const VideoCard = meta.story({
       <>
         <div className="aspect-video w-full bg-border" />
         <CardHeader>
-          <h3 className="line-clamp-2 text-sm font-semibold">
+          <h3 className="line-clamp-2 text-body leading-normal font-semibold">
             Sample Video Title
           </h3>
         </CardHeader>
         <CardContent>
-          <p className="text-xs text-muted">Talent Name</p>
-          <p className="text-xs text-muted">1.2M views • 2 days ago</p>
+          <p className="text-meta text-muted">Talent Name</p>
+          <p className="text-meta text-muted tabular-nums">
+            1.2M views • 2 days ago
+          </p>
         </CardContent>
       </>
     ),

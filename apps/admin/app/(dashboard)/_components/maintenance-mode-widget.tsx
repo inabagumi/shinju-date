@@ -1,8 +1,7 @@
 'use client'
 
-import { Button } from '@shinju-date/ui'
+import { Button, twMerge } from '@shinju-date/ui'
 import { useState, useTransition } from 'react'
-import { twMerge } from 'tailwind-merge'
 import ToggleSwitch from '@/components/toggle-switch'
 import {
   disableMaintenanceMode,

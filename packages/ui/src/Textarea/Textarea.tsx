@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentProps } from 'react'
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from '../tw-merge'
 
 // Note: Using text-base (16px) instead of text-sm (14px) to prevent iOS Safari
 // from zooming in when focusing on the textarea. iOS Safari zooms on input fields

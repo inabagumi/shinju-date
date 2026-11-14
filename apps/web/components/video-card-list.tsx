@@ -1,5 +1,5 @@
+import { twMerge } from '@shinju-date/ui'
 import type { ComponentPropsWithoutRef } from 'react'
-import { twMerge } from 'tailwind-merge'
 import type { Video } from '@/lib/fetchers'
 import VideoCard, { VideoCardSkeleton } from './video-card'
 

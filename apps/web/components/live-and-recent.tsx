@@ -1,5 +1,6 @@
 'use client'
 
+import { twMerge } from '@shinju-date/ui'
 import { useQuery } from '@tanstack/react-query'
 import {
   Activity as ActivityIcon,
@@ -7,7 +8,6 @@ import {
   Video as VideoIcon,
 } from 'lucide-react'
 import { Activity, type ReactNode, Suspense, useState } from 'react'
-import { twMerge } from 'tailwind-merge'
 import { fetchDashboardVideos, type Video } from '@/lib/fetchers'
 import ShortsCarousel from './shorts-carousel'
 import VideoCard, { VideoCardSkeleton } from './video-card'
