@@ -83,7 +83,7 @@ pnpm exec supabase start
 - **PostgREST** (internal): REST APIサービス
 - **Storage API** (internal): ファイルストレージ
 - **Realtime** (internal): リアルタイム機能
-- **Inbucket** (port 54324): メールテスト用Webインターフェース
+- **Mailpit** (port 54324): メールテスト用Webインターフェース
 - **Studio** (port 54323): Supabase管理UI
 
 ### 3.2. データベースの初期化
