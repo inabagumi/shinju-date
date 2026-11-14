@@ -9,7 +9,7 @@
   - 774-pink カラー（セカンダリカラー）
   - 774-blue カラー（セカンダリカラー）
   - プライマリー/セカンダリーカラー定義（移行が終わるまで残す）
-  - 意味で名付けた色（`surface` / `text` / `accent` など。ライトとダークで値が切り替わる）
+  - セマンティックカラー（`surface` / `text` / `accent` など。ライトとダークで値が切り替わる）
 
 ## 使用方法
 
@@ -22,9 +22,9 @@
 
 これにより、すべてのアプリケーションとパッケージで一貫したカラーパレットを使用できます。
 
-## 意味で名付けた色
+## セマンティックカラー
 
-部品の色には、用途で名付けた色を使います。値は `prefers-color-scheme` で
+部品の色には、用途で名付けたセマンティックカラーを使います。値は `prefers-color-scheme` で
 ライトとダークが切り替わるため、`dark:` を書く必要はありません。
 
 ```tsx
@@ -186,18 +186,28 @@
 
 ### 2. セマンティックカラーの使用
 
-成功・エラー・警告などの状態表示には、一般的なカラーを使用します。
+地・文字・枠・状態の表示には、[セマンティックカラー](#セマンティックカラー)を使用します。
+一般的な Tailwind カラー（`green-*`, `red-*`, `yellow-*`, `gray-*` など）や `dark:` での
+手書きは使いません。
 
 ```tsx
 // ✅ 成功状態
-<div className="bg-green-50 text-green-600">保存しました</div>
+<div className="bg-success/10 text-success">保存しました</div>
 
 // ✅ エラー状態
-<div className="bg-red-50 text-red-600">エラーが発生しました</div>
+<div className="bg-danger/10 text-danger">エラーが発生しました</div>
 
 // ✅ 警告状態
-<div className="bg-yellow-50 text-yellow-600">注意が必要です</div>
+<div className="bg-warning/10 text-warning">注意が必要です</div>
+
+// ❌ 一般的なカラーと dark: の手書き
+<div className="bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400">
+  エラーが発生しました
+</div>
 ```
+
+状態色の地は 10% の透過（`bg-danger/10` など）にすると、文字とのコントラスト比
+4.5:1 以上を両モードで保てます（`colors.test.ts` で確認しています）。
 
 ### 3. コントラスト比の確保
 

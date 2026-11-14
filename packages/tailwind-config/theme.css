@@ -39,7 +39,7 @@
   --color-774-blue-900: #0d399b;
   --color-774-blue-950: #0e245d;
 
-  /* 移行が終わるまで残す。新しく書く部品では下の意味で名付けた色を使う */
+  /* 移行が終わるまで残す。新しく書く部品では下のセマンティックカラーを使う */
   --color-primary: var(--color-774-nevy-950);
   --color-primary-foreground: var(--color-774-nevy-50);
   --color-secondary-pink: var(--color-774-pink-500);
@@ -49,7 +49,7 @@
 }
 
 /*
- * 意味で名付けた色。値はライトモードのもので、ダークモードの値は下の
+ * セマンティックカラー（用途で名付けた色）。値はライトモードのもので、ダークモードの値は下の
  * `prefers-color-scheme: dark` で上書きする。部品側は `bg-surface text-text`
  * のように1つのクラスを書くだけで両モードに対応できる。
  *

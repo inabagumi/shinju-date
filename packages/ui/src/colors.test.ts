@@ -37,7 +37,7 @@ function getSemanticColors(): {
   const darkStart = themeCSS.indexOf('@media (prefers-color-scheme: dark)')
 
   if (lightStart < 0 || darkStart < lightStart) {
-    throw new Error('theme.css の意味で名付けた色の定義が見つかりません')
+    throw new Error('theme.css のセマンティックカラーの定義が見つかりません')
   }
 
   return {
