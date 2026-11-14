@@ -54,3 +54,27 @@ for await (const stream of getStreamsByUserIds({ userIds: ['125328655'] })) {
 // Low-level access when needed
 const api = getTwitchApiClient()
 ```
+
+### Lookups by ID
+
+`getVideos` and `getClips` omit IDs that no longer exist. Helix answers a lookup by ID with `404` instead of an empty list when nothing matches, so a batch that fails with `404` is split and retried until only the missing IDs are left out. Other errors are rethrown.
+
+### Listing a broadcaster's videos
+
+```typescript
+// First page only (newest first)
+for await (const video of getVideosByUser({
+  userId: '125328655',
+  type: 'archive', // 'archive' | 'highlight' | 'upload' | 'all'
+  limit: 20,
+})) {
+  console.log(video.id, video.stream_id)
+}
+
+// Every page
+for await (const video of getVideosByUser({ userId: '125328655', all: true })) {
+  // ...
+}
+```
+
+Note that Twitch creates the archive of a broadcast as soon as it starts: an `archive` whose `stream_id` matches a stream returned by `getStreamsByUserIds` is still on air, and its `thumbnail_url` is empty until the broadcast ends.
