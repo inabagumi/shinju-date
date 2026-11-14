@@ -26,4 +26,6 @@ jobs:
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
           pnpm exec supabase link --project-ref "$SUPABASE_PROJECT_REF"
-          pnpm exec supabase db push
+          # Supabase CLI v3 targets the local stack by default and requires
+          # explicit consent for changes to a hosted project in CI.
+          pnpm exec supabase db push --remote --yes
