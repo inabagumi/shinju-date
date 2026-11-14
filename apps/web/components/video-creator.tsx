@@ -1,6 +1,6 @@
+import { twMerge } from '@shinju-date/ui'
 import { UserRound } from 'lucide-react'
 import Image from 'next/image'
-import { twMerge } from 'tailwind-merge'
 import type { ProfileImage, Video } from '@/lib/fetchers'
 
 export interface VideoCreatorInfo {

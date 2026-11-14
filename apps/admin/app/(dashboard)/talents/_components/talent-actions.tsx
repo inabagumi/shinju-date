@@ -1,9 +1,9 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
+import { twMerge } from '@shinju-date/ui'
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
-import { twMerge } from 'tailwind-merge'
 import {
   activateTalentAction,
   deleteTalentAction,
