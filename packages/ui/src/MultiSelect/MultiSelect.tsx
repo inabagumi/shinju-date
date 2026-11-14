@@ -65,7 +65,7 @@ export function MultiSelect({
       <Popover.Trigger asChild>
         <button
           className={twMerge(
-            'flex w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-left text-gray-900 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50',
+            'flex w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-left text-gray-900 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
             className,
           )}
           type="button"
@@ -80,7 +80,7 @@ export function MultiSelect({
       <Popover.Portal>
         <Popover.Content
           align="start"
-          className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 z-50 w-[var(--radix-popover-trigger-width)] rounded-md border border-gray-200 bg-white p-2 shadow-lg data-[state=closed]:animate-out data-[state=open]:animate-in"
+          className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=open]:animate-in z-50 w-[var(--radix-popover-trigger-width)] rounded-md border border-gray-200 bg-white p-2 shadow-lg"
           sideOffset={4}
         >
           <div className="flex flex-col gap-1">
@@ -92,10 +92,10 @@ export function MultiSelect({
             >
               <div className="mr-2 flex size-5 items-center justify-center rounded border border-gray-300">
                 {value.length === options.length && (
-                  <Check className="size-4 text-774-blue-600" />
+                  <Check className="text-774-blue-600 size-4" />
                 )}
                 {value.length > 0 && value.length < options.length && (
-                  <Minus className="size-3 text-774-blue-600" />
+                  <Minus className="text-774-blue-600 size-3" />
                 )}
               </div>
               <span className="font-medium">
@@ -115,7 +115,7 @@ export function MultiSelect({
                   >
                     <Checkbox.Root
                       checked={isChecked}
-                      className="mr-2 flex size-5 items-center justify-center rounded border border-gray-300 bg-white data-[state=checked]:border-774-blue-600 data-[state=checked]:bg-774-blue-600"
+                      className="data-[state=checked]:border-774-blue-600 data-[state=checked]:bg-774-blue-600 mr-2 flex size-5 items-center justify-center rounded border border-gray-300 bg-white"
                       id={`multi-select-${option.value}`}
                       onCheckedChange={() => handleToggle(option.value)}
                     >

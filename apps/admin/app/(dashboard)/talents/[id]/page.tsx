@@ -55,7 +55,7 @@ async function TalentProfile({ id }: { id: string }) {
         <div className="flex items-center justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="font-bold text-2xl">{talent.name}</h1>
+              <h1 className="text-2xl font-bold">{talent.name}</h1>
               <TalentStatusBadge talent={talent} />
             </div>
             <p className="text-gray-600">タレント詳細</p>
@@ -78,10 +78,10 @@ async function TalentProfile({ id }: { id: string }) {
         <div className="mb-6 rounded-md bg-red-50 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="font-medium text-red-800 text-sm">
+              <h3 className="text-sm font-medium text-red-800">
                 削除されたタレント
               </h3>
-              <div className="mt-2 text-red-700 text-sm">
+              <div className="mt-2 text-sm text-red-700">
                 <p>このタレントは削除されています。</p>
                 <p className="mt-1">動画の非公開・復旧も行われます。</p>
               </div>
@@ -92,10 +92,10 @@ async function TalentProfile({ id }: { id: string }) {
 
       {isRetired && (
         <div className="mb-6 rounded-md bg-amber-50 p-4">
-          <h3 className="font-medium text-amber-900 text-sm">
+          <h3 className="text-sm font-medium text-amber-900">
             引退したタレント
           </h3>
-          <div className="mt-2 text-amber-800 text-sm">
+          <div className="mt-2 text-sm text-amber-800">
             <p>このタレントは引退状態です。</p>
           </div>
         </div>
@@ -107,20 +107,20 @@ async function TalentProfile({ id }: { id: string }) {
       ) : (
         <Card className="mt-6" variant="elevated">
           <CardHeader>
-            <h3 className="font-medium text-gray-900 text-lg leading-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
               タレント情報
             </h3>
-            <p className="mt-1 max-w-2xl text-gray-500 text-sm">
+            <p className="mt-1 max-w-2xl text-sm text-gray-500">
               削除済みのため編集できません。
             </p>
           </CardHeader>
           <CardContent className="p-0">
             <dl>
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="font-medium text-gray-500 text-sm">
+                <dt className="text-sm font-medium text-gray-500">
                   タレント名
                 </dt>
-                <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                   {talent.name}
                 </dd>
               </div>
@@ -146,39 +146,39 @@ async function TalentProfile({ id }: { id: string }) {
       {/* Additional metadata */}
       <Card className="mt-6" variant="elevated">
         <CardHeader>
-          <h3 className="font-medium text-gray-900 text-lg leading-6">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">
             メタデータ
           </h3>
         </CardHeader>
         <CardContent className="p-0">
           <dl>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="font-medium text-gray-500 text-sm">
+              <dt className="text-sm font-medium text-gray-500">
                 データベースID
               </dt>
-              <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+              <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                 {talent.id}
               </dd>
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="font-medium text-gray-500 text-sm">状態</dt>
-              <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+              <dt className="text-sm font-medium text-gray-500">状態</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                 <TalentStatusBadge talent={talent} />
               </dd>
             </div>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="font-medium text-gray-500 text-sm">作成日時</dt>
-              <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+              <dt className="text-sm font-medium text-gray-500">作成日時</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                 <time dateTime={talent.created_at}>
                   {formatDateTimeFromISO(talent.created_at)}
                 </time>
               </dd>
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="font-medium text-gray-500 text-sm">
+              <dt className="text-sm font-medium text-gray-500">
                 最終更新日時
               </dt>
-              <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+              <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                 <time dateTime={talent.updated_at}>
                   {formatDateTimeFromISO(talent.updated_at)}
                 </time>
@@ -186,8 +186,8 @@ async function TalentProfile({ id }: { id: string }) {
             </div>
             {isDeleted && (
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="font-medium text-gray-500 text-sm">削除日時</dt>
-                <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                <dt className="text-sm font-medium text-gray-500">削除日時</dt>
+                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                   {talent.deleted_at ? (
                     <time dateTime={talent.deleted_at}>
                       {formatDateTimeFromISO(talent.deleted_at)}
@@ -212,10 +212,10 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
     <div className="mt-8">
       <Card variant="elevated">
         <CardHeader>
-          <h2 className="font-medium text-gray-900 text-lg leading-6">
+          <h2 className="text-lg leading-6 font-medium text-gray-900">
             最新動画
           </h2>
-          <p className="mt-1 max-w-2xl text-gray-500 text-sm">
+          <p className="mt-1 max-w-2xl text-sm text-gray-500">
             直近に公開された動画一覧
           </p>
         </CardHeader>
@@ -243,7 +243,7 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
                           />
                         </div>
                       ) : (
-                        <div className="flex h-12 w-20 items-center justify-center rounded bg-gray-200 text-gray-500 text-xs">
+                        <div className="flex h-12 w-20 items-center justify-center rounded bg-gray-200 text-xs text-gray-500">
                           No Image
                         </div>
                       )}
@@ -253,11 +253,11 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
                         className="text-774-blue-600 hover:text-774-blue-800"
                         href={`/videos/${video.id}`}
                       >
-                        <p className="truncate font-medium text-sm">
+                        <p className="truncate text-sm font-medium">
                           {video.title}
                         </p>
                       </Link>
-                      <p className="text-gray-500 text-sm">
+                      <p className="text-sm text-gray-500">
                         <time dateTime={video.published_at}>
                           {formatDateTimeFromISO(video.published_at)}
                         </time>
@@ -297,7 +297,7 @@ export default function TalentDetailPage({ params }: Props) {
       {/* Back button - static, renders immediately */}
       <div className="mb-6">
         <Link
-          className="inline-flex items-center text-774-blue-600 hover:text-774-blue-800"
+          className="text-774-blue-600 hover:text-774-blue-800 inline-flex items-center"
           href="/talents"
         >
           <ChevronLeft className="mr-1 size-4" />

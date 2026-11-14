@@ -52,7 +52,7 @@ export function DeleteConfirmDialog({
           <DialogDescription>
             本当に「{termName}」を削除しますか？この操作は取り消せません。
           </DialogDescription>
-          {error && <p className="mb-4 text-red-600 text-sm">{error}</p>}
+          {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
           <div className="flex justify-end gap-2">
             <DialogClose asChild>
               <Button disabled={isPending} variant="secondary">

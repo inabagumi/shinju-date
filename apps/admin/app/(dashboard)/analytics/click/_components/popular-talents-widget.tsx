@@ -42,7 +42,7 @@ function SimplePopularTalentsWidget({
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-semibold text-xl">
+        <h2 className="text-xl font-semibold">
           {selectedDate
             ? `人気タレントランキング (${selectedDate})`
             : `人気タレントランキング (${dateRange.startDate} 〜 ${dateRange.endDate})`}
@@ -53,7 +53,7 @@ function SimplePopularTalentsWidget({
           type="talents"
         />
       </div>
-      <p className="mb-4 text-gray-600 text-sm">
+      <p className="mb-4 text-sm text-gray-600">
         最もクリックされているタレントのランキング。どのタレントが人気かを把握できます。
       </p>
 
@@ -64,7 +64,7 @@ function SimplePopularTalentsWidget({
               className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
               key={talent.id}
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-774-nevy-100 font-semibold text-774-nevy-600 text-sm">
+              <div className="bg-774-nevy-100 text-774-nevy-600 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
                 {index + 1}
               </div>
               <div className="min-w-0 flex-1 truncate">
@@ -77,7 +77,7 @@ function SimplePopularTalentsWidget({
               </div>
               <div className="shrink-0 text-right">
                 <p className="font-semibold text-gray-900">{talent.clicks}</p>
-                <p className="text-gray-500 text-xs">回</p>
+                <p className="text-xs text-gray-500">回</p>
               </div>
             </div>
           ))}

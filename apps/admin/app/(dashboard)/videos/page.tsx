@@ -161,7 +161,7 @@ async function VideoCountData({
 export default function VideosPage({ searchParams }: PageProps<'/'>) {
   return (
     <div className="mx-auto max-w-7xl p-4">
-      <h1 className="mb-6 font-bold text-3xl">動画管理</h1>
+      <h1 className="mb-6 text-3xl font-bold">動画管理</h1>
 
       {/* Video count with Suspense */}
       <div className="mb-4">

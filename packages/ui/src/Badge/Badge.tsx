@@ -3,7 +3,7 @@ import type { ComponentPropsWithRef } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-full border px-2 py-1 font-medium text-xs',
+  'inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium',
   {
     defaultVariants: {
       variant: 'info',

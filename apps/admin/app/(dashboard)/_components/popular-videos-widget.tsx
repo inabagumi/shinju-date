@@ -33,7 +33,7 @@ export async function PopularVideosWidget() {
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 font-semibold text-xl">
+      <h2 className="mb-4 text-xl font-semibold">
         人気動画ランキング (過去30日間)
       </h2>
       {popularVideos.length > 0 ? (
@@ -63,7 +63,7 @@ export async function PopularVideosWidget() {
               )}
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{video.title}</p>
-                <p className="text-gray-500 text-sm">
+                <p className="text-sm text-gray-500">
                   クリック数: {formatNumber(video.clicks)}
                 </p>
               </div>

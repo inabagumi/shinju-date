@@ -36,7 +36,7 @@ export function SearchModalDialog() {
       <DialogPortal>
         <DialogOverlay className="z-50 backdrop-blur-sm" />
 
-        <DialogContent className="data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[20%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[20%] top-[20%] left-[50%] z-50 w-full max-w-2xl translate-x-[-50%] translate-y-[-20%] rounded-xl border-774-nevy-200 bg-primary-foreground p-0 shadow-2xl sm:max-w-3xl dark:border-zinc-700 dark:bg-zinc-900">
+        <DialogContent className="data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[20%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[20%] border-774-nevy-200 bg-primary-foreground top-[20%] left-[50%] z-50 w-full max-w-2xl translate-x-[-50%] translate-y-[-20%] rounded-xl p-0 shadow-2xl sm:max-w-3xl dark:border-zinc-700 dark:bg-zinc-900">
           <Suspense
             fallback={
               <div className="flex h-96 items-center justify-center">
@@ -163,15 +163,15 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex flex-col">
       <form
-        className="flex items-center border-774-nevy-200 border-b dark:border-zinc-700"
+        className="border-774-nevy-200 flex items-center border-b dark:border-zinc-700"
         onSubmit={handleSubmit}
       >
-        <Search className="ml-4 size-5 text-774-nevy-400 dark:text-774-nevy-300" />
+        <Search className="text-774-nevy-400 dark:text-774-nevy-300 ml-4 size-5" />
 
         <DialogTitle className="sr-only">検索</DialogTitle>
 
         <input
-          className="w-full bg-transparent px-4 py-4 text-primary outline-none placeholder:text-774-nevy-400 dark:text-774-nevy-50 dark:placeholder:text-774-nevy-500"
+          className="text-primary placeholder:text-774-nevy-400 dark:text-774-nevy-50 dark:placeholder:text-774-nevy-500 w-full bg-transparent px-4 py-4 outline-none"
           name="q"
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleInputKeyDown}
@@ -181,7 +181,7 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
         />
 
         <div className="mr-4 flex items-center gap-2">
-          <kbd className="hidden rounded border border-774-nevy-200 bg-774-nevy-100 px-2 py-1 font-mono text-774-nevy-500 text-xs sm:inline-block dark:border-zinc-700 dark:bg-zinc-800 dark:text-774-nevy-300">
+          <kbd className="border-774-nevy-200 bg-774-nevy-100 text-774-nevy-500 dark:text-774-nevy-300 hidden rounded border px-2 py-1 font-mono text-xs sm:inline-block dark:border-zinc-700 dark:bg-zinc-800">
             ESC
           </kbd>
         </div>
@@ -190,7 +190,7 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
       {/* Search suggestions */}
       <div>
         {isLoadingSuggestions ? (
-          <div className="p-8 text-center text-774-nevy-400 text-sm dark:text-774-nevy-400">
+          <div className="text-774-nevy-400 dark:text-774-nevy-400 p-8 text-center text-sm">
             読み込み中...
           </div>
         ) : suggestions && suggestions.length > 0 ? (
@@ -198,14 +198,14 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
             <div className="p-2">
               {suggestions.map((suggestion, index) => (
                 <Link
-                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left hover:bg-774-nevy-100 dark:hover:bg-zinc-800"
+                  className="hover:bg-774-nevy-100 flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left dark:hover:bg-zinc-800"
                   data-suggestion-link
                   href={`/videos/${encodeURIComponent(suggestion.term)}`}
                   key={suggestion.term}
                   onClick={handleSuggestionClick}
                   onKeyDown={(e) => handleSuggestionKeyDown(e, index)}
                 >
-                  <Search className="size-4 text-774-nevy-400 dark:text-774-nevy-300" />
+                  <Search className="text-774-nevy-400 dark:text-774-nevy-300 size-4" />
                   <span className="text-primary dark:text-774-nevy-50">
                     {suggestion.term}
                   </span>
@@ -214,13 +214,13 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
             </div>
           </div>
         ) : query ? (
-          <div className="p-8 text-center text-774-nevy-400 text-sm dark:text-774-nevy-400">
+          <div className="text-774-nevy-400 dark:text-774-nevy-400 p-8 text-center text-sm">
             Enterキーを押して「{query}」を検索
           </div>
         ) : (
           <div>
             <div className="border-774-nevy-200 border-b px-4 py-3 dark:border-zinc-700">
-              <h2 className="text-774-nevy-500 text-sm dark:text-774-nevy-400">
+              <h2 className="text-774-nevy-500 dark:text-774-nevy-400 text-sm">
                 おすすめの検索キーワード
               </h2>
             </div>

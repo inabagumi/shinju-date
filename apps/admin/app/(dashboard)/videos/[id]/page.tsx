@@ -70,7 +70,7 @@ async function CachedVideoDetails({ id }: { id: string }) {
       <div className="mb-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0 flex-1">
-            <h1 className="wrap-break-word font-bold text-2xl">
+            <h1 className="text-2xl font-bold wrap-break-word">
               {video.title}
             </h1>
             <p className="text-gray-600">動画詳細</p>
@@ -84,10 +84,10 @@ async function CachedVideoDetails({ id }: { id: string }) {
         <div className="mb-6 rounded-md bg-red-50 p-4">
           <div className="flex">
             <div className="ml-3">
-              <h3 className="font-medium text-red-800 text-sm">
+              <h3 className="text-sm font-medium text-red-800">
                 削除された動画
               </h3>
-              <div className="mt-2 text-red-700 text-sm">
+              <div className="mt-2 text-sm text-red-700">
                 <p>この動画は削除されており、同期できません。</p>
               </div>
             </div>
@@ -101,7 +101,7 @@ async function CachedVideoDetails({ id }: { id: string }) {
           {/* Thumbnail */}
           <Card variant="elevated">
             <CardHeader>
-              <h3 className="font-medium text-gray-900 text-lg leading-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
                 サムネイル
               </h3>
             </CardHeader>
@@ -129,7 +129,7 @@ async function CachedVideoDetails({ id }: { id: string }) {
           {/* Status */}
           <Card variant="elevated">
             <CardHeader>
-              <h3 className="font-medium text-gray-900 text-lg leading-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
                 ステータス
               </h3>
             </CardHeader>
@@ -142,36 +142,36 @@ async function CachedVideoDetails({ id }: { id: string }) {
         {/* Video information */}
         <Card variant="elevated">
           <CardHeader>
-            <h3 className="font-medium text-gray-900 text-lg leading-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
               動画情報
             </h3>
-            <p className="mt-1 max-w-2xl text-gray-500 text-sm">
+            <p className="mt-1 max-w-2xl text-sm text-gray-500">
               現在データベースに保存されている情報
             </p>
           </CardHeader>
           <CardContent className="p-0">
             <dl className="[&>div:nth-of-type(even)]:bg-white [&>div:nth-of-type(odd)]:bg-gray-50">
               <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="font-medium text-gray-500 text-sm">タイトル</dt>
-                <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                <dt className="text-sm font-medium text-gray-500">タイトル</dt>
+                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                   {video.title}
                 </dd>
               </div>
               <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="font-medium text-gray-500 text-sm">
+                <dt className="text-sm font-medium text-gray-500">
                   プラットフォーム
                 </dt>
-                <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                   <PlatformBadge platform={video.platform} />
                 </dd>
               </div>
               <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="font-medium text-gray-500 text-sm">
+                <dt className="text-sm font-medium text-gray-500">
                   {video.platform === 'twitch'
                     ? 'Twitch動画ID'
                     : 'YouTube動画ID'}
                 </dt>
-                <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                   <code className="rounded bg-gray-100 px-2 py-1 font-mono text-xs">
                     {video.platform === 'twitch'
                       ? (video.twitch_video?.twitch_video_id ?? 'N/A')
@@ -181,17 +181,17 @@ async function CachedVideoDetails({ id }: { id: string }) {
               </div>
               {video.platform === 'twitch' && video.twitch_video?.type && (
                 <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="font-medium text-gray-500 text-sm">
+                  <dt className="text-sm font-medium text-gray-500">
                     Twitch種別
                   </dt>
-                  <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                  <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                     {video.twitch_video.type}
                   </dd>
                 </div>
               )}
               <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="font-medium text-gray-500 text-sm">タレント</dt>
-                <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                <dt className="text-sm font-medium text-gray-500">タレント</dt>
+                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                   <Link
                     className="text-774-blue-600 hover:text-774-blue-800"
                     href={`/talents/${video.talent.id}`}
@@ -201,46 +201,46 @@ async function CachedVideoDetails({ id }: { id: string }) {
                 </dd>
               </div>
               <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="font-medium text-gray-500 text-sm">再生時間</dt>
-                <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                <dt className="text-sm font-medium text-gray-500">再生時間</dt>
+                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                   {formatDuration(Temporal.Duration.from(video.duration))}
                 </dd>
               </div>
               <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="font-medium text-gray-500 text-sm">動画種別</dt>
-                <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                <dt className="text-sm font-medium text-gray-500">動画種別</dt>
+                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                   <VideoKindBadge videoKind={video.video_kind} />
                 </dd>
               </div>
               <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="font-medium text-gray-500 text-sm">
+                <dt className="text-sm font-medium text-gray-500">
                   クリック数（7日間）
                 </dt>
-                <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                   {formatNumber(video.clicks)}
                 </dd>
               </div>
               <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="font-medium text-gray-500 text-sm">公開日時</dt>
-                <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                <dt className="text-sm font-medium text-gray-500">公開日時</dt>
+                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                   <time dateTime={video.published_at}>
                     {formatDateTimeFromISO(video.published_at)}
                   </time>
                 </dd>
               </div>
               <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="font-medium text-gray-500 text-sm">作成日時</dt>
-                <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                <dt className="text-sm font-medium text-gray-500">作成日時</dt>
+                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                   <time dateTime={video.created_at}>
                     {formatDateTimeFromISO(video.created_at)}
                   </time>
                 </dd>
               </div>
               <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="font-medium text-gray-500 text-sm">
+                <dt className="text-sm font-medium text-gray-500">
                   最終更新日時
                 </dt>
-                <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                   <time dateTime={video.updated_at}>
                     {formatDateTimeFromISO(video.updated_at)}
                   </time>
@@ -248,10 +248,10 @@ async function CachedVideoDetails({ id }: { id: string }) {
               </div>
               {isDeleted && (
                 <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="font-medium text-gray-500 text-sm">
+                  <dt className="text-sm font-medium text-gray-500">
                     削除日時
                   </dt>
-                  <dd className="mt-1 text-gray-900 text-sm sm:col-span-2 sm:mt-0">
+                  <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                     {video.deleted_at ? (
                       <time dateTime={video.deleted_at}>
                         {formatDateTimeFromISO(video.deleted_at)}
@@ -271,10 +271,10 @@ async function CachedVideoDetails({ id }: { id: string }) {
       <div className="mt-6">
         <Card variant="elevated">
           <CardHeader>
-            <h3 className="font-medium text-gray-900 text-lg leading-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
               外部リンク
             </h3>
-            <p className="mt-1 max-w-2xl text-gray-500 text-sm">
+            <p className="mt-1 max-w-2xl text-sm text-gray-500">
               {video.platform === 'twitch'
                 ? 'Twitch上のオリジナル動画へのリンク'
                 : 'YouTube上のオリジナル動画へのリンク'}
@@ -283,7 +283,7 @@ async function CachedVideoDetails({ id }: { id: string }) {
           <CardContent>
             {externalUrl && (
               <a
-                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 text-sm shadow-sm hover:bg-gray-50"
+                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
                 href={externalUrl}
                 rel="noopener noreferrer"
                 target="_blank"
@@ -304,7 +304,7 @@ export default function VideoDetailPage({ params }: Props) {
     <div className="mx-auto max-w-7xl p-4">
       <div className="mb-6">
         <Link
-          className="inline-flex items-center text-774-blue-600 hover:text-774-blue-800"
+          className="text-774-blue-600 hover:text-774-blue-800 inline-flex items-center"
           href="/videos"
         >
           <ChevronLeft className="mr-1 h-4 w-4" />

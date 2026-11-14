@@ -19,9 +19,9 @@ function ZeroResultKeywordsWidgetComponent({
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-semibold text-xl">検索結果ゼロのキーワード</h2>
+        <h2 className="text-xl font-semibold">検索結果ゼロのキーワード</h2>
       </div>
-      <p className="mb-4 text-gray-600 text-sm">
+      <p className="mb-4 text-sm text-gray-600">
         ユーザーが検索したものの結果が見つからなかったキーワード。コンテンツギャップを特定する機会です。
       </p>
       {keywords.length > 0 ? (

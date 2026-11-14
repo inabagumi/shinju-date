@@ -3,7 +3,7 @@ import { cacheLife } from 'next/cache'
 import { getLastVideoSync } from '../_lib/get-last-sync'
 
 export function SyncLabel({ children }: { children: React.ReactNode }) {
-  return <span className="text-slate-300 text-sm">最終同期: {children}</span>
+  return <span className="text-sm text-slate-300">最終同期: {children}</span>
 }
 
 function SyncSkeleton() {

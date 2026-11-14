@@ -7,7 +7,7 @@ import { twMerge } from 'tailwind-merge'
 // with font-size < 16px by default.
 // Reference: https://webkit.org/blog/5610/input-tips-for-building-great-web-forms-on-mobile/
 const textareaVariants = cva(
-  'block w-full rounded-md border px-3 py-2 text-base transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+  'block w-full rounded-md border px-3 py-2 text-base transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
   {
     defaultVariants: {
       variant: 'default',
@@ -15,7 +15,7 @@ const textareaVariants = cva(
     variants: {
       variant: {
         default:
-          'border-gray-300 focus:border-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white',
+          'focus:border-primary focus:ring-primary border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white',
         error:
           'border-red-500 focus:border-red-500 focus:ring-red-500 dark:border-red-600',
       },

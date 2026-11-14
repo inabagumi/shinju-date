@@ -100,7 +100,7 @@ function ChangeDetails({ log }: { log: Log }) {
 
 export function LogItem({ log }: { log: Log }) {
   return (
-    <li className="border-gray-200 border-b py-3 last:border-b-0">
+    <li className="border-b border-gray-200 py-3 last:border-b-0">
       <div className="flex items-start justify-between">
         <div className="flex flex-col">
           <LogMessage log={log} />
@@ -108,7 +108,7 @@ export function LogItem({ log }: { log: Log }) {
           <ChangeDetails log={log} />
         </div>
         <time
-          className="ml-4 flex-shrink-0 text-right text-gray-500 text-xs"
+          className="ml-4 flex-shrink-0 text-right text-xs text-gray-500"
           dateTime={log.created_at}
         >
           {formatRelativeTime(Temporal.Instant.from(log.created_at))}

@@ -21,10 +21,10 @@ export default async function ContactPage() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">
       <div className="mb-12 text-center">
-        <h1 className="mb-4 font-bold text-4xl text-primary dark:text-774-nevy-50">
+        <h1 className="text-primary dark:text-774-nevy-50 mb-4 text-4xl font-bold">
           お問い合わせ
         </h1>
-        <p className="mx-auto max-w-2xl text-774-nevy-600 text-lg dark:text-774-nevy-300">
+        <p className="text-774-nevy-600 dark:text-774-nevy-300 mx-auto max-w-2xl text-lg">
           SHINJU
           DATEについてのご質問、不具合報告、機能要望などがございましたら、
           こちらのフォームからお気軽にお問い合わせください。

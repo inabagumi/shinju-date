@@ -21,7 +21,7 @@ function TimelineSection({
 
   return (
     <section className="space-y-6">
-      <h2 className="text-right font-bold text-2xl">
+      <h2 className="text-right text-2xl font-bold">
         <time dateTime={dateTime.toJSON()}>
           {dateTime.toLocaleString('ja-JP', {
             dateStyle: 'short',
@@ -38,8 +38,8 @@ function TimelineSection({
 export function TimelineSkeleton() {
   return (
     <section className="space-y-6">
-      <h2 className="text-right font-bold text-2xl">
-        <span className="inline-block h-6 w-32 animate-pulse rounded-md bg-774-nevy-100" />
+      <h2 className="text-right text-2xl font-bold">
+        <span className="bg-774-nevy-100 inline-block h-6 w-32 animate-pulse rounded-md" />
       </h2>
 
       <VideoCardListSkeleton />

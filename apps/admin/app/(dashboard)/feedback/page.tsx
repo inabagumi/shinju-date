@@ -20,7 +20,7 @@ export default function FeedbackPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="font-bold text-3xl">機能要望管理</h1>
+          <h1 className="text-3xl font-bold">機能要望管理</h1>
         </div>
 
         {/* Feature Request List */}

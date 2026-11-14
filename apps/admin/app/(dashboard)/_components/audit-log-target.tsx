@@ -32,7 +32,7 @@ export function AuditLogTarget({ log }: { log: Log }) {
   const path = getAdminPagePath(log.target_table, log.target_record_id)
 
   const content = (
-    <code className="rounded bg-gray-100 px-1.5 py-1 font-medium text-gray-800 text-xs">
+    <code className="rounded bg-gray-100 px-1.5 py-1 text-xs font-medium text-gray-800">
       {displayName}
     </code>
   )

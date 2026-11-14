@@ -70,7 +70,7 @@ export function TalentModal({ talent }: TalentModalProps) {
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
         <button
-          className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90"
+          className="bg-secondary-blue text-secondary-blue-foreground rounded-md px-4 py-2 hover:opacity-90"
           type="button"
         >
           {isEditing ? '編集' : '新しいタレントを追加'}
@@ -89,33 +89,33 @@ export function TalentModal({ talent }: TalentModalProps) {
             <FormField name="name">
               <Label className="mb-2 block font-medium">タレント名</Label>
               <Input
-                className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
+                className="border-774-blue-300 focus:border-secondary-blue w-full rounded-md border px-3 py-2 focus:outline-none"
                 defaultValue={talent?.name ?? ''}
                 placeholder="表示に使用される名前"
                 required
               />
-              <p className="mt-1 text-gray-500 text-xs">
+              <p className="mt-1 text-xs text-gray-500">
                 管理画面から編集可能な表示名（YouTube
                 APIによる自動更新の対象外）
               </p>
-              <ErrorMessage className="mt-1 text-red-600 text-sm" />
+              <ErrorMessage className="mt-1 text-sm text-red-600" />
             </FormField>
             <FormField name="youtube_channel_id">
               <Label className="mb-2 block font-medium">
                 YouTubeチャンネル（任意）
               </Label>
               <Input
-                className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
+                className="border-774-blue-300 focus:border-secondary-blue w-full rounded-md border px-3 py-2 focus:outline-none"
                 defaultValue={talent?.youtube_channel?.youtube_channel_id ?? ''}
                 placeholder="@handle または https://youtube.com/@handle"
               />
-              <p className="mt-1 text-gray-500 text-xs">
+              <p className="mt-1 text-xs text-gray-500">
                 ハンドル・チャンネルID・URLに対応。追加時にYouTube
                 APIから名前とハンドルを取得します。後から個別ページで設定することもできます。
               </p>
-              <ErrorMessage className="mt-1 text-red-600 text-sm" />
+              <ErrorMessage className="mt-1 text-sm text-red-600" />
             </FormField>
-            <GenericErrorMessage className="text-red-600 text-sm" />
+            <GenericErrorMessage className="text-sm text-red-600" />
             <div className="flex items-center justify-between gap-2 pt-2">
               {isEditing && talent ? (
                 <DeleteConfirmDialog
@@ -128,14 +128,14 @@ export function TalentModal({ talent }: TalentModalProps) {
               <div className="flex gap-2">
                 <DialogClose asChild>
                   <button
-                    className="rounded-md border border-774-blue-300 px-4 py-2 hover:bg-gray-50"
+                    className="border-774-blue-300 rounded-md border px-4 py-2 hover:bg-gray-50"
                     type="button"
                   >
                     キャンセル
                   </button>
                 </DialogClose>
                 <SubmitButton
-                  className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90 disabled:opacity-50"
+                  className="bg-secondary-blue text-secondary-blue-foreground rounded-md px-4 py-2 hover:opacity-90 disabled:opacity-50"
                   type="submit"
                 >
                   {isEditing ? '更新' : '追加'}

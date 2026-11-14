@@ -67,7 +67,7 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
       <div className="absolute top-1/2 -left-4 z-10 hidden -translate-y-1/2 md:block">
         <button
           aria-label="前へ"
-          className="rounded-full bg-774-nevy-100 p-2 shadow-lg transition-colors hover:bg-774-nevy-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+          className="bg-774-nevy-100 hover:bg-774-nevy-200 rounded-full p-2 shadow-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:hover:bg-zinc-700"
           disabled={!canScrollPrev}
           onClick={scrollPrev}
           type="button"
@@ -78,7 +78,7 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
       <div className="absolute top-1/2 -right-4 z-10 hidden -translate-y-1/2 md:block">
         <button
           aria-label="次へ"
-          className="rounded-full bg-774-nevy-100 p-2 shadow-lg transition-colors hover:bg-774-nevy-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+          className="bg-774-nevy-100 hover:bg-774-nevy-200 rounded-full p-2 shadow-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:hover:bg-zinc-700"
           disabled={!canScrollNext}
           onClick={scrollNext}
           type="button"

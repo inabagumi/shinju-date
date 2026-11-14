@@ -62,20 +62,20 @@ function Thumbnail({ video }: ThumbnailProps) {
 
 export function ShortVideoCardSkeleton() {
   return (
-    <div className="block w-full overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none">
+    <div className="border-774-nevy-200 bg-774-nevy-100 block w-full overflow-hidden rounded-xl border shadow dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none">
       {/* 9:16 aspect ratio for shorts */}
       <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
-        <div className="h-full animate-pulse bg-774-nevy-200 dark:bg-zinc-700" />
+        <div className="bg-774-nevy-200 h-full animate-pulse dark:bg-zinc-700" />
       </div>
 
       <div className="space-y-4 p-3 md:p-2.5">
-        <h3 className="break-all font-semibold text-sm">
-          <span className="inline-block h-3 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
-          <span className="inline-block h-3 w-3/4 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
+        <h3 className="text-sm font-semibold break-all">
+          <span className="bg-774-nevy-200 inline-block h-3 w-full animate-pulse rounded-md dark:bg-zinc-700" />
+          <span className="bg-774-nevy-200 inline-block h-3 w-3/4 animate-pulse rounded-md dark:bg-zinc-700" />
         </h3>
 
         <div className="text-right text-xs">
-          <span className="inline-block h-3 w-20 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
+          <span className="bg-774-nevy-200 inline-block h-3 w-20 animate-pulse rounded-md dark:bg-zinc-700" />
         </div>
       </div>
     </div>
@@ -110,7 +110,7 @@ export default function ShortVideoCard({
   return (
     <a
       className={twMerge(
-        'block w-full overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
+        'border-774-nevy-200 bg-774-nevy-100 block w-full overflow-hidden rounded-xl border shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
         className,
       )}
       href={href}
@@ -128,7 +128,7 @@ export default function ShortVideoCard({
         {duration.total({
           unit: 'second',
         }) > 0 && (
-          <span className="absolute bottom-0 left-0 m-2 inline-block rounded-md bg-slate-800/80 px-1.5 py-0.5 font-semibold text-white text-xs">
+          <span className="absolute bottom-0 left-0 m-2 inline-block rounded-md bg-slate-800/80 px-1.5 py-0.5 text-xs font-semibold text-white">
             <time dateTime={duration.toString()}>
               {formatDuration(duration)}
             </time>
@@ -136,7 +136,7 @@ export default function ShortVideoCard({
         )}
         <div className="absolute top-0 right-0 m-2 flex flex-col items-end gap-1">
           <LiveNow
-            className="inline-block rounded-md bg-774-pink-600 px-1.5 py-0.5 font-semibold text-774-pink-50 text-xs"
+            className="bg-774-pink-600 text-774-pink-50 inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold"
             status={value.status}
           />
           <PlatformBadge platform={value.platform} />
@@ -145,7 +145,7 @@ export default function ShortVideoCard({
 
       <div className="space-y-4 p-3 md:p-2.5">
         <h3
-          className="line-clamp-2 break-all font-semibold text-sm"
+          className="line-clamp-2 text-sm font-semibold break-all"
           title={value.title}
         >
           {value.title}

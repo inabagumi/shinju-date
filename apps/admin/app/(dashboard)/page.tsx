@@ -14,7 +14,7 @@ export default function DashboardPage() {
   return (
     <div className="p-6">
       <div className="mx-auto max-w-7xl">
-        <h1 className="mb-6 font-bold text-3xl">ダッシュボード</h1>
+        <h1 className="mb-6 text-3xl font-bold">ダッシュボード</h1>
 
         {/* Main content area with max-width constraint */}
         <div className="space-y-6">

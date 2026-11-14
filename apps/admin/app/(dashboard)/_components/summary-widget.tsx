@@ -22,14 +22,14 @@ export async function VideoSummaryWidget() {
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 font-semibold text-xl">動画サマリー</h2>
+      <h2 className="mb-4 text-xl font-semibold">動画サマリー</h2>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Link
-          className="rounded-lg bg-774-blue-50 p-4 transition-colors hover:bg-774-blue-100"
+          className="bg-774-blue-50 hover:bg-774-blue-100 rounded-lg p-4 transition-colors"
           href="/videos?deleted=false"
         >
-          <p className="text-gray-600 text-sm">総動画数</p>
-          <p className="font-bold text-2xl text-774-blue-600">
+          <p className="text-sm text-gray-600">総動画数</p>
+          <p className="text-774-blue-600 text-2xl font-bold">
             {formatNumber(stats.totalVideos.current)}
           </p>
           <div className="mt-2">
@@ -40,8 +40,8 @@ export async function VideoSummaryWidget() {
           className="rounded-lg bg-green-50 p-4 transition-colors hover:bg-green-100"
           href="/videos?deleted=false&visible=true"
         >
-          <p className="text-gray-600 text-sm">公開中</p>
-          <p className="font-bold text-2xl text-green-600">
+          <p className="text-sm text-gray-600">公開中</p>
+          <p className="text-2xl font-bold text-green-600">
             {formatNumber(stats.visibleVideos.current)}
           </p>
           <div className="mt-2">
@@ -49,11 +49,11 @@ export async function VideoSummaryWidget() {
           </div>
         </Link>
         <Link
-          className="rounded-lg bg-774-nevy-50 p-4 transition-colors hover:bg-774-nevy-100"
+          className="bg-774-nevy-50 hover:bg-774-nevy-100 rounded-lg p-4 transition-colors"
           href="/videos?deleted=false&visible=true"
         >
-          <p className="text-gray-600 text-sm">配信予定</p>
-          <p className="font-bold text-2xl text-774-nevy-600">
+          <p className="text-sm text-gray-600">配信予定</p>
+          <p className="text-774-nevy-600 text-2xl font-bold">
             {formatNumber(stats.scheduledVideos.current)}
           </p>
           <div className="mt-2">
@@ -64,8 +64,8 @@ export async function VideoSummaryWidget() {
           className="rounded-lg bg-yellow-50 p-4 transition-colors hover:bg-yellow-100"
           href="/videos?deleted=false&visible=false"
         >
-          <p className="text-gray-600 text-sm">非表示</p>
-          <p className="font-bold text-2xl text-yellow-600">
+          <p className="text-sm text-gray-600">非表示</p>
+          <p className="text-2xl font-bold text-yellow-600">
             {formatNumber(stats.hiddenVideos.current)}
           </p>
           <div className="mt-2">
@@ -76,7 +76,7 @@ export async function VideoSummaryWidget() {
 
       {/* 7-Day Video Stats Chart */}
       <div className="mt-6">
-        <h3 className="mb-3 font-medium text-gray-700 text-lg">
+        <h3 className="mb-3 text-lg font-medium text-gray-700">
           動画数推移（7日間）
         </h3>
         {historicalStats.length === 0 ? (
@@ -104,14 +104,14 @@ export async function ContentSummaryWidget() {
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 font-semibold text-xl">コンテンツサマリー</h2>
+      <h2 className="mb-4 text-xl font-semibold">コンテンツサマリー</h2>
       <div className="grid grid-cols-2 gap-4">
         <Link
-          className="rounded-lg bg-774-nevy-50 p-4 transition-colors hover:bg-774-nevy-100"
+          className="bg-774-nevy-50 hover:bg-774-nevy-100 rounded-lg p-4 transition-colors"
           href="/terms"
         >
-          <p className="text-gray-600 text-sm">総用語数</p>
-          <p className="font-bold text-2xl text-774-nevy-600">
+          <p className="text-sm text-gray-600">総用語数</p>
+          <p className="text-774-nevy-600 text-2xl font-bold">
             {formatNumber(stats.totalTerms.current)}
           </p>
           <div className="mt-2">
@@ -119,11 +119,11 @@ export async function ContentSummaryWidget() {
           </div>
         </Link>
         <Link
-          className="rounded-lg bg-774-blue-50 p-4 transition-colors hover:bg-774-blue-100"
+          className="bg-774-blue-50 hover:bg-774-blue-100 rounded-lg p-4 transition-colors"
           href="/talents"
         >
-          <p className="text-gray-600 text-sm">総タレント数</p>
-          <p className="font-bold text-2xl text-774-blue-600">
+          <p className="text-sm text-gray-600">総タレント数</p>
+          <p className="text-774-blue-600 text-2xl font-bold">
             {formatNumber(stats.totalTalents.current)}
           </p>
           <div className="mt-2">

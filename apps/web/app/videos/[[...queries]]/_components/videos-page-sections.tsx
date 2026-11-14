@@ -17,14 +17,14 @@ export async function VideosPageHeading({ params }: VideosPageSectionProps) {
   const query = parseQueries(queries)
   const title = query ? `『${query}』の検索結果` : '動画一覧'
 
-  return <h1 className="font-semibold text-xl">{title}</h1>
+  return <h1 className="text-xl font-semibold">{title}</h1>
 }
 
 export function VideosPageHeadingSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="h-8 w-64 animate-pulse rounded-md bg-774-nevy-100 dark:bg-zinc-800"
+      className="bg-774-nevy-100 h-8 w-64 animate-pulse rounded-md dark:bg-zinc-800"
     />
   )
 }

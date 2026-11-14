@@ -87,7 +87,7 @@ export function TalentsList({ talents }: TalentsListProps) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex w-full flex-col gap-3 sm:max-w-2xl sm:flex-row">
           <input
-            className="w-full rounded-md border border-774-blue-300 px-4 py-2 focus:border-secondary-blue focus:outline-none"
+            className="border-774-blue-300 focus:border-secondary-blue w-full rounded-md border px-4 py-2 focus:outline-none"
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="タレント名またはIDで検索..."
             type="text"
@@ -95,7 +95,7 @@ export function TalentsList({ talents }: TalentsListProps) {
           />
           <select
             aria-label="状態で絞り込み"
-            className="rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none sm:w-48"
+            className="border-774-blue-300 focus:border-secondary-blue rounded-md border px-3 py-2 focus:outline-none sm:w-48"
             onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
             value={statusFilter}
           >
@@ -116,7 +116,7 @@ export function TalentsList({ talents }: TalentsListProps) {
             : 'タレントがいません。'}
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-774-blue-300">
+        <div className="border-774-blue-300 overflow-x-auto rounded-lg border">
           <table className="w-full">
             <thead className="bg-774-blue-50">
               <tr>
@@ -127,7 +127,7 @@ export function TalentsList({ talents }: TalentsListProps) {
                 <th className="px-4 py-3 text-left font-semibold">作成日時</th>
                 <th className="px-4 py-3 text-left font-semibold">
                   <button
-                    className="flex items-center gap-1 hover:text-774-blue-600"
+                    className="hover:text-774-blue-600 flex items-center gap-1"
                     onClick={toggleSortOrder}
                     type="button"
                   >
@@ -142,7 +142,7 @@ export function TalentsList({ talents }: TalentsListProps) {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-774-blue-200 bg-white">
+            <tbody className="divide-774-blue-200 divide-y bg-white">
               {filteredAndSortedTalents.map((talent) => (
                 <tr className="hover:bg-774-blue-50" key={talent.id}>
                   <td className="px-4 py-3">
@@ -160,11 +160,11 @@ export function TalentsList({ talents }: TalentsListProps) {
                               <div key={channel.id}>
                                 {channel.name &&
                                   channel.name !== talent.name && (
-                                    <div className="text-gray-600 text-xs">
+                                    <div className="text-xs text-gray-600">
                                       YouTube: {channel.name}
                                     </div>
                                   )}
-                                <div className="font-mono text-gray-500 text-xs">
+                                <div className="font-mono text-xs text-gray-500">
                                   {channel.youtube_channel_id}
                                 </div>
                               </div>
@@ -173,7 +173,7 @@ export function TalentsList({ talents }: TalentsListProps) {
                         )}
                       {(!talent.youtube_channels ||
                         talent.youtube_channels.length === 0) && (
-                        <div className="font-mono text-gray-500 text-xs">
+                        <div className="font-mono text-xs text-gray-500">
                           {talent.id}
                         </div>
                       )}
@@ -182,12 +182,12 @@ export function TalentsList({ talents }: TalentsListProps) {
                   <td className="px-4 py-3">
                     <TalentStatusBadge talent={talent} />
                   </td>
-                  <td className="px-4 py-3 text-gray-600 text-sm">
+                  <td className="px-4 py-3 text-sm text-gray-600">
                     <time dateTime={talent.created_at}>
                       {formatDateTimeFromISO(talent.created_at)}
                     </time>
                   </td>
-                  <td className="px-4 py-3 text-gray-600 text-sm">
+                  <td className="px-4 py-3 text-sm text-gray-600">
                     <time dateTime={talent.updated_at}>
                       {formatDateTimeFromISO(talent.updated_at)}
                     </time>

@@ -92,7 +92,7 @@ export function TalentActions({ talent }: TalentActionsProps) {
       <div className="flex flex-wrap justify-end gap-1">
         {isDeleted ? (
           <button
-            className="whitespace-nowrap rounded bg-green-50 px-2 py-1 text-green-700 text-xs hover:bg-green-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+            className="rounded bg-green-50 px-2 py-1 text-xs whitespace-nowrap text-green-700 hover:bg-green-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
             disabled={isPending}
             onClick={() =>
               runAction(
@@ -108,7 +108,7 @@ export function TalentActions({ talent }: TalentActionsProps) {
         ) : (
           <>
             <button
-              className="whitespace-nowrap rounded bg-774-blue-50 px-2 py-1 text-774-blue-600 text-xs hover:bg-774-blue-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+              className="bg-774-blue-50 text-774-blue-600 hover:bg-774-blue-100 rounded px-2 py-1 text-xs whitespace-nowrap disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
               disabled={isPending}
               onClick={handleSync}
               type="button"
@@ -117,7 +117,7 @@ export function TalentActions({ talent }: TalentActionsProps) {
             </button>
             {isActive && (
               <button
-                className="whitespace-nowrap rounded bg-amber-50 px-2 py-1 text-amber-800 text-xs hover:bg-amber-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                className="rounded bg-amber-50 px-2 py-1 text-xs whitespace-nowrap text-amber-800 hover:bg-amber-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
                 disabled={isPending}
                 onClick={() =>
                   runAction(
@@ -133,7 +133,7 @@ export function TalentActions({ talent }: TalentActionsProps) {
             )}
             {isRetired && (
               <button
-                className="whitespace-nowrap rounded bg-green-50 px-2 py-1 text-green-700 text-xs hover:bg-green-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                className="rounded bg-green-50 px-2 py-1 text-xs whitespace-nowrap text-green-700 hover:bg-green-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
                 disabled={isPending}
                 onClick={() =>
                   runAction(
@@ -148,7 +148,7 @@ export function TalentActions({ talent }: TalentActionsProps) {
               </button>
             )}
             <button
-              className="whitespace-nowrap rounded bg-red-50 px-2 py-1 text-red-600 text-xs hover:bg-red-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+              className="rounded bg-red-50 px-2 py-1 text-xs whitespace-nowrap text-red-600 hover:bg-red-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
               disabled={isPending}
               onClick={() =>
                 runAction(

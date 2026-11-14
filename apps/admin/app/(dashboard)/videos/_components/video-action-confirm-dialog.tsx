@@ -125,13 +125,13 @@ export function VideoActionConfirmDialog({
 
           {/* Video list */}
           <div className="my-4 max-h-60 overflow-y-auto rounded-md border border-gray-200 bg-gray-50 p-3">
-            <div className="mb-2 font-semibold text-gray-700 text-sm">
+            <div className="mb-2 text-sm font-semibold text-gray-700">
               対象動画 ({videos.length}件):
             </div>
             <ul className="space-y-2">
               {videos.map((video) => (
                 <li
-                  className="border-gray-400 border-l-2 pl-2 text-gray-600 text-sm"
+                  className="border-l-2 border-gray-400 pl-2 text-sm text-gray-600"
                   key={video.id}
                 >
                   {video.title}
@@ -144,7 +144,7 @@ export function VideoActionConfirmDialog({
           {requiresKeyword && (
             <div className="mb-4">
               <label
-                className="mb-2 block font-semibold text-red-700 text-sm"
+                className="mb-2 block text-sm font-semibold text-red-700"
                 htmlFor="confirm-keyword"
               >
                 続行するには「DELETE」と入力してください:
@@ -162,7 +162,7 @@ export function VideoActionConfirmDialog({
 
           {error && (
             <div className="mb-4 rounded-md border border-red-300 bg-red-50 p-3">
-              <p className="text-red-700 text-sm">{error}</p>
+              <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
 

@@ -118,10 +118,10 @@ function TermsResults({
     <div className="space-y-6">
       {/* Alphabet navigation */}
       {groupKeys.length > 0 && !searchQuery && (
-        <nav className="flex flex-wrap gap-2 rounded-md border border-774-blue-300 bg-774-blue-50 p-3">
+        <nav className="border-774-blue-300 bg-774-blue-50 flex flex-wrap gap-2 rounded-md border p-3">
           {groupKeys.map((group) => (
             <Button
-              className="rounded px-2 py-1 text-sm hover:bg-secondary-blue hover:text-secondary-blue-foreground"
+              className="hover:bg-secondary-blue hover:text-secondary-blue-foreground rounded px-2 py-1 text-sm"
               key={group}
               onClick={() => scrollToGroup(group)}
               size="sm"
@@ -144,11 +144,11 @@ function TermsResults({
           {Array.from(groupedTerms.entries()).map(([group, groupTerms]) => (
             <div id={`group-${group}`} key={group}>
               <Accordion.Item
-                className="overflow-hidden rounded-lg border border-774-blue-300"
+                className="border-774-blue-300 overflow-hidden rounded-lg border"
                 value={group}
               >
                 <Accordion.Header>
-                  <Accordion.Trigger className="flex w-full items-center justify-between bg-774-blue-50 px-4 py-3 text-left font-semibold hover:bg-774-blue-100">
+                  <Accordion.Trigger className="bg-774-blue-50 hover:bg-774-blue-100 flex w-full items-center justify-between px-4 py-3 text-left font-semibold">
                     <span>
                       {group} ({groupTerms.length})
                     </span>
@@ -157,12 +157,12 @@ function TermsResults({
                     </span>
                   </Accordion.Trigger>
                 </Accordion.Header>
-                <Accordion.Content className="overflow-hidden bg-white data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-                  <div className="divide-y divide-774-blue-200">
+                <Accordion.Content className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden bg-white">
+                  <div className="divide-774-blue-200 divide-y">
                     {groupTerms.map((term) => (
                       <div className="p-4" key={term.id}>
                         <div className="mb-2 flex items-start justify-between">
-                          <h3 className="font-semibold text-lg">{term.term}</h3>
+                          <h3 className="text-lg font-semibold">{term.term}</h3>
                           <div className="flex gap-2">
                             <TermModal term={term} />
                             <DeleteConfirmDialog
@@ -173,20 +173,20 @@ function TermsResults({
                         </div>
                         {term.readings.length > 0 && (
                           <div className="mb-2">
-                            <span className="font-medium text-gray-700 text-sm">
+                            <span className="text-sm font-medium text-gray-700">
                               読み方:
                             </span>
-                            <span className="ml-2 text-gray-600 text-sm">
+                            <span className="ml-2 text-sm text-gray-600">
                               {term.readings.join(', ')}
                             </span>
                           </div>
                         )}
                         {term.synonyms.length > 0 && (
                           <div>
-                            <span className="font-medium text-gray-700 text-sm">
+                            <span className="text-sm font-medium text-gray-700">
                               類義語:
                             </span>
-                            <span className="ml-2 text-gray-600 text-sm">
+                            <span className="ml-2 text-sm text-gray-600">
                               {term.synonyms.join(', ')}
                             </span>
                           </div>

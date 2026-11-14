@@ -25,7 +25,7 @@ export default function ClickAnalyticsPage({
 
   return (
     <div className="mx-auto max-w-7xl p-6">
-      <h1 className="mb-6 font-bold text-3xl">クリックアナリティクス</h1>
+      <h1 className="mb-6 text-3xl font-bold">クリックアナリティクス</h1>
 
       <div className="mb-6">
         <Suspense fallback={<DateRangePickerSkeleton />}>
@@ -35,7 +35,7 @@ export default function ClickAnalyticsPage({
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
-          <h2 className="mb-4 font-semibold text-xl">クリックボリューム</h2>
+          <h2 className="mb-4 text-xl font-semibold">クリックボリューム</h2>
           <Suspense fallback={<ChartSkeleton />}>
             <ClickVolumeChart searchParams={parsedSearchParams} />
           </Suspense>

@@ -133,14 +133,14 @@ export default function VideoList({ videos }: Props) {
     <div>
       {/* Action bar */}
       {selectedIds.length > 0 && (
-        <div className="sticky top-0 z-10 mb-4 bg-secondary-blue p-4 text-white shadow-lg">
+        <div className="bg-secondary-blue sticky top-0 z-10 mb-4 p-4 text-white shadow-lg">
           <div className="flex items-center justify-between">
             <span className="font-semibold">{selectedIds.length} 件選択中</span>
             <div className="flex gap-2">
               {hasNonDeletedVideos && (
                 <>
                   <button
-                    className="rounded-md bg-774-blue-800 px-4 py-2 hover:bg-774-blue-900"
+                    className="bg-774-blue-800 hover:bg-774-blue-900 rounded-md px-4 py-2"
                     onClick={() => handleBulkAction('toggle')}
                     type="button"
                   >
@@ -181,15 +181,15 @@ export default function VideoList({ videos }: Props) {
                   type="checkbox"
                 />
               </th>
-              <th className="whitespace-nowrap p-3 text-left">サムネイル</th>
-              <th className="whitespace-nowrap p-3 text-left">タイトル</th>
-              <th className="whitespace-nowrap p-3 text-left">
+              <th className="p-3 text-left whitespace-nowrap">サムネイル</th>
+              <th className="p-3 text-left whitespace-nowrap">タイトル</th>
+              <th className="p-3 text-left whitespace-nowrap">
                 プラットフォーム
               </th>
-              <th className="whitespace-nowrap p-3 text-left">タレント</th>
-              <th className="whitespace-nowrap p-3 text-left">
+              <th className="p-3 text-left whitespace-nowrap">タレント</th>
+              <th className="p-3 text-left whitespace-nowrap">
                 <Link
-                  className="flex items-center hover:text-774-blue-600"
+                  className="hover:text-774-blue-600 flex items-center"
                   href={getSortUrl('published_at')}
                 >
                   公開日時
@@ -200,9 +200,9 @@ export default function VideoList({ videos }: Props) {
                   />
                 </Link>
               </th>
-              <th className="whitespace-nowrap p-3 text-left">
+              <th className="p-3 text-left whitespace-nowrap">
                 <Link
-                  className="flex items-center hover:text-774-blue-600"
+                  className="hover:text-774-blue-600 flex items-center"
                   href={getSortUrl('updated_at')}
                 >
                   更新日時
@@ -213,11 +213,11 @@ export default function VideoList({ videos }: Props) {
                   />
                 </Link>
               </th>
-              <th className="whitespace-nowrap p-3 text-left">再生時間</th>
-              <th className="whitespace-nowrap p-3 text-left">クリック数</th>
-              <th className="whitespace-nowrap p-3 text-left">動画種別</th>
-              <th className="whitespace-nowrap p-3 text-left">ステータス</th>
-              <th className="whitespace-nowrap p-3 text-left">アクション</th>
+              <th className="p-3 text-left whitespace-nowrap">再生時間</th>
+              <th className="p-3 text-left whitespace-nowrap">クリック数</th>
+              <th className="p-3 text-left whitespace-nowrap">動画種別</th>
+              <th className="p-3 text-left whitespace-nowrap">ステータス</th>
+              <th className="p-3 text-left whitespace-nowrap">アクション</th>
             </tr>
           </thead>
           <tbody>
@@ -267,13 +267,13 @@ export default function VideoList({ videos }: Props) {
                       <PlatformBadge platform={video.platform} />
                     </td>
                     <td className="p-3">
-                      <span className="text-gray-600 text-sm">
+                      <span className="text-sm text-gray-600">
                         {video.talent.name}
                       </span>
                     </td>
                     <td className="p-3">
                       <time
-                        className="text-gray-600 text-sm"
+                        className="text-sm text-gray-600"
                         dateTime={video.published_at}
                       >
                         {formatDateTime(
@@ -285,7 +285,7 @@ export default function VideoList({ videos }: Props) {
                     </td>
                     <td className="p-3">
                       <time
-                        className="text-gray-600 text-sm"
+                        className="text-sm text-gray-600"
                         dateTime={video.updated_at}
                       >
                         {formatDateTime(
@@ -296,7 +296,7 @@ export default function VideoList({ videos }: Props) {
                       </time>
                     </td>
                     <td className="p-3">
-                      <span className="text-gray-600 text-sm">
+                      <span className="text-sm text-gray-600">
                         {formatDuration(Temporal.Duration.from(video.duration))}
                       </span>
                     </td>

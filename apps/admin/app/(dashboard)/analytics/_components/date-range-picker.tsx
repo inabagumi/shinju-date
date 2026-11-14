@@ -161,7 +161,7 @@ export default function DateRangePicker({
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900 text-sm">期間選択</h3>
+        <h3 className="text-sm font-semibold text-gray-900">期間選択</h3>
         {showComparison && (
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -202,7 +202,7 @@ export default function DateRangePicker({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label
-                className="mb-1 block text-gray-700 text-xs"
+                className="mb-1 block text-xs text-gray-700"
                 htmlFor="start-date"
               >
                 開始日
@@ -219,7 +219,7 @@ export default function DateRangePicker({
             </div>
             <div>
               <label
-                className="mb-1 block text-gray-700 text-xs"
+                className="mb-1 block text-xs text-gray-700"
                 htmlFor="end-date"
               >
                 終了日
@@ -235,7 +235,7 @@ export default function DateRangePicker({
             </div>
           </div>
           {validationError && (
-            <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-red-700 text-xs">
+            <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
               {validationError}
             </div>
           )}
@@ -251,7 +251,7 @@ export default function DateRangePicker({
               キャンセル
             </button>
             <button
-              className="flex-1 rounded bg-secondary-blue px-3 py-1.5 text-sm text-white transition-colors hover:bg-774-blue-800"
+              className="bg-secondary-blue hover:bg-774-blue-800 flex-1 rounded px-3 py-1.5 text-sm text-white transition-colors"
               onClick={handleCustomApply}
               type="button"
             >
@@ -261,7 +261,7 @@ export default function DateRangePicker({
         </div>
       )}
 
-      <div className="mt-3 rounded bg-gray-50 px-3 py-2 text-gray-600 text-xs">
+      <div className="mt-3 rounded bg-gray-50 px-3 py-2 text-xs text-gray-600">
         現在の期間: {value.startDate} 〜 {value.endDate}
         <br />
         最大90日間まで選択可能です

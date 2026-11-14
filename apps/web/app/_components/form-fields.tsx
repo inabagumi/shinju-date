@@ -23,7 +23,7 @@ export function InputField({
     <div>
       {label && (
         <label
-          className="mb-2 block font-medium text-primary text-sm dark:text-774-nevy-50"
+          className="text-primary dark:text-774-nevy-50 mb-2 block text-sm font-medium"
           htmlFor={inputId}
         >
           {label} {required && <span className="text-red-500">*</span>}
@@ -32,7 +32,7 @@ export function InputField({
       <Input
         {...props}
         className={twMerge(
-          'rounded-lg border-774-nevy-300 py-3 placeholder:text-774-nevy-400 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600 dark:placeholder:text-774-nevy-400',
+          'border-774-nevy-300 placeholder:text-774-nevy-400 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:placeholder:text-774-nevy-400 rounded-lg py-3 dark:border-zinc-600',
           className,
         )}
         id={inputId}
@@ -40,7 +40,7 @@ export function InputField({
         ref={ref}
         variant={error ? 'error' : 'default'}
       />
-      {error && <p className="mt-1 text-red-500 text-sm">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
     </div>
   )
 }
@@ -67,7 +67,7 @@ export function TextareaField({
     <div>
       {label && (
         <label
-          className="mb-2 block font-medium text-primary text-sm dark:text-774-nevy-50"
+          className="text-primary dark:text-774-nevy-50 mb-2 block text-sm font-medium"
           htmlFor={inputId}
         >
           {label} {required && <span className="text-red-500">*</span>}
@@ -75,7 +75,7 @@ export function TextareaField({
       )}
       <Textarea
         className={twMerge(
-          'rounded-lg border-774-nevy-300 px-4 py-3 placeholder:text-774-nevy-400 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600 dark:placeholder:text-774-nevy-400',
+          'border-774-nevy-300 placeholder:text-774-nevy-400 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:placeholder:text-774-nevy-400 rounded-lg px-4 py-3 dark:border-zinc-600',
           className,
         )}
         id={inputId}
@@ -83,7 +83,7 @@ export function TextareaField({
         variant={error ? 'error' : 'default'}
         {...props}
       />
-      {error && <p className="mt-1 text-red-500 text-sm">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
     </div>
   )
 }
@@ -112,7 +112,7 @@ export function SelectField({
     <div>
       {label && (
         <label
-          className="mb-2 block font-medium text-primary text-sm dark:text-774-nevy-50"
+          className="text-primary dark:text-774-nevy-50 mb-2 block text-sm font-medium"
           htmlFor={inputId}
         >
           {label} {required && <span className="text-red-500">*</span>}
@@ -120,7 +120,7 @@ export function SelectField({
       )}
       <select
         className={twMerge(
-          'w-full rounded-lg border border-774-nevy-300 bg-white px-4 py-3 text-primary focus:border-secondary-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/20 dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-50',
+          'border-774-nevy-300 text-primary focus:border-secondary-blue focus:ring-secondary-blue/20 dark:text-774-nevy-50 w-full rounded-lg border bg-white px-4 py-3 focus:ring-2 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800',
           className,
         )}
         id={inputId}
@@ -129,7 +129,7 @@ export function SelectField({
       >
         {children}
       </select>
-      {error && <p className="mt-1 text-red-500 text-sm">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
     </div>
   )
 }
@@ -154,18 +154,18 @@ export function CheckboxField({
       <label className="flex items-center gap-3">
         <input
           className={twMerge(
-            'h-4 w-4 rounded border-774-nevy-300 text-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600',
+            'border-774-nevy-300 text-secondary-blue focus:ring-secondary-blue/20 h-4 w-4 rounded dark:border-zinc-600',
             className,
           )}
           id={inputId}
           type="checkbox"
           {...props}
         />
-        <span className="text-primary text-sm dark:text-774-nevy-50">
+        <span className="text-primary dark:text-774-nevy-50 text-sm">
           {label}
         </span>
       </label>
-      {error && <p className="mt-1 text-red-500 text-sm">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
     </div>
   )
 }
