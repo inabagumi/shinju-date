@@ -16,8 +16,8 @@ import {
   fetchSuggestions,
   type Suggestion,
 } from '@/app/_lib/actions'
-import RecommendedQueries from '@/components/recommended-queries'
 import { useSearchModal } from './search-modal-context'
+import { SearchModalRecommendedQueries } from './search-modal-recommended-queries'
 
 export function SearchModalDialog() {
   const { isOpen, closeModal } = useSearchModal()
@@ -57,7 +57,10 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null)
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
-  const [recommendedQueries, setRecommendedQueries] = useState<string[]>([])
+  // `null` means the recommended queries are still loading
+  const [recommendedQueries, setRecommendedQueries] = useState<string[] | null>(
+    null,
+  )
 
   // Fetch recommended queries on mount
   useEffect(() => {
@@ -218,18 +221,10 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
             Enterキーを押して「{query}」を検索
           </div>
         ) : (
-          <div>
-            <div className="border-b border-774-nevy-200 px-4 py-3 dark:border-zinc-700">
-              <h2 className="text-sm text-774-nevy-500 dark:text-774-nevy-400">
-                おすすめの検索キーワード
-              </h2>
-            </div>
-            <RecommendedQueries
-              onClickLink={handleSuggestionClick}
-              queries={recommendedQueries}
-              variant="list"
-            />
-          </div>
+          <SearchModalRecommendedQueries
+            onClickLink={handleSuggestionClick}
+            queries={recommendedQueries}
+          />
         )}
       </div>
     </div>
