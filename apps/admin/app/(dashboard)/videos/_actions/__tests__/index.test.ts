@@ -6,6 +6,19 @@ vi.mock('@/lib/supabase', () => ({
   createSupabaseServerClient: vi.fn(),
 }))
 
+// Server Action の認証ガードを通過させ、各テストでモックした Supabase クライアントを渡す
+vi.mock('@/lib/auth', async (importOriginal) => {
+  const { createSupabaseServerClient } = await import('@/lib/supabase')
+
+  return {
+    ...(await importOriginal<typeof import('@/lib/auth')>()),
+    requireAuthenticatedUser: vi.fn(async () => ({
+      supabaseClient: await createSupabaseServerClient(),
+      user: { id: 'test-user-id' },
+    })),
+  }
+})
+
 vi.mock('@shinju-date/logger', () => ({
   logger: {
     error: vi.fn(),

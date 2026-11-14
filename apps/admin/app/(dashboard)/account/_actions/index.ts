@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import * as z from 'zod'
 import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import { requireAuthenticatedUser, unauthenticatedFormState } from '@/lib/auth'
 import { zodErrorToFormState } from '../_lib/form-helpers'
 
 const emailSchema = z.object({
@@ -34,6 +34,14 @@ export async function updateUserEmail(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedFormState()
+  }
+
+  const { supabaseClient } = auth
+
   let email: z.infer<typeof emailSchema>
 
   try {
@@ -48,22 +56,6 @@ export async function updateUserEmail(
     return {
       errors: {
         generic: ['入力された値が正しくありません。'],
-      },
-    }
-  }
-
-  const supabaseClient = await createSupabaseServerClient()
-
-  // Get current user to log the change
-  const {
-    data: { user: currentUser },
-    error: getUserError,
-  } = await supabaseClient.auth.getUser()
-
-  if (getUserError || !currentUser) {
-    return {
-      errors: {
-        generic: ['ユーザー情報の取得に失敗しました。'],
       },
     }
   }
@@ -97,6 +89,14 @@ export async function updateUserPassword(
   _currentState: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedFormState()
+  }
+
+  const { supabaseClient, user: currentUser } = auth
+
   let passwords: z.infer<typeof passwordSchema>
 
   try {
@@ -117,15 +117,7 @@ export async function updateUserPassword(
     }
   }
 
-  const supabaseClient = await createSupabaseServerClient()
-
-  // Get current user
-  const {
-    data: { user: currentUser },
-    error: getUserError,
-  } = await supabaseClient.auth.getUser()
-
-  if (getUserError || !currentUser || !currentUser.email) {
+  if (!currentUser.email) {
     return {
       errors: {
         generic: ['ユーザー情報の取得に失敗しました。'],

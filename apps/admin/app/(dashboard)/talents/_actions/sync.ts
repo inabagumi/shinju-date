@@ -8,7 +8,7 @@ import { getChannels } from '@shinju-date/youtube-api-client'
 import { revalidatePath } from 'next/cache'
 import { Temporal } from 'temporal-polyfill'
 import { createAuditLog } from '@/lib/audit-log'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 
 /**
  * タレントに紐づく YouTube チャンネル情報を YouTube API から同期する。
@@ -26,7 +26,13 @@ export async function syncTalentWithYouTube(talentId: string): Promise<{
   message?: string
   unchanged?: boolean
 }> {
-  const supabaseClient = await createSupabaseServerClient()
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
 
   try {
     const { data: talent, error: fetchError } = await supabaseClient
@@ -228,7 +234,13 @@ export async function syncTalentWithTwitch(talentId: string): Promise<{
   message?: string
   unchanged?: boolean
 }> {
-  const supabaseClient = await createSupabaseServerClient()
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
 
   try {
     const { data: talent, error: fetchError } = await supabaseClient
