@@ -758,8 +758,8 @@ interface SuggestionsParams {
 
 /**
  * Mirrors `suggestions_v2`: up to 10 terms that start with the query, then
- * those whose readings start with it. The mock terms have no popularity, so
- * shorter terms come first.
+ * those whose readings start with it, then those whose synonyms start with
+ * it. The mock terms have no popularity, so shorter terms come first.
  */
 async function suggestMockTerms({ p_query: query = '' }: SuggestionsParams) {
   const normalizedQuery = normalizeReadingText(query)
@@ -767,11 +767,13 @@ async function suggestMockTerms({ p_query: query = '' }: SuggestionsParams) {
     normalizeReadingText(text).startsWith(normalizedQuery)
   const suggestions: { priority: number; term: string }[] = []
 
-  for (const { readings, term } of await getMockTerms()) {
+  for (const { readings, synonyms, term } of await getMockTerms()) {
     if (startsWithQuery(term)) {
       suggestions.push({ priority: 1, term })
     } else if (readings.some(startsWithQuery)) {
       suggestions.push({ priority: 2, term })
+    } else if (synonyms.some(startsWithQuery)) {
+      suggestions.push({ priority: 3, term })
     }
   }
 
