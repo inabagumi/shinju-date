@@ -27,7 +27,7 @@ const silentLogger: Logger = {
  * | `refreshLiveVideos`       | follows videos that are scheduled or on air     |
  * | `refreshRecentVideos`     | re-reads the newest finished videos             |
  * | `removeUnavailableVideos` | soft-deletes videos that are gone, across all   |
- * | `syncAccounts`            | updates names and handles of tracked accounts   |
+ * | `syncAccounts`            | updates names, handles and icons of accounts    |
  *
  * How a platform is read and how its videos are stored (its own link table,
  * its own notion of a broadcast) is entirely up to the subclass.
@@ -80,7 +80,8 @@ export abstract class Scraper {
   abstract removeUnavailableVideos(now?: Temporal.Instant): Promise<boolean>
 
   /**
-   * Brings names and handles of the saved accounts in line with the platform.
+   * Brings names and handles (and, where supported, icons) of the saved
+   * accounts in line with the platform.
    */
   abstract syncAccounts(now?: Temporal.Instant): Promise<boolean>
 
