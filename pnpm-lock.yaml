@@ -223,6 +223,9 @@ importers:
       '@shinju-date/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@shinju-date/scraper':
+        specifier: workspace:*
+        version: link:../../packages/scraper
       '@shinju-date/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
