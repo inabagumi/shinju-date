@@ -699,12 +699,19 @@ describe('Supabase Handlers', () => {
         )
       }
 
-      const titles = await searchTitles('歌枠')
+      // The seeded Twitch videos always have these titles and are visible,
+      // unlike the YouTube videos whose statuses are random.
+      const twitchTitles = [
+        '【Twitch】明日の夜は耐久配信！',
+        '【Twitch】まったり雑談配信中',
+        '【Twitch】深夜のゲーム配信アーカイブ',
+        '【Twitch】ハイライト：先週の配信まとめ',
+        '【Twitch】アップロード動画：自己紹介',
+      ]
 
-      expect(titles.length).toBeGreaterThan(0)
-      expect(titles.every((title) => title.includes('歌枠'))).toBe(true)
-      // Full-width and upper-case letters match like PGroonga's normalizer.
-      expect(await searchTitles('ａｓｍｒ')).toEqual(await searchTitles('ASMR'))
+      expect(await searchTitles('Twitch')).toEqual(twitchTitles)
+      // Full-width and lower-case letters match like PGroonga's normalizer.
+      expect(await searchTitles('ｔｗｉｔｃｈ')).toEqual(twitchTitles)
       expect(await searchTitles('zzzzzzzzqqq')).toEqual([])
     })
 
