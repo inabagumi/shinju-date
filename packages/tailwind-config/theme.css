@@ -38,11 +38,80 @@
   --color-774-blue-800: #083ec5;
   --color-774-blue-900: #0d399b;
   --color-774-blue-950: #0e245d;
+}
 
+/*
+ * セマンティックカラー。値は上の色見本や Tailwind の標準色を `var()` で参照する。
+ * ここに書くのはライトの値で、`background` などのダークの値は下の
+ * `prefers-color-scheme: dark` で上書きする。部品側は
+ * `bg-background text-foreground` のように1つのクラスを書くだけで両モードに対応できる。
+ *
+ * `static` を付けて、使われていない変数も常に出力する（ダークモードの上書きと
+ * Storybook の色見本が変数を参照するため）。
+ *
+ * ダークモードに対応していないアプリは `<html data-color-scheme="light">` を
+ * 指定すると、OS の設定にかかわらずライトの値に固定できる。
+ */
+@theme static {
+  /* ブランドの地（フッターなど）と、その上の文字。ダークモードでも同じ */
   --color-primary: var(--color-774-nevy-950);
   --color-primary-foreground: var(--color-774-nevy-50);
+
+  /* ピンク・青の地と、その上の文字。ダークモードでも同じ */
   --color-secondary-pink: var(--color-774-pink-500);
   --color-secondary-pink-foreground: var(--color-774-pink-50);
   --color-secondary-blue: var(--color-774-blue-700);
   --color-secondary-blue-foreground: var(--color-774-blue-50);
+
+  /* ページの地と本文・見出し */
+  --color-background: var(--color-white);
+  --color-foreground: var(--color-zinc-900);
+
+  /* ヘッダー・モーダル・メニュー・入力欄 */
+  --color-surface: var(--color-white);
+
+  /* スケルトン・ホバー・表の見出し行 */
+  --color-muted: var(--color-774-nevy-50);
+
+  /* 補助情報（日時・タレント名・説明）。`text-*` だけに効く */
+  --text-color-muted: var(--color-zinc-600);
+
+  /* 区切り線・入力欄の枠 */
+  --color-border: var(--color-zinc-200);
+
+  /* リンク・選択中・主ボタン・フォーカス */
+  --color-accent: var(--color-774-nevy-700);
+  --color-accent-foreground: var(--color-white);
+
+  /* 配信中専用 */
+  --color-live: var(--color-774-pink-700);
+  --color-live-foreground: var(--color-white);
+
+  /* 状態 */
+  --color-danger: var(--color-red-700);
+  --color-success: var(--color-green-800);
+  --color-warning: var(--color-yellow-800);
+}
+
+@layer base {
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-scheme='light']) {
+      --color-background: var(--color-zinc-950);
+      --color-foreground: var(--color-zinc-100);
+
+      --color-surface: var(--color-zinc-900);
+
+      --color-muted: var(--color-zinc-800);
+      --text-color-muted: var(--color-zinc-400);
+
+      --color-border: var(--color-zinc-700);
+
+      --color-accent: var(--color-774-nevy-300);
+      --color-accent-foreground: var(--color-zinc-950);
+
+      --color-danger: var(--color-red-300);
+      --color-success: var(--color-green-300);
+      --color-warning: var(--color-yellow-300);
+    }
+  }
 }

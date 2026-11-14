@@ -8,7 +8,7 @@
   - 774-nevy カラー（ブランドカラー / プライマリ）
   - 774-pink カラー（セカンダリカラー）
   - 774-blue カラー（セカンダリカラー）
-  - プライマリー/セカンダリーカラー定義
+  - セマンティックカラー（`primary` / `background` / `foreground` / `accent` など）
 
 ## 使用方法
 
@@ -20,6 +20,30 @@
 ```
 
 これにより、すべてのアプリケーションとパッケージで一貫したカラーパレットを使用できます。
+
+## セマンティックカラー
+
+部品の色には、用途で名付けたセマンティックカラーを使います。色の一覧・用途・ライトとダークの値は
+[`theme.css`](./theme.css) を参照してください（Storybook の「Design System/Colors」で見本も確認できます）。
+
+`background` などは `prefers-color-scheme` でライトとダークの値が切り替わるため、1つのクラスを
+書くだけで両モードに対応できます（`dark:` は書きません）。
+
+```tsx
+const example = (
+  <div className="border border-border bg-surface text-foreground">
+    <p className="text-muted">補助情報</p>
+    <button className="bg-accent text-accent-foreground" type="button">
+      保存
+    </button>
+  </div>
+)
+```
+
+ダークモードに対応していないアプリは `<html data-color-scheme="light">` を指定すると、
+OS の設定にかかわらずライトの値に固定できます。
+
+文字と地のコントラスト比は `packages/ui/src/colors.test.ts` で確認しています。
 
 ## カラーパレット
 
@@ -158,18 +182,28 @@
 
 ### 2. セマンティックカラーの使用
 
-成功・エラー・警告などの状態表示には、一般的なカラーを使用します。
+地・文字・枠・状態の表示には、[セマンティックカラー](#セマンティックカラー)を使用します。
+一般的な Tailwind カラー（`green-*`, `red-*`, `yellow-*`, `gray-*` など）や `dark:` での
+手書きは使いません。
 
 ```tsx
 // ✅ 成功状態
-<div className="bg-green-50 text-green-600">保存しました</div>
+<div className="bg-success/10 text-success">保存しました</div>
 
 // ✅ エラー状態
-<div className="bg-red-50 text-red-600">エラーが発生しました</div>
+<div className="bg-danger/10 text-danger">エラーが発生しました</div>
 
 // ✅ 警告状態
-<div className="bg-yellow-50 text-yellow-600">注意が必要です</div>
+<div className="bg-warning/10 text-warning">注意が必要です</div>
+
+// ❌ 一般的なカラーと dark: の手書き
+<div className="bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400">
+  エラーが発生しました
+</div>
 ```
+
+状態色の地は 10% の透過（`bg-danger/10` など）にすると、文字とのコントラスト比
+4.5:1 以上を両モードで保てます（`colors.test.ts` で確認しています）。
 
 ### 3. コントラスト比の確保
 

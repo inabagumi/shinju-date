@@ -94,7 +94,7 @@ export const WithErrorMessage = meta.story({
         Description
       </label>
       <Textarea {...args} id="textarea-error" />
-      <p className="text-sm text-red-600 dark:text-red-500">
+      <p className="text-sm text-danger">
         Description must be at least 20 characters long
       </p>
     </div>
@@ -118,7 +118,7 @@ export const WithCounter = meta.story({
           Comment
         </label>
         <Textarea {...args} id="textarea-counter" />
-        <p className="text-right text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-right text-sm text-muted">
           {count}/{maxLength}
         </p>
       </div>

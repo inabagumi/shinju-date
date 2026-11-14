@@ -150,9 +150,7 @@ export const WithErrorMessage = meta.story({
         Email
       </label>
       <Input {...args} id="input-error" />
-      <p className="text-sm text-red-600 dark:text-red-500">
-        Please enter a valid email address
-      </p>
+      <p className="text-sm text-danger">Please enter a valid email address</p>
     </div>
   ),
 })

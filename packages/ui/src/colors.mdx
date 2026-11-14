@@ -2,14 +2,80 @@ import { Meta, ColorPalette, ColorItem } from '@storybook/addon-docs/blocks';
 
 <Meta title="Design System/Colors" />
 
+# Colors
+
+## セマンティックカラー
+
+部品の色には、用途で名付けたセマンティックカラーを使います。値は `theme.css` で
+定義していて、`background` などは `prefers-color-scheme` でライトとダークが切り替わります。
+この見本は閲覧している環境のモードの値で表示されます。
+
 <ColorPalette>
   <ColorItem
     colors={{
-      Primary: 'var(--color-primary)',
-      'Primary Foreground': 'var(--color-primary-foreground)'
+      Background: 'var(--color-background)',
+      Foreground: 'var(--color-foreground)',
     }}
-    subtitle="Main theme colors"
-    title="Primary Colors"
+    subtitle="ページの地と、本文・見出し"
+    title="Background"
+  />
+
+  <ColorItem
+    colors={{ Surface: 'var(--color-surface)' }}
+    subtitle="ヘッダー・モーダル・メニュー・入力欄"
+    title="Surface"
+  />
+
+  <ColorItem
+    colors={{
+      Muted: 'var(--color-muted)',
+      'Muted Text': 'var(--text-color-muted)',
+    }}
+    subtitle="スケルトン・ホバー・表の見出し行と、補助情報"
+    title="Muted"
+  />
+
+  <ColorItem
+    colors={{ Border: 'var(--color-border)' }}
+    subtitle="区切り線・入力欄の枠"
+    title="Border"
+  />
+
+  <ColorItem
+    colors={{
+      Accent: 'var(--color-accent)',
+      'Accent Foreground': 'var(--color-accent-foreground)',
+    }}
+    subtitle="リンク・選択中・主ボタン・フォーカスと、その上の文字"
+    title="Accent"
+  />
+
+  <ColorItem
+    colors={{
+      Live: 'var(--color-live)',
+      'Live Foreground': 'var(--color-live-foreground)',
+    }}
+    subtitle="配信中専用"
+    title="Live"
+  />
+
+  <ColorItem
+    colors={{
+      Danger: 'var(--color-danger)',
+      Success: 'var(--color-success)',
+      Warning: 'var(--color-warning)',
+    }}
+    subtitle="状態"
+    title="Status"
+  />
+
+  <ColorItem
+    colors={{
+      Primary: 'var(--color-primary)',
+      'Primary Foreground': 'var(--color-primary-foreground)',
+    }}
+    subtitle="ブランドの地（フッターなど）と、その上の文字"
+    title="Primary"
   />
 
   <ColorItem
@@ -17,19 +83,25 @@ import { Meta, ColorPalette, ColorItem } from '@storybook/addon-docs/blocks';
       'Secondary Pink': 'var(--color-secondary-pink)',
       'Secondary Pink Foreground': 'var(--color-secondary-pink-foreground)',
     }}
-    subtitle="Secondary theme color - Pink"
+    subtitle="ピンクの地と、その上の文字"
     title="Secondary Pink"
   />
 
   <ColorItem
     colors={{
       'Secondary Blue': 'var(--color-secondary-blue)',
-      'Secondary Blue Foreground': 'var(--color-secondary-blue-foreground)'
+      'Secondary Blue Foreground': 'var(--color-secondary-blue-foreground)',
     }}
-    subtitle="Secondary theme color - Blue"
+    subtitle="青の地と、その上の文字"
     title="Secondary Blue"
   />
+</ColorPalette>
 
+## 色見本
+
+ブランドの色見本です。部品では直接使わず、上のセマンティックカラーを使います。
+
+<ColorPalette>
   <ColorItem
     colors={{
       50: 'var(--color-774-nevy-50)',

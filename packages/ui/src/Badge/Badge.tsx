@@ -10,11 +10,11 @@ const badgeVariants = cva(
     },
     variants: {
       variant: {
-        error: 'border-red-300 bg-red-100 text-red-800',
-        info: 'border-774-blue-300 bg-774-blue-100 text-774-blue-800',
-        secondary: 'border-slate-300 bg-slate-100 text-slate-600',
-        success: 'border-green-300 bg-green-100 text-green-800',
-        warning: 'border-yellow-300 bg-yellow-100 text-yellow-800',
+        error: 'border-danger/30 bg-danger/10 text-danger',
+        info: 'border-accent/30 bg-accent/10 text-accent',
+        secondary: 'border-border bg-muted text-muted',
+        success: 'border-success/30 bg-success/10 text-success',
+        warning: 'border-warning/30 bg-warning/10 text-warning',
       },
     },
   },

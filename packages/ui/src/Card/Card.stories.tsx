@@ -98,19 +98,15 @@ export const VideoCard = meta.story({
   args: {
     children: (
       <>
-        <div className="aspect-video w-full bg-gray-300 dark:bg-zinc-700" />
+        <div className="aspect-video w-full bg-border" />
         <CardHeader>
           <h3 className="line-clamp-2 text-sm font-semibold">
             Sample Video Title
           </h3>
         </CardHeader>
         <CardContent>
-          <p className="text-xs text-gray-600 dark:text-zinc-400">
-            Talent Name
-          </p>
-          <p className="text-xs text-gray-500 dark:text-zinc-500">
-            1.2M views • 2 days ago
-          </p>
+          <p className="text-xs text-muted">Talent Name</p>
+          <p className="text-xs text-muted">1.2M views • 2 days ago</p>
         </CardContent>
       </>
     ),

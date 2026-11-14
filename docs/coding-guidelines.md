@@ -299,72 +299,62 @@ secondary-blue-foreground    /* = 774-blue-50 */
 <Link className="text-indigo-600">リンク</Link>
 ```
 
-### セマンティックカラー（例外）
+### セマンティックカラー
 
-以下の場合に限り、一般的な Tailwind カラーの使用を許可します：
+**地・文字・枠・状態の表示には、`theme.css` で定義されているセマンティックカラー（用途で名付けた色）を使用してください。**
 
-#### 1. 成功状態（Success）
+`background` などのセマンティックカラーは `prefers-color-scheme` でライトとダークの値が切り替わるため、`dark:` で色を手書きする必要はありません。色の一覧と用途は [`packages/tailwind-config/theme.css`](../packages/tailwind-config/theme.css) と Storybook の「Design System/Colors」を参照してください。
 
-```tsx
-// ✅ 緑色は成功を示す
-<div className="bg-green-50 text-green-600">
-  保存に成功しました
-</div>
+新しいセマンティックカラーを追加するときは、カラーコードを直接書かず、既存の色見本や Tailwind の標準色を `var()` で参照してください。
 
-<span className="text-green-600">公開中</span>
-```
-
-#### 2. エラー・危険状態（Error/Danger）
+#### 1. 状態（Success / Danger / Warning）
 
 ```tsx
-// ✅ 赤色はエラーや危険を示す
-<div className="border-red-300 bg-red-50 text-red-600">
+// ✅ 状態色の文字と、同じ色の 10% の地
+<div className="bg-success/10 text-success">保存に成功しました</div>
+
+<div className="border border-danger/30 bg-danger/10 text-danger">
   エラーが発生しました
 </div>
 
-<button className="border-red-600 text-red-600 hover:bg-red-50">
+<button className="border border-danger text-danger hover:bg-danger/10">
   削除
 </button>
+
+<span className="text-warning">非表示</span>
+
+// ❌ 一般的な Tailwind カラーを使用しない
+<div className="bg-red-50 text-red-600">エラーが発生しました</div>
 ```
 
-#### 3. 警告状態（Warning）
+#### 2. 地・文字・枠
 
 ```tsx
-// ✅ 黄色は警告を示す
-<div className="bg-yellow-50 text-yellow-700">
-  注意が必要です
+// ✅ 1つのクラスでライトとダークの両方に対応
+<div className="border border-border bg-surface">
+  <p className="text-foreground">本文</p>
+  <p className="text-muted">説明文</p>
 </div>
 
-<span className="text-yellow-600">非表示</span>
-```
-
-#### 4. ニュートラル・構造的要素
-
-```tsx
-// ✅ グレー系は構造的要素に使用
-<div className="border-gray-300 bg-gray-50">
-  <p className="text-gray-600">説明文</p>
-</div>
-
-// ✅ ダークモード対応
-<div className="bg-white dark:bg-zinc-800">
-  <p className="text-gray-900 dark:text-zinc-100">テキスト</p>
+// ❌ dark: で色を手書きしない
+<div className="border-gray-300 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+  <p className="text-gray-900 dark:text-zinc-100">本文</p>
 </div>
 ```
 
 ### UIコンポーネントライブラリでの使用
 
-`packages/ui` のコンポーネントでは、以下のようにテーマカラーを使用します：
+`packages/ui` のコンポーネントでは、以下のようにセマンティックカラーを使用します：
 
 ```tsx
 // Button コンポーネント
 const buttonVariants = cva('...', {
   variants: {
     variant: {
-      primary: 'bg-primary text-primary-foreground hover:bg-774-nevy-900',
-      'secondary-blue': 'bg-secondary-blue hover:bg-774-blue-800',
-      'secondary-pink': 'bg-secondary-pink hover:bg-774-pink-600',
-      danger: 'border-red-600 text-red-600', // セマンティック
+      primary: 'bg-accent text-accent-foreground hover:bg-accent/90',
+      secondary:
+        'border border-border bg-surface text-foreground hover:bg-muted',
+      danger: 'border border-danger text-danger hover:bg-danger/10',
     },
   },
 })
@@ -373,10 +363,10 @@ const buttonVariants = cva('...', {
 const badgeVariants = cva('...', {
   variants: {
     variant: {
-      info: 'bg-774-blue-100 text-774-blue-800',
-      success: 'bg-green-100 text-green-800', // セマンティック
-      error: 'bg-red-100 text-red-800', // セマンティック
-      warning: 'bg-yellow-100 text-yellow-800', // セマンティック
+      info: 'border-accent/30 bg-accent/10 text-accent',
+      success: 'border-success/30 bg-success/10 text-success',
+      error: 'border-danger/30 bg-danger/10 text-danger',
+      warning: 'border-warning/30 bg-warning/10 text-warning',
     },
   },
 })
@@ -386,23 +376,23 @@ const badgeVariants = cva('...', {
 
 既存のコードを更新する際の参考：
 
-| 旧カラー            | 新カラー                         | 用途                         |
-| ------------------- | -------------------------------- | ---------------------------- |
-| `blue-*`            | `774-blue-*`                     | リンク、ボタン、情報表示     |
-| `purple-*`          | `774-nevy-*`                     | ブランド要素、強調表示       |
-| `indigo-*`          | `774-nevy-*` または `774-blue-*` | コンテキストに応じて         |
-| `pink-*`            | `774-pink-*`                     | セカンダリアクション、エラー |
-| `green-*`           | そのまま                         | 成功、公開状態               |
-| `red-*`             | そのまま                         | エラー、削除、危険           |
-| `yellow-*`          | そのまま                         | 警告、非表示状態             |
-| `gray-*`, `slate-*` | そのまま                         | 構造的要素、テキスト         |
+| 旧カラー                      | 新カラー                                                                    | 用途                         |
+| ----------------------------- | --------------------------------------------------------------------------- | ---------------------------- |
+| `blue-*`                      | `774-blue-*`                                                                | リンク、ボタン、情報表示     |
+| `purple-*`                    | `774-nevy-*`                                                                | ブランド要素、強調表示       |
+| `indigo-*`                    | `774-nevy-*` または `774-blue-*`                                            | コンテキストに応じて         |
+| `pink-*`                      | `774-pink-*`                                                                | セカンダリアクション、エラー |
+| `green-*`                     | `success`                                                                   | 成功、公開状態               |
+| `red-*`                       | `danger`                                                                    | エラー、削除、危険           |
+| `yellow-*`                    | `warning`                                                                   | 警告、非表示状態             |
+| `gray-*`, `slate-*`, `zinc-*` | `background` / `surface` / `muted` / `border` / `foreground` / `text-muted` | 地、枠、テキスト             |
 
 ### レビューガイドライン
 
 コードレビュー時は以下をチェックしてください：
 
 - [ ] UI要素にテーマカラー（774-nevy、774-pink、774-blue）を使用しているか
-- [ ] セマンティックカラー（green, red, yellow）の使用が適切か
+- [ ] 地・文字・枠・状態にセマンティックカラーを使い、`dark:` で色を手書きしていないか
 - [ ] 一般的な blue/purple/indigo カラーが使用されていないか
 - [ ] ブランドの一貫性が保たれているか
 
