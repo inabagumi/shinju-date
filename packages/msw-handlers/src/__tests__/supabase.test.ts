@@ -452,6 +452,25 @@ describe('Supabase Handlers', () => {
       expect(rows).toHaveLength(2)
     })
 
+    it('should count every matching row of a page', async () => {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/video_backfill_jobs?select=id&limit=1',
+        { headers: { prefer: 'count=exact' } },
+      )
+
+      expect(await response.json()).toHaveLength(1)
+      expect(response.headers.get('content-range')).toBe('0-0/3')
+    })
+
+    it('should count every matching row in a HEAD request with a limit', async () => {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/video_backfill_jobs?select=id&limit=1',
+        { headers: { prefer: 'count=exact' }, method: 'HEAD' },
+      )
+
+      expect(response.headers.get('content-range')).toBe('0-0/3')
+    })
+
     it('should count the accounts whose latest job failed', async () => {
       const response = await fetch(
         'https://fake.supabase.test/rest/v1/video_backfill_latest_jobs?select=id&status=eq.failed',

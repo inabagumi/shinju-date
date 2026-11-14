@@ -127,22 +127,27 @@ function createReadOnlyHandlers(
   return [
     http.get(url, async ({ request }) => {
       const query = parseSupabaseQuery(new URL(request.url))
-      const filtered = applySupabaseFilters(await getRows(), query)
-      const data = await applySelect(filtered, query.select)
+      // An exact count counts every matching row, not only the page.
+      const matched = applySupabaseConditions(await getRows(), query)
+      const data = await applySelect(
+        applyPagination(matched, query),
+        query.select,
+      )
       const prefer = request.headers.get('prefer') ?? ''
+      const start = query.offset ? parseInt(query.offset, 10) : 0
 
       return HttpResponse.json(data, {
         headers:
           prefer.includes('count=exact') || query.returnCount
             ? {
-                'Content-Range': `0-${Math.max(0, data.length - 1)}/${filtered.length}`,
+                'Content-Range': `${start}-${Math.max(start, start + data.length - 1)}/${matched.length}`,
               }
             : {},
       })
     }),
     http.head(url, async ({ request }) => {
       const query = parseSupabaseQuery(new URL(request.url))
-      const count = applySupabaseFilters(await getRows(), query).length
+      const count = applySupabaseConditions(await getRows(), query).length
 
       return new HttpResponse(null, {
         headers: {
@@ -188,9 +193,21 @@ function parseSupabaseQuery(url: URL) {
 }
 
 /**
- * Apply filters and selections to mock data
+ * Apply filters and pagination to mock data
  */
 function applySupabaseFilters(
+  // biome-ignore lint/suspicious/noExplicitAny: Generic mock data handler requires any for flexible type matching across different table types
+  data: any[],
+  query: ReturnType<typeof parseSupabaseQuery>,
+) {
+  return applyPagination(applySupabaseConditions(data, query), query)
+}
+
+/**
+ * Apply the filters of a query, without pagination. The rows that match are
+ * what an exact count counts.
+ */
+function applySupabaseConditions(
   // biome-ignore lint/suspicious/noExplicitAny: Generic mock data handler requires any for flexible type matching across different table types
   data: any[],
   query: ReturnType<typeof parseSupabaseQuery>,
@@ -262,6 +279,18 @@ function applySupabaseFilters(
       }
     }
   }
+
+  return filteredData
+}
+
+/**
+ * Apply the offset and limit of a query.
+ */
+function applyPagination<T>(
+  data: T[],
+  query: ReturnType<typeof parseSupabaseQuery>,
+): T[] {
+  let filteredData = data
 
   // Apply offset before limit to match PostgREST pagination semantics
   if (query.offset) {
