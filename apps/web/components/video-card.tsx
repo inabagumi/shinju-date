@@ -144,7 +144,7 @@ export default function VideoCard({
         )}
         <div className="absolute top-0 right-0 m-2 flex flex-col items-end gap-1">
           <LiveNow
-            className="inline-block rounded-md bg-774-pink-600 px-1.5 py-0.5 text-xs font-semibold text-774-pink-50"
+            className="inline-block rounded-md bg-live px-1.5 py-0.5 text-xs font-semibold text-live-foreground"
             status={value.status}
           />
           <PlatformBadge platform={value.platform} />
