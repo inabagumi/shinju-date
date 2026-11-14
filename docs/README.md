@@ -13,6 +13,7 @@
 ### 📝 開発ガイドライン
 
 - **[coding-guidelines.md](coding-guidelines.md)** - コーディング規約とベストプラクティス
+- **[design-guidelines.md](design-guidelines.md)** - デザインガイドライン（色・文字・角丸・影）
 - **[testing-guide.md](testing-guide.md)** - テスト実装ガイド
 - **[e2e-testing.md](e2e-testing.md)** - E2Eテストガイド
 
@@ -37,8 +38,9 @@
 ### 機能開発時
 
 1. **[coding-guidelines.md](coding-guidelines.md)** - コーディング規約の確認
-2. **[testing-guide.md](testing-guide.md)** - テストの書き方
-3. **[e2e-testing.md](e2e-testing.md)** - E2Eテストの実装
+2. **[design-guidelines.md](design-guidelines.md)** - 画面や部品を作るときの見た目の決まり
+3. **[testing-guide.md](testing-guide.md)** - テストの書き方
+4. **[e2e-testing.md](e2e-testing.md)** - E2Eテストの実装
 
 ### システム理解・拡張
 

@@ -237,6 +237,8 @@ refactor(admin): convert type definitions to interface
 
 ## カラーパレットの使用
 
+色・文字サイズ・角丸・影の使い分けは [design-guidelines.md](design-guidelines.md) を参照してください。ここではクラスの書き方を説明します。
+
 ### テーマカラーの優先使用
 
 **原則として、UI要素には `@shinju-date/tailwind-config/theme.css` で定義されているテーマカラーを使用してください。**

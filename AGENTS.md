@@ -180,6 +180,17 @@ AIツールは常に進化しています。
 
 詳細なガイドラインは [docs/coding-guidelines.md](docs/coding-guidelines.md#typescript-型定義) を参照してください。
 
+### デザイン（色・文字・角丸・影）
+
+**重要**: 画面や部品を新しく作る・作り直すときは、**必ず** [docs/design-guidelines.md](docs/design-guidelines.md) を参照してください。色・文字サイズ・角丸・影の決まりと、役割ごとのクラスの組み合わせが載っています。
+
+- 色はセマンティックカラー（`bg-surface`、`text-muted`、`bg-accent` など）で指定し、`dark:` で手書きしない
+- 文字サイズは `text-display` / `text-title` / `text-heading` / `text-body` / `text-meta` / `text-caption` を使う（`text-xs` / `text-sm` などは使わない）
+- 角丸は `rounded-md`（操作部品）/ `rounded-xl`（入れ物）/ `rounded-full`（丸）の3種類
+- 影は重なるもの（モーダル・ドロップダウン・お知らせバナー・固定ヘッダー下の線）だけに使う
+- `twMerge` は `tailwind-merge` ではなく `@shinju-date/ui` からインポートする
+- 日本語のウェブフォントは追加しない
+
 ### Next.js Cache Directives（キャッシュディレクティブ）
 
 **🚨 厳格なルール**: Next.js 16のCache Componentsを使用する際、以下のルールを**必ず**守ってください：
