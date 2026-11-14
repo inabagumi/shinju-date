@@ -52,4 +52,27 @@ describe('VideoList', () => {
       within(row as HTMLElement).getByText('タレント不明'),
     ).toBeInTheDocument()
   })
+
+  it('shows the published and updated dates in one column', () => {
+    render(<VideoList videos={[createVideo()]} />)
+
+    const row = screen.getByText('Test Video').closest('tr') as HTMLElement
+    const published = within(row).getByText('公開')
+    const updated = within(row).getByText('更新')
+
+    expect(published.closest('td')).toBe(updated.closest('td'))
+    expect(
+      published.closest('td')?.querySelectorAll('time[datetime]'),
+    ).toHaveLength(2)
+  })
+
+  it('shows the platform and video kind badges in one column', () => {
+    render(<VideoList videos={[createVideo({ video_kind: 'short' })]} />)
+
+    const row = screen.getByText('Test Video').closest('tr') as HTMLElement
+    const platform = within(row).getByText('YouTube')
+    const kind = within(row).getByText('ショート')
+
+    expect(platform.closest('td')).toBe(kind.closest('td'))
+  })
 })
