@@ -2,11 +2,12 @@
 -- Run with `supabase test db`.
 BEGIN;
 
-SELECT plan(26);
+SELECT plan(28);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures: an admin, a signed-in user without the admin role, a banned
--- admin, plus an active talent and a deleted talent.
+-- admin, an active talent and a deleted talent, plus an audit log and a video
+-- backfill job so that the read checks do not pass on empty tables.
 -- ---------------------------------------------------------------------------
 INSERT INTO "auth"."users" ("id", "email", "raw_app_meta_data", "banned_until")
 VALUES
@@ -18,6 +19,12 @@ INSERT INTO "public"."talents" ("id", "name", "deleted_at")
 VALUES
     ('d1000000-0000-0000-0000-000000000001', 'Active talent', NULL),
     ('d1000000-0000-0000-0000-000000000002', 'Deleted talent', NOW());
+
+INSERT INTO "public"."audit_logs" ("id", "user_id", "action", "target_table", "target_record_id")
+VALUES ('d2000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', 'TERM_CREATE', 'terms', NULL);
+
+INSERT INTO "public"."video_backfill_jobs" ("id", "platform", "account_id", "talent_id", "status", "requested_at", "finished_at")
+VALUES ('d3000000-0000-0000-0000-000000000001', 'youtube', 'd4000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', 'done', '2026-11-01T00:00:00Z', '2026-11-01T00:10:00Z');
 
 -- ---------------------------------------------------------------------------
 -- Every policy for `authenticated` checks the admin role, except the public
@@ -103,7 +110,7 @@ SELECT throws_ok(
 );
 
 SELECT is_empty(
-    $$SELECT "id" FROM "public"."audit_logs"$$,
+    $$SELECT "id" FROM "public"."audit_logs" WHERE "id" = 'd2000000-0000-0000-0000-000000000001'$$,
     'a user without the admin role cannot read the audit_logs table'
 );
 
@@ -113,7 +120,7 @@ SELECT is_empty(
 );
 
 SELECT is_empty(
-    $$SELECT "id" FROM "public"."video_backfill_jobs"$$,
+    $$SELECT "id" FROM "public"."video_backfill_jobs" WHERE "id" = 'd3000000-0000-0000-0000-000000000001'$$,
     'a user without the admin role cannot read video backfill jobs'
 );
 
@@ -188,6 +195,18 @@ SELECT is(
     (SELECT count(*)::integer FROM "public"."feature_requests" WHERE "message" = 'Please add a feature'),
     1,
     'an admin can read feature requests'
+);
+
+SELECT results_eq(
+    $$SELECT "id" FROM "public"."audit_logs" WHERE "id" = 'd2000000-0000-0000-0000-000000000001'$$,
+    $$VALUES ('d2000000-0000-0000-0000-000000000001'::"uuid")$$,
+    'an admin can read the audit_logs table'
+);
+
+SELECT results_eq(
+    $$SELECT "id" FROM "public"."video_backfill_jobs" WHERE "id" = 'd3000000-0000-0000-0000-000000000001'$$,
+    $$VALUES ('d3000000-0000-0000-0000-000000000001'::"uuid")$$,
+    'an admin can read video backfill jobs'
 );
 
 RESET ROLE;
