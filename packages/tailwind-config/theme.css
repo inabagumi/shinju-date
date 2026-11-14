@@ -31,6 +31,22 @@
   /* 文章の最大幅（1行40〜45文字程度）。`max-w-text` で使う */
   --container-text: 44rem;
 
+  /*
+   * 角丸と影。使い分けは docs/design-guidelines.md を参照。ここに追加したら
+   * packages/ui/src/tw-merge.ts の一覧にも追加する。
+   */
+  /* 操作部品（ボタン、入力欄、バッジ、メニュー項目） */
+  --radius-control: var(--radius-md);
+  /* 入れ物（サムネイル、モーダル、表、パネル、メニュー） */
+  --radius-container: var(--radius-xl);
+  /*
+   * 重なるもの（モーダル、ドロップダウン、お知らせバナー）。`var()` で既定の影を
+   * 参照すると、Tailwind が値の中の色を `--tw-shadow-color` に置き換えられず、
+   * 影の色のクラス（`shadow-black/20` など）が効かなくなるため、値を直接書く。
+   */
+  --shadow-overlay:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
   --color-774-nevy-50: #f2f1ff;
   --color-774-nevy-100: #eae5ff;
   --color-774-nevy-200: #d5ceff;

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { describe, expect, it } from 'vitest'
-import { CONTAINERS, FONT_SIZES, twMerge } from './tw-merge'
+import { CONTAINERS, FONT_SIZES, RADII, SHADOWS, twMerge } from './tw-merge'
 
 const require = createRequire(import.meta.url)
 const themeCSS = readFileSync(
@@ -29,6 +29,14 @@ describe('twMerge', () => {
     expect([...CONTAINERS].sort()).toEqual(extractThemeKeys('container'))
   })
 
+  it('knows every radius in theme.css', () => {
+    expect([...RADII].sort()).toEqual(extractThemeKeys('radius'))
+  })
+
+  it('knows every shadow in theme.css', () => {
+    expect([...SHADOWS].sort()).toEqual(extractThemeKeys('shadow'))
+  })
+
   it('keeps a font size together with a text color', () => {
     expect(twMerge('text-body text-foreground')).toBe(
       'text-body text-foreground',
@@ -47,5 +55,30 @@ describe('twMerge', () => {
 
   it('replaces a max width with another one', () => {
     expect(twMerge('max-w-2xl', 'max-w-text')).toBe('max-w-text')
+  })
+
+  it('replaces a radius with another one', () => {
+    expect(twMerge('rounded-md', 'rounded-control')).toBe('rounded-control')
+    expect(twMerge('rounded-control', 'rounded-container')).toBe(
+      'rounded-container',
+    )
+    expect(twMerge('rounded-container', 'rounded-full')).toBe('rounded-full')
+  })
+
+  it('keeps a radius on one side together with the overall radius', () => {
+    expect(twMerge('rounded-container rounded-t-none')).toBe(
+      'rounded-container rounded-t-none',
+    )
+  })
+
+  it('replaces a shadow with another one', () => {
+    expect(twMerge('shadow-lg', 'shadow-overlay')).toBe('shadow-overlay')
+    expect(twMerge('shadow-overlay', 'shadow-none')).toBe('shadow-none')
+  })
+
+  it('keeps a shadow together with a shadow color', () => {
+    expect(twMerge('shadow-overlay shadow-black/20')).toBe(
+      'shadow-overlay shadow-black/20',
+    )
   })
 })

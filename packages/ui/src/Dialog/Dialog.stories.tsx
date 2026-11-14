@@ -157,7 +157,7 @@ export const WithForm = meta.story({
                   Name
                 </label>
                 <input
-                  className="rounded-md border border-border bg-surface px-4 py-2"
+                  className="rounded-control border border-border bg-surface px-4 py-2"
                   id="name"
                   onChange={(e) => setName(e.target.value)}
                   value={name}
