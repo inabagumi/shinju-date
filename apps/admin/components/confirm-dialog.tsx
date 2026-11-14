@@ -58,7 +58,7 @@ export function ConfirmDialog({
             {description}
           </DialogDescription>
           {children && (
-            <div className="mb-6 rounded-md border border-border bg-muted p-3 text-sm">
+            <div className="mb-6 rounded-control border border-border bg-muted p-3 text-meta">
               {children}
             </div>
           )}
