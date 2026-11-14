@@ -1,8 +1,10 @@
 export { default as formatDateKey } from './format-date.js'
 export {
   default as formatDateTime,
+  formatDate,
   formatDateTimeFromISO,
   formatDateTimeWithSeconds,
+  formatTime,
 } from './format-date-time.js'
 export { default as formatDuration } from './format-duration.js'
 export { formatRelativeTime } from './format-relative-time.js'
