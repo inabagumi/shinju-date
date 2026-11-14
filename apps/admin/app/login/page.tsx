@@ -42,6 +42,13 @@ export default function Login({ searchParams }: Props) {
         action={signIn}
         className="grid w-full max-w-md gap-8 rounded-lg border border-slate-400 bg-white/60 p-6 shadow-sm backdrop-blur"
       >
+        <h1 className="text-center text-title font-bold text-foreground">
+          <span className="block text-meta font-normal text-muted">
+            SHINJU DATE
+          </span>{' '}
+          Admin UI
+        </h1>
+
         <Suspense fallback={null}>
           <RedirectPathInput searchParams={searchParams} />
         </Suspense>

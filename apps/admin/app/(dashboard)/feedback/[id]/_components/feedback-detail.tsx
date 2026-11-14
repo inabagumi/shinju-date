@@ -128,7 +128,7 @@ export function FeatureRequestDetail({
             <p className="text-sm text-red-600">{statusState.error}</p>
           )}
           {statusState?.success === true && (
-            <p className="text-sm text-green-600">更新しました</p>
+            <p className="text-sm text-green-700">更新しました</p>
           )}
         </form>
       </div>
@@ -154,7 +154,7 @@ export function FeatureRequestDetail({
             <p className="text-sm text-red-600">{readState.error}</p>
           )}
           {readState?.success === true && (
-            <p className="text-sm text-green-600">更新しました</p>
+            <p className="text-sm text-green-700">更新しました</p>
           )}
         </form>
       </div>
@@ -182,7 +182,7 @@ export function FeatureRequestDetail({
             <p className="text-sm text-red-600">{memoState.error}</p>
           )}
           {memoState?.success === true && (
-            <p className="text-sm text-green-600">保存しました</p>
+            <p className="text-sm text-green-700">保存しました</p>
           )}
         </form>
 
