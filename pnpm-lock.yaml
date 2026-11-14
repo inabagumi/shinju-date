@@ -910,6 +910,70 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
 
+  packages/scraper:
+    dependencies:
+      '@googleapis/youtube':
+        specifier: 40.1.0
+        version: 40.1.0(supports-color@8.1.1)
+      '@shinju-date/database':
+        specifier: workspace:*
+        version: link:../database
+      '@shinju-date/retryable-fetch':
+        specifier: workspace:*
+        version: link:../retryable-fetch
+      '@shinju-date/temporal-fns':
+        specifier: workspace:*
+        version: link:../temporal-fns
+      '@shinju-date/twitch-api-client':
+        specifier: workspace:*
+        version: link:../twitch-api-client
+      '@shinju-date/youtube-api-client':
+        specifier: workspace:*
+        version: link:../youtube-api-client
+      '@supabase/supabase-js':
+        specifier: 2.119.0
+        version: 2.119.0(@opentelemetry/api@1.9.1)
+      mime:
+        specifier: 4.1.2
+        version: 4.1.2
+      nanoid:
+        specifier: 6.0.2
+        version: 6.0.2
+      p-queue:
+        specifier: 10.0.0
+        version: 10.0.0
+      sharp:
+        specifier: 0.35.5
+        version: 0.35.5(@types/node@26.6.6)
+      temporal-polyfill:
+        specifier: 1.0.8
+        version: 1.0.8
+    devDependencies:
+      '@shinju-date/helpers':
+        specifier: workspace:*
+        version: link:../helpers
+      '@tsconfig/node20':
+        specifier: 20.1.11
+        version: 20.1.11
+      '@tsconfig/strictest':
+        specifier: 2.0.9
+        version: 2.0.9
+      '@types/node':
+        specifier: 26.6.6
+        version: 26.6.6
+      msw:
+        specifier: 3.0.5
+        version: 3.0.5(@types/node@26.6.6)(graphql@16.15.0)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2))
+      tsup:
+        specifier: 9.0.0
+        version: 9.0.0(jiti@2.7.0)(postcss@8.5.32)(typescript@6.0.3)
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@opentelemetry/api@1.9.1)(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/ui@5.1.0)(jsdom@31.0.1(@noble/hashes@1.8.0))(msw@3.0.5(@types/node@26.6.6)(graphql@16.15.0)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2))
+
   packages/tailwind-config: {}
 
   packages/temporal-fns:

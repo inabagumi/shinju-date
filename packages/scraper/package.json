@@ -1,0 +1,58 @@
+{
+  "author": "Haneru Developers",
+  "dependencies": {
+    "@googleapis/youtube": "40.1.0",
+    "@shinju-date/database": "workspace:*",
+    "@shinju-date/retryable-fetch": "workspace:*",
+    "@shinju-date/temporal-fns": "workspace:*",
+    "@shinju-date/twitch-api-client": "workspace:*",
+    "@shinju-date/youtube-api-client": "workspace:*",
+    "@supabase/supabase-js": "2.119.0",
+    "mime": "4.1.2",
+    "nanoid": "6.0.2",
+    "p-queue": "10.0.0",
+    "sharp": "0.35.5",
+    "temporal-polyfill": "1.0.8"
+  },
+  "description": "Crawlers that keep YouTube and Twitch videos in the SHINJU DATE database in sync",
+  "devDependencies": {
+    "@shinju-date/helpers": "workspace:*",
+    "@tsconfig/node20": "20.1.11",
+    "@tsconfig/strictest": "2.0.9",
+    "@types/node": "26.6.6",
+    "msw": "3.0.5",
+    "tsup": "9.0.0",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./twitch": {
+      "import": "./dist/twitch.js",
+      "types": "./dist/twitch.d.ts"
+    },
+    "./youtube": {
+      "import": "./dist/youtube.js",
+      "types": "./dist/youtube.d.ts"
+    }
+  },
+  "homepage": "https://shinju.date/",
+  "license": "MIT",
+  "name": "@shinju-date/scraper",
+  "private": true,
+  "repository": {
+    "directory": "packages/scraper",
+    "type": "git",
+    "url": "https://github.com/inabagumi/shinju-date.git"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run"
+  },
+  "type": "module",
+  "version": "1.0.0"
+}
