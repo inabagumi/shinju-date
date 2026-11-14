@@ -24,7 +24,8 @@ type LinearRGB = [number, number, number]
 function extractDeclarations(css: string): Map<string, string> {
   const declarations = new Map<string, string>()
 
-  for (const match of css.matchAll(/--color-([\w-]+):\s*([^;]+);/g)) {
+  // `--color-*` と、`text-*` だけに効く `--text-color-*`
+  for (const match of css.matchAll(/(--(?:text-)?color-[\w-]+):\s*([^;]+);/g)) {
     const [, name, value] = match
 
     if (name && value) {
@@ -96,10 +97,10 @@ function resolveColor(colors: Map<string, string>, name: string): LinearRGB {
   const value = colors.get(name)
 
   if (!value) {
-    throw new Error(`--color-${name} が定義されていません`)
+    throw new Error(`${name} が定義されていません`)
   }
 
-  const reference = value.match(/^var\(--color-([\w-]+)\)$/)
+  const reference = value.match(/^var\((--[\w-]+)\)$/)
 
   if (reference?.[1]) {
     return resolveColor(colors, reference[1])
@@ -119,7 +120,7 @@ function resolveColor(colors: Map<string, string>, name: string): LinearRGB {
     )
   }
 
-  throw new Error(`--color-${name} の値を解釈できません: ${value}`)
+  throw new Error(`${name} の値を解釈できません: ${value}`)
 }
 
 // 半透明の前景色（`bg-danger/10` など）を地に重ねたときの色
@@ -146,37 +147,48 @@ function contrastRatio(a: LinearRGB, b: LinearRGB): number {
 }
 
 const SEMANTIC_COLOR_NAMES = [
-  'background',
-  'foreground',
-  'surface',
-  'muted',
-  'muted-foreground',
-  'border',
-  'accent',
-  'accent-foreground',
-  'live',
-  'live-foreground',
-  'danger',
-  'success',
-  'warning',
+  '--color-primary',
+  '--color-primary-foreground',
+  '--color-secondary-pink',
+  '--color-secondary-pink-foreground',
+  '--color-secondary-blue',
+  '--color-secondary-blue-foreground',
+  '--color-background',
+  '--color-foreground',
+  '--color-surface',
+  '--color-muted',
+  '--text-color-muted',
+  '--color-border',
+  '--color-accent',
+  '--color-accent-foreground',
+  '--color-live',
+  '--color-live-foreground',
+  '--color-danger',
+  '--color-success',
+  '--color-warning',
 ]
 
-const GROUNDS = ['background', 'surface', 'muted']
+const GROUNDS = ['--color-background', '--color-surface', '--color-muted']
 const TEXT_ON_GROUNDS = [
-  'foreground',
-  'muted-foreground',
-  'accent',
-  'danger',
-  'success',
-  'warning',
+  '--color-foreground',
+  '--text-color-muted',
+  '--color-accent',
+  '--color-danger',
+  '--color-success',
+  '--color-warning',
 ]
 // Badge の地（`bg-<color>/10`）に同じ色の文字を載せる組み合わせ
-const TINTED_COLORS = ['accent', 'danger', 'success', 'warning']
+const TINTED_COLORS = [
+  '--color-accent',
+  '--color-danger',
+  '--color-success',
+  '--color-warning',
+]
 const TINT_ALPHA = 0.1
 const FOREGROUND_PAIRS = [
-  ['accent-foreground', 'accent'],
-  ['live-foreground', 'live'],
-  ['primary-foreground', 'primary'],
+  ['--color-accent-foreground', '--color-accent'],
+  ['--color-live-foreground', '--color-live'],
+  ['--color-primary-foreground', '--color-primary'],
 ] as const
 
 describe('semantic colors', () => {
@@ -193,7 +205,7 @@ describe('semantic colors', () => {
   })
 
   it.each([...lightDeclarations, ...darkDeclarations])(
-    '--color-%s refers to an existing color with var()',
+    '%s refers to an existing color with var()',
     (_name, value) => {
       expect(value).toMatch(/^var\(--color-[\w-]+\)$/)
     },

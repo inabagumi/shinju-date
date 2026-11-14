@@ -61,7 +61,7 @@ export function DialogDescription({
 }: ComponentPropsWithRef<typeof DialogPrimitive.Description>) {
   return (
     <DialogPrimitive.Description
-      className={twMerge('mb-6 text-muted-foreground', className)}
+      className={twMerge('mb-6 text-muted', className)}
       {...props}
     />
   )

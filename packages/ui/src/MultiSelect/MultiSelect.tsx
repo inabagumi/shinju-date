@@ -71,10 +71,10 @@ export function MultiSelect({
           type="button"
           {...props}
         >
-          <span className={value.length === 0 ? 'text-muted-foreground' : ''}>
+          <span className={value.length === 0 ? 'text-muted' : ''}>
             {getDisplayText()}
           </span>
-          <ChevronDown className="ml-2 size-4 flex-shrink-0 text-muted-foreground" />
+          <ChevronDown className="ml-2 size-4 flex-shrink-0 text-muted" />
         </button>
       </Popover.Trigger>
       <Popover.Portal>

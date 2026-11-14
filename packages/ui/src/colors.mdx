@@ -6,168 +6,9 @@ import { Meta, ColorPalette, ColorItem } from '@storybook/addon-docs/blocks';
 
 ## セマンティックカラー
 
-部品の色には、用途で名付けたセマンティックカラーを使います。セマンティックカラーは
-上の色見本や Tailwind の標準色を `var()` で参照していて、`background` などは
-`prefers-color-scheme` でライトとダークの参照先が切り替わります。そのため
-`bg-background text-foreground border-border` のように1つのクラスを書くだけで
-両モードに対応できます（`dark:` は書きません）。
-
-ダークモードに対応していないアプリは `<html data-color-scheme="light">` を指定すると、
-OS の設定にかかわらずライトの値に固定できます（現在は `apps/admin` が該当）。
-
+部品の色には、用途で名付けたセマンティックカラーを使います。値は `theme.css` で
+定義していて、`background` などは `prefers-color-scheme` でライトとダークが切り替わります。
 この見本は閲覧している環境のモードの値で表示されます。
-
-<table>
-  <thead>
-    <tr>
-      <th>色</th>
-      <th>クラスの例</th>
-      <th>用途</th>
-      <th>ライト</th>
-      <th>ダーク</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>background</code></td>
-      <td><code>bg-background</code></td>
-      <td>ページの地</td>
-      <td><code>white</code></td>
-      <td><code>zinc-950</code></td>
-    </tr>
-    <tr>
-      <td><code>foreground</code></td>
-      <td><code>text-foreground</code></td>
-      <td>本文・見出し</td>
-      <td><code>zinc-900</code></td>
-      <td><code>zinc-100</code></td>
-    </tr>
-    <tr>
-      <td><code>surface</code></td>
-      <td><code>bg-surface</code></td>
-      <td>ヘッダー・モーダル・メニュー・入力欄</td>
-      <td><code>white</code></td>
-      <td><code>zinc-900</code></td>
-    </tr>
-    <tr>
-      <td><code>muted</code></td>
-      <td><code>bg-muted</code></td>
-      <td>スケルトン・ホバー・表の見出し行</td>
-      <td><code>774-nevy-50</code></td>
-      <td><code>zinc-800</code></td>
-    </tr>
-    <tr>
-      <td><code>muted-foreground</code></td>
-      <td><code>text-muted-foreground</code></td>
-      <td>補助情報（日時・タレント名・説明）</td>
-      <td><code>zinc-600</code></td>
-      <td><code>zinc-400</code></td>
-    </tr>
-    <tr>
-      <td><code>border</code></td>
-      <td><code>border-border</code></td>
-      <td>区切り線・入力欄の枠</td>
-      <td><code>zinc-200</code></td>
-      <td><code>zinc-700</code></td>
-    </tr>
-    <tr>
-      <td><code>accent</code></td>
-      <td><code>text-accent</code> / <code>bg-accent</code></td>
-      <td>リンク・選択中・主ボタン・フォーカス</td>
-      <td><code>774-nevy-700</code></td>
-      <td><code>774-nevy-300</code></td>
-    </tr>
-    <tr>
-      <td><code>accent-foreground</code></td>
-      <td><code>text-accent-foreground</code></td>
-      <td><code>accent</code> の地の上の文字</td>
-      <td><code>white</code></td>
-      <td><code>zinc-950</code></td>
-    </tr>
-    <tr>
-      <td><code>live</code></td>
-      <td><code>bg-live</code></td>
-      <td>配信中（配信中の表示以外には使わない）</td>
-      <td><code>774-pink-700</code></td>
-      <td><code>774-pink-700</code></td>
-    </tr>
-    <tr>
-      <td><code>live-foreground</code></td>
-      <td><code>text-live-foreground</code></td>
-      <td><code>live</code> の地の上の文字</td>
-      <td><code>white</code></td>
-      <td><code>white</code></td>
-    </tr>
-    <tr>
-      <td><code>danger</code></td>
-      <td><code>text-danger</code></td>
-      <td>エラー・削除などの危険な操作</td>
-      <td><code>red-700</code></td>
-      <td><code>red-300</code></td>
-    </tr>
-    <tr>
-      <td><code>success</code></td>
-      <td><code>text-success</code></td>
-      <td>成功</td>
-      <td><code>green-800</code></td>
-      <td><code>green-300</code></td>
-    </tr>
-    <tr>
-      <td><code>warning</code></td>
-      <td><code>text-warning</code></td>
-      <td>注意</td>
-      <td><code>yellow-800</code></td>
-      <td><code>yellow-300</code></td>
-    </tr>
-    <tr>
-      <td><code>primary</code></td>
-      <td><code>bg-primary</code></td>
-      <td>ブランドの地（フッターなど）</td>
-      <td><code>774-nevy-950</code></td>
-      <td><code>774-nevy-950</code></td>
-    </tr>
-    <tr>
-      <td><code>primary-foreground</code></td>
-      <td><code>text-primary-foreground</code></td>
-      <td><code>primary</code> の地の上の文字</td>
-      <td><code>774-nevy-50</code></td>
-      <td><code>774-nevy-50</code></td>
-    </tr>
-    <tr>
-      <td><code>secondary-pink</code></td>
-      <td><code>bg-secondary-pink</code></td>
-      <td>ピンクの地</td>
-      <td><code>774-pink-500</code></td>
-      <td><code>774-pink-500</code></td>
-    </tr>
-    <tr>
-      <td><code>secondary-pink-foreground</code></td>
-      <td><code>text-secondary-pink-foreground</code></td>
-      <td><code>secondary-pink</code> の地の上の文字</td>
-      <td><code>774-pink-50</code></td>
-      <td><code>774-pink-50</code></td>
-    </tr>
-    <tr>
-      <td><code>secondary-blue</code></td>
-      <td><code>bg-secondary-blue</code></td>
-      <td>青の地</td>
-      <td><code>774-blue-700</code></td>
-      <td><code>774-blue-700</code></td>
-    </tr>
-    <tr>
-      <td><code>secondary-blue-foreground</code></td>
-      <td><code>text-secondary-blue-foreground</code></td>
-      <td><code>secondary-blue</code> の地の上の文字</td>
-      <td><code>774-blue-50</code></td>
-      <td><code>774-blue-50</code></td>
-    </tr>
-  </tbody>
-</table>
-
-文字と地の組み合わせ（`foreground` / `muted-foreground` / `accent` / 状態色 ×
-`background` / `surface` / `muted`、`accent-foreground` × `accent`、
-`live-foreground` × `live`、`primary-foreground` × `primary`）は、両モードで
-コントラスト比 4.5:1 以上になることを `packages/ui/src/colors.test.ts` で確認しています。
 
 <ColorPalette>
   <ColorItem
@@ -188,7 +29,7 @@ OS の設定にかかわらずライトの値に固定できます（現在は `
   <ColorItem
     colors={{
       Muted: 'var(--color-muted)',
-      'Muted Foreground': 'var(--color-muted-foreground)',
+      'Muted Text': 'var(--text-color-muted)',
     }}
     subtitle="スケルトン・ホバー・表の見出し行と、補助情報"
     title="Muted"
