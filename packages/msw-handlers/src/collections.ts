@@ -34,6 +34,22 @@ export const thumbnails = new Collection({
   }),
 })
 
+// Profile images (icons) of YouTube channels and Twitch users
+export const profileImages = new Collection({
+  schema: z.object({
+    blur_data_url: z.string(),
+    created_at: z.string(),
+    etag: z.string().nullable(),
+    height: z.number(),
+    id: z.string().uuid(),
+    path: z.string(),
+    twitch_user_id: z.string().uuid().nullable(),
+    updated_at: z.string(),
+    width: z.number(),
+    youtube_channel_id: z.string().uuid().nullable(),
+  }),
+})
+
 // Videos collection
 export const videos = new Collection({
   schema: z.object({
@@ -266,6 +282,25 @@ export async function seedCollections() {
         talent_id: talent.id,
         youtube_channel_id: `UC${faker.string.alphanumeric(22)}`,
         youtube_handle: `@${faker.internet.username()}`,
+      }),
+    ),
+  )
+
+  // Create profile images. The last channel has none, to cover the fallback
+  // to a default icon.
+  await Promise.all(
+    createdChannels.slice(0, -1).map((channel) =>
+      profileImages.create({
+        blur_data_url: `data:image/webp;base64,${faker.string.alphanumeric(50)}`,
+        created_at: faker.date.past({ years: 1 }).toISOString(),
+        etag: `"${faker.string.alphanumeric(32)}"`,
+        height: 256,
+        id: faker.string.uuid(),
+        path: `youtube/${channel.youtube_channel_id}/${faker.string.alphanumeric(21)}.webp`,
+        twitch_user_id: null,
+        updated_at: faker.date.recent().toISOString(),
+        width: 256,
+        youtube_channel_id: channel.id,
       }),
     ),
   )

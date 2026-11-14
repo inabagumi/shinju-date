@@ -235,6 +235,73 @@ describe('Supabase Handlers', () => {
     })
   })
 
+  describe('Profile images', () => {
+    it('should embed the profile image of YouTube channels', async () => {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/youtube_channels?select=id,profile_image:profile_images(id,path,width,height)',
+      )
+      const channels = (await response.json()) as {
+        id: string
+        profile_image: {
+          height: number
+          id: string
+          path: string
+          width: number
+        } | null
+      }[]
+
+      expect(response.ok).toBe(true)
+
+      const withImage = channels.filter((channel) => channel.profile_image)
+
+      // Every channel but one has an icon, to cover the fallback as well.
+      expect(withImage).toHaveLength(channels.length - 1)
+      for (const { profile_image: image } of withImage) {
+        expect(image?.width).toBe(image?.height)
+        expect(image?.path).toMatch(/^youtube\/UC\w+\/\w+\.webp$/)
+      }
+    })
+
+    it('should look up a profile image by ID', async () => {
+      const listResponse = await fetch(
+        'https://fake.supabase.test/rest/v1/profile_images?select=id,path',
+      )
+      const [image] = (await listResponse.json()) as {
+        id: string
+        path: string
+      }[]
+
+      const response = await fetch(
+        `https://fake.supabase.test/rest/v1/profile_images?select=path&id=eq.${image?.id}`,
+        { headers: { Accept: 'application/vnd.pgrst.object+json' } },
+      )
+
+      expect(response.ok).toBe(true)
+      expect(await response.json()).toEqual({ path: image?.path })
+    })
+
+    it('should delete the profile image with its YouTube channel', async () => {
+      const listResponse = await fetch(
+        'https://fake.supabase.test/rest/v1/profile_images?select=id,youtube_channel_id',
+      )
+      const [image] = (await listResponse.json()) as {
+        id: string
+        youtube_channel_id: string
+      }[]
+
+      await fetch(
+        `https://fake.supabase.test/rest/v1/youtube_channels?id=eq.${image?.youtube_channel_id}`,
+        { method: 'DELETE' },
+      )
+
+      const response = await fetch(
+        `https://fake.supabase.test/rest/v1/profile_images?select=id&id=eq.${image?.id}`,
+      )
+
+      expect(await response.json()).toEqual([])
+    })
+  })
+
   describe('Query parameter parsing', () => {
     it('should handle limit parameter', async () => {
       const response = await fetch(
@@ -279,6 +346,41 @@ describe('Supabase Handlers', () => {
         expect(data.signedURL).toContain(
           'https://fake.supabase.test/storage/v1/object/public/thumbnails/subfolder/test.jpg',
         )
+      })
+    })
+
+    describe('profile-images bucket', () => {
+      it('should sign URLs and serve a square dummy image', async () => {
+        const signResponse = await fetch(
+          'https://fake.supabase.test/storage/v1/object/sign/profile-images/youtube/UC1/a.webp',
+          { method: 'POST' },
+        )
+        const { signedURL } = (await signResponse.json()) as {
+          signedURL: string
+        }
+
+        expect(signedURL).toBe(
+          'https://fake.supabase.test/storage/v1/object/public/profile-images/youtube/UC1/a.webp',
+        )
+
+        const response = await fetch(signedURL)
+
+        expect(response.ok).toBe(true)
+        expect(await response.text()).toContain('width="256" height="256"')
+      })
+
+      it('should accept object removal', async () => {
+        const response = await fetch(
+          'https://fake.supabase.test/storage/v1/object/profile-images',
+          {
+            body: JSON.stringify({ prefixes: ['youtube/UC1/a.webp'] }),
+            headers: { 'Content-Type': 'application/json' },
+            method: 'DELETE',
+          },
+        )
+
+        expect(response.ok).toBe(true)
+        expect(await response.json()).toEqual([{ name: 'youtube/UC1/a.webp' }])
       })
     })
 

@@ -51,6 +51,7 @@ MSW（Mock Service Worker）は、開発・テスト環境でAPIリクエスト�
 - `videos` - 動画情報
 - `channels` - チャンネル情報
 - `thumbnails` - サムネイル画像
+- `profile_images` - YouTubeチャンネル／Twitchユーザーのアイコン画像
 - `terms` - 検索用語
 - `youtube_videos` - YouTube動画マッピング
 - `youtube_channels` - YouTubeチャンネルマッピング

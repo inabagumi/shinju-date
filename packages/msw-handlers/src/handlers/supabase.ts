@@ -1,6 +1,7 @@
 import { HttpResponse, http } from 'msw'
 import {
   announcements,
+  profileImages,
   seedCollections,
   talents,
   terms,
@@ -46,6 +47,10 @@ async function getMockVideos() {
 
 async function getMockChannels() {
   return await youtubeChannels.findMany()
+}
+
+async function getMockProfileImages() {
+  return await profileImages.findMany()
 }
 
 async function getMockTerms() {
@@ -268,6 +273,21 @@ async function resolveRelation(
       return item.id
         ? await youtubeChannels.findMany((q) => q.where({ talent_id: item.id }))
         : []
+    case 'profile_images':
+      // One-to-one with youtube_channels / twitch_users
+      if ('youtube_handle' in item) {
+        return await profileImages.findFirst((q) =>
+          q.where({ youtube_channel_id: item.id }),
+        )
+      }
+
+      if ('twitch_login_name' in item) {
+        return await profileImages.findFirst((q) =>
+          q.where({ twitch_user_id: item.id }),
+        )
+      }
+
+      return null
     case 'twitch_users':
       // No Twitch mock data yet. Embedding from talents is one-to-many
       // (empty array), while embedding from twitch_videos is many-to-one.
@@ -554,6 +574,43 @@ export const supabaseHandlers = [
     },
   ),
 
+  // Profile images table
+  http.get(
+    'https://fake.supabase.test/rest/v1/profile_images',
+    async ({ request }) => {
+      const url = new URL(request.url)
+      const query = parseSupabaseQuery(url)
+
+      let filteredData = applySupabaseFilters(
+        await getMockProfileImages(),
+        query,
+      )
+      filteredData = await applySelect(filteredData, query.select)
+
+      // maybeSingle()/single() ask for an object instead of an array
+      const accept = request.headers.get('accept') || ''
+      if (accept.includes('application/vnd.pgrst.object+json')) {
+        const [row] = filteredData
+
+        if (!row) {
+          return HttpResponse.json(
+            {
+              code: 'PGRST116',
+              details: 'The result contains 0 rows',
+              hint: null,
+              message: 'Cannot coerce the result to a single JSON object',
+            },
+            { status: 406 },
+          )
+        }
+
+        return HttpResponse.json(row)
+      }
+
+      return HttpResponse.json(filteredData)
+    },
+  ),
+
   // Terms table
   http.get('https://fake.supabase.test/rest/v1/terms', async ({ request }) => {
     const url = new URL(request.url)
@@ -744,7 +801,8 @@ export const supabaseHandlers = [
       const url = new URL(request.url)
       const query = parseSupabaseQuery(url)
 
-      const filteredData = applySupabaseFilters(await getMockChannels(), query)
+      let filteredData = applySupabaseFilters(await getMockChannels(), query)
+      filteredData = await applySelect(filteredData, query.select)
 
       if (query.returnCount) {
         return HttpResponse.json(filteredData, {
@@ -1016,6 +1074,10 @@ export const supabaseHandlers = [
 
           for (const match of matches) {
             await youtubeChannels.delete((q) => q.where({ id: match.id }))
+            // ON DELETE CASCADE
+            await profileImages.delete((q) =>
+              q.where({ youtube_channel_id: match.id }),
+            )
           }
         }
       }
@@ -1349,7 +1411,7 @@ export const supabaseHandlers = [
   // Storage endpoints
   // Use :path* to match any nested path structure
   http.post(
-    'https://fake.supabase.test/storage/v1/object/sign/thumbnails/:path*',
+    'https://fake.supabase.test/storage/v1/object/sign/:bucket/:path*',
     async ({ request, params }) => {
       const url = new URL(request.url)
       // Log the full URL for debugging
@@ -1357,14 +1419,15 @@ export const supabaseHandlers = [
 
       // Extract path from params (handles nested paths correctly)
       // :path* returns an array when there are multiple segments
+      const bucket = String(params['bucket'])
       const pathParam = params['path']
       const path = Array.isArray(pathParam) ? pathParam.join('/') : pathParam
 
-      console.log('[MSW Storage] Extracted path:', path)
+      console.log('[MSW Storage] Extracted path:', bucket, path)
 
-      // Don't add thumbnails/ prefix again - the path parameter from the SDK
+      // Don't add the bucket prefix again - the path parameter from the SDK
       // is relative to the bucket, so it's just "video1.jpg" not "/thumbnails/video1.jpg"
-      const signedUrl = `https://fake.supabase.test/storage/v1/object/public/thumbnails/${path}`
+      const signedUrl = `https://fake.supabase.test/storage/v1/object/public/${bucket}/${path}`
       console.log('[MSW Storage] Returning signedURL:', signedUrl)
 
       // Return a mock signed URL
@@ -1375,14 +1438,16 @@ export const supabaseHandlers = [
     },
   ),
 
-  // Handle all thumbnail image fetches with a flexible pattern
+  // Handle all stored image fetches with a flexible pattern
   // Use :path* to match any path including nested directories
   http.get(
-    'https://fake.supabase.test/storage/v1/object/public/thumbnails/:path*',
-    async ({ request }) => {
-      console.log('[MSW Storage] GET thumbnail image called:', request.url)
-      const dummyImage =
-        '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" />'
+    'https://fake.supabase.test/storage/v1/object/public/:bucket/:path*',
+    async ({ params, request }) => {
+      console.log('[MSW Storage] GET image called:', request.url)
+      // Profile images are square; thumbnails are 16:9.
+      const [width, height] =
+        params['bucket'] === 'profile-images' ? [256, 256] : [1280, 720]
+      const dummyImage = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" />`
 
       return new HttpResponse(dummyImage, {
         headers: {
@@ -1390,6 +1455,18 @@ export const supabaseHandlers = [
           'Content-Type': 'image/svg+xml',
         },
       })
+    },
+  ),
+
+  // Removing objects (e.g. profile images of deleted accounts)
+  http.delete(
+    'https://fake.supabase.test/storage/v1/object/:bucket',
+    async ({ request }) => {
+      const { prefixes = [] } = (await request.json()) as {
+        prefixes?: string[]
+      }
+
+      return HttpResponse.json(prefixes.map((name) => ({ name })))
     },
   ),
 ]
