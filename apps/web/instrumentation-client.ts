@@ -35,17 +35,16 @@ if (dsn) {
       Sentry.init({
         dsn,
         enabled: environment === 'production',
-        enableLogs: true,
         environment,
         integrations: [
           Sentry.browserTracingIntegration(),
           Sentry.browserProfilingIntegration(),
           Sentry.replayIntegration(),
         ],
-        profilesSampleRate: 0.333,
+        profileLifecycle: 'trace',
+        profileSessionSampleRate: 0.333,
         replaysOnErrorSampleRate: 1.0,
         replaysSessionSampleRate: 0.1,
-        sendDefaultPii: true,
         tracesSampleRate: 0.333,
       })
     })

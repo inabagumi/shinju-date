@@ -18,9 +18,7 @@ export async function register() {
     const commonSentryOptions = {
       dsn,
       enabled: environment === 'production',
-      enableLogs: true,
       environment,
-      sendDefaultPii: true,
       tracesSampleRate: 1.0,
     } satisfies Parameters<typeof import('@sentry/nextjs').init>[0]
 
@@ -45,7 +43,8 @@ export async function register() {
             tracing: true,
           }),
         ],
-        profilesSampleRate: 1.0,
+        profileLifecycle: 'trace',
+        profileSessionSampleRate: 1.0,
       })
     }
 
