@@ -89,18 +89,12 @@ async function getLatestFailures(
     throw error
   }
 
-  return data.flatMap((row) =>
-    row.account_id && row.platform && row.finished_at
-      ? [
-          {
-            accountId: row.account_id,
-            error: row.error,
-            finishedAt: row.finished_at,
-            provider: row.platform,
-          },
-        ]
-      : [],
-  )
+  return data.map((row) => ({
+    accountId: row.account_id,
+    error: row.error,
+    finishedAt: row.finished_at,
+    provider: row.platform,
+  }))
 }
 
 /**

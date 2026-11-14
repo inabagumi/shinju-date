@@ -258,8 +258,9 @@ isOneToOne: false
           Views: {
             "video_backfill_latest_jobs": {
                   Row: {
-                    "account_id": string | null,"added": number | null,"created_at": string | null,"error": string | null,"finished_at": string | null,"id": string | null,"pages": number | null,"platform": Database["public"]['Enums']["platform_type"] | null,"requested_at": string | null,"requested_by": string | null,"run_id": string | null,"started_at": string | null,"status": Database["public"]['Enums']["video_backfill_job_status"] | null,"talent_id": string | null
+                    "account_id": string,"added": number,"created_at": string,"error": string | null,"finished_at": string,"id": string,"pages": number,"platform": Database["public"]['Enums']["platform_type"],"requested_at": string,"requested_by": string | null,"run_id": string | null,"started_at": string | null,"status": Database["public"]['Enums']["video_backfill_job_status"],"talent_id": string
                   }
+                  ComputedFields: never
                   Relationships: [
                     {
       foreignKeyName: "video_backfill_jobs_talent_id_fkey"
