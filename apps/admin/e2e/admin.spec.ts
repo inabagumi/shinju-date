@@ -101,6 +101,28 @@ test.describe('Admin App - Videos Management', () => {
     })
   }
 
+  test('should display a video detail page from the list', async ({ page }) => {
+    await page.goto('http://localhost:4000/videos')
+
+    const href = await page
+      .locator('tbody tr a[href^="/videos/"]')
+      .first()
+      .getAttribute('href')
+    await page.goto(`http://localhost:4000${href}`)
+
+    await expect(page.getByRole('heading', { level: 1 })).not.toBeEmpty()
+    await expect(page).toHaveTitle(/^(?!undefined).+ - 動画詳細 - /)
+    await expect(page.getByText('Temporal error')).toHaveCount(0)
+  })
+
+  test('should display not found for a missing video', async ({ page }) => {
+    await page.goto(
+      'http://localhost:4000/videos/00000000-0000-0000-0000-000000000000',
+    )
+
+    await expect(page.getByText('ページが見つかりません')).toBeVisible()
+  })
+
   test('should allow filtering videos', async ({ page }) => {
     await page.goto('http://localhost:4000/videos')
     await page.waitForLoadState('networkidle')
@@ -113,6 +135,42 @@ test.describe('Admin App - Videos Management', () => {
       await searchInput.fill('test')
       await page.waitForLoadState('networkidle')
     }
+  })
+})
+
+test.describe('Admin App - Talents Management', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('http://localhost:4000/login')
+    await page.waitForLoadState('networkidle')
+
+    await page
+      .locator('input[type="email"], input[name="email"]')
+      .fill('admin@example.com')
+    await page
+      .locator('input[type="password"], input[name="password"]')
+      .fill('password123')
+    await page.locator('button[type="submit"]').click()
+    await page.waitForURL((url) => !url.pathname.startsWith('/login'))
+  })
+
+  test('should display a talent detail page from the list', async ({
+    page,
+  }) => {
+    await page.goto('http://localhost:4000/talents')
+
+    const href = await page
+      .locator('a[href^="/talents/"]')
+      .evaluateAll((links) =>
+        links
+          .map((link) => link.getAttribute('href'))
+          .find((value) => value && /^\/talents\/[0-9a-f-]{36}$/.test(value)),
+      )
+    expect(href).toBeTruthy()
+    await page.goto(`http://localhost:4000${href}`)
+
+    await expect(page.getByRole('heading', { level: 1 })).not.toBeEmpty()
+    await expect(page).toHaveTitle(/^(?!undefined).+ - タレント詳細 - /)
+    await expect(page.getByText('Temporal error')).toHaveCount(0)
   })
 })
 
