@@ -27,7 +27,11 @@ export function toBackfillHistoryRow(
     finished_at: toTimestamp(job.finishedAt),
     pages: job.pages,
     platform: job.provider,
-    requested_at: toTimestamp(job.requestedAt),
+    // Identifies the request together with the account (the unique key), so
+    // it keeps the precision of the queue: a request made again within the
+    // same second is a different request. It is never compared with times
+    // from the platforms, which is what toDBString normalizes for.
+    requested_at: Temporal.Instant.from(job.requestedAt).toString(),
     requested_by: job.requestedBy,
     run_id: job.runId ?? null,
     started_at: job.startedAt ? toTimestamp(job.startedAt) : null,

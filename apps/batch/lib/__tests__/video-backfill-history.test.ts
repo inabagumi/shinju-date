@@ -44,7 +44,7 @@ function createSupabaseClient(error: { message: string } | null = null) {
 }
 
 describe('toBackfillHistoryRow', () => {
-  it('converts a finished job, with timestamps in seconds', () => {
+  it('converts a finished job, keeping the request time as queued', () => {
     expect(toBackfillHistoryRow(createJob())).toEqual({
       account_id: 'channel-row-1',
       added: 12,
@@ -52,7 +52,7 @@ describe('toBackfillHistoryRow', () => {
       finished_at: '2026-11-14T00:10:00Z',
       pages: 3,
       platform: 'youtube',
-      requested_at: '2026-11-14T00:00:00Z',
+      requested_at: '2026-11-14T00:00:00.456Z',
       requested_by: 'user-1',
       run_id: 'run-1',
       started_at: '2026-11-14T00:01:00Z',
@@ -80,6 +80,17 @@ describe('toBackfillHistoryRow', () => {
         status: 'failed',
       }),
     )
+  })
+
+  it('tells apart requests made within the same second', () => {
+    const first = toBackfillHistoryRow(
+      createJob({ requestedAt: '2026-11-14T00:00:00.100Z', status: 'failed' }),
+    )
+    const second = toBackfillHistoryRow(
+      createJob({ requestedAt: '2026-11-14T00:00:00.900Z' }),
+    )
+
+    expect(first.requested_at).not.toBe(second.requested_at)
   })
 
   it.each(['pending', 'running'] as const)(
