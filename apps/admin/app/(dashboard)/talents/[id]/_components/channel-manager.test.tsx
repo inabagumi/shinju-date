@@ -1,3 +1,4 @@
+import { ToastProvider, ToastViewport } from '@shinju-date/ui'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -15,18 +16,21 @@ const { ChannelManager } = await import('./channel-manager')
 
 function renderManager() {
   return render(
-    <ChannelManager
-      channels={[
-        {
-          id: 'channel-row-1',
-          name: 'Main Channel',
-          youtube_channel_id: 'UC0000000000000000000001',
-          youtube_handle: '@main',
-        },
-      ]}
-      isDeleted={false}
-      talentId="talent-1"
-    />,
+    <ToastProvider>
+      <ChannelManager
+        channels={[
+          {
+            id: 'channel-row-1',
+            name: 'Main Channel',
+            youtube_channel_id: 'UC0000000000000000000001',
+            youtube_handle: '@main',
+          },
+        ]}
+        isDeleted={false}
+        talentId="talent-1"
+      />
+      <ToastViewport />
+    </ToastProvider>,
   )
 }
 
@@ -74,5 +78,34 @@ describe('ChannelManager', () => {
         'talent-1',
       ),
     )
+  })
+
+  it('shows the error in a toast when the removal fails', async () => {
+    mocks.removeYouTubeChannelAction.mockResolvedValue({
+      error: '削除できませんでした。',
+      success: false,
+    })
+
+    renderManager()
+
+    fireEvent.click(screen.getByRole('button', { name: 'チャンネルを削除' }))
+    fireEvent.click(screen.getByRole('button', { name: '削除' }))
+
+    expect(
+      await screen.findByText('削除できませんでした。'),
+    ).toBeInTheDocument()
+  })
+
+  it('shows a fallback error in a toast when the removal throws', async () => {
+    mocks.removeYouTubeChannelAction.mockRejectedValue(new Error('network'))
+
+    renderManager()
+
+    fireEvent.click(screen.getByRole('button', { name: 'チャンネルを削除' }))
+    fireEvent.click(screen.getByRole('button', { name: '削除' }))
+
+    expect(
+      await screen.findByText('チャンネルの削除に失敗しました。'),
+    ).toBeInTheDocument()
   })
 })
