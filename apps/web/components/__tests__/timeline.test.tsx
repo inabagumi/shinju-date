@@ -1,13 +1,7 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
-import type { ReactNode } from 'react'
-import { describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import type { Video } from '@/lib/fetchers'
-import Timeline from '../timeline'
-
-vi.mock('@/lib/fetchers', () => ({
-  fetchUpcomingVideos: vi.fn(() => new Promise(() => {})),
-}))
+import Timeline, { formatTimelineDate } from '../timeline'
 
 vi.mock('../video-card', () => ({
   default: ({ value }: { value: Video }) => <article>{value.title}</article>,
@@ -18,15 +12,7 @@ function createVideo(id: string, publishedAt: string): Video {
   return { id, published_at: publishedAt, title: id } as Video
 }
 
-function renderWithQueryClient(ui: ReactNode) {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  })
-
-  render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>)
-}
-
-function getGroup(name: RegExp) {
+function getGroup(name: RegExp | string) {
   return screen.getByRole('region', { name })
 }
 
@@ -36,11 +22,50 @@ function getCardTitles(group: HTMLElement) {
     .map((card) => card.textContent)
 }
 
+describe('formatTimelineDate', () => {
+  const today = Temporal.PlainDate.from('2026-11-14')
+
+  test('should use words for today and tomorrow', () => {
+    expect(formatTimelineDate(today, today)).toBe('今日')
+    expect(
+      formatTimelineDate(Temporal.PlainDate.from('2026-11-15'), today),
+    ).toBe('明日')
+  })
+
+  test('should show the date and weekday after tomorrow', () => {
+    expect(
+      formatTimelineDate(Temporal.PlainDate.from('2026-11-16'), today),
+    ).toBe('11/16（月）')
+    expect(
+      formatTimelineDate(Temporal.PlainDate.from('2026-11-22'), today),
+    ).toBe('11/22（日）')
+  })
+
+  test('should include the year when the date is in another year', () => {
+    expect(
+      formatTimelineDate(
+        Temporal.PlainDate.from('2027-01-02'),
+        Temporal.PlainDate.from('2026-12-31'),
+      ),
+    ).toBe('2027/01/02（土）')
+  })
+})
+
 describe('Timeline', () => {
+  beforeEach(() => {
+    vi.spyOn(Temporal.Now, 'zonedDateTimeISO').mockReturnValue(
+      Temporal.ZonedDateTime.from('2026-11-14T12:00:00+09:00[Asia/Tokyo]'),
+    )
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   test('should keep each single-video date next to its own card', () => {
-    renderWithQueryClient(
+    render(
       <Timeline
-        prefetchedData={[
+        videos={[
           // Asia/Tokyo: 2026-11-16 20:00
           createVideo('video-c', '2026-11-16T11:00:00Z'),
           // Asia/Tokyo: 2026-11-14 20:00
@@ -56,11 +81,7 @@ describe('Timeline', () => {
     expect(groups).toHaveLength(3)
     expect(
       groups.map((group) => within(group).getByRole('heading').textContent),
-    ).toEqual([
-      expect.stringMatching(/^2026\/11\/14/),
-      expect.stringMatching(/^2026\/11\/15/),
-      expect.stringMatching(/^2026\/11\/16/),
-    ])
+    ).toEqual(['今日', '明日', '11/16（月）'])
 
     for (const [index, title] of ['video-a', 'video-b', 'video-c'].entries()) {
       const group = groups[index] as HTMLElement
@@ -70,10 +91,10 @@ describe('Timeline', () => {
     }
   })
 
-  test('should group multiple videos on the same date under one heading', () => {
-    renderWithQueryClient(
+  test('should group multiple videos on the same date in order of start time', () => {
+    render(
       <Timeline
-        prefetchedData={[
+        videos={[
           // Asia/Tokyo: 2026-11-15 00:30 (next day in JST)
           createVideo('video-d', '2026-11-14T15:30:00Z'),
           // Asia/Tokyo: 2026-11-14 21:00
@@ -86,8 +107,8 @@ describe('Timeline', () => {
       />,
     )
 
-    const firstGroup = getGroup(/^2026\/11\/14/)
-    const secondGroup = getGroup(/^2026\/11\/15/)
+    const firstGroup = getGroup('今日')
+    const secondGroup = getGroup('明日')
 
     expect(getCardTitles(firstGroup)).toEqual(['video-a', 'video-b', 'video-c'])
     expect(within(firstGroup).getByText('3件')).toBeInTheDocument()
@@ -95,25 +116,35 @@ describe('Timeline', () => {
     expect(within(secondGroup).getByText('1件')).toBeInTheDocument()
   })
 
-  test('should place the date heading before its cards and not on the opposite side', () => {
-    renderWithQueryClient(
-      <Timeline
-        prefetchedData={[createVideo('video-a', '2026-11-14T11:00:00Z')]}
-      />,
+  test('should place the date heading before its cards', () => {
+    render(
+      <Timeline videos={[createVideo('video-a', '2026-11-16T11:00:00Z')]} />,
     )
 
-    const group = getGroup(/^2026\/11\/14/)
-    const heading = within(group).getByRole('heading', { level: 2 })
+    const group = getGroup('11/16（月）')
+    const heading = within(group).getByRole('heading', { level: 3 })
     const [card] = within(group).getAllByRole('article')
 
-    expect(heading).not.toHaveClass('text-right')
     expect(
       heading.compareDocumentPosition(card as HTMLElement) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
-    expect(within(heading).getByText(/2026\/11\/14/)).toHaveAttribute(
+    expect(within(heading).getByText('11/16（月）')).toHaveAttribute(
       'dateTime',
-      '2026-11-14',
+      '2026-11-16',
+    )
+  })
+
+  test('should show the start time next to each card', () => {
+    render(
+      <Timeline videos={[createVideo('video-a', '2026-11-14T11:00:00Z')]} />,
+    )
+
+    const group = getGroup('今日')
+
+    expect(within(group).getByText('20:00')).toHaveAttribute(
+      'dateTime',
+      '2026-11-14T20:00:00+09:00',
     )
   })
 })

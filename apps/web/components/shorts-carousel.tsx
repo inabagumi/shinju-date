@@ -6,15 +6,20 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Video } from '@/lib/fetchers'
 import VideoCard, { VideoCardSkeleton } from './video-card'
 
+const SLIDE_CLASS_NAME =
+  'min-w-0 shrink-0 basis-[85%] md:basis-[calc(25%-1.125rem)]'
+
+const NAVIGATION_BUTTON_CLASS_NAME =
+  'rounded-full border border-border bg-surface p-2 text-foreground shadow-overlay transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50'
+
 export function ShortsCarouselSkeleton() {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-4 md:gap-6">
-        <VideoCardSkeleton variant="short" />
-        <VideoCardSkeleton variant="short" />
-        <VideoCardSkeleton variant="short" />
-        <VideoCardSkeleton variant="short" />
-      </div>
+    <div className="flex gap-4 overflow-hidden md:gap-6">
+      {Array.from({ length: 4 }, (_, index) => (
+        <div className={SLIDE_CLASS_NAME} key={index}>
+          <VideoCardSkeleton variant="short" />
+        </div>
+      ))}
     </div>
   )
 }
@@ -67,7 +72,7 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
       <div className="absolute top-1/2 -left-4 z-10 hidden -translate-y-1/2 md:block">
         <button
           aria-label="前へ"
-          className="rounded-full bg-774-nevy-100 p-2 shadow-lg transition-colors hover:bg-774-nevy-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+          className={NAVIGATION_BUTTON_CLASS_NAME}
           disabled={!canScrollPrev}
           onClick={scrollPrev}
           type="button"
@@ -78,7 +83,7 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
       <div className="absolute top-1/2 -right-4 z-10 hidden -translate-y-1/2 md:block">
         <button
           aria-label="次へ"
-          className="rounded-full bg-774-nevy-100 p-2 shadow-lg transition-colors hover:bg-774-nevy-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+          className={NAVIGATION_BUTTON_CLASS_NAME}
           disabled={!canScrollNext}
           onClick={scrollNext}
           type="button"
@@ -92,10 +97,7 @@ export default function ShortsCarousel({ videos }: { videos: Video[] }) {
         <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex gap-4 md:gap-6">
             {videos.map((video) => (
-              <div
-                className="min-w-0 shrink-0 basis-[85%] md:basis-[calc(25%-1.125rem)]"
-                key={video.id}
-              >
+              <div className={SLIDE_CLASS_NAME} key={video.id}>
                 <VideoCard
                   dateTimeFormatOptions={{
                     dateStyle: 'short',

@@ -6,12 +6,17 @@ import {
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Suspense } from 'react'
-import LiveAndRecent, {
-  LiveAndRecentSkeleton,
-} from '@/components/live-and-recent'
-import NoResults from '@/components/no-results'
+import {
+  type DashboardVideos,
+  LiveSection,
+  RecentSection,
+  RecentSectionSkeleton,
+  ScheduleSection,
+  ScheduleSectionSkeleton,
+  ShortsSection,
+  ShortsSectionSkeleton,
+} from '@/components/home-sections'
 import { MAIN_CONTENT_ID } from '@/components/skip-link'
-import Timeline, { TimelineSkeleton } from '@/components/timeline'
 import { fetchDashboardVideos, fetchUpcomingVideos } from '@/lib/fetchers'
 import hero from './_assets/hero.jpg'
 
@@ -35,26 +40,35 @@ export const metadata: Metadata = {
   },
 }
 
-async function HomeTimeline() {
-  const videos = await fetchUpcomingVideos()
-
-  return videos.length > 0 ? (
-    <Timeline prefetchedData={videos} />
-  ) : (
-    <NoResults message="登録されている配信予定の動画がありません。" />
-  )
+interface DashboardSectionProps {
+  dashboardVideos: Promise<DashboardVideos>
 }
 
-async function HomeLiveAndRecent() {
-  const data = await fetchDashboardVideos()
+async function HomeLive({ dashboardVideos }: DashboardSectionProps) {
+  return <LiveSection prefetchedData={await dashboardVideos} />
+}
 
-  return <LiveAndRecent prefetchedData={data} />
+async function HomeSchedule() {
+  const videos = await fetchUpcomingVideos()
+
+  return <ScheduleSection prefetchedData={videos} />
+}
+
+async function HomeRecent({ dashboardVideos }: DashboardSectionProps) {
+  return <RecentSection prefetchedData={await dashboardVideos} />
+}
+
+async function HomeShorts({ dashboardVideos }: DashboardSectionProps) {
+  return <ShortsSection prefetchedData={await dashboardVideos} />
 }
 
 export default function SchedulePage() {
+  // 配信中・新着動画・ショートは1回の取得を3つのセクションで分け合う
+  const dashboardVideos = fetchDashboardVideos()
+
   return (
     <>
-      <div className="relative aspect-4/3 w-full bg-slate-700 sm:aspect-video sm:max-h-[50vh]">
+      <div className="relative aspect-4/3 w-full bg-slate-700 sm:aspect-auto sm:h-90">
         <div className="absolute right-0 bottom-0 left-0 z-20 bg-linear-to-t from-slate-900/80 text-white">
           <h1 className="px-8 py-6 text-center md:text-left">
             <svg
@@ -83,12 +97,21 @@ export default function SchedulePage() {
         className="mx-auto max-w-6xl scroll-mt-20 space-y-12 px-4 pt-12"
         id={MAIN_CONTENT_ID}
       >
-        <Suspense fallback={<LiveAndRecentSkeleton />}>
-          <HomeLiveAndRecent />
+        {/* 配信中が0件のときはセクションごと表示しないため、読み込み中も何も置かない */}
+        <Suspense fallback={null}>
+          <HomeLive dashboardVideos={dashboardVideos} />
         </Suspense>
 
-        <Suspense fallback={<TimelineSkeleton />}>
-          <HomeTimeline />
+        <Suspense fallback={<ScheduleSectionSkeleton />}>
+          <HomeSchedule />
+        </Suspense>
+
+        <Suspense fallback={<RecentSectionSkeleton />}>
+          <HomeRecent dashboardVideos={dashboardVideos} />
+        </Suspense>
+
+        <Suspense fallback={<ShortsSectionSkeleton />}>
+          <HomeShorts dashboardVideos={dashboardVideos} />
         </Suspense>
       </main>
     </>

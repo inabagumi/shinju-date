@@ -11,10 +11,11 @@ type VideoCardListVariant = Exclude<VideoCardVariant, 'short'>
 /**
  * 横型（`row`）のカードは 640px 未満で1画面に4〜5件見えるよう、間隔を詰める。
  */
-const LIST_CLASS_NAMES: Record<VideoCardListVariant, string> = {
-  grid: 'grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 sm:gap-y-10 lg:grid-cols-3',
-  row: 'grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 sm:gap-y-10 lg:grid-cols-3',
-}
+export const VIDEO_CARD_LIST_CLASS_NAMES: Record<VideoCardListVariant, string> =
+  {
+    grid: 'grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 sm:gap-y-10 lg:grid-cols-3',
+    row: 'grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 sm:gap-y-10 lg:grid-cols-3',
+  }
 
 interface VideoCardListSkeletonProps {
   className?: string | undefined
@@ -28,7 +29,7 @@ export function VideoCardListSkeleton({
   variant = 'row',
 }: VideoCardListSkeletonProps) {
   return (
-    <div className={twMerge(LIST_CLASS_NAMES[variant], className)}>
+    <div className={twMerge(VIDEO_CARD_LIST_CLASS_NAMES[variant], className)}>
       {Array.from({ length: count }, (_, index) => (
         <VideoCardSkeleton key={index} variant={variant} />
       ))}
@@ -53,7 +54,7 @@ export default function VideoCardList({
   ...props
 }: VideoCardListProps) {
   return (
-    <div className={twMerge(LIST_CLASS_NAMES[variant], className)}>
+    <div className={twMerge(VIDEO_CARD_LIST_CLASS_NAMES[variant], className)}>
       {values.map((value) => (
         <VideoCard key={value.id} value={value} variant={variant} {...props} />
       ))}
