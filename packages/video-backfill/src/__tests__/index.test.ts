@@ -9,6 +9,7 @@ import {
   type BackfillRequest,
   ENQUEUE_SCRIPT,
   getBackfillJobId,
+  REQUEUE_SCRIPT,
 } from '../index.js'
 
 /**
@@ -21,8 +22,11 @@ class FakeRedis {
    * worker get in between a request's read and its write.
    */
   beforeNextScript: (() => Promise<void>) | undefined
-  /** Makes the next transaction fail without applying any of its commands. */
-  failNextTransaction = false
+  /**
+   * Makes LPUSH fail like it does on a key of the wrong type. As in Redis,
+   * the commands of a transaction or script before it are not rolled back.
+   */
+  lpushFails = false
   readonly lists = new Map<string, unknown[]>()
   readonly ttls = new Map<string, number>()
   readonly values = new Map<string, unknown>()
@@ -40,23 +44,45 @@ class FakeRedis {
   }
 
   /**
-   * Runs `ENQUEUE_SCRIPT` the way Redis would (the only script the queue
-   * uses). Values are kept deserialized, so they are compared as JSON.
+   * Runs the scripts of the queue the way Redis would. Values are kept
+   * deserialized, so they are compared as JSON.
    */
-  async eval(
-    script: string,
-    [jobKey = '', queueKey = '', workerLockKey = '']: string[],
-    [expected, job, ttl, id]: [string, string, number, string],
-  ): Promise<number> {
-    if (script !== ENQUEUE_SCRIPT) {
-      throw new Error('Unexpected script')
-    }
-
+  async eval(script: string, keys: string[], args: unknown[]): Promise<number> {
     const hook = this.beforeNextScript
 
     this.beforeNextScript = undefined
     await hook?.()
 
+    // Scripts run one at a time, as in Redis, and a failing command stops
+    // the script.
+    const run = this.#scripts.then(() => {
+      switch (script) {
+        case ENQUEUE_SCRIPT:
+          return this.#enqueueScript(
+            keys,
+            args as [string, string, number, string],
+          )
+        case REQUEUE_SCRIPT:
+          return this.#requeueScript(keys, args as [string, string, number])
+        default:
+          throw new Error('Unexpected script')
+      }
+    })
+
+    this.#scripts = run.then(
+      () => undefined,
+      () => undefined,
+    )
+
+    return run
+  }
+
+  #scripts: Promise<void> = Promise.resolve()
+
+  async #enqueueScript(
+    [jobKey = '', queueKey = '', workerLockKey = '']: string[],
+    [expected, job, ttl, id]: [string, string, number, string],
+  ): Promise<number> {
     const current = this.values.get(jobKey)
 
     if (
@@ -71,9 +97,21 @@ class FakeRedis {
       return 0
     }
 
-    await this.set(jobKey, JSON.parse(job), { ex: ttl })
     await this.lpush(queueKey, id)
     await this.expire(queueKey, ttl)
+    await this.set(jobKey, JSON.parse(job), { ex: ttl })
+
+    return 1
+  }
+
+  async #requeueScript(
+    [queueKey = '', jobKey = '', workerLockKey = '']: string[],
+    [id, job, ttl]: [string, string, number],
+  ): Promise<number> {
+    await this.lpush(queueKey, id)
+    await this.expire(queueKey, ttl)
+    await this.set(jobKey, JSON.parse(job), { ex: ttl })
+    await this.del(workerLockKey)
 
     return 1
   }
@@ -89,6 +127,12 @@ class FakeRedis {
   }
 
   async lpush(key: string, ...elements: unknown[]): Promise<number> {
+    if (this.lpushFails) {
+      throw new Error(
+        'WRONGTYPE Operation against a key holding the wrong kind of value',
+      )
+    }
+
     const list = this.lists.get(key) ?? []
 
     list.unshift(...elements.reverse())
@@ -110,15 +154,15 @@ class FakeRedis {
         return transaction
       },
       exec: async () => {
-        if (this.failNextTransaction) {
-          this.failNextTransaction = false
-          throw new Error('transaction failed')
-        }
-
+        // Like Redis, a failing command does not stop the others.
         const results: unknown[] = []
 
         for (const command of commands) {
-          results.push(await command())
+          try {
+            results.push(await command())
+          } catch (error) {
+            results.push(error)
+          }
         }
 
         return results
@@ -289,25 +333,41 @@ describe('BackfillQueue', () => {
     expect(redis.lists.get(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)).toEqual([])
   })
 
-  it('keeps a job claimed when putting it back fails', async () => {
+  it('saves nothing when the job cannot be added to the queue', async () => {
+    const { queue, redis } = createQueue()
+
+    redis.lpushFails = true
+
+    await expect(queue.enqueue(request, now)).rejects.toThrow('WRONGTYPE')
+    await expect(queue.getJobs([jobId], now)).resolves.toEqual([null])
+
+    // Once the queue works again, the request can be made right away.
+    redis.lpushFails = false
+
+    await expect(queue.enqueue(request, now)).resolves.toMatchObject({
+      enqueued: true,
+    })
+  })
+
+  it('keeps a job claimed when it cannot be put back in the queue', async () => {
     const { queue, redis } = createQueue()
 
     await queue.enqueue(request, now)
     const job = await claimJob(queue, later(1))
 
-    redis.failNextTransaction = true
+    redis.lpushFails = true
 
     await expect(queue.requeue({ ...job, cursor: 'page-2' })).rejects.toThrow(
-      'transaction failed',
+      'WRONGTYPE',
     )
-    // Nothing was half-applied: still running and locked, not queued twice.
+    // Not left pending without a queue entry: still running and locked, and
+    // free to be requested again once the lease runs out.
     await expect(queue.getJobs([jobId], later(2))).resolves.toEqual([
       {
         active: true,
         job: expect.objectContaining({ cursor: null, status: 'running' }),
       },
     ])
-    expect(redis.lists.get(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)).toEqual([])
   })
 
   it('refuses a second request while the job is being read', async () => {

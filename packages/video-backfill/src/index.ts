@@ -117,9 +117,32 @@ elseif current ~= ARGV[1] then
   return 0
 end
 if redis.call('EXISTS', KEYS[3]) == 1 then return 0 end
-redis.call('SET', KEYS[1], ARGV[2], 'EX', ARGV[3])
+-- LPUSH first: it is the only command here that can fail (WRONGTYPE), and
+-- the script stops there without rolling back what ran before.
 redis.call('LPUSH', KEYS[2], ARGV[4])
 redis.call('EXPIRE', KEYS[2], ARGV[3])
+redis.call('SET', KEYS[1], ARGV[2], 'EX', ARGV[3])
+return 1`
+
+/**
+ * Puts a claimed job back at the end of the queue, saves it as pending and
+ * releases it, atomically so a worker can claim it right away.
+ *
+ * `LPUSH` is the only command here that can fail (on a key of the wrong
+ * type), and a script stops at a failing command without rolling back the
+ * ones before it, so it runs first: when it fails nothing changed and the job
+ * stays claimed until its lease runs out. A MULTI transaction would not do:
+ * it runs the remaining commands after a failing one, which would leave the
+ * job pending without a queue entry.
+ *
+ * KEYS: queue, job, worker lock
+ * ARGV: job ID, job, TTL
+ */
+export const REQUEUE_SCRIPT = `-- video-backfill:requeue
+redis.call('LPUSH', KEYS[1], ARGV[1])
+redis.call('EXPIRE', KEYS[1], ARGV[3])
+redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3])
+redis.call('DEL', KEYS[3])
 return 1`
 
 function isActive(
@@ -344,7 +367,7 @@ export class BackfillQueue {
       updatedAt: now.toString(),
     }
 
-    await this.#queue(pending, { unlock: true })
+    await this.#queue(pending)
 
     return pending
   }
@@ -366,30 +389,12 @@ export class BackfillQueue {
     return finished
   }
 
-  /**
-   * Saves a pending job and puts it at the end of the queue in one
-   * transaction, so a job is never left pending without a queue entry (which
-   * would block new requests until it times out).
-   *
-   * @param unlock - Whether to release the job a worker holds; done in the
-   *   same transaction so the next worker can claim it right away.
-   */
-  async #queue(
-    job: BackfillJob,
-    { unlock }: { unlock: boolean },
-  ): Promise<void> {
-    const transaction = this.#redis
-      .multi()
-      .set(jobKey(job.id), job, { ex: BACKFILL_JOB_TTL_SECONDS })
-
-    if (unlock) {
-      transaction.del(lockKey(job.id))
-    }
-
-    await transaction
-      .lpush(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, job.id)
-      .expire(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, BACKFILL_JOB_TTL_SECONDS)
-      .exec()
+  async #queue(job: BackfillJob): Promise<void> {
+    await this.#redis.eval<[string, string, number]>(
+      REQUEUE_SCRIPT,
+      [REDIS_KEYS.VIDEO_BACKFILL_QUEUE, jobKey(job.id), lockKey(job.id)],
+      [job.id, JSON.stringify(job), BACKFILL_JOB_TTL_SECONDS],
+    )
   }
 
   async #save(job: BackfillJob): Promise<void> {
