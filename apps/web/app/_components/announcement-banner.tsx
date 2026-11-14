@@ -160,16 +160,20 @@ export function AnnouncementBanner({
         role="alert"
       >
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
+          {/*
+           * 見出しは本文と同じ行に置く。行を分けると、モバイルで動画一覧の
+           * カード（高さ約 80px）よりバナーが高くなり、隠す範囲が広がるため
+           */}
+          <div className="flex min-w-0 flex-1 items-start gap-2 py-0.5">
             <p
-              className={`flex items-center gap-1.5 text-caption font-semibold ${tone.textClassName}`}
+              className={`flex shrink-0 items-center gap-1.5 text-meta font-semibold ${tone.textClassName}`}
             >
               <ToneIcon aria-hidden="true" className="size-4" />
               {tone.label}
             </p>
             <button
               aria-expanded={isExpanded}
-              className="mt-1 w-full cursor-pointer rounded-control text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="min-w-0 flex-1 cursor-pointer rounded-control text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               onClick={() => setIsExpanded(!isExpanded)}
               type="button"
             >
