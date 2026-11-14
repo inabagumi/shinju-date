@@ -84,10 +84,10 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             </Suspense>
 
             <div className="safe-area-px pb-20 md:pb-40">
-              <AnnouncementBannerWrapper />
-
               <TimerProvider>{children}</TimerProvider>
             </div>
+
+            <AnnouncementBannerWrapper />
 
             <footer className="bg-primary py-5 safe-area-px safe-area-pb-footer text-sm text-primary-foreground dark:bg-zinc-800">
               <nav className="mx-auto max-w-6xl px-4 py-2">

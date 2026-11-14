@@ -12,12 +12,12 @@ interface Box {
   y: number
 }
 
-function getHeader(page: Page) {
-  return page.locator('body > nav').first()
-}
-
 function getBanner(page: Page) {
   return page.getByTestId('announcement-banner')
+}
+
+function getMinimizedBanner(page: Page) {
+  return page.getByTestId('announcement-banner-minimized')
 }
 
 function getVideoCards(page: Page) {
@@ -44,33 +44,52 @@ function intersects(a: Box, b: Box): boolean {
   )
 }
 
-/**
- * Assert that the announcement banner does not overlap any of the video
- * cards at the current scroll position.
- */
-async function expectBannerNotToOverlapVideoCards(page: Page) {
-  const bannerBox = await getBoundingBox(getBanner(page))
-  const cardBoxes = await getVideoCards(page).evaluateAll((elements) =>
+async function getVideoCardBoxes(page: Page): Promise<Box[]> {
+  return getVideoCards(page).evaluateAll((elements) =>
     elements.map((element) => {
       const { height, width, x, y } = element.getBoundingClientRect()
 
       return { height, width, x, y }
     }),
   )
-
-  expect(cardBoxes.length).toBeGreaterThan(0)
-
-  for (const cardBox of cardBoxes) {
-    expect(intersects(bannerBox, cardBox)).toBe(false)
-  }
 }
 
-async function openVideosPage(page: Page) {
-  await page.goto(`${BASE_URL}/videos`)
+/**
+ * Scroll to the end of the document and wait until the document height
+ * stops changing.
+ */
+async function scrollToEnd(page: Page) {
+  await expect
+    .poll(
+      async () => {
+        const before = await page.evaluate(
+          () => document.documentElement.scrollHeight,
+        )
+
+        await page.evaluate(() =>
+          window.scrollTo(0, document.documentElement.scrollHeight),
+        )
+        await page.waitForTimeout(300)
+
+        const after = await page.evaluate(
+          () => document.documentElement.scrollHeight,
+        )
+
+        return before === after
+      },
+      { timeout: 15_000 },
+    )
+    .toBe(true)
+}
+
+async function openPage(page: Page, path: string) {
+  await page.goto(`${BASE_URL}${path}`)
 
   await expect(getBanner(page)).toBeVisible()
   await expect(getBanner(page)).toContainText(ANNOUNCEMENT_MESSAGE)
   await expect(getVideoCards(page).first()).toBeVisible()
+  // Wait for hydration so that the click handlers are attached
+  await page.waitForLoadState('networkidle')
 }
 
 function describeViewport(
@@ -80,53 +99,76 @@ function describeViewport(
   test.describe(name, () => {
     test.use({ viewport })
 
-    test('should be placed below the header without covering the content', async ({
+    test('should not cover any video card once the page is scrolled to the end', async ({
       page,
     }) => {
-      await openVideosPage(page)
+      await openPage(page, '/')
 
-      const headerBox = await getBoundingBox(getHeader(page))
-      const bannerBox = await getBoundingBox(getBanner(page))
-
-      // The banner sits in the page flow directly below the sticky header
-      expect(bannerBox.y).toBeGreaterThanOrEqual(
-        headerBox.y + headerBox.height - 1,
-      )
-      expect(bannerBox.width).toBeLessThanOrEqual(viewport.width)
-
-      await expectBannerNotToOverlapVideoCards(page)
-    })
-
-    test('should not follow the scroll position or overlap video cards while scrolling', async ({
-      page,
-    }) => {
-      await openVideosPage(page)
+      await scrollToEnd(page)
 
       const banner = getBanner(page)
-      const initialBox = await getBoundingBox(banner)
+      await expect(banner).toBeInViewport({ ratio: 1 })
 
-      // Scroll through the page step by step. At every position, the banner
-      // must not cover any video card.
-      const step = Math.floor(viewport.height / 2)
-      for (let index = 0; index < 6; index++) {
-        await page.mouse.wheel(0, step)
-        // Wait for the smooth scroll / layout to settle
-        await page.waitForTimeout(100)
+      const bannerBox = await getBoundingBox(banner)
+      const cardBoxes = await getVideoCardBoxes(page)
 
-        await expectBannerNotToOverlapVideoCards(page)
+      expect(cardBoxes.length).toBeGreaterThan(0)
+      for (const cardBox of cardBoxes) {
+        expect(intersects(bannerBox, cardBox)).toBe(false)
       }
+    })
 
-      // The banner scrolls away with the content instead of sticking to the
-      // viewport
-      const scrolledBox = await getBoundingBox(banner)
-      expect(scrolledBox.y).toBeLessThan(initialBox.y)
-      await expect(banner).not.toBeInViewport()
+    test('should be minimizable so that it stops covering the video list', async ({
+      page,
+    }) => {
+      await openPage(page, '/videos')
+
+      const banner = getBanner(page)
+      const minimizeButton = banner.getByRole('button', {
+        name: 'お知らせを縮小',
+      })
+
+      // Scroll into the list so that the sticky banner overlaps video cards
+      await page.mouse.wheel(0, Math.floor(viewport.height / 2))
+      await expect
+        .poll(async () => {
+          const bannerBox = await getBoundingBox(banner)
+          const cardBoxes = await getVideoCardBoxes(page)
+
+          return cardBoxes.some((cardBox) => intersects(bannerBox, cardBox))
+        })
+        .toBe(true)
+
+      const bannerBox = await getBoundingBox(banner)
+
+      await minimizeButton.click()
+
+      const minimized = getMinimizedBanner(page)
+      await expect(banner).toBeHidden()
+      await expect(minimized).toBeVisible()
+      await expect(minimized).toBeFocused()
+      await expect(minimized).toHaveAttribute('aria-expanded', 'false')
+
+      // The minimized pill is much smaller than the banner and keeps the
+      // area the banner used to cover visible
+      const minimizedBox = await getBoundingBox(minimized)
+      expect(minimizedBox.width).toBeLessThan(bannerBox.width / 2)
+      expect(minimizedBox.height).toBeLessThan(bannerBox.height)
+      expect(minimizedBox.x + minimizedBox.width).toBeLessThanOrEqual(
+        bannerBox.x + bannerBox.width + 1,
+      )
+
+      // The announcement can be restored from the pill
+      await minimized.click()
+      await expect(minimized).toBeHidden()
+      await expect(banner).toBeVisible()
+      await expect(minimizeButton).toBeFocused()
     })
 
     test('should keep expand, collapse and dismiss behavior', async ({
       page,
     }) => {
-      await openVideosPage(page)
+      await openPage(page, '/videos')
 
       const banner = getBanner(page)
       const messageButton = banner.getByRole('button', {
@@ -138,9 +180,6 @@ function describeViewport(
 
       await expect(messageButton).toHaveAttribute('aria-expanded', 'false')
 
-      // Wait for hydration so that the click handlers are attached
-      await page.waitForLoadState('networkidle')
-
       await messageButton.click()
       await expect(messageButton).toHaveAttribute('aria-expanded', 'true')
 
@@ -149,6 +188,7 @@ function describeViewport(
 
       await closeButton.click()
       await expect(banner).toBeHidden()
+      await expect(getMinimizedBanner(page)).toBeHidden()
 
       // The dismissed state is persisted in a cookie
       await page.reload()
@@ -165,30 +205,30 @@ test.describe('Announcement Banner', () => {
   test.describe('Narrow screen', () => {
     test.use({ viewport: { height: 568, width: 320 } })
 
-    test('should keep the message and the close button usable', async ({
+    test('should keep the message and the controls usable', async ({
       page,
     }) => {
-      await openVideosPage(page)
+      await openPage(page, '/videos')
 
       const banner = getBanner(page)
       const messageButton = banner.getByRole('button', {
         name: ANNOUNCEMENT_MESSAGE,
       })
+      const minimizeButton = banner.getByRole('button', {
+        name: 'お知らせを縮小',
+      })
       const closeButton = banner.getByRole('button', {
         name: 'お知らせを閉じる',
       })
 
-      await expect(messageButton).toBeInViewport()
-      await expect(closeButton).toBeInViewport()
-
-      const bannerBox = await getBoundingBox(banner)
-      const closeButtonBox = await getBoundingBox(closeButton)
+      await expect(messageButton).toBeInViewport({ ratio: 1 })
+      await expect(minimizeButton).toBeInViewport({ ratio: 1 })
+      await expect(closeButton).toBeInViewport({ ratio: 1 })
 
       // Nothing overflows the narrow viewport horizontally
+      const bannerBox = await getBoundingBox(banner)
+      expect(bannerBox.x).toBeGreaterThanOrEqual(0)
       expect(bannerBox.x + bannerBox.width).toBeLessThanOrEqual(320)
-      expect(closeButtonBox.x + closeButtonBox.width).toBeLessThanOrEqual(320)
-
-      await page.waitForLoadState('networkidle')
 
       await closeButton.click()
       await expect(banner).toBeHidden()

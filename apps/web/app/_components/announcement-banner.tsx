@@ -1,8 +1,8 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { X } from 'lucide-react'
-import { useState } from 'react'
+import { Megaphone, Minus, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
@@ -25,12 +25,12 @@ function getBannerClasses(level: string): string {
 }
 
 /**
- * Site-wide announcement banner.
+ * Site-wide announcement banner that sticks to the bottom of the viewport.
  *
- * The banner is rendered in the normal page flow directly below the header
- * instead of being fixed to the viewport, so it never covers the main content
- * or its interactive areas while scrolling. The message is collapsed to a
- * single line by default and can be expanded by clicking it.
+ * Besides dismissing the announcement for good, the banner can be minimized
+ * into a small pill so that it stops covering the content underneath without
+ * hiding the announcement entirely. The message is collapsed to a single line
+ * by default and can be expanded by clicking it.
  */
 export function AnnouncementBanner({
   announcement: initialAnnouncement,
@@ -39,6 +39,10 @@ export function AnnouncementBanner({
 }) {
   const [isVisible, setIsVisible] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(false)
+  const minimizeButtonRef = useRef<HTMLButtonElement>(null)
+  const restoreButtonRef = useRef<HTMLButtonElement>(null)
+  const hasToggledMinimizedRef = useRef(false)
 
   // Periodically refetch announcement data
   const { data } = useQuery({
@@ -58,55 +62,109 @@ export function AnnouncementBanner({
     refetchIntervalInBackground: true,
   })
 
+  // Keep keyboard focus on the control that replaced the one just used
+  useEffect(() => {
+    if (!hasToggledMinimizedRef.current) {
+      return
+    }
+
+    if (isMinimized) {
+      restoreButtonRef.current?.focus()
+    } else {
+      minimizeButtonRef.current?.focus()
+    }
+  }, [isMinimized])
+
   if (!isVisible || !data) {
     return null
   }
 
-  return (
-    <div
-      className={`border-b ${getBannerClasses(data.level)}`}
-      data-testid="announcement-banner"
-      role="status"
-    >
-      <div className="mx-auto flex max-w-6xl items-start justify-between gap-3 px-4 py-3">
-        <button
-          aria-expanded={isExpanded}
-          className="min-w-0 flex-1 cursor-pointer text-left"
-          onClick={() => setIsExpanded(!isExpanded)}
-          type="button"
-        >
-          <div
-            className={`prose prose-sm max-w-none ${
-              !isExpanded ? 'line-clamp-1' : ''
-            }`}
+  const bannerClasses = getBannerClasses(data.level)
+
+  const toggleMinimized = () => {
+    hasToggledMinimizedRef.current = true
+    setIsMinimized((value) => !value)
+  }
+
+  if (isMinimized) {
+    return (
+      <div className="sticky bottom-4 z-50 safe-area-mx">
+        <div className="mb-4 flex justify-end">
+          <button
+            aria-expanded={false}
+            aria-label="お知らせを表示"
+            className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold shadow-lg ${bannerClasses}`}
+            data-testid="announcement-banner-minimized"
+            onClick={toggleMinimized}
+            ref={restoreButtonRef}
+            type="button"
           >
-            <ReactMarkdown
-              rehypePlugins={[
-                [
-                  rehypeExternalLinks,
-                  {
-                    rel: ['nofollow', 'noopener', 'noreferrer'],
-                    target: '_blank',
-                  },
-                ],
-              ]}
-              remarkPlugins={[remarkGfm]}
+            <Megaphone aria-hidden="true" className="size-4" />
+            お知らせ
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="sticky bottom-4 z-50 safe-area-mx">
+      <div
+        className={`mb-4 ml-auto max-w-md rounded-lg border p-4 shadow-lg ${bannerClasses}`}
+        data-testid="announcement-banner"
+        role="alert"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <button
+            aria-expanded={isExpanded}
+            className="min-w-0 flex-1 cursor-pointer text-left"
+            onClick={() => setIsExpanded(!isExpanded)}
+            type="button"
+          >
+            <div
+              className={`prose prose-sm max-w-none ${
+                !isExpanded ? 'line-clamp-1' : ''
+              }`}
             >
-              {data.message}
-            </ReactMarkdown>
+              <ReactMarkdown
+                rehypePlugins={[
+                  [
+                    rehypeExternalLinks,
+                    {
+                      rel: ['nofollow', 'noopener', 'noreferrer'],
+                      target: '_blank',
+                    },
+                  ],
+                ]}
+                remarkPlugins={[remarkGfm]}
+              >
+                {data.message}
+              </ReactMarkdown>
+            </div>
+          </button>
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              aria-label="お知らせを縮小"
+              className="cursor-pointer rounded-md p-1 hover:bg-black/10"
+              onClick={toggleMinimized}
+              ref={minimizeButtonRef}
+              type="button"
+            >
+              <Minus aria-hidden="true" className="size-5" />
+            </button>
+            <button
+              aria-label="お知らせを閉じる"
+              className="cursor-pointer rounded-md p-1 hover:bg-black/10"
+              onClick={async () => {
+                await dismissAnnouncement(data.id)
+                setIsVisible(false)
+              }}
+              type="button"
+            >
+              <X aria-hidden="true" className="size-5" />
+            </button>
           </div>
-        </button>
-        <button
-          aria-label="お知らせを閉じる"
-          className="-m-1 shrink-0 cursor-pointer rounded-md p-1 hover:bg-black/10"
-          onClick={async () => {
-            await dismissAnnouncement(data.id)
-            setIsVisible(false)
-          }}
-          type="button"
-        >
-          <X aria-hidden="true" className="size-5" />
-        </button>
+        </div>
       </div>
     </div>
   )
