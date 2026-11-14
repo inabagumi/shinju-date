@@ -9,8 +9,8 @@ interface Props {
  */
 export function MetricNoData({ description }: Props) {
   return (
-    <div className="rounded-lg border-2 border-border bg-muted p-6 text-center">
-      <div aria-hidden="true" className="text-4xl font-bold text-muted">
+    <div className="rounded-container border-2 border-border bg-muted p-6 text-center">
+      <div aria-hidden="true" className="text-display font-bold text-muted">
         —
       </div>
       <div className="mt-2 text-meta font-semibold text-foreground">
