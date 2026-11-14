@@ -76,7 +76,7 @@ export function MobileMenu({ children }: MobileMenuProps) {
         aria-controls={menuId}
         aria-expanded={isOpen}
         aria-label="メニュー"
-        className="flex size-9 items-center justify-center rounded-full hover:bg-774-nevy-100 dark:hover:bg-zinc-700"
+        className="flex size-10 items-center justify-center rounded-full hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         onClick={() => setIsOpen((value) => !value)}
         ref={buttonRef}
         type="button"
@@ -89,7 +89,7 @@ export function MobileMenu({ children }: MobileMenuProps) {
       </button>
 
       <div
-        className="absolute inset-x-0 top-full border-t border-774-nevy-200 bg-primary-foreground shadow-md dark:border-zinc-700 dark:bg-zinc-900"
+        className="absolute inset-x-0 top-full border-y border-border bg-surface shadow-overlay"
         hidden={!isOpen}
         id={menuId}
         ref={menuRef}

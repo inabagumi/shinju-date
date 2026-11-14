@@ -4,9 +4,9 @@
 @plugin '@tailwindcss/typography';
 
 @layer base {
-  /* iOS overscroll handling: html should have dark footer color */
+  /* iOS overscroll handling: html should have the footer color */
   html {
-    @apply min-h-screen bg-primary dark:bg-zinc-800;
+    @apply min-h-screen bg-primary;
   }
 
   /* Body should have light main content color */
