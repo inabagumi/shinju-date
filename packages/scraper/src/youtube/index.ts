@@ -1,4 +1,6 @@
 export type {
+  AddPastVideosOptions,
+  AddPastVideosResult,
   ErrorReporter,
   Logger,
   ScraperOptions,

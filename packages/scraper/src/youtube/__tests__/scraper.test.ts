@@ -1,5 +1,6 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { AccountNotFoundError } from '../../internal/database/index.js'
 import { TEST_NOW } from '../../internal/testing/context.js'
 import { setupSupabase } from '../../internal/testing/supabase.js'
 import { YouTubeScraper } from '../scraper.js'
@@ -16,6 +17,7 @@ const supabase = setupSupabase()
 
 interface ListParams {
   id?: string[]
+  pageToken?: string
   part?: string[]
   playlistId?: string
 }
@@ -23,6 +25,11 @@ interface ListParams {
 interface FakeYouTube {
   /** Channel ID → title */
   channels?: Record<string, string>
+  /**
+   * `<channel ID>:<page token>` → one page of its uploads playlist. Takes
+   * precedence over `uploads`.
+   */
+  uploadPages?: Record<string, { nextPageToken?: string; videoIds: string[] }>
   /** Channel ID → IDs in its uploads playlist, or an error to throw. */
   uploads?: Record<string, string[] | Error>
   /** Video ID → resource; IDs that are absent no longer exist. */
@@ -35,6 +42,7 @@ interface FakeYouTube {
  */
 function createClient({
   channels = {},
+  uploadPages = {},
   uploads = {},
   videos = {},
 }: FakeYouTube) {
@@ -75,8 +83,22 @@ function createClient({
       })),
     },
     playlistItems: {
-      list: vi.fn(async ({ playlistId }: ListParams) => {
-        const result = uploads[`UC${playlistId?.slice(2)}`] ?? []
+      list: vi.fn(async ({ pageToken = '', playlistId }: ListParams) => {
+        const channelId = `UC${playlistId?.slice(2)}`
+        const page = uploadPages[`${channelId}:${pageToken}`]
+
+        if (page) {
+          return {
+            data: {
+              items: page.videoIds.map((videoId) => ({
+                contentDetails: { videoId },
+              })),
+              nextPageToken: page.nextPageToken,
+            },
+          }
+        }
+
+        const result = uploads[channelId] ?? []
 
         if (result instanceof Error) {
           throw result
@@ -92,7 +114,7 @@ function createClient({
     videos: { list: videosList },
   } as unknown as youtube.Youtube
 
-  return { client, videosList }
+  return { client, playlistItemsList: client.playlistItems.list, videosList }
 }
 
 const activeTalents = [
@@ -110,9 +132,10 @@ describe('YouTubeScraper', () => {
   const onError = vi.fn()
 
   function createScraper(fake: FakeYouTube) {
-    const { client, videosList } = createClient(fake)
+    const { client, playlistItemsList, videosList } = createClient(fake)
 
     return {
+      playlistItemsList,
       scraper: new YouTubeScraper({
         client,
         onError,
@@ -377,6 +400,105 @@ describe('YouTubeScraper', () => {
         body: { name: 'Alice', youtube_handle: '@handle' },
         query: { id: 'eq.channel-row-1' },
       })
+    })
+  })
+
+  describe('addPastVideos', () => {
+    const channelRow = {
+      id: 'channel-row-1',
+      talent_id: 'talent-1',
+      talents: { id: 'talent-1' },
+      youtube_channel_id: 'UCaaa',
+    }
+
+    it('saves the videos of one page that are not saved yet', async () => {
+      supabase.respond(({ method, table }) => {
+        if (method !== 'GET') {
+          return []
+        }
+
+        switch (table) {
+          case 'youtube_channels':
+            return [channelRow]
+          case 'youtube_videos':
+            return [{ youtube_video_id: 'saved' }]
+          default:
+            return []
+        }
+      })
+      const { playlistItemsList, scraper, videosList } = createScraper({
+        channels: { UCaaa: 'Channel A' },
+        uploadPages: {
+          'UCaaa:': { nextPageToken: 'page-2', videoIds: ['saved', 'old'] },
+        },
+        videos: { old: {}, saved: {} },
+      })
+
+      await expect(
+        scraper.addPastVideos({ accountId: 'channel-row-1', now: TEST_NOW }),
+      ).resolves.toEqual({ added: 1, cursor: 'page-2', listed: 2 })
+
+      expect(playlistItemsList).toHaveBeenCalledWith(
+        expect.objectContaining({ maxResults: 50, playlistId: 'UUaaa' }),
+      )
+      expect(videosList).toHaveBeenCalledWith(
+        expect.objectContaining({ id: ['old'] }),
+      )
+      expect(
+        supabase.written('GET', 'youtube_channels')[0]?.query,
+      ).toMatchObject({
+        id: 'eq.channel-row-1',
+        'talents.deleted_at': 'is.null',
+      })
+      expect(supabase.written('POST', 'youtube_videos')).toEqual([
+        expect.objectContaining({
+          body: expect.objectContaining({
+            youtube_channel_id: 'channel-row-1',
+            youtube_video_id: 'old',
+          }),
+        }),
+      ])
+    })
+
+    it('continues from the cursor and reports the end of the history', async () => {
+      supabase.respond(({ method, table }) =>
+        method === 'GET' && table === 'youtube_channels' ? [channelRow] : [],
+      )
+      const { playlistItemsList, scraper, videosList } = createScraper({
+        channels: { UCaaa: 'Channel A' },
+        uploadPages: { 'UCaaa:page-2': { videoIds: [] } },
+      })
+
+      await expect(
+        scraper.addPastVideos({ accountId: 'channel-row-1', cursor: 'page-2' }),
+      ).resolves.toEqual({ added: 0, cursor: null, listed: 0 })
+
+      expect(playlistItemsList).toHaveBeenCalledWith(
+        expect.objectContaining({ pageToken: 'page-2' }),
+      )
+      expect(videosList).not.toHaveBeenCalled()
+    })
+
+    it('rejects a channel YouTube does not know', async () => {
+      supabase.respond(({ method, table }) =>
+        method === 'GET' && table === 'youtube_channels' ? [channelRow] : [],
+      )
+      const { playlistItemsList, scraper } = createScraper({})
+
+      await expect(
+        scraper.addPastVideos({ accountId: 'channel-row-1' }),
+      ).rejects.toBeInstanceOf(AccountNotFoundError)
+
+      expect(playlistItemsList).not.toHaveBeenCalled()
+    })
+
+    it('rejects a channel whose talent was deleted', async () => {
+      supabase.respond(() => [])
+      const { scraper } = createScraper({ channels: { UCaaa: 'Channel A' } })
+
+      await expect(
+        scraper.addPastVideos({ accountId: 'channel-row-1' }),
+      ).rejects.toBeInstanceOf(AccountNotFoundError)
     })
   })
 })

@@ -68,3 +68,61 @@ export async function getActiveTwitchUsers(
     })),
   )
 }
+
+/**
+ * Gets one YouTube channel by the primary key of its row, provided its talent
+ * is not deleted. Retired talents are included: their past videos are still
+ * listed on the site.
+ */
+export async function findYouTubeChannel(
+  supabaseClient: TypedSupabaseClient,
+  id: string,
+): Promise<ActiveYouTubeChannel | null> {
+  const { data, error } = await supabaseClient
+    .from('youtube_channels')
+    .select('id, talent_id, youtube_channel_id, talents!inner(id)')
+    .eq('id', id)
+    .is('talents.deleted_at', null)
+    .maybeSingle()
+
+  if (error) {
+    throw new DatabaseError('Failed to load a YouTube channel', error)
+  }
+
+  return data
+    ? {
+        id: data.id,
+        talentId: data.talent_id,
+        youtubeChannelId: data.youtube_channel_id,
+      }
+    : null
+}
+
+/**
+ * Gets one Twitch account by the primary key of its row, provided its talent
+ * is not deleted. Retired talents are included: their past videos are still
+ * listed on the site.
+ */
+export async function findTwitchUser(
+  supabaseClient: TypedSupabaseClient,
+  id: string,
+): Promise<ActiveTwitchUser | null> {
+  const { data, error } = await supabaseClient
+    .from('twitch_users')
+    .select('id, talent_id, twitch_user_id, talents!inner(id)')
+    .eq('id', id)
+    .is('talents.deleted_at', null)
+    .maybeSingle()
+
+  if (error) {
+    throw new DatabaseError('Failed to load a Twitch user', error)
+  }
+
+  return data
+    ? {
+        id: data.id,
+        talentId: data.talent_id,
+        twitchUserId: data.twitch_user_id,
+      }
+    : null
+}

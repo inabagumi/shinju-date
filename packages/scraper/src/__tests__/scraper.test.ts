@@ -2,6 +2,7 @@ import { Temporal } from 'temporal-polyfill'
 import { describe, expect, it, vi } from 'vitest'
 import { Scraper } from '../scraper.js'
 import type {
+  AddPastVideosResult,
   CrawlContext,
   ScraperOptions,
   TypedSupabaseClient,
@@ -25,6 +26,10 @@ class ExampleScraper extends Scraper {
     this.context = this.createContext('fetcher', now)
 
     return true
+  }
+
+  addPastVideos(): Promise<AddPastVideosResult> {
+    return Promise.resolve({ added: 0, cursor: null, listed: 0 })
   }
 
   async refreshLiveVideos(): Promise<boolean> {

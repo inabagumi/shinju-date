@@ -1,6 +1,8 @@
 import type { Temporal } from 'temporal-polyfill'
 import { Scraper } from '../scraper.js'
+import type { AddPastVideosOptions, AddPastVideosResult } from '../types.js'
 import { addNewTwitchVideos } from './add-new-videos.js'
+import { addPastTwitchVideos } from './add-past-videos.js'
 import {
   refreshRecentTwitchVideos,
   removeUnavailableTwitchVideos,
@@ -60,6 +62,13 @@ export class TwitchScraper extends Scraper {
 
   async syncAccounts(now?: Temporal.Instant): Promise<boolean> {
     return (await syncTwitchUsers(this.#context(now))) > 0
+  }
+
+  addPastVideos({
+    now,
+    ...options
+  }: AddPastVideosOptions): Promise<AddPastVideosResult> {
+    return addPastTwitchVideos(this.#context(now), options)
   }
 
   #context(now: Temporal.Instant | undefined) {

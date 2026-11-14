@@ -16,6 +16,13 @@ export class RequestQueue {
   }
 
   /**
+   * Runs a single task once a slot is free.
+   */
+  run<R>(task: () => Promise<R>): Promise<R> {
+    return this.#queue.add(task)
+  }
+
+  /**
    * Runs `task` for every item, keeping input order.
    * Rejects with the first failure, like `Promise.all`.
    */

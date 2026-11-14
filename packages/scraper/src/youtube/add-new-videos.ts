@@ -147,10 +147,33 @@ export async function addNewYouTubeVideos(
     }
   }
 
-  const savedIds = await findSavedYouTubeVideoIds(supabaseClient, [
-    ...channelByVideoId.keys(),
-  ])
-  const newIds = [...channelByVideoId.keys()].filter((id) => !savedIds.has(id))
+  return saveNewYouTubeVideos(context, channelByVideoId)
+}
+
+/**
+ * Saves the listed videos that are not saved yet. Details are requested only
+ * for those, so a page of videos that are all saved costs no further request.
+ * Shared by the discovery of new videos and by backfills of past ones, so
+ * both store videos the same way.
+ *
+ * @param channelByVideoId - The channel each listed video ID belongs to.
+ * @param concurrency - Videos saved at once.
+ * @returns The number of videos added.
+ */
+export async function saveNewYouTubeVideos(
+  context: CrawlContext<YouTubeFetcher>,
+  channelByVideoId: ReadonlyMap<string, ActiveYouTubeChannel>,
+  concurrency = SAVE_CONCURRENCY,
+): Promise<number> {
+  const { fetcher, logger, reportError, supabaseClient } = context
+  const listedIds = [...channelByVideoId.keys()]
+
+  if (listedIds.length === 0) {
+    return 0
+  }
+
+  const savedIds = await findSavedYouTubeVideoIds(supabaseClient, listedIds)
+  const newIds = listedIds.filter((id) => !savedIds.has(id))
 
   if (newIds.length === 0) {
     return 0
@@ -160,7 +183,7 @@ export async function addNewYouTubeVideos(
 
   return countChanges(
     videos,
-    SAVE_CONCURRENCY,
+    concurrency,
     async (video) => {
       const channel = channelByVideoId.get(video.id)
 

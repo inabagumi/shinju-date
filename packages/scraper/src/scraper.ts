@@ -1,6 +1,8 @@
 import { Temporal } from 'temporal-polyfill'
 import type { Logger } from './internal/logger.js'
 import type {
+  AddPastVideosOptions,
+  AddPastVideosResult,
   CrawlContext,
   ErrorReporter,
   ScraperOptions,
@@ -18,12 +20,13 @@ const silentLogger: Logger = {
  * Keeps the videos and accounts of one platform in the database in sync with
  * that platform.
  *
- * Every platform offers the same five operations, so callers (the cron routes)
+ * Every platform offers the same operations, so callers (the cron routes)
  * never need to know which platform they are driving:
  *
  * | Operation                 | What it does                                    |
  * | ------------------------- | ----------------------------------------------- |
  * | `addNewVideos`            | saves videos that appeared on tracked accounts  |
+ * | `addPastVideos`           | saves one page of an account's whole history    |
  * | `refreshLiveVideos`       | follows videos that are scheduled or on air     |
  * | `refreshRecentVideos`     | re-reads the newest finished videos             |
  * | `removeUnavailableVideos` | soft-deletes videos that are gone, across all   |
@@ -60,6 +63,24 @@ export abstract class Scraper {
    * Videos that are already saved are left alone.
    */
   abstract addNewVideos(now?: Temporal.Instant): Promise<boolean>
+
+  /**
+   * Reads one page of an account's whole history, newest first, and saves
+   * the videos that are not saved yet (a backfill). Videos that are saved
+   * already are left alone.
+   *
+   * A history is read across several calls so that none of them runs long:
+   * pass the returned cursor to the next call until it is `null`.
+   *
+   * Unlike the other operations this concerns a single account, so a failure
+   * to read it rejects; a video that cannot be saved is still only reported.
+   *
+   * @throws {AccountNotFoundError} When the account does not exist or its
+   *   talent was deleted.
+   */
+  abstract addPastVideos(
+    options: AddPastVideosOptions,
+  ): Promise<AddPastVideosResult>
 
   /**
    * Follows the videos that change from minute to minute: scheduled ones and

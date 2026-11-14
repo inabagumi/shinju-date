@@ -18,3 +18,10 @@ export interface YouTubeScraperOptions extends ScraperOptions {
   /** YouTube Data API client. Defaults to the shared API-key client. */
   client?: youtube.Youtube
 }
+
+/** One page of a channel's uploads, newest first. */
+export interface UploadPage {
+  /** Where the next page starts, or `null` when this was the last one. */
+  cursor: string | null
+  videoIds: string[]
+}
