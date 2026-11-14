@@ -70,11 +70,11 @@ function SearchExitRateWidgetComponent({
         <h2 className="text-xl font-semibold">
           検索からの離脱率
           {selectedDate ? (
-            <span className="ml-2 text-sm text-774-blue-600">
+            <span className="ml-2 text-meta text-accent">
               ({formatDateLabel(selectedDate)})
             </span>
           ) : (
-            <span className="ml-2 text-sm text-green-600">
+            <span className="ml-2 text-meta text-muted">
               ({formatDateRange(dateRange)})
             </span>
           )}
