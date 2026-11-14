@@ -7,7 +7,7 @@
 作業を開始する前に、以下のツールがインストールされていることを確認してください。
 
 - **Node.js**: `.node-version` ファイルで指定されたバージョン。`nvm` などのバージョン管理ツールの使用を推奨します。
-- **pnpm**: Corepack を通じて有効化されます。
+- **pnpm**: 公式のインストールスクリプトなどでインストールします。使用するバージョンは `package.json` の `devEngines.packageManager` で固定されており、pnpm v11 以降であれば自動的に切り替わります。
 - **Docker**: ローカルのSupabase環境とRedisを実行するために必要です。
 - **Docker Compose**: Redisサービスのオーケストレーションに使用します。
 
@@ -35,12 +35,15 @@ cd shinju-date
 
 ### 1.2. Node.js と pnpm の設定
 
-このプロジェクトは特定のバージョンの Node.js と pnpm を使用します。pnpmのバージョン管理にはCorepackを利用します。
+このプロジェクトは特定のバージョンの Node.js と pnpm を使用します。pnpm がインストールされていない場合は、公式のインストールスクリプトでインストールしてください（その他の方法は [pnpm のインストールガイド](https://pnpm.io/installation) を参照してください）。
 
 ```bash
-# package.jsonで定義されたpnpmバージョンを使用するためにCorepackを有効化
-corepack enable
+curl -fsSL https://get.pnpm.io/install.sh | sh -
 ```
+
+インストールスクリプトはシェルの設定ファイル（`~/.bashrc` や `~/.zshrc` など）に `PATH` の設定を追加しますが、現在のシェルには反映されません。インストール後は、スクリプトが案内する設定ファイルを読み込むか、ターミナルを開き直してから次の手順に進んでください。
+
+pnpm（v11 以降）は `package.json` の `devEngines.packageManager` に指定されたバージョンを自動的にダウンロードして使用します。また、`devEngines.runtime` に指定された Node.js も `pnpm install` の際に自動的にダウンロードされます。
 
 ### 1.3. JavaScript依存関係のインストール
 

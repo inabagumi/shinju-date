@@ -22,11 +22,9 @@ jobs:
         with:
           fetch-depth: 2
       - name: Setup pnpm
-        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
         with:
           cache: true
-          run_install: true
-          standalone: true
 
   # Matrix job for all unit tests (Node.js packages)
   test:
@@ -76,11 +74,9 @@ jobs:
 
       - name: Setup pnpm
         if: matrix.package.language == 'node'
-        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
         with:
           cache: true
-          run_install: true
-          standalone: true
 
       # Node.js test execution
       - name: Run Node.js tests
@@ -105,11 +101,9 @@ jobs:
 
       # Node.js linting
       - name: Setup pnpm
-        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
         with:
           cache: true
-          run_install: true
-          standalone: true
 
       - name: Run Node.js lint
         run: pnpm biome ci --reporter=github .
@@ -131,11 +125,9 @@ jobs:
           fetch-depth: 2
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
         with:
           cache: true
-          run_install: true
-          standalone: true
 
       - run: pnpm build --filter=!@shinju-date/admin --filter=!@shinju-date/batch --filter=!@shinju-date/web
 
@@ -164,11 +156,9 @@ jobs:
           fetch-depth: 2
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
         with:
           cache: true
-          run_install: true
-          standalone: true
 
       # Build dependencies for apps only
       - name: Build dependencies

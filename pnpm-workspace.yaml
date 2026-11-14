@@ -11,9 +11,6 @@ allowBuilds:
   sharp: true
   supabase: true
 
-# Avoid interactive prompt when recreating node_modules in CI/non-TTY
-confirmModulesPurge: false
-
 minimumReleaseAgeExclude:
   - '@next/env@16.3.0'
   - '@next/mdx@16.3.0'
