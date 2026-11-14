@@ -64,6 +64,9 @@
   --color-774-blue-800: #083ec5;
   --color-774-blue-900: #0d399b;
   --color-774-blue-950: #0e245d;
+
+  /* Twitch のブランドカラー。値や透明度を変えずに使う */
+  --color-twitch-purple: #9146ff;
 }
 
 /*
@@ -112,6 +115,10 @@
   /* 配信中専用 */
   --color-live: var(--color-774-pink-700);
   --color-live-foreground: var(--color-white);
+
+  /* Twitch の動画を示すバッジ。ブランドカラーのため、ダークモードでも同じ */
+  --color-twitch: var(--color-twitch-purple);
+  --color-twitch-foreground: var(--color-white);
 
   /* 状態 */
   --color-danger: var(--color-red-700);
