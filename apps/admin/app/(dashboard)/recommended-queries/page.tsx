@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 
 async function QueriesListData() {
   'use cache: private'
+
   cacheLife('minutes')
 
   const { manual, auto } = await getRecommendedQueries()

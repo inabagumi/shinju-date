@@ -26,6 +26,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   'use cache: private'
+
   cacheLife('minutes')
 
   const { id } = await params
@@ -45,6 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function CachedVideoDetails({ id }: { id: string }) {
   'use cache: private'
+
   cacheLife('minutes')
 
   const video = await getVideo(id)

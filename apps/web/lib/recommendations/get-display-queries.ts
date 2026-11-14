@@ -22,6 +22,7 @@ export const TOTAL_DISPLAY_COUNT = 4 // Total queries to display
  */
 export async function getDisplayRecommendationQueries(): Promise<string[]> {
   'use cache: remote'
+
   cacheLife('minutes')
   cacheTag('recommendation-queries')
 

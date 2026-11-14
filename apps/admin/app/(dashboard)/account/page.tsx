@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 
 async function UserEmailData() {
   'use cache: private'
+
   cacheLife('seconds')
 
   const supabaseClient = await createSupabaseServerClient()
