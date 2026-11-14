@@ -8,7 +8,7 @@ export const startMocking = async () => {
   if (process.env['ENABLE_MSW'] === 'true') {
     try {
       await worker.start({
-        onUnhandledRequest: 'warn',
+        onUnhandledFrame: 'warn',
       })
       console.log('🚀 MSW enabled')
     } catch (error) {

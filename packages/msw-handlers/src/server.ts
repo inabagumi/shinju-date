@@ -21,7 +21,7 @@ export const server = setupServer(...allHandlers)
  */
 export function startServer() {
   server.listen({
-    onUnhandledRequest: 'warn',
+    onUnhandledFrame: 'warn',
   })
   console.log('🚀 MSW server started')
   console.log('[MSW] Handlers registered:', server.listHandlers().length)

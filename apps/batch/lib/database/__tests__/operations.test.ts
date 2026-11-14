@@ -14,7 +14,7 @@ const MOCK_SUPABASE_ANON_KEY = 'mock-anon-key'
 
 // Start server before all tests
 beforeAll(() => {
-  server.listen({ onUnhandledRequest: 'warn' })
+  server.listen({ onUnhandledFrame: 'warn' })
 })
 
 // Reset handlers after each test
