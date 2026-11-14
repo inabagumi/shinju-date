@@ -8,5 +8,5 @@
 if (process.env['ENABLE_MSW'] === 'true' && typeof process !== 'undefined') {
   const { startServer } = await import('./server.js')
   startServer()
-  console.log('✅ MSW server registered via --import flag')
+  console.error('✅ MSW server registered via --import flag')
 }

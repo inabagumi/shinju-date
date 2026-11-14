@@ -77,6 +77,16 @@ NODE_OPTIONS="--import @shinju-date/msw-handlers/register" ENABLE_MSW=true pnpm 
 
 Next.js 16+ uses worker threads for parallel page generation during build. The `instrumentation.ts` file doesn't run during static page generation. Using `NODE_OPTIONS` with the `--import` flag ensures MSW is loaded in all processes and worker threads before any application code runs.
 
+`apps/web` and `apps/admin` provide this as the `build:msw` script:
+
+```bash
+pnpm --filter @shinju-date/web build:msw
+```
+
+**Write logs to stderr, not stdout**
+
+`NODE_OPTIONS` is inherited by child processes that Next.js spawns during build, such as `tsc --showConfig`, whose stdout is parsed as JSON. Anything this package writes to stdout breaks that parsing (`Could not parse output from TypeScript's --showConfig.`). For this reason, all Node.js diagnostic logs in this package use `console.error`. Do not add `console.log` calls.
+
 ### Browser Environment (React Components)
 
 For `apps/web` and `apps/admin`:
@@ -676,7 +686,7 @@ If mock responses don't match your expectations:
 
 1. Check the query parameters being sent
 2. Verify the mock data structure matches your database schema
-3. Add console.log statements in handlers for debugging
+3. Add `console.error` statements in handlers for debugging (not `console.log`; see above)
 
 ### TypeScript Errors
 

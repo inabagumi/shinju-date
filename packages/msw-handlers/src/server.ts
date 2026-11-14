@@ -23,8 +23,8 @@ export function startServer() {
   server.listen({
     onUnhandledFrame: 'warn',
   })
-  console.log('🚀 MSW server started')
-  console.log('[MSW] Handlers registered:', server.listHandlers().length)
+  console.error('🚀 MSW server started')
+  console.error('[MSW] Handlers registered:', server.listHandlers().length)
 }
 
 /**
@@ -32,7 +32,7 @@ export function startServer() {
  */
 export function stopServer() {
   server.close()
-  console.log('🛑 MSW server stopped')
+  console.error('🛑 MSW server stopped')
 }
 
 /**
