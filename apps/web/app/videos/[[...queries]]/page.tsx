@@ -1,18 +1,18 @@
 import { SITE_NAME as siteName } from '@shinju-date/constants'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { PageHeaderSkeleton } from '@/components/page-header'
 import { SearchResultsSkeleton } from '@/components/search-results'
 import { parseQueries } from '@/lib/url'
 import {
   VideosPageHeading,
+  VideosPageHeadingSkeleton,
   VideosPageResults,
   type VideosPageSectionProps,
 } from './_components/videos-page-sections'
 
 export async function generateMetadata({
   params,
-}: VideosPageSectionProps): Promise<Metadata> {
+}: Pick<VideosPageSectionProps, 'params'>): Promise<Metadata> {
   const { queries } = await params
   const query = parseQueries(queries)
   const title = query ? `『${query}』の検索結果` : '動画一覧'
@@ -39,14 +39,17 @@ export async function generateMetadata({
   }
 }
 
-export default function VideosPage({ params }: VideosPageSectionProps) {
+export default function VideosPage({
+  params,
+  searchParams,
+}: VideosPageSectionProps) {
   return (
     <>
-      <Suspense fallback={<PageHeaderSkeleton />}>
-        <VideosPageHeading params={params} />
+      <Suspense fallback={<VideosPageHeadingSkeleton />}>
+        <VideosPageHeading params={params} searchParams={searchParams} />
       </Suspense>
       <Suspense fallback={<SearchResultsSkeleton />}>
-        <VideosPageResults params={params} />
+        <VideosPageResults params={params} searchParams={searchParams} />
       </Suspense>
     </>
   )
