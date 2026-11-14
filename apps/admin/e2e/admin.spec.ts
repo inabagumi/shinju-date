@@ -51,21 +51,55 @@ test.describe('Admin App - Videos Management', () => {
     await emailInput.fill('admin@example.com')
     await passwordInput.fill('password123')
     await submitButton.click()
-    await page.waitForLoadState('networkidle')
+    // Wait for the sign-in redirect so that the session cookie is set
+    await page.waitForURL((url) => !url.pathname.startsWith('/login'))
   })
 
-  test('should display videos list with mock data', async ({ page }) => {
-    await page.goto('http://localhost:4000/videos')
-    await page.waitForLoadState('networkidle')
+  for (const viewport of [
+    { height: 844, name: 'mobile', width: 390 },
+    { height: 1000, name: 'desktop', width: 1440 },
+  ]) {
+    test(`should display videos list with mock data (${viewport.name})`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({
+        height: viewport.height,
+        width: viewport.width,
+      })
+      await page.goto('http://localhost:4000/videos')
 
-    // Wait for content to load
-    await page.waitForTimeout(1000)
+      await expect(
+        page.getByRole('heading', { level: 1, name: '動画管理' }),
+      ).toBeVisible()
+      // Next.js may keep a hidden copy of streamed content in the DOM, so
+      // only match the visible element.
+      await expect(
+        page.getByText(/全 [\d,]+ 件の動画/).filter({ visible: true }),
+      ).toBeVisible()
 
-    // Videos should be displayed (from MSW mock data)
-    // The actual implementation may vary, so this is a basic check
-    const content = await page.textContent('body')
-    expect(content).toBeTruthy()
-  })
+      const table = page.getByRole('table')
+      await expect(
+        table.getByRole('columnheader', { name: 'タレント' }),
+      ).toBeVisible()
+
+      // Rows rendered from MSW mock data
+      const rows = table.locator('tbody tr')
+      await expect(rows.first()).toBeVisible()
+      await expect(table.getByText('動画がありません。')).toHaveCount(0)
+      expect(await rows.count()).toBeGreaterThan(0)
+
+      // The title links to the detail page and the talent relation is resolved
+      const firstRow = rows.first()
+      await expect(
+        firstRow.locator('a[href^="/videos/"]').first(),
+      ).toHaveAttribute('href', /^\/videos\/[0-9a-f-]{36}$/)
+      const talentCell = firstRow.locator('td').nth(4)
+      await expect(talentCell).not.toBeEmpty()
+      await expect(talentCell).not.toHaveText('タレント不明')
+
+      await expect(page.getByText('Application error')).toHaveCount(0)
+    })
+  }
 
   test('should allow filtering videos', async ({ page }) => {
     await page.goto('http://localhost:4000/videos')

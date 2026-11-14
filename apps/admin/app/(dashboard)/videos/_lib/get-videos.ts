@@ -23,7 +23,9 @@ export type Video = Pick<
 > & {
   thumbnail: Pick<Tables<'thumbnails'>, 'id' | 'path' | 'blur_data_url'> | null
   clicks: number
-  talent: Pick<Tables<'talents'>, 'id' | 'name'>
+  // Embedded relations may be missing (e.g. hidden by RLS or absent in mock
+  // data), so consumers must handle `null`.
+  talent: Pick<Tables<'talents'>, 'id' | 'name'> | null
   youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
   twitch_video: {
     twitch_video_id: string
