@@ -61,8 +61,11 @@ export interface BackfillRequest {
 
 export type EnqueueResult =
   | { enqueued: true; job: BackfillJob }
-  /** A job for the account is queued or being read already. */
-  | { enqueued: false; job: BackfillJob }
+  /**
+   * A job for the account is queued or being read already, or another request
+   * for it is being handled at this moment (`job` is `null` until it is saved).
+   */
+  | { enqueued: false; job: BackfillJob | null }
 
 /** How long jobs and the queue are kept after their last change (7 days). */
 export const BACKFILL_JOB_TTL_SECONDS = 7 * 24 * 60 * 60
@@ -73,6 +76,12 @@ export const BACKFILL_JOB_TTL_SECONDS = 7 * 24 * 60 * 60
  * died is free again once it runs out.
  */
 export const BACKFILL_LEASE_SECONDS = 6 * 60
+
+/**
+ * How long one request holds an account while it checks and saves its job.
+ * Only guards against requests for the same account at the same moment.
+ */
+export const BACKFILL_ENQUEUE_LOCK_SECONDS = 30
 
 /**
  * A job that waited this long in the queue is considered lost (e.g. dropped
@@ -89,6 +98,10 @@ export function getBackfillJobId(
 
 function jobKey(id: string): string {
   return `${REDIS_KEYS.VIDEO_BACKFILL_JOB_PREFIX}${id}`
+}
+
+function enqueueLockKey(id: string): string {
+  return `${REDIS_KEYS.VIDEO_BACKFILL_ENQUEUE_LOCK_PREFIX}${id}`
 }
 
 function lockKey(id: string): string {
@@ -173,37 +186,53 @@ export class BackfillQueue {
     now: Temporal.Instant = Temporal.Now.instant(),
   ): Promise<EnqueueResult> {
     const id = getBackfillJobId(provider, accountId)
-    const [current] = await this.getJobs([id], now)
+    // Requests for the same account are handled one at a time, so that two of
+    // them cannot both find no active job and save over each other.
+    const locked = await this.#redis.set(enqueueLockKey(id), now.toString(), {
+      ex: BACKFILL_ENQUEUE_LOCK_SECONDS,
+      nx: true,
+    })
 
-    if (current?.active) {
-      return { enqueued: false, job: current.job }
+    if (locked !== 'OK') {
+      const [current] = await this.getJobs([id], now)
+
+      return { enqueued: false, job: current?.job ?? null }
     }
 
-    const resumed =
-      current && current.job.status !== 'done' ? current.job : null
-    const timestamp = now.toString()
-    const job: BackfillJob = {
-      accountId,
-      added: resumed?.added ?? 0,
-      attempts: 0,
-      cursor: resumed?.cursor ?? null,
-      error: null,
-      finishedAt: null,
-      id,
-      pages: resumed?.pages ?? 0,
-      provider,
-      requestedAt: timestamp,
-      requestedBy,
-      startedAt: null,
-      status: 'pending',
-      talentId,
-      updatedAt: timestamp,
+    try {
+      const [current] = await this.getJobs([id], now)
+
+      if (current?.active) {
+        return { enqueued: false, job: current.job }
+      }
+
+      const resumed =
+        current && current.job.status !== 'done' ? current.job : null
+      const timestamp = now.toString()
+      const job: BackfillJob = {
+        accountId,
+        added: resumed?.added ?? 0,
+        attempts: 0,
+        cursor: resumed?.cursor ?? null,
+        error: null,
+        finishedAt: null,
+        id,
+        pages: resumed?.pages ?? 0,
+        provider,
+        requestedAt: timestamp,
+        requestedBy,
+        startedAt: null,
+        status: 'pending',
+        talentId,
+        updatedAt: timestamp,
+      }
+
+      await this.#queue(job, { unlock: false })
+
+      return { enqueued: true, job }
+    } finally {
+      await this.#redis.del(enqueueLockKey(id))
     }
-
-    await this.#save(job)
-    await this.#push(id)
-
-    return { enqueued: true, job }
   }
 
   /**
@@ -301,11 +330,7 @@ export class BackfillQueue {
       updatedAt: now.toString(),
     }
 
-    await this.#save(pending)
-    // Unlock first: a worker that takes it off the queue right away must be
-    // able to claim it.
-    await this.#redis.del(lockKey(job.id))
-    await this.#push(job.id)
+    await this.#queue(pending, { unlock: true })
 
     return pending
   }
@@ -318,18 +343,39 @@ export class BackfillQueue {
       updatedAt: timestamp,
     }
 
-    await this.#save(finished)
-    await this.#redis.del(lockKey(job.id))
+    await this.#redis
+      .multi()
+      .set(jobKey(job.id), finished, { ex: BACKFILL_JOB_TTL_SECONDS })
+      .del(lockKey(job.id))
+      .exec()
 
     return finished
   }
 
-  async #push(id: string): Promise<void> {
-    await this.#redis.lpush(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, id)
-    await this.#redis.expire(
-      REDIS_KEYS.VIDEO_BACKFILL_QUEUE,
-      BACKFILL_JOB_TTL_SECONDS,
-    )
+  /**
+   * Saves a pending job and puts it at the end of the queue in one
+   * transaction, so a job is never left pending without a queue entry (which
+   * would block new requests until it times out).
+   *
+   * @param unlock - Whether to release the job a worker holds; done in the
+   *   same transaction so the next worker can claim it right away.
+   */
+  async #queue(
+    job: BackfillJob,
+    { unlock }: { unlock: boolean },
+  ): Promise<void> {
+    const transaction = this.#redis
+      .multi()
+      .set(jobKey(job.id), job, { ex: BACKFILL_JOB_TTL_SECONDS })
+
+    if (unlock) {
+      transaction.del(lockKey(job.id))
+    }
+
+    await transaction
+      .lpush(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, job.id)
+      .expire(REDIS_KEYS.VIDEO_BACKFILL_QUEUE, BACKFILL_JOB_TTL_SECONDS)
+      .exec()
   }
 
   async #save(job: BackfillJob): Promise<void> {

@@ -15,6 +15,8 @@ import {
  * they are given, like `@upstash/redis` does with automatic serialization.
  */
 class FakeRedis {
+  /** Makes the next transaction fail without applying any of its commands. */
+  failNextTransaction = false
   readonly lists = new Map<string, unknown[]>()
   readonly ttls = new Map<string, number>()
   readonly values = new Map<string, unknown>()
@@ -52,6 +54,49 @@ class FakeRedis {
 
   async mget<T extends unknown[]>(...keys: string[]): Promise<T> {
     return keys.map((key) => this.values.get(key) ?? null) as T
+  }
+
+  /** Commands queued in a transaction run together, or not at all. */
+  multi() {
+    const commands: (() => Promise<unknown>)[] = []
+    const transaction = {
+      del: (...keys: string[]) => {
+        commands.push(() => this.del(...keys))
+        return transaction
+      },
+      exec: async () => {
+        if (this.failNextTransaction) {
+          this.failNextTransaction = false
+          throw new Error('transaction failed')
+        }
+
+        const results: unknown[] = []
+
+        for (const command of commands) {
+          results.push(await command())
+        }
+
+        return results
+      },
+      expire: (key: string, seconds: number) => {
+        commands.push(() => this.expire(key, seconds))
+        return transaction
+      },
+      lpush: (key: string, ...elements: unknown[]) => {
+        commands.push(() => this.lpush(key, ...elements))
+        return transaction
+      },
+      set: (
+        key: string,
+        value: unknown,
+        options?: { ex?: number; nx?: boolean },
+      ) => {
+        commands.push(() => this.set(key, value, options))
+        return transaction
+      },
+    }
+
+    return transaction
   }
 
   async rpop<T>(key: string): Promise<T | null> {
@@ -148,6 +193,54 @@ describe('BackfillQueue', () => {
       job: { status: 'pending' },
     })
     expect(redis.lists.get(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)).toHaveLength(1)
+  })
+
+  it('refuses a request while another one for the account is handled', async () => {
+    const { queue, redis } = createQueue()
+
+    // Another request holds the account right now.
+    await redis.set(
+      `${REDIS_KEYS.VIDEO_BACKFILL_ENQUEUE_LOCK_PREFIX}${jobId}`,
+      'other',
+    )
+
+    await expect(queue.enqueue(request, now)).resolves.toEqual({
+      enqueued: false,
+      job: null,
+    })
+    expect(redis.lists.get(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)).toBeUndefined()
+  })
+
+  it('handles requests for the same account at the same moment once', async () => {
+    const { queue, redis } = createQueue()
+
+    const results = await Promise.all([
+      queue.enqueue(request, now),
+      queue.enqueue({ ...request, requestedBy: 'user-2' }, now),
+    ])
+
+    expect(results.filter((result) => result.enqueued)).toHaveLength(1)
+    expect(redis.lists.get(REDIS_KEYS.VIDEO_BACKFILL_QUEUE)).toEqual([jobId])
+    expect(
+      redis.values.has(
+        `${REDIS_KEYS.VIDEO_BACKFILL_ENQUEUE_LOCK_PREFIX}${jobId}`,
+      ),
+    ).toBe(false)
+  })
+
+  it('leaves no pending job behind when queueing it fails', async () => {
+    const { queue, redis } = createQueue()
+
+    redis.failNextTransaction = true
+
+    await expect(queue.enqueue(request, now)).rejects.toThrow(
+      'transaction failed',
+    )
+    await expect(queue.getJobs([jobId], now)).resolves.toEqual([null])
+    // The request can be made again right away.
+    await expect(queue.enqueue(request, now)).resolves.toMatchObject({
+      enqueued: true,
+    })
   })
 
   it('refuses a second request while the job is being read', async () => {
