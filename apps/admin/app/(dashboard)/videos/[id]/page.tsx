@@ -304,7 +304,7 @@ export default function VideoDetailPage({ params }: Props) {
     <div className="mx-auto max-w-7xl p-4">
       <div className="mb-6">
         <Link
-          className="text-774-blue-600 hover:text-774-blue-800 inline-flex items-center"
+          className="inline-flex items-center text-774-blue-600 hover:text-774-blue-800"
           href="/videos"
         >
           <ChevronLeft className="mr-1 h-4 w-4" />

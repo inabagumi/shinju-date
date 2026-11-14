@@ -133,14 +133,14 @@ export default function VideoList({ videos }: Props) {
     <div>
       {/* Action bar */}
       {selectedIds.length > 0 && (
-        <div className="bg-secondary-blue sticky top-0 z-10 mb-4 p-4 text-white shadow-lg">
+        <div className="sticky top-0 z-10 mb-4 bg-secondary-blue p-4 text-white shadow-lg">
           <div className="flex items-center justify-between">
             <span className="font-semibold">{selectedIds.length} 件選択中</span>
             <div className="flex gap-2">
               {hasNonDeletedVideos && (
                 <>
                   <button
-                    className="bg-774-blue-800 hover:bg-774-blue-900 rounded-md px-4 py-2"
+                    className="rounded-md bg-774-blue-800 px-4 py-2 hover:bg-774-blue-900"
                     onClick={() => handleBulkAction('toggle')}
                     type="button"
                   >
@@ -189,7 +189,7 @@ export default function VideoList({ videos }: Props) {
               <th className="p-3 text-left whitespace-nowrap">タレント</th>
               <th className="p-3 text-left whitespace-nowrap">
                 <Link
-                  className="hover:text-774-blue-600 flex items-center"
+                  className="flex items-center hover:text-774-blue-600"
                   href={getSortUrl('published_at')}
                 >
                   公開日時
@@ -202,7 +202,7 @@ export default function VideoList({ videos }: Props) {
               </th>
               <th className="p-3 text-left whitespace-nowrap">
                 <Link
-                  className="hover:text-774-blue-600 flex items-center"
+                  className="flex items-center hover:text-774-blue-600"
                   href={getSortUrl('updated_at')}
                 >
                   更新日時

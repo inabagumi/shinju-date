@@ -15,7 +15,7 @@ const textareaVariants = cva(
     variants: {
       variant: {
         default:
-          'focus:border-primary focus:ring-primary border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white',
+          'border-gray-300 focus:border-primary focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white',
         error:
           'border-red-500 focus:border-red-500 focus:ring-red-500 dark:border-red-600',
       },

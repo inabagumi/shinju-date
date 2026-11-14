@@ -118,10 +118,10 @@ function TermsResults({
     <div className="space-y-6">
       {/* Alphabet navigation */}
       {groupKeys.length > 0 && !searchQuery && (
-        <nav className="border-774-blue-300 bg-774-blue-50 flex flex-wrap gap-2 rounded-md border p-3">
+        <nav className="flex flex-wrap gap-2 rounded-md border border-774-blue-300 bg-774-blue-50 p-3">
           {groupKeys.map((group) => (
             <Button
-              className="hover:bg-secondary-blue hover:text-secondary-blue-foreground rounded px-2 py-1 text-sm"
+              className="rounded px-2 py-1 text-sm hover:bg-secondary-blue hover:text-secondary-blue-foreground"
               key={group}
               onClick={() => scrollToGroup(group)}
               size="sm"
@@ -144,11 +144,11 @@ function TermsResults({
           {Array.from(groupedTerms.entries()).map(([group, groupTerms]) => (
             <div id={`group-${group}`} key={group}>
               <Accordion.Item
-                className="border-774-blue-300 overflow-hidden rounded-lg border"
+                className="overflow-hidden rounded-lg border border-774-blue-300"
                 value={group}
               >
                 <Accordion.Header>
-                  <Accordion.Trigger className="bg-774-blue-50 hover:bg-774-blue-100 flex w-full items-center justify-between px-4 py-3 text-left font-semibold">
+                  <Accordion.Trigger className="flex w-full items-center justify-between bg-774-blue-50 px-4 py-3 text-left font-semibold hover:bg-774-blue-100">
                     <span>
                       {group} ({groupTerms.length})
                     </span>
@@ -157,8 +157,8 @@ function TermsResults({
                     </span>
                   </Accordion.Trigger>
                 </Accordion.Header>
-                <Accordion.Content className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden bg-white">
-                  <div className="divide-774-blue-200 divide-y">
+                <Accordion.Content className="overflow-hidden bg-white data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                  <div className="divide-y divide-774-blue-200">
                     {groupTerms.map((term) => (
                       <div className="p-4" key={term.id}>
                         <div className="mb-2 flex items-start justify-between">

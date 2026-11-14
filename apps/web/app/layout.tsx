@@ -40,13 +40,13 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           type="application/opensearchdescription+xml"
         />
       </head>
-      <body className="bg-primary-foreground text-primary dark:text-774-nevy-50 grid min-h-svh grid-rows-[auto_1fr_auto] antialiased dark:bg-zinc-900">
+      <body className="grid min-h-svh grid-rows-[auto_1fr_auto] bg-primary-foreground text-primary antialiased dark:bg-zinc-900 dark:text-774-nevy-50">
         <PageVisitTracker />
         <Providers>
           <SearchModalProvider>
             <SVGSymbols />
 
-            <nav className="bg-primary-foreground/60 sticky top-0 z-50 flex justify-between gap-6 px-2 py-3 shadow-md backdrop-blur dark:bg-zinc-900/60">
+            <nav className="sticky top-0 z-50 flex justify-between gap-6 bg-primary-foreground/60 px-2 py-3 shadow-md backdrop-blur dark:bg-zinc-900/60">
               <Link
                 className="flex items-center gap-2 p-1 font-semibold"
                 href="/"
@@ -94,7 +94,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
 
             <AnnouncementBannerWrapper />
 
-            <footer className="safe-area-pb-footer safe-area-px bg-primary text-primary-foreground py-5 text-sm dark:bg-zinc-800">
+            <footer className="bg-primary py-5 safe-area-px safe-area-pb-footer text-sm text-primary-foreground dark:bg-zinc-800">
               <nav className="mx-auto max-w-6xl px-4 py-2">
                 <ul className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-end">
                   <li>

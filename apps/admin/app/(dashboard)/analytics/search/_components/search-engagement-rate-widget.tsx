@@ -68,7 +68,7 @@ function SearchEngagementRateWidgetComponent({
         <h2 className="text-xl font-semibold">
           検索利用率
           {selectedDate ? (
-            <span className="text-774-blue-600 ml-2 text-sm">
+            <span className="ml-2 text-sm text-774-blue-600">
               ({selectedDate})
             </span>
           ) : (

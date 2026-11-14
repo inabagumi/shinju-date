@@ -21,7 +21,7 @@ export default function NoResults({
 
       {recommendedQueries.length > 0 && (
         <div className="mx-auto max-w-2xl">
-          <h2 className="text-774-nevy-500 dark:text-774-nevy-400 mb-4 text-sm">
+          <h2 className="mb-4 text-sm text-774-nevy-500 dark:text-774-nevy-400">
             おすすめの検索キーワード
           </h2>
           <RecommendedQueries queries={recommendedQueries} />
@@ -29,7 +29,7 @@ export default function NoResults({
       )}
 
       <Link
-        className="text-secondary-blue hover:bg-secondary-blue hover:text-secondary-blue-foreground dark:border-774-nevy-50 dark:text-774-nevy-50 dark:hover:bg-774-nevy-50 dark:hover:text-primary inline-block rounded-md border border-current px-6 py-3 font-semibold"
+        className="inline-block rounded-md border border-current px-6 py-3 font-semibold text-secondary-blue hover:bg-secondary-blue hover:text-secondary-blue-foreground dark:border-774-nevy-50 dark:text-774-nevy-50 dark:hover:bg-774-nevy-50 dark:hover:text-primary"
         href={joinURL(basePath, '/videos')}
       >
         新着動画を見る

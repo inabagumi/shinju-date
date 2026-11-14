@@ -92,10 +92,10 @@ export function MultiSelect({
             >
               <div className="mr-2 flex size-5 items-center justify-center rounded border border-gray-300">
                 {value.length === options.length && (
-                  <Check className="text-774-blue-600 size-4" />
+                  <Check className="size-4 text-774-blue-600" />
                 )}
                 {value.length > 0 && value.length < options.length && (
-                  <Minus className="text-774-blue-600 size-3" />
+                  <Minus className="size-3 text-774-blue-600" />
                 )}
               </div>
               <span className="font-medium">
@@ -115,7 +115,7 @@ export function MultiSelect({
                   >
                     <Checkbox.Root
                       checked={isChecked}
-                      className="data-[state=checked]:border-774-blue-600 data-[state=checked]:bg-774-blue-600 mr-2 flex size-5 items-center justify-center rounded border border-gray-300 bg-white"
+                      className="mr-2 flex size-5 items-center justify-center rounded border border-gray-300 bg-white data-[state=checked]:border-774-blue-600 data-[state=checked]:bg-774-blue-600"
                       id={`multi-select-${option.value}`}
                       onCheckedChange={() => handleToggle(option.value)}
                     >

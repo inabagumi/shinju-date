@@ -39,7 +39,7 @@ export function TimelineSkeleton() {
   return (
     <section className="space-y-6">
       <h2 className="text-right text-2xl font-bold">
-        <span className="bg-774-nevy-100 inline-block h-6 w-32 animate-pulse rounded-md" />
+        <span className="inline-block h-6 w-32 animate-pulse rounded-md bg-774-nevy-100" />
       </h2>
 
       <VideoCardListSkeleton />

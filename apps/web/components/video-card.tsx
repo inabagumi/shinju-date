@@ -62,20 +62,20 @@ function Thumbnail({ video }: ThumbnailProps) {
 
 export function VideoCardSkeleton() {
   return (
-    <div className="border-774-nevy-200 bg-774-nevy-100 flex flex-col overflow-hidden rounded-xl border shadow dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none">
+    <div className="flex flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none">
       <div className="relative aspect-video">
-        <div className="bg-774-nevy-200 h-full animate-pulse dark:bg-zinc-700" />
+        <div className="h-full animate-pulse bg-774-nevy-200 dark:bg-zinc-700" />
       </div>
 
       <div className="grid grow grid-rows-[1fr_auto] gap-6 p-2.5">
         <h3 className="font-semibold break-all">
-          <span className="bg-774-nevy-200 inline-block h-4 w-full animate-pulse rounded-md dark:bg-zinc-700" />
-          <span className="bg-774-nevy-200 inline-block h-4 w-full animate-pulse rounded-md dark:bg-zinc-700" />
-          <span className="bg-774-nevy-200 inline-block h-4 w-28 animate-pulse rounded-md dark:bg-zinc-700" />
+          <span className="inline-block h-4 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
+          <span className="inline-block h-4 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
+          <span className="inline-block h-4 w-28 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
         </h3>
 
         <div className="text-right text-sm">
-          <span className="bg-774-nevy-200 inline-block h-3 w-24 animate-pulse rounded-md dark:bg-zinc-700" />
+          <span className="inline-block h-3 w-24 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
         </div>
       </div>
     </div>
@@ -120,7 +120,7 @@ export default function VideoCard({
   return (
     <a
       className={twMerge(
-        'border-774-nevy-200 bg-774-nevy-100 flex flex-col overflow-hidden rounded-xl border shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
+        'flex flex-col overflow-hidden rounded-xl border border-774-nevy-200 bg-774-nevy-100 shadow hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-800 dark:shadow-none',
         className,
       )}
       href={href}
@@ -142,7 +142,7 @@ export default function VideoCard({
         )}
         <div className="absolute top-0 right-0 m-2 flex flex-col items-end gap-1">
           <LiveNow
-            className="bg-774-pink-600 text-774-pink-50 inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold"
+            className="inline-block rounded-md bg-774-pink-600 px-1.5 py-0.5 text-xs font-semibold text-774-pink-50"
             status={value.status}
           />
           <PlatformBadge platform={value.platform} />

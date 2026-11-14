@@ -297,7 +297,7 @@ export default function TalentDetailPage({ params }: Props) {
       {/* Back button - static, renders immediately */}
       <div className="mb-6">
         <Link
-          className="text-774-blue-600 hover:text-774-blue-800 inline-flex items-center"
+          className="inline-flex items-center text-774-blue-600 hover:text-774-blue-800"
           href="/talents"
         >
           <ChevronLeft className="mr-1 size-4" />

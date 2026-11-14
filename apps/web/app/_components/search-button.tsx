@@ -30,14 +30,14 @@ export function SearchButton() {
   return (
     <button
       aria-label="検索"
-      className="bg-774-nevy-100 text-774-nevy-300 hover:bg-774-nevy-200 hover:text-primary dark:text-774-nevy-100 dark:hover:text-774-nevy-100 flex w-full min-w-48 items-center gap-2 rounded-full border-0 px-4 py-1.5 text-left dark:bg-zinc-700 dark:hover:bg-zinc-600"
+      className="flex w-full min-w-48 items-center gap-2 rounded-full border-0 bg-774-nevy-100 px-4 py-1.5 text-left text-774-nevy-300 hover:bg-774-nevy-200 hover:text-primary dark:bg-zinc-700 dark:text-774-nevy-100 dark:hover:bg-zinc-600 dark:hover:text-774-nevy-100"
       onClick={openModal}
       type="button"
     >
       <Search className="size-5" />
       <span className="flex-1">検索</span>
       {isMac !== undefined && (
-        <kbd className="border-774-nevy-200 bg-primary-foreground text-774-nevy-500 dark:text-774-nevy-300 hidden rounded border px-2 py-0.5 font-mono text-xs sm:inline-block dark:border-zinc-600 dark:bg-zinc-800">
+        <kbd className="hidden rounded border border-774-nevy-200 bg-primary-foreground px-2 py-0.5 font-mono text-xs text-774-nevy-500 sm:inline-block dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-300">
           {isMac ? '⌘' : 'Ctrl'}K
         </kbd>
       )}

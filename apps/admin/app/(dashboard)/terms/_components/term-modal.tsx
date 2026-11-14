@@ -69,7 +69,7 @@ export function TermModal({ term }: TermModalProps) {
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
         <button
-          className="bg-secondary-blue text-secondary-blue-foreground rounded-md px-4 py-2 hover:opacity-90"
+          className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90"
           type="button"
         >
           {isEditing ? '編集' : '新しい用語を追加'}
@@ -88,7 +88,7 @@ export function TermModal({ term }: TermModalProps) {
             <FormField name="term">
               <Label className="mb-2 block font-medium">用語</Label>
               <Input
-                className="border-774-blue-300 focus:border-secondary-blue w-full rounded-md border px-3 py-2 focus:outline-none"
+                className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
                 defaultValue={term?.term ?? ''}
                 required
               />
@@ -118,14 +118,14 @@ export function TermModal({ term }: TermModalProps) {
             <div className="flex justify-end gap-2 pt-2">
               <DialogClose asChild>
                 <button
-                  className="border-774-blue-300 rounded-md border px-4 py-2 hover:bg-gray-50"
+                  className="rounded-md border border-774-blue-300 px-4 py-2 hover:bg-gray-50"
                   type="button"
                 >
                   キャンセル
                 </button>
               </DialogClose>
               <SubmitButton
-                className="bg-secondary-blue text-secondary-blue-foreground rounded-md px-4 py-2 hover:opacity-90 disabled:opacity-50"
+                className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90 disabled:opacity-50"
                 type="submit"
               >
                 {isEditing ? '更新' : '追加'}

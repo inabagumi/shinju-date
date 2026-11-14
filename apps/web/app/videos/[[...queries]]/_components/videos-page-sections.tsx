@@ -24,7 +24,7 @@ export function VideosPageHeadingSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="bg-774-nevy-100 h-8 w-64 animate-pulse rounded-md dark:bg-zinc-800"
+      className="h-8 w-64 animate-pulse rounded-md bg-774-nevy-100 dark:bg-zinc-800"
     />
   )
 }

@@ -48,7 +48,7 @@ function ColorInput({
         value={color}
       />
       <input
-        className="focus:border-774-blue-500 focus:ring-774-blue-500 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:ring-1 focus:outline-none"
+        className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-774-blue-500 focus:ring-1 focus:ring-774-blue-500 focus:outline-none"
         name={name}
         onChange={(e) => setColor(e.target.value)}
         placeholder="#FF5733"

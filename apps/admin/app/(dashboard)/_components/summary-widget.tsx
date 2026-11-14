@@ -25,11 +25,11 @@ export async function VideoSummaryWidget() {
       <h2 className="mb-4 text-xl font-semibold">動画サマリー</h2>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Link
-          className="bg-774-blue-50 hover:bg-774-blue-100 rounded-lg p-4 transition-colors"
+          className="rounded-lg bg-774-blue-50 p-4 transition-colors hover:bg-774-blue-100"
           href="/videos?deleted=false"
         >
           <p className="text-sm text-gray-600">総動画数</p>
-          <p className="text-774-blue-600 text-2xl font-bold">
+          <p className="text-2xl font-bold text-774-blue-600">
             {formatNumber(stats.totalVideos.current)}
           </p>
           <div className="mt-2">
@@ -49,11 +49,11 @@ export async function VideoSummaryWidget() {
           </div>
         </Link>
         <Link
-          className="bg-774-nevy-50 hover:bg-774-nevy-100 rounded-lg p-4 transition-colors"
+          className="rounded-lg bg-774-nevy-50 p-4 transition-colors hover:bg-774-nevy-100"
           href="/videos?deleted=false&visible=true"
         >
           <p className="text-sm text-gray-600">配信予定</p>
-          <p className="text-774-nevy-600 text-2xl font-bold">
+          <p className="text-2xl font-bold text-774-nevy-600">
             {formatNumber(stats.scheduledVideos.current)}
           </p>
           <div className="mt-2">
@@ -107,11 +107,11 @@ export async function ContentSummaryWidget() {
       <h2 className="mb-4 text-xl font-semibold">コンテンツサマリー</h2>
       <div className="grid grid-cols-2 gap-4">
         <Link
-          className="bg-774-nevy-50 hover:bg-774-nevy-100 rounded-lg p-4 transition-colors"
+          className="rounded-lg bg-774-nevy-50 p-4 transition-colors hover:bg-774-nevy-100"
           href="/terms"
         >
           <p className="text-sm text-gray-600">総用語数</p>
-          <p className="text-774-nevy-600 text-2xl font-bold">
+          <p className="text-2xl font-bold text-774-nevy-600">
             {formatNumber(stats.totalTerms.current)}
           </p>
           <div className="mt-2">
@@ -119,11 +119,11 @@ export async function ContentSummaryWidget() {
           </div>
         </Link>
         <Link
-          className="bg-774-blue-50 hover:bg-774-blue-100 rounded-lg p-4 transition-colors"
+          className="rounded-lg bg-774-blue-50 p-4 transition-colors hover:bg-774-blue-100"
           href="/talents"
         >
           <p className="text-sm text-gray-600">総タレント数</p>
-          <p className="text-774-blue-600 text-2xl font-bold">
+          <p className="text-2xl font-bold text-774-blue-600">
             {formatNumber(stats.totalTalents.current)}
           </p>
           <div className="mt-2">

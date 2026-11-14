@@ -20,11 +20,11 @@ export async function AnalyticsWidget() {
       <h2 className="mb-4 text-xl font-semibold">アナリティクス</h2>
       <div className="grid grid-cols-2 gap-4">
         <Link
-          className="bg-774-blue-50 hover:bg-774-blue-100 rounded-lg p-4 transition-colors"
+          className="rounded-lg bg-774-blue-50 p-4 transition-colors hover:bg-774-blue-100"
           href="/analytics/search"
         >
           <p className="text-sm text-gray-600">本日の検索数</p>
-          <p className="text-774-blue-600 text-2xl font-bold">
+          <p className="text-2xl font-bold text-774-blue-600">
             {formatNumber(analytics.recentSearches.current)}
           </p>
           <div className="mt-2">
@@ -44,11 +44,11 @@ export async function AnalyticsWidget() {
           </div>
         </Link>
         <Link
-          className="bg-774-nevy-50 hover:bg-774-nevy-100 col-span-2 rounded-lg p-4 transition-colors"
+          className="col-span-2 rounded-lg bg-774-nevy-50 p-4 transition-colors hover:bg-774-nevy-100"
           href="/analytics/search"
         >
           <p className="text-sm text-gray-600">人気キーワード数</p>
-          <p className="text-774-nevy-600 text-2xl font-bold">
+          <p className="text-2xl font-bold text-774-nevy-600">
             {formatNumber(analytics.totalPopularKeywords.current)}
           </p>
           <div className="mt-2">

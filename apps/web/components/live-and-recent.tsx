@@ -17,9 +17,9 @@ export function LiveAndRecentSkeleton() {
     <div className="space-y-6">
       {/* Tab buttons skeleton */}
       <div className="flex gap-2">
-        <div className="bg-774-nevy-100 h-10 w-24 animate-pulse rounded-lg dark:bg-zinc-800" />
-        <div className="bg-774-nevy-100 h-10 w-24 animate-pulse rounded-lg dark:bg-zinc-800" />
-        <div className="bg-774-nevy-100 h-10 w-24 animate-pulse rounded-lg dark:bg-zinc-800" />
+        <div className="h-10 w-24 animate-pulse rounded-lg bg-774-nevy-100 dark:bg-zinc-800" />
+        <div className="h-10 w-24 animate-pulse rounded-lg bg-774-nevy-100 dark:bg-zinc-800" />
+        <div className="h-10 w-24 animate-pulse rounded-lg bg-774-nevy-100 dark:bg-zinc-800" />
       </div>
 
       {/* Responsive layout */}

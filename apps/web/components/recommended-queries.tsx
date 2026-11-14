@@ -31,12 +31,12 @@ export default function RecommendedQueries({
           <div className="p-2">
             {queries.map((query) => (
               <Link
-                className="hover:bg-774-nevy-100 flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left dark:hover:bg-zinc-800"
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left hover:bg-774-nevy-100 dark:hover:bg-zinc-800"
                 href={`/videos/${encodeURIComponent(query)}`}
                 key={query}
                 {...(onClickLink ? { onClick: onClickLink } : {})}
               >
-                <Hash className="text-774-nevy-400 dark:text-774-nevy-300 size-4" />
+                <Hash className="size-4 text-774-nevy-400 dark:text-774-nevy-300" />
                 <span className="text-primary dark:text-774-nevy-50">
                   {query}
                 </span>
@@ -56,7 +56,7 @@ export default function RecommendedQueries({
           <li key={query}>
             <Link
               aria-label={`『${query}』の検索結果`}
-              className="hover:bg-774-nevy-100 block rounded-xl px-1 py-2 text-center dark:hover:bg-zinc-600"
+              className="block rounded-xl px-1 py-2 text-center hover:bg-774-nevy-100 dark:hover:bg-zinc-600"
               href={`/videos/${encodeURIComponent(query)}`}
               title={`『${query}』の検索結果`}
               {...(onClickLink ? { onClick: onClickLink } : {})}

@@ -54,7 +54,7 @@ export function AnnouncementBanner({
   }
 
   return (
-    <div className="safe-area-mx sticky bottom-4 z-50">
+    <div className="sticky bottom-4 z-50 safe-area-mx">
       <div
         className={`mb-4 ml-auto max-w-md rounded-lg border p-4 shadow-lg ${getBannerClasses(
           data.level,

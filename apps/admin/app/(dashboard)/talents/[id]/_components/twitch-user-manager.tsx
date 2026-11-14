@@ -191,7 +191,7 @@ export function TwitchUserManager({
                       {user.twitch_login_name && (
                         <div>
                           <a
-                            className="text-774-blue-600 hover:text-774-blue-800 inline-flex items-center text-sm"
+                            className="inline-flex items-center text-sm text-774-blue-600 hover:text-774-blue-800"
                             href={`https://www.twitch.tv/${encodeURIComponent(user.twitch_login_name)}`}
                             rel="noopener noreferrer"
                             target="_blank"

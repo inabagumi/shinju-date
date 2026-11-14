@@ -45,7 +45,7 @@ export default function SearchAnalyticsPage({
 
       {/* New Search Quality Metrics Section */}
       <div className="mb-6">
-        <h2 className="text-774-blue-700 mb-4 text-2xl font-semibold">
+        <h2 className="mb-4 text-2xl font-semibold text-774-blue-700">
           検索品質指標
         </h2>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

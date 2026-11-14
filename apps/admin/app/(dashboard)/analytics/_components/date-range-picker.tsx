@@ -251,7 +251,7 @@ export default function DateRangePicker({
               キャンセル
             </button>
             <button
-              className="bg-secondary-blue hover:bg-774-blue-800 flex-1 rounded px-3 py-1.5 text-sm text-white transition-colors"
+              className="flex-1 rounded bg-secondary-blue px-3 py-1.5 text-sm text-white transition-colors hover:bg-774-blue-800"
               onClick={handleCustomApply}
               type="button"
             >

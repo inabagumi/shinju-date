@@ -16,13 +16,13 @@ export default function NotFound() {
 
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link
-            className="bg-secondary-blue hover:bg-774-blue-800 focus:ring-774-blue-500 inline-flex items-center justify-center rounded-md border border-transparent px-6 py-3 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
+            className="inline-flex items-center justify-center rounded-md border border-transparent bg-secondary-blue px-6 py-3 text-sm font-medium text-white shadow-sm hover:bg-774-blue-800 focus:ring-2 focus:ring-774-blue-500 focus:ring-offset-2 focus:outline-none"
             href="/"
           >
             ダッシュボードに戻る
           </Link>
           <Link
-            className="focus:ring-774-blue-500 inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:outline-none"
+            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-774-blue-500 focus:ring-offset-2 focus:outline-none"
             href="/videos"
           >
             動画一覧を見る

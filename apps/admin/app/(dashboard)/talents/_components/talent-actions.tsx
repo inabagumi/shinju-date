@@ -108,7 +108,7 @@ export function TalentActions({ talent }: TalentActionsProps) {
         ) : (
           <>
             <button
-              className="bg-774-blue-50 text-774-blue-600 hover:bg-774-blue-100 rounded px-2 py-1 text-xs whitespace-nowrap disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+              className="rounded bg-774-blue-50 px-2 py-1 text-xs whitespace-nowrap text-774-blue-600 hover:bg-774-blue-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
               disabled={isPending}
               onClick={handleSync}
               type="button"

@@ -70,7 +70,7 @@ function SearchExitRateWidgetComponent({
         <h2 className="text-xl font-semibold">
           検索からの離脱率
           {selectedDate ? (
-            <span className="text-774-blue-600 ml-2 text-sm">
+            <span className="ml-2 text-sm text-774-blue-600">
               ({selectedDate})
             </span>
           ) : (
@@ -98,7 +98,7 @@ function SearchExitRateWidgetComponent({
               className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
               key={item.keyword}
             >
-              <div className="bg-774-blue-100 text-774-blue-600 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-774-blue-100 text-sm font-semibold text-774-blue-600">
                 {index + 1}
               </div>
               <div className="min-w-0 flex-1">

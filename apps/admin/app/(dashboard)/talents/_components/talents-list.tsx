@@ -87,7 +87,7 @@ export function TalentsList({ talents }: TalentsListProps) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex w-full flex-col gap-3 sm:max-w-2xl sm:flex-row">
           <input
-            className="border-774-blue-300 focus:border-secondary-blue w-full rounded-md border px-4 py-2 focus:outline-none"
+            className="w-full rounded-md border border-774-blue-300 px-4 py-2 focus:border-secondary-blue focus:outline-none"
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="タレント名またはIDで検索..."
             type="text"
@@ -95,7 +95,7 @@ export function TalentsList({ talents }: TalentsListProps) {
           />
           <select
             aria-label="状態で絞り込み"
-            className="border-774-blue-300 focus:border-secondary-blue rounded-md border px-3 py-2 focus:outline-none sm:w-48"
+            className="rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none sm:w-48"
             onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
             value={statusFilter}
           >
@@ -116,7 +116,7 @@ export function TalentsList({ talents }: TalentsListProps) {
             : 'タレントがいません。'}
         </p>
       ) : (
-        <div className="border-774-blue-300 overflow-x-auto rounded-lg border">
+        <div className="overflow-x-auto rounded-lg border border-774-blue-300">
           <table className="w-full">
             <thead className="bg-774-blue-50">
               <tr>
@@ -127,7 +127,7 @@ export function TalentsList({ talents }: TalentsListProps) {
                 <th className="px-4 py-3 text-left font-semibold">作成日時</th>
                 <th className="px-4 py-3 text-left font-semibold">
                   <button
-                    className="hover:text-774-blue-600 flex items-center gap-1"
+                    className="flex items-center gap-1 hover:text-774-blue-600"
                     onClick={toggleSortOrder}
                     type="button"
                   >
@@ -142,7 +142,7 @@ export function TalentsList({ talents }: TalentsListProps) {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-774-blue-200 divide-y bg-white">
+            <tbody className="divide-y divide-774-blue-200 bg-white">
               {filteredAndSortedTalents.map((talent) => (
                 <tr className="hover:bg-774-blue-50" key={talent.id}>
                   <td className="px-4 py-3">

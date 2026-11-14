@@ -59,7 +59,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
       {/* Header and Add Form */}
       <div className="space-y-4">
         {/* Add Query Form */}
-        <div className="border-774-blue-300 bg-774-blue-50 flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-end">
+        <div className="flex flex-col gap-4 rounded-lg border border-774-blue-300 bg-774-blue-50 p-4 sm:flex-row sm:items-end">
           <div className="flex-1">
             <label
               className="mb-2 block text-sm font-medium"
@@ -120,7 +120,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
               : '手動追加されたオススメクエリがありません。'}
           </p>
         ) : (
-          <div className="border-774-blue-300 overflow-x-auto rounded-lg border">
+          <div className="overflow-x-auto rounded-lg border border-774-blue-300">
             <table className="w-full">
               <thead className="bg-774-blue-50">
                 <tr>
@@ -130,7 +130,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-774-blue-200 divide-y bg-white">
+              <tbody className="divide-y divide-774-blue-200 bg-white">
                 {filteredManualQueries.map((query) => (
                   <tr className="hover:bg-774-blue-50" key={query}>
                     <td className="px-4 py-3">{query}</td>
@@ -168,7 +168,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
               : '自動選出されたオススメクエリがありません。'}
           </p>
         ) : (
-          <div className="border-774-blue-300 overflow-x-auto rounded-lg border">
+          <div className="overflow-x-auto rounded-lg border border-774-blue-300">
             <table className="w-full">
               <thead className="bg-774-blue-50">
                 <tr>
@@ -178,7 +178,7 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-774-blue-200 divide-y bg-white">
+              <tbody className="divide-y divide-774-blue-200 bg-white">
                 {filteredAutoQueries.map(({ query, score }) => (
                   <tr className="hover:bg-774-blue-50" key={query}>
                     <td className="px-4 py-3">{query}</td>

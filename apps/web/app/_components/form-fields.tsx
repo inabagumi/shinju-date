@@ -23,7 +23,7 @@ export function InputField({
     <div>
       {label && (
         <label
-          className="text-primary dark:text-774-nevy-50 mb-2 block text-sm font-medium"
+          className="mb-2 block text-sm font-medium text-primary dark:text-774-nevy-50"
           htmlFor={inputId}
         >
           {label} {required && <span className="text-red-500">*</span>}
@@ -32,7 +32,7 @@ export function InputField({
       <Input
         {...props}
         className={twMerge(
-          'border-774-nevy-300 placeholder:text-774-nevy-400 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:placeholder:text-774-nevy-400 rounded-lg py-3 dark:border-zinc-600',
+          'rounded-lg border-774-nevy-300 py-3 placeholder:text-774-nevy-400 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600 dark:placeholder:text-774-nevy-400',
           className,
         )}
         id={inputId}
@@ -67,7 +67,7 @@ export function TextareaField({
     <div>
       {label && (
         <label
-          className="text-primary dark:text-774-nevy-50 mb-2 block text-sm font-medium"
+          className="mb-2 block text-sm font-medium text-primary dark:text-774-nevy-50"
           htmlFor={inputId}
         >
           {label} {required && <span className="text-red-500">*</span>}
@@ -75,7 +75,7 @@ export function TextareaField({
       )}
       <Textarea
         className={twMerge(
-          'border-774-nevy-300 placeholder:text-774-nevy-400 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:placeholder:text-774-nevy-400 rounded-lg px-4 py-3 dark:border-zinc-600',
+          'rounded-lg border-774-nevy-300 px-4 py-3 placeholder:text-774-nevy-400 focus:border-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600 dark:placeholder:text-774-nevy-400',
           className,
         )}
         id={inputId}
@@ -112,7 +112,7 @@ export function SelectField({
     <div>
       {label && (
         <label
-          className="text-primary dark:text-774-nevy-50 mb-2 block text-sm font-medium"
+          className="mb-2 block text-sm font-medium text-primary dark:text-774-nevy-50"
           htmlFor={inputId}
         >
           {label} {required && <span className="text-red-500">*</span>}
@@ -120,7 +120,7 @@ export function SelectField({
       )}
       <select
         className={twMerge(
-          'border-774-nevy-300 text-primary focus:border-secondary-blue focus:ring-secondary-blue/20 dark:text-774-nevy-50 w-full rounded-lg border bg-white px-4 py-3 focus:ring-2 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800',
+          'w-full rounded-lg border border-774-nevy-300 bg-white px-4 py-3 text-primary focus:border-secondary-blue focus:ring-2 focus:ring-secondary-blue/20 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-774-nevy-50',
           className,
         )}
         id={inputId}
@@ -154,14 +154,14 @@ export function CheckboxField({
       <label className="flex items-center gap-3">
         <input
           className={twMerge(
-            'border-774-nevy-300 text-secondary-blue focus:ring-secondary-blue/20 h-4 w-4 rounded dark:border-zinc-600',
+            'h-4 w-4 rounded border-774-nevy-300 text-secondary-blue focus:ring-secondary-blue/20 dark:border-zinc-600',
             className,
           )}
           id={inputId}
           type="checkbox"
           {...props}
         />
-        <span className="text-primary dark:text-774-nevy-50 text-sm">
+        <span className="text-sm text-primary dark:text-774-nevy-50">
           {label}
         </span>
       </label>

@@ -26,7 +26,7 @@ export default function Breadcrumbs({
           itemType="https://schema.org/ListItem"
         >
           <Link
-            className="hover:bg-774-nevy-200 rounded-full px-4 py-1 dark:hover:bg-zinc-600"
+            className="rounded-full px-4 py-1 hover:bg-774-nevy-200 dark:hover:bg-zinc-600"
             href="/"
             itemProp="item"
           >
@@ -42,7 +42,7 @@ export default function Breadcrumbs({
             itemType="https://schema.org/ListItem"
           >
             <Link
-              className="bg-774-nevy-100 hover:bg-774-nevy-200 rounded-full px-4 py-1 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+              className="rounded-full bg-774-nevy-100 px-4 py-1 hover:bg-774-nevy-200 dark:bg-zinc-700 dark:hover:bg-zinc-600"
               href={pathname}
               itemProp="item"
             >
