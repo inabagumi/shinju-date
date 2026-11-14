@@ -8,6 +8,7 @@ resource "vercel_project" "this" {
   }
   ignore_command               = "npx turbo-ignore"
   name                         = "shinju-date"
+  node_version                 = "26.x"
   prioritise_production_builds = true
   root_directory               = "apps/web"
   resource_config = {
@@ -97,7 +98,7 @@ resource "vercel_project_deployment_retention" "this" {
   expiration_canceled   = "1m"
   expiration_errored    = "1m"
   expiration_preview    = "1m"
-  expiration_production = "unlimited"
+  expiration_production = "1m"
   project_id            = vercel_project.this.id
   team_id               = vercel_project.this.team_id
 }
@@ -112,6 +113,7 @@ resource "vercel_project" "admin" {
   }
   ignore_command               = "npx turbo-ignore"
   name                         = "shinju-date-admin"
+  node_version                 = "26.x"
   prioritise_production_builds = true
   root_directory               = "apps/admin"
   resource_config = {
@@ -192,7 +194,7 @@ resource "vercel_project_deployment_retention" "admin" {
   expiration_canceled   = "1m"
   expiration_errored    = "1m"
   expiration_preview    = "1m"
-  expiration_production = "unlimited"
+  expiration_production = "1m"
   project_id            = vercel_project.admin.id
   team_id               = vercel_project.admin.team_id
 }
@@ -207,6 +209,7 @@ resource "vercel_project" "batch" {
   }
   ignore_command               = "npx turbo-ignore"
   name                         = "shinju-date-batch"
+  node_version                 = "26.x"
   prioritise_production_builds = true
   root_directory               = "apps/batch"
   resource_config = {
@@ -320,7 +323,7 @@ resource "vercel_project_deployment_retention" "batch" {
   expiration_canceled   = "1m"
   expiration_errored    = "1m"
   expiration_preview    = "1m"
-  expiration_production = "unlimited"
+  expiration_production = "1m"
   project_id            = vercel_project.batch.id
   team_id               = vercel_project.batch.team_id
 }
