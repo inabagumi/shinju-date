@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { TwitchStream, TwitchVideo } from '../types.js'
 import {
-  getStatusForType,
   getThumbnailSource,
   getVideoChanges,
   toLiveFields,
@@ -15,18 +14,6 @@ const video = {
   title: 'Archive',
   type: 'archive',
 } as TwitchVideo
-
-describe('getStatusForType', () => {
-  it('treats archives and highlights as ended broadcasts', () => {
-    expect(getStatusForType('archive')).toBe('ENDED')
-    expect(getStatusForType('highlight')).toBe('ENDED')
-  })
-
-  it('treats uploads and clips as published videos', () => {
-    expect(getStatusForType('upload')).toBe('PUBLISHED')
-    expect(getStatusForType('clip')).toBe('PUBLISHED')
-  })
-})
 
 describe('toVideoFields', () => {
   it('maps a Helix video', () => {

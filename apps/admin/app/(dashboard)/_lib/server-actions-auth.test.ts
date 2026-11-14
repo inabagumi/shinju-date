@@ -71,6 +71,7 @@ import {
   removeYouTubeChannelAction,
 } from '../talents/_actions/channels'
 import {
+  syncTalentAccounts,
   syncTalentWithTwitch,
   syncTalentWithYouTube,
 } from '../talents/_actions/sync'
@@ -203,6 +204,7 @@ const resultActions: [string, () => Promise<unknown>][] = [
     () => requestVideoBackfillAction(ID, 'youtube'),
   ],
   ['getVideoBackfillStatusAction', () => getVideoBackfillStatusAction(ID)],
+  ['syncTalentAccounts', () => syncTalentAccounts(ID)],
   ['deleteTermAction', () => deleteTermAction(ID)],
   ['toggleVisibilityAction', () => toggleVisibilityAction([ID])],
   ['softDeleteAction', () => softDeleteAction([ID])],

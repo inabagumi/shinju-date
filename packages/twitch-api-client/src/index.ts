@@ -738,3 +738,84 @@ export async function* getStreamsByUserIds({
     }
   }
 }
+
+// ---------------------------------------------------------------------------
+// Broadcasts
+//
+// What a broadcast looks like on Twitch, shared by the crawler and the admin
+// app so both read a stream's state the same way.
+// ---------------------------------------------------------------------------
+
+/** The `videos.status` a finished Twitch video or clip is shown with. */
+export type TwitchVideoStatus = 'ENDED' | 'PUBLISHED'
+
+/**
+ * Archives and highlights are past broadcasts; uploads and clips are regular
+ * videos.
+ */
+export function getTwitchVideoStatus(
+  type: TwitchVideo['type'] | 'clip',
+): TwitchVideoStatus {
+  return type === 'upload' || type === 'clip' ? 'PUBLISHED' : 'ENDED'
+}
+
+/**
+ * The ID of the stream a video is the archive of, or `null` for any other
+ * video.
+ *
+ * Twitch creates the archive as soon as a broadcast starts, so it may exist
+ * while the stream is still on air: an archive alone does not mean the
+ * broadcast ended.
+ */
+export function getArchivedStreamId(video: TwitchVideo): string | null {
+  return video.type === 'archive' && video.stream_id ? video.stream_id : null
+}
+
+export interface GetBroadcastOptions {
+  /** Helix stream ID of the broadcast. */
+  streamId: string
+  /** Helix user ID of the broadcaster. */
+  userId: string
+}
+
+/**
+ * Gets the stream of a broadcast while it is on air.
+ *
+ * @returns `null` once the broadcast is offline.
+ */
+export async function getLiveStream({
+  streamId,
+  userId,
+}: GetBroadcastOptions): Promise<TwitchStream | null> {
+  for await (const stream of getStreamsByUserIds({ userIds: [userId] })) {
+    if (stream.id === streamId) {
+      return stream
+    }
+  }
+
+  return null
+}
+
+/**
+ * Finds the archive (VOD) of a broadcast among the broadcaster's newest
+ * archives.
+ *
+ * @returns `null` when Twitch keeps no archive of it (VODs disabled, expired
+ *   or deleted) or it is older than the newest {@link TWITCH_API_MAX_RESULTS}.
+ */
+export async function getArchiveOfStream({
+  streamId,
+  userId,
+}: GetBroadcastOptions): Promise<TwitchVideo | null> {
+  for await (const video of getVideosByUser({
+    limit: TWITCH_API_MAX_RESULTS,
+    type: 'archive',
+    userId,
+  })) {
+    if (getArchivedStreamId(video) === streamId) {
+      return video
+    }
+  }
+
+  return null
+}
