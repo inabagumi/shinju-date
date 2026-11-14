@@ -9,6 +9,7 @@ import type { Video } from '@/lib/fetchers'
 import FormattedTime from './formatted-time'
 import LiveNow from './live-now'
 import PlatformBadge from './platform-badge'
+import VideoCreator, { VideoCreatorSkeleton } from './video-creator'
 
 function getThumbnailURL(
   video: Video,
@@ -68,13 +69,15 @@ export function ShortVideoCardSkeleton() {
         <div className="h-full animate-pulse bg-774-nevy-200 dark:bg-zinc-700" />
       </div>
 
-      <div className="space-y-4 p-3 md:p-2.5">
+      <div className="flex flex-col gap-2 p-3 md:p-2.5">
         <h3 className="text-sm font-semibold break-all">
           <span className="inline-block h-3 w-full animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
           <span className="inline-block h-3 w-3/4 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
         </h3>
 
-        <div className="text-right text-xs">
+        <VideoCreatorSkeleton compact />
+
+        <div className="pt-2 text-right text-xs">
           <span className="inline-block h-3 w-20 animate-pulse rounded-md bg-774-nevy-200 dark:bg-zinc-700" />
         </div>
       </div>
@@ -143,7 +146,7 @@ export default function ShortVideoCard({
         </div>
       </div>
 
-      <div className="space-y-4 p-3 md:p-2.5">
+      <div className="flex flex-col gap-2 p-3 md:p-2.5">
         <h3
           className="line-clamp-2 text-sm font-semibold break-all"
           title={value.title}
@@ -151,7 +154,10 @@ export default function ShortVideoCard({
           {value.title}
         </h3>
 
-        <div className="text-right text-xs">
+        {/* The card is narrow in the carousel, so always use the compact size. */}
+        <VideoCreator compact value={value} />
+
+        <div className="pt-2 text-right text-xs">
           <FormattedTime
             dateTime={publishedAt}
             options={{
