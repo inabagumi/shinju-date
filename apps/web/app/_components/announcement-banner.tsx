@@ -1,6 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { X } from 'lucide-react'
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeExternalLinks from 'rehype-external-links'
@@ -23,6 +24,14 @@ function getBannerClasses(level: string): string {
   }
 }
 
+/**
+ * Site-wide announcement banner.
+ *
+ * The banner is rendered in the normal page flow directly below the header
+ * instead of being fixed to the viewport, so it never covers the main content
+ * or its interactive areas while scrolling. The message is collapsed to a
+ * single line by default and can be expanded by clicking it.
+ */
 export function AnnouncementBanner({
   announcement: initialAnnouncement,
 }: {
@@ -54,65 +63,50 @@ export function AnnouncementBanner({
   }
 
   return (
-    <div className="sticky bottom-4 z-50 safe-area-mx">
-      <div
-        className={`mb-4 ml-auto max-w-md rounded-lg border p-4 shadow-lg ${getBannerClasses(
-          data.level,
-        )}`}
-        role="alert"
-      >
-        <div className="flex items-start justify-between gap-4">
-          <button
-            className="flex-1 cursor-pointer text-left"
-            onClick={() => setIsExpanded(!isExpanded)}
-            type="button"
+    <div
+      className={`border-b ${getBannerClasses(data.level)}`}
+      data-testid="announcement-banner"
+      role="status"
+    >
+      <div className="mx-auto flex max-w-6xl items-start justify-between gap-3 px-4 py-3">
+        <button
+          aria-expanded={isExpanded}
+          className="min-w-0 flex-1 cursor-pointer text-left"
+          onClick={() => setIsExpanded(!isExpanded)}
+          type="button"
+        >
+          <div
+            className={`prose prose-sm max-w-none ${
+              !isExpanded ? 'line-clamp-1' : ''
+            }`}
           >
-            <div
-              className={`prose prose-sm max-w-none ${
-                !isExpanded ? 'line-clamp-1' : ''
-              }`}
+            <ReactMarkdown
+              rehypePlugins={[
+                [
+                  rehypeExternalLinks,
+                  {
+                    rel: ['nofollow', 'noopener', 'noreferrer'],
+                    target: '_blank',
+                  },
+                ],
+              ]}
+              remarkPlugins={[remarkGfm]}
             >
-              <ReactMarkdown
-                rehypePlugins={[
-                  [
-                    rehypeExternalLinks,
-                    {
-                      rel: ['nofollow', 'noopener', 'noreferrer'],
-                      target: '_blank',
-                    },
-                  ],
-                ]}
-                remarkPlugins={[remarkGfm]}
-              >
-                {data.message}
-              </ReactMarkdown>
-            </div>
-          </button>
-          <button
-            aria-label="お知らせを閉じる"
-            className="shrink-0 rounded-md p-1 hover:bg-black/10"
-            onClick={async () => {
-              await dismissAnnouncement(data.id)
-              setIsVisible(false)
-            }}
-            type="button"
-          >
-            <svg
-              aria-hidden="true"
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M6 18L18 6M6 6l12 12"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-              />
-            </svg>
-          </button>
-        </div>
+              {data.message}
+            </ReactMarkdown>
+          </div>
+        </button>
+        <button
+          aria-label="お知らせを閉じる"
+          className="-m-1 shrink-0 cursor-pointer rounded-md p-1 hover:bg-black/10"
+          onClick={async () => {
+            await dismissAnnouncement(data.id)
+            setIsVisible(false)
+          }}
+          type="button"
+        >
+          <X aria-hidden="true" className="size-5" />
+        </button>
       </div>
     </div>
   )
