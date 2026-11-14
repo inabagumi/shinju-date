@@ -1,10 +1,18 @@
 'use client'
 
-import { Menu, User, X } from 'lucide-react'
+import { twMerge } from '@shinju-date/ui'
+import { ChevronDown, Menu, User, X } from 'lucide-react'
 import NextLink from 'next/link'
 import { usePathname } from 'next/navigation'
-import { type ComponentProps, Suspense, useState } from 'react'
+import {
+  type ComponentProps,
+  type ReactNode,
+  Suspense,
+  useId,
+  useState,
+} from 'react'
 import Form, { SubmitButton } from '@/components/form'
+import { LogoIcon } from '@/components/logo-icon'
 import { signOut } from '@/lib/actions/sign-out'
 
 function ActiveNavigationLink({
@@ -31,299 +39,268 @@ function Link(props: ComponentProps<typeof NextLink>) {
   )
 }
 
-export function NavigationBar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isDataMenuOpen, setIsDataMenuOpen] = useState(false)
-  const [isAnalyticsMenuOpen, setIsAnalyticsMenuOpen] = useState(false)
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+interface NavigationItem {
+  href: string
+  label: string
+}
+
+const DATA_ITEMS: NavigationItem[] = [
+  { href: '/videos', label: '動画管理' },
+  { href: '/talents', label: 'タレント管理' },
+  { href: '/terms', label: '用語管理' },
+  { href: '/recommended-queries', label: 'おすすめクエリ管理' },
+  { href: '/announcements', label: 'お知らせ管理' },
+  { href: '/feedback', label: '機能要望管理' },
+]
+
+const ANALYTICS_ITEMS: NavigationItem[] = [
+  { href: '/analytics/search', label: '検索アナリティクス' },
+  { href: '/analytics/click', label: 'クリックアナリティクス' },
+]
+
+const USER_ITEMS: NavigationItem[] = [
+  { href: '/account', label: 'アカウント設定' },
+  { href: '/system', label: 'システム' },
+]
+
+type MenuId = 'analytics' | 'data' | 'user'
+
+/** `bg-primary` のバーの上に置くボタンとリンク */
+const barItemClassName =
+  'inline-flex items-center gap-1 rounded-control px-3 py-1.5 text-meta font-semibold transition-colors hover:bg-primary-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground'
+
+/** ドロップダウンの中の項目。現在のページは `text-accent` で示す */
+const menuItemClassName =
+  'block w-full rounded-control px-3 py-2 text-left text-meta text-foreground transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none aria-[current=page]:font-semibold aria-[current=page]:text-accent'
+
+interface DropdownProps {
+  align?: 'left' | 'right'
+  children: ReactNode
+  /** ボタンの中身。アイコンだけの場合は `label` で名前を付ける */
+  trigger: ReactNode
+  label?: string
+  isOpen: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+function Dropdown({
+  align = 'left',
+  children,
+  isOpen,
+  label,
+  onOpenChange,
+  trigger,
+}: DropdownProps) {
+  const menuId = useId()
 
   return (
-    <nav className="sticky top-0 z-50 bg-slate-800 text-slate-50">
-      {/* Desktop Navigation */}
-      <div className="mx-auto hidden max-w-7xl items-center gap-4 p-2 md:flex">
-        <NextLink className="inline-block p-2 text-xl font-semibold" href="/">
-          Admin UI
-        </NextLink>
-        <div className="flex grow items-center gap-4">
-          {/* データ管理 Dropdown */}
-          <div className="relative">
-            <button
-              className="rounded-md px-3 py-1 hover:bg-slate-700"
-              onClick={() => {
-                setIsDataMenuOpen(!isDataMenuOpen)
-                setIsAnalyticsMenuOpen(false)
-                setIsUserMenuOpen(false)
-              }}
-              onMouseEnter={() => {
-                setIsDataMenuOpen(true)
-                setIsAnalyticsMenuOpen(false)
-                setIsUserMenuOpen(false)
-              }}
-              type="button"
-            >
-              データ管理 ▾
-            </button>
-            {isDataMenuOpen && (
-              <div
-                className="absolute top-full left-0 z-50 mt-1 min-w-[200px] rounded-md border border-slate-600 bg-slate-700 py-1 shadow-lg"
-                onMouseLeave={() => setIsDataMenuOpen(false)}
-                role="menu"
-              >
-                <Link
-                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
-                  href="/videos"
-                  onClick={() => setIsDataMenuOpen(false)}
-                >
-                  動画管理
-                </Link>
-                <Link
-                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
-                  href="/talents"
-                  onClick={() => setIsDataMenuOpen(false)}
-                >
-                  タレント管理
-                </Link>
-                <Link
-                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
-                  href="/terms"
-                  onClick={() => setIsDataMenuOpen(false)}
-                >
-                  用語管理
-                </Link>
-                <Link
-                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
-                  href="/recommended-queries"
-                  onClick={() => setIsDataMenuOpen(false)}
-                >
-                  おすすめクエリ管理
-                </Link>
-                <Link
-                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
-                  href="/announcements"
-                  onClick={() => setIsDataMenuOpen(false)}
-                >
-                  お知らせ管理
-                </Link>
-                <Link
-                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
-                  href="/feedback"
-                  onClick={() => setIsDataMenuOpen(false)}
-                >
-                  機能要望管理
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* アナリティクス Dropdown */}
-          <div className="relative">
-            <button
-              className="rounded-md px-3 py-1 hover:bg-slate-700"
-              onClick={() => {
-                setIsAnalyticsMenuOpen(!isAnalyticsMenuOpen)
-                setIsDataMenuOpen(false)
-                setIsUserMenuOpen(false)
-              }}
-              onMouseEnter={() => {
-                setIsAnalyticsMenuOpen(true)
-                setIsDataMenuOpen(false)
-                setIsUserMenuOpen(false)
-              }}
-              type="button"
-            >
-              アナリティクス ▾
-            </button>
-            {isAnalyticsMenuOpen && (
-              <div
-                className="absolute top-full left-0 z-50 mt-1 min-w-[200px] rounded-md border border-slate-600 bg-slate-700 py-1 shadow-lg"
-                onMouseLeave={() => setIsAnalyticsMenuOpen(false)}
-                role="menu"
-              >
-                <Link
-                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
-                  href="/analytics/search"
-                  onClick={() => setIsAnalyticsMenuOpen(false)}
-                >
-                  検索アナリティクス
-                </Link>
-                <Link
-                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
-                  href="/analytics/click"
-                  onClick={() => setIsAnalyticsMenuOpen(false)}
-                >
-                  クリックアナリティクス
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* User Menu Dropdown */}
-          <div className="relative">
-            <button
-              aria-label="ユーザーメニュー"
-              className="rounded-md px-3 py-1 hover:bg-slate-700"
-              onClick={() => {
-                setIsUserMenuOpen(!isUserMenuOpen)
-                setIsDataMenuOpen(false)
-                setIsAnalyticsMenuOpen(false)
-              }}
-              onMouseEnter={() => {
-                setIsUserMenuOpen(true)
-                setIsDataMenuOpen(false)
-                setIsAnalyticsMenuOpen(false)
-              }}
-              type="button"
-            >
-              <User className="h-6 w-6" />
-            </button>
-            {isUserMenuOpen && (
-              <div
-                className="absolute top-full right-0 z-50 mt-1 min-w-[200px] rounded-md border border-slate-600 bg-slate-700 py-1 shadow-lg"
-                onMouseLeave={() => setIsUserMenuOpen(false)}
-                role="menu"
-              >
-                <Link
-                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
-                  href="/account"
-                  onClick={() => setIsUserMenuOpen(false)}
-                >
-                  アカウント設定
-                </Link>
-                <Link
-                  className="block px-4 py-2 hover:bg-slate-600 aria-[current=page]:bg-slate-600"
-                  href="/system"
-                  onClick={() => setIsUserMenuOpen(false)}
-                >
-                  システム
-                </Link>
-                <div className="my-2 border-t border-slate-600" />
-                <Form action={signOut}>
-                  <SubmitButton
-                    className="w-full px-4 py-2 text-left hover:bg-slate-600 focus-visible:bg-slate-600 focus-visible:outline-none"
-                    type="submit"
-                  >
-                    ログアウト
-                  </SubmitButton>
-                </Form>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Navigation */}
-      <div className="mx-auto flex max-w-7xl items-center justify-between p-2 md:hidden">
-        <NextLink className="inline-block p-2 text-xl font-semibold" href="/">
-          Admin UI
-        </NextLink>
-        <button
-          aria-label="メニューを開く"
-          className="rounded-md p-2 hover:bg-slate-700"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          type="button"
-        >
-          {isMenuOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <Menu className="h-6 w-6" />
+    // biome-ignore lint/a11y/noStaticElementInteractions: マウスが離れたらメニューを閉じる
+    <div className="relative" onMouseLeave={() => onOpenChange(false)}>
+      <button
+        aria-controls={isOpen ? menuId : undefined}
+        aria-expanded={isOpen}
+        aria-label={label}
+        className={barItemClassName}
+        onClick={() => onOpenChange(!isOpen)}
+        onMouseEnter={() => onOpenChange(true)}
+        type="button"
+      >
+        {trigger}
+      </button>
+      {isOpen && (
+        // 開いたメニューとボタンの間でマウスが離れないよう、上に余白（pt-1）を取る
+        <div
+          className={twMerge(
+            'absolute top-full z-50 min-w-52 pt-1',
+            align === 'right' ? 'right-0' : 'left-0',
           )}
-        </button>
-      </div>
+        >
+          <div
+            className="rounded-container border border-border bg-surface p-1 shadow-overlay"
+            id={menuId}
+          >
+            {children}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="border-t border-slate-700 md:hidden">
-          <div className="space-y-1 p-2">
-            <div className="space-y-1">
-              <div className="px-3 py-2 text-sm font-semibold">データ管理</div>
+interface NavigationBarProps {
+  /** バーの右側に表示する最終同期の日時 */
+  lastSync?: ReactNode
+}
+
+export function NavigationBar({ lastSync }: NavigationBarProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [openMenu, setOpenMenu] = useState<MenuId | null>(null)
+
+  const handleOpenChange = (id: MenuId) => (open: boolean) => {
+    setOpenMenu(open ? id : (current) => (current === id ? null : current))
+  }
+  const closeMenu = () => setOpenMenu(null)
+
+  return (
+    <nav
+      aria-label="メインメニュー"
+      className="sticky top-0 z-50 bg-primary text-primary-foreground"
+    >
+      <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-6">
+        <NextLink
+          className="flex shrink-0 items-center gap-2 rounded-control text-body font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground"
+          href="/"
+        >
+          <LogoIcon className="size-7" />
+          Admin UI
+        </NextLink>
+
+        {/* Desktop Navigation */}
+        <div className="hidden grow items-center gap-1 md:flex">
+          <Dropdown
+            isOpen={openMenu === 'data'}
+            onOpenChange={handleOpenChange('data')}
+            trigger={
+              <>
+                データ管理
+                <ChevronDown aria-hidden="true" className="size-4" />
+              </>
+            }
+          >
+            {DATA_ITEMS.map((item) => (
               <Link
-                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
-                href="/videos"
-                onClick={() => setIsMenuOpen(false)}
+                className={menuItemClassName}
+                href={item.href}
+                key={item.href}
+                onClick={closeMenu}
               >
-                動画管理
+                {item.label}
               </Link>
-              <Link
-                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
-                href="/talents"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                タレント管理
-              </Link>
-              <Link
-                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
-                href="/terms"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                用語管理
-              </Link>
-              <Link
-                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
-                href="/recommended-queries"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                おすすめクエリ管理
-              </Link>
-              <Link
-                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
-                href="/announcements"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                お知らせ管理
-              </Link>
-              <Link
-                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
-                href="/feedback"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                機能要望管理
-              </Link>
-            </div>
-            <div className="space-y-1">
-              <div className="px-3 py-2 text-sm font-semibold">
+            ))}
+          </Dropdown>
+          <Dropdown
+            isOpen={openMenu === 'analytics'}
+            onOpenChange={handleOpenChange('analytics')}
+            trigger={
+              <>
                 アナリティクス
-              </div>
+                <ChevronDown aria-hidden="true" className="size-4" />
+              </>
+            }
+          >
+            {ANALYTICS_ITEMS.map((item) => (
               <Link
-                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
-                href="/analytics/search"
-                onClick={() => setIsMenuOpen(false)}
+                className={menuItemClassName}
+                href={item.href}
+                key={item.href}
+                onClick={closeMenu}
               >
-                検索アナリティクス
+                {item.label}
               </Link>
-              <Link
-                className="block rounded-md px-6 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
-                href="/analytics/click"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                クリックアナリティクス
-              </Link>
-            </div>
-            <div className="border-t border-slate-700 pt-2">
-              <Link
-                className="block rounded-md px-4 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
-                href="/account"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                アカウント設定
-              </Link>
-              <Link
-                className="block rounded-md px-4 py-2 hover:bg-slate-700 aria-[current=page]:bg-slate-700"
-                href="/system"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                システム
-              </Link>
-              <div className="my-2 border-t border-slate-700" />
+            ))}
+          </Dropdown>
+        </div>
+
+        <div className="ml-auto flex items-center gap-4">
+          {lastSync && (
+            <p className="hidden text-caption text-primary-foreground/80 tabular-nums sm:block">
+              {lastSync}
+            </p>
+          )}
+          <div className="hidden md:block">
+            <Dropdown
+              align="right"
+              isOpen={openMenu === 'user'}
+              label="ユーザーメニュー"
+              onOpenChange={handleOpenChange('user')}
+              trigger={<User aria-hidden="true" className="size-5" />}
+            >
+              {USER_ITEMS.map((item) => (
+                <Link
+                  className={menuItemClassName}
+                  href={item.href}
+                  key={item.href}
+                  onClick={closeMenu}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <div className="my-1 border-t border-border" />
               <Form action={signOut}>
                 <SubmitButton
-                  className="w-full rounded-md bg-slate-500 px-4 py-2 text-slate-50 hover:bg-slate-700 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 focus-visible:outline-none active:bg-slate-600 active:shadow-inner disabled:pointer-events-none disabled:bg-slate-400"
+                  className={twMerge(menuItemClassName, 'font-normal')}
                   type="submit"
+                  variant="ghost"
                 >
                   ログアウト
                 </SubmitButton>
               </Form>
-            </div>
+            </Dropdown>
+          </div>
+          <button
+            aria-expanded={isMenuOpen}
+            aria-label={isMenuOpen ? 'メニューを閉じる' : 'メニューを開く'}
+            className={twMerge(barItemClassName, 'p-2 md:hidden')}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            type="button"
+          >
+            {isMenuOpen ? (
+              <X aria-hidden="true" className="size-5" />
+            ) : (
+              <Menu aria-hidden="true" className="size-5" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="border-t border-primary-foreground/20 md:hidden">
+          <div className="mx-auto max-w-7xl space-y-4 px-6 py-4">
+            {lastSync && (
+              <p className="text-caption text-primary-foreground/80 tabular-nums sm:hidden">
+                {lastSync}
+              </p>
+            )}
+            {[
+              { items: DATA_ITEMS, title: 'データ管理' },
+              { items: ANALYTICS_ITEMS, title: 'アナリティクス' },
+              { items: USER_ITEMS, title: 'アカウント' },
+            ].map((group) => (
+              <div className="space-y-1" key={group.title}>
+                <p className="px-3 text-caption font-semibold text-primary-foreground/80">
+                  {group.title}
+                </p>
+                {group.items.map((item) => (
+                  <Link
+                    className={twMerge(
+                      barItemClassName,
+                      'flex font-normal aria-[current=page]:bg-primary-foreground/10 aria-[current=page]:font-semibold',
+                    )}
+                    href={item.href}
+                    key={item.href}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            ))}
+            <Form
+              action={signOut}
+              className="border-t border-primary-foreground/20 pt-4"
+            >
+              <SubmitButton
+                className={twMerge(
+                  barItemClassName,
+                  'w-full justify-start font-normal',
+                )}
+                type="submit"
+                variant="ghost"
+              >
+                ログアウト
+              </SubmitButton>
+            </Form>
           </div>
         </div>
       )}

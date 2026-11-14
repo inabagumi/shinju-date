@@ -1,8 +1,8 @@
+import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
-import { PageHeader } from '@/components/page-header'
 import { FormCardSkeleton } from '@/components/skeletons'
 import { createSupabaseServerClient } from '@/lib/supabase'
 import { EmailUpdateForm } from './_components/email-update-form'
@@ -32,7 +32,7 @@ async function UserEmailData() {
 
 export default function AccountPage() {
   return (
-    <div className="mx-auto max-w-7xl p-6">
+    <div>
       {/* Static header */}
       <PageHeader
         description="ログイン情報を管理し、アカウントのセキュリティを維持します。"

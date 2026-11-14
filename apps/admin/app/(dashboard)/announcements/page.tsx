@@ -1,7 +1,7 @@
+import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
-import { PageHeader } from '@/components/page-header'
 import { ListCardsSkeleton } from '@/components/skeletons'
 import { AnnouncementModal } from './_components/announcement-modal'
 import { AnnouncementsList } from './_components/announcements-list'
@@ -23,7 +23,7 @@ async function AnnouncementsListData() {
 
 export default function AnnouncementsPage() {
   return (
-    <div className="mx-auto max-w-7xl p-6">
+    <div>
       {/* Header with Add button - static shell */}
       <PageHeader
         actions={

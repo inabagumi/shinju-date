@@ -1,8 +1,8 @@
 import { formatNumber } from '@shinju-date/helpers'
+import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
-import { PageHeader } from '@/components/page-header'
 import { TableSkeleton } from '@/components/skeletons'
 import { getTalents } from '../talents/_lib/get-talents'
 import Pagination from './_components/pagination'
@@ -164,7 +164,7 @@ async function VideoCountData({
 
 export default function VideosPage({ searchParams }: PageProps<'/'>) {
   return (
-    <div className="mx-auto max-w-7xl p-6">
+    <div>
       <PageHeader title="動画管理" />
 
       {/* Video count with Suspense */}

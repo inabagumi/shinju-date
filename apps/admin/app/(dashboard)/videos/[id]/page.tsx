@@ -306,7 +306,7 @@ async function CachedVideoDetails({ id }: { id: string }) {
 
 export default function VideoDetailPage({ params }: Props) {
   return (
-    <div className="mx-auto max-w-7xl p-4">
+    <div>
       <div className="mb-6">
         <Link
           className="inline-flex items-center text-774-blue-600 hover:text-774-blue-800"

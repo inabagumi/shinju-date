@@ -1,5 +1,6 @@
 'use client'
 
+import { twMerge } from '@shinju-date/ui'
 import {
   type ComponentPropsWithoutRef,
   createContext,
@@ -35,6 +36,7 @@ interface DropdownMenuTriggerProps extends ComponentPropsWithoutRef<'button'> {}
 
 export function DropdownMenuTrigger({
   children,
+  className,
   onClick,
   ...props
 }: DropdownMenuTriggerProps) {
@@ -50,7 +52,12 @@ export function DropdownMenuTrigger({
 
   return (
     <button
-      className="rounded p-1 hover:bg-gray-100"
+      aria-expanded={context.isOpen}
+      aria-haspopup="menu"
+      className={twMerge(
+        'rounded-control p-1 text-muted transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+        className,
+      )}
       onClick={handleClick}
       type="button"
       {...props}
@@ -95,9 +102,10 @@ export function DropdownMenuContent({
 
   return (
     <div
-      className={`absolute top-full z-50 mt-1 min-w-[160px] rounded-md border border-gray-200 bg-white py-1 shadow-lg ${
-        align === 'right' ? 'right-0' : 'left-0'
-      }`}
+      className={twMerge(
+        'absolute top-full z-50 mt-1 min-w-40 rounded-container border border-border bg-surface p-1 shadow-overlay',
+        align === 'right' ? 'right-0' : 'left-0',
+      )}
       ref={contentRef}
     >
       {children}
@@ -126,13 +134,17 @@ export function DropdownMenuItem({
   }
 
   const variantClasses = {
-    danger: 'text-red-600 hover:bg-red-50',
-    default: 'text-gray-700 hover:bg-gray-100',
+    danger: 'text-danger hover:bg-danger/10 focus-visible:bg-danger/10',
+    default: 'text-foreground hover:bg-muted focus-visible:bg-muted',
   }
 
   return (
     <button
-      className={`w-full px-4 py-2 text-left text-sm ${variantClasses[variant]} ${className || ''}`}
+      className={twMerge(
+        'flex w-full items-center gap-2 rounded-control px-3 py-2 text-left text-meta whitespace-nowrap transition-colors focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+        variantClasses[variant],
+        className,
+      )}
       onClick={handleClick}
       type="button"
       {...props}

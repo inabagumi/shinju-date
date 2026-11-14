@@ -1,7 +1,7 @@
+import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
-import { PageHeader } from '@/components/page-header'
 import { ListCardsSkeleton } from '@/components/skeletons'
 import { FeatureRequestList } from './_components/feedback-list'
 import { getFeatureRequests } from './_lib/get-feedback'
@@ -22,7 +22,7 @@ async function FeatureRequestListData() {
 
 export default function FeedbackPage() {
   return (
-    <div className="mx-auto max-w-7xl p-6">
+    <div>
       <PageHeader title="機能要望管理" />
 
       {/* Feature Request List */}

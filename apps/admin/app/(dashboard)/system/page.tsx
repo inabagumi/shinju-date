@@ -1,6 +1,6 @@
+import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { PageHeader } from '@/components/page-header'
 import { CardSkeleton } from '@/components/skeletons'
 import { WidgetErrorBoundary } from '@/components/widget-error-boundary'
 import { MaintenanceModePanel } from '../_components/maintenance-mode-panel'
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function SystemPage() {
   return (
-    <div className="mx-auto max-w-7xl p-6">
+    <div>
       <PageHeader title="システム" />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

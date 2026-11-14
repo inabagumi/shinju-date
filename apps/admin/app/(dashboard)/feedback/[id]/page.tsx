@@ -52,7 +52,7 @@ async function CachedFeatureRequestDetail({ id }: { id: string }) {
 
 export default function FeedbackDetailPage({ params }: Props) {
   return (
-    <div className="mx-auto max-w-4xl p-6">
+    <div className="max-w-4xl">
       <div className="mb-6">
         <Link className="text-blue-600 hover:underline" href="/feedback">
           ← 機能要望一覧に戻る

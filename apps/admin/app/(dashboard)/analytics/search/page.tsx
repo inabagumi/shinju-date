@@ -1,6 +1,6 @@
+import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { PageHeader } from '@/components/page-header'
 import {
   ChartSkeleton,
   DateRangePickerSkeleton,
@@ -27,7 +27,7 @@ export default function SearchAnalyticsPage({
   )
 
   return (
-    <div className="mx-auto max-w-7xl p-6">
+    <div>
       <PageHeader title="検索アナリティクス" />
 
       <div className="mb-6">
