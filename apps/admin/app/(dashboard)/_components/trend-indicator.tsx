@@ -14,7 +14,7 @@ export function TrendIndicator({
   label = '前日比',
 }: TrendIndicatorProps) {
   if (value === null) {
-    return <span className="text-xs text-gray-600">{label}: データなし</span>
+    return <span className="text-caption text-muted">{label}: データなし</span>
   }
 
   const isPositive = value > 0
@@ -22,7 +22,7 @@ export function TrendIndicator({
 
   if (isNeutral) {
     return (
-      <span className="flex items-center gap-1 text-xs text-gray-600">
+      <span className="flex items-center gap-1 text-caption text-muted">
         <span className="flex size-4 items-center justify-center">−</span>
         <span>
           {label}: {formatNumber(value)}
@@ -31,12 +31,12 @@ export function TrendIndicator({
     )
   }
 
-  const colorClass = isPositive ? 'text-green-600' : 'text-red-600'
+  const colorClass = isPositive ? 'text-success' : 'text-danger'
 
   const arrowIcon = isPositive ? '↑' : '↓'
 
   return (
-    <span className={`flex items-center gap-1 text-xs ${colorClass}`}>
+    <span className={`flex items-center gap-1 text-caption ${colorClass}`}>
       <span className="flex size-4 items-center justify-center font-bold">
         {arrowIcon}
       </span>

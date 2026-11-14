@@ -77,11 +77,11 @@ function RepeatSearchRateWidgetComponent({
         <h2 className="text-xl font-semibold">
           リピート検索率
           {selectedDate ? (
-            <span className="ml-2 text-sm text-774-blue-600">
+            <span className="ml-2 text-meta text-accent">
               ({formatDateLabel(selectedDate)})
             </span>
           ) : (
-            <span className="ml-2 text-sm text-green-700">
+            <span className="ml-2 text-meta text-muted">
               ({formatDateRange(dateRange)})
             </span>
           )}

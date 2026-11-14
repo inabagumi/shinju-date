@@ -125,10 +125,10 @@ export function FeatureRequestDetail({
             ステータスを更新
           </SubmitButton>
           {statusState?.success === false && (
-            <p className="text-sm text-red-600">{statusState.error}</p>
+            <p className="text-meta text-danger">{statusState.error}</p>
           )}
           {statusState?.success === true && (
-            <p className="text-sm text-green-700">更新しました</p>
+            <p className="text-meta text-success">更新しました</p>
           )}
         </form>
       </div>
@@ -151,10 +151,10 @@ export function FeatureRequestDetail({
             </SubmitButton>
           </div>
           {readState?.success === false && (
-            <p className="text-sm text-red-600">{readState.error}</p>
+            <p className="text-meta text-danger">{readState.error}</p>
           )}
           {readState?.success === true && (
-            <p className="text-sm text-green-700">更新しました</p>
+            <p className="text-meta text-success">更新しました</p>
           )}
         </form>
       </div>
@@ -179,10 +179,10 @@ export function FeatureRequestDetail({
             メモを保存
           </SubmitButton>
           {memoState?.success === false && (
-            <p className="text-sm text-red-600">{memoState.error}</p>
+            <p className="text-meta text-danger">{memoState.error}</p>
           )}
           {memoState?.success === true && (
-            <p className="text-sm text-green-700">保存しました</p>
+            <p className="text-meta text-success">保存しました</p>
           )}
         </form>
 
