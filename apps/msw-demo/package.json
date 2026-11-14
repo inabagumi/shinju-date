@@ -44,6 +44,7 @@
     "dev": "next --port 10000",
     "msw:init": "msw init public/ --save",
     "start": "next start --port 10000",
+    "typecheck": "tsc --noEmit",
     "typegen": "next typegen"
   },
   "type": "module",

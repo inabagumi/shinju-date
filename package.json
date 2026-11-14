@@ -33,6 +33,7 @@
     "dev:generate-secrets": "node scripts/generate-dev-secrets.js",
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
+    "typecheck": "turbo typecheck",
     "typegen": "turbo typegen"
   },
   "type": "module",
