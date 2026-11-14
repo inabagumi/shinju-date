@@ -94,7 +94,7 @@ const example = (
 
 ### `twMerge` について
 
-`theme.css` で追加した文字サイズ・角丸・影を `tailwind-merge` に登録した `twMerge` を、`@shinju-date/ui` から使ってください。`tailwind-merge` の `twMerge` は `text-body` などを文字色として扱うため、`twMerge('text-body text-foreground')` の `text-body` が消えてしまいます。`tailwind-merge` から直接インポートすると Biome のエラーになります。
+`theme.css` で追加した文字サイズ、角丸、影を `tailwind-merge` に登録した `twMerge` を、`@shinju-date/ui` から使ってください。`tailwind-merge` の `twMerge` は `text-body` などを文字色として扱うため、`twMerge('text-body text-foreground')` の `text-body` が消えてしまいます。`tailwind-merge` から直接インポートすると Biome のエラーになります。
 
 ```tsx
 import { twMerge } from '@shinju-date/ui'
@@ -104,11 +104,11 @@ import { twMerge } from '@shinju-date/ui'
 
 角丸は3種類です。値は `packages/tailwind-config/theme.css` で定義しています。
 
-| 対象                                                 | クラス              | 値   |
-| ---------------------------------------------------- | ------------------- | ---- |
-| 操作部品（ボタン・入力欄・バッジ・メニュー項目）     | `rounded-control`   | 6px  |
-| 入れ物（サムネイル・モーダル・表・パネル・メニュー） | `rounded-container` | 12px |
-| 丸（アバター・ピル）                                 | `rounded-full`      | -    |
+| 対象                                                 | クラス              |
+| ---------------------------------------------------- | ------------------- |
+| 操作部品（ボタン、入力欄、バッジ、メニュー項目）     | `rounded-control`   |
+| 入れ物（サムネイル、モーダル、表、パネル、メニュー） | `rounded-container` |
+| 丸（アバター、ピル）                                 | `rounded-full`      |
 
 `rounded` / `rounded-sm` / `rounded-md` / `rounded-lg` / `rounded-xl` / `rounded-2xl` などの Tailwind の既定のクラスは使いません。メニューやお知らせのように、操作部品を並べた入れ物は `rounded-container`、その中の項目は `rounded-control` にします。角の一部だけを丸める場合も `rounded-t-container` のように同じ名前を使います。
 
@@ -119,11 +119,11 @@ import { twMerge } from '@shinju-date/ui'
 
 | 対象                                     | クラス           |
 | ---------------------------------------- | ---------------- |
-| モーダル・ドロップダウン・お知らせバナー | `shadow-overlay` |
+| モーダル、ドロップダウン、お知らせバナー | `shadow-overlay` |
 
 固定ヘッダーには影を付けず、下端を `border` の線1本で区切ります。`shadow-sm` / `shadow-lg` などの Tailwind の既定のクラスは使いません。
 
-アプリにはまだ Tailwind の既定の角丸・影のクラスが残っています。画面を作り直すときに、上の名前に置き換えてください。
+アプリにはまだ Tailwind の既定の角丸と影のクラスが残っています。画面を作り直すときに、上の名前に置き換えてください。
 
 ## 新しい画面を作るとき
 
