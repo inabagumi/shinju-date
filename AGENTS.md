@@ -397,7 +397,6 @@ await redis.set('my-key', data)
 ```typescript
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { formatDateKey } from '@shinju-date/temporal-fns'
-import { Temporal } from 'temporal-polyfill'
 
 // ✅ REDIS_KEYSを使用
 const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
@@ -446,7 +445,9 @@ await redis.set(key, data, { ex: 30 * 24 * 60 * 60 })
     - 例外として、ライブラリの互換性など、やむを得ない場合に限り使用を許可しますが、その場合もサーバーとクライアントで値が異なる可能性があることを十分に認識し、慎重に扱う必要があります。
 
 2.  **`Temporal`の使用を推奨**
-    - 時刻の管理には、`temporal-polyfill`パッケージが提供する`Temporal`オブジェクトの使用を強く推奨します。
+    - 時刻の管理には、グローバルの`Temporal`オブジェクトの使用を強く推奨します。
+    - **`Temporal`はインポートせずにグローバルとして使用します**。サーバー（Node.js v26以降）ではネイティブ実装が使われ、Webブラウザでは各アプリの`instrumentation-client.ts`で`temporal-polyfill/global`を読み込み、ネイティブ実装がない場合のみポリフィルされます。`import { Temporal } from 'temporal-polyfill'`とは書かないでください。
+    - テストで現在時刻を固定する場合は、`vi.mock('temporal-polyfill')`ではなく`vi.spyOn(Temporal.Now, 'instant')`などを使用してください。
     - **現在時刻の取得**: タイムゾーンに依存しない絶対時刻を取得する場合は`Temporal.Now.instant()`を使用します。
     - **時刻の保存と通信**: データベースへの保存やAPIでの送受信には、`Temporal.Instant`オブジェクトをISO 8601形式の文字列（例: `instant.toString()`）に変換して使用します。
       - **注意**: `instant.toString()` は常にUTC（末尾が `Z` のISO 8601形式、例: `2025-11-01T12:00:00Z`）で出力されます。タイムゾーン付きの文字列（例: `2025-11-01T21:00:00+09:00`）が必要な場合は、`Temporal.ZonedDateTime.toString()` を使用してください。
@@ -467,7 +468,6 @@ const tokyoTime = now.toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })
 
 ```typescript
 import { TIME_ZONE } from '@shinju-date/constants'
-import { Temporal } from 'temporal-polyfill'
 
 // 現在の絶対時刻 (UTC) を取得
 const now = Temporal.Now.instant()
@@ -494,7 +494,6 @@ console.log(tokyoTime.toString())
 
 ```typescript
 import { toDBString } from '@shinju-date/temporal-fns'
-import { Temporal } from 'temporal-polyfill'
 
 const now = Temporal.Now.instant()
 
@@ -509,8 +508,6 @@ await supabase
 ##### 悪い例 (`Bad`)
 
 ```typescript
-import { Temporal } from 'temporal-polyfill'
-
 const now = Temporal.Now.instant()
 
 // toDBStringを使わずに直接toString()を呼び出してはいけません。
