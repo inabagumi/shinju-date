@@ -46,12 +46,8 @@
         "useLiteralKeys": "off"
       },
       "nursery": {
-        "useSortedClasses": {
-          "level": "warn",
-          "options": {
-            "attributes": ["className"],
-            "functions": ["twMerge", "cva"]
-          }
+        "useTailwindSortedClasses": {
+          "level": "warn"
         }
       }
     }
@@ -77,6 +73,11 @@
       }
     }
   ],
+  "tailwind": {
+    "attributes": ["class", "className"],
+    "mergeFunctions": ["twMerge"],
+    "variantFunctions": ["cva"]
+  },
   "vcs": {
     "clientKind": "git",
     "defaultBranch": "main",
