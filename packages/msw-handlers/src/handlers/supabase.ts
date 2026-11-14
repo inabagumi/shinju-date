@@ -684,24 +684,105 @@ const DEFAULT_SEARCH_VIDEOS_SELECT = [
 ].join(',')
 
 /**
- * Mirrors `search_videos_v2`: the visible videos of the given talents that
- * were published before `until`, newest first. The query is not matched.
+ * Normalize text roughly like PGroonga's `NormalizerAuto`: NFKC and lower
+ * case.
+ */
+function normalizeSearchText(text: string): string {
+  return text.normalize('NFKC').toLowerCase()
+}
+
+/**
+ * Normalize text for a prefix search on readings (`&^~`), which also matches
+ * katakana with hiragana.
+ */
+function normalizeReadingText(text: string): string {
+  return normalizeSearchText(text).replace(/[\u30a1-\u30f6]/g, (char) =>
+    String.fromCharCode(char.charCodeAt(0) - 0x60),
+  )
+}
+
+/**
+ * Mirrors `pgroonga_query_expand('terms', 'synonyms', 'synonyms', query)`:
+ * the query and, when a term lists it as a synonym, the other synonyms of
+ * that term.
+ */
+async function expandMockQuery(query: string): Promise<string[]> {
+  const normalizedQuery = normalizeSearchText(query)
+  const expanded = new Set([normalizedQuery])
+
+  for (const term of await getMockTerms()) {
+    const synonyms = term.synonyms.map(normalizeSearchText)
+
+    if (synonyms.includes(normalizedQuery)) {
+      for (const synonym of synonyms) {
+        expanded.add(synonym)
+      }
+    }
+  }
+
+  return [...expanded]
+}
+
+/**
+ * Mirrors `search_videos_v2`: the visible videos of the given talents whose
+ * titles contain the query or one of its synonyms and that were published
+ * before `until`, newest first.
  */
 async function searchMockVideos({
   channel_ids: channelIds = [],
   perpage = 10,
+  query = '',
   until,
 }: SearchVideosParams) {
+  const keywords = query === '' ? [] : await expandMockQuery(query)
+
   return (await getMockVideos())
     .filter(
       (video) =>
         video.deleted_at === null &&
         video.visible &&
+        (keywords.length === 0 ||
+          keywords.some((keyword) =>
+            normalizeSearchText(video.title).includes(keyword),
+          )) &&
         (channelIds.length === 0 || channelIds.includes(video.talent_id)) &&
         (!until || Temporal.Instant.compare(video.published_at, until) < 0),
     )
     .sort((a, b) => Temporal.Instant.compare(b.published_at, a.published_at))
     .slice(0, perpage)
+}
+
+interface SuggestionsParams {
+  p_query?: string
+}
+
+/**
+ * Mirrors `suggestions_v2`: up to 10 terms that start with the query, then
+ * those whose readings start with it. The mock terms have no popularity, so
+ * shorter terms come first.
+ */
+async function suggestMockTerms({ p_query: query = '' }: SuggestionsParams) {
+  const normalizedQuery = normalizeReadingText(query)
+  const startsWithQuery = (text: string) =>
+    normalizeReadingText(text).startsWith(normalizedQuery)
+  const suggestions: { priority: number; term: string }[] = []
+
+  for (const { readings, term } of await getMockTerms()) {
+    if (startsWithQuery(term)) {
+      suggestions.push({ priority: 1, term })
+    } else if (readings.some(startsWithQuery)) {
+      suggestions.push({ priority: 2, term })
+    }
+  }
+
+  return suggestions
+    .sort(
+      (a, b) =>
+        a.priority - b.priority ||
+        a.term.length - b.term.length ||
+        (a.term < b.term ? -1 : a.term > b.term ? 1 : 0),
+    )
+    .slice(0, 10)
 }
 
 export const supabaseHandlers = [
@@ -1779,18 +1860,10 @@ export const supabaseHandlers = [
   // RPC endpoints
   rest.post(
     'https://fake.supabase.test/rest/v1/rpc/suggestions_v2',
-    async () => {
-      const suggestions = [
-        {
-          created_at: '2023-01-01T00:00:00.000Z',
-          id: '950e8400-e29b-41d4-a716-446655440001',
-          kind: 'Test',
-          name: 'Test Suggestion',
-          updated_at: '2023-01-01T00:00:00.000Z',
-        },
-      ]
+    async ({ request }) => {
+      const body = (await request.json()) as SuggestionsParams
 
-      return HttpResponse.json(suggestions)
+      return HttpResponse.json(await suggestMockTerms(body))
     },
   ),
 

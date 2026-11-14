@@ -681,6 +681,33 @@ describe('Supabase Handlers', () => {
       expect(data.every((row) => row.talent.id === video?.talent.id)).toBe(true)
     })
 
+    it('should search only videos whose titles match the query', async () => {
+      const searchTitles = async (query: string) => {
+        const response = await fetch(
+          'https://fake.supabase.test/rest/v1/rpc/search_videos_v2?select=title',
+          {
+            body: JSON.stringify({ perpage: 100, query }),
+            headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
+          },
+        )
+
+        expect(response.ok).toBe(true)
+
+        return ((await response.json()) as { title: string }[]).map(
+          (video) => video.title,
+        )
+      }
+
+      const titles = await searchTitles('歌枠')
+
+      expect(titles.length).toBeGreaterThan(0)
+      expect(titles.every((title) => title.includes('歌枠'))).toBe(true)
+      // Full-width and upper-case letters match like PGroonga's normalizer.
+      expect(await searchTitles('ａｓｍｒ')).toEqual(await searchTitles('ASMR'))
+      expect(await searchTitles('zzzzzzzzqqq')).toEqual([])
+    })
+
     it('should embed Twitch videos in search_videos_v2 without a select', async () => {
       const response = await fetch(
         'https://fake.supabase.test/rest/v1/rpc/search_videos_v2',
@@ -700,6 +727,38 @@ describe('Supabase Handlers', () => {
         },
         youtube_video: null,
       })
+    })
+  })
+
+  describe('Search suggestions', () => {
+    async function suggest(query: string) {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/rpc/suggestions_v2',
+        {
+          body: JSON.stringify({ p_query: query }),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        },
+      )
+
+      expect(response.ok).toBe(true)
+
+      return (await response.json()) as { priority: number; term: string }[]
+    }
+
+    it('should suggest terms that start with the query', async () => {
+      expect(await suggest('歌')).toEqual([{ priority: 1, term: '歌枠' }])
+      expect(await suggest('asm')).toEqual([{ priority: 1, term: 'ASMR' }])
+    })
+
+    it('should suggest terms whose readings start with the query', async () => {
+      expect(await suggest('うた')).toEqual([{ priority: 2, term: '歌枠' }])
+      expect(await suggest('コラ')).toEqual([{ priority: 1, term: 'コラボ' }])
+      expect(await suggest('こら')).toEqual([{ priority: 1, term: 'コラボ' }])
+    })
+
+    it('should suggest nothing when no term matches', async () => {
+      expect(await suggest('zzzzzzzzqqq')).toEqual([])
     })
   })
 
