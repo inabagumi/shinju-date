@@ -71,7 +71,11 @@ test.describe('Admin App - Videos Management', () => {
       await expect(
         page.getByRole('heading', { level: 1, name: '動画管理' }),
       ).toBeVisible()
-      await expect(page.getByText(/全 [\d,]+ 件の動画/)).toBeVisible()
+      // Next.js may keep a hidden copy of streamed content in the DOM, so
+      // only match the visible element.
+      await expect(
+        page.getByText(/全 [\d,]+ 件の動画/).filter({ visible: true }),
+      ).toBeVisible()
 
       const table = page.getByRole('table')
       await expect(
