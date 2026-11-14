@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { VideoBackfillAccount } from '../../_actions/backfill'
 
@@ -102,5 +108,82 @@ describe('VideoBackfillPanel', () => {
     })
 
     expect(button).toHaveProperty('disabled', true)
+  })
+
+  it('asks for confirmation with the talent and the accounts', async () => {
+    mocks.getVideoBackfillStatusAction.mockResolvedValue({
+      accounts: [
+        createAccount(),
+        createAccount({ accountId: 'channel-row-2', name: 'Sub' }),
+      ],
+      success: true,
+    })
+
+    renderPanel()
+
+    const button = await screen.findByRole('button', {
+      name: 'YouTubeの過去動画を取り込む',
+    })
+
+    await waitFor(() => expect(button).toHaveProperty('disabled', false))
+    fireEvent.click(button)
+
+    const dialog = screen.getByRole('dialog')
+
+    expect(dialog).toHaveTextContent(
+      '「Talent」のYouTubeアカウント（2件）の過去動画をすべて確認し、未登録の動画を取り込みますか？',
+    )
+    expect(dialog).toHaveTextContent(
+      '処理はバックグラウンドで順番に行われます。',
+    )
+    expect(within(dialog).getByText('Main')).toBeTruthy()
+    expect(within(dialog).getByText('Sub')).toBeTruthy()
+  })
+
+  it('does not request the backfill when cancelled', async () => {
+    mocks.getVideoBackfillStatusAction.mockResolvedValue({
+      accounts: [createAccount()],
+      success: true,
+    })
+
+    renderPanel()
+
+    const button = await screen.findByRole('button', {
+      name: 'YouTubeの過去動画を取り込む',
+    })
+
+    await waitFor(() => expect(button).toHaveProperty('disabled', false))
+    fireEvent.click(button)
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(mocks.requestVideoBackfillAction).not.toHaveBeenCalled()
+  })
+
+  it('requests the backfill when confirmed', async () => {
+    mocks.getVideoBackfillStatusAction.mockResolvedValue({
+      accounts: [createAccount()],
+      success: true,
+    })
+    mocks.requestVideoBackfillAction.mockResolvedValue({
+      message: 'キューに追加しました。',
+      success: true,
+    })
+
+    renderPanel()
+
+    const button = await screen.findByRole('button', {
+      name: 'YouTubeの過去動画を取り込む',
+    })
+
+    await waitFor(() => expect(button).toHaveProperty('disabled', false))
+    fireEvent.click(button)
+    fireEvent.click(screen.getByRole('button', { name: '取り込む' }))
+
+    expect(await screen.findByText('キューに追加しました。')).toBeTruthy()
+    expect(mocks.requestVideoBackfillAction).toHaveBeenCalledWith(
+      'talent-1',
+      'youtube',
+    )
   })
 })

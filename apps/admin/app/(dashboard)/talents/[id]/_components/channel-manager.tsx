@@ -16,6 +16,7 @@ import {
 } from '@shinju-date/ui'
 import { ExternalLink, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import type { FormState } from '@/components/form'
 import Form, {
   ErrorMessage,
@@ -50,6 +51,9 @@ export function ChannelManager({
   const [deletingChannelId, setDeletingChannelId] = useState<string | null>(
     null,
   )
+  // Kept after the dialog closes so that its content stays while it fades out.
+  const [removalTarget, setRemovalTarget] = useState<Channel | null>(null)
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
 
   const handleAddChannel = async (
     currentState: FormState,
@@ -66,14 +70,6 @@ export function ChannelManager({
   }
 
   const handleRemoveChannel = async (channelId: string) => {
-    if (
-      !confirm(
-        'このチャンネルを削除してもよろしいですか？\n関連する動画データは削除されません。',
-      )
-    ) {
-      return
-    }
-
     setDeletingChannelId(channelId)
     const result = await removeYouTubeChannelAction(channelId, talentId)
 
@@ -207,7 +203,10 @@ export function ChannelManager({
                     <UIButton
                       className="ml-4"
                       disabled={deletingChannelId === channel.id}
-                      onClick={() => handleRemoveChannel(channel.id)}
+                      onClick={() => {
+                        setRemovalTarget(channel)
+                        setIsRemoveDialogOpen(true)
+                      }}
                       size="sm"
                       title="チャンネルを削除"
                       type="button"
@@ -226,6 +225,30 @@ export function ChannelManager({
           )}
         </CardContent>
       </Card>
+      <ConfirmDialog
+        confirmLabel="削除"
+        confirmVariant="danger"
+        description={
+          'このチャンネルを削除してもよろしいですか？\n関連する動画データは削除されません。'
+        }
+        onConfirm={() => {
+          if (removalTarget) {
+            void handleRemoveChannel(removalTarget.id)
+          }
+        }}
+        onOpenChange={setIsRemoveDialogOpen}
+        open={isRemoveDialogOpen}
+        title="チャンネルを削除"
+      >
+        {removalTarget && (
+          <>
+            <p className="font-medium">{removalTarget.name || '未取得'}</p>
+            <code className="mt-1 block font-mono text-xs break-all">
+              {removalTarget.youtube_channel_id}
+            </code>
+          </>
+        )}
+      </ConfirmDialog>
     </div>
   )
 }
