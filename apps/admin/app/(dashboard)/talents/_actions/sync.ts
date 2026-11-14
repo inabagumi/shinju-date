@@ -320,7 +320,10 @@ async function syncTwitchUsers(
       )
       const profileImageChanged = hasProfileImageChanged(profileImageResult)
 
-      if (upsertError && profileImageResult === null) {
+      // A failed write of the name and login only counts as synced when the
+      // icon was actually written: an unchanged icon would otherwise report
+      // the account as up to date although its changes were never saved.
+      if (upsertError && !profileImageChanged) {
         continue
       }
 

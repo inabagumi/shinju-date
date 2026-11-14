@@ -1089,54 +1089,63 @@ describe('syncTalentWithTwitch', () => {
     )
   })
 
-  it('should fail when neither name and login nor the icon can be synced', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-    const { getUsers } = await import('@shinju-date/twitch-api-client')
-    const { createAuditLog } = await import('@/lib/audit-log')
-    const { syncTwitchUserIconSafely } = await import('@/lib/twitch-user-icon')
+  it.each([
+    ['cannot be synced', null],
+    ['is unchanged', 'unchanged'],
+  ] as const)(
+    'should fail when name and login cannot be written and the icon %s',
+    async (_, iconResult) => {
+      const { createSupabaseServerClient } = await import('@/lib/supabase')
+      const { getUsers } = await import('@shinju-date/twitch-api-client')
+      const { createAuditLog } = await import('@/lib/audit-log')
+      const { syncTwitchUserIconSafely } = await import(
+        '@/lib/twitch-user-icon'
+      )
 
-    const { mockSupabaseClient } = createMockTwitchSupabaseClient({
-      upsertError: { message: 'duplicate key value' },
-      users: [
-        {
-          id: twitchUserRowId,
-          name: 'Old Name',
-          profile_images: null,
-          twitch_login_name: 'oldlogin',
-          twitch_user_id: twitchUserId,
-        },
-      ],
-    })
+      const { mockSupabaseClient } = createMockTwitchSupabaseClient({
+        upsertError: { message: 'duplicate key value' },
+        users: [
+          {
+            id: twitchUserRowId,
+            name: 'Old Name',
+            profile_images: null,
+            twitch_login_name: 'oldlogin',
+            twitch_user_id: twitchUserId,
+          },
+        ],
+      })
 
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
-    vi.mocked(getUsers).mockReturnValue(
-      (async function* () {
-        yield {
-          broadcaster_type: '',
-          created_at: '2011-08-08T20:45:44Z',
-          description: '',
-          display_name: 'New Name',
-          id: twitchUserId,
-          login: 'newlogin',
-          offline_image_url: '',
-          profile_image_url: '',
-          type: '',
-        }
-      })() as never,
-    )
-    vi.mocked(syncTwitchUserIconSafely).mockResolvedValueOnce(null)
+      vi.mocked(createSupabaseServerClient).mockResolvedValue(
+        mockSupabaseClient as never,
+      )
+      vi.mocked(getUsers).mockReturnValue(
+        (async function* () {
+          yield {
+            broadcaster_type: '',
+            created_at: '2011-08-08T20:45:44Z',
+            description: '',
+            display_name: 'New Name',
+            id: twitchUserId,
+            login: 'newlogin',
+            offline_image_url: '',
+            profile_image_url: '',
+            type: '',
+          }
+        })() as never,
+      )
+      vi.mocked(syncTwitchUserIconSafely).mockResolvedValueOnce(iconResult)
 
-    const result = await syncTalentWithTwitch(talentId)
+      const result = await syncTalentWithTwitch(talentId)
 
-    expect(result).toEqual({
-      error:
-        'Twitchでユーザーが見つかりませんでした。ユーザーIDが正しいか確認してください。',
-      success: false,
-    })
-    expect(createAuditLog).not.toHaveBeenCalled()
-  })
+      // アイコンが変わっていなければ、書き込めなかった name / login を「最新」と報告しない
+      expect(result).toEqual({
+        error:
+          'Twitchでユーザーが見つかりませんでした。ユーザーIDが正しいか確認してください。',
+        success: false,
+      })
+      expect(createAuditLog).not.toHaveBeenCalled()
+    },
+  )
 
   it('should return error when talent has no linked Twitch users', async () => {
     const { createSupabaseServerClient } = await import('@/lib/supabase')
