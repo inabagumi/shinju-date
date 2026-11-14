@@ -1,5 +1,5 @@
 import createMDX from '@next/mdx'
-import { withSentryConfig } from '@sentry/nextjs'
+import { withSentryConfig } from '@sentry/nextjs/config'
 import { withBotId } from 'botid/next/config'
 // import rehypeExternalLinks from 'rehype-external-links'
 // import remarkGfm from 'remark-gfm'
@@ -85,8 +85,9 @@ function withPlugins(config: NextConfig): NextConfig {
 
   if (process.env['NEXT_PUBLIC_SENTRY_DSN']) {
     return withSentryConfig(withMDX(configWithBotId), {
-      automaticVercelMonitors: false,
-      disableLogger: true,
+      bundleSizeOptimizations: {
+        excludeDebugStatements: true,
+      },
       reactComponentAnnotation: {
         enabled: true,
       },

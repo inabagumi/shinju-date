@@ -1,4 +1,4 @@
-import { withSentryConfig } from '@sentry/nextjs'
+import { withSentryConfig } from '@sentry/nextjs/config'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
@@ -32,8 +32,9 @@ const nextConfig: NextConfig = {
 function withPlugins(nextConfig: NextConfig): NextConfig {
   if (process.env['NEXT_PUBLIC_SENTRY_DSN']) {
     return withSentryConfig(nextConfig, {
-      automaticVercelMonitors: false,
-      disableLogger: true,
+      bundleSizeOptimizations: {
+        excludeDebugStatements: true,
+      },
       reactComponentAnnotation: {
         enabled: true,
       },

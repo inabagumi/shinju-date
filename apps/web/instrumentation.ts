@@ -18,9 +18,7 @@ export async function register() {
     const commonSentryOptions = {
       dsn,
       enabled: environment === 'production',
-      enableLogs: true,
       environment,
-      sendDefaultPii: true,
       tracesSampleRate: 0.333,
     } satisfies Parameters<typeof Sentry.init>[0]
 
@@ -45,7 +43,8 @@ export async function register() {
             tracing: true,
           }),
         ],
-        profilesSampleRate: 0.333,
+        profileLifecycle: 'trace',
+        profileSessionSampleRate: 0.333,
       })
     }
 
