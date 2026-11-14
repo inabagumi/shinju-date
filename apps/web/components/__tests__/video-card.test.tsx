@@ -244,6 +244,30 @@ describe('VideoCard', () => {
     expect(within(meta).getByText('・')).toHaveAttribute('aria-hidden', 'true')
   })
 
+  test('should hide the date below 640px when it is shown outside the card', () => {
+    render(
+      <VideoCard
+        hideTimeOnMobile
+        value={createYouTubeVideo({
+          name: 'チャンネル名',
+          profile_image: null,
+          youtube_handle: '@channel',
+        })}
+      />,
+    )
+
+    expect(screen.getByText('・')).toHaveClass('max-sm:hidden')
+    expect(screen.getByText('20:00')).toHaveClass('max-sm:hidden')
+  })
+
+  test('should use the given heading level for the title', () => {
+    render(<VideoCard titleAs="h4" value={createYouTubeVideo(null)} />)
+
+    expect(
+      screen.getByRole('heading', { level: 4, name: 'YouTubeの動画' }),
+    ).toBeInTheDocument()
+  })
+
   test('should not show the separator without a creator', () => {
     const video = createYouTubeVideo(null)
 

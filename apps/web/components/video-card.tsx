@@ -131,6 +131,10 @@ interface VideoCardProps {
     Intl.DateTimeFormatOptions,
     'dateStyle' | 'timeStyle'
   >
+  /** 640px 未満で補助情報の日時を隠す。日時をカードの外に表示する場合に使う */
+  hideTimeOnMobile?: boolean
+  /** タイトルの見出しの要素。カードを置く場所の見出しの階層に合わせる */
+  titleAs?: 'h3' | 'h4'
   value: Video
   variant?: VideoCardVariant
 }
@@ -141,6 +145,8 @@ export default function VideoCard({
     dateStyle: undefined,
     timeStyle: 'short',
   },
+  hideTimeOnMobile = false,
+  titleAs: Title = 'h3',
   value,
   variant = 'grid',
 }: VideoCardProps) {
@@ -215,22 +221,31 @@ export default function VideoCard({
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         {/* 1行のタイトルでも2行ぶんの高さを確保して、カードの高さを揃える */}
-        <h3
+        <Title
           className="line-clamp-2 min-h-[2lh] text-body leading-normal font-semibold wrap-anywhere group-hover:underline"
           title={value.title}
         >
           {value.title}
-        </h3>
+        </Title>
 
         <p className="flex min-w-0 items-center gap-1 text-meta text-muted">
           <VideoCreator value={value} />
           {hasCreator && (
-            <span aria-hidden="true" className="shrink-0">
+            <span
+              aria-hidden="true"
+              className={twMerge(
+                'shrink-0',
+                hideTimeOnMobile && 'max-sm:hidden',
+              )}
+            >
               ・
             </span>
           )}
           <FormattedTime
-            className="shrink-0 whitespace-nowrap tabular-nums"
+            className={twMerge(
+              'shrink-0 whitespace-nowrap tabular-nums',
+              hideTimeOnMobile && 'max-sm:hidden',
+            )}
             dateTime={publishedAt}
             options={dateTimeFormatOptions}
           />
