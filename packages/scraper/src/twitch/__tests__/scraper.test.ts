@@ -1,4 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  AccountNotFoundError,
+  StalledPaginationError,
+} from '../../internal/database/index.js'
 import { TEST_NOW } from '../../internal/testing/context.js'
 import { setupSupabase } from '../../internal/testing/supabase.js'
 import {
@@ -12,6 +16,7 @@ import type {
   TwitchStream,
   TwitchUser,
   TwitchVideo,
+  TwitchVideoPage,
 } from '../types.js'
 
 vi.mock('../../internal/thumbnails/index.js', async (importOriginal) => ({
@@ -30,6 +35,8 @@ async function* fromArray<T>(items: readonly T[]): AsyncGenerator<T> {
 
 interface FakeTwitch {
   archives?: TwitchVideo[]
+  /** Pages of a broadcaster's history, keyed by the cursor they start at. */
+  historyPages?: Record<string, TwitchVideoPage>
   liveStreams?: TwitchStream[]
   uploads?: TwitchVideo[]
   users?: TwitchUser[]
@@ -43,6 +50,7 @@ interface FakeTwitch {
  */
 function createApi({
   archives = [],
+  historyPages = {},
   liveStreams = [],
   uploads = [],
   users = [],
@@ -59,6 +67,10 @@ function createApi({
     ),
     getVideosByUser: vi.fn(({ type }) =>
       fromArray(type === 'upload' ? uploads : archives),
+    ),
+    getVideosByUserPage: vi.fn(
+      async ({ after }) =>
+        historyPages[after ?? ''] ?? { cursor: null, videos: [] },
     ),
   }
 }
@@ -313,6 +325,120 @@ describe('TwitchScraper', () => {
         body: { name: 'Alice', twitch_login_name: 'alice' },
         query: { id: 'eq.user-row-1' },
       })
+    })
+  })
+
+  describe('addPastVideos', () => {
+    const twitchUserRow = {
+      id: 'user-row-1',
+      talent_id: 'talent-1',
+      talents: { id: 'talent-1' },
+      twitch_user_id: 'twitch-user-1',
+    }
+
+    it('saves the videos of one page that are not saved yet', async () => {
+      supabase.respond(({ method, table }) => {
+        if (method !== 'GET') {
+          return []
+        }
+
+        if (table === 'twitch_users') {
+          return [twitchUserRow]
+        }
+
+        // `vod-1` is saved already.
+        if (table === 'twitch_videos') {
+          const { twitch_video, ...video } = createSavedVideo({
+            status: 'ENDED',
+            twitch_video: { twitch_video_id: 'vod-1', type: 'archive' },
+          })
+
+          return [{ ...twitch_video, video }]
+        }
+
+        return []
+      })
+      const { client, scraper } = createScraper({
+        historyPages: {
+          '': {
+            cursor: 'page-2',
+            videos: [
+              createVideo(),
+              createVideo({ id: 'vod-2', stream_id: 'stream-2' }),
+              createVideo({ id: 'highlight-1', type: 'highlight' }),
+            ],
+          },
+        },
+      })
+
+      await expect(
+        scraper.addPastVideos({ accountId: 'user-row-1', now: TEST_NOW }),
+      ).resolves.toEqual({ added: 1, cursor: 'page-2', listed: 3 })
+
+      expect(client.getVideosByUserPage).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'all', userId: 'twitch-user-1' }),
+      )
+      expect(supabase.written('GET', 'twitch_users')[0]?.query).toMatchObject({
+        id: 'eq.user-row-1',
+        'talents.deleted_at': 'is.null',
+      })
+      expect(
+        supabase
+          .written('POST', 'twitch_videos')
+          .map((request) => request.body),
+      ).toEqual([
+        expect.objectContaining({
+          twitch_user_id: 'user-row-1',
+          twitch_video_id: 'vod-2',
+        }),
+      ])
+    })
+
+    it('continues from the cursor and reports the end of the history', async () => {
+      supabase.respond(({ method, table }) =>
+        method === 'GET' && table === 'twitch_users' ? [twitchUserRow] : [],
+      )
+      const { client, scraper } = createScraper({
+        historyPages: {
+          'page-2': { cursor: null, videos: [] },
+        },
+      })
+
+      await expect(
+        scraper.addPastVideos({ accountId: 'user-row-1', cursor: 'page-2' }),
+      ).resolves.toEqual({ added: 0, cursor: null, listed: 0 })
+
+      expect(client.getVideosByUserPage).toHaveBeenCalledWith(
+        expect.objectContaining({ after: 'page-2' }),
+      )
+      expect(client.getStreamsByUserIds).not.toHaveBeenCalled()
+    })
+
+    it('rejects a page that does not move the cursor forward', async () => {
+      supabase.respond(({ method, table }) =>
+        method === 'GET' && table === 'twitch_users' ? [twitchUserRow] : [],
+      )
+      const { scraper } = createScraper({
+        historyPages: {
+          'page-2': { cursor: 'page-2', videos: [createVideo()] },
+        },
+      })
+
+      await expect(
+        scraper.addPastVideos({ accountId: 'user-row-1', cursor: 'page-2' }),
+      ).rejects.toBeInstanceOf(StalledPaginationError)
+      expect(supabase.written('POST', 'videos')).toEqual([])
+    })
+
+    it('rejects an account that is unknown or whose talent was deleted', async () => {
+      supabase.respond(() => [])
+      const { client, scraper } = createScraper({})
+
+      await expect(
+        scraper.addPastVideos({ accountId: 'user-row-404' }),
+      ).rejects.toBeInstanceOf(AccountNotFoundError)
+
+      expect(client.getVideosByUserPage).not.toHaveBeenCalled()
     })
   })
 })

@@ -56,6 +56,8 @@ jobs:
             language: "node"
           - name: "@shinju-date/twitch-api-client"
             language: "node"
+          - name: "@shinju-date/video-backfill"
+            language: "node"
           - name: "@shinju-date/youtube-api-client"
             language: "node"
           # Node.js apps with unit tests

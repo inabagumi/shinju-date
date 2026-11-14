@@ -29,3 +29,10 @@ export async function countChanges<T>(
 
   return count
 }
+
+/**
+ * Videos a backfill saves at once. Lower than the discovery of new videos:
+ * a backfill is not urgent, and every video downloads and resizes a
+ * thumbnail.
+ */
+export const BACKFILL_SAVE_CONCURRENCY = 4

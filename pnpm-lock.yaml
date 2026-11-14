@@ -235,6 +235,9 @@ importers:
       '@shinju-date/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@shinju-date/video-backfill':
+        specifier: workspace:*
+        version: link:../../packages/video-backfill
       '@shinju-date/web-cache':
         specifier: workspace:*
         version: link:../../packages/web-cache
@@ -383,6 +386,9 @@ importers:
       '@shinju-date/temporal-fns':
         specifier: workspace:*
         version: link:../../packages/temporal-fns
+      '@shinju-date/video-backfill':
+        specifier: workspace:*
+        version: link:../../packages/video-backfill
       '@shinju-date/web-cache':
         specifier: workspace:*
         version: link:../../packages/web-cache
@@ -1110,6 +1116,37 @@ importers:
       vite:
         specifier: 8.3.8
         version: 8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@opentelemetry/api@1.9.1)(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/ui@5.1.0)(jsdom@31.0.1(@noble/hashes@1.8.0))(msw@3.0.5(@types/node@26.6.6)(graphql@16.15.0)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2))
+
+  packages/video-backfill:
+    dependencies:
+      '@shinju-date/constants':
+        specifier: workspace:*
+        version: link:../constants
+      temporal-polyfill:
+        specifier: 1.0.8
+        version: 1.0.8
+    devDependencies:
+      '@tsconfig/node20':
+        specifier: 20.1.11
+        version: 20.1.11
+      '@tsconfig/strictest':
+        specifier: 2.0.9
+        version: 2.0.9
+      '@types/node':
+        specifier: 26.6.6
+        version: 26.6.6
+      '@upstash/redis':
+        specifier: 1.41.0
+        version: 1.41.0
+      tsup:
+        specifier: 9.0.0
+        version: 9.0.0(jiti@2.7.0)(postcss@8.5.32)(typescript@6.0.3)
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
       vitest:
         specifier: 5.1.0
         version: 5.1.0(@opentelemetry/api@1.9.1)(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/ui@5.1.0)(jsdom@31.0.1(@noble/hashes@1.8.0))(msw@3.0.5(@types/node@26.6.6)(graphql@16.15.0)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2))

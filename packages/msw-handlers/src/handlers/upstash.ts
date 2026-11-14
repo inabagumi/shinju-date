@@ -86,6 +86,52 @@ function simulateZUnionStore(destKey: string, keys: string[]) {
 }
 
 /**
+ * Simulate `ENQUEUE_SCRIPT` of `@shinju-date/video-backfill`: saves and queues
+ * a job only if it is unchanged since it was read and no worker holds it.
+ */
+function simulateBackfillEnqueue(keys: any[], argv: any[]): number {
+  const [jobKey, queueKey, lockKey] = keys
+  const [expected, job, , id] = argv
+  const current = mockRedisStore.get(jobKey)
+
+  if (expected === '' ? current !== undefined : current !== expected) {
+    return 0
+  }
+
+  if (mockRedisStore.has(lockKey)) {
+    return 0
+  }
+
+  mockRedisStore.set(jobKey, job)
+
+  const rawList = mockRedisStore.get(queueKey)
+  const list = Array.isArray(rawList) ? rawList : []
+
+  list.unshift(id)
+  mockRedisStore.set(queueKey, list)
+
+  return 1
+}
+
+/**
+ * Simulate `REQUEUE_SCRIPT` of `@shinju-date/video-backfill`: puts a claimed
+ * job back in the queue as pending and releases it.
+ */
+function simulateBackfillRequeue(keys: any[], argv: any[]): number {
+  const [queueKey, jobKey, lockKey] = keys
+  const [id, job] = argv
+  const rawList = mockRedisStore.get(queueKey)
+  const list = Array.isArray(rawList) ? rawList : []
+
+  list.unshift(id)
+  mockRedisStore.set(queueKey, list)
+  mockRedisStore.set(jobKey, job)
+  mockRedisStore.delete(lockKey)
+
+  return 1
+}
+
+/**
  * Parse Upstash Redis REST API command
  */
 function parseUpstashCommand(body: any) {
@@ -142,10 +188,57 @@ function processRedisCommand(command: string, args: any[]): any {
       return { result: value || null }
     }
 
+    case 'mget': {
+      return { result: args.map((key) => mockRedisStore.get(key) ?? null) }
+    }
+
     case 'set': {
-      const [key, value] = args
+      const [key, value, ...options] = args
+      const onlyIfMissing = options.some(
+        (option) => String(option).toLowerCase() === 'nx',
+      )
+
+      if (onlyIfMissing && mockRedisStore.has(key)) {
+        return { result: null }
+      }
+
       mockRedisStore.set(key, value)
       return { result: 'OK' }
+    }
+
+    case 'eval': {
+      // Lua cannot run here, so known scripts are emulated.
+      const [script, numKeys, ...rest] = args
+      const keys = rest.slice(0, Number(numKeys))
+      const argv = rest.slice(Number(numKeys))
+
+      if (String(script).includes('-- video-backfill:enqueue')) {
+        return { result: simulateBackfillEnqueue(keys, argv) }
+      }
+
+      if (String(script).includes('-- video-backfill:requeue')) {
+        return { result: simulateBackfillRequeue(keys, argv) }
+      }
+
+      return { result: null }
+    }
+
+    case 'lpush': {
+      const [key, ...elements] = args
+      const rawList = mockRedisStore.get(key)
+      const list = Array.isArray(rawList) ? rawList : []
+
+      // Each element is pushed to the head in turn, like Redis does.
+      list.unshift(...elements.reverse())
+      mockRedisStore.set(key, list)
+      return { result: list.length }
+    }
+
+    case 'rpop': {
+      const [key] = args
+      const rawList = mockRedisStore.get(key)
+      const list = Array.isArray(rawList) ? rawList : []
+      return { result: list.pop() ?? null }
     }
 
     case 'del': {

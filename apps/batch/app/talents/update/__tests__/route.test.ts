@@ -8,6 +8,7 @@ const revalidateTags = vi.fn()
 
 vi.mock('@/lib/ratelimit', () => ({
   talentsUpdate: { limit },
+  videosBackfill: { limit: vi.fn() },
   videosCheck: { limit: vi.fn() },
   videosCheckAll: { limit: vi.fn() },
   videosCheckRecent: { limit: vi.fn() },

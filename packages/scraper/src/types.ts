@@ -43,3 +43,29 @@ export interface CrawlContext<TFetcher> extends WriteContext {
   /** Reads from the platform. */
   fetcher: TFetcher
 }
+
+export interface AddPastVideosOptions {
+  /**
+   * Primary key of the account row: `youtube_channels.id` for YouTube,
+   * `twitch_users.id` for Twitch.
+   */
+  accountId: string
+  /**
+   * Where the previous call stopped, as returned in
+   * {@link AddPastVideosResult.cursor}. Omit to start from the newest videos.
+   */
+  cursor?: string | null | undefined
+  now?: Temporal.Instant | undefined
+}
+
+export interface AddPastVideosResult {
+  /** Number of videos that were saved. */
+  added: number
+  /**
+   * Where to continue with the next call, or `null` when the whole history of
+   * the account has been read.
+   */
+  cursor: string | null
+  /** Number of videos the platform listed on the page that was read. */
+  listed: number
+}

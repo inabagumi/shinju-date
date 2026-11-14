@@ -34,6 +34,7 @@ function createClient(overrides: Partial<TwitchApi> = {}): TwitchApi {
     getUsers: vi.fn(() => fromArray<TwitchUser>([])),
     getVideos: vi.fn(() => fromArray<TwitchVideo>([])),
     getVideosByUser: vi.fn(() => fromArray<TwitchVideo>([])),
+    getVideosByUserPage: vi.fn(async () => ({ cursor: null, videos: [] })),
     ...overrides,
   }
 }

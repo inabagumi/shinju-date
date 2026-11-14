@@ -4,6 +4,7 @@ import {
   getUsers,
   getVideos,
   getVideosByUser,
+  getVideosByUserPage,
   TWITCH_API_MAX_RESULTS,
 } from '@shinju-date/twitch-api-client'
 import {
@@ -24,6 +25,8 @@ import type {
   TwitchStream,
   TwitchUser,
   TwitchVideo,
+  TwitchVideoFilter,
+  TwitchVideoPage,
 } from './types.js'
 
 const defaultClient: TwitchApi = {
@@ -32,6 +35,7 @@ const defaultClient: TwitchApi = {
   getUsers,
   getVideos,
   getVideosByUser,
+  getVideosByUserPage,
 }
 
 /**
@@ -122,6 +126,27 @@ export class TwitchFetcher extends Fetcher<
       failures,
       missingAccountIds: [],
     }
+  }
+
+  /**
+   * Gets one page of a broadcaster's videos, newest first, to walk its whole
+   * history. Pass the returned cursor to read the next page.
+   */
+  getVideoPage(
+    accountId: string,
+    {
+      cursor,
+      type = 'all',
+    }: { cursor?: string | null | undefined; type?: TwitchVideoFilter } = {},
+  ): Promise<TwitchVideoPage> {
+    return this.request(() =>
+      this.#client.getVideosByUserPage({
+        after: cursor ?? undefined,
+        limit: TWITCH_API_MAX_RESULTS,
+        type,
+        userId: accountId,
+      }),
+    )
   }
 
   /**

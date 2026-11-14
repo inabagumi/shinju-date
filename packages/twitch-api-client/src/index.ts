@@ -633,6 +633,51 @@ export async function* getVideosByUser({
   }
 }
 
+export interface GetVideosByUserPageOptions {
+  /** Cursor returned by the previous page; omit for the newest videos. */
+  after?: string | undefined
+  /** Page size, up to 100 (default: 100). */
+  limit?: number
+  type?: 'archive' | 'highlight' | 'upload' | 'all'
+  userId: string
+}
+
+export interface TwitchVideoPage {
+  /** Cursor of the next page, or `null` when this was the last one. */
+  cursor: string | null
+  videos: TwitchVideo[]
+}
+
+/**
+ * Gets one page of a broadcaster's videos, newest first.
+ *
+ * Unlike {@link getVideosByUser} with `all`, the caller keeps the cursor, so a
+ * long history can be walked across several runs.
+ */
+export async function getVideosByUserPage({
+  after,
+  limit = TWITCH_API_MAX_RESULTS,
+  type = 'archive',
+  userId,
+}: GetVideosByUserPageOptions): Promise<TwitchVideoPage> {
+  const client = getTwitchApiClient()
+  const { cursor, data } = await client.videos.getVideosByUser(userId, {
+    limit,
+    type,
+    ...(after ? { after } : {}),
+  })
+
+  return {
+    // Helix may still return a cursor along with the last page; the empty
+    // page that follows it ends the walk.
+    cursor: data.length > 0 && cursor ? cursor : null,
+    videos: data.flatMap((video) => {
+      const mapped = mapVideo(video)
+      return mapped ? [mapped] : []
+    }),
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Clips
 // ---------------------------------------------------------------------------

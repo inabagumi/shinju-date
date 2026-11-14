@@ -15,6 +15,7 @@ import { EditTalentForm } from './_components/edit-talent-form'
 import { SyncTalentButton } from './_components/sync-talent-button'
 import { TalentLifecycleActions } from './_components/talent-lifecycle-actions'
 import { TwitchUserManager } from './_components/twitch-user-manager'
+import { VideoBackfillPanel } from './_components/video-backfill-panel'
 
 interface Props {
   params: Promise<{
@@ -142,6 +143,16 @@ async function TalentProfile({ id }: { id: string }) {
         talentId={talent.id}
         users={talent.twitch_users}
       />
+
+      {/* Backfill of past videos */}
+      {!isDeleted && (
+        <VideoBackfillPanel
+          hasTwitchUsers={talent.twitch_users.length > 0}
+          hasYouTubeChannels={talent.youtube_channels.length > 0}
+          talentId={talent.id}
+          talentName={talent.name}
+        />
+      )}
 
       {/* Additional metadata */}
       <Card className="mt-6" variant="elevated">

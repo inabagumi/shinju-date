@@ -3,6 +3,7 @@ import type {
   TwitchStream,
   TwitchUser,
   TwitchVideo,
+  TwitchVideoPage,
 } from '@shinju-date/twitch-api-client'
 import type {
   FetcherOptions,
@@ -10,7 +11,13 @@ import type {
 } from '../internal/fetcher-types.js'
 import type { ScraperOptions } from '../types.js'
 
-export type { TwitchClip, TwitchStream, TwitchUser, TwitchVideo }
+export type {
+  TwitchClip,
+  TwitchStream,
+  TwitchUser,
+  TwitchVideo,
+  TwitchVideoPage,
+}
 
 export type TwitchVideoFilter = 'archive' | 'highlight' | 'upload' | 'all'
 
@@ -30,6 +37,12 @@ export interface TwitchApi {
     type?: TwitchVideoFilter
     userId: string
   }) => AsyncIterable<TwitchVideo>
+  getVideosByUserPage: (options: {
+    after?: string | undefined
+    limit?: number
+    type?: TwitchVideoFilter
+    userId: string
+  }) => Promise<TwitchVideoPage>
 }
 
 export interface TwitchFetcherOptions extends FetcherOptions {

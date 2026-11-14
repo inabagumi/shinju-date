@@ -18,6 +18,7 @@
     "@shinju-date/temporal-fns": "workspace:*",
     "@shinju-date/twitch-api-client": "workspace:*",
     "@shinju-date/ui": "workspace:*",
+    "@shinju-date/video-backfill": "workspace:*",
     "@shinju-date/web-cache": "workspace:*",
     "@shinju-date/youtube-api-client": "workspace:*",
     "@supabase/sentry-js-integration": "0.3.0",

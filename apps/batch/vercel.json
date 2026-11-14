@@ -54,6 +54,10 @@
       "schedule": "3/5 * * * *"
     },
     {
+      "path": "/videos/backfill",
+      "schedule": "*/1 * * * *"
+    },
+    {
       "path": "/videos/cascade-from-talents",
       "schedule": "*/5 * * * *"
     }

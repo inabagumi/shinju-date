@@ -1,6 +1,8 @@
 import type { Temporal } from 'temporal-polyfill'
 import { Scraper } from '../scraper.js'
+import type { AddPastVideosOptions, AddPastVideosResult } from '../types.js'
 import { addNewYouTubeVideos } from './add-new-videos.js'
+import { addPastYouTubeVideos } from './add-past-videos.js'
 import {
   refreshYouTubeVideos,
   removeUnavailableYouTubeVideos,
@@ -53,6 +55,13 @@ export class YouTubeScraper extends Scraper {
 
   async syncAccounts(now?: Temporal.Instant): Promise<boolean> {
     return (await syncYouTubeChannels(this.#context(now))) > 0
+  }
+
+  addPastVideos({
+    now,
+    ...options
+  }: AddPastVideosOptions): Promise<AddPastVideosResult> {
+    return addPastYouTubeVideos(this.#context(now), options)
   }
 
   #context(now: Temporal.Instant | undefined) {
