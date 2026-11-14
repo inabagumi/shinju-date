@@ -146,13 +146,26 @@ ${message}
       }
     }
 
-    await resend.emails.send({
+    // The Resend SDK does not throw on API or network errors; it returns
+    // them as `error` instead, so check it explicitly.
+    const { error: sendError } = await resend.emails.send({
       from: process.env['FROM_EMAIL'] || 'noreply@shinju.date',
       subject: emailSubject,
       text: emailText,
       to: adminEmail,
       ...(replyToValue && { replyTo: replyToValue }),
     })
+
+    if (sendError) {
+      console.error('Failed to send contact form email:', sendError)
+
+      return {
+        error:
+          '送信中にエラーが発生しました。しばらく時間をおいて再度お試しください。',
+        success: false,
+        values,
+      }
+    }
 
     return {
       message: 'お問い合わせを受け付けました。ありがとうございます。',
