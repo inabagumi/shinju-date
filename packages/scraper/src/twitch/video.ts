@@ -1,5 +1,6 @@
 import type { Tables, TablesUpdate } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
+import { getTwitchVideoStatus } from '@shinju-date/twitch-api-client'
 import { Temporal } from 'temporal-polyfill'
 import {
   DEFAULT_THUMBNAIL_HEIGHT,
@@ -18,14 +19,6 @@ export type TwitchVideoFields = Pick<
 >
 
 /**
- * Archives and highlights are past broadcasts; uploads and clips are regular
- * videos.
- */
-export function getStatusForType(type: TwitchVideoType): 'ENDED' | 'PUBLISHED' {
-  return type === 'upload' || type === 'clip' ? 'PUBLISHED' : 'ENDED'
-}
-
-/**
  * Maps a Helix video to the columns we keep in sync with Twitch.
  */
 export function toVideoFields(video: TwitchVideo): TwitchVideoFields {
@@ -34,7 +27,7 @@ export function toVideoFields(video: TwitchVideo): TwitchVideoFields {
     published_at: toDBString(
       Temporal.Instant.from(video.published_at || video.created_at),
     ),
-    status: getStatusForType(video.type),
+    status: getTwitchVideoStatus(video.type),
     title: video.title,
   }
 }
@@ -46,7 +39,7 @@ export function toClipFields(clip: TwitchClip): TwitchVideoFields {
   return {
     duration: clip.duration,
     published_at: toDBString(Temporal.Instant.from(clip.created_at)),
-    status: getStatusForType('clip'),
+    status: getTwitchVideoStatus('clip'),
     title: clip.title,
   }
 }

@@ -1,6 +1,9 @@
 import type { TablesUpdate } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
-import { toLiveTwitchVideoId } from '@shinju-date/twitch-api-client'
+import {
+  getArchivedStreamId,
+  toLiveTwitchVideoId,
+} from '@shinju-date/twitch-api-client'
 import { countChanges } from '../internal/concurrency.js'
 import {
   DatabaseError,
@@ -220,8 +223,10 @@ async function getArchivesOfEndedBroadcasts(
   }
 
   for (const video of videos) {
-    if (video.type === 'archive' && video.stream_id) {
-      archiveByStreamId.set(video.stream_id, video)
+    const streamId = getArchivedStreamId(video)
+
+    if (streamId) {
+      archiveByStreamId.set(streamId, video)
     }
   }
 
