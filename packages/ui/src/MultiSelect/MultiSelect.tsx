@@ -4,7 +4,7 @@ import * as Checkbox from '@radix-ui/react-checkbox'
 import * as Popover from '@radix-ui/react-popover'
 import { Check, ChevronDown, Minus } from 'lucide-react'
 import type { ComponentPropsWithoutRef } from 'react'
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from '../tw-merge'
 
 export interface MultiSelectOption {
   label: string
@@ -80,17 +80,17 @@ export function MultiSelect({
       <Popover.Portal>
         <Popover.Content
           align="start"
-          className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=open]:animate-in z-50 w-[var(--radix-popover-trigger-width)] rounded-md border border-border bg-surface p-2 text-foreground shadow-lg"
+          className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=open]:animate-in z-50 w-[var(--radix-popover-trigger-width)] rounded-xl border border-border bg-surface p-2 text-foreground shadow-lg"
           sideOffset={4}
         >
           <div className="flex flex-col gap-1">
             {/* Select All / Deselect All button */}
             <button
-              className="flex w-full items-center rounded px-2 py-2 text-left text-sm hover:bg-muted"
+              className="flex w-full items-center rounded-md px-2 py-2 text-left text-sm hover:bg-muted"
               onClick={handleSelectAll}
               type="button"
             >
-              <div className="mr-2 flex size-5 items-center justify-center rounded border border-border">
+              <div className="mr-2 flex size-5 items-center justify-center rounded-md border border-border">
                 {value.length === options.length && (
                   <Check className="size-4 text-accent" />
                 )}
@@ -109,13 +109,13 @@ export function MultiSelect({
                 const isChecked = value.includes(option.value)
                 return (
                   <label
-                    className="flex w-full cursor-pointer items-center rounded px-2 py-2 text-sm hover:bg-muted"
+                    className="flex w-full cursor-pointer items-center rounded-md px-2 py-2 text-sm hover:bg-muted"
                     htmlFor={`multi-select-${option.value}`}
                     key={option.value}
                   >
                     <Checkbox.Root
                       checked={isChecked}
-                      className="mr-2 flex size-5 items-center justify-center rounded border border-border bg-surface data-[state=checked]:border-accent data-[state=checked]:bg-accent"
+                      className="mr-2 flex size-5 items-center justify-center rounded-md border border-border bg-surface data-[state=checked]:border-accent data-[state=checked]:bg-accent"
                       id={`multi-select-${option.value}`}
                       onCheckedChange={() => handleToggle(option.value)}
                     >

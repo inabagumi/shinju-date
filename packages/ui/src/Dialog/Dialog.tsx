@@ -1,6 +1,6 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import type { ComponentPropsWithRef } from 'react'
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from '../tw-merge'
 
 export const Dialog = DialogPrimitive.Root
 export const DialogTrigger = DialogPrimitive.Trigger
@@ -30,7 +30,7 @@ export function DialogContent({
   return (
     <DialogPrimitive.Content
       className={twMerge(
-        'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=open]:animate-in fixed top-1/2 left-1/2 max-h-[85vh] w-[90vw] max-w-[450px] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-surface p-6 text-foreground shadow-lg',
+        'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=open]:animate-in fixed top-1/2 left-1/2 max-h-[85vh] w-[90vw] max-w-[450px] -translate-x-1/2 -translate-y-1/2 rounded-xl bg-surface p-6 text-foreground shadow-lg',
         className,
       )}
       {...props}
@@ -47,7 +47,7 @@ export function DialogTitle({
   return (
     <DialogPrimitive.Title
       className={twMerge(
-        'mb-4 text-xl font-semibold text-foreground',
+        'mb-4 text-heading font-bold text-foreground',
         className,
       )}
       {...props}
@@ -61,7 +61,7 @@ export function DialogDescription({
 }: ComponentPropsWithRef<typeof DialogPrimitive.Description>) {
   return (
     <DialogPrimitive.Description
-      className={twMerge('mb-6 text-muted', className)}
+      className={twMerge('mb-6 text-meta text-muted', className)}
       {...props}
     />
   )

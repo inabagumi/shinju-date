@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentPropsWithRef } from 'react'
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from '../tw-merge'
 
 const inputVariants = cva(
   'w-full rounded-md border bg-surface px-4 py-2 text-foreground transition-colors outline-none placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-50',
