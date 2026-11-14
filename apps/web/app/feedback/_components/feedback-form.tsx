@@ -25,12 +25,16 @@ function SubmitButton() {
 export function FeedbackForm() {
   const [state, formAction, isPending] = useActionState(submitFeedback, null)
   const fieldErrors = isPending ? undefined : state?.fieldErrors
+  // React resets the form after the action, so restore the submitted values
+  // when it fails. They are absent on success, which clears the form.
+  const values = state?.values
 
   return (
     <div className="mx-auto max-w-2xl">
       <form action={formAction} className="space-y-6">
         {/* Message */}
         <TextareaField
+          defaultValue={values?.message}
           error={fieldErrors?.message}
           label="機能要望"
           name="message"
