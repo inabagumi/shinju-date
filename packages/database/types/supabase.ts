@@ -102,6 +102,60 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_images: {
+        Row: {
+          blur_data_url: string
+          created_at: string
+          etag: string | null
+          height: number
+          id: string
+          path: string
+          twitch_user_id: string | null
+          updated_at: string
+          width: number
+          youtube_channel_id: string | null
+        }
+        Insert: {
+          blur_data_url: string
+          created_at?: string
+          etag?: string | null
+          height: number
+          id?: string
+          path: string
+          twitch_user_id?: string | null
+          updated_at?: string
+          width: number
+          youtube_channel_id?: string | null
+        }
+        Update: {
+          blur_data_url?: string
+          created_at?: string
+          etag?: string | null
+          height?: number
+          id?: string
+          path?: string
+          twitch_user_id?: string | null
+          updated_at?: string
+          width?: number
+          youtube_channel_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_images_twitch_user_id_fkey"
+            columns: ["twitch_user_id"]
+            isOneToOne: true
+            referencedRelation: "twitch_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_images_youtube_channel_id_fkey"
+            columns: ["youtube_channel_id"]
+            isOneToOne: true
+            referencedRelation: "youtube_channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       talents: {
         Row: {
           created_at: string

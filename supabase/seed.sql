@@ -92,6 +92,14 @@ VALUES
 	('13000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', '100001', 'alice_twitch', 'Alice'),
 	('13000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', '100002', 'bob_twitch', 'Bob');
 
+-- profile_images (sample: one YouTube channel and one Twitch user have an icon)
+-- Only the rows are seeded. The objects are not in the local profile-images
+-- bucket, so the web app serves its fallback image for them.
+INSERT INTO public.profile_images (id, youtube_channel_id, twitch_user_id, path, width, height, blur_data_url, etag, created_at, updated_at)
+VALUES
+	('15000000-0000-0000-0000-000000000001', '11000000-0000-0000-0000-000000000001', NULL, 'youtube/UC00000001/seed.webp', 256, 256, 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==', '"seed-youtube-1"', NOW(), NOW()),
+	('15000000-0000-0000-0000-000000000002', NULL, '13000000-0000-0000-0000-000000000001', 'twitch/100001/seed.webp', 256, 256, 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==', '"seed-twitch-1"', NOW(), NOW());
+
 -- Twitch sample videos (separate from youtube_videos; platform = twitch)
 INSERT INTO public.videos (id, title, duration, created_at, updated_at, published_at, visible, thumbnail_id, talent_id, platform, status)
 VALUES

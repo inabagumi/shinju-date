@@ -163,6 +163,14 @@ pnpm vitest
 pnpm vitest --coverage
 ```
 
+### データベースのテスト（pgTAP）
+
+マイグレーションで定義した制約やRLSポリシーのテストは、`supabase/tests/database/` に pgTAP 形式で配置しています。ローカルのSupabaseを起動した状態で実行してください。
+
+```bash
+pnpm exec supabase test db
+```
+
 ## ベストプラクティス
 
 ### 1. テストファイルの配置
