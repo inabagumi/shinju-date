@@ -55,12 +55,14 @@ MSW（Mock Service Worker）は、開発・テスト環境でAPIリクエスト�
 - `terms` - 検索用語
 - `youtube_videos` - YouTube動画マッピング
 - `youtube_channels` - YouTubeチャンネルマッピング
+- `twitch_users` - Twitchユーザーマッピング（取得・登録・削除。`talents`から`twitch_users(...)`で埋め込み可能）
 
 サポートされているクエリパラメータ：
 
 - `select` - カラム選択
 - `eq` - 等価条件
 - `in` - IN条件
+- `ilike` - 大文字小文字を区別しないパターン一致
 - `limit` - 取得件数制限
 - `offset` - オフセット
 

@@ -314,7 +314,8 @@ The database includes the following tables:
 - `videos`: Video records with status and metadata
 - `thumbnails`: Thumbnail images with blur data
 - `youtube_channels`: YouTube channel information (all but one channel have a `profile_image_id`)
-- `profile_images`: Square icons referenced by `youtube_channels.profile_image_id`
+- `twitch_users`: Twitch user information (two users, one of them with a `profile_image_id`)
+- `profile_images`: Square icons referenced by `youtube_channels.profile_image_id` and `twitch_users.profile_image_id`
 - `youtube_videos`: YouTube video relation mapping
 - `terms`: Search terms and synonyms
 - `announcements`: System announcements

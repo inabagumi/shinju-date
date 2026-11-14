@@ -83,6 +83,18 @@ export const youtubeChannels = new Collection({
   }),
 })
 
+// Twitch users collection
+export const twitchUsers = new Collection({
+  schema: z.object({
+    id: z.string().uuid(),
+    name: z.string().nullable(),
+    profile_image_id: z.string().uuid().nullable(),
+    talent_id: z.string().uuid(),
+    twitch_login_name: z.string().nullable(),
+    twitch_user_id: z.string(),
+  }),
+})
+
 // YouTube videos collection
 export const youtubeVideos = new Collection({
   schema: z.object({
@@ -300,6 +312,38 @@ export async function seedCollections() {
         talent_id: talent.id,
         youtube_channel_id: youtubeChannelId,
         youtube_handle: `@${faker.internet.username()}`,
+      })
+    }),
+  )
+
+  // Create Twitch users for the first two talents. Only the first one has
+  // an icon, so the default icon fallback can be checked as well.
+  await Promise.all(
+    createdTalents.slice(0, 2).map(async (talent, idx) => {
+      const twitchUserId = faker.string.numeric(9)
+      const login = faker.internet.username().toLowerCase()
+      const profileImage =
+        idx === 0
+          ? await profileImages.create({
+              blur_data_url: `data:image/jpeg;base64,${faker.string.alphanumeric(50)}`,
+              created_at: faker.date.past({ years: 1 }).toISOString(),
+              etag: `"${faker.string.alphanumeric(32)}"`,
+              height: 256,
+              id: faker.string.uuid(),
+              path: `twitch/${twitchUserId}/${faker.string.alphanumeric(21)}.webp`,
+              source_url: `https://static-cdn.jtvnw.net/jtv_user_pictures/${faker.string.uuid()}-profile_image-300x300.png`,
+              updated_at: faker.date.recent().toISOString(),
+              width: 256,
+            })
+          : null
+
+      return twitchUsers.create({
+        id: faker.string.uuid(),
+        name: talent.name,
+        profile_image_id: profileImage?.id ?? null,
+        talent_id: talent.id,
+        twitch_login_name: login,
+        twitch_user_id: twitchUserId,
       })
     }),
   )

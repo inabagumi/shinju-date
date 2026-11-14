@@ -56,6 +56,7 @@ export {
   talents,
   terms,
   thumbnails,
+  twitchUsers,
   videos,
   youtubeChannels,
   youtubeVideos,
