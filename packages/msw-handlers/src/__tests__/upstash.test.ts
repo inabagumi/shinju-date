@@ -124,6 +124,23 @@ describe('Upstash Redis Handlers', () => {
       ])
     })
 
+    it('emulates the enqueue script of the backfill queue', async () => {
+      const script = '-- video-backfill:enqueue\n...'
+      const job = JSON.stringify({ status: 'pending' })
+      const keys = ['test:job', 'test:backfill-queue', 'test:job-lock']
+
+      await expect(
+        send(['eval', script, 3, ...keys, '', job, 60, 'youtube:x']),
+      ).resolves.toBe(1)
+      // A second request that also read no job does not save over it.
+      await expect(
+        send(['eval', script, 3, ...keys, '', job, 60, 'youtube:x']),
+      ).resolves.toBe(0)
+      await expect(send(['rpop', 'test:backfill-queue'])).resolves.toBe(
+        'youtube:x',
+      )
+    })
+
     it('works as a FIFO queue with LPUSH and RPOP', async () => {
       await expect(send(['lpush', 'test:queue', 'a'])).resolves.toBe(1)
       await expect(send(['lpush', 'test:queue', 'b', 'c'])).resolves.toBe(3)

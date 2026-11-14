@@ -86,6 +86,34 @@ function simulateZUnionStore(destKey: string, keys: string[]) {
 }
 
 /**
+ * Simulate `ENQUEUE_SCRIPT` of `@shinju-date/video-backfill`: saves and queues
+ * a job only if it is unchanged since it was read and no worker holds it.
+ */
+function simulateBackfillEnqueue(keys: any[], argv: any[]): number {
+  const [jobKey, queueKey, lockKey] = keys
+  const [expected, job, , id] = argv
+  const current = mockRedisStore.get(jobKey)
+
+  if (expected === '' ? current !== undefined : current !== expected) {
+    return 0
+  }
+
+  if (mockRedisStore.has(lockKey)) {
+    return 0
+  }
+
+  mockRedisStore.set(jobKey, job)
+
+  const rawList = mockRedisStore.get(queueKey)
+  const list = Array.isArray(rawList) ? rawList : []
+
+  list.unshift(id)
+  mockRedisStore.set(queueKey, list)
+
+  return 1
+}
+
+/**
  * Parse Upstash Redis REST API command
  */
 function parseUpstashCommand(body: any) {
@@ -158,6 +186,19 @@ function processRedisCommand(command: string, args: any[]): any {
 
       mockRedisStore.set(key, value)
       return { result: 'OK' }
+    }
+
+    case 'eval': {
+      // Lua cannot run here, so known scripts are emulated.
+      const [script, numKeys, ...rest] = args
+      const keys = rest.slice(0, Number(numKeys))
+      const argv = rest.slice(Number(numKeys))
+
+      if (String(script).includes('-- video-backfill:enqueue')) {
+        return { result: simulateBackfillEnqueue(keys, argv) }
+      }
+
+      return { result: null }
     }
 
     case 'lpush': {
