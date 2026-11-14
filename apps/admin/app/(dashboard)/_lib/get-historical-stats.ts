@@ -1,5 +1,5 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
-import { formatDateKey } from '@shinju-date/temporal-fns'
+import { formatDate, formatDateKey } from '@shinju-date/temporal-fns'
 import { getRedisClient } from '@/lib/redis'
 import type { SummaryStats } from './get-summary-stats'
 
@@ -29,7 +29,11 @@ export async function getHistoricalStats(
     const targetDate = now.subtract({ days: i })
     const dateKey = formatDateKey(targetDate)
     const redisKey = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}`
-    dateKeys.push({ date: dateKey, key: redisKey })
+    // Use the same MM/DD format as the other screens of the admin UI
+    dateKeys.push({
+      date: formatDate(targetDate, { includeYear: false }),
+      key: redisKey,
+    })
   }
 
   // Fetch all stats in parallel
@@ -48,7 +52,7 @@ export async function getHistoricalStats(
   for (const { date, stats } of results) {
     if (stats) {
       historicalStats.push({
-        date: formatDateForDisplay(date),
+        date,
         deletedVideos: stats.deletedVideos,
         hiddenVideos: stats.hiddenVideos,
         // Fallback: for old data without scheduledVideos, use 0
@@ -60,19 +64,4 @@ export async function getHistoricalStats(
   }
 
   return historicalStats
-}
-
-/**
- * Format date key (YYYYMMDD) to display format (MM/DD)
- */
-function formatDateForDisplay(dateKey: string): string {
-  // Validate format
-  if (dateKey.length !== 8) {
-    throw new TypeError(`Expected YYYYMMDD format (8 digits), got: ${dateKey}`)
-  }
-
-  const month = Number.parseInt(dateKey.slice(4, 6), 10)
-  const day = Number.parseInt(dateKey.slice(6, 8), 10)
-
-  return `${month}/${day}`
 }

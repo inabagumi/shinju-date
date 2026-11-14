@@ -5,6 +5,7 @@ import {
   type PopularTalent,
 } from '@/lib/analytics/get-popular-talents'
 import { ExportMenu } from '../../_components/export-menu'
+import { formatDateLabel, formatDateRange } from '../../_lib/format-date'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 interface Props {
@@ -43,8 +44,8 @@ function SimplePopularTalentsWidget({
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold">
           {selectedDate
-            ? `人気タレントランキング (${selectedDate})`
-            : `人気タレントランキング (${dateRange.startDate} 〜 ${dateRange.endDate})`}
+            ? `人気タレントランキング (${formatDateLabel(selectedDate)})`
+            : `人気タレントランキング (${formatDateRange(dateRange)})`}
         </h2>
         <ExportMenu
           dateRange={dateRange}

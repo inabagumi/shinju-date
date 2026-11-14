@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { getSearchEngagementRate } from '@/lib/analytics/get-search-quality-metrics'
+import { formatDateLabel, formatDateRange } from '../../_lib/format-date'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 interface Props {
@@ -68,11 +69,11 @@ function SearchEngagementRateWidgetComponent({
           検索利用率
           {selectedDate ? (
             <span className="ml-2 text-sm text-774-blue-600">
-              ({selectedDate})
+              ({formatDateLabel(selectedDate)})
             </span>
           ) : (
             <span className="ml-2 text-sm text-green-600">
-              ({dateRange.startDate}〜{dateRange.endDate})
+              ({formatDateRange(dateRange)})
             </span>
           )}
         </h2>

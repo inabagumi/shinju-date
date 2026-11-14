@@ -1,4 +1,5 @@
 import { cache } from 'react'
+import { formatDateLabel } from '../../_lib/format-date'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 import { getClickVolume } from '../_lib/get-click-volume'
 import ClickVolumeChartUI from './click-volume-chart-ui'
@@ -44,7 +45,7 @@ export async function ClickVolumeChart({ searchParams }: Props) {
       />
       {selectedDate && (
         <p className="mt-2 text-center text-sm text-gray-600">
-          選択された日付: {selectedDate}
+          選択された日付: {formatDateLabel(selectedDate)}
         </p>
       )}
     </>

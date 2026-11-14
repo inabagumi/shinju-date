@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { getPopularKeywords } from '@/lib/analytics/get-popular-keywords'
 import { ExportMenu } from '../../_components/export-menu'
+import { formatDateLabel, formatDateRange } from '../../_lib/format-date'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 interface Props {
@@ -50,11 +51,11 @@ function PopularKeywordsWidgetComponent({
           人気キーワードランキング
           {selectedDate ? (
             <span className="ml-2 text-sm text-774-blue-600">
-              ({selectedDate})
+              ({formatDateLabel(selectedDate)})
             </span>
           ) : (
             <span className="ml-2 text-sm text-green-600">
-              ({dateRange.startDate}〜{dateRange.endDate})
+              ({formatDateRange(dateRange)})
             </span>
           )}
         </h2>
@@ -66,8 +67,8 @@ function PopularKeywordsWidgetComponent({
       </div>
       <p className="mb-4 text-sm text-gray-600">
         {selectedDate
-          ? `${selectedDate}に検索されたキーワードのランキング。同じ日付をもう一度クリックすると期間全体の表示に戻ります。`
-          : `${dateRange.startDate}から${dateRange.endDate}の期間で最も検索されたキーワードのランキング。グラフの日付をクリックすると、その日のランキングが表示されます。`}
+          ? `${formatDateLabel(selectedDate)}に検索されたキーワードのランキング。同じ日付をもう一度クリックすると期間全体の表示に戻ります。`
+          : `${formatDateLabel(dateRange.startDate)}から${formatDateLabel(dateRange.endDate)}の期間で最も検索されたキーワードのランキング。グラフの日付をクリックすると、その日のランキングが表示されます。`}
       </p>
       {keywords.length > 0 ? (
         <div className="max-h-96 space-y-2 overflow-y-auto">
