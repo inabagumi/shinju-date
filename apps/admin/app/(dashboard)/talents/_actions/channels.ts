@@ -16,6 +16,7 @@ import {
   unauthenticatedFormState,
   unauthenticatedResult,
 } from '@/lib/auth'
+import { removeProfileImageObjects } from '@/lib/profile-images'
 
 function youtubeApiErrorFormState(error: unknown): FormState {
   if (error instanceof TypeError && error.message.includes('API Key')) {
@@ -211,7 +212,7 @@ export async function removeYouTubeChannelAction(
     // Get channel info before deletion for audit log
     const { data: channel, error: fetchError } = await supabaseClient
       .from('youtube_channels')
-      .select('youtube_channel_id')
+      .select('youtube_channel_id, profile_image:profile_images(path)')
       .eq('id', channelId)
       .eq('talent_id', talentId)
       .single()
@@ -242,6 +243,9 @@ export async function removeYouTubeChannelAction(
     if (error) {
       throw error
     }
+
+    // The profile_images row is deleted by ON DELETE CASCADE; its object is not.
+    await removeProfileImageObjects([channel.profile_image?.path])
 
     // Update talent's updated_at timestamp
     await supabaseClient

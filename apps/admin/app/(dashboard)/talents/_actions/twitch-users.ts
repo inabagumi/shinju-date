@@ -16,6 +16,7 @@ import {
   unauthenticatedFormState,
   unauthenticatedResult,
 } from '@/lib/auth'
+import { removeProfileImageObjects } from '@/lib/profile-images'
 
 function twitchApiErrorFormState(error: unknown): FormState {
   if (
@@ -206,7 +207,9 @@ export async function removeTwitchUserAction(
   try {
     const { data: user, error: fetchError } = await supabaseClient
       .from('twitch_users')
-      .select('twitch_user_id, twitch_login_name')
+      .select(
+        'twitch_user_id, twitch_login_name, profile_image:profile_images(path)',
+      )
       .eq('id', twitchUserRowId)
       .eq('talent_id', talentId)
       .single()
@@ -235,6 +238,9 @@ export async function removeTwitchUserAction(
     if (error) {
       throw error
     }
+
+    // The profile_images row is deleted by ON DELETE CASCADE; its object is not.
+    await removeProfileImageObjects([user.profile_image?.path])
 
     await supabaseClient
       .from('talents')

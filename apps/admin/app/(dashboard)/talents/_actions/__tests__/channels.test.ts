@@ -33,6 +33,10 @@ vi.mock('@/lib/audit-log', () => ({
   createAuditLog: vi.fn().mockResolvedValue(undefined),
 }))
 
+vi.mock('@/lib/profile-images', () => ({
+  removeProfileImageObjects: vi.fn().mockResolvedValue(undefined),
+}))
+
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }))
@@ -479,6 +483,7 @@ describe('removeYouTubeChannelAction', () => {
     const { createAuditLog } = await import('@/lib/audit-log')
     const { revalidatePath } = await import('next/cache')
     const { revalidateTags } = await import('@shinju-date/web-cache')
+    const { removeProfileImageObjects } = await import('@/lib/profile-images')
 
     let callCount = 0
     const mockSupabaseClient = {
@@ -491,7 +496,10 @@ describe('removeYouTubeChannelAction', () => {
             eq: vi.fn().mockReturnThis(),
             select: vi.fn().mockReturnThis(),
             single: vi.fn().mockResolvedValue({
-              data: { youtube_channel_id: youtubeChannelId },
+              data: {
+                profile_image: { path: 'youtube/UCabc/icon.webp' },
+                youtube_channel_id: youtubeChannelId,
+              },
               error: null,
             }),
           }
@@ -540,6 +548,9 @@ describe('removeYouTubeChannelAction', () => {
     expect(revalidatePath).toHaveBeenCalledWith(`/talents/${talentId}`)
     expect(revalidatePath).toHaveBeenCalledWith('/talents')
     expect(revalidateTags).toHaveBeenCalledWith(['talents', 'videos'])
+    expect(removeProfileImageObjects).toHaveBeenCalledWith([
+      'youtube/UCabc/icon.webp',
+    ])
   })
 
   it('should return error when channel is not found (PGRST116)', async () => {

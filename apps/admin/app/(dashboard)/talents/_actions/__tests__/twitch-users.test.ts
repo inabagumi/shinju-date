@@ -29,6 +29,10 @@ vi.mock('@/lib/audit-log', () => ({
   createAuditLog: vi.fn().mockResolvedValue(undefined),
 }))
 
+vi.mock('@/lib/profile-images', () => ({
+  removeProfileImageObjects: vi.fn().mockResolvedValue(undefined),
+}))
+
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }))
@@ -389,6 +393,7 @@ describe('removeTwitchUserAction', () => {
     const { createAuditLog } = await import('@/lib/audit-log')
     const { revalidatePath } = await import('next/cache')
     const { revalidateTags } = await import('@shinju-date/web-cache')
+    const { removeProfileImageObjects } = await import('@/lib/profile-images')
 
     let callCount = 0
     const mockSupabaseClient = {
@@ -402,6 +407,7 @@ describe('removeTwitchUserAction', () => {
             select: vi.fn().mockReturnThis(),
             single: vi.fn().mockResolvedValue({
               data: {
+                profile_image: { path: 'twitch/123/icon.webp' },
                 twitch_login_name: 'exampleuser',
                 twitch_user_id: twitchUserId,
               },
@@ -457,6 +463,9 @@ describe('removeTwitchUserAction', () => {
     expect(revalidatePath).toHaveBeenCalledWith(`/talents/${talentId}`)
     expect(revalidatePath).toHaveBeenCalledWith('/talents')
     expect(revalidateTags).toHaveBeenCalledWith(['talents', 'videos'])
+    expect(removeProfileImageObjects).toHaveBeenCalledWith([
+      'twitch/123/icon.webp',
+    ])
   })
 
   it('should return error when user is not found (PGRST116)', async () => {
