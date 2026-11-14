@@ -133,6 +133,41 @@ describe('requestVideoBackfillAction', () => {
     )
   })
 
+  it('records the jobs that were queued when another one fails', async () => {
+    mocks.enqueue
+      .mockResolvedValueOnce({ enqueued: true, job: {} })
+      .mockRejectedValueOnce(new Error('redis unavailable'))
+
+    await expect(
+      requestVideoBackfillAction(talentId, 'youtube'),
+    ).resolves.toEqual({
+      error:
+        'YouTubeの過去動画の取り込みを1件キューに追加しましたが、1件は追加できませんでした（redis unavailable）。',
+      success: false,
+    })
+    expect(mocks.createAuditLog).toHaveBeenCalledWith(
+      'VIDEO_BACKFILL',
+      'channels',
+      talentId,
+      expect.objectContaining({
+        accounts: [{ accountId: 'channel-row-1', name: 'Main' }],
+      }),
+    )
+  })
+
+  it('reports a failure without an audit log when nothing was queued', async () => {
+    mocks.enqueue.mockRejectedValue(new Error('redis unavailable'))
+
+    await expect(
+      requestVideoBackfillAction(talentId, 'twitch'),
+    ).resolves.toEqual({
+      error:
+        'Twitchの過去動画の取り込みをキューに追加できませんでした（redis unavailable）。',
+      success: false,
+    })
+    expect(mocks.createAuditLog).not.toHaveBeenCalled()
+  })
+
   it('rejects a talent without accounts of the platform', async () => {
     mocks.maybeSingle.mockResolvedValue({
       data: { ...talent, twitch_users: [] },

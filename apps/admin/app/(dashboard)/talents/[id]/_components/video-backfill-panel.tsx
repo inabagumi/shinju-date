@@ -104,18 +104,25 @@ export function VideoBackfillPanel({
     type: 'success' | 'error'
     text: string
   } | null>(null)
+  // Why the progress could not be loaded; shown with a retry button.
+  const [loadError, setLoadError] = useState<string | null>(null)
   const previousAdded = useRef<number | null>(null)
 
   const refresh = useCallback(async () => {
-    const result = await getVideoBackfillStatusAction(talentId)
+    let result: Awaited<ReturnType<typeof getVideoBackfillStatusAction>>
+
+    try {
+      result = await getVideoBackfillStatusAction(talentId)
+    } catch {
+      result = { success: false }
+    }
 
     if (!result.success || !result.accounts) {
-      setMessage({
-        text: result.error ?? '取り込み状況を取得できませんでした。',
-        type: 'error',
-      })
+      setLoadError(result.error ?? '取り込み状況を取得できませんでした。')
       return
     }
+
+    setLoadError(null)
 
     const added = result.accounts.reduce(
       (total, account) => total + account.added,
@@ -188,10 +195,20 @@ export function VideoBackfillPanel({
     })
   }
 
-  const isProviderActive = (provider: Provider) =>
-    accounts?.some(
-      (account) => account.provider === provider && account.active,
-    ) ?? false
+  /**
+   * Whether every account of the platform is queued or being read. While only
+   * some are, the others can still be requested: the request skips the ones
+   * that are active.
+   */
+  const isProviderActive = (provider: Provider) => {
+    const providerAccounts =
+      accounts?.filter((account) => account.provider === provider) ?? []
+
+    return (
+      providerAccounts.length > 0 &&
+      providerAccounts.every((account) => account.active)
+    )
+  }
 
   if (!hasYouTubeChannels && !hasTwitchUsers) {
     return null
@@ -236,6 +253,11 @@ export function VideoBackfillPanel({
               ))}
           </div>
         </div>
+        {accounts !== null && loadError && (
+          <div className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-800">
+            {loadError}
+          </div>
+        )}
         {message && (
           <div
             className={`mt-3 rounded-md p-3 text-sm ${
@@ -250,9 +272,25 @@ export function VideoBackfillPanel({
       </CardHeader>
       <CardContent className="p-0">
         {accounts === null ? (
-          <div className="px-4 py-6 text-center text-sm text-gray-500">
-            読み込み中...
-          </div>
+          loadError ? (
+            <div className="flex flex-col items-center gap-3 px-4 py-6 text-sm text-red-700">
+              <p>{loadError}</p>
+              <Button
+                onClick={() => {
+                  setLoadError(null)
+                  void refresh()
+                }}
+                size="sm"
+                variant="secondary"
+              >
+                再試行
+              </Button>
+            </div>
+          ) : (
+            <div className="px-4 py-6 text-center text-sm text-gray-500">
+              読み込み中...
+            </div>
+          )
         ) : (
           <ul className="divide-y divide-gray-200">
             {accounts.map((account) => (

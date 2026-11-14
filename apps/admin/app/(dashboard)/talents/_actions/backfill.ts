@@ -136,17 +136,53 @@ export async function requestVideoBackfillAction(
 
     const queue = new BackfillQueue(getRedisClient())
     const enqueued: typeof accounts = []
+    let failed = 0
+    let lastError: unknown
 
+    // One account that cannot be queued does not stop the others, and the
+    // ones that were queued are recorded in any case.
     for (const account of accounts) {
-      const result = await queue.enqueue({
-        accountId: account.accountId,
-        provider,
-        requestedBy: user.id,
-        talentId,
-      })
+      try {
+        const result = await queue.enqueue({
+          accountId: account.accountId,
+          provider,
+          requestedBy: user.id,
+          talentId,
+        })
 
-      if (result.enqueued) {
-        enqueued.push(account)
+        if (result.enqueued) {
+          enqueued.push(account)
+        }
+      } catch (error) {
+        failed++
+        lastError = error
+        logger.error('過去動画の取り込みをキューに追加できませんでした', {
+          accountId: account.accountId,
+          error,
+          provider,
+          talentId,
+        })
+      }
+    }
+
+    if (enqueued.length > 0) {
+      await createAuditLog('VIDEO_BACKFILL', 'channels', talentId, {
+        accounts: enqueued.map(({ accountId, name }) => ({ accountId, name })),
+        entityName: talent.name,
+        platform: provider,
+      })
+    }
+
+    if (failed > 0) {
+      const reason =
+        lastError instanceof Error ? lastError.message : '不明なエラー'
+
+      return {
+        error:
+          enqueued.length > 0
+            ? `${label}の過去動画の取り込みを${enqueued.length}件キューに追加しましたが、${failed}件は追加できませんでした（${reason}）。`
+            : `${label}の過去動画の取り込みをキューに追加できませんでした（${reason}）。`,
+        success: false,
       }
     }
 
@@ -156,12 +192,6 @@ export async function requestVideoBackfillAction(
         success: false,
       }
     }
-
-    await createAuditLog('VIDEO_BACKFILL', 'channels', talentId, {
-      accounts: enqueued.map(({ accountId, name }) => ({ accountId, name })),
-      entityName: talent.name,
-      platform: provider,
-    })
 
     const skipped = accounts.length - enqueued.length
 
