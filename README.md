@@ -28,6 +28,7 @@
 - **[retryable-fetch](packages/retryable-fetch/)** - リトライ機能付き fetch
 - **[temporal-fns](packages/temporal-fns/)** - 日時操作ユーティリティ
 - **[scraper](packages/scraper/)** - YouTube / Twitch データスクレイピング
+- **[video-backfill](packages/video-backfill/)** - 過去動画の取り込みジョブのキュー
 
 ## 技術スタック
 
