@@ -9,6 +9,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useMemo, useState } from 'react'
+import { ActionToast, useActionToast } from '@/components/action-toast'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,6 +40,7 @@ export default function VideoList({ videos }: Props) {
     open: boolean
     videoIds: string[]
   }>({ action: 'toggle', open: false, videoIds: [] })
+  const { showToast, toastProps } = useActionToast()
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -74,30 +76,39 @@ export default function VideoList({ videos }: Props) {
       throw new Error('動画が選択されていません。')
     }
 
-    if (action === 'toggle') {
-      const result = await toggleVisibilityAction(videoIds)
-      if (result.success) {
-        setSelectedIds([])
-        alert('表示状態を更新しました。')
-      } else {
-        throw new Error(result.error || '更新に失敗しました。')
+    try {
+      if (action === 'toggle') {
+        const result = await toggleVisibilityAction(videoIds)
+        if (result.success) {
+          setSelectedIds([])
+          showToast('success', '表示状態を更新しました。')
+        } else {
+          showToast('error', result.error || '更新に失敗しました。')
+        }
+      } else if (action === 'delete') {
+        const result = await softDeleteAction(videoIds)
+        if (result.success) {
+          setSelectedIds([])
+          showToast('success', '動画を削除しました。')
+        } else {
+          showToast('error', result.error || '削除に失敗しました。')
+        }
+      } else if (action === 'restore') {
+        const result = await restoreAction(videoIds)
+        if (result.success) {
+          setSelectedIds([])
+          showToast('success', '動画を復元しました。')
+        } else {
+          showToast('error', result.error || '復元に失敗しました。')
+        }
       }
-    } else if (action === 'delete') {
-      const result = await softDeleteAction(videoIds)
-      if (result.success) {
-        setSelectedIds([])
-        alert('動画を削除しました。')
-      } else {
-        throw new Error(result.error || '削除に失敗しました。')
-      }
-    } else if (action === 'restore') {
-      const result = await restoreAction(videoIds)
-      if (result.success) {
-        setSelectedIds([])
-        alert('動画を復元しました。')
-      } else {
-        throw new Error(result.error || '復元に失敗しました。')
-      }
+    } catch (error) {
+      showToast(
+        'error',
+        error instanceof Error
+          ? error.message
+          : '予期しないエラーが発生しました。',
+      )
     }
   }
 
@@ -410,6 +421,8 @@ export default function VideoList({ videos }: Props) {
           </tbody>
         </table>
       </div>
+
+      <ActionToast {...toastProps} />
 
       {/* Confirmation modal */}
       <VideoActionConfirmDialog

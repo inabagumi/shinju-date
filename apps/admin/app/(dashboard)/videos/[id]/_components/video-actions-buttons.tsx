@@ -1,9 +1,10 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import { Button, Toast, ToastClose, ToastTitle } from '@shinju-date/ui'
+import { Button } from '@shinju-date/ui'
 import { Loader2 } from 'lucide-react'
 import { useState, useTransition } from 'react'
+import { ActionToast, useActionToast } from '@/components/action-toast'
 import {
   restoreAction,
   softDeleteAction,
@@ -21,16 +22,11 @@ interface SyncVideoButtonProps {
 
 function SyncVideoButton({ videoId, platform }: SyncVideoButtonProps) {
   const [isPending, startTransition] = useTransition()
-  const [toastOpen, setToastOpen] = useState(false)
-  const [toastMessage, setToastMessage] = useState<{
-    type: 'success' | 'error'
-    text: string
-  } | null>(null)
+  const { showToast, toastProps } = useActionToast()
 
   const label = platform === 'twitch' ? 'Twitchと同期' : 'YouTubeと同期'
 
   const handleSync = () => {
-    setToastMessage(null)
     startTransition(async () => {
       try {
         const result =
@@ -38,28 +34,18 @@ function SyncVideoButton({ videoId, platform }: SyncVideoButtonProps) {
             ? await syncVideoWithTwitch(videoId)
             : await syncVideoWithYouTube(videoId)
         if (result.success) {
-          setToastMessage({
-            text:
-              result.message ??
+          showToast(
+            'success',
+            result.message ??
               (result.unchanged
                 ? '動画情報は既に最新です。'
                 : '動画情報を同期しました。'),
-            type: 'success',
-          })
-          setToastOpen(true)
+          )
         } else {
-          setToastMessage({
-            text: result.error || '同期に失敗しました。',
-            type: 'error',
-          })
-          setToastOpen(true)
+          showToast('error', result.error || '同期に失敗しました。')
         }
       } catch (_error) {
-        setToastMessage({
-          text: '予期しないエラーが発生しました。',
-          type: 'error',
-        })
-        setToastOpen(true)
+        showToast('error', '予期しないエラーが発生しました。')
       }
     })
   }
@@ -71,23 +57,7 @@ function SyncVideoButton({ videoId, platform }: SyncVideoButtonProps) {
         {isPending ? '同期中...' : label}
       </Button>
 
-      {toastMessage && (
-        <Toast
-          duration={5000}
-          onOpenChange={setToastOpen}
-          open={toastOpen}
-          variant={
-            toastMessage.type === 'success'
-              ? 'success'
-              : toastMessage.type === 'error'
-                ? 'destructive'
-                : 'default'
-          }
-        >
-          <ToastTitle>{toastMessage.text}</ToastTitle>
-          <ToastClose />
-        </Toast>
-      )}
+      <ActionToast {...toastProps} />
     </>
   )
 }
@@ -101,11 +71,7 @@ interface VideoActionsButtonsProps {
 
 export function VideoActionsButtons({ video }: VideoActionsButtonsProps) {
   const [isPending, _startTransition] = useTransition()
-  const [toastOpen, setToastOpen] = useState(false)
-  const [toastMessage, setToastMessage] = useState<{
-    type: 'success' | 'error'
-    text: string
-  } | null>(null)
+  const { showToast, toastProps } = useActionToast()
   const [confirmDialog, setConfirmDialog] = useState<{
     action: 'toggle' | 'delete' | 'restore'
     open: boolean
@@ -128,64 +94,40 @@ export function VideoActionsButtons({ video }: VideoActionsButtonsProps) {
 
   const handleConfirm = async () => {
     const { action } = confirmDialog
-    setToastMessage(null)
 
     try {
       if (action === 'toggle') {
         const result = await toggleVisibilityAction([video.id])
         if (result.success) {
-          setToastMessage({
-            text: `動画を${video.visible ? '非表示' : '表示'}に変更しました。`,
-            type: 'success',
-          })
-          setToastOpen(true)
+          showToast(
+            'success',
+            `動画を${video.visible ? '非表示' : '表示'}に変更しました。`,
+          )
         } else {
-          setToastMessage({
-            text: result.error || '操作に失敗しました。',
-            type: 'error',
-          })
-          setToastOpen(true)
+          showToast('error', result.error || '操作に失敗しました。')
         }
       } else if (action === 'delete') {
         const result = await softDeleteAction([video.id])
         if (result.success) {
-          setToastMessage({
-            text: '動画を削除しました。',
-            type: 'success',
-          })
-          setToastOpen(true)
+          showToast('success', '動画を削除しました。')
         } else {
-          setToastMessage({
-            text: result.error || '削除に失敗しました。',
-            type: 'error',
-          })
-          setToastOpen(true)
+          showToast('error', result.error || '削除に失敗しました。')
         }
       } else if (action === 'restore') {
         const result = await restoreAction([video.id])
         if (result.success) {
-          setToastMessage({
-            text: '動画を復元しました。',
-            type: 'success',
-          })
-          setToastOpen(true)
+          showToast('success', '動画を復元しました。')
         } else {
-          setToastMessage({
-            text: result.error || '復元に失敗しました。',
-            type: 'error',
-          })
-          setToastOpen(true)
+          showToast('error', result.error || '復元に失敗しました。')
         }
       }
     } catch (error) {
-      setToastMessage({
-        text:
-          error instanceof Error
-            ? error.message
-            : '予期しないエラーが発生しました。',
-        type: 'error',
-      })
-      setToastOpen(true)
+      showToast(
+        'error',
+        error instanceof Error
+          ? error.message
+          : '予期しないエラーが発生しました。',
+      )
     }
   }
 
@@ -225,23 +167,7 @@ export function VideoActionsButtons({ video }: VideoActionsButtonsProps) {
         )}
       </div>
 
-      {toastMessage && (
-        <Toast
-          duration={5000}
-          onOpenChange={setToastOpen}
-          open={toastOpen}
-          variant={
-            toastMessage.type === 'success'
-              ? 'success'
-              : toastMessage.type === 'error'
-                ? 'destructive'
-                : 'default'
-          }
-        >
-          <ToastTitle>{toastMessage.text}</ToastTitle>
-          <ToastClose />
-        </Toast>
-      )}
+      <ActionToast {...toastProps} />
 
       <VideoActionConfirmDialog
         action={confirmDialog.action}

@@ -1,5 +1,13 @@
-import { render, screen, within } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { ToastProvider, ToastViewport } from '@shinju-date/ui'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { toggleVisibilityAction } from '../_actions'
 import type { Video } from '../_lib/get-videos'
 import VideoList from './video-list'
 
@@ -74,5 +82,60 @@ describe('VideoList', () => {
     const kind = within(row).getByText('ショート')
 
     expect(platform.closest('td')).toBe(kind.closest('td'))
+  })
+
+  describe('bulk actions', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+    })
+
+    function renderWithToast() {
+      render(
+        <ToastProvider>
+          <VideoList videos={[createVideo()]} />
+          <ToastViewport />
+        </ToastProvider>,
+      )
+    }
+
+    function toggleSelectedVideos() {
+      fireEvent.click(screen.getByLabelText('「Test Video」を選択'))
+      fireEvent.click(
+        screen.getByRole('button', { name: '表示/非表示を切り替え' }),
+      )
+      fireEvent.click(screen.getByRole('button', { name: '切り替える' }))
+    }
+
+    it('shows a success toast and clears the selection', async () => {
+      vi.mocked(toggleVisibilityAction).mockResolvedValue({ success: true })
+
+      renderWithToast()
+      toggleSelectedVideos()
+
+      expect(
+        await screen.findByText('表示状態を更新しました。'),
+      ).toBeInTheDocument()
+      expect(toggleVisibilityAction).toHaveBeenCalledWith([
+        '00000000-0000-4000-8000-000000000001',
+      ])
+      await waitFor(() =>
+        expect(screen.queryByText('1 件選択中')).not.toBeInTheDocument(),
+      )
+    })
+
+    it('shows an error toast and keeps the selection', async () => {
+      vi.mocked(toggleVisibilityAction).mockResolvedValue({
+        error: '更新できませんでした。',
+        success: false,
+      })
+
+      renderWithToast()
+      toggleSelectedVideos()
+
+      expect(
+        await screen.findByText('更新できませんでした。'),
+      ).toBeInTheDocument()
+      expect(screen.getByText('1 件選択中')).toBeInTheDocument()
+    })
   })
 })

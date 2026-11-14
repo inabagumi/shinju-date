@@ -1,3 +1,4 @@
+import { ToastProvider, ToastViewport } from '@shinju-date/ui'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -15,18 +16,21 @@ const { TwitchUserManager } = await import('./twitch-user-manager')
 
 function renderManager() {
   return render(
-    <TwitchUserManager
-      isDeleted={false}
-      talentId="talent-1"
-      users={[
-        {
-          id: 'twitch-row-1',
-          name: 'Example User',
-          twitch_login_name: 'example',
-          twitch_user_id: '123456789',
-        },
-      ]}
-    />,
+    <ToastProvider>
+      <TwitchUserManager
+        isDeleted={false}
+        talentId="talent-1"
+        users={[
+          {
+            id: 'twitch-row-1',
+            name: 'Example User',
+            twitch_login_name: 'example',
+            twitch_user_id: '123456789',
+          },
+        ]}
+      />
+      <ToastViewport />
+    </ToastProvider>,
   )
 }
 
@@ -74,5 +78,34 @@ describe('TwitchUserManager', () => {
         'talent-1',
       ),
     )
+  })
+
+  it('shows the error in a toast when the removal fails', async () => {
+    mocks.removeTwitchUserAction.mockResolvedValue({
+      error: '削除できませんでした。',
+      success: false,
+    })
+
+    renderManager()
+
+    fireEvent.click(screen.getByRole('button', { name: 'ユーザーを削除' }))
+    fireEvent.click(screen.getByRole('button', { name: '削除' }))
+
+    expect(
+      await screen.findByText('削除できませんでした。'),
+    ).toBeInTheDocument()
+  })
+
+  it('shows a fallback error in a toast when the removal throws', async () => {
+    mocks.removeTwitchUserAction.mockRejectedValue(new Error('network'))
+
+    renderManager()
+
+    fireEvent.click(screen.getByRole('button', { name: 'ユーザーを削除' }))
+    fireEvent.click(screen.getByRole('button', { name: '削除' }))
+
+    expect(
+      await screen.findByText('Twitchユーザーの削除に失敗しました。'),
+    ).toBeInTheDocument()
   })
 })

@@ -16,6 +16,7 @@ import {
 } from '@shinju-date/ui'
 import { ExternalLink, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { ActionToast, useActionToast } from '@/components/action-toast'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import type { FormState } from '@/components/form'
 import Form, {
@@ -54,6 +55,7 @@ export function ChannelManager({
   // Kept after the dialog closes so that its content stays while it fades out.
   const [removalTarget, setRemovalTarget] = useState<Channel | null>(null)
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
+  const { showToast, toastProps } = useActionToast()
 
   const handleAddChannel = async (
     currentState: FormState,
@@ -71,13 +73,17 @@ export function ChannelManager({
 
   const handleRemoveChannel = async (channelId: string) => {
     setDeletingChannelId(channelId)
-    const result = await removeYouTubeChannelAction(channelId, talentId)
+    try {
+      const result = await removeYouTubeChannelAction(channelId, talentId)
 
-    if (!result.success) {
-      alert(result.error || 'チャンネルの削除に失敗しました。')
+      if (!result.success) {
+        showToast('error', result.error || 'チャンネルの削除に失敗しました。')
+      }
+    } catch {
+      showToast('error', 'チャンネルの削除に失敗しました。')
+    } finally {
+      setDeletingChannelId(null)
     }
-
-    setDeletingChannelId(null)
   }
 
   return (
@@ -249,6 +255,7 @@ export function ChannelManager({
           </>
         )}
       </ConfirmDialog>
+      <ActionToast {...toastProps} />
     </div>
   )
 }
