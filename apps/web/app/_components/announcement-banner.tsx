@@ -81,6 +81,10 @@ export function AnnouncementBanner({
 
   const bannerClasses = getBannerClasses(data.level)
 
+  // The sticky wrapper spans the full width of the page, so pointer events are
+  // disabled on it and re-enabled only on the visible banner / pill. Otherwise
+  // the transparent area next to them would block clicks on the content.
+
   const toggleMinimized = () => {
     hasToggledMinimizedRef.current = true
     setIsMinimized((value) => !value)
@@ -88,12 +92,12 @@ export function AnnouncementBanner({
 
   if (isMinimized) {
     return (
-      <div className="sticky bottom-4 z-50 safe-area-mx">
+      <div className="pointer-events-none sticky bottom-4 z-50 safe-area-mx">
         <div className="mb-4 flex justify-end">
           <button
             aria-expanded={false}
             aria-label="お知らせを表示"
-            className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold shadow-lg ${bannerClasses}`}
+            className={`pointer-events-auto flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold shadow-lg ${bannerClasses}`}
             data-testid="announcement-banner-minimized"
             onClick={toggleMinimized}
             ref={restoreButtonRef}
@@ -108,9 +112,9 @@ export function AnnouncementBanner({
   }
 
   return (
-    <div className="sticky bottom-4 z-50 safe-area-mx">
+    <div className="pointer-events-none sticky bottom-4 z-50 safe-area-mx">
       <div
-        className={`mb-4 ml-auto max-w-md rounded-lg border p-4 shadow-lg ${bannerClasses}`}
+        className={`pointer-events-auto mb-4 ml-auto max-w-md rounded-lg border p-4 shadow-lg ${bannerClasses}`}
         data-testid="announcement-banner"
         role="alert"
       >

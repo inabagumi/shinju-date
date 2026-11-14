@@ -44,6 +44,52 @@ function intersects(a: Box, b: Box): boolean {
   )
 }
 
+/**
+ * Assert that the content next to (left of) the given sticky element is
+ * clickable: pick a video card that shares a horizontal band with the
+ * element and check that a click in that card is not intercepted by the
+ * banner wrapper.
+ */
+async function expectContentBesideToBeClickable(page: Page, box: Box) {
+  const cardBoxes = await getVideoCardBoxes(page)
+  const candidateYs = [
+    box.y + box.height / 2,
+    box.y + 8,
+    box.y + box.height - 8,
+  ]
+
+  let point: [x: number, y: number] | null = null
+  for (const y of candidateYs) {
+    const card = cardBoxes.find(
+      (cardBox) =>
+        cardBox.y < y &&
+        y < cardBox.y + cardBox.height &&
+        cardBox.x < box.x - 40,
+    )
+
+    if (card) {
+      point = [Math.min(card.x + card.width / 2, box.x - 20), y]
+      break
+    }
+  }
+
+  expect(point).not.toBeNull()
+
+  const hitsVideoCard = await page.evaluate(
+    ([pointX, pointY]) => {
+      const element = document.elementFromPoint(pointX, pointY)
+
+      return (
+        element instanceof Element &&
+        element.closest('main a[target="_blank"]:has(h3)') !== null
+      )
+    },
+    point as [number, number],
+  )
+
+  expect(hitsVideoCard).toBe(true)
+}
+
 async function getVideoCardBoxes(page: Page): Promise<Box[]> {
   return getVideoCards(page).evaluateAll((elements) =>
     elements.map((element) => {
@@ -141,6 +187,12 @@ function describeViewport(
 
       const bannerBox = await getBoundingBox(banner)
 
+      // The transparent area next to the banner must not block the cards
+      // (only checked when there is content next to the banner)
+      if (bannerBox.x > 40) {
+        await expectContentBesideToBeClickable(page, bannerBox)
+      }
+
       await minimizeButton.click()
 
       const minimized = getMinimizedBanner(page)
@@ -157,6 +209,14 @@ function describeViewport(
       expect(minimizedBox.x + minimizedBox.width).toBeLessThanOrEqual(
         bannerBox.x + bannerBox.width + 1,
       )
+
+      // The content next to the pill and the area the banner used to cover
+      // are clickable again
+      await expectContentBesideToBeClickable(page, minimizedBox)
+      await expectContentBesideToBeClickable(page, {
+        ...bannerBox,
+        x: bannerBox.x + bannerBox.width,
+      })
 
       // The announcement can be restored from the pill
       await minimized.click()
