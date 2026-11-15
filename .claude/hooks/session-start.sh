@@ -36,9 +36,12 @@ if [ "$current" != "$(cat "$hashes" 2>/dev/null)" ]; then
 fi
 
 # next-dev-loop スキルが PATH から直接呼ぶ agent-browser を入れる。
-# エージェントしか使わないため devDependencies には入れない
-if [ ! -x "$PNPM_HOME/bin/agent-browser" ]; then
-  npm install --global --prefix "$PNPM_HOME" agent-browser@latest
+# エージェントしか使わないため devDependencies には入れず、バージョンは Renovate で更新する
+# renovate: datasource=npm depName=agent-browser
+agent_browser_version="0.43.0"
+
+if [ "$("$PNPM_HOME/bin/agent-browser" --version 2>/dev/null || true)" != "agent-browser $agent_browser_version" ]; then
+  npm install --global --prefix "$PNPM_HOME" "agent-browser@$agent_browser_version"
 fi
 
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then

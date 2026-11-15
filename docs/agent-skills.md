@@ -63,7 +63,8 @@ npm install --global agent-browser@latest
 agent-browser install
 ```
 
-- クラウドセッションでは、`.claude/hooks/session-start.sh` が `agent-browser` の最新版を pnpm の bin（`PATH` に入っています）に入れ、`AGENT_BROWSER_EXECUTABLE_PATH` でコンテナにある Chromium を指定します。追加の設定は要りません
+- クラウドセッションでは、`.claude/hooks/session-start.sh` が `agent-browser` を pnpm の bin（`PATH` に入っています）に入れ、`AGENT_BROWSER_EXECUTABLE_PATH` でコンテナにある Chromium を指定します。追加の設定は要りません
+- フックで入れるバージョンは、`# renovate:` のコメントを付けて固定しています。`.github/renovate.json` の `customManagers` がこれを読み、Renovate が更新の Pull Request を作ります
 - 使い方は `agent-browser skills get core` で読めます
 
 ## next-dev-loop で apps/web を確かめる
