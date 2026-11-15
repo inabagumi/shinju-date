@@ -211,6 +211,28 @@ export function defineCollectionRelations() {
   // See handlers/supabase.ts for implementation details
 }
 
+/**
+ * IDs of the seeded active talents, in the order of their names
+ * (一ノ瀬うるは, 飛良ひかり, 小森めと, 英リサ).
+ *
+ * - The first one has a YouTube channel and a Twitch user, both with icons
+ * - The second one has a YouTube channel with an icon and a Twitch user
+ *   without one
+ * - The last one has only a YouTube channel without an icon
+ */
+export const MOCK_TALENT_IDS = [
+  '00000000-0000-4000-8000-000000000001',
+  '00000000-0000-4000-8000-000000000002',
+  '00000000-0000-4000-8000-000000000003',
+  '00000000-0000-4000-8000-000000000004',
+] as const
+
+/** ID of the seeded talent whose status is `retired` */
+export const MOCK_RETIRED_TALENT_ID = '00000000-0000-4000-8000-000000000005'
+
+/** ID of the seeded talent that is deleted (`deleted_at` is set) */
+export const MOCK_DELETED_TALENT_ID = '00000000-0000-4000-8000-000000000006'
+
 let seeding: Promise<void> | undefined
 
 /**
@@ -239,7 +261,9 @@ export async function seedCollections() {
       talents.create({
         created_at: faker.date.past({ years: 2 }).toISOString(),
         deleted_at: null,
-        id: faker.string.uuid(),
+        // Fixed so that E2E tests can open the page of a talent
+        // (`MOCK_TALENT_IDS`)
+        id: MOCK_TALENT_IDS[idx] ?? faker.string.uuid(),
         name,
         status: 'active',
         theme_color: themeColors[idx] ?? null,
@@ -247,6 +271,29 @@ export async function seedCollections() {
       }),
     ),
   )
+
+  // A retired talent and a deleted talent, which the public site does not
+  // show. They have no channels or videos.
+  await Promise.all([
+    talents.create({
+      created_at: faker.date.past({ years: 3 }).toISOString(),
+      deleted_at: null,
+      id: MOCK_RETIRED_TALENT_ID,
+      name: '引退したタレント',
+      status: 'retired',
+      theme_color: null,
+      updated_at: faker.date.recent().toISOString(),
+    }),
+    talents.create({
+      created_at: faker.date.past({ years: 3 }).toISOString(),
+      deleted_at: faker.date.recent({ days: 30 }).toISOString(),
+      id: MOCK_DELETED_TALENT_ID,
+      name: '削除したタレント',
+      status: 'active',
+      theme_color: null,
+      updated_at: faker.date.recent().toISOString(),
+    }),
+  ])
 
   // Create thumbnails
   const createdThumbnails = await Promise.all(
