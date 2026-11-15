@@ -442,10 +442,10 @@ test.describe('Search Modal - Talent', () => {
 
     const searchInput = await openSearchModal(page)
 
-    await searchInput.fill('うるは')
-    await getTalentOption(page, '一ノ瀬うるは').click()
+    await searchInput.fill('ミオ')
+    await getTalentOption(page, 'あさぎりミオ').click()
 
-    await expect(getChipList(page).getByText('一ノ瀬うるは')).toBeVisible()
+    await expect(getChipList(page).getByText('あさぎりミオ')).toBeVisible()
     await expect(searchInput).toHaveValue('')
     await expect(searchInput).toBeFocused()
 
@@ -469,8 +469,8 @@ test.describe('Search Modal - Talent', () => {
 
     const searchInput = await openSearchModal(page)
 
-    await searchInput.fill('リサ')
-    await getTalentOption(page, '英リサ').click()
+    await searchInput.fill('ユラ')
+    await getTalentOption(page, 'なぎさわユラ').click()
     await Promise.all([
       page.waitForURL(/\/videos\?talent=[0-9a-f-]{36}$/, { timeout: 15000 }),
       searchInput.press('Enter'),
@@ -479,12 +479,12 @@ test.describe('Search Modal - Talent', () => {
     await expect(
       page
         .getByRole('list', { name: '選んでいるタレント' })
-        .getByText('英リサ'),
+        .getByText('なぎさわユラ'),
     ).toBeVisible()
 
     // 絞り込んだ動画一覧で開き直すと、そのタレントのチップが入っている
     await openSearchModal(page)
-    await expect(getChipList(page).getByText('英リサ')).toBeVisible()
+    await expect(getChipList(page).getByText('なぎさわユラ')).toBeVisible()
   })
 
   test('should carry the chip over to the keyword suggestions', async ({
@@ -495,8 +495,8 @@ test.describe('Search Modal - Talent', () => {
 
     const searchInput = await openSearchModal(page)
 
-    await searchInput.fill('うるは')
-    await getTalentOption(page, '一ノ瀬うるは').click()
+    await searchInput.fill('ミオ')
+    await getTalentOption(page, 'あさぎりミオ').click()
 
     // `歌配信` is a synonym of `歌枠` in the mock terms
     await searchInput.fill('歌配')
@@ -522,15 +522,15 @@ test.describe('Search Modal - Talent', () => {
     const searchInput = await openSearchModal(page)
 
     // 候補を選ぶ
-    await searchInput.pressSequentially('うるは')
-    await expect(getTalentOption(page, '一ノ瀬うるは')).toBeVisible()
+    await searchInput.pressSequentially('ミオ')
+    await expect(getTalentOption(page, 'あさぎりミオ')).toBeVisible()
     await page.keyboard.press('ArrowDown')
-    await expect(getTalentOption(page, '一ノ瀬うるは')).toBeFocused()
+    await expect(getTalentOption(page, 'あさぎりミオ')).toBeFocused()
     await page.keyboard.press('Enter')
-    await expect(getChipList(page).getByText('一ノ瀬うるは')).toBeVisible()
+    await expect(getChipList(page).getByText('あさぎりミオ')).toBeVisible()
     await expect(searchInput).toBeFocused()
 
-    await searchInput.pressSequentially('リサ')
+    await searchInput.pressSequentially('ユラ')
     await page.keyboard.press('ArrowDown')
     await page.keyboard.press('Enter')
     await expect(getChipList(page).getByRole('listitem')).toHaveCount(2)
@@ -538,12 +538,12 @@ test.describe('Search Modal - Talent', () => {
     // 入力が空のときの Backspace で最後のチップを外す
     await page.keyboard.press('Backspace')
     await expect(getChipList(page).getByRole('listitem')).toHaveCount(1)
-    await expect(getChipList(page).getByText('一ノ瀬うるは')).toBeVisible()
+    await expect(getChipList(page).getByText('あさぎりミオ')).toBeVisible()
 
     // 「外す」ボタンで外す
     await page.keyboard.press('Shift+Tab')
     await expect(
-      page.getByRole('button', { name: '一ノ瀬うるはを外す' }),
+      page.getByRole('button', { name: 'あさぎりミオを外す' }),
     ).toBeFocused()
     await page.keyboard.press('Enter')
     await expect(getChipList(page)).toHaveCount(0)
