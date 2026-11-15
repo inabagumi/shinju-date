@@ -17,19 +17,24 @@ const UNSELECTED_PILL_CLASS_NAME =
   'border-border text-foreground hover:bg-muted'
 
 interface VideoKindFilterNavProps {
+  className?: string | undefined
   current: VideoKindFilter
   query: string
+  /** 選んでいるタレントの ID。種別を切り替えても残す */
+  talentIds?: string[]
 }
 
 /**
  * 動画一覧と検索結果の種別（すべて／動画／ショート）の切り替え。
  */
 export default function VideoKindFilterNav({
+  className,
   current,
   query,
+  talentIds = [],
 }: VideoKindFilterNavProps) {
   return (
-    <nav aria-label="種別" className="mb-6">
+    <nav aria-label="種別" className={className}>
       <ul className="flex flex-wrap gap-2">
         {VIDEO_KIND_FILTER_OPTIONS.map((option) => {
           const isSelected = option.value === current
@@ -44,7 +49,7 @@ export default function VideoKindFilterNav({
                     ? SELECTED_PILL_CLASS_NAME
                     : UNSELECTED_PILL_CLASS_NAME,
                 )}
-                href={getVideosPath(query, option.value)}
+                href={getVideosPath(query, option.value, talentIds)}
               >
                 {option.label}
               </Link>
@@ -58,7 +63,7 @@ export default function VideoKindFilterNav({
 
 export function VideoKindFilterNavSkeleton() {
   return (
-    <div aria-hidden="true" className="mb-6 flex gap-2">
+    <div aria-hidden="true" className="flex gap-2">
       {VIDEO_KIND_FILTER_OPTIONS.map((option) => (
         <div
           className="h-9 w-20 animate-pulse rounded-full bg-muted"

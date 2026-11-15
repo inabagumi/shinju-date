@@ -1,16 +1,21 @@
-import { Suspense } from 'react'
+import { type ComponentProps, Suspense } from 'react'
 import NoResults from '@/components/no-results'
 import PageHeader, { PageHeaderSkeleton } from '@/components/page-header'
 import SearchExitTracker from '@/components/search-exit-tracker'
 import SearchQueryTracker from '@/components/search-query-tracker'
 import SearchResults from '@/components/search-results'
-import VideoKindFilterNav, {
-  VideoKindFilterNavSkeleton,
-} from '@/components/video-kind-filter-nav'
-import { countVideos, fetchVideos } from '@/lib/fetchers'
+import VideoFilters, { VideoFiltersSkeleton } from '@/components/video-filters'
+import {
+  countVideos,
+  fetchActiveTalents,
+  fetchVideos,
+  type Talent,
+} from '@/lib/fetchers'
 import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
+import { parseTalentIds, TALENT_SEARCH_PARAM } from '@/lib/talent-filter'
 import { parseQueries } from '@/lib/url'
 import {
+  getVideosPath,
   parseVideoKindFilter,
   VIDEO_KIND_FILTER_OPTIONS,
   VIDEO_KIND_SEARCH_PARAM,
@@ -27,6 +32,26 @@ export interface VideosPageSectionProps {
 interface VideosPageOptions {
   kind: VideoKindFilter
   query: string
+  /** 選んでいるタレントの ID。重複を除いて並べ替えてある */
+  talentIds: string[]
+}
+
+/**
+ * 検索パラメーターのタレントの ID のうち、活動中のタレントに一致するもの。
+ */
+export async function getSelectedTalentIds(
+  value: string | string[] | undefined,
+): Promise<string[]> {
+  if (!value || value.length === 0) {
+    return []
+  }
+
+  const talents = await fetchActiveTalents()
+
+  return parseTalentIds(
+    value,
+    talents.map((talent) => talent.id),
+  )
 }
 
 async function getVideosPageOptions({
@@ -41,11 +66,14 @@ async function getVideosPageOptions({
   return {
     kind: parseVideoKindFilter(searchParamValues[VIDEO_KIND_SEARCH_PARAM]),
     query: parseQueries(queries),
+    talentIds: await getSelectedTalentIds(
+      searchParamValues[TALENT_SEARCH_PARAM],
+    ),
   }
 }
 
-async function ResultCount({ kind, query }: VideosPageOptions) {
-  const count = await countVideos({ kind, query })
+async function ResultCount({ kind, query, talentIds }: VideosPageOptions) {
+  const count = await countVideos({ kind, query, talentIds })
 
   return <p className="tabular-nums">{count.toLocaleString('ja-JP')}件</p>
 }
@@ -63,37 +91,61 @@ export function VideosPageHeadingSkeleton() {
   return (
     <>
       <PageHeaderSkeleton />
-      <VideoKindFilterNavSkeleton />
+      <VideoFiltersSkeleton />
     </>
   )
 }
 
+interface VideosPageFiltersProps extends VideosPageOptions {
+  talents: Talent[]
+}
+
+function VideosPageFilters({
+  kind,
+  query,
+  talentIds,
+  talents,
+}: VideosPageFiltersProps) {
+  const selectedTalents = talents.filter((talent) =>
+    talentIds.includes(talent.id),
+  )
+
+  return (
+    <VideoFilters
+      kind={kind}
+      query={query}
+      selectedTalents={selectedTalents}
+      talents={talents}
+    />
+  )
+}
+
 export async function VideosPageHeading(props: VideosPageSectionProps) {
-  const { kind, query } = await getVideosPageOptions(props)
-
-  if (query) {
-    const title = `『${query}』の検索結果`
-
-    return (
-      <>
-        <PageHeader
-          breadcrumbs={[{ href: '/videos', name: '動画一覧' }, { name: title }]}
-          description={
-            <Suspense fallback={<ResultCountSkeleton />}>
-              <ResultCount kind={kind} query={query} />
-            </Suspense>
-          }
-          title={title}
-        />
-        <VideoKindFilterNav current={kind} query={query} />
-      </>
-    )
-  }
+  const [options, talents] = await Promise.all([
+    getVideosPageOptions(props),
+    fetchActiveTalents(),
+  ])
+  const { query, talentIds } = options
+  const title = query ? `『${query}』の検索結果` : '動画一覧'
+  const description =
+    query || talentIds.length > 0 ? (
+      <Suspense fallback={<ResultCountSkeleton />}>
+        <ResultCount {...options} />
+      </Suspense>
+    ) : undefined
 
   return (
     <>
-      <PageHeader breadcrumbs={[{ name: '動画一覧' }]} title="動画一覧" />
-      <VideoKindFilterNav current={kind} query={query} />
+      <PageHeader
+        breadcrumbs={
+          query
+            ? [{ href: '/videos', name: '動画一覧' }, { name: title }]
+            : [{ name: '動画一覧' }]
+        }
+        description={description}
+        title={title}
+      />
+      <VideosPageFilters {...options} talents={talents} />
     </>
   )
 }
@@ -110,48 +162,60 @@ function getKindName(kind: VideoKindFilter): string {
   )
 }
 
-export async function VideosPageResults(props: VideosPageSectionProps) {
-  const { kind, query } = await getVideosPageOptions(props)
-  const videos = await fetchVideos({ kind, query })
-
-  if (videos.length < 1) {
-    const kindName = getKindName(kind)
-    const message = query
-      ? `『${query}』に一致する${kindName}は見つかりませんでした。`
-      : `${kindName}は見つかりませんでした。`
-    const hint = query
-      ? '別のキーワードや短いキーワードで検索するか、ひらがな・カタカナ・英字の表記を変えてお試しください。'
-      : undefined
-    const recommendedQueries = query
-      ? await getDisplayRecommendationQueries()
-      : []
-
-    return (
-      <>
-        {query && (
-          <>
-            <SearchQueryTracker query={query} resultsCount={0} />
-            <SearchExitTracker hasResults={false} query={query} />
-          </>
-        )}
-        <NoResults
-          message={message}
-          recommendedQueries={recommendedQueries}
-          {...(hint ? { hint } : {})}
-        />
-      </>
-    )
+/** 1件もないときの案内 */
+async function getNoResultsProps({
+  kind,
+  query,
+  talentIds,
+}: VideosPageOptions): Promise<ComponentProps<typeof NoResults>> {
+  if (talentIds.length > 0) {
+    return {
+      clearFiltersHref: getVideosPath(query, kind),
+      message: '条件に一致する動画は見つかりませんでした。',
+    }
   }
+
+  const kindName = getKindName(kind)
+
+  if (!query) {
+    return { message: `${kindName}は見つかりませんでした。` }
+  }
+
+  return {
+    hint: '別のキーワードや短いキーワードで検索するか、ひらがな・カタカナ・英字の表記を変えてお試しください。',
+    message: `『${query}』に一致する${kindName}は見つかりませんでした。`,
+    recommendedQueries: await getDisplayRecommendationQueries(),
+  }
+}
+
+export async function VideosPageResults(props: VideosPageSectionProps) {
+  const options = await getVideosPageOptions(props)
+  const { kind, query, talentIds } = options
+  const videos = await fetchVideos({ kind, query, talentIds })
+  const noResultsProps =
+    videos.length > 0 ? undefined : await getNoResultsProps(options)
+  // タレントで絞り込んでいるときは、人気のキーワードと結果が0件のキーワードの
+  // 集計に入れない
+  const shouldTrackQuery = query !== '' && talentIds.length === 0
 
   return (
     <>
-      {query && (
+      {shouldTrackQuery && (
         <>
           <SearchQueryTracker query={query} resultsCount={videos.length} />
-          <SearchExitTracker hasResults={true} query={query} />
+          <SearchExitTracker hasResults={videos.length > 0} query={query} />
         </>
       )}
-      <SearchResults kind={kind} prefetchedData={[videos]} query={query} />
+      {noResultsProps ? (
+        <NoResults {...noResultsProps} />
+      ) : (
+        <SearchResults
+          kind={kind}
+          prefetchedData={[videos]}
+          query={query}
+          talentIds={talentIds}
+        />
+      )}
     </>
   )
 }

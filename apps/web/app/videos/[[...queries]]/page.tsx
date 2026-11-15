@@ -2,8 +2,10 @@ import { SITE_NAME as siteName } from '@shinju-date/constants'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { SearchResultsSkeleton } from '@/components/search-results'
+import { TALENT_SEARCH_PARAM } from '@/lib/talent-filter'
 import { parseQueries } from '@/lib/url'
 import {
+  getSelectedTalentIds,
   VideosPageHeading,
   VideosPageHeadingSkeleton,
   VideosPageResults,
@@ -12,9 +14,16 @@ import {
 
 export async function generateMetadata({
   params,
-}: Pick<VideosPageSectionProps, 'params'>): Promise<Metadata> {
-  const { queries } = await params
+  searchParams,
+}: VideosPageSectionProps): Promise<Metadata> {
+  const [{ queries }, searchParamValues] = await Promise.all([
+    params,
+    searchParams,
+  ])
   const query = parseQueries(queries)
+  const talentIds = await getSelectedTalentIds(
+    searchParamValues[TALENT_SEARCH_PARAM],
+  )
   const title = query ? `『${query}』の検索結果` : '動画一覧'
 
   return {
@@ -30,7 +39,8 @@ export async function generateMetadata({
       type: 'article',
     },
     robots: {
-      index: !query,
+      // タレントでの絞り込みは検索結果と同じく、検索エンジンに載せない
+      index: !query && talentIds.length === 0,
     },
     title,
     twitter: {
