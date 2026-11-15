@@ -63,14 +63,14 @@ export type Database = {
                   ]
                 },"talents": {
                   Row: {
-                    "created_at": string,"deleted_at": string | null,"id": string,"name": string,"status": Database["public"]['Enums']["talent_status"],"theme_color": string | null,"updated_at": string
+                    "created_at": string,"deleted_at": string | null,"id": string,"name": string,"reading": string | null,"status": Database["public"]['Enums']["talent_status"],"theme_color": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"deleted_at"?: string | null,"id"?: string,"name": string,"status"?: Database["public"]['Enums']["talent_status"],"theme_color"?: string | null,"updated_at"?: string
+                    "created_at"?: string,"deleted_at"?: string | null,"id"?: string,"name": string,"reading"?: string | null,"status"?: Database["public"]['Enums']["talent_status"],"theme_color"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"deleted_at"?: string | null,"id"?: string,"name"?: string,"status"?: Database["public"]['Enums']["talent_status"],"theme_color"?: string | null,"updated_at"?: string
+                    "created_at"?: string,"deleted_at"?: string | null,"id"?: string,"name"?: string,"reading"?: string | null,"status"?: Database["public"]['Enums']["talent_status"],"theme_color"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     
