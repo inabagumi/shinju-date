@@ -44,4 +44,21 @@ describe('SearchModalRecommendedQueries', () => {
     fireEvent.click(link)
     expect(onClickLink).toHaveBeenCalledTimes(1)
   })
+
+  test('should carry the talents over to the links', () => {
+    render(
+      <SearchModalRecommendedQueries
+        queries={['歌枠']}
+        talentIds={[
+          '00000000-0000-4000-8000-000000000002',
+          '00000000-0000-4000-8000-000000000001',
+        ]}
+      />,
+    )
+
+    expect(screen.getByRole('link', { name: '歌枠' })).toHaveAttribute(
+      'href',
+      `/videos/${encodeURIComponent('歌枠')}?talent=00000000-0000-4000-8000-000000000001&talent=00000000-0000-4000-8000-000000000002`,
+    )
+  })
 })

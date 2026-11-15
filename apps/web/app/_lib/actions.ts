@@ -7,6 +7,7 @@ import { toDBString } from '@shinju-date/temporal-fns'
 import { track } from '@vercel/analytics/server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { fetchActiveTalents, type Talent } from '@/lib/fetchers'
 import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
 import { supabaseClient } from '@/lib/supabase'
 
@@ -111,6 +112,19 @@ export async function fetchRecommendedQueries(): Promise<string[]> {
     return await getDisplayRecommendationQueries()
   } catch (err) {
     logger.error('Failed to fetch recommended queries', { error: err })
+    return []
+  }
+}
+
+/**
+ * Fetch the active talents (ID and name) for the search modal.
+ * The modal matches them against the input in the browser.
+ */
+export async function fetchSearchModalTalents(): Promise<Talent[]> {
+  try {
+    return await fetchActiveTalents()
+  } catch (err) {
+    logger.error('Failed to fetch talents', { error: err })
     return []
   }
 }

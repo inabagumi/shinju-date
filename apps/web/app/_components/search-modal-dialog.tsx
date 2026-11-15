@@ -7,17 +7,9 @@ import {
   DialogPortal,
   DialogTitle,
 } from '@shinju-date/ui'
-import { Search } from 'lucide-react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Suspense, useCallback, useEffect, useState } from 'react'
-import {
-  fetchRecommendedQueries,
-  fetchSuggestions,
-  type Suggestion,
-} from '@/app/_lib/actions'
+import { Suspense, useCallback } from 'react'
+import { SearchModalContent } from './search-modal-content'
 import { useSearchModal } from './search-modal-context'
-import { SearchModalRecommendedQueries } from './search-modal-recommended-queries'
 
 export function SearchModalDialog() {
   const { isOpen, closeModal } = useSearchModal()
@@ -37,6 +29,8 @@ export function SearchModalDialog() {
         <DialogOverlay className="z-50 backdrop-blur-sm" />
 
         <DialogContent className="data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[20%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[20%] top-[20%] left-[50%] z-50 w-full max-w-2xl translate-x-[-50%] translate-y-[-20%] border border-border p-0 sm:max-w-3xl">
+          <DialogTitle className="sr-only">検索</DialogTitle>
+
           <Suspense
             fallback={
               <div className="flex h-96 items-center justify-center">
@@ -49,185 +43,5 @@ export function SearchModalDialog() {
         </DialogContent>
       </DialogPortal>
     </Dialog>
-  )
-}
-
-function SearchModalContent({ onClose }: { onClose: () => void }) {
-  const router = useRouter()
-  const [query, setQuery] = useState('')
-  const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null)
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
-  // `null` means the recommended queries are still loading
-  const [recommendedQueries, setRecommendedQueries] = useState<string[] | null>(
-    null,
-  )
-
-  // Fetch recommended queries on mount
-  useEffect(() => {
-    fetchRecommendedQueries()
-      .then(setRecommendedQueries)
-      .catch((err) => {
-        console.debug('Failed to fetch recommended queries', err)
-        setRecommendedQueries([])
-      })
-  }, [])
-
-  // Fetch suggestions when query changes
-  useEffect(() => {
-    if (!query) {
-      setSuggestions(null)
-      setIsLoadingSuggestions(false)
-      return
-    }
-
-    setIsLoadingSuggestions(true)
-
-    const getSuggestions = async () => {
-      try {
-        const data = await fetchSuggestions(query)
-        setSuggestions(data)
-      } catch (err) {
-        console.debug('Failed to fetch suggestions', err)
-        setSuggestions([])
-      } finally {
-        setIsLoadingSuggestions(false)
-      }
-    }
-
-    // Debounce the search
-    const timeoutId = setTimeout(getSuggestions, 300)
-
-    return () => clearTimeout(timeoutId)
-  }, [query])
-
-  const handleInputKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!suggestions || suggestions.length === 0) return
-
-      if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        // Focus the first suggestion link
-        const firstLink = document.querySelector(
-          '[data-suggestion-link]',
-        ) as HTMLElement
-        firstLink?.focus()
-      }
-    },
-    [suggestions],
-  )
-
-  const handleSuggestionKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLAnchorElement>, index: number) => {
-      if (!suggestions) return
-
-      if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        // Focus the next suggestion link
-        const nextIndex = index + 1
-        if (nextIndex < suggestions.length) {
-          const links = document.querySelectorAll('[data-suggestion-link]')
-          const nextLink = links[nextIndex] as HTMLElement
-          nextLink?.focus()
-        }
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault()
-        if (index === 0) {
-          // Focus back on input
-          const input = document.querySelector(
-            'input[name="q"]',
-          ) as HTMLInputElement
-          input?.focus()
-        } else {
-          // Focus the previous suggestion link
-          const links = document.querySelectorAll('[data-suggestion-link]')
-          const prevLink = links[index - 1] as HTMLElement
-          prevLink?.focus()
-        }
-      }
-    },
-    [suggestions],
-  )
-
-  const handleSubmit = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault()
-      if (query.trim()) {
-        onClose()
-        router.push(`/search?q=${encodeURIComponent(query)}`)
-      }
-    },
-    [query, onClose, router],
-  )
-
-  const handleSuggestionClick = useCallback(() => {
-    onClose()
-  }, [onClose])
-
-  return (
-    <div className="flex flex-col">
-      <form
-        className="flex items-center border-b border-border"
-        onSubmit={handleSubmit}
-      >
-        <Search aria-hidden="true" className="ml-4 size-5 text-muted" />
-
-        <DialogTitle className="sr-only">検索</DialogTitle>
-
-        <input
-          className="w-full bg-transparent px-4 py-4 text-foreground outline-none placeholder:text-muted"
-          name="q"
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleInputKeyDown}
-          placeholder="検索..."
-          type="search"
-          value={query}
-        />
-
-        <div className="mr-4 flex items-center gap-2">
-          <kbd className="hidden rounded-control border border-border bg-muted px-2 py-1 font-mono text-caption text-muted sm:inline-block">
-            ESC
-          </kbd>
-        </div>
-      </form>
-
-      {/* Search suggestions */}
-      <div>
-        {isLoadingSuggestions ? (
-          <div className="p-8 text-center text-meta text-muted">
-            読み込み中...
-          </div>
-        ) : suggestions && suggestions.length > 0 ? (
-          <div className="max-h-96 overflow-y-auto">
-            <div className="p-2">
-              {suggestions.map((suggestion, index) => (
-                <Link
-                  className="flex w-full items-center gap-3 rounded-control px-4 py-3 text-left hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
-                  data-suggestion-link
-                  href={`/videos/${encodeURIComponent(suggestion.term)}`}
-                  key={suggestion.term}
-                  onClick={handleSuggestionClick}
-                  onKeyDown={(e) => handleSuggestionKeyDown(e, index)}
-                >
-                  <Search
-                    aria-hidden="true"
-                    className="size-4 shrink-0 text-muted"
-                  />
-                  <span>{suggestion.term}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        ) : query ? (
-          <div className="p-8 text-center text-meta text-muted">
-            Enterキーを押して「{query}」を検索
-          </div>
-        ) : (
-          <SearchModalRecommendedQueries
-            onClickLink={handleSuggestionClick}
-            queries={recommendedQueries}
-          />
-        )}
-      </div>
-    </div>
   )
 }
