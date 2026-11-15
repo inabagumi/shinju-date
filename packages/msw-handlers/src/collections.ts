@@ -453,6 +453,8 @@ export async function seedCollections() {
     ]).flat(),
     weekStart.subtract({ days: 5 }).add({ hours: 20 }),
     weekStart.add({ days: 9, hours: 20 }),
+    // 3 more at 21:00 on Wednesday, so 4 streams start at the same time
+    ...Array.from({ length: 3 }, () => weekStart.add({ days: 2, hours: 21 })),
   ]
   const scheduleTitles = [
     '【定期】朝の雑談',
@@ -494,7 +496,10 @@ export async function seedCollections() {
         title:
           status === 'LIVE'
             ? '【スケジュール】ただいま配信中'
-            : `${scheduleTitles[idx % scheduleTitles.length]} #${idx + 1}`,
+            : idx === scheduleStarts.length - 1
+              ? // Long enough to check that it does not run out of the item
+                '〖FORKROAD〗右か左かすきなほうをえらんでね【#ななしいんく公式チャンネル同時視聴コラボ】'
+              : `${scheduleTitles[idx % scheduleTitles.length]} #${idx + 1}`,
         updated_at: publishedAt.toString(),
         video_kind: 'standard',
         visible: true,
