@@ -18,6 +18,9 @@ interface ScheduleDayHeaderProps {
 
 /**
  * 1日ぶんの見出し。日付と曜日、件数を出し、今日は「今日」の文字の印で示す。
+ * スクロールしても日付がわかるよう、サイトのヘッダー（高さ 56px）の下に固定する。
+ * 1024px 以上では見出しの行がまとめて固定され、狭い画面ではその日のセクションの
+ * 中でだけ固定される。
  */
 export default function ScheduleDayHeader({
   count,
@@ -31,7 +34,7 @@ export default function ScheduleDayHeader({
 
   return (
     <header
-      className="flex items-baseline gap-x-2 border-b border-border pb-1 lg:flex-col lg:gap-0"
+      className="sticky top-14 z-10 flex items-baseline gap-x-2 border-b border-border bg-background pt-2 pb-1 lg:flex-col lg:gap-0"
       data-today={isToday || undefined}
     >
       <div className="flex flex-wrap items-baseline gap-x-2">

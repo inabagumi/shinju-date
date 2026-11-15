@@ -48,7 +48,26 @@ function getVideoAccounts(video: ScheduleVideo) {
 const ITEM_CLASS_NAME = 'block rounded-control border-l-4 py-1.5 pr-1 pl-2'
 
 interface ScheduleItemProps {
+  /**
+   * 同じ時刻の項目と横に並べる。1024px 以上ではアイコンと左の線だけを出し、
+   * 時刻・タレント名・タイトルは、まとめの見出しと `aria-label`・`title` で示す。
+   * 1024px 未満では通常の項目と同じ表示にする
+   */
+  compact?: boolean
   value: ScheduleVideo
+}
+
+/** 横に並べた項目の `aria-label` と `title`。画面に出ない情報をすべて入れる */
+function getCompactLabel(value: ScheduleVideo, time: string): string {
+  return [
+    time,
+    value.status === 'LIVE' ? '配信中' : null,
+    value.platform === 'twitch' ? 'Twitch' : null,
+    value.talent.name,
+    value.title,
+  ]
+    .filter((part) => part !== null)
+    .join(' ')
 }
 
 /**
@@ -59,7 +78,10 @@ interface ScheduleItemProps {
  * 保証できないため、文字の色や文字の地には使わない。未設定や `#RRGGBB` でない
  * 値のときは `border-border` の色にする。
  */
-export default function ScheduleItem({ value }: ScheduleItemProps) {
+export default function ScheduleItem({
+  compact = false,
+  value,
+}: ScheduleItemProps) {
   const href = getScheduleVideoUrl(value)
 
   if (!href) {
@@ -69,26 +91,38 @@ export default function ScheduleItem({ value }: ScheduleItemProps) {
   const startAt = Temporal.Instant.from(value.published_at).toZonedDateTimeISO(
     TIME_ZONE,
   )
+  const time = formatTime(startAt)
   const themeColor = parseThemeColor(value.talent.theme_color)
   const style = themeColor
     ? ({ '--talent-color': themeColor } as CSSProperties)
     : undefined
+  const compactLabel = compact ? getCompactLabel(value, time) : undefined
 
   return (
     <a
+      aria-label={compactLabel}
       className={twMerge(
         ITEM_CLASS_NAME,
-        'group hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+        'group min-w-0 hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+        compact &&
+          'lg:flex lg:flex-col lg:items-center lg:gap-1 lg:px-0.5 lg:pl-0.5',
         themeColor ? 'border-l-(--talent-color)' : 'border-l-border',
       )}
+      data-compact={compact || undefined}
       data-testid="schedule-item"
       href={href}
       ping="/api/ping"
       rel="noopener noreferrer"
       style={style}
       target="_blank"
+      title={compactLabel}
     >
-      <span className="flex flex-wrap items-center gap-1">
+      <span
+        className={twMerge(
+          'flex flex-wrap items-center gap-1',
+          compact && 'lg:hidden',
+        )}
+      >
         {/*
          * サーバーで描画する部品なので、クライアントの部品の `FormattedTime` に
          * Temporal のオブジェクトは渡せない。文字列を組み立てて出す
@@ -98,7 +132,7 @@ export default function ScheduleItem({ value }: ScheduleItemProps) {
           dateTime={startAt.toString({ timeZoneName: 'never' })}
           title={formatDateTimeWithSeconds(startAt)}
         >
-          {formatTime(startAt)}
+          {time}
         </time>
 
         <LiveNow
@@ -109,18 +143,37 @@ export default function ScheduleItem({ value }: ScheduleItemProps) {
         <PlatformBadge platform={value.platform} />
       </span>
 
-      <span className="mt-0.5 flex min-w-0 items-center gap-1.5">
+      <span
+        className={twMerge(
+          'mt-0.5 flex min-w-0 items-center gap-1.5',
+          compact && 'lg:mt-0',
+        )}
+      >
         <TalentIcon size={20} talent={getVideoAccounts(value)} />
         <span
-          className="min-w-0 truncate text-caption text-muted"
+          className={twMerge(
+            'min-w-0 truncate text-caption text-muted',
+            compact && 'lg:hidden',
+          )}
           title={value.talent.name}
         >
           {value.talent.name}
         </span>
       </span>
 
+      {/* 横に並べたときも、配信中は色ではなく文字で示す */}
+      {compact && (
+        <LiveNow
+          className="hidden max-w-full rounded-control bg-live px-0.5 text-center text-caption font-semibold wrap-anywhere text-live-foreground lg:block"
+          status={value.status}
+        />
+      )}
+
       <span
-        className="mt-0.5 line-clamp-2 text-meta wrap-anywhere group-hover:underline"
+        className={twMerge(
+          'mt-0.5 line-clamp-2 text-meta wrap-anywhere group-hover:underline',
+          compact && 'lg:hidden',
+        )}
         title={value.title}
       >
         {value.title}

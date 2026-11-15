@@ -5,9 +5,9 @@ import {
   getSchedulePath,
   getScheduleWeekRange,
   getStartHour,
-  getStartHours,
   getWeekDays,
   getWeekStart,
+  groupByStartTime,
   isWeekInRange,
   parseScheduleDate,
 } from '../schedule'
@@ -179,15 +179,21 @@ describe('getStartHour', () => {
   })
 })
 
-describe('getStartHours', () => {
-  test('should return the hours with videos once each, in order', () => {
+describe('groupByStartTime', () => {
+  test('should group the videos that start at the same minute, in order', () => {
+    const groups = groupByStartTime([
+      { id: 'c', published_at: '2026-11-09T12:58:00Z' },
+      { id: 'a', published_at: '2026-11-09T09:00:00Z' },
+      { id: 'b', published_at: '2026-11-09T09:00:30Z' },
+      { id: 'd', published_at: '2026-11-09T12:02:00Z' },
+    ])
+
     expect(
-      getStartHours([
-        { published_at: '2026-11-09T12:30:00Z' },
-        { published_at: '2026-11-10T03:00:00Z' },
-        { published_at: '2026-11-11T12:00:00Z' },
-      ]),
-    ).toEqual([12, 21])
-    expect(getStartHours([])).toEqual([])
+      groups.map(({ items, time }) => [time, items.map((item) => item.id)]),
+    ).toEqual([
+      ['18:00', ['a', 'b']],
+      ['21:02', ['d']],
+      ['21:58', ['c']],
+    ])
   })
 })

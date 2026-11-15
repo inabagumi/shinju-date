@@ -1,5 +1,5 @@
 import { TIME_ZONE } from '@shinju-date/constants'
-import { formatDate } from '@shinju-date/temporal-fns'
+import { formatDate, formatTime } from '@shinju-date/temporal-fns'
 import { WEEKDAYS } from './date-heading'
 
 /** The path of the schedule of the week that includes today */
@@ -149,14 +149,25 @@ export function getStartHour(publishedAt: string): number {
 }
 
 /**
- * The hours some of the videos start in, in ascending order. The schedule has
- * a row for each of them only, as the streams gather in the evening and most
- * of the 24 hours would be empty.
+ * Group the videos by the minute they start at (`HH:mm` in `TIME_ZONE`), in
+ * the order of the start. The videos that start at the same time are put side
+ * by side on the schedule.
  */
-export function getStartHours(
-  videos: readonly { published_at: string }[],
-): number[] {
-  return [
-    ...new Set(videos.map((video) => getStartHour(video.published_at))),
-  ].sort((a, b) => a - b)
+export function groupByStartTime<T extends { published_at: string }>(
+  videos: readonly T[],
+): { items: T[]; time: string }[] {
+  const groups = Map.groupBy(
+    videos.toSorted((videoA, videoB) =>
+      Temporal.Instant.compare(
+        Temporal.Instant.from(videoA.published_at),
+        Temporal.Instant.from(videoB.published_at),
+      ),
+    ),
+    (video) =>
+      formatTime(
+        Temporal.Instant.from(video.published_at).toZonedDateTimeISO(TIME_ZONE),
+      ),
+  )
+
+  return [...groups].map(([time, items]) => ({ items, time }))
 }

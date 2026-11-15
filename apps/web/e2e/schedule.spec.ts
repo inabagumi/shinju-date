@@ -128,8 +128,96 @@ test.describe('Schedule page', () => {
     expect(new Set(tops).size).toBe(1)
 
     for (const slot of await slots.all()) {
-      await expect(slot.getByTestId('schedule-item')).toContainText('21:00')
+      await expect(slot.getByTestId('schedule-item').first()).toContainText(
+        '21:00',
+      )
     }
+  })
+
+  test('should have a row for each of the 24 hours', async ({ page }) => {
+    await page.setViewportSize({ height: 900, width: 1280 })
+    await page.goto(`${BASE_URL}/schedule`)
+
+    // Every day has the rows of all the hours, even without any video
+    for (const day of await getDays(page).all()) {
+      await expect(day.locator('[data-hour]')).toHaveCount(24)
+    }
+
+    const firstDay = getDays(page).first()
+    const midnight = await firstDay.locator('[data-hour="0"]').boundingBox()
+    const lastHour = await firstDay.locator('[data-hour="23"]').boundingBox()
+
+    expect(midnight?.height).toBeGreaterThan(0)
+    expect(lastHour?.y).toBeGreaterThan(midnight?.y ?? 0)
+  })
+
+  test('should put the videos of the same time side by side', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ height: 900, width: 1280 })
+    await page.goto(`${BASE_URL}/schedule`)
+
+    // 4 streams start at 21:00 on Wednesday of the current week
+    const group = getMain(page).locator('[data-time="21:00"]').first()
+    const items = group.getByTestId('schedule-item')
+
+    await expect(items).toHaveCount(4)
+
+    const boxes = await Promise.all(
+      (await items.all()).map((item) => item.boundingBox()),
+    )
+    const tops = new Set(boxes.map((box) => Math.round(box?.y ?? -1)))
+    const lefts = new Set(boxes.map((box) => Math.round(box?.x ?? -1)))
+
+    expect(tops.size).toBe(1)
+    expect(lefts.size).toBe(4)
+
+    // The talent and the title are in the name of the link
+    for (const item of await items.all()) {
+      await expect(item).toHaveAttribute('aria-label', /^21:00 /)
+    }
+  })
+
+  test('should keep every item inside the column of its day', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ height: 900, width: 1280 })
+    await page.goto(`${BASE_URL}/schedule`)
+    await expect(getItems(page).first()).toBeVisible()
+
+    const overflows = await page.evaluate(() =>
+      [...document.querySelectorAll('[data-testid="schedule-day"]')].flatMap(
+        (day) => {
+          const { left, right } = day.getBoundingClientRect()
+
+          return [...day.querySelectorAll('[data-testid="schedule-item"]')]
+            .map((item) => item.getBoundingClientRect())
+            .filter((box) => box.left < left - 1 || box.right > right + 1)
+        },
+      ),
+    )
+
+    expect(overflows).toHaveLength(0)
+  })
+
+  test('should keep the dates on the screen while scrolling', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ height: 600, width: 1280 })
+    await page.goto(`${BASE_URL}/schedule`)
+    await expect(getItems(page).first()).toBeVisible()
+
+    await getMain(page)
+      .locator('[data-hour="21"]')
+      .first()
+      .scrollIntoViewIfNeeded()
+
+    const heading = getDays(page).first().getByRole('heading', { level: 2 })
+
+    await expect(heading).toBeInViewport()
+
+    // Right below the header of the site (56px)
+    expect(Math.round((await heading.boundingBox())?.y ?? 0)).toBeLessThan(120)
   })
 
   test('should move between the weeks with the Monday URLs', async ({
