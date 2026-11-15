@@ -189,35 +189,54 @@ test.describe('Schedule page', () => {
     expect(new Set(boxes.map((box) => Math.round(box?.y ?? -1))).size).toBe(1)
     expect(new Set(boxes.map((box) => Math.round(box?.x ?? -1))).size).toBe(4)
 
-    // Only the icons are shown, and the link is named with everything
-    for (const item of await items.all()) {
-      await expect(item).toHaveAttribute('data-compact', 'true')
-      await expect(item).toHaveAttribute('aria-label', /^21:00 /)
-    }
+    // Hovering an item expands it to the right, keeping its left edge and the
+    // place of its icon, and shows the whole title
+    const item = items.nth(1)
+    const icon = item.locator('[data-testid^="talent-"]')
+    // Scroll first, as hovering scrolls the item into view
+    await item.scrollIntoViewIfNeeded()
 
-    // Hovering an item expands it to the width of the day with everything
-    const last = items.last()
-    const title = last.getByText('〖FORKROAD〗右か左かすきなほうをえらんでね', {
-      exact: false,
-    })
     const dayBox = await wednesday.boundingBox()
+    const itemBefore = await item.boundingBox()
+    const iconBefore = await icon.boundingBox()
 
-    await expect(title).toBeHidden()
-    await last.hover()
-    await expect(title).toBeVisible()
-    await expect(last.getByText('21:00', { exact: true })).toBeVisible()
+    await item.hover()
+
+    const itemAfter = await item.boundingBox()
+    const iconAfter = await icon.boundingBox()
+
+    expect(itemAfter?.x).toBe(itemBefore?.x)
+    expect(itemAfter?.y).toBe(itemBefore?.y)
+    expect(iconAfter).toEqual(iconBefore)
+    expect(itemAfter?.width ?? 0).toBeGreaterThan(itemBefore?.width ?? 0)
+    // At least to the right end of the day
     expect(
-      Math.round((await last.boundingBox())?.width ?? 0),
-    ).toBeGreaterThanOrEqual(Math.round((dayBox?.width ?? 0) - 4))
+      Math.round((itemAfter?.x ?? 0) + (itemAfter?.width ?? 0)),
+    ).toBeGreaterThanOrEqual(
+      Math.round((dayBox?.x ?? 0) + (dayBox?.width ?? 0) - 4),
+    )
+
+    // The shadow is on the item itself, so the parts match
+    const placement = item.locator('xpath=..')
+
+    expect((await placement.boundingBox())?.height).toBeCloseTo(
+      (itemAfter?.height ?? 0) + 2,
+      0,
+    )
 
     // So does focusing it with the keyboard
     await page.mouse.move(0, 0)
-    await expect(title).toBeHidden()
 
     const first = items.first()
 
+    await first.scrollIntoViewIfNeeded()
+
+    const firstBefore = await first.boundingBox()
+
     await first.focus()
-    await expect(first.getByText('21:00', { exact: true })).toBeVisible()
+    expect((await first.boundingBox())?.width ?? 0).toBeGreaterThan(
+      firstBefore?.width ?? 0,
+    )
   })
 
   test('should keep every item inside the column of its day', async ({

@@ -180,36 +180,37 @@ describe('ScheduleItem', () => {
   })
 })
 
-describe('ScheduleItem (compact)', () => {
-  test('should name the link with everything it does not show', () => {
-    render(<ScheduleItem compact value={createVideo({ status: 'LIVE' })} />)
-
-    expect(getItem()).toHaveAttribute(
-      'aria-label',
-      '21:00 配信中 朝霧ミオ 【歌枠】アニソン縛り歌ってみた！',
-    )
-  })
-
-  test('should show only the icon, and everything when it is expanded', () => {
-    render(<ScheduleItem compact value={createVideo()} />)
-
-    const title = screen.getByText('【歌枠】アニソン縛り歌ってみた！')
-
-    expect(title).toHaveClass(
-      'lg:hidden',
-      'lg:group-hover/item:block',
-      'lg:group-focus-within/item:block',
-      'lg:group-hover/item:line-clamp-none',
-    )
-  })
-
-  test('should not name the link when it is not compact', () => {
+describe('ScheduleItem (on a wide screen)', () => {
+  test('should have a fill and a frame to stand out from the ground', () => {
     render(<ScheduleItem value={createVideo()} />)
 
-    expect(getItem()).not.toHaveAttribute('aria-label')
-    expect(
-      screen.getByText('【歌枠】アニソン縛り歌ってみた！'),
-    ).not.toHaveClass('lg:hidden')
+    expect(getItem()).toHaveClass('bg-muted', 'border', 'border-border')
+  })
+
+  test('should fill the placement and float with a shadow when expanded', () => {
+    render(<ScheduleItem value={createVideo()} />)
+
+    expect(getItem()).toHaveClass(
+      'lg:flex-1',
+      'lg:overflow-hidden',
+      'lg:group-hover/item:bg-surface',
+      'lg:group-hover/item:shadow-overlay',
+      'lg:group-focus-within/item:shadow-overlay',
+    )
+  })
+
+  test('should keep the same order of the contents when it is narrow', () => {
+    render(<ScheduleItem value={createVideo({ status: 'LIVE' })} />)
+
+    // The start, the talent and the title are always there, so nothing moves
+    // when the item is expanded
+    expect(getItem().textContent).toBe(
+      '21:00配信中朝霧ミオ【歌枠】アニソン縛り歌ってみた！',
+    )
+    expect(screen.getByText('【歌枠】アニソン縛り歌ってみた！')).toHaveClass(
+      'line-clamp-2',
+      'lg:group-hover/item:line-clamp-none',
+    )
   })
 })
 

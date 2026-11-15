@@ -45,47 +45,62 @@ function getVideoAccounts(video: ScheduleVideo) {
   }
 }
 
-const ITEM_CLASS_NAME = 'block rounded-control border-l-4 py-1.5 pr-1 pl-2'
+/**
+ * 地（`bg-background`）と見分けられるよう、淡い地（`bg-muted`）と枠を付ける。
+ * 左の線だけはタレントのテーマカラーにする
+ */
+const ITEM_CLASS_NAME =
+  'block rounded-control border border-l-4 border-border bg-muted py-1 pr-1 pl-2'
+
+/** 1時間の高さ（`--hour`、px）。`schedule-week.tsx` の値と合わせる */
+const HOUR_HEIGHT = 64
+
+/**
+ * タイトルより上の高さ（px）: 上下の余白（8）、上下の枠（2）、項目の間の余白
+ * （2）、1行目（20）、タイトルとの間（2）
+ */
+const ITEM_CHROME_HEIGHT = 34
+
+/** タイトルの1行の高さ（px）。`text-meta` の 14px × 1.6 */
+const TITLE_LINE_HEIGHT = 22.4
+
+/**
+ * 1024px 以上で、長さ（分）ぶんの高さの項目に入るタイトルの行数。行の途中で
+ * 切れないよう、入りきる行数だけ出す。0 のときはタイトルを出さない
+ */
+export function getTitleLines(lengthMinutes: number): number {
+  const height = (HOUR_HEIGHT * lengthMinutes) / 60
+
+  return Math.max(
+    0,
+    Math.floor((height - ITEM_CHROME_HEIGHT) / TITLE_LINE_HEIGHT),
+  )
+}
 
 interface ScheduleItemProps {
   /**
-   * 重なる項目が多く、1024px 以上で幅が狭いときにアイコンだけを出す。
-   * マウスを乗せるかフォーカスして広げると、すべてを出す。
-   * 1024px 未満では通常の項目と同じ表示にする
+   * 1024px 以上でタイトルを出す行数（`getTitleLines`）。省略すると2行まで。
+   * 広げたときは行数にかかわらず全文を出す
    */
-  compact?: boolean
+  titleLines?: number | undefined
   value: ScheduleVideo
 }
 
-/** アイコンだけの項目の `aria-label`。画面に出ない情報をすべて入れる */
-function getCompactLabel(value: ScheduleVideo, time: string): string {
-  return [
-    time,
-    value.status === 'LIVE' ? '配信中' : null,
-    value.platform === 'twitch' ? 'Twitch' : null,
-    value.talent.name,
-    value.title,
-  ]
-    .filter((part) => part !== null)
-    .join(' ')
-}
-
 /**
- * スケジュールの1件。開始時刻・タレント・タイトルだけを出し、サムネイルは
- * 出さない。リンクの挙動は `VideoCard` と同じにする。
+ * スケジュールの1件。アイコン・開始時刻・タレント名を1行目に、タイトルをその
+ * 下に出し、サムネイルは出さない。リンクの挙動は `VideoCard` と同じにする。
  *
- * 1024px 以上では、置く側（`group/item` の要素）が決めた位置と高さに収め、
- * はみ出す文字は切る。マウスを乗せるかフォーカスすると、置く側が項目を日の
- * 列の幅いっぱいに広げ、ここでは切っていた中身をすべて出す。
+ * 1024px 以上では、置く側（`group/item` の要素）が決めた位置と大きさに収め、
+ * 入りきらない部分は切る。幅が狭くても並びは変えず、先頭のアイコンで誰の配信か
+ * わかるようにする。マウスを乗せるかフォーカスして置く側が広げたとき、アイコンや
+ * 文字の位置はずれない。広げたときは、浮いて見えるよう地を `bg-surface` にし、
+ * 影を付けて、タイトルを全文出す。
  *
  * 左端の線はタレントのテーマカラーにする。任意の色なのでコントラスト比を
  * 保証できないため、文字の色や文字の地には使わない。未設定や `#RRGGBB` でない
  * 値のときは `border-border` の色にする。
  */
-export default function ScheduleItem({
-  compact = false,
-  value,
-}: ScheduleItemProps) {
+export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
   const href = getScheduleVideoUrl(value)
 
   if (!href) {
@@ -95,7 +110,6 @@ export default function ScheduleItem({
   const startAt = Temporal.Instant.from(value.published_at).toZonedDateTimeISO(
     TIME_ZONE,
   )
-  const time = formatTime(startAt)
   const themeColor = parseThemeColor(value.talent.theme_color)
   const style = themeColor
     ? ({ '--talent-color': themeColor } as CSSProperties)
@@ -103,18 +117,15 @@ export default function ScheduleItem({
 
   return (
     <a
-      aria-label={compact ? getCompactLabel(value, time) : undefined}
       className={twMerge(
         ITEM_CLASS_NAME,
-        'group min-w-0 hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent lg:h-full lg:overflow-hidden lg:bg-surface lg:hover:bg-muted',
-        // 広げたときは、切っていた中身をすべて出す
-        'lg:group-focus-within/item:h-auto lg:group-focus-within/item:min-h-full lg:group-hover/item:h-auto lg:group-hover/item:min-h-full',
-        compact &&
-          'lg:flex lg:flex-col lg:items-center lg:gap-1 lg:px-0.5 lg:group-focus-within/item:block lg:group-focus-within/item:pr-1 lg:group-focus-within/item:pl-2 lg:group-hover/item:block lg:group-hover/item:pr-1 lg:group-hover/item:pl-2',
+        'group min-w-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent lg:min-h-0 lg:flex-1 lg:overflow-hidden',
+        // 広げたときは、浮いて見えるよう地を変えて影を付ける。影は項目そのものに
+        // 付け、項目と影の大きさをそろえる
+        'lg:group-focus-within/item:bg-surface lg:group-focus-within/item:shadow-overlay lg:group-hover/item:bg-surface lg:group-hover/item:shadow-overlay',
         themeColor ? 'border-l-(--talent-color)' : 'border-l-border',
       )}
-      data-compact={compact || undefined}
-      data-start={time}
+      data-start={formatTime(startAt)}
       data-testid="schedule-item"
       href={href}
       ping="/api/ping"
@@ -122,66 +133,51 @@ export default function ScheduleItem({
       style={style}
       target="_blank"
     >
-      <span
-        className={twMerge(
-          'flex flex-wrap items-center gap-1',
-          compact &&
-            'lg:hidden lg:group-focus-within/item:flex lg:group-hover/item:flex',
-        )}
-      >
+      {/* 1行目は高さを 20px（アイコンの大きさ）にそろえる */}
+      <span className="flex h-5 min-w-0 items-center gap-1.5">
+        <TalentIcon size={20} talent={getVideoAccounts(value)} />
+
         {/*
          * サーバーで描画する部品なので、クライアントの部品の `FormattedTime` に
          * Temporal のオブジェクトは渡せない。文字列を組み立てて出す
          */}
         <time
-          className="text-meta font-bold tabular-nums"
+          className="shrink-0 text-meta leading-5 font-bold tabular-nums"
           dateTime={startAt.toString({ timeZoneName: 'never' })}
           title={formatDateTimeWithSeconds(startAt)}
         >
-          {time}
+          {formatTime(startAt)}
         </time>
 
         <LiveNow
-          className="rounded-control bg-live px-1.5 py-0.5 text-caption font-semibold text-live-foreground"
+          className="shrink-0 rounded-control bg-live px-1.5 py-0.5 text-caption leading-4 font-semibold text-live-foreground"
           status={value.status}
         />
 
-        <PlatformBadge platform={value.platform} />
-      </span>
+        <PlatformBadge
+          className="shrink-0 leading-4"
+          platform={value.platform}
+        />
 
-      <span
-        className={twMerge(
-          'mt-0.5 flex min-w-0 items-center gap-1.5',
-          compact &&
-            'lg:mt-0 lg:group-focus-within/item:mt-0.5 lg:group-hover/item:mt-0.5',
-        )}
-      >
-        <TalentIcon size={20} talent={getVideoAccounts(value)} />
-        <span
-          className={twMerge(
-            'min-w-0 truncate text-caption text-muted',
-            compact &&
-              'lg:hidden lg:group-focus-within/item:block lg:group-hover/item:block',
-          )}
-        >
+        <span className="min-w-0 truncate text-caption text-muted">
           {value.talent.name}
         </span>
       </span>
 
-      {/* アイコンだけのときも、配信中は色ではなく文字で示す */}
-      {compact && (
-        <LiveNow
-          className="hidden max-w-full rounded-control bg-live px-0.5 text-center text-caption font-semibold wrap-anywhere text-live-foreground lg:block lg:group-focus-within/item:hidden lg:group-hover/item:hidden"
-          status={value.status}
-        />
-      )}
-
       <span
         className={twMerge(
-          'mt-0.5 line-clamp-2 text-meta wrap-anywhere group-hover:underline lg:group-focus-within/item:line-clamp-none lg:group-hover/item:line-clamp-none',
-          compact &&
-            'lg:hidden lg:group-focus-within/item:block lg:group-hover/item:block',
+          'mt-0.5 line-clamp-2 text-meta wrap-anywhere group-hover:underline',
+          titleLines !== undefined &&
+            (titleLines > 0 ? 'lg:line-clamp-(--title-lines)' : 'lg:hidden'),
+          // 広げたときは全文を出す
+          // (`line-clamp-none` は `display: block` も指定する)
+          'lg:group-focus-within/item:line-clamp-none lg:group-hover/item:line-clamp-none',
         )}
+        style={
+          titleLines
+            ? ({ '--title-lines': titleLines } as CSSProperties)
+            : undefined
+        }
         title={value.title}
       >
         {value.title}

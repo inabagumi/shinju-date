@@ -20,6 +20,7 @@ import {
 import ScheduleDayHeader from './schedule-day-header'
 import ScheduleItem, {
   getScheduleVideoUrl,
+  getTitleLines,
   ScheduleItemSkeleton,
 } from './schedule-item'
 
@@ -166,19 +167,32 @@ function formatHour(hour: number): string {
   return `${hour.toString(10).padStart(2, '0')}:00`
 }
 
+/** 日の列の間の余白（`gap-x-2`） */
+const DAY_GAP = '0.5rem'
+
+/** 広げたときの最低の幅 */
+const EXPANDED_MIN_WIDTH = '14rem'
+
 /**
  * 項目を置く位置。`layoutDay` の結果を CSS 変数で渡し、1024px 以上だけ
- * クラスから参照する（狭い画面では使わない）
+ * クラスから参照する（狭い画面では使わない）。
+ *
+ * 広げたときの幅（`--expanded-width`）は、左端を動かさずに右へ伸ばす幅にする。
+ * 日の列の右端まで、ただし `EXPANDED_MIN_WIDTH` より狭くはせず、週の右端
+ * （右に残る日の列の分）は越えない。`100%` は日の列の幅を指す
  */
-function getPlacementStyle({
-  column,
-  columns,
-  length,
-  start,
-}: ScheduleLayout<ScheduleVideo>): CSSProperties {
+function getPlacementStyle(
+  { column, columns, length, start }: ScheduleLayout<ScheduleVideo>,
+  daysAfter: number,
+): CSSProperties {
+  const left = `(100% * ${column} / ${columns})`
+  const toDayEnd = `(100% - ${left})`
+  const toWeekEnd = `(${toDayEnd} + ${daysAfter} * (100% + ${DAY_GAP}))`
+
   return {
     '--column': column,
     '--columns': columns,
+    '--expanded-width': `min(max(calc${toDayEnd}, ${EXPANDED_MIN_WIDTH}), calc${toWeekEnd})`,
     '--length': length,
     '--start': start,
   } as CSSProperties
@@ -186,13 +200,11 @@ function getPlacementStyle({
 
 /**
  * 1024px 以上で項目を置くクラス。マウスを乗せるかフォーカスすると、前面に出して
- * 日の列の幅いっぱいに広げ、高さも中身に合わせて伸ばす
+ * 左端はそのままに右へ広げ、高さも中身に合わせて伸ばす（配信の長さより低くは
+ * しない）。項目は縦の flex で、この要素の高さいっぱいに広がる
  */
 const PLACEMENT_CLASS_NAME =
-  'group/item lg:absolute lg:top-[calc(var(--hour)*var(--start)/60)] lg:left-[calc(100%*var(--column)/var(--columns))] lg:h-[calc(var(--hour)*var(--length)/60)] lg:w-[calc(100%/var(--columns))] lg:pr-0.5 lg:pb-0.5 lg:focus-within:left-0 lg:focus-within:z-30 lg:focus-within:h-auto lg:focus-within:min-h-[calc(var(--hour)*var(--length)/60)] lg:focus-within:w-full lg:focus-within:shadow-overlay lg:hover:left-0 lg:hover:z-30 lg:hover:h-auto lg:hover:min-h-[calc(var(--hour)*var(--length)/60)] lg:hover:w-full lg:hover:shadow-overlay'
-
-/** アイコンだけにする、重なる項目の数 */
-const COMPACT_COLUMNS = 3
+  'group/item lg:absolute lg:top-[calc(var(--hour)*var(--start)/60)] lg:left-[calc(100%*var(--column)/var(--columns))] lg:flex lg:h-[calc(var(--hour)*var(--length)/60)] lg:w-[calc(100%/var(--columns))] lg:flex-col lg:pr-0.5 lg:pb-0.5 lg:focus-within:z-30 lg:focus-within:h-auto lg:focus-within:min-h-[calc(var(--hour)*var(--length)/60)] lg:focus-within:w-(--expanded-width) lg:hover:z-30 lg:hover:h-auto lg:hover:min-h-[calc(var(--hour)*var(--length)/60)] lg:hover:w-(--expanded-width)'
 
 interface ScheduleDayProps {
   date: Temporal.PlainDate
@@ -227,10 +239,10 @@ function ScheduleDay({ date, items, referenceDate }: ScheduleDayProps) {
                 className={PLACEMENT_CLASS_NAME}
                 data-columns={layout.columns}
                 key={layout.item.id}
-                style={getPlacementStyle(layout)}
+                style={getPlacementStyle(layout, 6 - (date.dayOfWeek % 7))}
               >
                 <ScheduleItem
-                  compact={layout.columns >= COMPACT_COLUMNS}
+                  titleLines={getTitleLines(layout.length)}
                   value={layout.item}
                 />
               </li>
