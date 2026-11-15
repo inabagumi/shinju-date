@@ -38,16 +38,16 @@ next-bundle-optimizer スキルで apps/web の初期ロードのレポートを
 
 ## ファイルの置き場所と更新
 
-スキルは [`skills`](https://github.com/vercel-labs/skills) CLI で Claude Code 向けに入れ、`.claude/skills/` にコミットしています。入れたスキルとその内容のハッシュは `skills-lock.json` に記録されます。
+スキルは [`skills`](https://github.com/vercel-labs/skills) CLI で入れ、実体を `.agents/skills/` にコミットしています。`.agents/skills/` は Codex、Cursor、GitHub Copilot、Gemini CLI などが読む共通の置き場所です。Claude Code は `.claude/skills/` しか読まないため、そこから `.agents/skills/` へシンボリックリンクを張っています。入れたスキルとその内容のハッシュは `skills-lock.json` に記録されます。
 
 ```bash
-pnpm dlx skills add vercel/next.js --skill next-dev-loop --skill next-cache-components-optimizer --skill next-partial-prefetching-optimizer --skill next-bundle-optimizer -a claude-code -y
+pnpm dlx skills add vercel/next.js --skill next-dev-loop --skill next-cache-components-optimizer --skill next-partial-prefetching-optimizer --skill next-bundle-optimizer -a universal -a claude-code -y
 ```
 
 - ルートの `package.json` に `devEngines` があるため、`npx` は使えません。`pnpm dlx` を使ってください
-- `.claude/skills/next-*` と `skills-lock.json` は、上流のファイルをそのまま置くために Biome の対象から外しています。手で編集しないでください
+- `-a universal` で `.agents/skills/` に実体を置き、`-a claude-code` で `.claude/skills/` にシンボリックリンクを張ります。`-a claude-code` だけを指定すると、`.claude/skills/` にコピーが置かれるので注意してください
+- `.agents/skills/next-*` と `skills-lock.json` は、上流のファイルをそのまま置くために Biome の対象から外しています。手で編集しないでください
 - 更新するときは `pnpm dlx skills update` を実行し、差分を確認してコミットしてください
-- ほかのエージェント（Codex、Cursor など）でも使う場合は、`-a` でエージェントを指定して入れ直します（`-a codex` なら `.agents/skills/` に置かれます）
 
 ## agent-browser
 

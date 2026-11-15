@@ -147,14 +147,14 @@ Vitest はテストファイルの型を検査しないため、TypeScript の�
 
 ### Next.js の公式スキル
 
-`.claude/skills/` に Next.js の公式スキルを4つ入れています。使いどころと入れなかったスキルの理由、`agent-browser` の入れ方は [docs/agent-skills.md](docs/agent-skills.md) を参照してください。
+`.agents/skills/` に Next.js の公式スキルを4つ入れています（Claude Code 向けに `.claude/skills/` からシンボリックリンクを張っています）。使いどころと入れなかったスキルの理由、`agent-browser` の入れ方は [docs/agent-skills.md](docs/agent-skills.md) を参照してください。
 
 - `next-dev-loop`: 起動中の `next dev` に対して、MCP（`/_next/mcp`）と `agent-browser` で編集のたびに動作を確かめる
 - `next-cache-components-optimizer`: 指定したルートの静的シェルを広げ、`instant()` テストを回帰テストとして残す
 - `next-partial-prefetching-optimizer`: 指定した遷移で、クリック前に用意しておく UI を `instant()` テストで決めて最適化する
 - `next-bundle-optimizer`: 初期ロードを重くしているクライアントバンドルを特定する（既定は変更を加えない監査）
 
-`.claude/skills/next-*` と `skills-lock.json` は `skills` CLI が置いたファイルです。手で編集せず、`pnpm dlx skills update` で更新してください。
+`.agents/skills/next-*`、`.claude/skills/next-*`、`skills-lock.json` は `skills` CLI が置いたファイルです。手で編集せず、`pnpm dlx skills update` で更新してください。
 
 ### 各アプリの AGENTS.md
 

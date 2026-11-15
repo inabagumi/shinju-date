@@ -27,7 +27,7 @@
   "files": {
     "includes": [
       "**",
-      "!**/.claude/skills/next-*",
+      "!**/.agents/skills/next-*",
       "!**/.devcontainer/devcontainer-lock.json",
       "!**/packages/database/types/supabase.ts",
       "!**/skills-lock.json"
