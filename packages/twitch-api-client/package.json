@@ -1,6 +1,7 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
+    "@shinju-date/constants": "workspace:*",
     "@twurple/api": "8.2.0",
     "@twurple/auth": "8.2.0"
   },
