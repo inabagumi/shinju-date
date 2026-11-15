@@ -1,5 +1,5 @@
-import { TIME_ZONE } from '@shinju-date/constants'
-import { getVideoExternalUrl } from '@shinju-date/helpers'
+import { TALENT_AFFILIATION_NAME, TIME_ZONE } from '@shinju-date/constants'
+import { getVideoExternalUrl, parseVideoTitle } from '@shinju-date/helpers'
 import { formatDuration } from '@shinju-date/temporal-fns'
 import { twMerge } from '@shinju-date/ui'
 import { ImageIcon } from 'lucide-react'
@@ -41,6 +41,34 @@ const THUMBNAIL_SIZES: Record<VideoCardVariant, string> = {
 
 const BADGE_CLASS_NAME =
   'inline-block rounded-control px-1.5 py-0.5 text-caption font-semibold'
+
+/**
+ * タイトルの上の、ラベルとハッシュタグの行。内容がないカードでも1行ぶんの高さを
+ * 確保して、カードの高さを揃える
+ */
+const TAGS_CLASS_NAME = 'truncate min-h-[1lh] text-caption text-muted'
+
+/** ラベルとハッシュタグの行に出すハッシュタグの数 */
+const MAX_HASHTAGS = 3
+
+/**
+ * タイトルを本文・ラベル・ハッシュタグに分け、本文と、ラベルとハッシュタグの
+ * 行に出す文字を返す。行には先頭のラベル1つと、ハッシュタグを先頭から3つまで
+ * 並べる
+ */
+function getTitleParts(video: Video): [text: string, tags: string] {
+  const talentName = video.talent?.name
+  const { hashtags, labels, text } = parseVideoTitle(video.title, {
+    creditKeywords: [TALENT_AFFILIATION_NAME],
+    creditNames: talentName ? [talentName] : [],
+  })
+  const tags = [
+    ...labels.slice(0, 1),
+    ...hashtags.slice(0, MAX_HASHTAGS).map((hashtag) => `#${hashtag}`),
+  ].join(' ')
+
+  return [text, tags]
+}
 
 function getThumbnailURL(
   video: Video,
@@ -110,6 +138,13 @@ export function VideoCardSkeleton({
       />
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">
+        {/* ラベルとハッシュタグの1行ぶんの高さ */}
+        {variant !== 'short' && (
+          <div className="flex min-h-[1lh] items-center text-caption">
+            <span className="h-3 w-1/3 animate-pulse rounded-control bg-muted" />
+          </div>
+        )}
+
         {/* タイトルの2行ぶんの高さ */}
         <div className="flex min-h-[2lh] flex-col justify-around text-body leading-normal">
           <span className="h-4 w-full animate-pulse rounded-control bg-muted" />
@@ -162,6 +197,7 @@ export default function VideoCard({
   const isShortInWideThumbnail =
     value.video_kind === 'short' && variant !== 'short'
   const isUpcoming = showUpcomingLabel && value.status === 'UPCOMING'
+  const [titleText, tags] = getTitleParts(value)
 
   const href = getVideoExternalUrl({
     platform: value.platform,
@@ -242,12 +278,22 @@ export default function VideoCard({
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">
+        {/*
+         * ラベルとハッシュタグは、カード全体が1つのリンクなのでリンクにしない。
+         * ショートのカルーセルでは出さない
+         */}
+        {variant !== 'short' && (
+          <p className={TAGS_CLASS_NAME} data-testid="video-card-tags">
+            {tags}
+          </p>
+        )}
+
         {/* 1行のタイトルでも2行ぶんの高さを確保して、カードの高さを揃える */}
         <Title
           className="line-clamp-2 min-h-[2lh] text-body leading-normal font-semibold wrap-anywhere group-hover:underline"
           title={value.title}
         >
-          {value.title}
+          {titleText}
         </Title>
 
         <p className="flex min-w-0 items-center gap-1 text-meta text-muted">

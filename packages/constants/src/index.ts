@@ -53,6 +53,9 @@ export const SITE_THEME_COLOR = '#1e0064' // var(--color-primary)
 
 export const SEARCH_RESULT_COUNT = 6
 
+/** タイトルの【】の中で、出演者の表記を見分けるための所属の名前 */
+export const TALENT_AFFILIATION_NAME = 'ななしいんく'
+
 /**
  * 1x1 transparent PNG image (89 bytes)
  * Used as fallback when thumbnail fetch fails

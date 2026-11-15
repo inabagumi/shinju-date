@@ -1,5 +1,5 @@
-import { TIME_ZONE } from '@shinju-date/constants'
-import { getVideoExternalUrl } from '@shinju-date/helpers'
+import { TALENT_AFFILIATION_NAME, TIME_ZONE } from '@shinju-date/constants'
+import { getVideoExternalUrl, parseVideoTitle } from '@shinju-date/helpers'
 import {
   formatDateTimeWithSeconds,
   formatTime,
@@ -115,6 +115,11 @@ export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
   const style = themeColor
     ? ({ '--talent-color': themeColor } as CSSProperties)
     : undefined
+  // 【】と末尾のハッシュタグを除いた本文を出す（ラベルとハッシュタグは出さない）
+  const { text: titleText } = parseVideoTitle(value.title, {
+    creditKeywords: [TALENT_AFFILIATION_NAME],
+    creditNames: [value.talent.name],
+  })
 
   return (
     <a
@@ -181,7 +186,7 @@ export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
         }
         title={value.title}
       >
-        {value.title}
+        {titleText}
       </span>
     </a>
   )
