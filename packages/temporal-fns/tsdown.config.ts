@@ -1,11 +1,7 @@
-import { defineConfig } from 'tsup'
+import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  dts: {
-    compilerOptions: {
-      ignoreDeprecations: '6.0',
-    },
-  },
+  dts: true,
   entry: [
     './src/index.ts',
     './src/format-date.ts',
@@ -15,6 +11,7 @@ export default defineConfig({
     './src/start-of-hour.ts',
     './src/to-db-string.ts',
   ],
+  fixedExtension: false,
   format: 'esm',
   sourcemap: true,
   target: 'es2022',

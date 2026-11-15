@@ -8,7 +8,7 @@
     "@tsconfig/node20": "20.1.11",
     "@tsconfig/strictest": "2.0.9",
     "@types/node": "26.6.6",
-    "tsup": "9.0.0",
+    "tsdown": "0.23.7",
     "typescript": "6.0.3",
     "vitest": "5.1.0"
   },
@@ -29,8 +29,8 @@
     "url": "https://github.com/inabagumi/shinju-date.git"
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
