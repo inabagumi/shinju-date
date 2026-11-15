@@ -10,6 +10,7 @@ import {
   TalentPageHeading,
   TalentPageHeadingSkeleton,
 } from './_components/talent-page-header'
+import { TalentStreamTendency } from './_components/talent-stream-tendency'
 import {
   TalentVideoKindFilterNav,
   TalentVideoKindFilterNavSkeleton,
@@ -60,6 +61,11 @@ export default function TalentPage({
     >
       <Suspense fallback={<TalentPageHeadingSkeleton />}>
         <TalentPageHeading params={params} />
+      </Suspense>
+
+      {/* Nothing is shown while loading, as some talents do not show it */}
+      <Suspense fallback={null}>
+        <TalentStreamTendency params={params} />
       </Suspense>
 
       <Suspense fallback={<TalentVideoKindFilterNavSkeleton />}>
