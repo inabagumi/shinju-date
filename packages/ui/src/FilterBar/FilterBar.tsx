@@ -1,8 +1,8 @@
 import * as Collapsible from '@radix-ui/react-collapsible'
 import { ChevronDown, SlidersHorizontal } from 'lucide-react'
 import { type ComponentPropsWithoutRef, useId } from 'react'
-import { Button } from '../Button/Button'
-import { twMerge } from '../tw-merge'
+import { Button } from '../Button/Button.js'
+import { twMerge } from '../tw-merge.js'
 
 export interface FilterBarProps
   extends Omit<ComponentPropsWithoutRef<typeof Collapsible.Root>, 'asChild'> {

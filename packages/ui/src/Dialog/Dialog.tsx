@@ -1,6 +1,6 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import type { ComponentPropsWithRef } from 'react'
-import { twMerge } from '../tw-merge'
+import { twMerge } from '../tw-merge.js'
 
 export const Dialog = DialogPrimitive.Root
 export const DialogTrigger = DialogPrimitive.Trigger

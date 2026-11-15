@@ -4,7 +4,7 @@ import * as Checkbox from '@radix-ui/react-checkbox'
 import * as Popover from '@radix-ui/react-popover'
 import { Check, ChevronDown, Minus } from 'lucide-react'
 import type { ComponentPropsWithoutRef } from 'react'
-import { twMerge } from '../tw-merge'
+import { twMerge } from '../tw-merge.js'
 
 export interface MultiSelectOption {
   label: string

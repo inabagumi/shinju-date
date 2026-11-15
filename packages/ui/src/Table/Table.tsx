@@ -1,5 +1,5 @@
 import type { ComponentPropsWithRef } from 'react'
-import { twMerge } from '../tw-merge'
+import { twMerge } from '../tw-merge.js'
 
 /**
  * 表。外枠を `border` と角丸で囲み、列がはみ出す場合は表の中で横にスクロールする。

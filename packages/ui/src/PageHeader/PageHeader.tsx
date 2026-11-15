@@ -1,5 +1,5 @@
 import type { ComponentPropsWithRef, ReactNode } from 'react'
-import { twMerge } from '../tw-merge'
+import { twMerge } from '../tw-merge.js'
 
 export interface PageHeaderProps
   extends Omit<ComponentPropsWithRef<'div'>, 'children' | 'title'> {

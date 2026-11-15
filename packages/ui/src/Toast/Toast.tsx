@@ -2,7 +2,7 @@ import * as ToastPrimitive from '@radix-ui/react-toast'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { X } from 'lucide-react'
 import type { ComponentPropsWithRef } from 'react'
-import { twMerge } from '../tw-merge'
+import { twMerge } from '../tw-merge.js'
 
 export const ToastProvider = ToastPrimitive.Provider
 

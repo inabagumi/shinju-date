@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority'
 import type { ComponentPropsWithRef, ReactNode } from 'react'
-import { twMerge } from '../tw-merge'
+import { twMerge } from '../tw-merge.js'
 
 /**
  * 前日比などの変化の意味。値の増減ではなく、良い変化か悪い変化かで選ぶ

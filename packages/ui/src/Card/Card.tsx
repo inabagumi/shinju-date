@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentPropsWithRef } from 'react'
-import { twMerge } from '../tw-merge'
+import { twMerge } from '../tw-merge.js'
 
 const cardVariants = cva(
   'flex flex-col overflow-hidden rounded-container border border-border text-foreground',
