@@ -23,9 +23,13 @@ import Form, {
   SubmitButton,
 } from '@/components/form'
 import { createTalentAction, updateTalentAction } from '../_actions'
+import {
+  TALENT_READING_DESCRIPTION,
+  TALENT_READING_PLACEHOLDER,
+} from '../_lib/talent-reading-description'
 import { DeleteConfirmDialog } from './delete-confirm-dialog'
 
-type Talent = Pick<Tables<'talents'>, 'id' | 'name'> & {
+type Talent = Pick<Tables<'talents'>, 'id' | 'name' | 'reading'> & {
   youtube_channel: Pick<
     Tables<'youtube_channels'>,
     'name' | 'youtube_channel_id'
@@ -101,6 +105,19 @@ export function TalentModal({ talent }: TalentModalProps) {
               <p className="mt-1 text-caption text-muted">
                 管理画面から編集可能な表示名（YouTube
                 APIによる自動更新の対象外）
+              </p>
+              <ErrorMessage className="mt-1 text-meta text-danger" />
+            </FormField>
+            <FormField name="reading">
+              <Label className="mb-2 block text-meta font-semibold">
+                読み仮名（任意）
+              </Label>
+              <Input
+                defaultValue={talent?.reading ?? ''}
+                placeholder={TALENT_READING_PLACEHOLDER}
+              />
+              <p className="mt-1 text-caption text-muted">
+                {TALENT_READING_DESCRIPTION}
               </p>
               <ErrorMessage className="mt-1 text-meta text-danger" />
             </FormField>

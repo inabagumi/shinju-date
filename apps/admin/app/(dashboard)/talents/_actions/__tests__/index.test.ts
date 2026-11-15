@@ -69,6 +69,28 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
+async function mockUpdateSupabaseClient() {
+  const { createSupabaseServerClient } = await import('@/lib/supabase')
+
+  const mockSupabaseClient = {
+    eq: vi.fn().mockReturnThis(),
+    from: vi.fn().mockReturnThis(),
+    is: vi.fn().mockReturnThis(),
+    select: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue({
+      data: { name: 'Updated Talent' },
+      error: null,
+    }),
+    update: vi.fn().mockReturnThis(),
+  }
+
+  vi.mocked(createSupabaseServerClient).mockResolvedValue(
+    mockSupabaseClient as never,
+  )
+
+  return mockSupabaseClient
+}
+
 describe('updateTalentAction', () => {
   it('should successfully update talent', async () => {
     const { createSupabaseServerClient } = await import('@/lib/supabase')
@@ -102,6 +124,7 @@ describe('updateTalentAction', () => {
     expect(result).toEqual({})
     expect(mockSupabaseClient.update).toHaveBeenCalledWith({
       name: 'Updated Talent',
+      reading: null,
       theme_color: '#FF5733',
       updated_at: '2024-11-24T17:00:00Z',
     })
@@ -217,9 +240,89 @@ describe('updateTalentAction', () => {
     expect(result).toEqual({})
     expect(mockSupabaseClient.update).toHaveBeenCalledWith({
       name: 'Updated Talent',
+      reading: null,
       theme_color: null,
       updated_at: '2024-11-24T17:00:00Z',
     })
+  })
+
+  it('should save the reading normalized to NFC without surrounding spaces', async () => {
+    const mockSupabaseClient = await mockUpdateSupabaseClient()
+
+    const formData = new FormData()
+    formData.append('id', '123e4567-e89b-12d3-a456-426614174000')
+    formData.append('name', 'Updated Talent')
+    // 分解表現の濁点（U+3099）を含む「しんじゅ」
+    formData.append('reading', ' しんし\u3099ゅー　')
+
+    const result = await updateTalentAction({}, formData)
+
+    expect(result).toEqual({})
+    expect(mockSupabaseClient.update).toHaveBeenCalledWith({
+      name: 'Updated Talent',
+      reading: 'しんじゅー',
+      theme_color: null,
+      updated_at: '2024-11-24T17:00:00Z',
+    })
+  })
+
+  it('should save the decomposed and precomposed voiced sounds as the same value', async () => {
+    const mockSupabaseClient = await mockUpdateSupabaseClient()
+
+    for (const reading of ['がぱ', 'か\u3099は\u309A']) {
+      const formData = new FormData()
+      formData.append('id', '123e4567-e89b-12d3-a456-426614174000')
+      formData.append('name', 'Updated Talent')
+      formData.append('reading', reading)
+
+      await updateTalentAction({}, formData)
+    }
+
+    expect(mockSupabaseClient.update).toHaveBeenCalledTimes(2)
+    expect(mockSupabaseClient.update.mock.calls[0]?.[0]).toMatchObject({
+      reading: 'がぱ',
+    })
+    expect(mockSupabaseClient.update.mock.calls[1]?.[0]).toMatchObject({
+      reading: 'がぱ',
+    })
+  })
+
+  it('should save an empty reading as null', async () => {
+    const mockSupabaseClient = await mockUpdateSupabaseClient()
+
+    const formData = new FormData()
+    formData.append('id', '123e4567-e89b-12d3-a456-426614174000')
+    formData.append('name', 'Updated Talent')
+    formData.append('reading', '   ')
+
+    const result = await updateTalentAction({}, formData)
+
+    expect(result).toEqual({})
+    expect(mockSupabaseClient.update).toHaveBeenCalledWith(
+      expect.objectContaining({ reading: null }),
+    )
+  })
+
+  it.each([
+    ['katakana', 'シンジュ'],
+    ['kanji', '真珠'],
+    ['latin letters', 'shinju'],
+  ])('should reject a reading in %s', async (_, reading) => {
+    const mockSupabaseClient = await mockUpdateSupabaseClient()
+
+    const formData = new FormData()
+    formData.append('id', '123e4567-e89b-12d3-a456-426614174000')
+    formData.append('name', 'Updated Talent')
+    formData.append('reading', reading)
+
+    const result = await updateTalentAction({}, formData)
+
+    expect(result).toEqual({
+      errors: {
+        reading: ['読み仮名はひらがなと長音符（ー）で入力してください。'],
+      },
+    })
+    expect(mockSupabaseClient.update).not.toHaveBeenCalled()
   })
 
   it('should handle database errors other than PGRST116', async () => {
@@ -520,6 +623,7 @@ describe('createTalentAction', () => {
     expect(result).toEqual({})
     expect(mockSupabaseClient.insert).toHaveBeenCalledWith({
       name: 'New Talent',
+      reading: null,
     })
     expect(createAuditLog).toHaveBeenCalledWith(
       'CHANNEL_CREATE',
@@ -597,6 +701,70 @@ describe('createTalentAction', () => {
       profile_images: null,
       youtube_channel_id: youtubeChannel.id,
     })
+  })
+
+  it('should create the talent with the normalized reading', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+
+    const mockSupabaseClient = {
+      from: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: {
+          id: '123e4567-e89b-12d3-a456-426614174000',
+          name: 'New Talent',
+        },
+        error: null,
+      }),
+    }
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    const formData = new FormData()
+    formData.append('name', ' New Talent ')
+    formData.append('reading', ' か\u3099ー ')
+
+    const result = await createTalentAction({}, formData)
+
+    expect(result).toEqual({})
+    expect(mockSupabaseClient.insert).toHaveBeenCalledWith({
+      name: 'New Talent',
+      reading: 'がー',
+    })
+  })
+
+  it('should reject a reading that is not in hiragana before calling YouTube', async () => {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const { resolveYouTubeChannel } = await import(
+      '@shinju-date/youtube-api-client'
+    )
+
+    const mockSupabaseClient = {
+      from: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+    }
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mockSupabaseClient as never,
+    )
+
+    const formData = new FormData()
+    formData.append('name', 'New Talent')
+    formData.append('reading', 'ニュータレント')
+    formData.append('youtube_channel_id', 'UCabcdefghijklmnopqrstuv')
+
+    const result = await createTalentAction({}, formData)
+
+    expect(result).toEqual({
+      errors: {
+        reading: ['読み仮名はひらがなと長音符（ー）で入力してください。'],
+      },
+    })
+    expect(resolveYouTubeChannel).not.toHaveBeenCalled()
+    expect(mockSupabaseClient.from).not.toHaveBeenCalled()
   })
 
   it('should return error when name is empty', async () => {

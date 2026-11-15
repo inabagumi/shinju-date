@@ -19,13 +19,17 @@ import {
 } from '@/lib/auth'
 import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
 import { zodErrorToFormState } from '../_lib/form-helpers'
+import { talentNameSchema, talentReadingSchema } from '../_lib/talent-schema'
+
+const createTalentSchema = z.object({
+  name: talentNameSchema,
+  reading: talentReadingSchema,
+})
 
 const updateTalentSchema = z.object({
   id: z.string().uuid({ message: '有効なIDではありません。' }),
-  name: z
-    .string({ message: 'タレント名を入力してください。' })
-    .trim()
-    .min(1, 'タレント名を入力してください。'),
+  name: talentNameSchema,
+  reading: talentReadingSchema,
   theme_color: z
     .string()
     .trim()
@@ -52,16 +56,17 @@ export async function createTalentAction(
 
   const { supabaseClient } = auth
 
-  const name = formData.get('name') as string
-  const rawChannelInput = (formData.get('youtube_channel_id') as string) ?? ''
+  const parsed = createTalentSchema.safeParse({
+    name: formData.get('name'),
+    reading: formData.get('reading'),
+  })
 
-  if (!name || name.trim() === '') {
-    return {
-      errors: {
-        name: ['タレント名を入力してください。'],
-      },
-    }
+  if (!parsed.success) {
+    return zodErrorToFormState(parsed.error)
   }
+
+  const { name, reading } = parsed.data
+  const rawChannelInput = (formData.get('youtube_channel_id') as string) ?? ''
 
   // Resolve optional YouTube channel before insert so we fail fast on bad input
   let resolvedChannel: {
@@ -125,7 +130,8 @@ export async function createTalentAction(
     const { data: newTalent, error } = await supabaseClient
       .from('talents')
       .insert({
-        name: name.trim(),
+        name,
+        reading,
       })
       .select('id, name')
       .single()
@@ -172,7 +178,8 @@ export async function createTalentAction(
   } catch (error) {
     logger.error('タレントの追加に失敗しました', {
       error,
-      name: name.trim(),
+      name,
+      reading,
       youtube_channel_id: resolvedChannel?.id,
     })
     return {
@@ -205,6 +212,7 @@ export async function updateTalentAction(
     validatedData = updateTalentSchema.parse({
       id: formData.get('id'),
       name: formData.get('name'),
+      reading: formData.get('reading'),
       theme_color: formData.get('theme_color'),
     })
   } catch (error) {
@@ -220,11 +228,12 @@ export async function updateTalentAction(
   }
 
   try {
-    // Update talents table (name and theme_color)
+    // Update talents table (name, reading and theme_color)
     const { data: talent, error } = await supabaseClient
       .from('talents')
       .update({
         name: validatedData.name,
+        reading: validatedData.reading,
         theme_color: validatedData.theme_color,
         updated_at: toDBString(Temporal.Now.instant()),
       })
@@ -266,6 +275,7 @@ export async function updateTalentAction(
       error,
       id: validatedData.id,
       name: validatedData.name,
+      reading: validatedData.reading,
       theme_color: validatedData.theme_color,
     })
     return {
