@@ -67,3 +67,17 @@ export function getVideosPath(
 
   return searchParams.size > 0 ? `${pathname}?${searchParams}` : pathname
 }
+
+/**
+ * 見つからなかったときに使う種別の呼び名。「すべて」では「動画」と呼ぶ。
+ */
+export function getVideoKindName(filter: VideoKindFilter): string {
+  if (filter === 'all') {
+    return '動画'
+  }
+
+  return (
+    VIDEO_KIND_FILTER_OPTIONS.find((option) => option.value === filter)
+      ?.label ?? '動画'
+  )
+}

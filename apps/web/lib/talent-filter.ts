@@ -1,8 +1,7 @@
+import { isUUID } from './uuid'
+
 /** タレントを URL で受け渡すときの検索パラメーターの名前 */
 export const TALENT_SEARCH_PARAM = 'talent'
-
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /**
  * タレントの ID を重複を除いて並べ替える。同じ条件の URL と取得関数の
@@ -25,7 +24,7 @@ export function parseTalentIds(
 
   return normalizeTalentIds(
     values
-      .filter((id) => UUID_PATTERN.test(id))
+      .filter(isUUID)
       .map((id) => id.toLowerCase())
       .filter((id) => activeIds.has(id)),
   )

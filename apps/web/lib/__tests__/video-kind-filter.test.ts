@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import {
+  getVideoKindName,
   getVideoKinds,
   getVideosPath,
   parseVideoKindFilter,
@@ -56,5 +57,16 @@ describe('getVideosPath', () => {
       `/videos/${encodeURIComponent('歌')}?kind=short&talent=${talentA}`,
     )
     expect(getVideosPath('', 'all', [])).toBe('/videos')
+  })
+})
+
+describe('getVideoKindName', () => {
+  test('should call all kinds videos', () => {
+    expect(getVideoKindName('all')).toBe('動画')
+  })
+
+  test('should use the label of the kind', () => {
+    expect(getVideoKindName('standard')).toBe('動画')
+    expect(getVideoKindName('short')).toBe('ショート')
   })
 })

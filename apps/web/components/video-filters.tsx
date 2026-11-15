@@ -87,8 +87,7 @@ export default function VideoFilters({
       <div className="flex flex-wrap items-center gap-2">
         <VideoKindFilterNav
           current={kind}
-          query={query}
-          talentIds={selectedIds}
+          getPath={(value) => getVideosPath(query, value, selectedIds)}
         />
         <TalentFilter
           kind={kind}

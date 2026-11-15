@@ -5,6 +5,7 @@ import type { Tables } from '@shinju-date/database'
 import { startOfHour, toDBString } from '@shinju-date/temporal-fns'
 import { cacheLife, cacheTag } from 'next/cache'
 import { supabaseClient } from '@/lib/supabase'
+import { isUUID } from '@/lib/uuid'
 import { getVideoKinds, type VideoKindFilter } from '@/lib/video-kind-filter'
 
 const DEFAULT_SEARCH_SELECT = `
@@ -248,6 +249,103 @@ export const fetchActiveTalents = async (): Promise<Talent[]> => {
   }
 
   return talents
+}
+
+export interface TalentYouTubeChannel
+  extends Pick<
+    Tables<'youtube_channels'>,
+    'name' | 'youtube_channel_id' | 'youtube_handle'
+  > {
+  profile_image: ProfileImage | null
+}
+
+export interface TalentTwitchUser
+  extends Pick<
+    Tables<'twitch_users'>,
+    'name' | 'twitch_login_name' | 'twitch_user_id'
+  > {
+  profile_image: ProfileImage | null
+}
+
+/**
+ * A talent with the YouTube channels and Twitch users it has.
+ *
+ * The channels and users are sorted by their platform IDs, so a talent with
+ * several of them always shows the same icon and links in the same order.
+ */
+export interface TalentDetail extends Talent {
+  twitch_users: TalentTwitchUser[]
+  youtube_channels: TalentYouTubeChannel[]
+}
+
+const TALENT_DETAIL_SELECT = `
+  id,
+  name,
+  youtube_channels (
+    name,
+    youtube_channel_id,
+    youtube_handle,
+    profile_image:profile_images (blur_data_url, id)
+  ),
+  twitch_users (
+    name,
+    twitch_login_name,
+    twitch_user_id,
+    profile_image:profile_images (blur_data_url, id)
+  )
+`
+
+function compareStrings(a: string, b: string): number {
+  if (a === b) {
+    return 0
+  }
+
+  return a < b ? -1 : 1
+}
+
+/**
+ * Fetch an active talent (`status = 'active'` and not deleted).
+ *
+ * Returns `null` for IDs that are not UUIDs and for talents that do not
+ * exist, are retired, or are deleted.
+ */
+export const fetchTalent = async (id: string): Promise<TalentDetail | null> => {
+  'use cache: remote'
+
+  cacheLife('days')
+  cacheTag('talents')
+
+  if (!isUUID(id)) {
+    return null
+  }
+
+  const { data: talent, error } = await supabaseClient
+    .from('talents')
+    .select<string, TalentDetail>(TALENT_DETAIL_SELECT)
+    .eq('id', id)
+    .eq('status', 'active')
+    .is('deleted_at', null)
+    .maybeSingle()
+
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  if (!talent) {
+    return null
+  }
+
+  return {
+    ...talent,
+    twitch_users: talent.twitch_users.toSorted((a, b) =>
+      compareStrings(a.twitch_user_id, b.twitch_user_id),
+    ),
+    youtube_channels: talent.youtube_channels.toSorted((a, b) =>
+      compareStrings(a.youtube_channel_id, b.youtube_channel_id),
+    ),
+  }
 }
 
 /**

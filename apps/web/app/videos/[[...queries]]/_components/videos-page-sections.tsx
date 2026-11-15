@@ -15,9 +15,9 @@ import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-displ
 import { parseTalentIds, TALENT_SEARCH_PARAM } from '@/lib/talent-filter'
 import { parseQueries } from '@/lib/url'
 import {
+  getVideoKindName,
   getVideosPath,
   parseVideoKindFilter,
-  VIDEO_KIND_FILTER_OPTIONS,
   VIDEO_KIND_SEARCH_PARAM,
   type VideoKindFilter,
 } from '@/lib/video-kind-filter'
@@ -150,18 +150,6 @@ export async function VideosPageHeading(props: VideosPageSectionProps) {
   )
 }
 
-/** 見つからなかった種別の呼び名。「すべて」では「動画」と呼ぶ */
-function getKindName(kind: VideoKindFilter): string {
-  if (kind === 'all') {
-    return '動画'
-  }
-
-  return (
-    VIDEO_KIND_FILTER_OPTIONS.find((option) => option.value === kind)?.label ??
-    '動画'
-  )
-}
-
 /** 1件もないときの案内 */
 async function getNoResultsProps({
   kind,
@@ -175,7 +163,7 @@ async function getNoResultsProps({
     }
   }
 
-  const kindName = getKindName(kind)
+  const kindName = getVideoKindName(kind)
 
   if (!query) {
     return { message: `${kindName}は見つかりませんでした。` }
