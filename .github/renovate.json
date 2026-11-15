@@ -3,10 +3,10 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Update the version of tools that .claude/hooks/session-start.sh installs",
+      "description": "Update versions in .claude/hooks/session-start.sh, in the same comment format as customManagers:dockerfileVersions",
       "managerFilePatterns": ["/^\\.claude/hooks/session-start\\.sh$/"],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n[^\\n]*=\"(?<currentValue>[^\"]+)\""
+        "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s+[a-zA-Z_][a-zA-Z0-9_]*=\"?(?<currentValue>[^\"\\s]+)\"?\\s"
       ]
     }
   ],
