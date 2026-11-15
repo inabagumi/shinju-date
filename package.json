@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.7",
+    "agent-browser": "0.43.0",
     "supabase": "3.1.0",
     "turbo": "2.11.11",
     "typescript": "6.0.3"

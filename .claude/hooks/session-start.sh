@@ -35,10 +35,20 @@ if [ "$current" != "$(cat "$hashes" 2>/dev/null)" ]; then
   printf '%s\n' "$current" > "$hashes"
 fi
 
+# next-dev-loop スキルは agent-browser を PATH から直接呼ぶため、
+# devDependencies に入れた agent-browser を PATH にある pnpm の bin に置く
+ln -sf "$PWD/node_modules/.bin/agent-browser" "$PNPM_HOME/bin/agent-browser"
+
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
   {
     echo "export PNPM_HOME=\"$PNPM_HOME\""
     echo "export PATH=\"$PNPM_HOME/bin:\$PATH\""
+
+    # agent-browser が既定で使う Chrome for Testing の代わりに、
+    # コンテナにある Playwright の Chromium を使う
+    if [ -x /opt/pw-browsers/chromium ]; then
+      echo "export AGENT_BROWSER_EXECUTABLE_PATH=/opt/pw-browsers/chromium"
+    fi
   } >> "$CLAUDE_ENV_FILE"
 fi
 
