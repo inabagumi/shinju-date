@@ -224,12 +224,12 @@ export const fetchOldestVideoDate = async (): Promise<string | null> => {
 }
 
 /**
- * Fetch the videos that start in the 7 days from `weekStart` (the Monday,
+ * Fetch the videos that start in the 7 days from `weekStart` (the Sunday,
  * `YYYY-MM-DD`) in `TIME_ZONE`: the ones on air, the upcoming ones, the ended
  * ones and the published ones, in the order of the start. Shorts are not
  * included.
  *
- * Callers pass the Monday, so each week is cached only once.
+ * Callers pass the Sunday, so each week is cached only once.
  */
 export const fetchScheduleVideos = async (
   weekStart: string,

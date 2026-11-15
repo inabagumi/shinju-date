@@ -19,7 +19,7 @@ export interface ScheduleWeek {
   range: ScheduleWeekRange
   /** Today in `TIME_ZONE`, at the time `fetchScheduleToday` was cached */
   today: Temporal.PlainDate
-  /** The Monday of the week the page shows */
+  /** The Sunday of the week the page shows */
   weekStart: Temporal.PlainDate
 }
 

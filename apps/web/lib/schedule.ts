@@ -28,14 +28,15 @@ export function parseScheduleDate(value: string): Temporal.PlainDate | null {
 }
 
 /**
- * The Monday of the week that includes the date. Weeks start on Monday, as the
- * timeline of the home page does.
+ * The Sunday of the week that includes the date. Weeks start on Sunday, as
+ * most calendars in Japan do.
  */
 export function getWeekStart(date: Temporal.PlainDate): Temporal.PlainDate {
-  return date.subtract({ days: date.dayOfWeek - 1 })
+  // `dayOfWeek` is 1 for Monday and 7 for Sunday
+  return date.subtract({ days: date.dayOfWeek % 7 })
 }
 
-/** The 7 days of the week that starts on `weekStart`, from Monday to Sunday */
+/** The 7 days of the week that starts on `weekStart`, from Sunday to Saturday */
 export function getWeekDays(
   weekStart: Temporal.PlainDate,
 ): Temporal.PlainDate[] {
@@ -44,7 +45,7 @@ export function getWeekDays(
 
 /**
  * The path of the schedule. Without a date, it is the week that includes
- * today (`/schedule`). With one, it always points to the Monday of the week,
+ * today (`/schedule`). With one, it always points to the Sunday of the week,
  * so each week has a single URL.
  */
 export function getSchedulePath(weekStart?: Temporal.PlainDate): string {
@@ -56,9 +57,9 @@ export function getSchedulePath(weekStart?: Temporal.PlainDate): string {
 }
 
 export interface ScheduleWeekRange {
-  /** The Monday of the first week that can be shown */
+  /** The Sunday of the first week that can be shown */
   first: Temporal.PlainDate
-  /** The Monday of the last week that can be shown */
+  /** The Sunday of the last week that can be shown */
   last: Temporal.PlainDate
 }
 
@@ -109,14 +110,14 @@ function formatMonthDay(date: Temporal.PlainDate, withWeekday: boolean) {
 }
 
 interface FormatWeekRangeOptions {
-  /** Add the weekdays, as in `2026年11月9日（月）〜11月15日（日）` */
+  /** Add the weekdays, as in `2026年11月8日（日）〜11月14日（土）` */
   withWeekdays?: boolean
 }
 
 /**
  * The range of the week that starts on `weekStart`, such as
- * `2026年11月9日〜11月15日`. The year of Sunday is written only when it differs
- * from that of Monday.
+ * `2026年11月8日〜11月14日`. The year of the last day is written only when it
+ * differs from that of the first day.
  */
 export function formatWeekRange(
   weekStart: Temporal.PlainDate,

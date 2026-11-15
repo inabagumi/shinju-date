@@ -589,18 +589,18 @@ describe('fetchScheduleVideos', () => {
     query.limit.mockResolvedValue({ data: [], error: null })
   })
 
-  test('requests the standard videos from Monday to Sunday in Japan', async () => {
-    await fetchScheduleVideos('2026-11-09')
+  test('requests the standard videos from Sunday to Saturday in Japan', async () => {
+    await fetchScheduleVideos('2026-11-08')
 
     expect(supabaseClient.from).toHaveBeenCalledWith('videos')
-    // 00:00 on Monday, 9 November and on Monday, 16 November in Japan
+    // 00:00 on Sunday, 8 November and on Sunday, 15 November in Japan
     expect(query.gte).toHaveBeenCalledWith(
       'published_at',
-      '2026-11-08T15:00:00Z',
+      '2026-11-07T15:00:00Z',
     )
     expect(query.lt).toHaveBeenCalledWith(
       'published_at',
-      '2026-11-15T15:00:00Z',
+      '2026-11-14T15:00:00Z',
     )
     expect(query.eq).toHaveBeenCalledWith('video_kind', 'standard')
     expect(query.eq).not.toHaveBeenCalledWith('status', expect.anything())
@@ -613,7 +613,7 @@ describe('fetchScheduleVideos', () => {
   })
 
   test('does not select the thumbnail but the theme color', async () => {
-    await fetchScheduleVideos('2026-11-09')
+    await fetchScheduleVideos('2026-11-08')
 
     const select = query.select.mock.calls[0]?.[0] as string
 
@@ -631,14 +631,14 @@ describe('fetchScheduleVideos', () => {
     })
 
     expect(
-      (await fetchScheduleVideos('2026-11-09')).map((video) => video.id),
+      (await fetchScheduleVideos('2026-11-08')).map((video) => video.id),
     ).toEqual(['video-1'])
   })
 
   test('throws when the videos cannot be fetched', async () => {
     query.limit.mockResolvedValue({ data: null, error: { message: 'failed' } })
 
-    await expect(fetchScheduleVideos('2026-11-09')).rejects.toThrow('failed')
+    await expect(fetchScheduleVideos('2026-11-08')).rejects.toThrow('failed')
   })
 })
 

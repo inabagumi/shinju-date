@@ -48,7 +48,7 @@ async function getLinkPath(page: Page, name: string): Promise<string> {
   return href
 }
 
-/** The Monday (`YYYY-MM-DD`) of the current week */
+/** The Sunday (`YYYY-MM-DD`) of the current week */
 async function getCurrentWeekStart(page: Page): Promise<string> {
   await page.goto(`${BASE_URL}/schedule`)
 
@@ -130,9 +130,9 @@ test.describe('Schedule page', () => {
     expect(new Set(tops).size).toBe(1)
 
     // An hour is 64px, so 21:00 is 21 hours below 00:00 (the top of the day)
-    const monday = getDays(page).first()
-    const body = await monday.locator('ul').boundingBox()
-    const itemAt21 = await monday.locator('[data-start="21:00"]').boundingBox()
+    const sunday = getDays(page).first()
+    const body = await sunday.locator('ul').boundingBox()
+    const itemAt21 = await sunday.locator('[data-start="21:00"]').boundingBox()
 
     expect(Math.round((itemAt21?.y ?? 0) - (body?.y ?? 0))).toBe(21 * 64)
   })
@@ -176,7 +176,8 @@ test.describe('Schedule page', () => {
     await expect(getItems(page).first()).toBeVisible()
 
     // 4 streams start at 21:00 on Wednesday of the current week
-    const wednesday = getDays(page).nth(2)
+    // Weeks start on Sunday
+    const wednesday = getDays(page).nth(3)
     const items = wednesday.locator('[data-start="21:00"]')
 
     await expect(items).toHaveCount(4)
@@ -261,7 +262,7 @@ test.describe('Schedule page', () => {
     expect(Math.round((await heading.boundingBox())?.y ?? 0)).toBeLessThan(120)
   })
 
-  test('should move between the weeks with the Monday URLs', async ({
+  test('should move between the weeks with the Sunday URLs', async ({
     page,
   }) => {
     const currentWeekStart = await getCurrentWeekStart(page)
@@ -288,13 +289,13 @@ test.describe('Schedule page', () => {
     await expect(page).toHaveURL(`${BASE_URL}/schedule`)
   })
 
-  test('should show the week of a date that is not a Monday', async ({
+  test('should show the week of a date that is not a Sunday', async ({
     page,
   }) => {
     const currentWeekStart = await getCurrentWeekStart(page)
-    const thursday = addDays(currentWeekStart, 3)
+    const wednesday = addDays(currentWeekStart, 3)
 
-    await page.goto(`${BASE_URL}/schedule/${thursday}`)
+    await page.goto(`${BASE_URL}/schedule/${wednesday}`)
 
     await expect(getDays(page)).toHaveCount(7)
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(

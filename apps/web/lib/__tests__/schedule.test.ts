@@ -49,40 +49,40 @@ describe('parseScheduleDate', () => {
 })
 
 describe('getWeekStart', () => {
-  test('should return the Monday of the week', () => {
-    // From Monday, 9 November 2026 to Sunday, 15 November 2026
-    for (const day of [9, 10, 11, 12, 13, 14, 15]) {
+  test('should return the Sunday of the week', () => {
+    // From Sunday, 8 November 2026 to Saturday, 14 November 2026
+    for (const day of [8, 9, 10, 11, 12, 13, 14]) {
       expect(
         getWeekStart(
           Temporal.PlainDate.from({ day, month: 11, year: 2026 }),
         ).toString(),
-      ).toBe('2026-11-09')
+      ).toBe('2026-11-08')
     }
 
-    expect(getWeekStart(date('2026-11-16')).toString()).toBe('2026-11-16')
+    expect(getWeekStart(date('2026-11-15')).toString()).toBe('2026-11-15')
   })
 
   test('should go back across the months and the years', () => {
-    expect(getWeekStart(date('2026-12-02')).toString()).toBe('2026-11-30')
-    // 1 January 2027 is a Friday, in the week of 28 December 2026
-    expect(getWeekStart(date('2027-01-01')).toString()).toBe('2026-12-28')
-    expect(getWeekStart(date('2027-01-03')).toString()).toBe('2026-12-28')
-    expect(getWeekStart(date('2027-01-04')).toString()).toBe('2027-01-04')
+    expect(getWeekStart(date('2026-12-02')).toString()).toBe('2026-11-29')
+    // 1 January 2027 is a Friday, in the week of 27 December 2026
+    expect(getWeekStart(date('2027-01-01')).toString()).toBe('2026-12-27')
+    expect(getWeekStart(date('2027-01-02')).toString()).toBe('2026-12-27')
+    expect(getWeekStart(date('2027-01-03')).toString()).toBe('2027-01-03')
   })
 })
 
 describe('getWeekDays', () => {
-  test('should return the 7 days from Monday to Sunday', () => {
+  test('should return the 7 days from Sunday to Saturday', () => {
     expect(
-      getWeekDays(date('2026-12-28')).map((day) => day.toString()),
+      getWeekDays(date('2026-12-27')).map((day) => day.toString()),
     ).toEqual([
+      '2026-12-27',
       '2026-12-28',
       '2026-12-29',
       '2026-12-30',
       '2026-12-31',
       '2027-01-01',
       '2027-01-02',
-      '2027-01-03',
     ])
   })
 })
@@ -92,10 +92,10 @@ describe('getSchedulePath', () => {
     expect(getSchedulePath()).toBe('/schedule')
   })
 
-  test('should always point to the Monday', () => {
-    expect(getSchedulePath(date('2026-11-09'))).toBe('/schedule/2026-11-09')
-    expect(getSchedulePath(date('2026-11-12'))).toBe('/schedule/2026-11-09')
-    expect(getSchedulePath(date('2027-01-01'))).toBe('/schedule/2026-12-28')
+  test('should always point to the Sunday', () => {
+    expect(getSchedulePath(date('2026-11-08'))).toBe('/schedule/2026-11-08')
+    expect(getSchedulePath(date('2026-11-12'))).toBe('/schedule/2026-11-08')
+    expect(getSchedulePath(date('2027-01-01'))).toBe('/schedule/2026-12-27')
   })
 })
 
@@ -108,14 +108,14 @@ describe('getScheduleWeekRange', () => {
       today,
     })
 
-    expect(range.first.toString()).toBe('2024-03-11')
-    expect(range.last.toString()).toBe('2026-12-07')
+    expect(range.first.toString()).toBe('2024-03-10')
+    expect(range.last.toString()).toBe('2026-12-06')
   })
 
   test('should start from the current week without any video', () => {
     expect(
       getScheduleWeekRange({ oldestDate: null, today }).first.toString(),
-    ).toBe('2026-11-09')
+    ).toBe('2026-11-08')
   })
 
   test('should not start after the current week', () => {
@@ -124,7 +124,7 @@ describe('getScheduleWeekRange', () => {
         oldestDate: date('2026-11-20'),
         today,
       }).first.toString(),
-    ).toBe('2026-11-09')
+    ).toBe('2026-11-08')
   })
 })
 
@@ -135,32 +135,32 @@ describe('isWeekInRange', () => {
   })
 
   test('should accept the weeks from the first to the last', () => {
-    expect(isWeekInRange(date('2026-10-26'), range)).toBe(true)
-    expect(isWeekInRange(date('2026-11-09'), range)).toBe(true)
-    expect(isWeekInRange(date('2026-12-07'), range)).toBe(true)
+    expect(isWeekInRange(date('2026-10-25'), range)).toBe(true)
+    expect(isWeekInRange(date('2026-11-08'), range)).toBe(true)
+    expect(isWeekInRange(date('2026-12-06'), range)).toBe(true)
   })
 
   test('should reject the weeks before the oldest video and after 4 weeks', () => {
-    expect(isWeekInRange(date('2026-10-19'), range)).toBe(false)
-    expect(isWeekInRange(date('2026-12-14'), range)).toBe(false)
+    expect(isWeekInRange(date('2026-10-18'), range)).toBe(false)
+    expect(isWeekInRange(date('2026-12-13'), range)).toBe(false)
   })
 })
 
 describe('formatWeekRange', () => {
-  test('should write the month of Sunday', () => {
-    expect(formatWeekRange(date('2026-11-09'))).toBe('2026年11月9日〜11月15日')
-    expect(formatWeekRange(date('2026-11-30'))).toBe('2026年11月30日〜12月6日')
+  test('should write the month of the last day', () => {
+    expect(formatWeekRange(date('2026-11-08'))).toBe('2026年11月8日〜11月14日')
+    expect(formatWeekRange(date('2026-11-29'))).toBe('2026年11月29日〜12月5日')
   })
 
-  test('should write the year of Sunday in another year', () => {
-    expect(formatWeekRange(date('2026-12-28'))).toBe(
-      '2026年12月28日〜2027年1月3日',
+  test('should write the year of the last day in another year', () => {
+    expect(formatWeekRange(date('2026-12-27'))).toBe(
+      '2026年12月27日〜2027年1月2日',
     )
   })
 
   test('should add the weekdays', () => {
-    expect(formatWeekRange(date('2026-11-09'), { withWeekdays: true })).toBe(
-      '2026年11月9日（月）〜11月15日（日）',
+    expect(formatWeekRange(date('2026-11-08'), { withWeekdays: true })).toBe(
+      '2026年11月8日（日）〜11月14日（土）',
     )
   })
 })

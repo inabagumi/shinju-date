@@ -12,7 +12,7 @@ export async function generateMetadata({
 
   return {
     alternates: {
-      // 月曜以外の日付でも、その週の月曜の URL を正規の URL にする
+      // 日曜以外の日付でも、その週の日曜の URL を正規の URL にする
       canonical: getSchedulePath(weekStart),
     },
     openGraph: {
@@ -32,7 +32,7 @@ export async function generateMetadata({
 }
 
 /**
- * その日を含む週（月曜〜日曜）の配信スケジュール。`params` は Suspense の中の
+ * その日を含む週（日曜〜土曜）の配信スケジュール。`params` は Suspense の中の
  * 各部品で読み、日付として読めない値では各部品が `notFound()` を呼ぶ。
  */
 export default function ScheduleWeekPage({
