@@ -245,17 +245,9 @@ export UPSTASH_REDIS_REST_TOKEN=fake-upstash-token
 export UPSTASH_REDIS_REST_URL=https://fake.upstash.test
 ```
 
-## 6. MSWの初期化
+MSW（Mock Service Worker）はサーバー側でだけ動くため、サービスワーカーのファイル（`mockServiceWorker.js`）を用意する必要はありません。詳細は [MSWガイド](msw-guide.md) を参照してください。
 
-Mock Service Worker (MSW) は、開発中にAPIレスポンスをモックするために使用されます。使用するには、サービスワーカースクリプトの初期化が必要です。
-
-```bash
-pnpm --filter './apps/*' run msw:init
-```
-
-このコマンドにより、`web` および `admin` アプリの `public` ディレクトリに `mockServiceWorker.js` ファイルが作成されます。
-
-## 7. 開発サーバーの起動
+## 6. 開発サーバーの起動
 
 これで開発サーバーを起動する準備が整いました。
 

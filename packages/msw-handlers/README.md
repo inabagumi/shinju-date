@@ -13,7 +13,7 @@ This package provides a unified mock infrastructure that enables efficient devel
 - **Reduced Boilerplate**: 560+ lines of hardcoded data replaced with declarative schemas
 - **Supabase API Mocking**: Complete mock handlers for database operations including tables, relations, and query parameters
 - **Upstash Redis Mocking**: Mock handlers for Redis operations including sorted sets, pipeline commands, and basic operations
-- **Browser & Node.js Support**: Works in both browser (Service Worker) and Node.js (server) environments
+- **Node.js Support**: Runs on the server side (`setupServer()`) of the Next.js apps, in tests, and during builds
 - **TypeScript Support**: Full TypeScript definitions and type safety
 - **Query Parameter Support**: Handles Supabase query parameters like `select`, `eq`, `in`, `limit`, etc.
 
@@ -87,44 +87,23 @@ pnpm --filter @shinju-date/web build:msw
 
 `NODE_OPTIONS` is inherited by child processes that Next.js spawns during build, such as `tsc --showConfig`, whose stdout is parsed as JSON. Anything this package writes to stdout breaks that parsing (`Could not parse output from TypeScript's --showConfig.`). For this reason, all Node.js diagnostic logs in this package use `console.error`. Do not add `console.log` calls.
 
-### Browser Environment (React Components)
+### Next.js Apps (Server Side)
 
-For `apps/web` and `apps/admin`:
-
-1. **Install MSW in your app** (if not already installed):
-
-```bash
-pnpm add -D msw
-```
-
-2. **Setup MSW in your app**:
-
-Create `lib/msw.ts`:
+`apps/web`, `apps/admin`, and `apps/batch` start MSW from `instrumentation.ts` when `ENABLE_MSW=true`:
 
 ```typescript
-import { setupWorker } from 'msw/browser'
-import { allHandlers } from '@shinju-date/msw-handlers'
-
-export const worker = setupWorker(...allHandlers)
-
-// Start the worker in development
-if (process.env.NODE_ENV === 'development') {
-  worker.start({
-    onUnhandledFrame: 'warn',
-  })
+// instrumentation.ts
+export async function register() {
+  if (process.env['ENABLE_MSW'] === 'true') {
+    if (process.env['NEXT_RUNTIME'] === 'nodejs') {
+      const { startServer } = await import('@shinju-date/msw-handlers/server')
+      startServer()
+    }
+  }
 }
 ```
 
-3. **Initialize in your app**:
-
-In your `app/layout.tsx` or `_app.tsx`:
-
-```typescript
-// Only in development
-if (process.env.NODE_ENV === 'development') {
-  import('./lib/msw')
-}
-```
+The apps call Supabase, Upstash, and other services only on the server (Server Components, Server Actions, and Route Handlers), so this package does not provide a browser worker. Do not import it from client code such as `instrumentation-client.ts`; the handlers and mock data would be emitted as a client chunk.
 
 ### Node.js Environment (Testing, Batch)
 
@@ -152,13 +131,13 @@ You can also import specific handlers:
 
 ```typescript
 import { supabaseHandlers, upstashHandlers } from '@shinju-date/msw-handlers'
-import { setupWorker } from 'msw/browser'
+import { setupServer } from 'msw/node'
 
 // Use only Supabase handlers
-const worker = setupWorker(...supabaseHandlers)
+const server = setupServer(...supabaseHandlers)
 
 // Or mix with custom handlers
-const worker = setupWorker(...supabaseHandlers, ...myCustomHandlers)
+const server = setupServer(...supabaseHandlers, ...myCustomHandlers)
 ```
 
 ## Supported APIs
@@ -626,25 +605,7 @@ pnpm run test
 
 ### Next.js App Router
 
-```typescript
-// app/layout.tsx
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  // Initialize MSW in development
-  if (process.env.NODE_ENV === 'development') {
-    import('@/lib/msw')
-  }
-
-  return (
-    <html lang="ja">
-      <body>{children}</body>
-    </html>
-  )
-}
-```
+See [Next.js Apps (Server Side)](#nextjs-apps-server-side). MSW starts from `instrumentation.ts`, not from a layout or a client component.
 
 ### Vitest Tests
 
@@ -680,11 +641,13 @@ videos?.forEach((video) => {
 
 ### MSW Not Starting
 
-If MSW doesn't start in the browser:
+If `🚀 MSW server started` doesn't appear in the terminal (stderr):
 
-1. Make sure the service worker is properly registered
-2. Check browser console for MSW-related errors
-3. Ensure the MSW browser package is installed
+1. Make sure `ENABLE_MSW=true` is set
+2. Make sure this package is built (`pnpm run build`)
+3. For builds, make sure `NODE_OPTIONS="--import @shinju-date/msw-handlers/register"` is set (or use `build:msw`)
+
+MSW does not run in the browser, so nothing is printed to the browser console.
 
 ### Mock Data Not Matching
 
@@ -709,7 +672,7 @@ When adding new handlers or modifying existing ones:
 1. **Follow the existing patterns** for consistency
 2. **Add TypeScript types** where possible
 3. **Update the README** with new functionality
-4. **Test your changes** in both browser and Node.js environments
+4. **Test your changes** with the tests and with `ENABLE_MSW=true` in an app
 5. **Run linting** with `pnpm run check --fix`
 
 ## License
