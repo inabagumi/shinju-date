@@ -98,7 +98,9 @@ test.describe('Schedule page', () => {
     const liveItem = getItems(page).filter({ hasText: LIVE_VIDEO_TITLE })
 
     await expect(liveItem).toBeVisible()
-    await expect(liveItem.getByText('配信中', { exact: true })).toBeVisible()
+    await expect(
+      liveItem.getByText('配信中', { exact: true }).filter({ visible: true }),
+    ).toBeVisible()
     await expect(liveItem).toHaveAttribute(
       'href',
       /^https:\/\/www\.youtube\.com\/watch\?v=/,
@@ -108,74 +110,113 @@ test.describe('Schedule page', () => {
     await expect(liveItem).toHaveAttribute('rel', 'noopener noreferrer')
   })
 
-  test('should line up the videos of the same hour across the days', async ({
+  test('should place the videos on the time axis of 24 hours', async ({
     page,
   }) => {
     await page.setViewportSize({ height: 900, width: 1280 })
     await page.goto(`${BASE_URL}/schedule`)
+    await expect(getItems(page).first()).toBeVisible()
 
-    // Every day of the current week has a stream at 21:00
-    const slots = getMain(page).locator('[data-hour="21"]')
-
-    await expect(slots).toHaveCount(7)
-
+    // Every day of the current week has a stream at 21:00, at the same height
     const tops = await Promise.all(
-      (await slots.all()).map(async (slot) =>
-        Math.round((await slot.boundingBox())?.y ?? -1),
+      (await getDays(page).all()).map(async (day) =>
+        Math.round(
+          (await day.locator('[data-start="21:00"]').first().boundingBox())
+            ?.y ?? -1,
+        ),
       ),
     )
 
     expect(new Set(tops).size).toBe(1)
 
-    for (const slot of await slots.all()) {
-      await expect(slot.getByTestId('schedule-item').first()).toContainText(
-        '21:00',
-      )
-    }
+    // An hour is 64px, so 21:00 is 21 hours below 00:00 (the top of the day)
+    const monday = getDays(page).first()
+    const body = await monday.locator('ul').boundingBox()
+    const itemAt21 = await monday.locator('[data-start="21:00"]').boundingBox()
+
+    expect(Math.round((itemAt21?.y ?? 0) - (body?.y ?? 0))).toBe(21 * 64)
   })
 
-  test('should have a row for each of the 24 hours', async ({ page }) => {
+  test('should draw a live stream for an hour', async ({ page }) => {
     await page.setViewportSize({ height: 900, width: 1280 })
     await page.goto(`${BASE_URL}/schedule`)
 
-    // Every day has the rows of all the hours, even without any video
-    for (const day of await getDays(page).all()) {
-      await expect(day.locator('[data-hour]')).toHaveCount(24)
-    }
+    const live = getMain(page)
+      .locator('li')
+      .filter({
+        has: page.getByTestId('schedule-item').filter({
+          hasText: LIVE_VIDEO_TITLE,
+        }),
+      })
 
-    const firstDay = getDays(page).first()
-    const midnight = await firstDay.locator('[data-hour="0"]').boundingBox()
-    const lastHour = await firstDay.locator('[data-hour="23"]').boundingBox()
-
-    expect(midnight?.height).toBeGreaterThan(0)
-    expect(lastHour?.y).toBeGreaterThan(midnight?.y ?? 0)
+    // 64px for an hour
+    expect(Math.round((await live.boundingBox())?.height ?? 0)).toBe(64)
   })
 
-  test('should put the videos of the same time side by side', async ({
-    page,
-  }) => {
+  test('should draw an ended stream as long as it was', async ({ page }) => {
+    await page.setViewportSize({ height: 900, width: 1280 })
+
+    // Every stream of the previous week has ended, and lasted 1.5 hours
+    const currentWeekStart = await getCurrentWeekStart(page)
+
+    await page.goto(`${BASE_URL}/schedule/${addDays(currentWeekStart, -7)}`)
+
+    const item = getMain(page)
+      .locator('li')
+      .filter({
+        has: page.getByTestId('schedule-item').filter({ hasText: /#15$/ }),
+      })
+
+    expect(Math.round((await item.boundingBox())?.height ?? 0)).toBe(96)
+  })
+
+  test('should put the videos that overlap side by side', async ({ page }) => {
     await page.setViewportSize({ height: 900, width: 1280 })
     await page.goto(`${BASE_URL}/schedule`)
+    await expect(getItems(page).first()).toBeVisible()
 
     // 4 streams start at 21:00 on Wednesday of the current week
-    const group = getMain(page).locator('[data-time="21:00"]').first()
-    const items = group.getByTestId('schedule-item')
+    const wednesday = getDays(page).nth(2)
+    const items = wednesday.locator('[data-start="21:00"]')
 
     await expect(items).toHaveCount(4)
 
     const boxes = await Promise.all(
       (await items.all()).map((item) => item.boundingBox()),
     )
-    const tops = new Set(boxes.map((box) => Math.round(box?.y ?? -1)))
-    const lefts = new Set(boxes.map((box) => Math.round(box?.x ?? -1)))
 
-    expect(tops.size).toBe(1)
-    expect(lefts.size).toBe(4)
+    expect(new Set(boxes.map((box) => Math.round(box?.y ?? -1))).size).toBe(1)
+    expect(new Set(boxes.map((box) => Math.round(box?.x ?? -1))).size).toBe(4)
 
-    // The talent and the title are in the name of the link
+    // Only the icons are shown, and the link is named with everything
     for (const item of await items.all()) {
+      await expect(item).toHaveAttribute('data-compact', 'true')
       await expect(item).toHaveAttribute('aria-label', /^21:00 /)
     }
+
+    // Hovering an item expands it to the width of the day with everything
+    const last = items.last()
+    const title = last.getByText('〖FORKROAD〗右か左かすきなほうをえらんでね', {
+      exact: false,
+    })
+    const dayBox = await wednesday.boundingBox()
+
+    await expect(title).toBeHidden()
+    await last.hover()
+    await expect(title).toBeVisible()
+    await expect(last.getByText('21:00', { exact: true })).toBeVisible()
+    expect(
+      Math.round((await last.boundingBox())?.width ?? 0),
+    ).toBeGreaterThanOrEqual(Math.round((dayBox?.width ?? 0) - 4))
+
+    // So does focusing it with the keyboard
+    await page.mouse.move(0, 0)
+    await expect(title).toBeHidden()
+
+    const first = items.first()
+
+    await first.focus()
+    await expect(first.getByText('21:00', { exact: true })).toBeVisible()
   })
 
   test('should keep every item inside the column of its day', async ({
@@ -208,7 +249,7 @@ test.describe('Schedule page', () => {
     await expect(getItems(page).first()).toBeVisible()
 
     await getMain(page)
-      .locator('[data-hour="21"]')
+      .locator('[data-start="21:00"]')
       .first()
       .scrollIntoViewIfNeeded()
 

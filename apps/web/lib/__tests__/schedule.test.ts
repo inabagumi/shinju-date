@@ -2,14 +2,15 @@ import { describe, expect, test } from 'vitest'
 import {
   formatScheduleDay,
   formatWeekRange,
+  getLengthMinutes,
   getSchedulePath,
   getScheduleWeekRange,
-  getStartHour,
   getWeekDays,
   getWeekStart,
-  groupByStartTime,
   isWeekInRange,
+  layoutDay,
   parseScheduleDate,
+  type ScheduleLayout,
 } from '../schedule'
 
 function date(value: string) {
@@ -171,29 +172,133 @@ describe('formatScheduleDay', () => {
   })
 })
 
-describe('getStartHour', () => {
-  test('should return the hour in Japan', () => {
-    // 21:30 and 00:10 on the next day in Japan
-    expect(getStartHour('2026-11-09T12:30:00Z')).toBe(21)
-    expect(getStartHour('2026-11-09T15:10:00Z')).toBe(0)
+describe('getLengthMinutes', () => {
+  test('should use the duration of an ended stream and a published video', () => {
+    expect(
+      getLengthMinutes({
+        duration: 'PT1H30M0S',
+        published_at: '2026-11-09T12:00:00Z',
+        status: 'ENDED',
+      }),
+    ).toBe(90)
+    expect(
+      getLengthMinutes({
+        duration: 'PT8M30S',
+        published_at: '2026-11-09T12:00:00Z',
+        status: 'PUBLISHED',
+      }),
+    ).toBe(8.5)
+  })
+
+  test('should use 1 hour for an upcoming or live stream', () => {
+    for (const status of ['UPCOMING', 'LIVE']) {
+      expect(
+        getLengthMinutes({
+          duration: 'PT3H',
+          published_at: '2026-11-09T12:00:00Z',
+          status,
+        }),
+      ).toBe(60)
+    }
+  })
+
+  test('should use 1 hour without a duration', () => {
+    for (const duration of [null, 'P0D']) {
+      expect(
+        getLengthMinutes({
+          duration,
+          published_at: '2026-11-09T12:00:00Z',
+          status: 'ENDED',
+        }),
+      ).toBe(60)
+    }
   })
 })
 
-describe('groupByStartTime', () => {
-  test('should group the videos that start at the same minute, in order', () => {
-    const groups = groupByStartTime([
-      { id: 'c', published_at: '2026-11-09T12:58:00Z' },
-      { id: 'a', published_at: '2026-11-09T09:00:00Z' },
-      { id: 'b', published_at: '2026-11-09T09:00:30Z' },
-      { id: 'd', published_at: '2026-11-09T12:02:00Z' },
-    ])
+describe('layoutDay', () => {
+  // 21:00 on 9 November 2026 in Japan
+  function video(
+    id: string,
+    time: string,
+    duration: string | null = null,
+    status = 'UPCOMING',
+  ) {
+    const [hour = 0, minute = 0] = time.split(':').map(Number)
+    const publishedAt = Temporal.ZonedDateTime.from({
+      day: 9,
+      hour,
+      minute,
+      month: 11,
+      timeZone: 'Asia/Tokyo',
+      year: 2026,
+    })
+      .toInstant()
+      .toString()
 
+    return { duration, id, published_at: publishedAt, status }
+  }
+
+  function summarize(layouts: ScheduleLayout<ReturnType<typeof video>>[]) {
+    return Object.fromEntries(
+      layouts.map(({ column, columns, item, length, start }) => [
+        item.id,
+        { column, columns, length, start },
+      ]),
+    )
+  }
+
+  test('should place a video at its start with its length', () => {
     expect(
-      groups.map(({ items, time }) => [time, items.map((item) => item.id)]),
-    ).toEqual([
-      ['18:00', ['a', 'b']],
-      ['21:02', ['d']],
-      ['21:58', ['c']],
-    ])
+      summarize(layoutDay([video('a', '21:30', 'PT2H', 'ENDED')])),
+    ).toEqual({
+      a: { column: 0, columns: 1, length: 120, start: 21 * 60 + 30 },
+    })
+  })
+
+  test('should draw a short video for 30 minutes at least', () => {
+    expect(
+      layoutDay([video('a', '12:00', 'PT5M', 'PUBLISHED')])[0]?.length,
+    ).toBe(30)
+  })
+
+  test('should cut a video at the end of the day', () => {
+    expect(layoutDay([video('a', '23:00', 'PT3H', 'ENDED')])[0]?.length).toBe(
+      60,
+    )
+  })
+
+  test('should put the videos that overlap side by side', () => {
+    expect(
+      summarize(
+        layoutDay([
+          video('a', '18:00'),
+          video('b', '18:00'),
+          video('c', '18:30'),
+          video('d', '20:00'),
+        ]),
+      ),
+    ).toEqual({
+      a: { column: 0, columns: 3, length: 60, start: 18 * 60 },
+      b: { column: 1, columns: 3, length: 60, start: 18 * 60 },
+      c: { column: 2, columns: 3, length: 60, start: 18 * 60 + 30 },
+      // It does not overlap the others, so it has the whole width
+      d: { column: 0, columns: 1, length: 60, start: 20 * 60 },
+    })
+  })
+
+  test('should reuse a column that has become free', () => {
+    expect(
+      summarize(
+        layoutDay([
+          video('a', '18:00', 'PT3H', 'ENDED'),
+          video('b', '18:00'),
+          video('c', '19:00'),
+        ]),
+      ),
+    ).toEqual({
+      a: { column: 0, columns: 2, length: 180, start: 18 * 60 },
+      b: { column: 1, columns: 2, length: 60, start: 18 * 60 },
+      c: { column: 1, columns: 2, length: 60, start: 19 * 60 },
+    })
   })
 })

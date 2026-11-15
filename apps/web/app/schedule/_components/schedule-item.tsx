@@ -49,15 +49,15 @@ const ITEM_CLASS_NAME = 'block rounded-control border-l-4 py-1.5 pr-1 pl-2'
 
 interface ScheduleItemProps {
   /**
-   * 同じ時刻の項目と横に並べる。1024px 以上ではアイコンと左の線だけを出し、
-   * 時刻・タレント名・タイトルは、まとめの見出しと `aria-label`・`title` で示す。
+   * 重なる項目が多く、1024px 以上で幅が狭いときにアイコンだけを出す。
+   * マウスを乗せるかフォーカスして広げると、すべてを出す。
    * 1024px 未満では通常の項目と同じ表示にする
    */
   compact?: boolean
   value: ScheduleVideo
 }
 
-/** 横に並べた項目の `aria-label` と `title`。画面に出ない情報をすべて入れる */
+/** アイコンだけの項目の `aria-label`。画面に出ない情報をすべて入れる */
 function getCompactLabel(value: ScheduleVideo, time: string): string {
   return [
     time,
@@ -73,6 +73,10 @@ function getCompactLabel(value: ScheduleVideo, time: string): string {
 /**
  * スケジュールの1件。開始時刻・タレント・タイトルだけを出し、サムネイルは
  * 出さない。リンクの挙動は `VideoCard` と同じにする。
+ *
+ * 1024px 以上では、置く側（`group/item` の要素）が決めた位置と高さに収め、
+ * はみ出す文字は切る。マウスを乗せるかフォーカスすると、置く側が項目を日の
+ * 列の幅いっぱいに広げ、ここでは切っていた中身をすべて出す。
  *
  * 左端の線はタレントのテーマカラーにする。任意の色なのでコントラスト比を
  * 保証できないため、文字の色や文字の地には使わない。未設定や `#RRGGBB` でない
@@ -96,31 +100,33 @@ export default function ScheduleItem({
   const style = themeColor
     ? ({ '--talent-color': themeColor } as CSSProperties)
     : undefined
-  const compactLabel = compact ? getCompactLabel(value, time) : undefined
 
   return (
     <a
-      aria-label={compactLabel}
+      aria-label={compact ? getCompactLabel(value, time) : undefined}
       className={twMerge(
         ITEM_CLASS_NAME,
-        'group min-w-0 hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+        'group min-w-0 hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent lg:h-full lg:overflow-hidden lg:bg-surface lg:hover:bg-muted',
+        // 広げたときは、切っていた中身をすべて出す
+        'lg:group-focus-within/item:h-auto lg:group-focus-within/item:min-h-full lg:group-hover/item:h-auto lg:group-hover/item:min-h-full',
         compact &&
-          'lg:flex lg:flex-col lg:items-center lg:gap-1 lg:px-0.5 lg:pl-0.5',
+          'lg:flex lg:flex-col lg:items-center lg:gap-1 lg:px-0.5 lg:group-focus-within/item:block lg:group-focus-within/item:pr-1 lg:group-focus-within/item:pl-2 lg:group-hover/item:block lg:group-hover/item:pr-1 lg:group-hover/item:pl-2',
         themeColor ? 'border-l-(--talent-color)' : 'border-l-border',
       )}
       data-compact={compact || undefined}
+      data-start={time}
       data-testid="schedule-item"
       href={href}
       ping="/api/ping"
       rel="noopener noreferrer"
       style={style}
       target="_blank"
-      title={compactLabel}
     >
       <span
         className={twMerge(
           'flex flex-wrap items-center gap-1',
-          compact && 'lg:hidden',
+          compact &&
+            'lg:hidden lg:group-focus-within/item:flex lg:group-hover/item:flex',
         )}
       >
         {/*
@@ -146,33 +152,35 @@ export default function ScheduleItem({
       <span
         className={twMerge(
           'mt-0.5 flex min-w-0 items-center gap-1.5',
-          compact && 'lg:mt-0',
+          compact &&
+            'lg:mt-0 lg:group-focus-within/item:mt-0.5 lg:group-hover/item:mt-0.5',
         )}
       >
         <TalentIcon size={20} talent={getVideoAccounts(value)} />
         <span
           className={twMerge(
             'min-w-0 truncate text-caption text-muted',
-            compact && 'lg:hidden',
+            compact &&
+              'lg:hidden lg:group-focus-within/item:block lg:group-hover/item:block',
           )}
-          title={value.talent.name}
         >
           {value.talent.name}
         </span>
       </span>
 
-      {/* 横に並べたときも、配信中は色ではなく文字で示す */}
+      {/* アイコンだけのときも、配信中は色ではなく文字で示す */}
       {compact && (
         <LiveNow
-          className="hidden max-w-full rounded-control bg-live px-0.5 text-center text-caption font-semibold wrap-anywhere text-live-foreground lg:block"
+          className="hidden max-w-full rounded-control bg-live px-0.5 text-center text-caption font-semibold wrap-anywhere text-live-foreground lg:block lg:group-focus-within/item:hidden lg:group-hover/item:hidden"
           status={value.status}
         />
       )}
 
       <span
         className={twMerge(
-          'mt-0.5 line-clamp-2 text-meta wrap-anywhere group-hover:underline',
-          compact && 'lg:hidden',
+          'mt-0.5 line-clamp-2 text-meta wrap-anywhere group-hover:underline lg:group-focus-within/item:line-clamp-none lg:group-hover/item:line-clamp-none',
+          compact &&
+            'lg:hidden lg:group-focus-within/item:block lg:group-hover/item:block',
         )}
         title={value.title}
       >

@@ -1,16 +1,17 @@
 import { twMerge } from '@shinju-date/ui'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import type { CSSProperties } from 'react'
 import { WEEKDAYS } from '@/lib/date-heading'
 import { fetchScheduleVideos, type ScheduleVideo } from '@/lib/fetchers'
 import { groupVideosByDate } from '@/lib/group-videos-by-date'
 import {
   formatWeekRange,
   getSchedulePath,
-  getStartHour,
   getWeekDays,
-  groupByStartTime,
   isWeekInRange,
+  layoutDay,
+  type ScheduleLayout,
 } from '@/lib/schedule'
 import {
   resolveScheduleWeek,
@@ -143,25 +144,55 @@ export function ScheduleWeekdayBandSkeleton() {
 }
 
 /**
- * 1024px 以上では、時刻の列と7日の列を並べ、各日の列は CSS の subgrid で
- * 同じ行（見出しの行と、0時から23時までの24行）を共有する。同じ時間帯の
- * 動画は日をまたいで同じ行に並ぶ。1024px 未満では日付ごとのセクションを縦に積む。
+ * 1024px 以上では、時刻の列と7日の列を並べ、各列は CSS の subgrid で見出しの
+ * 行と本体の行を共有する。本体は1時間を `--hour` の高さにした24時間の軸で、
+ * 項目は開始時刻の位置に、長さぶんの高さで置く。1024px 未満では日付ごとの
+ * セクションを縦に積み、項目を開始時刻の順に並べる。
  */
 const DAYS_CLASS_NAME =
-  'space-y-8 lg:grid lg:grid-cols-[auto_repeat(7,minmax(0,1fr))] lg:grid-rows-[auto_repeat(24,auto)] lg:gap-x-2 lg:space-y-0'
+  'space-y-8 [--hour:4rem] lg:grid lg:grid-cols-[auto_repeat(7,minmax(0,1fr))] lg:grid-rows-[auto_auto] lg:gap-x-2 lg:space-y-0'
 // `grid-cols-1` は `minmax(0, 1fr)` の1列。列幅を指定しないと、長いチャンネル名
 // やタイトルに合わせて列が広がり、隣の日にはみ出す
 const COLUMN_CLASS_NAME =
-  'lg:row-span-full lg:grid lg:grid-cols-1 lg:grid-rows-subgrid lg:content-start'
-/** 1時間の行。動画がない時間帯も同じ低さで出し、時刻の軸を一定にする */
-const SLOT_CLASS_NAME = 'lg:min-h-10 lg:border-t lg:border-border lg:py-1.5'
+  'lg:row-span-2 lg:grid lg:grid-cols-1 lg:grid-rows-subgrid'
+/** 24時間の本体。1時間ごとに区切りの線を引く */
+const BODY_CLASS_NAME =
+  'lg:relative lg:h-[calc(var(--hour)*24)] lg:bg-[repeating-linear-gradient(to_bottom,var(--color-border)_0,var(--color-border)_1px,transparent_1px,transparent_var(--hour))]'
 
-/** 0時から23時までの24時間。動画がない時間帯も行を出す */
+/** 0時から23時までの24時間 */
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour)
 
 function formatHour(hour: number): string {
   return `${hour.toString(10).padStart(2, '0')}:00`
 }
+
+/**
+ * 項目を置く位置。`layoutDay` の結果を CSS 変数で渡し、1024px 以上だけ
+ * クラスから参照する（狭い画面では使わない）
+ */
+function getPlacementStyle({
+  column,
+  columns,
+  length,
+  start,
+}: ScheduleLayout<ScheduleVideo>): CSSProperties {
+  return {
+    '--column': column,
+    '--columns': columns,
+    '--length': length,
+    '--start': start,
+  } as CSSProperties
+}
+
+/**
+ * 1024px 以上で項目を置くクラス。マウスを乗せるかフォーカスすると、前面に出して
+ * 日の列の幅いっぱいに広げ、高さも中身に合わせて伸ばす
+ */
+const PLACEMENT_CLASS_NAME =
+  'group/item lg:absolute lg:top-[calc(var(--hour)*var(--start)/60)] lg:left-[calc(100%*var(--column)/var(--columns))] lg:h-[calc(var(--hour)*var(--length)/60)] lg:w-[calc(100%/var(--columns))] lg:pr-0.5 lg:pb-0.5 lg:focus-within:left-0 lg:focus-within:z-30 lg:focus-within:h-auto lg:focus-within:min-h-[calc(var(--hour)*var(--length)/60)] lg:focus-within:w-full lg:focus-within:shadow-overlay lg:hover:left-0 lg:hover:z-30 lg:hover:h-auto lg:hover:min-h-[calc(var(--hour)*var(--length)/60)] lg:hover:w-full lg:hover:shadow-overlay'
+
+/** アイコンだけにする、重なる項目の数 */
+const COMPACT_COLUMNS = 3
 
 interface ScheduleDayProps {
   date: Temporal.PlainDate
@@ -172,9 +203,6 @@ interface ScheduleDayProps {
 function ScheduleDay({ date, items, referenceDate }: ScheduleDayProps) {
   const id = getDayId(date)
   const headingId = `${id}-heading`
-  const itemsByHour = Map.groupBy(items, (item) =>
-    getStartHour(item.published_at),
-  )
 
   return (
     <section
@@ -190,57 +218,37 @@ function ScheduleDay({ date, items, referenceDate }: ScheduleDayProps) {
         referenceDate={referenceDate}
       />
 
-      {/* 狭い画面では空の時間帯を出さないので、動画がない日はこの文を出す */}
-      {items.length === 0 && (
-        <p className="mt-2 text-meta text-muted lg:hidden">配信はありません</p>
-      )}
-
-      {HOURS.map((hour) => {
-        const hourItems = itemsByHour.get(hour) ?? []
-
-        return (
-          <ul
-            className={twMerge(
-              SLOT_CLASS_NAME,
-              'mt-2 space-y-2 lg:mt-0',
-              hourItems.length === 0 && 'max-lg:hidden',
-            )}
-            data-hour={hour}
-            key={hour}
-          >
-            {groupByStartTime(hourItems).map(({ items: group, time }) =>
-              group.length === 1 ? (
-                <li key={time}>
-                  {group.map((item) => (
-                    <ScheduleItem key={item.id} value={item} />
-                  ))}
-                </li>
-              ) : (
-                // 同じ時刻の項目は、1024px 以上では幅を分け合って横に並べる
-                <li data-time={time} key={time}>
-                  <p className="mb-1 hidden text-meta font-bold tabular-nums lg:block">
-                    {time}
-                  </p>
-                  <ul className="space-y-2 lg:flex lg:gap-1 lg:space-y-0">
-                    {group.map((item) => (
-                      <li className="lg:min-w-0 lg:flex-1" key={item.id}>
-                        <ScheduleItem compact value={item} />
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ),
-            )}
+      <div className={BODY_CLASS_NAME}>
+        {items.length > 0 ? (
+          // 開始時刻の順に並ぶので、狭い画面ではそのまま縦に積む
+          <ul className="mt-2 space-y-2 lg:mt-0 lg:space-y-0">
+            {layoutDay(items).map((layout) => (
+              <li
+                className={PLACEMENT_CLASS_NAME}
+                data-columns={layout.columns}
+                key={layout.item.id}
+                style={getPlacementStyle(layout)}
+              >
+                <ScheduleItem
+                  compact={layout.columns >= COMPACT_COLUMNS}
+                  value={layout.item}
+                />
+              </li>
+            ))}
           </ul>
-        )
-      })}
+        ) : (
+          <p className="mt-2 text-meta text-muted lg:hidden">
+            配信はありません
+          </p>
+        )}
+      </div>
     </section>
   )
 }
 
 /**
- * 1週間ぶんの配信と動画を、開始日時の日付と時間帯ごとに並べる。動画がない日も
- * 日付は出す。
+ * 1週間ぶんの配信と動画を、開始日時の日付ごとに、時刻の軸の上に並べる。動画が
+ * ない日も日付は出す。
  */
 export async function ScheduleDays({ params }: ScheduleWeekSectionProps) {
   const { today, weekStart } = await resolveScheduleWeek(params)
@@ -252,22 +260,7 @@ export async function ScheduleDays({ params }: ScheduleWeekSectionProps) {
 
   return (
     <div className={DAYS_CLASS_NAME}>
-      {/* 時刻の列。各項目にも開始時刻があるので、読み上げない */}
-      <div aria-hidden="true" className={twMerge(COLUMN_CLASS_NAME, 'hidden')}>
-        {/* 日付の見出しと一緒に固定し、下を流れる時刻を隠す */}
-        <span className="sticky top-14 z-10 bg-background" />
-        {HOURS.map((hour) => (
-          <span
-            className={twMerge(
-              SLOT_CLASS_NAME,
-              'text-meta text-muted tabular-nums',
-            )}
-            key={hour}
-          >
-            {formatHour(hour)}
-          </span>
-        ))}
-      </div>
+      <TimeColumn />
 
       {getWeekDays(weekStart).map((date) => (
         <ScheduleDay
@@ -281,24 +274,43 @@ export async function ScheduleDays({ params }: ScheduleWeekSectionProps) {
   )
 }
 
+/** 時刻の列。各項目にも開始時刻があるので、読み上げない */
+function TimeColumn() {
+  return (
+    // ラベルは絶対配置で列の幅にならないので、幅を決めておく
+    <div
+      aria-hidden="true"
+      className={twMerge(COLUMN_CLASS_NAME, 'hidden lg:w-12')}
+    >
+      {/* 日付の見出しと一緒に固定し、下を流れる時刻を隠す */}
+      <span className="sticky top-14 z-40 bg-background" />
+      <div className={twMerge(BODY_CLASS_NAME, 'lg:bg-none')}>
+        {HOURS.map((hour) => (
+          <span
+            className="absolute right-1 -translate-y-1/2 text-caption text-muted tabular-nums first:translate-y-0"
+            key={hour}
+            style={{ top: `calc(var(--hour) * ${hour})` }}
+          >
+            {formatHour(hour)}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export function ScheduleDaysSkeleton() {
   return (
     <div aria-hidden="true" className={DAYS_CLASS_NAME}>
-      <div className={twMerge(COLUMN_CLASS_NAME, 'hidden')}>
-        <span />
-        <span className={SLOT_CLASS_NAME} />
-        <span className={SLOT_CLASS_NAME} />
-      </div>
+      <TimeColumn />
 
       {Array.from({ length: 7 }, (_, index) => (
         <div className={twMerge(COLUMN_CLASS_NAME, 'min-w-0')} key={index}>
           <div className="border-b border-border pb-1">
             <span className="inline-block h-[1lh] w-20 animate-pulse rounded-control bg-muted text-body" />
           </div>
-          <div className={twMerge(SLOT_CLASS_NAME, 'mt-2 lg:mt-0')}>
+          <div className={twMerge(BODY_CLASS_NAME, 'mt-2 space-y-2 lg:mt-0')}>
             <ScheduleItemSkeleton />
-          </div>
-          <div className={twMerge(SLOT_CLASS_NAME, 'mt-2 lg:mt-0')}>
             <ScheduleItemSkeleton />
           </div>
         </div>

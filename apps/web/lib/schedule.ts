@@ -1,5 +1,5 @@
 import { TIME_ZONE } from '@shinju-date/constants'
-import { formatDate, formatTime } from '@shinju-date/temporal-fns'
+import { formatDate } from '@shinju-date/temporal-fns'
 import { WEEKDAYS } from './date-heading'
 
 /** The path of the schedule of the week that includes today */
@@ -143,31 +143,111 @@ export function formatScheduleDay(date: Temporal.PlainDate): string {
   return `${formatDate(date, { includeYear: false })}（${WEEKDAYS[date.dayOfWeek - 1]}）`
 }
 
-/** The hour (0 to 23 in `TIME_ZONE`) a video starts in */
-export function getStartHour(publishedAt: string): number {
-  return Temporal.Instant.from(publishedAt).toZonedDateTimeISO(TIME_ZONE).hour
+/** Minutes in a day, the height of the column of a day */
+export const MINUTES_IN_DAY = 24 * 60
+
+/** How long an upcoming or live stream is shown, as its end is not known */
+export const DEFAULT_LENGTH_MINUTES = 60
+
+/**
+ * The shortest an item is drawn, so that a short video still has room for the
+ * start time and the icon
+ */
+export const MIN_LENGTH_MINUTES = 30
+
+interface PlacedVideo {
+  duration: string | null
+  published_at: string
+  status: string
 }
 
 /**
- * Group the videos by the minute they start at (`HH:mm` in `TIME_ZONE`), in
- * the order of the start. The videos that start at the same time are put side
- * by side on the schedule.
+ * How long the video takes on the schedule, in minutes: its duration for an
+ * ended stream or a published video, and `DEFAULT_LENGTH_MINUTES` for an
+ * upcoming or live one or one without a duration.
  */
-export function groupByStartTime<T extends { published_at: string }>(
-  videos: readonly T[],
-): { items: T[]; time: string }[] {
-  const groups = Map.groupBy(
-    videos.toSorted((videoA, videoB) =>
-      Temporal.Instant.compare(
-        Temporal.Instant.from(videoA.published_at),
-        Temporal.Instant.from(videoB.published_at),
-      ),
-    ),
-    (video) =>
-      formatTime(
-        Temporal.Instant.from(video.published_at).toZonedDateTimeISO(TIME_ZONE),
-      ),
-  )
+export function getLengthMinutes(video: PlacedVideo): number {
+  if (video.status === 'ENDED' || video.status === 'PUBLISHED') {
+    const minutes = Temporal.Duration.from(video.duration ?? 'PT0S').total({
+      unit: 'minute',
+    })
 
-  return [...groups].map(([time, items]) => ({ items, time }))
+    if (minutes > 0) {
+      return minutes
+    }
+  }
+
+  return DEFAULT_LENGTH_MINUTES
+}
+
+export interface ScheduleLayout<T> {
+  /** The column of the item among the overlapping items, from 0 */
+  column: number
+  /** How many columns the overlapping items share */
+  columns: number
+  item: T
+  /** How long the item is drawn, in minutes (cut at the end of the day) */
+  length: number
+  /** When the item starts, in minutes from 00:00 in `TIME_ZONE` */
+  start: number
+}
+
+/**
+ * Place the videos of a day on the time axis, as a calendar does: each starts
+ * at its start time and is as long as `getLengthMinutes` (at least
+ * `MIN_LENGTH_MINUTES`, and cut at the end of the day). The videos that
+ * overlap share the width of the day side by side.
+ */
+export function layoutDay<T extends PlacedVideo>(
+  videos: readonly T[],
+): ScheduleLayout<T>[] {
+  const placed = videos
+    .map((item) => {
+      const startAt = Temporal.Instant.from(
+        item.published_at,
+      ).toZonedDateTimeISO(TIME_ZONE)
+      const start = startAt.hour * 60 + startAt.minute
+      const length = Math.min(
+        Math.max(getLengthMinutes(item), MIN_LENGTH_MINUTES),
+        MINUTES_IN_DAY - start,
+      )
+
+      return { column: 0, columns: 1, item, length, start }
+    })
+    .sort((a, b) => a.start - b.start || b.length - a.length)
+
+  // Split the videos into clusters of the ones that overlap each other, and
+  // give each video the first column that is free at its start
+  let cluster: typeof placed = []
+  let clusterEnd = 0
+  let columnEnds: number[] = []
+
+  const closeCluster = () => {
+    for (const layout of cluster) {
+      layout.columns = columnEnds.length
+    }
+
+    cluster = []
+    columnEnds = []
+  }
+
+  for (const layout of placed) {
+    if (cluster.length > 0 && layout.start >= clusterEnd) {
+      closeCluster()
+    }
+
+    const end = layout.start + layout.length
+    const column = columnEnds.findIndex(
+      (columnEnd) => columnEnd <= layout.start,
+    )
+
+    layout.column = column === -1 ? columnEnds.length : column
+    columnEnds[layout.column] = end
+    cluster.push(layout)
+    clusterEnd = cluster.length === 1 ? end : Math.max(clusterEnd, end)
+  }
+
+  closeCluster()
+
+  return placed
 }

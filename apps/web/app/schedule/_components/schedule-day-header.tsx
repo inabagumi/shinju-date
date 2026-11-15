@@ -34,7 +34,7 @@ export default function ScheduleDayHeader({
 
   return (
     <header
-      className="sticky top-14 z-10 flex items-baseline gap-x-2 border-b border-border bg-background pt-2 pb-1 lg:flex-col lg:gap-0"
+      className="sticky top-14 z-40 flex items-baseline gap-x-2 border-b border-border bg-background pt-2 pb-1 lg:flex-col lg:gap-0"
       data-today={isToday || undefined}
     >
       <div className="flex flex-wrap items-baseline gap-x-2">

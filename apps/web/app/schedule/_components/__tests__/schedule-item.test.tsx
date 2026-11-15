@@ -180,6 +180,39 @@ describe('ScheduleItem', () => {
   })
 })
 
+describe('ScheduleItem (compact)', () => {
+  test('should name the link with everything it does not show', () => {
+    render(<ScheduleItem compact value={createVideo({ status: 'LIVE' })} />)
+
+    expect(getItem()).toHaveAttribute(
+      'aria-label',
+      '21:00 配信中 朝霧ミオ 【歌枠】アニソン縛り歌ってみた！',
+    )
+  })
+
+  test('should show only the icon, and everything when it is expanded', () => {
+    render(<ScheduleItem compact value={createVideo()} />)
+
+    const title = screen.getByText('【歌枠】アニソン縛り歌ってみた！')
+
+    expect(title).toHaveClass(
+      'lg:hidden',
+      'lg:group-hover/item:block',
+      'lg:group-focus-within/item:block',
+      'lg:group-hover/item:line-clamp-none',
+    )
+  })
+
+  test('should not name the link when it is not compact', () => {
+    render(<ScheduleItem value={createVideo()} />)
+
+    expect(getItem()).not.toHaveAttribute('aria-label')
+    expect(
+      screen.getByText('【歌枠】アニソン縛り歌ってみた！'),
+    ).not.toHaveClass('lg:hidden')
+  })
+})
+
 describe('getScheduleVideoUrl', () => {
   test('should return null for a pending Twitch archive without the login', () => {
     const video = createTwitchVideo({}, null)
