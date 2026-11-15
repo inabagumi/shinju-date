@@ -66,7 +66,9 @@ describe('ScheduleItem', () => {
     const item = getItem()
 
     expect(item).toHaveTextContent('21:00')
-    expect(item).toHaveTextContent('【歌枠】アニソン縛り歌ってみた！')
+    // Without the labels in 【】
+    expect(item).toHaveTextContent('アニソン縛り歌ってみた！')
+    expect(item).not.toHaveTextContent('歌枠')
     // The name of the talent, not that of the channel
     expect(item).toHaveTextContent('朝霧ミオ')
     expect(item).not.toHaveTextContent('チャンネル名')
@@ -76,9 +78,23 @@ describe('ScheduleItem', () => {
   test('should keep the whole title in the title attribute', () => {
     render(<ScheduleItem value={createVideo()} />)
 
-    expect(
-      screen.getByText('【歌枠】アニソン縛り歌ってみた！'),
-    ).toHaveAttribute('title', '【歌枠】アニソン縛り歌ってみた！')
+    expect(screen.getByText('アニソン縛り歌ってみた！')).toHaveAttribute(
+      'title',
+      '【歌枠】アニソン縛り歌ってみた！',
+    )
+  })
+
+  test('should show neither the credits nor the trailing hashtags', () => {
+    const title =
+      '【歌枠】今日も歌います #歌枠リレー【朝霧ミオ / ななしいんく】'
+
+    render(<ScheduleItem value={createVideo({ title })} />)
+
+    const titleElement = screen.getByTitle(title)
+
+    expect(titleElement.textContent).toBe('今日も歌います')
+    expect(getItem()).not.toHaveTextContent('#歌枠リレー')
+    expect(getItem()).not.toHaveTextContent('ななしいんく')
   })
 
   test('should link like a video card', () => {
@@ -208,9 +224,9 @@ describe('ScheduleItem (on a wide screen)', () => {
     // The start, the talent and the title are always there, so nothing moves
     // when the item is expanded
     expect(getItem().textContent).toBe(
-      '21:00配信中朝霧ミオ【歌枠】アニソン縛り歌ってみた！',
+      '21:00配信中朝霧ミオアニソン縛り歌ってみた！',
     )
-    expect(screen.getByText('【歌枠】アニソン縛り歌ってみた！')).toHaveClass(
+    expect(screen.getByText('アニソン縛り歌ってみた！')).toHaveClass(
       'line-clamp-2',
       'lg:group-hover/item:line-clamp-none',
     )

@@ -4,8 +4,9 @@ const BASE_URL = process.env['BASE_URL'] || 'http://localhost:3000'
 
 // Seeded by the MSW mock data (packages/msw-handlers): a stream on air now,
 // 2 streams on each day of the current week (one of them at 21:00 in Japan)
-// and 1 in each of the previous and the next weeks
-const LIVE_VIDEO_TITLE = '【スケジュール】ただいま配信中'
+// and 1 in each of the previous and the next weeks. The title is
+// `【スケジュール】ただいま配信中`, and the item shows it without the label in 【】
+const LIVE_VIDEO_TITLE = 'ただいま配信中'
 
 const WEEK_PATH_PATTERN = /^\/schedule\/(\d{4}-\d{2}-\d{2})$/
 

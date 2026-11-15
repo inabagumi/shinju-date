@@ -378,6 +378,89 @@ describe('VideoCard', () => {
     )
   })
 
+  test('should show the title without the labels and the credits', () => {
+    const title =
+      '【雀魂】指示厨が泡吹いて倒れない麻雀【タレント名 / ななしいんく】'
+
+    render(<VideoCard value={{ ...createYouTubeVideo(null), title }} />)
+
+    const heading = screen.getByRole('heading')
+
+    expect(heading.textContent).toBe('指示厨が泡吹いて倒れない麻雀')
+    // The title attribute keeps the original title
+    expect(heading).toHaveAttribute('title', title)
+    expect(screen.getByTestId('video-card-tags').textContent).toBe('雀魂')
+  })
+
+  test('should show the trailing hashtags above the title', () => {
+    render(
+      <VideoCard
+        value={{
+          ...createYouTubeVideo(null),
+          title: 'YMCAになるポポティア #shorts #タレント名 #ymcaダンス',
+        }}
+      />,
+    )
+
+    const tags = screen.getByTestId('video-card-tags')
+
+    expect(tags.tagName).toBe('P')
+    expect(tags.textContent).toBe('#ymcaダンス')
+    expect(tags.nextElementSibling).toBe(screen.getByRole('heading'))
+    expect(screen.getByRole('heading').textContent).toBe('YMCAになるポポティア')
+    // The whole card is a link, so the hashtags are not links
+    expect(
+      within(screen.getByRole('link')).queryAllByRole('link'),
+    ).toHaveLength(0)
+  })
+
+  test('should show the first label and up to three hashtags', () => {
+    render(
+      <VideoCard
+        value={{
+          ...createYouTubeVideo(null),
+          title: '【Minecraft】【雑談】最終日！ #一 #二 #三 #四',
+        }}
+      />,
+    )
+
+    expect(screen.getByTestId('video-card-tags').textContent).toBe(
+      'Minecraft #一 #二 #三',
+    )
+    expect(screen.getByRole('heading').textContent).toBe('最終日！')
+  })
+
+  test('should keep the height of one line without labels and hashtags', () => {
+    render(<VideoCard value={createYouTubeVideo(null)} />)
+
+    const tags = screen.getByTestId('video-card-tags')
+
+    expect(tags).toBeEmptyDOMElement()
+    expect(tags).toHaveClass(
+      'truncate',
+      'min-h-[1lh]',
+      'text-caption',
+      'text-muted',
+    )
+  })
+
+  test('should not show the labels and hashtags on the short variant', () => {
+    render(
+      <VideoCard
+        value={{
+          ...createYouTubeVideo(null),
+          title:
+            '【 #踊ってみた 】Magic / 3SKM【 タレント名 / ななしいんく 】#shorts #3skm',
+          video_kind: 'short',
+        }}
+        variant="short"
+      />,
+    )
+
+    expect(screen.queryByTestId('video-card-tags')).not.toBeInTheDocument()
+    expect(screen.getByRole('heading').textContent).toBe('Magic / 3SKM')
+  })
+
   test.each([
     ['grid', ['flex-col'], 'aspect-video'],
     ['row', ['flex-row', 'sm:flex-col'], 'w-2/5'],
@@ -404,6 +487,23 @@ describe('VideoCardSkeleton', () => {
 
       expect(skeleton).toHaveClass(...layout)
       expect(skeleton.firstElementChild).toHaveClass(thumbnail, 'bg-muted')
+    },
+  )
+
+  test.each([
+    ['grid', 3],
+    ['row', 3],
+    ['short', 2],
+  ] as const)(
+    'should keep the lines of the %s variant',
+    (variant, expectedLines) => {
+      render(<VideoCardSkeleton variant={variant} />)
+
+      // The labels and hashtags (except on the short variant), the title and
+      // the meta line
+      const text = screen.getByTestId('video-card-skeleton').lastElementChild
+
+      expect(text?.children).toHaveLength(expectedLines)
     },
   )
 })
