@@ -97,5 +97,5 @@ export function getTalentPath(
 
 /** The path of a talent's calendar, the alternate of the talent's page */
 export function getTalentCalendarPath(id: string): string {
-  return `/channels/${encodeURIComponent(id)}/videos.ics`
+  return `/talents/${encodeURIComponent(id)}.ics`
 }

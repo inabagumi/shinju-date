@@ -67,6 +67,28 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   reactCompiler: true,
   reactStrictMode: true,
+  redirects() {
+    return Promise.resolve([
+      // Calendars already subscribed to still read the old path.
+      {
+        destination: '/talents/:id.ics',
+        permanent: true,
+        source: '/channels/:id/videos.ics',
+      },
+    ])
+  },
+  rewrites() {
+    // Returned as an array, these are applied before dynamic routes, so
+    // `/talents/<id>.ics` never reaches the talent's page (`/talents/[id]`).
+    // A dynamic segment cannot have an extension in its folder name, so the
+    // calendar is served from an internal path, which nothing links to.
+    return Promise.resolve([
+      {
+        destination: '/talents/:id/calendar',
+        source: '/talents/:id.ics',
+      },
+    ])
+  },
   serverExternalPackages: [
     '@sentry/profiling-node',
     'msw',

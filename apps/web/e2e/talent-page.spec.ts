@@ -72,7 +72,7 @@ test.describe('Talent page', () => {
 
     await expect(calendarLink).toHaveAttribute(
       'href',
-      `/channels/${TALENT.id}/videos.ics`,
+      `/talents/${TALENT.id}.ics`,
     )
     await expect(calendarLink).not.toHaveAttribute('target')
   })
@@ -94,7 +94,7 @@ test.describe('Talent page', () => {
 
     await expect(alternate).toHaveAttribute(
       'href',
-      `${BASE_URL}/channels/${TALENT.id}/videos.ics`,
+      `${BASE_URL}/talents/${TALENT.id}.ics`,
     )
 
     const response = await request.get(
