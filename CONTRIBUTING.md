@@ -454,13 +454,11 @@ pnpm exec supabase db reset
 #### MSW が動作しない
 
 ```bash
-# MSW サービスワーカーを初期化
-cd apps/web && pnpm run msw:init
-cd apps/admin && pnpm run msw:init
-
 # 環境変数を設定
 export ENABLE_MSW=true
 ```
+
+MSW はサーバー側でだけ動きます。起動すると、開発サーバーのターミナルに `🚀 MSW server started` と表示されます。詳細は [docs/msw-guide.md](docs/msw-guide.md) を参照してください。
 
 ### ドキュメント
 

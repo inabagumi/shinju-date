@@ -37,9 +37,8 @@ cp .env.local.sample .env.local
 開発環境でAPIモックを使用する場合：
 
 ```bash
-# サービスワーカーファイルの生成
-pnpm run msw:init
-
 # MSWを有効にして開発
 ENABLE_MSW=true pnpm run dev
 ```
+
+MSWはサーバー側（`instrumentation.ts`）でだけ起動します。詳細は [MSWガイド](../../docs/msw-guide.md) を参照してください。

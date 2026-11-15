@@ -26,21 +26,20 @@ MSW（Mock Service Worker）は、開発・テスト環境でAPIリクエスト�
 
 - `src/index.ts` - メインエクスポート
 - `src/server.ts` - Node.js サーバーセットアップ
+- `src/register.ts` - `--import` で読み込む、ビルド時のサーバーセットアップ
 - `src/handlers/supabase.ts` - Supabase API モックハンドラー
 - `src/handlers/upstash.ts` - Upstash Redis モックハンドラー
 - `README.md` - パッケージドキュメント
 
 #### アプリケーション統合
 
-- **Web App** (`apps/web/`)
-  - `lib/msw.ts` - ブラウザ用MSWワーカー
-  - `components/msw-provider.tsx` - React MSW初期化コンポーネント
-  - `app/msw-demo/page.tsx` - デモページ
-- **Admin App** (`apps/admin/`)
-  - `lib/msw.ts` - ブラウザ用MSWワーカー
-  - `components/msw-provider.tsx` - React MSW初期化コンポーネント
+MSWはサーバー側（Node.js）でだけ動かします。Supabase、Upstash、YouTubeなどへのアクセスは、サーバーコンポーネント、Server Action、ルートハンドラーで行っており、ブラウザから直接呼ぶ処理はないためです。ブラウザ側のMSW（`setupWorker()` とサービスワーカー）は使っていません。
+
+- **Web App** (`apps/web/`)、**Admin App** (`apps/admin/`)
+  - `instrumentation.ts` - `ENABLE_MSW=true` のとき、`@shinju-date/msw-handlers/server` の `startServer()` でMSWを起動する（Node.jsランタイムのみ）
+  - `package.json` の `build:msw` - `@shinju-date/msw-handlers/register` を読み込んで本番ビルドする（[ビルド方法](#ビルド方法)を参照）
 - **Batch App** (`apps/batch/`)
-  - `lib/msw.ts` - Node.js バッチ処理用MSWサーバー
+  - `instrumentation.ts` - Web/Adminと同じく、`ENABLE_MSW=true` のときにMSWを起動する
 
 ## 主な機能
 
@@ -97,11 +96,11 @@ const { data } = await supabase
 - サマリー統計 (`summary:stats:*`)
 - レコメンデーションクエリ (`queries:*`)
 
-### 3. 環境に応じた自動起動
+### 3. 環境変数による切り替え
 
-- **開発環境のみ**: 開発モードでのみMSWが動作
-- **本番環境への影響なし**: 本番ビルドにはMSWのコードが含まれない
-- **条件付きロード**: Dynamic importによる最適なバンドル分割
+- **明示的に有効化**: `ENABLE_MSW=true` のときだけMSWが動作する（開発モードでも、指定しなければ動作しない）
+- **ブラウザへの影響なし**: クライアント向けの出力（`.next/static`）にはMSWのコードが含まれない
+- **条件付きロード**: `instrumentation.ts` から動的インポートするため、`ENABLE_MSW` を指定しなければ読み込まれない
 
 ### 4. TypeScript統合
 
@@ -111,37 +110,26 @@ const { data } = await supabase
 
 ## 使用方法
 
-### ブラウザ（Web/Adminアプリ）
+### 開発サーバー（Web/Admin/Batchアプリ）
 
-開発モードでは自動的にMSWが起動します。既存のSupabaseコードをそのまま使用できます：
+[環境変数](#環境変数設定)を設定し、`ENABLE_MSW=true` を付けて開発サーバーを起動します。依存パッケージを先にビルドしておく必要があります。
+
+```bash
+pnpm build --filter=@shinju-date/web^...
+ENABLE_MSW=true pnpm --filter @shinju-date/web dev
+```
+
+`instrumentation.ts` がMSWのサーバーを起動するので、サーバー側のSupabaseやRedisのコードはそのままモックされます：
 
 ```typescript
-// 特別な設定は不要 - 開発環境で自動的にモックされる
+// サーバーコンポーネントやServer Actionの中で
 const { data: videos } = await supabase
   .from('videos')
   .select('id, title, thumbnails(path, blur_data_url)')
   .limit(10)
 ```
 
-ブラウザコンソールに以下のメッセージが表示されます：
-
-```
-🚀 MSW enabled for development
-```
-
-### Node.js（Batchアプリ）
-
-```typescript
-import { initializeMocking } from '@/lib/msw'
-
-// バッチ処理用にモッキングを開始
-initializeMocking()
-
-// Redis/Supabaseコールはモックデータを使用
-const result = await redisClient.zrange('videos:clicked:2023-10-23', 0, 10)
-```
-
-Node.jsコンソールに以下のメッセージが表示されます：
+ブラウザのコンソールには何も表示されません。開発サーバーを起動したターミナル（標準エラー出力）に、次のメッセージが表示されます：
 
 ```
 🚀 MSW server started
@@ -337,7 +325,7 @@ MSW起動メッセージが表示されない場合：
 # 既存の開発サーバーを終了
 pkill -f "next --port"
 # 再起動
-pnpm run dev:msw
+ENABLE_MSW=true pnpm run dev
 ```
 
 ## 既知の制限事項
@@ -380,27 +368,17 @@ videos?.forEach((video) => {
 ## セキュリティ
 
 - **脆弱性なし**: CodeQL分析でセキュリティ問題は検出されず
-- **開発環境のみ**: MSWコードは本番ビルドから除外
+- **ブラウザに配信しない**: MSWのコードはクライアント向けの出力に含まれない
 - **型安全性**: 厳格なTypeScriptがランタイムエラーを防止
 - **認証情報なし**: モックデータに実際の機密情報は含まれず
 
 ## テスト方法
 
-### クイックテスト（ブラウザ）
+### クイックテスト
 
-1. 開発モードでwebまたはadminアプリを起動
-2. `/msw-demo`にアクセス（webアプリのみ）
-3. ブラウザコンソールでMSW起動メッセージを確認
-4. モックデータが表示されることを確認
-
-### 手動テスト
-
-```typescript
-// 開発環境では、これがモックデータを返すはずです：
-const response = await fetch('/rest/v1/videos?select=id,title&limit=3')
-const videos = await response.json()
-console.log(videos) // モック動画データが表示されるはず
-```
+1. [開発サーバー](#開発サーバーwebadminbatchアプリ)の手順で、`ENABLE_MSW=true` を付けてwebまたはadminアプリを起動
+2. ターミナルに `🚀 MSW server started` が表示されることを確認
+3. ページを開き、モックデータが表示されることを確認
 
 ## 追加リソース
 
