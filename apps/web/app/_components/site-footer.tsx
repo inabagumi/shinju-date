@@ -60,6 +60,11 @@ export function SiteFooter() {
                 動画一覧
               </NavLink>
             </li>
+            <li>
+              <NavLink className={footerLinkClassName} href="/talents">
+                タレント一覧
+              </NavLink>
+            </li>
           </FooterLinkGroup>
 
           <FooterLinkGroup title="サポート">

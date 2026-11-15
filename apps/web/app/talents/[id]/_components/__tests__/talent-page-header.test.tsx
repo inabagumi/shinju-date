@@ -48,6 +48,21 @@ describe('TalentPageHeader', () => {
     ).toBeInTheDocument()
   })
 
+  test('should link back to the list of talents', () => {
+    render(<TalentPageHeader talent={createTalent()} />)
+
+    const breadcrumbs = screen.getByRole('navigation', {
+      name: 'パンくずリスト',
+    })
+
+    expect(
+      within(breadcrumbs).getByRole('link', { name: 'タレント一覧' }),
+    ).toHaveAttribute('href', '/talents')
+    expect(
+      within(breadcrumbs).getByText('朝霧ミオ').closest('[aria-current]'),
+    ).toHaveAttribute('aria-current', 'page')
+  })
+
   test('should open the channels in a new tab', () => {
     render(<TalentPageHeader talent={createTalent()} />)
 

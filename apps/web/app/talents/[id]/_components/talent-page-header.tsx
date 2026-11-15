@@ -47,7 +47,10 @@ interface TalentPageHeaderProps {
 export function TalentPageHeader({ talent }: TalentPageHeaderProps) {
   return (
     <PageHeader
-      breadcrumbs={[{ name: talent.name }]}
+      breadcrumbs={[
+        { href: '/talents', name: 'タレント一覧' },
+        { name: talent.name },
+      ]}
       description={
         <nav aria-label="リンク">
           <ul className="flex flex-wrap gap-x-6 gap-y-2 text-meta">
