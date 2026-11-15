@@ -3,8 +3,9 @@ import { expect, type Page, test } from '@playwright/test'
 const BASE_URL = process.env['BASE_URL'] || 'http://localhost:3000'
 
 // Provided by the MSW mock data (packages/msw-handlers). The first talent has
-// a YouTube channel and a Twitch user with icons, the second has only a
-// YouTube channel without an icon, and the third has no channels or videos.
+// a YouTube channel and a Twitch user with icons and finished streams within
+// 90 days, mostly on Saturday at 21:00, the second has only a YouTube channel
+// without an icon, and the third has no channels or videos.
 const TALENT = {
   id: '00000000-0000-4000-8000-000000000001',
   name: '朝霧ミオ',
@@ -156,6 +157,89 @@ test.describe('Talent page', () => {
     await expect(page).toHaveURL(`${BASE_URL}/talents/${TALENT.id}`)
   })
 
+  test('should show the tendency of the streams of a talent', async ({
+    page,
+  }) => {
+    await page.goto(`${BASE_URL}/talents/${TALENT.id}`)
+
+    const section = page.getByRole('region', { name: '配信の傾向' })
+
+    await expect(
+      section.getByRole('heading', { level: 2, name: '配信の傾向' }),
+    ).toBeVisible()
+    await expect(
+      section.getByText(
+        /^直近90日の配信は\d+回。いちばん多いのは土曜日、時間帯は21時台です。$/,
+      ),
+    ).toBeVisible()
+
+    // On wide screens it is always open, without the line to fold it
+    await expect(section.locator('summary')).toBeHidden()
+
+    const table = section.getByRole('table', {
+      name: '曜日と時間帯ごとの配信回数',
+    })
+
+    await expect(table).toBeVisible()
+    await expect(table.getByRole('row')).toHaveCount(8)
+    await expect(table.getByRole('rowheader', { name: '土曜日' })).toBeVisible()
+
+    // On wide screens the section is beside the heading, so the kinds of
+    // videos come right below both of them
+    const headingBox = await getHeader(page).boundingBox()
+    const sectionBox = await section.boundingBox()
+    const kindNavBox = await page
+      .getByRole('navigation', { name: '種別' })
+      .boundingBox()
+
+    if (!headingBox || !sectionBox || !kindNavBox) {
+      throw new Error('The heading, the section or the kinds are not shown')
+    }
+
+    expect(sectionBox.x).toBeGreaterThanOrEqual(headingBox.x + headingBox.width)
+    expect(sectionBox.y).toBeLessThan(headingBox.y + headingBox.height)
+    expect(kindNavBox.y).toBeGreaterThanOrEqual(
+      sectionBox.y + sectionBox.height,
+    )
+  })
+
+  test('should fold the tendency of the streams in a narrow screen', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ height: 812, width: 375 })
+    await page.goto(`${BASE_URL}/talents/${TALENT.id}`)
+
+    const section = page.getByRole('region', { name: '配信の傾向' })
+    const table = section.getByRole('table', {
+      name: '曜日と時間帯ごとの配信回数',
+    })
+    const toggle = section.locator('summary')
+
+    // Folded into a line with the busiest day and hour, below the heading
+    await expect(toggle).toBeVisible()
+    await expect(toggle).toContainText('土曜日・21時台が多い')
+    await expect(table).toBeHidden()
+
+    const headingBox = await getHeader(page).boundingBox()
+    const sectionBox = await section.boundingBox()
+
+    expect(sectionBox?.y ?? 0).toBeGreaterThanOrEqual(
+      (headingBox?.y ?? 0) + (headingBox?.height ?? 0),
+    )
+
+    await toggle.click()
+
+    await expect(table).toBeVisible()
+
+    const hasHorizontalScroll = await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth >
+        document.documentElement.clientWidth,
+    )
+
+    expect(hasHorizontalScroll).toBe(false)
+  })
+
   test('should show the default icon for a talent without icons', async ({
     page,
   }) => {
@@ -186,6 +270,9 @@ test.describe('Talent page', () => {
     ).toBeVisible()
     await expect(page.getByText('動画は見つかりませんでした。')).toBeVisible()
     await expect(getVideoCards(page)).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: '配信の傾向' })).toHaveCount(
+      0,
+    )
   })
 
   for (const [description, id] of [
