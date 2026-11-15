@@ -5,6 +5,11 @@ import { SearchResultsSkeleton } from '@/components/search-results'
 import { TALENT_SEARCH_PARAM } from '@/lib/talent-filter'
 import { parseQueries } from '@/lib/url'
 import {
+  getVideosCalendarPath,
+  parseVideoKindFilter,
+  VIDEO_KIND_SEARCH_PARAM,
+} from '@/lib/video-kind-filter'
+import {
   getSelectedTalentIds,
   VideosPageHeading,
   VideosPageHeadingSkeleton,
@@ -24,13 +29,14 @@ export async function generateMetadata({
   const talentIds = await getSelectedTalentIds(
     searchParamValues[TALENT_SEARCH_PARAM],
   )
+  const kind = parseVideoKindFilter(searchParamValues[VIDEO_KIND_SEARCH_PARAM])
   const title = query ? `『${query}』の検索結果` : '動画一覧'
 
   return {
     alternates: {
       canonical: query ? `/videos/${encodeURIComponent(query)}` : '/videos',
       types: {
-        'text/calendar': !query ? '/videos.ics' : null,
+        'text/calendar': !query ? getVideosCalendarPath(kind, talentIds) : null,
       },
     },
     openGraph: {

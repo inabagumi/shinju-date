@@ -1,7 +1,11 @@
-import { X } from 'lucide-react'
+import { CalendarPlus, X } from 'lucide-react'
 import Link from 'next/link'
 import type { Talent } from '@/lib/fetchers'
-import { getVideosPath, type VideoKindFilter } from '@/lib/video-kind-filter'
+import {
+  getVideosCalendarPath,
+  getVideosPath,
+  type VideoKindFilter,
+} from '@/lib/video-kind-filter'
 import TalentChip, { TALENT_CHIP_REMOVE_CLASS_NAME } from './talent-chip'
 import TalentFilter from './talent-filter'
 import VideoKindFilterNav, {
@@ -69,7 +73,8 @@ interface VideoFiltersProps {
 
 /**
  * 動画一覧と検索結果の絞り込み。種別の切り替えとタレントの複数選択を
- * 1行に並べ、収まらないときは折り返す。
+ * 1行に並べ、収まらないときは折り返す。キーワードがないときは、同じ条件の
+ * カレンダーへのリンクも並べる。
  */
 export default function VideoFilters({
   kind,
@@ -92,6 +97,16 @@ export default function VideoFilters({
           talents={talents}
           value={selectedIds}
         />
+        {!query && (
+          // カレンダーはページではないので、`next/link` のリンクにしない
+          <a
+            className="inline-flex h-9 items-center gap-1 rounded-control px-1 text-meta font-semibold text-accent underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            href={getVideosCalendarPath(kind, selectedIds)}
+          >
+            <CalendarPlus aria-hidden="true" className="size-4" />
+            カレンダーに登録
+          </a>
+        )}
       </div>
       {selectedTalents.length > 0 && (
         <SelectedTalentList

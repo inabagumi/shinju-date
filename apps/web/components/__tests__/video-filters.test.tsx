@@ -169,4 +169,52 @@ describe('VideoFilters', () => {
       within(list).getByRole('link', { name: '絞り込みを解除' }),
     ).toHaveAttribute('href', `/videos/${encodeURIComponent('歌')}`)
   })
+
+  test('should link to the calendar of the selected talents and kind', () => {
+    render(
+      <VideoFilters
+        kind="standard"
+        query=""
+        selectedTalents={[TALENT_C, TALENT_A]}
+        talents={TALENTS}
+      />,
+    )
+
+    expect(
+      screen.getByRole('link', { name: 'カレンダーに登録' }),
+    ).toHaveAttribute(
+      'href',
+      `/videos.ics?kind=standard&talent=${TALENT_C.id}&talent=${TALENT_A.id}`,
+    )
+  })
+
+  test('should link to the calendar of every video without filters', () => {
+    render(
+      <VideoFilters
+        kind="all"
+        query=""
+        selectedTalents={[]}
+        talents={TALENTS}
+      />,
+    )
+
+    expect(
+      screen.getByRole('link', { name: 'カレンダーに登録' }),
+    ).toHaveAttribute('href', '/videos.ics')
+  })
+
+  test('should not link to the calendar for the search results', () => {
+    render(
+      <VideoFilters
+        kind="all"
+        query="歌"
+        selectedTalents={[TALENT_A]}
+        talents={TALENTS}
+      />,
+    )
+
+    expect(
+      screen.queryByRole('link', { name: 'カレンダーに登録' }),
+    ).not.toBeInTheDocument()
+  })
 })

@@ -1,11 +1,6 @@
-import { TIME_ZONE } from '@shinju-date/constants'
 import { createErrorResponse } from '@shinju-date/helpers'
-import { startOfHour } from '@shinju-date/temporal-fns'
-import {
-  createCalendarResponse,
-  createEventAttributesList,
-} from '@/lib/calendar'
 import { supabaseClient } from '@/lib/supabase'
+import { createVideosCalendarResponse } from '@/lib/videos-calendar'
 
 export async function GET(
   _req: Request,
@@ -38,53 +33,7 @@ export async function GET(
     })
   }
 
-  const now = startOfHour(Temporal.Now.zonedDateTimeISO(TIME_ZONE))
-  const { data: videos, error: secondError } = await supabaseClient
-    .from('videos')
-    .select(
-      `
-        talent:talents!inner (
-          id,
-          name
-        ),
-        duration,
-        id,
-        platform,
-        published_at,
-        status,
-        title,
-        youtube_video:youtube_videos (youtube_video_id),
-        twitch_video:twitch_videos (
-          twitch_video_id,
-          type,
-          twitch_user:twitch_users (twitch_login_name)
-        )
-      `,
-    )
-    .eq('talent_id', id)
-    .lt(
-      'published_at',
-      now
-        .add({
-          days: 7,
-        })
-        .toInstant()
-        .toJSON(),
-    )
-    .order('published_at', {
-      ascending: false,
-    })
-    .limit(100)
-
-  if (secondError) {
-    return createErrorResponse(secondError.message, {
-      status: 500,
-    })
-  }
-
-  const events = createEventAttributesList(videos, {
-    now,
+  return createVideosCalendarResponse({
+    talentIds: [id],
   })
-
-  return createCalendarResponse(events)
 }

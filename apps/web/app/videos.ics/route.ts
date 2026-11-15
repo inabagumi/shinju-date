@@ -1,58 +1,35 @@
-import { TIME_ZONE } from '@shinju-date/constants'
 import { createErrorResponse } from '@shinju-date/helpers'
-import { startOfHour } from '@shinju-date/temporal-fns'
+import type { NextRequest } from 'next/server'
 import {
-  createCalendarResponse,
-  createEventAttributesList,
-} from '@/lib/calendar'
-import { supabaseClient } from '@/lib/supabase'
+  hasInvalidTalentId,
+  parseTalentIds,
+  TALENT_SEARCH_PARAM,
+} from '@/lib/talent-filter'
+import {
+  parseVideoKindFilter,
+  VIDEO_KIND_SEARCH_PARAM,
+} from '@/lib/video-kind-filter'
+import { createVideosCalendarResponse } from '@/lib/videos-calendar'
 
-export async function GET(): Promise<Response> {
-  const now = startOfHour(Temporal.Now.zonedDateTimeISO(TIME_ZONE))
-  const { data: videos, error } = await supabaseClient
-    .from('videos')
-    .select(
-      `
-        talent:talents!inner (
-          name
-        ),
-        duration,
-        id,
-        platform,
-        published_at,
-        status,
-        title,
-        youtube_video:youtube_videos (youtube_video_id),
-        twitch_video:twitch_videos (
-          twitch_video_id,
-          type,
-          twitch_user:twitch_users (twitch_login_name)
-        )
-      `,
-    )
-    .lt(
-      'published_at',
-      now
-        .add({
-          days: 7,
-        })
-        .toInstant()
-        .toString(),
-    )
-    .order('published_at', {
-      ascending: false,
-    })
-    .limit(100)
+/**
+ * 動画のカレンダー。動画一覧と同じ `talent` と `kind` で絞り込める。
+ *
+ * `talent` は活動中のタレントかどうかを確かめずにそのまま使う。一致しない
+ * ID を無視すると、登録済みのカレンダーがタレントの削除などをきっかけに
+ * すべてのタレントの予定に変わってしまうため。
+ */
+export async function GET(request: NextRequest): Promise<Response> {
+  const { searchParams } = request.nextUrl
+  const talentValues = searchParams.getAll(TALENT_SEARCH_PARAM)
 
-  if (error) {
-    return createErrorResponse(error.message, {
-      status: 500,
+  if (hasInvalidTalentId(talentValues)) {
+    return createErrorResponse('Bad Request', {
+      status: 400,
     })
   }
 
-  const events = createEventAttributesList(videos, {
-    now,
+  return createVideosCalendarResponse({
+    kind: parseVideoKindFilter(searchParams.getAll(VIDEO_KIND_SEARCH_PARAM)),
+    talentIds: parseTalentIds(talentValues),
   })
-
-  return createCalendarResponse(events)
 }
