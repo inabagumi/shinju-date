@@ -3,9 +3,9 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { twMerge } from '@shinju-date/ui'
-import { type ReactNode, useId, useMemo, useSyncExternalStore } from 'react'
+import { type ReactNode, useId, useMemo } from 'react'
 import FormattedTime from '@/components/formatted-time'
-import { useNow } from '@/components/timer'
+import { useToday } from '@/components/use-today'
 import VideoCard, { VideoCardSkeleton } from '@/components/video-card'
 import { VIDEO_CARD_LIST_CLASS_NAMES } from '@/components/video-card-list'
 import { WEEKDAYS } from '@/lib/date-heading'
@@ -36,31 +36,6 @@ export function formatTimelineDate(
   })
 
   return `${monthAndDay}（${WEEKDAYS[date.dayOfWeek - 1]}）`
-}
-
-function subscribeNothing() {
-  return () => {}
-}
-
-/**
- * 「今日」「明日」を判定する基準の日付。
- * サーバーでの描画とハイドレーションでは、データと一緒に取得した `referenceDate` を使い、
- * 両者の文言を揃える。ハイドレーションの後はブラウザの現在時刻に切り替えるため、
- * キャッシュを作った後に日付が変わっていても正しい文言になる。
- */
-function useToday(referenceDate: string): Temporal.PlainDate {
-  const now = useNow()
-  const isHydrated = useSyncExternalStore(
-    subscribeNothing,
-    () => true,
-    () => false,
-  )
-
-  return useMemo(
-    () =>
-      isHydrated ? now.toPlainDate() : Temporal.PlainDate.from(referenceDate),
-    [isHydrated, now, referenceDate],
-  )
 }
 
 interface TimelineGroupProps {
