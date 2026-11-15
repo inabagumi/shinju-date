@@ -9,17 +9,17 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import type { Talent } from '@/lib/fetchers'
 import { SearchModalContent } from '../search-modal-content'
 
-const URUHA: Talent = {
+const MIO: Talent = {
   id: '00000000-0000-4000-8000-000000000001',
-  name: '一ノ瀬うるは',
+  name: '朝霧ミオ',
 }
-const RISA: Talent = {
+const YURA: Talent = {
   id: '00000000-0000-4000-8000-000000000002',
-  name: '英リサ',
+  name: '凪沢ユラ',
 }
-const URURU: Talent = {
+const MYOSOTIS: Talent = {
   id: '00000000-0000-4000-8000-000000000003',
-  name: 'うるる',
+  name: 'ミオソティス',
 }
 
 const navigation = vi.hoisted(() => ({
@@ -87,28 +87,28 @@ describe('SearchModalContent', () => {
     actions.fetchRecommendedQueries.mockReset().mockResolvedValue(['歌枠'])
     actions.fetchSearchModalTalents
       .mockReset()
-      .mockResolvedValue([URUHA, RISA, URURU])
+      .mockResolvedValue([MIO, YURA, MYOSOTIS])
     actions.fetchSuggestions.mockReset().mockResolvedValue([])
   })
 
   test('should show the matching talents above the keyword suggestions', async () => {
-    actions.fetchSuggestions.mockResolvedValue([{ term: 'うるは' }])
+    actions.fetchSuggestions.mockResolvedValue([{ term: 'ミオ' }])
 
     await renderContent()
 
-    fireEvent.change(getInput(), { target: { value: 'ウルハ' } })
+    fireEvent.change(getInput(), { target: { value: 'みお' } })
     expect(screen.queryByRole('region', { name: 'タレント' })).toBeNull()
 
-    fireEvent.change(getInput(), { target: { value: 'うる' } })
+    fireEvent.change(getInput(), { target: { value: 'ミオ' } })
 
     const section = getTalentSection()
     expect(
       within(section)
         .getAllByRole('button')
         .map((button) => button.textContent),
-    ).toEqual(['一ノ瀬うるは', 'うるる'])
+    ).toEqual(['朝霧ミオ', 'ミオソティス'])
 
-    const suggestion = await screen.findByRole('link', { name: 'うるは' })
+    const suggestion = await screen.findByRole('link', { name: 'ミオ' })
     expect(
       section.compareDocumentPosition(suggestion) &
         Node.DOCUMENT_POSITION_FOLLOWING,
@@ -118,40 +118,40 @@ describe('SearchModalContent', () => {
   test('should turn the selected talent into a chip and clear the input', async () => {
     await renderContent()
 
-    await selectTalent('うるは', '一ノ瀬うるは')
+    await selectTalent('朝霧', '朝霧ミオ')
 
-    expect(within(getChipList()).getByText('一ノ瀬うるは')).toBeInTheDocument()
+    expect(within(getChipList()).getByText('朝霧ミオ')).toBeInTheDocument()
     expect(getInput()).toHaveValue('')
     expect(getInput()).toHaveFocus()
 
     // すでにチップになっているタレントは候補に出さない
-    fireEvent.change(getInput(), { target: { value: 'うる' } })
+    fireEvent.change(getInput(), { target: { value: 'ミオ' } })
     expect(
       within(getTalentSection())
         .getAllByRole('button')
         .map((button) => button.textContent),
-    ).toEqual(['うるる'])
+    ).toEqual(['ミオソティス'])
   })
 
   test('should search the keyword within the selected talents', async () => {
     const { onClose } = await renderContent()
 
-    await selectTalent('うるは', '一ノ瀬うるは')
-    await selectTalent('リサ', '英リサ')
+    await selectTalent('朝霧', '朝霧ミオ')
+    await selectTalent('ユラ', '凪沢ユラ')
 
     fireEvent.change(getInput(), { target: { value: ' 歌枠 ' } })
     submit()
 
     expect(onClose).toHaveBeenCalledTimes(1)
     expect(navigation.push).toHaveBeenCalledWith(
-      `/videos/${encodeURIComponent('歌枠')}?talent=${URUHA.id}&talent=${RISA.id}`,
+      `/videos/${encodeURIComponent('歌枠')}?talent=${MIO.id}&talent=${YURA.id}`,
     )
   })
 
   test('should open the video list of the selected talents without a keyword', async () => {
     await renderContent()
 
-    await selectTalent('うるは', '一ノ瀬うるは')
+    await selectTalent('朝霧', '朝霧ミオ')
 
     expect(
       screen.getByText('Enterキーを押して、選んだタレントの動画を表示'),
@@ -159,7 +159,7 @@ describe('SearchModalContent', () => {
 
     submit()
 
-    expect(navigation.push).toHaveBeenCalledWith(`/videos?talent=${URUHA.id}`)
+    expect(navigation.push).toHaveBeenCalledWith(`/videos?talent=${MIO.id}`)
   })
 
   test('should keep the search without chips as before', async () => {
@@ -181,8 +181,8 @@ describe('SearchModalContent', () => {
   test('should remove the last chip with Backspace on an empty input', async () => {
     await renderContent()
 
-    await selectTalent('うるは', '一ノ瀬うるは')
-    await selectTalent('リサ', '英リサ')
+    await selectTalent('朝霧', '朝霧ミオ')
+    await selectTalent('ユラ', '凪沢ユラ')
 
     fireEvent.change(getInput(), { target: { value: 'a' } })
     fireEvent.keyDown(getInput(), { key: 'Backspace' })
@@ -190,8 +190,8 @@ describe('SearchModalContent', () => {
 
     fireEvent.change(getInput(), { target: { value: '' } })
     fireEvent.keyDown(getInput(), { key: 'Backspace' })
-    expect(within(getChipList()).getByText('一ノ瀬うるは')).toBeInTheDocument()
-    expect(within(getChipList()).queryByText('英リサ')).toBeNull()
+    expect(within(getChipList()).getByText('朝霧ミオ')).toBeInTheDocument()
+    expect(within(getChipList()).queryByText('凪沢ユラ')).toBeNull()
 
     fireEvent.keyDown(getInput(), { key: 'Backspace' })
     expect(
@@ -202,13 +202,13 @@ describe('SearchModalContent', () => {
   test('should remove a chip with its remove button', async () => {
     await renderContent()
 
-    await selectTalent('うるは', '一ノ瀬うるは')
-    await selectTalent('リサ', '英リサ')
+    await selectTalent('朝霧', '朝霧ミオ')
+    await selectTalent('ユラ', '凪沢ユラ')
 
-    fireEvent.click(screen.getByRole('button', { name: '一ノ瀬うるはを外す' }))
+    fireEvent.click(screen.getByRole('button', { name: '朝霧ミオを外す' }))
 
-    expect(within(getChipList()).queryByText('一ノ瀬うるは')).toBeNull()
-    expect(within(getChipList()).getByText('英リサ')).toBeInTheDocument()
+    expect(within(getChipList()).queryByText('朝霧ミオ')).toBeNull()
+    expect(within(getChipList()).getByText('凪沢ユラ')).toBeInTheDocument()
     expect(getInput()).toHaveFocus()
   })
 
@@ -217,18 +217,18 @@ describe('SearchModalContent', () => {
 
     await renderContent()
 
-    await selectTalent('うるは', '一ノ瀬うるは')
+    await selectTalent('朝霧', '朝霧ミオ')
 
     expect(screen.getByRole('link', { name: '歌枠' })).toHaveAttribute(
       'href',
-      `/videos/${encodeURIComponent('歌枠')}?talent=${URUHA.id}`,
+      `/videos/${encodeURIComponent('歌枠')}?talent=${MIO.id}`,
     )
 
     fireEvent.change(getInput(), { target: { value: 'うた' } })
 
     expect(await screen.findByRole('link', { name: '歌枠' })).toHaveAttribute(
       'href',
-      `/videos/${encodeURIComponent('歌枠')}?talent=${URUHA.id}`,
+      `/videos/${encodeURIComponent('歌枠')}?talent=${MIO.id}`,
     )
   })
 
@@ -254,9 +254,9 @@ describe('SearchModalContent', () => {
     navigation.pathname = `/videos/${encodeURIComponent('歌枠')}`
     navigation.searchParams = new URLSearchParams([
       ['kind', 'short'],
-      ['talent', RISA.id],
+      ['talent', YURA.id],
       ['talent', 'not-a-uuid'],
-      ['talent', URUHA.id],
+      ['talent', MIO.id],
     ])
 
     await renderContent()
@@ -265,19 +265,19 @@ describe('SearchModalContent', () => {
       within(await screen.findByRole('list', { name: '選んでいるタレント' }))
         .getAllByRole('listitem')
         .map((item) => item.textContent),
-    ).toEqual(['一ノ瀬うるは', '英リサ'])
+    ).toEqual(['朝霧ミオ', '凪沢ユラ'])
 
     submit()
 
     // 種別は引き継がない
     expect(navigation.push).toHaveBeenCalledWith(
-      `/videos?talent=${URUHA.id}&talent=${RISA.id}`,
+      `/videos?talent=${MIO.id}&talent=${YURA.id}`,
     )
   })
 
   test('should not start with chips outside the video list', async () => {
     navigation.pathname = '/talents'
-    navigation.searchParams = new URLSearchParams([['talent', URUHA.id]])
+    navigation.searchParams = new URLSearchParams([['talent', MIO.id]])
 
     await renderContent()
 
@@ -288,20 +288,20 @@ describe('SearchModalContent', () => {
 
   test('should move between the talent and keyword suggestions with the arrow keys', async () => {
     actions.fetchSuggestions.mockResolvedValue([
-      { term: 'うるは' },
-      { term: 'うるう年' },
+      { term: 'ミオ' },
+      { term: 'ミオ 歌枠' },
     ])
 
     await renderContent()
 
-    fireEvent.change(getInput(), { target: { value: 'うる' } })
-    await screen.findByRole('link', { name: 'うるう年' })
+    fireEvent.change(getInput(), { target: { value: 'ミオ' } })
+    await screen.findByRole('link', { name: 'ミオ 歌枠' })
 
     const options = [
-      screen.getByRole('button', { name: '一ノ瀬うるは' }),
-      screen.getByRole('button', { name: 'うるる' }),
-      screen.getByRole('link', { name: 'うるは' }),
-      screen.getByRole('link', { name: 'うるう年' }),
+      screen.getByRole('button', { name: '朝霧ミオ' }),
+      screen.getByRole('button', { name: 'ミオソティス' }),
+      screen.getByRole('link', { name: 'ミオ' }),
+      screen.getByRole('link', { name: 'ミオ 歌枠' }),
     ]
 
     getInput().focus()

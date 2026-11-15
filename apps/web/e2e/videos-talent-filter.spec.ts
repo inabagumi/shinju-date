@@ -22,25 +22,25 @@ test.describe('Videos - Talent filter', () => {
     ).toBeVisible()
     await expect(getSelectedTalentList(page)).toHaveCount(0)
 
-    await selectTalent(page, 'タレント', '一ノ瀬うるは')
+    await selectTalent(page, 'タレント', '朝霧ミオ')
 
     await expect(page).toHaveURL(TALENT_PARAM_PATTERN)
     await expect(
-      getSelectedTalentList(page).getByText('一ノ瀬うるは'),
+      getSelectedTalentList(page).getByText('朝霧ミオ'),
     ).toBeVisible()
     await expect(page.locator('header p.tabular-nums')).toHaveText(/^[\d,]+件$/)
 
     // 開き直しても同じ条件になり、検索エンジンには載せない
     await page.reload()
     await expect(
-      getSelectedTalentList(page).getByText('一ノ瀬うるは'),
+      getSelectedTalentList(page).getByText('朝霧ミオ'),
     ).toBeVisible()
     await expect(page.locator('head meta[name="robots"]')).toHaveAttribute(
       'content',
       /noindex/,
     )
 
-    await selectTalent(page, '一ノ瀬うるは', '英リサ')
+    await selectTalent(page, '朝霧ミオ', '凪沢ユラ')
 
     await expect(page).toHaveURL(/talent=.+&talent=/)
     await expect(
@@ -48,16 +48,16 @@ test.describe('Videos - Talent filter', () => {
     ).toBeVisible()
 
     await getSelectedTalentList(page)
-      .getByRole('link', { name: '英リサを外す' })
+      .getByRole('link', { name: '凪沢ユラを外す' })
       .click()
 
     await expect(page).not.toHaveURL(/talent=.+&talent=/)
     await expect(
-      getSelectedTalentList(page).getByText('英リサ'),
+      getSelectedTalentList(page).getByText('凪沢ユラ'),
     ).not.toBeVisible()
 
     await getSelectedTalentList(page)
-      .getByRole('link', { name: '一ノ瀬うるはを外す' })
+      .getByRole('link', { name: '朝霧ミオを外す' })
       .click()
 
     await expect(page).toHaveURL(/\/videos$/)
@@ -67,7 +67,7 @@ test.describe('Videos - Talent filter', () => {
   test('should keep the talents when switching the kind', async ({ page }) => {
     await page.goto('/videos')
 
-    await selectTalent(page, 'タレント', '小森めと')
+    await selectTalent(page, 'タレント', '白露ネネ')
     await expect(page).toHaveURL(TALENT_PARAM_PATTERN)
 
     await page
@@ -78,7 +78,7 @@ test.describe('Videos - Talent filter', () => {
     await expect(page).toHaveURL(/kind=short/)
     await expect(page).toHaveURL(TALENT_PARAM_PATTERN)
     await expect(
-      getSelectedTalentList(page).getByText('小森めと'),
+      getSelectedTalentList(page).getByText('白露ネネ'),
     ).toBeVisible()
   })
 
@@ -104,7 +104,7 @@ test.describe('Videos - Talent filter', () => {
     await page.setViewportSize({ height: 800, width: 320 })
     await page.goto('/videos')
 
-    await selectTalent(page, 'タレント', '一ノ瀬うるは')
+    await selectTalent(page, 'タレント', '朝霧ミオ')
     await expect(page).toHaveURL(TALENT_PARAM_PATTERN)
 
     const hasHorizontalScroll = await page.evaluate(

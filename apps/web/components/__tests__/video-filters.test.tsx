@@ -48,9 +48,9 @@ vi.mock('@shinju-date/ui', async (importOriginal) => ({
 }))
 
 const TALENTS: Talent[] = [
-  { id: 'c3a1b2d4-5e6f-4a7b-8c9d-0e1f2a3b4c03', name: '一ノ瀬うるは' },
-  { id: '0f6b7c84-1a1e-4b4e-9d3a-5c7a0c1e2f01', name: '小森めと' },
-  { id: '7d2e4b1a-3c5f-4e6a-8b9c-0d1e2f3a4b02', name: '英リサ' },
+  { id: 'c3a1b2d4-5e6f-4a7b-8c9d-0e1f2a3b4c03', name: '朝霧ミオ' },
+  { id: '0f6b7c84-1a1e-4b4e-9d3a-5c7a0c1e2f01', name: '白露ネネ' },
+  { id: '7d2e4b1a-3c5f-4e6a-8b9c-0d1e2f3a4b02', name: '凪沢ユラ' },
 ]
 const [TALENT_A, TALENT_B, TALENT_C] = TALENTS as [Talent, Talent, Talent]
 
@@ -75,7 +75,7 @@ describe('VideoFilters', () => {
       within(group)
         .getAllByRole('checkbox')
         .map((checkbox) => checkbox.parentElement?.textContent),
-    ).toEqual(['一ノ瀬うるは', '小森めと', '英リサ'])
+    ).toEqual(['朝霧ミオ', '白露ネネ', '凪沢ユラ'])
     expect(
       screen.queryByRole('list', { name: '選んでいるタレント' }),
     ).not.toBeInTheDocument()
@@ -91,7 +91,7 @@ describe('VideoFilters', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('checkbox', { name: '小森めと' }))
+    fireEvent.click(screen.getByRole('checkbox', { name: '白露ネネ' }))
 
     expect(push).toHaveBeenCalledWith(
       `/videos/${encodeURIComponent('歌')}?kind=short&talent=${TALENT_B.id}&talent=${TALENT_A.id}`,
@@ -134,7 +134,7 @@ describe('VideoFilters', () => {
     const list = screen.getByRole('list', { name: '選んでいるタレント' })
 
     expect(
-      within(list).getByRole('link', { name: '一ノ瀬うるはを外す' }),
+      within(list).getByRole('link', { name: '朝霧ミオを外す' }),
     ).toHaveAttribute('href', '/videos?kind=standard')
     expect(
       within(list).queryByRole('link', { name: '絞り込みを解除' }),
@@ -154,13 +154,13 @@ describe('VideoFilters', () => {
     const list = screen.getByRole('list', { name: '選んでいるタレント' })
 
     expect(
-      within(list).getByRole('link', { name: '一ノ瀬うるはを外す' }),
+      within(list).getByRole('link', { name: '朝霧ミオを外す' }),
     ).toHaveAttribute(
       'href',
       `/videos/${encodeURIComponent('歌')}?talent=${TALENT_C.id}`,
     )
     expect(
-      within(list).getByRole('link', { name: '英リサを外す' }),
+      within(list).getByRole('link', { name: '凪沢ユラを外す' }),
     ).toHaveAttribute(
       'href',
       `/videos/${encodeURIComponent('歌')}?talent=${TALENT_A.id}`,

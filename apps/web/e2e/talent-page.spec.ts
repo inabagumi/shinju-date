@@ -7,11 +7,11 @@ const BASE_URL = process.env['BASE_URL'] || 'http://localhost:3000'
 // YouTube channel without an icon, and the third has no channels or videos.
 const TALENT = {
   id: '00000000-0000-4000-8000-000000000001',
-  name: '一ノ瀬うるは',
+  name: '朝霧ミオ',
 }
 const TALENT_WITHOUT_ICON = {
   id: '00000000-0000-4000-8000-000000000004',
-  name: '英リサ',
+  name: '凪沢ユラ',
 }
 const TALENT_WITHOUT_VIDEOS = {
   id: '00000000-0000-4000-8000-000000000007',
