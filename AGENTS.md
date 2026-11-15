@@ -256,15 +256,25 @@ async function getTalent(id: string) {
   return talent
 }
 
-// メタデータとページの両方で再利用
+// メタデータとページの部品の両方で再利用
 export async function generateMetadata({ params }) {
-  const talent = await getTalent(params.id) // キャッシュを再利用
+  const { id } = await params
+  const talent = await getTalent(id) // キャッシュを再利用
   return { title: talent.name }
 }
 
-export default async function Page({ params }) {
-  const talent = await getTalent(params.id) // 同じキャッシュを再利用
-  return <div>{talent.name}</div>
+async function TalentName({ params }) {
+  const { id } = await params
+  const talent = await getTalent(id) // 同じキャッシュを再利用
+  return <h1>{talent.name}</h1>
+}
+
+export default function Page({ params }) {
+  return (
+    <Suspense fallback={<TalentNameSkeleton />}>
+      <TalentName params={params} />
+    </Suspense>
+  )
 }
 ```
 
@@ -276,24 +286,27 @@ export default async function Page({ params }) {
 
 ### Next.js Partial Prerendering（部分的プリレンダリング）
 
-**🚨 重要**: Next.js 15以降では、Partial Prerenderingを活用することで、静的コンテンツと動的コンテンツを効率的に処理できます。以下のベストプラクティスを**必ず**守ってください：
+**🚨 重要**: `apps/web` と `apps/admin` は Cache Components（`cacheComponents`）と Partial Prefetching（`partialPrefetching`）を有効にしています。ページの静的な部分を事前にレンダリングしたシェルとして先に返し、動的な部分を後からストリーミングするため、以下を**必ず**守ってください：
 
 #### 基本原則
 
 1. **ページ全体をSuspenseで囲まない**：ページ全体を単一のSuspenseコンポーネントで囲むと、Partial Prerenderingの利点が失われます。
 2. **静的コンテンツは即座にレンダリング**：ナビゲーションリンク、ヘッダー、レイアウト要素など、静的なコンテンツはSuspenseの外に配置してください。
 3. **非同期データ取得のみをSuspenseで囲む**：データベースクエリやAPIコールなど、非同期処理が必要な要素のみをSuspenseコンポーネントで個別に囲んでください。
-4. **paramsは直接awaitする**：Next.js 15以降、動的ルートの`params`はPromiseです。余分なwrapperコンポーネントを作らず、ページコンポーネント自体で直接awaitしてください。
+4. **`params` と `searchParams` は Suspense の中で await する**：どちらもリクエストごとに決まる値（Promise）です。ページコンポーネントでは await せず、そのまま Suspense の中の部品に渡し、部品の中で await してください。
+   - ページで await すると、それより後ろ（ページ全体）が事前にレンダリングできなくなり、Next.js が「runtime data during prerendering」のエラーを出します
+   - このエラーを `export const instant = false` で黙らせないでください。静的なシェルを失うだけで、得るものはありません
+   - 同じデータを複数の部品で使う場合は、取得関数を `'use cache'` でキャッシュして、それぞれの部品から呼んでください（取得は1回で済みます）
+   - `generateMetadata` では `params` を直接 await して構いません。ページのほかの部品も `params` を読んでリクエスト時にレンダリングされるので、メタデータはそれらと一緒に後からストリーミングされます
 
 #### ✅ 正しい例（Partial Prerenderingを活用）：
 
 ```typescript
-export default async function TalentDetailPage({ params }: Props) {
-  const { id } = await params  // paramsを直接await
-
+// ページは async にせず、params を await しない
+export default function TalentDetailPage({ params }: PageProps<'/talents/[id]'>) {
   return (
     <div className="container mx-auto p-4">
-      {/* 静的コンテンツ - 即座にレンダリング */}
+      {/* 静的コンテンツ - シェルとして即座にレンダリング */}
       <div className="mb-6">
         <Link href="/talents">
           <ChevronLeft className="mr-1 size-4" />
@@ -301,24 +314,51 @@ export default async function TalentDetailPage({ params }: Props) {
         </Link>
       </div>
 
-      {/* 非同期データ - Suspenseで個別に囲む */}
+      {/* params を読む部品 - Suspenseで個別に囲む */}
       <Suspense fallback={<TalentProfileSkeleton />}>
-        <TalentProfile id={id} />
+        <TalentProfile params={params} />
       </Suspense>
 
-      {/* 別の非同期データ - 個別のSuspenseで囲む */}
+      {/* 別の部品 - 個別のSuspenseで囲む */}
       <Suspense fallback={<VideosSkeleton />}>
-        <RecentVideosSection talentId={id} />
+        <RecentVideosSection params={params} />
       </Suspense>
     </div>
   )
+}
+
+async function TalentProfile({
+  params,
+}: Pick<PageProps<'/talents/[id]'>, 'params'>) {
+  const { id } = await params // Suspense の中で await する
+  const talent = await getTalent(id) // 'use cache' 付きの取得関数
+
+  if (!talent) {
+    notFound()
+  }
+
+  return <h1>{talent.name}</h1>
 }
 ```
 
 #### ❌ 間違った例（Partial Prerenderingを妨げる）：
 
 ```typescript
-// ❌ ページ全体をSuspenseで囲んでいる
+// ❌ ページで params を await している（ページ全体が事前にレンダリングできなくなる）
+export default async function TalentDetailPage({ params }: Props) {
+  const { id } = await params
+
+  return (
+    <div>
+      <Link href="/talents">戻る</Link>
+      <Suspense fallback={<TalentProfileSkeleton />}>
+        <TalentProfile id={id} />
+      </Suspense>
+    </div>
+  )
+}
+
+// ❌ ページ全体をSuspenseで囲んでいる（静的コンテンツもSuspenseの中に入ってしまう）
 export default function TalentDetailPage({ params }: Props) {
   return (
     <Suspense fallback={<PageSkeleton />}>
@@ -326,21 +366,11 @@ export default function TalentDetailPage({ params }: Props) {
     </Suspense>
   )
 }
-
-// ❌ 余分なwrapperコンポーネントを使用している
-async function TalentDetailPageWrapper({ params }: Props) {
-  const { id } = await params
-
-  return (
-    <div>
-      {/* 静的コンテンツもSuspense内に入ってしまっている */}
-      <Link href="/talents">戻る</Link>
-      <TalentProfile id={id} />
-      <RecentVideosSection talentId={id} />
-    </div>
-  )
-}
 ```
+
+#### `notFound()` とステータスコード
+
+Suspense の中で `notFound()` を呼ぶと、すでにシェルを返し始めているため、ステータスコードは 200 のまま、not-found の画面と `<meta name="robots" content="noindex">` を返します。開発サーバーでは 404 になりますが、本番とは違います。HTTP の 404 が必要な場合は、Proxy（`proxy.ts`）でページをレンダリングする前に判定してください。
 
 #### Partial Prerenderingのメリット
 
@@ -348,27 +378,18 @@ async function TalentDetailPageWrapper({ params }: Props) {
 - **細かい読み込み制御**：各非同期セクションが独立して読み込まれ、適切なスケルトンが表示されます
 - **SEO対応**：静的コンテンツが事前にレンダリングされるため、検索エンジンに最適化されます
 
-#### Next.js 15以降の動的ルートパラメータの扱い方
+#### 動的ルートパラメータの型
+
+型は Next.js が生成する `PageProps` / `LayoutProps` を使うと、ルートのパスから `params` の型が決まります。
 
 ```typescript
-// ✅ 正しい：型定義でParamsをPromiseとして定義
-type Props = {
-  params: Promise<{
-    id: string
-  }>
-}
-
-// ✅ 正しい：generateMetadataでもawait
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+// ✅ 正しい：generateMetadata では await してよい
+export async function generateMetadata({
+  params,
+}: Pick<PageProps<'/talents/[id]'>, 'params'>): Promise<Metadata> {
   const { id } = await params
-  const data = await fetchData(id)
-  return { title: data.name }
-}
-
-// ✅ 正しい：ページコンポーネントでawait
-export default async function Page({ params }: Props) {
-  const { id } = await params
-  // ... 残りのコード
+  const talent = await getTalent(id)
+  return { title: talent?.name }
 }
 ```
 

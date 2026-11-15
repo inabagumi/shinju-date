@@ -231,7 +231,7 @@ refactor(admin): convert type definitions to interface
 
 - **Cache Directives**: `'use cache'` の直後には必ず空行を入れる
 - **Partial Prerendering**: ページ全体を Suspense で囲まない
-- **Params**: Next.js 15+ では `params` を直接 await する
+- **Params**: `params` と `searchParams` はページで await せず、Suspense の中の部品で await する
 
 詳細は [AGENTS.md](../AGENTS.md) を参照してください。
 
