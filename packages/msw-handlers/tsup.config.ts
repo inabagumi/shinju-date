@@ -8,7 +8,6 @@ export default defineConfig({
   },
   entry: [
     './src/index.ts',
-    './src/browser.ts',
     './src/server.ts',
     './src/session.ts',
     './src/register.ts',

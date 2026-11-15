@@ -63,11 +63,6 @@
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "msw": {
-    "workerDirectory": [
-      "public"
-    ]
-  },
   "name": "@shinju-date/admin",
   "private": true,
   "repository": {
@@ -79,7 +74,6 @@
     "build": "next build",
     "build:msw": "NODE_OPTIONS=\"--import @shinju-date/msw-handlers/register\" ENABLE_MSW=true next build",
     "dev": "next --port 4000",
-    "msw:init": "msw init public/ --save",
     "start": "next start --port 4000",
     "test": "vitest run",
     "test:e2e": "playwright test",

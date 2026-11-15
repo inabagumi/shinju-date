@@ -6,8 +6,8 @@ import { upstashHandlers } from './handlers/upstash.js'
 import { youtubeHandlers } from './handlers/youtube.js'
 
 /**
- * All mock handlers for browser environments
- * Use this in your app's MSW setup for development
+ * All mock handlers
+ * Pass them to `setupServer()` (Node.js) or `setupWorker()` (browser)
  */
 export const allHandlers = [
   ...googleFontsHandlers,
