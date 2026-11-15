@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from '@shinju-date/ui'
 import { Plus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import type { FormState } from '@/components/form'
 import Form, {
   ErrorMessage,
@@ -22,7 +22,22 @@ import Form, {
   SubmitButton,
 } from '@/components/form'
 import { createTermAction, updateTermAction } from '../_actions'
-import { SortableInputList } from './sortable-input-list'
+import { SortableInputListFallback } from './sortable-input-list-fallback'
+
+// dnd-kit は入力欄を並べ替えるときにしか使わないため、一覧の初期ロードに
+// 含めず、モーダルを開く操作に入ったときに読み込む
+function loadSortableInputList() {
+  return import('./sortable-input-list')
+}
+
+const SortableInputList = lazy(() =>
+  loadSortableInputList().then((mod) => ({ default: mod.SortableInputList })),
+)
+
+function preloadSortableInputList() {
+  // 読み込みに失敗しても、モーダルを開いたときに React.lazy がもう一度読み込む
+  loadSortableInputList().catch(() => undefined)
+}
 
 interface Term {
   id: string
@@ -69,7 +84,11 @@ export function TermModal({ term }: TermModalProps) {
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
-      <DialogTrigger asChild>
+      <DialogTrigger
+        asChild
+        onFocus={preloadSortableInputList}
+        onPointerEnter={preloadSortableInputList}
+      >
         {isEditing ? (
           <Button size="sm" variant="secondary">
             編集
@@ -100,24 +119,46 @@ export function TermModal({ term }: TermModalProps) {
               <Label className="mb-2 block text-meta font-semibold">
                 読み方
               </Label>
-              <SortableInputList
-                addButtonLabel="読み方を追加"
-                defaultValues={term?.readings ?? []}
-                name="readings"
-                placeholder="読み方を入力"
-              />
+              <Suspense
+                fallback={
+                  <SortableInputListFallback
+                    addButtonLabel="読み方を追加"
+                    defaultValues={term?.readings ?? []}
+                    name="readings"
+                    placeholder="読み方を入力"
+                  />
+                }
+              >
+                <SortableInputList
+                  addButtonLabel="読み方を追加"
+                  defaultValues={term?.readings ?? []}
+                  name="readings"
+                  placeholder="読み方を入力"
+                />
+              </Suspense>
               <ErrorMessage className="mt-1 text-meta text-danger" />
             </FormField>
             <FormField name="synonyms">
               <Label className="mb-2 block text-meta font-semibold">
                 類義語
               </Label>
-              <SortableInputList
-                addButtonLabel="類義語を追加"
-                defaultValues={term?.synonyms ?? []}
-                name="synonyms"
-                placeholder="類義語を入力"
-              />
+              <Suspense
+                fallback={
+                  <SortableInputListFallback
+                    addButtonLabel="類義語を追加"
+                    defaultValues={term?.synonyms ?? []}
+                    name="synonyms"
+                    placeholder="類義語を入力"
+                  />
+                }
+              >
+                <SortableInputList
+                  addButtonLabel="類義語を追加"
+                  defaultValues={term?.synonyms ?? []}
+                  name="synonyms"
+                  placeholder="類義語を入力"
+                />
+              </Suspense>
               <ErrorMessage className="mt-1 text-meta text-danger" />
             </FormField>
             <GenericErrorMessage className="rounded-control bg-danger/10 p-3 text-meta text-danger" />

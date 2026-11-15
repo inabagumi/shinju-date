@@ -211,7 +211,8 @@ test.describe('Admin App - Terms Management', () => {
     await emailInput.fill('admin@example.com')
     await passwordInput.fill('password123')
     await submitButton.click()
-    await page.waitForLoadState('networkidle')
+    // Wait for the sign-in redirect so that the session cookie is set
+    await page.waitForURL((url) => !url.pathname.startsWith('/login'))
   })
 
   test('should display terms list', async ({ page }) => {
@@ -224,6 +225,104 @@ test.describe('Admin App - Terms Management', () => {
     // Terms page should load successfully
     const content = await page.textContent('body')
     expect(content).toBeTruthy()
+  })
+
+  test('should edit the synonyms of a term in the modal', async ({ page }) => {
+    await page.goto('http://localhost:4000/terms')
+
+    await page
+      .getByRole('row')
+      .filter({ hasText: '歌枠' })
+      .getByRole('button', { name: '編集' })
+      .click()
+
+    const dialog = page.getByRole('dialog', { name: '用語を編集' })
+    const termInput = dialog.getByRole('textbox', { name: '用語' })
+    const synonymInputs = dialog.getByPlaceholder('類義語を入力')
+
+    // The focus moves to the term input, which does not wait for dnd-kit
+    await expect(termInput).toBeFocused()
+    await termInput.fill('歌枠（編集中）')
+
+    // The sortable list replaces the placeholder once dnd-kit is loaded
+    await expect(
+      dialog.getByRole('button', { name: '類義語を追加' }),
+    ).toBeEnabled()
+    await expect(termInput).toHaveValue('歌枠（編集中）')
+    await expect(synonymInputs).toHaveCount(2)
+
+    const synonymValues = () =>
+      synonymInputs.evaluateAll((inputs) =>
+        inputs.map((input) => (input as HTMLInputElement).value),
+      )
+
+    expect(await synonymValues()).toEqual(['歌配信', 'カラオケ配信'])
+
+    // Add and remove an input
+    await dialog.getByRole('button', { name: '類義語を追加' }).click()
+    await synonymInputs.nth(2).fill('歌ってみた')
+    expect(await synonymValues()).toEqual([
+      '歌配信',
+      'カラオケ配信',
+      '歌ってみた',
+    ])
+
+    // The readings have only one input, so every remove button is a synonym's
+    await dialog.getByRole('button', { name: '削除' }).first().click()
+    expect(await synonymValues()).toEqual(['カラオケ配信', '歌ってみた'])
+
+    // The first handle belongs to the only reading
+    const handles = dialog.getByRole('button', { name: 'ドラッグして並び替え' })
+    const synonymHandles = [handles.nth(1), handles.nth(2)] as const
+
+    // Reorder with the keyboard. Playwright presses the keys faster than a
+    // person, and dnd-kit may ignore an arrow key pressed right after the drag
+    // starts, so drop the row where it is and try again until it moves.
+    // (Escape would also close the dialog.)
+    await expect(async () => {
+      await synonymHandles[0].focus()
+      await page.keyboard.press('Space')
+
+      try {
+        await expect(
+          page.getByText(/^Draggable item .+ was moved over droppable area /),
+        ).toBeAttached({ timeout: 1000 })
+        await page.keyboard.press('ArrowDown')
+        // Drop only after dnd-kit has moved the row over the next one
+        await expect(
+          page.getByText(
+            /^Draggable item (\S+) was moved over droppable area (?!\1\.)/,
+          ),
+        ).toBeAttached({ timeout: 1000 })
+      } catch (error) {
+        await page.keyboard.press('Space')
+        throw error
+      }
+
+      await page.keyboard.press('Space')
+    }).toPass()
+    await expect.poll(synonymValues).toEqual(['歌ってみた', 'カラオケ配信'])
+
+    // Reorder with the mouse
+    const handleBox = await synonymHandles[0].boundingBox()
+    const targetBox = await synonymHandles[1].boundingBox()
+
+    if (!handleBox || !targetBox) {
+      throw new Error('The drag handles are not visible.')
+    }
+
+    await page.mouse.move(
+      handleBox.x + handleBox.width / 2,
+      handleBox.y + handleBox.height / 2,
+    )
+    await page.mouse.down()
+    await page.mouse.move(
+      targetBox.x + targetBox.width / 2,
+      targetBox.y + targetBox.height,
+      { steps: 10 },
+    )
+    await page.mouse.up()
+    await expect.poll(synonymValues).toEqual(['カラオケ配信', '歌ってみた'])
   })
 })
 
