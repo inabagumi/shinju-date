@@ -7,6 +7,7 @@ const query = vi.hoisted(() => ({
   is: vi.fn(),
   limit: vi.fn(),
   lte: vi.fn(),
+  maybeSingle: vi.fn(),
   neq: vi.fn(),
   order: vi.fn(),
   select: vi.fn(),
@@ -26,12 +27,15 @@ vi.mock('@/lib/supabase', () => ({
   },
 }))
 
-import { cacheTag } from 'next/cache'
+import { cacheLife, cacheTag } from 'next/cache'
+import { supabaseClient } from '@/lib/supabase'
 import {
   countVideos,
   fetchActiveTalents,
   fetchDashboardVideos,
+  fetchTalent,
   fetchVideos,
+  type TalentDetail,
 } from '../fetchers'
 
 const TALENT_IDS = [
@@ -128,6 +132,109 @@ describe('fetchActiveTalents', () => {
     })
 
     await expect(fetchActiveTalents()).rejects.toThrow('failed')
+  })
+})
+
+describe('fetchTalent', () => {
+  const talentId = TALENT_IDS[0] as string
+
+  function createTalent(overrides: Partial<TalentDetail> = {}): TalentDetail {
+    return {
+      id: talentId,
+      name: '一ノ瀬うるは',
+      twitch_users: [],
+      youtube_channels: [],
+      ...overrides,
+    }
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    query.select.mockReturnValue(query)
+    query.eq.mockReturnValue(query)
+    query.is.mockReturnValue(query)
+    query.maybeSingle.mockResolvedValue({ data: createTalent(), error: null })
+  })
+
+  test('fetches only an active talent that is not deleted', async () => {
+    expect(await fetchTalent(talentId)).toEqual(createTalent())
+
+    expect(supabaseClient.from).toHaveBeenCalledWith('talents')
+    expect(query.eq).toHaveBeenCalledWith('id', talentId)
+    expect(query.eq).toHaveBeenCalledWith('status', 'active')
+    expect(query.is).toHaveBeenCalledWith('deleted_at', null)
+  })
+
+  test('is cached for days with the talents tag', async () => {
+    await fetchTalent(talentId)
+
+    expect(cacheLife).toHaveBeenCalledWith('days')
+    expect(cacheTag).toHaveBeenCalledWith('talents')
+  })
+
+  test('returns null for a talent that is not shown', async () => {
+    query.maybeSingle.mockResolvedValue({ data: null, error: null })
+
+    expect(await fetchTalent(talentId)).toBeNull()
+  })
+
+  test('returns null for an ID that is not a UUID without querying', async () => {
+    expect(await fetchTalent('not-a-uuid')).toBeNull()
+    expect(supabaseClient.from).not.toHaveBeenCalled()
+  })
+
+  test('throws when the talent cannot be fetched', async () => {
+    query.maybeSingle.mockResolvedValue({
+      data: null,
+      error: { message: 'connection refused' },
+    })
+
+    await expect(fetchTalent(talentId)).rejects.toThrow('connection refused')
+  })
+
+  test('sorts the channels and users by their platform IDs', async () => {
+    query.maybeSingle.mockResolvedValue({
+      data: createTalent({
+        twitch_users: [
+          {
+            name: 'B',
+            profile_image: null,
+            twitch_login_name: 'b',
+            twitch_user_id: '200',
+          },
+          {
+            name: 'A',
+            profile_image: null,
+            twitch_login_name: 'a',
+            twitch_user_id: '100',
+          },
+        ],
+        youtube_channels: [
+          {
+            name: 'Sub',
+            profile_image: null,
+            youtube_channel_id: 'UCb',
+            youtube_handle: null,
+          },
+          {
+            name: 'Main',
+            profile_image: null,
+            youtube_channel_id: 'UCa',
+            youtube_handle: null,
+          },
+        ],
+      }),
+      error: null,
+    })
+
+    const talent = await fetchTalent(talentId)
+
+    expect(talent?.youtube_channels.map((channel) => channel.name)).toEqual([
+      'Main',
+      'Sub',
+    ])
+    expect(talent?.twitch_users.map((user) => user.name)).toEqual(['A', 'B'])
   })
 })
 

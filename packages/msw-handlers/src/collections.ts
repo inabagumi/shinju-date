@@ -211,6 +211,32 @@ export function defineCollectionRelations() {
   // See handlers/supabase.ts for implementation details
 }
 
+/**
+ * IDs of the seeded active talents, in the order of their names
+ * (一ノ瀬うるは, 飛良ひかり, 小森めと, 英リサ).
+ *
+ * - The first one has a YouTube channel and a Twitch user, both with icons
+ * - The second one has a YouTube channel with an icon and a Twitch user
+ *   without one
+ * - The last one has only a YouTube channel without an icon
+ */
+export const MOCK_TALENT_IDS = [
+  '00000000-0000-4000-8000-000000000001',
+  '00000000-0000-4000-8000-000000000002',
+  '00000000-0000-4000-8000-000000000003',
+  '00000000-0000-4000-8000-000000000004',
+] as const
+
+/** ID of the seeded talent whose status is `retired` */
+export const MOCK_RETIRED_TALENT_ID = '00000000-0000-4000-8000-000000000005'
+
+/** ID of the seeded talent that is deleted (`deleted_at` is set) */
+export const MOCK_DELETED_TALENT_ID = '00000000-0000-4000-8000-000000000006'
+
+/** ID of the seeded active talent that has no channels or videos */
+export const MOCK_TALENT_WITHOUT_VIDEOS_ID =
+  '00000000-0000-4000-8000-000000000007'
+
 let seeding: Promise<void> | undefined
 
 /**
@@ -239,7 +265,9 @@ export async function seedCollections() {
       talents.create({
         created_at: faker.date.past({ years: 2 }).toISOString(),
         deleted_at: null,
-        id: faker.string.uuid(),
+        // Fixed so that E2E tests can open the page of a talent
+        // (`MOCK_TALENT_IDS`)
+        id: MOCK_TALENT_IDS[idx] ?? faker.string.uuid(),
         name,
         status: 'active',
         theme_color: themeColors[idx] ?? null,
@@ -247,6 +275,39 @@ export async function seedCollections() {
       }),
     ),
   )
+
+  // A retired talent and a deleted talent, which the public site does not
+  // show, and an active talent that has just been added. They have no
+  // channels or videos.
+  await Promise.all([
+    talents.create({
+      created_at: faker.date.recent({ days: 7 }).toISOString(),
+      deleted_at: null,
+      id: MOCK_TALENT_WITHOUT_VIDEOS_ID,
+      name: '動画のないタレント',
+      status: 'active',
+      theme_color: null,
+      updated_at: faker.date.recent().toISOString(),
+    }),
+    talents.create({
+      created_at: faker.date.past({ years: 3 }).toISOString(),
+      deleted_at: null,
+      id: MOCK_RETIRED_TALENT_ID,
+      name: '引退したタレント',
+      status: 'retired',
+      theme_color: null,
+      updated_at: faker.date.recent().toISOString(),
+    }),
+    talents.create({
+      created_at: faker.date.past({ years: 3 }).toISOString(),
+      deleted_at: faker.date.recent({ days: 30 }).toISOString(),
+      id: MOCK_DELETED_TALENT_ID,
+      name: '削除したタレント',
+      status: 'active',
+      theme_color: null,
+      updated_at: faker.date.recent().toISOString(),
+    }),
+  ])
 
   // Create thumbnails
   const createdThumbnails = await Promise.all(
@@ -482,14 +543,17 @@ export async function seedCollections() {
     )
   }
 
-  // Create YouTube videos (relations)
+  // Create YouTube videos (relations). Each video belongs to the channel of
+  // its talent, so the page of a talent shows its own channel on the cards.
   const allVideos = await videos.findMany()
+  const findChannelOfVideo = (video: (typeof allVideos)[number]) =>
+    createdChannels.find((channel) => channel.talent_id === video.talent_id)
 
   // Create specific test data that tests expect
   const testYoutubeVideoIds = ['YT_video1abc', 'YT_video2def', 'YT_video3ghi']
   await Promise.all(
     allVideos.slice(0, 3).map((video, idx) => {
-      const channel = createdChannels[idx % createdChannels.length]
+      const channel = findChannelOfVideo(video)
       if (!channel) return Promise.resolve()
 
       return youtubeVideos.create({
@@ -504,8 +568,8 @@ export async function seedCollections() {
 
   // Create remaining YouTube videos with random IDs
   await Promise.all(
-    allVideos.slice(3).map((video, idx) => {
-      const channel = createdChannels[(idx + 3) % createdChannels.length]
+    allVideos.slice(3).map((video) => {
+      const channel = findChannelOfVideo(video)
       if (!channel) return Promise.resolve()
 
       return youtubeVideos.create({

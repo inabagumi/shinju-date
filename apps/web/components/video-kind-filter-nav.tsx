@@ -1,7 +1,6 @@
 import { twMerge } from '@shinju-date/ui'
 import Link from 'next/link'
 import {
-  getVideosPath,
   VIDEO_KIND_FILTER_OPTIONS,
   type VideoKindFilter,
 } from '@/lib/video-kind-filter'
@@ -19,19 +18,17 @@ const UNSELECTED_PILL_CLASS_NAME =
 interface VideoKindFilterNavProps {
   className?: string | undefined
   current: VideoKindFilter
-  query: string
-  /** 選んでいるタレントの ID。種別を切り替えても残す */
-  talentIds?: string[]
+  /** 種別ごとの切り替え先のパス。ほかの絞り込みの条件はここで残す */
+  getPath: (kind: VideoKindFilter) => string
 }
 
 /**
- * 動画一覧と検索結果の種別（すべて／動画／ショート）の切り替え。
+ * 動画一覧・検索結果・タレント詳細の種別（すべて／動画／ショート）の切り替え。
  */
 export default function VideoKindFilterNav({
   className,
   current,
-  query,
-  talentIds = [],
+  getPath,
 }: VideoKindFilterNavProps) {
   return (
     <nav aria-label="種別" className={className}>
@@ -49,7 +46,7 @@ export default function VideoKindFilterNav({
                     ? SELECTED_PILL_CLASS_NAME
                     : UNSELECTED_PILL_CLASS_NAME,
                 )}
-                href={getVideosPath(query, option.value, talentIds)}
+                href={getPath(option.value)}
               >
                 {option.label}
               </Link>
