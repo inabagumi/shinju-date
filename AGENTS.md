@@ -145,6 +145,17 @@ AIツールは常に進化しています。
 
 Vitest はテストファイルの型を検査しないため、TypeScript のコードを変更した後は `pnpm run typecheck`（特定のパッケージのみの場合は `pnpm run typecheck --filter=<パッケージ名>`）も実行してください。CI でも実行され、型エラーがあると失敗します。詳細は [CONTRIBUTING.md](CONTRIBUTING.md#型チェック) を参照してください。
 
+### Next.js の公式スキル
+
+`.claude/skills/` に Next.js の公式スキルを4つ入れています。使いどころと入れなかったスキルの理由、`agent-browser` の入れ方は [docs/agent-skills.md](docs/agent-skills.md) を参照してください。
+
+- `next-dev-loop`: 起動中の `next dev` に対して、MCP（`/_next/mcp`）と `agent-browser` で編集のたびに動作を確かめる
+- `next-cache-components-optimizer`: 指定したルートの静的シェルを広げ、`instant()` テストを回帰テストとして残す
+- `next-partial-prefetching-optimizer`: 指定した遷移で、クリック前に用意しておく UI を `instant()` テストで決めて最適化する
+- `next-bundle-optimizer`: 初期ロードを重くしているクライアントバンドルを特定する（既定は変更を加えない監査）
+
+`.claude/skills/next-*` と `skills-lock.json` は `skills` CLI が置いたファイルです。手で編集せず、`pnpm dlx skills update` で更新してください。
+
 ### 各アプリの AGENTS.md
 
 `apps/*/AGENTS.md` の `<!-- BEGIN:nextjs-agent-rules -->` から `<!-- END:nextjs-agent-rules -->` までのブロックは `next dev` が書き込みます。手で編集せず、`next dev` が書き換えた差分はそのままコミットしてください。

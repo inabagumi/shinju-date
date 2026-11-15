@@ -20,6 +20,7 @@
 ### 🔧 技術ガイド
 
 - **[msw-guide.md](msw-guide.md)** - MSW (Mock Service Worker) 統合ガイド
+- **[agent-skills.md](agent-skills.md)** - Next.js の公式スキル（AI エージェント向け）と agent-browser の使い方
 
 ### 📦 その他のドキュメント
 
