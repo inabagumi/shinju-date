@@ -68,7 +68,7 @@ describe('getTalentLinks', () => {
       },
       {
         external: false,
-        href: `/talents/${TALENT_ID}.ics`,
+        href: `/channels/${TALENT_ID}/videos.ics`,
         label: 'カレンダーに登録',
       },
     ])
@@ -129,7 +129,7 @@ describe('getTalentLinks', () => {
       },
       {
         external: false,
-        href: `/talents/${TALENT_ID}.ics`,
+        href: `/channels/${TALENT_ID}/videos.ics`,
         label: 'カレンダーに登録',
       },
     ])
@@ -149,6 +149,8 @@ describe('getTalentPath', () => {
 
   test('should return the paths of the page and the calendar', () => {
     expect(getTalentPath(TALENT_ID)).toBe(`/talents/${TALENT_ID}`)
-    expect(getTalentCalendarPath(TALENT_ID)).toBe(`/talents/${TALENT_ID}.ics`)
+    expect(getTalentCalendarPath(TALENT_ID)).toBe(
+      `/channels/${TALENT_ID}/videos.ics`,
+    )
   })
 })

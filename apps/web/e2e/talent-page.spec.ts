@@ -72,12 +72,15 @@ test.describe('Talent page', () => {
 
     await expect(calendarLink).toHaveAttribute(
       'href',
-      `/talents/${TALENT.id}.ics`,
+      `/channels/${TALENT.id}/videos.ics`,
     )
     await expect(calendarLink).not.toHaveAttribute('target')
   })
 
-  test('should point to the calendar as an alternate', async ({ page }) => {
+  test('should point to the calendar as an alternate', async ({
+    page,
+    request,
+  }) => {
     await page.goto(`${BASE_URL}/talents/${TALENT.id}`)
 
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
@@ -91,7 +94,16 @@ test.describe('Talent page', () => {
 
     await expect(alternate).toHaveAttribute(
       'href',
-      `${BASE_URL}/talents/${TALENT.id}.ics`,
+      `${BASE_URL}/channels/${TALENT.id}/videos.ics`,
+    )
+
+    const response = await request.get(
+      (await alternate.getAttribute('href')) ?? '',
+    )
+
+    expect(response.status()).toBe(200)
+    expect(response.headers()['content-type']).toBe(
+      'text/calendar; charset=UTF-8',
     )
   })
 
