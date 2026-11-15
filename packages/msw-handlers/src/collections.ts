@@ -15,6 +15,7 @@ export const talents = new Collection({
     deleted_at: z.string().nullable(),
     id: z.string().uuid(),
     name: z.string(),
+    reading: z.string().nullable(),
     status: z.enum(['active', 'retired']),
     theme_color: z.string().nullable(),
     updated_at: z.string(),
@@ -259,6 +260,12 @@ export async function seedCollections() {
   defineCollectionRelations()
   // Create talents
   const talentNames = ['朝霧ミオ', '風花リツ', '白露ネネ', '凪沢ユラ']
+  const talentReadings = [
+    'あさぎりみお',
+    'かざはなりつ',
+    'しらつゆねね',
+    'なぎさわゆら',
+  ]
   const themeColors = ['#FF6B9D', '#87CEEB', '#98D8C8', '#FFB6C1']
   const createdTalents = await Promise.all(
     talentNames.map((name, idx) =>
@@ -269,6 +276,7 @@ export async function seedCollections() {
         // (`MOCK_TALENT_IDS`)
         id: MOCK_TALENT_IDS[idx] ?? faker.string.uuid(),
         name,
+        reading: talentReadings[idx] ?? null,
         status: 'active',
         theme_color: themeColors[idx] ?? null,
         updated_at: faker.date.recent().toISOString(),
@@ -278,13 +286,15 @@ export async function seedCollections() {
 
   // A retired talent and a deleted talent, which the public site does not
   // show, and an active talent that has just been added. They have no
-  // channels or videos.
+  // channels, videos or readings, so the new talent comes last on the list of
+  // talents.
   await Promise.all([
     talents.create({
       created_at: faker.date.recent({ days: 7 }).toISOString(),
       deleted_at: null,
       id: MOCK_TALENT_WITHOUT_VIDEOS_ID,
       name: '動画のないタレント',
+      reading: null,
       status: 'active',
       theme_color: null,
       updated_at: faker.date.recent().toISOString(),
@@ -294,6 +304,7 @@ export async function seedCollections() {
       deleted_at: null,
       id: MOCK_RETIRED_TALENT_ID,
       name: '引退したタレント',
+      reading: null,
       status: 'retired',
       theme_color: null,
       updated_at: faker.date.recent().toISOString(),
@@ -303,6 +314,7 @@ export async function seedCollections() {
       deleted_at: faker.date.recent({ days: 30 }).toISOString(),
       id: MOCK_DELETED_TALENT_ID,
       name: '削除したタレント',
+      reading: null,
       status: 'active',
       theme_color: null,
       updated_at: faker.date.recent().toISOString(),
