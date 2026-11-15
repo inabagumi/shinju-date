@@ -792,9 +792,9 @@ importers:
 
   packages/helpers:
     dependencies:
-      '@shinju-date/twitch-api-client':
+      '@shinju-date/constants':
         specifier: workspace:*
-        version: link:../twitch-api-client
+        version: link:../constants
     devDependencies:
       '@tsconfig/node20':
         specifier: 20.1.11
@@ -999,6 +999,9 @@ importers:
 
   packages/twitch-api-client:
     dependencies:
+      '@shinju-date/constants':
+        specifier: workspace:*
+        version: link:../constants
       '@twurple/api':
         specifier: 8.2.0
         version: 8.2.0(@twurple/auth@8.2.0)

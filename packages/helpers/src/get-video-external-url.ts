@@ -1,4 +1,4 @@
-import { isLiveTwitchVideoId } from '@shinju-date/twitch-api-client'
+import { isLiveTwitchVideoId } from '@shinju-date/constants'
 
 export type VideoPlatform = 'youtube' | 'twitch'
 
