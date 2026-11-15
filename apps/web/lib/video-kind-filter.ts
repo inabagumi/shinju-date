@@ -45,16 +45,10 @@ export function getVideoKinds(
   return filter === 'all' ? undefined : [filter]
 }
 
-/**
- * 動画一覧（または検索結果）を種別とタレントで絞り込んだページのパス。
- * タレントの ID は重複を除いて並べ替える。
- */
-export function getVideosPath(
-  query: string,
+function createFilterSearchParams(
   filter: VideoKindFilter,
-  talentIds: readonly string[] = [],
-): string {
-  const pathname = query ? `/videos/${encodeURIComponent(query)}` : '/videos'
+  talentIds: readonly string[],
+): URLSearchParams {
   const searchParams = new URLSearchParams()
 
   if (filter !== 'all') {
@@ -65,7 +59,44 @@ export function getVideosPath(
     searchParams.append(TALENT_SEARCH_PARAM, talentId)
   }
 
+  return searchParams
+}
+
+function appendSearchParams(
+  pathname: string,
+  searchParams: URLSearchParams,
+): string {
   return searchParams.size > 0 ? `${pathname}?${searchParams}` : pathname
+}
+
+/**
+ * 動画一覧（または検索結果）を種別とタレントで絞り込んだページのパス。
+ * タレントの ID は重複を除いて並べ替える。
+ */
+export function getVideosPath(
+  query: string,
+  filter: VideoKindFilter,
+  talentIds: readonly string[] = [],
+): string {
+  const pathname = query ? `/videos/${encodeURIComponent(query)}` : '/videos'
+
+  return appendSearchParams(
+    pathname,
+    createFilterSearchParams(filter, talentIds),
+  )
+}
+
+/**
+ * 動画一覧と同じ条件で絞り込んだカレンダーのパス。キーワードには対応しない。
+ */
+export function getVideosCalendarPath(
+  filter: VideoKindFilter,
+  talentIds: readonly string[] = [],
+): string {
+  return appendSearchParams(
+    '/videos.ics',
+    createFilterSearchParams(filter, talentIds),
+  )
 }
 
 /**

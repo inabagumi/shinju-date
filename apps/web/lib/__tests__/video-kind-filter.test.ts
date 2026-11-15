@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import {
   getVideoKindName,
   getVideoKinds,
+  getVideosCalendarPath,
   getVideosPath,
   parseVideoKindFilter,
 } from '../video-kind-filter'
@@ -57,6 +58,23 @@ describe('getVideosPath', () => {
       `/videos/${encodeURIComponent('歌')}?kind=short&talent=${talentA}`,
     )
     expect(getVideosPath('', 'all', [])).toBe('/videos')
+  })
+})
+
+describe('getVideosCalendarPath', () => {
+  test('should link to the calendar of every video', () => {
+    expect(getVideosCalendarPath('all')).toBe('/videos.ics')
+    expect(getVideosCalendarPath('all', [])).toBe('/videos.ics')
+  })
+
+  test('should keep the kind and the talents in sorted order', () => {
+    const talentA = '0f6b7c84-1a1e-4b4e-9d3a-5c7a0c1e2f01'
+    const talentB = '7d2e4b1a-3c5f-4e6a-8b9c-0d1e2f3a4b02'
+
+    expect(getVideosCalendarPath('standard')).toBe('/videos.ics?kind=standard')
+    expect(getVideosCalendarPath('short', [talentB, talentA, talentB])).toBe(
+      `/videos.ics?kind=short&talent=${talentA}&talent=${talentB}`,
+    )
   })
 })
 

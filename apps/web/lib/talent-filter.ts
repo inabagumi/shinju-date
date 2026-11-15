@@ -11,21 +11,34 @@ export function normalizeTalentIds(ids: readonly string[]): string[] {
   return [...new Set(ids)].sort()
 }
 
+function toValues(value: string | string[] | undefined): string[] {
+  return Array.isArray(value) ? value : value ? [value] : []
+}
+
 /**
- * 検索パラメーターの値をタレントの ID に変換する。UUID の形式でない値と、
- * `activeTalentIds` に含まれない ID は無視する。
+ * 検索パラメーターのタレントの値に、UUID の形式でないものが含まれるか。
+ */
+export function hasInvalidTalentId(
+  value: string | string[] | undefined,
+): boolean {
+  return toValues(value).some((id) => !isUUID(id))
+}
+
+/**
+ * 検索パラメーターの値をタレントの ID に変換する。UUID の形式でない値は
+ * 無視する。`activeTalentIds` を指定したときは、それに含まれない ID も
+ * 無視する。
  */
 export function parseTalentIds(
   value: string | string[] | undefined,
-  activeTalentIds: readonly string[],
+  activeTalentIds?: readonly string[],
 ): string[] {
-  const values = Array.isArray(value) ? value : value ? [value] : []
-  const activeIds = new Set(activeTalentIds)
+  const activeIds = activeTalentIds ? new Set(activeTalentIds) : null
 
   return normalizeTalentIds(
-    values
+    toValues(value)
       .filter(isUUID)
       .map((id) => id.toLowerCase())
-      .filter((id) => activeIds.has(id)),
+      .filter((id) => !activeIds || activeIds.has(id)),
   )
 }

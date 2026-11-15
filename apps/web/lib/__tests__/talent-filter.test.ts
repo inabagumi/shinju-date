@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'vitest'
-import { normalizeTalentIds, parseTalentIds } from '../talent-filter'
+import {
+  hasInvalidTalentId,
+  normalizeTalentIds,
+  parseTalentIds,
+} from '../talent-filter'
 
 const TALENT_A = '0f6b7c84-1a1e-4b4e-9d3a-5c7a0c1e2f01'
 const TALENT_B = '7d2e4b1a-3c5f-4e6a-8b9c-0d1e2f3a4b02'
@@ -12,6 +16,20 @@ describe('normalizeTalentIds', () => {
       TALENT_A,
       TALENT_C,
     ])
+  })
+})
+
+describe('hasInvalidTalentId', () => {
+  test('should accept missing values and UUIDs', () => {
+    expect(hasInvalidTalentId(undefined)).toBe(false)
+    expect(hasInvalidTalentId([])).toBe(false)
+    expect(hasInvalidTalentId([TALENT_A, TALENT_B.toUpperCase()])).toBe(false)
+  })
+
+  test('should find the values that are not UUIDs', () => {
+    expect(hasInvalidTalentId('abc')).toBe(true)
+    expect(hasInvalidTalentId([''])).toBe(true)
+    expect(hasInvalidTalentId([TALENT_A, `${TALENT_B}x`])).toBe(true)
   })
 })
 
@@ -44,5 +62,11 @@ describe('parseTalentIds', () => {
         ACTIVE_TALENT_IDS,
       ),
     ).toEqual([TALENT_A])
+  })
+
+  test('should keep every UUID without the active talents', () => {
+    expect(
+      parseTalentIds([TALENT_C, 'abc', '00000000-0000-4000-8000-000000000000']),
+    ).toEqual(['00000000-0000-4000-8000-000000000000', TALENT_C])
   })
 })

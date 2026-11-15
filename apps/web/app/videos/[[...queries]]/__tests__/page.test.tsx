@@ -209,15 +209,32 @@ describe('generateMetadata', () => {
 
     expect(metadata.robots).toEqual({ index: true })
     expect(metadata.alternates?.canonical).toBe('/videos')
+    expect(metadata.alternates?.types).toEqual({
+      'text/calendar': '/videos.ics?kind=short',
+    })
+  })
+
+  test('should offer the calendar of every video without filters', async () => {
+    const metadata = await generateMetadata(createProps(undefined))
+
+    expect(metadata.alternates?.types).toEqual({
+      'text/calendar': '/videos.ics',
+    })
   })
 
   test('should not index the videos filtered by talents', async () => {
     const metadata = await generateMetadata(
-      createProps(undefined, { talent: TALENT_A.id }),
+      createProps(undefined, {
+        kind: 'standard',
+        talent: [TALENT_B.id, TALENT_A.id],
+      }),
     )
 
     expect(metadata.robots).toEqual({ index: false })
     expect(metadata.alternates?.canonical).toBe('/videos')
+    expect(metadata.alternates?.types).toEqual({
+      'text/calendar': `/videos.ics?kind=standard&talent=${TALENT_A.id}&talent=${TALENT_B.id}`,
+    })
   })
 
   test('should ignore unknown talents', async () => {
@@ -226,6 +243,9 @@ describe('generateMetadata', () => {
     )
 
     expect(metadata.robots).toEqual({ index: true })
+    expect(metadata.alternates?.types).toEqual({
+      'text/calendar': '/videos.ics',
+    })
   })
 
   test('should keep the canonical URL of the search results', async () => {
@@ -237,5 +257,6 @@ describe('generateMetadata', () => {
     expect(metadata.alternates?.canonical).toBe(
       `/videos/${encodeURIComponent('歌')}`,
     )
+    expect(metadata.alternates?.types).toEqual({ 'text/calendar': null })
   })
 })
