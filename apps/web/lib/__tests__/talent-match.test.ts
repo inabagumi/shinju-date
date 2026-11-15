@@ -3,7 +3,7 @@ import type { Talent } from '../fetchers'
 import { findMatchingTalents } from '../talent-match'
 
 const TALENTS: Talent[] = [
-  { id: '00000000-0000-4000-8000-000000000001', name: 'あさぎりミオ' },
+  { id: '00000000-0000-4000-8000-000000000001', name: '朝霧ミオ' },
   {
     id: '00000000-0000-4000-8000-000000000002',
     name: 'Ｙｕｒａ Ｎａｇｉｓａｗａ',
@@ -18,7 +18,7 @@ describe('findMatchingTalents', () => {
       TALENTS[0],
       TALENTS[3],
     ])
-    expect(findMatchingTalents(TALENTS, 'あさぎり')).toEqual([TALENTS[0]])
+    expect(findMatchingTalents(TALENTS, '朝霧')).toEqual([TALENTS[0]])
   })
 
   test('should ignore the difference between full-width and half-width characters', () => {

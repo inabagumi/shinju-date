@@ -39,7 +39,7 @@ function createTwitchUser(
 function createTalent(overrides: Partial<TalentDetail> = {}): TalentDetail {
   return {
     id: TALENT_ID,
-    name: 'あさぎりミオ',
+    name: '朝霧ミオ',
     twitch_users: [],
     youtube_channels: [],
     ...overrides,

@@ -108,14 +108,14 @@ describe('fetchActiveTalents', () => {
     query.eq.mockReturnValue(query)
     query.is.mockReturnValue(query)
     query.order.mockResolvedValue({
-      data: [{ id: TALENT_IDS[0], name: 'あさぎりミオ' }],
+      data: [{ id: TALENT_IDS[0], name: '朝霧ミオ' }],
       error: null,
     })
   })
 
   test('requests the active talents by name', async () => {
     await expect(fetchActiveTalents()).resolves.toEqual([
-      { id: TALENT_IDS[0], name: 'あさぎりミオ' },
+      { id: TALENT_IDS[0], name: '朝霧ミオ' },
     ])
 
     expect(query.select).toHaveBeenCalledWith('id, name')
@@ -141,7 +141,7 @@ describe('fetchTalent', () => {
   function createTalent(overrides: Partial<TalentDetail> = {}): TalentDetail {
     return {
       id: talentId,
-      name: 'あさぎりミオ',
+      name: '朝霧ミオ',
       twitch_users: [],
       youtube_channels: [],
       ...overrides,

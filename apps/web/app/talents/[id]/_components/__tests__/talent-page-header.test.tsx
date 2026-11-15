@@ -11,10 +11,10 @@ const TALENT_ID = '00000000-0000-4000-8000-000000000001'
 function createTalent(overrides: Partial<TalentDetail> = {}): TalentDetail {
   return {
     id: TALENT_ID,
-    name: 'あさぎりミオ',
+    name: '朝霧ミオ',
     twitch_users: [
       {
-        name: 'あさぎりミオ',
+        name: '朝霧ミオ',
         profile_image: null,
         twitch_login_name: 'uruha',
         twitch_user_id: '100',
@@ -22,7 +22,7 @@ function createTalent(overrides: Partial<TalentDetail> = {}): TalentDetail {
     ],
     youtube_channels: [
       {
-        name: 'あさぎりミオ',
+        name: '朝霧ミオ',
         profile_image: { blur_data_url: '', id: 'icon-1' },
         youtube_channel_id: 'UCuruha',
         youtube_handle: '@uruha',
@@ -37,14 +37,14 @@ describe('TalentPageHeader', () => {
     const { container } = render(<TalentPageHeader talent={createTalent()} />)
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'あさぎりミオ' }),
+      screen.getByRole('heading', { level: 1, name: '朝霧ミオ' }),
     ).toBeInTheDocument()
     expect(screen.getByTestId('talent-icon')).toBeInTheDocument()
     expect(container.querySelector('img')).toHaveAttribute('alt', '')
     expect(
       within(
         screen.getByRole('navigation', { name: 'パンくずリスト' }),
-      ).getByText('あさぎりミオ'),
+      ).getByText('朝霧ミオ'),
     ).toBeInTheDocument()
   })
 

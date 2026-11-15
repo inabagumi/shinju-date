@@ -11,11 +11,11 @@ import { SearchModalContent } from '../search-modal-content'
 
 const MIO: Talent = {
   id: '00000000-0000-4000-8000-000000000001',
-  name: 'あさぎりミオ',
+  name: '朝霧ミオ',
 }
 const YURA: Talent = {
   id: '00000000-0000-4000-8000-000000000002',
-  name: 'なぎさわユラ',
+  name: '凪沢ユラ',
 }
 const MYOSOTIS: Talent = {
   id: '00000000-0000-4000-8000-000000000003',
@@ -106,7 +106,7 @@ describe('SearchModalContent', () => {
       within(section)
         .getAllByRole('button')
         .map((button) => button.textContent),
-    ).toEqual(['あさぎりミオ', 'ミオソティス'])
+    ).toEqual(['朝霧ミオ', 'ミオソティス'])
 
     const suggestion = await screen.findByRole('link', { name: 'ミオ' })
     expect(
@@ -118,9 +118,9 @@ describe('SearchModalContent', () => {
   test('should turn the selected talent into a chip and clear the input', async () => {
     await renderContent()
 
-    await selectTalent('あさぎり', 'あさぎりミオ')
+    await selectTalent('朝霧', '朝霧ミオ')
 
-    expect(within(getChipList()).getByText('あさぎりミオ')).toBeInTheDocument()
+    expect(within(getChipList()).getByText('朝霧ミオ')).toBeInTheDocument()
     expect(getInput()).toHaveValue('')
     expect(getInput()).toHaveFocus()
 
@@ -136,8 +136,8 @@ describe('SearchModalContent', () => {
   test('should search the keyword within the selected talents', async () => {
     const { onClose } = await renderContent()
 
-    await selectTalent('あさぎり', 'あさぎりミオ')
-    await selectTalent('ユラ', 'なぎさわユラ')
+    await selectTalent('朝霧', '朝霧ミオ')
+    await selectTalent('ユラ', '凪沢ユラ')
 
     fireEvent.change(getInput(), { target: { value: ' 歌枠 ' } })
     submit()
@@ -151,7 +151,7 @@ describe('SearchModalContent', () => {
   test('should open the video list of the selected talents without a keyword', async () => {
     await renderContent()
 
-    await selectTalent('あさぎり', 'あさぎりミオ')
+    await selectTalent('朝霧', '朝霧ミオ')
 
     expect(
       screen.getByText('Enterキーを押して、選んだタレントの動画を表示'),
@@ -181,8 +181,8 @@ describe('SearchModalContent', () => {
   test('should remove the last chip with Backspace on an empty input', async () => {
     await renderContent()
 
-    await selectTalent('あさぎり', 'あさぎりミオ')
-    await selectTalent('ユラ', 'なぎさわユラ')
+    await selectTalent('朝霧', '朝霧ミオ')
+    await selectTalent('ユラ', '凪沢ユラ')
 
     fireEvent.change(getInput(), { target: { value: 'a' } })
     fireEvent.keyDown(getInput(), { key: 'Backspace' })
@@ -190,8 +190,8 @@ describe('SearchModalContent', () => {
 
     fireEvent.change(getInput(), { target: { value: '' } })
     fireEvent.keyDown(getInput(), { key: 'Backspace' })
-    expect(within(getChipList()).getByText('あさぎりミオ')).toBeInTheDocument()
-    expect(within(getChipList()).queryByText('なぎさわユラ')).toBeNull()
+    expect(within(getChipList()).getByText('朝霧ミオ')).toBeInTheDocument()
+    expect(within(getChipList()).queryByText('凪沢ユラ')).toBeNull()
 
     fireEvent.keyDown(getInput(), { key: 'Backspace' })
     expect(
@@ -202,13 +202,13 @@ describe('SearchModalContent', () => {
   test('should remove a chip with its remove button', async () => {
     await renderContent()
 
-    await selectTalent('あさぎり', 'あさぎりミオ')
-    await selectTalent('ユラ', 'なぎさわユラ')
+    await selectTalent('朝霧', '朝霧ミオ')
+    await selectTalent('ユラ', '凪沢ユラ')
 
-    fireEvent.click(screen.getByRole('button', { name: 'あさぎりミオを外す' }))
+    fireEvent.click(screen.getByRole('button', { name: '朝霧ミオを外す' }))
 
-    expect(within(getChipList()).queryByText('あさぎりミオ')).toBeNull()
-    expect(within(getChipList()).getByText('なぎさわユラ')).toBeInTheDocument()
+    expect(within(getChipList()).queryByText('朝霧ミオ')).toBeNull()
+    expect(within(getChipList()).getByText('凪沢ユラ')).toBeInTheDocument()
     expect(getInput()).toHaveFocus()
   })
 
@@ -217,7 +217,7 @@ describe('SearchModalContent', () => {
 
     await renderContent()
 
-    await selectTalent('あさぎり', 'あさぎりミオ')
+    await selectTalent('朝霧', '朝霧ミオ')
 
     expect(screen.getByRole('link', { name: '歌枠' })).toHaveAttribute(
       'href',
@@ -265,7 +265,7 @@ describe('SearchModalContent', () => {
       within(await screen.findByRole('list', { name: '選んでいるタレント' }))
         .getAllByRole('listitem')
         .map((item) => item.textContent),
-    ).toEqual(['あさぎりミオ', 'なぎさわユラ'])
+    ).toEqual(['朝霧ミオ', '凪沢ユラ'])
 
     submit()
 
@@ -298,7 +298,7 @@ describe('SearchModalContent', () => {
     await screen.findByRole('link', { name: 'ミオ 歌枠' })
 
     const options = [
-      screen.getByRole('button', { name: 'あさぎりミオ' }),
+      screen.getByRole('button', { name: '朝霧ミオ' }),
       screen.getByRole('button', { name: 'ミオソティス' }),
       screen.getByRole('link', { name: 'ミオ' }),
       screen.getByRole('link', { name: 'ミオ 歌枠' }),
