@@ -24,6 +24,10 @@ minimumReleaseAgeExclude:
   - "@next/swc-win32-x64-msvc@16.3.0"
   - next@16.3.0
 
+permissions:
+  tsdown:
+    skills: false
+
 publicHoistPattern:
   - "*import-in-the-middle*"
   - "*require-in-the-middle*"

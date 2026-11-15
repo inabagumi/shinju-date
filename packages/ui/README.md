@@ -308,7 +308,7 @@ pnpm run dev
 
 ### ビルドの出力
 
-`dist/` には、`src/` のファイルを1つずつ変換したモジュールを置きます（tsup の `bundle: false`）。アプリが `@shinju-date/ui` から読み込んでも、使う部品のモジュールとその Radix のパッケージだけがブラウザに配信されます。`package.json` の `"sideEffects"` で、CSS 以外のモジュールに副作用がないことを示しています。
+`dist/` には、`src/` のファイルを1つずつ変換したモジュールを置きます（tsdown の `unbundle: true`）。アプリが `@shinju-date/ui` から読み込んでも、使う部品のモジュールとその Radix のパッケージだけがブラウザに配信されます。`package.json` の `"sideEffects"` で、CSS 以外のモジュールに副作用がないことを示しています。
 
 部品を追加・変更するときは、次を守ってください。
 
