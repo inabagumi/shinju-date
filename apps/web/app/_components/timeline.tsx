@@ -8,9 +8,9 @@ import FormattedTime from '@/components/formatted-time'
 import { useNow } from '@/components/timer'
 import VideoCard, { VideoCardSkeleton } from '@/components/video-card'
 import { VIDEO_CARD_LIST_CLASS_NAMES } from '@/components/video-card-list'
+import { WEEKDAYS } from '@/lib/date-heading'
 import type { Video } from '@/lib/fetchers'
-
-const WEEKDAYS = ['月', '火', '水', '木', '金', '土', '日'] as const
+import { groupVideosByDate } from '@/lib/group-videos-by-date'
 
 /**
  * 日付見出しの文言。「今日」「明日」は言葉で、それ以降は日付と曜日で表す。
@@ -203,20 +203,7 @@ interface TimelineProps {
 
 export default function Timeline({ referenceDate, videos }: TimelineProps) {
   const today = useToday(referenceDate)
-  const schedule = useMemo<Map<string, Video[]>>(() => {
-    const sortedValues = videos.toSorted((videoA, videoB) =>
-      Temporal.Instant.compare(
-        Temporal.Instant.from(videoA.published_at),
-        Temporal.Instant.from(videoB.published_at),
-      ),
-    )
-    return Map.groupBy(sortedValues, (value) =>
-      Temporal.Instant.from(value.published_at)
-        .toZonedDateTimeISO(TIME_ZONE)
-        .toPlainDate()
-        .toJSON(),
-    )
-  }, [videos])
+  const schedule = useMemo(() => groupVideosByDate(videos), [videos])
 
   return (
     <div className="space-y-10">
