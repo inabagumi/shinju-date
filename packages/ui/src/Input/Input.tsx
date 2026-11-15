@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentPropsWithRef } from 'react'
-import { twMerge } from '../tw-merge'
+import { twMerge } from '../tw-merge.js'
 
 /** 入力欄の見た目。`Select` も同じ高さ・枠・角丸・フォーカス表示にするために使う */
 export const inputVariants = cva(

@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentPropsWithRef } from 'react'
-import { twMerge } from '../tw-merge'
+import { twMerge } from '../tw-merge.js'
 
 const badgeVariants = cva(
   'inline-flex items-center rounded-control border px-2 py-0.5 text-caption font-semibold whitespace-nowrap',

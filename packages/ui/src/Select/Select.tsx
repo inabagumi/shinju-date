@@ -1,8 +1,8 @@
 import type { VariantProps } from 'class-variance-authority'
 import { ChevronDown } from 'lucide-react'
 import type { ComponentPropsWithRef } from 'react'
-import { inputVariants } from '../Input/Input'
-import { twMerge } from '../tw-merge'
+import { inputVariants } from '../Input/Input.js'
+import { twMerge } from '../tw-merge.js'
 
 export type SelectProps = Omit<ComponentPropsWithRef<'select'>, 'size'> &
   VariantProps<typeof inputVariants>
