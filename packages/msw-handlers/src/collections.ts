@@ -5,6 +5,7 @@
 
 import { faker } from '@faker-js/faker'
 import { Collection } from '@msw/data'
+import { TIME_ZONE } from '@shinju-date/constants'
 import { z } from 'zod'
 import { MOCK_SUPABASE_USER } from './session.js'
 
@@ -433,31 +434,73 @@ export async function seedCollections() {
     }),
   )
 
-  // A stream of a week ago, so the schedule of the public site has a video in
-  // the previous week as well. It is created before the YouTube videos below,
-  // so it gets a youtube_videos row.
-  const talentOfLastWeek = createdTalents[2]
+  // Streams for the schedule of the public site: 2 on each day of the current
+  // week (from Monday to Sunday in Japan), 1 in each of the previous and the
+  // next weeks, and 1 on air now. They are created before the YouTube videos
+  // below, so they get youtube_videos rows. Their status follows the start:
+  // `ENDED` before now and `UPCOMING` after it.
+  const scheduleNow = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
+  const weekStart = scheduleNow
+    .toPlainDate()
+    .subtract({ days: scheduleNow.dayOfWeek - 1 })
+    .toZonedDateTime(TIME_ZONE)
+  // Some streams of different days start in the same hour, so the rows of the
+  // hours on the schedule can be checked
+  const scheduleStarts = [
+    ...Array.from({ length: 7 }, (_, day) => [
+      weekStart.add({ days: day, hours: 12 + (day % 3) * 2 }),
+      weekStart.add({ days: day, hours: 21 }),
+    ]).flat(),
+    weekStart.subtract({ days: 5 }).add({ hours: 20 }),
+    weekStart.add({ days: 9, hours: 20 }),
+  ]
+  const scheduleTitles = [
+    '【定期】朝の雑談',
+    '【歌枠】リクエスト歌枠',
+    '【ゲーム】RPG 実況',
+    '【雑談】週末のふりかえり',
+  ]
+  const scheduleSeeds = [
+    ...scheduleStarts.map((start) => ({
+      publishedAt: start.toInstant(),
+      status:
+        Temporal.ZonedDateTime.compare(start, scheduleNow) < 0
+          ? ('ENDED' as const)
+          : ('UPCOMING' as const),
+    })),
+    {
+      publishedAt: scheduleNow.subtract({ minutes: 30 }).toInstant(),
+      status: 'LIVE' as const,
+    },
+  ]
 
-  if (talentOfLastWeek) {
-    const publishedAt = Temporal.Now.instant().subtract({ hours: 24 * 7 })
+  await Promise.all(
+    scheduleSeeds.map(async ({ publishedAt, status }, idx) => {
+      const talent = createdTalents[idx % createdTalents.length]
+      if (!talent) return
 
-    await videos.create({
-      created_at: publishedAt.toString(),
-      deleted_at: null,
-      deleted_reason: null,
-      duration: 'PT1H30M0S',
-      id: faker.string.uuid(),
-      platform: 'youtube',
-      published_at: publishedAt.toString(),
-      status: 'ENDED',
-      talent_id: talentOfLastWeek.id,
-      thumbnail_id: createdThumbnails[0]?.id ?? null,
-      title: '【定期】先週の歌枠アーカイブ',
-      updated_at: publishedAt.toString(),
-      video_kind: 'standard',
-      visible: true,
-    })
-  }
+      return videos.create({
+        created_at: publishedAt.toString(),
+        deleted_at: null,
+        deleted_reason: null,
+        duration: status === 'ENDED' ? 'PT1H30M0S' : 'P0D',
+        id: faker.string.uuid(),
+        platform: 'youtube',
+        published_at: publishedAt.toString(),
+        status,
+        talent_id: talent.id,
+        thumbnail_id:
+          createdThumbnails[idx % createdThumbnails.length]?.id ?? null,
+        title:
+          status === 'LIVE'
+            ? '【スケジュール】ただいま配信中'
+            : `${scheduleTitles[idx % scheduleTitles.length]} #${idx + 1}`,
+        updated_at: publishedAt.toString(),
+        video_kind: 'standard',
+        visible: true,
+      })
+    }),
+  )
 
   // Create YouTube channels. The last one has no icon, so the default icon
   // fallback can be checked as well.
