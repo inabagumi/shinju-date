@@ -25,6 +25,11 @@ export function MainNavigationItems({
           動画一覧
         </NavLink>
       </li>
+      <li>
+        <NavLink className={linkClassName} href="/talents">
+          タレント一覧
+        </NavLink>
+      </li>
       <li className="empty:hidden">
         <ContactLink className={linkClassName}>お問い合わせ</ContactLink>
       </li>

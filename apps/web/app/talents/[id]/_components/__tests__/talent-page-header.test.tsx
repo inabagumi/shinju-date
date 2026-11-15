@@ -48,6 +48,16 @@ describe('TalentPageHeader', () => {
     ).toBeInTheDocument()
   })
 
+  test('should link back to the talent list from the breadcrumbs', () => {
+    render(<TalentPageHeader talent={createTalent()} />)
+
+    expect(
+      within(
+        screen.getByRole('navigation', { name: 'パンくずリスト' }),
+      ).getByRole('link', { name: 'タレント一覧' }),
+    ).toHaveAttribute('href', '/talents')
+  })
+
   test('should open the channels in a new tab', () => {
     render(<TalentPageHeader talent={createTalent()} />)
 
