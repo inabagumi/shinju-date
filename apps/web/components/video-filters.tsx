@@ -2,6 +2,7 @@ import { X } from 'lucide-react'
 import Link from 'next/link'
 import type { Talent } from '@/lib/fetchers'
 import { getVideosPath, type VideoKindFilter } from '@/lib/video-kind-filter'
+import TalentChip, { TALENT_CHIP_REMOVE_CLASS_NAME } from './talent-chip'
 import TalentFilter from './talent-filter'
 import VideoKindFilterNav, {
   VideoKindFilterNavSkeleton,
@@ -27,14 +28,10 @@ function SelectedTalentList({
   return (
     <ul aria-label="選んでいるタレント" className="flex flex-wrap gap-2">
       {selectedTalents.map((talent) => (
-        <li
-          className="inline-flex h-8 max-w-full items-center gap-1 rounded-full border border-border pr-1 pl-3 text-meta text-foreground"
-          key={talent.id}
-        >
-          <span className="truncate">{talent.name}</span>
+        <TalentChip key={talent.id} name={talent.name}>
           <Link
             aria-label={`${talent.name}を外す`}
-            className="inline-flex size-6 shrink-0 items-center justify-center rounded-full text-muted hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className={TALENT_CHIP_REMOVE_CLASS_NAME}
             href={getVideosPath(
               query,
               kind,
@@ -44,7 +41,7 @@ function SelectedTalentList({
           >
             <X aria-hidden="true" className="size-4" />
           </Link>
-        </li>
+        </TalentChip>
       ))}
       {selectedTalents.length > 1 && (
         <li className="inline-flex h-8 items-center">
