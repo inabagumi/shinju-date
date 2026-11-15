@@ -15,31 +15,43 @@ const fetchers = vi.hoisted(() => ({
 
 vi.mock('@/lib/fetchers', () => fetchers)
 
+interface MockTrackerProps {
+  query: string
+}
+
+interface MockSearchResultsProps {
+  talentIds: string[]
+}
+
+interface MockVideoFiltersProps {
+  selectedTalents: Talent[]
+}
+
 vi.mock('@/lib/recommendations/get-display-queries', () => ({
   getDisplayRecommendationQueries: vi.fn(async () => []),
 }))
 
 vi.mock('@/components/search-query-tracker', () => ({
-  default: ({ query }: { query: string }) => (
+  default: ({ query }: MockTrackerProps) => (
     <div data-testid="search-query-tracker">{query}</div>
   ),
 }))
 
 vi.mock('@/components/search-exit-tracker', () => ({
-  default: ({ query }: { query: string }) => (
+  default: ({ query }: MockTrackerProps) => (
     <div data-testid="search-exit-tracker">{query}</div>
   ),
 }))
 
 vi.mock('@/components/search-results', () => ({
-  default: ({ talentIds }: { talentIds: string[] }) => (
+  default: ({ talentIds }: MockSearchResultsProps) => (
     <div data-testid="search-results">{talentIds.join(',')}</div>
   ),
   SearchResultsSkeleton: () => null,
 }))
 
 vi.mock('@/components/video-filters', () => ({
-  default: ({ selectedTalents }: { selectedTalents: Talent[] }) => (
+  default: ({ selectedTalents }: MockVideoFiltersProps) => (
     <ul aria-label="選んでいるタレント">
       {selectedTalents.map((talent) => (
         <li key={talent.id}>{talent.name}</li>
