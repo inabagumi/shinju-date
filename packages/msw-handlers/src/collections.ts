@@ -736,7 +736,10 @@ export async function seedCollections() {
     end_at: faker.date.future().toISOString(),
     id: faker.string.uuid(),
     level: 'info',
-    message: 'メンテナンスのお知らせ',
+    // Contains a link and GFM syntax (strikethrough) so that the rendering of
+    // the Markdown message can be checked
+    message:
+      'メンテナンスのお知らせ: 日時は~~11月20日~~11月27日に変わりました。詳しくは[メンテナンス情報](https://example.com/maintenance)をご覧ください。',
     start_at: faker.date.recent().toISOString(),
     updated_at: faker.date.recent().toISOString(),
   })
