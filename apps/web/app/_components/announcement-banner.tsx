@@ -10,14 +10,8 @@ import {
   X,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import ReactMarkdown from 'react-markdown'
-import rehypeExternalLinks from 'rehype-external-links'
-import remarkGfm from 'remark-gfm'
-import {
-  type Announcement,
-  dismissAnnouncement,
-  getAnnouncement,
-} from '../_lib/actions'
+import { dismissAnnouncement, getRenderedAnnouncement } from '../_lib/actions'
+import type { RenderedAnnouncement } from './announcement-message'
 
 interface BannerTone {
   /** 左端の線の色 */
@@ -68,11 +62,14 @@ const ICON_BUTTON_CLASS_NAME =
  * into a small pill so that it stops covering the content underneath without
  * hiding the announcement entirely. The message is collapsed to a single line
  * by default and can be expanded by clicking it.
+ *
+ * The message is rendered on the server (see `announcement-message.tsx`), so
+ * this component never receives the Markdown source.
  */
 export function AnnouncementBanner({
   announcement: initialAnnouncement,
 }: {
-  announcement: Announcement
+  announcement: RenderedAnnouncement
 }) {
   const [isVisible, setIsVisible] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
@@ -86,7 +83,7 @@ export function AnnouncementBanner({
     enabled: isVisible,
     initialData: initialAnnouncement,
     queryFn: async () => {
-      const announcement = await getAnnouncement()
+      const announcement = await getRenderedAnnouncement()
       if (!announcement) {
         // If no announcement is available, hide the banner
         setIsVisible(false)
@@ -97,6 +94,11 @@ export function AnnouncementBanner({
     queryKey: ['announcement'],
     refetchInterval: 1_000 * 60, // Refetch every 60 seconds
     refetchIntervalInBackground: true,
+    // The message is a React element rendered on the server, not JSON data.
+    // Structural sharing would walk the whole element tree (including the
+    // owner info React attaches in development) and copy the changed parts
+    // into new objects for no benefit, so keep the fetched data as it is.
+    structuralSharing: false,
   })
 
   // Keep keyboard focus on the control that replaced the one just used
@@ -182,20 +184,7 @@ export function AnnouncementBanner({
                   !isExpanded ? 'line-clamp-1' : ''
                 }`}
               >
-                <ReactMarkdown
-                  rehypePlugins={[
-                    [
-                      rehypeExternalLinks,
-                      {
-                        rel: ['nofollow', 'noopener', 'noreferrer'],
-                        target: '_blank',
-                      },
-                    ],
-                  ]}
-                  remarkPlugins={[remarkGfm]}
-                >
-                  {data.message}
-                </ReactMarkdown>
+                {data.message}
               </div>
             </button>
           </div>
