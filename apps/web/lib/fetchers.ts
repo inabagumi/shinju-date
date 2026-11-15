@@ -424,6 +424,107 @@ export const fetchTalentList = async (): Promise<TalentListItem[]> => {
   }))
 }
 
+/** Whether a talent is streaming now, and when it streams next */
+export interface TalentStreamStatus {
+  /** Whether the talent has a video that is streaming now */
+  isLive: boolean
+  /**
+   * The start (ISO 8601) of the earliest stream from the start of this hour to
+   * a week later, the same end as the upcoming videos on the home page. `null`
+   * while the talent is live.
+   */
+  nextStreamAt: string | null
+}
+
+interface TalentStreamRow
+  extends Pick<Tables<'videos'>, 'published_at' | 'status' | 'talent_id'> {
+  twitch_video: Pick<Tables<'twitch_videos'>, 'twitch_video_id'> | null
+  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
+}
+
+// The platform videos are fetched only to skip the videos the site does not
+// show, as `hasPlatformSource` does
+const TALENT_STREAM_SELECT = `
+  published_at,
+  status,
+  talent_id,
+  twitch_video:twitch_videos (twitch_video_id),
+  youtube_video:youtube_videos (youtube_video_id)
+`
+
+/**
+ * Fetch whether each talent is streaming now and when it streams next, keyed
+ * by the ID of the talent. Talents with neither are not included.
+ *
+ * It is cached apart from `fetchTalentList`, as it changes much more often.
+ */
+export const fetchTalentStreamStatuses = async (): Promise<
+  Record<string, TalentStreamStatus>
+> => {
+  'use cache: remote'
+
+  cacheLife('minutes')
+  cacheTag('videos')
+
+  const baseTime = startOfHour(Temporal.Now.zonedDateTimeISO(TIME_ZONE))
+  const until = baseTime.add({
+    weeks: 1,
+  })
+
+  const { data: videos, error } = await supabaseClient
+    .from('videos')
+    .select<string, TalentStreamRow>(TALENT_STREAM_SELECT)
+    .in('status', ['LIVE', 'UPCOMING'])
+    .lte('published_at', toDBString(until))
+    .order('published_at', {
+      ascending: true,
+    })
+
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  // An upcoming stream that should have started before this hour is not the
+  // next one any more, while one that is a little late still is
+  const since = baseTime.toInstant()
+  const statuses: Record<string, TalentStreamStatus> = {}
+
+  for (const video of videos) {
+    if (video.youtube_video == null && video.twitch_video == null) {
+      continue
+    }
+
+    if (
+      video.status === 'UPCOMING' &&
+      Temporal.Instant.compare(
+        Temporal.Instant.from(video.published_at),
+        since,
+      ) < 0
+    ) {
+      continue
+    }
+
+    const status = statuses[video.talent_id] ?? {
+      isLive: false,
+      nextStreamAt: null,
+    }
+
+    statuses[video.talent_id] = status
+
+    if (video.status === 'LIVE') {
+      status.isLive = true
+      status.nextStreamAt = null
+    } else if (!status.isLive && status.nextStreamAt === null) {
+      // The videos are sorted by the start, so the first one is the earliest
+      status.nextStreamAt = video.published_at
+    }
+  }
+
+  return statuses
+}
+
 /**
  * Fetch currently streaming (LIVE) videos
  */
