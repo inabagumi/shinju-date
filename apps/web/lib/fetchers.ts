@@ -4,6 +4,7 @@ import { SEARCH_RESULT_COUNT, TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { startOfHour, toDBString } from '@shinju-date/temporal-fns'
 import { cacheLife, cacheTag } from 'next/cache'
+import { STREAM_TENDENCY_DAYS } from '@/lib/stream-tendency'
 import { supabaseClient } from '@/lib/supabase'
 import { isUUID } from '@/lib/uuid'
 import { getVideoKinds, type VideoKindFilter } from '@/lib/video-kind-filter'
@@ -529,6 +530,48 @@ export const fetchTalentStreamStatuses = async (): Promise<
   }
 
   return statuses
+}
+
+/**
+ * Fetch the starts (ISO 8601) of the streams a talent has finished, for the
+ * tendency of its streams on its page: the regular videos (not shorts) that
+ * are `ENDED`, which are the finished streams and premieres, from
+ * `STREAM_TENDENCY_DAYS` days before the start of today in `TIME_ZONE` to the
+ * start of today.
+ *
+ * Today is left out, so the result stays the same for the day it is cached.
+ */
+export const fetchTalentStreamStarts = async (
+  talentId: string,
+): Promise<string[]> => {
+  'use cache: remote'
+
+  cacheLife('days')
+  cacheTag('videos')
+
+  const until = Temporal.Now.zonedDateTimeISO(TIME_ZONE).startOfDay()
+  const since = until.subtract({ days: STREAM_TENDENCY_DAYS })
+
+  const { data: videos, error } = await supabaseClient
+    .from('videos')
+    .select('published_at')
+    .eq('talent_id', talentId)
+    .eq('status', 'ENDED')
+    .eq('video_kind', 'standard')
+    .gte('published_at', toDBString(since))
+    .lt('published_at', toDBString(until))
+    .order('published_at', {
+      ascending: false,
+    })
+    .limit(1000)
+
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  return videos.map((video) => video.published_at)
 }
 
 /**
