@@ -387,7 +387,9 @@ interface TalentListRow extends Talent {
 
 /**
  * Fetch the active talents (`status = 'active'` and not deleted) for the list
- * of talents, sorted by name.
+ * of talents, sorted by reading in the order of the Japanese syllabary (the
+ * column uses the `ja-x-icu` collation). Talents without a reading come last,
+ * sorted by name.
  */
 export const fetchTalentList = async (): Promise<TalentListItem[]> => {
   'use cache: remote'
@@ -400,6 +402,10 @@ export const fetchTalentList = async (): Promise<TalentListItem[]> => {
     .select<string, TalentListRow>(TALENT_LIST_SELECT)
     .eq('status', 'active')
     .is('deleted_at', null)
+    .order('reading', {
+      ascending: true,
+      nullsFirst: false,
+    })
     .order('name', {
       ascending: true,
     })
