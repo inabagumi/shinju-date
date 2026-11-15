@@ -46,11 +46,12 @@ function getVideoAccounts(video: ScheduleVideo) {
 }
 
 /**
- * 地（`bg-background`）と見分けられるよう、淡い地（`bg-muted`）と枠を付ける。
- * 左の線だけはタレントのテーマカラーにする
+ * 地と見分けられるよう枠を付ける。左の線だけはタレントのテーマカラーにする。
+ * 広げたときに下の項目が透けないよう、地は不透明な `bg-surface` にする
+ * （ライトでは地と同じ白なので、見た目は枠だけになる）
  */
 const ITEM_CLASS_NAME =
-  'block rounded-control border border-l-4 border-border bg-muted py-1 pr-1 pl-2'
+  'block rounded-control border border-l-4 border-border bg-surface py-1 pr-1 pl-2'
 
 /** 1時間の高さ（`--hour`、px）。`schedule-week.tsx` の値と合わせる */
 const HOUR_HEIGHT = 64
@@ -93,8 +94,8 @@ interface ScheduleItemProps {
  * 1024px 以上では、置く側（`group/item` の要素）が決めた位置と大きさに収め、
  * 入りきらない部分は切る。幅が狭くても並びは変えず、先頭のアイコンで誰の配信か
  * わかるようにする。マウスを乗せるかフォーカスして置く側が広げたとき、アイコンや
- * 文字の位置はずれない。広げたときは、浮いて見えるよう地を `bg-surface` にし、
- * 影を付けて、タイトルを全文出す。
+ * 文字の位置はずれない。広げたときは、浮いて見えるよう影を付けて、タイトルを
+ * 全文出す。
  *
  * 左端の線はタレントのテーマカラーにする。任意の色なのでコントラスト比を
  * 保証できないため、文字の色や文字の地には使わない。未設定や `#RRGGBB` でない
@@ -120,9 +121,9 @@ export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
       className={twMerge(
         ITEM_CLASS_NAME,
         'group min-w-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent lg:min-h-0 lg:flex-1 lg:overflow-hidden',
-        // 広げたときは、浮いて見えるよう地を変えて影を付ける。影は項目そのものに
-        // 付け、項目と影の大きさをそろえる
-        'lg:group-focus-within/item:bg-surface lg:group-focus-within/item:shadow-overlay lg:group-hover/item:bg-surface lg:group-hover/item:shadow-overlay',
+        // 広げたときは、浮いて見えるよう影を付ける（地の色は変えない）。影は
+        // 項目そのものに付け、項目と影の大きさをそろえる
+        'lg:group-focus-within/item:shadow-overlay lg:group-hover/item:shadow-overlay',
         themeColor ? 'border-l-(--talent-color)' : 'border-l-border',
       )}
       data-start={formatTime(startAt)}

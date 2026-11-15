@@ -181,10 +181,12 @@ describe('ScheduleItem', () => {
 })
 
 describe('ScheduleItem (on a wide screen)', () => {
-  test('should have a fill and a frame to stand out from the ground', () => {
+  test('should have a frame to stand out from the ground', () => {
     render(<ScheduleItem value={createVideo()} />)
 
-    expect(getItem()).toHaveClass('bg-muted', 'border', 'border-border')
+    // The fill is opaque, so the items below do not show through an expanded
+    // one
+    expect(getItem()).toHaveClass('bg-surface', 'border', 'border-border')
   })
 
   test('should fill the placement and float with a shadow when expanded', () => {
@@ -193,10 +195,11 @@ describe('ScheduleItem (on a wide screen)', () => {
     expect(getItem()).toHaveClass(
       'lg:flex-1',
       'lg:overflow-hidden',
-      'lg:group-hover/item:bg-surface',
       'lg:group-hover/item:shadow-overlay',
       'lg:group-focus-within/item:shadow-overlay',
     )
+    // The fill does not change on hover
+    expect(getItem().className).not.toMatch(/hover\S*:bg-/)
   })
 
   test('should keep the same order of the contents when it is narrow', () => {
