@@ -35,10 +35,25 @@ if [ "$current" != "$(cat "$hashes" 2>/dev/null)" ]; then
   printf '%s\n' "$current" > "$hashes"
 fi
 
+# next-dev-loop スキルが PATH から直接呼ぶ agent-browser を入れる。
+# エージェントしか使わないため devDependencies には入れず、バージョンは Renovate で更新する
+# renovate: datasource=npm depName=agent-browser
+AGENT_BROWSER_VERSION="0.43.0"
+
+if [ "$("$PNPM_HOME/bin/agent-browser" --version 2>/dev/null || true)" != "agent-browser $AGENT_BROWSER_VERSION" ]; then
+  npm install --global --prefix "$PNPM_HOME" "agent-browser@$AGENT_BROWSER_VERSION"
+fi
+
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
   {
     echo "export PNPM_HOME=\"$PNPM_HOME\""
     echo "export PATH=\"$PNPM_HOME/bin:\$PATH\""
+
+    # agent-browser が既定で使う Chrome for Testing の代わりに、
+    # コンテナにある Playwright の Chromium を使う
+    if [ -x /opt/pw-browsers/chromium ]; then
+      echo "export AGENT_BROWSER_EXECUTABLE_PATH=/opt/pw-browsers/chromium"
+    fi
   } >> "$CLAUDE_ENV_FILE"
 fi
 
