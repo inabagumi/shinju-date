@@ -1,5 +1,5 @@
-import { TALENT_AFFILIATION_NAME, TIME_ZONE } from '@shinju-date/constants'
-import { getVideoExternalUrl, parseVideoTitle } from '@shinju-date/helpers'
+import { TIME_ZONE } from '@shinju-date/constants'
+import { getVideoExternalUrl } from '@shinju-date/helpers'
 import {
   formatDateTimeWithSeconds,
   formatTime,
@@ -11,6 +11,7 @@ import PlatformBadge from '@/components/platform-badge'
 import TalentIcon from '@/components/talent-icon'
 import type { ScheduleVideo } from '@/lib/fetchers'
 import { parseThemeColor } from '@/lib/theme-color'
+import { getVideoTitleParts } from '@/lib/video-title'
 
 /**
  * 項目のリンク先。`VideoCard` と同じく `getVideoExternalUrl` で作る。
@@ -58,7 +59,8 @@ const HOUR_HEIGHT = 64
 
 /**
  * タイトルより上の高さ（px）: 上下の余白（8）、上下の枠（2）、項目の間の余白
- * （2）、1行目（20）、タイトルとの間（2）
+ * （2）、1行目（20）、タイトルとの間（2）。ラベルとハッシュタグの行は、1024px
+ * 以上で広げていないときは出さないので含めない
  */
 const ITEM_CHROME_HEIGHT = 34
 
@@ -89,7 +91,8 @@ interface ScheduleItemProps {
 
 /**
  * スケジュールの1件。アイコン・開始時刻・タレント名を1行目に、タイトルをその
- * 下に出し、サムネイルは出さない。リンクの挙動は `VideoCard` と同じにする。
+ * 下に出し、サムネイルは出さない。1行目とタイトルの間には、動画カードと同じ
+ * ラベルとハッシュタグの行を出す（1024px 以上では広げたときだけ）。リンクの挙動は `VideoCard` と同じにする。
  *
  * 1024px 以上では、置く側（`group/item` の要素）が決めた位置と大きさに収め、
  * 入りきらない部分は切る。幅が狭くても並びは変えず、先頭のアイコンで誰の配信か
@@ -115,11 +118,12 @@ export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
   const style = themeColor
     ? ({ '--talent-color': themeColor } as CSSProperties)
     : undefined
-  // 【】と末尾のハッシュタグを除いた本文を出す（ラベルとハッシュタグは出さない）
-  const { text: titleText } = parseVideoTitle(value.title, {
-    creditKeywords: [TALENT_AFFILIATION_NAME],
-    creditNames: [value.talent.name],
-  })
+  // 動画カードと同じく、【】と末尾のハッシュタグを除いた本文をタイトルに出し、
+  // 先頭のラベルとハッシュタグは1行目とタイトルの間の行に出す
+  const { tags, text: titleText } = getVideoTitleParts(
+    value.title,
+    value.talent.name,
+  )
 
   return (
     <a
@@ -169,6 +173,20 @@ export default function ScheduleItem({ titleLines, value }: ScheduleItemProps) {
           {value.talent.name}
         </span>
       </span>
+
+      {/*
+       * ラベルとハッシュタグの行。項目全体が1つのリンクなのでリンクにしない。
+       * 1024px 以上で広げていないときは、タイトルの行数（`getTitleLines`）を
+       * 減らさないよう出さない。広げたときは高さが中身に合わせて伸びるので出す
+       */}
+      {tags && (
+        <span
+          className="mt-0.5 block truncate text-caption text-muted lg:hidden lg:group-focus-within/item:block lg:group-hover/item:block"
+          data-testid="schedule-item-tags"
+        >
+          {tags}
+        </span>
+      )}
 
       <span
         className={twMerge(

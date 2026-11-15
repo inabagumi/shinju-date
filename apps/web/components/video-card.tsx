@@ -1,10 +1,11 @@
-import { TALENT_AFFILIATION_NAME, TIME_ZONE } from '@shinju-date/constants'
-import { getVideoExternalUrl, parseVideoTitle } from '@shinju-date/helpers'
+import { TIME_ZONE } from '@shinju-date/constants'
+import { getVideoExternalUrl } from '@shinju-date/helpers'
 import { formatDuration } from '@shinju-date/temporal-fns'
 import { twMerge } from '@shinju-date/ui'
 import { ImageIcon } from 'lucide-react'
 import Image from 'next/image'
 import type { Video } from '@/lib/fetchers'
+import { getVideoTitleParts } from '@/lib/video-title'
 import FormattedTime from './formatted-time'
 import LiveNow from './live-now'
 import PlatformBadge from './platform-badge'
@@ -47,28 +48,6 @@ const BADGE_CLASS_NAME =
  * 確保して、カードの高さを揃える
  */
 const TAGS_CLASS_NAME = 'truncate min-h-[1lh] text-caption text-muted'
-
-/** ラベルとハッシュタグの行に出すハッシュタグの数 */
-const MAX_HASHTAGS = 3
-
-/**
- * タイトルを本文・ラベル・ハッシュタグに分け、本文と、ラベルとハッシュタグの
- * 行に出す文字を返す。行には先頭のラベル1つと、ハッシュタグを先頭から3つまで
- * 並べる
- */
-function getTitleParts(video: Video): [text: string, tags: string] {
-  const talentName = video.talent?.name
-  const { hashtags, labels, text } = parseVideoTitle(video.title, {
-    creditKeywords: [TALENT_AFFILIATION_NAME],
-    creditNames: talentName ? [talentName] : [],
-  })
-  const tags = [
-    ...labels.slice(0, 1),
-    ...hashtags.slice(0, MAX_HASHTAGS).map((hashtag) => `#${hashtag}`),
-  ].join(' ')
-
-  return [text, tags]
-}
 
 function getThumbnailURL(
   video: Video,
@@ -197,7 +176,10 @@ export default function VideoCard({
   const isShortInWideThumbnail =
     value.video_kind === 'short' && variant !== 'short'
   const isUpcoming = showUpcomingLabel && value.status === 'UPCOMING'
-  const [titleText, tags] = getTitleParts(value)
+  const { tags, text: titleText } = getVideoTitleParts(
+    value.title,
+    value.talent?.name,
+  )
 
   const href = getVideoExternalUrl({
     platform: value.platform,
