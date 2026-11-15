@@ -40,6 +40,7 @@ export async function generateMetadata({
     },
     title: talent.name,
     twitter: {
+      card: 'summary_large_image',
       title: `${talent.name} - ${siteName}`,
     },
   }

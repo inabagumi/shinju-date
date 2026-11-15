@@ -212,6 +212,70 @@ test.describe('Talent page', () => {
   }
 })
 
+/** The width and height in the IHDR chunk of a PNG */
+function getPNGSize(body: Buffer) {
+  return { height: body.readUInt32BE(20), width: body.readUInt32BE(16) }
+}
+
+test.describe('Open Graph image of the talent page', () => {
+  for (const [description, talent] of [
+    ['a talent', TALENT],
+    // No theme color, no icon and no channels
+    ['a talent without a theme color or an icon', TALENT_WITHOUT_VIDEOS],
+  ] as const) {
+    test(`should point to a 1200x630 PNG for ${description}`, async ({
+      page,
+      request,
+    }) => {
+      await page.goto(`${BASE_URL}/talents/${talent.id}`)
+
+      const ogImage = page.locator('meta[property="og:image"]')
+
+      await expect(ogImage).toHaveAttribute(
+        'content',
+        new RegExp(`/talents/${talent.id}/opengraph-image`),
+      )
+      await expect(
+        page.locator('meta[property="og:image:width"]'),
+      ).toHaveAttribute('content', '1200')
+      await expect(
+        page.locator('meta[property="og:image:height"]'),
+      ).toHaveAttribute('content', '630')
+      await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+        'content',
+        'summary_large_image',
+      )
+
+      const response = await request.get(
+        (await ogImage.getAttribute('content')) ?? '',
+      )
+
+      expect(response.status()).toBe(200)
+      expect(response.headers()['content-type']).toBe('image/png')
+      expect(response.headers()['cache-control']).not.toContain('immutable')
+      expect(getPNGSize(await response.body())).toEqual({
+        height: 630,
+        width: 1200,
+      })
+    })
+  }
+
+  for (const [description, id] of [
+    ['a talent that does not exist', MISSING_TALENT_ID],
+    ['an ID that is not a UUID', 'not-a-uuid'],
+    ['a retired talent', RETIRED_TALENT_ID],
+    ['a deleted talent', DELETED_TALENT_ID],
+  ] as const) {
+    test(`should not be found for ${description}`, async ({ request }) => {
+      const response = await request.get(
+        `${BASE_URL}/talents/${id}/opengraph-image`,
+      )
+
+      expect(response.status()).toBe(404)
+    })
+  }
+})
+
 test.describe('Videos page after adding the talent page', () => {
   test('should keep the kind filter on the videos page', async ({ page }) => {
     await page.goto(`${BASE_URL}/videos`)

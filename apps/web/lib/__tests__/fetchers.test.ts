@@ -144,6 +144,7 @@ describe('fetchTalent', () => {
     return {
       id: talentId,
       name: '朝霧ミオ',
+      theme_color: null,
       twitch_users: [],
       youtube_channels: [],
       ...overrides,
