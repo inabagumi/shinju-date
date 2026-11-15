@@ -2025,6 +2025,21 @@ export const supabaseHandlers = [
       ),
   ),
 
+  // Downloads with the service role, as the Open Graph images of the talents
+  // do. The icon is filled, so that it can be told from the placeholder.
+  http.get(
+    'https://fake.supabase.test/storage/v1/object/profile-images/:path*',
+    () =>
+      new HttpResponse(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#87ceeb" /></svg>',
+        {
+          headers: {
+            'Content-Type': 'image/svg+xml',
+          },
+        },
+      ),
+  ),
+
   // Handle all thumbnail image fetches with a flexible pattern
   // Use :path* to match any path including nested directories
   http.get(
