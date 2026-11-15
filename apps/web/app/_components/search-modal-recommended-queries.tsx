@@ -1,4 +1,5 @@
 import RecommendedQueries from '@/components/recommended-queries'
+import { SearchModalSectionHeading } from './search-modal-section-heading'
 
 /**
  * Number of skeleton rows shown while recommended queries are loading.
@@ -11,13 +12,15 @@ interface SearchModalRecommendedQueriesProps {
   onClickLink?: () => void
   /** `null` while loading, otherwise the fetched queries */
   queries: string[] | null
+  /** リンク先に引き継ぐタレントの ID */
+  talentIds?: readonly string[]
 }
 
 function RecommendedQueriesHeading() {
   return (
-    <div className="border-b border-border px-4 py-3">
-      <h2 className="text-meta text-muted">おすすめの検索キーワード</h2>
-    </div>
+    <SearchModalSectionHeading>
+      おすすめの検索キーワード
+    </SearchModalSectionHeading>
   )
 }
 
@@ -44,6 +47,7 @@ function RecommendedQueriesSkeleton() {
 export function SearchModalRecommendedQueries({
   onClickLink,
   queries,
+  talentIds = [],
 }: SearchModalRecommendedQueriesProps) {
   if (queries === null) {
     return (
@@ -63,6 +67,7 @@ export function SearchModalRecommendedQueries({
       <RecommendedQueriesHeading />
       <RecommendedQueries
         queries={queries}
+        talentIds={talentIds}
         variant="list"
         {...(onClickLink ? { onClickLink } : {})}
       />

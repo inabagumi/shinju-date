@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, type Page, test } from '@playwright/test'
 
 // Base URL for tests - can be configured via environment variable
 const BASE_URL = process.env['BASE_URL'] || 'http://localhost:3000'
@@ -409,5 +409,151 @@ test.describe('Search Modal - Stability Tests', () => {
 
     // Should still be functional
     await expect(searchInput).not.toBeVisible()
+  })
+})
+
+test.describe('Search Modal - Talent', () => {
+  async function openSearchModal(page: Page) {
+    await page.getByRole('button', { name: '検索' }).click()
+
+    const searchInput = page.locator('input[name="q"]')
+    await expect(searchInput).toBeVisible({ timeout: 5000 })
+
+    return searchInput
+  }
+
+  function getChipList(page: Page) {
+    return page
+      .getByRole('dialog')
+      .getByRole('list', { name: '選んでいるタレント' })
+  }
+
+  function getTalentOption(page: Page, name: string) {
+    return page
+      .getByRole('region', { name: 'タレント' })
+      .getByRole('button', { name })
+  }
+
+  test('should search a keyword within the selected talent', async ({
+    page,
+  }) => {
+    await page.goto(BASE_URL)
+    await page.waitForLoadState('networkidle')
+
+    const searchInput = await openSearchModal(page)
+
+    await searchInput.fill('うるは')
+    await getTalentOption(page, '一ノ瀬うるは').click()
+
+    await expect(getChipList(page).getByText('一ノ瀬うるは')).toBeVisible()
+    await expect(searchInput).toHaveValue('')
+    await expect(searchInput).toBeFocused()
+
+    await searchInput.fill('歌枠')
+    await Promise.all([
+      page.waitForURL(
+        new RegExp(
+          `/videos/${encodeURIComponent('歌枠')}\\?talent=[0-9a-f-]{36}$`,
+        ),
+        { timeout: 15000 },
+      ),
+      searchInput.press('Enter'),
+    ])
+  })
+
+  test('should open the video list of the talent and start with its chip', async ({
+    page,
+  }) => {
+    await page.goto(BASE_URL)
+    await page.waitForLoadState('networkidle')
+
+    const searchInput = await openSearchModal(page)
+
+    await searchInput.fill('リサ')
+    await getTalentOption(page, '英リサ').click()
+    await Promise.all([
+      page.waitForURL(/\/videos\?talent=[0-9a-f-]{36}$/, { timeout: 15000 }),
+      searchInput.press('Enter'),
+    ])
+
+    await expect(
+      page
+        .getByRole('list', { name: '選んでいるタレント' })
+        .getByText('英リサ'),
+    ).toBeVisible()
+
+    // 絞り込んだ動画一覧で開き直すと、そのタレントのチップが入っている
+    await openSearchModal(page)
+    await expect(getChipList(page).getByText('英リサ')).toBeVisible()
+  })
+
+  test('should carry the chip over to the keyword suggestions', async ({
+    page,
+  }) => {
+    await page.goto(BASE_URL)
+    await page.waitForLoadState('networkidle')
+
+    const searchInput = await openSearchModal(page)
+
+    await searchInput.fill('うるは')
+    await getTalentOption(page, '一ノ瀬うるは').click()
+
+    // `歌配信` is a synonym of `歌枠` in the mock terms
+    await searchInput.fill('歌配')
+
+    const suggestionLink = page.locator('[data-suggestion-link]', {
+      hasText: '歌枠',
+    })
+    await expect(suggestionLink).toHaveAttribute(
+      'href',
+      new RegExp(
+        `^/videos/${encodeURIComponent('歌枠')}\\?talent=[0-9a-f-]{36}$`,
+      ),
+      { timeout: 10000 },
+    )
+  })
+
+  test('should select and remove talents only with the keyboard', async ({
+    page,
+  }) => {
+    await page.goto(BASE_URL)
+    await page.waitForLoadState('networkidle')
+
+    const searchInput = await openSearchModal(page)
+
+    // 候補を選ぶ
+    await searchInput.pressSequentially('うるは')
+    await expect(getTalentOption(page, '一ノ瀬うるは')).toBeVisible()
+    await page.keyboard.press('ArrowDown')
+    await expect(getTalentOption(page, '一ノ瀬うるは')).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(getChipList(page).getByText('一ノ瀬うるは')).toBeVisible()
+    await expect(searchInput).toBeFocused()
+
+    await searchInput.pressSequentially('リサ')
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('Enter')
+    await expect(getChipList(page).getByRole('listitem')).toHaveCount(2)
+
+    // 入力が空のときの Backspace で最後のチップを外す
+    await page.keyboard.press('Backspace')
+    await expect(getChipList(page).getByRole('listitem')).toHaveCount(1)
+    await expect(getChipList(page).getByText('一ノ瀬うるは')).toBeVisible()
+
+    // 「外す」ボタンで外す
+    await page.keyboard.press('Shift+Tab')
+    await expect(
+      page.getByRole('button', { name: '一ノ瀬うるはを外す' }),
+    ).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(getChipList(page)).toHaveCount(0)
+    await expect(searchInput).toBeFocused()
+
+    // チップがないときの遷移先は変わらない
+    await searchInput.pressSequentially('test')
+    await Promise.all([
+      page.waitForURL(`${BASE_URL}/videos/test`, { timeout: 15000 }),
+      page.keyboard.press('Enter'),
+    ])
   })
 })
