@@ -32,7 +32,9 @@ function findFirstNonBlank(
  * When the platform account is missing or has no name, the talent name is
  * used instead, so related data being absent never hides the card.
  */
-export function getVideoCreator(video: Video): VideoCreatorInfo | null {
+export function getVideoCreator(
+  video: Pick<Video, 'platform' | 'talent' | 'twitch_video' | 'youtube_video'>,
+): VideoCreatorInfo | null {
   if (video.platform === 'twitch') {
     const twitchUser = video.twitch_video?.twitch_user
     const name = findFirstNonBlank(
@@ -66,7 +68,7 @@ interface CreatorIconProps {
  * The icon is decorative: the name is always shown next to it, so screen
  * readers do not need to announce it twice.
  */
-function CreatorIcon({ profileImage }: CreatorIconProps) {
+export function CreatorIcon({ profileImage }: CreatorIconProps) {
   const baseClassName =
     'relative size-5 shrink-0 overflow-hidden rounded-full bg-muted'
 

@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 import VideoCardList, {
   VideoCardListSkeleton,
 } from '@/components/video-card-list'
@@ -12,6 +13,7 @@ import {
   type UpcomingVideos,
   type Video,
 } from '@/lib/fetchers'
+import { SCHEDULE_PATH } from '@/lib/schedule'
 import HomeSection, {
   HomeSectionCount,
   HomeSectionCountSkeleton,
@@ -88,6 +90,32 @@ export function LiveSection({ prefetchedData }: DashboardSectionProps) {
   )
 }
 
+const SECTION_LINK_CLASS_NAME =
+  'inline-flex items-center gap-0.5 rounded-control font-semibold text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
+
+function ScheduleLink() {
+  return (
+    <Link className={SECTION_LINK_CLASS_NAME} href={SCHEDULE_PATH}>
+      スケジュールを見る
+      <ChevronRight aria-hidden="true" className="size-4" />
+    </Link>
+  )
+}
+
+interface ScheduleAsideProps {
+  count: ReactNode
+}
+
+/** 配信予定の件数と、週ごとのスケジュールへのリンク */
+function ScheduleAside({ count }: ScheduleAsideProps) {
+  return (
+    <div className="flex items-baseline gap-4">
+      {count}
+      <ScheduleLink />
+    </div>
+  )
+}
+
 interface ScheduleSectionProps {
   prefetchedData: UpcomingVideos
 }
@@ -105,7 +133,9 @@ export function ScheduleSection({ prefetchedData }: ScheduleSectionProps) {
 
   return (
     <HomeSection
-      aside={<HomeSectionCount count={videos.length} />}
+      aside={
+        <ScheduleAside count={<HomeSectionCount count={videos.length} />} />
+      }
       title="配信予定"
     >
       {videos.length > 0 ? (
@@ -121,7 +151,10 @@ export function ScheduleSection({ prefetchedData }: ScheduleSectionProps) {
 
 export function ScheduleSectionSkeleton() {
   return (
-    <HomeSection aside={<HomeSectionCountSkeleton />} title="配信予定">
+    <HomeSection
+      aside={<ScheduleAside count={<HomeSectionCountSkeleton />} />}
+      title="配信予定"
+    >
       <TimelineSkeleton />
     </HomeSection>
   )
@@ -129,10 +162,7 @@ export function ScheduleSectionSkeleton() {
 
 function VideosLink() {
   return (
-    <Link
-      className="inline-flex items-center gap-0.5 rounded-control font-semibold text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-      href="/videos"
-    >
+    <Link className={SECTION_LINK_CLASS_NAME} href="/videos">
       動画一覧を見る
       <ChevronRight aria-hidden="true" className="size-4" />
     </Link>

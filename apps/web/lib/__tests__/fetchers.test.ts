@@ -6,10 +6,12 @@ const query = vi.hoisted(() => ({
   in: vi.fn(),
   is: vi.fn(),
   limit: vi.fn(),
+  lt: vi.fn(),
   lte: vi.fn(),
   maybeSingle: vi.fn(),
   neq: vi.fn(),
   order: vi.fn(),
+  range: vi.fn(),
   select: vi.fn(),
 }))
 
@@ -33,10 +35,12 @@ import {
   countVideos,
   fetchActiveTalents,
   fetchDashboardVideos,
+  fetchScheduleVideos,
   fetchTalent,
   fetchTalentList,
   fetchTalentStreamStatuses,
   fetchVideos,
+  type ScheduleVideo,
   type TalentDetail,
 } from '../fetchers'
 
@@ -550,5 +554,94 @@ describe('fetchDashboardVideos', () => {
 
     expect(query.eq).toHaveBeenCalledWith('status', 'PUBLISHED')
     expect(query.in).not.toHaveBeenCalledWith('status', ['PUBLISHED', 'ENDED'])
+  })
+})
+
+describe('fetchScheduleVideos', () => {
+  function createScheduleVideo(
+    index: number,
+    overrides: Partial<ScheduleVideo> = {},
+  ): ScheduleVideo {
+    return {
+      id: `video-${index}`,
+      platform: 'youtube',
+      published_at: '2026-11-10T12:00:00Z',
+      status: 'ENDED',
+      talent: { id: 'talent-1', name: '朝霧ミオ', theme_color: null },
+      title: `動画${index}`,
+      twitch_video: null,
+      youtube_video: { youtube_channel: null, youtube_video_id: `YT${index}` },
+      ...overrides,
+    }
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    query.select.mockReturnValue(query)
+    query.gte.mockReturnValue(query)
+    query.lt.mockReturnValue(query)
+    query.neq.mockReturnValue(query)
+    query.order.mockReturnValue(query)
+    query.range.mockResolvedValue({ data: [], error: null })
+  })
+
+  test('requests the videos from Monday to Sunday in Japan', async () => {
+    await fetchScheduleVideos('2026-11-12')
+
+    expect(supabaseClient.from).toHaveBeenCalledWith('videos')
+    // 00:00 on Monday, 9 November and on Monday, 16 November in Japan
+    expect(query.gte).toHaveBeenCalledWith(
+      'published_at',
+      '2026-11-08T15:00:00Z',
+    )
+    expect(query.lt).toHaveBeenCalledWith(
+      'published_at',
+      '2026-11-15T15:00:00Z',
+    )
+    expect(query.neq).toHaveBeenCalledWith('video_kind', 'short')
+    expect(query.order).toHaveBeenCalledWith('published_at', {
+      ascending: true,
+    })
+    expect(query.order).toHaveBeenCalledWith('id', { ascending: true })
+    expect(cacheTag).toHaveBeenCalledWith('videos')
+  })
+
+  test('fetches page by page until a page is not full', async () => {
+    const firstPage = Array.from({ length: 1000 }, (_, index) =>
+      createScheduleVideo(index),
+    )
+    const secondPage = [createScheduleVideo(1000)]
+
+    query.range
+      .mockResolvedValueOnce({ data: firstPage, error: null })
+      .mockResolvedValueOnce({ data: secondPage, error: null })
+
+    const videos = await fetchScheduleVideos('2026-11-09')
+
+    expect(videos).toHaveLength(1001)
+    expect(query.range).toHaveBeenCalledTimes(2)
+    expect(query.range).toHaveBeenNthCalledWith(1, 0, 999)
+    expect(query.range).toHaveBeenNthCalledWith(2, 1000, 1999)
+  })
+
+  test('drops the videos without a YouTube or Twitch video', async () => {
+    query.range.mockResolvedValue({
+      data: [
+        createScheduleVideo(1),
+        createScheduleVideo(2, { youtube_video: null }),
+      ],
+      error: null,
+    })
+
+    expect(
+      (await fetchScheduleVideos('2026-11-09')).map((video) => video.id),
+    ).toEqual(['video-1'])
+  })
+
+  test('throws when the videos cannot be fetched', async () => {
+    query.range.mockResolvedValue({ data: null, error: { message: 'failed' } })
+
+    await expect(fetchScheduleVideos('2026-11-09')).rejects.toThrow('failed')
   })
 })

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { fetchActiveTalents } from '@/lib/fetchers'
+import { SCHEDULE_PATH } from '@/lib/schedule'
 import { getTalentPath } from '@/lib/talent-links'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -17,6 +18,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 0.7,
       url: new URL('/videos', baseURL).toString(),
+    },
+    // Only the week that includes today. The pages of the other weeks are not
+    // indexed.
+    {
+      changeFrequency: 'daily',
+      priority: 0.7,
+      url: new URL(SCHEDULE_PATH, baseURL).toString(),
     },
     {
       changeFrequency: 'weekly',

@@ -86,7 +86,9 @@ export type Video = Pick<
   } | null
 }
 
-function hasPlatformSource(video: Video): boolean {
+function hasPlatformSource(
+  video: Pick<Video, 'twitch_video' | 'youtube_video'>,
+): boolean {
   return video.youtube_video != null || video.twitch_video != null
 }
 
@@ -131,6 +133,113 @@ export const fetchUpcomingVideos = async (): Promise<UpcomingVideos> => {
     today: baseTime.toPlainDate().toJSON(),
     videos: videos.filter(hasPlatformSource),
   }
+}
+
+/** The talent of a video on the schedule, with the theme color of the talent */
+export type ScheduleTalent = Pick<
+  Tables<'talents'>,
+  'id' | 'name' | 'theme_color'
+>
+
+/**
+ * A video on the schedule. It has only what the items of the schedule show
+ * and link to: no thumbnail, duration or kind.
+ */
+export interface ScheduleVideo
+  extends Pick<
+    Video,
+    | 'id'
+    | 'platform'
+    | 'published_at'
+    | 'status'
+    | 'title'
+    | 'twitch_video'
+    | 'youtube_video'
+  > {
+  talent: ScheduleTalent
+}
+
+const SCHEDULE_SELECT = `
+  id,
+  platform,
+  published_at,
+  status,
+  talent:talents!inner (id, name, theme_color),
+  title,
+  youtube_video:youtube_videos (
+    youtube_video_id,
+    youtube_channel:youtube_channels (
+      name,
+      youtube_handle,
+      profile_image:profile_images (blur_data_url, id)
+    )
+  ),
+  twitch_video:twitch_videos (
+    twitch_video_id,
+    type,
+    twitch_user:twitch_users (
+      name,
+      twitch_login_name,
+      profile_image:profile_images (blur_data_url, id)
+    )
+  )
+`
+
+/**
+ * The rows of a page. PostgREST returns at most 1,000 rows (`max-rows` of
+ * Supabase) for a request, so the videos of a week are fetched page by page.
+ */
+const SCHEDULE_PAGE_SIZE = 1000
+
+/**
+ * Fetch the videos that start in the week (from Monday to Sunday in
+ * `TIME_ZONE`) that includes `date` (`YYYY-MM-DD`): the ones on air, the
+ * upcoming ones and the ended ones, in the order of the start. Shorts are not
+ * included, as in the new videos of the home page.
+ *
+ * Pass the Monday of the week, so each week is cached only once.
+ */
+export const fetchScheduleVideos = async (
+  date: string,
+): Promise<ScheduleVideo[]> => {
+  'use cache: remote'
+
+  cacheLife('hours')
+  cacheTag('videos')
+
+  const plainDate = Temporal.PlainDate.from(date)
+  const weekStart = plainDate
+    .subtract({ days: plainDate.dayOfWeek - 1 })
+    .toZonedDateTime(TIME_ZONE)
+  const weekEnd = weekStart.add({ weeks: 1 })
+  const videos: ScheduleVideo[] = []
+
+  for (let offset = 0; ; offset += SCHEDULE_PAGE_SIZE) {
+    const { data, error } = await supabaseClient
+      .from('videos')
+      .select<string, ScheduleVideo>(SCHEDULE_SELECT)
+      .gte('published_at', toDBString(weekStart))
+      .lt('published_at', toDBString(weekEnd))
+      .neq('video_kind', 'short')
+      // The ID breaks ties, so a page never repeats or skips a video
+      .order('published_at', { ascending: true })
+      .order('id', { ascending: true })
+      .range(offset, offset + SCHEDULE_PAGE_SIZE - 1)
+
+    if (error) {
+      throw new TypeError(error.message, {
+        cause: error,
+      })
+    }
+
+    videos.push(...data)
+
+    if (data.length < SCHEDULE_PAGE_SIZE) {
+      break
+    }
+  }
+
+  return videos.filter(hasPlatformSource)
 }
 
 async function getDefaultBaseTime() {
