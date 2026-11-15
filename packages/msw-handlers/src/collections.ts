@@ -212,8 +212,8 @@ export function defineCollectionRelations() {
 }
 
 /**
- * IDs of the seeded active talents, in the order of their names
- * (あさぎりミオ, かざはなリツ, しらつゆネネ, なぎさわユラ).
+ * IDs of the seeded active talents, in the order of their readings
+ * (あさぎりみお, かざはなりつ, しらつゆねね, なぎさわゆら).
  *
  * - The first one has a YouTube channel and a Twitch user, both with icons
  * - The second one has a YouTube channel with an icon and a Twitch user
@@ -258,12 +258,7 @@ export async function seedCollections() {
   // Define relations first
   defineCollectionRelations()
   // Create talents
-  const talentNames = [
-    'あさぎりミオ',
-    'かざはなリツ',
-    'しらつゆネネ',
-    'なぎさわユラ',
-  ]
+  const talentNames = ['朝霧ミオ', '風花リツ', '白露ネネ', '凪沢ユラ']
   const themeColors = ['#FF6B9D', '#87CEEB', '#98D8C8', '#FFB6C1']
   const createdTalents = await Promise.all(
     talentNames.map((name, idx) =>

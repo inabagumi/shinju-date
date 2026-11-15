@@ -443,9 +443,9 @@ test.describe('Search Modal - Talent', () => {
     const searchInput = await openSearchModal(page)
 
     await searchInput.fill('ミオ')
-    await getTalentOption(page, 'あさぎりミオ').click()
+    await getTalentOption(page, '朝霧ミオ').click()
 
-    await expect(getChipList(page).getByText('あさぎりミオ')).toBeVisible()
+    await expect(getChipList(page).getByText('朝霧ミオ')).toBeVisible()
     await expect(searchInput).toHaveValue('')
     await expect(searchInput).toBeFocused()
 
@@ -470,7 +470,7 @@ test.describe('Search Modal - Talent', () => {
     const searchInput = await openSearchModal(page)
 
     await searchInput.fill('ユラ')
-    await getTalentOption(page, 'なぎさわユラ').click()
+    await getTalentOption(page, '凪沢ユラ').click()
     await Promise.all([
       page.waitForURL(/\/videos\?talent=[0-9a-f-]{36}$/, { timeout: 15000 }),
       searchInput.press('Enter'),
@@ -479,12 +479,12 @@ test.describe('Search Modal - Talent', () => {
     await expect(
       page
         .getByRole('list', { name: '選んでいるタレント' })
-        .getByText('なぎさわユラ'),
+        .getByText('凪沢ユラ'),
     ).toBeVisible()
 
     // 絞り込んだ動画一覧で開き直すと、そのタレントのチップが入っている
     await openSearchModal(page)
-    await expect(getChipList(page).getByText('なぎさわユラ')).toBeVisible()
+    await expect(getChipList(page).getByText('凪沢ユラ')).toBeVisible()
   })
 
   test('should carry the chip over to the keyword suggestions', async ({
@@ -496,7 +496,7 @@ test.describe('Search Modal - Talent', () => {
     const searchInput = await openSearchModal(page)
 
     await searchInput.fill('ミオ')
-    await getTalentOption(page, 'あさぎりミオ').click()
+    await getTalentOption(page, '朝霧ミオ').click()
 
     // `歌配信` is a synonym of `歌枠` in the mock terms
     await searchInput.fill('歌配')
@@ -523,11 +523,11 @@ test.describe('Search Modal - Talent', () => {
 
     // 候補を選ぶ
     await searchInput.pressSequentially('ミオ')
-    await expect(getTalentOption(page, 'あさぎりミオ')).toBeVisible()
+    await expect(getTalentOption(page, '朝霧ミオ')).toBeVisible()
     await page.keyboard.press('ArrowDown')
-    await expect(getTalentOption(page, 'あさぎりミオ')).toBeFocused()
+    await expect(getTalentOption(page, '朝霧ミオ')).toBeFocused()
     await page.keyboard.press('Enter')
-    await expect(getChipList(page).getByText('あさぎりミオ')).toBeVisible()
+    await expect(getChipList(page).getByText('朝霧ミオ')).toBeVisible()
     await expect(searchInput).toBeFocused()
 
     await searchInput.pressSequentially('ユラ')
@@ -538,12 +538,12 @@ test.describe('Search Modal - Talent', () => {
     // 入力が空のときの Backspace で最後のチップを外す
     await page.keyboard.press('Backspace')
     await expect(getChipList(page).getByRole('listitem')).toHaveCount(1)
-    await expect(getChipList(page).getByText('あさぎりミオ')).toBeVisible()
+    await expect(getChipList(page).getByText('朝霧ミオ')).toBeVisible()
 
     // 「外す」ボタンで外す
     await page.keyboard.press('Shift+Tab')
     await expect(
-      page.getByRole('button', { name: 'あさぎりミオを外す' }),
+      page.getByRole('button', { name: '朝霧ミオを外す' }),
     ).toBeFocused()
     await page.keyboard.press('Enter')
     await expect(getChipList(page)).toHaveCount(0)
