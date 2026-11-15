@@ -9,10 +9,6 @@ cd "${CLAUDE_PROJECT_DIR:-.}"
 
 if command -v dockerd >/dev/null && ! docker info >/dev/null 2>&1; then
   setsid dockerd >/tmp/dockerd.log 2>&1 </dev/null &
-  for _ in $(seq 1 30); do
-    docker info >/dev/null 2>&1 && break
-    sleep 1
-  done
 fi
 
 # コンテナにある pnpm v10 は devEngines に対応していないため入れ直す
@@ -29,13 +25,14 @@ if [ "$("$PNPM_HOME/bin/pnpm" -v 2>/dev/null || true)" != "$pnpm_version" ]; the
 fi
 
 hashes=node_modules/.session-start.sha256
-if ! sha256sum --check --status "$hashes" 2>/dev/null; then
+current="$(sha256sum .claude/hooks/session-start.sh package.json pnpm-lock.yaml pnpm-workspace.yaml \
+  apps/*/package.json packages/*/package.json)"
+if [ "$current" != "$(cat "$hashes" 2>/dev/null)" ]; then
   rm -f "$hashes"
 
   pnpm install --frozen-lockfile
 
-  sha256sum .claude/hooks/session-start.sh package.json pnpm-lock.yaml pnpm-workspace.yaml \
-    apps/*/package.json packages/*/package.json > "$hashes" || rm -f "$hashes"
+  printf '%s\n' "$current" > "$hashes"
 fi
 
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
@@ -43,4 +40,14 @@ if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
     echo "export PNPM_HOME=\"$PNPM_HOME\""
     echo "export PATH=\"$PNPM_HOME/bin:\$PATH\""
   } >> "$CLAUDE_ENV_FILE"
+fi
+
+if command -v dockerd >/dev/null; then
+  for _ in $(seq 1 30); do
+    docker info >/dev/null 2>&1 && exit 0
+    sleep 1
+  done
+  echo "Docker did not start. See /tmp/dockerd.log:" >&2
+  tail -n 20 /tmp/dockerd.log >&2 || true
+  exit 1
 fi
