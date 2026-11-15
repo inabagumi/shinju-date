@@ -1,6 +1,6 @@
 import { EmptyState } from '@shinju-date/ui'
 import { UsersRound } from 'lucide-react'
-import type { TalentListItem } from '@/lib/fetchers'
+import type { TalentListItem, TalentStreamStatus } from '@/lib/fetchers'
 import TalentCard, { TalentCardSkeleton } from './talent-card'
 
 /** 3 columns, 4 from 640px, 5 from 768px and 6 from 1024px */
@@ -10,10 +10,18 @@ const GRID_CLASS_NAME =
 const SKELETON_COUNT = 12
 
 interface TalentGridProps {
+  /**
+   * Whether each talent is live and when it streams next, keyed by the ID of
+   * the talent. The order of the talents does not change with them.
+   */
+  streamStatuses?: Record<string, TalentStreamStatus> | undefined
   talents: TalentListItem[]
 }
 
-export default function TalentGrid({ talents }: TalentGridProps) {
+export default function TalentGrid({
+  streamStatuses = {},
+  talents,
+}: TalentGridProps) {
   if (talents.length === 0) {
     return (
       <EmptyState icon={<UsersRound />} title="表示できるタレントがいません" />
@@ -24,7 +32,10 @@ export default function TalentGrid({ talents }: TalentGridProps) {
     <ul className={GRID_CLASS_NAME}>
       {talents.map((talent) => (
         <li key={talent.id}>
-          <TalentCard talent={talent} />
+          <TalentCard
+            streamStatus={streamStatuses[talent.id]}
+            talent={talent}
+          />
         </li>
       ))}
     </ul>
