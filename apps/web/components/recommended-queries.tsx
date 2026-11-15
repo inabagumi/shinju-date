@@ -31,15 +31,16 @@ export default function RecommendedQueries({
           <div className="p-2">
             {queries.map((query) => (
               <Link
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left hover:bg-774-nevy-100 dark:hover:bg-zinc-800"
+                className="flex w-full items-center gap-3 rounded-control px-4 py-3 text-left hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
                 href={`/videos/${encodeURIComponent(query)}`}
                 key={query}
                 {...(onClickLink ? { onClick: onClickLink } : {})}
               >
-                <Hash className="size-4 text-774-nevy-400 dark:text-774-nevy-300" />
-                <span className="text-primary dark:text-774-nevy-50">
-                  {query}
-                </span>
+                <Hash
+                  aria-hidden="true"
+                  className="size-4 shrink-0 text-muted"
+                />
+                <span>{query}</span>
               </Link>
             ))}
           </div>

@@ -43,11 +43,10 @@ function VideoCardRowSkeleton({ className }: VideoCardRowSkeletonProps) {
  * 日付の見出し。スクロール中はサイトのヘッダー（高さ 56px）の下に固定する。
  *
  * 下を流れるカードを隠すため、地はページの地（`app/layout.tsx` の `body`）と
- * 同じ色にする。ページの地はまだカラートークンに移行していないので、
- * 同じクラスを指定している。#6805 でページの地と一緒に置き換える。
+ * 同じ `bg-background` にする。
  */
 const DATE_HEADING_CLASS_NAME =
-  'sticky top-14 z-10 -mx-4 mb-4 bg-primary-foreground px-4 py-2 text-heading font-bold dark:bg-zinc-900'
+  'sticky top-14 z-10 -mx-4 mb-4 bg-background px-4 py-2 text-heading font-bold'
 
 export function SearchResultsSkeleton() {
   return (

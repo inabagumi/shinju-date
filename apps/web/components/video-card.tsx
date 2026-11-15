@@ -212,6 +212,10 @@ export default function VideoCard({
           platform={value.platform}
         />
 
+        {/*
+         * 「ショート」と再生時間はサムネイルの上に重ねるので、ライト／ダークに
+         * かかわらず半透明の黒の地に白の文字で表示する
+         */}
         {isShortInWideThumbnail && (
           <span
             className={twMerge(

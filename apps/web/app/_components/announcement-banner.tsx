@@ -1,7 +1,14 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Megaphone, Minus, X } from 'lucide-react'
+import {
+  CircleAlert,
+  type LucideIcon,
+  Megaphone,
+  Minus,
+  TriangleAlert,
+  X,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeExternalLinks from 'rehype-external-links'
@@ -12,17 +19,47 @@ import {
   getAnnouncement,
 } from '../_lib/actions'
 
-// Get banner background and text color based on level
-function getBannerClasses(level: string): string {
+interface BannerTone {
+  /** 左端の線の色 */
+  borderClassName: string
+  icon: LucideIcon
+  label: string
+  /** 見出しの文字とアイコンの色 */
+  textClassName: string
+}
+
+/**
+ * お知らせの種類ごとの見た目。地はどれも `bg-surface` にそろえ、種類は
+ * 左端の線と見出しの色（情報は `accent`、注意は `warning`、警告は `danger`）で示す。
+ */
+function getBannerTone(level: string): BannerTone {
   switch (level) {
     case 'warning':
-      return 'bg-yellow-50 text-yellow-900 border-yellow-300'
+      return {
+        borderClassName: 'border-l-warning',
+        icon: TriangleAlert,
+        label: '注意',
+        textClassName: 'text-warning',
+      }
     case 'alert':
-      return 'bg-red-50 text-red-900 border-red-300'
+      return {
+        borderClassName: 'border-l-danger',
+        icon: CircleAlert,
+        label: '警告',
+        textClassName: 'text-danger',
+      }
     default:
-      return 'bg-774-blue-50 text-774-blue-900 border-774-blue-300'
+      return {
+        borderClassName: 'border-l-accent',
+        icon: Megaphone,
+        label: 'お知らせ',
+        textClassName: 'text-accent',
+      }
   }
 }
+
+const ICON_BUTTON_CLASS_NAME =
+  'cursor-pointer rounded-control p-1 text-muted hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
 
 /**
  * Site-wide announcement banner that sticks to the bottom of the viewport.
@@ -79,7 +116,8 @@ export function AnnouncementBanner({
     return null
   }
 
-  const bannerClasses = getBannerClasses(data.level)
+  const tone = getBannerTone(data.level)
+  const ToneIcon = tone.icon
 
   // The sticky wrapper spans the full width of the page, so pointer events are
   // disabled on it and re-enabled only on the visible banner / pill. Otherwise
@@ -97,13 +135,16 @@ export function AnnouncementBanner({
           <button
             aria-expanded={false}
             aria-label="お知らせを表示"
-            className={`pointer-events-auto flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold shadow-lg ${bannerClasses}`}
+            className="pointer-events-auto flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-meta font-semibold text-foreground shadow-overlay hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             data-testid="announcement-banner-minimized"
             onClick={toggleMinimized}
             ref={restoreButtonRef}
             type="button"
           >
-            <Megaphone aria-hidden="true" className="size-4" />
+            <ToneIcon
+              aria-hidden="true"
+              className={`size-4 ${tone.textClassName}`}
+            />
             お知らせ
           </button>
         </div>
@@ -114,42 +155,54 @@ export function AnnouncementBanner({
   return (
     <div className="pointer-events-none sticky bottom-4 z-50 safe-area-mx">
       <div
-        className={`pointer-events-auto mb-4 ml-auto max-w-md rounded-lg border p-4 shadow-lg ${bannerClasses}`}
+        className={`pointer-events-auto mb-4 ml-auto max-w-md rounded-container border border-l-4 border-border bg-surface p-4 text-foreground shadow-overlay ${tone.borderClassName}`}
         data-testid="announcement-banner"
         role="alert"
       >
         <div className="flex items-start justify-between gap-3">
-          <button
-            aria-expanded={isExpanded}
-            className="min-w-0 flex-1 cursor-pointer text-left"
-            onClick={() => setIsExpanded(!isExpanded)}
-            type="button"
-          >
-            <div
-              className={`prose prose-sm max-w-none ${
-                !isExpanded ? 'line-clamp-1' : ''
-              }`}
+          {/*
+           * 見出しは本文と同じ行に置く。行を分けると、モバイルで動画一覧の
+           * カード（高さ約 80px）よりバナーが高くなり、隠す範囲が広がるため
+           */}
+          <div className="flex min-w-0 flex-1 items-start gap-2 py-0.5">
+            <p
+              className={`flex shrink-0 items-center gap-1.5 text-meta font-semibold ${tone.textClassName}`}
             >
-              <ReactMarkdown
-                rehypePlugins={[
-                  [
-                    rehypeExternalLinks,
-                    {
-                      rel: ['nofollow', 'noopener', 'noreferrer'],
-                      target: '_blank',
-                    },
-                  ],
-                ]}
-                remarkPlugins={[remarkGfm]}
+              <ToneIcon aria-hidden="true" className="size-4" />
+              {tone.label}
+            </p>
+            <button
+              aria-expanded={isExpanded}
+              className="min-w-0 flex-1 cursor-pointer rounded-control text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              onClick={() => setIsExpanded(!isExpanded)}
+              type="button"
+            >
+              <div
+                className={`prose prose-sm max-w-none prose-tokens ${
+                  !isExpanded ? 'line-clamp-1' : ''
+                }`}
               >
-                {data.message}
-              </ReactMarkdown>
-            </div>
-          </button>
+                <ReactMarkdown
+                  rehypePlugins={[
+                    [
+                      rehypeExternalLinks,
+                      {
+                        rel: ['nofollow', 'noopener', 'noreferrer'],
+                        target: '_blank',
+                      },
+                    ],
+                  ]}
+                  remarkPlugins={[remarkGfm]}
+                >
+                  {data.message}
+                </ReactMarkdown>
+              </div>
+            </button>
+          </div>
           <div className="flex shrink-0 items-center gap-1">
             <button
               aria-label="お知らせを縮小"
-              className="cursor-pointer rounded-md p-1 hover:bg-black/10"
+              className={ICON_BUTTON_CLASS_NAME}
               onClick={toggleMinimized}
               ref={minimizeButtonRef}
               type="button"
@@ -158,7 +211,7 @@ export function AnnouncementBanner({
             </button>
             <button
               aria-label="お知らせを閉じる"
-              className="cursor-pointer rounded-md p-1 hover:bg-black/10"
+              className={ICON_BUTTON_CLASS_NAME}
               onClick={async () => {
                 await dismissAnnouncement(data.id)
                 setIsVisible(false)

@@ -68,8 +68,13 @@ export default function SchedulePage() {
 
   return (
     <>
-      <div className="relative aspect-4/3 w-full bg-slate-700 sm:aspect-auto sm:h-90">
-        <div className="absolute right-0 bottom-0 left-0 z-20 bg-linear-to-t from-slate-900/80 text-white">
+      {/* 画像を読み込むまでは、フッターと同じブランドの地を見せる */}
+      <div className="relative aspect-4/3 w-full bg-primary sm:aspect-auto sm:h-90">
+        {/*
+         * ロゴはイラストの上に重ねるので、ライト／ダークにかかわらず黒の
+         * グラデーションと白で表示する
+         */}
+        <div className="absolute right-0 bottom-0 left-0 z-20 bg-linear-to-t from-black/80 text-white">
           <h1 className="px-8 py-6 text-center md:text-left">
             <svg
               aria-label="SHINJU DATE"

@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Manifest {
   return {
-    background_color: '#f2f1ff', // var(--color-774-nevy-50)
+    background_color: '#ffffff', // var(--color-background) のライトの値
     display: 'standalone',
     icons: [
       {

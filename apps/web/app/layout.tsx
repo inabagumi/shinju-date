@@ -40,7 +40,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           type="application/opensearchdescription+xml"
         />
       </head>
-      <body className="grid min-h-svh grid-rows-[auto_1fr_auto] bg-primary-foreground text-primary antialiased dark:bg-zinc-900 dark:text-774-nevy-50">
+      <body className="grid min-h-svh grid-rows-[auto_1fr_auto] bg-background text-foreground antialiased">
         <SkipLink />
         <PageVisitTracker />
         <Providers>

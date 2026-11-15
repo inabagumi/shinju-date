@@ -15,10 +15,8 @@ interface SearchModalRecommendedQueriesProps {
 
 function RecommendedQueriesHeading() {
   return (
-    <div className="border-b border-774-nevy-200 px-4 py-3 dark:border-zinc-700">
-      <h2 className="text-sm text-774-nevy-500 dark:text-774-nevy-400">
-        おすすめの検索キーワード
-      </h2>
+    <div className="border-b border-border px-4 py-3">
+      <h2 className="text-meta text-muted">おすすめの検索キーワード</h2>
     </div>
   )
 }
@@ -29,8 +27,8 @@ function RecommendedQueriesSkeleton() {
       <span className="sr-only">読み込み中...</span>
       {Array.from({ length: SKELETON_COUNT }, (_, index) => (
         <div className="flex w-full items-center gap-3 px-4 py-3" key={index}>
-          <span className="size-4 shrink-0 animate-pulse rounded bg-774-nevy-100 dark:bg-zinc-800" />
-          <span className="h-6 w-40 animate-pulse rounded-md bg-774-nevy-100 dark:bg-zinc-800" />
+          <span className="size-4 shrink-0 animate-pulse rounded-control bg-muted" />
+          <span className="h-6 w-40 animate-pulse rounded-control bg-muted" />
         </div>
       ))}
     </div>
