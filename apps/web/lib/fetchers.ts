@@ -268,12 +268,15 @@ export interface TalentTwitchUser
 }
 
 /**
- * A talent with the YouTube channels and Twitch users it has.
+ * A talent with the YouTube channels and Twitch users it has, and its theme
+ * color (not validated, as it is entered by hand).
  *
  * The channels and users are sorted by their platform IDs, so a talent with
  * several of them always shows the same icon and links in the same order.
  */
-export interface TalentDetail extends Talent {
+export interface TalentDetail
+  extends Talent,
+    Pick<Tables<'talents'>, 'theme_color'> {
   twitch_users: TalentTwitchUser[]
   youtube_channels: TalentYouTubeChannel[]
 }
@@ -281,6 +284,7 @@ export interface TalentDetail extends Talent {
 const TALENT_DETAIL_SELECT = `
   id,
   name,
+  theme_color,
   youtube_channels (
     name,
     youtube_channel_id,

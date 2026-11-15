@@ -40,6 +40,7 @@ function createTalent(overrides: Partial<TalentDetail> = {}): TalentDetail {
   return {
     id: TALENT_ID,
     name: '朝霧ミオ',
+    theme_color: null,
     twitch_users: [],
     youtube_channels: [],
     ...overrides,
