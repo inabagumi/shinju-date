@@ -86,10 +86,7 @@ describe('TalentPageHeader', () => {
 
     const calendarLink = screen.getByRole('link', { name: 'カレンダーに登録' })
 
-    expect(calendarLink).toHaveAttribute(
-      'href',
-      `/channels/${TALENT_ID}/videos.ics`,
-    )
+    expect(calendarLink).toHaveAttribute('href', `/talents/${TALENT_ID}.ics`)
     expect(calendarLink).not.toHaveAttribute('target')
   })
 

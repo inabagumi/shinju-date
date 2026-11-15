@@ -35,12 +35,12 @@ import { GET } from '../route'
 const TALENT_ID = '0f6b7c84-1a1e-4b4e-9d3a-5c7a0c1e2f01'
 
 function get(id: string): Promise<Response> {
-  return GET(new Request(`https://shinju.date/channels/${id}/videos.ics`), {
+  return GET(new Request(`https://shinju.date/talents/${id}.ics`), {
     params: Promise.resolve({ id }),
   })
 }
 
-describe('GET /channels/[id]/videos.ics', () => {
+describe('GET /talents/[id].ics', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
