@@ -241,13 +241,21 @@ describe('fetchTalent', () => {
 })
 
 describe('fetchTalentList', () => {
+  // The talents are sorted by reading and then by name, so the query is
+  // resolved by the second `order`
+  const mockTalentRows = (result: { data: unknown; error: unknown }) => {
+    query.order.mockImplementation((column: string) =>
+      column === 'name' ? Promise.resolve(result) : query,
+    )
+  }
+
   beforeEach(() => {
     vi.clearAllMocks()
 
     query.select.mockReturnValue(query)
     query.eq.mockReturnValue(query)
     query.is.mockReturnValue(query)
-    query.order.mockResolvedValue({
+    mockTalentRows({
       data: [
         {
           id: TALENT_IDS[0],
@@ -260,7 +268,7 @@ describe('fetchTalentList', () => {
     })
   })
 
-  test('fetches the active talents that are not deleted by name', async () => {
+  test('fetches the active talents that are not deleted', async () => {
     await expect(fetchTalentList()).resolves.toEqual([
       {
         id: TALENT_IDS[0],
@@ -273,7 +281,41 @@ describe('fetchTalentList', () => {
     expect(supabaseClient.from).toHaveBeenCalledWith('talents')
     expect(query.eq).toHaveBeenCalledWith('status', 'active')
     expect(query.is).toHaveBeenCalledWith('deleted_at', null)
-    expect(query.order).toHaveBeenCalledWith('name', { ascending: true })
+  })
+
+  test('sorts by reading, and the talents without one by name last', async () => {
+    await fetchTalentList()
+
+    expect(query.order).toHaveBeenCalledTimes(2)
+    expect(query.order).toHaveBeenNthCalledWith(1, 'reading', {
+      ascending: true,
+      nullsFirst: false,
+    })
+    expect(query.order).toHaveBeenNthCalledWith(2, 'name', { ascending: true })
+  })
+
+  test('keeps the order of the talents from the database', async () => {
+    const row = (id: string, name: string) => ({
+      id,
+      name,
+      twitch_users: [],
+      youtube_channels: [],
+    })
+
+    mockTalentRows({
+      data: [
+        row(TALENT_IDS[1] as string, '風花リツ'),
+        row(TALENT_IDS[0] as string, '朝霧ミオ'),
+      ],
+      error: null,
+    })
+
+    const talents = await fetchTalentList()
+
+    expect(talents.map((talent) => talent.name)).toEqual([
+      '風花リツ',
+      '朝霧ミオ',
+    ])
   })
 
   test('is cached for days with the talents tag', async () => {
@@ -296,7 +338,7 @@ describe('fetchTalentList', () => {
   test('returns the icons in the same order as fetchTalent', async () => {
     const icon = (id: string) => ({ blur_data_url: '', id })
 
-    query.order.mockResolvedValue({
+    mockTalentRows({
       data: [
         {
           id: TALENT_IDS[0],
@@ -331,7 +373,7 @@ describe('fetchTalentList', () => {
   })
 
   test('throws when the talents cannot be fetched', async () => {
-    query.order.mockResolvedValue({
+    mockTalentRows({
       data: null,
       error: { message: 'failed' },
     })
