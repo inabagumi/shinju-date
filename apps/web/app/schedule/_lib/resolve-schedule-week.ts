@@ -1,7 +1,12 @@
-import { TIME_ZONE } from '@shinju-date/constants'
 import { notFound } from 'next/navigation'
-import { connection } from 'next/server'
-import { getWeekStart, parseScheduleDate } from '@/lib/schedule'
+import { fetchOldestVideoDate, fetchScheduleToday } from '@/lib/fetchers'
+import {
+  getScheduleWeekRange,
+  getWeekStart,
+  isWeekInRange,
+  parseScheduleDate,
+  type ScheduleWeekRange,
+} from '@/lib/schedule'
 
 /**
  * `params` of `/schedule/[date]`. `/schedule` has none, and shows the week
@@ -9,31 +14,52 @@ import { getWeekStart, parseScheduleDate } from '@/lib/schedule'
  */
 export type SchedulePageParams = PageProps<'/schedule/[date]'>['params']
 
+export interface ScheduleWeek {
+  /** The weeks that can be shown. Links to the other weeks are not shown */
+  range: ScheduleWeekRange
+  /** Today in `TIME_ZONE`, at the time `fetchScheduleToday` was cached */
+  today: Temporal.PlainDate
+  /** The Monday of the week the page shows */
+  weekStart: Temporal.PlainDate
+}
+
 /**
- * The Monday of the week the page shows. For a date that cannot be read, this
- * renders the not-found page.
+ * The week the page shows. This renders the not-found page for a date that
+ * cannot be read, a week before the week of the oldest video, and a week more
+ * than `SCHEDULE_WEEKS_AHEAD` weeks after the current week.
  *
- * Each section of the page calls this inside its own `<Suspense>`, so the
- * heading and the frame of the week navigation stay in the static shell.
+ * Each section of the page calls this inside its own `<Suspense>`. The
+ * fetchers are cached, so they run only once.
  */
 export async function resolveScheduleWeek(
   params?: SchedulePageParams | undefined,
-): Promise<Temporal.PlainDate> {
-  if (!params) {
-    // Today depends on the time of the request, not on that of the prerender
-    await connection()
+): Promise<ScheduleWeek> {
+  let day: Temporal.PlainDate | null = null
 
-    return getWeekStart(
-      Temporal.Now.instant().toZonedDateTimeISO(TIME_ZONE).toPlainDate(),
-    )
+  if (params) {
+    const { date } = await params
+
+    day = parseScheduleDate(date)
+
+    if (!day) {
+      notFound()
+    }
   }
 
-  const { date } = await params
-  const day = parseScheduleDate(date)
+  const [todayValue, oldestValue] = await Promise.all([
+    fetchScheduleToday(),
+    fetchOldestVideoDate(),
+  ])
+  const today = Temporal.PlainDate.from(todayValue)
+  const range = getScheduleWeekRange({
+    oldestDate: oldestValue ? Temporal.PlainDate.from(oldestValue) : null,
+    today,
+  })
+  const weekStart = getWeekStart(day ?? today)
 
-  if (!day) {
+  if (!isWeekInRange(weekStart, range)) {
     notFound()
   }
 
-  return getWeekStart(day)
+  return { range, today, weekStart }
 }

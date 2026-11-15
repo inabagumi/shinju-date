@@ -1,80 +1,61 @@
 'use client'
 
-import { twMerge } from '@shinju-date/ui'
-import { useMemo, useSyncExternalStore } from 'react'
-import { useNow } from '@/components/timer'
+import { useMemo } from 'react'
+import { useToday } from '@/components/use-today'
 import { formatScheduleDay } from '@/lib/schedule'
-
-function subscribeNothing() {
-  return () => {}
-}
-
-/**
- * 今日の日付。サーバーでの描画とハイドレーションでは `null` を返し、
- * ハイドレーションの後にブラウザの現在時刻で決める。週のデータはキャッシュ
- * するため、キャッシュを作った時点の「今日」を使うと、日付が変わった後に
- * 印がずれる。
- */
-function useToday(): Temporal.PlainDate | null {
-  const now = useNow()
-  const isHydrated = useSyncExternalStore(
-    subscribeNothing,
-    () => true,
-    () => false,
-  )
-
-  return isHydrated ? now.toPlainDate() : null
-}
 
 interface ScheduleDayHeaderProps {
   count: number
   /** `YYYY-MM-DD` */
   date: string
   headingId: string
+  /**
+   * サーバーで描画したときの今日（`YYYY-MM-DD`）。ハイドレーションまでの
+   * 「今日」の基準で、その後はブラウザの現在時刻を使う
+   */
+  referenceDate: string
 }
 
 /**
- * 1日ぶんの見出し。日付と曜日、件数を出し、今日は紫の線と「今日」の印で示す。
+ * 1日ぶんの見出し。日付と曜日、件数を出し、今日は「今日」の文字の印で示す。
  */
 export default function ScheduleDayHeader({
   count,
   date: rawDate,
   headingId,
+  referenceDate,
 }: ScheduleDayHeaderProps) {
-  const today = useToday()
+  const today = useToday(referenceDate)
   const date = useMemo(() => Temporal.PlainDate.from(rawDate), [rawDate])
-  const isToday = today?.equals(date) ?? false
+  const isToday = today.equals(date)
 
   return (
     <header
-      className={twMerge(
-        'mb-3 flex items-baseline justify-between gap-2 border-b-2 pb-1 lg:flex-col lg:items-start lg:gap-0',
-        isToday ? 'border-accent' : 'border-border',
-      )}
+      className="flex items-baseline gap-x-2 border-b border-border pb-1 lg:flex-col lg:gap-0"
       data-today={isToday || undefined}
     >
-      <h3
-        className={twMerge(
-          'flex flex-wrap items-center gap-x-2 text-body leading-normal font-semibold tabular-nums',
-          isToday && 'text-accent',
-        )}
-        id={headingId}
-      >
-        <time
-          aria-current={isToday ? 'date' : undefined}
-          dateTime={date.toString()}
+      <div className="flex flex-wrap items-baseline gap-x-2">
+        <h2
+          className="text-body leading-normal font-semibold tabular-nums"
+          id={headingId}
         >
-          {formatScheduleDay(date)}
-        </time>
+          <time
+            aria-current={isToday ? 'date' : undefined}
+            dateTime={date.toString()}
+          >
+            {formatScheduleDay(date)}
+          </time>
+        </h2>
 
         {isToday && (
-          <span className="rounded-full bg-accent px-2 text-caption font-semibold text-accent-foreground">
-            今日
-          </span>
+          <span className="text-caption font-semibold text-accent">今日</span>
         )}
-      </h3>
+      </div>
 
-      <p className="text-meta text-muted tabular-nums">{count}件</p>
+      {/* 7日を横に並べる幅では、隣の日の見出しと混ざらないよう件数を下の行に置く */}
+      <p className="ml-auto text-meta text-muted tabular-nums lg:ml-0">
+        {count}件
+      </p>
     </header>
   )
 }

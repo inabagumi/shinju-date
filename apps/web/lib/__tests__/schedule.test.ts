@@ -3,8 +3,12 @@ import {
   formatScheduleDay,
   formatWeekRange,
   getSchedulePath,
+  getScheduleWeekRange,
+  getStartHour,
+  getStartHours,
   getWeekDays,
   getWeekStart,
+  isWeekInRange,
   parseScheduleDate,
 } from '../schedule'
 
@@ -83,6 +87,10 @@ describe('getWeekDays', () => {
 })
 
 describe('getSchedulePath', () => {
+  test('should point to the current week without a date', () => {
+    expect(getSchedulePath()).toBe('/schedule')
+  })
+
   test('should always point to the Monday', () => {
     expect(getSchedulePath(date('2026-11-09'))).toBe('/schedule/2026-11-09')
     expect(getSchedulePath(date('2026-11-12'))).toBe('/schedule/2026-11-09')
@@ -90,12 +98,56 @@ describe('getSchedulePath', () => {
   })
 })
 
-describe('formatWeekRange', () => {
-  test('should omit the month and the year of Sunday when they are the same', () => {
-    expect(formatWeekRange(date('2026-11-09'))).toBe('2026年11月9日〜15日')
+describe('getScheduleWeekRange', () => {
+  const today = date('2026-11-12')
+
+  test('should range from the week of the oldest video to 4 weeks later', () => {
+    const range = getScheduleWeekRange({
+      oldestDate: date('2024-03-14'),
+      today,
+    })
+
+    expect(range.first.toString()).toBe('2024-03-11')
+    expect(range.last.toString()).toBe('2026-12-07')
   })
 
-  test('should write the month of Sunday in another month', () => {
+  test('should start from the current week without any video', () => {
+    expect(
+      getScheduleWeekRange({ oldestDate: null, today }).first.toString(),
+    ).toBe('2026-11-09')
+  })
+
+  test('should not start after the current week', () => {
+    expect(
+      getScheduleWeekRange({
+        oldestDate: date('2026-11-20'),
+        today,
+      }).first.toString(),
+    ).toBe('2026-11-09')
+  })
+})
+
+describe('isWeekInRange', () => {
+  const range = getScheduleWeekRange({
+    oldestDate: date('2026-10-28'),
+    today: date('2026-11-12'),
+  })
+
+  test('should accept the weeks from the first to the last', () => {
+    expect(isWeekInRange(date('2026-10-26'), range)).toBe(true)
+    expect(isWeekInRange(date('2026-11-09'), range)).toBe(true)
+    expect(isWeekInRange(date('2026-12-07'), range)).toBe(true)
+  })
+
+  test('should reject the weeks before the oldest video and after 4 weeks', () => {
+    expect(isWeekInRange(date('2026-10-19'), range)).toBe(false)
+    expect(isWeekInRange(date('2026-12-14'), range)).toBe(false)
+  })
+})
+
+describe('formatWeekRange', () => {
+  test('should write the month of Sunday', () => {
+    expect(formatWeekRange(date('2026-11-09'))).toBe('2026年11月9日〜11月15日')
     expect(formatWeekRange(date('2026-11-30'))).toBe('2026年11月30日〜12月6日')
   })
 
@@ -104,11 +156,38 @@ describe('formatWeekRange', () => {
       '2026年12月28日〜2027年1月3日',
     )
   })
+
+  test('should add the weekdays', () => {
+    expect(formatWeekRange(date('2026-11-09'), { withWeekdays: true })).toBe(
+      '2026年11月9日（月）〜11月15日（日）',
+    )
+  })
 })
 
 describe('formatScheduleDay', () => {
   test('should write the month, the day and the weekday', () => {
-    expect(formatScheduleDay(date('2026-11-09'))).toBe('11/9（月）')
+    expect(formatScheduleDay(date('2026-11-09'))).toBe('11/09（月）')
     expect(formatScheduleDay(date('2026-11-15'))).toBe('11/15（日）')
+  })
+})
+
+describe('getStartHour', () => {
+  test('should return the hour in Japan', () => {
+    // 21:30 and 00:10 on the next day in Japan
+    expect(getStartHour('2026-11-09T12:30:00Z')).toBe(21)
+    expect(getStartHour('2026-11-09T15:10:00Z')).toBe(0)
+  })
+})
+
+describe('getStartHours', () => {
+  test('should return the hours with videos once each, in order', () => {
+    expect(
+      getStartHours([
+        { published_at: '2026-11-09T12:30:00Z' },
+        { published_at: '2026-11-10T03:00:00Z' },
+        { published_at: '2026-11-11T12:00:00Z' },
+      ]),
+    ).toEqual([12, 21])
+    expect(getStartHours([])).toEqual([])
   })
 })

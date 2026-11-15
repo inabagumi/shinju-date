@@ -11,7 +11,6 @@ const query = vi.hoisted(() => ({
   maybeSingle: vi.fn(),
   neq: vi.fn(),
   order: vi.fn(),
-  range: vi.fn(),
   select: vi.fn(),
 }))
 
@@ -35,6 +34,8 @@ import {
   countVideos,
   fetchActiveTalents,
   fetchDashboardVideos,
+  fetchOldestVideoDate,
+  fetchScheduleToday,
   fetchScheduleVideos,
   fetchTalent,
   fetchTalentList,
@@ -563,6 +564,7 @@ describe('fetchScheduleVideos', () => {
     overrides: Partial<ScheduleVideo> = {},
   ): ScheduleVideo {
     return {
+      duration: 'PT1H',
       id: `video-${index}`,
       platform: 'youtube',
       published_at: '2026-11-10T12:00:00Z',
@@ -570,6 +572,7 @@ describe('fetchScheduleVideos', () => {
       talent: { id: 'talent-1', name: '朝霧ミオ', theme_color: null },
       title: `動画${index}`,
       twitch_video: null,
+      video_kind: 'standard',
       youtube_video: { youtube_channel: null, youtube_video_id: `YT${index}` },
       ...overrides,
     }
@@ -581,13 +584,13 @@ describe('fetchScheduleVideos', () => {
     query.select.mockReturnValue(query)
     query.gte.mockReturnValue(query)
     query.lt.mockReturnValue(query)
-    query.neq.mockReturnValue(query)
+    query.eq.mockReturnValue(query)
     query.order.mockReturnValue(query)
-    query.range.mockResolvedValue({ data: [], error: null })
+    query.limit.mockResolvedValue({ data: [], error: null })
   })
 
-  test('requests the videos from Monday to Sunday in Japan', async () => {
-    await fetchScheduleVideos('2026-11-12')
+  test('requests the standard videos from Monday to Sunday in Japan', async () => {
+    await fetchScheduleVideos('2026-11-09')
 
     expect(supabaseClient.from).toHaveBeenCalledWith('videos')
     // 00:00 on Monday, 9 November and on Monday, 16 November in Japan
@@ -599,34 +602,27 @@ describe('fetchScheduleVideos', () => {
       'published_at',
       '2026-11-15T15:00:00Z',
     )
-    expect(query.neq).toHaveBeenCalledWith('video_kind', 'short')
+    expect(query.eq).toHaveBeenCalledWith('video_kind', 'standard')
+    expect(query.eq).not.toHaveBeenCalledWith('status', expect.anything())
     expect(query.order).toHaveBeenCalledWith('published_at', {
       ascending: true,
     })
-    expect(query.order).toHaveBeenCalledWith('id', { ascending: true })
+    expect(query.limit).toHaveBeenCalledWith(1000)
+    expect(cacheLife).toHaveBeenCalledWith('hours')
     expect(cacheTag).toHaveBeenCalledWith('videos')
   })
 
-  test('fetches page by page until a page is not full', async () => {
-    const firstPage = Array.from({ length: 1000 }, (_, index) =>
-      createScheduleVideo(index),
-    )
-    const secondPage = [createScheduleVideo(1000)]
+  test('does not select the thumbnail but the theme color', async () => {
+    await fetchScheduleVideos('2026-11-09')
 
-    query.range
-      .mockResolvedValueOnce({ data: firstPage, error: null })
-      .mockResolvedValueOnce({ data: secondPage, error: null })
+    const select = query.select.mock.calls[0]?.[0] as string
 
-    const videos = await fetchScheduleVideos('2026-11-09')
-
-    expect(videos).toHaveLength(1001)
-    expect(query.range).toHaveBeenCalledTimes(2)
-    expect(query.range).toHaveBeenNthCalledWith(1, 0, 999)
-    expect(query.range).toHaveBeenNthCalledWith(2, 1000, 1999)
+    expect(select).not.toMatch(/thumbnail/)
+    expect(select).toMatch(/talent:talents!inner \(id, name, theme_color\)/)
   })
 
   test('drops the videos without a YouTube or Twitch video', async () => {
-    query.range.mockResolvedValue({
+    query.limit.mockResolvedValue({
       data: [
         createScheduleVideo(1),
         createScheduleVideo(2, { youtube_video: null }),
@@ -640,8 +636,58 @@ describe('fetchScheduleVideos', () => {
   })
 
   test('throws when the videos cannot be fetched', async () => {
-    query.range.mockResolvedValue({ data: null, error: { message: 'failed' } })
+    query.limit.mockResolvedValue({ data: null, error: { message: 'failed' } })
 
     await expect(fetchScheduleVideos('2026-11-09')).rejects.toThrow('failed')
+  })
+})
+
+describe('fetchOldestVideoDate', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    query.select.mockReturnValue(query)
+    query.order.mockReturnValue(query)
+    query.limit.mockReturnValue(query)
+  })
+
+  test('returns the date in Japan the oldest video starts on', async () => {
+    // 00:30 on 1 April 2019 in Japan
+    query.maybeSingle.mockResolvedValue({
+      data: { published_at: '2019-03-31T15:30:00Z' },
+      error: null,
+    })
+
+    await expect(fetchOldestVideoDate()).resolves.toBe('2019-04-01')
+    expect(query.order).toHaveBeenCalledWith('published_at', {
+      ascending: true,
+    })
+    expect(query.limit).toHaveBeenCalledWith(1)
+    expect(cacheLife).toHaveBeenCalledWith('days')
+    expect(cacheTag).toHaveBeenCalledWith('videos')
+  })
+
+  test('returns null without any video', async () => {
+    query.maybeSingle.mockResolvedValue({ data: null, error: null })
+
+    await expect(fetchOldestVideoDate()).resolves.toBeNull()
+  })
+})
+
+describe('fetchScheduleToday', () => {
+  test('returns today in Japan', async () => {
+    // 00:30 on Monday, 16 November 2026 in Japan, still Sunday in UTC
+    const spy = vi
+      .spyOn(Temporal.Now, 'zonedDateTimeISO')
+      .mockImplementation((timeZone) =>
+        Temporal.Instant.from('2026-11-15T15:30:00Z').toZonedDateTimeISO(
+          timeZone ?? 'UTC',
+        ),
+      )
+
+    await expect(fetchScheduleToday()).resolves.toBe('2026-11-16')
+    expect(cacheLife).toHaveBeenCalledWith('minutes')
+
+    spy.mockRestore()
   })
 })

@@ -142,30 +142,22 @@ export type ScheduleTalent = Pick<
 >
 
 /**
- * A video on the schedule. It has only what the items of the schedule show
- * and link to: no thumbnail, duration or kind.
+ * A video on the schedule: a video of the video cards without the thumbnail,
+ * with the theme color of the talent.
  */
-export interface ScheduleVideo
-  extends Pick<
-    Video,
-    | 'id'
-    | 'platform'
-    | 'published_at'
-    | 'status'
-    | 'title'
-    | 'twitch_video'
-    | 'youtube_video'
-  > {
+export interface ScheduleVideo extends Omit<Video, 'talent' | 'thumbnail'> {
   talent: ScheduleTalent
 }
 
 const SCHEDULE_SELECT = `
+  duration,
   id,
   platform,
   published_at,
   status,
   talent:talents!inner (id, name, theme_color),
   title,
+  video_kind,
   youtube_video:youtube_videos (
     youtube_video_id,
     youtube_channel:youtube_channels (
@@ -186,57 +178,85 @@ const SCHEDULE_SELECT = `
 `
 
 /**
- * The rows of a page. PostgREST returns at most 1,000 rows (`max-rows` of
- * Supabase) for a request, so the videos of a week are fetched page by page.
+ * Today (`YYYY-MM-DD` in `TIME_ZONE`). The schedule decides the current week
+ * and marks today with it, and the browser switches to its own clock after
+ * the hydration.
  */
-const SCHEDULE_PAGE_SIZE = 1000
+export const fetchScheduleToday = async (): Promise<string> => {
+  'use cache'
+
+  cacheLife('minutes')
+
+  return Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate().toString()
+}
 
 /**
- * Fetch the videos that start in the week (from Monday to Sunday in
- * `TIME_ZONE`) that includes `date` (`YYYY-MM-DD`): the ones on air, the
- * upcoming ones and the ended ones, in the order of the start. Shorts are not
- * included, as in the new videos of the home page.
+ * The date (`YYYY-MM-DD` in `TIME_ZONE`) the oldest video starts on, or `null`
+ * when there is no video. The schedule shows no week before it.
+ */
+export const fetchOldestVideoDate = async (): Promise<string | null> => {
+  'use cache: remote'
+
+  cacheLife('days')
+  cacheTag('videos')
+
+  const { data: video, error } = await supabaseClient
+    .from('videos')
+    .select('published_at')
+    .order('published_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  if (!video) {
+    return null
+  }
+
+  return Temporal.Instant.from(video.published_at)
+    .toZonedDateTimeISO(TIME_ZONE)
+    .toPlainDate()
+    .toString()
+}
+
+/**
+ * Fetch the videos that start in the 7 days from `weekStart` (the Monday,
+ * `YYYY-MM-DD`) in `TIME_ZONE`: the ones on air, the upcoming ones, the ended
+ * ones and the published ones, in the order of the start. Shorts are not
+ * included.
  *
- * Pass the Monday of the week, so each week is cached only once.
+ * Callers pass the Monday, so each week is cached only once.
  */
 export const fetchScheduleVideos = async (
-  date: string,
+  weekStart: string,
 ): Promise<ScheduleVideo[]> => {
   'use cache: remote'
 
   cacheLife('hours')
   cacheTag('videos')
 
-  const plainDate = Temporal.PlainDate.from(date)
-  const weekStart = plainDate
-    .subtract({ days: plainDate.dayOfWeek - 1 })
-    .toZonedDateTime(TIME_ZONE)
-  const weekEnd = weekStart.add({ weeks: 1 })
-  const videos: ScheduleVideo[] = []
+  const since = Temporal.PlainDate.from(weekStart).toZonedDateTime(TIME_ZONE)
+  const until = since.add({ weeks: 1 })
 
-  for (let offset = 0; ; offset += SCHEDULE_PAGE_SIZE) {
-    const { data, error } = await supabaseClient
-      .from('videos')
-      .select<string, ScheduleVideo>(SCHEDULE_SELECT)
-      .gte('published_at', toDBString(weekStart))
-      .lt('published_at', toDBString(weekEnd))
-      .neq('video_kind', 'short')
-      // The ID breaks ties, so a page never repeats or skips a video
-      .order('published_at', { ascending: true })
-      .order('id', { ascending: true })
-      .range(offset, offset + SCHEDULE_PAGE_SIZE - 1)
+  // 1,000 is the most rows Supabase returns for a request. A week has far
+  // fewer videos.
+  const { data: videos, error } = await supabaseClient
+    .from('videos')
+    .select<string, ScheduleVideo>(SCHEDULE_SELECT)
+    .gte('published_at', toDBString(since))
+    .lt('published_at', toDBString(until))
+    .eq('video_kind', 'standard')
+    .order('published_at', { ascending: true })
+    .limit(1000)
 
-    if (error) {
-      throw new TypeError(error.message, {
-        cause: error,
-      })
-    }
-
-    videos.push(...data)
-
-    if (data.length < SCHEDULE_PAGE_SIZE) {
-      break
-    }
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
   }
 
   return videos.filter(hasPlatformSource)

@@ -2,11 +2,21 @@ import { expect, type Page, test } from '@playwright/test'
 
 const BASE_URL = process.env['BASE_URL'] || 'http://localhost:3000'
 
-// Seeded by the MSW mock data (packages/msw-handlers) a week before the mock
-// server starts, so it is always in the previous week
-const LAST_WEEK_VIDEO_TITLE = '【定期】先週の歌枠アーカイブ'
+// Seeded by the MSW mock data (packages/msw-handlers): a stream on air now,
+// 2 streams on each day of the current week (one of them at 21:00 in Japan)
+// and 1 in each of the previous and the next weeks
+const LIVE_VIDEO_TITLE = '【スケジュール】ただいま配信中'
 
-const WEEK_PATH_PATTERN = /^\/schedule\/\d{4}-\d{2}-\d{2}$/
+const WEEK_PATH_PATTERN = /^\/schedule\/(\d{4}-\d{2}-\d{2})$/
+
+/** `YYYY-MM-DD` that is `days` days after `date` */
+function addDays(date: string, days: number): string {
+  const [year = 0, month = 1, day = 1] = date.split('-').map(Number)
+
+  return new Date(Date.UTC(year, month - 1, day + days))
+    .toISOString()
+    .slice(0, 10)
+}
 
 function getMain(page: Page) {
   return page.getByRole('main')
@@ -20,20 +30,38 @@ function getDays(page: Page) {
   return getMain(page).getByTestId('schedule-day')
 }
 
-function getItem(page: Page, title: string) {
-  return getMain(page).getByTestId('schedule-item').filter({ hasText: title })
+function getItems(page: Page) {
+  return getMain(page).getByTestId('schedule-item')
+}
+
+function getWeekLink(page: Page, name: string) {
+  return getWeekNavigation(page).getByRole('link', { exact: true, name })
 }
 
 async function getLinkPath(page: Page, name: string): Promise<string> {
-  const href = await getWeekNavigation(page)
-    .getByRole('link', { exact: true, name })
-    .getAttribute('href')
+  const href = await getWeekLink(page, name).getAttribute('href')
 
   if (!href) {
     throw new Error(`The link "${name}" has no href`)
   }
 
   return href
+}
+
+/** The Monday (`YYYY-MM-DD`) of the current week */
+async function getCurrentWeekStart(page: Page): Promise<string> {
+  await page.goto(`${BASE_URL}/schedule`)
+
+  const previousPath = await getLinkPath(page, '前の週')
+  const [, previousWeekStart = ''] = previousPath.match(WEEK_PATH_PATTERN) ?? []
+
+  return addDays(previousWeekStart, 7)
+}
+
+async function expectNotFound(page: Page) {
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'ページが見つかりません' }),
+  ).toBeVisible()
 }
 
 async function expectNoHorizontalScroll(page: Page) {
@@ -61,131 +89,131 @@ test.describe('Schedule page', () => {
     await expect(getDays(page)).toHaveCount(7)
     await expect(getMain(page).locator('[aria-current="date"]')).toHaveCount(1)
     await expect(getMain(page).getByText('今日', { exact: true })).toBeVisible()
-    await expect(getItem(page, LAST_WEEK_VIDEO_TITLE)).toHaveCount(0)
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',
       /\/schedule$/,
     )
     await expect(page.locator('meta[name="robots"]')).toHaveCount(0)
+
+    const liveItem = getItems(page).filter({ hasText: LIVE_VIDEO_TITLE })
+
+    await expect(liveItem).toBeVisible()
+    await expect(liveItem.getByText('配信中', { exact: true })).toBeVisible()
+    await expect(liveItem).toHaveAttribute(
+      'href',
+      /^https:\/\/www\.youtube\.com\/watch\?v=/,
+    )
+    await expect(liveItem).toHaveAttribute('ping', '/api/ping')
+    await expect(liveItem).toHaveAttribute('target', '_blank')
+    await expect(liveItem).toHaveAttribute('rel', 'noopener noreferrer')
+  })
+
+  test('should line up the videos of the same hour across the days', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ height: 900, width: 1280 })
+    await page.goto(`${BASE_URL}/schedule`)
+
+    // Every day of the current week has a stream at 21:00
+    const slots = getMain(page).locator('[data-hour="21"]')
+
+    await expect(slots).toHaveCount(7)
+
+    const tops = await Promise.all(
+      (await slots.all()).map(async (slot) =>
+        Math.round((await slot.boundingBox())?.y ?? -1),
+      ),
+    )
+
+    expect(new Set(tops).size).toBe(1)
+
+    for (const slot of await slots.all()) {
+      await expect(slot.getByTestId('schedule-item')).toContainText('21:00')
+    }
   })
 
   test('should move between the weeks with the Monday URLs', async ({
     page,
   }) => {
-    await page.goto(`${BASE_URL}/schedule`)
+    const currentWeekStart = await getCurrentWeekStart(page)
+    const previousWeekStart = addDays(currentWeekStart, -7)
+    const nextWeekStart = addDays(currentWeekStart, 7)
 
-    const previousPath = await getLinkPath(page, '前の週')
-    const nextPath = await getLinkPath(page, '次の週')
+    expect(await getLinkPath(page, '次の週')).toBe(`/schedule/${nextWeekStart}`)
+    expect(await getLinkPath(page, '今週')).toBe('/schedule')
 
-    expect(previousPath).toMatch(WEEK_PATH_PATTERN)
-    expect(nextPath).toMatch(WEEK_PATH_PATTERN)
+    await getWeekLink(page, '前の週').click()
 
-    await getWeekNavigation(page)
-      .getByRole('link', { exact: true, name: '前の週' })
-      .click()
-
-    await expect(page).toHaveURL(`${BASE_URL}${previousPath}`)
-
-    const item = getItem(page, LAST_WEEK_VIDEO_TITLE)
-
-    await expect(item).toBeVisible()
-    await expect(item).toContainText('終了済み')
-    await expect(item).toContainText('白露ネネ')
-    // Linked like a video card
-    await expect(item).toHaveAttribute(
-      'href',
-      /^https:\/\/www\.youtube\.com\/watch\?v=/,
-    )
-    await expect(item).toHaveAttribute('ping', '/api/ping')
-    await expect(item).toHaveAttribute('target', '_blank')
-    // The talent has a theme color
-    await expect(item).toHaveCSS('border-left-color', 'rgb(152, 216, 200)')
-    // Today is not in the previous week
+    await expect(page).toHaveURL(`${BASE_URL}/schedule/${previousWeekStart}`)
     await expect(getMain(page).locator('[aria-current="date"]')).toHaveCount(0)
+    // The stream seeded in the previous week
+    await expect(getItems(page)).not.toHaveCount(0)
 
-    // The next week of the previous week is the current week, with its Monday
-    const currentPath = await getLinkPath(page, '次の週')
+    await getWeekLink(page, '次の週').click()
 
-    expect(currentPath).toMatch(WEEK_PATH_PATTERN)
-
-    await getWeekNavigation(page)
-      .getByRole('link', { exact: true, name: '次の週' })
-      .click()
-
-    await expect(page).toHaveURL(`${BASE_URL}${currentPath}`)
+    await expect(page).toHaveURL(`${BASE_URL}/schedule/${currentWeekStart}`)
     await expect(getMain(page).locator('[aria-current="date"]')).toHaveCount(1)
-    expect(await getLinkPath(page, '前の週')).toBe(previousPath)
-    expect(await getLinkPath(page, '次の週')).toBe(nextPath)
 
-    await getWeekNavigation(page)
-      .getByRole('link', { exact: true, name: '今週' })
-      .click()
+    await getWeekLink(page, '今週').click()
 
     await expect(page).toHaveURL(`${BASE_URL}/schedule`)
-    await expect(getItem(page, LAST_WEEK_VIDEO_TITLE)).toHaveCount(0)
   })
 
   test('should show the week of a date that is not a Monday', async ({
     page,
   }) => {
-    // Thursday, 12 November 2026
-    await page.goto(`${BASE_URL}/schedule/2026-11-12`)
+    const currentWeekStart = await getCurrentWeekStart(page)
+    const thursday = addDays(currentWeekStart, 3)
 
-    await expect(
-      getMain(page).getByRole('heading', {
-        level: 2,
-        name: '2026年11月9日〜15日',
-      }),
-    ).toBeVisible()
-    await expect(page).toHaveTitle(
-      '2026年11月9日〜15日の配信スケジュール - SHINJU DATE',
-    )
+    await page.goto(`${BASE_URL}/schedule/${thursday}`)
+
+    await expect(getDays(page)).toHaveCount(7)
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',
-      /\/schedule\/2026-11-09$/,
+      new RegExp(`/schedule/${currentWeekStart}$`),
     )
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
       'content',
       /noindex/,
     )
-    expect(await getLinkPath(page, '前の週')).toBe('/schedule/2026-11-02')
-    expect(await getLinkPath(page, '次の週')).toBe('/schedule/2026-11-16')
-    expect(await getLinkPath(page, '今週')).toBe('/schedule')
-
-    const headings = getDays(page).getByRole('heading', { level: 3 })
-
-    await expect(headings).toHaveText([
-      /^11\/9（月）/,
-      /^11\/10（火）/,
-      /^11\/11（水）/,
-      /^11\/12（木）/,
-      /^11\/13（金）/,
-      /^11\/14（土）/,
-      /^11\/15（日）/,
-    ])
+    await expect(page).toHaveTitle(
+      /^\d{4}年\d+月\d+日〜.+の配信スケジュール - SHINJU DATE$/,
+    )
+    await expect(getDays(page).first()).toHaveAttribute(
+      'id',
+      `day-${currentWeekStart}`,
+    )
   })
 
-  test('should go to the next year from the last week of a year', async ({
+  test('should show up to 4 weeks after the current week', async ({ page }) => {
+    const currentWeekStart = await getCurrentWeekStart(page)
+    const lastWeekStart = addDays(currentWeekStart, 28)
+
+    await page.goto(`${BASE_URL}/schedule/${lastWeekStart}`)
+
+    await expect(getDays(page)).toHaveCount(7)
+    // No link to the week that cannot be shown
+    await expect(getWeekLink(page, '前の週')).toBeVisible()
+    await expect(getWeekLink(page, '次の週')).toHaveCount(0)
+
+    await page.goto(`${BASE_URL}/schedule/${addDays(lastWeekStart, 7)}`)
+
+    await expectNotFound(page)
+  })
+
+  test('should not show the weeks before the oldest video', async ({
     page,
   }) => {
-    await page.goto(`${BASE_URL}/schedule/2027-01-01`)
+    await page.goto(`${BASE_URL}/schedule/2000-01-03`)
 
-    await expect(
-      getMain(page).getByRole('heading', {
-        level: 2,
-        name: '2026年12月28日〜2027年1月3日',
-      }),
-    ).toBeVisible()
-    expect(await getLinkPath(page, '次の週')).toBe('/schedule/2027-01-04')
+    await expectNotFound(page)
   })
 
   for (const value of ['2026-02-30', '2026-W46', 'today']) {
     test(`should show the not-found page for ${value}`, async ({ page }) => {
       await page.goto(`${BASE_URL}/schedule/${value}`)
 
-      await expect(
-        page.getByRole('heading', { level: 1, name: 'ページが見つかりません' }),
-      ).toBeVisible()
+      await expectNotFound(page)
     })
   }
 
@@ -196,19 +224,18 @@ test.describe('Schedule page', () => {
     await page.goto(`${BASE_URL}/schedule`)
 
     await expect(getDays(page)).toHaveCount(7)
+    await expect(page.getByRole('navigation', { name: '曜日' })).toBeHidden()
 
     const boxes = await Promise.all(
       (await getDays(page).all()).map((day) => day.boundingBox()),
     )
-    const tops = new Set(boxes.map((box) => Math.round(box?.y ?? -1)))
 
-    expect(tops.size).toBe(1)
+    expect(new Set(boxes.map((box) => Math.round(box?.y ?? -1))).size).toBe(1)
     await expectNoHorizontalScroll(page)
   })
 
-  // Below 1024px, a column of the 7 days would be too narrow for the names
-  for (const width of [390, 768]) {
-    test(`should stack the days on a narrow screen (${width}px)`, async ({
+  for (const width of [375, 768]) {
+    test(`should stack the days with the band of weekdays (${width}px)`, async ({
       page,
     }) => {
       await page.setViewportSize({ height: 844, width })
@@ -219,16 +246,29 @@ test.describe('Schedule page', () => {
       const boxes = await Promise.all(
         (await getDays(page).all()).map((day) => day.boundingBox()),
       )
-      const lefts = new Set(boxes.map((box) => Math.round(box?.x ?? -1)))
       const tops = boxes.map((box) => box?.y ?? -1)
 
-      expect(lefts.size).toBe(1)
+      expect(new Set(boxes.map((box) => Math.round(box?.x ?? -1))).size).toBe(1)
       expect(tops).toEqual(tops.toSorted((a, b) => a - b))
       await expectNoHorizontalScroll(page)
+
+      const band = page.getByRole('navigation', { name: '曜日' })
+      const links = band.getByRole('link')
+
+      await expect(links).toHaveCount(7)
+
+      const sundayHref = await links.last().getAttribute('href')
+
+      expect(sundayHref).toMatch(/^#day-\d{4}-\d{2}-\d{2}$/)
+
+      await links.last().click()
+
+      await expect(page).toHaveURL(new RegExp(`${sundayHref}$`))
+      await expect(getDays(page).last()).toBeInViewport()
     })
   }
 
-  test('should be linked from the navigation and the home page', async ({
+  test('should be linked from the navigation, the footer and the home page', async ({
     page,
   }) => {
     await page.setViewportSize({ height: 900, width: 1280 })
@@ -237,7 +277,12 @@ test.describe('Schedule page', () => {
     await expect(
       page
         .getByRole('banner')
-        .getByRole('link', { exact: true, name: '配信スケジュール' }),
+        .getByRole('link', { exact: true, name: 'スケジュール' }),
+    ).toHaveAttribute('href', '/schedule')
+    await expect(
+      page
+        .getByRole('contentinfo')
+        .getByRole('link', { exact: true, name: 'スケジュール' }),
     ).toHaveAttribute('href', '/schedule')
 
     await page

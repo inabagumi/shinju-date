@@ -186,12 +186,7 @@ test.describe('Navigation to the talents page on mobile', () => {
     // お問い合わせ follows them only when the contact form is enabled
     expect(
       (await menu.getByRole('link').allTextContents()).slice(0, 4),
-    ).toEqual([
-      'SHINJU DATEとは',
-      '配信スケジュール',
-      '動画一覧',
-      'タレント一覧',
-    ])
+    ).toEqual(['SHINJU DATEとは', 'スケジュール', '動画一覧', 'タレント一覧'])
 
     await menu.getByRole('link', { name: 'タレント一覧' }).click()
 

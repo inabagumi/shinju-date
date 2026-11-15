@@ -56,6 +56,11 @@ export function SiteFooter() {
               </NavLink>
             </li>
             <li>
+              <NavLink className={footerLinkClassName} href="/schedule">
+                スケジュール
+              </NavLink>
+            </li>
+            <li>
               <NavLink className={footerLinkClassName} href="/videos">
                 動画一覧
               </NavLink>

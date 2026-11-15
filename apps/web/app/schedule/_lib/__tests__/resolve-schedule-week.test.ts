@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 vi.mock('next/navigation', () => ({
   notFound: vi.fn(() => {
@@ -6,12 +6,13 @@ vi.mock('next/navigation', () => ({
   }),
 }))
 
-vi.mock('next/server', () => ({
-  connection: vi.fn(() => Promise.resolve()),
+vi.mock('@/lib/fetchers', () => ({
+  fetchOldestVideoDate: vi.fn(),
+  fetchScheduleToday: vi.fn(),
 }))
 
 import { notFound } from 'next/navigation'
-import { connection } from 'next/server'
+import { fetchOldestVideoDate, fetchScheduleToday } from '@/lib/fetchers'
 import { resolveScheduleWeek } from '../resolve-schedule-week'
 
 function params(date: string) {
@@ -19,38 +20,64 @@ function params(date: string) {
 }
 
 describe('resolveScheduleWeek', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
+  beforeEach(() => {
     vi.clearAllMocks()
+
+    // Thursday, 12 November 2026
+    vi.mocked(fetchScheduleToday).mockResolvedValue('2026-11-12')
+    vi.mocked(fetchOldestVideoDate).mockResolvedValue('2026-10-28')
+  })
+
+  test('should return the week of today without the date', async () => {
+    const { range, today, weekStart } = await resolveScheduleWeek()
+
+    expect(weekStart.toString()).toBe('2026-11-09')
+    expect(today.toString()).toBe('2026-11-12')
+    expect(range.first.toString()).toBe('2026-10-26')
+    expect(range.last.toString()).toBe('2026-12-07')
   })
 
   test('should return the Monday of the week of the date', async () => {
-    expect((await resolveScheduleWeek(params('2026-11-12'))).toString()).toBe(
-      '2026-11-09',
-    )
-    expect((await resolveScheduleWeek(params('2027-01-01'))).toString()).toBe(
-      '2026-12-28',
-    )
-    expect(connection).not.toHaveBeenCalled()
+    expect(
+      (await resolveScheduleWeek(params('2026-11-12'))).weekStart.toString(),
+    ).toBe('2026-11-09')
+    expect(
+      (await resolveScheduleWeek(params('2026-11-01'))).weekStart.toString(),
+    ).toBe('2026-10-26')
   })
 
-  test('should render the not-found page for a value that is not a date', async () => {
-    await expect(resolveScheduleWeek(params('2026-W46'))).rejects.toThrow(
-      'NEXT_NOT_FOUND',
-    )
-    await expect(resolveScheduleWeek(params('2026-02-30'))).rejects.toThrow(
-      'NEXT_NOT_FOUND',
-    )
-    expect(notFound).toHaveBeenCalledTimes(2)
+  test('should go across the years', async () => {
+    vi.mocked(fetchScheduleToday).mockResolvedValue('2026-12-30')
+
+    expect(
+      (await resolveScheduleWeek(params('2027-01-01'))).weekStart.toString(),
+    ).toBe('2026-12-28')
   })
 
-  test('should return the week of today in Japan without the date', async () => {
-    // 00:30 on Monday, 16 November 2026 in Japan, still Sunday in UTC
-    vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
-      Temporal.Instant.from('2026-11-15T15:30:00Z'),
-    )
+  test.each(['2026-W46', '2026-02-30', 'today'])(
+    'should render the not-found page for %s without fetching',
+    async (value) => {
+      await expect(resolveScheduleWeek(params(value))).rejects.toThrow(
+        'NEXT_NOT_FOUND',
+      )
+      expect(notFound).toHaveBeenCalled()
+      expect(fetchScheduleToday).not.toHaveBeenCalled()
+    },
+  )
 
-    expect((await resolveScheduleWeek()).toString()).toBe('2026-11-16')
-    expect(connection).toHaveBeenCalled()
+  test('should render the not-found page before the week of the oldest video', async () => {
+    // Sunday of the week before the oldest video
+    await expect(resolveScheduleWeek(params('2026-10-25'))).rejects.toThrow(
+      'NEXT_NOT_FOUND',
+    )
+  })
+
+  test('should render the not-found page more than 4 weeks ahead', async () => {
+    await expect(
+      resolveScheduleWeek(params('2026-12-13')),
+    ).resolves.toMatchObject({})
+    await expect(resolveScheduleWeek(params('2026-12-14'))).rejects.toThrow(
+      'NEXT_NOT_FOUND',
+    )
   })
 })

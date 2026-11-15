@@ -7,7 +7,7 @@ import { resolveScheduleWeek } from '../_lib/resolve-schedule-week'
 export async function generateMetadata({
   params,
 }: Pick<PageProps<'/schedule/[date]'>, 'params'>): Promise<Metadata> {
-  const weekStart = await resolveScheduleWeek(params)
+  const { weekStart } = await resolveScheduleWeek(params)
   const title = `${formatWeekRange(weekStart)}の配信スケジュール`
 
   return {

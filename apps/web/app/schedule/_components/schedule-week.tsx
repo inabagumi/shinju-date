@@ -1,176 +1,268 @@
 import { twMerge } from '@shinju-date/ui'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import type { CSSProperties } from 'react'
+import { WEEKDAYS } from '@/lib/date-heading'
 import { fetchScheduleVideos, type ScheduleVideo } from '@/lib/fetchers'
 import { groupVideosByDate } from '@/lib/group-videos-by-date'
 import {
   formatWeekRange,
   getSchedulePath,
+  getStartHour,
+  getStartHours,
   getWeekDays,
-  SCHEDULE_PATH,
+  isWeekInRange,
 } from '@/lib/schedule'
 import {
   resolveScheduleWeek,
   type SchedulePageParams,
 } from '../_lib/resolve-schedule-week'
 import ScheduleDayHeader from './schedule-day-header'
-import ScheduleItem, { ScheduleItemSkeleton } from './schedule-item'
+import ScheduleItem, {
+  getScheduleVideoUrl,
+  ScheduleItemSkeleton,
+} from './schedule-item'
 
 export interface ScheduleWeekSectionProps {
   /** `/schedule` では渡さず、今日を含む週を表示する */
   params?: SchedulePageParams | undefined
 }
 
-/**
- * 1024px 以上では7日を横に並べ、それより狭い画面では日付ごとに縦に積む。
- * 640px で7列にすると1列が約80px になり、タレント名が1文字しか入らない
- */
-const DAYS_CLASS_NAME = 'grid gap-8 lg:grid-cols-7 lg:gap-2'
-
-const WEEK_LINK_CLASS_NAME =
-  'inline-flex items-center gap-0.5 rounded-control font-semibold'
-
-export async function ScheduleWeekTitle({ params }: ScheduleWeekSectionProps) {
-  const weekStart = await resolveScheduleWeek(params)
-
-  return (
-    <h2 className="text-heading font-bold tabular-nums">
-      <time dateTime={weekStart.toString()}>{formatWeekRange(weekStart)}</time>
-    </h2>
-  )
+function getDayId(date: Temporal.PlainDate): string {
+  return `day-${date.toString()}`
 }
 
-export function ScheduleWeekTitleSkeleton() {
-  return (
-    <span
-      aria-hidden="true"
-      className="inline-block h-[1lh] w-64 max-w-full animate-pulse rounded-control bg-muted text-heading"
-    />
-  )
-}
+const LINK_CLASS_NAME =
+  'inline-flex items-center gap-0.5 rounded-control font-semibold text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
 
-type WeekDirection = 'next' | 'previous'
+/** 週の範囲と、前の週・今週・次の週へのリンク */
+const WEEK_NAVIGATION_CLASS_NAME =
+  'mb-6 flex min-h-[1lh] flex-wrap items-center justify-between gap-x-6 gap-y-3 text-heading'
 
-const WEEK_LINK_LABELS: Record<WeekDirection, string> = {
-  next: '次の週',
-  previous: '前の週',
-}
-
-function WeekLinkContent({ direction }: { direction: WeekDirection }) {
-  return direction === 'previous' ? (
-    <>
-      <ChevronLeft aria-hidden="true" className="size-4" />
-      {WEEK_LINK_LABELS.previous}
-    </>
-  ) : (
-    <>
-      {WEEK_LINK_LABELS.next}
-      <ChevronRight aria-hidden="true" className="size-4" />
-    </>
-  )
-}
-
-const ACTIVE_WEEK_LINK_CLASS_NAME = twMerge(
-  WEEK_LINK_CLASS_NAME,
-  'text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
-)
-
-interface AdjacentWeekLinkProps extends ScheduleWeekSectionProps {
-  direction: WeekDirection
-}
-
-/** 前の週・次の週へのリンク。リンク先は常に月曜の URL にする */
-export async function AdjacentWeekLink({
-  direction,
+export async function ScheduleWeekNavigation({
   params,
-}: AdjacentWeekLinkProps) {
-  const weekStart = await resolveScheduleWeek(params)
-  const target = weekStart.add({ weeks: direction === 'previous' ? -1 : 1 })
+}: ScheduleWeekSectionProps) {
+  const { range, weekStart } = await resolveScheduleWeek(params)
+  const previousWeek = weekStart.subtract({ weeks: 1 })
+  const nextWeek = weekStart.add({ weeks: 1 })
 
   return (
-    <Link
-      className={ACTIVE_WEEK_LINK_CLASS_NAME}
-      href={getSchedulePath(target)}
-    >
-      <WeekLinkContent direction={direction} />
-    </Link>
+    <div className={WEEK_NAVIGATION_CLASS_NAME}>
+      <p className="font-bold tabular-nums">
+        <time dateTime={weekStart.toString()}>
+          {formatWeekRange(weekStart, { withWeekdays: true })}
+        </time>
+      </p>
+
+      <nav aria-label="週の移動">
+        <ul className="flex items-center gap-4 text-meta">
+          {/* 表示できない週へのリンクは出さない */}
+          {isWeekInRange(previousWeek, range) && (
+            <li>
+              <Link
+                className={LINK_CLASS_NAME}
+                href={getSchedulePath(previousWeek)}
+              >
+                <ChevronLeft aria-hidden="true" className="size-4" />
+                前の週
+              </Link>
+            </li>
+          )}
+          <li>
+            <Link className={LINK_CLASS_NAME} href={getSchedulePath()}>
+              今週
+            </Link>
+          </li>
+          {isWeekInRange(nextWeek, range) && (
+            <li>
+              <Link
+                className={LINK_CLASS_NAME}
+                href={getSchedulePath(nextWeek)}
+              >
+                次の週
+                <ChevronRight aria-hidden="true" className="size-4" />
+              </Link>
+            </li>
+          )}
+        </ul>
+      </nav>
+    </div>
   )
 }
 
-/** 読み込み中は同じ文言を薄く出し、リンクに置き換わってもずれないようにする */
-export function AdjacentWeekLinkSkeleton({
-  direction,
-}: {
-  direction: WeekDirection
-}) {
+export function ScheduleWeekNavigationSkeleton() {
   return (
-    <span
-      aria-hidden="true"
-      className={twMerge(WEEK_LINK_CLASS_NAME, 'text-muted')}
-    >
-      <WeekLinkContent direction={direction} />
-    </span>
+    <div aria-hidden="true" className={WEEK_NAVIGATION_CLASS_NAME}>
+      <span className="inline-block h-[1lh] w-80 max-w-full animate-pulse rounded-control bg-muted" />
+      <span className="inline-block h-4 w-40 animate-pulse rounded-control bg-muted" />
+    </div>
   )
 }
 
-export function CurrentWeekLink() {
+const WEEKDAY_BAND_CLASS_NAME = 'mb-6 grid grid-cols-7 gap-1 lg:hidden'
+
+/**
+ * 1024px 未満で、日付ごとのセクションへ飛ぶページ内リンク（「月 9」「火 10」…）。
+ */
+export async function ScheduleWeekdayBand({
+  params,
+}: ScheduleWeekSectionProps) {
+  const { weekStart } = await resolveScheduleWeek(params)
+
   return (
-    <Link className={ACTIVE_WEEK_LINK_CLASS_NAME} href={SCHEDULE_PATH}>
-      今週
-    </Link>
+    <nav aria-label="曜日">
+      <ul className={WEEKDAY_BAND_CLASS_NAME}>
+        {getWeekDays(weekStart).map((date) => (
+          <li key={date.toString()}>
+            <a
+              className="flex flex-col items-center rounded-control py-1 text-meta tabular-nums hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              href={`#${getDayId(date)}`}
+            >
+              <span className="text-caption text-muted">
+                {WEEKDAYS[date.dayOfWeek - 1]}
+              </span>
+              <span className="font-semibold">{date.day}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
   )
+}
+
+export function ScheduleWeekdayBandSkeleton() {
+  return (
+    <div aria-hidden="true" className={WEEKDAY_BAND_CLASS_NAME}>
+      {Array.from({ length: 7 }, (_, index) => (
+        <span
+          className="h-11 animate-pulse rounded-control bg-muted"
+          key={index}
+        />
+      ))}
+    </div>
+  )
+}
+
+/**
+ * 1024px 以上では、時刻の列と7日の列を並べ、各日の列は CSS の subgrid で
+ * 同じ行（見出しの行と、動画がある時間帯ごとの行）を共有する。同じ時間帯の
+ * 動画は日をまたいで横に並ぶ。1024px 未満では日付ごとのセクションを縦に積む。
+ */
+const DAYS_CLASS_NAME =
+  'space-y-8 lg:grid lg:grid-cols-[auto_repeat(7,minmax(0,1fr))] lg:gap-x-2 lg:space-y-0'
+const COLUMN_CLASS_NAME =
+  'lg:row-span-full lg:grid lg:grid-rows-subgrid lg:content-start'
+const SLOT_CLASS_NAME = 'lg:border-t lg:border-border lg:py-2'
+
+/** 見出しの行と、時間帯ごとの行。時間帯がない週も1行は確保する */
+function getRowsStyle(slotCount: number): CSSProperties {
+  return {
+    gridTemplateRows: `auto repeat(${Math.max(slotCount, 1)}, auto)`,
+  }
+}
+
+function formatHour(hour: number): string {
+  return `${hour.toString(10).padStart(2, '0')}:00`
 }
 
 interface ScheduleDayProps {
   date: Temporal.PlainDate
+  hours: number[]
   items: ScheduleVideo[]
+  referenceDate: string
 }
 
-function ScheduleDay({ date, items }: ScheduleDayProps) {
-  const headingId = `schedule-day-${date.toString()}`
+function ScheduleDay({ date, hours, items, referenceDate }: ScheduleDayProps) {
+  const id = getDayId(date)
+  const headingId = `${id}-heading`
+  const itemsByHour = Map.groupBy(items, (item) =>
+    getStartHour(item.published_at),
+  )
 
   return (
     <section
       aria-labelledby={headingId}
-      className="min-w-0"
+      className={twMerge(COLUMN_CLASS_NAME, 'min-w-0 scroll-mt-20')}
       data-testid="schedule-day"
+      id={id}
     >
       <ScheduleDayHeader
         count={items.length}
         date={date.toString()}
         headingId={headingId}
+        referenceDate={referenceDate}
       />
 
       {items.length > 0 ? (
-        <ul className="space-y-2">
-          {items.map((item) => (
-            <li key={item.id}>
-              <ScheduleItem value={item} />
-            </li>
-          ))}
-        </ul>
+        hours.map((hour) => {
+          const hourItems = itemsByHour.get(hour) ?? []
+
+          return (
+            <ul
+              className={twMerge(
+                SLOT_CLASS_NAME,
+                'mt-2 space-y-2 lg:mt-0',
+                // 狭い画面では空の時間帯を出さない
+                hourItems.length === 0 && 'max-lg:hidden',
+              )}
+              data-hour={hour}
+              key={hour}
+            >
+              {hourItems.map((item) => (
+                <li key={item.id}>
+                  <ScheduleItem value={item} />
+                </li>
+              ))}
+            </ul>
+          )
+        })
       ) : (
-        <p className="text-meta text-muted">配信なし</p>
+        <p className={twMerge(SLOT_CLASS_NAME, 'mt-2 text-meta text-muted')}>
+          配信はありません
+        </p>
       )}
     </section>
   )
 }
 
 /**
- * 1週間ぶんの配信と動画を、開始日時の日付ごとに並べる。動画がない日も日付は出す。
+ * 1週間ぶんの配信と動画を、開始日時の日付と時間帯ごとに並べる。動画がない日も
+ * 日付は出す。
  */
 export async function ScheduleDays({ params }: ScheduleWeekSectionProps) {
-  const weekStart = await resolveScheduleWeek(params)
-  const videos = await fetchScheduleVideos(weekStart.toString())
+  const { today, weekStart } = await resolveScheduleWeek(params)
+  // リンク先が作れない動画は表示しないので、件数にも入れない
+  const videos = (await fetchScheduleVideos(weekStart.toString())).filter(
+    (video) => getScheduleVideoUrl(video) !== null,
+  )
   const groups = groupVideosByDate(videos)
+  const hours = getStartHours(videos)
 
   return (
-    <div className={DAYS_CLASS_NAME}>
+    <div className={DAYS_CLASS_NAME} style={getRowsStyle(hours.length)}>
+      {/* 時刻の列。各項目にも開始時刻があるので、読み上げない */}
+      <div aria-hidden="true" className={twMerge(COLUMN_CLASS_NAME, 'hidden')}>
+        <span />
+        {hours.map((hour) => (
+          <span
+            className={twMerge(
+              SLOT_CLASS_NAME,
+              'text-meta text-muted tabular-nums',
+            )}
+            key={hour}
+          >
+            {formatHour(hour)}
+          </span>
+        ))}
+      </div>
+
       {getWeekDays(weekStart).map((date) => (
         <ScheduleDay
           date={date}
+          hours={hours}
           items={groups.get(date.toString()) ?? []}
           key={date.toString()}
+          referenceDate={today.toString()}
         />
       ))}
     </div>
@@ -179,15 +271,22 @@ export async function ScheduleDays({ params }: ScheduleWeekSectionProps) {
 
 export function ScheduleDaysSkeleton() {
   return (
-    <div aria-hidden="true" className={DAYS_CLASS_NAME}>
-      {Array.from({ length: 7 }, (_, index) => (
-        <div className="min-w-0" key={index}>
-          <div className="mb-3 border-b-2 border-border pb-1">
-            <span className="inline-block h-[1lh] w-16 animate-pulse rounded-control bg-muted text-body" />
-          </div>
+    <div aria-hidden="true" className={DAYS_CLASS_NAME} style={getRowsStyle(2)}>
+      <div className={twMerge(COLUMN_CLASS_NAME, 'hidden')}>
+        <span />
+        <span className={SLOT_CLASS_NAME} />
+        <span className={SLOT_CLASS_NAME} />
+      </div>
 
-          <div className="space-y-2">
+      {Array.from({ length: 7 }, (_, index) => (
+        <div className={twMerge(COLUMN_CLASS_NAME, 'min-w-0')} key={index}>
+          <div className="border-b border-border pb-1">
+            <span className="inline-block h-[1lh] w-20 animate-pulse rounded-control bg-muted text-body" />
+          </div>
+          <div className={twMerge(SLOT_CLASS_NAME, 'mt-2 lg:mt-0')}>
             <ScheduleItemSkeleton />
+          </div>
+          <div className={twMerge(SLOT_CLASS_NAME, 'mt-2 lg:mt-0')}>
             <ScheduleItemSkeleton />
           </div>
         </div>

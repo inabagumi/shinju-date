@@ -22,7 +22,7 @@ export function MainNavigationItems({
       </li>
       <li>
         <NavLink className={linkClassName} href="/schedule">
-          配信スケジュール
+          スケジュール
         </NavLink>
       </li>
       <li>
