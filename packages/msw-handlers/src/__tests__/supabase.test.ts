@@ -719,8 +719,12 @@ describe('Supabase Handlers', () => {
         ),
       ).toBe(true)
 
-      // The Twitch videos are the latest, so the first page shows them.
-      const firstPage = await searchVideos({ perpage: 6 })
+      // The Twitch videos are among the latest up to now, so the first page
+      // shows them. Upcoming streams of the schedule come later than now.
+      const firstPage = await searchVideos({
+        perpage: 6,
+        until: Temporal.Now.instant().toString(),
+      })
 
       expect(firstPage.some((video) => video.platform === 'twitch')).toBe(true)
     })

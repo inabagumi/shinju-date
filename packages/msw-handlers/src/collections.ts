@@ -435,14 +435,14 @@ export async function seedCollections() {
   )
 
   // Streams for the schedule of the public site: 2 on each day of the current
-  // week (from Monday to Sunday in Japan), 1 in each of the previous and the
+  // week (from Sunday to Saturday in Japan), 1 in each of the previous and the
   // next weeks, and 1 on air now. They are created before the YouTube videos
   // below, so they get youtube_videos rows. Their status follows the start:
   // `ENDED` before now and `UPCOMING` after it.
   const scheduleNow = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
   const weekStart = scheduleNow
     .toPlainDate()
-    .subtract({ days: scheduleNow.dayOfWeek - 1 })
+    .subtract({ days: scheduleNow.dayOfWeek % 7 })
     .toZonedDateTime(TIME_ZONE)
   // Some streams of different days start in the same hour, so the rows of the
   // hours on the schedule can be checked
@@ -454,7 +454,7 @@ export async function seedCollections() {
     weekStart.subtract({ days: 5 }).add({ hours: 20 }),
     weekStart.add({ days: 9, hours: 20 }),
     // 3 more at 21:00 on Wednesday, so 4 streams start at the same time
-    ...Array.from({ length: 3 }, () => weekStart.add({ days: 2, hours: 21 })),
+    ...Array.from({ length: 3 }, () => weekStart.add({ days: 3, hours: 21 })),
   ]
   const scheduleTitles = [
     '【定期】朝の雑談',
