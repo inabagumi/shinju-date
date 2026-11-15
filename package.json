@@ -5,7 +5,7 @@
     "packageManager": {
       "name": "pnpm",
       "onFail": "download",
-      "version": "12.18.0"
+      "version": "12.21.0"
     },
     "runtime": {
       "name": "node",
