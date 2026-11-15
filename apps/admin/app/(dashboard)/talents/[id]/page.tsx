@@ -118,6 +118,11 @@ async function TalentProfile({ id }: { id: string }) {
             </CardHeader>
             <DetailList>
               <DetailRow label="タレント名">{talent.name}</DetailRow>
+              <DetailRow label="読み仮名">
+                {talent.reading ?? (
+                  <span className="text-muted">設定されていません</span>
+                )}
+              </DetailRow>
             </DetailList>
           </Card>
         )}

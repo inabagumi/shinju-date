@@ -19,9 +19,16 @@ import Form, {
   SubmitButton,
 } from '@/components/form'
 import { updateTalentAction } from '../../_actions'
+import {
+  TALENT_READING_DESCRIPTION,
+  TALENT_READING_PLACEHOLDER,
+} from '../../_lib/talent-reading-description'
 import { DetailList, DetailRow, PanelHeading } from './detail-list'
 
-type Talent = Pick<Tables<'talents'>, 'id' | 'name' | 'theme_color'> & {
+type Talent = Pick<
+  Tables<'talents'>,
+  'id' | 'name' | 'reading' | 'theme_color'
+> & {
   youtube_channels: Pick<
     Tables<'youtube_channels'>,
     'id' | 'name' | 'youtube_channel_id' | 'youtube_handle'
@@ -106,6 +113,14 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
               管理画面から編集可能な表示名
             </p>
           </DetailRow>
+          <DetailRow label="読み仮名">
+            {talent.reading ?? (
+              <span className="text-muted">設定されていません</span>
+            )}
+            <p className="mt-1 text-caption text-muted">
+              {TALENT_READING_DESCRIPTION}
+            </p>
+          </DetailRow>
           <DetailRow label="テーマカラー">
             {talent.theme_color ? (
               <div className="flex items-center gap-2">
@@ -179,7 +194,7 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
     <Card variant="elevated">
       <CardHeader>
         <PanelHeading
-          description="タレント名とテーマカラーを編集できます。"
+          description="タレント名・読み仮名・テーマカラーを編集できます。"
           title="タレント情報を編集"
         />
       </CardHeader>
@@ -197,6 +212,19 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
             />
             <p className="mt-1 text-caption text-muted">
               管理画面から編集可能な表示名（YouTube APIによる自動更新の対象外）
+            </p>
+            <ErrorMessage className="mt-1 text-meta text-danger" />
+          </FormField>
+          <FormField name="reading">
+            <Label className="mb-2 block text-meta font-semibold">
+              読み仮名（任意）
+            </Label>
+            <Input
+              defaultValue={talent.reading ?? ''}
+              placeholder={TALENT_READING_PLACEHOLDER}
+            />
+            <p className="mt-1 text-caption text-muted">
+              {TALENT_READING_DESCRIPTION}
             </p>
             <ErrorMessage className="mt-1 text-meta text-danger" />
           </FormField>
