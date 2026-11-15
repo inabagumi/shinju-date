@@ -63,11 +63,11 @@ vi.mock('@/components/video-filters', () => ({
 
 const TALENT_A: Talent = {
   id: '0f6b7c84-1a1e-4b4e-9d3a-5c7a0c1e2f01',
-  name: '一ノ瀬うるは',
+  name: 'あさぎりミオ',
 }
 const TALENT_B: Talent = {
   id: '7d2e4b1a-3c5f-4e6a-8b9c-0d1e2f3a4b02',
-  name: '小森めと',
+  name: 'しらつゆネネ',
 }
 const RETIRED_TALENT_ID = '00000000-0000-4000-8000-000000000000'
 
