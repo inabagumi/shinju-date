@@ -233,6 +233,10 @@ export const MOCK_RETIRED_TALENT_ID = '00000000-0000-4000-8000-000000000005'
 /** ID of the seeded talent that is deleted (`deleted_at` is set) */
 export const MOCK_DELETED_TALENT_ID = '00000000-0000-4000-8000-000000000006'
 
+/** ID of the seeded active talent that has no channels or videos */
+export const MOCK_TALENT_WITHOUT_VIDEOS_ID =
+  '00000000-0000-4000-8000-000000000007'
+
 let seeding: Promise<void> | undefined
 
 /**
@@ -273,8 +277,18 @@ export async function seedCollections() {
   )
 
   // A retired talent and a deleted talent, which the public site does not
-  // show. They have no channels or videos.
+  // show, and an active talent that has just been added. They have no
+  // channels or videos.
   await Promise.all([
+    talents.create({
+      created_at: faker.date.recent({ days: 7 }).toISOString(),
+      deleted_at: null,
+      id: MOCK_TALENT_WITHOUT_VIDEOS_ID,
+      name: '動画のないタレント',
+      status: 'active',
+      theme_color: null,
+      updated_at: faker.date.recent().toISOString(),
+    }),
     talents.create({
       created_at: faker.date.past({ years: 3 }).toISOString(),
       deleted_at: null,
@@ -529,14 +543,17 @@ export async function seedCollections() {
     )
   }
 
-  // Create YouTube videos (relations)
+  // Create YouTube videos (relations). Each video belongs to the channel of
+  // its talent, so the page of a talent shows its own channel on the cards.
   const allVideos = await videos.findMany()
+  const findChannelOfVideo = (video: (typeof allVideos)[number]) =>
+    createdChannels.find((channel) => channel.talent_id === video.talent_id)
 
   // Create specific test data that tests expect
   const testYoutubeVideoIds = ['YT_video1abc', 'YT_video2def', 'YT_video3ghi']
   await Promise.all(
     allVideos.slice(0, 3).map((video, idx) => {
-      const channel = createdChannels[idx % createdChannels.length]
+      const channel = findChannelOfVideo(video)
       if (!channel) return Promise.resolve()
 
       return youtubeVideos.create({
@@ -551,8 +568,8 @@ export async function seedCollections() {
 
   // Create remaining YouTube videos with random IDs
   await Promise.all(
-    allVideos.slice(3).map((video, idx) => {
-      const channel = createdChannels[(idx + 3) % createdChannels.length]
+    allVideos.slice(3).map((video) => {
+      const channel = findChannelOfVideo(video)
       if (!channel) return Promise.resolve()
 
       return youtubeVideos.create({

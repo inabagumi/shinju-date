@@ -57,6 +57,7 @@ export {
   MOCK_DELETED_TALENT_ID,
   MOCK_RETIRED_TALENT_ID,
   MOCK_TALENT_IDS,
+  MOCK_TALENT_WITHOUT_VIDEOS_ID,
   profileImages,
   seedCollections,
   talents,
