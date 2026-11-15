@@ -1,41 +1,16 @@
-import { TIME_ZONE } from '@shinju-date/constants'
-import { formatDate, formatTime } from '@shinju-date/temporal-fns'
 import { twMerge } from '@shinju-date/ui'
 import Link from 'next/link'
 import TalentIcon from '@/components/talent-icon'
+import {
+  LIVE_RING_CLASS_NAME,
+  NextStream,
+} from '@/components/talent-stream-status'
 import type { TalentListItem, TalentStreamStatus } from '@/lib/fetchers'
 import { getTalentPath } from '@/lib/talent-links'
 
 /** The size of the icon: 80px, 96px from 640px, and 112px from 1024px */
 const ICON_CLASS_NAME = 'size-20 sm:size-24 lg:size-28'
 const ICON_SIZES = '(min-width: 1024px) 112px, (min-width: 640px) 96px, 80px'
-
-/** A 2px ring in the live color, 2px apart from the icon */
-const LIVE_RING_CLASS_NAME =
-  'ring-2 ring-live ring-offset-2 ring-offset-background'
-
-interface NextStreamProps {
-  id: string
-  startsAt: string
-}
-
-/**
- * The start of the next stream as `次回 11/16 20:00`. It is built without
- * `toLocaleString`, whose output differs between the native Temporal and
- * temporal-polyfill and causes hydration errors.
- */
-function NextStream({ id, startsAt }: NextStreamProps) {
-  const dateTime = Temporal.Instant.from(startsAt).toZonedDateTimeISO(TIME_ZONE)
-
-  return (
-    <span className="text-caption text-muted tabular-nums" id={id}>
-      次回{' '}
-      <time dateTime={dateTime.toString({ timeZoneName: 'never' })}>
-        {formatDate(dateTime, { includeYear: false })} {formatTime(dateTime)}
-      </time>
-    </span>
-  )
-}
 
 interface TalentCardProps {
   /** Whether the talent is live and when it streams next, if known */
