@@ -6,7 +6,6 @@ allowBuilds:
   "@sentry-internal/node-cpu-profiler": true
   "@sentry/cli": true
   "@sentry/node-cpu-profiler": true
-  agent-browser: false
   esbuild: true
   msw: true
   sharp: true
@@ -24,10 +23,6 @@ minimumReleaseAgeExclude:
   - "@next/swc-win32-arm64-msvc@16.3.0"
   - "@next/swc-win32-x64-msvc@16.3.0"
   - next@16.3.0
-
-permissions:
-  agent-browser:
-    skills: false
 
 publicHoistPattern:
   - "*import-in-the-middle*"

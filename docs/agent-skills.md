@@ -51,11 +51,20 @@ pnpm dlx skills add vercel/next.js --skill next-dev-loop --skill next-cache-comp
 
 ## agent-browser
 
-`next-dev-loop` は、ブラウザを操作する CLI の [`agent-browser`](https://github.com/vercel-labs/agent-browser) を `PATH` から直接呼びます。`agent-browser` はルートの `devDependencies` に入れているので、`pnpm install` で入ります。
+`next-dev-loop` は、ブラウザを操作する CLI の [`agent-browser`](https://github.com/vercel-labs/agent-browser) を `PATH` から直接呼びます（0.31.1 以上が必要です）。エージェントしか使わない道具なので、`devDependencies` には入れず、使う人がグローバルに入れます。CI や `pnpm install` のたびに、ネイティブのバイナリ（約 20 MB）を取得させないためです。
 
-- pnpm にはビルドスクリプト（`postinstall`）と、パッケージに同梱されたスキルの両方を許可していません（`pnpm-workspace.yaml` の `allowBuilds` と `permissions`）。ネイティブのバイナリは初回の実行時にリンクされ、使い方は `agent-browser skills get core` で読めます
-- ローカルでは、`pnpm exec agent-browser` で呼ぶか、`node_modules/.bin` を `PATH` に追加してください。ブラウザは初回に `pnpm exec agent-browser install` で Chrome for Testing を入れるか、`AGENT_BROWSER_EXECUTABLE_PATH` で手元の Chrome を指定します
-- クラウドセッションでは、`.claude/hooks/session-start.sh` が `agent-browser` を `PATH` に置き、`AGENT_BROWSER_EXECUTABLE_PATH` でコンテナにある Chromium を指定します。追加の設定は要りません
+- ローカルでは、スキルの手順どおり次のコマンドで入れます。ブラウザは `agent-browser install` で Chrome for Testing を入れるか、`AGENT_BROWSER_EXECUTABLE_PATH` で手元の Chrome を指定します
+
+```bash
+npm install --global agent-browser@latest
+```
+
+```bash
+agent-browser install
+```
+
+- クラウドセッションでは、`.claude/hooks/session-start.sh` が `agent-browser` の最新版を pnpm の bin（`PATH` に入っています）に入れ、`AGENT_BROWSER_EXECUTABLE_PATH` でコンテナにある Chromium を指定します。追加の設定は要りません
+- 使い方は `agent-browser skills get core` で読めます
 
 ## next-dev-loop で apps/web を確かめる
 

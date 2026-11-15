@@ -35,9 +35,11 @@ if [ "$current" != "$(cat "$hashes" 2>/dev/null)" ]; then
   printf '%s\n' "$current" > "$hashes"
 fi
 
-# next-dev-loop スキルは agent-browser を PATH から直接呼ぶため、
-# devDependencies に入れた agent-browser を PATH にある pnpm の bin に置く
-ln -sf "$PWD/node_modules/.bin/agent-browser" "$PNPM_HOME/bin/agent-browser"
+# next-dev-loop スキルが PATH から直接呼ぶ agent-browser を入れる。
+# エージェントしか使わないため devDependencies には入れない
+if [ ! -x "$PNPM_HOME/bin/agent-browser" ]; then
+  npm install --global --prefix "$PNPM_HOME" agent-browser@latest
+fi
 
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
   {
