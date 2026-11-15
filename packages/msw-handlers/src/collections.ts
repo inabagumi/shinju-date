@@ -433,6 +433,32 @@ export async function seedCollections() {
     }),
   )
 
+  // A stream of a week ago, so the schedule of the public site has a video in
+  // the previous week as well. It is created before the YouTube videos below,
+  // so it gets a youtube_videos row.
+  const talentOfLastWeek = createdTalents[2]
+
+  if (talentOfLastWeek) {
+    const publishedAt = Temporal.Now.instant().subtract({ hours: 24 * 7 })
+
+    await videos.create({
+      created_at: publishedAt.toString(),
+      deleted_at: null,
+      deleted_reason: null,
+      duration: 'PT1H30M0S',
+      id: faker.string.uuid(),
+      platform: 'youtube',
+      published_at: publishedAt.toString(),
+      status: 'ENDED',
+      talent_id: talentOfLastWeek.id,
+      thumbnail_id: createdThumbnails[0]?.id ?? null,
+      title: '【定期】先週の歌枠アーカイブ',
+      updated_at: publishedAt.toString(),
+      video_kind: 'standard',
+      visible: true,
+    })
+  }
+
   // Create YouTube channels. The last one has no icon, so the default icon
   // fallback can be checked as well.
   const createdChannels = await Promise.all(
