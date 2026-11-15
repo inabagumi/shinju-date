@@ -43,6 +43,33 @@
 
 詳しい書き方は [coding-guidelines.md](coding-guidelines.md#セマンティックカラー) を参照してください。
 
+### タレントのテーマカラー
+
+タレントのテーマカラー（`talents.theme_color`、`#RRGGBB`）は、**配信スケジュール（`/schedule`）の予定の項目の左端の線にだけ**使います。スケジュールにはサムネイルを出さないので、「色はサムネイルに担わせる」の役をテーマカラーに持たせ、同じタレントの配信を1週間の中で色で追えるようにしています。
+
+- **文字のない印にだけ使う。** 任意の色なので、文字の色や文字の地にすると、ライトとダークのどちらかでコントラスト比 4.5:1 を満たせません。文字は今までどおり `text-foreground` / `text-muted` にします
+- **値は CSS 変数として `style` で渡し、クラスからその変数を参照する。** `dark:` は書きません。`#RRGGBB` の形でない値は `apps/web/lib/theme-color.ts` の `parseThemeColor` で未設定として扱います
+- **未設定のタレントは `border-border` の色にする**
+- **色だけに頼らない。** タレント名とアイコンを必ず出します。配信中は色ではなく「配信中」の文字つきの印（`bg-live`）で示し、ピンク系のテーマカラーと取り違えないようにします
+- タレント一覧、タレントのページ、動画カードなど、ほかの画面にはまだ使いません
+
+### 予定の項目（配信スケジュール）
+
+配信スケジュールの1件は、共通の動画カードではなく専用の項目（`apps/web/app/schedule/_components/schedule-item.tsx`）で表示します。スケジュールで知りたいのは「いつ・誰が」なので、サムネイルは出しません。リンクの挙動（リンク先、`ping`、別タブ）は動画カードと同じです。
+
+| 部分             | クラス                                                                                        |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| 項目（リンク）   | `border-l-4 rounded-r-control hover:bg-muted`                                                 |
+| 左端の線         | `border-l-(--talent-color)`（`style` で `--talent-color` を渡す）／未設定は `border-l-border` |
+| 開始時刻         | `text-meta font-bold text-foreground tabular-nums`                                            |
+| 状態（配信中）   | `rounded-control bg-live px-1.5 py-0.5 text-caption font-semibold text-live-foreground`       |
+| 状態（それ以外） | `text-caption text-muted`（予定・終了済み・公開済み）                                         |
+| タイトル         | `text-meta leading-normal font-semibold text-foreground line-clamp-2 lg:line-clamp-3`         |
+| タレント         | `text-meta text-muted`（アイコン 20px と名前）                                                |
+
+- 1024px 以上では7日を横に並べ、項目の中身を縦に積みます。それより狭い画面では日付ごとに縦に積み、左に開始時刻と状態、右にタイトルとタレントを置きます
+- 今日の日付は、見出しの文字を `text-accent`、下線を `border-accent` にし、`bg-accent text-accent-foreground` の「今日」の印を付けます
+
 ## 文字
 
 ### フォント
