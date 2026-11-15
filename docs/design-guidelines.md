@@ -130,7 +130,7 @@ import { twMerge } from '@shinju-date/ui'
 
 回数の分布を色の濃さで示す表（タレントのページの「配信の傾向」など）は、次の組み合わせにします。部品は `apps/web/app/talents/[id]/_components/talent-stream-tendency.tsx` です。
 
-補助的な情報なので、主な内容（動画の一覧など）を押し下げないよう小さく作り、広い画面ではページ見出しの横に置きます。狭い画面では `<details>` で要点の1行（「土曜日・21時台が多い」など）に畳み、広い画面では `md:details-content:block md:details-content:[content-visibility:visible]` で常に開いて、`<summary>` を `md:hidden` にします。
+補助的な情報なので、主な内容（動画の一覧など）を押し下げないよう小さく作り、広い画面ではページ見出しの横に置きます。狭い画面では `<details>` で要点の1行（「土曜日・21時台が多い」など）に畳み、広い画面では `md:details-content:block md:details-content:[content-visibility:visible]` で常に開いて、`<summary>` は `supports-[selector(::details-content)]:md:hidden` で隠します（`::details-content` に対応していないブラウザーでは、開くための1行を残します）。
 
 - 色は `accent` に固定する。タレントのテーマカラーなどの任意の色は、薄い段階を見分けられることをライトとダークの両方で保証できないので使わない
 - 濃さは、その表でいちばん多いセルの回数（`max`）に対する割合で4段階に分ける
