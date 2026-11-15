@@ -10,6 +10,10 @@ import { redirect } from 'next/navigation'
 import { fetchActiveTalents, type Talent } from '@/lib/fetchers'
 import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
 import { supabaseClient } from '@/lib/supabase'
+import {
+  type RenderedAnnouncement,
+  renderAnnouncement,
+} from '../_components/announcement-message'
 
 const ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
@@ -41,6 +45,18 @@ export async function getAnnouncement(): Promise<Announcement | null> {
   }
 
   return data
+}
+
+/**
+ * Get the currently active announcement with its message rendered on the
+ * server, so that the banner can refresh it without the Markdown parser
+ * being shipped to the browser.
+ * Returns null if no announcement is active
+ */
+export async function getRenderedAnnouncement(): Promise<RenderedAnnouncement | null> {
+  const announcement = await getAnnouncement()
+
+  return announcement ? renderAnnouncement(announcement) : null
 }
 
 /**

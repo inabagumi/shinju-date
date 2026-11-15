@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { Suspense } from 'react'
 import { getAnnouncement } from '../_lib/actions'
 import { AnnouncementBanner } from './announcement-banner'
+import { renderAnnouncement } from './announcement-message'
 
 async function AnnouncementContent() {
   const cookieStore = await cookies()
@@ -21,7 +22,7 @@ async function AnnouncementContent() {
     return null
   }
 
-  return <AnnouncementBanner announcement={announcement} />
+  return <AnnouncementBanner announcement={renderAnnouncement(announcement)} />
 }
 
 export function AnnouncementBannerWrapper() {

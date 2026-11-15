@@ -4,6 +4,9 @@ const BASE_URL = process.env['BASE_URL'] || 'http://localhost:3000'
 
 // Provided by the MSW mock data (packages/msw-handlers)
 const ANNOUNCEMENT_MESSAGE = 'メンテナンスのお知らせ'
+const ANNOUNCEMENT_LINK_TEXT = 'メンテナンス情報'
+const ANNOUNCEMENT_LINK_URL = 'https://example.com/maintenance'
+const ANNOUNCEMENT_STRUCK_TEXT = '11月20日'
 
 interface Box {
   height: number
@@ -278,6 +281,30 @@ function describeViewport(
 }
 
 test.describe('Announcement Banner', () => {
+  test('should render the Markdown message', async ({ page }) => {
+    await openPage(page, '/videos')
+
+    const banner = getBanner(page)
+    const messageButton = banner.getByRole('button', {
+      name: ANNOUNCEMENT_MESSAGE,
+    })
+
+    await messageButton.click()
+    await expect(messageButton).toHaveAttribute('aria-expanded', 'true')
+
+    // Links open in a new tab without passing the referrer
+    const link = banner.getByRole('link', { name: ANNOUNCEMENT_LINK_TEXT })
+    await expect(link).toBeVisible()
+    await expect(link).toHaveAttribute('href', ANNOUNCEMENT_LINK_URL)
+    await expect(link).toHaveAttribute('target', '_blank')
+    await expect(link).toHaveAttribute('rel', 'nofollow noopener noreferrer')
+
+    // GFM syntax (strikethrough) is rendered, and no Markdown source is shown
+    await expect(banner.locator('del')).toHaveText(ANNOUNCEMENT_STRUCK_TEXT)
+    await expect(banner).not.toContainText('~~')
+    await expect(banner).not.toContainText('](')
+  })
+
   describeViewport('Mobile', { height: 844, width: 390 })
   describeViewport('Desktop', { height: 1000, width: 1440 })
 
