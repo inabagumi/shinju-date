@@ -44,4 +44,17 @@ describe('getVideosPath', () => {
       `/videos/${encodeURIComponent('歌 枠')}?kind=standard`,
     )
   })
+
+  test('should keep the selected talents in sorted order', () => {
+    const talentA = '0f6b7c84-1a1e-4b4e-9d3a-5c7a0c1e2f01'
+    const talentB = '7d2e4b1a-3c5f-4e6a-8b9c-0d1e2f3a4b02'
+
+    expect(getVideosPath('', 'all', [talentB, talentA, talentB])).toBe(
+      `/videos?talent=${talentA}&talent=${talentB}`,
+    )
+    expect(getVideosPath('歌', 'short', [talentA])).toBe(
+      `/videos/${encodeURIComponent('歌')}?kind=short&talent=${talentA}`,
+    )
+    expect(getVideosPath('', 'all', [])).toBe('/videos')
+  })
 })

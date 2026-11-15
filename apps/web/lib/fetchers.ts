@@ -144,12 +144,15 @@ async function getDefaultBaseTime() {
 interface FetchVideosOptions {
   kind?: VideoKindFilter
   query?: string
+  /** 絞り込むタレントの ID。空のときはすべてのタレントが対象になる */
+  talentIds?: string[]
   until?: bigint | undefined
 }
 
 export const fetchVideos = async ({
   kind = 'all',
   query = '',
+  talentIds = [],
   until,
 }: FetchVideosOptions): Promise<Video[]> => {
   'use cache: remote'
@@ -163,7 +166,7 @@ export const fetchVideos = async ({
   const videoKinds = getVideoKinds(kind)
   const { data: videos, error } = await supabaseClient
     .rpc('search_videos_v3', {
-      channel_ids: [],
+      channel_ids: talentIds,
       perpage: SEARCH_RESULT_COUNT,
       query,
       until: baseTime.toJSON(),
@@ -183,14 +186,18 @@ export const fetchVideos = async ({
 interface CountVideosOptions {
   kind?: VideoKindFilter
   query?: string
+  /** 絞り込むタレントの ID。空のときはすべてのタレントが対象になる */
+  talentIds?: string[]
 }
 
 /**
- * Count the videos `fetchVideos` pages through for the given query and kind.
+ * Count the videos `fetchVideos` pages through for the given query, kind and
+ * talents.
  */
 export const countVideos = async ({
   kind = 'all',
   query = '',
+  talentIds = [],
 }: CountVideosOptions): Promise<number> => {
   'use cache: remote'
 
@@ -200,7 +207,7 @@ export const countVideos = async ({
   const baseTime = await getDefaultBaseTime()
   const videoKinds = getVideoKinds(kind)
   const { data: count, error } = await supabaseClient.rpc('count_videos_v1', {
-    channel_ids: [],
+    channel_ids: talentIds,
     query,
     until: baseTime.toJSON(),
     ...(videoKinds ? { video_kinds: videoKinds } : {}),
@@ -213,6 +220,34 @@ export const countVideos = async ({
   }
 
   return count
+}
+
+/**
+ * 活動中のタレント（ID と名前）を名前の昇順で取得する。動画一覧のタレントの
+ * 絞り込みの選択肢に使う。
+ */
+export const fetchActiveTalents = async (): Promise<Talent[]> => {
+  'use cache: remote'
+
+  cacheLife('hours')
+  cacheTag('talents')
+
+  const { data: talents, error } = await supabaseClient
+    .from('talents')
+    .select('id, name')
+    .eq('status', 'active')
+    .is('deleted_at', null)
+    .order('name', {
+      ascending: true,
+    })
+
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  return talents
 }
 
 /**

@@ -87,12 +87,17 @@ interface SearchResultsProps {
   kind?: VideoKindFilter
   prefetchedData?: Video[][]
   query?: string
+  /** 絞り込むタレントの ID。空のときはすべてのタレントが対象になる */
+  talentIds?: string[]
 }
+
+const NO_TALENT_IDS: string[] = []
 
 export default function SearchResults({
   kind = 'all',
   prefetchedData,
   query = '',
+  talentIds = NO_TALENT_IDS,
 }: SearchResultsProps) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
@@ -121,10 +126,11 @@ export default function SearchResults({
         return fetchVideos({
           kind,
           query,
+          talentIds,
           until: pageParam,
         })
       },
-      queryKey: ['videos', { kind, query }],
+      queryKey: ['videos', { kind, query, talentIds }],
     })
 
   const { ref: loadMoreRef, inView } = useInView({
