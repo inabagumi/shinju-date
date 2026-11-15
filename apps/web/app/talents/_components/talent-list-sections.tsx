@@ -1,4 +1,9 @@
-import { fetchTalentList } from '@/lib/fetchers'
+import { logger } from '@shinju-date/logger'
+import {
+  fetchTalentList,
+  fetchTalentStreamStatuses,
+  type TalentStreamStatus,
+} from '@/lib/fetchers'
 import TalentGrid from './talent-grid'
 
 /**
@@ -21,8 +26,29 @@ export function TalentCountSkeleton() {
   )
 }
 
-export async function TalentListGrid() {
-  const talents = await fetchTalentList()
+/**
+ * Whether each talent is live and when it streams next. The list is still
+ * shown with the icons and the names when they cannot be fetched.
+ */
+async function getStreamStatuses(): Promise<
+  Record<string, TalentStreamStatus>
+> {
+  try {
+    return await fetchTalentStreamStatuses()
+  } catch (error) {
+    logger.error('Failed to fetch the stream statuses of the talents', {
+      error,
+    })
 
-  return <TalentGrid talents={talents} />
+    return {}
+  }
+}
+
+export async function TalentListGrid() {
+  const [talents, streamStatuses] = await Promise.all([
+    fetchTalentList(),
+    getStreamStatuses(),
+  ])
+
+  return <TalentGrid streamStatuses={streamStatuses} talents={talents} />
 }

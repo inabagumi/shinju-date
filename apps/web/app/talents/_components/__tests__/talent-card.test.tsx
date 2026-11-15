@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, test, vi } from 'vitest'
-import type { TalentListItem } from '@/lib/fetchers'
+import type { TalentListItem, TalentStreamStatus } from '@/lib/fetchers'
 
 vi.mock('@/lib/fetchers', () => ({}))
 
@@ -62,6 +62,87 @@ describe('TalentCard', () => {
   })
 })
 
+describe('TalentCard with the stream status', () => {
+  const live: TalentStreamStatus = { isLive: true, nextStreamAt: null }
+  // 2026-11-16 20:00 in Japan
+  const upcoming: TalentStreamStatus = {
+    isLive: false,
+    nextStreamAt: '2026-11-16T11:00:00Z',
+  }
+
+  test('should show neither the badge nor the next stream by default', () => {
+    render(<TalentCard talent={createTalent()} />)
+
+    const link = screen.getByRole('link', { name: '朝霧ミオ' })
+
+    expect(link).not.toHaveAttribute('aria-describedby')
+    expect(screen.queryByText('配信中')).not.toBeInTheDocument()
+    expect(screen.queryByText(/次回/)).not.toBeInTheDocument()
+    expect(screen.getByTestId('talent-icon')).not.toHaveClass('ring-live')
+  })
+
+  test('should show the ring and the badge while live', () => {
+    render(<TalentCard streamStatus={live} talent={createTalent()} />)
+
+    const link = screen.getByRole('link', { name: '朝霧ミオ' })
+
+    expect(link).toHaveAccessibleDescription('配信中')
+    expect(screen.getByText('配信中')).toHaveClass(
+      'bg-live',
+      'text-live-foreground',
+      'text-caption',
+      'font-semibold',
+      'rounded-control',
+    )
+    expect(screen.getByTestId('talent-icon')).toHaveClass(
+      'ring-2',
+      'ring-live',
+      'ring-offset-2',
+      'ring-offset-background',
+    )
+  })
+
+  test('should show the ring around the default icon too', () => {
+    render(
+      <TalentCard
+        streamStatus={live}
+        talent={createTalent({ youtube_channels: [] })}
+      />,
+    )
+
+    expect(screen.getByTestId('talent-default-icon')).toHaveClass('ring-live')
+  })
+
+  test('should show the start of the next stream in Japan time', () => {
+    render(<TalentCard streamStatus={upcoming} talent={createTalent()} />)
+
+    const link = screen.getByRole('link', { name: '朝霧ミオ' })
+    const nextStream = screen.getByText(/^次回/)
+
+    expect(link).toHaveAccessibleDescription('次回 11/16 20:00')
+    expect(nextStream).toHaveTextContent('次回 11/16 20:00')
+    expect(nextStream).toHaveClass('text-caption', 'text-muted', 'tabular-nums')
+    expect(nextStream.querySelector('time')).toHaveAttribute(
+      'dateTime',
+      '2026-11-16T20:00:00+09:00',
+    )
+    expect(screen.queryByText('配信中')).not.toBeInTheDocument()
+    expect(screen.getByTestId('talent-icon')).not.toHaveClass('ring-live')
+  })
+
+  test('should not show the next stream while live', () => {
+    render(
+      <TalentCard
+        streamStatus={{ isLive: true, nextStreamAt: '2026-11-16T11:00:00Z' }}
+        talent={createTalent()}
+      />,
+    )
+
+    expect(screen.getByText('配信中')).toBeInTheDocument()
+    expect(screen.queryByText(/次回/)).not.toBeInTheDocument()
+  })
+})
+
 describe('TalentGrid', () => {
   test('should list the talents in order', () => {
     render(
@@ -83,6 +164,31 @@ describe('TalentGrid', () => {
       '朝霧ミオ',
       '夜宵ルナ',
     ])
+  })
+
+  test('should keep the order of the talents while some are live', () => {
+    const secondId = '00000000-0000-4000-8000-000000000002'
+
+    render(
+      <TalentGrid
+        streamStatuses={{
+          [secondId]: { isLive: true, nextStreamAt: null },
+        }}
+        talents={[
+          createTalent(),
+          createTalent({ id: secondId, name: '夜宵ルナ' }),
+        ]}
+      />,
+    )
+
+    const links = screen.getAllByRole('link')
+
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      `/talents/${TALENT_ID}`,
+      `/talents/${secondId}`,
+    ])
+    expect(links[0]).not.toHaveAttribute('aria-describedby')
+    expect(links[1]).toHaveAccessibleDescription('配信中')
   })
 
   test('should show the empty state without any talent', () => {
