@@ -1,4 +1,5 @@
 import type { Tables } from '@shinju-date/database'
+import { normalizeTalentIds, TALENT_SEARCH_PARAM } from './talent-filter'
 
 type VideoKind = Tables<'videos'>['video_kind']
 
@@ -45,14 +46,24 @@ export function getVideoKinds(
 }
 
 /**
- * 動画一覧（または検索結果）を種別で絞り込んだページのパス。
+ * 動画一覧（または検索結果）を種別とタレントで絞り込んだページのパス。
+ * タレントの ID は重複を除いて並べ替える。
  */
-export function getVideosPath(query: string, filter: VideoKindFilter): string {
+export function getVideosPath(
+  query: string,
+  filter: VideoKindFilter,
+  talentIds: readonly string[] = [],
+): string {
   const pathname = query ? `/videos/${encodeURIComponent(query)}` : '/videos'
+  const searchParams = new URLSearchParams()
 
-  if (filter === 'all') {
-    return pathname
+  if (filter !== 'all') {
+    searchParams.append(VIDEO_KIND_SEARCH_PARAM, filter)
   }
 
-  return `${pathname}?${new URLSearchParams({ [VIDEO_KIND_SEARCH_PARAM]: filter })}`
+  for (const talentId of normalizeTalentIds(talentIds)) {
+    searchParams.append(TALENT_SEARCH_PARAM, talentId)
+  }
+
+  return searchParams.size > 0 ? `${pathname}?${searchParams}` : pathname
 }

@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import type { Video } from '@/lib/fetchers'
+import { fetchVideos, type Video } from '@/lib/fetchers'
 import SearchResults from '../search-results'
 
 vi.mock('@/lib/fetchers', () => ({
@@ -108,5 +108,20 @@ describe('SearchResults', () => {
     )
 
     expect(container).toBeEmptyDOMElement()
+  })
+
+  test('should fetch the videos with the selected talents', () => {
+    const talentIds = ['0f6b7c84-1a1e-4b4e-9d3a-5c7a0c1e2f01']
+
+    renderWithQueryClient(
+      <SearchResults kind="short" query="歌" talentIds={talentIds} />,
+    )
+
+    expect(fetchVideos).toHaveBeenCalledWith({
+      kind: 'short',
+      query: '歌',
+      talentIds,
+      until: undefined,
+    })
   })
 })
