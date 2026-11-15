@@ -57,18 +57,18 @@
 
 配信スケジュールの1件は、共通の動画カードではなく専用の項目（`apps/web/app/schedule/_components/schedule-item.tsx`）で表示します。スケジュールで知りたいのは「いつ・誰が」なので、サムネイルは出しません。リンクの挙動（リンク先、`ping`、別タブ）は動画カードと同じです。
 
-| 部分             | クラス                                                                                        |
-| ---------------- | --------------------------------------------------------------------------------------------- |
-| 項目（リンク）   | `border-l-4 rounded-r-control hover:bg-muted`                                                 |
-| 左端の線         | `border-l-(--talent-color)`（`style` で `--talent-color` を渡す）／未設定は `border-l-border` |
-| 開始時刻         | `text-meta font-bold text-foreground tabular-nums`                                            |
-| 状態（配信中）   | `rounded-control bg-live px-1.5 py-0.5 text-caption font-semibold text-live-foreground`       |
-| 状態（それ以外） | `text-caption text-muted`（予定・終了済み・公開済み）                                         |
-| タイトル         | `text-meta leading-normal font-semibold text-foreground line-clamp-2 lg:line-clamp-3`         |
-| タレント         | `text-meta text-muted`（アイコン 20px と名前）                                                |
+| 部分           | クラス                                                                                                                                                 |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 項目（リンク） | `block rounded-control border-l-4 py-1.5 pr-1 pl-2 hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent` |
+| 左端の線       | `border-l-(--talent-color)`（`style` で `--talent-color` を渡す）／未設定や形が違う値は `border-l-border`                                              |
+| 1行目          | 開始時刻 `text-meta font-bold tabular-nums`。配信中だけ横に `LiveNow`（`bg-live` の「配信中」）、Twitch は `PlatformBadge`                             |
+| 2行目          | タレントのアイコン（`TalentIcon`、20px）と名前 `truncate text-caption text-muted`                                                                      |
+| 3行目          | タイトル `line-clamp-2 text-meta`（`title` 属性に全文）                                                                                                |
 
-- 1024px 以上では7日を横に並べ、項目の中身を縦に積みます。それより狭い画面では日付ごとに縦に積み、左に開始時刻と状態、右にタイトルとタレントを置きます
-- 今日の日付は、見出しの文字を `text-accent`、下線を `border-accent` にし、`bg-accent text-accent-foreground` の「今日」の印を付けます
+- 終了済みと予定には印を付けません。配信中だけ「配信中」の文字の印を出します
+- 1024px 以上では、左に時刻の列、右に7日の列を並べ、動画がある時間帯ごとに行を区切ります。同じ時間帯の動画は日をまたいで同じ行に並びます。動画がない時間帯の行は出しません（配信は夜に集中するので、0〜24時の行を並べるとほとんどが空になるため）
+- 1024px 未満では日付ごとのセクションを縦に積み、上に曜日の帯（各日へのページ内リンク）を置きます
+- 日付の見出しは `text-body font-semibold`、件数は `text-meta text-muted tabular-nums` です。今日は見出しの横に「今日」の文字の印（`text-caption font-semibold text-accent`）を付けます
 
 ## 文字
 
