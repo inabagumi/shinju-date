@@ -1,4 +1,4 @@
-/** 曜日の1文字の表記。`dayOfWeek - 1` で引く（月曜始まり） */
+/** 曜日の1文字の名前。`[0]` が月曜（`Temporal` の `dayOfWeek` が 1）にあたる */
 export const WEEKDAYS = ['月', '火', '水', '木', '金', '土', '日'] as const
 
 /**

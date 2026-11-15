@@ -221,6 +221,9 @@ export function defineCollectionRelations() {
  * - The second one has a YouTube channel with an icon and a Twitch user
  *   without one
  * - The last one has only a YouTube channel without an icon
+ *
+ * The first one also has finished streams within 90 days, mostly on Saturday
+ * at 21:00 in Japan, for the tendency of its streams on its page.
  */
 export const MOCK_TALENT_IDS = [
   '00000000-0000-4000-8000-000000000001',
@@ -506,6 +509,56 @@ export async function seedCollections() {
       })
     }),
   )
+
+  // Create the finished streams of the first talent within 90 days before
+  // today in Japan, for the tendency of its streams on its page: 10 on
+  // Saturdays at 21:00 and 2 on Fridays at 22:00. They are created before the
+  // YouTube videos below, so each of them gets one.
+  const [talentWithStreams] = createdTalents
+
+  if (talentWithStreams) {
+    const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).startOfDay()
+    // The latest Saturday before today (`dayOfWeek` is 6 on Saturday)
+    const lastSaturday = today.subtract({
+      days: (today.dayOfWeek + 7 - 6) % 7 || 7,
+    })
+    const streamSeeds = [
+      ...Array.from({ length: 10 }, (_, week) => ({
+        start: lastSaturday.subtract({ weeks: week }).with({ hour: 21 }),
+        title: '【雑談】土曜の夜の定期配信',
+      })),
+      ...Array.from({ length: 2 }, (_, week) => ({
+        start: lastSaturday
+          .subtract({ days: 1, weeks: week })
+          .with({ hour: 22 }),
+        title: '【Minecraft】金曜の夜の建築配信',
+      })),
+    ]
+
+    await Promise.all(
+      streamSeeds.map(({ start, title }, idx) => {
+        const thumbnail = createdThumbnails[idx % createdThumbnails.length]
+        const publishedAt = start.toInstant().toString()
+
+        return videos.create({
+          created_at: publishedAt,
+          deleted_at: null,
+          deleted_reason: null,
+          duration: `PT${faker.number.int({ max: 3, min: 1 })}H${faker.number.int({ max: 59, min: 0 })}M${faker.number.int({ max: 59, min: 0 })}S`,
+          id: faker.string.uuid(),
+          platform: 'youtube',
+          published_at: publishedAt,
+          status: 'ENDED',
+          talent_id: talentWithStreams.id,
+          thumbnail_id: thumbnail?.id ?? null,
+          title,
+          updated_at: publishedAt,
+          video_kind: 'standard',
+          visible: true,
+        })
+      }),
+    )
+  }
 
   // Create YouTube channels. The last one has no icon, so the default icon
   // fallback can be checked as well.

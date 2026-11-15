@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, test, vi } from 'vitest'
-import type { TalentDetail } from '@/lib/fetchers'
+import type { TalentDetail, TalentStreamStatus } from '@/lib/fetchers'
 
 vi.mock('@/lib/fetchers', () => ({}))
 
@@ -12,6 +12,7 @@ function createTalent(overrides: Partial<TalentDetail> = {}): TalentDetail {
   return {
     id: TALENT_ID,
     name: '朝霧ミオ',
+    theme_color: null,
     twitch_users: [
       {
         name: '朝霧ミオ',
@@ -101,5 +102,93 @@ describe('TalentPageHeader', () => {
     expect(screen.queryAllByRole('link', { name: /チャンネル/ })).toHaveLength(
       0,
     )
+  })
+})
+
+describe('TalentPageHeader with the stream status', () => {
+  const live: TalentStreamStatus = { isLive: true, nextStreamAt: null }
+  // 2026-11-16 20:00 in Japan
+  const upcoming: TalentStreamStatus = {
+    isLive: false,
+    nextStreamAt: '2026-11-16T11:00:00Z',
+  }
+
+  test('should show the ring and the badge while live', () => {
+    render(<TalentPageHeader streamStatus={live} talent={createTalent()} />)
+
+    const badge = screen.getByText('配信中')
+
+    expect(badge).toHaveClass(
+      'rounded-control',
+      'bg-live',
+      'px-1.5',
+      'py-0.5',
+      'text-caption',
+      'font-semibold',
+      'text-live-foreground',
+    )
+    expect(screen.getByTestId('talent-icon')).toHaveClass(
+      'ring-2',
+      'ring-live',
+      'ring-offset-2',
+      'ring-offset-background',
+    )
+    expect(
+      screen.getByRole('heading', { level: 1, name: '朝霧ミオ' }),
+    ).not.toContainElement(badge)
+    expect(screen.queryByText(/次回/)).not.toBeInTheDocument()
+  })
+
+  test('should not show the next stream while live', () => {
+    render(
+      <TalentPageHeader
+        streamStatus={{ isLive: true, nextStreamAt: '2026-11-16T11:00:00Z' }}
+        talent={createTalent()}
+      />,
+    )
+
+    expect(screen.getByText('配信中')).toBeInTheDocument()
+    expect(screen.queryByText(/次回/)).not.toBeInTheDocument()
+  })
+
+  test('should show the start of the next stream in Japan time', () => {
+    render(<TalentPageHeader streamStatus={upcoming} talent={createTalent()} />)
+
+    const nextStream = screen.getByText(/^次回/)
+
+    expect(nextStream).toHaveTextContent('次回 11/16 20:00')
+    expect(nextStream).toHaveClass('text-meta', 'text-muted', 'tabular-nums')
+    expect(nextStream).not.toHaveClass('text-caption')
+    expect(nextStream.querySelector('time')).toHaveAttribute(
+      'dateTime',
+      '2026-11-16T20:00:00+09:00',
+    )
+    expect(
+      screen.getByRole('heading', { level: 1, name: '朝霧ミオ' }),
+    ).not.toContainElement(nextStream)
+    expect(screen.queryByText('配信中')).not.toBeInTheDocument()
+    expect(screen.getByTestId('talent-icon')).not.toHaveClass('ring-live')
+  })
+
+  test('should put the stream status above the links', () => {
+    render(<TalentPageHeader streamStatus={upcoming} talent={createTalent()} />)
+
+    const line = screen.getByText(/^次回/).closest('p')
+    const links = screen.getByRole('navigation', { name: 'リンク' })
+
+    expect(line).toHaveClass('mb-2')
+    expect(line?.nextElementSibling).toBe(links)
+  })
+
+  test('should show nothing without a stream', () => {
+    const { container } = render(<TalentPageHeader talent={createTalent()} />)
+
+    expect(screen.queryByText('配信中')).not.toBeInTheDocument()
+    expect(screen.queryByText(/次回/)).not.toBeInTheDocument()
+    expect(screen.getByTestId('talent-icon')).not.toHaveClass('ring-live')
+    expect(
+      screen.getByRole('navigation', { name: 'リンク' }).previousElementSibling,
+    ).toBeNull()
+    expect(container.querySelector('p.mb-2')).toBeNull()
   })
 })

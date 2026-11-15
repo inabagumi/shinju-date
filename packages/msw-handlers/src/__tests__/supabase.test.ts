@@ -462,6 +462,16 @@ describe('Supabase Handlers', () => {
       expect(imageResponse.headers.get('content-type')).toBe('image/svg+xml')
       expect(await imageResponse.text()).toContain('width="256" height="256"')
     })
+
+    it('should download objects in the profile-images bucket', async () => {
+      const response = await fetch(
+        'https://fake.supabase.test/storage/v1/object/profile-images/youtube/UC1/a.webp',
+      )
+
+      expect(response.ok).toBe(true)
+      expect(response.headers.get('content-type')).toBe('image/svg+xml')
+      expect(await response.text()).toContain('<rect')
+    })
   })
 
   describe('Twitch users', () => {

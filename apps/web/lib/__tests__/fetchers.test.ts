@@ -39,6 +39,7 @@ import {
   fetchScheduleVideos,
   fetchTalent,
   fetchTalentList,
+  fetchTalentStreamStarts,
   fetchTalentStreamStatuses,
   fetchVideos,
   type ScheduleVideo,
@@ -149,6 +150,7 @@ describe('fetchTalent', () => {
     return {
       id: talentId,
       name: '朝霧ミオ',
+      theme_color: null,
       twitch_users: [],
       youtube_channels: [],
       ...overrides,
@@ -533,6 +535,77 @@ describe('fetchTalentStreamStatuses', () => {
     })
 
     await expect(fetchTalentStreamStatuses()).rejects.toThrow('failed')
+  })
+})
+
+describe('fetchTalentStreamStarts', () => {
+  const [talentId] = TALENT_IDS as [string]
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    vi.spyOn(Temporal.Now, 'zonedDateTimeISO').mockReturnValue(
+      Temporal.ZonedDateTime.from('2026-11-15T00:34:56+09:00[Asia/Tokyo]'),
+    )
+
+    query.select.mockReturnValue(query)
+    query.eq.mockReturnValue(query)
+    query.gte.mockReturnValue(query)
+    query.lt.mockReturnValue(query)
+    query.order.mockReturnValue(query)
+    query.limit.mockResolvedValue({ data: [], error: null })
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  test('requests the finished streams of the talent for 90 days before today', async () => {
+    await fetchTalentStreamStarts(talentId)
+
+    expect(supabaseClient.from).toHaveBeenCalledWith('videos')
+    expect(query.select).toHaveBeenCalledWith('published_at')
+    expect(query.eq).toHaveBeenCalledWith('talent_id', talentId)
+    expect(query.eq).toHaveBeenCalledWith('status', 'ENDED')
+    expect(query.eq).toHaveBeenCalledWith('video_kind', 'standard')
+    // From 0:00 in Japan 90 days before today to 0:00 of today
+    expect(query.gte).toHaveBeenCalledWith(
+      'published_at',
+      '2026-08-16T15:00:00Z',
+    )
+    expect(query.lt).toHaveBeenCalledWith(
+      'published_at',
+      '2026-11-14T15:00:00Z',
+    )
+    expect(query.limit).toHaveBeenCalledWith(1000)
+  })
+
+  test('is cached for days with the videos tag', async () => {
+    await fetchTalentStreamStarts(talentId)
+
+    expect(cacheLife).toHaveBeenCalledWith('days')
+    expect(cacheTag).toHaveBeenCalledWith('videos')
+  })
+
+  test('returns the starts of the streams', async () => {
+    query.limit.mockResolvedValue({
+      data: [
+        { published_at: '2026-11-14T12:00:00+00:00' },
+        { published_at: '2026-11-13T13:00:00+00:00' },
+      ],
+      error: null,
+    })
+
+    await expect(fetchTalentStreamStarts(talentId)).resolves.toEqual([
+      '2026-11-14T12:00:00+00:00',
+      '2026-11-13T13:00:00+00:00',
+    ])
+  })
+
+  test('throws when the streams cannot be fetched', async () => {
+    query.limit.mockResolvedValue({ data: null, error: { message: 'failed' } })
+
+    await expect(fetchTalentStreamStarts(talentId)).rejects.toThrow('failed')
   })
 })
 
