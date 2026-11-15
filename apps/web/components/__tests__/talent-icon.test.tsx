@@ -93,6 +93,27 @@ describe('TalentIcon', () => {
     })
   })
 
+  test('should leave the size to the class names without a size', () => {
+    const { container } = render(
+      <TalentIcon
+        className="size-20 sm:size-24"
+        sizes="(min-width: 640px) 96px, 80px"
+        talent={{
+          twitch_users: [],
+          youtube_channels: [createYouTubeChannel(createProfileImage('icon'))],
+        }}
+      />,
+    )
+    const icon = screen.getByTestId('talent-icon')
+
+    expect(icon).toHaveClass('size-20', 'sm:size-24')
+    expect(icon).not.toHaveAttribute('style')
+    expect(container.querySelector('img')).toHaveAttribute(
+      'sizes',
+      '(min-width: 640px) 96px, 80px',
+    )
+  })
+
   test('should show the default icon without any icon', () => {
     const { container } = render(
       <TalentIcon

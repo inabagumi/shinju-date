@@ -34,6 +34,7 @@ import {
   fetchActiveTalents,
   fetchDashboardVideos,
   fetchTalent,
+  fetchTalentList,
   fetchVideos,
   type TalentDetail,
 } from '../fetchers'
@@ -235,6 +236,106 @@ describe('fetchTalent', () => {
       'Sub',
     ])
     expect(talent?.twitch_users.map((user) => user.name)).toEqual(['A', 'B'])
+  })
+})
+
+describe('fetchTalentList', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    query.select.mockReturnValue(query)
+    query.eq.mockReturnValue(query)
+    query.is.mockReturnValue(query)
+    query.order.mockResolvedValue({
+      data: [
+        {
+          id: TALENT_IDS[0],
+          name: '朝霧ミオ',
+          twitch_users: [],
+          youtube_channels: [],
+        },
+      ],
+      error: null,
+    })
+  })
+
+  test('fetches the active talents that are not deleted by name', async () => {
+    await expect(fetchTalentList()).resolves.toEqual([
+      {
+        id: TALENT_IDS[0],
+        name: '朝霧ミオ',
+        twitch_users: [],
+        youtube_channels: [],
+      },
+    ])
+
+    expect(supabaseClient.from).toHaveBeenCalledWith('talents')
+    expect(query.eq).toHaveBeenCalledWith('status', 'active')
+    expect(query.is).toHaveBeenCalledWith('deleted_at', null)
+    expect(query.order).toHaveBeenCalledWith('name', { ascending: true })
+  })
+
+  test('is cached for days with the talents tag', async () => {
+    await fetchTalentList()
+
+    expect(cacheLife).toHaveBeenCalledWith('days')
+    expect(cacheTag).toHaveBeenCalledWith('talents')
+  })
+
+  test('selects only the names and the icons of the accounts', async () => {
+    await fetchTalentList()
+
+    const select = String(query.select.mock.calls[0]?.[0]).replace(/\s+/g, ' ')
+
+    expect(select).toContain('profile_image:profile_images (blur_data_url, id)')
+    expect(select).not.toContain('youtube_handle')
+    expect(select).not.toContain('twitch_login_name')
+  })
+
+  test('returns the icons in the same order as fetchTalent', async () => {
+    const icon = (id: string) => ({ blur_data_url: '', id })
+
+    query.order.mockResolvedValue({
+      data: [
+        {
+          id: TALENT_IDS[0],
+          name: '朝霧ミオ',
+          twitch_users: [
+            { profile_image: icon('twitch-b'), twitch_user_id: '200' },
+            { profile_image: icon('twitch-a'), twitch_user_id: '100' },
+          ],
+          youtube_channels: [
+            { profile_image: icon('youtube-b'), youtube_channel_id: 'UCb' },
+            { profile_image: null, youtube_channel_id: 'UCa' },
+          ],
+        },
+      ],
+      error: null,
+    })
+
+    const [talent] = await fetchTalentList()
+
+    expect(talent).toEqual({
+      id: TALENT_IDS[0],
+      name: '朝霧ミオ',
+      twitch_users: [
+        { profile_image: icon('twitch-a') },
+        { profile_image: icon('twitch-b') },
+      ],
+      youtube_channels: [
+        { profile_image: null },
+        { profile_image: icon('youtube-b') },
+      ],
+    })
+  })
+
+  test('throws when the talents cannot be fetched', async () => {
+    query.order.mockResolvedValue({
+      data: null,
+      error: { message: 'failed' },
+    })
+
+    await expect(fetchTalentList()).rejects.toThrow('failed')
   })
 })
 

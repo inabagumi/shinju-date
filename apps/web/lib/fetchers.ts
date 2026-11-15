@@ -348,6 +348,82 @@ export const fetchTalent = async (id: string): Promise<TalentDetail | null> => {
   }
 }
 
+/** The icon of a YouTube channel or Twitch user of a talent */
+export interface TalentAccountIcon {
+  profile_image: ProfileImage | null
+}
+
+/**
+ * A talent in the list of talents: the ID, the name, and the icons of its
+ * YouTube channels and Twitch users to pick the icon from.
+ *
+ * The accounts are in the same order as `fetchTalent` returns them, so a
+ * talent shows the same icon in the list and on its page.
+ */
+export interface TalentListItem extends Talent {
+  twitch_users: TalentAccountIcon[]
+  youtube_channels: TalentAccountIcon[]
+}
+
+// The platform IDs are fetched only to sort the accounts like `fetchTalent`
+const TALENT_LIST_SELECT = `
+  id,
+  name,
+  youtube_channels (
+    youtube_channel_id,
+    profile_image:profile_images (blur_data_url, id)
+  ),
+  twitch_users (
+    twitch_user_id,
+    profile_image:profile_images (blur_data_url, id)
+  )
+`
+
+interface TalentListRow extends Talent {
+  twitch_users: (TalentAccountIcon & Pick<TalentTwitchUser, 'twitch_user_id'>)[]
+  youtube_channels: (TalentAccountIcon &
+    Pick<TalentYouTubeChannel, 'youtube_channel_id'>)[]
+}
+
+/**
+ * Fetch the active talents (`status = 'active'` and not deleted) for the list
+ * of talents, sorted by name.
+ */
+export const fetchTalentList = async (): Promise<TalentListItem[]> => {
+  'use cache: remote'
+
+  cacheLife('days')
+  cacheTag('talents')
+
+  const { data: talents, error } = await supabaseClient
+    .from('talents')
+    .select<string, TalentListRow>(TALENT_LIST_SELECT)
+    .eq('status', 'active')
+    .is('deleted_at', null)
+    .order('name', {
+      ascending: true,
+    })
+
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  return talents.map((talent) => ({
+    id: talent.id,
+    name: talent.name,
+    twitch_users: talent.twitch_users
+      .toSorted((a, b) => compareStrings(a.twitch_user_id, b.twitch_user_id))
+      .map(({ profile_image }) => ({ profile_image })),
+    youtube_channels: talent.youtube_channels
+      .toSorted((a, b) =>
+        compareStrings(a.youtube_channel_id, b.youtube_channel_id),
+      )
+      .map(({ profile_image }) => ({ profile_image })),
+  }))
+}
+
 /**
  * Fetch currently streaming (LIVE) videos
  */
