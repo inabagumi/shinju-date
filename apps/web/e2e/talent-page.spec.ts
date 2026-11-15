@@ -173,6 +173,9 @@ test.describe('Talent page', () => {
       ),
     ).toBeVisible()
 
+    // On wide screens it is always open, without the line to fold it
+    await expect(section.locator('summary')).toBeHidden()
+
     const table = section.getByRole('table', {
       name: '曜日と時間帯ごとの配信回数',
     })
@@ -181,27 +184,52 @@ test.describe('Talent page', () => {
     await expect(table.getByRole('row')).toHaveCount(8)
     await expect(table.getByRole('rowheader', { name: '土曜日' })).toBeVisible()
 
-    // The section comes between the heading and the kinds of videos
+    // On wide screens the section is beside the heading, so the kinds of
+    // videos come right below both of them
     const headingBox = await getHeader(page).boundingBox()
     const sectionBox = await section.boundingBox()
     const kindNavBox = await page
       .getByRole('navigation', { name: '種別' })
       .boundingBox()
 
-    expect(headingBox && sectionBox && kindNavBox).toBeTruthy()
-    expect(sectionBox?.y ?? 0).toBeGreaterThan(headingBox?.y ?? 0)
-    expect(kindNavBox?.y ?? 0).toBeGreaterThan(sectionBox?.y ?? 0)
+    if (!headingBox || !sectionBox || !kindNavBox) {
+      throw new Error('The heading, the section or the kinds are not shown')
+    }
+
+    expect(sectionBox.x).toBeGreaterThanOrEqual(headingBox.x + headingBox.width)
+    expect(sectionBox.y).toBeLessThan(headingBox.y + headingBox.height)
+    expect(kindNavBox.y).toBeGreaterThanOrEqual(
+      sectionBox.y + sectionBox.height,
+    )
   })
 
-  test('should fit the tendency of the streams in a narrow screen', async ({
+  test('should fold the tendency of the streams in a narrow screen', async ({
     page,
   }) => {
     await page.setViewportSize({ height: 812, width: 375 })
     await page.goto(`${BASE_URL}/talents/${TALENT.id}`)
 
-    await expect(
-      page.getByRole('table', { name: '曜日と時間帯ごとの配信回数' }),
-    ).toBeVisible()
+    const section = page.getByRole('region', { name: '配信の傾向' })
+    const table = section.getByRole('table', {
+      name: '曜日と時間帯ごとの配信回数',
+    })
+    const toggle = section.locator('summary')
+
+    // Folded into a line with the busiest day and hour, below the heading
+    await expect(toggle).toBeVisible()
+    await expect(toggle).toContainText('土曜日・21時台が多い')
+    await expect(table).toBeHidden()
+
+    const headingBox = await getHeader(page).boundingBox()
+    const sectionBox = await section.boundingBox()
+
+    expect(sectionBox?.y ?? 0).toBeGreaterThanOrEqual(
+      (headingBox?.y ?? 0) + (headingBox?.height ?? 0),
+    )
+
+    await toggle.click()
+
+    await expect(table).toBeVisible()
 
     const hasHorizontalScroll = await page.evaluate(
       () =>

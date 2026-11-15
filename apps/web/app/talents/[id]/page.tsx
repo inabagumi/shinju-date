@@ -59,14 +59,22 @@ export default function TalentPage({
       className="mx-auto max-w-6xl scroll-mt-20 px-4 py-8"
       id={MAIN_CONTENT_ID}
     >
-      <Suspense fallback={<TalentPageHeadingSkeleton />}>
-        <TalentPageHeading params={params} />
-      </Suspense>
+      {/*
+       * The tendency of the streams is put beside the heading on wide screens,
+       * so it does not push the videos down, and below it on narrow ones
+       */}
+      <div className="md:flex md:items-start md:gap-8">
+        <div className="min-w-0 md:flex-1">
+          <Suspense fallback={<TalentPageHeadingSkeleton />}>
+            <TalentPageHeading params={params} />
+          </Suspense>
+        </div>
 
-      {/* Nothing is shown while loading, as some talents do not show it */}
-      <Suspense fallback={null}>
-        <TalentStreamTendency params={params} />
-      </Suspense>
+        {/* Nothing is shown while loading, as some talents do not show it */}
+        <Suspense fallback={null}>
+          <TalentStreamTendency params={params} />
+        </Suspense>
+      </div>
 
       <Suspense fallback={<TalentVideoKindFilterNavSkeleton />}>
         <TalentVideoKindFilterNav params={params} searchParams={searchParams} />

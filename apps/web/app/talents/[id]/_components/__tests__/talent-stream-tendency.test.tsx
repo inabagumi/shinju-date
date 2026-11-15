@@ -47,6 +47,15 @@ describe('StreamTendency', () => {
     ).toBeInTheDocument()
   })
 
+  test('should fold into a line with the busiest day and hour', () => {
+    const { container } = render(<StreamTendency counts={COUNTS} />)
+
+    const summary = container.querySelector('details > summary')
+
+    expect(container.querySelector('details')).not.toHaveAttribute('open')
+    expect(summary).toHaveTextContent('配信の傾向土曜日・21時台が多い')
+  })
+
   test('should read out the count of each cell by the day and the hour', () => {
     render(<StreamTendency counts={COUNTS} />)
 
