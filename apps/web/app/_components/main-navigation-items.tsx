@@ -21,6 +21,11 @@ export function MainNavigationItems({
         </NavLink>
       </li>
       <li>
+        <NavLink className={linkClassName} href="/schedule">
+          スケジュール
+        </NavLink>
+      </li>
+      <li>
         <NavLink className={linkClassName} href="/videos">
           動画一覧
         </NavLink>

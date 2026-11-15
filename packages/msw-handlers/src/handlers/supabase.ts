@@ -268,7 +268,7 @@ function createReadOnlyHandlers(
       // An exact count counts every matching row, not only the page.
       const matched = applySupabaseConditions(await getRows(), query)
       const data = await applySelect(
-        applyPagination(matched, query),
+        applyPagination(applyOrder(matched, query.order), query),
         query.select,
       )
       const prefer = request.headers.get('prefer') ?? ''
@@ -308,26 +308,108 @@ function parseSupabaseQuery(url: URL) {
   const prefer = url.searchParams.get('prefer') || ''
   const returnCount = prefer.includes('count=exact')
 
-  // Get all query parameters as individual filters
+  const order = url.searchParams.get('order')
+
+  // Get all query parameters as individual filters. `filters` keeps the last
+  // filter of each field, while `conditions` keeps all of them, so a range such
+  // as `published_at=gte.X&published_at=lt.Y` applies both ends.
   const filters: Record<string, string> = {}
+  const conditions: [field: string, filter: string][] = []
   for (const [key, value] of url.searchParams.entries()) {
-    if (!['select', 'limit', 'offset', 'prefer'].includes(key)) {
+    if (!['select', 'limit', 'offset', 'order', 'prefer'].includes(key)) {
       // Handle Supabase query syntax like id.in.(1,2) where the filter is in the key
       if (key.includes('.')) {
         const parts = key.split('.')
         if (parts.length >= 2 && parts[0]) {
           const field = parts[0]
           const operator = parts.slice(1).join('.')
-          filters[field] = operator + (value ? `.${value}` : '')
+          const filter = operator + (value ? `.${value}` : '')
+          filters[field] = filter
+          conditions.push([field, filter])
         }
       } else {
         // Handle regular field=value filters
         filters[key] = value
+        conditions.push([key, value])
       }
     }
   }
 
-  return { filters, limit, offset, returnCount, select }
+  return { conditions, filters, limit, offset, order, returnCount, select }
+}
+
+/**
+ * Compare a value of a row with the value of a filter: as instants when both
+ * are timestamps, as numbers when both are numbers, and as strings otherwise.
+ */
+function compareFilterValue(itemValue: unknown, filterValue: string): number {
+  if (typeof itemValue === 'number' && !Number.isNaN(Number(filterValue))) {
+    return itemValue - Number(filterValue)
+  }
+
+  const itemText = String(itemValue)
+
+  try {
+    return Temporal.Instant.compare(
+      Temporal.Instant.from(itemText),
+      Temporal.Instant.from(filterValue),
+    )
+  } catch {
+    return itemText < filterValue ? -1 : itemText > filterValue ? 1 : 0
+  }
+}
+
+const COMPARISON_OPERATORS = {
+  gt: (result: number) => result > 0,
+  gte: (result: number) => result >= 0,
+  lt: (result: number) => result < 0,
+  lte: (result: number) => result <= 0,
+} as const
+
+/**
+ * Sort the rows by the `order` parameter of PostgREST, such as
+ * `published_at.asc,id.desc`. `null` comes last in ascending order and first
+ * in descending order unless `nullsfirst` or `nullslast` is given.
+ */
+function applyOrder<T>(data: T[], order: string | null): T[] {
+  if (!order) {
+    return data
+  }
+
+  const keys = order.split(',').map((entry) => {
+    const [field = '', ...modifiers] = entry.trim().split('.')
+    const descending = modifiers.includes('desc')
+    const nullsFirst = modifiers.includes('nullsfirst')
+      ? true
+      : modifiers.includes('nullslast')
+        ? false
+        : descending
+
+    return { descending, field, nullsFirst }
+  })
+
+  return data.toSorted((a, b) => {
+    for (const { descending, field, nullsFirst } of keys) {
+      const valueA = (a as Record<string, unknown>)[field]
+      const valueB = (b as Record<string, unknown>)[field]
+
+      if (valueA == null || valueB == null) {
+        if (valueA == null && valueB == null) {
+          continue
+        }
+
+        return (valueA == null) === nullsFirst ? -1 : 1
+      }
+
+      const result = compareFilterValue(valueA, String(valueB))
+
+      if (result !== 0) {
+        return descending ? -result : result
+      }
+    }
+
+    return 0
+  })
 }
 
 /**
@@ -338,7 +420,10 @@ function applySupabaseFilters(
   data: any[],
   query: ReturnType<typeof parseSupabaseQuery>,
 ) {
-  return applyPagination(applySupabaseConditions(data, query), query)
+  return applyPagination(
+    applyOrder(applySupabaseConditions(data, query), query.order),
+    query,
+  )
 }
 
 /**
@@ -353,8 +438,26 @@ function applySupabaseConditions(
   let filteredData = [...data]
 
   // Apply field-specific filters
-  for (const [field, filterValue] of Object.entries(query.filters)) {
-    if (filterValue.startsWith('eq.')) {
+  for (const [field, filterValue] of query.conditions) {
+    const [operator = '', ...rest] = filterValue.split('.')
+    const operand = rest.join('.')
+
+    if (operator in COMPARISON_OPERATORS) {
+      // Handle range filters (e.g., published_at=gte.2026-11-09T15:00:00Z)
+      const matches =
+        COMPARISON_OPERATORS[operator as keyof typeof COMPARISON_OPERATORS]
+      filteredData = filteredData.filter(
+        (item) =>
+          item[field] != null &&
+          matches(compareFilterValue(item[field], operand)),
+      )
+    } else if (operator === 'neq') {
+      // Handle not equals filter (e.g., video_kind=neq.short). As in SQL,
+      // `NULL <> value` is not true, so rows with `null` do not match.
+      filteredData = filteredData.filter(
+        (item) => item[field] != null && String(item[field]) !== operand,
+      )
+    } else if (filterValue.startsWith('eq.')) {
       // Handle equals filter (e.g., visible=eq.true)
       const value = filterValue.substring(3)
       const parsedValue =

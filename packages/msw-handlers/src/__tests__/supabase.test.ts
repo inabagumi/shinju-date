@@ -247,6 +247,74 @@ describe('Supabase Handlers', () => {
       expect(response.ok).toBe(true)
       expect(data.map((video) => video.id).sort()).toEqual([...ids].sort())
     })
+
+    it('should apply both ends of a range on the same column, sorted', async () => {
+      const all = (await (
+        await fetch(
+          'https://fake.supabase.test/rest/v1/videos?select=id,published_at&order=published_at.asc,id.asc',
+        )
+      ).json()) as { id: string; published_at: string }[]
+      const instants = all.map((video) =>
+        Temporal.Instant.from(video.published_at),
+      )
+
+      for (const [index, instant] of instants.slice(1).entries()) {
+        expect(
+          Temporal.Instant.compare(
+            instants[index] as Temporal.Instant,
+            instant,
+          ),
+        ).toBeLessThanOrEqual(0)
+      }
+
+      const since = Temporal.Now.instant().subtract({ hours: 24 * 3 })
+      const until = Temporal.Now.instant()
+      const params = new URLSearchParams([
+        ['select', 'id,published_at'],
+        ['published_at', `gte.${since.toString()}`],
+        ['published_at', `lt.${until.toString()}`],
+        ['order', 'published_at.desc'],
+      ])
+      const data = (await (
+        await fetch(`https://fake.supabase.test/rest/v1/videos?${params}`)
+      ).json()) as { id: string; published_at: string }[]
+
+      const expected = all
+        .filter((video) => {
+          const instant = Temporal.Instant.from(video.published_at)
+
+          return (
+            Temporal.Instant.compare(instant, since) >= 0 &&
+            Temporal.Instant.compare(instant, until) < 0
+          )
+        })
+        .map((video) => video.id)
+
+      expect(expected.length).toBeGreaterThan(0)
+      expect(expected.length).toBeLessThan(all.length)
+      expect(data.map((video) => video.id).sort()).toEqual([...expected].sort())
+      expect(data.map((video) => video.published_at)).toEqual(
+        data
+          .map((video) => video.published_at)
+          .toSorted((a, b) =>
+            Temporal.Instant.compare(
+              Temporal.Instant.from(b),
+              Temporal.Instant.from(a),
+            ),
+          ),
+      )
+    })
+
+    it('should exclude rows with neq', async () => {
+      const data = (await (
+        await fetch(
+          'https://fake.supabase.test/rest/v1/videos?select=id,video_kind&video_kind=neq.short',
+        )
+      ).json()) as { id: string; video_kind: string }[]
+
+      expect(data.length).toBeGreaterThan(0)
+      expect(data.every((video) => video.video_kind !== 'short')).toBe(true)
+    })
   })
 
   describe('Channels endpoint', () => {
@@ -661,8 +729,12 @@ describe('Supabase Handlers', () => {
         ),
       ).toBe(true)
 
-      // The Twitch videos are the latest, so the first page shows them.
-      const firstPage = await searchVideos({ perpage: 6 })
+      // The Twitch videos are among the latest up to now, so the first page
+      // shows them. Upcoming streams of the schedule come later than now.
+      const firstPage = await searchVideos({
+        perpage: 6,
+        until: Temporal.Now.instant().toString(),
+      })
 
       expect(firstPage.some((video) => video.platform === 'twitch')).toBe(true)
     })
