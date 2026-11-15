@@ -348,6 +348,71 @@ export const fetchTalent = async (id: string): Promise<TalentDetail | null> => {
   }
 }
 
+/** A YouTube channel or Twitch user of a talent, with only its icon */
+export interface TalentAccountIcon {
+  profile_image: ProfileImage | null
+}
+
+/**
+ * A talent on the talent list: the ID, the name, and the icons of its
+ * accounts.
+ *
+ * The channels and users are in the order of their platform IDs, like those
+ * of `TalentDetail`, so the list shows the same icon as the talent's page.
+ */
+export interface TalentSummary extends Talent {
+  twitch_users: TalentAccountIcon[]
+  youtube_channels: TalentAccountIcon[]
+}
+
+const TALENT_SUMMARY_SELECT = `
+  id,
+  name,
+  youtube_channels (
+    profile_image:profile_images (blur_data_url, id)
+  ),
+  twitch_users (
+    profile_image:profile_images (blur_data_url, id)
+  )
+`
+
+/**
+ * Fetch the active talents (`status = 'active'` and not deleted) for the
+ * talent list, by name.
+ */
+export const fetchTalentSummaries = async (): Promise<TalentSummary[]> => {
+  'use cache: remote'
+
+  cacheLife('days')
+  cacheTag('talents')
+
+  const { data: talents, error } = await supabaseClient
+    .from('talents')
+    .select<string, TalentSummary>(TALENT_SUMMARY_SELECT)
+    .eq('status', 'active')
+    .is('deleted_at', null)
+    // Sorted on the server, as the platform IDs are not fetched
+    .order('youtube_channel_id', {
+      ascending: true,
+      referencedTable: 'youtube_channels',
+    })
+    .order('twitch_user_id', {
+      ascending: true,
+      referencedTable: 'twitch_users',
+    })
+    .order('name', {
+      ascending: true,
+    })
+
+  if (error) {
+    throw new TypeError(error.message, {
+      cause: error,
+    })
+  }
+
+  return talents
+}
+
 /**
  * Fetch currently streaming (LIVE) videos
  */

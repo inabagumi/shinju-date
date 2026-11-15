@@ -34,6 +34,7 @@ import {
   fetchActiveTalents,
   fetchDashboardVideos,
   fetchTalent,
+  fetchTalentSummaries,
   fetchVideos,
   type TalentDetail,
 } from '../fetchers'
@@ -132,6 +133,80 @@ describe('fetchActiveTalents', () => {
     })
 
     await expect(fetchActiveTalents()).rejects.toThrow('failed')
+  })
+})
+
+describe('fetchTalentSummaries', () => {
+  const talents = [
+    {
+      id: TALENT_IDS[0],
+      name: '朝霧ミオ',
+      twitch_users: [],
+      youtube_channels: [
+        { profile_image: { blur_data_url: null, id: 'icon-1' } },
+      ],
+    },
+  ]
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    query.select.mockReturnValue(query)
+    query.eq.mockReturnValue(query)
+    query.is.mockReturnValue(query)
+    query.order
+      .mockReturnValueOnce(query)
+      .mockReturnValueOnce(query)
+      .mockResolvedValueOnce({ data: talents, error: null })
+  })
+
+  test('fetches only the active talents that are not deleted, by name', async () => {
+    await expect(fetchTalentSummaries()).resolves.toEqual(talents)
+
+    expect(supabaseClient.from).toHaveBeenCalledWith('talents')
+    expect(query.eq).toHaveBeenCalledWith('status', 'active')
+    expect(query.is).toHaveBeenCalledWith('deleted_at', null)
+    expect(query.order).toHaveBeenCalledWith('name', { ascending: true })
+  })
+
+  test('fetches only the IDs, the names and the icons', async () => {
+    await fetchTalentSummaries()
+
+    const select = String(query.select.mock.calls[0]?.[0]).replace(/\s+/g, '')
+
+    expect(select).toBe(
+      'id,name,youtube_channels(profile_image:profile_images(blur_data_url,id)),twitch_users(profile_image:profile_images(blur_data_url,id))',
+    )
+  })
+
+  test('sorts the channels and users by their platform IDs', async () => {
+    await fetchTalentSummaries()
+
+    expect(query.order).toHaveBeenCalledWith('youtube_channel_id', {
+      ascending: true,
+      referencedTable: 'youtube_channels',
+    })
+    expect(query.order).toHaveBeenCalledWith('twitch_user_id', {
+      ascending: true,
+      referencedTable: 'twitch_users',
+    })
+  })
+
+  test('is cached for days with the talents tag', async () => {
+    await fetchTalentSummaries()
+
+    expect(cacheLife).toHaveBeenCalledWith('days')
+    expect(cacheTag).toHaveBeenCalledWith('talents')
+  })
+
+  test('throws when the talents cannot be fetched', async () => {
+    query.order.mockReset()
+    query.order
+      .mockReturnValueOnce(query)
+      .mockReturnValueOnce(query)
+      .mockResolvedValueOnce({ data: null, error: { message: 'failed' } })
+
+    await expect(fetchTalentSummaries()).rejects.toThrow('failed')
   })
 })
 
