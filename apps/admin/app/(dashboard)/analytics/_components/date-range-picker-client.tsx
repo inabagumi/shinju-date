@@ -2,8 +2,8 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { use } from 'react'
+import { createAnalyticsUrlParams } from '../_lib/analytics-url-params'
 import type { AnalyticsSearchParams } from '../_lib/search-params-schema'
-import { createAnalyticsUrlParams } from '../_lib/search-params-schema'
 import DateRangePicker from './date-range-picker'
 
 interface Props {

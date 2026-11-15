@@ -6,13 +6,13 @@ import { formatDateTimeWithSeconds } from '@shinju-date/temporal-fns'
 import { Select, Textarea } from '@shinju-date/ui'
 import { useActionState } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { z } from 'zod'
 import { SubmitButton } from '@/components/form'
 import {
   markFeatureRequestAsRead,
   updateFeatureRequestMemo,
   updateFeatureRequestStatus,
 } from '../../_actions/update-feedback'
+import { isFeatureRequestStatus } from '../../_lib/feature-request-status'
 
 interface FeatureRequestDetailProps {
   featureRequest: Tables<'feature_requests'>
@@ -26,25 +26,21 @@ const labelClassName = 'block text-meta font-semibold'
 const proseClassName =
   'prose max-w-text text-foreground [--tw-prose-body:var(--color-foreground)] [--tw-prose-bold:var(--color-foreground)] [--tw-prose-bullets:var(--text-color-muted)] [--tw-prose-code:var(--color-foreground)] [--tw-prose-counters:var(--text-color-muted)] [--tw-prose-headings:var(--color-foreground)] [--tw-prose-hr:var(--color-border)] [--tw-prose-links:var(--color-accent)] [--tw-prose-quote-borders:var(--color-border)] [--tw-prose-quotes:var(--color-foreground)]'
 
-const statusSchema = z.enum(['pending', 'in_progress', 'resolved', 'rejected'])
-const memoSchema = z.string()
-
 export function FeatureRequestDetail({
   featureRequest,
 }: FeatureRequestDetailProps) {
   const [statusState, updateStatusAction] = useActionState(
     async (_prevState: unknown, formData: FormData) => {
       const statusValue = formData.get('status')
-      const result = statusSchema.safeParse(statusValue)
 
-      if (!result.success) {
+      if (!isFeatureRequestStatus(statusValue)) {
         return {
           error: 'Invalid status value',
           success: false,
         }
       }
 
-      return updateFeatureRequestStatus(featureRequest.id, result.data)
+      return updateFeatureRequestStatus(featureRequest.id, statusValue)
     },
     null,
   )
@@ -52,16 +48,15 @@ export function FeatureRequestDetail({
   const [memoState, updateMemoAction] = useActionState(
     async (_prevState: unknown, formData: FormData) => {
       const memoValue = formData.get('admin_memo')
-      const result = memoSchema.safeParse(memoValue)
 
-      if (!result.success) {
+      if (typeof memoValue !== 'string') {
         return {
           error: 'Invalid memo value',
           success: false,
         }
       }
 
-      return updateFeatureRequestMemo(featureRequest.id, result.data)
+      return updateFeatureRequestMemo(featureRequest.id, memoValue)
     },
     null,
   )
