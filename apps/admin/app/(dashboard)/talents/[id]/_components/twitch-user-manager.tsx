@@ -12,6 +12,7 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
+  EmptyState,
   Button as UIButton,
 } from '@shinju-date/ui'
 import { ExternalLink, Plus, Trash2 } from 'lucide-react'
@@ -87,15 +88,13 @@ export function TwitchUserManager({
   }
 
   return (
-    <div className="mt-6">
+    <div>
       <Card variant="elevated">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Twitchユーザー管理
-              </h3>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0 space-y-1">
+              <h2 className="text-heading font-bold">Twitchユーザー管理</h2>
+              <p className="text-meta text-muted">
                 タレントに紐づけられたTwitchユーザーの追加・削除
               </p>
             </div>
@@ -104,9 +103,9 @@ export function TwitchUserManager({
                 <UIButton
                   onClick={() => setIsAddDialogOpen(true)}
                   type="button"
-                  variant="secondary-blue"
+                  variant="secondary"
                 >
-                  <Plus className="mr-2 size-4" />
+                  <Plus aria-hidden="true" className="mr-2 size-4" />
                   ユーザーを追加
                 </UIButton>
                 <DialogPortal>
@@ -121,7 +120,7 @@ export function TwitchUserManager({
                     <Form action={handleAddUser} className="space-y-4">
                       <input name="talent_id" type="hidden" value={talentId} />
                       <FormField name="twitch_user">
-                        <Label className="block text-sm font-medium">
+                        <Label className="block text-meta font-semibold">
                           ログイン名 / ユーザーID / URL
                         </Label>
                         <Input
@@ -129,21 +128,19 @@ export function TwitchUserManager({
                           placeholder="login または https://twitch.tv/login"
                           required
                         />
-                        <p className="mt-1 text-xs text-gray-500">
+                        <p className="mt-1 text-caption text-muted">
                           例: example、https://www.twitch.tv/example、123456789
                         </p>
-                        <ErrorMessage className="mt-1 text-sm text-red-600" />
+                        <ErrorMessage className="mt-1 text-meta text-danger" />
                       </FormField>
-                      <GenericErrorMessage className="text-sm text-red-600" />
+                      <GenericErrorMessage className="text-meta text-danger" />
                       <div className="flex justify-end gap-2">
                         <DialogClose asChild>
                           <UIButton type="button" variant="secondary">
                             キャンセル
                           </UIButton>
                         </DialogClose>
-                        <SubmitButton type="submit" variant="secondary-blue">
-                          追加
-                        </SubmitButton>
+                        <SubmitButton type="submit">追加</SubmitButton>
                       </div>
                     </Form>
                   </DialogContent>
@@ -157,34 +154,36 @@ export function TwitchUserManager({
             <div className="space-y-3">
               {users.map((user) => (
                 <div
-                  className="flex items-start justify-between rounded-md border border-gray-200 p-4"
+                  className="flex items-start justify-between gap-4 rounded-container border border-border p-4"
                   key={user.id}
                 >
                   <div className="min-w-0 flex-1">
                     <div className="space-y-2">
                       <div>
-                        <span className="text-xs font-medium text-gray-700">
-                          表示名:
+                        <span className="text-caption font-semibold text-muted">
+                          表示名
                         </span>
-                        <p className="mt-1 text-sm">{user.name || '未取得'}</p>
-                        <p className="mt-1 text-xs text-gray-500">
+                        <p className="mt-1 text-meta">
+                          {user.name || '未取得'}
+                        </p>
+                        <p className="mt-1 text-caption text-muted">
                           Twitch APIから自動更新される表示名
                         </p>
                       </div>
                       <div>
-                        <span className="text-xs font-medium text-gray-700">
-                          ユーザーID:
+                        <span className="text-caption font-semibold text-muted">
+                          ユーザーID
                         </span>
-                        <code className="mt-1 block rounded bg-gray-100 px-2 py-1 font-mono text-xs break-all">
+                        <code className="mt-1 block rounded-control bg-muted px-2 py-1 font-mono text-caption break-all">
                           {user.twitch_user_id}
                         </code>
                       </div>
                       {user.twitch_login_name && (
                         <div>
-                          <span className="text-xs font-medium text-gray-700">
-                            ログイン名:
+                          <span className="text-caption font-semibold text-muted">
+                            ログイン名
                           </span>
-                          <p className="mt-1 text-xs">
+                          <p className="mt-1 text-caption">
                             {user.twitch_login_name}
                           </p>
                         </div>
@@ -192,13 +191,16 @@ export function TwitchUserManager({
                       {user.twitch_login_name && (
                         <div>
                           <a
-                            className="inline-flex items-center text-sm text-774-blue-600 hover:text-774-blue-800"
+                            className="inline-flex items-center gap-1 text-meta text-accent hover:underline"
                             href={`https://www.twitch.tv/${encodeURIComponent(user.twitch_login_name)}`}
                             rel="noopener noreferrer"
                             target="_blank"
                           >
                             Twitchで開く
-                            <ExternalLink className="ml-1 size-3" />
+                            <ExternalLink
+                              aria-hidden="true"
+                              className="size-3"
+                            />
                           </a>
                         </div>
                       )}
@@ -206,7 +208,8 @@ export function TwitchUserManager({
                   </div>
                   {!isDeleted && (
                     <UIButton
-                      className="ml-4"
+                      aria-label="ユーザーを削除"
+                      className="shrink-0 px-2"
                       disabled={deletingUserId === user.id}
                       onClick={() => {
                         setRemovalTarget(user)
@@ -217,16 +220,17 @@ export function TwitchUserManager({
                       type="button"
                       variant="danger"
                     >
-                      <Trash2 className="size-5" />
+                      <Trash2 aria-hidden="true" className="size-4" />
                     </UIButton>
                   )}
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500">
-              登録されているTwitchユーザーがありません
-            </p>
+            <EmptyState
+              className="py-4"
+              title="登録されているTwitchユーザーがありません"
+            />
           )}
         </CardContent>
       </Card>
@@ -247,12 +251,12 @@ export function TwitchUserManager({
       >
         {removalTarget && (
           <>
-            <p className="font-medium">
+            <p className="font-semibold">
               {removalTarget.name ||
                 removalTarget.twitch_login_name ||
                 '未取得'}
             </p>
-            <code className="mt-1 block font-mono text-xs break-all">
+            <code className="mt-1 block font-mono text-caption break-all">
               {removalTarget.twitch_user_id}
             </code>
           </>

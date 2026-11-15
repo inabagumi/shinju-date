@@ -1,10 +1,12 @@
+import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
-import { PageHeader } from '@/components/page-header'
-import { ListCardsSkeleton } from '@/components/skeletons'
 import { AnnouncementModal } from './_components/announcement-modal'
-import { AnnouncementsList } from './_components/announcements-list'
+import {
+  AnnouncementsList,
+  AnnouncementsListSkeleton,
+} from './_components/announcements-list'
 import getAnnouncements from './_lib/get-announcements'
 
 export const metadata: Metadata = {
@@ -23,13 +25,13 @@ async function AnnouncementsListData() {
 
 export default function AnnouncementsPage() {
   return (
-    <div className="mx-auto max-w-7xl p-6">
+    <div>
       {/* Header with Add button - static shell */}
       <PageHeader
         actions={
           <Suspense
             fallback={
-              <div className="h-10 w-32 animate-pulse rounded bg-gray-200" />
+              <div className="h-10 w-48 animate-pulse rounded-control bg-muted" />
             }
           >
             <AnnouncementModal />
@@ -39,7 +41,7 @@ export default function AnnouncementsPage() {
       />
 
       {/* Announcements List - dynamic data with own Suspense */}
-      <Suspense fallback={<ListCardsSkeleton />}>
+      <Suspense fallback={<AnnouncementsListSkeleton />}>
         <AnnouncementsListData />
       </Suspense>
     </div>

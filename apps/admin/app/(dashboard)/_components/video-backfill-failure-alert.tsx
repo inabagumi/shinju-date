@@ -26,7 +26,7 @@ export async function VideoBackfillFailureAlert() {
 
   return (
     <div
-      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+      className="flex flex-wrap items-center justify-between gap-3 rounded-container border border-danger/30 bg-danger/10 p-4 text-meta text-danger"
       role="status"
     >
       <p className="flex items-center gap-2">
@@ -35,7 +35,7 @@ export async function VideoBackfillFailureAlert() {
         件あります。
       </p>
       <Link
-        className="font-medium underline"
+        className="font-semibold underline"
         href="/system#video-backfill-history"
       >
         履歴を確認して再試行する

@@ -5,6 +5,10 @@ import {
   type ButtonProps as UIButtonProps,
   Input as UIInput,
   type InputProps as UIInputProps,
+  Select as UISelect,
+  type SelectProps as UISelectProps,
+  Textarea as UITextarea,
+  type TextareaProps as UITextareaProps,
 } from '@shinju-date/ui'
 import {
   type ChangeEventHandler,
@@ -219,8 +223,7 @@ export function Label({ htmlFor, ...props }: LabelProps) {
   )
 }
 
-interface SelectProps
-  extends Omit<ComponentPropsWithoutRef<'select'>, 'value'> {}
+type SelectProps = Omit<UISelectProps, 'value' | 'variant'>
 
 export function Select({
   defaultValue = '',
@@ -243,7 +246,7 @@ export function Select({
   )
 
   return (
-    <select
+    <UISelect
       aria-describedby={invalid && id ? `${id}-error-message` : undefined}
       aria-invalid={invalid ? true : undefined}
       disabled={disabled ?? (pending ? true : undefined)}
@@ -251,13 +254,13 @@ export function Select({
       name={newName ?? name}
       onChange={handleChange}
       value={value}
+      variant={invalid ? 'error' : 'default'}
       {...props}
     />
   )
 }
 
-interface TextareaProps
-  extends Omit<ComponentPropsWithoutRef<'textarea'>, 'value'> {}
+type TextareaProps = Omit<UITextareaProps, 'value' | 'variant'>
 
 export function Textarea({
   defaultValue = '',
@@ -280,7 +283,7 @@ export function Textarea({
   )
 
   return (
-    <textarea
+    <UITextarea
       aria-describedby={invalid && id ? `${id}-error-message` : undefined}
       aria-invalid={invalid ? true : undefined}
       disabled={disabled ?? (pending ? true : undefined)}
@@ -288,6 +291,7 @@ export function Textarea({
       name={newName ?? name}
       onChange={handleChange}
       value={value}
+      variant={invalid ? 'error' : 'default'}
       {...props}
     />
   )

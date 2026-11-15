@@ -1,12 +1,12 @@
 'use client'
 
+import * as Popover from '@radix-ui/react-popover'
+import { twMerge } from '@shinju-date/ui'
 import {
   type ComponentPropsWithoutRef,
   createContext,
   type ReactNode,
   useContext,
-  useEffect,
-  useRef,
   useState,
 } from 'react'
 
@@ -21,12 +21,18 @@ interface DropdownMenuProps {
   children: ReactNode
 }
 
+/**
+ * 行末の「︙」などから開くメニュー。中身はポータルに描画するため、
+ * 横にスクロールする表の中に置いても枠で切れない。
+ */
 export function DropdownMenu({ children }: DropdownMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <DropdownMenuContext.Provider value={{ isOpen, setIsOpen }}>
-      <div className="relative inline-block">{children}</div>
+      <Popover.Root onOpenChange={setIsOpen} open={isOpen}>
+        {children}
+      </Popover.Root>
     </DropdownMenuContext.Provider>
   )
 }
@@ -34,7 +40,7 @@ export function DropdownMenu({ children }: DropdownMenuProps) {
 interface DropdownMenuTriggerProps extends ComponentPropsWithoutRef<'button'> {}
 
 export function DropdownMenuTrigger({
-  children,
+  className,
   onClick,
   ...props
 }: DropdownMenuTriggerProps) {
@@ -42,21 +48,22 @@ export function DropdownMenuTrigger({
   if (!context)
     throw new Error('DropdownMenuTrigger must be used within DropdownMenu')
 
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation()
-    context.setIsOpen(!context.isOpen)
-    onClick?.(e)
-  }
-
   return (
-    <button
-      className="rounded p-1 hover:bg-gray-100"
-      onClick={handleClick}
-      type="button"
-      {...props}
-    >
-      {children}
-    </button>
+    <Popover.Trigger asChild>
+      <button
+        aria-haspopup="menu"
+        className={twMerge(
+          'rounded-control p-1 text-muted transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+          className,
+        )}
+        onClick={(e) => {
+          e.stopPropagation()
+          onClick?.(e)
+        }}
+        type="button"
+        {...props}
+      />
+    </Popover.Trigger>
   )
 }
 
@@ -70,38 +77,22 @@ export function DropdownMenuContent({
   children,
 }: DropdownMenuContentProps) {
   const context = useContext(DropdownMenuContext)
-  const contentRef = useRef<HTMLDivElement>(null)
 
   if (!context)
     throw new Error('DropdownMenuContent must be used within DropdownMenu')
 
-  useEffect(() => {
-    if (!context.isOpen) return
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        contentRef.current &&
-        !contentRef.current.contains(event.target as Node)
-      ) {
-        context.setIsOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [context, context.isOpen])
-
-  if (!context.isOpen) return null
-
   return (
-    <div
-      className={`absolute top-full z-50 mt-1 min-w-[160px] rounded-md border border-gray-200 bg-white py-1 shadow-lg ${
-        align === 'right' ? 'right-0' : 'left-0'
-      }`}
-      ref={contentRef}
-    >
-      {children}
-    </div>
+    <Popover.Portal>
+      <Popover.Content
+        align={align === 'right' ? 'end' : 'start'}
+        className="z-50 min-w-40 rounded-container border border-border bg-surface p-1 text-foreground shadow-overlay"
+        collisionPadding={8}
+        role="menu"
+        sideOffset={4}
+      >
+        {children}
+      </Popover.Content>
+    </Popover.Portal>
   )
 }
 
@@ -126,14 +117,19 @@ export function DropdownMenuItem({
   }
 
   const variantClasses = {
-    danger: 'text-red-600 hover:bg-red-50',
-    default: 'text-gray-700 hover:bg-gray-100',
+    danger: 'text-danger hover:bg-danger/10 focus-visible:bg-danger/10',
+    default: 'text-foreground hover:bg-muted focus-visible:bg-muted',
   }
 
   return (
     <button
-      className={`w-full px-4 py-2 text-left text-sm ${variantClasses[variant]} ${className || ''}`}
+      className={twMerge(
+        'flex w-full items-center gap-2 rounded-control px-3 py-2 text-left text-meta whitespace-nowrap transition-colors focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+        variantClasses[variant],
+        className,
+      )}
       onClick={handleClick}
+      role="menuitem"
       type="button"
       {...props}
     >

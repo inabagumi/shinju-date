@@ -1,10 +1,9 @@
 'use client'
 
 import * as Sentry from '@sentry/nextjs'
-import { Button } from '@shinju-date/ui'
+import { Button, PageHeader } from '@shinju-date/ui'
 import Link from 'next/link'
 import { useEffect } from 'react'
-import { PageHeader } from '@/components/page-header'
 
 interface DashboardErrorProps {
   error: unknown
@@ -28,7 +27,7 @@ export default function DashboardError({ error, retry }: DashboardErrorProps) {
       : null
 
   return (
-    <div className="mx-auto max-w-7xl p-6">
+    <div>
       <PageHeader title="ページを表示できませんでした" />
 
       <div className="max-w-text space-y-6" role="alert">

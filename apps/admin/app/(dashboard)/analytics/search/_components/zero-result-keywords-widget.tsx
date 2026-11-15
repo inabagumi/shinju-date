@@ -1,4 +1,14 @@
+import {
+  EmptyState,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@shinju-date/ui'
 import { cache } from 'react'
+import { WidgetHeader } from '../../_components/widget-header'
 import { getZeroResultKeywords } from '../_lib/get-zero-result-keywords'
 
 /**
@@ -18,25 +28,29 @@ function ZeroResultKeywordsWidgetComponent({
 }) {
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">検索結果ゼロのキーワード</h2>
-      </div>
-      <p className="mb-4 text-sm text-gray-600">
-        ユーザーが検索したものの結果が見つからなかったキーワード。コンテンツギャップを特定する機会です。
-      </p>
+      <WidgetHeader
+        description="ユーザーが検索したものの結果が見つからなかったキーワード。コンテンツギャップを特定する機会です。"
+        title="検索結果ゼロのキーワード"
+      />
       {keywords.length > 0 ? (
-        <div className="max-h-96 space-y-2 overflow-y-auto">
-          {keywords.map((keyword) => (
-            <div
-              className="rounded border border-gray-200 bg-gray-50 px-3 py-2"
-              key={keyword}
-            >
-              <code className="text-sm">{keyword}</code>
-            </div>
-          ))}
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>キーワード</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {keywords.map((keyword) => (
+              <TableRow key={keyword}>
+                <TableCell className="wrap-break-word whitespace-normal">
+                  <code>{keyword}</code>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       ) : (
-        <p className="py-8 text-center text-gray-500">データがありません</p>
+        <EmptyState title="データがありません" />
       )}
     </div>
   )

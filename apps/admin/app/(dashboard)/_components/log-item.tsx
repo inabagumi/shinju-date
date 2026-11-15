@@ -42,9 +42,9 @@ function LogMessage({ log }: { log: Log }) {
   const actionLabel = ACTION_LABELS[log.action] ?? log.action
 
   return (
-    <p className="text-sm">
-      <span className="font-medium text-gray-900">{log.user_email}</span>
-      <span className="text-gray-600"> が{actionLabel}しました</span>
+    <p className="text-meta">
+      <span className="font-semibold">{log.user_email}</span>
+      <span className="text-muted"> が{actionLabel}しました</span>
     </p>
   )
 }
@@ -83,15 +83,17 @@ function ChangeDetails({ log }: { log: Log }) {
   }
 
   return (
-    <div className="mt-2 space-y-1 rounded-md bg-gray-50 p-2 text-xs">
+    <div className="mt-2 space-y-1 rounded-control bg-muted p-2 text-caption">
       {changedFields.map((field) => (
         <div className="flex gap-2" key={field}>
-          <span className="font-medium text-gray-600">{field}:</span>
-          <span className="text-gray-500 line-through">
+          <span className="font-semibold text-muted">{field}:</span>
+          <span className="text-muted line-through">
             {String(beforeObj[field])}
           </span>
-          <span className="text-gray-400">→</span>
-          <span className="text-gray-900">{String(afterObj[field])}</span>
+          <span aria-hidden="true" className="text-muted">
+            →
+          </span>
+          <span>{String(afterObj[field])}</span>
         </div>
       ))}
     </div>
@@ -100,7 +102,7 @@ function ChangeDetails({ log }: { log: Log }) {
 
 export function LogItem({ log }: { log: Log }) {
   return (
-    <li className="border-b border-gray-200 py-3 last:border-b-0">
+    <li className="border-b border-border py-3 last:border-b-0">
       <div className="flex items-start justify-between">
         <div className="flex flex-col">
           <LogMessage log={log} />
@@ -108,7 +110,7 @@ export function LogItem({ log }: { log: Log }) {
           <ChangeDetails log={log} />
         </div>
         <time
-          className="ml-4 flex-shrink-0 text-right text-xs text-gray-500"
+          className="ml-4 shrink-0 text-right text-caption text-muted tabular-nums"
           dateTime={log.created_at}
         >
           {formatRelativeTime(Temporal.Instant.from(log.created_at))}

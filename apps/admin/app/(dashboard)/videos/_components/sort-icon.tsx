@@ -13,7 +13,7 @@ export function SortIcon({
     return (
       <svg
         aria-hidden="true"
-        className="ml-1 inline-block h-4 w-4 text-gray-400"
+        className="ml-1 inline-block size-4 text-muted"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -32,7 +32,7 @@ export function SortIcon({
     return (
       <svg
         aria-hidden="true"
-        className="ml-1 inline-block h-4 w-4"
+        className="ml-1 inline-block size-4"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -50,7 +50,7 @@ export function SortIcon({
   return (
     <svg
       aria-hidden="true"
-      className="ml-1 inline-block h-4 w-4"
+      className="ml-1 inline-block size-4"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"

@@ -1,6 +1,6 @@
+import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
-import { PageHeader } from '@/components/page-header'
 import { TermsList } from './_components/terms-list'
 import getTerms from './_lib/get-terms'
 
@@ -18,7 +18,7 @@ async function getTermsData() {
 
 export default function TermsPage() {
   return (
-    <div className="mx-auto max-w-7xl p-6">
+    <div>
       <PageHeader
         description="検索に利用する用語、読み方、類義語を管理します。"
         title="用語管理"

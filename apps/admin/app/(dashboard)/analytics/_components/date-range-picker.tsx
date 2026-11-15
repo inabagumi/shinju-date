@@ -2,7 +2,7 @@
 
 import { TIME_ZONE } from '@shinju-date/constants'
 import { formatDate } from '@shinju-date/temporal-fns'
-import { Button } from '@shinju-date/ui'
+import { Button, Input } from '@shinju-date/ui'
 import { useState } from 'react'
 import { formatDateRange } from '../_lib/format-date'
 
@@ -180,18 +180,18 @@ export default function DateRangePicker({
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-900">期間選択</h3>
+    <div className="rounded-container border border-border bg-surface p-4">
+      <div className="mb-3 flex items-center justify-between gap-4">
+        <h2 className="text-meta font-semibold">期間選択</h2>
         {showComparison && (
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-meta">
             <input
               checked={comparisonEnabled}
-              className="rounded border-gray-300"
+              className="size-4 accent-accent"
               onChange={handleComparisonToggle}
               type="checkbox"
             />
-            <span className="text-gray-700">前期間と比較</span>
+            前期間と比較
           </label>
         )}
       </div>
@@ -230,70 +230,73 @@ export default function DateRangePicker({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label
-                className="mb-1 block text-xs text-gray-700"
+                className="mb-1 block text-caption font-semibold"
                 htmlFor="start-date"
               >
                 開始日
               </label>
-              <input
-                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+              <Input
                 id="start-date"
+                inputSize="sm"
                 max={today.toString()}
                 min={maxStartDate.toString()}
                 onChange={(e) => handleCustomStartChange(e.target.value)}
                 type="date"
                 value={customStart}
+                variant={validationError ? 'error' : 'default'}
               />
             </div>
             <div>
               <label
-                className="mb-1 block text-xs text-gray-700"
+                className="mb-1 block text-caption font-semibold"
                 htmlFor="end-date"
               >
                 終了日
               </label>
-              <input
-                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+              <Input
                 id="end-date"
+                inputSize="sm"
                 max={today.toString()}
                 onChange={(e) => handleCustomEndChange(e.target.value)}
                 type="date"
                 value={customEnd}
+                variant={validationError ? 'error' : 'default'}
               />
             </div>
           </div>
           {validationError && (
-            <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+            <p
+              className="rounded-control bg-danger/10 px-3 py-2 text-caption text-danger"
+              role="alert"
+            >
               {validationError}
-            </div>
+            </p>
           )}
           <div className="flex gap-2">
-            <button
-              className="flex-1 rounded border border-gray-300 bg-white px-3 py-1.5 text-sm transition-colors hover:bg-gray-50"
+            <Button
+              className="flex-1"
               onClick={() => {
                 setIsCustomMode(false)
                 setValidationError('')
               }}
-              type="button"
+              size="sm"
+              variant="secondary"
             >
               キャンセル
-            </button>
-            <button
-              className="flex-1 rounded bg-secondary-blue px-3 py-1.5 text-sm text-white transition-colors hover:bg-774-blue-800"
-              onClick={handleCustomApply}
-              type="button"
-            >
+            </Button>
+            <Button className="flex-1" onClick={handleCustomApply} size="sm">
               適用
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
-      <div className="mt-3 rounded bg-gray-50 px-3 py-2 text-xs text-gray-600">
-        現在の期間: {formatDateRange(value)}
+      <p className="mt-3 text-caption text-muted">
+        現在の期間:{' '}
+        <span className="tabular-nums">{formatDateRange(value)}</span>
         <br />
         最大90日間まで選択可能です
-      </div>
+      </p>
     </div>
   )
 }

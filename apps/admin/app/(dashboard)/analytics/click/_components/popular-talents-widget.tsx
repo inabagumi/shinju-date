@@ -5,7 +5,8 @@ import {
   type PopularTalent,
 } from '@/lib/analytics/get-popular-talents'
 import { ExportMenu } from '../../_components/export-menu'
-import { formatDateLabel, formatDateRange } from '../../_lib/format-date'
+import { RankingTable } from '../../_components/ranking-table'
+import { WidgetHeader } from '../../_components/widget-header'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 interface Props {
@@ -41,50 +42,35 @@ function SimplePopularTalentsWidget({
 }) {
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">
-          {selectedDate
-            ? `人気タレントランキング (${formatDateLabel(selectedDate)})`
-            : `人気タレントランキング (${formatDateRange(dateRange)})`}
-        </h2>
-        <ExportMenu
-          dateRange={dateRange}
-          selectedDate={selectedDate}
-          type="talents"
-        />
-      </div>
-      <p className="mb-4 text-sm text-gray-600">
-        最もクリックされているタレントのランキング。どのタレントが人気かを把握できます。
-      </p>
-
-      {talents.length > 0 ? (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {talents.map((talent, index) => (
-            <div
-              className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
-              key={talent.id}
+      <WidgetHeader
+        actions={
+          <ExportMenu
+            dateRange={dateRange}
+            selectedDate={selectedDate}
+            type="talents"
+          />
+        }
+        dateRange={dateRange}
+        description="最もクリックされているタレントのランキング。どのタレントが人気かを把握できます。"
+        selectedDate={selectedDate}
+        title="人気タレントランキング"
+      />
+      <RankingTable
+        items={talents.map((talent) => ({
+          key: talent.id,
+          label: (
+            <Link
+              className="text-accent hover:underline"
+              href={`/talents/${talent.id}`}
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-774-nevy-100 text-sm font-semibold text-774-nevy-600">
-                {index + 1}
-              </div>
-              <div className="min-w-0 flex-1 truncate">
-                <Link
-                  className="font-medium hover:underline"
-                  href={`/talents/${talent.id}`}
-                >
-                  {talent.name}
-                </Link>
-              </div>
-              <div className="shrink-0 text-right">
-                <p className="font-semibold text-gray-900">{talent.clicks}</p>
-                <p className="text-xs text-gray-500">回</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="py-8 text-center text-gray-500">データがありません</p>
-      )}
+              {talent.name}
+            </Link>
+          ),
+          value: talent.clicks,
+        }))}
+        labelHeading="タレント"
+        valueHeading="クリック数"
+      />
     </div>
   )
 }

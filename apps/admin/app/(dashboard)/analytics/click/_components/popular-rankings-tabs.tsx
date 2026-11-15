@@ -20,7 +20,10 @@ export async function PopularRankingsTabs({ searchParams }: Props) {
       <Activity mode={activeTab === 'videos' ? 'visible' : 'hidden'}>
         <Suspense
           fallback={
-            <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
+            <div
+              aria-hidden="true"
+              className="h-64 animate-pulse rounded-container bg-muted"
+            />
           }
         >
           <PopularVideosWidget searchParams={searchParams} />
@@ -30,7 +33,10 @@ export async function PopularRankingsTabs({ searchParams }: Props) {
       <Activity mode={activeTab === 'talents' ? 'visible' : 'hidden'}>
         <Suspense
           fallback={
-            <div className="h-64 animate-pulse rounded-lg bg-gray-200" />
+            <div
+              aria-hidden="true"
+              className="h-64 animate-pulse rounded-container bg-muted"
+            />
           }
         >
           <PopularTalentsWidget searchParams={searchParams} />

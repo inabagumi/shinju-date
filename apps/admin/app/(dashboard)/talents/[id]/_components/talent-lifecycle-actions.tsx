@@ -26,8 +26,8 @@ export function TalentLifecycleActions({
   const isActive = !isDeleted && talent.status === 'active'
 
   return (
-    <div className="flex flex-col items-end gap-2">
-      <div className="flex flex-wrap justify-end gap-2">
+    <div className="flex flex-col items-start gap-2 sm:items-end">
+      <div className="flex flex-wrap gap-2 sm:justify-end">
         {isDeleted ? (
           <Button
             disabled={isPending}
@@ -36,7 +36,6 @@ export function TalentLifecycleActions({
                 confirmMessage: `タレント「${talent.name}」を復活しますか？\n動画の復旧も行われます。`,
               })
             }
-            size="sm"
             variant="primary"
           >
             {isPending ? '処理中...' : '復活'}
@@ -51,7 +50,6 @@ export function TalentLifecycleActions({
                     confirmMessage: `タレント「${talent.name}」を引退にしますか？`,
                   })
                 }
-                size="sm"
                 variant="secondary"
               >
                 {isPending ? '処理中...' : '引退にする'}
@@ -65,8 +63,7 @@ export function TalentLifecycleActions({
                     confirmMessage: `タレント「${talent.name}」をアクティブに戻しますか？`,
                   })
                 }
-                size="sm"
-                variant="secondary-blue"
+                variant="secondary"
               >
                 {isPending ? '処理中...' : 'アクティブに戻す'}
               </Button>
@@ -79,7 +76,9 @@ export function TalentLifecycleActions({
         )}
       </div>
       {message?.type === 'error' && (
-        <p className="text-sm text-red-600">{message.text}</p>
+        <p className="text-meta text-danger" role="alert">
+          {message.text}
+        </p>
       )}
     </div>
   )

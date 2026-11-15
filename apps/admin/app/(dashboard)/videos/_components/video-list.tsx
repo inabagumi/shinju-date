@@ -3,8 +3,24 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { formatNumber, getVideoExternalUrl } from '@shinju-date/helpers'
 import { formatDateTime, formatDuration } from '@shinju-date/temporal-fns'
-import { Button } from '@shinju-date/ui'
-import { Eye, RotateCcw, Trash2 } from 'lucide-react'
+import {
+  Button,
+  EmptyState,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@shinju-date/ui'
+import {
+  EllipsisVertical,
+  ExternalLink,
+  Eye,
+  RotateCcw,
+  Trash2,
+  Video as VideoIcon,
+} from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -143,284 +159,285 @@ export default function VideoList({ videos }: Props) {
 
   return (
     <div>
-      {/* Action bar */}
-      {selectedIds.length > 0 && (
-        <div className="sticky top-0 z-10 mb-4 flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 shadow-lg sm:flex-row sm:items-center sm:justify-between">
-          <span className="font-semibold whitespace-nowrap tabular-nums">
-            {selectedIds.length} 件選択中
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {hasNonDeletedVideos && (
-              <>
+      {/*
+       * 一括操作のバー。選択の有無で表が上下に動かないよう、常に同じ高さで
+       * 表の上に確保する。狭い画面ではボタンの文字を隠してアイコンだけにする
+       */}
+      <div
+        aria-label="選択した動画の操作"
+        className="mb-4 flex h-14 items-center justify-between gap-3 rounded-container bg-muted px-4"
+        role="toolbar"
+      >
+        {selectedIds.length > 0 ? (
+          <>
+            <span
+              aria-live="polite"
+              className="text-meta font-semibold whitespace-nowrap tabular-nums"
+            >
+              {selectedIds.length} 件選択中
+            </span>
+            <div className="flex gap-2">
+              {hasNonDeletedVideos && (
                 <Button
                   className="gap-1.5 whitespace-nowrap"
                   onClick={() => handleBulkAction('toggle')}
+                  size="sm"
                   variant="secondary"
                 >
                   <Eye aria-hidden="true" className="size-4" />
-                  表示/非表示を切り替え
+                  <span className="sr-only sm:not-sr-only">
+                    表示/非表示を切り替え
+                  </span>
                 </Button>
+              )}
+              {hasDeletedVideos && (
                 <Button
                   className="gap-1.5 whitespace-nowrap"
+                  onClick={() => handleBulkAction('restore')}
+                  size="sm"
+                  variant="secondary"
+                >
+                  <RotateCcw aria-hidden="true" className="size-4" />
+                  <span className="sr-only sm:not-sr-only">復元</span>
+                </Button>
+              )}
+              {hasNonDeletedVideos && (
+                <Button
+                  className="ml-2 gap-1.5 whitespace-nowrap sm:ml-4"
                   onClick={() => handleBulkAction('delete')}
+                  size="sm"
                   variant="danger"
                 >
                   <Trash2 aria-hidden="true" className="size-4" />
-                  削除
+                  <span className="sr-only sm:not-sr-only">削除</span>
                 </Button>
-              </>
-            )}
-            {hasDeletedVideos && (
-              <Button
-                className="gap-1.5 whitespace-nowrap"
-                onClick={() => handleBulkAction('restore')}
-                variant="secondary"
-              >
-                <RotateCcw aria-hidden="true" className="size-4" />
-                復元
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
+              )}
+            </div>
+          </>
+        ) : (
+          <span className="text-meta text-muted">
+            動画を選択すると、まとめて操作できます。
+          </span>
+        )}
+      </div>
 
       {/* Video table */}
-      <div className="relative overflow-x-auto">
-        <table className="w-full min-w-5xl">
-          <thead className="border-b border-border bg-muted text-left text-meta whitespace-nowrap">
-            <tr>
-              <th className="p-3">
-                <input
-                  aria-label="すべて選択"
-                  checked={allSelected}
-                  onChange={(e) => handleSelectAll(e.target.checked)}
-                  type="checkbox"
-                />
-              </th>
-              <th className="p-3">サムネイル</th>
-              <th className="p-3">タイトル</th>
-              <th className="p-3">タレント</th>
-              <th className="p-3">
-                <div className="flex flex-col gap-1">
-                  <Link
-                    className="flex items-center hover:text-accent"
-                    href={getSortUrl('published_at')}
-                  >
-                    公開日時
-                    <SortIcon
-                      currentSortField={currentSortField}
-                      currentSortOrder={currentSortOrder}
-                      field="published_at"
+      <Table className="min-w-5xl">
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead>
+              <input
+                aria-label="すべて選択"
+                checked={allSelected}
+                className="size-4 accent-accent"
+                onChange={(e) => handleSelectAll(e.target.checked)}
+                type="checkbox"
+              />
+            </TableHead>
+            <TableHead>サムネイル</TableHead>
+            <TableHead>タイトル</TableHead>
+            <TableHead>タレント</TableHead>
+            <TableHead>
+              <div className="flex flex-col gap-1">
+                <Link
+                  className="flex items-center rounded-control hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  href={getSortUrl('published_at')}
+                >
+                  公開日時
+                  <SortIcon
+                    currentSortField={currentSortField}
+                    currentSortOrder={currentSortOrder}
+                    field="published_at"
+                  />
+                </Link>
+                <Link
+                  className="flex items-center rounded-control hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  href={getSortUrl('updated_at')}
+                >
+                  更新日時
+                  <SortIcon
+                    currentSortField={currentSortField}
+                    currentSortOrder={currentSortOrder}
+                    field="updated_at"
+                  />
+                </Link>
+              </div>
+            </TableHead>
+            <TableHead className="text-right">再生時間</TableHead>
+            <TableHead className="text-right">クリック数</TableHead>
+            <TableHead>種別</TableHead>
+            <TableHead>ステータス</TableHead>
+            <TableHead>
+              <span className="sr-only">アクション</span>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {videos.length > 0 ? (
+            videos.map((video) => {
+              return (
+                <TableRow key={video.id}>
+                  <TableCell>
+                    <input
+                      aria-label={`「${video.title}」を選択`}
+                      checked={selectedIds.includes(video.id)}
+                      className="size-4 accent-accent"
+                      onChange={(e) =>
+                        handleSelectVideo(video.id, e.target.checked)
+                      }
+                      type="checkbox"
                     />
-                  </Link>
-                  <Link
-                    className="flex items-center hover:text-accent"
-                    href={getSortUrl('updated_at')}
-                  >
-                    更新日時
-                    <SortIcon
-                      currentSortField={currentSortField}
-                      currentSortOrder={currentSortOrder}
-                      field="updated_at"
-                    />
-                  </Link>
-                </div>
-              </th>
-              <th className="p-3 text-right">再生時間</th>
-              <th className="p-3 text-right">クリック数</th>
-              <th className="p-3">種別</th>
-              <th className="p-3">ステータス</th>
-              <th className="p-3">
-                <span className="sr-only">アクション</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {videos.length > 0 ? (
-              videos.map((video) => {
-                return (
-                  <tr
-                    className="border-b border-border hover:bg-muted"
-                    key={video.id}
-                  >
-                    <td className="p-3">
-                      <input
-                        aria-label={`「${video.title}」を選択`}
-                        checked={selectedIds.includes(video.id)}
-                        onChange={(e) =>
-                          handleSelectVideo(video.id, e.target.checked)
-                        }
-                        type="checkbox"
-                      />
-                    </td>
-                    <td className="p-3">
-                      {video.thumbnail ? (
-                        <div className="relative aspect-video w-28">
-                          <Image
-                            alt=""
-                            blurDataURL={video.thumbnail.blur_data_url}
-                            className="rounded-md object-cover"
-                            fill
-                            placeholder="blur"
-                            sizes="112px"
-                            src={`/images/thumbnails/${video.thumbnail.id}`}
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex aspect-video w-28 items-center justify-center rounded-md bg-muted text-caption text-muted">
-                          No Image
-                        </div>
-                      )}
-                    </td>
-                    <td className="w-full min-w-64 p-3">
-                      <Link
-                        className="text-accent hover:underline"
-                        href={`/videos/${video.id}`}
-                      >
-                        <div className="line-clamp-2" title={video.title}>
-                          {video.title}
-                        </div>
-                      </Link>
-                    </td>
-                    <td className="p-3 text-meta whitespace-nowrap text-muted">
-                      {video.talent ? video.talent.name : 'タレント不明'}
-                    </td>
-                    <td className="p-3 text-meta whitespace-nowrap text-muted tabular-nums">
-                      <dl className="grid grid-cols-[auto_auto] gap-x-2">
-                        <dt>公開</dt>
-                        <dd>
-                          <time dateTime={video.published_at}>
-                            {formatDateTime(
-                              Temporal.Instant.from(
-                                video.published_at,
-                              ).toZonedDateTimeISO(TIME_ZONE),
-                            )}
-                          </time>
-                        </dd>
-                        <dt>更新</dt>
-                        <dd>
-                          <time dateTime={video.updated_at}>
-                            {formatDateTime(
-                              Temporal.Instant.from(
-                                video.updated_at,
-                              ).toZonedDateTimeISO(TIME_ZONE),
-                            )}
-                          </time>
-                        </dd>
-                      </dl>
-                    </td>
-                    <td className="p-3 text-right text-meta whitespace-nowrap text-muted tabular-nums">
-                      {formatDuration(Temporal.Duration.from(video.duration))}
-                    </td>
-                    <td className="p-3 text-right whitespace-nowrap tabular-nums">
-                      {formatNumber(video.clicks)}
-                    </td>
-                    <td className="p-3">
-                      <div className="flex flex-col items-start gap-1">
-                        <PlatformBadge platform={video.platform} />
-                        <VideoKindBadge videoKind={video.video_kind} />
+                  </TableCell>
+                  <TableCell>
+                    {video.thumbnail ? (
+                      <div className="relative aspect-video w-28">
+                        <Image
+                          alt=""
+                          blurDataURL={video.thumbnail.blur_data_url}
+                          className="rounded-control object-cover"
+                          fill
+                          placeholder="blur"
+                          sizes="112px"
+                          src={`/images/thumbnails/${video.thumbnail.id}`}
+                        />
                       </div>
-                    </td>
-                    <td className="p-3">
-                      <VideoStatusBadge video={video} />
-                    </td>
-                    <td className="p-3">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger aria-label="アクションメニュー">
-                          <svg
+                    ) : (
+                      <div className="flex aspect-video w-28 items-center justify-center rounded-control bg-muted text-caption text-muted">
+                        No Image
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="w-full min-w-64 whitespace-normal">
+                    <Link
+                      className="text-accent hover:underline"
+                      href={`/videos/${video.id}`}
+                    >
+                      <div className="line-clamp-2" title={video.title}>
+                        {video.title}
+                      </div>
+                    </Link>
+                  </TableCell>
+                  <TableCell className="text-muted">
+                    {video.talent ? video.talent.name : 'タレント不明'}
+                  </TableCell>
+                  <TableCell className="text-muted tabular-nums">
+                    <dl className="grid grid-cols-[auto_auto] gap-x-2">
+                      <dt>公開</dt>
+                      <dd>
+                        <time dateTime={video.published_at}>
+                          {formatDateTime(
+                            Temporal.Instant.from(
+                              video.published_at,
+                            ).toZonedDateTimeISO(TIME_ZONE),
+                          )}
+                        </time>
+                      </dd>
+                      <dt>更新</dt>
+                      <dd>
+                        <time dateTime={video.updated_at}>
+                          {formatDateTime(
+                            Temporal.Instant.from(
+                              video.updated_at,
+                            ).toZonedDateTimeISO(TIME_ZONE),
+                          )}
+                        </time>
+                      </dd>
+                    </dl>
+                  </TableCell>
+                  <TableCell className="text-right text-muted tabular-nums">
+                    {formatDuration(Temporal.Duration.from(video.duration))}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {formatNumber(video.clicks)}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col items-start gap-1">
+                      <PlatformBadge platform={video.platform} />
+                      <VideoKindBadge videoKind={video.video_kind} />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <VideoStatusBadge video={video} />
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger aria-label="アクションメニュー">
+                        <EllipsisVertical
+                          aria-hidden="true"
+                          className="size-5"
+                        />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            const externalUrl = getVideoExternalUrl({
+                              platform: video.platform,
+                              status: video.status,
+                              twitchLoginName:
+                                video.twitch_video?.twitch_user
+                                  ?.twitch_login_name,
+                              twitchVideoId:
+                                video.twitch_video?.twitch_video_id,
+                              twitchVideoType: video.twitch_video?.type,
+                              youtubeVideoId:
+                                video.youtube_video?.youtube_video_id,
+                            })
+                            if (externalUrl) {
+                              window.open(externalUrl, '_blank', 'noopener')
+                            }
+                          }}
+                        >
+                          {video.platform === 'twitch'
+                            ? 'Twitchで見る'
+                            : 'YouTubeで見る'}
+                          <ExternalLink
                             aria-hidden="true"
-                            className="h-5 w-5"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <title>アクションメニュー</title>
-                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                          </svg>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
+                            className="size-4 text-muted"
+                          />
+                        </DropdownMenuItem>
+                        {video.deleted_at ? (
                           <DropdownMenuItem
-                            onClick={() => {
-                              const externalUrl = getVideoExternalUrl({
-                                platform: video.platform,
-                                status: video.status,
-                                twitchLoginName:
-                                  video.twitch_video?.twitch_user
-                                    ?.twitch_login_name,
-                                twitchVideoId:
-                                  video.twitch_video?.twitch_video_id,
-                                twitchVideoType: video.twitch_video?.type,
-                                youtubeVideoId:
-                                  video.youtube_video?.youtube_video_id,
-                              })
-                              if (externalUrl) {
-                                window.open(externalUrl, '_blank', 'noopener')
-                              }
-                            }}
+                            onClick={() =>
+                              handleSingleAction('restore', video.id)
+                            }
                           >
-                            <span className="flex items-center gap-1">
-                              {video.platform === 'twitch'
-                                ? 'Twitchで見る'
-                                : 'YouTubeで見る'}
-                              <svg
-                                aria-hidden="true"
-                                className="h-4 w-4"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                viewBox="0 0 24 24"
-                              >
-                                <title>外部リンク</title>
-                                <path
-                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                            </span>
+                            復元
                           </DropdownMenuItem>
-                          {video.deleted_at ? (
+                        ) : (
+                          <>
                             <DropdownMenuItem
                               onClick={() =>
-                                handleSingleAction('restore', video.id)
+                                handleSingleAction('toggle', video.id)
                               }
                             >
-                              復元
+                              表示/非表示を切り替え
                             </DropdownMenuItem>
-                          ) : (
-                            <>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleSingleAction('toggle', video.id)
-                                }
-                              >
-                                表示/非表示を切り替え
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleSingleAction('delete', video.id)
-                                }
-                                variant="danger"
-                              >
-                                削除
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                )
-              })
-            ) : (
-              <tr>
-                <td className="p-8 text-center text-muted" colSpan={10}>
-                  動画がありません。
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                            <div className="my-1 border-t border-border" />
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleSingleAction('delete', video.id)
+                              }
+                              variant="danger"
+                            >
+                              削除
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              )
+            })
+          ) : (
+            <TableRow className="hover:bg-transparent">
+              <TableCell className="whitespace-normal" colSpan={10}>
+                <EmptyState icon={<VideoIcon />} title="動画がありません。" />
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
 
       <ActionToast {...toastProps} />
 

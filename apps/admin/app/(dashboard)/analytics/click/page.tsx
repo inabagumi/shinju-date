@@ -1,6 +1,6 @@
+import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { PageHeader } from '@/components/page-header'
 import {
   ChartSkeleton,
   DateRangePickerSkeleton,
@@ -8,6 +8,7 @@ import {
   TabNavigationSkeleton,
 } from '@/components/skeletons'
 import { DateRangePickerClient } from '../_components/date-range-picker-client'
+import { PANEL_CLASS_NAME } from '../_lib/panel'
 import { analyticsSearchParamsSchema } from '../_lib/search-params-schema'
 import { ClickVolumeChart } from './_components/click-volume-chart'
 import { PopularRankingsTabs } from './_components/popular-rankings-tabs'
@@ -25,24 +26,27 @@ export default function ClickAnalyticsPage({
   )
 
   return (
-    <div className="mx-auto max-w-7xl p-6">
+    <div>
       <PageHeader title="クリックアナリティクス" />
 
-      <div className="mb-6">
+      <div className="mb-8">
         <Suspense fallback={<DateRangePickerSkeleton />}>
           <DateRangePickerClient searchParams={parsedSearchParams} />
         </Suspense>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
-          <h2 className="mb-4 text-xl font-semibold">クリックボリューム</h2>
+      <section className="mb-8">
+        <h2 className="mb-4 text-heading font-bold">クリックボリューム</h2>
+        <div className={PANEL_CLASS_NAME}>
           <Suspense fallback={<ChartSkeleton />}>
             <ClickVolumeChart searchParams={parsedSearchParams} />
           </Suspense>
         </div>
+      </section>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
+      <section>
+        <h2 className="mb-4 text-heading font-bold">人気ランキング</h2>
+        <div className={PANEL_CLASS_NAME}>
           <Suspense fallback={<TabNavigationSkeleton />}>
             <TabNavigation
               defaultTab="videos"
@@ -59,7 +63,7 @@ export default function ClickAnalyticsPage({
             </Suspense>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

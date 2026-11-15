@@ -1,9 +1,19 @@
 'use client'
 
-import * as Accordion from '@radix-ui/react-accordion'
 import { range } from '@shinju-date/helpers'
-import { Button, Input } from '@shinju-date/ui'
-import { Suspense, use, useMemo, useState } from 'react'
+import {
+  Button,
+  EmptyState,
+  Input,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@shinju-date/ui'
+import { BookOpen } from 'lucide-react'
+import { Fragment, Suspense, use, useMemo, useState } from 'react'
 import { DeleteConfirmDialog } from './delete-confirm-dialog'
 import { TermModal } from './term-modal'
 
@@ -52,6 +62,7 @@ export function TermsList({ terms }: TermsListProps) {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Input
+          aria-label="用語を検索"
           className="sm:max-w-md"
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="用語、読み方、類義語で検索..."
@@ -114,14 +125,23 @@ function TermsResults({
     }
   }
 
+  if (filteredTerms.length === 0) {
+    return (
+      <EmptyState
+        icon={<BookOpen />}
+        title={searchQuery ? '検索結果がありません。' : '用語がありません。'}
+      />
+    )
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Alphabet navigation */}
+    <div className="space-y-4">
+      {/* Index of first characters */}
       {groupKeys.length > 0 && !searchQuery && (
-        <nav className="flex flex-wrap gap-2 rounded-md border border-774-blue-300 bg-774-blue-50 p-3">
+        <nav aria-label="頭文字の索引" className="flex flex-wrap gap-1">
           {groupKeys.map((group) => (
             <Button
-              className="rounded px-2 py-1 text-sm hover:bg-secondary-blue hover:text-secondary-blue-foreground"
+              className="min-w-9 px-2"
               key={group}
               onClick={() => scrollToGroup(group)}
               size="sm"
@@ -134,93 +154,85 @@ function TermsResults({
         </nav>
       )}
 
-      {/* Terms list */}
-      {filteredTerms.length === 0 ? (
-        <p className="py-8 text-center text-gray-500">
-          {searchQuery ? '検索結果がありません。' : '用語がありません。'}
-        </p>
-      ) : (
-        <Accordion.Root className="space-y-2" type="multiple">
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead>用語</TableHead>
+            <TableHead>読み方</TableHead>
+            <TableHead>類義語</TableHead>
+            <TableHead className="text-right">操作</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {Array.from(groupedTerms.entries()).map(([group, groupTerms]) => (
-            <div id={`group-${group}`} key={group}>
-              <Accordion.Item
-                className="overflow-hidden rounded-lg border border-774-blue-300"
-                value={group}
+            <Fragment key={group}>
+              <TableRow
+                className="scroll-mt-16 bg-muted/50 hover:bg-muted/50"
+                id={`group-${group}`}
               >
-                <Accordion.Header>
-                  <Accordion.Trigger className="flex w-full items-center justify-between bg-774-blue-50 px-4 py-3 text-left font-semibold hover:bg-774-blue-100">
-                    <span>
-                      {group} ({groupTerms.length})
-                    </span>
-                    <span className="transition-transform duration-200 [&[data-state=open]]:rotate-180">
-                      ▼
-                    </span>
-                  </Accordion.Trigger>
-                </Accordion.Header>
-                <Accordion.Content className="overflow-hidden bg-white data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-                  <div className="divide-y divide-774-blue-200">
-                    {groupTerms.map((term) => (
-                      <div className="p-4" key={term.id}>
-                        <div className="mb-2 flex items-start justify-between">
-                          <h3 className="text-lg font-semibold">{term.term}</h3>
-                          <div className="flex gap-2">
-                            <TermModal term={term} />
-                            <DeleteConfirmDialog
-                              termId={term.id}
-                              termName={term.term}
-                            />
-                          </div>
-                        </div>
-                        {term.readings.length > 0 && (
-                          <div className="mb-2">
-                            <span className="text-sm font-medium text-gray-700">
-                              読み方:
-                            </span>
-                            <span className="ml-2 text-sm text-gray-600">
-                              {term.readings.join(', ')}
-                            </span>
-                          </div>
-                        )}
-                        {term.synonyms.length > 0 && (
-                          <div>
-                            <span className="text-sm font-medium text-gray-700">
-                              類義語:
-                            </span>
-                            <span className="ml-2 text-sm text-gray-600">
-                              {term.synonyms.join(', ')}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </Accordion.Content>
-              </Accordion.Item>
-            </div>
+                <TableHead
+                  className="py-2 text-foreground"
+                  colSpan={4}
+                  scope="colgroup"
+                >
+                  {group}
+                  <span className="ml-2 font-normal text-muted tabular-nums">
+                    {groupTerms.length}件
+                  </span>
+                </TableHead>
+              </TableRow>
+              {groupTerms.map((term) => (
+                <TableRow key={term.id}>
+                  <TableCell className="font-semibold">{term.term}</TableCell>
+                  <TableCell className="whitespace-normal text-muted">
+                    {term.readings.join('、') || '—'}
+                  </TableCell>
+                  <TableCell className="whitespace-normal text-muted">
+                    {term.synonyms.join('、') || '—'}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-end gap-4">
+                      <TermModal term={term} />
+                      <DeleteConfirmDialog
+                        termId={term.id}
+                        termName={term.term}
+                      />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </Fragment>
           ))}
-        </Accordion.Root>
-      )}
+        </TableBody>
+      </Table>
     </div>
   )
 }
 
 function TermsResultsSkeleton() {
   return (
-    <div aria-hidden="true" className="animate-pulse space-y-6">
-      <div className="flex min-h-16 flex-wrap gap-2 rounded-md border border-gray-200 bg-gray-50 p-3">
+    <div aria-hidden="true" className="animate-pulse space-y-4">
+      <div className="flex min-h-8 flex-wrap gap-1">
         {range(8).map((item) => (
           <div
-            className="h-8 w-10 rounded bg-gray-200"
+            className="h-8 w-9 rounded-control bg-muted"
             key={`term-index-skeleton-${item}`}
           />
         ))}
       </div>
-      {range(5).map((item) => (
-        <div
-          className="h-12 rounded-lg border border-gray-200 bg-gray-100"
-          key={`term-group-skeleton-${item}`}
-        />
-      ))}
+      <div className="overflow-hidden rounded-container border border-border">
+        <div className="h-10 bg-muted" />
+        {range(6).map((item) => (
+          <div
+            className="flex h-14 items-center gap-4 border-t border-border px-4"
+            key={`term-row-skeleton-${item}`}
+          >
+            <div className="h-4 w-1/4 rounded-control bg-muted" />
+            <div className="h-4 w-1/4 rounded-control bg-muted" />
+            <div className="h-4 flex-1 rounded-control bg-muted" />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

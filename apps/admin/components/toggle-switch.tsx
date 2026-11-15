@@ -34,8 +34,8 @@ export default function ToggleSwitch({
     <button
       aria-checked={checked}
       aria-label={label}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none ${
-        checked ? 'bg-green-600' : 'bg-gray-300'
+      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
+        checked ? 'border-accent bg-accent' : 'border-border bg-border'
       } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
       disabled={disabled}
       onClick={handleClick}
@@ -44,8 +44,10 @@ export default function ToggleSwitch({
       {...props}
     >
       <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-          checked ? 'translate-x-6' : 'translate-x-1'
+        className={`inline-block size-4 transform rounded-full transition-transform ${
+          checked
+            ? 'translate-x-6 bg-accent-foreground'
+            : 'translate-x-1 bg-surface'
         }`}
       />
     </button>

@@ -30,9 +30,9 @@ interface Props {
 
 export default function RootLayout({ children }: Props) {
   return (
-    // 管理画面はダークモードに対応するまでセマンティックカラーをライトに固定する
-    <html className={lato.variable} data-color-scheme="light" lang="ja">
-      <body className="font-sans text-primary">
+    // チェックボックスや日付の入力欄などのブラウザ標準の部品も、OS の設定に合わせて明暗を切り替える
+    <html className={`${lato.variable} scheme-light-dark`} lang="ja">
+      <body className="bg-background font-sans text-foreground">
         <ToastProvider>
           {children}
           <ToastViewport />

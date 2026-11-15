@@ -55,17 +55,17 @@ function StatusBadge({ account }: { account: VideoBackfillAccount }) {
 
 function AccountRow({ account }: { account: VideoBackfillAccount }) {
   return (
-    <li className="px-4 py-3">
+    <li className="px-6 py-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-gray-900">
-            <span className="mr-2 text-xs text-gray-500">
+          <p className="truncate text-meta font-semibold">
+            <span className="mr-2 text-caption font-normal text-muted">
               {PROVIDER_LABELS[account.provider]}
             </span>
             {account.name}
           </p>
           {account.status !== null && (
-            <p className="text-sm text-gray-500">
+            <p className="text-meta text-muted tabular-nums">
               {account.added}件追加 · {account.pages}ページ確認
               {account.updatedAt && (
                 <>
@@ -78,7 +78,7 @@ function AccountRow({ account }: { account: VideoBackfillAccount }) {
             </p>
           )}
           {account.error && (
-            <p className="text-sm text-red-700">{account.error}</p>
+            <p className="text-meta text-danger">{account.error}</p>
           )}
         </div>
         <StatusBadge account={account} />
@@ -218,14 +218,12 @@ export function VideoBackfillPanel({
   }
 
   return (
-    <Card className="mt-6" variant="elevated">
+    <Card variant="elevated">
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              過去動画の取り込み
-            </h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+          <div className="min-w-0 space-y-1">
+            <h2 className="text-heading font-bold">過去動画の取り込み</h2>
+            <p className="max-w-text text-meta text-muted">
               プラットフォーム上にあってデータベースにない過去の動画を、
               すべての履歴をさかのぼって取り込みます。登録済みの動画はそのまま残ります。
             </p>
@@ -246,11 +244,13 @@ export function VideoBackfillPanel({
                     setConfirmProvider(provider)
                     setIsConfirmOpen(true)
                   }}
-                  size="sm"
                   variant="secondary"
                 >
                   {pendingProvider === provider && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2
+                      aria-hidden="true"
+                      className="mr-2 size-4 animate-spin"
+                    />
                   )}
                   {isProviderActive(provider)
                     ? `${PROVIDER_LABELS[provider]}: 実行中`
@@ -260,26 +260,26 @@ export function VideoBackfillPanel({
           </div>
         </div>
         {accounts !== null && loadError && (
-          <div className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-800">
+          <div className="mt-3 rounded-control bg-danger/10 p-3 text-meta text-danger">
             {loadError}
           </div>
         )}
         {message && (
           <div
-            className={`mt-3 rounded-md p-3 text-sm ${
+            className={`mt-3 rounded-control p-3 text-meta ${
               message.type === 'success'
-                ? 'bg-green-50 text-green-800'
-                : 'bg-red-50 text-red-800'
+                ? 'bg-success/10 text-success'
+                : 'bg-danger/10 text-danger'
             }`}
           >
             {message.text}
           </div>
         )}
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className="mt-6 border-t border-border p-0">
         {accounts === null ? (
           loadError ? (
-            <div className="flex flex-col items-center gap-3 px-4 py-6 text-sm text-red-700">
+            <div className="flex flex-col items-center gap-3 px-4 py-6 text-meta text-danger">
               <p>{loadError}</p>
               <Button
                 onClick={() => {
@@ -293,12 +293,12 @@ export function VideoBackfillPanel({
               </Button>
             </div>
           ) : (
-            <div className="px-4 py-6 text-center text-sm text-gray-500">
+            <div className="px-4 py-6 text-center text-meta text-muted">
               読み込み中...
             </div>
           )
         ) : (
-          <ul className="divide-y divide-gray-200">
+          <ul className="divide-y divide-border">
             {accounts.map((account) => (
               <AccountRow
                 account={account}

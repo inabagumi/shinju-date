@@ -2,13 +2,11 @@
 
 import type { Tables } from '@shinju-date/database'
 import {
-  Button,
+  FilterBar,
   Input,
   MultiSelect,
   type MultiSelectOption,
-  twMerge,
 } from '@shinju-date/ui'
-import { ChevronDown, SlidersHorizontal } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
@@ -40,7 +38,6 @@ interface Props {
 export function VideoFilters({ talents }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [isExpanded, setIsExpanded] = useState(false)
   const [searchInput, setSearchInput] = useState(
     searchParams.get('search') || '',
   )
@@ -170,10 +167,10 @@ export function VideoFilters({ talents }: Props) {
   const appliedCount = filters.filter(({ value }) => value.length > 0).length
 
   return (
-    <div className="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      <div>
+    <div className="mb-4 flex flex-col gap-3">
+      <div className="w-full sm:max-w-md">
         <label
-          className="mb-1 block text-meta font-medium"
+          className="mb-1 block text-meta font-semibold"
           htmlFor="search-filter"
         >
           タイトルまたはIDで検索
@@ -183,41 +180,16 @@ export function VideoFilters({ talents }: Props) {
           inputSize="md"
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="検索..."
+          type="search"
           value={searchInput}
           variant="default"
         />
       </div>
-      <Button
-        aria-controls="video-filter-options"
-        aria-expanded={isExpanded}
-        className="gap-1.5 justify-self-start sm:hidden"
-        onClick={() => setIsExpanded((prev) => !prev)}
-        variant="secondary"
-      >
-        <SlidersHorizontal aria-hidden="true" className="size-4" />
-        絞り込み
-        {appliedCount > 0 && (
-          <span className="rounded-full bg-accent px-2 text-caption text-accent-foreground tabular-nums">
-            {appliedCount}
-            <span className="sr-only">件の条件を適用中</span>
-          </span>
-        )}
-        <ChevronDown
-          aria-hidden="true"
-          className={twMerge(
-            'size-4 transition-transform',
-            isExpanded && 'rotate-180',
-          )}
-        />
-      </Button>
-      <div
-        className={twMerge('grid gap-4 sm:contents', !isExpanded && 'hidden')}
-        id="video-filter-options"
-      >
+      <FilterBar activeCount={appliedCount}>
         {filters.map((filter) => (
-          <div key={filter.key}>
+          <div className="md:w-48" key={filter.key}>
             <div
-              className="mb-1 block text-meta font-medium"
+              className="mb-1 block text-meta font-semibold"
               id={`video-filter-${filter.key}`}
             >
               {filter.label}で絞り込み
@@ -232,7 +204,7 @@ export function VideoFilters({ talents }: Props) {
             />
           </div>
         ))}
-      </div>
+      </FilterBar>
     </div>
   )
 }

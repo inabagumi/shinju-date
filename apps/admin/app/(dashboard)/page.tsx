@@ -1,5 +1,5 @@
+import { PageHeader } from '@shinju-date/ui'
 import { Suspense } from 'react'
-import { PageHeader } from '@/components/page-header'
 import { CardSkeleton } from '@/components/skeletons'
 import { WidgetErrorBoundary } from '@/components/widget-error-boundary'
 import { AnalyticsWidget } from './_components/analytics-widget'
@@ -15,7 +15,7 @@ import { VideoBackfillFailureAlert } from './_components/video-backfill-failure-
 
 export default function DashboardPage() {
   return (
-    <div className="mx-auto max-w-7xl p-6">
+    <div>
       <PageHeader title="ダッシュボード" />
 
       {/* Main content area with max-width constraint */}

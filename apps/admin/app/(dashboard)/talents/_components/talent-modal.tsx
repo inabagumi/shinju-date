@@ -2,6 +2,7 @@
 
 import type { Tables } from '@shinju-date/database'
 import {
+  Button,
   Dialog,
   DialogClose,
   DialogContent,
@@ -10,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@shinju-date/ui'
+import { Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { FormState } from '@/components/form'
 import Form, {
@@ -69,12 +71,13 @@ export function TalentModal({ talent }: TalentModalProps) {
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
-        <button
-          className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90"
-          type="button"
+        <Button
+          className="shrink-0 gap-2"
+          variant={isEditing ? 'secondary' : 'primary'}
         >
+          {!isEditing && <Plus aria-hidden="true" className="size-4" />}
           {isEditing ? '編集' : '新しいタレントを追加'}
-        </button>
+        </Button>
       </DialogTrigger>
       <DialogPortal>
         <DialogOverlay />
@@ -87,35 +90,35 @@ export function TalentModal({ talent }: TalentModalProps) {
               <input name="id" type="hidden" value={talent.id.toString()} />
             )}
             <FormField name="name">
-              <Label className="mb-2 block font-medium">タレント名</Label>
+              <Label className="mb-2 block text-meta font-semibold">
+                タレント名
+              </Label>
               <Input
-                className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
                 defaultValue={talent?.name ?? ''}
                 placeholder="表示に使用される名前"
                 required
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-caption text-muted">
                 管理画面から編集可能な表示名（YouTube
                 APIによる自動更新の対象外）
               </p>
-              <ErrorMessage className="mt-1 text-sm text-red-600" />
+              <ErrorMessage className="mt-1 text-meta text-danger" />
             </FormField>
             <FormField name="youtube_channel_id">
-              <Label className="mb-2 block font-medium">
+              <Label className="mb-2 block text-meta font-semibold">
                 YouTubeチャンネル（任意）
               </Label>
               <Input
-                className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
                 defaultValue={talent?.youtube_channel?.youtube_channel_id ?? ''}
                 placeholder="@handle または https://youtube.com/@handle"
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-caption text-muted">
                 ハンドル・チャンネルID・URLに対応。追加時にYouTube
                 APIから名前とハンドルを取得します。後から個別ページで設定することもできます。
               </p>
-              <ErrorMessage className="mt-1 text-sm text-red-600" />
+              <ErrorMessage className="mt-1 text-meta text-danger" />
             </FormField>
-            <GenericErrorMessage className="text-sm text-red-600" />
+            <GenericErrorMessage className="text-meta text-danger" />
             <div className="flex items-center justify-between gap-2 pt-2">
               {isEditing && talent ? (
                 <DeleteConfirmDialog
@@ -127,17 +130,9 @@ export function TalentModal({ talent }: TalentModalProps) {
               )}
               <div className="flex gap-2">
                 <DialogClose asChild>
-                  <button
-                    className="rounded-md border border-774-blue-300 px-4 py-2 hover:bg-gray-50"
-                    type="button"
-                  >
-                    キャンセル
-                  </button>
+                  <Button variant="secondary">キャンセル</Button>
                 </DialogClose>
-                <SubmitButton
-                  className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90 disabled:opacity-50"
-                  type="submit"
-                >
+                <SubmitButton type="submit">
                   {isEditing ? '更新' : '追加'}
                 </SubmitButton>
               </div>

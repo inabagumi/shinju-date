@@ -8,6 +8,7 @@ import Form, {
   Label,
   SubmitButton,
 } from '@/components/form'
+import { LogoIcon } from '@/components/logo-icon'
 import { getSafeRedirectPath, REDIRECT_PARAM } from '@/lib/redirect-path'
 import { signIn } from './_lib/actions'
 
@@ -37,57 +38,51 @@ async function RedirectPathInput({ searchParams }: Props) {
 
 export default function Login({ searchParams }: Props) {
   return (
-    <div className="grid min-h-svh place-items-center bg-gradient-to-bl from-slate-400 to-slate-100 p-4">
-      <Form
-        action={signIn}
-        className="grid w-full max-w-md gap-8 rounded-lg border border-slate-400 bg-white/60 p-6 shadow-sm backdrop-blur"
-      >
-        <Suspense fallback={null}>
-          <RedirectPathInput searchParams={searchParams} />
-        </Suspense>
-
-        <hgroup className="text-center">
+    <div className="grid min-h-svh place-items-center bg-background p-4">
+      <div className="grid w-full max-w-md gap-6">
+        <hgroup className="flex flex-col items-center gap-2 text-center">
+          <LogoIcon className="size-12 text-accent" />
           <h1 className="text-title font-bold">Admin UI</h1>
           <p className="text-meta text-muted">SHINJU DATE</p>
         </hgroup>
 
-        <GenericErrorMessage className="rounded-md bg-secondary-pink p-2 leading-normal text-slate-50" />
-
-        <div className="space-y-4">
-          <FormField className="flex flex-col space-y-2" name="email">
-            <Label className="aria-disabled:cursor-not-allowed aria-disabled:text-slate-400">
-              メールアドレス
-            </Label>
-            <Input
-              className="w-full rounded-md border border-slate-300 bg-white px-1.5 py-1 placeholder:text-slate-300 focus-visible:border-secondary-blue focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
-              placeholder="admin@example.com"
-              required
-              type="email"
-            />
-            <ErrorMessage className="text-sm leading-normal text-secondary-pink" />
-          </FormField>
-          <FormField className="flex flex-col space-y-2" name="password">
-            <Label className="aria-disabled:cursor-not-allowed aria-disabled:text-slate-400">
-              パスワード
-            </Label>
-            <Input
-              className="w-full rounded-md border border-slate-300 bg-white px-1.5 py-1 placeholder:text-slate-300 focus-visible:border-secondary-blue focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
-              minLength={8}
-              placeholder="••••••••"
-              required
-              type="password"
-            />
-            <ErrorMessage className="text-sm leading-normal text-secondary-pink" />
-          </FormField>
-        </div>
-
-        <SubmitButton
-          className="rounded-md bg-secondary-blue p-1 font-semibold text-slate-50 hover:bg-774-blue-800 focus-visible:ring-2 focus-visible:ring-774-blue-400 focus-visible:ring-offset-2 focus-visible:outline-none active:bg-774-blue-600 active:shadow-inner disabled:pointer-events-none disabled:bg-774-blue-400"
-          type="submit"
+        <Form
+          action={signIn}
+          className="grid gap-6 rounded-container border border-border bg-surface p-6"
         >
-          ログイン
-        </SubmitButton>
-      </Form>
+          <Suspense fallback={null}>
+            <RedirectPathInput searchParams={searchParams} />
+          </Suspense>
+
+          <GenericErrorMessage className="rounded-control bg-danger/10 p-3 text-meta text-danger" />
+
+          <div className="space-y-4">
+            <FormField className="flex flex-col gap-2" name="email">
+              <Label className="text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50">
+                メールアドレス
+              </Label>
+              <Input placeholder="admin@example.com" required type="email" />
+              <ErrorMessage className="text-meta text-danger" />
+            </FormField>
+            <FormField className="flex flex-col gap-2" name="password">
+              <Label className="text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50">
+                パスワード
+              </Label>
+              <Input
+                minLength={8}
+                placeholder="••••••••"
+                required
+                type="password"
+              />
+              <ErrorMessage className="text-meta text-danger" />
+            </FormField>
+          </div>
+
+          <SubmitButton className="w-full" type="submit">
+            ログイン
+          </SubmitButton>
+        </Form>
+      </div>
     </div>
   )
 }

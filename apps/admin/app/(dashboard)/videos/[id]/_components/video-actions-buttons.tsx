@@ -2,7 +2,7 @@
 
 import type { Tables } from '@shinju-date/database'
 import { Button } from '@shinju-date/ui'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Trash2 } from 'lucide-react'
 import { useState, useTransition } from 'react'
 import { ActionToast, useActionToast } from '@/components/action-toast'
 import {
@@ -52,8 +52,10 @@ function SyncVideoButton({ videoId, platform }: SyncVideoButtonProps) {
 
   return (
     <>
-      <Button disabled={isPending} onClick={handleSync} variant="primary">
-        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      <Button disabled={isPending} onClick={handleSync} variant="secondary">
+        {isPending && (
+          <Loader2 aria-hidden="true" className="mr-2 size-4 animate-spin" />
+        )}
         {isPending ? '同期中...' : label}
       </Button>
 
@@ -62,34 +64,30 @@ function SyncVideoButton({ videoId, platform }: SyncVideoButtonProps) {
   )
 }
 
-interface VideoActionsButtonsProps {
+type VideoAction = 'toggle' | 'delete' | 'restore'
+
+interface VideoActionsProps {
   video: Pick<
     Tables<'videos'>,
     'id' | 'title' | 'visible' | 'deleted_at' | 'platform'
   >
 }
 
-export function VideoActionsButtons({ video }: VideoActionsButtonsProps) {
-  const [isPending, _startTransition] = useTransition()
+/**
+ * 動画への操作（表示の切り替え・削除・復元）を確認ダイアログ付きで実行する。
+ * 通常の操作と危険な操作を別の場所に置けるよう、ボタンとは分けている。
+ */
+function useVideoAction(video: VideoActionsProps['video']) {
   const { showToast, toastProps } = useActionToast()
   const [confirmDialog, setConfirmDialog] = useState<{
-    action: 'toggle' | 'delete' | 'restore'
+    action: VideoAction
     open: boolean
   }>({ action: 'toggle', open: false })
 
-  const isDeleted = video.deleted_at !== null
   const videoInfo: VideoInfo = { id: video.id, title: video.title }
 
-  const handleToggleVisibility = () => {
-    setConfirmDialog({ action: 'toggle', open: true })
-  }
-
-  const handleDelete = () => {
-    setConfirmDialog({ action: 'delete', open: true })
-  }
-
-  const handleRestore = () => {
-    setConfirmDialog({ action: 'restore', open: true })
+  const openDialog = (action: VideoAction) => {
+    setConfirmDialog({ action, open: true })
   }
 
   const handleConfirm = async () => {
@@ -131,42 +129,8 @@ export function VideoActionsButtons({ video }: VideoActionsButtonsProps) {
     }
   }
 
-  return (
+  const dialog = (
     <>
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
-        <div className="flex gap-2">
-          {isDeleted ? (
-            <Button
-              disabled={isPending}
-              onClick={handleRestore}
-              variant="primary"
-            >
-              復元
-            </Button>
-          ) : (
-            <>
-              <Button
-                disabled={isPending}
-                onClick={handleToggleVisibility}
-                variant="secondary"
-              >
-                {video.visible ? '非表示にする' : '表示する'}
-              </Button>
-              <Button
-                disabled={isPending}
-                onClick={handleDelete}
-                variant="danger"
-              >
-                削除
-              </Button>
-            </>
-          )}
-        </div>
-        {!isDeleted && (
-          <SyncVideoButton platform={video.platform} videoId={video.id} />
-        )}
-      </div>
-
       <ActionToast {...toastProps} />
 
       <VideoActionConfirmDialog
@@ -176,6 +140,49 @@ export function VideoActionsButtons({ video }: VideoActionsButtonsProps) {
         open={confirmDialog.open}
         videos={[videoInfo]}
       />
+    </>
+  )
+
+  return { dialog, openDialog }
+}
+
+/** 見出しの右端に置く通常の操作（同期・表示の切り替え・復元） */
+export function VideoActionsButtons({ video }: VideoActionsProps) {
+  const { dialog, openDialog } = useVideoAction(video)
+  const isDeleted = video.deleted_at !== null
+
+  return (
+    <>
+      {isDeleted ? (
+        <Button onClick={() => openDialog('restore')} variant="primary">
+          復元
+        </Button>
+      ) : (
+        <>
+          <Button onClick={() => openDialog('toggle')} variant="secondary">
+            {video.visible ? '非表示にする' : '表示する'}
+          </Button>
+          <SyncVideoButton platform={video.platform} videoId={video.id} />
+        </>
+      )}
+
+      {dialog}
+    </>
+  )
+}
+
+/** ページの末尾に、通常の操作と離して置く削除のボタン */
+export function VideoDeleteButton({ video }: VideoActionsProps) {
+  const { dialog, openDialog } = useVideoAction(video)
+
+  return (
+    <>
+      <Button onClick={() => openDialog('delete')} variant="danger">
+        <Trash2 aria-hidden="true" className="mr-1.5 size-4" />
+        動画を削除
+      </Button>
+
+      {dialog}
     </>
   )
 }

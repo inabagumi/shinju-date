@@ -1,5 +1,5 @@
 import type { Tables } from '@shinju-date/database'
-import { Badge, type BadgeProps } from '@shinju-date/ui'
+import { Badge, type BadgeProps, twMerge } from '@shinju-date/ui'
 
 type VideoStatus = Tables<'videos'>['status']
 
@@ -61,9 +61,17 @@ interface VideoStatusBadgeProps {
 export function VideoStatusBadge({ video, className }: VideoStatusBadgeProps) {
   const variant = getBadgeVariant(video)
   const text = getStatusText(video)
+  // 配信中は公開サイトと同じ `live` の色（ピンク）で示す
+  const isLive = !video.deleted_at && video.visible && video.status === 'LIVE'
 
   return (
-    <Badge className={className} variant={variant}>
+    <Badge
+      className={twMerge(
+        isLive && 'border-transparent bg-live text-live-foreground',
+        className,
+      )}
+      variant={variant}
+    >
       {text}
     </Badge>
   )

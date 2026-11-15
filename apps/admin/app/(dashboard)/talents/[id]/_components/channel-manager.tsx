@@ -12,6 +12,7 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
+  EmptyState,
   Button as UIButton,
 } from '@shinju-date/ui'
 import { ExternalLink, Plus, Trash2 } from 'lucide-react'
@@ -87,15 +88,13 @@ export function ChannelManager({
   }
 
   return (
-    <div className="mt-6">
+    <div>
       <Card variant="elevated">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                YouTubeチャンネル管理
-              </h3>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0 space-y-1">
+              <h2 className="text-heading font-bold">YouTubeチャンネル管理</h2>
+              <p className="text-meta text-muted">
                 タレントに紐づけられたYouTubeチャンネルの追加・削除
               </p>
             </div>
@@ -104,9 +103,9 @@ export function ChannelManager({
                 <UIButton
                   onClick={() => setIsAddDialogOpen(true)}
                   type="button"
-                  variant="secondary-blue"
+                  variant="secondary"
                 >
-                  <Plus className="mr-2 size-4" />
+                  <Plus aria-hidden="true" className="mr-2 size-4" />
                   チャンネルを追加
                 </UIButton>
                 <DialogPortal>
@@ -121,7 +120,7 @@ export function ChannelManager({
                     <Form action={handleAddChannel} className="space-y-4">
                       <input name="talent_id" type="hidden" value={talentId} />
                       <FormField name="youtube_channel_id">
-                        <Label className="block text-sm font-medium">
+                        <Label className="block text-meta font-semibold">
                           ハンドル / チャンネルID / URL
                         </Label>
                         <Input
@@ -129,22 +128,20 @@ export function ChannelManager({
                           placeholder="@handle または https://youtube.com/@handle"
                           required
                         />
-                        <p className="mt-1 text-xs text-gray-500">
+                        <p className="mt-1 text-caption text-muted">
                           例:
                           @example、https://www.youtube.com/@example、UCxxx...
                         </p>
-                        <ErrorMessage className="mt-1 text-sm text-red-600" />
+                        <ErrorMessage className="mt-1 text-meta text-danger" />
                       </FormField>
-                      <GenericErrorMessage className="text-sm text-red-600" />
+                      <GenericErrorMessage className="text-meta text-danger" />
                       <div className="flex justify-end gap-2">
                         <DialogClose asChild>
                           <UIButton type="button" variant="secondary">
                             キャンセル
                           </UIButton>
                         </DialogClose>
-                        <SubmitButton type="submit" variant="secondary-blue">
-                          追加
-                        </SubmitButton>
+                        <SubmitButton type="submit">追加</SubmitButton>
                       </div>
                     </Form>
                   </DialogContent>
@@ -158,56 +155,57 @@ export function ChannelManager({
             <div className="space-y-3">
               {channels.map((channel) => (
                 <div
-                  className="flex items-start justify-between rounded-md border border-gray-200 p-4"
+                  className="flex items-start justify-between gap-4 rounded-container border border-border p-4"
                   key={channel.id}
                 >
                   <div className="min-w-0 flex-1">
                     <div className="space-y-2">
                       <div>
-                        <span className="text-xs font-medium text-gray-700">
-                          チャンネル名:
+                        <span className="text-caption font-semibold text-muted">
+                          チャンネル名
                         </span>
-                        <p className="mt-1 text-sm">
+                        <p className="mt-1 text-meta">
                           {channel.name || '未取得'}
                         </p>
-                        <p className="mt-1 text-xs text-gray-500">
+                        <p className="mt-1 text-caption text-muted">
                           YouTube APIから自動更新される名前
                         </p>
                       </div>
                       <div>
-                        <span className="text-xs font-medium text-gray-700">
-                          チャンネルID:
+                        <span className="text-caption font-semibold text-muted">
+                          チャンネルID
                         </span>
-                        <code className="mt-1 block rounded bg-gray-100 px-2 py-1 font-mono text-xs break-all">
+                        <code className="mt-1 block rounded-control bg-muted px-2 py-1 font-mono text-caption break-all">
                           {channel.youtube_channel_id}
                         </code>
                       </div>
                       {channel.youtube_handle && (
                         <div>
-                          <span className="text-xs font-medium text-gray-700">
-                            ハンドル:
+                          <span className="text-caption font-semibold text-muted">
+                            ハンドル
                           </span>
-                          <p className="mt-1 text-xs">
+                          <p className="mt-1 text-caption">
                             {channel.youtube_handle}
                           </p>
                         </div>
                       )}
                       <div>
                         <a
-                          className="inline-flex items-center text-sm text-774-blue-600 hover:text-774-blue-800"
+                          className="inline-flex items-center gap-1 text-meta text-accent hover:underline"
                           href={`https://www.youtube.com/channel/${channel.youtube_channel_id}`}
                           rel="noopener noreferrer"
                           target="_blank"
                         >
                           YouTubeで開く
-                          <ExternalLink className="ml-1 size-3" />
+                          <ExternalLink aria-hidden="true" className="size-3" />
                         </a>
                       </div>
                     </div>
                   </div>
                   {!isDeleted && (
                     <UIButton
-                      className="ml-4"
+                      aria-label="チャンネルを削除"
+                      className="shrink-0 px-2"
                       disabled={deletingChannelId === channel.id}
                       onClick={() => {
                         setRemovalTarget(channel)
@@ -218,16 +216,17 @@ export function ChannelManager({
                       type="button"
                       variant="danger"
                     >
-                      <Trash2 className="size-5" />
+                      <Trash2 aria-hidden="true" className="size-4" />
                     </UIButton>
                   )}
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500">
-              登録されているチャンネルがありません
-            </p>
+            <EmptyState
+              className="py-4"
+              title="登録されているチャンネルがありません"
+            />
           )}
         </CardContent>
       </Card>
@@ -248,8 +247,8 @@ export function ChannelManager({
       >
         {removalTarget && (
           <>
-            <p className="font-medium">{removalTarget.name || '未取得'}</p>
-            <code className="mt-1 block font-mono text-xs break-all">
+            <p className="font-semibold">{removalTarget.name || '未取得'}</p>
+            <code className="mt-1 block font-mono text-caption break-all">
               {removalTarget.youtube_channel_id}
             </code>
           </>

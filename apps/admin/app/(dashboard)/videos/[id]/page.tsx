@@ -3,20 +3,32 @@ import {
   formatDateTimeFromISO,
   formatDuration,
 } from '@shinju-date/temporal-fns'
-import { Card, CardContent, CardHeader } from '@shinju-date/ui'
+import { Button, PageHeader, twMerge } from '@shinju-date/ui'
 import { ChevronLeft, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
+import { type ReactNode, Suspense } from 'react'
 import { DetailCardsSkeleton } from '@/components/skeletons'
 import { PlatformBadge } from '../_components/platform-badge'
 import { VideoKindBadge } from '../_components/video-kind-badge'
 import { VideoStatusBadge } from '../_components/video-status-badge'
 import getVideo from '../_lib/get-video'
-import { VideoActionsButtons } from './_components/video-actions-buttons'
+import {
+  VideoActionsButtons,
+  VideoDeleteButton,
+} from './_components/video-actions-buttons'
+
+/** 詳細ページのパネル */
+const panelClassName = 'rounded-container border border-border bg-surface p-6'
+const panelTitleClassName = 'text-body leading-normal font-semibold'
+
+interface DetailItem {
+  label: string
+  value: ReactNode
+}
 
 interface Props {
   params: Promise<{
@@ -65,34 +77,112 @@ async function CachedVideoDetails({ id }: { id: string }) {
     youtubeVideoId: video.youtube_video?.youtube_video_id,
   })
 
+  const details: DetailItem[] = [
+    { label: 'タイトル', value: video.title },
+    {
+      label: 'プラットフォーム',
+      value: <PlatformBadge platform={video.platform} />,
+    },
+    {
+      label: video.platform === 'twitch' ? 'Twitch動画ID' : 'YouTube動画ID',
+      value: (
+        <code className="rounded-control bg-muted px-2 py-1 font-mono text-caption">
+          {video.platform === 'twitch'
+            ? (video.twitch_video?.twitch_video_id ?? 'N/A')
+            : (video.youtube_video?.youtube_video_id ?? 'N/A')}
+        </code>
+      ),
+    },
+    ...(video.platform === 'twitch' && video.twitch_video?.type
+      ? [{ label: 'Twitch種別', value: video.twitch_video.type }]
+      : []),
+    {
+      label: 'タレント',
+      value: video.talent ? (
+        <Link
+          className="text-accent hover:underline"
+          href={`/talents/${video.talent.id}`}
+        >
+          {video.talent.name}
+        </Link>
+      ) : (
+        <span className="text-muted">タレント不明</span>
+      ),
+    },
+    {
+      label: '再生時間',
+      value: (
+        <span className="tabular-nums">
+          {formatDuration(Temporal.Duration.from(video.duration))}
+        </span>
+      ),
+    },
+    {
+      label: '動画種別',
+      value: <VideoKindBadge videoKind={video.video_kind} />,
+    },
+    {
+      label: 'クリック数（7日間）',
+      value: <span className="tabular-nums">{formatNumber(video.clicks)}</span>,
+    },
+    {
+      label: '公開日時',
+      value: (
+        <time className="tabular-nums" dateTime={video.published_at}>
+          {formatDateTimeFromISO(video.published_at)}
+        </time>
+      ),
+    },
+    {
+      label: '作成日時',
+      value: (
+        <time className="tabular-nums" dateTime={video.created_at}>
+          {formatDateTimeFromISO(video.created_at)}
+        </time>
+      ),
+    },
+    {
+      label: '最終更新日時',
+      value: (
+        <time className="tabular-nums" dateTime={video.updated_at}>
+          {formatDateTimeFromISO(video.updated_at)}
+        </time>
+      ),
+    },
+    ...(video.deleted_at
+      ? [
+          {
+            label: '削除日時',
+            value: (
+              <time className="tabular-nums" dateTime={video.deleted_at}>
+                {formatDateTimeFromISO(video.deleted_at)}
+              </time>
+            ),
+          },
+        ]
+      : []),
+  ]
+
   return (
     <div>
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-bold wrap-break-word">
-              {video.title}
-            </h1>
-            <p className="text-gray-600">動画詳細</p>
-          </div>
-          <VideoActionsButtons video={video} />
-        </div>
-      </div>
+      <PageHeader
+        actions={<VideoActionsButtons video={video} />}
+        description="動画詳細"
+        title={<span className="wrap-break-word">{video.title}</span>}
+      />
 
       {/* Status indicator */}
       {isDeleted && (
-        <div className="mb-6 rounded-md bg-red-50 p-4">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
-                削除された動画
-              </h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>この動画は削除されており、同期できません。</p>
-              </div>
-            </div>
-          </div>
+        <div
+          className="mb-6 rounded-container border border-danger/30 bg-danger/10 p-4 text-danger"
+          role="status"
+        >
+          <p className="text-body leading-normal font-semibold">
+            削除された動画
+          </p>
+          <p className="mt-1 text-meta">
+            この動画は削除されており、同期できません。
+          </p>
         </div>
       )}
 
@@ -100,219 +190,103 @@ async function CachedVideoDetails({ id }: { id: string }) {
         {/* Thumbnail and basic info */}
         <div className="space-y-6">
           {/* Thumbnail */}
-          <Card variant="elevated">
-            <CardHeader>
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                サムネイル
-              </h3>
-            </CardHeader>
-            <CardContent>
-              {video.thumbnail ? (
-                <div className="relative aspect-video w-full">
-                  <Image
-                    alt={video.title}
-                    blurDataURL={video.thumbnail.blur_data_url}
-                    className="object-cover"
-                    fill
-                    placeholder="blur"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    src={`/images/thumbnails/${video.thumbnail.id}`}
-                  />
-                </div>
-              ) : (
-                <div className="flex aspect-video w-full items-center justify-center bg-gray-200 text-gray-500">
-                  No Image
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <section className={panelClassName}>
+            <h2 className={panelTitleClassName}>サムネイル</h2>
+            {video.thumbnail ? (
+              <div className="relative mt-4 aspect-video w-full">
+                <Image
+                  alt={video.title}
+                  blurDataURL={video.thumbnail.blur_data_url}
+                  className="rounded-container object-cover"
+                  fill
+                  placeholder="blur"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  src={`/images/thumbnails/${video.thumbnail.id}`}
+                />
+              </div>
+            ) : (
+              <div className="mt-4 flex aspect-video w-full items-center justify-center rounded-container bg-muted text-meta text-muted">
+                No Image
+              </div>
+            )}
+          </section>
 
           {/* Status */}
-          <Card variant="elevated">
-            <CardHeader>
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                ステータス
-              </h3>
-            </CardHeader>
-            <CardContent>
+          <section className={panelClassName}>
+            <h2 className={panelTitleClassName}>ステータス</h2>
+            <div className="mt-4">
               <VideoStatusBadge video={video} />
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         </div>
 
         {/* Video information */}
-        <Card variant="elevated">
-          <CardHeader>
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              動画情報
-            </h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+        <section className={twMerge(panelClassName, 'p-0')}>
+          <div className="p-6 pb-4">
+            <h2 className={panelTitleClassName}>動画情報</h2>
+            <p className="mt-1 text-meta text-muted">
               現在データベースに保存されている情報
             </p>
-          </CardHeader>
-          <CardContent className="p-0">
-            <dl className="[&>div:nth-of-type(even)]:bg-white [&>div:nth-of-type(odd)]:bg-gray-50">
-              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">タイトル</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  {video.title}
+          </div>
+          <dl className="divide-y divide-border border-t border-border">
+            {details.map(({ label, value }) => (
+              <div
+                className="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4"
+                key={label}
+              >
+                <dt className="text-meta text-muted">{label}</dt>
+                <dd className="mt-1 text-meta wrap-break-word sm:col-span-2 sm:mt-0">
+                  {value}
                 </dd>
               </div>
-              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">
-                  プラットフォーム
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  <PlatformBadge platform={video.platform} />
-                </dd>
-              </div>
-              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">
-                  {video.platform === 'twitch'
-                    ? 'Twitch動画ID'
-                    : 'YouTube動画ID'}
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  <code className="rounded bg-gray-100 px-2 py-1 font-mono text-xs">
-                    {video.platform === 'twitch'
-                      ? (video.twitch_video?.twitch_video_id ?? 'N/A')
-                      : (video.youtube_video?.youtube_video_id ?? 'N/A')}
-                  </code>
-                </dd>
-              </div>
-              {video.platform === 'twitch' && video.twitch_video?.type && (
-                <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">
-                    Twitch種別
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                    {video.twitch_video.type}
-                  </dd>
-                </div>
-              )}
-              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">タレント</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  {video.talent ? (
-                    <Link
-                      className="text-774-blue-600 hover:text-774-blue-800"
-                      href={`/talents/${video.talent.id}`}
-                    >
-                      {video.talent.name}
-                    </Link>
-                  ) : (
-                    <span className="text-gray-400">タレント不明</span>
-                  )}
-                </dd>
-              </div>
-              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">再生時間</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  {formatDuration(Temporal.Duration.from(video.duration))}
-                </dd>
-              </div>
-              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">動画種別</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  <VideoKindBadge videoKind={video.video_kind} />
-                </dd>
-              </div>
-              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">
-                  クリック数（7日間）
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  {formatNumber(video.clicks)}
-                </dd>
-              </div>
-              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">公開日時</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  <time dateTime={video.published_at}>
-                    {formatDateTimeFromISO(video.published_at)}
-                  </time>
-                </dd>
-              </div>
-              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">作成日時</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  <time dateTime={video.created_at}>
-                    {formatDateTimeFromISO(video.created_at)}
-                  </time>
-                </dd>
-              </div>
-              <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">
-                  最終更新日時
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  <time dateTime={video.updated_at}>
-                    {formatDateTimeFromISO(video.updated_at)}
-                  </time>
-                </dd>
-              </div>
-              {isDeleted && (
-                <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">
-                    削除日時
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                    {video.deleted_at ? (
-                      <time dateTime={video.deleted_at}>
-                        {formatDateTimeFromISO(video.deleted_at)}
-                      </time>
-                    ) : (
-                      '-'
-                    )}
-                  </dd>
-                </div>
-              )}
-            </dl>
-          </CardContent>
-        </Card>
+            ))}
+          </dl>
+        </section>
       </div>
 
       {/* External links */}
-      <div className="mt-6">
-        <Card variant="elevated">
-          <CardHeader>
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              外部リンク
-            </h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
-              {video.platform === 'twitch'
-                ? 'Twitch上のオリジナル動画へのリンク'
-                : 'YouTube上のオリジナル動画へのリンク'}
-            </p>
-          </CardHeader>
-          <CardContent>
-            {externalUrl && (
-              <a
-                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
-                href={externalUrl}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                {video.platform === 'twitch' ? 'Twitchで見る' : 'YouTubeで見る'}
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </a>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <section className={twMerge(panelClassName, 'mt-6')}>
+        <h2 className={panelTitleClassName}>外部リンク</h2>
+        <p className="mt-1 text-meta text-muted">
+          {video.platform === 'twitch'
+            ? 'Twitch上のオリジナル動画へのリンク'
+            : 'YouTube上のオリジナル動画へのリンク'}
+        </p>
+        {externalUrl && (
+          <Button asChild className="mt-4 gap-2" variant="secondary">
+            <a href={externalUrl} rel="noopener noreferrer" target="_blank">
+              {video.platform === 'twitch' ? 'Twitchで見る' : 'YouTubeで見る'}
+              <ExternalLink aria-hidden="true" className="size-4" />
+            </a>
+          </Button>
+        )}
+      </section>
+
+      {/* Dangerous operations, kept apart from the ordinary ones above */}
+      {!isDeleted && (
+        <section className={twMerge(panelClassName, 'mt-6 border-danger/30')}>
+          <h2 className={panelTitleClassName}>動画の削除</h2>
+          <p className="mt-1 text-meta text-muted">
+            削除した動画は公開サイトに表示されなくなり、同期もできなくなります。
+          </p>
+          <div className="mt-4">
+            <VideoDeleteButton video={video} />
+          </div>
+        </section>
+      )}
     </div>
   )
 }
 
 export default function VideoDetailPage({ params }: Props) {
   return (
-    <div className="mx-auto max-w-7xl p-4">
-      <div className="mb-6">
+    <div>
+      <div className="mb-4">
         <Link
-          className="inline-flex items-center text-774-blue-600 hover:text-774-blue-800"
+          className="inline-flex items-center rounded-control text-meta text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           href="/videos"
         >
-          <ChevronLeft className="mr-1 h-4 w-4" />
+          <ChevronLeft aria-hidden="true" className="mr-1 size-4" />
           動画一覧に戻る
         </Link>
       </div>

@@ -32,16 +32,16 @@ export function AuditLogTarget({ log }: { log: Log }) {
   const path = getAdminPagePath(log.target_table, log.target_record_id)
 
   const content = (
-    <code className="rounded bg-gray-100 px-1.5 py-1 text-xs font-medium text-gray-800">
+    <code className="rounded-control bg-muted px-1.5 py-0.5 text-caption font-semibold">
       {displayName}
     </code>
   )
 
   if (path) {
     return (
-      <div className="mt-1 pl-2">
-        <span className="text-gray-500">{log.target_table}: </span>
-        <Link className="hover:underline" href={path}>
+      <div className="mt-1 pl-2 text-meta">
+        <span className="text-muted">{log.target_table}: </span>
+        <Link className="text-accent hover:underline" href={path}>
           {content}
         </Link>
       </div>
@@ -49,8 +49,8 @@ export function AuditLogTarget({ log }: { log: Log }) {
   }
 
   return (
-    <div className="mt-1 pl-2">
-      <span className="text-gray-500">{log.target_table}: </span>
+    <div className="mt-1 pl-2 text-meta">
+      <span className="text-muted">{log.target_table}: </span>
       {content}
     </div>
   )

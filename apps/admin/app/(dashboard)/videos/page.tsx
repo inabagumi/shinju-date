@@ -1,8 +1,8 @@
 import { formatNumber } from '@shinju-date/helpers'
+import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
-import { PageHeader } from '@/components/page-header'
 import { TableSkeleton } from '@/components/skeletons'
 import { getTalents } from '../talents/_lib/get-talents'
 import Pagination from './_components/pagination'
@@ -159,38 +159,38 @@ async function VideoCountData({
     sortOrder,
   )
 
-  return <p className="text-gray-600">全 {formatNumber(total)} 件の動画</p>
+  return <span className="tabular-nums">全 {formatNumber(total)} 件の動画</span>
 }
 
 export default function VideosPage({ searchParams }: PageProps<'/'>) {
   return (
-    <div className="mx-auto max-w-7xl p-6">
-      <PageHeader title="動画管理" />
-
-      {/* Video count with Suspense */}
-      <div className="mb-4">
-        <Suspense
-          fallback={
-            <div
-              aria-hidden="true"
-              className="h-5 w-32 animate-pulse rounded bg-gray-200"
-            />
-          }
-        >
-          <VideoCountData searchParams={searchParams} />
-        </Suspense>
-      </div>
+    <div>
+      <PageHeader
+        description={
+          <Suspense
+            fallback={
+              <span
+                aria-hidden="true"
+                className="inline-block h-4 w-32 animate-pulse rounded-control bg-muted align-middle"
+              />
+            }
+          >
+            <VideoCountData searchParams={searchParams} />
+          </Suspense>
+        }
+        title="動画管理"
+      />
 
       {/* Filters with independent Suspense */}
       <Suspense
         fallback={
-          <div
-            aria-hidden="true"
-            className="mb-4 grid min-h-24 animate-pulse gap-4 rounded-lg border border-gray-200 bg-white p-4 sm:grid-cols-3"
-          >
-            <div className="h-10 rounded bg-gray-200" />
-            <div className="h-10 rounded bg-gray-200" />
-            <div className="h-10 rounded bg-gray-200" />
+          <div aria-hidden="true" className="mb-4 animate-pulse space-y-3">
+            <div className="h-16 w-full rounded-control bg-muted sm:max-w-md" />
+            <div className="hidden gap-3 md:flex">
+              <div className="h-16 w-48 rounded-control bg-muted" />
+              <div className="h-16 w-48 rounded-control bg-muted" />
+              <div className="h-16 w-48 rounded-control bg-muted" />
+            </div>
           </div>
         }
       >

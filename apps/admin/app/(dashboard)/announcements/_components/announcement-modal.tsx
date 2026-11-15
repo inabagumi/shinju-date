@@ -2,6 +2,7 @@
 
 import { TIME_ZONE } from '@shinju-date/constants'
 import {
+  Button,
   Dialog,
   DialogClose,
   DialogContent,
@@ -101,16 +102,17 @@ export function AnnouncementModal({
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
-        <button
-          className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90"
-          type="button"
-        >
-          {isEditing ? '編集' : '新しいお知らせを追加'}
-        </button>
+        {isEditing ? (
+          <Button size="sm" variant="secondary">
+            編集
+          </Button>
+        ) : (
+          <Button>新しいお知らせを追加</Button>
+        )}
       </DialogTrigger>
       <DialogPortal>
         <DialogOverlay />
-        <DialogContent className="max-w-[500px] overflow-y-auto">
+        <DialogContent className="max-w-lg overflow-y-auto">
           <DialogTitle>
             {isEditing ? 'お知らせを編集' : '新しいお知らせを追加'}
           </DialogTitle>
@@ -124,31 +126,32 @@ export function AnnouncementModal({
               <input name="id" type="hidden" value={announcement.id} />
             )}
             <FormField name="message">
-              <Label className="mb-2 block font-medium">メッセージ</Label>
+              <Label className="mb-2 block text-meta font-semibold">
+                メッセージ
+              </Label>
               <Textarea
-                className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
                 defaultValue={announcement?.message ?? ''}
                 required
                 rows={3}
               />
-              <ErrorMessage className="mt-1 text-sm text-red-600" />
+              <ErrorMessage className="mt-1 text-meta text-danger" />
             </FormField>
             <FormField name="level">
-              <Label className="mb-2 block font-medium">レベル</Label>
-              <Select
-                className="w-full appearance-none rounded-md border border-gray-300 bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%3e%3cpath%20fill=%27none%27%20stroke=%27%23333%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%272%27%20d=%27m2%205%206%206%206-6%27/%3e%3c/svg%3e')] bg-size-[1em] bg-position-[right_0.5rem_center] bg-no-repeat px-3 py-2 pr-8"
-                defaultValue={announcement?.level ?? 'info'}
-              >
+              <Label className="mb-2 block text-meta font-semibold">
+                レベル
+              </Label>
+              <Select defaultValue={announcement?.level ?? 'info'}>
                 <option value="info">情報 (青)</option>
                 <option value="warning">警告 (黄)</option>
                 <option value="alert">重要 (赤)</option>
               </Select>
-              <ErrorMessage className="mt-1 text-sm text-red-600" />
+              <ErrorMessage className="mt-1 text-meta text-danger" />
             </FormField>
             <FormField name="start_at_local">
-              <Label className="mb-2 block font-medium">開始日時 (JST)</Label>
+              <Label className="mb-2 block text-meta font-semibold">
+                開始日時 (JST)
+              </Label>
               <Input
-                className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
                 defaultValue={defaultStartAt
                   .toPlainDateTime()
                   .toString({ smallestUnit: 'minute' })}
@@ -156,12 +159,13 @@ export function AnnouncementModal({
                 step={60 * 30}
                 type="datetime-local"
               />
-              <ErrorMessage className="mt-1 text-sm text-red-600" />
+              <ErrorMessage className="mt-1 text-meta text-danger" />
             </FormField>
             <FormField name="end_at_local">
-              <Label className="mb-2 block font-medium">終了日時 (JST)</Label>
+              <Label className="mb-2 block text-meta font-semibold">
+                終了日時 (JST)
+              </Label>
               <Input
-                className="w-full rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none"
                 defaultValue={defaultEndAt
                   .toPlainDateTime()
                   .toString({ smallestUnit: 'minute' })}
@@ -169,35 +173,27 @@ export function AnnouncementModal({
                 step={60 * 30}
                 type="datetime-local"
               />
-              <ErrorMessage className="mt-1 text-sm text-red-600" />
+              <ErrorMessage className="mt-1 text-meta text-danger" />
             </FormField>
             <FormField name="enabled">
               <Label className="flex items-center gap-2">
                 <input
-                  className="h-4 w-4"
+                  className="size-4 accent-accent"
                   defaultChecked={announcement?.enabled ?? false}
                   name="enabled"
                   type="checkbox"
                   value="true"
                 />
-                <span className="font-medium">有効化</span>
+                <span className="text-meta font-semibold">有効化</span>
               </Label>
-              <ErrorMessage className="mt-1 text-sm text-red-600" />
+              <ErrorMessage className="mt-1 text-meta text-danger" />
             </FormField>
-            <GenericErrorMessage className="text-sm text-red-600" />
+            <GenericErrorMessage className="rounded-control bg-danger/10 p-3 text-meta text-danger" />
             <div className="flex justify-end gap-2 pt-2">
               <DialogClose asChild>
-                <button
-                  className="rounded-md border border-774-blue-300 px-4 py-2 hover:bg-gray-50"
-                  type="button"
-                >
-                  キャンセル
-                </button>
+                <Button variant="secondary">キャンセル</Button>
               </DialogClose>
-              <SubmitButton
-                className="rounded-md bg-secondary-blue px-4 py-2 text-secondary-blue-foreground hover:opacity-90 disabled:opacity-50"
-                type="submit"
-              >
+              <SubmitButton type="submit">
                 {isEditing ? '更新' : '追加'}
               </SubmitButton>
             </div>

@@ -2,6 +2,19 @@
 
 import type { Tables } from '@shinju-date/database'
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
+import {
+  EmptyState,
+  FilterBar,
+  Input,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@shinju-date/ui'
+import { ArrowDown, ArrowUp, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { TalentActions } from './talent-actions'
@@ -81,20 +94,26 @@ export function TalentsList({ talents }: TalentsListProps) {
     setSortOrder((current) => (current === 'desc' ? 'asc' : 'desc'))
   }
 
+  const isFiltered = searchQuery.trim() !== '' || statusFilter !== 'not_deleted'
+  const activeFilterCount =
+    (searchQuery.trim() !== '' ? 1 : 0) +
+    (statusFilter !== 'not_deleted' ? 1 : 0)
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex w-full flex-col gap-3 sm:max-w-2xl sm:flex-row">
-          <input
-            className="w-full rounded-md border border-774-blue-300 px-4 py-2 focus:border-secondary-blue focus:outline-none"
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <FilterBar activeCount={activeFilterCount} className="min-w-0 grow">
+          <Input
+            aria-label="タレント名またはIDで検索"
+            className="md:max-w-sm"
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="タレント名またはIDで検索..."
-            type="text"
+            type="search"
             value={searchQuery}
           />
-          <select
+          <Select
             aria-label="状態で絞り込み"
-            className="rounded-md border border-774-blue-300 px-3 py-2 focus:border-secondary-blue focus:outline-none sm:w-48"
+            className="md:w-48"
             onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
             value={statusFilter}
           >
@@ -103,106 +122,98 @@ export function TalentsList({ talents }: TalentsListProps) {
                 {option.label}
               </option>
             ))}
-          </select>
-        </div>
+          </Select>
+        </FilterBar>
         <TalentModal />
       </div>
 
       {filteredAndSortedTalents.length === 0 ? (
-        <p className="py-8 text-center text-gray-500">
-          {searchQuery || statusFilter !== 'not_deleted'
-            ? '検索結果がありません。'
-            : 'タレントがいません。'}
-        </p>
+        <EmptyState
+          icon={<Users />}
+          title={isFiltered ? '検索結果がありません。' : 'タレントがいません。'}
+        />
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-774-blue-300">
-          <table className="w-full min-w-3xl">
-            <thead className="bg-774-blue-50">
-              <tr>
-                <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
-                  タレント名
-                </th>
-                <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
-                  状態
-                </th>
-                <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
-                  作成日時
-                </th>
-                <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
-                  <button
-                    className="flex items-center gap-1 hover:text-774-blue-600"
-                    onClick={toggleSortOrder}
-                    type="button"
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead>タレント名</TableHead>
+              <TableHead>状態</TableHead>
+              <TableHead>作成日時</TableHead>
+              <TableHead
+                aria-sort={sortOrder === 'desc' ? 'descending' : 'ascending'}
+              >
+                <button
+                  className="inline-flex items-center gap-1 rounded-control hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  onClick={toggleSortOrder}
+                  type="button"
+                >
+                  最終更新日時
+                  {sortOrder === 'desc' ? (
+                    <ArrowDown aria-hidden="true" className="size-3" />
+                  ) : (
+                    <ArrowUp aria-hidden="true" className="size-3" />
+                  )}
+                </button>
+              </TableHead>
+              <TableHead className="text-right">
+                <span className="sr-only">操作</span>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredAndSortedTalents.map((talent) => (
+              <TableRow key={talent.id}>
+                <TableCell className="min-w-48 whitespace-normal">
+                  <Link
+                    className="font-semibold text-accent hover:underline"
+                    href={`/talents/${talent.id}`}
                   >
-                    最終更新日時
-                    <span className="text-xs">
-                      {sortOrder === 'desc' ? '↓' : '↑'}
-                    </span>
-                  </button>
-                </th>
-                <th className="w-40 px-4 py-3 text-right font-semibold whitespace-nowrap">
-                  操作
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-774-blue-200 bg-white">
-              {filteredAndSortedTalents.map((talent) => (
-                <tr className="hover:bg-774-blue-50" key={talent.id}>
-                  <td className="px-4 py-3">
-                    <div>
-                      <Link
-                        className="text-774-blue-600 hover:text-774-blue-800"
-                        href={`/talents/${talent.id}`}
-                      >
-                        {talent.name}
-                      </Link>
-                      {talent.youtube_channels &&
-                        talent.youtube_channels.length > 0 && (
-                          <div className="mt-1 space-y-1">
-                            {talent.youtube_channels.map((channel) => (
-                              <div key={channel.id}>
-                                {channel.name &&
-                                  channel.name !== talent.name && (
-                                    <div className="text-xs text-gray-600">
-                                      YouTube: {channel.name}
-                                    </div>
-                                  )}
-                                <div className="font-mono text-xs text-gray-500">
-                                  {channel.youtube_channel_id}
-                                </div>
+                    {talent.name}
+                  </Link>
+                  {talent.youtube_channels &&
+                    talent.youtube_channels.length > 0 && (
+                      <div className="mt-1 space-y-1">
+                        {talent.youtube_channels.map((channel) => (
+                          <div key={channel.id}>
+                            {channel.name && channel.name !== talent.name && (
+                              <div className="text-caption text-muted">
+                                YouTube: {channel.name}
                               </div>
-                            ))}
+                            )}
+                            <div className="font-mono text-caption break-all text-muted">
+                              {channel.youtube_channel_id}
+                            </div>
                           </div>
-                        )}
-                      {(!talent.youtube_channels ||
-                        talent.youtube_channels.length === 0) && (
-                        <div className="font-mono text-xs text-gray-500">
-                          {talent.id}
-                        </div>
-                      )}
+                        ))}
+                      </div>
+                    )}
+                  {(!talent.youtube_channels ||
+                    talent.youtube_channels.length === 0) && (
+                    <div className="font-mono text-caption break-all text-muted">
+                      {talent.id}
                     </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <TalentStatusBadge talent={talent} />
-                  </td>
-                  <td className="px-4 py-3 text-sm whitespace-nowrap text-gray-600">
-                    <time dateTime={talent.created_at}>
-                      {formatDateTimeFromISO(talent.created_at)}
-                    </time>
-                  </td>
-                  <td className="px-4 py-3 text-sm whitespace-nowrap text-gray-600">
-                    <time dateTime={talent.updated_at}>
-                      {formatDateTimeFromISO(talent.updated_at)}
-                    </time>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <TalentActions talent={talent} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <TalentStatusBadge talent={talent} />
+                </TableCell>
+                <TableCell className="text-muted tabular-nums">
+                  <time dateTime={talent.created_at}>
+                    {formatDateTimeFromISO(talent.created_at)}
+                  </time>
+                </TableCell>
+                <TableCell className="text-muted tabular-nums">
+                  <time dateTime={talent.updated_at}>
+                    {formatDateTimeFromISO(talent.updated_at)}
+                  </time>
+                </TableCell>
+                <TableCell className="w-12 text-right">
+                  <TalentActions talent={talent} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
     </div>
   )
