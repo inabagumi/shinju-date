@@ -1,7 +1,10 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, test } from 'vitest'
 import type { ScheduleVideo } from '@/lib/fetchers'
-import ScheduleItem, { getScheduleVideoUrl } from '../schedule-item'
+import ScheduleItem, {
+  getScheduleVideoUrl,
+  getTitleLines,
+} from '../schedule-item'
 
 const profileImage = {
   blur_data_url: 'data:image/webp;base64,AAAA',
@@ -67,8 +70,9 @@ describe('ScheduleItem', () => {
 
     expect(item).toHaveTextContent('21:00')
     // Without the labels in 【】
-    expect(item).toHaveTextContent('アニソン縛り歌ってみた！')
-    expect(item).not.toHaveTextContent('歌枠')
+    expect(
+      screen.getByTitle('【歌枠】アニソン縛り歌ってみた！').textContent,
+    ).toBe('アニソン縛り歌ってみた！')
     // The name of the talent, not that of the channel
     expect(item).toHaveTextContent('朝霧ミオ')
     expect(item).not.toHaveTextContent('チャンネル名')
@@ -84,7 +88,7 @@ describe('ScheduleItem', () => {
     )
   })
 
-  test('should show neither the credits nor the trailing hashtags', () => {
+  test('should show neither the credits nor the trailing hashtags in the title', () => {
     const title =
       '【歌枠】今日も歌います #歌枠リレー【朝霧ミオ / ななしいんく】'
 
@@ -93,8 +97,59 @@ describe('ScheduleItem', () => {
     const titleElement = screen.getByTitle(title)
 
     expect(titleElement.textContent).toBe('今日も歌います')
-    expect(getItem()).not.toHaveTextContent('#歌枠リレー')
     expect(getItem()).not.toHaveTextContent('ななしいんく')
+  })
+
+  test('should show the first label between the first line and the title', () => {
+    render(
+      <ScheduleItem
+        value={createVideo({ title: '【Minecraft】【雑談】夜の肝試し' })}
+      />,
+    )
+
+    const tags = screen.getByTestId('schedule-item-tags')
+
+    expect(tags.textContent).toBe('Minecraft')
+    expect(tags).toHaveClass('truncate', 'text-caption', 'text-muted')
+    expect(tags.previousElementSibling).toHaveTextContent('21:00')
+    expect(tags.nextElementSibling).toBe(
+      screen.getByTitle('【Minecraft】【雑談】夜の肝試し'),
+    )
+    // The whole item is a link, so the labels are not links
+    expect(tags.querySelector('a')).toBeNull()
+  })
+
+  test('should show up to three hashtags after the label', () => {
+    render(
+      <ScheduleItem
+        value={createVideo({
+          title: '【Minecraft】夜の肝試し #マイクラ肝試し2026 #a #b #c',
+        })}
+      />,
+    )
+
+    expect(screen.getByTestId('schedule-item-tags').textContent).toBe(
+      'Minecraft #マイクラ肝試し2026 #a #b',
+    )
+  })
+
+  test('should show the hashtags without a label', () => {
+    render(
+      <ScheduleItem
+        value={createVideo({ title: '夜の肝試し #マイクラ肝試し2026' })}
+      />,
+    )
+
+    expect(screen.getByTestId('schedule-item-tags').textContent).toBe(
+      '#マイクラ肝試し2026',
+    )
+  })
+
+  test('should not show the line without labels and hashtags', () => {
+    render(<ScheduleItem value={createVideo({ title: '今日も歌います' })} />)
+
+    expect(screen.queryByTestId('schedule-item-tags')).toBeNull()
+    expect(getItem().textContent).toBe('21:00朝霧ミオ今日も歌います')
   })
 
   test('should link like a video card', () => {
@@ -221,15 +276,39 @@ describe('ScheduleItem (on a wide screen)', () => {
   test('should keep the same order of the contents when it is narrow', () => {
     render(<ScheduleItem value={createVideo({ status: 'LIVE' })} />)
 
-    // The start, the talent and the title are always there, so nothing moves
-    // when the item is expanded
+    // The start and the talent are always there, so the first line does not
+    // move when the item is expanded
     expect(getItem().textContent).toBe(
-      '21:00配信中朝霧ミオアニソン縛り歌ってみた！',
+      '21:00配信中朝霧ミオ歌枠アニソン縛り歌ってみた！',
     )
     expect(screen.getByText('アニソン縛り歌ってみた！')).toHaveClass(
       'line-clamp-2',
       'lg:group-hover/item:line-clamp-none',
     )
+  })
+
+  test('should show the labels and hashtags only when expanded', () => {
+    render(<ScheduleItem titleLines={1} value={createVideo()} />)
+
+    // Shown, the line would leave no room for the title in an item of an hour
+    expect(screen.getByTestId('schedule-item-tags')).toHaveClass(
+      'lg:hidden',
+      'lg:group-hover/item:block',
+      'lg:group-focus-within/item:block',
+    )
+  })
+})
+
+describe('getTitleLines', () => {
+  test.each([
+    [30, 0],
+    [60, 1],
+    [90, 2],
+    [120, 4],
+  ])('should fit the title of %i minutes in %i lines', (minutes, lines) => {
+    // The line of the labels and hashtags is not shown unless the item is
+    // expanded, so it takes no room from the title
+    expect(getTitleLines(minutes)).toBe(lines)
   })
 })
 
