@@ -26,6 +26,8 @@ const TRAILING_RUN = new RegExp(
   'u',
 )
 const HASHTAG_ONLY = new RegExp(`^[#＃](${TAG_NAME}+)$`, 'u')
+// 数字だけのハッシュタグ（`#11` などの回数の表記）しかない本文
+const NUMBER_HASHTAGS_ONLY = new RegExp(`^(?:[#＃]\\p{N}+${SPACE}*)+$`, 'u')
 const SPACES = new RegExp(`${SPACE}+`, 'gu')
 const SEGMENT_SEPARATOR = /[/／￤┋┊|｜]/
 const TRAILING_SEPARATORS = /[\s\-–—/／|｜]+$/
@@ -59,6 +61,8 @@ function toCreditKey(value: string): string {
  *   名前を含む部分とタレントの名前と一致する部分（出演者の表記）は捨てる
  * - ハッシュタグは、タイトルの末尾に並ぶものだけを切り出す。先頭や文の途中の
  *   ものと、数字だけのもの（`#11` などの回数の表記）は本文に残す
+ * - 【】の外がハッシュタグだけのとき（`#Minecraft #11`）は、切り出すと本文に
+ *   回数の表記しか残らないので、切り出さずにそのまま本文にする
  * - 本文が空になったときは、先頭のラベルを本文にする。ラベルもなければ、元の
  *   タイトルを本文にする
  */
@@ -80,6 +84,8 @@ export function parseVideoTitle(
     return ' '
   })
 
+  const textWithHashtags = text
+
   // 末尾に並ぶハッシュタグだけを切り出す。数字だけのもの（`#11` などの
   // 回数の表記）は残す
   text = text.replace(TRAILING_RUN, (run) =>
@@ -94,6 +100,13 @@ export function parseVideoTitle(
     }),
   )
   text = text.replace(SPACES, ' ').trim()
+
+  // 【】の外がハッシュタグだけで、切り出すと回数の表記しか残らないものは、
+  // 切り出さずにそのまま本文にする
+  if (trailingTags.length > 0 && NUMBER_HASHTAGS_ONLY.test(text)) {
+    text = textWithHashtags.replace(SPACES, ' ').trim()
+    trailingTags.length = 0
+  }
 
   // ハッシュタグの前に置かれていた区切り（`タイトル - #タグ` の `-`）を除く
   if (trailingTags.length > 0) {

@@ -253,6 +253,26 @@ describe('parseVideoTitle', () => {
     })
   })
 
+  test.each([
+    ['#Minecraft #11', { hashtags: [], labels: [], text: '#Minecraft #11' }],
+    [
+      '＃Minecraft  ＃11 ＃12',
+      { hashtags: [], labels: [], text: '＃Minecraft ＃11 ＃12' },
+    ],
+    [
+      '【雑談】#Minecraft #11【柚原いづみ / ななしいんく】',
+      { hashtags: [], labels: ['雑談'], text: '#Minecraft #11' },
+    ],
+    ['#Minecraft #ARK', { hashtags: [], labels: [], text: '#Minecraft #ARK' }],
+  ])('should keep %s made only of hashtags in the text', (title, expected) => {
+    expect(
+      parseVideoTitle(title, {
+        creditKeywords: [TALENT_AFFILIATION_NAME],
+        creditNames: ['柚原いづみ'],
+      }),
+    ).toEqual(expected)
+  })
+
   test('should not treat `#` after a letter as a hashtag', () => {
     expect(parseVideoTitle('C# で作るゲーム C#')).toEqual({
       hashtags: [],
