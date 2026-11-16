@@ -34,17 +34,22 @@ cp .env.local.sample .env.local
 
 ### 必要な環境変数
 
-- `NEXT_PUBLIC_BASE_URL`: アプリケーションのベースURL（例: `http://localhost:4000` または本番環境のURL）
+環境変数は `lib/env.ts` で検証します。必須の変数がないと、起動したときに、足りない変数の名前を並べたエラーで止まります。
+
 - `NEXT_PUBLIC_SUPABASE_URL`: Supabase プロジェクトのURL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase の匿名キー
 - `UPSTASH_REDIS_REST_TOKEN`: Upstash Redis のRESTトークン
 - `UPSTASH_REDIS_REST_URL`: Upstash Redis のREST URL
 - `SUPABASE_SERVICE_ROLE_KEY`: Supabase のサービスロールキー（RLS を迂回する処理で使う）
 
-任意の環境変数:
+`ENABLE_MSW=true` でなければ必須の環境変数:
 
 - `GOOGLE_API_KEY`: YouTube Data API のキー（YouTube のチャンネルの同期）
 - `TWITCH_CLIENT_ID` / `TWITCH_CLIENT_SECRET`: Twitch のユーザーの登録と同期
+
+任意の環境変数:
+
+- `NEXT_PUBLIC_BASE_URL`: アプリケーションのベースURL（ないときは `http://localhost:4000`）
 - `REVALIDATE_URL` / `REVALIDATE_SECRET_TOKEN`: 公開サイトのキャッシュの再検証
 
 ## MSW（Mock Service Worker）

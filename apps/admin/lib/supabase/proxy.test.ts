@@ -13,6 +13,17 @@ import {
 } from 'vitest'
 import { updateSession } from './proxy'
 
+const { serverEnv } = vi.hoisted(() => ({
+  serverEnv: { ENABLE_MSW: true, MSW_SUPABASE_AUTHENTICATED: false },
+}))
+
+// `NEXT_PUBLIC_SUPABASE_URL` and the anonymous key come from `test.env` of
+// `vitest.config.ts`.
+vi.mock('@/lib/env', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/env')>()),
+  serverEnv,
+}))
+
 /**
  * MSW のモックに対して `updateSession()` を実行し、
  * `MSW_SUPABASE_AUTHENTICATED` の設定が反映されることを確認する。
@@ -24,7 +35,6 @@ describe('updateSession with MSW', () => {
 
   afterEach(() => {
     server.resetHandlers()
-    vi.unstubAllEnvs()
   })
 
   afterAll(() => {
@@ -32,10 +42,7 @@ describe('updateSession with MSW', () => {
   })
 
   function stubEnv(authenticated: boolean) {
-    vi.stubEnv('ENABLE_MSW', 'true')
-    vi.stubEnv('MSW_SUPABASE_AUTHENTICATED', authenticated ? 'true' : '')
-    vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'fake')
-    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://fake.supabase.test')
+    serverEnv.MSW_SUPABASE_AUTHENTICATED = authenticated
   }
 
   it('lets requests without cookies through when MSW_SUPABASE_AUTHENTICATED is true', async () => {
