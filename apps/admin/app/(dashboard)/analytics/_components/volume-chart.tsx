@@ -12,7 +12,12 @@ import {
 } from './volume-chart-ui'
 
 interface VolumeChartKindDefinition {
-  /** 期間（`YYYY-MM-DD`）の日ごとの件数を取る */
+  /**
+   * 期間（`YYYY-MM-DD`）の日ごとの件数を取る
+   *
+   * 取得関数の行の型（`DailyClickVolume` など）は `interface` で、暗黙のインデックスシグネチャを持たないため、
+   * スプレッドでオブジェクトリテラルの型に写してから返す
+   */
   fetchData: (startDate: string, endDate: string) => Promise<VolumeChartDatum[]>
   series: ChartSeries[]
   /** 合計を出す系列のキーと、その見出し */
@@ -28,13 +33,21 @@ interface VolumeChartKindDefinition {
  */
 const VOLUME_CHART_KINDS = {
   click: {
-    fetchData: (startDate, endDate) => getClickVolume(7, startDate, endDate),
+    fetchData: async (startDate, endDate) => {
+      const days = await getClickVolume(7, startDate, endDate)
+
+      return days.map((day) => ({ ...day }))
+    },
     series: [{ className: 'text-accent', key: 'clicks', label: 'クリック数' }],
     total: { key: 'clicks', label: '総クリック数' },
     variant: 'bar',
   },
   search: {
-    fetchData: (startDate, endDate) => getSearchVolume(7, startDate, endDate),
+    fetchData: async (startDate, endDate) => {
+      const days = await getSearchVolume(7, startDate, endDate)
+
+      return days.map((day) => ({ ...day }))
+    },
     series: [{ className: 'text-accent', key: 'count', label: '検索数' }],
     total: { key: 'count', label: '総検索数' },
     variant: 'area',
