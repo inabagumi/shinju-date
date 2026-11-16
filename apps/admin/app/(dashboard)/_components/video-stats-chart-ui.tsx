@@ -10,6 +10,12 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import {
+  CHART_AXIS_TICK,
+  CHART_COLORS,
+  CHART_TOOLTIP_CONTENT_STYLE,
+  CHART_TOOLTIP_LABEL_STYLE,
+} from '../_lib/chart-colors'
 
 interface VideoStatsChartProps {
   data: Array<{
@@ -33,29 +39,24 @@ export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
     <div className="h-80 w-full">
       <ResponsiveContainer height="100%" width="100%">
         <AreaChart data={data}>
-          <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" />
+          <CartesianGrid stroke={CHART_COLORS.grid} strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
-            tick={{ fill: 'var(--text-color-muted)', fontSize: 12 }}
-            tickLine={{ stroke: 'var(--color-border)' }}
+            tick={CHART_AXIS_TICK}
+            tickLine={{ stroke: CHART_COLORS.grid }}
           />
           <YAxis
             domain={['auto', 'auto']}
-            tick={{ fill: 'var(--text-color-muted)', fontSize: 12 }}
-            tickLine={{ stroke: 'var(--color-border)' }}
+            tick={CHART_AXIS_TICK}
+            tickLine={{ stroke: CHART_COLORS.grid }}
           />
           <Tooltip
-            contentStyle={{
-              backgroundColor: 'var(--color-surface)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-container)',
-              color: 'var(--color-foreground)',
-            }}
+            contentStyle={CHART_TOOLTIP_CONTENT_STYLE}
             formatter={(value, name) => [
               `${value ?? 0} 本`,
               LABEL_MAP[String(name ?? '')] || String(name ?? ''),
             ]}
-            labelStyle={{ color: 'var(--color-foreground)', fontWeight: 600 }}
+            labelStyle={CHART_TOOLTIP_LABEL_STYLE}
           />
           <Legend
             formatter={(value) => LABEL_MAP[String(value)] || String(value)}
@@ -64,25 +65,25 @@ export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
           />
           <Area
             dataKey="visibleVideos"
-            fill="var(--color-success)"
+            fill={CHART_COLORS.success}
             fillOpacity={0.15}
             stackId="visible"
-            stroke="var(--color-success)"
+            stroke={CHART_COLORS.success}
             type="monotone"
           />
           <Area
             dataKey="scheduledVideos"
-            fill="var(--color-accent)"
+            fill={CHART_COLORS.accent}
             fillOpacity={0.15}
             stackId="visible"
-            stroke="var(--color-accent)"
+            stroke={CHART_COLORS.accent}
             type="monotone"
           />
           <Area
             dataKey="hiddenVideos"
-            fill="var(--color-warning)"
+            fill={CHART_COLORS.warning}
             fillOpacity={0.15}
-            stroke="var(--color-warning)"
+            stroke={CHART_COLORS.warning}
             type="monotone"
           />
         </AreaChart>

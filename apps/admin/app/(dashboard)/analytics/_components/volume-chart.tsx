@@ -1,0 +1,92 @@
+import { formatNumber } from '@shinju-date/helpers'
+import { StatTile } from '@shinju-date/ui'
+import { CHART_COLORS } from '../../_lib/chart-colors'
+import { formatDateLabel } from '../_lib/format-date'
+import type { AnalyticsSearchParams } from '../_lib/search-params-schema'
+import { getClickVolume } from '../click/_lib/get-click-volume'
+import { getSearchVolume } from '../search/_lib/get-search-volume'
+import {
+  type VolumeChartDatum,
+  type VolumeChartSeries,
+  VolumeChartUI,
+  type VolumeChartVariant,
+} from './volume-chart-ui'
+
+interface VolumeChartKindDefinition {
+  /** 期間（`YYYY-MM-DD`）の日ごとの件数を取る */
+  fetchData: (startDate: string, endDate: string) => Promise<VolumeChartDatum[]>
+  series: VolumeChartSeries[]
+  /** 合計を出す系列のキーと、その見出し */
+  total: {
+    key: string
+    label: string
+  }
+  variant: VolumeChartVariant
+}
+
+/**
+ * グラフの種類ごとの違い（取得関数、見出し、系列の定義）
+ */
+const VOLUME_CHART_KINDS = {
+  click: {
+    fetchData: (startDate, endDate) => getClickVolume(7, startDate, endDate),
+    series: [
+      { color: CHART_COLORS.accent, key: 'clicks', label: 'クリック数' },
+    ],
+    total: { key: 'clicks', label: '総クリック数' },
+    variant: 'bar',
+  },
+  search: {
+    fetchData: (startDate, endDate) => getSearchVolume(7, startDate, endDate),
+    series: [{ color: CHART_COLORS.accent, key: 'count', label: '検索数' }],
+    total: { key: 'count', label: '総検索数' },
+    variant: 'area',
+  },
+} satisfies Record<string, VolumeChartKindDefinition>
+
+export type VolumeChartKind = keyof typeof VOLUME_CHART_KINDS
+
+interface VolumeChartProps {
+  kind: VolumeChartKind
+  searchParams: Promise<AnalyticsSearchParams>
+}
+
+function sumBy(data: VolumeChartDatum[], key: string): number {
+  return data.reduce((sum, day) => {
+    const value = day[key]
+    return sum + (typeof value === 'number' ? value : 0)
+  }, 0)
+}
+
+/**
+ * 日ごとの件数（クリック数・検索数）の合計とグラフを表示する
+ */
+export async function VolumeChart({ kind, searchParams }: VolumeChartProps) {
+  const definition: VolumeChartKindDefinition = VOLUME_CHART_KINDS[kind]
+  const { dateRange, selectedDate } = await searchParams
+
+  const data = await definition.fetchData(
+    dateRange.startDate,
+    dateRange.endDate,
+  )
+
+  return (
+    <>
+      <StatTile
+        className="mb-4 sm:max-w-xs"
+        label={definition.total.label}
+        value={formatNumber(sumBy(data, definition.total.key))}
+      />
+      <VolumeChartUI
+        data={data}
+        series={definition.series}
+        variant={definition.variant}
+      />
+      {selectedDate && (
+        <p className="mt-2 text-center text-meta text-muted">
+          選択された日付: {formatDateLabel(selectedDate)}
+        </p>
+      )}
+    </>
+  )
+}
