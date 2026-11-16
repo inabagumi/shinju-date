@@ -26,11 +26,5 @@ export function DateRangePickerClient({ searchParams }: Props) {
     router.replace(`${pathname}?${queryString}`)
   }
 
-  return (
-    <DateRangePicker
-      onChange={handleDateRangeChange}
-      showComparison={true}
-      value={dateRange}
-    />
-  )
+  return <DateRangePicker onChange={handleDateRangeChange} value={dateRange} />
 }
