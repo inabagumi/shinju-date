@@ -38,12 +38,14 @@ export async function getSummaryStats(
     })
   }
 
-  // Get visible video count (public: visible + ENDED or LIVE videos that existed during the target day)
+  // Get visible video count (public: visible + ENDED or LIVE or PUBLISHED
+  // videos that existed during the target day). Keep the statuses the same as
+  // the current count in admin, which subtracts this snapshot from it.
   const { count: visibleVideos, error: visibleError } = await supabaseClient
     .from('videos')
     .select('*', { count: 'exact', head: true })
     .eq('visible', true)
-    .in('status', ['ENDED', 'LIVE'])
+    .in('status', ['ENDED', 'LIVE', 'PUBLISHED'])
     .lt('created_at', targetDayEnd)
     .or(`deleted_at.is.null,deleted_at.gte.${targetDayEnd}`)
 
@@ -139,9 +141,10 @@ export async function getAnalyticsSummary(
     `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${dateKey}`,
   )
 
-  // Get count of unique popular keywords
+  // Get count of unique popular keywords (all-time ranking written by the
+  // search analytics of web)
   const totalPopularKeywords = await redisClient.zcard(
-    REDIS_KEYS.SEARCH_POPULAR,
+    REDIS_KEYS.SEARCH_POPULAR_ALL_TIME,
   )
 
   // Get target date's click volume

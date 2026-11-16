@@ -29,7 +29,6 @@
 #### レガシーキー
 
 - `recommendation_queries` - 旧来のオススメクエリキー（今後は使用しない）
-- `search:popular` - 旧来の人気検索キー（互換性のため継続）
 
 ### コンポーネント
 
@@ -39,7 +38,6 @@
 
 ```typescript
 // 正規化されたクエリで以下のキーを更新
-- search:popular (ZINCRBY +1)
 - search:popular:daily:{today} (ZINCRBY +1, TTL: 7日)
 - search:popular:weekly:{monday} (ZINCRBY +1, TTL: 35日)
 - search:popular:all_time (ZINCRBY +1)

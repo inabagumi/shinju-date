@@ -125,7 +125,11 @@ describe('getSummaryStats', () => {
 
     const visibleQuery = getFromMockResult(mockSupabaseClient, 1)
     expect(visibleQuery.eq).toHaveBeenCalledWith('visible', true)
-    expect(visibleQuery.in).toHaveBeenCalledWith('status', ['ENDED', 'LIVE'])
+    expect(visibleQuery.in).toHaveBeenCalledWith('status', [
+      'ENDED',
+      'LIVE',
+      'PUBLISHED',
+    ])
     expect(visibleQuery.lt).toHaveBeenCalledWith('created_at', targetDayEnd)
     expect(visibleQuery.or).toHaveBeenCalledWith(
       `deleted_at.is.null,deleted_at.gte.${targetDayEnd}`,
@@ -266,6 +270,129 @@ describe('getSummaryStats', () => {
   })
 })
 
+interface VideoRow {
+  created_at: string
+  deleted_at: string | null
+  status: 'ENDED' | 'LIVE' | 'PUBLISHED' | 'UPCOMING'
+  visible: boolean
+}
+
+type Row = Record<string, unknown>
+type Filter = (row: Row) => boolean
+
+// Compares values the way PostgreSQL compares these columns: the timestamps
+// are ISO 8601 strings in UTC, so the string order is the time order
+function compare(value: unknown, operator: string, operand: string): boolean {
+  if (operator === 'is' && operand === 'null') return value === null
+  if (typeof value !== 'string') return false
+  if (operator === 'gte') return value >= operand
+  if (operator === 'lt') return value < operand
+  throw new Error(`Unsupported operator: ${operator}`)
+}
+
+/**
+ * A Supabase client that counts the rows of in-memory tables with the filters
+ * `getSummaryStats` uses, so that the tests check the counts themselves
+ */
+function createTableClient(
+  tables: Record<string, readonly object[]>,
+): SupabaseClient {
+  return {
+    from(table: string) {
+      const filters: Filter[] = []
+      const builder = {
+        eq(column: string, value: unknown) {
+          filters.push((row) => row[column] === value)
+          return builder
+        },
+        in(column: string, values: unknown[]) {
+          filters.push((row) => values.includes(row[column]))
+          return builder
+        },
+        lt(column: string, value: string) {
+          filters.push((row) => compare(row[column], 'lt', value))
+          return builder
+        },
+        not(column: string, operator: string, value: unknown) {
+          if (operator !== 'is' || value !== null) {
+            throw new Error(`Unsupported not(): ${operator}`)
+          }
+          filters.push((row) => row[column] !== null)
+          return builder
+        },
+        or(expression: string) {
+          const conditions = expression.split(',').map((condition) => {
+            const [column = '', operator = '', ...rest] = condition.split('.')
+            return (row: Row) => compare(row[column], operator, rest.join('.'))
+          })
+          filters.push((row) => conditions.some((condition) => condition(row)))
+          return builder
+        },
+        select() {
+          return builder
+        },
+        // biome-ignore lint/suspicious/noThenProperty: Supabase query builders are thenable
+        then(resolve: (result: { count: number; error: null }) => unknown) {
+          const rows = (tables[table] ?? []) as Row[]
+          const count = rows.filter((row) =>
+            filters.every((filter) => filter(row)),
+          ).length
+          return Promise.resolve({ count, error: null }).then(resolve)
+        },
+      }
+      return builder
+    },
+  } as unknown as SupabaseClient
+}
+
+describe('getSummaryStats with video rows', () => {
+  const targetDayEnd = '2025-11-13T15:00:00Z'
+  const createdAt = '2025-11-01T00:00:00Z'
+
+  function video(
+    status: VideoRow['status'],
+    overrides: Partial<VideoRow> = {},
+  ): VideoRow {
+    return {
+      created_at: createdAt,
+      deleted_at: null,
+      status,
+      visible: true,
+      ...overrides,
+    }
+  }
+
+  const videos: VideoRow[] = [
+    video('PUBLISHED'),
+    video('PUBLISHED'),
+    video('PUBLISHED'),
+    video('LIVE'),
+    video('ENDED'),
+    video('ENDED'),
+    video('UPCOMING'),
+    // Not public: hidden, deleted before the end of the day, or created after it
+    video('PUBLISHED', { visible: false }),
+    video('ENDED', { deleted_at: '2025-11-10T00:00:00Z' }),
+    video('PUBLISHED', { created_at: '2025-11-14T00:00:00Z' }),
+    // Deleted after the end of the day, so it was still public on that day
+    video('PUBLISHED', { deleted_at: '2025-11-14T00:00:00Z' }),
+  ]
+
+  it('should count visible PUBLISHED videos as public', async () => {
+    const result = await getSummaryStats(
+      createTableClient({ talents: [], terms: [], videos: videos }),
+      targetDayEnd,
+    )
+
+    // 4 PUBLISHED + 1 LIVE + 2 ENDED
+    expect(result.visibleVideos).toBe(7)
+    expect(result.scheduledVideos).toBe(1)
+    expect(result.hiddenVideos).toBe(1)
+    expect(result.deletedVideos).toBe(1)
+    expect(result.totalVideos).toBe(9)
+  })
+})
+
 describe('getAnalyticsSummary', () => {
   let mockRedisClient: {
     get: ReturnType<typeof vi.fn>
@@ -312,7 +439,7 @@ describe('getAnalyticsSummary', () => {
       `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${dateKey}`,
     )
     expect(mockRedisClient.zcard).toHaveBeenCalledWith(
-      REDIS_KEYS.SEARCH_POPULAR,
+      REDIS_KEYS.SEARCH_POPULAR_ALL_TIME,
     )
     expect(mockRedisClient.zrange).toHaveBeenCalledWith(
       `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${dateKey}`,
