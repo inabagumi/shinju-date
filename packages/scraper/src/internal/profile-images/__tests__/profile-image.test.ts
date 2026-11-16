@@ -1,3 +1,4 @@
+import { HttpResponse, http } from 'msw'
 import sharp from 'sharp'
 import { beforeAll, describe, expect, it } from 'vitest'
 import {
@@ -90,6 +91,16 @@ describe('downloadProfileImage', () => {
       downloadProfileImage(IMAGE_URL, { ...saved, etag: null }),
     ).resolves.toBeNull()
     expect(requests).toHaveLength(0)
+  })
+
+  it('rejects error responses', async () => {
+    supabase.server.use(
+      http.get(IMAGE_URL, () => new HttpResponse('Not Found', { status: 404 })),
+    )
+
+    await expect(downloadProfileImage(IMAGE_URL, saved)).rejects.toThrow(
+      'Failed to download a profile image (404)',
+    )
   })
 
   it('rejects responses that are not images', async () => {

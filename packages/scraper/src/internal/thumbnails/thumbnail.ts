@@ -55,6 +55,16 @@ export async function createThumbnail({
   supabaseClient,
 }: CreateThumbnailOptions): Promise<Thumbnail> {
   const response = await retryableFetch(source.url)
+
+  if (!response.ok) {
+    // The body is read to reuse the socket.
+    await response.arrayBuffer()
+
+    throw new Error(
+      `Failed to download a thumbnail (${response.status}): ${source.url}`,
+    )
+  }
+
   const contentType = response.headers.get('Content-Type') ?? 'image/jpeg'
   const image = await response.arrayBuffer()
 

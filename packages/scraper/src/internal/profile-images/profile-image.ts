@@ -54,7 +54,8 @@ export interface DownloadedProfileImage {
  * version-like ETags that are the same for different images.
  *
  * @returns `null` when the icon is unchanged.
- * @throws When the icon cannot be downloaded or is not an image.
+ * @throws When the icon cannot be downloaded (including an error response)
+ *   or is not an image.
  */
 export async function downloadProfileImage(
   sourceUrl: string,
@@ -70,6 +71,16 @@ export async function downloadProfileImage(
   const response = await retryableFetch(sourceUrl, {
     ...(savedEtag ? { headers: { 'If-None-Match': savedEtag } } : {}),
   })
+
+  if (!response.ok && response.status !== 304) {
+    // The body is read to reuse the socket.
+    await response.arrayBuffer()
+
+    throw new Error(
+      `Failed to download a profile image (${response.status}): ${sourceUrl}`,
+    )
+  }
+
   const etag = response.headers.get('ETag')
 
   if (response.status === 304 || (savedEtag && etag === savedEtag)) {
