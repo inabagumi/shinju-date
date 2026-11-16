@@ -227,11 +227,260 @@ fix(admin): resolve authentication issue
 refactor(admin): convert type definitions to interface
 ```
 
-### Next.js 固有の規約
+## キャッシュのディレクティブ
 
-- **Cache Directives**: `'use cache'` の直後には必ず空行を入れる
-- **Partial Prerendering**: ページ全体を Suspense で囲まない
-- **Params**: `params` と `searchParams` はページで await せず、Suspense の中の部品で await する
+`apps/web` と `apps/admin` は Next.js の Cache Components を使っています。キャッシュのディレクティブは、次のように書きます。
+
+- `'use cache'`（`'use cache: remote'` / `'use cache: private'` を含む）の直後に、空行を1行入れる
+- `cacheLife()` や `cacheTag()` などのキャッシュ設定の並びの後にも、空行を1行入れる
+- この2つは、例外なく、すべてのファイルに適用する
+
+ディレクティブとキャッシュの設定を、本文から一目で区別できるようにするためです。過去に、まとめて直しています。
+
+```typescript
+// ✅ 正しい
+async function getTalent(id: string) {
+  'use cache: remote'
+
+  cacheLife('hours')
+  cacheTag('talents')
+
+  return await db.query(/* ... */)
+}
+
+// ❌ 間違い: ディレクティブと設定の後に空行がない
+async function getTalent(id: string) {
+  'use cache: remote'
+  cacheLife('hours')
+  return await db.query(/* ... */)
+}
+```
+
+### どこにキャッシュを付けるか
+
+- キャッシュは、コンポーネントではなく、データ取得関数に付ける。`generateMetadata` とページの部品の両方から呼んでも、取得は1回で済む
+- `'use cache'` を持つ関数を呼ぶ側で、もう一度キャッシュのディレクティブを付けない
+- 公開データには `'use cache: remote'`、認証が必要なデータには `'use cache: private'`（ユーザーごと）を使う
+
+```typescript
+async function getTalent(id: string) {
+  'use cache: private'
+
+  cacheLife('minutes')
+
+  return await db.query(/* ... */)
+}
+
+export async function generateMetadata({
+  params,
+}: Pick<PageProps<'/talents/[id]'>, 'params'>): Promise<Metadata> {
+  const { id } = await params
+  const talent = await getTalent(id) // 同じキャッシュを使う
+  return { title: talent?.name }
+}
+
+async function TalentName({
+  params,
+}: Pick<PageProps<'/talents/[id]'>, 'params'>) {
+  const { id } = await params
+  const talent = await getTalent(id) // 同じキャッシュを使う
+  return <h1>{talent?.name}</h1>
+}
+```
+
+## Partial Prerendering
+
+`apps/web` と `apps/admin` は、Cache Components（`cacheComponents`）と Partial Prefetching（`partialPrefetching`）を有効にしています。ページの静的な部分を、事前にレンダリングしたシェルとして先に返し、動的な部分を後からストリーミングします。静的なシェルが先に届くので、最初の表示が速くなり、検索エンジンにも内容が届きます。そのため、次のように書きます。
+
+- ページ全体を、1つの Suspense で囲まない。静的な内容まで、Suspense の中に入ってしまう
+- 静的なもの（ナビゲーションのリンク、見出し、レイアウト）は、Suspense の外に置く
+- 非同期のデータ取得をする部品だけを、それぞれ個別の Suspense で囲む。部品ごとに読み込まれ、それぞれのスケルトンが表示される
+- `params` と `searchParams` は、ページで await せず、Suspense の中の部品に Promise のまま渡して、部品の中で await する
+  - どちらも、リクエストごとに決まる値です。ページで await すると、それより後ろ（ページ全体）が事前にレンダリングできなくなり、Next.js が「runtime data during prerendering」のエラーを出します
+  - このエラーを `export const instant = false` で黙らせないでください。静的なシェルを失うだけで、得るものはありません
+  - 同じデータを複数の部品で使う場合は、取得関数を `'use cache'` でキャッシュし、それぞれの部品から呼んでください
+- `generateMetadata` では、`params` を直接 await して構わない。ページのほかの部品も `params` を読んでリクエスト時にレンダリングされるので、メタデータは、それらと一緒に後からストリーミングされる
+- `params` の型は、Next.js が生成する `PageProps<'/talents/[id]'>` / `LayoutProps` を使う。ルートのパスから `params` の型が決まる
+
+```typescript
+// ✅ 正しい: ページは async にせず、params を await しない
+export default function TalentDetailPage({
+  params,
+}: PageProps<'/talents/[id]'>) {
+  return (
+    <div className="container mx-auto p-4">
+      {/* 静的な内容: シェルとして、すぐにレンダリングされる */}
+      <Link href="/talents">タレント一覧に戻る</Link>
+
+      {/* params を読む部品: Suspense で個別に囲む */}
+      <Suspense fallback={<TalentProfileSkeleton />}>
+        <TalentProfile params={params} />
+      </Suspense>
+
+      <Suspense fallback={<VideosSkeleton />}>
+        <RecentVideosSection params={params} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function TalentProfile({
+  params,
+}: Pick<PageProps<'/talents/[id]'>, 'params'>) {
+  const { id } = await params // Suspense の中で await する
+  const talent = await getTalent(id) // 'use cache' 付きの取得関数
+
+  if (!talent) {
+    notFound()
+  }
+
+  return <h1>{talent.name}</h1>
+}
+
+// ❌ 間違い: ページで params を await している
+export default async function TalentDetailPage({
+  params,
+}: PageProps<'/talents/[id]'>) {
+  const { id } = await params
+  // ...
+}
+
+// ❌ 間違い: ページ全体を Suspense で囲んでいる
+export default function TalentDetailPage({
+  params,
+}: PageProps<'/talents/[id]'>) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <TalentDetailPageContent params={params} />
+    </Suspense>
+  )
+}
+```
+
+### `notFound()` とステータスコード
+
+Suspense の中で `notFound()` を呼ぶと、すでにシェルを返し始めているため、ステータスコードは 200 のまま、not-found の画面と `<meta name="robots" content="noindex">` を返します。開発サーバーでは 404 になりますが、本番とは違います。HTTP の 404 が必要な場合は、Proxy（`proxy.ts`）で、ページをレンダリングする前に判定してください。
+
+## Redis のキー
+
+キーの重複を防ぎ、キーを変えたときの影響範囲をつかめるようにするため、Redis のキーは1か所で管理します。
+
+- すべての Redis のキー（プレフィックスと固定のキー）は、`packages/constants/src/index.ts` の `REDIS_KEYS` に定義し、そこから参照する。コードに直接書かない
+- 日付を含むキーは、`@shinju-date/temporal-fns` の `formatDateKey` で作る。`YYYYMMDD`（ダッシュなし）を返すので、キーが短く済む
+- プレフィックスは、用途を示す英語にする（例: `summary:`、`videos:`、`search:`）。単語はコロンで区切り（例: `videos:clicked:`）、末尾にコロンを付けて、動的な値を足しやすくする
+- 必要に応じて、`REDIS_KEYS` の定義に、コメントで用途を書く
+- すべてのキーに TTL を付ける。メモリの肥大化を防ぐため
+
+```typescript
+// packages/constants/src/index.ts
+export const REDIS_KEYS = {
+  // ... 既存のキー
+  // Dashboard summary trend snapshots (format: prefix + YYYYMMDD)
+  SUMMARY_STATS_PREFIX: 'summary:stats:',
+} as const
+```
+
+```typescript
+import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import { formatDateKey } from '@shinju-date/temporal-fns'
+
+// ✅ 正しい
+const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
+const key = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDateKey(now)}` // summary:stats:20251111
+await redis.set(key, data, { ex: 30 * 24 * 60 * 60 }) // 30日
+
+// ❌ 間違い: キーを直接書き、TTL がない
+await redis.set('summary:stats:2025-11-11', data)
+```
+
+## 時刻の扱い
+
+### `Date` ではなく `Temporal` を使う
+
+- `new Date()` と `Date.now()` は、原則として使わない。サーバーとブラウザで値がずれ、React のハイドレーションのエラーの主な原因になる
+  - ライブラリとの受け渡しなど、やむを得ない場合だけ使う。その場合も、サーバーとブラウザで値が違いうることに注意する
+- 時刻には、グローバルの `Temporal` を使う。`import { Temporal } from 'temporal-polyfill'` とは書かない
+  - サーバー（Node.js v26 以降）では、ネイティブ実装が使われる。ブラウザでは、各アプリの `instrumentation-client.ts` が `temporal-polyfill/global` を読み込み、ネイティブ実装がない場合だけポリフィルする
+- テストで現在時刻を固定するときは、`vi.mock('temporal-polyfill')` ではなく、`vi.spyOn(Temporal.Now, 'instant')` などを使う
+- タイムゾーンに依存しない絶対時刻は、`Temporal.Now.instant()` で取る
+- API で送受信するときは、ISO 8601 の文字列にする。`Temporal.Instant` の `toString()` は、常に UTC（末尾が `Z`。例: `2025-11-01T12:00:00Z`）で出力する。タイムゾーン付きの文字列（例: `2025-11-01T21:00:00+09:00`）が要る場合は、`Temporal.ZonedDateTime` の `toString()` を使う
+- ユーザーに時刻を表示するときなど、タイムゾーンが要る場合は、`'Asia/Tokyo'` などを直接書かず、`@shinju-date/constants` の `TIME_ZONE` を使う
+
+```typescript
+import { TIME_ZONE } from '@shinju-date/constants'
+
+const now = Temporal.Now.instant() // 現在の絶対時刻（UTC）
+const isoString = now.toString() // 保存や送信のための文字列
+const fromString = Temporal.Instant.from('2025-11-01T12:00:00Z') // 文字列から戻す
+const tokyoTime = now.toZonedDateTimeISO(TIME_ZONE) // 日本時間で表示する
+```
+
+### データベースに保存する
+
+データベースの `TIMESTAMPTZ` のカラムに、`Temporal.Instant` や `Temporal.ZonedDateTime` の値を保存するときは、**必ず** `@shinju-date/temporal-fns` の `toDBString` を使います。
+
+`toDBString` は、秒未満を切り捨て、UTC の ISO 8601 の文字列にします。YouTube API から取った日時と、`Temporal.Now` で作った日時の精度がそろい、意図しないデータの更新を防げます。`toString()` を直接使うと、秒未満が残り、データの不整合の原因になります。
+
+```typescript
+import { toDBString } from '@shinju-date/temporal-fns'
+
+const now = Temporal.Now.instant()
+
+await supabase
+  .from('videos')
+  .update({ updated_at: toDBString(now) }) // ✅ now.toString() は使わない
+  .eq('id', videoId)
+```
+
+## admin の Server Action の認証
+
+`apps/admin` は `proxy.ts` でセッションを守っていますが、`matcher` の変更やリダイレクトの処理の不備に左右されないよう、Server Action ごとにも認証を確かめます（多層防御）。データを変更する Server Action では、次のようにします。
+
+- **必ず** `@/lib/auth` の `requireAuthenticatedUser()` を、関数の先頭で呼ぶ。入力値の検証や外部 API の呼び出しより前に、認証を確かめる
+- 未認証の場合は、更新せず、共通のレスポンスを返す
+  - `{ success, error }` を返す Action: `unauthenticatedResult()`
+  - `FormState` を返す Action（`useActionState` 用）: `unauthenticatedFormState()`
+- Supabase のクライアントは、`requireAuthenticatedUser()` の戻り値を使う（`createSupabaseServerClient()` を別に呼ばない）
+- サービスロールキーのクライアント（`@/lib/supabase/admin`）や Redis を使う Action は、RLS で守られないため、特に確認を忘れない
+- 新しい Action を足したら、`apps/admin/app/(dashboard)/_lib/server-actions-auth.test.ts` にも足し、未認証のときに副作用がないことを確かめる
+
+```typescript
+'use server'
+
+import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
+
+export async function deleteSomethingAction(id: string): Promise<{
+  success: boolean
+  error?: string
+}> {
+  const auth = await requireAuthenticatedUser()
+
+  if (!auth) {
+    return unauthenticatedResult()
+  }
+
+  const { supabaseClient } = auth
+
+  // ... 更新処理
+}
+```
+
+## 管理者のロールと RLS
+
+「Supabase Auth にログインできる = 管理者」とは限りません。管理者は、`app_metadata.role` が `admin` のユーザーです（`apps/admin/lib/admin-user.ts` の `isAdminUser()`、データベースでは `public.is_admin()`）。
+
+- `requireAuthenticatedUser()` と `proxy.ts` は、管理者のロールを持たないユーザーを、未認証として扱う
+- 管理画面向けの RLS のポリシーは、`TO "authenticated"` に加えて、**必ず** `(SELECT "public"."is_admin"())` を条件にする（`USING (true)` は使わない）。`supabase/tests/database/admin_role.test.sql` が、これを検査する
+- `SECURITY DEFINER` の関数は RLS を迂回するため、関数の中で `public.is_admin()` を確かめる
+
+```sql
+CREATE POLICY "Enable update for admins"
+    ON "public"."some_table"
+    FOR UPDATE
+    TO "authenticated"
+    USING ((SELECT "public"."is_admin"()))
+    WITH CHECK ((SELECT "public"."is_admin"()));
+```
 
 ## カラーパレットの使用
 

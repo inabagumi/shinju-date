@@ -65,97 +65,31 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 
 ## キャッシュのディレクティブ
 
-**🚨 厳格なルール**（例外なく、すべてのファイルに適用する）
+**🚨 厳格なルール**（例外なく、すべてのファイルに適用する。[理由と例](docs/coding-guidelines.md#キャッシュのディレクティブ)）
 
 - `'use cache'`（`'use cache: remote'` / `'use cache: private'` を含む）の直後に、空行を1行入れる
 - `cacheLife()` や `cacheTag()` などのキャッシュ設定の並びの後にも、空行を1行入れる
-- キャッシュはコンポーネントではなく、データ取得関数に付ける。`generateMetadata` とページの部品の両方から同じキャッシュを使える
+- キャッシュはコンポーネントではなく、データ取得関数に付ける（`generateMetadata` とページの部品の両方から同じキャッシュを使う）
 - `'use cache'` を持つ関数を呼ぶ側で、もう一度キャッシュのディレクティブを付けない
 - 公開データには `'use cache: remote'`、認証が必要なデータには `'use cache: private'`（ユーザーごと）を使う
 
-理由: ディレクティブと設定を本文から一目で区別できるようにするためです。過去にまとめて直しています。
-
-```typescript
-async function getTalent(id: string) {
-  'use cache: remote'
-
-  cacheLife('hours')
-  cacheTag('talents')
-
-  return await db.query(/* ... */)
-}
-```
-
-次のように、ディレクティブや設定の直後に空行なしで本文を続けてはいけません。
-
-```typescript
-async function getTalent(id: string) {
-  'use cache: remote'
-  cacheLife('hours')
-  return await db.query(/* ... */) // ❌ 空行がない
-}
-```
-
 ## Partial Prerendering
 
-`apps/web` と `apps/admin` は Cache Components（`cacheComponents`）と Partial Prefetching（`partialPrefetching`）を有効にしています。ページの静的な部分を事前にレンダリングしたシェルとして先に返し、動的な部分を後からストリーミングします。
+`apps/web` と `apps/admin` は Cache Components と Partial Prefetching を有効にしている（[理由と例](docs/coding-guidelines.md#partial-prerendering)）。
 
 - ページ全体を1つの Suspense で囲まない
 - 静的なもの（ナビゲーションのリンク、見出し、レイアウト）は Suspense の外に置く
 - 非同期のデータ取得をする部品だけを、それぞれ個別の Suspense で囲む
 - `params` と `searchParams` はページで await せず、Suspense の中の部品に Promise のまま渡して、部品の中で await する
-  - ページで await すると、ページ全体が事前にレンダリングできなくなり、「runtime data during prerendering」のエラーになる
-  - このエラーを `export const instant = false` で黙らせない（静的なシェルを失うだけ）
+  - 「runtime data during prerendering」のエラーを `export const instant = false` で黙らせない
   - 同じデータを複数の部品で使うときは、取得関数を `'use cache'` でキャッシュし、それぞれの部品から呼ぶ
-- `generateMetadata` では `params` を直接 await してよい（メタデータは、`params` を読むほかの部品と一緒に後からストリーミングされる）
+- `generateMetadata` では `params` を直接 await してよい
 - `params` の型は、Next.js が生成する `PageProps<'/talents/[id]'>` / `LayoutProps` を使う
-
-理由: 静的なシェルを先に返すことで、最初の表示が速くなり、検索エンジンにも内容が届きます。
-
-```typescript
-// ページは async にせず、params を await しない
-export default function TalentDetailPage({
-  params,
-}: PageProps<'/talents/[id]'>) {
-  return (
-    <div>
-      <Link href="/talents">タレント一覧に戻る</Link>
-      <Suspense fallback={<TalentProfileSkeleton />}>
-        <TalentProfile params={params} />
-      </Suspense>
-    </div>
-  )
-}
-
-async function TalentProfile({
-  params,
-}: Pick<PageProps<'/talents/[id]'>, 'params'>) {
-  const { id } = await params // Suspense の中で await する
-  const talent = await getTalent(id) // 'use cache' 付きの取得関数
-
-  if (!talent) {
-    notFound()
-  }
-
-  return <h1>{talent.name}</h1>
-}
-```
-
-次のように、ページで `params` を await してはいけません。それより後ろがすべてリクエスト時のレンダリングになります。
-
-```typescript
-export default async function TalentDetailPage({ params }: Props) {
-  const { id } = await params // ❌
-  // ...
-}
-```
-
-### `notFound()` とステータスコード
-
-- Suspense の中で `notFound()` を呼ぶと、ステータスコードは 200 のまま、not-found の画面と `<meta name="robots" content="noindex">` を返す（開発サーバーでは 404 になるが、本番とは違う）
-- HTTP の 404 が必要な場合は、Proxy（`proxy.ts`）でページをレンダリングする前に判定する
+- Suspense の中の `notFound()` はステータスコード 200 を返す。HTTP の 404 が要るときは、Proxy（`proxy.ts`）でページをレンダリングする前に判定する（[`notFound()` とステータスコード](docs/coding-guidelines.md#notfound-とステータスコード)）
 
 ## Redis のキー
+
+[理由と例](docs/coding-guidelines.md#redis-のキー)
 
 - すべての Redis のキー（プレフィックスと固定のキー）は、`packages/constants/src/index.ts` の `REDIS_KEYS` に定義し、そこから参照する。コードに直接書かない
 - 日付を含むキーは、`@shinju-date/temporal-fns` の `formatDateKey`（`YYYYMMDD`、ダッシュなし）で作る
@@ -163,46 +97,21 @@ export default async function TalentDetailPage({ params }: Props) {
 - 必要に応じて、`REDIS_KEYS` の定義にコメントで用途を書く
 - すべてのキーに TTL を付ける
 
-理由: キーの重複を防ぎ、変更したときの影響範囲をつかめるようにするためです。TTL はメモリの肥大化を防ぎます。
-
-```typescript
-import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
-import { formatDateKey } from '@shinju-date/temporal-fns'
-
-const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-const key = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDateKey(now)}` // summary:stats:20251111
-
-await redis.set(key, data, { ex: 30 * 24 * 60 * 60 }) // 30日
-```
-
 ## 時刻の扱い
 
+[理由と例](docs/coding-guidelines.md#時刻の扱い)
+
 - `new Date()` と `Date.now()` は原則として使わない。ライブラリとの受け渡しなど、やむを得ない場合だけ、サーバーとブラウザで値が違いうることに注意して使う
-- 時刻には、グローバルの `Temporal` を使う。`import { Temporal } from 'temporal-polyfill'` とは書かない
-  - サーバー（Node.js v26 以降）はネイティブ実装を使う。ブラウザでは、各アプリの `instrumentation-client.ts` が `temporal-polyfill/global` を読み込み、ネイティブ実装がない場合だけポリフィルする
+- 時刻には、グローバルの `Temporal` を使う。`import { Temporal } from 'temporal-polyfill'` とは書かない（ブラウザでは、各アプリの `instrumentation-client.ts` が `temporal-polyfill/global` を読み込む）
 - テストで現在時刻を固定するときは、`vi.mock('temporal-polyfill')` ではなく `vi.spyOn(Temporal.Now, 'instant')` などを使う
 - 現在の絶対時刻は `Temporal.Now.instant()` で取る
-- API で送受信するときは ISO 8601 の文字列にする。`Temporal.Instant` の `toString()` は常に UTC（末尾が `Z`）。タイムゾーン付きの文字列が要る場合は `Temporal.ZonedDateTime` の `toString()` を使う
+- API で送受信するときは ISO 8601 の文字列にする。`Temporal.Instant` の `toString()` は常に UTC。タイムゾーン付きの文字列が要る場合は `Temporal.ZonedDateTime` の `toString()` を使う
 - タイムゾーンは直接書かず（`'Asia/Tokyo'` など）、`@shinju-date/constants` の `TIME_ZONE` を使う
 - データベースの `TIMESTAMPTZ` のカラムに保存するときは、**必ず** `@shinju-date/temporal-fns` の `toDBString` を使う（`toString()` を直接使わない）
 
-理由: `Date` はサーバーとブラウザで値がずれ、ハイドレーションのエラーの原因になります。`toDBString` は秒未満を切り捨てて UTC にするので、YouTube API から取った日時と `Temporal.Now` の日時の精度がそろい、意図しない更新を防げます。
-
-```typescript
-import { TIME_ZONE } from '@shinju-date/constants'
-import { toDBString } from '@shinju-date/temporal-fns'
-
-const now = Temporal.Now.instant()
-
-await supabase
-  .from('videos')
-  .update({ updated_at: toDBString(now) })
-  .eq('id', videoId)
-
-const tokyoTime = now.toZonedDateTimeISO(TIME_ZONE) // 表示用
-```
-
 ## admin の Server Action の認証
+
+[理由と例](docs/coding-guidelines.md#admin-の-server-action-の認証)
 
 - データを変更する Server Action では、**必ず** `@/lib/auth` の `requireAuthenticatedUser()` を関数の先頭で呼ぶ（入力値の検証や外部 API の呼び出しより前）
 - 未認証なら更新せず、共通のレスポンスを返す
@@ -212,53 +121,21 @@ const tokyoTime = now.toZonedDateTimeISO(TIME_ZONE) // 表示用
 - サービスロールキーのクライアント（`@/lib/supabase/admin`）や Redis を使う Action は RLS で守られないので、特に忘れない
 - Action を追加したら、`apps/admin/app/(dashboard)/_lib/server-actions-auth.test.ts` にも追加し、未認証のときに副作用がないことを確かめる
 
-理由: `apps/admin` は `proxy.ts` でセッションを守っていますが、`matcher` の変更やリダイレクトの不備に左右されないよう、Action ごとにも確かめます（多層防御）。
-
-```typescript
-'use server'
-
-import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
-
-export async function deleteSomethingAction(id: string): Promise<{
-  success: boolean
-  error?: string
-}> {
-  const auth = await requireAuthenticatedUser()
-
-  if (!auth) {
-    return unauthenticatedResult()
-  }
-
-  const { supabaseClient } = auth
-
-  // ... 更新処理
-}
-```
-
 ## 管理者のロールと RLS
+
+[理由と例](docs/coding-guidelines.md#管理者のロールと-rls)
 
 - 「Supabase Auth にログインできる = 管理者」ではない。管理者は `app_metadata.role` が `admin` のユーザー（`apps/admin/lib/admin-user.ts` の `isAdminUser()`、データベースでは `public.is_admin()`）
 - `requireAuthenticatedUser()` と `proxy.ts` は、管理者のロールを持たないユーザーを未認証として扱う
 - 管理画面向けの RLS のポリシーは、`TO "authenticated"` に加えて、**必ず** `(SELECT "public"."is_admin"())` を条件にする（`USING (true)` は使わない）。`supabase/tests/database/admin_role.test.sql` が検査する
 - `SECURITY DEFINER` の関数は RLS を迂回するので、関数の中で `public.is_admin()` を確かめる
 
-```sql
-CREATE POLICY "Enable update for admins"
-    ON "public"."some_table"
-    FOR UPDATE
-    TO "authenticated"
-    USING ((SELECT "public"."is_admin"()))
-    WITH CHECK ((SELECT "public"."is_admin"()));
-```
-
 ## MSW による認証の模擬
 
-`apps/admin` の認証が要る画面は、[MSW](docs/msw-guide.md) のハンドラーが Supabase Auth を模擬するので、本物のバックエンドなしで確かめられます。
+[詳しい説明](docs/msw-guide.md#管理画面の認証の模擬)
 
-- `ENABLE_MSW=true` に加えて `MSW_SUPABASE_AUTHENTICATED=true` を設定すると、ログインしなくても管理者のロールを持つモックのユーザー（`admin@example.com`）として扱われる
-  - セッションの Cookie がない場合は、`apps/admin/lib/supabase/mock-session.ts` がモックのセッションを補う。モックのアクセストークンは MSW のハンドラーしか受け付けないので、本番の認証には影響しない
-  - ログアウトしても認証済みのまま。ログイン画面を確かめるときは設定しない
-- 設定しない場合は、ログインフォームに `admin@example.com` / `password123` を入れてログインする。ログアウトすると Cookie が消える
+- `apps/admin` は、`ENABLE_MSW=true` に加えて `MSW_SUPABASE_AUTHENTICATED=true` を設定すると、ログインしなくても管理者のモックのユーザー（`admin@example.com`）として扱われる。ログアウトしても認証済みのままなので、ログイン画面を確かめるときは設定しない
+- 設定しない場合は、ログインフォームに `admin@example.com` / `password123` を入れてログインする
 
 ## コミットとプルリクエスト
 
