@@ -1,4 +1,5 @@
 import { cacheLife } from 'next/cache'
+import { Panel } from '@/components/panel'
 import { getHistoricalStats } from '../_lib/get-historical-stats'
 import { VideoStatsChartEmpty } from './video-stats-chart-empty'
 import { VideoStatsChartUI } from './video-stats-chart-ui'
@@ -15,13 +16,12 @@ export async function VideoStatsChart() {
   const historicalStats = await getHistoricalStats(7)
 
   return (
-    <section className="rounded-container border border-border bg-surface p-6">
-      <h2 className="mb-4 text-heading font-bold">動画数推移（7日間）</h2>
+    <Panel title="動画数推移（7日間）">
       {historicalStats.length === 0 ? (
         <VideoStatsChartEmpty />
       ) : (
         <VideoStatsChartUI data={historicalStats} />
       )}
-    </section>
+    </Panel>
   )
 }

@@ -2,6 +2,7 @@
 
 import { Alert, Button, twMerge } from '@shinju-date/ui'
 import { useState, useTransition } from 'react'
+import { Panel } from '@/components/panel'
 import ToggleSwitch from '@/components/toggle-switch'
 import {
   disableMaintenanceMode,
@@ -60,9 +61,7 @@ export function MaintenanceModeWidget({
   }
 
   return (
-    <section className="rounded-container border border-border bg-surface p-6">
-      <h2 className="mb-4 text-heading font-bold">メンテナンスモード</h2>
-
+    <Panel title="メンテナンスモード">
       <div className="space-y-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1">
@@ -142,6 +141,6 @@ export function MaintenanceModeWidget({
           </ul>
         </div>
       </div>
-    </section>
+    </Panel>
   )
 }

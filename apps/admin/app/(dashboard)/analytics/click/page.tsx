@@ -1,6 +1,7 @@
 import { PageHeader } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { Panel } from '@/components/panel'
 import {
   ChartSkeleton,
   DateRangePickerSkeleton,
@@ -8,7 +9,6 @@ import {
   TabNavigationSkeleton,
 } from '@/components/skeletons'
 import { DateRangePickerClient } from '../_components/date-range-picker-client'
-import { PANEL_CLASS_NAME } from '../_lib/panel'
 import { analyticsSearchParamsSchema } from '../_lib/search-params-schema'
 import { ClickVolumeChart } from './_components/click-volume-chart'
 import { PopularRankingsTabs } from './_components/popular-rankings-tabs'
@@ -37,16 +37,16 @@ export default function ClickAnalyticsPage({
 
       <section className="mb-8">
         <h2 className="mb-4 text-heading font-bold">クリックボリューム</h2>
-        <div className={PANEL_CLASS_NAME}>
+        <Panel>
           <Suspense fallback={<ChartSkeleton />}>
             <ClickVolumeChart searchParams={parsedSearchParams} />
           </Suspense>
-        </div>
+        </Panel>
       </section>
 
       <section>
         <h2 className="mb-4 text-heading font-bold">人気ランキング</h2>
-        <div className={PANEL_CLASS_NAME}>
+        <Panel>
           <Suspense fallback={<TabNavigationSkeleton />}>
             <TabNavigation
               defaultTab="videos"
@@ -62,7 +62,7 @@ export default function ClickAnalyticsPage({
               <PopularRankingsTabs searchParams={parsedSearchParams} />
             </Suspense>
           </div>
-        </div>
+        </Panel>
       </section>
     </div>
   )

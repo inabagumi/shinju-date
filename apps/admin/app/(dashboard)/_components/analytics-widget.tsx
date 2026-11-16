@@ -1,4 +1,5 @@
 import { cacheLife } from 'next/cache'
+import { Panel } from '@/components/panel'
 import { getAnalyticsSummary } from '../_lib/get-analytics-summary'
 import { StatTileLink } from './trend-indicator'
 
@@ -14,8 +15,7 @@ export async function AnalyticsWidget() {
   const analytics = await getAnalyticsSummary(true)
 
   return (
-    <section className="rounded-container border border-border bg-surface p-6">
-      <h2 className="mb-4 text-heading font-bold">アナリティクス</h2>
+    <Panel title="アナリティクス">
       <div className="grid grid-cols-2 gap-4">
         <StatTileLink
           dayChange={analytics.recentSearches.dayChange}
@@ -37,6 +37,6 @@ export async function AnalyticsWidget() {
           value={analytics.totalPopularKeywords.current}
         />
       </div>
-    </section>
+    </Panel>
   )
 }
