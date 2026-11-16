@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { AuditAction } from '@/lib/audit-log'
 import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
 import { setupActionTest } from '@/test/action-harness'
+import { createTalent } from '@/test/factories'
 import { postgresError } from '@/test/supabase'
 import {
   activateTalentAction,
@@ -412,7 +413,11 @@ describe.each(lifecycleActionCases)('$name', (testCase) => {
 
 describe('createTalentAction', () => {
   it('should successfully create talent', async () => {
-    supabase.on('insert', 'talents', { id: TALENT_ID, name: 'New Talent' })
+    supabase.on(
+      'insert',
+      'talents',
+      createTalent({ id: TALENT_ID, name: 'New Talent' }),
+    )
 
     const formData = new FormData()
     formData.append('name', 'New Talent')
@@ -444,7 +449,11 @@ describe('createTalentAction', () => {
 
     vi.mocked(resolveYouTubeChannel).mockResolvedValue(youtubeChannel as never)
 
-    supabase.on('insert', 'talents', { id: TALENT_ID, name: 'New Talent' })
+    supabase.on(
+      'insert',
+      'talents',
+      createTalent({ id: TALENT_ID, name: 'New Talent' }),
+    )
     supabase.on('insert', 'youtube_channels', { id: 'channel-row-1' })
 
     const formData = new FormData()
@@ -468,7 +477,11 @@ describe('createTalentAction', () => {
   })
 
   it('should create the talent with the normalized reading', async () => {
-    supabase.on('insert', 'talents', { id: TALENT_ID, name: 'New Talent' })
+    supabase.on(
+      'insert',
+      'talents',
+      createTalent({ id: TALENT_ID, name: 'New Talent' }),
+    )
 
     const formData = new FormData()
     formData.append('name', ' New Talent ')

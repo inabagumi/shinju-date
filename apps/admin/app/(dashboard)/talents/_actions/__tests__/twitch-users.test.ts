@@ -2,6 +2,7 @@ import { resolveTwitchUser } from '@shinju-date/twitch-api-client'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { syncTwitchUserIconSafely } from '@/lib/twitch-user-icon'
 import { setupActionTest } from '@/test/action-harness'
+import { createTwitchUser } from '@/test/factories'
 import { postgresError } from '@/test/supabase'
 import { addTwitchUserAction, removeTwitchUserAction } from '../twitch-users'
 
@@ -241,10 +242,11 @@ describe('addTwitchUserAction', () => {
   })
 
   it('should return error when user already exists for this talent', async () => {
-    supabase.on('select', 'twitch_users', {
-      id: 'existing-user',
-      talent_id: talentId,
-    })
+    supabase.on(
+      'select',
+      'twitch_users',
+      createTwitchUser({ id: 'existing-user', talent_id: talentId }),
+    )
 
     const result = await addTwitchUserAction(
       {},
@@ -259,10 +261,11 @@ describe('addTwitchUserAction', () => {
   })
 
   it('should return error when user belongs to another talent', async () => {
-    supabase.on('select', 'twitch_users', {
-      id: 'existing-user',
-      talent_id: 'other-talent-id',
-    })
+    supabase.on(
+      'select',
+      'twitch_users',
+      createTwitchUser({ id: 'existing-user', talent_id: 'other-talent-id' }),
+    )
 
     const result = await addTwitchUserAction(
       {},
@@ -281,10 +284,14 @@ describe('addTwitchUserAction', () => {
 
 describe('removeTwitchUserAction', () => {
   it('should successfully remove Twitch user', async () => {
-    supabase.on('select', 'twitch_users', {
-      twitch_login_name: 'exampleuser',
-      twitch_user_id: twitchUserId,
-    })
+    supabase.on(
+      'select',
+      'twitch_users',
+      createTwitchUser({
+        twitch_login_name: 'exampleuser',
+        twitch_user_id: twitchUserId,
+      }),
+    )
 
     const result = await removeTwitchUserAction('twitch-user-row-123', talentId)
 

@@ -2,6 +2,7 @@ import { resolveYouTubeChannel } from '@shinju-date/youtube-api-client'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
 import { setupActionTest } from '@/test/action-harness'
+import { createYouTubeChannel } from '@/test/factories'
 import { postgresError } from '@/test/supabase'
 import {
   addYouTubeChannelAction,
@@ -273,10 +274,11 @@ describe('addYouTubeChannelAction', () => {
   })
 
   it('should return error when channel already exists for this talent', async () => {
-    supabase.on('select', 'youtube_channels', {
-      id: 'existing-channel',
-      talent_id: talentId,
-    })
+    supabase.on(
+      'select',
+      'youtube_channels',
+      createYouTubeChannel({ id: 'existing-channel', talent_id: talentId }),
+    )
 
     const result = await addYouTubeChannelAction(
       {},
@@ -294,10 +296,14 @@ describe('addYouTubeChannelAction', () => {
   })
 
   it('should return error when channel belongs to another talent', async () => {
-    supabase.on('select', 'youtube_channels', {
-      id: 'existing-channel',
-      talent_id: 'other-talent-id',
-    })
+    supabase.on(
+      'select',
+      'youtube_channels',
+      createYouTubeChannel({
+        id: 'existing-channel',
+        talent_id: 'other-talent-id',
+      }),
+    )
 
     const result = await addYouTubeChannelAction(
       {},
@@ -319,9 +325,11 @@ describe('addYouTubeChannelAction', () => {
 
 describe('removeYouTubeChannelAction', () => {
   it('should successfully remove YouTube channel', async () => {
-    supabase.on('select', 'youtube_channels', {
-      youtube_channel_id: youtubeChannelId,
-    })
+    supabase.on(
+      'select',
+      'youtube_channels',
+      createYouTubeChannel({ youtube_channel_id: youtubeChannelId }),
+    )
 
     const result = await removeYouTubeChannelAction('channel-123', talentId)
 
@@ -376,9 +384,11 @@ describe('removeYouTubeChannelAction', () => {
   })
 
   it('should handle delete operation errors', async () => {
-    supabase.on('select', 'youtube_channels', {
-      youtube_channel_id: youtubeChannelId,
-    })
+    supabase.on(
+      'select',
+      'youtube_channels',
+      createYouTubeChannel({ youtube_channel_id: youtubeChannelId }),
+    )
     supabase.on(
       'delete',
       'youtube_channels',

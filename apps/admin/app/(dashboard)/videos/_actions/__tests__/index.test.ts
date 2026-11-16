@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { setupActionTest } from '@/test/action-harness'
+import { createVideo } from '@/test/factories'
 import { postgresError } from '@/test/supabase'
 import { restoreAction } from '../index'
 
@@ -33,7 +34,11 @@ describe('restoreAction', () => {
 
   it('should successfully restore single video without thumbnail', async () => {
     supabase.on('select', 'videos', [
-      { id: 'video-id-1', thumbnail_id: null, title: 'Test Video' },
+      createVideo({
+        id: 'video-id-1',
+        thumbnail_id: null,
+        title: 'Test Video',
+      }),
     ])
 
     const result = await restoreAction(['video-id-1'])
@@ -47,7 +52,11 @@ describe('restoreAction', () => {
 
   it('should successfully restore video with thumbnail', async () => {
     supabase.on('select', 'videos', [
-      { id: 'video-id-1', thumbnail_id: 'thumb-id-1', title: 'Test Video' },
+      createVideo({
+        id: 'video-id-1',
+        thumbnail_id: 'thumb-id-1',
+        title: 'Test Video',
+      }),
     ])
 
     const result = await restoreAction(['video-id-1'])
@@ -60,8 +69,16 @@ describe('restoreAction', () => {
 
   it('should successfully restore multiple videos', async () => {
     supabase.on('select', 'videos', [
-      { id: 'video-id-1', thumbnail_id: 'thumb-id-1', title: 'Test Video 1' },
-      { id: 'video-id-2', thumbnail_id: null, title: 'Test Video 2' },
+      createVideo({
+        id: 'video-id-1',
+        thumbnail_id: 'thumb-id-1',
+        title: 'Test Video 1',
+      }),
+      createVideo({
+        id: 'video-id-2',
+        thumbnail_id: null,
+        title: 'Test Video 2',
+      }),
     ])
 
     const result = await restoreAction(['video-id-1', 'video-id-2'])
@@ -77,7 +94,11 @@ describe('restoreAction', () => {
 
   it('should return error when video update fails', async () => {
     supabase.on('select', 'videos', [
-      { id: 'video-id-1', thumbnail_id: null, title: 'Test Video' },
+      createVideo({
+        id: 'video-id-1',
+        thumbnail_id: null,
+        title: 'Test Video',
+      }),
     ])
     supabase.on('update', 'videos', postgresError('XX000', 'Database error'))
 
@@ -90,7 +111,11 @@ describe('restoreAction', () => {
 
   it('should return error when thumbnail update fails', async () => {
     supabase.on('select', 'videos', [
-      { id: 'video-id-1', thumbnail_id: 'thumb-id-1', title: 'Test Video' },
+      createVideo({
+        id: 'video-id-1',
+        thumbnail_id: 'thumb-id-1',
+        title: 'Test Video',
+      }),
     ])
     supabase.on(
       'update',
