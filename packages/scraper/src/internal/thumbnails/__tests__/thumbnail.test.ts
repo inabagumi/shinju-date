@@ -92,6 +92,25 @@ describe('createThumbnail', () => {
     expect(supabase.requests).toHaveLength(0)
   })
 
+  it('rejects error responses without storing anything', async () => {
+    const uploads = mockImageAndStorage()
+    supabase.server.use(
+      http.get(IMAGE_URL, () => new HttpResponse('Not Found', { status: 404 })),
+    )
+    supabase.respond(() => [])
+
+    await expect(
+      createThumbnail({
+        folder: 'yt-1',
+        now,
+        source,
+        supabaseClient: supabase.supabaseClient,
+      }),
+    ).rejects.toThrow('Failed to download a thumbnail (404)')
+    expect(uploads).toHaveLength(0)
+    expect(supabase.requests).toHaveLength(0)
+  })
+
   it('removes the stored image when it cannot be registered', async () => {
     const removed: unknown[] = []
     mockImageAndStorage()
