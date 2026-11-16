@@ -27,6 +27,14 @@ const nextConfig: NextConfig = {
     'msw',
     '@mswjs/interceptors',
   ],
+  turbopack: {
+    rules: {
+      // Compile Tailwind CSS with its Turbopack loader instead of PostCSS.
+      '*.css': {
+        loaders: ['@tailwindcss/turbopack'],
+      },
+    },
+  },
 }
 
 function withPlugins(nextConfig: NextConfig): NextConfig {
