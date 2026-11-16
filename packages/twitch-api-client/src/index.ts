@@ -1,7 +1,14 @@
+import type { Enums } from '@shinju-date/database'
 import { ApiClient } from '@twurple/api'
 import { AppTokenAuthProvider } from '@twurple/auth'
 
 export const TWITCH_API_MAX_RESULTS = 100
+
+/**
+ * Kind of video to list with the Helix `Get Videos` API. `all` is a value of
+ * the API, not of the database.
+ */
+export type TwitchVideoFilter = 'archive' | 'highlight' | 'upload' | 'all'
 
 // ---------------------------------------------------------------------------
 // Domain DTOs (stable for admin / batch consumers)
@@ -29,7 +36,8 @@ export interface TwitchVideo {
   published_at: string
   created_at: string
   thumbnail_url: string
-  type: 'archive' | 'highlight' | 'upload'
+  /** The `twitch_video_type` enum of the database, except clips. */
+  type: Exclude<Enums<'twitch_video_type'>, 'clip'>
   url: string
   user_id: string
   user_login: string
@@ -567,7 +575,7 @@ export interface GetVideosByUserOptions {
   all?: boolean
   /** Page size, up to 100 (default: 20). */
   limit?: number
-  type?: 'archive' | 'highlight' | 'upload' | 'all'
+  type?: TwitchVideoFilter
   userId: string
 }
 
@@ -613,7 +621,7 @@ export interface GetVideosByUserPageOptions {
   after?: string | undefined
   /** Page size, up to 100 (default: 100). */
   limit?: number
-  type?: 'archive' | 'highlight' | 'upload' | 'all'
+  type?: TwitchVideoFilter
   userId: string
 }
 
@@ -729,7 +737,7 @@ export type TwitchVideoStatus = 'ENDED' | 'PUBLISHED'
  * videos.
  */
 export function getTwitchVideoStatus(
-  type: TwitchVideo['type'] | 'clip',
+  type: Enums<'twitch_video_type'>,
 ): TwitchVideoStatus {
   return type === 'upload' || type === 'clip' ? 'PUBLISHED' : 'ENDED'
 }

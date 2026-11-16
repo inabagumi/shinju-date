@@ -1,7 +1,8 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@shinju-date/constants": "workspace:*"
+    "@shinju-date/constants": "workspace:*",
+    "@shinju-date/database": "workspace:*"
   },
   "description": "Queue of video backfill jobs shared by the admin and batch apps",
   "devDependencies": {

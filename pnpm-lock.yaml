@@ -716,6 +716,9 @@ importers:
       '@shinju-date/constants':
         specifier: workspace:*
         version: link:../constants
+      '@shinju-date/database':
+        specifier: workspace:*
+        version: link:../database
     devDependencies:
       '@tsconfig/node20':
         specifier: 20.1.11
@@ -920,6 +923,9 @@ importers:
       '@shinju-date/constants':
         specifier: workspace:*
         version: link:../constants
+      '@shinju-date/database':
+        specifier: workspace:*
+        version: link:../database
       '@twurple/api':
         specifier: 8.2.0
         version: 8.2.0(@twurple/auth@8.2.0)
@@ -1069,6 +1075,9 @@ importers:
       '@shinju-date/constants':
         specifier: workspace:*
         version: link:../constants
+      '@shinju-date/database':
+        specifier: workspace:*
+        version: link:../database
     devDependencies:
       '@tsconfig/node20':
         specifier: 20.1.11
@@ -1119,6 +1128,9 @@ importers:
       '@googleapis/youtube':
         specifier: 40.1.0
         version: 40.1.0
+      '@shinju-date/database':
+        specifier: workspace:*
+        version: link:../database
       zod:
         specifier: 4.6.7
         version: 4.6.7
