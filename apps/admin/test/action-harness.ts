@@ -44,12 +44,7 @@ vi.mock('@/lib/supabase', () => ({
   createSupabaseServerClient: mocks.createSupabaseServerClient,
 }))
 vi.mock('@/lib/supabase/admin', () => ({
-  // The service role client is created on import, so resolve the fake
-  // client of the current test file lazily.
-  supabaseClient: new Proxy(
-    {},
-    { get: (_target, property) => Reflect.get(currentClient(), property) },
-  ),
+  getSupabaseAdminClient: () => currentClient(),
 }))
 vi.mock('@/lib/audit-log', () => ({ createAuditLog: mocks.createAuditLog }))
 vi.mock('@/lib/redis', () => ({ getRedisClient: mocks.getRedisClient }))

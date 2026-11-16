@@ -11,7 +11,7 @@ import { createAuditLog } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 import { getRedisClient } from '@/lib/redis'
 import type { TypedSupabaseClient } from '@/lib/supabase'
-import { supabaseClient as supabaseAdminClient } from '@/lib/supabase/admin'
+import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 import {
   type BackfillAccount,
   getBackfillAccounts,
@@ -131,7 +131,7 @@ async function getRequesterEmails(
     [...new Set(ids)].map(async (id) => {
       try {
         const { data, error } =
-          await supabaseAdminClient.auth.admin.getUserById(id)
+          await getSupabaseAdminClient().auth.admin.getUserById(id)
 
         if (!error && data.user?.email) {
           emails.set(id, data.user.email)
