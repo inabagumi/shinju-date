@@ -111,9 +111,16 @@ describe('VolumeChart', () => {
     expect(screen.getByText('総クリック数')).toBeInTheDocument()
     expect(screen.getByText('1,201')).toBeInTheDocument()
     expect(document.querySelectorAll('.recharts-bar-rectangle')).toHaveLength(2)
+    // The series color comes from the class, not from the fill attribute
+    expect(document.querySelector('.recharts-bar')).toHaveClass('text-accent')
     expect(document.querySelector('.recharts-area')).toBeNull()
 
     await hoverSecondDay()
+
+    // The active day gets a muted background
+    expect(document.querySelector('.recharts-tooltip-cursor')).toHaveClass(
+      'fill-muted',
+    )
 
     const tooltip = document.querySelector('.recharts-tooltip-wrapper')
     expect(tooltip).toHaveTextContent('2026/11/09')
@@ -139,15 +146,22 @@ describe('VolumeChart', () => {
     const area = document.querySelector('.recharts-area-area')
     const gradientId = area?.getAttribute('fill')?.match(/^url\(#(.+)\)$/)?.[1]
     expect(gradientId).toBeDefined()
-    expect(
-      document.getElementById(gradientId ?? '')?.tagName.toLowerCase(),
-    ).toBe('lineargradient')
+    const gradient = document.getElementById(gradientId ?? '')
+    expect(gradient?.tagName.toLowerCase()).toBe('lineargradient')
+    expect(gradient).toHaveClass('text-accent')
+    // The series color comes from the class, not from the stroke attribute
+    expect(document.querySelector('.recharts-area')).toHaveClass('text-accent')
     expect(document.querySelector('.recharts-area-curve')).toHaveAttribute(
       'stroke',
-      'var(--color-accent)',
+      'currentColor',
     )
 
     await hoverSecondDay()
+
+    // The active dot is drawn outside the series, so it has its own class
+    expect(document.querySelector('.recharts-active-dot circle')).toHaveClass(
+      'text-accent',
+    )
 
     const tooltip = document.querySelector('.recharts-tooltip-wrapper')
     expect(tooltip).toHaveTextContent('検索数')

@@ -10,12 +10,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import {
-  CHART_AXIS_TICK,
-  CHART_COLORS,
-  CHART_TOOLTIP_CONTENT_STYLE,
-  CHART_TOOLTIP_LABEL_STYLE,
-} from '../_lib/chart-colors'
+import type { ChartSeries } from '../_lib/chart-series'
+import { ChartLegendContent } from './chart-legend-content'
+import { ChartTooltipContent } from './chart-tooltip-content'
 
 interface VideoStatsChartProps {
   data: Array<{
@@ -27,65 +24,86 @@ interface VideoStatsChartProps {
   }>
 }
 
-// Label mapping for chart legend and tooltip
-const LABEL_MAP: Record<string, string> = {
-  hiddenVideos: '非表示',
-  scheduledVideos: '配信予定',
-  visibleVideos: '公開中',
-} as const
+interface VideoStatsSeries extends ChartSeries {
+  /** 同じ値の系列は積み上げる */
+  stackId: string
+}
+
+const SERIES: VideoStatsSeries[] = [
+  {
+    className: 'text-success',
+    key: 'visibleVideos',
+    label: '公開中',
+    stackId: 'visible',
+  },
+  {
+    className: 'text-accent',
+    key: 'scheduledVideos',
+    label: '配信予定',
+    stackId: 'visible',
+  },
+  {
+    className: 'text-warning',
+    key: 'hiddenVideos',
+    label: '非表示',
+    stackId: 'hidden',
+  },
+]
+
+function formatValue(value: number): string {
+  return `${value} 本`
+}
 
 export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
+  // 線（グリッド、目盛りの線）は `currentColor` にして、グラフのルートの
+  // `text-border` を使う。`CartesianGrid` は `className` を線に渡さないため
   return (
     <div className="h-80 w-full">
       <ResponsiveContainer height="100%" width="100%">
-        <AreaChart data={data}>
-          <CartesianGrid stroke={CHART_COLORS.grid} strokeDasharray="3 3" />
+        <AreaChart className="text-border" data={data}>
+          <CartesianGrid stroke="currentColor" strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
-            tick={CHART_AXIS_TICK}
-            tickLine={{ stroke: CHART_COLORS.grid }}
+            tick={{
+              className: 'text-muted',
+              fill: 'currentColor',
+              fontSize: 12,
+            }}
+            tickLine={{ stroke: 'currentColor' }}
           />
           <YAxis
             domain={['auto', 'auto']}
-            tick={CHART_AXIS_TICK}
-            tickLine={{ stroke: CHART_COLORS.grid }}
+            tick={{
+              className: 'text-muted',
+              fill: 'currentColor',
+              fontSize: 12,
+            }}
+            tickLine={{ stroke: 'currentColor' }}
           />
           <Tooltip
-            contentStyle={CHART_TOOLTIP_CONTENT_STYLE}
-            formatter={(value, name) => [
-              `${value ?? 0} 本`,
-              LABEL_MAP[String(name ?? '')] || String(name ?? ''),
-            ]}
-            labelStyle={CHART_TOOLTIP_LABEL_STYLE}
+            content={
+              <ChartTooltipContent
+                colorItems
+                formatValue={formatValue}
+                series={SERIES}
+              />
+            }
           />
-          <Legend
-            formatter={(value) => LABEL_MAP[String(value)] || String(value)}
-            iconType="rect"
-            wrapperStyle={{ paddingTop: '20px' }}
-          />
-          <Area
-            dataKey="visibleVideos"
-            fill={CHART_COLORS.success}
-            fillOpacity={0.15}
-            stackId="visible"
-            stroke={CHART_COLORS.success}
-            type="monotone"
-          />
-          <Area
-            dataKey="scheduledVideos"
-            fill={CHART_COLORS.accent}
-            fillOpacity={0.15}
-            stackId="visible"
-            stroke={CHART_COLORS.accent}
-            type="monotone"
-          />
-          <Area
-            dataKey="hiddenVideos"
-            fill={CHART_COLORS.warning}
-            fillOpacity={0.15}
-            stroke={CHART_COLORS.warning}
-            type="monotone"
-          />
+          <Legend content={<ChartLegendContent series={SERIES} />} />
+          {SERIES.map((item) => (
+            <Area
+              // ホバー中の点は系列の外に描かれるので、点にも色のクラスを付ける
+              activeDot={{ className: item.className }}
+              className={item.className}
+              dataKey={item.key}
+              fill="currentColor"
+              fillOpacity={0.15}
+              key={item.key}
+              stackId={item.stackId}
+              stroke="currentColor"
+              type="monotone"
+            />
+          ))}
         </AreaChart>
       </ResponsiveContainer>
     </div>

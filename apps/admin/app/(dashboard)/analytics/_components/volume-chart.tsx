@@ -1,13 +1,12 @@
 import { formatNumber } from '@shinju-date/helpers'
 import { StatTile } from '@shinju-date/ui'
-import { CHART_COLORS } from '../../_lib/chart-colors'
+import type { ChartSeries } from '../../_lib/chart-series'
 import { formatDateLabel } from '../_lib/format-date'
 import type { AnalyticsSearchParams } from '../_lib/search-params-schema'
 import { getClickVolume } from '../click/_lib/get-click-volume'
 import { getSearchVolume } from '../search/_lib/get-search-volume'
 import {
   type VolumeChartDatum,
-  type VolumeChartSeries,
   VolumeChartUI,
   type VolumeChartVariant,
 } from './volume-chart-ui'
@@ -15,7 +14,7 @@ import {
 interface VolumeChartKindDefinition {
   /** 期間（`YYYY-MM-DD`）の日ごとの件数を取る */
   fetchData: (startDate: string, endDate: string) => Promise<VolumeChartDatum[]>
-  series: VolumeChartSeries[]
+  series: ChartSeries[]
   /** 合計を出す系列のキーと、その見出し */
   total: {
     key: string
@@ -30,15 +29,13 @@ interface VolumeChartKindDefinition {
 const VOLUME_CHART_KINDS = {
   click: {
     fetchData: (startDate, endDate) => getClickVolume(7, startDate, endDate),
-    series: [
-      { color: CHART_COLORS.accent, key: 'clicks', label: 'クリック数' },
-    ],
+    series: [{ className: 'text-accent', key: 'clicks', label: 'クリック数' }],
     total: { key: 'clicks', label: '総クリック数' },
     variant: 'bar',
   },
   search: {
     fetchData: (startDate, endDate) => getSearchVolume(7, startDate, endDate),
-    series: [{ color: CHART_COLORS.accent, key: 'count', label: '検索数' }],
+    series: [{ className: 'text-accent', key: 'count', label: '検索数' }],
     total: { key: 'count', label: '総検索数' },
     variant: 'area',
   },

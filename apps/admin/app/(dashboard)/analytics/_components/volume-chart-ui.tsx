@@ -1,7 +1,7 @@
 'use client'
 
 import { formatNumber } from '@shinju-date/helpers'
-import { type ReactNode, useId } from 'react'
+import { useId } from 'react'
 import {
   Area,
   AreaChart,
@@ -14,25 +14,10 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import {
-  CHART_AXIS_TICK,
-  CHART_COLORS,
-  CHART_TOOLTIP_CONTENT_STYLE,
-  CHART_TOOLTIP_ITEM_STYLE,
-  CHART_TOOLTIP_LABEL_STYLE,
-} from '../../_lib/chart-colors'
+import { ChartTooltipContent } from '../../_components/chart-tooltip-content'
+import type { ChartSeries } from '../../_lib/chart-series'
 import { formatDateLabel } from '../_lib/format-date'
 import { useSelectedDateParam } from '../_lib/use-selected-date-param'
-
-/** グラフの1系列（線・面・棒）の定義 */
-export interface VolumeChartSeries {
-  /** 系列の色（`CHART_COLORS` の値） */
-  color: string
-  /** データの中の、この系列の値のキー */
-  key: string
-  /** ツールチップに出す系列の名前 */
-  label: string
-}
 
 /** 1日分のデータ。`date` のほかに、系列のキーごとの件数を持つ */
 export interface VolumeChartDatum {
@@ -45,16 +30,12 @@ export type VolumeChartVariant = 'area' | 'bar'
 
 interface VolumeChartUIProps {
   data: VolumeChartDatum[]
-  series: VolumeChartSeries[]
+  series: ChartSeries[]
   variant: VolumeChartVariant
 }
 
-function formatTooltipValue(value: unknown): string {
-  return `${formatNumber(typeof value === 'number' ? value : 0)} 回`
-}
-
-function formatTooltipLabel(label: ReactNode): ReactNode {
-  return typeof label === 'string' ? formatDateLabel(label) : label
+function formatTooltipValue(value: number): string {
+  return `${formatNumber(value)} 回`
 }
 
 function formatTick(value: string): string {
@@ -75,29 +56,34 @@ export function VolumeChartUI({ data, series, variant }: VolumeChartUIProps) {
     }
   }
 
+  // 線（グリッド、軸、目盛りの線）は `currentColor` にして、グラフのルートの
+  // `text-border` を使う。`CartesianGrid` は `className` を線に渡さないため
   const axes = (
     <>
-      <CartesianGrid stroke={CHART_COLORS.grid} strokeDasharray="3 3" />
+      <CartesianGrid stroke="currentColor" strokeDasharray="3 3" />
       <XAxis
-        axisLine={{ stroke: CHART_COLORS.grid }}
+        axisLine={{ stroke: 'currentColor' }}
         dataKey="date"
-        tick={CHART_AXIS_TICK}
+        tick={{ className: 'text-muted', fill: 'currentColor', fontSize: 12 }}
         tickFormatter={formatTick}
-        tickLine={{ stroke: CHART_COLORS.grid }}
+        tickLine={{ stroke: 'currentColor' }}
       />
       <YAxis
-        axisLine={{ stroke: CHART_COLORS.grid }}
-        tick={CHART_AXIS_TICK}
-        tickLine={{ stroke: CHART_COLORS.grid }}
+        axisLine={{ stroke: 'currentColor' }}
+        tick={{ className: 'text-muted', fill: 'currentColor', fontSize: 12 }}
+        tickLine={{ stroke: 'currentColor' }}
       />
       <Tooltip
-        contentStyle={CHART_TOOLTIP_CONTENT_STYLE}
+        content={
+          <ChartTooltipContent
+            formatLabel={formatDateLabel}
+            formatValue={formatTooltipValue}
+            series={series}
+          />
+        }
+        // 棒グラフのホバー中の背景。`fill-*` のクラスは SVG の `fill` 属性より優先される。
         // 面グラフは、既定の縦線のカーソルのままにする
-        cursor={variant === 'bar' ? { fill: CHART_COLORS.cursor } : true}
-        formatter={(value, name) => [formatTooltipValue(value), name]}
-        itemStyle={CHART_TOOLTIP_ITEM_STYLE}
-        labelFormatter={formatTooltipLabel}
-        labelStyle={CHART_TOOLTIP_LABEL_STYLE}
+        cursor={variant === 'bar' ? { className: 'fill-muted' } : true}
       />
     </>
   )
@@ -106,13 +92,14 @@ export function VolumeChartUI({ data, series, variant }: VolumeChartUIProps) {
     <div className="h-64 w-full">
       <ResponsiveContainer height="100%" width="100%">
         {variant === 'bar' ? (
-          <BarChart data={data} onClick={handleClick}>
+          <BarChart className="text-border" data={data} onClick={handleClick}>
             {axes}
             {series.map((item) => (
               <Bar
+                className={item.className}
                 cursor="pointer"
                 dataKey={item.key}
-                fill={item.color}
+                fill="currentColor"
                 key={item.key}
                 name={item.label}
                 radius={[4, 4, 0, 0]}
@@ -120,10 +107,11 @@ export function VolumeChartUI({ data, series, variant }: VolumeChartUIProps) {
             ))}
           </BarChart>
         ) : (
-          <AreaChart data={data} onClick={handleClick}>
+          <AreaChart className="text-border" data={data} onClick={handleClick}>
             <defs>
               {series.map((item) => (
                 <linearGradient
+                  className={item.className}
                   id={`${gradientIdPrefix}-${item.key}`}
                   key={item.key}
                   x1="0"
@@ -131,21 +119,28 @@ export function VolumeChartUI({ data, series, variant }: VolumeChartUIProps) {
                   y1="0"
                   y2="1"
                 >
-                  <stop offset="5%" stopColor={item.color} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={item.color} stopOpacity={0} />
+                  <stop
+                    offset="5%"
+                    stopColor="currentColor"
+                    stopOpacity={0.3}
+                  />
+                  <stop offset="95%" stopColor="currentColor" stopOpacity={0} />
                 </linearGradient>
               ))}
             </defs>
             {axes}
             {series.map((item) => (
               <Area
+                // ホバー中の点は系列の外に描かれるので、点にも色のクラスを付ける
+                activeDot={{ className: item.className }}
+                className={item.className}
                 cursor="pointer"
                 dataKey={item.key}
                 fill={`url(#${gradientIdPrefix}-${item.key})`}
                 fillOpacity={1}
                 key={item.key}
                 name={item.label}
-                stroke={item.color}
+                stroke="currentColor"
                 strokeWidth={2}
                 type="monotone"
               />
