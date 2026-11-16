@@ -194,8 +194,6 @@ ENABLE_MSW=true
 # Supabase（MSW用のフェイク値）
 NEXT_PUBLIC_SUPABASE_ANON_KEY="fake"
 NEXT_PUBLIC_SUPABASE_URL="https://fake.supabase.test"
-
-# サービスロールキー（公開サイトと管理画面）
 SUPABASE_SERVICE_ROLE_KEY="fake"
 
 # Upstash Redis（MSW用のフェイク値）
