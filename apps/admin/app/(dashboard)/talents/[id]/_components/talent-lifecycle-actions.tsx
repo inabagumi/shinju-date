@@ -2,12 +2,13 @@
 
 import type { Tables } from '@shinju-date/database'
 import { Button } from '@shinju-date/ui'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import {
   activateTalentAction,
+  deleteTalentAction,
   restoreTalentAction,
   retireTalentAction,
 } from '../../_actions'
-import { DeleteConfirmDialog } from '../../_components/delete-confirm-dialog'
 import { useTalentLifecycleAction } from '../../_lib/use-talent-lifecycle-action'
 
 type Talent = Pick<Tables<'talents'>, 'id' | 'name' | 'status' | 'deleted_at'>
@@ -68,9 +69,13 @@ export function TalentLifecycleActions({
                 {isPending ? '処理中...' : 'アクティブに戻す'}
               </Button>
             )}
-            <DeleteConfirmDialog
-              talentId={talent.id}
-              talentName={talent.name}
+            <ConfirmDialog
+              confirmLabel="削除"
+              confirmVariant="danger"
+              description={`「${talent.name}」を削除しますか？紐づく動画も非公開になります。`}
+              onConfirm={() => deleteTalentAction(talent.id)}
+              title="タレントを削除"
+              trigger={<Button variant="danger">削除</Button>}
             />
           </>
         )}

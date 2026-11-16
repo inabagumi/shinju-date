@@ -14,7 +14,8 @@ import {
 } from '@shinju-date/ui'
 import { BookOpen } from 'lucide-react'
 import { Fragment, Suspense, use, useMemo, useState } from 'react'
-import { DeleteConfirmDialog } from './delete-confirm-dialog'
+import { ConfirmDialog } from '@/components/confirm-dialog'
+import { deleteTermAction } from '../_actions'
 import { TermModal } from './term-modal'
 
 interface Term {
@@ -193,9 +194,17 @@ function TermsResults({
                   <TableCell>
                     <div className="flex justify-end gap-4">
                       <TermModal term={term} />
-                      <DeleteConfirmDialog
-                        termId={term.id}
-                        termName={term.term}
+                      <ConfirmDialog
+                        confirmLabel="削除"
+                        confirmVariant="danger"
+                        description={`本当に「${term.term}」を削除しますか？この操作は取り消せません。`}
+                        onConfirm={() => deleteTermAction(term.id)}
+                        title="用語を削除"
+                        trigger={
+                          <Button size="sm" variant="danger">
+                            削除
+                          </Button>
+                        }
                       />
                     </div>
                   </TableCell>
