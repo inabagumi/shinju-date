@@ -253,11 +253,16 @@ MSW（Mock Service Worker）はサーバー側でだけ動くため、サービ�
 
 ```bash
 # すべてのアプリを同時に起動
-pnpm run dev --concurrency 17
+pnpm run dev
 
 # または、特定のアプリのみを起動
-pnpm run dev --filter=web
+pnpm run dev --filter=@shinju-date/web
 ```
+
+`pnpm run dev`（`scripts/dev.js`）は、`packages/*` をビルドしてから、次の2つを並べて動かします。パッケージのソースを変えると、そのパッケージが再ビルドされ、アプリに反映されます。
+
+- `turbo watch build --filter='./packages/*'`: パッケージの変更を監視して、再ビルドする
+- `turbo dev --filter='./apps/*'`: 各アプリの `next dev` を起動する（`--filter` を指定すると、アプリの絞り込みを置き換える）
 
 お疲れ様でした！これで開発環境のセットアップは完了です。
 
