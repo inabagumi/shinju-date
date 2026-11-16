@@ -1,45 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { setupActionTest } from '@/test/action-harness'
+import { createVideo } from '@/test/factories'
+import { postgresError, type SupabaseRequest } from '@/test/supabase'
 import { restoreAction, toggleVisibilityAction } from '../index'
 
-// Mock dependencies
-vi.mock('@/lib/supabase', () => ({
-  createSupabaseServerClient: vi.fn(),
-}))
-
-// Server Action の認証ガードを通過させ、各テストでモックした Supabase クライアントを渡す
-vi.mock('@/lib/auth', async (importOriginal) => {
-  const { createSupabaseServerClient } = await import('@/lib/supabase')
-
-  return {
-    ...(await importOriginal<typeof import('@/lib/auth')>()),
-    requireAuthenticatedUser: vi.fn(async () => ({
-      supabaseClient: await createSupabaseServerClient(),
-      user: { id: 'test-user-id' },
-    })),
-  }
-})
-
-vi.mock('@shinju-date/logger', () => ({
-  logger: {
-    error: vi.fn(),
-  },
-}))
-
-vi.mock('@/lib/audit-log', () => ({
-  createAuditLog: vi.fn().mockResolvedValue(undefined),
-}))
-
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
-}))
-
-vi.mock('@shinju-date/web-cache', () => ({
-  revalidateTags: vi.fn(),
-}))
-
-vi.mock('@shinju-date/temporal-fns', () => ({
-  toDBString: vi.fn((instant) => instant.toString()),
-}))
+const test = setupActionTest()
+const { supabase } = test
 
 vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
   Temporal.Instant.from('2024-11-24T17:00:00Z'),
@@ -56,21 +22,7 @@ describe('restoreAction', () => {
   })
 
   it('should return error when videos are not found', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-
-    const mockSupabaseClient = {
-      from: vi.fn().mockReturnThis(),
-      in: vi.fn().mockResolvedValue({
-        data: [],
-        error: null,
-      }),
-      select: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
+    supabase.on('select', 'videos', [])
 
     const result = await restoreAction(['video-id-1'])
 
@@ -81,236 +33,94 @@ describe('restoreAction', () => {
   })
 
   it('should successfully restore single video without thumbnail', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-    const { createAuditLog } = await import('@/lib/audit-log')
-    const { revalidatePath } = await import('next/cache')
-    const { revalidateTags } = await import('@shinju-date/web-cache')
-
-    const mockSupabaseClient = {
-      from: vi.fn().mockReturnThis(),
-      // biome-ignore lint/suspicious/noExplicitAny: Testing requires dynamic context binding
-      in: vi.fn().mockImplementation(function (this: any) {
-        // For select().in() - return video data
-        if (this.selectCalled) {
-          return Promise.resolve({
-            data: [
-              { id: 'video-id-1', thumbnail_id: null, title: 'Test Video' },
-            ],
-            error: null,
-          })
-        }
-        // For update().in() - return this for chaining
-        return this
+    supabase.on('select', 'videos', [
+      createVideo({
+        id: 'video-id-1',
+        thumbnail_id: null,
+        title: 'Test Video',
       }),
-      select: vi.fn().mockReturnThis(),
-      // biome-ignore lint/suspicious/noExplicitAny: Testing requires dynamic context binding
-      update: vi.fn().mockImplementation(function (this: any) {
-        this.updateCalled = true
-        return this
-      }),
-    }
-
-    // Track when select is called
-    // biome-ignore lint/suspicious/noExplicitAny: Testing requires dynamic context binding
-    mockSupabaseClient.select.mockImplementation(function (this: any) {
-      this.selectCalled = true
-      return this
-    })
-
-    // When in() is called after update, resolve with success
-    const inSpy = vi.spyOn(mockSupabaseClient, 'in')
-    // biome-ignore lint/suspicious/noExplicitAny: Testing requires dynamic context binding
-    inSpy.mockImplementation(function (this: any) {
-      if (this.updateCalled) {
-        return Promise.resolve({ data: null, error: null })
-      }
-      return Promise.resolve({
-        data: [{ id: 'video-id-1', thumbnail_id: null, title: 'Test Video' }],
-        error: null,
-      })
-    })
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
+    ])
 
     const result = await restoreAction(['video-id-1'])
 
     expect(result).toEqual({ success: true })
-    expect(createAuditLog).toHaveBeenCalledWith(
-      'VIDEO_RESTORE',
-      'videos',
-      'video-id-1',
-      { entityName: 'Test Video' },
-    )
-    expect(revalidatePath).toHaveBeenCalledWith('/videos')
-    expect(revalidateTags).toHaveBeenCalledWith(['videos'])
+    test.expectAuditLog('VIDEO_RESTORE', 'videos', 'video-id-1', {
+      entityName: 'Test Video',
+    })
+    test.expectRevalidated({ paths: ['/videos'], tags: [['videos']] })
   })
 
   it('should successfully restore video with thumbnail', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-
-    let callCount = 0
-    const mockSupabaseClient = {
-      from: vi.fn().mockReturnThis(),
-      in: vi.fn().mockImplementation(() => {
-        callCount++
-        if (callCount === 1) {
-          // First call: select videos
-          return Promise.resolve({
-            data: [
-              {
-                id: 'video-id-1',
-                thumbnail_id: 'thumb-id-1',
-                title: 'Test Video',
-              },
-            ],
-            error: null,
-          })
-        }
-        // Subsequent calls: update operations
-        return Promise.resolve({ data: null, error: null })
+    supabase.on('select', 'videos', [
+      createVideo({
+        id: 'video-id-1',
+        thumbnail_id: 'thumb-id-1',
+        title: 'Test Video',
       }),
-      select: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
+    ])
 
     const result = await restoreAction(['video-id-1'])
 
     expect(result).toEqual({ success: true })
-    // Should call in() three times: once for select, once for video update, once for thumbnail update
-    expect(mockSupabaseClient.in).toHaveBeenCalledTimes(3)
+    // Once for the select, once for the video update and once for the
+    // thumbnail update
+    expect(supabase.requests).toHaveLength(3)
   })
 
   it('should successfully restore multiple videos', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-    const { createAuditLog } = await import('@/lib/audit-log')
-
-    let callCount = 0
-    const mockSupabaseClient = {
-      from: vi.fn().mockReturnThis(),
-      in: vi.fn().mockImplementation(() => {
-        callCount++
-        if (callCount === 1) {
-          // First call: select videos
-          return Promise.resolve({
-            data: [
-              {
-                id: 'video-id-1',
-                thumbnail_id: 'thumb-id-1',
-                title: 'Test Video 1',
-              },
-              {
-                id: 'video-id-2',
-                thumbnail_id: null,
-                title: 'Test Video 2',
-              },
-            ],
-            error: null,
-          })
-        }
-        // Subsequent calls: update operations
-        return Promise.resolve({ data: null, error: null })
+    supabase.on('select', 'videos', [
+      createVideo({
+        id: 'video-id-1',
+        thumbnail_id: 'thumb-id-1',
+        title: 'Test Video 1',
       }),
-      select: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
+      createVideo({
+        id: 'video-id-2',
+        thumbnail_id: null,
+        title: 'Test Video 2',
+      }),
+    ])
 
     const result = await restoreAction(['video-id-1', 'video-id-2'])
 
     expect(result).toEqual({ success: true })
-    // Check that audit logs were created for both videos (at least 2 times)
-    expect(createAuditLog).toHaveBeenCalled()
-    const auditLogCalls = vi.mocked(createAuditLog).mock.calls
-    const videoIds = auditLogCalls.map((call) => call[2])
+    // Check that audit logs were created for both videos
+    const videoIds = test.createAuditLog.mock.calls.map(
+      (call: unknown[]) => call[2],
+    )
     expect(videoIds).toContain('video-id-1')
     expect(videoIds).toContain('video-id-2')
   })
 
   it('should return error when video update fails', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-    const { logger } = await import('@shinju-date/logger')
-
-    let callCount = 0
-    const mockSupabaseClient = {
-      from: vi.fn().mockReturnThis(),
-      in: vi.fn().mockImplementation(() => {
-        callCount++
-        if (callCount === 1) {
-          // First call: select videos
-          return Promise.resolve({
-            data: [
-              { id: 'video-id-1', thumbnail_id: null, title: 'Test Video' },
-            ],
-            error: null,
-          })
-        }
-        // Second call: update fails
-        return Promise.resolve({
-          data: null,
-          error: { message: 'Database error' },
-        })
+    supabase.on('select', 'videos', [
+      createVideo({
+        id: 'video-id-1',
+        thumbnail_id: null,
+        title: 'Test Video',
       }),
-      select: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
+    ])
+    supabase.on('update', 'videos', postgresError('XX000', 'Database error'))
 
     const result = await restoreAction(['video-id-1'])
 
     expect(result.success).toBe(false)
     expect(result.error).toBeTruthy()
-    expect(logger.error).toHaveBeenCalled()
+    expect(test.logger.error).toHaveBeenCalled()
   })
 
   it('should return error when thumbnail update fails', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-
-    let callCount = 0
-    const mockSupabaseClient = {
-      from: vi.fn().mockReturnThis(),
-      in: vi.fn().mockImplementation(() => {
-        callCount++
-        if (callCount === 1) {
-          // First call: select videos
-          return Promise.resolve({
-            data: [
-              {
-                id: 'video-id-1',
-                thumbnail_id: 'thumb-id-1',
-                title: 'Test Video',
-              },
-            ],
-            error: null,
-          })
-        }
-        if (callCount === 2) {
-          // Second call: video update succeeds
-          return Promise.resolve({ data: null, error: null })
-        }
-        // Third call: thumbnail update fails
-        return Promise.resolve({
-          data: null,
-          error: { message: 'Thumbnail update failed' },
-        })
+    supabase.on('select', 'videos', [
+      createVideo({
+        id: 'video-id-1',
+        thumbnail_id: 'thumb-id-1',
+        title: 'Test Video',
       }),
-      select: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
+    ])
+    supabase.on(
+      'update',
+      'thumbnails',
+      postgresError('XX000', 'Thumbnail update failed'),
     )
 
     const result = await restoreAction(['video-id-1'])
@@ -320,21 +130,7 @@ describe('restoreAction', () => {
   })
 
   it('should handle fetch error', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-
-    const mockSupabaseClient = {
-      from: vi.fn().mockReturnThis(),
-      in: vi.fn().mockResolvedValue({
-        data: null,
-        error: { message: 'Fetch error' },
-      }),
-      select: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
+    supabase.on('select', 'videos', postgresError('XX000', 'Fetch error'))
 
     const result = await restoreAction(['video-id-1'])
 
@@ -343,116 +139,40 @@ describe('restoreAction', () => {
   })
 })
 
-interface ToggleVideo {
-  id: string
-  title: string
-  visible: boolean
-}
-
-interface UpdateCall {
-  eq: [string, unknown][]
-  ids: string[]
-  values: Record<string, unknown>
-}
-
-interface ToggleMockOptions {
-  /** 指定した切り替え先の UPDATE をエラーにする */
-  failVisible?: boolean
-  /** UPDATE の前にほかの操作で切り替わった動画の ID */
-  changedIds?: string[]
-}
-
-/**
- * 読み取りの SELECT と、切り替え先ごとの UPDATE を模擬する Supabase クライアントを作る。
- */
-function createToggleSupabaseMock(
-  videos: ToggleVideo[],
-  { changedIds = [], failVisible }: ToggleMockOptions = {},
-) {
-  const updateCalls: UpdateCall[] = []
-
-  const from = vi.fn(() => {
-    let call: UpdateCall | undefined
-
-    const builder = {
-      eq: vi.fn((column: string, value: unknown) => {
-        call?.eq.push([column, value])
-        return builder
-      }),
-      in: vi.fn((_column: string, ids: string[]) => {
-        if (!call) {
-          return Promise.resolve({
-            data: videos.filter((video) => ids.includes(video.id)),
-            error: null,
-          })
-        }
-
-        call.ids = ids
-        return builder
-      }),
-      select: vi.fn(() => {
-        if (!call) {
-          return builder
-        }
-
-        const { values } = call
-
-        if (values['visible'] === failVisible) {
-          return Promise.resolve({
-            data: null,
-            error: { message: 'Database error' },
-          })
-        }
-
-        const [, expectedVisible] =
-          call.eq.find(([column]) => column === 'visible') ?? []
-
-        return Promise.resolve({
-          data: videos
-            .filter(
-              (video) =>
-                call?.ids.includes(video.id) &&
-                !changedIds.includes(video.id) &&
-                video.visible === expectedVisible,
-            )
-            .map(({ id, title }) => ({ id, title })),
-          error: null,
-        })
-      }),
-      update: vi.fn((values: Record<string, unknown>) => {
-        call = { eq: [], ids: [], values }
-        updateCalls.push(call)
-        return builder
-      }),
-    }
-
-    return builder
-  })
-
-  return { client: { from }, updateCalls }
-}
-
 describe('toggleVisibilityAction', () => {
-  const videos: ToggleVideo[] = [
-    { id: 'video-id-1', title: 'Hidden Video', visible: false },
-    { id: 'video-id-2', title: 'Visible Video 1', visible: true },
-    { id: 'video-id-3', title: 'Visible Video 2', visible: true },
+  const videos = [
+    createVideo({ id: 'video-id-1', title: 'Hidden Video', visible: false }),
+    createVideo({ id: 'video-id-2', title: 'Visible Video 1', visible: true }),
+    createVideo({ id: 'video-id-3', title: 'Visible Video 2', visible: true }),
   ]
   const ids = videos.map((video) => video.id)
 
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+  interface UpdateOptions {
+    /** UPDATE の前にほかの操作で切り替わった動画の ID */
+    changedIds?: string[]
+  }
 
-  async function useSupabaseMock(options?: ToggleMockOptions) {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-    const mock = createToggleSupabaseMock(videos, options)
+  /**
+   * PostgREST と同じく、`id=in.(...)` と `visible=eq.*` の両方に合う行を
+   * 更新したものとして返す。
+   */
+  function updatedRows(
+    request: SupabaseRequest,
+    { changedIds = [] }: UpdateOptions = {},
+  ) {
+    const targetIds = (request.query['id'] ?? '')
+      .replace(/^in\.\(|\)$/g, '')
+      .split(',')
+    const currentVisible = request.query['visible'] === 'eq.true'
 
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mock.client as never,
-    )
-
-    return mock
+    return videos
+      .filter(
+        (video) =>
+          targetIds.includes(video.id) &&
+          !changedIds.includes(video.id) &&
+          video.visible === currentVisible,
+      )
+      .map(({ id, title }) => ({ id, title }))
   }
 
   it('should return error when ids array is empty', async () => {
@@ -465,46 +185,51 @@ describe('toggleVisibilityAction', () => {
   })
 
   it('should update videos in one query per target visibility', async () => {
-    const { createAuditLog } = await import('@/lib/audit-log')
-    const { revalidatePath } = await import('next/cache')
-    const { revalidateTags } = await import('@shinju-date/web-cache')
-    const { updateCalls } = await useSupabaseMock()
+    supabase.on('select', 'videos', videos)
+    supabase.on('update', 'videos', (request: SupabaseRequest) =>
+      updatedRows(request),
+    )
 
     const result = await toggleVisibilityAction(ids)
 
     expect(result).toEqual({ success: true, updatedCount: 3 })
-    expect(updateCalls).toEqual([
+    expect(
+      supabase.calls('update', 'videos').map(({ body, query }) => ({
+        body,
+        id: query['id'],
+        visible: query['visible'],
+      })),
+    ).toEqual([
       {
-        eq: [['visible', false]],
-        ids: ['video-id-1'],
-        values: { updated_at: '2024-11-24T17:00:00Z', visible: true },
+        body: { updated_at: '2024-11-24T17:00:00Z', visible: true },
+        id: 'in.(video-id-1)',
+        visible: 'eq.false',
       },
       {
-        eq: [['visible', true]],
-        ids: ['video-id-2', 'video-id-3'],
-        values: { updated_at: '2024-11-24T17:00:00Z', visible: false },
+        body: { updated_at: '2024-11-24T17:00:00Z', visible: false },
+        id: 'in.(video-id-2,video-id-3)',
+        visible: 'eq.true',
       },
     ])
-    expect(createAuditLog).toHaveBeenCalledTimes(3)
+    expect(test.createAuditLog).toHaveBeenCalledTimes(3)
     for (const video of videos) {
-      expect(createAuditLog).toHaveBeenCalledWith(
-        'VIDEO_VISIBILITY_TOGGLE',
-        'videos',
-        video.id,
-        { entityName: video.title },
-      )
-      expect(revalidatePath).toHaveBeenCalledWith(`/videos/${video.id}`)
+      test.expectAuditLog('VIDEO_VISIBILITY_TOGGLE', 'videos', video.id, {
+        entityName: video.title,
+      })
     }
-    expect(revalidatePath).toHaveBeenCalledWith('/videos')
-    expect(revalidateTags).toHaveBeenCalledWith(['videos'])
+    test.expectRevalidated({
+      paths: ['/videos', ...ids.map((id) => `/videos/${id}`)],
+      tags: [['videos']],
+    })
   })
 
   it('should log and revalidate updated videos when one update fails', async () => {
-    const { createAuditLog } = await import('@/lib/audit-log')
-    const { revalidatePath } = await import('next/cache')
-    const { revalidateTags } = await import('@shinju-date/web-cache')
-    const { logger } = await import('@shinju-date/logger')
-    await useSupabaseMock({ failVisible: true })
+    supabase.on('select', 'videos', videos)
+    supabase.on('update', 'videos', (request: SupabaseRequest) =>
+      request.query['visible'] === 'eq.false'
+        ? postgresError('XX000', 'Database error')
+        : updatedRows(request),
+    )
 
     const result = await toggleVisibilityAction(ids)
 
@@ -513,29 +238,31 @@ describe('toggleVisibilityAction', () => {
       success: false,
       updatedCount: 2,
     })
-    expect(createAuditLog).toHaveBeenCalledTimes(2)
-    expect(createAuditLog).not.toHaveBeenCalledWith(
+    expect(test.createAuditLog).toHaveBeenCalledTimes(2)
+    expect(test.createAuditLog).not.toHaveBeenCalledWith(
       'VIDEO_VISIBILITY_TOGGLE',
       'videos',
       'video-id-1',
       expect.anything(),
     )
-    expect(revalidatePath).toHaveBeenCalledWith('/videos')
-    expect(revalidatePath).toHaveBeenCalledWith('/videos/video-id-2')
-    expect(revalidatePath).toHaveBeenCalledWith('/videos/video-id-3')
-    expect(revalidatePath).not.toHaveBeenCalledWith('/videos/video-id-1')
-    expect(revalidateTags).toHaveBeenCalledWith(['videos'])
-    expect(logger.error).toHaveBeenCalledWith('動画の表示切替に失敗しました', {
-      error: { message: 'Database error' },
-      ids: 'video-id-1',
+    test.expectRevalidated({
+      paths: ['/videos', '/videos/video-id-2', '/videos/video-id-3'],
+      tags: [['videos']],
     })
+    expect(test.revalidatePath).not.toHaveBeenCalledWith('/videos/video-id-1')
+    expect(test.logger.error).toHaveBeenCalledWith(
+      '動画の表示切替に失敗しました',
+      expect.objectContaining({ ids: 'video-id-1' }),
+    )
   })
 
   it('should not log or revalidate when no video is updated', async () => {
-    const { createAuditLog } = await import('@/lib/audit-log')
-    const { revalidatePath } = await import('next/cache')
-    const { revalidateTags } = await import('@shinju-date/web-cache')
-    await useSupabaseMock({ changedIds: ['video-id-1'], failVisible: false })
+    supabase.on('select', 'videos', videos)
+    supabase.on('update', 'videos', (request: SupabaseRequest) =>
+      request.query['visible'] === 'eq.true'
+        ? postgresError('XX000', 'Database error')
+        : updatedRows(request, { changedIds: ['video-id-1'] }),
+    )
 
     const result = await toggleVisibilityAction(ids)
 
@@ -544,14 +271,15 @@ describe('toggleVisibilityAction', () => {
       success: false,
       updatedCount: 0,
     })
-    expect(createAuditLog).not.toHaveBeenCalled()
-    expect(revalidatePath).not.toHaveBeenCalled()
-    expect(revalidateTags).not.toHaveBeenCalled()
+    test.expectNoAuditLog()
+    test.expectNotRevalidated()
   })
 
   it('should skip videos changed by another operation after reading', async () => {
-    const { createAuditLog } = await import('@/lib/audit-log')
-    await useSupabaseMock({ changedIds: ['video-id-2'] })
+    supabase.on('select', 'videos', videos)
+    supabase.on('update', 'videos', (request: SupabaseRequest) =>
+      updatedRows(request, { changedIds: ['video-id-2'] }),
+    )
 
     const result = await toggleVisibilityAction(ids)
 
@@ -560,8 +288,8 @@ describe('toggleVisibilityAction', () => {
       success: false,
       updatedCount: 2,
     })
-    expect(createAuditLog).toHaveBeenCalledTimes(2)
-    expect(createAuditLog).not.toHaveBeenCalledWith(
+    expect(test.createAuditLog).toHaveBeenCalledTimes(2)
+    expect(test.createAuditLog).not.toHaveBeenCalledWith(
       'VIDEO_VISIBILITY_TOGGLE',
       'videos',
       'video-id-2',

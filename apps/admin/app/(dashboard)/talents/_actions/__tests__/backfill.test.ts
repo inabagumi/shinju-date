@@ -1,35 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { setupActionTest } from '@/test/action-harness'
+import {
+  getVideoBackfillStatusAction,
+  requestVideoBackfillAction,
+} from '../backfill'
 
 const mocks = vi.hoisted(() => ({
-  createAuditLog: vi.fn(),
   enqueue: vi.fn(),
   getJobs: vi.fn(),
-  maybeSingle: vi.fn(),
 }))
 
-vi.mock('@/lib/auth', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/auth')>()),
-  requireAuthenticatedUser: vi.fn(async () => ({
-    supabaseClient: {
-      from: vi.fn(() => {
-        const query = {
-          eq: vi.fn(() => query),
-          is: vi.fn(() => query),
-          maybeSingle: mocks.maybeSingle,
-          select: vi.fn(() => query),
-        }
-
-        return query
-      }),
-    },
-    user: { id: 'user-1' },
-  })),
-}))
-vi.mock('@/lib/redis', () => ({ getRedisClient: vi.fn(() => ({})) }))
-vi.mock('@/lib/audit-log', () => ({ createAuditLog: mocks.createAuditLog }))
-vi.mock('@shinju-date/logger', () => ({
-  logger: { error: vi.fn(), warn: vi.fn() },
-}))
 vi.mock('@shinju-date/video-backfill', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@shinju-date/video-backfill')>()),
   BackfillQueue: class {
@@ -38,8 +18,12 @@ vi.mock('@shinju-date/video-backfill', async (importOriginal) => ({
   },
 }))
 
-const { getVideoBackfillStatusAction, requestVideoBackfillAction } =
-  await import('../backfill')
+const test = setupActionTest()
+const { supabase } = test
+
+beforeEach(() => {
+  test.signIn({ id: 'user-1' })
+})
 
 const talentId = '123e4567-e89b-12d3-a456-426614174000'
 const talent = {
@@ -60,8 +44,7 @@ const talent = {
 
 describe('requestVideoBackfillAction', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    mocks.maybeSingle.mockResolvedValue({ data: talent, error: null })
+    supabase.on('select', 'talents', [talent])
     mocks.enqueue.mockResolvedValue({ enqueued: true, job: {} })
   })
 
@@ -88,7 +71,7 @@ describe('requestVideoBackfillAction', () => {
         },
       ],
     ])
-    expect(mocks.createAuditLog).toHaveBeenCalledWith(
+    expect(test.createAuditLog).toHaveBeenCalledWith(
       'VIDEO_BACKFILL',
       'channels',
       talentId,
@@ -112,7 +95,7 @@ describe('requestVideoBackfillAction', () => {
       error: 'Twitchの過去動画の取り込みは既に実行中です。',
       success: false,
     })
-    expect(mocks.createAuditLog).not.toHaveBeenCalled()
+    expect(test.createAuditLog).not.toHaveBeenCalled()
   })
 
   it('reports the accounts that were skipped', async () => {
@@ -123,7 +106,7 @@ describe('requestVideoBackfillAction', () => {
     const result = await requestVideoBackfillAction(talentId, 'youtube')
 
     expect(result.message).toContain('実行中の1件は除く')
-    expect(mocks.createAuditLog).toHaveBeenCalledWith(
+    expect(test.createAuditLog).toHaveBeenCalledWith(
       'VIDEO_BACKFILL',
       'channels',
       talentId,
@@ -145,7 +128,7 @@ describe('requestVideoBackfillAction', () => {
         'YouTubeの過去動画の取り込みを1件キューに追加しましたが、1件は追加できませんでした（redis unavailable）。',
       success: false,
     })
-    expect(mocks.createAuditLog).toHaveBeenCalledWith(
+    expect(test.createAuditLog).toHaveBeenCalledWith(
       'VIDEO_BACKFILL',
       'channels',
       talentId,
@@ -165,14 +148,11 @@ describe('requestVideoBackfillAction', () => {
         'Twitchの過去動画の取り込みをキューに追加できませんでした（redis unavailable）。',
       success: false,
     })
-    expect(mocks.createAuditLog).not.toHaveBeenCalled()
+    expect(test.createAuditLog).not.toHaveBeenCalled()
   })
 
   it('rejects a talent without accounts of the platform', async () => {
-    mocks.maybeSingle.mockResolvedValue({
-      data: { ...talent, twitch_users: [] },
-      error: null,
-    })
+    supabase.on('select', 'talents', [{ ...talent, twitch_users: [] }])
 
     await expect(
       requestVideoBackfillAction(talentId, 'twitch'),
@@ -184,7 +164,7 @@ describe('requestVideoBackfillAction', () => {
   })
 
   it('rejects a talent that is deleted or unknown', async () => {
-    mocks.maybeSingle.mockResolvedValue({ data: null, error: null })
+    supabase.on('select', 'talents', [])
 
     await expect(
       requestVideoBackfillAction(talentId, 'youtube'),
@@ -198,14 +178,13 @@ describe('requestVideoBackfillAction', () => {
     await expect(
       requestVideoBackfillAction(talentId, 'niconico' as unknown as 'youtube'),
     ).resolves.toMatchObject({ success: false })
-    expect(mocks.maybeSingle).not.toHaveBeenCalled()
+    expect(supabase.calls('select', 'talents')).toEqual([])
   })
 })
 
 describe('getVideoBackfillStatusAction', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    mocks.maybeSingle.mockResolvedValue({ data: talent, error: null })
+    supabase.on('select', 'talents', [talent])
   })
 
   it('returns the progress of every account', async () => {
