@@ -1,4 +1,4 @@
-import { REDIS_KEYS } from '@shinju-date/constants'
+import { CACHE_TAGS, REDIS_KEYS } from '@shinju-date/constants'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { redisClient } from './redis'
@@ -21,7 +21,7 @@ export async function finishVideoSync({
   signal,
 }: FinishVideoSyncOptions): Promise<void> {
   if (changed) {
-    await revalidateTags(['videos'], { signal })
+    await revalidateTags([CACHE_TAGS.VIDEOS], { signal })
   }
 
   await redisClient.set(REDIS_KEYS.LAST_VIDEO_SYNC, toDBString(now))

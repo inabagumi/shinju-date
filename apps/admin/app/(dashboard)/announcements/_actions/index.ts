@@ -1,5 +1,6 @@
 'use server'
 
+import { CACHE_TAGS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
@@ -97,7 +98,7 @@ export async function createAnnouncementAction(
 
     revalidatePath('/announcements')
     revalidatePath('/', 'page')
-    await revalidateTags(['announcements'])
+    await revalidateTags([CACHE_TAGS.ANNOUNCEMENTS])
     return {}
   } catch (error) {
     logger.error('お知らせの追加に失敗しました', {
@@ -199,7 +200,7 @@ export async function updateAnnouncementAction(
 
     revalidatePath('/announcements')
     revalidatePath('/', 'page')
-    await revalidateTags(['announcements'])
+    await revalidateTags([CACHE_TAGS.ANNOUNCEMENTS])
     return {}
   } catch (error) {
     logger.error('お知らせの更新に失敗しました', {
@@ -254,7 +255,7 @@ export async function deleteAnnouncementAction(id: string): Promise<{
 
     revalidatePath('/announcements')
     revalidatePath('/', 'page')
-    await revalidateTags(['announcements'])
+    await revalidateTags([CACHE_TAGS.ANNOUNCEMENTS])
     return { success: true }
   } catch (error) {
     logger.error('お知らせの削除に失敗しました', { error, id })

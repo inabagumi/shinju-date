@@ -1,6 +1,10 @@
 'use server'
 
-import { SEARCH_RESULT_COUNT, TIME_ZONE } from '@shinju-date/constants'
+import {
+  CACHE_TAGS,
+  SEARCH_RESULT_COUNT,
+  TIME_ZONE,
+} from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { startOfHour, toDBString } from '@shinju-date/temporal-fns'
 import { cacheLife, cacheTag } from 'next/cache'
@@ -107,7 +111,7 @@ export const fetchUpcomingVideos = async (): Promise<UpcomingVideos> => {
   'use cache: remote'
 
   cacheLife('hours')
-  cacheTag('videos')
+  cacheTag(CACHE_TAGS.VIDEOS)
 
   const baseTime = startOfHour(Temporal.Now.zonedDateTimeISO(TIME_ZONE))
   const until = baseTime.add({
@@ -203,7 +207,7 @@ export const fetchOldestVideoDate = async (): Promise<string | null> => {
   'use cache: remote'
 
   cacheLife('days')
-  cacheTag('videos')
+  cacheTag(CACHE_TAGS.VIDEOS)
 
   const { data: video, error } = await supabaseClient
     .from('videos')
@@ -242,7 +246,7 @@ export const fetchScheduleVideos = async (
   'use cache: remote'
 
   cacheLife('hours')
-  cacheTag('videos')
+  cacheTag(CACHE_TAGS.VIDEOS)
 
   const since = Temporal.PlainDate.from(weekStart).toZonedDateTime(TIME_ZONE)
   const until = since.add({ weeks: 1 })
@@ -293,7 +297,7 @@ export const fetchVideos = async ({
   'use cache: remote'
 
   cacheLife('hours')
-  cacheTag('videos')
+  cacheTag(CACHE_TAGS.VIDEOS)
 
   const baseTime = until
     ? Temporal.Instant.fromEpochNanoseconds(until)
@@ -337,7 +341,7 @@ export const countVideos = async ({
   'use cache: remote'
 
   cacheLife('hours')
-  cacheTag('videos')
+  cacheTag(CACHE_TAGS.VIDEOS)
 
   const baseTime = await getDefaultBaseTime()
   const videoKinds = getVideoKinds(kind)
@@ -365,7 +369,7 @@ export const fetchActiveTalents = async (): Promise<Talent[]> => {
   'use cache: remote'
 
   cacheLife('hours')
-  cacheTag('talents')
+  cacheTag(CACHE_TAGS.TALENTS)
 
   const { data: talents, error } = await supabaseClient
     .from('talents')
@@ -451,7 +455,7 @@ export const fetchTalent = async (id: string): Promise<TalentDetail | null> => {
   'use cache: remote'
 
   cacheLife('days')
-  cacheTag('talents')
+  cacheTag(CACHE_TAGS.TALENTS)
 
   if (!isUUID(id)) {
     return null
@@ -533,7 +537,7 @@ export const fetchTalentList = async (): Promise<TalentListItem[]> => {
   'use cache: remote'
 
   cacheLife('days')
-  cacheTag('talents')
+  cacheTag(CACHE_TAGS.TALENTS)
 
   const { data: talents, error } = await supabaseClient
     .from('talents')
@@ -608,7 +612,7 @@ export const fetchTalentStreamStatuses = async (): Promise<
   'use cache: remote'
 
   cacheLife('minutes')
-  cacheTag('videos')
+  cacheTag(CACHE_TAGS.VIDEOS)
 
   const baseTime = startOfHour(Temporal.Now.zonedDateTimeISO(TIME_ZONE))
   const until = baseTime.add({
@@ -684,7 +688,7 @@ export const fetchTalentStreamStarts = async (
   'use cache: remote'
 
   cacheLife('days')
-  cacheTag('videos')
+  cacheTag(CACHE_TAGS.VIDEOS)
 
   const until = Temporal.Now.zonedDateTimeISO(TIME_ZONE).startOfDay()
   const since = until.subtract({ days: STREAM_TENDENCY_DAYS })
@@ -718,7 +722,7 @@ async function fetchLiveVideos(): Promise<Video[]> {
   'use cache: remote'
 
   cacheLife('minutes')
-  cacheTag('videos')
+  cacheTag(CACHE_TAGS.VIDEOS)
 
   const { data: liveVideos, error: liveError } = await supabaseClient
     .from('videos')
@@ -745,7 +749,7 @@ async function fetchRecentVideos(): Promise<Video[]> {
   'use cache: remote'
 
   cacheLife('minutes')
-  cacheTag('videos')
+  cacheTag(CACHE_TAGS.VIDEOS)
 
   const now = Temporal.Now.instant()
   const threeDaysAgo = now.subtract({ hours: 24 * 3 })
@@ -776,7 +780,7 @@ async function fetchShortsVideos(): Promise<Video[]> {
   'use cache: remote'
 
   cacheLife('minutes')
-  cacheTag('videos')
+  cacheTag(CACHE_TAGS.VIDEOS)
 
   const now = Temporal.Now.instant()
   const oneDayAgo = now.subtract({ hours: 24 })

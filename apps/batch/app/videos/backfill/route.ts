@@ -1,3 +1,4 @@
+import { CACHE_TAGS } from '@shinju-date/constants'
 import type { Scraper } from '@shinju-date/scraper'
 import {
   type BackfillProvider,
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     })
 
     if (added > 0) {
-      await revalidateTags(['videos'], { signal: request.signal })
+      await revalidateTags([CACHE_TAGS.VIDEOS], { signal: request.signal })
     }
   })
 }

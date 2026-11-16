@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
+import { CACHE_TAGS } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { revalidateTags } from '@shinju-date/web-cache'
@@ -61,7 +62,7 @@ export async function POST(request: Request): Promise<Response> {
     const result = await cascadeVideosFromTalents(supabaseClient)
 
     if (result.softDeleted > 0 || result.restored > 0) {
-      await revalidateTags(['videos', 'talents'], {
+      await revalidateTags([CACHE_TAGS.VIDEOS, CACHE_TAGS.TALENTS], {
         signal: request.signal,
       })
     }
@@ -95,7 +96,7 @@ export async function POST(request: Request): Promise<Response> {
 
       if (error.softDeleted > 0 || error.restored > 0) {
         try {
-          await revalidateTags(['videos', 'talents'], {
+          await revalidateTags([CACHE_TAGS.VIDEOS, CACHE_TAGS.TALENTS], {
             signal: request.signal,
           })
         } catch (revalidateError) {

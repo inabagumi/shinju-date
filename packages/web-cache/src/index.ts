@@ -1,3 +1,4 @@
+import type { CacheTag } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 
 interface RevalidateOptions {
@@ -11,11 +12,11 @@ interface RevalidateOptions {
  * - REVALIDATE_URL: 再検証APIのエンドポイントURL
  * - REVALIDATE_SECRET_TOKEN: 認証用のBearerトークン
  *
- * @param tags - 再検証するキャッシュタグの配列
+ * @param tags - 再検証するキャッシュタグの配列（`CACHE_TAGS` の値）
  * @param options - オプション (signal: AbortSignal)
  */
 export async function revalidateTags(
-  tags: string[],
+  tags: CacheTag[],
   { signal }: RevalidateOptions = {},
 ): Promise<void> {
   const revalidateUrl = process.env['REVALIDATE_URL']

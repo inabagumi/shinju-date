@@ -1,5 +1,6 @@
 'use server'
 
+import { CACHE_TAGS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
@@ -171,7 +172,7 @@ export async function addYouTubeChannelAction(
 
     revalidatePath(`/talents/${talentId}`)
     revalidatePath('/talents')
-    await revalidateTags(['talents', 'videos'])
+    await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS])
 
     return { success: true }
   } catch (error) {
@@ -271,7 +272,7 @@ export async function removeYouTubeChannelAction(
 
     revalidatePath(`/talents/${talentId}`)
     revalidatePath('/talents')
-    await revalidateTags(['talents', 'videos'])
+    await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS])
 
     return { success: true }
   } catch (error) {

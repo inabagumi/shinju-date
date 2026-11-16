@@ -1,5 +1,6 @@
 'use server'
 
+import { CACHE_TAGS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import type { SavedTwitchUserIcon } from '@shinju-date/scraper/twitch'
 import type {
@@ -99,7 +100,7 @@ async function touchTalent(
 async function revalidateTalent(talentId: string): Promise<void> {
   revalidatePath(`/talents/${talentId}`)
   revalidatePath('/talents')
-  await revalidateTags(['talents', 'videos'])
+  await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS])
 }
 
 /**

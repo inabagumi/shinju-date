@@ -243,7 +243,7 @@ async function getTalent(id: string) {
   'use cache: remote'
 
   cacheLife('hours')
-  cacheTag('talents')
+  cacheTag(CACHE_TAGS.TALENTS)
 
   return await db.query(/* ... */)
 }
