@@ -11,7 +11,12 @@ import {
   parseSupabaseQuery,
   type SupabaseQuery,
 } from './query.js'
-import { REST_URL, rest } from './rest.js'
+import {
+  acceptsSingleObject,
+  REST_URL,
+  rest,
+  singleObjectError,
+} from './rest.js'
 import { applySelect } from './select.js'
 import {
   getRows,
@@ -77,7 +82,7 @@ function findViolation<Name extends TableName>(
   allRows: readonly Tables<Name>[],
 ): Response | null {
   for (const row of writtenRows) {
-    for (const column of table.requiredColumns) {
+    for (const column of table.notNullColumns) {
       if (getColumn(row, column) == null) {
         return HttpResponse.json(
           {
@@ -146,7 +151,7 @@ function findConflict<Row extends object>(
 
 /**
  * The changes of an update, with `updated_at` set to the current time when
- * a trigger of the table does so.
+ * a trigger of the table does so (also for the updates of upserts).
  */
 function withTriggers<Name extends TableName>(
   table: WritableTableDefinition<Name>,
@@ -158,8 +163,92 @@ function withTriggers<Name extends TableName>(
 }
 
 /**
+ * The error of PostgreSQL when an upsert updates the same row twice, or a row
+ * that the same request inserts.
+ */
+function cardinalityViolation(): Response {
+  return HttpResponse.json(
+    {
+      code: '21000',
+      details: null,
+      hint: 'Ensure that no rows proposed for insertion within the same command have duplicate constrained values.',
+      message: 'ON CONFLICT DO UPDATE command cannot affect row a second time',
+    },
+    { status: 400 },
+  )
+}
+
+/** The changes that a write makes to a collection. */
+interface WritePlan<Row> {
+  inserts: Row[]
+  updates: [record: Row, changes: Partial<Row>][]
+}
+
+/**
+ * Apply the changes of a write to a collection as one transaction: when a
+ * record does not match the schema of the collection, the changes made so
+ * far are undone and an error is returned. The written records are returned
+ * otherwise, updates first.
+ */
+async function applyWrite<Name extends TableName>(
+  table: WritableTableDefinition<Name>,
+  { inserts, updates }: WritePlan<Tables<Name>>,
+): Promise<Tables<Name>[] | Response> {
+  const { collection } = table
+  const undo: (() => Promise<unknown>)[] = []
+  const writtenRows: Tables<Name>[] = []
+
+  try {
+    for (const [record, changes] of updates) {
+      const previous = { ...record }
+      const updated = await collection.update(record, {
+        data(draft) {
+          Object.assign(draft, changes)
+        },
+      })
+
+      if (updated) {
+        undo.push(() =>
+          collection.update(updated, {
+            data(draft) {
+              Object.assign(draft, previous)
+            },
+          }),
+        )
+        writtenRows.push(updated)
+      }
+    }
+
+    for (const row of inserts) {
+      const created = await collection.create(row)
+
+      undo.push(async () => collection.delete(created))
+      writtenRows.push(created)
+    }
+  } catch {
+    for (const step of undo.toReversed()) {
+      await step()
+    }
+
+    return HttpResponse.json(
+      {
+        code: '22P02',
+        details: null,
+        hint: null,
+        message: `invalid input value for relation "${table.name}"`,
+      },
+      { status: 400 },
+    )
+  }
+
+  return writtenRows
+}
+
+/**
  * The POST, PATCH and DELETE handlers of a table, which write to its
- * collection. Like PostgREST, a write changes nothing when it fails.
+ * collection. Like PostgREST, a write changes nothing when it fails,
+ * including when a single object is requested and the write would not
+ * return exactly one row.
  */
 function createWriteHandlers<Name extends TableName>(
   table: WritableTableDefinition<Name>,
@@ -184,58 +273,55 @@ function createWriteHandlers<Name extends TableName>(
         | Partial<Tables<Name>>
         | Partial<Tables<Name>>[]
       const currentRows = collection.findMany()
-      let nextRows = [...currentRows]
-      const inserts: Tables<Name>[] = []
-      const merges: [record: Tables<Name>, values: Partial<Tables<Name>>][] = []
+      // The rows of the table after the write, and the rows that the write
+      // inserts or updates, which an upsert cannot update again
+      const nextRows: Tables<Name>[] = [...currentRows]
+      const writtenRows = new Set<Tables<Name>>()
+      const plan: WritePlan<Tables<Name>> = { inserts: [], updates: [] }
 
       for (const values of Array.isArray(body) ? body : [body]) {
         const existing =
-          resolution && findConflict(currentRows, values, conflictColumns)
+          resolution && findConflict(nextRows, values, conflictColumns)
 
         if (existing && resolution === 'ignore') {
           continue
         }
 
         if (existing) {
-          merges.push([existing, values])
-          nextRows = nextRows.map((row) =>
-            row === existing ? { ...existing, ...values } : row,
-          )
+          if (writtenRows.has(existing)) {
+            return cardinalityViolation()
+          }
+
+          const changes = withTriggers(table, values)
+          const merged = { ...existing, ...changes }
+
+          plan.updates.push([existing, changes])
+          nextRows.splice(nextRows.indexOf(existing), 1, merged)
+          writtenRows.add(merged)
         } else {
-          // The required columns are checked by `findViolation`.
+          // The `NOT NULL` columns are checked by `findViolation`.
           const row = { ...table.defaults(), ...values } as Tables<Name>
 
-          inserts.push(row)
+          plan.inserts.push(row)
           nextRows.push(row)
+          writtenRows.add(row)
         }
       }
 
-      const violation = findViolation(
-        table,
-        nextRows.filter((row) => !currentRows.includes(row)),
-        nextRows,
-      )
+      const violation = findViolation(table, [...writtenRows], nextRows)
 
       if (violation) {
         return violation
       }
 
-      const savedRows: Tables<Name>[] = []
-
-      for (const [record, values] of merges) {
-        const updated = await collection.update(record, {
-          data(draft) {
-            Object.assign(draft, values)
-          },
-        })
-
-        if (updated) {
-          savedRows.push(updated)
-        }
+      if (acceptsSingleObject(request) && writtenRows.size !== 1) {
+        return singleObjectError(writtenRows.size)
       }
 
-      for (const row of inserts) {
-        savedRows.push(await collection.create(row))
+      const savedRows = await applyWrite(table, plan)
+
+      if (savedRows instanceof Response) {
+        return savedRows
       }
 
       if (returnsRepresentation(request)) {
@@ -270,18 +356,17 @@ function createWriteHandlers<Name extends TableName>(
         return violation
       }
 
-      const updatedRows: Tables<Name>[] = []
+      if (acceptsSingleObject(request) && matches.length !== 1) {
+        return singleObjectError(matches.length)
+      }
 
-      for (const record of matches) {
-        const updated = await collection.update(record, {
-          data(draft) {
-            Object.assign(draft, changes)
-          },
-        })
+      const updatedRows = await applyWrite(table, {
+        inserts: [],
+        updates: matches.map((record) => [record, changes]),
+      })
 
-        if (updated) {
-          updatedRows.push(updated)
-        }
+      if (updatedRows instanceof Response) {
+        return updatedRows
       }
 
       if (returnsRepresentation(request)) {
@@ -297,6 +382,10 @@ function createWriteHandlers<Name extends TableName>(
     rest.delete(url, async ({ request }) => {
       const query = parseSupabaseQuery(new URL(request.url))
       const matches = applySupabaseConditions(collection.findMany(), query)
+
+      if (acceptsSingleObject(request) && matches.length !== 1) {
+        return singleObjectError(matches.length)
+      }
 
       for (const record of matches) {
         collection.delete(record)

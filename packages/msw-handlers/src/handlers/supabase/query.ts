@@ -122,6 +122,56 @@ function parseFilterValue(value: string): boolean | number | string | null {
 }
 
 /**
+ * Whether the value of a column equals the value of a filter. Text columns
+ * may hold digits only (e.g. twitch_user_id), so the raw string is accepted
+ * as well.
+ */
+function matchesValue(value: unknown, text: string): boolean {
+  return value === parseFilterValue(text) || value === text
+}
+
+/** A value of a list such as `in.(...)`. */
+interface ListValue {
+  /** Whether the value is in double quotes, which keeps it a string. */
+  quoted: boolean
+  text: string
+}
+
+/**
+ * Split the values of a list such as `in.(a,"b,c")` on commas outside double
+ * quotes. A quoted value is taken as it is, with `\"` and `\\` unescaped,
+ * like PostgREST does.
+ */
+function parseListValues(list: string): ListValue[] {
+  const values: ListValue[] = []
+  let current = ''
+  let escaped = false
+  let inQuotes = false
+  let quoted = false
+
+  for (const char of list) {
+    if (escaped) {
+      current += char
+      escaped = false
+    } else if (inQuotes && char === '\\') {
+      escaped = true
+    } else if (char === '"') {
+      inQuotes = !inQuotes
+      quoted = true
+    } else if (char === ',' && !inQuotes) {
+      values.push({ quoted, text: quoted ? current : current.trim() })
+      current = ''
+      quoted = false
+    } else {
+      current += char
+    }
+  }
+  values.push({ quoted, text: quoted ? current : current.trim() })
+
+  return values
+}
+
+/**
  * Whether a row matches a single filter, such as `eq.1` or `in.(1,2)`.
  * Filters that are not supported match every row.
  */
@@ -144,10 +194,10 @@ function matchesFilter(row: object, column: string, filter: string): boolean {
       // `NULL <> value` is not true, so rows with `null` do not match.
       return value != null && String(value) !== operand
     case 'eq':
-      // Handle equals filter (e.g., visible=eq.true). Text columns may hold
-      // digits only (e.g. twitch_user_id), so the raw string is accepted as
-      // well.
-      return value === parseFilterValue(operand) || value === operand
+      // Handle equals filter (e.g., visible=eq.true). As in SQL,
+      // `NULL = value` is not true even for `eq.null` (`is.null` matches
+      // `null`).
+      return value != null && matchesValue(value, operand)
     case 'ilike': {
       // Handle case-insensitive pattern filter (e.g., login=ilike.alice*)
       const source = operand
@@ -171,15 +221,12 @@ function matchesFilter(row: object, column: string, filter: string): boolean {
         return true
       }
 
-      const rawValues = operand
-        .slice(1, -1)
-        .split(',')
-        .map((item) => item.trim())
-
-      return rawValues.some(
-        (item) =>
-          value === item ||
-          (!Number.isNaN(Number(item)) && value === Number(item)),
+      // As in SQL, `NULL IN (...)` is not true.
+      return (
+        value != null &&
+        parseListValues(operand.slice(1, -1)).some(({ quoted, text }) =>
+          quoted ? value === text : matchesValue(value, text),
+        )
       )
     }
     default:

@@ -135,7 +135,7 @@ Other tables, such as `audit_logs`, return no rows. The database functions (`/re
 - `limit`, `offset` - Pagination. With `Prefer: count=exact`, `Content-Range` has the number of all the matching rows, not only the page
 - `on_conflict` - The columns of an upsert (`Prefer: resolution=merge-duplicates` or `resolution=ignore-duplicates`)
 
-PATCH and DELETE change only the rows that match all the filters. Inserts, upserts and updates are checked against the `NOT NULL` columns and unique constraints of the table definitions, and fail with the error codes of PostgreSQL (`23502` and `23505`) without changing anything.
+PATCH and DELETE change only the rows that match all the filters. Inserts, upserts and updates are checked against the `NOT NULL` columns and unique constraints of the table definitions, and fail with the error codes of PostgreSQL (`23502` and `23505`) without changing anything. A write that asks for a single object (`.single()`) and would not return exactly one row also changes nothing (`PGRST116`).
 
 #### Example Queries
 
@@ -507,6 +507,15 @@ const myTable: WritableTableDefinition<'my_table'> = {
   }),
   kind: 'table',
   name: 'my_table',
+  // Every `NOT NULL` column, with or without a default (the type checks
+  // that none is missing)
+  notNullColumns: notNullColumns<'my_table'>({
+    created_at: true,
+    id: true,
+    name: true,
+    talent_id: true,
+    updated_at: true,
+  }),
   // Embedded resources that `select` can resolve, such as `talents(name)`
   relations: [
     {
@@ -516,8 +525,6 @@ const myTable: WritableTableDefinition<'my_table'> = {
       table: 'talents',
     },
   ],
-  // The columns that are `NOT NULL` and have no defaults
-  requiredColumns: ['name', 'talent_id'],
   // Unique constraints other than the primary key (`id`)
   unique: [{ columns: ['name'], name: 'my_table_name_key' }],
   // Whether a trigger sets `updated_at` when a row is updated

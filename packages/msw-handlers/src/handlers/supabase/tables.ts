@@ -91,6 +91,25 @@ type RequiredColumn<Name extends TableName> = Name extends WritableTableName
       Column<Name>
   : never
 
+/** The columns that are `NOT NULL`, with or without defaults. */
+type NotNullColumn<Name extends TableName> = Name extends TableName
+  ? {
+      [Key in keyof Tables<Name> & string]: null extends Tables<Name>[Key]
+        ? never
+        : Key
+    }[keyof Tables<Name> & string]
+  : never
+
+/**
+ * List the `NOT NULL` columns of a table. The type of the argument checks
+ * that every such column is listed.
+ */
+function notNullColumns<Name extends WritableTableName>(
+  columns: Record<NotNullColumn<Name>, true>,
+): readonly NotNullColumn<Name>[] {
+  return Object.keys(columns) as NotNullColumn<Name>[]
+}
+
 interface BaseTableDefinition<Name extends TableName> {
   name: Name
   relations: readonly RelationDefinition<Name>[]
@@ -104,10 +123,10 @@ export interface WritableTableDefinition<Name extends TableName>
   defaults: () => Omit<Tables<Name>, RequiredColumn<Name>>
   kind: 'table'
   /**
-   * The columns that are `NOT NULL` and have no defaults, which an insert
-   * has to give.
+   * The columns that are `NOT NULL`, which inserts, upserts and updates are
+   * checked against (made with `notNullColumns`).
    */
-  requiredColumns: readonly RequiredColumn<Name>[]
+  notNullColumns: readonly NotNullColumn<Name>[]
   /** Unique constraints other than the primary key (`id`). */
   unique: readonly UniqueConstraint<Name>[]
   /**
@@ -159,7 +178,12 @@ async function getLatestVideoBackfillJobs(): Promise<
 
   return videoBackfillJobs
     .findMany()
-    .toSorted((a, b) => b.finished_at.localeCompare(a.finished_at))
+    .toSorted((a, b) =>
+      Temporal.Instant.compare(
+        Temporal.Instant.from(b.finished_at),
+        Temporal.Instant.from(a.finished_at),
+      ),
+    )
     .filter((job) => {
       const key = `${job.platform}:${job.account_id}`
 
@@ -212,8 +236,15 @@ const announcementsTable: WritableTableDefinition<'announcements'> = {
   }),
   kind: 'table',
   name: 'announcements',
+  notNullColumns: notNullColumns<'announcements'>({
+    enabled: true,
+    end_at: true,
+    id: true,
+    level: true,
+    message: true,
+    start_at: true,
+  }),
   relations: [],
-  requiredColumns: ['end_at', 'message', 'start_at'],
   unique: [],
   updatedAtTrigger: true,
 }
@@ -230,8 +261,15 @@ const featureRequestsTable: WritableTableDefinition<'feature_requests'> = {
   }),
   kind: 'table',
   name: 'feature_requests',
+  notNullColumns: notNullColumns<'feature_requests'>({
+    created_at: true,
+    id: true,
+    is_read: true,
+    message: true,
+    status: true,
+    updated_at: true,
+  }),
   relations: [],
-  requiredColumns: ['message'],
   unique: [],
   updatedAtTrigger: true,
 }
@@ -246,8 +284,17 @@ const profileImagesTable: WritableTableDefinition<'profile_images'> = {
   }),
   kind: 'table',
   name: 'profile_images',
+  notNullColumns: notNullColumns<'profile_images'>({
+    blur_data_url: true,
+    created_at: true,
+    height: true,
+    id: true,
+    path: true,
+    source_url: true,
+    updated_at: true,
+    width: true,
+  }),
   relations: [],
-  requiredColumns: ['blur_data_url', 'height', 'path', 'source_url', 'width'],
   unique: [{ columns: ['path'], name: 'profile_images_path_key' }],
   updatedAtTrigger: true,
 }
@@ -265,6 +312,13 @@ const talentsTable: WritableTableDefinition<'talents'> = {
   }),
   kind: 'table',
   name: 'talents',
+  notNullColumns: notNullColumns<'talents'>({
+    created_at: true,
+    id: true,
+    name: true,
+    status: true,
+    updated_at: true,
+  }),
   relations: [
     {
       column: 'id',
@@ -279,7 +333,6 @@ const talentsTable: WritableTableDefinition<'talents'> = {
       table: 'twitch_users',
     },
   ],
-  requiredColumns: ['name'],
   unique: [],
   updatedAtTrigger: false,
 }
@@ -294,8 +347,16 @@ const termsTable: WritableTableDefinition<'terms'> = {
   }),
   kind: 'table',
   name: 'terms',
+  notNullColumns: notNullColumns<'terms'>({
+    created_at: true,
+    id: true,
+    popularity: true,
+    readings: true,
+    synonyms: true,
+    term: true,
+    updated_at: true,
+  }),
   relations: [],
-  requiredColumns: ['readings', 'synonyms', 'term'],
   unique: [{ columns: ['term'], name: 'terms_term_key' }],
   updatedAtTrigger: true,
 }
@@ -311,8 +372,16 @@ const thumbnailsTable: WritableTableDefinition<'thumbnails'> = {
   }),
   kind: 'table',
   name: 'thumbnails',
+  notNullColumns: notNullColumns<'thumbnails'>({
+    blur_data_url: true,
+    created_at: true,
+    height: true,
+    id: true,
+    path: true,
+    updated_at: true,
+    width: true,
+  }),
   relations: [],
-  requiredColumns: ['blur_data_url', 'height', 'path', 'width'],
   unique: [],
   updatedAtTrigger: true,
 }
@@ -327,6 +396,11 @@ const twitchUsersTable: WritableTableDefinition<'twitch_users'> = {
   }),
   kind: 'table',
   name: 'twitch_users',
+  notNullColumns: notNullColumns<'twitch_users'>({
+    id: true,
+    talent_id: true,
+    twitch_user_id: true,
+  }),
   relations: [
     TALENT_RELATION,
     PROFILE_IMAGE_RELATION,
@@ -337,7 +411,6 @@ const twitchUsersTable: WritableTableDefinition<'twitch_users'> = {
       table: 'twitch_videos',
     },
   ],
-  requiredColumns: ['talent_id', 'twitch_user_id'],
   unique: [
     {
       columns: ['twitch_user_id'],
@@ -360,6 +433,12 @@ const twitchVideosTable: WritableTableDefinition<'twitch_videos'> = {
   }),
   kind: 'table',
   name: 'twitch_videos',
+  notNullColumns: notNullColumns<'twitch_videos'>({
+    id: true,
+    twitch_user_id: true,
+    twitch_video_id: true,
+    video_id: true,
+  }),
   relations: [
     VIDEO_RELATION,
     {
@@ -369,7 +448,6 @@ const twitchVideosTable: WritableTableDefinition<'twitch_videos'> = {
       table: 'twitch_users',
     },
   ],
-  requiredColumns: ['twitch_user_id', 'twitch_video_id', 'video_id'],
   unique: [
     {
       columns: ['twitch_video_id'],
@@ -395,15 +473,19 @@ const videoBackfillJobsTable: WritableTableDefinition<'video_backfill_jobs'> = {
   }),
   kind: 'table',
   name: 'video_backfill_jobs',
+  notNullColumns: notNullColumns<'video_backfill_jobs'>({
+    account_id: true,
+    added: true,
+    created_at: true,
+    finished_at: true,
+    id: true,
+    pages: true,
+    platform: true,
+    requested_at: true,
+    status: true,
+    talent_id: true,
+  }),
   relations: [TALENT_RELATION],
-  requiredColumns: [
-    'account_id',
-    'finished_at',
-    'platform',
-    'requested_at',
-    'status',
-    'talent_id',
-  ],
   unique: [
     {
       columns: ['platform', 'account_id', 'requested_at'],
@@ -436,6 +518,19 @@ const videosTable: WritableTableDefinition<'videos'> = {
   }),
   kind: 'table',
   name: 'videos',
+  notNullColumns: notNullColumns<'videos'>({
+    created_at: true,
+    duration: true,
+    id: true,
+    platform: true,
+    published_at: true,
+    status: true,
+    talent_id: true,
+    title: true,
+    updated_at: true,
+    video_kind: true,
+    visible: true,
+  }),
   relations: [
     TALENT_RELATION,
     {
@@ -457,13 +552,6 @@ const videosTable: WritableTableDefinition<'videos'> = {
       table: 'twitch_videos',
     },
   ],
-  requiredColumns: [
-    'duration',
-    'platform',
-    'published_at',
-    'talent_id',
-    'title',
-  ],
   unique: [],
   updatedAtTrigger: true,
 }
@@ -478,8 +566,12 @@ const youtubeChannelsTable: WritableTableDefinition<'youtube_channels'> = {
   }),
   kind: 'table',
   name: 'youtube_channels',
+  notNullColumns: notNullColumns<'youtube_channels'>({
+    id: true,
+    talent_id: true,
+    youtube_channel_id: true,
+  }),
   relations: [TALENT_RELATION, PROFILE_IMAGE_RELATION],
-  requiredColumns: ['talent_id', 'youtube_channel_id'],
   unique: [
     {
       columns: ['youtube_channel_id'],
@@ -500,6 +592,12 @@ const youtubeVideosTable: WritableTableDefinition<'youtube_videos'> = {
   }),
   kind: 'table',
   name: 'youtube_videos',
+  notNullColumns: notNullColumns<'youtube_videos'>({
+    id: true,
+    video_id: true,
+    youtube_channel_id: true,
+    youtube_video_id: true,
+  }),
   relations: [
     VIDEO_RELATION,
     {
@@ -509,7 +607,6 @@ const youtubeVideosTable: WritableTableDefinition<'youtube_videos'> = {
       table: 'youtube_channels',
     },
   ],
-  requiredColumns: ['video_id', 'youtube_channel_id', 'youtube_video_id'],
   unique: [
     { columns: ['video_id'], name: 'youtube_videos_video_id_unique' },
     {

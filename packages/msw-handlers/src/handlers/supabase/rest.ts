@@ -13,6 +13,29 @@ type RestResolverInfo = Parameters<HttpResponseResolver>[0]
 
 type RestResolver = (info: RestResolverInfo) => Response | Promise<Response>
 
+/** Whether the request asks for a single object (`.single()`). */
+export function acceptsSingleObject(request: Request): boolean {
+  return (request.headers.get('accept') ?? '').startsWith(
+    SINGLE_OBJECT_MEDIA_TYPE,
+  )
+}
+
+/**
+ * The `PGRST116` error of PostgREST, for a request for a single object whose
+ * result does not contain exactly one row.
+ */
+export function singleObjectError(rowCount: number): Response {
+  return HttpResponse.json(
+    {
+      code: 'PGRST116',
+      details: `The result contains ${rowCount} rows`,
+      hint: null,
+      message: 'JSON object requested, multiple (or no) rows returned',
+    },
+    { status: 406 },
+  )
+}
+
 /**
  * Reply to a request for a single object (`.single()`) like PostgREST does:
  * the only row as an object, or a `PGRST116` error when the result does not
@@ -22,13 +45,7 @@ async function toSingleObjectResponse(
   request: Request,
   response: Response,
 ): Promise<Response> {
-  const accept = request.headers.get('accept') ?? ''
-
-  if (
-    !accept.startsWith(SINGLE_OBJECT_MEDIA_TYPE) ||
-    !response.ok ||
-    response.body === null
-  ) {
+  if (!acceptsSingleObject(request) || !response.ok || response.body === null) {
     return response
   }
 
@@ -45,15 +62,7 @@ async function toSingleObjectResponse(
   }
 
   if (rows.length !== 1) {
-    return HttpResponse.json(
-      {
-        code: 'PGRST116',
-        details: `The result contains ${rows.length} rows`,
-        hint: null,
-        message: 'JSON object requested, multiple (or no) rows returned',
-      },
-      { status: 406 },
-    )
+    return singleObjectError(rows.length)
   }
 
   const headers = new Headers(response.headers)
@@ -76,7 +85,9 @@ function createRestHandler(
 /**
  * Use these instead of `http` for the PostgREST API (`/rest/v1/*`). Every
  * handler then supports `.single()`, so a resolver only has to return the
- * rows as an array.
+ * rows as an array. A resolver that writes has to check the number of rows
+ * with `acceptsSingleObject` before writing, as PostgREST changes nothing
+ * when it returns `PGRST116`.
  */
 export const rest = {
   delete: createRestHandler('delete'),

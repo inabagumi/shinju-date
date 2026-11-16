@@ -1,4 +1,12 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 import { server } from '../server.js'
 
 describe('Supabase Handlers', () => {
@@ -653,6 +661,285 @@ describe('Supabase Handlers', () => {
           await fetch(`${restUrl}/terms?select=term&id=eq.${second?.id}`)
         ).json(),
       ).toEqual([{ term: second?.term }])
+    })
+
+    async function createTerms(
+      terms: { id?: string; popularity?: number | null; term: string }[],
+    ): Promise<{ id: string; term: string; updated_at: string }[]> {
+      const response = await fetch(
+        `${restUrl}/terms?select=id,term,updated_at`,
+        {
+          body: JSON.stringify(
+            terms.map((term) => ({ readings: [], synonyms: [], ...term })),
+          ),
+          headers: {
+            'Content-Type': 'application/json',
+            prefer: 'return=representation',
+          },
+          method: 'POST',
+        },
+      )
+
+      expect(response.status).toBe(201)
+
+      return (await response.json()) as {
+        id: string
+        term: string
+        updated_at: string
+      }[]
+    }
+
+    async function deleteTerms(ids: string[]) {
+      await fetch(`${restUrl}/terms?id=in.(${ids.join(',')})`, {
+        method: 'DELETE',
+      })
+    }
+
+    it('should not match null with eq.null, as in SQL', async () => {
+      expect(await listIds('videos', '&deleted_at=eq.null')).toEqual([])
+      expect(
+        (await listIds('videos', '&deleted_at=is.null')).length,
+      ).toBeGreaterThan(0)
+    })
+
+    it('should match booleans and quoted values with commas in an in filter', async () => {
+      expect(await listIds('videos', '&visible=in.(true)')).toEqual(
+        await listIds('videos', '&visible=eq.true'),
+      )
+
+      const [term] = await createTerms([{ term: 'カンマ,入りの用語' }])
+
+      try {
+        expect(
+          await listIds(
+            'terms',
+            `&term=in.(${encodeURIComponent('"カンマ,入りの用語",ほかの用語')})`,
+          ),
+        ).toEqual([term?.id])
+      } finally {
+        await deleteTerms([term?.id ?? ''])
+      }
+    })
+
+    it('should not write when a single object is requested and several rows match', async () => {
+      const terms = await createTerms([
+        { term: '単数のテスト用の用語1' },
+        { term: '単数のテスト用の用語2' },
+      ])
+      const ids = terms.map(({ id }) => id)
+      const headers = {
+        accept: 'application/vnd.pgrst.object+json',
+        'Content-Type': 'application/json',
+        prefer: 'return=representation',
+      }
+
+      try {
+        const patched = await fetch(
+          `${restUrl}/terms?id=in.(${ids.join(',')})&select=id`,
+          {
+            body: JSON.stringify({ synonyms: ['x'] }),
+            headers,
+            method: 'PATCH',
+          },
+        )
+        const deleted = await fetch(
+          `${restUrl}/terms?id=in.(${ids.join(',')})&select=id`,
+          { headers, method: 'DELETE' },
+        )
+
+        expect(patched.status).toBe(406)
+        expect(deleted.status).toBe(406)
+        expect(
+          await (
+            await fetch(
+              `${restUrl}/terms?select=id,synonyms&id=in.(${ids.join(',')})`,
+            )
+          ).json(),
+        ).toEqual(ids.map((id) => ({ id, synonyms: [] })))
+      } finally {
+        await deleteTerms(ids)
+      }
+    })
+
+    it('should ignore duplicates within the same request', async () => {
+      const id = crypto.randomUUID()
+      const response = await fetch(`${restUrl}/terms?select=id,term`, {
+        body: JSON.stringify([
+          { id, readings: [], synonyms: [], term: '重複のテスト用の用語1' },
+          { id, readings: [], synonyms: [], term: '重複のテスト用の用語2' },
+        ]),
+        headers: {
+          'Content-Type': 'application/json',
+          prefer: 'resolution=ignore-duplicates,return=representation',
+        },
+        method: 'POST',
+      })
+
+      try {
+        expect(response.status).toBe(201)
+        expect(await response.json()).toEqual([
+          { id, term: '重複のテスト用の用語1' },
+        ])
+      } finally {
+        await deleteTerms([id])
+      }
+    })
+
+    it('should set updated_at in a merge and reject updating a row twice', async () => {
+      const [first, second] = await createTerms([
+        { term: 'マージのテスト用の用語1' },
+        { term: 'マージのテスト用の用語2' },
+      ])
+      const upsert = (body: unknown) =>
+        fetch(`${restUrl}/terms?select=term,updated_at`, {
+          body: JSON.stringify(body),
+          headers: {
+            'Content-Type': 'application/json',
+            prefer: 'resolution=merge-duplicates,return=representation',
+          },
+          method: 'POST',
+        })
+
+      try {
+        const twice = await upsert([
+          { id: first?.id, term: 'マージのテスト用の用語3' },
+          { id: first?.id, term: second?.term },
+        ])
+
+        expect(twice.status).toBe(400)
+        expect(await twice.json()).toMatchObject({ code: '21000' })
+
+        vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
+          Temporal.Instant.from('2099-01-01T00:00:00Z'),
+        )
+
+        const merged = await upsert({
+          id: first?.id,
+          term: 'マージのテスト用の用語3',
+        })
+
+        expect(merged.status).toBe(201)
+        expect(await merged.json()).toEqual([
+          {
+            term: 'マージのテスト用の用語3',
+            updated_at: '2099-01-01T00:00:00Z',
+          },
+        ])
+      } finally {
+        vi.restoreAllMocks()
+        await deleteTerms([first?.id ?? '', second?.id ?? ''])
+      }
+    })
+
+    it('should reject null in a NOT NULL column with a default and write nothing', async () => {
+      const before = await listIds('terms')
+      const response = await fetch(`${restUrl}/terms`, {
+        body: JSON.stringify([
+          { readings: [], synonyms: [], term: 'NOT NULL のテスト用の用語1' },
+          {
+            popularity: null,
+            readings: [],
+            synonyms: [],
+            term: 'NOT NULL のテスト用の用語2',
+          },
+        ]),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      })
+
+      expect(response.status).toBe(400)
+      expect(await response.json()).toMatchObject({
+        code: '23502',
+        message:
+          'null value in column "popularity" of relation "terms" violates not-null constraint',
+      })
+      expect(await listIds('terms')).toEqual(before)
+    })
+
+    it('should undo a write when a row does not match the schema', async () => {
+      const before = await listIds('terms')
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      try {
+        const response = await fetch(`${restUrl}/terms`, {
+          body: JSON.stringify([
+            { readings: [], synonyms: [], term: 'スキーマのテスト用の用語1' },
+            {
+              readings: 'not an array',
+              synonyms: [],
+              term: 'スキーマのテスト用の用語2',
+            },
+          ]),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        })
+
+        expect(response.status).toBe(400)
+        expect(await response.json()).toMatchObject({ code: '22P02' })
+        expect(await listIds('terms')).toEqual(before)
+      } finally {
+        error.mockRestore()
+      }
+    })
+
+    it('should pick the latest backfill job by instant, not by text', async () => {
+      const [latest] = (await (
+        await fetch(
+          `${restUrl}/video_backfill_latest_jobs?select=*&platform=eq.youtube`,
+        )
+      ).json()) as {
+        account_id: string
+        platform: string
+        talent_id: string
+      }[]
+
+      expect(latest).toBeDefined()
+
+      const job = {
+        account_id: latest?.account_id,
+        platform: latest?.platform,
+        talent_id: latest?.talent_id,
+      }
+      const created = await fetch(`${restUrl}/video_backfill_jobs?select=id`, {
+        body: JSON.stringify([
+          // 2099-01-01T01:00:00Z, which comes after the other one as text
+          {
+            ...job,
+            finished_at: '2099-01-01T10:00:00+09:00',
+            requested_at: '2099-01-01T00:00:00Z',
+            status: 'done',
+          },
+          {
+            ...job,
+            finished_at: '2099-01-01T02:00:00Z',
+            requested_at: '2099-01-01T00:30:00Z',
+            status: 'failed',
+          },
+        ]),
+        headers: {
+          'Content-Type': 'application/json',
+          prefer: 'return=representation',
+        },
+        method: 'POST',
+      })
+      const ids = ((await created.json()) as { id: string }[]).map(
+        ({ id }) => id,
+      )
+
+      try {
+        expect(created.status).toBe(201)
+        expect(
+          await (
+            await fetch(
+              `${restUrl}/video_backfill_latest_jobs?select=status&account_id=eq.${latest?.account_id}`,
+            )
+          ).json(),
+        ).toEqual([{ status: 'failed' }])
+      } finally {
+        await fetch(`${restUrl}/video_backfill_jobs?id=in.(${ids.join(',')})`, {
+          method: 'DELETE',
+        })
+      }
     })
 
     it('should not serve tables that do not exist', async () => {
