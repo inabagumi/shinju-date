@@ -1,6 +1,6 @@
 import { formatNumber } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
-import { AlertTriangle } from 'lucide-react'
+import { Alert } from '@shinju-date/ui'
 import Link from 'next/link'
 import { countVideoBackfillFailures } from '../_lib/count-video-backfill-failures'
 
@@ -25,21 +25,19 @@ export async function VideoBackfillFailureAlert() {
   }
 
   return (
-    <div
-      className="flex flex-wrap items-center justify-between gap-3 rounded-container border border-danger/30 bg-danger/10 p-4 text-meta text-danger"
-      role="status"
+    <Alert
+      action={
+        <Link
+          className="font-semibold underline"
+          href="/system#video-backfill-history"
+        >
+          履歴を確認して再試行する
+        </Link>
+      }
+      tone="danger"
     >
-      <p className="flex items-center gap-2">
-        <AlertTriangle aria-hidden="true" className="size-4 shrink-0" />
-        過去動画の取り込みが失敗したアカウントが{formatNumber(failures)}
-        件あります。
-      </p>
-      <Link
-        className="font-semibold underline"
-        href="/system#video-backfill-history"
-      >
-        履歴を確認して再試行する
-      </Link>
-    </div>
+      過去動画の取り込みが失敗したアカウントが{formatNumber(failures)}
+      件あります。
+    </Alert>
   )
 }

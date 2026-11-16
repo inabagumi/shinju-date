@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, twMerge } from '@shinju-date/ui'
+import { Alert, Button, twMerge } from '@shinju-date/ui'
 import { useState, useTransition } from 'react'
 import ToggleSwitch from '@/components/toggle-switch'
 import {
@@ -94,19 +94,21 @@ export function MaintenanceModeWidget({
         </div>
 
         {showConfirmation && (
-          <div className="rounded-container border border-warning/30 bg-warning/10 p-4">
-            <p className="mb-3 font-semibold">
-              {pendingAction === 'enable'
+          <Alert
+            title={
+              pendingAction === 'enable'
                 ? 'メンテナンスモードを有効にしますか?'
-                : 'メンテナンスモードを無効にしますか?'}
-            </p>
-            <p className="mb-4 text-meta">
+                : 'メンテナンスモードを無効にしますか?'
+            }
+            tone="warning"
+          >
+            <p className="mb-4">
               {pendingAction === 'enable'
                 ? '一般ユーザーのアクセスがメンテナンスページに切り替わり、バッチ処理が停止されます。'
                 : '一般ユーザーのアクセスとバッチ処理が再開されます。'}
             </p>
             {error && (
-              <p className="mb-4 text-meta text-danger" role="alert">
+              <p className="mb-4 text-danger" role="alert">
                 {error}
               </p>
             )}
@@ -128,7 +130,7 @@ export function MaintenanceModeWidget({
                 キャンセル
               </Button>
             </div>
-          </div>
+          </Alert>
         )}
 
         <div className="rounded-container bg-muted p-4">

@@ -2,6 +2,7 @@
 
 import type { Tables } from '@shinju-date/database'
 import {
+  Alert,
   Button,
   Dialog,
   DialogClose,
@@ -159,12 +160,9 @@ export function VideoActionConfirmDialog({
           )}
 
           {error && (
-            <div
-              className="mb-4 rounded-control border border-danger/30 bg-danger/10 p-3"
-              role="alert"
-            >
-              <p className="text-meta text-danger">{error}</p>
-            </div>
+            <Alert className="mb-4" tone="danger">
+              {error}
+            </Alert>
           )}
 
           <div className="flex justify-end gap-2">
