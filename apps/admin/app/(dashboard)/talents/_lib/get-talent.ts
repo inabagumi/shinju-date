@@ -1,29 +1,32 @@
-import type { Tables } from '@shinju-date/database'
+import type { QueryData } from '@supabase/supabase-js'
 import { cacheLife } from 'next/cache'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import {
+  createSupabaseServerClient,
+  type TypedSupabaseClient,
+} from '@/lib/supabase'
 
-export interface Talent {
-  id: string
-  name: string
-  reading: string | null
-  theme_color: string | null
-  status: Tables<'talents'>['status']
-  created_at: string
-  updated_at: string
-  deleted_at: string | null
-  youtube_channels: {
-    id: string
-    name: string | null
-    youtube_channel_id: string
-    youtube_handle: string | null
-  }[]
-  twitch_users: {
-    id: string
-    name: string | null
-    twitch_user_id: string
-    twitch_login_name: string | null
-  }[]
+const TALENT_SELECT = `
+  id,
+  name,
+  reading,
+  theme_color,
+  status,
+  created_at,
+  updated_at,
+  deleted_at,
+  youtube_channels (id, name, youtube_channel_id, youtube_handle),
+  twitch_users (id, name, twitch_user_id, twitch_login_name)
+`
+
+function selectTalent(supabaseClient: TypedSupabaseClient, id: string) {
+  return supabaseClient
+    .from('talents')
+    .select(TALENT_SELECT)
+    .eq('id', id)
+    .single()
 }
+
+export type Talent = QueryData<ReturnType<typeof selectTalent>>
 
 export async function getTalent(id: string): Promise<Talent | null> {
   'use cache: private'
@@ -32,13 +35,7 @@ export async function getTalent(id: string): Promise<Talent | null> {
 
   const supabaseClient = await createSupabaseServerClient()
 
-  const { data: talent, error } = await supabaseClient
-    .from('talents')
-    .select(
-      'id, name, reading, theme_color, status, created_at, updated_at, deleted_at, youtube_channels(id, name, youtube_channel_id, youtube_handle), twitch_users(id, name, twitch_user_id, twitch_login_name)',
-    )
-    .eq('id', id)
-    .single()
+  const { data: talent, error } = await selectTalent(supabaseClient, id)
 
   if (error) {
     if (error.code === 'PGRST116') {
