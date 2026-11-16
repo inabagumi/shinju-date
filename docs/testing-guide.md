@@ -367,5 +367,4 @@ PlaywrightのGitHub Actionsレポーターについては、[E2E Testing Guide](
 ## 関連ドキュメント
 
 - [CONTRIBUTING.md](../CONTRIBUTING.md) - 開発・貢献ガイド
-- [AGENTS.md](../AGENTS.md) - AI エージェント活用ガイド
 - [msw-guide.md](./msw-guide.md) - モック環境の設定
