@@ -95,6 +95,8 @@ jobs:
             language: "node"
           - name: "@shinju-date/msw-handlers"
             language: "node"
+          - name: "@shinju-date/retryable-fetch"
+            language: "node"
           - name: "@shinju-date/temporal-fns"
             language: "node"
           - name: "@shinju-date/ui"
