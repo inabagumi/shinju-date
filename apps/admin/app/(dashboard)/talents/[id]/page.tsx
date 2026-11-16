@@ -1,5 +1,6 @@
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import {
+  Alert,
   Badge,
   Card,
   CardContent,
@@ -81,28 +82,19 @@ async function TalentProfile({ id }: { id: string }) {
       <div className="space-y-6">
         {/* Status indicator */}
         {isDeleted && (
-          <div
-            className="flex flex-col gap-3 rounded-container border border-danger/30 bg-danger/10 p-4 text-danger sm:flex-row sm:items-center sm:justify-between"
-            role="status"
+          <Alert
+            action={<TalentLifecycleActions talent={talent} />}
+            title="削除されたタレント"
+            tone="danger"
           >
-            <div className="text-meta">
-              <p className="font-semibold">削除されたタレント</p>
-              <p className="mt-1">
-                このタレントは削除されています。復活すると動画の復旧も行われます。
-              </p>
-            </div>
-            <TalentLifecycleActions talent={talent} />
-          </div>
+            このタレントは削除されています。復活すると動画の復旧も行われます。
+          </Alert>
         )}
 
         {isRetired && (
-          <div
-            className="rounded-container border border-warning/30 bg-warning/10 p-4 text-meta text-warning"
-            role="status"
-          >
-            <p className="font-semibold">引退したタレント</p>
-            <p className="mt-1">このタレントは引退状態です。</p>
-          </div>
+          <Alert title="引退したタレント" tone="warning">
+            このタレントは引退状態です。
+          </Alert>
         )}
 
         {/* Talent information - Editable form */}

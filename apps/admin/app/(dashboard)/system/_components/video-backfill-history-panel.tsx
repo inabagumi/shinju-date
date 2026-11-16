@@ -3,6 +3,7 @@
 import { formatNumber } from '@shinju-date/helpers'
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import {
+  Alert,
   Badge,
   Button,
   Card,
@@ -306,17 +307,21 @@ export function VideoBackfillHistoryPanel() {
           </div>
         )}
         {failures.length > 0 && (
-          <section
+          <Alert
             aria-label="最後の取り込みが失敗したアカウント"
-            className="mt-3 rounded-container border border-danger/30 bg-danger/10 px-4 py-3"
+            className="mt-3"
+            role="region"
+            title={
+              <>
+                最後の取り込みが失敗したアカウント:{' '}
+                {formatNumber(failures.length)}件
+                {failures.length > retryable &&
+                  `（再試行中: ${formatNumber(failures.length - retryable)}件）`}
+              </>
+            }
+            tone="danger"
           >
-            <h3 className="text-meta font-semibold text-danger">
-              最後の取り込みが失敗したアカウント:{' '}
-              {formatNumber(failures.length)}件
-              {failures.length > retryable &&
-                `（再試行中: ${formatNumber(failures.length - retryable)}件）`}
-            </h3>
-            <ul className="mt-1 max-h-60 divide-y divide-danger/20 overflow-y-auto">
+            <ul className="max-h-60 divide-y divide-danger/20 overflow-y-auto">
               {failures.map((failure) => (
                 <FailureRow
                   failure={failure}
@@ -324,7 +329,7 @@ export function VideoBackfillHistoryPanel() {
                 />
               ))}
             </ul>
-          </section>
+          </Alert>
         )}
       </CardHeader>
       <CardContent className="p-0">

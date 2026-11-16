@@ -3,7 +3,7 @@ import {
   formatDateTimeFromISO,
   formatDuration,
 } from '@shinju-date/temporal-fns'
-import { Button, PageHeader, twMerge } from '@shinju-date/ui'
+import { Alert, Button, PageHeader, twMerge } from '@shinju-date/ui'
 import { ChevronLeft, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
@@ -173,17 +173,9 @@ async function CachedVideoDetails({ id }: { id: string }) {
 
       {/* Status indicator */}
       {isDeleted && (
-        <div
-          className="mb-6 rounded-container border border-danger/30 bg-danger/10 p-4 text-danger"
-          role="status"
-        >
-          <p className="text-body leading-normal font-semibold">
-            削除された動画
-          </p>
-          <p className="mt-1 text-meta">
-            この動画は削除されており、同期できません。
-          </p>
-        </div>
+        <Alert className="mb-6" title="削除された動画" tone="danger">
+          この動画は削除されており、同期できません。
+        </Alert>
       )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -264,15 +256,16 @@ async function CachedVideoDetails({ id }: { id: string }) {
 
       {/* Dangerous operations, kept apart from the ordinary ones above */}
       {!isDeleted && (
-        <section className={twMerge(panelClassName, 'mt-6 border-danger/30')}>
-          <h2 className={panelTitleClassName}>動画の削除</h2>
-          <p className="mt-1 text-meta text-muted">
-            削除した動画は公開サイトに表示されなくなり、同期もできなくなります。
-          </p>
-          <div className="mt-4">
-            <VideoDeleteButton video={video} />
-          </div>
-        </section>
+        <Alert
+          action={<VideoDeleteButton video={video} />}
+          aria-label="動画の削除"
+          className="mt-6"
+          role="region"
+          title="動画の削除"
+          tone="danger"
+        >
+          削除した動画は公開サイトに表示されなくなり、同期もできなくなります。
+        </Alert>
       )}
     </div>
   )
