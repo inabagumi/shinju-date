@@ -34,10 +34,10 @@ const IGNORED_FILES = [/^\.agents\//, /^\.claude\//]
 const PATH_PREFIXES = ['.github/', 'apps/', 'docs/', 'packages/', 'scripts/']
 
 const INLINE_CODE_PATTERN = /(`+)([^`]+?)\1/g
-const LINK_PATTERN = /!?\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+"[^"]*")?\s*\)/g
-const LINK_DEFINITION_PATTERN = /^\s{0,3}\[[^\]]+\]:\s*<?(\S+?)>?(?:\s|$)/
+const LINK_DEFINITION_PATTERN = /^ {0,3}\[[^\]]+\]:[ \t]*<?([^\s>]+)>?/gm
 const SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i
 const FENCE_PATTERN = /^\s*(`{3,}|~{3,})/
+const CLOSING_FENCE_PATTERN = /^\s*(`{3,}|~{3,})[ \t]*$/
 
 /** @type {Map<string, Set<string>>} */
 const anchorCache = new Map()
@@ -141,36 +141,127 @@ function decode(value) {
 }
 
 /**
- * Split lines into the lines outside fenced code blocks.
+ * Blank out fenced code blocks, keeping the line numbers.
  *
  * @param {string[]} lines - Lines of a Markdown file
- * @returns {Array<[number, string]>} Pairs of an index and a line
+ * @returns {string[]} Lines with the fenced code blocks replaced by ''
  */
-function linesOutsideFences(lines) {
+function blankFences(lines) {
   const result = []
   let fence = null
 
-  for (const [index, line] of lines.entries()) {
-    const fenceMatch = line.match(FENCE_PATTERN)
+  for (const line of lines) {
+    if (fence === null) {
+      const opening = line.match(FENCE_PATTERN)
 
-    if (fenceMatch) {
-      const marker = fenceMatch[1]
-
-      if (fence === null) {
-        fence = marker
-      } else if (marker[0] === fence[0] && marker.length >= fence.length) {
-        fence = null
+      if (opening) {
+        fence = opening[1]
       }
 
+      result.push(opening ? '' : line)
       continue
     }
 
-    if (fence === null) {
-      result.push([index, line])
+    const closing = line.match(CLOSING_FENCE_PATTERN)
+
+    if (
+      closing &&
+      closing[1][0] === fence[0] &&
+      closing[1].length >= fence.length
+    ) {
+      fence = null
     }
+
+    result.push('')
   }
 
   return result
+}
+
+/**
+ * Replace inline code with spaces, keeping the offsets and the line breaks.
+ *
+ * @param {string} text - Markdown text
+ */
+function blankInlineCode(text) {
+  return text.replace(INLINE_CODE_PATTERN, (match) =>
+    match.replace(/[^\n]/g, ' '),
+  )
+}
+
+/**
+ * Read the destination of an inline link, which may contain balanced
+ * parentheses and line breaks.
+ *
+ * @param {string} text - Markdown text without code
+ * @param {number} start - Index just after `](`
+ * @returns {string | null} Destination, or null when it is not a link
+ */
+function readDestination(text, start) {
+  let index = start
+
+  while (index < text.length && /\s/.test(text[index])) {
+    index += 1
+  }
+
+  if (text[index] === '<') {
+    const end = text.indexOf('>', index)
+
+    return end === -1 ? null : text.slice(index + 1, end)
+  }
+
+  let depth = 0
+  let destination = ''
+
+  for (; index < text.length; index++) {
+    const char = text[index]
+
+    if (char === '\\' && index + 1 < text.length) {
+      destination += text[index + 1]
+      index += 1
+    } else if (/\s/.test(char)) {
+      break
+    } else if (char === '(') {
+      depth += 1
+      destination += char
+    } else if (char === ')') {
+      if (depth === 0) {
+        break
+      }
+
+      depth -= 1
+      destination += char
+    } else {
+      destination += char
+    }
+  }
+
+  return destination === '' ? null : destination
+}
+
+/**
+ * Find the destinations of the links in Markdown text without code.
+ *
+ * @param {string} text - Markdown text without code
+ * @returns {Array<{ index: number, target: string }>} Destinations and the
+ *   indexes where their links start
+ */
+function findLinks(text) {
+  const links = []
+
+  for (const match of text.matchAll(/\]\(/g)) {
+    const target = readDestination(text, match.index + 2)
+
+    if (target !== null) {
+      links.push({ index: text.lastIndexOf('[', match.index), target })
+    }
+  }
+
+  for (const match of text.matchAll(LINK_DEFINITION_PATTERN)) {
+    links.push({ index: match.index, target: match[1] })
+  }
+
+  return links
 }
 
 /**
@@ -179,10 +270,33 @@ function linesOutsideFences(lines) {
  * @param {string} heading - Text of a heading
  */
 function slugify(heading) {
-  return heading
-    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/<[^>]+>/g, '')
-    .replace(/[`*]/g, '')
+  let text = heading.replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+  let previous
+
+  do {
+    previous = text
+    text = text.replace(/<[^<>]*>/g, '')
+  } while (text !== previous)
+
+  // Remove the emphasis marks, but keep the content of code spans as it is
+  text = text
+    .split(/(`+)([^`]*?)\1/)
+    .map((part, index) => {
+      if (index % 3 === 1) {
+        return ''
+      }
+
+      if (index % 3 === 2) {
+        return part
+      }
+
+      return part
+        .replace(/\*/g, '')
+        .replace(/(^|[^\p{L}\p{N}_])_+([^_]+?)_+(?=$|[^\p{L}\p{N}_])/gu, '$1$2')
+    })
+    .join('')
+
+  return text
     .trim()
     .toLowerCase()
     .replace(/[^\p{L}\p{M}\p{N}\p{Pc}\- ]/gu, '')
@@ -200,18 +314,40 @@ function getAnchors(path) {
   }
 
   const anchors = new Set()
-  const counts = new Map()
-  const lines = readFileSync(path, 'utf8').split('\n')
+  const occurrences = new Map()
+  const lines = blankFences(readFileSync(path, 'utf8').split('\n'))
 
-  for (const [, line] of linesOutsideFences(lines)) {
-    const heading = line.match(/^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$/)
+  // The same way as GitHub (github-slugger) avoids duplicate anchors
+  const addHeading = (heading) => {
+    const base = slugify(heading)
+    let slug = base
 
-    if (heading) {
-      const slug = slugify(heading[1])
-      const count = counts.get(slug) ?? 0
+    if (occurrences.has(slug)) {
+      do {
+        const count = occurrences.get(base) + 1
 
-      anchors.add(count === 0 ? slug : `${slug}-${count}`)
-      counts.set(slug, count + 1)
+        occurrences.set(base, count)
+        slug = `${base}-${count}`
+      } while (occurrences.has(slug))
+    }
+
+    occurrences.set(slug, 0)
+    anchors.add(slug)
+  }
+
+  for (const [index, line] of lines.entries()) {
+    const atx = line.match(/^\s{0,3}#{1,6}\s+(.+?)(?:\s+#+)?\s*$/)
+    const next = lines[index + 1] ?? ''
+
+    if (atx) {
+      addHeading(atx[1])
+    } else if (
+      /^\s{0,3}(?:=+|-+)\s*$/.test(next) &&
+      line.trim() !== '' &&
+      !/^\s{0,3}(?:[-*+>|]|\d+[.)])/.test(line)
+    ) {
+      // Setext heading (a line underlined with `===` or `---`)
+      addHeading(line.trim())
     }
 
     for (const match of line.matchAll(/<a\s[^>]*(?:id|name)="([^"]+)"/g)) {
@@ -250,68 +386,63 @@ function extractPath(code) {
 function checkFile(file) {
   const errors = []
   const filePath = join(root, file)
-  const lines = readFileSync(filePath, 'utf8').split('\n')
   const baseDir = dirname(filePath)
+  const lines = blankFences(readFileSync(filePath, 'utf8').split('\n'))
+  const text = lines.join('\n')
+  const lineStarts = [0]
 
-  for (const [index, line] of linesOutsideFences(lines)) {
+  for (const line of lines) {
+    lineStarts.push(lineStarts[lineStarts.length - 1] + line.length + 1)
+  }
+
+  const lineAt = (offset) =>
+    lineStarts.findLastIndex((lineStart) => lineStart <= offset) + 1
+
+  for (const { index, target } of findLinks(blankInlineCode(text))) {
     const report = (message) => {
-      errors.push({ line: index + 1, message })
+      errors.push({ line: lineAt(index), message })
     }
 
-    const targets = []
-    const textWithoutCode = line.replace(INLINE_CODE_PATTERN, (match) =>
-      ' '.repeat(match.length),
-    )
-
-    for (const match of textWithoutCode.matchAll(LINK_PATTERN)) {
-      targets.push(match[1])
+    if (SCHEME_PATTERN.test(target)) {
+      continue
     }
 
-    const definition = textWithoutCode.match(LINK_DEFINITION_PATTERN)
+    const [pathPart = '', fragment] = target.replace(/\?[^#]*/, '').split('#')
+    const path = decode(pathPart)
+    let absolutePath = filePath
 
-    if (definition) {
-      targets.push(definition[1])
-    }
+    if (path !== '') {
+      absolutePath = path.startsWith('/')
+        ? join(root, path)
+        : resolve(baseDir, path)
 
-    for (const target of targets) {
-      if (SCHEME_PATTERN.test(target)) {
+      if (!pathExists(absolutePath)) {
+        report(`Link to a missing path: ${target}`)
         continue
       }
-
-      const [pathPart = '', fragment] = target.replace(/\?[^#]*/, '').split('#')
-      const path = decode(pathPart)
-      let absolutePath = filePath
-
-      if (path !== '') {
-        absolutePath = path.startsWith('/')
-          ? join(root, path)
-          : resolve(baseDir, path)
-
-        if (!pathExists(absolutePath)) {
-          report(`Link to a missing path: ${target}`)
-          continue
-        }
-      }
-
-      if (
-        fragment &&
-        absolutePath.endsWith('.md') &&
-        !getAnchors(absolutePath).has(decode(fragment).toLowerCase())
-      ) {
-        report(`Link to a missing heading: ${target}`)
-      }
     }
 
-    for (const match of line.matchAll(INLINE_CODE_PATTERN)) {
-      const path = extractPath(match[2])
-
-      if (path !== null && !pathExists(join(root, path))) {
-        report(`Missing path in inline code: ${path}`)
-      }
+    if (
+      fragment &&
+      absolutePath.endsWith('.md') &&
+      !getAnchors(absolutePath).has(decode(fragment).toLowerCase())
+    ) {
+      report(`Link to a missing heading: ${target}`)
     }
   }
 
-  return errors
+  for (const match of text.matchAll(INLINE_CODE_PATTERN)) {
+    const path = extractPath(match[2])
+
+    if (path !== null && !pathExists(join(root, path))) {
+      errors.push({
+        line: lineAt(match.index),
+        message: `Missing path in inline code: ${path}`,
+      })
+    }
+  }
+
+  return errors.toSorted((a, b) => a.line - b.line)
 }
 
 const files = listMarkdownFiles()
