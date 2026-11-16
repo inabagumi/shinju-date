@@ -1,6 +1,9 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { describe, expect, it, vi } from 'vitest'
-import { updateTermPopularity } from '../update-term-popularity'
+import {
+  UPDATE_BATCH_SIZE,
+  updateTermPopularity,
+} from '../update-term-popularity'
 
 // Mock logger
 vi.mock('@shinju-date/logger', () => ({
@@ -10,75 +13,64 @@ vi.mock('@shinju-date/logger', () => ({
   },
 }))
 
+interface RpcItem {
+  score: number
+  term: string
+}
+
+function createMockRedis(results: (string | number)[]) {
+  return {
+    zrange: vi.fn().mockResolvedValue(results),
+  }
+}
+
+/**
+ * A Supabase client whose `update_terms_popularity` matches the given terms
+ * ignoring the case, like the Postgres function.
+ */
+function createMockSupabase(existingTerms: string[]) {
+  const known = new Set(existingTerms.map((term) => term.toLowerCase()))
+  const rpc = vi.fn(
+    async (_name: string, { p_items }: { p_items: RpcItem[] }) => ({
+      data: p_items.filter(({ term }) => known.has(term.toLowerCase())).length,
+      error: null,
+    }),
+  )
+  const from = vi.fn()
+
+  return { from, rpc }
+}
+
+async function run(
+  redis: ReturnType<typeof createMockRedis>,
+  supabase: { from: unknown; rpc: unknown },
+) {
+  return updateTermPopularity(
+    // biome-ignore lint/suspicious/noExplicitAny: Mocked Redis client
+    redis as any,
+    // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
+    supabase as any,
+  )
+}
+
 describe('updateTermPopularity', () => {
   it('should fetch and update term popularity', async () => {
-    // Setup mock Redis client
-    const mockRedis = {
-      zrange: vi
-        .fn()
-        .mockResolvedValue(['タレント名1', 10, 'タレント名2', 5, '配信', 3]),
-    }
+    const mockRedis = createMockRedis([
+      'タレント名1',
+      10,
+      'タレント名2',
+      5,
+      '配信',
+      3,
+    ])
+    const mockSupabase = createMockSupabase([
+      'タレント名1',
+      'タレント名2',
+      '配信',
+    ])
 
-    // Setup mock Supabase client with full term data
-    const selectMock = vi.fn().mockResolvedValue({
-      data: [
-        {
-          created_at: '2024-01-01',
-          id: 'id1',
-          popularity: 0,
-          readings: ['たれんとめい1'],
-          synonyms: [],
-          term: 'タレント名1',
-          updated_at: '2024-01-01',
-        },
-        {
-          created_at: '2024-01-01',
-          id: 'id2',
-          popularity: 0,
-          readings: ['たれんとめい2'],
-          synonyms: [],
-          term: 'タレント名2',
-          updated_at: '2024-01-01',
-        },
-        {
-          created_at: '2024-01-01',
-          id: 'id3',
-          popularity: 0,
-          readings: ['はいしん'],
-          synonyms: [],
-          term: '配信',
-          updated_at: '2024-01-01',
-        },
-      ],
-      error: null,
-    })
+    const result = await run(mockRedis, mockSupabase)
 
-    const upsertMock = vi.fn().mockResolvedValue({
-      count: 3,
-      error: null,
-    })
-
-    const mockSupabase = {
-      from: vi.fn().mockImplementation((table) => {
-        if (table === 'terms') {
-          return {
-            select: selectMock,
-            upsert: upsertMock,
-          }
-        }
-        return {}
-      }),
-    }
-
-    // Execute
-    const result = await updateTermPopularity(
-      // biome-ignore lint/suspicious/noExplicitAny: Mocked Redis client
-      mockRedis as any,
-      // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
-      mockSupabase as any,
-    )
-
-    // Verify Redis call
     expect(mockRedis.zrange).toHaveBeenCalledWith(
       REDIS_KEYS.SEARCH_POPULAR_ALL_TIME,
       0,
@@ -88,181 +80,115 @@ describe('updateTermPopularity', () => {
       },
     )
 
-    // Verify result
-    expect(result.total).toBe(3)
-    expect(result.updated).toBe(3)
-    expect(result.notFound).toBe(0)
+    expect(result).toEqual({ notFound: 0, total: 3, updated: 3 })
 
-    // Verify database calls
-    expect(mockSupabase.from).toHaveBeenCalledWith('terms')
-    expect(selectMock).toHaveBeenCalledWith('*')
+    expect(mockSupabase.rpc).toHaveBeenCalledTimes(1)
+    expect(mockSupabase.rpc).toHaveBeenCalledWith('update_terms_popularity', {
+      p_items: [
+        { score: 10, term: 'タレント名1' },
+        { score: 5, term: 'タレント名2' },
+        { score: 3, term: '配信' },
+      ],
+    })
+  })
 
-    // Verify upsert was called with merged data
-    expect(upsertMock).toHaveBeenCalledWith(
-      expect.arrayContaining([
-        expect.objectContaining({
-          popularity: 10,
-          readings: ['たれんとめい1'],
-          term: 'タレント名1',
-        }),
-        expect.objectContaining({
-          popularity: 5,
-          readings: ['たれんとめい2'],
-          term: 'タレント名2',
-        }),
-        expect.objectContaining({
-          popularity: 3,
-          readings: ['はいしん'],
-          term: '配信',
-        }),
-      ]),
-      {
-        count: 'exact',
-        onConflict: 'id',
-      },
+  it('should write only the popularity, without reading or writing whole rows', async () => {
+    const mockRedis = createMockRedis(['asmr', 4])
+    const mockSupabase = createMockSupabase(['ASMR'])
+
+    const result = await run(mockRedis, mockSupabase)
+
+    expect(result.updated).toBe(1)
+    // Rows are neither read nor upserted, so the readings and synonyms edited
+    // in the admin app in the meantime are kept.
+    expect(mockSupabase.from).not.toHaveBeenCalled()
+
+    expect(mockSupabase.rpc).toHaveBeenCalledWith('update_terms_popularity', {
+      p_items: [{ score: 4, term: 'asmr' }],
+    })
+  })
+
+  it('should update every term when there are more than 1,000', async () => {
+    const count = 1_202
+    const terms = Array.from({ length: count }, (_, i) => `term-${i}`)
+    const mockRedis = createMockRedis(terms.flatMap((term, i) => [term, i]))
+    const mockSupabase = createMockSupabase(terms)
+
+    const result = await run(mockRedis, mockSupabase)
+
+    expect(result).toEqual({ notFound: 0, total: count, updated: count })
+    expect(mockSupabase.rpc).toHaveBeenCalledTimes(
+      Math.ceil(count / UPDATE_BATCH_SIZE),
     )
+
+    const sentItems = mockSupabase.rpc.mock.calls.flatMap(
+      ([, { p_items }]) => p_items,
+    )
+    expect(sentItems).toHaveLength(count)
+    expect(sentItems.at(-1)).toEqual({
+      score: count - 1,
+      term: `term-${count - 1}`,
+    })
+
+    for (const [, { p_items }] of mockSupabase.rpc.mock.calls) {
+      expect(p_items.length).toBeLessThanOrEqual(UPDATE_BATCH_SIZE)
+    }
   })
 
   it('should handle empty Redis data', async () => {
-    // Setup mock Redis client with no data
-    const mockRedis = {
-      zrange: vi.fn().mockResolvedValue([]),
-    }
+    const mockRedis = createMockRedis([])
+    const mockSupabase = createMockSupabase([])
 
-    const mockSupabase = {
-      from: vi.fn(),
-    }
+    const result = await run(mockRedis, mockSupabase)
 
-    // Execute
-    const result = await updateTermPopularity(
-      // biome-ignore lint/suspicious/noExplicitAny: Mocked Redis client
-      mockRedis as any,
-      // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
-      mockSupabase as any,
-    )
-
-    // Verify
-    expect(result.total).toBe(0)
-    expect(result.updated).toBe(0)
-    expect(result.notFound).toBe(0)
-    expect(mockSupabase.from).not.toHaveBeenCalled()
+    expect(result).toEqual({ notFound: 0, total: 0, updated: 0 })
+    expect(mockSupabase.rpc).not.toHaveBeenCalled()
   })
 
   it('should handle terms not found in database', async () => {
-    // Setup mock Redis client
-    const mockRedis = {
-      zrange: vi
-        .fn()
-        .mockResolvedValue(['unknown-term', 10, 'another-term', 5]),
-    }
+    const mockRedis = createMockRedis(['unknown-term', 10, 'another-term', 5])
+    const mockSupabase = createMockSupabase([])
 
-    // Setup mock Supabase client returning no matching terms
-    const selectMock = vi.fn().mockResolvedValue({
-      data: [], // No existing terms
-      error: null,
-    })
+    const result = await run(mockRedis, mockSupabase)
 
-    const mockSupabase = {
-      from: vi.fn().mockReturnValue({
-        select: selectMock,
-      }),
-    }
+    expect(result).toEqual({ notFound: 2, total: 2, updated: 0 })
+  })
 
-    // Execute
-    const result = await updateTermPopularity(
-      // biome-ignore lint/suspicious/noExplicitAny: Mocked Redis client
-      mockRedis as any,
-      // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
-      mockSupabase as any,
-    )
+  it('should count the terms that are not found', async () => {
+    const mockRedis = createMockRedis(['配信', 10, 'unknown-term', 5])
+    const mockSupabase = createMockSupabase(['配信'])
 
-    // Verify
-    expect(result.total).toBe(2)
-    expect(result.updated).toBe(0)
-    expect(result.notFound).toBe(2)
+    const result = await run(mockRedis, mockSupabase)
+
+    expect(result).toEqual({ notFound: 1, total: 2, updated: 1 })
   })
 
   it('should handle database errors gracefully', async () => {
-    // Setup mock Redis client
-    const mockRedis = {
-      zrange: vi.fn().mockResolvedValue(['term1', 10]),
-    }
-
-    // Setup mock Supabase client with error on select
-    const selectMock = vi.fn().mockResolvedValue({
-      data: null,
-      error: { message: 'Database error' },
-    })
-
+    const mockRedis = createMockRedis(['term1', 10])
     const mockSupabase = {
-      from: vi.fn().mockReturnValue({
-        select: selectMock,
+      from: vi.fn(),
+      rpc: vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'Database error' },
       }),
     }
 
-    // Execute - should throw error
-    await expect(
-      // biome-ignore lint/suspicious/noExplicitAny: Mocked Redis client
-      updateTermPopularity(mockRedis as any, mockSupabase as any),
-    ).rejects.toThrow()
+    await expect(run(mockRedis, mockSupabase)).rejects.toEqual({
+      message: 'Database error',
+    })
   })
 
   it('should convert scores to integers', async () => {
-    // Setup mock Redis client with decimal scores
-    const mockRedis = {
-      zrange: vi.fn().mockResolvedValue(['term1', 10.7, 'term2', 5.3]),
-    }
+    const mockRedis = createMockRedis(['term1', 10.7, 'term2', 5.3])
+    const mockSupabase = createMockSupabase(['term1', 'term2'])
 
-    const selectMock = vi.fn().mockResolvedValue({
-      data: [
-        {
-          created_at: '2024-01-01',
-          id: 'id1',
-          popularity: 0,
-          readings: ['reading1'],
-          synonyms: [],
-          term: 'term1',
-          updated_at: '2024-01-01',
-        },
-        {
-          created_at: '2024-01-01',
-          id: 'id2',
-          popularity: 0,
-          readings: ['reading2'],
-          synonyms: [],
-          term: 'term2',
-          updated_at: '2024-01-01',
-        },
+    await run(mockRedis, mockSupabase)
+
+    expect(mockSupabase.rpc).toHaveBeenCalledWith('update_terms_popularity', {
+      p_items: [
+        { score: 10, term: 'term1' },
+        { score: 5, term: 'term2' },
       ],
-      error: null,
     })
-
-    const upsertMock = vi.fn().mockResolvedValue({
-      count: 2,
-      error: null,
-    })
-
-    const mockSupabase = {
-      from: vi.fn().mockReturnValue({
-        select: selectMock,
-        upsert: upsertMock,
-      }),
-    }
-
-    // Execute
-    // biome-ignore lint/suspicious/noExplicitAny: Mocked Redis client
-    await updateTermPopularity(mockRedis as any, mockSupabase as any)
-
-    // Verify that scores are floored to integers
-    expect(upsertMock).toHaveBeenCalledWith(
-      expect.arrayContaining([
-        expect.objectContaining({ popularity: 10, term: 'term1' }),
-        expect.objectContaining({ popularity: 5, term: 'term2' }),
-      ]),
-      {
-        count: 'exact',
-        onConflict: 'id',
-      },
-    )
   })
 })
