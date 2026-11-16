@@ -1,12 +1,7 @@
 import { createErrorResponse } from '@shinju-date/helpers'
 import type { NextRequest } from 'next/server'
 import { serveStorageImage } from '@/lib/storage-image'
-import { createSupabaseClient, supabaseClient } from '@/lib/supabase'
-
-const supabaseAdminClient = createSupabaseClient(
-  undefined,
-  process.env['SUPABASE_SERVICE_ROLE_KEY'],
-)
+import { getSupabaseAdminClient, supabaseClient } from '@/lib/supabase'
 
 /**
  * Serves the icon of a YouTube channel or Twitch user.
@@ -37,6 +32,6 @@ export async function GET(
   return serveStorageImage(request, {
     bucket: 'profile-images',
     path: profileImage.path,
-    supabaseClient: supabaseAdminClient,
+    supabaseClient: getSupabaseAdminClient(),
   })
 }

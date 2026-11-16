@@ -1,7 +1,9 @@
+import type { Tables } from '@shinju-date/database'
 import { createSupabaseServerClient } from '@/lib/supabase'
-import type { Announcement } from './types'
 
-export default async function getAnnouncements(): Promise<Announcement[]> {
+export default async function getAnnouncements(): Promise<
+  Tables<'announcements'>[]
+> {
   const supabase = await createSupabaseServerClient()
 
   const { data, error } = await supabase

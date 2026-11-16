@@ -52,6 +52,19 @@ pnpm run typecheck --filter=@shinju-date/msw-handlers
 - 依存パッケージのビルド（`^build`）と、Next.js のアプリケーションでは `next typegen` による型の生成（`PageProps`、`LayoutProps`、`RouteContext` など）を先に実行します
 - 新しいパッケージやアプリケーションを追加した場合は、`package.json` に `"typecheck": "tsc --noEmit"` を追加してください
 
+#### ドキュメントのリンク
+
+Markdown のファイルを変更した後は、リポジトリの中へのリンクとファイルのパスが実在するかを確かめてください。
+
+```bash
+pnpm run check:docs
+```
+
+- 相対パスのリンク（`[セットアップガイド](docs/setup-guide.md)`）と、そのリンク先の見出し（`#1-初期セットアップ`）を確かめます
+- バッククォートで囲まれた、`apps/`、`packages/`、`docs/`、`scripts/`、`.github/` で始まるファイルのパスを確かめます（`*` を含むパスは、一致するファイルが1つ以上あるかを確かめます）
+- 外部の URL は確かめません
+- `.agents/` と `.claude/` の下のファイル（`skills` CLI が置いたファイル）は対象外です
+
 ### コミットメッセージ
 
 [Conventional Commits](https://www.conventionalcommits.org/) の形式に従ってください：
@@ -126,7 +139,7 @@ pnpm run build
 
 CI は、プルリクエストごとに次のことを確かめます。どれかが失敗すると、マージできません。
 
-- **リント**: Biome のフォーマットとリントに違反がないこと
+- **リント**: Biome のフォーマットとリントに違反がないこと。Markdown の中の、リポジトリの中へのリンクとファイルのパスが実在すること
 - **型チェック**: テストのファイルを含めて、すべてのパッケージとアプリケーションの型に誤りがないこと
 - **テスト**: パッケージとアプリケーションのユニットテストが通ること
 - **ビルド**: すべてのパッケージがビルドできること。web と admin は、MSW を有効にして本番用にビルドできること
@@ -240,8 +253,7 @@ shinju-date/
 ├── apps/                    # アプリケーション
 │   ├── web/                # 公開ウェブサイト
 │   ├── admin/              # 管理画面
-│   ├── batch/              # バッチ処理
-│   └── msw-demo/           # MSW のデモ
+│   └── batch/              # バッチ処理
 ├── packages/               # 共有パッケージ
 │   ├── database/           # データベース関連
 │   ├── msw-handlers/       # MSW モックハンドラ

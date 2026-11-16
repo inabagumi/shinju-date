@@ -6,7 +6,7 @@ import { formatDateKey } from '@shinju-date/temporal-fns'
 import { listDatesInRange } from '@/lib/analytics/list-dates-in-range'
 import { getRedisClient } from '@/lib/redis'
 
-export type DailyClickVolume = {
+export interface DailyClickVolume {
   clicks: number
   date: string
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { TIME_ZONE } from '@shinju-date/constants'
+import type { Tables } from '@shinju-date/database'
 import {
   Button,
   Dialog,
@@ -25,7 +26,6 @@ import Form, {
   Textarea,
 } from '@/components/form'
 import { createAnnouncementAction, updateAnnouncementAction } from '../_actions'
-import type { Announcement } from '../_lib/types'
 
 // Convert datetime-local format to ISO string
 function toISOString(dateTimeLocal: string): string {
@@ -38,7 +38,7 @@ function toISOString(dateTimeLocal: string): string {
 export function AnnouncementModal({
   announcement,
 }: {
-  announcement?: Announcement
+  announcement?: Tables<'announcements'>
 }) {
   const [open, setOpen] = useState(false)
   const defaultStartAt = useMemo(
