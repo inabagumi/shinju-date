@@ -1,7 +1,8 @@
 import * as Sentry from '@sentry/nextjs'
-import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import { CACHE_TAGS, REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { formatDateKey, getMondayOfWeek } from '@shinju-date/temporal-fns'
+import { revalidateTags } from '@shinju-date/web-cache'
 import { after, type NextRequest } from 'next/server'
 import { recommendationQueriesUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
@@ -100,8 +101,9 @@ export async function POST(request: NextRequest) {
       // Clear the auto_recommended key if no data available
       await redisClient.del(REDIS_KEYS.QUERIES_AUTO_RECOMMENDED)
 
-      // Invalidate combined cache
-      await redisClient.del(REDIS_KEYS.QUERIES_COMBINED_CACHE)
+      await revalidateTags([CACHE_TAGS.RECOMMENDATION_QUERIES], {
+        signal: request.signal,
+      })
 
       after(async () => {
         Sentry.captureCheckIn({
@@ -191,10 +193,11 @@ export async function POST(request: NextRequest) {
     // Delete temporary union key
     multi.del(REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION)
 
-    // Invalidate combined cache
-    multi.del(REDIS_KEYS.QUERIES_COMBINED_CACHE)
-
     await multi.exec()
+
+    await revalidateTags([CACHE_TAGS.RECOMMENDATION_QUERIES], {
+      signal: request.signal,
+    })
 
     Sentry.logger.info('Updated auto-recommended queries.', {
       count: matchingQueries.length,
