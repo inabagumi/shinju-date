@@ -83,8 +83,6 @@ jobs:
       matrix:
         package:
           # Node.js packages with tests (excluding UI browser tests)
-          - name: "@shinju-date/composable-fetch"
-            language: "node"
           - name: "@shinju-date/database"
             language: "node"
           - name: "@shinju-date/health-checkers"

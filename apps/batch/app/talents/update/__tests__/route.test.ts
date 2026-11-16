@@ -72,6 +72,9 @@ describe('POST /talents/update', () => {
     const response = await POST(createRequest('?provider=niconico'))
 
     expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: expect.stringMatching(/^Invalid query parameters\. provider: /),
+    })
     expect(createScraper).not.toHaveBeenCalled()
   })
 })

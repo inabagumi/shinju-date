@@ -1,10 +1,11 @@
 'use client'
 
 import * as Sentry from '@sentry/nextjs'
-import { Button, Card, CardContent } from '@shinju-date/ui'
+import { Button } from '@shinju-date/ui'
 import { AlertTriangle } from 'lucide-react'
 import { catchError, type ErrorInfo } from 'next/error'
 import { useEffect } from 'react'
+import { Panel } from './panel'
 
 interface WidgetErrorBoundaryProps {
   /** Kept on the fallback so that links to the widget still land on it */
@@ -33,9 +34,8 @@ export function WidgetErrorFallback({
   }, [error])
 
   return (
-    <Card id={id} role="alert" variant="elevated">
-      <CardContent className="space-y-4">
-        <h2 className="text-heading font-bold">{title}</h2>
+    <Panel id={id} role="alert" title={title}>
+      <div className="space-y-4">
         <p className="flex items-start gap-2 text-body text-danger">
           <AlertTriangle aria-hidden="true" className="mt-1 size-4 shrink-0" />
           読み込めませんでした。時間をおいて再試行してください。
@@ -43,8 +43,8 @@ export function WidgetErrorFallback({
         <Button onClick={() => retry()} size="sm" variant="secondary">
           再試行
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </Panel>
   )
 }
 

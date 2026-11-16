@@ -1,4 +1,5 @@
 import { cacheLife } from 'next/cache'
+import { Panel } from '@/components/panel'
 import { getHistoricalStats } from '../_lib/get-historical-stats'
 import { getSummaryStats } from '../_lib/get-summary-stats'
 import { StatTileLink } from './trend-indicator'
@@ -20,8 +21,7 @@ export async function VideoSummaryWidget() {
   ])
 
   return (
-    <section className="rounded-container border border-border bg-surface p-6">
-      <h2 className="mb-4 text-heading font-bold">動画サマリー</h2>
+    <Panel title="動画サマリー">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatTileLink
           dayChange={stats.totalVideos.dayChange}
@@ -60,7 +60,7 @@ export async function VideoSummaryWidget() {
           <VideoStatsChartUI data={historicalStats} />
         )}
       </div>
-    </section>
+    </Panel>
   )
 }
 
@@ -76,8 +76,7 @@ export async function ContentSummaryWidget() {
   const stats = await getSummaryStats(true)
 
   return (
-    <section className="rounded-container border border-border bg-surface p-6">
-      <h2 className="mb-4 text-heading font-bold">コンテンツサマリー</h2>
+    <Panel title="コンテンツサマリー">
       <div className="grid grid-cols-2 gap-4">
         <StatTileLink
           dayChange={stats.totalTerms.dayChange}
@@ -92,6 +91,6 @@ export async function ContentSummaryWidget() {
           value={stats.totalTalents.current}
         />
       </div>
-    </section>
+    </Panel>
   )
 }

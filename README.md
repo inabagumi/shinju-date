@@ -16,7 +16,6 @@
 
 ### 共有パッケージ (`packages/`)
 
-- **[composable-fetch](packages/composable-fetch/)** - キャッシュやリトライを組み合わせられる fetch のミドルウェア
 - **[constants](packages/constants/)** - 共通の定数
 - **[database](packages/database/)** - Supabase のクライアントとデータベースの型定義
 - **[health-checkers](packages/health-checkers/)** - ヘルスチェック機能

@@ -1,5 +1,6 @@
 import { EmptyState } from '@shinju-date/ui'
 import { cacheLife } from 'next/cache'
+import { Panel } from '@/components/panel'
 import { getAuditLogs } from '../_lib/get-audit-logs'
 import { LogItem } from './log-item'
 
@@ -11,8 +12,7 @@ export async function RecentActivity() {
   const logs = await getAuditLogs(10)
 
   return (
-    <section className="rounded-container border border-border bg-surface p-6">
-      <h2 className="mb-4 text-heading font-bold">最近のアクティビティ</h2>
+    <Panel title="最近のアクティビティ">
       {logs.length === 0 ? (
         <EmptyState title="最近のアクティビティはありません" />
       ) : (
@@ -22,6 +22,6 @@ export async function RecentActivity() {
           ))}
         </ul>
       )}
-    </section>
+    </Panel>
   )
 }

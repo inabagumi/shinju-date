@@ -5,15 +5,16 @@ import { ExternalLink } from 'lucide-react'
 import { cacheLife } from 'next/cache'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Panel } from '@/components/panel'
 import { PopularVideosListSkeleton } from '@/components/skeletons'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
 
 export function PopularVideosWidgetSkeleton() {
   return (
-    <div className="rounded-container border border-border bg-surface p-6">
+    <Panel>
       <div className="mb-4 h-7 w-64 animate-pulse rounded-control bg-muted" />
       <PopularVideosListSkeleton />
-    </div>
+    </Panel>
   )
 }
 
@@ -31,10 +32,7 @@ export async function PopularVideosWidget() {
   const popularVideos = await getPopularVideos(10, startDate, today)
 
   return (
-    <section className="rounded-container border border-border bg-surface p-6">
-      <h2 className="mb-4 text-heading font-bold">
-        人気動画ランキング (過去30日間)
-      </h2>
+    <Panel title="人気動画ランキング (過去30日間)">
       {popularVideos.length > 0 ? (
         <ol className="divide-y divide-border">
           {popularVideos.map((video, index) => (
@@ -87,6 +85,6 @@ export async function PopularVideosWidget() {
       ) : (
         <EmptyState title="データがありません" />
       )}
-    </section>
+    </Panel>
   )
 }

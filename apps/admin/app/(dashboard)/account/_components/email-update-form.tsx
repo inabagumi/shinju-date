@@ -7,6 +7,7 @@ import Form, {
   SubmitButton,
   SuccessMessage,
 } from '@/components/form'
+import { Panel } from '@/components/panel'
 import { updateUserEmail } from '../_actions'
 
 interface Props {
@@ -15,8 +16,7 @@ interface Props {
 
 export function EmailUpdateForm({ currentEmail }: Props) {
   return (
-    <section className="max-w-text rounded-container border border-border bg-surface p-6">
-      <h2 className="mb-4 text-heading font-bold">メールアドレスの変更</h2>
+    <Panel className="max-w-text" title="メールアドレスの変更">
       <Form action={updateUserEmail} className="space-y-4">
         <div className="rounded-control bg-muted p-3">
           <p className="text-meta text-muted">
@@ -44,6 +44,6 @@ export function EmailUpdateForm({ currentEmail }: Props) {
 
         <SubmitButton type="submit">メールアドレスを更新</SubmitButton>
       </Form>
-    </section>
+    </Panel>
   )
 }

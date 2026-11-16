@@ -1,4 +1,4 @@
-import type Database from '@shinju-date/database'
+import type { Enums } from '@shinju-date/database'
 import retryableFetch from '@shinju-date/retryable-fetch'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { nanoid } from 'nanoid'
@@ -21,7 +21,7 @@ const FOREIGN_KEY_VIOLATION = '23503'
 export interface ProfileImageOwner {
   /** `youtube_channels.id` or `twitch_users.id`. */
   id: string
-  platform: Database['public']['Enums']['platform_type']
+  platform: Enums<'platform_type'>
   /**
    * The channel or user ID on the platform. Stored objects are grouped under
    * it so they can be traced back to their owner.

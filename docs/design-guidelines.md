@@ -122,6 +122,7 @@ Lato は 300・400・700 を読み込んでいます（Lato には 600 があり
 | --------------------------------------------- | ---------------------------------------- | ------------------ | ------------------- | ---- |
 | ページ見出し（h1）                            | `text-title font-bold md:text-display`   | 24px（PC は 32px） | 700                 | 1.4  |
 | セクション見出し（h2）                        | `text-heading font-bold`                 | 20px               | 700                 | 1.4  |
+| パネルの見出し（管理画面の `Panel` の h2）    | `text-heading font-bold`                 | 20px               | 700                 | 1.4  |
 | カードのタイトル・小見出し                    | `text-body leading-normal font-semibold` | 16px               | 600                 | 1.5  |
 | 本文                                          | `text-body`                              | 16px               | 400                 | 1.7  |
 | 補助情報（日時・タレント名・説明）            | `text-meta text-muted`                   | 14px               | 400                 | 1.6  |
@@ -141,6 +142,21 @@ const example = (
 
 - **時刻・再生時間・件数は `tabular-nums` にする。** 桁がそろい、数字が変わっても幅が揺れません
 - **文章の行長は1行40〜45文字程度に抑える。** 説明文やお知らせなど、まとまった文章は `max-w-text`（44rem）の中に置きます
+- **管理画面の枠で囲んだ区画は `Panel`（`apps/admin/components/panel.tsx`）にする。** 枠（`rounded-container border border-border bg-surface p-6`）と見出し（`title`）、補足（`description`）、見出しの右の操作（`actions`）をまとめて持ちます。クラスの文字列を手で書かないでください。詳細ページの項目名と値の一覧は、`Panel` の中に `DetailList` と `DetailRow` で置きます
+
+```tsx
+const panel = (
+  <Panel
+    actions={<Button variant="secondary">編集</Button>}
+    description="現在データベースに保存されている情報"
+    title="タレント情報"
+  >
+    <DetailList>
+      <DetailRow label="タレント名">{talent.name}</DetailRow>
+    </DetailList>
+  </Panel>
+)
+```
 
 ### 状態の知らせ（Alert）
 

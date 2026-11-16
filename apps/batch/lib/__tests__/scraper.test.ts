@@ -1,3 +1,4 @@
+import type { Enums } from '@shinju-date/database'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const supabaseClient = {}
@@ -30,7 +31,7 @@ interface CreatedScraper {
     onError: (error: unknown, context: Record<string, unknown>) => void
     supabaseClient: unknown
   }
-  provider: string
+  provider: Enums<'platform_type'>
 }
 
 describe('createScraper', () => {

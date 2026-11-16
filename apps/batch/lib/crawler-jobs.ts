@@ -1,5 +1,5 @@
+import type { Enums } from '@shinju-date/database'
 import type { CronJob } from './cron'
-import type { Provider } from './provider'
 import * as ratelimit from './ratelimit'
 
 export type VideosCheckMode = 'default' | 'recent' | 'all'
@@ -10,7 +10,7 @@ export type VideosCheckMode = 'default' | 'recent' | 'all'
  * The schedules are duplicated from `vercel.json` because Sentry needs them
  * to detect missed runs; a test keeps the two in sync.
  */
-const TALENTS_UPDATE_JOBS: Record<Provider, CronJob> = {
+const TALENTS_UPDATE_JOBS: Record<Enums<'platform_type'>, CronJob> = {
   twitch: {
     path: '/talents/update?provider=twitch',
     ratelimit: ratelimit.talentsUpdate,
@@ -25,7 +25,7 @@ const TALENTS_UPDATE_JOBS: Record<Provider, CronJob> = {
   },
 }
 
-const VIDEOS_UPDATE_JOBS: Record<Provider, CronJob> = {
+const VIDEOS_UPDATE_JOBS: Record<Enums<'platform_type'>, CronJob> = {
   twitch: {
     path: '/videos/update?provider=twitch',
     ratelimit: ratelimit.videosUpdate,
@@ -40,7 +40,10 @@ const VIDEOS_UPDATE_JOBS: Record<Provider, CronJob> = {
   },
 }
 
-const VIDEOS_CHECK_JOBS: Record<Provider, Record<VideosCheckMode, CronJob>> = {
+const VIDEOS_CHECK_JOBS: Record<
+  Enums<'platform_type'>,
+  Record<VideosCheckMode, CronJob>
+> = {
   twitch: {
     all: {
       path: '/videos/check?provider=twitch&mode=all',
@@ -95,16 +98,16 @@ export const VIDEOS_BACKFILL_JOB: CronJob = {
   schedule: '*/1 * * * *',
 }
 
-export function getTalentsUpdateJob(provider: Provider): CronJob {
+export function getTalentsUpdateJob(provider: Enums<'platform_type'>): CronJob {
   return TALENTS_UPDATE_JOBS[provider]
 }
 
-export function getVideosUpdateJob(provider: Provider): CronJob {
+export function getVideosUpdateJob(provider: Enums<'platform_type'>): CronJob {
   return VIDEOS_UPDATE_JOBS[provider]
 }
 
 export function getVideosCheckJob(
-  provider: Provider,
+  provider: Enums<'platform_type'>,
   mode: VideosCheckMode,
 ): CronJob {
   return VIDEOS_CHECK_JOBS[provider][mode]

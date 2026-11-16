@@ -1,3 +1,4 @@
+import type { Enums } from '@shinju-date/database'
 import type { Logger } from './internal/logger.js'
 import type {
   AddPastVideosOptions,
@@ -45,7 +46,7 @@ const silentLogger: Logger = {
  */
 export abstract class Scraper {
   /** Name of the platform, as stored in `videos.platform`. */
-  abstract readonly provider: string
+  abstract readonly provider: Enums<'platform_type'>
 
   protected readonly logger: Logger
   protected readonly supabaseClient: TypedSupabaseClient

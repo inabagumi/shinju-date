@@ -4,6 +4,7 @@
     "@sentry/nextjs": "11.12.0",
     "@sentry/profiling-node": "11.12.0",
     "@shinju-date/constants": "workspace:*",
+    "@shinju-date/database": "workspace:*",
     "@shinju-date/health-checkers": "workspace:*",
     "@shinju-date/helpers": "workspace:*",
     "@shinju-date/logger": "workspace:*",
@@ -23,7 +24,6 @@
   },
   "description": "Scheduled batch processing jobs for SHINJU DATE",
   "devDependencies": {
-    "@shinju-date/database": "workspace:*",
     "@shinju-date/msw-handlers": "workspace:*",
     "@playwright/test": "1.65.1",
     "@tsconfig/next": "2.0.7",

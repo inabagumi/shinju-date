@@ -1,24 +1,22 @@
 import { CACHE_TAGS } from '@shinju-date/constants'
-import { createErrorResponse } from '@shinju-date/helpers'
 import { revalidateTags } from '@shinju-date/web-cache'
 import type { NextRequest } from 'next/server'
 import { getTalentsUpdateJob } from '@/lib/crawler-jobs'
 import { runCronJob } from '@/lib/cron'
-import { parseProvider } from '@/lib/provider'
+import { providerQuerySchema } from '@/lib/provider'
+import { parseQuery } from '@/lib/query'
 import { createScraper } from '@/lib/scraper'
 
 export const maxDuration = 120
 
 export async function POST(request: NextRequest): Promise<Response> {
-  const providerResult = parseProvider(
-    request.nextUrl.searchParams.get('provider'),
-  )
+  const query = parseQuery(providerQuerySchema, request)
 
-  if (!providerResult.success) {
-    return createErrorResponse(providerResult.error, { status: 400 })
+  if (query instanceof Response) {
+    return query
   }
 
-  const { provider } = providerResult
+  const { provider } = query
 
   return runCronJob(request, getTalentsUpdateJob(provider), async () => {
     const changed = await createScraper(provider).syncAccounts()

@@ -1,11 +1,12 @@
 'use client'
 
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
-import { Badge, Button, Card, CardContent, CardHeader } from '@shinju-date/ui'
+import { Badge, Button } from '@shinju-date/ui'
 import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { Panel } from '@/components/panel'
 import {
   getVideoBackfillStatusAction,
   requestVideoBackfillAction,
@@ -218,65 +219,55 @@ export function VideoBackfillPanel({
   }
 
   return (
-    <Card variant="elevated">
-      <CardHeader>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0 space-y-1">
-            <h2 className="text-heading font-bold">過去動画の取り込み</h2>
-            <p className="max-w-text text-meta text-muted">
-              プラットフォーム上にあってデータベースにない過去の動画を、
-              すべての履歴をさかのぼって取り込みます。登録済みの動画はそのまま残ります。
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {(['youtube', 'twitch'] as const)
-              .filter((provider) =>
-                provider === 'youtube' ? hasYouTubeChannels : hasTwitchUsers,
-              )
-              .map((provider) => (
-                <Button
-                  className="whitespace-nowrap"
-                  disabled={
-                    isPending || accounts === null || isProviderActive(provider)
-                  }
-                  key={provider}
-                  onClick={() => {
-                    setConfirmProvider(provider)
-                    setIsConfirmOpen(true)
-                  }}
-                  variant="secondary"
-                >
-                  {pendingProvider === provider && (
-                    <Loader2
-                      aria-hidden="true"
-                      className="mr-2 size-4 animate-spin"
-                    />
-                  )}
-                  {isProviderActive(provider)
-                    ? `${PROVIDER_LABELS[provider]}: 実行中`
-                    : `${PROVIDER_LABELS[provider]}の過去動画を取り込む`}
-                </Button>
-              ))}
-          </div>
-        </div>
-        {accounts !== null && loadError && (
-          <div className="mt-3 rounded-control bg-danger/10 p-3 text-meta text-danger">
-            {loadError}
-          </div>
-        )}
-        {message && (
-          <div
-            className={`mt-3 rounded-control p-3 text-meta ${
-              message.type === 'success'
-                ? 'bg-success/10 text-success'
-                : 'bg-danger/10 text-danger'
-            }`}
+    <Panel
+      actions={(['youtube', 'twitch'] as const)
+        .filter((provider) =>
+          provider === 'youtube' ? hasYouTubeChannels : hasTwitchUsers,
+        )
+        .map((provider) => (
+          <Button
+            className="whitespace-nowrap"
+            disabled={
+              isPending || accounts === null || isProviderActive(provider)
+            }
+            key={provider}
+            onClick={() => {
+              setConfirmProvider(provider)
+              setIsConfirmOpen(true)
+            }}
+            variant="secondary"
           >
-            {message.text}
-          </div>
-        )}
-      </CardHeader>
-      <CardContent className="mt-6 border-t border-border p-0">
+            {pendingProvider === provider && (
+              <Loader2
+                aria-hidden="true"
+                className="mr-2 size-4 animate-spin"
+              />
+            )}
+            {isProviderActive(provider)
+              ? `${PROVIDER_LABELS[provider]}: 実行中`
+              : `${PROVIDER_LABELS[provider]}の過去動画を取り込む`}
+          </Button>
+        ))}
+      description="プラットフォーム上にあってデータベースにない過去の動画を、すべての履歴をさかのぼって取り込みます。登録済みの動画はそのまま残ります。"
+      title="過去動画の取り込み"
+    >
+      {accounts !== null && loadError && (
+        <div className="mb-4 rounded-control bg-danger/10 p-3 text-meta text-danger">
+          {loadError}
+        </div>
+      )}
+      {message && (
+        <div
+          className={`mb-4 rounded-control p-3 text-meta ${
+            message.type === 'success'
+              ? 'bg-success/10 text-success'
+              : 'bg-danger/10 text-danger'
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
+      <div className="-mx-6 -mb-6 border-t border-border">
         {accounts === null ? (
           loadError ? (
             <div className="flex flex-col items-center gap-3 px-4 py-6 text-meta text-danger">
@@ -307,7 +298,7 @@ export function VideoBackfillPanel({
             ))}
           </ul>
         )}
-      </CardContent>
+      </div>
       <ConfirmDialog
         confirmLabel="取り込む"
         description={confirmProvider ? getConfirmMessage(confirmProvider) : ''}
@@ -328,6 +319,6 @@ export function VideoBackfillPanel({
           </ul>
         )}
       </ConfirmDialog>
-    </Card>
+    </Panel>
   )
 }
