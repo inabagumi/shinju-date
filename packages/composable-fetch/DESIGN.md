@@ -62,7 +62,7 @@ Server responses:
 The package uses a composable middleware pattern inspired by Express.js and Redux middleware:
 
 ```typescript
-type FetchMiddleware<TOptions = MiddlewareOptions> = (
+type FetchMiddleware<TOptions extends MiddlewareOptions = MiddlewareOptions> = (
   next: FetchFunction,
   options?: TOptions,
 ) => FetchFunction
@@ -141,7 +141,7 @@ This allows:
 
 **`RedisLike`**: Minimal Redis interface
 
-- Compatible with Upstash Redis, ioredis, etc.
+- Compatible with Upstash Redis (with `automaticDeserialization: false`); other clients such as ioredis need an adapter
 - Only requires: `get`, `set`, `del`
 
 **`RedisCacheStorage`**: Redis-backed implementation
@@ -257,7 +257,7 @@ Order matters:
 
 - Testable with mocks
 - No lock-in to specific Redis client
-- Flexible (Upstash, ioredis, etc.)
+- Flexible (any client that fits `RedisLike`)
 - Explicit dependencies
 - Environment-agnostic
 
@@ -266,7 +266,7 @@ Order matters:
 **Benefits:**
 
 - Pluggable backends (Redis, memory, filesystem, etc.)
-- Easy testing with InMemoryStorage
+- Easy testing with InMemoryCacheStorage
 - Clear contracts
 - Future-proof for other storage types
 
@@ -321,7 +321,7 @@ Order matters:
 **Test patterns:**
 
 - Mock fetch functions
-- InMemoryStorage for cache tests
+- InMemoryCacheStorage for cache tests
 - Mock Redis for Redis tests
 - Time-based tests for TTL
 
@@ -358,7 +358,7 @@ For high-throughput systems, consider:
 
 ### Memory Usage
 
-InMemoryStorage:
+InMemoryCacheStorage:
 
 - Use only for development/testing
 - Not shared across processes
