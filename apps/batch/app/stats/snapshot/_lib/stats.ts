@@ -40,7 +40,8 @@ export async function getSummaryStats(
 
   // Get visible video count (public: visible + ENDED or LIVE or PUBLISHED
   // videos that existed during the target day). Keep the statuses the same as
-  // the current count in admin, which subtracts this snapshot from it.
+  // the current count in admin, which subtracts this snapshot from it
+  // (`VIDEO_SUMMARY_FILTERS` in apps/admin/app/(dashboard)/_lib/video-summary-filters.ts).
   const { count: visibleVideos, error: visibleError } = await supabaseClient
     .from('videos')
     .select('*', { count: 'exact', head: true })
