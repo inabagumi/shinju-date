@@ -15,6 +15,7 @@ import type {
   TypedSupabaseClient,
   WriteContext,
 } from '../types.js'
+import { saveNewTwitchVideos } from './add-new-videos.js'
 import type { TwitchFetcher } from './fetcher.js'
 import { createTwitchThumbnail, saveTwitchVideo } from './save-video.js'
 import {
@@ -122,6 +123,30 @@ export function planLiveSync({
   return plan
 }
 
+/** Selects a saved row together with the Helix ID of its broadcaster. */
+export const SAVED_LIVE_VIDEO_SELECT =
+  'id, deleted_at, duration, published_at, status, thumbnail_id, title, twitch_video:twitch_videos!inner(id, stream_id, twitch_video_id, type, twitch_user:twitch_users(twitch_user_id))'
+
+interface SavedLiveVideoRow extends Omit<SavedTwitchVideo, 'twitch_video'> {
+  twitch_video: SavedTwitchVideo['twitch_video'] & {
+    twitch_user: { twitch_user_id: string } | null
+  }
+}
+
+/**
+ * Flattens a row read with {@link SAVED_LIVE_VIDEO_SELECT}.
+ */
+export function toSavedLiveVideo({
+  twitch_video: { twitch_user, ...twitchVideo },
+  ...video
+}: SavedLiveVideoRow): SavedLiveVideo {
+  return {
+    ...video,
+    twitch_video: twitchVideo,
+    twitchUserId: twitch_user?.twitch_user_id ?? null,
+  }
+}
+
 /**
  * Loads every Twitch row shown as LIVE.
  *
@@ -133,9 +158,7 @@ async function getSavedLiveVideos(
 ): Promise<SavedLiveVideo[]> {
   const { data, error } = await supabaseClient
     .from('videos')
-    .select(
-      'id, deleted_at, duration, published_at, status, thumbnail_id, title, twitch_video:twitch_videos!inner(id, stream_id, twitch_video_id, type, twitch_user:twitch_users(twitch_user_id))',
-    )
+    .select(SAVED_LIVE_VIDEO_SELECT)
     .eq('platform', 'twitch')
     .eq('status', 'LIVE')
     .is('deleted_at', null)
@@ -144,13 +167,7 @@ async function getSavedLiveVideos(
     throw new DatabaseError('Failed to load live Twitch videos', error)
   }
 
-  return data.map(
-    ({ twitch_video: { twitch_user, ...twitchVideo }, ...video }) => ({
-      ...video,
-      twitch_video: twitchVideo,
-      twitchUserId: twitch_user?.twitch_user_id ?? null,
-    }),
-  )
+  return data.map(toSavedLiveVideo)
 }
 
 /**
@@ -205,13 +222,12 @@ async function getArchivesOfEndedBroadcasts(
   { fetcher, reportError }: CrawlContext<TwitchFetcher>,
   ended: readonly SavedLiveVideo[],
 ): Promise<Map<string, TwitchVideo>> {
-  const archiveByStreamId = new Map<string, TwitchVideo>()
   const twitchUserIds = ended
     .map((saved) => saved.twitchUserId)
     .filter((id) => id !== null)
 
   if (twitchUserIds.length === 0) {
-    return archiveByStreamId
+    return new Map()
   }
 
   const { failures, videos } = await fetcher.getRecentVideos(twitchUserIds, {
@@ -222,6 +238,14 @@ async function getArchivesOfEndedBroadcasts(
     reportError(error, { twitchUserId: accountId })
   }
 
+  return toArchiveByStreamId(videos)
+}
+
+function toArchiveByStreamId(
+  videos: readonly TwitchVideo[],
+): Map<string, TwitchVideo> {
+  const archiveByStreamId = new Map<string, TwitchVideo>()
+
   for (const video of videos) {
     const streamId = getArchivedStreamId(video)
 
@@ -231,6 +255,34 @@ async function getArchivesOfEndedBroadcasts(
   }
 
   return archiveByStreamId
+}
+
+/**
+ * Looks up the archive of one broadcast among the newest archives of its
+ * broadcaster. Unlike {@link getArchivesOfEndedBroadcasts}, a failed lookup
+ * rejects: it concerns a single broadcast.
+ */
+async function findArchiveOfBroadcast(
+  fetcher: TwitchFetcher,
+  saved: SavedLiveVideo,
+): Promise<TwitchVideo | undefined> {
+  const streamId = saved.twitch_video.stream_id
+
+  if (!streamId || !saved.twitchUserId) {
+    return undefined
+  }
+
+  const { failures, videos } = await fetcher.getRecentVideos(
+    [saved.twitchUserId],
+    { type: 'archive' },
+  )
+  const [failure] = failures
+
+  if (failure) {
+    throw failure.error
+  }
+
+  return toArchiveByStreamId(videos).get(streamId)
 }
 
 /**
@@ -344,4 +396,59 @@ export async function syncTwitchLive(
   }
 
   return changedCount
+}
+
+/**
+ * Brings one saved broadcast in line with Twitch, the same way the scheduled
+ * operations do:
+ *
+ * - while its stream is on air, the row is (re)marked LIVE and follows the
+ *   title, like `refreshLiveVideos`
+ * - once its stream is offline, a LIVE row is ended and takes over the
+ *   archive's details when Twitch lists it, like `refreshLiveVideos`
+ * - a placeholder still waiting for its archive is linked to it when Twitch
+ *   lists it, like `addNewVideos`, and stays LIVE while the stream is on air
+ *
+ * No row is ever added for other broadcasts.
+ */
+export async function refreshTwitchBroadcast(
+  context: CrawlContext<TwitchFetcher>,
+  saved: SavedLiveVideo,
+): Promise<void> {
+  const { fetcher, now, supabaseClient } = context
+  const liveStreams = saved.twitchUserId
+    ? await fetcher.getLiveStreams([saved.twitchUserId])
+    : []
+  const plan = planLiveSync({
+    activeTwitchUserIds: new Set(),
+    liveStreams,
+    savedByStreamId: [saved],
+    savedLiveVideos: saved.status === 'LIVE' ? [saved] : [],
+  })
+  const hasEnded = plan.ended.length > 0
+  const archive =
+    hasEnded || isLivePlaceholder(saved)
+      ? await findArchiveOfBroadcast(fetcher, saved)
+      : undefined
+
+  for (const { values } of plan.refreshed) {
+    await updateVideo(supabaseClient, saved.id, {
+      ...values,
+      updated_at: toDBString(now),
+    })
+  }
+
+  if (hasEnded) {
+    await endBroadcast(context, saved, archive)
+    return
+  }
+
+  if (archive && isLivePlaceholder(saved)) {
+    // Only this row owns the stream ID, so nothing can be inserted here.
+    await saveNewTwitchVideos(context, {
+      liveStreams,
+      users: [],
+      videos: [archive],
+    })
+  }
 }

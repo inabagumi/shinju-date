@@ -6,13 +6,16 @@ import {
 import { TEST_NOW } from '../../internal/testing/context.js'
 import { setupSupabase } from '../../internal/testing/supabase.js'
 import {
+  createClip,
   createSavedVideo,
   createStream,
   createVideo,
 } from '../../internal/testing/twitch.js'
+import type { SavedTwitchVideo } from '../saved-video.js'
 import { TwitchScraper } from '../scraper.js'
 import type {
   TwitchApi,
+  TwitchClip,
   TwitchStream,
   TwitchUser,
   TwitchVideo,
@@ -35,6 +38,8 @@ async function* fromArray<T>(items: readonly T[]): AsyncGenerator<T> {
 
 interface FakeTwitch {
   archives?: TwitchVideo[]
+  /** Clips that still exist, looked up by ID. */
+  clips?: TwitchClip[]
   /** Pages of a broadcaster's history, keyed by the cursor they start at. */
   historyPages?: Record<string, TwitchVideoPage>
   liveStreams?: TwitchStream[]
@@ -50,6 +55,7 @@ interface FakeTwitch {
  */
 function createApi({
   archives = [],
+  clips = [],
   historyPages = {},
   liveStreams = [],
   uploads = [],
@@ -57,7 +63,9 @@ function createApi({
   videos = [],
 }: FakeTwitch): TwitchApi {
   return {
-    getClips: vi.fn(() => fromArray([])),
+    getClips: vi.fn(({ ids }) =>
+      fromArray(clips.filter((clip) => ids.includes(clip.id))),
+    ),
     getStreamsByUserIds: vi.fn(() => fromArray(liveStreams)),
     getUsers: vi.fn(({ ids }) =>
       fromArray(users.filter((user) => ids.includes(user.id))),
@@ -73,6 +81,57 @@ function createApi({
         historyPages[after ?? ''] ?? { cursor: null, videos: [] },
     ),
   }
+}
+
+/**
+ * Answers like a database holding one saved video: reads return the row as it
+ * is after the writes made so far.
+ */
+function respondWithSavedVideo(initial: SavedTwitchVideo) {
+  let row = structuredClone(initial)
+
+  supabase.respond(({ body, method, query, table }) => {
+    const { twitch_video, ...video } = row
+
+    switch (`${method} ${table}`) {
+      case 'GET talents':
+        return activeTalents
+      case 'GET videos':
+        return [
+          {
+            ...video,
+            twitch_video: {
+              ...twitch_video,
+              twitch_user: { twitch_user_id: 'twitch-user-1' },
+            },
+          },
+        ]
+      case 'GET twitch_videos':
+        return query['stream_id']?.includes(twitch_video.stream_id ?? '') ||
+          query['twitch_video_id']?.includes(twitch_video.twitch_video_id)
+          ? [{ ...twitch_video, video }]
+          : []
+      case 'PATCH videos':
+        row = { ...row, ...(body as Partial<SavedTwitchVideo>) }
+        return [{ id: row.id }]
+      case 'PATCH twitch_videos':
+        row = {
+          ...row,
+          twitch_video: {
+            ...twitch_video,
+            ...(body as Partial<SavedTwitchVideo['twitch_video']>),
+          },
+        }
+        return []
+      default:
+        return []
+    }
+  })
+}
+
+/** The writes made so far, without the reads. */
+function writes() {
+  return supabase.requests.filter(({ method }) => method !== 'GET')
 }
 
 const activeTalents = [
@@ -251,6 +310,253 @@ describe('TwitchScraper', () => {
         duration: 'PT2H',
         updated_at: '2024-05-01T12:00:00Z',
       })
+    })
+  })
+
+  describe('refreshVideo', () => {
+    const endedArchive = createSavedVideo({
+      duration: 'PT1H',
+      status: 'ENDED',
+      thumbnail_id: 'thumb-1',
+      title: 'Archive',
+      twitch_video: { twitch_video_id: 'vod-1', type: 'archive' },
+    })
+
+    it('updates what changed and reports the changed columns', async () => {
+      respondWithSavedVideo(endedArchive)
+      const { scraper } = createScraper({
+        videos: [createVideo({ title: 'Renamed archive' })],
+      })
+
+      await expect(scraper.refreshVideo('video-1', TEST_NOW)).resolves.toEqual({
+        after: { duration: 'PT2H', title: 'Renamed archive' },
+        before: { duration: 'PT1H', title: 'Archive' },
+        status: 'updated',
+        title: 'Renamed archive',
+      })
+
+      expect(supabase.written('GET', 'videos')[0]?.query).toMatchObject({
+        deleted_at: 'is.null',
+        id: 'eq.video-1',
+        platform: 'eq.twitch',
+      })
+      expect(onError).not.toHaveBeenCalled()
+    })
+
+    it('writes the same values as the scheduled refresh', async () => {
+      const fake = { videos: [createVideo({ title: 'Renamed archive' })] }
+
+      respondWithSavedVideo(endedArchive)
+      await createScraper(fake).scraper.refreshVideo('video-1', TEST_NOW)
+      const single = writes()
+
+      supabase.requests.length = 0
+      respondWithSavedVideo(endedArchive)
+      await createScraper(fake).scraper.refreshRecentVideos(TEST_NOW)
+
+      expect(single).toEqual([
+        expect.objectContaining({
+          body: {
+            duration: 'PT2H',
+            title: 'Renamed archive',
+            updated_at: '2024-05-01T12:00:00Z',
+          },
+          table: 'videos',
+        }),
+      ])
+      expect(writes()).toEqual(single)
+    })
+
+    it('reads a clip as a clip', async () => {
+      respondWithSavedVideo(
+        createSavedVideo({
+          duration: 'PT30S',
+          published_at: '2024-05-01T09:00:00+00:00',
+          status: 'PUBLISHED',
+          title: 'Clip',
+          twitch_video: {
+            stream_id: null,
+            twitch_video_id: 'clip-1',
+            type: 'clip',
+          },
+        }),
+      )
+      const { client, scraper } = createScraper({
+        clips: [createClip({ title: 'Renamed clip' })],
+      })
+
+      await expect(scraper.refreshVideo('video-1', TEST_NOW)).resolves.toEqual({
+        after: { title: 'Renamed clip' },
+        before: { title: 'Clip' },
+        status: 'updated',
+        title: 'Renamed clip',
+      })
+      expect(client.getClips).toHaveBeenCalledWith({ ids: ['clip-1'] })
+      expect(client.getVideos).not.toHaveBeenCalled()
+    })
+
+    it('reports a video that is up to date without writing', async () => {
+      respondWithSavedVideo({ ...endedArchive, duration: 'PT2H' })
+      const { scraper } = createScraper({ videos: [createVideo()] })
+
+      await expect(scraper.refreshVideo('video-1', TEST_NOW)).resolves.toEqual({
+        status: 'unchanged',
+        title: 'Archive',
+      })
+      expect(writes()).toEqual([])
+    })
+
+    it('soft-deletes a video Twitch no longer returns, like the scheduled refresh', async () => {
+      respondWithSavedVideo(endedArchive)
+
+      await expect(
+        createScraper({}).scraper.refreshVideo('video-1', TEST_NOW),
+      ).resolves.toEqual({ status: 'unavailable' })
+      const single = writes()
+
+      supabase.requests.length = 0
+      respondWithSavedVideo(endedArchive)
+      await createScraper({}).scraper.refreshRecentVideos(TEST_NOW)
+
+      expect(single).toEqual([
+        expect.objectContaining({
+          body: expect.objectContaining({ deleted_reason: 'unavailable' }),
+          query: expect.objectContaining({ id: 'in.(video-1)' }),
+          table: 'videos',
+        }),
+        expect.objectContaining({
+          query: expect.objectContaining({ id: 'in.(thumb-1)' }),
+          table: 'thumbnails',
+        }),
+      ])
+      expect(writes()).toEqual(single)
+    })
+
+    it('reports a video that is not saved, or not a Twitch video', async () => {
+      supabase.respond(() => [])
+      const { client, scraper } = createScraper({ videos: [createVideo()] })
+
+      await expect(scraper.refreshVideo('video-404')).resolves.toEqual({
+        status: 'not-found',
+      })
+      expect(client.getVideos).not.toHaveBeenCalled()
+      expect(client.getStreamsByUserIds).not.toHaveBeenCalled()
+    })
+
+    it('links a broadcast on air to its archive and keeps it LIVE', async () => {
+      respondWithSavedVideo(createSavedVideo({ title: 'Old title' }))
+      const { scraper } = createScraper({
+        archives: [createVideo()],
+        liveStreams: [createStream()],
+      })
+
+      await expect(scraper.refreshVideo('video-1', TEST_NOW)).resolves.toEqual({
+        after: { title: 'Live now' },
+        before: { title: 'Old title' },
+        status: 'updated',
+        title: 'Live now',
+      })
+
+      expect(supabase.written('PATCH', 'twitch_videos')).toEqual([
+        expect.objectContaining({
+          body: { twitch_video_id: 'vod-1', type: 'archive' },
+          query: { id: 'eq.twitch-row-1' },
+        }),
+      ])
+      expect(supabase.written('PATCH', 'videos')).toEqual([
+        expect.objectContaining({
+          body: { title: 'Live now', updated_at: '2024-05-01T12:00:00Z' },
+        }),
+      ])
+      expect(supabase.written('POST', 'videos')).toEqual([])
+    })
+
+    it('reports a link to the archive as an update', async () => {
+      respondWithSavedVideo(createSavedVideo())
+      const { scraper } = createScraper({
+        archives: [createVideo()],
+        liveStreams: [createStream()],
+      })
+
+      await expect(scraper.refreshVideo('video-1', TEST_NOW)).resolves.toEqual({
+        after: {},
+        before: {},
+        status: 'updated',
+        title: 'Live now',
+      })
+    })
+
+    it('ends a broadcast that went offline like the scheduled live sync', async () => {
+      const fake = { archives: [createVideo()] }
+
+      respondWithSavedVideo(createSavedVideo())
+      await expect(
+        createScraper(fake).scraper.refreshVideo('video-1', TEST_NOW),
+      ).resolves.toEqual({
+        // The start time is the same instant, written differently.
+        after: { duration: 'PT2H', status: 'ENDED', title: 'Archive' },
+        before: { duration: 'P0D', status: 'LIVE', title: 'Live now' },
+        status: 'updated',
+        title: 'Archive',
+      })
+      const single = writes()
+
+      supabase.requests.length = 0
+      respondWithSavedVideo(createSavedVideo())
+      await createScraper(fake).scraper.refreshLiveVideos(TEST_NOW)
+
+      expect(single.map(({ table }) => table)).toEqual([
+        'twitch_videos',
+        'videos',
+      ])
+      expect(writes()).toEqual(single)
+    })
+
+    it('links an ended broadcast to the archive Twitch lists by now', async () => {
+      respondWithSavedVideo(createSavedVideo({ status: 'ENDED' }))
+      const { scraper } = createScraper({ archives: [createVideo()] })
+
+      await expect(
+        scraper.refreshVideo('video-1', TEST_NOW),
+      ).resolves.toMatchObject({
+        after: { duration: 'PT2H', title: 'Archive' },
+        status: 'updated',
+      })
+      expect(supabase.written('PATCH', 'twitch_videos')[0]?.body).toEqual({
+        twitch_video_id: 'vod-1',
+        type: 'archive',
+      })
+      expect(supabase.written('PATCH', 'videos')[0]?.body).toMatchObject({
+        duration: 'PT2H',
+        status: 'ENDED',
+        thumbnail_id: 'thumb-new',
+        title: 'Archive',
+      })
+    })
+
+    it('rejects without ending a broadcast when its archives cannot be read', async () => {
+      const error = new Error('helix unavailable')
+      respondWithSavedVideo(createSavedVideo())
+      const { client, scraper } = createScraper({})
+      vi.mocked(client.getVideosByUser).mockImplementation(() => {
+        throw error
+      })
+
+      await expect(scraper.refreshVideo('video-1', TEST_NOW)).rejects.toBe(
+        error,
+      )
+      expect(writes()).toEqual([])
+    })
+
+    it('leaves an ended broadcast whose archive Twitch does not list', async () => {
+      respondWithSavedVideo(createSavedVideo({ status: 'ENDED' }))
+      const { scraper } = createScraper({})
+
+      await expect(scraper.refreshVideo('video-1', TEST_NOW)).resolves.toEqual({
+        status: 'unchanged',
+        title: 'Live now',
+      })
+      expect(writes()).toEqual([])
     })
   })
 

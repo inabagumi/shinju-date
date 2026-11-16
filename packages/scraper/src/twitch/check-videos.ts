@@ -237,6 +237,40 @@ export async function refreshRecentTwitchVideos(
   return updatedCount + deletedCount
 }
 
+/**
+ * Brings one saved video or clip in line with Twitch, the same way
+ * `refreshRecentVideos` does: updates what changed, fills in a thumbnail that
+ * was not available yet, or soft-deletes it when Twitch no longer returns it.
+ *
+ * Placeholders of broadcasts have no Helix resource: see
+ * `refreshTwitchBroadcast` for those.
+ *
+ * @returns `'unavailable'` when the video was soft-deleted, otherwise whether
+ *   it changed.
+ */
+export async function refreshTwitchVideoDetails(
+  context: CrawlContext<TwitchFetcher>,
+  saved: SavedTwitchVideo,
+): Promise<boolean | 'unavailable'> {
+  const { fetchedById, missingIds } = await lookUpOnTwitch(context.fetcher, [
+    saved,
+  ])
+  const fetched = fetchedById.get(saved.twitch_video.twitch_video_id)
+
+  if (fetched) {
+    return refreshVideo(context, saved, fetched)
+  }
+
+  // A placeholder is never looked up, so it is never missing either.
+  if (missingIds.length === 0) {
+    return false
+  }
+
+  await deleteMissingVideos(context, missingIds, toSavedByTwitchId([saved]))
+
+  return 'unavailable'
+}
+
 async function getSweepPage(
   supabaseClient: TypedSupabaseClient,
   cursor: string | undefined,
