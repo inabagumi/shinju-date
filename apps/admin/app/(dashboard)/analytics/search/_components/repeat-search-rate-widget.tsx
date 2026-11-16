@@ -1,32 +1,13 @@
 import { StatTile } from '@shinju-date/ui'
-import { cache } from 'react'
 import { getRepeatSearchRate } from '@/lib/analytics/get-search-quality-metrics'
 import { WidgetHeader } from '../../_components/widget-header'
+import { resolvePeriod } from '../../_lib/resolve-period'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 import { MetricNoData } from './metric-no-data'
 
 interface Props {
   searchParams: Promise<AnalyticsSearchParams>
 }
-
-/**
- * Cached function to fetch repeat search rate data
- */
-const fetchRepeatSearchRateData = cache(
-  async (
-    startDate: string,
-    endDate: string,
-    selectedDate: string | null,
-  ): Promise<number | null> => {
-    if (selectedDate) {
-      return getRepeatSearchRate(Temporal.PlainDate.from(selectedDate))
-    }
-
-    const start = Temporal.PlainDate.from(startDate)
-    const end = Temporal.PlainDate.from(endDate)
-    return getRepeatSearchRate(start, end)
-  },
-)
 
 /**
  * Repeat Search Rate Widget Component
@@ -111,11 +92,8 @@ function RepeatSearchRateWidgetComponent({
 export async function RepeatSearchRateWidget({ searchParams }: Props) {
   const { dateRange, selectedDate } = await searchParams
 
-  const repeatRate = await fetchRepeatSearchRateData(
-    dateRange.startDate,
-    dateRange.endDate,
-    selectedDate,
-  )
+  const { start, end } = resolvePeriod({ dateRange, selectedDate })
+  const repeatRate = await getRepeatSearchRate(start, end)
 
   return (
     <RepeatSearchRateWidgetComponent
