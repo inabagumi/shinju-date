@@ -26,8 +26,8 @@ export type FetchMiddleware<
  * @example
  * ```typescript
  * const enhancedFetch = composeFetch(
- *   withRetry,
- *   withCache
+ *   (next) => withRetry(next),
+ *   (next) => withCache(next, { storage }),
  * )
  *
  * const response = await enhancedFetch('https://api.example.com/data')

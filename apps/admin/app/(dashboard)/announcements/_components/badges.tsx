@@ -1,5 +1,5 @@
+import type { Tables } from '@shinju-date/database'
 import { Badge } from '@shinju-date/ui'
-import type { Announcement } from '../_lib/types'
 
 // Get level badge variant
 function getLevelBadgeVariant(level: string): 'info' | 'warning' | 'danger' {
@@ -26,7 +26,7 @@ function getLevelLabel(level: string): string {
 }
 
 // Check if announcement is currently active
-function isActive(announcement: Announcement): boolean {
+function isActive(announcement: Tables<'announcements'>): boolean {
   if (!announcement.enabled) return false
 
   const now = Temporal.Now.instant()
@@ -45,7 +45,11 @@ export function LevelBadge({ level }: { level: string }) {
   )
 }
 
-export function StatusBadge({ announcement }: { announcement: Announcement }) {
+export function StatusBadge({
+  announcement,
+}: {
+  announcement: Tables<'announcements'>
+}) {
   return isActive(announcement) ? (
     <Badge variant="success">公開中</Badge>
   ) : announcement.enabled ? (

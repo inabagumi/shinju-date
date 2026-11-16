@@ -3,6 +3,7 @@
 import { checkBotId } from 'botid/server'
 import { Resend } from 'resend'
 import { z } from 'zod'
+import { serverEnv } from '@/lib/env'
 import {
   type FormState,
   getFormValues,
@@ -40,8 +41,8 @@ const CONTACT_FORM_FIELDS = [
 ] as const satisfies readonly ContactFormField[]
 
 // Only initialize Resend if API key is available
-const resend = process.env['RESEND_API_KEY']
-  ? new Resend(process.env['RESEND_API_KEY'])
+const resend = serverEnv.RESEND_API_KEY
+  ? new Resend(serverEnv.RESEND_API_KEY)
   : null
 
 export async function submitContactForm(
@@ -121,7 +122,7 @@ ${message}
 このメールはSHINJU DATEのお問い合わせフォームから自動送信されました。`
 
     // Only send email if admin email is properly configured (not default)
-    const adminEmail = process.env['ADMIN_EMAIL']
+    const adminEmail = serverEnv.ADMIN_EMAIL
     if (!adminEmail || adminEmail === 'admin@example.com') {
       return {
         error: 'メール送信設定が完了していません。',
@@ -149,7 +150,7 @@ ${message}
     // The Resend SDK does not throw on API or network errors; it returns
     // them as `error` instead, so check it explicitly.
     const { error: sendError } = await resend.emails.send({
-      from: process.env['FROM_EMAIL'] || 'noreply@shinju.date',
+      from: serverEnv.FROM_EMAIL || 'noreply@shinju.date',
       subject: emailSubject,
       text: emailText,
       to: adminEmail,
