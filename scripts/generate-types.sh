@@ -20,12 +20,13 @@ cd "$PROJECT_ROOT"
 
 SUPABASE_STATUS_ENV=$(pnpm exec supabase status -o env 2>/dev/null || true)
 
-if echo "$SUPABASE_STATUS_ENV" | grep -qE '^API_URL='; then
+# `supabase gen types` only needs the database, so `supabase db start` is enough
+if echo "$SUPABASE_STATUS_ENV" | grep -qE '^DB_URL='; then
     echo -e "${GREEN}Using Supabase CLI local instance${NC}"
     pnpm exec supabase gen types typescript --local --schema public > "$OUTPUT_FILE"
     echo -e "${GREEN}Types generated successfully at: ${OUTPUT_FILE}${NC}"
 else
     echo -e "${RED}Error: Supabase local stack is not running${NC}"
-    echo -e "${YELLOW}Please start Supabase first: pnpm exec supabase start${NC}"
+    echo -e "${YELLOW}Please start Supabase first: pnpm exec supabase start (or pnpm exec supabase db start)${NC}"
     exit 1
 fi

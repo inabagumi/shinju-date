@@ -158,6 +158,7 @@ pnpm run build
   - **Typecheck**: テストファイルを含めた型チェック（`tsc`）が成功すること
   - **Test**: テストが全て成功すること
   - **Build**: 全てのパッケージとアプリケーションがビルドできること
+  - **Database**: データベースを変えた場合、マイグレーションの適用、pgTAP のテスト、生成される型の確認が成功すること
 - コードレビューに対応
 - 必要に応じて修正
 
@@ -192,6 +193,12 @@ Node.js CI は以下のジョブ構成になっています：
 6. **E2E Tests** - エンドツーエンドテスト
    - Test と Build の両方が成功した場合に実行
    - 現在は準備中（将来的に追加予定）
+
+7. **Database** - データベースの確認
+   - `supabase/`、`packages/database/`、`scripts/generate-types.sh`、ルートの `package.json` を変えた場合だけ実行（**Detect Changes** ジョブが判定）
+   - `pnpm exec supabase db start` で、すべてのマイグレーションとシードを空のデータベースに適用
+   - `pnpm exec supabase test db` で、`supabase/tests/database/` の pgTAP のテストを実行
+   - `pnpm db:schema` で型を生成し直し、`packages/database/types/supabase.ts` に差分がないことを確認
 
 **並列実行の利点**：
 
@@ -256,13 +263,16 @@ pnpm run test --watch
 
    ```bash
    pnpm exec supabase db reset  # 全マイグレーションを適用
+   pnpm exec supabase test db   # pgTAP のテストを実行
+   pnpm db:schema               # 型を生成し直す（生成した型も一緒にコミットする）
    ```
+
+   プルリクエストでは、CI の **Database** ジョブが同じことを確かめます。
 
 4. **本番適用（レビュー後）**
-
-   ```bash
-   pnpm exec supabase db push --project-ref YOUR_PROJECT_ID
-   ```
+   - main にマージすると、`Supabase DB Push on main` ワークフローが本番に適用します
+   - `supabase/` を変えた push だけで動き、同時に2つは動きません
+   - 適用の前に、空のデータベースへのマイグレーションの適用と pgTAP のテストを実行し、失敗したら適用しません
 
 ### データ操作のベストプラクティス
 

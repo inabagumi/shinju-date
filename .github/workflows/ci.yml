@@ -26,6 +26,51 @@ jobs:
         with:
           cache: true
 
+  # Detect whether the database job needs to run
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    outputs:
+      database: ${{ steps.filter.outputs.database }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+
+      - name: Detect database changes
+        id: filter
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            # A pull request checks out the merge commit, whose first parent is the base branch
+            base="HEAD^1"
+          elif [ -n "$BEFORE_SHA" ] && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ] && git fetch --depth=1 origin "$BEFORE_SHA"; then
+            base="$BEFORE_SHA"
+          else
+            base=""
+          fi
+
+          if [ -z "$base" ]; then
+            echo "Could not find the base commit, so the database job runs"
+            database=true
+          else
+            changed_files=$(git diff --name-only "$base" HEAD)
+            # The Supabase CLI version is in package.json, and it can change the generated types
+            if grep -qE '^(supabase/|packages/database/|scripts/generate-types\.sh$|package\.json$|\.github/workflows/ci\.yml$)' <<< "$changed_files"; then
+              database=true
+            else
+              database=false
+            fi
+          fi
+
+          echo "database=$database"
+          echo "database=$database" >> "$GITHUB_OUTPUT"
+
   # Matrix job for all unit tests (Node.js packages)
   test:
     name: Test (${{ matrix.package.name }})
@@ -282,11 +327,44 @@ jobs:
             packages/*/playwright-report/
           retention-days: 30
 
+  # Migrations, pgTAP tests and generated types (only when the database changes)
+  database:
+    name: Database
+    runs-on: ubuntu-26.04
+    needs: [install, changes]
+    if: needs.changes.outputs.database == 'true'
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup pnpm
+        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          cache: true
+
+      # Applies all migrations and the seed to an empty database
+      - name: Start local database
+        run: pnpm exec supabase db start
+
+      - name: Run pgTAP tests
+        run: pnpm exec supabase test db
+
+      - name: Check generated types are up to date
+        run: |
+          pnpm db:schema
+
+          if ! git diff --exit-code packages/database/types/supabase.ts; then
+            echo "::error file=packages/database/types/supabase.ts::The generated types do not match the migrations. Run \`pnpm db:schema\` and commit the result."
+            exit 1
+          fi
+
   # Summary job - this is the only required status check
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-26.04
-    needs: [lint, typecheck, build-msw, e2e]
+    needs: [lint, typecheck, build-msw, e2e, changes, database]
     if: always()
     steps:
       - name: Check lint results
@@ -311,6 +389,13 @@ jobs:
         if: needs.e2e.result != 'success'
         run: |
           echo "E2E job failed"
+          exit 1
+
+      # The database job is skipped when the database does not change
+      - name: Check database results
+        if: needs.changes.result != 'success' || (needs.database.result != 'success' && needs.database.result != 'skipped')
+        run: |
+          echo "Database job failed"
           exit 1
 
       - name: All jobs passed
