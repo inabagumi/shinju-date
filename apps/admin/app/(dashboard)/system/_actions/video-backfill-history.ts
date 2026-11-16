@@ -1,6 +1,6 @@
 'use server'
 
-import type { default as Database } from '@shinju-date/database'
+import type { Enums } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import {
   type BackfillProvider,
@@ -20,8 +20,7 @@ import {
 /** Entries of the history shown at once. */
 const HISTORY_LIMIT = 50
 
-export type VideoBackfillHistoryStatus =
-  Database['public']['Enums']['video_backfill_job_status']
+export type VideoBackfillHistoryStatus = Enums<'video_backfill_job_status'>
 
 /** A backfill job that finished, as recorded by the batch app. */
 export interface VideoBackfillHistoryEntry {
