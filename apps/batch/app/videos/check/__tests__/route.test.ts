@@ -123,10 +123,23 @@ describe('POST /videos/check', () => {
     )
   })
 
+  it('rejects an unknown provider', async () => {
+    const response = await POST(createRequest('?provider=niconico'))
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: expect.stringMatching(/^Invalid query parameters\. provider: /),
+    })
+    expect(createScraper).not.toHaveBeenCalled()
+  })
+
   it('rejects an unknown mode', async () => {
     const response = await POST(createRequest('?mode=everything'))
 
     expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: expect.stringMatching(/^Invalid query parameters\. mode: /),
+    })
     expect(createScraper).not.toHaveBeenCalled()
   })
 

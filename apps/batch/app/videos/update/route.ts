@@ -1,23 +1,21 @@
-import { createErrorResponse } from '@shinju-date/helpers'
 import type { NextRequest } from 'next/server'
 import { getVideosUpdateJob } from '@/lib/crawler-jobs'
 import { runCronJob } from '@/lib/cron'
-import { parseProvider } from '@/lib/provider'
+import { providerQuerySchema } from '@/lib/provider'
+import { parseQuery } from '@/lib/query'
 import { createScraper } from '@/lib/scraper'
 import { finishVideoSync } from '@/lib/video-sync'
 
 export const maxDuration = 120
 
 export async function POST(request: NextRequest): Promise<Response> {
-  const providerResult = parseProvider(
-    request.nextUrl.searchParams.get('provider'),
-  )
+  const query = parseQuery(providerQuerySchema, request)
 
-  if (!providerResult.success) {
-    return createErrorResponse(providerResult.error, { status: 400 })
+  if (query instanceof Response) {
+    return query
   }
 
-  const { provider } = providerResult
+  const { provider } = query
 
   return runCronJob(request, getVideosUpdateJob(provider), async () => {
     const now = Temporal.Now.instant()

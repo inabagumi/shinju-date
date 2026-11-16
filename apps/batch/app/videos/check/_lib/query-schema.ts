@@ -1,7 +1,6 @@
 import { z } from 'zod'
-import { providerSchema } from '@/lib/provider'
+import { providerQuerySchema } from '@/lib/provider'
 
-export const querySchema = z.object({
+export const querySchema = providerQuerySchema.extend({
   mode: z.enum(['recent', 'all']).optional(),
-  provider: providerSchema,
 })
