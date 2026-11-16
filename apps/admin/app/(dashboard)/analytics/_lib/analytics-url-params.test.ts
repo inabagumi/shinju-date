@@ -1,48 +1,58 @@
 import { describe, expect, it } from 'vitest'
-import { createAnalyticsUrlParams } from './analytics-url-params'
+import { updateDateRangeParams } from './analytics-url-params'
 
-describe('createAnalyticsUrlParams', () => {
+describe('updateDateRangeParams', () => {
   const dateRange = { endDate: '2025-11-07', startDate: '2025-11-01' }
 
-  it('sets from and to when no date is selected', () => {
-    expect(createAnalyticsUrlParams(dateRange)).toBe(
+  it('sets from and to when there are no parameters', () => {
+    expect(updateDateRangeParams(new URLSearchParams(), dateRange)).toBe(
       'from=2025-11-01&to=2025-11-07',
     )
   })
 
-  it('sets only date when a date is selected', () => {
-    expect(createAnalyticsUrlParams(dateRange, '2025-11-03')).toBe(
-      'date=2025-11-03',
-    )
+  it('replaces the current from and to', () => {
+    expect(
+      updateDateRangeParams(
+        new URLSearchParams({ from: '2025-10-01', to: '2025-10-30' }),
+        dateRange,
+      ),
+    ).toBe('from=2025-11-01&to=2025-11-07')
   })
 
-  it('ignores null and empty selected dates', () => {
-    expect(createAnalyticsUrlParams(dateRange, null)).toBe(
-      'from=2025-11-01&to=2025-11-07',
-    )
-    expect(createAnalyticsUrlParams(dateRange, '')).toBe(
-      'from=2025-11-01&to=2025-11-07',
-    )
+  it('keeps the selected tab', () => {
+    expect(
+      updateDateRangeParams(new URLSearchParams({ tab: 'talents' }), dateRange),
+    ).toBe('tab=talents&from=2025-11-01&to=2025-11-07')
   })
 
-  it('appends tab after the date range', () => {
-    expect(createAnalyticsUrlParams(dateRange, null, 'talents')).toBe(
-      'from=2025-11-01&to=2025-11-07&tab=talents',
-    )
+  it('keeps the selected date when it is within the new range', () => {
+    for (const date of ['2025-11-01', '2025-11-03', '2025-11-07']) {
+      expect(
+        updateDateRangeParams(
+          new URLSearchParams({ date, tab: 'talents' }),
+          dateRange,
+        ),
+      ).toBe(`date=${date}&tab=talents&from=2025-11-01&to=2025-11-07`)
+    }
   })
 
-  it('appends tab after the selected date', () => {
-    expect(createAnalyticsUrlParams(dateRange, '2025-11-03', 'videos')).toBe(
-      'date=2025-11-03&tab=videos',
-    )
+  it('removes the selected date when it is outside the new range', () => {
+    for (const date of ['2025-10-31', '2025-11-08']) {
+      expect(
+        updateDateRangeParams(
+          new URLSearchParams({ date, tab: 'talents' }),
+          dateRange,
+        ),
+      ).toBe('tab=talents&from=2025-11-01&to=2025-11-07')
+    }
   })
 
-  it('ignores null and empty tabs', () => {
-    expect(createAnalyticsUrlParams(dateRange, null, null)).toBe(
-      'from=2025-11-01&to=2025-11-07',
-    )
-    expect(createAnalyticsUrlParams(dateRange, null, '')).toBe(
-      'from=2025-11-01&to=2025-11-07',
-    )
+  it('removes a selected date that is not a valid date', () => {
+    expect(
+      updateDateRangeParams(
+        new URLSearchParams({ date: 'invalid' }),
+        dateRange,
+      ),
+    ).toBe('from=2025-11-01&to=2025-11-07')
   })
 })
