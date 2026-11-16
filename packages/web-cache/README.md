@@ -11,14 +11,17 @@ pnpm add @shinju-date/web-cache
 ## 使用方法
 
 ```typescript
+import { CACHE_TAGS } from '@shinju-date/constants'
 import { revalidateTags } from '@shinju-date/web-cache'
 
 // キャッシュタグを再検証
-await revalidateTags(['videos', 'talents'])
+await revalidateTags([CACHE_TAGS.VIDEOS, CACHE_TAGS.TALENTS])
 
 // AbortSignalを使用
-await revalidateTags(['videos'], { signal: request.signal })
+await revalidateTags([CACHE_TAGS.VIDEOS], { signal: request.signal })
 ```
+
+タグは `@shinju-date/constants` の `CACHE_TAGS` から指定します。一覧にない文字列を渡すと型エラーになります。
 
 ## 環境変数
 
