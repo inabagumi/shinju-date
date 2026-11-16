@@ -46,7 +46,7 @@
 
 ## 開発を始める
 
-要点は次のとおりです。前提条件、環境変数、MSW を使う方法などの詳しい手順は、[セットアップガイド](docs/setup-guide.md)を読んでください。
+詳しい手順は、[セットアップガイド](docs/setup-guide.md)を読んでください。
 
 ```bash
 # 依存関係のインストール
@@ -64,8 +64,6 @@ pnpm dev
 ```
 
 [GitHub Codespaces](https://github.com/features/codespaces) と [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers) では、依存関係のインストール、Supabase と Redis の起動が自動で実行されます。
-
-貢献の流れは、[CONTRIBUTING.md](CONTRIBUTING.md) を読んでください。
 
 ## コマンド
 

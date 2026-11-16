@@ -23,12 +23,10 @@ Dev Container設定（`.devcontainer/`）を変更する場合は、`@devcontain
 
 ## コーディング規約
 
-コードの決まりは、次の2つの文書にまとめています。ここには同じ内容を書きません。
+コードの決まりは、次の2つの文書にまとめています。
 
-- [コーディングガイドライン](docs/coding-guidelines.md) - TypeScript の型定義、キャッシュのディレクティブ、Partial Prerendering、Redis のキー、時刻の扱い、admin の Server Action の認証など
-- [デザインガイドライン](docs/design-guidelines.md) - 色、文字サイズ、角丸、影
-
-フォーマットとリントは Biome が確かめます。
+- [コーディングガイドライン](docs/coding-guidelines.md)
+- [デザインガイドライン](docs/design-guidelines.md)
 
 ### コード品質チェック
 
@@ -135,8 +133,6 @@ CI は、プルリクエストごとに次のことを確かめます。どれ�
 - **E2E**: web、admin、batch の Playwright のテストと、ui の Storybook のブラウザのテストが通ること
 - **データベース**: データベースを変えた場合だけ、マイグレーションとシードを空のデータベースに適用できること、pgTAP のテストが通ること、生成される型がコミットされたものと一致すること
 
-失敗したときは、GitHub のプルリクエストの「Checks」で、どの確認が失敗したかを確かめてください。
-
 ## Issue の起票ルール
 
 ### Issue テンプレート
@@ -146,8 +142,6 @@ Issue は、次の3つのテンプレートのどれかで作成してくださ�
 - **バグ報告**: 動作の不具合やエラー
 - **機能要望**: 新しい機能や改善の提案
 - **タスク**: リファクタリングやドキュメントの作成などの作業
-
-質問や相談は、[GitHub Discussions](https://github.com/inabagumi/shinju-date/discussions) を使ってください。
 
 ## テスト
 
