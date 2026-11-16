@@ -1,6 +1,6 @@
 'use server'
 
-import { REDIS_KEYS } from '@shinju-date/constants'
+import { CACHE_TAGS, REDIS_KEYS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
@@ -36,7 +36,7 @@ export async function addQueryAction(query: string): Promise<{
 
     revalidatePath('/recommended-queries')
     revalidatePath('/', 'page')
-    await revalidateTags(['videos'])
+    await revalidateTags([CACHE_TAGS.VIDEOS])
     return { success: true }
   } catch (error) {
     logger.error('クエリの追加に失敗しました', { error, query: trimmedQuery })
@@ -74,7 +74,7 @@ export async function deleteQueryAction(query: string): Promise<{
 
     revalidatePath('/recommended-queries')
     revalidatePath('/', 'page')
-    await revalidateTags(['videos'])
+    await revalidateTags([CACHE_TAGS.VIDEOS])
     return { success: true }
   } catch (error) {
     logger.error('クエリの削除に失敗しました', { error, query })

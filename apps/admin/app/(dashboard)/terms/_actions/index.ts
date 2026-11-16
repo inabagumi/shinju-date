@@ -1,5 +1,6 @@
 'use server'
 
+import { CACHE_TAGS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
@@ -71,7 +72,7 @@ export async function createTermAction(
     })
 
     revalidatePath('/terms')
-    await revalidateTags(['videos'])
+    await revalidateTags([CACHE_TAGS.VIDEOS])
     return {}
   } catch (error) {
     logger.error('用語の追加に失敗しました', { error, term: term.trim() })
@@ -147,7 +148,7 @@ export async function updateTermAction(
     })
 
     revalidatePath('/terms')
-    await revalidateTags(['videos'])
+    await revalidateTags([CACHE_TAGS.VIDEOS])
     return {}
   } catch (error) {
     logger.error('用語の更新に失敗しました', { error, id, term: term.trim() })
@@ -195,7 +196,7 @@ export async function deleteTermAction(id: string): Promise<{
     })
 
     revalidatePath('/terms')
-    await revalidateTags(['videos'])
+    await revalidateTags([CACHE_TAGS.VIDEOS])
     return { success: true }
   } catch (error) {
     logger.error('用語の削除に失敗しました', { error, id })

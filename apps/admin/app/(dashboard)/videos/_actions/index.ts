@@ -1,5 +1,6 @@
 'use server'
 
+import { CACHE_TAGS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
@@ -100,7 +101,7 @@ export async function toggleVisibilityAction(ids: string[]): Promise<{
         revalidatePath(`/videos/${video.id}`)
       }
 
-      await revalidateTags(['videos'])
+      await revalidateTags([CACHE_TAGS.VIDEOS])
     }
 
     const failedCount = videos.length - updatedVideos.length
@@ -208,7 +209,7 @@ export async function softDeleteAction(ids: string[]): Promise<{
     )
 
     revalidatePath('/videos')
-    await revalidateTags(['videos'])
+    await revalidateTags([CACHE_TAGS.VIDEOS])
     return { success: true }
   } catch (error) {
     logger.error('動画の削除に失敗しました', { error, ids: ids.join(',') })
@@ -306,7 +307,7 @@ export async function restoreAction(ids: string[]): Promise<{
     )
 
     revalidatePath('/videos')
-    await revalidateTags(['videos'])
+    await revalidateTags([CACHE_TAGS.VIDEOS])
     return { success: true }
   } catch (error) {
     logger.error('動画の復元に失敗しました', { error, ids: ids.join(',') })

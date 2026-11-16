@@ -1,5 +1,6 @@
 'use server'
 
+import { CACHE_TAGS } from '@shinju-date/constants'
 import type { Tables, TablesUpdate } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
@@ -182,7 +183,7 @@ export async function syncVideoWithYouTube(videoId: string): Promise<{
 
     revalidatePath(`/videos/${videoId}`)
     revalidatePath('/videos')
-    await revalidateTags(['videos'])
+    await revalidateTags([CACHE_TAGS.VIDEOS])
     return { success: true }
   } catch (error) {
     logger.error('動画の同期に失敗しました', { error, videoId })
@@ -477,7 +478,7 @@ export async function syncVideoWithTwitch(videoId: string): Promise<{
 
     revalidatePath(`/videos/${videoId}`)
     revalidatePath('/videos')
-    await revalidateTags(['videos'])
+    await revalidateTags([CACHE_TAGS.VIDEOS])
 
     if (liveStream) {
       return { message: '配信中の状態を同期しました。', success: true }
