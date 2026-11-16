@@ -34,7 +34,4 @@ pnpm run test
 ```bash
 # ビルド
 pnpm run build
-
-# 開発モード（ウォッチ）
-pnpm run dev
 ```

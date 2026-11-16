@@ -459,9 +459,6 @@ The package includes comprehensive tests covering all functionality:
 ```bash
 # Run tests
 pnpm test
-
-# Watch mode
-pnpm dev
 ```
 
 ### Testing with In-Memory Cache

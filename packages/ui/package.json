@@ -75,7 +75,6 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "dev": "tsdown --watch",
     "test": "vitest run --project unit",
     "test:e2e": "vitest run --project storybook",
     "storybook": "storybook dev -p 6006",

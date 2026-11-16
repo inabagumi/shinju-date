@@ -45,7 +45,4 @@ const minDate = min(instant1, instant2)
 ```bash
 # ビルド
 pnpm run build
-
-# 開発モード（ウォッチ）
-pnpm run dev
 ```
