@@ -1019,51 +1019,28 @@ export const supabaseHandlers = [
   rest.patch(
     'https://fake.supabase.test/rest/v1/videos',
     async ({ request }) => {
-      const url = new URL(request.url)
       const preferHeader = request.headers.get('prefer') || ''
-      const query = parseSupabaseQuery(url)
-      // biome-ignore lint/suspicious/noExplicitAny: Request body can contain various table update payloads
-      const body = (await request.json()) as any
+      const query = parseSupabaseQuery(new URL(request.url))
+      const body = (await request.json()) as TablesUpdate<'videos'>
+      // Update only the rows that match all the filters, such as
+      // `id=in.(...)&visible=eq.false`, as PostgREST does
+      const matches = applySupabaseConditions(await getMockVideos(), query)
 
-      // Find matching records and update them using @msw/data Collections
-      // biome-ignore lint/suspicious/noExplicitAny: Updated items can be from any table type
-      const updatedItems: any[] = []
-      for (const [field, filterValue] of Object.entries(query.filters)) {
-        if (filterValue.startsWith('eq.')) {
-          const value = filterValue.substring(3)
-          const parsedValue =
-            value === 'true'
-              ? true
-              : value === 'false'
-                ? false
-                : value === 'null'
-                  ? null
-                  : Number.isNaN(Number(value))
-                    ? value
-                    : Number(value)
-
-          // Find and update records in Collection
-          const matches = await videos.findMany((q) =>
-            q.where({ [field]: parsedValue }),
-          )
-
-          for (const match of matches) {
-            await videos.update((q) => q.where({ id: match.id }), {
-              data(record) {
-                return Object.assign(record, body)
-              },
-            })
-            updatedItems.push({ ...match, ...body })
-          }
-        }
+      for (const match of matches) {
+        await videos.update((q) => q.where({ id: match.id }), {
+          data(record) {
+            Object.assign(record, body)
+          },
+        })
       }
 
       if (preferHeader.includes('return=representation')) {
-        return HttpResponse.json(updatedItems, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
+        return HttpResponse.json(
+          await applySelect(
+            matches.map((match) => ({ ...match, ...body })),
+            query.select,
+          ),
+        )
       }
 
       return new HttpResponse(null, { status: 204 })

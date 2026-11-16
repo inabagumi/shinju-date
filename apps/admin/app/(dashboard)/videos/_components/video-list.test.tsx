@@ -107,13 +107,16 @@ describe('VideoList', () => {
     }
 
     it('shows a success toast and clears the selection', async () => {
-      vi.mocked(toggleVisibilityAction).mockResolvedValue({ success: true })
+      vi.mocked(toggleVisibilityAction).mockResolvedValue({
+        success: true,
+        updatedCount: 1,
+      })
 
       renderWithToast()
       toggleSelectedVideos()
 
       expect(
-        await screen.findByText('表示状態を更新しました。'),
+        await screen.findByText('1 件の動画の表示状態を更新しました。'),
       ).toBeInTheDocument()
       expect(toggleVisibilityAction).toHaveBeenCalledWith([
         '00000000-0000-4000-8000-000000000001',

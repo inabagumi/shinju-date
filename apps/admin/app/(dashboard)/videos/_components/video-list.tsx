@@ -97,7 +97,10 @@ export default function VideoList({ videos }: Props) {
         const result = await toggleVisibilityAction(videoIds)
         if (result.success) {
           setSelectedIds([])
-          showToast('success', '表示状態を更新しました。')
+          showToast(
+            'success',
+            `${result.updatedCount ?? videoIds.length} 件の動画の表示状態を更新しました。`,
+          )
         } else {
           showToast('danger', result.error || '更新に失敗しました。')
         }

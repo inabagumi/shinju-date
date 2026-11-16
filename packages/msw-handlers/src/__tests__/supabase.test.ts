@@ -315,6 +315,60 @@ describe('Supabase Handlers', () => {
       expect(data.length).toBeGreaterThan(0)
       expect(data.every((video) => video.video_kind !== 'short')).toBe(true)
     })
+
+    it('should update only the rows that match all the filters', async () => {
+      const url = 'https://fake.supabase.test/rest/v1/videos'
+      const listVideos = async (filters: string) =>
+        (await (await fetch(`${url}?select=id,visible${filters}`)).json()) as {
+          id: string
+          visible: boolean
+        }[]
+      const visibleVideos = await listVideos('&visible=eq.true')
+      const [hiddenVideo] = await listVideos('&visible=eq.false&limit=1')
+      const targets = visibleVideos.slice(0, 2)
+      const untouched = visibleVideos.slice(2)
+
+      expect(targets).toHaveLength(2)
+      expect(untouched.length).toBeGreaterThan(0)
+      expect(hiddenVideo).toBeDefined()
+
+      const ids = [...targets, hiddenVideo].map((video) => video?.id)
+      const response = await fetch(
+        `${url}?id=in.(${ids.join(',')})&visible=eq.true&select=id`,
+        {
+          body: JSON.stringify({ visible: false }),
+          headers: {
+            'Content-Type': 'application/json',
+            prefer: 'return=representation',
+          },
+          method: 'PATCH',
+        },
+      )
+
+      try {
+        expect(response.status).toBe(200)
+        expect(await response.json()).toEqual(targets.map(({ id }) => ({ id })))
+
+        const after = await listVideos('')
+        const visibleById = new Map(
+          after.map((video) => [video.id, video.visible]),
+        )
+
+        for (const { id } of targets) {
+          expect(visibleById.get(id)).toBe(false)
+        }
+        for (const { id } of untouched) {
+          expect(visibleById.get(id)).toBe(true)
+        }
+        expect(visibleById.get(hiddenVideo?.id ?? '')).toBe(false)
+      } finally {
+        await fetch(`${url}?id=in.(${targets.map(({ id }) => id).join(',')})`, {
+          body: JSON.stringify({ visible: true }),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'PATCH',
+        })
+      }
+    })
   })
 
   describe('Channels endpoint', () => {
