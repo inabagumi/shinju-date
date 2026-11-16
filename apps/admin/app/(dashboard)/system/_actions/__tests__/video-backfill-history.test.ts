@@ -1,55 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
+import { setupActionTest } from '@/test/action-harness'
+import {
+  getVideoBackfillHistoryAction,
+  retryFailedVideoBackfillJobsAction,
+} from '../video-backfill-history'
 
 const mocks = vi.hoisted(() => ({
-  createAuditLog: vi.fn(),
   enqueue: vi.fn(),
   getJobs: vi.fn(),
-  getUserById: vi.fn(),
-  history: vi.fn(),
-  latest: vi.fn(),
-  talents: vi.fn(),
 }))
 
-/** A query that resolves with what `result` returns, whatever is chained. */
-function createQuery(result: () => unknown) {
-  const query = {
-    eq: vi.fn(() => query),
-    is: vi.fn(() => query),
-    limit: vi.fn(() => query),
-    order: vi.fn(() => query),
-    select: vi.fn(() => query),
-    // biome-ignore lint/suspicious/noThenProperty: Mimics the thenable query builder of supabase-js
-    then: (resolve: (value: unknown) => unknown) => resolve(result()),
-  }
-
-  return query
-}
-
-vi.mock('@/lib/auth', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/auth')>()),
-  requireAuthenticatedUser: vi.fn(async () => ({
-    supabaseClient: {
-      from: vi.fn((table: string) =>
-        createQuery(
-          table === 'talents'
-            ? mocks.talents
-            : table === 'video_backfill_latest_jobs'
-              ? mocks.latest
-              : mocks.history,
-        ),
-      ),
-    },
-    user: { id: 'user-1' },
-  })),
-}))
-vi.mock('@/lib/supabase/admin', () => ({
-  supabaseClient: { auth: { admin: { getUserById: mocks.getUserById } } },
-}))
-vi.mock('@/lib/redis', () => ({ getRedisClient: vi.fn(() => ({})) }))
-vi.mock('@/lib/audit-log', () => ({ createAuditLog: mocks.createAuditLog }))
-vi.mock('@shinju-date/logger', () => ({
-  logger: { error: vi.fn(), warn: vi.fn() },
-}))
 vi.mock('@shinju-date/video-backfill', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@shinju-date/video-backfill')>()),
   BackfillQueue: class {
@@ -58,8 +18,15 @@ vi.mock('@shinju-date/video-backfill', async (importOriginal) => ({
   },
 }))
 
-const { getVideoBackfillHistoryAction, retryFailedVideoBackfillJobsAction } =
-  await import('../video-backfill-history')
+const test = setupActionTest()
+const { supabase } = test
+
+/** `auth.admin.getUserById()` of the service role client. */
+const getUserById = vi.spyOn(supabase.client.auth.admin, 'getUserById')
+
+beforeEach(() => {
+  test.signIn({ id: 'user-1' })
+})
 
 const talents = [
   {
@@ -143,14 +110,17 @@ function job(id: string) {
 
 describe('getVideoBackfillHistoryAction', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    mocks.talents.mockReturnValue({ data: talents, error: null })
-    mocks.history.mockReturnValue({ data: history, error: null })
-    mocks.latest.mockReturnValue({ data: latestFailures, error: null })
-    mocks.getUserById.mockImplementation(async (id: string) =>
-      id === 'user-1'
-        ? { data: { user: { email: 'admin@example.com' } }, error: null }
-        : { data: { user: null }, error: { message: 'User not found' } },
+    supabase.on('select', 'talents', talents)
+    supabase.on('select', 'video_backfill_jobs', history)
+    supabase.on('select', 'video_backfill_latest_jobs', latestFailures)
+    getUserById.mockImplementation(
+      async (id: string) =>
+        (id === 'user-1'
+          ? { data: { user: { email: 'admin@example.com' } }, error: null }
+          : {
+              data: { user: null },
+              error: { message: 'User not found' },
+            }) as Awaited<ReturnType<typeof getUserById>>,
     )
     mocks.getJobs.mockResolvedValue([
       { active: true, job: job('twitch:twitch-row-1') },
@@ -229,10 +199,19 @@ describe('getVideoBackfillHistoryAction', () => {
   })
 
   it('reports a history that cannot be loaded', async () => {
-    mocks.history.mockReturnValue({
-      data: null,
-      error: new Error('permission denied'),
-    })
+    // supabase-js returns a PostgREST error as a plain object, so throw an
+    // `Error` from the client to reach the message.
+    const from = supabase.client.from.bind(supabase.client)
+    const spy = vi.spyOn(supabase.client, 'from').mockImplementation(((
+      table: string,
+    ) => {
+      if (table === 'video_backfill_jobs') {
+        throw new Error('permission denied')
+      }
+
+      return from(table as 'talents')
+    }) as typeof from)
+    onTestFinished(() => spy.mockRestore())
 
     await expect(getVideoBackfillHistoryAction()).resolves.toEqual({
       error: 'permission denied',
@@ -243,9 +222,8 @@ describe('getVideoBackfillHistoryAction', () => {
 
 describe('retryFailedVideoBackfillJobsAction', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    mocks.talents.mockReturnValue({ data: talents, error: null })
-    mocks.latest.mockReturnValue({ data: latestFailures, error: null })
+    supabase.on('select', 'talents', talents)
+    supabase.on('select', 'video_backfill_latest_jobs', latestFailures)
     mocks.enqueue.mockImplementation(
       async ({
         accountId,
@@ -284,7 +262,7 @@ describe('retryFailedVideoBackfillJobsAction', () => {
         },
       ],
     ])
-    expect(mocks.createAuditLog).toHaveBeenCalledExactlyOnceWith(
+    expect(test.createAuditLog).toHaveBeenCalledExactlyOnceWith(
       'VIDEO_BACKFILL',
       'redis:video-backfill',
       null,
@@ -319,7 +297,7 @@ describe('retryFailedVideoBackfillJobsAction', () => {
       error: '失敗した過去動画の取り込みは、すべて再試行中です。',
       success: false,
     })
-    expect(mocks.createAuditLog).not.toHaveBeenCalled()
+    expect(test.createAuditLog).not.toHaveBeenCalled()
   })
 
   it('records the accounts that were queued when others cannot be', async () => {
@@ -330,11 +308,11 @@ describe('retryFailedVideoBackfillJobsAction', () => {
         '失敗した過去動画の取り込みを1件キューに追加しました（1件は追加できませんでした: redis unavailable）。',
       success: false,
     })
-    expect(mocks.createAuditLog).toHaveBeenCalledOnce()
+    expect(test.createAuditLog).toHaveBeenCalledOnce()
   })
 
   it('does nothing when no job failed', async () => {
-    mocks.latest.mockReturnValue({ data: [], error: null })
+    supabase.on('select', 'video_backfill_latest_jobs', [])
 
     await expect(retryFailedVideoBackfillJobsAction()).resolves.toEqual({
       error: '失敗した過去動画の取り込みはありません。',

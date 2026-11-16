@@ -2,7 +2,7 @@
 
 このドキュメントでは、SHINJU DATE プロジェクトにおけるテストの実装方法とベストプラクティスを説明します。
 
-**最終更新日**: 2025-11-11
+**最終更新日**: 2026-11-16
 
 ## 📋 目次
 
@@ -248,6 +248,62 @@ describe('MyComponent', () => {
   })
 })
 ```
+
+#### 管理画面の Server Action のテスト
+
+`apps/admin` の Server Action のテストでは、共通のモックを `vi.mock()` で書かず、`apps/admin/test/` の補助を使います。
+
+- `action-harness.ts` の `setupActionTest()`: 認証（`@/lib/auth`）、Supabase のクライアント、監査ログ、再検証（`next/cache`、`@shinju-date/web-cache`）、Redis、ロガーのモックを、1回の呼び出しで用意する。各テストの前に、モックをクリアし、管理者としてログインした状態にする
+- `supabase.ts`: 本物の Supabase のクライアントを使い、PostgREST へのリクエストを MSW で受ける偽のデータベース。テーブルと操作（`select`、`insert`、`upsert`、`update`、`delete`、`rpc`）ごとに応答を決め、送られたリクエストを確かめる
+- `factories.ts`: タレント、動画、チャンネルなどの行のフィクスチャ
+
+`setupActionTest()` のモックは、このモジュールを読み込んだときに登録されます。テストの対象の Action は、`@/test/action-harness` より後に、相対パスで読み込んでください（Biome の並べ替えで、この順になります）。モックしたモジュールは、テストのファイルで読み込まず、`setupActionTest()` の戻り値から使います。
+
+```ts
+import { describe, expect, it } from 'vitest'
+import { setupActionTest } from '@/test/action-harness'
+import { postgresError } from '@/test/supabase'
+import { restoreAction } from '../index'
+
+const test = setupActionTest()
+const { supabase } = test
+
+describe('restoreAction', () => {
+  it('restores the videos', async () => {
+    supabase.on('select', 'videos', [
+      { id: 'video-1', thumbnail_id: null, title: 'Video' },
+    ])
+
+    await expect(restoreAction(['video-1'])).resolves.toEqual({
+      success: true,
+    })
+    expect(supabase.calls('update', 'videos')).toHaveLength(1)
+    test.expectAuditLog('VIDEO_RESTORE', 'videos', 'video-1', {
+      entityName: 'Video',
+    })
+    test.expectRevalidated({ paths: ['/videos'], tags: [['videos']] })
+  })
+
+  it('reports a database error', async () => {
+    supabase.on('select', 'videos', postgresError('XX000', 'Fetch error'))
+
+    await expect(restoreAction(['video-1'])).resolves.toMatchObject({
+      success: false,
+    })
+  })
+
+  it('requires an administrator', async () => {
+    test.signOut()
+
+    await expect(restoreAction(['video-1'])).resolves.toMatchObject({
+      success: false,
+    })
+    expect(supabase.requests).toHaveLength(0)
+  })
+})
+```
+
+`toDBString` はモックせず、本物を使います。秒に丸めるので、期待する日時は `2024-11-24T17:00:00Z` のように書きます。
 
 ### 5. 非同期処理のテスト
 

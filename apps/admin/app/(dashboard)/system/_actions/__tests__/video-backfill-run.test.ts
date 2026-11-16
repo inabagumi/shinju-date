@@ -1,34 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { setupActionTest } from '@/test/action-harness'
+import {
+  getVideoBackfillRunAction,
+  requestVideoBackfillRunAction,
+} from '../video-backfill-run'
 
 const mocks = vi.hoisted(() => ({
-  createAuditLog: vi.fn(),
   getLatest: vi.fn(),
-  order: vi.fn(),
   start: vi.fn(),
 }))
 
-vi.mock('@/lib/auth', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/auth')>()),
-  requireAuthenticatedUser: vi.fn(async () => ({
-    supabaseClient: {
-      from: vi.fn(() => {
-        const query = {
-          is: vi.fn(() => query),
-          order: mocks.order,
-          select: vi.fn(() => query),
-        }
-
-        return query
-      }),
-    },
-    user: { id: 'user-1' },
-  })),
-}))
-vi.mock('@/lib/redis', () => ({ getRedisClient: vi.fn(() => ({})) }))
-vi.mock('@/lib/audit-log', () => ({ createAuditLog: mocks.createAuditLog }))
-vi.mock('@shinju-date/logger', () => ({
-  logger: { error: vi.fn(), warn: vi.fn() },
-}))
 vi.mock('@shinju-date/video-backfill', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@shinju-date/video-backfill')>()),
   BackfillRuns: class {
@@ -37,8 +18,12 @@ vi.mock('@shinju-date/video-backfill', async (importOriginal) => ({
   },
 }))
 
-const { getVideoBackfillRunAction, requestVideoBackfillRunAction } =
-  await import('../video-backfill-run')
+const test = setupActionTest()
+const { supabase } = test
+
+beforeEach(() => {
+  test.signIn({ id: 'user-1' })
+})
 
 const runId = '123e4567-e89b-12d3-a456-426614174000'
 const talents = [
@@ -94,8 +79,7 @@ const run = {
 
 describe('requestVideoBackfillRunAction', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    mocks.order.mockResolvedValue({ data: talents, error: null })
+    supabase.on('select', 'talents', talents)
     mocks.start.mockResolvedValue({
       failed: 0,
       run,
@@ -125,7 +109,7 @@ describe('requestVideoBackfillRunAction', () => {
       ],
       expect.objectContaining({ requestedBy: 'user-1' }),
     )
-    expect(mocks.createAuditLog).toHaveBeenCalledExactlyOnceWith(
+    expect(test.createAuditLog).toHaveBeenCalledExactlyOnceWith(
       'VIDEO_BACKFILL',
       'redis:video-backfill',
       runId,
@@ -147,7 +131,7 @@ describe('requestVideoBackfillRunAction', () => {
       error: '全タレントの取得漏れチェックは既に実行中です。',
       success: false,
     })
-    expect(mocks.createAuditLog).not.toHaveBeenCalled()
+    expect(test.createAuditLog).not.toHaveBeenCalled()
   })
 
   it('refuses while another request is being handled', async () => {
@@ -159,7 +143,7 @@ describe('requestVideoBackfillRunAction', () => {
       ),
       success: false,
     })
-    expect(mocks.createAuditLog).not.toHaveBeenCalled()
+    expect(test.createAuditLog).not.toHaveBeenCalled()
   })
 
   it('reports when every account is being backfilled already', async () => {
@@ -169,7 +153,7 @@ describe('requestVideoBackfillRunAction', () => {
       error: 'すべてのアカウントで過去動画の取り込みが実行中です。',
       success: false,
     })
-    expect(mocks.createAuditLog).not.toHaveBeenCalled()
+    expect(test.createAuditLog).not.toHaveBeenCalled()
   })
 
   it('reports the accounts that were skipped or could not be queued', async () => {
@@ -184,7 +168,7 @@ describe('requestVideoBackfillRunAction', () => {
         '全タレントの取得漏れチェックを2件キューに追加しました（実行中の3件は除く、1件は追加できませんでした: redis unavailable）。',
       success: false,
     })
-    expect(mocks.createAuditLog).toHaveBeenCalledWith(
+    expect(test.createAuditLog).toHaveBeenCalledWith(
       'VIDEO_BACKFILL',
       'redis:video-backfill',
       runId,
@@ -204,11 +188,11 @@ describe('requestVideoBackfillRunAction', () => {
         '取得漏れチェックをキューに追加できませんでした（redis unavailable）。',
       success: false,
     })
-    expect(mocks.createAuditLog).not.toHaveBeenCalled()
+    expect(test.createAuditLog).not.toHaveBeenCalled()
   })
 
   it('rejects when no active talent has an account', async () => {
-    mocks.order.mockResolvedValue({ data: [talents[1]], error: null })
+    supabase.on('select', 'talents', [talents[1]])
 
     await expect(requestVideoBackfillRunAction()).resolves.toEqual({
       error: 'active なタレントに紐づくアカウントはありません。',
@@ -218,9 +202,10 @@ describe('requestVideoBackfillRunAction', () => {
   })
 
   it('reports a database error', async () => {
-    mocks.order.mockResolvedValue({
-      data: null,
-      error: new Error('database unavailable'),
+    // supabase-js returns a PostgREST error as a plain object, so throw an
+    // `Error` from the client to reach the message.
+    vi.spyOn(supabase.client, 'from').mockImplementationOnce(() => {
+      throw new Error('database unavailable')
     })
 
     await expect(requestVideoBackfillRunAction()).resolves.toEqual({
@@ -233,8 +218,7 @@ describe('requestVideoBackfillRunAction', () => {
 
 describe('getVideoBackfillRunAction', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    mocks.order.mockResolvedValue({ data: talents, error: null })
+    supabase.on('select', 'talents', talents)
   })
 
   it('returns the targets without a check', async () => {
