@@ -56,6 +56,19 @@ pnpm run typecheck --filter=@shinju-date/msw-handlers
 - 依存パッケージのビルド（`^build`）と、Next.js のアプリケーションでは `next typegen` による型の生成（`PageProps`、`LayoutProps`、`RouteContext` など）を先に実行します
 - 新しいパッケージやアプリケーションを追加した場合は、`package.json` に `"typecheck": "tsc --noEmit"` を追加してください
 
+#### ドキュメントのリンク
+
+Markdown のファイルを変更した後は、リポジトリの中へのリンクとファイルのパスが実在するかを確かめてください。
+
+```bash
+pnpm run check:docs
+```
+
+- 相対パスのリンク（`[セットアップガイド](docs/setup-guide.md)`）と、そのリンク先の見出し（`#1-初期セットアップ`）を確かめます
+- バッククォートで囲まれた、`apps/`、`packages/`、`docs/`、`scripts/`、`.github/` で始まるファイルのパスを確かめます（`*` を含むパスは、一致するファイルが1つ以上あるかを確かめます）
+- 外部の URL は確かめません
+- `.agents/` と `.claude/` の下のファイル（`skills` CLI が置いたファイル）は対象外です
+
 ### コードの決まり
 
 コードの決まりは [コーディングガイドライン](docs/coding-guidelines.md) と [デザインガイドライン](docs/design-guidelines.md) にまとめています。特に次の決まりは、必ず守ってください。
@@ -135,7 +148,7 @@ pnpm run build
 ### 4. レビュープロセス
 
 - CI/CDが通ることを確認
-  - **Lint**: コード品質チェック（Biome）が成功すること
+  - **Lint**: コード品質チェック（Biome）と、Markdown のリンク切れの確認が成功すること
   - **Typecheck**: テストファイルを含めた型チェック（`tsc`）が成功すること
   - **Test**: テストが全て成功すること
   - **Build**: 全てのパッケージとアプリケーションがビルドできること
@@ -155,6 +168,7 @@ Node.js CI は以下のジョブ構成になっています：
    - Install Dependencies 成功後に実行
    - pnpm のキャッシュを使用して高速にインストール
    - Biomeによるフォーマットとリンティングを実行
+   - `pnpm run check:docs` で Markdown のリンク切れを確認
 
 3. **Typecheck** - 型チェック（並列実行）
    - Install Dependencies 成功後に実行
