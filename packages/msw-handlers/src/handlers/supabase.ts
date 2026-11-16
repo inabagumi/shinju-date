@@ -929,6 +929,31 @@ async function suggestMockTerms({ p_query: query = '' }: SuggestionsParams) {
     .slice(0, 10)
 }
 
+interface UpdateTermsPopularityParams {
+  p_items?: { score?: number; term?: string }[]
+}
+
+/**
+ * Mirrors `update_terms_popularity`: the number of terms matching the given
+ * terms, ignoring the case. The mock terms have no popularity, so nothing is
+ * written.
+ */
+async function updateMockTermsPopularity({
+  p_items: items = [],
+}: UpdateTermsPopularityParams) {
+  const givenTerms = new Set(
+    items.flatMap(({ score, term }) =>
+      typeof term === 'string' && typeof score === 'number'
+        ? [term.toLowerCase()]
+        : [],
+    ),
+  )
+
+  return (await getMockTerms()).filter(({ term }) =>
+    givenTerms.has(term.toLowerCase()),
+  ).length
+}
+
 export const supabaseHandlers = [
   // Videos table
   rest.get('https://fake.supabase.test/rest/v1/videos', async ({ request }) => {
@@ -2027,6 +2052,15 @@ export const supabaseHandlers = [
         )
       },
     ),
+  ),
+
+  rest.post(
+    'https://fake.supabase.test/rest/v1/rpc/update_terms_popularity',
+    async ({ request }) => {
+      const body = (await request.json()) as UpdateTermsPopularityParams
+
+      return HttpResponse.json(await updateMockTermsPopularity(body))
+    },
   ),
 
   rest.post(

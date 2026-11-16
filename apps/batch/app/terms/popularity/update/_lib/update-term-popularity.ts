@@ -58,72 +58,51 @@ async function fetchSearchPopularityFromRedis(
 }
 
 /**
- * Update term popularity in database using upsert
- * Fetches existing terms, merges popularity data, and upserts in a single query
+ * How many terms one call of `update_terms_popularity` updates. Keeps each
+ * request and UPDATE statement small, whatever the number of terms.
+ */
+export const UPDATE_BATCH_SIZE = 500
+
+/**
+ * Update the popularity of the terms in the database
+ *
+ * Only `popularity` is written, so edits made in the admin app while the batch
+ * runs are kept. Terms are matched ignoring the case by the
+ * `update_terms_popularity` function, in batches of `UPDATE_BATCH_SIZE`, so
+ * there is no limit on the number of terms.
  */
 async function updateTermsPopularityInDatabase(
   supabase: TypedSupabaseClient,
   popularityData: TermPopularity[],
 ): Promise<{ updated: number; notFound: number }> {
-  // Fetch all existing terms with all their fields
-  const { data: existingTerms, error: fetchError } = await supabase
-    .from('terms')
-    .select('*')
+  let updated = 0
 
-  if (fetchError) {
-    logger.error('データベースから既存の用語の取得に失敗しました', {
-      error: fetchError,
+  for (let i = 0; i < popularityData.length; i += UPDATE_BATCH_SIZE) {
+    const items = popularityData
+      .slice(i, i + UPDATE_BATCH_SIZE)
+      .map(({ score, term }) => ({ score, term }))
+
+    const { data, error } = await supabase.rpc('update_terms_popularity', {
+      p_items: items,
     })
-    throw fetchError
+
+    if (error) {
+      logger.error('用語の人気度更新に失敗しました', {
+        error,
+      })
+      throw error
+    }
+
+    updated += data
   }
 
-  if (!existingTerms || existingTerms.length === 0) {
-    logger.info('データベースに用語が存在しません')
-    return { notFound: popularityData.length, updated: 0 }
-  }
+  // Search queries are saved in lowercase, so each of them matches one term,
+  // unless terms differ only in case.
+  const notFound = Math.max(popularityData.length - updated, 0)
 
-  // Create a map of term (lowercase) to full term data for quick lookup
-  const termMap = new Map(existingTerms.map((t) => [t.term.toLowerCase(), t]))
-
-  // Merge popularity data with existing term data
-  const termsToUpsert = popularityData
-    .map((item) => {
-      const existingTerm = termMap.get(item.term.toLowerCase())
-      if (!existingTerm) {
-        return null
-      }
-
-      // Merge existing term data with new popularity
-      return {
-        ...existingTerm,
-        popularity: item.score,
-      }
-    })
-    .filter((t): t is NonNullable<typeof t> => t !== null)
-
-  const notFound = popularityData.length - termsToUpsert.length
-
-  if (termsToUpsert.length === 0) {
+  if (updated === 0) {
     logger.info('更新対象の用語が見つかりませんでした')
-    return { notFound, updated: 0 }
   }
-
-  // Upsert all terms in a single query
-  const { error: upsertError, count } = await supabase
-    .from('terms')
-    .upsert(termsToUpsert, {
-      count: 'exact',
-      onConflict: 'id',
-    })
-
-  if (upsertError) {
-    logger.error('用語の人気度更新に失敗しました', {
-      error: upsertError,
-    })
-    throw upsertError
-  }
-
-  const updated = count ?? termsToUpsert.length
 
   return { notFound, updated }
 }
