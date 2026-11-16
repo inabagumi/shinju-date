@@ -4,10 +4,43 @@ on:
   push:
     branches:
       - main
+    paths:
+      - supabase/**
+
+# Never apply migrations to production twice at the same time, and never stop
+# one halfway. A newer push waits until the running one finishes. (If several
+# pushes are waiting, only the newest one runs, and it has all the migrations.)
+concurrency:
+  group: supabase-db-push
+  cancel-in-progress: false
 
 jobs:
+  # Check migrations and pgTAP tests on an empty local database first
+  test:
+    name: Test
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup pnpm
+        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          cache: true
+
+      # Applies all migrations and the seed to an empty database
+      - name: Start local database
+        run: pnpm exec supabase db start
+
+      - name: Run pgTAP tests
+        run: pnpm exec supabase test db
+
   supabase-db-push:
     runs-on: ubuntu-26.04
+    needs: test
     permissions:
       contents: read
 
