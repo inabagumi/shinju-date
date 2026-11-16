@@ -40,8 +40,25 @@
 - 状態の表示は、状態色の文字と同じ色の 10% の地（`bg-danger/10 text-danger` など）にする
 - `gray-*` / `zinc-*` / `slate-*` などの Tailwind の標準色や、`774-*` の色見本は部品で直接使わない
 - 文字と地のコントラスト比は 4.5:1 以上にする。組み合わせは `packages/ui/src/colors.test.ts` で確認している
+- 新しいセマンティックカラーを `theme.css` に足すときは、カラーコードを直接書かず、`774-*` の色見本や Tailwind の標準色を `var()` で参照する
 
-詳しい書き方は [coding-guidelines.md](coding-guidelines.md#セマンティックカラー) を参照してください。
+```tsx
+// ✅ 1つのクラスでライトとダークの両方に対応
+<div className="border border-border bg-surface">
+  <p className="text-foreground">本文</p>
+  <p className="text-muted">説明文</p>
+</div>
+
+// ✅ 状態色の文字と、同じ色の 10% の地
+<div className="border border-danger/30 bg-danger/10 text-danger">
+  エラーが発生しました
+</div>
+
+// ❌ dark: で色を手書きしない
+<div className="border-gray-300 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+  <p className="text-gray-900 dark:text-zinc-100">本文</p>
+</div>
+```
 
 ### タレントのテーマカラー
 

@@ -34,15 +34,17 @@ pnpm build-storybook
 
 ## コンポーネント
 
+主な部品を説明します。ほかに、`Alert`、`MultiSelect`、`Toast`（`ToastProvider` など）と、`theme.css` の文字サイズを登録した `twMerge` も公開しています。公開しているものは [`src/index.ts`](src/index.ts) と Storybook を見てください。
+
 ### Button
 
 複数のバリエーションを持つ汎用ボタンコンポーネント。
 
 **バリアント:**
 
-- `primary` (デフォルト): 青色のプライマリーボタン
-- `secondary`: グレーのセカンダリーボタン
-- `danger`: 赤色の危険なアクションを示すボタン
+- `primary` (デフォルト): アクセントカラー（`bg-accent`）の主ボタン
+- `secondary`: 枠線付き（`bg-surface`）のボタン
+- `danger`: 危険な操作を示す、`danger` の枠線と文字のボタン
 - `ghost`: 背景色なしのゴーストボタン
 
 **サイズ:**
@@ -150,7 +152,7 @@ import {
 
 **バリアント:**
 
-- `default` (デフォルト): グレー背景のカード
+- `default` (デフォルト): `bg-muted` の地のカード
 
 **サブコンポーネント:**
 
@@ -174,6 +176,7 @@ import { Card, CardHeader, CardContent } from '@shinju-date/ui'
 
 状態を示す小さなラベル。色は状態の意味で選びます。
 
+- `info` (デフォルト): 情報（アクセントカラー）
 - `success`: 成功（公開中・完了など）
 - `warning`: 注意（未読・中断など）
 - `danger`: 危険（失敗・削除済みなど）
@@ -201,7 +204,7 @@ import { Button, PageHeader } from '@shinju-date/ui'
 
 ### Table
 
-表。外枠は `border` と角丸で、見出し行は `bg-muted` の地に 12px・太字・`text-muted` の文字です。セルは既定で折り返さず、はみ出す場合は表の中で横にスクロールします。
+表。外枠は `border` と角丸で、見出し行は `bg-muted` の地に 12px（`text-caption`）・`font-semibold`・`text-muted` の文字です。セルは既定で折り返さず、はみ出す場合は表の中で横にスクロールします。
 
 ```tsx
 import {
@@ -329,8 +332,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'bg-blue-600 text-white hover:bg-blue-700',
-        secondary: 'border border-gray-300 bg-white text-gray-700',
+        primary: 'bg-accent text-accent-foreground hover:bg-accent/90',
+        secondary:
+          'border border-border bg-surface text-foreground hover:bg-muted',
         // ...
       },
       size: {
