@@ -30,9 +30,7 @@ export type RetryMiddlewareOptions = {
  *
  * @example
  * ```typescript
- * const retryFetch = composeFetch(
- *   withRetry(fetch, { retries: 3 })
- * )
+ * const retryFetch = composeFetch((next) => withRetry(next, { retries: 3 }))
  *
  * const response = await retryFetch('https://api.example.com/data')
  * ```

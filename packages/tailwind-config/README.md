@@ -95,7 +95,7 @@ const example = (
 ### カラーが反映されない
 
 1. `globals.css` で `theme.css` をインポートしているか確認
-2. Tailwind CSS のビルドが最新か確認（`pnpm run build` を実行）
+2. アプリの開発サーバーを再起動するか、アプリをビルドし直す（`pnpm run build --filter=<アプリ名>`）
 3. ブラウザのキャッシュをクリア
 
 ## 参考資料

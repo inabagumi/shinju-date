@@ -43,7 +43,7 @@ Redis のジョブは最後の変更から 7 日で消えるため、終えた�
 
 ## Redis キー
 
-キーはすべて `@shinju-date/constants` の `REDIS_KEYS` で管理し、7 日間の TTL を設定します（チェックの依頼中のロックだけは `BACKFILL_RUN_LOCK_SECONDS`）。
+キーはすべて `@shinju-date/constants` の `REDIS_KEYS` で管理し、7 日間の TTL を設定します（処理中のジョブのロックは `BACKFILL_LEASE_SECONDS`、チェックの依頼中のロックは `BACKFILL_RUN_LOCK_SECONDS`）。
 
 | キー                                                               | 内容                     |
 | ------------------------------------------------------------------ | ------------------------ |

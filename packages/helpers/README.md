@@ -5,16 +5,19 @@
 ## 構成
 
 - **TypeScript**: 型安全なユーティリティ関数
-- **Next.js**: フレームワーク統合
+- **Web 標準 API**: `Request` / `Response` を使うヘルパー（Next.js には依存しない）
 
 ## 使用方法
 
 ```typescript
-import { helperFunction } from '@shinju-date/helpers'
+import { formatNumber, isNonNullable, range } from '@shinju-date/helpers'
 
-// ヘルパー関数の使用例
-const result = helperFunction(input)
+formatNumber(12345) // '12,345'
+range(3) // [0, 1, 2]
+values.filter(isNonNullable) // null と undefined を除く
 ```
+
+公開している関数と型は [`src/index.ts`](src/index.ts) を見てください。
 
 ## テスト
 
