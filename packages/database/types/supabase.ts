@@ -337,6 +337,9 @@ isOneToOne: false
 { Args: { "p_query": string }; Returns: {
               "priority": number,"term": string
             }[]
+                           },
+"update_terms_popularity":
+{ Args: { "p_items": Json }; Returns: number
                            }
           }
           Enums: {
