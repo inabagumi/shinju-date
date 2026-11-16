@@ -1,8 +1,8 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import type { NextProxy, NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
-import { joinURL } from 'ufo'
 import { getRedisClient } from '@/lib/redis'
+import { getLegacySearchRedirectPath } from '@/lib/search-redirect'
 
 async function handleMaintenanceMode(
   request: NextRequest,
@@ -36,17 +36,10 @@ export async function proxy(
     }
   }
 
-  if (
-    request.nextUrl.pathname === '/videos' &&
-    request.nextUrl.searchParams.has('q')
-  ) {
-    const queries = request.nextUrl.searchParams.getAll('q')
-    const pathname = joinURL(
-      request.nextUrl.pathname,
-      queries.map((query) => encodeURIComponent(query)).join('/'),
-    )
+  const searchRedirectPath = getLegacySearchRedirectPath(request.nextUrl)
 
-    return Response.redirect(new URL(pathname, request.nextUrl), 308)
+  if (searchRedirectPath) {
+    return Response.redirect(new URL(searchRedirectPath, request.nextUrl), 308)
   }
 
   return NextResponse.next()

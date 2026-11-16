@@ -110,7 +110,7 @@ test.describe('Search Modal - Opening and Closing', () => {
 
 test.describe('Search Modal - Direct Navigation', () => {
   test('should handle direct navigation to /search', async ({ page }) => {
-    // The route handler redirects /search to /videos
+    // proxy.ts redirects /search to /videos
     // page.goto will follow the redirect automatically
     await page.goto('/search')
 
@@ -120,12 +120,24 @@ test.describe('Search Modal - Direct Navigation', () => {
   test('should handle direct navigation to /search with query parameter', async ({
     page,
   }) => {
-    // The route handler redirects /search?q=test to /videos/test
+    // proxy.ts redirects /search?q=test to /videos/test
     await page.goto('/search?q=test')
 
     await expect(page).toHaveURL('/videos/test', {
       timeout: NAVIGATION_TIMEOUT,
     })
+  })
+
+  test('should redirect multiple queries from /search and /videos to the same URL', async ({
+    page,
+  }) => {
+    const expectedURL = `/videos/${encodeURIComponent('a b')}`
+
+    await page.goto('/search?q=a&q=b')
+    await expect(page).toHaveURL(expectedURL, { timeout: NAVIGATION_TIMEOUT })
+
+    await page.goto('/videos?q=a&q=b')
+    await expect(page).toHaveURL(expectedURL, { timeout: NAVIGATION_TIMEOUT })
   })
 })
 
