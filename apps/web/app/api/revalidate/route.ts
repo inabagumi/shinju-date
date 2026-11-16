@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/nextjs'
 import { createErrorResponse } from '@shinju-date/helpers'
 import { revalidateTag } from 'next/cache'
+import { serverEnv } from '@/lib/env'
 import { type Payload, payloadSchema } from './_lib/schemas'
 
 async function parseRequest(request: Request): Promise<Payload> {
@@ -11,7 +12,7 @@ async function parseRequest(request: Request): Promise<Payload> {
 
 export async function POST(request: Request): Promise<Response> {
   // 認証チェック
-  const secretToken = process.env['REVALIDATE_SECRET_TOKEN']
+  const secretToken = serverEnv.REVALIDATE_SECRET_TOKEN
   if (secretToken) {
     const authHeader = request.headers.get('Authorization')
     const expectedAuth = `Bearer ${secretToken}`

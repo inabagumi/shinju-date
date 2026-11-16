@@ -6,6 +6,7 @@ import { Suspense } from 'react'
 import PageVisitTracker from '@/components/page-visit-tracker'
 import SkipLink from '@/components/skip-link'
 import { TimerProvider } from '@/components/timer'
+import { publicEnv } from '@/lib/env'
 import { AnnouncementBannerWrapper } from './_components/announcement-banner-wrapper'
 import { Providers } from './_components/providers'
 import { SearchModalProvider } from './_components/search-modal-context'
@@ -16,9 +17,7 @@ import SVGSymbols from './_components/svg-symbols'
 import { lato } from './_lib/fonts'
 
 export const metadata: Metadata = {
-  metadataBase: process.env['NEXT_PUBLIC_BASE_URL']
-    ? new URL(process.env['NEXT_PUBLIC_BASE_URL'])
-    : null,
+  metadataBase: new URL(publicEnv.NEXT_PUBLIC_BASE_URL),
   title: {
     default: siteName,
     template: `%s - ${siteName}`,
