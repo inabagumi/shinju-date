@@ -5,7 +5,7 @@ const meta = preview.meta({
   argTypes: {
     variant: {
       control: 'select',
-      options: ['default', 'elevated'],
+      options: ['default'],
     },
   },
   component: Card,
@@ -29,27 +29,6 @@ export const Default = meta.story({
       </>
     ),
     variant: 'default',
-  },
-})
-
-export const Elevated = meta.story({
-  args: {
-    children: (
-      <>
-        <CardHeader>
-          <h3 className="text-body leading-normal font-semibold">
-            Elevated Card
-          </h3>
-        </CardHeader>
-        <CardContent>
-          <p>
-            This card uses the raised surface. Like other cards, it has no
-            shadow.
-          </p>
-        </CardContent>
-      </>
-    ),
-    variant: 'elevated',
   },
 })
 

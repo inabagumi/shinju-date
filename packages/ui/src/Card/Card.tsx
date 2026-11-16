@@ -11,7 +11,6 @@ const cardVariants = cva(
     variants: {
       variant: {
         default: 'bg-muted',
-        elevated: 'bg-surface',
       },
     },
   },

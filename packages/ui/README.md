@@ -146,12 +146,11 @@ import {
 
 ### Card
 
-コンテンツ用のコンテナコンポーネント。
+コンテンツ用のコンテナコンポーネント。管理画面の枠で囲んだ区画（`bg-surface` の地と `p-6` の余白）には、`Card` の上に作った `apps/admin/components/panel.tsx` の `Panel` を使います。
 
 **バリアント:**
 
 - `default` (デフォルト): グレー背景のカード
-- `elevated`: 白背景で影付きのカード
 
 **サブコンポーネント:**
 
@@ -161,7 +160,7 @@ import {
 ```tsx
 import { Card, CardHeader, CardContent } from '@shinju-date/ui'
 
-;<Card variant="elevated">
+;<Card>
   <CardHeader>
     <h2>カードタイトル</h2>
   </CardHeader>
