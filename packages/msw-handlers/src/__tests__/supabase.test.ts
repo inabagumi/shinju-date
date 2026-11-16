@@ -894,6 +894,29 @@ describe('Supabase Handlers', () => {
     })
   })
 
+  describe('Term popularity', () => {
+    it('should count the terms matching the given terms, ignoring the case', async () => {
+      const response = await fetch(
+        'https://fake.supabase.test/rest/v1/rpc/update_terms_popularity',
+        {
+          body: JSON.stringify({
+            p_items: [
+              { score: 10, term: 'asmr' },
+              { score: 5, term: '歌枠' },
+              { score: 1, term: 'unknown' },
+              { term: 'コラボ' },
+            ],
+          }),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        },
+      )
+
+      expect(response.ok).toBe(true)
+      expect(await response.json()).toBe(2)
+    })
+  })
+
   describe('Search suggestions', () => {
     async function suggest(query: string) {
       const response = await fetch(
