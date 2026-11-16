@@ -2,6 +2,11 @@ import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
+import {
+  applyVideoSummaryFilter,
+  VIDEO_SUMMARY_FILTERS,
+  type VideoSummaryFilter,
+} from './video-summary-filters'
 
 export type SummaryStats = {
   totalVideos: number
@@ -42,68 +47,32 @@ export async function getSummaryStats(
 ): Promise<SummaryStats | SummaryStatsWithTrends> {
   const supabaseClient = await createSupabaseServerClient()
 
-  // Get total video count (excluding deleted videos)
-  const { count: totalVideos, error: totalError } = await supabaseClient
-    .from('videos')
-    .select('*', { count: 'exact', head: true })
-    .is('deleted_at', null)
+  const countVideos = (filter: VideoSummaryFilter) =>
+    applyVideoSummaryFilter(
+      supabaseClient.from('videos').select('*', { count: 'exact', head: true }),
+      filter,
+    )
 
-  if (totalError) {
-    throw new TypeError(totalError.message, {
-      cause: totalError,
-    })
-  }
+  const [
+    { count: totalVideos, error: totalError },
+    { count: visibleVideos, error: visibleError },
+    { count: scheduledVideos, error: scheduledError },
+    { count: hiddenVideos, error: hiddenError },
+    { count: deletedVideos, error: deletedError },
+  ] = await Promise.all([
+    countVideos(VIDEO_SUMMARY_FILTERS.totalVideos),
+    countVideos(VIDEO_SUMMARY_FILTERS.visibleVideos),
+    countVideos(VIDEO_SUMMARY_FILTERS.scheduledVideos),
+    countVideos(VIDEO_SUMMARY_FILTERS.hiddenVideos),
+    countVideos(VIDEO_SUMMARY_FILTERS.deletedVideos),
+  ])
 
-  // Get visible video count (public: visible + ENDED or LIVE or PUBLISHED, excluding deleted videos)
-  const { count: visibleVideos, error: visibleError } = await supabaseClient
-    .from('videos')
-    .select('*', { count: 'exact', head: true })
-    .eq('visible', true)
-    .in('status', ['ENDED', 'LIVE', 'PUBLISHED'])
-    .is('deleted_at', null)
+  const videoError =
+    totalError ?? visibleError ?? scheduledError ?? hiddenError ?? deletedError
 
-  if (visibleError) {
-    throw new TypeError(visibleError.message, {
-      cause: visibleError,
-    })
-  }
-
-  // Get hidden video count (excluding deleted videos)
-  const { count: hiddenVideos, error: hiddenError } = await supabaseClient
-    .from('videos')
-    .select('*', { count: 'exact', head: true })
-    .eq('visible', false)
-    .is('deleted_at', null)
-
-  if (hiddenError) {
-    throw new TypeError(hiddenError.message, {
-      cause: hiddenError,
-    })
-  }
-
-  // Get scheduled video count (visible + UPCOMING, excluding deleted videos)
-  const { count: scheduledVideos, error: scheduledError } = await supabaseClient
-    .from('videos')
-    .select('*', { count: 'exact', head: true })
-    .eq('visible', true)
-    .eq('status', 'UPCOMING')
-    .is('deleted_at', null)
-
-  if (scheduledError) {
-    throw new TypeError(scheduledError.message, {
-      cause: scheduledError,
-    })
-  }
-
-  // Get deleted video count
-  const { count: deletedVideos, error: deletedError } = await supabaseClient
-    .from('videos')
-    .select('*', { count: 'exact', head: true })
-    .not('deleted_at', 'is', null)
-
-  if (deletedError) {
-    throw new TypeError(deletedError.message, {
-      cause: deletedError,
+  if (videoError) {
+    throw new TypeError(videoError.message, {
+      cause: videoError,
     })
   }
 

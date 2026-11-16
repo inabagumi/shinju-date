@@ -1,6 +1,10 @@
 import { cacheLife } from 'next/cache'
 import { getHistoricalStats } from '../_lib/get-historical-stats'
 import { getSummaryStats } from '../_lib/get-summary-stats'
+import {
+  getVideoListHref,
+  VIDEO_SUMMARY_FILTERS,
+} from '../_lib/video-summary-filters'
 import { StatTileLink } from './trend-indicator'
 import { VideoStatsChartEmpty } from './video-stats-chart-empty'
 import { VideoStatsChartUI } from './video-stats-chart-ui'
@@ -25,25 +29,25 @@ export async function VideoSummaryWidget() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatTileLink
           dayChange={stats.totalVideos.dayChange}
-          href="/videos?deleted=false"
+          href={getVideoListHref(VIDEO_SUMMARY_FILTERS.totalVideos)}
           label="総動画数"
           value={stats.totalVideos.current}
         />
         <StatTileLink
           dayChange={stats.visibleVideos.dayChange}
-          href="/videos?deleted=false&visible=true"
+          href={getVideoListHref(VIDEO_SUMMARY_FILTERS.visibleVideos)}
           label="公開中"
           value={stats.visibleVideos.current}
         />
         <StatTileLink
           dayChange={stats.scheduledVideos.dayChange}
-          href="/videos?deleted=false&visible=true"
+          href={getVideoListHref(VIDEO_SUMMARY_FILTERS.scheduledVideos)}
           label="配信予定"
           value={stats.scheduledVideos.current}
         />
         <StatTileLink
           dayChange={stats.hiddenVideos.dayChange}
-          href="/videos?deleted=false&visible=false"
+          href={getVideoListHref(VIDEO_SUMMARY_FILTERS.hiddenVideos)}
           label="非表示"
           value={stats.hiddenVideos.current}
         />
