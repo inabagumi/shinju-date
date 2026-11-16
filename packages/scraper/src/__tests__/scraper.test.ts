@@ -3,6 +3,7 @@ import { Scraper } from '../scraper.js'
 import type {
   AddPastVideosResult,
   CrawlContext,
+  RefreshVideoResult,
   ScraperOptions,
   TypedSupabaseClient,
 } from '../types.js'
@@ -39,6 +40,10 @@ class ExampleScraper extends Scraper {
 
   refreshRecentVideos(): Promise<boolean> {
     return Promise.resolve(false)
+  }
+
+  refreshVideo(): Promise<RefreshVideoResult> {
+    return Promise.resolve({ status: 'not-found' })
   }
 
   removeUnavailableVideos(): Promise<boolean> {

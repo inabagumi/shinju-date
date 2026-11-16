@@ -1,3 +1,4 @@
+import type { TablesUpdate } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { countChanges } from '../internal/concurrency.js'
 import {
@@ -6,12 +7,15 @@ import {
   softDeleteUnavailableVideos,
   updateVideo,
 } from '../internal/database/index.js'
+import { diffVideoFields } from '../internal/video-fields.js'
 import type {
   CrawlContext,
+  RefreshVideoResult,
   TypedSupabaseClient,
   WriteContext,
 } from '../types.js'
 import type { YouTubeFetcher } from './fetcher.js'
+import type { YouTubeVideo } from './types.js'
 import { getVideoChanges, type YouTubeVideoFields } from './video.js'
 
 const UPDATE_CONCURRENCY = 8
@@ -37,6 +41,9 @@ interface SavedYouTubeVideo extends YouTubeVideoFields {
   }
 }
 
+const SAVED_VIDEO_SELECT =
+  'id, duration, published_at, status, thumbnail_id, title, video_kind, youtube_video:youtube_videos!inner(youtube_video_id)'
+
 /**
  * Loads the videos a refresh looks at, for active talents only.
  */
@@ -46,9 +53,7 @@ async function getVideosToRefresh(
 ): Promise<SavedYouTubeVideo[]> {
   const query = supabaseClient
     .from('videos')
-    .select(
-      'id, duration, published_at, status, thumbnail_id, title, video_kind, youtube_video:youtube_videos!inner(youtube_video_id), talent:talents!inner(id)',
-    )
+    .select(`${SAVED_VIDEO_SELECT}, talent:talents!inner(id)`)
     .eq('platform', 'youtube')
     .is('deleted_at', null)
     .is('talent.deleted_at', null)
@@ -70,6 +75,30 @@ async function getVideosToRefresh(
 }
 
 /**
+ * Writes what changed on YouTube to a saved video.
+ *
+ * @returns The columns that changed, or `null` when the video is up to date.
+ */
+async function updateFromYouTube(
+  { now, supabaseClient }: WriteContext,
+  saved: SavedYouTubeVideo,
+  video: YouTubeVideo,
+): Promise<TablesUpdate<'videos'> | null> {
+  const changes = getVideoChanges(saved, video, now)
+
+  if (!changes) {
+    return null
+  }
+
+  await updateVideo(supabaseClient, saved.id, {
+    ...changes,
+    updated_at: toDBString(now),
+  })
+
+  return changes
+}
+
+/**
  * Brings saved videos in line with YouTube: updates what changed (status,
  * schedule, title, duration) and soft-deletes videos YouTube no longer returns.
  *
@@ -79,7 +108,7 @@ export async function refreshYouTubeVideos(
   context: CrawlContext<YouTubeFetcher>,
   scope: YouTubeRefreshScope,
 ): Promise<number> {
-  const { fetcher, logger, now, reportError, supabaseClient } = context
+  const { fetcher, logger, reportError, supabaseClient } = context
   const savedVideos = await getVideosToRefresh(supabaseClient, scope)
 
   if (savedVideos.length === 0) {
@@ -98,18 +127,10 @@ export async function refreshYouTubeVideos(
     UPDATE_CONCURRENCY,
     async (video) => {
       const saved = savedByYouTubeId.get(video.id)
-      const changes = saved && getVideoChanges(saved, video, now)
 
-      if (!saved || !changes) {
-        return false
-      }
-
-      await updateVideo(supabaseClient, saved.id, {
-        ...changes,
-        updated_at: toDBString(now),
-      })
-
-      return true
+      return saved
+        ? (await updateFromYouTube(context, saved, video)) !== null
+        : false
     },
     (error, video) => reportError(error, { youtubeVideoId: video.id }),
   )
@@ -162,6 +183,70 @@ async function deleteMissingVideos(
   })
 
   return deletedCount
+}
+
+/**
+ * Brings one saved video in line with YouTube, the same way the scheduled
+ * refreshes do: updates what changed, or soft-deletes the video when YouTube
+ * no longer returns it.
+ *
+ * Unlike the scheduled refreshes, the video is refreshed whatever its status
+ * and whatever the status of its talent.
+ */
+export async function refreshYouTubeVideo(
+  context: CrawlContext<YouTubeFetcher>,
+  videoId: string,
+): Promise<RefreshVideoResult> {
+  const { fetcher, logger, supabaseClient } = context
+  const { data: saved, error } = await supabaseClient
+    .from('videos')
+    .select(SAVED_VIDEO_SELECT)
+    .eq('id', videoId)
+    .eq('platform', 'youtube')
+    .is('deleted_at', null)
+    .maybeSingle()
+
+  if (error) {
+    throw new DatabaseError('Failed to load a YouTube video', error)
+  }
+
+  if (!saved) {
+    return { status: 'not-found' }
+  }
+
+  const youtubeVideoId = saved.youtube_video.youtube_video_id
+  const { missingIds, videos } = await fetcher.getVideos([youtubeVideoId])
+  const video = videos.find((candidate) => candidate.id === youtubeVideoId)
+
+  if (!video) {
+    await deleteMissingVideos(
+      context,
+      missingIds,
+      new Map([[youtubeVideoId, saved]]),
+    )
+
+    return { status: 'unavailable' }
+  }
+
+  const changes = await updateFromYouTube(context, saved, video)
+
+  if (!changes) {
+    return { status: 'unchanged', title: saved.title }
+  }
+
+  const after = { ...saved, ...changes }
+
+  logger.info('動画を更新しました', {
+    platform: 'youtube',
+    videoId,
+    youtubeVideoId,
+  })
+
+  return {
+    ...diffVideoFields(saved, after),
+    status: 'updated',
+    title: after.title,
+  }
 }
 
 type SweptYouTubeVideo = Pick<

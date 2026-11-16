@@ -109,9 +109,12 @@ export function planNewVideos({
 }
 
 /**
+ * Carries out one planned action. Failures are thrown, so callers decide
+ * whether one failed video stops the others.
+ *
  * @returns Whether the action changed what the public site shows.
  */
-async function applyAction(
+export async function applyNewVideoAction(
   context: WriteContext,
   action: NewVideoAction,
   userByTwitchId: ReadonlyMap<string, ActiveTwitchUser>,
@@ -266,7 +269,7 @@ export async function saveNewTwitchVideos(
     actions,
     concurrency,
     async (action) => {
-      if (!(await applyAction(context, action, userByTwitchId))) {
+      if (!(await applyNewVideoAction(context, action, userByTwitchId))) {
         return false
       }
 

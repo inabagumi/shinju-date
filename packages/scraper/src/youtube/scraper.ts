@@ -1,8 +1,13 @@
 import { Scraper } from '../scraper.js'
-import type { AddPastVideosOptions, AddPastVideosResult } from '../types.js'
+import type {
+  AddPastVideosOptions,
+  AddPastVideosResult,
+  RefreshVideoResult,
+} from '../types.js'
 import { addNewYouTubeVideos } from './add-new-videos.js'
 import { addPastYouTubeVideos } from './add-past-videos.js'
 import {
+  refreshYouTubeVideo,
   refreshYouTubeVideos,
   removeUnavailableYouTubeVideos,
 } from './check-videos.js'
@@ -46,6 +51,13 @@ export class YouTubeScraper extends Scraper {
 
   async refreshRecentVideos(now?: Temporal.Instant): Promise<boolean> {
     return (await refreshYouTubeVideos(this.#context(now), 'recent')) > 0
+  }
+
+  refreshVideo(
+    videoId: string,
+    now?: Temporal.Instant,
+  ): Promise<RefreshVideoResult> {
+    return refreshYouTubeVideo(this.#context(now), videoId)
   }
 
   async removeUnavailableVideos(now?: Temporal.Instant): Promise<boolean> {

@@ -5,6 +5,7 @@ import type {
   AddPastVideosResult,
   CrawlContext,
   ErrorReporter,
+  RefreshVideoResult,
   ScraperOptions,
   TypedSupabaseClient,
 } from './types.js'
@@ -29,6 +30,7 @@ const silentLogger: Logger = {
  * | `addPastVideos`           | saves one page of an account's whole history    |
  * | `refreshLiveVideos`       | follows videos that are scheduled or on air     |
  * | `refreshRecentVideos`     | re-reads the newest finished videos             |
+ * | `refreshVideo`            | re-reads one saved video                        |
  * | `removeUnavailableVideos` | soft-deletes videos that are gone, across all   |
  * | `syncAccounts`            | updates names, handles and icons of accounts    |
  *
@@ -95,6 +97,23 @@ export abstract class Scraper {
    * changed and soft-deletes the ones the platform no longer returns.
    */
   abstract refreshRecentVideos(now?: Temporal.Instant): Promise<boolean>
+
+  /**
+   * Re-reads one saved video and brings it in line with the platform, with
+   * the same functions as the scheduled refreshes: the same columns are
+   * updated to the same values, and a video the platform no longer returns
+   * is soft-deleted with the same reason (`unavailable`).
+   *
+   * Unlike the scheduled refreshes, this concerns a single video, so a
+   * failure to read the platform or the database rejects (a thumbnail that
+   * cannot be stored is still only reported).
+   *
+   * @param videoId Primary key of the `videos` row.
+   */
+  abstract refreshVideo(
+    videoId: string,
+    now?: Temporal.Instant,
+  ): Promise<RefreshVideoResult>
 
   /**
    * Checks every saved video of non-deleted talents and soft-deletes the ones

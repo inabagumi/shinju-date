@@ -339,6 +339,179 @@ describe('YouTubeScraper', () => {
     })
   })
 
+  describe('refreshVideo', () => {
+    const savedVideo = {
+      duration: 'P0D',
+      id: 'video-1',
+      published_at: '2024-05-01T13:00:00+00:00',
+      status: 'UPCOMING',
+      thumbnail_id: 'thumb-1',
+      title: 'Video yt-1',
+      video_kind: 'standard',
+      youtube_video: { youtube_video_id: 'yt-1' },
+    }
+    const onAir = {
+      'yt-1': {
+        contentDetails: {},
+        liveStreamingDetails: {
+          actualStartTime: '2024-05-01T11:59:00Z',
+          scheduledStartTime: '2024-05-01T13:00:00Z',
+        },
+        snippet: {
+          publishedAt: '2024-05-01T10:00:00Z',
+          title: 'Now on air',
+        },
+      },
+    }
+
+    it('updates what changed and reports the changed columns', async () => {
+      supabase.respond(({ method }) => (method === 'GET' ? [savedVideo] : []))
+      const { scraper, videosList } = createScraper({ videos: onAir })
+
+      await expect(scraper.refreshVideo('video-1', TEST_NOW)).resolves.toEqual({
+        after: {
+          published_at: '2024-05-01T11:59:00Z',
+          status: 'LIVE',
+          title: 'Now on air',
+        },
+        before: {
+          published_at: '2024-05-01T13:00:00+00:00',
+          status: 'UPCOMING',
+          title: 'Video yt-1',
+        },
+        status: 'updated',
+        title: 'Now on air',
+      })
+
+      expect(supabase.written('GET', 'videos')[0]?.query).toMatchObject({
+        deleted_at: 'is.null',
+        id: 'eq.video-1',
+        platform: 'eq.youtube',
+      })
+      expect(videosList).toHaveBeenCalledWith(
+        expect.objectContaining({ id: ['yt-1'] }),
+      )
+      expect(supabase.written('PATCH', 'videos')).toEqual([
+        expect.objectContaining({
+          body: {
+            published_at: '2024-05-01T11:59:00Z',
+            status: 'LIVE',
+            title: 'Now on air',
+            updated_at: '2024-05-01T12:00:00Z',
+          },
+          query: { id: 'eq.video-1' },
+        }),
+      ])
+    })
+
+    it('writes the same values as the scheduled refresh', async () => {
+      supabase.respond(({ method }) => (method === 'GET' ? [savedVideo] : []))
+
+      await createScraper({ videos: onAir }).scraper.refreshVideo(
+        'video-1',
+        TEST_NOW,
+      )
+      const single = supabase.written('PATCH', 'videos')
+
+      supabase.requests.length = 0
+      await createScraper({ videos: onAir }).scraper.refreshLiveVideos(TEST_NOW)
+
+      expect(single).toHaveLength(1)
+      expect(supabase.written('PATCH', 'videos')).toEqual(single)
+    })
+
+    it('updates the kind of a video', async () => {
+      supabase.respond(({ method }) =>
+        method === 'GET'
+          ? [
+              {
+                ...savedVideo,
+                duration: 'PT10M',
+                published_at: '2024-05-01T10:00:00+00:00',
+                status: 'PUBLISHED',
+              },
+            ]
+          : [],
+      )
+      const { scraper } = createScraper({
+        videos: { 'yt-1': { contentDetails: { duration: 'PT1M' } } },
+      })
+
+      await expect(scraper.refreshVideo('video-1', TEST_NOW)).resolves.toEqual({
+        after: { duration: 'PT1M', video_kind: 'short' },
+        before: { duration: 'PT10M', video_kind: 'standard' },
+        status: 'updated',
+        title: 'Video yt-1',
+      })
+    })
+
+    it('reports a video that is up to date without writing', async () => {
+      supabase.respond(({ method }) =>
+        method === 'GET'
+          ? [
+              {
+                ...savedVideo,
+                duration: 'PT10M',
+                published_at: '2024-05-01T10:00:00+00:00',
+                status: 'PUBLISHED',
+              },
+            ]
+          : [],
+      )
+      const { scraper } = createScraper({ videos: { 'yt-1': {} } })
+
+      await expect(scraper.refreshVideo('video-1', TEST_NOW)).resolves.toEqual({
+        status: 'unchanged',
+        title: 'Video yt-1',
+      })
+      expect(supabase.written('PATCH', 'videos')).toEqual([])
+    })
+
+    it('soft-deletes a video YouTube no longer returns, like the scheduled refresh', async () => {
+      supabase.respond(({ method, table }) => {
+        if (method === 'GET') {
+          return [savedVideo]
+        }
+
+        return table === 'videos' ? [{ id: 'video-1' }] : []
+      })
+      const { scraper } = createScraper({})
+
+      await expect(scraper.refreshVideo('video-1', TEST_NOW)).resolves.toEqual({
+        status: 'unavailable',
+      })
+      const single = supabase.requests.filter(({ method }) => method !== 'GET')
+
+      supabase.requests.length = 0
+      await createScraper({}).scraper.refreshLiveVideos(TEST_NOW)
+
+      expect(single).toEqual([
+        expect.objectContaining({
+          body: expect.objectContaining({ deleted_reason: 'unavailable' }),
+          query: expect.objectContaining({ id: 'in.(video-1)' }),
+          table: 'videos',
+        }),
+        expect.objectContaining({
+          query: expect.objectContaining({ id: 'in.(thumb-1)' }),
+          table: 'thumbnails',
+        }),
+      ])
+      expect(
+        supabase.requests.filter(({ method }) => method !== 'GET'),
+      ).toEqual(single)
+    })
+
+    it('reports a video that is not saved, or not a YouTube video', async () => {
+      supabase.respond(() => [])
+      const { scraper, videosList } = createScraper({ videos: { 'yt-1': {} } })
+
+      await expect(scraper.refreshVideo('video-404')).resolves.toEqual({
+        status: 'not-found',
+      })
+      expect(videosList).not.toHaveBeenCalled()
+    })
+  })
+
   describe('removeUnavailableVideos', () => {
     it('checks every video with ID-only requests and deletes the missing ones', async () => {
       supabase.respond(({ method, query, table }) => {

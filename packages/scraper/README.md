@@ -28,10 +28,11 @@ const changed = await scraper.addNewVideos()
 | `refreshLiveVideos()`       | 配信予定・配信中の動画を追う（開始、タイトル変更、終了）                             |
 | `refreshRecentVideos()`     | 終了済みの最新動画を再取得し、変更を反映する。取得できなくなった動画は削除扱いにする |
 | `removeUnavailableVideos()` | 保存済みの全動画を確認し、取得できなくなった動画を削除扱いにする                     |
+| `refreshVideo(videoId)`     | 保存済みの動画 1 件を再取得し、変更を反映する（取得できなければ削除扱いにする）      |
 | `syncAccounts()`            | 保存済みアカウントの名前・ハンドル・アイコンをプラットフォームに合わせる             |
 | `addPastVideos(options)`    | 1 アカウントの全履歴を 1 ページ読み、未保存の動画を保存する（バックフィル）          |
 
-- `addPastVideos` 以外の操作は「公開サイトに見える変更があったか」を `boolean` で返します（キャッシュ再検証の判断に使えます）。
+- `addPastVideos` と `refreshVideo` 以外の操作は「公開サイトに見える変更があったか」を `boolean` で返します（キャッシュ再検証の判断に使えます）。
 - 引数に実行時刻（`Temporal.Instant`）を渡すと、その実行で書き込む行のタイムスタンプが揃います。省略時は現在時刻です。
 
 ### 過去動画の取り込み（`addPastVideos`）
@@ -55,6 +56,32 @@ do {
 - 対象は削除されていないタレントのアカウントです（引退したタレントも含む）。アカウントが見つからなければ `AccountNotFoundError` で reject します。
 - Twitch はアーカイブとアップロードが対象です（ハイライトは対象外。`addNewVideos` と同じ）。
 - サムネイルの同時処理数は `addNewVideos` より抑えています。
+
+### 動画 1 件の見直し（`refreshVideo`）
+
+管理画面の「動画を同期」のように、動画 1 件を指定して見直すための操作です。定期の見直しと同じ関数（差分の判定、項目への変換、論理削除）を使うので、同じ動画は同じ項目が同じ値に更新されます。
+
+```ts
+const result = await scraper.refreshVideo(videoId) // videos.id
+
+switch (result.status) {
+  case 'updated': // result.before / result.after は変わった項目だけを持つ
+  case 'unchanged':
+    console.log(result.title)
+    break
+  case 'unavailable': // プラットフォームから消えていたので、論理削除した
+  case 'not-found': // 保存済みの動画がない（削除済みを含む）、または、そのプラットフォームの動画ではない
+    break
+}
+```
+
+- 更新する項目は、定期の見直しと同じです（タイトル、長さ、開始日時、状態、種別）。`before` と `after` は、変わった項目だけを持ちます（監査ログ向け）。
+- 定期の見直しと違い、動画の状態やタレントの状態を問わずに見直します。
+- 1 件だけを扱うので、プラットフォームやデータベースを読めなければ reject します（サムネイルを保存できない場合だけは、ほかの操作と同じく `onError` に渡します）。
+- **Twitch** は、配信中の行と、アーカイブが分からないままの行（プレースホルダー）を、配信の状態から見直します（`refreshLiveVideos` と同じ）。アーカイブが見つかれば結び付けます（`addNewVideos` と同じ。配信中なら LIVE のまま）。クリップは、クリップとして確認します。
+- Twitch でアーカイブへの結び付けやサムネイルだけが変わった場合も `updated` を返します（`before` と `after` は空）。
+
+型 `RefreshVideoResult` は `@shinju-date/scraper` から import できます。
 
 ### 失敗の扱い
 
@@ -101,7 +128,7 @@ do {
 
 ## プロバイダーを追加する
 
-1. `Scraper` を継承したクラスを作り、5 つの操作を実装します。プラットフォーム固有の紐づけテーブルへの書き込みもここに書きます。
+1. `Scraper` を継承したクラスを作り、すべての操作を実装します。プラットフォーム固有の紐づけテーブルへの書き込みもここに書きます。
 2. プラットフォームからの取得は、内部の基底クラス `Fetcher` を継承すると、ID の重複除去とバッチ化・並行数の制御・アカウント単位の失敗の切り離しをそのまま使えます。
 
 既存の `youtube/` と `twitch/` が実装例です。

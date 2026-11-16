@@ -1,5 +1,9 @@
 import { Scraper } from '../scraper.js'
-import type { AddPastVideosOptions, AddPastVideosResult } from '../types.js'
+import type {
+  AddPastVideosOptions,
+  AddPastVideosResult,
+  RefreshVideoResult,
+} from '../types.js'
 import { addNewTwitchVideos } from './add-new-videos.js'
 import { addPastTwitchVideos } from './add-past-videos.js'
 import {
@@ -7,6 +11,7 @@ import {
   removeUnavailableTwitchVideos,
 } from './check-videos.js'
 import { TwitchFetcher } from './fetcher.js'
+import { refreshTwitchVideo } from './refresh-video.js'
 import { syncTwitchUsers } from './sync-accounts.js'
 import { syncTwitchLive } from './sync-live.js'
 import type { TwitchScraperOptions } from './types.js'
@@ -53,6 +58,17 @@ export class TwitchScraper extends Scraper {
 
   async refreshRecentVideos(now?: Temporal.Instant): Promise<boolean> {
     return (await refreshRecentTwitchVideos(this.#context(now))) > 0
+  }
+
+  /**
+   * Re-reads one saved video. A broadcast follows its stream and is linked
+   * to its archive once Twitch lists it; a clip is read as a clip.
+   */
+  refreshVideo(
+    videoId: string,
+    now?: Temporal.Instant,
+  ): Promise<RefreshVideoResult> {
+    return refreshTwitchVideo(this.#context(now), videoId)
   }
 
   async removeUnavailableVideos(now?: Temporal.Instant): Promise<boolean> {
