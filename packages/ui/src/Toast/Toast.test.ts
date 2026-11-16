@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   Toast,
-  ToastAction,
   ToastClose,
-  ToastDescription,
   ToastProvider,
   ToastTitle,
   ToastViewport,
@@ -26,16 +24,8 @@ describe('Toast', () => {
     expect(ToastTitle).toBeDefined()
   })
 
-  it('should export ToastDescription component', () => {
-    expect(ToastDescription).toBeDefined()
-  })
-
   it('should export ToastClose component', () => {
     expect(ToastClose).toBeDefined()
-  })
-
-  it('should export ToastAction component', () => {
-    expect(ToastAction).toBeDefined()
   })
 
   it('should have correct display name for Toast', () => {
@@ -50,15 +40,7 @@ describe('Toast', () => {
     expect(ToastTitle.name).toBe('ToastTitle')
   })
 
-  it('should have correct display name for ToastDescription', () => {
-    expect(ToastDescription.name).toBe('ToastDescription')
-  })
-
   it('should have correct display name for ToastClose', () => {
     expect(ToastClose.name).toBe('ToastClose')
-  })
-
-  it('should have correct display name for ToastAction', () => {
-    expect(ToastAction.name).toBe('ToastAction')
   })
 })

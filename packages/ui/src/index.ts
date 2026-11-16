@@ -4,7 +4,6 @@ export { Button, type ButtonProps } from './Button/Button.js'
 export {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   type CardProps,
 } from './Card/Card.js'
@@ -44,9 +43,7 @@ export {
 export { Textarea, type TextareaProps } from './Textarea/Textarea.js'
 export {
   Toast,
-  ToastAction,
   ToastClose,
-  ToastDescription,
   type ToastProps,
   ToastProvider,
   ToastTitle,

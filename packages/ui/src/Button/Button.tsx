@@ -22,10 +22,6 @@ const buttonVariants = cva(
         primary: 'bg-accent text-accent-foreground hover:bg-accent/90',
         secondary:
           'border border-border bg-surface text-foreground hover:bg-muted',
-        'secondary-blue':
-          'bg-secondary-blue text-secondary-blue-foreground hover:bg-774-blue-800 active:bg-774-blue-600',
-        'secondary-pink':
-          'bg-secondary-pink text-secondary-pink-foreground hover:bg-774-pink-600 active:bg-774-pink-700',
       },
     },
   },

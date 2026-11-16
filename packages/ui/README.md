@@ -152,16 +152,14 @@ import {
 
 - `default` (デフォルト): グレー背景のカード
 - `elevated`: 白背景で影付きのカード
-- `outlined`: 背景色なしでボーダーのみのカード
 
 **サブコンポーネント:**
 
 - `CardHeader`: カードのヘッダー部分
 - `CardContent`: カードのメインコンテンツ
-- `CardFooter`: カードのフッター部分
 
 ```tsx
-import { Card, CardHeader, CardContent, CardFooter } from '@shinju-date/ui'
+import { Card, CardHeader, CardContent } from '@shinju-date/ui'
 
 ;<Card variant="elevated">
   <CardHeader>
@@ -170,9 +168,6 @@ import { Card, CardHeader, CardContent, CardFooter } from '@shinju-date/ui'
   <CardContent>
     <p>カードの内容がここに入ります。</p>
   </CardContent>
-  <CardFooter>
-    <Button>アクション</Button>
-  </CardFooter>
 </Card>
 ```
 

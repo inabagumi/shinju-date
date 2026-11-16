@@ -265,8 +265,6 @@ const example = (
 
 ```tsx
 <Button variant="primary">プライマリボタン</Button>
-<Button variant="secondary-blue">セカンダリブルー</Button>
-<Button variant="secondary-pink">セカンダリピンク</Button>
 <Button variant="danger">危険な操作</Button>
 ```
 

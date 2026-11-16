@@ -1,12 +1,11 @@
 import preview from '#.storybook/preview'
-import { Button } from '../Button/Button'
-import { Card, CardContent, CardFooter, CardHeader } from './Card'
+import { Card, CardContent, CardHeader } from './Card'
 
 const meta = preview.meta({
   argTypes: {
     variant: {
       control: 'select',
-      options: ['default', 'elevated', 'outlined'],
+      options: ['default', 'elevated'],
     },
   },
   component: Card,
@@ -48,52 +47,6 @@ export const Elevated = meta.story({
             shadow.
           </p>
         </CardContent>
-      </>
-    ),
-    variant: 'elevated',
-  },
-})
-
-export const Outlined = meta.story({
-  args: {
-    children: (
-      <>
-        <CardHeader>
-          <h3 className="text-body leading-normal font-semibold">
-            Outlined Card
-          </h3>
-        </CardHeader>
-        <CardContent>
-          <p>This card has a transparent background with a visible border.</p>
-        </CardContent>
-      </>
-    ),
-    variant: 'outlined',
-  },
-})
-
-export const WithFooter = meta.story({
-  args: {
-    children: (
-      <>
-        <CardHeader>
-          <h3 className="text-body leading-normal font-semibold">
-            Card with Footer
-          </h3>
-        </CardHeader>
-        <CardContent>
-          <p>This card includes a footer section with action buttons.</p>
-        </CardContent>
-        <CardFooter>
-          <div className="flex gap-2">
-            <Button size="sm" variant="primary">
-              Confirm
-            </Button>
-            <Button size="sm" variant="secondary">
-              Cancel
-            </Button>
-          </div>
-        </CardFooter>
       </>
     ),
     variant: 'elevated',
