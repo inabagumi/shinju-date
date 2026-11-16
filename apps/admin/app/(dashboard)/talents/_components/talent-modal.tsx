@@ -13,6 +13,7 @@ import {
 } from '@shinju-date/ui'
 import { Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import type { FormState } from '@/components/form'
 import Form, {
   ErrorMessage,
@@ -22,12 +23,15 @@ import Form, {
   Label,
   SubmitButton,
 } from '@/components/form'
-import { createTalentAction, updateTalentAction } from '../_actions'
+import {
+  createTalentAction,
+  deleteTalentAction,
+  updateTalentAction,
+} from '../_actions'
 import {
   TALENT_READING_DESCRIPTION,
   TALENT_READING_PLACEHOLDER,
 } from '../_lib/talent-reading-description'
-import { DeleteConfirmDialog } from './delete-confirm-dialog'
 
 type Talent = Pick<Tables<'talents'>, 'id' | 'name' | 'reading'> & {
   youtube_channel: Pick<
@@ -138,9 +142,13 @@ export function TalentModal({ talent }: TalentModalProps) {
             <GenericErrorMessage className="text-meta text-danger" />
             <div className="flex items-center justify-between gap-2 pt-2">
               {isEditing && talent ? (
-                <DeleteConfirmDialog
-                  talentId={talent.id}
-                  talentName={talent.name}
+                <ConfirmDialog
+                  confirmLabel="削除"
+                  confirmVariant="danger"
+                  description={`「${talent.name}」を削除しますか？紐づく動画も非公開になります。`}
+                  onConfirm={() => deleteTalentAction(talent.id)}
+                  title="タレントを削除"
+                  trigger={<Button variant="danger">削除</Button>}
                 />
               ) : (
                 <div />
