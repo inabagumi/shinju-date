@@ -1,5 +1,13 @@
 import { SITE_DESCRIPTION, SITE_NAME as siteName } from '@shinju-date/constants'
 import dedent from 'dedent'
+import { joinURL } from 'ufo'
+import { getVideosPath } from '@/lib/video-kind-filter'
+
+/**
+ * OpenSearch のテンプレートの検索語の場所。`getVideosPath` が
+ * `encodeURIComponent` した括弧を、`decodeURI` で元に戻して使う。
+ */
+const SEARCH_TERMS = '{searchTerms}'
 
 export function GET(): Response {
   const baseURL = process.env['NEXT_PUBLIC_BASE_URL'] ?? 'http://localhost:3000'
@@ -14,7 +22,7 @@ export function GET(): Response {
       <InputEncoding>UTF-8</InputEncoding>
       <moz:SearchForm>${new URL('/', baseURL).toString()}</moz:SearchForm>
       <ShortName>${siteName}</ShortName>
-      <Url method="get" template="${baseURL}/videos/{searchTerms}" type="text/html"/>
+      <Url method="get" template="${joinURL(baseURL, decodeURI(getVideosPath(SEARCH_TERMS, 'all')))}" type="text/html"/>
     </OpenSearchDescription>
   `
 

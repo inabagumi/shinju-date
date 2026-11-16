@@ -6,6 +6,7 @@ import { TALENT_SEARCH_PARAM } from '@/lib/talent-filter'
 import { parseQueries } from '@/lib/url'
 import {
   getVideosCalendarPath,
+  getVideosPath,
   parseVideoKindFilter,
   VIDEO_KIND_SEARCH_PARAM,
 } from '@/lib/video-kind-filter'
@@ -34,7 +35,7 @@ export async function generateMetadata({
 
   return {
     alternates: {
-      canonical: query ? `/videos/${encodeURIComponent(query)}` : '/videos',
+      canonical: getVideosPath(query, 'all'),
       types: {
         'text/calendar': !query ? getVideosCalendarPath(kind, talentIds) : null,
       },

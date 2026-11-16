@@ -202,13 +202,12 @@ export function SearchModalContent({ onClose }: SearchModalContentProps) {
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault()
 
-      if (selectedTalentIds.length > 0) {
-        onClose()
-        router.push(getVideosPath(query.trim(), 'all', selectedTalentIds))
-      } else if (query.trim()) {
-        onClose()
-        router.push(`/search?q=${encodeURIComponent(query)}`)
-      }
+      const trimmedQuery = query.trim()
+
+      if (!trimmedQuery && selectedTalentIds.length === 0) return
+
+      onClose()
+      router.push(getVideosPath(trimmedQuery, 'all', selectedTalentIds))
     },
     [query, onClose, router, selectedTalentIds],
   )
