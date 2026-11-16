@@ -51,7 +51,6 @@
 ## ドキュメント
 
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - 開発・貢献ガイド
-- **[AGENTS.md](AGENTS.md)** - AI エージェント活用ガイド
 - **[docs/](docs/)** - プロジェクト固有のドキュメント
   - [Setup Guide](docs/setup-guide.md) - セットアップガイド（**最初に読むべきドキュメント**）
   - [Coding Guidelines](docs/coding-guidelines.md) - コーディング規約

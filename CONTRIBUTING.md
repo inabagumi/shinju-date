@@ -47,7 +47,7 @@ devcontainer down --workspace-folder .
 - **フォーマッター**: Biome を使用
 - **リンティング**: Biome の規則に従う
 - **型安全性**: TypeScript の厳格な型チェックを使用
-- **型定義**: オブジェクト型には `interface` を優先使用（詳細は [docs/coding-guidelines.md](docs/coding-guidelines.md#typescript-型定義) を参照）
+- **型定義**: オブジェクト型には [`interface` を優先使用](docs/coding-guidelines.md#typescript-型定義)
 
 ### コード品質チェック
 
@@ -75,101 +75,17 @@ pnpm run typecheck --filter=@shinju-date/msw-handlers
 - 依存パッケージのビルド（`^build`）と、Next.js のアプリケーションでは `next typegen` による型の生成（`PageProps`、`LayoutProps`、`RouteContext` など）を先に実行します
 - 新しいパッケージやアプリケーションを追加した場合は、`package.json` に `"typecheck": "tsc --noEmit"` を追加してください
 
-### TypeScript 型定義の規約
+### コードの決まり
 
-**重要**: オブジェクト型の定義には `interface` を使用してください。
+コードの決まりは [コーディングガイドライン](docs/coding-guidelines.md) と [デザインガイドライン](docs/design-guidelines.md) にまとめています。特に次の決まりは、必ず守ってください。
 
-```typescript
-// ✅ 推奨
-interface ComponentProps {
-  title: string
-  onClose: () => void
-}
-
-// ❌ 非推奨（例外を除く）
-type ComponentProps = {
-  title: string
-  onClose: () => void
-}
-```
-
-**例外**: 以下の場合は `type` を使用します：
-
-- ユニオン型: `type Status = 'active' | 'inactive'`
-- インターセクション型: `type Combined = A & B`
-- マップド型・条件型・タプル型
-
-詳細は [docs/coding-guidelines.md](docs/coding-guidelines.md#typescript-型定義) を参照してください。
-
-### Next.js Cache Directives（キャッシュディレクティブ）
-
-**🚨 厳格なルール - 必ず守ること**:
-
-1. **`'use cache'` ディレクティブの直後には必ず空行を1行入れる**
-2. **`cacheLife()` や `cacheTag()` などの後にも必ず空行を1行入れる**
-3. **全てのファイルで例外なくこのルールを適用する**
-
-```typescript
-// ✅ 正しい例
-async function MyComponent() {
-  'use cache: remote'
-
-  cacheLife('hours')
-  cacheTag('my-tag')
-
-  const data = await fetchData()
-  return <div>{data}</div>
-}
-
-// ❌ 間違った例
-async function MyComponent() {
-  'use cache: remote'
-  const data = await fetchData() // NG: ディレクティブの後に空行がない
-  return <div>{data}</div>
-}
-```
-
-**キャッシュのベストプラクティス**:
-
-- キャッシュはデータ取得関数のレベルで行い、コンポーネントとメタデータ生成関数の両方で再利用する
-- 重複してキャッシュディレクティブを使用しない
-- `'use cache: remote'` は公開データに使用し、`'use cache: private'` は認証が必要なデータに使用する
-- データ取得関数にキャッシュディレクティブがある場合、その関数を呼び出すコンポーネントでは追加のキャッシュディレクティブは不要
-
-### Redisキーの管理
-
-**重要**: すべてのRedisキーは`@shinju-date/constants`の`REDIS_KEYS`オブジェクトで一元管理してください。
-
-#### ルール
-
-1. **キーの定義場所**
-   - すべてのRedisキープレフィックスは`packages/constants/src/index.ts`の`REDIS_KEYS`に定義
-   - ハードコーディングは禁止
-
-2. **日付フォーマット**
-   - 日付を含むキーには`@shinju-date/temporal-fns`の`formatDateKey`を使用（`YYYYMMDD`形式）
-   - 例: `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDateKey(now)}` → `summary:stats:20251111`
-
-3. **TTL設定**
-   - すべてのキーに適切な有効期限（TTL）を設定すること
-   - 例: `{ ex: 30 * 24 * 60 * 60 }` // 30日間
-
-#### 例
-
-```typescript
-import { REDIS_KEYS } from '@shinju-date/constants'
-import { formatDateKey } from '@shinju-date/temporal-fns'
-
-// ✅ 正しい例
-const key = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDateKey(now)}`
-await redis.set(key, data, { ex: 30 * 24 * 60 * 60 })
-
-// ❌ 間違った例（ハードコーディング）
-const key = 'summary:stats:2025-11-11'
-await redis.set(key, data)
-```
-
-詳細は [AGENTS.md](AGENTS.md) の「Redisキーの管理」セクションを参照してください。
+- [TypeScript 型定義](docs/coding-guidelines.md#typescript-型定義): オブジェクトの型には `interface` を使う
+- [キャッシュのディレクティブ](docs/coding-guidelines.md#キャッシュのディレクティブ): `'use cache'` と、キャッシュ設定の並びの後に、空行を1行入れる
+- [Partial Prerendering](docs/coding-guidelines.md#partial-prerendering): ページ全体を Suspense で囲まず、`params` は Suspense の中の部品で await する
+- [Redis のキー](docs/coding-guidelines.md#redis-のキー): `REDIS_KEYS` に定義し、TTL を付ける
+- [時刻の扱い](docs/coding-guidelines.md#時刻の扱い): `Date` ではなく `Temporal` を使い、データベースには `toDBString` で保存する
+- [admin の Server Action の認証](docs/coding-guidelines.md#admin-の-server-action-の認証): 先頭で `requireAuthenticatedUser()` を呼ぶ
+- [管理者のロールと RLS](docs/coding-guidelines.md#管理者のロールと-rls): ポリシーの条件に `public.is_admin()` を使う
 
 ### コミットメッセージ
 
@@ -373,8 +289,6 @@ pnpm db:export
 
 ## AI エージェントとの協業
 
-このプロジェクトでは GitHub Copilot などの AI ツールを積極的に活用しています。詳細は [AGENTS.md](AGENTS.md) を参照してください。
-
 ### 各アプリの AGENTS.md（Next.js が管理するブロック）
 
 `apps/*/AGENTS.md` の `<!-- BEGIN:nextjs-agent-rules -->` から `<!-- END:nextjs-agent-rules -->` までのブロックは、コーディングエージェントが `next dev` を起動したときに Next.js が書き込みます。ブロックは手で編集せず、Next.js の更新などで `next dev` が書き換えた場合は、その差分をそのままコミットしてください。
@@ -463,7 +377,6 @@ MSW はサーバー側でだけ動きます。起動すると、開発サーバ�
 ### ドキュメント
 
 - [docs/](docs/): プロジェクト固有のドキュメント
-- [AGENTS.md](AGENTS.md): AI エージェント活用ガイド
 
 ## ライセンス
 
