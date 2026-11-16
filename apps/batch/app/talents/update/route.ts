@@ -1,3 +1,4 @@
+import { CACHE_TAGS } from '@shinju-date/constants'
 import { createErrorResponse } from '@shinju-date/helpers'
 import { revalidateTags } from '@shinju-date/web-cache'
 import type { NextRequest } from 'next/server'
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     const changed = await createScraper(provider).syncAccounts()
 
     if (changed) {
-      await revalidateTags(['talents'], { signal: request.signal })
+      await revalidateTags([CACHE_TAGS.TALENTS], { signal: request.signal })
     }
   })
 }
