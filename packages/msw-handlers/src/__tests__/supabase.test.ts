@@ -331,29 +331,38 @@ describe('Supabase Handlers', () => {
           id: string
           visible: boolean
         }[]
-      const visibleVideos = await listVideos('&visible=eq.true')
-      const [hiddenVideo] = await listVideos('&visible=eq.false&limit=1')
+      const setVisible = (ids: string[], visible: boolean) =>
+        fetch(`${url}?id=in.(${ids.join(',')})`, {
+          body: JSON.stringify({ visible }),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'PATCH',
+        })
+      // The seeded videos may all be visible, so hide one for the test.
+      const [hiddenVideo, ...visibleVideos] =
+        await listVideos('&visible=eq.true')
       const targets = visibleVideos.slice(0, 2)
       const untouched = visibleVideos.slice(2)
 
+      expect(hiddenVideo).toBeDefined()
       expect(targets).toHaveLength(2)
       expect(untouched.length).toBeGreaterThan(0)
-      expect(hiddenVideo).toBeDefined()
-
-      const ids = [...targets, hiddenVideo].map((video) => video?.id)
-      const response = await fetch(
-        `${url}?id=in.(${ids.join(',')})&visible=eq.true&select=id`,
-        {
-          body: JSON.stringify({ visible: false }),
-          headers: {
-            'Content-Type': 'application/json',
-            prefer: 'return=representation',
-          },
-          method: 'PATCH',
-        },
-      )
 
       try {
+        await setVisible([hiddenVideo?.id ?? ''], false)
+
+        const ids = [...targets, hiddenVideo].map((video) => video?.id)
+        const response = await fetch(
+          `${url}?id=in.(${ids.join(',')})&visible=eq.true&select=id`,
+          {
+            body: JSON.stringify({ visible: false }),
+            headers: {
+              'Content-Type': 'application/json',
+              prefer: 'return=representation',
+            },
+            method: 'PATCH',
+          },
+        )
+
         expect(response.status).toBe(200)
         expect(await response.json()).toEqual(targets.map(({ id }) => ({ id })))
 
@@ -370,11 +379,10 @@ describe('Supabase Handlers', () => {
         }
         expect(visibleById.get(hiddenVideo?.id ?? '')).toBe(false)
       } finally {
-        await fetch(`${url}?id=in.(${targets.map(({ id }) => id).join(',')})`, {
-          body: JSON.stringify({ visible: true }),
-          headers: { 'Content-Type': 'application/json' },
-          method: 'PATCH',
-        })
+        await setVisible(
+          [hiddenVideo, ...targets].map((video) => video?.id ?? ''),
+          true,
+        )
       }
     })
   })
