@@ -66,7 +66,7 @@ describe('getAllTerms', () => {
     const { client, requests } = createMockSupabase(rows)
 
     // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
-    const terms = await getAllTerms(client as any)
+    const terms = await Array.fromAsync(getAllTerms(client as any))
 
     expect(terms).toHaveLength(1_202)
     expect(new Set(terms.map(({ id }) => id)).size).toBe(1_202)
@@ -81,8 +81,10 @@ describe('getAllTerms', () => {
     const rows = createRows(25)
     const { client } = createMockSupabase(rows, { maxRows: 10 })
 
-    // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
-    const terms = await getAllTerms(client as any, { pageSize: 20 })
+    const terms = await Array.fromAsync(
+      // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
+      getAllTerms(client as any, { pageSize: 20 }),
+    )
 
     expect(terms.map(({ term }) => term)).toEqual(rows.map(({ term }) => term))
   })
@@ -91,7 +93,26 @@ describe('getAllTerms', () => {
     const { client } = createMockSupabase([])
 
     // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
-    expect(await getAllTerms(client as any)).toEqual([])
+    expect(await Array.fromAsync(getAllTerms(client as any))).toEqual([])
+  })
+
+  it('should throw when a page does not move past the previous one', async () => {
+    const rows = createRows(2)
+    const builder = {
+      gt: () => builder,
+      limit: () => builder,
+      order: () => builder,
+      select: () => builder,
+      // biome-ignore lint/suspicious/noThenProperty: Mimics the awaitable query builder of Supabase
+      then: <T>(resolve: (value: { data: Row[]; error: null }) => T) =>
+        Promise.resolve(resolve({ data: rows, error: null })),
+    }
+    const client = { from: () => builder }
+
+    await expect(
+      // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
+      Array.fromAsync(getAllTerms(client as any)),
+    ).rejects.toThrow('Pagination did not advance')
   })
 
   it('should throw when the query fails', async () => {
@@ -107,6 +128,8 @@ describe('getAllTerms', () => {
     const client = { from: () => builder }
 
     // biome-ignore lint/suspicious/noExplicitAny: Mocked Supabase client
-    await expect(getAllTerms(client as any)).rejects.toThrow('Database error')
+    await expect(Array.fromAsync(getAllTerms(client as any))).rejects.toThrow(
+      'Database error',
+    )
   })
 })

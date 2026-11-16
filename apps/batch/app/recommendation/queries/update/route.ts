@@ -143,12 +143,9 @@ export async function POST(request: NextRequest) {
       queriesWithScores.push({ query, score })
     }
 
-    // Get all terms from the database
-    const terms = await getAllTerms(supabaseClient)
-
     // Build a map from all terms/synonyms (lowercase) to their canonical term
     const termMap = new Map<string, string>()
-    for (const { term, synonyms } of terms) {
+    for await (const { term, synonyms } of getAllTerms(supabaseClient)) {
       const lowerTerm = term.toLowerCase()
       // Map the term to itself
       termMap.set(lowerTerm, term)
