@@ -1,9 +1,9 @@
 -- Storage bucket for video thumbnails (#7133)
 --
 -- Thumbnails are stored in the `thumbnails` bucket and registered in the
--- `thumbnails` table. The production bucket was created by hand before
--- migrations managed storage, so a fresh local Supabase had no bucket and
--- every upload failed with "Bucket not found".
+-- `thumbnails` table. The bucket already exists in production, but no
+-- migration created it, so a fresh local Supabase had no bucket and every
+-- upload failed with "Bucket not found".
 --
 -- Private: objects are served through the /images/thumbnails/[id] routes of
 -- the web and admin apps, which sign URLs with the service role. No
