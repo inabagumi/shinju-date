@@ -1,34 +1,29 @@
 # @shinju-date/retryable-fetch
 
-リトライ機能付きの fetch ユーティリティを提供するパッケージ。
+一時的な失敗を再試行する `fetch`。
 
-## 構成
-
-- **p-retry**: リトライロジック
-- **TypeScript**: 型安全な fetch 実装
-
-## 使用方法
+## 使い方
 
 ```typescript
-import { retryableFetch } from '@shinju-date/retryable-fetch'
+import retryableFetch from '@shinju-date/retryable-fetch'
 
-// リトライ機能付きfetchの使用例
-const response = await retryableFetch('https://api.example.com/data', {
-  method: 'GET',
-  retries: 3,
-  retryDelay: 1000,
-})
+const response = await retryableFetch('https://api.example.com/data')
+
+if (!response.ok) {
+  throw new Error(`Request failed with ${response.status}`)
+}
 ```
 
-## 機能
+## 動作
 
-- 自動リトライ機能
-- カスタマイズ可能なリトライ設定
-- エラーハンドリング
+- 通信の失敗と `408` / `429` / `5xx` を、最大5回再試行する（間隔は [p-retry](https://github.com/sindresorhus/p-retry) の既定）
+- `GET` / `HEAD` 以外は再試行しない
+- 応答は、`4xx` や最後の `5xx` も含めてそのまま返す。`response.ok` は呼び出し元で確かめる
+- `signal` が中断されたら再試行をやめる
 
 ## 開発
 
 ```bash
-# ビルド
 pnpm run build
+pnpm run test
 ```

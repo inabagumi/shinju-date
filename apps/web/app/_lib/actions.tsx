@@ -4,13 +4,10 @@ import { COOKIE_NAMES } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
-import { track } from '@vercel/analytics/server'
 import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 import { fetchActiveTalents, type Talent } from '@/lib/fetchers'
 import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
 import { supabaseClient } from '@/lib/supabase'
-import { getVideosPath } from '@/lib/video-kind-filter'
 import {
   type RenderedAnnouncement,
   renderAnnouncement,
@@ -74,19 +71,6 @@ export async function dismissAnnouncement(announcementId: string) {
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
   })
-}
-
-export async function search(formData: FormData) {
-  const value = formData.get('query')
-  const query = typeof value === 'string' ? value : ''
-
-  if (query) {
-    await track('Search', {
-      query,
-    })
-  }
-
-  redirect(getVideosPath(query, 'all'))
 }
 
 export type Suggestion = {

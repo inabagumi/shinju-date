@@ -1,10 +1,11 @@
 import { isLiveTwitchVideoId } from '@shinju-date/constants'
+import type { Enums } from '@shinju-date/database'
 
-export type VideoPlatform = 'youtube' | 'twitch'
+export type VideoPlatform = Enums<'platform_type'>
 
-export type VideoStatus = 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
+export type VideoStatus = Enums<'video_status'>
 
-export type TwitchVideoType = 'archive' | 'highlight' | 'upload' | 'clip'
+export type TwitchVideoType = Enums<'twitch_video_type'>
 
 export interface GetVideoExternalUrlParams {
   platform: VideoPlatform

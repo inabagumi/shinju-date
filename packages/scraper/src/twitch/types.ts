@@ -3,6 +3,7 @@ import type {
   TwitchStream,
   TwitchUser,
   TwitchVideo,
+  TwitchVideoFilter,
   TwitchVideoPage,
 } from '@shinju-date/twitch-api-client'
 import type {
@@ -16,10 +17,9 @@ export type {
   TwitchStream,
   TwitchUser,
   TwitchVideo,
+  TwitchVideoFilter,
   TwitchVideoPage,
 }
-
-export type TwitchVideoFilter = 'archive' | 'highlight' | 'upload' | 'all'
 
 /**
  * The Helix calls a Twitch scraper makes. Defaults to the implementations of

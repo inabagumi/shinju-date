@@ -1,47 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { setupActionTest } from '@/test/action-harness'
 import { syncVideoWithTwitch } from '../sync'
 
-vi.mock('@/lib/supabase', () => ({
-  createSupabaseServerClient: vi.fn(),
-}))
-
-// Server Action の認証ガードを通過させ、各テストでモックした Supabase クライアントを渡す
-vi.mock('@/lib/auth', async (importOriginal) => {
-  const { createSupabaseServerClient } = await import('@/lib/supabase')
-
-  return {
-    ...(await importOriginal<typeof import('@/lib/auth')>()),
-    requireAuthenticatedUser: vi.fn(async () => ({
-      supabaseClient: await createSupabaseServerClient(),
-      user: { id: 'test-user-id' },
-    })),
-  }
-})
-
-vi.mock('@shinju-date/logger', () => ({
-  logger: {
-    error: vi.fn(),
-    warn: vi.fn(),
-  },
-}))
-
-vi.mock('@/lib/audit-log', () => ({
-  createAuditLog: vi.fn().mockResolvedValue(undefined),
-}))
-
-vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
-}))
-
-vi.mock('@shinju-date/web-cache', () => ({
-  revalidateTags: vi.fn(),
-}))
-
-vi.mock('@shinju-date/temporal-fns', () => ({
-  toDBString: vi.fn((instant: { toString: () => string } | string) =>
-    typeof instant === 'string' ? instant : instant.toString(),
-  ),
-}))
+const test = setupActionTest()
+const { supabase } = test
 
 vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
   Temporal.Instant.from('2024-11-24T17:00:00Z'),
@@ -67,55 +29,23 @@ const twitchVideoRowId = '14000000-0000-0000-0000-000000000101'
 const twitchVideoId = '1234567890'
 
 describe('syncVideoWithTwitch', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
   it('should update archive video metadata from Helix Videos API', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-    const { createAuditLog } = await import('@/lib/audit-log')
     const { getVideos } = await import('@shinju-date/twitch-api-client')
 
-    const mockUpdate = vi.fn().mockReturnThis()
-    const mockEq = vi.fn().mockResolvedValue({ error: null })
-    mockUpdate.mockReturnValue({ eq: mockEq })
-
-    const mockSupabaseClient = {
-      from: vi.fn((table: string) => {
-        if (table === 'videos') {
-          return {
-            eq: vi.fn().mockReturnThis(),
-            select: vi.fn().mockReturnThis(),
-            single: vi.fn().mockResolvedValue({
-              data: {
-                duration: 'PT3H',
-                id: videoId,
-                platform: 'twitch',
-                published_at: '2024-01-01T00:00:00Z',
-                status: 'ENDED',
-                title: 'Old Title',
-                twitch_video: {
-                  id: twitchVideoRowId,
-                  twitch_video_id: twitchVideoId,
-                  type: 'archive',
-                },
-                visible: true,
-              },
-              error: null,
-            }),
-            update: mockUpdate,
-          }
-        }
-        return {
-          eq: vi.fn().mockReturnThis(),
-          update: vi.fn().mockReturnThis(),
-        }
-      }),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
+    supabase.on('select', 'videos', {
+      duration: 'PT3H',
+      id: videoId,
+      platform: 'twitch',
+      published_at: '2024-01-01T00:00:00Z',
+      status: 'ENDED',
+      title: 'Old Title',
+      twitch_video: {
+        id: twitchVideoRowId,
+        twitch_video_id: twitchVideoId,
+        type: 'archive',
+      },
+      visible: true,
+    })
 
     async function* mockGetVideos() {
       yield {
@@ -144,13 +74,15 @@ describe('syncVideoWithTwitch', () => {
 
     expect(result).toEqual({ success: true })
     expect(getVideos).toHaveBeenCalledWith({ ids: [twitchVideoId] })
-    expect(mockUpdate).toHaveBeenCalledWith(
+    expect(supabase.calls('update', 'videos')).toEqual([
       expect.objectContaining({
-        duration: 'PT1H',
-        title: 'New Archive Title',
+        body: expect.objectContaining({
+          duration: 'PT1H',
+          title: 'New Archive Title',
+        }),
       }),
-    )
-    expect(createAuditLog).toHaveBeenCalledWith(
+    ])
+    test.expectAuditLog(
       'VIDEO_SYNC',
       'videos',
       videoId,
@@ -161,52 +93,26 @@ describe('syncVideoWithTwitch', () => {
   })
 
   it('should sync clip metadata from Helix Clips API', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
     const { getClips, getVideos } = await import(
       '@shinju-date/twitch-api-client'
     )
 
-    const mockUpdate = vi.fn().mockReturnThis()
-    const mockEq = vi.fn().mockResolvedValue({ error: null })
-    mockUpdate.mockReturnValue({ eq: mockEq })
-
     const clipId = 'AwkwardHelplessSalamanderSwiftRage'
-    const mockSupabaseClient = {
-      from: vi.fn((table: string) => {
-        if (table === 'videos') {
-          return {
-            eq: vi.fn().mockReturnThis(),
-            select: vi.fn().mockReturnThis(),
-            single: vi.fn().mockResolvedValue({
-              data: {
-                duration: 'PT30S',
-                id: videoId,
-                platform: 'twitch',
-                published_at: '2024-01-01T00:00:00Z',
-                status: 'PUBLISHED',
-                title: 'Old Clip',
-                twitch_video: {
-                  id: twitchVideoRowId,
-                  twitch_video_id: clipId,
-                  type: 'clip',
-                },
-                visible: true,
-              },
-              error: null,
-            }),
-            update: mockUpdate,
-          }
-        }
-        return {
-          eq: vi.fn().mockReturnThis(),
-          update: vi.fn().mockReturnThis(),
-        }
-      }),
-    }
 
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
+    supabase.on('select', 'videos', {
+      duration: 'PT30S',
+      id: videoId,
+      platform: 'twitch',
+      published_at: '2024-01-01T00:00:00Z',
+      status: 'PUBLISHED',
+      title: 'Old Clip',
+      twitch_video: {
+        id: twitchVideoRowId,
+        twitch_video_id: clipId,
+        type: 'clip',
+      },
+      visible: true,
+    })
 
     async function* mockGetClips() {
       yield {
@@ -236,47 +142,33 @@ describe('syncVideoWithTwitch', () => {
     expect(result).toEqual({ success: true })
     expect(getClips).toHaveBeenCalledWith({ ids: [clipId] })
     expect(getVideos).not.toHaveBeenCalled()
-    expect(mockUpdate).toHaveBeenCalledWith(
+    expect(supabase.calls('update', 'videos')).toEqual([
       expect.objectContaining({
-        duration: 'PT25S',
-        title: 'New Clip Title',
+        body: expect.objectContaining({
+          duration: 'PT25S',
+          title: 'New Clip Title',
+        }),
       }),
-    )
+    ])
   })
 
   it('should return already up to date when nothing changed', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
     const { getVideos } = await import('@shinju-date/twitch-api-client')
-    const { createAuditLog } = await import('@/lib/audit-log')
 
-    const mockSupabaseClient = {
-      from: vi.fn(() => ({
-        eq: vi.fn().mockReturnThis(),
-        select: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({
-          data: {
-            duration: 'PT1H',
-            id: videoId,
-            platform: 'twitch',
-            published_at: '2024-06-01T12:00:00Z',
-            status: 'ENDED',
-            title: 'Same Title',
-            twitch_video: {
-              id: twitchVideoRowId,
-              twitch_video_id: twitchVideoId,
-              type: 'archive',
-            },
-            visible: true,
-          },
-          error: null,
-        }),
-        update: vi.fn(),
-      })),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
+    supabase.on('select', 'videos', {
+      duration: 'PT1H',
+      id: videoId,
+      platform: 'twitch',
+      published_at: '2024-06-01T12:00:00Z',
+      status: 'ENDED',
+      title: 'Same Title',
+      twitch_video: {
+        id: twitchVideoRowId,
+        twitch_video_id: twitchVideoId,
+        type: 'archive',
+      },
+      visible: true,
+    })
 
     async function* mockGetVideos() {
       yield {
@@ -308,29 +200,12 @@ describe('syncVideoWithTwitch', () => {
       success: true,
       unchanged: true,
     })
-    expect(createAuditLog).not.toHaveBeenCalled()
+    test.expectNoAuditLog()
   })
 
   it('should return error when the video row is not found', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-
-    const mockSupabaseClient = {
-      from: vi.fn(() => ({
-        eq: vi.fn().mockReturnThis(),
-        select: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({
-          data: null,
-          error: {
-            code: 'PGRST116',
-            message: 'The result contains 0 rows',
-          },
-        }),
-      })),
-    }
-
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
+    // An unanswered `single()` select gets PGRST116 (0 rows).
+    supabase.on('select', 'videos', [])
 
     const result = await syncVideoWithTwitch(videoId)
 
@@ -354,52 +229,18 @@ interface SavedTwitchVideoRow {
   }
 }
 
-function createMockTwitchVideoClient(row: SavedTwitchVideoRow) {
-  const mockVideosEq = vi.fn().mockResolvedValue({ error: null })
-  const mockVideosUpdate = vi.fn().mockReturnValue({ eq: mockVideosEq })
-  const mockTwitchVideosEq = vi.fn().mockResolvedValue({ error: null })
-  const mockTwitchVideosUpdate = vi
-    .fn()
-    .mockReturnValue({ eq: mockTwitchVideosEq })
-
-  const mockSupabaseClient = {
-    from: vi.fn((table: string) => {
-      if (table === 'videos') {
-        return {
-          eq: vi.fn().mockReturnThis(),
-          select: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({
-            data: {
-              ...row,
-              id: videoId,
-              platform: 'twitch',
-              twitch_video: {
-                ...row.twitch_video,
-                id: twitchVideoRowId,
-                twitch_user: { twitch_user_id: twitchUserId },
-              },
-              visible: true,
-            },
-            error: null,
-          }),
-          update: mockVideosUpdate,
-        }
-      }
-
-      if (table === 'twitch_videos') {
-        return { update: mockTwitchVideosUpdate }
-      }
-
-      throw new Error(`Unexpected table: ${table}`)
-    }),
-  }
-
-  return {
-    mockSupabaseClient,
-    mockTwitchVideosEq,
-    mockTwitchVideosUpdate,
-    mockVideosUpdate,
-  }
+function answerSavedTwitchVideo(row: SavedTwitchVideoRow): void {
+  supabase.on('select', 'videos', {
+    ...row,
+    id: videoId,
+    platform: 'twitch',
+    twitch_video: {
+      ...row.twitch_video,
+      id: twitchVideoRowId,
+      twitch_user: { twitch_user_id: twitchUserId },
+    },
+    visible: true,
+  })
 }
 
 function liveStream(title: string) {
@@ -443,33 +284,23 @@ function archive(id: string, title: string) {
 }
 
 describe('syncVideoWithTwitch for broadcasts', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
   it('keeps an on-air placeholder LIVE and follows the stream title', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-    const { createAuditLog } = await import('@/lib/audit-log')
     const { getArchiveOfStream, getLiveStream, getVideos } = await import(
       '@shinju-date/twitch-api-client'
     )
 
-    const { mockSupabaseClient, mockTwitchVideosUpdate, mockVideosUpdate } =
-      createMockTwitchVideoClient({
-        duration: 'P0D',
-        published_at: '2024-06-01T12:00:00Z',
-        status: 'LIVE',
-        title: 'Old Stream Title',
-        twitch_video: {
-          stream_id: streamId,
-          twitch_video_id: placeholderId,
-          type: null,
-        },
-      })
+    answerSavedTwitchVideo({
+      duration: 'P0D',
+      published_at: '2024-06-01T12:00:00Z',
+      status: 'LIVE',
+      title: 'Old Stream Title',
+      twitch_video: {
+        stream_id: streamId,
+        twitch_video_id: placeholderId,
+        type: null,
+      },
+    })
 
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
     vi.mocked(getLiveStream).mockResolvedValue(liveStream('New Stream Title'))
 
     const result = await syncVideoWithTwitch(videoId)
@@ -485,46 +316,39 @@ describe('syncVideoWithTwitch for broadcasts', () => {
     expect(getArchiveOfStream).not.toHaveBeenCalled()
     // The placeholder is not a Helix video ID and must not be looked up.
     expect(getVideos).not.toHaveBeenCalled()
-    expect(mockVideosUpdate).toHaveBeenCalledWith({
-      title: 'New Stream Title',
-      updated_at: '2024-11-24T17:00:00Z',
-    })
-    expect(mockTwitchVideosUpdate).not.toHaveBeenCalled()
-    expect(createAuditLog).toHaveBeenCalledWith(
-      'VIDEO_SYNC',
-      'videos',
-      videoId,
+    expect(
+      supabase.calls('update', 'videos').map((request) => request.body),
+    ).toEqual([
       {
-        after: { title: 'New Stream Title' },
-        before: { title: 'Old Stream Title' },
-        platform: 'twitch',
+        title: 'New Stream Title',
+        updated_at: '2024-11-24T17:00:00Z',
       },
-    )
+    ])
+    expect(supabase.calls('update', 'twitch_videos')).toHaveLength(0)
+    test.expectAuditLog('VIDEO_SYNC', 'videos', videoId, {
+      after: { title: 'New Stream Title' },
+      before: { title: 'Old Stream Title' },
+      platform: 'twitch',
+    })
   })
 
   it('does not end a broadcast whose archive was linked while on air', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-    const { createAuditLog } = await import('@/lib/audit-log')
     const { getLiveStream, getVideos } = await import(
       '@shinju-date/twitch-api-client'
     )
 
-    const { mockSupabaseClient, mockVideosUpdate } =
-      createMockTwitchVideoClient({
-        duration: 'P0D',
-        published_at: '2024-06-01T12:00:00Z',
-        status: 'LIVE',
-        title: 'Stream Title',
-        twitch_video: {
-          stream_id: streamId,
-          twitch_video_id: '900',
-          type: 'archive',
-        },
-      })
+    answerSavedTwitchVideo({
+      duration: 'P0D',
+      published_at: '2024-06-01T12:00:00Z',
+      status: 'LIVE',
+      title: 'Stream Title',
+      twitch_video: {
+        stream_id: streamId,
+        twitch_video_id: '900',
+        type: 'archive',
+      },
+    })
 
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
     vi.mocked(getLiveStream).mockResolvedValue(liveStream('Stream Title'))
 
     const result = await syncVideoWithTwitch(videoId)
@@ -535,23 +359,16 @@ describe('syncVideoWithTwitch for broadcasts', () => {
       unchanged: true,
     })
     expect(getVideos).not.toHaveBeenCalled()
-    expect(mockVideosUpdate).not.toHaveBeenCalled()
-    expect(createAuditLog).not.toHaveBeenCalled()
+    expect(supabase.calls('update', 'videos')).toHaveLength(0)
+    test.expectNoAuditLog()
   })
 
   it('ends an offline placeholder and takes over its archive', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-    const { createAuditLog } = await import('@/lib/audit-log')
     const { getArchiveOfStream, getLiveStream } = await import(
       '@shinju-date/twitch-api-client'
     )
 
-    const {
-      mockSupabaseClient,
-      mockTwitchVideosEq,
-      mockTwitchVideosUpdate,
-      mockVideosUpdate,
-    } = createMockTwitchVideoClient({
+    answerSavedTwitchVideo({
       duration: 'P0D',
       published_at: '2024-06-01T12:00:00Z',
       status: 'LIVE',
@@ -563,9 +380,6 @@ describe('syncVideoWithTwitch for broadcasts', () => {
       },
     })
 
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
     vi.mocked(getLiveStream).mockResolvedValue(null)
     vi.mocked(getArchiveOfStream).mockResolvedValue(
       archive('901', 'Archive Title'),
@@ -578,19 +392,27 @@ describe('syncVideoWithTwitch for broadcasts', () => {
       streamId,
       userId: twitchUserId,
     })
-    expect(mockTwitchVideosUpdate).toHaveBeenCalledWith({
-      twitch_video_id: '901',
-      type: 'archive',
-    })
-    expect(mockTwitchVideosEq).toHaveBeenCalledWith('id', twitchVideoRowId)
-    expect(mockVideosUpdate).toHaveBeenCalledWith({
-      duration: 'PT2H',
-      published_at: '2024-06-01T12:00:05Z',
-      status: 'ENDED',
-      title: 'Archive Title',
-      updated_at: '2024-11-24T17:00:00Z',
-    })
-    expect(createAuditLog).toHaveBeenCalledWith(
+    expect(supabase.calls('update', 'twitch_videos')).toEqual([
+      expect.objectContaining({
+        body: {
+          twitch_video_id: '901',
+          type: 'archive',
+        },
+        query: expect.objectContaining({ id: `eq.${twitchVideoRowId}` }),
+      }),
+    ])
+    expect(
+      supabase.calls('update', 'videos').map((request) => request.body),
+    ).toEqual([
+      {
+        duration: 'PT2H',
+        published_at: '2024-06-01T12:00:05Z',
+        status: 'ENDED',
+        title: 'Archive Title',
+        updated_at: '2024-11-24T17:00:00Z',
+      },
+    ])
+    test.expectAuditLog(
       'VIDEO_SYNC',
       'videos',
       videoId,
@@ -604,28 +426,22 @@ describe('syncVideoWithTwitch for broadcasts', () => {
   })
 
   it('only ends an offline placeholder whose broadcast has no archive', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
-    const { createAuditLog } = await import('@/lib/audit-log')
     const { getArchiveOfStream, getLiveStream } = await import(
       '@shinju-date/twitch-api-client'
     )
 
-    const { mockSupabaseClient, mockTwitchVideosUpdate, mockVideosUpdate } =
-      createMockTwitchVideoClient({
-        duration: 'P0D',
-        published_at: '2024-06-01T12:00:00Z',
-        status: 'LIVE',
-        title: 'Stream Title',
-        twitch_video: {
-          stream_id: streamId,
-          twitch_video_id: placeholderId,
-          type: null,
-        },
-      })
+    answerSavedTwitchVideo({
+      duration: 'P0D',
+      published_at: '2024-06-01T12:00:00Z',
+      status: 'LIVE',
+      title: 'Stream Title',
+      twitch_video: {
+        stream_id: streamId,
+        twitch_video_id: placeholderId,
+        type: null,
+      },
+    })
 
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
     vi.mocked(getLiveStream).mockResolvedValue(null)
     vi.mocked(getArchiveOfStream).mockResolvedValue(null)
 
@@ -636,45 +452,39 @@ describe('syncVideoWithTwitch for broadcasts', () => {
         '配信は終了しています。アーカイブが見つからないため、配信の終了のみ反映しました。',
       success: true,
     })
-    expect(mockTwitchVideosUpdate).not.toHaveBeenCalled()
-    expect(mockVideosUpdate).toHaveBeenCalledWith({
-      status: 'ENDED',
-      updated_at: '2024-11-24T17:00:00Z',
-    })
-    expect(createAuditLog).toHaveBeenCalledWith(
-      'VIDEO_SYNC',
-      'videos',
-      videoId,
+    expect(supabase.calls('update', 'twitch_videos')).toHaveLength(0)
+    expect(
+      supabase.calls('update', 'videos').map((request) => request.body),
+    ).toEqual([
       {
-        after: { status: 'ENDED' },
-        before: { status: 'LIVE' },
-        platform: 'twitch',
+        status: 'ENDED',
+        updated_at: '2024-11-24T17:00:00Z',
       },
-    )
+    ])
+    test.expectAuditLog('VIDEO_SYNC', 'videos', videoId, {
+      after: { status: 'ENDED' },
+      before: { status: 'LIVE' },
+      platform: 'twitch',
+    })
   })
 
   it('treats an ended placeholder without an archive as up to date', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
     const { getArchiveOfStream, getLiveStream } = await import(
       '@shinju-date/twitch-api-client'
     )
 
-    const { mockSupabaseClient, mockVideosUpdate } =
-      createMockTwitchVideoClient({
-        duration: 'P0D',
-        published_at: '2024-06-01T12:00:00Z',
-        status: 'ENDED',
-        title: 'Stream Title',
-        twitch_video: {
-          stream_id: streamId,
-          twitch_video_id: placeholderId,
-          type: null,
-        },
-      })
+    answerSavedTwitchVideo({
+      duration: 'P0D',
+      published_at: '2024-06-01T12:00:00Z',
+      status: 'ENDED',
+      title: 'Stream Title',
+      twitch_video: {
+        stream_id: streamId,
+        twitch_video_id: placeholderId,
+        type: null,
+      },
+    })
 
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
     vi.mocked(getLiveStream).mockResolvedValue(null)
     vi.mocked(getArchiveOfStream).mockResolvedValue(null)
 
@@ -685,31 +495,26 @@ describe('syncVideoWithTwitch for broadcasts', () => {
       success: true,
       unchanged: true,
     })
-    expect(mockVideosUpdate).not.toHaveBeenCalled()
+    expect(supabase.calls('update', 'videos')).toHaveLength(0)
   })
 
   it('ends a linked archive once its broadcast went offline', async () => {
-    const { createSupabaseServerClient } = await import('@/lib/supabase')
     const { getArchiveOfStream, getLiveStream, getVideos } = await import(
       '@shinju-date/twitch-api-client'
     )
 
-    const { mockSupabaseClient, mockTwitchVideosUpdate, mockVideosUpdate } =
-      createMockTwitchVideoClient({
-        duration: 'P0D',
-        published_at: '2024-06-01T12:00:00Z',
-        status: 'LIVE',
-        title: 'Stream Title',
-        twitch_video: {
-          stream_id: streamId,
-          twitch_video_id: '900',
-          type: 'archive',
-        },
-      })
+    answerSavedTwitchVideo({
+      duration: 'P0D',
+      published_at: '2024-06-01T12:00:00Z',
+      status: 'LIVE',
+      title: 'Stream Title',
+      twitch_video: {
+        stream_id: streamId,
+        twitch_video_id: '900',
+        type: 'archive',
+      },
+    })
 
-    vi.mocked(createSupabaseServerClient).mockResolvedValue(
-      mockSupabaseClient as never,
-    )
     vi.mocked(getLiveStream).mockResolvedValue(null)
 
     async function* mockGetVideos() {
@@ -723,13 +528,15 @@ describe('syncVideoWithTwitch for broadcasts', () => {
     expect(result).toEqual({ success: true })
     expect(getArchiveOfStream).not.toHaveBeenCalled()
     expect(getVideos).toHaveBeenCalledWith({ ids: ['900'] })
-    expect(mockTwitchVideosUpdate).not.toHaveBeenCalled()
-    expect(mockVideosUpdate).toHaveBeenCalledWith(
+    expect(supabase.calls('update', 'twitch_videos')).toHaveLength(0)
+    expect(supabase.calls('update', 'videos')).toEqual([
       expect.objectContaining({
-        duration: 'PT2H',
-        status: 'ENDED',
-        title: 'Archive Title',
+        body: expect.objectContaining({
+          duration: 'PT2H',
+          status: 'ENDED',
+          title: 'Archive Title',
+        }),
       }),
-    )
+    ])
   })
 })

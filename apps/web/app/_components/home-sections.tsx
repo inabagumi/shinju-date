@@ -21,7 +21,7 @@ import ShortsCarousel, { ShortsCarouselSkeleton } from './shorts-carousel'
 import Timeline, { TimelineSkeleton } from './timeline'
 
 /** 新着動画は1段ぶん（PC 4列・タブレット 2列×2段・モバイル 4件）だけ表示する */
-export const RECENT_VIDEOS_LIMIT = 4
+const RECENT_VIDEOS_LIMIT = 4
 
 const DATE_TIME_FORMAT_OPTIONS = {
   dateStyle: 'short',

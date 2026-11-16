@@ -3,6 +3,7 @@ import type { Tables } from '@shinju-date/database'
 import { range } from '@shinju-date/helpers'
 import { formatDateTime } from '@shinju-date/temporal-fns'
 import {
+  Button,
   EmptyState,
   Table,
   TableBody,
@@ -15,15 +16,21 @@ import { Megaphone } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
+import { ConfirmDialog } from '@/components/confirm-dialog'
+import { deleteAnnouncementAction } from '../_actions'
 import { AnnouncementModal } from './announcement-modal'
 import { LevelBadge, StatusBadge } from './badges'
-import { DeleteConfirmDialog } from './delete-confirm-dialog'
 
 /**
  * Markdown の本文。`prose` の色を両モードのセマンティックカラーに合わせる。
  */
 const proseClassName =
   'prose prose-sm max-w-text text-foreground [--tw-prose-body:var(--color-foreground)] [--tw-prose-bold:var(--color-foreground)] [--tw-prose-bullets:var(--text-color-muted)] [--tw-prose-code:var(--color-foreground)] [--tw-prose-counters:var(--text-color-muted)] [--tw-prose-headings:var(--color-foreground)] [--tw-prose-links:var(--color-accent)]'
+
+/** 削除の確認文に入れるため、本文を50文字までに切り詰める */
+function truncateMessage(message: string): string {
+  return message.length > 50 ? `${message.substring(0, 50)}...` : message
+}
 
 function AnnouncementRow({
   announcement,
@@ -69,9 +76,17 @@ function AnnouncementRow({
       <TableCell>
         <div className="flex justify-end gap-4">
           <AnnouncementModal announcement={announcement} />
-          <DeleteConfirmDialog
-            announcementId={announcement.id}
-            announcementMessage={announcement.message}
+          <ConfirmDialog
+            confirmLabel="削除"
+            confirmVariant="danger"
+            description={`本当に「${truncateMessage(announcement.message)}」を削除しますか？この操作は取り消せません。`}
+            onConfirm={deleteAnnouncementAction.bind(null, announcement.id)}
+            title="お知らせを削除"
+            trigger={
+              <Button size="sm" variant="danger">
+                削除
+              </Button>
+            }
           />
         </div>
       </TableCell>
