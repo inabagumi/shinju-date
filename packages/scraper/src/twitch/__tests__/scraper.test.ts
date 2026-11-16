@@ -526,7 +526,7 @@ describe('TwitchScraper', () => {
 
     it('links an ended broadcast to the archive Twitch lists by now', async () => {
       respondWithSavedVideo(createSavedVideo({ status: 'ENDED' }))
-      const { scraper } = createScraper({ archives: [createVideo()] })
+      const { client, scraper } = createScraper({ archives: [createVideo()] })
 
       await expect(
         scraper.refreshVideo('video-1', TEST_NOW),
@@ -543,6 +543,12 @@ describe('TwitchScraper', () => {
         status: 'ENDED',
         thumbnail_id: 'thumb-new',
         title: 'Archive',
+      })
+      // A broadcast that ended long ago may be past the newest few archives.
+      expect(client.getVideosByUser).toHaveBeenCalledWith({
+        limit: 100,
+        type: 'archive',
+        userId: 'twitch-user-1',
       })
     })
 

@@ -2,6 +2,7 @@ import type { TablesUpdate } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
 import {
   getArchivedStreamId,
+  TWITCH_API_MAX_RESULTS,
   toLiveTwitchVideoId,
 } from '@shinju-date/twitch-api-client'
 import { countChanges } from '../internal/concurrency.js'
@@ -259,8 +260,9 @@ function toArchiveByStreamId(
 
 /**
  * Looks up the archive of one broadcast among the newest archives of its
- * broadcaster. Unlike {@link getArchivesOfEndedBroadcasts}, a failed lookup
- * rejects: it concerns a single broadcast.
+ * broadcaster, as deep as one Helix page goes. Unlike
+ * {@link getArchivesOfEndedBroadcasts}, a failed lookup rejects: it concerns a
+ * single broadcast, which may have ended long ago.
  */
 async function findArchiveOfBroadcast(
   fetcher: TwitchFetcher,
@@ -274,7 +276,7 @@ async function findArchiveOfBroadcast(
 
   const { failures, videos } = await fetcher.getRecentVideos(
     [saved.twitchUserId],
-    { type: 'archive' },
+    { limit: TWITCH_API_MAX_RESULTS, type: 'archive' },
   )
   const [failure] = failures
 
