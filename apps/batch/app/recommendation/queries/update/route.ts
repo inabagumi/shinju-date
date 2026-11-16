@@ -6,6 +6,7 @@ import { after, type NextRequest } from 'next/server'
 import { recommendationQueriesUpdate as ratelimit } from '@/lib/ratelimit'
 import { redisClient } from '@/lib/redis'
 import { supabaseClient } from '@/lib/supabase'
+import { getAllTerms } from './_lib/get-all-terms'
 
 const MONITOR_SLUG = '/recommendation/queries/update'
 
@@ -15,39 +16,6 @@ const WEIGHT_WEEKLY = 5.0
 const WEIGHT_ALL_TIME = 1.0
 
 export const maxDuration = 120
-
-async function getAllTerms({
-  page = 1,
-  perPage = 1_000,
-}: {
-  perPage?: number
-  page?: number
-} = {}) {
-  const { data: terms, error } = await supabaseClient
-    .from('terms')
-    .select('term, synonyms')
-    .order('updated_at', {
-      ascending: true,
-    })
-    .range((page - 1) * perPage, perPage * page - 1)
-
-  if (error) {
-    throw new TypeError(error.message, {
-      cause: error,
-    })
-  }
-
-  if (terms.length === perPage) {
-    const nextTerms = await getAllTerms({
-      page: page + 1,
-      perPage,
-    })
-
-    terms.push(...nextTerms)
-  }
-
-  return terms
-}
 
 export async function POST(request: NextRequest) {
   const cronSecure = process.env['CRON_SECRET']
@@ -176,7 +144,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get all terms from the database
-    const terms = await getAllTerms()
+    const terms = await getAllTerms(supabaseClient)
 
     // Build a map from all terms/synonyms (lowercase) to their canonical term
     const termMap = new Map<string, string>()
