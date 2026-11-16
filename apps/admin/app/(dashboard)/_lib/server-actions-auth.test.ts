@@ -1,44 +1,12 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
 /**
  * 未認証のリクエストで mutation 系 Server Action が更新処理を行わず、
  * 共通の未認証レスポンスを返すことを確認する。
  */
 
-const mocks = vi.hoisted(() => ({
-  adminFrom: vi.fn(),
-  createAuditLog: vi.fn(),
-  createSupabaseServerClient: vi.fn(),
-  getRedisClient: vi.fn(),
-  requireAuthenticatedUser: vi.fn(),
-  revalidatePath: vi.fn(),
-  revalidateTags: vi.fn(),
-}))
-
-vi.mock('@/lib/auth', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/auth')>()),
-  requireAuthenticatedUser: mocks.requireAuthenticatedUser,
-}))
-vi.mock('@/lib/supabase', () => ({
-  createSupabaseServerClient: mocks.createSupabaseServerClient,
-}))
-vi.mock('@/lib/supabase/admin', () => ({
-  supabaseClient: { from: mocks.adminFrom },
-}))
-vi.mock('@/lib/redis', () => ({
-  getRedisClient: mocks.getRedisClient,
-}))
-vi.mock('@/lib/audit-log', () => ({
-  createAuditLog: mocks.createAuditLog,
-}))
-vi.mock('next/cache', () => ({
-  revalidatePath: mocks.revalidatePath,
-}))
-vi.mock('@shinju-date/web-cache', () => ({
-  revalidateTags: mocks.revalidateTags,
-}))
-
 import { unauthenticatedFormState, unauthenticatedResult } from '@/lib/auth'
+import { setupActionTest } from '@/test/action-harness'
 import { updateUserEmail, updateUserPassword } from '../account/_actions'
 import {
   createAnnouncementAction,
@@ -105,6 +73,9 @@ import {
   disableMaintenanceMode,
   enableMaintenanceMode,
 } from './maintenance-mode-actions'
+
+const test = setupActionTest()
+const { supabase } = test
 
 const ID = '00000000-0000-4000-8000-000000000000'
 
@@ -231,25 +202,24 @@ const resultActions: [string, () => Promise<unknown>][] = [
 ]
 
 function expectNoSideEffects() {
-  expect(mocks.createSupabaseServerClient).not.toHaveBeenCalled()
-  expect(mocks.adminFrom).not.toHaveBeenCalled()
-  expect(mocks.getRedisClient).not.toHaveBeenCalled()
-  expect(mocks.createAuditLog).not.toHaveBeenCalled()
-  expect(mocks.revalidatePath).not.toHaveBeenCalled()
-  expect(mocks.revalidateTags).not.toHaveBeenCalled()
+  expect(test.createSupabaseServerClient).not.toHaveBeenCalled()
+  // No PostgREST request at all, through either client
+  expect(supabase.requests).toEqual([])
+  expect(test.getRedisClient).not.toHaveBeenCalled()
+  test.expectNoAuditLog()
+  test.expectNotRevalidated()
 }
 
 describe('mutation Server Actions without an authenticated user', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    mocks.requireAuthenticatedUser.mockResolvedValue(null)
+    test.signOut()
   })
 
   it.each(formActions)(
     '%s returns an unauthenticated FormState',
     async (_name, action) => {
       await expect(action()).resolves.toEqual(unauthenticatedFormState())
-      expect(mocks.requireAuthenticatedUser).toHaveBeenCalledOnce()
+      expect(test.requireAuthenticatedUser).toHaveBeenCalledOnce()
       expectNoSideEffects()
     },
   )
@@ -258,7 +228,7 @@ describe('mutation Server Actions without an authenticated user', () => {
     '%s returns an unauthenticated result',
     async (_name, action) => {
       await expect(action()).resolves.toEqual(unauthenticatedResult())
-      expect(mocks.requireAuthenticatedUser).toHaveBeenCalledOnce()
+      expect(test.requireAuthenticatedUser).toHaveBeenCalledOnce()
       expectNoSideEffects()
     },
   )
