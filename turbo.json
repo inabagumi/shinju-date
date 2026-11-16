@@ -25,21 +25,12 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        ".nitro/**",
-        ".output/**",
-        "!.output/cache/**",
-        ".vercel/output/**",
-        "dist/**"
-      ]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
-    "lint": {},
     "test": {
       "dependsOn": ["^build"]
     },
