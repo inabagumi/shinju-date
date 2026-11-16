@@ -1,25 +1,17 @@
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
-import {
-  Alert,
-  Badge,
-  Card,
-  CardContent,
-  CardHeader,
-  EmptyState,
-  PageHeader,
-} from '@shinju-date/ui'
+import { Alert, Badge, EmptyState, PageHeader } from '@shinju-date/ui'
 import { ChevronLeft, Video } from 'lucide-react'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { DetailList, DetailRow, Panel } from '@/components/panel'
 import { DetailCardsSkeleton, ListCardsSkeleton } from '@/components/skeletons'
 import { TalentStatusBadge } from '../_components/talent-status-badge'
 import { getRecentVideosForTalent } from '../_lib/get-recent-videos'
 import { getTalent } from '../_lib/get-talent'
 import { ChannelManager } from './_components/channel-manager'
-import { DetailList, DetailRow, PanelHeading } from './_components/detail-list'
 import { EditTalentForm } from './_components/edit-talent-form'
 import { SyncTalentButton } from './_components/sync-talent-button'
 import { TalentLifecycleActions } from './_components/talent-lifecycle-actions'
@@ -101,13 +93,10 @@ async function TalentProfile({ id }: { id: string }) {
         {!isDeleted ? (
           <EditTalentForm talent={talent} />
         ) : (
-          <Card variant="elevated">
-            <CardHeader className="pb-6">
-              <PanelHeading
-                description="削除済みのため編集できません。"
-                title="タレント情報"
-              />
-            </CardHeader>
+          <Panel
+            description="削除済みのため編集できません。"
+            title="タレント情報"
+          >
             <DetailList>
               <DetailRow label="タレント名">{talent.name}</DetailRow>
               <DetailRow label="読み仮名">
@@ -116,7 +105,7 @@ async function TalentProfile({ id }: { id: string }) {
                 )}
               </DetailRow>
             </DetailList>
-          </Card>
+          </Panel>
         )}
 
         {/* YouTube Channel Management */}
@@ -144,10 +133,7 @@ async function TalentProfile({ id }: { id: string }) {
         )}
 
         {/* Additional metadata */}
-        <Card variant="elevated">
-          <CardHeader className="pb-6">
-            <PanelHeading title="メタデータ" />
-          </CardHeader>
+        <Panel title="メタデータ">
           <DetailList>
             <DetailRow label="データベースID">
               <code className="font-mono break-all">{talent.id}</code>
@@ -177,23 +163,19 @@ async function TalentProfile({ id }: { id: string }) {
               </DetailRow>
             )}
           </DetailList>
-        </Card>
+        </Panel>
 
         {/* Lifecycle changes, kept apart from routine operations such as sync */}
         {!isDeleted && (
-          <Card variant="elevated">
-            <CardContent className="flex flex-wrap items-center justify-between gap-4">
-              <PanelHeading
-                description={
-                  isRetired
-                    ? 'アクティブに戻すか、タレントを削除します。削除すると紐づく動画も非公開になります。'
-                    : '引退にするか、タレントを削除します。削除すると紐づく動画も非公開になります。'
-                }
-                title="状態の変更"
-              />
-              <TalentLifecycleActions talent={talent} />
-            </CardContent>
-          </Card>
+          <Panel
+            actions={<TalentLifecycleActions talent={talent} />}
+            description={
+              isRetired
+                ? 'アクティブに戻すか、タレントを削除します。削除すると紐づく動画も非公開になります。'
+                : '引退にするか、タレントを削除します。削除すると紐づく動画も非公開になります。'
+            }
+            title="状態の変更"
+          />
         )}
       </div>
     </>
@@ -204,18 +186,19 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
   const recentVideos = await getRecentVideosForTalent(talentId, 5)
 
   return (
-    <Card className="mt-6" variant="elevated">
-      <CardHeader className="pb-6">
-        <PanelHeading description="直近に公開された動画一覧" title="最新動画" />
-      </CardHeader>
+    <Panel
+      className="mt-6"
+      description="直近に公開された動画一覧"
+      title="最新動画"
+    >
       {recentVideos.length === 0 ? (
         <EmptyState
-          className="border-t border-border"
+          className="-mx-6 -mb-6 border-t border-border"
           icon={<Video />}
           title="動画がありません。"
         />
       ) : (
-        <ul className="divide-y divide-border border-t border-border">
+        <ul className="-mx-6 -mb-6 divide-y divide-border border-t border-border">
           {recentVideos.map((video) => (
             <li className="px-6 py-4" key={video.id}>
               <div className="flex items-center gap-4">
@@ -273,7 +256,7 @@ async function RecentVideosSection({ talentId }: { talentId: string }) {
           ))}
         </ul>
       )}
-    </Card>
+    </Panel>
   )
 }
 

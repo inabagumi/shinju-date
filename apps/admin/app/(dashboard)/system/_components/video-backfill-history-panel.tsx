@@ -6,9 +6,6 @@ import {
   Alert,
   Badge,
   Button,
-  Card,
-  CardContent,
-  CardHeader,
   Dialog,
   DialogClose,
   DialogContent,
@@ -21,6 +18,7 @@ import {
 import { Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState, useTransition } from 'react'
+import { Panel } from '@/components/panel'
 import {
   getVideoBackfillHistoryAction,
   retryFailedVideoBackfillJobsAction,
@@ -230,112 +228,101 @@ export function VideoBackfillHistoryPanel() {
   const retryable = failures.filter((failure) => !failure.active).length
 
   return (
-    <Card
-      className="lg:col-span-2"
-      id="video-backfill-history"
-      variant="elevated"
-    >
-      <CardHeader>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h2 className="text-heading font-bold">過去動画の取り込みの履歴</h2>
-            <p className="mt-1 max-w-text text-meta text-muted">
-              終了した過去動画の取り込みの結果です。最後の取り込みが失敗したアカウントは、まとめて再試行できます。
-            </p>
-          </div>
-          <Dialog onOpenChange={setOpen} open={open}>
-            <Button
-              className="whitespace-nowrap"
-              disabled={isPending || retryable === 0}
-              onClick={() => setOpen(true)}
-              size="sm"
-              variant="secondary"
-            >
-              {isPending && (
-                <Loader2
-                  aria-hidden="true"
-                  className="mr-2 size-4 animate-spin"
-                />
-              )}
-              失敗したジョブを再試行
-            </Button>
-            <DialogPortal>
-              <DialogOverlay />
-              <DialogContent>
-                <DialogTitle>失敗したジョブを再試行</DialogTitle>
-                <DialogDescription>
-                  最後の取り込みが失敗した {formatNumber(retryable)}
-                  件のアカウントの過去動画の取り込みを、もう一度キューに追加しますか？
-                  処理はバックグラウンドで順番に行われます。
-                </DialogDescription>
-                <div className="flex justify-end gap-2">
-                  <DialogClose asChild>
-                    <Button disabled={isPending} variant="secondary">
-                      キャンセル
-                    </Button>
-                  </DialogClose>
-                  <Button
-                    disabled={isPending}
-                    onClick={retry}
-                    variant="primary"
-                  >
-                    {isPending ? '追加中...' : '再試行する'}
+    <Panel
+      actions={
+        <Dialog onOpenChange={setOpen} open={open}>
+          <Button
+            className="whitespace-nowrap"
+            disabled={isPending || retryable === 0}
+            onClick={() => setOpen(true)}
+            size="sm"
+            variant="secondary"
+          >
+            {isPending && (
+              <Loader2
+                aria-hidden="true"
+                className="mr-2 size-4 animate-spin"
+              />
+            )}
+            失敗したジョブを再試行
+          </Button>
+          <DialogPortal>
+            <DialogOverlay />
+            <DialogContent>
+              <DialogTitle>失敗したジョブを再試行</DialogTitle>
+              <DialogDescription>
+                最後の取り込みが失敗した {formatNumber(retryable)}
+                件のアカウントの過去動画の取り込みを、もう一度キューに追加しますか？
+                処理はバックグラウンドで順番に行われます。
+              </DialogDescription>
+              <div className="flex justify-end gap-2">
+                <DialogClose asChild>
+                  <Button disabled={isPending} variant="secondary">
+                    キャンセル
                   </Button>
-                </div>
-              </DialogContent>
-            </DialogPortal>
-          </Dialog>
+                </DialogClose>
+                <Button disabled={isPending} onClick={retry} variant="primary">
+                  {isPending ? '追加中...' : '再試行する'}
+                </Button>
+              </div>
+            </DialogContent>
+          </DialogPortal>
+        </Dialog>
+      }
+      className="lg:col-span-2"
+      description="終了した過去動画の取り込みの結果です。最後の取り込みが失敗したアカウントは、まとめて再試行できます。"
+      id="video-backfill-history"
+      title="過去動画の取り込みの履歴"
+    >
+      {state !== null && loadError && (
+        <div
+          className="mb-4 rounded-control bg-danger/10 p-3 text-meta text-danger"
+          role="alert"
+        >
+          {loadError}
         </div>
-        {state !== null && loadError && (
-          <div
-            className="mt-3 rounded-control bg-danger/10 p-3 text-meta text-danger"
-            role="alert"
-          >
-            {loadError}
-          </div>
-        )}
-        {message && (
-          <div
-            className={`mt-3 rounded-control p-3 text-meta ${
-              message.type === 'success'
-                ? 'bg-success/10 text-success'
-                : 'bg-danger/10 text-danger'
-            }`}
-            role={message.type === 'success' ? 'status' : 'alert'}
-          >
-            {message.text}
-          </div>
-        )}
-        {failures.length > 0 && (
-          <Alert
-            aria-label="最後の取り込みが失敗したアカウント"
-            className="mt-3"
-            role="region"
-            title={
-              <>
-                最後の取り込みが失敗したアカウント:{' '}
-                {formatNumber(failures.length)}件
-                {failures.length > retryable &&
-                  `（再試行中: ${formatNumber(failures.length - retryable)}件）`}
-              </>
-            }
-            tone="danger"
-          >
-            <ul className="max-h-60 divide-y divide-danger/20 overflow-y-auto">
-              {failures.map((failure) => (
-                <FailureRow
-                  failure={failure}
-                  key={`${failure.provider}:${failure.accountId}`}
-                />
-              ))}
-            </ul>
-          </Alert>
-        )}
-      </CardHeader>
-      <CardContent className="p-0">
+      )}
+      {message && (
+        <div
+          className={`mb-4 rounded-control p-3 text-meta ${
+            message.type === 'success'
+              ? 'bg-success/10 text-success'
+              : 'bg-danger/10 text-danger'
+          }`}
+          role={message.type === 'success' ? 'status' : 'alert'}
+        >
+          {message.text}
+        </div>
+      )}
+      {failures.length > 0 && (
+        <Alert
+          aria-label="最後の取り込みが失敗したアカウント"
+          className="mb-4"
+          role="region"
+          title={
+            <>
+              最後の取り込みが失敗したアカウント:{' '}
+              {formatNumber(failures.length)}件
+              {failures.length > retryable &&
+                `（再試行中: ${formatNumber(failures.length - retryable)}件）`}
+            </>
+          }
+          tone="danger"
+        >
+          <ul className="max-h-60 divide-y divide-danger/20 overflow-y-auto">
+            {failures.map((failure) => (
+              <FailureRow
+                failure={failure}
+                key={`${failure.provider}:${failure.accountId}`}
+              />
+            ))}
+          </ul>
+        </Alert>
+      )}
+      <div className="-mx-6 -mb-6">
         {state === null ? (
           loadError ? (
-            <div className="flex flex-col items-center gap-3 px-4 py-6 text-meta text-danger">
+            <div className="flex flex-col items-center gap-3 px-4 pt-2 pb-6 text-meta text-danger">
               <p>{loadError}</p>
               <Button
                 onClick={() => {
@@ -349,20 +336,23 @@ export function VideoBackfillHistoryPanel() {
               </Button>
             </div>
           ) : (
-            <div className="px-4 py-6 text-center text-meta text-muted">
+            <div className="px-4 pt-2 pb-6 text-center text-meta text-muted">
               読み込み中...
             </div>
           )
         ) : state.entries.length > 0 ? (
-          <ul className="mt-4 max-h-[32rem] divide-y divide-border overflow-y-auto border-t border-border">
+          <ul className="max-h-[32rem] divide-y divide-border overflow-y-auto border-t border-border">
             {state.entries.map((entry) => (
               <HistoryRow entry={entry} key={entry.id} />
             ))}
           </ul>
         ) : (
-          <EmptyState title="終了した過去動画の取り込みはまだありません。" />
+          <EmptyState
+            className="pt-4"
+            title="終了した過去動画の取り込みはまだありません。"
+          />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </Panel>
   )
 }

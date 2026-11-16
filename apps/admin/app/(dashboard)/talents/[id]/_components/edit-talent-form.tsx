@@ -1,13 +1,7 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  Button as UIButton,
-  Input as UIInput,
-} from '@shinju-date/ui'
+import { Button as UIButton, Input as UIInput } from '@shinju-date/ui'
 import { useId, useState } from 'react'
 import type { FormState } from '@/components/form'
 import Form, {
@@ -18,12 +12,12 @@ import Form, {
   Label,
   SubmitButton,
 } from '@/components/form'
+import { DetailList, DetailRow, Panel } from '@/components/panel'
 import { updateTalentAction } from '../../_actions'
 import {
   TALENT_READING_DESCRIPTION,
   TALENT_READING_PLACEHOLDER,
 } from '../../_lib/talent-reading-description'
-import { DetailList, DetailRow, PanelHeading } from './detail-list'
 
 type Talent = Pick<
   Tables<'talents'>,
@@ -90,22 +84,19 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
 
   if (!isEditing) {
     return (
-      <Card variant="elevated">
-        <CardHeader className="pb-6">
-          <PanelHeading
-            actions={
-              <UIButton
-                onClick={() => setIsEditing(true)}
-                type="button"
-                variant="secondary"
-              >
-                編集
-              </UIButton>
-            }
-            description="現在データベースに保存されている情報"
-            title="タレント情報"
-          />
-        </CardHeader>
+      <Panel
+        actions={
+          <UIButton
+            onClick={() => setIsEditing(true)}
+            type="button"
+            variant="secondary"
+          >
+            編集
+          </UIButton>
+        }
+        description="現在データベースに保存されている情報"
+        title="タレント情報"
+      >
         <DetailList>
           <DetailRow label="タレント名">
             {talent.name}
@@ -186,78 +177,73 @@ export function EditTalentForm({ talent }: EditTalentFormProps) {
             )}
           </DetailRow>
         </DetailList>
-      </Card>
+      </Panel>
     )
   }
 
   return (
-    <Card variant="elevated">
-      <CardHeader>
-        <PanelHeading
-          description="タレント名・読み仮名・テーマカラーを編集できます。"
-          title="タレント情報を編集"
-        />
-      </CardHeader>
-      <CardContent>
-        <Form action={handleAction} className="max-w-xl space-y-4">
-          <input name="id" type="hidden" value={talent.id} />
-          <FormField name="name">
-            <Label className="mb-2 block text-meta font-semibold">
-              タレント名
-            </Label>
-            <Input
-              defaultValue={talent.name}
-              placeholder="表示に使用される名前"
-              required
-            />
-            <p className="mt-1 text-caption text-muted">
-              管理画面から編集可能な表示名（YouTube APIによる自動更新の対象外）
-            </p>
-            <ErrorMessage className="mt-1 text-meta text-danger" />
-          </FormField>
-          <FormField name="reading">
-            <Label className="mb-2 block text-meta font-semibold">
-              読み仮名（任意）
-            </Label>
-            <Input
-              defaultValue={talent.reading ?? ''}
-              placeholder={TALENT_READING_PLACEHOLDER}
-            />
-            <p className="mt-1 text-caption text-muted">
-              {TALENT_READING_DESCRIPTION}
-            </p>
-            <ErrorMessage className="mt-1 text-meta text-danger" />
-          </FormField>
-          <FormField name="theme_color">
-            <Label
-              className="mb-2 block text-meta font-semibold"
-              htmlFor={themeColorId}
-            >
-              テーマカラー
-            </Label>
-            <ColorInput
-              defaultValue={talent.theme_color}
-              id={themeColorId}
-              name="theme_color"
-            />
-            <p className="mt-1 text-caption text-muted">
-              タレントのテーマカラー（#RRGGBB形式で指定してください）
-            </p>
-            <ErrorMessage className="mt-1 text-meta text-danger" />
-          </FormField>
-          <GenericErrorMessage className="text-meta text-danger" />
-          <div className="flex gap-2 pt-2">
-            <UIButton
-              onClick={() => setIsEditing(false)}
-              type="button"
-              variant="secondary"
-            >
-              キャンセル
-            </UIButton>
-            <SubmitButton type="submit">保存</SubmitButton>
-          </div>
-        </Form>
-      </CardContent>
-    </Card>
+    <Panel
+      description="タレント名・読み仮名・テーマカラーを編集できます。"
+      title="タレント情報を編集"
+    >
+      <Form action={handleAction} className="max-w-xl space-y-4">
+        <input name="id" type="hidden" value={talent.id} />
+        <FormField name="name">
+          <Label className="mb-2 block text-meta font-semibold">
+            タレント名
+          </Label>
+          <Input
+            defaultValue={talent.name}
+            placeholder="表示に使用される名前"
+            required
+          />
+          <p className="mt-1 text-caption text-muted">
+            管理画面から編集可能な表示名（YouTube APIによる自動更新の対象外）
+          </p>
+          <ErrorMessage className="mt-1 text-meta text-danger" />
+        </FormField>
+        <FormField name="reading">
+          <Label className="mb-2 block text-meta font-semibold">
+            読み仮名（任意）
+          </Label>
+          <Input
+            defaultValue={talent.reading ?? ''}
+            placeholder={TALENT_READING_PLACEHOLDER}
+          />
+          <p className="mt-1 text-caption text-muted">
+            {TALENT_READING_DESCRIPTION}
+          </p>
+          <ErrorMessage className="mt-1 text-meta text-danger" />
+        </FormField>
+        <FormField name="theme_color">
+          <Label
+            className="mb-2 block text-meta font-semibold"
+            htmlFor={themeColorId}
+          >
+            テーマカラー
+          </Label>
+          <ColorInput
+            defaultValue={talent.theme_color}
+            id={themeColorId}
+            name="theme_color"
+          />
+          <p className="mt-1 text-caption text-muted">
+            タレントのテーマカラー（#RRGGBB形式で指定してください）
+          </p>
+          <ErrorMessage className="mt-1 text-meta text-danger" />
+        </FormField>
+        <GenericErrorMessage className="text-meta text-danger" />
+        <div className="flex gap-2 pt-2">
+          <UIButton
+            onClick={() => setIsEditing(false)}
+            type="button"
+            variant="secondary"
+          >
+            キャンセル
+          </UIButton>
+          <SubmitButton type="submit">保存</SubmitButton>
+        </div>
+      </Form>
+    </Panel>
   )
 }

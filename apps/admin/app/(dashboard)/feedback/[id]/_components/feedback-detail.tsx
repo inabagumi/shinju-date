@@ -7,6 +7,7 @@ import { Select, Textarea } from '@shinju-date/ui'
 import { useActionState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { SubmitButton } from '@/components/form'
+import { Panel } from '@/components/panel'
 import {
   markFeatureRequestAsRead,
   updateFeatureRequestMemo,
@@ -18,8 +19,6 @@ interface FeatureRequestDetailProps {
   featureRequest: Tables<'feature_requests'>
 }
 
-const panelClassName = 'rounded-container border border-border bg-surface p-6'
-const panelHeadingClassName = 'mb-4 text-heading font-bold'
 const labelClassName = 'block text-meta font-semibold'
 
 /** Markdown の本文。`prose` の色を両モードのセマンティックカラーに合わせる */
@@ -83,16 +82,14 @@ export function FeatureRequestDetail({
     <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
       <div className="space-y-6 lg:col-span-2">
         {/* Message */}
-        <section className={panelClassName}>
-          <h2 className={panelHeadingClassName}>機能要望内容</h2>
+        <Panel title="機能要望内容">
           <div className={proseClassName}>
             <ReactMarkdown>{featureRequest.message}</ReactMarkdown>
           </div>
-        </section>
+        </Panel>
 
         {/* Admin Memo */}
-        <section className={panelClassName}>
-          <h2 className={panelHeadingClassName}>管理メモ</h2>
+        <Panel title="管理メモ">
           <form action={updateMemoAction} className="space-y-4">
             <div className="space-y-2">
               <label className={labelClassName} htmlFor="admin_memo">
@@ -122,13 +119,12 @@ export function FeatureRequestDetail({
               </div>
             </div>
           )}
-        </section>
+        </Panel>
       </div>
 
       <div className="space-y-6">
         {/* Basic Information */}
-        <section className={panelClassName}>
-          <h2 className={panelHeadingClassName}>基本情報</h2>
+        <Panel title="基本情報">
           <dl className="space-y-3">
             <div>
               <dt className="text-meta text-muted">送信日時</dt>
@@ -139,11 +135,10 @@ export function FeatureRequestDetail({
               <dd className="mt-1 tabular-nums">{updatedAtFormatted}</dd>
             </div>
           </dl>
-        </section>
+        </Panel>
 
         {/* Status */}
-        <section className={panelClassName}>
-          <h2 className={panelHeadingClassName}>ステータス管理</h2>
+        <Panel title="ステータス管理">
           <form action={updateStatusAction} className="space-y-4">
             <div className="space-y-2">
               <label className={labelClassName} htmlFor="status">
@@ -165,11 +160,10 @@ export function FeatureRequestDetail({
               <ActionResult message="更新しました" state={statusState} />
             </div>
           </form>
-        </section>
+        </Panel>
 
         {/* Read Status */}
-        <section className={panelClassName}>
-          <h2 className={panelHeadingClassName}>既読管理</h2>
+        <Panel title="既読管理">
           <form action={markAsReadAction} className="space-y-4">
             <p className="text-meta">
               現在: {featureRequest.is_read ? '既読' : '未読'}
@@ -186,7 +180,7 @@ export function FeatureRequestDetail({
               <ActionResult message="更新しました" state={readState} />
             </div>
           </form>
-        </section>
+        </Panel>
       </div>
     </div>
   )

@@ -7,12 +7,12 @@ import Form, {
   SubmitButton,
   SuccessMessage,
 } from '@/components/form'
+import { Panel } from '@/components/panel'
 import { updateUserPassword } from '../_actions'
 
 export function PasswordUpdateForm() {
   return (
-    <section className="max-w-text rounded-container border border-border bg-surface p-6">
-      <h2 className="mb-4 text-heading font-bold">パスワードの変更</h2>
+    <Panel className="max-w-text" title="パスワードの変更">
       <Form action={updateUserPassword} className="space-y-4">
         <SuccessMessage
           className="rounded-control bg-success/10 p-3 text-meta text-success"
@@ -62,6 +62,6 @@ export function PasswordUpdateForm() {
 
         <SubmitButton type="submit">パスワードを更新</SubmitButton>
       </Form>
-    </section>
+    </Panel>
   )
 }

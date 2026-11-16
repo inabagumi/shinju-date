@@ -9,6 +9,7 @@ import Form, {
   SubmitButton,
 } from '@/components/form'
 import { LogoIcon } from '@/components/logo-icon'
+import { Panel } from '@/components/panel'
 import { getSafeRedirectPath, REDIRECT_PARAM } from '@/lib/redirect-path'
 import { signIn } from './_lib/actions'
 
@@ -46,42 +47,41 @@ export default function Login({ searchParams }: Props) {
           <p className="text-meta text-muted">SHINJU DATE</p>
         </hgroup>
 
-        <Form
-          action={signIn}
-          className="grid gap-6 rounded-container border border-border bg-surface p-6"
-        >
-          <Suspense fallback={null}>
-            <RedirectPathInput searchParams={searchParams} />
-          </Suspense>
+        <Panel>
+          <Form action={signIn} className="grid gap-6">
+            <Suspense fallback={null}>
+              <RedirectPathInput searchParams={searchParams} />
+            </Suspense>
 
-          <GenericErrorMessage className="rounded-control bg-danger/10 p-3 text-meta text-danger" />
+            <GenericErrorMessage className="rounded-control bg-danger/10 p-3 text-meta text-danger" />
 
-          <div className="space-y-4">
-            <FormField className="flex flex-col gap-2" name="email">
-              <Label className="text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50">
-                メールアドレス
-              </Label>
-              <Input placeholder="admin@example.com" required type="email" />
-              <ErrorMessage className="text-meta text-danger" />
-            </FormField>
-            <FormField className="flex flex-col gap-2" name="password">
-              <Label className="text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50">
-                パスワード
-              </Label>
-              <Input
-                minLength={8}
-                placeholder="••••••••"
-                required
-                type="password"
-              />
-              <ErrorMessage className="text-meta text-danger" />
-            </FormField>
-          </div>
+            <div className="space-y-4">
+              <FormField className="flex flex-col gap-2" name="email">
+                <Label className="text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50">
+                  メールアドレス
+                </Label>
+                <Input placeholder="admin@example.com" required type="email" />
+                <ErrorMessage className="text-meta text-danger" />
+              </FormField>
+              <FormField className="flex flex-col gap-2" name="password">
+                <Label className="text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50">
+                  パスワード
+                </Label>
+                <Input
+                  minLength={8}
+                  placeholder="••••••••"
+                  required
+                  type="password"
+                />
+                <ErrorMessage className="text-meta text-danger" />
+              </FormField>
+            </div>
 
-          <SubmitButton className="w-full" type="submit">
-            ログイン
-          </SubmitButton>
-        </Form>
+            <SubmitButton className="w-full" type="submit">
+              ログイン
+            </SubmitButton>
+          </Form>
+        </Panel>
       </div>
     </div>
   )

@@ -3,7 +3,7 @@ import {
   formatDateTimeFromISO,
   formatDuration,
 } from '@shinju-date/temporal-fns'
-import { Alert, Button, PageHeader, twMerge } from '@shinju-date/ui'
+import { Alert, Button, PageHeader } from '@shinju-date/ui'
 import { ChevronLeft, ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 import { cacheLife } from 'next/cache'
@@ -11,6 +11,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { type ReactNode, Suspense } from 'react'
+import { DetailList, DetailRow, Panel } from '@/components/panel'
 import { DetailCardsSkeleton } from '@/components/skeletons'
 import { PlatformBadge } from '../_components/platform-badge'
 import { VideoKindBadge } from '../_components/video-kind-badge'
@@ -20,10 +21,6 @@ import {
   VideoActionsButtons,
   VideoDeleteButton,
 } from './_components/video-actions-buttons'
-
-/** 詳細ページのパネル */
-const panelClassName = 'rounded-container border border-border bg-surface p-6'
-const panelTitleClassName = 'text-body leading-normal font-semibold'
 
 interface DetailItem {
   label: string
@@ -182,10 +179,9 @@ async function CachedVideoDetails({ id }: { id: string }) {
         {/* Thumbnail and basic info */}
         <div className="space-y-6">
           {/* Thumbnail */}
-          <section className={panelClassName}>
-            <h2 className={panelTitleClassName}>サムネイル</h2>
+          <Panel title="サムネイル">
             {video.thumbnail ? (
-              <div className="relative mt-4 aspect-video w-full">
+              <div className="relative aspect-video w-full">
                 <Image
                   alt={video.title}
                   blurDataURL={video.thumbnail.blur_data_url}
@@ -197,62 +193,52 @@ async function CachedVideoDetails({ id }: { id: string }) {
                 />
               </div>
             ) : (
-              <div className="mt-4 flex aspect-video w-full items-center justify-center rounded-container bg-muted text-meta text-muted">
+              <div className="flex aspect-video w-full items-center justify-center rounded-container bg-muted text-meta text-muted">
                 No Image
               </div>
             )}
-          </section>
+          </Panel>
 
           {/* Status */}
-          <section className={panelClassName}>
-            <h2 className={panelTitleClassName}>ステータス</h2>
-            <div className="mt-4">
-              <VideoStatusBadge video={video} />
-            </div>
-          </section>
+          <Panel title="ステータス">
+            <VideoStatusBadge video={video} />
+          </Panel>
         </div>
 
         {/* Video information */}
-        <section className={twMerge(panelClassName, 'p-0')}>
-          <div className="p-6 pb-4">
-            <h2 className={panelTitleClassName}>動画情報</h2>
-            <p className="mt-1 text-meta text-muted">
-              現在データベースに保存されている情報
-            </p>
-          </div>
-          <dl className="divide-y divide-border border-t border-border">
+        <Panel
+          description="現在データベースに保存されている情報"
+          title="動画情報"
+        >
+          <DetailList>
             {details.map(({ label, value }) => (
-              <div
-                className="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4"
-                key={label}
-              >
-                <dt className="text-meta text-muted">{label}</dt>
-                <dd className="mt-1 text-meta wrap-break-word sm:col-span-2 sm:mt-0">
-                  {value}
-                </dd>
-              </div>
+              <DetailRow key={label} label={label}>
+                {value}
+              </DetailRow>
             ))}
-          </dl>
-        </section>
+          </DetailList>
+        </Panel>
       </div>
 
       {/* External links */}
-      <section className={twMerge(panelClassName, 'mt-6')}>
-        <h2 className={panelTitleClassName}>外部リンク</h2>
-        <p className="mt-1 text-meta text-muted">
-          {video.platform === 'twitch'
+      <Panel
+        className="mt-6"
+        description={
+          video.platform === 'twitch'
             ? 'Twitch上のオリジナル動画へのリンク'
-            : 'YouTube上のオリジナル動画へのリンク'}
-        </p>
+            : 'YouTube上のオリジナル動画へのリンク'
+        }
+        title="外部リンク"
+      >
         {externalUrl && (
-          <Button asChild className="mt-4 gap-2" variant="secondary">
+          <Button asChild className="gap-2" variant="secondary">
             <a href={externalUrl} rel="noopener noreferrer" target="_blank">
               {video.platform === 'twitch' ? 'Twitchで見る' : 'YouTubeで見る'}
               <ExternalLink aria-hidden="true" className="size-4" />
             </a>
           </Button>
         )}
-      </section>
+      </Panel>
 
       {/* Dangerous operations, kept apart from the ordinary ones above */}
       {!isDeleted && (
