@@ -2,72 +2,26 @@
 
 SHINJU DATE のデータベース（Supabase）の型定義と、enum の値を持つ定数を提供するパッケージ。データベースのクライアントは含みません。
 
-## 公開しているもの
+公開しているものは [`src/index.ts`](src/index.ts) を見てください。中身は、Supabase CLI が生成する [`types/supabase.ts`](types/supabase.ts) の再エクスポートです。
 
-### 型
-
-| 名前                  | 内容                                                        |
-| --------------------- | ----------------------------------------------------------- |
-| `Database`（default） | データベース全体の型。Supabase のクライアントの型引数に渡す |
-| `Tables`              | テーブルとビューの行の型（例: `Tables<'videos'>`）          |
-| `TablesInsert`        | テーブルに挿入する値の型                                    |
-| `TablesUpdate`        | テーブルを更新する値の型                                    |
-| `Enums`               | enum の型（例: `Enums<'platform_type'>`）                   |
-
-enum には、名前を付けた型もあります。
-
-| 名前                     | 元の enum                   |
-| ------------------------ | --------------------------- |
-| `Platform`               | `platform_type`             |
-| `VideoStatus`            | `video_status`              |
-| `VideoKind`              | `video_kind`                |
-| `VideoDeletedReason`     | `video_deleted_reason`      |
-| `TwitchVideoType`        | `twitch_video_type`         |
-| `TalentStatus`           | `talent_status`             |
-| `FeatureRequestStatus`   | `feature_request_status`    |
-| `VideoBackfillJobStatus` | `video_backfill_job_status` |
-| `AuditAction`            | `audit_action`              |
+## 使い方
 
 ```typescript
 import type Database from '@shinju-date/database'
-import type { Platform, Tables, VideoStatus } from '@shinju-date/database'
-
-type Video = Tables<'videos'>
-
-const platform: Platform = 'youtube'
-const status: VideoStatus = 'PUBLISHED'
-```
-
-### 定数
-
-`Constants` は、enum の値を配列で持つ定数です。型と違い、実行時に使えます。
-
-```typescript
+import type { Enums, Tables } from '@shinju-date/database'
 import { Constants } from '@shinju-date/database'
 
-Constants.public.Enums.platform_type // ['youtube', 'twitch']
+type Video = Tables<'videos'>
+type Platform = Enums<'platform_type'>
 
-// 入力値の検証などに使う
-const isPlatform = (value: string) =>
-  (Constants.public.Enums.platform_type as readonly string[]).includes(value)
+// enum の値は、実行時には Constants から読む
+Constants.public.Enums.platform_type // ['youtube', 'twitch']
 ```
 
 ## 型の生成
 
-`types/supabase.ts` は Supabase CLI が生成するファイルです。手で編集せず、ローカルの Supabase を起動してから、リポジトリのルートで次のコマンドを実行してください。
+`types/supabase.ts` は手で編集しません。ローカルの Supabase を起動してから、リポジトリのルートで次のコマンドを実行します。
 
 ```bash
 pnpm db:schema
-```
-
-`src/index.ts` は生成された `Enums` と `Constants` を参照するだけなので、型を生成し直しても直す必要はありません（enum の追加や名前の変更を除く）。
-
-## 開発
-
-```bash
-# ビルド
-pnpm run build
-
-# テスト
-pnpm run test
 ```
