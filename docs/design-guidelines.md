@@ -110,6 +110,8 @@ Lato は 300・400・700 を読み込んでいます（Lato には 600 があり
 | 補助情報（日時・タレント名・説明）            | `text-meta text-muted`                   | 14px               | 400                 | 1.6  |
 | バッジ・注記                                  | `text-caption font-semibold`             | 12px               | 600                 | 1.4  |
 | 状態の知らせ（[`Alert`](#状態の知らせalert)） | `text-meta`（見出しは `font-semibold`）  | 14px               | 400（見出しは 600） | 1.6  |
+| 入力欄（すべての大きさ）、大きいボタン        | `text-body leading-normal`               | 16px               | —                   | 1.5  |
+| ボタン（標準と小）、メニューの項目、トースト  | `text-meta leading-5`                    | 14px               | —                   | 20px |
 
 ```tsx
 const example = (
@@ -122,6 +124,8 @@ const example = (
 )
 ```
 
+- **操作部品の行間は、本文より詰める。** ボタン・入力欄・メニューの項目・トーストは、1行で収まる前提で高さを決めているため、`text-body` / `text-meta` の行間（1.7 / 1.6）ではなく、上の表の `leading-normal` / `leading-5` を併用します。`packages/ui` の部品は、すでにこの組み合わせになっています
+- **入力欄（`Input`・`Select`・`Textarea`）の文字は 16px 未満にしない。** iOS の Safari は、16px 未満の入力欄にフォーカスすると画面を拡大します。小さい入力欄（`inputSize="sm"`）も文字は 16px のままで、余白で小ささを出します
 - **時刻・再生時間・件数は `tabular-nums` にする。** 桁がそろい、数字が変わっても幅が揺れません
 - **文章の行長は1行40〜45文字程度に抑える。** 説明文やお知らせなど、まとまった文章は `max-w-text`（44rem）の中に置きます
 
