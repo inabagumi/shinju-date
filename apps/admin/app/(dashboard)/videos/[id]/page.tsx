@@ -256,15 +256,16 @@ async function CachedVideoDetails({ id }: { id: string }) {
 
       {/* Dangerous operations, kept apart from the ordinary ones above */}
       {!isDeleted && (
-        <section className={twMerge(panelClassName, 'mt-6 border-danger/30')}>
-          <h2 className={panelTitleClassName}>動画の削除</h2>
-          <p className="mt-1 text-meta text-muted">
-            削除した動画は公開サイトに表示されなくなり、同期もできなくなります。
-          </p>
-          <div className="mt-4">
-            <VideoDeleteButton video={video} />
-          </div>
-        </section>
+        <Alert
+          action={<VideoDeleteButton video={video} />}
+          aria-label="動画の削除"
+          className="mt-6"
+          role="region"
+          title="動画の削除"
+          tone="danger"
+        >
+          削除した動画は公開サイトに表示されなくなり、同期もできなくなります。
+        </Alert>
       )}
     </div>
   )

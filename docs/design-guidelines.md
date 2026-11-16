@@ -129,13 +129,13 @@ const example = (
 
 削除済み・引退・失敗など、画面の中で状態を知らせる枠は、`@shinju-date/ui` の `Alert` を使います。色の付いた枠を手で書かないでください。
 
-| 部分     | クラス・props                                                                                                           |
-| -------- | ----------------------------------------------------------------------------------------------------------------------- |
-| 枠       | `rounded-container border p-4 text-meta text-foreground`。地と枠線は `tone` で決まる                                    |
-| 見出し   | `title`。本文の上の太字の1行（`font-semibold`）                                                                         |
-| 本文     | `children`                                                                                                              |
-| 操作     | `action`。右端に置くリンクやボタン。狭い画面では本文の下に回る                                                          |
-| 読み上げ | `role`。既定は `danger` と `warning` が `alert`、`success` と `neutral` が `status`。一覧などを含む枠は `region` にする |
+| 部分     | クラス・props                                                                                                                                                                        |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 枠       | `rounded-container border p-4 text-meta text-foreground`。地と枠線は `tone` で決まる                                                                                                 |
+| 見出し   | `title`。本文の上の太字の1行（`font-semibold`）                                                                                                                                      |
+| 本文     | `children`                                                                                                                                                                           |
+| 操作     | `action`。右端に置くリンクやボタン。狭い画面では本文の下に回る                                                                                                                       |
+| 読み上げ | `role`。既定は `danger` と `warning` が `alert`、`success` と `neutral` が `status`。知らせではない枠（一覧や、危険な操作を分けて置く枠）は `role="region"` と `aria-label` を付ける |
 
 `tone` は状態の意味で選びます。文字はどの `tone` でも `text-foreground` にし、色は地と枠線だけに使います（コントラスト比は `packages/ui/src/colors.test.ts` で確認しています）。
 
