@@ -15,7 +15,7 @@ import type {
   TypedSupabaseClient,
   WriteContext,
 } from '../types.js'
-import { saveNewTwitchVideos } from './add-new-videos.js'
+import { applyNewVideoAction, planNewVideos } from './add-new-videos.js'
 import type { TwitchFetcher } from './fetcher.js'
 import { createTwitchThumbnail, saveTwitchVideo } from './save-video.js'
 import {
@@ -444,11 +444,22 @@ export async function refreshTwitchBroadcast(
   }
 
   if (archive && isLivePlaceholder(saved)) {
-    // Only this row owns the stream ID, so nothing can be inserted here.
-    await saveNewTwitchVideos(context, {
+    // The same plan as `addNewVideos`, but applied without isolating failures:
+    // a failed link has to reject. This row owns the stream ID, so the plan
+    // can only link the archive to it, never insert a row.
+    const actions = planNewVideos({
       liveStreams,
-      users: [],
+      savedByStreamId: [saved],
+      savedByVideoId: await findSavedTwitchVideos(
+        supabaseClient,
+        'twitch_video_id',
+        [archive.id],
+      ),
       videos: [archive],
     })
+
+    for (const action of actions) {
+      await applyNewVideoAction(context, action, new Map())
+    }
   }
 }

@@ -4,7 +4,10 @@ import {
   StalledPaginationError,
 } from '../../internal/database/index.js'
 import { TEST_NOW } from '../../internal/testing/context.js'
-import { setupSupabase } from '../../internal/testing/supabase.js'
+import {
+  postgresError,
+  setupSupabase,
+} from '../../internal/testing/supabase.js'
 import {
   createClip,
   createSavedVideo,
@@ -85,15 +88,24 @@ function createApi({
 
 /**
  * Answers like a database holding one saved video: reads return the row as it
- * is after the writes made so far.
+ * is after the writes made so far. Requests named in `failing` (e.g.
+ * `PATCH twitch_videos`) fail instead.
  */
-function respondWithSavedVideo(initial: SavedTwitchVideo) {
+function respondWithSavedVideo(
+  initial: SavedTwitchVideo,
+  { failing = [] }: { failing?: string[] } = {},
+) {
   let row = structuredClone(initial)
 
   supabase.respond(({ body, method, query, table }) => {
     const { twitch_video, ...video } = row
+    const request = `${method} ${table}`
 
-    switch (`${method} ${table}`) {
+    if (failing.includes(request)) {
+      return postgresError('57014', 'canceling statement due to timeout')
+    }
+
+    switch (request) {
       case 'GET talents':
         return activeTalents
       case 'GET videos':
@@ -546,6 +558,19 @@ describe('TwitchScraper', () => {
         error,
       )
       expect(writes()).toEqual([])
+    })
+
+    it('rejects when the broadcast cannot be linked to its archive', async () => {
+      respondWithSavedVideo(createSavedVideo({ status: 'ENDED' }), {
+        failing: ['PATCH twitch_videos'],
+      })
+      const { scraper } = createScraper({ archives: [createVideo()] })
+
+      await expect(scraper.refreshVideo('video-1', TEST_NOW)).rejects.toThrow(
+        'Failed to update a Twitch video',
+      )
+      expect(supabase.written('PATCH', 'videos')).toEqual([])
+      expect(onError).not.toHaveBeenCalled()
     })
 
     it('leaves an ended broadcast whose archive Twitch does not list', async () => {
