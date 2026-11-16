@@ -3,7 +3,7 @@ import { formatDate, formatDateKey } from '@shinju-date/temporal-fns'
 import { getRedisClient } from '@/lib/redis'
 import type { SummaryStats } from './get-summary-stats'
 
-export type HistoricalStatsEntry = {
+export interface HistoricalStatsEntry {
   date: string
   totalVideos: number
   visibleVideos: number

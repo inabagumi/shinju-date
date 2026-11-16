@@ -5,7 +5,7 @@ import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { getRedisClient } from '@/lib/redis'
 
-export type PopularKeyword = {
+export interface PopularKeyword {
   keyword: string
   count: number
 }
