@@ -1,7 +1,7 @@
 'use client'
 
 import { TIME_ZONE } from '@shinju-date/constants'
-import { formatNumber, getVideoExternalUrl } from '@shinju-date/helpers'
+import { formatNumber } from '@shinju-date/helpers'
 import { formatDateTime, formatDuration } from '@shinju-date/temporal-fns'
 import {
   Button,
@@ -21,7 +21,6 @@ import {
   Trash2,
   Video as VideoIcon,
 } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useMemo, useState } from 'react'
@@ -32,6 +31,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/dropdown-menu'
+import {
+  ExternalVideoLink,
+  getExternalVideoUrl,
+} from '@/components/external-video-link'
+import { VideoThumbnail } from '@/components/video-thumbnail'
 import {
   restoreAction,
   softDeleteAction,
@@ -292,23 +296,7 @@ export default function VideoList({ videos }: Props) {
                     />
                   </TableCell>
                   <TableCell>
-                    {video.thumbnail ? (
-                      <div className="relative aspect-video w-28">
-                        <Image
-                          alt=""
-                          blurDataURL={video.thumbnail.blur_data_url}
-                          className="rounded-control object-cover"
-                          fill
-                          placeholder="blur"
-                          sizes="112px"
-                          src={`/images/thumbnails/${video.thumbnail.id}`}
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex aspect-video w-28 items-center justify-center rounded-control bg-muted text-caption text-muted">
-                        No Image
-                      </div>
-                    )}
+                    <VideoThumbnail size="md" thumbnail={video.thumbnail} />
                   </TableCell>
                   <TableCell className="w-full min-w-64 whitespace-normal">
                     <Link
@@ -371,33 +359,19 @@ export default function VideoList({ videos }: Props) {
                         />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuItem
-                          onClick={() => {
-                            const externalUrl = getVideoExternalUrl({
-                              platform: video.platform,
-                              status: video.status,
-                              twitchLoginName:
-                                video.twitch_video?.twitch_user
-                                  ?.twitch_login_name,
-                              twitchVideoId:
-                                video.twitch_video?.twitch_video_id,
-                              twitchVideoType: video.twitch_video?.type,
-                              youtubeVideoId:
-                                video.youtube_video?.youtube_video_id,
-                            })
-                            if (externalUrl) {
-                              window.open(externalUrl, '_blank', 'noopener')
-                            }
-                          }}
-                        >
-                          {video.platform === 'twitch'
-                            ? 'Twitchで見る'
-                            : 'YouTubeで見る'}
-                          <ExternalLink
-                            aria-hidden="true"
-                            className="size-4 text-muted"
-                          />
-                        </DropdownMenuItem>
+                        {getExternalVideoUrl(video) && (
+                          <DropdownMenuItem asChild>
+                            <ExternalVideoLink video={video}>
+                              {video.platform === 'twitch'
+                                ? 'Twitchで見る'
+                                : 'YouTubeで見る'}
+                              <ExternalLink
+                                aria-hidden="true"
+                                className="size-4 text-muted"
+                              />
+                            </ExternalVideoLink>
+                          </DropdownMenuItem>
+                        )}
                         {video.deleted_at ? (
                           <DropdownMenuItem
                             onClick={() =>
