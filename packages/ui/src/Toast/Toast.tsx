@@ -72,7 +72,7 @@ export function ToastTitle({
 }: ComponentPropsWithRef<typeof ToastPrimitive.Title>) {
   return (
     <ToastPrimitive.Title
-      className={twMerge('text-sm font-semibold', className)}
+      className={twMerge('text-meta leading-5 font-semibold', className)}
       {...props}
     />
   )

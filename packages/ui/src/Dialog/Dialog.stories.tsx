@@ -153,7 +153,7 @@ export const WithForm = meta.story({
               }}
             >
               <div className="mt-4 flex flex-col gap-2">
-                <label className="text-sm font-medium" htmlFor="name">
+                <label className="text-meta font-medium" htmlFor="name">
                   Name
                 </label>
                 <input
@@ -198,7 +198,7 @@ export const LongContent = meta.story({
               text: `${i + 1}. Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
                 Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.`,
             })).map((term) => (
-              <p className="mb-2 text-sm text-foreground" key={term.id}>
+              <p className="mb-2 text-meta text-foreground" key={term.id}>
                 {term.text}
               </p>
             ))}
