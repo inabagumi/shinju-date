@@ -802,8 +802,13 @@ describe('Supabase Handlers', () => {
 
       try {
         const twice = await upsert([
-          { id: first?.id, term: 'マージのテスト用の用語3' },
-          { id: first?.id, term: second?.term },
+          {
+            id: first?.id,
+            readings: [],
+            synonyms: [],
+            term: 'マージのテスト用の用語3',
+          },
+          { id: first?.id, readings: [], synonyms: [], term: second?.term },
         ])
 
         expect(twice.status).toBe(400)
@@ -815,6 +820,8 @@ describe('Supabase Handlers', () => {
 
         const merged = await upsert({
           id: first?.id,
+          readings: [],
+          synonyms: [],
           term: 'マージのテスト用の用語3',
         })
 
@@ -937,6 +944,83 @@ describe('Supabase Handlers', () => {
         ).toEqual([{ status: 'failed' }])
       } finally {
         await fetch(`${restUrl}/video_backfill_jobs?id=in.(${ids.join(',')})`, {
+          method: 'DELETE',
+        })
+      }
+    })
+
+    it('should match nothing with an empty in list and compare quoted values by type', async () => {
+      expect(await listIds('terms', '&popularity=in.()')).toEqual([])
+      expect(
+        await listIds('terms', `&popularity=in.(${encodeURIComponent('"0"')})`),
+      ).toEqual(await listIds('terms', '&popularity=in.(0)'))
+      expect(
+        (await listIds('terms', '&popularity=in.(0)')).length,
+      ).toBeGreaterThan(0)
+    })
+
+    it('should check NOT NULL columns of rows that an upsert ignores', async () => {
+      const before = await listIds('terms')
+      const id = crypto.randomUUID()
+      const response = await fetch(`${restUrl}/terms`, {
+        body: JSON.stringify([
+          { id, readings: [], synonyms: [], term: '無視のテスト用の用語1' },
+          {
+            id,
+            popularity: null,
+            readings: [],
+            synonyms: [],
+            term: '無視のテスト用の用語2',
+          },
+        ]),
+        headers: {
+          'Content-Type': 'application/json',
+          prefer: 'resolution=ignore-duplicates',
+        },
+        method: 'POST',
+      })
+
+      expect(response.status).toBe(400)
+      expect(await response.json()).toMatchObject({ code: '23502' })
+      expect(await listIds('terms')).toEqual(before)
+    })
+
+    it('should read the latest backfill jobs with a timestamp without an offset', async () => {
+      const [latest] = (await (
+        await fetch(
+          `${restUrl}/video_backfill_latest_jobs?select=*&platform=eq.youtube`,
+        )
+      ).json()) as {
+        account_id: string
+        platform: string
+        talent_id: string
+      }[]
+      const created = await fetch(`${restUrl}/video_backfill_jobs?select=id`, {
+        body: JSON.stringify({
+          account_id: latest?.account_id,
+          finished_at: '2099-01-01T00:00:00',
+          platform: latest?.platform,
+          requested_at: '2099-01-01T00:00:00Z',
+          status: 'failed',
+          talent_id: latest?.talent_id,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          prefer: 'return=representation',
+        },
+        method: 'POST',
+      })
+      const [job] = (await created.json()) as { id: string }[]
+
+      try {
+        const response = await fetch(
+          `${restUrl}/video_backfill_latest_jobs?select=id&account_id=eq.${latest?.account_id}`,
+        )
+
+        expect(response.status).toBe(200)
+        expect(await response.json()).toEqual([{ id: job?.id }])
+      } finally {
+        await fetch(`${restUrl}/video_backfill_jobs?id=eq.${job?.id}`, {
           method: 'DELETE',
         })
       }

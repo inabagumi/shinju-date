@@ -130,20 +130,18 @@ function matchesValue(value: unknown, text: string): boolean {
   return value === parseFilterValue(text) || value === text
 }
 
-/** A value of a list such as `in.(...)`. */
-interface ListValue {
-  /** Whether the value is in double quotes, which keeps it a string. */
-  quoted: boolean
-  text: string
-}
-
 /**
  * Split the values of a list such as `in.(a,"b,c")` on commas outside double
- * quotes. A quoted value is taken as it is, with `\"` and `\\` unescaped,
- * like PostgREST does.
+ * quotes, like PostgREST does. The quotes only keep commas (and spaces) in a
+ * value, with `\"` and `\\` unescaped; the value is compared like the
+ * others. An empty list has no values.
  */
-function parseListValues(list: string): ListValue[] {
-  const values: ListValue[] = []
+function parseListValues(list: string): string[] {
+  if (list.trim() === '') {
+    return []
+  }
+
+  const values: string[] = []
   let current = ''
   let escaped = false
   let inQuotes = false
@@ -159,14 +157,14 @@ function parseListValues(list: string): ListValue[] {
       inQuotes = !inQuotes
       quoted = true
     } else if (char === ',' && !inQuotes) {
-      values.push({ quoted, text: quoted ? current : current.trim() })
+      values.push(quoted ? current : current.trim())
       current = ''
       quoted = false
     } else {
       current += char
     }
   }
-  values.push({ quoted, text: quoted ? current : current.trim() })
+  values.push(quoted ? current : current.trim())
 
   return values
 }
@@ -224,8 +222,8 @@ function matchesFilter(row: object, column: string, filter: string): boolean {
       // As in SQL, `NULL IN (...)` is not true.
       return (
         value != null &&
-        parseListValues(operand.slice(1, -1)).some(({ quoted, text }) =>
-          quoted ? value === text : matchesValue(value, text),
+        parseListValues(operand.slice(1, -1)).some((text) =>
+          matchesValue(value, text),
         )
       )
     }

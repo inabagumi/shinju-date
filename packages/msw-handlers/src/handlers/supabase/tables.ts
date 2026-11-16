@@ -158,6 +158,40 @@ function now(): string {
 }
 
 /**
+ * Parse a `TIMESTAMPTZ` value like PostgreSQL does. A value without an offset
+ * is in the time zone of the session, which is UTC on Supabase.
+ */
+function parseTimestamp(text: string): Temporal.Instant | null {
+  try {
+    return Temporal.Instant.from(text)
+  } catch {
+    try {
+      return Temporal.PlainDateTime.from(text)
+        .toZonedDateTime('UTC')
+        .toInstant()
+    } catch {
+      return null
+    }
+  }
+}
+
+/**
+ * Compare two `TIMESTAMPTZ` values as instants. Values that cannot be parsed
+ * come before the others, so in descending order (the latest first) they
+ * come last and are never picked as the latest.
+ */
+function compareTimestamps(a: string, b: string): number {
+  const instantA = parseTimestamp(a)
+  const instantB = parseTimestamp(b)
+
+  if (instantA === null || instantB === null) {
+    return Number(instantA !== null) - Number(instantB !== null)
+  }
+
+  return Temporal.Instant.compare(instantA, instantB)
+}
+
+/**
  * Mirrors the `video_backfill_latest_jobs` view: the latest finished job of
  * each account that still exists, of talents that are not deleted.
  */
@@ -178,12 +212,7 @@ async function getLatestVideoBackfillJobs(): Promise<
 
   return videoBackfillJobs
     .findMany()
-    .toSorted((a, b) =>
-      Temporal.Instant.compare(
-        Temporal.Instant.from(b.finished_at),
-        Temporal.Instant.from(a.finished_at),
-      ),
-    )
+    .toSorted((a, b) => compareTimestamps(b.finished_at, a.finished_at))
     .filter((job) => {
       const key = `${job.platform}:${job.account_id}`
 

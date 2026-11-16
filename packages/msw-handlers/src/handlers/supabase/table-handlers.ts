@@ -277,9 +277,17 @@ function createWriteHandlers<Name extends TableName>(
       // inserts or updates, which an upsert cannot update again
       const nextRows: Tables<Name>[] = [...currentRows]
       const writtenRows = new Set<Tables<Name>>()
+      // Every proposed row, with the defaults, is checked against the
+      // `NOT NULL` columns before conflicts are resolved, as PostgreSQL does
+      const proposedRows: Tables<Name>[] = []
       const plan: WritePlan<Tables<Name>> = { inserts: [], updates: [] }
 
       for (const values of Array.isArray(body) ? body : [body]) {
+        // The `NOT NULL` columns are checked by `findViolation`.
+        const proposed = { ...table.defaults(), ...values } as Tables<Name>
+
+        proposedRows.push(proposed)
+
         const existing =
           resolution && findConflict(nextRows, values, conflictColumns)
 
@@ -299,16 +307,17 @@ function createWriteHandlers<Name extends TableName>(
           nextRows.splice(nextRows.indexOf(existing), 1, merged)
           writtenRows.add(merged)
         } else {
-          // The `NOT NULL` columns are checked by `findViolation`.
-          const row = { ...table.defaults(), ...values } as Tables<Name>
-
-          plan.inserts.push(row)
-          nextRows.push(row)
-          writtenRows.add(row)
+          plan.inserts.push(proposed)
+          nextRows.push(proposed)
+          writtenRows.add(proposed)
         }
       }
 
-      const violation = findViolation(table, [...writtenRows], nextRows)
+      const violation = findViolation(
+        table,
+        [...proposedRows, ...writtenRows],
+        nextRows,
+      )
 
       if (violation) {
         return violation
