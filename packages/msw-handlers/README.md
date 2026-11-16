@@ -120,20 +120,22 @@ The package mocks the following Supabase tables and operations:
 
 #### Tables
 
-- `videos` - Video content with title, duration, etc.
-- `channels` - Channel information with name
-- `thumbnails` - Thumbnail images with blur data URLs
-- `profile_images` - Square icons of YouTube channels and Twitch users
-- `twitch_videos` - Twitch videos of the Twitch users (read only)
-- `terms` - Search terms with readings and synonyms
+The tables (and views) listed in `src/handlers/supabase/tables.ts` share the same handlers of PostgREST (`src/handlers/supabase/table-handlers.ts`):
+
+- `announcements`, `feature_requests`, `profile_images`, `talents`, `terms`, `thumbnails`, `twitch_users`, `twitch_videos`, `video_backfill_jobs`, `videos`, `youtube_channels`, `youtube_videos` - read and written (GET, HEAD, POST, PATCH, DELETE)
+- `video_backfill_latest_jobs` - a view, only read (GET, HEAD)
+
+Other tables, such as `audit_logs`, return no rows. The database functions (`/rest/v1/rpc/*`) have handlers of their own in `src/handlers/supabase/rpc.ts`.
 
 #### Query Parameters
 
-- `select` - Column selection (supports nested relations)
-- `eq` - Equality filters
-- `in` - Array inclusion filters
-- `limit` - Result limiting
-- `offset` - Result pagination
+- `select` - Column selection (supports embedded resources from the relations of the table definitions)
+- `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `ilike`, `in`, `is.null`, `not.is.null` - Filters, combined with AND
+- `order` - Sorting
+- `limit`, `offset` - Pagination. With `Prefer: count=exact`, `Content-Range` has the number of all the matching rows, not only the page
+- `on_conflict` - The columns of an upsert (`Prefer: resolution=merge-duplicates` or `resolution=ignore-duplicates`)
+
+PATCH and DELETE change only the rows that match all the filters. Inserts, upserts and updates are checked against the `NOT NULL` columns and unique constraints of the table definitions, and fail with the error codes of PostgreSQL (`23502` and `23505`) without changing anything.
 
 #### Example Queries
 
@@ -445,7 +447,7 @@ await videos.delete((q) => q.where({ id: 'some-uuid' }))
 
 By using `@msw/data` with Zod schemas, we've significantly reduced boilerplate:
 
-- **supabase.ts**: Reduced by 470+ lines (from hardcoded arrays to collection queries)
+- **Supabase handlers**: Reduced by 470+ lines (from hardcoded arrays to collection queries)
 - **upstash.ts**: Reduced by 90+ lines (simplified with faker-based factory)
 - **Total**: 560+ lines of hardcoded mock data eliminated
 
@@ -492,44 +494,38 @@ export async function seedCollections() {
 export { myTable } from './collections.js'
 ```
 
-3. **Use in handlers** in `src/handlers/supabase.ts`:
+3. **Add a table definition** to `TABLES` in `src/handlers/supabase/tables.ts`. The table then gets the GET, HEAD, POST, PATCH and DELETE handlers:
 
 ```typescript
-import { myTable } from '../collections.js'
-
-// Initialize
-await seedCollections()
-const mockMyTable = await myTable.findMany()
+const myTable: WritableTableDefinition<'my_table'> = {
+  collection: asMockCollection(myTableCollection),
+  // The columns that have defaults (or are nullable)
+  defaults: () => ({
+    created_at: now(),
+    id: crypto.randomUUID(),
+    updated_at: now(),
+  }),
+  kind: 'table',
+  name: 'my_table',
+  // Embedded resources that `select` can resolve, such as `talents(name)`
+  relations: [
+    {
+      column: 'talent_id',
+      many: false,
+      referencedColumn: 'id',
+      table: 'talents',
+    },
+  ],
+  // The columns that are `NOT NULL` and have no defaults
+  requiredColumns: ['name', 'talent_id'],
+  // Unique constraints other than the primary key (`id`)
+  unique: [{ columns: ['name'], name: 'my_table_name_key' }],
+  // Whether a trigger sets `updated_at` when a row is updated
+  updatedAtTrigger: true,
 }
 ```
 
-2. **Export from `src/factories/index.ts`**:
-
-```typescript
-export {
-  createMyTableFactory,
-  createManyMyTable,
-} from './supabase/my-table.js'
-```
-
-3. **Use in handler** (`src/handlers/supabase.ts`):
-
-```typescript
-import { createManyMyTable } from '../factories/index.js'
-
-const mockMyTable = createManyMyTable(10)
-
-// Add new handler
-http.get('*/rest/v1/my_table', ({ request }) => {
-  const url = new URL(request.url)
-  const query = parseSupabaseQuery(url)
-
-  let filteredData = applySupabaseFilters(mockMyTable, query)
-  filteredData = applySelect(filteredData, query.select)
-
-  return HttpResponse.json(filteredData)
-})
-```
+A view is defined with `kind: 'view'` and a `rows` function instead of a collection, and is only read.
 
 ### Extending Redis Mocks
 
