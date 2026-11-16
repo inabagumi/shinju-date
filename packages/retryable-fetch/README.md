@@ -1,6 +1,6 @@
 # @shinju-date/retryable-fetch
 
-`GET` / `HEAD` の一時的な失敗を再試行する `fetch`。
+一時的な失敗を再試行する `fetch`。
 
 ## 使い方
 
