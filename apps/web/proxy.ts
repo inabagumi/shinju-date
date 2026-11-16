@@ -1,6 +1,7 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import type { NextProxy, NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
+import { serverEnv } from '@/lib/env'
 import { getRedisClient } from '@/lib/redis'
 import { getLegacySearchRedirectPath } from '@/lib/search-redirect'
 
@@ -28,7 +29,7 @@ async function handleMaintenanceMode(
 export async function proxy(
   request: NextRequest,
 ): Promise<ReturnType<NextProxy>> {
-  if (process.env['ENABLE_MSW'] !== 'true') {
+  if (!serverEnv.ENABLE_MSW) {
     const maintenanceResponse = await handleMaintenanceMode(request)
 
     if (maintenanceResponse) {

@@ -1,6 +1,7 @@
 import { SITE_DESCRIPTION, SITE_NAME as siteName } from '@shinju-date/constants'
 import dedent from 'dedent'
 import { joinURL } from 'ufo'
+import { publicEnv } from '@/lib/env'
 import { getVideosPath } from '@/lib/video-kind-filter'
 
 /**
@@ -10,7 +11,7 @@ import { getVideosPath } from '@/lib/video-kind-filter'
 const SEARCH_TERMS = '{searchTerms}'
 
 export function GET(): Response {
-  const baseURL = process.env['NEXT_PUBLIC_BASE_URL'] ?? 'http://localhost:3000'
+  const baseURL = publicEnv.NEXT_PUBLIC_BASE_URL
   const body = dedent`
     <?xml version="1.0" encoding="utf-8"?>
     <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">
