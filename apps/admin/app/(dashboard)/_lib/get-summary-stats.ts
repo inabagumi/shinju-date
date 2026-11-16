@@ -3,7 +3,7 @@ import { formatDateKey } from '@shinju-date/temporal-fns'
 import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
 
-export type SummaryStats = {
+export interface SummaryStats {
   totalVideos: number
   visibleVideos: number
   scheduledVideos: number
@@ -13,13 +13,13 @@ export type SummaryStats = {
   totalTalents: number
 }
 
-export type TrendValue = {
+export interface TrendValue {
   current: number
   dayChange: number | null
   weekChange: number | null
 }
 
-export type SummaryStatsWithTrends = {
+export interface SummaryStatsWithTrends {
   totalVideos: TrendValue
   visibleVideos: TrendValue
   scheduledVideos: TrendValue

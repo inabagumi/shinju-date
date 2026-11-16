@@ -3,7 +3,7 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { _getPopularItemsFromRedis } from './_get-popular-items-from-redis'
 
-export type PopularKeyword = {
+export interface PopularKeyword {
   keyword: string
   count: number
 }
