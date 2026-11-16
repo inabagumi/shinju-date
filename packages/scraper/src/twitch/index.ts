@@ -7,8 +7,10 @@ export type {
   AddPastVideosResult,
   ErrorReporter,
   Logger,
+  RefreshVideoResult,
   ScraperOptions,
   TypedSupabaseClient,
+  VideoFields,
 } from '../types.js'
 export type {
   SavedTwitchUserIcon,

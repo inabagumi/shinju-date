@@ -1,4 +1,5 @@
 import type Database from '@shinju-date/database'
+import type { Tables } from '@shinju-date/database'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Logger } from './internal/logger.js'
 
@@ -68,3 +69,40 @@ export interface AddPastVideosResult {
   /** Number of videos the platform listed on the page that was read. */
   listed: number
 }
+
+/**
+ * The `videos` columns a refresh keeps in line with the platform: title,
+ * duration, start time, status and kind. Twitch has no kinds, so its
+ * `video_kind` is never changed.
+ */
+export type VideoFields = Pick<
+  Tables<'videos'>,
+  'duration' | 'published_at' | 'status' | 'title' | 'video_kind'
+>
+
+/** What `Scraper#refreshVideo` did with the video. */
+export type RefreshVideoResult =
+  /**
+   * The video was updated. `before` and `after` hold only the columns that
+   * changed; both are empty when only something else changed (a thumbnail
+   * that became available, or the archive a Twitch broadcast is linked to).
+   */
+  | {
+      after: Partial<VideoFields>
+      before: Partial<VideoFields>
+      status: 'updated'
+      /** The title of the video after the update. */
+      title: string
+    }
+  /** The video already matches the platform. */
+  | { status: 'unchanged'; title: string }
+  /**
+   * The platform no longer returns the video, so it was soft-deleted with the
+   * reason `unavailable`, exactly like the scheduled refreshes do.
+   */
+  | { status: 'unavailable' }
+  /**
+   * No video with that ID is saved (or it was deleted already), or it belongs
+   * to another platform.
+   */
+  | { status: 'not-found' }
