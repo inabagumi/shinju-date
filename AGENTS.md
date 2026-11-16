@@ -21,19 +21,19 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 
 ## 環境のセットアップ
 
-- 作業を始める前に、[docs/setup-guide.md](docs/setup-guide.md) を読む
-- Dev Container の設定（`.devcontainer/`）を変えたら、`@devcontainers/cli` でビルドして確かめる。手順は [.devcontainer/README.md](.devcontainer/README.md) の「Dockerfile のテスト」
+- 作業を始める前に、[セットアップガイド](docs/setup-guide.md)を読む
+- Dev Container の設定（`.devcontainer/`）を変えたら、`@devcontainers/cli` でビルドして確かめる（[Dockerfile のテスト](.devcontainer/README.md#dockerfile-のテスト)）
 
 ## 品質チェック
 
 - コードを変えたら、**必ず** `pnpm run check --fix` を実行する（Biome によるフォーマット、リント、未使用の import の削除）
 - TypeScript を変えたら、`pnpm run typecheck`（1つのパッケージなら `pnpm run typecheck --filter=<パッケージ名>`）も実行する
 
-理由: CI で同じものが実行され、失敗するとマージできません。Vitest はテストのファイルの型を検査しないため、型チェックは別に要ります（[CONTRIBUTING.md](CONTRIBUTING.md) の「型チェック」）。
+理由: CI で同じものが実行され、失敗するとマージできません。Vitest はテストのファイルの型を検査しないため、[型チェック](CONTRIBUTING.md#型チェック)は別に要ります。
 
 ## Next.js の公式スキル
 
-`.agents/skills/` に Next.js の公式スキルを4つ入れています（`.claude/skills/` からシンボリックリンク）。使いどころと `agent-browser` の入れ方は [docs/agent-skills.md](docs/agent-skills.md) を参照してください。
+`.agents/skills/` に Next.js の公式スキルを4つ入れています（`.claude/skills/` からシンボリックリンク）。[使いどころ](docs/agent-skills.md#入れているスキル)と [`agent-browser` の入れ方](docs/agent-skills.md#agent-browser)も読んでください。
 
 - `next-dev-loop`: 起動中の `next dev` に対して、MCP（`/_next/mcp`）と `agent-browser` で編集のたびに動作を確かめる
 - `next-cache-components-optimizer`: 指定したルートの静的シェルを広げ、`instant()` テストを回帰テストとして残す
@@ -49,14 +49,12 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 
 ## TypeScript の型定義
 
-- オブジェクトの型（React の Props、関数のオプションなど）は `type` ではなく `interface` で定義する
+- オブジェクトの型（React の Props、関数のオプションなど）は `type` ではなく `interface` で定義する（[理由と例](docs/coding-guidelines.md#typescript-型定義)）
 - ユニオン型、交差型、マップ型、条件型、タプル型は `type` を使う
-
-理由と例は [docs/coding-guidelines.md](docs/coding-guidelines.md#typescript-型定義) を参照してください。
 
 ## デザイン
 
-画面や部品を新しく作る・作り直すときは、**必ず** [docs/design-guidelines.md](docs/design-guidelines.md) を参照してください。要点は次のとおりです。
+画面や部品を新しく作る・作り直すときは、**必ず**[デザインのガイドライン](docs/design-guidelines.md)に従う。要点は次のとおりです。
 
 - 色はセマンティックカラー（`bg-surface`、`text-muted`、`bg-accent` など）で指定し、`dark:` で手書きしない
 - 文字サイズは `text-display` / `text-title` / `text-heading` / `text-body` / `text-meta` / `text-caption` を使う（`text-xs` / `text-sm` などは使わない）
@@ -255,20 +253,16 @@ CREATE POLICY "Enable update for admins"
 
 ## MSW による認証の模擬
 
-`apps/admin` の認証が要る画面は、MSW のハンドラーが Supabase Auth を模擬するので、本物のバックエンドなしで確かめられます。
+`apps/admin` の認証が要る画面は、[MSW](docs/msw-guide.md) のハンドラーが Supabase Auth を模擬するので、本物のバックエンドなしで確かめられます。
 
 - `ENABLE_MSW=true` に加えて `MSW_SUPABASE_AUTHENTICATED=true` を設定すると、ログインしなくても管理者のロールを持つモックのユーザー（`admin@example.com`）として扱われる
   - セッションの Cookie がない場合は、`apps/admin/lib/supabase/mock-session.ts` がモックのセッションを補う。モックのアクセストークンは MSW のハンドラーしか受け付けないので、本番の認証には影響しない
   - ログアウトしても認証済みのまま。ログイン画面を確かめるときは設定しない
 - 設定しない場合は、ログインフォームに `admin@example.com` / `password123` を入れてログインする。ログアウトすると Cookie が消える
 
-MSW の全般的な使い方は [docs/msw-guide.md](docs/msw-guide.md) を参照してください。
-
 ## コミットとプルリクエスト
 
-- コミットメッセージとプルリクエストのタイトルは、Conventional Commits の形式の平易な英語で書く（例: `feat(web): add new feature`、`fix(admin): resolve API issue`）
+- コミットメッセージとプルリクエストのタイトルは、[Conventional Commits の形式](CONTRIBUTING.md#コミットメッセージ)の平易な英語で書く（例: `feat(web): add new feature`、`fix(admin): resolve API issue`）
 - スコープは `apps/*` と `packages/*` のアプリやパッケージを単位にする
-- プルリクエストのタイトルはそのままコミットメッセージになるので、日本語を使わず、GitHub の UI に収まる1行にする
+- [プルリクエスト](CONTRIBUTING.md#pull-request-のフロー)のタイトルはそのままコミットメッセージになるので、日本語を使わず、GitHub の UI に収まる1行にする
 - 大きな変更は小さなコミットに分ける
-
-詳しくは [CONTRIBUTING.md](CONTRIBUTING.md) の「コミットメッセージ」と「Pull Request のフロー」を参照してください。

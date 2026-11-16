@@ -284,7 +284,6 @@ pnpm run build --filter=@shinju-date/msw-handlers
 
 - **[@shinju-date/msw-handlers](../../packages/msw-handlers/README.md)**: モックハンドラーパッケージの詳細
 - **[MSW Guide](../../docs/msw-guide.md)**: MSW統合の全体的なドキュメント
-- **[AGENTS.md](../../AGENTS.md)**: AI エージェント向けの、このプロジェクトの決まり（MSW による認証の模擬を含む）
 - **[MSW公式ドキュメント](https://mswjs.io/)**: MSW の詳細な使用方法
 
 ## コントリビューション

@@ -169,8 +169,6 @@ const key = 'summary:stats:2025-11-11'
 await redis.set(key, data)
 ```
 
-詳細は [AGENTS.md](AGENTS.md) の「Redis のキー」を参照してください。
-
 ### コミットメッセージ
 
 [Conventional Commits](https://www.conventionalcommits.org/) の形式に従ってください：
@@ -373,8 +371,6 @@ pnpm db:export
 
 ## AI エージェントとの協業
 
-AI エージェントが守る、このプロジェクトの決まりは [AGENTS.md](AGENTS.md) にまとめています。
-
 ### 各アプリの AGENTS.md（Next.js が管理するブロック）
 
 `apps/*/AGENTS.md` の `<!-- BEGIN:nextjs-agent-rules -->` から `<!-- END:nextjs-agent-rules -->` までのブロックは、コーディングエージェントが `next dev` を起動したときに Next.js が書き込みます。ブロックは手で編集せず、Next.js の更新などで `next dev` が書き換えた場合は、その差分をそのままコミットしてください。
@@ -463,7 +459,6 @@ MSW はサーバー側でだけ動きます。起動すると、開発サーバ�
 ### ドキュメント
 
 - [docs/](docs/): プロジェクト固有のドキュメント
-- [AGENTS.md](AGENTS.md): AI エージェント向けの、このプロジェクトの決まり
 
 ## ライセンス
 
