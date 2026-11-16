@@ -22,7 +22,7 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 ## 環境のセットアップ
 
 - 作業を始める前に、[セットアップガイド](docs/setup-guide.md)を読む
-- Dev Container の設定（`.devcontainer/`）を変えたら、`@devcontainers/cli` でビルドして確かめる（[Dockerfile のテスト](.devcontainer/README.md#dockerfile-のテスト)）
+- Dev Container の設定（`.devcontainer/`）を変えたら、`@devcontainers/cli` でビルドして確かめる（[Dev Container のテスト](.devcontainer/README.md#dev-container-のテスト)）
 
 ## 品質チェック
 

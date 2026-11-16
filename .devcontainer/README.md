@@ -1,416 +1,196 @@
-# Dev Container Configuration
+# Dev Container
 
-このディレクトリには、SHINJU DATEプロジェクトのDev Container設定が含まれています。
+このディレクトリには、SHINJU DATE の Dev Container（VS Code Dev Containers / GitHub Codespaces）の設定があります。
 
-## 設計原則と職責分離
+## 概要
 
-Dev Container環境は、以下の4つのファイルで構成され、それぞれが明確な役割を持っています：
+- **app**: 作業用のコンテナです。Node.js、pnpm、Terraform、PostgreSQL のクライアントが入っています
+- **Redis**: ルートの `compose.yml` が、app と並べて起動します
+- **Supabase**: app の中の Docker-in-Docker で、Supabase CLI（`pnpm exec supabase start`）が起動します
 
-### 1. Dockerfile - OS レベルのセットアップ
+バージョンは、リポジトリのほかの設定に合わせています。
 
-**職責**: コンテナイメージのビルド時に実行される、OSレベルの環境構築を担当します。
+| ツール    | Dev Container の設定                                    | 合わせる先                                                                  |
+| --------- | ------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Node.js   | `Dockerfile` の基底のイメージ（`typescript-node:5-26`） | `.node-version` と `package.json` の `devEngines`（同じメジャーバージョン） |
+| pnpm      | `Dockerfile` の `PNPM_VERSION`                          | `package.json` の `devEngines.packageManager`                               |
+| Terraform | `devcontainer.json` の Terraform の機能の `version`     | `terraform/versions.tf` の `required_version`                               |
 
-**含まれる内容**:
+Node.js のメジャーバージョンは、Renovate が `.node-version` と一緒に上げます（`.github/renovate.json` の「Node.js major」のグループ）。
 
-- apt パッケージのインストール（postgresql-client など）
-- pnpm のセットアップ（公式のインストールスクリプトを使用）
-- システム全体で必要な環境変数の設定
-
-**含まれない内容**:
-
-- プロジェクト固有の依存関係のインストール（pnpm install など）
-- データベースマイグレーションの適用
-- 型定義ファイルの生成
-
-**メリット**:
-
-- イメージのキャッシュが効くため、再ビルド時間が短縮される
-- CI/CD でも同じイメージを再利用できる
-- OS レベルの変更が必要な場合のみリビルドされる
-
-### 2. post-create.sh - プロジェクト固有の初期化
-
-**職責**: コンテナ起動後に一度だけ実行される、プロジェクト固有の初期化処理を担当します。
-
-**含まれる内容**:
-
-- プロジェクトの依存関係のインストール（`pnpm install --frozen-lockfile`）
-- Supabase データベースのリセットとマイグレーション適用
-- TypeScript 型定義の生成（`pnpm typegen`）
-
-**含まれない内容**:
-
-- OS レベルのパッケージインストール（apt-get など）
-- システムツールのインストール（pnpm など）
-
-**メリット**:
-
-- プロジェクトの変更に応じて柔軟に更新できる
-- イメージの再ビルドなしで変更を適用できる
-- 開発者ごとに異なる初期化処理を追加しやすい
-
-### 3. devcontainer.json - VS Code / GitHub Codespaces 設定
-
-**職責**: VS Code Dev Container および GitHub Codespaces の動作を定義します。
-
-**含まれる内容**:
-
-- VS Code 拡張機能の指定
-- エディタ設定
-- ポートフォワーディング設定
-- Docker Compose ファイルの参照
-- Dev Container Features の有効化
-- `postCreateCommand` の指定（post-create.sh へのパス）
-
-**含まれない内容**:
-
-- コンテナイメージの具体的なビルド手順（Dockerfile に記載）
-- バックエンドサービスの定義（compose.yml に記載）
-
-### 4. compose.override.yml - Dev Container 専用サービス定義
-
-**職責**: Dev Container で使用する `app` サービスのみを定義します。
-
-**含まれる内容**:
-
-- `app` サービスの Dockerfile ビルド設定
-- `privileged: true`（Docker-in-Docker でコンテナ内の dockerd を動かすために必要）
-- 環境変数のロード（`env_file` による `./config/dev-secrets.env` の参照）
-- ワークスペースのボリュームマウント（`.:/workspaces/shinju-date:cached`）
-- Supabase 接続 URL（DinD 上で公開される `127.0.0.1:54321`）
-- 依存サービスの指定（`depends_on` で `serverless-redis-http` など）
-
-**含まれない内容**:
-
-- Supabase サービス（Supabase CLI + Docker-in-Docker で管理）
-- Redis などの共有サービス（`../compose.yml` で定義）
-
-**補足**:
-
-- ルートの `compose.yml` と組み合わせて使用されます（`dockerComposeFile: ["../compose.yml", "compose.override.yml"]`）
-- `../compose.yml` が Redis などの共有開発サービスを定義しています
-- ボリュームマウントの `.` は、最初の compose ファイル（プロジェクトルートの `compose.yml`）からの相対パスです
-- Supabase は app コンテナ内の Docker-in-Docker で起動するため、bind mount パスがコンテナ FS 上で完結します
-
-## ファイル構成まとめ
+## ファイル構成
 
 ```
 .devcontainer/
-├── Dockerfile          # OS レベルセットアップ（イメージビルド時）
-├── post-create.sh      # プロジェクト固有初期化（コンテナ起動後、supabase start を含む）
-├── devcontainer.json   # VS Code / Codespaces 設定
-├── compose.override.yml  # Dev Container 専用サービス（app のみ）
-└── README.md           # このファイル
+├── Dockerfile            # OS レベルの準備（イメージのビルド時）
+├── post-create.sh        # プロジェクトの初期化（コンテナの作成後。supabase start を含む）
+├── devcontainer.json     # VS Code / Codespaces の設定
+├── devcontainer-lock.json  # Dev Container の機能のロックファイル
+├── compose.override.yml  # Dev Container 専用のサービス（app のみ）
+└── README.md             # このファイル
 
-../compose.yml           # ルートの compose.yml（Redis のみ）
-../config/               # 設定ファイル
-  └── dev-secrets.env    # 開発用シークレット（Supabase APIキー、Redisトークン）
-../supabase/             # Supabase CLI 設定・マイグレーション
-  ├── config.toml        # Supabase CLI ローカル設定
-  └── migrations/        # データベースマイグレーション
+../compose.yml            # 共有のサービス（Redis）
+../config/dev-secrets.env # 開発用のシークレット（Supabase の API キー、Redis のトークン）
+../supabase/              # Supabase CLI の設定とマイグレーション
 ```
 
-## 運用上の注意点
+### Dockerfile
 
-### Dockerfile のテスト
+コンテナのイメージのビルド時に実行する、OS レベルの準備を書きます。
 
-Dockerfile の変更をローカルでテストするには、`@devcontainers/cli` を使用してください：
+- apt のパッケージ（`postgresql-client` など）のインストール
+- pnpm のインストール（公式のインストールスクリプトを使う）
+
+プロジェクトの依存関係のインストールや、データベースの初期化は書きません（`post-create.sh` に書く）。イメージのキャッシュが効くため、再ビルドの時間が短くなります。
+
+### post-create.sh
+
+コンテナの作成後に一度だけ実行する、プロジェクトの初期化を書きます。
+
+- 依存関係のインストール（`pnpm install --frozen-lockfile`）
+- Supabase の起動（`pnpm exec supabase start`）と、データベースのリセット（マイグレーションとシードの適用）
+- TypeScript の型定義の生成（`pnpm typegen`）
+
+### devcontainer.json
+
+VS Code の拡張機能、転送するポート、Compose のファイル、Dev Container の機能（Docker-in-Docker、Terraform）、`postCreateCommand` を指定します。
+
+### compose.override.yml
+
+Dev Container で使う `app` サービスだけを定義します。
+
+- `privileged: true`（Docker-in-Docker で、コンテナの中の dockerd を動かすために必要）
+- `env_file` で `./config/dev-secrets.env` を読み込む
+- ワークスペースのマウント（`.:/workspaces/shinju-date:cached`）
+- Supabase の URL（Docker-in-Docker が公開する `http://127.0.0.1:54321`）と、Redis の URL（`http://serverless-redis-http:80`）
+- `depends_on` で `serverless-redis-http` を待つ
+
+ルートの `compose.yml` と組み合わせて使います（`dockerComposeFile: ["../compose.yml", "compose.override.yml"]`）。相対パスは、最初の Compose のファイル（プロジェクトのルートの `compose.yml`）から解決するため、`.` はプロジェクトのルートを指します。
+
+## ポート
+
+`devcontainer.json` の `forwardPorts` で、次のポートをホストに転送します。
+
+| ポート | サービス        | 説明                     |
+| ------ | --------------- | ------------------------ |
+| 3000   | Web             | `apps/web`               |
+| 4000   | Admin           | `apps/admin`             |
+| 5000   | Batch           | `apps/batch`             |
+| 8079   | Redis HTTP API  | Upstash 互換の REST API  |
+| 54321  | Supabase API    | Supabase の API の入り口 |
+| 54323  | Supabase Studio | Web の管理画面           |
+| 54324  | Mailpit Web UI  | メールの確認画面         |
+
+次のポートは転送しませんが、コンテナの中から使えます。
+
+| 接続先            | サービス   | 説明                                  |
+| ----------------- | ---------- | ------------------------------------- |
+| `redis:6379`      | Redis      | Redis への直接の接続（`compose.yml`） |
+| `127.0.0.1:54322` | PostgreSQL | データベースへの直接の接続            |
+
+Supabase のポートを変える場合は、`supabase/config.toml` を編集してください。
+
+## Docker-in-Docker と Redis
+
+- **Supabase**: app コンテナの中の Docker-in-Docker（`docker-in-docker` の機能）の上で、`supabase start` が起動します。ポートは、app コンテナの `127.0.0.1` に公開されます。bind mount のパスも、コンテナのファイルシステムの中で完結します
+- **Redis**: 外側の Docker Compose（`compose.yml`）が、app と並べて起動します。app からは、サービス名 `serverless-redis-http` で接続します
+- Dev Container の中で `docker ps` を実行すると、**Docker-in-Docker の上のコンテナ（主に Supabase）だけ**が見えます。外側の Redis のコンテナは、ホストの Docker に属するため、表示されません。Redis が動いているかは、`curl http://serverless-redis-http/` などで確かめてください
+
+## 使い方
+
+### 初回
+
+1. リポジトリをクローンする
+2. VS Code で開き、`Dev Containers: Reopen in Container` を実行する
+3. `Dockerfile` からイメージがビルドされ、`post-create.sh` が依存関係とデータベースを初期化する
+
+### 日常の開発
+
+- 依存関係を更新した場合は、コンテナの中で `pnpm install` を実行する
+- 開発サーバーは `pnpm dev` で起動する
+- Supabase が止まっている場合は、`pnpm exec supabase start` で起動する
+- Supabase の状態は `pnpm exec supabase status`、ログは `pnpm exec supabase logs` で確かめる
+- データベースをリセットする場合は、`pnpm exec supabase db reset` を実行する
+
+### マイグレーションの追加
+
+マイグレーションは `supabase/migrations/` にあり、`supabase db reset` で適用されます。
 
 ```bash
-# CLIのインストール（初回のみ）
+pnpm exec supabase migration new description
+```
+
+SQL を書いたら、`pnpm exec supabase db reset` でローカルに適用します。
+
+## 設定を変更した場合
+
+| 変更したファイル                      | 反映のしかた                                                                                   |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `Dockerfile`、`devcontainer.json`     | `Dev Containers: Rebuild Container` で、コンテナを作り直す                                     |
+| `compose.yml`、`compose.override.yml` | コンテナを作り直す（`devcontainer down` の後に `devcontainer up`）                             |
+| `post-create.sh`                      | 次のコンテナの作成時に反映される。今のコンテナでは `./.devcontainer/post-create.sh` を実行する |
+
+## Dev Container のテスト
+
+`.devcontainer/` の設定を変更した場合は、**必ず** `@devcontainers/cli` でローカルでテストしてください。CI では、`.github/workflows/devcontainer-test.yml` が同じ手順で、Node.js のバージョン、`terraform validate`、`pnpm dev` を確かめます。
+
+```bash
+# CLI のインストール（初回のみ）
 npm install -g @devcontainers/cli
 
-# Dev Container のビルドとテスト
+# Dev Container のビルドと起動
 devcontainer up --workspace-folder .
 
-# テスト後のクリーンアップ
+# Dev Container の中でコマンドを実行する
+devcontainer exec --workspace-folder . node --version
+devcontainer exec --workspace-folder . terraform -chdir=terraform validate
+
+# テスト後の後片付け
 devcontainer down --workspace-folder .
 ```
-
-詳細は CONTRIBUTING.md の「Dev Container設定の開発とデバッグ」セクションを参照してください。
-
-### Dockerfile を変更した場合
-
-Dockerfile を変更した場合は、**必ず Dev Container をリビルド**してください：
-
-1. VS Code のコマンドパレット（`Cmd+Shift+P` / `Ctrl+Shift+P`）を開く
-2. `Dev Containers: Rebuild Container` を実行
-
-または、ローカルで `@devcontainers/cli` を使用してテスト：
-
-```bash
-# CLIのインストール（初回のみ）
-npm install -g @devcontainers/cli
-
-# Dev Container のビルドとテスト
-devcontainer up --workspace-folder .
-
-# テスト後のクリーンアップ
-devcontainer down --workspace-folder .
-```
-
-### post-create.sh を変更した場合
-
-post-create.sh の変更は、次回のコンテナ作成時に自動的に適用されます。イメージのリビルドは不要です。
-
-ただし、既存のコンテナで変更を適用するには：
-
-```bash
-# コンテナ内で手動実行
-./.devcontainer/post-create.sh
-```
-
-### devcontainer.json を変更した場合
-
-devcontainer.json の変更は、**必ず Dev Container をリビルド**してください：
-
-- VS Code: `Dev Containers: Rebuild Container`
-- またはコンテナを完全に削除して再作成
-
-### compose.yml / compose.override.yml を変更した場合
-
-compose 設定の変更は、**Dev Container を再作成**してください：
-
-```bash
-# @devcontainers/cli を使う場合
-devcontainer down --workspace-folder .
-devcontainer up --workspace-folder .
-
-# VS Code の場合
-# Dev Containers: Rebuild Container を実行
-```
-
-## 開発ワークフロー
-
-### 初回セットアップ
-
-1. リポジトリをクローン
-2. VS Code で開く
-3. `Dev Containers: Reopen in Container` を実行
-4. Dockerfile からイメージがビルドされる（初回のみ）
-5. post-create.sh が自動実行され、依存関係とデータベースが初期化される
-
-### 日常的な開発
-
-- コンテナは一度ビルドすれば、そのまま使い続けられます
-- プロジェクトの依存関係を更新した場合は、コンテナ内で `pnpm install` を実行
-- Supabase が停止している場合は `pnpm exec supabase start` で再起動
-- データベースをリセットしたい場合は `pnpm exec supabase db reset` を実行
 
 ## トラブルシューティング
 
-### ビルドが遅い
+### post-create.sh が失敗する
 
-Dockerfile のキャッシュが効いていない可能性があります。不要な `RUN` 命令を統合するか、変更頻度の低い命令を上部に配置してください。
-
-### post-create.sh がエラーになる
-
-post-create.sh のログを確認し、該当する処理を手動で実行してデバッグしてください：
+ログを確かめ、失敗した処理を手で実行してください。
 
 ```bash
-# 依存関係のインストール
 pnpm install --frozen-lockfile
-
-# Supabase の起動
 pnpm exec supabase start
-
-# データベースのリセット
 pnpm exec supabase db reset
-
-# 型定義の生成
 pnpm typegen
 ```
 
 ### コンテナが起動しない
 
-Docker Compose のログを確認してください：
+Docker Compose のログを確かめてください。
 
 ```bash
 docker compose logs app
 ```
 
-Supabase のログを確認してください：
+### Supabase に接続できない
 
 ```bash
-pnpm exec supabase logs
-```
-
-## 参考資料
-
-- [Dev Containers 仕様](https://containers.dev/)
-- [Docker Compose ドキュメント](https://docs.docker.com/compose/)
-- [Supabase公式ドキュメント](https://supabase.com/docs)
-
----
-
-## 概要
-
-このプロジェクトでは、Docker ComposeをRedisサービスの管理に使用し、SupabaseサービスはSupabase CLI（`supabase start`）で管理します。サービス定義は以下のファイルに分かれています：
-
-- **`../compose.yml`（ルート）**: Redis等の共有開発サービス（Supabaseを除く）
-- **`.devcontainer/compose.override.yml`**: Dev Container専用のappサービス
-
-## ファイル構成
-
-- **devcontainer.json** - VSCode Dev Container / GitHub Codespaces の設定
-- **compose.override.yml** - Dev Container専用サービス（appのみ）
-- **post-create.sh** - コンテナ作成後に実行される初期化スクリプト（`supabase start`を含む）
-
-### ルートレベルの設定ファイル
-
-以下のファイルはプロジェクトルートの`config/`ディレクトリに配置されています：
-
-- **config/dev-secrets.env** - 開発用シークレット（Supabase APIキー、Redisトークン）
-
-## サービス一覧
-
-### アプリケーション開発
-
-- **app** - TypeScript/Node.js 開発コンテナ（メインの作業環境）
-
-### Redis（compose.yml）
-
-- **redis** - Redis 8.4.0（ポート6379）
-- **serverless-redis-http** - Upstash互換REST API（ポート8079）
-
-### Supabase（Supabase CLI管理）
-
-Supabaseサービスは `supabase start` コマンドで起動され、Dev Container の `post-create.sh` で自動的に実行されます：
-
-- **API / Kong** (port 54321): APIゲートウェイ
-- **PostgreSQL** (port 54322): データベース
-- **Supabase Studio** (port 54323): Web管理UI
-- **Mailpit** (port 54324): メールテスト用
-
-## 使い方
-
-### サービスの起動（Redisのみ）
-
-```bash
-docker compose up -d
-```
-
-### Supabaseの起動
-
-```bash
-pnpm exec supabase start
-```
-
-### サービスの状態確認
-
-```bash
-# Redis
-docker compose ps
-
-# Supabase
 pnpm exec supabase status
-```
-
-### サービスのログ確認
-
-```bash
-# Redis
-docker compose logs -f
-
-# Supabase
-pnpm exec supabase logs
-```
-
-### サービスの停止
-
-```bash
-# Redis
-docker compose down
-
-# Supabase
-pnpm exec supabase stop
-```
-
-## ポートマッピング
-
-| サービス        | ポート | 説明                            |
-| --------------- | ------ | ------------------------------- |
-| Supabase API    | 54321  | Supabase API エントリーポイント |
-| PostgreSQL      | 54322  | データベース直接接続            |
-| Supabase Studio | 54323  | Web管理UI                       |
-| Mailpit Web UI  | 54324  | メール確認UI                    |
-| Redis           | 6379   | Redis直接接続                   |
-| Redis HTTP API  | 8079   | Upstash互換REST API             |
-
-## データベースマイグレーション
-
-マイグレーションは`../supabase/migrations/`ディレクトリに配置されており、`supabase db reset`で適用されます。
-
-### 新しいマイグレーションの追加
-
-1. `supabase/migrations/`に新しいSQLファイルを作成
-
-   ```bash
-   pnpm exec supabase migration new description
-   ```
-
-2. マイグレーションSQLを記述
-
-3. ローカルで適用
-
-   ```bash
-   pnpm exec supabase db reset
-   ```
-
-## トラブルシューティング
-
-### サービスが起動しない
-
-```bash
-# Supabaseのログを確認
-pnpm exec supabase logs
-
-# Supabaseを再起動
 pnpm exec supabase stop
 pnpm exec supabase start
 ```
 
-### ポート競合
+### ビルドが遅い
 
-`supabase/config.toml`でSupabaseのポートを変更してください：
+`Dockerfile` のキャッシュが効いていない可能性があります。`RUN` をまとめるか、変更の少ない命令を上に置いてください。
 
-```toml
-[api]
-port = 54321  # 変更する
+## 注意
 
-[db]
-port = 54322  # 変更する
-```
-
-### データベース接続エラー
-
-```bash
-# Supabaseの状態を確認
-pnpm exec supabase status
-
-# データベースをリセット
-pnpm exec supabase db reset
-```
-
-## 環境変数
-
-`config/dev-secrets.env`に開発用シークレットが定義されています。Supabase CLI のデフォルトの JWT シークレットに対応したAPIキーが含まれています。
-
-## Docker-in-Docker と Redis の関係
-
-- **Supabase**: app コンテナ内の Docker-in-Docker（`docker-in-docker` feature）上で `supabase start` により起動します。ポートは app コンテナの `localhost`（`127.0.0.1`）に公開されます。
-- **Redis**: 外側の Docker Compose（`compose.yml`）が app と並べて起動します。app からはサービス名 `serverless-redis-http` で到達します。
-- Dev Container 内で `docker ps` を実行すると **DinD 上のコンテナ（主に Supabase）だけ**が見えます。外側の Redis コンテナはホスト側の Docker に属するため、ここでは表示されません。Redis の生死確認は Dev Container 起動時の `depends_on` と、`curl http://serverless-redis-http/` などで行ってください。
-
-## 注意事項
-
-- **機密情報**: `config/dev-secrets.env`には開発用の固定値のみを使用してください。
-- **本番環境**: この設定は開発環境専用です。本番環境では使用しないでください。
-- **Docker-in-Docker**: app サービスは `privileged: true` でコンテナ内に独立した Docker daemon を起動します。
+- `config/dev-secrets.env` には、開発用の固定の値だけを書いてください
+- この設定は開発環境専用です。本番環境では使わないでください
+- app サービスは `privileged: true` で、コンテナの中に独立した Docker のデーモンを起動します
 
 ## 参考資料
 
-- [Supabase公式ドキュメント](https://supabase.com/docs)
-- [Supabase CLIリファレンス](https://supabase.com/docs/reference/cli/introduction)
-- [Docker Compose ドキュメント](https://docs.docker.com/compose/)
-- [Dev Containers 仕様](https://containers.dev/)
+- [Dev Containers の仕様](https://containers.dev/)
+- [Docker Compose のドキュメント](https://docs.docker.com/compose/)
+- [Supabase のドキュメント](https://supabase.com/docs)
+- [Supabase CLI のリファレンス](https://supabase.com/docs/reference/cli/introduction)
