@@ -821,6 +821,16 @@ describe('Supabase Handlers', () => {
 
         expect(twice.status).toBe(400)
         expect(await twice.json()).toMatchObject({ code: '21000' })
+        expect(
+          await (
+            await fetch(
+              `${restUrl}/terms?select=id,term&id=in.(${first?.id},${second?.id})&order=term.asc`,
+            )
+          ).json(),
+        ).toEqual([
+          { id: first?.id, term: first?.term },
+          { id: second?.id, term: second?.term },
+        ])
 
         vi.spyOn(Temporal.Now, 'instant').mockReturnValue(
           Temporal.Instant.from('2099-01-01T00:00:00Z'),
