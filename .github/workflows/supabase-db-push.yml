@@ -8,8 +8,7 @@ on:
       - supabase/**
 
 # Never apply migrations to production twice at the same time, and never stop
-# one halfway. A newer push waits until the running one finishes. (If several
-# pushes are waiting, only the newest one runs, and it has all the migrations.)
+# one halfway. A newer push waits until the running one finishes.
 concurrency:
   group: supabase-db-push
   cancel-in-progress: false
