@@ -181,4 +181,28 @@ describe('retryableFetch', () => {
     ).rejects.toThrow()
     expect(fetchMock).not.toHaveBeenCalled()
   })
+
+  it('uses the signal of a Request object', async () => {
+    const controller = new AbortController()
+    controller.abort()
+
+    await expect(
+      retryableFetch(new Request(URL, { signal: controller.signal })),
+    ).rejects.toThrow()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('ignores the signal of a Request object when init.signal is null', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    fetchMock.mockResolvedValue(respond(200))
+
+    const response = await retryableFetch(
+      new Request(URL, { signal: controller.signal }),
+      { signal: null },
+    )
+
+    expect(response.status).toBe(200)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
 })

@@ -29,10 +29,12 @@ function getSignal(
   input: RequestInfo | URL,
   init?: RequestInit,
 ): AbortSignal | undefined {
-  const signal =
-    init?.signal ?? (input instanceof Request ? input.signal : null)
+  // `signal: null` detaches the request's signal, as in `fetch`.
+  if (init?.signal !== undefined) {
+    return init.signal ?? undefined
+  }
 
-  return signal ?? undefined
+  return input instanceof Request ? input.signal : undefined
 }
 
 /** Thrown inside the retry loop to retry a response that may change. */
