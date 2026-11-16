@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest'
-import { restoreAction } from '../index'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { restoreAction, toggleVisibilityAction } from '../index'
 
 // Mock dependencies
 vi.mock('@/lib/supabase', () => ({
@@ -340,5 +340,232 @@ describe('restoreAction', () => {
 
     expect(result.success).toBe(false)
     expect(result.error).toBeTruthy()
+  })
+})
+
+interface ToggleVideo {
+  id: string
+  title: string
+  visible: boolean
+}
+
+interface UpdateCall {
+  eq: [string, unknown][]
+  ids: string[]
+  values: Record<string, unknown>
+}
+
+interface ToggleMockOptions {
+  /** 指定した切り替え先の UPDATE をエラーにする */
+  failVisible?: boolean
+  /** UPDATE の前にほかの操作で切り替わった動画の ID */
+  changedIds?: string[]
+}
+
+/**
+ * 読み取りの SELECT と、切り替え先ごとの UPDATE を模擬する Supabase クライアントを作る。
+ */
+function createToggleSupabaseMock(
+  videos: ToggleVideo[],
+  { changedIds = [], failVisible }: ToggleMockOptions = {},
+) {
+  const updateCalls: UpdateCall[] = []
+
+  const from = vi.fn(() => {
+    let call: UpdateCall | undefined
+
+    const builder = {
+      eq: vi.fn((column: string, value: unknown) => {
+        call?.eq.push([column, value])
+        return builder
+      }),
+      in: vi.fn((_column: string, ids: string[]) => {
+        if (!call) {
+          return Promise.resolve({
+            data: videos.filter((video) => ids.includes(video.id)),
+            error: null,
+          })
+        }
+
+        call.ids = ids
+        return builder
+      }),
+      select: vi.fn(() => {
+        if (!call) {
+          return builder
+        }
+
+        const { values } = call
+
+        if (values['visible'] === failVisible) {
+          return Promise.resolve({
+            data: null,
+            error: { message: 'Database error' },
+          })
+        }
+
+        const [, expectedVisible] =
+          call.eq.find(([column]) => column === 'visible') ?? []
+
+        return Promise.resolve({
+          data: videos
+            .filter(
+              (video) =>
+                call?.ids.includes(video.id) &&
+                !changedIds.includes(video.id) &&
+                video.visible === expectedVisible,
+            )
+            .map(({ id, title }) => ({ id, title })),
+          error: null,
+        })
+      }),
+      update: vi.fn((values: Record<string, unknown>) => {
+        call = { eq: [], ids: [], values }
+        updateCalls.push(call)
+        return builder
+      }),
+    }
+
+    return builder
+  })
+
+  return { client: { from }, updateCalls }
+}
+
+describe('toggleVisibilityAction', () => {
+  const videos: ToggleVideo[] = [
+    { id: 'video-id-1', title: 'Hidden Video', visible: false },
+    { id: 'video-id-2', title: 'Visible Video 1', visible: true },
+    { id: 'video-id-3', title: 'Visible Video 2', visible: true },
+  ]
+  const ids = videos.map((video) => video.id)
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  async function useSupabaseMock(options?: ToggleMockOptions) {
+    const { createSupabaseServerClient } = await import('@/lib/supabase')
+    const mock = createToggleSupabaseMock(videos, options)
+
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(
+      mock.client as never,
+    )
+
+    return mock
+  }
+
+  it('should return error when ids array is empty', async () => {
+    const result = await toggleVisibilityAction([])
+
+    expect(result).toEqual({
+      error: '動画が選択されていません。',
+      success: false,
+    })
+  })
+
+  it('should update videos in one query per target visibility', async () => {
+    const { createAuditLog } = await import('@/lib/audit-log')
+    const { revalidatePath } = await import('next/cache')
+    const { revalidateTags } = await import('@shinju-date/web-cache')
+    const { updateCalls } = await useSupabaseMock()
+
+    const result = await toggleVisibilityAction(ids)
+
+    expect(result).toEqual({ success: true, updatedCount: 3 })
+    expect(updateCalls).toEqual([
+      {
+        eq: [['visible', false]],
+        ids: ['video-id-1'],
+        values: { updated_at: '2024-11-24T17:00:00Z', visible: true },
+      },
+      {
+        eq: [['visible', true]],
+        ids: ['video-id-2', 'video-id-3'],
+        values: { updated_at: '2024-11-24T17:00:00Z', visible: false },
+      },
+    ])
+    expect(createAuditLog).toHaveBeenCalledTimes(3)
+    for (const video of videos) {
+      expect(createAuditLog).toHaveBeenCalledWith(
+        'VIDEO_VISIBILITY_TOGGLE',
+        'videos',
+        video.id,
+        { entityName: video.title },
+      )
+      expect(revalidatePath).toHaveBeenCalledWith(`/videos/${video.id}`)
+    }
+    expect(revalidatePath).toHaveBeenCalledWith('/videos')
+    expect(revalidateTags).toHaveBeenCalledWith(['videos'])
+  })
+
+  it('should log and revalidate updated videos when one update fails', async () => {
+    const { createAuditLog } = await import('@/lib/audit-log')
+    const { revalidatePath } = await import('next/cache')
+    const { revalidateTags } = await import('@shinju-date/web-cache')
+    const { logger } = await import('@shinju-date/logger')
+    await useSupabaseMock({ failVisible: true })
+
+    const result = await toggleVisibilityAction(ids)
+
+    expect(result).toEqual({
+      error: '2 件を更新し、1 件は失敗しました。',
+      success: false,
+      updatedCount: 2,
+    })
+    expect(createAuditLog).toHaveBeenCalledTimes(2)
+    expect(createAuditLog).not.toHaveBeenCalledWith(
+      'VIDEO_VISIBILITY_TOGGLE',
+      'videos',
+      'video-id-1',
+      expect.anything(),
+    )
+    expect(revalidatePath).toHaveBeenCalledWith('/videos')
+    expect(revalidatePath).toHaveBeenCalledWith('/videos/video-id-2')
+    expect(revalidatePath).toHaveBeenCalledWith('/videos/video-id-3')
+    expect(revalidatePath).not.toHaveBeenCalledWith('/videos/video-id-1')
+    expect(revalidateTags).toHaveBeenCalledWith(['videos'])
+    expect(logger.error).toHaveBeenCalledWith('動画の表示切替に失敗しました', {
+      error: { message: 'Database error' },
+      ids: 'video-id-1',
+    })
+  })
+
+  it('should not log or revalidate when no video is updated', async () => {
+    const { createAuditLog } = await import('@/lib/audit-log')
+    const { revalidatePath } = await import('next/cache')
+    const { revalidateTags } = await import('@shinju-date/web-cache')
+    await useSupabaseMock({ changedIds: ['video-id-1'], failVisible: false })
+
+    const result = await toggleVisibilityAction(ids)
+
+    expect(result).toEqual({
+      error: '動画の表示状態を更新できませんでした。',
+      success: false,
+      updatedCount: 0,
+    })
+    expect(createAuditLog).not.toHaveBeenCalled()
+    expect(revalidatePath).not.toHaveBeenCalled()
+    expect(revalidateTags).not.toHaveBeenCalled()
+  })
+
+  it('should skip videos changed by another operation after reading', async () => {
+    const { createAuditLog } = await import('@/lib/audit-log')
+    await useSupabaseMock({ changedIds: ['video-id-2'] })
+
+    const result = await toggleVisibilityAction(ids)
+
+    expect(result).toEqual({
+      error: '2 件を更新し、1 件は失敗しました。',
+      success: false,
+      updatedCount: 2,
+    })
+    expect(createAuditLog).toHaveBeenCalledTimes(2)
+    expect(createAuditLog).not.toHaveBeenCalledWith(
+      'VIDEO_VISIBILITY_TOGGLE',
+      'videos',
+      'video-id-2',
+      expect.anything(),
+    )
   })
 })

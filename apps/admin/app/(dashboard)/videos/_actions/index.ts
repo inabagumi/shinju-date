@@ -7,9 +7,15 @@ import { revalidatePath } from 'next/cache'
 import { createAuditLog } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 
+interface VideoVisibilityGroup {
+  ids: string[]
+  visible: boolean
+}
+
 export async function toggleVisibilityAction(ids: string[]): Promise<{
   success: boolean
   error?: string
+  updatedCount?: number
 }> {
   const auth = await requireAuthenticatedUser()
 
@@ -40,38 +46,77 @@ export async function toggleVisibilityAction(ids: string[]): Promise<{
 
     const now = Temporal.Now.instant()
 
-    // Toggle visibility for each video
-    const updatePromises = videos.map((video) =>
-      supabaseClient
-        .from('videos')
-        .update({
-          updated_at: toDBString(now),
-          visible: !video.visible,
-        })
-        .eq('id', video.id),
-    )
+    // 切り替え先ごとにまとめ、表示にする動画と非表示にする動画をそれぞれ1回で更新する
+    const groups: VideoVisibilityGroup[] = [
+      {
+        ids: videos.filter((video) => !video.visible).map((video) => video.id),
+        visible: true,
+      },
+      {
+        ids: videos.filter((video) => video.visible).map((video) => video.id),
+        visible: false,
+      },
+    ].filter((group) => group.ids.length > 0)
 
-    const results = await Promise.all(updatePromises)
-
-    // Check if any update failed
-    const hasError = results.some(({ error }) => error !== null)
-
-    if (hasError) {
-      return { error: '一部の動画の更新に失敗しました。', success: false }
-    }
-
-    // Log audit entries for each video
-    await Promise.all(
-      videos.map((video) =>
-        createAuditLog('VIDEO_VISIBILITY_TOGGLE', 'videos', video.id, {
-          entityName: video.title,
-        }),
+    const results = await Promise.all(
+      groups.map((group) =>
+        supabaseClient
+          .from('videos')
+          .update({
+            updated_at: toDBString(now),
+            visible: group.visible,
+          })
+          .in('id', group.ids)
+          // 読み取った後にほかの操作で切り替わった動画は更新しない
+          .eq('visible', !group.visible)
+          .select('id, title'),
       ),
     )
 
-    revalidatePath('/videos')
-    await revalidateTags(['videos'])
-    return { success: true }
+    const updatedVideos = results.flatMap(({ data }) => data ?? [])
+
+    for (const [index, { error }] of results.entries()) {
+      if (error) {
+        logger.error('動画の表示切替に失敗しました', {
+          error,
+          ids: groups[index]?.ids.join(','),
+        })
+      }
+    }
+
+    // 更新された動画には、一部が失敗した場合でも監査ログと再検証を行う
+    if (updatedVideos.length > 0) {
+      await Promise.all(
+        updatedVideos.map((video) =>
+          createAuditLog('VIDEO_VISIBILITY_TOGGLE', 'videos', video.id, {
+            entityName: video.title,
+          }),
+        ),
+      )
+
+      revalidatePath('/videos')
+
+      for (const video of updatedVideos) {
+        revalidatePath(`/videos/${video.id}`)
+      }
+
+      await revalidateTags(['videos'])
+    }
+
+    const failedCount = videos.length - updatedVideos.length
+
+    if (failedCount > 0) {
+      return {
+        error:
+          updatedVideos.length > 0
+            ? `${updatedVideos.length} 件を更新し、${failedCount} 件は失敗しました。`
+            : '動画の表示状態を更新できませんでした。',
+        success: false,
+        updatedCount: updatedVideos.length,
+      }
+    }
+
+    return { success: true, updatedCount: updatedVideos.length }
   } catch (error) {
     logger.error('動画の表示切替に失敗しました', {
       error,
