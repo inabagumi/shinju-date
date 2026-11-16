@@ -37,37 +37,9 @@ pnpm install
 
 ## Usage
 
-### Option 1: Using experimental.adapterPath (Recommended)
+### Using NODE_OPTIONS
 
-Use Next.js's deployment adapter system to configure MSW:
-
-**In your `next.config.ts`:**
-
-```typescript
-import type { NextConfig } from 'next'
-
-const nextConfig: NextConfig = {
-  experimental: {
-    adapterPath: import.meta.resolve('@shinju-date/msw-handlers/adapter'),
-  },
-  // ... other config
-}
-
-export default nextConfig
-```
-
-**Then just set environment variable:**
-
-```bash
-ENABLE_MSW=true pnpm run build
-ENABLE_MSW=true pnpm run dev
-```
-
-The adapter automatically configures `NODE_OPTIONS` when MSW is enabled, ensuring MSW is loaded in all processes and worker threads.
-
-### Option 2: Using NODE_OPTIONS directly
-
-For more explicit control, set `NODE_OPTIONS` manually:
+To load MSW during a build, set `NODE_OPTIONS`:
 
 ```bash
 NODE_OPTIONS="--import @shinju-date/msw-handlers/register" ENABLE_MSW=true pnpm run build

@@ -183,34 +183,6 @@ CIでも同じスクリプトで `apps/web` と `apps/admin` のビルドを確�
 > [!NOTE]
 > `ENABLE_MSW=true` だけでは、ビルド時にMSWが起動しません。`instrumentation.ts` の `register()` はリクエスト処理時にのみ呼ばれ、静的生成のワーカーでは実行されないためです（[仕組み](#仕組み)を参照）。
 
-#### その他の方法: Deployment Adapter
-
-Next.jsのアダプターシステムを使用してMSWを設定することもできます。
-
-**ステップ1: `next.config.ts` を更新**
-
-```typescript
-import type { NextConfig } from 'next'
-
-const nextConfig: NextConfig = {
-  experimental: {
-    adapterPath: import.meta.resolve('@shinju-date/msw-handlers/adapter'),
-  },
-  // ... その他の設定
-}
-
-export default nextConfig
-```
-
-**ステップ2: MSWを有効にしてビルドまたは開発**
-
-```bash
-ENABLE_MSW=true pnpm run build
-ENABLE_MSW=true pnpm run dev
-```
-
-アダプターは自動的に`NODE_OPTIONS`を設定し、すべてのプロセスとワーカースレッドでMSWをロードします。
-
 ### 環境変数設定
 
 `.env.local` ファイルに以下の変数を設定：
