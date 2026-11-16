@@ -278,23 +278,20 @@ function slugify(heading) {
     text = text.replace(/<[^<>]*>/g, '')
   } while (text !== previous)
 
-  // Remove the emphasis marks, but keep the content of code spans as it is
+  // Remove the emphasis marks, but keep the content of code spans as it is.
+  // Code spans are replaced with placeholders first, so that emphasis around
+  // a code span is matched as a whole.
+  const codeSpans = []
+
   text = text
-    .split(/(`+)([^`]*?)\1/)
-    .map((part, index) => {
-      if (index % 3 === 1) {
-        return ''
-      }
+    .replace(/(`+)([^`]*?)\1/g, (_match, _ticks, content) => {
+      codeSpans.push(content)
 
-      if (index % 3 === 2) {
-        return part
-      }
-
-      return part
-        .replace(/\*/g, '')
-        .replace(/(^|[^\p{L}\p{N}_])_+([^_]+?)_+(?=$|[^\p{L}\p{N}_])/gu, '$1$2')
+      return `\uE000${codeSpans.length - 1}\uE001`
     })
-    .join('')
+    .replace(/\*/g, '')
+    .replace(/(^|[^\p{L}\p{N}_])_+([^_]+?)_+(?=$|[^\p{L}\p{N}_])/gu, '$1$2')
+    .replace(/\uE000(\d+)\uE001/g, (_match, index) => codeSpans[Number(index)])
 
   return text
     .trim()
