@@ -305,7 +305,7 @@ importers:
       '@shinju-date/msw-handlers':
         specifier: workspace:*
         version: link:../../packages/msw-handlers
-      '@tailwindcss/postcss':
+      '@tailwindcss/turbopack':
         specifier: 4.3.5
         version: 4.3.5
       '@tailwindcss/typography':
@@ -344,9 +344,6 @@ importers:
       msw:
         specifier: 3.0.5
         version: 3.0.5(@types/node@26.6.6)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0))
-      postcss-load-config:
-        specifier: 6.0.1
-        version: 6.0.1(jiti@2.7.0)(postcss@8.5.33)
       rehype-external-links:
         specifier: 3.0.0
         version: 3.0.0
@@ -647,7 +644,7 @@ importers:
       '@shinju-date/msw-handlers':
         specifier: workspace:*
         version: link:../../packages/msw-handlers
-      '@tailwindcss/postcss':
+      '@tailwindcss/turbopack':
         specifier: 4.3.5
         version: 4.3.5
       '@tailwindcss/typography':
@@ -686,12 +683,6 @@ importers:
       msw:
         specifier: 3.0.5
         version: 3.0.5(@types/node@26.6.6)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0))
-      postcss:
-        specifier: 8.5.33
-        version: 8.5.33
-      postcss-load-config:
-        specifier: 6.0.1
-        version: 6.0.1(jiti@2.7.0)(postcss@8.5.33)
       rehype-external-links:
         specifier: 3.0.0
         version: 3.0.0
@@ -3412,6 +3403,9 @@ packages:
 
   '@tailwindcss/postcss@4.3.5':
     resolution: {integrity: sha512-FAV37Tlx9wBiT/hkfgVD0Q6CWsP2oUX3lf28nrfjW8+ksILjnpuFulUqWDfNR4/ZiEHHDRBX8DUTzD1Rys687A==}
+
+  '@tailwindcss/turbopack@4.3.5':
+    resolution: {integrity: sha512-0f0rOTyz4yGtPzpSiIP3ppAaYtMnQbGnEsHPGK4Yy8wNbE4xZWlNPjWtD6oyXvQZTg2N0XF4BZEhfsgvJe889g==}
 
   '@tailwindcss/typography@0.5.20':
     resolution: {integrity: sha512-hwbzQuNUfcPvbegQFatVPl/MY/tcM9KLl963hQ5laJKPh81TEZ1+dNG9PirGvcaDBkp+BCshExAyKVPW91dozw==}
@@ -7721,6 +7715,13 @@ snapshots:
       '@tailwindcss/node': 4.3.5
       '@tailwindcss/oxide': 4.3.5
       postcss: 8.5.33
+      tailwindcss: 4.3.5
+
+  '@tailwindcss/turbopack@4.3.5':
+    dependencies:
+      '@alloc/quick-lru': 5.3.0
+      '@tailwindcss/node': 4.3.5
+      '@tailwindcss/oxide': 4.3.5
       tailwindcss: 4.3.5
 
   '@tailwindcss/typography@0.5.20(tailwindcss@4.3.5)':
