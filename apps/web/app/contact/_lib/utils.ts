@@ -1,8 +1,10 @@
+import { serverEnv } from '@/lib/env'
+
 // Check if contact form is enabled
 export function isContactFormEnabled(): boolean {
   return !!(
-    process.env['RESEND_API_KEY'] &&
-    process.env['FROM_EMAIL'] &&
-    process.env['ADMIN_EMAIL']
+    serverEnv.RESEND_API_KEY &&
+    serverEnv.FROM_EMAIL &&
+    serverEnv.ADMIN_EMAIL
   )
 }

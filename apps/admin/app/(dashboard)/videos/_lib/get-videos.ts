@@ -3,34 +3,26 @@ import type { Tables } from '@shinju-date/database'
 import { range } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
+import type { QueryData } from '@supabase/supabase-js'
 import { getRedisClient } from '@/lib/redis'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import {
+  createSupabaseServerClient,
+  type TypedSupabaseClient,
+} from '@/lib/supabase'
 import { escapeSearchString } from './escape-search'
+import { VIDEO_SELECT } from './video-select'
 
-export type Video = Pick<
-  Tables<'videos'>,
-  | 'id'
-  | 'title'
-  | 'visible'
-  | 'deleted_at'
-  | 'published_at'
-  | 'updated_at'
-  | 'status'
-  | 'duration'
-  | 'platform'
-  | 'video_kind'
-> & {
-  thumbnail: Pick<Tables<'thumbnails'>, 'id' | 'path' | 'blur_data_url'> | null
+function selectVideos(supabaseClient: TypedSupabaseClient) {
+  return supabaseClient.from('videos').select(VIDEO_SELECT, { count: 'exact' })
+}
+
+type VideoRow = QueryData<ReturnType<typeof selectVideos>>[number]
+
+export interface Video extends Omit<VideoRow, 'talent'> {
   clicks: number
   // Embedded relations may be missing (e.g. hidden by RLS or absent in mock
   // data), so consumers must handle `null`.
-  talent: Pick<Tables<'talents'>, 'id' | 'name'> | null
-  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
-  twitch_video: {
-    twitch_video_id: string
-    type: Tables<'twitch_videos'>['type']
-    twitch_user: Pick<Tables<'twitch_users'>, 'twitch_login_name'> | null
-  } | null
+  talent: VideoRow['talent'] | null
 }
 
 export interface VideoFilters {
@@ -62,12 +54,7 @@ export async function getVideos(
   const to = from + perPage - 1
 
   // Start building the query
-  let query = supabaseClient
-    .from('videos')
-    .select(
-      'id, title, visible, deleted_at, published_at, updated_at, status, duration, platform, video_kind, thumbnail:thumbnails(id, path, blur_data_url), talent:talents(id, name), youtube_video:youtube_videos(youtube_video_id), twitch_video:twitch_videos(twitch_video_id, type, twitch_user:twitch_users(twitch_login_name))',
-      { count: 'exact' },
-    )
+  let query = selectVideos(supabaseClient)
 
   // Apply filters
   if (filters?.talentId && filters.talentId.length > 0) {
@@ -166,21 +153,8 @@ export async function getVideos(
 
   // Combine video data with click counts
   const videosWithClicks: Video[] = videos.map((video, index) => ({
+    ...video,
     clicks: clickCounts[index] ?? 0,
-    deleted_at: video.deleted_at,
-    duration: video.duration,
-    id: video.id,
-    platform: video.platform,
-    published_at: video.published_at,
-    status: video.status,
-    talent: video.talent,
-    thumbnail: video.thumbnail,
-    title: video.title,
-    twitch_video: video.twitch_video,
-    updated_at: video.updated_at,
-    video_kind: video.video_kind,
-    visible: video.visible,
-    youtube_video: video.youtube_video,
   }))
 
   return {

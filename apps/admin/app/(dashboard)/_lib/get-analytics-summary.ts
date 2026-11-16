@@ -5,19 +5,19 @@ import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { getRedisClient } from '@/lib/redis'
 
-export type AnalyticsSummary = {
+export interface AnalyticsSummary {
   recentSearches: number
   totalPopularKeywords: number
   recentClicks: number
 }
 
-export type AnalyticsTrendValue = {
+export interface AnalyticsTrendValue {
   current: number
   dayChange: number | null
   weekChange: number | null
 }
 
-export type AnalyticsSummaryWithTrends = {
+export interface AnalyticsSummaryWithTrends {
   recentSearches: AnalyticsTrendValue
   totalPopularKeywords: AnalyticsTrendValue
   recentClicks: AnalyticsTrendValue

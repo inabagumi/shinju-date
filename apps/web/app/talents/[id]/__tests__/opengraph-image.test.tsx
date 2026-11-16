@@ -17,7 +17,7 @@ vi.mock('../_lib/og-image', async (importOriginal) => ({
 }))
 
 vi.mock('@/lib/supabase', () => ({
-  createSupabaseClient: vi.fn(),
+  getSupabaseAdminClient: vi.fn(),
   supabaseClient: {},
 }))
 

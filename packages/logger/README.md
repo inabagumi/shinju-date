@@ -13,10 +13,18 @@
 import { logger } from '@shinju-date/logger'
 
 // ログ出力の例
-logger.info('Information message')
-logger.error('Error message', error)
-logger.warn('Warning message')
+logger.info('動画を同期しました', { count: 10 })
+
+try {
+  JSON.parse('{')
+} catch (error) {
+  logger.error('JSON の解析に失敗しました', { error })
+}
+
+logger.warn('レスポンスが空でした')
 ```
+
+メッセージは日本語で書き、第2引数の属性のキーと値は英単語か数値にします。
 
 ## テスト
 

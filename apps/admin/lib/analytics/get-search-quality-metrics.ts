@@ -6,7 +6,7 @@ import { formatDateKey } from '@shinju-date/temporal-fns'
 import { getRedisClient } from '@/lib/redis'
 import { listDatesInRange } from './list-dates-in-range'
 
-export type SearchQualityMetrics = {
+export interface SearchQualityMetrics {
   searchEngagementRate: number | null
   searchExitRates: Array<{
     keyword: string
