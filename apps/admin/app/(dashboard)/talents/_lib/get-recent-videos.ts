@@ -1,21 +1,38 @@
+import type { QueryData } from '@supabase/supabase-js'
 import { cacheLife } from 'next/cache'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import {
+  createSupabaseServerClient,
+  type TypedSupabaseClient,
+} from '@/lib/supabase'
 
-export type RecentVideo = {
-  id: string
-  title: string
-  published_at: string
-  visible: boolean
-  deleted_at: string | null
-  thumbnail: {
-    id: string
-    path: string
-    blur_data_url: string
-  } | null
-  youtube_video: {
-    youtube_video_id: string
-  } | null
+const RECENT_VIDEO_SELECT = `
+  id,
+  title,
+  published_at,
+  visible,
+  deleted_at,
+  thumbnail:thumbnails (id, path, blur_data_url),
+  youtube_video:youtube_videos (youtube_video_id)
+`
+
+function selectRecentVideos(
+  supabaseClient: TypedSupabaseClient,
+  talentId: string,
+  limit: number,
+) {
+  return supabaseClient
+    .from('videos')
+    .select(RECENT_VIDEO_SELECT)
+    .is('deleted_at', null)
+    .is('visible', true)
+    .eq('talent_id', talentId)
+    .order('published_at', { ascending: false })
+    .limit(limit)
 }
+
+export type RecentVideo = QueryData<
+  ReturnType<typeof selectRecentVideos>
+>[number]
 
 export async function getRecentVideosForTalent(
   talentId: string,
@@ -27,16 +44,11 @@ export async function getRecentVideosForTalent(
 
   const supabaseClient = await createSupabaseServerClient()
 
-  const { data: videos, error } = await supabaseClient
-    .from('videos')
-    .select(
-      'id, title, published_at, visible, deleted_at, thumbnail:thumbnails(id, path, blur_data_url), youtube_video:youtube_videos(youtube_video_id)',
-    )
-    .is('deleted_at', null)
-    .is('visible', true)
-    .eq('talent_id', talentId)
-    .order('published_at', { ascending: false })
-    .limit(limit)
+  const { data: videos, error } = await selectRecentVideos(
+    supabaseClient,
+    talentId,
+    limit,
+  )
 
   if (error) {
     throw new TypeError(error.message, {
@@ -44,15 +56,5 @@ export async function getRecentVideosForTalent(
     })
   }
 
-  return (
-    videos?.map((video) => ({
-      deleted_at: video.deleted_at,
-      id: video.id,
-      published_at: video.published_at,
-      thumbnail: video.thumbnail,
-      title: video.title,
-      visible: video.visible,
-      youtube_video: video.youtube_video,
-    })) || []
-  )
+  return videos
 }

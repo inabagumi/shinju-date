@@ -159,6 +159,10 @@ jobs:
       - name: Run Node.js lint
         run: pnpm biome ci --reporter=github .
 
+      # Checks the repository paths in Markdown files (external URLs are not checked)
+      - name: Check docs
+        run: pnpm run check:docs
+
   # Type check job for Node.js (including test files, which Vitest does not type check)
   typecheck:
     name: Typecheck

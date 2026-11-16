@@ -13,7 +13,6 @@
 - **[web](apps/web/)** - 公開ウェブサイト (https://shinju.date) のフロントエンド
 - **[admin](apps/admin/)** - コンテンツ管理用の管理画面
 - **[batch](apps/batch/)** - 定期実行されるバッチ処理
-- **[msw-demo](apps/msw-demo/)** - MSW の統合を確かめるためのデモ
 
 ### 共有パッケージ (`packages/`)
 

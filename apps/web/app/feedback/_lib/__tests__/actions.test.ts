@@ -9,9 +9,9 @@ vi.mock('botid/server', () => ({
 }))
 
 vi.mock('@/lib/supabase', () => ({
-  createSupabaseClient: () => ({
+  supabaseClient: {
     from: () => ({ insert }),
-  }),
+  },
 }))
 
 import { submitFeedback } from '../actions'

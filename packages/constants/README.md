@@ -10,11 +10,17 @@
 ## 使用方法
 
 ```typescript
-import { CONSTANT_NAME } from '@shinju-date/constants'
+import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import { formatDateKey } from '@shinju-date/temporal-fns'
 
-// 使用例
-console.log(CONSTANT_NAME)
+// タイムゾーンは直接書かず、TIME_ZONE を使う
+const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
+
+// Redis のキーは REDIS_KEYS から参照する
+const key = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${formatDateKey(now)}`
 ```
+
+公開している定数と関数は [`src/index.ts`](src/index.ts) を見てください。
 
 ## 開発
 

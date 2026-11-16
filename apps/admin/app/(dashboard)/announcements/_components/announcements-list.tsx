@@ -1,4 +1,5 @@
 import { TIME_ZONE } from '@shinju-date/constants'
+import type { Tables } from '@shinju-date/database'
 import { range } from '@shinju-date/helpers'
 import { formatDateTime } from '@shinju-date/temporal-fns'
 import {
@@ -17,7 +18,6 @@ import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { deleteAnnouncementAction } from '../_actions'
-import type { Announcement } from '../_lib/types'
 import { AnnouncementModal } from './announcement-modal'
 import { LevelBadge, StatusBadge } from './badges'
 
@@ -32,7 +32,11 @@ function truncateMessage(message: string): string {
   return message.length > 50 ? `${message.substring(0, 50)}...` : message
 }
 
-function AnnouncementRow({ announcement }: { announcement: Announcement }) {
+function AnnouncementRow({
+  announcement,
+}: {
+  announcement: Tables<'announcements'>
+}) {
   const startAt = Temporal.Instant.from(
     announcement.start_at,
   ).toZonedDateTimeISO(TIME_ZONE)
@@ -93,7 +97,7 @@ function AnnouncementRow({ announcement }: { announcement: Announcement }) {
 export function AnnouncementsList({
   announcements,
 }: {
-  announcements: Announcement[]
+  announcements: Tables<'announcements'>[]
 }) {
   if (announcements.length === 0) {
     return (

@@ -1,54 +1,33 @@
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
-import type { Tables } from '@shinju-date/database'
 import { range } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
+import type { QueryData } from '@supabase/supabase-js'
 import { cache } from 'react'
 import { getRedisClient } from '@/lib/redis'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import {
+  createSupabaseServerClient,
+  type TypedSupabaseClient,
+} from '@/lib/supabase'
+import { VIDEO_SELECT } from './video-select'
 
-interface Thumbnail {
-  id: string
-  path: string
-  blur_data_url: string
+const VIDEO_DETAIL_SELECT = `${VIDEO_SELECT}, created_at` as const
+
+function selectVideo(supabaseClient: TypedSupabaseClient, id: string) {
+  return supabaseClient
+    .from('videos')
+    .select(VIDEO_DETAIL_SELECT)
+    .eq('id', id)
+    .single()
 }
 
-interface Talent {
-  id: string
-  name: string
-}
+type VideoDetailRow = QueryData<ReturnType<typeof selectVideo>>
 
-interface YoutubeVideo {
-  youtube_video_id: string
-}
-
-interface TwitchUser {
-  twitch_login_name: string | null
-}
-
-interface TwitchVideo {
-  twitch_video_id: string
-  type: Tables<'twitch_videos'>['type']
-  twitch_user: TwitchUser | null
-}
-
-export interface VideoDetail {
-  id: string
-  title: string
-  visible: boolean
-  deleted_at: string | null
-  published_at: string
-  updated_at: string
-  created_at: string
-  status: Tables<'videos'>['status']
-  duration: string
-  platform: Tables<'videos'>['platform']
-  video_kind: Tables<'videos'>['video_kind']
-  thumbnail: Thumbnail | null
+export interface VideoDetail extends Omit<VideoDetailRow, 'talent'> {
   clicks: number
-  talent: Talent | null
-  youtube_video: YoutubeVideo | null
-  twitch_video: TwitchVideo | null
+  // Embedded relations may be missing (e.g. hidden by RLS or absent in mock
+  // data), so consumers must handle `null`.
+  talent: VideoDetailRow['talent'] | null
 }
 
 const getVideo = cache(async function getVideo(
@@ -56,13 +35,7 @@ const getVideo = cache(async function getVideo(
 ): Promise<VideoDetail | null> {
   const supabaseClient = await createSupabaseServerClient()
 
-  const { data: video, error } = await supabaseClient
-    .from('videos')
-    .select(
-      'id, title, visible, deleted_at, published_at, updated_at, created_at, status, duration, platform, video_kind, thumbnail:thumbnails(id, path, blur_data_url), talent:talents(id, name), youtube_video:youtube_videos(youtube_video_id), twitch_video:twitch_videos(twitch_video_id, type, twitch_user:twitch_users(twitch_login_name))',
-    )
-    .eq('id', id)
-    .single()
+  const { data: video, error } = await selectVideo(supabaseClient, id)
 
   if (error) {
     if (error.code === 'PGRST116') {
@@ -118,24 +91,7 @@ const getVideo = cache(async function getVideo(
     totalClicks = 0
   }
 
-  return {
-    clicks: totalClicks,
-    created_at: video.created_at,
-    deleted_at: video.deleted_at,
-    duration: video.duration,
-    id: video.id,
-    platform: video.platform,
-    published_at: video.published_at,
-    status: video.status,
-    talent: video.talent,
-    thumbnail: video.thumbnail,
-    title: video.title,
-    twitch_video: video.twitch_video,
-    updated_at: video.updated_at,
-    video_kind: video.video_kind,
-    visible: video.visible,
-    youtube_video: video.youtube_video,
-  }
+  return { ...video, clicks: totalClicks }
 })
 
 export default getVideo
