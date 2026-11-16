@@ -1,4 +1,5 @@
 import { TIME_ZONE } from '@shinju-date/constants'
+import type { Tables } from '@shinju-date/database'
 import { range } from '@shinju-date/helpers'
 import { formatDateTime } from '@shinju-date/temporal-fns'
 import {
@@ -14,7 +15,6 @@ import { Megaphone } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import rehypeExternalLinks from 'rehype-external-links'
 import remarkGfm from 'remark-gfm'
-import type { Announcement } from '../_lib/types'
 import { AnnouncementModal } from './announcement-modal'
 import { LevelBadge, StatusBadge } from './badges'
 import { DeleteConfirmDialog } from './delete-confirm-dialog'
@@ -25,7 +25,11 @@ import { DeleteConfirmDialog } from './delete-confirm-dialog'
 const proseClassName =
   'prose prose-sm max-w-text text-foreground [--tw-prose-body:var(--color-foreground)] [--tw-prose-bold:var(--color-foreground)] [--tw-prose-bullets:var(--text-color-muted)] [--tw-prose-code:var(--color-foreground)] [--tw-prose-counters:var(--text-color-muted)] [--tw-prose-headings:var(--color-foreground)] [--tw-prose-links:var(--color-accent)]'
 
-function AnnouncementRow({ announcement }: { announcement: Announcement }) {
+function AnnouncementRow({
+  announcement,
+}: {
+  announcement: Tables<'announcements'>
+}) {
   const startAt = Temporal.Instant.from(
     announcement.start_at,
   ).toZonedDateTimeISO(TIME_ZONE)
@@ -78,7 +82,7 @@ function AnnouncementRow({ announcement }: { announcement: Announcement }) {
 export function AnnouncementsList({
   announcements,
 }: {
-  announcements: Announcement[]
+  announcements: Tables<'announcements'>[]
 }) {
   if (announcements.length === 0) {
     return (
