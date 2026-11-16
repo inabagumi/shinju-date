@@ -2,7 +2,7 @@ import { SITE_THEME_COLOR } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import sharp from 'sharp'
 import type { ProfileImage } from '@/lib/fetchers'
-import { createSupabaseClient, supabaseClient } from '@/lib/supabase'
+import { getSupabaseAdminClient, supabaseClient } from '@/lib/supabase'
 
 const THEME_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/
 
@@ -17,21 +17,6 @@ export function getTalentThemeColor(
   return themeColor && THEME_COLOR_PATTERN.test(themeColor)
     ? themeColor
     : SITE_THEME_COLOR
-}
-
-let supabaseAdminClient: ReturnType<typeof createSupabaseClient> | undefined
-
-/**
- * Created on first use, so that a missing service role key only leaves out
- * the icon instead of failing the whole image.
- */
-function getSupabaseAdminClient() {
-  supabaseAdminClient ??= createSupabaseClient(
-    undefined,
-    process.env['SUPABASE_SERVICE_ROLE_KEY'],
-  )
-
-  return supabaseAdminClient
 }
 
 /**

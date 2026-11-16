@@ -1,9 +1,14 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { getRedisClient } from '@/lib/redis'
 
-export type RecommendedQueriesResult = {
+export interface AutoRecommendedQuery {
+  query: string
+  score: number
+}
+
+export interface RecommendedQueriesResult {
   manual: string[]
-  auto: Array<{ query: string; score: number }>
+  auto: AutoRecommendedQuery[]
 }
 
 export default async function getRecommendedQueries(): Promise<RecommendedQueriesResult> {
@@ -17,7 +22,7 @@ export default async function getRecommendedQueries(): Promise<RecommendedQuerie
   ])
 
   // Parse auto queries with scores
-  const autoQueries: Array<{ query: string; score: number }> = []
+  const autoQueries: AutoRecommendedQuery[] = []
   if (autoQueriesWithScores) {
     for (let i = 0; i < autoQueriesWithScores.length; i += 2) {
       const query = String(autoQueriesWithScores[i])

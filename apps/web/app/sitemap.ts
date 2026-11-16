@@ -1,12 +1,11 @@
 import type { MetadataRoute } from 'next'
+import { publicEnv } from '@/lib/env'
 import { fetchActiveTalents } from '@/lib/fetchers'
 import { SCHEDULE_PATH } from '@/lib/schedule'
 import { getTalentPath } from '@/lib/talent-links'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseURL = new URL(
-    process.env['NEXT_PUBLIC_BASE_URL'] ?? 'http://localhost:3000',
-  )
+  const baseURL = new URL(publicEnv.NEXT_PUBLIC_BASE_URL)
   const talents = await fetchActiveTalents()
   const sitemapItems: MetadataRoute.Sitemap = [
     {

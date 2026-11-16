@@ -1,11 +1,15 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
-const { sendEmail } = vi.hoisted(() => {
+const { sendEmail, serverEnv } = vi.hoisted(() => ({
+  sendEmail: vi.fn(),
   // The Resend client is created when the module is imported.
-  vi.stubEnv('RESEND_API_KEY', 're_test')
+  serverEnv: {
+    ADMIN_EMAIL: undefined as string | undefined,
+    RESEND_API_KEY: 're_test',
+  },
+}))
 
-  return { sendEmail: vi.fn() }
-})
+vi.mock('@/lib/env', () => ({ serverEnv }))
 
 vi.mock('resend', () => ({
   Resend: class {
@@ -47,7 +51,7 @@ describe('submitContactForm', () => {
   })
 
   afterEach(() => {
-    vi.unstubAllEnvs()
+    serverEnv.ADMIN_EMAIL = undefined
     vi.restoreAllMocks()
   })
 
@@ -101,7 +105,7 @@ describe('submitContactForm', () => {
   })
 
   test('returns the submitted values when the email cannot be sent', async () => {
-    vi.stubEnv('ADMIN_EMAIL', '')
+    serverEnv.ADMIN_EMAIL = undefined
 
     const result = await submitContactForm(
       null,
@@ -117,7 +121,7 @@ describe('submitContactForm', () => {
   })
 
   test('reports success when the email is sent', async () => {
-    vi.stubEnv('ADMIN_EMAIL', 'contact@shinju.date')
+    serverEnv.ADMIN_EMAIL = 'contact@shinju.date'
     sendEmail.mockResolvedValue({
       data: { id: 'email-id' },
       error: null,
@@ -142,7 +146,7 @@ describe('submitContactForm', () => {
   })
 
   test('reports a failure when Resend returns an error', async () => {
-    vi.stubEnv('ADMIN_EMAIL', 'contact@shinju.date')
+    serverEnv.ADMIN_EMAIL = 'contact@shinju.date'
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     const sendError = {
       message: 'Internal server error',

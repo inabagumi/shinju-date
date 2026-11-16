@@ -80,6 +80,7 @@ ENABLE_MSW=true \
 NEXT_PUBLIC_BASE_URL=http://localhost:3000 \
 NEXT_PUBLIC_SUPABASE_ANON_KEY=fake \
 NEXT_PUBLIC_SUPABASE_URL=https://fake.supabase.test \
+SUPABASE_SERVICE_ROLE_KEY=fake \
 UPSTASH_REDIS_REST_TOKEN=fake \
 UPSTASH_REDIS_REST_URL=https://fake.upstash.test \
 pnpm --filter @shinju-date/web dev

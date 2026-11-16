@@ -10,6 +10,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import type { ChartSeries } from '../_lib/chart-series'
+import { ChartLegendContent } from './chart-legend-content'
+import { ChartTooltipContent } from './chart-tooltip-content'
 
 interface VideoStatsChartProps {
   data: Array<{
@@ -21,70 +24,86 @@ interface VideoStatsChartProps {
   }>
 }
 
-// Label mapping for chart legend and tooltip
-const LABEL_MAP: Record<string, string> = {
-  hiddenVideos: '非表示',
-  scheduledVideos: '配信予定',
-  visibleVideos: '公開中',
-} as const
+interface VideoStatsSeries extends ChartSeries {
+  /** 同じ値の系列は積み上げる */
+  stackId: string
+}
+
+const SERIES: VideoStatsSeries[] = [
+  {
+    className: 'text-success',
+    key: 'visibleVideos',
+    label: '公開中',
+    stackId: 'visible',
+  },
+  {
+    className: 'text-accent',
+    key: 'scheduledVideos',
+    label: '配信予定',
+    stackId: 'visible',
+  },
+  {
+    className: 'text-warning',
+    key: 'hiddenVideos',
+    label: '非表示',
+    stackId: 'hidden',
+  },
+]
+
+function formatValue(value: number): string {
+  return `${value} 本`
+}
 
 export function VideoStatsChartUI({ data }: VideoStatsChartProps) {
+  // 線（グリッド、目盛りの線）は `currentColor` にして、グラフのルートの
+  // `text-border` を使う。`CartesianGrid` は `className` を線に渡さないため
   return (
     <div className="h-80 w-full">
       <ResponsiveContainer height="100%" width="100%">
-        <AreaChart data={data}>
-          <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" />
+        <AreaChart className="text-border" data={data}>
+          <CartesianGrid stroke="currentColor" strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
-            tick={{ fill: 'var(--text-color-muted)', fontSize: 12 }}
-            tickLine={{ stroke: 'var(--color-border)' }}
+            tick={{
+              className: 'text-muted',
+              fill: 'currentColor',
+              fontSize: 12,
+            }}
+            tickLine={{ stroke: 'currentColor' }}
           />
           <YAxis
             domain={['auto', 'auto']}
-            tick={{ fill: 'var(--text-color-muted)', fontSize: 12 }}
-            tickLine={{ stroke: 'var(--color-border)' }}
+            tick={{
+              className: 'text-muted',
+              fill: 'currentColor',
+              fontSize: 12,
+            }}
+            tickLine={{ stroke: 'currentColor' }}
           />
           <Tooltip
-            contentStyle={{
-              backgroundColor: 'var(--color-surface)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-container)',
-              color: 'var(--color-foreground)',
-            }}
-            formatter={(value, name) => [
-              `${value ?? 0} 本`,
-              LABEL_MAP[String(name ?? '')] || String(name ?? ''),
-            ]}
-            labelStyle={{ color: 'var(--color-foreground)', fontWeight: 600 }}
+            content={
+              <ChartTooltipContent
+                colorItems
+                formatValue={formatValue}
+                series={SERIES}
+              />
+            }
           />
-          <Legend
-            formatter={(value) => LABEL_MAP[String(value)] || String(value)}
-            iconType="rect"
-            wrapperStyle={{ paddingTop: '20px' }}
-          />
-          <Area
-            dataKey="visibleVideos"
-            fill="var(--color-success)"
-            fillOpacity={0.15}
-            stackId="visible"
-            stroke="var(--color-success)"
-            type="monotone"
-          />
-          <Area
-            dataKey="scheduledVideos"
-            fill="var(--color-accent)"
-            fillOpacity={0.15}
-            stackId="visible"
-            stroke="var(--color-accent)"
-            type="monotone"
-          />
-          <Area
-            dataKey="hiddenVideos"
-            fill="var(--color-warning)"
-            fillOpacity={0.15}
-            stroke="var(--color-warning)"
-            type="monotone"
-          />
+          <Legend content={<ChartLegendContent series={SERIES} />} />
+          {SERIES.map((item) => (
+            <Area
+              // ホバー中の点は系列の外に描かれるので、点にも色のクラスを付ける
+              activeDot={{ className: item.className }}
+              className={item.className}
+              dataKey={item.key}
+              fill="currentColor"
+              fillOpacity={0.15}
+              key={item.key}
+              stackId={item.stackId}
+              stroke="currentColor"
+              type="monotone"
+            />
+          ))}
         </AreaChart>
       </ResponsiveContainer>
     </div>

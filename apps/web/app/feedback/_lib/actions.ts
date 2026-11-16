@@ -8,7 +8,7 @@ import {
   getFormValues,
   toValidationErrorState,
 } from '@/lib/form-state'
-import { createSupabaseClient } from '@/lib/supabase'
+import { supabaseClient } from '@/lib/supabase'
 
 const MESSAGE_REQUIRED_ERROR = '機能要望を入力してください'
 
@@ -66,15 +66,12 @@ export async function submitFeedback(
 
     const { message } = result.data
 
-    // Create Supabase client (anon key for public access)
-    const supabase = createSupabaseClient()
-
     // Insert feature request into database
     const featureRequestData: TablesInsert<'feature_requests'> = {
       message,
     }
 
-    const { error: insertError } = await supabase
+    const { error: insertError } = await supabaseClient
       .from('feature_requests')
       .insert(featureRequestData)
 

@@ -9,8 +9,8 @@ import {
   TabNavigationSkeleton,
 } from '@/components/skeletons'
 import { DateRangePickerClient } from '../_components/date-range-picker-client'
+import { VolumeChart } from '../_components/volume-chart'
 import { analyticsSearchParamsSchema } from '../_lib/search-params-schema'
-import { ClickVolumeChart } from './_components/click-volume-chart'
 import { PopularRankingsTabs } from './_components/popular-rankings-tabs'
 import { TabNavigation } from './_components/tab-navigation'
 
@@ -39,7 +39,7 @@ export default function ClickAnalyticsPage({
         <h2 className="mb-4 text-heading font-bold">クリックボリューム</h2>
         <Panel>
           <Suspense fallback={<ChartSkeleton />}>
-            <ClickVolumeChart searchParams={parsedSearchParams} />
+            <VolumeChart kind="click" searchParams={parsedSearchParams} />
           </Suspense>
         </Panel>
       </section>
