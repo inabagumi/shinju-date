@@ -146,6 +146,7 @@ export const terms = new Collection({
   schema: z.object({
     created_at: z.string(),
     id: z.string().uuid(),
+    popularity: z.number(),
     readings: z.array(z.string()),
     synonyms: z.array(z.string()),
     term: z.string(),
@@ -205,12 +206,12 @@ export const auditLogs = new Collection({
  * because it would require restructuring all our Zod schemas to include getter-based
  * relation properties, which would be a breaking change.
  *
- * Instead, we handle relations manually in the applySelect function by looking up
- * related records when needed (e.g., item.talent_id -> talents.findFirst()).
+ * Instead, the relations are listed in the table definitions
+ * (`handlers/supabase/tables.ts`), and embedded resources are looked up from
+ * them (e.g., `videos.talent_id` -> `talents.id`).
  */
 export function defineCollectionRelations() {
-  // Relations are handled manually in applySelect function
-  // See handlers/supabase.ts for implementation details
+  // Relations are listed in handlers/supabase/tables.ts
 }
 
 /**
@@ -848,6 +849,7 @@ export async function seedCollections() {
       terms.create({
         created_at: faker.date.past({ years: 1 }).toISOString(),
         id: faker.string.uuid(),
+        popularity: 0,
         readings: termData.readings,
         synonyms: termData.synonyms,
         term: termData.term,
