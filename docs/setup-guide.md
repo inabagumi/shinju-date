@@ -256,7 +256,7 @@ MSW（Mock Service Worker）はサーバー側でだけ動くため、サービ�
 pnpm run dev
 
 # または、特定のアプリのみを起動
-pnpm exec turbo watch dev --filter=@shinju-date/web --env-mode=loose
+pnpm run dev --filter=@shinju-date/web
 ```
 
 `pnpm run dev` は `turbo watch dev` で、`dev` の前に依存するパッケージをビルドし（`dependsOn: ["^build"]`）、パッケージのソースが変わると、そのパッケージを再ビルドします。

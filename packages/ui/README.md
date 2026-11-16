@@ -301,9 +301,6 @@ import { FilterBar, Input, Select } from '@shinju-date/ui'
 ```bash
 # パッケージのビルド
 pnpm run build
-
-# 開発モード（watch）
-pnpm run dev
 ```
 
 ### ビルドの出力

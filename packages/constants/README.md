@@ -21,7 +21,4 @@ console.log(CONSTANT_NAME)
 ```bash
 # ビルド
 pnpm run build
-
-# 開発モード（ウォッチ）
-pnpm run dev
 ```

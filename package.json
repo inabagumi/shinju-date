@@ -29,7 +29,7 @@
     "db:export": "./scripts/export-production-data.sh",
     "db:schema": "./scripts/generate-types.sh",
     "db:import": "./scripts/import-data.sh",
-    "dev": "turbo watch dev --filter='./apps/*' --env-mode=loose",
+    "dev": "turbo watch dev --env-mode=loose",
     "dev:generate-secrets": "node scripts/generate-dev-secrets.js",
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
