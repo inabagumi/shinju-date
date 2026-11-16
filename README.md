@@ -54,10 +54,12 @@
 - **[docs/](docs/)** - プロジェクト固有のドキュメント
   - [Setup Guide](docs/setup-guide.md) - セットアップガイド（**最初に読むべきドキュメント**）
   - [Coding Guidelines](docs/coding-guidelines.md) - コーディング規約
+  - [Design Guidelines](docs/design-guidelines.md) - デザインガイドライン
   - [Testing Guide](docs/testing-guide.md) - テストガイド
+  - [E2E Testing](docs/e2e-testing.md) - E2Eテストガイド
   - [MSW Guide](docs/msw-guide.md) - MSW モック統合ガイド
+  - [Agent Skills](docs/agent-skills.md) - Next.js の公式スキル（AI エージェント向け）
   - [Hybrid Recommendation System](docs/hybrid-recommendation-system.md) - ハイブリッドオススメシステム
-  - [Supabase Implementation](docs/supabase-implementation.md) - Supabase実装詳細
 
 ## ローカル開発環境
 

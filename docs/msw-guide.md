@@ -24,11 +24,13 @@ MSW（Mock Service Worker）は、開発・テスト環境でAPIリクエスト�
 
 #### コアパッケージ (`packages/msw-handlers/`)
 
-- `src/index.ts` - メインエクスポート
+- `src/index.ts` - メインエクスポート（すべてのハンドラー）
 - `src/server.ts` - Node.js サーバーセットアップ
 - `src/register.ts` - `--import` で読み込む、ビルド時のサーバーセットアップ
-- `src/handlers/supabase.ts` - Supabase API モックハンドラー
-- `src/handlers/upstash.ts` - Upstash Redis モックハンドラー
+- `src/session.ts` - 管理画面の認証を模擬する、モックのユーザーとセッション
+- `src/collections.ts` - Supabase のテーブルのモックデータ（`@msw/data`）
+- `src/redis-factory.ts` - Upstash Redis のモックデータ
+- `src/handlers/` - サービスごとのモックハンドラー（`supabase.ts`、`upstash.ts`、`youtube.ts`、`twitch.ts`、`google-fonts.ts`、`resend.ts`）
 - `README.md` - パッケージドキュメント
 
 #### アプリケーション統合
@@ -48,10 +50,13 @@ MSWはサーバー側（Node.js）でだけ動かします。Supabase、Upstash�
 サポートされているテーブル：
 
 - `videos` - 動画情報
+- `talents` - タレント情報
 - `channels` - チャンネル情報
 - `thumbnails` - サムネイル画像
 - `profile_images` - YouTubeチャンネル・Twitchユーザーのアイコン（`youtube_channels`から`profile_images(...)`で埋め込み可能）
 - `terms` - 検索用語
+- `announcements` - お知らせ
+- `feature_requests` - フィードバック
 - `youtube_videos` - YouTube動画マッピング
 - `youtube_channels` - YouTubeチャンネルマッピング
 - `twitch_users` - Twitchユーザーマッピング（取得・登録・削除。`talents`から`twitch_users(...)`で埋め込み可能）
@@ -80,21 +85,23 @@ const { data } = await supabase
 
 - `ZRANGE` - ソート済みセットの範囲取得
 - `ZUNIONSTORE` - ソート済みセットの和集合
-- `PING` - 接続確認
-- `GET` - 値の取得
-- `SET` - 値の設定
+- `SADD` / `SMEMBERS` - セットへの追加と取得
+- `LPUSH` / `RPOP` - リストへの追加と取り出し
+- `GET` / `MGET` / `SET` / `DEL` - 値の取得、設定、削除
 - `EXPIRE` - 有効期限の設定
+- `EVAL` - スクリプトの実行（`@upstash/ratelimit` のレート制限用）
+- `PING` - 接続確認
 
 パイプラインサポート：
 
 - 単一リクエストで複数のコマンドを実行
 
-事前に準備されたデータ：
+事前に準備されたデータ（直近7日分）：
 
 - クリック追跡データ (`videos:clicked:*`, `channels:clicked:*`)
-- 検索分析データ (`search:popular:*`, `search:volume:*`)
-- サマリー統計 (`summary:stats:*`)
-- レコメンデーションクエリ (`queries:*`)
+- 検索キーワード (`search:keywords:*`)
+
+ほかのキー（`search:popular:*` など）は、最初は空です。アプリが書き込んだ値は、開発サーバーを止めるまでメモリーに保持されます。
 
 ### 3. 環境変数による切り替え
 
@@ -261,9 +268,9 @@ Next.jsはビルド時にワーカースレッドを使用して並列にペー�
 **クリック追跡**
 
 ```
-videos:clicked:2023-10-23 => [
-  { member: "1", score: 150 },
-  { member: "2", score: 120 }
+videos:clicked:20231023 => [
+  { member: "<動画のID>", score: 100 },
+  { member: "<動画のID>", score: 80 }
 ]
 ```
 
@@ -301,7 +308,7 @@ MSWが有効な場合、以下のメッセージが標準エラー出力に表�
 
 MSW起動メッセージが表示されない場合：
 
-- Node.jsバージョンが18以上であることを確認（`--import`とトップレベルawaitに必要）
+- ルートの `package.json` の `devEngines` で指定しているバージョンのNode.jsを使っているか確認
 - registerモジュールのパスが正しいか確認
 - MSWハンドラーパッケージが正しくビルドされているか確認：
 

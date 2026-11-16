@@ -61,11 +61,11 @@ pnpm install
 pnpm typegen
 ```
 
-## 3. ローカルSupabase環境
+## 2. ローカルSupabase環境
 
 本番データベースへの影響を避けるため、開発にはローカルのSupabaseスタックを使用します。SupabaseサービスはSupabase CLI（`pnpm exec supabase`）で管理されます。
 
-### 3.1. Supabaseサービスの起動
+### 2.1. Supabaseサービスの起動
 
 Supabase CLIを使用してローカルのSupabaseサービスを起動します。
 
@@ -86,7 +86,7 @@ pnpm exec supabase start
 - **Mailpit** (port 54324): メールテスト用Webインターフェース
 - **Studio** (port 54323): Supabase管理UI
 
-### 3.2. データベースの初期化
+### 2.2. データベースの初期化
 
 マイグレーションとシードデータを適用します：
 
@@ -94,7 +94,7 @@ pnpm exec supabase start
 pnpm exec supabase db reset
 ```
 
-### 3.3. サービスの状態確認
+### 2.3. サービスの状態確認
 
 サービスが正常に起動しているか確認します：
 
@@ -102,11 +102,11 @@ pnpm exec supabase db reset
 pnpm exec supabase status
 ```
 
-### 3.4. Supabase Studioへのアクセス
+### 2.4. Supabase Studioへのアクセス
 
 ブラウザで [http://localhost:54323](http://localhost:54323) を開くと、Supabase Studioにアクセスできます。ここからデータベースのテーブル、認証ユーザー、ストレージバケットなどを管理できます。
 
-### 3.5. 管理画面にログインするユーザーの作成
+### 2.5. 管理画面にログインするユーザーの作成
 
 管理画面（`apps/admin`）とデータベースの RLS は、Supabase Auth にログインできるだけのユーザーを管理者として扱いません。`app_metadata.role` が `admin` のユーザーのみが削除済みデータの閲覧や更新を行えます（データベース側では `public.is_admin()` で判定します）。
 
@@ -122,7 +122,7 @@ WHERE email = 'you@example.com';
 
 MSW を使用する場合、モックのユーザー（`admin@example.com`）には管理者ロールが付与済みです。
 
-### 3.6. サムネイルの表示の確認
+### 2.6. サムネイルの表示の確認
 
 サムネイルの画像は、Storage の `thumbnails` バケット（非公開）に保存し、`/images/thumbnails/[id]` のルートが署名付きの URL を作って配信します。バケットはマイグレーションで作られますが、シードのデータはサムネイルを含みません（SQL のシードでは画像のファイルを置けず、ファイルのない行は配信のルートでエラーになるため）。シードの動画は、どれもサムネイルなしで表示されます。
 
@@ -162,7 +162,7 @@ MSW を使用する場合、モックのユーザー（`admin@example.com`）に
 
 ファイルのないパスを指す行を足すと、管理画面の `/images/thumbnails/[id]` はステータスコード 500 を返します。行を足す前に、ファイルをアップロードしてください。
 
-### 3.7. 本番データのインポート（任意ですが推奨）
+### 2.7. 本番データのインポート（任意ですが推奨）
 
 より現実的なデータで開発を進めるため、本番データベースからサニタイズされたスナップショットをインポートできます。
 
@@ -174,7 +174,7 @@ pnpm db:import
 
 **注意**: 本番データベースからのデータエクスポートは、プロジェクト管理者のみが実行できます。個人情報を含むテーブルのエクスポートは禁止されています。
 
-### 3.8. サービスの停止
+### 2.8. サービスの停止
 
 開発作業を終了する際は、サービスを停止できます：
 
@@ -188,11 +188,11 @@ pnpm exec supabase stop
 pnpm exec supabase stop --no-backup
 ```
 
-## 4. ローカルRedis環境
+## 3. ローカルRedis環境
 
 Upstash Redisの機能を完全にテストするため、ローカルRedis環境がDocker Composeで自動的にセットアップされます。
 
-### 4.1. Redisサービスの起動
+### 3.1. Redisサービスの起動
 
 Docker Composeを使用してRedisサービスを起動します（Supabaseとは独立して起動します）：
 
@@ -205,7 +205,7 @@ docker compose up -d
 - **Redis 8** (port 6379): ネイティブRedisプロトコル
 - **Redis HTTP API** (port 8079): Upstash互換REST API
 
-### 4.2. 接続テスト
+### 3.2. 接続テスト
 
 Redis HTTP APIが正常に動作しているか確認：
 
@@ -218,7 +218,7 @@ curl -X POST http://localhost:8079 \
 # 成功した場合、{"result":"PONG"} が返されます
 ```
 
-### 4.3. 環境変数
+### 3.3. 環境変数
 
 `.env.local`ファイルで以下を設定してください：
 
@@ -227,17 +227,17 @@ UPSTASH_REDIS_REST_URL=http://localhost:8079
 UPSTASH_REDIS_REST_TOKEN=local_development_token
 ```
 
-### 4.4. 動作しない場合
+### 3.4. 動作しない場合
 
 Docker Composeが動作しない場合は、MSW（Mock Service Worker）を使用してください。MSWは全ての環境で動作する完全なRedisモックを提供し、`.env.local`ファイルのサンプルにはMSW設定も含まれています。
 
 詳細は [MSWガイド](msw-guide.md) を参照してください。
 
-## 5. 環境変数
+## 4. 環境変数
 
 このプロジェクトでは、様々なサービスのための環境変数が必要です。ローカル開発、特にMSW (Mock Service Worker) を使用する際は、ダミーの値を使用します。
 
-### 5.1. `.env.local` ファイルの作成
+### 4.1. `.env.local` ファイルの作成
 
 `web` および `admin` アプリのサンプル環境変数ファイルをコピーして、`.env.local` ファイルを作成します。
 
@@ -248,7 +248,7 @@ cp apps/admin/.env.local.sample apps/admin/.env.local
 
 サンプルファイルには、ローカルRedis（`http://localhost:8079`）とローカルSupabase（`http://localhost:54321`）を使用する設定がデフォルトで含まれています。MSWモックを使用したい場合は、コメントを参照して設定を変更してください。
 
-### 5.2. ローカル開発で推奨される環境変数
+### 4.2. ローカル開発で推奨される環境変数
 
 Supabase CLI と Docker Compose を使用する場合、以下の環境変数を設定することが推奨されます：
 
@@ -267,7 +267,7 @@ export UPSTASH_REDIS_REST_URL=http://localhost:8079
 export NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1
 ```
 
-### 5.3. AIエージェントおよびCI環境（MSW使用時）
+### 4.3. AIエージェントおよびCI環境（MSW使用時）
 
 AIエージェントやCI環境でMSWを使用する場合は、以下の環境変数を設定します：
 
@@ -287,7 +287,7 @@ export UPSTASH_REDIS_REST_URL=https://fake.upstash.test
 
 MSW（Mock Service Worker）はサーバー側でだけ動くため、サービスワーカーのファイル（`mockServiceWorker.js`）を用意する必要はありません。詳細は [MSWガイド](msw-guide.md) を参照してください。
 
-## 6. 開発サーバーの起動
+## 5. 開発サーバーの起動
 
 これで開発サーバーを起動する準備が整いました。
 
