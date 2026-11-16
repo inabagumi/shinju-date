@@ -26,9 +26,6 @@ export async function addQueryAction(query: string): Promise<{
     const redisClient = getRedisClient()
     await redisClient.sadd(REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED, trimmedQuery)
 
-    // Invalidate combined cache
-    await redisClient.del(REDIS_KEYS.QUERIES_COMBINED_CACHE)
-
     // Log audit entry
     await createAuditLog(
       'RECOMMENDED_QUERY_CREATE',
@@ -66,9 +63,6 @@ export async function deleteQueryAction(query: string): Promise<{
   try {
     const redisClient = getRedisClient()
     await redisClient.srem(REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED, query)
-
-    // Invalidate combined cache
-    await redisClient.del(REDIS_KEYS.QUERIES_COMBINED_CACHE)
 
     // Log audit entry
     await createAuditLog(

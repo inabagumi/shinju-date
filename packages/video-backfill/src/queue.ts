@@ -1,8 +1,9 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
+import type { Enums } from '@shinju-date/database'
 import type { Redis } from '@upstash/redis'
 
 /** Platform whose account a job reads, as in `videos.platform`. */
-export type BackfillProvider = 'youtube' | 'twitch'
+export type BackfillProvider = Enums<'platform_type'>
 
 /**
  * - `pending`: waiting in the queue (for the first time, or to continue)

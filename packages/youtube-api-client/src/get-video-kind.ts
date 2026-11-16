@@ -1,7 +1,8 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
+import type { Enums } from '@shinju-date/database'
 
-/** Mirrors the `video_kind` enum of the database. */
-export type YouTubeVideoKind = 'standard' | 'short'
+/** The `video_kind` enum of the database. */
+export type YouTubeVideoKind = Enums<'video_kind'>
 
 /**
  * Determines the kind/type of a YouTube video based on its duration.

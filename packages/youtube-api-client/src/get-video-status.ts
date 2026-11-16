@@ -1,7 +1,8 @@
 import type { youtube_v3 as youtube } from '@googleapis/youtube'
+import type { Enums } from '@shinju-date/database'
 
-/** Mirrors the `video_status` enum of the database. */
-export type YouTubeVideoStatus = 'UPCOMING' | 'LIVE' | 'ENDED' | 'PUBLISHED'
+/** The `video_status` enum of the database. */
+export type YouTubeVideoStatus = Enums<'video_status'>
 
 /**
  * Determines the status of a YouTube video based on its live streaming details.
