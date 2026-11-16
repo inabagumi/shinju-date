@@ -5,9 +5,6 @@ import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import {
   Badge,
   Button,
-  Card,
-  CardContent,
-  CardHeader,
   Dialog,
   DialogClose,
   DialogContent,
@@ -20,6 +17,7 @@ import {
 import { Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState, useTransition } from 'react'
+import { Panel } from '@/components/panel'
 import {
   getVideoBackfillRunAction,
   requestVideoBackfillRunAction,
@@ -128,7 +126,7 @@ function RunSummary({ run }: { run: VideoBackfillRun }) {
 
   return (
     <>
-      <div className="space-y-3 px-6 py-4">
+      <div className="space-y-3 px-6 pb-4">
         <div className="flex flex-wrap items-center justify-between gap-2 text-meta text-muted tabular-nums">
           <p>
             <time dateTime={run.requestedAt}>
@@ -275,91 +273,84 @@ export function VideoBackfillRunPanel() {
   const totalTargets = targets ? targets.youtube + targets.twitch : 0
 
   return (
-    <Card className="lg:col-span-2" variant="elevated">
-      <CardHeader>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h2 className="text-heading font-bold">
-              取得漏れチェック（全タレント）
-            </h2>
-            <p className="mt-1 max-w-text text-meta text-muted">
-              active
-              なタレントのすべてのアカウントについて、プラットフォーム上にあってデータベースにない過去の動画を取り込みます。登録済みの動画はそのまま残ります。
-            </p>
-          </div>
-          <Dialog onOpenChange={setOpen} open={open}>
-            <Button
-              className="whitespace-nowrap"
-              disabled={
-                isPending || state === null || isActive || totalTargets === 0
-              }
-              onClick={() => setOpen(true)}
-              size="sm"
-              variant="secondary"
-            >
-              {isPending && (
-                <Loader2
-                  aria-hidden="true"
-                  className="mr-2 size-4 animate-spin"
-                />
-              )}
-              {isActive ? '実行中' : '取得漏れをチェックする'}
-            </Button>
-            <DialogPortal>
-              <DialogOverlay />
-              <DialogContent>
-                <DialogTitle>全タレントの取得漏れをチェック</DialogTitle>
-                <DialogDescription>
-                  active なタレントの YouTube チャンネル{' '}
-                  {formatNumber(targets?.youtube ?? 0)}件と Twitch アカウント{' '}
-                  {formatNumber(targets?.twitch ?? 0)}件（合計{' '}
-                  {formatNumber(totalTargets)}
-                  件）の過去動画をすべて確認し、未登録の動画を取り込みますか？
-                  処理はバックグラウンドで順番に行われ、完了までに時間がかかります。
-                </DialogDescription>
-                <div className="flex justify-end gap-2">
-                  <DialogClose asChild>
-                    <Button disabled={isPending} variant="secondary">
-                      キャンセル
-                    </Button>
-                  </DialogClose>
-                  <Button
-                    disabled={isPending}
-                    onClick={request}
-                    variant="primary"
-                  >
-                    {isPending ? '追加中...' : 'チェックする'}
+    <Panel
+      actions={
+        <Dialog onOpenChange={setOpen} open={open}>
+          <Button
+            className="whitespace-nowrap"
+            disabled={
+              isPending || state === null || isActive || totalTargets === 0
+            }
+            onClick={() => setOpen(true)}
+            size="sm"
+            variant="secondary"
+          >
+            {isPending && (
+              <Loader2
+                aria-hidden="true"
+                className="mr-2 size-4 animate-spin"
+              />
+            )}
+            {isActive ? '実行中' : '取得漏れをチェックする'}
+          </Button>
+          <DialogPortal>
+            <DialogOverlay />
+            <DialogContent>
+              <DialogTitle>全タレントの取得漏れをチェック</DialogTitle>
+              <DialogDescription>
+                active なタレントの YouTube チャンネル{' '}
+                {formatNumber(targets?.youtube ?? 0)}件と Twitch アカウント{' '}
+                {formatNumber(targets?.twitch ?? 0)}件（合計{' '}
+                {formatNumber(totalTargets)}
+                件）の過去動画をすべて確認し、未登録の動画を取り込みますか？
+                処理はバックグラウンドで順番に行われ、完了までに時間がかかります。
+              </DialogDescription>
+              <div className="flex justify-end gap-2">
+                <DialogClose asChild>
+                  <Button disabled={isPending} variant="secondary">
+                    キャンセル
                   </Button>
-                </div>
-              </DialogContent>
-            </DialogPortal>
-          </Dialog>
+                </DialogClose>
+                <Button
+                  disabled={isPending}
+                  onClick={request}
+                  variant="primary"
+                >
+                  {isPending ? '追加中...' : 'チェックする'}
+                </Button>
+              </div>
+            </DialogContent>
+          </DialogPortal>
+        </Dialog>
+      }
+      className="lg:col-span-2"
+      description="active なタレントのすべてのアカウントについて、プラットフォーム上にあってデータベースにない過去の動画を取り込みます。登録済みの動画はそのまま残ります。"
+      title="取得漏れチェック（全タレント）"
+    >
+      {state !== null && loadError && (
+        <div
+          className="mb-4 rounded-control bg-danger/10 p-3 text-meta text-danger"
+          role="alert"
+        >
+          {loadError}
         </div>
-        {state !== null && loadError && (
-          <div
-            className="mt-3 rounded-control bg-danger/10 p-3 text-meta text-danger"
-            role="alert"
-          >
-            {loadError}
-          </div>
-        )}
-        {message && (
-          <div
-            className={`mt-3 rounded-control p-3 text-meta ${
-              message.type === 'success'
-                ? 'bg-success/10 text-success'
-                : 'bg-danger/10 text-danger'
-            }`}
-            role={message.type === 'success' ? 'status' : 'alert'}
-          >
-            {message.text}
-          </div>
-        )}
-      </CardHeader>
-      <CardContent className="p-0">
+      )}
+      {message && (
+        <div
+          className={`mb-4 rounded-control p-3 text-meta ${
+            message.type === 'success'
+              ? 'bg-success/10 text-success'
+              : 'bg-danger/10 text-danger'
+          }`}
+          role={message.type === 'success' ? 'status' : 'alert'}
+        >
+          {message.text}
+        </div>
+      )}
+      <div className="-mx-6 -mb-6">
         {state === null ? (
           loadError ? (
-            <div className="flex flex-col items-center gap-3 px-4 py-6 text-meta text-danger">
+            <div className="flex flex-col items-center gap-3 px-4 pt-2 pb-6 text-meta text-danger">
               <p>{loadError}</p>
               <Button
                 onClick={() => {
@@ -373,16 +364,19 @@ export function VideoBackfillRunPanel() {
               </Button>
             </div>
           ) : (
-            <div className="px-4 py-6 text-center text-meta text-muted">
+            <div className="px-4 pt-2 pb-6 text-center text-meta text-muted">
               読み込み中...
             </div>
           )
         ) : state.run ? (
           <RunSummary run={state.run} />
         ) : (
-          <EmptyState title="最近の取得漏れチェックはありません。" />
+          <EmptyState
+            className="pt-4"
+            title="最近の取得漏れチェックはありません。"
+          />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </Panel>
   )
 }
