@@ -33,7 +33,7 @@ next-bundle-optimizer スキルで apps/web の初期ロードのレポートを
 
 ## 入れていないスキル
 
-- `next-cache-components-adoption` と `next-partial-prefetching-adoption`: 移行用のスキルです。`apps/web` と `apps/admin` はどちらの機能（`cacheComponents` と `partialPrefetching`）もすでに有効で、`prefetch=` を付けた `<Link>` も残っていません。`apps/batch` と `apps/msw-demo` で Cache Components を有効にするときに、あらためて検討します
+- `next-cache-components-adoption` と `next-partial-prefetching-adoption`: 移行用のスキルです。`apps/web` と `apps/admin` はどちらの機能（`cacheComponents` と `partialPrefetching`）もすでに有効で、`prefetch=` を付けた `<Link>` も残っていません。`apps/batch` で Cache Components を有効にするときに、あらためて検討します
 - `vercel-react-view-transitions`（`vercel-labs/agent-skills`）: Next.js 本体のスキルではなく、View Transitions も使っていないため対象外です
 
 ## ファイルの置き場所と更新

@@ -13,7 +13,6 @@ export default defineConfig({
     './src/server.ts',
     './src/session.ts',
     './src/register.ts',
-    './src/adapter.ts',
   ],
   fixedExtension: false,
   format: 'esm',

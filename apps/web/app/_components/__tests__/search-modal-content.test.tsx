@@ -175,7 +175,9 @@ describe('SearchModalContent', () => {
     ).toBeInTheDocument()
     submit()
 
-    expect(navigation.push).toHaveBeenCalledWith('/search?q=test%20query')
+    expect(navigation.push).toHaveBeenCalledWith(
+      `/videos/${encodeURIComponent('test query')}`,
+    )
   })
 
   test('should remove the last chip with Backspace on an empty input', async () => {
