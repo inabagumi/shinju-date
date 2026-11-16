@@ -6,17 +6,20 @@
     "@tsconfig/node20": "20.1.11",
     "@tsconfig/strictest": "2.0.9",
     "@types/node": "26.6.6",
-    "next": "16.4.6",
     "tsdown": "0.23.7",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
   "main": "./dist/index.js",
   "name": "@shinju-date/database",
-  "peerDependencies": {
-    "next": "^15.0.0 || ^16.0.0"
-  },
   "private": true,
   "repository": {
     "directory": "packages/database",
@@ -25,6 +28,7 @@
   },
   "scripts": {
     "build": "tsdown",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "type": "module",
