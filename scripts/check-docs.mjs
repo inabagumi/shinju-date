@@ -312,7 +312,10 @@ function getAnchors(path) {
 
   const anchors = new Set()
   const occurrences = new Map()
-  const lines = blankFences(readFileSync(path, 'utf8').split('\n'))
+  // Headings in block quotes also get anchors, so drop the quote markers
+  const lines = blankFences(readFileSync(path, 'utf8').split('\n')).map(
+    (line) => line.replace(/^(?: {0,3}>[ \t]?)+/, ''),
+  )
 
   // The same way as GitHub (github-slugger) avoids duplicate anchors
   const addHeading = (heading) => {
