@@ -20,6 +20,13 @@
       "versioning": "regex:^(?<minor>\\d+)-(?<major>\\d+)-bookworm$"
     },
     {
+      "automerge": false,
+      "description": "Do not automerge a new image version, which can change the tools in the Dev Container",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["mcr.microsoft.com/devcontainers/typescript-node"],
+      "matchUpdateTypes": ["minor"]
+    },
+    {
       "description": "Update the Node.js major in .node-version, devEngines and the Dev Container image together",
       "groupName": "Node.js major",
       "matchPackageNames": [
