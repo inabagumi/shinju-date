@@ -10,6 +10,7 @@ import { redirect } from 'next/navigation'
 import { fetchActiveTalents, type Talent } from '@/lib/fetchers'
 import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
 import { supabaseClient } from '@/lib/supabase'
+import { getVideosPath } from '@/lib/video-kind-filter'
 import {
   type RenderedAnnouncement,
   renderAnnouncement,
@@ -76,17 +77,16 @@ export async function dismissAnnouncement(announcementId: string) {
 }
 
 export async function search(formData: FormData) {
-  const query = formData.get('query')
+  const value = formData.get('query')
+  const query = typeof value === 'string' ? value : ''
 
-  if (query && typeof query === 'string') {
+  if (query) {
     await track('Search', {
       query,
     })
-
-    redirect(`/videos/${encodeURIComponent(query)}`)
-  } else {
-    redirect('/videos')
   }
+
+  redirect(getVideosPath(query, 'all'))
 }
 
 export type Suggestion = {
