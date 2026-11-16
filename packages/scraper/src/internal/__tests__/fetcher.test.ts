@@ -28,7 +28,7 @@ interface Platform {
  * implemented, on top of the helpers the base class provides.
  */
 class ExampleFetcher extends Fetcher<Account, Video> {
-  readonly provider = 'example'
+  readonly provider = 'youtube'
 
   readonly requests: string[][] = []
   readonly #platform: Platform
@@ -194,7 +194,7 @@ describe('Fetcher', () => {
 
       expect(logger.error).toHaveBeenCalledWith(
         'Failed to fetch data for an account',
-        { accountId: 'a', error, provider: 'example' },
+        { accountId: 'a', error, provider: 'youtube' },
       )
     })
 

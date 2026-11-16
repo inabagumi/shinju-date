@@ -365,6 +365,9 @@ importers:
       '@shinju-date/constants':
         specifier: workspace:*
         version: link:../../packages/constants
+      '@shinju-date/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@shinju-date/health-checkers':
         specifier: workspace:*
         version: link:../../packages/health-checkers
@@ -417,9 +420,6 @@ importers:
       '@playwright/test':
         specifier: 1.65.1
         version: 1.65.1
-      '@shinju-date/database':
-        specifier: workspace:*
-        version: link:../../packages/database
       '@shinju-date/msw-handlers':
         specifier: workspace:*
         version: link:../../packages/msw-handlers

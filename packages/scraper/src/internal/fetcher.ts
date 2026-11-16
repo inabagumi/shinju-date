@@ -1,3 +1,4 @@
+import type { Enums } from '@shinju-date/database'
 import { toBatches, unique } from './batch.js'
 import type {
   AccountFailure,
@@ -58,7 +59,7 @@ export abstract class Fetcher<
   TRecentVideosOptions extends RecentVideosOptions = RecentVideosOptions,
 > {
   /** Name of the platform, e.g. for logs. */
-  abstract readonly provider: string
+  abstract readonly provider: Enums<'platform_type'>
 
   protected readonly logger: Logger | undefined
   readonly #queue: RequestQueue

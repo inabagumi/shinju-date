@@ -1,8 +1,8 @@
-import { createErrorResponse } from '@shinju-date/helpers'
 import type { Scraper } from '@shinju-date/scraper'
 import type { NextRequest } from 'next/server'
 import { getVideosCheckJob, type VideosCheckMode } from '@/lib/crawler-jobs'
 import { runCronJob } from '@/lib/cron'
+import { parseQuery } from '@/lib/query'
 import { createScraper } from '@/lib/scraper'
 import { finishVideoSync } from '@/lib/video-sync'
 import { querySchema } from './_lib/query-schema'
@@ -30,15 +30,13 @@ function checkVideos(
 }
 
 export async function POST(request: NextRequest): Promise<Response> {
-  const query = querySchema.safeParse(
-    Object.fromEntries(request.nextUrl.searchParams.entries()),
-  )
+  const query = parseQuery(querySchema, request)
 
-  if (!query.success) {
-    return createErrorResponse('Invalid query parameters', { status: 400 })
+  if (query instanceof Response) {
+    return query
   }
 
-  const { mode = 'default', provider } = query.data
+  const { mode = 'default', provider } = query
 
   return runCronJob(request, getVideosCheckJob(provider, mode), async () => {
     const now = Temporal.Now.instant()
