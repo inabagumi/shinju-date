@@ -12,12 +12,16 @@
  * External URLs are not checked, so that CI does not fail for reasons outside
  * the repository. Fenced code blocks are skipped.
  *
+ * A path exists when Git tracks it, or when it is a new file that is not
+ * ignored, so that ignored leftovers (such as `node_modules` of a removed app)
+ * do not hide a broken link.
+ *
  * Usage:
  *   node scripts/check-docs.mjs
  */
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, globSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -38,27 +42,90 @@ const FENCE_PATTERN = /^\s*(`{3,}|~{3,})/
 /** @type {Map<string, Set<string>>} */
 const anchorCache = new Map()
 
-function listMarkdownFiles() {
-  const output = execFileSync('git', ['ls-files', '-z', '*.md'], {
-    cwd: root,
-    encoding: 'utf8',
-  })
+/**
+ * List the files Git tracks and the new files that are not ignored.
+ *
+ * @param {string[]} pathspecs - Pathspecs to limit the files
+ */
+function listFiles(pathspecs = []) {
+  const output = execFileSync(
+    'git',
+    [
+      'ls-files',
+      '-z',
+      '--cached',
+      '--others',
+      '--exclude-standard',
+      '--deduplicate',
+      '--',
+      ...pathspecs,
+    ],
+    { cwd: root, encoding: 'utf8' },
+  )
 
-  return output
-    .split('\0')
-    .filter(Boolean)
-    .filter((file) => !IGNORED_FILES.some((pattern) => pattern.test(file)))
+  return output.split('\0').filter(Boolean)
+}
+
+/** Files and their parent directories, relative to the repository root */
+const knownPaths = new Set([''])
+
+for (const file of listFiles()) {
+  const parts = file.split('/')
+
+  for (let index = 1; index <= parts.length; index++) {
+    knownPaths.add(parts.slice(0, index).join('/'))
+  }
+}
+
+function listMarkdownFiles() {
+  return listFiles(['*.md']).filter(
+    (file) => !IGNORED_FILES.some((pattern) => pattern.test(file)),
+  )
+}
+
+/**
+ * @param {string} pattern - Path that contains `*`
+ */
+function globToRegExp(pattern) {
+  const source = pattern
+    .split(/(\*\*\/|\*\*|\*)/)
+    .map((part) => {
+      if (part === '**/') {
+        return '(?:.*/)?'
+      }
+
+      if (part === '**') {
+        return '.*'
+      }
+
+      if (part === '*') {
+        return '[^/]*'
+      }
+
+      return part.replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+    })
+    .join('')
+
+  return new RegExp(`^${source}$`)
 }
 
 /**
  * @param {string} path - Absolute path, which may contain `*`
  */
 function pathExists(path) {
-  if (path.includes('*')) {
-    return globSync(relative(root, path), { cwd: root }).length > 0
+  const relativePath = relative(root, path).split('\\').join('/')
+
+  if (relativePath.startsWith('..')) {
+    return false
   }
 
-  return existsSync(path)
+  if (relativePath.includes('*')) {
+    const pattern = globToRegExp(relativePath)
+
+    return [...knownPaths].some((knownPath) => pattern.test(knownPath))
+  }
+
+  return knownPaths.has(relativePath)
 }
 
 /**

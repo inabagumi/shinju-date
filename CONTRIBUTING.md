@@ -253,8 +253,7 @@ shinju-date/
 ├── apps/                    # アプリケーション
 │   ├── web/                # 公開ウェブサイト
 │   ├── admin/              # 管理画面
-│   ├── batch/              # バッチ処理
-│   └── msw-demo/           # MSW のデモ
+│   └── batch/              # バッチ処理
 ├── packages/               # 共有パッケージ
 │   ├── database/           # データベース関連
 │   ├── msw-handlers/       # MSW モックハンドラ
