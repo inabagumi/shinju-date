@@ -10,33 +10,14 @@ SHINJU DATEプロジェクトへの貢献をご検討いただき、ありがと
 
 ## Dev Container設定の開発とデバッグ
 
-Dev Container設定（`.devcontainer/`）を変更する場合は、`@devcontainers/cli`を使用してローカルでテストしてください。
-
-### Dev Containers CLIのインストール
-
-```bash
-npm install -g @devcontainers/cli
-```
-
-### Dev Container設定のテスト
-
-```bash
-# Dev Containerをビルドしてテスト
-devcontainer up --workspace-folder .
-
-# Dev Container内でコマンドを実行
-devcontainer exec --workspace-folder . pnpm install
-
-# Dev Containerを停止
-devcontainer down --workspace-folder .
-```
+Dev Container設定（`.devcontainer/`）を変更する場合は、`@devcontainers/cli`を使用してローカルでテストしてください。手順は[.devcontainer/README.md](.devcontainer/README.md#dev-container-のテスト)の「Dev Container のテスト」を参照してください。
 
 ### 変更すべき設定ファイル
 
 - `.devcontainer/devcontainer.json` - Dev Container本体の設定
 - `.devcontainer/compose.override.yml` - Dev Container専用サービス（appのみ）
-- `compose.yml`（ルート） - Supabase、Redis等の共有サービス
-- `config/` - Kong、Vector等の設定ファイル
+- `compose.yml`（ルート） - Redis等の共有サービス
+- `config/dev-secrets.env` - 開発用シークレット
 
 詳細は[.devcontainer/README.md](.devcontainer/README.md)を参照してください。
 
