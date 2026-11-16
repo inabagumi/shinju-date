@@ -13,7 +13,7 @@ const supabaseClient = {} as TypedSupabaseClient
  * A platform scraper reduced to what the base class provides.
  */
 class ExampleScraper extends Scraper {
-  readonly provider = 'example'
+  readonly provider = 'youtube'
 
   context: CrawlContext<string> | undefined
 
@@ -100,7 +100,7 @@ describe('Scraper', () => {
 
     expect(logger.error).toHaveBeenCalledWith('Failed to process an item', {
       error: expect.objectContaining({ message: 'one video failed' }),
-      provider: 'example',
+      provider: 'youtube',
       videoId: 'v1',
     })
   })
