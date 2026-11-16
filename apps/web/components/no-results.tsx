@@ -1,10 +1,8 @@
 import { Button } from '@shinju-date/ui'
 import Link from 'next/link'
-import { joinURL } from 'ufo'
 import RecommendedQueries from './recommended-queries'
 
 interface NoResultsProps {
-  basePath?: string
   /** 絞り込みを解除したページのパス。渡すと解除するリンクを出す */
   clearFiltersHref?: string | undefined
   /** 見つからなかったときに次に試すことの案内 */
@@ -15,7 +13,6 @@ interface NoResultsProps {
 }
 
 export default function NoResults({
-  basePath = '/',
   clearFiltersHref,
   hint,
   message,
@@ -47,7 +44,7 @@ export default function NoResults({
           </Button>
         )}
         <Button asChild size="lg" variant="secondary">
-          <Link href={joinURL(basePath, '/videos')}>新着動画を見る</Link>
+          <Link href="/videos">新着動画を見る</Link>
         </Button>
       </div>
     </div>
