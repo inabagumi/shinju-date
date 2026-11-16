@@ -20,6 +20,7 @@
 
 - **[msw-guide.md](msw-guide.md)** - MSW (Mock Service Worker) 統合ガイド
 - **[agent-skills.md](agent-skills.md)** - Next.js の公式スキル（AI エージェント向け）と agent-browser の使い方
+- **[hybrid-recommendation-system.md](hybrid-recommendation-system.md)** - 検索のおすすめクエリ（手動の追加と、検索の傾向からの自動選出）の仕組み
 
 ### 📦 その他のドキュメント
 
@@ -43,7 +44,8 @@
 
 ### システム理解・拡張
 
-1. **各パッケージの README** - 個別コンポーネントの詳細仕様
+1. **[hybrid-recommendation-system.md](hybrid-recommendation-system.md)** - おすすめクエリの仕組み
+2. **各パッケージの README** - 個別コンポーネントの詳細仕様
 
 ## 📝 ドキュメント作成ガイドライン
 

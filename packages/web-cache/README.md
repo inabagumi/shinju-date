@@ -4,8 +4,14 @@
 
 ## インストール
 
-```bash
-pnpm add @shinju-date/web-cache
+ワークスペース内のパッケージです。使うアプリの `package.json` の `dependencies` に追加します。
+
+```json
+{
+  "dependencies": {
+    "@shinju-date/web-cache": "workspace:*"
+  }
+}
 ```
 
 ## 使用方法

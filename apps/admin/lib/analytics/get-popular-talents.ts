@@ -3,16 +3,35 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { isNonNullable } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import type { QueryData } from '@supabase/supabase-js'
+import {
+  createSupabaseServerClient,
+  type TypedSupabaseClient,
+} from '@/lib/supabase'
 import { _getPopularItemsFromRedis } from './_get-popular-items-from-redis'
 
-export type PopularTalent = {
+const POPULAR_TALENT_SELECT = `
+  id,
+  name,
+  youtube_channels (youtube_channel_id)
+`
+
+function selectPopularTalents(
+  supabaseClient: TypedSupabaseClient,
+  talentIds: string[],
+) {
+  return supabaseClient
+    .from('talents')
+    .select(POPULAR_TALENT_SELECT)
+    .in('id', talentIds)
+}
+
+type PopularTalentRow = QueryData<
+  ReturnType<typeof selectPopularTalents>
+>[number]
+
+export interface PopularTalent extends PopularTalentRow {
   clicks: number
-  id: string
-  name: string
-  youtube_channels: {
-    youtube_channel_id: string
-  }[]
 }
 
 /**
@@ -40,10 +59,10 @@ export async function getPopularTalents(
   const supabaseClient = await createSupabaseServerClient()
 
   const talentIds = talentScores.map(([id]) => id)
-  const { data: talents, error } = await supabaseClient
-    .from('talents')
-    .select('id, name, youtube_channels(youtube_channel_id)')
-    .in('id', talentIds)
+  const { data: talents, error } = await selectPopularTalents(
+    supabaseClient,
+    talentIds,
+  )
 
   if (error) {
     logger.error('タレントの詳細取得に失敗しました', {
@@ -61,14 +80,7 @@ export async function getPopularTalents(
       const talent = talentMap.get(id)
       if (!talent) return null
 
-      return {
-        clicks,
-        id: talent.id,
-        name: talent.name,
-        youtube_channels: Array.isArray(talent.youtube_channels)
-          ? talent.youtube_channels
-          : [],
-      }
+      return { ...talent, clicks }
     })
     .filter(isNonNullable)
 }

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { publicEnv } from '@/lib/env'
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -6,9 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       userAgent: '*',
     },
-    sitemap: new URL(
-      '/sitemap.xml',
-      process.env['NEXT_PUBLIC_BASE_URL'] ?? 'http://localhost:3000',
-    ).toString(),
+    sitemap: new URL('/sitemap.xml', publicEnv.NEXT_PUBLIC_BASE_URL).toString(),
   }
 }

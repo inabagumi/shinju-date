@@ -1,28 +1,35 @@
-import type { Tables } from '@shinju-date/database'
-import { createSupabaseServerClient } from '@/lib/supabase'
+import type { QueryData } from '@supabase/supabase-js'
+import {
+  createSupabaseServerClient,
+  type TypedSupabaseClient,
+} from '@/lib/supabase'
 
-export type TalentListItem = Pick<
-  Tables<'talents'>,
-  'id' | 'name' | 'created_at' | 'updated_at' | 'deleted_at' | 'status'
-> & {
-  youtube_channels: Pick<
-    Tables<'youtube_channels'>,
-    'id' | 'name' | 'youtube_channel_id' | 'youtube_handle'
-  >[]
+const TALENT_LIST_SELECT = `
+  id,
+  name,
+  created_at,
+  updated_at,
+  deleted_at,
+  status,
+  youtube_channels (id, name, youtube_channel_id, youtube_handle)
+`
+
+function selectTalents(supabaseClient: TypedSupabaseClient) {
+  return supabaseClient
+    .from('talents')
+    .select(TALENT_LIST_SELECT)
+    .order('name', {
+      ascending: true,
+    })
 }
+
+export type TalentListItem = QueryData<ReturnType<typeof selectTalents>>[number]
 
 export async function getTalents(): Promise<TalentListItem[]> {
   const supabaseClient = await createSupabaseServerClient()
 
   // Admin can read deleted talents via RLS; include all for filter UI
-  const { data: talents, error } = await supabaseClient
-    .from('talents')
-    .select(
-      'id, name, created_at, updated_at, deleted_at, status, youtube_channels(id, name, youtube_channel_id, youtube_handle)',
-    )
-    .order('name', {
-      ascending: true,
-    })
+  const { data: talents, error } = await selectTalents(supabaseClient)
 
   if (error) {
     throw new TypeError(error.message, {
