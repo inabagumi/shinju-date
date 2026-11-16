@@ -86,7 +86,7 @@ export function MultiSelect({
           <div className="flex flex-col gap-1">
             {/* Select All / Deselect All button */}
             <button
-              className="flex w-full items-center rounded-control px-2 py-2 text-left text-sm hover:bg-muted"
+              className="flex w-full items-center rounded-control px-2 py-2 text-left text-meta leading-5 hover:bg-muted"
               onClick={handleSelectAll}
               type="button"
             >
@@ -109,7 +109,7 @@ export function MultiSelect({
                 const isChecked = value.includes(option.value)
                 return (
                   <label
-                    className="flex w-full cursor-pointer items-center rounded-control px-2 py-2 text-sm hover:bg-muted"
+                    className="flex w-full cursor-pointer items-center rounded-control px-2 py-2 text-meta leading-5 hover:bg-muted"
                     htmlFor={`multi-select-${option.value}`}
                     key={option.value}
                   >

@@ -130,7 +130,7 @@ export const WithLabel = meta.story({
   },
   render: (args) => (
     <div className="flex w-64 flex-col gap-2">
-      <label className="text-sm font-medium" htmlFor="input-with-label">
+      <label className="text-meta font-medium" htmlFor="input-with-label">
         Username
       </label>
       <Input {...args} id="input-with-label" />
@@ -146,11 +146,13 @@ export const WithErrorMessage = meta.story({
   },
   render: (args) => (
     <div className="flex w-64 flex-col gap-2">
-      <label className="text-sm font-medium" htmlFor="input-error">
+      <label className="text-meta font-medium" htmlFor="input-error">
         Email
       </label>
       <Input {...args} id="input-error" />
-      <p className="text-sm text-danger">Please enter a valid email address</p>
+      <p className="text-meta text-danger">
+        Please enter a valid email address
+      </p>
     </div>
   ),
 })

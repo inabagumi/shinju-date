@@ -67,7 +67,7 @@ export const LongText = meta.story({
 export const WithCustomClass = meta.story({
   args: {
     children: 'Custom Badge',
-    className: 'text-base px-4 py-2',
+    className: 'text-body px-4 py-2',
     variant: 'success',
   },
 })

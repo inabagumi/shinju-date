@@ -84,6 +84,8 @@ import { Button } from '@shinju-date/ui'
 - `md` (デフォルト): 中サイズ
 - `lg`: 大サイズ
 
+文字は、どのサイズでも 16px（`text-body leading-normal`）です。iOS の Safari は、16px 未満の入力欄にフォーカスすると画面を拡大するためです。`sm` は余白で小ささを出しています。
+
 **注意**: `size` プロップ名はHTML input要素のネイティブ属性と競合するため、`inputSize` を使用します。
 
 ```tsx
@@ -338,9 +340,9 @@ const buttonVariants = cva(
         // ...
       },
       size: {
-        sm: 'px-3 py-1 text-sm',
-        md: 'px-4 py-2 text-sm',
-        lg: 'px-6 py-3 text-base',
+        sm: 'px-3 py-1 text-meta leading-5',
+        md: 'px-4 py-2 text-meta leading-5',
+        lg: 'px-6 py-3 text-body leading-normal',
       },
     },
   },
