@@ -16,8 +16,8 @@ Dev Container設定（`.devcontainer/`）を変更する場合は、`@devcontain
 
 - `.devcontainer/devcontainer.json` - Dev Container本体の設定
 - `.devcontainer/compose.override.yml` - Dev Container専用サービス（appのみ）
-- `compose.yml`（ルート） - Redis と、Upstash 互換の Redis HTTP API（Supabase は Supabase CLI で起動します）
-- `config/dev-secrets.env` - 開発用の環境変数（Supabase のキー、Redis HTTP API のトークン）
+- `compose.yml`（ルート） - Redis と、Upstash 互換の Redis HTTP API
+- `config/dev-secrets.env` - 開発用の環境変数
 
 詳細は[.devcontainer/README.md](.devcontainer/README.md)を参照してください。
 
@@ -120,7 +120,7 @@ pnpm run build
 
 ### 4. レビュープロセス
 
-- CI（`.github/workflows/ci.yml`）が通ることを確認
+- CI が通ることを確認
 - コードレビューに対応
 - 必要に応じて修正
 
@@ -128,12 +128,12 @@ pnpm run build
 
 CI は、プルリクエストごとに次のことを確かめます。どれかが失敗すると、マージできません。
 
-- **リント**: Biome のフォーマットとリントに違反がないこと（`pnpm biome ci .`）
-- **型チェック**: テストのファイルを含めて、すべてのパッケージとアプリケーションの型に誤りがないこと（`pnpm typecheck`）
-- **テスト**: パッケージとアプリケーションのユニットテストが通ること（`pnpm test`）
-- **ビルド**: すべてのパッケージがビルドできること。web と admin は、MSW を有効にして本番用にビルドできること（Supabase と Upstash に接続しない）
+- **リント**: Biome のフォーマットとリントに違反がないこと
+- **型チェック**: テストのファイルを含めて、すべてのパッケージとアプリケーションの型に誤りがないこと
+- **テスト**: パッケージとアプリケーションのユニットテストが通ること
+- **ビルド**: すべてのパッケージがビルドできること。web と admin は、MSW を有効にして本番用にビルドできること
 - **E2E**: web、admin、batch の Playwright のテストと、ui の Storybook のブラウザのテストが通ること
-- **データベース**: `supabase/` や `packages/database/` などを変えた場合だけ、すべてのマイグレーションとシードを空のデータベースに適用できること、pgTAP のテスト（`supabase/tests/database/`）が通ること、生成される型（`packages/database/types/supabase.ts`）がコミットされたものと一致すること
+- **データベース**: データベースを変えた場合だけ、マイグレーションとシードを空のデータベースに適用できること、pgTAP のテストが通ること、生成される型がコミットされたものと一致すること
 
 失敗したときは、GitHub のプルリクエストの「Checks」で、どの確認が失敗したかを確かめてください。
 
@@ -141,11 +141,11 @@ CI は、プルリクエストごとに次のことを確かめます。どれ�
 
 ### Issue テンプレート
 
-Issue は、次の3つのテンプレートのどれかで作成してください（テンプレートを使わない Issue は作成できません）。
+Issue は、次の3つのテンプレートのどれかで作成してください。
 
-- **バグ報告**: 動作の不具合やエラー（バグの説明、再現手順、期待される動作、OS、ブラウザなど）
-- **機能要望**: 新しい機能や改善の提案（機能の説明、解決策、代替案など）
-- **タスク**: リファクタリングやドキュメントの作成などの作業（タスクの説明、受け入れ条件）
+- **バグ報告**: 動作の不具合やエラー
+- **機能要望**: 新しい機能や改善の提案
+- **タスク**: リファクタリングやドキュメントの作成などの作業
 
 質問や相談は、[GitHub Discussions](https://github.com/inabagumi/shinju-date/discussions) を使ってください。
 
@@ -160,7 +160,7 @@ pnpm run test
 # 特定のパッケージ
 pnpm run test --filter=@shinju-date/helpers
 
-# ウォッチモード（特定のパッケージで Vitest を起動する）
+# ウォッチモード
 pnpm --filter=@shinju-date/helpers exec vitest
 ```
 
@@ -262,7 +262,7 @@ shinju-date/
 
 ### 質問・相談
 
-- **GitHub Issues**: バグの報告、機能の要望、作業のタスク（[Issue の起票ルール](#issue-の起票ルール)）
+- **GitHub Issues**: バグの報告、機能の要望、作業のタスク
 - **GitHub Discussions**: 質問、相談、一般的な議論
 
 ### よくある問題と解決方法

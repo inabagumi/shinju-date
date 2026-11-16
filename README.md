@@ -12,13 +12,13 @@
 
 - **[web](apps/web/)** - 公開ウェブサイト (https://shinju.date) のフロントエンド
 - **[admin](apps/admin/)** - コンテンツ管理用の管理画面
-- **[batch](apps/batch/)** - 定期実行されるバッチ処理（Next.js のルートハンドラー）
+- **[batch](apps/batch/)** - 定期実行されるバッチ処理
 - **[msw-demo](apps/msw-demo/)** - MSW の統合を確かめるためのデモ
 
 ### 共有パッケージ (`packages/`)
 
 - **[composable-fetch](packages/composable-fetch/)** - キャッシュやリトライを組み合わせられる fetch のミドルウェア
-- **[constants](packages/constants/)** - 共通の定数（`REDIS_KEYS`、`TIME_ZONE` など）
+- **[constants](packages/constants/)** - 共通の定数
 - **[database](packages/database/)** - Supabase のクライアントとデータベースの型定義
 - **[health-checkers](packages/health-checkers/)** - ヘルスチェック機能
 - **[helpers](packages/helpers/)** - 汎用のユーティリティ関数
@@ -26,18 +26,18 @@
 - **[msw-handlers](packages/msw-handlers/)** - 開発とテストで使う MSW のモックハンドラー
 - **[retryable-fetch](packages/retryable-fetch/)** - リトライ機能付きの fetch
 - **[scraper](packages/scraper/)** - YouTube と Twitch の動画をデータベースと同期するクローラー
-- **[tailwind-config](packages/tailwind-config/)** - 共有の Tailwind CSS のテーマ設定（色、文字サイズなど）
+- **[tailwind-config](packages/tailwind-config/)** - 共有の Tailwind CSS のテーマ設定
 - **[temporal-fns](packages/temporal-fns/)** - `Temporal` を使った日時操作のユーティリティ
 - **[twitch-api-client](packages/twitch-api-client/)** - Twitch Helix API のクライアント
 - **[ui](packages/ui/)** - 共有の UI コンポーネント（Button、Input、Dialog、Card など）
-- **[video-backfill](packages/video-backfill/)** - 過去の動画の取り込みジョブのキュー（admin と batch で共有）
+- **[video-backfill](packages/video-backfill/)** - 過去の動画の取り込みジョブのキュー
 - **[web-cache](packages/web-cache/)** - 公開サイトのキャッシュを再検証するユーティリティ
 - **[youtube-api-client](packages/youtube-api-client/)** - YouTube Data API のクライアント
 
 ## 技術スタック
 
 - **フロントエンド**: Next.js (App Router), TypeScript, Tailwind CSS
-- **バックエンド**: Next.js のルートハンドラー（web、admin、batch）と Server Actions（web、admin）
+- **バックエンド**: Next.js のルートハンドラー、Server Actions
 - **データベース**: Supabase (PostgreSQL)
 - **キャッシュ**: Upstash Redis
 - **パッケージマネージャー**: pnpm
@@ -52,18 +52,18 @@
 # 依存関係のインストール
 pnpm install
 
-# Supabase の起動（Supabase CLI）と、マイグレーションとシードの適用
+# Supabase の起動と、マイグレーションとシードの適用
 pnpm exec supabase start
 pnpm exec supabase db reset
 
-# Redis の起動（Docker Compose）
+# Redis の起動
 docker compose up -d
 
 # 開発サーバーの起動
 pnpm dev
 ```
 
-[GitHub Codespaces](https://github.com/features/codespaces) と [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers) では、依存関係のインストール、Supabase と Redis の起動が自動で実行されます（[`.devcontainer/README.md`](.devcontainer/README.md)）。
+[GitHub Codespaces](https://github.com/features/codespaces) と [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers) では、依存関係のインストール、Supabase と Redis の起動が自動で実行されます。
 
 貢献の流れは、[CONTRIBUTING.md](CONTRIBUTING.md) を読んでください。
 
