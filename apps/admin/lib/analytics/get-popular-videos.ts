@@ -12,9 +12,16 @@ import { _getPopularItemsFromRedis } from './_get-popular-items-from-redis'
 
 const POPULAR_VIDEO_SELECT = `
   id,
+  platform,
+  status,
   thumbnail:thumbnails (id, path, blur_data_url),
   title,
-  youtube_video:youtube_videos (youtube_video_id)
+  youtube_video:youtube_videos (youtube_video_id),
+  twitch_video:twitch_videos (
+    twitch_video_id,
+    type,
+    twitch_user:twitch_users (twitch_login_name)
+  )
 `
 
 function selectPopularVideos(
