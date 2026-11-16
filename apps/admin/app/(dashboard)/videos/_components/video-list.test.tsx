@@ -6,8 +6,13 @@ import {
   waitFor,
   within,
 } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { toggleVisibilityAction } from '../_actions'
+import {
+  restoreAction,
+  softDeleteAction,
+  toggleVisibilityAction,
+} from '../_actions'
 import type { Video } from '../_lib/get-videos'
 import VideoList from './video-list'
 
@@ -20,6 +25,10 @@ vi.mock('../_actions', () => ({
   softDeleteAction: vi.fn(),
   toggleVisibilityAction: vi.fn(),
 }))
+
+interface WrapperProps {
+  children: ReactNode
+}
 
 function createVideo(overrides: Partial<Video> = {}): Video {
   return {
@@ -139,6 +148,155 @@ describe('VideoList', () => {
         await screen.findByText('更新できませんでした。'),
       ).toBeInTheDocument()
       expect(screen.getByText('1 件選択中')).toBeInTheDocument()
+    })
+  })
+
+  describe('selection across lists', () => {
+    const videoA = createVideo({
+      id: '00000000-0000-4000-8000-00000000000a',
+      title: 'Video A',
+    })
+    const videoB = createVideo({
+      id: '00000000-0000-4000-8000-00000000000b',
+      title: 'Video B',
+    })
+    const videoC = createVideo({
+      id: '00000000-0000-4000-8000-00000000000c',
+      title: 'Video C',
+    })
+    const videoD = createVideo({
+      id: '00000000-0000-4000-8000-00000000000d',
+      title: 'Video D',
+    })
+    const deletedVideo = createVideo({
+      deleted_at: '2025-01-03T00:00:00Z',
+      id: '00000000-0000-4000-8000-00000000000e',
+      title: 'Deleted Video',
+    })
+
+    function Wrapper({ children }: WrapperProps) {
+      return (
+        <ToastProvider>
+          {children}
+          <ToastViewport />
+        </ToastProvider>
+      )
+    }
+
+    function select(title: string) {
+      fireEvent.click(screen.getByLabelText(`「${title}」を選択`))
+    }
+
+    function confirmDelete() {
+      fireEvent.change(screen.getByLabelText(/「DELETE」と入力してください/), {
+        target: { value: 'DELETE' },
+      })
+      fireEvent.click(screen.getByRole('button', { name: '削除する' }))
+    }
+
+    beforeEach(() => {
+      vi.clearAllMocks()
+      vi.mocked(softDeleteAction).mockResolvedValue({ success: true })
+      vi.mocked(restoreAction).mockResolvedValue({ success: true })
+    })
+
+    it('drops the selection that is no longer in the list', async () => {
+      const { rerender } = render(<VideoList videos={[videoA, videoB]} />, {
+        wrapper: Wrapper,
+      })
+      select('Video A')
+      select('Video B')
+      expect(screen.getByText('2 件選択中')).toBeInTheDocument()
+
+      rerender(<VideoList videos={[videoC]} />)
+      expect(
+        screen.getByText('動画を選択すると、まとめて操作できます。'),
+      ).toBeInTheDocument()
+
+      select('Video C')
+      expect(screen.getByText('1 件選択中')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('button', { name: '削除' }))
+      const dialog = screen.getByRole('dialog')
+      expect(within(dialog).getByText('Video C')).toBeInTheDocument()
+      expect(within(dialog).queryByText('Video A')).not.toBeInTheDocument()
+      expect(within(dialog).queryByText('Video B')).not.toBeInTheDocument()
+
+      confirmDelete()
+
+      await waitFor(() =>
+        expect(softDeleteAction).toHaveBeenCalledWith([videoC.id]),
+      )
+    })
+
+    it('does not restore the selection when returning to the previous list', () => {
+      const { rerender } = render(<VideoList videos={[videoA, videoB]} />, {
+        wrapper: Wrapper,
+      })
+      select('Video A')
+
+      rerender(<VideoList videos={[videoC]} />)
+      rerender(<VideoList videos={[videoA, videoB]} />)
+
+      expect(screen.getByLabelText('「Video A」を選択')).not.toBeChecked()
+      expect(
+        screen.getByText('動画を選択すると、まとめて操作できます。'),
+      ).toBeInTheDocument()
+    })
+
+    it('checks "select all" only when every video in the list is selected', () => {
+      const { rerender } = render(<VideoList videos={[videoA, videoB]} />, {
+        wrapper: Wrapper,
+      })
+      select('Video A')
+
+      rerender(<VideoList videos={[videoC, videoD]} />)
+      select('Video C')
+
+      expect(screen.getByLabelText('すべて選択')).not.toBeChecked()
+
+      select('Video D')
+
+      expect(screen.getByLabelText('すべて選択')).toBeChecked()
+    })
+
+    it('deletes only the non-deleted videos shown in the dialog', async () => {
+      render(<VideoList videos={[videoA, deletedVideo]} />, {
+        wrapper: Wrapper,
+      })
+      fireEvent.click(screen.getByLabelText('すべて選択'))
+      expect(screen.getByText('2 件選択中')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('button', { name: '削除' }))
+      const dialog = screen.getByRole('dialog')
+      expect(within(dialog).getByText('Video A')).toBeInTheDocument()
+      expect(
+        within(dialog).queryByText('Deleted Video'),
+      ).not.toBeInTheDocument()
+
+      confirmDelete()
+
+      await waitFor(() =>
+        expect(softDeleteAction).toHaveBeenCalledWith([videoA.id]),
+      )
+    })
+
+    it('restores only the deleted videos shown in the dialog', async () => {
+      render(<VideoList videos={[videoA, deletedVideo]} />, {
+        wrapper: Wrapper,
+      })
+      fireEvent.click(screen.getByLabelText('すべて選択'))
+
+      fireEvent.click(screen.getByRole('button', { name: '復元' }))
+      const dialog = screen.getByRole('dialog')
+      expect(within(dialog).getByText('Deleted Video')).toBeInTheDocument()
+      expect(within(dialog).queryByText('Video A')).not.toBeInTheDocument()
+
+      fireEvent.click(within(dialog).getByRole('button', { name: '復元する' }))
+
+      await waitFor(() =>
+        expect(restoreAction).toHaveBeenCalledWith([deletedVideo.id]),
+      )
     })
   })
 })
