@@ -101,14 +101,15 @@ Lato は 300・400・700 を読み込んでいます（Lato には 600 があり
 
 ### 役割ごとの組み合わせ
 
-| 役割                               | クラス                                   | サイズ             | 太さ | 行間 |
-| ---------------------------------- | ---------------------------------------- | ------------------ | ---- | ---- |
-| ページ見出し（h1）                 | `text-title font-bold md:text-display`   | 24px（PC は 32px） | 700  | 1.4  |
-| セクション見出し（h2）             | `text-heading font-bold`                 | 20px               | 700  | 1.4  |
-| カードのタイトル・小見出し         | `text-body leading-normal font-semibold` | 16px               | 600  | 1.5  |
-| 本文                               | `text-body`                              | 16px               | 400  | 1.7  |
-| 補助情報（日時・タレント名・説明） | `text-meta text-muted`                   | 14px               | 400  | 1.6  |
-| バッジ・注記                       | `text-caption font-semibold`             | 12px               | 600  | 1.4  |
+| 役割                                          | クラス                                   | サイズ             | 太さ                | 行間 |
+| --------------------------------------------- | ---------------------------------------- | ------------------ | ------------------- | ---- |
+| ページ見出し（h1）                            | `text-title font-bold md:text-display`   | 24px（PC は 32px） | 700                 | 1.4  |
+| セクション見出し（h2）                        | `text-heading font-bold`                 | 20px               | 700                 | 1.4  |
+| カードのタイトル・小見出し                    | `text-body leading-normal font-semibold` | 16px               | 600                 | 1.5  |
+| 本文                                          | `text-body`                              | 16px               | 400                 | 1.7  |
+| 補助情報（日時・タレント名・説明）            | `text-meta text-muted`                   | 14px               | 400                 | 1.6  |
+| バッジ・注記                                  | `text-caption font-semibold`             | 12px               | 600                 | 1.4  |
+| 状態の知らせ（[`Alert`](#状態の知らせalert)） | `text-meta`（見出しは `font-semibold`）  | 14px               | 400（見出しは 600） | 1.6  |
 
 ```tsx
 const example = (
@@ -123,6 +124,39 @@ const example = (
 
 - **時刻・再生時間・件数は `tabular-nums` にする。** 桁がそろい、数字が変わっても幅が揺れません
 - **文章の行長は1行40〜45文字程度に抑える。** 説明文やお知らせなど、まとまった文章は `max-w-text`（44rem）の中に置きます
+
+### 状態の知らせ（Alert）
+
+削除済み・引退・失敗など、画面の中で状態を知らせる枠は、`@shinju-date/ui` の `Alert` を使います。色の付いた枠を手で書かないでください。
+
+| 部分     | クラス・props                                                                                                           |
+| -------- | ----------------------------------------------------------------------------------------------------------------------- |
+| 枠       | `rounded-container border p-4 text-meta text-foreground`。地と枠線は `tone` で決まる                                    |
+| 見出し   | `title`。本文の上の太字の1行（`font-semibold`）                                                                         |
+| 本文     | `children`                                                                                                              |
+| 操作     | `action`。右端に置くリンクやボタン。狭い画面では本文の下に回る                                                          |
+| 読み上げ | `role`。既定は `danger` と `warning` が `alert`、`success` と `neutral` が `status`。一覧などを含む枠は `region` にする |
+
+`tone` は状態の意味で選びます。文字はどの `tone` でも `text-foreground` にし、色は地と枠線だけに使います（コントラスト比は `packages/ui/src/colors.test.ts` で確認しています）。
+
+| `tone`    | 地と枠線                          | 使う場面                                   |
+| --------- | --------------------------------- | ------------------------------------------ |
+| `danger`  | `border-danger/30 bg-danger/10`   | 危険な状態（失敗、削除済み、操作のエラー） |
+| `warning` | `border-warning/30 bg-warning/10` | 注意を促す状態（引退、確認が必要な操作）   |
+| `success` | `border-success/30 bg-success/10` | 操作が済んだこと                           |
+| `neutral` | `border-border bg-muted`          | どれにも当たらない知らせ（予定や補足）     |
+
+```tsx
+const example = (
+  <Alert
+    action={<Link href="/system#video-backfill-history">履歴を確認する</Link>}
+    title="削除されたタレント"
+    tone="danger"
+  >
+    このタレントは削除されています。
+  </Alert>
+)
+```
 
 ### 動画カードのタイトル
 
@@ -205,5 +239,5 @@ import { twMerge } from '@shinju-date/ui'
 - [ ] 時刻・再生時間・件数に `tabular-nums` を付けている
 - [ ] 角丸は `rounded-control` / `rounded-container` / `rounded-full` のいずれか
 - [ ] 影は重なるものだけに `shadow-overlay` を使っている
-- [ ] `packages/ui` にある部品（Button・Badge・Card・Dialog・Input・Select・Table・PageHeader・EmptyState・StatTile・FilterBar など）を使っている
-- [ ] Badge の色は状態の意味で選んでいる（成功は `success`、注意は `warning`、危険は `danger`、中立は `neutral`）
+- [ ] `packages/ui` にある部品（Button・Badge・Card・Dialog・Input・Select・Table・PageHeader・EmptyState・StatTile・FilterBar・Alert など）を使っている
+- [ ] Badge の色と Alert の `tone` は状態の意味で選んでいる（成功は `success`、注意は `warning`、危険は `danger`、中立は `neutral`）
