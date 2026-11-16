@@ -16,9 +16,9 @@ import { logger } from '@shinju-date/logger'
 logger.info('動画を同期しました', { count: 10 })
 
 try {
-  await syncVideos()
+  JSON.parse('{')
 } catch (error) {
-  logger.error('動画の同期に失敗しました', { error })
+  logger.error('JSON の解析に失敗しました', { error })
 }
 
 logger.warn('レスポンスが空でした')
