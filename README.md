@@ -1,6 +1,6 @@
 # SHINJU DATE
 
-[![Node.js CI](https://github.com/inabagumi/shinju-date/workflows/Node.js%20CI/badge.svg)](https://github.com/inabagumi/shinju-date/actions)
+[![CI](https://github.com/inabagumi/shinju-date/actions/workflows/ci.yml/badge.svg)](https://github.com/inabagumi/shinju-date/actions/workflows/ci.yml)
 
 「[SHINJU DATE](https://shinju.date/)」は[ななしいんく](https://www.774.ai/)に所属するタレントが[YouTube](https://www.youtube.com/)で配信や投稿した動画を検索できるウェブサービスです。[ななしいんくが定める二次創作ガイドライン](https://www.774.ai/guideline)に従ってななしいんくとは直接の関係がない営利を目的としていない団体である[Haneru Developers](https://haneru.dev/)によって開発と運営が行われています。
 
@@ -12,93 +12,60 @@
 
 - **[web](apps/web/)** - 公開ウェブサイト (https://shinju.date) のフロントエンド
 - **[admin](apps/admin/)** - コンテンツ管理用の管理画面
-- **[batch](apps/batch/)** - 定期実行されるバッチ処理 (Nitro)
+- **[batch](apps/batch/)** - 定期実行されるバッチ処理（Next.js のルートハンドラー）
+- **[msw-demo](apps/msw-demo/)** - MSW の統合を確かめるためのデモ
 
 ### 共有パッケージ (`packages/`)
 
-- **[ui](packages/ui/)** - 共有UIコンポーネント (Button, Input, Dialog, Cardなど)
-- **[tailwind-config](packages/tailwind-config/)** - 共有Tailwind CSSテーマ設定（カラーパレット、フォントなど）
-- **[database](packages/database/)** - データベース接続と型定義
-- **[msw-handlers](packages/msw-handlers/)** - 開発・テスト用 MSW モックハンドラ
-- **[youtube-api-client](packages/youtube-api-client/)** - YouTube API クライアント
-- **[logger](packages/logger/)** - 共有ログ機能
-- **[constants](packages/constants/)** - 共通定数
-- **[helpers](packages/helpers/)** - 汎用ユーティリティ関数
+- **[composable-fetch](packages/composable-fetch/)** - キャッシュやリトライを組み合わせられる fetch のミドルウェア
+- **[constants](packages/constants/)** - 共通の定数（`REDIS_KEYS`、`TIME_ZONE` など）
+- **[database](packages/database/)** - Supabase のクライアントとデータベースの型定義
 - **[health-checkers](packages/health-checkers/)** - ヘルスチェック機能
-- **[retryable-fetch](packages/retryable-fetch/)** - リトライ機能付き fetch
-- **[temporal-fns](packages/temporal-fns/)** - 日時操作ユーティリティ
-- **[scraper](packages/scraper/)** - YouTube / Twitch データスクレイピング
-- **[video-backfill](packages/video-backfill/)** - 過去動画の取り込みジョブのキュー
+- **[helpers](packages/helpers/)** - 汎用のユーティリティ関数
+- **[logger](packages/logger/)** - 共有のログ機能
+- **[msw-handlers](packages/msw-handlers/)** - 開発とテストで使う MSW のモックハンドラー
+- **[retryable-fetch](packages/retryable-fetch/)** - リトライ機能付きの fetch
+- **[scraper](packages/scraper/)** - YouTube と Twitch の動画をデータベースと同期するクローラー
+- **[tailwind-config](packages/tailwind-config/)** - 共有の Tailwind CSS のテーマ設定（色、文字サイズなど）
+- **[temporal-fns](packages/temporal-fns/)** - `Temporal` を使った日時操作のユーティリティ
+- **[twitch-api-client](packages/twitch-api-client/)** - Twitch Helix API のクライアント
+- **[ui](packages/ui/)** - 共有の UI コンポーネント（Button、Input、Dialog、Card など）
+- **[video-backfill](packages/video-backfill/)** - 過去の動画の取り込みジョブのキュー（admin と batch で共有）
+- **[web-cache](packages/web-cache/)** - 公開サイトのキャッシュを再検証するユーティリティ
+- **[youtube-api-client](packages/youtube-api-client/)** - YouTube Data API のクライアント
 
 ## 技術スタック
 
 - **フロントエンド**: Next.js (App Router), TypeScript, Tailwind CSS
-- **バックエンド**: Nitro (Batch), Next.js API Routes (Web/Admin)
+- **バックエンド**: Next.js のルートハンドラー（web、admin、batch）と Server Actions（web、admin）
 - **データベース**: Supabase (PostgreSQL)
 - **キャッシュ**: Upstash Redis
 - **パッケージマネージャー**: pnpm
-- **モノレポ管理**: Turbo
+- **モノレポ管理**: Turborepo
 - **コード品質**: Biome (JavaScript/TypeScript)
 
 ## 開発を始める
 
-プロジェクトの開発環境をセットアップするには、[docs/setup-guide.md](docs/setup-guide.md) に従ってください。
-
-このガイドには、前提条件、依存関係のインストール、Supabase・Redisのローカル設定、開発サーバーの起動方法などが含まれています。
-
-より詳細な貢献方法については、[CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
-
-## ドキュメント
-
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - 開発・貢献ガイド
-- **[docs/](docs/)** - プロジェクト固有のドキュメント
-  - [Setup Guide](docs/setup-guide.md) - セットアップガイド（**最初に読むべきドキュメント**）
-  - [Coding Guidelines](docs/coding-guidelines.md) - コーディング規約
-  - [Testing Guide](docs/testing-guide.md) - テストガイド
-  - [MSW Guide](docs/msw-guide.md) - MSW モック統合ガイド
-  - [Hybrid Recommendation System](docs/hybrid-recommendation-system.md) - ハイブリッドオススメシステム
-  - [Supabase Implementation](docs/supabase-implementation.md) - Supabase実装詳細
-
-## ローカル開発環境
-
-### GitHub Codespaces / Dev Containers
-
-このプロジェクトは [GitHub Codespaces](https://github.com/features/codespaces) および [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers) に対応しています。
-
-#### Codespaces で開始
-
-1. GitHubリポジトリページで「Code」→「Codespaces」→「Create codespace on main」をクリック
-2. 自動的に以下が実行されます：
-   - 依存関係のインストール（`pnpm install`）
-   - Docker Compose経由でSupabase・Redisサービスが起動
-   - パッケージのビルド
-
-#### Supabase ローカル環境
-
-ローカル開発では Docker Compose で管理される Supabase サービスを使用します。必要に応じて起動時に環境変数を上書きできます。
+要点は次のとおりです。前提条件、環境変数、MSW を使う方法などの詳しい手順は、[セットアップガイド](docs/setup-guide.md)を読んでください。
 
 ```bash
-# そのまま起動（既定の開発用値が compose.yml に含まれています）
+# 依存関係のインストール
+pnpm install
+
+# Supabase の起動（Supabase CLI）と、マイグレーションとシードの適用
+pnpm exec supabase start
+pnpm exec supabase db reset
+
+# Redis の起動（Docker Compose）
 docker compose up -d
 
-# サービスの状態確認
-docker compose ps
-
-# 任意の値に差し替えて起動する例
-SUPABASE_ANON_KEY=... \
-SUPABASE_SERVICE_ROLE_KEY=... \
-SUPABASE_JWT_SECRET=... \
-SUPABASE_POSTGRES_PASSWORD=... \
-docker compose up -d
-
-# データのインポート
-pnpm db:import
-
-# サービスの停止
-docker compose down
+# 開発サーバーの起動
+pnpm dev
 ```
 
-詳細は [セットアップガイド](docs/setup-guide.md) を参照してください。
+[GitHub Codespaces](https://github.com/features/codespaces) と [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers) では、依存関係のインストール、Supabase と Redis の起動が自動で実行されます（[`.devcontainer/README.md`](.devcontainer/README.md)）。
+
+貢献の流れは、[CONTRIBUTING.md](CONTRIBUTING.md) を読んでください。
 
 ## コマンド
 
@@ -112,9 +79,25 @@ pnpm run build
 # テスト実行
 pnpm run test
 
+# 型チェック
+pnpm run typecheck
+
 # コード品質チェック
 pnpm run check --fix
 ```
+
+## ドキュメント
+
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - 開発・貢献ガイド
+- **[docs/](docs/)** - プロジェクト固有のドキュメント
+  - [Setup Guide](docs/setup-guide.md) - セットアップガイド（**最初に読むべきドキュメント**）
+  - [Coding Guidelines](docs/coding-guidelines.md) - コーディング規約
+  - [Design Guidelines](docs/design-guidelines.md) - デザインガイドライン
+  - [Testing Guide](docs/testing-guide.md) - テストガイド
+  - [E2E Testing](docs/e2e-testing.md) - E2E テストガイド
+  - [MSW Guide](docs/msw-guide.md) - MSW モック統合ガイド
+  - [Agent Skills](docs/agent-skills.md) - AI エージェント向けの Next.js の公式スキル
+  - [Hybrid Recommendation System](docs/hybrid-recommendation-system.md) - ハイブリッドオススメシステム
 
 ## ライセンス
 

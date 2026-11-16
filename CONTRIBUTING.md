@@ -16,25 +16,23 @@ Dev Container設定（`.devcontainer/`）を変更する場合は、`@devcontain
 
 - `.devcontainer/devcontainer.json` - Dev Container本体の設定
 - `.devcontainer/compose.override.yml` - Dev Container専用サービス（appのみ）
-- `compose.yml`（ルート） - Redis等の共有サービス
-- `config/dev-secrets.env` - 開発用シークレット
+- `compose.yml`（ルート） - Redis と、Upstash 互換の Redis HTTP API（Supabase は Supabase CLI で起動します）
+- `config/dev-secrets.env` - 開発用の環境変数（Supabase のキー、Redis HTTP API のトークン）
 
 詳細は[.devcontainer/README.md](.devcontainer/README.md)を参照してください。
 
 ## コーディング規約
 
-### JavaScript/TypeScript
+コードの決まりは、次の2つの文書にまとめています。ここには同じ内容を書きません。
 
-- **フォーマッター**: Biome を使用
-- **リンティング**: Biome の規則に従う
-- **型安全性**: TypeScript の厳格な型チェックを使用
-- **型定義**: オブジェクト型には [`interface` を優先使用](docs/coding-guidelines.md#typescript-型定義)
+- [コーディングガイドライン](docs/coding-guidelines.md) - TypeScript の型定義、キャッシュのディレクティブ、Partial Prerendering、Redis のキー、時刻の扱い、admin の Server Action の認証など
+- [デザインガイドライン](docs/design-guidelines.md) - 色、文字サイズ、角丸、影
+
+フォーマットとリントは Biome が確かめます。
 
 ### コード品質チェック
 
 **重要**: すべてのコード変更後は、必ず以下のコマンドを実行してください。
-
-#### JavaScript/TypeScript
 
 ```bash
 pnpm run check --fix
@@ -55,18 +53,6 @@ pnpm run typecheck --filter=@shinju-date/msw-handlers
 - 各パッケージ・アプリケーションの `typecheck` スクリプト（`tsc --noEmit`）を Turborepo 経由で実行します
 - 依存パッケージのビルド（`^build`）と、Next.js のアプリケーションでは `next typegen` による型の生成（`PageProps`、`LayoutProps`、`RouteContext` など）を先に実行します
 - 新しいパッケージやアプリケーションを追加した場合は、`package.json` に `"typecheck": "tsc --noEmit"` を追加してください
-
-### コードの決まり
-
-コードの決まりは [コーディングガイドライン](docs/coding-guidelines.md) と [デザインガイドライン](docs/design-guidelines.md) にまとめています。特に次の決まりは、必ず守ってください。
-
-- [TypeScript 型定義](docs/coding-guidelines.md#typescript-型定義): オブジェクトの型には `interface` を使う
-- [キャッシュのディレクティブ](docs/coding-guidelines.md#キャッシュのディレクティブ): `'use cache'` と、キャッシュ設定の並びの後に、空行を1行入れる
-- [Partial Prerendering](docs/coding-guidelines.md#partial-prerendering): ページ全体を Suspense で囲まず、`params` は Suspense の中の部品で await する
-- [Redis のキー](docs/coding-guidelines.md#redis-のキー): `REDIS_KEYS` に定義し、TTL を付ける
-- [時刻の扱い](docs/coding-guidelines.md#時刻の扱い): `Date` ではなく `Temporal` を使い、データベースには `toDBString` で保存する
-- [admin の Server Action の認証](docs/coding-guidelines.md#admin-の-server-action-の認証): 先頭で `requireAuthenticatedUser()` を呼ぶ
-- [管理者のロールと RLS](docs/coding-guidelines.md#管理者のロールと-rls): ポリシーの条件に `public.is_admin()` を使う
 
 ### コミットメッセージ
 
@@ -134,76 +120,34 @@ pnpm run build
 
 ### 4. レビュープロセス
 
-- CI/CDが通ることを確認
-  - **Lint**: コード品質チェック（Biome）が成功すること
-  - **Typecheck**: テストファイルを含めた型チェック（`tsc`）が成功すること
-  - **Test**: テストが全て成功すること
-  - **Build**: 全てのパッケージとアプリケーションがビルドできること
-  - **Database**: データベースを変えた場合、マイグレーションの適用、pgTAP のテスト、生成される型の確認が成功すること
+- CI（`.github/workflows/ci.yml`）が通ることを確認
 - コードレビューに対応
 - 必要に応じて修正
 
-#### CI/CD の構成
+#### プルリクエストで確かめられること
 
-Node.js CI は以下のジョブ構成になっています：
+CI は、プルリクエストごとに次のことを確かめます。どれかが失敗すると、マージできません。
 
-1. **Install Dependencies** - 依存関係の検証
-   - `pnpm install --frozen-lockfile` を実行し、pnpm のキャッシュを有効化
-   - 他の全てのジョブの前提条件として機能
+- **リント**: Biome のフォーマットとリントに違反がないこと（`pnpm biome ci .`）
+- **型チェック**: テストのファイルを含めて、すべてのパッケージとアプリケーションの型に誤りがないこと（`pnpm typecheck`）
+- **テスト**: パッケージとアプリケーションのユニットテストが通ること（`pnpm test`）
+- **ビルド**: すべてのパッケージがビルドできること。web と admin は、MSW を有効にして本番用にビルドできること（Supabase と Upstash に接続しない）
+- **E2E**: web、admin、batch の Playwright のテストと、ui の Storybook のブラウザのテストが通ること
+- **データベース**: `supabase/` や `packages/database/` などを変えた場合だけ、すべてのマイグレーションとシードを空のデータベースに適用できること、pgTAP のテスト（`supabase/tests/database/`）が通ること、生成される型（`packages/database/types/supabase.ts`）がコミットされたものと一致すること
 
-2. **Lint** - コード品質チェック（並列実行）
-   - Install Dependencies 成功後に実行
-   - pnpm のキャッシュを使用して高速にインストール
-   - Biomeによるフォーマットとリンティングを実行
-
-3. **Typecheck** - 型チェック（並列実行）
-   - Install Dependencies 成功後に実行
-   - pnpm のキャッシュを使用して高速にインストール
-   - `pnpm typecheck` でテストファイルを含めた全てのパッケージとアプリケーションの型を検査
-
-4. **Test** - テスト実行（並列実行）
-   - Install Dependencies 成功後に実行
-   - pnpm のキャッシュを使用して高速にインストール
-   - ユニットテストを実行
-
-5. **Build** - ビルド確認（並列実行）
-   - Install Dependencies 成功後に実行
-   - pnpm のキャッシュを使用して高速にインストール
-   - 全てのパッケージとアプリケーションがビルドできることを確認
-
-6. **E2E Tests** - エンドツーエンドテスト
-   - Test と Build の両方が成功した場合に実行
-   - 現在は準備中（将来的に追加予定）
-
-7. **Database** - データベースの確認
-   - `supabase/`、`packages/database/`、`scripts/generate-types.sh`、ルートの `package.json` を変えた場合だけ実行（**Detect Changes** ジョブが判定）
-   - `pnpm exec supabase db start` で、すべてのマイグレーションとシードを空のデータベースに適用
-   - `pnpm exec supabase test db` で、`supabase/tests/database/` の pgTAP のテストを実行
-   - `pnpm db:schema` で型を生成し直し、`packages/database/types/supabase.ts` に差分がないことを確認
-
-**並列実行の利点**：
-
-- Lint、Typecheck、Test、Build が同時に実行されるため、CI時間が短縮されます
-- pnpm の組み込みキャッシュ機能により、各ジョブで依存関係を高速にインストールできます
-- 各ジョブは個別のチェックとして表示されるため、失敗した場合は具体的にどの段階で問題が発生したか容易に特定できます
+失敗したときは、GitHub のプルリクエストの「Checks」で、どの確認が失敗したかを確かめてください。
 
 ## Issue の起票ルール
 
-### Issue のタイプ
-
-- **Bug Report**: バグの報告
-- **Feature Request**: 新機能の提案
-- **Documentation**: ドキュメントの改善
-- **Question**: 質問・相談
-
 ### Issue テンプレート
 
-Issueを作成する際は、提供されているテンプレートを使用してください：
+Issue は、次の3つのテンプレートのどれかで作成してください（テンプレートを使わない Issue は作成できません）。
 
-- **再現手順**: バグの場合は詳細な再現手順
-- **期待する動作**: どのような動作を期待するか
-- **実際の動作**: 実際に何が起こるか
-- **環境情報**: OS、ブラウザ、Node.jsバージョンなど
+- **バグ報告**: 動作の不具合やエラー（バグの説明、再現手順、期待される動作、OS、ブラウザなど）
+- **機能要望**: 新しい機能や改善の提案（機能の説明、解決策、代替案など）
+- **タスク**: リファクタリングやドキュメントの作成などの作業（タスクの説明、受け入れ条件）
+
+質問や相談は、[GitHub Discussions](https://github.com/inabagumi/shinju-date/discussions) を使ってください。
 
 ## テスト
 
@@ -214,11 +158,13 @@ Issueを作成する際は、提供されているテンプレートを使用し
 pnpm run test
 
 # 特定のパッケージ
-pnpm run test --filter=@shinju-date/database
+pnpm run test --filter=@shinju-date/helpers
 
-# ウォッチモード
-pnpm run test --watch
+# ウォッチモード（特定のパッケージで Vitest を起動する）
+pnpm --filter=@shinju-date/helpers exec vitest
 ```
+
+テストの書き方は、[テストガイド](docs/testing-guide.md)と [E2E テストガイド](docs/e2e-testing.md)を読んでください。
 
 ### テストの作成
 
@@ -300,11 +246,13 @@ shinju-date/
 ├── apps/                    # アプリケーション
 │   ├── web/                # 公開ウェブサイト
 │   ├── admin/              # 管理画面
-│   └── batch/              # バッチ処理
+│   ├── batch/              # バッチ処理
+│   └── msw-demo/           # MSW のデモ
 ├── packages/               # 共有パッケージ
 │   ├── database/           # データベース関連
 │   ├── msw-handlers/       # MSW モックハンドラ
 │   └── ...
+├── supabase/               # マイグレーション、シード、pgTAP のテスト
 ├── docs/                   # プロジェクトドキュメント
 ├── terraform/              # インフラ定義
 └── CONTRIBUTING.md         # このファイル
@@ -314,8 +262,8 @@ shinju-date/
 
 ### 質問・相談
 
-- **GitHub Issues**: 技術的な質問や提案
-- **GitHub Discussions**: 一般的な議論
+- **GitHub Issues**: バグの報告、機能の要望、作業のタスク（[Issue の起票ルール](#issue-の起票ルール)）
+- **GitHub Discussions**: 質問、相談、一般的な議論
 
 ### よくある問題と解決方法
 
@@ -375,4 +323,4 @@ MSW はサーバー側でだけ動きます。起動すると、開発サーバ�
 
 ---
 
-ご質問やご不明な点がございましたら、お気軽に Issue を作成してください。皆様の貢献をお待ちしています！
+ご質問やご不明な点がございましたら、お気軽に GitHub Discussions で質問してください。皆様の貢献をお待ちしています！
