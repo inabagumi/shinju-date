@@ -94,6 +94,51 @@ describe('formatRelativeTime', () => {
       const time = Temporal.Instant.from('2024-01-15T11:00:00Z') // Exactly 1 hour ago
       expect(formatRelativeTime(time, 'ja', referenceTime)).toBe('1 時間前')
     })
+
+    it.each([
+      [28, '4 週間前'],
+      [29, '4 週間前'],
+      [30, '4 週間前'],
+      [31, '先月'],
+      [360, '11 か月前'],
+      [364, '11 か月前'],
+      [365, '昨年'],
+    ])(
+      'formats %i days ago without "this month" or "this year"',
+      (days, expected) => {
+        const time = referenceTime.subtract({ hours: 24 * days })
+        expect(formatRelativeTime(time, 'ja', referenceTime)).toBe(expected)
+      },
+    )
+
+    it.each([
+      [28, '4 週間後'],
+      [29, '4 週間後'],
+      [31, '来月'],
+      [360, '11 か月後'],
+      [364, '11 か月後'],
+      [365, '来年'],
+    ])(
+      'formats %i days from now with the same rules as the past',
+      (days, expected) => {
+        const time = referenceTime.add({ hours: 24 * days })
+        expect(formatRelativeTime(time, 'ja', referenceTime)).toBe(expected)
+      },
+    )
+
+    it('rounds future and past times in the same way', () => {
+      const past = referenceTime.subtract({ milliseconds: 90_500 })
+      const future = referenceTime.add({ milliseconds: 90_500 })
+      expect(formatRelativeTime(past, 'ja', referenceTime)).toBe('1 分前')
+      expect(formatRelativeTime(future, 'ja', referenceTime)).toBe('1 分後')
+    })
+
+    it('formats less than 1 second as now in both directions', () => {
+      const past = referenceTime.subtract({ milliseconds: 500 })
+      const future = referenceTime.add({ milliseconds: 500 })
+      expect(formatRelativeTime(past, 'ja', referenceTime)).toBe('今')
+      expect(formatRelativeTime(future, 'ja', referenceTime)).toBe('今')
+    })
   })
 
   describe('different locales', () => {

@@ -68,4 +68,19 @@ describe('formatDuration', () => {
     const duration = Temporal.Duration.from('PT5M30S')
     expect(formatDuration(duration)).toBe('5:30')
   })
+
+  it('balances minutes over 60 into hours', () => {
+    const duration = Temporal.Duration.from('PT90M')
+    expect(formatDuration(duration)).toBe('1:30:00')
+  })
+
+  it('balances seconds over 60 into minutes', () => {
+    const duration = Temporal.Duration.from('PT150S')
+    expect(formatDuration(duration)).toBe('2:30')
+  })
+
+  it('folds days into hours', () => {
+    const duration = Temporal.Duration.from('P1DT2H3M4S')
+    expect(formatDuration(duration)).toBe('26:03:04')
+  })
 })
