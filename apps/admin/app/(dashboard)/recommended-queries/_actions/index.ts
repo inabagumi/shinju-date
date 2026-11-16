@@ -36,7 +36,7 @@ export async function addQueryAction(query: string): Promise<{
 
     revalidatePath('/recommended-queries')
     revalidatePath('/', 'page')
-    await revalidateTags([CACHE_TAGS.VIDEOS])
+    await revalidateTags([CACHE_TAGS.RECOMMENDATION_QUERIES])
     return { success: true }
   } catch (error) {
     logger.error('クエリの追加に失敗しました', { error, query: trimmedQuery })
@@ -74,7 +74,7 @@ export async function deleteQueryAction(query: string): Promise<{
 
     revalidatePath('/recommended-queries')
     revalidatePath('/', 'page')
-    await revalidateTags([CACHE_TAGS.VIDEOS])
+    await revalidateTags([CACHE_TAGS.RECOMMENDATION_QUERIES])
     return { success: true }
   } catch (error) {
     logger.error('クエリの削除に失敗しました', { error, query })
