@@ -78,10 +78,10 @@ export function ChannelManager({
       const result = await removeYouTubeChannelAction(channelId, talentId)
 
       if (!result.success) {
-        showToast('error', result.error || 'チャンネルの削除に失敗しました。')
+        showToast('danger', result.error || 'チャンネルの削除に失敗しました。')
       }
     } catch {
-      showToast('error', 'チャンネルの削除に失敗しました。')
+      showToast('danger', 'チャンネルの削除に失敗しました。')
     } finally {
       setDeletingChannelId(null)
     }

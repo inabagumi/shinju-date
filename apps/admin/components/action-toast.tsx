@@ -3,7 +3,8 @@
 import { Toast, ToastClose, ToastTitle } from '@shinju-date/ui'
 import { useState } from 'react'
 
-export type ActionToastType = 'success' | 'error'
+/** トーストの色。`Toast` のバリアントの名前と同じにし、そのまま渡す */
+export type ActionToastType = 'success' | 'danger'
 
 export interface ActionToastMessage {
   /** 同じ文言が続いても表示時間をやり直せるよう、表示のたびに変える */
@@ -32,7 +33,7 @@ export function ActionToast({ message, onOpenChange, open }: ActionToastProps) {
       key={message.id}
       onOpenChange={onOpenChange}
       open={open}
-      variant={message.type === 'success' ? 'success' : 'destructive'}
+      variant={message.type}
     >
       <ToastTitle>{message.text}</ToastTitle>
       <ToastClose />

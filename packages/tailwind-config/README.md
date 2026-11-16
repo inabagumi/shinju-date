@@ -275,7 +275,7 @@ const example = (
 ```tsx
 <Badge variant="info">情報</Badge>
 <Badge variant="success">成功</Badge>
-<Badge variant="error">エラー</Badge>
+<Badge variant="danger">危険</Badge>
 <Badge variant="warning">警告</Badge>
 ```
 

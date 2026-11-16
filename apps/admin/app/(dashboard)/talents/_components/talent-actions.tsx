@@ -66,7 +66,7 @@ export function TalentActions({ talent }: TalentActionsProps) {
         } else {
           setMessage({
             text: result.error || '同期に失敗しました。',
-            type: 'error',
+            type: 'danger',
           })
         }
         // A platform may have been updated even when another one failed.
@@ -74,7 +74,7 @@ export function TalentActions({ talent }: TalentActionsProps) {
           router.refresh()
         }
       } catch {
-        setMessage({ text: '予期しないエラーが発生しました。', type: 'error' })
+        setMessage({ text: '予期しないエラーが発生しました。', type: 'danger' })
       }
     })
   }

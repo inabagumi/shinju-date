@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useCallback, useState, useTransition } from 'react'
+import type { ActionToastType } from '@/components/action-toast'
 
 export interface TalentLifecycleActionResult {
   success: boolean
@@ -9,7 +10,7 @@ export interface TalentLifecycleActionResult {
 }
 
 export interface TalentLifecycleMessage {
-  type: 'success' | 'error'
+  type: ActionToastType
   text: string
 }
 
@@ -50,13 +51,13 @@ export function useTalentLifecycleAction() {
           } else {
             setMessage({
               text: result.error || '操作に失敗しました。',
-              type: 'error',
+              type: 'danger',
             })
           }
         } catch {
           setMessage({
             text: '予期しないエラーが発生しました。',
-            type: 'error',
+            type: 'danger',
           })
         }
       })

@@ -49,7 +49,7 @@ export const Success = meta.story({
   },
 })
 
-export const Destructive = meta.story({
+export const Danger = meta.story({
   render: () => {
     const [open, setOpen] = useState(false)
 
@@ -62,7 +62,7 @@ export const Destructive = meta.story({
           duration={5000}
           onOpenChange={setOpen}
           open={open}
-          variant="destructive"
+          variant="danger"
         >
           <ToastTitle>操作に失敗しました。</ToastTitle>
           <ToastClose />

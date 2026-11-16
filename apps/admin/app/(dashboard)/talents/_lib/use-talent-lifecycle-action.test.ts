@@ -80,7 +80,7 @@ describe('useTalentLifecycleAction', () => {
     await waitFor(() => {
       expect(result.current.message).toEqual({
         text: '指定されたタレントが見つかりません。',
-        type: 'error',
+        type: 'danger',
       })
     })
     expect(refresh).not.toHaveBeenCalled()
@@ -97,7 +97,7 @@ describe('useTalentLifecycleAction', () => {
     await waitFor(() => {
       expect(result.current.message).toEqual({
         text: '操作に失敗しました。',
-        type: 'error',
+        type: 'danger',
       })
     })
   })
@@ -113,7 +113,7 @@ describe('useTalentLifecycleAction', () => {
     await waitFor(() => {
       expect(result.current.message).toEqual({
         text: '予期しないエラーが発生しました。',
-        type: 'error',
+        type: 'danger',
       })
     })
     expect(refresh).not.toHaveBeenCalled()

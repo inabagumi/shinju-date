@@ -76,12 +76,12 @@ export function TwitchUserManager({
 
       if (!result.success) {
         showToast(
-          'error',
+          'danger',
           result.error || 'Twitchユーザーの削除に失敗しました。',
         )
       }
     } catch {
-      showToast('error', 'Twitchユーザーの削除に失敗しました。')
+      showToast('danger', 'Twitchユーザーの削除に失敗しました。')
     } finally {
       setDeletingUserId(null)
     }
