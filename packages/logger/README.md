@@ -14,7 +14,13 @@ import { logger } from '@shinju-date/logger'
 
 // ログ出力の例
 logger.info('動画を同期しました', { count: 10 })
-logger.error('動画の同期に失敗しました', { error })
+
+try {
+  await syncVideos()
+} catch (error) {
+  logger.error('動画の同期に失敗しました', { error })
+}
+
 logger.warn('レスポンスが空でした')
 ```
 
