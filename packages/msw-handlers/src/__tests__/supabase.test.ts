@@ -371,17 +371,294 @@ describe('Supabase Handlers', () => {
     })
   })
 
-  describe('Channels endpoint', () => {
-    it('should return mock channels data', async () => {
-      const response = await fetch(
-        'https://fake.supabase.test/rest/v1/channels',
-      )
-      const data = (await response.json()) as unknown[]
+  describe('Table handlers', () => {
+    const restUrl = 'https://fake.supabase.test/rest/v1'
 
-      expect(response.ok).toBe(true)
-      expect(Array.isArray(data)).toBe(true)
-      expect(data[0]).toHaveProperty('name')
-      expect(data[0]).toHaveProperty('id')
+    async function listIds(table: string, filters = ''): Promise<string[]> {
+      const rows = (await (
+        await fetch(`${restUrl}/${table}?select=id${filters}`)
+      ).json()) as { id: string }[]
+
+      return rows.map(({ id }) => id)
+    }
+
+    it.each(['videos', 'talents', 'terms'])(
+      'should count every row of %s, not only the page',
+      async (table) => {
+        const total = (await listIds(table)).length
+
+        expect(total).toBeGreaterThan(3)
+
+        const response = await fetch(
+          `${restUrl}/${table}?select=id&offset=0&limit=3`,
+          { headers: { prefer: 'count=exact' } },
+        )
+
+        expect(await response.json()).toHaveLength(3)
+        expect(response.headers.get('content-range')).toBe(`0-2/${total}`)
+
+        const head = await fetch(
+          `${restUrl}/${table}?select=id&offset=1&limit=2`,
+          { headers: { prefer: 'count=exact' }, method: 'HEAD' },
+        )
+
+        expect(head.headers.get('content-range')).toBe(`1-2/${total}`)
+      },
+    )
+
+    it('should count the matching rows of a page with a filter', async () => {
+      const visible = await listIds('videos', '&visible=eq.true')
+      const response = await fetch(
+        `${restUrl}/videos?select=id&visible=eq.true&offset=2&limit=5`,
+        { headers: { prefer: 'count=exact' } },
+      )
+
+      expect(await response.json()).toEqual(
+        visible.slice(2, 7).map((id) => ({ id })),
+      )
+      expect(response.headers.get('content-range')).toBe(
+        `2-6/${visible.length}`,
+      )
+    })
+
+    it('should return an empty range when no row matches', async () => {
+      const response = await fetch(
+        `${restUrl}/videos?select=id&id=eq.00000000-0000-0000-0000-000000000000`,
+        { headers: { prefer: 'count=exact' } },
+      )
+
+      expect(await response.json()).toEqual([])
+      expect(response.headers.get('content-range')).toBe('*/0')
+    })
+
+    it('should update nothing when no row matches all the filters', async () => {
+      const [video] = (await (
+        await fetch(`${restUrl}/videos?select=id,title,visible&limit=1`)
+      ).json()) as { id: string; title: string; visible: boolean }[]
+
+      expect(video).toBeDefined()
+
+      const before = (await (
+        await fetch(`${restUrl}/videos?select=id,title`)
+      ).json()) as { id: string; title: string }[]
+      const response = await fetch(
+        `${restUrl}/videos?id=eq.${video?.id}&visible=eq.${!video?.visible}&select=id`,
+        {
+          body: JSON.stringify({ title: 'Updated title' }),
+          headers: {
+            'Content-Type': 'application/json',
+            prefer: 'return=representation',
+          },
+          method: 'PATCH',
+        },
+      )
+
+      expect(response.status).toBe(200)
+      expect(await response.json()).toEqual([])
+      expect(
+        await (await fetch(`${restUrl}/videos?select=id,title`)).json(),
+      ).toEqual(before)
+    })
+
+    it('should update every row of an in filter', async () => {
+      const [first, second, third] = (await (
+        await fetch(`${restUrl}/talents?select=id,theme_color&limit=3`)
+      ).json()) as { id: string; theme_color: string | null }[]
+
+      expect(third).toBeDefined()
+
+      const targets = [first, second].map((talent) => talent?.id)
+
+      try {
+        const response = await fetch(
+          `${restUrl}/talents?id=in.(${targets.join(',')})&select=id,theme_color`,
+          {
+            body: JSON.stringify({ theme_color: '#000000' }),
+            headers: {
+              'Content-Type': 'application/json',
+              prefer: 'return=representation',
+            },
+            method: 'PATCH',
+          },
+        )
+
+        expect(response.status).toBe(200)
+        expect(await response.json()).toEqual(
+          targets.map((id) => ({ id, theme_color: '#000000' })),
+        )
+
+        const after = (await (
+          await fetch(
+            `${restUrl}/talents?select=id,theme_color&id=in.(${[...targets, third?.id].join(',')})`,
+          )
+        ).json()) as { id: string; theme_color: string | null }[]
+
+        expect(after).toEqual([
+          { id: first?.id, theme_color: '#000000' },
+          { id: second?.id, theme_color: '#000000' },
+          { id: third?.id, theme_color: third?.theme_color },
+        ])
+      } finally {
+        for (const talent of [first, second]) {
+          await fetch(`${restUrl}/talents?id=eq.${talent?.id}`, {
+            body: JSON.stringify({ theme_color: talent?.theme_color }),
+            headers: { 'Content-Type': 'application/json' },
+            method: 'PATCH',
+          })
+        }
+      }
+    })
+
+    it('should set updated_at when a trigger of the table does', async () => {
+      const [term] = (await (
+        await fetch(`${restUrl}/terms?select=id,synonyms,updated_at&limit=1`)
+      ).json()) as { id: string; synonyms: string[]; updated_at: string }[]
+
+      expect(term).toBeDefined()
+
+      const response = await fetch(
+        `${restUrl}/terms?id=eq.${term?.id}&select=updated_at`,
+        {
+          body: JSON.stringify({ synonyms: term?.synonyms }),
+          headers: {
+            'Content-Type': 'application/json',
+            prefer: 'return=representation',
+          },
+          method: 'PATCH',
+        },
+      )
+      const [updated] = (await response.json()) as { updated_at: string }[]
+
+      expect(updated?.updated_at).not.toBe(term?.updated_at)
+      expect(updated?.updated_at).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/,
+      )
+    })
+
+    it('should delete only the rows that match all the filters', async () => {
+      const created = await fetch(`${restUrl}/terms?select=id,term`, {
+        body: JSON.stringify([
+          { readings: [], synonyms: [], term: '削除するテスト用の用語1' },
+          { readings: [], synonyms: [], term: '削除するテスト用の用語2' },
+        ]),
+        headers: {
+          'Content-Type': 'application/json',
+          prefer: 'return=representation',
+        },
+        method: 'POST',
+      })
+      const [first, second] = (await created.json()) as {
+        id: string
+        term: string
+      }[]
+
+      expect(created.status).toBe(201)
+      expect(second).toBeDefined()
+
+      const before = await listIds('terms')
+      const unmatched = await fetch(
+        `${restUrl}/terms?id=eq.${first?.id}&term=eq.${encodeURIComponent(second?.term ?? '')}`,
+        { method: 'DELETE' },
+      )
+
+      expect(unmatched.status).toBe(204)
+      expect(await listIds('terms')).toEqual(before)
+
+      const deleted = await fetch(
+        `${restUrl}/terms?id=in.(${first?.id},${second?.id})&select=term`,
+        { headers: { prefer: 'return=representation' }, method: 'DELETE' },
+      )
+
+      expect(deleted.status).toBe(200)
+      expect(await deleted.json()).toEqual([
+        { term: first?.term },
+        { term: second?.term },
+      ])
+      expect(await listIds('terms')).toEqual(
+        before.filter((id) => id !== first?.id && id !== second?.id),
+      )
+    })
+
+    it('should merge or ignore duplicates in an upsert', async () => {
+      const [user] = (await (
+        await fetch(`${restUrl}/twitch_users?select=*&limit=1`)
+      ).json()) as {
+        id: string
+        name: string | null
+        talent_id: string
+        twitch_user_id: string
+      }[]
+
+      expect(user).toBeDefined()
+
+      try {
+        const ignored = await fetch(`${restUrl}/twitch_users?select=id`, {
+          body: JSON.stringify({ ...user, name: 'Ignored' }),
+          headers: {
+            prefer: 'resolution=ignore-duplicates,return=representation',
+          },
+          method: 'POST',
+        })
+
+        expect(ignored.status).toBe(201)
+        expect(await ignored.json()).toEqual([])
+
+        const merged = await fetch(
+          `${restUrl}/twitch_users?on_conflict=twitch_user_id&select=id,name`,
+          {
+            body: JSON.stringify({
+              name: 'Merged',
+              talent_id: user?.talent_id,
+              twitch_user_id: user?.twitch_user_id,
+            }),
+            headers: {
+              prefer: 'resolution=merge-duplicates,return=representation',
+            },
+            method: 'POST',
+          },
+        )
+
+        expect(merged.status).toBe(201)
+        expect(await merged.json()).toEqual([{ id: user?.id, name: 'Merged' }])
+      } finally {
+        await fetch(`${restUrl}/twitch_users?id=eq.${user?.id}`, {
+          body: JSON.stringify({ name: user?.name }),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'PATCH',
+        })
+      }
+    })
+
+    it('should reject an update that breaks a unique constraint', async () => {
+      const [first, second] = (await (
+        await fetch(`${restUrl}/terms?select=id,term&limit=2`)
+      ).json()) as { id: string; term: string }[]
+
+      expect(second).toBeDefined()
+
+      const response = await fetch(`${restUrl}/terms?id=eq.${second?.id}`, {
+        body: JSON.stringify({ term: first?.term }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'PATCH',
+      })
+
+      expect(response.status).toBe(409)
+      expect(await response.json()).toMatchObject({
+        code: '23505',
+        message:
+          'duplicate key value violates unique constraint "terms_term_key"',
+      })
+      expect(
+        await (
+          await fetch(`${restUrl}/terms?select=term&id=eq.${second?.id}`)
+        ).json(),
+      ).toEqual([{ term: second?.term }])
+    })
+
+    it('should not serve tables that do not exist', async () => {
+      const response = await fetch(`${restUrl}/channels?select=id`)
+
+      expect(await response.json()).toEqual([])
     })
   })
 
