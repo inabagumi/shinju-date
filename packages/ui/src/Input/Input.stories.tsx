@@ -13,7 +13,7 @@ const meta = preview.meta({
     },
     variant: {
       control: 'select',
-      options: ['default', 'error'],
+      options: ['default', 'danger'],
     },
   },
   component: Input,
@@ -61,7 +61,7 @@ export const ErrorState = meta.story({
   args: {
     placeholder: 'Enter text...',
     value: 'Invalid input',
-    variant: 'error',
+    variant: 'danger',
   },
 })
 
@@ -142,7 +142,7 @@ export const WithErrorMessage = meta.story({
   args: {
     type: 'email',
     value: 'invalid-email',
-    variant: 'error',
+    variant: 'danger',
   },
   render: (args) => (
     <div className="flex w-64 flex-col gap-2">

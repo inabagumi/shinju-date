@@ -53,10 +53,10 @@ export function SyncTalentButton({
             router.refresh()
           }
         } else {
-          showToast('error', result.error || '同期に失敗しました。')
+          showToast('danger', result.error || '同期に失敗しました。')
         }
       } catch (_error) {
-        showToast('error', '予期しないエラーが発生しました。')
+        showToast('danger', '予期しないエラーが発生しました。')
       } finally {
         setPendingPlatform(null)
       }

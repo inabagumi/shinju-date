@@ -614,7 +614,7 @@ const badgeVariants = cva('...', {
     variant: {
       info: 'border-accent/30 bg-accent/10 text-accent',
       success: 'border-success/30 bg-success/10 text-success',
-      error: 'border-danger/30 bg-danger/10 text-danger',
+      danger: 'border-danger/30 bg-danger/10 text-danger',
       warning: 'border-warning/30 bg-warning/10 text-warning',
     },
   },

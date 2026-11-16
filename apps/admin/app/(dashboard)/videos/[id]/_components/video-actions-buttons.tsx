@@ -42,10 +42,10 @@ function SyncVideoButton({ videoId, platform }: SyncVideoButtonProps) {
                 : '動画情報を同期しました。'),
           )
         } else {
-          showToast('error', result.error || '同期に失敗しました。')
+          showToast('danger', result.error || '同期に失敗しました。')
         }
       } catch (_error) {
-        showToast('error', '予期しないエラーが発生しました。')
+        showToast('danger', '予期しないエラーが発生しました。')
       }
     })
   }
@@ -102,26 +102,26 @@ function useVideoAction(video: VideoActionsProps['video']) {
             `動画を${video.visible ? '非表示' : '表示'}に変更しました。`,
           )
         } else {
-          showToast('error', result.error || '操作に失敗しました。')
+          showToast('danger', result.error || '操作に失敗しました。')
         }
       } else if (action === 'delete') {
         const result = await softDeleteAction([video.id])
         if (result.success) {
           showToast('success', '動画を削除しました。')
         } else {
-          showToast('error', result.error || '削除に失敗しました。')
+          showToast('danger', result.error || '削除に失敗しました。')
         }
       } else if (action === 'restore') {
         const result = await restoreAction([video.id])
         if (result.success) {
           showToast('success', '動画を復元しました。')
         } else {
-          showToast('error', result.error || '復元に失敗しました。')
+          showToast('danger', result.error || '復元に失敗しました。')
         }
       }
     } catch (error) {
       showToast(
-        'error',
+        'danger',
         error instanceof Error
           ? error.message
           : '予期しないエラーが発生しました。',

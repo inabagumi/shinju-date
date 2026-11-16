@@ -42,7 +42,7 @@ export const InCard = meta.story({
     title: '未読のフィードバックはありません',
   },
   render: (args) => (
-    <Card variant="outlined">
+    <Card variant="elevated">
       <EmptyState {...args} />
     </Card>
   ),

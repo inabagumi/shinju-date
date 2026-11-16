@@ -74,7 +74,7 @@ import { Button } from '@shinju-date/ui'
 **バリアント:**
 
 - `default` (デフォルト): 通常の入力フィールド
-- `error`: エラー状態の入力フィールド
+- `danger`: エラー状態の入力フィールド
 
 **サイズ:**
 
@@ -95,7 +95,7 @@ import { Input } from '@shinju-date/ui'
 
 <Input 
   placeholder="エラー状態" 
-  variant="error"
+  variant="danger"
 />
 ```
 
@@ -152,16 +152,14 @@ import {
 
 - `default` (デフォルト): グレー背景のカード
 - `elevated`: 白背景で影付きのカード
-- `outlined`: 背景色なしでボーダーのみのカード
 
 **サブコンポーネント:**
 
 - `CardHeader`: カードのヘッダー部分
 - `CardContent`: カードのメインコンテンツ
-- `CardFooter`: カードのフッター部分
 
 ```tsx
-import { Card, CardHeader, CardContent, CardFooter } from '@shinju-date/ui'
+import { Card, CardHeader, CardContent } from '@shinju-date/ui'
 
 ;<Card variant="elevated">
   <CardHeader>
@@ -170,9 +168,6 @@ import { Card, CardHeader, CardContent, CardFooter } from '@shinju-date/ui'
   <CardContent>
     <p>カードの内容がここに入ります。</p>
   </CardContent>
-  <CardFooter>
-    <Button>アクション</Button>
-  </CardFooter>
 </Card>
 ```
 
@@ -244,6 +239,16 @@ import { Select } from '@shinju-date/ui'
   <option value="new">新しい順</option>
   <option value="old">古い順</option>
 </Select>
+```
+
+### Textarea
+
+複数行の入力欄。`Input` と同じ余白・枠・角丸・フォーカス表示で、`variant` と `inputSize` も同じものを使えます。
+
+```tsx
+import { Textarea } from '@shinju-date/ui'
+
+;<Textarea placeholder="内容を入力..." rows={4} variant="danger" />
 ```
 
 ### EmptyState

@@ -76,7 +76,7 @@ export function InputField({
         inputSize="lg"
         ref={ref}
         required={required}
-        variant={error ? 'error' : 'default'}
+        variant={error ? 'danger' : 'default'}
       />
       <FieldError error={error} id={errorId} />
     </div>
@@ -115,7 +115,7 @@ export function TextareaField({
         id={inputId}
         ref={ref}
         required={required}
-        variant={error ? 'error' : 'default'}
+        variant={error ? 'danger' : 'default'}
       />
       <FieldError error={error} id={errorId} />
     </div>
@@ -157,7 +157,7 @@ export function SelectField({
         inputSize="lg"
         ref={ref}
         required={required}
-        variant={error ? 'error' : 'default'}
+        variant={error ? 'danger' : 'default'}
       >
         {children}
       </Select>

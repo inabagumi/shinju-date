@@ -1,4 +1,5 @@
 import preview from '#.storybook/preview'
+import { Input } from '../Input/Input'
 import { Textarea } from './Textarea'
 
 const meta = preview.meta({
@@ -6,9 +7,13 @@ const meta = preview.meta({
     disabled: {
       control: 'boolean',
     },
+    inputSize: {
+      control: 'select',
+      options: ['sm', 'md', 'lg'],
+    },
     variant: {
       control: 'select',
-      options: ['default', 'error'],
+      options: ['default', 'danger'],
     },
   },
   component: Textarea,
@@ -41,7 +46,7 @@ export const ErrorState = meta.story({
     placeholder: 'Enter text...',
     rows: 4,
     value: 'This content has an error',
-    variant: 'error',
+    variant: 'danger',
   },
 })
 
@@ -53,18 +58,40 @@ export const Disabled = meta.story({
   },
 })
 
-export const Large = meta.story({
+export const ManyRows = meta.story({
   args: {
-    placeholder: 'Large textarea with many rows',
+    placeholder: 'Textarea with many rows',
     rows: 8,
   },
 })
 
-export const Small = meta.story({
+export const FewRows = meta.story({
   args: {
-    placeholder: 'Small textarea',
+    placeholder: 'Textarea with few rows',
     rows: 2,
   },
+})
+
+export const Sizes = meta.story({
+  render: () => (
+    <div className="flex w-96 flex-col gap-4">
+      <Textarea inputSize="sm" placeholder="Small" rows={2} />
+      <Textarea inputSize="md" placeholder="Medium (default)" rows={2} />
+      <Textarea inputSize="lg" placeholder="Large" rows={2} />
+    </div>
+  ),
+})
+
+/** `Input` と並べ、余白・枠・角丸が同じであることを確かめる */
+export const WithInput = meta.story({
+  render: () => (
+    <div className="flex w-96 flex-col gap-4">
+      <Input placeholder="Input" />
+      <Textarea placeholder="Textarea" rows={3} />
+      <Input placeholder="Input (danger)" variant="danger" />
+      <Textarea placeholder="Textarea (danger)" rows={3} variant="danger" />
+    </div>
+  ),
 })
 
 export const WithLabel = meta.story({
@@ -86,7 +113,7 @@ export const WithErrorMessage = meta.story({
   args: {
     rows: 4,
     value: 'Too short',
-    variant: 'error',
+    variant: 'danger',
   },
   render: (args) => (
     <div className="flex w-96 flex-col gap-2">

@@ -201,7 +201,7 @@ export function Input({
       onChange={handleChange}
       type={type}
       value={value}
-      variant={invalid ? 'error' : 'default'}
+      variant={invalid ? 'danger' : 'default'}
       {...props}
     />
   )
@@ -254,7 +254,7 @@ export function Select({
       name={newName ?? name}
       onChange={handleChange}
       value={value}
-      variant={invalid ? 'error' : 'default'}
+      variant={invalid ? 'danger' : 'default'}
       {...props}
     />
   )
@@ -291,7 +291,7 @@ export function Textarea({
       name={newName ?? name}
       onChange={handleChange}
       value={value}
-      variant={invalid ? 'error' : 'default'}
+      variant={invalid ? 'danger' : 'default'}
       {...props}
     />
   )

@@ -2,7 +2,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentPropsWithRef } from 'react'
 import { twMerge } from '../tw-merge.js'
 
-/** 入力欄の見た目。`Select` も同じ高さ・枠・角丸・フォーカス表示にするために使う */
+/** 入力欄の見た目。`Select` と `Textarea` も同じ余白・枠・角丸・フォーカス表示にするために使う */
 export const inputVariants = cva(
   'w-full rounded-control border bg-surface px-4 py-2 text-foreground transition-colors outline-none placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-50',
   {
@@ -17,10 +17,10 @@ export const inputVariants = cva(
         sm: 'px-3 py-1.5 text-sm',
       },
       variant: {
+        danger:
+          'border-danger focus:border-danger focus:ring-2 focus:ring-danger/20',
         default:
           'border-border focus:border-accent focus:ring-2 focus:ring-accent/20',
-        error:
-          'border-danger focus:border-danger focus:ring-2 focus:ring-danger/20',
       },
     },
   },

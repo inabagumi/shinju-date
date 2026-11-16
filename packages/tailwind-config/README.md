@@ -265,8 +265,6 @@ const example = (
 
 ```tsx
 <Button variant="primary">プライマリボタン</Button>
-<Button variant="secondary-blue">セカンダリブルー</Button>
-<Button variant="secondary-pink">セカンダリピンク</Button>
 <Button variant="danger">危険な操作</Button>
 ```
 
@@ -275,7 +273,7 @@ const example = (
 ```tsx
 <Badge variant="info">情報</Badge>
 <Badge variant="success">成功</Badge>
-<Badge variant="error">エラー</Badge>
+<Badge variant="danger">危険</Badge>
 <Badge variant="warning">警告</Badge>
 ```
 

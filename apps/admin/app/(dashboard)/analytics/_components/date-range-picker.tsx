@@ -243,7 +243,7 @@ export default function DateRangePicker({
                 onChange={(e) => handleCustomStartChange(e.target.value)}
                 type="date"
                 value={customStart}
-                variant={validationError ? 'error' : 'default'}
+                variant={validationError ? 'danger' : 'default'}
               />
             </div>
             <div>
@@ -260,7 +260,7 @@ export default function DateRangePicker({
                 onChange={(e) => handleCustomEndChange(e.target.value)}
                 type="date"
                 value={customEnd}
-                variant={validationError ? 'error' : 'default'}
+                variant={validationError ? 'danger' : 'default'}
               />
             </div>
           </div>

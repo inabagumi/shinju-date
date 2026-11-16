@@ -99,7 +99,7 @@ export default function VideoList({ videos }: Props) {
           setSelectedIds([])
           showToast('success', '表示状態を更新しました。')
         } else {
-          showToast('error', result.error || '更新に失敗しました。')
+          showToast('danger', result.error || '更新に失敗しました。')
         }
       } else if (action === 'delete') {
         const result = await softDeleteAction(videoIds)
@@ -107,7 +107,7 @@ export default function VideoList({ videos }: Props) {
           setSelectedIds([])
           showToast('success', '動画を削除しました。')
         } else {
-          showToast('error', result.error || '削除に失敗しました。')
+          showToast('danger', result.error || '削除に失敗しました。')
         }
       } else if (action === 'restore') {
         const result = await restoreAction(videoIds)
@@ -115,12 +115,12 @@ export default function VideoList({ videos }: Props) {
           setSelectedIds([])
           showToast('success', '動画を復元しました。')
         } else {
-          showToast('error', result.error || '復元に失敗しました。')
+          showToast('danger', result.error || '復元に失敗しました。')
         }
       }
     } catch (error) {
       showToast(
-        'error',
+        'danger',
         error instanceof Error
           ? error.message
           : '予期しないエラーが発生しました。',

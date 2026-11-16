@@ -24,7 +24,7 @@ const meta = preview.meta({
     },
     variant: {
       control: 'select',
-      options: ['default', 'error'],
+      options: ['default', 'danger'],
     },
   },
   component: Select,
@@ -47,7 +47,7 @@ export const Default = meta.story({
 
 export const ErrorState = meta.story({
   args: {
-    variant: 'error',
+    variant: 'danger',
   },
 })
 

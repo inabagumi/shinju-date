@@ -25,8 +25,8 @@ describe('Select', () => {
   it('shares the border, radius and padding of Input', () => {
     render(
       <>
-        <Input aria-label="キーワード" variant="error" />
-        <Select aria-label="並び順" variant="error" />
+        <Input aria-label="キーワード" variant="danger" />
+        <Select aria-label="並び順" variant="danger" />
       </>,
     )
 

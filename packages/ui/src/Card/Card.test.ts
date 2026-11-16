@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Card, CardContent, CardFooter, CardHeader } from './Card'
+import { Card, CardContent, CardHeader } from './Card'
 
 describe('Card components', () => {
   it('should export Card component', () => {
@@ -12,9 +12,5 @@ describe('Card components', () => {
 
   it('should export CardContent component', () => {
     expect(CardContent).toBeDefined()
-  })
-
-  it('should export CardFooter component', () => {
-    expect(CardFooter).toBeDefined()
   })
 })

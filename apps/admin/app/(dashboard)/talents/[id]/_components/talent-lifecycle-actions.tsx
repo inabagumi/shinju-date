@@ -75,7 +75,7 @@ export function TalentLifecycleActions({
           </>
         )}
       </div>
-      {message?.type === 'error' && (
+      {message?.type === 'danger' && (
         <p className="text-meta text-danger" role="alert">
           {message.text}
         </p>

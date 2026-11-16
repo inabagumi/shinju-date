@@ -12,7 +12,6 @@ const cardVariants = cva(
       variant: {
         default: 'bg-muted',
         elevated: 'bg-surface',
-        outlined: 'bg-transparent',
       },
     },
   },
@@ -39,11 +38,4 @@ export function CardContent({
   ...props
 }: ComponentPropsWithRef<'div'>) {
   return <div className={twMerge('p-6', className)} {...props} />
-}
-
-export function CardFooter({
-  className,
-  ...props
-}: ComponentPropsWithRef<'div'>) {
-  return <div className={twMerge('p-6 pt-0', className)} {...props} />
 }
