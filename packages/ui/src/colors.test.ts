@@ -187,6 +187,12 @@ const TINTED_COLORS = [
   '--color-warning',
 ]
 const TINT_ALPHA = 0.1
+// Alert の地（`bg-<color>/10`）に本文（`text-foreground`）を載せる組み合わせ
+const ALERT_TINTED_COLORS = [
+  '--color-danger',
+  '--color-success',
+  '--color-warning',
+]
 const FOREGROUND_PAIRS = [
   ['--color-accent-foreground', '--color-accent'],
   ['--color-live-foreground', '--color-live'],
@@ -254,6 +260,25 @@ describe('semantic colors', () => {
         expect(contrastRatio(foreground, background)).toBeGreaterThanOrEqual(
           MIN_CONTRAST_RATIO,
         )
+      },
+    )
+
+    const alertCombinations = GROUNDS.flatMap((ground) =>
+      ALERT_TINTED_COLORS.map((color) => [color, ground] as const),
+    )
+
+    it.each(alertCombinations)(
+      `--color-foreground on a tint of %s over %s has a contrast ratio of at least ${MIN_CONTRAST_RATIO}:1`,
+      (color, ground) => {
+        const background = blend(
+          resolveColor(colors, color),
+          resolveColor(colors, ground),
+          TINT_ALPHA,
+        )
+
+        expect(
+          contrastRatio(resolveColor(colors, '--color-foreground'), background),
+        ).toBeGreaterThanOrEqual(MIN_CONTRAST_RATIO)
       },
     )
 
