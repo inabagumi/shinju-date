@@ -1,7 +1,5 @@
 import { expect, type Locator, type Page, test } from '@playwright/test'
 
-const BASE_URL = process.env['BASE_URL'] || 'http://localhost:3000'
-
 // Provided by the MSW mock data (packages/msw-handlers)
 const ANNOUNCEMENT_MESSAGE = 'メンテナンスのお知らせ'
 const ANNOUNCEMENT_LINK_TEXT = 'メンテナンス情報'
@@ -101,8 +99,11 @@ async function scrollUntilCardSpans(page: Page, locator: Locator) {
   await expect
     .poll(
       async () => {
-        await page.mouse.wheel(0, 40)
-        await page.waitForTimeout(50)
+        // Scroll synchronously, so that the boxes below are measured after
+        // the scroll without waiting for it
+        await page.evaluate(() =>
+          window.scrollBy({ behavior: 'instant', top: 40 }),
+        )
 
         const box = await getBoundingBox(locator)
         const cardBoxes = await getVideoCardBoxes(page)
@@ -131,34 +132,36 @@ async function getVideoCardBoxes(page: Page): Promise<Box[]> {
 
 /**
  * Scroll to the end of the document and wait until the document height
- * stops changing.
+ * stops changing: the height is compared with the one at the previous check,
+ * and `expect.poll` waits between the checks.
  */
 async function scrollToEnd(page: Page) {
+  let previousHeight: number | null = null
+
   await expect
     .poll(
       async () => {
-        const before = await page.evaluate(
-          () => document.documentElement.scrollHeight,
-        )
+        const height = await page.evaluate(() => {
+          window.scrollTo({
+            behavior: 'instant',
+            top: document.documentElement.scrollHeight,
+          })
 
-        await page.evaluate(() =>
-          window.scrollTo(0, document.documentElement.scrollHeight),
-        )
-        await page.waitForTimeout(300)
+          return document.documentElement.scrollHeight
+        })
+        const isStable = height === previousHeight
 
-        const after = await page.evaluate(
-          () => document.documentElement.scrollHeight,
-        )
+        previousHeight = height
 
-        return before === after
+        return isStable
       },
-      { timeout: 15_000 },
+      { intervals: [300], timeout: 15_000 },
     )
     .toBe(true)
 }
 
 async function openPage(page: Page, path: string) {
-  await page.goto(`${BASE_URL}${path}`)
+  await page.goto(path)
 
   await expect(getBanner(page)).toBeVisible()
   await expect(getBanner(page)).toContainText(ANNOUNCEMENT_MESSAGE)
@@ -305,6 +308,31 @@ test.describe('Announcement Banner', () => {
     await expect(banner).not.toContainText('](')
   })
 
+  test('should refetch the announcement every minute', async ({ page }) => {
+    // Control the timers of the page, so that the refetch can be triggered
+    // without waiting for a minute
+    await page.clock.install()
+    await openPage(page, '/videos')
+
+    // The announcement is fetched again with a Server Action. The other
+    // Server Actions of the page (the trackers) are called while it loads,
+    // and `openPage` waits for them, so the next one is the refetch. The
+    // response is streamed and its body may stay open on the development
+    // server, so only its status is checked.
+    const refetchRequest = page.waitForRequest(
+      (request) =>
+        request.method() === 'POST' &&
+        request.headers()['next-action'] !== undefined,
+    )
+
+    await page.clock.fastForward('01:00')
+
+    const response = await (await refetchRequest).response()
+
+    expect(response?.ok()).toBe(true)
+    await expect(getBanner(page)).toContainText(ANNOUNCEMENT_MESSAGE)
+  })
+
   describeViewport('Mobile', { height: 844, width: 390 })
   describeViewport('Desktop', { height: 1000, width: 1440 })
 
@@ -331,10 +359,8 @@ test.describe('Announcement Banner', () => {
       await expect(minimizeButton).toBeInViewport({ ratio: 1 })
       await expect(closeButton).toBeInViewport({ ratio: 1 })
 
-      // Nothing overflows the narrow viewport horizontally
-      const bannerBox = await getBoundingBox(banner)
-      expect(bannerBox.x).toBeGreaterThanOrEqual(0)
-      expect(bannerBox.x + bannerBox.width).toBeLessThanOrEqual(320)
+      // Nothing overflows the narrow viewport
+      await expect(banner).toBeInViewport({ ratio: 1 })
 
       await closeButton.click()
       await expect(banner).toBeHidden()

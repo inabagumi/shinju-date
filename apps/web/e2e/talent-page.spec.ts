@@ -1,7 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
 
-const BASE_URL = process.env['BASE_URL'] || 'http://localhost:3000'
-
 // Provided by the MSW mock data (packages/msw-handlers). The first talent has
 // a YouTube channel and a Twitch user with icons and finished streams within
 // 90 days, mostly on Saturday at 21:00, the second has only a YouTube channel
@@ -35,7 +33,7 @@ test.describe('Talent page', () => {
   test('should show the icon, the name and the links of a talent', async ({
     page,
   }) => {
-    await page.goto(`${BASE_URL}/talents/${TALENT.id}`)
+    await page.goto(`/talents/${TALENT.id}`)
 
     await expect(page).toHaveTitle(`${TALENT.name} - SHINJU DATE`)
 
@@ -82,11 +80,11 @@ test.describe('Talent page', () => {
     page,
     request,
   }) => {
-    await page.goto(`${BASE_URL}/talents/${TALENT.id}`)
+    await page.goto(`/talents/${TALENT.id}`)
 
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',
-      `${BASE_URL}/talents/${TALENT.id}`,
+      new RegExp(`^https?://[^/]+/talents/${TALENT.id}$`),
     )
 
     const alternate = page.locator(
@@ -95,7 +93,7 @@ test.describe('Talent page', () => {
 
     await expect(alternate).toHaveAttribute(
       'href',
-      `${BASE_URL}/talents/${TALENT.id}.ics`,
+      new RegExp(`^https?://[^/]+/talents/${TALENT.id}\\.ics$`),
     )
 
     const response = await request.get(
@@ -111,7 +109,7 @@ test.describe('Talent page', () => {
   test('should show only the videos of the talent by date', async ({
     page,
   }) => {
-    await page.goto(`${BASE_URL}/talents/${TALENT.id}`)
+    await page.goto(`/talents/${TALENT.id}`)
 
     const cards = getVideoCards(page)
 
@@ -129,7 +127,7 @@ test.describe('Talent page', () => {
   test('should stay on the talent page when switching the kind', async ({
     page,
   }) => {
-    await page.goto(`${BASE_URL}/talents/${TALENT.id}`)
+    await page.goto(`/talents/${TALENT.id}`)
 
     const kindNav = page.getByRole('navigation', { name: '種別' })
 
@@ -140,7 +138,7 @@ test.describe('Talent page', () => {
 
     await kindNav.getByRole('link', { name: 'ショート' }).click()
 
-    await expect(page).toHaveURL(`${BASE_URL}/talents/${TALENT.id}?kind=short`)
+    await expect(page).toHaveURL(`/talents/${TALENT.id}?kind=short`)
     await expect(
       kindNav.getByRole('link', { name: 'ショート' }),
     ).toHaveAttribute('aria-current', 'page')
@@ -154,13 +152,13 @@ test.describe('Talent page', () => {
 
     await kindNav.getByRole('link', { name: 'すべて' }).click()
 
-    await expect(page).toHaveURL(`${BASE_URL}/talents/${TALENT.id}`)
+    await expect(page).toHaveURL(`/talents/${TALENT.id}`)
   })
 
   test('should show the tendency of the streams of a talent', async ({
     page,
   }) => {
-    await page.goto(`${BASE_URL}/talents/${TALENT.id}`)
+    await page.goto(`/talents/${TALENT.id}`)
 
     const section = page.getByRole('region', { name: '配信の傾向' })
 
@@ -207,7 +205,7 @@ test.describe('Talent page', () => {
     page,
   }) => {
     await page.setViewportSize({ height: 812, width: 375 })
-    await page.goto(`${BASE_URL}/talents/${TALENT.id}`)
+    await page.goto(`/talents/${TALENT.id}`)
 
     const section = page.getByRole('region', { name: '配信の傾向' })
     const table = section.getByRole('table', {
@@ -243,7 +241,7 @@ test.describe('Talent page', () => {
   test('should show the default icon for a talent without icons', async ({
     page,
   }) => {
-    await page.goto(`${BASE_URL}/talents/${TALENT_WITHOUT_ICON.id}`)
+    await page.goto(`/talents/${TALENT_WITHOUT_ICON.id}`)
 
     const header = getHeader(page)
 
@@ -257,7 +255,7 @@ test.describe('Talent page', () => {
   test('should show the empty state for a talent without videos', async ({
     page,
   }) => {
-    await page.goto(`${BASE_URL}/talents/${TALENT_WITHOUT_VIDEOS.id}`)
+    await page.goto(`/talents/${TALENT_WITHOUT_VIDEOS.id}`)
 
     await expect(
       getHeader(page).getByRole('heading', {
@@ -284,7 +282,7 @@ test.describe('Talent page', () => {
     test(`should show the not-found page for ${description}`, async ({
       page,
     }) => {
-      await page.goto(`${BASE_URL}/talents/${id}`)
+      await page.goto(`/talents/${id}`)
 
       await expect(
         page.getByRole('heading', { level: 1, name: 'ページが見つかりません' }),
@@ -314,7 +312,7 @@ test.describe('Open Graph image of the talent page', () => {
       page,
       request,
     }) => {
-      await page.goto(`${BASE_URL}/talents/${talent.id}`)
+      await page.goto(`/talents/${talent.id}`)
 
       const ogImage = page.locator('meta[property="og:image"]')
 
@@ -354,9 +352,7 @@ test.describe('Open Graph image of the talent page', () => {
     ['a deleted talent', DELETED_TALENT_ID],
   ] as const) {
     test(`should not be found for ${description}`, async ({ request }) => {
-      const response = await request.get(
-        `${BASE_URL}/talents/${id}/opengraph-image`,
-      )
+      const response = await request.get(`/talents/${id}/opengraph-image`)
 
       expect(response.status()).toBe(404)
     })
@@ -365,13 +361,13 @@ test.describe('Open Graph image of the talent page', () => {
 
 test.describe('Videos page after adding the talent page', () => {
   test('should keep the kind filter on the videos page', async ({ page }) => {
-    await page.goto(`${BASE_URL}/videos`)
+    await page.goto('/videos')
 
     const kindNav = page.getByRole('navigation', { name: '種別' })
 
     await kindNav.getByRole('link', { name: 'ショート' }).click()
 
-    await expect(page).toHaveURL(`${BASE_URL}/videos?kind=short`)
+    await expect(page).toHaveURL('/videos?kind=short')
     await expect(
       kindNav.getByRole('link', { name: 'ショート' }),
     ).toHaveAttribute('aria-current', 'page')
@@ -382,14 +378,14 @@ test.describe('Videos page after adding the talent page', () => {
   }) => {
     const query = 'ゲーム'
 
-    await page.goto(`${BASE_URL}/videos/${encodeURIComponent(query)}`)
+    await page.goto(`/videos/${encodeURIComponent(query)}`)
 
     const kindNav = page.getByRole('navigation', { name: '種別' })
 
     await kindNav.getByRole('link', { name: '動画' }).click()
 
     await expect(page).toHaveURL(
-      `${BASE_URL}/videos/${encodeURIComponent(query)}?kind=standard`,
+      `/videos/${encodeURIComponent(query)}?kind=standard`,
     )
   })
 })

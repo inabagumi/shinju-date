@@ -1,7 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
 
-const BASE_URL = process.env['BASE_URL'] || 'http://localhost:3000'
-
 function getHeader(page: Page) {
   return page.getByRole('banner')
 }
@@ -32,7 +30,7 @@ test.describe('Mobile Navigation', () => {
   test('should open the menu and navigate to the videos page', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     const { menu, menuButton } = await getMobileMenu(page)
 
@@ -59,7 +57,7 @@ test.describe('Mobile Navigation', () => {
   })
 
   test('should support keyboard operation', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     const { menu, menuButton } = await getMobileMenu(page)
 
@@ -86,7 +84,7 @@ test.describe('Mobile Navigation', () => {
   test('should close the menu when clicking outside of it', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     const { menu, menuButton } = await getMobileMenu(page)
 
@@ -101,7 +99,7 @@ test.describe('Mobile Navigation', () => {
   })
 
   test('should mark the current page with aria-current', async ({ page }) => {
-    await page.goto(`${BASE_URL}/about`)
+    await page.goto('/about')
 
     const { menu, menuButton } = await getMobileMenu(page)
 
@@ -122,7 +120,7 @@ test.describe('Desktop Navigation', () => {
   test('should keep the inline navigation and hide the menu button', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     await expect(
       getHeader(page).getByRole('button', { name: 'メニュー' }),

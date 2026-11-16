@@ -1,7 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
 
-const BASE_URL = process.env['BASE_URL'] || 'http://localhost:3000'
-
 // Provided by the MSW mock data (packages/msw-handlers): five active talents,
 // a retired talent and a deleted talent. The first talent has icons, and the
 // talent without videos has no channels, so it has no icon.
@@ -23,7 +21,7 @@ function getTalentCard(page: Page, name: string) {
 
 test.describe('Talents page', () => {
   test('should list the active talents with their icons', async ({ page }) => {
-    await page.goto(`${BASE_URL}/talents`)
+    await page.goto('/talents')
 
     await expect(page).toHaveTitle('タレント一覧 - SHINJU DATE')
 
@@ -53,7 +51,7 @@ test.describe('Talents page', () => {
   })
 
   test('should not list the retired or deleted talents', async ({ page }) => {
-    await page.goto(`${BASE_URL}/talents`)
+    await page.goto('/talents')
 
     await expect(getTalentCard(page, TALENT.name)).toBeVisible()
     await expect(
@@ -65,7 +63,7 @@ test.describe('Talents page', () => {
   })
 
   test('should point to the list as the canonical URL', async ({ page }) => {
-    await page.goto(`${BASE_URL}/talents`)
+    await page.goto('/talents')
 
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',
@@ -81,7 +79,7 @@ test.describe('Talents page', () => {
   ]) {
     test(`should show ${columns} columns at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ height: 900, width })
-      await page.goto(`${BASE_URL}/talents`)
+      await page.goto('/talents')
 
       const list = getTalentList(page)
 
@@ -99,11 +97,11 @@ test.describe('Talents page', () => {
   }
 
   test('should open the page of a talent from the list', async ({ page }) => {
-    await page.goto(`${BASE_URL}/talents`)
+    await page.goto('/talents')
 
     await getTalentCard(page, TALENT.name).click()
 
-    await expect(page).toHaveURL(`${BASE_URL}/talents/${TALENT.id}`)
+    await expect(page).toHaveURL(`/talents/${TALENT.id}`)
     await expect(
       page.getByRole('heading', { level: 1, name: TALENT.name }),
     ).toBeVisible()
@@ -114,7 +112,7 @@ test.describe('Talents page', () => {
       .getByRole('link', { name: 'タレント一覧' })
       .click()
 
-    await expect(page).toHaveURL(`${BASE_URL}/talents`)
+    await expect(page).toHaveURL('/talents')
   })
 })
 
@@ -122,7 +120,7 @@ test.describe('Navigation to the talents page', () => {
   test.use({ viewport: { height: 800, width: 1280 } })
 
   test('should open the list from the header', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     const link = page
       .getByRole('banner')
@@ -132,14 +130,14 @@ test.describe('Navigation to the talents page', () => {
 
     await link.click()
 
-    await expect(page).toHaveURL(`${BASE_URL}/talents`)
+    await expect(page).toHaveURL('/talents')
     await expect(link).toHaveAttribute('aria-current', 'page')
   })
 
   test('should mark the list as current on the page of a talent', async ({
     page,
   }) => {
-    await page.goto(`${BASE_URL}/talents/${TALENT.id}`)
+    await page.goto(`/talents/${TALENT.id}`)
 
     await expect(
       page
@@ -156,14 +154,14 @@ test.describe('Navigation to the talents page', () => {
   })
 
   test('should open the list from the footer', async ({ page }) => {
-    await page.goto(`${BASE_URL}/about`)
+    await page.goto('/about')
 
     await page
       .getByRole('navigation', { name: 'フッター' })
       .getByRole('link', { name: 'タレント一覧' })
       .click()
 
-    await expect(page).toHaveURL(`${BASE_URL}/talents`)
+    await expect(page).toHaveURL('/talents')
   })
 })
 
@@ -171,7 +169,7 @@ test.describe('Navigation to the talents page on mobile', () => {
   test.use({ viewport: { height: 844, width: 390 } })
 
   test('should open the list from the mobile menu', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
 
     const menuButton = page
       .getByRole('banner')
@@ -190,7 +188,7 @@ test.describe('Navigation to the talents page on mobile', () => {
 
     await menu.getByRole('link', { name: 'タレント一覧' }).click()
 
-    await expect(page).toHaveURL(`${BASE_URL}/talents`)
+    await expect(page).toHaveURL('/talents')
   })
 })
 
@@ -198,7 +196,7 @@ test.describe('Sitemap', () => {
   test('should include the list and the active talents', async ({
     request,
   }) => {
-    const response = await request.get(`${BASE_URL}/sitemap.xml`)
+    const response = await request.get('/sitemap.xml')
     const body = await response.text()
 
     expect(response.ok()).toBe(true)

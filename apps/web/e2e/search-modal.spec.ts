@@ -1,118 +1,110 @@
 import { expect, type Page, test } from '@playwright/test'
 
-// Base URL for tests - can be configured via environment variable
-const BASE_URL = process.env['BASE_URL'] || 'http://localhost:3000'
-
 // Keyboard modifier for Cmd/Ctrl+K shortcut
 const KEYBOARD_MODIFIER = process.platform === 'darwin' ? 'Meta' : 'Control'
+
+// `歌配信` is a synonym of `歌枠` in the mock terms (packages/msw-handlers),
+// so typing `歌配` always suggests `歌枠`
+const SUGGESTION_QUERY = '歌配'
+const SUGGESTED_TERM = '歌枠'
+
+// The first visit to a page of the search results can take a while on the
+// development server, which compiles the page on demand
+const NAVIGATION_TIMEOUT = 15_000
+
+function getSearchDialog(page: Page) {
+  return page.getByRole('dialog', { name: '検索' })
+}
+
+function getSearchInput(page: Page) {
+  return getSearchDialog(page).getByRole('searchbox')
+}
+
+function getSuggestionLink(page: Page, name: string) {
+  return getSearchDialog(page).getByRole('link', { exact: true, name })
+}
+
+async function openSearchModal(page: Page) {
+  await page.getByRole('button', { name: '検索' }).click()
+
+  const searchInput = getSearchInput(page)
+  await expect(searchInput).toBeVisible()
+
+  return searchInput
+}
 
 test.describe('Search Modal - Opening and Closing', () => {
   test('should open search modal when clicking search button', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    // Click search button
-    const searchButton = page.getByRole('button', { name: '検索' })
-    await searchButton.click()
-
-    // Wait for modal to appear by checking for the input field
-    const searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
+    await openSearchModal(page)
   })
 
   test('should open modal with functional (non-disabled) text input', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    // Open search modal
-    const searchButton = page.getByRole('button', { name: '検索' })
-    await searchButton.click()
-
-    // Wait for modal to be visible
-    const searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
+    const searchInput = await openSearchModal(page)
 
     // CRITICAL: Verify the input is NOT disabled
-    await expect(searchInput).not.toBeDisabled({ timeout: 5000 })
+    await expect(searchInput).toBeEnabled()
 
     // Verify the input is editable
-    await expect(searchInput).toBeEditable({ timeout: 5000 })
+    await expect(searchInput).toBeEditable()
 
     // Verify we can actually type in it
     await searchInput.fill('test')
     await expect(searchInput).toHaveValue('test')
 
     // Verify "Loading..." text is not visible (Suspense resolved)
-    const loadingText = page.locator('text=Loading...')
-    await expect(loadingText).not.toBeVisible()
+    await expect(page.getByText('Loading...')).toBeHidden()
   })
 
   test('should close search modal when pressing ESC key', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    // Open search modal
-    const searchButton = page.getByRole('button', { name: '検索' })
-    await searchButton.click()
+    const searchInput = await openSearchModal(page)
 
-    // Wait for modal to be visible
-    const searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
-
-    // Press ESC key
     await page.keyboard.press('Escape')
 
-    // Wait for modal to close
-    await expect(searchInput).not.toBeVisible({ timeout: 5000 })
+    await expect(searchInput).toBeHidden()
   })
 
   test('should close search modal when clicking outside (overlay)', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    // Open search modal
-    const searchButton = page.getByRole('button', { name: '検索' })
-    await searchButton.click()
-
-    // Wait for modal to be visible
-    const searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
-
-    // Wait a bit for modal animations and event handlers to be ready
-    await page.waitForTimeout(500)
-
-    // Get viewport dimensions to click in a reliable location
+    const searchInput = await openSearchModal(page)
     const viewportSize = page.viewportSize()
-    if (viewportSize) {
-      // Click in the top-right corner, which should be outside the modal
-      await page.mouse.click(viewportSize.width - 10, 10)
-    } else {
-      // Fallback to coordinates
-      await page.mouse.click(10, 10)
-    }
 
-    // Wait for modal to close
-    await expect(searchInput).not.toBeVisible({ timeout: 5000 })
+    expect(viewportSize).not.toBeNull()
+
+    // The dialog starts listening to clicks outside of it just after it
+    // opens, so click the top-right corner (outside the dialog) again until
+    // the dialog closes
+    await expect(async () => {
+      await page.mouse.click((viewportSize?.width ?? 0) - 10, 10)
+      await expect(searchInput).toBeHidden({ timeout: 1_000 })
+    }).toPass()
   })
 
   test('should open search modal with Cmd/Ctrl+K shortcut', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    // Press Cmd/Ctrl+K
     await page.keyboard.press(`${KEYBOARD_MODIFIER}+KeyK`)
 
-    // Wait for modal to be visible
-    const searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
+    await expect(getSearchInput(page)).toBeVisible()
   })
 })
 
@@ -120,85 +112,65 @@ test.describe('Search Modal - Direct Navigation', () => {
   test('should handle direct navigation to /search', async ({ page }) => {
     // The route handler redirects /search to /videos
     // page.goto will follow the redirect automatically
-    await page.goto(`${BASE_URL}/search`, { waitUntil: 'networkidle' })
+    await page.goto('/search')
 
-    // Verify we ended up at /videos after redirect
-    expect(page.url()).toBe(`${BASE_URL}/videos`)
+    await expect(page).toHaveURL('/videos')
   })
 
   test('should handle direct navigation to /search with query parameter', async ({
     page,
   }) => {
     // The route handler redirects /search?q=test to /videos/test
-    await page.goto(`${BASE_URL}/search?q=test`, { waitUntil: 'networkidle' })
+    await page.goto('/search?q=test')
 
-    // Verify we ended up at /videos/test after redirect
-    expect(page.url()).toBe(`${BASE_URL}/videos/test`)
+    await expect(page).toHaveURL('/videos/test', {
+      timeout: NAVIGATION_TIMEOUT,
+    })
   })
 })
 
 test.describe('Search Modal - Search Functionality', () => {
   test('should perform search and navigate to results', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    // Open search modal
-    const searchButton = page.getByRole('button', { name: '検索' })
-    await searchButton.click()
+    const searchInput = await openSearchModal(page)
 
-    // Wait for modal to be visible
-    const searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
-
-    // Type search query
     await searchInput.fill('test query')
-    await expect(searchInput).toHaveValue('test query', { timeout: 2000 })
+    await expect(searchInput).toHaveValue('test query')
 
-    // Wait for navigation while pressing Enter
-    await Promise.all([
-      page.waitForURL(`${BASE_URL}/videos/test%20query`, { timeout: 15000 }),
-      searchInput.press('Enter'),
-    ])
+    await searchInput.press('Enter')
+
+    await expect(page).toHaveURL('/videos/test%20query', {
+      timeout: NAVIGATION_TIMEOUT,
+    })
   })
 
   test('should update search query in real-time', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    // Open search modal
-    const searchButton = page.getByRole('button', { name: '検索' })
-    await searchButton.click()
+    const searchInput = await openSearchModal(page)
 
-    // Wait for modal to be visible
-    const searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
-
-    // Type search query
     await searchInput.fill('test')
-    await expect(searchInput).toHaveValue('test', { timeout: 2000 })
+    await expect(searchInput).toHaveValue('test')
 
-    // Update search query
     await searchInput.fill('updated')
-    await expect(searchInput).toHaveValue('updated', { timeout: 2000 })
+    await expect(searchInput).toHaveValue('updated')
   })
 
   test('should handle empty search submission', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    // Open search modal
-    const searchButton = page.getByRole('button', { name: '検索' })
-    await searchButton.click()
-
-    // Wait for modal to be visible
-    const searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
+    const searchInput = await openSearchModal(page)
 
     // Press Enter without typing anything
     await searchInput.press('Enter')
 
     // Modal should remain open (no navigation)
-    await expect(searchInput).toBeVisible({ timeout: 1000 })
+    await expect(searchInput).toBeVisible()
+    await expect(page).toHaveURL('/')
   })
 })
 
@@ -206,226 +178,132 @@ test.describe('Search Modal - Suggestion Links', () => {
   test('should suggest a term when the query matches one of its synonyms', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    // Open search modal
-    await page.getByRole('button', { name: '検索' }).click()
+    const searchInput = await openSearchModal(page)
 
-    const searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
+    await searchInput.fill(SUGGESTION_QUERY)
 
-    // `歌配信` is a synonym of `歌枠` in the mock terms
-    await searchInput.fill('歌配')
-
-    const suggestionLink = page.locator('[data-suggestion-link]', {
-      hasText: '歌枠',
-    })
-    await expect(suggestionLink).toBeVisible({ timeout: 10000 })
-    await expect(suggestionLink).toHaveAttribute(
+    await expect(getSuggestionLink(page, SUGGESTED_TERM)).toHaveAttribute(
       'href',
-      `/videos/${encodeURIComponent('歌枠')}`,
+      `/videos/${encodeURIComponent(SUGGESTED_TERM)}`,
     )
   })
 
   test('should close modal when clicking a suggestion link', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    // Open search modal
-    const searchButton = page.getByRole('button', { name: '検索' })
-    await searchButton.click()
+    const searchInput = await openSearchModal(page)
 
-    // Wait for modal to be visible
-    const searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
+    await searchInput.fill(SUGGESTION_QUERY)
+    await getSuggestionLink(page, SUGGESTED_TERM).click()
 
-    // Type query to trigger suggestions
-    await searchInput.fill('test')
-
-    // Look for suggestion links - wait for them to load or timeout
-    const suggestionLinks = page.locator('[data-suggestion-link]')
-    try {
-      await suggestionLinks.first().waitFor({ state: 'visible', timeout: 2000 })
-    } catch {
-      // Suggestions may not load with MSW - skip test
-      return
-    }
-
-    const count = await suggestionLinks.count()
-
-    if (count > 0) {
-      // Click first suggestion and wait for navigation
-      await Promise.all([
-        page.waitForURL('**/videos/**', { timeout: 10000 }),
-        suggestionLinks.first().click(),
-      ])
-
-      // Modal should be closed
-      await expect(searchInput).not.toBeVisible({ timeout: 5000 })
-
-      // Should navigate to videos page
-      expect(page.url()).toContain('/videos/')
-    }
+    await expect(page).toHaveURL(
+      `/videos/${encodeURIComponent(SUGGESTED_TERM)}`,
+      { timeout: NAVIGATION_TIMEOUT },
+    )
+    await expect(searchInput).toBeHidden()
   })
 
   test('should support keyboard navigation in suggestions', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    // Open search modal
-    const searchButton = page.getByRole('button', { name: '検索' })
-    await searchButton.click()
+    const searchInput = await openSearchModal(page)
 
-    // Focus on search input
-    const searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
+    await searchInput.fill(SUGGESTION_QUERY)
 
-    // Type query to trigger suggestions
-    await searchInput.fill('test')
-    await searchInput.focus()
+    const suggestionLink = getSuggestionLink(page, SUGGESTED_TERM)
+    await expect(suggestionLink).toBeVisible()
 
-    // Look for suggestion links - wait for them to load or timeout
-    const suggestionLinks = page.locator('[data-suggestion-link]')
-    try {
-      await suggestionLinks.first().waitFor({ state: 'visible', timeout: 2000 })
-    } catch {
-      // Suggestions may not load with MSW - skip test
-      return
-    }
+    // ArrowDown moves the focus to the first suggestion
+    await page.keyboard.press('ArrowDown')
+    await expect(suggestionLink).toBeFocused()
 
-    const count = await suggestionLinks.count()
-
-    if (count > 0) {
-      // Press ArrowDown to focus first suggestion
-      await page.keyboard.press('ArrowDown')
-
-      // Wait for focus to change - using short timeout for keyboard event
-      await page.waitForTimeout(200)
-
-      // First suggestion should be focused
-      const firstSuggestion = suggestionLinks.first()
-      await expect(firstSuggestion).toBeFocused()
-
-      // Press ArrowUp to go back to input
-      await page.keyboard.press('ArrowUp')
-
-      // Wait for focus to change - using short timeout for keyboard event
-      await page.waitForTimeout(200)
-
-      // Input should be focused again
-      await expect(searchInput).toBeFocused()
-    }
+    // ArrowUp moves the focus back to the input
+    await page.keyboard.press('ArrowUp')
+    await expect(searchInput).toBeFocused()
   })
 })
 
 test.describe('Search Modal - Stability Tests', () => {
   test('should handle rapid opening and closing', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    const searchButton = page.getByRole('button', { name: '検索' })
-    const searchInput = page.locator('input[name="q"]')
+    const searchInput = getSearchInput(page)
 
     // Rapidly open and close modal 3 times
     for (let i = 0; i < 3; i++) {
-      // Open
-      await searchButton.click()
-      await expect(searchInput).toBeVisible({ timeout: 5000 })
+      await openSearchModal(page)
 
-      // Close with ESC
       await page.keyboard.press('Escape')
-      await expect(searchInput).not.toBeVisible({ timeout: 5000 })
+      await expect(searchInput).toBeHidden()
     }
-
-    // Modal should be closed
-    await expect(searchInput).not.toBeVisible()
   })
 
   test('should maintain state across multiple searches', async ({ page }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
     // First search
-    await page.getByRole('button', { name: '検索' }).click()
-
-    let searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
+    let searchInput = await openSearchModal(page)
 
     await searchInput.fill('first search')
+    await searchInput.press('Enter')
 
-    // Wait for navigation while pressing Enter
-    await Promise.all([
-      page.waitForURL(`${BASE_URL}/videos/first%20search`, {
-        timeout: 15000,
+    await expect(page).toHaveURL('/videos/first%20search', {
+      timeout: NAVIGATION_TIMEOUT,
+    })
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: '『first search』の検索結果',
       }),
-      searchInput.press('Enter'),
-    ])
-
-    // Ensure page is fully loaded before second search
-    await page.waitForLoadState('networkidle')
+    ).toBeVisible()
 
     // Second search
-    await page.getByRole('button', { name: '検索' }).click()
-
-    searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
+    searchInput = await openSearchModal(page)
 
     await searchInput.fill('second search')
+    await searchInput.press('Enter')
 
-    // Wait for navigation while pressing Enter
-    await Promise.all([
-      page.waitForURL(`${BASE_URL}/videos/second%20search`, {
-        timeout: 15000,
-      }),
-      searchInput.press('Enter'),
-    ])
+    await expect(page).toHaveURL('/videos/second%20search', {
+      timeout: NAVIGATION_TIMEOUT,
+    })
   })
 
   test('should handle browser back button after closing modal', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    // Open modal
-    await page.getByRole('button', { name: '検索' }).click()
+    const searchInput = await openSearchModal(page)
 
-    const searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
-
-    // Close modal with ESC
     await page.keyboard.press('Escape')
-    await expect(searchInput).not.toBeVisible({ timeout: 5000 })
+    await expect(searchInput).toBeHidden()
 
     // Browser back button should work normally (though there might not be history)
     // This test ensures no errors occur
     await page.goBack()
-    await page.waitForLoadState('networkidle', { timeout: 5000 })
 
     // Should still be functional
-    await expect(searchInput).not.toBeVisible()
+    await expect(searchInput).toBeHidden()
   })
 })
 
 test.describe('Search Modal - Talent', () => {
-  async function openSearchModal(page: Page) {
-    await page.getByRole('button', { name: '検索' }).click()
-
-    const searchInput = page.locator('input[name="q"]')
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
-
-    return searchInput
-  }
-
   function getChipList(page: Page) {
-    return page
-      .getByRole('dialog')
-      .getByRole('list', { name: '選んでいるタレント' })
+    return getSearchDialog(page).getByRole('list', {
+      name: '選んでいるタレント',
+    })
   }
 
   function getTalentOption(page: Page, name: string) {
@@ -437,7 +315,7 @@ test.describe('Search Modal - Talent', () => {
   test('should search a keyword within the selected talent', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
     const searchInput = await openSearchModal(page)
@@ -450,32 +328,31 @@ test.describe('Search Modal - Talent', () => {
     await expect(searchInput).toBeFocused()
 
     await searchInput.fill('歌枠')
-    await Promise.all([
-      page.waitForURL(
-        new RegExp(
-          `/videos/${encodeURIComponent('歌枠')}\\?talent=[0-9a-f-]{36}$`,
-        ),
-        { timeout: 15000 },
+    await searchInput.press('Enter')
+
+    await expect(page).toHaveURL(
+      new RegExp(
+        `/videos/${encodeURIComponent('歌枠')}\\?talent=[0-9a-f-]{36}$`,
       ),
-      searchInput.press('Enter'),
-    ])
+      { timeout: NAVIGATION_TIMEOUT },
+    )
   })
 
   test('should open the video list of the talent and start with its chip', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
     const searchInput = await openSearchModal(page)
 
     await searchInput.fill('ユラ')
     await getTalentOption(page, '凪沢ユラ').click()
-    await Promise.all([
-      page.waitForURL(/\/videos\?talent=[0-9a-f-]{36}$/, { timeout: 15000 }),
-      searchInput.press('Enter'),
-    ])
+    await searchInput.press('Enter')
 
+    await expect(page).toHaveURL(/\/videos\?talent=[0-9a-f-]{36}$/, {
+      timeout: NAVIGATION_TIMEOUT,
+    })
     await expect(
       page
         .getByRole('list', { name: '選んでいるタレント' })
@@ -490,7 +367,7 @@ test.describe('Search Modal - Talent', () => {
   test('should carry the chip over to the keyword suggestions', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
     const searchInput = await openSearchModal(page)
@@ -498,25 +375,20 @@ test.describe('Search Modal - Talent', () => {
     await searchInput.fill('ミオ')
     await getTalentOption(page, '朝霧ミオ').click()
 
-    // `歌配信` is a synonym of `歌枠` in the mock terms
-    await searchInput.fill('歌配')
+    await searchInput.fill(SUGGESTION_QUERY)
 
-    const suggestionLink = page.locator('[data-suggestion-link]', {
-      hasText: '歌枠',
-    })
-    await expect(suggestionLink).toHaveAttribute(
+    await expect(getSuggestionLink(page, SUGGESTED_TERM)).toHaveAttribute(
       'href',
       new RegExp(
-        `^/videos/${encodeURIComponent('歌枠')}\\?talent=[0-9a-f-]{36}$`,
+        `^/videos/${encodeURIComponent(SUGGESTED_TERM)}\\?talent=[0-9a-f-]{36}$`,
       ),
-      { timeout: 10000 },
     )
   })
 
   test('should select and remove talents only with the keyboard', async ({
     page,
   }) => {
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await page.waitForLoadState('networkidle')
 
     const searchInput = await openSearchModal(page)
@@ -551,9 +423,10 @@ test.describe('Search Modal - Talent', () => {
 
     // チップがないときの遷移先は変わらない
     await searchInput.pressSequentially('test')
-    await Promise.all([
-      page.waitForURL(`${BASE_URL}/videos/test`, { timeout: 15000 }),
-      page.keyboard.press('Enter'),
-    ])
+    await page.keyboard.press('Enter')
+
+    await expect(page).toHaveURL('/videos/test', {
+      timeout: NAVIGATION_TIMEOUT,
+    })
   })
 })
