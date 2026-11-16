@@ -24,7 +24,8 @@
 
 - `queries:manual_recommended` (Set) - 手動で追加されたオススメクエリ
 - `queries:auto_recommended` (Sorted Set) - 自動選出されたオススメクエリ（スコア付き）
-- `queries:combined_cache` (String/JSON) - 結合済みオススメクエリのキャッシュ（TTL: 10分）
+
+結合済みのオススメクエリは Redis には保存せず、公開サイトの `'use cache: remote'` でキャッシュします（キャッシュタグ: `CACHE_TAGS.RECOMMENDATION_QUERIES`）。
 
 ### コンポーネント
 
@@ -65,7 +66,7 @@ function getMondayOfWeek(dateTime: Temporal.ZonedDateTime): string {
 4. 集計結果から用語集に存在するクエリのみをフィルタ
 5. スコア降順でソート
 6. `queries:auto_recommended` に保存
-7. `queries:combined_cache` を削除（キャッシュ無効化）
+7. 公開サイトの `CACHE_TAGS.RECOMMENDATION_QUERIES` のタグを再検証
 
 **レート制限**: 20時間ごとに1回まで
 
@@ -77,21 +78,17 @@ function getMondayOfWeek(dateTime: Temporal.ZonedDateTime): string {
 - **削除**: `queries:manual_recommended` から文字列を削除
 - **表示**: 手動/自動のオススメクエリを分けて表示
 
-操作後は自動的に `queries:combined_cache` を削除してキャッシュを無効化します。
-
 #### 4. 公開サイト表示 (`apps/web/app/page.tsx`)
 
 **取得ロジック** (`apps/web/lib/recommendations/get-combined-queries.ts`):
 
-1. `queries:combined_cache` からキャッシュを取得
-   - キャッシュヒット時: そのまま返却
-2. キャッシュミス時:
-   - `queries:manual_recommended` から手動クエリを取得
-   - `queries:auto_recommended` から自動クエリを取得（スコア降順）
-   - 手動クエリを先頭に、その後に重複を除いた自動クエリを追加
-   - 結果を `queries:combined_cache` にキャッシュ（TTL: 10分）
+1. `queries:manual_recommended` から手動クエリを取得
+2. `queries:auto_recommended` から自動クエリを取得（スコア降順）
+3. 手動クエリを先頭に、その後に重複を除いた自動クエリを追加
 
-**表示**: 最大4件のクエリをホームページに表示（手動追加が優先）
+この関数の結果だけを `'use cache: remote'`（`cacheLife('minutes')`、`cacheTag(CACHE_TAGS.RECOMMENDATION_QUERIES)`）でキャッシュします。
+
+**表示** (`apps/web/lib/recommendations/get-display-queries.ts`): 上位2件を固定で、残りの2件を3〜20位からランダムに選び、最大4件を表示します。選ぶ処理はキャッシュの外で行うので、読み込むたびに変わります。
 
 ## 設定パラメータ
 
@@ -110,7 +107,6 @@ const WEIGHT_ALL_TIME = 1.0 // 全期間データの重み
 ```typescript
 DAILY_TTL = 7日間 (604,800秒)
 WEEKLY_TTL = 35日間 (3,024,000秒)
-CACHE_TTL = 10分 (600秒)
 ```
 
 ## 動作確認方法
@@ -160,7 +156,7 @@ ZRANGE queries:auto_recommended 0 -1 WITHSCORES REV
 
 1. Redisの接続を確認
 2. `queries:manual_recommended` と `queries:auto_recommended` の内容を確認
-3. キャッシュを削除: `DEL queries:combined_cache`
+3. 公開サイトの `recommendation-queries` のタグを再検証する（キャッシュは `cacheLife('minutes')` の期限でも切れる）
 
 ### 自動オススメが更新されない
 
