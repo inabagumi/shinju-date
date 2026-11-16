@@ -14,6 +14,8 @@ E2EテストはPlaywrightを使用して実装されており、MSW（Mock Servi
 - **apps/admin**: 管理ダッシュボード
 - **apps/batch**: バッチAPIエンドポイント
 
+`packages/ui` の `test:e2e` は、Playwright ではなく、Vitest のブラウザモードで Storybook のストーリーを検証します（[`packages/ui` の README](../packages/ui/README.md#storybook)を参照）。
+
 ## セットアップ
 
 ### 1. Playwrightブラウザのインストール
@@ -26,10 +28,12 @@ pnpm exec playwright install chromium
 
 ### 2. 環境設定
 
-各アプリケーションには `.env.test` ファイルが用意されており、E2Eテスト実行時に自動的に読み込まれます。これらのファイルには以下が設定されています：
+E2Eテストの実行時に必要な環境変数は、各アプリの `playwright.config.ts` の `webServer.env` で、Playwright が起動する開発サーバー（`pnpm dev`）に渡されます。`.env` ファイルを用意する必要はありません。設定されている値は以下のとおりです：
 
 - `ENABLE_MSW=true`: MSWによるAPIモックを有効化
 - 各種APIキー（fake値）: Supabase、Upstash、Google APIなど
+
+ローカル（`CI` を設定しないとき）では `reuseExistingServer` が有効なため、同じポートで開発サーバーがすでに起動していると、Playwright はそのサーバーをそのまま使い、`webServer.env` を適用しません。MSW を有効にしていない開発サーバーが起動している場合は、止めてからテストを実行してください。
 
 ## テストの実行
 
@@ -76,40 +80,43 @@ cd apps/admin && pnpm exec playwright test --ui
 
 ## GitHub Actions での実行
 
-E2EテストはGitHub Actionsでmatrix戦略を使用して並列実行されます。`.github/workflows/node.js.yml` の `e2e` ジョブで各アプリケーションが独立してテストされます。
+E2EテストはGitHub Actionsでmatrix戦略を使用して並列実行されます。`.github/workflows/ci.yml` の `e2e` ジョブで各アプリケーションが独立してテストされます。
 
 ## テストの構成
 
-### apps/web/e2e/web.spec.ts
+### apps/web/e2e/
 
-公開Webサイトの基本的な動作を検証します：
+公開Webサイトの動作を、機能ごとのファイル（`home.spec.ts`、`videos.spec.ts` など）で検証します：
 
-- ホームページの読み込み
-- ナビゲーション要素の表示
-- 動画ページの表示とフィルタリング
-- 検索機能
+- ホームページの読み込みとお知らせバナー
+- モバイルのナビゲーション
+- 動画ページの表示とタレントによる絞り込み
+- 検索モーダル
+- 配信予定
+- タレントの一覧ページと個別ページ、カレンダー
 - お問い合わせページ
 
 ### apps/admin/e2e/admin.spec.ts
 
 管理ダッシュボードの機能を検証します：
 
-- ログイン機能（MSWモックによる認証）
-- ダッシュボードの表示
-- 動画管理ページ
+- ログインページ（MSWモックによる認証）
+- 動画管理ページ（一覧、詳細、絞り込み）
 - タレント管理ページ
-- 用語管理ページ
-- アナリティクスページ（Redis集計のダッシュボード）
+- 用語管理ページ（類義語の編集）
+- 存在しないURLの404ページ
 
 ### apps/batch/e2e/batch.spec.ts
 
 バッチAPIエンドポイントの動作を検証します：
 
 - ヘルスチェックエンドポイント (`/api/healthz`, `/api/readyz`)
-- 動画更新エンドポイント
+- 動画の更新・確認エンドポイント
 - タレント更新エンドポイント
+- タレントから動画への反映エンドポイント
 - おすすめクエリ更新エンドポイント
 - 統計スナップショットエンドポイント
+- 存在しないルートの扱い
 
 ## MSWによるモッキング
 
@@ -117,6 +124,7 @@ E2Eテスト実行時、以下のAPIがMSWによってモックされます：
 
 - **Supabase API**: データベースクエリ、認証
 - **YouTube Data API**: チャンネル情報、動画情報
+- **Twitch API**: ユーザー情報、アイコン
 - **Upstash Redis**: キャッシュ操作
 - **Google Fonts API**: フォント読み込み
 - **Resend API**: メール送信

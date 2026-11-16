@@ -69,7 +69,7 @@ agent-browser install
 
 ## next-dev-loop で apps/web を確かめる
 
-MSW を有効にして開発サーバーを起動します（環境変数は [setup-guide.md](setup-guide.md#53-aiエージェントおよびci環境msw使用時) と同じです）。依存パッケージを先にビルドしておく必要があります。
+MSW を有効にして開発サーバーを起動します（環境変数は [setup-guide.md](setup-guide.md#43-aiエージェントおよびci環境msw使用時) と同じです）。依存パッケージを先にビルドしておく必要があります。
 
 ```bash
 pnpm build --filter=@shinju-date/web^...
@@ -80,6 +80,7 @@ ENABLE_MSW=true \
 NEXT_PUBLIC_BASE_URL=http://localhost:3000 \
 NEXT_PUBLIC_SUPABASE_ANON_KEY=fake \
 NEXT_PUBLIC_SUPABASE_URL=https://fake.supabase.test \
+SUPABASE_SERVICE_ROLE_KEY=fake \
 UPSTASH_REDIS_REST_TOKEN=fake \
 UPSTASH_REDIS_REST_URL=https://fake.upstash.test \
 pnpm --filter @shinju-date/web dev

@@ -17,8 +17,14 @@
 
 ## Installation
 
-```bash
-pnpm add @shinju-date/composable-fetch
+This is a private workspace package. To use it in your app:
+
+```json
+{
+  "dependencies": {
+    "@shinju-date/composable-fetch": "workspace:*"
+  }
+}
 ```
 
 ## Quick Start
@@ -47,7 +53,8 @@ import {
 import { Redis } from '@upstash/redis'
 
 // Set up Redis-backed cache storage
-const redis = Redis.fromEnv()
+// RedisCacheStorage parses the JSON itself, so turn off automatic deserialization
+const redis = Redis.fromEnv({ automaticDeserialization: false })
 const storage = new RedisCacheStorage({
   redis,
   ttl: 3600, // 1 hour default TTL
@@ -100,7 +107,7 @@ The package uses a composable middleware pattern where each middleware wraps the
 3. Add cross-cutting concerns (caching, retries, logging, etc.)
 
 ```typescript
-type FetchMiddleware<TOptions = MiddlewareOptions> = (
+type FetchMiddleware<TOptions extends MiddlewareOptions = MiddlewareOptions> = (
   next: FetchFunction,
   options?: TOptions,
 ) => FetchFunction
@@ -117,7 +124,10 @@ Middlewares are composed from left to right, with the leftmost middleware being 
 // 3. Actual fetch happens
 // 4. withCache processes the response first
 // 5. withRetry processes the response last
-const fetch = composeFetch(withRetry, withCache)
+const fetch = composeFetch(
+  (next) => withRetry(next),
+  (next) => withCache(next, { storage }),
+)
 ```
 
 ## API Reference
@@ -170,7 +180,7 @@ Middleware that implements ETag-based HTTP caching.
 - Sends `If-None-Match` headers on subsequent requests
 - Returns cached response on `304 Not Modified`
 - Supports custom TTL per request via `X-Cache-TTL` header
-- Only caches `GET` requests by default
+- Only caches `GET` requests (other methods pass through)
 
 **Example:**
 
@@ -244,7 +254,8 @@ Redis-based implementation of `CacheStorage`.
 ```typescript
 import { Redis } from '@upstash/redis'
 
-const redis = Redis.fromEnv()
+// RedisCacheStorage parses the JSON itself, so turn off automatic deserialization
+const redis = Redis.fromEnv({ automaticDeserialization: false })
 const storage = new RedisCacheStorage({
   redis,
   keyPrefix: 'api:',
@@ -254,9 +265,8 @@ const storage = new RedisCacheStorage({
 
 **Compatible Redis Clients:**
 
-- `@upstash/redis`
-- `ioredis`
-- Any client implementing the `RedisLike` interface
+- `@upstash/redis` (with `automaticDeserialization: false`)
+- Any client implementing the `RedisLike` interface (`ioredis` needs an adapter, because its `set` takes `'EX', seconds` instead of `{ ex }`)
 
 #### `InMemoryCacheStorage`
 
@@ -378,7 +388,12 @@ type LoggingOptions = {
 const withLogging: FetchMiddleware<LoggingOptions> = (next, options = {}) => {
   return async (input, init) => {
     const start = Date.now()
-    const url = typeof input === 'string' ? input : input.url
+    const url =
+      typeof input === 'string'
+        ? input
+        : input instanceof URL
+          ? input.href
+          : input.url
 
     console.log(`[Fetch] ${init?.method || 'GET'} ${url}`)
 
@@ -566,6 +581,8 @@ import { Redis } from '@upstash/redis'
 
 // Create Redis client once and reuse
 const redis = Redis.fromEnv({
+  // RedisCacheStorage parses the JSON itself
+  automaticDeserialization: false,
   cache: 'default', // Enable HTTP caching in Upstash client
 })
 

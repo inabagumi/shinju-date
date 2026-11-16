@@ -39,6 +39,13 @@ cp .env.local.sample .env.local
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase の匿名キー
 - `UPSTASH_REDIS_REST_TOKEN`: Upstash Redis のRESTトークン
 - `UPSTASH_REDIS_REST_URL`: Upstash Redis のREST URL
+- `SUPABASE_SERVICE_ROLE_KEY`: Supabase のサービスロールキー（RLS を迂回する処理で使う）
+
+任意の環境変数:
+
+- `GOOGLE_API_KEY`: YouTube Data API のキー（YouTube のチャンネルの同期）
+- `TWITCH_CLIENT_ID` / `TWITCH_CLIENT_SECRET`: Twitch のユーザーの登録と同期
+- `REVALIDATE_URL` / `REVALIDATE_SECRET_TOKEN`: 公開サイトのキャッシュの再検証
 
 ## MSW（Mock Service Worker）
 
