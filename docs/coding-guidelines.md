@@ -233,7 +233,7 @@ refactor(admin): convert type definitions to interface
 - **Partial Prerendering**: ページ全体を Suspense で囲まない
 - **Params**: `params` と `searchParams` はページで await せず、Suspense の中の部品で await する
 
-詳細は [AGENTS.md](../AGENTS.md) を参照してください。
+詳細は [AGENTS.md](../AGENTS.md) の「キャッシュのディレクティブ」と「Partial Prerendering」を参照してください。
 
 ## カラーパレットの使用
 

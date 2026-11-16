@@ -8,7 +8,7 @@
 
 - **[setup-guide.md](setup-guide.md)** - 開発環境のセットアップ手順（**最初に読むべきドキュメント**）
 - **[../CONTRIBUTING.md](../CONTRIBUTING.md)** - 開発・貢献ガイド
-- **[../AGENTS.md](../AGENTS.md)** - AI エージェント活用ガイド
+- **[../AGENTS.md](../AGENTS.md)** - AI エージェント向けの、このプロジェクトの決まり
 
 ### 📝 開発ガイドライン
 
@@ -33,7 +33,7 @@
 1. **[setup-guide.md](setup-guide.md)** - 開発環境のセットアップ（必読）
 2. **[../CONTRIBUTING.md](../CONTRIBUTING.md)** - コントリビューションの流れとルール
 3. **[coding-guidelines.md](coding-guidelines.md)** - コーディング規約を理解
-4. **[../AGENTS.md](../AGENTS.md)** - AI ツールの効果的な活用方法
+4. **[../AGENTS.md](../AGENTS.md)** - このプロジェクトの決まり（キャッシュ、時刻、認証など）
 5. **[msw-guide.md](msw-guide.md)** - 開発時のモック環境の理解
 
 ### 機能開発時

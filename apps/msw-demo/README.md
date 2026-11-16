@@ -245,7 +245,7 @@ MSWの設定で `onUnhandledFrame: 'warn'` が有効なため、モックされ�
    - `instrumentation.ts` をコピー
    - `next.config.ts` で experimental instrumentation を有効化
 
-詳細は [AGENTS.md](../../AGENTS.md) の「MSW (Mock Service Worker) の有効化」セクションを参照してください。
+詳細は [docs/msw-guide.md](../../docs/msw-guide.md) を参照してください。
 
 ## トラブルシューティング
 
@@ -284,7 +284,7 @@ pnpm run build --filter=@shinju-date/msw-handlers
 
 - **[@shinju-date/msw-handlers](../../packages/msw-handlers/README.md)**: モックハンドラーパッケージの詳細
 - **[MSW Guide](../../docs/msw-guide.md)**: MSW統合の全体的なドキュメント
-- **[AGENTS.md](../../AGENTS.md)**: AI エージェントとの協業ガイド（MSW設定を含む）
+- **[AGENTS.md](../../AGENTS.md)**: AI エージェント向けの、このプロジェクトの決まり（MSW による認証の模擬を含む）
 - **[MSW公式ドキュメント](https://mswjs.io/)**: MSW の詳細な使用方法
 
 ## コントリビューション

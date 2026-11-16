@@ -169,7 +169,7 @@ const key = 'summary:stats:2025-11-11'
 await redis.set(key, data)
 ```
 
-詳細は [AGENTS.md](AGENTS.md) の「Redisキーの管理」セクションを参照してください。
+詳細は [AGENTS.md](AGENTS.md) の「Redis のキー」を参照してください。
 
 ### コミットメッセージ
 
@@ -373,7 +373,7 @@ pnpm db:export
 
 ## AI エージェントとの協業
 
-このプロジェクトでは GitHub Copilot などの AI ツールを積極的に活用しています。詳細は [AGENTS.md](AGENTS.md) を参照してください。
+AI エージェントが守る、このプロジェクトの決まりは [AGENTS.md](AGENTS.md) にまとめています。
 
 ### 各アプリの AGENTS.md（Next.js が管理するブロック）
 
@@ -463,7 +463,7 @@ MSW はサーバー側でだけ動きます。起動すると、開発サーバ�
 ### ドキュメント
 
 - [docs/](docs/): プロジェクト固有のドキュメント
-- [AGENTS.md](AGENTS.md): AI エージェント活用ガイド
+- [AGENTS.md](AGENTS.md): AI エージェント向けの、このプロジェクトの決まり
 
 ## ライセンス
 
