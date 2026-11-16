@@ -5,6 +5,16 @@ export const COOKIE_NAMES = {
   DISMISSED_ANNOUNCEMENT_ID: 'dismissed_announcement_id',
 } as const
 
+// Cache tags of the public site (web). admin and batch revalidate them
+export const CACHE_TAGS = {
+  ANNOUNCEMENTS: 'announcements',
+  RECOMMENDATION_QUERIES: 'recommendation-queries',
+  TALENTS: 'talents',
+  VIDEOS: 'videos',
+} as const
+
+export type CacheTag = (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS]
+
 // Redis keys for search analytics
 export const REDIS_KEYS = {
   CLICK_CHANNEL_PREFIX: 'channels:clicked:',
