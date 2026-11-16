@@ -21,7 +21,7 @@ const mocks = vi.hoisted(() => {
 })
 
 vi.mock('@/lib/supabase', () => ({
-  createSupabaseClient: vi.fn(() => mocks.adminClient),
+  getSupabaseAdminClient: vi.fn(() => mocks.adminClient),
   supabaseClient: mocks.publicClient,
 }))
 
