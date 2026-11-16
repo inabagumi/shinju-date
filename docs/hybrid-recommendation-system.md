@@ -26,10 +26,6 @@
 - `queries:auto_recommended` (Sorted Set) - 自動選出されたオススメクエリ（スコア付き）
 - `queries:combined_cache` (String/JSON) - 結合済みオススメクエリのキャッシュ（TTL: 10分）
 
-#### レガシーキー
-
-- `recommendation_queries` - 旧来のオススメクエリキー（今後は使用しない）
-
 ### コンポーネント
 
 #### 1. 検索ログ記録 (`apps/web/lib/search-analytics.ts`)
