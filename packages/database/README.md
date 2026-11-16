@@ -1,34 +1,27 @@
 # @shinju-date/database
 
-データベース接続と型定義を提供するパッケージ。
+SHINJU DATE のデータベース（Supabase）の型定義と、enum の値を持つ定数を提供するパッケージ。データベースのクライアントは含みません。
 
-## 構成
+公開しているものは [`src/index.ts`](src/index.ts) を見てください。中身は、Supabase CLI が生成する [`types/supabase.ts`](types/supabase.ts) の再エクスポートです。
 
-- **Supabase**: データベースクライアント
-- **TypeScript**: 型安全なデータベース操作
-- **Next.js**: フレームワーク統合
-
-## 使用方法
+## 使い方
 
 ```typescript
-import { supabase } from '@shinju-date/database'
+import type Database from '@shinju-date/database'
+import type { Enums, Tables } from '@shinju-date/database'
+import { Constants } from '@shinju-date/database'
 
-// データベース操作の例
-const { data, error } = await supabase.from('videos').select('*').limit(10)
+type Video = Tables<'videos'>
+type Platform = Enums<'platform_type'>
+
+// enum の値は、実行時には Constants から読む
+Constants.public.Enums.platform_type // ['youtube', 'twitch']
 ```
 
-## 型生成
+## 型の生成
 
-Supabase の型定義を生成するには：
-
-```bash
-# 環境変数 SUPABASE_PROJECT_ID を設定してから実行
-pnpm run generate
-```
-
-## 開発
+`types/supabase.ts` は手で編集しません。ローカルの Supabase を起動してから、リポジトリのルートで次のコマンドを実行します。
 
 ```bash
-# ビルド
-pnpm run build
+pnpm db:schema
 ```
