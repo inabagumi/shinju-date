@@ -114,13 +114,17 @@ export const fetchUpcomingVideos = async (): Promise<UpcomingVideos> => {
     weeks: 1,
   })
 
+  // An upcoming stream that should have started before this hour is left out,
+  // as `fetchTalentStreamStatuses` does, so the streams that never started do
+  // not take up the limit. The nearest ones are kept when there are more.
   const { data: videos, error } = await supabaseClient
     .from('videos')
     .select<string, Video>(DEFAULT_SEARCH_SELECT)
     .eq('status', 'UPCOMING')
+    .gte('published_at', toDBString(baseTime))
     .lte('published_at', toDBString(until))
     .order('published_at', {
-      ascending: false,
+      ascending: true,
     })
     .limit(100)
 

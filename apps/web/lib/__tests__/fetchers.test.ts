@@ -41,9 +41,11 @@ import {
   fetchTalentList,
   fetchTalentStreamStarts,
   fetchTalentStreamStatuses,
+  fetchUpcomingVideos,
   fetchVideos,
   type ScheduleVideo,
   type TalentDetail,
+  type Video,
 } from '../fetchers'
 
 const TALENT_IDS = [
@@ -628,6 +630,96 @@ describe('fetchDashboardVideos', () => {
 
     expect(query.eq).toHaveBeenCalledWith('status', 'PUBLISHED')
     expect(query.in).not.toHaveBeenCalledWith('status', ['PUBLISHED', 'ENDED'])
+  })
+})
+
+describe('fetchUpcomingVideos', () => {
+  function createVideo(index: number, overrides: Partial<Video> = {}): Video {
+    return {
+      duration: 'P0D',
+      id: `video-${index}`,
+      platform: 'youtube',
+      published_at: '2026-11-16T11:00:00Z',
+      status: 'UPCOMING',
+      talent: { id: 'talent-1', name: '朝霧ミオ' },
+      thumbnail: null,
+      title: `動画${index}`,
+      twitch_video: null,
+      video_kind: 'standard',
+      youtube_video: { youtube_channel: null, youtube_video_id: `YT${index}` },
+      ...overrides,
+    }
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    vi.spyOn(Temporal.Now, 'zonedDateTimeISO').mockReturnValue(
+      Temporal.ZonedDateTime.from('2026-11-15T12:34:56+09:00[Asia/Tokyo]'),
+    )
+
+    query.select.mockReturnValue(query)
+    query.eq.mockReturnValue(query)
+    query.gte.mockReturnValue(query)
+    query.lte.mockReturnValue(query)
+    query.order.mockReturnValue(query)
+    query.limit.mockResolvedValue({ data: [], error: null })
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  test('requests the nearest 100 upcoming videos from this hour to a week later', async () => {
+    await fetchUpcomingVideos()
+
+    expect(supabaseClient.from).toHaveBeenCalledWith('videos')
+    expect(query.eq).toHaveBeenCalledWith('status', 'UPCOMING')
+    // The start of the hour, the same as `fetchTalentStreamStatuses`, so the
+    // streams that should have started before it are left out
+    expect(query.gte).toHaveBeenCalledWith(
+      'published_at',
+      '2026-11-15T03:00:00Z',
+    )
+    expect(query.lte).toHaveBeenCalledWith(
+      'published_at',
+      '2026-11-22T03:00:00Z',
+    )
+    expect(query.order).toHaveBeenCalledWith('published_at', {
+      ascending: true,
+    })
+    expect(query.limit).toHaveBeenCalledWith(100)
+    expect(cacheLife).toHaveBeenCalledWith('hours')
+    expect(cacheTag).toHaveBeenCalledWith('videos')
+  })
+
+  test('returns the videos with today in Japan', async () => {
+    query.limit.mockResolvedValue({
+      data: [createVideo(1), createVideo(2)],
+      error: null,
+    })
+
+    const { today, videos } = await fetchUpcomingVideos()
+
+    expect(today).toBe('2026-11-15')
+    expect(videos.map((video) => video.id)).toEqual(['video-1', 'video-2'])
+  })
+
+  test('drops the videos without a YouTube or Twitch video', async () => {
+    query.limit.mockResolvedValue({
+      data: [createVideo(1), createVideo(2, { youtube_video: null })],
+      error: null,
+    })
+
+    const { videos } = await fetchUpcomingVideos()
+
+    expect(videos.map((video) => video.id)).toEqual(['video-1'])
+  })
+
+  test('throws when the videos cannot be fetched', async () => {
+    query.limit.mockResolvedValue({ data: null, error: { message: 'failed' } })
+
+    await expect(fetchUpcomingVideos()).rejects.toThrow('failed')
   })
 })
 
