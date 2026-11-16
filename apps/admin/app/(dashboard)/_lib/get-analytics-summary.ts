@@ -44,9 +44,10 @@ export async function getAnalyticsSummary(
       `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${dateKey}`,
     )
 
-    // Get count of unique popular keywords
+    // Get count of unique popular keywords (all-time ranking written by the
+    // search analytics of web)
     const totalPopularKeywords = await redisClient.zcard(
-      REDIS_KEYS.SEARCH_POPULAR,
+      REDIS_KEYS.SEARCH_POPULAR_ALL_TIME,
     )
 
     // Get today's click volume

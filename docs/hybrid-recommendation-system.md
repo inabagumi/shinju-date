@@ -26,10 +26,6 @@
 - `queries:auto_recommended` (Sorted Set) - 自動選出されたオススメクエリ（スコア付き）
 - `queries:combined_cache` (String/JSON) - 結合済みオススメクエリのキャッシュ（TTL: 10分）
 
-#### レガシーキー
-
-- `search:popular` - 旧来の人気検索キー（互換性のため継続）
-
 ### コンポーネント
 
 #### 1. 検索ログ記録 (`apps/web/lib/search-analytics.ts`)
@@ -38,7 +34,6 @@
 
 ```typescript
 // 正規化されたクエリで以下のキーを更新
-- search:popular (ZINCRBY +1)
 - search:popular:daily:{today} (ZINCRBY +1, TTL: 7日)
 - search:popular:weekly:{monday} (ZINCRBY +1, TTL: 35日)
 - search:popular:all_time (ZINCRBY +1)

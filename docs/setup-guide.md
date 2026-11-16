@@ -122,7 +122,47 @@ WHERE email = 'you@example.com';
 
 MSW を使用する場合、モックのユーザー（`admin@example.com`）には管理者ロールが付与済みです。
 
-### 3.6. 本番データのインポート（任意ですが推奨）
+### 3.6. サムネイルの表示の確認
+
+サムネイルの画像は、Storage の `thumbnails` バケット（非公開）に保存し、`/images/thumbnails/[id]` のルートが署名付きの URL を作って配信します。バケットはマイグレーションで作られますが、シードのデータはサムネイルを含みません（SQL のシードでは画像のファイルを置けず、ファイルのない行は配信のルートでエラーになるため）。シードの動画は、どれもサムネイルなしで表示されます。
+
+ローカルでサムネイルの表示を確かめるときは、画像のファイルをアップロードしてから、`thumbnails` テーブルに行を足し、動画に結び付けます。
+
+1. サービスロールキーを環境変数に読み込みます：
+
+   ```bash
+   eval "$(pnpm exec supabase status -o env 2>/dev/null | grep -E '^(API_URL|SERVICE_ROLE_KEY|DB_URL)=')"
+   ```
+
+2. 画像のファイル（ここでは `thumbnail.jpg`）を、`thumbnails` バケットの `local/thumbnail.jpg` にアップロードします：
+
+   ```bash
+   curl -X POST "$API_URL/storage/v1/object/thumbnails/local/thumbnail.jpg" \
+     -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
+     -H 'Content-Type: image/jpeg' \
+     --data-binary @thumbnail.jpg
+   ```
+
+   Supabase Studio の「Storage」から、`thumbnails` バケットにアップロードしてもかまいません。
+
+3. `thumbnails` テーブルに行を足し、シードの動画に結び付けます（`path` は、アップロードしたパスと同じにします。`width` と `height` は画像の大きさに合わせます）：
+
+   ```bash
+   psql "$DB_URL" <<'SQL'
+   WITH "thumbnail" AS (
+     INSERT INTO "public"."thumbnails" ("path", "width", "height", "blur_data_url")
+     VALUES ('local/thumbnail.jpg', 1280, 720, 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==')
+     RETURNING "id"
+   )
+   UPDATE "public"."videos"
+   SET "thumbnail_id" = (SELECT "id" FROM "thumbnail")
+   WHERE "id" = '30000000-0000-0000-0000-000000000011';
+   SQL
+   ```
+
+ファイルのないパスを指す行を足すと、管理画面の `/images/thumbnails/[id]` はステータスコード 500 を返します。行を足す前に、ファイルをアップロードしてください。
+
+### 3.7. 本番データのインポート（任意ですが推奨）
 
 より現実的なデータで開発を進めるため、本番データベースからサニタイズされたスナップショットをインポートできます。
 
@@ -134,7 +174,7 @@ pnpm db:import
 
 **注意**: 本番データベースからのデータエクスポートは、プロジェクト管理者のみが実行できます。個人情報を含むテーブルのエクスポートは禁止されています。
 
-### 3.7. サービスの停止
+### 3.8. サービスの停止
 
 開発作業を終了する際は、サービスを停止できます：
 

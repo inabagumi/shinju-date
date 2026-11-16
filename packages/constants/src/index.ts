@@ -16,7 +16,6 @@ export const REDIS_KEYS = {
   QUERIES_COMBINED_CACHE: 'queries:combined_cache',
   QUERIES_MANUAL_RECOMMENDED: 'queries:manual_recommended',
   SEARCH_EXIT_WITHOUT_CLICK_PREFIX: 'search:exit_without_click:',
-  SEARCH_POPULAR: 'search:popular',
   SEARCH_POPULAR_ALL_TIME: 'search:popular:all_time',
   SEARCH_POPULAR_DAILY_PREFIX: 'search:popular:daily:',
   SEARCH_POPULAR_TEMP_UNION: 'search:popular:temp_union',

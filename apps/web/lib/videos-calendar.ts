@@ -60,6 +60,8 @@ export async function createVideosCalendarResponse({
     query = query.eq('video_kind', kind)
   }
 
+  // The calendar also has the past videos, so there is no lower bound. They are
+  // sorted from the latest, so the oldest ones are dropped at the limit.
   const { data: videos, error } = await query
     .order('published_at', {
       ascending: false,
