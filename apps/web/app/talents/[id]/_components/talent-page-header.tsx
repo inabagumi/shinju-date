@@ -7,7 +7,7 @@ import {
   LIVE_RING_CLASS_NAME,
   NextStream,
 } from '@/components/talent-stream-status'
-import { TEXT_LINK_CLASS_NAME } from '@/lib/class-names'
+import { TextLink, TextLinkIcon } from '@/components/text-link'
 import {
   fetchTalentStreamStatusesSafe,
   type TalentDetail,
@@ -23,24 +23,23 @@ interface TalentLinkItemProps {
 function TalentLinkItem({ link }: TalentLinkItemProps) {
   if (link.external) {
     return (
-      <a
-        className={TEXT_LINK_CLASS_NAME}
-        href={link.href}
-        rel="noopener noreferrer"
-        target="_blank"
-      >
+      <TextLink href={link.href} rel="noopener noreferrer" target="_blank">
         {link.label}
-        <ExternalLink aria-hidden="true" className="size-4" />
-      </a>
+        <TextLinkIcon>
+          <ExternalLink />
+        </TextLinkIcon>
+      </TextLink>
     )
   }
 
   // The calendar is not a page, so it is not a `next/link` link
   return (
-    <a className={TEXT_LINK_CLASS_NAME} href={link.href}>
-      <CalendarPlus aria-hidden="true" className="size-4" />
+    <TextLink href={link.href}>
+      <TextLinkIcon>
+        <CalendarPlus />
+      </TextLinkIcon>
       {link.label}
-    </a>
+    </TextLink>
   )
 }
 

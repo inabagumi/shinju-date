@@ -2,11 +2,13 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { ChevronRight } from 'lucide-react'
-import Link from 'next/link'
+import {
+  NavigationLink,
+  NavigationLinkIcon,
+} from '@/components/navigation-link'
 import VideoCardList, {
   VideoCardListSkeleton,
 } from '@/components/video-card-list'
-import { NAVIGATION_LINK_CLASS_NAME } from '@/lib/class-names'
 import {
   fetchDashboardVideos,
   fetchUpcomingVideos,
@@ -94,10 +96,12 @@ export function LiveSection({ prefetchedData }: DashboardSectionProps) {
 function ScheduleLink() {
   return (
     <p className="mt-6 text-meta">
-      <Link className={NAVIGATION_LINK_CLASS_NAME} href={getSchedulePath()}>
+      <NavigationLink href={getSchedulePath()}>
         スケジュールを見る
-        <ChevronRight aria-hidden="true" className="size-4" />
-      </Link>
+        <NavigationLinkIcon>
+          <ChevronRight />
+        </NavigationLinkIcon>
+      </NavigationLink>
     </p>
   )
 }
@@ -146,10 +150,12 @@ export function ScheduleSectionSkeleton() {
 
 function VideosLink() {
   return (
-    <Link className={NAVIGATION_LINK_CLASS_NAME} href="/videos">
+    <NavigationLink href="/videos">
       動画一覧を見る
-      <ChevronRight aria-hidden="true" className="size-4" />
-    </Link>
+      <NavigationLinkIcon>
+        <ChevronRight />
+      </NavigationLinkIcon>
+    </NavigationLink>
   )
 }
 

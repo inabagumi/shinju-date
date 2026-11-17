@@ -1,8 +1,10 @@
 import { twMerge } from '@shinju-date/ui'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import Link from 'next/link'
 import type { CSSProperties } from 'react'
-import { NAVIGATION_LINK_CLASS_NAME } from '@/lib/class-names'
+import {
+  NavigationLink,
+  NavigationLinkIcon,
+} from '@/components/navigation-link'
 import { WEEKDAYS } from '@/lib/date-heading'
 import { fetchScheduleVideos, type ScheduleVideo } from '@/lib/fetchers'
 import { groupVideosByDate } from '@/lib/group-videos-by-date'
@@ -58,32 +60,25 @@ export async function ScheduleWeekNavigation({
           {/* 表示できない週へのリンクは出さない */}
           {isWeekInRange(previousWeek, range) && (
             <li>
-              <Link
-                className={NAVIGATION_LINK_CLASS_NAME}
-                href={getSchedulePath(previousWeek)}
-              >
-                <ChevronLeft aria-hidden="true" className="size-4" />
+              <NavigationLink href={getSchedulePath(previousWeek)}>
+                <NavigationLinkIcon>
+                  <ChevronLeft />
+                </NavigationLinkIcon>
                 前の週
-              </Link>
+              </NavigationLink>
             </li>
           )}
           <li>
-            <Link
-              className={NAVIGATION_LINK_CLASS_NAME}
-              href={getSchedulePath()}
-            >
-              今週
-            </Link>
+            <NavigationLink href={getSchedulePath()}>今週</NavigationLink>
           </li>
           {isWeekInRange(nextWeek, range) && (
             <li>
-              <Link
-                className={NAVIGATION_LINK_CLASS_NAME}
-                href={getSchedulePath(nextWeek)}
-              >
+              <NavigationLink href={getSchedulePath(nextWeek)}>
                 次の週
-                <ChevronRight aria-hidden="true" className="size-4" />
-              </Link>
+                <NavigationLinkIcon>
+                  <ChevronRight />
+                </NavigationLinkIcon>
+              </NavigationLink>
             </li>
           )}
         </ul>

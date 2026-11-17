@@ -18,10 +18,10 @@ import {
   fetchSuggestions,
   type Suggestion,
 } from '@/app/_lib/actions'
+import { ListOption, ListOptionIcon } from '@/components/list-option'
 import TalentChip, {
   TALENT_CHIP_REMOVE_CLASS_NAME,
 } from '@/components/talent-chip'
-import { LIST_OPTION_CLASS_NAME } from '@/lib/class-names'
 import type { Talent } from '@/lib/fetchers'
 import { parseTalentIds, TALENT_SEARCH_PARAM } from '@/lib/talent-filter'
 import { findMatchingTalents } from '@/lib/talent-match'
@@ -278,21 +278,18 @@ export function SearchModalContent({ onClose }: SearchModalContentProps) {
                 </SearchModalSectionHeading>
                 <div className="p-2">
                   {talentCandidates.map((talent) => (
-                    <button
-                      className={LIST_OPTION_CLASS_NAME}
+                    <ListOption
                       data-search-modal-option
                       data-talent-option
                       key={talent.id}
                       onClick={() => selectTalent(talent)}
                       onKeyDown={handleOptionKeyDown}
-                      type="button"
                     >
-                      <UserRound
-                        aria-hidden="true"
-                        className="size-4 shrink-0 text-muted"
-                      />
+                      <ListOptionIcon>
+                        <UserRound />
+                      </ListOptionIcon>
                       <span>{talent.name}</span>
-                    </button>
+                    </ListOption>
                   ))}
                 </div>
               </section>
@@ -312,25 +309,24 @@ export function SearchModalContent({ onClose }: SearchModalContentProps) {
               ) : suggestions && suggestions.length > 0 ? (
                 <div className="p-2">
                   {suggestions.map((suggestion) => (
-                    <Link
-                      className={LIST_OPTION_CLASS_NAME}
-                      data-search-modal-option
-                      data-suggestion-link
-                      href={getVideosPath(
-                        suggestion.term,
-                        'all',
-                        selectedTalentIds,
-                      )}
-                      key={suggestion.term}
-                      onClick={handleSuggestionClick}
-                      onKeyDown={handleOptionKeyDown}
-                    >
-                      <Search
-                        aria-hidden="true"
-                        className="size-4 shrink-0 text-muted"
-                      />
-                      <span>{suggestion.term}</span>
-                    </Link>
+                    <ListOption asChild key={suggestion.term}>
+                      <Link
+                        data-search-modal-option
+                        data-suggestion-link
+                        href={getVideosPath(
+                          suggestion.term,
+                          'all',
+                          selectedTalentIds,
+                        )}
+                        onClick={handleSuggestionClick}
+                        onKeyDown={handleOptionKeyDown}
+                      >
+                        <ListOptionIcon>
+                          <Search />
+                        </ListOptionIcon>
+                        <span>{suggestion.term}</span>
+                      </Link>
+                    </ListOption>
                   ))}
                 </div>
               ) : (
