@@ -25,11 +25,34 @@ export const supabaseHandlers = [
 
   ...authHandlers,
 
-  // Tables without mock data, such as `audit_logs` (read through
-  // `get_audit_logs`), and health checks return no rows
-  rest.get(`${REST_URL}/*`, () => HttpResponse.json([])),
-
   ...rpcHandlers,
+
+  // Like PostgREST, the functions and the tables (and views) that the mock
+  // does not have are not found
+  rest.post(`${REST_URL}/rpc/:name`, ({ params }) =>
+    HttpResponse.json(
+      {
+        code: 'PGRST202',
+        details: null,
+        hint: 'Add a handler of the function to src/handlers/supabase/rpc.ts.',
+        message: `Could not find the function public.${String(params['name'])} in the schema cache`,
+      },
+      { status: 404 },
+    ),
+  ),
+  ...(['delete', 'get', 'head', 'patch', 'post'] as const).map((method) =>
+    rest[method](`${REST_URL}/:name`, ({ params }) =>
+      HttpResponse.json(
+        {
+          code: 'PGRST205',
+          details: null,
+          hint: 'Add a definition of the table to TABLES in src/handlers/supabase/tables.ts.',
+          message: `Could not find the table 'public.${String(params['name'])}' in the schema cache`,
+        },
+        { status: 404 },
+      ),
+    ),
+  ),
 
   ...storageHandlers,
 ]

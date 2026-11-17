@@ -140,6 +140,24 @@ describe('zodErrorToFormState', () => {
       },
     })
   })
+
+  it('reports the errors of hidden fields as generic errors', () => {
+    const schema = z.object({
+      id: z.guid('有効なIDではありません。'),
+      name: z.string().min(1, '名前を入力してください。'),
+    })
+    const result = schema.safeParse({ id: 'invalid', name: '' })
+
+    expect(result.success).toBe(false)
+    expect(
+      zodErrorToFormState(result.error as z.ZodError, { hiddenFields: ['id'] }),
+    ).toEqual({
+      errors: {
+        generic: ['有効なIDではありません。'],
+        name: ['名前を入力してください。'],
+      },
+    })
+  })
 })
 
 describe('actionErrorToFormState', () => {

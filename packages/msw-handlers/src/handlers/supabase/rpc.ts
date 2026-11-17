@@ -9,8 +9,14 @@ import {
   youtubeVideos,
 } from '../../collections.js'
 import { MOCK_SUPABASE_USER } from '../../session.js'
+import {
+  applyOrder,
+  applyPagination,
+  applySupabaseConditions,
+  parseSupabaseQuery,
+} from './query.js'
 import { REST_URL, rest } from './rest.js'
-import { applySelect } from './select.js'
+import { selectRows } from './select.js'
 
 interface GetAuditLogsParams {
   p_limit?: number
@@ -283,14 +289,24 @@ export const rpcHandlers = [
   ).map(([functionName, search]) =>
     rest.post(`${REST_URL}/rpc/${functionName}`, async ({ request }) => {
       const body = (await request.json()) as SearchVideosParams
-      // `.rpc(...).select(...)` embeds resources like a table query, so
-      // project the video rows with the requested select when it is given.
+      const url = new URL(request.url)
+      // `.rpc(...).select(...)` embeds resources and takes filters like a
+      // table query, so the video rows are queried like the table.
+      const query = parseSupabaseQuery(url)
       const select =
-        new URL(request.url).searchParams.get('select') ??
-        DEFAULT_SEARCH_VIDEOS_SELECT
+        url.searchParams.get('select') ?? DEFAULT_SEARCH_VIDEOS_SELECT
+      const selected = await selectRows(
+        applySupabaseConditions(await search(body), query),
+        select,
+        'videos',
+        query.filters,
+      )
 
       return HttpResponse.json(
-        await applySelect(await search(body), select, 'videos'),
+        applyPagination(
+          applyOrder(selected, query.order, ({ row }) => row),
+          query,
+        ).map(({ output }) => output),
       )
     }),
   ),

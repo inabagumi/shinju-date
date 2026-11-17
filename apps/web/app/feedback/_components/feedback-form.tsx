@@ -1,26 +1,10 @@
 'use client'
 
-import { Button } from '@shinju-date/ui'
 import { useActionState } from 'react'
-import { useFormStatus } from 'react-dom'
-import { TextareaField } from '@/app/_components/form-fields'
+import { TextareaField } from '@/components/form/form-fields'
+import { FormStatus } from '@/components/form/form-status'
+import { FormSubmitButton } from '@/components/form/form-submit-button'
 import { submitFeedback } from '../_lib/actions'
-
-function SubmitButton() {
-  const { pending } = useFormStatus()
-
-  return (
-    <Button
-      className="w-full"
-      disabled={pending}
-      size="lg"
-      type="submit"
-      variant="primary"
-    >
-      {pending ? '送信中...' : '送信する'}
-    </Button>
-  )
-}
 
 export function FeedbackForm() {
   const [state, formAction, isPending] = useActionState(submitFeedback, null)
@@ -42,20 +26,9 @@ export function FeedbackForm() {
         rows={8}
       />
 
-      <SubmitButton />
+      <FormSubmitButton />
 
-      {/* Status Messages */}
-      {!isPending && state && (state.success || state.error) && (
-        <div
-          className={`rounded-container border p-4 ${
-            state.success
-              ? 'border-success/30 bg-success/10 text-success'
-              : 'border-danger/30 bg-danger/10 text-danger'
-          }`}
-        >
-          {state.success ? state.message : state.error}
-        </div>
-      )}
+      <FormStatus state={isPending ? null : state} />
     </form>
   )
 }
