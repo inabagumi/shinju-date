@@ -1,4 +1,6 @@
+import { HttpResponse, http } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
+import { postgresError, setupSupabase } from '../internal/testing/supabase.js'
 import { Scraper } from '../scraper.js'
 import type {
   AddPastVideosResult,
@@ -19,8 +21,8 @@ class ExampleScraper extends Scraper {
 
   context: CrawlContext<string> | undefined
 
-  constructor(options: Omit<ScraperOptions, 'supabaseClient'> = {}) {
-    super({ ...options, supabaseClient })
+  constructor(options: Partial<ScraperOptions> = {}) {
+    super({ supabaseClient, ...options })
   }
 
   async addNewVideos(now?: Temporal.Instant): Promise<boolean> {
@@ -119,5 +121,98 @@ describe('Scraper', () => {
     const scraper = new ExampleScraper()
 
     await expect(scraper.refreshLiveVideos()).resolves.toBe(false)
+  })
+})
+
+describe('Scraper#cleanUpImages', () => {
+  const supabase = setupSupabase()
+  const now = Temporal.Instant.from('2024-05-08T12:00:00Z')
+
+  /** Records the paths removed from each storage bucket. */
+  function mockStorage(): Record<string, string[]> {
+    const removed: Record<string, string[]> = {}
+
+    supabase.server.use(
+      http.delete(
+        'https://fake.supabase.test/storage/v1/object/:bucket',
+        async ({ params, request }) => {
+          const { prefixes } = (await request.json()) as { prefixes: string[] }
+
+          removed[String(params['bucket'])] = prefixes
+
+          return HttpResponse.json([])
+        },
+      ),
+    )
+
+    return removed
+  }
+
+  function createScraper() {
+    const onError = vi.fn()
+    const scraper = new ExampleScraper({
+      onError,
+      supabaseClient: supabase.supabaseClient,
+    })
+
+    return { onError, scraper }
+  }
+
+  it('deletes the thumbnails and icons nothing uses, past their grace periods', async () => {
+    const removed = mockStorage()
+    supabase.respondWith({
+      'DELETE profile_images': [],
+      'DELETE thumbnails': [{ id: 'thumb-1' }],
+      'GET profile_images': [{ id: 'image-1', path: 'twitch/1/a.webp' }],
+      'GET thumbnails': [{ id: 'thumb-1', path: 'vod-1/a.jpg', videos: [] }],
+    })
+    const { onError, scraper } = createScraper()
+
+    await expect(scraper.cleanUpImages(now)).resolves.toBeUndefined()
+
+    expect(supabase.written('GET', 'thumbnails')[0]?.query).toMatchObject({
+      updated_at: 'lt.2024-05-01T12:00:00Z',
+      videos: 'is.null',
+    })
+    expect(supabase.written('GET', 'profile_images')[0]?.query).toMatchObject({
+      created_at: 'lt.2024-05-08T11:00:00Z',
+    })
+    expect(removed).toEqual({
+      'profile-images': ['twitch/1/a.webp'],
+      thumbnails: ['vod-1/a.jpg'],
+    })
+    expect(onError).not.toHaveBeenCalled()
+  })
+
+  it('reports a failed clean-up and still cleans up the other kind', async () => {
+    const removed = mockStorage()
+    supabase.respondWith({
+      'GET profile_images': [{ id: 'image-1', path: 'twitch/1/a.webp' }],
+      'GET thumbnails': () => postgresError('57014', 'canceling statement'),
+    })
+    const { onError, scraper } = createScraper()
+
+    await expect(scraper.cleanUpImages(now)).resolves.toBeUndefined()
+
+    expect(onError).toHaveBeenCalledTimes(1)
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('Failed to list unused thumbnails'),
+      }),
+      { operation: 'removeUnusedThumbnails' },
+    )
+    expect(removed).toEqual({ 'profile-images': ['twitch/1/a.webp'] })
+  })
+
+  it('never rejects, even when nothing can be cleaned up', async () => {
+    supabase.respond(() => postgresError('42501', 'permission denied'))
+    const { onError, scraper } = createScraper()
+
+    await expect(scraper.cleanUpImages(now)).resolves.toBeUndefined()
+
+    expect(onError.mock.calls.map(([, context]) => context)).toEqual([
+      { operation: 'removeUnusedThumbnails' },
+      { operation: 'removeUnusedProfileImages' },
+    ])
   })
 })
