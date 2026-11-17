@@ -1,5 +1,6 @@
 'use client'
 
+import { FOCUS_RING } from '@shinju-date/ui'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
@@ -89,8 +90,7 @@ export function LiveSection({ prefetchedData }: DashboardSectionProps) {
   )
 }
 
-const SECTION_LINK_CLASS_NAME =
-  'inline-flex items-center gap-0.5 rounded-control font-semibold text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
+const SECTION_LINK_CLASS_NAME = `inline-flex items-center gap-0.5 rounded-control font-semibold text-accent hover:underline ${FOCUS_RING}`
 
 /** タイムラインの下に置く、週ごとのスケジュールへのリンク */
 function ScheduleLink() {

@@ -1,5 +1,5 @@
 import { logger } from '@shinju-date/logger'
-import { twMerge } from '@shinju-date/ui'
+import { FOCUS_RING, twMerge } from '@shinju-date/ui'
 import { CalendarPlus, ExternalLink } from 'lucide-react'
 import PageHeader from '@/components/page-header'
 import TalentIcon from '@/components/talent-icon'
@@ -15,8 +15,7 @@ import {
 import { getTalentLinks, type TalentLink } from '@/lib/talent-links'
 import { getShownTalent, type TalentPageParams } from '../_lib/get-shown-talent'
 
-const LINK_CLASS_NAME =
-  'inline-flex items-center gap-1 rounded-control font-semibold text-accent underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
+const LINK_CLASS_NAME = `inline-flex items-center gap-1 rounded-control font-semibold text-accent underline-offset-4 hover:underline ${FOCUS_RING}`
 
 interface TalentLinkItemProps {
   link: TalentLink

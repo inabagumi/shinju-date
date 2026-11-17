@@ -1,12 +1,11 @@
-import { twMerge } from '@shinju-date/ui'
+import { FOCUS_RING, twMerge } from '@shinju-date/ui'
 import Link from 'next/link'
 import {
   VIDEO_KIND_FILTER_OPTIONS,
   type VideoKindFilter,
 } from '@/lib/video-kind-filter'
 
-const PILL_CLASS_NAME =
-  'inline-flex h-9 items-center rounded-full border px-4 text-meta font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
+const PILL_CLASS_NAME = `inline-flex h-9 items-center rounded-full border px-4 text-meta font-semibold ${FOCUS_RING}`
 
 /** 選択中は `accent` の地に `accent-foreground` の文字 */
 const SELECTED_PILL_CLASS_NAME =

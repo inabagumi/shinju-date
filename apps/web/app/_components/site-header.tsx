@@ -1,11 +1,11 @@
 import { SITE_NAME as siteName } from '@shinju-date/constants'
+import { FOCUS_RING } from '@shinju-date/ui'
 import Link from 'next/link'
 import { MainNavigationItems } from './main-navigation-items'
 import { MobileMenu } from './mobile-menu'
 import { SearchButton } from './search-button'
 
-const navigationLinkClassName =
-  'rounded-control underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent aria-[current=page]:font-bold aria-[current=page]:text-accent'
+const navigationLinkClassName = `rounded-control underline-offset-4 hover:underline ${FOCUS_RING} aria-[current=page]:font-bold aria-[current=page]:text-accent`
 
 /**
  * サイト全体のヘッダー。高さは 56px に固定し、スクロールしても地を不透明に保つ。
@@ -17,7 +17,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 h-14 border-b border-border bg-surface safe-area-px text-foreground">
       <div className="mx-auto flex h-full max-w-6xl items-center gap-3 px-4 md:gap-8">
         <Link
-          className="flex shrink-0 items-center gap-2 rounded-control font-semibold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className={`flex shrink-0 items-center gap-2 rounded-control font-semibold whitespace-nowrap ${FOCUS_RING}`}
           href="/"
         >
           <svg
