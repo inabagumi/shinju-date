@@ -238,7 +238,7 @@ describe('Supabase Handlers', () => {
       expect(data).toEqual(all.slice(1, 3))
     })
 
-    it('should handle filtering with id.in', async () => {
+    it('should handle filtering with id=in', async () => {
       const ids = (
         (await (
           await fetch('https://fake.supabase.test/rest/v1/videos?select=id')
@@ -249,7 +249,7 @@ describe('Supabase Handlers', () => {
       expect(ids).toHaveLength(2)
 
       const response = await fetch(
-        `https://fake.supabase.test/rest/v1/videos?select=*&id.in.(${ids.join(',')})`,
+        `https://fake.supabase.test/rest/v1/videos?select=*&id=in.(${ids.join(',')})`,
       )
       const data = (await response.json()) as { id: string }[]
 
@@ -1059,7 +1059,40 @@ describe('Supabase Handlers', () => {
     it('should not serve tables that do not exist', async () => {
       const response = await fetch(`${restUrl}/channels?select=id`)
 
-      expect(await response.json()).toEqual([])
+      expect(response.status).toBe(404)
+      expect(await response.json()).toEqual({
+        code: 'PGRST205',
+        details: null,
+        hint: expect.any(String),
+        message:
+          "Could not find the table 'public.channels' in the schema cache",
+      })
+    })
+
+    it('should not write to tables that do not exist', async () => {
+      const response = await fetch(`${restUrl}/channels`, {
+        body: JSON.stringify({ name: 'x' }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      })
+
+      expect(response.status).toBe(404)
+      expect(((await response.json()) as { code: string }).code).toBe(
+        'PGRST205',
+      )
+    })
+
+    it('should not call functions that do not exist', async () => {
+      const response = await fetch(`${restUrl}/rpc/no_such_function`, {
+        body: JSON.stringify({}),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      })
+
+      expect(response.status).toBe(404)
+      expect(((await response.json()) as { code: string }).code).toBe(
+        'PGRST202',
+      )
     })
   })
 
@@ -2214,18 +2247,6 @@ describe('Supabase Handlers', () => {
       expect(response.status).toBe(406)
       expect(data.code).toBe('PGRST116')
       expect(data.details).toMatch(/^The result contains \d+ rows$/)
-    })
-
-    it('should return PGRST116 from tables without mock data', async () => {
-      const response = await fetch(
-        'https://fake.supabase.test/rest/v1/audit_logs?select=*&id=eq.not-a-uuid',
-        { headers },
-      )
-
-      expect(response.status).toBe(406)
-      expect(((await response.json()) as { code: string }).code).toBe(
-        'PGRST116',
-      )
     })
 
     it('should return the updated row as an object', async () => {
