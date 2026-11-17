@@ -1,6 +1,6 @@
 import type { Tables } from '@shinju-date/database'
 import { cache } from 'react'
-import { supabaseClient } from '@/lib/supabase/admin'
+import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 import { unwrap, unwrapOrNull } from '@/lib/supabase/query'
 
 export interface FeatureRequestFilters {
@@ -11,7 +11,7 @@ export interface FeatureRequestFilters {
 export async function getFeatureRequests(
   filters: FeatureRequestFilters = {},
 ): Promise<Tables<'feature_requests'>[]> {
-  let query = supabaseClient
+  let query = getSupabaseAdminClient()
     .from('feature_requests')
     .select('*')
     .order('created_at', { ascending: false })
@@ -31,7 +31,7 @@ export const getFeatureRequestById = cache(async function getFeatureRequestById(
   id: string,
 ): Promise<Tables<'feature_requests'> | null> {
   return unwrapOrNull(
-    await supabaseClient
+    await getSupabaseAdminClient()
       .from('feature_requests')
       .select('*')
       .eq('id', id)

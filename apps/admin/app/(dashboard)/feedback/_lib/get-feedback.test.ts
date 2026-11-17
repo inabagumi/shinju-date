@@ -13,15 +13,13 @@ import { getFeatureRequestById, getFeatureRequests } from './get-feedback'
 const state = vi.hoisted(() => ({ supabase: null as FakeSupabase | null }))
 
 vi.mock('@/lib/supabase/admin', () => ({
-  // The service role client is created on import, so resolve the fake client
-  // lazily.
-  supabaseClient: new Proxy(
-    {},
-    {
-      get: (_target, property) =>
-        Reflect.get(state.supabase?.client ?? {}, property),
-    },
-  ),
+  getSupabaseAdminClient: () => {
+    if (!state.supabase) {
+      throw new Error('The fake Supabase is not set up.')
+    }
+
+    return state.supabase.client
+  },
 }))
 
 vi.mock('@shinju-date/logger', () => ({

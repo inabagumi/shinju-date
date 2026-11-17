@@ -1,32 +1,13 @@
 import { StatTile } from '@shinju-date/ui'
-import { cache } from 'react'
 import { getSearchEngagementRate } from '@/lib/analytics/get-search-quality-metrics'
 import { WidgetHeader } from '../../_components/widget-header'
+import { resolvePeriod } from '../../_lib/resolve-period'
 import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 import { MetricNoData } from './metric-no-data'
 
 interface Props {
   searchParams: Promise<AnalyticsSearchParams>
 }
-
-/**
- * Cached function to fetch search engagement rate data
- */
-const fetchSearchEngagementData = cache(
-  async (
-    startDate: string,
-    endDate: string,
-    selectedDate: string | null,
-  ): Promise<number | null> => {
-    if (selectedDate) {
-      return getSearchEngagementRate(Temporal.PlainDate.from(selectedDate))
-    }
-
-    const start = Temporal.PlainDate.from(startDate)
-    const end = Temporal.PlainDate.from(endDate)
-    return getSearchEngagementRate(start, end)
-  },
-)
 
 /**
  * Search Engagement Rate Widget Component
@@ -96,11 +77,8 @@ function SearchEngagementRateWidgetComponent({
 export async function SearchEngagementRateWidget({ searchParams }: Props) {
   const { dateRange, selectedDate } = await searchParams
 
-  const engagementRate = await fetchSearchEngagementData(
-    dateRange.startDate,
-    dateRange.endDate,
-    selectedDate,
-  )
+  const { start, end } = resolvePeriod({ dateRange, selectedDate })
+  const engagementRate = await getSearchEngagementRate(start, end)
 
   return (
     <SearchEngagementRateWidgetComponent
