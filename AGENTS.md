@@ -12,6 +12,7 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 - [デザイン](#デザイン)
 - [キャッシュのディレクティブ](#キャッシュのディレクティブ)
 - [Partial Prerendering](#partial-prerendering)
+- [共有パッケージに置くもの](#共有パッケージに置くもの)
 - [Redis のキー](#redis-のキー)
 - [時刻の扱い](#時刻の扱い)
 - [admin の Server Action の認証](#admin-の-server-action-の認証)
@@ -88,6 +89,13 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 - `generateMetadata` では `params` を直接 await してよい
 - `params` の型は、Next.js が生成する `PageProps<'/talents/[id]'>` / `LayoutProps` を使う
 - Suspense の中の `notFound()` はステータスコード 200 を返す。HTTP の 404 が要るときは、Proxy（`proxy.ts`）でページをレンダリングする前に判定する（[`notFound()` とステータスコード](docs/coding-guidelines.md#notfound-とステータスコード)）
+
+## 共有パッケージに置くもの
+
+[理由と例](docs/coding-guidelines.md#共有パッケージに置くもの)
+
+- `packages/helpers` と `packages/constants` には、2つ以上のアプリ（またはパッケージ）が使うものだけを置く
+- 1つのアプリだけが使うものは、そのアプリの `lib/` に置く
 
 ## Redis のキー
 

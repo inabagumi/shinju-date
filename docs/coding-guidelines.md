@@ -498,6 +498,16 @@ CREATE POLICY "Enable update for admins"
 - 検索ボックスには、`apps/admin/components/search-input.tsx` の `SearchInput` を使う。入力をやめてから少し待って URL に反映し、「戻る」などで URL が変わったら入力欄を合わせる
 - フォームの入力中の値（追加のフォームなど）は、URL に入れない
 
+## 共有パッケージに置くもの
+
+`packages/helpers`（小さな関数）と `packages/constants`（定数）は、複数のアプリやパッケージが使うものの置き場所です。1つのアプリだけが使うものまで置くと、どこで使われているかを追いにくくなり、そのアプリのための変更で、関係のないアプリまでビルドとテストをやり直すことになります。
+
+- `packages/helpers` と `packages/constants` には、2つ以上のアプリ（またはパッケージ）が使うものだけを置く
+- 1つのアプリだけが使うものは、そのアプリの `lib/` に置く（例: 公開サイトの名前や説明は `apps/web/lib/site.ts`、cron のリクエストの検証は `apps/batch/lib/cron.ts`）
+- 2つ目のアプリやパッケージが使うことになったときに、パッケージへ移す
+- 関数と一緒に公開する型（引数や戻り値の型）は、その関数の一部として数える
+- `packages/constants` には、定数だけを置く。例外は、Twitch の配信中の ID を扱う関数（`packages/constants/src/twitch-live-id.ts`）。ブラウザ向けの出力に Twitch の SDK を入れないために、`@shinju-date/twitch-api-client` ではなく、ここに置いている
+
 ## 色
 
 色・文字サイズ・角丸・影の決まりは、[デザインガイドライン](design-guidelines.md)にまとめています。色は [design-guidelines.md の「色」](design-guidelines.md#色)を参照してください。
