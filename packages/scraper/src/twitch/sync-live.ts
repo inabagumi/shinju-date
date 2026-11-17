@@ -127,7 +127,7 @@ export function planLiveSync({
 
 /** Selects a saved row together with the Helix ID of its broadcaster. */
 export const SAVED_LIVE_VIDEO_SELECT =
-  'id, deleted_at, duration, published_at, status, thumbnail_id, title, thumbnails(id, path), twitch_video:twitch_videos!inner(id, stream_id, twitch_video_id, type, twitch_user:twitch_users(twitch_user_id))'
+  'id, deleted_at, duration, published_at, status, thumbnail_id, title, twitch_video:twitch_videos!inner(id, stream_id, twitch_video_id, type, twitch_user:twitch_users(twitch_user_id))'
 
 interface SavedLiveVideoRow extends Omit<SavedTwitchVideo, 'twitch_video'> {
   twitch_video: SavedTwitchVideo['twitch_video'] & {
@@ -203,7 +203,9 @@ async function endBroadcast(
     })
   }
 
-  // The preview of the stream gives way to the thumbnail of the archive.
+  // The preview of the stream gives way to the thumbnail of the archive. The
+  // preview is left for the cleanup of unused thumbnails, since cached pages
+  // may still show it.
   await replaceThumbnail(context, {
     create: () =>
       createTwitchThumbnail(context, {
@@ -211,7 +213,6 @@ async function endBroadcast(
         twitchVideoId: archive.id,
       }),
     fields: toVideoFields(archive),
-    previous: saved.thumbnails,
     videoId: saved.id,
   })
 }

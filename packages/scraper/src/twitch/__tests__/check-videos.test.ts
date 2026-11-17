@@ -47,7 +47,6 @@ function createSavedArchive(
     duration: 'PT2H',
     status: 'ENDED',
     thumbnail_id: 'thumb-1',
-    thumbnails: { id: 'thumb-1', path: 'vod-1/thumb.jpg' },
     title: 'Archive',
     ...video,
     twitch_video: {
@@ -189,9 +188,7 @@ describe('refreshRecentTwitchVideos', () => {
 
   it('fills in a thumbnail Twitch did not have when the video was saved', async () => {
     supabase.respond(({ method }) =>
-      method === 'GET'
-        ? [createSavedArchive({ thumbnail_id: null, thumbnails: null })]
-        : [],
+      method === 'GET' ? [createSavedArchive({ thumbnail_id: null })] : [],
     )
     const { fetcher } = createFetcher({ videos: [createVideo()] })
 
@@ -215,7 +212,7 @@ describe('refreshRecentTwitchVideos', () => {
   it('removes the new thumbnail when the video cannot be updated', async () => {
     supabase.respond(({ method, table }) => {
       if (method === 'GET') {
-        return [createSavedArchive({ thumbnail_id: null, thumbnails: null })]
+        return [createSavedArchive({ thumbnail_id: null })]
       }
 
       return table === 'videos'

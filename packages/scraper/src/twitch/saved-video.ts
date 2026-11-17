@@ -19,8 +19,6 @@ export interface SavedTwitchVideo
     | 'thumbnail_id'
     | 'title'
   > {
-  /** The thumbnail `thumbnail_id` points at, to remove once it is replaced. */
-  thumbnails: Pick<Tables<'thumbnails'>, 'id' | 'path'> | null
   twitch_video: Pick<
     Tables<'twitch_videos'>,
     'id' | 'stream_id' | 'twitch_video_id' | 'type'
@@ -52,7 +50,7 @@ export async function findSavedTwitchVideos(
     const { data, error } = await supabaseClient
       .from('twitch_videos')
       .select(
-        'id, stream_id, twitch_video_id, type, video:videos!inner(id, deleted_at, duration, published_at, status, thumbnail_id, title, thumbnails(id, path))',
+        'id, stream_id, twitch_video_id, type, video:videos!inner(id, deleted_at, duration, published_at, status, thumbnail_id, title)',
       )
       .in(column, ids)
 

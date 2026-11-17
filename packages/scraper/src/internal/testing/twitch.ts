@@ -94,7 +94,6 @@ export function createSavedVideo({
     published_at: '2024-05-01T09:00:00+00:00',
     status: 'LIVE',
     thumbnail_id: 'thumb-live',
-    thumbnails: { id: 'thumb-live', path: 'live:stream-1/preview.jpg' },
     title: 'Live now',
     ...overrides,
     twitch_video: {

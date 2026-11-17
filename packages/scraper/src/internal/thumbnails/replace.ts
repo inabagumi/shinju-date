@@ -12,14 +12,15 @@ export interface ReplaceThumbnailOptions {
   create: () => Promise<Thumbnail | null>
   /** Other columns to update along with the thumbnail. */
   fields: Omit<TablesUpdate<'videos'>, 'thumbnail_id' | 'updated_at'>
-  /** The thumbnail the video uses now, if any; removed once it is replaced. */
-  previous: Thumbnail | null
   videoId: string
 }
 
 /**
- * Points a video at a new thumbnail and removes the one it used before, so a
- * replaced thumbnail is not left behind.
+ * Points a video at a new thumbnail.
+ *
+ * The thumbnail the video used before is left in place: pages the public site
+ * cached before the update still show its image, so it is only removed later,
+ * once no video uses it any more.
  *
  * When no new thumbnail is stored, only `fields` are updated (nothing is
  * written when they are empty) and the video keeps its thumbnail. Every
@@ -31,7 +32,7 @@ export interface ReplaceThumbnailOptions {
  */
 export async function replaceThumbnail(
   context: WriteContext,
-  { create, fields, previous, videoId }: ReplaceThumbnailOptions,
+  { create, fields, videoId }: ReplaceThumbnailOptions,
 ): Promise<Thumbnail | null> {
   const { now, supabaseClient } = context
   const updatedAt = toDBString(now)
@@ -58,10 +59,6 @@ export async function replaceThumbnail(
     await removeThumbnail(context, thumbnail)
 
     throw error
-  }
-
-  if (previous) {
-    await removeThumbnail(context, previous)
   }
 
   return thumbnail

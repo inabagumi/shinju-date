@@ -382,10 +382,9 @@ describe('syncTwitchLive', () => {
       title: 'Archive',
       updated_at: '2024-05-01T12:00:00Z',
     })
-    // The preview of the stream is no longer used by any video.
-    expect(deletedThumbnailIds()).toEqual(['eq.thumb-live'])
-    expect(removedImages).toEqual([{ prefixes: ['live:stream-1/preview.jpg'] }])
-    expect(reportError).not.toHaveBeenCalled()
+    // Cached pages may still show the preview, so the cleanup removes it later.
+    expect(deletedThumbnailIds()).toEqual([])
+    expect(removedImages).toEqual([])
   })
 
   it('removes the new thumbnail when the broadcast cannot be ended', async () => {

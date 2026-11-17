@@ -8,7 +8,6 @@ const supabase = setupSupabase()
 
 const STORAGE_DELETE_URL =
   'https://fake.supabase.test/storage/v1/object/thumbnails'
-const previous = { id: 'thumb-old', path: 'live:stream-1/old.jpg' }
 const created = { id: 'thumb-new', path: 'vod-1/new.jpg' }
 
 function setup() {
@@ -40,14 +39,13 @@ function deletedThumbnailIds(): (string | undefined)[] {
 }
 
 describe('replaceThumbnail', () => {
-  it('points the video at the new thumbnail and removes the previous one', async () => {
+  it('points the video at the new thumbnail and leaves the previous one for the cleanup', async () => {
     const { context, removedPaths, reportError } = setup()
     supabase.respond(() => [])
 
     const thumbnail = await replaceThumbnail(context, {
       create: async () => created,
       fields: { title: 'Archive' },
-      previous,
       videoId: 'video-1',
     })
 
@@ -61,38 +59,18 @@ describe('replaceThumbnail', () => {
       title: 'Archive',
       updated_at: '2024-05-01T12:00:00Z',
     })
-    expect(deletedThumbnailIds()).toEqual(['eq.thumb-old'])
-    expect(removedPaths).toEqual([{ prefixes: ['live:stream-1/old.jpg'] }])
+    expect(deletedThumbnailIds()).toEqual([])
+    expect(removedPaths).toEqual([])
     expect(reportError).not.toHaveBeenCalled()
   })
 
-  it('removes nothing when the video had no thumbnail', async () => {
-    const { context, removedPaths } = setup()
-    supabase.respond(() => [])
-
-    await replaceThumbnail(context, {
-      create: async () => created,
-      fields: {},
-      previous: null,
-      videoId: 'video-1',
-    })
-
-    expect(supabase.written('PATCH', 'videos')[0]?.body).toEqual({
-      thumbnail_id: 'thumb-new',
-      updated_at: '2024-05-01T12:00:00Z',
-    })
-    expect(deletedThumbnailIds()).toEqual([])
-    expect(removedPaths).toEqual([])
-  })
-
-  it('keeps the previous thumbnail when no new one is stored', async () => {
-    const { context, removedPaths } = setup()
+  it('updates only the other columns when no new thumbnail is stored', async () => {
+    const { context } = setup()
     supabase.respond(() => [])
 
     const thumbnail = await replaceThumbnail(context, {
       create: async () => null,
       fields: { title: 'Archive' },
-      previous,
       videoId: 'video-1',
     })
 
@@ -101,8 +79,6 @@ describe('replaceThumbnail', () => {
       title: 'Archive',
       updated_at: '2024-05-01T12:00:00Z',
     })
-    expect(deletedThumbnailIds()).toEqual([])
-    expect(removedPaths).toEqual([])
   })
 
   it('writes nothing when no new thumbnail is stored and nothing else changed', async () => {
@@ -112,14 +88,13 @@ describe('replaceThumbnail', () => {
     await replaceThumbnail(context, {
       create: async () => null,
       fields: {},
-      previous,
       videoId: 'video-1',
     })
 
     expect(supabase.requests).toEqual([])
   })
 
-  it('removes the new thumbnail and keeps the previous one when the video cannot be updated', async () => {
+  it('removes the new thumbnail when the video cannot be updated', async () => {
     const { context, removedPaths } = setup()
     supabase.respond(({ table }) =>
       table === 'videos' ? postgresError('57014', 'statement timeout') : [],
@@ -129,7 +104,6 @@ describe('replaceThumbnail', () => {
       replaceThumbnail(context, {
         create: async () => created,
         fields: { title: 'Archive' },
-        previous,
         videoId: 'video-1',
       }),
     ).rejects.toThrow('statement timeout')
@@ -137,28 +111,25 @@ describe('replaceThumbnail', () => {
     expect(removedPaths).toEqual([{ prefixes: ['vod-1/new.jpg'] }])
   })
 
-  it('reports a previous thumbnail that cannot be removed', async () => {
+  it('still throws the update failure when the new thumbnail cannot be removed', async () => {
     const { context, removedPaths, reportError } = setup()
-    supabase.respond(({ method, table }) =>
-      method === 'DELETE' && table === 'thumbnails'
-        ? postgresError('57014', 'statement timeout')
-        : [],
+    supabase.respond(({ table }) =>
+      postgresError('57014', `statement timeout on ${table}`),
     )
 
     await expect(
       replaceThumbnail(context, {
         create: async () => created,
         fields: {},
-        previous,
         videoId: 'video-1',
       }),
-    ).resolves.toEqual(created)
+    ).rejects.toThrow('statement timeout on videos')
     expect(removedPaths).toEqual([])
     expect(reportError).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: expect.stringContaining('statement timeout'),
+        message: expect.stringContaining('statement timeout on thumbnails'),
       }),
-      { thumbnailId: 'thumb-old', thumbnailPath: 'live:stream-1/old.jpg' },
+      { thumbnailId: 'thumb-new', thumbnailPath: 'vod-1/new.jpg' },
     )
   })
 })

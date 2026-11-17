@@ -329,12 +329,9 @@ describe('addNewTwitchVideos', () => {
       },
       query: { id: 'eq.video-1' },
     })
-    // The preview of the stream is no longer used by any video.
-    expect(
-      supabase.written('DELETE', 'thumbnails').map(({ query }) => query['id']),
-    ).toEqual(['eq.thumb-live'])
-    expect(removedImages).toEqual([{ prefixes: ['live:stream-1/preview.jpg'] }])
-    expect(reportError).not.toHaveBeenCalled()
+    // Cached pages may still show the preview, so the cleanup removes it later.
+    expect(supabase.written('DELETE', 'thumbnails')).toEqual([])
+    expect(removedImages).toEqual([])
   })
 
   it('removes the new thumbnail when the placeholder cannot be updated', async () => {

@@ -154,7 +154,9 @@ export async function applyNewVideoAction(
     return false
   }
 
-  // The preview of the stream gives way to the thumbnail of the archive.
+  // The preview of the stream gives way to the thumbnail of the archive. The
+  // preview is left for the cleanup of unused thumbnails, since cached pages
+  // may still show it.
   await replaceThumbnail(context, {
     create: () =>
       createTwitchThumbnail(context, {
@@ -162,7 +164,6 @@ export async function applyNewVideoAction(
         twitchVideoId: video.id,
       }),
     fields: toVideoFields(video),
-    previous: action.saved.thumbnails,
     videoId: action.saved.id,
   })
 
