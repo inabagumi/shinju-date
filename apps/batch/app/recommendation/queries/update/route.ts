@@ -14,6 +14,73 @@ const WEIGHT_DAILY = 10.0
 const WEIGHT_WEEKLY = 5.0
 const WEIGHT_ALL_TIME = 1.0
 
+/**
+ * How long the working key of the weighted union is kept, in case the job
+ * stops before it deletes the key.
+ */
+const TEMP_UNION_TTL_SECONDS = 10 * 60
+
+/**
+ * How long the automatic recommendations are kept. The job rebuilds them every
+ * day; when it has stopped for a week, the stale ones are not shown.
+ */
+const AUTO_RECOMMENDED_TTL_SECONDS = 8 * 24 * 60 * 60
+
+interface WeightedQuery {
+  query: string
+  score: number
+}
+
+/**
+ * Sums the scores of the rankings with their weights, using a working key
+ * that is deleted afterwards even when reading it fails.
+ */
+async function readWeightedQueries(
+  keys: string[],
+  weights: number[],
+): Promise<WeightedQuery[]> {
+  try {
+    await redisClient.zunionstore(
+      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
+      keys.length,
+      [...keys, 'WEIGHTS', ...weights.map(String)],
+    )
+    await redisClient.expire(
+      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
+      TEMP_UNION_TTL_SECONDS,
+    )
+
+    // Format: [member, score, member, score, ...]
+    const weightedQueries = await redisClient.zrange(
+      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
+      0,
+      -1,
+      {
+        withScores: true,
+      },
+    )
+
+    const queriesWithScores: WeightedQuery[] = []
+    for (let i = 0; i < weightedQueries.length; i += 2) {
+      const query = String(weightedQueries[i])
+      const score = Number(weightedQueries[i + 1])
+      queriesWithScores.push({ query, score })
+    }
+
+    return queriesWithScores
+  } finally {
+    // The key expires anyway, so a failure here must not hide the result or
+    // the original error.
+    await redisClient
+      .del(REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION)
+      .catch((error: unknown) => {
+        logger.warn('検索語の集計の作業用のキーを削除できませんでした', {
+          error,
+        })
+      })
+  }
+}
+
 export const maxDuration = 120
 
 export async function POST(request: NextRequest): Promise<Response> {
@@ -63,30 +130,7 @@ export async function POST(request: NextRequest): Promise<Response> {
       return
     }
 
-    // Perform ZUNIONSTORE with weights
-    await redisClient.zunionstore(
-      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
-      keysToUnion.length,
-      [...keysToUnion, 'WEIGHTS', ...weights.map(String)],
-    )
-
-    // Get all members with their scores from the union
-    const weightedQueries = await redisClient.zrange(
-      REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION,
-      0,
-      -1,
-      {
-        withScores: true,
-      },
-    )
-
-    // Parse the results (format: [member, score, member, score, ...])
-    const queriesWithScores: Array<{ query: string; score: number }> = []
-    for (let i = 0; i < weightedQueries.length; i += 2) {
-      const query = String(weightedQueries[i])
-      const score = Number(weightedQueries[i + 1])
-      queriesWithScores.push({ query, score })
-    }
+    const queriesWithScores = await readWeightedQueries(keysToUnion, weights)
 
     // Build a map from all terms/synonyms (lowercase) to their canonical term
     const termMap = new Map<string, string>()
@@ -131,10 +175,11 @@ export async function POST(request: NextRequest): Promise<Response> {
           score,
         })
       }
+      multi.expire(
+        REDIS_KEYS.QUERIES_AUTO_RECOMMENDED,
+        AUTO_RECOMMENDED_TTL_SECONDS,
+      )
     }
-
-    // Delete temporary union key
-    multi.del(REDIS_KEYS.SEARCH_POPULAR_TEMP_UNION)
 
     await multi.exec()
 
