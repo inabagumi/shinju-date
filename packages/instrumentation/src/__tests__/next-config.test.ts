@@ -36,6 +36,22 @@ describe('withSentry', () => {
     )
   })
 
+  test('leaves out the options for the browser bundle without browser', () => {
+    vi.stubEnv('NEXT_PUBLIC_SENTRY_DSN', 'https://key@example.com/1')
+
+    withSentry({ reactStrictMode: true }, { browser: false })
+
+    expect(withSentryConfig).toHaveBeenCalledWith(
+      { reactStrictMode: true },
+      {
+        bundleSizeOptimizations: {
+          excludeDebugStatements: true,
+        },
+        silent: true,
+      },
+    )
+  })
+
   test('returns the config as it is without the DSN', () => {
     vi.stubEnv('NEXT_PUBLIC_SENTRY_DSN', undefined)
     const config = { reactStrictMode: true }
