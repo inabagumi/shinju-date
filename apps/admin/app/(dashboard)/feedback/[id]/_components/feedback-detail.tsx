@@ -1,34 +1,20 @@
-'use client'
-
 import type { Tables } from '@shinju-date/database'
 import { Skeleton } from '@shinju-date/ui'
-import Form, {
-  FormField,
-  Label,
-  Select,
-  SubmitButton,
-  SuccessMessage,
-  Textarea,
-} from '@/components/form'
 import { Markdown } from '@/components/markdown'
 import { Panel, PanelSkeleton } from '@/components/panel'
 import { formatDateTimeFromISO } from '@/lib/format'
-import {
-  markFeatureRequestAsRead,
-  updateFeatureRequestMemo,
-  updateFeatureRequestStatus,
-} from '../../_actions/update-feedback'
-import {
-  FEATURE_REQUEST_STATUS_LABELS,
-  FEATURE_REQUEST_STATUSES,
-} from '../../_lib/feature-request-status'
+import { FeedbackMemoForm } from './feedback-memo-form'
+import { FeedbackReadToggle } from './feedback-read-toggle'
+import { FeedbackStatusForm } from './feedback-status-form'
 
 interface FeatureRequestDetailProps {
   featureRequest: Tables<'feature_requests'>
 }
 
-const successMessageClassName = 'text-meta text-success'
-
+/**
+ * 機能要望の詳細。本文・管理メモのプレビュー・日時はサーバーで描き、
+ * 操作（ステータスの変更、メモの保存、既読と未読の切り替え）だけをクライアントの部品にする
+ */
 export function FeatureRequestDetail({
   featureRequest,
 }: FeatureRequestDetailProps) {
@@ -45,23 +31,10 @@ export function FeatureRequestDetail({
 
         {/* Admin Memo */}
         <Panel title="管理メモ">
-          <Form action={updateFeatureRequestMemo} className="space-y-4">
-            <input name="id" type="hidden" value={featureRequest.id} />
-            <FormField name="admin_memo">
-              <Label>メモ（Markdown対応）</Label>
-              <Textarea
-                defaultValue={featureRequest.admin_memo ?? ''}
-                rows={8}
-              />
-            </FormField>
-            <div className="flex flex-wrap items-center gap-3">
-              <SubmitButton>メモを保存</SubmitButton>
-              <SuccessMessage
-                className={successMessageClassName}
-                message="保存しました。"
-              />
-            </div>
-          </Form>
+          <FeedbackMemoForm
+            adminMemo={featureRequest.admin_memo}
+            id={featureRequest.id}
+          />
 
           {/* Preview */}
           {featureRequest.admin_memo && (
@@ -92,50 +65,18 @@ export function FeatureRequestDetail({
 
         {/* Status */}
         <Panel title="ステータス管理">
-          <Form action={updateFeatureRequestStatus} className="space-y-4">
-            <input name="id" type="hidden" value={featureRequest.id} />
-            <FormField name="status">
-              <Label>対応ステータス</Label>
-              <Select defaultValue={featureRequest.status}>
-                {FEATURE_REQUEST_STATUSES.map((status) => (
-                  <option key={status} value={status}>
-                    {FEATURE_REQUEST_STATUS_LABELS[status]}
-                  </option>
-                ))}
-              </Select>
-            </FormField>
-            <div className="flex flex-wrap items-center gap-3">
-              <SubmitButton>ステータスを更新</SubmitButton>
-              <SuccessMessage
-                className={successMessageClassName}
-                message="更新しました。"
-              />
-            </div>
-          </Form>
+          <FeedbackStatusForm
+            id={featureRequest.id}
+            status={featureRequest.status}
+          />
         </Panel>
 
         {/* Read Status */}
         <Panel title="既読管理">
-          <Form action={markFeatureRequestAsRead} className="space-y-4">
-            <p className="text-meta">
-              現在: {featureRequest.is_read ? '既読' : '未読'}
-            </p>
-            <input name="id" type="hidden" value={featureRequest.id} />
-            <input
-              name="is_read"
-              type="hidden"
-              value={String(!featureRequest.is_read)}
-            />
-            <div className="flex flex-wrap items-center gap-3">
-              <SubmitButton variant="secondary">
-                {featureRequest.is_read ? '未読にする' : '既読にする'}
-              </SubmitButton>
-              <SuccessMessage
-                className={successMessageClassName}
-                message="更新しました。"
-              />
-            </div>
-          </Form>
+          <FeedbackReadToggle
+            id={featureRequest.id}
+            isRead={featureRequest.is_read}
+          />
         </Panel>
       </div>
     </div>

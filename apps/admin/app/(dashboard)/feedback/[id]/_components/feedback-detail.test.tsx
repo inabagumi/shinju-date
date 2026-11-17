@@ -51,6 +51,29 @@ describe('FeatureRequestDetail', () => {
     vi.clearAllMocks()
   })
 
+  describe('message', () => {
+    it('renders the message as Markdown', () => {
+      render(
+        <FeatureRequestDetail
+          featureRequest={{
+            ...featureRequest,
+            message:
+              '**検索**の改善\n\n- 絞り込み\n- 並べ替え\n\n[詳細](https://example.com/)',
+          }}
+        />,
+      )
+
+      expect(screen.getByText('検索').tagName).toBe('STRONG')
+      expect(
+        screen.getAllByRole('listitem').map((item) => item.textContent),
+      ).toEqual(['絞り込み', '並べ替え'])
+      expect(screen.getByRole('link', { name: '詳細' })).toHaveAttribute(
+        'href',
+        'https://example.com/',
+      )
+    })
+  })
+
   describe('status', () => {
     it('submits the selected status and tells that it was updated', async () => {
       mocks.updateFeatureRequestStatus.mockResolvedValue({ success: true })
