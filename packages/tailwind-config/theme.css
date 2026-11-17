@@ -169,30 +169,20 @@
  * キーボードでフォーカスしたときの見た目（docs/design-guidelines.md の「フォーカス」）。
  * `focus-visible` だけに効くので、マウスでのクリックでは出ない。ここに追加したら
  * packages/ui/src/tw-merge.ts の `FOCUS_RINGS` にも追加する。
+ * `outline-none` と一緒に使わない（`outline-2` の線の種類が `none` になり、線が消える）。
  */
 
 /* ボタン・リンク・タブなど、押して操作する部品。部品から 2px 離して線を出す */
 @utility focus-ring {
-  &:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-  }
+  @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
 }
 
 /* 文字を入力する部品。枠の線の色を変え、同じ色の線を外側に重ねる */
 @utility field-focus-ring {
-  &:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 0;
-    border-color: var(--color-accent);
-  }
+  @apply focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent;
 }
 
 /* 入力に誤りがある状態の、文字を入力する部品 */
 @utility field-focus-ring-danger {
-  &:focus-visible {
-    outline: 2px solid var(--color-danger);
-    outline-offset: 0;
-    border-color: var(--color-danger);
-  }
+  @apply focus-visible:border-danger focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-danger;
 }

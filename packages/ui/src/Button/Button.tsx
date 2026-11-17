@@ -4,7 +4,7 @@ import type { ComponentPropsWithRef } from 'react'
 import { twMerge } from '../tw-merge.js'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center rounded-control font-medium focus-ring transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+  'inline-flex items-center justify-center rounded-control font-medium transition-colors focus-ring disabled:cursor-not-allowed disabled:opacity-50',
   {
     defaultVariants: {
       size: 'md',

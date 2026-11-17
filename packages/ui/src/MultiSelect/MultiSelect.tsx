@@ -65,7 +65,7 @@ export function MultiSelect({
       <Popover.Trigger asChild>
         <button
           className={twMerge(
-            'flex w-full items-center justify-between rounded-control border field-focus-ring border-border bg-surface px-3 py-2 text-left text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50',
+            'flex w-full items-center justify-between rounded-control border border-border bg-surface px-3 py-2 text-left text-foreground transition-colors field-focus-ring hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50',
             className,
           )}
           type="button"

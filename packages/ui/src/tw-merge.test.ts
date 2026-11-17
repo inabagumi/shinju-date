@@ -61,10 +61,6 @@ describe('twMerge', () => {
     expect(twMerge('focus-ring', 'field-focus-ring')).toBe('field-focus-ring')
   })
 
-  it('keeps a focus ring together with outline utilities', () => {
-    expect(twMerge('focus-ring outline-none')).toBe('focus-ring outline-none')
-  })
-
   it('keeps a font size together with a text color', () => {
     expect(twMerge('text-body text-foreground')).toBe(
       'text-body text-foreground',
