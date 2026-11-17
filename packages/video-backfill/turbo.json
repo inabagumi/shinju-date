@@ -1,0 +1,9 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "test": {
+      "env": ["UPSTASH_REDIS_REST_TOKEN", "UPSTASH_REDIS_REST_URL"]
+    }
+  }
+}

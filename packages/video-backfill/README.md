@@ -73,3 +73,25 @@ const runs = new BackfillRuns(redisClient)
 await runs.start(accounts, { requestedBy })
 const progress = await runs.getLatest()
 ```
+
+## テスト
+
+`src/__tests__/integration/` のテストは、同じ一式を、本物の Redis と、模倣（`FakeRedis`）の両方に対して実行します。Lua のスクリプトは本物の Redis で実行され、模倣のほうは、本物と同じ結果を返すことを確かめます。
+
+- 本物の Redis に対するテスト（`redis.test.ts`）は、`UPSTASH_REDIS_REST_URL` と `UPSTASH_REDIS_REST_TOKEN` が設定されているときだけ動きます。ないときはスキップします。CI では、`services` で Redis と Serverless Redis HTTP を起動して動かします
+- テストごとに、キーの接頭辞（`test:video-backfill:<UUID>:`）を変え、終わったら使ったキーを消します
+
+ローカルでは、`compose.yml` の Redis を起動して（[ローカルRedis環境](../../docs/setup-guide.md#4-ローカルredis環境)）、次のように実行します。トークンは `config/dev-secrets.env` の `SRH_TOKEN` です。
+
+```bash
+UPSTASH_REDIS_REST_URL=http://localhost:8079 UPSTASH_REDIS_REST_TOKEN=<SRH_TOKEN> pnpm run test --filter=@shinju-date/video-backfill
+```
+
+### 模倣（`@shinju-date/video-backfill/testing`）
+
+Lua を実行できない環境のために、スクリプトの模倣を、このパッケージの `./testing` の入口から公開しています。スクリプトの模倣は、リポジトリの中でここだけです。
+
+- `SCRIPT_EMULATIONS`: スクリプトの名前（1行目のコメント、例: `-- video-backfill:enqueue`）ごとに、スクリプトが実行するコマンドで同じ動きをする関数
+- `FakeRedis`: キューが使う `@upstash/redis` のメソッドを、メモリの上で動かすもの。スクリプトは `SCRIPT_EMULATIONS` で動かします
+
+`@shinju-date/msw-handlers` の Upstash のモックも、`EVAL` を受けると `SCRIPT_EMULATIONS` を使います。スクリプトを変えたら、`src/testing/scripts.ts` の模倣も同じように直してください（直し忘れると、`FakeRedis` に対するテストが失敗します）。本番のコードからは import しないでください。
