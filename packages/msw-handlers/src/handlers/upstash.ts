@@ -203,8 +203,17 @@ function processRedisCommand(command: string, args: any[]): any {
     }
 
     case 'expire': {
-      // For mock purposes, we'll just return success
-      return { result: 1 }
+      // Keys are not expired in the mock, but Redis returns 0 when the key
+      // does not exist.
+      const [key] = args
+      return { result: mockRedisStore.has(key) ? 1 : 0 }
+    }
+
+    case 'incr': {
+      const [key] = args
+      const value = Number(mockRedisStore.get(key) ?? 0) + 1
+      mockRedisStore.set(key, value as any)
+      return { result: value }
     }
 
     case 'ping': {
