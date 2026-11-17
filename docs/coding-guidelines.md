@@ -238,6 +238,7 @@ refactor(admin): convert type definitions to interface
 - `'use cache'`（`'use cache: remote'` / `'use cache: private'` を含む）の直後に、空行を1行入れる
 - `cacheLife()` や `cacheTag()` などのキャッシュ設定の並びの後にも、空行を1行入れる
 - この2つは、例外なく、すべてのファイルに適用する
+- `pnpm run check` が、`scripts/check-cache-directives.mjs` で確かめる（Biome のプラグインは、空行を判定できないため）
 
 ディレクティブとキャッシュの設定を、本文から一目で区別できるようにするためです。過去に、まとめて直しています。
 
@@ -412,6 +413,7 @@ await redis.set('summary:stats:2025-11-11', data)
 - タイムゾーンに依存しない絶対時刻は、`Temporal.Now.instant()` で取る
 - API で送受信するときは、ISO 8601 の文字列にする。`Temporal.Instant` の `toString()` は、常に UTC（末尾が `Z`。例: `2025-11-01T12:00:00Z`）で出力する。タイムゾーン付きの文字列（例: `2025-11-01T21:00:00+09:00`）が要る場合は、`Temporal.ZonedDateTime` の `toString()` を使う
 - ユーザーに時刻を表示するときなど、タイムゾーンが要る場合は、`'Asia/Tokyo'` などを直接書かず、`@shinju-date/constants` の `TIME_ZONE` を使う
+  - `pnpm run check` が、`'Asia/Tokyo'` を含む文字列をエラーにする（`config/biome/no-hardcoded-time-zone.grit`）。`TIME_ZONE` の定義と、テストのファイルは対象外
 
 ```typescript
 import { TIME_ZONE } from '@shinju-date/constants'

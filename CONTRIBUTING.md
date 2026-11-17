@@ -36,6 +36,12 @@ Dev Container設定（`.devcontainer/`）を変更する場合は、`@devcontain
 pnpm run check --fix
 ```
 
+`pnpm run check` は、Biome に加えて、`'use cache'` の後の空行を `scripts/check-cache-directives.mjs` で確かめます。Biome の組み込みのルールで確かめられない決まりは、`config/biome/` に GritQL のプラグインとして置き、`biome.json` の `plugins` で有効にしています。プラグインと `scripts/` のスクリプトを変えたら、テストを実行してください。
+
+```bash
+pnpm run test:scripts
+```
+
 #### 型チェック
 
 Vitest はテストを実行する際に型を検査せず、パッケージのビルド（tsdown）も型を検査しません（型エラーがあってもビルドは通ります）。型エラーを検出するため、TypeScript のコードを変更した後は型チェックも実行してください。

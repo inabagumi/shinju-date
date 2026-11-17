@@ -58,10 +58,10 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 
 画面や部品を新しく作る・作り直すときは、**必ず**[デザインのガイドライン](docs/design-guidelines.md)に従う。要点は次のとおりです。
 
-- 色はセマンティックカラー（`bg-surface`、`text-muted`、`bg-accent` など）で指定し、`dark:` で手書きしない
-- 文字サイズは `text-display` / `text-title` / `text-heading` / `text-body` / `text-meta` / `text-caption` を使う（`text-xs` / `text-sm` などは使わない）
-- 角丸は `rounded-control`（操作部品）/ `rounded-container`（入れ物）/ `rounded-full`（丸）の3種類（`rounded-md` / `rounded-xl` などは使わない）
-- 影は重なるもの（モーダル、ドロップダウン、お知らせバナー）だけに `shadow-overlay` を使う。固定ヘッダーは影を付けず、下端を `border` の線1本で区切る
+- 色はセマンティックカラー（`bg-surface`、`text-muted`、`bg-accent` など）で指定し、`dark:` で手書きしない（`pnpm run check` が確かめる）
+- 文字サイズは `text-display` / `text-title` / `text-heading` / `text-body` / `text-meta` / `text-caption` を使う（`text-xs` / `text-sm` などは使わない。`pnpm run check` が確かめる）
+- 角丸は `rounded-control`（操作部品）/ `rounded-container`（入れ物）/ `rounded-full`（丸）の3種類（`rounded-md` / `rounded-xl` などは使わない。`pnpm run check` が確かめる）
+- 影は重なるもの（モーダル、ドロップダウン、お知らせバナー）だけに `shadow-overlay` を使う（`shadow-sm` / `shadow-lg` などは使わない。`pnpm run check` が確かめる）。固定ヘッダーは影を付けず、下端を `border` の線1本で区切る
 - `twMerge` は `tailwind-merge` ではなく `@shinju-date/ui` からインポートする（`pnpm run check` が確かめる）
 - 日本語のウェブフォントは追加しない
 - 管理画面で、フォームを使わずに Server Action を呼ぶときは `useServerAction`（`apps/admin/lib/use-server-action.ts`）を使い、結果をトーストで知らせる。成功のあとに `router.refresh()` を呼ばない（[操作の結果の知らせ](docs/design-guidelines.md#操作の結果の知らせ管理画面)）
@@ -70,8 +70,8 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 
 **🚨 厳格なルール**（例外なく、すべてのファイルに適用する。[理由と例](docs/coding-guidelines.md#キャッシュのディレクティブ)）
 
-- `'use cache'`（`'use cache: remote'` / `'use cache: private'` を含む）の直後に、空行を1行入れる
-- `cacheLife()` や `cacheTag()` などのキャッシュ設定の並びの後にも、空行を1行入れる
+- `'use cache'`（`'use cache: remote'` / `'use cache: private'` を含む）の直後に、空行を1行入れる（`pnpm run check` が確かめる）
+- `cacheLife()` や `cacheTag()` などのキャッシュ設定の並びの後にも、空行を1行入れる（`pnpm run check` が確かめる）
 - キャッシュはコンポーネントではなく、データ取得関数に付ける（`generateMetadata` とページの部品の両方から同じキャッシュを使う）
 - `'use cache'` を持つ関数を呼ぶ側で、もう一度キャッシュのディレクティブを付けない
 - 公開データには `'use cache: remote'`、認証が必要なデータには `'use cache: private'`（ユーザーごと）を使う
@@ -116,7 +116,7 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 - テストで現在時刻を固定するときは、`vi.mock('temporal-polyfill')` ではなく `vi.spyOn(Temporal.Now, 'instant')` などを使う
 - 現在の絶対時刻は `Temporal.Now.instant()` で取る
 - API で送受信するときは ISO 8601 の文字列にする。`Temporal.Instant` の `toString()` は常に UTC。タイムゾーン付きの文字列が要る場合は `Temporal.ZonedDateTime` の `toString()` を使う
-- タイムゾーンは直接書かず（`'Asia/Tokyo'` など）、`@shinju-date/constants` の `TIME_ZONE` を使う
+- タイムゾーンは直接書かず（`'Asia/Tokyo'` など）、`@shinju-date/constants` の `TIME_ZONE` を使う（`pnpm run check` が確かめる。テストのファイルは対象外）
 - データベースの `TIMESTAMPTZ` のカラムに保存するときは、**必ず** `@shinju-date/temporal-fns` の `toDBString` を使う（`toString()` を直接使わない）
 
 ## admin の Server Action の認証
