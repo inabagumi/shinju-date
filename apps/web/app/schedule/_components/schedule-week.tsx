@@ -16,6 +16,7 @@ import {
   layoutDay,
   type ScheduleLayout,
 } from '@/lib/schedule'
+import { HOUR_HEIGHT_REM } from '../_lib/layout'
 import {
   resolveScheduleWeek,
   type SchedulePageParams,
@@ -142,13 +143,19 @@ export function ScheduleWeekdayBandSkeleton() {
 }
 
 /**
+ * 1時間の高さ（`--hour`）。タイトルの行数の計算（`getTitleLines`）と同じ
+ * `HOUR_HEIGHT_REM` から渡す
+ */
+const DAYS_STYLE = { '--hour': `${HOUR_HEIGHT_REM}rem` } as CSSProperties
+
+/**
  * 1024px 以上では、時刻の列と7日の列を並べ、各列は CSS の subgrid で見出しの
  * 行と本体の行を共有する。本体は1時間を `--hour` の高さにした24時間の軸で、
  * 項目は開始時刻の位置に、長さぶんの高さで置く。1024px 未満では日付ごとの
  * セクションを縦に積み、項目を開始時刻の順に並べる。
  */
 const DAYS_CLASS_NAME =
-  'space-y-8 [--hour:4rem] lg:grid lg:grid-cols-[auto_repeat(7,minmax(0,1fr))] lg:grid-rows-[auto_auto] lg:gap-x-2 lg:space-y-0'
+  'space-y-8 lg:grid lg:grid-cols-[auto_repeat(7,minmax(0,1fr))] lg:grid-rows-[auto_auto] lg:gap-x-2 lg:space-y-0'
 // `grid-cols-1` は `minmax(0, 1fr)` の1列。列幅を指定しないと、長いチャンネル名
 // やタイトルに合わせて列が広がり、隣の日にはみ出す
 const COLUMN_CLASS_NAME =
@@ -268,7 +275,7 @@ export async function ScheduleDays({ params }: ScheduleWeekSectionProps) {
   const groups = groupVideosByDate(videos)
 
   return (
-    <div className={DAYS_CLASS_NAME}>
+    <div className={DAYS_CLASS_NAME} style={DAYS_STYLE}>
       <TimeColumn />
 
       {getWeekDays(weekStart).map((date) => (
@@ -310,7 +317,7 @@ function TimeColumn() {
 
 export function ScheduleDaysSkeleton() {
   return (
-    <div aria-hidden="true" className={DAYS_CLASS_NAME}>
+    <div aria-hidden="true" className={DAYS_CLASS_NAME} style={DAYS_STYLE}>
       <TimeColumn />
 
       {Array.from({ length: 7 }, (_, index) => (
