@@ -1,11 +1,9 @@
 import type { Tables } from '@shinju-date/database'
 import { isLiveTwitchVideoId } from '@shinju-date/twitch-api-client'
 import { chunk } from '../internal/batch.js'
+import { IN_FILTER_CHUNK_SIZE } from '../internal/constants.js'
 import { DatabaseError } from '../internal/database/index.js'
 import type { TypedSupabaseClient } from '../types.js'
-
-/** Keeps `in.(...)` filters comfortably below URL length limits. */
-const IN_FILTER_CHUNK_SIZE = 100
 
 /** A saved Twitch video: its `videos` row plus its `twitch_videos` row. */
 export interface SavedTwitchVideo

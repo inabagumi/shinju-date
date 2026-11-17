@@ -1,0 +1,14 @@
+/**
+ * Writes made at once by the crawls (accounts, videos and broadcasts). Saving
+ * a video also downloads and resizes its thumbnail.
+ */
+export const WRITE_CONCURRENCY = 8
+
+/** How many of the newest finished videos a refresh re-reads. */
+export const RECENT_VIDEO_COUNT = 100
+
+/** Page size of the full sweep; PostgREST caps responses at 1000 rows. */
+export const SWEEP_PAGE_SIZE = 1000
+
+/** Keeps `in.(...)` filters comfortably below URL length limits. */
+export const IN_FILTER_CHUNK_SIZE = 100

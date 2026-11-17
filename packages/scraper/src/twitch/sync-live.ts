@@ -6,6 +6,7 @@ import {
   toLiveTwitchVideoId,
 } from '@shinju-date/twitch-api-client'
 import { countChanges } from '../internal/concurrency.js'
+import { WRITE_CONCURRENCY } from '../internal/constants.js'
 import {
   DatabaseError,
   getActiveTwitchUsers,
@@ -28,8 +29,6 @@ import {
 } from './saved-video.js'
 import type { TwitchStream, TwitchVideo } from './types.js'
 import { toLiveFields, toVideoFields } from './video.js'
-
-const WRITE_CONCURRENCY = 8
 
 /** A saved LIVE row together with the Helix ID of its broadcaster. */
 export interface SavedLiveVideo extends SavedTwitchVideo {

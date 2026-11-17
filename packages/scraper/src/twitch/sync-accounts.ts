@@ -1,6 +1,7 @@
 import type { Tables } from '@shinju-date/database'
 import { diffAccountFields } from '../internal/account-fields.js'
 import { countChanges } from '../internal/concurrency.js'
+import { WRITE_CONCURRENCY } from '../internal/constants.js'
 import { DatabaseError } from '../internal/database/index.js'
 import type {
   AccountChanges,
@@ -14,8 +15,6 @@ import {
   syncTwitchUserIcon,
 } from './profile-image.js'
 import type { TwitchUser } from './types.js'
-
-const UPDATE_CONCURRENCY = 8
 
 /** The columns of a user that are kept in line with Twitch. */
 export type TwitchUserFields = Pick<
@@ -191,7 +190,7 @@ export async function syncTwitchUsers(
 
   return countChanges(
     users,
-    UPDATE_CONCURRENCY,
+    WRITE_CONCURRENCY,
     async (user) => {
       const saved = savedByTwitchId.get(user.id)
 

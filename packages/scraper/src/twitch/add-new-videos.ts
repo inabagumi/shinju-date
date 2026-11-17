@@ -1,5 +1,6 @@
 import { getArchivedStreamId } from '@shinju-date/twitch-api-client'
 import { countChanges } from '../internal/concurrency.js'
+import { WRITE_CONCURRENCY } from '../internal/constants.js'
 import {
   type ActiveTwitchUser,
   getActiveTwitchUsers,
@@ -16,9 +17,6 @@ import {
 } from './saved-video.js'
 import type { TwitchStream, TwitchVideo } from './types.js'
 import { toLiveFields, toVideoFields } from './video.js'
-
-/** Videos saved at once; each one downloads and resizes a thumbnail. */
-const SAVE_CONCURRENCY = 8
 
 /** What to do with a video Twitch lists for a broadcaster. */
 export type NewVideoAction =
@@ -213,7 +211,7 @@ export async function addNewTwitchVideos(
 }
 
 export interface SaveNewTwitchVideosOptions {
-  /** Videos saved at once (default: 8). */
+  /** Videos saved at once (default: `WRITE_CONCURRENCY`). */
   concurrency?: number
   /** Streams of `users` that are on air right now. */
   liveStreams: readonly TwitchStream[]
@@ -233,7 +231,7 @@ export interface SaveNewTwitchVideosOptions {
 export async function saveNewTwitchVideos(
   context: WriteContext,
   {
-    concurrency = SAVE_CONCURRENCY,
+    concurrency = WRITE_CONCURRENCY,
     liveStreams,
     users,
     videos,
