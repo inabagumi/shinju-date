@@ -1,39 +1,33 @@
 import type { Metadata } from 'next'
 import PageHeader from '@/components/page-header'
-import { MAIN_CONTENT_ID } from '@/components/skip-link'
+import PageMain from '@/components/page-main'
+import { createPageMetadata } from '@/lib/metadata'
 import { ContactForm } from './_components/contact-form'
 import { isContactFormEnabled } from './_lib/utils'
 
-export const metadata: Metadata = {
+const TITLE = 'お問い合わせ'
+
+export const metadata: Metadata = createPageMetadata({
   description:
     'SHINJU DATEに関するお問い合わせフォームです。不具合報告や機能要望をお寄せください。',
-  openGraph: {
-    description:
-      'SHINJU DATEに関するお問い合わせフォームです。不具合報告や機能要望をお寄せください。',
-    title: 'お問い合わせ - SHINJU DATE',
-    type: 'website',
-    url: '/contact',
-  },
-  title: 'お問い合わせ',
-}
+  path: '/contact',
+  title: TITLE,
+})
 
 export default async function ContactPage() {
   const enabled = isContactFormEnabled()
 
   return (
-    <main
-      className="mx-auto max-w-6xl scroll-mt-20 px-4 py-8"
-      id={MAIN_CONTENT_ID}
-    >
+    <PageMain>
       <PageHeader
-        breadcrumbs={[{ name: 'お問い合わせ' }]}
+        breadcrumbs={[{ name: TITLE }]}
         description={
           <p>
             SHINJU
             DATEについてのご質問、不具合報告、機能要望などがございましたら、こちらのフォームからお気軽にお問い合わせください。
           </p>
         }
-        title="お問い合わせ"
+        title={TITLE}
       />
 
       <div className="max-w-xl">
@@ -45,6 +39,6 @@ export default async function ContactPage() {
           </div>
         )}
       </div>
-    </main>
+    </PageMain>
   )
 }

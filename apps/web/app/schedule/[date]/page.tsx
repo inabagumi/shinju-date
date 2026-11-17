@@ -1,5 +1,5 @@
-import { SITE_NAME as siteName } from '@shinju-date/constants'
 import type { Metadata } from 'next'
+import { createPageMetadata } from '@/lib/metadata'
 import { formatWeekRange, getSchedulePath } from '@/lib/schedule'
 import SchedulePageContent from '../_components/schedule-page-content'
 import { resolveScheduleWeek } from '../_lib/resolve-schedule-week'
@@ -8,27 +8,15 @@ export async function generateMetadata({
   params,
 }: Pick<PageProps<'/schedule/[date]'>, 'params'>): Promise<Metadata> {
   const { weekStart } = await resolveScheduleWeek(params)
-  const title = `${formatWeekRange(weekStart)}の配信スケジュール`
 
-  return {
-    alternates: {
-      // 日曜以外の日付でも、その週の日曜の URL を正規の URL にする
-      canonical: getSchedulePath(weekStart),
-    },
-    openGraph: {
-      siteName,
-      title,
-      type: 'article',
-    },
-    robots: {
-      // 検索エンジンには `/schedule` だけを載せる
-      index: false,
-    },
-    title,
-    twitter: {
-      title: `${title} - ${siteName}`,
-    },
-  }
+  return createPageMetadata({
+    // 検索エンジンには `/schedule` だけを載せる
+    index: false,
+    // 日曜以外の日付でも、その週の日曜の URL を正規の URL にする
+    path: getSchedulePath(weekStart),
+    title: `${formatWeekRange(weekStart)}の配信スケジュール`,
+    type: 'article',
+  })
 }
 
 /**

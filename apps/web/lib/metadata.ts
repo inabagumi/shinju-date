@@ -1,0 +1,80 @@
+import { SITE_NAME } from '@shinju-date/constants'
+import type { Metadata } from 'next'
+
+/** The Open Graph types the pages use. */
+export type PageType = 'article' | 'profile' | 'website'
+
+export interface PageMetadataOptions {
+  /**
+   * The whole `<title>` of the page, which the site name is not added to.
+   *
+   * Only the home page, whose `title` is the site name itself, sets it. Its
+   * titles for sharing are then `title` alone, and `og:site_name`, which would
+   * repeat it, is left out.
+   */
+  absoluteTitle?: string
+  description?: string
+  /** `false` keeps the page out of search engines. */
+  index?: boolean
+  /** The path of the canonical URL of the page. */
+  path: string
+  /** The title of the page, without the site name. */
+  title: string
+  type?: PageType
+}
+
+/**
+ * What `createPageMetadata` returns. The parts are always set, so a page can
+ * spread them to add its own fields.
+ */
+export interface PageMetadata extends Metadata {
+  alternates: {
+    canonical: string
+  }
+  openGraph: {
+    description?: string
+    siteName?: string
+    title: string
+    type: PageType
+  }
+  twitter: {
+    title: string
+  }
+}
+
+/**
+ * The metadata every page has in common: the title, the canonical URL, and
+ * the titles for Open Graph and X.
+ *
+ * The root layout adds the site name to `title`, but not to the titles for
+ * sharing. Open Graph has `og:site_name` for it, and X has nothing, so the
+ * site name is added to the title for X here.
+ */
+export function createPageMetadata({
+  absoluteTitle,
+  description,
+  index,
+  path,
+  title,
+  type = 'website',
+}: PageMetadataOptions): PageMetadata {
+  const hasSiteName = absoluteTitle === undefined
+
+  return {
+    alternates: {
+      canonical: path,
+    },
+    ...(description !== undefined && { description }),
+    openGraph: {
+      ...(description !== undefined && { description }),
+      ...(hasSiteName && { siteName: SITE_NAME }),
+      title,
+      type,
+    },
+    ...(index !== undefined && { robots: { index } }),
+    title: hasSiteName ? title : { absolute: absoluteTitle },
+    twitter: {
+      title: hasSiteName ? `${title} - ${SITE_NAME}` : title,
+    },
+  }
+}

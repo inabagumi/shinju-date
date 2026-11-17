@@ -1,23 +1,16 @@
-import { SITE_NAME as siteName } from '@shinju-date/constants'
+import { SITE_NAME } from '@shinju-date/constants'
 import type { Metadata } from 'next'
-import type { ReactNode } from 'react'
 import SimpleDocument from '@/components/simple-document'
+import { createPageMetadata } from '@/lib/metadata'
 
-export const metadata: Metadata = {
-  alternates: {
-    canonical: '/about',
-  },
-  openGraph: {
-    siteName,
-    title: `${siteName}とは?`,
-    type: 'article',
-  },
-  title: `${siteName}とは?`,
-  twitter: {
-    title: `${siteName}とは? - ${siteName}`,
-  },
-}
+const TITLE = `${SITE_NAME}とは?`
 
-export default function AboutLayout({ children }: { children: ReactNode }) {
-  return <SimpleDocument title={`${siteName}とは?`}>{children}</SimpleDocument>
+export const metadata: Metadata = createPageMetadata({
+  path: '/about',
+  title: TITLE,
+  type: 'article',
+})
+
+export default function AboutLayout({ children }: LayoutProps<'/about'>) {
+  return <SimpleDocument title={TITLE}>{children}</SimpleDocument>
 }

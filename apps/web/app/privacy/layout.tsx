@@ -1,25 +1,15 @@
-import { SITE_NAME as siteName } from '@shinju-date/constants'
 import type { Metadata } from 'next'
-import type { ReactNode } from 'react'
 import SimpleDocument from '@/components/simple-document'
+import { createPageMetadata } from '@/lib/metadata'
 
-export const metadata: Metadata = {
-  alternates: {
-    canonical: '/privacy',
-  },
-  openGraph: {
-    siteName,
-    title: 'プライバシーポリシー',
-    type: 'article',
-  },
-  title: 'プライバシーポリシー',
-  twitter: {
-    title: `プライバシーポリシー - ${siteName}`,
-  },
-}
+const TITLE = 'プライバシーポリシー'
 
-export default function PrivacyLayout({ children }: { children: ReactNode }) {
-  return (
-    <SimpleDocument title="プライバシーポリシー">{children}</SimpleDocument>
-  )
+export const metadata: Metadata = createPageMetadata({
+  path: '/privacy',
+  title: TITLE,
+  type: 'article',
+})
+
+export default function PrivacyLayout({ children }: LayoutProps<'/privacy'>) {
+  return <SimpleDocument title={TITLE}>{children}</SimpleDocument>
 }
