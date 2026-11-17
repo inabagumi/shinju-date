@@ -1,75 +1,17 @@
-import { createErrorResponse } from '@shinju-date/helpers'
-import { stringify } from 'csv-stringify/sync'
-import { connection, type NextRequest, NextResponse } from 'next/server'
 import { getPopularVideos } from '@/lib/analytics/get-popular-videos'
-import { exportSearchParamsSchema } from '../_lib/schema'
+import { createCsvExportRoute } from '../_lib/create-csv-export-route'
 
 /**
  * Export popular videos data as CSV
  */
-export async function GET(request: NextRequest) {
-  await connection()
-
-  try {
-    // Parse and validate query parameters
-    const searchParams = Object.fromEntries(
-      request.nextUrl.searchParams.entries(),
-    )
-    const validatedParams = exportSearchParamsSchema.parse(searchParams)
-
-    // Fetch data for the period of the parameters
-    const videos = await getPopularVideos({
-      limit: validatedParams.limit,
-      range: validatedParams.range,
-    })
-
-    // Check if data is available
-    if (videos.length === 0) {
-      return createErrorResponse(
-        'No data available for the specified date range',
-        {
-          status: 404,
-        },
-      )
-    }
-
-    // Prepare data for CSV export
-    const csvData = [
-      ['順位', 'タイトル', 'YouTube動画ID', 'クリック数'],
-      ...videos.map((video, index) => [
-        index + 1,
-        video.title,
-        video.youtube_video?.youtube_video_id || 'N/A',
-        video.clicks,
-      ]),
-    ]
-
-    // Generate CSV content using csv-stringify
-    const csvContent = stringify(csvData, {
-      bom: true, // Add BOM for Excel compatibility
-    })
-
-    // Generate filename
-    const dateStr =
-      validatedParams.selectedDate ||
-      `${validatedParams.startDate}_${validatedParams.endDate || validatedParams.startDate}`
-    const filename = `click-analytics-videos-${dateStr}.csv`
-
-    // Return CSV response
-    return new NextResponse(csvContent, {
-      headers: {
-        'Content-Disposition': `attachment; filename="${filename}"`,
-        'Content-Type': 'text/csv;charset=utf-8',
-      },
-    })
-  } catch (error) {
-    console.error('CSV export error:', error)
-
-    // Handle validation errors
-    if (error instanceof Error && 'issues' in error) {
-      return createErrorResponse('Invalid parameters provided', { status: 400 })
-    }
-
-    return createErrorResponse('Failed to generate CSV export', { status: 500 })
-  }
-}
+export const GET = createCsvExportRoute({
+  fetch: getPopularVideos,
+  filenamePrefix: 'click-analytics-videos-',
+  header: ['順位', 'タイトル', 'YouTube動画ID', 'クリック数'],
+  toRow: (video, index) => [
+    index + 1,
+    video.title,
+    video.youtube_video?.youtube_video_id || 'N/A',
+    video.clicks,
+  ],
+})

@@ -15,11 +15,9 @@ describe('exportSearchParamsSchema', () => {
     expect(
       exportSearchParamsSchema.parse({ from: '2026-11-03', to: '2026-11-10' }),
     ).toEqual({
-      endDate: '2026-11-10',
       limit: 50,
       range: { end: '2026-11-10', start: '2026-11-03' },
       selectedDate: null,
-      startDate: '2026-11-03',
     })
   })
 
@@ -31,21 +29,35 @@ describe('exportSearchParamsSchema', () => {
         to: '2026-11-10',
       }),
     ).toEqual({
-      endDate: null,
       limit: 50,
       range: { end: '2026-11-05', start: '2026-11-05' },
       selectedDate: '2026-11-05',
-      startDate: '2026-11-05',
     })
   })
 
   it('exports a single day when only from is given', () => {
     expect(exportSearchParamsSchema.parse({ from: '2026-11-03' })).toEqual({
-      endDate: null,
       limit: 50,
       range: { end: '2026-11-03', start: '2026-11-03' },
       selectedDate: '2026-11-03',
-      startDate: '2026-11-03',
+    })
+  })
+
+  it('exports a single day when only to is given', () => {
+    expect(exportSearchParamsSchema.parse({ to: '2026-11-03' })).toEqual({
+      limit: 50,
+      range: { end: '2026-11-03', start: '2026-11-03' },
+      selectedDate: '2026-11-03',
+    })
+  })
+
+  it('treats an empty date like a missing one', () => {
+    expect(
+      exportSearchParamsSchema.parse({ from: '', to: '2026-11-03' }),
+    ).toEqual({
+      limit: 50,
+      range: { end: '2026-11-03', start: '2026-11-03' },
+      selectedDate: '2026-11-03',
     })
   })
 
@@ -68,10 +80,41 @@ describe('exportSearchParamsSchema', () => {
     expect(exportSearchParamsSchema.safeParse({ date }).success).toBe(false)
   })
 
+  it.each([
+    ['from', { from: '2026-08-16', to: '2026-11-10' }],
+    ['to', { from: '2026-11-01', to: '2026-11-15' }],
+    ['date', { date: '2026-11-15', from: '2026-11-01', to: '2026-11-10' }],
+    ['from', { date: '2026-11-05', from: '2026-08-16' }],
+  ])('rejects %s outside the window instead of ignoring it', (key, params) => {
+    const result = exportSearchParamsSchema.safeParse(params)
+
+    expect(result.success).toBe(false)
+    expect(result.error?.issues.map((issue) => issue.path)).toContainEqual([
+      key,
+    ])
+  })
+
   it('rejects a start after the end', () => {
-    expect(() =>
-      exportSearchParamsSchema.parse({ from: '2026-11-10', to: '2026-11-03' }),
-    ).toThrow('Start date must be before or equal to end date')
+    const result = exportSearchParamsSchema.safeParse({
+      from: '2026-11-10',
+      to: '2026-11-03',
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error?.issues.map((issue) => issue.message)).toContain(
+      'Start date must be before or equal to end date',
+    )
+  })
+
+  it('rejects a range longer than 90 days', () => {
+    // 2026-08-16 to 2026-11-14 is 91 days. A range this long always starts
+    // before the window, which keeps the last 90 days
+    expect(
+      exportSearchParamsSchema.safeParse({
+        from: '2026-08-16',
+        to: '2026-11-14',
+      }).success,
+    ).toBe(false)
   })
 
   describe('compared with the schema of the analytics pages', () => {
@@ -84,13 +127,13 @@ describe('exportSearchParamsSchema', () => {
 
     /** Whether the export covers the given range */
     function isAcceptedByExport(from: string, to: string): boolean {
-      try {
-        const result = exportSearchParamsSchema.parse({ from, to })
+      const result = exportSearchParamsSchema.safeParse({ from, to })
 
-        return result.startDate === from && result.endDate === to
-      } catch {
-        return false
-      }
+      return (
+        result.success &&
+        result.data.range.start === from &&
+        result.data.range.end === to
+      )
     }
 
     it.each([
