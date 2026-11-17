@@ -175,6 +175,50 @@ test.describe('Admin App - Talents Management', () => {
     await expect(page).toHaveTitle(/^(?!undefined).+ - タレント詳細 - /)
     await expect(page.getByText('Temporal error')).toHaveCount(0)
   })
+
+  test('should confirm a lifecycle change from the list in a dialog', async ({
+    page,
+  }) => {
+    await page.goto('http://localhost:4000/talents')
+
+    await page
+      .getByRole('button', { name: /^「.+」の操作$/ })
+      .first()
+      .click()
+    await page.getByRole('menuitem', { name: '削除' }).click()
+
+    const dialog = page.getByRole('dialog', { name: 'タレントを削除' })
+    await expect(dialog).toBeVisible()
+    await expect(dialog).toContainText(/タレント「.+」を削除しますか？/)
+
+    await dialog.getByRole('button', { name: 'キャンセル' }).click()
+    await expect(dialog).toBeHidden()
+  })
+
+  test('should confirm a lifecycle change from the detail page in a dialog', async ({
+    page,
+  }) => {
+    await page.goto('http://localhost:4000/talents')
+
+    const href = await page
+      .locator('a[href^="/talents/"]')
+      .evaluateAll((links) =>
+        links
+          .map((link) => link.getAttribute('href'))
+          .find((value) => value && /^\/talents\/[0-9a-f-]{36}$/.test(value)),
+      )
+    expect(href).toBeTruthy()
+    await page.goto(`http://localhost:4000${href}`)
+
+    await page.getByRole('button', { exact: true, name: '削除' }).click()
+
+    const dialog = page.getByRole('dialog', { name: 'タレントを削除' })
+    await expect(dialog).toBeVisible()
+    await expect(dialog).toContainText(/タレント「.+」を削除しますか？/)
+
+    await dialog.getByRole('button', { name: 'キャンセル' }).click()
+    await expect(dialog).toBeHidden()
+  })
 })
 
 test.describe('Admin App - Feedback Management', () => {

@@ -1,20 +1,21 @@
-import type Database from '@shinju-date/database'
+import type { Enums } from '@shinju-date/database'
 import { Badge, type BadgeProps } from '@shinju-date/ui'
 
-type VideoKind = Database['public']['Enums']['video_kind']
-
-const VIDEO_KIND_LABELS: Record<VideoKind, string> = {
+const VIDEO_KIND_LABELS: Record<Enums<'video_kind'>, string> = {
   short: 'ショート',
   standard: '通常',
 }
 
-const VIDEO_KIND_VARIANTS: Record<VideoKind, BadgeProps['variant']> = {
+const VIDEO_KIND_VARIANTS: Record<
+  Enums<'video_kind'>,
+  BadgeProps['variant']
+> = {
   short: 'info',
   standard: 'neutral',
 }
 
 interface VideoKindBadgeProps {
-  videoKind: VideoKind
+  videoKind: Enums<'video_kind'>
   className?: string
 }
 

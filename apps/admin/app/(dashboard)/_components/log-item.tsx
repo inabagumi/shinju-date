@@ -1,12 +1,9 @@
-import type Database from '@shinju-date/database'
+import type { Enums } from '@shinju-date/database'
 import { formatRelativeTime } from '@shinju-date/temporal-fns'
 import { AuditLogTarget } from '../_components/audit-log-target'
 import type { Log } from '../_lib/get-audit-logs'
 
-const ACTION_LABELS: Record<
-  Database['public']['Enums']['audit_action'],
-  string
-> = {
+const ACTION_LABELS: Record<Enums<'audit_action'>, string> = {
   ACCOUNT_EMAIL_UPDATE: 'メールアドレスを更新',
   ACCOUNT_PASSWORD_UPDATE: 'パスワードを更新',
   ANNOUNCEMENT_CREATE: 'お知らせを作成',

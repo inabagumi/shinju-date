@@ -1,17 +1,24 @@
-import type { Tables } from '@shinju-date/database'
+import { Constants, type Enums } from '@shinju-date/database'
 
-export type FeatureRequestStatus = Tables<'feature_requests'>['status']
+export type FeatureRequestStatus = Enums<'feature_request_status'>
 
 /**
  * `feature_request_status` の値。クライアントコンポーネントでも使うため、
  * zod を使わずに判定する
  */
-export const FEATURE_REQUEST_STATUSES = [
-  'pending',
-  'in_progress',
-  'resolved',
-  'rejected',
-] as const satisfies readonly FeatureRequestStatus[]
+export const FEATURE_REQUEST_STATUSES =
+  Constants.public.Enums.feature_request_status
+
+/** `feature_request_status` の表示名 */
+export const FEATURE_REQUEST_STATUS_LABELS: Record<
+  FeatureRequestStatus,
+  string
+> = {
+  in_progress: '対応中',
+  pending: '未対応',
+  rejected: '却下',
+  resolved: '対応済み',
+}
 
 export function isFeatureRequestStatus(
   value: unknown,
