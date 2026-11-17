@@ -3,7 +3,7 @@
 import type { TablesUpdate } from '@shinju-date/database'
 import { revalidatePath } from 'next/cache'
 import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
-import { supabaseClient } from '@/lib/supabase/admin'
+import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 
 export async function updateFeatureRequestStatus(
   id: string,
@@ -21,7 +21,7 @@ export async function updateFeatureRequestStatus(
       }
     }
 
-    const { error } = await supabaseClient
+    const { error } = await getSupabaseAdminClient()
       .from('feature_requests')
       .update({ status })
       .eq('id', id)
@@ -50,7 +50,7 @@ export async function updateFeatureRequestMemo(
   }
 
   try {
-    const { error } = await supabaseClient
+    const { error } = await getSupabaseAdminClient()
       .from('feature_requests')
       .update({ admin_memo: adminMemo })
       .eq('id', id)
@@ -79,7 +79,7 @@ export async function markFeatureRequestAsRead(
   }
 
   try {
-    const { error } = await supabaseClient
+    const { error } = await getSupabaseAdminClient()
       .from('feature_requests')
       .update({ is_read: isRead })
       .eq('id', id)
