@@ -4,18 +4,18 @@
     "@shinju-date/constants": "workspace:*",
     "@shinju-date/database": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
-    "zod": "4.6.7"
+    "zod": "catalog:"
   },
   "description": "Types, counts and Redis snapshots of the dashboard statistics shared by the admin and batch apps",
   "devDependencies": {
-    "@supabase/supabase-js": "2.119.0",
-    "@tsconfig/node20": "20.1.11",
-    "@tsconfig/strictest": "2.0.9",
-    "@types/node": "26.6.6",
-    "@upstash/redis": "1.41.0",
-    "tsdown": "0.23.7",
-    "typescript": "6.0.3",
-    "vitest": "5.1.0"
+    "@supabase/supabase-js": "catalog:",
+    "@tsconfig/node20": "catalog:",
+    "@tsconfig/strictest": "catalog:",
+    "@types/node": "catalog:",
+    "@upstash/redis": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "exports": {
     ".": {

@@ -1,17 +1,17 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@googleapis/youtube": "40.1.0",
+    "@googleapis/youtube": "catalog:",
     "@shinju-date/database": "workspace:*",
-    "zod": "4.6.7"
+    "zod": "catalog:"
   },
   "description": "YouTube API client package for SHINJU DATE with Zod validation",
   "devDependencies": {
-    "@tsconfig/node20": "20.1.11",
-    "@tsconfig/strictest": "2.0.9",
-    "tsdown": "0.23.7",
-    "typescript": "6.0.3",
-    "vitest": "5.1.0"
+    "@tsconfig/node20": "catalog:",
+    "@tsconfig/strictest": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "exports": {
     ".": {

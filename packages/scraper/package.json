@@ -1,28 +1,28 @@
 {
   "author": "Haneru Developers",
   "dependencies": {
-    "@googleapis/youtube": "40.1.0",
+    "@googleapis/youtube": "catalog:",
     "@shinju-date/database": "workspace:*",
     "@shinju-date/retryable-fetch": "workspace:*",
     "@shinju-date/temporal-fns": "workspace:*",
     "@shinju-date/twitch-api-client": "workspace:*",
     "@shinju-date/youtube-api-client": "workspace:*",
-    "@supabase/supabase-js": "2.119.0",
+    "@supabase/supabase-js": "catalog:",
     "mime": "4.1.2",
     "nanoid": "6.0.2",
     "p-queue": "10.0.0",
-    "sharp": "0.35.5"
+    "sharp": "catalog:"
   },
   "description": "Crawlers that keep YouTube and Twitch videos in the SHINJU DATE database in sync",
   "devDependencies": {
     "@shinju-date/helpers": "workspace:*",
-    "@tsconfig/node20": "20.1.11",
-    "@tsconfig/strictest": "2.0.9",
-    "@types/node": "26.6.6",
-    "msw": "3.0.6",
-    "tsdown": "0.23.7",
-    "typescript": "6.0.3",
-    "vitest": "5.1.0"
+    "@tsconfig/node20": "catalog:",
+    "@tsconfig/strictest": "catalog:",
+    "@types/node": "catalog:",
+    "msw": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "exports": {
     ".": {
