@@ -1,4 +1,6 @@
+import { HttpResponse, http } from 'msw'
 import { beforeAll, describe, expect, it } from 'vitest'
+import { StorageError } from '../../internal/errors.js'
 import { TEST_NOW } from '../../internal/testing/context.js'
 import {
   createImage,
@@ -202,6 +204,38 @@ describe('syncYouTubeChannelIcon', () => {
       id: 'eq.image-1',
     })
     expect(storage.removed).toEqual([['youtube/UCaaa/old.webp']])
+  })
+
+  it('throws StorageError when the icon cannot be uploaded', async () => {
+    serveImage(supabase, thumbnails.high.url, { body: image })
+    supabase.server.use(
+      http.post(
+        'https://fake.supabase.test/storage/v1/object/profile-images/*',
+        () =>
+          HttpResponse.json(
+            {
+              error: 'Internal',
+              message: 'storage is down',
+              statusCode: '500',
+            },
+            { status: 500 },
+          ),
+      ),
+    )
+    respondWithChannel()
+
+    const result = syncYouTubeChannelIcon({
+      channel: { snippet: { thumbnails, title: 'Alice' } },
+      now: TEST_NOW,
+      saved,
+      supabaseClient: supabase.supabaseClient,
+    })
+
+    await expect(result).rejects.toBeInstanceOf(StorageError)
+    await expect(result).rejects.toMatchObject({
+      operation: 'Failed to upload a profile image',
+    })
+    expect(supabase.requests).toHaveLength(0)
   })
 
   it('rejects when the icon cannot be downloaded', async () => {

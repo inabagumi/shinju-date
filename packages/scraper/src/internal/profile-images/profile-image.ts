@@ -4,7 +4,7 @@ import { toDBString } from '@shinju-date/temporal-fns'
 import { nanoid } from 'nanoid'
 import sharp from 'sharp'
 import type { TypedSupabaseClient } from '../../types.js'
-import { DatabaseError } from '../errors.js'
+import { DatabaseError, StorageError } from '../errors.js'
 
 export const PROFILE_IMAGES_BUCKET = 'profile-images'
 
@@ -165,7 +165,7 @@ export async function createProfileImage({
     })
 
   if (uploadError) {
-    throw uploadError
+    throw new StorageError('Failed to upload a profile image', uploadError)
   }
 
   const timestamp = toDBString(now)

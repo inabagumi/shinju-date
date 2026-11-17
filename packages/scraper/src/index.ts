@@ -1,6 +1,9 @@
 export {
   AccountNotFoundError,
+  DatabaseError,
   StalledPaginationError,
+  StorageError,
+  throwIfError,
 } from './internal/errors.js'
 export { Scraper } from './scraper.js'
 export type {
