@@ -454,7 +454,13 @@ describe('createTalentAction', () => {
       'talents',
       createTalent({ id: TALENT_ID, name: 'New Talent' }),
     )
-    supabase.on('insert', 'youtube_channels', { id: 'channel-row-1' })
+    supabase.on('insert', 'youtube_channels', {
+      id: 'channel-row-1',
+      name: 'Example Channel',
+      talent: { name: 'New Talent' },
+      youtube_channel_id: youtubeChannel.id,
+      youtube_handle: '@example',
+    })
 
     const formData = new FormData()
     formData.append('name', 'New Talent')
@@ -473,6 +479,18 @@ describe('createTalentAction', () => {
       id: 'channel-row-1',
       profile_images: null,
       youtube_channel_id: youtubeChannel.id,
+    })
+    test.expectAuditLog('YOUTUBE_CHANNEL_CREATE', TALENT_ID, {
+      account: {
+        id: 'channel-row-1',
+        name: 'Example Channel',
+        youtube_channel_id: youtubeChannel.id,
+        youtube_handle: '@example',
+      },
+      entityName: 'New Talent',
+    })
+    test.expectAuditLog('CHANNEL_CREATE', TALENT_ID, {
+      entityName: 'New Talent',
     })
   })
 
@@ -502,6 +520,58 @@ describe('createTalentAction', () => {
       vi.mocked(resolveYouTubeChannel).mockResolvedValue(
         youtubeChannel as never,
       )
+    })
+
+    it('should not create the talent when the channel is not on YouTube', async () => {
+      vi.mocked(resolveYouTubeChannel).mockResolvedValue(null)
+
+      const result = await createTalentAction({}, channelFormData())
+
+      expect(result).toEqual({
+        errors: {
+          youtube_channel_id: [
+            'YouTubeでチャンネルが見つかりませんでした。入力内容を確認してください。',
+          ],
+        },
+      })
+      expect(supabase.requests).toHaveLength(0)
+      expectNothingCompleted()
+    })
+
+    it('should not create the talent when the channel input is not understood', async () => {
+      const formData = channelFormData()
+      formData.set('youtube_channel_id', 'ab')
+
+      const result = await createTalentAction({}, formData)
+
+      expect(result).toEqual({
+        errors: {
+          youtube_channel_id: [
+            '有効なチャンネルID（UC...）、ハンドル（@name）、またはYouTube URLを入力してください。',
+          ],
+        },
+      })
+      expect(resolveYouTubeChannel).not.toHaveBeenCalled()
+      expect(supabase.requests).toHaveLength(0)
+      expectNothingCompleted()
+    })
+
+    it('should not create the talent when the YouTube API key is missing', async () => {
+      vi.mocked(resolveYouTubeChannel).mockRejectedValue(
+        new TypeError('An API Key is required.'),
+      )
+
+      const result = await createTalentAction({}, channelFormData())
+
+      expect(result).toEqual({
+        errors: {
+          generic: [
+            'YouTube APIキーが設定されていません。管理者に連絡してください。',
+          ],
+        },
+      })
+      expect(supabase.requests).toHaveLength(0)
+      expectNothingCompleted()
     })
 
     it('should not create the talent when the channel is already registered', async () => {
@@ -534,6 +604,16 @@ describe('createTalentAction', () => {
     })
 
     it('should delete the created talent when the channel was registered in the meantime', async () => {
+      // タレントを作る前の確認では登録されておらず、チャンネルの行を作るときには登録されている
+      supabase.once('select', 'youtube_channels', [])
+      supabase.on(
+        'select',
+        'youtube_channels',
+        createYouTubeChannel({
+          talent_id: 'other-talent-id',
+          youtube_channel_id: youtubeChannel.id,
+        }),
+      )
       supabase.on(
         'insert',
         'talents',

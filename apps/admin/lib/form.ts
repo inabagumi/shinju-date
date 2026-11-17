@@ -1,5 +1,6 @@
 import type * as z from 'zod'
 import type { FormState } from '@/components/form'
+import type { ActionError } from '@/lib/action'
 
 export type ParseFormDataResult<T> =
   | { data: T; success: true }
@@ -25,6 +26,18 @@ export function zodErrorToFormState(error: z.ZodError): FormState {
     },
     {},
   )
+}
+
+/**
+ * `ActionError` を `FormState` に直す。項目（`field`）があればその項目のエラーに、
+ * なければ項目に結び付かないエラー（`generic`）にする。
+ */
+export function actionErrorToFormState(error: ActionError): FormState {
+  return {
+    errors: {
+      [error.field ?? 'generic']: [error.message],
+    },
+  }
 }
 
 /**

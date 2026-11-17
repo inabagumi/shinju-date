@@ -3,7 +3,6 @@
 import { CACHE_TAGS } from '@shinju-date/constants'
 import type { Enums, Tables } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
-import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
 import { revalidatePath } from 'next/cache'
 import { createAuditLog } from '@/lib/audit-log'
@@ -13,6 +12,7 @@ import {
   unauthenticatedResult,
 } from '@/lib/auth'
 import { createScraper } from '@/lib/scraper'
+import { touchTalent } from '@/lib/talent-accounts'
 import {
   accountsNotFoundError,
   type PlatformSyncOutcome,
@@ -62,13 +62,10 @@ async function syncPlatform(
     }
 
     // 一覧の並びに反映するため、タレントの更新日時を進める
-    const { error } = await supabaseClient
-      .from('talents')
-      .update({ updated_at: toDBString(now) })
-      .eq('id', talent.id)
+    const touchError = await touchTalent(supabaseClient, talent.id, now)
 
-    if (error) {
-      throw error
+    if (touchError) {
+      throw touchError
     }
 
     await createAuditLog('CHANNEL_SYNC', talent.id, {

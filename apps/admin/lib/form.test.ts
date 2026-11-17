@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import * as z from 'zod'
-import { parseFormData, zodErrorToFormState } from './form'
+import { ActionError } from './action'
+import {
+  actionErrorToFormState,
+  parseFormData,
+  zodErrorToFormState,
+} from './form'
 
 function createFormData(entries: [string, string][]): FormData {
   const formData = new FormData()
@@ -133,6 +138,22 @@ describe('zodErrorToFormState', () => {
       errors: {
         password: ['8文字以上入力してください。', '数字を含めてください。'],
       },
+    })
+  })
+})
+
+describe('actionErrorToFormState', () => {
+  it('attaches the message to the field of the error', () => {
+    expect(
+      actionErrorToFormState(
+        new ActionError('すでに登録されています。', { field: 'name' }),
+      ),
+    ).toEqual({ errors: { name: ['すでに登録されています。'] } })
+  })
+
+  it('attaches the message to no field when the error has none', () => {
+    expect(actionErrorToFormState(new ActionError('失敗しました。'))).toEqual({
+      errors: { generic: ['失敗しました。'] },
     })
   })
 })

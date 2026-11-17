@@ -13,6 +13,12 @@ export const NO_ROWS_ERROR_CODE = 'PGRST116'
  */
 export const INVALID_TEXT_REPRESENTATION_ERROR_CODE = '22P02'
 
+/**
+ * The PostgreSQL error for a row that breaks a unique constraint, e.g. a
+ * YouTube channel that is already saved.
+ */
+export const UNIQUE_VIOLATION_ERROR_CODE = '23505'
+
 const NOT_FOUND_ERROR_CODES: ReadonlySet<string> = new Set([
   NO_ROWS_ERROR_CODE,
   INVALID_TEXT_REPRESENTATION_ERROR_CODE,
