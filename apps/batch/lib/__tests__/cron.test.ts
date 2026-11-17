@@ -196,13 +196,15 @@ describe('runCronJob', () => {
   })
 
   it('locks the job for a little longer than its maximum duration', async () => {
+    let ttl: number | undefined
     const run = vi.fn(async () => {
-      expect(redis.ttls.get(LOCK_KEY)).toBe(130)
+      ttl = redis.ttls.get(LOCK_KEY)
     })
 
-    await runCronJob(createRequest(), job, run)
+    const response = await runCronJob(createRequest(), job, run)
 
-    expect(run).toHaveBeenCalledTimes(1)
+    expect(response.status).toBe(204)
+    expect(ttl).toBe(130)
     expect(redis.values.has(LOCK_KEY)).toBe(false)
   })
 
