@@ -1,6 +1,6 @@
-import { ToastProvider, ToastViewport } from '@shinju-date/ui'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ActionToastProvider } from '@/components/action-toast'
 
 const mocks = vi.hoisted(() => ({
   addYouTubeChannelAction: vi.fn(),
@@ -16,7 +16,7 @@ const { ChannelManager } = await import('./channel-manager')
 
 function renderManager() {
   return render(
-    <ToastProvider>
+    <ActionToastProvider>
       <ChannelManager
         channels={[
           {
@@ -29,8 +29,7 @@ function renderManager() {
         isDeleted={false}
         talentId="talent-1"
       />
-      <ToastViewport />
-    </ToastProvider>,
+    </ActionToastProvider>,
   )
 }
 

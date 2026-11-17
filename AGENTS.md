@@ -63,6 +63,7 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 - 影は重なるもの（モーダル、ドロップダウン、お知らせバナー）だけに `shadow-overlay` を使う。固定ヘッダーは影を付けず、下端を `border` の線1本で区切る
 - `twMerge` は `tailwind-merge` ではなく `@shinju-date/ui` からインポートする（`pnpm run check` が確かめる）
 - 日本語のウェブフォントは追加しない
+- 管理画面で、フォームを使わずに Server Action を呼ぶときは `useServerAction`（`apps/admin/lib/use-server-action.ts`）を使い、結果をトーストで知らせる。成功のあとに `router.refresh()` を呼ばない（[操作の結果の知らせ](docs/design-guidelines.md#操作の結果の知らせ管理画面)）
 
 ## キャッシュのディレクティブ
 

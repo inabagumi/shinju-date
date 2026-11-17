@@ -1,7 +1,7 @@
 import './globals.css'
-import { ToastProvider, ToastViewport } from '@shinju-date/ui'
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
+import { ActionToastProvider } from '@/components/action-toast'
 import { lato } from './fonts'
 
 export const viewport: Viewport = {
@@ -33,10 +33,7 @@ export default function RootLayout({ children }: Props) {
     // チェックボックスや日付の入力欄などのブラウザ標準の部品も、OS の設定に合わせて明暗を切り替える
     <html className={`${lato.variable} scheme-light-dark`} lang="ja">
       <body className="bg-background font-sans text-foreground">
-        <ToastProvider>
-          {children}
-          <ToastViewport />
-        </ToastProvider>
+        <ActionToastProvider>{children}</ActionToastProvider>
       </body>
     </html>
   )

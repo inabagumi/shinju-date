@@ -1,6 +1,6 @@
-import { ToastProvider, ToastViewport } from '@shinju-date/ui'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ActionToastProvider } from '@/components/action-toast'
 
 const mocks = vi.hoisted(() => ({
   activateTalentAction: vi.fn(),
@@ -39,10 +39,9 @@ const activeTalent: TalentActionsTalent = {
 
 function renderActions(talent: TalentActionsTalent = activeTalent) {
   return render(
-    <ToastProvider>
+    <ActionToastProvider>
       <TalentActions talent={talent} />
-      <ToastViewport />
-    </ToastProvider>,
+    </ActionToastProvider>,
   )
 }
 

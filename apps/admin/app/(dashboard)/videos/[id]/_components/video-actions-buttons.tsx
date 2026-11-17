@@ -3,8 +3,9 @@
 import type { Tables } from '@shinju-date/database'
 import { Button } from '@shinju-date/ui'
 import { Loader2, Trash2 } from 'lucide-react'
-import { useState, useTransition } from 'react'
-import { ActionToast, useActionToast } from '@/components/action-toast'
+import { useState } from 'react'
+import { useActionToast } from '@/components/action-toast'
+import { useServerAction } from '@/lib/use-server-action'
 import {
   restoreAction,
   softDeleteAction,
@@ -21,43 +22,28 @@ interface SyncVideoButtonProps {
 }
 
 function SyncVideoButton({ videoId, platform }: SyncVideoButtonProps) {
-  const [isPending, startTransition] = useTransition()
-  const { showToast, toastProps } = useActionToast()
+  const { isPending, run } = useServerAction(syncVideoAction, {
+    errorText: '同期に失敗しました。',
+    successText: (result) =>
+      result.message ??
+      (result.unchanged
+        ? '動画情報は既に最新です。'
+        : '動画情報を同期しました。'),
+  })
 
   const label = platform === 'twitch' ? 'Twitchと同期' : 'YouTubeと同期'
 
-  const handleSync = () => {
-    startTransition(async () => {
-      try {
-        const result = await syncVideoAction(videoId)
-        if (result.success) {
-          showToast(
-            'success',
-            result.message ??
-              (result.unchanged
-                ? '動画情報は既に最新です。'
-                : '動画情報を同期しました。'),
-          )
-        } else {
-          showToast('danger', result.error || '同期に失敗しました。')
-        }
-      } catch (_error) {
-        showToast('danger', '予期しないエラーが発生しました。')
-      }
-    })
-  }
-
   return (
-    <>
-      <Button disabled={isPending} onClick={handleSync} variant="secondary">
-        {isPending && (
-          <Loader2 aria-hidden="true" className="mr-2 size-4 animate-spin" />
-        )}
-        {isPending ? '同期中...' : label}
-      </Button>
-
-      <ActionToast {...toastProps} />
-    </>
+    <Button
+      disabled={isPending}
+      onClick={() => run(videoId)}
+      variant="secondary"
+    >
+      {isPending && (
+        <Loader2 aria-hidden="true" className="mr-2 size-4 animate-spin" />
+      )}
+      {isPending ? '同期中...' : label}
+    </Button>
   )
 }
 
@@ -75,7 +61,7 @@ interface VideoActionsProps {
  * 通常の操作と危険な操作を別の場所に置けるよう、ボタンとは分けている。
  */
 function useVideoAction(video: VideoActionsProps['video']) {
-  const { showToast, toastProps } = useActionToast()
+  const { showToast } = useActionToast()
   const [confirmDialog, setConfirmDialog] = useState<{
     action: VideoAction
     open: boolean
@@ -127,17 +113,13 @@ function useVideoAction(video: VideoActionsProps['video']) {
   }
 
   const dialog = (
-    <>
-      <ActionToast {...toastProps} />
-
-      <VideoActionConfirmDialog
-        action={confirmDialog.action}
-        onConfirm={handleConfirm}
-        onOpenChange={(open) => setConfirmDialog((prev) => ({ ...prev, open }))}
-        open={confirmDialog.open}
-        videos={[videoInfo]}
-      />
-    </>
+    <VideoActionConfirmDialog
+      action={confirmDialog.action}
+      onConfirm={handleConfirm}
+      onOpenChange={(open) => setConfirmDialog((prev) => ({ ...prev, open }))}
+      open={confirmDialog.open}
+      videos={[videoInfo]}
+    />
   )
 
   return { dialog, openDialog }

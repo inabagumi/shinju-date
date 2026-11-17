@@ -14,7 +14,7 @@ import {
 } from '@shinju-date/ui'
 import { ExternalLink, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import { ActionToast, useActionToast } from '@/components/action-toast'
+import { useActionToast } from '@/components/action-toast'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import type { FormState } from '@/components/form'
 import Form, {
@@ -52,7 +52,7 @@ export function TwitchUserManager({
   // Kept after the dialog closes so that its content stays while it fades out.
   const [removalTarget, setRemovalTarget] = useState<TwitchUser | null>(null)
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
-  const { showToast, toastProps } = useActionToast()
+  const { showToast } = useActionToast()
 
   const handleAddUser = async (
     currentState: FormState,
@@ -248,7 +248,6 @@ export function TwitchUserManager({
           </>
         )}
       </ConfirmDialog>
-      <ActionToast {...toastProps} />
     </div>
   )
 }

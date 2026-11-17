@@ -1,4 +1,3 @@
-import { ToastProvider, ToastViewport } from '@shinju-date/ui'
 import {
   fireEvent,
   render,
@@ -8,6 +7,7 @@ import {
 } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ActionToastProvider } from '@/components/action-toast'
 import {
   restoreAction,
   softDeleteAction,
@@ -53,7 +53,9 @@ function createVideo(overrides: Partial<Video> = {}): Video {
 
 describe('VideoList', () => {
   it('renders the talent name', () => {
-    render(<VideoList videos={[createVideo()]} />)
+    render(<VideoList videos={[createVideo()]} />, {
+      wrapper: ActionToastProvider,
+    })
 
     const row = screen.getByText('Test Video').closest('tr')
     expect(row).not.toBeNull()
@@ -61,7 +63,9 @@ describe('VideoList', () => {
   })
 
   it('renders a fallback instead of crashing when the talent is missing', () => {
-    render(<VideoList videos={[createVideo({ talent: null })]} />)
+    render(<VideoList videos={[createVideo({ talent: null })]} />, {
+      wrapper: ActionToastProvider,
+    })
 
     const row = screen.getByText('Test Video').closest('tr')
     expect(row).not.toBeNull()
@@ -71,7 +75,9 @@ describe('VideoList', () => {
   })
 
   it('shows the published and updated dates in one column', () => {
-    render(<VideoList videos={[createVideo()]} />)
+    render(<VideoList videos={[createVideo()]} />, {
+      wrapper: ActionToastProvider,
+    })
 
     const row = screen.getByText('Test Video').closest('tr') as HTMLElement
     const published = within(row).getByText('公開')
@@ -84,7 +90,9 @@ describe('VideoList', () => {
   })
 
   it('shows the platform and video kind badges in one column', () => {
-    render(<VideoList videos={[createVideo({ video_kind: 'short' })]} />)
+    render(<VideoList videos={[createVideo({ video_kind: 'short' })]} />, {
+      wrapper: ActionToastProvider,
+    })
 
     const row = screen.getByText('Test Video').closest('tr') as HTMLElement
     const platform = within(row).getByText('YouTube')
@@ -100,10 +108,9 @@ describe('VideoList', () => {
 
     function renderWithToast() {
       render(
-        <ToastProvider>
+        <ActionToastProvider>
           <VideoList videos={[createVideo()]} />
-          <ToastViewport />
-        </ToastProvider>,
+        </ActionToastProvider>,
       )
     }
 
@@ -175,12 +182,7 @@ describe('VideoList', () => {
     })
 
     function Wrapper({ children }: WrapperProps) {
-      return (
-        <ToastProvider>
-          {children}
-          <ToastViewport />
-        </ToastProvider>
-      )
+      return <ActionToastProvider>{children}</ActionToastProvider>
     }
 
     function select(title: string) {

@@ -2,15 +2,15 @@
 
 import type { Tables } from '@shinju-date/database'
 import { EllipsisVertical } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
-import { ActionToast, useActionToast } from '@/components/action-toast'
+import { useState } from 'react'
+import { useActionToast } from '@/components/action-toast'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/dropdown-menu'
+import { useServerAction } from '@/lib/use-server-action'
 import { syncTalentAccounts } from '../_actions/sync'
 import {
   TalentLifecycleDialog,
@@ -24,8 +24,17 @@ interface TalentActionsProps {
 }
 
 export function TalentActions({ talent }: TalentActionsProps) {
-  const router = useRouter()
-  const [isSyncPending, startSyncTransition] = useTransition()
+  const { isPending: isSyncPending, run: runSync } = useServerAction(
+    syncTalentAccounts,
+    {
+      errorText: '同期に失敗しました。',
+      successText: (result) =>
+        result.message ??
+        (result.unchanged
+          ? 'アカウント情報は既に最新です。'
+          : 'アカウント情報を同期しました。'),
+    },
+  )
   // メニューは項目を押すと閉じて中身が消えるため、ダイアログはメニューの外に置き、
   // 開いている操作をここで持つ。閉じる途中も文言が変わらないよう、操作の種類は
   // 閉じても残す
@@ -34,7 +43,7 @@ export function TalentActions({ talent }: TalentActionsProps) {
     operation: TalentLifecycleOperation
   }>({ open: false, operation: 'delete' })
   // 一覧の行の中には結果を表示する場所がないため、トーストで知らせる
-  const { showToast, toastProps } = useActionToast()
+  const { showToast } = useActionToast()
 
   const isDeleted = talent.deleted_at !== null
   const isRetired = !isDeleted && talent.status === 'retired'
@@ -42,31 +51,6 @@ export function TalentActions({ talent }: TalentActionsProps) {
 
   const openLifecycleDialog = (operation: TalentLifecycleOperation) => {
     setLifecycleDialog({ open: true, operation })
-  }
-
-  const handleSync = () => {
-    startSyncTransition(async () => {
-      try {
-        const result = await syncTalentAccounts(talent.id)
-        if (result.success) {
-          showToast(
-            'success',
-            result.message ??
-              (result.unchanged
-                ? 'アカウント情報は既に最新です。'
-                : 'アカウント情報を同期しました。'),
-          )
-        } else {
-          showToast('danger', result.error || '同期に失敗しました。')
-        }
-        // A platform may have been updated even when another one failed.
-        if (result.unchanged === false) {
-          router.refresh()
-        }
-      } catch {
-        showToast('danger', '予期しないエラーが発生しました。')
-      }
-    })
   }
 
   return (
@@ -85,7 +69,9 @@ export function TalentActions({ talent }: TalentActionsProps) {
             </DropdownMenuItem>
           ) : (
             <>
-              <DropdownMenuItem onClick={handleSync}>同期</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => runSync(talent.id)}>
+                同期
+              </DropdownMenuItem>
               {isActive && (
                 <DropdownMenuItem onClick={() => openLifecycleDialog('retire')}>
                   引退にする
@@ -118,7 +104,6 @@ export function TalentActions({ talent }: TalentActionsProps) {
         operation={lifecycleDialog.operation}
         talent={talent}
       />
-      <ActionToast {...toastProps} />
     </>
   )
 }

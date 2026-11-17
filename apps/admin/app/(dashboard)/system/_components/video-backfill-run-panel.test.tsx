@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ActionToastProvider } from '@/components/action-toast'
 import type {
   VideoBackfillRun,
   VideoBackfillRunAccount,
@@ -69,7 +70,7 @@ describe('VideoBackfillRunPanel', () => {
       success: true,
     })
 
-    render(<VideoBackfillRunPanel />)
+    render(<VideoBackfillRunPanel />, { wrapper: ActionToastProvider })
 
     expect(
       await screen.findByText('最近の取得漏れチェックはありません。'),
@@ -118,7 +119,7 @@ describe('VideoBackfillRunPanel', () => {
       targets,
     })
 
-    render(<VideoBackfillRunPanel />)
+    render(<VideoBackfillRunPanel />, { wrapper: ActionToastProvider })
 
     const button = await screen.findByRole('button', { name: '実行中' })
 
@@ -137,7 +138,7 @@ describe('VideoBackfillRunPanel', () => {
       targets,
     })
 
-    render(<VideoBackfillRunPanel />)
+    render(<VideoBackfillRunPanel />, { wrapper: ActionToastProvider })
 
     const button = await screen.findByRole('button', {
       name: '取得漏れをチェックする',
@@ -155,7 +156,7 @@ describe('VideoBackfillRunPanel', () => {
       })
       .mockResolvedValueOnce({ run: createRun(), success: true, targets })
 
-    render(<VideoBackfillRunPanel />)
+    render(<VideoBackfillRunPanel />, { wrapper: ActionToastProvider })
 
     fireEvent.click(await screen.findByRole('button', { name: '再試行' }))
 

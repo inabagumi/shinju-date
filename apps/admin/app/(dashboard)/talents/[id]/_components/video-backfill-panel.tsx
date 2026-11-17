@@ -4,9 +4,10 @@ import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import { Badge, Button } from '@shinju-date/ui'
 import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Panel } from '@/components/panel'
+import { useServerAction } from '@/lib/use-server-action'
 import {
   getVideoBackfillStatusAction,
   requestVideoBackfillAction,
@@ -100,12 +101,7 @@ export function VideoBackfillPanel({
 }: Props) {
   const router = useRouter()
   const [accounts, setAccounts] = useState<VideoBackfillAccount[] | null>(null)
-  const [isPending, startTransition] = useTransition()
   const [pendingProvider, setPendingProvider] = useState<Provider | null>(null)
-  const [message, setMessage] = useState<{
-    type: 'success' | 'error'
-    text: string
-  } | null>(null)
   // Why the progress could not be loaded; shown with a retry button.
   const [loadError, setLoadError] = useState<string | null>(null)
   const previousAdded = useRef<number | null>(null)
@@ -169,31 +165,17 @@ export function VideoBackfillPanel({
     return `「${talentName}」の${label}アカウント${count > 0 ? `（${count}件）` : ''}の過去動画をすべて確認し、未登録の動画を取り込みますか？\n処理はバックグラウンドで順番に行われます。`
   }
 
-  const request = (provider: Provider) => {
-    setMessage(null)
-    setPendingProvider(provider)
-    startTransition(async () => {
-      try {
-        const result = await requestVideoBackfillAction(talentId, provider)
+  const { run: requestBackfill } = useServerAction(requestVideoBackfillAction, {
+    errorText: 'キューへの追加に失敗しました。',
+    successText: (result) => result.message ?? 'キューに追加しました。',
+  })
 
-        setMessage(
-          result.success
-            ? {
-                text: result.message ?? 'キューに追加しました。',
-                type: 'success',
-              }
-            : {
-                text: result.error ?? 'キューへの追加に失敗しました。',
-                type: 'error',
-              },
-        )
-        await refresh()
-      } catch {
-        setMessage({ text: '予期しないエラーが発生しました。', type: 'error' })
-      } finally {
-        setPendingProvider(null)
-      }
-    })
+  // Keep the button busy until the progress shows the queued jobs.
+  const request = async (provider: Provider) => {
+    setPendingProvider(provider)
+    await requestBackfill(talentId, provider)
+    await refresh()
+    setPendingProvider(null)
   }
 
   /**
@@ -228,7 +210,9 @@ export function VideoBackfillPanel({
           <Button
             className="whitespace-nowrap"
             disabled={
-              isPending || accounts === null || isProviderActive(provider)
+              pendingProvider !== null ||
+              accounts === null ||
+              isProviderActive(provider)
             }
             key={provider}
             onClick={() => {
@@ -254,17 +238,6 @@ export function VideoBackfillPanel({
       {accounts !== null && loadError && (
         <div className="mb-4 rounded-control bg-danger/10 p-3 text-meta text-danger">
           {loadError}
-        </div>
-      )}
-      {message && (
-        <div
-          className={`mb-4 rounded-control p-3 text-meta ${
-            message.type === 'success'
-              ? 'bg-success/10 text-success'
-              : 'bg-danger/10 text-danger'
-          }`}
-        >
-          {message.text}
         </div>
       )}
       <div className="-mx-6 -mb-6 border-t border-border">
@@ -304,7 +277,7 @@ export function VideoBackfillPanel({
         description={confirmProvider ? getConfirmMessage(confirmProvider) : ''}
         onConfirm={() => {
           if (confirmProvider) {
-            request(confirmProvider)
+            void request(confirmProvider)
           }
         }}
         onOpenChange={setIsConfirmOpen}

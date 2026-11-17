@@ -195,6 +195,36 @@ const example = (
 )
 ```
 
+### 操作の結果の知らせ（管理画面）
+
+管理画面で Server Action を呼んだ結果は、操作した場所によって知らせ方を決めます。
+
+| 操作した場所                                 | 知らせ方                                                         |
+| -------------------------------------------- | ---------------------------------------------------------------- |
+| 一覧の行・メニュー・ボタン                   | トースト                                                         |
+| 確認ダイアログ（`ConfirmDialog`）            | 失敗はダイアログの中に出す。成功したら閉じて、トーストで知らせる |
+| フォームの送信（`useActionState`）           | 入力欄の近くに出す                                               |
+| 画面の状態（削除済み・引退・読み込みの失敗） | `Alert`（[状態の知らせ](#状態の知らせalert)）                    |
+
+- フォームを使わずにアクションを呼ぶときは、`apps/admin/lib/use-server-action.ts` の `useServerAction` を使う。`useTransition` と try/catch を部品ごとに書かない
+  - 成功なら `successText`、失敗なら `result.error`、`result.warnings` があれば1件ずつ警告のトーストを出す。例外のときは「処理に失敗しました。」を出す
+  - 実行中の状態は `isPending` で受け取り、ボタンを無効にする
+- トーストは、ルートのレイアウトに置いた `ActionToastProvider` が1か所で描く。部品から直接トーストを出すときは `useActionToast()` の `showToast` を使い、`<Toast>` を部品ごとに置かない
+- トーストの色は、`success`（成功）、`warning`（成功したが一部に注意が要る）、`danger`（失敗）の3つ
+- 成功のあとに `router.refresh()` を呼ばない。表示の更新は、アクションの `revalidatePath` に任せる
+
+```tsx
+const { isPending, run } = useServerAction(toggleVisibilityAction, {
+  successText: '表示状態を更新しました。',
+})
+
+const button = (
+  <Button disabled={isPending} onClick={() => run([video.id])}>
+    表示を切り替える
+  </Button>
+)
+```
+
 ### 動画カードのタイトル
 
 動画のタイトルは、`@shinju-date/helpers` の `parseVideoTitle` で「本文・ラベル（【】と〖〗の中身）・末尾のハッシュタグ」に分けて表示します。【】の中の出演者の表記（所属の名前 `TALENT_AFFILIATION_NAME` を含む部分と、タレントの名前）は出しません。`title` 属性には元のタイトルを入れます。
@@ -278,3 +308,4 @@ import { twMerge } from '@shinju-date/ui'
 - [ ] 影は重なるものだけに `shadow-overlay` を使っている
 - [ ] `packages/ui` にある部品（Button・Badge・Card・Dialog・Input・Select・Table・PageHeader・EmptyState・StatTile・FilterBar・Alert など）を使っている
 - [ ] Badge の色と Alert の `tone` は状態の意味で選んでいる（成功は `success`、注意は `warning`、危険は `danger`、中立は `neutral`）
+- [ ] 管理画面の操作の結果は、[操作の結果の知らせ](#操作の結果の知らせ管理画面)に沿って出している

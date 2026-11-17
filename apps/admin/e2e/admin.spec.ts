@@ -370,6 +370,47 @@ test.describe('Admin App - Terms Management', () => {
   })
 })
 
+test.describe('Admin App - Recommended Queries Management', () => {
+  test.beforeEach(async ({ page }) => {
+    // Login before each test
+    await page.goto('http://localhost:4000/login')
+    await page.waitForLoadState('networkidle')
+
+    const emailInput = page.locator('input[type="email"], input[name="email"]')
+    const passwordInput = page.locator(
+      'input[type="password"], input[name="password"]',
+    )
+    const submitButton = page.locator('button[type="submit"]')
+
+    await emailInput.fill('admin@example.com')
+    await passwordInput.fill('password123')
+    await submitButton.click()
+    // Wait for the sign-in redirect so that the session cookie is set
+    await page.waitForURL((url) => !url.pathname.startsWith('/login'))
+  })
+
+  test('should show the added query in the list and a toast without reloading', async ({
+    page,
+  }) => {
+    await page.goto('http://localhost:4000/recommended-queries')
+
+    // Unique per run, since the mock Redis keeps the set between tests
+    const query = `E2E クエリ ${test.info().testId}-${test.info().retry}`
+
+    await page.getByLabel('新しい手動クエリを追加').fill(query)
+    await page.getByRole('button', { exact: true, name: '追加' }).click()
+
+    await expect(
+      page.getByRole('region').getByText('クエリを追加しました。'),
+    ).toBeVisible()
+    // The list is updated by the action's revalidatePath, not router.refresh()
+    await expect(
+      page.getByRole('cell', { exact: true, name: query }),
+    ).toBeVisible()
+    await expect(page.getByLabel('新しい手動クエリを追加')).toHaveValue('')
+  })
+})
+
 test.describe('Admin App - Not Found', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:4000/login')
