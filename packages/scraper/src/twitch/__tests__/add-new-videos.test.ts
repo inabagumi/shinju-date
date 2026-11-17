@@ -250,9 +250,7 @@ describe('addNewTwitchVideos', () => {
   it('turns the placeholder of an ended broadcast into its archive', async () => {
     supabase.respondWith({
       'GET talents': TWITCH_TALENTS,
-      'GET twitch_videos': findSavedVideos([
-        createSavedVideo({ status: 'ENDED' }),
-      ]),
+      'GET videos': findSavedVideos([createSavedVideo({ status: 'ENDED' })]),
     })
     const { fetcher } = createFakeTwitchFetcher({ archives: [createVideo()] })
 
@@ -283,9 +281,7 @@ describe('addNewTwitchVideos', () => {
   it('removes the new thumbnail when the placeholder cannot be updated', async () => {
     supabase.respondWith({
       'GET talents': TWITCH_TALENTS,
-      'GET twitch_videos': findSavedVideos([
-        createSavedVideo({ status: 'ENDED' }),
-      ]),
+      'GET videos': findSavedVideos([createSavedVideo({ status: 'ENDED' })]),
       'PATCH videos': () => postgresError('57014', 'statement timeout'),
     })
     const { fetcher } = createFakeTwitchFetcher({ archives: [createVideo()] })
@@ -308,7 +304,7 @@ describe('addNewTwitchVideos', () => {
   it('keeps a broadcast LIVE when its archive shows up while on air', async () => {
     supabase.respondWith({
       'GET talents': TWITCH_TALENTS,
-      'GET twitch_videos': findSavedVideos([createSavedVideo()]),
+      'GET videos': findSavedVideos([createSavedVideo()]),
     })
     const { fetcher } = createFakeTwitchFetcher({
       archives: [createVideo({ duration: 'PT10M', thumbnail_url: '' })],
@@ -377,7 +373,7 @@ describe('addNewTwitchVideos', () => {
   it('leaves saved videos alone', async () => {
     supabase.respondWith({
       'GET talents': TWITCH_TALENTS,
-      'GET twitch_videos': findSavedVideos([
+      'GET videos': findSavedVideos([
         createSavedVideo({
           status: 'ENDED',
           twitch_video: { twitch_video_id: 'vod-1', type: 'archive' },

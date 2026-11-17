@@ -21,6 +21,7 @@ import type { TwitchFetcher } from './fetcher.js'
 import { createTwitchThumbnail } from './save-video.js'
 import {
   isLivePlaceholder,
+  SAVED_TWITCH_VIDEO_COLUMNS,
   type SavedTwitchVideo,
   updateTwitchVideo,
 } from './saved-video.js'
@@ -32,8 +33,9 @@ import {
   toVideoFields,
 } from './video.js'
 
+/** The talent is embedded only to filter on its status. */
 const SAVED_VIDEO_SELECT =
-  'id, deleted_at, duration, published_at, status, thumbnail_id, title, twitch_video:twitch_videos!inner(id, stream_id, twitch_video_id, type), talent:talents!inner(id)'
+  `${SAVED_TWITCH_VIDEO_COLUMNS}, talent:talents!inner(id)` as const
 
 /** What Twitch reports for one saved video or clip. */
 interface FetchedVideo {
