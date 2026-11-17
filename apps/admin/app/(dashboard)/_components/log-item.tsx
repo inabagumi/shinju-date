@@ -49,16 +49,30 @@ function LogMessage({ log }: { log: Log }) {
   )
 }
 
+interface Changes {
+  after?: unknown
+  before?: unknown
+}
+
+interface ChangeDetailsObject extends Changes {
+  changes?: Changes
+}
+
 function ChangeDetails({ log }: { log: Log }) {
-  // Check if details has changes object
   const detailsObject =
     log.details &&
     typeof log.details === 'object' &&
     !Array.isArray(log.details)
-      ? (log.details as { changes?: { before?: unknown; after?: unknown } })
+      ? (log.details as ChangeDetailsObject)
       : null
 
-  const changes = detailsObject?.changes
+  // Older VIDEO_SYNC entries keep `before` and `after` directly under
+  // `details` instead of under `details.changes`.
+  const changes =
+    detailsObject?.changes ??
+    (detailsObject
+      ? { after: detailsObject.after, before: detailsObject.before }
+      : undefined)
 
   if (!changes?.before || !changes.after) {
     return null
