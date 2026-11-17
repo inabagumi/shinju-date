@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+const acquireLock = vi.fn()
 const limit = vi.fn()
 const createScraper = vi.fn(() => ({ provider: 'youtube' }))
 const revalidateTags = vi.fn()
@@ -8,18 +9,8 @@ const workOffBackfillQueue = vi.fn()
 const recordBackfillJob = vi.fn()
 const supabaseClient = { from: vi.fn() }
 
-vi.mock('@/lib/ratelimit', () => ({
-  recommendationQueriesUpdate: { limit: vi.fn() },
-  statsSnapshot: { limit: vi.fn() },
-  talentsUpdate: { limit: vi.fn() },
-  termsPopularityUpdate: { limit: vi.fn() },
-  videosBackfill: { limit },
-  videosCascadeFromTalents: { limit: vi.fn() },
-  videosCheck: { limit: vi.fn() },
-  videosCheckAll: { limit: vi.fn() },
-  videosCheckRecent: { limit: vi.fn() },
-  videosUpdate: { limit: vi.fn() },
-}))
+vi.mock('@/lib/lock', () => ({ acquireLock }))
+vi.mock('@/lib/ratelimit', () => ({ videosBackfill: { limit } }))
 vi.mock('@/lib/redis', () => ({ redisClient: {} }))
 vi.mock('@/lib/scraper', () => ({ createScraper }))
 vi.mock('@/lib/supabase', () => ({ supabaseClient }))
@@ -62,6 +53,8 @@ describe('POST /videos/backfill', () => {
 
     expect(response.status).toBe(204)
     expect(limit).toHaveBeenCalledWith('videos:backfill')
+    // Runs overlap on purpose; each job of the queue has its own lock.
+    expect(acquireLock).not.toHaveBeenCalled()
     expect(workOffBackfillQueue).toHaveBeenCalledTimes(1)
     expect(revalidateTags).not.toHaveBeenCalled()
   })

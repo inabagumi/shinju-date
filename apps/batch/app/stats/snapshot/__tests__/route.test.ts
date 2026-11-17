@@ -13,9 +13,8 @@ const mockRedisClient = {
   set: vi.fn(),
 }
 
-const mockRatelimit = {
-  limit: vi.fn(),
-}
+const acquireLock = vi.fn()
+const releaseLock = vi.fn()
 
 const mockCountSummaryStats = vi.fn()
 const mockCollectAnalyticsSummary = vi.fn()
@@ -28,18 +27,7 @@ vi.mock('@/lib/redis', () => ({
   redisClient: mockRedisClient,
 }))
 
-vi.mock('@/lib/ratelimit', () => ({
-  recommendationQueriesUpdate: { limit: vi.fn() },
-  statsSnapshot: mockRatelimit,
-  talentsUpdate: { limit: vi.fn() },
-  termsPopularityUpdate: { limit: vi.fn() },
-  videosBackfill: { limit: vi.fn() },
-  videosCascadeFromTalents: { limit: vi.fn() },
-  videosCheck: { limit: vi.fn() },
-  videosCheckAll: { limit: vi.fn() },
-  videosCheckRecent: { limit: vi.fn() },
-  videosUpdate: { limit: vi.fn() },
-}))
+vi.mock('@/lib/lock', () => ({ acquireLock, releaseLock }))
 
 // The counts and the analytics are tested in `@shinju-date/dashboard-stats`.
 // The snapshots are written by the real functions of the package, so that the
@@ -104,7 +92,7 @@ describe('stats/snapshot route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    mockRatelimit.limit.mockResolvedValue({ success: true })
+    acquireLock.mockResolvedValue('lock-value')
     mockRedisClient.set.mockResolvedValue('OK')
     mockCountSummaryStats.mockResolvedValue(summaryStats)
     mockCollectAnalyticsSummary.mockResolvedValue(analyticsSummary)
@@ -167,7 +155,8 @@ describe('stats/snapshot route', () => {
       const response = await runAt('2025-11-12T15:05:00Z')
 
       expect(response.status).toBe(204)
-      expect(mockRatelimit.limit).toHaveBeenCalledWith('stats:snapshot')
+      expect(acquireLock).toHaveBeenCalledWith('stats:snapshot', 70)
+      expect(releaseLock).toHaveBeenCalledWith('stats:snapshot', 'lock-value')
       expect(Sentry.captureCheckIn).toHaveBeenLastCalledWith({
         checkInId: 'mock-check-in-id',
         monitorSlug: '/stats/snapshot',

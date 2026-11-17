@@ -1,21 +1,25 @@
-import { describe, expect, it, vi } from 'vitest'
+import { readFile } from 'node:fs/promises'
+import { describe, expect, it } from 'vitest'
 import vercelConfig from '../../vercel.json' with { type: 'json' }
+import { getCronJobIdentifier } from '../cron'
+import {
+  getTalentsUpdateJob,
+  getVideosCheckJob,
+  getVideosUpdateJob,
+  JOBS,
+} from '../jobs'
 
-vi.mock('../ratelimit', () => ({
-  recommendationQueriesUpdate: { limit: vi.fn() },
-  statsSnapshot: { limit: vi.fn() },
-  talentsUpdate: { limit: vi.fn() },
-  termsPopularityUpdate: { limit: vi.fn() },
-  videosBackfill: { limit: vi.fn() },
-  videosCascadeFromTalents: { limit: vi.fn() },
-  videosCheck: { limit: vi.fn() },
-  videosCheckAll: { limit: vi.fn() },
-  videosCheckRecent: { limit: vi.fn() },
-  videosUpdate: { limit: vi.fn() },
-}))
+/** The `maxDuration` the route of `path` exports, read from its source. */
+async function readMaxDuration(path: string): Promise<number | undefined> {
+  const { pathname } = new URL(path, 'http://localhost')
+  const source = await readFile(
+    new URL(`../../app${pathname}/route.ts`, import.meta.url),
+    'utf8',
+  )
+  const value = source.match(/^export const maxDuration = (\d+)$/m)?.[1]
 
-const { JOBS, getTalentsUpdateJob, getVideosCheckJob, getVideosUpdateJob } =
-  await import('../jobs')
+  return value === undefined ? undefined : Number(value)
+}
 
 /** Compares query strings regardless of parameter order. */
 function normalize(path: string): string {
@@ -44,11 +48,18 @@ describe('jobs', () => {
     expect(new Set(paths).size).toBe(paths.length)
   })
 
-  it('count each job separately so providers never block each other', () => {
-    const keys = JOBS.map((job) => job.ratelimitKey)
+  it('lock each job separately so providers never block each other', () => {
+    const identifiers = JOBS.map((job) => getCronJobIdentifier(job.path))
 
-    expect(new Set(keys).size).toBe(keys.length)
+    expect(new Set(identifiers).size).toBe(identifiers.length)
   })
+
+  it.each(JOBS.map((job) => [job.path, job.maxDurationSeconds] as const))(
+    'stay in sync with the maxDuration of %s',
+    async (path, seconds) => {
+      await expect(readMaxDuration(path)).resolves.toBe(seconds)
+    },
+  )
 
   it('resolves the job of a request', () => {
     expect(getVideosUpdateJob('youtube').path).toBe('/videos/update')

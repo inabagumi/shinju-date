@@ -61,7 +61,7 @@ search:popular:all_time          ZINCRBY +1
 6. `queries:auto_recommended` に保存
 7. 公開サイトの `CACHE_TAGS.RECOMMENDATION_QUERIES` のタグを再検証
 
-**レート制限**: 20時間ごとに1回まで
+**重なりの防止**: 前の実行が終わるまで、次の実行は 429 になる
 
 #### 3. 手動オススメ管理 (`apps/admin/app/(dashboard)/recommended-queries/`)
 

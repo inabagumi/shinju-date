@@ -1,23 +1,13 @@
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const limit = vi.fn()
+const acquireLock = vi.fn()
+const releaseLock = vi.fn()
 const scraper = { syncAccounts: vi.fn() }
 const createScraper = vi.fn(() => scraper)
 const revalidateTags = vi.fn()
 
-vi.mock('@/lib/ratelimit', () => ({
-  recommendationQueriesUpdate: { limit: vi.fn() },
-  statsSnapshot: { limit: vi.fn() },
-  talentsUpdate: { limit },
-  termsPopularityUpdate: { limit: vi.fn() },
-  videosBackfill: { limit: vi.fn() },
-  videosCascadeFromTalents: { limit: vi.fn() },
-  videosCheck: { limit: vi.fn() },
-  videosCheckAll: { limit: vi.fn() },
-  videosCheckRecent: { limit: vi.fn() },
-  videosUpdate: { limit: vi.fn() },
-}))
+vi.mock('@/lib/lock', () => ({ acquireLock, releaseLock }))
 vi.mock('@/lib/scraper', () => ({ createScraper }))
 vi.mock('@shinju-date/web-cache', () => ({ revalidateTags }))
 
@@ -47,7 +37,7 @@ function createRequest(search = ''): NextRequest {
 describe('POST /talents/update', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    limit.mockResolvedValue({ success: true })
+    acquireLock.mockResolvedValue('lock-value')
     scraper.syncAccounts.mockResolvedValue(false)
   })
 
@@ -55,7 +45,7 @@ describe('POST /talents/update', () => {
     const response = await POST(createRequest())
 
     expect(response.status).toBe(204)
-    expect(limit).toHaveBeenCalledWith('channels:update:youtube')
+    expect(acquireLock).toHaveBeenCalledWith('talents:update', 130)
     expect(createScraper).toHaveBeenCalledWith('youtube')
     expect(scraper.syncAccounts).toHaveBeenCalledTimes(1)
     expect(revalidateTags).not.toHaveBeenCalled()
@@ -67,7 +57,10 @@ describe('POST /talents/update', () => {
     const response = await POST(createRequest('?provider=twitch'))
 
     expect(response.status).toBe(204)
-    expect(limit).toHaveBeenCalledWith('channels:update:twitch')
+    expect(acquireLock).toHaveBeenCalledWith(
+      'talents:update:provider=twitch',
+      130,
+    )
     expect(createScraper).toHaveBeenCalledWith('twitch')
     expect(revalidateTags).toHaveBeenCalledWith(['talents'], expect.anything())
   })
