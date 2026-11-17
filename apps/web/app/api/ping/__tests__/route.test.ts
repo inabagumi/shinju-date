@@ -483,13 +483,14 @@ describe('POST /api/ping', () => {
       1,
       'talent-b',
     )
+    expect(mocks.pipeline.expire).toHaveBeenCalledTimes(2)
     expect(mocks.pipeline.expire).toHaveBeenCalledWith(
       videoKey,
-      expect.any(Number),
+      90 * 24 * 60 * 60,
     )
     expect(mocks.pipeline.expire).toHaveBeenCalledWith(
       talentKey,
-      expect.any(Number),
+      90 * 24 * 60 * 60,
     )
     expect(mocks.pipeline.exec).toHaveBeenCalledOnce()
     expect(mocks.track).toHaveBeenCalledWith(

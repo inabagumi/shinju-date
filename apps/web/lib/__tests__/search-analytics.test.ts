@@ -35,9 +35,29 @@ describe('logSearchQuery', () => {
     vi.restoreAllMocks()
   })
 
-  test('sets a TTL on every daily and weekly key', async () => {
+  test('counts the normalized query for the day, the week and the whole period', async () => {
+    await logSearchQuery('  Singing 歌枠 ', 3)
+
+    expect(multi.zincrby.mock.calls).toEqual([
+      [`${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}20251014`, 1, 'singing 歌枠'],
+      [`${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}20251013`, 1, 'singing 歌枠'],
+      [REDIS_KEYS.SEARCH_POPULAR_ALL_TIME, 1, 'singing 歌枠'],
+    ])
+    expect(multi.exec).toHaveBeenCalledOnce()
+  })
+
+  test('increments the daily search volume', async () => {
     await logSearchQuery('歌枠', 3)
 
+    expect(multi.incr.mock.calls).toEqual([
+      [`${REDIS_KEYS.SEARCH_VOLUME_PREFIX}20251014`],
+    ])
+  })
+
+  test('sets a TTL on every daily and weekly key, and on no other key', async () => {
+    await logSearchQuery('歌枠', 0)
+
+    expect(multi.expire.mock.calls).toHaveLength(3)
     expect(multi.expire.mock.calls).toEqual(
       expect.arrayContaining([
         [`${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}20251014`, 90 * DAY_SECONDS],
@@ -48,16 +68,20 @@ describe('logSearchQuery', () => {
         [`${REDIS_KEYS.SEARCH_VOLUME_PREFIX}20251014`, 90 * DAY_SECONDS],
       ]),
     )
-    expect(multi.expire).toHaveBeenCalledTimes(3)
-    expect(multi.exec).toHaveBeenCalledOnce()
   })
 
-  test('increments the daily search volume', async () => {
+  test('records a query without results', async () => {
+    await logSearchQuery('歌枠', 0)
+
+    expect(multi.sadd.mock.calls).toEqual([
+      [REDIS_KEYS.SEARCH_ZERO_RESULTS, '歌枠'],
+    ])
+  })
+
+  test('does not record a query with results as one without', async () => {
     await logSearchQuery('歌枠', 3)
 
-    expect(multi.incr).toHaveBeenCalledWith(
-      `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}20251014`,
-    )
+    expect(multi.sadd).not.toHaveBeenCalled()
   })
 
   test('does not write anything for a blank query', async () => {

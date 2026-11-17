@@ -2,13 +2,16 @@
 
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
-import { formatDateKey, getMondayOfWeek } from '@shinju-date/temporal-fns'
+import {
+  DAILY_TTL_SECONDS,
+  dailyKey,
+  incrWithTtl,
+  WEEKLY_TTL_SECONDS,
+  weeklyKey,
+  zincrbyWithTtl,
+} from './analytics/redis'
 import { getRedisClient } from './redis'
 import { trackSearchSession } from './session-analytics'
-
-// TTL settings for time-based search keys
-const DAILY_TTL_SECONDS = 90 * 24 * 60 * 60 // 90 days
-const WEEKLY_TTL_SECONDS = 35 * 24 * 60 * 60 // 35 days
 
 /**
  * Log a search query to Redis for analytics
@@ -26,36 +29,44 @@ export async function logSearchQuery(
   try {
     const redisClient = getRedisClient()
     const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-    const today = formatDateKey(now)
-    const mondayOfWeek = getMondayOfWeek(now)
-
-    const dailyKey = `${REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX}${today}`
-    const weeklyKey = `${REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX}${mondayOfWeek}`
-    const volumeKey = `${REDIS_KEYS.SEARCH_VOLUME_PREFIX}${today}`
 
     const multi = redisClient.multi()
 
     // Increment daily search count
-    multi.zincrby(dailyKey, 1, normalizedQuery)
+    zincrbyWithTtl(
+      multi,
+      dailyKey(REDIS_KEYS.SEARCH_POPULAR_DAILY_PREFIX, now),
+      1,
+      normalizedQuery,
+      DAILY_TTL_SECONDS,
+    )
 
     // Increment weekly search count
-    multi.zincrby(weeklyKey, 1, normalizedQuery)
+    zincrbyWithTtl(
+      multi,
+      weeklyKey(REDIS_KEYS.SEARCH_POPULAR_WEEKLY_PREFIX, now),
+      1,
+      normalizedQuery,
+      WEEKLY_TTL_SECONDS,
+    )
 
-    // Increment all-time search count
+    // Increment all-time search count. No TTL: the key holds the counts of
+    // the whole period, and an expiry would reset them.
     multi.zincrby(REDIS_KEYS.SEARCH_POPULAR_ALL_TIME, 1, normalizedQuery)
 
     // Track zero-result searches
     if (resultCount === 0) {
+      // No TTL: the set collects the keywords of the whole period, which
+      // admin lists as they are, and an expiry would empty it.
       multi.sadd(REDIS_KEYS.SEARCH_ZERO_RESULTS, normalizedQuery)
     }
 
     // Track daily search volume
-    multi.incr(volumeKey)
-
-    // Set TTL for daily and weekly keys in the same pipeline
-    multi.expire(dailyKey, DAILY_TTL_SECONDS)
-    multi.expire(weeklyKey, WEEKLY_TTL_SECONDS)
-    multi.expire(volumeKey, DAILY_TTL_SECONDS)
+    incrWithTtl(
+      multi,
+      dailyKey(REDIS_KEYS.SEARCH_VOLUME_PREFIX, now),
+      DAILY_TTL_SECONDS,
+    )
 
     await multi.exec()
 
