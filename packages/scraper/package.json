@@ -15,6 +15,7 @@
   },
   "description": "Crawlers that keep YouTube and Twitch videos in the SHINJU DATE database in sync",
   "devDependencies": {
+    "@shinju-date/config": "workspace:*",
     "@shinju-date/helpers": "workspace:*",
     "@tsconfig/node20": "catalog:",
     "@tsconfig/strictest": "catalog:",

@@ -7,6 +7,7 @@
   "devDependencies": {
     "@sentry/nextjs": "catalog:",
     "@sentry/profiling-node": "catalog:",
+    "@shinju-date/config": "workspace:*",
     "@supabase/sentry-js-integration": "catalog:",
     "@supabase/supabase-js": "catalog:",
     "@tsconfig/node20": "catalog:",

@@ -2,6 +2,7 @@
   "author": "Haneru Developers",
   "description": "Health check utilities for web services",
   "devDependencies": {
+    "@shinju-date/config": "workspace:*",
     "@supabase/supabase-js": "catalog:",
     "@tsconfig/strictest": "catalog:",
     "@upstash/redis": "catalog:",

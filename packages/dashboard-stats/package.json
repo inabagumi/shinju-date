@@ -8,6 +8,7 @@
   },
   "description": "Types, counts and Redis snapshots of the dashboard statistics shared by the admin and batch apps",
   "devDependencies": {
+    "@shinju-date/config": "workspace:*",
     "@supabase/supabase-js": "catalog:",
     "@tsconfig/node20": "catalog:",
     "@tsconfig/strictest": "catalog:",
