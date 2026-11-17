@@ -1,5 +1,5 @@
 import { BACKFILL_SAVE_CONCURRENCY } from '../internal/concurrency.js'
-import { findTwitchUser } from '../internal/database/index.js'
+import { findAccount, TWITCH_USERS } from '../internal/database/index.js'
 import {
   AccountNotFoundError,
   StalledPaginationError,
@@ -41,13 +41,13 @@ export async function addPastTwitchVideos(
   { accountId, cursor }: Pick<AddPastVideosOptions, 'accountId' | 'cursor'>,
 ): Promise<AddPastVideosResult> {
   const { fetcher, supabaseClient } = context
-  const user = await findTwitchUser(supabaseClient, accountId)
+  const user = await findAccount(supabaseClient, TWITCH_USERS, accountId)
 
   if (!user) {
     throw new AccountNotFoundError(accountId)
   }
 
-  const page = await fetcher.getVideoPage(user.twitchUserId, {
+  const page = await fetcher.getVideoPage(user.platformId, {
     cursor,
     type: 'all',
   })
@@ -60,7 +60,7 @@ export async function addPastTwitchVideos(
 
   // The archive of a broadcast that is still on air must keep its row LIVE.
   const liveStreams =
-    videos.length > 0 ? await fetcher.getLiveStreams([user.twitchUserId]) : []
+    videos.length > 0 ? await fetcher.getLiveStreams([user.platformId]) : []
   const added = await saveNewTwitchVideos(context, {
     concurrency: BACKFILL_SAVE_CONCURRENCY,
     liveStreams,

@@ -2,8 +2,9 @@ import { getArchivedStreamId } from '@shinju-date/twitch-api-client'
 import { countChanges } from '../internal/concurrency.js'
 import { WRITE_CONCURRENCY } from '../internal/constants.js'
 import {
-  type ActiveTwitchUser,
-  getActiveTwitchUsers,
+  getActiveAccounts,
+  type TalentAccount,
+  TWITCH_USERS,
 } from '../internal/database/index.js'
 import type { CrawlContext, WriteContext } from '../types.js'
 import { attachArchive } from './attach-archive.js'
@@ -113,7 +114,7 @@ export function planNewVideos({
 export async function applyNewVideoAction(
   context: WriteContext,
   action: NewVideoAction,
-  userByTwitchId: ReadonlyMap<string, ActiveTwitchUser>,
+  userByTwitchId: ReadonlyMap<string, TalentAccount>,
 ): Promise<boolean> {
   const { liveStream, video } = action
 
@@ -157,13 +158,13 @@ export async function addNewTwitchVideos(
   context: CrawlContext<TwitchFetcher>,
 ): Promise<number> {
   const { fetcher, reportError, supabaseClient } = context
-  const users = await getActiveTwitchUsers(supabaseClient)
+  const users = await getActiveAccounts(supabaseClient, TWITCH_USERS)
 
   if (users.length === 0) {
     return 0
   }
 
-  const twitchUserIds = [...new Set(users.map((user) => user.twitchUserId))]
+  const twitchUserIds = [...new Set(users.map((user) => user.platformId))]
 
   const [liveStreams, archives, uploads] = await Promise.all([
     fetcher.getLiveStreams(twitchUserIds),
@@ -191,7 +192,7 @@ export interface SaveNewTwitchVideosOptions {
   /** Streams of `users` that are on air right now. */
   liveStreams: readonly TwitchStream[]
   /** Accounts the videos may belong to; videos of other accounts are skipped. */
-  users: readonly ActiveTwitchUser[]
+  users: readonly TalentAccount[]
   /** Videos Twitch listed; the ones that are saved already are skipped. */
   videos: readonly TwitchVideo[]
 }
@@ -218,7 +219,7 @@ export async function saveNewTwitchVideos(
     return 0
   }
 
-  const userByTwitchId = new Map(users.map((user) => [user.twitchUserId, user]))
+  const userByTwitchId = new Map(users.map((user) => [user.platformId, user]))
   const [savedByVideoId, savedByStreamId] = await Promise.all([
     findSavedTwitchVideos(
       supabaseClient,

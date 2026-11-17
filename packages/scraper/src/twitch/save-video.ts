@@ -1,9 +1,6 @@
 import type { Tables } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
-import {
-  type ActiveTwitchUser,
-  insertVideo,
-} from '../internal/database/index.js'
+import { insertVideo, type TalentAccount } from '../internal/database/index.js'
 import {
   createThumbnail,
   removeThumbnail,
@@ -56,7 +53,7 @@ export interface SaveTwitchVideoOptions {
     Tables<'twitch_videos'>,
     'stream_id' | 'twitch_video_id' | 'type'
   >
-  user: ActiveTwitchUser
+  user: TalentAccount
 }
 
 /**
