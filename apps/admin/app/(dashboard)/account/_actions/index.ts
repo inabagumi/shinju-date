@@ -6,7 +6,7 @@ import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedFormState } from '@/lib/auth'
 import { publicEnv } from '@/lib/env'
-import { zodErrorToFormState } from '@/lib/form'
+import { parseFormData } from '@/lib/form'
 
 const emailSchema = z.object({
   email: z.email({
@@ -43,23 +43,13 @@ export async function updateUserEmail(
 
   const { supabaseClient } = auth
 
-  let email: z.infer<typeof emailSchema>
+  const parsed = parseFormData(emailSchema, formData)
 
-  try {
-    email = emailSchema.parse({
-      email: formData.get('email'),
-    })
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return zodErrorToFormState(error)
-    }
-
-    return {
-      errors: {
-        generic: ['入力された値が正しくありません。'],
-      },
-    }
+  if (!parsed.success) {
+    return parsed.state
   }
+
+  const email = parsed.data
 
   // Update email - this will send a confirmation email to the new address
   // The email won't be changed until the user clicks the confirmation link
@@ -98,25 +88,13 @@ export async function updateUserPassword(
 
   const { supabaseClient, user: currentUser } = auth
 
-  let passwords: z.infer<typeof passwordSchema>
+  const parsed = parseFormData(passwordSchema, formData)
 
-  try {
-    passwords = passwordSchema.parse({
-      confirmPassword: formData.get('confirmPassword'),
-      currentPassword: formData.get('currentPassword'),
-      newPassword: formData.get('newPassword'),
-    })
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return zodErrorToFormState(error)
-    }
-
-    return {
-      errors: {
-        generic: ['入力された値が正しくありません。'],
-      },
-    }
+  if (!parsed.success) {
+    return parsed.state
   }
+
+  const passwords = parsed.data
 
   if (!currentUser.email) {
     return {
