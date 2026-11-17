@@ -8,8 +8,6 @@ import { useEffect } from 'react'
 import { Panel } from './panel'
 
 interface WidgetErrorBoundaryProps {
-  /** Kept on the fallback so that links to the widget still land on it */
-  id?: string
   /** The heading of the widget, shown in place of it when it fails */
   title: string
 }
@@ -25,7 +23,6 @@ interface WidgetErrorFallbackProps extends WidgetErrorBoundaryProps {
  */
 export function WidgetErrorFallback({
   error,
-  id,
   retry,
   title,
 }: WidgetErrorFallbackProps) {
@@ -34,7 +31,7 @@ export function WidgetErrorFallback({
   }, [error])
 
   return (
-    <Panel id={id} role="alert" title={title}>
+    <Panel role="alert" title={title}>
       <div className="space-y-4">
         <p className="flex items-start gap-2 text-body text-danger">
           <AlertTriangle aria-hidden="true" className="mt-1 size-4 shrink-0" />

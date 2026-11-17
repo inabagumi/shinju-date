@@ -21,9 +21,9 @@ import {
   Panel,
   PanelSkeleton,
 } from '@/components/panel'
+import { PlatformBadge } from '@/components/platform-badge'
 import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
-import { PlatformBadge } from '../_components/platform-badge'
 import { VideoKindBadge } from '../_components/video-kind-badge'
 import getVideo from '../_lib/get-video'
 import {

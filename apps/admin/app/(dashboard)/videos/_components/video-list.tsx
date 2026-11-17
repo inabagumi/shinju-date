@@ -38,6 +38,7 @@ import {
   ExternalVideoLink,
   getExternalVideoUrl,
 } from '@/components/external-video-link'
+import { PlatformBadge } from '@/components/platform-badge'
 import {
   TableSkeleton,
   type TableSkeletonColumn,
@@ -51,7 +52,6 @@ import {
   toggleVisibilityAction,
 } from '../_actions'
 import type { Video } from '../_lib/get-videos'
-import { PlatformBadge } from './platform-badge'
 import { SortIcon } from './sort-icon'
 import { VideoActionConfirmDialog } from './video-action-confirm-dialog'
 import { VideoKindBadge } from './video-kind-badge'

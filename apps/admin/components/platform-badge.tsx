@@ -1,9 +1,10 @@
 import type { Tables } from '@shinju-date/database'
 import { Badge, twMerge } from '@shinju-date/ui'
 
-type Platform = Tables<'videos'>['platform']
+export type Platform = Tables<'videos'>['platform']
 
-const PLATFORM_LABELS: Record<Platform, string> = {
+/** プラットフォームの表示名。管理画面では、この定義だけを使う */
+export const PLATFORM_LABELS: Record<Platform, string> = {
   twitch: 'Twitch',
   youtube: 'YouTube',
 }

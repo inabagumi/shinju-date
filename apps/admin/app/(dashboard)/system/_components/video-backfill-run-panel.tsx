@@ -1,52 +1,39 @@
 'use client'
 
-import { formatNumber } from '@shinju-date/helpers'
+import { formatNumber, range } from '@shinju-date/helpers'
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
+import { Badge, Button, EmptyState, Skeleton } from '@shinju-date/ui'
+import { AsyncPanelBody } from '@/components/async-panel-body'
 import {
-  Badge,
-  Button,
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-  EmptyState,
-} from '@shinju-date/ui'
-import { Loader2 } from 'lucide-react'
-import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
-import { Panel } from '@/components/panel'
-import { useServerAction } from '@/lib/use-server-action'
+  BackfillAccountRow,
+  BackfillAccountRowSkeleton,
+} from '@/components/backfill-account-row'
+import {
+  BACKFILL_STATUS_LABELS,
+  BackfillStatusBadge,
+} from '@/components/backfill-status-badge'
+import { ConfirmDialog } from '@/components/confirm-dialog'
+import { Panel, PanelSkeleton } from '@/components/panel'
+import { useBackfillRequest } from '@/lib/use-backfill-request'
+import { usePolledResource } from '@/lib/use-polled-resource'
 import {
   getVideoBackfillRunAction,
   requestVideoBackfillRunAction,
-  type VideoBackfillRun,
-  type VideoBackfillRunAccount,
-  type VideoBackfillTargets,
 } from '../_actions/video-backfill-run'
+import type {
+  VideoBackfillRun,
+  VideoBackfillRunAccount,
+  VideoBackfillRunState,
+} from '../_lib/get-video-backfill-run'
 
 type Status = VideoBackfillRunAccount['status']
 
 /** How often progress is refreshed while a check is in progress. */
 const POLL_INTERVAL_MS = 5_000
 
-const PROVIDER_LABELS: Record<VideoBackfillRunAccount['provider'], string> = {
-  twitch: 'Twitch',
-  youtube: 'YouTube',
-}
-
-const STATUS_LABELS: Record<
-  Status,
-  { label: string; variant: 'info' | 'success' | 'warning' | 'danger' }
-> = {
-  done: { label: '完了', variant: 'success' },
-  failed: { label: '失敗', variant: 'danger' },
-  interrupted: { label: '中断', variant: 'warning' },
-  pending: { label: '待機中', variant: 'info' },
-  running: { label: '取り込み中', variant: 'info' },
-}
+const TITLE = '取得漏れチェック（全タレント）'
+const DESCRIPTION =
+  'active なタレントのすべてのアカウントについて、プラットフォーム上にあってデータベースにない過去の動画を取り込みます。登録済みの動画はそのまま残ります。'
 
 /** Order of the counts in the summary. */
 const STATUSES: Status[] = [
@@ -66,59 +53,11 @@ const STATUS_ORDER: Record<Status, number> = {
   running: 0,
 }
 
-function StatusBadge({ status }: { status: Status }) {
-  const { label, variant } = STATUS_LABELS[status]
-
-  return <Badge variant={variant}>{label}</Badge>
+interface RunSummaryProps {
+  run: VideoBackfillRun
 }
 
-function AccountRow({ account }: { account: VideoBackfillRunAccount }) {
-  return (
-    <li className="px-6 py-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate text-meta font-semibold">
-            <span className="mr-2 text-caption font-normal text-muted">
-              {PROVIDER_LABELS[account.provider]}
-            </span>
-            {account.talentName ? (
-              <Link
-                className="text-accent hover:underline"
-                href={`/talents/${account.talentId}`}
-              >
-                {account.talentName}
-              </Link>
-            ) : (
-              '削除されたタレント'
-            )}
-            {account.name && (
-              <span className="ml-2 font-normal text-muted">
-                {account.name}
-              </span>
-            )}
-          </p>
-          <p className="text-meta text-muted tabular-nums">
-            {formatNumber(account.added)}件追加
-            {account.updatedAt && (
-              <>
-                {' · '}
-                <time dateTime={account.updatedAt}>
-                  {formatDateTimeFromISO(account.updatedAt)}
-                </time>
-              </>
-            )}
-          </p>
-          {account.error && (
-            <p className="text-meta text-danger">{account.error}</p>
-          )}
-        </div>
-        <StatusBadge status={account.status} />
-      </div>
-    </li>
-  )
-}
-
-function RunSummary({ run }: { run: VideoBackfillRun }) {
+function RunSummary({ run }: RunSummaryProps) {
   const total = run.accounts.length
   const finished = total - run.counts.pending - run.counts.running
   const accounts = [...run.accounts].sort(
@@ -160,7 +99,7 @@ function RunSummary({ run }: { run: VideoBackfillRun }) {
           {STATUSES.map((status) => (
             <div className="rounded-control bg-muted p-2" key={status}>
               <dt className="text-caption text-muted">
-                {STATUS_LABELS[status].label}
+                {BACKFILL_STATUS_LABELS[status].label}
               </dt>
               <dd className="text-body font-semibold tabular-nums">
                 {formatNumber(run.counts[status])}
@@ -177,14 +116,35 @@ function RunSummary({ run }: { run: VideoBackfillRun }) {
       </div>
       <ul className="max-h-96 divide-y divide-border overflow-y-auto border-t border-border">
         {accounts.map((account) => (
-          <AccountRow
-            account={account}
+          <BackfillAccountRow
+            aside={<BackfillStatusBadge status={account.status} />}
+            error={account.error}
             key={`${account.provider}:${account.accountId}`}
-          />
+            name={account.name}
+            provider={account.provider}
+            talent={{ id: account.talentId, name: account.talentName }}
+          >
+            <p className="text-meta text-muted tabular-nums">
+              {formatNumber(account.added)}件追加
+              {account.updatedAt && (
+                <>
+                  {' · '}
+                  <time dateTime={account.updatedAt}>
+                    {formatDateTimeFromISO(account.updatedAt)}
+                  </time>
+                </>
+              )}
+            </p>
+          </BackfillAccountRow>
         ))}
       </ul>
     </>
   )
+}
+
+interface VideoBackfillRunPanelProps {
+  /** サーバーコンポーネントで取得した、対象の件数と最新のチェックの進捗 */
+  initialData: VideoBackfillRunState
 }
 
 /**
@@ -192,163 +152,88 @@ function RunSummary({ run }: { run: VideoBackfillRun }) {
  * DB にない動画）の取り込みをまとめてキューに追加し、その進捗を表示する。
  * 取り込みはバッチが非同期に行う。
  */
-export function VideoBackfillRunPanel() {
-  const [state, setState] = useState<{
-    run: VideoBackfillRun | null
-    targets: VideoBackfillTargets
-  } | null>(null)
-  const [open, setOpen] = useState(false)
-  // Why the progress could not be loaded; shown with a retry button.
-  const [loadError, setLoadError] = useState<string | null>(null)
+export function VideoBackfillRunPanel({
+  initialData,
+}: VideoBackfillRunPanelProps) {
+  const { data, error, reload } = usePolledResource({
+    fetcher: getVideoBackfillRunAction,
+    initialData,
+    intervalMs: POLL_INTERVAL_MS,
+    isActive: ({ run }) => run?.active ?? false,
+  })
+  const request = useBackfillRequest(requestVideoBackfillRunAction, reload)
 
-  const refresh = useCallback(async () => {
-    let result: Awaited<ReturnType<typeof getVideoBackfillRunAction>>
-
-    try {
-      result = await getVideoBackfillRunAction()
-    } catch {
-      result = { success: false }
-    }
-
-    if (!result.success || !result.targets) {
-      setLoadError(
-        result.error ?? '取得漏れチェックの状況を取得できませんでした。',
-      )
-      return
-    }
-
-    setLoadError(null)
-    setState({ run: result.run ?? null, targets: result.targets })
-  }, [])
-
-  const isActive = state?.run?.active ?? false
-
-  useEffect(() => {
-    void refresh()
-  }, [refresh])
-
-  useEffect(() => {
-    if (!isActive) {
-      return
-    }
-
-    const timer = setInterval(() => {
-      void refresh()
-    }, POLL_INTERVAL_MS)
-
-    return () => clearInterval(timer)
-  }, [isActive, refresh])
-
-  const { isPending, run: runRequest } = useServerAction(
-    requestVideoBackfillRunAction,
-    {
-      errorText: 'キューへの追加に失敗しました。',
-      successText: (result) => result.message ?? 'キューに追加しました。',
-    },
-  )
-
-  const request = async () => {
-    await runRequest()
-    setOpen(false)
-    await refresh()
-  }
-
-  const targets = state?.targets
-  const totalTargets = targets ? targets.youtube + targets.twitch : 0
+  const { run, targets } = data
+  const isActive = run?.active ?? false
+  const totalTargets = targets.youtube + targets.twitch
 
   return (
     <Panel
       actions={
-        <Dialog onOpenChange={setOpen} open={open}>
-          <Button
-            className="whitespace-nowrap"
-            disabled={
-              isPending || state === null || isActive || totalTargets === 0
-            }
-            onClick={() => setOpen(true)}
-            size="sm"
-            variant="secondary"
-          >
-            {isPending && (
-              <Loader2
-                aria-hidden="true"
-                className="mr-2 size-4 animate-spin"
-              />
-            )}
-            {isActive ? '実行中' : '取得漏れをチェックする'}
-          </Button>
-          <DialogPortal>
-            <DialogOverlay />
-            <DialogContent>
-              <DialogTitle>全タレントの取得漏れをチェック</DialogTitle>
-              <DialogDescription>
-                active なタレントの YouTube チャンネル{' '}
-                {formatNumber(targets?.youtube ?? 0)}件と Twitch アカウント{' '}
-                {formatNumber(targets?.twitch ?? 0)}件（合計{' '}
-                {formatNumber(totalTargets)}
-                件）の過去動画をすべて確認し、未登録の動画を取り込みますか？
-                処理はバックグラウンドで順番に行われ、完了までに時間がかかります。
-              </DialogDescription>
-              <div className="flex justify-end gap-2">
-                <DialogClose asChild>
-                  <Button disabled={isPending} variant="secondary">
-                    キャンセル
-                  </Button>
-                </DialogClose>
-                <Button
-                  disabled={isPending}
-                  onClick={request}
-                  variant="primary"
-                >
-                  {isPending ? '追加中...' : 'チェックする'}
-                </Button>
-              </div>
-            </DialogContent>
-          </DialogPortal>
-        </Dialog>
+        <ConfirmDialog
+          confirmLabel="チェックする"
+          description={`active なタレントの YouTube チャンネル ${formatNumber(targets.youtube)}件と Twitch アカウント ${formatNumber(targets.twitch)}件（合計 ${formatNumber(totalTargets)}件）の過去動画をすべて確認し、未登録の動画を取り込みますか？\n処理はバックグラウンドで順番に行われ、完了までに時間がかかります。`}
+          onConfirm={request}
+          pendingLabel="追加中..."
+          title="全タレントの取得漏れをチェック"
+          trigger={
+            <Button
+              className="whitespace-nowrap"
+              disabled={isActive || totalTargets === 0}
+              size="sm"
+              variant="secondary"
+            >
+              {isActive ? '実行中' : '取得漏れをチェックする'}
+            </Button>
+          }
+        />
       }
-      className="lg:col-span-2"
-      description="active なタレントのすべてのアカウントについて、プラットフォーム上にあってデータベースにない過去の動画を取り込みます。登録済みの動画はそのまま残ります。"
-      title="取得漏れチェック（全タレント）"
+      description={DESCRIPTION}
+      title={TITLE}
     >
-      {state !== null && loadError && (
-        <div
-          className="mb-4 rounded-control bg-danger/10 p-3 text-meta text-danger"
-          role="alert"
-        >
-          {loadError}
-        </div>
-      )}
-      <div className="-mx-6 -mb-6">
-        {state === null ? (
-          loadError ? (
-            <div className="flex flex-col items-center gap-3 px-4 pt-2 pb-6 text-meta text-danger">
-              <p>{loadError}</p>
-              <Button
-                onClick={() => {
-                  setLoadError(null)
-                  void refresh()
-                }}
-                size="sm"
-                variant="secondary"
-              >
-                再試行
-              </Button>
-            </div>
+      <AsyncPanelBody error={error} onRetry={reload}>
+        <div className="-mx-6 -mb-6">
+          {run ? (
+            <RunSummary run={run} />
           ) : (
-            <div className="px-4 pt-2 pb-6 text-center text-meta text-muted">
-              読み込み中...
-            </div>
-          )
-        ) : state.run ? (
-          <RunSummary run={state.run} />
-        ) : (
-          <EmptyState
-            className="pt-4"
-            title="最近の取得漏れチェックはありません。"
-          />
-        )}
-      </div>
+            <EmptyState
+              className="pt-4"
+              title="最近の取得漏れチェックはありません。"
+            />
+          )}
+        </div>
+      </AsyncPanelBody>
     </Panel>
+  )
+}
+
+/** スケルトンに並べる、アカウントの行の数 */
+const SKELETON_ROWS = 3
+
+/** 読み込み中の `VideoBackfillRunPanel`。依頼の行、進捗の棒、件数の枠、アカウントの行を並べる */
+export function VideoBackfillRunPanelSkeleton() {
+  return (
+    <PanelSkeleton
+      actions={<Skeleton className="h-8 w-44" />}
+      description={DESCRIPTION}
+      title={TITLE}
+    >
+      <div className="-mx-6 -mb-6">
+        <div className="space-y-3 px-6 pb-4">
+          <Skeleton className="h-5 w-64 max-w-full" />
+          <Skeleton className="h-2 w-full rounded-full" />
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+            {range(STATUSES.length + 1).map((tile) => (
+              <Skeleton className="h-14" key={`run-count-skeleton-${tile}`} />
+            ))}
+          </div>
+        </div>
+        <ul className="divide-y divide-border border-t border-border">
+          {range(SKELETON_ROWS).map((row) => (
+            <BackfillAccountRowSkeleton key={`run-account-skeleton-${row}`} />
+          ))}
+        </ul>
+      </div>
+    </PanelSkeleton>
   )
 }

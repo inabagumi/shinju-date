@@ -7,7 +7,7 @@ import {
 } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ActionToastProvider } from '@/components/action-toast'
-import type { VideoBackfillAccount } from '../../_actions/backfill'
+import type { VideoBackfillAccount } from '../../_lib/get-video-backfill-status'
 
 const mocks = vi.hoisted(() => ({
   getVideoBackfillStatusAction: vi.fn(),
@@ -45,11 +45,10 @@ function createAccount(
   }
 }
 
-function renderPanel() {
+function renderPanel(accounts: VideoBackfillAccount[]) {
   return render(
     <VideoBackfillPanel
-      hasTwitchUsers={false}
-      hasYouTubeChannels
+      initialData={{ accounts, success: true }}
       talentId="talent-1"
       talentName="Talent"
     />,
@@ -62,73 +61,101 @@ describe('VideoBackfillPanel', () => {
     vi.clearAllMocks()
   })
 
-  it('offers a retry when the progress cannot be loaded', async () => {
-    mocks.getVideoBackfillStatusAction
-      .mockResolvedValueOnce({
-        error: 'Redis に接続できません',
-        success: false,
-      })
-      .mockResolvedValueOnce({ accounts: [createAccount()], success: true })
+  it('shows the progress it was given without fetching it', () => {
+    renderPanel([
+      createAccount({ added: 12, pages: 3, status: 'done' }),
+      createAccount({
+        accountId: 'twitch-row-1',
+        name: 'alice',
+        provider: 'twitch',
+      }),
+    ])
 
-    renderPanel()
-
-    fireEvent.click(await screen.findByRole('button', { name: '再試行' }))
-
-    expect(await screen.findByText('Main')).toBeTruthy()
-    expect(screen.queryByText('Redis に接続できません')).toBeNull()
-    expect(mocks.getVideoBackfillStatusAction).toHaveBeenCalledTimes(2)
+    expect(screen.getByText('12件追加 · 3ページ確認')).toBeTruthy()
+    expect(screen.getByText('完了')).toBeTruthy()
+    // An account that was never backfilled has no progress to show.
+    expect(screen.getByText('未実行')).toBeTruthy()
+    expect(mocks.getVideoBackfillStatusAction).not.toHaveBeenCalled()
   })
 
-  it('can still be requested while only some accounts are active', async () => {
-    mocks.getVideoBackfillStatusAction.mockResolvedValue({
-      accounts: [
-        createAccount({ active: true, status: 'running' }),
-        createAccount({ accountId: 'channel-row-2', name: 'Sub' }),
-      ],
-      success: true,
-    })
+  it('offers only the platforms the talent has an account on', () => {
+    renderPanel([createAccount()])
 
-    renderPanel()
-
-    const button = await screen.findByRole('button', {
-      name: 'YouTubeの過去動画を取り込む',
-    })
-
-    await waitFor(() => expect(button).toHaveProperty('disabled', false))
+    expect(
+      screen.getByRole('button', { name: 'YouTubeの過去動画を取り込む' }),
+    ).toBeTruthy()
+    expect(
+      screen.queryByRole('button', { name: 'Twitchの過去動画を取り込む' }),
+    ).toBeNull()
   })
 
-  it('cannot be requested while every account is active', async () => {
-    mocks.getVideoBackfillStatusAction.mockResolvedValue({
-      accounts: [createAccount({ active: true, status: 'pending' })],
-      success: true,
-    })
+  it('shows the accounts the server sends after one was added', () => {
+    const { rerender } = renderPanel([createAccount()])
 
-    renderPanel()
+    rerender(
+      <VideoBackfillPanel
+        initialData={{
+          accounts: [
+            createAccount(),
+            createAccount({
+              accountId: 'twitch-row-1',
+              name: 'alice',
+              provider: 'twitch',
+            }),
+          ],
+          success: true,
+        }}
+        talentId="talent-1"
+        talentName="Talent"
+      />,
+    )
 
-    const button = await screen.findByRole('button', {
-      name: 'YouTube: 実行中',
-    })
-
-    expect(button).toHaveProperty('disabled', true)
+    expect(screen.getByText('alice')).toBeTruthy()
+    expect(
+      screen.getByRole('button', { name: 'Twitchの過去動画を取り込む' }),
+    ).toHaveProperty('disabled', false)
+    expect(mocks.getVideoBackfillStatusAction).not.toHaveBeenCalled()
   })
 
-  it('asks for confirmation with the talent and the accounts', async () => {
-    mocks.getVideoBackfillStatusAction.mockResolvedValue({
-      accounts: [
-        createAccount(),
-        createAccount({ accountId: 'channel-row-2', name: 'Sub' }),
-      ],
-      success: true,
-    })
+  it('renders nothing for a talent without accounts', () => {
+    const { container } = renderPanel([])
 
-    renderPanel()
+    expect(container.textContent).toBe('')
+  })
 
-    const button = await screen.findByRole('button', {
-      name: 'YouTubeの過去動画を取り込む',
-    })
+  it('can still be requested while only some accounts are active', () => {
+    renderPanel([
+      createAccount({ active: true, status: 'running' }),
+      createAccount({ accountId: 'channel-row-2', name: 'Sub' }),
+    ])
 
-    await waitFor(() => expect(button).toHaveProperty('disabled', false))
-    fireEvent.click(button)
+    expect(
+      screen.getByRole('button', { name: 'YouTubeの過去動画を取り込む' }),
+    ).toHaveProperty('disabled', false)
+  })
+
+  it('cannot be requested while every account is active', () => {
+    renderPanel([createAccount({ active: true, status: 'pending' })])
+
+    expect(
+      screen.getByRole('button', { name: 'YouTube: 実行中' }),
+    ).toHaveProperty('disabled', true)
+  })
+
+  it('asks for confirmation with the talent and the accounts', () => {
+    renderPanel([
+      createAccount(),
+      createAccount({ accountId: 'channel-row-2', name: 'Sub' }),
+      createAccount({
+        accountId: 'twitch-row-1',
+        name: 'alice',
+        provider: 'twitch',
+      }),
+    ])
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'YouTubeの過去動画を取り込む' }),
+    )
 
     const dialog = screen.getByRole('dialog')
 
@@ -140,22 +167,15 @@ describe('VideoBackfillPanel', () => {
     )
     expect(within(dialog).getByText('Main')).toBeTruthy()
     expect(within(dialog).getByText('Sub')).toBeTruthy()
+    expect(within(dialog).queryByText('alice')).toBeNull()
   })
 
   it('does not request the backfill when cancelled', async () => {
-    mocks.getVideoBackfillStatusAction.mockResolvedValue({
-      accounts: [createAccount()],
-      success: true,
-    })
+    renderPanel([createAccount()])
 
-    renderPanel()
-
-    const button = await screen.findByRole('button', {
-      name: 'YouTubeの過去動画を取り込む',
-    })
-
-    await waitFor(() => expect(button).toHaveProperty('disabled', false))
-    fireEvent.click(button)
+    fireEvent.click(
+      screen.getByRole('button', { name: 'YouTubeの過去動画を取り込む' }),
+    )
     fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }))
 
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
@@ -163,23 +183,20 @@ describe('VideoBackfillPanel', () => {
   })
 
   it('requests the backfill when confirmed', async () => {
-    mocks.getVideoBackfillStatusAction.mockResolvedValue({
-      accounts: [createAccount()],
-      success: true,
-    })
     mocks.requestVideoBackfillAction.mockResolvedValue({
       message: 'キューに追加しました。',
       success: true,
     })
-
-    renderPanel()
-
-    const button = await screen.findByRole('button', {
-      name: 'YouTubeの過去動画を取り込む',
+    mocks.getVideoBackfillStatusAction.mockResolvedValue({
+      accounts: [createAccount({ active: true, status: 'pending' })],
+      success: true,
     })
 
-    await waitFor(() => expect(button).toHaveProperty('disabled', false))
-    fireEvent.click(button)
+    renderPanel([createAccount()])
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'YouTubeの過去動画を取り込む' }),
+    )
     fireEvent.click(screen.getByRole('button', { name: '取り込む' }))
 
     expect(await screen.findByText('キューに追加しました。')).toBeTruthy()
@@ -187,5 +204,54 @@ describe('VideoBackfillPanel', () => {
       'talent-1',
       'youtube',
     )
+
+    // The job that was just queued shows up without reloading the page.
+    expect(
+      await screen.findByRole('button', { name: 'YouTube: 実行中' }),
+    ).toBeTruthy()
+    expect(mocks.getVideoBackfillStatusAction).toHaveBeenCalledWith('talent-1')
+  })
+
+  it('refreshes the page when the backfill added videos', async () => {
+    mocks.requestVideoBackfillAction.mockResolvedValue({ success: true })
+    mocks.getVideoBackfillStatusAction.mockResolvedValue({
+      accounts: [createAccount({ added: 15, status: 'done' })],
+      success: true,
+    })
+
+    renderPanel([createAccount({ added: 12, status: 'done' })])
+
+    expect(mocks.router.refresh).not.toHaveBeenCalled()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'YouTubeの過去動画を取り込む' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: '取り込む' }))
+
+    // The videos that were just added show up in the list below the panel.
+    await waitFor(() => expect(mocks.router.refresh).toHaveBeenCalledOnce())
+  })
+
+  it('does not refresh the page for progress that the server sent', () => {
+    const { rerender } = renderPanel([
+      createAccount({ active: true, added: 12, status: 'running' }),
+    ])
+
+    rerender(
+      <VideoBackfillPanel
+        initialData={{
+          accounts: [
+            createAccount({ active: true, added: 15, status: 'running' }),
+          ],
+          success: true,
+        }}
+        talentId="talent-1"
+        talentName="Talent"
+      />,
+    )
+
+    // The server rendered the list of videos together with this progress.
+    expect(screen.getByText(/15件追加/)).toBeTruthy()
+    expect(mocks.router.refresh).not.toHaveBeenCalled()
   })
 })

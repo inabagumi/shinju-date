@@ -209,26 +209,58 @@ describe('getVideoBackfillStatusAction', () => {
       'youtube:channel-row-2',
       'twitch:twitch-row-1',
     ])
-    expect(result.accounts).toEqual([
-      expect.objectContaining({
-        accountId: 'channel-row-1',
-        active: true,
-        added: 12,
-        name: 'Main',
-        status: 'running',
-      }),
-      expect.objectContaining({
-        accountId: 'channel-row-2',
+    expect(result).toEqual({
+      accounts: [
+        expect.objectContaining({
+          accountId: 'channel-row-1',
+          active: true,
+          added: 12,
+          name: 'Main',
+          status: 'running',
+        }),
+        expect.objectContaining({
+          accountId: 'channel-row-2',
+          active: false,
+          added: 0,
+          status: null,
+        }),
+        expect.objectContaining({
+          accountId: 'twitch-row-1',
+          name: 'alice',
+          provider: 'twitch',
+          status: null,
+        }),
+      ],
+      success: true,
+    })
+  })
+
+  it('shows a job that stopped without finishing as interrupted', async () => {
+    mocks.getJobs.mockResolvedValue([
+      {
         active: false,
-        added: 0,
-        status: null,
-      }),
-      expect.objectContaining({
-        accountId: 'twitch-row-1',
-        name: 'alice',
-        provider: 'twitch',
-        status: null,
-      }),
+        job: {
+          added: 4,
+          error: null,
+          finishedAt: null,
+          pages: 1,
+          requestedAt: '2026-11-14T00:00:00Z',
+          status: 'running',
+          updatedAt: '2026-11-14T00:02:00Z',
+        },
+      },
+      null,
+      null,
     ])
+
+    const result = await getVideoBackfillStatusAction(talentId)
+
+    expect(result).toMatchObject({
+      accounts: [
+        { accountId: 'channel-row-1', active: false, status: 'interrupted' },
+        { status: null },
+        { status: null },
+      ],
+    })
   })
 })

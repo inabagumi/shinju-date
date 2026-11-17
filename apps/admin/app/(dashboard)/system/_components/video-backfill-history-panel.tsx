@@ -1,31 +1,26 @@
 'use client'
 
-import { formatNumber } from '@shinju-date/helpers'
+import { formatNumber, range } from '@shinju-date/helpers'
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
+import { Alert, Badge, Button, EmptyState, Skeleton } from '@shinju-date/ui'
+import { AsyncPanelBody } from '@/components/async-panel-body'
 import {
-  Alert,
-  Badge,
-  Button,
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-  EmptyState,
-} from '@shinju-date/ui'
-import { Loader2 } from 'lucide-react'
-import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
-import { Panel } from '@/components/panel'
-import { useServerAction } from '@/lib/use-server-action'
+  BackfillAccountRow,
+  BackfillAccountRowSkeleton,
+} from '@/components/backfill-account-row'
+import { BackfillStatusBadge } from '@/components/backfill-status-badge'
+import { ConfirmDialog } from '@/components/confirm-dialog'
+import { Panel, PanelSkeleton } from '@/components/panel'
+import { useBackfillRequest } from '@/lib/use-backfill-request'
+import { usePolledResource } from '@/lib/use-polled-resource'
 import {
   getVideoBackfillHistoryAction,
   retryFailedVideoBackfillJobsAction,
-  type VideoBackfillFailure,
-  type VideoBackfillHistoryEntry,
 } from '../_actions/video-backfill-history'
+import type {
+  VideoBackfillHistory,
+  VideoBackfillHistoryEntry,
+} from '../_lib/get-video-backfill-history'
 
 /**
  * How often the history is refreshed while failed accounts are retried, so
@@ -34,297 +29,162 @@ import {
  */
 const POLL_INTERVAL_MS = 15_000
 
-const PROVIDER_LABELS: Record<VideoBackfillHistoryEntry['provider'], string> = {
-  twitch: 'Twitch',
-  youtube: 'YouTube',
-}
-
-const STATUS_LABELS: Record<
-  VideoBackfillHistoryEntry['status'],
-  { label: string; variant: 'success' | 'danger' }
-> = {
-  done: { label: '完了', variant: 'success' },
-  failed: { label: '失敗', variant: 'danger' },
-}
+const TITLE = '過去動画の取り込みの履歴'
+const DESCRIPTION =
+  '終了した過去動画の取り込みの結果です。最後の取り込みが失敗したアカウントは、まとめて再試行できます。'
 
 const SCOPE_LABELS: Record<VideoBackfillHistoryEntry['scope'], string> = {
   all: '全タレントのチェックで依頼',
   single: '個別に依頼',
 }
 
-function TalentLink({
-  talentId,
-  talentName,
-}: {
-  talentId: string
-  talentName: string | null
-}) {
-  return talentName ? (
-    <Link className="text-accent hover:underline" href={`/talents/${talentId}`}>
-      {talentName}
-    </Link>
-  ) : (
-    '不明なタレント'
-  )
-}
-
-function FailureRow({ failure }: { failure: VideoBackfillFailure }) {
-  return (
-    <li className="py-2">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="min-w-0 truncate text-meta font-semibold">
-          <span className="mr-2 text-caption font-normal text-muted">
-            {PROVIDER_LABELS[failure.provider]}
-          </span>
-          <TalentLink
-            talentId={failure.talentId}
-            talentName={failure.talentName}
-          />
-          <span className="ml-2 font-normal text-muted">{failure.name}</span>
-        </p>
-        {failure.active ? (
-          <Badge variant="info">再試行中</Badge>
-        ) : (
-          <time
-            className="text-caption text-muted tabular-nums"
-            dateTime={failure.finishedAt}
-          >
-            {formatDateTimeFromISO(failure.finishedAt)}
-          </time>
-        )}
-      </div>
-      {failure.error && (
-        <p className="text-meta text-danger">{failure.error}</p>
-      )}
-    </li>
-  )
-}
-
-function HistoryRow({ entry }: { entry: VideoBackfillHistoryEntry }) {
-  const { label, variant } = STATUS_LABELS[entry.status]
-
-  return (
-    <li className="px-6 py-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate text-meta font-semibold">
-            <span className="mr-2 text-caption font-normal text-muted">
-              {PROVIDER_LABELS[entry.provider]}
-            </span>
-            <TalentLink
-              talentId={entry.talentId}
-              talentName={entry.talentName}
-            />
-            <span className="ml-2 font-normal text-muted">
-              {entry.name ?? '削除されたアカウント'}
-            </span>
-          </p>
-          <p className="text-meta text-muted tabular-nums">
-            {formatNumber(entry.added)}件追加 · {formatNumber(entry.pages)}
-            ページ · {entry.requester ?? '不明なユーザー'}が
-            {SCOPE_LABELS[entry.scope]}
-          </p>
-          <p className="text-caption text-muted tabular-nums">
-            <time dateTime={entry.requestedAt}>
-              {formatDateTimeFromISO(entry.requestedAt)}
-            </time>
-            {' → '}
-            <time dateTime={entry.finishedAt}>
-              {formatDateTimeFromISO(entry.finishedAt)}
-            </time>
-          </p>
-          {entry.error && (
-            <p className="text-meta text-danger">{entry.error}</p>
-          )}
-        </div>
-        <Badge variant={variant}>{label}</Badge>
-      </div>
-    </li>
-  )
+interface VideoBackfillHistoryPanelProps {
+  /** サーバーコンポーネントで取得した、履歴と失敗したアカウント */
+  initialData: VideoBackfillHistory
 }
 
 /**
  * 終了した過去動画の取り込み（バックフィル）の履歴を表示し、最後の取り込みが
  * 失敗したアカウントをまとめて再試行できるようにする。取り込みはバッチが非同期に行う。
  */
-export function VideoBackfillHistoryPanel() {
-  const [state, setState] = useState<{
-    entries: VideoBackfillHistoryEntry[]
-    failures: VideoBackfillFailure[]
-  } | null>(null)
-  const [open, setOpen] = useState(false)
-  // Why the history could not be loaded; shown with a retry button.
-  const [loadError, setLoadError] = useState<string | null>(null)
+export function VideoBackfillHistoryPanel({
+  initialData,
+}: VideoBackfillHistoryPanelProps) {
+  const { data, error, reload } = usePolledResource({
+    fetcher: getVideoBackfillHistoryAction,
+    initialData,
+    intervalMs: POLL_INTERVAL_MS,
+    isActive: ({ failures }) => failures.some((failure) => failure.active),
+  })
+  const retry = useBackfillRequest(retryFailedVideoBackfillJobsAction, reload)
 
-  const refresh = useCallback(async () => {
-    let result: Awaited<ReturnType<typeof getVideoBackfillHistoryAction>>
-
-    try {
-      result = await getVideoBackfillHistoryAction()
-    } catch {
-      result = { success: false }
-    }
-
-    if (!result.success || !result.entries || !result.failures) {
-      setLoadError(
-        result.error ?? '過去動画の取り込みの履歴を取得できませんでした。',
-      )
-      return
-    }
-
-    setLoadError(null)
-    setState({ entries: result.entries, failures: result.failures })
-  }, [])
-
-  const isRetrying = state?.failures.some((failure) => failure.active) ?? false
-
-  useEffect(() => {
-    void refresh()
-  }, [refresh])
-
-  useEffect(() => {
-    if (!isRetrying) {
-      return
-    }
-
-    const timer = setInterval(() => {
-      void refresh()
-    }, POLL_INTERVAL_MS)
-
-    return () => clearInterval(timer)
-  }, [isRetrying, refresh])
-
-  const { isPending, run: runRetry } = useServerAction(
-    retryFailedVideoBackfillJobsAction,
-    {
-      errorText: 'キューへの追加に失敗しました。',
-      successText: (result) => result.message ?? 'キューに追加しました。',
-    },
-  )
-
-  const retry = async () => {
-    await runRetry()
-    setOpen(false)
-    await refresh()
-  }
-
-  const failures = state?.failures ?? []
+  const { entries, failures } = data
   const retryable = failures.filter((failure) => !failure.active).length
 
   return (
     <Panel
       actions={
-        <Dialog onOpenChange={setOpen} open={open}>
-          <Button
-            className="whitespace-nowrap"
-            disabled={isPending || retryable === 0}
-            onClick={() => setOpen(true)}
-            size="sm"
-            variant="secondary"
-          >
-            {isPending && (
-              <Loader2
-                aria-hidden="true"
-                className="mr-2 size-4 animate-spin"
-              />
-            )}
-            失敗したジョブを再試行
-          </Button>
-          <DialogPortal>
-            <DialogOverlay />
-            <DialogContent>
-              <DialogTitle>失敗したジョブを再試行</DialogTitle>
-              <DialogDescription>
-                最後の取り込みが失敗した {formatNumber(retryable)}
-                件のアカウントの過去動画の取り込みを、もう一度キューに追加しますか？
-                処理はバックグラウンドで順番に行われます。
-              </DialogDescription>
-              <div className="flex justify-end gap-2">
-                <DialogClose asChild>
-                  <Button disabled={isPending} variant="secondary">
-                    キャンセル
-                  </Button>
-                </DialogClose>
-                <Button disabled={isPending} onClick={retry} variant="primary">
-                  {isPending ? '追加中...' : '再試行する'}
-                </Button>
-              </div>
-            </DialogContent>
-          </DialogPortal>
-        </Dialog>
-      }
-      className="lg:col-span-2"
-      description="終了した過去動画の取り込みの結果です。最後の取り込みが失敗したアカウントは、まとめて再試行できます。"
-      id="video-backfill-history"
-      title="過去動画の取り込みの履歴"
-    >
-      {state !== null && loadError && (
-        <div
-          className="mb-4 rounded-control bg-danger/10 p-3 text-meta text-danger"
-          role="alert"
-        >
-          {loadError}
-        </div>
-      )}
-      {failures.length > 0 && (
-        <Alert
-          aria-label="最後の取り込みが失敗したアカウント"
-          className="mb-4"
-          role="region"
-          title={
-            <>
-              最後の取り込みが失敗したアカウント:{' '}
-              {formatNumber(failures.length)}件
-              {failures.length > retryable &&
-                `（再試行中: ${formatNumber(failures.length - retryable)}件）`}
-            </>
+        <ConfirmDialog
+          confirmLabel="再試行する"
+          description={`最後の取り込みが失敗した ${formatNumber(retryable)}件のアカウントの過去動画の取り込みを、もう一度キューに追加しますか？\n処理はバックグラウンドで順番に行われます。`}
+          onConfirm={retry}
+          pendingLabel="追加中..."
+          title="失敗したジョブを再試行"
+          trigger={
+            <Button
+              className="whitespace-nowrap"
+              disabled={retryable === 0}
+              size="sm"
+              variant="secondary"
+            >
+              失敗したジョブを再試行
+            </Button>
           }
-          tone="danger"
-        >
-          <ul className="max-h-60 divide-y divide-danger/20 overflow-y-auto">
-            {failures.map((failure) => (
-              <FailureRow
-                failure={failure}
-                key={`${failure.provider}:${failure.accountId}`}
-              />
-            ))}
-          </ul>
-        </Alert>
-      )}
-      <div className="-mx-6 -mb-6">
-        {state === null ? (
-          loadError ? (
-            <div className="flex flex-col items-center gap-3 px-4 pt-2 pb-6 text-meta text-danger">
-              <p>{loadError}</p>
-              <Button
-                onClick={() => {
-                  setLoadError(null)
-                  void refresh()
-                }}
-                size="sm"
-                variant="secondary"
-              >
-                再試行
-              </Button>
-            </div>
-          ) : (
-            <div className="px-4 pt-2 pb-6 text-center text-meta text-muted">
-              読み込み中...
-            </div>
-          )
-        ) : state.entries.length > 0 ? (
-          <ul className="max-h-[32rem] divide-y divide-border overflow-y-auto border-t border-border">
-            {state.entries.map((entry) => (
-              <HistoryRow entry={entry} key={entry.id} />
-            ))}
-          </ul>
-        ) : (
-          <EmptyState
-            className="pt-4"
-            title="終了した過去動画の取り込みはまだありません。"
-          />
+        />
+      }
+      description={DESCRIPTION}
+      title={TITLE}
+    >
+      <AsyncPanelBody error={error} onRetry={reload}>
+        {failures.length > 0 && (
+          <Alert
+            aria-label="最後の取り込みが失敗したアカウント"
+            className="mb-4"
+            role="region"
+            title={
+              <>
+                最後の取り込みが失敗したアカウント:{' '}
+                {formatNumber(failures.length)}件
+                {failures.length > retryable &&
+                  `（再試行中: ${formatNumber(failures.length - retryable)}件）`}
+              </>
+            }
+            tone="danger"
+          >
+            <ul className="max-h-60 divide-y divide-danger/20 overflow-y-auto">
+              {failures.map((failure) => (
+                <BackfillAccountRow
+                  aside={
+                    failure.active ? (
+                      <Badge variant="info">再試行中</Badge>
+                    ) : (
+                      <time
+                        className="text-caption text-muted tabular-nums"
+                        dateTime={failure.finishedAt}
+                      >
+                        {formatDateTimeFromISO(failure.finishedAt)}
+                      </time>
+                    )
+                  }
+                  className="px-0 py-2"
+                  error={failure.error}
+                  key={`${failure.provider}:${failure.accountId}`}
+                  name={failure.name}
+                  provider={failure.provider}
+                  talent={{ id: failure.talentId, name: failure.talentName }}
+                />
+              ))}
+            </ul>
+          </Alert>
         )}
-      </div>
+        <div className="-mx-6 -mb-6">
+          {entries.length > 0 ? (
+            <ul className="max-h-[32rem] divide-y divide-border overflow-y-auto border-t border-border">
+              {entries.map((entry) => (
+                <BackfillAccountRow
+                  aside={<BackfillStatusBadge status={entry.status} />}
+                  error={entry.error}
+                  key={entry.id}
+                  name={entry.name}
+                  provider={entry.provider}
+                  talent={{ id: entry.talentId, name: entry.talentName }}
+                >
+                  <p className="text-meta text-muted tabular-nums">
+                    {formatNumber(entry.added)}件追加 ·{' '}
+                    {formatNumber(entry.pages)}
+                    ページ · {entry.requester ?? '不明なユーザー'}が
+                    {SCOPE_LABELS[entry.scope]}
+                  </p>
+                  <p className="text-caption text-muted tabular-nums">
+                    <time dateTime={entry.requestedAt}>
+                      {formatDateTimeFromISO(entry.requestedAt)}
+                    </time>
+                    {' → '}
+                    <time dateTime={entry.finishedAt}>
+                      {formatDateTimeFromISO(entry.finishedAt)}
+                    </time>
+                  </p>
+                </BackfillAccountRow>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState
+              className="pt-4"
+              title="終了した過去動画の取り込みはまだありません。"
+            />
+          )}
+        </div>
+      </AsyncPanelBody>
     </Panel>
+  )
+}
+
+/** スケルトンに並べる、履歴の行の数。一覧の高さ（`max-h-[32rem]`）に収まる数にする */
+const SKELETON_ROWS = 6
+
+/** 読み込み中の `VideoBackfillHistoryPanel`。履歴の行を並べる */
+export function VideoBackfillHistoryPanelSkeleton() {
+  return (
+    <PanelSkeleton
+      actions={<Skeleton className="h-8 w-44" />}
+      description={DESCRIPTION}
+      title={TITLE}
+    >
+      <ul className="-mx-6 -mb-6 divide-y divide-border border-t border-border">
+        {range(SKELETON_ROWS).map((row) => (
+          <BackfillAccountRowSkeleton key={`history-skeleton-${row}`} />
+        ))}
+      </ul>
+    </PanelSkeleton>
   )
 }

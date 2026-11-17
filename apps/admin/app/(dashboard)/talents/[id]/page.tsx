@@ -16,15 +16,20 @@ import {
 } from '@/components/panel'
 import { VideoStatusBadge } from '@/components/video-status-badge'
 import { VideoThumbnail } from '@/components/video-thumbnail'
+import { WidgetErrorBoundary } from '@/components/widget-error-boundary'
 import { TalentStatusBadge } from '../_components/talent-status-badge'
 import { getRecentVideosForTalent } from '../_lib/get-recent-videos'
 import { getTalent } from '../_lib/get-talent'
+import { getVideoBackfillStatus } from '../_lib/get-video-backfill-status'
 import { ChannelManager } from './_components/channel-manager'
 import { EditTalentForm } from './_components/edit-talent-form'
 import { SyncTalentButton } from './_components/sync-talent-button'
 import { TalentLifecycleActions } from './_components/talent-lifecycle-actions'
 import { TwitchUserManager } from './_components/twitch-user-manager'
-import { VideoBackfillPanel } from './_components/video-backfill-panel'
+import {
+  VideoBackfillPanel,
+  VideoBackfillPanelSkeleton,
+} from './_components/video-backfill-panel'
 
 export async function generateMetadata({
   params,
@@ -42,6 +47,28 @@ export async function generateMetadata({
   return {
     title: `${talent.name} - タレント詳細`,
   }
+}
+
+interface VideoBackfillProps {
+  talentId: string
+  talentName: string
+}
+
+/** 過去動画の取り込みの最初の状況をサーバーで取得して、パネルに渡す */
+async function VideoBackfill({ talentId, talentName }: VideoBackfillProps) {
+  const initialData = await getVideoBackfillStatus(talentId)
+
+  if (!initialData) {
+    return null
+  }
+
+  return (
+    <VideoBackfillPanel
+      initialData={initialData}
+      talentId={talentId}
+      talentName={talentName}
+    />
+  )
 }
 
 async function TalentProfile({
@@ -130,15 +157,15 @@ async function TalentProfile({
           users={talent.twitch_users}
         />
 
-        {/* Backfill of past videos */}
-        {!isDeleted && (
-          <VideoBackfillPanel
-            hasTwitchUsers={talent.twitch_users.length > 0}
-            hasYouTubeChannels={talent.youtube_channels.length > 0}
-            talentId={talent.id}
-            talentName={talent.name}
-          />
-        )}
+        {/* Backfill of past videos; its progress is read apart from the talent */}
+        {!isDeleted &&
+          talent.youtube_channels.length + talent.twitch_users.length > 0 && (
+            <WidgetErrorBoundary title="過去動画の取り込み">
+              <Suspense fallback={<VideoBackfillPanelSkeleton />}>
+                <VideoBackfill talentId={talent.id} talentName={talent.name} />
+              </Suspense>
+            </WidgetErrorBoundary>
+          )}
 
         {/* Additional metadata */}
         <Panel title="メタデータ">
@@ -308,16 +335,7 @@ function TalentProfileSkeleton() {
           title="Twitchユーザー管理"
         />
 
-        <PanelSkeleton
-          actions={<Skeleton className="h-9 w-56" />}
-          description="プラットフォーム上にあってデータベースにない過去の動画を、すべての履歴をさかのぼって取り込みます。登録済みの動画はそのまま残ります。"
-          title="過去動画の取り込み"
-        >
-          <div className="-mx-6 -mb-6 border-t border-border px-6 py-3">
-            <Skeleton className="h-5 w-48" />
-            <Skeleton className="mt-1 h-5 w-64 max-w-full" />
-          </div>
-        </PanelSkeleton>
+        <VideoBackfillPanelSkeleton />
 
         <PanelSkeleton title="メタデータ">
           <DetailListSkeleton rows={4} />
