@@ -102,14 +102,18 @@ describe('getSummaryStats', () => {
   })
 
   it('should count visible PUBLISHED videos as public', async () => {
+    vi.mocked(getRedisClient).mockReturnValue({
+      get: vi.fn().mockResolvedValue(null),
+    } as never)
+
     const result = await getSummaryStats()
 
     // 3 PUBLISHED + 1 LIVE + 2 ENDED
-    expect(result.visibleVideos).toBe(6)
-    expect(result.scheduledVideos).toBe(1)
-    expect(result.hiddenVideos).toBe(1)
-    expect(result.deletedVideos).toBe(1)
-    expect(result.totalVideos).toBe(8)
+    expect(result.visibleVideos.current).toBe(6)
+    expect(result.scheduledVideos.current).toBe(1)
+    expect(result.hiddenVideos.current).toBe(1)
+    expect(result.deletedVideos.current).toBe(1)
+    expect(result.totalVideos.current).toBe(8)
   })
 
   it('should show no change against a snapshot of the same videos', async () => {
@@ -126,7 +130,7 @@ describe('getSummaryStats', () => {
     const get = vi.fn().mockResolvedValue(snapshot)
     vi.mocked(getRedisClient).mockReturnValue({ get } as never)
 
-    const result = await getSummaryStats(true)
+    const result = await getSummaryStats()
 
     expect(get).toHaveBeenCalledWith(
       expect.stringMatching(new RegExp(`^${REDIS_KEYS.SUMMARY_STATS_PREFIX}`)),

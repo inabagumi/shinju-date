@@ -25,6 +25,6 @@ describe('getAnalyticsSummary', () => {
     const result = await getAnalyticsSummary()
 
     expect(zcard).toHaveBeenCalledWith(REDIS_KEYS.SEARCH_POPULAR_ALL_TIME)
-    expect(result.totalPopularKeywords).toBe(12)
+    expect(result.totalPopularKeywords.current).toBe(12)
   })
 })
