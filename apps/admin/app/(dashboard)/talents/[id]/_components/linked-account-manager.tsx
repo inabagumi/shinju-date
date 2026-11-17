@@ -90,29 +90,21 @@ export function LinkedAccountManager<T>({
   removeAction,
   getAccount,
 }: LinkedAccountManagerProps<T>) {
-  const [deletingAccountId, setDeletingAccountId] = useState<string | null>(
-    null,
-  )
   // Kept after the dialog closes so that its content stays while it fades out.
   const [removalTarget, setRemovalTarget] = useState<LinkedAccount | null>(null)
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
   const { showToast } = useActionToast()
   const removeLabel = `${labels.account}を削除`
-  const removeError = `${labels.account}の削除に失敗しました。`
 
+  // 失敗はダイアログの中に出し、成功したらダイアログを閉じてトーストで知らせる
   const handleRemove = async (accountId: string) => {
-    setDeletingAccountId(accountId)
-    try {
-      const result = await removeAction(accountId, talentId)
+    const result = await removeAction(accountId, talentId)
 
-      if (!result.success) {
-        showToast('danger', result.error || removeError)
-      }
-    } catch {
-      showToast('danger', removeError)
-    } finally {
-      setDeletingAccountId(null)
+    if (result.success) {
+      showToast('success', `${labels.account}を削除しました。`)
     }
+
+    return result
   }
 
   return (
@@ -202,7 +194,6 @@ export function LinkedAccountManager<T>({
                   <UIButton
                     aria-label={removeLabel}
                     className="shrink-0 px-2"
-                    disabled={deletingAccountId === account.id}
                     onClick={() => {
                       setRemovalTarget(account)
                       setIsRemoveDialogOpen(true)
@@ -226,11 +217,9 @@ export function LinkedAccountManager<T>({
         confirmLabel="削除"
         confirmVariant="danger"
         description={`この${labels.account}を削除してもよろしいですか？\n関連する動画データは削除されません。`}
-        onConfirm={() => {
-          if (removalTarget) {
-            void handleRemove(removalTarget.id)
-          }
-        }}
+        onConfirm={() =>
+          removalTarget ? handleRemove(removalTarget.id) : undefined
+        }
         onOpenChange={setIsRemoveDialogOpen}
         open={isRemoveDialogOpen}
         title={removeLabel}

@@ -154,7 +154,7 @@ describe.each(definitions)('LinkedAccountManager ($name)', (definition) => {
     expect(definition.removeAction).not.toHaveBeenCalled()
   })
 
-  it('removes the account when confirmed', async () => {
+  it('removes the account and shows a toast when confirmed', async () => {
     definition.removeAction.mockResolvedValue({ success: true })
 
     renderManager()
@@ -162,15 +162,17 @@ describe.each(definitions)('LinkedAccountManager ($name)', (definition) => {
     fireEvent.click(screen.getByRole('button', { name: removeLabel }))
     fireEvent.click(screen.getByRole('button', { name: '削除' }))
 
-    await waitFor(() =>
-      expect(definition.removeAction).toHaveBeenCalledWith(
-        definition.accountRowId,
-        'talent-1',
-      ),
+    expect(
+      await screen.findByText(`${definition.account}を削除しました。`),
+    ).toBeInTheDocument()
+    expect(definition.removeAction).toHaveBeenCalledWith(
+      definition.accountRowId,
+      'talent-1',
     )
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
   })
 
-  it('shows the error in a toast when the removal fails', async () => {
+  it('keeps the dialog open with the error when the removal fails', async () => {
     definition.removeAction.mockResolvedValue({
       error: '削除できませんでした。',
       success: false,
@@ -179,24 +181,32 @@ describe.each(definitions)('LinkedAccountManager ($name)', (definition) => {
     renderManager()
 
     fireEvent.click(screen.getByRole('button', { name: removeLabel }))
-    fireEvent.click(screen.getByRole('button', { name: '削除' }))
 
-    expect(
-      await screen.findByText('削除できませんでした。'),
-    ).toBeInTheDocument()
+    const dialog = screen.getByRole('dialog')
+
+    fireEvent.click(within(dialog).getByRole('button', { name: '削除' }))
+
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+      '削除できませんでした。',
+    )
+    expect(screen.getByRole('dialog')).toBe(dialog)
   })
 
-  it('shows a fallback error in a toast when the removal throws', async () => {
+  it('keeps the dialog open with a fallback error when the removal throws', async () => {
     definition.removeAction.mockRejectedValue(new Error('network'))
 
     renderManager()
 
     fireEvent.click(screen.getByRole('button', { name: removeLabel }))
-    fireEvent.click(screen.getByRole('button', { name: '削除' }))
 
-    expect(
-      await screen.findByText(`${definition.account}の削除に失敗しました。`),
-    ).toBeInTheDocument()
+    const dialog = screen.getByRole('dialog')
+
+    fireEvent.click(within(dialog).getByRole('button', { name: '削除' }))
+
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+      '処理に失敗しました。',
+    )
+    expect(screen.getByRole('dialog')).toBe(dialog)
   })
 
   it('adds with the dialog and closes it on success', async () => {
