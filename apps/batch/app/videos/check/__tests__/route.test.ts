@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const acquireLock = vi.fn()
 const releaseLock = vi.fn()
 const scraper = {
-  cleanUpImages: vi.fn(),
   refreshLiveVideos: vi.fn(),
   refreshRecentVideos: vi.fn(),
   removeUnavailableVideos: vi.fn(),
@@ -92,55 +91,10 @@ describe('POST /videos/check', () => {
       expect(createScraper).toHaveBeenCalledWith(provider)
 
       for (const [name, mock] of Object.entries(scraper)) {
-        if (name !== 'cleanUpImages') {
-          expect(mock).toHaveBeenCalledTimes(name === operation ? 1 : 0)
-        }
+        expect(mock).toHaveBeenCalledTimes(name === operation ? 1 : 0)
       }
     },
   )
-
-  it.each([
-    ['?mode=all', 'youtube'],
-    ['?provider=twitch&mode=all', 'twitch'],
-  ] as const)(
-    '%s cleans up unused images after checking every video',
-    async (search, provider) => {
-      const response = await POST(createRequest(search))
-
-      expect(response.status).toBe(204)
-      expect(createScraper).toHaveBeenCalledWith(provider)
-      expect(scraper.cleanUpImages).toHaveBeenCalledTimes(1)
-      expect(
-        scraper.removeUnavailableVideos.mock.invocationCallOrder[0],
-      ).toBeLessThan(scraper.cleanUpImages.mock.invocationCallOrder[0] ?? 0)
-
-      const [now] = scraper.removeUnavailableVideos.mock.calls[0] ?? []
-
-      expect(scraper.cleanUpImages).toHaveBeenCalledWith(now)
-    },
-  )
-
-  it.each([
-    '',
-    '?mode=recent',
-    '?provider=twitch',
-    '?provider=twitch&mode=recent',
-  ])('%s leaves unused images alone', async (search) => {
-    await POST(createRequest(search))
-
-    expect(scraper.cleanUpImages).not.toHaveBeenCalled()
-  })
-
-  it('reports whether videos changed, whatever the clean-up did', async () => {
-    scraper.removeUnavailableVideos.mockResolvedValue(true)
-
-    const response = await POST(createRequest('?mode=all'))
-
-    expect(response.status).toBe(204)
-    expect(finishVideoSync).toHaveBeenCalledWith(
-      expect.objectContaining({ changed: true }),
-    )
-  })
 
   it('reports whether anything changed', async () => {
     scraper.refreshLiveVideos.mockResolvedValue(true)

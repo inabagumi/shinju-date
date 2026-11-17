@@ -12,22 +12,16 @@ export const maxDuration = 120
 /**
  * - `default`: videos that are scheduled or on air
  * - `recent`: the newest finished videos
- * - `all`: availability of every video, then images no video or account uses
- *   any more (failures to clean those up are only reported)
+ * - `all`: availability of every video
  */
-async function checkVideos(
+function checkVideos(
   scraper: Scraper,
   mode: VideosCheckMode,
   now: Temporal.Instant,
 ): Promise<boolean> {
   switch (mode) {
-    case 'all': {
-      const changed = await scraper.removeUnavailableVideos(now)
-
-      await scraper.cleanUpImages(now)
-
-      return changed
-    }
+    case 'all':
+      return scraper.removeUnavailableVideos(now)
     case 'recent':
       return scraper.refreshRecentVideos(now)
     default:

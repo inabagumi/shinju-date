@@ -61,7 +61,6 @@ pnpm exec playwright test --ui
     - `?mode=recent` / `?provider=twitch&mode=recent`: 最新100件（ENDED/PUBLISHED）のメタデータ更新と削除判定
       - Twitch は配信直後だとサムネイルが未生成のため、サムネイルがない動画はここで補完する
     - `?mode=all` / `?provider=twitch&mode=all`: 全動画の削除判定のみ（週2回）
-      - 最後に、どの動画からも使われていないサムネイルと、どのアカウントからも使われていないアイコンを削除する（プラットフォームを問わない。失敗は Sentry に報告するだけで、ジョブは失敗にしない）
   - `/videos/cascade-from-talents`: タレント削除／復活に伴う動画の連鎖処理（5分毎）
     - 削除済みタレントに紐づく未削除動画をソフトデリート（`deleted_reason = talent_deleted`）
     - 復活済みタレントに紐づく `talent_deleted` のみ復旧（`unavailable` / `withdrawn` は対象外）
@@ -77,6 +76,10 @@ pnpm exec playwright test --ui
   - `/talents/update`: タレント／チャンネル情報の更新
     - デフォルト / `?provider=youtube`: YouTubeチャンネル同期（3時間毎）
     - `?provider=twitch`: Twitchユーザー（display_name / login）同期
+- **使われていない画像の削除** (`/images/cleanup`)
+  - どの動画からも使われていないサムネイルと、どのアカウントからも使われていないアイコンを削除する（日次。プラットフォームを問わない）
+  - サムネイルは、使われなくなってから 1 週間たったものを、1 回の実行で最大 500 件削除する
+  - 動画のジョブと別にしているので、削除に時間がかかっても動画の同期を止めない。失敗は Sentry に報告するだけで、ジョブは失敗にしない
 - **統計情報の更新** (`/stats/snapshot`)
   - ダッシュボード統計のスナップショット保存（日次比較用）
 - **推薦クエリの更新** (`/recommendation/queries/update`)
@@ -92,6 +95,7 @@ pnpm exec playwright test --ui
 
 - `GET /api/healthz` - ヘルスチェック（常に正常応答）
 - `GET /api/readyz` - 準備状態チェック（Supabase/Redis接続確認）
+- `POST /images/cleanup` - 使われていないサムネイルとアイコンの削除
 - `POST /stats/snapshot` - 統計スナップショット作成
 - `POST /recommendation/queries/update` - 推薦クエリ更新
 - `POST /talents/update` - タレント情報更新
@@ -103,7 +107,7 @@ pnpm exec playwright test --ui
   - `provider=youtube`（デフォルト）/ `provider=twitch`
   - パラメータなし: UPCOMING/LIVE動画の情報更新（Twitch は配信の LIVE 状態の同期）
   - `mode=recent`: 最新100件の動画の情報更新と削除判定
-  - `mode=all`: 全動画の削除判定（情報更新なし）と、使われていない画像の削除
+  - `mode=all`: 全動画の削除判定（情報更新なし）
 - `POST /videos/cascade-from-talents` - タレント削除／復活に伴う動画の連鎖ソフトデリート／復旧
 - `POST /videos/backfill` - 過去動画の取り込みキューの処理
 
@@ -143,7 +147,7 @@ pnpm exec playwright test --ui
 
 ## クローラーの構成
 
-YouTube / Twitch のクローラー（`/videos/update`・`/videos/check`・`/videos/backfill`・`/talents/update`）の本体は `@shinju-date/scraper` にあります。取得・差分判定・データベースへの書き込み・サムネイル保存はすべてそちらの担当で、仕様もそちらの README にあります。
+YouTube / Twitch のクローラー（`/videos/update`・`/videos/check`・`/videos/backfill`・`/talents/update`・`/images/cleanup`）の本体は `@shinju-date/scraper` にあります。取得・差分判定・データベースへの書き込み・サムネイル保存はすべてそちらの担当で、仕様もそちらの README にあります。
 
 このアプリが受け持つのは次の 3 つです。
 
@@ -151,14 +155,15 @@ YouTube / Twitch のクローラー（`/videos/update`・`/videos/check`・`/vid
 2. プロバイダーに対応するスクレイパーを作り、ルートに応じた操作を呼ぶ
 3. 変更があれば公開サイトのキャッシュを再検証し、最終同期時刻を記録する
 
-| ルート                      | 呼び出す操作                               |
-| --------------------------- | ------------------------------------------ |
-| `/videos/update`            | `addNewVideos`                             |
-| `/videos/check`             | `refreshLiveVideos`                        |
-| `/videos/check?mode=recent` | `refreshRecentVideos`                      |
-| `/videos/check?mode=all`    | `removeUnavailableVideos`、`cleanUpImages` |
-| `/talents/update`           | `syncAccounts`                             |
-| `/videos/backfill`          | `addPastVideos`                            |
+| ルート                      | 呼び出す操作              |
+| --------------------------- | ------------------------- |
+| `/videos/update`            | `addNewVideos`            |
+| `/videos/check`             | `refreshLiveVideos`       |
+| `/videos/check?mode=recent` | `refreshRecentVideos`     |
+| `/videos/check?mode=all`    | `removeUnavailableVideos` |
+| `/talents/update`           | `syncAccounts`            |
+| `/videos/backfill`          | `addPastVideos`           |
+| `/images/cleanup`           | `cleanUpImages`           |
 
 スクレイパーは 1 アカウント・1 動画単位の失敗では止まらず、その失敗を Sentry に報告して続行します。実行全体が失敗した場合だけ例外になり、実行基盤が 500 と Sentry チェックインの `error` にします。
 
