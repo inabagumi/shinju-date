@@ -6,7 +6,7 @@ import {
   type Ratings,
   REPEAT_SEARCH_RATE_RATINGS,
   rate,
-} from '../metric-ratings'
+} from './metric-ratings'
 
 describe('rate', () => {
   it.each([

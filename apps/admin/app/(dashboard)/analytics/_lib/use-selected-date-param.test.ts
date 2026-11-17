@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useSelectedDateParam } from '../use-selected-date-param'
+import { useSelectedDateParam } from './use-selected-date-param'
 
 const mocks = vi.hoisted(() => ({
   push: vi.fn(),

@@ -21,7 +21,7 @@ vi.mock('@/lib/supabase', () => ({
   }),
 }))
 
-import { signIn } from '../actions'
+import { signIn } from './actions'
 
 function createFormData(next?: string): FormData {
   const formData = new FormData()

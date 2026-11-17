@@ -12,7 +12,7 @@ import {
   restoreTalentAction,
   retireTalentAction,
   updateTalentAction,
-} from '../index'
+} from './index'
 
 vi.mock('@shinju-date/youtube-api-client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@shinju-date/youtube-api-client')>()),

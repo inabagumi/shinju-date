@@ -3,7 +3,7 @@ import type { RefreshVideoResult } from '@shinju-date/scraper'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { setupActionTest } from '@/test/action-harness'
-import { syncVideoAction } from '../sync'
+import { syncVideoAction } from './sync'
 
 const scraper = vi.hoisted(() => ({
   createScraper: vi.fn(),

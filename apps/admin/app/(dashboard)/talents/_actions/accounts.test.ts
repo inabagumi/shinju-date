@@ -7,11 +7,8 @@ import { syncTwitchUserIconSafely } from '@/lib/twitch-user-icon'
 import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
 import { setupActionTest } from '@/test/action-harness'
 import { postgresError } from '@/test/supabase'
-import {
-  addYouTubeChannelAction,
-  removeYouTubeChannelAction,
-} from '../channels'
-import { addTwitchUserAction, removeTwitchUserAction } from '../twitch-users'
+import { addYouTubeChannelAction, removeYouTubeChannelAction } from './channels'
+import { addTwitchUserAction, removeTwitchUserAction } from './twitch-users'
 
 vi.mock('@shinju-date/youtube-api-client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@shinju-date/youtube-api-client')>()),

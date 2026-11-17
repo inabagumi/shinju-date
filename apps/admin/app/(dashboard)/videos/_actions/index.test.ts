@@ -6,7 +6,7 @@ import {
   restoreAction,
   softDeleteAction,
   toggleVisibilityAction,
-} from '../index'
+} from './index'
 
 const test = setupActionTest()
 const { supabase } = test

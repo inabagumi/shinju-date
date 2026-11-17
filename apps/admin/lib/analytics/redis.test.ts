@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dailyKeys, parseScoredMembers, sumScores } from '../redis'
+import { dailyKeys, parseScoredMembers, sumScores } from './redis'
 
 describe('parseScoredMembers', () => {
   it('reads scores returned as numbers', () => {

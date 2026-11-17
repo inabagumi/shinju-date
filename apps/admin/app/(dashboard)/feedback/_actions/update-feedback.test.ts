@@ -5,7 +5,7 @@ import {
   markFeatureRequestAsRead,
   updateFeatureRequestMemo,
   updateFeatureRequestStatus,
-} from '../update-feedback'
+} from './update-feedback'
 
 const test = setupActionTest()
 const { supabase } = test

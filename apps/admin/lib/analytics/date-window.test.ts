@@ -8,7 +8,7 @@ import {
   parseDateFormat,
   validateDate,
   validateRange,
-} from '../date-window'
+} from './date-window'
 
 /** Fix the current time. The date is derived from the time zone that is asked for */
 function mockNow(instant: string) {

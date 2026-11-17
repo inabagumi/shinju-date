@@ -1,7 +1,7 @@
 import { CACHE_TAGS, REDIS_KEYS } from '@shinju-date/constants'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { setupActionTest } from '@/test/action-harness'
-import { addQueryAction, deleteQueryAction } from '../index'
+import { addQueryAction, deleteQueryAction } from './index'
 
 const test = setupActionTest()
 

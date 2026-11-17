@@ -3,7 +3,7 @@ import { setupActionTest } from '@/test/action-harness'
 import {
   getVideoBackfillHistoryAction,
   retryFailedVideoBackfillJobsAction,
-} from '../video-backfill-history'
+} from './video-backfill-history'
 
 const mocks = vi.hoisted(() => ({
   enqueue: vi.fn(),

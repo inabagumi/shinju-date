@@ -7,7 +7,7 @@ import {
   syncTalentAccounts,
   syncTalentWithTwitch,
   syncTalentWithYouTube,
-} from '../sync'
+} from './sync'
 
 const scraper = vi.hoisted(() => ({
   createScraper: vi.fn(),

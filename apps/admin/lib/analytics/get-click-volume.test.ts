@@ -1,12 +1,12 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { getClickVolume } from '../get-click-volume'
+import { getClickVolume } from './get-click-volume'
 
 vi.mock('next/cache', () => ({
   cacheLife: vi.fn(),
 }))
 vi.mock('@/lib/redis', async () => {
-  const { createMockPipeline } = await import('./mock-redis-pipeline')
+  const { createMockPipeline } = await import('@/test/mock-redis-pipeline')
   const mockedRedisClient = {
     pipeline: vi.fn(),
     zrange: vi.fn(),

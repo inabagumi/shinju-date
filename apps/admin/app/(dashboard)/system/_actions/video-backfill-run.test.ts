@@ -3,7 +3,7 @@ import { setupActionTest } from '@/test/action-harness'
 import {
   getVideoBackfillRunAction,
   requestVideoBackfillRunAction,
-} from '../video-backfill-run'
+} from './video-backfill-run'
 
 const mocks = vi.hoisted(() => ({
   getLatest: vi.fn(),
