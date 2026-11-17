@@ -3,8 +3,11 @@
 import * as Checkbox from '@radix-ui/react-checkbox'
 import * as Popover from '@radix-ui/react-popover'
 import { Check, ChevronDown, Minus } from 'lucide-react'
-import type { ComponentPropsWithoutRef } from 'react'
+import { type ComponentPropsWithoutRef, useId } from 'react'
 import { twMerge } from '../tw-merge.js'
+
+const checkboxClassName =
+  'mr-2 flex size-5 items-center justify-center rounded-control border border-border bg-surface data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=indeterminate]:border-accent data-[state=indeterminate]:bg-accent'
 
 export interface MultiSelectOption {
   label: string
@@ -34,6 +37,18 @@ export function MultiSelect({
   className,
   ...props
 }: MultiSelectProps) {
+  // 同じ値の選択肢を持つ MultiSelect が並んでも、チェックボックスの id が重ならないようにする
+  const idPrefix = useId()
+  const selectAllId = `${idPrefix}-select-all`
+  const getOptionId = (optionValue: string) =>
+    `${idPrefix}-option-${optionValue}`
+  const selectAllState =
+    options.length > 0 && value.length === options.length
+      ? true
+      : value.length > 0
+        ? 'indeterminate'
+        : false
+
   const handleToggle = (optionValue: string) => {
     const newValue = value.includes(optionValue)
       ? value.filter((v) => v !== optionValue)
@@ -42,7 +57,7 @@ export function MultiSelect({
   }
 
   const handleSelectAll = () => {
-    if (value.length === options.length) {
+    if (selectAllState === true) {
       onChange([])
     } else {
       onChange(options.map((opt) => opt.value))
@@ -64,6 +79,7 @@ export function MultiSelect({
     <Popover.Root>
       <Popover.Trigger asChild>
         <button
+          aria-label={label}
           className={twMerge(
             'flex w-full items-center justify-between rounded-control border border-border bg-surface px-3 py-2 text-left text-foreground transition-colors field-focus-ring hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50',
             className,
@@ -84,24 +100,27 @@ export function MultiSelect({
           sideOffset={4}
         >
           <div className="flex flex-col gap-1">
-            {/* Select All / Deselect All button */}
-            <button
-              className="flex w-full items-center rounded-control px-2 py-2 text-left text-meta leading-5 hover:bg-muted"
-              onClick={handleSelectAll}
-              type="button"
+            {/* Select All: 一部だけ選択のときは aria-checked="mixed" になる */}
+            <label
+              className="flex w-full cursor-pointer items-center rounded-control px-2 py-2 text-meta leading-5 hover:bg-muted"
+              htmlFor={selectAllId}
             >
-              <div className="mr-2 flex size-5 items-center justify-center rounded-control border border-border">
-                {value.length === options.length && (
-                  <Check className="size-4 text-accent" />
-                )}
-                {value.length > 0 && value.length < options.length && (
-                  <Minus className="size-3 text-accent" />
-                )}
-              </div>
-              <span className="font-medium">
-                {value.length === options.length ? 'すべて解除' : 'すべて選択'}
-              </span>
-            </button>
+              <Checkbox.Root
+                checked={selectAllState}
+                className={checkboxClassName}
+                id={selectAllId}
+                onCheckedChange={handleSelectAll}
+              >
+                <Checkbox.Indicator>
+                  {selectAllState === 'indeterminate' ? (
+                    <Minus className="size-3 text-accent-foreground" />
+                  ) : (
+                    <Check className="size-4 text-accent-foreground" />
+                  )}
+                </Checkbox.Indicator>
+              </Checkbox.Root>
+              <span className="font-medium">すべて選択</span>
+            </label>
             <div className="my-1 h-px bg-border" />
             {/* Options list with scroll */}
             <div className="overflow-y-auto" style={{ maxHeight }}>
@@ -110,13 +129,13 @@ export function MultiSelect({
                 return (
                   <label
                     className="flex w-full cursor-pointer items-center rounded-control px-2 py-2 text-meta leading-5 hover:bg-muted"
-                    htmlFor={`multi-select-${option.value}`}
+                    htmlFor={getOptionId(option.value)}
                     key={option.value}
                   >
                     <Checkbox.Root
                       checked={isChecked}
-                      className="mr-2 flex size-5 items-center justify-center rounded-control border border-border bg-surface data-[state=checked]:border-accent data-[state=checked]:bg-accent"
-                      id={`multi-select-${option.value}`}
+                      className={checkboxClassName}
+                      id={getOptionId(option.value)}
                       onCheckedChange={() => handleToggle(option.value)}
                     >
                       <Checkbox.Indicator>

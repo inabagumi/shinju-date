@@ -109,10 +109,11 @@ export const WithPreselected = meta.story({
     await expect(osakaOption).toBeChecked()
 
     // Test "Select All" functionality
-    const selectAllButton = within(document.body).getByRole('button', {
+    const selectAllCheckbox = within(document.body).getByRole('checkbox', {
       name: /すべて選択/i,
     })
-    await userEvent.click(selectAllButton)
+    await expect(selectAllCheckbox).toHaveAttribute('aria-checked', 'mixed')
+    await userEvent.click(selectAllCheckbox)
 
     // Verify all options are checked
     await expect(tokyoOption).toBeChecked()
@@ -120,11 +121,9 @@ export const WithPreselected = meta.story({
     const kyotoOption = within(document.body).getByLabelText(/kyoto/i)
     await expect(kyotoOption).toBeChecked()
 
-    // Test "Deselect All" functionality (button text should change)
-    const deselectAllButton = within(document.body).getByRole('button', {
-      name: /すべて解除/i,
-    })
-    await userEvent.click(deselectAllButton)
+    // Test "Deselect All" functionality (clicking the checked checkbox again)
+    await expect(selectAllCheckbox).toBeChecked()
+    await userEvent.click(selectAllCheckbox)
 
     // Verify all options are unchecked
     await expect(tokyoOption).not.toBeChecked()
