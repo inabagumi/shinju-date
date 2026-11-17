@@ -199,6 +199,24 @@ export const fetchScheduleToday = async (): Promise<string> => {
 }
 
 /**
+ * The current time in `TIME_ZONE`, as the string of a
+ * `Temporal.ZonedDateTime`. The server and the browser start rendering from
+ * it (the first value of `useNow` and the reference date of the search
+ * results), so the hydration does not differ from the server. The browser
+ * switches to its own clock after the hydration.
+ *
+ * It is cached as long as the videos (`fetchVideos`) are, as it is rendered
+ * with them.
+ */
+export const fetchCurrentTime = async (): Promise<string> => {
+  'use cache: remote'
+
+  cacheLife('hours')
+
+  return Temporal.Now.zonedDateTimeISO(TIME_ZONE).toString()
+}
+
+/**
  * The date (`YYYY-MM-DD` in `TIME_ZONE`) the oldest video starts on, or `null`
  * when there is no video. The schedule shows no week before it.
  */

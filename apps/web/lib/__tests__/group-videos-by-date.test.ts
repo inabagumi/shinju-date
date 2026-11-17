@@ -35,4 +35,21 @@ describe('groupVideosByDate', () => {
 
     expect(videos.map((video) => video.id)).toEqual(['b', 'a'])
   })
+
+  test('should keep the given order with `sort: false`', () => {
+    const groups = groupVideosByDate(
+      [
+        { id: 'c', published_at: '2026-11-11T13:00:00Z' },
+        { id: 'b', published_at: '2026-11-10T13:00:00Z' },
+        { id: 'a', published_at: '2026-11-10T12:00:00Z' },
+      ],
+      { sort: false },
+    )
+
+    expect([...groups.keys()]).toEqual(['2026-11-11', '2026-11-10'])
+    expect(groups.get('2026-11-10')?.map((video) => video.id)).toEqual([
+      'b',
+      'a',
+    ])
+  })
 })

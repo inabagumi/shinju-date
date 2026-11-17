@@ -4,6 +4,7 @@ import VideoKindFilterNav, {
   VideoKindFilterNavSkeleton,
 } from '@/components/video-kind-filter-nav'
 import { fetchVideos } from '@/lib/fetchers'
+import { getReferenceDate } from '@/lib/reference-date'
 import { getTalentPath } from '@/lib/talent-links'
 import {
   getVideoKindName,
@@ -67,7 +68,10 @@ export async function TalentVideos({
     getKind(searchParams),
   ])
   const talentIds = [talent.id]
-  const videos = await fetchVideos({ kind, talentIds })
+  const [videos, referenceDate] = await Promise.all([
+    fetchVideos({ kind, talentIds }),
+    getReferenceDate(),
+  ])
 
   if (videos.length < 1) {
     return (
@@ -81,6 +85,7 @@ export async function TalentVideos({
     <SearchResults
       kind={kind}
       prefetchedData={[videos]}
+      referenceDate={referenceDate}
       talentIds={talentIds}
     />
   )
