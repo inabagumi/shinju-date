@@ -1,71 +1,26 @@
-import { TIME_ZONE } from '@shinju-date/constants'
 import { z } from 'zod'
+import {
+  getDefaultDateRange,
+  parseDate,
+  validateRange,
+} from '@/lib/analytics/date-window'
 
 /**
- * Default date range (past 7 days)
+ * Validate a date range ensuring both dates are selectable, start <= end and
+ * the length is within the limit
  */
-export function getDefaultDateRange() {
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
-  return {
-    endDate: today.toString(),
-    startDate: today.subtract({ days: 6 }).toString(),
-  }
-}
-
-/**
- * Validate a date string and ensure it's within allowed range
- */
-function validateDateString(dateStr: string): string | null {
-  try {
-    const date = Temporal.PlainDate.from(dateStr)
-    const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
-
-    // Date cannot be in the future
-    if (Temporal.PlainDate.compare(date, today) > 0) {
-      return null
-    }
-
-    // Date cannot be more than 90 days old (retention limit)
-    const maxPastDate = today.subtract({ days: 89 })
-    if (Temporal.PlainDate.compare(date, maxPastDate) < 0) {
-      return null
-    }
-
-    return date.toString()
-  } catch {
-    return null
-  }
-}
-
-/**
- * Validate a date range ensuring start <= end and within constraints
- */
-function validateDateRange(
+function parseDateRange(
   startDate: string,
   endDate: string,
 ): { startDate: string; endDate: string } | null {
-  const validStart = validateDateString(startDate)
-  const validEnd = validateDateString(endDate)
+  const start = parseDate(startDate)
+  const end = parseDate(endDate)
 
-  if (!validStart || !validEnd) {
+  if (!start || !end || validateRange(start, end) !== null) {
     return null
   }
 
-  const start = Temporal.PlainDate.from(validStart)
-  const end = Temporal.PlainDate.from(validEnd)
-
-  // Start date must be before or equal to end date
-  if (Temporal.PlainDate.compare(start, end) > 0) {
-    return null
-  }
-
-  // Maximum period constraint (90 days)
-  const daysDifference = end.since(start).days + 1
-  if (daysDifference > 90) {
-    return null
-  }
-
-  return { endDate: validEnd, startDate: validStart }
+  return { endDate: end.toString(), startDate: start.toString() }
 }
 
 /**
@@ -83,7 +38,7 @@ export const analyticsSearchParamsSchema = z
           val = val[0]
         }
         if (!val) return undefined
-        return validateDateString(val)
+        return parseDate(val)?.toString() ?? null
       }),
 
     // Start date of the range (from parameter)
@@ -127,12 +82,7 @@ export const analyticsSearchParamsSchema = z
 
     // If both from and to are provided, use them for the chart range
     if (from && to) {
-      const validRange = validateDateRange(from, to)
-      if (validRange) {
-        dateRange = validRange
-      } else {
-        dateRange = getDefaultDateRange()
-      }
+      dateRange = parseDateRange(from, to) ?? getDefaultDateRange()
     } else {
       // Fall back to default range
       dateRange = getDefaultDateRange()

@@ -2,12 +2,14 @@
 
 import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
-import { formatDateKey } from '@shinju-date/temporal-fns'
 import { headers } from 'next/headers'
+import {
+  DAILY_TTL_SECONDS,
+  dailyKey,
+  hincrbyWithTtl,
+  saddWithTtl,
+} from './analytics/redis'
 import { getRedisClient } from './redis'
-
-// TTL settings for time-based session keys
-const DAILY_TTL_SECONDS = 90 * 24 * 60 * 60 // 90 days
 
 /**
  * Generate a simple session ID based on IP address and User-Agent
@@ -43,15 +45,16 @@ export async function trackPageVisit(): Promise<void> {
     const redisClient = getRedisClient()
     const sessionId = await generateSessionId()
     const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-    const today = formatDateKey(now)
-
-    const sessionTotalKey = `${REDIS_KEYS.SESSIONS_TOTAL_PREFIX}${today}`
 
     const multi = redisClient.multi()
 
     // Track unique sessions using a set
-    multi.sadd(sessionTotalKey, sessionId)
-    multi.expire(sessionTotalKey, DAILY_TTL_SECONDS)
+    saddWithTtl(
+      multi,
+      dailyKey(REDIS_KEYS.SESSIONS_TOTAL_PREFIX, now),
+      sessionId,
+      DAILY_TTL_SECONDS,
+    )
 
     await multi.exec()
   } catch (error) {
@@ -72,20 +75,25 @@ export async function trackSearchSession(query: string): Promise<void> {
     const redisClient = getRedisClient()
     const sessionId = await generateSessionId()
     const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-    const today = formatDateKey(now)
-
-    const sessionWithSearchKey = `${REDIS_KEYS.SESSIONS_WITH_SEARCH_PREFIX}${today}`
-    const searchSessionsKey = `${REDIS_KEYS.SEARCH_SESSIONS_PREFIX}${today}`
 
     const multi = redisClient.multi()
 
     // Track unique sessions that performed searches
-    multi.sadd(sessionWithSearchKey, sessionId)
-    multi.expire(sessionWithSearchKey, DAILY_TTL_SECONDS)
+    saddWithTtl(
+      multi,
+      dailyKey(REDIS_KEYS.SESSIONS_WITH_SEARCH_PREFIX, now),
+      sessionId,
+      DAILY_TTL_SECONDS,
+    )
 
     // Track total search count per session for repeat search rate
-    multi.hincrby(searchSessionsKey, sessionId, 1)
-    multi.expire(searchSessionsKey, DAILY_TTL_SECONDS)
+    hincrbyWithTtl(
+      multi,
+      dailyKey(REDIS_KEYS.SEARCH_SESSIONS_PREFIX, now),
+      sessionId,
+      1,
+      DAILY_TTL_SECONDS,
+    )
 
     await multi.exec()
   } catch (error) {
@@ -108,15 +116,17 @@ export async function trackSearchExitWithoutClick(
   try {
     const redisClient = getRedisClient()
     const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
-    const today = formatDateKey(now)
-
-    const exitKey = `${REDIS_KEYS.SEARCH_EXIT_WITHOUT_CLICK_PREFIX}${today}`
 
     const multi = redisClient.multi()
 
     // Increment exit count for this query
-    multi.hincrby(exitKey, normalizedQuery, 1)
-    multi.expire(exitKey, DAILY_TTL_SECONDS)
+    hincrbyWithTtl(
+      multi,
+      dailyKey(REDIS_KEYS.SEARCH_EXIT_WITHOUT_CLICK_PREFIX, now),
+      normalizedQuery,
+      1,
+      DAILY_TTL_SECONDS,
+    )
 
     await multi.exec()
   } catch (error) {

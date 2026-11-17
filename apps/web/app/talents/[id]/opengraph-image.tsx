@@ -3,13 +3,14 @@ import { ImageResponse } from 'next/og'
 import { LOGO_PATH, LOGO_VIEW_BOX } from '@/app/_components/svg-symbols'
 import { getTalentProfileImage } from '@/components/talent-icon'
 import { fetchTalent } from '@/lib/fetchers'
+import { SITE_THEME_COLOR } from '@/lib/site'
 import { fetchTalentIconDataURL, getTalentThemeColor } from './_lib/og-image'
 
 export const alt = 'SHINJU DATE'
 export const size = { height: 630, width: 1200 }
 export const contentType = 'image/png'
 
-const TEXT_COLOR = '#1e0064'
+const TEXT_COLOR = SITE_THEME_COLOR
 const ICON_SIZE = 320
 const LOGO_HEIGHT = 56
 const LOGO_WIDTH = (LOGO_HEIGHT * 256) / 80

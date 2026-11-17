@@ -173,4 +173,35 @@ describe('LogItem', () => {
       expect(screen.queryByRole('link')).not.toBeInTheDocument()
     },
   )
+
+  it('links a feedback update to the feedback and shows the changed status', () => {
+    const feedbackId = '70000000-0000-0000-0000-000000000001'
+
+    render(
+      <LogItem
+        log={{
+          ...videoSyncLog({
+            changes: {
+              after: { status: 'resolved' },
+              before: { status: 'pending' },
+            },
+            entityName: '検索結果を配信日で絞り込みたいです',
+          }),
+          action: 'FEATURE_REQUEST_UPDATE',
+          target_record_id: feedbackId,
+          target_table: 'feature_requests',
+        }}
+      />,
+    )
+
+    expect(
+      screen.getByText('がフィードバックを更新しました'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: '検索結果を配信日で絞り込みたいです' }),
+    ).toHaveAttribute('href', `/feedback/${feedbackId}`)
+    expect(screen.getByText('status:')).toBeInTheDocument()
+    expect(screen.getByText('pending')).toBeInTheDocument()
+    expect(screen.getByText('resolved')).toBeInTheDocument()
+  })
 })

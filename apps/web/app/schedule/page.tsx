@@ -1,24 +1,12 @@
-import type { Metadata } from 'next'
+import { createPageMetadata } from '@/lib/metadata'
 import { getSchedulePath } from '@/lib/schedule'
-import { SITE_NAME as siteName } from '@/lib/site'
 import SchedulePageContent from './_components/schedule-page-content'
 
-const title = '配信スケジュール'
-
-export const metadata: Metadata = {
-  alternates: {
-    canonical: getSchedulePath(),
-  },
-  openGraph: {
-    siteName,
-    title,
-    type: 'article',
-  },
-  title,
-  twitter: {
-    title: `${title} - ${siteName}`,
-  },
-}
+export const metadata = createPageMetadata({
+  path: getSchedulePath(),
+  title: '配信スケジュール',
+  type: 'article',
+})
 
 /** 今日（`TIME_ZONE`）を含む週の配信スケジュール */
 export default function SchedulePage() {

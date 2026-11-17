@@ -81,8 +81,53 @@ async function waitForSortableInputList(dialog: HTMLElement) {
 describe('TermModal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.createTermAction.mockResolvedValue({})
-    mocks.updateTermAction.mockResolvedValue({})
+    mocks.createTermAction.mockResolvedValue({ success: true })
+    mocks.updateTermAction.mockResolvedValue({ success: true })
+  })
+
+  describe('submitting', () => {
+    it('closes the dialog when the action succeeds', async () => {
+      render(<TermModal term={term} />)
+
+      fireEvent.click(screen.getByRole('button', { name: '編集' }))
+
+      const dialog = screen.getByRole('dialog', { name: '用語を編集' })
+
+      fireEvent.click(within(dialog).getByRole('button', { name: '更新' }))
+
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      })
+      expect(mocks.updateTermAction).toHaveBeenCalledOnce()
+      expect(mocks.createTermAction).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      [
+        'a validation error',
+        { errors: { term: ['用語を入力してください。'] } },
+        '用語を入力してください。',
+      ],
+      [
+        'an error that belongs to no field',
+        { error: '用語の追加に失敗しました。' },
+        '用語の追加に失敗しました。',
+      ],
+    ])('keeps the dialog open on %s', async (_name, state, message) => {
+      mocks.createTermAction.mockResolvedValue(state)
+
+      render(<TermModal />)
+
+      fireEvent.click(screen.getByRole('button', { name: '新しい用語を追加' }))
+
+      const dialog = screen.getByRole('dialog', { name: '新しい用語を追加' })
+
+      fireEvent.click(within(dialog).getByRole('button', { name: '追加' }))
+
+      expect(await within(dialog).findByText(message)).toBeInTheDocument()
+      expect(screen.getByRole('dialog')).toBe(dialog)
+      expect(mocks.updateTermAction).not.toHaveBeenCalled()
+    })
   })
 
   describe('while the sortable list is loading', () => {

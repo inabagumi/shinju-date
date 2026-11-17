@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import PageMain from '@/components/page-main'
 import { SearchResultsSkeleton } from '@/components/search-results'
-import { MAIN_CONTENT_ID } from '@/components/skip-link'
 import { fetchTalent } from '@/lib/fetchers'
-import { SITE_NAME as siteName } from '@/lib/site'
+import { createPageMetadata } from '@/lib/metadata'
 import { getTalentCalendarPath, getTalentPath } from '@/lib/talent-links'
 import {
   TalentPageHeading,
@@ -27,22 +27,23 @@ export async function generateMetadata({
     notFound()
   }
 
+  const metadata = createPageMetadata({
+    path: getTalentPath(talent.id),
+    title: talent.name,
+    type: 'profile',
+  })
+
   return {
+    ...metadata,
     alternates: {
-      canonical: getTalentPath(talent.id),
+      ...metadata.alternates,
       types: {
         'text/calendar': getTalentCalendarPath(talent.id),
       },
     },
-    openGraph: {
-      siteName,
-      title: talent.name,
-      type: 'profile',
-    },
-    title: talent.name,
     twitter: {
+      ...metadata.twitter,
       card: 'summary_large_image',
-      title: `${talent.name} - ${siteName}`,
     },
   }
 }
@@ -56,10 +57,7 @@ export default function TalentPage({
   searchParams,
 }: PageProps<'/talents/[id]'>) {
   return (
-    <main
-      className="mx-auto max-w-6xl scroll-mt-20 px-4 py-8"
-      id={MAIN_CONTENT_ID}
-    >
+    <PageMain>
       {/*
        * The tendency of the streams is put beside the heading on wide screens,
        * so it does not push the videos down, and below it on narrow ones
@@ -84,6 +82,6 @@ export default function TalentPage({
       <Suspense fallback={<SearchResultsSkeleton />}>
         <TalentVideos params={params} searchParams={searchParams} />
       </Suspense>
-    </main>
+    </PageMain>
   )
 }

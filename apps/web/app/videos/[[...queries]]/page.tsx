@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { SearchResultsSkeleton } from '@/components/search-results'
-import { SITE_NAME as siteName } from '@/lib/site'
+import { createPageMetadata } from '@/lib/metadata'
 import { TALENT_SEARCH_PARAM } from '@/lib/talent-filter'
 import { parseQueries } from '@/lib/url'
 import {
@@ -31,27 +31,21 @@ export async function generateMetadata({
     searchParamValues[TALENT_SEARCH_PARAM],
   )
   const kind = parseVideoKindFilter(searchParamValues[VIDEO_KIND_SEARCH_PARAM])
-  const title = query ? `『${query}』の検索結果` : '動画一覧'
+  const metadata = createPageMetadata({
+    // タレントでの絞り込みは検索結果と同じく、検索エンジンに載せない
+    index: !query && talentIds.length === 0,
+    path: getVideosPath(query, 'all'),
+    title: query ? `『${query}』の検索結果` : '動画一覧',
+    type: 'article',
+  })
 
   return {
+    ...metadata,
     alternates: {
-      canonical: getVideosPath(query, 'all'),
+      ...metadata.alternates,
       types: {
         'text/calendar': !query ? getVideosCalendarPath(kind, talentIds) : null,
       },
-    },
-    openGraph: {
-      siteName,
-      title,
-      type: 'article',
-    },
-    robots: {
-      // タレントでの絞り込みは検索結果と同じく、検索エンジンに載せない
-      index: !query && talentIds.length === 0,
-    },
-    title,
-    twitter: {
-      title: `${title} - ${siteName}`,
     },
   }
 }

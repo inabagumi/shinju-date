@@ -1,9 +1,15 @@
 'use client'
 
-import { TIME_ZONE } from '@shinju-date/constants'
 import { formatDate } from '@shinju-date/temporal-fns'
 import { Button, Input } from '@shinju-date/ui'
 import { useState } from 'react'
+import {
+  getEarliestDate,
+  getToday,
+  MAX_RANGE_DAYS,
+  validateDate,
+  validateRange,
+} from '@/lib/analytics/date-window'
 import { formatDateRange } from '../_lib/format-date'
 
 export interface DateRange {
@@ -15,9 +21,6 @@ interface DateRangePickerProps {
   value: DateRange
   onChange: (range: DateRange) => void
 }
-
-// Maximum allowed period in days (90 days data retention policy)
-const MAX_PERIOD_DAYS = 90
 
 function isSameRange(a: DateRange, b: DateRange): boolean {
   return a.startDate === b.startDate && a.endDate === b.endDate
@@ -32,8 +35,8 @@ export default function DateRangePicker({
   const [customEnd, setCustomEnd] = useState(value.endDate)
   const [validationError, setValidationError] = useState('')
 
-  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
-  const maxStartDate = today.subtract({ days: MAX_PERIOD_DAYS - 1 }) // Allow up to 90 days ago
+  const today = getToday()
+  const maxStartDate = getEarliestDate(today) // Allow up to 90 days ago
 
   const presets = [
     {
@@ -89,7 +92,7 @@ export default function DateRangePicker({
     let startDate = Temporal.PlainDate.from(range.startDate)
 
     // If preset exceeds 90 days, adjust the start date
-    const earliestStartDate = endDate.subtract({ days: MAX_PERIOD_DAYS - 1 })
+    const earliestStartDate = endDate.subtract({ days: MAX_RANGE_DAYS - 1 })
     if (Temporal.PlainDate.compare(startDate, earliestStartDate) < 0) {
       startDate = earliestStartDate
     }
@@ -123,21 +126,22 @@ export default function DateRangePicker({
     const startDate = Temporal.PlainDate.from(customStart)
     const endDate = Temporal.PlainDate.from(customEnd)
 
+    const rangeError = validateRange(startDate, endDate)
+
     // Validate date range
-    if (Temporal.PlainDate.compare(startDate, endDate) > 0) {
+    if (rangeError === 'reversed') {
       setValidationError('開始日は終了日より前である必要があります')
       return
     }
 
     // Validate maximum period constraint
-    const daysDifference = endDate.since(startDate).days + 1
-    if (daysDifference > MAX_PERIOD_DAYS) {
-      setValidationError(`期間は最大${MAX_PERIOD_DAYS}日間まで選択できます`)
+    if (rangeError === 'too-long') {
+      setValidationError(`期間は最大${MAX_RANGE_DAYS}日間まで選択できます`)
       return
     }
 
     // Validate that start date is not too far in the past
-    if (Temporal.PlainDate.compare(startDate, maxStartDate) < 0) {
+    if (validateDate(startDate, today) === 'too-old') {
       setValidationError(
         `開始日は${formatDate(maxStartDate)}以降である必要があります`,
       )
@@ -145,7 +149,7 @@ export default function DateRangePicker({
     }
 
     // Validate that end date is not in the future
-    if (Temporal.PlainDate.compare(endDate, today) > 0) {
+    if (validateDate(endDate, today) === 'future') {
       setValidationError('終了日は今日以降にできません')
       return
     }

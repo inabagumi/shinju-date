@@ -1,8 +1,7 @@
-import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import PageHeader from '@/components/page-header'
-import { MAIN_CONTENT_ID } from '@/components/skip-link'
-import { SITE_NAME as siteName } from '@/lib/site'
+import PageMain from '@/components/page-main'
+import { createPageMetadata } from '@/lib/metadata'
 import { TalentGridSkeleton } from './_components/talent-grid'
 import {
   TalentCount,
@@ -12,20 +11,10 @@ import {
 
 const TITLE = 'タレント一覧'
 
-export const metadata: Metadata = {
-  alternates: {
-    canonical: '/talents',
-  },
-  openGraph: {
-    siteName,
-    title: TITLE,
-    type: 'website',
-  },
+export const metadata = createPageMetadata({
+  path: '/talents',
   title: TITLE,
-  twitter: {
-    title: `${TITLE} - ${siteName}`,
-  },
-}
+})
 
 /**
  * The list of the active talents. The heading is a part of the static shell,
@@ -33,10 +22,7 @@ export const metadata: Metadata = {
  */
 export default function TalentsPage() {
   return (
-    <main
-      className="mx-auto max-w-6xl scroll-mt-20 px-4 py-8"
-      id={MAIN_CONTENT_ID}
-    >
+    <PageMain>
       <PageHeader
         breadcrumbs={[{ name: TITLE }]}
         description={
@@ -50,6 +36,6 @@ export default function TalentsPage() {
       <Suspense fallback={<TalentGridSkeleton />}>
         <TalentListGrid />
       </Suspense>
-    </main>
+    </PageMain>
   )
 }

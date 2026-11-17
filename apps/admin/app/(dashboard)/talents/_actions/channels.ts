@@ -1,44 +1,15 @@
 'use server'
 
-import { CACHE_TAGS } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
-import { toDBString } from '@shinju-date/temporal-fns'
-import { revalidateTags } from '@shinju-date/web-cache'
-import {
-  parseYouTubeChannelIdentifier,
-  resolveYouTubeChannel,
-} from '@shinju-date/youtube-api-client'
-import { revalidatePath } from 'next/cache'
 import type { FormState } from '@/components/form'
-import { createAuditLog } from '@/lib/audit-log'
+import { ActionError } from '@/lib/action'
 import {
   requireAuthenticatedUser,
   unauthenticatedFormState,
   unauthenticatedResult,
 } from '@/lib/auth'
-import { isNotFoundError } from '@/lib/supabase/query'
-import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
-
-function youtubeApiErrorFormState(error: unknown): FormState {
-  if (error instanceof TypeError && error.message.includes('API Key')) {
-    return {
-      errors: {
-        generic: [
-          'YouTube APIキーが設定されていません。管理者に連絡してください。',
-        ],
-      },
-    }
-  }
-
-  logger.error('YouTube APIの呼び出しに失敗しました', { error })
-  return {
-    errors: {
-      generic: [
-        'YouTube APIへの接続に失敗しました。しばらくしてから再度お試しください。',
-      ],
-    },
-  }
-}
+import { actionErrorToFormState } from '@/lib/form'
+import { linkAccount, unlinkAccount } from '@/lib/talent-accounts'
 
 export async function addYouTubeChannelAction(
   _currentState: FormState,
@@ -50,135 +21,26 @@ export async function addYouTubeChannelAction(
     return unauthenticatedFormState()
   }
 
-  const { supabaseClient } = auth
-
-  const talentId = formData.get('talent_id') as string
-  const rawInput = (formData.get('youtube_channel_id') as string) ?? ''
-
-  if (!talentId) {
-    return {
-      errors: {
-        generic: ['タレントIDが指定されていません。'],
-      },
-    }
-  }
-
-  if (!rawInput.trim()) {
-    return {
-      errors: {
-        youtube_channel_id: [
-          'YouTubeチャンネルID、ハンドル、またはURLを入力してください。',
-        ],
-      },
-    }
-  }
-
-  const identifier = parseYouTubeChannelIdentifier(rawInput)
-  if (!identifier) {
-    return {
-      errors: {
-        youtube_channel_id: [
-          '有効なチャンネルID（UC...）、ハンドル（@name）、またはYouTube URLを入力してください。',
-        ],
-      },
-    }
-  }
-
-  let youtubeChannel: Awaited<ReturnType<typeof resolveYouTubeChannel>>
-  try {
-    youtubeChannel = await resolveYouTubeChannel(identifier)
-  } catch (error) {
-    return youtubeApiErrorFormState(error)
-  }
-
-  if (!youtubeChannel) {
-    return {
-      errors: {
-        youtube_channel_id: [
-          'YouTubeでチャンネルが見つかりませんでした。入力内容を確認してください。',
-        ],
-      },
-    }
-  }
-
-  const youtubeChannelId = youtubeChannel.id
-  const channelName = youtubeChannel.snippet.title
-  const youtubeHandle = youtubeChannel.snippet.customUrl || null
+  const talentId = String(formData.get('talent_id') ?? '')
+  const input = String(formData.get('youtube_channel_id') ?? '')
 
   try {
-    // Unique across all talents (youtube_channel_id has a global unique constraint)
-    const { data: existingChannel } = await supabaseClient
-      .from('youtube_channels')
-      .select('id, talent_id')
-      .eq('youtube_channel_id', youtubeChannelId)
-      .maybeSingle()
-
-    if (existingChannel) {
-      if (existingChannel.talent_id === talentId) {
-        return {
-          errors: {
-            youtube_channel_id: ['このチャンネルは既に登録されています。'],
-          },
-        }
-      }
-      return {
-        errors: {
-          youtube_channel_id: [
-            'このチャンネルは別のタレントに既に登録されています。',
-          ],
-        },
-      }
-    }
-
-    const { data: newChannel, error } = await supabaseClient
-      .from('youtube_channels')
-      .insert({
-        name: channelName,
-        talent_id: talentId,
-        youtube_channel_id: youtubeChannelId,
-        youtube_handle: youtubeHandle,
-      })
-      .select('id, talent:talents (name)')
-      .single()
-
-    if (error) {
-      throw error
-    }
-
-    // アイコンの取得に失敗してもチャンネルの追加は成功扱いにする（次回の同期で再取得される）
-    await syncYouTubeChannelIconSafely(youtubeChannel, {
-      id: newChannel.id,
-      profile_images: null,
-      youtube_channel_id: youtubeChannelId,
+    await linkAccount('youtube', {
+      input,
+      supabaseClient: auth.supabaseClient,
+      talentId,
     })
-
-    await supabaseClient
-      .from('talents')
-      .update({
-        updated_at: toDBString(Temporal.Now.instant()),
-      })
-      .eq('id', talentId)
-
-    await createAuditLog('YOUTUBE_CHANNEL_CREATE', talentId, {
-      account: {
-        id: newChannel.id,
-        name: channelName,
-        youtube_channel_id: youtubeChannelId,
-        youtube_handle: youtubeHandle,
-      },
-      entityName: newChannel.talent.name,
-    })
-
-    revalidatePath(`/talents/${talentId}`)
-    revalidatePath('/talents')
-    await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS])
 
     return { success: true }
   } catch (error) {
+    if (error instanceof ActionError) {
+      return actionErrorToFormState(error)
+    }
+
     logger.error('YouTubeチャンネルの追加に失敗しました', {
       error,
+      input,
       talent_id: talentId,
-      youtube_channel_id: youtubeChannelId,
     })
     return {
       errors: {
@@ -205,76 +67,19 @@ export async function removeYouTubeChannelAction(
     return unauthenticatedResult()
   }
 
-  const { supabaseClient } = auth
-
-  if (!channelId || !talentId) {
-    return {
-      error: 'チャンネルIDまたはタレントIDが指定されていません。',
-      success: false,
-    }
-  }
-
   try {
-    // Get channel info before deletion for audit log
-    const { data: channel, error: fetchError } = await supabaseClient
-      .from('youtube_channels')
-      .select('name, youtube_channel_id, youtube_handle, talent:talents (name)')
-      .eq('id', channelId)
-      .eq('talent_id', talentId)
-      .single()
-
-    if (fetchError) {
-      // No row matched: the channel doesn't exist
-      if (isNotFoundError(fetchError)) {
-        logger.warn('削除対象のチャンネルが見つかりませんでした', {
-          channel_id: channelId,
-          talent_id: talentId,
-        })
-        return {
-          error:
-            '指定されたチャンネルが見つかりません。既に削除されているか、存在しないIDが指定されています。',
-          success: false,
-        }
-      }
-      throw fetchError
-    }
-
-    // Delete the YouTube channel
-    const { error } = await supabaseClient
-      .from('youtube_channels')
-      .delete()
-      .eq('id', channelId)
-      .eq('talent_id', talentId)
-
-    if (error) {
-      throw error
-    }
-
-    // Update talent's updated_at timestamp
-    await supabaseClient
-      .from('talents')
-      .update({
-        updated_at: toDBString(Temporal.Now.instant()),
-      })
-      .eq('id', talentId)
-
-    // Log audit entry
-    await createAuditLog('YOUTUBE_CHANNEL_DELETE', talentId, {
-      account: {
-        id: channelId,
-        name: channel.name,
-        youtube_channel_id: channel.youtube_channel_id,
-        youtube_handle: channel.youtube_handle,
-      },
-      entityName: channel.talent.name,
+    await unlinkAccount('youtube', {
+      accountId: channelId,
+      supabaseClient: auth.supabaseClient,
+      talentId,
     })
-
-    revalidatePath(`/talents/${talentId}`)
-    revalidatePath('/talents')
-    await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS])
 
     return { success: true }
   } catch (error) {
+    if (error instanceof ActionError) {
+      return { error: error.message, success: false }
+    }
+
     logger.error('YouTubeチャンネルの削除に失敗しました', {
       channel_id: channelId,
       error,

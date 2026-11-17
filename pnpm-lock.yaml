@@ -217,6 +217,9 @@ importers:
       '@shinju-date/constants':
         specifier: workspace:*
         version: link:../../packages/constants
+      '@shinju-date/dashboard-stats':
+        specifier: workspace:*
+        version: link:../../packages/dashboard-stats
       '@shinju-date/health-checkers':
         specifier: workspace:*
         version: link:../../packages/health-checkers
