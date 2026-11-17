@@ -1,7 +1,8 @@
--- Tests for the video search by kind (#6804). Run with `supabase test db`.
+-- Tests for the video search by kind (#6804) and its pages, which leave out the
+-- videos the site does not show (#7200). Run with `supabase test db`.
 BEGIN;
 
-SELECT plan(10);
+SELECT plan(13);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures: a talent with regular videos and shorts, and a deleted talent.
@@ -24,10 +25,12 @@ VALUES
     ('e1000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000001', '歌ってみた ショート', 'PT30S', '2026-11-11T12:00:00Z', 'youtube', 'PUBLISHED', 'short'),
     ('e1000000-0000-0000-0000-000000000003', 'e0000000-0000-0000-0000-000000000001', 'ゲーム実況', 'PT2H', '2026-11-12T12:00:00Z', 'youtube', 'ENDED', 'standard'),
     ('e1000000-0000-0000-0000-000000000004', 'e0000000-0000-0000-0000-000000000001', '歌枠 その2', 'PT1H', '2026-11-13T12:00:00Z', 'youtube', 'ENDED', 'standard'),
-    -- A video of the deleted talent, which the site does not show
-    ('e1000000-0000-0000-0000-000000000005', 'e0000000-0000-0000-0000-000000000002', '歌枠 削除済み', 'PT1H', '2026-11-13T12:00:00Z', 'youtube', 'ENDED', 'standard'),
-    -- A video with neither a YouTube nor a Twitch video, which the site does not show
-    ('e1000000-0000-0000-0000-000000000006', 'e0000000-0000-0000-0000-000000000001', '歌枠 動画なし', 'PT1H', '2026-11-13T12:00:00Z', 'youtube', 'ENDED', 'standard');
+    -- The newest videos are the ones the site does not show, so they would
+    -- take up a page if they were left out after the page size is applied.
+    -- A video of the deleted talent
+    ('e1000000-0000-0000-0000-000000000005', 'e0000000-0000-0000-0000-000000000002', '歌枠 削除済み', 'PT1H', '2026-11-14T12:00:00Z', 'youtube', 'ENDED', 'standard'),
+    -- A video with neither a YouTube nor a Twitch video
+    ('e1000000-0000-0000-0000-000000000006', 'e0000000-0000-0000-0000-000000000001', '歌枠 動画なし', 'PT1H', '2026-11-14T13:00:00Z', 'youtube', 'ENDED', 'standard');
 
 INSERT INTO "public"."youtube_videos" ("video_id", "youtube_video_id", "youtube_channel_id")
 VALUES
@@ -45,7 +48,7 @@ SELECT set_config('request.jwt.claims', '{"role": "anon"}', true);
 -- search_videos_v3
 -- ---------------------------------------------------------------------------
 SELECT results_eq(
-    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], 10) WHERE "id" <> 'e1000000-0000-0000-0000-000000000006'$$,
+    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], 10)$$,
     $$VALUES
         ('e1000000-0000-0000-0000-000000000004'::uuid),
         ('e1000000-0000-0000-0000-000000000003'::uuid),
@@ -69,7 +72,7 @@ SELECT results_eq(
 );
 
 SELECT results_eq(
-    $$SELECT "id" FROM "public"."search_videos_v3"('歌', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], 10, ARRAY['standard']::"public"."video_kind"[]) WHERE "id" <> 'e1000000-0000-0000-0000-000000000006'$$,
+    $$SELECT "id" FROM "public"."search_videos_v3"('歌', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], 10, ARRAY['standard']::"public"."video_kind"[])$$,
     $$VALUES
         ('e1000000-0000-0000-0000-000000000004'::uuid),
         ('e1000000-0000-0000-0000-000000000001'::uuid)$$,
@@ -80,6 +83,31 @@ SELECT results_eq(
     $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-11-12T12:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001']::uuid[], 10, ARRAY['standard']::"public"."video_kind"[])$$,
     $$VALUES ('e1000000-0000-0000-0000-000000000001'::uuid)$$,
     'only videos published before until are returned'
+);
+
+SELECT results_eq(
+    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002']::uuid[], 10)$$,
+    $$VALUES
+        ('e1000000-0000-0000-0000-000000000004'::uuid),
+        ('e1000000-0000-0000-0000-000000000003'::uuid),
+        ('e1000000-0000-0000-0000-000000000002'::uuid),
+        ('e1000000-0000-0000-0000-000000000001'::uuid)$$,
+    'the videos of a deleted talent and the videos with neither a YouTube nor a Twitch video are not returned'
+);
+
+SELECT results_eq(
+    $$SELECT "id" FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002']::uuid[], 2)$$,
+    $$VALUES
+        ('e1000000-0000-0000-0000-000000000004'::uuid),
+        ('e1000000-0000-0000-0000-000000000003'::uuid)$$,
+    'the videos the site does not show are left out before the page size is applied'
+);
+
+-- The pages and the count agree
+SELECT is(
+    (SELECT count(*) FROM "public"."search_videos_v3"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002']::uuid[], 1000)),
+    "public"."count_videos_v1"('', '2026-12-01T00:00:00Z', ARRAY['e0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002']::uuid[]),
+    'the search returns as many videos as count_videos_v1 counts'
 );
 
 -- ---------------------------------------------------------------------------
