@@ -88,7 +88,7 @@ export async function syncVideoAction(
         }
 
       case 'unavailable':
-        await createAuditLog('VIDEO_SYNC', videoId, {
+        await createAuditLog(supabaseClient, 'VIDEO_SYNC', videoId, {
           changes: {
             after: {
               deleted_at: toDBString(now),
@@ -106,7 +106,7 @@ export async function syncVideoAction(
         }
 
       case 'updated':
-        await createAuditLog('VIDEO_SYNC', videoId, {
+        await createAuditLog(supabaseClient, 'VIDEO_SYNC', videoId, {
           changes: { after: result.after, before: result.before },
           entityName: result.title,
         })

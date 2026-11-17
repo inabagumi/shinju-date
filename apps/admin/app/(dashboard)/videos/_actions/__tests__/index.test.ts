@@ -2,7 +2,11 @@ import { describe, expect, it, vi } from 'vitest'
 import { setupActionTest } from '@/test/action-harness'
 import { createVideo } from '@/test/factories'
 import { postgresError, type SupabaseRequest } from '@/test/supabase'
-import { restoreAction, toggleVisibilityAction } from '../index'
+import {
+  restoreAction,
+  softDeleteAction,
+  toggleVisibilityAction,
+} from '../index'
 
 const test = setupActionTest()
 const { supabase } = test
@@ -44,9 +48,13 @@ describe('restoreAction', () => {
     const result = await restoreAction(['video-id-1'])
 
     expect(result).toEqual({ success: true })
-    test.expectAuditLog('VIDEO_RESTORE', 'video-id-1', {
-      entityName: 'Test Video',
-    })
+    test.expectAuditLogs([
+      {
+        action: 'VIDEO_RESTORE',
+        details: { entityName: 'Test Video' },
+        targetRecordId: 'video-id-1',
+      },
+    ])
     test.expectRevalidated({ paths: ['/videos'], tags: [['videos']] })
   })
 
@@ -84,12 +92,19 @@ describe('restoreAction', () => {
     const result = await restoreAction(['video-id-1', 'video-id-2'])
 
     expect(result).toEqual({ success: true })
-    // Check that audit logs were created for both videos
-    const videoIds = test.createAuditLog.mock.calls.map(
-      (call: unknown[]) => call[1],
-    )
-    expect(videoIds).toContain('video-id-1')
-    expect(videoIds).toContain('video-id-2')
+    // Both videos are recorded with one call
+    test.expectAuditLogs([
+      {
+        action: 'VIDEO_RESTORE',
+        details: { entityName: 'Test Video 1' },
+        targetRecordId: 'video-id-1',
+      },
+      {
+        action: 'VIDEO_RESTORE',
+        details: { entityName: 'Test Video 2' },
+        targetRecordId: 'video-id-2',
+      },
+    ])
   })
 
   it('should return error when video update fails', async () => {
@@ -136,6 +151,44 @@ describe('restoreAction', () => {
 
     expect(result.success).toBe(false)
     expect(result.error).toBeTruthy()
+  })
+})
+
+describe('softDeleteAction', () => {
+  it('should record the audit logs of all videos with one call', async () => {
+    supabase.on('select', 'videos', [
+      createVideo({ id: 'video-id-1', thumbnail_id: null, title: 'Video 1' }),
+      createVideo({ id: 'video-id-2', thumbnail_id: null, title: 'Video 2' }),
+    ])
+
+    const result = await softDeleteAction(['video-id-1', 'video-id-2'])
+
+    expect(result).toEqual({ success: true })
+    test.expectAuditLogs([
+      {
+        action: 'VIDEO_DELETE',
+        details: { entityName: 'Video 1' },
+        targetRecordId: 'video-id-1',
+      },
+      {
+        action: 'VIDEO_DELETE',
+        details: { entityName: 'Video 2' },
+        targetRecordId: 'video-id-2',
+      },
+    ])
+    test.expectRevalidated({ paths: ['/videos'], tags: [['videos']] })
+  })
+
+  it('should not record audit logs when the update fails', async () => {
+    supabase.on('select', 'videos', [
+      createVideo({ id: 'video-id-1', thumbnail_id: null }),
+    ])
+    supabase.on('update', 'videos', postgresError('XX000', 'Database error'))
+
+    const result = await softDeleteAction(['video-id-1'])
+
+    expect(result.success).toBe(false)
+    test.expectNoAuditLog()
   })
 })
 
@@ -211,12 +264,13 @@ describe('toggleVisibilityAction', () => {
         visible: 'eq.true',
       },
     ])
-    expect(test.createAuditLog).toHaveBeenCalledTimes(3)
-    for (const video of videos) {
-      test.expectAuditLog('VIDEO_VISIBILITY_TOGGLE', video.id, {
-        entityName: video.title,
-      })
-    }
+    test.expectAuditLogs(
+      videos.map((video) => ({
+        action: 'VIDEO_VISIBILITY_TOGGLE',
+        details: { entityName: video.title },
+        targetRecordId: video.id,
+      })),
+    )
     test.expectRevalidated({
       paths: ['/videos', ...ids.map((id) => `/videos/${id}`)],
       tags: [['videos']],
@@ -238,12 +292,18 @@ describe('toggleVisibilityAction', () => {
       success: false,
       updatedCount: 2,
     })
-    expect(test.createAuditLog).toHaveBeenCalledTimes(2)
-    expect(test.createAuditLog).not.toHaveBeenCalledWith(
-      'VIDEO_VISIBILITY_TOGGLE',
-      'video-id-1',
-      expect.anything(),
-    )
+    test.expectAuditLogs([
+      {
+        action: 'VIDEO_VISIBILITY_TOGGLE',
+        details: { entityName: 'Visible Video 1' },
+        targetRecordId: 'video-id-2',
+      },
+      {
+        action: 'VIDEO_VISIBILITY_TOGGLE',
+        details: { entityName: 'Visible Video 2' },
+        targetRecordId: 'video-id-3',
+      },
+    ])
     test.expectRevalidated({
       paths: ['/videos', '/videos/video-id-2', '/videos/video-id-3'],
       tags: [['videos']],
@@ -287,11 +347,17 @@ describe('toggleVisibilityAction', () => {
       success: false,
       updatedCount: 2,
     })
-    expect(test.createAuditLog).toHaveBeenCalledTimes(2)
-    expect(test.createAuditLog).not.toHaveBeenCalledWith(
-      'VIDEO_VISIBILITY_TOGGLE',
-      'video-id-2',
-      expect.anything(),
-    )
+    test.expectAuditLogs([
+      {
+        action: 'VIDEO_VISIBILITY_TOGGLE',
+        details: { entityName: 'Hidden Video' },
+        targetRecordId: 'video-id-1',
+      },
+      {
+        action: 'VIDEO_VISIBILITY_TOGGLE',
+        details: { entityName: 'Visible Video 2' },
+        targetRecordId: 'video-id-3',
+      },
+    ])
   })
 })
