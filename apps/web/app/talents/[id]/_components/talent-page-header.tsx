@@ -1,4 +1,3 @@
-import { logger } from '@shinju-date/logger'
 import { twMerge } from '@shinju-date/ui'
 import { CalendarPlus, ExternalLink } from 'lucide-react'
 import LiveBadge from '@/components/live-badge'
@@ -10,7 +9,7 @@ import {
 } from '@/components/talent-stream-status'
 import { TEXT_LINK_CLASS_NAME } from '@/lib/class-names'
 import {
-  fetchTalentStreamStatuses,
+  fetchTalentStreamStatusesSafe,
   type TalentDetail,
   type TalentStreamStatus,
 } from '@/lib/fetchers'
@@ -137,32 +136,15 @@ interface TalentPageHeadingProps {
 }
 
 /**
- * Whether each talent is live and when it streams next. The heading is still
- * shown without them when they cannot be fetched.
- */
-async function getStreamStatuses(): Promise<
-  Record<string, TalentStreamStatus>
-> {
-  try {
-    return await fetchTalentStreamStatuses()
-  } catch (error) {
-    logger.error('Failed to fetch the stream statuses of the talents', {
-      error,
-    })
-
-    return {}
-  }
-}
-
-/**
  * Both are cached, so they are awaited together in the same `<Suspense>`
  * instead of streaming the stream status in later, which would move the
- * links down.
+ * links down. The heading is still shown without the stream status when it
+ * cannot be fetched.
  */
 export async function TalentPageHeading({ params }: TalentPageHeadingProps) {
   const [talent, streamStatuses] = await Promise.all([
     getShownTalent(params),
-    getStreamStatuses(),
+    fetchTalentStreamStatusesSafe(),
   ])
 
   return (

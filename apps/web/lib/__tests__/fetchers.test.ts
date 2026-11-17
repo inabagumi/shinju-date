@@ -15,6 +15,10 @@ const query = vi.hoisted(() => ({
   select: vi.fn(),
 }))
 
+vi.mock('@shinju-date/logger', () => ({
+  logger: { error: vi.fn() },
+}))
+
 vi.mock('next/cache', () => ({
   cacheLife: vi.fn(),
   cacheTag: vi.fn(),
@@ -29,6 +33,7 @@ vi.mock('@/lib/supabase', () => ({
   },
 }))
 
+import { logger } from '@shinju-date/logger'
 import { cacheLife, cacheTag } from 'next/cache'
 import { supabaseClient } from '@/lib/supabase'
 import {
@@ -43,6 +48,7 @@ import {
   fetchTalentList,
   fetchTalentStreamStarts,
   fetchTalentStreamStatuses,
+  fetchTalentStreamStatusesSafe,
   fetchUpcomingVideos,
   fetchVideos,
   type ScheduleVideo,
@@ -590,6 +596,51 @@ describe('fetchTalentStreamStatuses', () => {
     })
 
     await expect(fetchTalentStreamStatuses()).rejects.toThrow('failed')
+  })
+})
+
+describe('fetchTalentStreamStatusesSafe', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    query.select.mockReturnValue(query)
+    query.in.mockReturnValue(query)
+    query.lte.mockReturnValue(query)
+  })
+
+  test('returns the stream statuses', async () => {
+    const [talentId] = TALENT_IDS as [string]
+
+    query.order.mockResolvedValue({
+      data: [
+        {
+          published_at: '2026-11-15T01:00:00Z',
+          status: 'LIVE',
+          talent_id: talentId,
+          twitch_video: null,
+          youtube_video: { youtube_video_id: 'abcdefghijk' },
+        },
+      ],
+      error: null,
+    })
+
+    await expect(fetchTalentStreamStatusesSafe()).resolves.toEqual({
+      [talentId]: { isLive: true, nextStreamAt: null },
+    })
+    expect(logger.error).not.toHaveBeenCalled()
+  })
+
+  test('returns no statuses and logs the error when they cannot be fetched', async () => {
+    query.order.mockResolvedValue({
+      data: null,
+      error: { message: 'failed' },
+    })
+
+    await expect(fetchTalentStreamStatusesSafe()).resolves.toEqual({})
+    expect(logger.error).toHaveBeenCalledWith(
+      'Failed to fetch the stream statuses of the talents',
+      { error: expect.any(TypeError) },
+    )
   })
 })
 
