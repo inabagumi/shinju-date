@@ -1,3 +1,4 @@
+import type { ParsedUrlQuery } from 'node:querystring'
 import { getVideos, type Video } from './get-videos'
 import {
   defaultVideoSearchParams,
@@ -22,7 +23,7 @@ export interface VideosForPage {
  * 呼ぶ部品（件数と表）は、1回の表示で同じ結果を使う
  */
 export async function getVideosForPage(
-  searchParams: Promise<Record<string, string | string[] | undefined>>,
+  searchParams: Promise<ParsedUrlQuery>,
 ): Promise<VideosForPage> {
   const result = videoSearchParamsSchema.safeParse(await searchParams)
   const { page, sortField, sortOrder, ...filters } = result.success

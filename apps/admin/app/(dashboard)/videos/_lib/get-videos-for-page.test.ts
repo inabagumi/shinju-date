@@ -1,3 +1,4 @@
+import type { ParsedUrlQuery } from 'node:querystring'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getVideosForPage } from './get-videos-for-page'
 
@@ -61,7 +62,7 @@ describe('getVideosForPage', () => {
     const searchParams = Promise.resolve({
       page: '3',
       search: { nested: 'value' },
-    } as unknown as Record<string, string>)
+    } as unknown as ParsedUrlQuery)
 
     await expect(getVideosForPage(searchParams)).resolves.toMatchObject({
       currentPage: 1,
