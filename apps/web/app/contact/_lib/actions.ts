@@ -3,13 +3,12 @@
 import { checkBotId } from 'botid/server'
 import { Resend } from 'resend'
 import { z } from 'zod'
-import { serverEnv } from '@/lib/env'
 import {
   type FormState,
   getFormValues,
   toValidationErrorState,
 } from '@/lib/form-state'
-import { isContactFormEnabled } from './utils'
+import { getContactFormConfig } from './utils'
 
 const MESSAGE_REQUIRED_ERROR = 'お問い合わせ内容を入力してください'
 
@@ -40,11 +39,6 @@ const CONTACT_FORM_FIELDS = [
   'wantsReply',
 ] as const satisfies readonly ContactFormField[]
 
-// Only initialize Resend if API key is available
-const resend = serverEnv.RESEND_API_KEY
-  ? new Resend(serverEnv.RESEND_API_KEY)
-  : null
-
 export async function submitContactForm(
   _prevState: unknown,
   formData: FormData,
@@ -72,13 +66,16 @@ export async function submitContactForm(
     }
 
     // Check if contact form is enabled
-    if (!isContactFormEnabled()) {
+    const config = getContactFormConfig()
+
+    if (!config) {
       return {
         error: 'お問い合わせ機能は現在ご利用いただけません。',
         success: false,
         values,
       }
     }
+
     // Parse form data
     const rawData = {
       email: formData.get('email') || undefined,
@@ -115,21 +112,14 @@ export async function submitContactForm(
     }
 
     const emailSubject = `【SHINJU DATE】お問い合わせ: ${typeLabels[type]}`
-    const emailText = `■ お問い合わせ内容
+    const emailText = `■ お名前
+${name || '（未入力）'}
+
+■ お問い合わせ内容
 ${message}
 
 ---
 このメールはSHINJU DATEのお問い合わせフォームから自動送信されました。`
-
-    // Only send email if admin email is properly configured (not default)
-    const adminEmail = serverEnv.ADMIN_EMAIL
-    if (!adminEmail || adminEmail === 'admin@example.com') {
-      return {
-        error: 'メール送信設定が完了していません。',
-        success: false,
-        values,
-      }
-    }
 
     // Set up reply-to with name and email if both available and reply requested
     const replyToValue =
@@ -139,21 +129,15 @@ ${message}
           ? email
           : undefined
 
-    if (!resend) {
-      return {
-        error: 'メール送信設定が完了していません。',
-        success: false,
-        values,
-      }
-    }
+    const resend = new Resend(config.resendApiKey)
 
     // The Resend SDK does not throw on API or network errors; it returns
     // them as `error` instead, so check it explicitly.
     const { error: sendError } = await resend.emails.send({
-      from: serverEnv.FROM_EMAIL || 'noreply@shinju.date',
+      from: config.fromEmail,
       subject: emailSubject,
       text: emailText,
-      to: adminEmail,
+      to: config.adminEmail,
       ...(replyToValue && { replyTo: replyToValue }),
     })
 
