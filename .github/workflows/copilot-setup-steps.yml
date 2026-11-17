@@ -44,7 +44,7 @@ jobs:
 
       # Starts Supabase and Redis, creates the .env.local files and generates the types
       - name: Set up the development environment
-        run: pnpm run setup
+        run: ./scripts/setup-dev.sh
 
       - name: Verify Supabase and Redis
         run: |
@@ -71,5 +71,5 @@ jobs:
         run: |
           # A second run succeeds and keeps the existing .env.local files
           echo '# Added by the workflow' >> apps/web/.env.local
-          pnpm run setup
+          ./scripts/setup-dev.sh
           grep -qxF '# Added by the workflow' apps/web/.env.local
