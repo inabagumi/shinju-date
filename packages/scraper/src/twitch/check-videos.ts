@@ -122,6 +122,7 @@ async function refreshVideo(
           twitchVideoId: saved.twitch_video.twitch_video_id,
         }),
       fields: changes,
+      previousThumbnailId: null,
       videoId: saved.id,
     })
 

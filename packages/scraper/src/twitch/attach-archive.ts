@@ -55,6 +55,7 @@ export async function attachArchive(
         twitchVideoId: archive.id,
       }),
     fields: toVideoFields(archive),
+    previousThumbnailId: saved.thumbnail_id,
     videoId: saved.id,
   })
 
