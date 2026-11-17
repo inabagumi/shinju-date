@@ -36,12 +36,9 @@ describe('addQueryAction', () => {
       REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED,
       'Hoge',
     )
-    test.expectAuditLog(
-      'RECOMMENDED_QUERY_CREATE',
-      'redis:recommended_queries',
-      null,
-      { entityName: 'Hoge' },
-    )
+    test.expectAuditLog('RECOMMENDED_QUERY_CREATE', null, {
+      entityName: 'Hoge',
+    })
     expect(test.revalidateTags).toHaveBeenCalledTimes(1)
     expect(test.revalidateTags).toHaveBeenCalledWith([
       CACHE_TAGS.RECOMMENDATION_QUERIES,
@@ -79,12 +76,9 @@ describe('deleteQueryAction', () => {
       REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED,
       'Hoge',
     )
-    test.expectAuditLog(
-      'RECOMMENDED_QUERY_DELETE',
-      'redis:recommended_queries',
-      null,
-      { entityName: 'Hoge' },
-    )
+    test.expectAuditLog('RECOMMENDED_QUERY_DELETE', null, {
+      entityName: 'Hoge',
+    })
     expect(test.revalidateTags).toHaveBeenCalledTimes(1)
     expect(test.revalidateTags).toHaveBeenCalledWith([
       CACHE_TAGS.RECOMMENDATION_QUERIES,

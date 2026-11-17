@@ -68,6 +68,20 @@ describe('LogItem', () => {
     expect(screen.queryByText('→')).not.toBeInTheDocument()
   })
 
+  it('shows the record ID and no changes when details does not match the schemas', () => {
+    render(
+      <LogItem
+        log={videoSyncLog({
+          changes: { after: { title: 'New Title' } },
+          entityName: 42,
+        })}
+      />,
+    )
+
+    expect(screen.getByRole('link', { name: videoId })).toBeInTheDocument()
+    expect(screen.queryByText('→')).not.toBeInTheDocument()
+  })
+
   it.each(['talents', 'channels'])(
     'links a talent sync logged against %s to the talent',
     (targetTable) => {

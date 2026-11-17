@@ -11,13 +11,9 @@ import {
   FeatureRequestDetailSkeleton,
 } from './_components/feedback-detail'
 
-interface Props {
-  params: Promise<{
-    id: string
-  }>
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: Pick<PageProps<'/feedback/[id]'>, 'params'>): Promise<Metadata> {
   const { id } = await params
 
   const featureRequest = await getFeatureRequestById(id)
@@ -35,7 +31,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-async function FeatureRequestDetailData({ id }: { id: string }) {
+async function FeatureRequestDetailData({
+  params,
+}: Pick<PageProps<'/feedback/[id]'>, 'params'>) {
+  const { id } = await params
+
   const featureRequest = await getFeatureRequestById(id)
 
   if (!featureRequest) {
@@ -45,7 +45,9 @@ async function FeatureRequestDetailData({ id }: { id: string }) {
   return <FeatureRequestDetail featureRequest={featureRequest} />
 }
 
-export default function FeedbackDetailPage({ params }: Props) {
+export default function FeedbackDetailPage({
+  params,
+}: PageProps<'/feedback/[id]'>) {
   return (
     <div>
       <div className="mb-4">
@@ -55,9 +57,7 @@ export default function FeedbackDetailPage({ params }: Props) {
       <PageHeader title="機能要望詳細" />
 
       <Suspense fallback={<FeatureRequestDetailSkeleton />}>
-        {params.then(({ id }) => (
-          <FeatureRequestDetailData id={id} />
-        ))}
+        <FeatureRequestDetailData params={params} />
       </Suspense>
     </div>
   )

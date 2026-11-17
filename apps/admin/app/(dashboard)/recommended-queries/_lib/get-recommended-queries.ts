@@ -1,5 +1,6 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
 import { cacheLife } from 'next/cache'
+import { parseScoredMembers } from '@/lib/analytics/redis'
 import { getRedisClient } from '@/lib/redis'
 
 export interface AutoRecommendedQuery {
@@ -20,24 +21,16 @@ export default async function getRecommendedQueries(): Promise<RecommendedQuerie
   const redisClient = getRedisClient()
   const [manualQueries, autoQueriesWithScores] = await Promise.all([
     redisClient.smembers<string[]>(REDIS_KEYS.QUERIES_MANUAL_RECOMMENDED),
-    redisClient.zrange(REDIS_KEYS.QUERIES_AUTO_RECOMMENDED, 0, -1, {
+    redisClient.zrange<unknown[]>(REDIS_KEYS.QUERIES_AUTO_RECOMMENDED, 0, -1, {
       rev: true,
       withScores: true,
     }),
   ])
 
-  // Parse auto queries with scores
-  const autoQueries: AutoRecommendedQuery[] = []
-  if (autoQueriesWithScores) {
-    for (let i = 0; i < autoQueriesWithScores.length; i += 2) {
-      const query = String(autoQueriesWithScores[i])
-      const score = Number(autoQueriesWithScores[i + 1])
-      autoQueries.push({ query, score })
-    }
-  }
-
   return {
-    auto: autoQueries,
+    auto: parseScoredMembers(autoQueriesWithScores).map(
+      ({ member, score }): AutoRecommendedQuery => ({ query: member, score }),
+    ),
     manual: (manualQueries ?? []).sort(),
   }
 }

@@ -47,10 +47,10 @@ function getMessageTextarea() {
 
 function fillForm() {
   fireEvent.change(getTypeSelect(), { target: { value: 'bug' } })
-  fireEvent.change(getNameInput(), { target: { value: '因幡はねる' } })
+  fireEvent.change(getNameInput(), { target: { value: '山田花子' } })
   fireEvent.click(getReplyCheckbox())
   fireEvent.change(queryEmailInput() as HTMLInputElement, {
-    target: { value: 'haneru@example.com' },
+    target: { value: 'hanako@example.com' },
   })
   fireEvent.change(getMessageTextarea(), {
     target: { value: '動画が表示されません' },
@@ -78,9 +78,9 @@ describe('ContactForm', () => {
 
     expect(screen.getByText('送信中にエラーが発生しました。')).toBeVisible()
     expect(getTypeSelect().value).toBe('bug')
-    expect(getNameInput().value).toBe('因幡はねる')
+    expect(getNameInput().value).toBe('山田花子')
     expect(getReplyCheckbox().checked).toBe(true)
-    expect(queryEmailInput()?.value).toBe('haneru@example.com')
+    expect(queryEmailInput()?.value).toBe('hanako@example.com')
     expect(getMessageTextarea().value).toBe('動画が表示されません')
   })
 

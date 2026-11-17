@@ -35,6 +35,7 @@ import {
   countVideos,
   fetchActiveAnnouncements,
   fetchActiveTalents,
+  fetchCalendarVideos,
   fetchDashboardVideos,
   fetchOldestVideoDate,
   fetchScheduleToday,
@@ -109,6 +110,81 @@ describe('countVideos', () => {
       'count_videos_v1',
       expect.objectContaining({ channel_ids: TALENT_IDS, query: '歌' }),
     )
+  })
+})
+
+describe('fetchCalendarVideos', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.spyOn(Temporal.Now, 'zonedDateTimeISO').mockImplementation((timeZone) =>
+      Temporal.Instant.from('2026-11-15T03:20:45.5Z').toZonedDateTimeISO(
+        timeZone ?? 'UTC',
+      ),
+    )
+
+    query.select.mockReturnValue(query)
+    query.lt.mockReturnValue(query)
+    query.in.mockReturnValue(query)
+    query.eq.mockReturnValue(query)
+    query.order.mockReturnValue(query)
+    query.limit.mockResolvedValue({ data: [], error: null })
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  test('requests the latest 100 videos until a week later', async () => {
+    await fetchCalendarVideos()
+
+    expect(supabaseClient.from).toHaveBeenCalledWith('videos')
+    // The start of the hour a week later
+    expect(query.lt).toHaveBeenCalledWith(
+      'published_at',
+      '2026-11-22T03:00:00Z',
+    )
+    expect(query.in).not.toHaveBeenCalled()
+    expect(query.eq).not.toHaveBeenCalled()
+    expect(query.order).toHaveBeenCalledWith('published_at', {
+      ascending: false,
+    })
+    expect(query.limit).toHaveBeenCalledWith(100)
+    expect(cacheLife).toHaveBeenCalledWith('hours')
+    expect(cacheTag).toHaveBeenCalledWith('videos')
+  })
+
+  test('narrows the videos by the talents and the kind', async () => {
+    await fetchCalendarVideos({ kind: 'short', talentIds: TALENT_IDS })
+
+    expect(query.in).toHaveBeenCalledWith('talent_id', TALENT_IDS)
+    expect(query.eq).toHaveBeenCalledWith('video_kind', 'short')
+  })
+
+  test('leaves out the videos without a platform source', async () => {
+    const video = {
+      duration: 'PT1H',
+      id: 'video-1',
+      platform: 'youtube',
+      published_at: '2026-11-15T12:00:00Z',
+      status: 'ENDED',
+      talent: { name: '朝霧ミオ' },
+      title: '歌枠',
+      twitch_video: null,
+      youtube_video: { youtube_video_id: 'abc123' },
+    }
+
+    query.limit.mockResolvedValue({
+      data: [video, { ...video, id: 'video-2', youtube_video: null }],
+      error: null,
+    })
+
+    await expect(fetchCalendarVideos()).resolves.toEqual([video])
+  })
+
+  test('throws when the videos cannot be fetched', async () => {
+    query.limit.mockResolvedValue({ data: null, error: { message: 'failed' } })
+
+    await expect(fetchCalendarVideos()).rejects.toThrow('failed')
   })
 })
 

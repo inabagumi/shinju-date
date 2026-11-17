@@ -26,13 +26,9 @@ import { TalentLifecycleActions } from './_components/talent-lifecycle-actions'
 import { TwitchUserManager } from './_components/twitch-user-manager'
 import { VideoBackfillPanel } from './_components/video-backfill-panel'
 
-interface Props {
-  params: Promise<{
-    id: string
-  }>
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: Pick<PageProps<'/talents/[id]'>, 'params'>): Promise<Metadata> {
   const { id } = await params
 
   const talent = await getTalent(id)
@@ -48,7 +44,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-async function TalentProfile({ id }: { id: string }) {
+async function TalentProfile({
+  params,
+}: Pick<PageProps<'/talents/[id]'>, 'params'>) {
+  const { id } = await params
+
   const talent = await getTalent(id)
 
   if (!talent) {
@@ -193,11 +193,11 @@ async function TalentProfile({ id }: { id: string }) {
 /** 「最新動画」に表示する件数 */
 const RECENT_VIDEOS_LIMIT = 5
 
-async function RecentVideosSection({ talentId }: { talentId: string }) {
-  const recentVideos = await getRecentVideosForTalent(
-    talentId,
-    RECENT_VIDEOS_LIMIT,
-  )
+async function RecentVideosSection({
+  params,
+}: Pick<PageProps<'/talents/[id]'>, 'params'>) {
+  const { id } = await params
+  const recentVideos = await getRecentVideosForTalent(id, RECENT_VIDEOS_LIMIT)
 
   return (
     <Panel
@@ -367,7 +367,9 @@ function RecentVideosSectionSkeleton() {
   )
 }
 
-export default function TalentDetailPage({ params }: Props) {
+export default function TalentDetailPage({
+  params,
+}: PageProps<'/talents/[id]'>) {
   return (
     <div>
       {/* Back button - static, renders immediately */}
@@ -377,16 +379,12 @@ export default function TalentDetailPage({ params }: Props) {
 
       {/* Talent profile section */}
       <Suspense fallback={<TalentProfileSkeleton />}>
-        {params.then(({ id }) => (
-          <TalentProfile id={id} />
-        ))}
+        <TalentProfile params={params} />
       </Suspense>
 
       {/* Recent videos section */}
       <Suspense fallback={<RecentVideosSectionSkeleton />}>
-        {params.then(({ id }) => (
-          <RecentVideosSection talentId={id} />
-        ))}
+        <RecentVideosSection params={params} />
       </Suspense>
     </div>
   )

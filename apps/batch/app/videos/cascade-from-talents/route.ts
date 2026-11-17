@@ -1,132 +1,57 @@
-import * as Sentry from '@sentry/nextjs'
 import { CACHE_TAGS } from '@shinju-date/constants'
-import { createErrorResponse, verifyCronRequest } from '@shinju-date/helpers'
 import { logger } from '@shinju-date/logger'
 import { revalidateTags } from '@shinju-date/web-cache'
-import { after } from 'next/server'
-import { serverEnv } from '@/lib/env'
-import { videosCascadeFromTalents as ratelimit } from '@/lib/ratelimit'
+import { runCronJob } from '@/lib/cron'
+import { VIDEOS_CASCADE_FROM_TALENTS_JOB } from '@/lib/jobs'
 import { supabaseClient } from '@/lib/supabase'
 import {
   CascadePhaseError,
   cascadeVideosFromTalents,
 } from './_lib/cascade-from-talents'
 
-const MONITOR_SLUG = '/videos/cascade-from-talents'
-const CRON_SCHEDULE = '*/5 * * * *'
-
 export const maxDuration = 60
 
 export async function POST(request: Request): Promise<Response> {
-  const cronSecure = serverEnv.CRON_SECRET
-  if (
-    cronSecure &&
-    !verifyCronRequest(request, {
-      cronSecure,
-    })
-  ) {
-    logger.warn('CRON_SECRETが一致しませんでした')
+  return runCronJob(
+    request,
+    VIDEOS_CASCADE_FROM_TALENTS_JOB,
+    async () => {
+      const result = await cascadeVideosFromTalents(supabaseClient)
 
-    return createErrorResponse('Unauthorized', {
-      status: 401,
-    })
-  }
+      if (result.softDeleted > 0 || result.restored > 0) {
+        await revalidateTags([CACHE_TAGS.VIDEOS, CACHE_TAGS.TALENTS], {
+          signal: request.signal,
+        })
+      }
 
-  const { success } = await ratelimit.limit('videos:cascade-from-talents')
+      logger.info('タレント連鎖の動画ソフトデリート／復旧が完了しました', {
+        restored: result.restored,
+        softDeleted: result.softDeleted,
+      })
 
-  if (!success) {
-    logger.warn('前回の実行から間隔が空いていません')
-
-    return createErrorResponse(
-      'There has been no interval since the last run.',
-      {
-        status: 429,
-      },
-    )
-  }
-
-  const checkInId = Sentry.captureCheckIn(
-    {
-      monitorSlug: MONITOR_SLUG,
-      status: 'in_progress',
+      return result
     },
     {
-      schedule: {
-        type: 'crontab',
-        value: CRON_SCHEDULE,
-      },
-      timezone: 'Etc/UTC',
-    },
-  )
+      onError: async (error) => {
+        if (!(error instanceof CascadePhaseError)) {
+          return
+        }
 
-  try {
-    const result = await cascadeVideosFromTalents(supabaseClient)
+        // One phase may have committed; keep visibility and revalidate if needed.
+        logger.error('タレント連鎖の動画処理でフェーズ失敗がありました', {
+          error,
+          restored: error.restored,
+          softDeleted: error.softDeleted,
+        })
 
-    if (result.softDeleted > 0 || result.restored > 0) {
-      await revalidateTags([CACHE_TAGS.VIDEOS, CACHE_TAGS.TALENTS], {
-        signal: request.signal,
-      })
-    }
-
-    logger.info('タレント連鎖の動画ソフトデリート／復旧が完了しました', {
-      restored: result.restored,
-      softDeleted: result.softDeleted,
-    })
-
-    after(async () => {
-      Sentry.captureCheckIn({
-        checkInId,
-        monitorSlug: MONITOR_SLUG,
-        status: 'ok',
-      })
-
-      await Sentry.flush(10_000)
-    })
-
-    return Response.json(result, {
-      status: 200,
-    })
-  } catch (error) {
-    if (error instanceof CascadePhaseError) {
-      // One phase may have committed; keep visibility and revalidate if needed.
-      logger.error('タレント連鎖の動画処理でフェーズ失敗がありました', {
-        error,
-        restored: error.restored,
-        softDeleted: error.softDeleted,
-      })
-
-      if (error.softDeleted > 0 || error.restored > 0) {
-        try {
+        if (error.softDeleted > 0 || error.restored > 0) {
           await revalidateTags([CACHE_TAGS.VIDEOS, CACHE_TAGS.TALENTS], {
             signal: request.signal,
           })
-        } catch (revalidateError) {
-          logger.error('部分成功後のキャッシュ再検証に失敗しました', {
-            error: revalidateError,
-          })
         }
-      }
-    }
-
-    after(async () => {
-      Sentry.captureException(error)
-
-      Sentry.captureCheckIn({
-        checkInId,
-        monitorSlug: MONITOR_SLUG,
-        status: 'error',
-      })
-
-      await Sentry.flush(10_000)
-    })
-
-    return createErrorResponse(
-      error instanceof Error ? error.message : 'Unknown error',
-      {
-        status: 500,
       },
-    )
-  }
+    },
+  )
 }
 
 export const GET = POST

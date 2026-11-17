@@ -5,7 +5,6 @@ import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import {
   EmptyState,
   FilterBar,
-  Input,
   Select,
   Skeleton,
   Table,
@@ -17,8 +16,15 @@ import {
 } from '@shinju-date/ui'
 import { ArrowDown, ArrowUp, Users } from 'lucide-react'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { SearchInput } from '@/components/search-input'
 import { FilterBarSkeleton, TableSkeleton } from '@/components/table-skeleton'
+import { useUpdateSearchParams } from '@/lib/use-update-search-params'
+import {
+  DEFAULT_TALENT_LIST_FILTERS,
+  type TalentSortOrder,
+  type TalentStatusFilter,
+} from '../_lib/talent-list-filters'
 import { TalentActions } from './talent-actions'
 import { TalentModal } from './talent-modal'
 import { TalentStatusBadge } from './talent-status-badge'
@@ -33,13 +39,17 @@ type Talent = Pick<
   >[]
 }
 
-type StatusFilter = 'not_deleted' | 'active' | 'retired' | 'deleted' | 'all'
-
 interface TalentsListProps {
+  /** URL の `search`。前後の空白を取り除いたもの */
+  search: string | undefined
+  /** URL の `sort` */
+  sortOrder: TalentSortOrder
+  /** URL の `status` */
+  statusFilter: TalentStatusFilter
   talents: Talent[]
 }
 
-const FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
+const FILTER_OPTIONS: { value: TalentStatusFilter; label: string }[] = [
   { label: '削除済み以外', value: 'not_deleted' },
   { label: 'アクティブ', value: 'active' },
   { label: '引退', value: 'retired' },
@@ -47,7 +57,7 @@ const FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
   { label: 'すべて', value: 'all' },
 ]
 
-function matchesFilter(talent: Talent, filter: StatusFilter): boolean {
+function matchesFilter(talent: Talent, filter: TalentStatusFilter): boolean {
   const isDeleted = talent.deleted_at !== null
 
   switch (filter) {
@@ -64,18 +74,21 @@ function matchesFilter(talent: Talent, filter: StatusFilter): boolean {
   }
 }
 
-export function TalentsList({ talents }: TalentsListProps) {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('not_deleted')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+export function TalentsList({
+  search,
+  sortOrder,
+  statusFilter,
+  talents,
+}: TalentsListProps) {
+  const updateSearchParams = useUpdateSearchParams()
 
   const filteredAndSortedTalents = useMemo(() => {
     let filtered = talents.filter((talent) =>
       matchesFilter(talent, statusFilter),
     )
 
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
+    if (search) {
+      const query = search.toLowerCase()
       filtered = filtered.filter(
         (talent) =>
           talent.name.toLowerCase().includes(query) ||
@@ -90,33 +103,44 @@ export function TalentsList({ talents }: TalentsListProps) {
       )
       return sortOrder === 'desc' ? -order : order
     })
-  }, [talents, searchQuery, sortOrder, statusFilter])
+  }, [talents, search, sortOrder, statusFilter])
 
-  const toggleSortOrder = () => {
-    setSortOrder((current) => (current === 'desc' ? 'asc' : 'desc'))
+  // 既定の値のときは、パラメータを付けない
+  const changeStatusFilter = (nextFilter: TalentStatusFilter) => {
+    updateSearchParams({
+      status:
+        nextFilter === DEFAULT_TALENT_LIST_FILTERS.status ? null : nextFilter,
+    })
   }
 
-  const isFiltered = searchQuery.trim() !== '' || statusFilter !== 'not_deleted'
+  const toggleSortOrder = () => {
+    const nextOrder = sortOrder === 'desc' ? 'asc' : 'desc'
+
+    updateSearchParams({
+      sort: nextOrder === DEFAULT_TALENT_LIST_FILTERS.sort ? null : nextOrder,
+    })
+  }
+
+  const isStatusFiltered = statusFilter !== DEFAULT_TALENT_LIST_FILTERS.status
+  const isFiltered = search !== undefined || isStatusFiltered
   const activeFilterCount =
-    (searchQuery.trim() !== '' ? 1 : 0) +
-    (statusFilter !== 'not_deleted' ? 1 : 0)
+    (search !== undefined ? 1 : 0) + (isStatusFiltered ? 1 : 0)
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <FilterBar activeCount={activeFilterCount} className="min-w-0 grow">
-          <Input
+          <SearchInput
             aria-label="タレント名またはIDで検索"
             className="md:max-w-sm"
-            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="タレント名またはIDで検索..."
-            type="search"
-            value={searchQuery}
           />
           <Select
             aria-label="状態で絞り込み"
             className="md:w-48"
-            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+            onChange={(e) =>
+              changeStatusFilter(e.target.value as TalentStatusFilter)
+            }
             value={statusFilter}
           >
             {FILTER_OPTIONS.map((option) => (

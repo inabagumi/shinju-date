@@ -1,6 +1,7 @@
 import type { Enums } from '@shinju-date/database'
 import { formatRelativeTime } from '@shinju-date/temporal-fns'
 import { AuditLogTarget } from '../_components/audit-log-target'
+import { getChanges } from '../_lib/audit-log-details'
 import type { Log } from '../_lib/get-audit-logs'
 
 const ACTION_LABELS: Record<Enums<'audit_action'>, string> = {
@@ -46,47 +47,17 @@ function LogMessage({ log }: { log: Log }) {
   )
 }
 
-interface Changes {
-  after?: unknown
-  before?: unknown
-}
-
-interface ChangeDetailsObject extends Changes {
-  changes?: Changes
-}
-
 function ChangeDetails({ log }: { log: Log }) {
-  const detailsObject =
-    log.details &&
-    typeof log.details === 'object' &&
-    !Array.isArray(log.details)
-      ? (log.details as ChangeDetailsObject)
-      : null
+  const changes = getChanges(log.details)
 
-  // Older VIDEO_SYNC entries keep `before` and `after` directly under
-  // `details` instead of under `details.changes`.
-  const changes =
-    detailsObject?.changes ??
-    (detailsObject
-      ? { after: detailsObject.after, before: detailsObject.before }
-      : undefined)
-
-  if (!changes?.before || !changes.after) {
+  if (!changes) {
     return null
   }
 
-  // Extract changed fields
-  const beforeObj =
-    typeof changes.before === 'object' && changes.before !== null
-      ? (changes.before as Record<string, unknown>)
-      : {}
-  const afterObj =
-    typeof changes.after === 'object' && changes.after !== null
-      ? (changes.after as Record<string, unknown>)
-      : {}
+  const { after, before } = changes
 
-  const changedFields = Object.keys(beforeObj).filter(
-    (key) => beforeObj[key] !== afterObj[key],
+  const changedFields = Object.keys(before).filter(
+    (key) => before[key] !== after[key],
   )
 
   if (changedFields.length === 0) {
@@ -99,12 +70,12 @@ function ChangeDetails({ log }: { log: Log }) {
         <div className="flex gap-2" key={field}>
           <span className="font-semibold text-muted">{field}:</span>
           <span className="text-muted line-through">
-            {String(beforeObj[field])}
+            {String(before[field])}
           </span>
           <span aria-hidden="true" className="text-muted">
             →
           </span>
-          <span>{String(afterObj[field])}</span>
+          <span>{String(after[field])}</span>
         </div>
       ))}
     </div>

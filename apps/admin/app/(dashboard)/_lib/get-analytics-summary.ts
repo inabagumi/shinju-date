@@ -4,6 +4,7 @@ import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
 import { logger } from '@shinju-date/logger'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { cacheLife } from 'next/cache'
+import { sumScores } from '@/lib/analytics/redis'
 import { getRedisClient } from '@/lib/redis'
 
 export interface AnalyticsSummary {
@@ -51,18 +52,12 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummaryWithTrends>
 
     // Get today's click volume
     const clickKey = `${REDIS_KEYS.CLICK_VIDEO_PREFIX}${dateKey}`
-    const clickResults = await redisClient.zrange<string[]>(clickKey, 0, -1, {
+    const clickResults = await redisClient.zrange<unknown[]>(clickKey, 0, -1, {
       rev: false,
       withScores: true,
     })
 
-    let recentClicks = 0
-    for (let j = 1; j < clickResults.length; j += 2) {
-      const scoreStr = clickResults[j]
-      if (scoreStr) {
-        recentClicks += Number.parseInt(scoreStr, 10)
-      }
-    }
+    const recentClicks = sumScores(clickResults)
 
     const currentAnalytics: AnalyticsSummary = {
       recentClicks,

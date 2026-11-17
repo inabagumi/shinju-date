@@ -9,8 +9,12 @@ const recordBackfillJob = vi.fn()
 const supabaseClient = { from: vi.fn() }
 
 vi.mock('@/lib/ratelimit', () => ({
+  recommendationQueriesUpdate: { limit: vi.fn() },
+  statsSnapshot: { limit: vi.fn() },
   talentsUpdate: { limit: vi.fn() },
+  termsPopularityUpdate: { limit: vi.fn() },
   videosBackfill: { limit },
+  videosCascadeFromTalents: { limit: vi.fn() },
   videosCheck: { limit: vi.fn() },
   videosCheckAll: { limit: vi.fn() },
   videosCheckRecent: { limit: vi.fn() },

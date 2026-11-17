@@ -22,9 +22,8 @@ services:
     command: sleep infinity
     environment:
       # Environment variables loaded from env_file (./config/dev-secrets.env):
-      # SUPABASE_ANON_KEY, SUPABASE_SERVICE_KEY, NEXT_PUBLIC_SUPABASE_ANON_KEY, UPSTASH_REDIS_REST_TOKEN
+      # NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, UPSTASH_REDIS_REST_TOKEN
       # Supabase runs inside DinD, so ports are published on this container's localhost
-      SUPABASE_URL: http://127.0.0.1:54321
       UPSTASH_REDIS_REST_URL: http://serverless-redis-http:80
       NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
     depends_on:

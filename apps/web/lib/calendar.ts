@@ -1,5 +1,4 @@
 import { SITE_NAME as siteName } from '@shinju-date/constants'
-import type { Tables } from '@shinju-date/database'
 import { getVideoExternalUrl } from '@shinju-date/helpers'
 import { max, min } from '@shinju-date/temporal-fns'
 import {
@@ -7,21 +6,15 @@ import {
   createEvents,
   type EventAttributes,
 } from 'ics'
+import type { CalendarVideo } from './fetchers'
 
-type Talent = Pick<Tables<'talents'>, 'name'>
-
-type Video = Pick<
-  Tables<'videos'>,
-  'duration' | 'id' | 'platform' | 'published_at' | 'status' | 'title'
-> & {
-  talent: Talent
-  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
-  twitch_video: {
-    twitch_video_id: string
-    type: Tables<'twitch_videos'>['type']
-    twitch_user: Pick<Tables<'twitch_users'>, 'twitch_login_name'> | null
-  } | null
-}
+/**
+ * The calendar apps fetch the subscribed URLs periodically, so let the CDN
+ * answer them for a while. The videos are cached for hours in
+ * `fetchCalendarVideos` anyway.
+ */
+const CALENDAR_CACHE_CONTROL =
+  'public, max-age=300, s-maxage=900, stale-while-revalidate=3600'
 
 interface GetPublishedAtAndEndedAtOptions {
   now: Temporal.ZonedDateTime
@@ -33,7 +26,7 @@ type GetPublishedAtAndEndedAtResult = [
 ]
 
 export function getPublishedAtAndEndedAt(
-  video: Video,
+  video: CalendarVideo,
   { now }: GetPublishedAtAndEndedAtOptions,
 ): GetPublishedAtAndEndedAtResult {
   const publishedAt = Temporal.Instant.from(
@@ -77,6 +70,7 @@ export function createCalendarResponse(events: EventAttributes[]): Response {
 
   return new Response(value, {
     headers: {
+      'Cache-Control': CALENDAR_CACHE_CONTROL,
       'Content-Type': 'text/calendar; charset=UTF-8',
     },
   })
@@ -87,7 +81,7 @@ interface CreateEventAttributesListOptions {
 }
 
 export function createEventAttributesList(
-  videos: Video[],
+  videos: CalendarVideo[],
   { now }: CreateEventAttributesListOptions,
 ): EventAttributes[] {
   const events: EventAttributes[] = []

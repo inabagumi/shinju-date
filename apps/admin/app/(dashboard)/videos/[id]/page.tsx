@@ -36,13 +36,9 @@ interface DetailItem {
   value: ReactNode
 }
 
-interface Props {
-  params: Promise<{
-    id: string
-  }>
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: Pick<PageProps<'/videos/[id]'>, 'params'>): Promise<Metadata> {
   const { id } = await params
 
   const video = await getVideo(id)
@@ -58,7 +54,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-async function VideoDetails({ id }: { id: string }) {
+async function VideoDetails({
+  params,
+}: Pick<PageProps<'/videos/[id]'>, 'params'>) {
+  const { id } = await params
+
   const video = await getVideo(id)
 
   if (!video) {
@@ -290,7 +290,7 @@ function VideoDetailsSkeleton() {
   )
 }
 
-export default function VideoDetailPage({ params }: Props) {
+export default function VideoDetailPage({ params }: PageProps<'/videos/[id]'>) {
   return (
     <div>
       <div className="mb-4">
@@ -298,9 +298,7 @@ export default function VideoDetailPage({ params }: Props) {
       </div>
 
       <Suspense fallback={<VideoDetailsSkeleton />}>
-        {params.then(({ id }) => (
-          <VideoDetails id={id} />
-        ))}
+        <VideoDetails params={params} />
       </Suspense>
     </div>
   )

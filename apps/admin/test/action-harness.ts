@@ -110,14 +110,8 @@ export function setupActionTest() {
     /** Asserts that an audit log entry was recorded with these arguments. */
     expectAuditLog(
       ...args:
-        | [action: AuditAction, targetTable: string]
-        | [action: AuditAction, targetTable: string, targetRecordId: unknown]
-        | [
-            action: AuditAction,
-            targetTable: string,
-            targetRecordId: unknown,
-            details: unknown,
-          ]
+        | [action: AuditAction, targetRecordId: unknown]
+        | [action: AuditAction, targetRecordId: unknown, details: unknown]
     ): void {
       expect(mocks.createAuditLog).toHaveBeenCalledWith(...args)
     },
