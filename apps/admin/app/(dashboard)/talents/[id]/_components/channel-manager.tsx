@@ -20,7 +20,6 @@ import type { FormState } from '@/components/form'
 import Form, {
   ErrorMessage,
   FormField,
-  GenericErrorMessage,
   Input,
   Label,
   SubmitButton,
@@ -111,27 +110,23 @@ export function ChannelManager({
                   <Form action={handleAddChannel} className="space-y-4">
                     <input name="talent_id" type="hidden" value={talentId} />
                     <FormField name="youtube_channel_id">
-                      <Label className="block text-meta font-semibold">
-                        ハンドル / チャンネルID / URL
-                      </Label>
+                      <Label>ハンドル / チャンネルID / URL</Label>
                       <Input
-                        className="mt-1"
                         placeholder="@handle または https://youtube.com/@handle"
                         required
                       />
                       <p className="mt-1 text-caption text-muted">
                         例: @example、https://www.youtube.com/@example、UCxxx...
                       </p>
-                      <ErrorMessage className="mt-1 text-meta text-danger" />
+                      <ErrorMessage />
                     </FormField>
-                    <GenericErrorMessage className="text-meta text-danger" />
                     <div className="flex justify-end gap-2">
                       <DialogClose asChild>
                         <UIButton type="button" variant="secondary">
                           キャンセル
                         </UIButton>
                       </DialogClose>
-                      <SubmitButton type="submit">追加</SubmitButton>
+                      <SubmitButton>追加</SubmitButton>
                     </div>
                   </Form>
                 </DialogContent>

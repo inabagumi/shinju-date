@@ -1,6 +1,8 @@
 'use client'
 
 import {
+  Alert,
+  twMerge,
   Button as UIButton,
   type ButtonProps as UIButtonProps,
   Input as UIInput,
@@ -48,6 +50,7 @@ interface Props extends Omit<ComponentPropsWithoutRef<'form'>, 'action'> {
 
 export default function Form({
   action,
+  children,
   initialState = {},
   noValidate = true,
   ...props
@@ -56,8 +59,43 @@ export default function Form({
 
   return (
     <FormContext.Provider value={state}>
-      <form action={formAction} noValidate={noValidate} {...props} />
+      <form action={formAction} noValidate={noValidate} {...props}>
+        <FormError />
+        {children}
+      </form>
     </FormContext.Provider>
+  )
+}
+
+interface MessageLinesProps {
+  messages: string[]
+}
+
+function MessageLines({ messages }: MessageLinesProps) {
+  return messages.map((message, i) => (
+    <Fragment key={message}>
+      {i > 0 && <br />}
+      {message}
+    </Fragment>
+  ))
+}
+
+/**
+ * 項目に結び付かないエラー（`FormState.error` と `errors.generic`）を出す。
+ * 置き忘れないよう、`Form` がフォームの先頭に必ず描く。
+ */
+function FormError() {
+  const { error, errors } = useContext(FormContext)
+  const messages = [
+    ...new Set([...(error ? [error] : []), ...(errors?.['generic'] ?? [])]),
+  ]
+
+  return (
+    messages.length > 0 && (
+      <Alert tone="danger">
+        <MessageLines messages={messages} />
+      </Alert>
+    )
   )
 }
 
@@ -65,7 +103,7 @@ type SubmitButtonProps = Omit<UIButtonProps, 'asChild'>
 
 export function SubmitButton({
   disabled,
-  type = 'button',
+  type = 'submit',
   variant = 'primary',
   size = 'md',
   ...props
@@ -85,20 +123,24 @@ export function SubmitButton({
 
 interface ErrorMessageProps extends ComponentPropsWithoutRef<'p'> {}
 
-export function ErrorMessage(props: ErrorMessageProps) {
+export function ErrorMessage({
+  className,
+  role = 'alert',
+  ...props
+}: ErrorMessageProps) {
   const { errors } = useContext(FormContext)
   const { id, name } = useContext(FormFieldContext)
   const errorMessages = (name && errors?.[name]) || []
 
   return (
     errorMessages.length > 0 && (
-      <p id={id ? `${id}-error-message` : undefined} {...props}>
-        {errorMessages.map((message, i) => (
-          <Fragment key={message}>
-            {i > 0 && <br />}
-            {message}
-          </Fragment>
-        ))}
+      <p
+        className={twMerge('mt-1 text-meta text-danger', className)}
+        id={id ? `${id}-error-message` : undefined}
+        role={role}
+        {...props}
+      >
+        <MessageLines messages={errorMessages} />
       </p>
     )
   )
@@ -120,29 +162,6 @@ export function FormField({ name, ...props }: FormFieldProps) {
     >
       <div {...props} />
     </FormFieldContext.Provider>
-  )
-}
-
-interface GenericErrorMessageProps extends ComponentPropsWithoutRef<'p'> {}
-
-export function GenericErrorMessage({
-  role = 'alert',
-  ...props
-}: GenericErrorMessageProps) {
-  const { errors } = useContext(FormContext)
-  const errorMessages = errors?.['generic'] || []
-
-  return (
-    errorMessages.length > 0 && (
-      <p role={role} {...props}>
-        {errorMessages.map((message, i) => (
-          <Fragment key={message}>
-            {i > 0 && <br />}
-            {message}
-          </Fragment>
-        ))}
-      </p>
-    )
   )
 }
 
@@ -209,7 +228,7 @@ export function Input({
 
 interface LabelProps extends ComponentPropsWithoutRef<'label'> {}
 
-export function Label({ htmlFor, ...props }: LabelProps) {
+export function Label({ className, htmlFor, ...props }: LabelProps) {
   const { pending } = useFormStatus()
   const { id } = useContext(FormFieldContext)
 
@@ -217,6 +236,10 @@ export function Label({ htmlFor, ...props }: LabelProps) {
     // biome-ignore lint/a11y/noLabelWithoutControl: ラッパーなので無効に。
     <label
       aria-disabled={pending ? true : undefined}
+      className={twMerge(
+        'mb-2 block text-meta font-semibold aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
+        className,
+      )}
       htmlFor={htmlFor ?? id}
       {...props}
     />
