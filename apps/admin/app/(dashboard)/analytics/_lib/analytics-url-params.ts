@@ -1,4 +1,4 @@
-import type { SearchParamUpdates } from '@/lib/use-update-search-params'
+import type { SearchParamUpdates } from '@/lib/search-params-href'
 
 /**
  * 期間（`from` と `to`）を書き換えるときに、`useUpdateSearchParams` に渡すパラメータを返す。
