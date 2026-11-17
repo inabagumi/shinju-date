@@ -1,47 +1,15 @@
 // Node.js provides Temporal natively on the server, so the polyfill is only
 // needed in the browser. It installs itself only when Temporal is missing.
 import 'temporal-polyfill/global'
+import { initClient } from '@shinju-date/instrumentation/client'
 
-const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
+export { onRouterTransitionStart } from '@shinju-date/instrumentation/client'
 
-if (dsn) {
-  import('@sentry/nextjs')
-    .then((Sentry) => {
-      const environment =
-        process.env['VERCEL_ENV'] ??
-        process.env['NEXT_PUBLIC_VERCEL_ENV'] ??
-        'development'
-
-      Sentry.init({
-        dsn,
-        enabled: environment === 'production',
-        environment,
-        integrations: [
-          Sentry.browserTracingIntegration(),
-          Sentry.browserProfilingIntegration(),
-          Sentry.replayIntegration(),
-        ],
-        profileLifecycle: 'trace',
-        profileSessionSampleRate: 1.0,
-        replaysOnErrorSampleRate: 1.0,
-        replaysSessionSampleRate: 0.1,
-        tracesSampleRate: 1.0,
-      })
-    })
-    .catch((error) => {
-      throw error
-    })
-}
-
-export async function onRouterTransitionStart(
-  href: string,
-  navigationType: string,
-) {
-  const dsn = process.env['NEXT_PUBLIC_SENTRY_DSN']
-
-  if (dsn) {
-    const { captureRouterTransitionStart } = await import('@sentry/nextjs')
-
-    captureRouterTransitionStart(href, navigationType)
-  }
-}
+initClient({
+  profileSessionSampleRate: 1.0,
+  replay: {
+    onErrorSampleRate: 1.0,
+    sessionSampleRate: 0.1,
+  },
+  tracesSampleRate: 1.0,
+})
