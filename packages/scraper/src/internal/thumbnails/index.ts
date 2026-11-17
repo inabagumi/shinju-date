@@ -6,6 +6,7 @@ export {
 export type {
   CreateThumbnailOptions,
   Thumbnail,
+  ThumbnailRemovalContext,
   ThumbnailSource,
 } from './thumbnail.js'
 export { createThumbnail, removeThumbnail } from './thumbnail.js'

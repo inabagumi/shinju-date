@@ -3,7 +3,7 @@ import { toDBString } from '@shinju-date/temporal-fns'
 import mime from 'mime'
 import { nanoid } from 'nanoid'
 import sharp from 'sharp'
-import type { TypedSupabaseClient } from '../../types.js'
+import type { TypedSupabaseClient, WriteContext } from '../../types.js'
 import { DatabaseError } from '../database/errors.js'
 
 const BUCKET = 'thumbnails'
@@ -28,6 +28,12 @@ export interface CreateThumbnailOptions {
   source: ThumbnailSource
   supabaseClient: TypedSupabaseClient
 }
+
+/** What {@link removeThumbnail} needs from the run. */
+export type ThumbnailRemovalContext = Pick<
+  WriteContext,
+  'reportError' | 'supabaseClient'
+>
 
 /** A stored thumbnail: its `thumbnails` row ID and storage path. */
 export interface Thumbnail {
@@ -116,17 +122,37 @@ export async function createThumbnail({
 }
 
 /**
- * Removes a thumbnail that ended up unused (its video was not saved).
- * Best effort: a leftover thumbnail is harmless, so failures are ignored.
+ * Removes a thumbnail that is no longer used: first its row, then its image.
+ *
+ * Best effort: a leftover thumbnail is never shown, so failures are reported
+ * instead of thrown. The image is only removed once the row is gone, so a row
+ * never points at a missing image.
  */
 export async function removeThumbnail(
-  supabaseClient: TypedSupabaseClient,
+  { reportError, supabaseClient }: ThumbnailRemovalContext,
   thumbnail: Thumbnail,
 ): Promise<void> {
   try {
-    await supabaseClient.from('thumbnails').delete().eq('id', thumbnail.id)
-    await supabaseClient.storage.from(BUCKET).remove([thumbnail.path])
-  } catch {
-    // Ignored on purpose, see above.
+    const { error: deleteError } = await supabaseClient
+      .from('thumbnails')
+      .delete()
+      .eq('id', thumbnail.id)
+
+    if (deleteError) {
+      throw new DatabaseError('Failed to delete a thumbnail', deleteError)
+    }
+
+    const { error: removeError } = await supabaseClient.storage
+      .from(BUCKET)
+      .remove([thumbnail.path])
+
+    if (removeError) {
+      throw removeError
+    }
+  } catch (error) {
+    reportError(error, {
+      thumbnailId: thumbnail.id,
+      thumbnailPath: thumbnail.path,
+    })
   }
 }
