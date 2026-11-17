@@ -82,6 +82,19 @@ pnpm run check:docs
 - 外部の URL は確かめません
 - `.agents/` と `.claude/` の下のファイル（`skills` CLI が置いたファイル）は対象外です
 
+#### パッケージのビルドと `exports`
+
+`packages/*` の `tsdown.config.ts` は、`@shinju-date/config/tsdown` の `definePackageConfig()` を呼び、入口（`entry`）と、共通の設定と違う値だけを書きます。共通の設定と違う値には、理由をコメントで書いてください。
+
+`package.json` の `exports` は、各入口を `{ "types": ..., "default": ... }`（`types` が先）の形にし、`main`、`types`、`typesVersions` は書きません（[`@shinju-date/config`](packages/config/README.md#packagejson-の-exports)）。`tsdown.config.ts` や `exports` を変更した後は、ビルドしてから形を確かめてください。
+
+```bash
+pnpm run build --filter='./packages/*'
+pnpm run check:package-exports
+```
+
+- `scripts/check-package-exports.mjs` が、`exports` の形と、指しているファイルが存在するかを確かめます（CI では、`Build (Node.js)` のジョブがビルドのあとに実行します）
+
 ### 依存のバージョン
 
 2つ以上の `package.json` に書く依存のバージョンは、`pnpm-workspace.yaml` の `catalog:` に1か所だけ書き、各 `package.json` には `"catalog:"` と書きます。
@@ -96,7 +109,7 @@ pnpm run check:docs
 
 - 新しいパッケージやアプリケーションを追加するときは、ほかの `package.json` からバージョンを写さず、`catalog:` にある依存は `"catalog:"` で参照してください
 - 1つの `package.json` だけが使う依存は、その `package.json` にバージョンを書きます。2つ目の `package.json` が使うようになったら、`catalog:` に移してください
-- `peerDependencies` は、受け入れる範囲（`^19.0.0` など）を書くため、`catalog:` を使いません
+- `peerDependencies` は、受け入れる範囲を書くため、`catalog:` を使いません。外部のパッケージは `^` の範囲（`^19.0.0` など）、workspace のパッケージは `workspace:*` と書きます
 - Renovate は、`catalog:` のバージョンを `pnpm-workspace.yaml` の中で更新します
 
 ### コミットメッセージ

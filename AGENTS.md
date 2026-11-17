@@ -31,6 +31,7 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 - コードを変えたら、**必ず** `pnpm run check --fix` を実行する（Biome によるフォーマット、リント、未使用の import の削除）
 - TypeScript を変えたら、`pnpm run typecheck`（1つのパッケージなら `pnpm run typecheck --filter=<パッケージ名>`）も実行する
 - Markdown を変えたら、`pnpm run check:docs` も実行する（リポジトリの中へのリンクとファイルのパスが実在するかを確かめる。[ドキュメントのリンク](CONTRIBUTING.md#ドキュメントのリンク)）
+- `packages/*` の `tsdown.config.ts` や `package.json` の `exports` を変えたら、ビルドのあとに `pnpm run check:package-exports` も実行する（[パッケージのビルドと `exports`](CONTRIBUTING.md#パッケージのビルドと-exports)）
 - `'use cache'`、`cacheLife()`、`cacheTag()` を書いたら、`pnpm run check:cache-directives` も実行する（後ろの空行を確かめる。[キャッシュのディレクティブの空行](CONTRIBUTING.md#キャッシュのディレクティブの空行)）
 
 理由: CI で同じものが実行され、失敗するとマージできません。Vitest はテストのファイルの型を検査しないため、[型チェック](CONTRIBUTING.md#型チェック)は別に要ります。
