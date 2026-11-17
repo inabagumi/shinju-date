@@ -1,22 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../../internal/testing/context.js'
+import { createFakeTwitchFetcher } from '../../internal/testing/fetcher.js'
 import {
   postgresError,
   setupSupabase,
 } from '../../internal/testing/supabase.js'
 import {
+  createSavedLiveVideo,
   createSavedVideo,
   createStream,
   createVideo,
+  liveVideoRoutes,
 } from '../../internal/testing/twitch.js'
 import { createThumbnail } from '../../internal/thumbnails/index.js'
-import type { TwitchFetcher } from '../fetcher.js'
-import type { SavedTwitchVideo } from '../saved-video.js'
-import {
-  planLiveSync,
-  type SavedLiveVideo,
-  syncTwitchLive,
-} from '../sync-live.js'
+import { planLiveSync, syncTwitchLive } from '../sync-live.js'
 
 vi.mock('../../internal/thumbnails/index.js', async (importOriginal) => ({
   ...(await importOriginal<
@@ -25,13 +22,6 @@ vi.mock('../../internal/thumbnails/index.js', async (importOriginal) => ({
   createThumbnail: vi.fn(),
   removeThumbnail: vi.fn(),
 }))
-
-function createLiveVideo(
-  overrides: Parameters<typeof createSavedVideo>[0] = {},
-  twitchUserId: string | null = 'twitch-user-1',
-): SavedLiveVideo {
-  return { ...createSavedVideo(overrides), twitchUserId }
-}
 
 describe('planLiveSync', () => {
   const activeTwitchUserIds = new Set(['twitch-user-1'])
@@ -61,7 +51,7 @@ describe('planLiveSync', () => {
   })
 
   it('leaves a broadcast that is still on air alone', () => {
-    const saved = createLiveVideo()
+    const saved = createSavedLiveVideo()
 
     expect(
       planLiveSync({
@@ -74,7 +64,7 @@ describe('planLiveSync', () => {
   })
 
   it('follows title changes during a broadcast', () => {
-    const saved = createLiveVideo()
+    const saved = createSavedLiveVideo()
 
     expect(
       planLiveSync({
@@ -87,7 +77,7 @@ describe('planLiveSync', () => {
   })
 
   it('ends a broadcast whose stream went offline', () => {
-    const saved = createLiveVideo()
+    const saved = createSavedLiveVideo()
 
     expect(
       planLiveSync({
@@ -100,8 +90,8 @@ describe('planLiveSync', () => {
   })
 
   it('ends only the broadcasts that went offline', () => {
-    const onAir = createLiveVideo()
-    const offline = createLiveVideo({
+    const onAir = createSavedLiveVideo()
+    const offline = createSavedLiveVideo({
       id: 'video-2',
       twitch_video: { id: 'twitch-row-2', stream_id: 'stream-2' },
     })
@@ -155,7 +145,7 @@ describe('planLiveSync', () => {
   })
 
   it('ends a LIVE row that has no stream to check', () => {
-    const saved = createLiveVideo({ twitch_video: { stream_id: null } })
+    const saved = createSavedLiveVideo({ twitch_video: { stream_id: null } })
 
     expect(
       planLiveSync({
@@ -180,74 +170,6 @@ describe('syncTwitchLive', () => {
       supabaseClient: supabase.supabaseClient,
     })
 
-  interface FetcherOptions {
-    archives?: ReturnType<typeof createVideo>[]
-    liveStreams?: ReturnType<typeof createStream>[]
-  }
-
-  function createFetcher({ archives = [], liveStreams = [] }: FetcherOptions) {
-    const getLiveStreams = vi.fn(async () => liveStreams)
-    const getRecentVideos = vi.fn(async () => ({
-      failures: [],
-      missingAccountIds: [],
-      videos: archives,
-    }))
-
-    return {
-      fetcher: { getLiveStreams, getRecentVideos } as unknown as TwitchFetcher,
-      getLiveStreams,
-      getRecentVideos,
-    }
-  }
-
-  interface DatabaseOptions {
-    /** Rows the lookup by stream ID returns. */
-    savedByStreamId?: SavedTwitchVideo[]
-    /** Rows currently shown as LIVE. */
-    savedLiveVideos?: SavedLiveVideo[]
-    write?: Parameters<typeof supabase.respond>[0]
-  }
-
-  function mockDatabase({
-    savedByStreamId,
-    savedLiveVideos = [],
-    write = () => [],
-  }: DatabaseOptions = {}) {
-    supabase.respond((request) => {
-      if (request.method !== 'GET') {
-        return write(request)
-      }
-
-      switch (request.table) {
-        case 'talents':
-          return [
-            {
-              id: 'talent-1',
-              twitch_users: [
-                { id: 'user-row-1', twitch_user_id: 'twitch-user-1' },
-              ],
-            },
-          ]
-        case 'videos':
-          return savedLiveVideos.map(
-            ({ twitch_video, twitchUserId, ...video }) => ({
-              ...video,
-              twitch_video: {
-                ...twitch_video,
-                twitch_user: twitchUserId
-                  ? { twitch_user_id: twitchUserId }
-                  : null,
-              },
-            }),
-          )
-        default:
-          return (savedByStreamId ?? savedLiveVideos).map(
-            ({ twitch_video, ...video }) => ({ ...twitch_video, video }),
-          )
-      }
-    })
-  }
-
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(createThumbnail).mockResolvedValue({
@@ -257,8 +179,8 @@ describe('syncTwitchLive', () => {
   })
 
   it('adds a LIVE row for a stream that just went on air', async () => {
-    mockDatabase()
-    const { getLiveStreams, fetcher } = createFetcher({
+    supabase.respondWith(liveVideoRoutes())
+    const { getLiveStreams, fetcher } = createFakeTwitchFetcher({
       liveStreams: [createStream()],
     })
 
@@ -293,8 +215,8 @@ describe('syncTwitchLive', () => {
   })
 
   it('changes nothing while a tracked broadcast stays on air', async () => {
-    mockDatabase({ savedLiveVideos: [createLiveVideo()] })
-    const { getRecentVideos, fetcher } = createFetcher({
+    supabase.respondWith(liveVideoRoutes([createSavedLiveVideo()]))
+    const { getRecentVideos, fetcher } = createFakeTwitchFetcher({
       liveStreams: [createStream()],
     })
 
@@ -308,8 +230,8 @@ describe('syncTwitchLive', () => {
   })
 
   it('follows a title change', async () => {
-    mockDatabase({ savedLiveVideos: [createLiveVideo()] })
-    const { fetcher } = createFetcher({
+    supabase.respondWith(liveVideoRoutes([createSavedLiveVideo()]))
+    const { fetcher } = createFakeTwitchFetcher({
       liveStreams: [createStream({ title: 'New title' })],
     })
 
@@ -323,8 +245,8 @@ describe('syncTwitchLive', () => {
   })
 
   it('ends a broadcast and keeps the placeholder until the archive exists', async () => {
-    mockDatabase({ savedLiveVideos: [createLiveVideo()] })
-    const { getRecentVideos, fetcher } = createFetcher({})
+    supabase.respondWith(liveVideoRoutes([createSavedLiveVideo()]))
+    const { getRecentVideos, fetcher } = createFakeTwitchFetcher()
 
     const changed = await syncTwitchLive(createContext(fetcher))
 
@@ -340,8 +262,8 @@ describe('syncTwitchLive', () => {
   })
 
   it('ends a broadcast and takes over its archive', async () => {
-    mockDatabase({ savedLiveVideos: [createLiveVideo()] })
-    const { fetcher } = createFetcher({
+    supabase.respondWith(liveVideoRoutes([createSavedLiveVideo()]))
+    const { fetcher } = createFakeTwitchFetcher({
       archives: [
         createVideo({ id: 'vod-other', stream_id: 'stream-other' }),
         createVideo(),
@@ -365,8 +287,8 @@ describe('syncTwitchLive', () => {
   })
 
   it('keeps the live thumbnail while the archive has none', async () => {
-    mockDatabase({ savedLiveVideos: [createLiveVideo()] })
-    const { fetcher } = createFetcher({
+    supabase.respondWith(liveVideoRoutes([createSavedLiveVideo()]))
+    const { fetcher } = createFakeTwitchFetcher({
       archives: [createVideo({ thumbnail_url: '' })],
     })
 
@@ -379,14 +301,14 @@ describe('syncTwitchLive', () => {
   })
 
   it('ends a broadcast whose archive was attached while on air', async () => {
-    mockDatabase({
-      savedLiveVideos: [
-        createLiveVideo({
+    supabase.respondWith(
+      liveVideoRoutes([
+        createSavedLiveVideo({
           twitch_video: { twitch_video_id: 'vod-1', type: 'archive' },
         }),
-      ],
-    })
-    const { fetcher } = createFetcher({ archives: [createVideo()] })
+      ]),
+    )
+    const { fetcher } = createFakeTwitchFetcher({ archives: [createVideo()] })
 
     await syncTwitchLive(createContext(fetcher))
 
@@ -398,15 +320,15 @@ describe('syncTwitchLive', () => {
   })
 
   it('still ends broadcasts of accounts that are no longer crawled', async () => {
-    mockDatabase({
-      savedLiveVideos: [
-        createLiveVideo(
+    supabase.respondWith(
+      liveVideoRoutes([
+        createSavedLiveVideo(
           { twitch_video: { stream_id: 'stream-9' } },
           'twitch-user-9',
         ),
-      ],
-    })
-    const { getLiveStreams, fetcher } = createFetcher({})
+      ]),
+    )
+    const { getLiveStreams, fetcher } = createFakeTwitchFetcher()
 
     await syncTwitchLive(createContext(fetcher))
 
@@ -420,8 +342,8 @@ describe('syncTwitchLive', () => {
   })
 
   it('ends a broadcast whose account is gone without asking Twitch', async () => {
-    mockDatabase({ savedLiveVideos: [createLiveVideo({}, null)] })
-    const { getRecentVideos, fetcher } = createFetcher({})
+    supabase.respondWith(liveVideoRoutes([createSavedLiveVideo({}, null)]))
+    const { getRecentVideos, fetcher } = createFakeTwitchFetcher()
 
     await syncTwitchLive(createContext(fetcher))
 
@@ -432,13 +354,13 @@ describe('syncTwitchLive', () => {
   })
 
   it('quietly skips a stream another run started tracking first', async () => {
-    mockDatabase({
-      write: ({ method, table }) =>
-        method === 'POST' && table === 'twitch_videos'
-          ? postgresError('23505', 'duplicate key value')
-          : [],
+    supabase.respondWith({
+      ...liveVideoRoutes(),
+      'POST twitch_videos': () => postgresError('23505', 'duplicate key value'),
     })
-    const { fetcher } = createFetcher({ liveStreams: [createStream()] })
+    const { fetcher } = createFakeTwitchFetcher({
+      liveStreams: [createStream()],
+    })
 
     const changed = await syncTwitchLive(createContext(fetcher))
 
@@ -447,20 +369,20 @@ describe('syncTwitchLive', () => {
   })
 
   it('reports a broadcast that could not be ended and handles the rest', async () => {
-    mockDatabase({
-      savedLiveVideos: [
-        createLiveVideo(),
-        createLiveVideo({
+    supabase.respondWith({
+      ...liveVideoRoutes([
+        createSavedLiveVideo(),
+        createSavedLiveVideo({
           id: 'video-2',
           twitch_video: { id: 'twitch-row-2', stream_id: 'stream-2' },
         }),
-      ],
-      write: ({ query }) =>
+      ]),
+      'PATCH videos': ({ query }) =>
         query['id'] === 'eq.video-1'
           ? postgresError('40001', 'could not serialize access')
           : [],
     })
-    const { fetcher } = createFetcher({})
+    const { fetcher } = createFakeTwitchFetcher()
 
     const changed = await syncTwitchLive(createContext(fetcher))
 

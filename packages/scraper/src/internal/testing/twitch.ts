@@ -1,9 +1,39 @@
 import type {
   TwitchClip,
   TwitchStream,
+  TwitchUser,
   TwitchVideo,
 } from '@shinju-date/twitch-api-client'
 import type { SavedTwitchVideo } from '../../twitch/saved-video.js'
+import type { SavedLiveVideo } from '../../twitch/sync-live.js'
+import type { SupabaseResponder, SupabaseRoutes } from './supabase.js'
+
+/** An active talent with one Twitch account, as the crawls load it. */
+export const TWITCH_TALENTS = [
+  {
+    id: 'talent-1',
+    twitch_users: [{ id: 'user-row-1', twitch_user_id: 'twitch-user-1' }],
+  },
+]
+
+/** Builds the Helix user `id` (Alice by default) for tests. */
+export function createUser(
+  id = 'twitch-user-1',
+  overrides: Partial<Omit<TwitchUser, 'id'>> = {},
+): TwitchUser {
+  return {
+    broadcaster_type: '',
+    created_at: '2020-01-01T00:00:00Z',
+    description: '',
+    display_name: 'Alice',
+    id,
+    login: 'alice',
+    offline_image_url: '',
+    profile_image_url: '',
+    type: '',
+    ...overrides,
+  }
+}
 
 /** Builds a Helix stream with sensible defaults for tests. */
 export function createStream(
@@ -103,5 +133,74 @@ export function createSavedVideo({
       type: null,
       ...twitchVideo,
     },
+  }
+}
+
+/** Builds a saved archive that matches `createVideo()` exactly. */
+export function createSavedArchive({
+  twitch_video: twitchVideo,
+  ...overrides
+}: SavedVideoOverrides = {}): SavedTwitchVideo {
+  return createSavedVideo({
+    duration: 'PT2H',
+    status: 'ENDED',
+    thumbnail_id: 'thumb-1',
+    title: 'Archive',
+    ...overrides,
+    twitch_video: {
+      twitch_video_id: 'vod-1',
+      type: 'archive',
+      ...twitchVideo,
+    },
+  })
+}
+
+/**
+ * Builds a saved row shown as LIVE, with the Twitch user it belongs to
+ * (`null` when the account is gone).
+ */
+export function createSavedLiveVideo(
+  overrides: SavedVideoOverrides = {},
+  twitchUserId: string | null = 'twitch-user-1',
+): SavedLiveVideo {
+  return { ...createSavedVideo(overrides), twitchUserId }
+}
+
+/**
+ * Answers the lookup of saved rows by stream ID or Twitch video ID
+ * (`GET twitch_videos`) with the matching ones among `savedVideos`.
+ */
+export function findSavedVideos(
+  savedVideos: readonly SavedTwitchVideo[],
+): SupabaseResponder {
+  return ({ query }) => {
+    const column = query['stream_id'] ? 'stream_id' : 'twitch_video_id'
+    const ids = (query[column] ?? '').slice(4, -1).split(',')
+
+    return savedVideos
+      .filter((saved) => ids.includes(String(saved.twitch_video[column])))
+      .map(({ twitch_video, ...video }) => ({ ...twitch_video, video }))
+  }
+}
+
+/**
+ * Routes of a database in which the active talent of `TWITCH_TALENTS`
+ * has `savedLiveVideos` shown as LIVE.
+ */
+export function liveVideoRoutes(
+  savedLiveVideos: readonly SavedLiveVideo[] = [],
+): SupabaseRoutes {
+  return {
+    'GET talents': TWITCH_TALENTS,
+    'GET twitch_videos': findSavedVideos(savedLiveVideos),
+    'GET videos': savedLiveVideos.map(
+      ({ twitch_video, twitchUserId, ...video }) => ({
+        ...video,
+        twitch_video: {
+          ...twitch_video,
+          twitch_user: twitchUserId ? { twitch_user_id: twitchUserId } : null,
+        },
+      }),
+    ),
   }
 }
