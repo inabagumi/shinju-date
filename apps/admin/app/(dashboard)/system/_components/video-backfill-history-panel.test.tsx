@@ -1,8 +1,9 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ActionToastProvider } from '@/components/action-toast'
 import type {
   VideoBackfillFailure,
+  VideoBackfillHistory,
   VideoBackfillHistoryEntry,
 } from '../_actions/video-backfill-history'
 
@@ -58,13 +59,24 @@ function createFailure(
   }
 }
 
+function renderPanel(
+  history: Partial<Omit<VideoBackfillHistory, 'success'>> = {},
+) {
+  return render(
+    <VideoBackfillHistoryPanel
+      initialData={{ entries: [], failures: [], success: true, ...history }}
+    />,
+    { wrapper: ActionToastProvider },
+  )
+}
+
 describe('VideoBackfillHistoryPanel', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('shows what past backfills did and who requested them', async () => {
-    mocks.getVideoBackfillHistoryAction.mockResolvedValue({
+  it('shows what past backfills did and who requested them', () => {
+    renderPanel({
       entries: [
         createEntry(),
         createEntry({
@@ -78,14 +90,10 @@ describe('VideoBackfillHistoryPanel', () => {
           status: 'failed',
         }),
       ],
-      failures: [],
-      success: true,
     })
 
-    render(<VideoBackfillHistoryPanel />, { wrapper: ActionToastProvider })
-
     expect(
-      await screen.findByText(
+      screen.getByText(
         '12件追加 · 3ページ · admin@example.comが全タレントのチェックで依頼',
       ),
     ).toBeTruthy()
@@ -97,44 +105,73 @@ describe('VideoBackfillHistoryPanel', () => {
     expect(
       screen.getByRole('button', { name: '失敗したジョブを再試行' }),
     ).toHaveProperty('disabled', true)
+    expect(mocks.getVideoBackfillHistoryAction).not.toHaveBeenCalled()
+  })
+
+  it('tells that there is no history yet', () => {
+    renderPanel()
+
+    expect(
+      screen.getByText('終了した過去動画の取り込みはまだありません。'),
+    ).toBeTruthy()
+  })
+
+  it('lists the accounts whose latest backfill failed', () => {
+    renderPanel({
+      failures: [
+        createFailure(),
+        createFailure({
+          accountId: 'channel-row-2',
+          active: true,
+          name: 'Main',
+          provider: 'youtube',
+        }),
+      ],
+    })
+
+    const failures = screen.getByRole('region', {
+      name: '最後の取り込みが失敗したアカウント',
+    })
+
+    expect(
+      within(failures).getByText(/最後の取り込みが失敗したアカウント: 2件/),
+    ).toBeTruthy()
+    expect(within(failures).getByText(/再試行中: 1件/)).toBeTruthy()
+    expect(within(failures).getAllByText('quota exceeded')).toHaveLength(2)
+    // The account that is retried shows that instead of when it failed.
+    expect(within(failures).getByText('再試行中')).toBeTruthy()
   })
 
   it('confirms before retrying the failed jobs at once', async () => {
-    mocks.getVideoBackfillHistoryAction
-      .mockResolvedValueOnce({
-        entries: [],
-        failures: [
-          createFailure(),
-          createFailure({
-            accountId: 'channel-row-2',
-            active: true,
-            name: 'Main',
-            provider: 'youtube',
-          }),
-        ],
-        success: true,
-      })
-      .mockResolvedValue({ entries: [], failures: [], success: true })
+    mocks.getVideoBackfillHistoryAction.mockResolvedValue({
+      entries: [],
+      failures: [createFailure({ active: true })],
+      success: true,
+    })
     mocks.retryFailedVideoBackfillJobsAction.mockResolvedValue({
       message: '失敗した過去動画の取り込みを1件キューに追加しました。',
       success: true,
     })
 
-    render(<VideoBackfillHistoryPanel />, { wrapper: ActionToastProvider })
-
-    expect(
-      await screen.findByText(/最後の取り込みが失敗したアカウント: 2件/),
-    ).toBeTruthy()
-    expect(screen.getByText(/再試行中: 1件/)).toBeTruthy()
+    renderPanel({
+      failures: [
+        createFailure(),
+        createFailure({
+          accountId: 'channel-row-2',
+          active: true,
+          name: 'Main',
+          provider: 'youtube',
+        }),
+      ],
+    })
 
     const button = screen.getByRole('button', {
       name: '失敗したジョブを再試行',
     })
 
-    await waitFor(() => expect(button).toHaveProperty('disabled', false))
     fireEvent.click(button)
 
-    const dialog = await screen.findByRole('dialog')
+    const dialog = screen.getByRole('dialog')
 
     expect(dialog.textContent).toContain('1件のアカウント')
     expect(mocks.retryFailedVideoBackfillJobsAction).not.toHaveBeenCalled()
@@ -147,57 +184,11 @@ describe('VideoBackfillHistoryPanel', () => {
       ),
     ).toBeTruthy()
     expect(mocks.retryFailedVideoBackfillJobsAction).toHaveBeenCalledOnce()
-    expect(mocks.getVideoBackfillHistoryAction).toHaveBeenCalledTimes(2)
-  })
 
-  it('keeps refreshing while failed accounts are retried', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true })
-
-    try {
-      mocks.getVideoBackfillHistoryAction
-        .mockResolvedValueOnce({
-          entries: [],
-          failures: [createFailure({ active: true })],
-          success: true,
-        })
-        .mockResolvedValue({
-          entries: [createEntry({ provider: 'twitch' })],
-          failures: [],
-          success: true,
-        })
-
-      render(<VideoBackfillHistoryPanel />, { wrapper: ActionToastProvider })
-
-      expect(await screen.findByText('再試行中')).toBeTruthy()
-
-      await vi.advanceTimersByTimeAsync(15_000)
-
-      await waitFor(() => expect(screen.queryByText('再試行中')).toBeNull())
-      expect(mocks.getVideoBackfillHistoryAction).toHaveBeenCalledTimes(2)
-
-      await vi.advanceTimersByTimeAsync(15_000)
-
-      // Nothing is retried any more, so the history is no longer refreshed.
-      expect(mocks.getVideoBackfillHistoryAction).toHaveBeenCalledTimes(2)
-    } finally {
-      vi.useRealTimers()
-    }
-  })
-
-  it('offers a reload when the history cannot be loaded', async () => {
-    mocks.getVideoBackfillHistoryAction
-      .mockResolvedValueOnce({ error: 'permission denied', success: false })
-      .mockResolvedValueOnce({
-        entries: [createEntry()],
-        failures: [],
-        success: true,
-      })
-
-    render(<VideoBackfillHistoryPanel />, { wrapper: ActionToastProvider })
-
-    fireEvent.click(await screen.findByRole('button', { name: '再試行' }))
-
-    expect(await screen.findByText('Alice')).toBeTruthy()
-    expect(screen.queryByText('permission denied')).toBeNull()
+    // Every failed account is retried now, so nothing is left to request.
+    expect(
+      await screen.findByText(/最後の取り込みが失敗したアカウント: 1件/),
+    ).toBeTruthy()
+    expect(button).toHaveProperty('disabled', true)
   })
 })

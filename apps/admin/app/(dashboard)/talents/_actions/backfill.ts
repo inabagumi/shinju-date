@@ -2,20 +2,17 @@
 
 import { logger } from '@shinju-date/logger'
 import {
-  type BackfillJobStatus,
   type BackfillProvider,
   BackfillQueue,
+  type BackfillRunJobStatus,
   getBackfillJobId,
+  getBackfillRunJobStatus,
 } from '@shinju-date/video-backfill'
+import { PLATFORM_LABELS } from '@/components/platform-badge'
 import { createAuditLog } from '@/lib/audit-log'
 import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
 import { getRedisClient } from '@/lib/redis'
 import type { TypedSupabaseClient } from '@/lib/supabase'
-
-const PROVIDER_LABELS: Record<BackfillProvider, string> = {
-  twitch: 'Twitch',
-  youtube: 'YouTube',
-}
 
 /** Progress of the backfill of one account of a talent. */
 export interface VideoBackfillAccount {
@@ -32,9 +29,18 @@ export interface VideoBackfillAccount {
   pages: number
   provider: BackfillProvider
   requestedAt: string | null
-  /** `null` when the account was never backfilled (or it was long ago). */
-  status: BackfillJobStatus | null
+  /**
+   * `interrupted` when the job stopped without finishing; `null` when the
+   * account was never backfilled (or it was long ago).
+   */
+  status: BackfillRunJobStatus | null
   updatedAt: string | null
+}
+
+/** The accounts of a talent, with the progress of their backfills. */
+export interface VideoBackfillStatus {
+  accounts: VideoBackfillAccount[]
+  success: true
 }
 
 interface TalentAccounts {
@@ -114,7 +120,7 @@ export async function requestVideoBackfillAction(
     return { error: '不明なプラットフォームです。', success: false }
   }
 
-  const label = PROVIDER_LABELS[provider]
+  const label = PLATFORM_LABELS[provider]
 
   try {
     const talent = await getTalentAccounts(supabaseClient, talentId)
@@ -222,11 +228,9 @@ export async function requestVideoBackfillAction(
 /**
  * タレントの各アカウントの過去動画の取り込み状況を返す。
  */
-export async function getVideoBackfillStatusAction(talentId: string): Promise<{
-  success: boolean
-  accounts?: VideoBackfillAccount[]
-  error?: string
-}> {
+export async function getVideoBackfillStatusAction(
+  talentId: string,
+): Promise<VideoBackfillStatus | { error: string; success: false }> {
   const auth = await requireAuthenticatedUser()
 
   if (!auth) {
@@ -259,7 +263,9 @@ export async function getVideoBackfillStatusAction(talentId: string): Promise<{
           finishedAt: state?.job.finishedAt ?? null,
           pages: state?.job.pages ?? 0,
           requestedAt: state?.job.requestedAt ?? null,
-          status: state?.job.status ?? null,
+          status: state
+            ? getBackfillRunJobStatus(state.job.status, state.active)
+            : null,
           updatedAt: state?.job.updatedAt ?? null,
         }
       }),

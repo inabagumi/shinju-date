@@ -68,6 +68,13 @@ export interface VideoBackfillFailure {
   talentName: string
 }
 
+/** The backfills that finished, and the accounts whose latest one failed. */
+export interface VideoBackfillHistory {
+  entries: VideoBackfillHistoryEntry[]
+  failures: VideoBackfillFailure[]
+  success: true
+}
+
 interface LatestFailure {
   accountId: string
   error: string | null
@@ -155,12 +162,9 @@ async function getRequesterEmails(
  * - 失敗は `video_backfill_latest_jobs` で最後の取り込みが失敗したアカウント。削除されたアカウント・タレントは除く
  * - 失敗したアカウントのうち、再依頼されて待機中・処理中のものは `active` にする（Redis を読めないときは `false`）
  */
-export async function getVideoBackfillHistoryAction(): Promise<{
-  success: boolean
-  entries?: VideoBackfillHistoryEntry[]
-  error?: string
-  failures?: VideoBackfillFailure[]
-}> {
+export async function getVideoBackfillHistoryAction(): Promise<
+  VideoBackfillHistory | { error: string; success: false }
+> {
   const auth = await requireAuthenticatedUser()
 
   if (!auth) {

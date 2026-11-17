@@ -2,94 +2,40 @@
 
 import { formatNumber } from '@shinju-date/helpers'
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
-import { Badge, Button } from '@shinju-date/ui'
-import { Loader2 } from 'lucide-react'
+import { Button, Skeleton } from '@shinju-date/ui'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
+import { AsyncPanelBody } from '@/components/async-panel-body'
+import {
+  BackfillAccountRow,
+  BackfillAccountRowSkeleton,
+} from '@/components/backfill-account-row'
+import { BackfillStatusBadge } from '@/components/backfill-status-badge'
 import { ConfirmDialog } from '@/components/confirm-dialog'
-import { Panel } from '@/components/panel'
-import { useServerAction } from '@/lib/use-server-action'
+import { Panel, PanelSkeleton } from '@/components/panel'
+import { PLATFORM_LABELS } from '@/components/platform-badge'
+import { useBackfillRequest } from '@/lib/use-backfill-request'
+import { usePolledResource } from '@/lib/use-polled-resource'
 import {
   getVideoBackfillStatusAction,
   requestVideoBackfillAction,
-  type VideoBackfillAccount,
+  type VideoBackfillStatus,
 } from '../../_actions/backfill'
-
-type Provider = VideoBackfillAccount['provider']
 
 /** How often progress is refreshed while a job is queued or running. */
 const POLL_INTERVAL_MS = 5_000
 
-const PROVIDER_LABELS: Record<Provider, string> = {
-  twitch: 'Twitch',
-  youtube: 'YouTube',
-}
+const TITLE = '過去動画の取り込み'
+const DESCRIPTION =
+  'プラットフォーム上にあってデータベースにない過去の動画を、すべての履歴をさかのぼって取り込みます。登録済みの動画はそのまま残ります。'
 
-interface Props {
+const PROVIDERS = ['youtube', 'twitch'] as const
+
+interface VideoBackfillPanelProps {
+  /** サーバーコンポーネントで取得した、アカウントごとの取り込み状況 */
+  initialData: VideoBackfillStatus
   talentId: string
   talentName: string
-  hasYouTubeChannels: boolean
-  hasTwitchUsers: boolean
-}
-
-function StatusBadge({ account }: { account: VideoBackfillAccount }) {
-  if (account.status === null) {
-    return <Badge variant="neutral">未実行</Badge>
-  }
-
-  if (
-    !account.active &&
-    (account.status === 'pending' || account.status === 'running')
-  ) {
-    return <Badge variant="warning">中断</Badge>
-  }
-
-  switch (account.status) {
-    case 'pending':
-      return <Badge variant="info">待機中</Badge>
-    case 'running':
-      return <Badge variant="info">取り込み中</Badge>
-    case 'done':
-      return <Badge variant="success">完了</Badge>
-    case 'failed':
-      return <Badge variant="danger">失敗</Badge>
-  }
-}
-
-function AccountRow({ account }: { account: VideoBackfillAccount }) {
-  return (
-    <li className="px-6 py-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate text-meta font-semibold">
-            <span className="mr-2 text-caption font-normal text-muted">
-              {PROVIDER_LABELS[account.provider]}
-            </span>
-            {account.name}
-          </p>
-          {account.status !== null && (
-            <p className="text-meta text-muted tabular-nums">
-              {formatNumber(account.added)}件追加 ·{' '}
-              {formatNumber(account.pages)}
-              ページ確認
-              {account.updatedAt && (
-                <>
-                  {' · '}
-                  <time dateTime={account.updatedAt}>
-                    {formatDateTimeFromISO(account.updatedAt)}
-                  </time>
-                </>
-              )}
-            </p>
-          )}
-          {account.error && (
-            <p className="text-meta text-danger">{account.error}</p>
-          )}
-        </div>
-        <StatusBadge account={account} />
-      </div>
-    </li>
-  )
 }
 
 /**
@@ -97,204 +43,124 @@ function AccountRow({ account }: { account: VideoBackfillAccount }) {
  * キューに追加し、その進捗を表示する。取り込みはバッチが非同期に行う。
  */
 export function VideoBackfillPanel({
+  initialData,
   talentId,
   talentName,
-  hasYouTubeChannels,
-  hasTwitchUsers,
-}: Props) {
+}: VideoBackfillPanelProps) {
   const router = useRouter()
-  const [accounts, setAccounts] = useState<VideoBackfillAccount[] | null>(null)
-  const [pendingProvider, setPendingProvider] = useState<Provider | null>(null)
-  // Why the progress could not be loaded; shown with a retry button.
-  const [loadError, setLoadError] = useState<string | null>(null)
-  const previousAdded = useRef<number | null>(null)
-  // Kept after the dialog closes so that its content stays while it fades out.
-  const [confirmProvider, setConfirmProvider] = useState<Provider | null>(null)
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const { data, error, reload } = usePolledResource({
+    fetcher: () => getVideoBackfillStatusAction(talentId),
+    initialData,
+    intervalMs: POLL_INTERVAL_MS,
+    isActive: ({ accounts }) => accounts.some((account) => account.active),
+  })
+  const request = useBackfillRequest(requestVideoBackfillAction, reload)
 
-  const refresh = useCallback(async () => {
-    let result: Awaited<ReturnType<typeof getVideoBackfillStatusAction>>
+  const { accounts } = data
+  const added = accounts.reduce((total, account) => total + account.added, 0)
+  const previousAdded = useRef(added)
 
-    try {
-      result = await getVideoBackfillStatusAction(talentId)
-    } catch {
-      result = { success: false }
-    }
-
-    if (!result.success || !result.accounts) {
-      setLoadError(result.error ?? '取り込み状況を取得できませんでした。')
-      return
-    }
-
-    setLoadError(null)
-
-    const added = result.accounts.reduce(
-      (total, account) => total + account.added,
-      0,
-    )
-
-    // Show the videos that were just added in the list below.
-    if (previousAdded.current !== null && added > previousAdded.current) {
+  // Show the videos that were just added in the list below.
+  useEffect(() => {
+    if (added > previousAdded.current) {
       router.refresh()
     }
 
     previousAdded.current = added
-    setAccounts(result.accounts)
-  }, [router, talentId])
+  }, [added, router])
 
-  const hasActiveJobs = accounts?.some((account) => account.active) ?? false
-
-  useEffect(() => {
-    void refresh()
-  }, [refresh])
-
-  useEffect(() => {
-    if (!hasActiveJobs) {
-      return
-    }
-
-    const timer = setInterval(() => {
-      void refresh()
-    }, POLL_INTERVAL_MS)
-
-    return () => clearInterval(timer)
-  }, [hasActiveJobs, refresh])
-
-  const getConfirmMessage = (provider: Provider) => {
-    const label = PROVIDER_LABELS[provider]
-    const count =
-      accounts?.filter((account) => account.provider === provider).length ?? 0
-
-    return `「${talentName}」の${label}アカウント${count > 0 ? `（${count}件）` : ''}の過去動画をすべて確認し、未登録の動画を取り込みますか？\n処理はバックグラウンドで順番に行われます。`
-  }
-
-  const { run: requestBackfill } = useServerAction(requestVideoBackfillAction, {
-    errorText: 'キューへの追加に失敗しました。',
-    successText: (result) => result.message ?? 'キューに追加しました。',
-  })
-
-  // Keep the button busy until the progress shows the queued jobs.
-  const request = async (provider: Provider) => {
-    setPendingProvider(provider)
-    await requestBackfill(talentId, provider)
-    await refresh()
-    setPendingProvider(null)
-  }
-
-  /**
-   * Whether every account of the platform is queued or being read. While only
-   * some are, the others can still be requested: the request skips the ones
-   * that are active.
-   */
-  const isProviderActive = (provider: Provider) => {
-    const providerAccounts =
-      accounts?.filter((account) => account.provider === provider) ?? []
-
-    return (
-      providerAccounts.length > 0 &&
-      providerAccounts.every((account) => account.active)
-    )
-  }
-
-  const confirmTargets =
-    accounts?.filter((account) => account.provider === confirmProvider) ?? []
-
-  if (!hasYouTubeChannels && !hasTwitchUsers) {
+  if (accounts.length === 0) {
     return null
   }
 
   return (
     <Panel
-      actions={(['youtube', 'twitch'] as const)
-        .filter((provider) =>
-          provider === 'youtube' ? hasYouTubeChannels : hasTwitchUsers,
+      actions={PROVIDERS.map((provider) => {
+        const label = PLATFORM_LABELS[provider]
+        const targets = accounts.filter(
+          (account) => account.provider === provider,
         )
-        .map((provider) => (
-          <Button
-            className="whitespace-nowrap"
-            disabled={
-              pendingProvider !== null ||
-              accounts === null ||
-              isProviderActive(provider)
-            }
+        // While only some accounts are queued or being read, the others can
+        // still be requested: the request skips the ones that are active.
+        const isActive = targets.every((account) => account.active)
+
+        if (targets.length === 0) {
+          return null
+        }
+
+        return (
+          <ConfirmDialog
+            confirmLabel="取り込む"
+            description={`「${talentName}」の${label}アカウント（${targets.length}件）の過去動画をすべて確認し、未登録の動画を取り込みますか？\n処理はバックグラウンドで順番に行われます。`}
             key={provider}
-            onClick={() => {
-              setConfirmProvider(provider)
-              setIsConfirmOpen(true)
-            }}
-            variant="secondary"
-          >
-            {pendingProvider === provider && (
-              <Loader2
-                aria-hidden="true"
-                className="mr-2 size-4 animate-spin"
-              />
-            )}
-            {isProviderActive(provider)
-              ? `${PROVIDER_LABELS[provider]}: 実行中`
-              : `${PROVIDER_LABELS[provider]}の過去動画を取り込む`}
-          </Button>
-        ))}
-      description="プラットフォーム上にあってデータベースにない過去の動画を、すべての履歴をさかのぼって取り込みます。登録済みの動画はそのまま残ります。"
-      title="過去動画の取り込み"
-    >
-      {accounts !== null && loadError && (
-        <div className="mb-4 rounded-control bg-danger/10 p-3 text-meta text-danger">
-          {loadError}
-        </div>
-      )}
-      <div className="-mx-6 -mb-6 border-t border-border">
-        {accounts === null ? (
-          loadError ? (
-            <div className="flex flex-col items-center gap-3 px-4 py-6 text-meta text-danger">
-              <p>{loadError}</p>
+            onConfirm={() => request(talentId, provider)}
+            pendingLabel="追加中..."
+            title={TITLE}
+            trigger={
               <Button
-                onClick={() => {
-                  setLoadError(null)
-                  void refresh()
-                }}
-                size="sm"
+                className="whitespace-nowrap"
+                disabled={isActive}
                 variant="secondary"
               >
-                再試行
+                {isActive ? `${label}: 実行中` : `${label}の過去動画を取り込む`}
               </Button>
-            </div>
-          ) : (
-            <div className="px-4 py-6 text-center text-meta text-muted">
-              読み込み中...
-            </div>
-          )
-        ) : (
-          <ul className="divide-y divide-border">
-            {accounts.map((account) => (
-              <AccountRow
-                account={account}
-                key={`${account.provider}:${account.accountId}`}
-              />
-            ))}
-          </ul>
-        )}
-      </div>
-      <ConfirmDialog
-        confirmLabel="取り込む"
-        description={confirmProvider ? getConfirmMessage(confirmProvider) : ''}
-        onConfirm={() => {
-          if (confirmProvider) {
-            void request(confirmProvider)
-          }
-        }}
-        onOpenChange={setIsConfirmOpen}
-        open={isConfirmOpen}
-        title="過去動画の取り込み"
-      >
-        {confirmTargets.length > 0 && (
-          <ul className="space-y-1">
-            {confirmTargets.map((account) => (
-              <li key={account.accountId}>{account.name}</li>
-            ))}
-          </ul>
-        )}
-      </ConfirmDialog>
+            }
+          >
+            <ul className="space-y-1">
+              {targets.map((account) => (
+                <li key={account.accountId}>{account.name}</li>
+              ))}
+            </ul>
+          </ConfirmDialog>
+        )
+      })}
+      description={DESCRIPTION}
+      title={TITLE}
+    >
+      <AsyncPanelBody error={error} onRetry={reload}>
+        <ul className="-mx-6 -mb-6 divide-y divide-border border-t border-border">
+          {accounts.map((account) => (
+            <BackfillAccountRow
+              aside={<BackfillStatusBadge status={account.status} />}
+              error={account.error}
+              key={`${account.provider}:${account.accountId}`}
+              name={account.name}
+              provider={account.provider}
+            >
+              {account.status !== null && (
+                <p className="text-meta text-muted tabular-nums">
+                  {formatNumber(account.added)}件追加 ·{' '}
+                  {formatNumber(account.pages)}
+                  ページ確認
+                  {account.updatedAt && (
+                    <>
+                      {' · '}
+                      <time dateTime={account.updatedAt}>
+                        {formatDateTimeFromISO(account.updatedAt)}
+                      </time>
+                    </>
+                  )}
+                </p>
+              )}
+            </BackfillAccountRow>
+          ))}
+        </ul>
+      </AsyncPanelBody>
     </Panel>
+  )
+}
+
+/** 読み込み中の `VideoBackfillPanel`。アカウント1件ぶんの行を置く */
+export function VideoBackfillPanelSkeleton() {
+  return (
+    <PanelSkeleton
+      actions={<Skeleton className="h-9 w-56" />}
+      description={DESCRIPTION}
+      title={TITLE}
+    >
+      <ul className="-mx-6 -mb-6 border-t border-border">
+        <BackfillAccountRowSkeleton />
+      </ul>
+    </PanelSkeleton>
   )
 }

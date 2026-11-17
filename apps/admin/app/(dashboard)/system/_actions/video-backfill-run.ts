@@ -54,6 +54,14 @@ export interface VideoBackfillTargets {
   youtube: number
 }
 
+/** The targets of a check, with the progress of the latest one. */
+export interface VideoBackfillRunState {
+  /** `null` when there was no check (or it was long ago). */
+  run: VideoBackfillRun | null
+  success: true
+  targets: VideoBackfillTargets
+}
+
 function countTargets(
   targets: readonly BackfillAccount[],
 ): VideoBackfillTargets {
@@ -176,13 +184,9 @@ export async function requestVideoBackfillRunAction(): Promise<{
 /**
  * 全タレントの取得漏れチェックの対象数と、最新のチェックの進捗を返す。
  */
-export async function getVideoBackfillRunAction(): Promise<{
-  success: boolean
-  error?: string
-  /** `null` when there was no check (or it was long ago). */
-  run?: VideoBackfillRun | null
-  targets?: VideoBackfillTargets
-}> {
+export async function getVideoBackfillRunAction(): Promise<
+  VideoBackfillRunState | { error: string; success: false }
+> {
   const auth = await requireAuthenticatedUser()
 
   if (!auth) {

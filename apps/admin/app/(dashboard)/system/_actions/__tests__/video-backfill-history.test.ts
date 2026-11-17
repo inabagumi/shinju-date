@@ -132,7 +132,7 @@ describe('getVideoBackfillHistoryAction', () => {
     const result = await getVideoBackfillHistoryAction()
 
     expect(result.success).toBe(true)
-    expect(result.entries).toEqual([
+    expect(result).toHaveProperty('entries', [
       {
         accountId: 'channel-row-1',
         added: 12,
@@ -166,7 +166,7 @@ describe('getVideoBackfillHistoryAction', () => {
       'twitch:twitch-row-1',
       'youtube:channel-row-2',
     ])
-    expect(result.failures).toEqual([
+    expect(result).toHaveProperty('failures', [
       {
         accountId: 'twitch-row-1',
         active: true,
@@ -191,11 +191,10 @@ describe('getVideoBackfillHistoryAction', () => {
 
     const result = await getVideoBackfillHistoryAction()
 
-    expect(result.success).toBe(true)
-    expect(result.failures?.map((failure) => failure.active)).toEqual([
-      false,
-      false,
-    ])
+    expect(result).toMatchObject({
+      failures: [{ active: false }, { active: false }],
+      success: true,
+    })
   })
 
   it('reports a history that cannot be loaded', async () => {
