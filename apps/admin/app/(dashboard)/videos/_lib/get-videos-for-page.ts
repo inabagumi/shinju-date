@@ -4,12 +4,15 @@ import {
   defaultVideoSearchParams,
   videoSearchParamsSchema,
 } from './search-params-schema'
+import type { VideoSort } from './video-sort'
 
 /** 動画一覧の1ページに出す動画の数 */
 export const VIDEOS_PER_PAGE = 20
 
 export interface VideosForPage {
   currentPage: number
+  /** 検証したあとの並べ替え。見出しのリンクを作るのに使う */
+  sort: VideoSort
   total: number
   totalPages: number
   videos: Video[]
@@ -40,6 +43,7 @@ export async function getVideosForPage(
 
   return {
     currentPage: page,
+    sort: { field: sortField, order: sortOrder },
     total,
     totalPages: Math.ceil(total / VIDEOS_PER_PAGE),
     videos,

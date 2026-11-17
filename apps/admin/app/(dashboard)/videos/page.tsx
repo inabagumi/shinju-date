@@ -2,6 +2,7 @@ import { formatNumber } from '@shinju-date/helpers'
 import { PageHeader, Skeleton } from '@shinju-date/ui'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { toURLSearchParams } from '@/lib/search-params-href'
 import { getTalents } from '../talents/_lib/get-talents'
 import Pagination from './_components/pagination'
 import { VideoFilters, VideoFiltersSkeleton } from './_components/video-filters'
@@ -21,12 +22,18 @@ async function VideoFiltersData() {
 async function VideoTableData({
   searchParams,
 }: Pick<PageProps<'/videos'>, 'searchParams'>) {
-  const { currentPage, totalPages, videos } =
-    await getVideosForPage(searchParams)
+  const [{ currentPage, sort, totalPages, videos }, query] = await Promise.all([
+    getVideosForPage(searchParams),
+    searchParams,
+  ])
 
   return (
     <>
-      <VideoList videos={videos} />
+      <VideoList
+        searchParams={toURLSearchParams(query)}
+        sort={sort}
+        videos={videos}
+      />
       {totalPages > 1 && (
         <Pagination currentPage={currentPage} totalPages={totalPages} />
       )}

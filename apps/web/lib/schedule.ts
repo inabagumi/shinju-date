@@ -137,7 +137,7 @@ export const DEFAULT_LENGTH_MINUTES = 60
 export const MIN_LENGTH_MINUTES = 30
 
 interface PlacedVideo {
-  duration: string | null
+  duration: string
   published_at: string
   status: string
 }
@@ -149,7 +149,7 @@ interface PlacedVideo {
  */
 export function getLengthMinutes(video: PlacedVideo): number {
   if (video.status === 'ENDED' || video.status === 'PUBLISHED') {
-    const minutes = Temporal.Duration.from(video.duration ?? 'PT0S').total({
+    const minutes = Temporal.Duration.from(video.duration).total({
       unit: 'minute',
     })
 
