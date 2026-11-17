@@ -1,11 +1,15 @@
 'use server'
 
 import { COOKIE_NAMES } from '@shinju-date/constants'
-import type { Tables } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
-import { toDBString } from '@shinju-date/temporal-fns'
 import { cookies } from 'next/headers'
-import { fetchActiveTalents, type Talent } from '@/lib/fetchers'
+import { selectCurrentAnnouncement } from '@/lib/announcement'
+import {
+  type Announcement,
+  fetchActiveAnnouncements,
+  fetchActiveTalents,
+  type Talent,
+} from '@/lib/fetchers'
 import { getDisplayRecommendationQueries } from '@/lib/recommendations/get-display-queries'
 import { supabaseClient } from '@/lib/supabase'
 import {
@@ -15,34 +19,21 @@ import {
 
 const ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
-export type Announcement = Pick<
-  Tables<'announcements'>,
-  'end_at' | 'id' | 'level' | 'message' | 'start_at'
->
-
 /**
  * Get the currently active announcement
+ * When the periods of some announcements overlap, the newest one is returned.
  * Returns null if no announcement is active
  */
 export async function getAnnouncement(): Promise<Announcement | null> {
-  const now = Temporal.Now.instant()
+  try {
+    const announcements = await fetchActiveAnnouncements()
 
-  const { data, error } = await supabaseClient
-    .from('announcements')
-    .select('id, message, level, start_at, end_at')
-    .eq('enabled', true)
-    .lte('start_at', toDBString(now))
-    .gte('end_at', toDBString(now))
-    .order('created_at', { ascending: false })
-    .maybeSingle()
-
-  if (error) {
+    return selectCurrentAnnouncement(announcements, Temporal.Now.instant())
+  } catch (error) {
     logger.error('Failed to fetch announcement', { error })
 
     return null
   }
-
-  return data
 }
 
 /**
