@@ -28,11 +28,24 @@ export const RADII = ['control', 'container'] as const
 export const SHADOWS = ['overlay'] as const
 
 /**
+ * `theme.css` で追加したフォーカスの見た目（`@utility`）。どれも同じ部品に
+ * 1つだけ付けるものなので、後から渡したもので置き換える。
+ */
+export const FOCUS_RINGS = [
+  'focus-ring',
+  'field-focus-ring',
+  'field-focus-ring-danger',
+] as const
+
+/**
  * `theme.css` の追加分を登録した `twMerge`。`tailwind-merge` から直接
  * インポートせず、`@shinju-date/ui` からインポートして使う。
  */
-export const twMerge = extendTailwindMerge({
+export const twMerge = extendTailwindMerge<'focus-ring'>({
   extend: {
+    classGroups: {
+      'focus-ring': [...FOCUS_RINGS],
+    },
     theme: {
       container: [...CONTAINERS],
       radius: [...RADII],

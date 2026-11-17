@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest'
 
 // WCAG 2.x の本文の基準（AA）
 const MIN_CONTRAST_RATIO = 4.5
+// WCAG 2.x の、文字以外（フォーカスの線など）の基準（AA）
+const MIN_NON_TEXT_CONTRAST_RATIO = 3
 
 const DARK_MODE_QUERY = '@media (prefers-color-scheme: dark)'
 const SEMANTIC_COLORS_START = '@theme static'
@@ -193,6 +195,8 @@ const ALERT_TINTED_COLORS = [
   '--color-success',
   '--color-warning',
 ]
+// フォーカスの線（theme.css の `focus-ring` などの `@utility`）の色
+const FOCUS_RING_COLORS = ['--color-accent', '--color-danger']
 const FOREGROUND_PAIRS = [
   ['--color-accent-foreground', '--color-accent'],
   ['--color-live-foreground', '--color-live'],
@@ -279,6 +283,22 @@ describe('semantic colors', () => {
         expect(
           contrastRatio(resolveColor(colors, '--color-foreground'), background),
         ).toBeGreaterThanOrEqual(MIN_CONTRAST_RATIO)
+      },
+    )
+
+    const focusRingCombinations = GROUNDS.flatMap((ground) =>
+      FOCUS_RING_COLORS.map((color) => [color, ground] as const),
+    )
+
+    it.each(focusRingCombinations)(
+      `focus ring in %s on %s has a contrast ratio of at least ${MIN_NON_TEXT_CONTRAST_RATIO}:1`,
+      (color, ground) => {
+        expect(
+          contrastRatio(
+            resolveColor(colors, color),
+            resolveColor(colors, ground),
+          ),
+        ).toBeGreaterThanOrEqual(MIN_NON_TEXT_CONTRAST_RATIO)
       },
     )
 

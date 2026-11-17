@@ -112,7 +112,7 @@ export async function ScheduleWeekdayBand({
         {getWeekDays(weekStart).map((date) => (
           <li key={date.toString()}>
             <a
-              className="flex flex-col items-center rounded-control py-1 text-meta tabular-nums hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="flex flex-col items-center rounded-control py-1 text-meta tabular-nums focus-ring hover:bg-muted"
               href={`#${getDayId(date)}`}
             >
               <span className="text-caption text-muted">

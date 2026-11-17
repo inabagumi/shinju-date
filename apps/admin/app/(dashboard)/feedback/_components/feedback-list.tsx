@@ -141,7 +141,7 @@ export function FeatureRequestList({
                   </TableCell>
                   <TableCell className="min-w-64 whitespace-normal">
                     <Link
-                      className={`line-clamp-2 max-w-text rounded-control hover:text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
+                      className={`line-clamp-2 max-w-text rounded-control focus-ring hover:text-accent hover:underline ${
                         item.is_read ? '' : 'font-semibold'
                       }`}
                       href={`/feedback/${item.id}`}

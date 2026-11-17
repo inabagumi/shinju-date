@@ -13,7 +13,7 @@ interface BackLinkProps {
 export function BackLink({ children, href }: BackLinkProps) {
   return (
     <Link
-      className="inline-flex items-center gap-1 rounded-control text-meta text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="inline-flex items-center gap-1 rounded-control text-meta text-accent focus-ring hover:underline"
       href={href}
     >
       <ChevronLeft aria-hidden="true" className="size-4" />

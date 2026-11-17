@@ -189,10 +189,7 @@ export function CheckboxField({
           {...props}
           aria-describedby={errorId}
           aria-invalid={error ? true : undefined}
-          className={twMerge(
-            'size-4 accent-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
-            className,
-          )}
+          className={twMerge('size-4 accent-accent focus-ring', className)}
           id={inputId}
           type="checkbox"
         />

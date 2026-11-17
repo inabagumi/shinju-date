@@ -1,7 +1,14 @@
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { describe, expect, it } from 'vitest'
-import { CONTAINERS, FONT_SIZES, RADII, SHADOWS, twMerge } from './tw-merge'
+import {
+  CONTAINERS,
+  FOCUS_RINGS,
+  FONT_SIZES,
+  RADII,
+  SHADOWS,
+  twMerge,
+} from './tw-merge'
 
 const require = createRequire(import.meta.url)
 const themeCSS = readFileSync(
@@ -35,6 +42,23 @@ describe('twMerge', () => {
 
   it('knows every shadow in theme.css', () => {
     expect([...SHADOWS].sort()).toEqual(extractThemeKeys('shadow'))
+  })
+
+  it('knows every focus ring in theme.css', () => {
+    const utilities = [
+      ...themeCSS.matchAll(/@utility ([\w-]*focus-ring[\w-]*)/g),
+    ]
+      .map(([, name]) => name)
+      .sort()
+
+    expect([...FOCUS_RINGS].sort()).toEqual(utilities)
+  })
+
+  it('replaces a focus ring with another one', () => {
+    expect(twMerge('field-focus-ring', 'field-focus-ring-danger')).toBe(
+      'field-focus-ring-danger',
+    )
+    expect(twMerge('focus-ring', 'field-focus-ring')).toBe('field-focus-ring')
   })
 
   it('keeps a font size together with a text color', () => {

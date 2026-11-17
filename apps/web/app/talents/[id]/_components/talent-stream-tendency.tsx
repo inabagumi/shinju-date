@@ -81,7 +81,7 @@ export function StreamTendency({ counts }: StreamTendencyProps) {
       {/* Browsers without `::details-content` cannot open it on wide screens,
           so they keep the line to open it */}
       <details className="group md:details-content:block md:details-content:[content-visibility:visible]">
-        <summary className="flex cursor-pointer list-none items-center gap-1 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent supports-[selector(::details-content)]:md:hidden [&::-webkit-details-marker]:hidden">
+        <summary className="flex cursor-pointer list-none items-center gap-1 rounded-control focus-ring supports-[selector(::details-content)]:md:hidden [&::-webkit-details-marker]:hidden">
           <ChevronRight
             aria-hidden="true"
             className="size-4 shrink-0 text-muted transition-transform group-open:rotate-90"

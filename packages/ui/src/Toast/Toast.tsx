@@ -57,7 +57,7 @@ export function ToastClose({
   return (
     <ToastPrimitive.Close
       className={twMerge(
-        'absolute top-2 right-2 rounded-control p-1 text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground focus:opacity-100 focus:ring-2 focus:ring-accent focus:outline-none',
+        'absolute top-2 right-2 rounded-control p-1 text-muted opacity-0 transition-opacity focus-ring group-hover:opacity-100 hover:text-foreground focus:opacity-100',
         className,
       )}
       {...props}
