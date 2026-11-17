@@ -166,10 +166,28 @@ describe('search exit tracking', () => {
       <Page tracker={{ hasResults: true, query: '歌' }} />,
     )
 
-    fireEvent(getByText('動画'), new MouseEvent('auxclick', { bubbles: true }))
+    fireEvent(
+      getByText('動画'),
+      new MouseEvent('auxclick', { bubbles: true, button: 1 }),
+    )
     navigate(rerender, '/about')
 
     expect(sendBeacon).not.toHaveBeenCalled()
+  })
+
+  test('does not treat opening the context menu of a video as opening it', () => {
+    const { getByText, rerender } = render(
+      <Page tracker={{ hasResults: true, query: '歌' }} />,
+    )
+
+    // 右ボタンでも `auxclick` が発火する
+    fireEvent(
+      getByText('動画'),
+      new MouseEvent('auxclick', { bubbles: true, button: 2 }),
+    )
+    navigate(rerender, '/about')
+
+    expect(getSentQueries()).toEqual(['歌'])
   })
 
   test('does not treat a click on another link as opening a video', () => {
