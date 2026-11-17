@@ -43,9 +43,9 @@ function nameOf(script: string): string {
  * their names. For mocks of Redis that cannot run Lua: {@link FakeRedis} and
  * the mock of Upstash in `@shinju-date/msw-handlers`.
  *
- * The tests in `src/__tests__/integration/` run against both real Redis and
- * {@link FakeRedis}, so an emulation that does not do what its script does
- * fails them.
+ * The tests of the queue (`describeOnEachRedis` in `test/redis.ts`) run
+ * against both real Redis and {@link FakeRedis}, so an emulation that does
+ * not do what its script does fails them.
  */
 export const SCRIPT_EMULATIONS: Readonly<Record<string, ScriptEmulation>> = {
   [nameOf(ENQUEUE_SCRIPT)]: (call, [job = '', queue = '', lock = ''], argv) => {

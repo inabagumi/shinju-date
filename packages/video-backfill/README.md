@@ -76,9 +76,9 @@ const progress = await runs.getLatest()
 
 ## テスト
 
-`src/__tests__/integration/` のテストは、同じ一式を、本物の Redis と、模倣（`FakeRedis`）の両方に対して実行します。Lua のスクリプトは本物の Redis で実行され、模倣のほうは、本物と同じ結果を返すことを確かめます。
+`BackfillQueue` と `BackfillRuns` のテスト（`src/queue.test.ts`、`src/runs.test.ts`）は、同じ一式を、本物の Redis と、模倣（`FakeRedis`）の両方に対して実行します（`test/redis.ts` の `describeOnEachRedis`）。Lua のスクリプトは本物の Redis で実行され、模倣のほうは、本物と同じ結果を返すことを確かめます。
 
-- 本物の Redis に対するテスト（`redis.test.ts`）は、`UPSTASH_REDIS_REST_URL` と `UPSTASH_REDIS_REST_TOKEN` が設定されているときだけ動きます。ないときはスキップします。CI では、`services` で Redis と Serverless Redis HTTP を起動して動かします
+- 本物の Redis に対するテストは、`UPSTASH_REDIS_REST_URL` と `UPSTASH_REDIS_REST_TOKEN` が設定されているときだけ動きます。ないときはスキップします。CI では、`services` で Redis と Serverless Redis HTTP を起動して動かします
 - テストごとに、キーの接頭辞（`test:video-backfill:<UUID>:`）を変え、終わったら使ったキーを消します
 
 ローカルでは、`compose.yml` の Redis を起動して（[ローカルRedis環境](../../docs/setup-guide.md#4-ローカルredis環境)）、次のように実行します。トークンは `config/dev-secrets.env` の `SRH_TOKEN` です。

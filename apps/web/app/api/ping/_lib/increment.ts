@@ -5,7 +5,7 @@ import {
   zincrbyWithTtl,
 } from '@/lib/analytics/redis'
 import { getRedisClient } from '@/lib/redis'
-import type { Video } from './types'
+import type { Video } from './get-video-by-url'
 
 interface IncrementOptions {
   timestamp?: Temporal.ZonedDateTime

@@ -4,48 +4,20 @@ import { CACHE_TAGS, TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { startOfHour, toDBString } from '@shinju-date/temporal-fns'
+import type { QueryData } from '@supabase/supabase-js'
 import { cacheLife, cacheTag } from 'next/cache'
+import {
+  VIDEO_CALENDAR_SELECT,
+  VIDEO_LIST_SELECT,
+  VIDEO_SCHEDULE_SELECT,
+} from '@/lib/data/selects'
 import { SEARCH_RESULT_COUNT } from '@/lib/site'
 import { STREAM_TENDENCY_DAYS } from '@/lib/stream-tendency'
 import { supabaseClient } from '@/lib/supabase'
 import { isUUID } from '@/lib/uuid'
 import { getVideoKinds, type VideoKindFilter } from '@/lib/video-kind-filter'
 
-const DEFAULT_SEARCH_SELECT = `
-  duration,
-  id,
-  platform,
-  published_at,
-  status,
-  talent:talents!inner (id, name),
-  thumbnail:thumbnails (blur_data_url, height, id, path, width),
-  title,
-  video_kind,
-  youtube_video:youtube_videos (
-    youtube_video_id,
-    youtube_channel:youtube_channels (
-      name,
-      youtube_handle,
-      profile_image:profile_images (blur_data_url, id)
-    )
-  ),
-  twitch_video:twitch_videos (
-    twitch_video_id,
-    type,
-    twitch_user:twitch_users (
-      name,
-      twitch_login_name,
-      profile_image:profile_images (blur_data_url, id)
-    )
-  )
-`
-
 export type Talent = Pick<Tables<'talents'>, 'id' | 'name'>
-
-export type Thumbnail = Pick<
-  Tables<'thumbnails'>,
-  'blur_data_url' | 'height' | 'id' | 'path' | 'width'
->
 
 /**
  * Icon of a YouTube channel or Twitch user, served from
@@ -56,38 +28,24 @@ export type ProfileImage = Pick<
   'blur_data_url' | 'id'
 >
 
-export interface YouTubeChannel
-  extends Pick<Tables<'youtube_channels'>, 'name' | 'youtube_handle'> {
-  profile_image: ProfileImage | null
+/**
+ * The query of the videos of the video cards, which the type of the rows is
+ * derived from. The filters are added to it by each fetcher.
+ */
+function selectVideos() {
+  return supabaseClient.from('videos').select(VIDEO_LIST_SELECT)
 }
 
-export interface TwitchUser
-  extends Pick<Tables<'twitch_users'>, 'name' | 'twitch_login_name'> {
-  profile_image: ProfileImage | null
-}
+/** A video of the video cards */
+export type Video = QueryData<ReturnType<typeof selectVideos>>[number]
 
-export type Video = Pick<
-  Tables<'videos'>,
-  | 'duration'
-  | 'id'
-  | 'platform'
-  | 'published_at'
-  | 'status'
-  | 'title'
-  | 'video_kind'
-> & {
-  talent: Talent
-  thumbnail: Thumbnail | null
-  youtube_video: {
-    youtube_video_id: string
-    youtube_channel: YouTubeChannel | null
-  } | null
-  twitch_video: {
-    twitch_video_id: string
-    type: Tables<'twitch_videos'>['type']
-    twitch_user: TwitchUser | null
-  } | null
-}
+export type Thumbnail = NonNullable<Video['thumbnail']>
+
+export type YouTubeChannel = NonNullable<
+  Video['youtube_video']
+>['youtube_channel']
+
+export type TwitchUser = NonNullable<Video['twitch_video']>['twitch_user']
 
 function hasPlatformSource(video: {
   twitch_video: object | null
@@ -120,9 +78,7 @@ export const fetchUpcomingVideos = async (): Promise<UpcomingVideos> => {
   // An upcoming stream that should have started before this hour is left out,
   // as `fetchTalentStreamStatuses` does, so the streams that never started do
   // not take up the limit. The nearest ones are kept when there are more.
-  const { data: videos, error } = await supabaseClient
-    .from('videos')
-    .select<string, Video>(DEFAULT_SEARCH_SELECT)
+  const { data: videos, error } = await selectVideos()
     .eq('status', 'UPCOMING')
     .gte('published_at', toDBString(baseTime))
     .lte('published_at', toDBString(until))
@@ -143,47 +99,21 @@ export const fetchUpcomingVideos = async (): Promise<UpcomingVideos> => {
   }
 }
 
-/** The talent of a video on the schedule, with the theme color of the talent */
-export type ScheduleTalent = Pick<
-  Tables<'talents'>,
-  'id' | 'name' | 'theme_color'
->
+/** The query of the videos of the schedule, which the type is derived from */
+function selectScheduleVideos() {
+  return supabaseClient.from('videos').select(VIDEO_SCHEDULE_SELECT)
+}
 
 /**
  * A video on the schedule: a video of the video cards without the thumbnail,
  * with the theme color of the talent.
  */
-export interface ScheduleVideo extends Omit<Video, 'talent' | 'thumbnail'> {
-  talent: ScheduleTalent
-}
+export type ScheduleVideo = QueryData<
+  ReturnType<typeof selectScheduleVideos>
+>[number]
 
-const SCHEDULE_SELECT = `
-  duration,
-  id,
-  platform,
-  published_at,
-  status,
-  talent:talents!inner (id, name, theme_color),
-  title,
-  video_kind,
-  youtube_video:youtube_videos (
-    youtube_video_id,
-    youtube_channel:youtube_channels (
-      name,
-      youtube_handle,
-      profile_image:profile_images (blur_data_url, id)
-    )
-  ),
-  twitch_video:twitch_videos (
-    twitch_video_id,
-    type,
-    twitch_user:twitch_users (
-      name,
-      twitch_login_name,
-      profile_image:profile_images (blur_data_url, id)
-    )
-  )
-`
+/** The talent of a video on the schedule, with the theme color of the talent */
+export type ScheduleTalent = ScheduleVideo['talent']
 
 /**
  * Today (`YYYY-MM-DD` in `TIME_ZONE`). The schedule decides the current week
@@ -270,9 +200,7 @@ export const fetchScheduleVideos = async (
 
   // 1,000 is the most rows Supabase returns for a request. A week has far
   // fewer videos.
-  const { data: videos, error } = await supabaseClient
-    .from('videos')
-    .select<string, ScheduleVideo>(SCHEDULE_SELECT)
+  const { data: videos, error } = await selectScheduleVideos()
     .gte('published_at', toDBString(since))
     .lt('published_at', toDBString(until))
     .eq('video_kind', 'standard')
@@ -328,7 +256,7 @@ export const fetchVideos = async ({
       until: baseTime.toJSON(),
       ...(videoKinds ? { video_kinds: videoKinds } : {}),
     })
-    .select<string, Video>(DEFAULT_SEARCH_SELECT)
+    .select(VIDEO_LIST_SELECT)
 
   if (error) {
     throw new TypeError(error.message, {
@@ -378,38 +306,15 @@ export const countVideos = async ({
   return count
 }
 
-const CALENDAR_SELECT = `
-  duration,
-  id,
-  platform,
-  published_at,
-  status,
-  talent:talents!inner (name),
-  title,
-  youtube_video:youtube_videos (youtube_video_id),
-  twitch_video:twitch_videos (
-    twitch_video_id,
-    type,
-    twitch_user:twitch_users (twitch_login_name)
-  )
-`
+/** The query of the videos of the calendars, which the type is derived from */
+function selectCalendarVideos() {
+  return supabaseClient.from('videos').select(VIDEO_CALENDAR_SELECT)
+}
 
 /** A video of the calendars (`/videos.ics` and `/talents/[id].ics`) */
-export type CalendarVideo = Pick<
-  Video,
-  'duration' | 'id' | 'platform' | 'published_at' | 'status' | 'title'
-> & {
-  talent: Pick<Talent, 'name'>
-  youtube_video: Pick<
-    NonNullable<Video['youtube_video']>,
-    'youtube_video_id'
-  > | null
-  twitch_video: {
-    twitch_video_id: string
-    type: Tables<'twitch_videos'>['type']
-    twitch_user: Pick<TwitchUser, 'twitch_login_name'> | null
-  } | null
-}
+export type CalendarVideo = QueryData<
+  ReturnType<typeof selectCalendarVideos>
+>[number]
 
 interface FetchCalendarVideosOptions {
   /** 動画の種別。`all` では絞り込まない */
@@ -440,10 +345,7 @@ export const fetchCalendarVideos = async ({
   const until = startOfHour(Temporal.Now.zonedDateTimeISO(TIME_ZONE)).add({
     days: 7,
   })
-  let query = supabaseClient
-    .from('videos')
-    .select<string, CalendarVideo>(CALENDAR_SELECT)
-    .lt('published_at', toDBString(until))
+  let query = selectCalendarVideos().lt('published_at', toDBString(until))
 
   if (talentIds.length > 0) {
     query = query.in('talent_id', [...talentIds])
@@ -609,7 +511,7 @@ export const fetchTalent = async (id: string): Promise<TalentDetail | null> => {
 
   const { data: talent, error } = await supabaseClient
     .from('talents')
-    .select<string, TalentDetail>(TALENT_DETAIL_SELECT)
+    .select(TALENT_DETAIL_SELECT)
     .eq('id', id)
     .eq('status', 'active')
     .is('deleted_at', null)
@@ -667,12 +569,6 @@ const TALENT_LIST_SELECT = `
   )
 `
 
-interface TalentListRow extends Talent {
-  twitch_users: (TalentAccountIcon & Pick<TalentTwitchUser, 'twitch_user_id'>)[]
-  youtube_channels: (TalentAccountIcon &
-    Pick<TalentYouTubeChannel, 'youtube_channel_id'>)[]
-}
-
 /**
  * Fetch the active talents (`status = 'active'` and not deleted) for the list
  * of talents, sorted by reading in the order of the Japanese syllabary (the
@@ -687,7 +583,7 @@ export const fetchTalentList = async (): Promise<TalentListItem[]> => {
 
   const { data: talents, error } = await supabaseClient
     .from('talents')
-    .select<string, TalentListRow>(TALENT_LIST_SELECT)
+    .select(TALENT_LIST_SELECT)
     .eq('status', 'active')
     .is('deleted_at', null)
     .order('reading', {
@@ -730,12 +626,6 @@ export interface TalentStreamStatus {
   nextStreamAt: string | null
 }
 
-interface TalentStreamRow
-  extends Pick<Tables<'videos'>, 'published_at' | 'status' | 'talent_id'> {
-  twitch_video: Pick<Tables<'twitch_videos'>, 'twitch_video_id'> | null
-  youtube_video: Pick<Tables<'youtube_videos'>, 'youtube_video_id'> | null
-}
-
 // The platform videos are fetched only to skip the videos the site does not
 // show, as `hasPlatformSource` does
 const TALENT_STREAM_SELECT = `
@@ -767,7 +657,7 @@ export const fetchTalentStreamStatuses = async (): Promise<
 
   const { data: videos, error } = await supabaseClient
     .from('videos')
-    .select<string, TalentStreamRow>(TALENT_STREAM_SELECT)
+    .select(TALENT_STREAM_SELECT)
     .in('status', ['LIVE', 'UPCOMING'])
     .lte('published_at', toDBString(until))
     .order('published_at', {
@@ -888,9 +778,7 @@ async function fetchLiveVideos(): Promise<Video[]> {
   cacheLife('minutes')
   cacheTag(CACHE_TAGS.VIDEOS)
 
-  const { data: liveVideos, error: liveError } = await supabaseClient
-    .from('videos')
-    .select<string, Video>(DEFAULT_SEARCH_SELECT)
+  const { data: liveVideos, error: liveError } = await selectVideos()
     .eq('status', 'LIVE')
     .order('published_at', { ascending: false })
     .limit(10)
@@ -918,9 +806,7 @@ async function fetchRecentVideos(): Promise<Video[]> {
   const now = Temporal.Now.instant()
   const threeDaysAgo = now.subtract({ hours: 24 * 3 })
 
-  const { data: recentVideos, error: recentError } = await supabaseClient
-    .from('videos')
-    .select<string, Video>(DEFAULT_SEARCH_SELECT)
+  const { data: recentVideos, error: recentError } = await selectVideos()
     .eq('status', 'PUBLISHED')
     .neq('video_kind', 'short')
     .gte('published_at', toDBString(threeDaysAgo))
@@ -949,9 +835,7 @@ async function fetchShortsVideos(): Promise<Video[]> {
   const now = Temporal.Now.instant()
   const oneDayAgo = now.subtract({ hours: 24 })
 
-  const { data: shortsVideos, error: shortsError } = await supabaseClient
-    .from('videos')
-    .select<string, Video>(DEFAULT_SEARCH_SELECT)
+  const { data: shortsVideos, error: shortsError } = await selectVideos()
     .eq('video_kind', 'short')
     .eq('status', 'PUBLISHED')
     .gte('published_at', toDBString(oneDayAgo))

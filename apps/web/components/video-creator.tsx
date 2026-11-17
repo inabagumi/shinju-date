@@ -24,7 +24,7 @@ export function getVideoCreator(video: Video): VideoCreatorInfo | null {
     const name = findFirstNonBlank(
       twitchUser?.name,
       twitchUser?.twitch_login_name,
-      video.talent?.name,
+      video.talent.name,
     )
 
     return name
@@ -36,7 +36,7 @@ export function getVideoCreator(video: Video): VideoCreatorInfo | null {
   const name = findFirstNonBlank(
     youtubeChannel?.name,
     youtubeChannel?.youtube_handle,
-    video.talent?.name,
+    video.talent.name,
   )
 
   return name

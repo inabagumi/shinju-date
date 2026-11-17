@@ -204,7 +204,7 @@ The commands are implemented in `src/handlers/upstash/commands.ts`, with the opt
 
 A command that is not implemented returns the error of Redis, `ERR unknown command '<name>', with args beginning with: …`, with 400 (`@upstash/redis` throws it). In a pipeline, only that command gets the error; a transaction with it is discarded (`EXECABORT`), like Redis does. `EVAL` of another script also returns an error, as Lua cannot run in the mock.
 
-`src/__tests__/upstash-commands.test.ts` finds the methods of `@upstash/redis` called in `apps/` and `packages/` (except the tests) and checks that every command of them is implemented. When an app starts to use a new command, add it to `COMMANDS` in `src/handlers/upstash/commands.ts`.
+`src/upstash-commands.test.ts` finds the methods of `@upstash/redis` called in `apps/` and `packages/` (except the tests) and checks that every command of them is implemented. When an app starts to use a new command, add it to `COMMANDS` in `src/handlers/upstash/commands.ts`.
 
 #### Example Usage
 

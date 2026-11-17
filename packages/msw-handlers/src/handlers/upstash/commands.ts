@@ -2,7 +2,7 @@
  * The Redis commands that the mock supports, with the semantics of Redis.
  *
  * Every command that `apps/` and `packages/` send has to be here
- * (`src/__tests__/upstash-commands.test.ts` checks it). A command that is not
+ * (`src/upstash-commands.test.ts` checks it). A command that is not
  * here is an error, like an unknown command of Redis, so that the apps do not
  * silently get `null`.
  */

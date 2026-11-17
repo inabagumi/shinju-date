@@ -1,54 +1,18 @@
+import type { QueryData } from '@supabase/supabase-js'
+import {
+  VIDEO_CLICK_SELECT,
+  VIDEO_CLICK_SELECT_BY_TWITCH_VIDEO,
+  VIDEO_CLICK_SELECT_BY_YOUTUBE_VIDEO,
+} from '@/lib/data/selects'
 import { supabaseClient } from '@/lib/supabase'
-import type { Video } from './types'
 
-/**
- * Static select fragments for ping URL resolution.
- * Keep these as plain string constants (no runtime interpolation) so call sites
- * can pass them with an explicit result generic: `.select<string, Video>(...)`.
- */
-const VIDEO_SELECT = `
-  talent:talents!inner (id, name),
-  id,
-  platform,
-  status,
-  title,
-  youtube_video:youtube_videos (youtube_video_id),
-  twitch_video:twitch_videos (
-    twitch_video_id,
-    type,
-    twitch_user:twitch_users (twitch_login_name)
-  )
-`
+/** The query of the video a click is tracked for, which the type is derived from */
+function selectVideos() {
+  return supabaseClient.from('videos').select(VIDEO_CLICK_SELECT)
+}
 
-/** Inner-join youtube_videos so filtering by platform id drops non-matches. */
-const VIDEO_SELECT_YOUTUBE_INNER = `
-  talent:talents!inner (id, name),
-  id,
-  platform,
-  status,
-  title,
-  youtube_video:youtube_videos!inner (youtube_video_id),
-  twitch_video:twitch_videos (
-    twitch_video_id,
-    type,
-    twitch_user:twitch_users (twitch_login_name)
-  )
-`
-
-/** Inner-join twitch_videos so filtering by platform id drops non-matches. */
-const VIDEO_SELECT_TWITCH_INNER = `
-  talent:talents!inner (id, name),
-  id,
-  platform,
-  status,
-  title,
-  youtube_video:youtube_videos (youtube_video_id),
-  twitch_video:twitch_videos!inner (
-    twitch_video_id,
-    type,
-    twitch_user:twitch_users (twitch_login_name)
-  )
-`
+/** The video a click is tracked for */
+export type Video = QueryData<ReturnType<typeof selectVideos>>[number]
 
 function getYouTubeVideoID(url: URL): string {
   let videoID: string | undefined
@@ -104,7 +68,7 @@ async function getYouTubeVideoByURL(url: URL): Promise<Video> {
 
   const { data: video, error } = await supabaseClient
     .from('videos')
-    .select<string, Video>(VIDEO_SELECT_YOUTUBE_INNER)
+    .select(VIDEO_CLICK_SELECT_BY_YOUTUBE_VIDEO)
     .eq('youtube_video.youtube_video_id', videoID)
     .maybeSingle()
 
@@ -126,7 +90,7 @@ async function getTwitchVideoByPlatformId(
 ): Promise<Video> {
   const { data: video, error } = await supabaseClient
     .from('videos')
-    .select<string, Video>(VIDEO_SELECT_TWITCH_INNER)
+    .select(VIDEO_CLICK_SELECT_BY_TWITCH_VIDEO)
     .eq('twitch_video.twitch_video_id', twitchVideoId)
     .maybeSingle()
 
@@ -208,9 +172,7 @@ async function getTwitchVideoByURL(url: URL): Promise<Video> {
   }
 
   // Prefer an active LIVE video for this user when available.
-  const { data: liveVideo, error: liveError } = await supabaseClient
-    .from('videos')
-    .select<string, Video>(VIDEO_SELECT)
+  const { data: liveVideo, error: liveError } = await selectVideos()
     .eq('platform', 'twitch')
     .eq('status', 'LIVE')
     .in('id', videoIds)
@@ -229,9 +191,7 @@ async function getTwitchVideoByURL(url: URL): Promise<Video> {
   }
 
   // Fallback: most recent video for this Twitch user (e.g. ended stream link).
-  const { data: recentVideo, error: recentError } = await supabaseClient
-    .from('videos')
-    .select<string, Video>(VIDEO_SELECT)
+  const { data: recentVideo, error: recentError } = await selectVideos()
     .eq('platform', 'twitch')
     .in('id', videoIds)
     .order('published_at', { ascending: false })
