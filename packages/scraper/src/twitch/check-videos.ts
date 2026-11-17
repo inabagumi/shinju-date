@@ -6,6 +6,7 @@ import {
   softDeleteUnavailableVideos,
   updateVideo,
 } from '../internal/database/index.js'
+import { replaceThumbnail } from '../internal/thumbnails/index.js'
 import type {
   CrawlContext,
   TypedSupabaseClient,
@@ -104,26 +105,28 @@ async function refreshVideo(
 ): Promise<boolean> {
   const { now, supabaseClient } = context
   const changes = getVideoChanges(saved, fetched.fields) ?? {}
-
-  // Twitch has no thumbnail for a VOD until some time after the broadcast, so
-  // videos saved before that get theirs here.
-  if (!saved.thumbnail_id) {
-    const thumbnail = await createTwitchThumbnail(context, {
-      thumbnailUrl: fetched.thumbnailUrl,
-      twitchVideoId: saved.twitch_video.twitch_video_id,
-    })
-
-    if (thumbnail) {
-      changes.thumbnail_id = thumbnail.id
-    }
-  }
-
   const typeChanged = saved.twitch_video.type !== fetched.type
 
   if (typeChanged) {
     await updateTwitchVideo(supabaseClient, saved.twitch_video.id, {
       type: fetched.type,
     })
+  }
+
+  // Twitch has no thumbnail for a VOD until some time after the broadcast, so
+  // videos saved before that get theirs here.
+  if (!saved.thumbnail_id) {
+    const thumbnail = await replaceThumbnail(context, {
+      create: () =>
+        createTwitchThumbnail(context, {
+          thumbnailUrl: fetched.thumbnailUrl,
+          twitchVideoId: saved.twitch_video.twitch_video_id,
+        }),
+      fields: changes,
+      videoId: saved.id,
+    })
+
+    return thumbnail !== null || Object.keys(changes).length > 0 || typeChanged
   }
 
   if (Object.keys(changes).length > 0) {

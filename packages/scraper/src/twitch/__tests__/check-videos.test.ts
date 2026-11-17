@@ -1,7 +1,11 @@
+import { HttpResponse, http } from 'msw'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../../internal/testing/context.js'
 import { createFakeTwitchFetcher } from '../../internal/testing/fetcher.js'
-import { setupSupabase } from '../../internal/testing/supabase.js'
+import {
+  postgresError,
+  setupSupabase,
+} from '../../internal/testing/supabase.js'
 import {
   createClip,
   createSavedArchive,
@@ -160,6 +164,39 @@ describe('refreshRecentTwitchVideos', () => {
       thumbnail_id: 'thumb-new',
       updated_at: '2024-05-01T12:00:00Z',
     })
+  })
+
+  it('removes the new thumbnail when the video cannot be updated', async () => {
+    supabase.respond(({ method, table }) => {
+      if (method === 'GET') {
+        return [createSavedArchive({ thumbnail_id: null })]
+      }
+
+      return table === 'videos'
+        ? postgresError('57014', 'statement timeout')
+        : []
+    })
+    supabase.server.use(
+      http.delete(
+        'https://fake.supabase.test/storage/v1/object/thumbnails',
+        () => HttpResponse.json([]),
+      ),
+    )
+    const { fetcher } = createFakeTwitchFetcher({ videos: [createVideo()] })
+
+    const changed = await refreshRecentTwitchVideos(createContext(fetcher))
+
+    expect(changed).toBe(0)
+    expect(
+      supabase.written('DELETE', 'thumbnails').map(({ query }) => query['id']),
+    ).toEqual(['eq.thumb-new'])
+    expect(reportError).toHaveBeenCalledOnce()
+    expect(reportError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('statement timeout'),
+      }),
+      { twitchVideoId: 'vod-1' },
+    )
   })
 
   it('keeps the thumbnail a video already has', async () => {

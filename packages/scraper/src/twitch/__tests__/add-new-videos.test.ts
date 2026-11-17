@@ -1,3 +1,4 @@
+import { HttpResponse, http } from 'msw'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestContext } from '../../internal/testing/context.js'
 import { createFakeTwitchFetcher } from '../../internal/testing/fetcher.js'
@@ -165,12 +166,25 @@ describe('addNewTwitchVideos', () => {
       supabaseClient: supabase.supabaseClient,
     })
 
+  let removedImages: unknown[]
+
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(createThumbnail).mockResolvedValue({
       id: 'thumb-new',
       path: 'vod-1/x.jpg',
     })
+    removedImages = []
+    supabase.server.use(
+      http.delete(
+        'https://fake.supabase.test/storage/v1/object/thumbnails',
+        async ({ request }) => {
+          removedImages.push(await request.json())
+
+          return HttpResponse.json([])
+        },
+      ),
+    )
   })
 
   it('adds archives and uploads that are not saved yet', async () => {
@@ -261,6 +275,34 @@ describe('addNewTwitchVideos', () => {
       },
       query: { id: 'eq.video-1' },
     })
+    // Cached pages may still show the preview, so the cleanup removes it later.
+    expect(supabase.written('DELETE', 'thumbnails')).toEqual([])
+    expect(removedImages).toEqual([])
+  })
+
+  it('removes the new thumbnail when the placeholder cannot be updated', async () => {
+    supabase.respondWith({
+      'GET talents': TWITCH_TALENTS,
+      'GET twitch_videos': findSavedVideos([
+        createSavedVideo({ status: 'ENDED' }),
+      ]),
+      'PATCH videos': () => postgresError('57014', 'statement timeout'),
+    })
+    const { fetcher } = createFakeTwitchFetcher({ archives: [createVideo()] })
+
+    const added = await addNewTwitchVideos(createContext(fetcher))
+
+    expect(added).toBe(0)
+    expect(
+      supabase.written('DELETE', 'thumbnails').map(({ query }) => query['id']),
+    ).toEqual(['eq.thumb-new'])
+    expect(removedImages).toEqual([{ prefixes: ['vod-1/x.jpg'] }])
+    expect(reportError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('statement timeout'),
+      }),
+      { twitchVideoId: 'vod-1' },
+    )
   })
 
   it('keeps a broadcast LIVE when its archive shows up while on air', async () => {

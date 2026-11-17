@@ -170,10 +170,13 @@ describe('addNewYouTubeVideos', () => {
     const added = await addNewYouTubeVideos(createContext(fetcher))
 
     expect(added).toBe(0)
-    expect(removeThumbnail).toHaveBeenCalledWith(supabase.supabaseClient, {
-      id: 'thumb-1',
-      path: 'new-1/x.jpg',
-    })
+    expect(removeThumbnail).toHaveBeenCalledWith(
+      expect.objectContaining({ supabaseClient: supabase.supabaseClient }),
+      {
+        id: 'thumb-1',
+        path: 'new-1/x.jpg',
+      },
+    )
     expect(reportError).not.toHaveBeenCalled()
   })
 
