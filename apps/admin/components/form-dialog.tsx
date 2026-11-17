@@ -12,10 +12,12 @@ import {
   DialogTrigger,
   twMerge,
 } from '@shinju-date/ui'
+import { unstable_rethrow } from 'next/navigation'
 import { type ReactElement, type ReactNode, useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import type { FormState } from '@/components/form'
 import Form, { SubmitButton } from '@/components/form'
+import { SERVER_ACTION_FALLBACK_ERROR } from '@/lib/use-server-action'
 
 /** ダイアログの幅 */
 export type FormDialogSize = 'md' | 'lg'
@@ -33,7 +35,9 @@ export interface FormDialogProps {
   /**
    * フォームを送信したときに呼ぶアクション。`{ success: true }` を返したとき
    * だけダイアログを閉じる。検証のエラー（`errors`）や、項目に結び付かない
-   * エラー（`error`）を返したときは、ダイアログの中に表示して開いたままにする
+   * エラー（`error`）を返したときは、ダイアログの中に表示して開いたままにする。
+   * 例外が投げられたときは「処理に失敗しました。」を表示し、入力を残したまま
+   * 送信し直せるようにする
    */
   action: (
     currentState: FormState,
@@ -113,18 +117,25 @@ export function FormDialog({
   ): Promise<FormState> => {
     isPendingRef.current = true
 
+    let result: FormState
+
     try {
-      const result = await action(currentState, formData)
+      result = await action(currentState, formData)
+    } catch (error) {
+      // `redirect()` などの Next.js が使う例外は、そのまま Next.js に渡す
+      unstable_rethrow(error)
 
-      if (result.success) {
-        setOpen(false)
-        onSuccess?.()
-      }
-
-      return result
+      return { error: SERVER_ACTION_FALLBACK_ERROR }
     } finally {
       isPendingRef.current = false
     }
+
+    if (result.success) {
+      setOpen(false)
+      onSuccess?.()
+    }
+
+    return result
   }
 
   const preventWhilePending = (event: Event) => {

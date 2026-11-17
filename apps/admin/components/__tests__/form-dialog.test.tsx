@@ -7,7 +7,10 @@ import {
   waitFor,
   within,
 } from '@testing-library/react'
+import { redirect } from 'next/navigation'
+import { Component, type ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
+import { SERVER_ACTION_FALLBACK_ERROR } from '@/lib/use-server-action'
 import { ErrorMessage, FormField, type FormState, Input, Label } from '../form'
 import { FormDialog, type FormDialogProps } from '../form-dialog'
 
@@ -22,6 +25,33 @@ function createDeferred<T>() {
   })
 
   return { promise, reject, resolve }
+}
+
+interface ErrorCatcherProps {
+  children: ReactNode
+}
+
+interface ErrorCatcherState {
+  error: unknown
+}
+
+/** 部品が投げた例外を受け取り、その文を表示する */
+class ErrorCatcher extends Component<ErrorCatcherProps, ErrorCatcherState> {
+  static getDerivedStateFromError(error: unknown): ErrorCatcherState {
+    return { error }
+  }
+
+  override state: ErrorCatcherState = { error: null }
+
+  override render() {
+    const { error } = this.state
+
+    if (error) {
+      return <p>caught: {error instanceof Error ? error.message : 'unknown'}</p>
+    }
+
+    return this.props.children
+  }
 }
 
 function renderDialog(
@@ -241,6 +271,96 @@ describe('FormDialog', () => {
 
     expect(getTermInput(reopened)).toHaveValue('初期値')
     expect(within(reopened).queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('shows a fallback error and keeps the fields when the action throws, then submits again', async () => {
+    const onSuccess = vi.fn()
+    const { action } = renderDialog(
+      vi
+        .fn<Action>()
+        .mockRejectedValueOnce(new Error('network'))
+        .mockResolvedValueOnce({ success: true }),
+      { onSuccess },
+    )
+
+    const dialog = openDialog()
+
+    fireEvent.change(getTermInput(dialog), { target: { value: '歌枠' } })
+    submit(dialog)
+
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+      SERVER_ACTION_FALLBACK_ERROR,
+    )
+    expect(screen.getByRole('dialog')).toBe(dialog)
+    expect(getTermInput(dialog)).toHaveValue('歌枠')
+    expect(onSuccess).not.toHaveBeenCalled()
+
+    await waitFor(() =>
+      expect(
+        within(dialog).getByRole('button', { name: '追加' }),
+      ).toBeEnabled(),
+    )
+
+    submit(dialog)
+
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    )
+    expect(action).toHaveBeenCalledTimes(2)
+
+    const [, formData] = action.mock.calls[1] ?? []
+
+    expect((formData as FormData).get('term')).toBe('歌枠')
+    expect(onSuccess).toHaveBeenCalledOnce()
+  })
+
+  it('closes with Escape again after the action throws', async () => {
+    renderDialog(() => Promise.reject(new Error('network')))
+
+    const dialog = openDialog()
+
+    submit(dialog)
+
+    expect(await within(dialog).findByRole('alert')).toBeInTheDocument()
+
+    fireEvent.keyDown(dialog, { code: 'Escape', key: 'Escape' })
+
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    )
+  })
+
+  it('leaves the errors that Next.js uses, such as a redirect, to Next.js', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    try {
+      render(
+        <ErrorCatcher>
+          <FormDialog
+            action={async () => redirect('/login')}
+            submitLabel="追加"
+            title="用語を追加"
+            trigger={<Button>開く</Button>}
+          >
+            <FormField name="term">
+              <Label>用語</Label>
+              <Input />
+            </FormField>
+          </FormDialog>
+        </ErrorCatcher>,
+      )
+
+      submit(openDialog())
+
+      expect(
+        await screen.findByText('caught: NEXT_REDIRECT'),
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByText(SERVER_ACTION_FALLBACK_ERROR),
+      ).not.toBeInTheDocument()
+    } finally {
+      consoleError.mockRestore()
+    }
   })
 
   it('does not close with Escape, an outside click or the cancel button while submitting', async () => {

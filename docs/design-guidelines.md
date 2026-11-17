@@ -216,6 +216,7 @@ const example = (
   - 実行中の状態は `isPending` で受け取り、ボタンを無効にする
 - 作成と編集のダイアログは、`apps/admin/components/form-dialog.tsx` の `FormDialog` に入力欄を渡して作る。`Dialog` と `Form` を部品ごとに組み立てない
   - アクションが `{ success: true }` を返したときだけ閉じる。検証のエラー（`errors`）と、項目に結び付かないエラー（`error`）は、ダイアログの中に出して開いたままにする
+  - アクションが例外を投げたときは「処理に失敗しました。」を出し、入力を残したまま送信し直せるようにする
   - 開くたびに、前回の入力とエラーを消す。送信中は、Escape と外側のクリックで閉じない
 - トーストは、ルートのレイアウトに置いた `ActionToastProvider` が1か所で描く。部品から直接トーストを出すときは `useActionToast()` の `showToast` を使い、`<Toast>` を部品ごとに置かない
 - トーストの色は、`success`（成功）、`warning`（成功したが一部に注意が要る）、`danger`（失敗）の3つ
