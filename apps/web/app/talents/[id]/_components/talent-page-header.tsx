@@ -1,6 +1,7 @@
 import { logger } from '@shinju-date/logger'
 import { twMerge } from '@shinju-date/ui'
 import { CalendarPlus, ExternalLink } from 'lucide-react'
+import LiveBadge from '@/components/live-badge'
 import PageHeader from '@/components/page-header'
 import TalentIcon from '@/components/talent-icon'
 import {
@@ -60,9 +61,7 @@ function StreamStatusLine({ streamStatus }: StreamStatusLineProps) {
   if (streamStatus?.isLive) {
     return (
       <p className="mb-2">
-        <span className="rounded-control bg-live px-1.5 py-0.5 text-caption font-semibold text-live-foreground">
-          配信中
-        </span>
+        <LiveBadge />
       </p>
     )
   }

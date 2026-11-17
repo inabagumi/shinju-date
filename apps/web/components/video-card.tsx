@@ -7,7 +7,7 @@ import Image from 'next/image'
 import type { Video } from '@/lib/fetchers'
 import { getVideoTitleParts } from '@/lib/video-title'
 import FormattedTime from './formatted-time'
-import LiveNow from './live-now'
+import LiveBadge from './live-badge'
 import PlatformBadge from './platform-badge'
 import VideoCreator, {
   getVideoCreator,
@@ -217,13 +217,9 @@ export default function VideoCard({
       >
         <Thumbnail sizes={THUMBNAIL_SIZES[variant]} video={value} />
 
-        <LiveNow
-          className={twMerge(
-            BADGE_CLASS_NAME,
-            'absolute top-0 left-0 m-2 bg-live text-live-foreground',
-          )}
-          status={value.status}
-        />
+        {value.status === 'LIVE' && (
+          <LiveBadge className="absolute top-0 left-0 m-2" />
+        )}
 
         <PlatformBadge
           className="absolute top-0 right-0 m-2"
