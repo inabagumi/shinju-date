@@ -26,8 +26,8 @@ describe('createYouTubePlatform', () => {
     })
 
     const result = await createYouTubePlatform(fetcher).lookUp([
-      'yt-1',
-      'yt-gone',
+      createSavedVideo('yt-1'),
+      createSavedVideo('yt-gone'),
     ])
 
     expect(getVideos).toHaveBeenCalledExactlyOnceWith(['yt-1', 'yt-gone'])
@@ -35,6 +35,23 @@ describe('createYouTubePlatform', () => {
       fetchedById: new Map([['yt-1', video]]),
       missingIds: ['yt-gone'],
     })
+  })
+
+  it('checks for missing videos without fetching them', async () => {
+    const { fetcher, findMissingVideoIds, getVideos } =
+      createFakeFetcher<YouTubeFetcher>({ missingVideoIds: ['yt-gone'] })
+
+    const missingIds = await createYouTubePlatform(fetcher).findMissing?.([
+      createSavedVideo('yt-1'),
+      createSavedVideo('yt-gone'),
+    ])
+
+    expect(findMissingVideoIds).toHaveBeenCalledExactlyOnceWith([
+      'yt-1',
+      'yt-gone',
+    ])
+    expect(getVideos).not.toHaveBeenCalled()
+    expect(missingIds).toEqual(['yt-gone'])
   })
 
   it('maps a video to its fields', () => {

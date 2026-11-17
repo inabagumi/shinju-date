@@ -1,12 +1,14 @@
 import { DatabaseError } from '../internal/errors.js'
 import { compareVideoFields } from '../internal/operations/diff-video-fields.js'
+import { refreshSavedVideo } from '../internal/operations/refresh-saved-videos.js'
 import type {
   CrawlContext,
   RefreshVideoResult,
   TypedSupabaseClient,
 } from '../types.js'
-import { refreshTwitchVideoDetails } from './check-videos.js'
+import { refreshTypeAndThumbnail } from './check-videos.js'
 import type { TwitchFetcher } from './fetcher.js'
+import { createTwitchPlatform } from './platform.js'
 import { isLivePlaceholder } from './saved-video.js'
 import {
   refreshTwitchBroadcast,
@@ -58,13 +60,21 @@ export async function refreshTwitchVideo(
   if (saved.status === 'LIVE' || isLivePlaceholder(saved)) {
     await refreshTwitchBroadcast(context, saved)
   } else {
-    const result = await refreshTwitchVideoDetails(context, saved)
+    const result = await refreshSavedVideo(
+      context,
+      createTwitchPlatform(context.fetcher),
+      saved,
+      {
+        afterRefresh: (current, fetched) =>
+          refreshTypeAndThumbnail(context, current, fetched),
+      },
+    )
 
     if (result === 'unavailable') {
       return { status: 'unavailable' }
     }
 
-    if (!result) {
+    if (!result?.changed) {
       return { status: 'unchanged', title: saved.title }
     }
   }

@@ -8,11 +8,11 @@ import type {
 import { addNewYouTubeVideos } from './add-new-videos.js'
 import { addPastYouTubeVideos } from './add-past-videos.js'
 import {
-  refreshYouTubeVideo,
   refreshYouTubeVideos,
   removeUnavailableYouTubeVideos,
 } from './check-videos.js'
 import { YouTubeFetcher } from './fetcher.js'
+import { refreshYouTubeVideo } from './refresh-video.js'
 import {
   syncYouTubeChannels,
   syncYouTubeChannelsOfTalent,

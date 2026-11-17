@@ -166,6 +166,25 @@ describe('refreshRecentTwitchVideos', () => {
     })
   })
 
+  it('updates what changed and fills in the missing thumbnail', async () => {
+    supabase.respond(({ method }) =>
+      method === 'GET' ? [createSavedArchive({ thumbnail_id: null })] : [],
+    )
+    const { fetcher } = createFakeTwitchFetcher({
+      videos: [createVideo({ title: 'Renamed' })],
+    })
+
+    const changed = await refreshRecentTwitchVideos(createContext(fetcher))
+
+    expect(changed).toBe(1)
+    expect(supabase.written('PATCH', 'videos').map(({ body }) => body)).toEqual(
+      [
+        { title: 'Renamed', updated_at: '2024-05-01T12:00:00Z' },
+        { thumbnail_id: 'thumb-new', updated_at: '2024-05-01T12:00:00Z' },
+      ],
+    )
+  })
+
   it('removes the new thumbnail when the video cannot be updated', async () => {
     supabase.respond(({ method, table }) => {
       if (method === 'GET') {
