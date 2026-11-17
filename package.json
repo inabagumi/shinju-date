@@ -25,7 +25,8 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
-    "check": "biome check",
+    "check": "node scripts/check-cache-directives.mjs && biome check",
+    "check:cache-directives": "node scripts/check-cache-directives.mjs",
     "check:dev-secrets": "node scripts/check-dev-secrets.mjs",
     "check:docs": "node scripts/check-docs.mjs",
     "db:export": "./scripts/export-production-data.sh",
@@ -34,6 +35,7 @@
     "dev": "turbo watch dev --env-mode=loose",
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
+    "test:scripts": "node --test 'scripts/**/*.test.mjs'",
     "typecheck": "turbo typecheck",
     "typegen": "turbo typegen"
   },

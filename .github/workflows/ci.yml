@@ -107,6 +107,14 @@ jobs:
       - name: Run Node.js lint
         run: pnpm biome ci --reporter=github .
 
+      # Checks the blank lines after the cache directives, which the Biome plugins cannot check
+      - name: Check cache directives
+        run: pnpm run check:cache-directives
+
+      # Tests the Biome plugins in config/biome/ and the check scripts
+      - name: Test scripts
+        run: pnpm run test:scripts
+
       # Checks the repository paths in Markdown files (external URLs are not checked)
       - name: Check docs
         run: pnpm run check:docs
