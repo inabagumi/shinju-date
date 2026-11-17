@@ -1,9 +1,7 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { describe, expect, it } from 'vitest'
-import {
-  analyticsSearchParamsSchema,
-  getDefaultDateRange,
-} from './search-params-schema'
+import { getDefaultDateRange } from '@/lib/analytics/date-window'
+import { analyticsSearchParamsSchema } from './search-params-schema'
 
 describe('analyticsSearchParamsSchema', () => {
   const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
@@ -239,19 +237,6 @@ describe('analyticsSearchParamsSchema', () => {
       },
       selectedDate: null,
       tab: 'videos',
-    })
-  })
-})
-
-describe('getDefaultDateRange', () => {
-  it('should return 7-day range ending today', () => {
-    const result = getDefaultDateRange()
-    const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE).toPlainDate()
-    const expectedStart = today.subtract({ days: 6 })
-
-    expect(result).toEqual({
-      endDate: today.toString(),
-      startDate: expectedStart.toString(),
     })
   })
 })
