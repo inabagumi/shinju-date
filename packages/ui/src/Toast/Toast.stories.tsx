@@ -70,6 +70,29 @@ export const Danger = meta.story({
   },
 })
 
+export const Warning = meta.story({
+  render: () => {
+    const [open, setOpen] = useState(false)
+
+    return (
+      <>
+        <Button onClick={() => setOpen(true)} variant="secondary">
+          Show Warning Toast
+        </Button>
+        <Toast
+          duration={5000}
+          onOpenChange={setOpen}
+          open={open}
+          variant="warning"
+        >
+          <ToastTitle>一部の動画は更新できませんでした。</ToastTitle>
+          <ToastClose />
+        </Toast>
+      </>
+    )
+  },
+})
+
 export const Default = meta.story({
   render: () => {
     const [open, setOpen] = useState(false)
