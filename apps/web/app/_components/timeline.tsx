@@ -4,12 +4,12 @@ import { TIME_ZONE } from '@shinju-date/constants'
 import { twMerge } from '@shinju-date/ui'
 import { type ReactNode, useId, useMemo } from 'react'
 import FormattedTime from '@/components/formatted-time'
-import { useToday } from '@/components/use-today'
 import VideoCard, { VideoCardSkeleton } from '@/components/video-card'
 import { VIDEO_CARD_LIST_CLASS_NAMES } from '@/components/video-card-list'
 import { formatRelativeDate } from '@/lib/date-heading'
 import type { Video } from '@/lib/fetchers'
 import { groupVideosByDate } from '@/lib/group-videos-by-date'
+import { useToday } from '@/lib/use-today'
 
 interface TimelineGroupProps {
   children: ReactNode

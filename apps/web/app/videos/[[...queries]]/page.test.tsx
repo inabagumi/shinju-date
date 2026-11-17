@@ -32,13 +32,13 @@ vi.mock('@/lib/recommendations/get-display-queries', () => ({
   getDisplayRecommendationQueries: vi.fn(async () => []),
 }))
 
-vi.mock('@/components/search-query-tracker', () => ({
+vi.mock('./_components/search-query-tracker', () => ({
   default: ({ query }: MockTrackerProps) => (
     <div data-testid="search-query-tracker">{query}</div>
   ),
 }))
 
-vi.mock('@/components/search-exit-tracker', () => ({
+vi.mock('./_components/search-exit-tracker', () => ({
   default: ({ query }: MockTrackerProps) => (
     <div data-testid="search-exit-tracker">{query}</div>
   ),
@@ -51,7 +51,7 @@ vi.mock('@/components/search-results', () => ({
   SearchResultsSkeleton: () => null,
 }))
 
-vi.mock('@/components/video-filters', () => ({
+vi.mock('./_components/video-filters', () => ({
   default: ({ selectedTalents }: MockVideoFiltersProps) => (
     <ul aria-label="選んでいるタレント">
       {selectedTalents.map((talent) => (

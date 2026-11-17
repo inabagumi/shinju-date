@@ -3,6 +3,7 @@
   "description": "Shared logger package for SHINJU DATE applications",
   "devDependencies": {
     "@sentry/nextjs": "catalog:",
+    "@shinju-date/config": "workspace:*",
     "@tsconfig/node20": "catalog:",
     "@tsconfig/strictest": "catalog:",
     "@types/node": "catalog:",
@@ -13,15 +14,14 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "default": "./dist/index.js"
     }
   },
   "homepage": "https://shinju.date/",
   "license": "MIT",
-  "main": "./dist/index.js",
   "name": "@shinju-date/logger",
   "peerDependencies": {
-    "@sentry/nextjs": "^10.0.0 || ^11.0.0"
+    "@sentry/nextjs": "^11.0.0"
   },
   "private": true,
   "repository": {
@@ -35,6 +35,5 @@
     "typecheck": "tsc --noEmit"
   },
   "type": "module",
-  "types": "./dist/index.d.ts",
   "version": "1.0.0"
 }

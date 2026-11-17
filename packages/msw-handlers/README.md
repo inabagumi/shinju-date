@@ -204,7 +204,7 @@ The commands are implemented in `src/handlers/upstash/commands.ts`, with the opt
 
 A command that is not implemented returns the error of Redis, `ERR unknown command '<name>', with args beginning with: …`, with 400 (`@upstash/redis` throws it). In a pipeline, only that command gets the error; a transaction with it is discarded (`EXECABORT`), like Redis does. `EVAL` of another script also returns an error, as Lua cannot run in the mock.
 
-`src/__tests__/upstash-commands.test.ts` finds the methods of `@upstash/redis` called in `apps/` and `packages/` (except the tests) and checks that every command of them is implemented. When an app starts to use a new command, add it to `COMMANDS` in `src/handlers/upstash/commands.ts`.
+`src/upstash-commands.test.ts` finds the methods of `@upstash/redis` called in `apps/` and `packages/` (except the tests) and checks that every command of them is implemented. When an app starts to use a new command, add it to `COMMANDS` in `src/handlers/upstash/commands.ts`.
 
 #### Example Usage
 
@@ -227,7 +227,9 @@ The package mocks the app access tokens (`POST https://id.twitch.tv/oauth2/token
 - `GET /helix/streams` - The broadcasts on air, by `user_id` or `user_login`
 - `GET /helix/clips` - By `id` (the clips that do not exist are left out) or by `broadcaster_id`
 
-The videos, streams and clips come from the Twitch videos of the Supabase mock (`twitch_videos` with their `videos` and `twitch_users`): the archives, highlights and uploads are videos, the `LIVE` video is a stream, and the clip is a clip. The thumbnails and the icons that they link to are served as well.
+The users come from the Twitch users of the Supabase mock (`twitch_users`): a user with an icon (`profile_image_id`) has the icon that its `profile_images` was downloaded from, and one without an icon has the default icon of Twitch. Only these users can be found by `login`. Any other numeric ID gets a generated user without videos, so that a new user can be added in the admin app.
+
+The videos, streams and clips come from the Twitch videos of the Supabase mock (`twitch_videos` with their `videos` and `twitch_users`): the archives, highlights and uploads are videos, the `LIVE` video is a stream, and the clip is a clip. The user icons (with the ETag of the `profile_images` of the users) and the thumbnails that they link to are served as well.
 
 ### YouTube Data API
 

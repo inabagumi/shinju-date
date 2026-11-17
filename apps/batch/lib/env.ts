@@ -7,9 +7,8 @@ import { z } from 'zod'
  * required variable stops on start with the names of every missing one,
  * instead of failing later on the first cron run that needs it.
  *
- * The Sentry settings (`NEXT_PUBLIC_SENTRY_DSN`, `VERCEL_ENV` and
- * `NEXT_PUBLIC_VERCEL_ENV`) are read only by `@shinju-date/instrumentation`,
- * so they are not listed here.
+ * The Sentry settings (`NEXT_PUBLIC_SENTRY_DSN` and `VERCEL_ENV`) are read
+ * only by `@shinju-date/instrumentation`, so they are not listed here.
  */
 
 /**

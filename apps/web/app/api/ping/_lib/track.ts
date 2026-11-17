@@ -1,6 +1,6 @@
 import { getVideoExternalUrl } from '@shinju-date/helpers'
 import { track as vercelTrack } from '@vercel/analytics/server'
-import type { Video } from './types'
+import type { Video } from './get-video-by-url'
 
 // biome-ignore lint/style/useConsistentTypeDefinitions: interface には暗黙のインデックスシグネチャがなく、vercelTrack の Record<string, AllowedPropertyValues> に渡せないため
 type TrackProperties = {
@@ -16,7 +16,7 @@ function generateTrackProperties(video: Video): TrackProperties {
   const url = getVideoExternalUrl({
     platform: video.platform,
     status: video.status,
-    twitchLoginName: video.twitch_video?.twitch_user?.twitch_login_name,
+    twitchLoginName: video.twitch_video?.twitch_user.twitch_login_name,
     twitchVideoId: video.twitch_video?.twitch_video_id,
     twitchVideoType: video.twitch_video?.type,
     youtubeVideoId: video.youtube_video?.youtube_video_id,

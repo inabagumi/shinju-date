@@ -2,25 +2,14 @@ import { withSentry } from '@shinju-date/instrumentation/next-config'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  experimental: {
-    turbopackRustReactCompiler: true,
-  },
-  headers() {
-    return Promise.resolve([
-      {
-        headers: [
-          {
-            key: 'Document-Policy',
-            value: 'js-profiling',
-          },
-        ],
-        source: '/:path*',
-      },
-    ])
-  },
-  reactCompiler: true,
   reactStrictMode: true,
-  serverExternalPackages: ['@sentry/profiling-node'],
+  serverExternalPackages: [
+    '@sentry/profiling-node',
+    'msw',
+    '@mswjs/interceptors',
+  ],
 }
 
-export default withSentry(nextConfig)
+// This app has only Route Handlers, so it leaves out the Sentry options for
+// the browser bundle.
+export default withSentry(nextConfig, { browser: false })

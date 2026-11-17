@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation'
 import { ImageResponse } from 'next/og'
-import { LOGO_PATH, LOGO_VIEW_BOX } from '@/app/_components/svg-symbols'
-import { getTalentProfileImage } from '@/components/talent-icon'
 import { fetchTalent } from '@/lib/fetchers'
 import { SITE_THEME_COLOR } from '@/lib/site'
+import { LOGO_PATH, LOGO_VIEW_BOX } from '@/lib/svg-symbols'
+import { getTalentProfileImage } from '@/lib/talent-profile-image'
 import { fetchTalentIconDataURL, getTalentThemeColor } from './_lib/og-image'
 
 export const alt = 'SHINJU DATE'

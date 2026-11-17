@@ -2,10 +2,7 @@ import { formatNumber } from '@shinju-date/helpers'
 import { type ComponentProps, Suspense } from 'react'
 import NoResults from '@/components/no-results'
 import PageHeader, { PageHeaderSkeleton } from '@/components/page-header'
-import SearchExitTracker from '@/components/search-exit-tracker'
-import SearchQueryTracker from '@/components/search-query-tracker'
 import SearchResults from '@/components/search-results'
-import VideoFilters, { VideoFiltersSkeleton } from '@/components/video-filters'
 import {
   countVideos,
   fetchActiveTalents,
@@ -23,13 +20,9 @@ import {
   VIDEO_KIND_SEARCH_PARAM,
   type VideoKindFilter,
 } from '@/lib/video-kind-filter'
-
-export interface VideosPageSectionProps {
-  params: Promise<{
-    queries?: string[]
-  }>
-  searchParams: Promise<Record<string, string | string[] | undefined>>
-}
+import SearchExitTracker from './search-exit-tracker'
+import SearchQueryTracker from './search-query-tracker'
+import VideoFilters, { VideoFiltersSkeleton } from './video-filters'
 
 interface VideosPageOptions {
   kind: VideoKindFilter
@@ -59,7 +52,7 @@ export async function getSelectedTalentIds(
 async function getVideosPageOptions({
   params,
   searchParams,
-}: VideosPageSectionProps): Promise<VideosPageOptions> {
+}: PageProps<'/videos/[[...queries]]'>): Promise<VideosPageOptions> {
   const [{ queries }, searchParamValues] = await Promise.all([
     params,
     searchParams,
@@ -122,7 +115,9 @@ function VideosPageFilters({
   )
 }
 
-export async function VideosPageHeading(props: VideosPageSectionProps) {
+export async function VideosPageHeading(
+  props: PageProps<'/videos/[[...queries]]'>,
+) {
   const [options, talents] = await Promise.all([
     getVideosPageOptions(props),
     fetchActiveTalents(),
@@ -178,7 +173,9 @@ async function getNoResultsProps({
   }
 }
 
-export async function VideosPageResults(props: VideosPageSectionProps) {
+export async function VideosPageResults(
+  props: PageProps<'/videos/[[...queries]]'>,
+) {
   const options = await getVideosPageOptions(props)
   const { kind, query, talentIds } = options
   const [videos, referenceDate] = await Promise.all([
