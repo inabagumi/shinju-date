@@ -5,9 +5,19 @@ on:
   push:
     paths:
       - .github/workflows/copilot-setup-steps.yml
+      - apps/*/.env.local.sample
+      - compose.yml
+      - config/dev-secrets.env
+      - scripts/lib.sh
+      - scripts/setup-dev.sh
   pull_request:
     paths:
       - .github/workflows/copilot-setup-steps.yml
+      - apps/*/.env.local.sample
+      - compose.yml
+      - config/dev-secrets.env
+      - scripts/lib.sh
+      - scripts/setup-dev.sh
 
 jobs:
   copilot-setup-steps:
@@ -29,37 +39,20 @@ jobs:
         with:
           cache: true
 
-      - name: Build internal packages to generate type definitions
-        run: pnpm typegen
-
       - name: Set Next.js Turbopack TLS environment variable
         run: echo 'NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1' >> $GITHUB_ENV
 
-      - name: Start Supabase
-        run: pnpm exec supabase start
-
-      - name: Start Redis
-        run: docker compose up -d --wait
-
-      - name: Set environment variables for Supabase and Upstash
-        run: |
-          # `supabase status -o env` prints the values as NAME="value" lines
-          status="$(pnpm exec supabase status -o env)"
-          eval "$(grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY)=' <<< "$status")"
-
-          # The Redis HTTP API of compose.yml accepts this token
-          redis_token="$(sed -n 's/^SRH_TOKEN=//p' config/dev-secrets.env)"
-
-          {
-            echo "NEXT_PUBLIC_SUPABASE_URL=${API_URL:?}"
-            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${ANON_KEY:?}"
-            echo "SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY:?}"
-            echo "UPSTASH_REDIS_REST_TOKEN=${redis_token:?}"
-            echo "UPSTASH_REDIS_REST_URL=http://localhost:8079"
-          } >> "$GITHUB_ENV"
+      # Starts Supabase and Redis, creates the .env.local files and generates the types
+      - name: Set up the development environment
+        run: ./scripts/setup-dev.sh
 
       - name: Verify Supabase and Redis
         run: |
+          # The setup script wrote the URLs, the keys and the token to .env.local
+          set -a
+          source apps/admin/.env.local
+          set +a
+
           # The migrations and the seed are applied: a seeded table has a row
           curl --fail --silent --show-error \
             -H "apikey: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}" \
@@ -73,3 +66,10 @@ jobs:
             -d '["PING"]' \
             "${UPSTASH_REDIS_REST_URL}" \
             | jq --exit-status '.result == "PONG"'
+
+      - name: Verify that the setup can run again
+        run: |
+          # A second run succeeds and keeps the existing .env.local files
+          echo '# Added by the workflow' >> apps/web/.env.local
+          ./scripts/setup-dev.sh
+          grep -qxF '# Added by the workflow' apps/web/.env.local

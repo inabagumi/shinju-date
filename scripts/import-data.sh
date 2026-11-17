@@ -4,16 +4,11 @@ set -euo pipefail
 # Data import script for local development
 # This script downloads and imports production data into the local Supabase instance
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+# shellcheck source=scripts/lib.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+
 DATA_DIR="${DATA_DIR:-$PROJECT_ROOT/supabase/data-exports}"
 TEMP_DIR="/tmp/supabase-import"
-
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
 
 echo -e "${GREEN}Starting database import...${NC}"
 

@@ -7,6 +7,8 @@ on:
       - .github/workflows/devcontainer-test.yml
       - .node-version
       - compose.yml
+      - scripts/lib.sh
+      - scripts/setup-dev.sh
       - terraform/versions.tf
   push:
     branches:
@@ -16,6 +18,8 @@ on:
       - .github/workflows/devcontainer-test.yml
       - .node-version
       - compose.yml
+      - scripts/lib.sh
+      - scripts/setup-dev.sh
       - terraform/versions.tf
   workflow_dispatch:
 

@@ -3,9 +3,6 @@
 .temp
 .env
 
-# Local Supabase data
-volumes/
-
 # Supabase
 .branches
 .temp

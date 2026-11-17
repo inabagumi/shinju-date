@@ -48,21 +48,14 @@
 詳しい手順は、[セットアップガイド](docs/setup-guide.md)を読んでください。
 
 ```bash
-# 依存関係のインストール
-pnpm install
-
-# Supabase の起動と、マイグレーションとシードの適用
-pnpm exec supabase start
-pnpm exec supabase db reset
-
-# Redis の起動
-docker compose up -d
+# 依存関係のインストール、Supabase と Redis の起動、.env.local の作成
+./scripts/setup-dev.sh
 
 # 開発サーバーの起動
 pnpm dev
 ```
 
-[GitHub Codespaces](https://github.com/features/codespaces) と [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers) では、依存関係のインストール、Supabase と Redis の起動が自動で実行されます。
+[GitHub Codespaces](https://github.com/features/codespaces) と [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers) では、`./scripts/setup-dev.sh` と同じ初期設定が自動で実行されます。
 
 ## コマンド
 

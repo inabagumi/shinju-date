@@ -4,15 +4,10 @@ set -euo pipefail
 # Generate TypeScript types from PostgreSQL schema
 # This script extracts the database schema and generates TypeScript types
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-OUTPUT_FILE="${PROJECT_ROOT}/packages/database/types/supabase.ts"
+# shellcheck source=scripts/lib.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+OUTPUT_FILE="${PROJECT_ROOT}/packages/database/types/supabase.ts"
 
 echo -e "${GREEN}Generating TypeScript types from database schema...${NC}"
 

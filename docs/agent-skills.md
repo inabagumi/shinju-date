@@ -69,7 +69,7 @@ agent-browser install
 
 ## next-dev-loop で apps/web を確かめる
 
-MSW を有効にして開発サーバーを起動します（環境変数は [setup-guide.md](setup-guide.md#43-aiエージェントおよびci環境msw使用時) と同じです）。依存パッケージを先にビルドしておく必要があります。
+MSW を有効にして開発サーバーを起動します（環境変数は [setup-guide.md](setup-guide.md#52-aiエージェントおよびci環境msw使用時) と同じです）。依存パッケージを先にビルドしておく必要があります。
 
 ```bash
 pnpm build --filter=@shinju-date/web^...
