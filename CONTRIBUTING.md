@@ -37,6 +37,12 @@ Dev Container設定（`.devcontainer/`）を変更する場合は、`@devcontain
 pnpm run check --fix
 ```
 
+Biome の組み込みのルールで確かめられない決まりは、`config/biome/` に GritQL のプラグインとして置き、`biome.json` の `plugins` で有効にしています。プラグインと `scripts/` のスクリプトを変えたら、テストを実行してください。
+
+```bash
+pnpm run test:scripts
+```
+
 #### 型チェック
 
 Vitest はテストを実行する際に型を検査せず、パッケージのビルド（tsdown）も型を検査しません（型エラーがあってもビルドは通ります）。型エラーを検出するため、TypeScript のコードを変更した後は型チェックも実行してください。
@@ -52,6 +58,16 @@ pnpm run typecheck --filter=@shinju-date/msw-handlers
 - 各パッケージ・アプリケーションの `typecheck` スクリプト（`tsc --noEmit`）を Turborepo 経由で実行します
 - 依存パッケージのビルド（`^build`）と、Next.js のアプリケーションでは `next typegen` による型の生成（`PageProps`、`LayoutProps`、`RouteContext` など）を先に実行します
 - 新しいパッケージやアプリケーションを追加した場合は、`package.json` に `"typecheck": "tsc --noEmit"` を追加してください
+
+#### キャッシュのディレクティブの空行
+
+`'use cache'`、`cacheLife()`、`cacheTag()` を書いた後は、その後ろに空行があるかを確かめてください（[キャッシュのディレクティブ](docs/coding-guidelines.md#キャッシュのディレクティブ)）。
+
+```bash
+pnpm run check:cache-directives
+```
+
+- Biome のプラグインは空行を判定できないため、`scripts/check-cache-directives.mjs` で確かめます
 
 #### ドキュメントのリンク
 
