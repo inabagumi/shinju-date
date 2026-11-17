@@ -1,13 +1,15 @@
 import Link from 'next/link'
+import { AUDIT_TARGET_TABLES } from '@/lib/audit-log'
+import { getEntityName } from '../_lib/audit-log-details'
 import type { Log } from '../_lib/get-audit-logs'
 
 const getAdminPagePath = (table: string, id: string): string | null => {
   switch (table) {
-    case 'channels':
+    case AUDIT_TARGET_TABLES.CHANNELS:
       return `/talents/${id}`
-    case 'videos':
+    case AUDIT_TARGET_TABLES.VIDEOS:
       return `/videos/${id}`
-    case 'terms':
+    case AUDIT_TARGET_TABLES.TERMS:
       return '/terms'
     default:
       return null
@@ -15,15 +17,7 @@ const getAdminPagePath = (table: string, id: string): string | null => {
 }
 
 export function AuditLogTarget({ log }: { log: Log }) {
-  // detailsがオブジェクトであることを安全にチェック
-  const detailsObject =
-    log.details &&
-    typeof log.details === 'object' &&
-    !Array.isArray(log.details)
-      ? (log.details as { entityName?: string })
-      : null
-
-  const displayName = detailsObject?.entityName ?? log.target_record_id
+  const displayName = getEntityName(log.details) ?? log.target_record_id
 
   if (!log.target_table || !displayName) {
     return null
