@@ -1,6 +1,7 @@
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, devices } from '@playwright/test'
+import { STORAGE_STATE } from './e2e/storage-state'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -12,9 +13,22 @@ export default defineConfig({
   fullyParallel: true,
 
   projects: [
+    // Signs in once and saves the cookies to `STORAGE_STATE`
     {
-      name: 'chromium',
+      name: 'setup',
+      testMatch: '**/auth.setup.ts',
+    },
+    // Tests of the login page itself, which start without the saved session
+    {
+      name: 'login',
+      testMatch: '**/login.spec.ts',
       use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      dependencies: ['setup'],
+      name: 'chromium',
+      testIgnore: '**/login.spec.ts',
+      use: { ...devices['Desktop Chrome'], storageState: STORAGE_STATE },
     },
   ],
   reporter: process.env['CI']
