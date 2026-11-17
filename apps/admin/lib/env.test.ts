@@ -1,6 +1,7 @@
 // @vitest-environment node
+import { readFileSync } from 'node:fs'
 import { describe, expect, test } from 'vitest'
-import { type EnvSource, parseEnv, parsePublicEnv } from './env'
+import { ENV_NAMES, type EnvSource, parseEnv, parsePublicEnv } from './env'
 
 const API_KEYS = {
   GOOGLE_API_KEY: 'google-api-key',
@@ -170,5 +171,28 @@ describe('parsePublicEnv', () => {
     expect(() => parsePublicEnv(without('NEXT_PUBLIC_SUPABASE_URL'))).toThrow(
       'NEXT_PUBLIC_SUPABASE_URL',
     )
+  })
+})
+
+interface TurboConfig {
+  globalEnv?: string[]
+  tasks?: Record<string, { env?: string[] }>
+}
+
+function readTurboConfig(path: string): TurboConfig {
+  return JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'))
+}
+
+describe('ENV_NAMES', () => {
+  test('are all passed to the build by turbo.json', () => {
+    const appConfig = readTurboConfig('../turbo.json')
+    const rootConfig = readTurboConfig('../../../turbo.json')
+    const passedNames = new Set([
+      ...(rootConfig.globalEnv ?? []),
+      ...(appConfig.tasks?.['build']?.env ?? []),
+    ])
+
+    expect(ENV_NAMES).toContain('UPSTASH_REDIS_REST_URL')
+    expect(ENV_NAMES.filter((name) => !passedNames.has(name))).toEqual([])
   })
 })
