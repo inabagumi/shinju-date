@@ -4,17 +4,12 @@ set -euo pipefail
 # Data export script for production database
 # This script exports non-sensitive data from the production database to be used in local development
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+# shellcheck source=scripts/lib.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+
 OUTPUT_DIR="${OUTPUT_DIR:-$PROJECT_ROOT/supabase/data-exports}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 OUTPUT_FILE="${OUTPUT_DIR}/production_data_${TIMESTAMP}.sql"
-
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
 
 echo -e "${GREEN}Starting database export...${NC}"
 
