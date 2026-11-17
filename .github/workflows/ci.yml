@@ -200,13 +200,6 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      # Build dependencies for apps only
-      - name: Build dependencies
-        if: matrix.package != '@shinju-date/ui'
-        run: |
-          pnpm build --filter=@shinju-date/msw-handlers
-          pnpm build --filter=${{ matrix.package }}^...
-
       # Get Playwright version
       - name: Get Playwright version
         id: playwright-version
@@ -228,9 +221,9 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm --filter ${{ matrix.package }} exec playwright install --with-deps chromium
 
-      # Run E2E tests
+      # Runs through turbo, which builds the dependencies first (dependsOn in turbo.json)
       - name: Run E2E tests
-        run: pnpm --filter ${{ matrix.package }} test:e2e
+        run: pnpm test:e2e --filter=${{ matrix.package }}
         env:
           CI: true
 
