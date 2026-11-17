@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { TwitchStream, TwitchVideo } from '../types.js'
-import {
-  getThumbnailSource,
-  getVideoChanges,
-  toLiveFields,
-  toVideoFields,
-} from '../video.js'
+import { getThumbnailSource, toLiveFields, toVideoFields } from '../video.js'
 
 const video = {
   created_at: '2024-05-01T09:00:00Z',
@@ -45,25 +40,6 @@ describe('toLiveFields', () => {
       status: 'LIVE',
       title: 'Live now',
     })
-  })
-})
-
-describe('getVideoChanges', () => {
-  const saved = toVideoFields(video)
-
-  it('returns null when nothing changed', () => {
-    expect(
-      getVideoChanges(
-        { ...saved, published_at: '2024-05-01T09:00:05+00:00' },
-        saved,
-      ),
-    ).toBeNull()
-  })
-
-  it('returns only the columns that changed', () => {
-    expect(
-      getVideoChanges(saved, { ...saved, duration: 'PT2H', title: 'Renamed' }),
-    ).toEqual({ duration: 'PT2H', title: 'Renamed' })
   })
 })
 

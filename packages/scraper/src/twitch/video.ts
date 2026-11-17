@@ -1,4 +1,4 @@
-import type { Tables, TablesUpdate } from '@shinju-date/database'
+import type { Tables } from '@shinju-date/database'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { getTwitchVideoStatus } from '@shinju-date/twitch-api-client'
 import {
@@ -53,43 +53,6 @@ export function toLiveFields(stream: TwitchStream): TwitchVideoFields {
     status: 'LIVE',
     title: stream.title,
   }
-}
-
-function isSameInstant(a: string, b: string): boolean {
-  return (
-    toDBString(Temporal.Instant.from(a)) ===
-    toDBString(Temporal.Instant.from(b))
-  )
-}
-
-/**
- * Compares a saved video with what Twitch reports now.
- *
- * @returns The columns that changed, or `null` when the video is up to date.
- */
-export function getVideoChanges(
-  saved: TwitchVideoFields,
-  next: TwitchVideoFields,
-): TablesUpdate<'videos'> | null {
-  const changes: TablesUpdate<'videos'> = {}
-
-  if (saved.duration !== next.duration) {
-    changes.duration = next.duration
-  }
-
-  if (!isSameInstant(saved.published_at, next.published_at)) {
-    changes.published_at = next.published_at
-  }
-
-  if (saved.status !== next.status) {
-    changes.status = next.status
-  }
-
-  if (saved.title !== next.title) {
-    changes.title = next.title
-  }
-
-  return Object.keys(changes).length > 0 ? changes : null
 }
 
 /**

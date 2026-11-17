@@ -11,6 +11,7 @@ import {
   softDeleteUnavailableVideos,
   updateVideo,
 } from '../internal/database/index.js'
+import { diffVideoFields } from '../internal/operations/diff-video-fields.js'
 import { replaceThumbnail } from '../internal/thumbnails/index.js'
 import type {
   CrawlContext,
@@ -26,7 +27,6 @@ import {
   updateTwitchVideo,
 } from './saved-video.js'
 import {
-  getVideoChanges,
   type TwitchVideoFields,
   type TwitchVideoType,
   toClipFields,
@@ -103,7 +103,7 @@ async function refreshVideo(
   fetched: FetchedVideo,
 ): Promise<boolean> {
   const { now, supabaseClient } = context
-  const changes = getVideoChanges(saved, fetched.fields) ?? {}
+  const changes = diffVideoFields(saved, fetched.fields)
   const typeChanged = saved.twitch_video.type !== fetched.type
 
   if (typeChanged) {
