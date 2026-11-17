@@ -1,22 +1,23 @@
-import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import { TIME_ZONE } from '@shinju-date/constants'
+import {
+  readSummarySnapshot,
+  type SummaryStats,
+} from '@shinju-date/dashboard-stats'
 import { formatDate, formatDateKey } from '@shinju-date/temporal-fns'
 import { cacheLife } from 'next/cache'
+import { isNonNullable } from '@/lib/is-non-nullable'
 import { getRedisClient } from '@/lib/redis'
-import type { SummaryStats } from './get-summary-stats'
 
-export interface HistoricalStatsEntry {
+/** The snapshot of the counts of a day, with the date to show on the chart. */
+export interface HistoricalStatsEntry extends SummaryStats {
   date: string
-  totalVideos: number
-  visibleVideos: number
-  scheduledVideos: number
-  hiddenVideos: number
-  deletedVideos: number
 }
 
 /**
  * Get historical summary statistics for the past N days
  * @param days - Number of days to fetch (default: 7)
- * @returns Array of historical stats, ordered from oldest to newest
+ * @returns Array of historical stats, ordered from oldest to newest. Days
+ * without a snapshot are left out.
  */
 export async function getHistoricalStats(
   days = 7,
@@ -28,45 +29,23 @@ export async function getHistoricalStats(
   const redisClient = getRedisClient()
   const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
 
-  // Generate date keys for the past N days
-  const dateKeys: Array<{ date: string; key: string }> = []
-  for (let i = days - 1; i >= 0; i--) {
-    const targetDate = now.subtract({ days: i })
-    const dateKey = formatDateKey(targetDate)
-    const redisKey = `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${dateKey}`
-    // Use the same MM/DD format as the other screens of the admin UI
-    dateKeys.push({
-      date: formatDate(targetDate, { includeYear: false }),
-      key: redisKey,
-    })
-  }
+  const entries = await Promise.all(
+    Array.from({ length: days }, async (_, index) => {
+      const targetDate = now.subtract({ days: days - 1 - index })
+      const stats = await readSummarySnapshot(
+        redisClient,
+        formatDateKey(targetDate),
+      )
 
-  // Fetch all stats in parallel
-  const statsPromises = dateKeys.map(async ({ date, key }) => {
-    const stats = await redisClient.get<SummaryStats>(key)
-    return {
-      date,
-      stats,
-    }
-  })
+      return (
+        stats && {
+          // Use the same MM/DD format as the other screens of the admin UI
+          date: formatDate(targetDate, { includeYear: false }),
+          ...stats,
+        }
+      )
+    }),
+  )
 
-  const results = await Promise.all(statsPromises)
-
-  // Filter out null results and transform to HistoricalStatsEntry
-  const historicalStats: HistoricalStatsEntry[] = []
-  for (const { date, stats } of results) {
-    if (stats) {
-      historicalStats.push({
-        date,
-        deletedVideos: stats.deletedVideos,
-        hiddenVideos: stats.hiddenVideos,
-        // Fallback: for old data without scheduledVideos, use 0
-        scheduledVideos: stats.scheduledVideos ?? 0,
-        totalVideos: stats.totalVideos,
-        visibleVideos: stats.visibleVideos,
-      })
-    }
-  }
-
-  return historicalStats
+  return entries.filter(isNonNullable)
 }

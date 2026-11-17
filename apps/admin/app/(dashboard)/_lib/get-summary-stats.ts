@@ -1,211 +1,44 @@
-import { REDIS_KEYS, TIME_ZONE } from '@shinju-date/constants'
+import { TIME_ZONE } from '@shinju-date/constants'
+import {
+  countSummaryStats,
+  readSummarySnapshot,
+  type SummaryStats,
+  type WithTrends,
+  withTrends,
+} from '@shinju-date/dashboard-stats'
 import { formatDateKey } from '@shinju-date/temporal-fns'
 import { cacheLife } from 'next/cache'
 import { getRedisClient } from '@/lib/redis'
 import { createSupabaseServerClient } from '@/lib/supabase'
-import { unwrapCount } from '@/lib/supabase/query'
-import {
-  applyVideoSummaryFilter,
-  VIDEO_SUMMARY_FILTERS,
-  type VideoSummaryTile,
-} from './video-summary-filters'
-
-export interface SummaryStats {
-  totalVideos: number
-  visibleVideos: number
-  scheduledVideos: number
-  hiddenVideos: number
-  deletedVideos: number
-  totalTerms: number
-  totalTalents: number
-}
-
-export interface TrendValue {
-  current: number
-  dayChange: number | null
-  weekChange: number | null
-}
-
-export interface SummaryStatsWithTrends {
-  totalVideos: TrendValue
-  visibleVideos: TrendValue
-  scheduledVideos: TrendValue
-  hiddenVideos: TrendValue
-  deletedVideos: TrendValue
-  totalTerms: TrendValue
-  totalTalents: TrendValue
-}
 
 /**
- * Get summary statistics about videos and terms with trend indicators
- * (day-over-day and week-over-week)
+ * Get the counts of the videos, terms and talents, each with its changes from
+ * the snapshots of the day before and the week before (saved by the daily
+ * job `/stats/snapshot` of batch).
+ *
+ * The widgets of the dashboard share one result, so that the counts run once
+ * for each display.
  */
-export async function getSummaryStats(): Promise<SummaryStatsWithTrends> {
+export async function getSummaryStats(): Promise<WithTrends<SummaryStats>> {
   'use cache: private'
 
   cacheLife('minutes')
 
   const supabaseClient = await createSupabaseServerClient()
-
-  const countVideos = async (tile: VideoSummaryTile) =>
-    unwrapCount(
-      await applyVideoSummaryFilter(
-        supabaseClient
-          .from('videos')
-          .select('*', { count: 'exact', head: true }),
-        VIDEO_SUMMARY_FILTERS[tile],
-      ),
-      `getSummaryStats.${tile}`,
-    )
-
-  const [
-    totalVideos,
-    visibleVideos,
-    scheduledVideos,
-    hiddenVideos,
-    deletedVideos,
-  ] = await Promise.all([
-    countVideos('totalVideos'),
-    countVideos('visibleVideos'),
-    countVideos('scheduledVideos'),
-    countVideos('hiddenVideos'),
-    countVideos('deletedVideos'),
-  ])
-
-  // Get total terms count
-  const totalTerms = unwrapCount(
-    await supabaseClient
-      .from('terms')
-      .select('*', { count: 'exact', head: true }),
-    'getSummaryStats.totalTerms',
-  )
-
-  // Get total talents count
-  const totalTalents = unwrapCount(
-    await supabaseClient
-      .from('talents')
-      .select('*', { count: 'exact', head: true })
-      .is('deleted_at', null),
-    'getSummaryStats.totalTalents',
-  )
-
-  const currentStats: SummaryStats = {
-    deletedVideos,
-    hiddenVideos,
-    scheduledVideos,
-    totalTalents,
-    totalTerms,
-    totalVideos,
-    visibleVideos,
-  }
-
-  // Get yesterday's and last week's snapshots for trends
-  // Note: Snapshots are now saved by the daily batch job (/stats/snapshot)
-  // so we only read them here, not write them
   const redisClient = getRedisClient()
-  const now = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
+  const today = Temporal.Now.zonedDateTimeISO(TIME_ZONE)
 
-  const yesterday = now.subtract({ days: 1 })
-  const lastWeek = now.subtract({ days: 7 })
-
-  const yesterdayKey = formatDateKey(yesterday)
-  const lastWeekKey = formatDateKey(lastWeek)
-
-  const [yesterdayStats, lastWeekStats] = await Promise.all([
-    redisClient.get<SummaryStats>(
-      `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${yesterdayKey}`,
+  const [current, yesterday, lastWeek] = await Promise.all([
+    countSummaryStats(supabaseClient),
+    readSummarySnapshot(
+      redisClient,
+      formatDateKey(today.subtract({ days: 1 })),
     ),
-    redisClient.get<SummaryStats>(
-      `${REDIS_KEYS.SUMMARY_STATS_PREFIX}${lastWeekKey}`,
+    readSummarySnapshot(
+      redisClient,
+      formatDateKey(today.subtract({ days: 7 })),
     ),
   ])
 
-  // Calculate trends
-  const calculateTrend = (
-    current: number,
-    previous: number | undefined,
-  ): number | null => {
-    if (previous === undefined) return null
-    return current - previous
-  }
-
-  return {
-    deletedVideos: {
-      current: currentStats.deletedVideos,
-      dayChange: calculateTrend(
-        currentStats.deletedVideos,
-        yesterdayStats?.deletedVideos,
-      ),
-      weekChange: calculateTrend(
-        currentStats.deletedVideos,
-        lastWeekStats?.deletedVideos,
-      ),
-    },
-    hiddenVideos: {
-      current: currentStats.hiddenVideos,
-      dayChange: calculateTrend(
-        currentStats.hiddenVideos,
-        yesterdayStats?.hiddenVideos,
-      ),
-      weekChange: calculateTrend(
-        currentStats.hiddenVideos,
-        lastWeekStats?.hiddenVideos,
-      ),
-    },
-    scheduledVideos: {
-      current: currentStats.scheduledVideos,
-      dayChange: calculateTrend(
-        currentStats.scheduledVideos,
-        yesterdayStats?.scheduledVideos,
-      ),
-      weekChange: calculateTrend(
-        currentStats.scheduledVideos,
-        lastWeekStats?.scheduledVideos,
-      ),
-    },
-    totalTalents: {
-      current: currentStats.totalTalents,
-      dayChange: calculateTrend(
-        currentStats.totalTalents,
-        yesterdayStats?.totalTalents,
-      ),
-      weekChange: calculateTrend(
-        currentStats.totalTalents,
-        lastWeekStats?.totalTalents,
-      ),
-    },
-    totalTerms: {
-      current: currentStats.totalTerms,
-      dayChange: calculateTrend(
-        currentStats.totalTerms,
-        yesterdayStats?.totalTerms,
-      ),
-      weekChange: calculateTrend(
-        currentStats.totalTerms,
-        lastWeekStats?.totalTerms,
-      ),
-    },
-    totalVideos: {
-      current: currentStats.totalVideos,
-      dayChange: calculateTrend(
-        currentStats.totalVideos,
-        yesterdayStats?.totalVideos,
-      ),
-      weekChange: calculateTrend(
-        currentStats.totalVideos,
-        lastWeekStats?.totalVideos,
-      ),
-    },
-    visibleVideos: {
-      current: currentStats.visibleVideos,
-      dayChange: calculateTrend(
-        currentStats.visibleVideos,
-        yesterdayStats?.visibleVideos,
-      ),
-      weekChange: calculateTrend(
-        currentStats.visibleVideos,
-        lastWeekStats?.visibleVideos,
-      ),
-    },
-  }
+  return withTrends(current, yesterday, lastWeek)
 }
