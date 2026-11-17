@@ -209,7 +209,7 @@ export const fetchScheduleToday = async (): Promise<string> => {
  * with them.
  */
 export const fetchCurrentTime = async (): Promise<string> => {
-  'use cache'
+  'use cache: remote'
 
   cacheLife('hours')
 
