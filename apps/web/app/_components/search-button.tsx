@@ -31,7 +31,7 @@ export function SearchButton() {
     <button
       aria-keyshortcuts="Control+K Meta+K"
       aria-label="動画を検索"
-      className="flex h-10 w-full min-w-0 items-center gap-2 rounded-control border border-border bg-background px-3 text-left text-meta text-muted focus-ring transition-colors hover:border-accent hover:text-foreground focus-visible:border-accent md:max-w-md"
+      className="flex h-10 w-full min-w-0 items-center gap-2 rounded-control border border-border bg-background px-3 text-left text-meta text-muted transition-colors focus-ring hover:border-accent hover:text-foreground focus-visible:border-accent md:max-w-md"
       onClick={openModal}
       type="button"
     >
