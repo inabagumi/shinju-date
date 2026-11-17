@@ -5,30 +5,25 @@ import type { Tables, TablesUpdate } from '@shinju-date/database'
 import { logger } from '@shinju-date/logger'
 import { toDBString } from '@shinju-date/temporal-fns'
 import { revalidateTags } from '@shinju-date/web-cache'
-import {
-  parseYouTubeChannelIdentifier,
-  resolveYouTubeChannel,
-} from '@shinju-date/youtube-api-client'
 import { revalidatePath } from 'next/cache'
 import * as z from 'zod'
 import type { FormState } from '@/components/form'
+import { ActionError } from '@/lib/action'
 import { type AuditAction, createAuditLog } from '@/lib/audit-log'
 import {
   requireAuthenticatedUser,
   unauthenticatedFormState,
   unauthenticatedResult,
 } from '@/lib/auth'
-import { zodErrorToFormState } from '@/lib/form'
+import { actionErrorToFormState, zodErrorToFormState } from '@/lib/form'
 import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 import { isNotFoundError } from '@/lib/supabase/query'
-import { syncYouTubeChannelIconSafely } from '@/lib/youtube-channel-icon'
+import {
+  linkAccount,
+  type ResolvedAccount,
+  resolveAccount,
+} from '@/lib/talent-accounts'
 import { talentNameSchema, talentReadingSchema } from '../_lib/talent-schema'
-
-/** 一意制約（`youtube_channels.youtube_channel_id` など）に違反したときの PostgreSQL のエラーコード */
-const UNIQUE_VIOLATION_ERROR_CODE = '23505'
-
-const CHANNEL_ALREADY_REGISTERED_MESSAGE =
-  'このチャンネルは別のタレントに既に登録されています。'
 
 const createTalentSchema = z.object({
   name: talentNameSchema,
@@ -75,87 +70,16 @@ export async function createTalentAction(
   }
 
   const { name, reading } = parsed.data
-  const rawChannelInput = (formData.get('youtube_channel_id') as string) ?? ''
-
-  // Resolve optional YouTube channel before insert so we fail fast on bad input
-  let resolvedChannel: {
-    channel: NonNullable<Awaited<ReturnType<typeof resolveYouTubeChannel>>>
-    id: string
-    name: string
-    youtubeHandle: string | null
-  } | null = null
-
-  if (rawChannelInput.trim() !== '') {
-    const identifier = parseYouTubeChannelIdentifier(rawChannelInput)
-    if (!identifier) {
-      return {
-        errors: {
-          youtube_channel_id: [
-            '有効なチャンネルID（UC...）、ハンドル（@name）、またはYouTube URLを入力してください。',
-          ],
-        },
-      }
-    }
-
-    try {
-      const youtubeChannel = await resolveYouTubeChannel(identifier)
-      if (!youtubeChannel) {
-        return {
-          errors: {
-            youtube_channel_id: [
-              'YouTubeでチャンネルが見つかりませんでした。入力内容を確認してください。',
-            ],
-          },
-        }
-      }
-      resolvedChannel = {
-        channel: youtubeChannel,
-        id: youtubeChannel.id,
-        name: youtubeChannel.snippet.title,
-        youtubeHandle: youtubeChannel.snippet.customUrl || null,
-      }
-    } catch (error) {
-      if (error instanceof TypeError && error.message.includes('API Key')) {
-        return {
-          errors: {
-            generic: [
-              'YouTube APIキーが設定されていません。管理者に連絡してください。',
-            ],
-          },
-        }
-      }
-      logger.error('YouTube APIの呼び出しに失敗しました', { error })
-      return {
-        errors: {
-          generic: [
-            'YouTube APIへの接続に失敗しました。しばらくしてから再度お試しください。',
-          ],
-        },
-      }
-    }
-  }
+  const channelInput = String(formData.get('youtube_channel_id') ?? '')
+  let account: ResolvedAccount<'youtube'> | null = null
 
   try {
-    if (resolvedChannel) {
-      // youtube_channel_id は全タレントで一意なので、タレントを作る前に確かめる
-      const { data: existingChannel, error: existingChannelError } =
-        await supabaseClient
-          .from('youtube_channels')
-          .select('id')
-          .eq('youtube_channel_id', resolvedChannel.id)
-          .maybeSingle()
-
-      if (existingChannelError) {
-        throw existingChannelError
-      }
-
-      if (existingChannel) {
-        return {
-          errors: {
-            youtube_channel_id: [CHANNEL_ALREADY_REGISTERED_MESSAGE],
-          },
-        }
-      }
+    // タレントを作る前に、チャンネルを解決し、登録済みでないことを確かめる
+    if (channelInput.trim() !== '') {
+      account = await resolveAccount('youtube', {
+        input: channelInput,
+        supabaseClient,
+      })
     }
 
     const { data: newTalent, error } = await supabaseClient
@@ -171,43 +95,33 @@ export async function createTalentAction(
       throw error
     }
 
-    if (resolvedChannel) {
-      const { data: newChannel, error: youtubeError } = await supabaseClient
-        .from('youtube_channels')
-        .insert({
-          name: resolvedChannel.name,
-          talent_id: newTalent.id,
-          youtube_channel_id: resolvedChannel.id,
-          youtube_handle: resolvedChannel.youtubeHandle,
+    if (account) {
+      try {
+        await linkAccount('youtube', {
+          input: account,
+          supabaseClient,
+          talentId: newTalent.id,
         })
-        .select('id')
-        .single()
-
-      if (youtubeError) {
-        logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
-          error: youtubeError,
-          youtube_channel_id: resolvedChannel.id,
-        })
-
+      } catch (linkError) {
         await deleteTalentSafely(newTalent.id)
+
+        if (linkError instanceof ActionError) {
+          throw linkError
+        }
+
+        logger.error('youtube_channelsテーブルへの書き込みに失敗しました', {
+          error: linkError,
+          youtube_channel_id: account.remote.id,
+        })
 
         return {
           errors: {
             youtube_channel_id: [
-              youtubeError.code === UNIQUE_VIOLATION_ERROR_CODE
-                ? CHANNEL_ALREADY_REGISTERED_MESSAGE
-                : 'YouTubeチャンネルの登録に失敗しました。しばらくしてから再度お試しください。',
+              'YouTubeチャンネルの登録に失敗しました。しばらくしてから再度お試しください。',
             ],
           },
         }
       }
-
-      // アイコンの取得に失敗してもタレントの追加は成功扱いにする（次回の同期で再取得される）
-      await syncYouTubeChannelIconSafely(resolvedChannel.channel, {
-        id: newChannel.id,
-        profile_images: null,
-        youtube_channel_id: resolvedChannel.id,
-      })
     }
 
     // Log audit entry
@@ -219,11 +133,15 @@ export async function createTalentAction(
     await revalidateTags([CACHE_TAGS.TALENTS, CACHE_TAGS.VIDEOS])
     return {}
   } catch (error) {
+    if (error instanceof ActionError) {
+      return actionErrorToFormState(error)
+    }
+
     logger.error('タレントの追加に失敗しました', {
       error,
       name,
       reading,
-      youtube_channel_id: resolvedChannel?.id,
+      youtube_channel_id: account?.remote.id,
     })
     return {
       errors: {
