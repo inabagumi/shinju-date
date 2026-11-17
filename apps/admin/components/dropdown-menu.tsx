@@ -55,7 +55,7 @@ export function DropdownMenuTrigger({
       <button
         aria-haspopup="menu"
         className={twMerge(
-          'rounded-control p-1 text-muted focus-ring transition-colors hover:bg-muted hover:text-foreground',
+          'rounded-control p-1 text-muted transition-colors focus-ring hover:bg-muted hover:text-foreground',
           className,
         )}
         onClick={(e) => {

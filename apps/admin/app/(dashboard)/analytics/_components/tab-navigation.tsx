@@ -36,7 +36,7 @@ export function TabNavigation({
         {tabs.map((tab) => (
           <button
             aria-selected={activeTab === tab.id}
-            className={`border-b-2 px-1 py-2 text-meta font-semibold whitespace-nowrap focus-ring transition-colors ${
+            className={`border-b-2 px-1 py-2 text-meta font-semibold whitespace-nowrap transition-colors focus-ring ${
               activeTab === tab.id
                 ? 'border-accent text-accent'
                 : 'border-transparent text-muted hover:border-border hover:text-foreground'
