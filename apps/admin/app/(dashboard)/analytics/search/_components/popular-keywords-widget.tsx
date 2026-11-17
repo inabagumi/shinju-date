@@ -1,5 +1,8 @@
 import { cache } from 'react'
-import { getPopularKeywords } from '@/lib/analytics/get-popular-keywords'
+import {
+  getPopularKeywords,
+  type PopularKeyword,
+} from '@/lib/analytics/get-popular-keywords'
 import { ExportMenu } from '../../_components/export-menu'
 import { RankingTable } from '../../_components/ranking-table'
 import { WidgetHeader } from '../../_components/widget-header'
@@ -8,11 +11,6 @@ import type { AnalyticsSearchParams } from '../../_lib/search-params-schema'
 
 interface Props {
   searchParams: Promise<AnalyticsSearchParams>
-}
-
-interface PopularKeyword {
-  keyword: string
-  count: number
 }
 
 /**
