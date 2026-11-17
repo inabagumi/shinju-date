@@ -14,6 +14,9 @@ test.describe('Talent calendar', () => {
     expect(response.headers()['content-type']).toBe(
       'text/calendar; charset=UTF-8',
     )
+    expect(response.headers()['cache-control']).toBe(
+      'public, max-age=300, s-maxage=900, stale-while-revalidate=3600',
+    )
 
     const body = await response.text()
 
@@ -25,6 +28,14 @@ test.describe('Talent calendar', () => {
     request,
   }) => {
     const response = await request.get(`/talents/${MISSING_TALENT_ID}.ics`)
+
+    expect(response.status()).toBe(404)
+  })
+
+  test('should answer 404 for an ID that is not a UUID', async ({
+    request,
+  }) => {
+    const response = await request.get('/talents/not-a-uuid.ics')
 
     expect(response.status()).toBe(404)
   })
