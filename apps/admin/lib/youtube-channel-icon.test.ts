@@ -5,7 +5,7 @@ import {
 } from './youtube-channel-icon'
 
 vi.mock('@/lib/supabase/admin', () => ({
-  supabaseClient: { kind: 'service-role' },
+  getSupabaseAdminClient: () => ({ kind: 'service-role' }),
 }))
 
 vi.mock('@shinju-date/logger', () => ({

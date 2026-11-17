@@ -1,17 +1,24 @@
 import { MOCK_SUPABASE_SESSION } from '@shinju-date/msw-handlers/session'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { withMockSessionCookie } from './mock-session'
+
+const { serverEnv } = vi.hoisted(() => ({
+  serverEnv: { ENABLE_MSW: false, MSW_SUPABASE_AUTHENTICATED: false },
+}))
+
+vi.mock('@/lib/env', () => ({ serverEnv }))
 
 const SUPABASE_URL = 'https://fake.supabase.test'
 
 describe('withMockSessionCookie', () => {
-  afterEach(() => {
-    vi.unstubAllEnvs()
+  beforeEach(() => {
+    serverEnv.ENABLE_MSW = false
+    serverEnv.MSW_SUPABASE_AUTHENTICATED = false
   })
 
   it('adds the mock session when MSW_SUPABASE_AUTHENTICATED is true', async () => {
-    vi.stubEnv('ENABLE_MSW', 'true')
-    vi.stubEnv('MSW_SUPABASE_AUTHENTICATED', 'true')
+    serverEnv.ENABLE_MSW = true
+    serverEnv.MSW_SUPABASE_AUTHENTICATED = true
 
     const cookies = [{ name: 'other', value: 'value' }]
 
@@ -29,8 +36,8 @@ describe('withMockSessionCookie', () => {
   it.each(['sb-fake-auth-token', 'sb-fake-auth-token.0'])(
     'keeps the session cookie (%s) of a signed-in user',
     async (name) => {
-      vi.stubEnv('ENABLE_MSW', 'true')
-      vi.stubEnv('MSW_SUPABASE_AUTHENTICATED', 'true')
+      serverEnv.ENABLE_MSW = true
+      serverEnv.MSW_SUPABASE_AUTHENTICATED = true
 
       const cookies = [{ name, value: 'session' }]
 
@@ -41,12 +48,11 @@ describe('withMockSessionCookie', () => {
   )
 
   it.each([
-    { ENABLE_MSW: 'true', MSW_SUPABASE_AUTHENTICATED: '' },
-    { ENABLE_MSW: '', MSW_SUPABASE_AUTHENTICATED: 'true' },
-    { ENABLE_MSW: '', MSW_SUPABASE_AUTHENTICATED: '' },
+    { ENABLE_MSW: true, MSW_SUPABASE_AUTHENTICATED: false },
+    { ENABLE_MSW: false, MSW_SUPABASE_AUTHENTICATED: true },
+    { ENABLE_MSW: false, MSW_SUPABASE_AUTHENTICATED: false },
   ])('does not add the mock session with %o', async (env) => {
-    vi.stubEnv('ENABLE_MSW', env.ENABLE_MSW)
-    vi.stubEnv('MSW_SUPABASE_AUTHENTICATED', env.MSW_SUPABASE_AUTHENTICATED)
+    Object.assign(serverEnv, env)
 
     await expect(withMockSessionCookie(SUPABASE_URL, [])).resolves.toEqual([])
   })

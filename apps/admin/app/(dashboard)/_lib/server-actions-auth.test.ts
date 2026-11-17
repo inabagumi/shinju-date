@@ -65,10 +65,7 @@ import {
   softDeleteAction,
   toggleVisibilityAction,
 } from '../videos/_actions'
-import {
-  syncVideoWithTwitch,
-  syncVideoWithYouTube,
-} from '../videos/_actions/sync'
+import { syncVideoAction } from '../videos/_actions/sync'
 import {
   disableMaintenanceMode,
   enableMaintenanceMode,
@@ -195,8 +192,7 @@ const resultActions: [string, () => Promise<unknown>][] = [
   ['toggleVisibilityAction', () => toggleVisibilityAction([ID])],
   ['softDeleteAction', () => softDeleteAction([ID])],
   ['restoreAction', () => restoreAction([ID])],
-  ['syncVideoWithYouTube', () => syncVideoWithYouTube(ID)],
-  ['syncVideoWithTwitch', () => syncVideoWithTwitch(ID)],
+  ['syncVideoAction', () => syncVideoAction(ID)],
   ['enableMaintenanceMode', () => enableMaintenanceMode()],
   ['disableMaintenanceMode', () => disableMaintenanceMode()],
 ]

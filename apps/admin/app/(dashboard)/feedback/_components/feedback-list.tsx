@@ -19,20 +19,18 @@ import {
 import { Inbox } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
+import {
+  FEATURE_REQUEST_STATUS_LABELS,
+  FEATURE_REQUEST_STATUSES,
+  type FeatureRequestStatus,
+} from '../_lib/feature-request-status'
 
 interface FeatureRequestListProps {
   featureRequests: Tables<'feature_requests'>[]
 }
 
-const statusLabels: Record<Tables<'feature_requests'>['status'], string> = {
-  in_progress: '対応中',
-  pending: '未対応',
-  rejected: '却下',
-  resolved: '対応済み',
-}
-
 const statusColors: Record<
-  Tables<'feature_requests'>['status'],
+  FeatureRequestStatus,
   'info' | 'neutral' | 'success' | 'danger'
 > = {
   in_progress: 'neutral',
@@ -45,7 +43,7 @@ export function FeatureRequestList({
   featureRequests,
 }: FeatureRequestListProps) {
   const [statusFilter, setStatusFilter] = useState<
-    Tables<'feature_requests'>['status'] | 'all'
+    FeatureRequestStatus | 'all'
   >('all')
   const [readFilter, setReadFilter] = useState<'all' | 'read' | 'unread'>('all')
 
@@ -69,17 +67,16 @@ export function FeatureRequestList({
           <Select
             id="status-filter"
             onChange={(e) =>
-              setStatusFilter(
-                e.target.value as Tables<'feature_requests'>['status'] | 'all',
-              )
+              setStatusFilter(e.target.value as FeatureRequestStatus | 'all')
             }
             value={statusFilter}
           >
             <option value="all">すべて</option>
-            <option value="pending">未対応</option>
-            <option value="in_progress">対応中</option>
-            <option value="resolved">対応済み</option>
-            <option value="rejected">却下</option>
+            {FEATURE_REQUEST_STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {FEATURE_REQUEST_STATUS_LABELS[status]}
+              </option>
+            ))}
           </Select>
         </div>
         <div className="flex flex-col gap-1 md:w-48">
@@ -127,7 +124,7 @@ export function FeatureRequestList({
                   <TableCell>
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge variant={statusColors[item.status]}>
-                        {statusLabels[item.status]}
+                        {FEATURE_REQUEST_STATUS_LABELS[item.status]}
                       </Badge>
                       {!item.is_read && <Badge variant="warning">未読</Badge>}
                     </div>

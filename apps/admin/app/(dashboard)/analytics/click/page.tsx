@@ -9,10 +9,10 @@ import {
   TabNavigationSkeleton,
 } from '@/components/skeletons'
 import { DateRangePickerClient } from '../_components/date-range-picker-client'
+import { TabNavigation } from '../_components/tab-navigation'
 import { VolumeChart } from '../_components/volume-chart'
 import { analyticsSearchParamsSchema } from '../_lib/search-params-schema'
 import { PopularRankingsTabs } from './_components/popular-rankings-tabs'
-import { TabNavigation } from './_components/tab-navigation'
 
 export const metadata: Metadata = {
   title: 'クリックアナリティクス',
