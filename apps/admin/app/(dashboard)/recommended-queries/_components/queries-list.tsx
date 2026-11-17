@@ -12,6 +12,7 @@ import {
   TableRow,
 } from '@shinju-date/ui'
 import { useMemo, useState, useTransition } from 'react'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { addQueryAction, deleteQueryAction } from '../_actions'
 
 interface QueriesListProps {
@@ -50,16 +51,6 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
         setNewQuery('')
       } else {
         setError(result.error ?? '追加に失敗しました。')
-      }
-    })
-  }
-
-  const handleDeleteQuery = (query: string) => {
-    setError(null)
-    startTransition(async () => {
-      const result = await deleteQueryAction(query)
-      if (!result.success) {
-        setError(result.error ?? '削除に失敗しました。')
       }
     })
   }
@@ -150,16 +141,24 @@ export function QueriesList({ manualQueries, autoQueries }: QueriesListProps) {
                 <TableRow key={query}>
                   <TableCell className="whitespace-normal">{query}</TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      aria-label={`「${query}」を削除`}
-                      disabled={isPending}
-                      onClick={() => handleDeleteQuery(query)}
-                      size="sm"
-                      type="button"
-                      variant="danger"
-                    >
-                      削除
-                    </Button>
+                    <ConfirmDialog
+                      confirmLabel="削除"
+                      confirmVariant="danger"
+                      description={`「${query}」を削除しますか？`}
+                      onConfirm={() => deleteQueryAction(query)}
+                      title="おすすめクエリを削除"
+                      trigger={
+                        <Button
+                          aria-label={`「${query}」を削除`}
+                          disabled={isPending}
+                          size="sm"
+                          type="button"
+                          variant="danger"
+                        >
+                          削除
+                        </Button>
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ))}

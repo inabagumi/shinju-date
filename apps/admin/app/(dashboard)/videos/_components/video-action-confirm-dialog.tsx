@@ -1,49 +1,65 @@
 'use client'
 
 import type { Tables } from '@shinju-date/database'
-import {
-  Alert,
-  Button,
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-  Input,
-} from '@shinju-date/ui'
-import { AlertTriangle, Eye, RotateCcw } from 'lucide-react'
-import { useState, useTransition } from 'react'
+import type { ButtonProps } from '@shinju-date/ui'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 
 type VideoInfo = Pick<Tables<'videos'>, 'id' | 'title'>
 
+/** 動画に対する操作の種類 */
+type VideoAction = 'toggle' | 'delete' | 'restore'
+
 interface VideoActionConfirmDialogProps {
-  action: 'toggle' | 'delete' | 'restore'
+  action: VideoAction
   videos: VideoInfo[]
   open: boolean
   onOpenChange: (open: boolean) => void
   onConfirm: () => Promise<void>
 }
 
-const ACTION_CONFIG = {
+interface VideoActionConfig {
+  title: string
+  description: (count: number) => string
+  confirmLabel: string
+  confirmVariant: ButtonProps['variant']
+  /** 指定すると、この文字列を入力するまで実行できない */
+  requireKeyword?: string
+}
+
+const VIDEO_ACTIONS = {
   delete: {
-    buttonVariant: 'danger' as const,
-    icon: AlertTriangle,
+    confirmLabel: '削除する',
+    confirmVariant: 'danger',
+    description: (count) =>
+      count > 1
+        ? `${count}件の動画を削除しようとしています。この操作は取り消せません。`
+        : '以下の動画を削除します。この操作は取り消せません。',
+    requireKeyword: 'DELETE',
     title: '動画を削除',
   },
   restore: {
-    buttonVariant: 'primary' as const,
-    icon: RotateCcw,
+    confirmLabel: '復元する',
+    confirmVariant: 'primary',
+    description: (count) =>
+      count > 1 ? `${count}件の動画を復元します。` : '以下の動画を復元します。',
     title: '動画を復元',
   },
   toggle: {
-    buttonVariant: 'primary' as const,
-    icon: Eye,
+    confirmLabel: '切り替える',
+    confirmVariant: 'primary',
+    description: (count) =>
+      count > 1
+        ? `${count}件の動画の表示状態を切り替えます。`
+        : '以下の動画の表示状態を切り替えます。',
     title: '表示状態を切り替え',
   },
-} as const
+} as const satisfies Record<VideoAction, VideoActionConfig>
 
+/**
+ * 動画の表示の切り替え・削除・復元を確かめてから実行するダイアログ。
+ * 実行中の表示、エラーの表示、削除のときのキーワードの入力は `ConfirmDialog` が
+ * 受け持つ。
+ */
 export function VideoActionConfirmDialog({
   action,
   videos,
@@ -51,144 +67,34 @@ export function VideoActionConfirmDialog({
   onOpenChange,
   onConfirm,
 }: VideoActionConfirmDialogProps) {
-  const [isPending, startTransition] = useTransition()
-  const [error, setError] = useState<string | null>(null)
-  const [confirmKeyword, setConfirmKeyword] = useState('')
-
-  const config = ACTION_CONFIG[action]
-  const isMultiple = videos.length > 1
-  const requiresKeyword = action === 'delete'
-
-  const handleConfirm = () => {
-    // For delete operations, require keyword confirmation
-    if (requiresKeyword && confirmKeyword !== 'DELETE') {
-      setError('「DELETE」と入力してください。')
-      return
-    }
-
-    startTransition(async () => {
-      try {
-        await onConfirm()
-        setError(null)
-        setConfirmKeyword('')
-        onOpenChange(false)
-      } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : '予期しないエラーが発生しました。',
-        )
-      }
-    })
-  }
-
-  const handleOpenChange = (newOpen: boolean) => {
-    if (!isPending) {
-      setError(null)
-      setConfirmKeyword('')
-      onOpenChange(newOpen)
-    }
-  }
-
-  const getDescription = () => {
-    if (action === 'delete') {
-      if (isMultiple) {
-        return `${videos.length}件の動画を削除しようとしています。この操作は取り消せません。`
-      }
-      return '以下の動画を削除します。この操作は取り消せません。'
-    }
-    if (action === 'restore') {
-      if (isMultiple) {
-        return `${videos.length}件の動画を復元します。`
-      }
-      return '以下の動画を復元します。'
-    }
-    if (isMultiple) {
-      return `${videos.length}件の動画の表示状態を切り替えます。`
-    }
-    return '以下の動画の表示状態を切り替えます。'
-  }
-
-  const Icon = config.icon
+  const config: VideoActionConfig = VIDEO_ACTIONS[action]
 
   return (
-    <Dialog onOpenChange={handleOpenChange} open={open}>
-      <DialogPortal>
-        <DialogOverlay />
-        <DialogContent className="max-h-[85vh] w-[90vw] max-w-[550px] overflow-y-auto">
-          <DialogTitle className="flex items-center gap-2">
-            <Icon aria-hidden="true" className="size-5" />
-            {config.title}
-          </DialogTitle>
-          <DialogDescription>{getDescription()}</DialogDescription>
-
-          {/* Video list */}
-          <div className="my-4 max-h-60 overflow-y-auto rounded-container border border-border bg-muted p-3">
-            <div className="mb-2 text-meta font-semibold tabular-nums">
-              対象動画 ({videos.length}件):
-            </div>
-            <ul className="space-y-2">
-              {videos.map((video) => (
-                <li
-                  className="border-l-2 border-border pl-2 text-meta text-muted"
-                  key={video.id}
-                >
-                  {video.title}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Keyword confirmation for delete */}
-          {requiresKeyword && (
-            <div className="mb-4">
-              <label
-                className="mb-2 block text-meta font-semibold text-danger"
-                htmlFor="confirm-keyword"
-              >
-                続行するには「DELETE」と入力してください:
-              </label>
-              <Input
-                autoComplete="off"
-                disabled={isPending}
-                id="confirm-keyword"
-                onChange={(e) => setConfirmKeyword(e.target.value)}
-                placeholder="DELETE"
-                value={confirmKeyword}
-              />
-            </div>
-          )}
-
-          {error && (
-            <Alert className="mb-4" tone="danger">
-              {error}
-            </Alert>
-          )}
-
-          <div className="flex justify-end gap-2">
-            <DialogClose asChild>
-              <Button disabled={isPending} variant="secondary">
-                キャンセル
-              </Button>
-            </DialogClose>
-            <Button
-              disabled={
-                isPending || (requiresKeyword && confirmKeyword !== 'DELETE')
-              }
-              onClick={handleConfirm}
-              variant={config.buttonVariant}
-            >
-              {isPending
-                ? '処理中...'
-                : action === 'delete'
-                  ? '削除する'
-                  : action === 'restore'
-                    ? '復元する'
-                    : '切り替える'}
-            </Button>
-          </div>
-        </DialogContent>
-      </DialogPortal>
-    </Dialog>
+    <ConfirmDialog
+      confirmLabel={config.confirmLabel}
+      confirmVariant={config.confirmVariant}
+      description={config.description(videos.length)}
+      onConfirm={onConfirm}
+      onOpenChange={onOpenChange}
+      open={open}
+      pendingLabel="処理中..."
+      requireKeyword={config.requireKeyword}
+      size="lg"
+      title={config.title}
+    >
+      <p className="mb-2 font-semibold tabular-nums">
+        対象動画 ({videos.length}件):
+      </p>
+      <ul className="max-h-60 space-y-2 overflow-y-auto">
+        {videos.map((video) => (
+          <li
+            className="border-l-2 border-border pl-2 text-muted"
+            key={video.id}
+          >
+            {video.title}
+          </li>
+        ))}
+      </ul>
+    </ConfirmDialog>
   )
 }

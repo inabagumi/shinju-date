@@ -301,4 +301,35 @@ describe('ConfirmDialog', () => {
       expect(screen.getByRole('button', { name: '削除' })).toBeDisabled()
     })
   })
+
+  describe('size', () => {
+    function renderWithSize(size?: ConfirmDialogProps['size']) {
+      render(
+        <ConfirmDialog
+          confirmLabel="削除"
+          description="削除してもよろしいですか？"
+          onConfirm={vi.fn()}
+          onOpenChange={vi.fn()}
+          open
+          size={size}
+          title="項目を削除"
+        />,
+      )
+
+      return screen.getByRole('dialog')
+    }
+
+    it('uses the default width when omitted', () => {
+      const dialog = renderWithSize()
+
+      expect(dialog).toHaveClass('overflow-y-auto')
+      expect(dialog).not.toHaveClass('max-w-lg')
+    })
+
+    it('uses the wider width for lg', () => {
+      const dialog = renderWithSize('lg')
+
+      expect(dialog).toHaveClass('max-w-lg', 'overflow-y-auto')
+    })
+  })
 })
