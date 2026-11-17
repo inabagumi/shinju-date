@@ -50,4 +50,13 @@ describe('Textarea', () => {
     expect(textarea).toHaveClass('min-h-32')
     expect(ref.current).toBe(textarea)
   })
+
+  it('lets className win over the default classes', () => {
+    render(<Textarea aria-label="内容" className="py-4" />)
+
+    const textarea = screen.getByRole('textbox', { name: '内容' })
+
+    expect(textarea).toHaveClass('px-4', 'py-4')
+    expect(textarea).not.toHaveClass('py-2')
+  })
 })
