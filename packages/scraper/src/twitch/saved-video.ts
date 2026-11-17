@@ -3,7 +3,7 @@ import { isLiveTwitchVideoId } from '@shinju-date/twitch-api-client'
 import type { QueryData } from '@supabase/supabase-js'
 import { chunk } from '../internal/batch.js'
 import { IN_FILTER_CHUNK_SIZE } from '../internal/constants.js'
-import { DatabaseError } from '../internal/database/index.js'
+import { DatabaseError } from '../internal/errors.js'
 import type { TypedSupabaseClient } from '../types.js'
 
 /** Columns of the `videos` row of a saved Twitch video. */

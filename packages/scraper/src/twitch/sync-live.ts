@@ -9,10 +9,10 @@ import type { QueryData } from '@supabase/supabase-js'
 import { countChanges } from '../internal/concurrency.js'
 import { WRITE_CONCURRENCY } from '../internal/constants.js'
 import {
-  DatabaseError,
   getActiveTwitchUsers,
   updateVideo,
 } from '../internal/database/index.js'
+import { DatabaseError } from '../internal/errors.js'
 import type {
   CrawlContext,
   TypedSupabaseClient,

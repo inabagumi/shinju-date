@@ -1,9 +1,9 @@
 import { BACKFILL_SAVE_CONCURRENCY } from '../internal/concurrency.js'
+import { findYouTubeChannel } from '../internal/database/index.js'
 import {
   AccountNotFoundError,
-  findYouTubeChannel,
   StalledPaginationError,
-} from '../internal/database/index.js'
+} from '../internal/errors.js'
 import type {
   AddPastVideosOptions,
   AddPastVideosResult,

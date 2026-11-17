@@ -1,3 +1,4 @@
+import { throwIfError } from '@shinju-date/scraper'
 import { toDBString } from '@shinju-date/temporal-fns'
 import type { TypedSupabaseClient } from '@/lib/supabase'
 import { BATCH_LIMIT } from './constants'
@@ -97,19 +98,18 @@ async function softDeleteVideosOfDeletedTalents(
   limit: number,
 ): Promise<number> {
   // Join filter: non-deleted videos whose parent talent is soft-deleted.
-  const { data, error } = await supabaseClient
-    .from('videos')
-    .select('id, thumbnail_id, talents!inner(deleted_at)')
-    .is('deleted_at', null)
-    .not('talents.deleted_at', 'is', null)
-    .order('id', { ascending: true })
-    .limit(limit)
+  const data = throwIfError(
+    await supabaseClient
+      .from('videos')
+      .select('id, thumbnail_id, talents!inner(deleted_at)')
+      .is('deleted_at', null)
+      .not('talents.deleted_at', 'is', null)
+      .order('id', { ascending: true })
+      .limit(limit),
+    'Failed to load videos of deleted talents',
+  )
 
-  if (error) {
-    throw new TypeError(error.message, { cause: error })
-  }
-
-  const videos: CascadeVideoRow[] = (data ?? []).map((row) => ({
+  const videos: CascadeVideoRow[] = data.map((row) => ({
     id: row.id,
     thumbnail_id: row.thumbnail_id,
   }))
@@ -127,20 +127,19 @@ async function restoreCascadeDeletedVideos(
   limit: number,
 ): Promise<number> {
   // Only talent_deleted under restored (non-deleted) talents.
-  const { data, error } = await supabaseClient
-    .from('videos')
-    .select('id, thumbnail_id, talents!inner(deleted_at)')
-    .eq('deleted_reason', 'talent_deleted')
-    .not('deleted_at', 'is', null)
-    .is('talents.deleted_at', null)
-    .order('id', { ascending: true })
-    .limit(limit)
+  const data = throwIfError(
+    await supabaseClient
+      .from('videos')
+      .select('id, thumbnail_id, talents!inner(deleted_at)')
+      .eq('deleted_reason', 'talent_deleted')
+      .not('deleted_at', 'is', null)
+      .is('talents.deleted_at', null)
+      .order('id', { ascending: true })
+      .limit(limit),
+    'Failed to load videos of restored talents',
+  )
 
-  if (error) {
-    throw new TypeError(error.message, { cause: error })
-  }
-
-  const videos: CascadeVideoRow[] = (data ?? []).map((row) => ({
+  const videos: CascadeVideoRow[] = data.map((row) => ({
     id: row.id,
     thumbnail_id: row.thumbnail_id,
   }))
@@ -161,40 +160,38 @@ async function softDeleteVideos(
   const timestamp = toDBString(now)
 
   // Re-check deleted_at so concurrent admin/sync deletes are not overwritten.
-  const { data: updatedVideos, error: videoError } = await supabaseClient
-    .from('videos')
-    .update({
-      deleted_at: timestamp,
-      deleted_reason: 'talent_deleted',
-      updated_at: timestamp,
-    })
-    .in('id', videoIds)
-    .is('deleted_at', null)
-    .select('id')
+  const updatedVideos = throwIfError(
+    await supabaseClient
+      .from('videos')
+      .update({
+        deleted_at: timestamp,
+        deleted_reason: 'talent_deleted',
+        updated_at: timestamp,
+      })
+      .in('id', videoIds)
+      .is('deleted_at', null)
+      .select('id'),
+    'Failed to soft-delete videos of deleted talents',
+  )
 
-  if (videoError) {
-    throw new TypeError(videoError.message, { cause: videoError })
-  }
-
-  const updatedIds = new Set((updatedVideos ?? []).map((video) => video.id))
+  const updatedIds = new Set(updatedVideos.map((video) => video.id))
   const thumbnailIds = videos
     .filter((video) => updatedIds.has(video.id))
     .map((video) => video.thumbnail_id)
     .filter((id): id is string => id !== null)
 
   if (thumbnailIds.length > 0) {
-    const { error: thumbnailError } = await supabaseClient
-      .from('thumbnails')
-      .update({
-        deleted_at: timestamp,
-        updated_at: timestamp,
-      })
-      .in('id', thumbnailIds)
-      .is('deleted_at', null)
-
-    if (thumbnailError) {
-      throw new TypeError(thumbnailError.message, { cause: thumbnailError })
-    }
+    throwIfError(
+      await supabaseClient
+        .from('thumbnails')
+        .update({
+          deleted_at: timestamp,
+          updated_at: timestamp,
+        })
+        .in('id', thumbnailIds)
+        .is('deleted_at', null),
+      'Failed to soft-delete thumbnails of deleted talents',
+    )
   }
 
   return updatedIds.size
@@ -209,39 +206,37 @@ async function restoreVideos(
   const timestamp = toDBString(now)
 
   // Re-check deleted_reason so concurrent admin changes are not overwritten.
-  const { data: updatedVideos, error: videoError } = await supabaseClient
-    .from('videos')
-    .update({
-      deleted_at: null,
-      deleted_reason: null,
-      updated_at: timestamp,
-    })
-    .in('id', videoIds)
-    .eq('deleted_reason', 'talent_deleted')
-    .select('id')
+  const updatedVideos = throwIfError(
+    await supabaseClient
+      .from('videos')
+      .update({
+        deleted_at: null,
+        deleted_reason: null,
+        updated_at: timestamp,
+      })
+      .in('id', videoIds)
+      .eq('deleted_reason', 'talent_deleted')
+      .select('id'),
+    'Failed to restore videos of restored talents',
+  )
 
-  if (videoError) {
-    throw new TypeError(videoError.message, { cause: videoError })
-  }
-
-  const updatedIds = new Set((updatedVideos ?? []).map((video) => video.id))
+  const updatedIds = new Set(updatedVideos.map((video) => video.id))
   const thumbnailIds = videos
     .filter((video) => updatedIds.has(video.id))
     .map((video) => video.thumbnail_id)
     .filter((id): id is string => id !== null)
 
   if (thumbnailIds.length > 0) {
-    const { error: thumbnailError } = await supabaseClient
-      .from('thumbnails')
-      .update({
-        deleted_at: null,
-        updated_at: timestamp,
-      })
-      .in('id', thumbnailIds)
-
-    if (thumbnailError) {
-      throw new TypeError(thumbnailError.message, { cause: thumbnailError })
-    }
+    throwIfError(
+      await supabaseClient
+        .from('thumbnails')
+        .update({
+          deleted_at: null,
+          updated_at: timestamp,
+        })
+        .in('id', thumbnailIds),
+      'Failed to restore thumbnails of restored talents',
+    )
   }
 
   return updatedIds.size

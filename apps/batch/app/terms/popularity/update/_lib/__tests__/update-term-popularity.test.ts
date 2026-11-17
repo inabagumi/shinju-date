@@ -1,4 +1,5 @@
 import { REDIS_KEYS } from '@shinju-date/constants'
+import { DatabaseError } from '@shinju-date/scraper'
 import { describe, expect, it, vi } from 'vitest'
 import {
   UPDATE_BATCH_SIZE,
@@ -173,8 +174,12 @@ describe('updateTermPopularity', () => {
       }),
     }
 
-    await expect(run(mockRedis, mockSupabase)).rejects.toEqual({
-      message: 'Database error',
+    const result = run(mockRedis, mockSupabase)
+
+    await expect(result).rejects.toBeInstanceOf(DatabaseError)
+    await expect(result).rejects.toMatchObject({
+      cause: { message: 'Database error' },
+      operation: 'Failed to update the popularity of terms',
     })
   })
 

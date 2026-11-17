@@ -1,5 +1,5 @@
 import type { TypedSupabaseClient } from '../../types.js'
-import { DatabaseError } from './errors.js'
+import { DatabaseError } from '../errors.js'
 
 /** A YouTube channel owned by an active talent. */
 export interface ActiveYouTubeChannel {

@@ -6,11 +6,11 @@ import {
   WRITE_CONCURRENCY,
 } from '../internal/constants.js'
 import {
-  DatabaseError,
   paginateById,
   softDeleteUnavailableVideos,
   updateVideo,
 } from '../internal/database/index.js'
+import { DatabaseError } from '../internal/errors.js'
 import { diffVideoFields } from '../internal/operations/diff-video-fields.js'
 import { replaceThumbnail } from '../internal/thumbnails/index.js'
 import type {

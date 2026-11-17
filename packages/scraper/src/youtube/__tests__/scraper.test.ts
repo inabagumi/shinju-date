@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   AccountNotFoundError,
   StalledPaginationError,
-} from '../../internal/database/index.js'
+} from '../../internal/errors.js'
 import { TEST_NOW } from '../../internal/testing/context.js'
 import { setupSupabase } from '../../internal/testing/supabase.js'
 import {
