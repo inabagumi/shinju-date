@@ -13,7 +13,11 @@ export interface PolledResourceFailure {
 }
 
 export interface UsePolledResourceOptions<T extends { success: true }> {
-  /** サーバーコンポーネントで取得した、最初のデータ。`data` の型は、この値から決まる */
+  /**
+   * サーバーコンポーネントで取得したデータ。`data` の型は、この値から決まる。
+   * 最初の表示に使い、サーバーが取得し直して別の値（別の参照）を渡してきたら、
+   * `data` をその値に置き換える。描画のたびに作り直さないこと
+   */
   initialData: T
   /**
    * データを取り直す Server Action。成功したときの戻り値（`success: true`）が、
@@ -39,6 +43,8 @@ export interface UsePolledResourceReturn<T> {
  * サーバーで取得したデータを最初に表示し、進行中の間だけ一定の間隔で取り直す。
  *
  * - 最初の表示は `initialData` を使い、マウントのあとの取得を待たない
+ * - サーバーが取得し直したデータ（`revalidatePath` や `router.refresh()` のあと）が
+ *   届いたら、それに置き換える
  * - `isActive(data)` が真の間だけ `fetcher` を呼び、偽になったら止める
  * - 取り直しに失敗しても、前のデータを残して `error` に理由を入れる
  */
@@ -50,6 +56,16 @@ export function usePolledResource<T extends { success: true }>({
 }: UsePolledResourceOptions<T>): UsePolledResourceReturn<T> {
   const [data, setData] = useState(initialData)
   const [error, setError] = useState<string | null>(null)
+
+  // サーバーが取得し直したデータが届いたら、取り直したデータより新しいので置き換える。
+  // 進行中でなければ取り直さないので、こうしないと古いデータが残り続ける
+  const [serverData, setServerData] = useState(initialData)
+
+  if (initialData !== serverData) {
+    setServerData(initialData)
+    setData(initialData)
+    setError(null)
+  }
 
   // `fetcher` が描画のたびに作り直されても、`reload` と間隔を作り直さない
   const fetcherRef = useRef(fetcher)

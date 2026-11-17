@@ -205,17 +205,79 @@ describe('usePolledResource', () => {
     expect(result.current.error).toBe(POLLED_RESOURCE_FALLBACK_ERROR)
   })
 
+  it('replaces the data when the server sends it again', async () => {
+    const fetcher = vi
+      .fn<() => Promise<Progress | PolledResourceFailure>>()
+      .mockResolvedValueOnce(createProgress({ added: 2 }))
+      .mockResolvedValueOnce({ error: 'timeout', success: false })
+    const fromServer = createProgress({ active: true, added: 8 })
+
+    const { rerender, result } = renderHook(
+      ({ initialData }) =>
+        usePolledResource({
+          fetcher,
+          initialData,
+          intervalMs: INTERVAL_MS,
+          isActive: (data) => data.active,
+        }),
+      { initialProps: { initialData: createProgress() } },
+    )
+
+    await act(() => result.current.reload())
+    await act(() => result.current.reload())
+
+    expect(result.current.data.added).toBe(2)
+    expect(result.current.error).toBe('timeout')
+
+    rerender({ initialData: fromServer })
+
+    // What the server read is newer than what was fetched, and it loaded.
+    expect(result.current.data).toBe(fromServer)
+    expect(result.current.error).toBeNull()
+
+    fetcher.mockResolvedValue(createProgress({ added: 9 }))
+    await act(() => vi.advanceTimersByTimeAsync(INTERVAL_MS))
+
+    // The data from the server is in progress, so it is fetched again.
+    expect(result.current.data.added).toBe(9)
+  })
+
+  it('keeps the fetched data while the server sends the same data', async () => {
+    const fetcher = vi
+      .fn<() => Promise<Progress>>()
+      .mockResolvedValue(createProgress({ added: 2 }))
+    const initialData = createProgress()
+
+    const { rerender, result } = renderHook(
+      ({ initialData }) =>
+        usePolledResource({
+          fetcher,
+          initialData,
+          intervalMs: INTERVAL_MS,
+          isActive: (data) => data.active,
+        }),
+      { initialProps: { initialData } },
+    )
+
+    await act(() => result.current.reload())
+    rerender({ initialData })
+
+    expect(result.current.data.added).toBe(2)
+  })
+
   it('calls the latest fetcher without restarting the interval', async () => {
     const first = vi.fn<() => Promise<Progress>>()
     const second = vi
       .fn<() => Promise<Progress>>()
       .mockResolvedValue(createProgress({ active: true, added: 9 }))
 
+    const initialData = createProgress({ active: true })
+
     const { rerender, result } = renderHook(
       ({ fetcher }) =>
         usePolledResource({
           fetcher,
-          initialData: createProgress({ active: true }),
+          initialData,
           intervalMs: INTERVAL_MS,
           isActive: (data) => data.active,
         }),

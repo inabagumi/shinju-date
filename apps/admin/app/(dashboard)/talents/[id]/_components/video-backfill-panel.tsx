@@ -60,14 +60,17 @@ export function VideoBackfillPanel({
   const added = accounts.reduce((total, account) => total + account.added, 0)
   const previousAdded = useRef(added)
 
-  // Show the videos that were just added in the list below.
+  // Show the videos that were just added in the list below. Data that came
+  // from the server was rendered together with that list, so it needs no
+  // refresh (and asking for one would refresh again and again while a job
+  // keeps adding videos).
   useEffect(() => {
-    if (added > previousAdded.current) {
+    if (added > previousAdded.current && data !== initialData) {
       router.refresh()
     }
 
     previousAdded.current = added
-  }, [added, router])
+  }, [added, data, initialData, router])
 
   if (accounts.length === 0) {
     return null

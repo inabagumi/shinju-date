@@ -89,6 +89,34 @@ describe('VideoBackfillPanel', () => {
     ).toBeNull()
   })
 
+  it('shows the accounts the server sends after one was added', () => {
+    const { rerender } = renderPanel([createAccount()])
+
+    rerender(
+      <VideoBackfillPanel
+        initialData={{
+          accounts: [
+            createAccount(),
+            createAccount({
+              accountId: 'twitch-row-1',
+              name: 'alice',
+              provider: 'twitch',
+            }),
+          ],
+          success: true,
+        }}
+        talentId="talent-1"
+        talentName="Talent"
+      />,
+    )
+
+    expect(screen.getByText('alice')).toBeTruthy()
+    expect(
+      screen.getByRole('button', { name: 'Twitchの過去動画を取り込む' }),
+    ).toHaveProperty('disabled', false)
+    expect(mocks.getVideoBackfillStatusAction).not.toHaveBeenCalled()
+  })
+
   it('renders nothing for a talent without accounts', () => {
     const { container } = renderPanel([])
 
@@ -202,5 +230,28 @@ describe('VideoBackfillPanel', () => {
 
     // The videos that were just added show up in the list below the panel.
     await waitFor(() => expect(mocks.router.refresh).toHaveBeenCalledOnce())
+  })
+
+  it('does not refresh the page for progress that the server sent', () => {
+    const { rerender } = renderPanel([
+      createAccount({ active: true, added: 12, status: 'running' }),
+    ])
+
+    rerender(
+      <VideoBackfillPanel
+        initialData={{
+          accounts: [
+            createAccount({ active: true, added: 15, status: 'running' }),
+          ],
+          success: true,
+        }}
+        talentId="talent-1"
+        talentName="Talent"
+      />,
+    )
+
+    // The server rendered the list of videos together with this progress.
+    expect(screen.getByText(/15件追加/)).toBeTruthy()
+    expect(mocks.router.refresh).not.toHaveBeenCalled()
   })
 })
