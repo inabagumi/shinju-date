@@ -147,8 +147,8 @@ export interface SyncAccountResult<
    * - `unchanged`: the account already matches the platform
    * - `not-found`: the platform did not return the account
    * - `failed`: the name and the handle could not be written (the failure is
-   *   passed to `onError`). On Twitch the icon is still synced, so
-   *   `iconUpdated` can be `true`
+   *   passed to `onError`). The icon is still synced, so `iconUpdated` can
+   *   be `true`
    */
   status: 'failed' | 'not-found' | 'unchanged' | 'updated'
 }

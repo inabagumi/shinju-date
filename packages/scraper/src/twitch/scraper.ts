@@ -5,6 +5,7 @@ import type {
   RefreshVideoResult,
   SyncAccountResult,
 } from '../types.js'
+import type { TwitchUserFields } from './accounts.js'
 import { addNewTwitchVideos } from './add-new-videos.js'
 import { addPastTwitchVideos } from './add-past-videos.js'
 import {
@@ -13,11 +14,7 @@ import {
 } from './check-videos.js'
 import { TwitchFetcher } from './fetcher.js'
 import { refreshTwitchVideo } from './refresh-video.js'
-import {
-  syncTwitchUsers,
-  syncTwitchUsersOfTalent,
-  type TwitchUserFields,
-} from './sync-accounts.js'
+import { syncTwitchUsers, syncTwitchUsersOfTalent } from './sync-accounts.js'
 import { syncTwitchLive } from './sync-live.js'
 import type { TwitchScraperOptions } from './types.js'
 

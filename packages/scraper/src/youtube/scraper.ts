@@ -5,6 +5,7 @@ import type {
   RefreshVideoResult,
   SyncAccountResult,
 } from '../types.js'
+import type { YouTubeChannelFields } from './accounts.js'
 import { addNewYouTubeVideos } from './add-new-videos.js'
 import { addPastYouTubeVideos } from './add-past-videos.js'
 import {
@@ -16,7 +17,6 @@ import { refreshYouTubeVideo } from './refresh-video.js'
 import {
   syncYouTubeChannels,
   syncYouTubeChannelsOfTalent,
-  type YouTubeChannelFields,
 } from './sync-accounts.js'
 import type { YouTubeScraperOptions } from './types.js'
 

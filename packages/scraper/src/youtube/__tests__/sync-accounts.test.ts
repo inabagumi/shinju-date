@@ -123,6 +123,39 @@ describe('syncYouTubeChannels', () => {
     ).toEqual(['GET talents', 'GET profile_images'])
   })
 
+  it('reports a channel that could not be updated and handles the rest', async () => {
+    supabase.respondWith({
+      ...routes,
+      'PATCH youtube_channels': ({ query }) =>
+        query['id'] === 'eq.channel-row-1'
+          ? postgresError('23505', 'duplicate key value')
+          : routes['PATCH youtube_channels'],
+    })
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      accounts: [
+        createChannel('UCaaa', { customUrl: '@alice_new', title: 'Alice' }),
+        createChannel('UCbbb', { customUrl: '@bob', title: 'Bob Ch.' }),
+      ],
+    })
+
+    const changed = await syncYouTubeChannels(createContext(fetcher))
+
+    expect(changed).toBe(1)
+    expect(supabase.written('PATCH', 'youtube_channels')).toEqual([
+      expect.objectContaining({ query: { id: 'eq.channel-row-1' } }),
+      expect.objectContaining({
+        body: { name: 'Bob Ch.', youtube_handle: '@bob' },
+        query: { id: 'eq.channel-row-2' },
+      }),
+    ])
+    expect(reportError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('duplicate key value'),
+      }),
+      { youtubeChannelId: 'UCaaa' },
+    )
+  })
+
   it('loads the saved icon of every channel', async () => {
     supabase.respondWith(routes)
     const { fetcher } = createFakeFetcher<YouTubeFetcher>()
@@ -266,6 +299,49 @@ describe('syncYouTubeChannels', () => {
         operation: 'syncProfileImage',
         youtubeChannelId: 'UCbbb',
       })
+    })
+
+    it('still syncs the icon when the name cannot be updated', async () => {
+      serveImage(supabase, ICON_URL, { body: image })
+      const storage = mockStorage(supabase)
+      supabase.respondWith({
+        ...routes,
+        'PATCH youtube_channels': ({ body }) =>
+          body !== null && typeof body === 'object' && 'name' in body
+            ? postgresError('23505', 'duplicate key value')
+            : routes['PATCH youtube_channels'],
+      })
+      const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+        accounts: [
+          createChannel('UCaaa', {
+            customUrl: '@alice_new',
+            thumbnails,
+            title: 'Alice',
+          }),
+        ],
+      })
+
+      const changed = await syncYouTubeChannels(createContext(fetcher))
+
+      const inserted = supabase.written('POST', 'profile_images')[0]?.body as {
+        id: string
+      }
+
+      expect(changed).toBe(1)
+      expect(storage.uploads).toHaveLength(1)
+      expect(supabase.written('PATCH', 'youtube_channels')).toContainEqual(
+        expect.objectContaining({
+          body: { profile_image_id: inserted.id },
+          query: { id: 'eq.channel-row-1', select: 'id' },
+        }),
+      )
+      expect(reportError).toHaveBeenCalledTimes(1)
+      expect(reportError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining('duplicate key value'),
+        }),
+        { youtubeChannelId: 'UCaaa' },
+      )
     })
 
     it('deletes icons that are no longer used', async () => {
@@ -493,6 +569,36 @@ describe('syncYouTubeChannelsOfTalent', () => {
       status: 'updated',
     })
     expect(supabase.written('POST', 'profile_images')).toHaveLength(1)
+  })
+
+  it('still syncs the icon of a channel whose name cannot be updated', async () => {
+    serveImage(supabase, ICON_URL, { body: await createImage(800, 800) })
+    const storage = mockStorage(supabase)
+    supabase.respondWith({
+      ...talentRoutes,
+      'PATCH youtube_channels': ({ body }) =>
+        body !== null && typeof body === 'object' && 'name' in body
+          ? postgresError('23505', 'duplicate key value')
+          : talentRoutes['PATCH youtube_channels'],
+    })
+    const { fetcher } = createFakeFetcher<YouTubeFetcher>({
+      accounts: [
+        createChannel('UCbbb', { customUrl: '@bob', thumbnails, title: 'Bob' }),
+      ],
+    })
+
+    const [result] = await syncYouTubeChannelsOfTalent(
+      createContext(fetcher),
+      'talent-2',
+    )
+
+    expect(result).toEqual({
+      accountId: 'channel-row-2',
+      iconUpdated: true,
+      name: 'Bob',
+      status: 'failed',
+    })
+    expect(storage.uploads).toHaveLength(1)
   })
 
   it('returns nothing without asking YouTube when the talent has no channels', async () => {
