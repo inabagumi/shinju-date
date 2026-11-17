@@ -1,6 +1,5 @@
 'use client'
 
-import { FOCUS_RING } from '@shinju-date/ui'
 import { use } from 'react'
 import { useUpdateSearchParams } from '@/lib/use-update-search-params'
 import type { AnalyticsSearchParams } from '../_lib/search-params-schema'
@@ -37,7 +36,7 @@ export function TabNavigation({
         {tabs.map((tab) => (
           <button
             aria-selected={activeTab === tab.id}
-            className={`border-b-2 px-1 py-2 text-meta font-semibold whitespace-nowrap transition-colors ${FOCUS_RING} ${
+            className={`border-b-2 px-1 py-2 text-meta font-semibold whitespace-nowrap focus-ring transition-colors ${
               activeTab === tab.id
                 ? 'border-accent text-accent'
                 : 'border-transparent text-muted hover:border-border hover:text-foreground'

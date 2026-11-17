@@ -7,7 +7,6 @@ import {
   Badge,
   EmptyState,
   FilterBar,
-  FOCUS_RING,
   Select,
   Table,
   TableBody,
@@ -130,7 +129,7 @@ export function FeatureRequestList({
                   </TableCell>
                   <TableCell className="min-w-64 whitespace-normal">
                     <Link
-                      className={`line-clamp-2 max-w-text rounded-control hover:text-accent hover:underline ${FOCUS_RING} ${
+                      className={`line-clamp-2 max-w-text rounded-control focus-ring hover:text-accent hover:underline ${
                         item.is_read ? '' : 'font-semibold'
                       }`}
                       href={`/feedback/${item.id}`}

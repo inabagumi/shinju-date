@@ -1,6 +1,6 @@
 import { TIME_ZONE } from '@shinju-date/constants'
 import { formatNumber } from '@shinju-date/helpers'
-import { Button, EmptyState, FOCUS_RING } from '@shinju-date/ui'
+import { Button, EmptyState } from '@shinju-date/ui'
 import { ExternalLink } from 'lucide-react'
 import { cacheLife } from 'next/cache'
 import Link from 'next/link'
@@ -59,7 +59,7 @@ export async function DashboardPopularVideos() {
                 </Button>
                 {getExternalVideoUrl(video) && (
                   <ExternalVideoLink
-                    className={`flex items-center justify-center rounded-control border border-border bg-surface p-1 text-muted transition-colors hover:bg-muted hover:text-foreground ${FOCUS_RING}`}
+                    className="flex items-center justify-center rounded-control border border-border bg-surface p-1 text-muted focus-ring transition-colors hover:bg-muted hover:text-foreground"
                     video={video}
                   >
                     <ExternalLink aria-hidden="true" className="size-5" />

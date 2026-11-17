@@ -2,7 +2,7 @@
 
 import * as Popover from '@radix-ui/react-popover'
 import { Slot } from '@radix-ui/react-slot'
-import { FOCUS_RING, twMerge } from '@shinju-date/ui'
+import { twMerge } from '@shinju-date/ui'
 import {
   type ComponentPropsWithoutRef,
   createContext,
@@ -55,7 +55,7 @@ export function DropdownMenuTrigger({
       <button
         aria-haspopup="menu"
         className={twMerge(
-          `rounded-control p-1 text-muted transition-colors hover:bg-muted hover:text-foreground ${FOCUS_RING}`,
+          'rounded-control p-1 text-muted focus-ring transition-colors hover:bg-muted hover:text-foreground',
           className,
         )}
         onClick={(e) => {

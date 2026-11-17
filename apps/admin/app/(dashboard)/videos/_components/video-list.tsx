@@ -8,7 +8,6 @@ import {
 import {
   Button,
   EmptyState,
-  FOCUS_RING,
   Table,
   TableBody,
   TableCell,
@@ -299,7 +298,7 @@ export default function VideoList({ videos }: Props) {
             <TableHead>
               <div className="flex flex-col gap-1">
                 <Link
-                  className={`flex items-center rounded-control hover:text-accent ${FOCUS_RING}`}
+                  className="flex items-center rounded-control focus-ring hover:text-accent"
                   href={getSortUrl('published_at')}
                 >
                   公開日時
@@ -310,7 +309,7 @@ export default function VideoList({ videos }: Props) {
                   />
                 </Link>
                 <Link
-                  className={`flex items-center rounded-control hover:text-accent ${FOCUS_RING}`}
+                  className="flex items-center rounded-control focus-ring hover:text-accent"
                   href={getSortUrl('updated_at')}
                 >
                   更新日時

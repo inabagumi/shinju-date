@@ -5,7 +5,6 @@ import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import {
   EmptyState,
   FilterBar,
-  FOCUS_RING,
   Input,
   Select,
   Table,
@@ -144,7 +143,7 @@ export function TalentsList({ talents }: TalentsListProps) {
                 aria-sort={sortOrder === 'desc' ? 'descending' : 'ascending'}
               >
                 <button
-                  className={`inline-flex items-center gap-1 rounded-control hover:text-foreground ${FOCUS_RING}`}
+                  className="inline-flex items-center gap-1 rounded-control focus-ring hover:text-foreground"
                   onClick={toggleSortOrder}
                   type="button"
                 >

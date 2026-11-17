@@ -1,6 +1,5 @@
 'use client'
 
-import { FOCUS_RING } from '@shinju-date/ui'
 import type { ComponentPropsWithoutRef } from 'react'
 
 // Note: We need to omit 'onChange' from button props because:
@@ -35,7 +34,7 @@ export default function ToggleSwitch({
     <button
       aria-checked={checked}
       aria-label={label}
-      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors ${FOCUS_RING} ${
+      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border focus-ring transition-colors ${
         checked ? 'border-accent bg-accent' : 'border-border bg-border'
       } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
       disabled={disabled}
