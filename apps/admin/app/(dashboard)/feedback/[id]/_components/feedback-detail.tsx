@@ -2,9 +2,15 @@
 
 import type { Tables } from '@shinju-date/database'
 import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
-import { Select, Skeleton, Textarea } from '@shinju-date/ui'
-import { useActionState } from 'react'
-import { SubmitButton } from '@/components/form'
+import { Skeleton } from '@shinju-date/ui'
+import Form, {
+  FormField,
+  Label,
+  Select,
+  SubmitButton,
+  SuccessMessage,
+  Textarea,
+} from '@/components/form'
 import { Markdown } from '@/components/markdown'
 import { Panel, PanelSkeleton } from '@/components/panel'
 import {
@@ -15,58 +21,17 @@ import {
 import {
   FEATURE_REQUEST_STATUS_LABELS,
   FEATURE_REQUEST_STATUSES,
-  isFeatureRequestStatus,
 } from '../../_lib/feature-request-status'
 
 interface FeatureRequestDetailProps {
   featureRequest: Tables<'feature_requests'>
 }
 
-const labelClassName = 'block text-meta font-semibold'
+const successMessageClassName = 'text-meta text-success'
 
 export function FeatureRequestDetail({
   featureRequest,
 }: FeatureRequestDetailProps) {
-  const [statusState, updateStatusAction] = useActionState(
-    async (_prevState: unknown, formData: FormData) => {
-      const statusValue = formData.get('status')
-
-      if (!isFeatureRequestStatus(statusValue)) {
-        return {
-          error: 'Invalid status value',
-          success: false,
-        }
-      }
-
-      return updateFeatureRequestStatus(featureRequest.id, statusValue)
-    },
-    null,
-  )
-
-  const [memoState, updateMemoAction] = useActionState(
-    async (_prevState: unknown, formData: FormData) => {
-      const memoValue = formData.get('admin_memo')
-
-      if (typeof memoValue !== 'string') {
-        return {
-          error: 'Invalid memo value',
-          success: false,
-        }
-      }
-
-      return updateFeatureRequestMemo(featureRequest.id, memoValue)
-    },
-    null,
-  )
-
-  const [readState, markAsReadAction] = useActionState(
-    async (_prevState: unknown, formData: FormData) => {
-      const isRead = formData.get('is_read') === 'true'
-      return markFeatureRequestAsRead(featureRequest.id, isRead)
-    },
-    null,
-  )
-
   const createdAtFormatted = formatDateTimeFromISO(featureRequest.created_at)
   const updatedAtFormatted = formatDateTimeFromISO(featureRequest.updated_at)
 
@@ -80,23 +45,23 @@ export function FeatureRequestDetail({
 
         {/* Admin Memo */}
         <Panel title="管理メモ">
-          <form action={updateMemoAction} className="space-y-4">
-            <div className="space-y-2">
-              <label className={labelClassName} htmlFor="admin_memo">
-                メモ（Markdown対応）
-              </label>
+          <Form action={updateFeatureRequestMemo} className="space-y-4">
+            <input name="id" type="hidden" value={featureRequest.id} />
+            <FormField name="admin_memo">
+              <Label>メモ（Markdown対応）</Label>
               <Textarea
-                defaultValue={featureRequest.admin_memo || ''}
-                id="admin_memo"
-                name="admin_memo"
+                defaultValue={featureRequest.admin_memo ?? ''}
                 rows={8}
               />
-            </div>
+            </FormField>
             <div className="flex flex-wrap items-center gap-3">
               <SubmitButton>メモを保存</SubmitButton>
-              <ActionResult message="保存しました" state={memoState} />
+              <SuccessMessage
+                className={successMessageClassName}
+                message="保存しました。"
+              />
             </div>
-          </form>
+          </Form>
 
           {/* Preview */}
           {featureRequest.admin_memo && (
@@ -127,36 +92,35 @@ export function FeatureRequestDetail({
 
         {/* Status */}
         <Panel title="ステータス管理">
-          <form action={updateStatusAction} className="space-y-4">
-            <div className="space-y-2">
-              <label className={labelClassName} htmlFor="status">
-                対応ステータス
-              </label>
-              <Select
-                defaultValue={featureRequest.status}
-                id="status"
-                name="status"
-              >
+          <Form action={updateFeatureRequestStatus} className="space-y-4">
+            <input name="id" type="hidden" value={featureRequest.id} />
+            <FormField name="status">
+              <Label>対応ステータス</Label>
+              <Select defaultValue={featureRequest.status}>
                 {FEATURE_REQUEST_STATUSES.map((status) => (
                   <option key={status} value={status}>
                     {FEATURE_REQUEST_STATUS_LABELS[status]}
                   </option>
                 ))}
               </Select>
-            </div>
+            </FormField>
             <div className="flex flex-wrap items-center gap-3">
               <SubmitButton>ステータスを更新</SubmitButton>
-              <ActionResult message="更新しました" state={statusState} />
+              <SuccessMessage
+                className={successMessageClassName}
+                message="更新しました。"
+              />
             </div>
-          </form>
+          </Form>
         </Panel>
 
         {/* Read Status */}
         <Panel title="既読管理">
-          <form action={markAsReadAction} className="space-y-4">
+          <Form action={markFeatureRequestAsRead} className="space-y-4">
             <p className="text-meta">
               現在: {featureRequest.is_read ? '既読' : '未読'}
             </p>
+            <input name="id" type="hidden" value={featureRequest.id} />
             <input
               name="is_read"
               type="hidden"
@@ -166,39 +130,16 @@ export function FeatureRequestDetail({
               <SubmitButton variant="secondary">
                 {featureRequest.is_read ? '未読にする' : '既読にする'}
               </SubmitButton>
-              <ActionResult message="更新しました" state={readState} />
+              <SuccessMessage
+                className={successMessageClassName}
+                message="更新しました。"
+              />
             </div>
-          </form>
+          </Form>
         </Panel>
       </div>
     </div>
   )
-}
-
-interface ActionResultProps {
-  message: string
-  state: { error?: string; success: boolean } | null
-}
-
-/** フォームを送信した結果。失敗は `text-danger`、成功は `text-success` で示す */
-function ActionResult({ message, state }: ActionResultProps) {
-  if (state?.success === false) {
-    return (
-      <p className="text-meta text-danger" role="alert">
-        {state.error}
-      </p>
-    )
-  }
-
-  if (state?.success === true) {
-    return (
-      <p className="text-meta text-success" role="status">
-        {message}
-      </p>
-    )
-  }
-
-  return null
 }
 
 /**

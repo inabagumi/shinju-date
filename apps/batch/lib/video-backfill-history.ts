@@ -1,4 +1,5 @@
 import type { TablesInsert } from '@shinju-date/database'
+import { throwIfError } from '@shinju-date/scraper'
 import { toDBString } from '@shinju-date/temporal-fns'
 import type { BackfillJob } from '@shinju-date/video-backfill'
 import type { TypedSupabaseClient } from './supabase'
@@ -48,14 +49,13 @@ export async function recordBackfillJob(
   supabaseClient: TypedSupabaseClient,
   job: BackfillJob,
 ): Promise<void> {
-  const { error } = await supabaseClient
-    .from('video_backfill_jobs')
-    .upsert(toBackfillHistoryRow(job), {
-      ignoreDuplicates: true,
-      onConflict: 'platform,account_id,requested_at',
-    })
-
-  if (error) {
-    throw new Error(error.message, { cause: error })
-  }
+  throwIfError(
+    await supabaseClient
+      .from('video_backfill_jobs')
+      .upsert(toBackfillHistoryRow(job), {
+        ignoreDuplicates: true,
+        onConflict: 'platform,account_id,requested_at',
+      }),
+    'Failed to record a backfill job',
+  )
 }

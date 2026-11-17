@@ -1,4 +1,4 @@
-import { DatabaseError } from '../internal/database/index.js'
+import { DatabaseError } from '../internal/errors.js'
 import { compareVideoFields } from '../internal/operations/diff-video-fields.js'
 import { refreshSavedVideo } from '../internal/operations/refresh-saved-videos.js'
 import type {

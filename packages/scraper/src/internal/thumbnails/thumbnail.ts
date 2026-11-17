@@ -4,7 +4,7 @@ import mime from 'mime'
 import { nanoid } from 'nanoid'
 import sharp from 'sharp'
 import type { TypedSupabaseClient, WriteContext } from '../../types.js'
-import { DatabaseError } from '../database/errors.js'
+import { DatabaseError, StorageError } from '../errors.js'
 
 const BUCKET = 'thumbnails'
 
@@ -97,7 +97,7 @@ export async function createThumbnail({
     })
 
   if (uploadError) {
-    throw uploadError
+    throw new StorageError('Failed to upload a thumbnail', uploadError)
   }
 
   const { error: insertError } = await supabaseClient
@@ -147,7 +147,7 @@ export async function removeThumbnail(
       .remove([thumbnail.path])
 
     if (removeError) {
-      throw removeError
+      throw new StorageError('Failed to remove a thumbnail', removeError)
     }
   } catch (error) {
     reportError(error, {

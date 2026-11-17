@@ -1,32 +1,48 @@
 'use server'
 
-import type { TablesUpdate } from '@shinju-date/database'
 import { revalidatePath } from 'next/cache'
+import type { FormState } from '@/components/form'
 import { createAuditLog } from '@/lib/audit-log'
-import { requireAuthenticatedUser, unauthenticatedResult } from '@/lib/auth'
+import { requireAuthenticatedUser, unauthenticatedFormState } from '@/lib/auth'
+import { parseFormData } from '@/lib/form'
 import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 import { createEntityNameFromMessage } from '../_lib/create-entity-name-from-message'
+import {
+  feedbackMemoFormSchema,
+  feedbackReadFormSchema,
+  feedbackStatusFormSchema,
+} from '../_lib/feedback-form-schema'
 
-const NOT_FOUND_ERROR = 'フィードバックが見つかりませんでした'
+const INVALID_INPUT_ERROR = '入力が正しくありません。'
+const NOT_FOUND_ERROR = 'フィードバックが見つかりませんでした。'
+
+/**
+ * 項目に結び付かないエラーの `FormState`。入力欄は選択肢とメモだけで、ほかの値は
+ * 隠しフィールドなので、検証の失敗も項目ごとに分けず、このエラーにする
+ */
+function errorState(message: string): FormState {
+  return { errors: { generic: [message] } }
+}
 
 export async function updateFeatureRequestStatus(
-  id: string,
-  status: TablesUpdate<'feature_requests'>['status'],
-): Promise<{ success: boolean; error?: string }> {
+  _currentState: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const auth = await requireAuthenticatedUser()
 
   if (!auth) {
-    return unauthenticatedResult()
+    return unauthenticatedFormState()
   }
 
-  try {
-    if (!status) {
-      return {
-        error: 'ステータスが指定されていません',
-        success: false,
-      }
-    }
+  const parsed = parseFormData(feedbackStatusFormSchema, formData)
 
+  if (!parsed.success) {
+    return errorState(INVALID_INPUT_ERROR)
+  }
+
+  const { id, status } = parsed.data
+
+  try {
     const supabaseClient = getSupabaseAdminClient()
     const { data: featureRequest, error: fetchError } = await supabaseClient
       .from('feature_requests')
@@ -39,7 +55,7 @@ export async function updateFeatureRequestStatus(
     }
 
     if (!featureRequest) {
-      return { error: NOT_FOUND_ERROR, success: false }
+      return errorState(NOT_FOUND_ERROR)
     }
 
     // 状態が変わらないときは、更新も監査ログの記録もしない
@@ -68,22 +84,27 @@ export async function updateFeatureRequestStatus(
     return { success: true }
   } catch (error) {
     console.error('Update feature request status error:', error)
-    return {
-      error: 'ステータスの更新に失敗しました',
-      success: false,
-    }
+    return errorState('ステータスの更新に失敗しました。')
   }
 }
 
 export async function updateFeatureRequestMemo(
-  id: string,
-  adminMemo: string,
-): Promise<{ success: boolean; error?: string }> {
+  _currentState: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const auth = await requireAuthenticatedUser()
 
   if (!auth) {
-    return unauthenticatedResult()
+    return unauthenticatedFormState()
   }
+
+  const parsed = parseFormData(feedbackMemoFormSchema, formData)
+
+  if (!parsed.success) {
+    return errorState(INVALID_INPUT_ERROR)
+  }
+
+  const { admin_memo: adminMemo, id } = parsed.data
 
   try {
     const supabaseClient = getSupabaseAdminClient()
@@ -98,7 +119,7 @@ export async function updateFeatureRequestMemo(
     }
 
     if (!featureRequest) {
-      return { error: NOT_FOUND_ERROR, success: false }
+      return errorState(NOT_FOUND_ERROR)
     }
 
     // メモが変わらないときは、更新も監査ログの記録もしない
@@ -128,20 +149,25 @@ export async function updateFeatureRequestMemo(
     return { success: true }
   } catch (error) {
     console.error('Update feature request memo error:', error)
-    return {
-      error: 'メモの更新に失敗しました',
-      success: false,
-    }
+    return errorState('メモの更新に失敗しました。')
   }
 }
 
 export async function markFeatureRequestAsRead(
-  id: string,
-  isRead: boolean,
-): Promise<{ success: boolean; error?: string }> {
+  _currentState: FormState,
+  formData: FormData,
+): Promise<FormState> {
   if (!(await requireAuthenticatedUser())) {
-    return unauthenticatedResult()
+    return unauthenticatedFormState()
   }
+
+  const parsed = parseFormData(feedbackReadFormSchema, formData)
+
+  if (!parsed.success) {
+    return errorState(INVALID_INPUT_ERROR)
+  }
+
+  const { id, is_read: isRead } = parsed.data
 
   try {
     // 既読は対応の状態ではなく、確認したかどうかの印なので、監査ログには記録しない
@@ -158,9 +184,6 @@ export async function markFeatureRequestAsRead(
     return { success: true }
   } catch (error) {
     console.error('Mark feature request as read error:', error)
-    return {
-      error: '既読状態の更新に失敗しました',
-      success: false,
-    }
+    return errorState('既読状態の更新に失敗しました。')
   }
 }

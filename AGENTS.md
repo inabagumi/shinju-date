@@ -7,6 +7,7 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 - [環境のセットアップ](#環境のセットアップ)
 - [品質チェック](#品質チェック)
 - [Next.js の公式スキル](#nextjs-の公式スキル)
+- [依存のバージョン](#依存のバージョン)
 - [各アプリの AGENTS.md](#各アプリの-agentsmd)
 - [TypeScript の型定義](#typescript-の型定義)
 - [デザイン](#デザイン)
@@ -44,6 +45,11 @@ SHINJU DATE で作業する AI エージェント向けの、このプロジェ�
 - `next-bundle-optimizer`: 初期ロードを重くしているクライアントバンドルを特定する（既定は変更を加えない監査）
 
 `.agents/skills/next-*`、`.claude/skills/next-*`、`skills-lock.json` は `skills` CLI が置いたファイルです。手で編集せず、`pnpm dlx skills update` で更新してください。
+
+## 依存のバージョン
+
+- 2つ以上の `package.json` に書く依存は、`pnpm-workspace.yaml` の `catalog:` にバージョンを書き、各 `package.json` では `"catalog:"` と書く（[依存のバージョン](CONTRIBUTING.md#依存のバージョン)）
+- 新しいパッケージを足すときに、ほかの `package.json` からバージョンを写さない
 
 ## 各アプリの AGENTS.md
 

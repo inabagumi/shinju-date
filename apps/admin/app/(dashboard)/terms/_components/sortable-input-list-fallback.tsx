@@ -25,6 +25,7 @@ export function SortableInputListFallback({
   return (
     <div aria-busy="true" className="space-y-2">
       {values.map((value, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: 読み込みまでの表示で並びは変わらず、同じ値が並ぶこともあるので、インデックスをキーにする
         <div className="flex items-center gap-2" key={index}>
           <Button
             aria-label="ドラッグして並び替え"
@@ -62,6 +63,7 @@ export function SortableInputListFallback({
 
       {values.map((value, index) => (
         <input
+          // biome-ignore lint/suspicious/noArrayIndexKey: 読み込みまでの表示で並びは変わらず、同じ値が並ぶこともあるので、インデックスをキーにする
           key={index}
           name={`${name}[${index}]`}
           type="hidden"

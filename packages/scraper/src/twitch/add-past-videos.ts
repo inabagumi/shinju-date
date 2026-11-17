@@ -1,9 +1,9 @@
 import { BACKFILL_SAVE_CONCURRENCY } from '../internal/concurrency.js'
+import { findTwitchUser } from '../internal/database/index.js'
 import {
   AccountNotFoundError,
-  findTwitchUser,
   StalledPaginationError,
-} from '../internal/database/index.js'
+} from '../internal/errors.js'
 import type {
   AddPastVideosOptions,
   AddPastVideosResult,

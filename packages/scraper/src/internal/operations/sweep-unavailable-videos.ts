@@ -1,6 +1,7 @@
 import type { WriteContext } from '../../types.js'
 import { SWEEP_PAGE_SIZE } from '../constants.js'
-import { DatabaseError, paginateById } from '../database/index.js'
+import { paginateById } from '../database/index.js'
+import { DatabaseError } from '../errors.js'
 import type { PlatformAdapter, SavedVideoBase } from '../platform.js'
 import { deleteMissingVideos } from './delete-missing-videos.js'
 

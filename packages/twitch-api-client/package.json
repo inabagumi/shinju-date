@@ -8,12 +8,12 @@
   },
   "description": "Twitch Helix API client for SHINJU DATE, powered by twurple",
   "devDependencies": {
-    "@tsconfig/node20": "20.1.11",
-    "@tsconfig/strictest": "2.0.9",
-    "@types/node": "26.6.6",
-    "tsdown": "0.23.7",
-    "typescript": "6.0.3",
-    "vitest": "5.1.0"
+    "@tsconfig/node20": "catalog:",
+    "@tsconfig/strictest": "catalog:",
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "exports": {
     ".": {

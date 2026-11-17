@@ -1,6 +1,5 @@
 import { TIME_ZONE } from '@shinju-date/constants'
-import { formatDate } from '@shinju-date/temporal-fns'
-import { WEEKDAYS } from './date-heading'
+import { formatLongDate } from './date-heading'
 
 /** The path of the schedule of the week that includes today */
 export const SCHEDULE_PATH = '/schedule'
@@ -101,14 +100,6 @@ export function isWeekInRange(
   )
 }
 
-function formatMonthDay(date: Temporal.PlainDate, withWeekday: boolean) {
-  const monthDay = `${date.month}月${date.day}日`
-
-  return withWeekday
-    ? `${monthDay}（${WEEKDAYS[date.dayOfWeek - 1]}）`
-    : monthDay
-}
-
 interface FormatWeekRangeOptions {
   /** Add the weekdays, as in `2026年11月8日（日）〜11月14日（土）` */
   withWeekdays?: boolean
@@ -124,24 +115,13 @@ export function formatWeekRange(
   { withWeekdays = false }: FormatWeekRangeOptions = {},
 ): string {
   const weekEnd = weekStart.add({ days: 6 })
-  const start = `${weekStart.year}年${formatMonthDay(weekStart, withWeekdays)}`
-  const end =
-    weekEnd.year === weekStart.year
-      ? formatMonthDay(weekEnd, withWeekdays)
-      : `${weekEnd.year}年${formatMonthDay(weekEnd, withWeekdays)}`
+  const start = formatLongDate(weekStart, { weekday: withWeekdays, year: true })
+  const end = formatLongDate(weekEnd, {
+    weekday: withWeekdays,
+    year: weekEnd.year !== weekStart.year,
+  })
 
   return `${start}〜${end}`
-}
-
-/**
- * The heading of a day on the schedule, such as `11/09（月）`, in the same form
- * as the timeline of the home page.
- *
- * `toLocaleString` is not used, as its output differs between the native
- * Temporal and temporal-polyfill and causes hydration errors.
- */
-export function formatScheduleDay(date: Temporal.PlainDate): string {
-  return `${formatDate(date, { includeYear: false })}（${WEEKDAYS[date.dayOfWeek - 1]}）`
 }
 
 /** Minutes in a day, the height of the column of a day */

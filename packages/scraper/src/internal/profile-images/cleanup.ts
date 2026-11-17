@@ -1,6 +1,6 @@
 import { toDBString } from '@shinju-date/temporal-fns'
 import type { TypedSupabaseClient } from '../../types.js'
-import { DatabaseError } from '../database/errors.js'
+import { DatabaseError } from '../errors.js'
 import { removeProfileImage } from './profile-image.js'
 
 /**
