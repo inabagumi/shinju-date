@@ -39,6 +39,12 @@ export const SUPPORTED_OPERATORS = [
 
 export type FilterOperator = (typeof SUPPORTED_OPERATORS)[number]
 
+/**
+ * A column, optionally followed by a JSON path such as `readings->0` or
+ * `data->>name` (keys and array indexes).
+ */
+const COLUMN_PATTERN = /^[A-Za-z_]\w*(?:->>?(?:-?\d+|\w+))*$/
+
 /** The values that `is` accepts. */
 const IS_VALUES = new Set(['false', 'not_null', 'null', 'true', 'unknown'])
 
@@ -143,10 +149,10 @@ function parseCondition(
   const operator = dot === -1 ? rest : rest.slice(0, dot)
   const operand = dot === -1 ? '' : rest.slice(dot + 1)
 
-  if (column === '' || !/^[A-Za-z_][\w]*$/.test(column)) {
+  if (!COLUMN_PATTERN.test(column)) {
     throw parseError(
       `failed to parse filter (${source})`,
-      `unsupported column "${column}": the mock supports only plain columns, not JSON paths or casts`,
+      `unsupported column "${column}": the mock supports columns and JSON paths such as data->items->0 or data->>name`,
     )
   }
 
@@ -297,6 +303,41 @@ export function getColumn(row: object, column: string): unknown {
 }
 
 /**
+ * The value of a column of a row, or of a JSON path in it such as
+ * `readings->0` (JSON) or `data->>name` (text), like PostgreSQL: a key or an
+ * index that does not exist is `NULL`.
+ */
+export function getColumnPath(row: object, path: string): unknown {
+  const [column = '', ...steps] = path.split(/(?=->)/)
+  let value = getColumn(row, column)
+
+  for (const step of steps) {
+    const asText = step.startsWith('->>')
+    const key = step.slice(asText ? 3 : 2)
+
+    if (Array.isArray(value) && /^-?\d+$/.test(key)) {
+      value = value.at(Number(key))
+    } else if (
+      value !== null &&
+      typeof value === 'object' &&
+      !Array.isArray(value)
+    ) {
+      value = (value as Record<string, unknown>)[key]
+    } else {
+      value = undefined
+    }
+
+    value ??= null
+
+    if (asText && value !== null) {
+      value = typeof value === 'object' ? JSON.stringify(value) : String(value)
+    }
+  }
+
+  return value
+}
+
+/**
  * Compare a value of a row with the value of a filter: as instants when both
  * are timestamps, as numbers when both are numbers, and as strings otherwise.
  */
@@ -414,7 +455,7 @@ function evaluateCondition(
   row: object,
   { column, operand, operator }: FilterCondition,
 ): boolean | null {
-  const value = getColumn(row, column) ?? null
+  const value = getColumnPath(row, column) ?? null
 
   switch (operator) {
     case 'is': {
@@ -547,7 +588,7 @@ function parseOrder(order: string) {
     const [column = '', ...modifiers] = entry.trim().split('.')
 
     if (
-      !/^[A-Za-z_]\w*$/.test(column) ||
+      !COLUMN_PATTERN.test(column) ||
       modifiers.some(
         (modifier) =>
           !['asc', 'desc', 'nullsfirst', 'nullslast'].includes(modifier),
@@ -555,7 +596,7 @@ function parseOrder(order: string) {
     ) {
       throw parseError(
         `failed to parse order (${order})`,
-        'The mock supports only the columns of the table, followed by asc, desc, nullsfirst or nullslast',
+        'The mock supports the columns of the table (and JSON paths in them), followed by asc, desc, nullsfirst or nullslast',
       )
     }
 
@@ -592,8 +633,8 @@ export function applyOrder<Item>(
     const b = getRow(itemB)
 
     for (const { column, descending, nullsFirst } of keys) {
-      const valueA = getColumn(a, column)
-      const valueB = getColumn(b, column)
+      const valueA = getColumnPath(a, column)
+      const valueB = getColumnPath(b, column)
 
       if (valueA == null || valueB == null) {
         if (valueA == null && valueB == null) {

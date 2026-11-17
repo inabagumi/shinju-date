@@ -82,8 +82,8 @@ describe('Supabase filters', () => {
       'deleted_at=is.foo',
       // A filter in the key, which PostgREST does not support
       'id.in.(1,2)',
-      // A JSON path
-      'title->>a=eq.1',
+      // A cast
+      'title::text=eq.1',
       // A logic tree without parentheses
       'or=id.eq.1',
       // A condition without an operator in a logic tree
@@ -189,6 +189,32 @@ describe('Supabase filters', () => {
 
       expect(liked.map(({ id }) => id)).toContain(talent?.id)
       expect(matched.map(({ id }) => id)).toEqual([talent?.id])
+    })
+  })
+
+  describe('JSON paths', () => {
+    interface Term {
+      readings: string[]
+      term: string
+    }
+
+    it('orders by an element of an array, like the terms of admin', async () => {
+      const rows = await getJson<Term[]>(
+        'terms?select=term,readings&order=readings->0.asc',
+      )
+      const firstReadings = rows.map(({ readings }) => readings[0] ?? '')
+
+      expect(rows.length).toBeGreaterThan(1)
+      expect(firstReadings).toEqual(firstReadings.toSorted())
+    })
+
+    it('filters by a JSON path as text', async () => {
+      const [term] = await getJson<Term[]>('terms?select=term,readings&limit=1')
+      const rows = await getJson<Term[]>(
+        `terms?select=term&readings->>0=eq.${encodeURIComponent(term?.readings[0] ?? '')}`,
+      )
+
+      expect(rows.map(({ term }) => term)).toContain(term?.term)
     })
   })
 
