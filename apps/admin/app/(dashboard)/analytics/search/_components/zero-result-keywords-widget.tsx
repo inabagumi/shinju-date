@@ -7,16 +7,8 @@ import {
   TableHeader,
   TableRow,
 } from '@shinju-date/ui'
-import { cache } from 'react'
 import { WidgetHeader } from '../../_components/widget-header'
 import { getZeroResultKeywords } from '../_lib/get-zero-result-keywords'
-
-/**
- * Cached function to fetch zero result keywords data
- */
-const fetchZeroResultKeywordsData = cache(async () => {
-  return getZeroResultKeywords()
-})
 
 /**
  * Zero Result Keywords Widget Component
@@ -60,7 +52,7 @@ function ZeroResultKeywordsWidgetComponent({
  * Async server component that fetches and displays zero result keywords widget
  */
 export async function ZeroResultKeywordsWidget() {
-  const zeroResultKeywords = await fetchZeroResultKeywordsData()
+  const zeroResultKeywords = await getZeroResultKeywords()
 
   return <ZeroResultKeywordsWidgetComponent keywords={zeroResultKeywords} />
 }

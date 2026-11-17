@@ -6,6 +6,7 @@
 import { faker } from '@faker-js/faker'
 import { Collection } from '@msw/data'
 import { TIME_ZONE } from '@shinju-date/constants'
+import { Constants } from '@shinju-date/database'
 import { z } from 'zod'
 import { MOCK_SUPABASE_USER } from './session.js'
 
@@ -17,7 +18,7 @@ export const talents = new Collection({
     id: z.string().uuid(),
     name: z.string(),
     reading: z.string().nullable(),
-    status: z.enum(['active', 'retired']),
+    status: z.enum(Constants.public.Enums.talent_status),
     theme_color: z.string().nullable(),
     updated_at: z.string(),
   }),
@@ -59,18 +60,18 @@ export const videos = new Collection({
     created_at: z.string(),
     deleted_at: z.string().nullable(),
     deleted_reason: z
-      .enum(['unavailable', 'withdrawn', 'talent_deleted'])
+      .enum(Constants.public.Enums.video_deleted_reason)
       .nullable(),
     duration: z.string(),
     id: z.string().uuid(),
-    platform: z.enum(['youtube', 'twitch']),
+    platform: z.enum(Constants.public.Enums.platform_type),
     published_at: z.string(),
-    status: z.enum(['PUBLISHED', 'LIVE', 'ENDED', 'UPCOMING']),
+    status: z.enum(Constants.public.Enums.video_status),
     talent_id: z.string().uuid(),
     thumbnail_id: z.string().uuid().nullable(),
     title: z.string(),
     updated_at: z.string(),
-    video_kind: z.enum(['standard', 'short']),
+    video_kind: z.enum(Constants.public.Enums.video_kind),
     visible: z.boolean(),
   }),
 })
@@ -109,12 +110,12 @@ export const videoBackfillJobs = new Collection({
     finished_at: z.string(),
     id: z.string().uuid(),
     pages: z.number(),
-    platform: z.enum(['youtube', 'twitch']),
+    platform: z.enum(Constants.public.Enums.platform_type),
     requested_at: z.string(),
     requested_by: z.string().nullable(),
     run_id: z.string().uuid().nullable(),
     started_at: z.string().nullable(),
-    status: z.enum(['done', 'failed']),
+    status: z.enum(Constants.public.Enums.video_backfill_job_status),
     talent_id: z.string().uuid(),
   }),
 })
@@ -136,7 +137,7 @@ export const twitchVideos = new Collection({
     stream_id: z.string().nullable(),
     twitch_user_id: z.string().uuid(),
     twitch_video_id: z.string(),
-    type: z.enum(['archive', 'highlight', 'upload', 'clip']).nullable(),
+    type: z.enum(Constants.public.Enums.twitch_video_type).nullable(),
     video_id: z.string().uuid(),
   }),
 })
@@ -176,7 +177,7 @@ export const featureRequests = new Collection({
     id: z.string().uuid(),
     is_read: z.boolean(),
     message: z.string(),
-    status: z.enum(['pending', 'in_progress', 'resolved', 'rejected']),
+    status: z.enum(Constants.public.Enums.feature_request_status),
     updated_at: z.string(),
   }),
 })
@@ -363,12 +364,17 @@ export async function seedCollections() {
       if (!talent) return
 
       const thumbnail = createdThumbnails[idx % createdThumbnails.length]
-      const status = faker.helpers.arrayElement([
-        'PUBLISHED',
-        'LIVE',
-        'ENDED',
-        'UPCOMING',
-      ] as const)
+      // The first video is always `UPCOMING` (hidden), so the seeded data has
+      // a hidden video whatever the other statuses are.
+      const status =
+        idx === 0
+          ? 'UPCOMING'
+          : faker.helpers.arrayElement([
+              'PUBLISHED',
+              'LIVE',
+              'ENDED',
+              'UPCOMING',
+            ] as const)
 
       // Make some videos shorts (30% chance) using weightedArrayElement for clarity
       const videoKind = faker.helpers.weightedArrayElement([

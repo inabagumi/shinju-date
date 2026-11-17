@@ -3,7 +3,7 @@
 import type { Tables } from '@shinju-date/database'
 import { EllipsisVertical } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { ActionToast, useActionToast } from '@/components/action-toast'
 import {
   DropdownMenu,
@@ -11,14 +11,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/dropdown-menu'
-import {
-  activateTalentAction,
-  deleteTalentAction,
-  restoreTalentAction,
-  retireTalentAction,
-} from '../_actions'
 import { syncTalentAccounts } from '../_actions/sync'
-import { useTalentLifecycleAction } from '../_lib/use-talent-lifecycle-action'
+import {
+  TalentLifecycleDialog,
+  type TalentLifecycleOperation,
+} from './talent-lifecycle-dialog'
 
 type Talent = Pick<Tables<'talents'>, 'id' | 'name' | 'status' | 'deleted_at'>
 
@@ -28,53 +25,46 @@ interface TalentActionsProps {
 
 export function TalentActions({ talent }: TalentActionsProps) {
   const router = useRouter()
-  const {
-    isPending: isLifecyclePending,
-    message,
-    run,
-    setMessage,
-  } = useTalentLifecycleAction()
   const [isSyncPending, startSyncTransition] = useTransition()
-  const isPending = isLifecyclePending || isSyncPending
-  const { showToast, toastProps } = useActionToast()
-
+  // メニューは項目を押すと閉じて中身が消えるため、ダイアログはメニューの外に置き、
+  // 開いている操作をここで持つ。閉じる途中も文言が変わらないよう、操作の種類は
+  // 閉じても残す
+  const [lifecycleDialog, setLifecycleDialog] = useState<{
+    open: boolean
+    operation: TalentLifecycleOperation
+  }>({ open: false, operation: 'delete' })
   // 一覧の行の中には結果を表示する場所がないため、トーストで知らせる
-  useEffect(() => {
-    if (message) {
-      showToast(message.type, message.text)
-    }
-  }, [message])
+  const { showToast, toastProps } = useActionToast()
 
   const isDeleted = talent.deleted_at !== null
   const isRetired = !isDeleted && talent.status === 'retired'
   const isActive = !isDeleted && talent.status === 'active'
 
+  const openLifecycleDialog = (operation: TalentLifecycleOperation) => {
+    setLifecycleDialog({ open: true, operation })
+  }
+
   const handleSync = () => {
-    setMessage(null)
     startSyncTransition(async () => {
       try {
         const result = await syncTalentAccounts(talent.id)
         if (result.success) {
-          setMessage({
-            text:
-              result.message ??
+          showToast(
+            'success',
+            result.message ??
               (result.unchanged
                 ? 'アカウント情報は既に最新です。'
                 : 'アカウント情報を同期しました。'),
-            type: 'success',
-          })
+          )
         } else {
-          setMessage({
-            text: result.error || '同期に失敗しました。',
-            type: 'danger',
-          })
+          showToast('danger', result.error || '同期に失敗しました。')
         }
         // A platform may have been updated even when another one failed.
         if (result.unchanged === false) {
           router.refresh()
         }
       } catch {
-        setMessage({ text: '予期しないエラーが発生しました。', type: 'danger' })
+        showToast('danger', '予期しないエラーが発生しました。')
       }
     })
   }
@@ -84,57 +74,33 @@ export function TalentActions({ talent }: TalentActionsProps) {
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label={`「${talent.name}」の操作`}
-          disabled={isPending}
+          disabled={isSyncPending}
         >
           <EllipsisVertical aria-hidden="true" className="size-5" />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {isDeleted ? (
-            <DropdownMenuItem
-              onClick={() =>
-                run(() => restoreTalentAction(talent.id), {
-                  confirmMessage: `タレント「${talent.name}」を復活しますか？`,
-                  successText: 'タレントを復活しました。',
-                })
-              }
-            >
+            <DropdownMenuItem onClick={() => openLifecycleDialog('restore')}>
               復活
             </DropdownMenuItem>
           ) : (
             <>
               <DropdownMenuItem onClick={handleSync}>同期</DropdownMenuItem>
               {isActive && (
-                <DropdownMenuItem
-                  onClick={() =>
-                    run(() => retireTalentAction(talent.id), {
-                      confirmMessage: `タレント「${talent.name}」を引退にしますか？`,
-                      successText: 'タレントを引退にしました。',
-                    })
-                  }
-                >
+                <DropdownMenuItem onClick={() => openLifecycleDialog('retire')}>
                   引退にする
                 </DropdownMenuItem>
               )}
               {isRetired && (
                 <DropdownMenuItem
-                  onClick={() =>
-                    run(() => activateTalentAction(talent.id), {
-                      confirmMessage: `タレント「${talent.name}」をアクティブに戻しますか？`,
-                      successText: 'タレントをアクティブに戻しました。',
-                    })
-                  }
+                  onClick={() => openLifecycleDialog('activate')}
                 >
                   アクティブに戻す
                 </DropdownMenuItem>
               )}
               <hr className="my-1 border-border" />
               <DropdownMenuItem
-                onClick={() =>
-                  run(() => deleteTalentAction(talent.id), {
-                    confirmMessage: `タレント「${talent.name}」を削除しますか？`,
-                    successText: 'タレントを削除しました。',
-                  })
-                }
+                onClick={() => openLifecycleDialog('delete')}
                 variant="danger"
               >
                 削除
@@ -143,6 +109,15 @@ export function TalentActions({ talent }: TalentActionsProps) {
           )}
         </DropdownMenuContent>
       </DropdownMenu>
+      <TalentLifecycleDialog
+        onOpenChange={(open) =>
+          setLifecycleDialog((prev) => ({ ...prev, open }))
+        }
+        onSuccess={(text) => showToast('success', text)}
+        open={lifecycleDialog.open}
+        operation={lifecycleDialog.operation}
+        talent={talent}
+      />
       <ActionToast {...toastProps} />
     </>
   )

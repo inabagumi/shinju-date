@@ -4,9 +4,9 @@ import { CardSkeleton } from '@/components/skeletons'
 import { WidgetErrorBoundary } from '@/components/widget-error-boundary'
 import { AnalyticsWidget } from './_components/analytics-widget'
 import {
-  PopularVideosWidget,
-  PopularVideosWidgetSkeleton,
-} from './_components/popular-videos-widget'
+  DashboardPopularVideos,
+  DashboardPopularVideosSkeleton,
+} from './_components/dashboard-popular-videos'
 import {
   ContentSummaryWidget,
   VideoSummaryWidget,
@@ -51,8 +51,8 @@ export default function DashboardPage() {
 
         {/* Popular Videos - Full width */}
         <WidgetErrorBoundary title="人気動画ランキング (過去30日間)">
-          <Suspense fallback={<PopularVideosWidgetSkeleton />}>
-            <PopularVideosWidget />
+          <Suspense fallback={<DashboardPopularVideosSkeleton />}>
+            <DashboardPopularVideos />
           </Suspense>
         </WidgetErrorBoundary>
       </div>

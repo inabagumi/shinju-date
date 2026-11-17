@@ -5,7 +5,7 @@ import {
   type SyncTwitchUserIconOptions,
   syncTwitchUserIcon,
 } from '@shinju-date/scraper/twitch'
-import { supabaseClient } from '@/lib/supabase/admin'
+import { getSupabaseAdminClient } from '@/lib/supabase/admin'
 
 /**
  * Twitch ユーザーのアイコンを Twitch に合わせて保存・差し替える。
@@ -22,7 +22,11 @@ export async function syncTwitchUserIconSafely(
   saved: SavedTwitchUserIcon,
 ): Promise<ProfileImageSyncResult | null> {
   try {
-    return await syncTwitchUserIcon({ saved, supabaseClient, user })
+    return await syncTwitchUserIcon({
+      saved,
+      supabaseClient: getSupabaseAdminClient(),
+      user,
+    })
   } catch (error) {
     // エラーオブジェクトをそのまま渡さず、名前とメッセージだけを記録する
     logger.warn('Twitchユーザーのアイコンを同期できませんでした', {
