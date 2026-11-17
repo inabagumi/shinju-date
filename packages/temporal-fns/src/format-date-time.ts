@@ -77,9 +77,17 @@ export function formatDateTimeWithSeconds(
   return formatDateTime(timestamp, { includeSeconds: true })
 }
 
-export function formatDateTimeFromISO(isoString: string): string {
+/**
+ * Formats an ISO 8601 string in JST as `YYYY/MM/DD HH:mm:ss` (or
+ * `YYYY/MM/DD HH:mm` with `includeSeconds: false`).
+ */
+export function formatDateTimeFromISO(
+  isoString: string,
+  options: FormatDateTimeOptions = {},
+): string {
+  const { includeSeconds = true } = options
   const instant = parseISO8601(isoString)
   // Use JST timezone
   const zonedDateTime = instant.toZonedDateTimeISO('Asia/Tokyo')
-  return formatDateTimeWithSeconds(zonedDateTime)
+  return formatDateTime(zonedDateTime, { includeSeconds })
 }
