@@ -80,7 +80,7 @@ export function MultiSelect({
       <Popover.Portal>
         <Popover.Content
           align="start"
-          className="data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=open]:animate-in z-50 w-[var(--radix-popover-trigger-width)] rounded-container border border-border bg-surface p-2 text-foreground shadow-overlay"
+          className="z-50 w-[var(--radix-popover-trigger-width)] rounded-container border border-border bg-surface p-2 text-foreground shadow-overlay"
           sideOffset={4}
         >
           <div className="flex flex-col gap-1">
