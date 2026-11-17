@@ -1,9 +1,8 @@
 'use client'
 
-import { TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { range } from '@shinju-date/helpers'
-import { formatDateTime } from '@shinju-date/temporal-fns'
+import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import {
   Badge,
   EmptyState,
@@ -114,10 +113,9 @@ export function FeatureRequestList({
           </TableHeader>
           <TableBody>
             {filteredRequests.map((item) => {
-              const createdAt = Temporal.Instant.from(item.created_at)
-              const formattedDate = formatDateTime(
-                createdAt.toZonedDateTimeISO(TIME_ZONE),
-              )
+              const formattedDate = formatDateTimeFromISO(item.created_at, {
+                includeSeconds: false,
+              })
 
               return (
                 <TableRow key={item.id}>

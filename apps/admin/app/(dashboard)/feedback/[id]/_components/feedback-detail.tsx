@@ -1,8 +1,7 @@
 'use client'
 
-import { TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
-import { formatDateTimeWithSeconds } from '@shinju-date/temporal-fns'
+import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import { Select, Textarea } from '@shinju-date/ui'
 import { useActionState } from 'react'
 import ReactMarkdown from 'react-markdown'
@@ -72,15 +71,8 @@ export function FeatureRequestDetail({
     null,
   )
 
-  // Format dates using Temporal
-  const createdAt = Temporal.Instant.from(featureRequest.created_at)
-  const updatedAt = Temporal.Instant.from(featureRequest.updated_at)
-  const createdAtFormatted = formatDateTimeWithSeconds(
-    createdAt.toZonedDateTimeISO(TIME_ZONE),
-  )
-  const updatedAtFormatted = formatDateTimeWithSeconds(
-    updatedAt.toZonedDateTimeISO(TIME_ZONE),
-  )
+  const createdAtFormatted = formatDateTimeFromISO(featureRequest.created_at)
+  const updatedAtFormatted = formatDateTimeFromISO(featureRequest.updated_at)
 
   return (
     <div className="grid gap-6 lg:grid-cols-3 lg:items-start">

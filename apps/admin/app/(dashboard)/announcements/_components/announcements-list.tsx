@@ -1,7 +1,6 @@
-import { TIME_ZONE } from '@shinju-date/constants'
 import type { Tables } from '@shinju-date/database'
 import { range } from '@shinju-date/helpers'
-import { formatDateTime } from '@shinju-date/temporal-fns'
+import { formatDateTimeFromISO } from '@shinju-date/temporal-fns'
 import {
   Button,
   EmptyState,
@@ -37,13 +36,6 @@ function AnnouncementRow({
 }: {
   announcement: Tables<'announcements'>
 }) {
-  const startAt = Temporal.Instant.from(
-    announcement.start_at,
-  ).toZonedDateTimeISO(TIME_ZONE)
-  const endAt = Temporal.Instant.from(announcement.end_at).toZonedDateTimeISO(
-    TIME_ZONE,
-  )
-
   return (
     <TableRow>
       <TableCell className="min-w-64 whitespace-normal">
@@ -71,7 +63,11 @@ function AnnouncementRow({
         </div>
       </TableCell>
       <TableCell className="text-muted tabular-nums">
-        {formatDateTime(startAt)} 〜 {formatDateTime(endAt)}
+        {formatDateTimeFromISO(announcement.start_at, {
+          includeSeconds: false,
+        })}{' '}
+        〜{' '}
+        {formatDateTimeFromISO(announcement.end_at, { includeSeconds: false })}
       </TableCell>
       <TableCell>
         <div className="flex justify-end gap-4">
