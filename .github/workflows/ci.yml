@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # Detect whether the database job needs to run
+  # Detect whether the database and Terraform jobs need to run
   changes:
     name: Detect Changes
     runs-on: ubuntu-26.04
@@ -20,13 +20,14 @@ jobs:
       contents: read
     outputs:
       database: ${{ steps.filter.outputs.database }}
+      terraform: ${{ steps.filter.outputs.terraform }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
 
-      - name: Detect database changes
+      - name: Detect database and Terraform changes
         id: filter
         env:
           BEFORE_SHA: ${{ github.event.before }}
@@ -42,8 +43,9 @@ jobs:
           fi
 
           if [ -z "$base" ]; then
-            echo "Could not find the base commit, so the database job runs"
+            echo "Could not find the base commit, so the database and Terraform jobs run"
             database=true
+            terraform=true
           else
             changed_files=$(git diff --name-only "$base" HEAD)
             # The Supabase CLI version is in package.json, and it can change the generated types
@@ -52,10 +54,18 @@ jobs:
             else
               database=false
             fi
+
+            if grep -qE '^(terraform/|\.github/workflows/ci\.yml$)' <<< "$changed_files"; then
+              terraform=true
+            else
+              terraform=false
+            fi
           fi
 
           echo "database=$database"
           echo "database=$database" >> "$GITHUB_OUTPUT"
+          echo "terraform=$terraform"
+          echo "terraform=$terraform" >> "$GITHUB_OUTPUT"
 
   # Unit tests of all packages (turbo skips the packages whose inputs did not change)
   test:
@@ -281,14 +291,56 @@ jobs:
             exit 1
           fi
 
+  # Format and validate the Terraform configuration (only when it changes)
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-26.04
+    needs: changes
+    if: needs.changes.outputs.terraform == 'true'
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: "^1.17"
+          terraform_wrapper: false
+
+      - name: Check format
+        run: terraform fmt -check -recursive
+
+      # Skips HCP Terraform, which needs a token, and only downloads the providers
+      - name: Initialize
+        run: terraform init -backend=false -input=false
+
+      - name: Validate
+        run: terraform validate
+
   # Summary job - this is the only required status check
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-26.04
-    needs: [changes, test, lint, typecheck, build, build-msw, e2e, database]
+    needs:
+      [
+        changes,
+        test,
+        lint,
+        typecheck,
+        build,
+        build-msw,
+        e2e,
+        database,
+        terraform,
+      ]
     if: always()
     steps:
-      # The database job is skipped when the database does not change
+      # The database and Terraform jobs are skipped when they do not change
       - name: Check job results
         env:
           FAILED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
