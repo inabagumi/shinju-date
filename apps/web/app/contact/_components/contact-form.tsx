@@ -1,31 +1,15 @@
 'use client'
 
-import { Button } from '@shinju-date/ui'
 import { useActionState, useState } from 'react'
-import { useFormStatus } from 'react-dom'
 import {
   CheckboxField,
   InputField,
   SelectField,
   TextareaField,
-} from '@/app/_components/form-fields'
+} from '@/components/form/form-fields'
+import { FormStatus } from '@/components/form/form-status'
+import { FormSubmitButton } from '@/components/form/form-submit-button'
 import { type ContactFormState, submitContactForm } from '../_lib/actions'
-
-function SubmitButton() {
-  const { pending } = useFormStatus()
-
-  return (
-    <Button
-      className="w-full"
-      disabled={pending}
-      size="lg"
-      type="submit"
-      variant="primary"
-    >
-      {pending ? '送信中...' : '送信する'}
-    </Button>
-  )
-}
 
 interface WantsReplyChange {
   checked: boolean
@@ -110,20 +94,9 @@ export function ContactForm() {
         rows={6}
       />
 
-      <SubmitButton />
+      <FormSubmitButton />
 
-      {/* Status Messages */}
-      {!isPending && state && (state.success || state.error) && (
-        <div
-          className={`rounded-container border p-4 ${
-            state.success
-              ? 'border-success/30 bg-success/10 text-success'
-              : 'border-danger/30 bg-danger/10 text-danger'
-          }`}
-        >
-          {state.success ? state.message : state.error}
-        </div>
-      )}
+      <FormStatus state={isPending ? null : state} />
     </form>
   )
 }
